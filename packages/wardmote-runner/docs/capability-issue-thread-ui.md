@@ -170,13 +170,13 @@ pnpm --filter @tickernelz/wardmote-runner smoke:capability:ui
 
 Hosts without the Playwright chromium system libraries can either run
 `pnpm --filter @tickernelz/wardmote-runner verify:rootless` or set
-`PAPERCLIP_RUNNER_CHROMIUM_PATH` to a preinstalled Chromium.
+`WARDMOTE_RUNNER_CHROMIUM_PATH` to a preinstalled Chromium.
 
 The committed PNGs are pinned to the Chromium build listed in
 `.paperclip-local/evidence/capability/ui/index.md`, so `check:capability:ui` needs that same
-browser. Point `PAPERCLIP_RUNNER_CHROMIUM_PATH` at the recorded browser before
+browser. Point `WARDMOTE_RUNNER_CHROMIUM_PATH` at the recorded browser before
 comparing — and when that path is the agent-browser wrapper, also set
-`PAPERCLIP_CHROMIUM_BIN` to the exact binary, because the wrapper otherwise
+`WARDMOTE_CHROMIUM_BIN` to the exact binary, because the wrapper otherwise
 picks the newest installed Playwright Chromium. The issue-thread bundle
 self-hosts its Latin Inter and DejaVu Sans Mono WOFF2 faces plus tiny status-glyph
 subsets, so host fontconfig directories do not participate in capture. The recorder probes the

@@ -25,7 +25,7 @@ async function writeWorkspaceEnv(workspacePath: string, homeDir: string, instanc
   await fs.mkdir(envDir, { recursive: true });
   await fs.writeFile(
     path.join(envDir, ".env"),
-    `PAPERCLIP_HOME=${JSON.stringify(homeDir)}\nPAPERCLIP_INSTANCE_ID=${JSON.stringify(instanceId)}\n`,
+    `WARDMOTE_HOME=${JSON.stringify(homeDir)}\nWARDMOTE_INSTANCE_ID=${JSON.stringify(instanceId)}\n`,
     "utf8",
   );
 }

@@ -8,7 +8,7 @@ const html = readFileSync(new URL("../../ui/index.html", import.meta.url), "utf8
 // Offline fallback belongs to stamped production workers. Development workers
 // deliberately leave requests to Vite; service-worker-reload.spec.ts covers that.
 const worker = readFileSync(new URL("../../ui/public/sw.js", import.meta.url), "utf8")
-  .replace("__PAPERCLIP_BUILD_ID__", "bootstrap-recovery-test");
+  .replace("__WARDMOTE_BUILD_ID__", "bootstrap-recovery-test");
 
 test.use({ serviceWorkers: "allow" });
 

@@ -3,8 +3,8 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 import {
-  PAPERCLIP_RUNNER_BUILD_METADATA,
-  PAPERCLIP_RUNNERD_BUILD_METADATA_SCHEMA,
+  WARDMOTE_RUNNER_BUILD_METADATA,
+  WARDMOTE_RUNNERD_BUILD_METADATA_SCHEMA,
 } from "./build-metadata.js";
 import {
   PaperclipRunnerEvalCompatibilityError,
@@ -15,13 +15,13 @@ import {
 function compatible(): PaperclipRunnerEvalCompatibilityRequirement {
   return {
     consumer: "paperclip-evals",
-    packageVersion: PAPERCLIP_RUNNER_BUILD_METADATA.package.version,
+    packageVersion: WARDMOTE_RUNNER_BUILD_METADATA.package.version,
     runnerd: {
-      schema: PAPERCLIP_RUNNERD_BUILD_METADATA_SCHEMA,
+      schema: WARDMOTE_RUNNERD_BUILD_METADATA_SCHEMA,
       binaryName: "paperclip-runnerd",
       packageName: "@tickernelz/wardmote-runner",
-      packageVersion: PAPERCLIP_RUNNER_BUILD_METADATA.package.version,
-      binaryContractVersion: PAPERCLIP_RUNNER_BUILD_METADATA.contracts.runnerdArtifact,
+      packageVersion: WARDMOTE_RUNNER_BUILD_METADATA.package.version,
+      binaryContractVersion: WARDMOTE_RUNNER_BUILD_METADATA.contracts.runnerdArtifact,
       nativeExecutionVersion: 1,
       harnessDriverVersion: 1,
       prp: { name: "paperclip.runner", minimumVersion: 1, maximumVersion: 1 },
@@ -29,8 +29,8 @@ function compatible(): PaperclipRunnerEvalCompatibilityRequirement {
     nativeExecutionVersion: 1,
     prp: { minimumVersion: 1, maximumVersion: 1 },
     catalog: {
-      version: PAPERCLIP_RUNNER_BUILD_METADATA.semanticCatalog.version,
-      sha256: PAPERCLIP_RUNNER_BUILD_METADATA.semanticCatalog.sha256,
+      version: WARDMOTE_RUNNER_BUILD_METADATA.semanticCatalog.version,
+      sha256: WARDMOTE_RUNNER_BUILD_METADATA.semanticCatalog.sha256,
     },
     driver: {
       contractVersion: 1,
@@ -60,7 +60,7 @@ describe("Paperclip Evals integration compatibility", () => {
       fileURLToPath(new URL("../../package.json", import.meta.url)),
       "utf8",
     ));
-    expect(PAPERCLIP_RUNNER_BUILD_METADATA.package.version).toBe(packageJson.version);
+    expect(WARDMOTE_RUNNER_BUILD_METADATA.package.version).toBe(packageJson.version);
   });
 
   it("negotiates package, binary, PRP, catalog, and driver V1", () => {
@@ -80,7 +80,7 @@ describe("Paperclip Evals integration compatibility", () => {
     requirement.runnerd.nativeExecutionVersion = 2;
     requirement.runnerd.harnessDriverVersion = 2;
     requirement.nativeExecutionVersion = 2;
-    const unsupportedVersion = PAPERCLIP_RUNNER_BUILD_METADATA.prp.maximumVersion + 1;
+    const unsupportedVersion = WARDMOTE_RUNNER_BUILD_METADATA.prp.maximumVersion + 1;
     requirement.prp = { minimumVersion: unsupportedVersion, maximumVersion: unsupportedVersion };
     requirement.runnerd.prp = { name: "paperclip.runner", minimumVersion: unsupportedVersion, maximumVersion: unsupportedVersion };
     requirement.catalog = { version: 2, sha256: `sha256:${"0".repeat(64)}` };

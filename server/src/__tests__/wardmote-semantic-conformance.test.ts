@@ -18,10 +18,10 @@ import {
 } from "./helpers/wardmote-semantic-conformance.js";
 
 vi.hoisted(() => {
-  process.env.PAPERCLIP_HOME = "/tmp/paperclip-semantic-conformance-home";
-  process.env.PAPERCLIP_INSTANCE_ID = "semantic-conformance";
-  process.env.PAPERCLIP_LOG_DIR = "/tmp/paperclip-semantic-conformance-home/logs";
-  process.env.PAPERCLIP_IN_WORKTREE = "false";
+  process.env.WARDMOTE_HOME = "/tmp/paperclip-semantic-conformance-home";
+  process.env.WARDMOTE_INSTANCE_ID = "semantic-conformance";
+  process.env.WARDMOTE_LOG_DIR = "/tmp/paperclip-semantic-conformance-home/logs";
+  process.env.WARDMOTE_IN_WORKTREE = "false";
 });
 
 const embeddedSupport = await getEmbeddedPostgresTestSupport();

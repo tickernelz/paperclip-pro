@@ -16,7 +16,7 @@ const repo = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 assert.equal(process.platform, 'linux', 'Run this verification on disposable EC2 Linux, not a developer host');
 const root = mkdtempSync(join(tmpdir(), 'paperclip-grok-public-install-'));
 const prerequisite = join(root, 'native/grok');
-const env = { ...process.env, NODE_PATH: '', PAPERCLIP_RELEASE_REUSE_UI_DIST: '1', npm_config_ignore_scripts: 'false', npm_config_audit: 'false', npm_config_fund: 'false' };
+const env = { ...process.env, NODE_PATH: '', WARDMOTE_RELEASE_REUSE_UI_DIST: '1', npm_config_ignore_scripts: 'false', npm_config_audit: 'false', npm_config_fund: 'false' };
 const run = (cmd, args, cwd = root) => execFileSync(cmd, args, { cwd, env, stdio: 'pipe', maxBuffer: 32 * 1024 * 1024 });
 const sourceRevision = run('git', ['rev-parse', 'HEAD'], repo).toString().trim();
 const releaseVersion = `0.0.0-grok-verify.${sourceRevision.slice(0, 12)}`;
@@ -186,8 +186,8 @@ try {
   // prefetch that had not finished yet; zero means the overlap hid it entirely.
   const downloads = Object.fromEntries(prefetches.map(({ name, durationMs }) => [`${name}_prefetch_ms`, durationMs]));
   console.log(JSON.stringify({ schema: 'paperclip.public-npm-install.timing.v1', ...timing, ...downloads }));
-  if (process.env.PAPERCLIP_RUNNER_QUALIFICATION_PACKAGES_DIR) {
-    const retained = retainRunnerQualificationPackages({ repo, output: process.env.PAPERCLIP_RUNNER_QUALIFICATION_PACKAGES_DIR, sourceRevision, releaseVersion, env,
+  if (process.env.WARDMOTE_RUNNER_QUALIFICATION_PACKAGES_DIR) {
+    const retained = retainRunnerQualificationPackages({ repo, output: process.env.WARDMOTE_RUNNER_QUALIFICATION_PACKAGES_DIR, sourceRevision, releaseVersion, env,
       publicArchives: [...needed].map((name, index) => ({ name, file: tarballs[index] })),
     });
     console.log(JSON.stringify(retained));

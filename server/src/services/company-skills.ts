@@ -638,7 +638,7 @@ function readCanonicalSkillKey(frontmatter: Record<string, unknown>, metadata: R
  * use them. Mirrors the repo-root `skills/` bundle that
  * `ensureSkillInventoryCurrent` imports into every company library.
  */
-export const PAPERCLIP_CORE_SKILL_KEYS = [
+export const WARDMOTE_CORE_SKILL_KEYS = [
   "paperclipai/paperclip/paperclip",
   "paperclipai/paperclip/paperclip-board",
   "paperclipai/paperclip/paperclip-converting-plans-to-tasks",

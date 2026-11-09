@@ -250,7 +250,7 @@ describe("server adapter registry", () => {
     expect(probe).toHaveBeenLastCalledWith("openrouter/deepseek/deepseek-v4-flash-0731");
   });
   it("reports qualification-only readiness for an exact host-authorized candidate", async () => {
-    const key = "PAPERCLIP_RUNNER_ACPX_QUALIFICATION";
+    const key = "WARDMOTE_RUNNER_ACPX_QUALIFICATION";
     const previous = process.env[key];
     process.env[key] = JSON.stringify([{ agent: "copilot", model: "exact-model" }]);
     try {

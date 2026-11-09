@@ -153,7 +153,7 @@ async function createRemoteMcpToolFixture(db: ReturnType<typeof createDb>, compa
     expect(parseNativeRuntimeContext(nativeRuntimeContextFixture()).connectionInstructions).toBeUndefined();
     const captured: string[] = [];
     const result = await executeProcess({ runId: f.run.id, agent: { ...f.agent, adapterType: "process" }, runtime: { sessionId: null, sessionParams: null, sessionDisplayId: null, taskKey: null }, context,
-      config: { command: process.execPath, args: ["-e", "const fs=require('node:fs');const file=process.env.PAPERCLIP_CONNECTION_INSTRUCTIONS_FILE;console.log(JSON.stringify({file,mode:fs.statSync(file).mode&511,snapshot:JSON.parse(fs.readFileSync(file,'utf8'))}))"], env: { PAPERCLIP_CONNECTION_INSTRUCTIONS_FILE: "/forged" } },
+      config: { command: process.execPath, args: ["-e", "const fs=require('node:fs');const file=process.env.WARDMOTE_CONNECTION_INSTRUCTIONS_FILE;console.log(JSON.stringify({file,mode:fs.statSync(file).mode&511,snapshot:JSON.parse(fs.readFileSync(file,'utf8'))}))"], env: { WARDMOTE_CONNECTION_INSTRUCTIONS_FILE: "/forged" } },
       onLog: async (_stream, text) => { captured.push(text); },
     });
     expect(result.exitCode).toBe(0);

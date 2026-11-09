@@ -30,8 +30,8 @@ const backgroundFeature = defineDecisionFeature("test.background", { background:
 const outcome: DecisionProviderOutcome = { answers: { billing: { type: "boolean", probability: 0.9 } }, receipt: decisionReceipt("openai", { usage: { inputTokens: 100, outputTokens: 0 } }) };
 beforeAll(async () => {
   home = await realpath(await mkdtemp(path.join(os.tmpdir(), "paperclip-decisions-")));
-  vi.stubEnv("PAPERCLIP_HOME", home);
-  vi.stubEnv("PAPERCLIP_INSTANCE_ID", "decisions-fixture");
+  vi.stubEnv("WARDMOTE_HOME", home);
+  vi.stubEnv("WARDMOTE_INSTANCE_ID", "decisions-fixture");
   database = await startEmbeddedPostgresTestDatabase("paperclip-decisions-db-");
   db = createDb(database.connectionString);
 }, 90000);

@@ -45,7 +45,7 @@ const paperclipCursorInstructionCrypto=n("node:crypto"),paperclipCursorInstructi
 let paperclipCursorInstructionSnapshot;
 function paperclipCursorInstructionState(){
 if(paperclipCursorInstructionSnapshot)return paperclipCursorInstructionSnapshot;
-const raw=process.env.PAPERCLIP_CURSOR_INSTRUCTIONS;
+const raw=process.env.WARDMOTE_CURSOR_INSTRUCTIONS;
 if(typeof raw!=="string"||Buffer.byteLength(raw)>200000)throw new Error("Cursor instruction binding missing or oversized");
 let value;try{value=JSON.parse(raw)}catch{throw new Error("Cursor instruction binding invalid")}
 if(!value||typeof value!=="object"||Array.isArray(value)||Object.keys(value).sort().join(",")!=="content,digest,schema"||value.schema!=="paperclip.cursor.instructions.v1"||typeof value.content!=="string"||value.content.includes("\\0")||Buffer.byteLength(value.content)>32768||typeof value.digest!=="string"||!/^sha256:[a-f0-9]{64}$/.test(value.digest))throw new Error("Cursor instruction binding invalid");

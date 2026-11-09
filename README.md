@@ -171,7 +171,7 @@ Operator environment such as `PATH` entries for adapter binaries, API keys and p
 | `WARDMOTE_RUN_OOM_SCORE_ADJ` | `500` | Linux `oom_score_adj` for run processes, so the kernel kills runs before the server |
 | `WARDMOTE_TELEMETRY_DISABLED=1` or `DO_NOT_TRACK=1` | unset | Turns off anonymous usage telemetry (already off under CI) |
 
-The older `PAPERCLIP_*` spellings still work in this release and log a deprecation warning. Day-two operation, backups, public hostnames and release mechanics are in [docs/fork/OPERATIONS.md](docs/fork/OPERATIONS.md); observability (OpenTelemetry, Sentry) is in [doc/observability.md](doc/observability.md).
+Day-two operation, backups, public hostnames and release mechanics are in [docs/fork/OPERATIONS.md](docs/fork/OPERATIONS.md); observability (OpenTelemetry, Sentry) is in [doc/observability.md](doc/observability.md).
 
 ## Development
 

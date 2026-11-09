@@ -36,7 +36,7 @@ fn launches_concurrent_runners_on_separate_ports() {
         let run_id = format!("run_{index}");
         let process = Command::new(env!("CARGO_BIN_EXE_paperclip-runnerd"))
             .env(
-                "PAPERCLIP_RUNNER_BOOTSTRAP_TICKET",
+                "WARDMOTE_RUNNER_BOOTSTRAP_TICKET",
                 "fixture-bootstrap-ticket",
             )
             .args([

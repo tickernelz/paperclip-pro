@@ -12,7 +12,7 @@ assert.ok(serverDirectory && extra.length === 0, 'Usage: pi-public-install-probe
 for (const key of Object.keys(process.env)) {
   assert.ok(!/(?:API_KEY|TOKEN|SECRET|PASSWORD)$/.test(key), `Unexpected credential variable: ${key}`);
 }
-assert.equal(process.env.PAPERCLIP_RUNNER_BINARY, undefined);
+assert.equal(process.env.WARDMOTE_RUNNER_BINARY, undefined);
 assert.equal(process.env.NODE_OPTIONS, undefined);
 assert.equal(process.env.NODE_PATH, undefined);
 const server = await realpath(serverDirectory);

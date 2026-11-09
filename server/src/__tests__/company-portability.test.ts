@@ -4857,8 +4857,8 @@ describe("company portability", () => {
   it("skips oversized and missing-blob attachments with warnings instead of failing", async () => {
     // The deployment-level cap is read once when the service module loads, so
     // this test re-imports the module under a 10-byte cap to reach the skip.
-    const previousCap = process.env.PAPERCLIP_ATTACHMENT_MAX_BYTES;
-    process.env.PAPERCLIP_ATTACHMENT_MAX_BYTES = "10";
+    const previousCap = process.env.WARDMOTE_ATTACHMENT_MAX_BYTES;
+    process.env.WARDMOTE_ATTACHMENT_MAX_BYTES = "10";
     vi.resetModules();
     try {
       const { companyPortabilityService: cappedPortabilityService } =
@@ -4912,9 +4912,9 @@ describe("company portability", () => {
       );
     } finally {
       if (previousCap === undefined) {
-        delete process.env.PAPERCLIP_ATTACHMENT_MAX_BYTES;
+        delete process.env.WARDMOTE_ATTACHMENT_MAX_BYTES;
       } else {
-        process.env.PAPERCLIP_ATTACHMENT_MAX_BYTES = previousCap;
+        process.env.WARDMOTE_ATTACHMENT_MAX_BYTES = previousCap;
       }
       vi.resetModules();
     }

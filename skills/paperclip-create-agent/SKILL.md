@@ -47,7 +47,7 @@ subagent for the requested permanent hire.
 
 The hiring tools — `paperclipListAgentConfigurations`, `paperclipCreateAgentHire`
 — live in the `extended` toolset: they are available when the operator enables
-`PAPERCLIP_MCP_TOOLSETS=full`; otherwise call the same operation through
+`WARDMOTE_MCP_TOOLSETS=full`; otherwise call the same operation through
 `paperclipApiRequest` (`method`, `path` relative to `/api`, `jsonBody` as a JSON
 string). `companyId` arguments default to the session's company, so pass one only
 when hiring into a different company.
@@ -140,7 +140,7 @@ call it again rather than reporting a pending hire.
 
 - if the response has `approval`, the hire is `pending_approval`
 - monitor and discuss on the approval thread
-- when the board approves, you will be woken with `PAPERCLIP_APPROVAL_ID`; read linked issues and close/comment follow-up
+- when the board approves, you will be woken with `WARDMOTE_APPROVAL_ID`; read linked issues and close/comment follow-up
 
 Read the approval with `paperclipGetApproval` (`approvalId`), and comment on the
 thread with `paperclipAddApprovalComment`:
@@ -154,8 +154,8 @@ If the approval already exists and needs manual linking to the issue, call
 `paperclipLinkIssueApproval` (`issueId`, `approvalId`).
 
 After approval is granted, run this follow-up loop: `paperclipGetApproval`
-(`approvalId: PAPERCLIP_APPROVAL_ID`) for the decision, then
-`paperclipGetApprovalIssues` (`approvalId: PAPERCLIP_APPROVAL_ID`) for the linked
+(`approvalId: WARDMOTE_APPROVAL_ID`) for the decision, then
+`paperclipGetApprovalIssues` (`approvalId: WARDMOTE_APPROVAL_ID`) for the linked
 issues.
 
 For each linked issue, either:

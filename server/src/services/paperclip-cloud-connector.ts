@@ -197,16 +197,16 @@ export function paperclipCloudConnectorConfigFromEnv(
 ): PaperclipCloudConnectorConfig | null {
   const localIdentity = loadPaperclipCloudConnectorIdentity();
   const legacyConfigured = [
-    env.PAPERCLIP_ID_CONNECTOR_INSTANCE_ID,
-    env.PAPERCLIP_ID_CONNECTOR_SIGN_PRIVATE_KEY,
-    env.PAPERCLIP_ID_CONNECTOR_SEAL_PRIVATE_KEY,
-    env.PAPERCLIP_ID_CONNECTOR_ENVIRONMENT,
-    env.PAPERCLIP_ID_CONNECTOR_BASE_URL,
+    env.WARDMOTE_ID_CONNECTOR_INSTANCE_ID,
+    env.WARDMOTE_ID_CONNECTOR_SIGN_PRIVATE_KEY,
+    env.WARDMOTE_ID_CONNECTOR_SEAL_PRIVATE_KEY,
+    env.WARDMOTE_ID_CONNECTOR_ENVIRONMENT,
+    env.WARDMOTE_ID_CONNECTOR_BASE_URL,
   ].some((value) => Boolean(value?.trim()));
-  const managedInstanceId = env.PAPERCLIP_CLOUD_CONNECTOR_INSTANCE_ID?.trim();
-  const managedSignPrivateKey = env.PAPERCLIP_CLOUD_CONNECTOR_SIGN_PRIVATE_KEY?.trim();
-  const managedSealPrivateKey = env.PAPERCLIP_CLOUD_CONNECTOR_SEAL_PRIVATE_KEY?.trim();
-  const managedEnvironment = env.PAPERCLIP_CLOUD_CONNECTOR_ENVIRONMENT?.trim();
+  const managedInstanceId = env.WARDMOTE_CLOUD_CONNECTOR_INSTANCE_ID?.trim();
+  const managedSignPrivateKey = env.WARDMOTE_CLOUD_CONNECTOR_SIGN_PRIVATE_KEY?.trim();
+  const managedSealPrivateKey = env.WARDMOTE_CLOUD_CONNECTOR_SEAL_PRIVATE_KEY?.trim();
+  const managedEnvironment = env.WARDMOTE_CLOUD_CONNECTOR_ENVIRONMENT?.trim();
   const hasManagedIdentityOverride = [managedInstanceId, managedSignPrivateKey, managedSealPrivateKey]
     .some(Boolean);
   const localStatus = hasManagedIdentityOverride ? null : paperclipCloudConnectorEnrollmentStatus(env);
@@ -223,7 +223,7 @@ export function paperclipCloudConnectorConfigFromEnv(
   const signPrivateKey = hasManagedIdentityOverride ? managedSignPrivateKey : localIdentity!.signPrivateKey;
   const sealPrivateKey = hasManagedIdentityOverride ? managedSealPrivateKey : localIdentity!.sealPrivateKey;
   const environment = hasManagedIdentityOverride ? managedEnvironment : localIdentity!.environment;
-  const baseUrl = env.PAPERCLIP_CLOUD_CONNECTOR_BASE_URL?.trim()
+  const baseUrl = env.WARDMOTE_CLOUD_CONNECTOR_BASE_URL?.trim()
     || (hasActiveLocalIdentity ? localIdentity!.brokerBaseUrl : undefined)
     || "https://my.paperclip.app";
   const values = [instanceId, signPrivateKey, sealPrivateKey, environment];

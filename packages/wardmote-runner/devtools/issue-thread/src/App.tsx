@@ -125,7 +125,7 @@ interface EmbeddedEvalReport {
 }
 
 declare global {
-  interface Window { __PAPERCLIP_EVAL_REPORT__?: EmbeddedEvalReport }
+  interface Window { __WARDMOTE_EVAL_REPORT__?: EmbeddedEvalReport }
 }
 
 interface StoredChatSession {
@@ -296,7 +296,7 @@ function useLayout(): "side" | "overlay" | "segment" {
 }
 
 export function App() {
-  const embeddedEval = window.__PAPERCLIP_EVAL_REPORT__ ?? null;
+  const embeddedEval = window.__WARDMOTE_EVAL_REPORT__ ?? null;
   const route = useRoute();
   const chat = route.surface === "chat";
   const layout = useLayout();

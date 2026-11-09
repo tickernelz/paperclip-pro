@@ -205,7 +205,7 @@ The immutable sandbox image is
 The remote runner binary was extracted from that image (SHA-256
 `5067194e4a4eff0946e312b162e78a46184dae49c29f5699be81fec6cfd0b9d7`).
 The first attempt failed before provider startup because a macOS host needs
-`PAPERCLIP_RUNNER_REMOTE_BINARY_PATH` pointing to a Linux binary. After configuring
+`WARDMOTE_RUNNER_REMOTE_BINARY_PATH` pointing to a Linux binary. After configuring
 it, PRP authenticated through Daytona provider ingress and the agent executed in
 `/home/daytona/paperclip-workspace` as the `daytona` user.
 

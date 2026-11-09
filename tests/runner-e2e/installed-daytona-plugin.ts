@@ -8,7 +8,7 @@ import { pathToFileURL } from "node:url";
 import { assertInstalledCliSelection, usesInstalledCli } from "./installed-cli.js";
 import type { MatrixExecution } from "./types.js";
 
-export const installedDaytonaPluginKeys = ["PAPERCLIP_RUNNER_E2E_INSTALLED_DAYTONA_PLUGIN", "PAPERCLIP_RUNNER_E2E_INSTALLED_DAYTONA_PLUGIN_AUTHORITY", "PAPERCLIP_RUNNER_E2E_INSTALLED_DAYTONA_PLUGIN_AUTHORITY_SHA256"] as const;
+export const installedDaytonaPluginKeys = ["WARDMOTE_RUNNER_E2E_INSTALLED_DAYTONA_PLUGIN", "WARDMOTE_RUNNER_E2E_INSTALLED_DAYTONA_PLUGIN_AUTHORITY", "WARDMOTE_RUNNER_E2E_INSTALLED_DAYTONA_PLUGIN_AUTHORITY_SHA256"] as const;
 type PackagePin = { root: string; packageSha256: string; entry: string; entrySha256: string };
 export interface InstalledDaytonaPluginAuthority {
   schema: "paperclip.e2e.installed-daytona-plugin/v1";
@@ -44,10 +44,10 @@ export async function verifyInstalledDaytonaPlugin(env: NodeJS.ProcessEnv, execu
   if (!selected && !required) return undefined;
   assertInstalledCliSelection(env, executions);
   if (!usesInstalledCli(env) || !installedDaytonaPluginKeys.every(key => Boolean(env[key])) || executions.some(e => e.environment.id !== "daytona")) throw new Error("Installed Daytona plugin requires complete pins and installed Pi Daytona selection");
-  const authorityPath = env.PAPERCLIP_RUNNER_E2E_INSTALLED_DAYTONA_PLUGIN_AUTHORITY!;
-  const authoritySha256 = env.PAPERCLIP_RUNNER_E2E_INSTALLED_DAYTONA_PLUGIN_AUTHORITY_SHA256!;
+  const authorityPath = env.WARDMOTE_RUNNER_E2E_INSTALLED_DAYTONA_PLUGIN_AUTHORITY!;
+  const authoritySha256 = env.WARDMOTE_RUNNER_E2E_INSTALLED_DAYTONA_PLUGIN_AUTHORITY_SHA256!;
   const a: InstalledDaytonaPluginAuthority = JSON.parse((await pinned(authorityPath, authoritySha256, 65536)).toString());
-  if (a.schema !== "paperclip.e2e.installed-daytona-plugin/v1" || a.plugin?.root !== env.PAPERCLIP_RUNNER_E2E_INSTALLED_DAYTONA_PLUGIN) throw new Error("Installed Daytona plugin authority differs");
+  if (a.schema !== "paperclip.e2e.installed-daytona-plugin/v1" || a.plugin?.root !== env.WARDMOTE_RUNNER_E2E_INSTALLED_DAYTONA_PLUGIN) throw new Error("Installed Daytona plugin authority differs");
   await canonical(a.graphRoot);
   async function packageAt(pin: PackagePin, name: string) {
     await canonical(pin.root);

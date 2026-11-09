@@ -25,8 +25,8 @@ beforeAll(async () => {
   temporary = await startEmbeddedPostgresTestDatabase("dot-invitations-");
   db = createDb(temporary.connectionString);
   root = await mkdtemp(join(tmpdir(), "dot-invite-home-"));
-  vi.stubEnv("PAPERCLIP_HOME", root);
-  vi.stubEnv("PAPERCLIP_IN_WORKTREE", "false");
+  vi.stubEnv("WARDMOTE_HOME", root);
+  vi.stubEnv("WARDMOTE_IN_WORKTREE", "false");
   await instanceSettingsService(db).updateExperimental({ enableOpenAiDot: true, enablePublicMcp: true });
 }, 120000);
 afterAll(async () => { await temporary?.cleanup(); if (root) await rm(root, { recursive: true, force: true }); vi.unstubAllEnvs(); });

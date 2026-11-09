@@ -125,7 +125,7 @@ describe("OpenWA catalog, describe and call (embedded Postgres + fake gateway)",
   let db: Db;
   let root: string;
   let storage: ReturnType<typeof createStorageService>;
-  const oldKey = process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE;
+  const oldKey = process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE;
   const services: ChatChannelService[] = [];
   const gateways: FakeOpenwaGateway[] = [];
   const endpointIds: string[] = [];
@@ -134,7 +134,7 @@ describe("OpenWA catalog, describe and call (embedded Postgres + fake gateway)",
     database = await startEmbeddedPostgresTestDatabase("paperclip-openwa-catalog-");
     db = createDb(database.connectionString);
     root = await mkdtemp(path.join(tmpdir(), "openwa-catalog-"));
-    process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE = path.join(root, "master.key");
+    process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE = path.join(root, "master.key");
     storage = createStorageService(createLocalDiskStorageProvider(path.join(root, "storage")));
     await instanceSettingsService(db).updateExperimental({ enableChatConnectors: true });
   }, 60_000);
@@ -147,8 +147,8 @@ describe("OpenWA catalog, describe and call (embedded Postgres + fake gateway)",
   afterAll(async () => {
     await database?.cleanup();
     if (root) await rm(root, { recursive: true, force: true });
-    if (oldKey === undefined) delete process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE;
-    else process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE = oldKey;
+    if (oldKey === undefined) delete process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE;
+    else process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE = oldKey;
   });
 
   async function setup(input: { policy?: Record<string, unknown>; adminKey?: boolean } = {}) {

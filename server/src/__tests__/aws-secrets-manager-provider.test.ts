@@ -4,11 +4,11 @@ import { SecretProviderClientError } from "../secrets/types.js";
 
 describe("awsSecretsManagerProvider", () => {
   const previousEnv = {
-    PAPERCLIP_SECRETS_AWS_REGION: process.env.PAPERCLIP_SECRETS_AWS_REGION,
+    WARDMOTE_SECRETS_AWS_REGION: process.env.WARDMOTE_SECRETS_AWS_REGION,
     AWS_REGION: process.env.AWS_REGION,
     AWS_DEFAULT_REGION: process.env.AWS_DEFAULT_REGION,
-    PAPERCLIP_SECRETS_AWS_DEPLOYMENT_ID: process.env.PAPERCLIP_SECRETS_AWS_DEPLOYMENT_ID,
-    PAPERCLIP_SECRETS_AWS_KMS_KEY_ID: process.env.PAPERCLIP_SECRETS_AWS_KMS_KEY_ID,
+    WARDMOTE_SECRETS_AWS_DEPLOYMENT_ID: process.env.WARDMOTE_SECRETS_AWS_DEPLOYMENT_ID,
+    WARDMOTE_SECRETS_AWS_KMS_KEY_ID: process.env.WARDMOTE_SECRETS_AWS_KMS_KEY_ID,
     AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID,
     AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY,
     AWS_SESSION_TOKEN: process.env.AWS_SESSION_TOKEN,
@@ -92,11 +92,11 @@ describe("awsSecretsManagerProvider", () => {
   });
 
   it("creates AWS secrets from selected provider vault config without deployment env fallback", async () => {
-    delete process.env.PAPERCLIP_SECRETS_AWS_REGION;
+    delete process.env.WARDMOTE_SECRETS_AWS_REGION;
     delete process.env.AWS_REGION;
     delete process.env.AWS_DEFAULT_REGION;
-    delete process.env.PAPERCLIP_SECRETS_AWS_DEPLOYMENT_ID;
-    delete process.env.PAPERCLIP_SECRETS_AWS_KMS_KEY_ID;
+    delete process.env.WARDMOTE_SECRETS_AWS_DEPLOYMENT_ID;
+    delete process.env.WARDMOTE_SECRETS_AWS_KMS_KEY_ID;
     delete process.env.AWS_ACCESS_KEY_ID;
     delete process.env.AWS_SECRET_ACCESS_KEY;
     delete process.env.AWS_SESSION_TOKEN;
@@ -283,7 +283,7 @@ describe("awsSecretsManagerProvider", () => {
           SecretId:
             "arn:aws:secretsmanager:us-east-1:123456789012:secret:paperclip/prod-use1/company-1/openai-api-key",
           SecretString: "rotated-secret-value",
-          VersionStages: ["PAPERCLIP_PENDING"],
+          VersionStages: ["WARDMOTE_PENDING"],
         },
       },
     ]);
@@ -875,17 +875,17 @@ describe("awsSecretsManagerProvider", () => {
   });
 
   it("warns when AWS provider configuration is incomplete and blocks managed writes", async () => {
-    delete process.env.PAPERCLIP_SECRETS_AWS_REGION;
+    delete process.env.WARDMOTE_SECRETS_AWS_REGION;
     delete process.env.AWS_REGION;
     delete process.env.AWS_DEFAULT_REGION;
-    delete process.env.PAPERCLIP_SECRETS_AWS_DEPLOYMENT_ID;
-    delete process.env.PAPERCLIP_SECRETS_AWS_KMS_KEY_ID;
+    delete process.env.WARDMOTE_SECRETS_AWS_DEPLOYMENT_ID;
+    delete process.env.WARDMOTE_SECRETS_AWS_KMS_KEY_ID;
 
     const provider = createAwsSecretsManagerProvider();
     const health = await provider.healthCheck();
 
     expect(health.status).toBe("warn");
-    expect(health.message).toContain("missing PAPERCLIP_SECRETS_AWS_REGION");
+    expect(health.message).toContain("missing WARDMOTE_SECRETS_AWS_REGION");
     expect(health.warnings).toEqual(
       expect.arrayContaining([
         expect.stringContaining("Missing required non-secret AWS provider config"),
@@ -895,9 +895,9 @@ describe("awsSecretsManagerProvider", () => {
     );
     expect(health.details).toMatchObject({
       missingConfig: [
-        "PAPERCLIP_SECRETS_AWS_REGION or AWS_REGION/AWS_DEFAULT_REGION",
-        "PAPERCLIP_SECRETS_AWS_DEPLOYMENT_ID",
-        "PAPERCLIP_SECRETS_AWS_KMS_KEY_ID",
+        "WARDMOTE_SECRETS_AWS_REGION or AWS_REGION/AWS_DEFAULT_REGION",
+        "WARDMOTE_SECRETS_AWS_DEPLOYMENT_ID",
+        "WARDMOTE_SECRETS_AWS_KMS_KEY_ID",
       ],
       credentialSource: "AWS SDK default credential provider chain",
     });
@@ -911,7 +911,7 @@ describe("awsSecretsManagerProvider", () => {
           version: 1,
         },
       }),
-    ).rejects.toThrow(/PAPERCLIP_SECRETS_AWS_REGION|AWS_REGION/i);
+    ).rejects.toThrow(/WARDMOTE_SECRETS_AWS_REGION|AWS_REGION/i);
   });
 
   it("deletes only Paperclip-managed AWS secrets", async () => {
@@ -1068,7 +1068,7 @@ describe("awsSecretsManagerProvider", () => {
         input: {
           SecretId:
             "arn:aws:secretsmanager:us-east-1:123456789012:secret:paperclip/prod-use1/company-1/openai-api-key",
-          VersionStage: "PAPERCLIP_PENDING",
+          VersionStage: "WARDMOTE_PENDING",
           RemoveFromVersionId: "aws-version-2",
         },
       },

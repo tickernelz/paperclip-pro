@@ -93,7 +93,7 @@ describe("OpenWA round trip (embedded Postgres + fake gateway)", () => {
   let db: Db;
   let scratch: string;
   let stt: FakeSttServer;
-  const oldKey = process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE;
+  const oldKey = process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE;
   const services: ChatChannelService[] = [];
   const gateways: FakeOpenwaGateway[] = [];
   const endpointIds: string[] = [];
@@ -102,7 +102,7 @@ describe("OpenWA round trip (embedded Postgres + fake gateway)", () => {
     database = await startEmbeddedPostgresTestDatabase("paperclip-openwa-round-trip-");
     db = createDb(database.connectionString);
     scratch = await mkdtemp(path.join(tmpdir(), "openwa-round-trip-"));
-    process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE = path.join(scratch, "master.key");
+    process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE = path.join(scratch, "master.key");
     process.env[STT_ENV] = "sk-round-trip-stt";
     stt = new FakeSttServer();
     await stt.start();
@@ -121,8 +121,8 @@ describe("OpenWA round trip (embedded Postgres + fake gateway)", () => {
     await database?.cleanup();
     delete process.env[STT_ENV];
     if (scratch) await rm(scratch, { recursive: true, force: true });
-    if (oldKey === undefined) delete process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE;
-    else process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE = oldKey;
+    if (oldKey === undefined) delete process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE;
+    else process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE = oldKey;
   });
 
   async function setup() {

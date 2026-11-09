@@ -34,7 +34,7 @@
  * do bind the two selected pairs on loopback, so the readiness and exposure
  * lifecycle is exercised for real; they are reaped in `afterEach`. A pair
  * that reads free at discovery can still be taken by another process before
- * the guest binds it; this suite does not close that window. `PAPERCLIP_HOME`
+ * the guest binds it; this suite does not close that window. `WARDMOTE_HOME`
  * is redirected to a temp dir so the local-service registry never touches the
  * real instance on this host.
  */
@@ -97,12 +97,12 @@ let NEXT_HMR_PORT: number;
 
 /**
  * The real, unredirected Paperclip home directory. `beforeEach` later points
- * `PAPERCLIP_HOME` at a throwaway temp dir for the suite under test, so this
+ * `WARDMOTE_HOME` at a throwaway temp dir for the suite under test, so this
  * must be read before that happens. Mirrors the default in
  * `resolvePaperclipHomeDir`.
  */
-const REAL_PAPERCLIP_HOME = process.env.PAPERCLIP_TEST_HOST_HOME?.trim()
-  || process.env.PAPERCLIP_HOME?.trim()
+const REAL_WARDMOTE_HOME = process.env.WARDMOTE_TEST_HOST_HOME?.trim()
+  || process.env.WARDMOTE_HOME?.trim()
   || path.join(os.homedir(), ".paperclip-pro");
 
 /**
@@ -116,7 +116,7 @@ const REAL_PAPERCLIP_HOME = process.env.PAPERCLIP_TEST_HOST_HOME?.trim()
  */
 async function readLocallyLeasedPorts(): Promise<Set<number>> {
   const leased = new Set<number>();
-  const instancesDir = path.join(REAL_PAPERCLIP_HOME, "instances");
+  const instancesDir = path.join(REAL_WARDMOTE_HOME, "instances");
   let instanceEntries: Awaited<ReturnType<typeof fs.readdir>>;
   try {
     instanceEntries = await fs.readdir(instancesDir, { withFileTypes: true });
@@ -302,8 +302,8 @@ const GUEST_COMMAND =
     beforeAll(async () => {
       tempDb = await startEmbeddedPostgresTestDatabase("pap17419-reservation-");
       db = createDb(tempDb.connectionString);
-      previousHttpsMode = process.env.PAPERCLIP_MANAGED_RUNTIME_HTTPS;
-      process.env.PAPERCLIP_MANAGED_RUNTIME_HTTPS = "auto";
+      previousHttpsMode = process.env.WARDMOTE_MANAGED_RUNTIME_HTTPS;
+      process.env.WARDMOTE_MANAGED_RUNTIME_HTTPS = "auto";
     }, 60_000);
 
     beforeEach(async () => {
@@ -321,25 +321,25 @@ const GUEST_COMMAND =
       // Redirect the local-service registry into a throwaway instance. Without
       // this the suite would write runtime-service records into the real
       // Paperclip instance on this host and could confuse a live server.
-      previousPaperclipHome = process.env.PAPERCLIP_HOME;
-      previousInstanceId = process.env.PAPERCLIP_INSTANCE_ID;
-      process.env.PAPERCLIP_HOME = paperclipHome;
-      process.env.PAPERCLIP_INSTANCE_ID = `pap17419-${randomUUID()}`;
+      previousPaperclipHome = process.env.WARDMOTE_HOME;
+      previousInstanceId = process.env.WARDMOTE_INSTANCE_ID;
+      process.env.WARDMOTE_HOME = paperclipHome;
+      process.env.WARDMOTE_INSTANCE_ID = `pap17419-${randomUUID()}`;
     });
 
     afterAll(async () => {
-      if (previousHttpsMode === undefined) delete process.env.PAPERCLIP_MANAGED_RUNTIME_HTTPS;
-      else process.env.PAPERCLIP_MANAGED_RUNTIME_HTTPS = previousHttpsMode;
+      if (previousHttpsMode === undefined) delete process.env.WARDMOTE_MANAGED_RUNTIME_HTTPS;
+      else process.env.WARDMOTE_MANAGED_RUNTIME_HTTPS = previousHttpsMode;
       await tempDb?.cleanup();
     });
 
     afterEach(async () => {
       // Terminate first, while the suite's fake broker is still installed.
       await resetRuntimeServicesForTests({ terminateProcesses: true });
-      if (previousPaperclipHome === undefined) delete process.env.PAPERCLIP_HOME;
-      else process.env.PAPERCLIP_HOME = previousPaperclipHome;
-      if (previousInstanceId === undefined) delete process.env.PAPERCLIP_INSTANCE_ID;
-      else process.env.PAPERCLIP_INSTANCE_ID = previousInstanceId;
+      if (previousPaperclipHome === undefined) delete process.env.WARDMOTE_HOME;
+      else process.env.WARDMOTE_HOME = previousPaperclipHome;
+      if (previousInstanceId === undefined) delete process.env.WARDMOTE_INSTANCE_ID;
+      else process.env.WARDMOTE_INSTANCE_ID = previousInstanceId;
       await fs.rm(workspaceRoot, { recursive: true, force: true });
       await fs.rm(paperclipHome, { recursive: true, force: true });
       await db.delete(workspaceRuntimeServices);

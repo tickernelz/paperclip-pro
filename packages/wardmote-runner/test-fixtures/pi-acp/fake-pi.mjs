@@ -50,7 +50,7 @@ const endMessage = (stopReason = "stop", usage = { input: 11, output: 3, cacheRe
 };
 let active = false;
 let modelIteration = 0;
-const invocationNamespace = JSON.parse(process.env.PAPERCLIP_PI_RUNTIME_CONFIGURATION).invocationNamespace;
+const invocationNamespace = JSON.parse(process.env.WARDMOTE_PI_RUNTIME_CONFIGURATION).invocationNamespace;
 const toolIdentity = (id) => `pi-${createHash("sha256").update(JSON.stringify([invocationNamespace, modelIteration, id])).digest("hex")}`;
 const begin = () => { modelIteration++; output({ type: "turn_start" });
   messageTimestamp++; assistantActive = true; output({ type: "message_start", message: nativeMessage() });

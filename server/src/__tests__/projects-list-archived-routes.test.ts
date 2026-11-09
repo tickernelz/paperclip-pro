@@ -113,12 +113,12 @@ describeEmbeddedPostgres("project list archived route defaults", () => {
 describeEmbeddedPostgres("private project route visibility", { concurrent: false }, () => {
   let db!: ReturnType<typeof createDb>;
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
-  const previousPrivacyMode = process.env.PAPERCLIP_ISSUE_PRIVACY_MODE;
+  const previousPrivacyMode = process.env.WARDMOTE_ISSUE_PRIVACY_MODE;
 
   beforeAll(async () => {
     tempDb = await startEmbeddedPostgresTestDatabase("paperclip-private-project-routes-");
     db = createDb(tempDb.connectionString);
-    process.env.PAPERCLIP_ISSUE_PRIVACY_MODE = "enforce";
+    process.env.WARDMOTE_ISSUE_PRIVACY_MODE = "enforce";
   }, 20_000);
 
   afterEach(async () => {
@@ -128,8 +128,8 @@ describeEmbeddedPostgres("private project route visibility", { concurrent: false
   });
 
   afterAll(async () => {
-    if (previousPrivacyMode === undefined) delete process.env.PAPERCLIP_ISSUE_PRIVACY_MODE;
-    else process.env.PAPERCLIP_ISSUE_PRIVACY_MODE = previousPrivacyMode;
+    if (previousPrivacyMode === undefined) delete process.env.WARDMOTE_ISSUE_PRIVACY_MODE;
+    else process.env.WARDMOTE_ISSUE_PRIVACY_MODE = previousPrivacyMode;
     await tempDb?.cleanup();
   });
 

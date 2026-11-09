@@ -303,7 +303,7 @@ fn run_durable(args: &[String]) -> Result<(), LocalRunnerError> {
         .map_err(|error| LocalRunnerError::invalid(error.to_string()))?
         .ok_or_else(|| {
             LocalRunnerError::invalid(
-                "PAPERCLIP_RUNNER_BOOTSTRAP_TICKET is required for durable mode",
+                "WARDMOTE_RUNNER_BOOTSTRAP_TICKET is required for durable mode",
             )
         })?;
     let duration = |name: &str, default: u64| {

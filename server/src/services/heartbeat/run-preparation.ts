@@ -11,7 +11,6 @@ import {
   type DurableChatWakeupRequest,
 } from "../durable-chat-wakeup.js";
 import { createHash } from "node:crypto";
-import { legacyEnvKey } from "@tickernelz/wardmote-shared/env-aliases";
 import {
   and,
   asc,
@@ -115,13 +114,13 @@ import type { TrustPresetResolution } from "../trust-preset-resolver.js";
 
 const EXTERNAL_ATTACHMENT_OMISSIONS_KEY = "externalAttachmentOmissions";
 
-export const PAPERCLIP_WAKE_PAYLOAD_KEY = "paperclipWake";
+export const WARDMOTE_WAKE_PAYLOAD_KEY = "paperclipWake";
 
-const PAPERCLIP_AGENT_MESSAGE_KEY = "paperclipAgentMessage";
+const WARDMOTE_AGENT_MESSAGE_KEY = "paperclipAgentMessage";
 
-export const PAPERCLIP_HARNESS_CHECKOUT_KEY = "paperclipHarnessCheckedOut";
+export const WARDMOTE_HARNESS_CHECKOUT_KEY = "paperclipHarnessCheckedOut";
 
-export const PAPERCLIP_EXTERNAL_CHAT_EXECUTION_BOUND_KEY =
+export const WARDMOTE_EXTERNAL_CHAT_EXECUTION_BOUND_KEY =
   "paperclipExternalChatExecutionBound";
 
 const MAX_INLINE_WAKE_COMMENTS = 8;
@@ -209,27 +208,27 @@ function isConfiguredEnvBindingValue(binding: unknown) {
 const LOW_TRUST_SENSITIVE_ENV_KEY_RE =
   /(api[-_]?key|access[-_]?token|auth(?:_?token)?|authorization|bearer|secret|passwd|password|credential|jwt|private[-_]?key|cookie|connectionstring)/i;
 
-// PAPERCLIP_* env binding policy:
-// 1. PAPERCLIP_API_KEY is never accepted from user/adapter/project/routine
+// WARDMOTE_* env binding policy:
+// 1. WARDMOTE_API_KEY is never accepted from user/adapter/project/routine
 //    config — the harness-minted run token is the only source.
-// 2. A PAPERCLIP_* runtime var the harness assigns for the run (RUN_ID,
+// 2. A WARDMOTE_* runtime var the harness assigns for the run (RUN_ID,
 //    AGENT_ID, wake/workspace vars, ...) always wins over a same-named
 //    binding; adapters enforce this at env-merge time.
-// 3. Any other PAPERCLIP_*-named binding is user data and flows through to
+// 3. Any other WARDMOTE_*-named binding is user data and flows through to
 //    the run env like any non-prefixed binding.
 const FORBIDDEN_ENV_BINDING_KEYS = new Set([
   CONFIGURED_ENVIRONMENT_KEYS,
-  "PAPERCLIP_AGENT_KEY_ID", "PAPERCLIP_AGENT_PUBLIC_KEY", "PAPERCLIP_AGENT_PRIVATE_KEY",
-  "PAPERCLIP_RUNNER_NETWORK_ACCESS",
-  "PAPERCLIP_RUNNER_NETWORK_ROOTS",
-  "PAPERCLIP_API_KEY",
-  "PAPERCLIP_GITHUB_AUTH_MODE",
-  "PAPERCLIP_GITHUB_HOST_HOME",
-  "PAPERCLIP_GIT_METADATA_ROOTS",
-  "PAPERCLIP_GITHUB_BROKER_TOKEN",
-  "PAPERCLIP_GITHUB_BROKER_URL",
-  "PAPERCLIP_GITHUB_BRIDGE_TOKEN",
-  "PAPERCLIP_GITHUB_LAUNCHER_DIR",
+  "WARDMOTE_AGENT_KEY_ID", "WARDMOTE_AGENT_PUBLIC_KEY", "WARDMOTE_AGENT_PRIVATE_KEY",
+  "WARDMOTE_RUNNER_NETWORK_ACCESS",
+  "WARDMOTE_RUNNER_NETWORK_ROOTS",
+  "WARDMOTE_API_KEY",
+  "WARDMOTE_GITHUB_AUTH_MODE",
+  "WARDMOTE_GITHUB_HOST_HOME",
+  "WARDMOTE_GIT_METADATA_ROOTS",
+  "WARDMOTE_GITHUB_BROKER_TOKEN",
+  "WARDMOTE_GITHUB_BROKER_URL",
+  "WARDMOTE_GITHUB_BRIDGE_TOKEN",
+  "WARDMOTE_GITHUB_LAUNCHER_DIR",
 ]);
 
 export const MANAGED_GITHUB_TOKEN_KEYS = new Set([
@@ -237,7 +236,7 @@ export const MANAGED_GITHUB_TOKEN_KEYS = new Set([
   "GITHUB_TOKEN",
   "GH_ENTERPRISE_TOKEN",
   "GITHUB_ENTERPRISE_TOKEN",
-  "PAPERCLIP_GIT_TOKEN",
+  "WARDMOTE_GIT_TOKEN",
 ]);
 
 function stripForbiddenEnvBindings(
@@ -248,8 +247,8 @@ function stripForbiddenEnvBindings(
   const filtered = Object.fromEntries(
     Object.entries(record).filter(
       ([key]) =>
-        !FORBIDDEN_ENV_BINDING_KEYS.has(legacyEnvKey(key.toUpperCase())) &&
-        !(managedGitHubCredentials && MANAGED_GITHUB_TOKEN_KEYS.has(legacyEnvKey(key))),
+        !FORBIDDEN_ENV_BINDING_KEYS.has(key.toUpperCase()) &&
+        !(managedGitHubCredentials && MANAGED_GITHUB_TOKEN_KEYS.has(key)),
     ),
   );
   return Object.keys(filtered).length > 0 ? filtered : null;
@@ -809,7 +808,7 @@ function sanitizeAgentSessionMessageText(value: unknown): string | null {
 }
 
 export function configuredPaperclipApiBaseUrl(): string | null {
-  const configured = readNonEmptyString(process.env.PAPERCLIP_API_URL);
+  const configured = readNonEmptyString(process.env.WARDMOTE_API_URL);
   return configured
     ? configured.replace(/\/+$/, "").replace(/\/api$/, "")
     : null;
@@ -819,7 +818,7 @@ export function paperclipApiBaseUrl(): string {
   const configured = configuredPaperclipApiBaseUrl();
   if (!configured) {
     throw new Error(
-      "PAPERCLIP_API_URL is required to deliver managed runtime MCP servers",
+      "WARDMOTE_API_URL is required to deliver managed runtime MCP servers",
     );
   }
   return configured;
@@ -1190,7 +1189,7 @@ export function createAdapterRuntimeToolAccess(input: {
     responsibleUserId: input.responsibleUserId,
   });
   if (!minted) return undefined;
-  // The normal server bootstrap always exports PAPERCLIP_API_URL. Some service
+  // The normal server bootstrap always exports WARDMOTE_API_URL. Some service
   // tests invoke heartbeat execution without booting an HTTP server, however;
   // in that context there is no reachable endpoint to advertise and runtime
   // tools should simply remain unavailable instead of failing the run.
@@ -1377,7 +1376,7 @@ export function enrichWakeContextSnapshot(input: {
     contextSnapshot.wakeCommentId = latestCommentId;
     // Once comment ids are normalized into the snapshot, rebuild the structured
     // wake payload from those ids later instead of carrying forward stale data.
-    delete contextSnapshot[PAPERCLIP_WAKE_PAYLOAD_KEY];
+    delete contextSnapshot[WARDMOTE_WAKE_PAYLOAD_KEY];
   } else if (
     !readNonEmptyString(contextSnapshot["wakeCommentId"]) &&
     wakeCommentId
@@ -1525,7 +1524,7 @@ export function mergeCoalescedContextSnapshot(
   };
   // Only executeRun can mint this proof. Coalescence may retain an unchanged
   // admitted proof, but must never accept a new marker from an incoming wake.
-  delete merged[PAPERCLIP_EXTERNAL_CHAT_EXECUTION_BOUND_KEY];
+  delete merged[WARDMOTE_EXTERNAL_CHAT_EXECUTION_BOUND_KEY];
   delete merged[EXTERNAL_CHAT_QUESTION_RESPONSE_KEY];
   const mergedAttachmentOmissions = mergeExternalAttachmentOmissions(
     existing,
@@ -1560,9 +1559,9 @@ export function mergeCoalescedContextSnapshot(
     merged.wakeCommentId = latestCommentId;
     // The merged context should carry canonical comment ids; the next wake will
     // regenerate any structured payload from those ids.
-    delete merged[PAPERCLIP_WAKE_PAYLOAD_KEY];
+    delete merged[WARDMOTE_WAKE_PAYLOAD_KEY];
   }
-  const existingWake = parseObject(existing[PAPERCLIP_WAKE_PAYLOAD_KEY]);
+  const existingWake = parseObject(existing[WARDMOTE_WAKE_PAYLOAD_KEY]);
   const existingCommentIds = extractWakeCommentIds(existing);
   const payloadCommentIds = Array.isArray(existingWake.commentIds)
     ? existingWake.commentIds
@@ -1581,15 +1580,15 @@ export function mergeCoalescedContextSnapshot(
     mergedCommentIds.every((id, index) => id === existingCommentIds[index]) &&
     payloadCommentIds.length === existingCommentIds.length &&
     payloadCommentIds.every((id, index) => id === existingCommentIds[index]) &&
-    ((existing[PAPERCLIP_HARNESS_CHECKOUT_KEY] === true &&
+    ((existing[WARDMOTE_HARNESS_CHECKOUT_KEY] === true &&
       existingWake.checkedOutByHarness === true) ||
-      (existing[PAPERCLIP_EXTERNAL_CHAT_EXECUTION_BOUND_KEY] === true &&
+      (existing[WARDMOTE_EXTERNAL_CHAT_EXECUTION_BOUND_KEY] === true &&
         existingWake.externalChatExecutionBound === true));
   if (preservesAdmittedWake) {
-    merged[PAPERCLIP_WAKE_PAYLOAD_KEY] = existingWake;
+    merged[WARDMOTE_WAKE_PAYLOAD_KEY] = existingWake;
     merged.wakeReason = existing.wakeReason;
-    if (existing[PAPERCLIP_EXTERNAL_CHAT_EXECUTION_BOUND_KEY] === true) {
-      merged[PAPERCLIP_EXTERNAL_CHAT_EXECUTION_BOUND_KEY] = true;
+    if (existing[WARDMOTE_EXTERNAL_CHAT_EXECUTION_BOUND_KEY] === true) {
+      merged[WARDMOTE_EXTERNAL_CHAT_EXECUTION_BOUND_KEY] = true;
     }
   }
   if (
@@ -1640,8 +1639,8 @@ export async function resolveExternalChatWakeProvider(input: {
     !input.agentId ||
     !input.issueId ||
     commentIds.length === 0 ||
-    (input.contextSnapshot[PAPERCLIP_HARNESS_CHECKOUT_KEY] !== true &&
-      input.contextSnapshot[PAPERCLIP_EXTERNAL_CHAT_EXECUTION_BOUND_KEY] !==
+    (input.contextSnapshot[WARDMOTE_HARNESS_CHECKOUT_KEY] !== true &&
+      input.contextSnapshot[WARDMOTE_EXTERNAL_CHAT_EXECUTION_BOUND_KEY] !==
         true)
   ) {
     return null;
@@ -1790,8 +1789,8 @@ export async function attestReviewedExternalChatRun(input: {
             input,
             {
               ...(answer?.authorizationContext ?? admittedContext),
-              [PAPERCLIP_HARNESS_CHECKOUT_KEY]: false,
-              [PAPERCLIP_EXTERNAL_CHAT_EXECUTION_BOUND_KEY]: true,
+              [WARDMOTE_HARNESS_CHECKOUT_KEY]: false,
+              [WARDMOTE_EXTERNAL_CHAT_EXECUTION_BOUND_KEY]: true,
             },
             "nonblocking",
           );
@@ -1918,7 +1917,7 @@ export async function buildPaperclipWakePayload(input: {
   const conversationMode = input.contextSnapshot.conversationMode === true;
   const continuationSummary = conversationMode ? null : input.continuationSummary ?? null;
   const agentMessage = parseObject(
-    input.contextSnapshot[PAPERCLIP_AGENT_MESSAGE_KEY],
+    input.contextSnapshot[WARDMOTE_AGENT_MESSAGE_KEY],
   );
   const agentMessageText = sanitizeAgentSessionMessageText(agentMessage.text);
   const issueSummary =
@@ -2416,9 +2415,9 @@ export async function buildPaperclipWakePayload(input: {
     checkboxSelection:
       Object.keys(checkboxSelection).length > 0 ? checkboxSelection : null,
     checkedOutByHarness:
-      input.contextSnapshot[PAPERCLIP_HARNESS_CHECKOUT_KEY] === true,
+      input.contextSnapshot[WARDMOTE_HARNESS_CHECKOUT_KEY] === true,
     externalChatExecutionBound:
-      input.contextSnapshot[PAPERCLIP_EXTERNAL_CHAT_EXECUTION_BOUND_KEY] ===
+      input.contextSnapshot[WARDMOTE_EXTERNAL_CHAT_EXECUTION_BOUND_KEY] ===
       true,
     simplifiedEnglishInteractions: input.simplifiedEnglishInteractions === true,
     dependencyBlockedInteraction:

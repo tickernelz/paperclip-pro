@@ -87,7 +87,7 @@ describe("OpenWA agent tools (embedded Postgres + fake gateway)", () => {
   let db: Db;
   let root: string;
   let storage: ReturnType<typeof createStorageService>;
-  const oldKey = process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE;
+  const oldKey = process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE;
   const services: ChatChannelService[] = [];
   const gateways: FakeOpenwaGateway[] = [];
   const endpointIds: string[] = [];
@@ -96,7 +96,7 @@ describe("OpenWA agent tools (embedded Postgres + fake gateway)", () => {
     database = await startEmbeddedPostgresTestDatabase("paperclip-openwa-tools-");
     db = createDb(database.connectionString);
     root = await mkdtemp(path.join(tmpdir(), "openwa-tools-"));
-    process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE = path.join(root, "master.key");
+    process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE = path.join(root, "master.key");
     storage = createStorageService(createLocalDiskStorageProvider(path.join(root, "storage")));
     await instanceSettingsService(db).updateExperimental({ enableChatConnectors: true });
   }, 60_000);
@@ -109,8 +109,8 @@ describe("OpenWA agent tools (embedded Postgres + fake gateway)", () => {
   afterAll(async () => {
     await database?.cleanup();
     if (root) await rm(root, { recursive: true, force: true });
-    if (oldKey === undefined) delete process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE;
-    else process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE = oldKey;
+    if (oldKey === undefined) delete process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE;
+    else process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE = oldKey;
   });
 
   async function setup(policy: Record<string, unknown> = {}) {
@@ -1082,8 +1082,8 @@ describe("OpenWA agent tools (embedded Postgres + fake gateway)", () => {
     expect(t.gateway.documents.at(-1)).toMatchObject({ filename: "Panduan Pengguna erp_discovery.pdf", mimetype: "text/plain" });
   });
 
-  it("still rejects types outside an operator's PAPERCLIP_ALLOWED_ATTACHMENT_TYPES restriction", async () => {
-    vi.stubEnv("PAPERCLIP_ALLOWED_ATTACHMENT_TYPES", "image/*,application/pdf");
+  it("still rejects types outside an operator's WARDMOTE_ALLOWED_ATTACHMENT_TYPES restriction", async () => {
+    vi.stubEnv("WARDMOTE_ALLOWED_ATTACHMENT_TYPES", "image/*,application/pdf");
     try {
       const t = await setup();
       const c = await conversation(t, MEMBER);

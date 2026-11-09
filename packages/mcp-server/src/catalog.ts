@@ -47,7 +47,7 @@ export function canonicalToolName(name: string): string {
 }
 
 export function resolveListingAnnotations(env: NodeJS.ProcessEnv = process.env): boolean {
-  const configured = env.PAPERCLIP_MCP_LIST_ANNOTATIONS?.trim().toLowerCase() ?? "";
+  const configured = env.WARDMOTE_MCP_LIST_ANNOTATIONS?.trim().toLowerCase() ?? "";
   return configured === "1" || configured === "true" || configured === "yes";
 }
 

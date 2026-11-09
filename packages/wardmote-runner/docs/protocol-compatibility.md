@@ -269,7 +269,7 @@ remain in v1 only when old consumers can safely ignore them.
 
 PRP is one independently versioned component of the runner bundle. Catalog,
 runner-client, control-plane-adapter, testkit, and eval-corpus compatibility is
-declared by `PAPERCLIP_RUNNER_COMPATIBILITY` and checked before execution by
+declared by `WARDMOTE_RUNNER_COMPATIBILITY` and checked before execution by
 `assertPaperclipRunnerCompatibility`. A mismatch fails with
 `paperclip_runner_incompatible` and stable per-issue codes; a provider-specific
 tool error is not a compatibility negotiation mechanism.

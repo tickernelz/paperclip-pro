@@ -251,7 +251,7 @@ required variables return `422`; non-JSON media types return `415` and invalid
 JSON objects return `400`. Rotating a secret immediately invalidates the old one.
 
 Cloud installations use their canonical public origin for generated URLs.
-Self-hosted installations should set `PAPERCLIP_PUBLIC_URL` to their HTTPS
+Self-hosted installations should set `WARDMOTE_PUBLIC_URL` to their HTTPS
 origin. The reverse proxy must forward this POST endpoint and its authorization,
 signature, timestamp, and idempotency headers without requiring a browser login.
 For local HTTPS testing, proxy an isolated test instance through Tailscale Serve;

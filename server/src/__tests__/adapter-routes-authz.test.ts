@@ -375,10 +375,10 @@ describe("adapter management route authorization", () => {
 
   describe("operator-hidden adapter management floor", () => {
     beforeEach(() => {
-      process.env.PAPERCLIP_HIDDEN_SETTINGS = "instance.adapters";
+      process.env.WARDMOTE_HIDDEN_SETTINGS = "instance.adapters";
     });
     afterEach(() => {
-      delete process.env.PAPERCLIP_HIDDEN_SETTINGS;
+      delete process.env.WARDMOTE_HIDDEN_SETTINGS;
     });
 
     it.each([

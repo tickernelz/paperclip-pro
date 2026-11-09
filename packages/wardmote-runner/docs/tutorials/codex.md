@@ -32,7 +32,7 @@ codex app-server --help
 Run the real-Codex steps from an ordinary operator shell with a workspace that
 has no `AGENTS.md` in that directory or any ancestor. A child directory of this
 repository is not skillless because Codex discovers the repository
-`AGENTS.md`. In a Paperclip-managed agent run, `PAPERCLIP_WORKSPACE_CWD` also
+`AGENTS.md`. In a Paperclip-managed agent run, `WARDMOTE_WORKSPACE_CWD` also
 prevents `mktemp -d` from selecting a directory outside the assigned workspace;
 use a separate clean operator workspace rather than bypassing that guard.
 

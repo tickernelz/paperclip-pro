@@ -50,7 +50,6 @@ import {
   sanitizeInheritedPaperclipEnv,
   selectPaperclipTaskMarkdown,
 } from "@tickernelz/wardmote-adapter-utils/server-utils";
-import { legacyEnvKey } from "@tickernelz/wardmote-shared/env-aliases";
 import {
   paperclipRestGuidance,
   type PaperclipAccessMode,
@@ -80,13 +79,13 @@ import { createOmpModelFallbackTracker, ompFallbackChain, type OmpModelFallbackT
 import { writeOmpToolGuardExtension, type OmpToolGuardExtension } from "./tool-guard.js";
 import { prependPythonPath, writeOmpPythonEnvBridge, type OmpPythonEnvBridge } from "./python-env.js";
 import {
-  PAPERCLIP_MCP_BIN,
-  PAPERCLIP_MCP_CREDENTIAL_CODE,
-  PAPERCLIP_MCP_CONNECT_FAILURE_RE,
-  PAPERCLIP_MCP_TRANSIENT_FAILURE_RE,
-  PAPERCLIP_MCP_SERVER_NAME,
-  PAPERCLIP_MCP_TOOLSETS_ENV,
-  PAPERCLIP_MCP_UNAVAILABLE_CODE,
+  WARDMOTE_MCP_BIN,
+  WARDMOTE_MCP_CREDENTIAL_CODE,
+  WARDMOTE_MCP_CONNECT_FAILURE_RE,
+  WARDMOTE_MCP_TRANSIENT_FAILURE_RE,
+  WARDMOTE_MCP_SERVER_NAME,
+  WARDMOTE_MCP_TOOLSETS_ENV,
+  WARDMOTE_MCP_UNAVAILABLE_CODE,
   paperclipMcpUnavailableRecovery,
   paperclipMcpGuidance,
   paperclipMcpEndpoint,
@@ -282,7 +281,7 @@ function addWakeEnvironment(
   runId: string,
   context: Record<string, unknown>,
 ): void {
-  env.PAPERCLIP_RUN_ID = runId;
+  env.WARDMOTE_RUN_ID = runId;
   const taskId = asString(context.taskId, "").trim() || asString(context.issueId, "").trim();
   const wakeReason = asString(context.wakeReason, "").trim();
   const wakeCommentId = asString(context.wakeCommentId, "").trim() || asString(context.commentId, "").trim();
@@ -292,13 +291,13 @@ function addWakeEnvironment(
     ? context.issueIds.filter((value): value is string => typeof value === "string" && value.trim().length > 0)
     : [];
   const issueWorkMode = readPaperclipIssueWorkModeFromContext(context);
-  if (taskId) env.PAPERCLIP_TASK_ID = taskId;
-  if (wakeReason) env.PAPERCLIP_WAKE_REASON = wakeReason;
-  if (wakeCommentId) env.PAPERCLIP_WAKE_COMMENT_ID = wakeCommentId;
-  if (approvalId) env.PAPERCLIP_APPROVAL_ID = approvalId;
-  if (approvalStatus) env.PAPERCLIP_APPROVAL_STATUS = approvalStatus;
-  if (linkedIssueIds.length > 0) env.PAPERCLIP_LINKED_ISSUE_IDS = linkedIssueIds.join(",");
-  if (issueWorkMode) env.PAPERCLIP_ISSUE_WORK_MODE = issueWorkMode;
+  if (taskId) env.WARDMOTE_TASK_ID = taskId;
+  if (wakeReason) env.WARDMOTE_WAKE_REASON = wakeReason;
+  if (wakeCommentId) env.WARDMOTE_WAKE_COMMENT_ID = wakeCommentId;
+  if (approvalId) env.WARDMOTE_APPROVAL_ID = approvalId;
+  if (approvalStatus) env.WARDMOTE_APPROVAL_STATUS = approvalStatus;
+  if (linkedIssueIds.length > 0) env.WARDMOTE_LINKED_ISSUE_IDS = linkedIssueIds.join(",");
+  if (issueWorkMode) env.WARDMOTE_ISSUE_WORK_MODE = issueWorkMode;
 }
 
 export function buildOmpArgs(input: {
@@ -554,26 +553,26 @@ export function applyRuntimeToolAccess(
     sections.push(
       [
         "Paperclip runtime tools are delivered through the environment of this run.",
-        `Bearer token: $PAPERCLIP_RUNTIME_TOOLS_TOKEN (valid until ${tools.expiresAt}).`,
-        `Search connections: POST $PAPERCLIP_RUNTIME_TOOLS_CONNECTIONS_SEARCH_URL`,
-        `Request a connection: POST $PAPERCLIP_RUNTIME_TOOLS_CONNECTION_REQUEST_URL`,
-        `MCP endpoint: $PAPERCLIP_RUNTIME_TOOLS_MCP_URL`,
+        `Bearer token: $WARDMOTE_RUNTIME_TOOLS_TOKEN (valid until ${tools.expiresAt}).`,
+        `Search connections: POST $WARDMOTE_RUNTIME_TOOLS_CONNECTIONS_SEARCH_URL`,
+        `Request a connection: POST $WARDMOTE_RUNTIME_TOOLS_CONNECTION_REQUEST_URL`,
+        `MCP endpoint: $WARDMOTE_RUNTIME_TOOLS_MCP_URL`,
         "Send the bearer token as the Authorization header. Never print the token.",
       ].join("\n"),
     );
   }
   const servers = mcp?.getServers() ?? [];
   if (servers.length > 0) {
-    env.PAPERCLIP_RUNTIME_MCP_SERVERS = JSON.stringify(
+    env.WARDMOTE_RUNTIME_MCP_SERVERS = JSON.stringify(
       servers.map((server) => ({ name: server.name, url: server.url, connectionId: server.connectionId })),
     );
-    env.PAPERCLIP_RUNTIME_MCP_TOKENS = JSON.stringify(
+    env.WARDMOTE_RUNTIME_MCP_TOKENS = JSON.stringify(
       Object.fromEntries(servers.map((server) => [server.name, server.token])),
     );
     sections.push(
       [
         `Paperclip provisioned ${servers.length} MCP server(s) for this run: ${servers.map((s) => s.name).join(", ")}.`,
-        "Endpoints are in $PAPERCLIP_RUNTIME_MCP_SERVERS and their bearer tokens in $PAPERCLIP_RUNTIME_MCP_TOKENS, keyed by server name.",
+        "Endpoints are in $WARDMOTE_RUNTIME_MCP_SERVERS and their bearer tokens in $WARDMOTE_RUNTIME_MCP_TOKENS, keyed by server name.",
         "OMP loads MCP servers from its agent directory, so reach these over HTTP for this run instead of expecting them in the tool list.",
       ].join("\n"),
     );
@@ -647,10 +646,10 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     for (const [key, value] of Object.entries(configuredEnv)) {
       if (typeof value !== "string") continue;
       if (isForbiddenConfigEnvKey(key)) continue;
-      if (isPaperclipRuntimeEnvKey(key) && Object.hasOwn(env, legacyEnvKey(key))) continue;
+      if (isPaperclipRuntimeEnvKey(key) && Object.hasOwn(env, key)) continue;
       env[key] = value;
     }
-    if (!env.PAPERCLIP_API_KEY && authToken) env.PAPERCLIP_API_KEY = authToken;
+    if (!env.WARDMOTE_API_KEY && authToken) env.WARDMOTE_API_KEY = authToken;
     const runtimeToolGuidance = applyRuntimeToolAccess(env, ctx.runtimeTools, ctx.runtimeMcp);
     applyPreparedOmpAgentEnvironment(env, preparedConfig);
 
@@ -741,8 +740,8 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
         runtimeRootDir,
         adapterKey: "omp",
         timeoutSec,
-        hostApiToken: env.PAPERCLIP_API_KEY,
-        hostApiUrl: env.PAPERCLIP_API_URL,
+        hostApiToken: env.WARDMOTE_API_KEY,
+        hostApiUrl: env.WARDMOTE_API_URL,
         onLog,
       });
       if (paperclipBridge) Object.assign(env, paperclipBridge.env);
@@ -822,21 +821,21 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     const mcpEnabled = asBoolean(executionConfig.paperclipMcp, true);
     const mcpTransport = paperclipMcpTransport(executionConfig);
     const mcpCommand = remote || mcpTransport === "http"
-      ? { command: PAPERCLIP_MCP_BIN, args: ["--toolsets", mcpToolsets], source: "path" as const }
+      ? { command: WARDMOTE_MCP_BIN, args: ["--toolsets", mcpToolsets], source: "path" as const }
       : resolvePaperclipMcpServerCommand();
-    const mcpApiKey = asString(invocationEnv.PAPERCLIP_API_KEY, "").trim();
-    const mcpEndpoint = paperclipMcpEndpoint(asString(invocationEnv.PAPERCLIP_API_URL, ""), mcpToolsets);
+    const mcpApiKey = asString(invocationEnv.WARDMOTE_API_KEY, "").trim();
+    const mcpEndpoint = paperclipMcpEndpoint(asString(invocationEnv.WARDMOTE_API_URL, ""), mcpToolsets);
     let mcpProbe: PaperclipMcpProbe | null = null;
     if (mcpEnabled && mcpApiKey && (mcpTransport === "http" || !remote)) {
       mcpProbe = mcpTransport === "http"
         ? await probePaperclipMcpEndpoint({
             url: mcpEndpoint,
             apiKey: mcpApiKey,
-            runId: asString(invocationEnv.PAPERCLIP_RUN_ID, runId),
+            runId: asString(invocationEnv.WARDMOTE_RUN_ID, runId),
           })
         : await probePaperclipMcpServer({
             command: mcpCommand,
-            env: { ...invocationEnv, [PAPERCLIP_MCP_TOOLSETS_ENV]: mcpToolsets },
+            env: { ...invocationEnv, [WARDMOTE_MCP_TOOLSETS_ENV]: mcpToolsets },
           });
       if (!mcpProbe.ok) {
         const source = mcpTransport === "http" ? mcpEndpoint : mcpCommand.command;
@@ -850,9 +849,9 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
           timedOut: false,
           errorMessage: message,
           ...(mcpProbe.credentialRejected
-            ? { errorCode: PAPERCLIP_MCP_CREDENTIAL_CODE }
+            ? { errorCode: WARDMOTE_MCP_CREDENTIAL_CODE }
             : {
-                errorCode: PAPERCLIP_MCP_UNAVAILABLE_CODE,
+                errorCode: WARDMOTE_MCP_UNAVAILABLE_CODE,
                 ...(mcpProbe.transient ? paperclipMcpUnavailableRecovery() : {}),
               }),
           usageComplete: true,
@@ -958,7 +957,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
         ? "OMP runs in RPC mode: the prompt travels on stdin and same-turn steering is available for this run."
         : "OMP runs in one-shot print mode; same-turn steering is unavailable for this run.",
       mcpArmed
-        ? `Paperclip MCP server armed from ${mcpCommand.source === "path" ? PAPERCLIP_MCP_BIN : mcpCommand.command} with toolsets ${mcpToolsets}${mcpProbe ? ` (${mcpProbe.toolCount ?? 0} tools, handshake ${mcpProbe.durationMs}ms)` : ""}`
+        ? `Paperclip MCP server armed from ${mcpCommand.source === "path" ? WARDMOTE_MCP_BIN : mcpCommand.command} with toolsets ${mcpToolsets}${mcpProbe ? ` (${mcpProbe.toolCount ?? 0} tools, handshake ${mcpProbe.durationMs}ms)` : ""}`
         : mcpEnabled
           ? "Paperclip MCP server not armed: this run has no Paperclip API key."
           : "Paperclip MCP server disabled by adapter configuration; the agent has no Paperclip tools this run.",
@@ -1028,11 +1027,11 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       let mcpConnectTransient = false;
       let stdoutTranscript = "";
       const bufferedOnLog = async (stream: "stdout" | "stderr", chunk: string): Promise<void> => {
-        const connectFailure = mcpArmed && !mcpConnectFailed ? PAPERCLIP_MCP_CONNECT_FAILURE_RE.exec(chunk) : null;
+        const connectFailure = mcpArmed && !mcpConnectFailed ? WARDMOTE_MCP_CONNECT_FAILURE_RE.exec(chunk) : null;
         if (connectFailure) {
           mcpConnectFailed = true;
           const lineEnd = chunk.indexOf("\n", connectFailure.index);
-          mcpConnectTransient = PAPERCLIP_MCP_TRANSIENT_FAILURE_RE.test(
+          mcpConnectTransient = WARDMOTE_MCP_TRANSIENT_FAILURE_RE.test(
             chunk.slice(connectFailure.index, lineEnd < 0 ? undefined : lineEnd),
           );
           await queueLog(
@@ -1221,7 +1220,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       const provider = attempt.parsed.provider ?? configuredModelProvider(asString(executionConfig.model, "").trim());
       const model = attempt.parsed.model ?? (asString(executionConfig.model, "").trim() || null);
       const mcpFailure = attempt.mcpConnectFailed
-        ? `Paperclip MCP server "${PAPERCLIP_MCP_SERVER_NAME}" failed to connect; the agent had no Paperclip tools.`
+        ? `Paperclip MCP server "${WARDMOTE_MCP_SERVER_NAME}" failed to connect; the agent had no Paperclip tools.`
         : "";
       const fallbackError = mcpFailure || rpcPromptError || parsedError || stderrLine || `OMP exited with code ${effectiveExitCode}.`;
       const failed = effectiveExitCode !== 0 || attempt.proc.timedOut || attempt.mcpConnectFailed;
@@ -1236,7 +1235,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
         : { errorCode: null, errorFamily: null, retryNotBefore: null };
       const failureContract = attempt.mcpConnectFailed
         ? {
-            errorCode: PAPERCLIP_MCP_UNAVAILABLE_CODE,
+            errorCode: WARDMOTE_MCP_UNAVAILABLE_CODE,
             errorFamily: null,
             retryNotBefore: null,
             ...(attempt.mcpConnectTransient ? paperclipMcpUnavailableRecovery() : {}),

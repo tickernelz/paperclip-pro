@@ -216,7 +216,7 @@ function parseBinaryResponse(res: IncomingMessage, callback: (error: Error | nul
 describe("getMaxAttachmentBytes", () => {
   it("reads the deployment-level attachment cap from the environment on every call", async () => {
     const { getMaxAttachmentBytes } = await import("../attachment-types.js");
-    vi.stubEnv("PAPERCLIP_ATTACHMENT_MAX_BYTES", "5");
+    vi.stubEnv("WARDMOTE_ATTACHMENT_MAX_BYTES", "5");
     try {
       expect(getMaxAttachmentBytes()).toBe(5);
     } finally {
@@ -247,9 +247,9 @@ describe("issue attachment routes", () => {
   });
 
   beforeEach(() => {
-    vi.stubEnv("PAPERCLIP_HOME", uploadHome);
-    vi.stubEnv("PAPERCLIP_INSTANCE_ID", "default");
-    vi.stubEnv("PAPERCLIP_ATTACHMENT_MAX_BYTES", "");
+    vi.stubEnv("WARDMOTE_HOME", uploadHome);
+    vi.stubEnv("WARDMOTE_INSTANCE_ID", "default");
+    vi.stubEnv("WARDMOTE_ATTACHMENT_MAX_BYTES", "");
     vi.resetModules();
     vi.doUnmock("@tickernelz/wardmote-shared/telemetry");
     vi.doUnmock("../telemetry.js");

@@ -2,8 +2,8 @@ import { resolvePaperclipRunnerPiThinkingLevel } from "./wardmote-runner-permiss
 import { describe, expect, it } from "vitest";
 
 import {
-  PAPERCLIP_RUNNER_DEFAULT_MODELS,
-  PAPERCLIP_RUNNER_ACPX_PROFILES,
+  WARDMOTE_RUNNER_DEFAULT_MODELS,
+  WARDMOTE_RUNNER_ACPX_PROFILES,
   paperclipRunnerTransitionConfig,
   isPaperclipRunnerProvider,
   resolvePaperclipRunnerModel,
@@ -13,10 +13,10 @@ import {
 
 describe("Paperclip Runner permission defaults", () => {
   it("admits Pi with provider credentials while keeping Copilot pending", () => {
-    expect(PAPERCLIP_RUNNER_ACPX_PROFILES.find(profile => profile.value === "pi"))
+    expect(WARDMOTE_RUNNER_ACPX_PROFILES.find(profile => profile.value === "pi"))
       .toMatchObject({ qualified: true, credentialEnvironment: expect.arrayContaining(["OPENROUTER_API_KEY", "OPENAI_API_KEY", "ANTHROPIC_API_KEY", "GEMINI_API_KEY"]) });
     for (const agent of ["copilot"]) {
-      expect(PAPERCLIP_RUNNER_ACPX_PROFILES.find(profile => profile.value === agent)?.qualified).toBe(false);
+      expect(WARDMOTE_RUNNER_ACPX_PROFILES.find(profile => profile.value === agent)?.qualified).toBe(false);
     }
   });
   it("defaults Codex to the only qualified non-interactive mode", () => {
@@ -67,10 +67,10 @@ describe("Paperclip Runner permission defaults", () => {
 
   it("uses the Codex default for missing or blank models", () => {
     expect(resolvePaperclipRunnerModel("codex", undefined)).toBe(
-      PAPERCLIP_RUNNER_DEFAULT_MODELS.codex,
+      WARDMOTE_RUNNER_DEFAULT_MODELS.codex,
     );
     expect(resolvePaperclipRunnerModel("codex", "   ")).toBe(
-      PAPERCLIP_RUNNER_DEFAULT_MODELS.codex,
+      WARDMOTE_RUNNER_DEFAULT_MODELS.codex,
     );
   });
 

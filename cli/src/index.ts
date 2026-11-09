@@ -1,4 +1,3 @@
-import "@tickernelz/wardmote-shared/env-aliases-bootstrap";
 import { registerRuntimeCommands } from "./commands/runtime.js";
 import { registerEmailCommands } from "./commands/client/email.js";
 import { registerMcpCommands } from "./commands/mcp.js";

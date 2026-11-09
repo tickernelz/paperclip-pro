@@ -119,7 +119,7 @@ oversight capability; none exists today.
 
 ## Rollout modes
 
-`PAPERCLIP_ISSUE_PRIVACY_MODE=enforce` is the default. `shadow` records
+`WARDMOTE_ISSUE_PRIVACY_MODE=enforce` is the default. `shadow` records
 structured would-deny decisions without enforcing them and exists only for
 rollout diagnosis. `off` disables the task predicate. Operators should not use
 `shadow` or `off` when private-task confidentiality is required.

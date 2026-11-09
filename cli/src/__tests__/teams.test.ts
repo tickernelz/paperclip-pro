@@ -76,9 +76,9 @@ describe("teams CLI commands", () => {
 
   beforeEach(() => {
     process.env = { ...ORIGINAL_ENV };
-    delete process.env.PAPERCLIP_API_URL;
-    delete process.env.PAPERCLIP_API_KEY;
-    delete process.env.PAPERCLIP_COMPANY_ID;
+    delete process.env.WARDMOTE_API_URL;
+    delete process.env.WARDMOTE_API_KEY;
+    delete process.env.WARDMOTE_COMPANY_ID;
     fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
     logSpy = vi.spyOn(console, "log").mockImplementation(() => undefined);
@@ -459,7 +459,7 @@ describe("teams CLI commands", () => {
   });
 
   it("auto-requests board approval for forbidden installs inside a Wardmote task run", async () => {
-    process.env.PAPERCLIP_TASK_ID = "11111111-1111-4111-8111-111111111111";
+    process.env.WARDMOTE_TASK_ID = "11111111-1111-4111-8111-111111111111";
     const approval = {
       id: "approval-2",
       companyId: "company-1",

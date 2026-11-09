@@ -60,8 +60,8 @@ describe("sandbox callback bridge", () => {
           (args[0] === "-c" || args[0] === "-lc") &&
           typeof args[1] === "string"
         ) {
-          env.PAPERCLIP_TEST_STDIN = input.stdin;
-          args[1] = `printf '%s' \"$PAPERCLIP_TEST_STDIN\" | (${args[1]})`;
+          env.WARDMOTE_TEST_STDIN = input.stdin;
+          args[1] = `printf '%s' \"$WARDMOTE_TEST_STDIN\" | (${args[1]})`;
         }
         try {
           const result = await execFile(command, args, {
@@ -1716,8 +1716,8 @@ describe("sandbox callback bridge", () => {
       expect(error).toEqual(new Error("Sandbox bridge control command timed out after 30000ms."));
       await operation;
       expect(runner.execute.mock.calls[0]?.[0].env).toMatchObject({
-        PAPERCLIP_BRIDGE_TOKEN: "private-bridge-token",
-        PAPERCLIP_SANDBOX_EXEC_CHANNEL: "bridge",
+        WARDMOTE_BRIDGE_TOKEN: "private-bridge-token",
+        WARDMOTE_SANDBOX_EXEC_CHANNEL: "bridge",
       });
       expect(runner.execute).toHaveBeenLastCalledWith(expect.objectContaining({ timeoutMs: 30_000 }));
       expect(vi.getTimerCount()).toBe(0);
@@ -1749,7 +1749,7 @@ describe("sandbox callback bridge", () => {
 
     expect(runner.execute).toHaveBeenCalledWith(expect.objectContaining({
       env: {
-        PAPERCLIP_SANDBOX_EXEC_CHANNEL: "bridge",
+        WARDMOTE_SANDBOX_EXEC_CHANNEL: "bridge",
       },
     }));
   });
@@ -3242,9 +3242,9 @@ describe("sandbox callback bridge", () => {
     const child = spawn(process.execPath, [entrypoint], {
       env: {
         ...process.env,
-        PAPERCLIP_BRIDGE_QUEUE_DIR: queueDir,
-        PAPERCLIP_BRIDGE_TOKEN: "test-token",
-        PAPERCLIP_BRIDGE_PORT: String(blockedPort),
+        WARDMOTE_BRIDGE_QUEUE_DIR: queueDir,
+        WARDMOTE_BRIDGE_TOKEN: "test-token",
+        WARDMOTE_BRIDGE_PORT: String(blockedPort),
       },
       stdio: ["ignore", "ignore", "pipe"],
     });
@@ -3275,10 +3275,10 @@ describe("sandbox callback bridge", () => {
     const child = spawn(process.execPath, [entrypoint], {
       env: {
         ...process.env,
-        PAPERCLIP_API_BRIDGE_MODE: "duplex_v1",
-        PAPERCLIP_BRIDGE_QUEUE_DIR: queueDir,
-        PAPERCLIP_BRIDGE_TOKEN: "test-token",
-        PAPERCLIP_BRIDGE_PORT: "0",
+        WARDMOTE_API_BRIDGE_MODE: "duplex_v1",
+        WARDMOTE_BRIDGE_QUEUE_DIR: queueDir,
+        WARDMOTE_BRIDGE_TOKEN: "test-token",
+        WARDMOTE_BRIDGE_PORT: "0",
       },
       stdio: ["ignore", "ignore", "pipe"],
     });
@@ -3291,7 +3291,7 @@ describe("sandbox callback bridge", () => {
     });
 
     expect(exitCode).not.toBe(0);
-    expect(stderr).toContain("Unsupported PAPERCLIP_API_BRIDGE_MODE: duplex_v1");
+    expect(stderr).toContain("Unsupported WARDMOTE_API_BRIDGE_MODE: duplex_v1");
   }, 15_000);
 
   it("exits nonzero for an unknown bridge mode instead of starting the queue gateway", async () => {
@@ -3307,10 +3307,10 @@ describe("sandbox callback bridge", () => {
     const child = spawn(process.execPath, [entrypoint], {
       env: {
         ...process.env,
-        PAPERCLIP_API_BRIDGE_MODE: "totally_unknown_mode",
-        PAPERCLIP_BRIDGE_QUEUE_DIR: queueDir,
-        PAPERCLIP_BRIDGE_TOKEN: "test-token",
-        PAPERCLIP_BRIDGE_PORT: "0",
+        WARDMOTE_API_BRIDGE_MODE: "totally_unknown_mode",
+        WARDMOTE_BRIDGE_QUEUE_DIR: queueDir,
+        WARDMOTE_BRIDGE_TOKEN: "test-token",
+        WARDMOTE_BRIDGE_PORT: "0",
       },
       stdio: ["ignore", "ignore", "pipe"],
     });
@@ -3323,7 +3323,7 @@ describe("sandbox callback bridge", () => {
     });
 
     expect(exitCode).not.toBe(0);
-    expect(stderr).toContain("Unsupported PAPERCLIP_API_BRIDGE_MODE: totally_unknown_mode");
+    expect(stderr).toContain("Unsupported WARDMOTE_API_BRIDGE_MODE: totally_unknown_mode");
   }, 15_000);
 
   it("test_http2_gateway_writes_no_frame_between_ready_and_the_preface", async () => {
@@ -3355,10 +3355,10 @@ describe("sandbox callback bridge", () => {
     const child = spawn(process.execPath, [entrypoint], {
       env: {
         ...process.env,
-        PAPERCLIP_API_BRIDGE_MODE: "http2_v1",
-        PAPERCLIP_BRIDGE_TOKEN: "test-token",
-        PAPERCLIP_BRIDGE_PORT: String(assignedPort),
-        PAPERCLIP_BRIDGE_NONCE: nonce,
+        WARDMOTE_API_BRIDGE_MODE: "http2_v1",
+        WARDMOTE_BRIDGE_TOKEN: "test-token",
+        WARDMOTE_BRIDGE_PORT: String(assignedPort),
+        WARDMOTE_BRIDGE_NONCE: nonce,
       },
       stdio: ["pipe", "pipe", "pipe"],
     });
@@ -3440,12 +3440,12 @@ describe("sandbox callback bridge", () => {
     const child = spawn(process.execPath, [entrypoint], {
       env: {
         ...process.env,
-        PAPERCLIP_API_BRIDGE_MODE: "http2_v1",
-        PAPERCLIP_BRIDGE_TOKEN: options.bridgeToken,
-        PAPERCLIP_BRIDGE_PORT: String(assignedPort),
-        PAPERCLIP_BRIDGE_NONCE: "test-nonce",
+        WARDMOTE_API_BRIDGE_MODE: "http2_v1",
+        WARDMOTE_BRIDGE_TOKEN: options.bridgeToken,
+        WARDMOTE_BRIDGE_PORT: String(assignedPort),
+        WARDMOTE_BRIDGE_NONCE: "test-nonce",
         ...(options.maxBodyBytes != null
-          ? { PAPERCLIP_BRIDGE_MAX_BODY_BYTES: String(options.maxBodyBytes) }
+          ? { WARDMOTE_BRIDGE_MAX_BODY_BYTES: String(options.maxBodyBytes) }
           : {}),
       },
       stdio: ["pipe", "pipe", "pipe"],

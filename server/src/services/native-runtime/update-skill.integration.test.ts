@@ -13,20 +13,20 @@ import { companySkillService } from "../company-skills.js";
 describe("runner update_skill through the real skill API", () => {
   let server: Awaited<ReturnType<typeof startRunnerApiTestServer>>;
   let home: string;
-  const previousSecret = process.env.PAPERCLIP_AGENT_JWT_SECRET;
-  const previousHome = process.env.PAPERCLIP_HOME;
+  const previousSecret = process.env.WARDMOTE_AGENT_JWT_SECRET;
+  const previousHome = process.env.WARDMOTE_HOME;
   beforeAll(async () => {
-    process.env.PAPERCLIP_AGENT_JWT_SECRET = randomUUID();
+    process.env.WARDMOTE_AGENT_JWT_SECRET = randomUUID();
     home = await mkdtemp(join(tmpdir(), "paperclip-update-skill-"));
-    process.env.PAPERCLIP_HOME = home;
+    process.env.WARDMOTE_HOME = home;
     server = await startRunnerApiTestServer();
   }, 60_000);
   afterAll(async () => {
     await server?.close();
-    if (previousSecret === undefined) delete process.env.PAPERCLIP_AGENT_JWT_SECRET;
-    else process.env.PAPERCLIP_AGENT_JWT_SECRET = previousSecret;
-    if (previousHome === undefined) delete process.env.PAPERCLIP_HOME;
-    else process.env.PAPERCLIP_HOME = previousHome;
+    if (previousSecret === undefined) delete process.env.WARDMOTE_AGENT_JWT_SECRET;
+    else process.env.WARDMOTE_AGENT_JWT_SECRET = previousSecret;
+    if (previousHome === undefined) delete process.env.WARDMOTE_HOME;
+    else process.env.WARDMOTE_HOME = previousHome;
     if (home) await rm(home, { recursive: true, force: true });
   });
 

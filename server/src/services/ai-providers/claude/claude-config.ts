@@ -15,7 +15,7 @@ import {
   type AdapterExecutionTarget,
   type AdapterExecutionTargetShellOptions,
 } from "@tickernelz/wardmote-adapter-utils/execution-target";
-import { PAPERCLIP_MCP_SERVER_NAME } from "@tickernelz/wardmote-adapter-utils/wardmote-mcp";
+import { WARDMOTE_MCP_SERVER_NAME } from "@tickernelz/wardmote-adapter-utils/wardmote-mcp";
 import type { PaperclipMcpHttpTarget } from "@tickernelz/wardmote-adapter-utils/wardmote-mcp-mount";
 import { resolvePaperclipInstanceRootForAdapter } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import { shellQuote } from "@tickernelz/wardmote-adapter-utils/ssh";
@@ -134,8 +134,8 @@ export function resolveManagedClaudeConfigSeedDir(
   companyId?: string,
 ): string {
   const instanceRoot = resolvePaperclipInstanceRootForAdapter({
-    homeDir: nonEmpty(env.PAPERCLIP_HOME) ?? undefined,
-    instanceId: nonEmpty(env.PAPERCLIP_INSTANCE_ID) ?? undefined,
+    homeDir: nonEmpty(env.WARDMOTE_HOME) ?? undefined,
+    instanceId: nonEmpty(env.WARDMOTE_INSTANCE_ID) ?? undefined,
     env,
   });
   return companyId
@@ -149,8 +149,8 @@ export function resolveManagedClaudeRuntimeStateDir(
   agentId: string,
 ): string {
   const instanceRoot = resolvePaperclipInstanceRootForAdapter({
-    homeDir: nonEmpty(env.PAPERCLIP_HOME) ?? undefined,
-    instanceId: nonEmpty(env.PAPERCLIP_INSTANCE_ID) ?? undefined,
+    homeDir: nonEmpty(env.WARDMOTE_HOME) ?? undefined,
+    instanceId: nonEmpty(env.WARDMOTE_INSTANCE_ID) ?? undefined,
     env,
   });
   return path.join(instanceRoot, "companies", companyId, "agents", agentId, "claude-runtime");
@@ -167,8 +167,8 @@ export async function writePaperclipClaudeMcpConfig(input: {
   const usedNames = new Set<string>();
   const mcpServers: Record<string, unknown> = {};
   if (input.paperclip) {
-    usedNames.add(PAPERCLIP_MCP_SERVER_NAME);
-    mcpServers[PAPERCLIP_MCP_SERVER_NAME] = {
+    usedNames.add(WARDMOTE_MCP_SERVER_NAME);
+    mcpServers[WARDMOTE_MCP_SERVER_NAME] = {
       type: "http",
       url: input.paperclip.url,
       headers: input.paperclip.headers,

@@ -225,7 +225,7 @@ export function resolveWorkspaceHandoffIdentity(
   const key = resolveWorkspaceHandoffLocalKey(env);
   if (!key) return null;
   const configuredOrigin =
-    normalizeWorkspaceHandoffOrigin(env.PAPERCLIP_PUBLIC_URL)
+    normalizeWorkspaceHandoffOrigin(env.WARDMOTE_PUBLIC_URL)
     ?? (config.authBaseUrlMode === "explicit"
       ? normalizeWorkspaceHandoffOrigin(config.authPublicBaseUrl)
       : null);
@@ -240,12 +240,12 @@ export function resolveWorkspaceHandoffIdentity(
 
 export function createBetterAuthInstance(db: Db, config: Config, trustedOrigins: string[]): BetterAuthInstance {
   const baseUrl = config.authBaseUrlMode === "explicit" ? config.authPublicBaseUrl : undefined;
-  const publicUrl = process.env.PAPERCLIP_PUBLIC_URL?.trim() || baseUrl;
-  const managedRuntimePublicUrl = process.env.PAPERCLIP_MANAGED_RUNTIME_PUBLIC_URL?.trim() || undefined;
-  const secret = process.env.BETTER_AUTH_SECRET ?? process.env.PAPERCLIP_AGENT_JWT_SECRET;
+  const publicUrl = process.env.WARDMOTE_PUBLIC_URL?.trim() || baseUrl;
+  const managedRuntimePublicUrl = process.env.WARDMOTE_MANAGED_RUNTIME_PUBLIC_URL?.trim() || undefined;
+  const secret = process.env.BETTER_AUTH_SECRET ?? process.env.WARDMOTE_AGENT_JWT_SECRET;
   if (!secret) {
     throw new Error(
-      "BETTER_AUTH_SECRET (or PAPERCLIP_AGENT_JWT_SECRET) must be set. " +
+      "BETTER_AUTH_SECRET (or WARDMOTE_AGENT_JWT_SECRET) must be set. " +
       "For local development, set BETTER_AUTH_SECRET=paperclip-dev-secret in your .env file.",
     );
   }
@@ -278,7 +278,7 @@ export function createBetterAuthInstance(db: Db, config: Config, trustedOrigins:
     rateLimit: buildBetterAuthRateLimitOptions({
       deploymentMode: config.deploymentMode,
       deploymentExposure: config.deploymentExposure,
-      override: process.env.PAPERCLIP_AUTH_RATE_LIMIT_ENABLED,
+      override: process.env.WARDMOTE_AUTH_RATE_LIMIT_ENABLED,
     }),
     advanced: buildBetterAuthAdvancedOptions({ disableSecureCookies }),
     // Registered only for a managed workspace instance: the plugin is what makes

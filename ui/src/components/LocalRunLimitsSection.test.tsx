@@ -19,11 +19,11 @@ vi.mock("@/api/instanceSettings", () => ({ instanceSettingsApi: mockInstanceSett
 (globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
 
 const DEFAULTS: EffectiveLocalRunLimits = {
-  maxConcurrentRuns: { value: 20, source: "default", envVar: "PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS" },
-  maxConcurrentStarts: { value: 4, source: "default", envVar: "PAPERCLIP_MAX_CONCURRENT_LOCAL_STARTS" },
-  startWaitBypassSec: { value: 120, source: "default", envVar: "PAPERCLIP_LOCAL_START_WAIT_BYPASS_SEC" },
-  memoryReservePercent: { value: 20, source: "default", envVar: "PAPERCLIP_LOCAL_MEMORY_RESERVE_PERCENT" },
-  memoryGateCooldownSec: { value: 120, source: "default", envVar: "PAPERCLIP_LOCAL_MEMORY_GATE_COOLDOWN_SEC" },
+  maxConcurrentRuns: { value: 20, source: "default", envVar: "WARDMOTE_MAX_CONCURRENT_LOCAL_RUNS" },
+  maxConcurrentStarts: { value: 4, source: "default", envVar: "WARDMOTE_MAX_CONCURRENT_LOCAL_STARTS" },
+  startWaitBypassSec: { value: 120, source: "default", envVar: "WARDMOTE_LOCAL_START_WAIT_BYPASS_SEC" },
+  memoryReservePercent: { value: 20, source: "default", envVar: "WARDMOTE_LOCAL_MEMORY_RESERVE_PERCENT" },
+  memoryGateCooldownSec: { value: 120, source: "default", envVar: "WARDMOTE_LOCAL_MEMORY_GATE_COOLDOWN_SEC" },
 };
 
 const UNSET: LocalRunLimitsSettings = { maxConcurrentRuns: null, maxConcurrentStarts: null, startWaitBypassSec: null, memoryReservePercent: null, memoryGateCooldownSec: null };
@@ -125,12 +125,12 @@ describe("LocalRunLimitsSection", () => {
   it("shows an environment override read-only and keeps the saved value for that field", async () => {
     mockInstanceSettingsApi.getLocalRunLimits.mockResolvedValue({
       ...DEFAULTS,
-      maxConcurrentRuns: { value: 12, source: "env", envVar: "PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS" },
+      maxConcurrentRuns: { value: 12, source: "env", envVar: "WARDMOTE_MAX_CONCURRENT_LOCAL_RUNS" },
     });
     await renderSection({ maxConcurrentRuns: 5, maxConcurrentStarts: null, startWaitBypassSec: null, memoryReservePercent: null, memoryGateCooldownSec: null });
     await vi.waitFor(() =>
       expect(container.querySelector('[data-testid="local-run-limit-env-maxConcurrentRuns"]')?.textContent).toContain(
-        "PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS",
+        "WARDMOTE_MAX_CONCURRENT_LOCAL_RUNS",
       ),
     );
 

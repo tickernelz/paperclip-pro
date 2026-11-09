@@ -30,9 +30,9 @@ async function close(server: Server) {
 
 const scratch = await mkdtemp(join(tmpdir(), "paperclip-dot-demo-"));
 // This process has its own ephemeral encryption key, never the instance key.
-process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE = join(scratch, "master.key");
-delete process.env.PAPERCLIP_SECRETS_MASTER_KEY;
-delete process.env.PAPERCLIP_CLOUD_API_ORIGIN;
+process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE = join(scratch, "master.key");
+delete process.env.WARDMOTE_SECRETS_MASTER_KEY;
+delete process.env.WARDMOTE_CLOUD_API_ORIGIN;
 let database: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | undefined;
 const app = express(); app.use(express.json({ limit: "256kb" }));
 const http = createServer(app);

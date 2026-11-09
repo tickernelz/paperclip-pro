@@ -11,7 +11,7 @@ if [ -n "${UPGRADE_PNPM_STORE:-}" ]; then
 fi
 export npm_config_userconfig="$HOME/.npmrc"
 export PATH="$HOME/.local/bin:$PATH"
-unset PAPERCLIP_HOME WARDMOTE_HOME
+unset WARDMOTE_HOME
 REPO="${UPGRADE_REPO:?UPGRADE_REPO is required}"
 SHA="${UPGRADE_SHA:?UPGRADE_SHA is required}"
 PORT="${UPGRADE_PORT:-3197}"

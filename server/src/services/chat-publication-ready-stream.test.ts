@@ -7,7 +7,7 @@ import { nativePublicationTextFits } from "./chat-publication-text-parts.js";
 // Local qualification only: load an independently copied candidate module,
 // never a behavioral mock. CI/default runs use the installed pinned adapter.
 vi.mock("@chat-adapter/slack", async (importOriginal) => {
-  const candidate = process.env.PAPERCLIP_SLACK_STREAM_ADAPTER_MODULE;
+  const candidate = process.env.WARDMOTE_SLACK_STREAM_ADAPTER_MODULE;
   return candidate ? import(/* @vite-ignore */ candidate) : importOriginal();
 });
 

@@ -18,7 +18,7 @@ describe("canonical instruction revisions", () => {
   let database: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;
   let db: ReturnType<typeof createDb>;
   let service: ReturnType<typeof agentInstructionRevisionService>;
-  const previousHome = process.env.PAPERCLIP_HOME;
+  const previousHome = process.env.WARDMOTE_HOME;
   let home: string;
   let companyId: string, agentId: string, userId: string, actorId: string, runId: string, root: string;
   let actor: AuthorizationActor;
@@ -26,14 +26,14 @@ describe("canonical instruction revisions", () => {
   const initial = "\uFEFF# Original\r\n☃\0\n";
   beforeAll(async () => {
     home = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), "instruction-revisions-")));
-    process.env.PAPERCLIP_HOME = home;
+    process.env.WARDMOTE_HOME = home;
     database = await startEmbeddedPostgresTestDatabase("instruction-revisions-db-");
     db = createDb(database.connectionString);
     service = agentInstructionRevisionService(db);
   }, 90_000);
   afterAll(async () => {
     vi.restoreAllMocks();
-    if (previousHome === undefined) delete process.env.PAPERCLIP_HOME; else process.env.PAPERCLIP_HOME = previousHome;
+    if (previousHome === undefined) delete process.env.WARDMOTE_HOME; else process.env.WARDMOTE_HOME = previousHome;
     await database?.cleanup();
     if (home) await fs.rm(home, { recursive: true, force: true });
   });
@@ -147,14 +147,14 @@ describe("canonical instruction revisions", () => {
   });
   it("rechecks user target scope and agent containment, even with shadow authorization enabled", async () => {
     const first = await base();
-    const previousShadow = process.env.PAPERCLIP_RESPONSIBLE_USER_AUTHZ_SHADOW;
-    process.env.PAPERCLIP_RESPONSIBLE_USER_AUTHZ_SHADOW = "true";
+    const previousShadow = process.env.WARDMOTE_RESPONSIBLE_USER_AUTHZ_SHADOW;
+    process.env.WARDMOTE_RESPONSIBLE_USER_AUTHZ_SHADOW = "true";
     await db.update(principalPermissionGrants).set({ scope: { agentIds: [actorId] } }).where(eq(principalPermissionGrants.principalId, userId));
     await expect(save("denied", first.revision.id)).rejects.toMatchObject({ status: 403 });
     await db.update(principalPermissionGrants).set({ scope: null }).where(eq(principalPermissionGrants.principalId, userId));
     await db.update(agents).set({ permissions: { trustPreset: "low_trust_review" } }).where(eq(agents.id, actorId));
     await expect(save("restricted", first.revision.id)).rejects.toMatchObject({ status: 403 });
-    if (previousShadow === undefined) delete process.env.PAPERCLIP_RESPONSIBLE_USER_AUTHZ_SHADOW; else process.env.PAPERCLIP_RESPONSIBLE_USER_AUTHZ_SHADOW = previousShadow;
+    if (previousShadow === undefined) delete process.env.WARDMOTE_RESPONSIBLE_USER_AUTHZ_SHADOW; else process.env.WARDMOTE_RESPONSIBLE_USER_AUTHZ_SHADOW = previousShadow;
   });
   it("keeps suggest-only protected-change consent and explicit configure scope restrictions", async () => {
     const first = await base();

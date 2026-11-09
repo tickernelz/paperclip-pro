@@ -187,10 +187,10 @@ describe("heartbeat run scratch cleanup", () => {
 
     const result = buildHeartbeatRunScratchEnv({ TMPDIR: "/custom/tmp" }, scratch);
 
-    expect(result.env.PAPERCLIP_RUN_SCRATCH_DIR).toBe(scratch.dir);
-    expect(result.env.PAPERCLIP_TASK_SCRATCH_DIR).toBe(scratch.dir);
-    expect(result.env.PAPERCLIP_SCRATCH_DIR).toBe(scratch.dir);
-    expect(result.env.PAPERCLIP_TMPDIR).toBe(scratch.tempDir);
+    expect(result.env.WARDMOTE_RUN_SCRATCH_DIR).toBe(scratch.dir);
+    expect(result.env.WARDMOTE_TASK_SCRATCH_DIR).toBe(scratch.dir);
+    expect(result.env.WARDMOTE_SCRATCH_DIR).toBe(scratch.dir);
+    expect(result.env.WARDMOTE_TMPDIR).toBe(scratch.tempDir);
     expect(result.env.TMPDIR).toBeUndefined();
     expect(result.env.TEMP).toBe(scratch.tempDir);
     expect(result.env.TMP).toBe(scratch.tempDir);

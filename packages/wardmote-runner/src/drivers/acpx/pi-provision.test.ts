@@ -51,10 +51,10 @@ it("verifies an existing cache in full and never repairs a rejected cache automa
   expect(mocks.build).not.toHaveBeenCalled(); expect(await readdir(f.parent)).toEqual([`${process.platform}-${process.arch}`]);
 });
 it("publishes only after staging verification, then verifies the actual package authority", async () => {
-  const f = await fixture(); vi.stubEnv("PAPERCLIP_ACPX_PROVIDER_PACKAGE_ROOT", "untrusted-ambient");
+  const f = await fixture(); vi.stubEnv("WARDMOTE_ACPX_PROVIDER_PACKAGE_ROOT", "untrusted-ambient");
   expect(await provisionPi(f.entry)).toMatchObject({ status: "installed_verified" });
   expect(mocks.verify).toHaveBeenCalledTimes(2); expect(mocks.close).toHaveBeenCalledTimes(2);
-  expect(process.env.PAPERCLIP_ACPX_PROVIDER_PACKAGE_ROOT).toBe("untrusted-ambient");
+  expect(process.env.WARDMOTE_ACPX_PROVIDER_PACKAGE_ROOT).toBe("untrusted-ambient");
   expect(await readdir(f.parent)).toEqual([`${process.platform}-${process.arch}`]);
 });
 it.each(["build", "staging", "published"])("cleans only its owned transaction after %s failure", async stage => {

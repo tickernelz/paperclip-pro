@@ -302,7 +302,7 @@ export type WorkspaceReadinessGateMode = "auto" | "strict";
 export function resolveWorkspaceReadinessGateMode(
   env: NodeJS.ProcessEnv = process.env,
 ): WorkspaceReadinessGateMode {
-  return env.PAPERCLIP_WORKSPACE_READINESS_GATE?.trim().toLowerCase() === "strict" ? "strict" : "auto";
+  return env.WARDMOTE_WORKSPACE_READINESS_GATE?.trim().toLowerCase() === "strict" ? "strict" : "auto";
 }
 
 /**

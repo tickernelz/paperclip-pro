@@ -526,7 +526,7 @@ function cleanRoomView(identifier: string, withTurn: boolean) {
     turnId: "turn-0",
     category: "session",
     outcome: "no_real_paperclip_request",
-    reason: "Real Paperclip API requests: 0. Child PAPERCLIP_* environment keys: none.",
+    reason: "Real Paperclip API requests: 0. Child WARDMOTE_* environment keys: none.",
     stateRevision: 3,
     threadAnchorId: null,
   };

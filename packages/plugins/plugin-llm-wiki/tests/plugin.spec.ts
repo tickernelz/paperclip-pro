@@ -8,7 +8,7 @@ import manifest, {
   CURSOR_WINDOW_ROUTINE_KEY,
   INDEX_REFRESH_ROUTINE_KEY,
   NIGHTLY_LINT_ROUTINE_KEY,
-  PAPERCLIP_DISTILL_SKILL_KEY,
+  WARDMOTE_DISTILL_SKILL_KEY,
   WIKI_MAINTAINER_AGENT_KEY,
   WIKI_MAINTAINER_SKILL_CANONICAL_KEY,
   WIKI_MAINTAINER_SKILL_KEY,
@@ -34,8 +34,8 @@ import { OPERATION_ORIGIN_KIND, type WikiSkillResource } from "../src/wiki.js";
 
 const COMPANY_ID = "11111111-1111-4111-8111-111111111111";
 const OTHER_COMPANY_ID = "99999999-9999-4999-8999-999999999999";
-const ORIGINAL_DEPLOYMENT_MODE = process.env.PAPERCLIP_DEPLOYMENT_MODE;
-const ORIGINAL_DEPLOYMENT_EXPOSURE = process.env.PAPERCLIP_DEPLOYMENT_EXPOSURE;
+const ORIGINAL_DEPLOYMENT_MODE = process.env.WARDMOTE_DEPLOYMENT_MODE;
+const ORIGINAL_DEPLOYMENT_EXPOSURE = process.env.WARDMOTE_DEPLOYMENT_EXPOSURE;
 type TestBridgeGlobal = typeof globalThis & {
   __paperclipPluginBridge__?: {
     sdkUi?: Record<string, unknown>;
@@ -101,14 +101,14 @@ let mockPageMetadataByPath: Record<string, {
 
 beforeEach(() => {
   if (ORIGINAL_DEPLOYMENT_MODE == null) {
-    delete process.env.PAPERCLIP_DEPLOYMENT_MODE;
+    delete process.env.WARDMOTE_DEPLOYMENT_MODE;
   } else {
-    process.env.PAPERCLIP_DEPLOYMENT_MODE = ORIGINAL_DEPLOYMENT_MODE;
+    process.env.WARDMOTE_DEPLOYMENT_MODE = ORIGINAL_DEPLOYMENT_MODE;
   }
   if (ORIGINAL_DEPLOYMENT_EXPOSURE == null) {
-    delete process.env.PAPERCLIP_DEPLOYMENT_EXPOSURE;
+    delete process.env.WARDMOTE_DEPLOYMENT_EXPOSURE;
   } else {
-    process.env.PAPERCLIP_DEPLOYMENT_EXPOSURE = ORIGINAL_DEPLOYMENT_EXPOSURE;
+    process.env.WARDMOTE_DEPLOYMENT_EXPOSURE = ORIGINAL_DEPLOYMENT_EXPOSURE;
   }
   mockPathname = "/PAP/wiki";
   mockSearch = "";
@@ -460,14 +460,14 @@ beforeEach(() => {
 
 afterEach(() => {
   if (ORIGINAL_DEPLOYMENT_MODE == null) {
-    delete process.env.PAPERCLIP_DEPLOYMENT_MODE;
+    delete process.env.WARDMOTE_DEPLOYMENT_MODE;
   } else {
-    process.env.PAPERCLIP_DEPLOYMENT_MODE = ORIGINAL_DEPLOYMENT_MODE;
+    process.env.WARDMOTE_DEPLOYMENT_MODE = ORIGINAL_DEPLOYMENT_MODE;
   }
   if (ORIGINAL_DEPLOYMENT_EXPOSURE == null) {
-    delete process.env.PAPERCLIP_DEPLOYMENT_EXPOSURE;
+    delete process.env.WARDMOTE_DEPLOYMENT_EXPOSURE;
   } else {
-    process.env.PAPERCLIP_DEPLOYMENT_EXPOSURE = ORIGINAL_DEPLOYMENT_EXPOSURE;
+    process.env.WARDMOTE_DEPLOYMENT_EXPOSURE = ORIGINAL_DEPLOYMENT_EXPOSURE;
   }
   delete (globalThis as TestBridgeGlobal).__paperclipPluginBridge__;
 });
@@ -2290,7 +2290,7 @@ Duplicate headings receive stable suffixes.
     expect(result.operation.issue.assigneeAgentId).toBe(wikiMaintainerAgent().id);
     expect(result.operation.issue.assigneeAdapterOverrides).toBeNull();
     expect(result.operation.issue.description).toContain("Prompt source: LLM Wiki plugin action `distill-paperclip-now`");
-    expect(result.operation.issue.description).toContain(`Required skill: use the installed \`${PAPERCLIP_DISTILL_SKILL_KEY}\` skill`);
+    expect(result.operation.issue.description).toContain(`Required skill: use the installed \`${WARDMOTE_DISTILL_SKILL_KEY}\` skill`);
     expect(result.operation.issue.description).toContain("Do not hardcode a single project");
     expect(result.operation.issue.description).not.toContain(`Source project ID: ${project.id}`);
     const workItemInsert = harness.dbExecutes.find((execute) =>
@@ -2640,8 +2640,8 @@ Duplicate headings receive stable suffixes.
   });
 
   it("refuses auto-apply Paperclip project page patches in authenticated/public deployments", async () => {
-    process.env.PAPERCLIP_DEPLOYMENT_MODE = "authenticated";
-    process.env.PAPERCLIP_DEPLOYMENT_EXPOSURE = "public";
+    process.env.WARDMOTE_DEPLOYMENT_MODE = "authenticated";
+    process.env.WARDMOTE_DEPLOYMENT_EXPOSURE = "public";
     const harness = createTestHarness({ manifest, config: { autoApplyIngestPatches: true } });
     const project = existingProject();
     const issue = paperclipIssue({

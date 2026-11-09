@@ -4869,7 +4869,7 @@ mod tests {
             "-c",
             "shell_environment_policy.set={PATH=\"/run/b\"}",
             "-c",
-            "shell_environment_policy.include_only=[\"PAPERCLIP_GITHUB_BROKER_TOKEN\"]",
+            "shell_environment_policy.include_only=[\"WARDMOTE_GITHUB_BROKER_TOKEN\"]",
             "--disable",
             "image_generation",
             "app-server",

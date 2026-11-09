@@ -44,10 +44,10 @@ describe("durable Dot Runner integration", () => {
     temporary = await startEmbeddedPostgresTestDatabase("paperclip-dot-runner-");
     db = createDb(temporary.connectionString);
     root = await mkdtemp(join(tmpdir(), "paperclip-dot-state-"));
-    vi.stubEnv("PAPERCLIP_IN_WORKTREE", "false");
-    vi.stubEnv("PAPERCLIP_RUNNER_BINARY", join(runnerRoot, "runner/target/release", process.platform === "win32" ? "paperclip-runnerd.exe" : "paperclip-runnerd"));
-    vi.stubEnv("PAPERCLIP_RUNNER_STATE_DIR", join(root, "runner-state"));
-    vi.stubEnv("PAPERCLIP_SECRETS_MASTER_KEY", randomBytes(32).toString("base64"));
+    vi.stubEnv("WARDMOTE_IN_WORKTREE", "false");
+    vi.stubEnv("WARDMOTE_RUNNER_BINARY", join(runnerRoot, "runner/target/release", process.platform === "win32" ? "paperclip-runnerd.exe" : "paperclip-runnerd"));
+    vi.stubEnv("WARDMOTE_RUNNER_STATE_DIR", join(root, "runner-state"));
+    vi.stubEnv("WARDMOTE_SECRETS_MASTER_KEY", randomBytes(32).toString("base64"));
     await instanceSettingsService(db).updateExperimental({ enablePublicMcp: true, enableOpenAiDot: true, enableNativeRunner: false });
   }, 360000);
   afterAll(async () => {
@@ -68,12 +68,12 @@ describe("durable Dot Runner integration", () => {
     for (const key of ["enableOpenAiDot", "enablePublicMcp"] as const) {
       await settings.updateExperimental({ [key]: false });
       try {
-        vi.stubEnv("PAPERCLIP_ENABLE_OPENAI_DOT", "1");
+        vi.stubEnv("WARDMOTE_ENABLE_OPENAI_DOT", "1");
         expect(await broker.enabled()).toBe(false);
         await expect(broker.createPairing({ companyId: randomUUID(), agentId: randomUUID(), operatorId: randomUUID() })).rejects.toThrow("Settings > Features");
       } finally { await settings.updateExperimental({ enablePublicMcp: true, enableOpenAiDot: true }); }
     }
-    vi.stubEnv("PAPERCLIP_ENABLE_OPENAI_DOT", "0");
+    vi.stubEnv("WARDMOTE_ENABLE_OPENAI_DOT", "0");
     expect(await broker.enabled()).toBe(true);
   });
 
@@ -666,7 +666,7 @@ describe("durable Dot Runner integration", () => {
 
   it.each([
     { name: "local Rust", managed: false },
-    ...(process.env.PAPERCLIP_DOT_DAYTONA_LIVE === "1" ? [{ name: "private Daytona Rust", managed: true }] : []),
+    ...(process.env.WARDMOTE_DOT_DAYTONA_LIVE === "1" ? [{ name: "private Daytona Rust", managed: true }] : []),
   ])("signed readiness, native tools and finalization through $name", async ({ managed }) => {
     const remote = managed ? await (await import("./helpers/dot-daytona.js")).startDotDaytona(root) : null;
     try {
@@ -701,7 +701,7 @@ describe("durable Dot Runner integration", () => {
         ...(remote ? { runnerExecutionTarget: remote.target, runnerRemoteBinaryPath: remote.runnerBinary, runnerIngressAuthorized: true }
           : { dotWorkspaceRoot: root }),
         runnerInstanceId: prepared.runnerInstanceId,
-        runnerEnvironment: { PAPERCLIP_NATIVE_MCP_NAME: "paperclip-assigned", PAPERCLIP_NATIVE_MCP_URL: "http://127.0.0.1:3217/mcp/gateways/dot-fixture", PAPERCLIP_NATIVE_MCP_TOKEN: "fixture-gateway-secret" },
+        runnerEnvironment: { WARDMOTE_NATIVE_MCP_NAME: "paperclip-assigned", WARDMOTE_NATIVE_MCP_URL: "http://127.0.0.1:3217/mcp/gateways/dot-fixture", WARDMOTE_NATIVE_MCP_TOKEN: "fixture-gateway-secret" },
         useRunnerd: true, turnTimeoutMs: 45000, onEvent: async event => { observed.push(event); }, onLog: async () => {} });
       // Attach a handler immediately: a bootstrap error must never become an unhandled rejection.
       let startupError: unknown;

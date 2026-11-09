@@ -30,9 +30,9 @@ In a separate terminal:
 
 ```bash
 cd /path/to/paperclip
-export PAPERCLIP_HOME=/tmp/paperclip-smoke
-export PAPERCLIP_INSTANCE_ID=smoke
-export PAPERCLIP_DEPLOYMENT_MODE=local_trusted
+export WARDMOTE_HOME=/tmp/paperclip-smoke
+export WARDMOTE_INSTANCE_ID=smoke
+export WARDMOTE_DEPLOYMENT_MODE=local_trusted
 pnpm --filter @tickernelz/wardmote-server dev
 ```
 

@@ -881,8 +881,8 @@ describeEmbeddedPostgres("companySearchService", () => {
   });
 
   it("pushes private issue filtering into list, count, and company search queries", async () => {
-    const previousMode = process.env.PAPERCLIP_ISSUE_PRIVACY_MODE;
-    process.env.PAPERCLIP_ISSUE_PRIVACY_MODE = "enforce";
+    const previousMode = process.env.WARDMOTE_ISSUE_PRIVACY_MODE;
+    process.env.WARDMOTE_ISSUE_PRIVACY_MODE = "enforce";
     try {
       const companyId = await createCompany();
       const ownerId = `owner-${randomUUID()}`;
@@ -929,14 +929,14 @@ describeEmbeddedPostgres("companySearchService", () => {
       );
       expect(result.results.map((row) => row.id)).toEqual([openId]);
     } finally {
-      if (previousMode === undefined) delete process.env.PAPERCLIP_ISSUE_PRIVACY_MODE;
-      else process.env.PAPERCLIP_ISSUE_PRIVACY_MODE = previousMode;
+      if (previousMode === undefined) delete process.env.WARDMOTE_ISSUE_PRIVACY_MODE;
+      else process.env.WARDMOTE_ISSUE_PRIVACY_MODE = previousMode;
     }
   });
 
   it("pushes private project filtering into project search and counts", async () => {
-    const previousMode = process.env.PAPERCLIP_ISSUE_PRIVACY_MODE;
-    process.env.PAPERCLIP_ISSUE_PRIVACY_MODE = "enforce";
+    const previousMode = process.env.WARDMOTE_ISSUE_PRIVACY_MODE;
+    process.env.WARDMOTE_ISSUE_PRIVACY_MODE = "enforce";
     try {
       const companyId = await createCompany();
       const memberId = `member-${randomUUID()}`;
@@ -970,8 +970,8 @@ describeEmbeddedPostgres("companySearchService", () => {
       expect(memberResult.results.map((row) => row.id)).toEqual(expect.arrayContaining([openId, privateId]));
       expect(memberResult.countsByType.project).toBe(2);
     } finally {
-      if (previousMode === undefined) delete process.env.PAPERCLIP_ISSUE_PRIVACY_MODE;
-      else process.env.PAPERCLIP_ISSUE_PRIVACY_MODE = previousMode;
+      if (previousMode === undefined) delete process.env.WARDMOTE_ISSUE_PRIVACY_MODE;
+      else process.env.WARDMOTE_ISSUE_PRIVACY_MODE = previousMode;
     }
   });
 });

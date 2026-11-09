@@ -76,7 +76,7 @@ No arrow points from App runtime to an external eval repository.
 ## Compatibility and versioning
 
 Package semver describes distribution compatibility. Independently versioned
-contracts are published in `PAPERCLIP_RUNNER_COMPATIBILITY`:
+contracts are published in `WARDMOTE_RUNNER_COMPATIBILITY`:
 
 | Component | Current contract | Compatibility rule |
 |---|---:|---|

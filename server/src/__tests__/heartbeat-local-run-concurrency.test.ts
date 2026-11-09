@@ -206,7 +206,7 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
     const companyId = randomUUID();
     const seeded = await seedAgentsWithWork(companyId, 5);
     const heartbeat = heartbeatService(db, {
-      runtimeEnv: { ...process.env, PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS: "2" },
+      runtimeEnv: { ...process.env, WARDMOTE_MAX_CONCURRENT_LOCAL_RUNS: "2" },
     });
 
     await wakeAll(heartbeat, seeded);
@@ -248,7 +248,7 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
       responsibleUserId: "responsible-user",
     });
     const heartbeat = heartbeatService(db, {
-      runtimeEnv: { ...process.env, PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS: "1" },
+      runtimeEnv: { ...process.env, WARDMOTE_MAX_CONCURRENT_LOCAL_RUNS: "1" },
     });
 
     await wakeAll(heartbeat, seeded);
@@ -262,7 +262,7 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
     const companyId = randomUUID();
     const seeded = await seedAgentsWithWork(companyId, 2);
     const heartbeat = heartbeatService(db, {
-      runtimeEnv: { ...process.env, PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS: "1" },
+      runtimeEnv: { ...process.env, WARDMOTE_MAX_CONCURRENT_LOCAL_RUNS: "1" },
     });
 
     await wakeAll(heartbeat, seeded);
@@ -287,8 +287,8 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
     const heartbeat = heartbeatService(db, {
       runtimeEnv: {
         ...process.env,
-        PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS: "5",
-        PAPERCLIP_MAX_CONCURRENT_LOCAL_STARTS: "5",
+        WARDMOTE_MAX_CONCURRENT_LOCAL_RUNS: "5",
+        WARDMOTE_MAX_CONCURRENT_LOCAL_STARTS: "5",
       },
     });
 
@@ -306,9 +306,9 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
     const heartbeat = heartbeatService(db, {
       runtimeEnv: {
         ...process.env,
-        PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS: "10",
-        PAPERCLIP_MAX_CONCURRENT_LOCAL_STARTS: "4",
-        PAPERCLIP_LOCAL_START_WAIT_BYPASS_SEC: "600",
+        WARDMOTE_MAX_CONCURRENT_LOCAL_RUNS: "10",
+        WARDMOTE_MAX_CONCURRENT_LOCAL_STARTS: "4",
+        WARDMOTE_LOCAL_START_WAIT_BYPASS_SEC: "600",
       },
     });
 
@@ -339,9 +339,9 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
     const heartbeat = heartbeatService(db, {
       runtimeEnv: {
         ...process.env,
-        PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS: "10",
-        PAPERCLIP_MAX_CONCURRENT_LOCAL_STARTS: "11",
-        PAPERCLIP_LOCAL_START_WAIT_BYPASS_SEC: "600",
+        WARDMOTE_MAX_CONCURRENT_LOCAL_RUNS: "10",
+        WARDMOTE_MAX_CONCURRENT_LOCAL_STARTS: "11",
+        WARDMOTE_LOCAL_START_WAIT_BYPASS_SEC: "600",
       },
     });
 
@@ -362,9 +362,9 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
     const heartbeat = heartbeatService(db, {
       runtimeEnv: {
         ...process.env,
-        PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS: "10",
-        PAPERCLIP_MAX_CONCURRENT_LOCAL_STARTS: "4",
-        PAPERCLIP_LOCAL_START_WAIT_BYPASS_SEC: "600",
+        WARDMOTE_MAX_CONCURRENT_LOCAL_RUNS: "10",
+        WARDMOTE_MAX_CONCURRENT_LOCAL_STARTS: "4",
+        WARDMOTE_LOCAL_START_WAIT_BYPASS_SEC: "600",
       },
     });
 
@@ -392,9 +392,9 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
     const heartbeat = heartbeatService(db, {
       runtimeEnv: {
         ...process.env,
-        PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS: "4",
-        PAPERCLIP_MAX_CONCURRENT_LOCAL_STARTS: "4",
-        PAPERCLIP_LOCAL_START_WAIT_BYPASS_SEC: "600",
+        WARDMOTE_MAX_CONCURRENT_LOCAL_RUNS: "4",
+        WARDMOTE_MAX_CONCURRENT_LOCAL_STARTS: "4",
+        WARDMOTE_LOCAL_START_WAIT_BYPASS_SEC: "600",
       },
     });
 
@@ -419,9 +419,9 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
     const heartbeat = heartbeatService(db, {
       runtimeEnv: {
         ...process.env,
-        PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS: "10",
-        PAPERCLIP_MAX_CONCURRENT_LOCAL_STARTS: "1",
-        PAPERCLIP_LOCAL_START_WAIT_BYPASS_SEC: "600",
+        WARDMOTE_MAX_CONCURRENT_LOCAL_RUNS: "10",
+        WARDMOTE_MAX_CONCURRENT_LOCAL_STARTS: "1",
+        WARDMOTE_LOCAL_START_WAIT_BYPASS_SEC: "600",
       },
     });
 
@@ -450,9 +450,9 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
     const heartbeat = heartbeatService(db, {
       runtimeEnv: {
         ...process.env,
-        PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS: "10",
-        PAPERCLIP_MAX_CONCURRENT_LOCAL_STARTS: "1",
-        PAPERCLIP_LOCAL_START_WAIT_BYPASS_SEC: "600",
+        WARDMOTE_MAX_CONCURRENT_LOCAL_RUNS: "10",
+        WARDMOTE_MAX_CONCURRENT_LOCAL_STARTS: "1",
+        WARDMOTE_LOCAL_START_WAIT_BYPASS_SEC: "600",
       },
     });
 
@@ -486,9 +486,9 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
     const heartbeat = heartbeatService(db, {
       runtimeEnv: {
         ...process.env,
-        PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS: "1",
-        PAPERCLIP_MAX_CONCURRENT_LOCAL_STARTS: "10",
-        PAPERCLIP_LOCAL_START_WAIT_BYPASS_SEC: "600",
+        WARDMOTE_MAX_CONCURRENT_LOCAL_RUNS: "1",
+        WARDMOTE_MAX_CONCURRENT_LOCAL_STARTS: "10",
+        WARDMOTE_LOCAL_START_WAIT_BYPASS_SEC: "600",
       },
     });
 
@@ -509,9 +509,9 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
     const heartbeat = heartbeatService(db, {
       runtimeEnv: {
         ...process.env,
-        PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS: "10",
-        PAPERCLIP_MAX_CONCURRENT_LOCAL_STARTS: "1",
-        PAPERCLIP_LOCAL_START_WAIT_BYPASS_SEC: "600",
+        WARDMOTE_MAX_CONCURRENT_LOCAL_RUNS: "10",
+        WARDMOTE_MAX_CONCURRENT_LOCAL_STARTS: "1",
+        WARDMOTE_LOCAL_START_WAIT_BYPASS_SEC: "600",
       },
     });
 
@@ -534,9 +534,9 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
     const heartbeat = heartbeatService(db, {
       runtimeEnv: {
         ...process.env,
-        PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS: "10",
-        PAPERCLIP_MAX_CONCURRENT_LOCAL_STARTS: "1",
-        PAPERCLIP_LOCAL_START_WAIT_BYPASS_SEC: "2",
+        WARDMOTE_MAX_CONCURRENT_LOCAL_RUNS: "10",
+        WARDMOTE_MAX_CONCURRENT_LOCAL_STARTS: "1",
+        WARDMOTE_LOCAL_START_WAIT_BYPASS_SEC: "2",
       },
     });
 
@@ -555,11 +555,11 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
   function envWithoutLocalRunLimits(overrides: Record<string, string> = {}) {
     const env: Record<string, string | undefined> = { ...process.env, ...overrides };
     for (const key of [
-      "PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS",
-      "PAPERCLIP_MAX_CONCURRENT_LOCAL_STARTS",
-      "PAPERCLIP_LOCAL_START_WAIT_BYPASS_SEC",
-      "PAPERCLIP_LOCAL_MEMORY_RESERVE_PERCENT",
-      "PAPERCLIP_LOCAL_MEMORY_GATE_COOLDOWN_SEC",
+      "WARDMOTE_MAX_CONCURRENT_LOCAL_RUNS",
+      "WARDMOTE_MAX_CONCURRENT_LOCAL_STARTS",
+      "WARDMOTE_LOCAL_START_WAIT_BYPASS_SEC",
+      "WARDMOTE_LOCAL_MEMORY_RESERVE_PERCENT",
+      "WARDMOTE_LOCAL_MEMORY_GATE_COOLDOWN_SEC",
     ]) {
       if (!(key in overrides)) delete env[key];
     }
@@ -667,7 +667,7 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
     await saveLocalRunLimits({ maxConcurrentRuns: 3, maxConcurrentStarts: 10, startWaitBypassSec: 600, memoryReservePercent: null, memoryGateCooldownSec: null });
     try {
       const heartbeat = heartbeatService(db, {
-        runtimeEnv: envWithoutLocalRunLimits({ PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS: "1" }),
+        runtimeEnv: envWithoutLocalRunLimits({ WARDMOTE_MAX_CONCURRENT_LOCAL_RUNS: "1" }),
       });
 
       await wakeAll(heartbeat, seeded);

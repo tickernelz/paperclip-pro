@@ -34,8 +34,8 @@ if (process.argv[2] === "--pi-no-key-probe") {
   }
   await writeFile(join(root, "report.json"), JSON.stringify({ error, closeError, settledMs, durationMs: Math.round(performance.now() - started), evidence }), { mode: 0o600 });
 } else {
-  const packageRoot = process.env.PAPERCLIP_TEST_PI_STARTUP_PACKAGE_ROOT;
-  const daemon = process.env.PAPERCLIP_TEST_PI_STARTUP_RUNNER_BINARY;
+  const packageRoot = process.env.WARDMOTE_TEST_PI_STARTUP_PACKAGE_ROOT;
+  const daemon = process.env.WARDMOTE_TEST_PI_STARTUP_RUNNER_BINARY;
   // 60 s cold admission + 20 s cleanup watchdog + 10 s test supervision.
   test("closed Pi Runner startup rejects admission and closes without a prompt", {
     skip: !packageRoot || !daemon, timeout: 90_000,

@@ -4,7 +4,6 @@ import os from "node:os";
 import path from "node:path";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import { legacyEnvKey } from "@tickernelz/wardmote-shared/env-aliases";
 import { resolvePaperclipHomeDir, resolvePaperclipInstanceId } from "../config/home.js";
 
 const execFileAsync = promisify(execFile);
@@ -82,11 +81,11 @@ function escapeRegExp(value: string): string {
 }
 
 export function resolveServiceShimPath(homeDir = os.homedir()): string {
-  return process.env.PAPERCLIP_SHIM_PATH?.trim() || path.join(homeDir, ".local", "bin", "paperclip-pro");
+  return process.env.WARDMOTE_SHIM_PATH?.trim() || path.join(homeDir, ".local", "bin", "paperclip-pro");
 }
 
 // The installed definition, not the current environment, is the truth
-// about what the service executes: PAPERCLIP_SHIM_PATH may have changed
+// about what the service executes: WARDMOTE_SHIM_PATH may have changed
 // or been unset since the definition was written.
 function unescapeSystemd(value: string): string {
   return value.replace(/\\\\|\\"|\$\$|%%/g, (m) =>
@@ -146,10 +145,10 @@ export const DEFAULT_SYSTEMD_MEMORY_LIMITS: SystemdMemoryLimits = {
 };
 
 export const SERVICE_MEMORY_OVERRIDE_KEYS = {
-  high: "PAPERCLIP_SERVICE_MEMORY_HIGH",
-  max: "PAPERCLIP_SERVICE_MEMORY_MAX",
-  swapMax: "PAPERCLIP_SERVICE_MEMORY_SWAP_MAX",
-  oomScoreAdjust: "PAPERCLIP_SERVICE_OOM_SCORE_ADJUST",
+  high: "WARDMOTE_SERVICE_MEMORY_HIGH",
+  max: "WARDMOTE_SERVICE_MEMORY_MAX",
+  swapMax: "WARDMOTE_SERVICE_MEMORY_SWAP_MAX",
+  oomScoreAdjust: "WARDMOTE_SERVICE_OOM_SCORE_ADJUST",
 } as const;
 
 const SYSTEMD_MEMORY_LIMIT_PATTERN = /^(?:infinity|(?:[1-9]\d?|100)%|[1-9]\d*[KMGT]?)$/;
@@ -178,7 +177,7 @@ export function parseServiceMemoryOverrides(content: string): Partial<SystemdMem
     if (separator < 1) continue;
     const key = line.slice(0, separator).trim();
     const value = line.slice(separator + 1).trim().replace(/^(["'])(.*)\1$/, "$2");
-    const legacyKey = legacyEnvKey(key);
+    const legacyKey = key;
     if (legacyKey !== key) {
       values.set(legacyKey, value);
       fromWardmote.add(legacyKey);
@@ -233,9 +232,6 @@ EnvironmentFile=-${escapeSystemdPath(resolveServiceEnvironmentFilePath(input.hom
 Environment="WARDMOTE_SERVICE_MANAGED=1"
 Environment="WARDMOTE_INSTANCE_ID=${escapeSystemd(input.instanceId)}"
 Environment="WARDMOTE_HOME=${escapeSystemd(input.homeDir)}"
-Environment="PAPERCLIP_SERVICE_MANAGED=1"
-Environment="PAPERCLIP_INSTANCE_ID=${escapeSystemd(input.instanceId)}"
-Environment="PAPERCLIP_HOME=${escapeSystemd(input.homeDir)}"
 WorkingDirectory=%h
 Restart=always
 RestartSec=5
@@ -268,9 +264,6 @@ export function renderLaunchdPlist(input: { instanceId: string; shimPath: string
     <key>WARDMOTE_SERVICE_MANAGED</key><string>1</string>
     <key>WARDMOTE_INSTANCE_ID</key><string>${escapeXml(input.instanceId)}</string>
     <key>WARDMOTE_HOME</key><string>${escapeXml(input.homeDir)}</string>
-    <key>PAPERCLIP_SERVICE_MANAGED</key><string>1</string>
-    <key>PAPERCLIP_INSTANCE_ID</key><string>${escapeXml(input.instanceId)}</string>
-    <key>PAPERCLIP_HOME</key><string>${escapeXml(input.homeDir)}</string>
   </dict>
   <key>RunAtLoad</key><true/>
   <key>KeepAlive</key><true/>
@@ -483,7 +476,7 @@ export function appendServiceUserBinDirs(searchPath: string | undefined, userHom
 }
 
 export async function assertForegroundRunAllowed(instanceId: string, force = false, detector: typeof detectServiceManager = detectServiceManager): Promise<void> {
-  if (force || process.env.PAPERCLIP_SERVICE_MANAGED === "1") return;
+  if (force || process.env.WARDMOTE_SERVICE_MANAGED === "1") return;
   const detection = await detector({ instanceId });
   if (!detection.supported) return;
   const status = await detection.manager.status();

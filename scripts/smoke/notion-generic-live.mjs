@@ -548,7 +548,7 @@ async function runSmoke({ config, chromium }) {
   const connectionName = `Notion generic self-test ${startedAt.toISOString()}`;
   const outputDirectory = process.env.NOTION_EVIDENCE_DIR
     ? path.resolve(process.env.NOTION_EVIDENCE_DIR)
-    : path.join(process.env.PAPERCLIP_RUN_SCRATCH_DIR || process.cwd(), `notion-generic-live-${runKey}`);
+    : path.join(process.env.WARDMOTE_RUN_SCRATCH_DIR || process.cwd(), `notion-generic-live-${runKey}`);
   await mkdir(outputDirectory, { recursive: true });
 
   const summary = {

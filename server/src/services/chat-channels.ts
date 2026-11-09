@@ -9971,7 +9971,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       !isSupportedTelegramWebhookBaseUrl(getWebhookPublicBaseUrl())
     ) {
       throw unprocessable(
-        "Telegram webhooks require PAPERCLIP_CHAT_WEBHOOK_PUBLIC_URL to use HTTPS on port 443, 80, 88, or 8443",
+        "Telegram webhooks require WARDMOTE_CHAT_WEBHOOK_PUBLIC_URL to use HTTPS on port 443, 80, 88, or 8443",
         {
           code: "chat_telegram_webhook_url_unsupported",
           provider: "telegram",

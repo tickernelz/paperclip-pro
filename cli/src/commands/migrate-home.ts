@@ -99,9 +99,9 @@ export async function migrateHomeCommand(
   const deps = { ...defaultDependencies, ...overrides };
   const source = path.join(deps.userHomeDir, LEGACY_HOME_DIRNAME);
   const target = path.join(deps.userHomeDir, WARDMOTE_HOME_DIRNAME);
-  const pinned = deps.env.PAPERCLIP_HOME?.trim();
+  const pinned = deps.env.WARDMOTE_HOME?.trim();
   if (pinned) {
-    throw new Error(`WARDMOTE_HOME/PAPERCLIP_HOME is set to ${pinned}. Unset it before migrating the default home.`);
+    throw new Error(`WARDMOTE_HOME is set to ${pinned}. Unset it before migrating the default home.`);
   }
   const sourceStat = fs.lstatSync(source, { throwIfNoEntry: false });
   if (!sourceStat) throw new Error(`Nothing to migrate: ${source} does not exist.`);

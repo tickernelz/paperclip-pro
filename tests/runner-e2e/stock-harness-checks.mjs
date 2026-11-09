@@ -217,7 +217,7 @@ export function main(args = process.argv.slice(2)) {
       ...(gate.testPattern ? ["--testNamePattern", gate.testPattern] : []),
       "--reporter=default", "--reporter=json", `--outputFile.json=${file}`],
     { cwd: resolve(root, gate.cwd),
-      env: gate.id === "SH-1" ? { ...env, PAPERCLIP_STOCK_PREFLIGHT_RUNNERD: runnerdBinary } : env,
+      env: gate.id === "SH-1" ? { ...env, WARDMOTE_STOCK_PREFLIGHT_RUNNERD: runnerdBinary } : env,
       stdio: "inherit", timeout: 10 * 60_000 });
     let report;
     try { report = JSON.parse(readFileSync(file, "utf8")); } catch { /* missing evidence fails closed below */ }

@@ -317,14 +317,14 @@ export function buildWorktreeEnvEntries(
   branding?: WorktreeUiBranding,
 ): Record<string, string> {
   return {
-    PAPERCLIP_HOME: paths.homeDir,
-    PAPERCLIP_INSTANCE_ID: paths.instanceId,
-    PAPERCLIP_CONFIG: paths.configPath,
-    PAPERCLIP_CONTEXT: paths.contextPath,
-    PAPERCLIP_IN_WORKTREE: "true",
-    PAPERCLIP_DB_BACKUP_ENABLED: "false",
-    ...(branding?.name ? { PAPERCLIP_WORKTREE_NAME: branding.name } : {}),
-    ...(branding?.color ? { PAPERCLIP_WORKTREE_COLOR: branding.color } : {}),
+    WARDMOTE_HOME: paths.homeDir,
+    WARDMOTE_INSTANCE_ID: paths.instanceId,
+    WARDMOTE_CONFIG: paths.configPath,
+    WARDMOTE_CONTEXT: paths.contextPath,
+    WARDMOTE_IN_WORKTREE: "true",
+    WARDMOTE_DB_BACKUP_ENABLED: "false",
+    ...(branding?.name ? { WARDMOTE_WORKTREE_NAME: branding.name } : {}),
+    ...(branding?.color ? { WARDMOTE_WORKTREE_COLOR: branding.color } : {}),
   };
 }
 

@@ -29,7 +29,7 @@ let home: string;
 const companyId = randomUUID(), agentId = randomUUID(), owner = "audit-owner";
 beforeAll(async () => {
   home = await mkdtemp(path.join(os.tmpdir(), "ai-legacy-audit-"));
-  vi.stubEnv("PAPERCLIP_HOME", home);
+  vi.stubEnv("WARDMOTE_HOME", home);
   database = await startEmbeddedPostgresTestDatabase("ai-legacy-audit-db-");
   db = createDb(database.connectionString);
   await db.insert(companies).values({ id: companyId, name: "Audit", issuePrefix: "AUD" });

@@ -8,12 +8,12 @@ import {
 } from "@tickernelz/wardmote-adapter-utils/wardmote-mcp";
 
 export {
-  PAPERCLIP_MCP_BIN,
-  PAPERCLIP_MCP_DEFAULT_TOOLSETS,
-  PAPERCLIP_MCP_HTTP_PATH,
-  PAPERCLIP_MCP_PACKAGE,
-  PAPERCLIP_MCP_SERVER_NAME,
-  PAPERCLIP_MCP_TOOLSETS_ENV,
+  WARDMOTE_MCP_BIN,
+  WARDMOTE_MCP_DEFAULT_TOOLSETS,
+  WARDMOTE_MCP_HTTP_PATH,
+  WARDMOTE_MCP_PACKAGE,
+  WARDMOTE_MCP_SERVER_NAME,
+  WARDMOTE_MCP_TOOLSETS_ENV,
   buildPaperclipMcpServerEntry,
   paperclipMcpEndpoint,
   paperclipMcpGuidance,
@@ -24,12 +24,12 @@ export {
   type PaperclipMcpCommand,
 } from "@tickernelz/wardmote-adapter-utils/wardmote-mcp";
 
-export const PAPERCLIP_MCP_UNAVAILABLE_CODE = "paperclip_mcp_unavailable";
-export const PAPERCLIP_MCP_CONNECT_FAILURE_RE = /MCP server \\?"paperclip\\?" failed to connect/;
-export const PAPERCLIP_MCP_CREDENTIAL_CODE = "paperclip_mcp_credential_rejected";
+export const WARDMOTE_MCP_UNAVAILABLE_CODE = "paperclip_mcp_unavailable";
+export const WARDMOTE_MCP_CONNECT_FAILURE_RE = /MCP server \\?"paperclip\\?" failed to connect/;
+export const WARDMOTE_MCP_CREDENTIAL_CODE = "paperclip_mcp_credential_rejected";
 const PROBE_TIMEOUT_MS = 30_000;
 const HTTP_PROBE_TIMEOUT_MS = 5_000;
-export const PAPERCLIP_MCP_UNAVAILABLE_RETRY_DELAY_MS = 45_000;
+export const WARDMOTE_MCP_UNAVAILABLE_RETRY_DELAY_MS = 45_000;
 
 export function paperclipMcpUnavailableRecovery(now: number = Date.now()): {
   errorFamily: "transient_upstream";
@@ -37,7 +37,7 @@ export function paperclipMcpUnavailableRecovery(now: number = Date.now()): {
 } {
   return {
     errorFamily: "transient_upstream",
-    retryNotBefore: new Date(now + PAPERCLIP_MCP_UNAVAILABLE_RETRY_DELAY_MS).toISOString(),
+    retryNotBefore: new Date(now + WARDMOTE_MCP_UNAVAILABLE_RETRY_DELAY_MS).toISOString(),
   };
 }
 
@@ -49,7 +49,7 @@ const TRANSIENT_NETWORK_CODES: Record<string, true> = {
   ETIMEDOUT: true,
   UND_ERR_CONNECT_TIMEOUT: true,
 };
-export const PAPERCLIP_MCP_TRANSIENT_FAILURE_RE =
+export const WARDMOTE_MCP_TRANSIENT_FAILURE_RE =
   /\b(?:timed out|timeout|ECONNREFUSED|ECONNRESET|ENOTFOUND|EAI_AGAIN|ETIMEDOUT|fetch failed)\b|\b(?:HTTP|status)\s*(?:5\d\d|429)\b/i;
 
 function isTransientNetworkError(error: unknown): boolean {

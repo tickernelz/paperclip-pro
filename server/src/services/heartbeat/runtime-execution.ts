@@ -1,7 +1,7 @@
 import { parseNativeSessionGoalControl } from "./scheduling.js";
 import { isHeartbeatRunTerminalStatus } from "./run-lifecycle.js";
 import {
-  PAPERCLIP_WAKE_PAYLOAD_KEY,
+  WARDMOTE_WAKE_PAYLOAD_KEY,
   configuredPaperclipApiBaseUrl,
   buildPaperclipRuntimeMcpServers,
   createAdapterRuntimeToolAccess,
@@ -259,7 +259,7 @@ export async function executeHeartbeatRuntime(db: Db, input: HeartbeatRuntimeExe
         runId: run.id,
         adapterType: agent.adapterType,
       },
-      "local agent jwt secret missing or invalid; running without injected PAPERCLIP_API_KEY",
+      "local agent jwt secret missing or invalid; running without injected WARDMOTE_API_KEY",
     );
   }
   let adapterFinalizeOutcome: "succeeded" | "failed" | null = null;
@@ -637,16 +637,16 @@ export async function executeHeartbeatRuntime(db: Db, input: HeartbeatRuntimeExe
                 ...(input.instructions.instructionCopy && isAgentDirectoryCopy(input.instructions.instructionCopy) ? { AGENT_HOME: input.instructions.instructionCopy.executionRoot } : {}),
                 ...(nativeMcpServer
                   ? {
-                      PAPERCLIP_NATIVE_MCP_NAME: nativeMcpServer.name,
-                      PAPERCLIP_NATIVE_MCP_URL: nativeMcpServer.url,
-                      PAPERCLIP_NATIVE_MCP_TOKEN: nativeMcpServer.token,
+                      WARDMOTE_NATIVE_MCP_NAME: nativeMcpServer.name,
+                      WARDMOTE_NATIVE_MCP_URL: nativeMcpServer.url,
+                      WARDMOTE_NATIVE_MCP_TOKEN: nativeMcpServer.token,
                     }
                   : {}),
                 ...(providerTraceCapture
                   ? {
-                      PAPERCLIP_PROVIDER_TRACE_PATH:
+                      WARDMOTE_PROVIDER_TRACE_PATH:
                         providerTraceCapture.path,
-                      PAPERCLIP_PROVIDER_TRACE_MAX_BYTES: String(
+                      WARDMOTE_PROVIDER_TRACE_MAX_BYTES: String(
                         PROVIDER_TRACE_MAX_BYTES,
                       ),
                     }
@@ -657,21 +657,21 @@ export async function executeHeartbeatRuntime(db: Db, input: HeartbeatRuntimeExe
                 nativeRuntimeResolution,
               ),
               runnerPublicUrl:
-                runtimeEnv.PAPERCLIP_RUNNER_PUBLIC_URL?.trim() || null,
+                runtimeEnv.WARDMOTE_RUNNER_PUBLIC_URL?.trim() || null,
               runnerCaBundlePath:
-                runtimeEnv.PAPERCLIP_RUNNER_CA_BUNDLE_PATH?.trim() ||
+                runtimeEnv.WARDMOTE_RUNNER_CA_BUNDLE_PATH?.trim() ||
                 null,
               runnerRemoteBinaryPath:
-                runtimeEnv.PAPERCLIP_RUNNER_REMOTE_BINARY_PATH?.trim() ||
+                runtimeEnv.WARDMOTE_RUNNER_REMOTE_BINARY_PATH?.trim() ||
                 null,
               runnerRemoteCodexPath:
-                runtimeEnv.PAPERCLIP_RUNNER_REMOTE_CODEX_PATH?.trim() ||
+                runtimeEnv.WARDMOTE_RUNNER_REMOTE_CODEX_PATH?.trim() ||
                 null,
               runnerRemoteCodexNpmSpec:
-                runtimeEnv.PAPERCLIP_RUNNER_REMOTE_CODEX_NPM_SPEC?.trim() ||
+                runtimeEnv.WARDMOTE_RUNNER_REMOTE_CODEX_NPM_SPEC?.trim() ||
                 null,
               runnerRemoteProviderPackPath:
-                runtimeEnv.PAPERCLIP_RUNNER_REMOTE_PROVIDER_PACK_PATH?.trim() ||
+                runtimeEnv.WARDMOTE_RUNNER_REMOTE_PROVIDER_PACK_PATH?.trim() ||
                 null,
               stopTaskForReassignment: async (target) => {
                 await settleLiveRunnerGoalBeforeInterrupt(db, target);
@@ -728,8 +728,8 @@ export async function executeHeartbeatRuntime(db: Db, input: HeartbeatRuntimeExe
         ...context,
         ...(legacyQuestionResponse
           ? {
-              [PAPERCLIP_WAKE_PAYLOAD_KEY]: {
-                ...parseObject(context[PAPERCLIP_WAKE_PAYLOAD_KEY]),
+              [WARDMOTE_WAKE_PAYLOAD_KEY]: {
+                ...parseObject(context[WARDMOTE_WAKE_PAYLOAD_KEY]),
                 questionResponse: legacyQuestionResponse,
               },
             }

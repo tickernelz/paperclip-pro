@@ -445,7 +445,7 @@ describe("P6-25 pre-result native session recovery", () => {
         },
       }));
       const heartbeat = heartbeatService(db, {
-        runtimeEnv: { PAPERCLIP_INSTANCE_ID: "observed-owner-test" },
+        runtimeEnv: { WARDMOTE_INSTANCE_ID: "observed-owner-test" },
         nativeSessionBackendFactory: backendFactory,
       });
 
@@ -966,7 +966,7 @@ describe.each(["unchanged", "newer_active", "stale_idle"] as const)(
         await drainHeartbeatRunsToQuiescence(
           db,
           heartbeatService(db, {
-            runtimeEnv: { PAPERCLIP_INSTANCE_ID: "phase6-recovery-test" },
+            runtimeEnv: { WARDMOTE_INSTANCE_ID: "phase6-recovery-test" },
             nativeSessionBackendFactory: () => backend,
           }),
         );
@@ -1093,7 +1093,7 @@ describe.each(["unchanged", "newer_active", "stale_idle"] as const)(
         return input.binding.runId === runId ? backend : freshBackend(input);
       });
       const heartbeat = heartbeatService(db, {
-        runtimeEnv: { PAPERCLIP_INSTANCE_ID: "phase6-recovery-test" },
+        runtimeEnv: { WARDMOTE_INSTANCE_ID: "phase6-recovery-test" },
         nativeSessionBackendFactory: backendFactory,
       });
       if (newerRequest) {

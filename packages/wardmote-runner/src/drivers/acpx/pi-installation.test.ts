@@ -18,8 +18,8 @@ const candidate = (): AcpxReleaseProfile => ({ ...QUALIFIED_ACPX_PROFILES.pi });
 async function fixture() {
   const root = await mkdtemp(join(tmpdir(), "pi-installation-test-")); roots.push(root);
   await writeFile(join(root, "package.json"), JSON.stringify({ name: "@tickernelz/wardmote-runner" }));
-  vi.stubEnv("PAPERCLIP_ACPX_PROVIDER_PACKAGE_ROOT", root);
-  vi.stubEnv("PAPERCLIP_ACPX_PROVIDER_PACKAGE_MANIFEST", join(root, "package.json"));
+  vi.stubEnv("WARDMOTE_ACPX_PROVIDER_PACKAGE_ROOT", root);
+  vi.stubEnv("WARDMOTE_ACPX_PROVIDER_PACKAGE_MANIFEST", join(root, "package.json"));
   const assets = join(root, "provider-assets/pi", `${process.platform}-${process.arch}`);
   await mkdir(join(assets, "runtime"), { recursive: true });
   return { root, assets };
@@ -151,18 +151,18 @@ describe("Pi installation factory", () => {
     }));
     await expect(verifyPiInstallation(candidate())).rejects.toThrow("trusted target pin");
   });
-  it.runIf(process.env.PAPERCLIP_TEST_PI_DISTRIBUTION_ROOT)("launches the actual closed Pi snapshot with bound subprocess paths", async () => {
+  it.runIf(process.env.WARDMOTE_TEST_PI_DISTRIBUTION_ROOT)("launches the actual closed Pi snapshot with bound subprocess paths", async () => {
     const { root, assets } = await fixture();
-    await cp(process.env.PAPERCLIP_TEST_PI_DISTRIBUTION_ROOT!, assets, { recursive: true });
+    await cp(process.env.WARDMOTE_TEST_PI_DISTRIBUTION_ROOT!, assets, { recursive: true });
     const workspace = join(root, "workspace"); const agentHome = join(root, "agent");
     await mkdir(workspace); await mkdir(agentHome);
     const installation = await verifyPiInstallation(candidate());
     const command = await installation.openCommand();
     const child = command.spawn([], { cwd: workspace, env: {
       PATH: "/usr/bin:/bin", HOME: agentHome, PI_CODING_AGENT_DIR: agentHome,
-      PAPERCLIP_ACPX_ISOLATED_CONTEXT: "1", PAPERCLIP_PI_READ_ONLY: "1",
-      PAPERCLIP_PI_READ_ROOTS: "[]", PAPERCLIP_PI_PROTECTED_ROOTS: JSON.stringify([agentHome]),
-      PAPERCLIP_PI_ENTRYPOINT: "/unverified/ignored.js", PI_TELEMETRY: "0",
+      WARDMOTE_ACPX_ISOLATED_CONTEXT: "1", WARDMOTE_PI_READ_ONLY: "1",
+      WARDMOTE_PI_READ_ROOTS: "[]", WARDMOTE_PI_PROTECTED_ROOTS: JSON.stringify([agentHome]),
+      WARDMOTE_PI_ENTRYPOINT: "/unverified/ignored.js", PI_TELEMETRY: "0",
     } });
     let stderr = ""; child.stderr!.on("data", chunk => { stderr += String(chunk); });
     const pending = new Map<number, { resolve(value: any): void; reject(error: Error): void }>();

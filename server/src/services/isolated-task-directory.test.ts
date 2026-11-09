@@ -47,7 +47,7 @@ describe("isolated task directories", () => {
 
   async function setup() {
     root = await mkdtemp(path.join(os.tmpdir(), "paperclip-isolated-task-"));
-    vi.stubEnv("PAPERCLIP_HOME", root);
+    vi.stubEnv("WARDMOTE_HOME", root);
     return { companyId: "company-1", issueId: "issue-1" };
   }
 

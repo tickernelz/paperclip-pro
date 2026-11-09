@@ -20,7 +20,7 @@ describe("remote connector lifecycle", () => {
   let keyDir: string;
   beforeAll(async () => {
     keyDir = await mkdtemp(join(tmpdir(), "mcp-connector-secrets-"));
-    vi.stubEnv("PAPERCLIP_SECRETS_MASTER_KEY_FILE", join(keyDir, "key"));
+    vi.stubEnv("WARDMOTE_SECRETS_MASTER_KEY_FILE", join(keyDir, "key"));
     fixture = await startEmbeddedPostgresTestDatabase("mcp-connectors-test-");
     db = createDb(fixture.connectionString);
   });
@@ -56,22 +56,22 @@ describe("remote connector lifecycle", () => {
     app.use((req, _res, next) => { req.actor = { type: "board", userId: actor.actorId, source: "local_implicit", isInstanceAdmin: true }; next(); });
     app.use("/api", toolAccessRoutes(db, { paperclipCloudConnector: null }));
 
-    const publicBaseUrlEnv = process.env.PAPERCLIP_AUTH_PUBLIC_BASE_URL;
-    const otherPublicUrlNames = ["BETTER_AUTH_URL", "BETTER_AUTH_BASE_URL", "PAPERCLIP_PUBLIC_URL", "PAPERCLIP_MANAGED_RUNTIME_PUBLIC_URL"] as const;
+    const publicBaseUrlEnv = process.env.WARDMOTE_AUTH_PUBLIC_BASE_URL;
+    const otherPublicUrlNames = ["BETTER_AUTH_URL", "BETTER_AUTH_BASE_URL", "WARDMOTE_PUBLIC_URL", "WARDMOTE_MANAGED_RUNTIME_PUBLIC_URL"] as const;
     const otherPublicUrlEnv = Object.fromEntries(otherPublicUrlNames.map((name) => [name, process.env[name]]));
     try {
       for (const name of otherPublicUrlNames) process.env[name] = "";
-      process.env.PAPERCLIP_AUTH_PUBLIC_BASE_URL = "https://paperclip.example.test";
+      process.env.WARDMOTE_AUTH_PUBLIC_BASE_URL = "https://paperclip.example.test";
       const configured = await request(app).get(`/api/companies/${org.id}/tools/gallery`);
       expect(configured.status).toBe(200);
       expect(configured.body.oauthCallbackUrl).toBe("https://paperclip.example.test/api/tools/oauth/callback");
 
-      process.env.PAPERCLIP_AUTH_PUBLIC_BASE_URL = "http://127.0.0.1:3105";
+      process.env.WARDMOTE_AUTH_PUBLIC_BASE_URL = "http://127.0.0.1:3105";
       const configuredLoopback = await request(app).get(`/api/companies/${org.id}/tools/gallery`);
       expect(configuredLoopback.status).toBe(200);
       expect(configuredLoopback.body.oauthCallbackUrl).toBe("http://127.0.0.1:3105/api/tools/oauth/callback");
 
-      delete process.env.PAPERCLIP_AUTH_PUBLIC_BASE_URL;
+      delete process.env.WARDMOTE_AUTH_PUBLIC_BASE_URL;
       const inferredLoopback = await request(app)
         .get(`/api/companies/${org.id}/tools/gallery`)
         .set("host", "127.0.0.1:3105");
@@ -84,8 +84,8 @@ describe("remote connector lifecycle", () => {
       expect(unsupported.status).toBe(200);
       expect(unsupported.body).not.toHaveProperty("oauthCallbackUrl");
     } finally {
-      if (publicBaseUrlEnv === undefined) delete process.env.PAPERCLIP_AUTH_PUBLIC_BASE_URL;
-      else process.env.PAPERCLIP_AUTH_PUBLIC_BASE_URL = publicBaseUrlEnv;
+      if (publicBaseUrlEnv === undefined) delete process.env.WARDMOTE_AUTH_PUBLIC_BASE_URL;
+      else process.env.WARDMOTE_AUTH_PUBLIC_BASE_URL = publicBaseUrlEnv;
       for (const name of otherPublicUrlNames) {
         const value = otherPublicUrlEnv[name];
         if (value === undefined) delete process.env[name];

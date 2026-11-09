@@ -134,8 +134,8 @@ export function createToolRuntimeSupervisor(db: Db, options: ToolRuntimeSupervis
   const deploymentExposure = options.deploymentExposure ?? "private";
   const trustedLocalStdioRuntimeHost =
     options.trustedLocalStdioRuntimeHost
-    ?? process.env.PAPERCLIP_TRUSTED_MCP_RUNTIME_HOST
-    ?? process.env.PAPERCLIP_TOOL_RUNTIME_TRUSTED_HOST
+    ?? process.env.WARDMOTE_TRUSTED_MCP_RUNTIME_HOST
+    ?? process.env.WARDMOTE_TOOL_RUNTIME_TRUSTED_HOST
     ?? null;
   const hostId = options.hostId ?? trustedLocalStdioRuntimeHost ?? process.env.HOSTNAME ?? "local-host";
   const idleTtlMs = numberOption(options.idleTtlMs, DEFAULT_IDLE_TTL_MS, 1);

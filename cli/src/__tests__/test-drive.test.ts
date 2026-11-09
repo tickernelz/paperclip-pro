@@ -136,9 +136,9 @@ describe("test-drive data isolation", () => {
   it("discards inherited Wardmote routing", async () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-test-drive-env-"));
     cleanupDirectories.push(root);
-    process.env.PAPERCLIP_HOME = "/normal/home";
-    process.env.PAPERCLIP_CONFIG = "/normal/config.json";
-    process.env.PAPERCLIP_IN_WORKTREE = "true";
+    process.env.WARDMOTE_HOME = "/normal/home";
+    process.env.WARDMOTE_CONFIG = "/normal/config.json";
+    process.env.WARDMOTE_IN_WORKTREE = "true";
     process.env.DATABASE_URL = "postgres://normal-instance";
 
     const prepared = await prepareTestDriveEnvironment(
@@ -148,15 +148,15 @@ describe("test-drive data isolation", () => {
 
     expect(prepared.dataDir).toBe(path.resolve(root));
     expect(prepared.linkedWorktree).toBe(false);
-    expect(process.env.PAPERCLIP_HOME).toBe(path.resolve(root));
-    expect(process.env.PAPERCLIP_CONFIG).toBe(
+    expect(process.env.WARDMOTE_HOME).toBe(path.resolve(root));
+    expect(process.env.WARDMOTE_CONFIG).toBe(
       path.join(path.resolve(root), "instances", "default", "config.json"),
     );
-    expect(process.env.PAPERCLIP_IN_WORKTREE).toBe("false");
-    expect(process.env.PAPERCLIP_DISABLE_CWD_ENV_FILE).toBe("true");
-    expect(process.env.PAPERCLIP_DEPLOYMENT_MODE).toBe("local_trusted");
-    expect(process.env.PAPERCLIP_DEPLOYMENT_EXPOSURE).toBe("private");
-    expect(process.env.PAPERCLIP_BIND).toBe("loopback");
+    expect(process.env.WARDMOTE_IN_WORKTREE).toBe("false");
+    expect(process.env.WARDMOTE_DISABLE_CWD_ENV_FILE).toBe("true");
+    expect(process.env.WARDMOTE_DEPLOYMENT_MODE).toBe("local_trusted");
+    expect(process.env.WARDMOTE_DEPLOYMENT_EXPOSURE).toBe("private");
+    expect(process.env.WARDMOTE_BIND).toBe("loopback");
     expect(process.env.HOST).toBe("127.0.0.1");
     expect(process.env.DATABASE_URL).toBeUndefined();
     expect(Number(process.env.PORT)).toBeGreaterThanOrEqual(3100);
@@ -352,9 +352,9 @@ describe("test-drive foreground lifecycle", () => {
   };
 
   it("skips service-manager integration for an auto-created directory and opens after initialization", async () => {
-    process.env.PAPERCLIP_HOME = "/tmp/test-drive-lifecycle";
-    process.env.PAPERCLIP_INSTANCE_ID = "default";
-    process.env.PAPERCLIP_IN_WORKTREE = "false";
+    process.env.WARDMOTE_HOME = "/tmp/test-drive-lifecycle";
+    process.env.WARDMOTE_INSTANCE_ID = "default";
+    process.env.WARDMOTE_IN_WORKTREE = "false";
     const events: string[] = [];
     let runOptions: RunOptions | undefined;
     const api = {
@@ -391,9 +391,9 @@ describe("test-drive foreground lifecycle", () => {
   });
 
   it("retains the managed-instance collision guard for an explicitly reused directory", async () => {
-    process.env.PAPERCLIP_HOME = "/tmp/test-drive-reused";
-    process.env.PAPERCLIP_INSTANCE_ID = "default";
-    process.env.PAPERCLIP_IN_WORKTREE = "false";
+    process.env.WARDMOTE_HOME = "/tmp/test-drive-reused";
+    process.env.WARDMOTE_INSTANCE_ID = "default";
+    process.env.WARDMOTE_IN_WORKTREE = "false";
     let runOptions: RunOptions | undefined;
     const api = {
       get: vi.fn(async <T>() => [company("existing", "Existing")] as T),
@@ -415,9 +415,9 @@ describe("test-drive foreground lifecycle", () => {
   });
 
   it("honors --no-browser after successful initialization", async () => {
-    process.env.PAPERCLIP_HOME = "/tmp/test-drive-no-browser";
-    process.env.PAPERCLIP_INSTANCE_ID = "default";
-    process.env.PAPERCLIP_IN_WORKTREE = "false";
+    process.env.WARDMOTE_HOME = "/tmp/test-drive-no-browser";
+    process.env.WARDMOTE_INSTANCE_ID = "default";
+    process.env.WARDMOTE_IN_WORKTREE = "false";
     const api = {
       get: vi.fn(async <T>() => [company("existing", "Existing")] as T),
       post: vi.fn(),

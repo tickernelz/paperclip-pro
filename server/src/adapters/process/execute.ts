@@ -16,7 +16,6 @@ import {
   resolveCommandForLogs,
   runChildProcess,
 } from "../utils.js";
-import { legacyEnvKey } from "@tickernelz/wardmote-shared/env-aliases";
 
 export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExecutionResult> {
   let spawned = false;
@@ -50,18 +49,18 @@ async function executeProcess(ctx: AdapterExecutionContext): Promise<AdapterExec
   };
   for (const [k, v] of Object.entries(envConfig)) {
     if (typeof v !== "string") continue;
-    // Runtime PAPERCLIP_* always wins over config, and PAPERCLIP_API_KEY is
+    // Runtime WARDMOTE_* always wins over config, and WARDMOTE_API_KEY is
     // never accepted from config — the harness-minted run token is the only
-    // source. Other PAPERCLIP_* keys Paperclip did not assign flow through.
+    // source. Other WARDMOTE_* keys Paperclip did not assign flow through.
     if (isForbiddenConfigEnvKey(k)) continue;
-    if (isPaperclipRuntimeEnvKey(k) && legacyEnvKey(k) in env) continue;
+    if (isPaperclipRuntimeEnvKey(k) && k in env) continue;
     env[k] = v;
   }
-  env.PAPERCLIP_RUN_ID = runId;
-  if (authToken) env.PAPERCLIP_API_KEY = authToken;
+  env.WARDMOTE_RUN_ID = runId;
+  if (authToken) env.WARDMOTE_API_KEY = authToken;
   // runtimeEnv is only used to resolve the command path and log HOME below;
   // the child env is built inside runChildProcess from
-  // sanitizeInheritedPaperclipEnv(process.env) + env, so a PAPERCLIP_API_KEY
+  // sanitizeInheritedPaperclipEnv(process.env) + env, so a WARDMOTE_API_KEY
   // on the server process never reaches the child.
   const runtimeEnv = ensurePathInEnv({ ...process.env, ...env });
   const resolvedCommand = await resolveCommandForLogs(command, cwd, runtimeEnv);
@@ -87,14 +86,14 @@ async function executeProcess(ctx: AdapterExecutionContext): Promise<AdapterExec
   const instructions = parseObject(ctx.context.connectionInstructions);
   let instructionsDirectory: string | undefined;
   // Override configured/inherited paths even when the connection was removed.
-  env.PAPERCLIP_CONNECTION_INSTRUCTIONS_FILE = "";
+  env.WARDMOTE_CONNECTION_INSTRUCTIONS_FILE = "";
   let proc: Awaited<ReturnType<typeof runChildProcess>>;
   try {
     if (typeof instructions.text === "string" && instructions.text) {
       instructionsDirectory = await mkdtemp(join(tmpdir(), "paperclip-connection-instructions-"));
       const instructionsFile = join(instructionsDirectory, "instructions.json");
       await writeFile(instructionsFile, JSON.stringify(instructions), { mode: 0o600 });
-      env.PAPERCLIP_CONNECTION_INSTRUCTIONS_FILE = instructionsFile;
+      env.WARDMOTE_CONNECTION_INSTRUCTIONS_FILE = instructionsFile;
     }
     proc = await runChildProcess(runId, command, args, {
       cwd, env, timeoutSec, graceSec, onLog, onSpawn: ctx.onSpawn,

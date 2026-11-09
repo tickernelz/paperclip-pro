@@ -945,7 +945,7 @@ export function GitHubChatPreview({
                       conversation. PR events can ask the same agent to review
                       changes.
                     </Heading>
-                    <GitHubSetupPrompt instanceUrl={import.meta.env.VITE_PAPERCLIP_INSTANCE_URL ?? ""} />
+                    <GitHubSetupPrompt instanceUrl={import.meta.env.VITE_WARDMOTE_INSTANCE_URL ?? ""} />
                     <Select
                       disabled={draft.connected}
                       label="Paperclip agent"

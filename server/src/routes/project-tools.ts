@@ -22,7 +22,7 @@ export function projectToolRoutes(db: Db) {
     try {
       if (!definitions.some((tool: { name?: string }) => tool.name === params?.name)) throw forbidden("Tool is unavailable in this mode");
       if (params.name === "create_project" || params.name === "create_task") await assertOpenwaRunMay(db, context.run, "create_task", { consume: false });
-      const apiUrl = process.env.PAPERCLIP_API_URL;
+      const apiUrl = process.env.WARDMOTE_API_URL;
       if (!apiUrl) throw new Error("Paperclip API origin is unavailable");
       const result = await callProjectTool({
         name: params.name, arguments: params.arguments ?? {}, apiUrl,

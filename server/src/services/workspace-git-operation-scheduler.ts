@@ -210,10 +210,10 @@ export function workspaceGitSchedulerOptionsFromEnv(
   "concurrency" | "queueCapacity" | "timeoutMs" | "defaultCacheTtlMs"
 >> {
   return {
-    concurrency: envInteger(env, "PAPERCLIP_WORKSPACE_GIT_SCAN_CONCURRENCY", DEFAULT_CONCURRENCY, 1, 16),
-    queueCapacity: envInteger(env, "PAPERCLIP_WORKSPACE_GIT_SCAN_QUEUE_CAPACITY", DEFAULT_QUEUE_CAPACITY, 0, 1_024),
-    timeoutMs: envInteger(env, "PAPERCLIP_WORKSPACE_GIT_SCAN_TIMEOUT_MS", DEFAULT_TIMEOUT_MS, 100, 120_000),
-    defaultCacheTtlMs: envInteger(env, "PAPERCLIP_WORKSPACE_GIT_SCAN_CACHE_TTL_MS", DEFAULT_CACHE_TTL_MS, 0, 60_000),
+    concurrency: envInteger(env, "WARDMOTE_WORKSPACE_GIT_SCAN_CONCURRENCY", DEFAULT_CONCURRENCY, 1, 16),
+    queueCapacity: envInteger(env, "WARDMOTE_WORKSPACE_GIT_SCAN_QUEUE_CAPACITY", DEFAULT_QUEUE_CAPACITY, 0, 1_024),
+    timeoutMs: envInteger(env, "WARDMOTE_WORKSPACE_GIT_SCAN_TIMEOUT_MS", DEFAULT_TIMEOUT_MS, 100, 120_000),
+    defaultCacheTtlMs: envInteger(env, "WARDMOTE_WORKSPACE_GIT_SCAN_CACHE_TTL_MS", DEFAULT_CACHE_TTL_MS, 0, 60_000),
   };
 }
 

@@ -98,7 +98,7 @@ interface PluginCompanyOptions extends PluginJsonOptions {
 function requireCompanyId(ctx: { companyId?: string }): string {
   if (!ctx.companyId) {
     throw new Error(
-      "Company ID is required. Pass --company-id, set PAPERCLIP_COMPANY_ID, or set context profile companyId via `wardmote context set`.",
+      "Company ID is required. Pass --company-id, set WARDMOTE_COMPANY_ID, or set context profile companyId via `wardmote context set`.",
     );
   }
   return ctx.companyId;
@@ -219,7 +219,7 @@ export function formatTargetDiagnostics(diag: TargetDiagnostics): string {
     lines.push(pc.yellow(`  health: unreachable${diag.error ? ` (${diag.error.split("\n")[0]})` : ""}`));
     lines.push(
       pc.dim(
-        `  Verify the right instance is running, then pass ${pc.cyan("--api-base <url>")} or set ${pc.cyan("PAPERCLIP_API_URL")} if it lives elsewhere.`,
+        `  Verify the right instance is running, then pass ${pc.cyan("--api-base <url>")} or set ${pc.cyan("WARDMOTE_API_URL")} if it lives elsewhere.`,
       ),
     );
     return lines.join("\n");

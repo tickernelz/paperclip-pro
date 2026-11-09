@@ -19,7 +19,7 @@ interface LocalEncryptedMaterial extends StoredSecretVersionMaterial {
 }
 
 function resolveMasterKeyFilePath() {
-  const fromEnv = process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE;
+  const fromEnv = process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE;
   if (fromEnv && fromEnv.trim().length > 0) return path.resolve(fromEnv.trim());
   return resolveDefaultSecretsKeyFilePath();
 }
@@ -46,12 +46,12 @@ function decodeMasterKey(raw: string): Buffer | null {
 }
 
 function loadOrCreateMasterKey(allowCreate = true): Buffer {
-  const envKeyRaw = process.env.PAPERCLIP_SECRETS_MASTER_KEY;
+  const envKeyRaw = process.env.WARDMOTE_SECRETS_MASTER_KEY;
   if (envKeyRaw && envKeyRaw.trim().length > 0) {
     const fromEnv = decodeMasterKey(envKeyRaw);
     if (!fromEnv) {
       throw badRequest(
-        "Invalid PAPERCLIP_SECRETS_MASTER_KEY (expected 32-byte base64, 64-char hex, or raw 32-char string)",
+        "Invalid WARDMOTE_SECRETS_MASTER_KEY (expected 32-byte base64, 64-char hex, or raw 32-char string)",
       );
     }
     return fromEnv;
@@ -115,20 +115,20 @@ function prepareManagedVersion(value: string): PreparedSecretVersion {
 }
 
 async function inspectLocalEncryptedHealth(): Promise<SecretProviderHealthCheck> {
-  const envKeyRaw = process.env.PAPERCLIP_SECRETS_MASTER_KEY;
+  const envKeyRaw = process.env.WARDMOTE_SECRETS_MASTER_KEY;
   if (envKeyRaw && envKeyRaw.trim().length > 0) {
     if (!decodeMasterKey(envKeyRaw)) {
       return {
         provider: "local_encrypted",
         status: "error",
         message:
-          "PAPERCLIP_SECRETS_MASTER_KEY is invalid; expected 32-byte base64, 64-char hex, or raw 32-char string",
+          "WARDMOTE_SECRETS_MASTER_KEY is invalid; expected 32-byte base64, 64-char hex, or raw 32-char string",
       };
     }
     return {
       provider: "local_encrypted",
       status: "ok",
-      message: "Local encrypted provider is using PAPERCLIP_SECRETS_MASTER_KEY",
+      message: "Local encrypted provider is using WARDMOTE_SECRETS_MASTER_KEY",
       backupGuidance: [
         "Back up the configured master key separately from the database.",
         "A restore needs both the database metadata and the same master key.",

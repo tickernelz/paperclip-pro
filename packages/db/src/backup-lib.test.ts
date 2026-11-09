@@ -85,8 +85,8 @@ describeEmbeddedPostgres("runDatabaseBackup", () => {
     const historyBytes = gzipSync("SELECT 'history';");
     fs.writeFileSync(history, historyBytes);
     fs.utimesSync(history, new Date(0), new Date(0));
-    const previous = process.env.PAPERCLIP_PG_DUMP_PATH;
-    process.env.PAPERCLIP_PG_DUMP_PATH = executable;
+    const previous = process.env.WARDMOTE_PG_DUMP_PATH;
+    process.env.WARDMOTE_PG_DUMP_PATH = executable;
     const failure = new Error("fixture archive fsync failed");
     let verified = 0;
     try {
@@ -103,8 +103,8 @@ describeEmbeddedPostgres("runDatabaseBackup", () => {
       expect(fs.readFileSync(history)).toEqual(historyBytes);
       expect(fs.readdirSync(backupDir).filter(name => name.endsWith(".sql.gz"))).toEqual(["paperclip-history.sql.gz"]);
     } finally {
-      if (previous === undefined) delete process.env.PAPERCLIP_PG_DUMP_PATH;
-      else process.env.PAPERCLIP_PG_DUMP_PATH = previous;
+      if (previous === undefined) delete process.env.WARDMOTE_PG_DUMP_PATH;
+      else process.env.WARDMOTE_PG_DUMP_PATH = previous;
     }
   }, EMBEDDED_POSTGRES_TEST_TIMEOUT_MS);
 
@@ -549,10 +549,10 @@ describeEmbeddedPostgres("runDatabaseBackup", () => {
       const backupDir = createTempDir("paperclip-db-copy-fk-backup-");
       const sourceSql = postgres(sourceConnectionString, { max: 1, onnotice: () => {} });
       const restoreSql = postgres(restoreConnectionString, { max: 1, onnotice: () => {} });
-      const originalPgDumpPath = process.env.PAPERCLIP_PG_DUMP_PATH;
-      const originalPsqlPath = process.env.PAPERCLIP_PSQL_PATH;
-      process.env.PAPERCLIP_PG_DUMP_PATH = "/bin/false";
-      process.env.PAPERCLIP_PSQL_PATH = "/bin/false";
+      const originalPgDumpPath = process.env.WARDMOTE_PG_DUMP_PATH;
+      const originalPsqlPath = process.env.WARDMOTE_PSQL_PATH;
+      process.env.WARDMOTE_PG_DUMP_PATH = "/bin/false";
+      process.env.WARDMOTE_PSQL_PATH = "/bin/false";
 
       try {
         await sourceSql.unsafe(`
@@ -603,14 +603,14 @@ describeEmbeddedPostgres("runDatabaseBackup", () => {
         expect(rows).toEqual([{ note: "child emitted before parent", name: "parent" }]);
       } finally {
         if (originalPgDumpPath === undefined) {
-          delete process.env.PAPERCLIP_PG_DUMP_PATH;
+          delete process.env.WARDMOTE_PG_DUMP_PATH;
         } else {
-          process.env.PAPERCLIP_PG_DUMP_PATH = originalPgDumpPath;
+          process.env.WARDMOTE_PG_DUMP_PATH = originalPgDumpPath;
         }
         if (originalPsqlPath === undefined) {
-          delete process.env.PAPERCLIP_PSQL_PATH;
+          delete process.env.WARDMOTE_PSQL_PATH;
         } else {
-          process.env.PAPERCLIP_PSQL_PATH = originalPsqlPath;
+          process.env.WARDMOTE_PSQL_PATH = originalPsqlPath;
         }
         await sourceSql.end();
         await restoreSql.end();

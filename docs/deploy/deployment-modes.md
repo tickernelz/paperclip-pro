@@ -84,5 +84,5 @@ pnpm wardmote configure --section server
 Runtime override via environment variable:
 
 ```sh
-PAPERCLIP_DEPLOYMENT_MODE=authenticated PAPERCLIP_BIND=lan pnpm wardmote run
+WARDMOTE_DEPLOYMENT_MODE=authenticated WARDMOTE_BIND=lan pnpm wardmote run
 ```

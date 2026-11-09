@@ -65,7 +65,7 @@ describeEmbeddedPostgres("cases routes", () => {
 
   let db!: ReturnType<typeof createDb>;
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
-  const previousAgentJwtSecret = process.env.PAPERCLIP_AGENT_JWT_SECRET;
+  const previousAgentJwtSecret = process.env.WARDMOTE_AGENT_JWT_SECRET;
 
   const storage: StorageService = {
     provider: "local_disk",
@@ -90,7 +90,7 @@ describeEmbeddedPostgres("cases routes", () => {
   };
 
   beforeAll(async () => {
-    process.env.PAPERCLIP_AGENT_JWT_SECRET = "cases-routes-test-secret";
+    process.env.WARDMOTE_AGENT_JWT_SECRET = "cases-routes-test-secret";
     tempDb = await startEmbeddedPostgresTestDatabase("paperclip-cases-routes-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
@@ -120,9 +120,9 @@ describeEmbeddedPostgres("cases routes", () => {
   afterAll(async () => {
     await tempDb?.cleanup();
     if (previousAgentJwtSecret === undefined) {
-      delete process.env.PAPERCLIP_AGENT_JWT_SECRET;
+      delete process.env.WARDMOTE_AGENT_JWT_SECRET;
     } else {
-      process.env.PAPERCLIP_AGENT_JWT_SECRET = previousAgentJwtSecret;
+      process.env.WARDMOTE_AGENT_JWT_SECRET = previousAgentJwtSecret;
     }
   });
 

@@ -22,16 +22,16 @@ let previousPaperclipHome: string | undefined;
 let previousServiceManaged: string | undefined;
 
 beforeEach(() => {
-  previousPaperclipHome = process.env.PAPERCLIP_HOME;
-  previousServiceManaged = process.env.PAPERCLIP_SERVICE_MANAGED;
-  process.env.PAPERCLIP_HOME = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-service-restart-"));
+  previousPaperclipHome = process.env.WARDMOTE_HOME;
+  previousServiceManaged = process.env.WARDMOTE_SERVICE_MANAGED;
+  process.env.WARDMOTE_HOME = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-service-restart-"));
 });
 
 afterEach(() => {
-  if (previousPaperclipHome === undefined) delete process.env.PAPERCLIP_HOME;
-  else process.env.PAPERCLIP_HOME = previousPaperclipHome;
-  if (previousServiceManaged === undefined) delete process.env.PAPERCLIP_SERVICE_MANAGED;
-  else process.env.PAPERCLIP_SERVICE_MANAGED = previousServiceManaged;
+  if (previousPaperclipHome === undefined) delete process.env.WARDMOTE_HOME;
+  else process.env.WARDMOTE_HOME = previousPaperclipHome;
+  if (previousServiceManaged === undefined) delete process.env.WARDMOTE_SERVICE_MANAGED;
+  else process.env.WARDMOTE_SERVICE_MANAGED = previousServiceManaged;
 });
 
 function managerFixture(active = true) {
@@ -65,7 +65,7 @@ function managerFixture(active = true) {
 
 describe("service health doctor checks", () => {
   it("skips live service checks during the managed unit's own activation", async () => {
-    process.env.PAPERCLIP_SERVICE_MANAGED = "1";
+    process.env.WARDMOTE_SERVICE_MANAGED = "1";
     const detect = vi.fn();
     const probe = vi.fn();
     await expect(serviceHealthChecks(config, { detect, probe })).resolves.toEqual([]);
@@ -102,7 +102,7 @@ describe("service health doctor checks", () => {
   });
 
   it("reclaims restart locks left by terminated processes", async () => {
-    const lockPath = path.join(process.env.PAPERCLIP_HOME!, "instances", "default", "hot-restart.lock");
+    const lockPath = path.join(process.env.WARDMOTE_HOME!, "instances", "default", "hot-restart.lock");
     fs.mkdirSync(path.dirname(lockPath), { recursive: true });
     fs.writeFileSync(lockPath, "424242:stale-token\n");
     const callback = vi.fn(async () => "restarted");
@@ -217,7 +217,7 @@ describe("service runtime shim awareness", () => {
     expect(shimPresent).toHaveBeenCalledWith("/custom/bin/paperclip-pro");
     expect(runtime?.message).toContain("/custom/bin/paperclip-pro");
     expect(runtime?.repairHint).toContain("/custom/bin/paperclip-pro");
-    expect(runtime?.repairHint).toContain("unset PAPERCLIP_SHIM_PATH");
+    expect(runtime?.repairHint).toContain("unset WARDMOTE_SHIM_PATH");
     expect(runtime?.repairHint).toContain("`wardmote install` followed by `wardmote service install`");
   });
 

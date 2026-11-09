@@ -16,15 +16,15 @@ host, for example `https://pages.paperclip.ing/<slug>/`.
 - Source directory contains `index.html` at its root.
 - `aws` CLI v2, `curl`, and `jq` are available on PATH for live publishes.
 - Environment variables are configured:
-  - `PAPERCLIP_PAGE_BUCKET`
-  - `PAPERCLIP_PAGE_BASE_URL`
+  - `WARDMOTE_PAGE_BUCKET`
+  - `WARDMOTE_PAGE_BASE_URL`
   - `AWS_REGION`
-  - `PAPERCLIP_PAGE_AWS_ACCESS_KEY_ID` and `PAPERCLIP_PAGE_AWS_SECRET_ACCESS_KEY`
+  - `WARDMOTE_PAGE_AWS_ACCESS_KEY_ID` and `WARDMOTE_PAGE_AWS_SECRET_ACCESS_KEY`
     with the page-uploader credentials from Paperclip Secrets
 - Optional environment variables:
-  - `PAPERCLIP_PAGE_DEFAULT_PREFIX`
-  - `PAPERCLIP_PAGE_AWS_PROFILE` (alternative to the namespaced key pair)
-  - `PAPERCLIP_PAGE_AWS_SESSION_TOKEN` (only together with the namespaced key
+  - `WARDMOTE_PAGE_DEFAULT_PREFIX`
+  - `WARDMOTE_PAGE_AWS_PROFILE` (alternative to the namespaced key pair)
+  - `WARDMOTE_PAGE_AWS_SESSION_TOKEN` (only together with the namespaced key
     pair)
 
 Do not bind the page-uploader credentials as global `AWS_ACCESS_KEY_ID` /
@@ -32,7 +32,7 @@ Do not bind the page-uploader credentials as global `AWS_ACCESS_KEY_ID` /
 every AWS SDK, so global names silently replace the host identity for every
 process in the agent run. The namespaced variables scope the uploader identity
 to this helper only. The ambient credential chain still works as a fallback
-when none of the `PAPERCLIP_PAGE_AWS_*` credential variables are set.
+when none of the `WARDMOTE_PAGE_AWS_*` credential variables are set.
 
 ## Workflow
 

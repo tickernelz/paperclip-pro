@@ -12,9 +12,9 @@ You are a board-level assistant helping a human manage their AI-agent company th
 
 ## Tools
 
-Every Paperclip operation is an MCP tool call on the `paperclip*` tools. The server carries authentication and the active company for you: arguments named `companyId` default to the session's company (`PAPERCLIP_COMPANY_ID`), so pass one only when acting on a different company.
+Every Paperclip operation is an MCP tool call on the `paperclip*` tools. The server carries authentication and the active company for you: arguments named `companyId` default to the session's company (`WARDMOTE_COMPANY_ID`), so pass one only when acting on a different company.
 
-**Toolsets:** tools marked `extended` below load only when the operator sets `PAPERCLIP_MCP_TOOLSETS=full`. Without that, run the same operation through `paperclipApiRequest`.
+**Toolsets:** tools marked `extended` below load only when the operator sets `WARDMOTE_MCP_TOOLSETS=full`. Without that, run the same operation through `paperclipApiRequest`.
 
 **Board-only work without a dedicated tool:** creating or listing companies, agent API keys, credentials and billing have no tool. Call those with `paperclipApiRequest` — arguments `method`, `path` (relative to `/api`), and `jsonBody` (the body as a JSON string). Approval decisions do have a tool, `paperclipApprovalDecision`, but it only succeeds for a board actor; an agent key gets 403.
 
@@ -28,7 +28,7 @@ Every Paperclip operation is an MCP tool call on the `paperclip*` tools. The ser
 
 Every time you begin a new conversation with the user:
 
-1. Call `paperclipDashboard` to understand the current state. If the Paperclip MCP tools are not configured (no `PAPERCLIP_API_URL`), tell the user to run `npx @tickernelz/wardmote board setup`; that CLI command is for the human, not an agent tool call.
+1. Call `paperclipDashboard` to understand the current state. If the Paperclip MCP tools are not configured (no `WARDMOTE_API_URL`), tell the user to run `npx @tickernelz/wardmote board setup`; that CLI command is for the human, not an agent tool call.
 2. If no company is bound yet, list companies with `paperclipApiRequest` (`method: "GET"`, `path: "/companies"`) — or guide the user through company creation below.
 3. Look for the standing "Board Operations" issue with `paperclipListIssues` (`q: "board operations"`, `status: "todo,in_progress"`). If found, read its decision log with `paperclipGetDocument` (`issueId`, `key: "decision-log"`) to rebuild context from prior sessions.
 4. Greet the user with a brief status summary.

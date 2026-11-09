@@ -275,7 +275,7 @@ import {
   UNMANAGED_BACKGROUND_TASK_LIVENESS_REASON,
   UNMANAGED_BACKGROUND_TASK_STOP_REASON,
 } from "@tickernelz/wardmote-adapter-utils/server-utils";
-const externalTestDatabaseUrl = process.env.PAPERCLIP_TEST_DATABASE_URL?.trim();
+const externalTestDatabaseUrl = process.env.WARDMOTE_TEST_DATABASE_URL?.trim();
 const embeddedPostgresSupport = externalTestDatabaseUrl
   ? { supported: true }
   : await getEmbeddedPostgresTestSupport();
@@ -3120,13 +3120,13 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     const home = await fs.mkdtemp(
       path.join(os.tmpdir(), "paperclip-hot-restart-"),
     );
-    const previousHome = process.env.PAPERCLIP_HOME;
-    process.env.PAPERCLIP_HOME = home;
+    const previousHome = process.env.WARDMOTE_HOME;
+    process.env.WARDMOTE_HOME = home;
     try {
       return await fn(home);
     } finally {
-      if (previousHome === undefined) delete process.env.PAPERCLIP_HOME;
-      else process.env.PAPERCLIP_HOME = previousHome;
+      if (previousHome === undefined) delete process.env.WARDMOTE_HOME;
+      else process.env.WARDMOTE_HOME = previousHome;
       // Native dispatch materializes read-only runtime bundles in this owned
       // temporary home. Restore directory permissions solely for test cleanup.
       const makeDirectoriesWritable = async (
@@ -3526,7 +3526,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
           preflightActiveRunIds: [runId],
         });
         const heartbeat = heartbeatService(db, {
-          runtimeEnv: { ...process.env, PAPERCLIP_SERVICE_MANAGED: "1" },
+          runtimeEnv: { ...process.env, WARDMOTE_SERVICE_MANAGED: "1" },
         });
         const preparation = await heartbeat.prepareHotRestartShutdown(
           "SIGTERM",
@@ -5448,10 +5448,10 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     const heartbeat = heartbeatService(db);
     const previousSettings = await instanceSettingsService(db).getExperimental();
     const previousPath = process.env.PATH;
-    const previousHome = process.env.PAPERCLIP_HOME;
+    const previousHome = process.env.WARDMOTE_HOME;
     try {
       process.env.PATH = `${bin}${path.delimiter}${previousPath ?? ""}`;
-      process.env.PAPERCLIP_HOME = home;
+      process.env.WARDMOTE_HOME = home;
       await instanceSettingsService(db).updateExperimental({ enableIsolatedWorkspaces: true });
       await db.insert(projects).values({ id: projectId, companyId, name: "Git connection fixture", status: "in_progress" });
       await db.insert(projectWorkspaces).values(workspaceIds.map((id, index) => ({
@@ -5503,7 +5503,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     } finally {
       await heartbeat.waitForRunExecutionDrain(runId);
       if (previousPath === undefined) delete process.env.PATH; else process.env.PATH = previousPath;
-      if (previousHome === undefined) delete process.env.PAPERCLIP_HOME; else process.env.PAPERCLIP_HOME = previousHome;
+      if (previousHome === undefined) delete process.env.WARDMOTE_HOME; else process.env.WARDMOTE_HOME = previousHome;
       await instanceSettingsService(db).updateExperimental({ enableIsolatedWorkspaces: previousSettings.enableIsolatedWorkspaces });
       await fs.rm(home, { recursive: true, force: true });
     }
@@ -5519,7 +5519,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     const workspaceId = randomUUID();
     const repoUrl = "git@clone-alias.example.test:team/additional.git";
     const previousPath = process.env.PATH;
-    const previousHome = process.env.PAPERCLIP_HOME;
+    const previousHome = process.env.WARDMOTE_HOME;
     const heartbeat = heartbeatService(db);
     await fs.mkdir(cwd);
     await fs.mkdir(bin);
@@ -5540,7 +5540,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
       `process.exit(result.status ?? 2);\n`, { mode: 0o755 });
     try {
       process.env.PATH = `${bin}${path.delimiter}${previousPath ?? ""}`;
-      process.env.PAPERCLIP_HOME = home;
+      process.env.WARDMOTE_HOME = home;
       await db.insert(projects).values({ id: projectId, companyId, name: "Additional repository fixture", status: "in_progress" });
       await db.insert(projectWorkspaces).values([
         { id: workspaceId, companyId, projectId, name: "Primary", sourceType: "local_path", cwd, isPrimary: true },
@@ -5580,7 +5580,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     } finally {
       await heartbeat.waitForRunExecutionDrain(runId);
       if (previousPath === undefined) delete process.env.PATH; else process.env.PATH = previousPath;
-      if (previousHome === undefined) delete process.env.PAPERCLIP_HOME; else process.env.PAPERCLIP_HOME = previousHome;
+      if (previousHome === undefined) delete process.env.WARDMOTE_HOME; else process.env.WARDMOTE_HOME = previousHome;
       await fs.rm(home, { recursive: true, force: true });
     }
   });

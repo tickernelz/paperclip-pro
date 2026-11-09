@@ -12,7 +12,7 @@ import test from "node:test";
 
 // Tests run real pinned Pi RPC without live provider credentials. The final
 // stream regressions use synthetic loopback responses and a socket deny guard.
-const packageRoot = process.env.PAPERCLIP_TEST_PI_RUNTIME_ROOT
+const packageRoot = process.env.WARDMOTE_TEST_PI_RUNTIME_ROOT
   ?? dirname(dirname(fileURLToPath(import.meta.resolve("@earendil-works/pi-coding-agent"))));
 const metadata = JSON.parse(await readFile(join(packageRoot, "package.json"), "utf8"));
 const extensionSource = await readFile(new URL("../src/drivers/acpx/pi-runtime-extension.ts", import.meta.url), "utf8");
@@ -83,7 +83,7 @@ for (const brokenCatalog of [false, true]) {
       cwd: join(root, "workspace"), stdio: "pipe",
       env: {
         PATH: process.env.PATH, HOME: root, PI_CODING_AGENT_DIR: join(root, "agent"), PI_SKIP_VERSION_CHECK: "1", PI_TELEMETRY: "0",
-        PAPERCLIP_PI_RUNTIME_CONFIGURATION: JSON.stringify({
+        WARDMOTE_PI_RUNTIME_CONFIGURATION: JSON.stringify({
           invocationNamespace: "00000000-0000-4000-8000-000000000000",
           workspace: join(root, "workspace"), readOnly: true, readRoots: [], protectedRoots: [join(root, "agent")], instructions: "Use the assigned tools",
           servers: [{ type: "http", name: "paperclip", url: `http://127.0.0.1:${port}/mcp`, headers: [{ name: "Authorization", value: "Bearer 0123456789abcdef0123456789abcdef" }] }],
@@ -384,8 +384,8 @@ for (const scenario of ["hello", "interleaved-tools", "provider-error", "provide
       } finally { await rm(root, { recursive: true, force: true }); }
     });
     await mkdir(join(root, "workspace")); await mkdir(join(root, "agent"));
-    const wrapperRoot = process.env.PAPERCLIP_TEST_PI_ACP_PACKAGE
-      ? dirname(process.env.PAPERCLIP_TEST_PI_ACP_PACKAGE)
+    const wrapperRoot = process.env.WARDMOTE_TEST_PI_ACP_PACKAGE
+      ? dirname(process.env.WARDMOTE_TEST_PI_ACP_PACKAGE)
       : join(dirname(dirname(packageRoot)), "pi-acp");
     const calls = []; const modelRequests = []; const reasoningRequests = [];
     const agentHomes = [join(root, "run-1-agent"), join(root, "run-2-agent")];
@@ -524,9 +524,9 @@ await import(${JSON.stringify(pathToFileURL(join(wrapperRoot, "dist/index.js")).
       child = spawn(process.execPath, [owner], {
         cwd: join(root, "workspace"), stdio: "pipe", env: {
           PATH: "/usr/bin:/bin", HOME: root, PI_CODING_AGENT_DIR: join(root, "agent"), PI_SKIP_VERSION_CHECK: "1", PI_TELEMETRY: "0",
-          PAPERCLIP_ACPX_ISOLATED_CONTEXT: "1", PAPERCLIP_PI_READ_ONLY: "0",
-          ...(agentHome ? { PAPERCLIP_PI_AGENT_HOME: agentHome } : {}),
-          PAPERCLIP_PI_NODE_EXECUTABLE: await realpath(process.execPath), PAPERCLIP_PI_ENTRYPOINT: bootstrap, PAPERCLIP_PI_EXTENSION_PATH: extension,
+          WARDMOTE_ACPX_ISOLATED_CONTEXT: "1", WARDMOTE_PI_READ_ONLY: "0",
+          ...(agentHome ? { WARDMOTE_PI_AGENT_HOME: agentHome } : {}),
+          WARDMOTE_PI_NODE_EXECUTABLE: await realpath(process.execPath), WARDMOTE_PI_ENTRYPOINT: bootstrap, WARDMOTE_PI_EXTENSION_PATH: extension,
         },
       });
       let buffered = "";

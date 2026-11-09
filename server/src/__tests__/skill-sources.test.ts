@@ -18,7 +18,7 @@ describe.skipIf(!support.supported)('skill source persistence', () => {
   let testDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;
   let db: ReturnType<typeof createDb>;
   let home: string;
-  const originalHome = process.env.PAPERCLIP_HOME;
+  const originalHome = process.env.WARDMOTE_HOME;
   const companyId = randomUUID();
   const sha = 'a'.repeat(40);
   const md = (name: string) => `---\nname: ${name}\ndescription: Example\n---\nDo useful work.\n`;
@@ -28,11 +28,11 @@ describe.skipIf(!support.supported)('skill source persistence', () => {
   const context: SkillSourceContext = { actor: { type: 'user', userId: 'board' }, read: () => githubFixture(files, { 'deep/one/scripts/run.sh': '100755' }, commit), authorize: async () => {}, audit: async () => {} };
   beforeAll(async () => {
     testDb = await startEmbeddedPostgresTestDatabase('paperclip-skill-sources-'); db = createDb(testDb.connectionString);
-    home = await fs.mkdtemp(path.join(os.tmpdir(), 'paperclip-source-test-')); process.env.PAPERCLIP_HOME = home;
+    home = await fs.mkdtemp(path.join(os.tmpdir(), 'paperclip-source-test-')); process.env.WARDMOTE_HOME = home;
     await db.insert(companies).values({ id: companyId, name: 'Skills', issuePrefix: 'SKL' });
   }, 30000);
   afterAll(async () => {
-    if (originalHome === undefined) delete process.env.PAPERCLIP_HOME; else process.env.PAPERCLIP_HOME = originalHome;
+    if (originalHome === undefined) delete process.env.WARDMOTE_HOME; else process.env.WARDMOTE_HOME = originalHome;
     await testDb?.cleanup(); if (home) await fs.rm(home, { recursive: true, force: true });
   });
   it('imports duplicate names independently, stores complete snapshots and refreshes without duplicates', async () => {

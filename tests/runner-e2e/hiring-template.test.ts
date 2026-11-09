@@ -236,7 +236,7 @@ describe("production hiring fixture wiring and source observations", () => {
       expect(cell.task.expectedRunCount).toBe(7);
       expect(cell.task.minimumExpectedRunCount).toBe(5);
       expect(cell.task.attemptTimeoutMs?.local).toBe(15 * 60_000);
-      expect(buildRunnerE2EProcessEnvironment({}, [cell]).PAPERCLIP_RUNNER_API_TOOLS_ENABLED).toBe("true");
+      expect(buildRunnerE2EProcessEnvironment({}, [cell]).WARDMOTE_RUNNER_API_TOOLS_ENABLED).toBe("true");
       const payload = cell.profile.buildAgent({ executionId: "fixture", workspacePath: "/workspace", environmentId: "env", environmentFixtureId: "local",
         secretRefs: { [cell.profile.credential]: { type: "secret_ref", secretId: "secret", version: "latest" } } });
       expect(payload).toMatchObject({ role: "ceo", adapterType: "paperclip_runner" });

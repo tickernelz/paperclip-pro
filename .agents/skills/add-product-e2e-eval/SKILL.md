@@ -11,7 +11,7 @@ this family even when their packaged results are imported into Evalbook. Runner
 protocol cases against the mock control plane belong in
 [add-runner-eval](../add-runner-eval/SKILL.md).
 
-Locate the repository using `PAPERCLIP_ROOT` when supplied, or
+Locate the repository using `WARDMOTE_ROOT` when supplied, or
 `git rev-parse --show-toplevel` from a checkout. From outside Git, inspect
 workspace roots such as `~/paperclipai/paperclip`; verify the selected root
 contains `tests/runner-e2e` and `packages/wardmote-runner`. Run commands from

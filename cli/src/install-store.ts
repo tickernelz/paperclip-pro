@@ -75,7 +75,7 @@ export function resolveInstallStorePaths(options: {
   const paperclipHome = path.resolve(options.paperclipHome ?? resolvePaperclipHomeDir());
   const homeDir = path.resolve(options.homeDir ?? process.env.HOME ?? path.dirname(paperclipHome));
   const cliRoot = path.join(paperclipHome, "cli");
-  const shimPath = process.env.PAPERCLIP_SHIM_PATH?.trim() || path.join(homeDir, ".local", "bin", "paperclip-pro");
+  const shimPath = process.env.WARDMOTE_SHIM_PATH?.trim() || path.join(homeDir, ".local", "bin", "paperclip-pro");
   return {
     paperclipHome,
     cliRoot,

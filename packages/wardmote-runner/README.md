@@ -98,7 +98,7 @@ Pi credentials are selected from the explicit run environment and remain session
 The native Rust launcher forwards the controller-bound credential names, including
 custom provider references, without restricting Pi to an OpenRouter credential.
 Built-in providers can use their usual API-key environment variables. Custom Pi
-providers are supported through `PAPERCLIP_PI_PROVIDERS`: a JSON object containing
+providers are supported through `WARDMOTE_PI_PROVIDERS`: a JSON object containing
 the native `models.json` provider entries (without the outer `providers` key).
 The runner writes that configuration to the private Pi agent directory and binds
 its digest to recovery. API-key and header environment references are forwarded
@@ -491,16 +491,16 @@ qualification uses `eval-session --candidate-profile <pi|cursor|copilot>` with a
 explicit model and a separately materialized pinned candidate pack. This option
 is a constructor-bound diagnostic opt-in; session JSON cannot enable a candidate.
 Missing credentials or unverifiable spend block paid qualification. Set
-`PAPERCLIP_EVAL_MAX_CAMPAIGN_COST_USD` to a positive finite number to bound
+`WARDMOTE_EVAL_MAX_CAMPAIGN_COST_USD` to a positive finite number to bound
 additional scheduling after the observed campaign total reaches that value:
 
 ```sh
-PAPERCLIP_EVAL_MAX_CAMPAIGN_COST_USD=12 \
-  PAPERCLIP_EVALS_ROOT=/path/to/paperclip-evals \
+WARDMOTE_EVAL_MAX_CAMPAIGN_COST_USD=12 \
+  WARDMOTE_EVALS_ROOT=/path/to/paperclip-evals \
   pnpm --filter @tickernelz/wardmote-runner report:runner-live-evals
 
 # Run two scheduled native Codex executions only.
-PAPERCLIP_EVALS_ROOT=/path/to/paperclip-evals \
+WARDMOTE_EVALS_ROOT=/path/to/paperclip-evals \
   pnpm --filter @tickernelz/wardmote-runner report:runner-live-evals -- \
   --candidate codex-luna --limit 2
 ```

@@ -11,7 +11,7 @@ import { fileURLToPath } from "node:url";
 
 // Optional test-only package location permits the isolated Pi branch to test
 // before the integration owner updates package.json and the shared lockfile.
-const packageJson = process.env.PAPERCLIP_TEST_PI_ACP_PACKAGE
+const packageJson = process.env.WARDMOTE_TEST_PI_ACP_PACKAGE
   ?? createRequire(import.meta.url).resolve("pi-acp/package.json");
 const packageRoot = dirname(packageJson);
 const packageMetadata = JSON.parse(await readFile(packageJson, "utf8"));
@@ -37,9 +37,9 @@ async function fixture(t, extra = {}) {
     cwd: join(root, "workspace"), stdio: "pipe",
     env: {
       PATH: process.env.PATH, HOME: root, PI_CODING_AGENT_DIR: join(root, "agent"),
-      PAPERCLIP_ACPX_ISOLATED_CONTEXT: "1", PAPERCLIP_PI_READ_ONLY: "0",
-      PAPERCLIP_PI_NODE_EXECUTABLE: await realpath(process.execPath),
-      PAPERCLIP_PI_ENTRYPOINT: fakePi, PAPERCLIP_PI_EXTENSION_PATH: join(root, "extension.js"),
+      WARDMOTE_ACPX_ISOLATED_CONTEXT: "1", WARDMOTE_PI_READ_ONLY: "0",
+      WARDMOTE_PI_NODE_EXECUTABLE: await realpath(process.execPath),
+      WARDMOTE_PI_ENTRYPOINT: fakePi, WARDMOTE_PI_EXTENSION_PATH: join(root, "extension.js"),
       ...extra,
     },
   });

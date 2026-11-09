@@ -746,7 +746,7 @@ const recoveryFakeCodex = resolve(
     const bin = join(scratch, "bin");
     const workspace = join(scratch, "workspace");
     const sourceHome = join(scratch, "source-home");
-    const previousStateBase = process.env.PAPERCLIP_RUNNER_STATE_DIR;
+    const previousStateBase = process.env.WARDMOTE_RUNNER_STATE_DIR;
     const server = createServer();
     let firstSession: NativeSession | undefined;
     const ownedSessions = new Set<NativeSession>();
@@ -758,7 +758,7 @@ const recoveryFakeCodex = resolve(
       runnerDiagnostics.push(chunk.slice(-4_096));
       if (runnerDiagnostics.length > 32) runnerDiagnostics.shift();
     };
-    process.env.PAPERCLIP_RUNNER_STATE_DIR = stateBase;
+    process.env.WARDMOTE_RUNNER_STATE_DIR = stateBase;
     try {
       await Promise.all(
         [bin, workspace, sourceHome].map((path) =>
@@ -1249,8 +1249,8 @@ const recoveryFakeCodex = resolve(
       server.closeAllConnections();
       await new Promise<void>((done) => server.close(() => done()));
       if (previousStateBase === undefined)
-        delete process.env.PAPERCLIP_RUNNER_STATE_DIR;
-      else process.env.PAPERCLIP_RUNNER_STATE_DIR = previousStateBase;
+        delete process.env.WARDMOTE_RUNNER_STATE_DIR;
+      else process.env.WARDMOTE_RUNNER_STATE_DIR = previousStateBase;
       await database.cleanup();
       if (closeFailures.length) {
         // Retain exact fixture state if owned retirement cannot be proven.
@@ -2705,7 +2705,7 @@ describe("buildNativeExecutionInput wake projection", () => {
     expect(
       JSON.stringify([codex, opencode, claudeManaged, agentCore, acpx]),
     ).not.toMatch(
-      /OPENAI_API_KEY|ANTHROPIC_API_KEY|AWS_SECRET_ACCESS_KEY|PAPERCLIP_API_KEY/,
+      /OPENAI_API_KEY|ANTHROPIC_API_KEY|AWS_SECRET_ACCESS_KEY|WARDMOTE_API_KEY/,
     );
   });
 

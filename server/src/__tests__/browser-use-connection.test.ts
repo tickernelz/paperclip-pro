@@ -53,16 +53,16 @@ const actor = { actorType: "user" as const, actorId: "browser-reviewer" };
   () => {
     let db: ReturnType<typeof createDb>;
     let temp: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;
-    const originalApiUrl = process.env.PAPERCLIP_API_URL;
+    const originalApiUrl = process.env.WARDMOTE_API_URL;
     beforeAll(async () => {
-      process.env.PAPERCLIP_API_URL = "http://127.0.0.1:3100";
+      process.env.WARDMOTE_API_URL = "http://127.0.0.1:3100";
       temp = await startEmbeddedPostgresTestDatabase("paperclip-browser-use-");
       db = createDb(temp.connectionString);
     }, 30000);
     afterAll(async () => {
       await temp?.cleanup();
-      if (originalApiUrl === undefined) delete process.env.PAPERCLIP_API_URL;
-      else process.env.PAPERCLIP_API_URL = originalApiUrl;
+      if (originalApiUrl === undefined) delete process.env.WARDMOTE_API_URL;
+      else process.env.WARDMOTE_API_URL = originalApiUrl;
     });
     async function fixture(personal = false) {
       const [company] = await db

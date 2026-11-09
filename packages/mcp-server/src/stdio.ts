@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-import "@tickernelz/wardmote-shared/env-aliases-bootstrap";
 import { runServer } from "./index.js";
 
 void runServer().catch((error) => {

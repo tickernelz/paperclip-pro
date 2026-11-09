@@ -102,9 +102,9 @@ function createTempConfig(serverPort: number): string {
 describe("doctor", () => {
   beforeEach(() => {
     process.env = { ...ORIGINAL_ENV };
-    delete process.env.PAPERCLIP_AGENT_JWT_SECRET;
-    delete process.env.PAPERCLIP_SECRETS_MASTER_KEY;
-    delete process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE;
+    delete process.env.WARDMOTE_AGENT_JWT_SECRET;
+    delete process.env.WARDMOTE_SECRETS_MASTER_KEY;
+    delete process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE;
   });
 
   afterEach(() => {
@@ -123,7 +123,7 @@ describe("doctor", () => {
 
     expect(summary.failed).toBe(0);
     expect(summary.warned).toBe(0);
-    expect(process.env.PAPERCLIP_AGENT_JWT_SECRET).toBeTruthy();
+    expect(process.env.WARDMOTE_AGENT_JWT_SECRET).toBeTruthy();
     expect(detectServiceManager).toHaveBeenCalled();
   });
 });

@@ -1,5 +1,4 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
-import { legacyEnvKey } from "@tickernelz/wardmote-shared/env-aliases";
 import { randomUUID } from "node:crypto";
 import { upsertIssueDocumentSchema } from "@tickernelz/wardmote-shared";
 import { and, eq, inArray } from "drizzle-orm";
@@ -28,7 +27,7 @@ import type { ToolGatewayService } from "../tool-gateway.js";
 import { READ_CURRENT_WAKE_COMMENTS_TOOL_NAME } from "./current-wake-comments.js";
 import { CAPABILITY_SEMANTIC_TOOL_CATALOG, runnerCodexDynamicToolsFit } from "../../vendor/paperclip-runner/index.js";
 
-const PUBLIC_BASE_URL_ENV = legacyEnvKey("WARDMOTE_AUTH_PUBLIC_BASE_URL");
+const PUBLIC_BASE_URL_ENV = "WARDMOTE_AUTH_PUBLIC_BASE_URL";
 
 describe("PaperclipRunnerToolAuthority", () => {
   const credentialDocumentBody = "Use a secret manager for credential handling.\nAuthorization: Bearer intentional-document-credential";
@@ -42,8 +41,8 @@ describe("PaperclipRunnerToolAuthority", () => {
   const runId = "00000000-0000-4000-8000-000000000104";
 
   beforeEach(() => {
-    vi.stubEnv("PAPERCLIP_RUNNER_API_TOOLS_ENABLED", undefined);
-    vi.stubEnv("PAPERCLIP_RUNNER_API_TOOLS_COMPANY_IDS", undefined);
+    vi.stubEnv("WARDMOTE_RUNNER_API_TOOLS_ENABLED", undefined);
+    vi.stubEnv("WARDMOTE_RUNNER_API_TOOLS_COMPANY_IDS", undefined);
   });
   afterEach(() => vi.unstubAllEnvs());
 
@@ -240,9 +239,9 @@ describe("PaperclipRunnerToolAuthority", () => {
   });
 
   it("advertises API tools by default and preserves direct-chat file tools when disabled", () => {
-    const previousEnabled = process.env.PAPERCLIP_RUNNER_API_TOOLS_ENABLED;
+    const previousEnabled = process.env.WARDMOTE_RUNNER_API_TOOLS_ENABLED;
     const previousCompanies =
-      process.env.PAPERCLIP_RUNNER_API_TOOLS_COMPANY_IDS;
+      process.env.WARDMOTE_RUNNER_API_TOOLS_COMPANY_IDS;
     const createAuthority = () =>
       new PaperclipRunnerToolAuthority(db, {
         companyId,
@@ -259,8 +258,8 @@ describe("PaperclipRunnerToolAuthority", () => {
     ];
 
     try {
-      delete process.env.PAPERCLIP_RUNNER_API_TOOLS_ENABLED;
-      delete process.env.PAPERCLIP_RUNNER_API_TOOLS_COMPANY_IDS;
+      delete process.env.WARDMOTE_RUNNER_API_TOOLS_ENABLED;
+      delete process.env.WARDMOTE_RUNNER_API_TOOLS_COMPANY_IDS;
       const defaultNames = createAuthority()
         .definitions()
         .map((tool) => tool.name);
@@ -271,8 +270,8 @@ describe("PaperclipRunnerToolAuthority", () => {
       expect(defaultNames).toContain("call_api");
       expect(defaultNames).toContain("hire_agent");
 
-      process.env.PAPERCLIP_RUNNER_API_TOOLS_ENABLED = "true";
-      process.env.PAPERCLIP_RUNNER_API_TOOLS_COMPANY_IDS = companyId;
+      process.env.WARDMOTE_RUNNER_API_TOOLS_ENABLED = "true";
+      process.env.WARDMOTE_RUNNER_API_TOOLS_COMPANY_IDS = companyId;
       const enabledNames = createAuthority()
         .definitions()
         .map((tool) => tool.name);
@@ -290,7 +289,7 @@ describe("PaperclipRunnerToolAuthority", () => {
       expect(hireSchema.properties).not.toHaveProperty("adapterConfig");
       expect(hireSchema.properties).not.toHaveProperty("env");
 
-      process.env.PAPERCLIP_RUNNER_API_TOOLS_ENABLED = "false";
+      process.env.WARDMOTE_RUNNER_API_TOOLS_ENABLED = "false";
       const disabledNames = createAuthority().definitions().map((tool) => tool.name);
       expect(disabledNames).toEqual(expect.arrayContaining(requiredChatFileTools));
       for (const name of ["search_api", "call_api", "hire_agent"]) {
@@ -298,25 +297,25 @@ describe("PaperclipRunnerToolAuthority", () => {
       }
     } finally {
       if (previousEnabled === undefined) {
-        delete process.env.PAPERCLIP_RUNNER_API_TOOLS_ENABLED;
+        delete process.env.WARDMOTE_RUNNER_API_TOOLS_ENABLED;
       } else {
-        process.env.PAPERCLIP_RUNNER_API_TOOLS_ENABLED = previousEnabled;
+        process.env.WARDMOTE_RUNNER_API_TOOLS_ENABLED = previousEnabled;
       }
       if (previousCompanies === undefined) {
-        delete process.env.PAPERCLIP_RUNNER_API_TOOLS_COMPANY_IDS;
+        delete process.env.WARDMOTE_RUNNER_API_TOOLS_COMPANY_IDS;
       } else {
-        process.env.PAPERCLIP_RUNNER_API_TOOLS_COMPANY_IDS = previousCompanies;
+        process.env.WARDMOTE_RUNNER_API_TOOLS_COMPANY_IDS = previousCompanies;
       }
     }
   });
 
   it("dispatches hire_agent with fixed caller context and replays its API receipt", async () => {
-    const previousEnabled = process.env.PAPERCLIP_RUNNER_API_TOOLS_ENABLED;
-    const previousCompanies = process.env.PAPERCLIP_RUNNER_API_TOOLS_COMPANY_IDS;
-    const previousSecret = process.env.PAPERCLIP_AGENT_JWT_SECRET;
-    process.env.PAPERCLIP_AGENT_JWT_SECRET = "hire-agent-test-secret";
-    process.env.PAPERCLIP_RUNNER_API_TOOLS_ENABLED = "true";
-    process.env.PAPERCLIP_RUNNER_API_TOOLS_COMPANY_IDS = companyId;
+    const previousEnabled = process.env.WARDMOTE_RUNNER_API_TOOLS_ENABLED;
+    const previousCompanies = process.env.WARDMOTE_RUNNER_API_TOOLS_COMPANY_IDS;
+    const previousSecret = process.env.WARDMOTE_AGENT_JWT_SECRET;
+    process.env.WARDMOTE_AGENT_JWT_SECRET = "hire-agent-test-secret";
+    process.env.WARDMOTE_RUNNER_API_TOOLS_ENABLED = "true";
+    process.env.WARDMOTE_RUNNER_API_TOOLS_COMPANY_IDS = companyId;
     const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(
       new Response(JSON.stringify({ id: randomUUID(), status: "active" }), {
         status: 201,
@@ -366,17 +365,17 @@ describe("PaperclipRunnerToolAuthority", () => {
       expect(fetchMock).toHaveBeenCalledTimes(1);
     } finally {
       fetchMock.mockRestore();
-      if (previousEnabled === undefined) delete process.env.PAPERCLIP_RUNNER_API_TOOLS_ENABLED;
-      else process.env.PAPERCLIP_RUNNER_API_TOOLS_ENABLED = previousEnabled;
-      if (previousCompanies === undefined) delete process.env.PAPERCLIP_RUNNER_API_TOOLS_COMPANY_IDS;
-      else process.env.PAPERCLIP_RUNNER_API_TOOLS_COMPANY_IDS = previousCompanies;
-      if (previousSecret === undefined) delete process.env.PAPERCLIP_AGENT_JWT_SECRET;
-      else process.env.PAPERCLIP_AGENT_JWT_SECRET = previousSecret;
+      if (previousEnabled === undefined) delete process.env.WARDMOTE_RUNNER_API_TOOLS_ENABLED;
+      else process.env.WARDMOTE_RUNNER_API_TOOLS_ENABLED = previousEnabled;
+      if (previousCompanies === undefined) delete process.env.WARDMOTE_RUNNER_API_TOOLS_COMPANY_IDS;
+      else process.env.WARDMOTE_RUNNER_API_TOOLS_COMPANY_IDS = previousCompanies;
+      if (previousSecret === undefined) delete process.env.WARDMOTE_AGENT_JWT_SECRET;
+      else process.env.WARDMOTE_AGENT_JWT_SECRET = previousSecret;
     }
   });
 
   it("dispatches cross-task Markdown documents that pass route validation and persist revisions", async () => {
-    vi.stubEnv("PAPERCLIP_AGENT_JWT_SECRET", "document-test-secret");
+    vi.stubEnv("WARDMOTE_AGENT_JWT_SECRET", "document-test-secret");
     const taskId = randomUUID();
     await db.insert(issues).values({ id: taskId, companyId, title: "Cross-task document target", status: "todo" });
     const service = documentService(db);

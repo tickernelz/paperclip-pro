@@ -49,8 +49,8 @@ export function resolveOmpProfile(
   const configured = envProfile(configuredEnv);
   if (configured) return configured;
 
-  if (processEnv.PAPERCLIP_OMP_PROFILE !== undefined) {
-    return { profile: normalizeOmpProfile(processEnv.PAPERCLIP_OMP_PROFILE), specified: true };
+  if (processEnv.WARDMOTE_OMP_PROFILE !== undefined) {
+    return { profile: normalizeOmpProfile(processEnv.WARDMOTE_OMP_PROFILE), specified: true };
   }
   return envProfile(processEnv) ?? { profile: null, specified: false };
 }

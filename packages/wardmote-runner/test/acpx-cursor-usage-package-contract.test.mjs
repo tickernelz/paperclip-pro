@@ -9,7 +9,7 @@ import test from "node:test";
 import { createCursorNativeUsage } from "../scripts/cursor-native-usage.mjs";
 
 const require = createRequire(import.meta.url);
-const root = process.env.PAPERCLIP_TEST_ACPX_PACKAGE_ROOT ?? dirname(require.resolve("acpx/package.json"));
+const root = process.env.WARDMOTE_TEST_ACPX_PACKAGE_ROOT ?? dirname(require.resolve("acpx/package.json"));
 const { _: createConversation, y: recordSubmission, n: runPromptTurn,
   dt: serialize, ut: parse, tt: assertKeyPolicy, g: clone, E: apply } =
   await import(pathToFileURL(join(root, "dist/live-checkpoint-BSIrfgVo.js")));

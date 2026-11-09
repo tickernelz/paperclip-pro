@@ -114,7 +114,7 @@ export default {...original, testDir:${JSON.stringify(root)}, testMatch:"fixture
           : [driver], { cwd: repoRoot, env: {
         ...process.env, PATH: fixtureBin + path.delimiter + process.env.PATH,
         FIXTURE_MODE: mode, FIXTURE_ONBOARD: onboard, FIXTURE_CALLS: calls, FIXTURE_PORT: String(port), FIXTURE_CONFIG: config, FIXTURE_METADATA: metadata,
-        PAPERCLIPAI_VERSION: version, PAPERCLIP_CANARY_SMOKE_BASE_URL: `http://127.0.0.1:${port}`, PAPERCLIP_CANARY_SMOKE_SERVER_LOG: path.join(root,"server.log"),
+        PAPERCLIPAI_VERSION: version, WARDMOTE_CANARY_SMOKE_BASE_URL: `http://127.0.0.1:${port}`, WARDMOTE_CANARY_SMOKE_SERVER_LOG: path.join(root,"server.log"),
         npm_config_cache: path.join(root, "fresh-cache"),
       }, stdio: ["ignore", "pipe", "pipe"] });
       let output = "";

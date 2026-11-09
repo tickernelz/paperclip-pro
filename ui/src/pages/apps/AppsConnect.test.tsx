@@ -4220,7 +4220,7 @@ describe("AppsConnect — guided generic MCP flow (PAP-17087)", () => {
     connectAppMock.mockRejectedValue(apiError(
       422,
       "oauth_redirect_origin_unsupported",
-      "OAuth connections require PAPERCLIP_PUBLIC_URL or an auth public base URL",
+      "OAuth connections require WARDMOTE_PUBLIC_URL or an auth public base URL",
     ));
     await render();
     await gotoLinkFrame(container, "https://mcp.example.test/mcp");
@@ -4231,7 +4231,7 @@ describe("AppsConnect — guided generic MCP flow (PAP-17087)", () => {
     await flushReact();
 
     expect(container.textContent).toContain("This Wardmote needs a public HTTPS address first");
-    expect(container.textContent).not.toContain("PAPERCLIP_PUBLIC_URL");
+    expect(container.textContent).not.toContain("WARDMOTE_PUBLIC_URL");
   });
 
   it("does not ask the operator to resolve an internal name conflict", async () => {

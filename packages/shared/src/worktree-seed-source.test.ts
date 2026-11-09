@@ -13,7 +13,7 @@ function makeInstance(prefix: string, instanceId: string) {
   const configPath = path.join(configDir, "config.json");
   fs.mkdirSync(configDir, { recursive: true });
   fs.writeFileSync(configPath, "{}\n");
-  fs.writeFileSync(path.join(configDir, ".env"), `PAPERCLIP_INSTANCE_ID=${instanceId}\n`);
+  fs.writeFileSync(path.join(configDir, ".env"), `WARDMOTE_INSTANCE_ID=${instanceId}\n`);
   return { cwd, configPath, instanceId };
 }
 

@@ -24,7 +24,7 @@ over stdio. The transport starts a dedicated Unix process group. Normal close,
 stop/reset cleanup, and fatal protocol errors terminate that group with a
 bounded TERM/KILL sequence so a Codex child is not abandoned.
 
-Only the allowlisted Codex host environment is copied. `PAPERCLIP_*` variables,
+Only the allowlisted Codex host environment is copied. `WARDMOTE_*` variables,
 provider credentials other than Codex's server-side home, and credentialed
 proxy URLs are not passed to runnerd or Codex. Model-issued commands still use
 the separate skillless, network-disabled workspace permission profile.

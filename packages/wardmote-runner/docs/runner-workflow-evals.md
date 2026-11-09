@@ -29,7 +29,7 @@ the same grid and drill-down pages as the direct Runner eval suite.
 
 The checked-in live manifest contains only adapter/model settings,
 qualification variable names, and budgets. Credentials remain in the
-environment. `PAPERCLIP_EVAL_MAX_CAMPAIGN_COST_USD` must be a positive finite
+environment. `WARDMOTE_EVAL_MAX_CAMPAIGN_COST_USD` must be a positive finite
 number and defaults to 12 USD for scheduled runs.
 
 Live executions export one immutable Evalbook attempt per workflow/candidate to
@@ -37,8 +37,8 @@ Live executions export one immutable Evalbook attempt per workflow/candidate to
 `evals/paperclip-runner/tools/eval_program.py report` from a `paperclip-evals`
 checkout. That program writes the canonical matrix to
 `.paperclip-local/evals/workflows/index.html`, plus `latest.html`, test pages,
-and attempt pages. Set `PAPERCLIP_EVALBOOK_PROGRAM` to the program's absolute
-path or `PAPERCLIP_EVALS_ROOT` to its repository root. Conventional sibling
+and attempt pages. Set `WARDMOTE_EVALBOOK_PROGRAM` to the program's absolute
+path or `WARDMOTE_EVALS_ROOT` to its repository root. Conventional sibling
 worktree locations are discovered automatically. GitHub Actions checks out a
 pinned `paperclip-evals` revision, so every hosted run uses the same reviewed
 report implementation rather than a copied or package-local renderer.

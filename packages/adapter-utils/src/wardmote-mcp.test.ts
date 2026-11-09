@@ -21,9 +21,9 @@ import {
 const TOOL_NAME_RE = /\bpaperclip[A-Z]\w*/;
 
 const runEnv = {
-  PAPERCLIP_API_URL: "https://paperclip.test",
-  PAPERCLIP_API_KEY: "run-key",
-  PAPERCLIP_RUN_ID: "run-7",
+  WARDMOTE_API_URL: "https://paperclip.test",
+  WARDMOTE_API_KEY: "run-key",
+  WARDMOTE_RUN_ID: "run-7",
 };
 
 describe("paperclipAccessMode", () => {
@@ -31,8 +31,8 @@ describe("paperclipAccessMode", () => {
     expect(paperclipAccessMode({}, runEnv)).toBe("mcp");
     expect(paperclipAccessMode({ paperclipMcp: false }, runEnv)).toBe("rest");
     expect(paperclipAccessMode({ paperclipMcp: "false" }, runEnv)).toBe("rest");
-    expect(paperclipAccessMode({}, { ...runEnv, PAPERCLIP_API_KEY: "  " })).toBe("rest");
-    expect(paperclipAccessMode({}, { ...runEnv, PAPERCLIP_API_URL: undefined })).toBe("rest");
+    expect(paperclipAccessMode({}, { ...runEnv, WARDMOTE_API_KEY: "  " })).toBe("rest");
+    expect(paperclipAccessMode({}, { ...runEnv, WARDMOTE_API_URL: undefined })).toBe("rest");
   });
 });
 
@@ -44,8 +44,8 @@ describe("paperclipAgentPromptTemplate", () => {
 
     const rest = paperclipAgentPromptTemplate("rest");
     expect(rest).not.toMatch(TOOL_NAME_RE);
-    expect(rest).toContain("POST /api/issues/$PAPERCLIP_TASK_ID/interactions");
-    expect(rest).toContain("PATCH /api/issues/$PAPERCLIP_TASK_ID");
+    expect(rest).toContain("POST /api/issues/$WARDMOTE_TASK_ID/interactions");
+    expect(rest).toContain("PATCH /api/issues/$WARDMOTE_TASK_ID");
   });
 
   it("keeps the execution contract identical apart from the access-surface lines", () => {
@@ -68,7 +68,7 @@ describe("renderPaperclipWakePrompt", () => {
     expect(renderPaperclipWakePrompt(wake)).toContain("`paperclipCheckoutIssue`");
     const rest = renderPaperclipWakePrompt(wake, { paperclipAccess: "rest" });
     expect(rest).not.toMatch(TOOL_NAME_RE);
-    expect(rest).toContain("POST /api/issues/$PAPERCLIP_TASK_ID/checkout");
+    expect(rest).toContain("POST /api/issues/$WARDMOTE_TASK_ID/checkout");
   });
 });
 
@@ -80,8 +80,8 @@ describe("paperclipAccessGuidance", () => {
 
     const rest = paperclipAccessGuidance("rest", { shellHint: "run_shell_command" });
     expect(rest).not.toMatch(TOOL_NAME_RE);
-    expect(rest).toContain("Authorization: Bearer $PAPERCLIP_API_KEY");
-    expect(rest).toContain("X-Paperclip-Run-Id: $PAPERCLIP_RUN_ID");
+    expect(rest).toContain("Authorization: Bearer $WARDMOTE_API_KEY");
+    expect(rest).toContain("X-Paperclip-Run-Id: $WARDMOTE_RUN_ID");
     expect(rest).toContain("run_shell_command");
   });
 
@@ -170,7 +170,7 @@ describe("per-runtime MCP config renderers", () => {
         env: runEnv,
       }),
     );
-    expect(config.mcpServers.paperclip.headers.Authorization).toBe("Bearer ${PAPERCLIP_API_KEY}");
+    expect(config.mcpServers.paperclip.headers.Authorization).toBe("Bearer ${WARDMOTE_API_KEY}");
     expect(config.mcpServers.paperclip.headers["X-Paperclip-Run-Id"]).toBe("run-7");
   });
 });

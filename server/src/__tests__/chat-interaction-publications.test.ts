@@ -39,10 +39,10 @@ describeEmbeddedPostgres(
     let tempDb: Awaited<
       ReturnType<typeof startEmbeddedPostgresTestDatabase>
     > | null = null;
-    const previousPublicUrl = process.env.PAPERCLIP_PUBLIC_URL;
+    const previousPublicUrl = process.env.WARDMOTE_PUBLIC_URL;
 
     beforeAll(async () => {
-      process.env.PAPERCLIP_PUBLIC_URL = "https://paperclip.example";
+      process.env.WARDMOTE_PUBLIC_URL = "https://paperclip.example";
       tempDb = await startEmbeddedPostgresTestDatabase(
         "paperclip-terminal-chat-interaction-",
       );
@@ -51,8 +51,8 @@ describeEmbeddedPostgres(
 
     afterAll(async () => {
       if (previousPublicUrl === undefined)
-        delete process.env.PAPERCLIP_PUBLIC_URL;
-      else process.env.PAPERCLIP_PUBLIC_URL = previousPublicUrl;
+        delete process.env.WARDMOTE_PUBLIC_URL;
+      else process.env.WARDMOTE_PUBLIC_URL = previousPublicUrl;
       await tempDb?.cleanup();
     });
 

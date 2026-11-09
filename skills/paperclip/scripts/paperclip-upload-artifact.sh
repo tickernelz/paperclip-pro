@@ -11,11 +11,11 @@ Uploads a generated file from the current workspace to the current Paperclip
 issue, then creates an attachment-backed artifact work product by default.
 
 Required environment for live uploads:
-  PAPERCLIP_API_URL, PAPERCLIP_API_KEY, PAPERCLIP_COMPANY_ID, PAPERCLIP_TASK_ID, PAPERCLIP_RUN_ID
+  WARDMOTE_API_URL, WARDMOTE_API_KEY, WARDMOTE_COMPANY_ID, WARDMOTE_TASK_ID, WARDMOTE_RUN_ID
 
 Options:
-  --issue-id ID          Issue id to attach to (default: PAPERCLIP_TASK_ID)
-  --company-id ID        Company id (default: PAPERCLIP_COMPANY_ID)
+  --issue-id ID          Issue id to attach to (default: WARDMOTE_TASK_ID)
+  --company-id ID        Company id (default: WARDMOTE_COMPANY_ID)
   --title TEXT           Work product title (default: file basename)
   --summary TEXT         Work product summary
   --content-type TYPE    Override detected upload content type
@@ -114,7 +114,7 @@ sha256_text() {
 }
 
 helper_state_directory() {
-  printf '%s' "${PAPERCLIP_HELPER_STATE_DIR:-${PAPERCLIP_WORKSPACE_CWD:-$PWD}/.paperclip/artifact-helper}"
+  printf '%s' "${WARDMOTE_HELPER_STATE_DIR:-${WARDMOTE_WORKSPACE_CWD:-$PWD}/.paperclip/artifact-helper}"
 }
 
 helper_response_file() {
@@ -136,8 +136,8 @@ request_json() {
     status_code="$(
       curl -sS -X "$method" -w '%{http_code}' -o "$response_file" \
         "$url" \
-        -H "Authorization: Bearer $PAPERCLIP_API_KEY" \
-        -H "X-Paperclip-Run-Id: $PAPERCLIP_RUN_ID" \
+        -H "Authorization: Bearer $WARDMOTE_API_KEY" \
+        -H "X-Paperclip-Run-Id: $WARDMOTE_RUN_ID" \
         -H 'Content-Type: application/json' \
         --data-binary "$body"
     )"
@@ -145,8 +145,8 @@ request_json() {
     status_code="$(
       curl -sS -X "$method" -w '%{http_code}' -o "$response_file" \
         "$url" \
-        -H "Authorization: Bearer $PAPERCLIP_API_KEY" \
-        -H "X-Paperclip-Run-Id: $PAPERCLIP_RUN_ID"
+        -H "Authorization: Bearer $WARDMOTE_API_KEY" \
+        -H "X-Paperclip-Run-Id: $WARDMOTE_RUN_ID"
     )"
   fi
 
@@ -178,8 +178,8 @@ upload_file() {
   status_code="$(
     curl -sS -X POST -w '%{http_code}' -o "$response_file" \
       "$url" \
-      -H "Authorization: Bearer $PAPERCLIP_API_KEY" \
-      -H "X-Paperclip-Run-Id: $PAPERCLIP_RUN_ID" \
+      -H "Authorization: Bearer $WARDMOTE_API_KEY" \
+      -H "X-Paperclip-Run-Id: $WARDMOTE_RUN_ID" \
       -F "file=@\"${escaped_path}\";type=${content_type}"
   )" || curl_status=$?
 
@@ -275,8 +275,8 @@ acquire_operation_lock() {
 }
 
 file_path=""
-issue_id="${PAPERCLIP_TASK_ID:-}"
-company_id="${PAPERCLIP_COMPANY_ID:-}"
+issue_id="${WARDMOTE_TASK_ID:-}"
+company_id="${WARDMOTE_COMPANY_ID:-}"
 title=""
 summary=""
 content_type=""
@@ -409,17 +409,17 @@ if [[ "$dry_run" == "1" ]]; then
   exit 0
 fi
 
-if [[ -z "${PAPERCLIP_API_URL:-}" || -z "${PAPERCLIP_API_KEY:-}" || -z "${PAPERCLIP_RUN_ID:-}" ]]; then
-  printf 'Missing PAPERCLIP_API_URL, PAPERCLIP_API_KEY, or PAPERCLIP_RUN_ID.\n' >&2
+if [[ -z "${WARDMOTE_API_URL:-}" || -z "${WARDMOTE_API_KEY:-}" || -z "${WARDMOTE_RUN_ID:-}" ]]; then
+  printf 'Missing WARDMOTE_API_URL, WARDMOTE_API_KEY, or WARDMOTE_RUN_ID.\n' >&2
   exit 1
 fi
 
 if [[ -z "$issue_id" || -z "$company_id" ]]; then
-  printf 'Missing issue or company id. Pass --issue-id/--company-id or set PAPERCLIP_TASK_ID/PAPERCLIP_COMPANY_ID.\n' >&2
+  printf 'Missing issue or company id. Pass --issue-id/--company-id or set WARDMOTE_TASK_ID/WARDMOTE_COMPANY_ID.\n' >&2
   exit 1
 fi
 
-api_root="${PAPERCLIP_API_URL%/}"
+api_root="${WARDMOTE_API_URL%/}"
 case "$api_root" in
   */api) api_base="$api_root" ;;
   *) api_base="$api_root/api" ;;
@@ -427,7 +427,7 @@ esac
 file_sha256="$(sha256_file "$file_path")"
 original_filename="$(basename "$file_path")"
 operation_key="$(
-  sha256_text "$api_base|$company_id|$issue_id|$PAPERCLIP_RUN_ID|$original_filename|$file_sha256|$content_type"
+  sha256_text "$api_base|$company_id|$issue_id|$WARDMOTE_RUN_ID|$original_filename|$file_sha256|$content_type"
 )"
 acquire_operation_lock "$operation_key"
 trap release_operation_lock EXIT
@@ -444,7 +444,7 @@ for ((lookup_attempt = 1; lookup_attempt <= lookup_attempts; lookup_attempt++));
   attachment="$(
     jq -nc \
       --argjson attachments "$existing_attachments" \
-      --arg runId "$PAPERCLIP_RUN_ID" \
+      --arg runId "$WARDMOTE_RUN_ID" \
       --arg sha256 "$file_sha256" \
       --arg originalFilename "$original_filename" \
       --arg contentType "$content_type" \
@@ -514,7 +514,7 @@ if [[ "$create_work_product" == "1" ]]; then
       --arg title "$title" \
       --arg summary "$summary" \
       --arg status "$status" \
-      --arg runId "$PAPERCLIP_RUN_ID" \
+      --arg runId "$WARDMOTE_RUN_ID" \
       --arg attachmentId "$attachment_id" \
       --arg contentType "$content_type" \
       --argjson byteSize "$byte_size" \

@@ -134,11 +134,11 @@ describe("secrets CLI helpers", () => {
 
   beforeEach(() => {
     process.env = { ...originalEnv };
-    delete process.env.PAPERCLIP_SECRETS_AWS_REGION;
+    delete process.env.WARDMOTE_SECRETS_AWS_REGION;
     delete process.env.AWS_REGION;
     delete process.env.AWS_DEFAULT_REGION;
-    delete process.env.PAPERCLIP_SECRETS_AWS_DEPLOYMENT_ID;
-    delete process.env.PAPERCLIP_SECRETS_AWS_KMS_KEY_ID;
+    delete process.env.WARDMOTE_SECRETS_AWS_DEPLOYMENT_ID;
+    delete process.env.WARDMOTE_SECRETS_AWS_KMS_KEY_ID;
     delete process.env.AWS_ACCESS_KEY_ID;
     delete process.env.AWS_SECRET_ACCESS_KEY;
     delete process.env.AWS_SESSION_TOKEN;
@@ -244,15 +244,15 @@ describe("secrets CLI helpers", () => {
     const result = secretsCheck(configWithSecretsProvider("aws_secrets_manager"));
 
     expect(result.status).toBe("fail");
-    expect(result.message).toContain("PAPERCLIP_SECRETS_AWS_DEPLOYMENT_ID");
+    expect(result.message).toContain("WARDMOTE_SECRETS_AWS_DEPLOYMENT_ID");
     expect(result.repairHint).toContain("AWS SDK default credential chain");
     expect(result.repairHint).toContain("Do not store AWS root credentials");
   });
 
   it("passes AWS doctor checks when non-secret provider config is present", () => {
-    process.env.PAPERCLIP_SECRETS_AWS_REGION = "us-east-1";
-    process.env.PAPERCLIP_SECRETS_AWS_DEPLOYMENT_ID = "prod-us-1";
-    process.env.PAPERCLIP_SECRETS_AWS_KMS_KEY_ID =
+    process.env.WARDMOTE_SECRETS_AWS_REGION = "us-east-1";
+    process.env.WARDMOTE_SECRETS_AWS_DEPLOYMENT_ID = "prod-us-1";
+    process.env.WARDMOTE_SECRETS_AWS_KMS_KEY_ID =
       "arn:aws:kms:us-east-1:123456789012:key/test";
     process.env.AWS_PROFILE = "paperclip-prod";
 
@@ -267,8 +267,8 @@ describe("secrets CLI helpers", () => {
 describe("secrets API parity commands", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
-    delete process.env.PAPERCLIP_API_KEY;
-    delete process.env.PAPERCLIP_API_URL;
+    delete process.env.WARDMOTE_API_KEY;
+    delete process.env.WARDMOTE_API_URL;
     vi.spyOn(console, "log").mockImplementation(() => {});
   });
 

@@ -9,17 +9,17 @@ export const WIKI_MAINTAINER_SKILL_KEY = "wiki-maintainer";
 export const WIKI_INGEST_SKILL_KEY = "wiki-ingest";
 export const WIKI_QUERY_SKILL_KEY = "wiki-query";
 export const WIKI_LINT_SKILL_KEY = "wiki-lint";
-export const PAPERCLIP_DISTILL_SKILL_KEY = "paperclip-distill";
+export const WARDMOTE_DISTILL_SKILL_KEY = "paperclip-distill";
 export const INDEX_REFRESH_SKILL_KEY = "index-refresh";
 export const WIKI_PROJECT_KEY = "llm-wiki";
 export const CURSOR_WINDOW_ROUTINE_KEY = "cursor-window-processing";
 export const NIGHTLY_LINT_ROUTINE_KEY = "nightly-wiki-lint";
 export const INDEX_REFRESH_ROUTINE_KEY = "index-refresh";
 export const DEFAULT_MAX_SOURCE_BYTES = 250000;
-export const DEFAULT_MAX_PAPERCLIP_ISSUE_SOURCE_CHARS = 12000;
-export const DEFAULT_MAX_PAPERCLIP_CURSOR_WINDOW_CHARS = 60000;
-export const DEFAULT_MAX_PAPERCLIP_ROUTINE_RUN_CHARS = 120000;
-export const DEFAULT_PAPERCLIP_COST_CENTS_PER_1K_CHARS = 1;
+export const DEFAULT_MAX_WARDMOTE_ISSUE_SOURCE_CHARS = 12000;
+export const DEFAULT_MAX_WARDMOTE_CURSOR_WINDOW_CHARS = 60000;
+export const DEFAULT_MAX_WARDMOTE_ROUTINE_RUN_CHARS = 120000;
+export const DEFAULT_WARDMOTE_COST_CENTS_PER_1K_CHARS = 1;
 export const WIKI_MAINTENANCE_ROUTINE_KEYS = [
   CURSOR_WINDOW_ROUTINE_KEY,
   NIGHTLY_LINT_ROUTINE_KEY,
@@ -30,7 +30,7 @@ export const WIKI_MANAGED_SKILL_KEYS = [
   WIKI_INGEST_SKILL_KEY,
   WIKI_QUERY_SKILL_KEY,
   WIKI_LINT_SKILL_KEY,
-  PAPERCLIP_DISTILL_SKILL_KEY,
+  WARDMOTE_DISTILL_SKILL_KEY,
   INDEX_REFRESH_SKILL_KEY,
 ] as const;
 
@@ -216,11 +216,11 @@ const manifest: PaperclipPluginManifestV1 = {
       markdown: skillMarkdown(WIKI_LINT_SKILL_KEY)
     },
     {
-      skillKey: PAPERCLIP_DISTILL_SKILL_KEY,
+      skillKey: WARDMOTE_DISTILL_SKILL_KEY,
       displayName: "Paperclip Distill",
-      slug: PAPERCLIP_DISTILL_SKILL_KEY,
+      slug: WARDMOTE_DISTILL_SKILL_KEY,
       description: "Turn Paperclip cursor-window, distill, or backfill source bundles into wiki-insightful project knowledge.",
-      markdown: skillMarkdown(PAPERCLIP_DISTILL_SKILL_KEY)
+      markdown: skillMarkdown(WARDMOTE_DISTILL_SKILL_KEY)
     },
     {
       skillKey: INDEX_REFRESH_SKILL_KEY,

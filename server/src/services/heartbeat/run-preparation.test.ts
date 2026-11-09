@@ -120,7 +120,7 @@ describe("heartbeat run preparation module", () => {
     expect(database.select).toHaveBeenCalledTimes(2);
   });
 
-  it("drops forbidden bindings under their WARDMOTE_* names like their PAPERCLIP_* names", async () => {
+  it("drops forbidden WARDMOTE_* bindings in any letter case", async () => {
     const forbidden = [
       "API_KEY", "AGENT_KEY_ID", "AGENT_PUBLIC_KEY", "AGENT_PRIVATE_KEY",
       "RUNNER_NETWORK_ACCESS", "RUNNER_NETWORK_ROOTS", "GITHUB_AUTH_MODE", "GITHUB_HOST_HOME",

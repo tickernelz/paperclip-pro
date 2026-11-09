@@ -5330,8 +5330,8 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
   it("permits native-runner replacement only after verifying the stamped backup", async () => {
     const seeded = await seedReusablePluginSandboxLease("paperclip_runner");
     const backupBase = await mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-replacement-"));
-    const previousStateDirectory = process.env.PAPERCLIP_RUNNER_STATE_DIR;
-    process.env.PAPERCLIP_RUNNER_STATE_DIR = backupBase;
+    const previousStateDirectory = process.env.WARDMOTE_RUNNER_STATE_DIR;
+    process.env.WARDMOTE_RUNNER_STATE_DIR = backupBase;
     try {
       const normalizedSessionId = "native-replacement-session";
       const runnerInstanceId = "native-replacement-runner";
@@ -5438,9 +5438,9 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
       });
     } finally {
       if (previousStateDirectory === undefined) {
-        delete process.env.PAPERCLIP_RUNNER_STATE_DIR;
+        delete process.env.WARDMOTE_RUNNER_STATE_DIR;
       } else {
-        process.env.PAPERCLIP_RUNNER_STATE_DIR = previousStateDirectory;
+        process.env.WARDMOTE_RUNNER_STATE_DIR = previousStateDirectory;
       }
       await rm(backupBase, { recursive: true, force: true });
     }

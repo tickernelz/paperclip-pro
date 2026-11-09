@@ -9,13 +9,13 @@ import { heartbeatRuns, type Db } from "@tickernelz/wardmote-db";
 import type { PaperclipSkillEntry } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import { isToolConnectionAttentionHealth } from "@tickernelz/wardmote-shared";
 import {
-  PAPERCLIP_OPERATIONAL_SKILL_KEY,
+  WARDMOTE_OPERATIONAL_SKILL_KEY,
   resolvePaperclipDesiredSkillNames,
 } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import {
   NATIVE_RUNTIME_ASSET_SCHEMA,
-  PAPERCLIP_EXECUTION_PROMPT,
-  PAPERCLIP_EXECUTION_PROMPT_REVISION,
+  WARDMOTE_EXECUTION_PROMPT,
+  WARDMOTE_EXECUTION_PROMPT_REVISION,
   canonicalNativeRuntimeContextDigest,
   nativeRuntimePromptDigest,
   parseNativeRuntimeContext,
@@ -174,7 +174,7 @@ async function materializeInstructionBundle(db: Db, agent: RuntimeAgent, agentFi
 
 async function materializeSelectedSkills(runtimeConfig: Record<string, unknown>, entries: PaperclipSkillEntry[], omitLegacy: boolean) {
   const desiredKeys = resolvePaperclipDesiredSkillNames(runtimeConfig, entries).filter(
-    (key) => !omitLegacy || key !== PAPERCLIP_OPERATIONAL_SKILL_KEY,
+    (key) => !omitLegacy || key !== WARDMOTE_OPERATIONAL_SKILL_KEY,
   );
   const byKey = new Map(entries.map((entry) => [entry.key, entry]));
   return Promise.all(desiredKeys.sort().map(async (key) => {
@@ -251,7 +251,7 @@ export async function buildNativeRuntimeContext(input: { db: Db; agent: RuntimeA
     resolveNativeRuntimeMcpSnapshot({ db: input.db, agent: input.agent, runId: input.runId }),
   ]);
   const snapshot = {
-    prompt: { revision: PAPERCLIP_EXECUTION_PROMPT_REVISION, text: PAPERCLIP_EXECUTION_PROMPT, digest: nativeRuntimePromptDigest() },
+    prompt: { revision: WARDMOTE_EXECUTION_PROMPT_REVISION, text: WARDMOTE_EXECUTION_PROMPT, digest: nativeRuntimePromptDigest() },
     instructions: { ...instructions, ...(input.instructionWorkingCopy ? { workingCopy: input.instructionWorkingCopy } : {}) },
     skills,
     mcp,

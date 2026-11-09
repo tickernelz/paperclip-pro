@@ -81,7 +81,7 @@ export function isTruthyRuntimeEnvValue(value: string | undefined) {
 }
 
 function getRuntimeInstanceId(env: Record<string, string | undefined>) {
-  const instanceId = env.PAPERCLIP_INSTANCE_ID?.trim();
+  const instanceId = env.WARDMOTE_INSTANCE_ID?.trim();
   return instanceId ? instanceId : null;
 }
 
@@ -131,7 +131,7 @@ export function applyExperimentalSettingsPatch(
   }
 
   const runtimeEnv = options.runtimeEnv ?? process.env;
-  if (!isTruthyRuntimeEnvValue(runtimeEnv.PAPERCLIP_IN_WORKTREE)) {
+  if (!isTruthyRuntimeEnvValue(runtimeEnv.WARDMOTE_IN_WORKTREE)) {
     return nextExperimental;
   }
 
@@ -197,7 +197,7 @@ export async function resolveWorktreeRunExecutionActivationState(options: {
   runtimeEnv?: Record<string, string | undefined>;
 }): Promise<WorktreeRunExecutionActivationState> {
   const runtimeEnv = options.runtimeEnv ?? process.env;
-  if (!isTruthyRuntimeEnvValue(runtimeEnv.PAPERCLIP_IN_WORKTREE)) {
+  if (!isTruthyRuntimeEnvValue(runtimeEnv.WARDMOTE_IN_WORKTREE)) {
     return suppressWorktreeRunExecution("not_worktree_runtime");
   }
   try {
@@ -353,7 +353,7 @@ export function normalizeExperimentalSettings(raw: unknown): InstanceExperimenta
 }
 
 export function instanceSettingsService(db: Db, options: InstanceSettingsServiceOptions = {}) {
-  // Same posture for PAPERCLIP_SETTING_DEFAULTS: parsed once, applied per
+  // Same posture for WARDMOTE_SETTING_DEFAULTS: parsed once, applied per
   // read, never persisted (see applyOperatorGeneralDefaults) — including on
   // the write path, where a full-GET echo of the overlaid value is stripped
   // back to the schema default (see stripOperatorGeneralEchoes).

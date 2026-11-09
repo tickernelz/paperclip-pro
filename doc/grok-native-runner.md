@@ -129,10 +129,10 @@ positive probe mounts that binary read-only at the canonical sandbox path.
 
 
 The Cloud application image also carries the controller-owned provider pack and
-sets `PAPERCLIP_RUNNER_REMOTE_PROVIDER_PACK_PATH`. Remote ACPX execution verifies
+sets `WARDMOTE_RUNNER_REMOTE_PROVIDER_PACK_PATH`. Remote ACPX execution verifies
 the sandbox against that pack before using it, or stages the matching pack when
 needed. The Cloud controller image does not install the native Grok executable;
 the selected sandbox image must provide the prerequisite above.
-Cloud builds must supply the full source SHA through `PAPERCLIP_BUILD_COMMIT`
+Cloud builds must supply the full source SHA through `WARDMOTE_BUILD_COMMIT`
 to produce that verified pack. Unstamped local Cloud builds still work for other
 features, but omit the pack and cannot start remote ACPX sessions.

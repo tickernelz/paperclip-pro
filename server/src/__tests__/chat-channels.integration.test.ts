@@ -137,7 +137,7 @@ import type { TelegramDraftControl } from "../services/chat-telegram-draft-stop.
 
 // Opt-in private physical candidate; normal CI uses the staged pinned package.
 vi.mock("@chat-adapter/telegram", async (importOriginal) => {
-  const candidate = process.env.PAPERCLIP_TELEGRAM_STOP_ADAPTER_MODULE;
+  const candidate = process.env.WARDMOTE_TELEGRAM_STOP_ADAPTER_MODULE;
   return candidate ? import(/* @vite-ignore */ candidate) : importOriginal();
 });
 import { createDiscordAdapter } from "@chat-adapter/discord";
@@ -215,7 +215,7 @@ import {
   startEmbeddedPostgresTestDatabase,
 } from "./helpers/embedded-postgres.js";
 
-const externalTestDatabaseUrl = process.env.PAPERCLIP_TEST_DATABASE_URL;
+const externalTestDatabaseUrl = process.env.WARDMOTE_TEST_DATABASE_URL;
 const embeddedPostgresSupport = externalTestDatabaseUrl
   ? { supported: true }
   : await getEmbeddedPostgresTestSupport();
@@ -1063,14 +1063,14 @@ const OPERATOR_RESTRICTED_ATTACHMENT_TYPES = [
 
 describeEmbeddedPostgres("chat channel control-plane integration", () => {
   beforeEach(() => {
-    vi.stubEnv("PAPERCLIP_ALLOWED_ATTACHMENT_TYPES", OPERATOR_RESTRICTED_ATTACHMENT_TYPES);
+    vi.stubEnv("WARDMOTE_ALLOWED_ATTACHMENT_TYPES", OPERATOR_RESTRICTED_ATTACHMENT_TYPES);
   });
 
   let db!: TestDb;
   let tempDb: Awaited<
     ReturnType<typeof startEmbeddedPostgresTestDatabase>
   > | null = null;
-  const previousKeyFile = process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE;
+  const previousKeyFile = process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE;
   const secretsTmpDir = path.join(
     os.tmpdir(),
     `paperclip-chat-channels-${randomUUID()}`,
@@ -1078,7 +1078,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
 
   beforeAll(async () => {
     mkdirSync(secretsTmpDir, { recursive: true });
-    process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE = path.join(
+    process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE = path.join(
       secretsTmpDir,
       "master.key",
     );
@@ -1095,8 +1095,8 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
   afterAll(async () => {
     await tempDb?.cleanup();
     if (previousKeyFile === undefined)
-      delete process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE;
-    else process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE = previousKeyFile;
+      delete process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE;
+    else process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE = previousKeyFile;
     rmSync(secretsTmpDir, { recursive: true, force: true });
   });
 
@@ -7422,7 +7422,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       inspected: [{ channel: "COTHER", count: 1, nextCursor: "older", hasMore: true }],
     });
     await expect(executeSlackTool(db, binding, "slack_history", { channel: "GPRIVATE" }, fetched as typeof fetch)).rejects.toThrow("in a DM");
-    vi.stubEnv("PAPERCLIP_TOOL_ACTION_SIGNING_SECRET", "slack-tools-integration-signing-secret");
+    vi.stubEnv("WARDMOTE_TOOL_ACTION_SIGNING_SECRET", "slack-tools-integration-signing-secret");
     onTestFinished(() => vi.unstubAllEnvs());
     const originalFetch = globalThis.fetch;
     const postFetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
@@ -15818,7 +15818,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     expect(failure).toMatchObject({
       status: 422,
       message:
-        "Telegram webhooks require PAPERCLIP_CHAT_WEBHOOK_PUBLIC_URL to use HTTPS on port 443, 80, 88, or 8443",
+        "Telegram webhooks require WARDMOTE_CHAT_WEBHOOK_PUBLIC_URL to use HTTPS on port 443, 80, 88, or 8443",
       details: {
         code: "chat_telegram_webhook_url_unsupported",
         provider: "telegram",
@@ -43867,8 +43867,8 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
 
   it("publishes GitHub questions as link-only cards with no executable callback", async () => {
     const fixture = await seedCompany();
-    const previousPublicUrl = process.env.PAPERCLIP_PUBLIC_URL;
-    process.env.PAPERCLIP_PUBLIC_URL = "https://paperclip.example";
+    const previousPublicUrl = process.env.WARDMOTE_PUBLIC_URL;
+    process.env.WARDMOTE_PUBLIC_URL = "https://paperclip.example";
     try {
       const { callbacks, endpoint, runtime, service } =
         await configuredGitHubEndpoint(fixture);
@@ -43962,15 +43962,15 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       ).toContain(`https://paperclip.example/issues/${conversation!.issueId}`);
     } finally {
       if (previousPublicUrl === undefined)
-        delete process.env.PAPERCLIP_PUBLIC_URL;
-      else process.env.PAPERCLIP_PUBLIC_URL = previousPublicUrl;
+        delete process.env.WARDMOTE_PUBLIC_URL;
+      else process.env.WARDMOTE_PUBLIC_URL = previousPublicUrl;
     }
   });
 
   it("keeps a successful GitHub link-question continuation final internal", async () => {
     const fixture = await seedCompany();
-    const previousPublicUrl = process.env.PAPERCLIP_PUBLIC_URL;
-    process.env.PAPERCLIP_PUBLIC_URL = "https://paperclip.example";
+    const previousPublicUrl = process.env.WARDMOTE_PUBLIC_URL;
+    process.env.WARDMOTE_PUBLIC_URL = "https://paperclip.example";
     try {
       const continuationRunId = randomUUID();
       const wakeup = vi.fn(async (agentId, options) => {
@@ -44168,8 +44168,8 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       await service.shutdown();
     } finally {
       if (previousPublicUrl === undefined)
-        delete process.env.PAPERCLIP_PUBLIC_URL;
-      else process.env.PAPERCLIP_PUBLIC_URL = previousPublicUrl;
+        delete process.env.WARDMOTE_PUBLIC_URL;
+      else process.env.WARDMOTE_PUBLIC_URL = previousPublicUrl;
     }
   });
 
@@ -59514,11 +59514,11 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
             : mode === "malformed_account"
               ? 123
               : providerAccount;
-      const previous = process.env.PAPERCLIP_RUNNER_STATE_DIR;
+      const previous = process.env.WARDMOTE_RUNNER_STATE_DIR;
       const directory = mkdtempSync(
         path.join(os.tmpdir(), "paperclip-chat-cleanup-retry-"),
       );
-      process.env.PAPERCLIP_RUNNER_STATE_DIR = directory;
+      process.env.WARDMOTE_RUNNER_STATE_DIR = directory;
       try {
         const runId = randomUUID();
         const nativeSessionId = context.binding.normalizedSessionId;
@@ -59894,8 +59894,8 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       } finally {
         await context.service.shutdown();
         if (previous === undefined)
-          delete process.env.PAPERCLIP_RUNNER_STATE_DIR;
-        else process.env.PAPERCLIP_RUNNER_STATE_DIR = previous;
+          delete process.env.WARDMOTE_RUNNER_STATE_DIR;
+        else process.env.WARDMOTE_RUNNER_STATE_DIR = previous;
         rmSync(directory, { recursive: true, force: true });
       }
     },
@@ -59950,7 +59950,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
             : kind === "malformed_account"
               ? 123
               : providerAccount;
-      const previousStateDirectory = process.env.PAPERCLIP_RUNNER_STATE_DIR;
+      const previousStateDirectory = process.env.WARDMOTE_RUNNER_STATE_DIR;
       let stateDirectory: string | null = null;
       try {
         const nativeSessionId = randomUUID();
@@ -60078,7 +60078,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
           stateDirectory = mkdtempSync(
             path.join(os.tmpdir(), "paperclip-chat-retry-checkpoint-"),
           );
-          process.env.PAPERCLIP_RUNNER_STATE_DIR = stateDirectory;
+          process.env.WARDMOTE_RUNNER_STATE_DIR = stateDirectory;
           const canonical = (value: unknown): string =>
             value && typeof value === "object" && !Array.isArray(value)
               ? `{${Object.entries(value)
@@ -60181,8 +60181,8 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         await context.service.shutdown();
         if (stateDirectory) {
           if (previousStateDirectory === undefined)
-            delete process.env.PAPERCLIP_RUNNER_STATE_DIR;
-          else process.env.PAPERCLIP_RUNNER_STATE_DIR = previousStateDirectory;
+            delete process.env.WARDMOTE_RUNNER_STATE_DIR;
+          else process.env.WARDMOTE_RUNNER_STATE_DIR = previousStateDirectory;
           rmSync(stateDirectory, { recursive: true, force: true });
         }
       }

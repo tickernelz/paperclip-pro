@@ -81,7 +81,7 @@ export function inspectNativeCompletionRunnerd({ repositoryRoot, sourceSha, sour
     binaryBytes = stat.size;
     binarySha256 = archiveDigest(binary);
     if (hosted) {
-      if (environment.PAPERCLIP_RUNNER_E2E_SOURCE_SHA !== sourceSha || !/^[a-f0-9]{40}$/.test(sourceSha ?? ""))
+      if (environment.WARDMOTE_RUNNER_E2E_SOURCE_SHA !== sourceSha || !/^[a-f0-9]{40}$/.test(sourceSha ?? ""))
         throw new Error("trusted hosted target SHA does not match admitted Git HEAD");
       if (![environment.GITHUB_RUN_ID, environment.GITHUB_RUN_ATTEMPT].every(value => typeof value === "string" && value === value.trim() && /^[1-9]\d*$/.test(value)))
         throw new Error("trusted hosted workflow run and attempt are unavailable");

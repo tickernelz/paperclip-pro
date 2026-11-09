@@ -38,7 +38,7 @@ export async function provisionPackageRoot(entrypoint) {
   return { root, manifest, cli, assetRoot: vendored ? resolve(cli, "..") : root };
 }
 async function verifiedInstallation(root, manifest) {
-  const keys = ["PAPERCLIP_ACPX_PROVIDER_PACKAGE_ROOT", "PAPERCLIP_ACPX_PROVIDER_PACKAGE_MANIFEST"];
+  const keys = ["WARDMOTE_ACPX_PROVIDER_PACKAGE_ROOT", "WARDMOTE_ACPX_PROVIDER_PACKAGE_MANIFEST"];
   const previous = keys.map(key => process.env[key]);
   process.env[keys[0]] = root; process.env[keys[1]] = manifest;
   try { const installation = await verifyPiInstallation(QUALIFIED_ACPX_PROFILES.pi); const lease = await installation.openCommand(); await lease.close(); }

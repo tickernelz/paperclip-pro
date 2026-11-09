@@ -4,14 +4,14 @@ This runbook covers Paperclip Tools & Access runtime slots for MCP connections. 
 
 Do not print raw bearer tokens, gateway session tokens, credential headers, environment variables, or secret values while following this runbook. The APIs below return redacted state and audit metadata; keep shell tracing disabled when exporting credentials.
 
-Tool action approvals require `PAPERCLIP_TOOL_ACTION_SIGNING_SECRET` to be set independently from auth/JWT secrets. `wardmote onboard` generates it for local instances, and worktree setup propagates or generates an independent value in the worktree `.env`; operator-managed deployments must set it explicitly. Rotate it deliberately: changing it invalidates outstanding signed tool-action approvals, so drain or reject pending approvals before rotation.
+Tool action approvals require `WARDMOTE_TOOL_ACTION_SIGNING_SECRET` to be set independently from auth/JWT secrets. `wardmote onboard` generates it for local instances, and worktree setup propagates or generates an independent value in the worktree `.env`; operator-managed deployments must set it explicitly. Rotate it deliberately: changing it invalidates outstanding signed tool-action approvals, so drain or reject pending approvals before rotation.
 
 ## Support Matrix
 
 | Transport | Local trusted | Hosted cloud / public authenticated | Notes |
 | --- | --- | --- | --- |
 | `remote_http` | Supported | Supported | Preferred production path. Paperclip proxies calls through the gateway with policy, audit, timeout, and redaction controls. |
-| `local_stdio` | Supported through approved templates and supervised runtime slots | Supported only when an explicitly trusted MCP runtime worker/host is configured | Set `PAPERCLIP_TRUSTED_MCP_RUNTIME_HOST` or `PAPERCLIP_TOOL_RUNTIME_TRUSTED_HOST` only for a worker that is allowed to supervise local processes. Do not enable arbitrary agent-supplied commands. |
+| `local_stdio` | Supported through approved templates and supervised runtime slots | Supported only when an explicitly trusted MCP runtime worker/host is configured | Set `WARDMOTE_TRUSTED_MCP_RUNTIME_HOST` or `WARDMOTE_TOOL_RUNTIME_TRUSTED_HOST` only for a worker that is allowed to supervise local processes. Do not enable arbitrary agent-supplied commands. |
 
 ## Native runtime gateway ownership
 
@@ -43,7 +43,7 @@ The board runtime health API summarizes one-hour event windows plus current dura
 ```sh
 curl -fsS \
   -H "Authorization: Bearer $BOARD_API_KEY" \
-  "$PAPERCLIP_URL/api/companies/$COMPANY_ID/tools/runtime-health" | jq .
+  "$WARDMOTE_URL/api/companies/$COMPANY_ID/tools/runtime-health" | jq .
 ```
 
 Metrics surfaced there include:
@@ -77,7 +77,7 @@ Metrics surfaced there include:
    ```sh
    curl -fsS \
      -H "Authorization: Bearer $BOARD_API_KEY" \
-     "$PAPERCLIP_URL/api/companies/$COMPANY_ID/tools/runtime-health" | jq '{status, metrics, alerts}'
+     "$WARDMOTE_URL/api/companies/$COMPANY_ID/tools/runtime-health" | jq '{status, metrics, alerts}'
    ```
 
 2. List durable runtime slots:
@@ -85,7 +85,7 @@ Metrics surfaced there include:
    ```sh
    curl -fsS \
      -H "Authorization: Bearer $BOARD_API_KEY" \
-     "$PAPERCLIP_URL/api/companies/$COMPANY_ID/tools/runtime-slots" | jq .
+     "$WARDMOTE_URL/api/companies/$COMPANY_ID/tools/runtime-slots" | jq .
    ```
 
 3. Inspect recent gateway audit events without printing secrets:
@@ -93,7 +93,7 @@ Metrics surfaced there include:
    ```sh
    curl -fsS \
      -H "Authorization: Bearer $BOARD_API_KEY" \
-     "$PAPERCLIP_URL/api/tool-gateway/audit?companyId=$COMPANY_ID&limit=100" \
+     "$WARDMOTE_URL/api/tool-gateway/audit?companyId=$COMPANY_ID&limit=100" \
      | jq '[.[] | {createdAt, action, entityType, entityId, reasonCode: .details.reasonCode, tool: .details.tool, durationMs: .details.durationMs}]'
    ```
 
@@ -107,7 +107,7 @@ Stop the slot first when it is stale, idle, failed, or confirmed not to be servi
 curl -fsS -X POST \
   -H "Authorization: Bearer $BOARD_API_KEY" \
   -H "Content-Type: application/json" \
-  "$PAPERCLIP_URL/api/companies/$COMPANY_ID/tools/runtime-slots/$SLOT_ID/stop" \
+  "$WARDMOTE_URL/api/companies/$COMPANY_ID/tools/runtime-slots/$SLOT_ID/stop" \
   -d '{}' | jq .
 ```
 
@@ -117,7 +117,7 @@ Restart once when the template/config is expected to recover:
 curl -fsS -X POST \
   -H "Authorization: Bearer $BOARD_API_KEY" \
   -H "Content-Type: application/json" \
-  "$PAPERCLIP_URL/api/companies/$COMPANY_ID/tools/runtime-slots/$SLOT_ID/restart" \
+  "$WARDMOTE_URL/api/companies/$COMPANY_ID/tools/runtime-slots/$SLOT_ID/restart" \
   -d '{}' | jq .
 ```
 
@@ -127,7 +127,7 @@ If restart suppression fires, do not keep retrying. Disable the connection:
 curl -fsS -X PATCH \
   -H "Authorization: Bearer $BOARD_API_KEY" \
   -H "Content-Type: application/json" \
-  "$PAPERCLIP_URL/api/tool-connections/$CONNECTION_ID" \
+  "$WARDMOTE_URL/api/tool-connections/$CONNECTION_ID" \
   -d '{"enabled":false,"status":"disabled"}' | jq '{id, name, enabled, status, healthStatus}'
 ```
 
@@ -139,7 +139,7 @@ curl -fsS -X PATCH \
    curl -fsS -X POST \
      -H "Authorization: Bearer $BOARD_API_KEY" \
      -H "Content-Type: application/json" \
-     "$PAPERCLIP_URL/api/tool-connections/$CONNECTION_ID/health-check" \
+     "$WARDMOTE_URL/api/tool-connections/$CONNECTION_ID/health-check" \
      -d '{}' | jq '{connection: {id: .connection.id, healthStatus: .connection.healthStatus, healthMessage: .connection.healthMessage}, runtimeSlot}'
    ```
 
@@ -149,7 +149,7 @@ curl -fsS -X PATCH \
    curl -fsS -X POST \
      -H "Authorization: Bearer $BOARD_API_KEY" \
      -H "Content-Type: application/json" \
-     "$PAPERCLIP_URL/api/tool-connections/$CONNECTION_ID/catalog/refresh" \
+     "$WARDMOTE_URL/api/tool-connections/$CONNECTION_ID/catalog/refresh" \
      -d '{}' | jq '{discoveredCount, quarantinedCount}'
    ```
 
@@ -158,7 +158,7 @@ curl -fsS -X PATCH \
    ```sh
    curl -fsS \
      -H "Authorization: Bearer $BOARD_API_KEY" \
-     "$PAPERCLIP_URL/api/companies/$COMPANY_ID/tools/runtime-health" | jq '{status, metrics, alerts}'
+     "$WARDMOTE_URL/api/companies/$COMPANY_ID/tools/runtime-health" | jq '{status, metrics, alerts}'
    ```
 
 Recovery is complete when stuck-slot alerts clear, timeout/error rates return below threshold, the connection is healthy or intentionally disabled, and audit events show no new restart suppression or capacity deferrals.

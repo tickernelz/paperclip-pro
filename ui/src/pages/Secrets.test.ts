@@ -96,7 +96,7 @@ describe("Secrets page provider helpers", () => {
           provider: "aws_secrets_manager",
           status: "warn",
           message:
-            "AWS Secrets Manager provider is not ready: missing PAPERCLIP_SECRETS_AWS_DEPLOYMENT_ID.",
+            "AWS Secrets Manager provider is not ready: missing WARDMOTE_SECRETS_AWS_DEPLOYMENT_ID.",
         },
       ],
     };
@@ -108,7 +108,7 @@ describe("Secrets page provider helpers", () => {
         health,
       ),
     ).toBe(
-      "Deployment default AWS Secrets Manager is not configured. Select a ready provider vault or configure the deployment default. AWS Secrets Manager provider is not ready: missing PAPERCLIP_SECRETS_AWS_DEPLOYMENT_ID.",
+      "Deployment default AWS Secrets Manager is not configured. Select a ready provider vault or configure the deployment default. AWS Secrets Manager provider is not ready: missing WARDMOTE_SECRETS_AWS_DEPLOYMENT_ID.",
     );
   });
 

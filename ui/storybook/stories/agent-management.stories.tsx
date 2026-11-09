@@ -108,7 +108,7 @@ const agentManagementAgents: Agent[] = [
       extraArgs: ["--full-auto"],
       env: {
         OPENAI_API_KEY: { type: "secret_ref", secretId: "secret-openai", version: "latest" },
-        PAPERCLIP_TRACE: { type: "plain", value: "storybook" },
+        WARDMOTE_TRACE: { type: "plain", value: "storybook" },
       } satisfies Record<string, EnvBinding>,
       timeoutSec: 7200,
       graceSec: 20,
@@ -494,7 +494,7 @@ function AgentConfigFormStory() {
     extraArgs: "--full-auto, --search",
     envBindings: {
       OPENAI_API_KEY: { type: "secret_ref", secretId: "secret-openai", version: "latest" },
-      PAPERCLIP_TRACE: { type: "plain", value: "storybook" },
+      WARDMOTE_TRACE: { type: "plain", value: "storybook" },
     },
     runtimeServicesJson: JSON.stringify(
       [
@@ -663,7 +663,7 @@ function ConfigPrimitivesStory() {
     runtimeServices: [
       { name: "api", command: "pnpm dev:once", healthUrl: "http://localhost:3100/api/health" },
     ],
-    env: { PAPERCLIP_BIND: "lan" },
+    env: { WARDMOTE_BIND: "lan" },
   }, null, 2));
 
   return (
@@ -871,7 +871,7 @@ function ForcedKubernetesFixtures({
   queryClient.setQueryData(queryKeys.secrets.list(COMPANY_ID), storybookSecrets);
   queryClient.setQueryData(queryKeys.adapters.all, adapterFixtures);
   // The instance-level execution policy that forces all agent execution onto
-  // the managed Kubernetes sandbox (PAPERCLIP_EXECUTION_MODE=kubernetes).
+  // the managed Kubernetes sandbox (WARDMOTE_EXECUTION_MODE=kubernetes).
   queryClient.setQueryData(queryKeys.instance.generalSettings, {
     censorUsernameInLogs: false,
     executionMode: "kubernetes",

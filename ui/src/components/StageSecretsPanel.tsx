@@ -74,7 +74,7 @@ export function StageSecretsPanel({
         <p>
           These env vars are injected when{" "}
           <span className="font-medium text-ink">{displayName}</span> runs this step. They override
-          matching project and agent env on collisions. <span className="font-mono">PAPERCLIP_*</span> names
+          matching project and agent env on collisions. <span className="font-mono">WARDMOTE_*</span> names
           are reserved.
         </p>
       </div>

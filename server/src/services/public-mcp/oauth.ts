@@ -28,7 +28,7 @@ export class PublicMcpDisabledError extends McpOAuthError {
 const invalidGrant = () => new McpOAuthError("invalid_grant", "Authorization is expired, revoked, or invalid.");
 
 export function publicMcpConfig(env: NodeJS.ProcessEnv = process.env, authPublicBaseUrl?: string) {
-  const origin = env.PAPERCLIP_PUBLIC_URL ?? authPublicBaseUrl;
+  const origin = env.WARDMOTE_PUBLIC_URL ?? authPublicBaseUrl;
   if (!origin) return null;
   const normalizeOrigin = (value: string, setting: string) => {
     const url = new URL(value);
@@ -39,11 +39,11 @@ export function publicMcpConfig(env: NodeJS.ProcessEnv = process.env, authPublic
     }
     return url.origin;
   };
-  const publicOrigin = normalizeOrigin(origin, "PAPERCLIP_PUBLIC_URL");
+  const publicOrigin = normalizeOrigin(origin, "WARDMOTE_PUBLIC_URL");
   // Optional browser ingress for the same instance. Protocol issuer, resource,
   // token exchange and callback delivery remain on the public MCP origin.
-  const authorizationOrigin = env.PAPERCLIP_MCP_AUTHORIZATION_ORIGIN
-    ? normalizeOrigin(env.PAPERCLIP_MCP_AUTHORIZATION_ORIGIN, "PAPERCLIP_MCP_AUTHORIZATION_ORIGIN") : undefined;
+  const authorizationOrigin = env.WARDMOTE_MCP_AUTHORIZATION_ORIGIN
+    ? normalizeOrigin(env.WARDMOTE_MCP_AUTHORIZATION_ORIGIN, "WARDMOTE_MCP_AUTHORIZATION_ORIGIN") : undefined;
   return { origin: publicOrigin, resource: publicOrigin + PUBLIC_MCP_PATH, ...(authorizationOrigin ? { authorizationOrigin } : {}) };
 }
 export type PublicMcpConfig = NonNullable<ReturnType<typeof publicMcpConfig>>;

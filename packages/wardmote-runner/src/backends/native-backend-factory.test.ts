@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { parseNativeExecutionInput, type NativeExecutionInput } from "../contracts/native-execution.js";
-import { NATIVE_RUNTIME_ASSET_SCHEMA, PAPERCLIP_EXECUTION_PROMPT, PAPERCLIP_EXECUTION_PROMPT_REVISION, nativeRuntimePromptDigest, canonicalNativeRuntimeContextDigest, composeNativeSystemInstructions } from "../contracts/runtime-context.js";
+import { NATIVE_RUNTIME_ASSET_SCHEMA, WARDMOTE_EXECUTION_PROMPT, WARDMOTE_EXECUTION_PROMPT_REVISION, nativeRuntimePromptDigest, canonicalNativeRuntimeContextDigest, composeNativeSystemInstructions } from "../contracts/runtime-context.js";
 
 const contextRoots: string[] = [];
 afterEach(() => { for (const root of contextRoots.splice(0)) rmSync(root, { recursive: true, force: true }); });
@@ -16,7 +16,7 @@ function preparedExecution(base: NativeExecutionInput): NativeExecutionInput {
   writeFileSync(join(root, "AGENTS.md"), "Keep assigned instructions.");
   const digest = "0".repeat(64);
   const context = {
-    prompt: { revision: PAPERCLIP_EXECUTION_PROMPT_REVISION, text: PAPERCLIP_EXECUTION_PROMPT, digest: nativeRuntimePromptDigest() },
+    prompt: { revision: WARDMOTE_EXECUTION_PROMPT_REVISION, text: WARDMOTE_EXECUTION_PROMPT, digest: nativeRuntimePromptDigest() },
     instructions: { entryPath: "AGENTS.md", bundle: { schema: NATIVE_RUNTIME_ASSET_SCHEMA, digest, manifestDigest: digest, rootPath: root, fileCount: 1, totalBytes: 27 } },
     skills: [], mcp: { assignmentSetId: "none", digest, bindingId: null },
   };
@@ -295,7 +295,7 @@ describe("native backend factory", () => {
       environment: {
         HOME: remoteWorkspace,
         CODEX_HOME: `${remoteWorkspace}/.codex`,
-        PAPERCLIP_WORKSPACE_CWD: remoteWorkspace,
+        WARDMOTE_WORKSPACE_CWD: remoteWorkspace,
       },
     });
 
@@ -329,7 +329,7 @@ describe("native backend factory", () => {
         captured = context?.baseInstructions;
         return transport;
       },
-      environment: { ...process.env, PAPERCLIP_WORKSPACE_CWD: WORKSPACE },
+      environment: { ...process.env, WARDMOTE_WORKSPACE_CWD: WORKSPACE },
     });
     const session = await backend.openSession({
       identity: { runId: "run", sessionId: "session", companyId: "company", issueId: "issue", agentId: "agent" },
@@ -344,7 +344,7 @@ describe("native backend factory", () => {
       createNativeSessionBackend(execution(), {
         workingDirectoryAuthority: "remote_runner",
         environment: {
-          PAPERCLIP_WORKSPACE_CWD: "/home/daytona/paperclip-workspace",
+          WARDMOTE_WORKSPACE_CWD: "/home/daytona/paperclip-workspace",
         },
       }),
     ).toThrow("requires a runnerd transport");
@@ -362,7 +362,7 @@ describe("native backend factory", () => {
         codexTransportFactory: () => transport,
         environment: {
           ...process.env,
-          PAPERCLIP_WORKSPACE_CWD: WORKSPACE,
+          WARDMOTE_WORKSPACE_CWD: WORKSPACE,
         },
       });
 
@@ -603,7 +603,7 @@ describe("native backend factory", () => {
     const backend = createCodexNativeSessionBackend(input, {
       transportFactory: () => transport,
       workingDirectoryAuthority: "remote_runner",
-      environment: { PAPERCLIP_WORKSPACE_CWD: WORKSPACE },
+      environment: { WARDMOTE_WORKSPACE_CWD: WORKSPACE },
     });
 
     await backend.openSession({

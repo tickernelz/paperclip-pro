@@ -14,13 +14,13 @@ export default defineConfig({
   webServer: {
     command: "pnpm exec vite --config vite.sdk.config.ts --host 127.0.0.1 --port 4193",
     env: {
-      PAPERCLIP_LIVE_CONSOLE_DRIVER: "codex",
-      PAPERCLIP_LIVE_CONSOLE_MAX_SESSIONS: "8",
+      WARDMOTE_LIVE_CONSOLE_DRIVER: "codex",
+      WARDMOTE_LIVE_CONSOLE_MAX_SESSIONS: "8",
       // The browser middleware creates its disposable working directory below
       // this run-owned root. Tell the nested Codex process about that exact
       // assignment so its workspace-boundary guard remains fail closed.
-      PAPERCLIP_WORKSPACE_CWD:
-        process.env.PAPERCLIP_RUN_SCRATCH_DIR ?? process.cwd(),
+      WARDMOTE_WORKSPACE_CWD:
+        process.env.WARDMOTE_RUN_SCRATCH_DIR ?? process.cwd(),
     },
     url: "http://127.0.0.1:4193/reference-console/",
     reuseExistingServer: false,

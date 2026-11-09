@@ -1,6 +1,6 @@
 import { writeFileSync } from "node:fs";
 
-export const RUN_OOM_SCORE_ADJ_ENV = "PAPERCLIP_RUN_OOM_SCORE_ADJ";
+export const RUN_OOM_SCORE_ADJ_ENV = "WARDMOTE_RUN_OOM_SCORE_ADJ";
 
 export const DEFAULT_RUN_OOM_SCORE_ADJ = 500;
 

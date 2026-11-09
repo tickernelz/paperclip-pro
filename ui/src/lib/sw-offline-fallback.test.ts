@@ -32,7 +32,7 @@ function loadServiceWorkerFetchListener(overrides: {
   // Offline fallback belongs to a stamped production build. Development
   // leaves Vite requests to the browser instead of intercepting them.
   const code = readFileSync(resolve(uiRoot, "public/sw.js"), "utf8")
-    .replace("__PAPERCLIP_BUILD_ID__", "fixture-production");
+    .replace("__WARDMOTE_BUILD_ID__", "fixture-production");
   new Function("self", "caches", "fetch", "Response", "URL", code)(
     swSelf,
     caches,

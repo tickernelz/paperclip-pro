@@ -345,7 +345,7 @@ export function snapshotPiWorkspaceFile(cwd: string, path: string, environment: 
     return !isAbsolute(suffix) && suffix !== ".." && !suffix.startsWith(`..${sep}`);
   };
   if (!within(root, logical) || !within(root, physical)) throw new Error("Pi diff escaped its workspace");
-  for (const protectedPath of pathArray(environment.PAPERCLIP_PI_PROTECTED_ROOTS)) {
+  for (const protectedPath of pathArray(environment.WARDMOTE_PI_PROTECTED_ROOTS)) {
     if (within(protectedPath, logical)) throw new Error("Pi diff targets protected state");
     let protectedPhysical: string;
     try { protectedPhysical = realpathSync(protectedPath); } catch { continue; }
@@ -367,15 +367,15 @@ export function createPiLaunchSpec(
   params: { cwd: string; mcpServers?: unknown[]; sessionPath?: string },
   environment: NodeJS.ProcessEnv,
 ): { command: string; args: string[]; env: NodeJS.ProcessEnv; invocationNamespace: string } {
-  if (environment.PAPERCLIP_ACPX_ISOLATED_CONTEXT !== "1") throw new Error("Pi requires an isolated runner launch");
-  const command = requiredFile(environment, "PAPERCLIP_PI_NODE_EXECUTABLE");
-  const entrypoint = requiredFile(environment, "PAPERCLIP_PI_ENTRYPOINT");
-  const extension = requiredFile(environment, "PAPERCLIP_PI_EXTENSION_PATH");
-  if (environment.PAPERCLIP_PI_READ_ONLY !== "0" && environment.PAPERCLIP_PI_READ_ONLY !== "1") throw new Error("Pi requires an explicit read-only policy");
-  const readRoots = pathArray(environment.PAPERCLIP_PI_READ_ROOTS);
-  const protectedRoots = pathArray(environment.PAPERCLIP_PI_PROTECTED_ROOTS);
+  if (environment.WARDMOTE_ACPX_ISOLATED_CONTEXT !== "1") throw new Error("Pi requires an isolated runner launch");
+  const command = requiredFile(environment, "WARDMOTE_PI_NODE_EXECUTABLE");
+  const entrypoint = requiredFile(environment, "WARDMOTE_PI_ENTRYPOINT");
+  const extension = requiredFile(environment, "WARDMOTE_PI_EXTENSION_PATH");
+  if (environment.WARDMOTE_PI_READ_ONLY !== "0" && environment.WARDMOTE_PI_READ_ONLY !== "1") throw new Error("Pi requires an explicit read-only policy");
+  const readRoots = pathArray(environment.WARDMOTE_PI_READ_ROOTS);
+  const protectedRoots = pathArray(environment.WARDMOTE_PI_PROTECTED_ROOTS);
   const workspace = realpathSync(params.cwd);
-  const suppliedAgentHome = environment.PAPERCLIP_PI_AGENT_HOME;
+  const suppliedAgentHome = environment.WARDMOTE_PI_AGENT_HOME;
   let agentHome: string | undefined;
   if (suppliedAgentHome !== undefined) {
     if (!isAbsolute(suppliedAgentHome) || /[\0\r\n]/.test(suppliedAgentHome) || suppliedAgentHome === "/" || !lstatSync(suppliedAgentHome).isDirectory() || realpathSync(suppliedAgentHome) !== suppliedAgentHome) throw new Error("Pi agent files require a canonical registered directory");
@@ -384,14 +384,14 @@ export function createPiLaunchSpec(
   const invocationNamespace = randomUUID();
   const configuration = JSON.stringify({
     invocationNamespace, workspace, servers: params.mcpServers ?? [],
-    readOnly: environment.PAPERCLIP_PI_READ_ONLY === "1",
+    readOnly: environment.WARDMOTE_PI_READ_ONLY === "1",
     readRoots, protectedRoots,
     ...(agentHome ? { agentHome } : {}),
-    instructions: environment.PAPERCLIP_PI_SYSTEM_INSTRUCTIONS ?? "",
+    instructions: environment.WARDMOTE_PI_SYSTEM_INSTRUCTIONS ?? "",
   });
   if (Buffer.byteLength(configuration) > 64 * 1024) throw new Error("Pi launch configuration exceeds its bound");
-  const guard = environment.PAPERCLIP_PI_MODULE_GUARD_PATH === undefined ? []
-    : ["--require", requiredFile(environment, "PAPERCLIP_PI_MODULE_GUARD_PATH")];
+  const guard = environment.WARDMOTE_PI_MODULE_GUARD_PATH === undefined ? []
+    : ["--require", requiredFile(environment, "WARDMOTE_PI_MODULE_GUARD_PATH")];
   const args = [...guard, entrypoint, "--mode", "rpc", "--no-extensions", "--no-skills", "--no-prompt-templates", "--no-themes", "--no-approve", "--offline", "-e", extension];
   for (const root of readRoots) args.push("--skill", root);
   if (params.sessionPath) {
@@ -403,7 +403,7 @@ export function createPiLaunchSpec(
     if (!suffix || isAbsolute(suffix) || suffix === ".." || suffix.startsWith(`..${sep}`) || !lstatSync(params.sessionPath).isFile()) throw new Error("Pi session escaped its private home");
     args.push("--session", sessionPath);
   }
-  const env: NodeJS.ProcessEnv = { ...environment, PAPERCLIP_PI_RUNTIME_CONFIGURATION: configuration };
+  const env: NodeJS.ProcessEnv = { ...environment, WARDMOTE_PI_RUNTIME_CONFIGURATION: configuration };
   // Ambient AGENT_HOME never grants filesystem authority. Only the runner's
   // authenticated working-copy binding reaches both the model and tool gate.
   if (agentHome) env.AGENT_HOME = agentHome; else delete env.AGENT_HOME;

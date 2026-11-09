@@ -2377,8 +2377,8 @@ rl.on("line", (line) => {
   });
 
   it("starts with another user's personal app and requests authorization only when used", async () => {
-    const originalApiUrl = process.env.PAPERCLIP_API_URL;
-    process.env.PAPERCLIP_API_URL = "http://paperclip.example.test";
+    const originalApiUrl = process.env.WARDMOTE_API_URL;
+    process.env.WARDMOTE_API_URL = "http://paperclip.example.test";
     const company = await createCompany(db);
     const agent = await createAgent(db, company.id);
     const { issue, run } = await createIssueAndRun(db, company.id, agent.id);
@@ -2486,8 +2486,8 @@ rl.on("line", (line) => {
         eq(toolConnections.id, connection.id),
       )).resolves.toEqual([{ healthStatus: "ok" }]);
     } finally {
-      if (originalApiUrl === undefined) delete process.env.PAPERCLIP_API_URL;
-      else process.env.PAPERCLIP_API_URL = originalApiUrl;
+      if (originalApiUrl === undefined) delete process.env.WARDMOTE_API_URL;
+      else process.env.WARDMOTE_API_URL = originalApiUrl;
       await fake.close();
     }
   });

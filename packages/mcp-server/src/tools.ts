@@ -87,11 +87,11 @@ export interface RuntimeConnectionTools {
 }
 
 async function callRuntimeConnectionTool(
-  endpointEnv: "PAPERCLIP_RUNTIME_TOOLS_CONNECTIONS_SEARCH_URL" | "PAPERCLIP_RUNTIME_TOOLS_CONNECTION_REQUEST_URL",
+  endpointEnv: "WARDMOTE_RUNTIME_TOOLS_CONNECTIONS_SEARCH_URL" | "WARDMOTE_RUNTIME_TOOLS_CONNECTION_REQUEST_URL",
   body: unknown,
 ) {
   const endpoint = process.env[endpointEnv]?.trim();
-  const token = process.env.PAPERCLIP_RUNTIME_TOOLS_TOKEN?.trim();
+  const token = process.env.WARDMOTE_RUNTIME_TOOLS_TOKEN?.trim();
   if (!endpoint || !token) {
     throw new Error("Connection intent tools are available only inside an active Paperclip heartbeat run");
   }
@@ -116,8 +116,8 @@ async function callRuntimeConnectionTool(
 }
 
 const envRuntimeConnectionTools: RuntimeConnectionTools = {
-  search: (input) => callRuntimeConnectionTool("PAPERCLIP_RUNTIME_TOOLS_CONNECTIONS_SEARCH_URL", input),
-  request: (input) => callRuntimeConnectionTool("PAPERCLIP_RUNTIME_TOOLS_CONNECTION_REQUEST_URL", input),
+  search: (input) => callRuntimeConnectionTool("WARDMOTE_RUNTIME_TOOLS_CONNECTIONS_SEARCH_URL", input),
+  request: (input) => callRuntimeConnectionTool("WARDMOTE_RUNTIME_TOOLS_CONNECTION_REQUEST_URL", input),
 };
 
 const companyIdOptional = z.string().guid().optional().nullable();

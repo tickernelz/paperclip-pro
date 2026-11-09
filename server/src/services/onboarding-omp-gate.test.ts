@@ -27,7 +27,7 @@ describe("onboardingOmpGateFailure", () => {
 
   it("does not gate the Docker image, a remote environment, or another adapter", async () => {
     const probe = vi.fn(async () => probeOf("missing", null));
-    expect(await onboardingOmpGateFailure(local, { PAPERCLIP_OMP_BUNDLED_VERSION: "18.18.0" }, probe)).toBeNull();
+    expect(await onboardingOmpGateFailure(local, { WARDMOTE_OMP_BUNDLED_VERSION: "18.18.0" }, probe)).toBeNull();
     expect(await onboardingOmpGateFailure({ ...local, defaultEnvironmentId: "env-1" }, {}, probe)).toBeNull();
     expect(await onboardingOmpGateFailure({ adapterType: "process", adapterConfig: {} }, {}, probe)).toBeNull();
     expect(probe).not.toHaveBeenCalled();

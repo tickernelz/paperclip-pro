@@ -11,12 +11,12 @@ import {
   writeOmpPythonEnvBridge,
 } from "./python-env.js";
 
-const PRINT_API_URL = 'import os;print(os.environ.get("PAPERCLIP_API_URL"))';
+const PRINT_API_URL = 'import os;print(os.environ.get("WARDMOTE_API_URL"))';
 
 function strippedEnv(extra: Record<string, string>): Record<string, string> {
   const env: Record<string, string> = {};
   for (const [key, value] of Object.entries(process.env)) {
-    if (value === undefined || key.startsWith("PAPERCLIP_") || key.startsWith("PYTHON")) continue;
+    if (value === undefined || key.startsWith("WARDMOTE_") || key.startsWith("PYTHON")) continue;
     env[key] = value;
   }
   return { ...env, ...extra };
@@ -38,7 +38,7 @@ describe("OMP Python env bridge sitecustomize", () => {
     await fs.writeFile(path.join(bridgeDir, OMP_PYTHON_SITECUSTOMIZE_FILE_NAME), renderOmpSitecustomize(), "utf8");
     await fs.writeFile(
       path.join(bridgeDir, OMP_PYTHON_ENV_FILE_NAME),
-      renderOmpPythonEnvData({ PAPERCLIP_API_URL: "http://bridge.invalid/api", HOME: "/not-forwarded" }),
+      renderOmpPythonEnvData({ WARDMOTE_API_URL: "http://bridge.invalid/api", HOME: "/not-forwarded" }),
       "utf8",
     );
   });
@@ -47,7 +47,7 @@ describe("OMP Python env bridge sitecustomize", () => {
     await fs.rm(root, { recursive: true, force: true });
   });
 
-  it("restores a PAPERCLIP_* value that the parent stripped from the environment", () => {
+  it("restores a WARDMOTE_* value that the parent stripped from the environment", () => {
     const withBridge = python(PRINT_API_URL, strippedEnv({ PYTHONPATH: bridgeDir }));
     expect(withBridge).toEqual({ status: 0, stdout: "http://bridge.invalid/api", stderr: "" });
     const withoutBridge = python(PRINT_API_URL, strippedEnv({}));
@@ -57,16 +57,16 @@ describe("OMP Python env bridge sitecustomize", () => {
   it("keeps a value already present in the environment", () => {
     const existing = python(
       PRINT_API_URL,
-      strippedEnv({ PYTHONPATH: bridgeDir, PAPERCLIP_API_URL: "http://already.set/api" }),
+      strippedEnv({ PYTHONPATH: bridgeDir, WARDMOTE_API_URL: "http://already.set/api" }),
     );
     expect(existing.stdout).toBe("http://already.set/api");
     const absent = python(PRINT_API_URL, strippedEnv({ PYTHONPATH: bridgeDir }));
     expect(absent.stdout).toBe("http://bridge.invalid/api");
   });
 
-  it("only forwards PAPERCLIP_* keys into the data file", () => {
-    expect(JSON.parse(renderOmpPythonEnvData({ PAPERCLIP_RUN_ID: "r", HOME: "/h", PATH: "/bin" }))).toEqual({
-      PAPERCLIP_RUN_ID: "r",
+  it("only forwards WARDMOTE_* keys into the data file", () => {
+    expect(JSON.parse(renderOmpPythonEnvData({ WARDMOTE_RUN_ID: "r", HOME: "/h", PATH: "/bin" }))).toEqual({
+      WARDMOTE_RUN_ID: "r",
     });
   });
 
@@ -102,7 +102,7 @@ describe("OMP Python env bridge sitecustomize", () => {
       "import os\nos.environ['USER_SITECUSTOMIZE_MARKER'] = 'ran'\n",
       "utf8",
     );
-    const code = 'import os;print(os.environ.get("PAPERCLIP_API_URL"), os.environ.get("USER_SITECUSTOMIZE_MARKER"))';
+    const code = 'import os;print(os.environ.get("WARDMOTE_API_URL"), os.environ.get("USER_SITECUSTOMIZE_MARKER"))';
     const chained = python(code, strippedEnv({ PYTHONPATH: [bridgeDir, userDir].join(path.delimiter) }));
     expect(chained).toEqual({ status: 0, stdout: "http://bridge.invalid/api ran", stderr: "" });
     await fs.writeFile(path.join(bridgeDir, OMP_PYTHON_SITECUSTOMIZE_FILE_NAME), "import os\n", "utf8");
@@ -128,7 +128,7 @@ describe("OMP Python env bridge sitecustomize", () => {
     await fs.mkdir(laterDir);
     await fs.writeFile(
       path.join(outerDir, OMP_PYTHON_ENV_FILE_NAME),
-      renderOmpPythonEnvData({ PAPERCLIP_API_URL: "http://outer.invalid/api" }),
+      renderOmpPythonEnvData({ WARDMOTE_API_URL: "http://outer.invalid/api" }),
       "utf8",
     );
     await fs.writeFile(
@@ -136,7 +136,7 @@ describe("OMP Python env bridge sitecustomize", () => {
       'import os\nos.environ["LATER_RUNS"] = str(int(os.environ.get("LATER_RUNS", "0")) + 1)\n',
       "utf8",
     );
-    const code = 'import os;print(os.environ.get("BRIDGE_RUNS"), os.environ.get("LATER_RUNS"), os.environ.get("PAPERCLIP_API_URL"))';
+    const code = 'import os;print(os.environ.get("BRIDGE_RUNS"), os.environ.get("LATER_RUNS"), os.environ.get("WARDMOTE_API_URL"))';
     const stacked = strippedEnv({ PYTHONPATH: [outerDir, bridgeDir, laterDir].join(path.delimiter) });
 
     for (const dir of [outerDir, bridgeDir]) {
@@ -157,7 +157,7 @@ describe("OMP Python env bridge sitecustomize", () => {
       runId: "run-pyenv",
       target: null,
       remote: false,
-      env: { PAPERCLIP_API_KEY: "secret-token", PATH: "/bin" },
+      env: { WARDMOTE_API_KEY: "secret-token", PATH: "/bin" },
       remoteRootDir: null,
       cwd: root,
       timeoutSec: 0,
@@ -166,16 +166,16 @@ describe("OMP Python env bridge sitecustomize", () => {
     const dataFile = path.join(bridge.dir, OMP_PYTHON_ENV_FILE_NAME);
     expect((await fs.stat(bridge.dir)).mode & 0o777).toBe(0o700);
     expect((await fs.stat(dataFile)).mode & 0o777).toBe(0o600);
-    expect(JSON.parse(await fs.readFile(dataFile, "utf8"))).toEqual({ PAPERCLIP_API_KEY: "secret-token" });
+    expect(JSON.parse(await fs.readFile(dataFile, "utf8"))).toEqual({ WARDMOTE_API_KEY: "secret-token" });
     expect(bridge.launch("omp", ["--mode", "rpc"])).toEqual({ command: "omp", args: ["--mode", "rpc"] });
     const visible = python(
-      'import os;print(os.environ.get("PAPERCLIP_API_KEY"))',
+      'import os;print(os.environ.get("WARDMOTE_API_KEY"))',
       strippedEnv({ PYTHONPATH: bridge.dir }),
     );
     expect(visible.stdout).toBe("secret-token");
     await bridge.cleanup();
     await expect(fs.access(bridge.dir)).rejects.toThrow();
-    expect(python('import os;print(os.environ.get("PAPERCLIP_API_KEY"))', strippedEnv({ PYTHONPATH: bridge.dir })).stdout)
+    expect(python('import os;print(os.environ.get("WARDMOTE_API_KEY"))', strippedEnv({ PYTHONPATH: bridge.dir })).stdout)
       .toBe("None");
   });
 
@@ -208,7 +208,7 @@ describe("OMP Python env bridge sitecustomize", () => {
         };
       },
     };
-    const runEnv = { PAPERCLIP_API_URL: "http://remote.invalid/api", PAPERCLIP_API_KEY: "remote-secret" };
+    const runEnv = { WARDMOTE_API_URL: "http://remote.invalid/api", WARDMOTE_API_KEY: "remote-secret" };
     const bridge = await writeOmpPythonEnvBridge({
       runId: "run-remote-pyenv",
       target: { kind: "remote", transport: "sandbox", remoteCwd: remoteRoot, runner } as never,
@@ -221,7 +221,7 @@ describe("OMP Python env bridge sitecustomize", () => {
     });
     expect(bridge.dir).toBe(path.posix.join(remoteRoot, "python-env"));
     const code =
-      'import os,host_marker;print(os.environ["PYTHONPATH"]);print(host_marker.VALUE, os.environ.get("PAPERCLIP_API_URL"))';
+      'import os,host_marker;print(os.environ["PYTHONPATH"]);print(host_marker.VALUE, os.environ.get("WARDMOTE_API_URL"))';
     const launch = bridge.launch("python3", ["-c", code]);
     expect(launch.command).toBe("sh");
     expect(launch.args.join(" ")).not.toContain("remote-secret");

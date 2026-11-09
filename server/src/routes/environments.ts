@@ -81,7 +81,7 @@ export function environmentRoutes(
   const instanceSettings = instanceSettingsService(db);
   const projects = projectService(db);
   const secrets = secretService(db);
-  const strictSecretsMode = process.env.PAPERCLIP_SECRETS_STRICT_MODE === "true";
+  const strictSecretsMode = process.env.WARDMOTE_SECRETS_STRICT_MODE === "true";
 
   function parseObject(value: unknown): Record<string, unknown> {
     return value && typeof value === "object" && !Array.isArray(value)

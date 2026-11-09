@@ -93,7 +93,7 @@ import { badRequest, forbidden, notFound, unauthorized, unprocessable } from "..
 
 /**
  * Floor: when the hosting operator hides the Plugins settings surface
- * (`instance.plugins` in PAPERCLIP_HIDDEN_SETTINGS), plugin lifecycle and
+ * (`instance.plugins` in WARDMOTE_HIDDEN_SETTINGS), plugin lifecycle and
  * configuration writes are rejected alongside it. Reads stay open — installed
  * plugins keep running and `/plugins/ui-contributions` still powers their UI.
  */
@@ -1123,7 +1123,7 @@ export function pluginRoutes(
    * 4. Transitions to `ready` state if no new capability approval is needed
    *
    * Cloud-managed instances (identified by the harness-injected
-   * `PAPERCLIP_MANAGED_CONFIG` environment variable) enforce a positive
+   * `WARDMOTE_MANAGED_CONFIG` environment variable) enforce a positive
    * allowlist: only local paths that canonicalize to a directory inside the
    * bundled plugin catalog root may be installed. npm/registry installs and
    * arbitrary local paths are rejected with `403`. Local paths are

@@ -114,11 +114,11 @@ export type {
   LoginRunnerRaceResult,
 } from "./login-runner-lifecycle.js";
 export {
-  PAPERCLIP_RUNNER_IDLE_TIMEOUT_DEFAULT_MS,
-  PAPERCLIP_RUNNER_IDLE_TIMEOUT_MAX_MS,
-  PAPERCLIP_RUNNER_DEFAULT_MODELS,
-  PAPERCLIP_RUNNER_PERMISSION_CAPABILITIES,
-  PAPERCLIP_RUNNER_ACPX_PROFILES,
+  WARDMOTE_RUNNER_IDLE_TIMEOUT_DEFAULT_MS,
+  WARDMOTE_RUNNER_IDLE_TIMEOUT_MAX_MS,
+  WARDMOTE_RUNNER_DEFAULT_MODELS,
+  WARDMOTE_RUNNER_PERMISSION_CAPABILITIES,
+  WARDMOTE_RUNNER_ACPX_PROFILES,
   isPaperclipRunnerProvider,
   resolvePaperclipRunnerIdleTimeoutMs,
   resolvePaperclipRunnerModel,
@@ -129,8 +129,8 @@ export {
   resolvePaperclipRunnerPiThinkingLevel,
 } from "./wardmote-runner-permissions.js";
 export {
-  PAPERCLIP_RUNNER_INGRESS_PORT,
-  PAPERCLIP_RUNNER_CONNECT_PATH_PREFIX,
+  WARDMOTE_RUNNER_INGRESS_PORT,
+  WARDMOTE_RUNNER_CONNECT_PATH_PREFIX,
   PaperclipRunnerTransportError,
   buildDirectRunnerConnectUrl,
   resolvePaperclipRunnerTransport,

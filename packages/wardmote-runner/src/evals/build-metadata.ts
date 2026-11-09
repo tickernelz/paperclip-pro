@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 
-import { PAPERCLIP_RUNNER_COMPATIBILITY } from "../compatibility.js";
+import { WARDMOTE_RUNNER_COMPATIBILITY } from "../compatibility.js";
 import {
   PRP_PROTOCOL_MIN_VERSION,
   PRP_PROTOCOL_NAME,
@@ -8,16 +8,16 @@ import {
 } from "../protocol/replay-contract.js";
 import { canonicalCapabilitySemanticCatalog } from "../semantic-tools/catalog.js";
 
-export const PAPERCLIP_RUNNER_BUILD_METADATA_SCHEMA =
+export const WARDMOTE_RUNNER_BUILD_METADATA_SCHEMA =
   "paperclip-runner/build-metadata/v1" as const;
-export const PAPERCLIP_RUNNER_NATIVE_EXECUTION_SCHEMA =
+export const WARDMOTE_RUNNER_NATIVE_EXECUTION_SCHEMA =
   "paperclip-runner/native-execution/v1" as const;
-export const PAPERCLIP_RUNNER_EVAL_INTEGRATION_SCHEMA =
+export const WARDMOTE_RUNNER_EVAL_INTEGRATION_SCHEMA =
   "paperclip-runner/evals-integration/v1" as const;
-export const PAPERCLIP_RUNNERD_BUILD_METADATA_SCHEMA =
+export const WARDMOTE_RUNNERD_BUILD_METADATA_SCHEMA =
   "paperclip-runner/runnerd-build-metadata/v1" as const;
 
-export const PAPERCLIP_RUNNER_SEMANTIC_CATALOG_SHA256 =
+export const WARDMOTE_RUNNER_SEMANTIC_CATALOG_SHA256 =
   `sha256:${createHash("sha256")
     .update(canonicalCapabilitySemanticCatalog())
     .digest("hex")}` as const;
@@ -27,21 +27,21 @@ export const PAPERCLIP_RUNNER_SEMANTIC_CATALOG_SHA256 =
  * Contract versions are independent from package semver so consumers can give
  * a precise mismatch instead of guessing from a package version.
  */
-export const PAPERCLIP_RUNNER_BUILD_METADATA = Object.freeze({
-  schema: PAPERCLIP_RUNNER_BUILD_METADATA_SCHEMA,
+export const WARDMOTE_RUNNER_BUILD_METADATA = Object.freeze({
+  schema: WARDMOTE_RUNNER_BUILD_METADATA_SCHEMA,
   package: Object.freeze({
-    name: PAPERCLIP_RUNNER_COMPATIBILITY.packageName,
-    version: PAPERCLIP_RUNNER_COMPATIBILITY.packageVersion,
+    name: WARDMOTE_RUNNER_COMPATIBILITY.packageName,
+    version: WARDMOTE_RUNNER_COMPATIBILITY.packageVersion,
   }),
   contracts: Object.freeze({
-    evalIntegration: PAPERCLIP_RUNNER_COMPATIBILITY.components.evalIntegration,
-    nativeExecution: PAPERCLIP_RUNNER_COMPATIBILITY.components.nativeExecution,
-    runnerdArtifact: PAPERCLIP_RUNNER_COMPATIBILITY.components.runnerdBinary,
+    evalIntegration: WARDMOTE_RUNNER_COMPATIBILITY.components.evalIntegration,
+    nativeExecution: WARDMOTE_RUNNER_COMPATIBILITY.components.nativeExecution,
+    runnerdArtifact: WARDMOTE_RUNNER_COMPATIBILITY.components.runnerdBinary,
     prp: PRP_PROTOCOL_VERSION,
-    semanticCatalog: PAPERCLIP_RUNNER_COMPATIBILITY.components.catalog,
-    harnessDriver: PAPERCLIP_RUNNER_COMPATIBILITY.components.harnessDriver,
-    controlPlaneAdapter: PAPERCLIP_RUNNER_COMPATIBILITY.components.controlPlaneAdapter,
-    testkit: PAPERCLIP_RUNNER_COMPATIBILITY.components.testkit,
+    semanticCatalog: WARDMOTE_RUNNER_COMPATIBILITY.components.catalog,
+    harnessDriver: WARDMOTE_RUNNER_COMPATIBILITY.components.harnessDriver,
+    controlPlaneAdapter: WARDMOTE_RUNNER_COMPATIBILITY.components.controlPlaneAdapter,
+    testkit: WARDMOTE_RUNNER_COMPATIBILITY.components.testkit,
   }),
   prp: Object.freeze({
     name: PRP_PROTOCOL_NAME,
@@ -49,14 +49,14 @@ export const PAPERCLIP_RUNNER_BUILD_METADATA = Object.freeze({
     maximumVersion: PRP_PROTOCOL_VERSION,
   }),
   semanticCatalog: Object.freeze({
-    version: PAPERCLIP_RUNNER_COMPATIBILITY.components.catalog,
-    sha256: PAPERCLIP_RUNNER_SEMANTIC_CATALOG_SHA256,
+    version: WARDMOTE_RUNNER_COMPATIBILITY.components.catalog,
+    sha256: WARDMOTE_RUNNER_SEMANTIC_CATALOG_SHA256,
   }),
   runnerd: Object.freeze({
     binaryName: "paperclip-runnerd" as const,
-    metadataSchema: PAPERCLIP_RUNNERD_BUILD_METADATA_SCHEMA,
+    metadataSchema: WARDMOTE_RUNNERD_BUILD_METADATA_SCHEMA,
     digestAlgorithm: "sha256" as const,
   }),
 });
 
-export type PaperclipRunnerBuildMetadata = typeof PAPERCLIP_RUNNER_BUILD_METADATA;
+export type PaperclipRunnerBuildMetadata = typeof WARDMOTE_RUNNER_BUILD_METADATA;

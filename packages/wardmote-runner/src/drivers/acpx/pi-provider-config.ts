@@ -13,7 +13,7 @@ export const PI_CREDENTIAL_NAMES = Object.freeze([
   "XIAOMI_TOKEN_PLAN_CN_API_KEY", "XIAOMI_TOKEN_PLAN_AMS_API_KEY", "XIAOMI_TOKEN_PLAN_SGP_API_KEY",
   "ANT_LING_API_KEY", "QWEN_TOKEN_PLAN_API_KEY", "QWEN_TOKEN_PLAN_CN_API_KEY",
   "TYPESAFE_API_KEY", "RADIUS_API_KEY", "COPILOT_GITHUB_TOKEN", "AWS_BEARER_TOKEN_BEDROCK",
-  "PAPERCLIP_PI_PROVIDERS",
+  "WARDMOTE_PI_PROVIDERS",
 ]);
 
 // General IAM credentials authorize services beyond the model provider. Bedrock
@@ -70,7 +70,7 @@ const RESERVED_PI_CREDENTIAL_NAMES = new Set<string>([
 export function piProviderConfiguration(environment?: NodeJS.ProcessEnv): {
   json: string; digest: string; credentialNames: readonly string[];
 } | undefined {
-  const raw = environment?.PAPERCLIP_PI_PROVIDERS;
+  const raw = environment?.WARDMOTE_PI_PROVIDERS;
   if (raw === undefined) return undefined;
   const invalid = () => new Error("Pi custom providers require a bounded JSON object with explicit credentials; command-based credentials are unsupported");
   if (Buffer.byteLength(raw) > 64 * 1024) throw invalid();
@@ -81,7 +81,7 @@ export function piProviderConfiguration(environment?: NodeJS.ProcessEnv): {
   const credential = (value: unknown) => {
     if (typeof value !== "string" || value.trimStart().startsWith("!")) throw invalid();
     if (/^[A-Z][A-Z0-9_]{0,127}$/.test(value)) {
-      if (/^(?:PAPERCLIP_|NODE_|NPM_|npm_)/.test(value)
+      if (/^(?:WARDMOTE_|NODE_|NPM_|npm_)/.test(value)
         || RESERVED_PI_CREDENTIAL_NAMES.has(value)) throw invalid();
       names.add(value);
     }

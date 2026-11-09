@@ -78,7 +78,7 @@ provider software to the Cloud server image. Codex with managed MCP tools and
 the native Runner Codex backend do not require a server-side remote provider
 pack. Remote native ACPX (including Claude) and OpenCode currently require an
 operator-supplied, build-owned provider pack configured through
-`PAPERCLIP_RUNNER_REMOTE_PROVIDER_PACK_PATH`; the standard Cloud server image
+`WARDMOTE_RUNNER_REMOTE_PROVIDER_PACK_PATH`; the standard Cloud server image
 does not supply one. A pack installed in the sandbox alone does not satisfy
 that existing runtime requirement. Treat that provider setup as a separate
 Runner prerequisite, not an automatic connector installation step.

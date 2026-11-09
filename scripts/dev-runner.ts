@@ -109,7 +109,7 @@ const tailscaleAuthFlagNames = new Set([
 let tailscaleAuth = false;
 let bindMode: BindMode | null = null;
 let bindHost: string | null = null;
-const managedRuntimeExposure = process.env.PAPERCLIP_MANAGED_RUNTIME_EXPOSURE === "tailscale_https";
+const managedRuntimeExposure = process.env.WARDMOTE_MANAGED_RUNTIME_EXPOSURE === "tailscale_https";
 const forwardedArgs: string[] = [];
 
 for (let index = 0; index < cliArgs.length; index += 1) {
@@ -165,23 +165,23 @@ if (bindMode === "custom" && !bindHost) {
 // Managed HTTPS runtimes serve the built UI bundle: the Vite dev middleware's
 // unbundled module waterfall stalls behind the Tailscale HTTPS proxy and the
 // first page load in a fresh browser profile stays blank forever (PAP-18043).
-const explicitUiDevMiddleware = process.env.PAPERCLIP_UI_DEV_MIDDLEWARE;
+const explicitUiDevMiddleware = process.env.WARDMOTE_UI_DEV_MIDDLEWARE;
 const serveBuiltUiForManagedRuntime = managedRuntimeExposure && explicitUiDevMiddleware === undefined;
 const env: NodeJS.ProcessEnv = {
   ...process.env,
-  PAPERCLIP_UI_DEV_MIDDLEWARE: explicitUiDevMiddleware ?? (serveBuiltUiForManagedRuntime ? "false" : "true"),
+  WARDMOTE_UI_DEV_MIDDLEWARE: explicitUiDevMiddleware ?? (serveBuiltUiForManagedRuntime ? "false" : "true"),
 };
 
 if (mode === "dev") {
-  env.PAPERCLIP_DEV_SERVER_STATUS_FILE = devServerStatusFilePath;
-  env.PAPERCLIP_DEV_SERVER_STATUS_TOKEN = devServerStatusToken ?? "";
-  env.PAPERCLIP_MIGRATION_AUTO_APPLY ??= "true";
+  env.WARDMOTE_DEV_SERVER_STATUS_FILE = devServerStatusFilePath;
+  env.WARDMOTE_DEV_SERVER_STATUS_TOKEN = devServerStatusToken ?? "";
+  env.WARDMOTE_MIGRATION_AUTO_APPLY ??= "true";
 }
 
 if (mode === "watch") {
-  delete env.PAPERCLIP_DEV_SERVER_STATUS_TOKEN;
-  env.PAPERCLIP_MIGRATION_PROMPT ??= "never";
-  env.PAPERCLIP_MIGRATION_AUTO_APPLY ??= "true";
+  delete env.WARDMOTE_DEV_SERVER_STATUS_TOKEN;
+  env.WARDMOTE_MIGRATION_PROMPT ??= "never";
+  env.WARDMOTE_MIGRATION_AUTO_APPLY ??= "true";
 }
 
 if (tailscaleAuth || bindMode) {
@@ -189,31 +189,31 @@ if (tailscaleAuth || bindMode) {
   if (tailscaleAuth) {
     console.log("[paperclip] note: --tailscale-auth/--authenticated-private are legacy aliases for --bind lan");
   }
-  env.PAPERCLIP_BIND = effectiveBind;
+  env.WARDMOTE_BIND = effectiveBind;
   if (bindHost) {
-    env.PAPERCLIP_BIND_HOST = bindHost;
+    env.WARDMOTE_BIND_HOST = bindHost;
   } else {
-    delete env.PAPERCLIP_BIND_HOST;
+    delete env.WARDMOTE_BIND_HOST;
   }
   if (effectiveBind === "loopback" && !tailscaleAuth) {
-    delete env.PAPERCLIP_DEPLOYMENT_MODE;
-    delete env.PAPERCLIP_DEPLOYMENT_EXPOSURE;
-    delete env.PAPERCLIP_AUTH_BASE_URL_MODE;
+    delete env.WARDMOTE_DEPLOYMENT_MODE;
+    delete env.WARDMOTE_DEPLOYMENT_EXPOSURE;
+    delete env.WARDMOTE_AUTH_BASE_URL_MODE;
     console.log("[paperclip] dev mode: local_trusted (bind=loopback)");
   } else {
-    env.PAPERCLIP_DEPLOYMENT_MODE = "authenticated";
-    env.PAPERCLIP_DEPLOYMENT_EXPOSURE = "private";
-    env.PAPERCLIP_AUTH_BASE_URL_MODE = managedRuntimeExposure ? "explicit" : "auto";
+    env.WARDMOTE_DEPLOYMENT_MODE = "authenticated";
+    env.WARDMOTE_DEPLOYMENT_EXPOSURE = "private";
+    env.WARDMOTE_AUTH_BASE_URL_MODE = managedRuntimeExposure ? "explicit" : "auto";
     console.log(
       `[paperclip] dev mode: authenticated/private (bind=${effectiveBind}${bindHost ? `:${bindHost}` : ""})`,
     );
   }
 } else {
-  delete env.PAPERCLIP_BIND;
-  delete env.PAPERCLIP_BIND_HOST;
-  delete env.PAPERCLIP_DEPLOYMENT_MODE;
-  delete env.PAPERCLIP_DEPLOYMENT_EXPOSURE;
-  delete env.PAPERCLIP_AUTH_BASE_URL_MODE;
+  delete env.WARDMOTE_BIND;
+  delete env.WARDMOTE_BIND_HOST;
+  delete env.WARDMOTE_DEPLOYMENT_MODE;
+  delete env.WARDMOTE_DEPLOYMENT_EXPOSURE;
+  delete env.WARDMOTE_AUTH_BASE_URL_MODE;
   console.log("[paperclip] dev mode: local_trusted (default)");
 }
 
@@ -457,7 +457,7 @@ async function refreshPendingMigrations() {
 
 async function maybePreflightMigrations(options: { interactive?: boolean; autoApply?: boolean; exitOnDecline?: boolean } = {}) {
   const interactive = options.interactive ?? mode === "watch";
-  const autoApply = options.autoApply ?? env.PAPERCLIP_MIGRATION_AUTO_APPLY === "true";
+  const autoApply = options.autoApply ?? env.WARDMOTE_MIGRATION_AUTO_APPLY === "true";
   const exitOnDecline = options.exitOnDecline ?? mode === "watch";
 
   const payload = await refreshPendingMigrations();
@@ -577,7 +577,7 @@ async function buildPaperclipRunner() {
     !paperclipRunnerBinaryNeedsBuild({
       repoRoot,
       nativeRunnerRequired: await getNativeRunnerRequired(),
-      configuredBinary: env.PAPERCLIP_RUNNER_BINARY,
+      configuredBinary: env.WARDMOTE_RUNNER_BINARY,
     })
   ) {
     return;
@@ -894,7 +894,7 @@ if (serveBuiltUiForManagedRuntime) {
 }
 await maybePreflightMigrations();
 if (uiBundleBuild) {
-  env.PAPERCLIP_UI_DEV_MIDDLEWARE = (await uiBundleBuild) ? "false" : "true";
+  env.WARDMOTE_UI_DEV_MIDDLEWARE = (await uiBundleBuild) ? "false" : "true";
 }
 await startServerChild();
 installDevIntervals();

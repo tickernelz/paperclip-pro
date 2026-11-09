@@ -103,7 +103,7 @@ The browser creates and assigns the task; fixtures use public APIs. The
 `accept-while-running` case additionally holds the committed card’s creation
 response in the test server until browser acceptance, to exercise real overlap.
 
-The launcher always sets `PAPERCLIP_ANNOUNCEMENTS_ENABLED=false` for its isolated
+The launcher always sets `WARDMOTE_ANNOUNCEMENTS_ENABLED=false` for its isolated
 instances so announcement panels do not obscure screenshot evidence. No shell
 or workflow configuration is needed, including for Daytona cells.
 
@@ -268,8 +268,8 @@ Shell variables take precedence over the local file. The recognized names are:
 - `DAYTONA_API_KEY`
 - `CURSOR_AUTH_TOKEN` (extended Cursor candidate)
 - `COPILOT_GITHUB_TOKEN` (extended Copilot candidate)
-- `PAPERCLIP_E2E_DAYTONA_IMAGE` (Daytona only)
-- `PAPERCLIP_E2E_DAYTONA_NODE_SHA256` and `PAPERCLIP_E2E_DAYTONA_RUNNERD_SHA256` (native Cursor/Pi/Copilot Daytona fixtures; exact `sha256:...` executable digests from that image)
+- `WARDMOTE_E2E_DAYTONA_IMAGE` (Daytona only)
+- `WARDMOTE_E2E_DAYTONA_NODE_SHA256` and `WARDMOTE_E2E_DAYTONA_RUNNERD_SHA256` (native Cursor/Pi/Copilot Daytona fixtures; exact `sha256:...` executable digests from that image)
 
 The image must be an immutable `image@sha256:...` reference. The launcher
 reports missing variable names but never prints values. It passes raw provider
@@ -601,7 +601,7 @@ AND semantics. `--id` is exclusive with dimension selectors and `--all`.
 selector, an empty selection, or a run with no explicit selector exits before
 Paperclip starts. `--max-parallel <n>` controls the number of isolated
 profile/environment/case harnesses that can overlap (default 1, also configurable
-with `PAPERCLIP_E2E_MAX_PARALLEL`). `--max-automatic-retries <0|1>` controls the
+with `WARDMOTE_E2E_MAX_PARALLEL`). `--max-automatic-retries <0|1>` controls the
 launcher retry budget (default 1). Set it to 0 for a single-attempt comparison;
 it suppresses both transient-infrastructure and provider-variance retries while
 preserving the original failure classification. Headed/UI/debug runs are forced
@@ -641,8 +641,8 @@ image="ghcr.io/paperclipai/paperclip-daytona-runner:e2e-content-${content_id}"
 if ! docker buildx imagetools inspect "$image" >/dev/null 2>&1; then
   docker buildx build \
     --platform linux/amd64 \
-    --build-arg "PAPERCLIP_RUNNER_CONTENT_ID=${content_id}" \
-    --build-arg "PAPERCLIP_RUNNER_SOURCE_REVISION=${source_revision}" \
+    --build-arg "WARDMOTE_RUNNER_CONTENT_ID=${content_id}" \
+    --build-arg "WARDMOTE_RUNNER_SOURCE_REVISION=${source_revision}" \
     --file docker/daytona-runner/Dockerfile \
     --tag "$image" \
     --push \
@@ -659,7 +659,7 @@ stored separately as image provenance. CI reads that provenance back from a
 reused image when it builds the controller-side provider pack, preserving the
 exact manifest match required to avoid restaging the pack into Daytona.
 
-Resolve the manifest digest and set `PAPERCLIP_E2E_DAYTONA_IMAGE` to
+Resolve the manifest digest and set `WARDMOTE_E2E_DAYTONA_IMAGE` to
 `ghcr.io/paperclipai/paperclip-daytona-runner@sha256:...`. The repository
 workflow signs that digest with Cosign/OIDC and verifies that it is publicly
 pullable, includes the provider pack, and advertises `dial_ws_loopback`,
@@ -670,7 +670,7 @@ content tags are never rebuilt or overwritten by the workflow.
 ### Match the local controller package to the Daytona image
 
 When the controller runs on macOS or another platform different from the sandbox,
-set `PAPERCLIP_RUNNER_REMOTE_BINARY_PATH` to a verified Linux amd64
+set `WARDMOTE_RUNNER_REMOTE_BINARY_PATH` to a verified Linux amd64
 `paperclip-runnerd`, such as the binary copied from `/usr/local/bin/paperclip-runnerd`
 in the pinned image. The controller must have these exact bytes for its artifact
 identity check. A local macOS runner cannot substitute for the Linux binary,
@@ -678,7 +678,7 @@ even when the sandbox image contains a compatible runner. This also applies to
 native Codex cells, which do not otherwise need the remote provider pack below.
 
 Native ACPX (including Claude) and OpenCode Daytona cells also require
-`PAPERCLIP_RUNNER_REMOTE_PROVIDER_PACK_PATH` on the controller. The package and
+`WARDMOTE_RUNNER_REMOTE_PROVIDER_PACK_PATH` on the controller. The package and
 the image must come from the same verified build. Equal provider version numbers
 are insufficient: verification compares the complete manifest, source revision,
 Node executable, lockfile, and built bridge hashes. An independently rebuilt
@@ -694,19 +694,19 @@ match. Docker must be running; the temporary container below is never started.
 ```sh
 (
   set -eu
-  : "${PAPERCLIP_E2E_DAYTONA_IMAGE:?Set the verified immutable image digest}"
-  case "$PAPERCLIP_E2E_DAYTONA_IMAGE" in
+  : "${WARDMOTE_E2E_DAYTONA_IMAGE:?Set the verified immutable image digest}"
+  case "$WARDMOTE_E2E_DAYTONA_IMAGE" in
     *@sha256:*) ;;
     *) echo "Use an immutable image digest" >&2; exit 1 ;;
   esac
-  docker pull --platform linux/amd64 "$PAPERCLIP_E2E_DAYTONA_IMAGE"
+  docker pull --platform linux/amd64 "$WARDMOTE_E2E_DAYTONA_IMAGE"
   pack_dir="$(mktemp -d "${TMPDIR:-/tmp}/paperclip-e2e-provider-pack.XXXXXX")"
   container_id="$(docker create --platform linux/amd64 --network none \
-    --entrypoint /bin/true "$PAPERCLIP_E2E_DAYTONA_IMAGE")"
+    --entrypoint /bin/true "$WARDMOTE_E2E_DAYTONA_IMAGE")"
   trap 'docker rm "$container_id" >/dev/null' EXIT
   docker cp "$container_id:/opt/paperclip-runner/provider-pack/." "$pack_dir/"
   test -f "$pack_dir/provider-pack.json"
-  printf 'Set PAPERCLIP_RUNNER_REMOTE_PROVIDER_PACK_PATH to: %s\n' "$pack_dir"
+  printf 'Set WARDMOTE_RUNNER_REMOTE_PROVIDER_PACK_PATH to: %s\n' "$pack_dir"
 )
 ```
 
@@ -1213,9 +1213,9 @@ usage is not reported as free. Judge spend is shown separately and included in
 total estimated spend when known; provider/child usage stays in the run ledger.
 
 Regenerate normalized reports with the existing report command, pointing
-`PAPERCLIP_RUNNER_E2E_REPORT_ROOT` at that campaign,
-`PAPERCLIP_RUNNER_E2E_REPORT_OUT` at a fresh output directory, and
-`PAPERCLIP_RUNNER_E2E_EXPECTED_IDS` at the JSON array of selected execution IDs.
+`WARDMOTE_RUNNER_E2E_REPORT_ROOT` at that campaign,
+`WARDMOTE_RUNNER_E2E_REPORT_OUT` at a fresh output directory, and
+`WARDMOTE_RUNNER_E2E_EXPECTED_IDS` at the JSON array of selected execution IDs.
 Then use the existing dashboard/history publication workflow. Merely running
 `test:e2e:runner:dashboard` reads the already normalized bundle; it never calls
 a judge or refreshes results from outside that bundle. Published campaign
@@ -1226,7 +1226,7 @@ bundles remain immutable; judge them before publishing.
 Use separate campaigns for each skill revision and three repetitions per
 case/provider (144 executions per revision), keeping source environment,
 provider/default model, credentials mode, case facts, and judge configuration
-matched. Set distinct `PAPERCLIP_E2E_CAMPAIGN_ID` values such as
+matched. Set distinct `WARDMOTE_E2E_CAMPAIGN_ID` values such as
 `first-task-skill-a-r1` through `r3`, and repeat for skill B. Review actual model
 identities and instruction hashes before comparing; dirty working trees are
 explicitly marked. Do not pool results with mismatched configurations or treat
@@ -1325,7 +1325,7 @@ Browser-only regressions exercise delayed rendering without provider calls:
 ```sh
 pnpm test:e2e:runner:browser-support
 # To use an installed Chrome instead of Playwright's Chromium:
-PAPERCLIP_PLAYWRIGHT_CHANNEL=chrome pnpm test:e2e:runner:browser-support
+WARDMOTE_PLAYWRIGHT_CHANNEL=chrome pnpm test:e2e:runner:browser-support
 ```
 
 ### Native provider continuity
@@ -1564,7 +1564,7 @@ charges are separate; unavailable receipts do not mean zero cost. The September
 $25 per provider and $25 coordinated infrastructure/diagnosis.
 
 The launcher binds only the selected candidate and exact discovered model in
-`PAPERCLIP_RUNNER_ACPX_QUALIFICATION`, a JSON array of `{agent,model}` pairs.
+`WARDMOTE_RUNNER_ACPX_QUALIFICATION`, a JSON array of `{agent,model}` pairs.
 The server reads this operator environment at its normal runnerd construction
 boundary; agent config/environment cannot enable qualification. Normal hosts
 have no admission override. It does not bypass profile, executable, credential,
@@ -1989,10 +1989,10 @@ workspace so a user's installed skill cannot shadow the managed skill under test
 
 The 26 explicit Pi cells can run against an independently installed public CLI
 and server instead of the source CLI. Supply all four reviewed pins:
-`PAPERCLIP_RUNNER_E2E_INSTALLED_CLI` (canonical `@tickernelz/wardmote/dist/index.js`),
-`PAPERCLIP_RUNNER_E2E_INSTALLED_CLI_SHA256` (bare SHA-256),
-`PAPERCLIP_RUNNER_E2E_INSTALLED_SERVER_ROOT` (canonical resolved public server
-package root), and `PAPERCLIP_RUNNER_E2E_INSTALLED_SERVER_SHA256` (its
+`WARDMOTE_RUNNER_E2E_INSTALLED_CLI` (canonical `@tickernelz/wardmote/dist/index.js`),
+`WARDMOTE_RUNNER_E2E_INSTALLED_CLI_SHA256` (bare SHA-256),
+`WARDMOTE_RUNNER_E2E_INSTALLED_SERVER_ROOT` (canonical resolved public server
+package root), and `WARDMOTE_RUNNER_E2E_INSTALLED_SERVER_SHA256` (its
 `dist/index.js` SHA-256). The CLI must resolve that exact server dependency, with
 matching public package versions. Build/install provenance and the complete
 installed dependency/assets inventory remain separate required evidence; the
@@ -2009,9 +2009,9 @@ Pi's historical `qualificationCandidate` fixture selector remains a roster key;
 it no longer grants an opt-in when the source Pi declaration admits normal use.
 
 Installed Pi Daytona cells also require the published plugin fixture inputs
-`PAPERCLIP_RUNNER_E2E_INSTALLED_DAYTONA_PLUGIN` (canonical package root),
-`PAPERCLIP_RUNNER_E2E_INSTALLED_DAYTONA_PLUGIN_AUTHORITY` (canonical JSON file),
-and `PAPERCLIP_RUNNER_E2E_INSTALLED_DAYTONA_PLUGIN_AUTHORITY_SHA256`.
+`WARDMOTE_RUNNER_E2E_INSTALLED_DAYTONA_PLUGIN` (canonical package root),
+`WARDMOTE_RUNNER_E2E_INSTALLED_DAYTONA_PLUGIN_AUTHORITY` (canonical JSON file),
+and `WARDMOTE_RUNNER_E2E_INSTALLED_DAYTONA_PLUGIN_AUTHORITY_SHA256`.
 The authority schema `paperclip.e2e.installed-daytona-plugin/v1` pins a canonical
 `graphRoot` and four public packages (`plugin`, `sdk`, `shared`, `daytona`).
 Each has `root`, `packageSha256`, `entry`, and `entrySha256`; `plugin` also has
@@ -2155,7 +2155,7 @@ This keeps automatic title naming from introducing an unrelated permission
 request before the tested native write. Permission policy, provider prompts,
 command correlation, and no-effect assertions remain unchanged.
 
-Set `PAPERCLIP_RUNNER_E2E_INSTALLED_CLI` to the absolute public consumer's
+Set `WARDMOTE_RUNNER_E2E_INSTALLED_CLI` to the absolute public consumer's
 `@tickernelz/wardmote/dist/index.js` for an installed-product acceptance run. Install the
 public package graph and run its ordinary `runtime setup cursor` first. The
 supervisor launches that compiled CLI from its own package directory; repository
@@ -2165,15 +2165,15 @@ admission is rejected, so this path requires production admission. Use the
 existing browser/API cases and encrypted company-secret fixture path.
 
 Install the public `@tickernelz/wardmote-plugin-daytona` package separately for a Daytona
-smoke. Set `PAPERCLIP_RUNNER_E2E_INSTALLED_DAYTONA_PLUGIN` to its absolute installed
+smoke. Set `WARDMOTE_RUNNER_E2E_INSTALLED_DAYTONA_PLUGIN` to its absolute installed
 package directory when it has its own dependency root. The fixture checks its
 compiled entries and release version before provisioning. The version must match
 the installed CLI by default. If the release uses independent plugin versions,
-set `PAPERCLIP_RUNNER_E2E_INSTALLED_DAYTONA_PLUGIN_VERSION` to the exact plugin
+set `WARDMOTE_RUNNER_E2E_INSTALLED_DAYTONA_PLUGIN_VERSION` to the exact plugin
 version in the release record. Record the plugin tarball SHA-256 with that version;
 do not substitute a workspace build or an older installed plugin.
 
-For a diagnosed failure campaign, `PAPERCLIP_RUNNER_E2E_KEEP_FAILED_PRIVATE=1`
+For a diagnosed failure campaign, `WARDMOTE_RUNNER_E2E_KEEP_FAILED_PRIVATE=1`
 retains the attempt's owner-only private directory after a failed case even
 when owned cleanup passed. This does not alter the case or cleanup outcome.
 Private traces and database files must not be published. Unconfirmed cleanup

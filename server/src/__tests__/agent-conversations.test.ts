@@ -646,7 +646,7 @@ const support = await getEmbeddedPostgresTestSupport();
       await new Promise<void>((resolve) => listener.once("listening", resolve));
       const address = listener.address() as { port: number };
       const cwd = await mkdtemp(join(tmpdir(), "chat-runtime-"));
-      const script = `fetch("http://127.0.0.1:${address.port}/respond", {method:"POST", headers:{"content-type":"application/json"}, body:JSON.stringify({runId:process.env.PAPERCLIP_RUN_ID})}).then(async r=>{if(!r.ok){console.error(r.status,await r.text());process.exitCode=1}})`;
+      const script = `fetch("http://127.0.0.1:${address.port}/respond", {method:"POST", headers:{"content-type":"application/json"}, body:JSON.stringify({runId:process.env.WARDMOTE_RUN_ID})}).then(async r=>{if(!r.ok){console.error(r.status,await r.text());process.exitCode=1}})`;
       await db
         .insert(agents)
         .values({
@@ -802,8 +802,8 @@ const support = await getEmbeddedPostgresTestSupport();
       const run = await runFor(chat.id, message.id);
       await prepareConversationTurn(db, run);
       await db.update(heartbeatRuns).set({ status: "cancelled" }).where(eq(heartbeatRuns.id, run.id));
-      const previousSecret = process.env.PAPERCLIP_AGENT_JWT_SECRET;
-      process.env.PAPERCLIP_AGENT_JWT_SECRET = "test-conversation-cancellation-secret";
+      const previousSecret = process.env.WARDMOTE_AGENT_JWT_SECRET;
+      process.env.WARDMOTE_AGENT_JWT_SECRET = "test-conversation-cancellation-secret";
       try {
         const app = express();
         app.use(actorMiddleware(db, { deploymentMode: "local_trusted" }));
@@ -811,8 +811,8 @@ const support = await getEmbeddedPostgresTestSupport();
         const token = createLocalAgentJwt(agentId, companyId, "process", run.id)!;
         expect((await request(app).post("/mutate").set("Authorization", `Bearer ${token}`)).status).toBe(403);
       } finally {
-        if (previousSecret === undefined) delete process.env.PAPERCLIP_AGENT_JWT_SECRET;
-        else process.env.PAPERCLIP_AGENT_JWT_SECRET = previousSecret;
+        if (previousSecret === undefined) delete process.env.WARDMOTE_AGENT_JWT_SECRET;
+        else process.env.WARDMOTE_AGENT_JWT_SECRET = previousSecret;
       }
       await expect(issueService(db).addComment(chat.id, "Late old reply", { agentId, runId: run.id }))
         .rejects.toThrow(/cancelled/);

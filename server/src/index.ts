@@ -1,4 +1,3 @@
-import "@tickernelz/wardmote-shared/env-aliases-bootstrap";
 import { subscribeAllCompanyLiveEvents } from "./services/live-events.js";
 import { startNotificationDispatcher } from "./services/notifications/dispatcher.js";
 import { createWebPushRuntime } from "./services/notifications/web-push.js";
@@ -224,14 +223,14 @@ async function startServerWithDatabaseTeardown(
   ensureDecisionSigningSecret();
   let config = loadConfig();
   initTelemetry({ enabled: config.telemetryEnabled });
-  if (process.env.PAPERCLIP_SECRETS_PROVIDER === undefined) {
-    process.env.PAPERCLIP_SECRETS_PROVIDER = config.secretsProvider;
+  if (process.env.WARDMOTE_SECRETS_PROVIDER === undefined) {
+    process.env.WARDMOTE_SECRETS_PROVIDER = config.secretsProvider;
   }
-  if (process.env.PAPERCLIP_SECRETS_STRICT_MODE === undefined) {
-    process.env.PAPERCLIP_SECRETS_STRICT_MODE = config.secretsStrictMode ? "true" : "false";
+  if (process.env.WARDMOTE_SECRETS_STRICT_MODE === undefined) {
+    process.env.WARDMOTE_SECRETS_STRICT_MODE = config.secretsStrictMode ? "true" : "false";
   }
-  if (process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE === undefined) {
-    process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE = config.secretsMasterKeyFilePath;
+  if (process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE === undefined) {
+    process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE = config.secretsMasterKeyFilePath;
   }
   
   type MigrationSummary =
@@ -248,8 +247,8 @@ async function startServerWithDatabaseTeardown(
   }
   
   async function promptApplyMigrations(migrations: string[]): Promise<boolean> {
-    if (process.env.PAPERCLIP_MIGRATION_AUTO_APPLY === "true") return true;
-    if (process.env.PAPERCLIP_MIGRATION_PROMPT === "never") return false;
+    if (process.env.WARDMOTE_MIGRATION_AUTO_APPLY === "true") return true;
+    if (process.env.WARDMOTE_MIGRATION_PROMPT === "never") return false;
     if (!stdin.isTTY || !stdout.isTTY) return true;
   
     const prompt = createInterface({ input: stdin, output: stdout });
@@ -295,7 +294,7 @@ async function startServerWithDatabaseTeardown(
       if (!apply) {
         throw new Error(
           `${label} has pending migrations (${formatPendingMigrationSummary(state.pendingMigrations)}). ` +
-            "Refusing to start against a stale schema. Run pnpm db:migrate or set PAPERCLIP_MIGRATION_AUTO_APPLY=true.",
+            "Refusing to start against a stale schema. Run pnpm db:migrate or set WARDMOTE_MIGRATION_AUTO_APPLY=true.",
         );
       }
   
@@ -316,7 +315,7 @@ async function startServerWithDatabaseTeardown(
       throw migrationRefusalError(
         state,
         `${label} has pending migrations (${formatPendingMigrationSummary(state.pendingMigrations)}). ` +
-          "Refusing to start against a stale schema. Run pnpm db:migrate or set PAPERCLIP_MIGRATION_AUTO_APPLY=true.",
+          "Refusing to start against a stale schema. Run pnpm db:migrate or set WARDMOTE_MIGRATION_AUTO_APPLY=true.",
       );
     }
 
@@ -460,7 +459,7 @@ async function startServerWithDatabaseTeardown(
     const configuredPort = config.embeddedPostgresPort;
     let port = configuredPort;
     const logBuffer = createEmbeddedPostgresLogBuffer(120);
-    const verboseEmbeddedPostgresLogs = process.env.PAPERCLIP_EMBEDDED_POSTGRES_VERBOSE === "true";
+    const verboseEmbeddedPostgresLogs = process.env.WARDMOTE_EMBEDDED_POSTGRES_VERBOSE === "true";
     const appendEmbeddedPostgresLog = (message: unknown) => {
       logBuffer.append(message);
       if (!verboseEmbeddedPostgresLogs) {
@@ -763,7 +762,7 @@ async function startServerWithDatabaseTeardown(
       );
     }
   } catch (err) {
-    logger.error({ err }, "invalid PAPERCLIP_SETTING_DEFAULTS; refusing to start (fail closed)");
+    logger.error({ err }, "invalid WARDMOTE_SETTING_DEFAULTS; refusing to start (fail closed)");
     throw err;
   }
 
@@ -782,11 +781,11 @@ async function startServerWithDatabaseTeardown(
   });
   const databaseBackupMaxAgeHours = Math.max(
     1,
-    Number(process.env.PAPERCLIP_DB_BACKUP_MAX_AGE_HOURS) ||
+    Number(process.env.WARDMOTE_DB_BACKUP_MAX_AGE_HOURS) ||
       Math.max(26, Math.ceil((config.databaseBackupIntervalMinutes / 60) * 2)),
   );
   const databaseBackupAlertFile =
-    process.env.PAPERCLIP_DB_BACKUP_ALERT_FILE ||
+    process.env.WARDMOTE_DB_BACKUP_ALERT_FILE ||
     resolve(config.databaseBackupDir, "..", "health", "db-backup-to-s3.failure");
   const databaseBackupAlertFiles = [
     databaseBackupAlertFile,
@@ -795,7 +794,7 @@ async function startServerWithDatabaseTeardown(
   ];
   let databaseBackupInFlight = false;
   const idleDatabaseBackupEnabled = config.databaseBackupEnabled
-    && process.env.PAPERCLIP_DB_BACKUP_IDLE_CHECKPOINT_ENABLED === "1";
+    && process.env.WARDMOTE_DB_BACKUP_IDLE_CHECKPOINT_ENABLED === "1";
   const runServerDatabaseBackup = async (
     trigger: InstanceDatabaseBackupTrigger,
   ): Promise<InstanceDatabaseBackupRunResult | null> => {
@@ -923,7 +922,7 @@ async function startServerWithDatabaseTeardown(
     bindHost: runtimeListenHost,
     port: listenPort,
   });
-  const operatorApiUrl = process.env.PAPERCLIP_API_URL?.trim() || "";
+  const operatorApiUrl = process.env.WARDMOTE_API_URL?.trim() || "";
   const configuredApiUrl = operatorApiUrl || runtimeApiUrl;
   // Upgrade admission runs before every WebSocket listener, outside Express.
   const server = createPaperclipHttpServer(app as unknown as RequestListener, {
@@ -940,13 +939,13 @@ async function startServerWithDatabaseTeardown(
     bindHost: runtimeListenHost,
     port: listenPort,
   });
-  process.env.PAPERCLIP_LISTEN_HOST = runtimeListenHost;
-  process.env.PAPERCLIP_LISTEN_PORT = String(listenPort);
-  process.env.PAPERCLIP_RUNTIME_API_URL = runtimeApiUrl;
-  process.env.PAPERCLIP_RUNTIME_API_CANDIDATES_JSON = JSON.stringify(runtimeApiCandidates);
-  process.env.PAPERCLIP_API_URL = configuredApiUrl;
-  if (operatorApiUrl) process.env.PAPERCLIP_API_URL_OVERRIDE = operatorApiUrl;
-  else delete process.env.PAPERCLIP_API_URL_OVERRIDE;
+  process.env.WARDMOTE_LISTEN_HOST = runtimeListenHost;
+  process.env.WARDMOTE_LISTEN_PORT = String(listenPort);
+  process.env.WARDMOTE_RUNTIME_API_URL = runtimeApiUrl;
+  process.env.WARDMOTE_RUNTIME_API_CANDIDATES_JSON = JSON.stringify(runtimeApiCandidates);
+  process.env.WARDMOTE_API_URL = configuredApiUrl;
+  if (operatorApiUrl) process.env.WARDMOTE_API_URL_OVERRIDE = operatorApiUrl;
+  else delete process.env.WARDMOTE_API_URL_OVERRIDE;
 
   let startupListenerBound = false;
   try {
@@ -1057,9 +1056,9 @@ async function startServerWithDatabaseTeardown(
     }));
 
   // Force the instance onto the Kubernetes sandbox provider when configured via
-  // env (PAPERCLIP_EXECUTION_MODE=kubernetes). Runs BEFORE the heartbeat resumes
+  // env (WARDMOTE_EXECUTION_MODE=kubernetes). Runs BEFORE the heartbeat resumes
   // queued runs so the policy + managed k8s environments are in place. A bad
-  // PAPERCLIP_EXECUTION_MODE / PAPERCLIP_K8S_* value throws and fails startup
+  // WARDMOTE_EXECUTION_MODE / WARDMOTE_K8S_* value throws and fails startup
   // (fail-loud) rather than silently allowing local execution.
   try {
     const policyResult = await bootstrapExecutionPolicyFromEnv(db as any);
@@ -1240,8 +1239,8 @@ async function startServerWithDatabaseTeardown(
   const tools = toolAccessService(db as any, {
     deploymentMode: config.deploymentMode,
     deploymentExposure: config.deploymentExposure,
-    trustedLocalStdioRuntimeHost: process.env.PAPERCLIP_TRUSTED_MCP_RUNTIME_HOST
-      ?? process.env.PAPERCLIP_TOOL_RUNTIME_TRUSTED_HOST
+    trustedLocalStdioRuntimeHost: process.env.WARDMOTE_TRUSTED_MCP_RUNTIME_HOST
+      ?? process.env.WARDMOTE_TOOL_RUNTIME_TRUSTED_HOST
       ?? null,
   });
   const scheduleGitHubConnectionEventPoll = () => {
@@ -1865,14 +1864,14 @@ async function startServerWithDatabaseTeardown(
   await waitForExternalAdapters();
 
   // Reconcile the agent-creation picker to the declaratively-configured adapter
-  // set (PAPERCLIP_ADAPTERS). Must run after external adapters are loaded so the
+  // set (WARDMOTE_ADAPTERS). Must run after external adapters are loaded so the
   // known-adapter list is complete. Fail loud on misconfig (a declared adapter
   // with no implementation), consistent with the execution-policy bootstrap:
   // log the structured error, then rethrow to fail startup.
   try {
     reconcileAdapterAvailability(parseAdapterRegistryEnv());
   } catch (err) {
-    logger.error({ err }, "failed to reconcile adapter availability from PAPERCLIP_ADAPTERS");
+    logger.error({ err }, "failed to reconcile adapter availability from WARDMOTE_ADAPTERS");
     throw err;
   }
 
@@ -1882,7 +1881,7 @@ async function startServerWithDatabaseTeardown(
   void systemdNotify(["--ready", `--status=Listening on ${config.host}:${listenPort}`]).then((notified) => {
     if (notified) logger.info("Notified systemd that Paperclip is ready");
   });
-  if (process.env.PAPERCLIP_OPEN_ON_LISTEN === "true") {
+  if (process.env.WARDMOTE_OPEN_ON_LISTEN === "true") {
     const openHost = config.host === "0.0.0.0" || config.host === "::" ? "127.0.0.1" : config.host;
     const url = `http://${openHost}:${listenPort}`;
     void import("open")

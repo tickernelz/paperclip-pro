@@ -69,7 +69,7 @@ describe("OpenWA ingress (embedded Postgres + fake gateway)", () => {
   let database: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;
   let db: Db;
   let secrets: string;
-  const oldKey = process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE;
+  const oldKey = process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE;
   const services: ChatChannelService[] = [];
   const gateways: FakeOpenwaGateway[] = [];
   const endpointIds: string[] = [];
@@ -78,7 +78,7 @@ describe("OpenWA ingress (embedded Postgres + fake gateway)", () => {
     database = await startEmbeddedPostgresTestDatabase("paperclip-openwa-");
     db = createDb(database.connectionString);
     secrets = await mkdtemp(path.join(tmpdir(), "openwa-secrets-"));
-    process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE = path.join(secrets, "master.key");
+    process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE = path.join(secrets, "master.key");
   }, 60_000);
   afterEach(async () => {
     await Promise.all(services.splice(0).map((service) => service.shutdown()));
@@ -89,8 +89,8 @@ describe("OpenWA ingress (embedded Postgres + fake gateway)", () => {
   afterAll(async () => {
     await database?.cleanup();
     if (secrets) await rm(secrets, { recursive: true, force: true });
-    if (oldKey === undefined) delete process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE;
-    else process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE = oldKey;
+    if (oldKey === undefined) delete process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE;
+    else process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE = oldKey;
   });
 
   async function setup(options: { leaseTtlMs?: number; renewalMs?: number } = {}) {

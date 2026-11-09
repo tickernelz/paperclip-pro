@@ -1,8 +1,8 @@
 // Deterministic provider: all effects use the real run-authenticated APIs/MCP transport.
 // No DB writes, mocked Paperclip responses, provider calls, or outside workspaces.
-const base = process.env.PAPERCLIP_API_URL;
+const base = process.env.WARDMOTE_API_URL;
 const headers = {
-  Authorization: `Bearer ${process.env.PAPERCLIP_API_KEY}`,
+  Authorization: `Bearer ${process.env.WARDMOTE_API_KEY}`,
   "Content-Type": "application/json",
 };
 async function api(path, method = "GET", body) {
@@ -18,7 +18,7 @@ async function api(path, method = "GET", body) {
     );
   return data;
 }
-const run = await api(`/heartbeat-runs/${process.env.PAPERCLIP_RUN_ID}`);
+const run = await api(`/heartbeat-runs/${process.env.WARDMOTE_RUN_ID}`);
 const ctx = run.contextSnapshot;
 const task = await api(`/issues/${ctx.issueId}`);
 const comment = async (body) =>

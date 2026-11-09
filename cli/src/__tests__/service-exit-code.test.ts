@@ -34,8 +34,8 @@ async function runServiceCommand(args: string[], home: string): Promise<{ code: 
       env: {
         PATH: "/nonexistent-paperclip-test-path",
         HOME: home,
-        PAPERCLIP_HOME: home,
-        PAPERCLIP_TELEMETRY_DISABLED: "1",
+        WARDMOTE_HOME: home,
+        WARDMOTE_TELEMETRY_DISABLED: "1",
         DO_NOT_TRACK: "1",
       },
     });

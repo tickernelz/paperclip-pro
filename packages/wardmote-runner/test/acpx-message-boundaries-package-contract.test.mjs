@@ -8,7 +8,7 @@ import { pathToFileURL } from "node:url";
 import test from "node:test";
 
 const require = createRequire(import.meta.url);
-const root = process.env.PAPERCLIP_TEST_ACPX_ROOT ?? dirname(require.resolve("acpx/package.json"));
+const root = process.env.WARDMOTE_TEST_ACPX_ROOT ?? dirname(require.resolve("acpx/package.json"));
 const { createAcpRuntime, createAgentRegistry, createFileSessionStore } = await import(pathToFileURL(join(root, "dist/runtime.js")));
 const fixture = String.raw`
 const readline = require('node:readline');

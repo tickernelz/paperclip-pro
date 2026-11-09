@@ -150,7 +150,7 @@ if sys.argv[1] != "completion":
   it.skipIf(!workspaceCommandSandboxAvailable())("runs useful commands but denies files outside the workspace and injected credentials", async () => {
     const directory = await root(), outside = await root();
     const secret = join(outside, "private.txt"); await writeFile(secret, "PRIVATE");
-    const success = await executeWorkspaceTool(directory, "workspace_run", { program: "/bin/sh", args: ["-c", "printf hello > output.txt; printf '%s' \"${PAPERCLIP_SECRETS_MASTER_KEY-unset}\"" ] }, authorize);
+    const success = await executeWorkspaceTool(directory, "workspace_run", { program: "/bin/sh", args: ["-c", "printf hello > output.txt; printf '%s' \"${WARDMOTE_SECRETS_MASTER_KEY-unset}\"" ] }, authorize);
     expect(success).toMatchObject({ exitCode: 0, output: "unset", stopped: null });
     expect(await readFile(join(directory, "output.txt"), "utf8")).toBe("hello");
     const read = await executeWorkspaceTool(directory, "workspace_run", { program: "/bin/cat", args: [secret] }, authorize);

@@ -32,7 +32,7 @@ version, command, permission, and process-ownership checks remain enforced.
 
 Bind the selected provider's credentials in the agent environment, for example
 `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GEMINI_API_KEY`, or `OPENROUTER_API_KEY`.
-Custom models use `PAPERCLIP_PI_PROVIDERS`, an explicit JSON object in Pi's
+Custom models use `WARDMOTE_PI_PROVIDERS`, an explicit JSON object in Pi's
 `models.json` providers format. The runner writes it into the private Pi home,
 forwards explicitly bound credential references, and includes its digest in
 recovery identity. Credential commands and control-plane credential references
@@ -369,8 +369,8 @@ cache and load; these are admission diagnostics, not authenticated qualification
 No timeout or provider-closure identity changes in this repair.
 
 The opt-in regression is `node --test test/pi-closed-startup.test.mjs` from the
-Runner package, with `PAPERCLIP_TEST_PI_STARTUP_PACKAGE_ROOT` pointing at a built
-Runner package containing Pi assets and `PAPERCLIP_TEST_PI_STARTUP_RUNNER_BINARY`
+Runner package, with `WARDMOTE_TEST_PI_STARTUP_PACKAGE_ROOT` pointing at a built
+Runner package containing Pi assets and `WARDMOTE_TEST_PI_STARTUP_RUNNER_BINARY`
 pointing at its compatible daemon. It spawns a clean environment, submits no
 prompt, asserts terminal admission rejection within the unchanged 30-second
 deadline, and verifies the daemon closes. It does not inherit provider credentials.
@@ -405,7 +405,7 @@ boundaries explicit.
 | Native tools | `read`, `grep`, `find`, `ls`, `write`, `edit`, and `bash` pass the immutable extension gate before execution. File roots and read-only mode are checked before and after a permission wait. The host sandbox remains authoritative for shell commands and races. |
 | Permissions | Native tool approval uses ACP `session/request_permission`, with allow once, allow for the session, and deny. Only offered options are accepted. Session grants cover an identical operation and still revalidate paths. Questions never become approvals. |
 | Questions | The owned `paperclip_native_question` tool exposes Pi `select`, `confirm`, `input`, and `editor` through ACP form elicitation. Select is single-choice with stable option IDs. Pi returns `false` for both No and dismissal of confirm, so the tool reports `negative_or_cancelled`; it never invents a confirmed answer. Other methods return explicit cancellation. Permissions and semantic Plan approval remain separate. |
-| Agent files | Only the authenticated execution's registered `agent_files` working copy can become `AGENT_HOME`. The Pi wrapper takes `PAPERCLIP_PI_AGENT_HOME` from the runner's bound launch, ignores ambient `AGENT_HOME`, and admits that canonical directory alongside the task workspace. Protected overlap, directory replacement and symlink escape fail closed. Read-only policy still forbids writes. `PI_CODING_AGENT_DIR` remains private provider state. |
+| Agent files | Only the authenticated execution's registered `agent_files` working copy can become `AGENT_HOME`. The Pi wrapper takes `WARDMOTE_PI_AGENT_HOME` from the runner's bound launch, ignores ambient `AGENT_HOME`, and admits that canonical directory alongside the task workspace. Protected overlap, directory replacement and symlink escape fail closed. Read-only policy still forbids writes. `PI_CODING_AGENT_DIR` remains private provider state. |
 | Semantic tools | Runner-bound HTTP MCP catalogs (numeric loopback HTTP or assigned HTTPS gateways) register under exact `mcp__<server>__<tool>` names. Calls use an occurrence-scoped delivery ID and preserve the bounded native ID as private ACP-wire provenance, together with the cancellation signal. Common normalized events currently drop that metadata. Authenticated PRP tool handling owns semantic authorization and durable interactions. Only the exact session-assigned gateway URL and credential are used, with redirects disabled. Ambient and unassigned MCP servers are not admitted. |
 | Plans and artifacts | Pi has no native structured plan or artifact channel. Paperclip plan and artifact semantic tools remain available through the MCP bridge; native file edits retain bounded, workspace-confined ACP diff projection. Tool text/image results are preserved, and resource blocks are recorded without following URLs. |
 | Steering | Capability-negotiated `pi/steer` issues native RPC `steer` during an active turn. `pi/follow_up` explicitly queues native RPC `follow_up`. Neither is inferred from a second ACP prompt. Each takes `{sessionId, message}` and returns `{accepted: true, sessionId, kind}` with the matching control kind. |
@@ -434,7 +434,7 @@ its current system prompt and latest task constraints. The old root is absent
 from the current system prompt; historical user messages still retain prior
 root text, which the current guidance explicitly supersedes.
 
-Pi uses `PAPERCLIP_PI_SYSTEM_INSTRUCTIONS` in its runner-owned launch
+Pi uses `WARDMOTE_PI_SYSTEM_INSTRUCTIONS` in its runner-owned launch
 configuration and appends it through `before_agent_start`. Generic ACP
 `_meta.systemPrompt` is ignored, so that metadata alone is insufficient. This
 proof captures the native model-request boundary, beyond host options or wire
@@ -525,22 +525,22 @@ qualification requirements for version 7.
 
 ## Verified launch and packaging contract
 
-The wrapper rejects ambient launch unless `PAPERCLIP_ACPX_ISOLATED_CONTEXT=1`.
+The wrapper rejects ambient launch unless `WARDMOTE_ACPX_ISOLATED_CONTEXT=1`.
 It executes an absolute bound Node executable with an absolute bound Pi CLI path,
 without a shell or PATH lookup. The common command lease must supply:
 
-- `PAPERCLIP_PI_NODE_EXECUTABLE`, `PAPERCLIP_PI_ENTRYPOINT`, and
-  `PAPERCLIP_PI_EXTENSION_PATH`: files in the immutable private provider snapshot.
+- `WARDMOTE_PI_NODE_EXECUTABLE`, `WARDMOTE_PI_ENTRYPOINT`, and
+  `WARDMOTE_PI_EXTENSION_PATH`: files in the immutable private provider snapshot.
 - `PI_CODING_AGENT_DIR`: isolated persisted session/auth/settings home.
-- `PAPERCLIP_PI_READ_ONLY`: exactly `0` or `1`.
-- `PAPERCLIP_PI_READ_ROOTS` and `PAPERCLIP_PI_PROTECTED_ROOTS`: JSON arrays of
+- `WARDMOTE_PI_READ_ONLY`: exactly `0` or `1`.
+- `WARDMOTE_PI_READ_ROOTS` and `WARDMOTE_PI_PROTECTED_ROOTS`: JSON arrays of
   absolute allowed skill/read roots and protected runtime/config roots. Assigned
   skills must use a separate immutable lease outside the protected runtime and
   executable roots; overlapping roots fail admission. Skill roots are always
   immutable, even when nested inside a writable workspace.
-- `PAPERCLIP_PI_SYSTEM_INSTRUCTIONS`: admitted instructions, bounded to 32 KiB.
+- `WARDMOTE_PI_SYSTEM_INSTRUCTIONS`: admitted instructions, bounded to 32 KiB.
 
-The wrapper synthesizes `PAPERCLIP_PI_RUNTIME_CONFIGURATION` for its child,
+The wrapper synthesizes `WARDMOTE_PI_RUNTIME_CONFIGURATION` for its child,
 including only session-bound MCP servers. The owned extension captures and deletes
 this configuration environment variable before model shell execution. Credentials
 remain accessible only through the deliberately admitted runtime mechanisms.
@@ -628,7 +628,7 @@ against a deterministic RPC fixture. It proves initialization, streaming,
 terminal usage, question versus permission routing, explicit steering, provider
 exit, required sentinel, and typed failure settlement. It requires the exact
 installed pinned package; an absent or unpatched dependency is a failure.
-`PAPERCLIP_TEST_PI_ACP_PACKAGE` can select a separately installed pinned fixture.
+`WARDMOTE_TEST_PI_ACP_PACKAGE` can select a separately installed pinned fixture.
 These fixtures invoke no model or paid API.
 
 At source `f58cfa1cbf4503b93a0be4480f51b492d8203b7c`, all 30 tests in those

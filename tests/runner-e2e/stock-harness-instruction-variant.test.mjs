@@ -39,8 +39,8 @@ describe("closed stock harness instruction variants", () => {
     const source = readFileSync(new URL("../../server/src/onboarding-assets/default/AGENTS.md", import.meta.url), "utf8");
     const expected = classifyStockInstructionManual(source);
     for (const label of ["historical", "reduced", "unknown"]) {
-      vi.stubEnv("PAPERCLIP_STOCK_HARNESS_VARIANT", label);
-      vi.stubEnv("PAPERCLIP_RUNNER_E2E_SOURCE_REF", `refs/heads/${label}`);
+      vi.stubEnv("WARDMOTE_STOCK_HARNESS_VARIANT", label);
+      vi.stubEnv("WARDMOTE_RUNNER_E2E_SOURCE_REF", `refs/heads/${label}`);
       vi.stubEnv("GITHUB_HEAD_REF", label);
       expect(readStockInstructionVariant()).toEqual(expected);
     }

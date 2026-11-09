@@ -118,7 +118,7 @@ describe("isAllowedContentType", () => {
   });
 
   it("accepts any content type when no operator restriction is configured", () => {
-    vi.stubEnv("PAPERCLIP_ALLOWED_ATTACHMENT_TYPES", "");
+    vi.stubEnv("WARDMOTE_ALLOWED_ATTACHMENT_TYPES", "");
     for (const contentType of [
       "application/x-msdos-program",
       "application/x-msdownload",
@@ -134,14 +134,14 @@ describe("isAllowedContentType", () => {
     }
   });
 
-  it("enforces PAPERCLIP_ALLOWED_ATTACHMENT_TYPES when an operator sets it", () => {
-    vi.stubEnv("PAPERCLIP_ALLOWED_ATTACHMENT_TYPES", "image/*,application/pdf");
+  it("enforces WARDMOTE_ALLOWED_ATTACHMENT_TYPES when an operator sets it", () => {
+    vi.stubEnv("WARDMOTE_ALLOWED_ATTACHMENT_TYPES", "image/*,application/pdf");
     expect(isAllowedContentType("image/png")).toBe(true);
     expect(isAllowedContentType("application/pdf")).toBe(true);
     expect(isAllowedContentType("application/x-msdos-program")).toBe(false);
     expect(isAllowedContentType("application/octet-stream")).toBe(false);
     vi.unstubAllEnvs();
-    vi.stubEnv("PAPERCLIP_ALLOWED_ATTACHMENT_TYPES", "");
+    vi.stubEnv("WARDMOTE_ALLOWED_ATTACHMENT_TYPES", "");
     expect(isAllowedContentType("application/x-msdos-program")).toBe(true);
   });
 });
@@ -320,17 +320,17 @@ describe("getEffectiveAttachmentLimit", () => {
   });
 
   it("defaults to 100 MB when neither the setting nor the environment is set", () => {
-    vi.stubEnv("PAPERCLIP_ATTACHMENT_MAX_BYTES", "");
+    vi.stubEnv("WARDMOTE_ATTACHMENT_MAX_BYTES", "");
     expect(getEffectiveAttachmentLimit()).toEqual({ maxBytes: 100 * 1024 * 1024, source: "default" });
   });
 
-  it("uses PAPERCLIP_ATTACHMENT_MAX_BYTES when no setting is saved", () => {
-    vi.stubEnv("PAPERCLIP_ATTACHMENT_MAX_BYTES", String(7 * 1024 * 1024));
+  it("uses WARDMOTE_ATTACHMENT_MAX_BYTES when no setting is saved", () => {
+    vi.stubEnv("WARDMOTE_ATTACHMENT_MAX_BYTES", String(7 * 1024 * 1024));
     expect(getEffectiveAttachmentLimit()).toEqual({ maxBytes: 7 * 1024 * 1024, source: "env" });
   });
 
   it("lets the saved setting win over the environment and reads it on every call", () => {
-    vi.stubEnv("PAPERCLIP_ATTACHMENT_MAX_BYTES", String(7 * 1024 * 1024));
+    vi.stubEnv("WARDMOTE_ATTACHMENT_MAX_BYTES", String(7 * 1024 * 1024));
     setAttachmentLimitSetting(250);
     expect(getEffectiveAttachmentLimit()).toEqual({ maxBytes: 250 * 1024 * 1024, source: "setting" });
     setAttachmentLimitSetting(5);
@@ -340,7 +340,7 @@ describe("getEffectiveAttachmentLimit", () => {
   });
 
   it("ignores an invalid environment value", () => {
-    vi.stubEnv("PAPERCLIP_ATTACHMENT_MAX_BYTES", "nope");
+    vi.stubEnv("WARDMOTE_ATTACHMENT_MAX_BYTES", "nope");
     expect(getEffectiveAttachmentLimit().source).toBe("default");
   });
 });

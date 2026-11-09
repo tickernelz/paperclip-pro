@@ -315,7 +315,7 @@ describe("Capability evidence redaction", () => {
   });
 
   it("withholds provider diagnostics and provider thread identity", () => {
-    expect(redactCapabilityEvidenceData("diagnostic", { message: `PAPERCLIP_API_KEY=${CANARY}` })).toEqual({
+    expect(redactCapabilityEvidenceData("diagnostic", { message: `WARDMOTE_API_KEY=${CANARY}` })).toEqual({
       diagnostic: "withheld",
     });
     expect(

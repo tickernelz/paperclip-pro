@@ -140,8 +140,8 @@ describe("ACPX installation integrity", () => {
       await expect(verifyQualifiedAcpxInstallation(profile, resolver)).rejects.toThrow(staleBundledAlias
         ? /runtime executable package version mismatch/
         : /digest mismatch/);
-      vi.stubEnv("PAPERCLIP_ACPX_PROVIDER_PACKAGE_ROOT", root);
-      vi.stubEnv("PAPERCLIP_ACPX_PROVIDER_PACKAGE_MANIFEST", undefined);
+      vi.stubEnv("WARDMOTE_ACPX_PROVIDER_PACKAGE_ROOT", root);
+      vi.stubEnv("WARDMOTE_ACPX_PROVIDER_PACKAGE_MANIFEST", undefined);
       await expect(verifyQualifiedAcpxInstallation(profile)).rejects.toThrow(staleBundledAlias
         ? /runtime executable package version mismatch/
         : /digest mismatch/);
@@ -722,10 +722,10 @@ describe("ACPX installation integrity", () => {
   });
 
   it("resolves a controller-owned builtin root for descriptor-loaded sidecars and rejects relative roots", () => {
-    vi.stubEnv("PAPERCLIP_ACPX_BUILTIN_ROOT", "/verified/dist/providers");
+    vi.stubEnv("WARDMOTE_ACPX_BUILTIN_ROOT", "/verified/dist/providers");
     try { expect(builtinGrokLauncherPath("file:///proc/self/fd/9")).toBe("/verified/dist/providers/grok/launcher.cjs"); }
     finally { vi.unstubAllEnvs(); }
-    vi.stubEnv("PAPERCLIP_ACPX_BUILTIN_ROOT", "../untrusted");
+    vi.stubEnv("WARDMOTE_ACPX_BUILTIN_ROOT", "../untrusted");
     try { expect(() => builtinGrokLauncherPath()).toThrow("Invalid builtin provider root"); }
     finally { vi.unstubAllEnvs(); }
   });
@@ -1697,11 +1697,11 @@ describe("ACPX installation integrity", () => {
           `const module = await import(${JSON.stringify(moduleUrl)});`,
           `const credentials = await import(${JSON.stringify(credentialModuleUrl)});`,
           `const profile = ${JSON.stringify(fixture.profile)};`,
-          `const credential = await credentials.stageManagedCodexCredential({ agentHomeDirectory: ${JSON.stringify(credentialHome)}, environment: { PAPERCLIP_ACPX_CODEX_AUTH_JSON_SECRET: '{"owner":"original"}' } });`,
+          `const credential = await credentials.stageManagedCodexCredential({ agentHomeDirectory: ${JSON.stringify(credentialHome)}, environment: { WARDMOTE_ACPX_CODEX_AUTH_JSON_SECRET: '{"owner":"original"}' } });`,
           `const paths = new Map(${JSON.stringify([...fixture.paths])});`,
           "const installation = await module.verifyQualifiedAcpxInstallation(profile, (name) => paths.get(name));",
           "const lease = await installation.openCommand();",
-          `const provider = lease.spawn([], { env: { ...process.env, PAPERCLIP_PROVIDER_PID_FILE: ${JSON.stringify(pidFile)} } }, { credentialFenceFds: credential.lifetimeFenceFds, activateCredentialFenceOwner: (pid) => credential.activateLifetimeOwner(pid) });`,
+          `const provider = lease.spawn([], { env: { ...process.env, WARDMOTE_PROVIDER_PID_FILE: ${JSON.stringify(pidFile)} } }, { credentialFenceFds: credential.lifetimeFenceFds, activateCredentialFenceOwner: (pid) => credential.activateLifetimeOwner(pid) });`,
           "await module.awaitVerifiedAcpxProviderOwnership(provider);",
           'process.send?.({ type: "ready", guardianPid: provider.pid });',
           "process.stdin.resume();",
@@ -1732,7 +1732,7 @@ describe("ACPX installation integrity", () => {
             stageManagedCodexCredential({
               agentHomeDirectory: credentialHome,
               environment: {
-                PAPERCLIP_ACPX_CODEX_AUTH_JSON_SECRET: '{"owner":"contender"}',
+                WARDMOTE_ACPX_CODEX_AUTH_JSON_SECRET: '{"owner":"contender"}',
               },
             }),
           ).rejects.toThrow("already has an active lease");
@@ -1755,7 +1755,7 @@ describe("ACPX installation integrity", () => {
             contender = await stageManagedCodexCredential({
               agentHomeDirectory: credentialHome,
               environment: {
-                PAPERCLIP_ACPX_CODEX_AUTH_JSON_SECRET: '{"owner":"contender"}',
+                WARDMOTE_ACPX_CODEX_AUTH_JSON_SECRET: '{"owner":"contender"}',
               },
             });
             return true;
@@ -1796,11 +1796,11 @@ describe("ACPX installation integrity", () => {
           `const module = await import(${JSON.stringify(moduleUrl)});`,
           `const credentials = await import(${JSON.stringify(credentialModuleUrl)});`,
           `const profile = ${JSON.stringify(fixture.profile)};`,
-          `const credential = await credentials.stageManagedCodexCredential({ agentHomeDirectory: ${JSON.stringify(credentialHome)}, environment: { PAPERCLIP_ACPX_CODEX_AUTH_JSON_SECRET: '{"owner":"original"}' } });`,
+          `const credential = await credentials.stageManagedCodexCredential({ agentHomeDirectory: ${JSON.stringify(credentialHome)}, environment: { WARDMOTE_ACPX_CODEX_AUTH_JSON_SECRET: '{"owner":"original"}' } });`,
           `const paths = new Map(${JSON.stringify([...fixture.paths])});`,
           "const installation = await module.verifyQualifiedAcpxInstallation(profile, (name) => paths.get(name));",
           "const lease = await installation.openCommand();",
-          `const provider = lease.spawn([], { env: { ...process.env, PAPERCLIP_PROVIDER_PID_FILE: ${JSON.stringify(pidFile)} } }, { credentialFenceFds: credential.lifetimeFenceFds, activateCredentialFenceOwner: (pid) => credential.activateLifetimeOwner(pid) });`,
+          `const provider = lease.spawn([], { env: { ...process.env, WARDMOTE_PROVIDER_PID_FILE: ${JSON.stringify(pidFile)} } }, { credentialFenceFds: credential.lifetimeFenceFds, activateCredentialFenceOwner: (pid) => credential.activateLifetimeOwner(pid) });`,
           "await module.awaitVerifiedAcpxProviderOwnership(provider);",
           'process.send?.({ type: "ready", guardianPid: provider.pid });',
           "process.stdin.resume();",
@@ -1833,7 +1833,7 @@ describe("ACPX installation integrity", () => {
         const contender = await stageManagedCodexCredential({
           agentHomeDirectory: credentialHome,
           environment: {
-            PAPERCLIP_ACPX_CODEX_AUTH_JSON_SECRET: '{"owner":"contender"}',
+            WARDMOTE_ACPX_CODEX_AUTH_JSON_SECRET: '{"owner":"contender"}',
           },
         });
         await contender.close();
@@ -1872,7 +1872,7 @@ describe("ACPX installation integrity", () => {
       );
       const guardian = (await installation.openCommand()).spawn(
         [],
-        { env: { ...process.env, PAPERCLIP_PROVIDER_PID_FILE: pidFile } },
+        { env: { ...process.env, WARDMOTE_PROVIDER_PID_FILE: pidFile } },
         {
           credentialFenceFds: [fenceFds[0]!, fenceFds[1]!],
           activateCredentialFenceOwner: async () => undefined,
@@ -1928,7 +1928,7 @@ describe("ACPX installation integrity", () => {
       );
       const provider = (await installation.openCommand()).spawn(
         [],
-        { env: { ...process.env, PAPERCLIP_PROVIDER_PID_FILE: pidFile } },
+        { env: { ...process.env, WARDMOTE_PROVIDER_PID_FILE: pidFile } },
         {
           credentialFenceFds: [fenceFds[0]!, fenceFds[1]!],
           activateCredentialFenceOwner: async () => undefined,
@@ -1972,7 +1972,7 @@ describe("ACPX installation integrity", () => {
       );
       const guardian = (await installation.openCommand()).spawn(
         [],
-        { env: { ...process.env, PAPERCLIP_PROVIDER_PID_FILE: pidFile } },
+        { env: { ...process.env, WARDMOTE_PROVIDER_PID_FILE: pidFile } },
         {
           credentialFenceFds: [fenceFds[0]!, fenceFds[1]!],
           activateCredentialFenceOwner: async () => undefined,
@@ -2070,7 +2070,7 @@ async function persistentInstallationFixture() {
   const command = [
     "#!/usr/bin/env node",
     'const fs = require("node:fs");',
-    "fs.writeFileSync(process.env.PAPERCLIP_PROVIDER_PID_FILE, String(process.pid));",
+    "fs.writeFileSync(process.env.WARDMOTE_PROVIDER_PID_FILE, String(process.pid));",
     "setInterval(() => undefined, 1_000);",
   ].join("\n");
   await writeFile(fixture.commandPath, command);
@@ -2277,7 +2277,7 @@ describe("Grok launcher subscription refresh", () => {
     const executable = input.executable ?? "/private/verified/grok";
     return { fs, spawnSync, execve, executable, run: () => runInNewContext(script, {
       Buffer, Date,
-      process: { env: { PAPERCLIP_GROK_VERIFIED_EXECUTABLE: executable, GROK_HOME: "/isolated/grok", ...(input.apiKey ? { XAI_API_KEY: input.apiKey } : {}) }, getuid: () => 1000, execve },
+      process: { env: { WARDMOTE_GROK_VERIFIED_EXECUTABLE: executable, GROK_HOME: "/isolated/grok", ...(input.apiKey ? { XAI_API_KEY: input.apiKey } : {}) }, getuid: () => 1000, execve },
       require: (name: string) => name === "node:path" ? { isAbsolute, join } : name === "node:fs" ? fs : name === "node:child_process" ? { spawnSync } : undefined,
     }) };
   }

@@ -13,19 +13,19 @@ describe("canonical instruction tools through native authority", () => {
   let database: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;
   let db: ReturnType<typeof createDb>;
   let home: string;
-  const previousHome = process.env.PAPERCLIP_HOME;
+  const previousHome = process.env.WARDMOTE_HOME;
   let companyId: string, agentId: string, targetAgentId: string, userId: string, runId: string, issueId: string, root: string;
   let authority: PaperclipRunnerToolAuthority;
   const entryFile = "policy/ENTRY.md";
   const original = "\uFEFF# Original\r\n\0☃\n";
   beforeAll(async () => {
     home = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), "instruction-tool-home-")));
-    process.env.PAPERCLIP_HOME = home;
+    process.env.WARDMOTE_HOME = home;
     database = await startEmbeddedPostgresTestDatabase("instruction-tool-db-");
     db = createDb(database.connectionString);
   }, 90_000);
   afterAll(async () => {
-    if (previousHome === undefined) delete process.env.PAPERCLIP_HOME; else process.env.PAPERCLIP_HOME = previousHome;
+    if (previousHome === undefined) delete process.env.WARDMOTE_HOME; else process.env.WARDMOTE_HOME = previousHome;
     await database?.cleanup();
     if (home) await fs.rm(home, { recursive: true, force: true });
   });

@@ -81,7 +81,7 @@ import {
 import {
   isForbiddenConfigEnvKey,
   normalizePaperclipRunnerAdapterConfig,
-  PAPERCLIP_OPERATIONAL_SKILL_KEY,
+  WARDMOTE_OPERATIONAL_SKILL_KEY,
   parseObject,
   readPaperclipSkillSyncPreference,
   writePaperclipSkillSyncPreference,
@@ -121,7 +121,7 @@ import {
 } from "../services/index.js";
 import { badRequest, conflict, forbidden, HttpError, notFound, unprocessable } from "../errors.js";
 import { normalizeAgentFallbackModelsConfig } from "../services/model-fallback.js";
-import { ONBOARDING_FIRST_TASK_SKILL_KEY, PAPERCLIP_CORE_SKILL_KEYS } from "../services/company-skills.js";
+import { ONBOARDING_FIRST_TASK_SKILL_KEY, WARDMOTE_CORE_SKILL_KEYS } from "../services/company-skills.js";
 import { createRunSecretRedactionRegistry } from "../services/run-secret-redaction.js";
 import { assertNoAgentAuthorityEscalation } from "../services/agent-authority-escalation.js";
 import { assertAuthenticated, assertBoard, assertBoardOrAgentAuthority, assertCompanyAccess, assertInstanceAdmin, buildActorSecretContext, getAccessibleResource, getActorInfo, hasCompanyAccess, isCompanyOwnerAgentActor } from "./authz.js";
@@ -773,7 +773,7 @@ export function agentRoutes(
   const companySkills = companySkillService(db);
   const workspaceOperations = workspaceOperationService(db);
   const instanceSettings = instanceSettingsService(db);
-  const strictSecretsMode = process.env.PAPERCLIP_SECRETS_STRICT_MODE === "true";
+  const strictSecretsMode = process.env.WARDMOTE_SECRETS_STRICT_MODE === "true";
 
   async function actorCanReadRun(req: Request, run: RunReadBinding) {
     return canActorReadHeartbeatRun(db, access, req.actor, run);
@@ -1813,7 +1813,7 @@ export function agentRoutes(
    * (hire + create), as opposed to the paths that operate on an existing one.
    *
    * A disabled adapter is one this instance cannot run — most often because a
-   * declarative registry (PAPERCLIP_ADAPTERS) curated it out, which
+   * declarative registry (WARDMOTE_ADAPTERS) curated it out, which
    * reconcileAdapterAvailability turns into a disabled type at boot. Registered
    * but disabled still passes assertKnownAdapterType, so an agent could be
    * created on it and then fail EVERY run at lease time with
@@ -2547,10 +2547,10 @@ export function agentRoutes(
     const adapter = findActiveServerAdapter(adapterType);
     if (!adapter?.listSkills && !adapter?.syncSkills) return undefined;
     const keys = boardOnboardingFirstAgent
-      ? [...PAPERCLIP_CORE_SKILL_KEYS, ONBOARDING_FIRST_TASK_SKILL_KEY]
-      : PAPERCLIP_CORE_SKILL_KEYS;
+      ? [...WARDMOTE_CORE_SKILL_KEYS, ONBOARDING_FIRST_TASK_SKILL_KEY]
+      : WARDMOTE_CORE_SKILL_KEYS;
     return keys
-      .filter((key) => adapterType !== "paperclip_runner" || key !== PAPERCLIP_OPERATIONAL_SKILL_KEY)
+      .filter((key) => adapterType !== "paperclip_runner" || key !== WARDMOTE_OPERATIONAL_SKILL_KEY)
       .map((key) => ({ key, versionId: null }));
   }
 
@@ -2677,7 +2677,7 @@ export function agentRoutes(
       mode,
     ).filter(
       (entry) => !isConnectorSkill(entry.key) && (adapterType !== "paperclip_runner"
-        || entry.key.trim().toLowerCase() !== PAPERCLIP_OPERATIONAL_SKILL_KEY),
+        || entry.key.trim().toLowerCase() !== WARDMOTE_OPERATIONAL_SKILL_KEY),
     );
     const desiredSkills = desiredSkillEntries.map((entry) => entry.key);
     const resolvedKeys = new Set([
@@ -3085,7 +3085,7 @@ export function agentRoutes(
         const controllerAvailable = !managedOnly || environment?.driver === "sandbox";
         const checks: AdapterEnvironmentCheck[] = [
           { code: "dot_enabled", level: dotEnabled ? "info" : "error", message: dotEnabled ? "Dot is enabled." : "Turn on OpenAI Dot and Assistant connections in Settings > Features." },
-          { code: "dot_public_endpoint", level: resource?.origin.startsWith("https://") ? "info" : "error", message: resource?.origin.startsWith("https://") ? "Public HTTPS MCP origin is configured." : "Configure a stable public HTTPS PAPERCLIP_PUBLIC_URL." },
+          { code: "dot_public_endpoint", level: resource?.origin.startsWith("https://") ? "info" : "error", message: resource?.origin.startsWith("https://") ? "Public HTTPS MCP origin is configured." : "Configure a stable public HTTPS WARDMOTE_PUBLIC_URL." },
           { code: "dot_unmetered", level: inputAdapterConfig.allowUnmeteredProvider === true ? "info" : "error", message: "Dot usage and provider cost are unavailable. Explicit externally billed provider acknowledgement is required." },
           { code: "dot_binding", level: binding?.status === "ready" && binding.subscriptionVerified && binding.id === inputAdapterConfig.dotBindingId ? "info" : "warn", message: binding?.status === "ready" && binding.subscriptionVerified ? "Binding has a verified event subscription and completed readiness challenge." : "Save this agent, pair it, subscribe to mailbox events and complete the event test." },
           { code: "dot_controller", level: controllerAvailable ? "info" : "error", message: controllerAvailable
@@ -3832,7 +3832,7 @@ export function agentRoutes(
     const worktreeActivation = await resolveWorktreeRunExecutionActivationState({
       getExperimental: () => instanceSettingsService(db).getExperimental(),
     });
-    const isWorktreeRuntime = isTruthyRuntimeEnvValue(process.env.PAPERCLIP_IN_WORKTREE);
+    const isWorktreeRuntime = isTruthyRuntimeEnvValue(process.env.WARDMOTE_IN_WORKTREE);
     const eligibleRows = !isWorktreeRuntime
       ? rows
       : worktreeActivation.armed

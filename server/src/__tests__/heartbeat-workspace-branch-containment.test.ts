@@ -112,7 +112,7 @@ vi.mock("../adapters/index.js", () => ({
   runningProcesses: new Map(),
 }));
 
-const externalTestDatabaseUrl = process.env.PAPERCLIP_TEST_DATABASE_URL?.trim();
+const externalTestDatabaseUrl = process.env.WARDMOTE_TEST_DATABASE_URL?.trim();
 const embeddedPostgresSupport = externalTestDatabaseUrl ? { supported: true } : await getEmbeddedPostgresTestSupport();
 const describeEmbeddedPostgres = embeddedPostgresSupport.supported ? describe : describe.skip;
 
@@ -940,7 +940,7 @@ describeEmbeddedPostgres("heartbeat workspace branch containment", () => {
   async function seedRetainedSourceRun(kind: "deleted" | "explicit_conflict" | "foreign_project" | "foreign_company" | "unproven") {
     const home = await realpath(await mkdtemp(path.join(os.tmpdir(), "paperclip-retained-source-home-")));
     tempRoots.push(home);
-    vi.stubEnv("PAPERCLIP_HOME", home);
+    vi.stubEnv("WARDMOTE_HOME", home);
     const original = await createGitRepo();
     const replacement = await createGitRepo();
     tempRoots.push(original, replacement);

@@ -7,7 +7,7 @@ Ordinary self-hosted images need no catalog and keep their existing behavior.
 
 ## Image layout
 
-Use `distribution/catalog.json` beneath `PAPERCLIP_BUNDLED_PLUGIN_ROOT`
+Use `distribution/catalog.json` beneath `WARDMOTE_BUNDLED_PLUGIN_ROOT`
 (default `/app/packages/plugins`). Each plugin has a stable directory below
 `distribution/`, containing its `package.json`, compiled manifest, worker and
 optional UI. Bundle runtime dependencies; startup never installs them.

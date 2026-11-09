@@ -2,7 +2,7 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
-import { PAPERCLIP_PROTOCOL_ACTIONS } from "../dist/protocol-actions/index.js";
+import { WARDMOTE_PROTOCOL_ACTIONS } from "../dist/protocol-actions/index.js";
 import { buildCapabilityScenarioIndex } from "../dist/scenarios/scenario-index.js";
 import { capabilityScenarioFixture } from "../dist/scenarios/scenario-fixtures.js";
 import { capabilityScenarioPlan } from "../dist/scenarios/scenario-plan.js";
@@ -11,7 +11,7 @@ const root = resolve(import.meta.dirname, "..");
 const manifestPath = resolve(root, "spec/capability/eval-traceability.yaml");
 const outputPath = resolve(root, "spec/capability/protocol-coverage.json");
 const index = buildCapabilityScenarioIndex(await readFile(manifestPath, "utf8"));
-const catalog = PAPERCLIP_PROTOCOL_ACTIONS.map((action) => ({
+const catalog = WARDMOTE_PROTOCOL_ACTIONS.map((action) => ({
   id: action.id,
   ownership: action.canonical.placement,
   surfaces: action.canonical.surfaces,

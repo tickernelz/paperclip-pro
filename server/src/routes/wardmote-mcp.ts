@@ -51,7 +51,7 @@ async function runIssueIdForCredential(
 function loopbackApiUrl(req: Request): string {
   const port = req.socket.localPort;
   if (!port) {
-    const configured = process.env.PAPERCLIP_API_URL?.replace(/\/+$/, "");
+    const configured = process.env.WARDMOTE_API_URL?.replace(/\/+$/, "");
     if (!configured) throw new Error("Paperclip API origin is unavailable");
     return configured.endsWith("/api") ? configured : `${configured}/api`;
   }

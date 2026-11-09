@@ -23,7 +23,7 @@ describe("registered run instruction copies", () => {
   let db: ReturnType<typeof createDb>;
   let copies: ReturnType<typeof agentInstructionWorkingCopyService>;
   let revisions: ReturnType<typeof agentInstructionRevisionService>;
-  const previousHome = process.env.PAPERCLIP_HOME;
+  const previousHome = process.env.WARDMOTE_HOME;
   let home: string;
   let companyId: string, agentId: string, userId: string, root: string;
   const entryFile = "policy/INSTRUCTIONS.txt";
@@ -37,14 +37,14 @@ describe("registered run instruction copies", () => {
   }
   beforeAll(async () => {
     home = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), "instruction-working-copies-")));
-    process.env.PAPERCLIP_HOME = home;
+    process.env.WARDMOTE_HOME = home;
     database = await startEmbeddedPostgresTestDatabase("instruction-copies-db-");
     db = createDb(database.connectionString);
     copies = agentInstructionWorkingCopyService(db);
     revisions = agentInstructionRevisionService(db);
   }, 90_000);
   afterAll(async () => {
-    if (previousHome === undefined) delete process.env.PAPERCLIP_HOME; else process.env.PAPERCLIP_HOME = previousHome;
+    if (previousHome === undefined) delete process.env.WARDMOTE_HOME; else process.env.WARDMOTE_HOME = previousHome;
     await database?.cleanup();
     if (home) {
       const writable = async (dir: string) => {

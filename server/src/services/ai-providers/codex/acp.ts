@@ -142,7 +142,7 @@ export function buildCodexAcpConfig(config: Record<string, unknown>): Record<str
   );
 
   const env = parseObject(config.env);
-  let networkAccess = env.PAPERCLIP_CODEX_ACP_NETWORK_ACCESS !== "false";
+  let networkAccess = env.WARDMOTE_CODEX_ACP_NETWORK_ACCESS !== "false";
   const extraArgs = asStringArray(config.extraArgs);
   for (const arg of extraArgs.length > 0 ? extraArgs : asStringArray(config.args)) {
     const match = /^(?:(?:--config=|-c=?)\s*)?sandbox_workspace_write\.network_access\s*=\s*(true|false)\s*$/.exec(arg);
@@ -151,7 +151,7 @@ export function buildCodexAcpConfig(config: Record<string, unknown>): Record<str
 
   return {
     ...config,
-    env: { ...env, PAPERCLIP_CODEX_ACP_NETWORK_ACCESS: String(networkAccess) },
+    env: { ...env, WARDMOTE_CODEX_ACP_NETWORK_ACCESS: String(networkAccess) },
     agent: "codex",
     mode,
     permissionMode,

@@ -5,7 +5,7 @@ const root = process.cwd();
 // This mode preserves the checked-in ingestion report.
 const definitionsOnly = process.argv.includes("--definitions-only");
 const corpus =
-  process.env.PAPERCLIP_CONTENT_TEMPLATES ??
+  process.env.WARDMOTE_CONTENT_TEMPLATES ??
   path.resolve(
     root,
     "../../paperclip-content/research/connections/vercel/templates",

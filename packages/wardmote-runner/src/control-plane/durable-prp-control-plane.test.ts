@@ -391,17 +391,17 @@ it("preserves an explicit OpenCode permission mode at the runner spawn boundary"
     runnerDigest: expectedRunnerDigest,
     environment: {
       PATH: "/bin",
-      PAPERCLIP_AGENT_KEY_ID: "sha256:identity",
-      PAPERCLIP_AGENT_PUBLIC_KEY: "public-pem",
-      PAPERCLIP_AGENT_PRIVATE_KEY: "private-pem",
+      WARDMOTE_AGENT_KEY_ID: "sha256:identity",
+      WARDMOTE_AGENT_PUBLIC_KEY: "public-pem",
+      WARDMOTE_AGENT_PRIVATE_KEY: "private-pem",
       OPENROUTER_API_KEY: "provider-key",
-      PAPERCLIP_AI_PROVIDER_KEY: "managed-provider-key",
+      WARDMOTE_AI_PROVIDER_KEY: "managed-provider-key",
       ANTHROPIC_AUTH_TOKEN: "managed-claude-key",
       ANTHROPIC_BASE_URL: "https://gateway.example",
-      PAPERCLIP_OPENCODE_PERMISSION_MODE: "deny",
-      PAPERCLIP_OPENCODE_RUNTIME_DIR: "/runner/opencode",
+      WARDMOTE_OPENCODE_PERMISSION_MODE: "deny",
+      WARDMOTE_OPENCODE_RUNTIME_DIR: "/runner/opencode",
       DATABASE_URL: "must-not-reach-runnerd",
-      PAPERCLIP_API_KEY: "must-not-reach-runnerd",
+      WARDMOTE_API_KEY: "must-not-reach-runnerd",
       NODE_OPTIONS: "--require=/untrusted/bootstrap.cjs",
     },
     processLauncher: (spec) => {
@@ -426,20 +426,20 @@ it("preserves an explicit OpenCode permission mode at the runner spawn boundary"
   expect(launches).toHaveLength(1);
   expect(launches[0]!.environment).toMatchObject({
     PATH: "/bin",
-    PAPERCLIP_AGENT_KEY_ID: "sha256:identity",
-    PAPERCLIP_AGENT_PUBLIC_KEY: "public-pem",
-    PAPERCLIP_AGENT_PRIVATE_KEY: "private-pem",
+    WARDMOTE_AGENT_KEY_ID: "sha256:identity",
+    WARDMOTE_AGENT_PUBLIC_KEY: "public-pem",
+    WARDMOTE_AGENT_PRIVATE_KEY: "private-pem",
     OPENROUTER_API_KEY: "provider-key",
-    PAPERCLIP_AI_PROVIDER_KEY: "managed-provider-key",
+    WARDMOTE_AI_PROVIDER_KEY: "managed-provider-key",
     ANTHROPIC_AUTH_TOKEN: "managed-claude-key",
     ANTHROPIC_BASE_URL: "https://gateway.example",
-    PAPERCLIP_OPENCODE_PERMISSION_MODE: "deny",
-    PAPERCLIP_OPENCODE_RUNTIME_DIR: "/runner/opencode",
+    WARDMOTE_OPENCODE_PERMISSION_MODE: "deny",
+    WARDMOTE_OPENCODE_RUNTIME_DIR: "/runner/opencode",
   });
   expect(launches[0]!.environment.DATABASE_URL).toBeUndefined();
-  expect(launches[0]!.environment.PAPERCLIP_API_KEY).toBeUndefined();
+  expect(launches[0]!.environment.WARDMOTE_API_KEY).toBeUndefined();
   expect(launches[0]!.environment.NODE_OPTIONS).toBeUndefined();
-  expect(launches[0]!.environment.PAPERCLIP_OPENCODE_COMMAND).toBeUndefined();
+  expect(launches[0]!.environment.WARDMOTE_OPENCODE_COMMAND).toBeUndefined();
 });
 
 it("preserves only bounded GitHub credential projection at the runner spawn boundary", () => {
@@ -457,14 +457,14 @@ it("preserves only bounded GitHub credential projection at the runner spawn boun
       PATH: "/bin",
       GH_TOKEN: "github-token",
       GITHUB_TOKEN: "github-token",
-      PAPERCLIP_GIT_TOKEN: "github-token",
+      WARDMOTE_GIT_TOKEN: "github-token",
       GIT_TERMINAL_PROMPT: "0",
       GIT_CONFIG_COUNT: "1",
       GIT_CONFIG_KEY_0: "credential.https://github.com.helper",
       GIT_CONFIG_VALUE_0: "!trusted-helper",
       GIT_CONFIG_KEY_1: "must.not.cross",
       GIT_CONFIG_VALUE_1: "must-not-cross",
-      PAPERCLIP_RUNNER_EXTERNAL_SANDBOX: "1",
+      WARDMOTE_RUNNER_EXTERNAL_SANDBOX: "1",
       DATABASE_URL: "must-not-cross",
     },
     processLauncher: (spec) => {
@@ -490,12 +490,12 @@ it("preserves only bounded GitHub credential projection at the runner spawn boun
   expect(launches[0]!.environment).toMatchObject({
     GH_TOKEN: "github-token",
     GITHUB_TOKEN: "github-token",
-    PAPERCLIP_GIT_TOKEN: "github-token",
+    WARDMOTE_GIT_TOKEN: "github-token",
     GIT_TERMINAL_PROMPT: "0",
     GIT_CONFIG_COUNT: "1",
     GIT_CONFIG_KEY_0: "credential.https://github.com.helper",
     GIT_CONFIG_VALUE_0: "!trusted-helper",
-    PAPERCLIP_RUNNER_EXTERNAL_SANDBOX: "1",
+    WARDMOTE_RUNNER_EXTERNAL_SANDBOX: "1",
   });
   expect(launches[0]!.environment.GIT_CONFIG_KEY_1).toBeUndefined();
   expect(launches[0]!.environment.GIT_CONFIG_VALUE_1).toBeUndefined();
@@ -515,8 +515,8 @@ it("preserves the controller-selected ACPX provider package root", () => {
     runnerDigest: expectedRunnerDigest,
     environment: {
       PATH: "/bin",
-      PAPERCLIP_ACPX_PROVIDER_PACKAGE_ROOT: "/verified/provider-pack",
-      PAPERCLIP_ACPX_PROVIDER_PACKAGE_MANIFEST:
+      WARDMOTE_ACPX_PROVIDER_PACKAGE_ROOT: "/verified/provider-pack",
+      WARDMOTE_ACPX_PROVIDER_PACKAGE_MANIFEST:
         "/verified/provider-pack/package.json",
       NODE_PATH: "/untrusted/modules",
     },
@@ -540,11 +540,11 @@ it("preserves the controller-selected ACPX provider package root", () => {
   });
 
   expect(launches).toHaveLength(1);
-  expect(launches[0]!.environment.PAPERCLIP_ACPX_PROVIDER_PACKAGE_ROOT).toBe(
+  expect(launches[0]!.environment.WARDMOTE_ACPX_PROVIDER_PACKAGE_ROOT).toBe(
     "/verified/provider-pack",
   );
   expect(
-    launches[0]!.environment.PAPERCLIP_ACPX_PROVIDER_PACKAGE_MANIFEST,
+    launches[0]!.environment.WARDMOTE_ACPX_PROVIDER_PACKAGE_MANIFEST,
   ).toBe("/verified/provider-pack/package.json");
   expect(launches[0]!.environment.NODE_PATH).toBeUndefined();
 });
@@ -561,7 +561,7 @@ it.each([
   vi.stubEnv(key, "ambient-must-not-cross");
   vi.stubEnv(ACPX_CREDENTIAL_BINDING_ENV, "ambient-forged-marker");
   const iam = agent === "pi" ? configuredEnvironmentProjection({ AWS_ACCESS_KEY_ID: "general-key", AWS_SECRET_ACCESS_KEY: "general-secret", AWS_SESSION_TOKEN: "general-session", CUSTOM_SETTING: "allowed" }) : {};
-  const custom = key === "CUSTOM_PI_API_KEY" ? { PAPERCLIP_PI_PROVIDERS: JSON.stringify({ private: { baseUrl: "https://provider.invalid", apiKey: key } }) } : {};
+  const custom = key === "CUSTOM_PI_API_KEY" ? { WARDMOTE_PI_PROVIDERS: JSON.stringify({ private: { baseUrl: "https://provider.invalid", apiKey: key } }) } : {};
   try {
     for (const explicit of [true, false]) {
       const environment = createCapabilityRunnerdProviderEnvironment({
@@ -587,7 +587,7 @@ it.each([
         const receipt = launch.environment[ACPX_CREDENTIAL_BINDING_ENV];
         expect(receipt).toBeDefined();
         expect(JSON.parse(receipt!)).toEqual({ schema: "paperclip.acpx_credential_binding.v1", agent,
-          sessionId: identity.normalizedSessionId, names: explicit ? [...(key === "CUSTOM_PI_API_KEY" ? ["PAPERCLIP_PI_PROVIDERS"] : []), key] : [] });
+          sessionId: identity.normalizedSessionId, names: explicit ? [...(key === "CUSTOM_PI_API_KEY" ? ["WARDMOTE_PI_PROVIDERS"] : []), key] : [] });
         expect(receipt).not.toContain("fixture-credential");
         expect(launch.environment.DATABASE_URL).toBeUndefined();
         if (agent === "pi") {

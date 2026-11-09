@@ -2,15 +2,15 @@ import fs from "node:fs";
 import path from "node:path";
 import { randomBytes } from "node:crypto";
 import { config as loadDotenv, parse as parseEnvFileContents } from "dotenv";
-import { applyEnvAliases } from "@tickernelz/wardmote-shared/env-aliases";
 import { updateEnvFileContents, writeEnvFileAtomicallyIfChanged } from "@tickernelz/wardmote-shared/env-file";
+import { resolvePaperclipEnvPathForConfig } from "@tickernelz/wardmote-shared/home-paths";
 import { resolveConfigPath } from "./store.js";
 
-const JWT_SECRET_ENV_KEY = "PAPERCLIP_AGENT_JWT_SECRET";
-const TOOL_ACTION_SIGNING_SECRET_ENV_KEY = "PAPERCLIP_TOOL_ACTION_SIGNING_SECRET";
-const PAPERCLIP_OWNED_ENV_KEY_PATTERN = /^PAPERCLIP_[A-Z0-9_]+$/;
+const JWT_SECRET_ENV_KEY = "WARDMOTE_AGENT_JWT_SECRET";
+const TOOL_ACTION_SIGNING_SECRET_ENV_KEY = "WARDMOTE_TOOL_ACTION_SIGNING_SECRET";
+const WARDMOTE_OWNED_ENV_KEY_PATTERN = /^WARDMOTE_[A-Z0-9_]+$/;
 function resolveEnvFilePath(configPath?: string) {
-  return path.resolve(path.dirname(resolveConfigPath(configPath)), ".env");
+  return resolvePaperclipEnvPathForConfig(resolveConfigPath(configPath));
 }
 const loadedEnvFiles = new Set<string>();
 
@@ -37,7 +37,7 @@ function emptyEnvFileContents() {
 function paperclipOwnedEntries(entries: Record<string, string>): Record<string, string> {
   return Object.fromEntries(
     Object.entries(entries).filter(
-      ([key, value]) => PAPERCLIP_OWNED_ENV_KEY_PATTERN.test(key) && value.trim().length > 0,
+      ([key, value]) => WARDMOTE_OWNED_ENV_KEY_PATTERN.test(key) && value.trim().length > 0,
     ),
   );
 }
@@ -60,7 +60,6 @@ export function loadAgentJwtEnvFile(filePath = resolveEnvFilePath()): void {
   if (!fs.existsSync(filePath)) return;
   loadedEnvFiles.add(filePath);
   loadDotenv({ path: filePath, override: false, quiet: true });
-  applyEnvAliases();
 }
 
 export function readAgentJwtSecretFromEnv(configPath?: string): string | null {

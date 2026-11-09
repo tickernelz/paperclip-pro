@@ -17,12 +17,12 @@ Use the bundled script for every stage. Keep the workflow strictly ordered: `sca
 
 ## Inputs
 
-Require `PAPERCLIP_API_URL` and `PAPERCLIP_API_KEY`. The script strips a trailing `/api` from the URL. It resolves the target user from the run JWT payload's `responsible_user_id`; use `--user-id <uuid>` only for an explicit target override.
+Require `WARDMOTE_API_URL` and `WARDMOTE_API_KEY`. The script strips a trailing `/api` from the URL. It resolves the target user from the run JWT payload's `responsible_user_id`; use `--user-id <uuid>` only for an explicit target override.
 
 Use a run-owned output directory when available:
 
 ```bash
-RUN_DIR="${PAPERCLIP_RUN_SCRATCH_DIR:-${PAPERCLIP_TASK_SCRATCH_DIR:-.}}/garden-inbox"
+RUN_DIR="${WARDMOTE_RUN_SCRATCH_DIR:-${WARDMOTE_TASK_SCRATCH_DIR:-.}}/garden-inbox"
 mkdir -p "$RUN_DIR"
 ```
 
@@ -51,7 +51,7 @@ Post checkbox interactions on the driving issue:
 
 ```bash
 node .agents/skills/garden-inbox/scripts/garden-inbox.mjs confirm \
-  --issue-id "$PAPERCLIP_TASK_ID" \
+  --issue-id "$WARDMOTE_TASK_ID" \
   --candidates "$RUN_DIR/candidates.json"
 ```
 
@@ -63,7 +63,7 @@ For development or payload review, suppress the POST:
 
 ```bash
 node .agents/skills/garden-inbox/scripts/garden-inbox.mjs confirm \
-  --issue-id "$PAPERCLIP_TASK_ID" \
+  --issue-id "$WARDMOTE_TASK_ID" \
   --candidates "$RUN_DIR/candidates.json" \
   --dry-run
 ```
@@ -74,7 +74,7 @@ After an interaction-resolution wake, take the resolved interaction ID from the 
 
 ```bash
 node .agents/skills/garden-inbox/scripts/garden-inbox.mjs apply \
-  --issue-id "$PAPERCLIP_TASK_ID" \
+  --issue-id "$WARDMOTE_TASK_ID" \
   --interaction-id "$INTERACTION_ID" \
   --candidates "$RUN_DIR/candidates.json"
 ```
@@ -85,7 +85,7 @@ Test `apply` without API writes by supplying a saved interaction response:
 
 ```bash
 node .agents/skills/garden-inbox/scripts/garden-inbox.mjs apply \
-  --issue-id "$PAPERCLIP_TASK_ID" \
+  --issue-id "$WARDMOTE_TASK_ID" \
   --interaction-file resolved-interaction.json \
   --candidates "$RUN_DIR/candidates.json" \
   --dry-run

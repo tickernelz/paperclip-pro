@@ -24,12 +24,12 @@ describe("Pi caller-selected providers and models", () => {
 
   it("forwards only explicitly bound Pi credentials, including custom-provider references", () => {
     const environment = { OPENAI_API_KEY: "openai-fixture", ANTHROPIC_API_KEY: "anthropic-fixture", CUSTOM_MODEL_KEY: "custom-fixture",
-      PAPERCLIP_PI_PROVIDERS: JSON.stringify({ custom: { baseUrl: "https://models.example/v1", api: "openai-completions", apiKey: "CUSTOM_MODEL_KEY", models: [{ id: "new-model" }] } }),
-      PAPERCLIP_API_KEY: "control-plane-fixture", NODE_OPTIONS: "--inspect" };
+      WARDMOTE_PI_PROVIDERS: JSON.stringify({ custom: { baseUrl: "https://models.example/v1", api: "openai-completions", apiKey: "CUSTOM_MODEL_KEY", models: [{ id: "new-model" }] } }),
+      WARDMOTE_API_KEY: "control-plane-fixture", NODE_OPTIONS: "--inspect" };
     const binding = createAcpxCredentialBinding(environment, "pi", "session-1");
     const bound = createAcpxSidecarHostEnvironment({ ...environment, [ACPX_CREDENTIAL_BINDING_ENV]: binding }, "pi", "session-1");
     expect(createSanitizedAcpxSpawnInput(bound, "pi").env).toMatchObject({ OPENAI_API_KEY: "openai-fixture", ANTHROPIC_API_KEY: "anthropic-fixture", CUSTOM_MODEL_KEY: "custom-fixture" });
-    expect(createSanitizedAcpxSpawnInput(bound, "pi").env).not.toHaveProperty("PAPERCLIP_API_KEY");
+    expect(createSanitizedAcpxSpawnInput(bound, "pi").env).not.toHaveProperty("WARDMOTE_API_KEY");
     expect(createSanitizedAcpxSpawnInput(bound, "pi").env).not.toHaveProperty("NODE_OPTIONS");
     expect(() => createAcpxSidecarHostEnvironment({ ...environment, [ACPX_CREDENTIAL_BINDING_ENV]: binding }, "pi", "another-session")).toThrow();
     expect(() => createAcpxSidecarHostEnvironment(environment, "pi", "session-1")).toThrow();
@@ -38,17 +38,17 @@ describe("Pi caller-selected providers and models", () => {
     finally { vi.unstubAllEnvs(); }
   });
 
-  it.each(["!cat /private/key", "PAPERCLIP_API_KEY", "NODE_OPTIONS", "PATH", "AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_SESSION_TOKEN"])("rejects unsafe custom-provider credential reference %s", apiKey => {
-    expect(() => piProviderConfiguration({ PAPERCLIP_PI_PROVIDERS: JSON.stringify({ custom: { apiKey } }) })).toThrow();
+  it.each(["!cat /private/key", "WARDMOTE_API_KEY", "NODE_OPTIONS", "PATH", "AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_SESSION_TOKEN"])("rejects unsafe custom-provider credential reference %s", apiKey => {
+    expect(() => piProviderConfiguration({ WARDMOTE_PI_PROVIDERS: JSON.stringify({ custom: { apiKey } }) })).toThrow();
   });
 
   it("reserves loader and shell controls at the controller boundary", async () => {
     const names = JSON.parse(await readFile(new URL("../../../test-fixtures/pi-acp/reserved-credential-names.json", import.meta.url), "utf8"));
     for (const apiKey of names) {
-      expect(() => piProviderConfiguration({ PAPERCLIP_PI_PROVIDERS: JSON.stringify({ custom: { apiKey } }) }), apiKey).toThrow();
+      expect(() => piProviderConfiguration({ WARDMOTE_PI_PROVIDERS: JSON.stringify({ custom: { apiKey } }) }), apiKey).toThrow();
     }
     for (const apiKey of ["LD_API_KEY", "DYLD_API_KEY", "MY_PI_SERVICE_KEY"]) {
-      expect(piProviderConfiguration({ PAPERCLIP_PI_PROVIDERS: JSON.stringify({ custom: { apiKey } }) })?.credentialNames).toEqual([apiKey]);
+      expect(piProviderConfiguration({ WARDMOTE_PI_PROVIDERS: JSON.stringify({ custom: { apiKey } }) })?.credentialNames).toEqual([apiKey]);
     }
   });
 
@@ -56,7 +56,7 @@ describe("Pi caller-selected providers and models", () => {
     const root = await mkdtemp(join(tmpdir(), "pi-model-recovery-"));
     try {
       const profile = resolveQualifiedAcpxProfile("pi", "custom/new-model");
-      const configuration = (baseUrl: string) => piProviderConfiguration({ PAPERCLIP_PI_PROVIDERS: JSON.stringify({ custom: { baseUrl, api: "openai-completions", apiKey: "CUSTOM_MODEL_KEY", models: [{ id: "new-model" }] } }) })!;
+      const configuration = (baseUrl: string) => piProviderConfiguration({ WARDMOTE_PI_PROVIDERS: JSON.stringify({ custom: { baseUrl, api: "openai-completions", apiKey: "CUSTOM_MODEL_KEY", models: [{ id: "new-model" }] } }) })!;
       const input = { runtimeDirectory: root, workingDirectory: root, normalizedSessionId: "session-1", profile,
         requestedModel: profile.reportedModelId, permissionMode: "deny-all" as const, piThinkingLevel: "off" as const };
       const first = await createAcpxRecoveryBinding({ ...input, providerConfigurationDigest: configuration("https://first.example/v1").digest });

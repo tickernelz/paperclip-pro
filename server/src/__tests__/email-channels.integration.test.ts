@@ -76,10 +76,10 @@ describe("AgentMail durable email pipeline", () => {
   let database: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;
   let db: ReturnType<typeof createDb>;
   const folder = mkdtempSync(path.join(os.tmpdir(), "paperclip-email-"));
-  const previous = process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE;
+  const previous = process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE;
   const services: EmailChannelService[] = [];
   beforeAll(async () => {
-    process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE = path.join(
+    process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE = path.join(
       folder,
       "master.key",
     );
@@ -113,8 +113,8 @@ describe("AgentMail durable email pipeline", () => {
   afterAll(async () => {
     await database?.cleanup();
     if (previous === undefined)
-      delete process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE;
-    else process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE = previous;
+      delete process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE;
+    else process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE = previous;
     rmSync(folder, { recursive: true, force: true });
   });
   it("installs one connector skill and provider tools only for the assigned agent", async () => {

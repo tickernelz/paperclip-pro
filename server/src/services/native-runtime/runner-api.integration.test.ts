@@ -15,23 +15,23 @@ import { PaperclipRunnerToolAuthority } from "./paperclip-runner-tool-authority.
 
 describe("runner API against real HTTP routes", () => {
   let server: Awaited<ReturnType<typeof startRunnerApiTestServer>>;
-  const oldSecret = process.env.PAPERCLIP_AGENT_JWT_SECRET;
+  const oldSecret = process.env.WARDMOTE_AGENT_JWT_SECRET;
   beforeEach(() => {
-    vi.stubEnv("PAPERCLIP_RUNNER_API_TOOLS_ENABLED", undefined);
-    vi.stubEnv("PAPERCLIP_RUNNER_API_TOOLS_COMPANY_IDS", undefined);
+    vi.stubEnv("WARDMOTE_RUNNER_API_TOOLS_ENABLED", undefined);
+    vi.stubEnv("WARDMOTE_RUNNER_API_TOOLS_COMPANY_IDS", undefined);
   });
   afterEach(() => vi.unstubAllEnvs());
   beforeAll(async () => {
-    process.env.PAPERCLIP_AGENT_JWT_SECRET = randomUUID();
+    process.env.WARDMOTE_AGENT_JWT_SECRET = randomUUID();
     server = await startRunnerApiTestServer();
   }, 60_000);
   afterAll(async () => {
     await server?.close();
-    if (oldSecret === undefined) delete process.env.PAPERCLIP_AGENT_JWT_SECRET;
-    else process.env.PAPERCLIP_AGENT_JWT_SECRET = oldSecret;
+    if (oldSecret === undefined) delete process.env.WARDMOTE_AGENT_JWT_SECRET;
+    else process.env.WARDMOTE_AGENT_JWT_SECRET = oldSecret;
   });
 
-  it.skipIf(!process.env.PAPERCLIP_REQUIRE_RUNNER_API_INTEGRATION && !existsSync(defaultCapabilityRunnerdBinary())).each(["current", "legacy_http"])("runs runnerd → PRP → authority → actual authenticated HTTP (%s receipt)", async (receiptFormat) => {
+  it.skipIf(!process.env.WARDMOTE_REQUIRE_RUNNER_API_INTEGRATION && !existsSync(defaultCapabilityRunnerdBinary())).each(["current", "legacy_http"])("runs runnerd → PRP → authority → actual authenticated HTTP (%s receipt)", async (receiptFormat) => {
     const fixture = await server.fixture();
     const provider = join(server.root, `scripted-api-provider-${receiptFormat}.mjs`);
     await writeFile(provider, `#!${process.execPath}
@@ -98,14 +98,14 @@ else if(m.id!==undefined) send({id:m.id,result:{}});
 
   it("cannot opt into API tools through a binding when the operator flag is false", async () => {
     const fixture = await server.fixture({ apiToolsEnabled: true });
-    process.env.PAPERCLIP_RUNNER_API_TOOLS_ENABLED = "false";
+    process.env.WARDMOTE_RUNNER_API_TOOLS_ENABLED = "false";
     try {
       const names = (await fixture.authority.definitions()).map(tool => tool.name);
       expect(names).toContain("get_task_context");
       expect(names).not.toContain("search_api");
       expect(names).not.toContain("call_api");
       await expect(fixture.authority.execute({ tool: "call_api", callId: "disabled", arguments: { operationId: "GET /api/companies/{companyId}/projects" } })).rejects.toThrow("not_advertised");
-    } finally { delete process.env.PAPERCLIP_RUNNER_API_TOOLS_ENABLED; }
+    } finally { delete process.env.WARDMOTE_RUNNER_API_TOOLS_ENABLED; }
   });
 
   it("rejects credential calls before any durable receipt or secret result exists", async () => {
@@ -204,7 +204,7 @@ else if(m.id!==undefined) send({id:m.id,result:{}});
   it("revokes advertised API tools without disabling dedicated operations", async () => {
     const fixture = await server.fixture();
     expect(fixture.authority.definitions().some(tool => tool.name === "call_api")).toBe(true);
-    vi.stubEnv("PAPERCLIP_RUNNER_API_TOOLS_ENABLED", "false");
+    vi.stubEnv("WARDMOTE_RUNNER_API_TOOLS_ENABLED", "false");
     try {
       expect(fixture.authority.definitions().some(tool => tool.name === "search_api")).toBe(false);
       await expect(fixture.authority.execute({ tool: "call_api", callId: "revoked", arguments: {
@@ -373,7 +373,7 @@ else if(m.id!==undefined) send({id:m.id,result:{}});
 
   it("counts old snapshots and other-run reservations against the company quota, and reclaims deletions", async () => {
     const fixture = await server.fixture();
-    vi.stubEnv("PAPERCLIP_RUNNER_API_COMPANY_CAPTURE_MAX_BYTES", String(2 * RUNNER_API_RESPONSE_MAX_BYTES));
+    vi.stubEnv("WARDMOTE_RUNNER_API_COMPANY_CAPTURE_MAX_BYTES", String(2 * RUNNER_API_RESPONSE_MAX_BYTES));
     const [oldSnapshot] = await server.db.insert(assets).values({ companyId: fixture.companyId, provider: "local_disk",
       objectKey: `${fixture.companyId}/runner-api/old-snapshot`, contentType: "text/plain", byteSize: RUNNER_API_RESPONSE_MAX_BYTES,
       sha256: "old-snapshot", createdByAgentId: fixture.agentId }).returning();
@@ -437,7 +437,7 @@ else if(m.id!==undefined) send({id:m.id,result:{}});
 
   it("shares company admission across simultaneous runs", async () => {
     const fixture = await server.fixture();
-    vi.stubEnv("PAPERCLIP_RUNNER_API_COMPANY_CAPTURE_MAX_BYTES", String(RUNNER_API_RESPONSE_MAX_BYTES));
+    vi.stubEnv("WARDMOTE_RUNNER_API_COMPANY_CAPTURE_MAX_BYTES", String(RUNNER_API_RESPONSE_MAX_BYTES));
     const otherRunId = randomUUID();
     await server.db.insert(heartbeatRuns).values({ id: otherRunId, companyId: fixture.companyId, agentId: fixture.agentId,
       status: "running", runtimeMode: "native", nativeIssueId: fixture.blockerId, contextSnapshot: { issueId: fixture.blockerId } });

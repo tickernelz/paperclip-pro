@@ -211,8 +211,8 @@ describe("resolveServerVersion", () => {
   });
 
   it("keeps fallback diagnostics quiet by default", () => {
-    const previousDebugFlag = process.env.PAPERCLIP_DEBUG_VERSION_RESOLUTION;
-    delete process.env.PAPERCLIP_DEBUG_VERSION_RESOLUTION;
+    const previousDebugFlag = process.env.WARDMOTE_DEBUG_VERSION_RESOLUTION;
+    delete process.env.WARDMOTE_DEBUG_VERSION_RESOLUTION;
     const consoleDebug = vi.spyOn(console, "debug").mockImplementation(() => {});
 
     try {
@@ -230,9 +230,9 @@ describe("resolveServerVersion", () => {
     } finally {
       consoleDebug.mockRestore();
       if (previousDebugFlag === undefined) {
-        delete process.env.PAPERCLIP_DEBUG_VERSION_RESOLUTION;
+        delete process.env.WARDMOTE_DEBUG_VERSION_RESOLUTION;
       } else {
-        process.env.PAPERCLIP_DEBUG_VERSION_RESOLUTION = previousDebugFlag;
+        process.env.WARDMOTE_DEBUG_VERSION_RESOLUTION = previousDebugFlag;
       }
     }
   });

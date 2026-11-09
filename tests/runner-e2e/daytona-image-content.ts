@@ -83,7 +83,7 @@ export interface DaytonaImageContentOptions {
   platform?: string;
   baseImages?: readonly string[];
   frontendDigest?: string;
-  /** Must match the Docker PAPERCLIP_RUNNER_CANDIDATE_PROVIDERS build argument. */
+  /** Must match the Docker WARDMOTE_RUNNER_CANDIDATE_PROVIDERS build argument. */
   candidateProviders?: readonly string[];
 }
 

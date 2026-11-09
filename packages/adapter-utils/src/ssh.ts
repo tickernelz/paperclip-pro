@@ -1245,10 +1245,10 @@ async function isSshEnvLabFixtureProcess(state: Pick<SshEnvLabFixtureState, "pid
 }
 
 export async function getSshEnvLabSupport(): Promise<SshEnvLabSupport> {
-  if (process.platform === "darwin" && process.env.PAPERCLIP_ENABLE_DARWIN_SSH_ENV_LAB !== "1") {
+  if (process.platform === "darwin" && process.env.WARDMOTE_ENABLE_DARWIN_SSH_ENV_LAB !== "1") {
     return {
       supported: false,
-      reason: "SSH env-lab fixture is disabled on macOS; set PAPERCLIP_ENABLE_DARWIN_SSH_ENV_LAB=1 to opt in.",
+      reason: "SSH env-lab fixture is disabled on macOS; set WARDMOTE_ENABLE_DARWIN_SSH_ENV_LAB=1 to opt in.",
     };
   }
 

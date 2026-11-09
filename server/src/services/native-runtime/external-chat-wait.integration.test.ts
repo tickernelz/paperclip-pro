@@ -76,7 +76,7 @@ import { createStorageService } from "../../storage/service.js";
 import { subscribeAllCompanyLiveEvents } from "../live-events.js";
 
 describe("native external-chat response wait", () => {
-  const externalTestDatabaseUrl = process.env.PAPERCLIP_TEST_DATABASE_URL;
+  const externalTestDatabaseUrl = process.env.WARDMOTE_TEST_DATABASE_URL;
   let temporary: Awaited<
     ReturnType<typeof startEmbeddedPostgresTestDatabase>
   > | null = null;
@@ -730,8 +730,8 @@ describe("native external-chat response wait", () => {
       })
       .where(eq(chatDeliveries.id, fixture.deliveryId));
     const interactionSvc = issueThreadInteractionService(db);
-    const previousPublicUrl = process.env.PAPERCLIP_PUBLIC_URL;
-    process.env.PAPERCLIP_PUBLIC_URL = withLink
+    const previousPublicUrl = process.env.WARDMOTE_PUBLIC_URL;
+    process.env.WARDMOTE_PUBLIC_URL = withLink
       ? "https://board.paperclip.example"
       : "http://127.0.0.1:3103";
     let interaction: Awaited<ReturnType<typeof interactionSvc.create>>;
@@ -763,8 +763,8 @@ describe("native external-chat response wait", () => {
       );
     } finally {
       if (previousPublicUrl === undefined)
-        delete process.env.PAPERCLIP_PUBLIC_URL;
-      else process.env.PAPERCLIP_PUBLIC_URL = previousPublicUrl;
+        delete process.env.WARDMOTE_PUBLIC_URL;
+      else process.env.WARDMOTE_PUBLIC_URL = previousPublicUrl;
     }
     const publicationKey = `interaction:${interaction.id}:${fixture.endpointId}`;
     const [publication] = await db
