@@ -1588,7 +1588,6 @@ const BOARD_ONLY_OPERATIONS = new Set([
   "PUT /api/projects/{id}/repositories",
   "DELETE /api/issues/{id}/documents/{key}",
   "GET /api/companies/{companyId}/decisions",
-  "GET /api/cloud/stacks",
   "GET /api/companies",
   "POST /api/companies",
   "GET /api/companies/stats",
@@ -1870,7 +1869,6 @@ const CREATED_OPERATIONS = new Set([
   "POST /api/approvals/{id}/comments",
   "POST /api/companies/{companyId}/assets/images",
   "POST /api/companies/{companyId}/logo",
-  "POST /api/companies/{companyId}/onboarding-seed",
   "POST /api/cli-auth/challenges",
   "POST /api/board-api-keys",
   "POST /api/companies",
@@ -2261,21 +2259,6 @@ registry.registerPath({
 });
 
 // ─── Companies ───────────────────────────────────────────────────────────────
-
-registry.registerPath({
-  method: "get",
-  path: "/api/cloud/stacks",
-  tags: ["cloud"],
-  summary: "List the current Cloud tenant user's stacks",
-  responses: {
-    200: r.ok(),
-    403: r.forbidden,
-    404: r.notFound,
-    502: r.serverError,
-    503: r.serverError,
-    500: r.serverError,
-  },
-});
 
 registry.registerPath({
   method: "get",
@@ -8064,24 +8047,6 @@ registry.registerPath({
   responses: { 200: r.ok(), 401: r.unauthorized },
 });
 
-registry.registerPath({
-  method: "get",
-  path: "/api/instance/lifecycle",
-  tags: ["instance"],
-  summary:
-    "Read the Cloud-pinned primary company's lifecycle status and how many other companies are not archived; 404 when the instance is not Cloud-managed",
-  responses: { 200: r.ok(), 401: r.unauthorized, 403: r.forbidden, 404: r.notFound },
-});
-
-registry.registerPath({
-  method: "post",
-  path: "/api/instance/lifecycle/unarchive-primary",
-  tags: ["instance"],
-  summary:
-    "Unarchive the Cloud-pinned primary company (idempotent); used by the Cloud control plane while restoring an archived stack",
-  responses: { 200: r.ok(), 401: r.unauthorized, 403: r.forbidden, 404: r.notFound },
-});
-
 // ─── Board chat (Conference Room Chat, experimental) ──────────────────────────
 
 registry.registerPath({
@@ -9403,15 +9368,6 @@ registry.registerPath({
   request: { params: z.object({ companyId: z.string() }) },
   requestBody: multipartFileRequestBody("file", "The company logo image."),
   responses: { 200: r.ok(), 401: r.unauthorized },
-});
-
-registry.registerPath({
-  method: "post",
-  path: "/api/companies/{companyId}/onboarding-seed",
-  tags: ["companies"],
-  summary: "Apply the onboarding seed Paperclip Cloud collected at signup",
-  request: { params: z.object({ companyId: z.string() }) },
-  responses: { 200: r.ok(), 401: r.unauthorized, 422: r.unprocessable },
 });
 
 registry.registerPath({
@@ -10992,10 +10948,8 @@ registry.registerPath({
     "uploaded as a compressed zip (`multipart/form-data` with a `package` file field plus a " +
     "JSON `meta` field, or a bare `application/zip` body with the `meta` JSON in the `meta` " +
     "query parameter); the zip is unzipped server-side into the same import bundle. " +
-    "Callers can opt into asynchronous processing: trusted Cloud tenants set the " +
-    "`x-paperclip-cloud-async-import: 1` header (browsers cannot — the Cloud harness proxy " +
-    "strips inbound `x-paperclip-cloud-*` headers), while board sessions use the proxy-safe " +
-    "`?async=1` query parameter. Either way the server responds 202 with a job id and status " +
+    "Callers can opt into asynchronous processing with the `?async=1` query parameter; " +
+    "the server then responds 202 with a job id and status " +
     "URL instead of holding the connection open for the whole import. While a board actor " +
     "already has an async job running, a resubmit returns 409 carrying the running job's id " +
     "and status URL. Jobs are held in memory and are lost on restart.",

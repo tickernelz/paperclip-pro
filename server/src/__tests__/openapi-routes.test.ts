@@ -40,8 +40,6 @@ const apiPrefixes: Record<string, string> = {
   "openwa-tools.ts": "/api",
   "public-issue-share.ts": "/api",
   "email.ts": "/api",
-  "cloud.ts": "/api/cloud",
-  "customer-success.ts": "/api/customer-success/v1",
   "companies.ts": "/api/companies",
   "company-skills.ts": "/api",
   "company-skill-policy.ts": "/api",
@@ -69,7 +67,6 @@ const apiPrefixes: Record<string, string> = {
   "llms.ts": "/api",
   "managed-agent-profiles.ts": "/api",
   "notifications.ts": "/api",
-  "onboarding-seed.ts": "/api",
   "onboarding-omp.ts": "/api",
   "openapi.ts": "/api",
   "paperclip-mcp.ts": "/api",
@@ -112,11 +109,6 @@ const HTTP_METHODS = new Set([
 const explicitOpenApiCoverageExclusions = new Set<string>();
 
 const explicitOpenApiOperationCoverageExclusions = new Set([
-  // Inspection uses its own versioned Cloud-permit/managed-run protocol,
-  // documented in CUSTOMER-SUCCESS-INSPECTION.md and the shared contract.
-  // Ordinary board sessions and agent API keys cannot invoke these endpoints.
-  "GET /api/customer-success/v1/run-authority",
-  "POST /api/customer-success/v1/read",
   // OAuth discovery and protocol endpoints have their own metadata contract;
   // browser connection-management operations remain documented in the board API.
   // Markdown rendering of the separately documented assistant setup page.

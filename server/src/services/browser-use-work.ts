@@ -13,7 +13,7 @@ export function registerBrowserUseCleanup(
     run: () => service.sweep(),
     hasPending: async () => {
       // During idle drain retain a memory-only wake, including startup or a
-      // newly committed first session. Warm standby is gated by the coordinator.
+      // newly committed first session.
       next = canRun() ? await service.nextSweepAt() : Date.now() + 3000;
       return false;
     },

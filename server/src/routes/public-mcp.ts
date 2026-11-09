@@ -204,7 +204,7 @@ export function publicMcpManagementRoutes(oauth: PublicMcpOAuth, agentOAuth?: Pu
   };
   const deviceOAuth = async (code: string) => agentOAuth && await agentOAuth.ownsDevice(code) ? agentOAuth : oauth;
   const realUser: RequestHandler = (req, _res, next) => {
-    if (req.actor.type !== "board" || !req.actor.userId || !["session", "cloud_tenant"].includes(req.actor.source ?? "")) {
+    if (req.actor.type !== "board" || !req.actor.userId || req.actor.source !== "session") {
       throw new McpOAuthError("access_denied", "Sign in to manage assistant connections.", 401);
     }
     next();

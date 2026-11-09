@@ -65,7 +65,7 @@ describeEmbeddedPostgres("issue list routes assigneeAgentId filter", () => {
         userId,
         companyIds: [companyId],
         memberships: [{ companyId, membershipRole: "owner", status: "active", principalId: userId }],
-        source: "cloud_tenant",
+        source: "session",
         isInstanceAdmin: false,
       };
       next();
@@ -80,7 +80,7 @@ describeEmbeddedPostgres("issue list routes assigneeAgentId filter", () => {
     return `P${randomUUID().replace(/-/g, "").slice(0, 4).toUpperCase()}`;
   }
 
-  async function seedCloudTenantMember(companyId: string, userId = "cloud-user-1") {
+  async function seedCompanyMember(companyId: string, userId = "cloud-user-1") {
     await db.insert(companyMemberships).values({
       companyId,
       principalType: "user",
@@ -109,7 +109,7 @@ describeEmbeddedPostgres("issue list routes assigneeAgentId filter", () => {
       issuePrefix: uniqueIssuePrefix(),
       requireBoardApprovalForNewAgents: false,
     });
-    await seedCloudTenantMember(companyId);
+    await seedCompanyMember(companyId);
     await db.insert(agents).values({
       id: assigneeAgentId,
       companyId,
@@ -161,7 +161,7 @@ describeEmbeddedPostgres("issue list routes assigneeAgentId filter", () => {
       issuePrefix: uniqueIssuePrefix(),
       requireBoardApprovalForNewAgents: false,
     });
-    await seedCloudTenantMember(companyId);
+    await seedCompanyMember(companyId);
     await db.insert(agents).values({
       id: ownerAgentId,
       companyId,
@@ -257,7 +257,7 @@ describeEmbeddedPostgres("issue list routes assigneeAgentId filter", () => {
       issuePrefix: uniqueIssuePrefix(),
       requireBoardApprovalForNewAgents: false,
     });
-    await seedCloudTenantMember(companyId);
+    await seedCompanyMember(companyId);
     await db.insert(issues).values([
       { id: longIssueId, companyId, title: "Long", description: longDescription, status: "todo", priority: "medium" },
       { id: shortIssueId, companyId, title: "Short", description: "Short detail", status: "todo", priority: "medium" },
@@ -293,7 +293,7 @@ describeEmbeddedPostgres("issue list routes assigneeAgentId filter", () => {
       issuePrefix: uniqueIssuePrefix(),
       requireBoardApprovalForNewAgents: false,
     });
-    await seedCloudTenantMember(companyId);
+    await seedCompanyMember(companyId);
     await db.insert(agents).values({
       id: agentId,
       companyId,
@@ -357,7 +357,7 @@ describeEmbeddedPostgres("issue list routes assigneeAgentId filter", () => {
       issuePrefix: uniqueIssuePrefix(),
       requireBoardApprovalForNewAgents: false,
     });
-    await seedCloudTenantMember(companyId);
+    await seedCompanyMember(companyId);
     await db.insert(agents).values({
       id: agentId,
       companyId,
@@ -495,7 +495,7 @@ describeEmbeddedPostgres("issue list routes assigneeAgentId filter", () => {
       issuePrefix: uniqueIssuePrefix(),
       requireBoardApprovalForNewAgents: false,
     });
-    await seedCloudTenantMember(companyId);
+    await seedCompanyMember(companyId);
     await db.insert(issues).values({
       id: issueId,
       companyId,
@@ -531,7 +531,7 @@ describeEmbeddedPostgres("issue list routes assigneeAgentId filter", () => {
       issuePrefix: uniqueIssuePrefix(),
       requireBoardApprovalForNewAgents: false,
     });
-    await seedCloudTenantMember(companyId);
+    await seedCompanyMember(companyId);
     await db.insert(issues).values({
       id: issueId,
       companyId,
@@ -573,8 +573,8 @@ describeEmbeddedPostgres("issue list routes assigneeAgentId filter", () => {
       issuePrefix: uniqueIssuePrefix(),
       requireBoardApprovalForNewAgents: false,
     });
-    await seedCloudTenantMember(companyId, "cloud-user-1");
-    await seedCloudTenantMember(companyId, "cloud-user-2");
+    await seedCompanyMember(companyId, "cloud-user-1");
+    await seedCompanyMember(companyId, "cloud-user-2");
     await db.insert(issues).values({
       id: issueId,
       companyId,
@@ -620,7 +620,7 @@ describeEmbeddedPostgres("issue list routes assigneeAgentId filter", () => {
       issuePrefix: uniqueIssuePrefix(),
       requireBoardApprovalForNewAgents: false,
     });
-    await seedCloudTenantMember(companyId);
+    await seedCompanyMember(companyId);
     await db.insert(issues).values({
       id: issueId,
       companyId,
@@ -660,7 +660,7 @@ describeEmbeddedPostgres("issue list routes assigneeAgentId filter", () => {
       issuePrefix: uniqueIssuePrefix(),
       requireBoardApprovalForNewAgents: false,
     });
-    await seedCloudTenantMember(companyId);
+    await seedCompanyMember(companyId);
     await db.insert(issues).values({
       id: issueId,
       companyId,
@@ -696,7 +696,7 @@ describeEmbeddedPostgres("issue list routes assigneeAgentId filter", () => {
       issuePrefix: uniqueIssuePrefix(),
       requireBoardApprovalForNewAgents: false,
     });
-    await seedCloudTenantMember(companyId);
+    await seedCompanyMember(companyId);
     await db.insert(issues).values({
       id: issueId,
       companyId,
@@ -751,7 +751,7 @@ describeEmbeddedPostgres("issue list routes assigneeAgentId filter", () => {
       issuePrefix: uniqueIssuePrefix(),
       requireBoardApprovalForNewAgents: false,
     });
-    await seedCloudTenantMember(companyId);
+    await seedCompanyMember(companyId);
     await db.insert(agents).values([
       {
         id: assigneeAgentId,
@@ -812,7 +812,7 @@ describeEmbeddedPostgres("issue list routes assigneeAgentId filter", () => {
       issuePrefix: uniqueIssuePrefix(),
       requireBoardApprovalForNewAgents: false,
     });
-    await seedCloudTenantMember(companyId);
+    await seedCompanyMember(companyId);
 
     const app = createApp(companyId);
     const res = await request(app)
@@ -854,7 +854,7 @@ describeEmbeddedPostgres("issue list routes assigneeAgentId filter", () => {
         requireBoardApprovalForNewAgents: false,
       },
     ]);
-    await seedCloudTenantMember(companyId);
+    await seedCompanyMember(companyId);
     await db.insert(agents).values([
       {
         id: agentId,
@@ -996,7 +996,7 @@ describeEmbeddedPostgres("issue list routes assigneeAgentId filter", () => {
       issuePrefix: uniqueIssuePrefix(),
       requireBoardApprovalForNewAgents: false,
     });
-    await seedCloudTenantMember(companyId);
+    await seedCompanyMember(companyId);
     await db.insert(agents).values({
       id: agentId,
       companyId,

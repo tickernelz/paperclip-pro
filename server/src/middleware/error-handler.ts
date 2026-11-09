@@ -7,7 +7,6 @@ import { foreignKeyViolationConstraint } from "../db-errors.js";
 import { trackErrorHandlerCrash } from "@tickernelz/wardmote-shared/telemetry";
 import { getTelemetryClient } from "../telemetry.js";
 import { captureException } from "../sentry.js";
-import { COMPANY_IMPORT_API_PATH } from "../routes/company-import-paths.js";
 import { logger } from "./logger.js";
 import { isSecretSensitiveHttpRequest } from "./http-log-policy.js";
 import {
@@ -300,18 +299,5 @@ export function errorHandler(
 
   reportCrash(reportableError);
 
-  res.status(500).json({
-    error: "Internal server error",
-    ...(shouldExposeTrustedCloudTenantImportError(req)
-      ? { message: rootError.message }
-      : {}),
-  });
-}
-
-function shouldExposeTrustedCloudTenantImportError(req: Request) {
-  return (
-    req.actor?.source === "cloud_tenant" &&
-    req.method === "POST" &&
-    req.originalUrl.split("?")[0] === COMPANY_IMPORT_API_PATH
-  );
+  res.status(500).json({ error: "Internal server error" });
 }

@@ -377,7 +377,7 @@ describe("private task production review", () => {
     const { setupLiveEventsWebSocketServer } = await import("../realtime/live-events-ws.js");
     const { publishLiveEvent } = await import("../services/live-events.js");
     const server = createServer();
-    const wss = setupLiveEventsWebSocketServer(server, db, { deploymentMode: "authenticated", resolveCloudActor: async () => ({ userId: f.outsider, companyIds: [f.company.id] }) });
+    const wss = setupLiveEventsWebSocketServer(server, db, { deploymentMode: "authenticated", resolveSessionFromHeaders: async () => ({ user: { id: f.outsider }, session: { id: "privacy-review-session" } }) as never });
     await new Promise<void>(resolve => server.listen(0, "127.0.0.1", resolve));
     const socket = new WebSocket(`ws://127.0.0.1:${(server.address() as { port: number }).port}/api/companies/${f.company.id}/events/ws`);
     const messages: string[] = [];
@@ -468,7 +468,7 @@ describe("private task production review", () => {
     const { setupLiveEventsWebSocketServer } = await import("../realtime/live-events-ws.js");
     const { publishLiveEvent } = await import("../services/live-events.js");
     const server = createServer();
-    const wss = setupLiveEventsWebSocketServer(server, db, { deploymentMode: "authenticated", resolveCloudActor: async () => ({ userId: f.outsider, companyIds: [f.company.id] }) });
+    const wss = setupLiveEventsWebSocketServer(server, db, { deploymentMode: "authenticated", resolveSessionFromHeaders: async () => ({ user: { id: f.outsider }, session: { id: "privacy-review-session" } }) as never });
     await new Promise<void>(resolve => server.listen(0, "127.0.0.1", resolve));
     const address = server.address() as { port: number };
     const socket = new WebSocket(`ws://127.0.0.1:${address.port}/api/companies/${f.company.id}/events/ws`);
