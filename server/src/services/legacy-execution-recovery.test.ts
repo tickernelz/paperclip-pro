@@ -1,6 +1,6 @@
 import { isPreDispatchReviewWait } from "./pre-dispatch-review-wait.js";
 import { expect, it } from "vitest";
-import { isDependencyGateRefusedRun, legacyExecutionNeedsReconciliation } from "./legacy-execution-recovery.js";
+import { isCancelledBeforeLegacyDispatch, isDependencyGateRefusedRun, legacyExecutionNeedsReconciliation } from "./legacy-execution-recovery.js";
 
 const stopped = {
   runtimeMode: "legacy", status: "cancelled", errorCode: "cancelled",
@@ -127,4 +127,41 @@ it("recognizes only an unclaimed pre-dispatch review wait receipt", () => {
     { resultJson: { ...run.resultJson, stopReason: "cancelled" } },
     { resultJson: { ...run.resultJson, workspaceRestoreFailure: "restore_unsafe_archive" } },
   ]) expect(isPreDispatchReviewWait({ ...run, ...patch })).toBe(false);
+});
+
+const stoppedWhilePreparing = {
+  runtimeMode: "legacy", status: "cancelled", errorCode: "issue_reassigned",
+  executionStage: "preparing", runtimeModeResolvedAt: null, processPid: null,
+  resultJson: { cancellation: { source: "control_plane", expected: true, initiator: { type: "system" } } },
+};
+
+it("does not hold a reassigned run that was stopped before it reached the dispatching stage", () => {
+  expect(isCancelledBeforeLegacyDispatch(stoppedWhilePreparing)).toBe(true);
+  expect(legacyExecutionNeedsReconciliation(stoppedWhilePreparing)).toBe(false);
+});
+
+it("keeps the hold once the controller may have entered the adapter", () => {
+  for (const run of [
+    { ...stoppedWhilePreparing, executionStage: "dispatching" },
+    { ...stoppedWhilePreparing, executionStage: "settled", resultJson: {} },
+    { ...stoppedWhilePreparing, executionStage: undefined },
+    { ...stoppedWhilePreparing, runtimeModeResolvedAt: new Date() },
+    { ...stoppedWhilePreparing, processPid: 4242 },
+    { ...stoppedWhilePreparing, processPid: undefined },
+    { ...stoppedWhilePreparing, status: "failed" },
+  ]) {
+    expect(isCancelledBeforeLegacyDispatch(run)).toBe(false);
+    expect(legacyExecutionNeedsReconciliation(run)).toBe(true);
+  }
+});
+
+it("accepts the executor's own no-dispatch receipt on a settled run", () => {
+  const settled = { ...stoppedWhilePreparing, executionStage: "settled",
+    resultJson: { ...stoppedWhilePreparing.resultJson, startupPreparationSettledAt: "2026-11-09T13:14:24.000Z" } };
+  expect(legacyExecutionNeedsReconciliation(settled)).toBe(false);
+});
+
+it("still holds unrestored workspace files even when no provider work started", () => {
+  expect(legacyExecutionNeedsReconciliation({ ...stoppedWhilePreparing,
+    resultJson: { ...stoppedWhilePreparing.resultJson, workspaceRestoreFailure: "restore_unsafe_archive" } })).toBe(true);
 });

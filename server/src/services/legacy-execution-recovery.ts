@@ -32,9 +32,18 @@ export function isDependencyGateRefusedRun(
   return run.status === "cancelled" && run.errorCode === DEPENDENCY_GATE_FAILURE_CODE;
 }
 
+export function isCancelledBeforeLegacyDispatch(
+  run: Pick<Run, "runtimeMode" | "status" | "resultJson"> & Partial<Pick<Run, "executionStage" | "runtimeModeResolvedAt" | "processPid">>,
+): boolean {
+  if (run.runtimeMode !== "legacy" || run.status !== "cancelled") return false;
+  if (run.runtimeModeResolvedAt !== null || run.processPid !== null) return false;
+  if (run.executionStage === "preparing") return true;
+  return run.executionStage === "settled" && typeof run.resultJson?.startupPreparationSettledAt === "string";
+}
+
 /** Error families describe availability, not whether earlier actions happened. */
 export function legacyExecutionNeedsReconciliation(
-  run: Pick<Run, "runtimeMode" | "status" | "errorCode" | "resultJson"> & Partial<Pick<Run, "scheduledRetryAttempt" | "scheduledRetryReason" | "contextSnapshot">>,
+  run: Pick<Run, "runtimeMode" | "status" | "errorCode" | "resultJson"> & Partial<Pick<Run, "scheduledRetryAttempt" | "scheduledRetryReason" | "contextSnapshot" | "executionStage" | "runtimeModeResolvedAt" | "processPid">>,
 ): boolean {
   if (
     run.runtimeMode === "native" ||
@@ -45,6 +54,7 @@ export function legacyExecutionNeedsReconciliation(
   if (isDependencyGateRefusedRun(run)) return false;
   // A fresh model turn cannot repair or verify unrestored files.
   if (run.resultJson?.workspaceRestoreFailure === "restore_unsafe_archive" || hasRequiredWorkspaceRecovery(run.resultJson)) return true;
+  if (isCancelledBeforeLegacyDispatch(run)) return false;
   // A fresh conversation turn lets the agent decide what remains. The retry
   // scheduler, not an action-outcome hold, owns the automatic attempt limit.
   if (hasConversationContinuationPolicy(run.resultJson)) return false;
