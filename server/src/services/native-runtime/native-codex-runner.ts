@@ -189,7 +189,7 @@ export function resolvePaperclipRunnerBinary(
     defaultCapabilityRunnerdBinary(),
     resolve(
       moduleDirectory,
-      "../../../../packages/paperclip-runner/runner/target/release",
+      "../../../../packages/wardmote-runner/runner/target/release",
       executableName(),
     ),
   ].filter((candidate): candidate is string => Boolean(candidate));
@@ -202,7 +202,7 @@ export function resolvePaperclipRunnerBinary(
     }
   }
   throw new Error(
-    "paperclip_runner_binary_missing: build @tickernelz/wardmote-paperclip-runner or set PAPERCLIP_RUNNER_BINARY",
+    "paperclip_runner_binary_missing: build @tickernelz/wardmote-runner or set PAPERCLIP_RUNNER_BINARY",
   );
 }
 

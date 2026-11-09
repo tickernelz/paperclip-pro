@@ -31,8 +31,8 @@ import { getEmbeddedPostgresTestSupport, startEmbeddedPostgresTestDatabase } fro
 
 import { createPublicMcpEvents, publicMcpEventDefinitions } from "../services/public-mcp/events.js";
 import { createDotRunnerMcpBridge } from "../services/public-mcp/dot-runner.js";
-import { DotHarnessDriver } from "../../../packages/paperclip-runner/src/drivers/dot/dot-harness-driver.js";
-import { HarnessDriverBackend } from "../../../packages/paperclip-runner/src/backends/harness-driver-backend.js";
+import { DotHarnessDriver } from "../../../packages/wardmote-runner/src/drivers/dot/dot-harness-driver.js";
+import { HarnessDriverBackend } from "../../../packages/wardmote-runner/src/backends/harness-driver-backend.js";
 import { eventFetch, signingKey, type EventFetch } from "../services/public-mcp/event-webhooks.js";
 
 const support = await getEmbeddedPostgresTestSupport();

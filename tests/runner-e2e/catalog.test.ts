@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { contextIntegrityTasks } from "./context-integrity-cases.js";
-import { normalizePrpResultSignals } from "../../packages/paperclip-runner/src/protocol/result-normalization.js";
+import { normalizePrpResultSignals } from "../../packages/wardmote-runner/src/protocol/result-normalization.js";
 import {
   connectionReviewSuite,
   runnerEnvironments,

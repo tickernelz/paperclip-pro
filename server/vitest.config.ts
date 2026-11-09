@@ -10,13 +10,13 @@ export default defineConfig({
       {
         find: /^@tickernelz\/wardmote-paperclip-runner\/live$/,
         replacement: fileURLToPath(
-          new URL("../packages/paperclip-runner/src/live/index.ts", import.meta.url),
+          new URL("../packages/wardmote-runner/src/live/index.ts", import.meta.url),
         ),
       },
       {
         find: /^@tickernelz\/wardmote-paperclip-runner$/,
         replacement: fileURLToPath(
-          new URL("../packages/paperclip-runner/src/index.ts", import.meta.url),
+          new URL("../packages/wardmote-runner/src/index.ts", import.meta.url),
         ),
       },
     ],

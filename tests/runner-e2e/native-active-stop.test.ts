@@ -4,12 +4,12 @@ import { assertActiveStopRetirement, readActiveStopRemoteRetirement, type Active
 import { stopAtPendingPermission } from "./native-active-stop-flow.js";
 import { runnerMatrix, runnerSuites, suiteDefinitionHash } from "./catalog.js";
 import { selectRunnerExecutions, parseRunnerSelectors } from "./selectors.js";
-import { createCursorToolEvidence } from "../../packages/paperclip-runner/src/drivers/acpx/cursor-tool-evidence.js";
-import { createCopilotToolEvidence } from "../../packages/paperclip-runner/src/drivers/acpx/copilot-tool-evidence.js";
-import type { CanonicalProviderEvent } from "../../packages/paperclip-runner/src/provider-events.js";
+import { createCursorToolEvidence } from "../../packages/wardmote-runner/src/drivers/acpx/cursor-tool-evidence.js";
+import { createCopilotToolEvidence } from "../../packages/wardmote-runner/src/drivers/acpx/copilot-tool-evidence.js";
+import type { CanonicalProviderEvent } from "../../packages/wardmote-runner/src/provider-events.js";
 
-import { CodexSessionState } from "../../packages/paperclip-runner/src/drivers/codex/codex-session-state.js";
-import { mapTerminalTurn } from "../../packages/paperclip-runner/src/drivers/codex/codex-session-terminal.js";
+import { CodexSessionState } from "../../packages/wardmote-runner/src/drivers/codex/codex-session-state.js";
+import { mapTerminalTurn } from "../../packages/wardmote-runner/src/drivers/codex/codex-session-terminal.js";
 
 const caller = readActiveStopCaller({ deploymentMode: "local_trusted" }, { session: { userId: "local-board", id: "paperclip:local_implicit:local-board" } });
 const cancellationRequestId = "11111111-2222-4333-8444-555555555555";

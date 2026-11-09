@@ -295,7 +295,7 @@ describe("nativeRunEventsToTranscript", () => {
   it("projects the cross-language duplicate-delivery fixture exactly once", () => {
     const fixture = JSON.parse(readFileSync(
       new URL(
-        "../../../../packages/paperclip-runner/protocol/fixtures/replay/duplicate-event.json",
+        "../../../../packages/wardmote-runner/protocol/fixtures/replay/duplicate-event.json",
         import.meta.url,
       ),
       "utf8",

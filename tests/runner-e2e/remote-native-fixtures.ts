@@ -2,7 +2,7 @@ import { createHash, randomBytes } from "node:crypto";
 import { watch, lstatSync, readFileSync } from "node:fs";
 import { posix } from "node:path";
 
-import { PI_DISTRIBUTION_CLOSURE_SHA256 } from "../../packages/paperclip-runner/src/drivers/acpx/pi-closure-pins.js";
+import { PI_DISTRIBUTION_CLOSURE_SHA256 } from "../../packages/wardmote-runner/src/drivers/acpx/pi-closure-pins.js";
 const PI_FAULT_SOURCE = readFileSync(new URL("./pi-provider-fault.py", import.meta.url), "utf8");
 
 export const REMOTE_FIXTURE_DAYTONA_SDK_VERSION = "0.203.0";

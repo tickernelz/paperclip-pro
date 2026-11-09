@@ -259,7 +259,7 @@ importers:
         specifier: ^5.0.3
         version: 5.0.3(@opentelemetry/api@1.9.1)(@types/node@24.13.3)(jsdom@30.0.1(@noble/hashes@2.4.0))(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))
 
-  packages/paperclip-eval-kernel:
+  packages/eval-kernel:
     devDependencies:
       '@types/node':
         specifier: ^24.0.0
@@ -268,7 +268,7 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
 
-  packages/paperclip-runner:
+  packages/wardmote-runner:
     dependencies:
       '@agentclientprotocol/claude-agent-acp':
         specifier: 0.73.0
@@ -314,9 +314,9 @@ importers:
       '@playwright/test':
         specifier: ^1.61.1
         version: 1.62.1
-      '@tickernelz/wardmote-paperclip-eval-kernel':
+      '@tickernelz/wardmote-eval-kernel':
         specifier: workspace:*
-        version: link:../paperclip-eval-kernel
+        version: link:../eval-kernel
       '@types/node':
         specifier: ^24.0.0
         version: 24.13.3
@@ -884,9 +884,9 @@ importers:
         specifier: 1.0.88
         version: 1.0.88
     devDependencies:
-      '@tickernelz/wardmote-paperclip-runner':
+      '@tickernelz/wardmote-runner':
         specifier: workspace:*
-        version: link:../packages/paperclip-runner
+        version: link:../packages/wardmote-runner
       '@types/compression':
         specifier: ^1.8.1
         version: 1.8.1

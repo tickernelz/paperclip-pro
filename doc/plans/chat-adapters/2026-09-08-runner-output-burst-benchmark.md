@@ -50,9 +50,9 @@ can overlap, so they must not be added together as independent serial costs.
 
 Implementation and fixture:
 
-- `packages/paperclip-runner/src/live/runnerd-final-output-burst.benchmark.test.ts`
-- `packages/paperclip-runner/test/fixtures/fake-final-burst-codex-app-server.mjs`
-- Production change: `packages/paperclip-runner/runner/crates/runner-core/src/durable/runner.rs`, `poll_executor_events`.
+- `packages/wardmote-runner/src/live/runnerd-final-output-burst.benchmark.test.ts`
+- `packages/wardmote-runner/test/fixtures/fake-final-burst-codex-app-server.mjs`
+- Production change: `packages/wardmote-runner/runner/crates/runner-core/src/durable/runner.rs`, `poll_executor_events`.
 
 Measured binary SHA-256 digests:
 
@@ -78,7 +78,7 @@ Exact local evidence filenames, under the ignored
 These are metric exports, **not full shell/Vitest logs**. Full Vitest results
 were captured by the execution tool: baseline 103.48 s, candidate 83.97 s.
 
-Run from `packages/paperclip-runner`:
+Run from `packages/wardmote-runner`:
 
 ```sh
 PAPERCLIP_FINAL_BURST_BENCHMARK=1 PAPERCLIP_FINAL_BURST_REPETITIONS=3 PAPERCLIP_FINAL_BURST_BINARY=/tmp/paperclip-final-burst-cargo.YoIBsw/baseline-paperclip-runnerd pnpm exec vitest run src/live/runnerd-final-output-burst.benchmark.test.ts

@@ -33,7 +33,7 @@
     "manuallyScrolledToEnd": true,
     "manualApprovalReceiptVerified": true,
     "fixtureSource": "Canonical runtime_request.created fixture matches normalizeCursorPlanRequest output; the browser does not launch Cursor or execute its normalizer.",
-    "normalizerReference": "packages/paperclip-runner/src/drivers/acpx/cursor-extensions.ts (Cursor provider branch)"
+    "normalizerReference": "packages/wardmote-runner/src/drivers/acpx/cursor-extensions.ts (Cursor provider branch)"
   },
   "storybookPlays": [
     {

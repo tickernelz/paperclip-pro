@@ -35,12 +35,12 @@
     "dev": "tsx src/index.ts",
     "dev:watch": "cross-env PAPERCLIP_MIGRATION_PROMPT=never PAPERCLIP_MIGRATION_AUTO_APPLY=true tsx ./scripts/dev-watch.ts",
     "prepare:ui-dist": "bash ../scripts/prepare-server-ui-dist.sh",
-    "build": "pnpm run prepare:runner-vendor && node scripts/verify-runner-vendor-dependencies.mjs && tsc && mkdir -p dist/onboarding-assets dist/built-ins dist/services/scripts dist/vendor/paperclip-runner && cp -R src/onboarding-assets/. dist/onboarding-assets/ && cp -R src/built-ins/. dist/built-ins/ && cp -R src/services/scripts/. dist/services/scripts/ && mkdir -p dist/services/ai-providers/codex dist/services/ai-providers/grok && cp src/services/ai-providers/codex/codex-auth-merge-decision.cjs src/services/ai-providers/codex/codex-auth-merge-extract.sh dist/services/ai-providers/codex/ && cp src/services/ai-providers/grok/grok-auth-merge-decision.cjs dist/services/ai-providers/grok/ && cp -Rf ../packages/paperclip-runner/dist/. dist/vendor/paperclip-runner/ && node scripts/write-build-stamp.mjs",
+    "build": "pnpm run prepare:runner-vendor && node scripts/verify-runner-vendor-dependencies.mjs && tsc && mkdir -p dist/onboarding-assets dist/built-ins dist/services/scripts dist/vendor/paperclip-runner && cp -R src/onboarding-assets/. dist/onboarding-assets/ && cp -R src/built-ins/. dist/built-ins/ && cp -R src/services/scripts/. dist/services/scripts/ && mkdir -p dist/services/ai-providers/codex dist/services/ai-providers/grok && cp src/services/ai-providers/codex/codex-auth-merge-decision.cjs src/services/ai-providers/codex/codex-auth-merge-extract.sh dist/services/ai-providers/codex/ && cp src/services/ai-providers/grok/grok-auth-merge-decision.cjs dist/services/ai-providers/grok/ && cp -Rf ../packages/wardmote-runner/dist/. dist/vendor/paperclip-runner/ && node scripts/write-build-stamp.mjs",
     "prepack": "pnpm run prepare:ui-dist && pnpm run build",
     "postpack": "rm -rf ui-dist",
     "clean": "rm -rf dist",
     "start": "node dist/index.js",
-    "prepare:runner-vendor": "pnpm --filter @tickernelz/wardmote-paperclip-runner build",
+    "prepare:runner-vendor": "pnpm --filter @tickernelz/wardmote-runner build",
     "typecheck": "pnpm run prepare:runner-vendor && pnpm --filter @tickernelz/wardmote-plugin-sdk ensure-build-deps && tsc --noEmit"
   },
   "dependencies": {
@@ -128,7 +128,7 @@
     "acpx"
   ],
   "devDependencies": {
-    "@tickernelz/wardmote-paperclip-runner": "workspace:*",
+    "@tickernelz/wardmote-runner": "workspace:*",
     "@types/compression": "^1.8.1",
     "@types/express": "^5.0.0",
     "@types/express-serve-static-core": "^5.1.3",

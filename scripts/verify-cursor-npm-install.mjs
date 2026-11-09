@@ -23,7 +23,7 @@ assert.match(releaseBinaries.sourceRevision, /^[a-f0-9]{40}$/);
 run('git', ['merge-base', '--is-ancestor', releaseBinaries.sourceRevision, sourceRevision], repo);
 // Controller and TypeScript admission may follow a frozen daemon. Keep its
 // exact provenance and require the Rust sources and protocol to remain identical.
-run('git', ['diff', '--quiet', releaseBinaries.sourceRevision, sourceRevision, '--', 'packages/paperclip-runner/runner', 'packages/paperclip-runner/protocol'], repo);
+run('git', ['diff', '--quiet', releaseBinaries.sourceRevision, sourceRevision, '--', 'packages/wardmote-runner/runner', 'packages/wardmote-runner/protocol'], repo);
 assert.deepEqual(Object.keys(releaseBinaries.platforms).sort(), ['darwin-arm64', 'darwin-x64', 'linux-x64']);
 assert.equal(releaseBinaries.remoteProviderPack?.target, 'linux-x64', 'Release assembly must include the expected ordinary Daytona image pack');
 const releaseVersion = `0.0.0-cursor-verify.${sourceRevision.slice(0, 12)}`;

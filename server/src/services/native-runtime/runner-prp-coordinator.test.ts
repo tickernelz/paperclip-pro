@@ -22,7 +22,7 @@ import type {
   PrpEvent,
   PrpStructuredRunResult,
   PrpTerminalState,
-} from "@tickernelz/wardmote-paperclip-runner";
+} from "@tickernelz/wardmote-runner";
 import { NativeSessionProtocolIntegrityError } from "../../vendor/paperclip-runner/index.js";
 
 import {

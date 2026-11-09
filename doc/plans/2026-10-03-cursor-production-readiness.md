@@ -30,7 +30,7 @@ defensively but is not advertised or certified. See the
 The PR audit found duplicated release tuples in Rust descriptor validation,
 duplicated model rules in Rust session validation, and independent pins in the
 TypeScript profile registry, provider-pack builder, server pack verifier, and
-Cursor installation code. `packages/paperclip-runner/acpx-profiles.json` now owns
+Cursor installation code. `packages/wardmote-runner/acpx-profiles.json` now owns
 the release/profile declarations; generated TypeScript and named Rust structs
 share them. Following review, all ACPX harnesses now accept any explicit model ID;
 the native provider must acknowledge that exact selection before prompting.
@@ -745,7 +745,7 @@ Public release packaging now selects the daemon beside its own compiled module,
 including the server's vendored layout, and verifies its actual executable
 architecture. Release assembly requires one source revision and all three
 independently built daemons. Run
-`pnpm --filter @tickernelz/wardmote-paperclip-runner stage:release-binaries /path/to/manifest.json`
+`pnpm --filter @tickernelz/wardmote-runner stage:release-binaries /path/to/manifest.json`
 with a JSON manifest containing `sourceRevision` and `platforms`, whose exact
 keys are `darwin-arm64`, `darwin-x64`, and `linux-x64`; each entry contains an
 absolute artifact `path` and `sha256:<64 hex digits>` digest. Assembly verifies

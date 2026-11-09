@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { expect, it, vi } from "vitest";
 import { gradePiRestartCompletion, observePiRestartPending, runPiPendingControllerRestart } from "./pi-native-restart-flow.js";
-import { validatePrpStructuredRunResult } from "../../packages/paperclip-runner/src/protocol/replay-contract.js";
+import { validatePrpStructuredRunResult } from "../../packages/wardmote-runner/src/protocol/replay-contract.js";
 
 type Row = Record<string, any>;
 vi.mock("@playwright/test", () => ({ expect: (locator: { count(): number }) => ({

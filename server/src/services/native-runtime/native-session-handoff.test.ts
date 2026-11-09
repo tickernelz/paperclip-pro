@@ -4,7 +4,7 @@ import { agents, companies, createDb, documents, heartbeatRunEvents, heartbeatRu
 import { getEmbeddedPostgresTestSupport, startEmbeddedPostgresTestDatabase } from "../../__tests__/helpers/embedded-postgres.js";
 import { buildNativeSessionHandoff, createNativeSessionHandoffLoader, NATIVE_HANDOFF_MAX_BYTES, renderNativeSessionHandoff } from "./native-session-handoff.js";
 import { buildNativeExecutionInput } from "./native-execution-input.js";
-import { buildNativeModelEnvelope } from "@tickernelz/wardmote-paperclip-runner";
+import { buildNativeModelEnvelope } from "@tickernelz/wardmote-runner";
 import { nativeRuntimeContextFixture } from "./runtime-context.test-fixture.js";
 
 describe("bounded fresh-session handoff", () => {

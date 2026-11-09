@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import { runnerMatrix, runnerSuites } from "./catalog.js";
 import { buildRunnerE2EProcessEnvironment } from "./harness-env.js";
-import { canonicalProviderEventsFromAcpxRuntimeEvent, canonicalProviderEventsFromCodex } from "../../packages/paperclip-runner/src/provider-events.js";
+import { canonicalProviderEventsFromAcpxRuntimeEvent, canonicalProviderEventsFromCodex } from "../../packages/wardmote-runner/src/provider-events.js";
 import { loadDefaultAgentInstructionsBundle } from "../../server/src/services/default-agent-instructions.js";
 import { HIRING_TEMPLATE_READ_FILES, HIRING_TEMPLATE_SKILL_KEY, hiringTemplateInputs, hiringTemplateScenario } from "./hiring-template-cases.js";
 import { readHiringInstructions, readHiringTemplateSources, renderHiringCoderExample, waitForSettledHiringObservation } from "./hiring-template-flow.js";

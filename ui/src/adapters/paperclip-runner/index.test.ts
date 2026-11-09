@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { paperclipRunnerUIAdapter } from "./index";
-import { createPiProfileExtensionAdapter, PI_NOTICE_METHOD } from "../../../../packages/paperclip-runner/src/drivers/acpx/pi-extension-adapter";
+import { createPiProfileExtensionAdapter, PI_NOTICE_METHOD } from "../../../../packages/wardmote-runner/src/drivers/acpx/pi-extension-adapter";
 import { transcriptToTaskChatItems } from "../../components/task-chat/transcript-adapter";
 
 const piFailure = (overrides: Record<string, unknown> = {}, eventOverrides: Record<string, unknown> = {}) => ({

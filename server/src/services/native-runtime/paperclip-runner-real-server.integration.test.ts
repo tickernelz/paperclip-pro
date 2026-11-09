@@ -22,7 +22,7 @@ import { PaperclipRunnerToolAuthority } from "./paperclip-runner-tool-authority.
 
 const fakeCodexAppServer = resolve(
   import.meta.dirname,
-  "../../../../packages/paperclip-runner/runner/target/debug/fake-codex-app-server",
+  "../../../../packages/wardmote-runner/runner/target/debug/fake-codex-app-server",
 );
 const runnerBinariesAvailable =
   existsSync(defaultCapabilityRunnerdBinary()) && existsSync(fakeCodexAppServer);

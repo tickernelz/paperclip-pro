@@ -142,7 +142,7 @@ jobs:
       - name: Runner Rust release cache
         uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6
         with:
-          workspaces: packages/paperclip-runner/runner -> target
+          workspaces: packages/wardmote-runner/runner -> target
           shared-key: runner-typecheck-v1
           cache-workspace-crates: false
           cache-bin: false
@@ -164,11 +164,11 @@ jobs:
         with:
           save-store: "true"
       - name: Build Runner Evalbook viewer
-        run: pnpm --filter @tickernelz/wardmote-paperclip-runner build:issue-thread
+        run: pnpm --filter @tickernelz/wardmote-runner build:issue-thread
       - name: Runner Rust release cache
         uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6
         with:
-          workspaces: packages/paperclip-runner/runner -> target
+          workspaces: packages/wardmote-runner/runner -> target
           shared-key: runner-build-v1
           cache-workspace-crates: false
           cache-bin: false
@@ -193,7 +193,7 @@ jobs:
       - uses: ./.github/actions/setup-workspace
 
       - name: Select the pinned Runner Rust toolchain
-        working-directory: packages/paperclip-runner
+        working-directory: packages/wardmote-runner
         run: |
           set -uo pipefail
           if ! command -v rustup >/dev/null 2>&1; then
@@ -213,7 +213,7 @@ jobs:
       - name: Runner Rust dependencies
         uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6
         with:
-          workspaces: packages/paperclip-runner/runner -> target
+          workspaces: packages/wardmote-runner/runner -> target
           shared-key: runner-v1
           cache-workspace-crates: false
           cache-bin: false
@@ -221,15 +221,15 @@ jobs:
 
       - name: Static checks
         if: matrix.part == 'checks'
-        run: pnpm --filter @tickernelz/wardmote-paperclip-runner check:static
+        run: pnpm --filter @tickernelz/wardmote-runner check:static
 
       - name: Rust checks
         if: matrix.part == 'checks'
-        run: pnpm --filter @tickernelz/wardmote-paperclip-runner check:runner
+        run: pnpm --filter @tickernelz/wardmote-runner check:runner
 
       - name: TypeScript suites
         if: matrix.part == 'suites'
-        run: pnpm --filter @tickernelz/wardmote-paperclip-runner test:typescript:vitest
+        run: pnpm --filter @tickernelz/wardmote-runner test:typescript:vitest
 
   general:
     name: Tests (${{ matrix.label }})
@@ -436,14 +436,14 @@ jobs:
       - name: Runner Rust release cache
         uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6
         with:
-          workspaces: packages/paperclip-runner/runner -> target
+          workspaces: packages/wardmote-runner/runner -> target
           shared-key: runner-build-v1
           cache-workspace-crates: false
           cache-bin: false
           save-if: false
       - name: Upgrade an existing install to this commit and keep its home
         env:
-          CARGO_TARGET_DIR: ${{ github.workspace }}/packages/paperclip-runner/runner/target
+          CARGO_TARGET_DIR: ${{ github.workspace }}/packages/wardmote-runner/runner/target
           GH_TOKEN: ${{ github.token }}
           UPGRADE_REPO: ${{ github.event.pull_request.head.repo.full_name }}
           UPGRADE_SHA: ${{ github.event.pull_request.head.sha }}

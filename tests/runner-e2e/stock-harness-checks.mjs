@@ -9,7 +9,7 @@ import { readStockInstructionVariant } from "./stock-harness-instruction-variant
 
 const root = resolve(import.meta.dirname, "../..");
 export const stockHarnessGates = [
-  { id: "SH-1", name: "Native Codex additive instructions", cwd: "packages/paperclip-runner", files: [
+  { id: "SH-1", name: "Native Codex additive instructions", cwd: "packages/wardmote-runner", files: [
     "src/drivers/codex/codex-app-server-driver.test.ts",
     "src/drivers/codex/codex-app-server-driver.lifecycle.test.ts",
     "src/live/runnerd-codex-transport.test.ts",
@@ -84,24 +84,24 @@ export function sourceFingerprint() {
     "tests/runner-e2e/automatic-retry.ts", "tests/runner-e2e/types.ts",
     "packages/adapter-utils/src/acpx-engine/execute.ts", "packages/adapter-utils/src/acpx-engine/ephemeral-session-environment.ts",
     "tests/runner-e2e/context-integrity-cases.ts", "tests/runner-e2e/context-integrity-flow.ts", "tests/runner-e2e/context-integrity-scoring.ts",
-    "tests/runner-e2e/stock-harness-manifest.ts", "packages/paperclip-runner/scripts/generate-capability-contract.mjs",
-    "packages/paperclip-runner/spec/capability/source-contract.json",
-    "packages/paperclip-runner/scripts/check-capability-inventory.mjs", "packages/paperclip-runner/scripts/lib/capability-inventory.mjs",
-    "packages/paperclip-runner/spec/capability/capabilities.yaml", "packages/paperclip-runner/spec/capability/eval-traceability.yaml",
-    "packages/paperclip-runner/spec/capability/mcp-tool-map.yaml", "packages/paperclip-runner/spec/capability/inventory.schema.json",
-    "packages/paperclip-runner/src/generated/capability-contract.ts", "packages/paperclip-runner/docs/capability-contract.md",
+    "tests/runner-e2e/stock-harness-manifest.ts", "packages/wardmote-runner/scripts/generate-capability-contract.mjs",
+    "packages/wardmote-runner/spec/capability/source-contract.json",
+    "packages/wardmote-runner/scripts/check-capability-inventory.mjs", "packages/wardmote-runner/scripts/lib/capability-inventory.mjs",
+    "packages/wardmote-runner/spec/capability/capabilities.yaml", "packages/wardmote-runner/spec/capability/eval-traceability.yaml",
+    "packages/wardmote-runner/spec/capability/mcp-tool-map.yaml", "packages/wardmote-runner/spec/capability/inventory.schema.json",
+    "packages/wardmote-runner/src/generated/capability-contract.ts", "packages/wardmote-runner/docs/capability-contract.md",
     ...["capabilities.yaml", "mcp-tool-map.yaml", "eval-traceability.yaml", "capability-contract.md", "downstream-handoff.md"]
-      .map(file => `packages/paperclip-runner/generated/capability/${file}`),
+      .map(file => `packages/wardmote-runner/generated/capability/${file}`),
     "packages/adapter-utils/src/server-utils.ts", "packages/shared/src/connection-intent-guidance.ts",
     "server/src/onboarding-assets/default/AGENTS.md", "server/src/routes/agents.ts", "scripts/ensure-plugin-build-deps.mjs",
-    "packages/paperclip-runner/src/drivers/codex/codex-app-server-driver-impl.ts",
-    "packages/paperclip-runner/src/live/runnerd-codex-transport.ts",
-    "packages/paperclip-runner/src/live/live-session.ts",
-    "packages/paperclip-runner/runner/crates/runner-core/src/codex_provider.rs",
-    "packages/paperclip-runner/runner/crates/runner-core/src/bin/fake-codex-app-server.rs",
-    "packages/paperclip-runner/runner/Cargo.toml", "packages/paperclip-runner/runner/Cargo.lock",
-    "packages/paperclip-runner/runner/crates/runner-core/Cargo.toml",
-    "packages/paperclip-runner/runner/crates/runner-core/tests/codex_provider.rs",
+    "packages/wardmote-runner/src/drivers/codex/codex-app-server-driver-impl.ts",
+    "packages/wardmote-runner/src/live/runnerd-codex-transport.ts",
+    "packages/wardmote-runner/src/live/live-session.ts",
+    "packages/wardmote-runner/runner/crates/runner-core/src/codex_provider.rs",
+    "packages/wardmote-runner/runner/crates/runner-core/src/bin/fake-codex-app-server.rs",
+    "packages/wardmote-runner/runner/Cargo.toml", "packages/wardmote-runner/runner/Cargo.lock",
+    "packages/wardmote-runner/runner/crates/runner-core/Cargo.toml",
+    "packages/wardmote-runner/runner/crates/runner-core/tests/codex_provider.rs",
   ]);
   const sourceErrors = [];
   sources.add("skills/paperclip/SKILL.md");
@@ -155,9 +155,9 @@ export function main(args = process.argv.slice(2)) {
     const report = assertPreflightReceipt(JSON.parse(readFileSync(verify, "utf8")), {
       sha: git.stdout.trim(), fingerprint: source.fingerprint,
       runnerdSha256: createHash("sha256").update(readFileSync(join(root,
-        "packages/paperclip-runner/runner/target/debug", `paperclip-runnerd${process.platform === "win32" ? ".exe" : ""}`))).digest("hex"),
+        "packages/wardmote-runner/runner/target/debug", `paperclip-runnerd${process.platform === "win32" ? ".exe" : ""}`))).digest("hex"),
       fakeCodexSha256: createHash("sha256").update(readFileSync(join(root,
-        "packages/paperclip-runner/runner/target/debug/fake-codex-app-server"))).digest("hex"),
+        "packages/wardmote-runner/runner/target/debug/fake-codex-app-server"))).digest("hex"),
     });
     const output = resolve(verify, "..");
     for (const gate of gates) {
@@ -187,7 +187,7 @@ export function main(args = process.argv.slice(2)) {
   const runnerd = setupRun.status === 0 ? spawnSync("cargo", ["build", "--locked",
     ...(args.includes("--allow-rust-network") ? [] : ["--offline"]),
     "--workspace", "--bins"], {
-    cwd: join(root, "packages/paperclip-runner/runner"), env, encoding: "utf8", timeout: 10 * 60_000,
+    cwd: join(root, "packages/wardmote-runner/runner"), env, encoding: "utf8", timeout: 10 * 60_000,
   }) : null;
   writeFileSync(join(output, "runnerd-build.txt"), `${runnerd?.stdout ?? ""}\n${runnerd?.stderr ?? ""}`);
   const setup = { passed: setupRun.status === 0 && runnerd?.status === 0,
@@ -203,11 +203,11 @@ export function main(args = process.argv.slice(2)) {
     process.exitCode = 1;
     return;
   }
-  const runnerdBinary = join(root, "packages/paperclip-runner/runner/target/debug",
+  const runnerdBinary = join(root, "packages/wardmote-runner/runner/target/debug",
     `paperclip-runnerd${process.platform === "win32" ? ".exe" : ""}`);
   setup.runnerdSha256 = createHash("sha256").update(readFileSync(runnerdBinary)).digest("hex");
   setup.fakeCodexSha256 = createHash("sha256").update(readFileSync(join(root,
-    "packages/paperclip-runner/runner/target/debug/fake-codex-app-server"))).digest("hex");
+    "packages/wardmote-runner/runner/target/debug/fake-codex-app-server"))).digest("hex");
   const results = [];
   for (const gate of gates) {
     console.log(`Checking ${gate.id}: ${gate.name}`);
@@ -225,7 +225,7 @@ export function main(args = process.argv.slice(2)) {
   }
   const rust = spawnSync("cargo", ["test", ...(args.includes("--allow-rust-network") ? [] : ["--offline"]), "-p", "paperclip-runner-core", "--test", "codex_provider",
     "runtime_instructions_are_additive_for_codex_on_start_and_resume", "--", "--exact"],
-  { cwd: join(root, "packages/paperclip-runner/runner"), env, encoding: "utf8", timeout: 10 * 60_000 });
+  { cwd: join(root, "packages/wardmote-runner/runner"), env, encoding: "utf8", timeout: 10 * 60_000 });
   const rustOutput = `${rust.stdout ?? ""}\n${rust.stderr ?? ""}`;
   writeFileSync(join(output, "rust.txt"), rustOutput);
   results.push({ id: "SH-1-rust", passed: rust.status === 0 && /test runtime_instructions_are_additive_for_codex_on_start_and_resume \.\.\. ok/.test(rustOutput), exitCode: rust.status });

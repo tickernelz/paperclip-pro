@@ -123,7 +123,7 @@ Dockerfile and build it with `--platform linux/amd64 --target commentary-runner-
 
 ```dockerfile
 FROM scratch AS commentary-runner-export
-COPY --from=runner-build /app/packages/paperclip-runner/runner/target/release/paperclip-runnerd /paperclip-runnerd
+COPY --from=runner-build /app/packages/wardmote-runner/runner/target/release/paperclip-runnerd /paperclip-runnerd
 ```
 
 The smoke calls the production Daytona provider hooks for creation, execution,

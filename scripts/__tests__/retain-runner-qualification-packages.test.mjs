@@ -22,8 +22,8 @@ test('retention preserves public archives and runs the normal plugin prepack wit
     put('packages/plugins/sandbox-providers/daytona/dist/index.js', 'export const retained = true;\n');
     json('packages/plugins/sdk/package.json', { name: '@tickernelz/wardmote-plugin-sdk', version: '0.3.1' });
     put('scripts/generate-plugin-package-json.mjs', readFileSync(new URL('../generate-plugin-package-json.mjs', import.meta.url)));
-    json('packages/paperclip-runner/package.json', { name: '@tickernelz/wardmote-paperclip-runner', version: '0.0.0', private: true, files: ['dist'] });
-    put('packages/paperclip-runner/dist/cli/eval-session.js', 'export const evaluation = true;\n');
+    json('packages/wardmote-runner/package.json', { name: '@tickernelz/wardmote-runner', version: '0.0.0', private: true, files: ['dist'] });
+    put('packages/wardmote-runner/dist/cli/eval-session.js', 'export const evaluation = true;\n');
     const publicArchives = ['@tickernelz/wardmote-server', 'paperclip-pro', '@tickernelz/wardmote-plugin-sdk'].map((name, i) => ({ name, file: put(`public-${i}.tgz`, `unchanged archive ${name}`) }));
     const output = join(root, 'retained');
     const result = retainRunnerQualificationPackages({ repo: root, output, sourceRevision, releaseVersion, publicArchives });

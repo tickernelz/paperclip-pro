@@ -3,7 +3,7 @@ import { existsSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 
 export const docsLaneVitestSuites = [
-  "packages/paperclip-runner/src/backends/native-instruction-measurement.test.ts",
+  "packages/wardmote-runner/src/backends/native-instruction-measurement.test.ts",
   "packages/shared/src/frontmatter.test.ts",
   "packages/shared/src/telemetry/readme-contract.test.ts",
   "packages/skills-catalog/src/release-content-cases-contract.test.ts",

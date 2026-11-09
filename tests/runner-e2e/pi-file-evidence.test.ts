@@ -6,8 +6,8 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import { collectPiFileEvidence, gradePiCopyback, gradePiFileEvidence, piFileContract, piFilePrompt, seedPiFile } from "./pi-file-evidence.js";
-import { canonicalProviderEventsFromAcpxRuntimeEvent, createAcpxToolEventNormalizer } from "../../packages/paperclip-runner/src/provider-events.js";
-import { safeAcpxLocations } from "../../packages/paperclip-runner/src/drivers/acpx/safe-locations.js";
+import { canonicalProviderEventsFromAcpxRuntimeEvent, createAcpxToolEventNormalizer } from "../../packages/wardmote-runner/src/provider-events.js";
+import { safeAcpxLocations } from "../../packages/wardmote-runner/src/drivers/acpx/safe-locations.js";
 import { classifyFailure } from "./failure-classifier.js";
 import { runnerMatrix } from "./catalog.js";
 

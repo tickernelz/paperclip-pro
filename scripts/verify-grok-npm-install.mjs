@@ -44,7 +44,7 @@ try {
   const imageReady = prefetch('image', 'docker', ['pull', '--platform', 'linux/amd64', GROK_PUBLIC_INSTALL_IMAGE]);
   // Provision as the unprivileged verification user, never into the host's /opt.
   // Only the positive probe sees this file at the canonical sandbox path.
-  const grokReady = prefetch('grok', process.execPath, [join(repo, 'packages/paperclip-runner/scripts/provision-grok.mjs'), stagedGrok]);
+  const grokReady = prefetch('grok', process.execPath, [join(repo, 'packages/wardmote-runner/scripts/provision-grok.mjs'), stagedGrok]);
   const listing = run(process.execPath, [join(repo, 'scripts/release-package-map.mjs'), 'list'], repo).toString().trim().split('\n').map(line => line.split('\t'));
   const packages = new Map(listing.map(([dir, name]) => [name, { dir, manifest: JSON.parse(readFileSync(join(repo, dir, 'package.json'), 'utf8')) }]));
   const needed = new Set();
@@ -128,7 +128,7 @@ try {
   assert.equal(existsSync(prerequisite), false, 'npm must not provision Grok');
   const server = join(consumer, 'node_modules/@tickernelz/wardmote-server');
   const installed = join(server, 'dist/vendor/paperclip-runner');
-  const codexVersion = JSON.parse(readFileSync(join(repo, 'packages/paperclip-runner/acpx-profiles.json'), 'utf8')).profiles.codex.agentRuntimeVersion;
+  const codexVersion = JSON.parse(readFileSync(join(repo, 'packages/wardmote-runner/acpx-profiles.json'), 'utf8')).profiles.codex.agentRuntimeVersion;
   assert.match(codexVersion, /^\d+\.\d+\.\d+$/);
   writeFileSync(join(assets, 'codex-probe.mjs'), installedCodexProbeSource(
     '/consumer/node_modules/@tickernelz/wardmote-server/dist/vendor/paperclip-runner/index.js', '/consumer', codexVersion), { mode: 0o644 });

@@ -52,29 +52,29 @@ describe("server package build script", () => {
     };
 
     expect(
-      packageJson.dependencies?.["@tickernelz/wardmote-paperclip-runner"],
+      packageJson.dependencies?.["@tickernelz/wardmote-runner"],
     ).toBeUndefined();
-    expect(packageJson.devDependencies?.["@tickernelz/wardmote-paperclip-runner"]).toBe(
+    expect(packageJson.devDependencies?.["@tickernelz/wardmote-runner"]).toBe(
       "workspace:*",
     );
     expect(packageJson.scripts?.["prepare:runner-vendor"]).toBe(
-      "pnpm --filter @tickernelz/wardmote-paperclip-runner build",
+      "pnpm --filter @tickernelz/wardmote-runner build",
     );
     expect(packageJson.scripts?.build).toContain(
-      "cp -Rf ../packages/paperclip-runner/dist/. dist/vendor/paperclip-runner/",
+      "cp -Rf ../packages/wardmote-runner/dist/. dist/vendor/paperclip-runner/",
     );
   });
 
   it("replaces an existing read-only image manifest with the build's copy step", () => {
     const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf8"));
     const step = packageJson.scripts.build.split(" && ").find((command: string) =>
-      command.includes("../packages/paperclip-runner/dist/."));
+      command.includes("../packages/wardmote-runner/dist/."));
     expect(step).toBeDefined();
     const [command, ...args] = step.split(" ");
     const root = mkdtempSync(path.join(tmpdir(), "runner-vendor-copy-"));
     try {
       const relative = "remote-provider-packs/linux-x64/provider-pack.json";
-      const source = path.join(root, "packages/paperclip-runner/dist", relative);
+      const source = path.join(root, "packages/wardmote-runner/dist", relative);
       const destination = path.join(root, "server/dist/vendor/paperclip-runner", relative);
       mkdirSync(path.dirname(source), { recursive: true });
       mkdirSync(path.dirname(destination), { recursive: true });
@@ -92,7 +92,7 @@ describe("server package build script", () => {
       scripts?: Record<string, string>;
     };
 
-    // See scripts/verify-runner-vendor-dependencies.mjs: packages/paperclip-runner
+    // See scripts/verify-runner-vendor-dependencies.mjs: packages/wardmote-runner
     // is vendored with a raw copy of its compiled dist/, so every runtime
     // dependency it imports must also be a direct dependency of server. This
     // check derives that requirement from an esbuild scan of the vendored
@@ -112,7 +112,7 @@ describe("server package build script", () => {
     // generate-replay-goldens.mjs already does, not through a `check:*`
     // wrapper that rebuilds first for standalone use.
     const runner = JSON.parse(readFileSync(new URL(
-      "../../../packages/paperclip-runner/package.json", import.meta.url,
+      "../../../packages/wardmote-runner/package.json", import.meta.url,
     ), "utf8")) as { scripts: Record<string, string> };
     const steps = runner.scripts.build.split(" && ");
     const wrapped = steps
@@ -136,7 +136,7 @@ describe("server package build script", () => {
   it("ships the pinned OpenCode dependency resolved by the vendored Runner", () => {
     const server = JSON.parse(readFileSync(packageJsonPath, "utf8"));
     const runner = JSON.parse(readFileSync(new URL(
-      "../../../packages/paperclip-runner/package.json", import.meta.url,
+      "../../../packages/wardmote-runner/package.json", import.meta.url,
     ), "utf8"));
     // createRequire resolution is dynamic and is not covered by the import scan.
     expect(server.dependencies["opencode-ai"]).toBe("1.18.34");
@@ -147,10 +147,10 @@ describe("server package build script", () => {
     const shim = readFileSync(runnerShimPath, "utf8");
 
     expect(shim).toContain(
-      '"../../../../packages/paperclip-runner/src/index.ts"',
+      '"../../../../packages/wardmote-runner/src/index.ts"',
     );
     expect(shim).not.toContain(
-      'export * from "@tickernelz/wardmote-paperclip-runner"',
+      'export * from "@tickernelz/wardmote-runner"',
     );
   });
 
@@ -162,7 +162,7 @@ describe("server package build script", () => {
       const consumer = readFileSync(consumerPath, "utf8");
 
       expect(consumer).toContain('vendor/paperclip-runner/index.js"');
-      expect(consumer).not.toContain('from "@tickernelz/wardmote-paperclip-runner"');
+      expect(consumer).not.toContain('from "@tickernelz/wardmote-runner"');
     }
   });
 });

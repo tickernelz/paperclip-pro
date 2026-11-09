@@ -11,7 +11,7 @@ import { describe, expect, it } from "vitest";
 import {
   localIntegrityBoundaryGolden as fixture,
   localIntegrityEventsFor as eventsFor,
-} from "../../../packages/paperclip-runner/test-support/local-integrity-boundary-golden.js";
+} from "../../../packages/wardmote-runner/test-support/local-integrity-boundary-golden.js";
 
 import { redactEventPayload } from "../redaction.js";
 import { appendHeartbeatRunEvent } from "../services/heartbeat-run-events.js";
