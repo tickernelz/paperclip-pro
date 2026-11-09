@@ -72,7 +72,7 @@ interface ConnectorDefinition {
 // current access, not credential availability or agent-authored config, select them.
 const connectors: ConnectorDefinition[] = [
   { key: "browser-use-cloud", label: "Browser Use Cloud", skillName: "browser-use-cloud", skillMarkdown: BROWSER_USE_CLOUD_SKILL, tools: [],
-    legacySkillKeys: ["paperclipai/paperclip/browser-use"],
+    legacySkillKeys: ["tickernelz/wardmote/browser-use"],
     async resolve(db, binding) {
       const { getAssignedMcpGateway } = await import("./native-runtime/assigned-mcp-tools.js");
       try { return await getAssignedMcpGateway(db).browserUseResources(binding); } catch { return []; }
@@ -135,7 +135,7 @@ const connectors: ConnectorDefinition[] = [
   },
 ];
 const skillKey = (connector: ConnectorDefinition) =>
-  `paperclipai/paperclip/${connector.skillName}`;
+  `tickernelz/wardmote/${connector.skillName}`;
 export type ConnectorAssignment = {
   key: string;
   label: string;
@@ -270,7 +270,7 @@ export async function prepareConnectorSkillDelivery(
     const promptSkills = adapterType === "paperclip_runner"
       ? config.paperclipRuntimeSkills.filter(entry =>
         manifestSkills.has(entry.key)
-        || ["paperclipai/paperclip/slack", "paperclipai/paperclip/speko"].includes(entry.key))
+        || ["tickernelz/wardmote/slack", "tickernelz/wardmote/speko"].includes(entry.key))
       : [];
     const instructions = (await Promise.all(promptSkills.map(entry =>
       fs.readFile(path.join(entry.source, "SKILL.md"), "utf8")))).join("\n\n");

@@ -20,7 +20,7 @@ vi.mock("./AgentSkillRow", () => ({ AgentSkillRow: ({ variant, data, checked, on
 import { toDesiredSkillPayload } from "./AgentSkillsTab";
 
 describe("toDesiredSkillPayload", () => {
-  const skillKey = "paperclipai/paperclip/paperclip";
+  const skillKey = "tickernelz/wardmote/paperclip";
   const versionId = "22222222-2222-4222-8222-222222222222";
 
   it("includes saved version pins while beta skills are enabled", () => {
@@ -52,7 +52,7 @@ it("keeps a beta pin in the autosave payload while the flag is off", async () =>
   const { AgentSkillsTab: Tab } = await import("./AgentSkillsTab");
   const client = new QueryClient({ defaultOptions: { queries: { staleTime: Infinity, retry: false } } });
   const agent = { id: "agent-1", companyId: "company-1", adapterType: "codex_local", adapterConfig: {} } as Agent;
-  const pinnedKey = "paperclipai/paperclip/paperclip";
+  const pinnedKey = "tickernelz/wardmote/paperclip";
   const versionId = "22222222-2222-4222-8222-222222222222";
   const base = { adapterType: "codex_local", supported: true, mode: "ephemeral", desiredSkills: [], entries: [], warnings: [] };
   client.setQueryData(queryKeys.agents.skills(agent.id), {
@@ -92,7 +92,7 @@ it("keeps a beta pin in the autosave payload while the flag is off", async () =>
 it("removes a connector from editable library rows when its automatic assignment arrives", async () => {
   const client = new QueryClient({ defaultOptions: { queries: { staleTime: Infinity, retry: false } } });
   const agent = { id: "agent-1", companyId: "company-1", adapterType: "codex_local", adapterConfig: {} } as Agent;
-  const key = "paperclipai/paperclip/agentmail";
+  const key = "tickernelz/wardmote/agentmail";
   const snapshot = { adapterType: "codex_local", supported: true, mode: "ephemeral", desiredSkills: [], entries: [], warnings: [] };
   client.setQueryData(queryKeys.agents.skills(agent.id), snapshot);
   client.setQueryData(queryKeys.companySkills.list(agent.companyId), [{ id: "skill-1", key, name: "agentmail", categories: [], sourceKind: "bundled", sourceType: "bundled" }]);
