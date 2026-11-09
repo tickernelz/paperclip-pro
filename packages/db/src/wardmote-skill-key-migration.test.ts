@@ -37,6 +37,8 @@ describeEmbeddedPostgres("wardmote bundled skill key migration", () => {
     const conflictCurrentId = randomUUID();
     const agentId = randomUUID();
     const untouchedAgentId = randomUUID();
+    const revisionId = randomUUID();
+    const untouchedRevisionId = randomUUID();
 
     await sql`
       INSERT INTO "companies" ("id", "name", "issue_prefix")
@@ -59,6 +61,16 @@ describeEmbeddedPostgres("wardmote bundled skill key migration", () => {
           paperclipSkillSync: { desiredSkills: ["paperclipai/paperclip/paperclip", "acme/tools/reviewer", "tickernelz/wardmote/paperclip"] },
         })}),
         (${untouchedAgentId}, ${companyId}, 'Untouched', ${sql.json({ paperclipSkillSync: { desiredSkills: ["acme/tools/reviewer"] } })})
+    `;
+    await sql`
+      INSERT INTO "agent_config_revisions" ("id", "company_id", "agent_id", "changed_keys", "before_config", "after_config")
+      VALUES
+        (${revisionId}, ${companyId}, ${agentId}, ${sql.json(["adapterConfig"])},
+          ${sql.json({ name: "Agent", adapterConfig: { model: "before", paperclipSkillSync: { desiredSkills: ["acme/tools/reviewer"] } } })},
+          ${sql.json({ name: "Agent", adapterConfig: { model: "after", paperclipSkillSync: { desiredSkills: ["paperclipai/paperclip/paperclip", "acme/tools/reviewer"] } } })}),
+        (${untouchedRevisionId}, ${companyId}, ${untouchedAgentId}, ${sql.json(["adapterConfig"])},
+          ${sql.json({ adapterConfig: { paperclipSkillSync: { desiredSkills: "paperclipai/paperclip/paperclip" } } })},
+          ${sql.json({ adapterConfig: { model: "x" } })})
     `;
 
     const hash = await migrationHash();
@@ -90,11 +102,33 @@ describeEmbeddedPostgres("wardmote bundled skill key migration", () => {
     `;
     expect(untouched!.adapter_config.paperclipSkillSync.desiredSkills).toEqual(["acme/tools/reviewer"]);
 
+    const revisions = await sql<{ id: string; before_config: Record<string, any>; after_config: Record<string, any> }[]>`
+      SELECT "id", "before_config", "after_config" FROM "agent_config_revisions"
+    `;
+    const revisionById = new Map(revisions.map((row) => [row.id, row]));
+    expect(revisionById.get(revisionId)!.before_config).toEqual({
+      name: "Agent",
+      adapterConfig: { model: "before", paperclipSkillSync: { desiredSkills: ["acme/tools/reviewer"] } },
+    });
+    expect(revisionById.get(revisionId)!.after_config.name).toBe("Agent");
+    expect(revisionById.get(revisionId)!.after_config.adapterConfig.model).toBe("after");
+    expect([...revisionById.get(revisionId)!.after_config.adapterConfig.paperclipSkillSync.desiredSkills].sort()).toEqual([
+      "acme/tools/reviewer",
+      "tickernelz/wardmote/paperclip",
+    ]);
+    expect(revisionById.get(untouchedRevisionId)).toEqual({
+      id: untouchedRevisionId,
+      before_config: { adapterConfig: { paperclipSkillSync: { desiredSkills: "paperclipai/paperclip/paperclip" } } },
+      after_config: { adapterConfig: { model: "x" } },
+    });
+
     const before = await sql`SELECT "id", "key", "metadata", "updated_at" FROM "company_skills" ORDER BY "id"`;
     const agentsBefore = await sql`SELECT "id", "adapter_config" FROM "agents" ORDER BY "id"`;
+    const revisionsBefore = await sql`SELECT "id", "before_config", "after_config" FROM "agent_config_revisions" ORDER BY "id"`;
     await sql`DELETE FROM "drizzle"."__drizzle_migrations" WHERE "hash" = ${hash}`;
     await applyPendingMigrations(database.connectionString);
     expect(await sql`SELECT "id", "key", "metadata", "updated_at" FROM "company_skills" ORDER BY "id"`).toEqual(before);
     expect(await sql`SELECT "id", "adapter_config" FROM "agents" ORDER BY "id"`).toEqual(agentsBefore);
+    expect(await sql`SELECT "id", "before_config", "after_config" FROM "agent_config_revisions" ORDER BY "id"`).toEqual(revisionsBefore);
   });
 });

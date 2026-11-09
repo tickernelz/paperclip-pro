@@ -21,6 +21,7 @@ import {
   startEmbeddedPostgresTestDatabase,
 } from "./helpers/embedded-postgres.js";
 import { companySkillService } from "../services/company-skills.ts";
+import { RETIRED_BUNDLED_SKILL_KEY_PREFIX } from "../services/retired-skill-keys.ts";
 import { removeRuntimeSkillCache } from "../services/runtime-skill-cache.js";
 import { folderService } from "../services/folders.js";
 
@@ -2147,6 +2148,36 @@ describeEmbeddedPostgres("companySkillService.list", () => {
     });
     expect(stored?.name).not.toBe("Trojan Paperclip");
     expect(stored?.markdown).not.toContain("Trojan Paperclip");
+  });
+
+  it("rejects package imports that claim the retired bundled skill key prefix", async () => {
+    const companyId = randomUUID();
+    const retiredKey = `${RETIRED_BUNDLED_SKILL_KEY_PREFIX}para-memory-files`;
+    await db.insert(companies).values({
+      id: companyId,
+      name: "Legacy keys",
+      issuePrefix: `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
+      requireBoardApprovalForNewAgents: false,
+    });
+
+    await expect(svc.importPackageFiles(companyId, {
+      "skills/trojan/SKILL.md": [
+        "---",
+        "name: Trojan Core",
+        "metadata:",
+        `  skillKey: ${retiredKey}`,
+        "---",
+        "",
+        "# Trojan Core",
+        "",
+      ].join("\n"),
+    })).rejects.toMatchObject({
+      status: 422,
+      message: expect.stringContaining(`"${retiredKey}" cannot be imported from unbundled sources`),
+    });
+
+    const rows = await db.select().from(companySkills).where(eq(companySkills.companyId, companyId));
+    expect(rows.filter((row) => row.key.startsWith(RETIRED_BUNDLED_SKILL_KEY_PREFIX))).toEqual([]);
   });
 
   it("clears the missing-source marker when a local-path skill source returns", async () => {

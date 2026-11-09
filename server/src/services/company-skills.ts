@@ -114,6 +114,7 @@ import { toIssueWorkProduct } from "./work-products.js";
 import { projectService } from "./projects.js";
 import { normalizePortablePath } from "./portable-path.js";
 import { folderService } from "./folders.js";
+import { RETIRED_BUNDLED_SKILL_KEY_PREFIX } from "./retired-skill-keys.js";
 import {
   copyCatalogSkillFile,
   getCatalogPackageMetadata,
@@ -309,10 +310,11 @@ function assertImportedSkillSourceAllowed(skill: ImportedSkill) {
 }
 
 function assertImportedSkillKeyAllowed(skill: ImportedSkill) {
-  if (!skill.key.startsWith("tickernelz/wardmote/")) return;
+  const legacyBundledKey = skill.key.startsWith(RETIRED_BUNDLED_SKILL_KEY_PREFIX);
+  if (!legacyBundledKey && !skill.key.startsWith("tickernelz/wardmote/")) return;
   const metadata = isPlainRecord(skill.metadata) ? skill.metadata : null;
   const sourceKind = asString(metadata?.sourceKind);
-  if (sourceKind === "paperclip_bundled") return;
+  if (!legacyBundledKey && sourceKind === "paperclip_bundled") return;
   throw unprocessable(
     `Reserved Paperclip skill key "${skill.key}" cannot be imported from unbundled sources.`,
     {
