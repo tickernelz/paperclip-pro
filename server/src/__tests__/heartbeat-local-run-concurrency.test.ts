@@ -176,15 +176,18 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
     );
   }
 
-  async function drainEverything(heartbeat: ReturnType<typeof heartbeatService>) {
+  async function drainEverything(heartbeat: ReturnType<typeof heartbeatService>, companyId: string) {
     const releaseAdapters = setInterval(() => {
       while (adapterGate.waiters.length > 0) adapterGate.waiters.shift()!();
     }, 25);
     try {
-      await waitForCondition(async () => {
-        const rows = await db.select({ status: heartbeatRuns.status }).from(heartbeatRuns);
+      expect(await waitForCondition(async () => {
+        const rows = await db
+          .select({ status: heartbeatRuns.status })
+          .from(heartbeatRuns)
+          .where(eq(heartbeatRuns.companyId, companyId));
         return rows.every((row) => row.status !== "running" && row.status !== "queued");
-      }, 20_000);
+      }, 20_000)).toBe(true);
       await heartbeat.drainActiveRunExecutions();
     } finally {
       clearInterval(releaseAdapters);
@@ -230,7 +233,7 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
     }
 
-    await drainEverything(heartbeat);
+    await drainEverything(heartbeat, companyId);
     expect(await countRuns(companyId, "failed")).toBe(0);
     expect(await countRuns(companyId, "cancelled")).toBe(0);
     expect(await countRuns(companyId, "succeeded")).toBeGreaterThanOrEqual(5);
@@ -254,7 +257,7 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
     await wakeAll(heartbeat, seeded);
     expect(await waitForCondition(async () => (await countRuns(companyId, "running")) === 1)).toBe(true);
 
-    await drainEverything(heartbeat);
+    await drainEverything(heartbeat, companyId);
     expect(await countRuns(companyId, "succeeded")).toBeGreaterThanOrEqual(1);
   }, 60_000);
 
@@ -277,7 +280,7 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
       return running.length === 1 && !firstWave.includes(running[0]!);
     })).toBe(true);
 
-    await drainEverything(heartbeat);
+    await drainEverything(heartbeat, companyId);
     expect(await countRuns(companyId, "succeeded")).toBeGreaterThanOrEqual(2);
   }, 60_000);
 
@@ -296,7 +299,7 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
     expect(await waitForCondition(async () => (await countRuns(companyId, "running")) === 5)).toBe(true);
     expect(await countRuns(companyId, "queued")).toBe(0);
 
-    await drainEverything(heartbeat);
+    await drainEverything(heartbeat, companyId);
     expect(await countRuns(companyId, "failed")).toBe(0);
   }, 60_000);
 
@@ -329,7 +332,7 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
     expect(await waitForCondition(async () => (await countRuns(companyId, "running")) === 5)).toBe(true);
     expect(await countRuns(companyId, "queued")).toBe(0);
 
-    await drainEverything(heartbeat);
+    await drainEverything(heartbeat, companyId);
     expect(await countRuns(companyId, "failed")).toBe(0);
   }, 90_000);
 
@@ -352,7 +355,7 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
     expect(await countRuns(companyId, "running")).toBe(10);
     expect(await countRuns(companyId, "queued")).toBe(1);
 
-    await drainEverything(heartbeat);
+    await drainEverything(heartbeat, companyId);
     expect(await countRuns(companyId, "failed")).toBe(0);
   }, 120_000);
 
@@ -382,7 +385,7 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
     await heartbeat.resumeQueuedRuns();
     expect(await waitForCondition(async () => (await countRuns(companyId, "running")) === 5)).toBe(true);
 
-    await drainEverything(heartbeat);
+    await drainEverything(heartbeat, companyId);
     expect(await countRuns(companyId, "failed")).toBe(0);
   }, 90_000);
 
@@ -409,7 +412,7 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
     expect(await countRuns(companyId, "running")).toBe(4);
     expect(await countRuns(companyId, "queued")).toBe(1);
 
-    await drainEverything(heartbeat);
+    await drainEverything(heartbeat, companyId);
     expect(await countRuns(companyId, "failed")).toBe(0);
   }, 90_000);
 
@@ -439,7 +442,7 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
     await heartbeat.resumeQueuedRuns();
     expect(await waitForCondition(async () => (await countRuns(companyId, "running")) === 2)).toBe(true);
 
-    await drainEverything(heartbeat);
+    await drainEverything(heartbeat, companyId);
     expect(await countRuns(companyId, "failed")).toBe(0);
   }, 90_000);
 
@@ -476,7 +479,7 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
     await log("stdout", '{"type":"agent_start"}\n');
     expect(await waitForCondition(async () => (await countRuns(companyId, "running")) === 2)).toBe(true);
 
-    await drainEverything(heartbeat);
+    await drainEverything(heartbeat, companyId);
     expect(await countRuns(companyId, "failed")).toBe(0);
   }, 90_000);
 
@@ -498,7 +501,7 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
     expect(await countRuns(companyId, "running")).toBe(1);
     expect(await countRuns(companyId, "queued")).toBe(1);
 
-    await drainEverything(heartbeat);
+    await drainEverything(heartbeat, companyId);
     expect(await countRuns(companyId, "failed")).toBe(0);
     expect(await countRuns(companyId, "succeeded")).toBeGreaterThanOrEqual(2);
   }, 90_000);
@@ -524,7 +527,7 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
     await reportStartupSignal((await runningRunIds(companyId))[0]!);
     expect(await waitForCondition(async () => (await countRuns(companyId, "running")) === 2)).toBe(true);
 
-    await drainEverything(heartbeat);
+    await drainEverything(heartbeat, companyId);
     expect(await countRuns(companyId, "failed")).toBe(0);
   }, 90_000);
 
@@ -548,7 +551,7 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
 
     expect(await waitForCondition(async () => (await countRuns(companyId, "running")) === 2, 15_000)).toBe(true);
 
-    await drainEverything(heartbeat);
+    await drainEverything(heartbeat, companyId);
     expect(await countRuns(companyId, "failed")).toBe(0);
   }, 90_000);
 
@@ -596,7 +599,7 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
       expect(await countRuns(companyId, "running")).toBe(3);
       expect(await countRuns(companyId, "queued")).toBe(1);
 
-      await drainEverything(heartbeat);
+      await drainEverything(heartbeat, companyId);
       expect(await countRuns(companyId, "failed")).toBe(0);
       expect(await countRuns(companyId, "cancelled")).toBe(0);
     } finally {
@@ -621,7 +624,7 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
       expect(await countRuns(companyId, "queued")).toBe(1);
       expect(await countRuns(companyId, "cancelled")).toBe(0);
 
-      await drainEverything(heartbeat);
+      await drainEverything(heartbeat, companyId);
       expect(await countRuns(companyId, "failed")).toBe(0);
     } finally {
       await saveLocalRunLimits({ maxConcurrentRuns: null, maxConcurrentStarts: null, startWaitBypassSec: null, memoryReservePercent: null, memoryGateCooldownSec: null });
@@ -653,7 +656,7 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
       }
       expect(await countRuns(companyId, "queued")).toBe(0);
 
-      await drainEverything(heartbeat);
+      await drainEverything(heartbeat, companyId);
       expect(await countRuns(companyId, "failed")).toBe(0);
     } finally {
       info.mockRestore();
@@ -676,7 +679,7 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
       expect(await countRuns(companyId, "running")).toBe(1);
       expect(await countRuns(companyId, "queued")).toBe(2);
 
-      await drainEverything(heartbeat);
+      await drainEverything(heartbeat, companyId);
       expect(await countRuns(companyId, "failed")).toBe(0);
     } finally {
       await saveLocalRunLimits({ maxConcurrentRuns: null, maxConcurrentStarts: null, startWaitBypassSec: null, memoryReservePercent: null, memoryGateCooldownSec: null });

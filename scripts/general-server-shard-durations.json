@@ -230,7 +230,7 @@
     "server/src/__tests__/heartbeat-ledger-billing-code.test.ts": 6,
     "server/src/__tests__/heartbeat-list.test.ts": 1234,
     "server/src/__tests__/heartbeat-local-environment.test.ts": 5196,
-    "server/src/__tests__/heartbeat-local-run-concurrency.test.ts": 353419,
+    "server/src/__tests__/heartbeat-local-run-concurrency.test.ts": 56671,
     "server/src/__tests__/heartbeat-lock-release-on-reassignment.test.ts": 2854,
     "server/src/__tests__/heartbeat-managed-clone-credentials.test.ts": 1977,
     "server/src/__tests__/heartbeat-model-fallback-warning.test.ts": 8,
