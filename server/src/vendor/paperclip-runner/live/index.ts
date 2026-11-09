@@ -4,4 +4,4 @@ export {
   probeAcpxGrokInstallation,
   probeAcpxCursorInstallation,
   probeAcpxPiInstallation,
-} from "@tickernelz/wardmote-paperclip-runner/live";
+} from "@tickernelz/wardmote-runner/live";

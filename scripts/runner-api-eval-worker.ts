@@ -10,10 +10,10 @@ import { homedir } from "node:os";
 import { runnerApiCatalog } from "../server/src/services/native-runtime/runner-api-catalog.js";
 import { startRunnerApiTestServer } from "../server/src/__tests__/helpers/runner-api-server.js";
 import { registerRunnerPrpAuthority } from "../server/src/realtime/runner-prp-ws.js";
-import { createRunnerdCodexTransport, defaultCapabilityRunnerdBinary } from "../packages/paperclip-runner/src/live/runnerd-codex-transport.js";
-import { createSkilllessCodexThreadConfig } from "../packages/paperclip-runner/src/drivers/codex/codex-app-server-driver.js";
-import { AttemptJournal } from "../packages/paperclip-runner/src/evals/attempt-journal.js";
-import { estimateModelCostNanodollars } from "../packages/paperclip-runner/src/evals/model-pricing.js";
+import { createRunnerdCodexTransport, defaultCapabilityRunnerdBinary } from "../packages/wardmote-runner/src/live/runnerd-codex-transport.js";
+import { createSkilllessCodexThreadConfig } from "../packages/wardmote-runner/src/drivers/codex/codex-app-server-driver.js";
+import { AttemptJournal } from "../packages/wardmote-runner/src/evals/attempt-journal.js";
+import { estimateModelCostNanodollars } from "../packages/wardmote-runner/src/evals/model-pricing.js";
 import { CONNECTION_INTENT_AGENT_GUIDANCE } from "../packages/shared/src/connection-intent-guidance.js";
 
 if (process.argv.includes("--catalog")) {
@@ -99,7 +99,7 @@ try {
         if (request.model === "claude-sonnet-5" && (process.platform !== "linux" || process.arch !== "x64")) throw new Error("Qualified ACPX Claude requires Linux x64; no provider turn was dispatched");
         if (!request.reservationId || request.maxCostUsd !== 0.5 || !["gpt-5.6-luna", "claude-sonnet-5", ...OPENROUTER_MODELS].includes(request.model)) throw new Error("Paid attempt requires ledger reservation and qualified model");
         if (isOpenRouter) {
-          providerVersion = execFileSync(resolve("packages/paperclip-runner/node_modules/opencode-ai/bin/opencode.exe"), ["--version"], { encoding: "utf8" }).trim();
+          providerVersion = execFileSync(resolve("packages/wardmote-runner/node_modules/opencode-ai/bin/opencode.exe"), ["--version"], { encoding: "utf8" }).trim();
           if (providerVersion !== "1.18.34") throw new Error("OpenCode profile requires version 1.18.34");
         }
         const providerEnvironment = isOpenRouter ? openRouterEnvironment() : request.model === "claude-sonnet-5" ? (() => {

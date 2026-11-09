@@ -22,7 +22,7 @@ import {
   issues,
   nativeRunFinalizations,
 } from "@tickernelz/wardmote-db";
-import type { PrpEvent } from "@tickernelz/wardmote-paperclip-runner";
+import type { PrpEvent } from "@tickernelz/wardmote-runner";
 import { respondIssueThreadInteractionSchema } from "@tickernelz/wardmote-shared";
 
 import {

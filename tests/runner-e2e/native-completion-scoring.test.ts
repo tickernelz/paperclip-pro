@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { rehydrateRunnerdItemNotification } from "../../packages/paperclip-runner/src/live/runnerd-codex-transport.js";
+import { rehydrateRunnerdItemNotification } from "../../packages/wardmote-runner/src/live/runnerd-codex-transport.js";
 import { gradeNativeCompletion as gradeLegacyNativeCompletion, gradeNativeCompletionFinalAnswer as gradeNativeCompletion, type NativeCompletionObservation } from "./native-completion-scoring.js";
 type Row = Record<string, unknown>;
 function sample(blocked = true, compatibility = false): NativeCompletionObservation {

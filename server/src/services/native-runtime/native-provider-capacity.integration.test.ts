@@ -16,7 +16,7 @@ import type {
   ControlPlanePort,
   NativeExecutionInputV1,
   PrpEvent,
-} from "@tickernelz/wardmote-paperclip-runner";
+} from "@tickernelz/wardmote-runner";
 import { startEmbeddedPostgresTestDatabase } from "../../__tests__/helpers/embedded-postgres.js";
 
 const provider = vi.hoisted(() => ({ execute: vi.fn() }));

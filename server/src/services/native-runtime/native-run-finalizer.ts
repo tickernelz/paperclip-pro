@@ -31,7 +31,7 @@ import {
   workspaceOperations,
 } from "@tickernelz/wardmote-db";
 import { classifyNativeEvidence } from "./evidence-classifier.js";
-import type { PrpIgnoredAttentionRequest, PrpTerminalState } from "@tickernelz/wardmote-paperclip-runner";
+import type { PrpIgnoredAttentionRequest, PrpTerminalState } from "@tickernelz/wardmote-runner";
 import {
   arbitrateNativeStatus,
   NATIVE_STATUS_ARBITER_POLICY_VERSION,

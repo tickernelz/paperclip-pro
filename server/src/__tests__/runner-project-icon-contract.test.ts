@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   capabilitySemanticToolDescriptor,
   paperclipSemanticAction,
-} from "@tickernelz/wardmote-paperclip-runner";
+} from "@tickernelz/wardmote-runner";
 import { PROJECT_ICON_NAMES } from "@tickernelz/wardmote-shared";
 
 // Cross-package parity belongs at the App boundary: the standalone runner

@@ -12,9 +12,9 @@ import { errorHandler } from "../middleware/error-handler.js";
 import { getEmbeddedPostgresTestSupport, startEmbeddedPostgresTestDatabase } from "./helpers/embedded-postgres.js";
 import { preparePlanSkills, selectPlanSkills, verifyPlanSkills, verifyPlanSelection } from "../../../tests/runner-e2e/plan-task-skills.js";
 import { planInvocations, planInvocationPrompt } from "../../../tests/runner-e2e/plan-task-exposure.js";
-import { nativeTaskSkillInputs } from "../../../packages/paperclip-runner/src/backends/runtime-context.js";
-import { resolveRunnerdCodexSkillInputs } from "../../../packages/paperclip-runner/src/live/runnerd-codex-transport.js";
-import type { NativeRuntimeContextSnapshot } from "../../../packages/paperclip-runner/src/contracts/runtime-context.js";
+import { nativeTaskSkillInputs } from "../../../packages/wardmote-runner/src/backends/runtime-context.js";
+import { resolveRunnerdCodexSkillInputs } from "../../../packages/wardmote-runner/src/live/runnerd-codex-transport.js";
+import type { NativeRuntimeContextSnapshot } from "../../../packages/wardmote-runner/src/contracts/runtime-context.js";
 import { PLAN_SKILLS, PLAN_VARIANTS, planHash } from "../../../tests/runner-e2e/plan-task-cases.js";
 import type { RunnerApi } from "../../../tests/runner-e2e/api.js";
 

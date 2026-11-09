@@ -21,7 +21,7 @@ describe("findMissingVendorDependencies", () => {
 
   it("flags a runner dependency that isn't mirrored into server/package.json", () => {
     // This is the exact shape of the incident this check exists to catch:
-    // packages/paperclip-runner/package.json grew a new runtime dependency
+    // packages/wardmote-runner/package.json grew a new runtime dependency
     // (smol-toml) that never got mirrored into server/package.json, so the
     // vendored `cp -R` copy failed to resolve it at runtime (#13110, #13116).
     const missing = findMissingVendorDependencies(
@@ -45,7 +45,7 @@ describe("findMissingVendorDependencies", () => {
 describe("findRunnerExternalPackages", () => {
   // Fixture-level coverage for the actual esbuild scan, not just the diff
   // function: a real dist/index.js + dist/testing.js on disk, structurally
-  // matching packages/paperclip-runner's shape (testing.js re-exports
+  // matching packages/wardmote-runner's shape (testing.js re-exports
   // index.js, which imports another local module that imports a bare npm
   // specifier), plus package.json dependency noise that should be ignored
   // because nothing reachable from these entry points imports it.
@@ -92,7 +92,7 @@ describe("findRunnerExternalPackages", () => {
     const missingEntryPoint = join(fixtureDir, "index.js");
 
     await expect(findRunnerExternalPackages([missingEntryPoint])).rejects.toThrow(
-      /expected build output at .*index\.js.*Run "pnpm --filter @tickernelz\/wardmote-paperclip-runner build" first/s,
+      /expected build output at .*index\.js.*Run "pnpm --filter @tickernelz\/wardmote-runner build" first/s,
     );
   });
 });

@@ -97,7 +97,7 @@ The reference is the runner's Codex app-server integration and its closed thread
 ## Evidence and packaging
 
 - [Cursor's ACP contract](https://cursor.com/docs/cli/acp) describes stdio JSON-RPC, sessions, permissions and five extensions. The pinned binary reveals additional capabilities and one material documentation discrepancy below.
-- `packages/paperclip-runner/cursor-distributions.json` pins vendor archive and complete extracted execution-closure SHA256 digests for macOS ARM64/x64 and Linux x64. All three archives were downloaded and independently inventoried (446 files on macOS, 454 on Linux). A real macOS ARM64 installation passed the materializer's full closure check.
+- `packages/wardmote-runner/cursor-distributions.json` pins vendor archive and complete extracted execution-closure SHA256 digests for macOS ARM64/x64 and Linux x64. All three archives were downloaded and independently inventoried (446 files on macOS, 454 on Linux). A real macOS ARM64 installation passed the materializer's full closure check.
 - The archive is a complete runtime: bundled `node`, `index.js`, dynamically loaded numbered JavaScript chunks, native addons, workers, and assets. Pinning only the launcher or one executable does not pin its execution dependencies. The materializer rejects links/special files and overwrites, and verifies every file against the pinned closure digest.
 - `test/fixtures/cursor-acp/credential-free-probe.json` records an actual macOS ARM64 initialization and nonbillable method probes. `initialize` reports ACP v1, session load/list, HTTP/SSE MCP, image prompts, and opt-in subagent events. Audio and embedded context are false. `session/fork` and `session/resume` return method-not-found. Creating/listing a session requires authentication.
 - Static evidence comes from `5672.index.js` (ACP implementation), `8096.index.js` (ACP SDK protocol schemas), `190.index.js` (hook paths) and `index.js` (CLI/configuration), all bound by the archive and closure pins. SDK schema support alone is not counted as implemented harness capability.
@@ -229,7 +229,7 @@ Three real ACP stream tests prove child lifecycle/transcript preservation before
 
 ## Integrated pack and offline launch evidence
 
-The full `build-provider-pack.mjs --candidate-providers=cursor` path passed on source `25fb1b5b317e52a8ad50208d7681a1ee34bd939c` (foundation includes upstream master `18e8c121d`). It used standalone Node, pnpm 9.15.4, a fresh production deployment and the pinned vendor archive. The build checked portable Node relocation, fresh ACPX import and complete Cursor materialization. The retained manifest is `packages/paperclip-runner/test/fixtures/cursor-acp/provider-pack-darwin-arm64.json`; it contains only relative paths and digests.
+The full `build-provider-pack.mjs --candidate-providers=cursor` path passed on source `25fb1b5b317e52a8ad50208d7681a1ee34bd939c` (foundation includes upstream master `18e8c121d`). It used standalone Node, pnpm 9.15.4, a fresh production deployment and the pinned vendor archive. The build checked portable Node relocation, fresh ACPX import and complete Cursor materialization. The retained manifest is `packages/wardmote-runner/test/fixtures/cursor-acp/provider-pack-darwin-arm64.json`; it contains only relative paths and digests.
 
 - Pack digest: `sha256:38bc6dd39c13b0f5478a1018e26deb61b0333ab0242f3d857e3c79d3a34b7682`.
 - Cursor declaration: `sha256:c91aa592ec867071ec4457b9b7230399ce42ad918787ceed99b4b651ea5607e2`.
@@ -358,7 +358,7 @@ recovery, accounting, and authenticated target-platform gates.
 
 ### Frozen profile v3 build
 
-[The retained build record](../../packages/paperclip-runner/test/fixtures/cursor-acp/production-v3-offline-build.json)
+[The retained build record](../../packages/wardmote-runner/test/fixtures/cursor-acp/production-v3-offline-build.json)
 identifies exact runtime source `526081b9d6c905de5e2da680e3a37c620899b380`,
 profile v3, the ARM64 portable package and matching release daemon, both lock
 hashes, the committed ACPX patch hash, and credential-free launch results.
@@ -423,7 +423,7 @@ reload reset authority. The adapter also asserts admission immediately after
 patch retains upstream terminal-failure diagnostics, rich interaction callbacks,
 response-delivery receipts, and Cursor child-event handling.
 
-[The v4 declaration](../../packages/paperclip-runner/test/fixtures/cursor-acp/profile-v4-identity.json)
+[The v4 declaration](../../packages/wardmote-runner/test/fixtures/cursor-acp/profile-v4-identity.json)
 binds profile digest `sha256:b1440d559ebc4eef5c7a582f1c81fc153270cfbafa1731a8ee76d83713bdf61b`
 to all platform closures and ACPX patch SHA-256
 `64180c194ab841d6f4bba7e6eca5ead621c6222c9a8057e4bb2bb6f007d8bb3c`.
@@ -442,7 +442,7 @@ On ARM64 it additionally executes the exact patched new/load methods and native
 cache/RequestContext construction with explicit dependency doubles, proving the
 composed bytes and native ordering at that boundary. This is an offline source
 execution proof, not a claim that an authenticated model obeyed the instructions.
-[The retained proof](../../packages/paperclip-runner/test/fixtures/cursor-acp/instructions-v4-offline-proof.json)
+[The retained proof](../../packages/wardmote-runner/test/fixtures/cursor-acp/instructions-v4-offline-proof.json)
 and `runtime-patch-offline-proof.json` record the limits.
 
 Nine new deterministic tests cover exact UTF-8 and empty instructions, ambient
@@ -494,7 +494,7 @@ availability, Plan-mode governed completion, and accepted/revised artifact flows
 remain pending Product qualification. Existing v4 paid results and macOS x64
 Rosetta build evidence remain historical and do not qualify v5.
 
-[The v5 declaration](../../packages/paperclip-runner/test/fixtures/cursor-acp/profile-v5-identity.json)
+[The v5 declaration](../../packages/wardmote-runner/test/fixtures/cursor-acp/profile-v5-identity.json)
 binds digest `sha256:aa8c0b2b84786982bcd06b7634bf95be6f2bc42bb8def48a8751dc50cf739b6b`.
 Profile v5 retains the native distribution closures and instruction patch. Its
 canonical declaration adds the admitted mode policy and binds ACPX patch

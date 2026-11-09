@@ -2,7 +2,7 @@ import { parseRestartRunnerIdentity, type RestartRunnerIdentity } from "./proces
 import { createHash, randomBytes } from "node:crypto";
 import { expect, type Page } from "@playwright/test";
 import { canonicalJson } from "../../packages/shared/src/portability-hash.js";
-import { validatePrpStructuredRunResult } from "../../packages/paperclip-runner/src/protocol/replay-contract.js";
+import { validatePrpStructuredRunResult } from "../../packages/wardmote-runner/src/protocol/replay-contract.js";
 import { pollUntil } from "./api.js";
 import { hasAcpxNativeOrigin } from "./acpx-native-origin.js";
 import { isValidNativePrpEnvelope } from "./native-event-envelope.js";

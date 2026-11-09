@@ -23,7 +23,7 @@ behavior.
 
 - **Runner Evals:** real Runner/provider behavior against a seeded mock control
   plane. Definitions live in `paperclip-evals/evals/paperclip-runner`; see the
-  [direct live protocol evals](../packages/paperclip-runner/docs/runner-protocol-live-evals.md).
+  [direct live protocol evals](../packages/wardmote-runner/docs/runner-protocol-live-evals.md).
 - **Product E2E Evals:** real browser, Paperclip server, database, Runner,
   provider, and (where selected) Daytona, using an isolated instance and
   grading oracle. See [`tests/runner-e2e`](../tests/runner-e2e/README.md) and
@@ -94,7 +94,7 @@ comparison axis.
 Runner Evals are owned by the Runner/evals maintainers. Definitions, rosters,
 case prompts, and the report program live in the sibling private repository
 `paperclipai/paperclip-evals`; Runner integration, viewer, aggregation, and
-publication code live under `packages/paperclip-runner` and the
+publication code live under `packages/wardmote-runner` and the
 `runner-protocol-live-evals.yml` workflow. The public-facing report uses the
 same Evalbook renderer and Runner Lab viewer as the trusted report after
 sanitization.
@@ -187,12 +187,12 @@ explicitly; use a narrow selector while developing a fixture.
 
 For Runner Evals, the narrowest useful local validation is the report program's
 help/validation path and the deterministic Runner checks documented in
-[`runner-workflow-evals.md`](../packages/paperclip-runner/docs/runner-workflow-evals.md).
+[`runner-workflow-evals.md`](../packages/wardmote-runner/docs/runner-workflow-evals.md).
 Hosted direct live runs must use the default-branch workflow, an exact 40
 character `evals_sha`, an explicitly selected roster (or the maintained
 enabled `all` campaign), and the protected paid environment. The complete
 hosted command is intentionally kept in the workflow and
-[direct live protocol guide](../packages/paperclip-runner/docs/runner-protocol-live-evals.md).
+[direct live protocol guide](../packages/wardmote-runner/docs/runner-protocol-live-evals.md).
 Live provider runs can spend money; use the existing workflow authorization and
 the user's stated scope when selecting them.
 

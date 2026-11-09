@@ -68,10 +68,10 @@ configured cells alone do not qualify behavior.
 - [x] Verify Paperclip task context, tools, auth, assigned skills, and completion
   still work. Record applicable regressions and eval results.
 
-Starting points: [Codex backend](../../packages/paperclip-runner/src/backends/codex-native-backend.ts),
-[app-server driver](../../packages/paperclip-runner/src/drivers/codex/codex-app-server-driver-impl.ts),
-[runnerd transport](../../packages/paperclip-runner/src/live/runnerd-codex-transport.ts),
-[Rust provider](../../packages/paperclip-runner/runner/crates/runner-core/src/codex_provider.rs).
+Starting points: [Codex backend](../../packages/wardmote-runner/src/backends/codex-native-backend.ts),
+[app-server driver](../../packages/wardmote-runner/src/drivers/codex/codex-app-server-driver-impl.ts),
+[runnerd transport](../../packages/wardmote-runner/src/live/runnerd-codex-transport.ts),
+[Rust provider](../../packages/wardmote-runner/runner/crates/runner-core/src/codex_provider.rs).
 
 Decision: use additive `developerInstructions` on Codex start and resume in the
 TypeScript driver, Runner Lab/eval sessions, and Rust provider. Retain existing
@@ -105,7 +105,7 @@ live campaign was run, and no task-quality improvement is claimed.
 
 Starting points: [default hire instructions](../../server/src/onboarding-assets/default/AGENTS.md),
 [shared adapter utilities](../../packages/adapter-utils/src/server-utils.ts),
-[native runtime contract](../../packages/paperclip-runner/src/contracts/runtime-context.ts),
+[native runtime contract](../../packages/wardmote-runner/src/contracts/runtime-context.ts),
 [Paperclip operational skill](../../skills/paperclip/SKILL.md).
 
 Decision: Dotta confirmed the harness already handles skill and tool delivery;
@@ -448,7 +448,7 @@ fresh rebased CI remains required before readiness.
 
 Claude starting points: [local adapter](../../packages/adapters/claude-local/src/server/execute.ts),
 [ACP patch](../../patches/@agentclientprotocol__claude-agent-acp@0.73.0.patch),
-[runtime sandbox](../../packages/paperclip-runner/src/drivers/acpx/runtime-sandbox.ts).
+[runtime sandbox](../../packages/wardmote-runner/src/drivers/acpx/runtime-sandbox.ts).
 
 Decision: repository-context loading mechanism per harness pending. Personal MCP
 isolation is approved and should remain.

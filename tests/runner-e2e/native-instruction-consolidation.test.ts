@@ -112,7 +112,7 @@ describe("native instruction comparison admission", () => {
   it("rejects duplicate or incomplete capture, dirty or paid source, and stale fixture evidence", () => {
     const measurement = {
       schema: "paperclip.native-instruction-measurement.v2", sourceSha: "frozen", sourceDirty: false, providerCalls: 0,
-      fixtureSha256: createHash("sha256").update(readFileSync(new URL("../../packages/paperclip-runner/src/backends/native-instruction-measurement.test.ts", import.meta.url))).digest("hex"),
+      fixtureSha256: createHash("sha256").update(readFileSync(new URL("../../packages/wardmote-runner/src/backends/native-instruction-measurement.test.ts", import.meta.url))).digest("hex"),
       sourceHashes: Object.fromEntries(Object.entries(NATIVE_INSTRUCTION_VARIANTS.baseline).map(([file, digest]) => [file.split('/').at(-1)!, digest])),
       directOpenCodeReceipts: ["v4", "v5"].flatMap(schema => ["start", "resume", "continuation"].map(phase => ({ provider: "opencode", schema, phase }))),
       receipts: ['codex', 'acpx', 'opencode'].flatMap(provider => ['v4', 'v5'].flatMap(schema => ['start', 'resume', 'continuation'].map(phase => ({ provider, schema, phase })))),

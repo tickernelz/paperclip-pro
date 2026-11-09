@@ -8,9 +8,9 @@ The first slice replaces the repeated final-response procedure in native task co
 
 The production comparison axis is exactly these three files:
 
-- `packages/paperclip-runner/src/backends/runtime-context.ts`
-- `packages/paperclip-runner/src/backends/codex-native-backend.ts`
-- `packages/paperclip-runner/src/backends/opencode-native-backend.ts`
+- `packages/wardmote-runner/src/backends/runtime-context.ts`
+- `packages/wardmote-runner/src/backends/codex-native-backend.ts`
+- `packages/wardmote-runner/src/backends/opencode-native-backend.ts`
 
 Both variants start from master `2a8a99e4a5f69aa803b3f10b982f583e75a87042`. The baseline retains those three original files. The candidate changes only those three production files. All fixture, grader, admission, test and documentation repairs must be common to both variants. The fixed execution prompt, production AGENTS bundle, completion tool descriptions/schemas, operational skills, hiring, connections and delivery guidance stay identical. The prior #14961 trial measured a different change and cannot qualify this one.
 
@@ -18,7 +18,7 @@ Both variants start from master `2a8a99e4a5f69aa803b3f10b982f583e75a87042`. The 
 
 `src/backends/native-instruction-measurement.test.ts` in the Runner package captures actual `thread/start`, `thread/resume` and `turn/start` parameters from the real runnerd facade with a scripted transport. It captures native Codex, ACPX Claude and OpenCode for input v4 and v5: eighteen receipts per variant. Every receipt records exact UTF-8 bytes, character counts and hashes of the instruction string, fixture tool schemas, turn input and their full projection. It checks finish/block descriptions, document/file rules, approval mode and identical start/resume tools and instructions. The fixture uses the actual production AGENTS file and a fixed projection of the core semantic catalog plus the reserved completion tools.
 
-Run from `packages/paperclip-runner`:
+Run from `packages/wardmote-runner`:
 
 ```sh
 PAPERCLIP_NATIVE_INSTRUCTION_REPORT=/absolute/path/measurement.json pnpm exec vitest run src/backends/native-instruction-measurement.test.ts

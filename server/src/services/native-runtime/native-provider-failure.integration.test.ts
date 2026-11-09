@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { agents, agentWakeupRequests, companies, completionContracts, createDb, heartbeatRunEvents, heartbeatRuns, issueRecoveryActions, issueThreadInteractions, issues, nativeRunFinalizations, nativeRunResults, statusDecisions, workAssessments } from "@tickernelz/wardmote-db";
-import type { ControlPlanePort, NativeExecutionInputV1, PrpEvent, PrpTerminalState } from "@tickernelz/wardmote-paperclip-runner";
+import type { ControlPlanePort, NativeExecutionInputV1, PrpEvent, PrpTerminalState } from "@tickernelz/wardmote-runner";
 import { startEmbeddedPostgresTestDatabase } from "../../__tests__/helpers/embedded-postgres.js";
 import { CONTROL_PLANE_CONFORMANCE_RESULT } from "../../vendor/paperclip-runner/testing.js";
 

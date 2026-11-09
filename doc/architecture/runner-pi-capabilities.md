@@ -76,7 +76,7 @@ model, Pi 1.0 supports `off`, `low`, `high`, and `max`. Pi's implicit `medium`
 default resolves to `high`; Pi 0.84.2 also resolved that default to `high`, so
 this is a configuration gap rather than evidence of a new Pi 1.0 default.
 
-The [provider-free wire proof](../../packages/paperclip-runner/test-fixtures/pi-acp/thinking-modes.v13.darwin-arm64.json)
+The [provider-free wire proof](../../packages/wardmote-runner/test-fixtures/pi-acp/thinking-modes.v13.darwin-arm64.json)
 records actual Pi 1.0 request bodies changing from `high` to `low` through ACP,
 truthful `max` restoration, blocked non-loopback connections, and owned-process
 retirement. Synthetic responses establish propagation, not paid qualification.
@@ -287,7 +287,7 @@ progress but cannot become a final answer. Missing or conflicting boundaries
 fail closed. Loaded history has a separate display-only identity. Retry,
 compaction, extension and command notices retain bounded, redacted severity and
 metadata on `paperclip/pi_notice`; they are never assistant final content.
-The [v8 declaration](../../packages/paperclip-runner/test-fixtures/pi-acp/profile-v8-identity.json)
+The [v8 declaration](../../packages/wardmote-runner/test-fixtures/pi-acp/profile-v8-identity.json)
 also pins the shared ACPX parser and Pi host projections. Previous sessions must
 be reopened. No paid profile-v8 qualification has run.
 
@@ -332,7 +332,7 @@ was aggregated into the final item. Three runs settled across these two cells,
 all owned processes exited, and five later cells did not launch. The native
 message attribution defect is repaired in v8; authenticated v8 qualification
 remains pending. The canonical
-[v7 declaration](../../packages/paperclip-runner/test-fixtures/pi-acp/profile-v7-identity.json)
+[v7 declaration](../../packages/wardmote-runner/test-fixtures/pi-acp/profile-v7-identity.json)
 binds the exact wrapper, helper, extension and three target closures.
 
 Credential-free regressions run the pinned SDK with synthetic model streams to
@@ -352,13 +352,13 @@ The first frozen v6 Product hello attempt fails before provider startup because
 the shared native-execution parser still admits only profile versions 1–5.
 Both assignment and automatic recovery runs reject the same input; no usage
 receipt exists. The early exclusive-key billing delta is $0 and cleanup passes.
-The [retained failure](../../packages/paperclip-runner/test-fixtures/pi-acp/product-hello-profile-rejection.v6.darwin-arm64.json)
+The [retained failure](../../packages/wardmote-runner/test-fixtures/pi-acp/product-hello-profile-rejection.v6.darwin-arm64.json)
 includes the actual local sidecar, Node, daemon, closure and pack identities.
 The parser repair is included in frozen source `edf14a067`. Its second hello
 attempt passes that boundary but fails at the 30-second `session.open` deadline.
 No terminal usage exists; both immediate and delayed exclusive-key deltas are $0,
 and all 40 owned process identities are gone. The
-[v6 startup proof](../../packages/paperclip-runner/test-fixtures/pi-acp/startup-diagnostic.v6.darwin-arm64.json)
+[v6 startup proof](../../packages/wardmote-runner/test-fixtures/pi-acp/startup-diagnostic.v6.darwin-arm64.json)
 retains that failure and the credential-free diagnosis. Bounded 32-worker file
 hashing and snapshot copying preserve all integrity checks, canonical ordering,
 the 32 MiB snapshot batch ceiling, and fully drained failure cleanup. A diagnostic
@@ -424,7 +424,7 @@ host must inspect this advertisement before sending provider extension requests.
 
 ## Native model instruction delivery (profile version 6)
 
-The [fresh/load model-request proof](../../packages/paperclip-runner/test-fixtures/pi-acp/prompt-delivery.v6.darwin-arm64.json)
+The [fresh/load model-request proof](../../packages/wardmote-runner/test-fixtures/pi-acp/prompt-delivery.v6.darwin-arm64.json)
 uses the actual pinned wrapper launch helper, owned extension, and Pi SDK
 `AgentSession.prompt` with a synthetic model stream. Captured model requests
 contain the exact composed Paperclip execution prompt, custom instruction-entry
@@ -577,7 +577,7 @@ part of its verified package and must never be omitted from a copy or hash.
 
 ## Verification and maintenance
 
-The [v5 offline pack proof](../../packages/paperclip-runner/test-fixtures/pi-acp/offline-provider-pack-proof.v5.darwin-arm64.json)
+The [v5 offline pack proof](../../packages/wardmote-runner/test-fixtures/pi-acp/offline-provider-pack-proof.v5.darwin-arm64.json)
 binds runtime source `aec26ad83f1d082f0d0a5eaffbd615a9e2e26155`, combined macOS
 pack `sha256:cf7d0998bbc2bed7b893c726c2b6455ba8a683d9cff7d92afedbff2d5900d500`,
 and immutable daemon `sha256:fe03a5f5e7b7d51aafb398aa435e4a200ca6e0206c46b84ba0baa15aa0be5f31`.
@@ -585,7 +585,7 @@ Recursive workspace typecheck and full build pass. Focused checks pass 43
 TypeScript tests including actual installation launch, 19 installed-wrapper/native
 SDK tests, eight materializer tests and 13 Rust backend tests. Independent review
 recomputed the v5 digest and verified all 13,827 installed files. The
-[security closure proof](../../packages/paperclip-runner/test-fixtures/pi-acp/security-closure-proof.v5.json)
+[security closure proof](../../packages/wardmote-runner/test-fixtures/pi-acp/security-closure-proof.v5.json)
 retains npm's vulnerable pre-replacement result, the fixed installed version,
 unchanged upstream metadata, target pins and exact runtime file changes.
 
@@ -600,7 +600,7 @@ runtime source trees remain identical to `aec26ad83`. Linux execution is recorde
 separately. The two clean lock resolutions match `9eea6018…`; tracked lock bytes
 remain unchanged.
 
-The [v4 offline proof](../../packages/paperclip-runner/test-fixtures/pi-acp/offline-provider-pack-proof.v4.darwin-arm64.json)
+The [v4 offline proof](../../packages/wardmote-runner/test-fixtures/pi-acp/offline-provider-pack-proof.v4.darwin-arm64.json)
 binds frozen source `f556110d588a9de9fefe676a9a62bf09e98afb85`, combined pack
 `sha256:4df7e9fa164929c7ae7d8e8711f0bf7d587d9fa6a246d0a8340f318f57168855`,
 and release Runner SHA-256
@@ -664,7 +664,7 @@ Primary references reviewed:
 
 ## Candidate distribution build
 
-Run `node packages/paperclip-runner/scripts/materialize-pi-distribution.mjs
+Run `node packages/wardmote-runner/scripts/materialize-pi-distribution.mjs
 /absolute/new-output` on the target build host. Supported targets are macOS arm64,
 macOS x64 and Linux x64; no cross-platform qualification is inferred. The builder
 uses exact official Node 24.21.0, pinned archive SHA-256 and executable SHA-256
@@ -779,7 +779,7 @@ cannot continue invisibly. Successful compaction reports
 helper discards failed-attempt usage, so any retry or missing compaction receipt
 invalidates complete-turn token/cost totals instead of inventing complete coverage.
 
-The retained [macOS ARM64 provider-pack admission proof](../../packages/paperclip-runner/test-fixtures/pi-acp/offline-provider-pack-proof.darwin-arm64.json)
+The retained [macOS ARM64 provider-pack admission proof](../../packages/wardmote-runner/test-fixtures/pi-acp/offline-provider-pack-proof.darwin-arm64.json)
 records source `7710736ca3924c655c5b0efd172cfd3c0173766a`, with version 3
 runtime source `06cf356a8bc94f709fcd15606fe05e17933fe3b2`. The latter differs only
 by the capability report and Pi evidence JSON; all execution tree hashes match.
@@ -796,39 +796,39 @@ Version 3 verification passes TypeScript and release Runner builds, 95 focused
 Vitest cases in seven files including actual-distribution launch, 25 installed
 package/receipt/materializer checks, and 16 native-provider Rust tests. These
 checks do not constitute full repository verification or paid qualification.
-The [version 2 dd78 proof](../../packages/paperclip-runner/test-fixtures/pi-acp/offline-provider-pack-proof.darwin-arm64.dd78df1e.json)
+The [version 2 dd78 proof](../../packages/wardmote-runner/test-fixtures/pi-acp/offline-provider-pack-proof.darwin-arm64.dd78df1e.json)
 retains the earlier pack used for hello, model admission and restrictive denial.
 Its 107 Vitest checks and 22 installed checks remain tied to that source.
 
-The [9f2d0420e proof](../../packages/paperclip-runner/test-fixtures/pi-acp/offline-provider-pack-proof.darwin-arm64.9f2d0420e.json)
+The [9f2d0420e proof](../../packages/wardmote-runner/test-fixtures/pi-acp/offline-provider-pack-proof.darwin-arm64.9f2d0420e.json)
 retains the earlier source and pack that reproduced the startup timeout. Its 97
 Vitest checks and 22 package checks, including the corrected explicit package-path
 invocation, remain historical evidence.
 
-The [a6167ce3a proof](../../packages/paperclip-runner/test-fixtures/pi-acp/offline-provider-pack-proof.darwin-arm64.a6167ce3a.json)
-and [58511d79d proof](../../packages/paperclip-runner/test-fixtures/pi-acp/offline-provider-pack-proof.darwin-arm64.58511d79d.json)
+The [a6167ce3a proof](../../packages/wardmote-runner/test-fixtures/pi-acp/offline-provider-pack-proof.darwin-arm64.a6167ce3a.json)
+and [58511d79d proof](../../packages/wardmote-runner/test-fixtures/pi-acp/offline-provider-pack-proof.darwin-arm64.58511d79d.json)
 remain historical observations. The 128 targeted checks, 31 installation checks
 and 17 package checks remain pinned to `58511d79d`; the full Runner suite
 (2,202 passed, 11 skipped) and 13 native-provider Rust tests remain pinned to
 `2e65b64d5`. They are not relabeled as checks of the latest source.
 
-The [pre-launch-boundary proof](../../packages/paperclip-runner/test-fixtures/pi-acp/offline-provider-pack-proof.2e65b64d5.darwin-arm64.json)
+The [pre-launch-boundary proof](../../packages/wardmote-runner/test-fixtures/pi-acp/offline-provider-pack-proof.2e65b64d5.darwin-arm64.json)
 retains source `2e65b64d5a2148583109b8157d6e72f54f5ad29b` and manifest
 `sha256:7300b9c449c02b61d2f93ef765f371c277e39a58d04739c6c24dcf7939500701`,
 including the full runner suite and native-provider Rust results. It predates the
 final runner environment allowlist and direct candidate-admission fixes.
 
-The [pre-policy proof](../../packages/paperclip-runner/test-fixtures/pi-acp/offline-provider-pack-proof.d039e1b7b.darwin-arm64.json)
+The [pre-policy proof](../../packages/wardmote-runner/test-fixtures/pi-acp/offline-provider-pack-proof.d039e1b7b.darwin-arm64.json)
 retains source `d039e1b7b072862b4c326ba7194dc42617fa5984` and manifest
 `sha256:5a47fc67b886c1e05d0f630ed89c1b9f5324610b649d1db020a3e036e36fc85d`,
 including its cleanup-timeout retry history. It predates the Node engine metadata
 and corresponding manifest/closure identities.
 
-The [previous integrated proof](../../packages/paperclip-runner/test-fixtures/pi-acp/offline-provider-pack-proof.f58cfa1cb.darwin-arm64.json)
+The [previous integrated proof](../../packages/wardmote-runner/test-fixtures/pi-acp/offline-provider-pack-proof.f58cfa1cb.darwin-arm64.json)
 retains source `f58cfa1cbf4503b93a0be4480f51b492d8203b7c` and manifest
 `sha256:3de76fb7d3902d29285e3da51e36d2ba4654c29bab0c867a6209fadea77c2181`.
 It covers the retry-status repair before the HTTPS and shared runtime fixes.
-The [earlier integrated proof](../../packages/paperclip-runner/test-fixtures/pi-acp/offline-provider-pack-proof.1e0d11c48.darwin-arm64.json)
+The [earlier integrated proof](../../packages/wardmote-runner/test-fixtures/pi-acp/offline-provider-pack-proof.1e0d11c48.darwin-arm64.json)
 retains source `1e0d11c482f8ef50b6afc1430cb736579114b266` and manifest
 `sha256:f859e30e51326ff875d616e2bb3fd4c0246ce1f58a5988968b91bae176a68281`
 with its narrower capability assertions. These files are historical evidence,
@@ -851,9 +851,9 @@ every field in Pi's native event stream. These are explicit follow-ups:
   metadata and redaction. Extend field-by-field wrapper/canonical/browser parity
   without giving notices terminal authority or treating deterministic tests as
   paid qualification. See the [wrapper patch](https://github.com/paperclipai/paperclip/blob/41503eb38f03c436b1569f9f0204625bb4d58782/patches/pi-acp%400.0.33.patch#L381),
-  [notice adapter](https://github.com/paperclipai/paperclip/blob/41503eb38f03c436b1569f9f0204625bb4d58782/packages/paperclip-runner/src/drivers/acpx/pi-extension-adapter.ts#L22),
-  [package regressions](https://github.com/paperclipai/paperclip/blob/41503eb38f03c436b1569f9f0204625bb4d58782/packages/paperclip-runner/test/pi-acp-package-contract.test.mjs#L225),
-  [adapter regressions](https://github.com/paperclipai/paperclip/blob/41503eb38f03c436b1569f9f0204625bb4d58782/packages/paperclip-runner/src/drivers/acpx/pi-extension-adapter.test.ts#L5),
+  [notice adapter](https://github.com/paperclipai/paperclip/blob/41503eb38f03c436b1569f9f0204625bb4d58782/packages/wardmote-runner/src/drivers/acpx/pi-extension-adapter.ts#L22),
+  [package regressions](https://github.com/paperclipai/paperclip/blob/41503eb38f03c436b1569f9f0204625bb4d58782/packages/wardmote-runner/test/pi-acp-package-contract.test.mjs#L225),
+  [adapter regressions](https://github.com/paperclipai/paperclip/blob/41503eb38f03c436b1569f9f0204625bb4d58782/packages/wardmote-runner/src/drivers/acpx/pi-extension-adapter.test.ts#L5),
   and [UI details](https://github.com/paperclipai/paperclip/blob/41503eb38f03c436b1569f9f0204625bb4d58782/ui/src/components/task-chat/TaskChatProtocolActivityRow.tsx#L283).
 - **P1 — native queue state.** `queue_update` contains steering and follow-up queues. Extension calls
   acknowledge RPC acceptance, but the wrapper does not project that event into
@@ -884,7 +884,7 @@ every field in Pi's native event stream. These are explicit follow-ups:
 
 ## Authenticated local qualification progress
 
-The [v5 native controls proof](../../packages/paperclip-runner/test-fixtures/pi-acp/native-controls-proof.v5.darwin-arm64.json)
+The [v5 native controls proof](../../packages/wardmote-runner/test-fixtures/pi-acp/native-controls-proof.v5.darwin-arm64.json)
 passes the unchanged probe on frozen `aec26ad83` / pack `cf7d0998…` in 19.199 seconds.
 The original write invocation `pi-849b369266c920633abffa988509e4ba61fcdf464f62c73900fd5ddd6d477402`
 correlates with the denied failed-tool update. The decision is fsynced before either control request; both control
@@ -900,7 +900,7 @@ controls and denial on the patched profile; it does not qualify Product recovery
 or remote execution.
 
 
-The [v4 native controls proof](../../packages/paperclip-runner/test-fixtures/pi-acp/native-controls-proof.v4.darwin-arm64.json)
+The [v4 native controls proof](../../packages/wardmote-runner/test-fixtures/pi-acp/native-controls-proof.v4.darwin-arm64.json)
 passes on frozen `f556110d5` / pack `4df7e9fa…`: one native write request uses the
 same normalized invocation ID in its persisted decision and failed tool update;
 the original deny option is written only after both control acknowledgements.
@@ -917,7 +917,7 @@ Undici 7.29.0. Profile v5 fixes both copies as described above. The separately a
 control proof uses that repaired closure; no further paid case is authorized.
 This paid v4 proof remains bound to its original bytes.
 
-The first [v4 plan attempt](../../packages/paperclip-runner/test-fixtures/pi-acp/product-plan-infrastructure-failure.v4.darwin-arm64.json)
+The first [v4 plan attempt](../../packages/wardmote-runner/test-fixtures/pi-acp/product-plan-infrastructure-failure.v4.darwin-arm64.json)
 failed before provider startup: embedded PostgreSQL could not initialize the
 Product fixture. Canonical classification is `transient_infrastructure`, with
 zero provider prompts and two unchanged post-attempt key-billing observations.
@@ -934,7 +934,7 @@ whose recorded creator PID was present. Startup and graceful shutdown now pass;
 the current checkpoint above supersedes this historical qualification hold.
 
 
-The [sanitized attempt ledger](../../packages/paperclip-runner/test-fixtures/pi-acp/paid-qualification-progress.darwin-arm64.json)
+The [sanitized attempt ledger](../../packages/wardmote-runner/test-fixtures/pi-acp/paid-qualification-progress.darwin-arm64.json)
 retains all twenty attempts, including eight failures before a model prompt. One
 Runner protocol turn reached the exact model and successfully called `get_task_context`, `get_task_history`,
 `list_documents`, and `read_document`. The canonical case permits those extra
@@ -990,7 +990,7 @@ regression failed before repair; 45 live-session tests and three focused follow-
 checks passed, with source typecheck. This is a confirmed protocol defect, but
 its causal contribution to the earlier model timeout is not proven.
 
-The [startup diagnostic](../../packages/paperclip-runner/test-fixtures/pi-acp/startup-diagnostic.darwin-arm64.json)
+The [startup diagnostic](../../packages/wardmote-runner/test-fixtures/pi-acp/startup-diagnostic.darwin-arm64.json)
 reproduces that failure without credentials through the deployed Runner transport.
 Its `run.prepare` command completes, while `session.open` remains pending at the
 unchanged 30-second deadline. Separately timing the same 13,827-file, 234 MB
@@ -1021,7 +1021,7 @@ retained. This result proves startup admission, not a completed Product journey.
 The explicit retry adds an idle-sleep assertion and a wall-clock supervisor bound
 without changing the provider timeout, canonical oracle or evidence scanner.
 
-The explicit [hello06 Product proof](../../packages/paperclip-runner/test-fixtures/pi-acp/product-hello-proof.darwin-arm64.json)
+The explicit [hello06 Product proof](../../packages/wardmote-runner/test-fixtures/pi-acp/product-hello-proof.darwin-arm64.json)
 passes all six canonical matchers, including the exact response once, task `done`,
 run `succeeded`, native runtime and local environment. Pi executes
 `mcp__paperclip__paperclip_finish`, then reports a completed turn and succeeded run.
@@ -1031,7 +1031,7 @@ The catalog notice estimates $0.00384062; measured key billing is $0.000654767.
 Product correctly marks dollar coverage `unpriced` and incomplete. These values
 are not interchangeable.
 
-The separate [authenticated model-selection proof](../../packages/paperclip-runner/test-fixtures/pi-acp/model-admission-proof.darwin-arm64.json)
+The separate [authenticated model-selection proof](../../packages/wardmote-runner/test-fixtures/pi-acp/model-admission-proof.darwin-arm64.json)
 sends no prompt and measures zero key billing delta. It reads the actual ACP
 model response, selects the declared model, and observes
 `openrouter/deepseek/deepseek-v4-flash-0731` after Pi's native RPC state refresh.
@@ -1047,10 +1047,10 @@ reports and fixtures; an execution-source change requires a fresh build.
 
 | Execution source path | Git tree at `dd78df1e` |
 | --- | --- |
-| `packages/paperclip-runner/src` | `a8123cb4396c77ce0127d5ccf49d3584b63a9a58` |
-| `packages/paperclip-runner/scripts` | `9ede97769bb3f2bbfa8e02be220b5ce06e438a99` |
-| `packages/paperclip-runner/runner` | `2cc84e150aecbd5faf2c8bcecc4b6352c24dbca8` |
-| `packages/paperclip-runner/protocol` | `1d50458fb572d0c75f9a398f419209c52c23ba6f` |
+| `packages/wardmote-runner/src` | `a8123cb4396c77ce0127d5ccf49d3584b63a9a58` |
+| `packages/wardmote-runner/scripts` | `9ede97769bb3f2bbfa8e02be220b5ce06e438a99` |
+| `packages/wardmote-runner/runner` | `2cc84e150aecbd5faf2c8bcecc4b6352c24dbca8` |
+| `packages/wardmote-runner/protocol` | `1d50458fb572d0c75f9a398f419209c52c23ba6f` |
 | `patches` | `1e2f846b8b2dda202b79ee83baeb0860a3b9ab64` |
 | `server/src` | `b267adc1e0ad36955b68314829cfd4256ab88d37` |
 | `tests/runner-e2e` | `5ff4b8a85a14e3e005e3e240c145899c0bc742b5` |
@@ -1088,19 +1088,19 @@ fresh paid qualification before those behaviors can be claimed for its bytes;
 the new immutable-pack checks above pass.
 
 
-The [restrictive-denial proof](../../packages/paperclip-runner/test-fixtures/pi-acp/native-denial-proof.darwin-arm64.json)
+The [restrictive-denial proof](../../packages/wardmote-runner/test-fixtures/pi-acp/native-denial-proof.darwin-arm64.json)
 retains the version 2 real native write rejection: the original offered decision
 was durably recorded before responding, the matching tool failed, the prompt
 settled, and an independent filesystem check found no forbidden marker. This is
 direct ACP delivery proof; it does not exercise PRP restart replay.
 
-The [file-edit failure](../../packages/paperclip-runner/test-fixtures/pi-acp/product-file-failure.darwin-arm64.json)
+The [file-edit failure](../../packages/wardmote-runner/test-fixtures/pi-acp/product-file-failure.darwin-arm64.json)
 retains the candidate timeout, five generic finish errors, missing file oracle,
 unknown terminal usage and successful process cleanup. These failures are kept
 alongside the version 3 corrections rather than overwritten by a future retry.
 ## Version 3 live evidence
 
-The [file delivery proof](../../packages/paperclip-runner/test-fixtures/pi-acp/product-file-proof.darwin-arm64.json)
+The [file delivery proof](../../packages/wardmote-runner/test-fixtures/pi-acp/product-file-proof.darwin-arm64.json)
 passes all seven canonical matchers. The independent oracle reads the exact
 24-byte workspace file before cleanup. The first finish request fails because a
 workspace-only file is not downloadable; the retained validation message tells
@@ -1109,7 +1109,7 @@ browser shows the download card and Done status. All five Bash results are
 non-null; canonical exit code remains unknown. The case measured $0.003324737.
 No separate raw copy of the workspace file was retained.
 
-The [typed question proof](../../packages/paperclip-runner/test-fixtures/pi-acp/product-question-proof.darwin-arm64.json)
+The [typed question proof](../../packages/wardmote-runner/test-fixtures/pi-acp/product-question-proof.darwin-arm64.json)
 passes all six matchers. The browser submits option ID `cobalt` for question ID
 `verification-word`; the same durable interaction becomes answered and a distinct
 warm continuation completes. The pending form and final answer were visually
@@ -1117,7 +1117,7 @@ inspected. This is continuation without server restart. The waiting run has no
 usage receipt, while the continuation has one; total token coverage remains
 partial. The measured key delta is $0.001413697.
 
-The [plan failure](../../packages/paperclip-runner/test-fixtures/pi-acp/product-plan-failure.darwin-arm64.json)
+The [plan failure](../../packages/wardmote-runner/test-fixtures/pi-acp/product-plan-failure.darwin-arm64.json)
 retains a complete two-step Plan at revision 1 and an unanswered confirmation
 bound to that exact revision. The provider run succeeds and the task remains in
 review. The real browser trace shows `task-chat-plan-preview-fallback` inside a
@@ -1130,7 +1130,7 @@ operation authority. Its negative fixture retains the observed fallback, and the
 positive settled-turn UI regression passes. A fresh daemon and new source-pinned
 live run are still required.
 
-The [native controls proof](../../packages/paperclip-runner/test-fixtures/pi-acp/native-controls-proof.darwin-arm64.json)
+The [native controls proof](../../packages/wardmote-runner/test-fixtures/pi-acp/native-controls-proof.darwin-arm64.json)
 submits one ACP prompt to the actual selected model. While its native write waits
 for permission, both explicit controls acknowledge the same active session. The
 original offered denial ID is persisted and fsynced before the pipe response.
@@ -1145,14 +1145,14 @@ controls on a live process, not durable queue replay after process replacement.
 All four observations use immutable pack `eb31cada…` at source `7710736ca…`,
 with runtime source `06cf356a8…`; they predate the combined provider integration
 `7ab463697…`. Execution tree hashes are retained in the Product proofs. The
-[Linux x64 proof](../../packages/paperclip-runner/test-fixtures/pi-acp/offline-native-proof.linux-x64.v3.json)
+[Linux x64 proof](../../packages/wardmote-runner/test-fixtures/pi-acp/offline-native-proof.linux-x64.v3.json)
 uses profile version 3 at source `06cf356a8…`, image
 `sha256:c5fa7976bba92a186a2f70dc8b8ddc58ab86606b80a819c89bf550d2d057c832`.
 It launches the verified native wrapper, initializes ACP protocol 1 and exits
 cleanly on EOF with network disabled and no credentials or model prompts. This
 proves Linux executable admission; authenticated Daytona behavior remains pending.
 
-The explicit [plan02 follow-up](../../packages/paperclip-runner/test-fixtures/pi-acp/product-plan-resume-failure.darwin-arm64.json)
+The explicit [plan02 follow-up](../../packages/wardmote-runner/test-fixtures/pi-acp/product-plan-resume-failure.darwin-arm64.json)
 uses combined pack `0800f101…` from source `7ab463697…` and fresh daemon
 `955d0714…` from `e35b11db2…`. It passes the repaired Plan presentation boundary
 and accepts the exact revision. The resumed run then fails after 120 seconds.

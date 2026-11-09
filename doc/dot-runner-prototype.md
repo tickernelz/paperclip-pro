@@ -36,7 +36,7 @@ Fresh-worktree preparation (use the repository's pinned pnpm version):
 
 ```sh
 pnpm install --no-frozen-lockfile
-pnpm --filter '@tickernelz/wardmote-server^...' --filter '!@tickernelz/wardmote-paperclip-runner' --filter '!@tickernelz/wardmote-ui' build
+pnpm --filter '@tickernelz/wardmote-server^...' --filter '!@tickernelz/wardmote-runner' --filter '!@tickernelz/wardmote-ui' build
 ```
 
 The local callback uses an injected transport restricted to one fixed synthetic
@@ -204,7 +204,7 @@ and [app review](https://developers.openai.com/plugins/deploy/app-review).
 ## Verification
 
 ```sh
-pnpm --filter @tickernelz/wardmote-paperclip-runner exec vitest run src/drivers/dot/dot-harness-driver.test.ts
+pnpm --filter @tickernelz/wardmote-runner exec vitest run src/drivers/dot/dot-harness-driver.test.ts
 pnpm --filter @tickernelz/wardmote-server exec vitest run src/__tests__/public-mcp.test.ts
 pnpm prototype:dot
 ```

@@ -43,7 +43,7 @@ provider manifest, and remote controller version checks aligned.
 
 ## Build and verify
 
-Run `pnpm --filter @tickernelz/wardmote-paperclip-runner test:opencode:qualification`
+Run `pnpm --filter @tickernelz/wardmote-runner test:opencode:qualification`
 after installing dependencies to exercise the actual pinned OpenCode executable.
 It checks health/version, session creation and retrieval, SSE messages, an async
 prompt, and session deletion against a loopback mock provider. It uses an
@@ -134,7 +134,7 @@ download dependencies when a task starts.
 ## Candidate ACP qualification assets
 
 Provider branches can build their pinned assets with
-`node packages/paperclip-runner/scripts/build-provider-pack.mjs /absolute/pack --candidate-providers=cursor`
+`node packages/wardmote-runner/scripts/build-provider-pack.mjs /absolute/pack --candidate-providers=cursor`
 (or `copilot` or `pi`). The source revision must include the named provider's
 builder. Assets are installed at build time under `provider-assets/<provider>/<platform>-<architecture>`.
 The pack manifest binds each complete asset tree. Runtime admission separately

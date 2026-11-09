@@ -12,8 +12,8 @@ vi.mock("node:fs/promises", async (original) => {
     open: async (...args: Parameters<typeof fs.open>) => { hooks.open?.(String(args[0])); const file = await fs.open(...args); const read = file.read.bind(file); file.read = (async (...readArgs: any[]) => { const result = await (read as any)(...readArgs); hooks.read?.(String(args[0]), result.bytesRead); return result; }) as typeof file.read; return file; },
   };
 });
-vi.mock("../vendor/paperclip-runner/index.js", async () => await import("../../../packages/paperclip-runner/src/drivers/acpx/qualified-profiles.js"));
-import { QUALIFIED_ACPX_PROFILES } from "../../../packages/paperclip-runner/src/drivers/acpx/qualified-profiles.js";
+vi.mock("../vendor/paperclip-runner/index.js", async () => await import("../../../packages/wardmote-runner/src/drivers/acpx/qualified-profiles.js"));
+import { QUALIFIED_ACPX_PROFILES } from "../../../packages/wardmote-runner/src/drivers/acpx/qualified-profiles.js";
 import { createRemotePiCompanionManifest, importRemotePiCompanion, inventoryRemoteCompanion, resolveRemotePiCompanion, selectRemotePiCompanion } from "../services/native-runtime/remote-pi-companion.js";
 const roots: string[] = [];
 afterEach(() => { hooks.mkdir = undefined; hooks.rename = undefined; hooks.open = undefined; hooks.read = undefined; for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true }); vi.restoreAllMocks(); });
@@ -110,7 +110,7 @@ it.each(["new", "existing"])("defers actual SIGTERM on the %s import path and dr
   await build({ entryPoints: [new URL("../services/native-runtime/remote-pi-companion.ts", import.meta.url).pathname], outfile: bundle,
     platform: "node", format: "esm", target: "node24", bundle: true, logLevel: "silent",
     plugins: [{ name: "source-owned-profile-only", setup(builder) {
-      builder.onResolve({ filter: /vendor\/paperclip-runner\/index\.js$/ }, () => ({ path: new URL("../../../packages/paperclip-runner/src/drivers/acpx/qualified-profiles.ts", import.meta.url).pathname }));
+      builder.onResolve({ filter: /vendor\/paperclip-runner\/index\.js$/ }, () => ({ path: new URL("../../../packages/wardmote-runner/src/drivers/acpx/qualified-profiles.ts", import.meta.url).pathname }));
     } }],
   });
   const script = join(f.root, "cancel.mjs");

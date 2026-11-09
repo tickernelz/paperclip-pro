@@ -140,7 +140,7 @@ describe("runner E2E local binary resolution", () => {
     ).toBe(
       path.join(
         "/repository",
-        "packages/paperclip-runner/runner/target/debug/paperclip-runnerd",
+        "packages/wardmote-runner/runner/target/debug/paperclip-runnerd",
       ),
     );
   });
@@ -166,7 +166,7 @@ describe("runner E2E local binary resolution", () => {
     expect(runnerBinary).toBe(
       path.join(
         "/repository",
-        "packages/paperclip-runner/runner/target/debug/paperclip-runnerd",
+        "packages/wardmote-runner/runner/target/debug/paperclip-runnerd",
       ),
     );
     expect(

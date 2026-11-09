@@ -14,7 +14,7 @@ Paperclip repository first. It defines the two families and their boundaries.
 Do not assume the skill's installed location is inside a checkout. Locate the
 repo explicitly with `git rev-parse --show-toplevel` from the current directory,
 or inspect likely workspace roots and select the checkout containing
-`package.json`, `tests/runner-e2e`, and `packages/paperclip-runner`. Locate the
+`package.json`, `tests/runner-e2e`, and `packages/wardmote-runner`. Locate the
 private sibling `paperclip-evals` only when a Runner Eval needs its definitions;
 use an explicit `PAPERCLIP_EVALS_ROOT` or a discovered sibling checkout. Never
 invent a relative path from this copied skill into the repository.
@@ -23,7 +23,7 @@ invent a relative path from this copied skill into the repository.
 
 Choose **Runner Evals** for real runner/provider protocol behavior against the
 mock control plane. Authoritative details are in
-`packages/paperclip-runner/docs/runner-protocol-live-evals.md` and the sibling
+`packages/wardmote-runner/docs/runner-protocol-live-evals.md` and the sibling
 `paperclip-evals/evals/paperclip-runner` definitions.
 
 Choose **Product E2E Evals** for real browser/server/database/runner/provider

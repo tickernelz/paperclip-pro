@@ -150,9 +150,9 @@ protocol fixture from this checkout, then point the suite at their absolute
 paths:
 
 ```sh
-cargo build --manifest-path packages/paperclip-runner/runner/Cargo.toml --bin paperclip-runnerd --bin fake-codex-app-server
-PAPERCLIP_STOP_FAKE_CODEX="$PWD/packages/paperclip-runner/runner/target/debug/fake-codex-app-server" \
-PAPERCLIP_RUNNER_BINARY="$PWD/packages/paperclip-runner/runner/target/debug/paperclip-runnerd" \
+cargo build --manifest-path packages/wardmote-runner/runner/Cargo.toml --bin paperclip-runnerd --bin fake-codex-app-server
+PAPERCLIP_STOP_FAKE_CODEX="$PWD/packages/wardmote-runner/runner/target/debug/fake-codex-app-server" \
+PAPERCLIP_RUNNER_BINARY="$PWD/packages/wardmote-runner/runner/target/debug/paperclip-runnerd" \
 pnpm exec playwright test --config tests/e2e/playwright-composer-stop.config.ts
 ```
 

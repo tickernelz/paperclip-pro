@@ -10,7 +10,7 @@ import {
 } from "./task-protocol-surfaces";
 
 function schema(name: string): Record<string, unknown> {
-  const path = fileURLToPath(new URL(`../../../../packages/paperclip-runner/protocol/schemas/${name}`, import.meta.url));
+  const path = fileURLToPath(new URL(`../../../../packages/wardmote-runner/protocol/schemas/${name}`, import.meta.url));
   return JSON.parse(readFileSync(path, "utf8")) as Record<string, unknown>;
 }
 
