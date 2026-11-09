@@ -9,7 +9,7 @@ import {
   PAPERCLIP_MCP_SERVER_NAME,
   paperclipMcpEndpoint,
   paperclipMcpHttpHeaders,
-} from "./paperclip-mcp.js";
+} from "./wardmote-mcp.js";
 
 export interface PaperclipMcpMount {
   dir: string;

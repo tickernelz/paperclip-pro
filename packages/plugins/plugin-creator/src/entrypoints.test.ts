@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it } from "vitest";
 const tempDirs: string[] = [];
 
 function makeTempDir(): string {
-  const dir = fs.mkdtempSync(path.join(process.cwd(), ".tmp-create-paperclip-plugin-"));
+  const dir = fs.mkdtempSync(path.join(process.cwd(), ".tmp-plugin-creator-"));
   tempDirs.push(dir);
   return dir;
 }
@@ -17,7 +17,7 @@ afterEach(() => {
   }
 });
 
-describe("create-paperclip-plugin entrypoints", () => {
+describe("plugin-creator entrypoints", () => {
   it("keeps src/index.ts import-safe when process.argv points at another bundled CLI", async () => {
     const originalArgv = process.argv;
     const outputRoot = makeTempDir();
@@ -42,7 +42,7 @@ describe("create-paperclip-plugin entrypoints", () => {
     const result = runCli(
       [
         process.execPath,
-        "create-paperclip-plugin",
+        "plugin-creator",
         "demo-plugin",
         "--output",
         outputRoot,

@@ -189,7 +189,7 @@ describeEmbeddedPostgres("environmentCustomImageService", () => {
     });
     await db.insert(plugins).values({
       pluginKey: "paperclip.fake-sandbox-provider",
-      packageName: "paperclip-plugin-fake-sandbox",
+      packageName: "plugin-fake-sandbox",
       version: "0.1.0",
       apiVersion: 1,
       categories: ["automation"],
@@ -848,7 +848,7 @@ describeEmbeddedPostgres("environmentCustomImageService reconciliation", () => {
     });
     await db.insert(plugins).values({
       pluginKey: "paperclip.fake-sandbox-provider",
-      packageName: "paperclip-plugin-fake-sandbox",
+      packageName: "plugin-fake-sandbox",
       version: "0.1.0",
       apiVersion: 1,
       categories: ["automation"],

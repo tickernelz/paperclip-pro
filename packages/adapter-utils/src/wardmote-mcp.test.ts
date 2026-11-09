@@ -6,13 +6,13 @@ import {
   paperclipMcpHttpHeaders,
   paperclipMcpToolsets,
   renderPaperclipMcpConfig,
-} from "./paperclip-mcp.js";
+} from "./wardmote-mcp.js";
 import {
   paperclipMcpHttpTarget,
   renderPaperclipGeminiSettings,
   renderPaperclipGrokConfig,
   renderPaperclipOpenCodeConfig,
-} from "./paperclip-mcp-mount.js";
+} from "./wardmote-mcp-mount.js";
 import {
   paperclipAgentPromptTemplate,
   renderPaperclipWakePrompt,

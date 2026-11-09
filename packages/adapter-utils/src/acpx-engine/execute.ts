@@ -94,8 +94,8 @@ import {
   paperclipAccessMode,
   paperclipMcpToolsets,
   type PaperclipAccessMode,
-} from "@tickernelz/wardmote-adapter-utils/paperclip-mcp";
-import { paperclipMcpHttpTarget } from "@tickernelz/wardmote-adapter-utils/paperclip-mcp-mount";
+} from "@tickernelz/wardmote-adapter-utils/wardmote-mcp";
+import { paperclipMcpHttpTarget } from "@tickernelz/wardmote-adapter-utils/wardmote-mcp-mount";
 import { shellQuote } from "@tickernelz/wardmote-adapter-utils/ssh";
 import { runToolProfile, type RunToolProfile } from "@tickernelz/wardmote-adapter-utils/tool-profile";
 import { createEphemeralSessionEnvironmentStore } from "./ephemeral-session-environment.js";
