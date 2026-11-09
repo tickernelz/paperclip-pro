@@ -1,6 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { skillSourcesApi } from './skillSources';
-import { tenantSessionRecovery } from '@/lib/tenant-session-recovery';
 import type { SkillSourceDiscovery, SkillSourceDiscoveryEvent } from '@tickernelz/wardmote-shared';
 
 const input = { repositoryUrl: 'https://github.com/acme/skills' };
@@ -39,11 +38,9 @@ describe('live skill source discovery', () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response([candidate, { type: 'error', error: 'Reconnect GitHub', status: 403 }])));
     await expect(skillSourcesApi.discoverStream('company-1', input, vi.fn())).rejects.toMatchObject({ message: 'Reconnect GitHub', status: 403 });
   });
-  it('preserves normal HTTP authorization and session recovery handling', async () => {
-    const recover = vi.spyOn(tenantSessionRecovery, 'recoverIfNeeded').mockReturnValue(null);
+  it('preserves normal HTTP authorization handling', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(Response.json({ error: 'Company access denied' }, { status: 403 })));
     await expect(skillSourcesApi.discoverStream('company-2', input, vi.fn())).rejects.toMatchObject({ status: 403, message: 'Company access denied' });
-    expect(recover).toHaveBeenCalledWith(403, { error: 'Company access denied' });
   });
   it('passes cancellation to fetch and stops consuming events once aborted', async () => {
     const controller = new AbortController();

@@ -36,16 +36,6 @@ const SELF_HOSTED_HEALTH = {
   bootstrapInviteActive: false,
 };
 
-const CLOUD_HEALTH = {
-  ...SELF_HOSTED_HEALTH,
-  cloud: {
-    managed: true as const,
-    managedBy: "paperclip-cloud" as const,
-    stackSlug: "acme",
-    cloudBaseUrl: "https://cloud.example.test",
-  },
-};
-
 describe("InstanceGeneralSettings sign-out", () => {
   let container: HTMLDivElement;
   let root: Root | null;
@@ -79,7 +69,7 @@ describe("InstanceGeneralSettings sign-out", () => {
     vi.clearAllMocks();
   });
 
-  async function renderPage(health: typeof SELF_HOSTED_HEALTH | typeof CLOUD_HEALTH) {
+  async function renderPage(health: typeof SELF_HOSTED_HEALTH) {
     mockHealthApi.get.mockResolvedValue(health);
     queryClient.setQueryData(queryKeys.health, health);
     root = createRoot(container);
@@ -98,16 +88,6 @@ describe("InstanceGeneralSettings sign-out", () => {
     return Array.from(container.querySelectorAll("button"))
       .find((button) => button.textContent?.trim() === "Sign out");
   }
-
-  it("uses the Cloud-managed top-level logout without calling local auth", async () => {
-    await renderPage(CLOUD_HEALTH);
-
-    flushSync(() => signOutButton()?.click());
-
-    await vi.waitFor(() => expect(mockNavigateTopLevel).toHaveBeenCalledOnce());
-    expect(mockNavigateTopLevel).toHaveBeenCalledWith("/cloud/logout");
-    expect(mockAuthApi.signOut).not.toHaveBeenCalled();
-  });
 
   it("keeps authenticated self-hosted sign-out local and drops the account caches", async () => {
     const invalidateQueries = vi.spyOn(queryClient, "invalidateQueries");

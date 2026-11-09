@@ -40,7 +40,6 @@
     "server/src/__tests__/cases-routes.test.ts": 4563,
     "server/src/__tests__/ceo-owner-access-routes.test.ts": 1288,
     "server/src/__tests__/cli-auth-routes.test.ts": 23112,
-    "server/src/__tests__/cloud-routes.test.ts": 92,
     "server/src/__tests__/companies-route-cross-company-authz.test.ts": 17371,
     "server/src/__tests__/companies-route-path-guard.test.ts": 34,
     "server/src/__tests__/company-branding-route.test.ts": 10784,

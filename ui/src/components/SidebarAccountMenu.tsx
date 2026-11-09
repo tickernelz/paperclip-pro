@@ -12,8 +12,6 @@ import { hidesCompanyPage, type DeploymentMode } from "@tickernelz/wardmote-shar
 import { Link } from "@/lib/router";
 import { authApi } from "@/api/auth";
 import { queryKeys } from "@/lib/queryKeys";
-import { useCloudInstance } from "@/hooks/useCloudInstance";
-import { useCloudInviteUrl } from "@/hooks/useCloudInviteUrl";
 import { useCanInviteCompanyMembers } from "@/hooks/useCompanyInviteAccess";
 import { useHiddenSettings } from "@/hooks/useHiddenSettings";
 import { useSignOut } from "@/hooks/useSignOut";
@@ -47,12 +45,6 @@ interface MenuActionProps {
   href?: string;
   /** Opens `href` in a new tab (docs and other off-product links). */
   external?: boolean;
-  /**
-   * Leaves the app in the current tab with a full navigation. Cloud links
-   * must use this: the cloud harness shadows those paths on tenant hosts, so
-   * the in-app router can never reach them.
-   */
-  topLevel?: boolean;
 }
 
 function deriveInitials(name: string) {
@@ -69,7 +61,6 @@ function MenuAction({
   onClick,
   href,
   external = false,
-  topLevel = false,
 }: MenuActionProps) {
   const className =
     "flex h-(--profile-popover-row-height) w-full items-center gap-(--profile-popover-row-gap) rounded-lg px-2.5 text-left text-(length:--text-compact) font-medium leading-(--profile-popover-label-line-height) text-ink transition-colors hover:bg-bg-3";
@@ -87,14 +78,6 @@ function MenuAction({
     if (external) {
       return (
         <a href={href} target="_blank" rel="noreferrer" className={className} onClick={onClick}>
-          {content}
-        </a>
-      );
-    }
-
-    if (topLevel) {
-      return (
-        <a href={href} className={className} onClick={onClick}>
           {content}
         </a>
       );
@@ -120,21 +103,15 @@ export function SidebarAccountMenu({
   onOpenChange,
   forceExpanded = false,
 }: SidebarAccountMenuProps) {
-  const cloud = useCloudInstance();
-  const isCloud = Boolean(cloud);
   // Invites live on the Members page (or in Cloud's People settings). Hide the
   // shortcut when the hosting operator hides either surface, and until the
   // health response resolves so a hidden surface never flashes.
   const { hidden: hiddenSettings, loaded: hiddenSettingsLoaded } = useHiddenSettings();
-  // On Cloud the shortcut exists only for the current stack's owner/admin and
-  // only once the stack metadata is known; the in-app Invites tab is never a
-  // fallback there because it drives a different invitation flow.
-  const cloudInviteUrl = useCloudInviteUrl();
   // Self-hosted invites need the `users:invite` grant. Offer the shortcut only
   // to boards with role-default access (company owner/admin/operator,
   // instance admins, local boards). The server checks the actual grants.
-  const canInviteMembers = useCanInviteCompanyMembers(!isCloud);
-  const inviteHref = isCloud ? cloudInviteUrl : canInviteMembers ? INVITES_PATH : null;
+  const canInviteMembers = useCanInviteCompanyMembers();
+  const inviteHref = canInviteMembers ? INVITES_PATH : null;
   const showInvite =
     hiddenSettingsLoaded &&
     inviteHref !== null &&
@@ -241,7 +218,6 @@ export function SidebarAccountMenu({
                   label="Invite"
                   icon={UserPlus}
                   href={inviteHref}
-                  topLevel={isCloud}
                   onClick={closeNavigationChrome}
                 />
               ) : null}
@@ -276,7 +252,7 @@ export function SidebarAccountMenu({
             </div>
           </PopoverContent>
         </Popover>
-        {!rail && !isCloud ? (
+        {!rail ? (
           <Tooltip>
             <TooltipTrigger asChild>
               <a

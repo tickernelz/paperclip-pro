@@ -5,7 +5,6 @@ import { TaskBrowserFooter } from "@/components/task-side-panel/TaskBrowserFoote
 import { TaskBrowserActivity } from "@/components/task-side-panel/TaskBrowserActivity";
 import type { TaskBrowser } from "@tickernelz/wardmote-shared";
 import { DispositionRecoveryNotice } from "../components/DispositionRecoveryNotice";
-import { CloudSignIn } from "../components/CloudSignIn";
 import { CloudAccessError } from "../components/CloudAccessGate";
 import { SetupPrompt } from "./apps/chat/SetupPrompt";
 import { MediaArtifactCard } from "@/components/artifacts/MediaArtifactCard";
@@ -2293,10 +2292,6 @@ export function DesignGuide() {
           recovery. Recovery decisions and attempts belong in the run log;
           there is no execution status card or reconciliation form.
         </p>
-      </Section>
-
-      <Section title="Cloud sign-in unavailable">
-        <CloudSignIn cloud={{ managed: true, managedBy: "paperclip-cloud", cloudBaseUrl: null, stackSlug: null }} returnTo="/" />
       </Section>
 
       <Section title="Saved provider API keys">

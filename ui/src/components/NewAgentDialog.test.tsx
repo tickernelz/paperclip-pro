@@ -135,26 +135,6 @@ it.each([false, undefined])(
   },
 );
 
-it.each([true, false, undefined])("gates the Cloud native runner on explicit enablement (%s)", async (enableNativeRunner) => {
-  await act(async () => {
-    cache.setQueryData(queryKeys.instance.experimentalSettings, { enableNativeRunner });
-    cache.setQueryData(queryKeys.health, {
-      status: "ok",
-      cloud: { managed: true },
-    });
-    cache.setQueryData(
-      queryKeys.adapters.all,
-      ["omp_local", "claude_local", "codex_local", "paperclip_runner"].map((type) => ({ type, loaded: true })),
-    );
-  });
-  await name();
-  expect(
-    [...document.querySelectorAll<HTMLInputElement>('input[type="radio"]')].map(
-      (input) => input.value,
-    ),
-  ).toEqual(enableNativeRunner ? ["paperclip_runner"] : []);
-});
-
 it("moves Dot out of the harness picker into experimental external invitations", async () => {
   await act(async () => cache.setQueryData(queryKeys.instance.experimentalSettings, { enableNativeRunner: false, enableOpenAiDot: true, enablePublicMcp: true }));
   await name();
@@ -255,10 +235,9 @@ it("waits for company approval before issuing a Dot capability", async () => {
   expect(dotApi.pair).not.toHaveBeenCalled();
 });
 
-it("allows the scoped Dot invitation on cloud when its prerequisites are enabled", async () => {
+it("allows the scoped Dot invitation when its prerequisites are enabled", async () => {
   await act(async () => {
     cache.setQueryData(queryKeys.instance.experimentalSettings, { enableOpenAiDot: true, enablePublicMcp: true });
-    cache.setQueryData(queryKeys.health, { status: "ok", cloud: { managed: true } });
   });
   await click("Invite an external agent");
   const dot = [...document.querySelectorAll("button")].find(b => b.textContent?.startsWith("Dot"))!;

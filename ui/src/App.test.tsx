@@ -21,11 +21,6 @@ const mockAccessApi = vi.hoisted(() => ({
   getCurrentBoardAccess: vi.fn(),
   claimBootstrapAdmin: vi.fn(),
 }));
-const beginCloudSignInMock = vi.hoisted(() => vi.fn());
-vi.mock("@/lib/cloud-sign-in", () => ({
-  beginCloudSignIn: (url: string) => beginCloudSignInMock(url),
-  clearCloudSignInAttempt: vi.fn(),
-}));
 
 vi.mock("./api/health", () => ({
   healthApi: mockHealthApi,
@@ -106,18 +101,6 @@ describe("CloudAccessGate", () => {
     vi.clearAllMocks();
   });
 
-  it("renews a missing Cloud instance session without opening local auth", async () => {
-    mockHealthApi.get.mockResolvedValue({ deploymentMode: "authenticated", cloud: { managed: true, managedBy: "paperclip-cloud", cloudBaseUrl: "https://my-staging.paperclip.app", stackSlug: "team" } });
-    mockAuthApi.getSession.mockResolvedValue(null);
-    beginCloudSignInMock.mockReturnValue(true);
-    const root = renderGate(container);
-    await vi.waitFor(() => expect(beginCloudSignInMock).toHaveBeenCalledTimes(1));
-    expect(beginCloudSignInMock).toHaveBeenCalledWith("https://my-staging.paperclip.app/v1/stacks/team/entry-redirect?returnTo=%2Finstance%2Fsettings%2Fgeneral");
-    expect(container.textContent).not.toContain("Navigate:/auth");
-    expect(container.textContent).not.toContain("Outlet content");
-    unmountRoot(root);
-  });
-
   it("does not mistake a session service failure for a signed-out user", async () => {
     mockAuthApi.getSession.mockRejectedValue(new Error("Session service unavailable"));
     const root = renderGate(container);
@@ -125,21 +108,6 @@ describe("CloudAccessGate", () => {
     expect(container.querySelector("button")?.textContent).toBe("Try again");
     expect(container.textContent).not.toContain("Outlet content");
     expect(container.textContent).not.toContain("Navigate:/auth");
-    expect(beginCloudSignInMock).not.toHaveBeenCalled();
-    unmountRoot(root);
-  });
-
-  it.each([undefined, { managed: true, managedBy: "paperclip-cloud", cloudBaseUrl: "https://my.paperclip.app", stackSlug: "team" }])(
-    "does not require a session in local trusted mode, including with Cloud metadata %j", async (cloud) => {
-    mockHealthApi.get.mockResolvedValue({ deploymentMode: "local_trusted", cloud });
-    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-    await client.fetchQuery({
-      queryKey: queryKeys.auth.session,
-      queryFn: () => Promise.reject(new Error("Session service unavailable")),
-    }).catch(() => {});
-    const root = renderGate(container, false, client);
-    await waitForText(container, "Outlet content");
-    expect(beginCloudSignInMock).not.toHaveBeenCalled();
     unmountRoot(root);
   });
 
@@ -182,7 +150,7 @@ describe("CloudAccessGate", () => {
     unmountRoot(root);
   });
 
-  it("still blocks invitation pages while cloud bootstrap is pending", async () => {
+  it("still blocks invitation pages while bootstrap is pending", async () => {
     mockHealthApi.get.mockResolvedValue({ deploymentMode: "authenticated", deploymentExposure: "public", bootstrapStatus: "bootstrap_pending" });
     mockAuthApi.getSession.mockResolvedValue({ user: { id: "invitee" } });
     const root = renderGate(container, true);
@@ -191,7 +159,7 @@ describe("CloudAccessGate", () => {
     unmountRoot(root);
   });
 
-  it("keeps invitation pages closed when cloud access checks fail", async () => {
+  it("keeps invitation pages closed when access checks fail", async () => {
     mockAuthApi.getSession.mockResolvedValue({ user: { id: "invitee" } });
     mockAccessApi.getCurrentBoardAccess.mockRejectedValueOnce(new Error("Access check unavailable"));
     const root = renderGate(container, true);

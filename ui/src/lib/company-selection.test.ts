@@ -94,14 +94,12 @@ describe("resolveCompanyArchiveDeparture", () => {
   const justArchived = { id: "old", name: "Old Co", issuePrefix: "OLD", status: "archived" };
   const active = { id: "pap", name: "Wardmote", issuePrefix: "PAP", status: "active" };
   const alsoArchived = { id: "ret", name: "Retail", issuePrefix: "RET", status: "archived" };
-  const portfolioUrl = "https://my.paperclip.app/orgs?manage=1";
 
-  it("switches to another active company when one exists, even on cloud", () => {
+  it("switches to another active company when one exists", () => {
     expect(
       resolveCompanyArchiveDeparture({
         archivedCompanyId: "old",
         companies: [justArchived, alsoArchived, active],
-        cloudPortfolioUrl: portfolioUrl,
       }),
     ).toEqual({ kind: "company", company: active });
   });
@@ -113,27 +111,15 @@ describe("resolveCompanyArchiveDeparture", () => {
       resolveCompanyArchiveDeparture({
         archivedCompanyId: "old",
         companies: [{ ...justArchived, status: "active" }],
-        cloudPortfolioUrl: null,
       }),
     ).toEqual({ kind: "companies_list" });
   });
 
-  it("leaves for the Cloud portfolio when no active company remains", () => {
-    expect(
-      resolveCompanyArchiveDeparture({
-        archivedCompanyId: "old",
-        companies: [justArchived, alsoArchived],
-        cloudPortfolioUrl: portfolioUrl,
-      }),
-    ).toEqual({ kind: "cloud_portfolio", url: portfolioUrl });
-  });
-
-  it("falls back to the companies list on self-hosted instances", () => {
+  it("falls back to the companies list when no active company remains", () => {
     expect(
       resolveCompanyArchiveDeparture({
         archivedCompanyId: "old",
         companies: [justArchived],
-        cloudPortfolioUrl: null,
       }),
     ).toEqual({ kind: "companies_list" });
   });

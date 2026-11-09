@@ -1,6 +1,5 @@
 import type { EffectiveAttachmentLimit, ServerInfoSnapshot } from "@tickernelz/wardmote-shared";
 import { setAttachmentLimit } from "@/lib/attachment-limit";
-import { tenantSessionRecovery } from "@/lib/tenant-session-recovery";
 import { ApiError } from "./client";
 import { ApiUnavailableError, readApiJson } from "./response";
 
@@ -16,14 +15,6 @@ export type DevServerHealthStatus = {
   activeRunCount: number;
   waitingForIdle: boolean;
   lastRestartAt: string | null;
-};
-
-export type CloudInstanceHealthStatus = {
-  managed: true;
-  managedBy: "paperclip-cloud";
-  stackSlug: string | null;
-  stackDisplayName?: string;
-  cloudBaseUrl: string | null;
 };
 
 export type HealthStatus = {
@@ -42,7 +33,6 @@ export type HealthStatus = {
   };
   serverInfo?: ServerInfoSnapshot;
   devServer?: DevServerHealthStatus;
-  cloud?: CloudInstanceHealthStatus;
   /**
    * Settings surfaces hidden by the hosting operator (keys from the shared
    * settings-visibility registry). Absent when nothing is hidden.
@@ -60,8 +50,6 @@ export const healthApi = {
     });
     const payload = await readApiJson<HealthStatus & { error?: string } | null>(res);
     if (!res.ok) {
-      const recovery = tenantSessionRecovery.recoverIfNeeded(res.status, payload);
-      if (recovery) return recovery;
       throw new ApiError(payload?.error ?? `Failed to load health (${res.status})`, res.status, payload);
     }
     // Startup recovery can still serve sign-in and deployment metadata.
@@ -77,8 +65,6 @@ export const healthApi = {
     });
     if (!res.ok) {
       const payload = await res.json().catch(() => null) as { error?: string } | null;
-      const recovery = tenantSessionRecovery.recoverIfNeeded(res.status, payload);
-      if (recovery) return recovery;
       throw new Error(payload?.error ?? `Failed to request restart (${res.status})`);
     }
   },

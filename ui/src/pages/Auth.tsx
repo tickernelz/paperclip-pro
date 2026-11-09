@@ -3,9 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useSearchParams } from "@/lib/router";
 import { authApi } from "../api/auth";
 import { healthApi } from "../api/health";
-import { CloudSignIn } from "@/components/CloudSignIn";
-import { clearCloudSignInAttempt } from "@/lib/cloud-sign-in";
-import { tenantSignInReturnPath } from "@/lib/cloudLinks";
+import { signInReturnPath } from "@/lib/sign-in-return-path";
 import { queryKeys } from "../lib/queryKeys";
 import { getRememberedInvitePath } from "../lib/invite-memory";
 import { Button } from "@/components/ui/button";
@@ -28,7 +26,7 @@ export function AuthPage() {
   const errorId = "auth-error";
 
   const nextPath = useMemo(
-    () => tenantSignInReturnPath(searchParams.get("next") || getRememberedInvitePath() || "/"),
+    () => signInReturnPath(searchParams.get("next") || getRememberedInvitePath() || "/"),
     [searchParams],
   );
   const healthQuery = useQuery({
@@ -44,7 +42,6 @@ export function AuthPage() {
 
   useEffect(() => {
     if (session) {
-      clearCloudSignInAttempt();
       navigate(nextPath, { replace: true });
     }
   }, [session, navigate, nextPath]);
@@ -93,10 +90,6 @@ export function AuthPage() {
   // A health/session failure must not be mistaken for a self-hosted instance.
   if (healthQuery.error || sessionError) {
     return <p role="alert" className="p-6 text-sm text-bad">Unable to check sign-in. Refresh and try again.</p>;
-  }
-
-  if (healthQuery.data?.cloud) {
-    return <CloudSignIn cloud={healthQuery.data.cloud} returnTo={nextPath} />;
   }
 
   return (

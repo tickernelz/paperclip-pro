@@ -86,17 +86,7 @@ vi.mock("./InstanceGeneralSettings", () => ({
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 (globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
 
-const CLOUD_HEALTH = {
-  status: "ok" as const,
-  cloud: {
-    managed: true as const,
-    managedBy: "paperclip-cloud" as const,
-    stackSlug: "acme-labs",
-    cloudBaseUrl: "https://cloud.example.test",
-  },
-};
-
-const SELF_HOSTED_HEALTH = { status: "ok" as const, cloud: null };
+const SELF_HOSTED_HEALTH = { status: "ok" as const };
 
 let observedPath = "";
 
@@ -147,8 +137,6 @@ describe("CompanySettings archive departure", () => {
     const queryClient = new QueryClient({
       defaultOptions: { queries: { retry: false } },
     });
-    // CloudAccessGate owns the health fetch in the app; seeding the cache is
-    // how useCloudInstance sees a managed instance under test.
     queryClient.setQueryData(queryKeys.health, health);
     const root = createRoot(container);
     flushSync(() => {
@@ -192,23 +180,6 @@ describe("CompanySettings archive departure", () => {
         }),
       );
       expect(mockNavigateTopLevel).not.toHaveBeenCalled();
-    });
-    flushSync(() => root.unmount());
-  });
-
-  it("leaves for the Cloud portfolio's manage view when no active company remains", async () => {
-    companyState.companies = [ARCHIVING_COMPANY];
-    const root = render(CLOUD_HEALTH);
-    clickArchive();
-
-    await waitForAssertion(() => {
-      expect(mockNavigateTopLevel).toHaveBeenCalledWith(
-        "https://cloud.example.test/orgs?manage=1",
-      );
-      // A full navigation replaces the document: no in-app route change and
-      // no company switch.
-      expect(observedPath).toBe("/OLD/company/settings");
-      expect(mockSetSelectedCompanyId).not.toHaveBeenCalled();
     });
     flushSync(() => root.unmount());
   });

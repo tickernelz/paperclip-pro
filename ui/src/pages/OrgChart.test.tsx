@@ -288,11 +288,4 @@ describe("OrgChart mobile gestures", () => {
     expect(container.textContent).toContain("Export organization");
   });
 
-  it("hides the Import button but keeps Export on a Cloud-managed instance", async () => {
-    queryClient.setQueryData(queryKeys.health, { status: "ok", cloud: { managed: true } });
-    await renderOrgChart();
-
-    expect(container.textContent).not.toContain("Import organization");
-    expect(container.textContent).toContain("Export organization");
-  });
 });

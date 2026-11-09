@@ -57,16 +57,6 @@ async function flushReact() {
   await new Promise((resolve) => window.setTimeout(resolve, 0));
 }
 
-const CLOUD_HEALTH = {
-  status: "ok" as const,
-  cloud: {
-    managed: true as const,
-    managedBy: "paperclip-cloud" as const,
-    stackSlug: "acme-labs",
-    cloudBaseUrl: "https://cloud.example.test",
-  },
-};
-
 describe("Companies page", () => {
   let container: HTMLDivElement;
 
@@ -82,11 +72,10 @@ describe("Companies page", () => {
     vi.clearAllMocks();
   });
 
-  async function renderPage({ cloud }: { cloud?: boolean } = {}) {
+  async function renderPage() {
     const queryClient = new QueryClient({
       defaultOptions: { queries: { retry: false } },
     });
-    if (cloud) queryClient.setQueryData(queryKeys.health, CLOUD_HEALTH);
     const root = createRoot(container);
     act(() => {
       root.render(
@@ -110,17 +99,4 @@ describe("Companies page", () => {
     });
   });
 
-  it("hides the company wizard on a cloud-managed instance", async () => {
-    const root = await renderPage({ cloud: true });
-
-    // Cloud stacks hold exactly one company and POST /companies is a 403 floor,
-    // so the entry point must not be offered at all.
-    expect(container.textContent).not.toContain("New Organization");
-    expect(container.textContent).toContain("Acme Labs");
-    expect(mockOpenOnboarding).not.toHaveBeenCalled();
-
-    act(() => {
-      root.unmount();
-    });
-  });
 });
