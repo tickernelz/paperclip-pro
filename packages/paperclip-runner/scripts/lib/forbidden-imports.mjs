@@ -12,6 +12,8 @@ const RUST_IMPORT_PATTERNS = [
 ];
 const REVIEWED_EVAL_KERNEL = "@tickernelz/wardmote-paperclip-eval-kernel";
 const REVIEWED_EVAL_HARNESS = "src/eval/workflow-harness.ts";
+const TEST_FILE = /\.(?:test|spec)\.[cm]?[jt]sx?$/;
+const REPOSITORY_TEST_DIRECTORY = "tests";
 
 const libraryDirectory = dirname(fileURLToPath(import.meta.url));
 export const defaultPackageRoot = resolve(libraryDirectory, "../..");
@@ -163,6 +165,12 @@ function isForbiddenBrowserPackage(specifier) {
   );
 }
 
+function isRepositoryTestImport({ file, packageRoot, resolvedImport }) {
+  const relativeFile = relative(packageRoot, file).split(/[\\/]/).join("/");
+  const repositoryTestRoot = resolve(packageRoot, "../..", REPOSITORY_TEST_DIRECTORY);
+  return TEST_FILE.test(relativeFile) && isInside(repositoryTestRoot, resolvedImport);
+}
+
 function violationReason({ file, packageRoot, specifier, publicRunnerImports, reviewedEvalHarness }) {
   const relativeFile = relative(packageRoot, file).split(/[\\/]/).join("/");
   const isExampleConsumer = relativeFile.startsWith("examples/");
@@ -198,7 +206,9 @@ function violationReason({ file, packageRoot, specifier, publicRunnerImports, re
   if (specifier.startsWith(".") || specifier.startsWith("/")) {
     const resolvedImport = resolve(dirname(file), specifier);
     if (!isInside(packageRoot, resolvedImport)) {
-      return "relative imports may not escape packages/paperclip-runner";
+      return isRepositoryTestImport({ file, packageRoot, resolvedImport })
+        ? null
+        : "relative imports may not escape packages/paperclip-runner";
     }
     const segments = relativeFile.split("/");
     const examplesIndex = segments.indexOf("examples");
