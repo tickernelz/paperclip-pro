@@ -47,7 +47,7 @@ runs:
           packages/*/node_modules
           packages/*/*/node_modules
           packages/plugins/*/*/node_modules
-        key: modules-${{ runner.os }}-${{ steps.store.outputs.arch }}-node24-${{ hashFiles('pnpm-lock.yaml', 'pnpm-workspace.yaml', '.npmrc', 'patches/**', '**/package.json') }}
+        key: modules-${{ runner.os }}-${{ steps.store.outputs.arch }}-node24-${{ hashFiles('pnpm-lock.yaml', 'pnpm-workspace.yaml', '.npmrc', 'patches/**', '**/package.json', '.github/actions/setup-workspace/action.yml') }}
 
     - name: Restore pnpm store
       id: pnpm-store

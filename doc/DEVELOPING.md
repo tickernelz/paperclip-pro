@@ -39,8 +39,10 @@ Shared setup lives in `.github/actions/setup-workspace` and the static gates in
 `.github/actions/policy-checks`; the workspace `node_modules` trees, the pnpm
 store (pruned to the lockfile) and the Runner Rust caches are written only by
 pushes to `main` and restored everywhere else. A job whose lockfile, workspace
-manifests and patches match a cached `node_modules` restores it and skips the
-store and `pnpm install`; any other job restores the store and installs.
+manifests, patches and setup action match a cached `node_modules` restores it
+and skips `pnpm install`; any other job restores the store and installs. The
+upgrade-path lane restores the store on a hit too (`store: "true"`), because
+the source install it tests runs its own `pnpm install` against it.
 
 Server test shards run vitest with `WARDMOTE_SERVER_TEST_WORKERS=3`: one fresh
 process per file, longest files first by the manifests in
