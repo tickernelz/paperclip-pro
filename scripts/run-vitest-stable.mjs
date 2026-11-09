@@ -6,7 +6,6 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadShardDurations, selectGeneralServerShard } from "./general-server-shard.mjs";
 
-import { docsLaneNodeTestSuites, docsLaneVitestSuites } from "./docs-lane-suites.mjs";
 
 import { assertSelectedTests, partitionTestLines } from "./test-line-shard.mjs";
 
@@ -65,7 +64,6 @@ const additionalSerializedServerTests = new Set([
 let invocationIndex = 0;
 const serializedModeName = "serialized";
 const generalModeName = "general";
-const docsModeName = "docs";
 const allModeName = "all";
 const generalServerGroupName = "general-server";
 const generalServerWithoutChatGroupName = "general-server-without-chat";
@@ -260,8 +258,8 @@ function parseCliOptions(argv) {
     fail(`Unknown argument "${arg}".`);
   }
 
-  if (!new Set([allModeName, generalModeName, serializedModeName, docsModeName]).has(mode)) {
-    fail(`Unknown mode "${mode}". Expected one of: ${allModeName}, ${generalModeName}, ${serializedModeName}, ${docsModeName}.`);
+  if (!new Set([allModeName, generalModeName, serializedModeName]).has(mode)) {
+    fail(`Unknown mode "${mode}". Expected one of: ${allModeName}, ${generalModeName}, ${serializedModeName}.`);
   }
 
   if ((shardIndex === null) !== (shardCount === null)) {
@@ -297,16 +295,6 @@ function parseCliOptions(argv) {
       mode,
       shardIndex: shardIndex ?? 0,
       shardCount: shardCount ?? 1,
-      group: null,
-      dryRun,
-    };
-  }
-
-  if (mode === docsModeName) {
-    return {
-      mode,
-      shardIndex: null,
-      shardCount: null,
       group: null,
       dryRun,
     };
@@ -506,26 +494,6 @@ function runGeneralGroup(routeTests, groupName, shardIndex = null, shardCount = 
   fail(`Unknown group "${groupName}".`);
 }
 
-function runDocsLaneSuites() {
-  console.log(
-    `\n[test:run] docs lane running ${docsLaneVitestSuites.length} vitest suites and ${docsLaneNodeTestSuites.length} node:test suites`,
-  );
-
-  runVitest(
-    [...serializedServerVitestArgs, ...docsLaneVitestSuites],
-    "documentation-reading vitest suites",
-  );
-
-  for (const suite of docsLaneNodeTestSuites) {
-    const result = spawnSync("node", ["--test", suite], { cwd: repoRoot, stdio: "inherit" });
-    if (result.error) {
-      console.error(`[test:run] Failed to start node:test for ${suite}: ${result.error.message}`);
-      process.exit(1);
-    }
-    if (result.status !== 0) process.exit(result.status ?? 1);
-  }
-}
-
 function runSerializedSuites(routeTests, shardIndex, shardCount) {
   const shardTests = selectSerializedSuites(routeTests, shardIndex, shardCount);
   console.log(
@@ -615,8 +583,6 @@ if (options.dryRun) {
           options.shardCount > 1
             ? `${options.shardIndex + 1}/${options.shardCount}`
             : null,
-        docsLaneVitestSuites: options.mode === docsModeName ? docsLaneVitestSuites : null,
-        docsLaneNodeTestSuites: options.mode === docsModeName ? docsLaneNodeTestSuites : null,
       },
       null,
       2,
@@ -635,8 +601,4 @@ if (options.mode === generalModeName || options.mode === allModeName) {
 
 if (options.mode === serializedModeName || options.mode === allModeName) {
   runSerializedSuites(routeTests, options.shardIndex ?? 0, options.shardCount ?? 1);
-}
-
-if (options.mode === docsModeName) {
-  runDocsLaneSuites();
 }
