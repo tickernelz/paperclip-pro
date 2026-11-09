@@ -294,6 +294,42 @@ describeEmbeddedPostgres("per-agent fallback models", () => {
     expect(startEvents[0]!.payload).toMatchObject({ phase: "run_start", from: PRIMARY, to: BACKUP, reason: "refusal" });
   }, 60_000);
 
+  it("retries on the primary when only the fallback the run ended on asked for a long wait", async () => {
+    const target = await seed({ model: PRIMARY, fallbackModels: [BACKUP] });
+    const fallbackRetryNotBefore = new Date(Date.now() + 14 * 60 * 60_000).toISOString();
+    behaviors.set(target.agentId, [
+      async (ctx) => {
+        await ctx.onEvent?.({
+          eventType: "model.fallback",
+          stream: "system",
+          level: "warn",
+          message: `Fallback: ${BACKUP}`,
+          payload: { phase: "in_run", from: PRIMARY, to: BACKUP, primary: PRIMARY, reason: "upstream", retryAfterMs: 300_000 },
+        });
+        return {
+          exitCode: 1,
+          signal: null,
+          timedOut: false,
+          errorMessage: "429 Upstream rate limit exceeded retry-after-ms=50854000",
+          errorCode: "omp_provider_quota",
+          errorFamily: "provider_quota",
+          retryNotBefore: fallbackRetryNotBefore,
+          resultJson: { errorFamily: "provider_quota", retryNotBefore: fallbackRetryNotBefore, modelFallback: { active: BACKUP } },
+        };
+      },
+    ]);
+    const failed = await runOnce(target);
+    expect(failed.run.status).toBe("failed");
+    await expect.poll(() => retryOf(failed.run.id).then((row) => row?.status ?? null), { timeout: 5_000 }).toBe("scheduled_retry");
+    const retry = await retryOf(failed.run.id);
+    expect((retry!.contextSnapshot as Record<string, unknown>).paperclipForcedModel).toBe(PRIMARY);
+    const cooldowns = await cooldownRows(target.companyId);
+    const primaryCooldown = cooldowns.find((row) => row.selector === PRIMARY)!;
+    expect(cooldowns.find((row) => row.selector === BACKUP)!.cooldownUntil.toISOString()).toBe(fallbackRetryNotBefore);
+    expect(retry!.scheduledRetryAt!.getTime()).toBe(primaryCooldown.cooldownUntil.getTime());
+    expect(retry!.scheduledRetryAt!.getTime() - Date.now()).toBeLessThan(6 * 60_000);
+  }, 60_000);
+
   it("keeps the existing retry timing when every candidate is cooling down", async () => {
     const target = await seed({ model: PRIMARY, fallbackModels: [BACKUP] });
     await db.insert(modelCooldowns).values({

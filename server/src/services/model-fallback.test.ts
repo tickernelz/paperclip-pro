@@ -71,6 +71,27 @@ describe("fallback lineage", () => {
     expect(plan.start).toBe("c/override");
   });
 
+  it("retries on a model that is not cooling instead of waiting out the failed model's cooldown", () => {
+    const later = (minutes: number) => new Date(now.getTime() + minutes * 60_000);
+    const cooling = (entries: Array<[string, Date]>) => new Map(entries);
+    expect(planModelFallbackStep({
+      chain: ["a/x", "b/y"], primary: "a/x", active: "b/y", reason: "rate_limit", attempts: {}, now,
+      notBefore: cooling([["b/y", later(14 * 60)]]),
+    })).toMatchObject({ start: "a/x", fastRetry: false, availableAt: null });
+    expect(planModelFallbackStep({
+      chain: ["a/x", "b/y", "c/z"], primary: "a/x", active: "a/x", reason: "rate_limit", attempts: {}, now,
+      notBefore: cooling([["a/x", later(14 * 60)], ["b/y", later(60)]]),
+    })).toMatchObject({ start: "c/z", fastRetry: false, availableAt: null });
+    expect(planModelFallbackStep({
+      chain: ["a/x", "b/y", "c/z"], primary: "a/x", active: "a/x", reason: "rate_limit", attempts: {}, now,
+      notBefore: cooling([["a/x", later(14 * 60)], ["b/y", later(60)], ["c/z", later(90)]]),
+    })).toMatchObject({ start: "b/y", fastRetry: false, availableAt: later(60) });
+    expect(planModelFallbackStep({
+      chain: ["a/x", "b/y"], primary: "a/x", active: "a/x", reason: "upstream", attempts: {}, now,
+      notBefore: cooling([["a/x", later(-1)]]),
+    })).toMatchObject({ start: "a/x", fastRetry: true, availableAt: null });
+  });
+
   it("reads a lineage attempt map leniently", () => {
     expect(readModelFallbackAttempts({ "a/x": 2, "b/y": "1", "": 3, "c/z": -1 })).toEqual({ "a/x": 2 });
   });

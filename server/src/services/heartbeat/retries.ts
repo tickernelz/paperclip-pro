@@ -568,8 +568,9 @@ export function createHeartbeatRetries(db: Db, dependencies: HeartbeatRetryDepen
       retryReason === BOUNDED_TRANSIENT_HEARTBEAT_RETRY_REASON
         ? readTransientRecoveryContractFromRun(run)
         : null;
-    const transientRetryNotBefore =
-      transientRecovery?.retryNotBefore ?? modelFallbackPlan?.availableAt ?? null;
+    const transientRetryNotBefore = modelFallbackPlan
+      ? modelFallbackPlan.availableAt
+      : transientRecovery?.retryNotBefore ?? null;
     const contextSnapshot = parseObject(run.contextSnapshot);
     // A retry inherits the durable authorization scope of its source run. Do
     // not promote an untrusted or legacy contextSnapshot.issueId into a new

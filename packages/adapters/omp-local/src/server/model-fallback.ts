@@ -110,6 +110,8 @@ export function createOmpModelFallbackTracker(input: {
       if (active === input.primary) return;
       const message = object(event.message);
       if (!message || text(message.role) !== "assistant") return;
+      const stopReason = text(message.stopReason);
+      if (stopReason === "error" || stopReason === "aborted") return;
       const provider = text(message.provider);
       const model = text(message.model);
       if (!provider || !model || `${provider}/${model}` !== stripOmpThinkingSuffix(input.primary)) return;

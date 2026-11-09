@@ -58,7 +58,7 @@ export interface ModelFallbackStepPlan {
   fastRetry: boolean;
   /** Attempts the whole lineage may consume, primary retry included. */
   maxAttempts: number;
-  /** When a cooled model becomes eligible again, for reporting only. */
+  /** When the start model's cooldown ends; the retry must not run before it. */
   availableAt: Date | null;
 }
 
@@ -158,6 +158,7 @@ export function planModelFallbackStep(input: {
   reason: RunModelFallbackReason;
   attempts: Readonly<Record<string, number>>;
   now: Date;
+  notBefore?: ReadonlyMap<string, Date>;
 }): ModelFallbackStepPlan {
   const chain = [...input.chain];
   const attempts: Record<string, number> = { ...input.attempts };
@@ -168,16 +169,24 @@ export function planModelFallbackStep(input: {
     input.reason !== "refusal" &&
     input.active === input.primary &&
     !exhausted(input.primary);
-  const start = retriesPrimary
-    ? input.primary
-    : chain.find((selector) => selector !== input.active && !exhausted(selector)) ?? null;
+  const candidates = [
+    ...(retriesPrimary ? [input.primary] : []),
+    ...chain.filter((selector) => selector !== input.active && !exhausted(selector)),
+  ];
+  const coolingUntil = (selector: string) => {
+    const until = input.notBefore?.get(selector);
+    return until && until.getTime() > input.now.getTime() ? until : null;
+  };
+  const start = candidates.find((selector) => !coolingUntil(selector))
+    ?? candidates.reduce<string | null>((earliest, selector) =>
+      earliest === null || coolingUntil(selector)!.getTime() < coolingUntil(earliest)!.getTime() ? selector : earliest, null);
   return {
     chain,
     attempts,
     start,
-    fastRetry: retriesPrimary,
+    fastRetry: retriesPrimary && start === input.primary,
     maxAttempts: modelFallbackAttemptBudget(chain, input.primary),
-    availableAt: null,
+    availableAt: start ? coolingUntil(start) : null,
   };
 }
 
@@ -313,17 +322,29 @@ export async function planModelFallbackRetry(input: {
   if (!reason) return null;
   const active = readRunActiveModel(input.run) ?? primary;
   if (!chain.includes(active)) return null;
-  const step = planModelFallbackStep({
+  const cooldowns = await loadModelCooldowns(input.db, input.run.companyId, chain, input.now);
+  const notBefore = new Map<string, Date>();
+  for (const [selector, cooldown] of cooldowns) {
+    if (selector !== active) notBefore.set(selector, cooldown.until);
+  }
+  const resultJson = asRecord(input.run.resultJson);
+  const activeRetryNotBefore = readDate(resultJson.retryNotBefore ?? resultJson.transientRetryNotBefore);
+  if (activeRetryNotBefore) notBefore.set(active, activeRetryNotBefore);
+  return planModelFallbackStep({
     chain,
     primary,
     active,
     reason,
     attempts: readModelFallbackAttempts(context[MODEL_FALLBACK_ATTEMPTS_KEY]),
     now: input.now,
+    notBefore,
   });
-  const cooldowns = await loadModelCooldowns(input.db, input.run.companyId, chain, input.now);
-  const availableAt = step.start ? null : cooldowns.get(primary)?.until ?? null;
-  return { ...step, availableAt };
+}
+
+function readDate(value: unknown): Date | null {
+  if (typeof value !== "string" && typeof value !== "number") return null;
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
 /** Attempts a run lineage may spend: its recorded model budget, else the adapter-agnostic budget. */

@@ -35,6 +35,19 @@ describe("OMP model fallback tracker", () => {
     expect(tracker.snapshot().active).toBe("a/primary");
   });
 
+  it("keeps the fallback active when the primary only reports an error or an aborted request", async () => {
+    const emit = vi.fn(async (_event: AdapterRuntimeEvent) => {});
+    const tracker = createOmpModelFallbackTracker({ primary: "a/primary", start: "a/primary", emit });
+    await tracker.ingest({ type: "retry_fallback_applied", from: "a/primary:xhigh", to: "b/backup:max", role: "a/primary" });
+    await tracker.ingest({ type: "message_end", message: { role: "assistant", provider: "b", model: "backup", stopReason: "error", errorMessage: "429 retry-after-ms=50854000" } });
+    await tracker.ingest({ type: "message_end", message: { role: "assistant", provider: "a", model: "primary", stopReason: "aborted", errorMessage: "Request was aborted" } });
+    await tracker.ingest({ type: "turn_end", message: { role: "assistant", provider: "a", model: "primary", stopReason: "error" } });
+    expect(emit.mock.calls.map(([event]) => event.eventType)).toEqual(["model.fallback"]);
+    expect(tracker.snapshot().active).toBe("b/backup");
+    await tracker.ingest({ type: "message_end", message: { role: "assistant", provider: "a", model: "primary", stopReason: "stop" } });
+    expect(tracker.snapshot().active).toBe("a/primary");
+  });
+
   it("builds the chain from config and strips thinking suffixes only", () => {
     expect(ompFallbackChain({ model: "a/x", fallbackModels: ["b/y", "a/x", "b/y"] })).toEqual({ key: "a/x", chain: ["b/y"] });
     expect(ompFallbackChain({ model: "a/x", fallbackModels: [] })).toBeNull();
