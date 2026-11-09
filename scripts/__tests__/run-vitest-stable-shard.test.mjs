@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
+import { globSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
@@ -85,6 +86,24 @@ test("the general-server shards form a complete, non-overlapping partition", () 
   // Every suite runs exactly once: union covers the whole set with no overlap.
   assert.equal(selectedTotal, total, "every suite must be selected exactly once");
   assert.equal(seen.size, total, "union of shards must cover the whole suite set");
+});
+
+test("every file the server vitest config includes runs in exactly one server lane", () => {
+  const serverRoot = path.join(repoRoot, "server");
+  const config = readFileSync(path.join(serverRoot, "vitest.config.ts"), "utf8");
+  const includeList = config.match(/^\s*include:\s*(\[[^\]]*\])/m);
+  assert.ok(includeList, "server/vitest.config.ts must declare test.include as a literal array");
+  const patterns = JSON.parse(includeList[1]);
+  assert.ok(patterns.length > 0);
+  const included = globSync(patterns, { cwd: serverRoot, exclude: (file) => /(^|\/)(node_modules|dist)$/.test(file) })
+    .map((file) => `server/${file.split(path.sep).join("/")}`);
+  const general = dryRunJson(["--mode", "general", "--group", "general-server", "--shard-index", "0", "--shard-count", "1"])
+    .selectedGeneralServerSuites;
+  const serialized = dryRunJson(["--mode", "serialized", "--shard-index", "0", "--shard-count", "1"])
+    .selectedSerializedSuites;
+  const lanes = [...general, ...serialized];
+  assert.equal(new Set(lanes).size, lanes.length, "a server suite is assigned to both lanes");
+  assert.deepEqual(lanes.sort(), included.sort());
 });
 
 test("a route/authz suite never leaks into the general-server shards", () => {

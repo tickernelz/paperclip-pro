@@ -13,13 +13,27 @@ const script = path.join(repoRoot, "scripts", "e2e-shard.mjs");
 const durationsManifest = path.join(repoRoot, "scripts", "e2e-shard-durations.json");
 const playwrightConfig = path.join(repoRoot, "tests", "e2e", "playwright.config.ts");
 
-const SHARD_COUNT = 4;
+const workflow = readFileSync(path.join(repoRoot, ".github/workflows/ci.yml"), "utf8");
+const e2eJob = workflow.split(/\n  e2e:\n/)[1];
+assert.ok(e2eJob, "expected an e2e job in ci.yml");
+const SHARD_COUNT = Number(e2eJob.match(/--shard-count (\d+)/)?.[1]);
+assert.ok(SHARD_COUNT > 1, "the e2e job must pass a real --shard-count to scripts/e2e-shard.mjs");
 
 function runShard(args) {
   const result = spawnSync(process.execPath, [script, ...args], { cwd: repoRoot, encoding: "utf8" });
   assert.equal(result.status, 0, `expected success for ${args.join(" ")}: ${result.stderr}`);
   return result.stdout.trim().split(/\s+/).filter(Boolean);
 }
+
+test("ci.yml drives the shards it names: matrix, job name and --shard-count agree", () => {
+  const matrix = e2eJob.match(/shard_index:\s*\[([^\]]*)\]/);
+  assert.ok(matrix, "expected an e2e shard_index matrix in ci.yml");
+  const indexes = matrix[1].split(",").map((entry) => Number(entry.trim()));
+  assert.deepEqual(indexes, Array.from({ length: SHARD_COUNT }, (_, index) => index));
+  const name = e2eJob.match(/name: E2E \(\$\{\{ matrix\.shard_index \}\}\/(\d+)\)/);
+  assert.ok(name, "expected an E2E job name that reports the shard count");
+  assert.equal(Number(name[1]), SHARD_COUNT);
+});
 
 test("the e2e shards form a complete, non-overlapping partition", () => {
   const specs = listE2eSpecs();
