@@ -16,7 +16,7 @@ export interface TerminalActorClaim {
 
 export type TerminalActorLoader = (claim: TerminalActorClaim) => Promise<TerminalActor | null>;
 
-export const HUMAN_TERMINAL_SOURCES: ReadonlySet<string> = new Set(["local_implicit", "session", "cloud_tenant"]);
+export const HUMAN_TERMINAL_SOURCES: ReadonlySet<string> = new Set(["local_implicit", "session"]);
 
 export const TERMINAL_INSTANCE_ADMIN_REQUIRED = "Instance admin access required";
 

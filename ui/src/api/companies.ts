@@ -138,10 +138,7 @@ export const companiesApi = {
   importBundle: (data: CompanyPortabilityImportRequest) =>
     api.post<CompanyPortabilityImportResult>("/companies/import", data),
   // Submit an import as a server-side job: 202 with a job id to poll, or 409
-  // with the already-running job. Board sessions opt in with the proxy-safe
-  // `?async=1` query parameter — the Cloud harness strips the inbound
-  // `x-paperclip-cloud-*` header a browser would otherwise use, so that header
-  // never survives to engage the async path.
+  // with the already-running job.
   importBundleAsync: (data: CompanyPortabilityImportRequest) =>
     api.post<CompanyImportJobAccepted>("/companies/import?async=1", data),
   /** Submit a local .zip package as an async import job by uploading the raw compressed zip as multipart. */

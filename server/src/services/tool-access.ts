@@ -294,8 +294,7 @@ type ActorInfo = {
     | "board_key"
     | "agent_key"
     | "agent_jwt"
-    | "mcp_oauth"
-    | "cloud_tenant";
+    | "mcp_oauth";
 };
 
 const ACTIVE_BROKER_RUN_STATUSES = new Set(["running"]);
@@ -10958,8 +10957,7 @@ export function toolAccessService(
         | "board_key"
         | "agent_key"
         | "agent_jwt"
-        | "mcp_oauth"
-        | "cloud_tenant";
+        | "mcp_oauth";
       issueId?: string | null;
       heartbeatRunId?: string | null;
     },
@@ -11998,8 +11996,7 @@ export function toolAccessService(
         | "board_key"
         | "agent_key"
         | "agent_jwt"
-        | "mcp_oauth"
-        | "cloud_tenant";
+        | "mcp_oauth";
       issueId?: string | null;
       heartbeatRunId?: string | null;
     },

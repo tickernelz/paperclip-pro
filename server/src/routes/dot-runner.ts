@@ -18,7 +18,7 @@ export function dotRunnerRoutes(db: Db, resourceUrl?: string) {
   function companyScope(req: Request, write = false) {
     const companyId = z.uuid().parse(req.params.companyId);
     assertBoard(req); assertCompanyAccess(req, companyId);
-    if (write && (!req.actor.userId || !["session", "cloud_tenant"].includes(req.actor.source ?? "")
+    if (write && (!req.actor.userId || req.actor.source !== "session"
         || req.actor.memberships?.find(m => m.companyId === companyId)?.membershipRole === "viewer")) {
       throw forbidden("Sign in as an operator to connect a Dot agent.");
     }

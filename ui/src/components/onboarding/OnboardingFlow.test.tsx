@@ -72,4 +72,22 @@ describe("OnboardingFlow", () => {
     await settle(2_500);
     expect(statusMock).toHaveBeenCalledTimes(1);
   });
+
+  it("brands the first screen with the Moot mark and the Wardmote name", async () => {
+    statusMock.mockRejectedValue(new ApiError("Instance admin access required", 403, { error: "Instance admin access required" }));
+    root = createRoot(container!);
+    act(() => {
+      root!.render(
+        <QueryClientProvider client={new QueryClient()}>
+          <OnboardingFlow />
+        </QueryClientProvider>,
+      );
+    });
+    await settle(100);
+    const name = document.querySelector('[data-testid="onboarding-flow"] main b');
+    expect(name?.textContent).toBe("Wardmote");
+    expect(name?.previousElementSibling?.tagName.toLowerCase()).toBe("svg");
+    expect(document.body.textContent).not.toMatch(/\bPaperclip\b/);
+  });
 });
+

@@ -155,7 +155,7 @@ describeEmbeddedPostgres("issue list includeConversations union", () => {
   function boardActor(userId: string): Actor {
     return {
       type: "board",
-      source: "cloud_tenant",
+      source: "session",
       userId,
       companyIds: [companyId],
       memberships: [{ companyId, membershipRole: "owner", status: "active" }],

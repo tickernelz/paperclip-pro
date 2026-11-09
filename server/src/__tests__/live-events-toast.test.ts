@@ -25,6 +25,9 @@ function database(onPredicate: (kind: "where" | "join", condition: SQL) => void 
         if (table === "agents") return [{ name: "Coder", appearance: { schemaVersion: 1, characterVersion: "cap-v1", paletteId: "bubblegum-sky" } }];
         return [];
       },
+      then: (resolve: (rows: unknown[]) => unknown) => resolve(
+        table === "company_memberships" && fields.companyId ? [{ companyId: "company" }] : [],
+      ),
     };
     return query;
   } };
@@ -33,7 +36,7 @@ describe("authenticated activity notifications", () => {
   it("keeps actor identity after authorization and excludes hidden tasks and private details", async () => {
     const server = createServer();
     setupLiveEventsWebSocketServer(server, database() as never, { deploymentMode: "authenticated",
-      resolveCloudActor: async () => ({ userId: "viewer", companyIds: ["company"] }) });
+      resolveSessionFromHeaders: async () => ({ user: { id: "viewer" }, session: { id: "session" } }) as never });
     server.listen(0, "127.0.0.1");
     await once(server, "listening");
     const socket = new WebSocket(`ws://127.0.0.1:${(server.address() as { port: number }).port}/api/companies/company/events/ws`);

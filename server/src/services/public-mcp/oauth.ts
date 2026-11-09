@@ -207,7 +207,7 @@ export function createPublicMcpOAuth(db: Db, config: PublicMcpConfig, options: {
   }
 
   async function consentContext(actor: Request["actor"], requestedCompanyId: string | null) {
-    const signedIn = actor.type === "board" && !!actor.userId && ["session", "cloud_tenant"].includes(actor.source ?? "");
+    const signedIn = actor.type === "board" && !!actor.userId && actor.source === "session";
     const access = signedIn ? await boardAuth.resolveBoardAccess(actor.userId!) : null;
     const available = access?.user && access.companyIds.length ? await db.select({ id: companies.id, name: companies.name, status: companies.status, logoAssetId: companyLogos.assetId })
       .from(companies).leftJoin(companyLogos, eq(companyLogos.companyId, companies.id)).where(inArray(companies.id, access.companyIds)) : [];
@@ -220,7 +220,7 @@ export function createPublicMcpOAuth(db: Db, config: PublicMcpConfig, options: {
   }
 
   async function approveGrant(tx: Db, actor: Request["actor"], request: { requestedCompanyId: string | null; clientId: string; resource: string; scopes: string[] }, input: { companyId?: string; allowWrites: boolean; allowConfiguration?: boolean }) {
-    if (actor.type !== "board" || !actor.userId || !["session", "cloud_tenant"].includes(actor.source ?? "")) throw new McpOAuthError("access_denied", "Sign in to approve an assistant connection.", 401);
+    if (actor.type !== "board" || !actor.userId || actor.source !== "session") throw new McpOAuthError("access_denied", "Sign in to approve an assistant connection.", 401);
     const access = await boardAuthService(tx).resolveBoardAccess(actor.userId);
     const membership = access.memberships.find(m => m.companyId === input.companyId && m.status === "active");
     if (!access.user || !membership || (request.requestedCompanyId && request.requestedCompanyId !== input.companyId)) throw new McpOAuthError("access_denied", "Choose an available organization for this request.", 403);
@@ -327,7 +327,7 @@ export function createPublicMcpOAuth(db: Db, config: PublicMcpConfig, options: {
     },
     async consentDevice(userCode: string, actor: Request["actor"], input: { decision: "approve" | "deny"; companyId?: string; allowWrites: boolean; allowConfiguration?: boolean }) {
       await assertEnabled();
-      if (actor.type !== "board" || !actor.userId || !["session", "cloud_tenant"].includes(actor.source ?? "")) throw new McpOAuthError("access_denied", "Sign in to approve a connection.", 401);
+      if (actor.type !== "board" || !actor.userId || actor.source !== "session") throw new McpOAuthError("access_denied", "Sign in to approve a connection.", 401);
       return db.transaction(async tx => {
         const [row] = await tx.select().from(mcpOauthDeviceRequests).where(eq(mcpOauthDeviceRequests.userCodeHash, deviceHash(userCode))).for("update");
         if (!row || row.resource !== config.resource || row.status !== "pending" || row.expiresAt <= new Date()) throw invalidGrant();
@@ -401,7 +401,7 @@ export function createPublicMcpOAuth(db: Db, config: PublicMcpConfig, options: {
     },
     async consent(id: string, actor: Request["actor"], input: { decision: "approve" | "deny"; companyId?: string; allowWrites: boolean; allowConfiguration?: boolean }) {
       await assertEnabled();
-      if (actor.type !== "board" || !actor.userId || !["session", "cloud_tenant"].includes(actor.source ?? "")) {
+      if (actor.type !== "board" || !actor.userId || actor.source !== "session") {
         throw new McpOAuthError("access_denied", "Sign in to approve an assistant connection.", 401);
       }
       const access = await boardAuth.resolveBoardAccess(actor.userId);

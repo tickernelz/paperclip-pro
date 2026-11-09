@@ -201,8 +201,6 @@ describe("cli auth routes", () => {
   });
 
   it.each([
-    ["cloud_tenant", "board", false, false, true],
-    ["cloud_tenant", "instance_admin_required", false, false, false],
     ["session", "board", false, false, true],
     ["board_api_key", "board", false, true, false],
   ])("reports CLI approval for %s requesting %s", async (source, requestedAccess, isInstanceAdmin, requiresSignIn, canApprove) => {

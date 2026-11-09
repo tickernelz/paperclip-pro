@@ -43,9 +43,7 @@ describeEmbeddedPostgres("issue identifier routes", () => {
         userId: "cloud-user-1",
         companyIds: [companyId],
         memberships: [{ companyId, membershipRole: "owner", status: "active" }],
-        source: "cloud_tenant",
-        // cloud_tenant actors are never instance admins — access flows through
-        // company-scoped membership grants, seeded per test company below.
+        source: "session",
         isInstanceAdmin: false,
       };
       next();
@@ -55,7 +53,7 @@ describeEmbeddedPostgres("issue identifier routes", () => {
     return app;
   }
 
-  async function seedCloudTenantMember(companyId: string) {
+  async function seedCompanyMember(companyId: string) {
     await db.insert(companyMemberships).values({
       companyId,
       principalType: "user",
@@ -72,7 +70,7 @@ describeEmbeddedPostgres("issue identifier routes", () => {
     });
   }
 
-  it("resolves alphanumeric Cloud tenant issue identifiers for detail reads and updates", async () => {
+  it("resolves alphanumeric issue identifiers for detail reads and updates", async () => {
     const companyId = randomUUID();
     const issueId = randomUUID();
 
@@ -82,7 +80,7 @@ describeEmbeddedPostgres("issue identifier routes", () => {
       issuePrefix: "PC1A2",
       requireBoardApprovalForNewAgents: false,
     });
-    await seedCloudTenantMember(companyId);
+    await seedCompanyMember(companyId);
     await db.insert(issues).values({
       id: issueId,
       companyId,
