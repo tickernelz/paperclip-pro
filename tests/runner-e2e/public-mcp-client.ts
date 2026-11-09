@@ -10,7 +10,7 @@ const require = createRequire(path.resolve(import.meta.dirname, "../../server/pa
 const { Client } = await import(require.resolve("@modelcontextprotocol/sdk/client/index.js"));
 const { StreamableHTTPClientTransport } = await import(require.resolve("@modelcontextprotocol/sdk/client/streamableHttp.js"));
 export const origin = `http://127.0.0.1:${process.env.WARDMOTE_RUNNER_E2E_PORT ?? process.env.WARDMOTE_PUBLIC_MCP_EVAL_PORT ?? 3298}`;
-export const resource = origin + "/mcp/paperclip";
+export const resource = origin + "/mcp/wardmote";
 export interface Team { id: string; name: string; issuePrefix: string }
 export interface Agent { id: string; name: string; status: string }
 export interface Task { id: string; companyId: string; title: string; status: string; assigneeAgentId: string | null }

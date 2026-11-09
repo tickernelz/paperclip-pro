@@ -425,7 +425,7 @@ for (const scenario of ["hello", "interleaved-tools", "provider-error", "provide
             ? { name: index === 0 ? "write" : "read", arguments: index === 0
               ? { path: join(agentHomes[index], "memory.txt"), content: "T1 fixture memory\n" }
               : { path: join(agentHomes[index], "memory.txt") } }
-            : { name: "mcp__paperclip__paperclip_finish", arguments: finishArguments(index) };
+            : { name: "mcp__wardmote__paperclip_finish", arguments: finishArguments(index) };
           const chunks = [];
           if (step < 2) {
             const args = JSON.stringify(tool.arguments);
@@ -447,7 +447,7 @@ for (const scenario of ["hello", "interleaved-tools", "provider-error", "provide
         const names = scenario === "interleaved-tools" ? tools.map(tool => tool.name) : [n === 1 ? tools[0].name : tools[1].name];
         const chunks = [];
         if (toolTurn) {
-          chunks.push({ choices: [{ index: 0, delta: { tool_calls: names.map((name, index) => ({ index, id: `call_${n}_${index}`, type: "function", function: { name: `mcp__paperclip__${name}`, arguments: '{"fixture":' } })) } }] });
+          chunks.push({ choices: [{ index: 0, delta: { tool_calls: names.map((name, index) => ({ index, id: `call_${n}_${index}`, type: "function", function: { name: `mcp__wardmote__${name}`, arguments: '{"fixture":' } })) } }] });
           // Reverse delivery order proves index correlation, not FIFO guessing.
           for (const index of names.map((_, index) => index).reverse()) chunks.push({ choices: [{ index: 0, delta: { tool_calls: [{ index, function: { arguments: `${index}}` } }] } }] });
         } else chunks.push({ choices: [{ index: 0, delta: { reasoning: "Fixture thought", content: "HELLO_COMPLETE" } }] });
@@ -570,7 +570,7 @@ await import(${JSON.stringify(pathToFileURL(join(wrapperRoot, "dist/index.js")).
       assert.equal((await call("session/prompt", { sessionId: session.sessionId, prompt: prompt(0) })).stopReason, "end_turn");
       assert.equal(await readFile(join(agentHomes[0], "memory.txt"), "utf8"), "T1 fixture memory\n");
       const firstUpdates = notifications.map(event => event.params?.update).filter(Boolean);
-      const firstFinish = firstUpdates.find(update => update.sessionUpdate === "tool_call" && update.title === "mcp__paperclip__paperclip_finish");
+      const firstFinish = firstUpdates.find(update => update.sessionUpdate === "tool_call" && update.title === "mcp__wardmote__paperclip_finish");
       assert.ok(firstFinish);
       assert.equal(firstUpdates.filter(update => update.toolCallId === firstFinish.toolCallId && update.status === "completed").length, 1);
       // Product ends the old provider for registered-file collection. Reopen
@@ -592,7 +592,7 @@ await import(${JSON.stringify(pathToFileURL(join(wrapperRoot, "dist/index.js")).
           const until = Date.now() + 5000;
           const check = () => {
             const updates = notifications.slice(secondStart).map(event => event.params?.update).filter(Boolean);
-            const finish = updates.find(update => update.sessionUpdate === "tool_call" && update.title === "mcp__paperclip__paperclip_finish");
+            const finish = updates.find(update => update.sessionUpdate === "tool_call" && update.title === "mcp__wardmote__paperclip_finish");
             if (stalledResponse && finish && updates.some(update => update.toolCallId === finish.toolCallId && JSON.stringify(update.rawInput) === JSON.stringify(finishArguments(1)))) return resolve();
             if (Date.now() >= until) return reject(new Error("pending-only fixture boundary not observed"));
             setTimeout(check, 10);
@@ -612,7 +612,7 @@ await import(${JSON.stringify(pathToFileURL(join(wrapperRoot, "dist/index.js")).
       const readCompleted = readLifecycle.filter(update => update.status === "completed");
       assert.equal(readCompleted.length, 1);
       assert.ok(readCompleted[0].content.some(block => block.type === "content" && block.content?.type === "text" && block.content.text.includes("T1 fixture memory")));
-      const secondFinish = updates.find(update => update.sessionUpdate === "tool_call" && update.title === "mcp__paperclip__paperclip_finish");
+      const secondFinish = updates.find(update => update.sessionUpdate === "tool_call" && update.title === "mcp__wardmote__paperclip_finish");
       assert.ok(secondFinish); assert.notEqual(secondFinish.toolCallId, firstFinish.toolCallId);
       const lifecycle = updates.filter(update => update.toolCallId === secondFinish.toolCallId);
       const executed = scenario === "warm-recovery";

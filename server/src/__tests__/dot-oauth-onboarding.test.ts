@@ -121,7 +121,7 @@ describe("Dot onboarding with an operator-issued pairing capability", () => {
     const revokedId = randomUUID();
     const usedHash = randomUUID();
     await db.insert(mcpOauthGrants).values([
-      { ...grant, id: personalId, purpose: "personal", agentId: null, resource: config.origin + "/mcp/paperclip" },
+      { ...grant, id: personalId, purpose: "personal", agentId: null, resource: config.origin + "/mcp/wardmote" },
       { ...grant, id: revokedId, revokedAt: new Date() },
     ]);
     await db.insert(mcpOauthTokens).values([
@@ -150,7 +150,7 @@ describe("Dot onboarding with an operator-issued pairing capability", () => {
   it("pins browser ingress without changing the issuer, resource or token endpoint", async () => {
     const browserOrigin = "https://paperclip-browser.example:10000";
     const f = await fixture(browserOrigin);
-    const personal = createPublicMcpOAuth(db, { ...config, authorizationOrigin: browserOrigin, resource: config.origin + "/mcp/paperclip" });
+    const personal = createPublicMcpOAuth(db, { ...config, authorizationOrigin: browserOrigin, resource: config.origin + "/mcp/wardmote" });
     const app = express(); app.use(express.json());
     app.use((req, _res, next) => { req.actor = { type: "none" }; next(); });
     app.use(publicMcpIngressRoutes(f.oauth, vi.fn()));
@@ -172,13 +172,13 @@ describe("Dot onboarding with an operator-issued pairing capability", () => {
   });
   it("validates a separately configured browser origin", () => {
     expect(publicMcpConfig({ WARDMOTE_PUBLIC_URL: config.origin, WARDMOTE_MCP_AUTHORIZATION_ORIGIN: "https://browser.example:10000" }))
-      .toMatchObject({ origin: config.origin, resource: config.origin + "/mcp/paperclip", authorizationOrigin: "https://browser.example:10000" });
+      .toMatchObject({ origin: config.origin, resource: config.origin + "/mcp/wardmote", authorizationOrigin: "https://browser.example:10000" });
     for (const invalid of ["http://browser.example", "https://secret@browser.example", "https://browser.example/path", "https://browser.example?next=evil", "https://browser.example#fragment"])
       expect(() => publicMcpConfig({ WARDMOTE_PUBLIC_URL: config.origin, WARDMOTE_MCP_AUTHORIZATION_ORIGIN: invalid })).toThrow();
   });
   it.each(["mcp", "dot-mcp"])("connects via %s without a board session, binds the exact agent, and consumes the capability once", async prefix => {
     const f = await fixture();
-    const personal = createPublicMcpOAuth(db, { ...config, resource: config.origin + "/mcp/paperclip" });
+    const personal = createPublicMcpOAuth(db, { ...config, resource: config.origin + "/mcp/wardmote" });
     const app = express(); app.use(express.json());
     app.use((req, _res, next) => { req.actor = { type: "none" }; next(); });
     app.use("/api", publicMcpManagementRoutes(personal, f.oauth));
@@ -212,9 +212,9 @@ describe("Dot onboarding with an operator-issued pairing capability", () => {
   });
   it("does not expose personal assistant requests through the public Dot pairing lane", async () => {
     const f = await fixture();
-    const personal = createPublicMcpOAuth(db, { ...config, resource: config.origin + "/mcp/paperclip" });
+    const personal = createPublicMcpOAuth(db, { ...config, resource: config.origin + "/mcp/wardmote" });
     const client = await personal.register({ client_name: "Personal", redirect_uris: [callback], grant_types: ["authorization_code"] }, randomUUID());
-    const id = (await personal.authorize({ ...f.input, client_id: client.client_id, resource: config.origin + "/mcp/paperclip", scope: "paperclip:read" })).split("/").at(-1)!;
+    const id = (await personal.authorize({ ...f.input, client_id: client.client_id, resource: config.origin + "/mcp/wardmote", scope: "paperclip:read" })).split("/").at(-1)!;
     const app = express(); app.use(express.json());
     app.use((req, _res, next) => { req.actor = { type: "none" }; next(); });
     app.use("/api", publicMcpManagementRoutes(personal, f.oauth));
@@ -241,7 +241,7 @@ describe("Dot onboarding with an operator-issued pairing capability", () => {
   });
   it("prevents concurrent requests and the personal endpoint from spending the same capability", async () => {
     const f = await fixture();
-    const personal = createPublicMcpOAuth(db, { ...config, resource: config.origin + "/mcp/paperclip" });
+    const personal = createPublicMcpOAuth(db, { ...config, resource: config.origin + "/mcp/wardmote" });
     await expect(personal.consentDotPairing(f.id, f.pairing.pairingCode)).rejects.toMatchObject({ status: 403 });
     const other = await f.begin();
     const results = await Promise.allSettled([f.oauth.consentDotPairing(f.id, f.pairing.pairingCode), f.oauth.consentDotPairing(other, f.pairing.pairingCode)]);

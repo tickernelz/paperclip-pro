@@ -32,7 +32,7 @@ default. Use authenticated deployment with real user accounts and company
 memberships; local implicit board authority and agent/board API keys cannot
 approve user OAuth connections. Configure `TRUST_PROXY` correctly at your edge.
 
-The endpoint is `POST /mcp/paperclip`, using stateless Streamable HTTP with JSON
+The endpoint is `POST /mcp/wardmote`, using stateless Streamable HTTP with JSON
 responses. GET/SSE sessions are unnecessary. Each invocation verifies its bearer
 token again; normal API endpoints do not accept these OAuth tokens. Public
 installation requires a reachable HTTPS deployment. Private self-hosted
@@ -105,14 +105,14 @@ After the instance is enabled and reachable, an existing team member can connect
 without a store listing. For Codex CLI:
 
 ```sh
-codex mcp add paperclip --url https://YOUR-PAPERCLIP-HOST/mcp/paperclip
+codex mcp add paperclip --url https://YOUR-PAPERCLIP-HOST/mcp/wardmote
 codex mcp login paperclip --scopes paperclip:read,paperclip:write,paperclip:configure,offline_access
 ```
 
 For Claude Code:
 
 ```sh
-claude mcp add --transport http paperclip https://YOUR-PAPERCLIP-HOST/mcp/paperclip
+claude mcp add --transport http paperclip https://YOUR-PAPERCLIP-HOST/mcp/wardmote
 ```
 
 Open Claude Code's `/mcp` menu and authenticate the Paperclip server. Both flows
@@ -136,8 +136,8 @@ installation requires the separate deployment and submission work below.
 With a CLI build that includes this feature:
 
 ```sh
-wardmote mcp login --device --url https://YOUR-PAPERCLIP-HOST/mcp/paperclip
-wardmote mcp proxy --url https://YOUR-PAPERCLIP-HOST/mcp/paperclip
+wardmote mcp login --device --url https://YOUR-PAPERCLIP-HOST/mcp/wardmote
+wardmote mcp proxy --url https://YOUR-PAPERCLIP-HOST/mcp/wardmote
 ```
 
 Add `--company <organization UUID>` to login to restrict the consent choice.
@@ -166,7 +166,7 @@ does not advertise device or CIMD support until separately implemented.
 
 ## Identity and consent
 
-- Protected-resource discovery: `/.well-known/oauth-protected-resource/mcp/paperclip`.
+- Protected-resource discovery: `/.well-known/oauth-protected-resource/mcp/wardmote`.
 - Authorization-server discovery: `/.well-known/oauth-authorization-server`.
 - Public-client registration: `/mcp/oauth/register`.
 - Authorization, token and revocation endpoints: `/mcp/oauth/authorize`,

@@ -844,7 +844,7 @@ const READ_ONLY_REST_ALLOW: readonly RestRule[] = [
   { method: "POST", path: /^\/api\/issues\/([^/]+)\/checkout$/i, ownIssue: 1 },
   { method: "POST", path: /^\/api\/issues\/([^/]+)\/release$/i, ownIssue: 1 },
   { method: "PATCH", path: /^\/api\/issues\/([^/]+)$/i, ownIssue: 1, check: "issuePatch" },
-  { method: "POST", path: /^\/api\/mcp\/paperclip$/i },
+  { method: "POST", path: /^\/api\/mcp\/wardmote$/i },
   { method: "POST", path: /^\/api\/tool-gateway\/sessions$/i },
   { method: "POST", path: /^\/api\/tool-gateway\/tools\/call$/i },
   { method: "POST", path: /^\/api\/companies\/[^/]+\/email\/send$/i },

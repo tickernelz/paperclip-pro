@@ -113,7 +113,7 @@ flowchart LR
   subgraph host["Your machine"]
     subgraph server["Wardmote server (Node.js)"]
       api["REST API"]
-      mcp["MCP endpoint<br/>/api/mcp/paperclip"]
+      mcp["MCP endpoint<br/>/api/mcp/wardmote"]
       hb["Heartbeat scheduler<br/>and run queue"]
       adapter["omp_local adapter"]
     end
@@ -135,7 +135,7 @@ flowchart LR
 - **Embedded PostgreSQL**: created on first start under the instance directory and migrated with Drizzle; database backups run hourly by default into `data/backups`.
 - **Board UI**: React 19, installable as a PWA, laid out for both phone and desktop.
 - **`omp_local` adapter**: starts one `omp` process per agent run, streams its transcript to the board and caps how many local runs start at once, because OMP is memory-hungry while it boots.
-- **MCP**: agents reach Wardmote through `POST /api/mcp/paperclip` with a run-scoped token. The tools are generated from the OpenAPI document; the default `core` toolset gives an agent 67 tools, and `?toolsets=core,extended` gives 483. Each tool carries an `agent` or `board` authority, so a `ceo` agent sees more than an engineer.
+- **MCP**: agents reach Wardmote through `POST /api/mcp/wardmote` with a run-scoped token. The tools are generated from the OpenAPI document; the default `core` toolset gives an agent 67 tools, and `?toolsets=core,extended` gives 483. Each tool carries an `agent` or `board` authority, so a `ceo` agent sees more than an engineer.
 
 ## Operations
 

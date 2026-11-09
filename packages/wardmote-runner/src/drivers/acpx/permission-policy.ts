@@ -52,7 +52,7 @@ export function claudePaperclipPermissionRules(
     return isRead || (action && (
       mode === "approve-paperclip" && AUTOMATIC_WARDMOTE_WORKFLOW_ACTIONS.has(name)
     ))
-      ? [`mcp__paperclip__${name}`]
+      ? [`mcp__wardmote__${name}`]
       : [];
   });
   return [...new Set(names)].sort();

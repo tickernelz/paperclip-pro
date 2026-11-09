@@ -20,7 +20,7 @@ async function render(element: React.ReactNode = <AssistantConnection initialAss
   await flush();
 }
 beforeEach(() => {
-  mocks.setup.mockResolvedValue({ enabled: true, serverUrl: "https://canonical.example/mcp/paperclip" });
+  mocks.setup.mockResolvedValue({ enabled: true, serverUrl: "https://canonical.example/mcp/wardmote" });
   mocks.connections.mockResolvedValue([]);
   mocks.revoke.mockResolvedValue(undefined);
   client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
@@ -54,14 +54,14 @@ describe("assistant setup from Connections", () => {
   it("uses the canonical URL and explains how OpenCode opens consent without granting access", async () => {
     await render();
     const config = Array.from(container.querySelectorAll("pre")).map(p => p.textContent!).find(p => p.startsWith("{"))!;
-    expect(JSON.parse(config).mcp.paperclip).toEqual({ type: "remote", url: "https://canonical.example/mcp/paperclip", enabled: true, oauth: { scope: "paperclip:read paperclip:write paperclip:configure offline_access" } });
+    expect(JSON.parse(config).mcp.paperclip).toEqual({ type: "remote", url: "https://canonical.example/mcp/wardmote", enabled: true, oauth: { scope: "paperclip:read paperclip:write paperclip:configure offline_access" } });
     expect(container.textContent).toContain("opencode mcp auth paperclip");
     expect(container.textContent).toContain("No assistants connected to Butter yet");
     expect(container.querySelector('[role="combobox"]')).toBeNull();
     expect(mocks.revoke).not.toHaveBeenCalled();
   });
   it("shows the enable path while disabled, with no usable setup instructions", async () => {
-    mocks.setup.mockResolvedValue({ enabled: false, serverUrl: "https://canonical.example/mcp/paperclip" });
+    mocks.setup.mockResolvedValue({ enabled: false, serverUrl: "https://canonical.example/mcp/wardmote" });
     await render();
     expect(container.querySelector('a[href="/company/settings/instance/features"]')).not.toBeNull();
     expect(container.textContent).not.toContain("opencode mcp auth");
@@ -158,7 +158,7 @@ describe("assistant setup from Connections", () => {
     mocks.setup.mockRejectedValue(new Error("offline"));
     await render();
     expect(container.querySelector('[role="alert"]')?.textContent).toContain("Couldn’t load assistant setup");
-    mocks.setup.mockResolvedValue({ enabled: true, serverUrl: "https://canonical.example/mcp/paperclip" });
+    mocks.setup.mockResolvedValue({ enabled: true, serverUrl: "https://canonical.example/mcp/wardmote" });
     await act(async () => Array.from(container.querySelectorAll('button')).find(b => b.textContent === "Try again")!.click());
     await flush();
     expect(container.textContent).toContain("opencode mcp auth paperclip");

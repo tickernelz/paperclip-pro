@@ -31,7 +31,7 @@ Runner setting in addition to Dot and Assistant connections (MCP).
    **Connect Dot with pairing code**. Entering a valid code first shows the
    exact company, agent, permissions, and ongoing revocable access duration;
    previewing consumes no code and creates no grant. No operator sign-in in Dot’s browser is
-   needed. The personal `/mcp/paperclip` connection
+   needed. The personal `/mcp/wardmote` connection
    cannot execute as Dot.
 4. The OAuth code approval pairs Dot atomically. Attach the connected plugin
    to the Dot conversation if ChatGPT has not exposed its action tools. Dot calls

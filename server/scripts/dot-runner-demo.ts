@@ -49,7 +49,7 @@ try {
   const db = createDb(database.connectionString);
   const origin = await listen(http);
   const callbackOrigin = await listen(callback);
-  const oauth = createPublicMcpOAuth(db, { origin, resource: origin + "/mcp/paperclip" });
+  const oauth = createPublicMcpOAuth(db, { origin, resource: origin + "/mcp/wardmote" });
   await instanceSettingsService(db).updateExperimental({ enablePublicMcp: true });
   const userId = randomUUID();
   await db.insert(authUsers).values({ id: userId, name: "Dot lab operator", email: `${userId}@example.test`, createdAt: new Date(), updatedAt: new Date() });
@@ -82,7 +82,7 @@ try {
   });
   app.use(publicMcpIngressRoutes(oauth, createPublicMcpExecutor(db, oauth, api), service, bridge));
   const rpc = async (method: string, params: Record<string, unknown> = {}) => {
-    const response = await fetch(origin + "/mcp/paperclip", { method: "POST", signal: AbortSignal.timeout(10_000),
+    const response = await fetch(origin + "/mcp/wardmote", { method: "POST", signal: AbortSignal.timeout(10_000),
       headers: { Authorization: `Bearer ${tokens.access_token}`, "Content-Type": "application/json", "MCP-Protocol-Version": "2026-07-28", "Mcp-Method": method, "Mcp-Name": String(params.name ?? "") },
       body: JSON.stringify({ jsonrpc: "2.0", id: randomUUID(), method, params: { ...params, _meta: {
         "io.modelcontextprotocol/protocolVersion": "2026-07-28", "io.modelcontextprotocol/clientCapabilities": {},

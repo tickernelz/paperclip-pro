@@ -109,10 +109,10 @@ describe("paperclipAccessGuidance", () => {
 describe("paperclip MCP endpoint", () => {
   it("normalizes the API base and encodes the toolsets", () => {
     expect(paperclipMcpEndpoint("https://paperclip.test/", "core")).toBe(
-      "https://paperclip.test/api/mcp/paperclip?toolsets=core",
+      "https://paperclip.test/api/mcp/wardmote?toolsets=core",
     );
     expect(paperclipMcpEndpoint("https://paperclip.test/api", "core,extended")).toBe(
-      "https://paperclip.test/api/mcp/paperclip?toolsets=core%2Cextended",
+      "https://paperclip.test/api/mcp/wardmote?toolsets=core%2Cextended",
     );
   });
 
@@ -134,7 +134,7 @@ describe("per-runtime MCP config renderers", () => {
 
   it("resolves the endpoint and the authenticating headers once", () => {
     expect(target).toEqual({
-      url: "https://paperclip.test/api/mcp/paperclip?toolsets=core",
+      url: "https://paperclip.test/api/mcp/wardmote?toolsets=core",
       headers: {
         Authorization: "Bearer run-key",
         "X-Wardmote-Run-Id": "run-7",
@@ -144,9 +144,9 @@ describe("per-runtime MCP config renderers", () => {
 
   it("renders the shape each runtime reads", () => {
     expect(JSON.parse(renderPaperclipGeminiSettings(target))).toEqual({
-      mcpServers: { paperclip: { httpUrl: target.url, headers: target.headers } },
+      mcpServers: { wardmote: { httpUrl: target.url, headers: target.headers } },
     });
-    expect(JSON.parse(renderPaperclipOpenCodeConfig(target)).mcp.paperclip).toEqual({
+    expect(JSON.parse(renderPaperclipOpenCodeConfig(target)).mcp.wardmote).toEqual({
       type: "remote",
       url: target.url,
       enabled: true,
@@ -154,7 +154,7 @@ describe("per-runtime MCP config renderers", () => {
       headers: target.headers,
     });
     const grok = renderPaperclipGrokConfig(target);
-    expect(grok).toContain('[mcp_servers."paperclip"]');
+    expect(grok).toContain('[mcp_servers."wardmote"]');
     expect(grok).toContain(`url = ${JSON.stringify(target.url)}`);
     expect(grok).toContain('"Authorization" = "Bearer run-key"');
     expect(grok).toContain('"X-Wardmote-Run-Id" = "run-7"');
@@ -170,7 +170,7 @@ describe("per-runtime MCP config renderers", () => {
         env: runEnv,
       }),
     );
-    expect(config.mcpServers.paperclip.headers.Authorization).toBe("Bearer ${WARDMOTE_API_KEY}");
-    expect(config.mcpServers.paperclip.headers["X-Wardmote-Run-Id"]).toBe("run-7");
+    expect(config.mcpServers.wardmote.headers.Authorization).toBe("Bearer ${WARDMOTE_API_KEY}");
+    expect(config.mcpServers.wardmote.headers["X-Wardmote-Run-Id"]).toBe("run-7");
   });
 });

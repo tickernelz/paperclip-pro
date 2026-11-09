@@ -67,7 +67,7 @@ export function createPublicMcpEvents(db: Db, oauth: PublicMcpOAuth, api: ApiDis
   async function authorizeCloud(principal: McpPrincipal, authority?: CloudEventAuthority) {
     if (!cloudOrigin) return;
     if (!authority || !Number.isFinite(authority.expiresAt) || authority.expiresAt <= now() || authority.token.length > 24000) throw new McpEventError(-32602, "Refresh the hosted connection before subscribing.");
-    const response = await fetcher(cloudOrigin + "/mcp/paperclip", {
+    const response = await fetcher(cloudOrigin + "/mcp/wardmote", {
       method: "POST", redirect: "error", signal: AbortSignal.timeout(10_000),
       headers: { Authorization: `Bearer ${authority.token}`, "Content-Type": "application/json", Accept: "application/json, text/event-stream" },
       body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/call", params: { name: "paperclip_connection", arguments: {} } }),

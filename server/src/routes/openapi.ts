@@ -12038,7 +12038,7 @@ registerCurrentRoute({
 
 registerCurrentRoute({
   method: "post",
-  path: "/api/mcp/paperclip",
+  path: "/api/mcp/wardmote",
   tags: ["projects"],
   summary: "Call the Paperclip tool surface over the server-hosted MCP endpoint",
   body: z.object({
@@ -12052,14 +12052,14 @@ registerCurrentRoute({
 
 registerCurrentRoute({
   method: "get",
-  path: "/api/mcp/paperclip",
+  path: "/api/mcp/wardmote",
   tags: ["projects"],
   summary: "Reject the server-to-client stream the stateless Paperclip MCP endpoint does not offer",
 });
 
 registerCurrentRoute({
   method: "delete",
-  path: "/api/mcp/paperclip",
+  path: "/api/mcp/wardmote",
   tags: ["projects"],
   summary: "Reject session termination the stateless Paperclip MCP endpoint does not implement",
 });

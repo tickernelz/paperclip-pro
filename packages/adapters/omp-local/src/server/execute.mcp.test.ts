@@ -88,7 +88,7 @@ describe("OMP local Paperclip MCP wiring", () => {
         if (raw === null) continue;
         mcpDir = dir;
         mcpServer = (JSON.parse(raw) as { mcpServers: Record<string, Record<string, unknown>> })
-          .mcpServers.paperclip ?? null;
+          .mcpServers.wardmote ?? null;
       }
       const pythonDir = (options.env.PYTHONPATH ?? "").split(path.delimiter)[0] ?? "";
       const dataFile = path.join(pythonDir, OMP_PYTHON_ENV_FILE_NAME);

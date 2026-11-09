@@ -1704,7 +1704,7 @@ mod tests {
             let events = normalize_acpx_tool_call(
                 &json!({
                     "type": "tool_call", "tag": "tool_call_update", "status": "pending",
-                    "title": "mcp__paperclip__hire_agent", "inputUpdated": input_updated,
+                    "title": "mcp__wardmote__hire_agent", "inputUpdated": input_updated,
                     "rawInput": {"private": "secret-input"},
                 }),
                 "provider-tool-id",

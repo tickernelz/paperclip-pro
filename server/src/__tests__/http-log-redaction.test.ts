@@ -7,7 +7,7 @@ import request from "supertest";
 import { describe, expect, it } from "vitest";
 import { HttpError } from "../errors.js";
 import { HTTP_LOG_REDACT_PATHS } from "../middleware/http-log-redaction.js";
-import { RETIRED_GITHUB_CAPABILITY_HEADER } from "../services/retired-header-names.js";
+import { RETIRED_GITHUB_CAPABILITY_HEADER, RETIRED_MCP_PATH_SEGMENT } from "../services/retired-header-names.js";
 import { errorHandler } from "../middleware/error-handler.js";
 import { testAdapterEnvironmentSchema } from "@tickernelz/wardmote-shared";
 import { createHttpLogger } from "../middleware/logger.js";
@@ -42,13 +42,17 @@ describe("HTTP logger redaction", () => {
     const app = express();
     app.use(express.json());
     app.use(createHttpLogger(pino({ redact: [...HTTP_LOG_REDACT_PATHS] }, stream)));
-    app.post("/mcp/paperclip", (_req, res) => res.status(400).json({ error: "invalid_request" }));
+    app.post("/mcp/wardmote", (_req, res) => res.status(400).json({ error: "invalid_request" }));
     app.post("/mcp/oauth/token", (_req, res) => res.status(400).json({ error: "invalid_grant" }));
     app.get("/mcp/oauth/authorize", (_req, res) => res.redirect("https://client.example/callback?code=redirect-canary"));
     await request(app).post("/mcp/oauth/token").send({ code: "code-canary", code_verifier: "pkce-canary", refresh_token: "refresh-canary" });
     await request(app).get("/mcp/oauth/authorize?state=state-canary");
-    await request(app).post("/mcp/paperclip").send({ params: { delivery: { url: "https://receiver.example/callback-path-canary", secret: "whsec_callback-secret-canary" }, _meta: { "ai.paperclip/cloudAuthority": { token: "cloud-authority-canary" } } } });
+    await request(app).post("/mcp/wardmote").send({ params: { delivery: { url: "https://receiver.example/callback-path-canary", secret: "whsec_callback-secret-canary" }, _meta: { "ai.paperclip/cloudAuthority": { token: "cloud-authority-canary" } } } });
     expect(chunks.join("")).not.toMatch(/callback-path-canary|callback-secret-canary|cloud-authority-canary/);
+    chunks.length = 0;
+    app.post(`/mcp/${RETIRED_MCP_PATH_SEGMENT}`, (_req, res) => res.status(404).json({ error: "not_found" }));
+    await request(app).post(`/mcp/${RETIRED_MCP_PATH_SEGMENT}`).send({ method: "tools/call", params: { name: "x", arguments: { body: "retired-route-canary" } } });
+    expect(chunks.join("")).not.toContain("retired-route-canary");
     expect(chunks.join("")).not.toMatch(/code-canary|pkce-canary|refresh-canary|redirect-canary|state-canary/);
   });
 

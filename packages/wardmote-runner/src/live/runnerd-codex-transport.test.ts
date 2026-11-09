@@ -7847,7 +7847,7 @@ it("persists an active provider as settled before bounded suspension", async () 
 
 it.each(["claude", "codex"] as const)("keeps the explicitly assigned gateway in the %s runner environment", (agent) => {
   const gateway = {
-    WARDMOTE_NATIVE_MCP_NAME: "paperclip-assigned",
+    WARDMOTE_NATIVE_MCP_NAME: "wardmote-assigned",
     WARDMOTE_NATIVE_MCP_URL: "http://127.0.0.1:3100/mcp/gateway",
     WARDMOTE_NATIVE_MCP_TOKEN: "fixture-scoped-gateway-token-1234567890",
   };

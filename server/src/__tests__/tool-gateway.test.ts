@@ -2095,7 +2095,7 @@ rl.on("line", (line) => {
       const gateway = createTestToolGatewayService(db);
       const session = await gateway.createSession({ companyId: company.id, agentId: agent.id, runId: run.id });
       const tool = (await gateway.listToolsForSession(session.token)).find((entry) => entry.catalogEntryId === catalogEntry.id)!;
-      expect(`mcp__paperclip-assigned__${tool.name}`.length).toBeLessThanOrEqual(128);
+      expect(`mcp__wardmote-assigned__${tool.name}`.length).toBeLessThanOrEqual(128);
       expect((await gateway.listToolsForSession(session.token)).find((entry) => entry.catalogEntryId === catalogEntry.id)?.name).toBe(tool.name);
       await gateway.executeTool({ sessionToken: session.token, tool: tool.name, parameters: {} });
     } finally {

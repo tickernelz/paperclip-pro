@@ -65,14 +65,14 @@ export function paperclipMcpRoutes(db: Db) {
   const access = accessService(db);
   const connections = connectionIntentService(db);
 
-  router.get("/mcp/paperclip", (_req, res) => {
+  router.get("/mcp/wardmote", (_req, res) => {
     res.status(405).json({ error: "Method not allowed" });
   });
-  router.delete("/mcp/paperclip", (_req, res) => {
+  router.delete("/mcp/wardmote", (_req, res) => {
     res.status(405).json({ error: "Method not allowed" });
   });
 
-  router.post("/mcp/paperclip", async (req, res) => {
+  router.post("/mcp/wardmote", async (req, res) => {
     if (req.actor.type === "none") throw unauthorized();
     if (req.actor.type !== "agent") throw forbidden("Agent credentials required");
     const token = req.header("authorization")?.replace(/^Bearer\s+/i, "").trim();
@@ -93,7 +93,7 @@ export function paperclipMcpRoutes(db: Db) {
       return send({
         protocolVersion: PROTOCOL_VERSION,
         capabilities: { tools: { listChanged: false } },
-        serverInfo: { name: "paperclip", version: "0.1.0" },
+        serverInfo: { name: "wardmote", version: "0.1.0" },
         ...(notes.length > 0 ? { instructions: notes.join(" ") } : {}),
       });
     }

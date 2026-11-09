@@ -23,7 +23,7 @@ export function registerMcpCommands(program: Command) {
         if (message.id === undefined) continue;
         try {
           let result: unknown;
-          if (message.method === "initialize") result = { protocolVersion: "2025-03-26", capabilities: { tools: {} }, serverInfo: { name: "paperclip", version: "1" } };
+          if (message.method === "initialize") result = { protocolVersion: "2025-03-26", capabilities: { tools: {} }, serverInfo: { name: "wardmote", version: "1" } };
           else if (message.method === "ping") result = {};
           else if (message.method === "tools/list" || message.method === "tools/call") result = await mcpRpc(resource, await mcpAccessToken(resource), message.method, message.params ?? {});
           else { process.stdout.write(JSON.stringify({ jsonrpc: "2.0", id: message.id, error: { code: -32601, message: "Method not supported." } }) + "\n"); continue; }

@@ -59,7 +59,7 @@ describeEmbeddedPostgres("hosted Paperclip MCP inbox tool", () => {
   });
 
   function rpc(body: Record<string, unknown>) {
-    return fetch(`${origin}/api/mcp/paperclip`, {
+    return fetch(`${origin}/api/mcp/wardmote`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

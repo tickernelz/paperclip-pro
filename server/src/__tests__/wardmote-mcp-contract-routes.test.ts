@@ -89,7 +89,7 @@ describeEmbeddedPostgres("hosted Paperclip MCP error and paging contract", () =>
       runId: randomUUID(),
     };
     const query = toolsets ? `?toolsets=${encodeURIComponent(toolsets)}` : "";
-    const response = await fetch(`${origin}/api/mcp/paperclip${query}`, {
+    const response = await fetch(`${origin}/api/mcp/wardmote${query}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

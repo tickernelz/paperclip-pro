@@ -183,7 +183,7 @@ export function publicMcpIngressRoutes(oauth: PublicMcpOAuth, execute: ReturnTyp
       }
       return;
     }
-    const server = new Server({ name: "paperclip", version: "0.1.0" }, { capabilities: { tools: {} } });
+    const server = new Server({ name: "wardmote", version: "0.1.0" }, { capabilities: { tools: {} } });
     server.setRequestHandler(ListToolsRequestSchema, listTools);
     server.setRequestHandler(CallToolRequestSchema, callTool);
     const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined, enableJsonResponse: true });

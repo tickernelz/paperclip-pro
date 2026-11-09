@@ -143,7 +143,7 @@ describe("runtime context materialization", () => {
       codexHome,
       sourceCodexHome: join(root, "host-home"),
       nativeMcp: nativeMcpLaunchBinding({
-        WARDMOTE_NATIVE_MCP_NAME: "paperclip-assigned",
+        WARDMOTE_NATIVE_MCP_NAME: "wardmote-assigned",
         WARDMOTE_NATIVE_MCP_URL: "https://paperclip.example/mcp",
         WARDMOTE_NATIVE_MCP_TOKEN: "x".repeat(40),
       }),
@@ -160,7 +160,7 @@ describe("runtime context materialization", () => {
     ).toBe(0);
     const config = await readFile(join(codexHome, "config.toml"), "utf8");
     expect(config).toContain("shell_snapshot = false");
-    expect(config).toContain("paperclip-assigned");
+    expect(config).toContain("wardmote-assigned");
     expect(config).toContain('default_tools_approval_mode = "approve"');
     expect(config).toContain("Bearer ");
     expect(config).not.toContain("unassigned");

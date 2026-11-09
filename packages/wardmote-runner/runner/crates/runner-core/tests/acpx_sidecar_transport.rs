@@ -275,7 +275,7 @@ fn assigned_gateway_binding_reaches_qualified_sidecar_without_unrelated_secrets(
                 "--nocapture",
             ])
             .env(CHILD, "1")
-            .env("WARDMOTE_NATIVE_MCP_NAME", "paperclip-assigned")
+            .env("WARDMOTE_NATIVE_MCP_NAME", "wardmote-assigned")
             .env("WARDMOTE_NATIVE_MCP_URL", "http://127.0.0.1:3100/mcp")
             .env(
                 "WARDMOTE_NATIVE_MCP_TOKEN",
@@ -327,7 +327,7 @@ fn assigned_gateway_binding_reaches_qualified_sidecar_without_unrelated_secrets(
         let response = sidecar
             .request(GeneratedAcpxSidecarCommand::Initialize, json!({}))
             .unwrap();
-        assert_eq!(response["name"], "paperclip-assigned");
+        assert_eq!(response["name"], "wardmote-assigned");
         assert_eq!(response["url"], "http://127.0.0.1:3100/mcp");
         assert_eq!(
             response["hasToken"], true,

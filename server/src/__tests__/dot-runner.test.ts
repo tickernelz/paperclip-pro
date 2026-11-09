@@ -122,7 +122,7 @@ describe("durable Dot Runner integration", () => {
     await expect(broker.pair(unpaired, pairing.pairingCode)).rejects.toThrow();
     const principal = await oauth.authenticate(tokens.access_token);
     expect(principal.actor).toMatchObject({ type: "agent", agentId: agent!.id, companyId: company!.id });
-    const personal = createPublicMcpOAuth(db, { ...config, resource: config.origin + "/mcp/paperclip" });
+    const personal = createPublicMcpOAuth(db, { ...config, resource: config.origin + "/mcp/wardmote" });
     await expect(personal.authenticate(tokens.access_token)).rejects.toThrow();
     const secret = "whsec_" + randomBytes(32).toString("base64");
     const received: Array<Record<string, any>> = [];
@@ -171,7 +171,7 @@ describe("durable Dot Runner integration", () => {
   }
 
   function gateway(oauth: ReturnType<typeof createPublicMcpOAuth>, actor: Request["actor"]) {
-    const personal = createPublicMcpOAuth(db, { ...oauth.config, resource: oauth.config.origin + "/mcp/paperclip" });
+    const personal = createPublicMcpOAuth(db, { ...oauth.config, resource: oauth.config.origin + "/mcp/wardmote" });
     const dispatch = async () => { throw new Error("Personal API dispatch forbidden"); };
     const app = express();
     app.use(express.json());
@@ -659,7 +659,7 @@ describe("durable Dot Runner integration", () => {
     await instanceSettingsService(db).updateExperimental({ enableOpenAiDot: false });
     try {
       expect((await request(app).get("/.well-known/oauth-protected-resource/mcp/runner")).status).toBe(503);
-      expect((await request(app).get("/.well-known/oauth-protected-resource/mcp/paperclip")).status).toBe(200);
+      expect((await request(app).get("/.well-known/oauth-protected-resource/mcp/wardmote")).status).toBe(200);
     } finally { await instanceSettingsService(db).updateExperimental({ enableOpenAiDot: true }); }
     await f.events.unsubscribe(f.principal, f.subscription);
   }, 30000);
@@ -701,7 +701,7 @@ describe("durable Dot Runner integration", () => {
         ...(remote ? { runnerExecutionTarget: remote.target, runnerRemoteBinaryPath: remote.runnerBinary, runnerIngressAuthorized: true }
           : { dotWorkspaceRoot: root }),
         runnerInstanceId: prepared.runnerInstanceId,
-        runnerEnvironment: { WARDMOTE_NATIVE_MCP_NAME: "paperclip-assigned", WARDMOTE_NATIVE_MCP_URL: "http://127.0.0.1:3217/mcp/gateways/dot-fixture", WARDMOTE_NATIVE_MCP_TOKEN: "fixture-gateway-secret" },
+        runnerEnvironment: { WARDMOTE_NATIVE_MCP_NAME: "wardmote-assigned", WARDMOTE_NATIVE_MCP_URL: "http://127.0.0.1:3217/mcp/gateways/dot-fixture", WARDMOTE_NATIVE_MCP_TOKEN: "fixture-gateway-secret" },
         useRunnerd: true, turnTimeoutMs: 45000, onEvent: async event => { observed.push(event); }, onLog: async () => {} });
       // Attach a handler immediately: a bootstrap error must never become an unhandled rejection.
       let startupError: unknown;

@@ -9,7 +9,7 @@ function fixture() {
   trace.start("agent.turn");
   return { spans, timing: createNativeToolTrace(trace, () => now), at: (time: number) => { now = time; } };
 }
-const event = (kind: string, id: string, time: number, inputUpdated = false) => ({ eventType: `tool.execution.${kind}`, emittedAt: new Date(time).toISOString(), payload: { executionId: id, name: "mcp__paperclip__call_api", inputUpdated } });
+const event = (kind: string, id: string, time: number, inputUpdated = false) => ({ eventType: `tool.execution.${kind}`, emittedAt: new Date(time).toISOString(), payload: { executionId: id, name: "mcp__wardmote__call_api", inputUpdated } });
 
 describe("native tool timing", () => {
   it("measures streamed input and server execution in their distinct ID namespaces", async () => {

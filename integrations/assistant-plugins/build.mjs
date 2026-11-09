@@ -3,11 +3,11 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 
 // The endpoint is a packaging input, never a model-callable destination.
-const endpoint = new URL(process.argv[2] || "http://localhost:3100/mcp/paperclip");
+const endpoint = new URL(process.argv[2] || "http://localhost:3100/mcp/wardmote");
 const local = ["localhost", "127.0.0.1", "[::1]"].includes(endpoint.hostname);
-if (endpoint.username || endpoint.password || endpoint.search || endpoint.hash || endpoint.pathname !== "/mcp/paperclip"
+if (endpoint.username || endpoint.password || endpoint.search || endpoint.hash || endpoint.pathname !== "/mcp/wardmote"
   || (endpoint.protocol !== "https:" && !(local && endpoint.protocol === "http:"))) {
-  throw new Error("Supply a deployed HTTPS /mcp/paperclip URL, or HTTP loopback for development.");
+  throw new Error("Supply a deployed HTTPS /mcp/wardmote URL, or HTTP loopback for development.");
 }
 const root = path.dirname(fileURLToPath(import.meta.url));
 const identity = { name: "paperclip", version: "0.1.0", description: "Review your team, delegate work and retrieve durable results in Paperclip.", author: { name: "Paperclip", url: "https://paperclip.ing" }, homepage: "https://paperclip.ing", repository: "https://github.com/paperclipai/paperclip", license: "MIT" };
@@ -18,10 +18,10 @@ for (const vendor of ["openai", "claude"]) {
   const manifestDir = vendor === "openai" ? ".codex-plugin" : ".claude-plugin";
   await mkdir(path.join(out, manifestDir), { recursive: true });
   await cp(path.join(root, "shared", "skills"), path.join(out, "skills"), { recursive: true });
-  await json(path.join(out, ".mcp.json"), { mcpServers: { paperclip: { type: "http", url: endpoint.href } } });
+  await json(path.join(out, ".mcp.json"), { mcpServers: { wardmote: { type: "http", url: endpoint.href } } });
   if (vendor === "openai") {
     await json(path.join(out, "plugin.json"), { $schema: "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json", ...identity, extensions: { "com.openai": { interface: presentation } } });
-    await json(path.join(out, "mcp.json"), { $schema: "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json", mcpServers: { paperclip: { type: "streamable-http", url: endpoint.href } } });
+    await json(path.join(out, "mcp.json"), { $schema: "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json", mcpServers: { wardmote: { type: "streamable-http", url: endpoint.href } } });
     await json(path.join(out, manifestDir, "plugin.json"), { ...identity, skills: "./skills/", mcpServers: "./.mcp.json", interface: presentation });
   } else {
     await json(path.join(out, manifestDir, "plugin.json"), { ...identity, skills: "./skills/", mcpServers: "./.mcp.json" });

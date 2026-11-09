@@ -68,7 +68,7 @@ export async function initializeMcpHttpSession(input: {
       params: {
         protocolVersion: MCP_PROTOCOL_VERSION,
         capabilities: {},
-        clientInfo: { name: "paperclip", version: "1" },
+        clientInfo: { name: "wardmote", version: "1" },
       },
     }),
   });

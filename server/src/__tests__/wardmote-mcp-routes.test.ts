@@ -120,7 +120,7 @@ describeEmbeddedPostgres("server-hosted Wardmote MCP endpoint", () => {
     opts: { authorized?: boolean; toolsets?: string } = {},
   ) {
     const query = opts.toolsets ? `?toolsets=${encodeURIComponent(opts.toolsets)}` : "";
-    const response = await fetch(`${origin}/api/mcp/paperclip${query}`, {
+    const response = await fetch(`${origin}/api/mcp/wardmote${query}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -151,12 +151,12 @@ describeEmbeddedPostgres("server-hosted Wardmote MCP endpoint", () => {
     actor = agentActor(seeded.agentId);
     const { status, body } = await rpc({ method: "initialize" });
     expect(status).toBe(200);
-    expect(body.result!.serverInfo!.name).toBe("paperclip");
+    expect(body.result!.serverInfo!.name).toBe("wardmote");
     expect(body.result!.capabilities!.tools).toBeDefined();
   });
 
   it("refuses the transport methods it does not implement", async () => {
-    const get = await fetch(`${origin}/api/mcp/paperclip`);
+    const get = await fetch(`${origin}/api/mcp/wardmote`);
     expect(get.status).toBe(405);
   });
 

@@ -227,9 +227,9 @@ describe("ACPX runtime host", () => {
   });
 
   it.each([
-    { WARDMOTE_NATIVE_MCP_NAME: "paperclip-assigned" },
+    { WARDMOTE_NATIVE_MCP_NAME: "wardmote-assigned" },
     { WARDMOTE_NATIVE_MCP_NAME: "paperclip", WARDMOTE_NATIVE_MCP_URL: "http://127.0.0.1:3211/mcp", WARDMOTE_NATIVE_MCP_TOKEN: "x".repeat(40) },
-    { WARDMOTE_NATIVE_MCP_NAME: "paperclip-assigned", WARDMOTE_NATIVE_MCP_URL: "http://external.example/mcp", WARDMOTE_NATIVE_MCP_TOKEN: "x".repeat(40) },
+    { WARDMOTE_NATIVE_MCP_NAME: "wardmote-assigned", WARDMOTE_NATIVE_MCP_URL: "http://external.example/mcp", WARDMOTE_NATIVE_MCP_TOKEN: "x".repeat(40) },
   ])("rejects invalid assigned connection bindings before runtime launch", async (environment) => {
     const fixture = await hostFixture();
     const openRuntime = vi.fn();
@@ -244,7 +244,7 @@ describe("ACPX runtime host", () => {
       ...fixture.options,
       agent: "claude", model: "claude-sonnet-5",
       environment: { ...fixture.options.environment,
-        WARDMOTE_NATIVE_MCP_NAME: "paperclip-assigned",
+        WARDMOTE_NATIVE_MCP_NAME: "wardmote-assigned",
         WARDMOTE_NATIVE_MCP_URL: "http://127.0.0.1:3211/mcp/gateway",
         WARDMOTE_NATIVE_MCP_TOKEN: "fixture-gateway-token-".repeat(3),
       },
@@ -254,15 +254,15 @@ describe("ACPX runtime host", () => {
       return runtimePort({ getStatus: async () => ({ models: { currentModelId: "claude-sonnet-5" } }) });
     } }));
     try {
-      expect(servers.map(server => server.name)).toEqual(["paperclip", "paperclip-assigned"]);
-      expect(servers[1]).toEqual({ name: "paperclip-assigned", url: "http://127.0.0.1:3211/mcp/gateway",
+      expect(servers.map(server => server.name)).toEqual(["paperclip", "wardmote-assigned"]);
+      expect(servers[1]).toEqual({ name: "wardmote-assigned", url: "http://127.0.0.1:3211/mcp/gateway",
         bearerToken: "fixture-gateway-token-".repeat(3), runnerOwned: true });
     } finally { await host.close({ reason: "gateway test complete" }); }
   });
 
   it.each([
-    ["approve-reads", ["mcp__paperclip__get_task_context"]],
-    ["approve-paperclip", ["mcp__paperclip__create_task", "mcp__paperclip__get_task_context", "mcp__paperclip__reassign_task", "mcp__paperclip__write_document"]],
+    ["approve-reads", ["mcp__wardmote__get_task_context"]],
+    ["approve-paperclip", ["mcp__wardmote__create_task", "mcp__wardmote__get_task_context", "mcp__wardmote__reassign_task", "mcp__wardmote__write_document"]],
     ["deny-all", undefined],
   ] as const)("binds exact assigned Claude tools to %s before provider launch", async (permissionMode, allow) => {
     const fixture = await hostFixture();
