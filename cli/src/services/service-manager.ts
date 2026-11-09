@@ -476,6 +476,12 @@ export async function detectServiceManager(input: { instanceId?: string; platfor
   }
 }
 
+export function appendServiceUserBinDirs(searchPath: string | undefined, userHomeDir = os.homedir()): string {
+  const entries = (searchPath ?? "").split(path.delimiter).filter(Boolean);
+  const missing = [path.join(userHomeDir, ".local", "bin"), path.join(userHomeDir, ".bun", "bin")].filter((dir) => !entries.includes(dir));
+  return [...entries, ...missing].join(path.delimiter);
+}
+
 export async function assertForegroundRunAllowed(instanceId: string, force = false, detector: typeof detectServiceManager = detectServiceManager): Promise<void> {
   if (force || process.env.PAPERCLIP_SERVICE_MANAGED === "1") return;
   const detection = await detector({ instanceId });
