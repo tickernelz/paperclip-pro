@@ -10129,6 +10129,10 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         attestations: configuration.attestations,
       });
     }
+    const revokeMintedOpenwaKey = async () => {
+      if (openwaMintedKeyId && credentials.adminApiKey)
+        await revokeOpenwaAgentKey({ baseUrl: credentials.baseUrl, adminApiKey: credentials.adminApiKey }, openwaMintedKeyId, { fetchImpl });
+    };
     let identity: VerifiedProviderIdentity;
     try {
       identity = await verifyCredentials(endpoint.provider, credentials);
@@ -10153,102 +10157,108 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       }
       await assertNativeBotIdentityAvailable(endpoint, identity);
     } catch (error) {
-      if (openwaMintedKeyId && credentials.adminApiKey)
-        await revokeOpenwaAgentKey({ baseUrl: credentials.baseUrl, adminApiKey: credentials.adminApiKey }, openwaMintedKeyId, { fetchImpl });
+      await revokeMintedOpenwaKey();
       throw error;
     }
-    const prepared = await prepareProviderInventory(endpoint, credentials);
-    const credentialsChangedByDiscovery =
-      endpoint.provider === "github" &&
-      prepared.credentials.installationId !== credentials.installationId;
-    credentials = prepared.credentials;
-    await options.nativeBotIdentityClaimBarrier?.();
-    // Claim a fresh provider identity before any newly supplied secrets are
-    // persisted. The provider-global unique indexes are the multi-process
-    // arbitration boundary when two setup requests both pass the optimistic
-    // preflight. A process that stops after this small claim leaves a
-    // fail-closed attention endpoint that the same operator can reconnect;
-    // it never leaves credentials bound to the losing endpoint.
-    if (!endpoint.botExternalId) {
-      try {
-        const claimed = await db.transaction(async (tx) => {
-          await credentialLease.assertOwned(tx);
-          await notifyChatEndpointWork(tx);
-          const rows = await tx
-            .update(chatEndpoints)
-            .set({
-              status: "attention",
-              providerAccountId: identity.providerAccountId ?? null,
-              providerAccountLabel: identity.providerAccountLabel ?? null,
-              botExternalId: identity.botExternalId ?? null,
-              botUsername: identity.botUsername ?? null,
-              botDisplayName:
-                identity.botLabel ??
-                endpoint.botDisplayName ??
-                record.assignedAgentName,
-              healthMessage: "Provider setup must be completed",
-              lastError: null,
-              updatedAt: new Date(),
-            })
-            .where(
-              and(
-                eq(chatEndpoints.id, endpoint.id),
-                eq(chatEndpoints.status, endpoint.status),
-                isNull(chatEndpoints.botExternalId),
-              ),
-            )
-            .returning({ id: chatEndpoints.id });
-          await credentialLease.assertOwned(tx);
-          return rows;
-        });
-        if (claimed.length !== 1) {
-          throw conflict("This chat connection changed during setup", {
-            code: "chat_endpoint_setup_changed",
+    let prepared: Awaited<ReturnType<typeof prepareProviderInventory>>;
+    let keepOpenwaEndpointActive = false;
+    try {
+      prepared = await prepareProviderInventory(endpoint, credentials);
+      const credentialsChangedByDiscovery =
+        endpoint.provider === "github" &&
+        prepared.credentials.installationId !== credentials.installationId;
+      credentials = prepared.credentials;
+      await options.nativeBotIdentityClaimBarrier?.();
+      // Claim a fresh provider identity before any newly supplied secrets are
+      // persisted. The provider-global unique indexes are the multi-process
+      // arbitration boundary when two setup requests both pass the optimistic
+      // preflight. A process that stops after this small claim leaves a
+      // fail-closed attention endpoint that the same operator can reconnect;
+      // it never leaves credentials bound to the losing endpoint.
+      if (!endpoint.botExternalId) {
+        try {
+          const claimed = await db.transaction(async (tx) => {
+            await credentialLease.assertOwned(tx);
+            await notifyChatEndpointWork(tx);
+            const rows = await tx
+              .update(chatEndpoints)
+              .set({
+                status: "attention",
+                providerAccountId: identity.providerAccountId ?? null,
+                providerAccountLabel: identity.providerAccountLabel ?? null,
+                botExternalId: identity.botExternalId ?? null,
+                botUsername: identity.botUsername ?? null,
+                botDisplayName:
+                  identity.botLabel ??
+                  endpoint.botDisplayName ??
+                  record.assignedAgentName,
+                healthMessage: "Provider setup must be completed",
+                lastError: null,
+                updatedAt: new Date(),
+              })
+              .where(
+                and(
+                  eq(chatEndpoints.id, endpoint.id),
+                  eq(chatEndpoints.status, endpoint.status),
+                  isNull(chatEndpoints.botExternalId),
+                ),
+              )
+              .returning({ id: chatEndpoints.id });
+            await credentialLease.assertOwned(tx);
+            return rows;
           });
+          if (claimed.length !== 1) {
+            throw conflict("This chat connection changed during setup", {
+              code: "chat_endpoint_setup_changed",
+            });
+          }
+        } catch (error) {
+          if (isNativeBotIdentityUniqueViolation(error)) {
+            throw nativeBotIdentityConflict(endpoint.provider);
+          }
+          throw error;
         }
-      } catch (error) {
-        if (isNativeBotIdentityUniqueViolation(error)) {
-          throw nativeBotIdentityConflict(endpoint.provider);
-        }
-        throw error;
       }
+      keepOpenwaEndpointActive =
+        endpoint.provider === "openwa" &&
+        input.action === "reconnect" &&
+        endpoint.status === "active" &&
+        (identity.providerAccountId ?? null) === endpoint.providerAccountId &&
+        (identity.botExternalId ?? null) === endpoint.botExternalId &&
+        (await resolveCredentials(endpoint)
+          .then(
+            (stored) =>
+              stored.baseUrl === credentials.baseUrl &&
+              stored.sessionId === credentials.sessionId &&
+              stored.apiKey === credentials.apiKey,
+          )
+          .catch(() => false));
+      if (endpoint.provider === "imessage-photon") {
+        await invalidateRuntime(endpoint.id);
+        await credentialLease.assertOwned();
+        if (credentials.allocation === "shared") await db.update(chatEndpoints).set({ allowGroupChats: false }).where(eq(chatEndpoints.id, endpoint.id));
+        await db.update(toolConnections).set({ config: { provider: endpoint.provider, photon: credentials.allocation === "shared" ? { allocation: "shared", projectId: credentials.projectId } : { allocation: "dedicated", projectId: credentials.projectId, lineId: credentials.lineId } } }).where(and(eq(toolConnections.companyId, endpoint.companyId), eq(toolConnections.id, endpoint.connectionId)));
+      }
+      if (endpoint.provider === "openwa") {
+        await invalidateRuntime(endpoint.id);
+        await credentialLease.assertOwned();
+        await db.update(toolConnections).set({ config: { provider: endpoint.provider, openwa: { baseUrl: credentials.baseUrl, sessionId: credentials.sessionId } } }).where(and(eq(toolConnections.companyId, endpoint.companyId), eq(toolConnections.id, endpoint.connectionId)));
+      }
+      if (
+        (input.credentials && Object.keys(input.credentials).length > 0) ||
+        credentialsChangedByDiscovery ||
+        openwaMintedKeyId !== null
+      )
+        await persistCredentials(
+          endpoint,
+          credentials,
+          credentialLease,
+          actorUserId,
+        );
+    } catch (error) {
+      await revokeMintedOpenwaKey();
+      throw error;
     }
-    const keepOpenwaEndpointActive =
-      endpoint.provider === "openwa" &&
-      input.action === "reconnect" &&
-      endpoint.status === "active" &&
-      (identity.providerAccountId ?? null) === endpoint.providerAccountId &&
-      (identity.botExternalId ?? null) === endpoint.botExternalId &&
-      (await resolveCredentials(endpoint)
-        .then(
-          (stored) =>
-            stored.baseUrl === credentials.baseUrl &&
-            stored.sessionId === credentials.sessionId &&
-            stored.apiKey === credentials.apiKey,
-        )
-        .catch(() => false));
-    if (endpoint.provider === "imessage-photon") {
-      await invalidateRuntime(endpoint.id);
-      await credentialLease.assertOwned();
-      if (credentials.allocation === "shared") await db.update(chatEndpoints).set({ allowGroupChats: false }).where(eq(chatEndpoints.id, endpoint.id));
-      await db.update(toolConnections).set({ config: { provider: endpoint.provider, photon: credentials.allocation === "shared" ? { allocation: "shared", projectId: credentials.projectId } : { allocation: "dedicated", projectId: credentials.projectId, lineId: credentials.lineId } } }).where(and(eq(toolConnections.companyId, endpoint.companyId), eq(toolConnections.id, endpoint.connectionId)));
-    }
-    if (endpoint.provider === "openwa") {
-      await invalidateRuntime(endpoint.id);
-      await credentialLease.assertOwned();
-      await db.update(toolConnections).set({ config: { provider: endpoint.provider, openwa: { baseUrl: credentials.baseUrl, sessionId: credentials.sessionId } } }).where(and(eq(toolConnections.companyId, endpoint.companyId), eq(toolConnections.id, endpoint.connectionId)));
-    }
-    if (
-      (input.credentials && Object.keys(input.credentials).length > 0) ||
-      credentialsChangedByDiscovery ||
-      openwaMintedKeyId !== null
-    )
-      await persistCredentials(
-        endpoint,
-        credentials,
-        credentialLease,
-        actorUserId,
-      );
     if (prepared.inventory)
       await reconcileProviderResourceRows(
         endpoint,

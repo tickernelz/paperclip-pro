@@ -201,7 +201,7 @@ describeEmbeddedPostgres("OpenWA setup inspection and configure", () => {
     return gateway;
   }
 
-  async function setup(options: { adapterType?: string; publicBaseUrl?: string | null } = {}) {
+  async function setup(options: { adapterType?: string; publicBaseUrl?: string | null; nativeBotIdentityClaimBarrier?: () => Promise<void> } = {}) {
     gateway ??= await startFakeGateway();
     const companyId = randomUUID();
     const agentId = randomUUID();
@@ -251,6 +251,7 @@ describeEmbeddedPostgres("OpenWA setup inspection and configure", () => {
       publicBaseUrl: options.publicBaseUrl === undefined ? "https://paperclip.example" : options.publicBaseUrl,
       heartbeat: { wakeup: async () => ({ accepted: true }) } as never,
       scheduleDeferredWork: () => {},
+      nativeBotIdentityClaimBarrier: options.nativeBotIdentityClaimBarrier,
     });
     services.push(service);
     const endpoint = await service.create(companyId, { provider: "openwa", assignedAgentId: agentId }, userId);
@@ -646,6 +647,20 @@ describeEmbeddedPostgres("OpenWA setup inspection and configure", () => {
     const response = await configure(app, endpoint.id, { credentials: { adminApiKey: ADMIN_KEY } });
     expect(response.status).toBe(422);
     expect(response.body.details.code).toBe("openwa_session_not_ready");
+    expect([...live().minted.values()]).toMatchObject([{ active: false }]);
+  });
+
+  it("revokes the minted key when the channel changes after the session was verified", async () => {
+    let endpointId = "";
+    const { app, endpoint } = await setup({
+      nativeBotIdentityClaimBarrier: async () => {
+        await db.update(chatEndpoints).set({ status: "attention" }).where(eq(chatEndpoints.id, endpointId));
+      },
+    });
+    endpointId = endpoint.id;
+    const response = await configure(app, endpoint.id, { credentials: { adminApiKey: ADMIN_KEY } });
+    expect(response.status).toBe(409);
+    expect(response.body.details.code).toBe("chat_endpoint_setup_changed");
     expect([...live().minted.values()]).toMatchObject([{ active: false }]);
   });
 

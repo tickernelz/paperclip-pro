@@ -78,6 +78,12 @@ function failureMessage(failure: unknown, fallback: string): string {
   return failure instanceof Error && failure.message ? failure.message : fallback;
 }
 
+const ENGINE_RUNNING_STATUSES: ReadonlySet<string> = new Set(["initializing", "qr_ready", "authenticating", "ready"]);
+
+function gatewaySaid(failure: unknown, pattern: RegExp): boolean {
+  return failure instanceof Error && pattern.test(failure.message);
+}
+
 export function openwaFailureCode(failure: unknown): string | null {
   const code = failure instanceof ApiError ? (failure.body as { code?: unknown } | null)?.code : null;
   return typeof code === "string" ? code : null;
@@ -309,6 +315,28 @@ export function OpenwaSessionLinker({
     gcTime: 0,
   });
   const image = String(record(qr.data).qrCode ?? "");
+  const start = useMutation({
+    mutationFn: () =>
+      run({ operationId: "SessionController_start", sessionId: session.id }).catch((failure: unknown) => {
+        if (gatewaySaid(failure, /already started/i)) return null;
+        throw failure;
+      }),
+    onSuccess: () => {
+      setError(undefined);
+      void status.refetch();
+      void qr.refetch();
+    },
+    onError: (failure) => setError(failureMessage(failure, "Couldn't start the session.")),
+  });
+  const startSession = start.mutate;
+  const engineStopped =
+    (typeof current.status === "string" && !ENGINE_RUNNING_STATUSES.has(current.status)) || gatewaySaid(qr.error, /not started/i);
+  const startRequested = useRef(false);
+  useEffect(() => {
+    if (!engineStopped || startRequested.current) return;
+    startRequested.current = true;
+    startSession();
+  }, [engineStopped, startSession]);
   const pairing = useMutation({
     mutationFn: () => run({ operationId: "SessionController_requestPairingCode", sessionId: session.id, args: { phoneNumber: phone.replace(/\D/g, "") } }),
     onSuccess: (result) => {
@@ -333,8 +361,15 @@ export function OpenwaSessionLinker({
       ) : image.startsWith("data:image/") ? (
         <img src={image} alt="WhatsApp login QR code" className="mx-auto aspect-square w-full max-w-64 bg-white p-2" />
       ) : (
-        <p className="text-sm text-ink-3">{qr.isError ? "Waiting for the gateway to issue a QR code…" : "Loading QR code…"}</p>
+        <p className="text-sm text-ink-3">
+          {start.isPending ? "Starting the session…" : qr.isError ? "Waiting for the gateway to issue a QR code…" : "Loading QR code…"}
+        </p>
       )}
+      {start.isError && !connected ? (
+        <Button size="sm" variant="secondary" onClick={() => startSession()}>
+          Start session
+        </Button>
+      ) : null}
       {status.isError ? (
         <p role="alert" className="text-sm text-bad">
           {failureMessage(status.error, "Couldn't read the session status.")}
@@ -353,7 +388,7 @@ export function OpenwaSessionLinker({
               placeholder="628123456789"
               onChange={(event) => setPhone(event.target.value)}
             />
-            <Button variant="secondary" disabled={pairing.isPending || phone.replace(/\D/g, "").length < 8} onClick={() => pairing.mutate()}>
+            <Button variant="secondary" disabled={pairing.isPending || start.isPending || phone.replace(/\D/g, "").length < 8} onClick={() => pairing.mutate()}>
               Get code
             </Button>
           </div>

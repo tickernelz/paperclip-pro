@@ -5,6 +5,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ChatEndpoint } from "@/api/chatEndpoints";
+import { ApiError } from "@/api/client";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { OpenwaConnectStep } from "./OpenwaConnectStep";
 import { openwaSetupInput } from "./ChatEndpointSetup";
@@ -185,6 +186,53 @@ describe("OpenWA connect step", () => {
       soleClient: "true",
     });
     expect(container.textContent).not.toContain("secret-admin-key");
+  });
+
+  it("starts a disconnected session before showing its QR, then selects it once it is ready", async () => {
+    const admin = {
+      ...inspection,
+      keyRole: "admin",
+      adminKey: { role: "admin" },
+      canManageSessions: true,
+      agentKeyMinted: true,
+      warnings: [],
+      eligible: false,
+      sessions: [{ sessionId: "session-b", name: "spare", status: "disconnected", maskedNumber: null, pushName: null, eligible: false, unavailableReason: "The session is disconnected" }],
+    };
+    const linked = { ...admin, eligible: true, sessions: [{ sessionId: "session-b", name: "spare", status: "ready", maskedNumber: "+62xxx...9999", pushName: "Spare", eligible: true }] };
+    mocks.inspectOpenwa.mockResolvedValueOnce(admin).mockResolvedValueOnce(linked);
+    let status = "disconnected";
+    const engineRunning = () => ["initializing", "qr_ready", "authenticating", "ready"].includes(status);
+    const gatewayRefused = (operationId: string, message: string) =>
+      new ApiError(operationId + " failed with HTTP 400: " + message, 400, { error: message, details: { code: "openwa_bad_request" } });
+    mocks.runOpenwaGatewayAdmin.mockImplementation(async (_id: string, call: { operationId: string; sessionId?: string }) => {
+      const reply = (data: unknown) => ({ operationId: call.operationId, sessionId: call.sessionId ?? null, data, revealed: false });
+      if (call.operationId === "SessionController_findOne") return reply({ id: "session-b", status });
+      if (call.operationId === "SessionController_start") {
+        if (engineRunning()) throw gatewayRefused(call.operationId, "Session is already started");
+        status = "qr_ready";
+        return reply({ id: "session-b", status });
+      }
+      if (!engineRunning()) throw gatewayRefused(call.operationId, "Session is not started. Call POST /sessions/:sessionId/start first.");
+      if (call.operationId === "SessionController_getQRCode") return reply({ qrCode: "data:image/png;base64,QR" });
+      return reply({});
+    });
+    render();
+    type("#openwa-base-url", "http://localhost:2785");
+    type("#openwa-admin-api-key", "secret-admin-key");
+    click(button("Inspect gateway"));
+    await vi.waitFor(() => expect(button("Link WhatsApp")).toBeTruthy());
+    click(button("Link WhatsApp"));
+    await vi.waitFor(() => expect(container.querySelector('img[alt="WhatsApp login QR code"]')).toBeTruthy());
+    const connection = { baseUrl: "http://localhost:2785", adminApiKey: "secret-admin-key" };
+    expect(mocks.runOpenwaGatewayAdmin.mock.calls.filter(([, call]) => call.operationId === "SessionController_start")).toEqual([
+      ["endpoint-1", { operationId: "SessionController_start", sessionId: "session-b", connection }],
+    ]);
+    expect(container.querySelector('[role="alert"]')).toBeNull();
+    status = "ready";
+    await vi.waitFor(() => expect(mocks.inspectOpenwa).toHaveBeenCalledTimes(2), { timeout: 6_000 });
+    await vi.waitFor(() => expect(container.querySelector<HTMLInputElement>('input[value="session-b"]')?.checked).toBe(true));
+    expect(container.querySelector('img[alt="WhatsApp login QR code"]')).toBeNull();
   });
 
   it("adds an admin key on reconnect without retyping the operator key", () => {
