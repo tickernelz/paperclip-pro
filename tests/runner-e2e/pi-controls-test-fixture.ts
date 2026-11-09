@@ -1,5 +1,5 @@
-import { CodexSessionState } from "../../packages/paperclip-runner/src/drivers/codex/codex-session-state.js";
-import { mapTerminalTurn } from "../../packages/paperclip-runner/src/drivers/codex/codex-session-terminal.js";
+import { CodexSessionState } from "../../packages/wardmote-runner/src/drivers/codex/codex-session-state.js";
+import { mapTerminalTurn } from "../../packages/wardmote-runner/src/drivers/codex/codex-session-terminal.js";
 import { observePiControlPending } from "./pi-controls-evidence.js";
 import { readActiveStopCaller } from "./native-active-stop-evidence.js";
 

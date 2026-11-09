@@ -355,7 +355,7 @@ test("the docs mode rejects shard flags and an unknown group", () => {
   assert.notEqual(dryRun(["--mode", "docs", "--group", "general-chat"]).status, 0);
 });
 
-const laneWrapper = path.join(repoRoot, "packages/paperclip-runner/scripts/run-pr-vitest-lane.mjs");
+const laneWrapper = path.join(repoRoot, "packages/wardmote-runner/scripts/run-pr-vitest-lane.mjs");
 
 function wrapperPlan(args, envOverrides = {}) {
   const result = spawnSync(process.execPath, [laneWrapper, ...args, "--dry-run"], {

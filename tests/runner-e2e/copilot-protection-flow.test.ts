@@ -4,15 +4,15 @@ import { spawn } from "node:child_process";
 import { readFile, mkdtemp, rm, writeFile, unlink, rename, mkdir, symlink } from "node:fs/promises";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { createCopilotToolEvidence } from "../../packages/paperclip-runner/src/drivers/acpx/copilot-tool-evidence.js";
-import { validateAcpxRichEvent } from "../../packages/paperclip-runner/src/drivers/acpx/profile-extensions.js";
+import { createCopilotToolEvidence } from "../../packages/wardmote-runner/src/drivers/acpx/copilot-tool-evidence.js";
+import { validateAcpxRichEvent } from "../../packages/wardmote-runner/src/drivers/acpx/profile-extensions.js";
 import { copilotOrigin, readCopilotToolEvidence } from "./copilot-evidence.js";
 import { copilotProtectionCases, gradeCopilotAttachedSettlement, gradeCopilotDeniedWrite } from "./copilot-protection-cases.js";
 import { createAttachedCommandFixture, createDeniedTargetFixture, bindDeniedTargetPrompt, watchDeniedTarget, exists, isPerTurnRunProcess } from "./copilot-local-fixtures.js";
 import { runnerMatrix, suiteDefinitionHash } from "./catalog.js";
 import { selectRunnerExecutions, parseRunnerSelectors } from "./selectors.js";
 
-const fixture = JSON.parse(await readFile(new URL("../../packages/paperclip-runner/src/drivers/acpx/fixtures/copilot-tool-evidence.json", import.meta.url), "utf8"));
+const fixture = JSON.parse(await readFile(new URL("../../packages/wardmote-runner/src/drivers/acpx/fixtures/copilot-tool-evidence.json", import.meta.url), "utf8"));
 function projected(name: string, target = "copilot-denied-nonce.txt") {
   const frames = JSON.parse(JSON.stringify(fixture[name]).replaceAll("copilot-denied-nonce.txt", target)), rows: any[] = []; let clock = 10;
   const projector = createCopilotToolEvidence({ sessionId: frames[0].params.sessionId, turnId: "turn", workingDirectory: "/fixture/workspace", active: () => true,

@@ -6,7 +6,7 @@ dist/
 dist-preview/
 dist-flow-preview/
 server/ui-dist/
-packages/paperclip-runner/runner/target/
+packages/wardmote-runner/runner/target/
 ui/storybook-static/
 .env
 *.tsbuildinfo

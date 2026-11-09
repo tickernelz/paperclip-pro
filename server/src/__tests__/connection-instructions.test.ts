@@ -1,6 +1,6 @@
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { nativeSystemInstructions } from "../../../packages/paperclip-runner/src/backends/runtime-context.js";
+import { nativeSystemInstructions } from "../../../packages/wardmote-runner/src/backends/runtime-context.js";
 import type { NativeExecutionInput } from "../vendor/paperclip-runner/index.js";
 import { randomUUID } from "node:crypto";
 import { access, mkdtemp, writeFile, rm, readFile } from "node:fs/promises";

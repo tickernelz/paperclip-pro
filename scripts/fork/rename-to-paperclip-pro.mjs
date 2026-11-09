@@ -223,7 +223,7 @@ const PROTECTED = [
 
 const DEFAULT_RULE = r(String.raw`\bpaperclipai\b`, CLI_BIN);
 
-const DERIVED_ARTIFACTS = ["packages/paperclip-runner/scripts/generate-protocol-manifest.mjs"];
+const DERIVED_ARTIFACTS = ["packages/wardmote-runner/scripts/generate-protocol-manifest.mjs"];
 
 function regenerateDerived(check) {
   const failures = [];

@@ -121,7 +121,7 @@ type FixtureObservation = PolicyObservation & {
 type DisabledLiveEntrypoint = "attention" | "cancellation" | "reconciliation" | "rollout";
 
 const corpusPath = fileURLToPath(new URL(
-  "../../../packages/paperclip-runner/spec/fixtures/status-authority-sdk.json",
+  "../../../packages/wardmote-runner/spec/fixtures/status-authority-sdk.json",
   import.meta.url,
 ));
 

@@ -94,7 +94,7 @@ isolation; otherwise the worktree preview configuration suppresses execution.
 The actual runner-driver fixture also requires:
 
 ```sh
-cargo build --manifest-path packages/paperclip-runner/runner/Cargo.toml --bin fake-codex-app-server
+cargo build --manifest-path packages/wardmote-runner/runner/Cargo.toml --bin fake-codex-app-server
 ```
 
 A run without that binary failed at provider startup; the complete 37-case native

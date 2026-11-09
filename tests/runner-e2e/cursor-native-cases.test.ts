@@ -1,5 +1,5 @@
-import { parsePaperclipQuestionResponse } from "../../packages/paperclip-runner/src/contracts/question-set.js";
-import { normalizeCursorPlanRequest } from "../../packages/paperclip-runner/src/drivers/acpx/cursor-extensions.js";
+import { parsePaperclipQuestionResponse } from "../../packages/wardmote-runner/src/contracts/question-set.js";
+import { normalizeCursorPlanRequest } from "../../packages/wardmote-runner/src/drivers/acpx/cursor-extensions.js";
 import { cursorNativePlanResponse, findCursorNativeRequest, hasCursorNativeCardBinding } from "./cursor-native-flow.js";
 import { cursorDeniedCommand, type CursorToolNotice } from "./cursor-native-evidence.js";
 import { describe, expect, it } from "vitest";

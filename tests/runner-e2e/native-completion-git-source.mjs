@@ -61,12 +61,12 @@ export function inspectNativeCompletionBuildHydration(repositoryRoot) {
   return { present: true, verified: errors.length === 0, archiveSha256, checksumSha256, errors };
 }
 
-export const NATIVE_COMPLETION_RUNNERD_PATH = "packages/paperclip-runner/runner/target/debug/paperclip-runnerd";
+export const NATIVE_COMPLETION_RUNNERD_PATH = "packages/wardmote-runner/runner/target/debug/paperclip-runnerd";
 /** Mirror the production default selector, and reject staged binaries that would take precedence. */
 export function inspectNativeCompletionRunnerd({ repositoryRoot, sourceSha, sourceFingerprint, environment }) {
   const errors = [], hosted = environment.GITHUB_ACTIONS === "true";
   const selectedPath = `${NATIVE_COMPLETION_RUNNERD_PATH}${process.platform === "win32" ? ".exe" : ""}`;
-  const staged = join(repositoryRoot, `packages/paperclip-runner/dist/bin/paperclip-runnerd${process.platform === "win32" ? ".exe" : ""}`);
+  const staged = join(repositoryRoot, `packages/wardmote-runner/dist/bin/paperclip-runnerd${process.platform === "win32" ? ".exe" : ""}`);
   let binarySha256 = null, binaryBytes = null, archiveSha256 = null, archiveMemberBytes = null;
   try {
     try { lstatSync(staged); throw new Error("staged dist/bin runnerd would override the admitted debug executable"); }

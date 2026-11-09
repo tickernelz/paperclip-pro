@@ -38,7 +38,7 @@ Provision Grok Build 1.0.13 at
 The sandbox provisioning helper is explicit and is never run by npm:
 
 ```sh
-sudo node packages/paperclip-runner/scripts/provision-grok.mjs /opt/paperclip/providers/grok/1.0.13/grok
+sudo node packages/wardmote-runner/scripts/provision-grok.mjs /opt/paperclip/providers/grok/1.0.13/grok
 ```
 
 The standard Daytona image provisions it separately from the provider pack.
@@ -96,7 +96,7 @@ interactive sign-in UI. Authentication mode remains part of the profile identity
 After a subscription upgrade, a fresh `grok login` may be needed if the existing
 login still reports the previous entitlement through ACP.
 
-`packages/paperclip-runner/scripts/grok-native-smoke.mjs` records explicit auth,
+`packages/wardmote-runner/scripts/grok-native-smoke.mjs` records explicit auth,
 model/binary identity, MCP outcome, durable resume and restrictive permissions.
 Pass `--auth subscription --auth-file /private/path/auth.json --output /private/report.json`
 or `--auth api --output /private/report.json` with an explicitly supplied key.

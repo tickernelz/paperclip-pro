@@ -24,7 +24,7 @@ import type {
   NativeExecutionInput,
   NativeSessionBackend,
   NativeSession,
-} from "@tickernelz/wardmote-paperclip-runner";
+} from "@tickernelz/wardmote-runner";
 import {
   CONTROL_PLANE_CONFORMANCE_RESULT,
   CONTROL_PLANE_CONFORMANCE_TERMINAL,

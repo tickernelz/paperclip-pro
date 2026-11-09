@@ -9,7 +9,7 @@ import { Script } from "node:vm";
 import { describe, expect, it, vi } from "vitest";
 import { REMOTE_FIXTURE_MIN_SETUP_BUDGET_MS, bindRemoteNativeFixture, validatePiProviderDeathReceipt, createRemoteTargetWatch, isRemoteRunRoot, parseRemoteProcStat, remoteProcEntryDisappeared, remoteNativeFixtureDiagnostics, remoteNativeIncompleteTerminalEvidence, type RemoteNativeFixtureOptions, type RemoteNativeSnapshot } from "./remote-native-fixtures.js";
 
-import { PI_DISTRIBUTION_CLOSURE_SHA256 } from "../../packages/paperclip-runner/src/drivers/acpx/pi-closure-pins.js";
+import { PI_DISTRIBUTION_CLOSURE_SHA256 } from "../../packages/wardmote-runner/src/drivers/acpx/pi-closure-pins.js";
 import { createRemoteNativeBootstrap } from "./remote-native-bootstrap.js";
 
 const hash = (s: string) => `sha256:${createHash("sha256").update(s).digest("hex")}`;

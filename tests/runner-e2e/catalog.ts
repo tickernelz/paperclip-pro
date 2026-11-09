@@ -36,9 +36,9 @@ import { models as claudeModels } from "../../packages/adapter-utils/src/provide
 import { DEFAULT_GROK_LOCAL_MODEL } from "../../packages/adapter-utils/src/provider-models/grok.js";
 
 const DEFAULT_KIMI_LOCAL_MODEL = "kimi-code/kimi-for-coding";
-import { QUALIFIED_ACPX_PROFILES } from "../../packages/paperclip-runner/src/drivers/acpx/qualified-profiles.js";
+import { QUALIFIED_ACPX_PROFILES } from "../../packages/wardmote-runner/src/drivers/acpx/qualified-profiles.js";
 import { ACPX_QUALIFICATION_MODELS } from "../acpx-qualification-models.js";
-import { QUALIFIED_OPENCODE_MODEL } from "../../packages/paperclip-runner/src/drivers/opencode/opencode-server-driver.js";
+import { QUALIFIED_OPENCODE_MODEL } from "../../packages/wardmote-runner/src/drivers/opencode/opencode-server-driver.js";
 import { CREDENTIAL_NAMES } from "./types.js";
 import { createGitStreamingTask } from "./daytona-git-streaming.js";
 import { PENDING_PROFILE_PREREQUISITES } from "./prerequisites.js";

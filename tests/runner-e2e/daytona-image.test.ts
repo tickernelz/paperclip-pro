@@ -16,8 +16,8 @@ describe("runner E2E Daytona image contract", () => {
   it("keeps the qualified native Grok binary separate from the legacy command", async () => {
     const [dockerfile, packBuilder, runnerPackage] = await Promise.all([
       readFile(path.join(repositoryRoot, "docker/daytona-runner/Dockerfile"), "utf8"),
-      readFile(path.join(repositoryRoot, "packages/paperclip-runner/scripts/build-provider-pack.mjs"), "utf8"),
-      readFile(path.join(repositoryRoot, "packages/paperclip-runner/package.json"), "utf8"),
+      readFile(path.join(repositoryRoot, "packages/wardmote-runner/scripts/build-provider-pack.mjs"), "utf8"),
+      readFile(path.join(repositoryRoot, "packages/wardmote-runner/package.json"), "utf8"),
     ]);
     expect(dockerfile).toMatch(/@xai-official\/grok@\d+\.\d+\.\d+/);
     expect(dockerfile).not.toMatch(/for cli in[^;]*\bgrok\b/);
@@ -26,7 +26,7 @@ describe("runner E2E Daytona image contract", () => {
     expect(packBuilder).toContain('path: "dist/providers/grok/launcher.cjs"');
     expect(dockerfile).toContain("scripts/provision-grok.mjs");
     expect(dockerfile).toContain("/opt/paperclip/providers/grok/1.0.13/grok");
-    expect(DAYTONA_IMAGE_INPUT_PATHS).toContain("packages/paperclip-runner/scripts/provision-grok.mjs");
+    expect(DAYTONA_IMAGE_INPUT_PATHS).toContain("packages/wardmote-runner/scripts/provision-grok.mjs");
     expect(DAYTONA_IMAGE_INPUT_PATHS).not.toContain("packages/grok-acp/package.json");
   });
 
@@ -51,10 +51,10 @@ describe("runner E2E Daytona image contract", () => {
     expect(dockerfile).toContain("--bin paperclip-runnerd");
     expect(dockerfile).toContain("build-provider-pack.mjs /provider-pack");
     expect(normalizedDockerfile).not.toContain(
-      "COPY packages/paperclip-eval-kernel ./packages/paperclip-eval-kernel",
+      "COPY packages/eval-kernel ./packages/eval-kernel",
     );
     expect(normalizedDockerfile).not.toContain(
-      "COPY packages/paperclip-runner ./packages/paperclip-runner",
+      "COPY packages/wardmote-runner ./packages/wardmote-runner",
     );
     expect(dockerfile).toContain(
       "COPY packages ./packages",
@@ -86,27 +86,27 @@ describe("runner E2E Daytona image contract", () => {
       "daytonaio/sandbox:0.8.0@sha256:eadf88e4391072b7ad4bed27d9cadfc9fe9d8ed375d9219d34c2ccb518f213e3",
     ]);
     expect(dockerignore).toContain("**/node_modules");
-    expect(dockerignore).toContain("packages/paperclip-runner/dist");
-    expect(dockerignore).toContain("packages/paperclip-runner/runner/target");
-    expect(await readFile(path.join(repositoryRoot, ".github/docker-context-checks.Dockerfile"), "utf8")).toContain("node packages/paperclip-runner/scripts/generate-acpx-profiles.mjs --check");
+    expect(dockerignore).toContain("packages/wardmote-runner/dist");
+    expect(dockerignore).toContain("packages/wardmote-runner/runner/target");
+    expect(await readFile(path.join(repositoryRoot, ".github/docker-context-checks.Dockerfile"), "utf8")).toContain("node packages/wardmote-runner/scripts/generate-acpx-profiles.mjs --check");
     for (const declaration of [
       "test-fixtures/pi-acp/profile-v19-identity.json",
       "test/fixtures/copilot-profile-v16-identity.json",
     ]) {
-      expect(dockerignore).toContain(`!packages/paperclip-runner/${declaration}`);
-      await expect(readFile(path.join(repositoryRoot, "packages/paperclip-runner", declaration), "utf8")).resolves.toBeTruthy();
+      expect(dockerignore).toContain(`!packages/wardmote-runner/${declaration}`);
+      await expect(readFile(path.join(repositoryRoot, "packages/wardmote-runner", declaration), "utf8")).resolves.toBeTruthy();
     }
     for (const developmentOnlyInput of [
-      "packages/paperclip-runner/devtools",
-      "packages/paperclip-runner/docs",
-      "packages/paperclip-runner/examples",
-      "packages/paperclip-runner/test",
-      "packages/paperclip-runner/test-fixtures",
-      "packages/paperclip-runner/test-support",
-      "packages/paperclip-runner/**/*.md",
-      "packages/paperclip-runner/**/*.test.ts",
-      "packages/paperclip-runner/runner/crates/*/tests",
-      "packages/paperclip-runner/scripts/*-smoke.mjs",
+      "packages/wardmote-runner/devtools",
+      "packages/wardmote-runner/docs",
+      "packages/wardmote-runner/examples",
+      "packages/wardmote-runner/test",
+      "packages/wardmote-runner/test-fixtures",
+      "packages/wardmote-runner/test-support",
+      "packages/wardmote-runner/**/*.md",
+      "packages/wardmote-runner/**/*.test.ts",
+      "packages/wardmote-runner/runner/crates/*/tests",
+      "packages/wardmote-runner/scripts/*-smoke.mjs",
     ]) {
       expect(dockerignore).toContain(developmentOnlyInput);
     }
@@ -164,10 +164,10 @@ describe("runner E2E Daytona image contract", () => {
     expect(workflow).toContain('.config.User == "daytona"');
     expect(workflow).toContain("PAPERCLIP_RUNNER_PROVIDER_PACK_ROOT=");
     expect(workflow).toContain(
-      "node packages/paperclip-runner/scripts/build-provider-pack.mjs packages/paperclip-runner/provider-pack",
+      "node packages/wardmote-runner/scripts/build-provider-pack.mjs packages/wardmote-runner/provider-pack",
     );
     expect(workflow).toContain(
-      "PAPERCLIP_RUNNER_REMOTE_PROVIDER_PACK_PATH: ${{ github.workspace }}/packages/paperclip-runner/provider-pack",
+      "PAPERCLIP_RUNNER_REMOTE_PROVIDER_PACK_PATH: ${{ github.workspace }}/packages/wardmote-runner/provider-pack",
     );
     expect(workflow).toContain(
       "PAPERCLIP_RUNNER_SOURCE_REVISION: ${{ needs.daytona_image.outputs.source_revision }}",
@@ -179,7 +179,7 @@ describe("runner E2E Daytona image contract", () => {
       workflow.indexOf(`--format '{{json .Image}}'`),
     );
     const providerInstall = dockerfile.indexOf(
-      "pnpm install --frozen-lockfile --filter '@tickernelz/wardmote-paperclip-runner...'",
+      "pnpm install --frozen-lockfile --filter '@tickernelz/wardmote-runner...'",
     );
     const runnerSourceCopy = dockerfile.indexOf(
       "COPY packages ./packages",
@@ -205,26 +205,26 @@ describe("runner E2E Daytona image contract", () => {
       "docker/daytona-runner/Dockerfile",
       "pnpm-lock.yaml",
       "patches",
-      "packages/paperclip-eval-kernel/src",
-      "packages/paperclip-runner/package.json",
-      "packages/paperclip-runner/scripts/candidate-provider-pack.mjs",
-      "packages/paperclip-runner/scripts/build-copilot-distribution.mjs",
-      "packages/paperclip-runner/scripts/materialize-copilot-binary.mjs",
-      "packages/paperclip-runner/scripts/materialize-cursor-distribution.mjs",
-      "packages/paperclip-runner/scripts/cursor-runtime-patch.mjs",
-      "packages/paperclip-runner/cursor-distributions.json",
-      "packages/paperclip-runner/runner/crates",
-      "packages/paperclip-runner/scripts/materialize-pi-distribution.mjs",
-      "packages/paperclip-runner/scripts/pi-distribution",
-      "packages/paperclip-runner/src",
+      "packages/eval-kernel/src",
+      "packages/wardmote-runner/package.json",
+      "packages/wardmote-runner/scripts/candidate-provider-pack.mjs",
+      "packages/wardmote-runner/scripts/build-copilot-distribution.mjs",
+      "packages/wardmote-runner/scripts/materialize-copilot-binary.mjs",
+      "packages/wardmote-runner/scripts/materialize-cursor-distribution.mjs",
+      "packages/wardmote-runner/scripts/cursor-runtime-patch.mjs",
+      "packages/wardmote-runner/cursor-distributions.json",
+      "packages/wardmote-runner/runner/crates",
+      "packages/wardmote-runner/scripts/materialize-pi-distribution.mjs",
+      "packages/wardmote-runner/scripts/pi-distribution",
+      "packages/wardmote-runner/src",
     ]) {
       expect(DAYTONA_IMAGE_INPUT_PATHS).toContain(requiredPath);
     }
     expect(DAYTONA_IMAGE_INPUT_PATHS).not.toContain(
-      "packages/paperclip-eval-kernel",
+      "packages/eval-kernel",
     );
     expect(DAYTONA_IMAGE_INPUT_PATHS).not.toContain(
-      "packages/paperclip-runner",
+      "packages/wardmote-runner",
     );
     expect(DAYTONA_IMAGE_DOCKERFILE_PATH).toBe(
       "docker/daytona-runner/Dockerfile",
@@ -242,11 +242,11 @@ describe("runner E2E Daytona image contract", () => {
       "docker/daytona-runner/Dockerfile",
       "package.json",
       "pnpm-lock.yaml",
-      "packages/paperclip-runner/package.json",
-      "packages/paperclip-runner/src",
-      "packages/paperclip-runner/runner/crates",
-      "packages/paperclip-runner/scripts/materialize-pi-distribution.mjs",
-      "packages/paperclip-runner/scripts/pi-distribution",
+      "packages/wardmote-runner/package.json",
+      "packages/wardmote-runner/src",
+      "packages/wardmote-runner/runner/crates",
+      "packages/wardmote-runner/scripts/materialize-pi-distribution.mjs",
+      "packages/wardmote-runner/scripts/pi-distribution",
     ] as const;
     const options = {
       repositoryRoot: root,
@@ -258,13 +258,13 @@ describe("runner E2E Daytona image contract", () => {
       await mkdir(path.join(root, "docker/daytona-runner"), {
         recursive: true,
       });
-      await mkdir(path.join(root, "packages/paperclip-runner/src"), {
+      await mkdir(path.join(root, "packages/wardmote-runner/src"), {
         recursive: true,
       });
       await mkdir(
         path.join(
           root,
-          "packages/paperclip-runner/runner/crates/runner-core/src",
+          "packages/wardmote-runner/runner/crates/runner-core/src",
         ),
         { recursive: true },
       );
@@ -278,25 +278,25 @@ describe("runner E2E Daytona image contract", () => {
         "lockfileVersion: 9\n",
       );
       await writeFile(
-        path.join(root, "packages/paperclip-runner/package.json"),
-        '{"name":"@tickernelz/wardmote-paperclip-runner"}\n',
+        path.join(root, "packages/wardmote-runner/package.json"),
+        '{"name":"@tickernelz/wardmote-runner"}\n',
       );
       await writeFile(
-        path.join(root, "packages/paperclip-runner/src/runner.ts"),
+        path.join(root, "packages/wardmote-runner/src/runner.ts"),
         "version one\n",
       );
       await writeFile(
         path.join(
           root,
-          "packages/paperclip-runner/runner/crates/runner-core/src/lib.rs",
+          "packages/wardmote-runner/runner/crates/runner-core/src/lib.rs",
         ),
         'pub const VERSION: &str = "one";\n',
       );
-      await mkdir(path.join(root, "packages/paperclip-runner/scripts/pi-distribution"), { recursive: true });
+      await mkdir(path.join(root, "packages/wardmote-runner/scripts/pi-distribution"), { recursive: true });
       for (const relativePath of [
-        "packages/paperclip-runner/scripts/materialize-pi-distribution.mjs",
-        "packages/paperclip-runner/scripts/pi-distribution/package.json",
-        "packages/paperclip-runner/scripts/pi-distribution/package-lock.json",
+        "packages/wardmote-runner/scripts/materialize-pi-distribution.mjs",
+        "packages/wardmote-runner/scripts/pi-distribution/package.json",
+        "packages/wardmote-runner/scripts/pi-distribution/package-lock.json",
       ]) await writeFile(path.join(root, relativePath), "version one\n");
       const baseline = await computeDaytonaImageContentId(options);
       const candidate = await computeDaytonaImageContentId({ ...options, candidateProviders: ["pi"] });
@@ -331,12 +331,12 @@ describe("runner E2E Daytona image contract", () => {
         "docker/daytona-runner/Dockerfile",
         "package.json",
         "pnpm-lock.yaml",
-        "packages/paperclip-runner/package.json",
-        "packages/paperclip-runner/src/runner.ts",
-        "packages/paperclip-runner/scripts/materialize-pi-distribution.mjs",
-        "packages/paperclip-runner/scripts/pi-distribution/package.json",
-        "packages/paperclip-runner/scripts/pi-distribution/package-lock.json",
-        "packages/paperclip-runner/runner/crates/runner-core/src/lib.rs",
+        "packages/wardmote-runner/package.json",
+        "packages/wardmote-runner/src/runner.ts",
+        "packages/wardmote-runner/scripts/materialize-pi-distribution.mjs",
+        "packages/wardmote-runner/scripts/pi-distribution/package.json",
+        "packages/wardmote-runner/scripts/pi-distribution/package-lock.json",
+        "packages/wardmote-runner/runner/crates/runner-core/src/lib.rs",
       ]) {
         const absolutePath = path.join(root, relativePath);
         const original = await readFile(absolutePath, "utf8");
@@ -356,8 +356,8 @@ describe("runner E2E Daytona image contract", () => {
   });
 
   it.each([
-    "packages/paperclip-runner/scripts/cursor-runtime-patch.mjs",
-    "packages/paperclip-runner/scripts/provider-pack-executable-shims.mjs",
+    "packages/wardmote-runner/scripts/cursor-runtime-patch.mjs",
+    "packages/wardmote-runner/scripts/provider-pack-executable-shims.mjs",
   ])("invalidates the image when %s changes", async (patchPath) => {
     const root = await mkdtemp(path.join(tmpdir(), "paperclip-provider-image-id-"));
     expect(DAYTONA_IMAGE_INPUT_PATHS).toContain(patchPath);
@@ -385,12 +385,12 @@ describe("runner E2E Daytona image contract", () => {
     );
     const options = {
       repositoryRoot: root,
-      inputPaths: ["packages/paperclip-runner"],
+      inputPaths: ["packages/wardmote-runner"],
       baseImages: [`example.test/base:1@sha256:${"a".repeat(64)}`],
       frontendDigest: `sha256:${"c".repeat(64)}`,
     } as const;
     try {
-      const runnerRoot = path.join(root, "packages/paperclip-runner");
+      const runnerRoot = path.join(root, "packages/wardmote-runner");
       await mkdir(path.join(runnerRoot, "src/live"), { recursive: true });
       await mkdir(path.join(runnerRoot, "docs"), { recursive: true });
       await mkdir(path.join(runnerRoot, "spec"), { recursive: true });

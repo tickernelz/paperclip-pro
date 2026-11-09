@@ -24,8 +24,8 @@ import {
   sanitizeRecord,
 } from "../redaction.js";
 
-import { createCopilotToolEvidence } from "../../../packages/paperclip-runner/src/drivers/acpx/copilot-tool-evidence.js";
-import { appendSemanticToolReceipt } from "../../../packages/paperclip-runner/src/drivers/semantic-tool-receipt.js";
+import { createCopilotToolEvidence } from "../../../packages/wardmote-runner/src/drivers/acpx/copilot-tool-evidence.js";
+import { appendSemanticToolReceipt } from "../../../packages/wardmote-runner/src/drivers/semantic-tool-receipt.js";
 
 function receiptNotice(version: 1 | 2 = 1): Record<string, any> {
   return {
@@ -102,7 +102,7 @@ describe("redaction", () => {
     const schema = JSON.parse(
       readFileSync(
         new URL(
-          "../../../packages/paperclip-runner/protocol/schemas/event.schema.json",
+          "../../../packages/wardmote-runner/protocol/schemas/event.schema.json",
           import.meta.url,
         ),
         "utf8",
@@ -115,7 +115,7 @@ describe("redaction", () => {
     const v1 = JSON.parse(
       readFileSync(
         new URL(
-          "../../../packages/paperclip-runner/protocol/schemas/event.schema.json",
+          "../../../packages/wardmote-runner/protocol/schemas/event.schema.json",
           import.meta.url,
         ),
         "utf8",
@@ -124,7 +124,7 @@ describe("redaction", () => {
     const v2 = JSON.parse(
       readFileSync(
         new URL(
-          "../../../packages/paperclip-runner/protocol/schemas/event-v2.schema.json",
+          "../../../packages/wardmote-runner/protocol/schemas/event-v2.schema.json",
           import.meta.url,
         ),
         "utf8",
@@ -140,7 +140,7 @@ describe("redaction", () => {
     const fixture = JSON.parse(
       readFileSync(
         new URL(
-          "../../../packages/paperclip-runner/protocol/fixtures/replay/duplicate-event.json",
+          "../../../packages/wardmote-runner/protocol/fixtures/replay/duplicate-event.json",
           import.meta.url,
         ),
         "utf8",
@@ -158,7 +158,7 @@ describe("redaction", () => {
 
   it("preserves current PRP v2 session discriminators", () => {
     const schema = JSON.parse(readFileSync(
-      new URL("../../../packages/paperclip-runner/protocol/schemas/event-v2.schema.json", import.meta.url),
+      new URL("../../../packages/wardmote-runner/protocol/schemas/event-v2.schema.json", import.meta.url),
       "utf8",
     )) as { properties: { eventType: { enum: string[] } } };
     for (const eventType of schema.properties.eventType.enum) {

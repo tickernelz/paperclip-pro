@@ -219,7 +219,7 @@ to get operations into runnerd.
 
 The Runner package remains standalone: define the broker port and envelopes in
 the package; implement them in Paperclip server without importing server or DB
-code into `packages/paperclip-runner`.
+code into `packages/wardmote-runner`.
 
 ## 4. Production Runner integration
 
@@ -694,9 +694,9 @@ Add TypeScript/Rust parity fixtures and a scripted external peer.
 **Files:**
 
 - `packages/adapter-utils/src/paperclip-runner-permissions.ts`
-- `packages/paperclip-runner/protocol/schemas/` and protocol fixtures
-- `packages/paperclip-runner/src/contracts/{native-execution,harness-driver,types}.ts`
-- `packages/paperclip-runner/src/backends/native-backend-factory.ts`
+- `packages/wardmote-runner/protocol/schemas/` and protocol fixtures
+- `packages/wardmote-runner/src/contracts/{native-execution,harness-driver,types}.ts`
+- `packages/wardmote-runner/src/backends/native-backend-factory.ts`
 - Runner compatibility/export declarations and corresponding Rust protocol code
 
 **Exit:** A qualified test artifact recognizes Dot and rejects incompatible
@@ -733,7 +733,7 @@ The app port implements only transport persistence/routing.
 - `runner/crates/runner-core/src/native_provider_backend.rs`
 - `runner/crates/runner-core/src/provider_bridge.rs` where shared extension is needed
 - Runner durable command/event validation and provider descriptor projection
-- `packages/paperclip-runner/src/drivers/dot/` reference/conformance implementation
+- `packages/wardmote-runner/src/drivers/dot/` reference/conformance implementation
 - Runnerd transport facade and `server/src/services/native-runtime/runner-prp-coordinator.ts`
 
 **Exit:** A real Rust runnerd and scripted MCP peer complete an assignment through
@@ -869,7 +869,7 @@ pnpm -r typecheck
 pnpm test:run
 pnpm build
 pnpm check:token-gates # when UI changes are present
-pnpm --filter @tickernelz/wardmote-paperclip-runner verify
+pnpm --filter @tickernelz/wardmote-runner verify
 ```
 
 Browser/product suites are opt-in and required for the onboarding/live acceptance
@@ -913,13 +913,13 @@ outside Paperclip after its Paperclip authority ends.
 
 - [Prototype and actual live acceptance](../dot-runner-prototype.md)
 - [Runner architecture](../architecture/paperclip-runner.md)
-- [Runner package ownership and production boundary](../../packages/paperclip-runner/README.md)
+- [Runner package ownership and production boundary](../../packages/wardmote-runner/README.md)
 - [Public MCP identity, tools and hosted broker](../public-mcp.md)
-- [Current Dot reference driver](../../packages/paperclip-runner/src/drivers/dot/dot-harness-driver.ts)
+- [Current Dot reference driver](../../packages/wardmote-runner/src/drivers/dot/dot-harness-driver.ts)
 - [Current MCP bridge](../../server/src/services/public-mcp/dot-runner.ts)
 - [Native provider selection](../../server/src/services/native-runtime/provider-profile.ts)
 - [Production native executor](../../server/src/services/native-runtime/native-session-executor.ts)
-- [Rust provider dispatch](../../packages/paperclip-runner/runner/crates/runner-core/src/native_provider_backend.rs)
+- [Rust provider dispatch](../../packages/wardmote-runner/runner/crates/runner-core/src/native_provider_backend.rs)
 - [Production tool authority](../../server/src/services/native-runtime/paperclip-runner-tool-authority.ts)
 - [OpenAI MCP Events](https://developers.openai.com/plugins/build/mcp-events),
   checked 2026-10-02: Dot support, asynchronous webhook acknowledgement,
