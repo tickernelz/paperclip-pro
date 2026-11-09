@@ -3,7 +3,7 @@
 - Status: Proposed
 - Date: 2026-08-24
 - Owners: Paperclip control plane and runner maintainers
-- Related: [Paperclip Runner compatibility and rollout](paperclip-runner-compatibility.md)
+- Related: [Paperclip Runner compatibility and rollout](wardmote-runner-compatibility.md)
 
 ## Context
 
@@ -245,7 +245,7 @@ Runtime selection is persisted before launch. Later setting changes cannot
 silently move an in-flight run between the direct and native execution paths.
 
 The detailed compatibility rules are in
-[Paperclip Runner compatibility and rollout](paperclip-runner-compatibility.md).
+[Paperclip Runner compatibility and rollout](wardmote-runner-compatibility.md).
 
 ## Observability
 

@@ -1,11 +1,11 @@
 import { spawn, type ChildProcess } from "node:child_process";
 import path from "node:path";
 import type { AdapterExecutionTarget } from "@tickernelz/wardmote-adapter-utils/execution-target";
-import { writePaperclipMcpMount } from "@tickernelz/wardmote-adapter-utils/paperclip-mcp-mount";
+import { writePaperclipMcpMount } from "@tickernelz/wardmote-adapter-utils/wardmote-mcp-mount";
 import {
   renderPaperclipMcpConfig,
   type PaperclipMcpCommand,
-} from "@tickernelz/wardmote-adapter-utils/paperclip-mcp";
+} from "@tickernelz/wardmote-adapter-utils/wardmote-mcp";
 
 export {
   PAPERCLIP_MCP_BIN,
@@ -22,7 +22,7 @@ export {
   renderPaperclipMcpConfig,
   resolvePaperclipMcpServerCommand,
   type PaperclipMcpCommand,
-} from "@tickernelz/wardmote-adapter-utils/paperclip-mcp";
+} from "@tickernelz/wardmote-adapter-utils/wardmote-mcp";
 
 export const PAPERCLIP_MCP_UNAVAILABLE_CODE = "paperclip_mcp_unavailable";
 export const PAPERCLIP_MCP_CONNECT_FAILURE_RE = /MCP server \\?"paperclip\\?" failed to connect/;

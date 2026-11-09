@@ -1,6 +1,6 @@
 export const FIXED_TIME_ISO = "2026-06-05T12:00:00.000Z";
 
-export const MCP_FIXTURE_PROTOCOL_VERSION = "paperclip-mcp-fixture/v1";
+export const MCP_FIXTURE_PROTOCOL_VERSION = "wardmote-mcp-fixture/v1";
 
 export const toolCatalog = [
   {

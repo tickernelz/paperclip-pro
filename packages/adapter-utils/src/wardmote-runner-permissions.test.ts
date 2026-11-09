@@ -1,4 +1,4 @@
-import { resolvePaperclipRunnerPiThinkingLevel } from "./paperclip-runner-permissions.js";
+import { resolvePaperclipRunnerPiThinkingLevel } from "./wardmote-runner-permissions.js";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -9,7 +9,7 @@ import {
   resolvePaperclipRunnerModel,
   resolvePaperclipRunnerPermissionMode,
   resolvePaperclipRunnerCursorMode,
-} from "./paperclip-runner-permissions.js";
+} from "./wardmote-runner-permissions.js";
 
 describe("Paperclip Runner permission defaults", () => {
   it("admits Pi with provider credentials while keeping Copilot pending", () => {
