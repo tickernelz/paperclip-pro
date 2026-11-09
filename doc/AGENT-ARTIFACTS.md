@@ -166,7 +166,7 @@ If the helper is unavailable, use the same API shape:
 curl -sS -X POST \
   "$WARDMOTE_API_URL/api/companies/$WARDMOTE_COMPANY_ID/issues/$WARDMOTE_TASK_ID/attachments" \
   -H "Authorization: Bearer $WARDMOTE_API_KEY" \
-  -H "X-Paperclip-Run-Id: $WARDMOTE_RUN_ID" \
+  -H "X-Wardmote-Run-Id: $WARDMOTE_RUN_ID" \
   -F 'file=@"dist/demo.mp4";type=video/mp4'
 ```
 
@@ -176,7 +176,7 @@ Then create a work product when the uploaded file is the deliverable:
 curl -sS -X POST \
   "$WARDMOTE_API_URL/api/issues/$WARDMOTE_TASK_ID/work-products" \
   -H "Authorization: Bearer $WARDMOTE_API_KEY" \
-  -H "X-Paperclip-Run-Id: $WARDMOTE_RUN_ID" \
+  -H "X-Wardmote-Run-Id: $WARDMOTE_RUN_ID" \
   -H "Content-Type: application/json" \
   --data-binary @artifact-work-product.json
 ```

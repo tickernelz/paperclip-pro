@@ -1057,7 +1057,7 @@ export function emailChannelService(db: Db, options: EmailChannelOptions) {
     const headers = Object.fromEntries(
       Object.entries(message.headers).map(([k, v]) => [k.toLowerCase(), v]),
     );
-    const publicationId = headers["x-paperclip-publication-id"];
+    const publicationId = headers["x-wardmote-publication-id"];
     if (!publicationId || !/^[0-9a-f-]{36}$/i.test(publicationId)) return;
     const [send] = await tx
       .select({ publication: chatPublications, send: emailSends })
@@ -1812,7 +1812,7 @@ export function emailChannelService(db: Db, options: EmailChannelOptions) {
           text: input.text,
           ...recipients,
           ...(attachments.length ? { attachments } : {}),
-          headers: { "X-Paperclip-Publication-Id": pub.id },
+          headers: { "X-Wardmote-Publication-Id": pub.id },
         },
         pub.id,
         input.replyToMessageId,
@@ -2564,7 +2564,7 @@ export function emailChannelService(db: Db, options: EmailChannelOptions) {
             fetchImpl,
           ).getMessage(endpoint.botExternalId!, resolution.providerMessageId);
           const header = Object.entries(message.headers).find(
-            ([key]) => key.toLowerCase() === "x-paperclip-publication-id",
+            ([key]) => key.toLowerCase() === "x-wardmote-publication-id",
           )?.[1];
           if (
             message.inbox_id !== endpoint.botExternalId ||

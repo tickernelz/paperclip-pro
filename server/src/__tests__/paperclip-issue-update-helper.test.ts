@@ -55,7 +55,7 @@ describe("paperclip issue update helper", () => {
           url: req.url ?? "",
           body,
           authorization: req.headers.authorization,
-          runId: req.headers["x-paperclip-run-id"],
+          runId: req.headers["x-wardmote-run-id"],
         };
         requests.push(recorded);
         respond(recorded, requests.length, res);

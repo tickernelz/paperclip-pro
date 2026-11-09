@@ -666,7 +666,7 @@ export async function generate(): Promise<GeneratorResult> {
       totalOperations += 1;
       const key = operationKey(method, path);
       knownOperations.add(key);
-      const authorization = operation["x-paperclip-authorization"] ?? {};
+      const authorization = operation["x-wardmote-authorization"] ?? {};
       if (authorization.actor === "board_or_agent") agentAuthorized += 1;
       if (authorization.actor !== "board_or_agent" && authorization.actor !== "board") {
         note(key, `actor:${authorization.actor ?? "unknown"}`);
@@ -809,7 +809,7 @@ export async function generate(): Promise<GeneratorResult> {
       [summary, described, undocumentedBody, defaultsNote].filter(Boolean).join(". ");
 
     const guardEvidence = evidence.get(candidate.key);
-    const registryBoard = candidate.operation["x-paperclip-authorization"]?.actor === "board";
+    const registryBoard = candidate.operation["x-wardmote-authorization"]?.actor === "board";
     const probeDenial = PROBE_BOARD_DENIED_OPERATIONS[candidate.key];
     const authority: ToolAuthority =
       guardEvidence?.boardGuard || registryBoard || probeDenial ? "board" : "agent";

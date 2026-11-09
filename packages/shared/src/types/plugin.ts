@@ -49,13 +49,8 @@ export type JsonSchema = {
    * When true, the Paperclip config UI hides this property behind an
    * "Advanced options" disclosure. Defaults to false (always visible).
    */
-  "x-paperclip-advanced"?: boolean;
-  /**
-   * Optional sub-section heading used to group advanced properties inside
-   * the disclosure (e.g. "SSH access", "VM resources"). Ignored when
-   * `x-paperclip-advanced` is not true.
-   */
-  "x-paperclip-group"?: string;
+  "x-wardmote-advanced"?: boolean;
+  "x-wardmote-group"?: string;
   [key: string]: unknown;
 };
 

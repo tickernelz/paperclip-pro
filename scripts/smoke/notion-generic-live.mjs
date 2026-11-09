@@ -80,7 +80,7 @@ function assertNoCredentialMaterial(value, credentials, checkpoint) {
 
 function issueMutationHeaders(config, method, pathname) {
   if (method === "GET" || !pathname.startsWith("/api/issues/")) return {};
-  return { "X-Paperclip-Run-Id": config.runId };
+  return { "X-Wardmote-Run-Id": config.runId };
 }
 
 async function apiJson(request, config, method, pathname, data, checkpoint, expectedStatuses = [200]) {

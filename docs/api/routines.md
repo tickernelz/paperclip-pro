@@ -202,8 +202,8 @@ request using its own secret; an agent or board API key is not a substitute.
 | Mode | Headers and signature |
 |------|-----------------------|
 | `bearer` | `Authorization: Bearer <webhookSecret>` |
-| `hmac_sha256` | `X-Paperclip-Timestamp` (Unix seconds or milliseconds) and `X-Paperclip-Signature: sha256=<hex>`; HMAC-SHA256 over the timestamp string, a dot, and the exact body bytes |
-| `github_hmac` | `X-Hub-Signature-256: sha256=<hex>`; HMAC-SHA256 over the exact body bytes, without a timestamp. `X-Paperclip-Signature` is also accepted. Configure GitHub to send JSON. |
+| `hmac_sha256` | `X-Wardmote-Timestamp` (Unix seconds or milliseconds) and `X-Wardmote-Signature: sha256=<hex>`; HMAC-SHA256 over the timestamp string, a dot, and the exact body bytes |
+| `github_hmac` | `X-Hub-Signature-256: sha256=<hex>`; HMAC-SHA256 over the exact body bytes, without a timestamp. `X-Wardmote-Signature` is also accepted. Configure GitHub to send JSON. |
 | `none` | No signature. Anyone with the generated URL can fire the trigger; keep it private. |
 
 For a bearer trigger:
@@ -228,8 +228,8 @@ const response = await fetch(process.env.WEBHOOK_URL, {
   method: "POST",
   headers: {
     "Content-Type": "application/json",
-    "X-Paperclip-Timestamp": timestamp,
-    "X-Paperclip-Signature": `sha256=${signature}`,
+    "X-Wardmote-Timestamp": timestamp,
+    "X-Wardmote-Signature": `sha256=${signature}`,
   },
   body,
 });

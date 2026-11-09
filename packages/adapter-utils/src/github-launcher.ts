@@ -64,7 +64,7 @@ async function main() {
           response = await fetch(url, {
             method: 'POST', redirect: 'error', signal: AbortSignal.timeout(10000),
             headers: { authorization: 'Bearer ' + (env.WARDMOTE_GITHUB_BRIDGE_TOKEN || env.WARDMOTE_API_KEY || env.WARDMOTE_GITHUB_BROKER_TOKEN),
-              'x-paperclip-github-capability': env.WARDMOTE_GITHUB_BROKER_TOKEN, 'content-type': 'application/json' },
+              'x-wardmote-github-capability': env.WARDMOTE_GITHUB_BROKER_TOKEN, 'content-type': 'application/json' },
             body: '{}',
           });
           if (response.status === 409 && conflicts < 29) {

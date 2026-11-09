@@ -857,7 +857,7 @@ describeEmbeddedPostgres("tool access service", () => {
       .post(
         `/api/agents/me/connections/${encodeURIComponent(connection.uid)}/token`,
       )
-      .set("X-Paperclip-Run-Id", run.id)
+      .set("X-Wardmote-Run-Id", run.id)
       .send({ scope: "pages:publish:ns/dotta", requestedTtlSeconds: 5000 });
 
     expect(res.status).toBe(200);
@@ -894,7 +894,7 @@ describeEmbeddedPostgres("tool access service", () => {
       .post(
         `/api/agents/me/connections/${encodeURIComponent(connection.uid)}/token`,
       )
-      .set("X-Paperclip-Run-Id", run.id)
+      .set("X-Wardmote-Run-Id", run.id)
       .send({ scope: "pages:publish:ns/dotta" });
     expect(revoked.status).toBe(403);
     expect(revoked.body.error).toContain("no longer authorized");
@@ -1051,7 +1051,7 @@ describeEmbeddedPostgres("tool access service", () => {
       .post(
         `/api/agents/me/connections/${encodeURIComponent(connection.uid)}/token`,
       )
-      .set("X-Paperclip-Run-Id", run.id)
+      .set("X-Wardmote-Run-Id", run.id)
       .send({ scope: "pages:publish:ns/dotta" });
 
     expect(res.status).toBe(403);
@@ -1094,7 +1094,7 @@ describeEmbeddedPostgres("tool access service", () => {
       .post(
         `/api/agents/me/connections/${encodeURIComponent(connection.uid)}/token`,
       )
-      .set("X-Paperclip-Run-Id", run.id)
+      .set("X-Wardmote-Run-Id", run.id)
       .send({ scope: "pages:publish:ns/dotta" });
 
     expect(res.status).toBe(409);
@@ -2022,7 +2022,7 @@ describeEmbeddedPostgres("tool access service", () => {
 
     const res = await request(app)
       .post(`/api/agents/me/connections/${connection.id}/token`)
-      .set("X-Paperclip-Run-Id", run.id)
+      .set("X-Wardmote-Run-Id", run.id)
       .send({ scope: "pages:publish:ns/dotta" });
 
     expect(res.status).toBe(403);

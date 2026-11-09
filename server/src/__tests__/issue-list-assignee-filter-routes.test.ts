@@ -559,7 +559,7 @@ describeEmbeddedPostgres("issue list routes assigneeAgentId filter", () => {
       Array.from({ length: 10 }, () => [issueId]),
     );
     expect(computeCount).toBe(1);
-    expect(responses.some((res) => res.headers["x-paperclip-request-cache"] === "coalesced")).toBe(true);
+    expect(responses.some((res) => res.headers["x-wardmote-request-cache"] === "coalesced")).toBe(true);
   });
 
   it("keeps compact issue-list cache keys separated by board user identity", async () => {
@@ -605,8 +605,8 @@ describeEmbeddedPostgres("issue list routes assigneeAgentId filter", () => {
     expect(first.status, JSON.stringify(first.body)).toBe(200);
     expect(second.status, JSON.stringify(second.body)).toBe(200);
     expect(computeCount).toBe(2);
-    expect(first.headers["x-paperclip-request-cache"]).toBe("miss");
-    expect(second.headers["x-paperclip-request-cache"]).toBe("miss");
+    expect(first.headers["x-wardmote-request-cache"]).toBe("miss");
+    expect(second.headers["x-wardmote-request-cache"]).toBe("miss");
   });
 
   it("serves repeated compact issue-list requests from the short server cache", async () => {
@@ -646,8 +646,8 @@ describeEmbeddedPostgres("issue list routes assigneeAgentId filter", () => {
     expect(first.status, JSON.stringify(first.body)).toBe(200);
     expect(second.status, JSON.stringify(second.body)).toBe(200);
     expect(computeCount).toBe(1);
-    expect(first.headers["x-paperclip-request-cache"]).toBe("miss");
-    expect(second.headers["x-paperclip-request-cache"]).toBe("hit");
+    expect(first.headers["x-wardmote-request-cache"]).toBe("miss");
+    expect(second.headers["x-wardmote-request-cache"]).toBe("hit");
   });
 
   it("bounds compact issue-list server cache entries", async () => {
@@ -719,7 +719,7 @@ describeEmbeddedPostgres("issue list routes assigneeAgentId filter", () => {
       request(app)
         .get(`/api/companies/${companyId}/issues`)
         .set("Referer", "http://localhost:3100/issues?q=do-not-log-this")
-        .set("X-Paperclip-Tab-Visible", "visible")
+        .set("X-Wardmote-Tab-Visible", "visible")
         .query({ view: "compact", limit: "20", q: "do-not-log-this" })
     ));
 

@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { readFile } from "node:fs/promises";
 const git = (...args) => execFileSync("git", args, { encoding: "utf8" }).trim();
-const headers = { Authorization: `Bearer ${process.env.WARDMOTE_API_KEY}`, "X-Paperclip-Run-Id": process.env.WARDMOTE_RUN_ID, "Content-Type": "application/json" };
+const headers = { Authorization: `Bearer ${process.env.WARDMOTE_API_KEY}`, "X-Wardmote-Run-Id": process.env.WARDMOTE_RUN_ID, "Content-Type": "application/json" };
 const api = async (route, method = "GET", body) => {
   const response = await fetch(`${process.env.WARDMOTE_API_URL}/api${route}`, { method, headers, body: body ? JSON.stringify(body) : undefined });
   assert(response.ok, `${response.status}: ${await response.clone().text()}`);

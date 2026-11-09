@@ -32,7 +32,7 @@ try {
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${WARDMOTE_API_KEY}`,
-      "X-Paperclip-Run-Id": WARDMOTE_RUN_ID,
+      "X-Wardmote-Run-Id": WARDMOTE_RUN_ID,
     },
     body: JSON.stringify({ kind, body, idempotencyKey }),
     // Never forward run credentials through redirects. Bound the entire HTTP attempt.

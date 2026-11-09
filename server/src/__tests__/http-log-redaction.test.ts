@@ -7,6 +7,7 @@ import request from "supertest";
 import { describe, expect, it } from "vitest";
 import { HttpError } from "../errors.js";
 import { HTTP_LOG_REDACT_PATHS } from "../middleware/http-log-redaction.js";
+import { RETIRED_GITHUB_CAPABILITY_HEADER } from "../services/retired-header-names.js";
 import { errorHandler } from "../middleware/error-handler.js";
 import { testAdapterEnvironmentSchema } from "@tickernelz/wardmote-shared";
 import { createHttpLogger } from "../middleware/logger.js";
@@ -486,16 +487,42 @@ describe("HTTP logger redaction", () => {
 
     await request(app)
       .post("/runtime-tools/github/credentials")
-      .set("X-Paperclip-Github-Capability", capability)
+      .set("X-Wardmote-Github-Capability", capability)
       .send({})
       .expect(status);
 
     const output = chunks.join("");
     expect(output).not.toContain(capability);
     const log = JSON.parse(output.trim());
-    expect(log.req.headers["x-paperclip-github-capability"]).toBe("[Redacted]");
+    expect(log.req.headers["x-wardmote-github-capability"]).toBe("[Redacted]");
     expect(log.req.url).toBe("/runtime-tools/github/credentials");
     expect(log.res.statusCode).toBe(status);
+  });
+
+  it("redacts a GitHub capability sent under the retired header name", async () => {
+    const capability = "retired-github-capability-canary";
+    const chunks: string[] = [];
+    const stream = new Writable({
+      write(chunk, _encoding, callback) {
+        chunks.push(chunk.toString());
+        callback();
+      },
+    });
+    const app = express();
+    app.use(createHttpLogger(pino({ redact: [...HTTP_LOG_REDACT_PATHS] }, stream)));
+    app.post("/runtime-tools/github/credentials", (_req, res) => {
+      res.status(401).json({ error: "unauthorized" });
+    });
+
+    await request(app)
+      .post("/runtime-tools/github/credentials")
+      .set(RETIRED_GITHUB_CAPABILITY_HEADER, capability)
+      .send({})
+      .expect(401);
+
+    const output = chunks.join("");
+    expect(output).not.toContain(capability);
+    expect(JSON.parse(output.trim()).req.headers[RETIRED_GITHUB_CAPABILITY_HEADER]).toBe("[Redacted]");
   });
 
   it("drops OAuth callback query data from the message and structured request", async () => {

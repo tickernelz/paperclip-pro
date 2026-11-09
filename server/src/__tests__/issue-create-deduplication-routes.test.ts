@@ -349,7 +349,7 @@ describeEmbeddedPostgres("issue create deduplication routes", () => {
 
     const response = await request(app)
       .post(`/api/companies/${companyId}/issues`)
-      .set("X-Paperclip-Run-Id", runId)
+      .set("X-Wardmote-Run-Id", runId)
       .send({ parentId: parent.id, title: "Attributed create" })
       .expect(201);
     const [created] = await db.select().from(issues).where(eq(issues.id, response.body.id));
@@ -520,7 +520,7 @@ describeEmbeddedPostgres("issue create deduplication routes", () => {
 
       const response = await request(createApp())
         .post(`/api/companies/${companyId}/issues`)
-        .set("X-Paperclip-Run-Id", runId)
+        .set("X-Wardmote-Run-Id", runId)
         .send({ title: "Board-created work" })
         .expect(201);
 

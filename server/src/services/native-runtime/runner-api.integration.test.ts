@@ -528,7 +528,7 @@ else if(m.id!==undefined) send({id:m.id,result:{}});
       const requestHeaders = (token: string) => ({
         authorization: `Bearer ${token}`,
         "content-type": "application/json",
-        "x-paperclip-run-id": fixture.runId,
+        "x-wardmote-run-id": fixture.runId,
       });
       const humanCommentResponse = await fetch(
         `${fixture.apiUrl}/api/issues/${fixture.issueId}/comments`,
@@ -593,7 +593,7 @@ else if(m.id!==undefined) send({id:m.id,result:{}});
         `${fixture.apiUrl}/api/issues/${fixture.issueId}/interactions`,
         {
           method: "POST",
-          headers: { ...requestHeaders(successorToken!), "x-paperclip-run-id": successorRunId },
+          headers: { ...requestHeaders(successorToken!), "x-wardmote-run-id": successorRunId },
           body: JSON.stringify({ ...questionPayload, idempotencyKey: `fresh-source-question-${successorRunId}` }),
         },
       );

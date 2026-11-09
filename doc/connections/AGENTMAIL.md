@@ -167,7 +167,7 @@ Remote email images are not rendered. Attachments use Paperclip's content-type,
 size, company, and task bounds.
 
 An agent must own the inbox, be assigned the source task, and supply the running
-source task's `X-Paperclip-Run-Id` at acceptance. Board actions require company
+source task's `X-Wardmote-Run-Id` at acceptance. Board actions require company
 write access. Configured action policies apply to both. Authority is checked
 again when the durable send executes. A new conversation creates its child task
 and immutable send intent in one transaction before contacting AgentMail.

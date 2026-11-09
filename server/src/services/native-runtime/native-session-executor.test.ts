@@ -1152,7 +1152,7 @@ describe("remote provider pack manifest", () => {
     const manifest = { schema: "paperclip-runner/remote-provider-pack/v1", payload,
       digest: "sha256:" + createHash("sha256").update(canonical(payload)).digest("hex") };
     state.bundledPackManifestPath = join(root, "provider-pack.json");
-    state.bundledRunnerBinary = join(root, "linux-paperclip-runnerd");
+    state.bundledRunnerBinary = join(root, "linux-wardmote-runnerd");
     await writeFile(state.bundledPackManifestPath, JSON.stringify(manifest));
     await writeFile(state.bundledRunnerBinary, "verified Linux daemon fixture");
     const remoteExecution = { ...execution, provider: provider === "opencode"

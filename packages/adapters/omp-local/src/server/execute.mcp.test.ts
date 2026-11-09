@@ -184,7 +184,7 @@ describe("OMP local Paperclip MCP wiring", () => {
       url: paperclipMcpEndpoint(invocation.env.WARDMOTE_API_URL, "core"),
       headers: {
         Authorization: "Bearer ${WARDMOTE_API_KEY}",
-        "X-Paperclip-Run-Id": "run-mcp",
+        "X-Wardmote-Run-Id": "run-mcp",
       },
     });
     expect(invocation.env.WARDMOTE_API_KEY).toBe("run-jwt");
@@ -266,7 +266,7 @@ describe("OMP local Paperclip MCP wiring", () => {
     expect(invocation.mcpServer).toMatchObject({ enabled: false });
     expect(invocation.systemPrompt).not.toMatch(/\bpaperclip[A-Z]\w*/);
     expect(invocation.systemPrompt).toContain("Authorization: Bearer $WARDMOTE_API_KEY");
-    expect(invocation.systemPrompt).toContain("X-Paperclip-Run-Id: $WARDMOTE_RUN_ID");
+    expect(invocation.systemPrompt).toContain("X-Wardmote-Run-Id: $WARDMOTE_RUN_ID");
     expect(invocation.systemPrompt).toContain("POST /api/issues/$WARDMOTE_TASK_ID/interactions");
     expect(probeMock).not.toHaveBeenCalled();
     expect(endpointProbeMock).not.toHaveBeenCalled();

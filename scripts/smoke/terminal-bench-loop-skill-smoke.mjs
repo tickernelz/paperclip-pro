@@ -110,7 +110,7 @@ function createApiClient({ apiUrl, apiKey, runId }) {
       headers["Content-Type"] = "application/json";
     }
     if (runId && method !== "GET") {
-      headers["X-Paperclip-Run-Id"] = runId;
+      headers["X-Wardmote-Run-Id"] = runId;
     }
 
     const response = await fetch(`${baseUrl}${path}`, {

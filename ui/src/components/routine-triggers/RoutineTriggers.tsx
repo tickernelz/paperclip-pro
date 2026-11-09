@@ -573,7 +573,7 @@ function WebhookSettings({
       {trigger.signingMode === "hmac_sha256" && (
         <p className="text-sm text-ink-3">
           Sign the timestamp, a period, and the exact JSON body with
-          HMAC-SHA256. Send X-Paperclip-Timestamp and X-Paperclip-Signature:
+          HMAC-SHA256. Send X-Wardmote-Timestamp and X-Wardmote-Signature:
           sha256=&lt;signature&gt;.
         </p>
       )}

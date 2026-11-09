@@ -564,7 +564,7 @@ export function pluginRoutes(
       "accept",
       "content-type",
       "user-agent",
-      "x-paperclip-run-id",
+      "x-wardmote-run-id",
       "x-request-id",
     ]);
     const headers: Record<string, string> = {};

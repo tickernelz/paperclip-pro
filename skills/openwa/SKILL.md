@@ -23,7 +23,7 @@ as tool arguments.
 
 For CLI/sandbox runtimes, POST the same strict arguments to
 `$WARDMOTE_API_URL/api/companies/$WARDMOTE_COMPANY_ID/openwa/tasks/$WARDMOTE_TASK_ID/tools`
-with `Authorization: Bearer $WARDMOTE_API_KEY`, `X-Paperclip-Run-Id: $WARDMOTE_RUN_ID`
+with `Authorization: Bearer $WARDMOTE_API_KEY`, `X-Wardmote-Run-Id: $WARDMOTE_RUN_ID`
 and JSON `{ "tool": "openwa_read_chat", "arguments": {} }`. Read the adjacent
 `TOOLS.json` file for every tool's exact argument schema. Never print credentials.
 

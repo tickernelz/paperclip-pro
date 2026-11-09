@@ -81,7 +81,7 @@ describe("paperclipAccessGuidance", () => {
     const rest = paperclipAccessGuidance("rest", { shellHint: "run_shell_command" });
     expect(rest).not.toMatch(TOOL_NAME_RE);
     expect(rest).toContain("Authorization: Bearer $WARDMOTE_API_KEY");
-    expect(rest).toContain("X-Paperclip-Run-Id: $WARDMOTE_RUN_ID");
+    expect(rest).toContain("X-Wardmote-Run-Id: $WARDMOTE_RUN_ID");
     expect(rest).toContain("run_shell_command");
   });
 
@@ -137,7 +137,7 @@ describe("per-runtime MCP config renderers", () => {
       url: "https://paperclip.test/api/mcp/paperclip?toolsets=core",
       headers: {
         Authorization: "Bearer run-key",
-        "X-Paperclip-Run-Id": "run-7",
+        "X-Wardmote-Run-Id": "run-7",
       },
     });
   });
@@ -157,7 +157,7 @@ describe("per-runtime MCP config renderers", () => {
     expect(grok).toContain('[mcp_servers."paperclip"]');
     expect(grok).toContain(`url = ${JSON.stringify(target.url)}`);
     expect(grok).toContain('"Authorization" = "Bearer run-key"');
-    expect(grok).toContain('"X-Paperclip-Run-Id" = "run-7"');
+    expect(grok).toContain('"X-Wardmote-Run-Id" = "run-7"');
   });
 
   it("keeps the credential out of the omp config file as an env reference", () => {
@@ -171,6 +171,6 @@ describe("per-runtime MCP config renderers", () => {
       }),
     );
     expect(config.mcpServers.paperclip.headers.Authorization).toBe("Bearer ${WARDMOTE_API_KEY}");
-    expect(config.mcpServers.paperclip.headers["X-Paperclip-Run-Id"]).toBe("run-7");
+    expect(config.mcpServers.paperclip.headers["X-Wardmote-Run-Id"]).toBe("run-7");
   });
 });

@@ -59,7 +59,7 @@ node packages/mcp-server/dist/stdio.js
 
 The Paperclip server hosts the same tool surface at `POST /api/mcp/paperclip`, so a run does not have to spawn this package as a child process. It is stateless streamable HTTP: one endpoint, JSON responses, no `Mcp-Session-Id`, `GET` and `DELETE` answer `405`.
 
-- Authentication is the REST API's: `Authorization: Bearer <run agent key>` plus `X-Paperclip-Run-Id`. Only agent actors are accepted; a board actor gets `403`, a missing credential `401`.
+- Authentication is the REST API's: `Authorization: Bearer <run agent key>` plus `X-Wardmote-Run-Id`. Only agent actors are accepted; a board actor gets `403`, a missing credential `401`.
 - `companyId` and `agentId` come from the authenticated agent, never from a request header, and board-authority tools are exposed only when that agent's `agentAuthorityCapabilities` include company-level authority.
 - Toolsets come from `?toolsets=core,full`; absent, empty or unknown values fall back to `core`, and `full` implies `core` rather than replacing it. The deprecated `all` and `extended` still resolve, with a one-time warning per process.
 - Each `tools/call` re-enters the REST API over the server's own loopback address with the caller's bearer token, so every route guard, record rule and audit hook runs exactly as it does for a direct API call.

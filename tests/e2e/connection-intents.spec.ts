@@ -124,7 +124,7 @@ const post = async (url, body, token = process.env.WARDMOTE_RUNTIME_TOOLS_TOKEN)
   if (!response.ok) throw new Error(\`\${response.status}: \${await response.text()}\`);
   return await response.json();
 };
-const apiHeaders = { authorization: \`Bearer \${process.env.WARDMOTE_API_KEY}\`, "content-type": "application/json", "x-paperclip-run-id": process.env.WARDMOTE_RUN_ID };
+const apiHeaders = { authorization: \`Bearer \${process.env.WARDMOTE_API_KEY}\`, "content-type": "application/json", "x-wardmote-run-id": process.env.WARDMOTE_RUN_ID };
 const runResponse = await fetch(\`\${process.env.WARDMOTE_API_URL}/api/heartbeat-runs/\${process.env.WARDMOTE_RUN_ID}\`, { headers: apiHeaders });
 if (!runResponse.ok) throw new Error(await runResponse.text());
 const run = await runResponse.json();
@@ -153,14 +153,14 @@ const sessionResponse = await fetch(\`\${process.env.WARDMOTE_API_URL}/api/tool-
 if (!sessionResponse.ok) throw new Error(await sessionResponse.text());
 const session = await sessionResponse.json();
 const toolsResponse = await fetch(\`\${process.env.WARDMOTE_API_URL}/api/tool-gateway/tools\`, {
-  headers: { "x-paperclip-tool-gateway-token": session.token }
+  headers: { "x-wardmote-tool-gateway-token": session.token }
 });
 const tools = await toolsResponse.json();
 const tool = tools.find((entry) => entry.connectionId === ${JSON.stringify(connectionId)} && entry.upstreamToolName === "notion:list_pages");
 if (!tool) throw new Error("Continuation did not receive the installed Notion tool");
 const call = await fetch(\`\${process.env.WARDMOTE_API_URL}/api/tool-gateway/tools/call\`, {
   method: "POST",
-  headers: { "x-paperclip-tool-gateway-token": session.token, "content-type": "application/json" },
+  headers: { "x-wardmote-tool-gateway-token": session.token, "content-type": "application/json" },
   body: JSON.stringify({ tool: tool.name, parameters: {} })
 });
 if (!call.ok) throw new Error(await call.text());
@@ -186,7 +186,7 @@ test("AgentMail request shows a durable inline key card in agent chat", async ({
     const agent = await createAgent(request, seed.companyId, "Email requester");
     // Script only the agent's choice of tool; persistence, routes, and UI are real.
     const script = `
-const headers = { authorization: "Bearer " + process.env.WARDMOTE_API_KEY, "content-type": "application/json", "x-paperclip-run-id": process.env.WARDMOTE_RUN_ID };
+const headers = { authorization: "Bearer " + process.env.WARDMOTE_API_KEY, "content-type": "application/json", "x-wardmote-run-id": process.env.WARDMOTE_RUN_ID };
 const runResponse = await fetch(process.env.WARDMOTE_API_URL + "/api/heartbeat-runs/" + process.env.WARDMOTE_RUN_ID, { headers });
 if (!runResponse.ok) throw new Error(await runResponse.text());
 const run = await runResponse.json();

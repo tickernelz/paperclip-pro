@@ -83,7 +83,7 @@ function runtime(options, { requireApi = true } = {}) {
 async function apiRequest(context, path, { method = "GET", body } = {}) {
   const headers = { Accept: "application/json", Authorization: `Bearer ${context.apiKey}` };
   if (body !== undefined) headers["Content-Type"] = "application/json";
-  if (method !== "GET" && context.runId) headers["X-Paperclip-Run-Id"] = context.runId;
+  if (method !== "GET" && context.runId) headers["X-Wardmote-Run-Id"] = context.runId;
   const response = await fetch(`${context.apiBase}/api${path}`, {
     method,
     headers,

@@ -212,7 +212,7 @@ describe("agent auth middleware", () => {
 
     const res = await request(createApp(db, "local_trusted"))
       .get("/actor")
-      .set("X-Paperclip-Run-Id", runId);
+      .set("X-Wardmote-Run-Id", runId);
 
     expect(res.status).toBe(200);
     expect(res.body).toMatchObject({ type: "board", userId: "local-board", runId });
@@ -353,7 +353,7 @@ describe("agent auth middleware", () => {
     const res = await request(createApp(db))
       .get("/actor")
       .set("Authorization", `Bearer ${token}`)
-      .set("X-Paperclip-Run-Id", runId);
+      .set("X-Wardmote-Run-Id", runId);
 
     expect(res.status).toBe(200);
     expect(res.body).toMatchObject({
@@ -383,7 +383,7 @@ describe("agent auth middleware", () => {
     const res = await request(createApp(db))
       .get("/actor")
       .set("Authorization", `Bearer ${token}`)
-      .set("X-Paperclip-Run-Id", runId);
+      .set("X-Wardmote-Run-Id", runId);
 
     expect(res.status).toBe(200);
     expect(res.body).toMatchObject({
@@ -409,7 +409,7 @@ describe("agent auth middleware", () => {
     const res = await request(createApp(db))
       .get("/actor")
       .set("Authorization", `Bearer ${token}`)
-      .set("X-Paperclip-Run-Id", spoofedRunId);
+      .set("X-Wardmote-Run-Id", spoofedRunId);
 
     expect(res.status).toBe(422);
     expect(res.body.code).toBe("agent_jwt_run_id_mismatch");
@@ -474,11 +474,11 @@ describe("agent auth middleware", () => {
     const readRes = await request(app)
       .get(`/companies/${companyId}/issues/${issueId}`)
       .set("Authorization", `Bearer ${forkToken}`)
-      .set("X-Paperclip-Run-Id", runId);
+      .set("X-Wardmote-Run-Id", runId);
     const writeRes = await request(app)
       .patch(`/companies/${companyId}/issues/${issueId}`)
       .set("Authorization", `Bearer ${forkToken}`)
-      .set("X-Paperclip-Run-Id", runId)
+      .set("X-Wardmote-Run-Id", runId)
       .send({ title: "should not write" });
 
     expect(readRes.status).toBe(401);

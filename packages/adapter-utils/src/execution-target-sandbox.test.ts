@@ -2542,7 +2542,7 @@ describe("sandbox adapter execution targets", () => {
         method: req.method ?? "GET",
         url: req.url ?? "/",
         auth: req.headers.authorization ?? null,
-        runId: typeof req.headers["x-paperclip-run-id"] === "string" ? req.headers["x-paperclip-run-id"] : null,
+        runId: typeof req.headers["x-wardmote-run-id"] === "string" ? req.headers["x-wardmote-run-id"] : null,
       });
       res.writeHead(200, { "content-type": "application/json" });
       res.end(JSON.stringify({ ok: true }));
@@ -2854,7 +2854,7 @@ describe("sandbox adapter execution targets", () => {
         method: req.method ?? "GET",
         url: req.url ?? "/",
         auth: req.headers.authorization ?? null,
-        runId: typeof req.headers["x-paperclip-run-id"] === "string" ? req.headers["x-paperclip-run-id"] : null,
+        runId: typeof req.headers["x-wardmote-run-id"] === "string" ? req.headers["x-wardmote-run-id"] : null,
       });
       res.writeHead(200, { "content-type": "application/json" });
       res.end(JSON.stringify({ ok: true }));
@@ -3036,7 +3036,7 @@ describe("sandbox adapter execution targets", () => {
         method: req.method ?? "GET",
         url: req.url ?? "/",
         auth: req.headers.authorization ?? null,
-        runId: typeof req.headers["x-paperclip-run-id"] === "string" ? req.headers["x-paperclip-run-id"] : null,
+        runId: typeof req.headers["x-wardmote-run-id"] === "string" ? req.headers["x-wardmote-run-id"] : null,
       });
       res.writeHead(201, {
         "content-type": "application/json",
@@ -3086,7 +3086,7 @@ describe("sandbox adapter execution targets", () => {
       // The indeterminate 504 maps to a non-retryable 409, so the caller does not
       // retry the committed mutation.
       expect(response.status).toBe(409);
-      expect(response.headers.get("x-paperclip-bridge-outcome")).toBe("indeterminate");
+      expect(response.headers.get("x-wardmote-bridge-outcome")).toBe("indeterminate");
       await expect(response.json()).resolves.toEqual({
         error: "Bridge response body exceeded the configured size limit of 512 bytes.",
         outcome: "indeterminate",
@@ -3125,7 +3125,7 @@ describe("sandbox adapter execution targets", () => {
         method: req.method ?? "GET",
         url: req.url ?? "/",
         auth: req.headers.authorization ?? null,
-        runId: typeof req.headers["x-paperclip-run-id"] === "string" ? req.headers["x-paperclip-run-id"] : null,
+        runId: typeof req.headers["x-wardmote-run-id"] === "string" ? req.headers["x-wardmote-run-id"] : null,
       });
       res.writeHead(200, {
         "content-type": "application/json",
@@ -3173,7 +3173,7 @@ describe("sandbox adapter execution targets", () => {
       // The forward returns a retryable 502 with no indeterminate marker, so the
       // server passes it through instead of mapping it to a terminal 409.
       expect(response.status).toBe(502);
-      expect(response.headers.get("x-paperclip-bridge-outcome")).toBeNull();
+      expect(response.headers.get("x-wardmote-bridge-outcome")).toBeNull();
       await expect(response.json()).resolves.toEqual({
         error: "Bridge response body exceeded the configured size limit of 512 bytes.",
       });
@@ -3190,11 +3190,6 @@ describe("sandbox adapter execution targets", () => {
   });
 
   it("forwards the host indeterminate-outcome header so the sandbox server maps the 504 to a non-retryable 409", async () => {
-    // The host marks a possibly-committed mutation with a 504 and the
-    // `x-paperclip-bridge-outcome: indeterminate` header. The forward must keep
-    // that header, so the in-sandbox server maps the 504 to a non-retryable 409.
-    // If the forward drops the header, the client sees a retryable 504 and a
-    // retry repeats a mutation that already committed.
     const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-execution-target-bridge-outcome-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
@@ -3205,7 +3200,7 @@ describe("sandbox adapter execution targets", () => {
     const apiServer = createServer((_req, res) => {
       res.writeHead(504, {
         "content-type": "application/json",
-        "x-paperclip-bridge-outcome": "indeterminate",
+        "x-wardmote-bridge-outcome": "indeterminate",
       });
       res.end(responseBody);
     });
@@ -3251,7 +3246,7 @@ describe("sandbox adapter execution targets", () => {
       expect(response.status).toBe(409);
       // The outcome header and body still reach the client, so a caller that
       // reads them still sees the indeterminate result.
-      expect(response.headers.get("x-paperclip-bridge-outcome")).toBe("indeterminate");
+      expect(response.headers.get("x-wardmote-bridge-outcome")).toBe("indeterminate");
       await expect(response.json()).resolves.toEqual({
         error: "Mutation outcome is indeterminate.",
         outcome: "indeterminate",
@@ -3276,7 +3271,7 @@ describe("sandbox adapter execution targets", () => {
         method: req.method ?? "GET",
         url: req.url ?? "/",
         auth: req.headers.authorization ?? null,
-        runId: typeof req.headers["x-paperclip-run-id"] === "string" ? req.headers["x-paperclip-run-id"] : null,
+        runId: typeof req.headers["x-wardmote-run-id"] === "string" ? req.headers["x-wardmote-run-id"] : null,
       });
       res.writeHead(200, { "content-type": "application/json" });
       res.end(JSON.stringify({ ok: true }));
@@ -3714,7 +3709,7 @@ describe("sandbox adapter execution targets", () => {
           method: req.method ?? "GET",
           url: req.url ?? "/",
           auth: req.headers.authorization ?? null,
-          runId: typeof req.headers["x-paperclip-run-id"] === "string" ? req.headers["x-paperclip-run-id"] : null,
+          runId: typeof req.headers["x-wardmote-run-id"] === "string" ? req.headers["x-wardmote-run-id"] : null,
           headers,
           body: Buffer.concat(chunks),
         });
@@ -5954,7 +5949,7 @@ describe("sandbox adapter execution targets", () => {
         headers: { authorization: `Bearer ${bridgeToken}` },
       });
       expect(response.status).toBe(502);
-      expect(response.headers["x-paperclip-bridge-outcome"]).toBeUndefined();
+      expect(response.headers["x-wardmote-bridge-outcome"]).toBeUndefined();
     } finally {
       sessionRef.current?.close();
       await bridge?.stop();
@@ -6013,7 +6008,7 @@ describe("sandbox adapter execution targets", () => {
         headers: { authorization: `Bearer ${bridgeToken}`, "content-type": "application/json" },
       });
       expect(response.status).toBe(504);
-      expect(response.headers["x-paperclip-bridge-outcome"]).toBe("indeterminate");
+      expect(response.headers["x-wardmote-bridge-outcome"]).toBe("indeterminate");
     } finally {
       sessionRef.current?.close();
       await bridge?.stop();
@@ -6375,7 +6370,7 @@ describe("sandbox adapter execution targets", () => {
         headers: { authorization: `Bearer ${bridgeToken}`, "content-type": "application/json" },
       });
       expect(response.status).toBe(504);
-      expect(response.headers["x-paperclip-bridge-outcome"]).toBe("indeterminate");
+      expect(response.headers["x-wardmote-bridge-outcome"]).toBe("indeterminate");
       expect(JSON.parse(response.body.toString("utf8"))).toMatchObject({
         outcome: "indeterminate",
         retryable: false,

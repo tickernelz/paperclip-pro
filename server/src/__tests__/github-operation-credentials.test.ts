@@ -893,7 +893,7 @@ const support = await getEmbeddedPostgresTestSupport();
         (
           await post()
             .set("Authorization", "Bearer bridge-host-token")
-            .set("x-paperclip-github-capability", token)
+            .set("x-wardmote-github-capability", token)
         ).status,
       ).toBe(200);
       await switchTo(input, "B");

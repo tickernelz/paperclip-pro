@@ -31,14 +31,14 @@ New sends require `endpointId`, `parentIssueId`, `to`, `subject`, and `text`;
 optional `cc`, `bcc`, and `attachmentIds` are explicit. Attachments must already
 belong to the source task. Both operations require a new UUID `idempotencyKey`.
 Preserve that key and the identical payload across retries. The CLI supplies
-`X-Paperclip-Run-Id` from the run environment. Provider keys are held by Paperclip.
+`X-Wardmote-Run-Id` from the run environment. Provider keys are held by Paperclip.
 
 Inspect the returned publication with `paperclip-pro email delivery <publicationId>`.
 If the installed CLI does not include `email`, use the authenticated HTTP API
 instead; do not install or upgrade tools just to send mail. Read
 `GET /api/companies/$WARDMOTE_COMPANY_ID/email/tasks/$WARDMOTE_TASK_ID` and send
 `POST /api/companies/$WARDMOTE_COMPANY_ID/email/send` with the same JSON fields
-listed above. Use the injected API URL, bearer key, and `X-Paperclip-Run-Id`.
+listed above. Use the injected API URL, bearer key, and `X-Wardmote-Run-Id`.
 Never use the provider key. Delivery is
 `GET /api/companies/$WARDMOTE_COMPANY_ID/email/deliveries/<publicationId>`.
 
@@ -52,7 +52,7 @@ and reconnection are managed through the AgentMail connection in Paperclip.
 ## HTTP API reference
 
 These endpoints are also available through the sandbox callback bridge. Use the
-injected Paperclip API URL and agent credential; include `X-Paperclip-Run-Id` on
+injected Paperclip API URL and agent credential; include `X-Wardmote-Run-Id` on
 writes. Provider keys stay in the control plane.
 
 | Action | Endpoint |

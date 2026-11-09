@@ -301,13 +301,13 @@ describePg("attachment retention", () => {
     const app = contentApp();
     const assetResponse = await request(app).get("/api/assets/" + f.orphanAsset.id + "/content");
     expect(assetResponse.status).toBe(410);
-    expect(assetResponse.headers["x-paperclip-purged-at"]).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+    expect(assetResponse.headers["x-wardmote-purged-at"]).toMatch(/^\d{4}-\d{2}-\d{2}T/);
     expect(assetResponse.body).toMatchObject({ code: "attachment_purged" });
     expect(assetResponse.body.error).toMatch(/^File removed by retention \(\d{4}-\d{2}-\d{2}\)$/);
 
     const attachmentResponse = await request(app).get("/api/attachments/" + f.closedAttachment.id + "/content");
     expect(attachmentResponse.status).toBe(410);
-    expect(attachmentResponse.body).toMatchObject({ code: "attachment_purged", purgedAt: attachmentResponse.headers["x-paperclip-purged-at"] });
+    expect(attachmentResponse.body).toMatchObject({ code: "attachment_purged", purgedAt: attachmentResponse.headers["x-wardmote-purged-at"] });
 
     const listing = await request(app).get("/api/issues/" + f.doneIssueId + "/attachments");
     expect(listing.status).toBe(200);

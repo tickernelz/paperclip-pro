@@ -87,7 +87,7 @@ function parseAttachmentRangeHeader(
 export function sendPurgedContent(res: Response, purgedAt: Date | string | null | undefined): boolean {
   if (!purgedAt) return false;
   const iso = new Date(purgedAt).toISOString();
-  res.setHeader("X-Paperclip-Purged-At", iso);
+  res.setHeader("X-Wardmote-Purged-At", iso);
   res.setHeader("Cache-Control", "private, no-store");
   res.status(410).json({
     error: `File removed by retention (${iso.slice(0, 10)})`,

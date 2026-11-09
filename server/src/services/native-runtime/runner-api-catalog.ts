@@ -97,7 +97,7 @@ export function buildRunnerApiCatalog(document: Json = buildOpenApiDocument()): 
         parameters: dereference([...(item.parameters ?? []), ...(operation.parameters ?? [])]),
         ...(operation.requestBody ? { requestBody: dereference(operation.requestBody) } : {}),
         responses: dereference(operation.responses ?? {}),
-        authorization: operation["x-paperclip-authorization"] ?? { actor: "board_or_agent" },
+        authorization: operation["x-wardmote-authorization"] ?? { actor: "board_or_agent" },
         transport: protocol ? "protocol" : "rest",
         callPolicy: protocol ? "protocol" : restriction ? "restricted" : "rest",
         dedicatedTools: dedicatedTools(method, path),
