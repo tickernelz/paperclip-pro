@@ -11,7 +11,7 @@ import { chmodSync, existsSync, mkdirSync, readFileSync, renameSync, writeFileSy
 import path from "node:path";
 
 import { resolvePaperclipInstanceRoot } from "../home-paths.js";
-import { runtimePublicOrigin } from "./cloud-runtime-identity.js";
+import { runtimePublicOrigin } from "../lib/public-base-url.js";
 
 const IDENTITY_VERSION = 1;
 const ENROLLMENT_FILE = "paperclip-cloud-connector.json";

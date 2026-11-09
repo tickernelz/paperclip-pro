@@ -335,7 +335,6 @@ export function createPublicMcpEvents(db: Db, oauth: PublicMcpOAuth, api: ApiDis
   }
   let running: Promise<void> | null = null;
   const tick = () => running ?? (running = (async () => {
-    // The experimental setting is stored in SQL; check warm standby first.
     if (options.isBackgroundWorkEnabled?.() === false || !await oauth.isEnabled()) return;
     await db.delete(admissions).where(lte(admissions.expiresAt, new Date(now())));
     await db.delete(subscriptions).where(lt(subscriptions.expiresAt, new Date(now() - 7 * 24 * hour)));

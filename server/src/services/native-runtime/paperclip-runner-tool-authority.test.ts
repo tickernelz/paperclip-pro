@@ -1,5 +1,5 @@
-import * as cloudIdentity from "../cloud-runtime-identity.js";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { legacyEnvKey } from "@tickernelz/wardmote-shared/env-aliases";
 import { randomUUID } from "node:crypto";
 import { upsertIssueDocumentSchema } from "@tickernelz/wardmote-shared";
 import { and, eq, inArray } from "drizzle-orm";
@@ -27,6 +27,8 @@ import { createAssignedMcpTools } from "./assigned-mcp-tools.js";
 import type { ToolGatewayService } from "../tool-gateway.js";
 import { READ_CURRENT_WAKE_COMMENTS_TOOL_NAME } from "./current-wake-comments.js";
 import { CAPABILITY_SEMANTIC_TOOL_CATALOG, runnerCodexDynamicToolsFit } from "../../vendor/paperclip-runner/index.js";
+
+const PUBLIC_BASE_URL_ENV = legacyEnvKey("WARDMOTE_AUTH_PUBLIC_BASE_URL");
 
 describe("PaperclipRunnerToolAuthority", () => {
   const credentialDocumentBody = "Use a secret manager for credential handling.\nAuthorization: Bearer intentional-document-credential";
@@ -180,22 +182,22 @@ describe("PaperclipRunnerToolAuthority", () => {
     ).rejects.toThrow("paperclip_runner_tool_not_advertised");
   });
 
-  it("returns public task URLs from the current claimed origin in context and search results", async () => {
-    const origin = vi.spyOn(cloudIdentity, "runtimeCanonicalOrigin").mockReturnValue("https://board.example");
+  it("returns public task URLs from the configured origin in context and search results", async () => {
+    vi.stubEnv(PUBLIC_BASE_URL_ENV, "https://board.example");
     const authority = new PaperclipRunnerToolAuthority(db, { companyId, agentId, issueId, runId });
     try {
       expect(await authority.execute({ tool: "get_task_context", callId: "public-task-url", arguments: {} }))
         .toMatchObject({ activeTask: { id: issueId, url: `https://board.example/issues/${issueId}` } });
       expect(await authority.execute({ tool: "search_tasks", callId: "search-public-task-url", arguments: { query: "Exercise real runner tools" } }))
         .toMatchObject({ tasks: expect.arrayContaining([expect.objectContaining({ id: issueId, url: `https://board.example/issues/${issueId}` })]) });
-      origin.mockReturnValue("https://renamed.example");
+      vi.stubEnv(PUBLIC_BASE_URL_ENV, "https://renamed.example");
       expect(await authority.execute({ tool: "get_task_context", callId: "renamed-task-url", arguments: {} }))
         .toMatchObject({ activeTask: { url: `https://renamed.example/issues/${issueId}` } });
-      origin.mockReturnValue("https://localhost");
+      vi.stubEnv(PUBLIC_BASE_URL_ENV, "https://localhost");
       expect(await authority.execute({ tool: "get_task_context", callId: "unsafe-task-url", arguments: {} }))
         .toMatchObject({ activeTask: { url: null } });
     } finally {
-      origin.mockRestore();
+      vi.unstubAllEnvs();
     }
   });
 

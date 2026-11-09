@@ -9,9 +9,6 @@ import { createLifecycleDriver } from "./services/agent-lifecycle-driver.js";
 import { startAgentLifecycle } from "./services/agent-lifecycle.js";
 import { idleAdmissionMiddleware, trackIdleRequestHandlers } from "./middleware/idle-admission.js";
 import { isIdleTaskDrainActive, trackIdleWork } from "./services/task-admission.js";
-import { customerSuccessRoutes } from "./routes/customer-success.js";
-import { cloudWarmStandbyMiddleware } from "./middleware/cloud-warm-standby.js";
-import type { CloudWarmStandby } from "./services/cloud-warm-standby.js";
 import { browserUseRoutes } from "./routes/browser-use.js";
 import { registerChatActionWork } from "./services/chat-action-work.js";
 import { registerChatDeliveryWork } from "./services/chat-delivery-work.js";
@@ -79,9 +76,6 @@ import {
 } from "./services/company-import-transfers.js";
 import { companyTransferRunService } from "./services/company-transfer-runs.js";
 import { healthRoutes } from "./routes/health.js";
-import { cloudRuntimeIdentityMiddleware } from "./middleware/cloud-runtime-identity.js";
-import { cloudControlMiddleware } from "./middleware/cloud-control.js";
-import { cloudRoutes } from "./routes/cloud.js";
 import { companyRoutes } from "./routes/companies.js";
 import { companySkillRoutes } from "./routes/company-skills.js";
 import { companySkillPolicyRoutes } from "./routes/company-skill-policy.js";
@@ -505,7 +499,6 @@ export function createManagedBundledPluginWorkerRecovery(input: {
 export async function createApp(
   db: Db,
   opts: {
-    cloudWarmStandby?: CloudWarmStandby;
     uiMode: UiMode;
     serverPort: number;
     storageService: StorageService;
@@ -556,14 +549,12 @@ export async function createApp(
   app.use(idleAdmissionMiddleware);
   const staticUi = express.Router();
   app.locals.paperclipDb = db;
-  const isWarmStandby = opts.cloudWarmStandby ?? (() => false);
   const health = healthRoutes(db, {
     deploymentMode: opts.deploymentMode,
     deploymentExposure: opts.deploymentExposure,
     authReady: opts.authReady,
     companyDeletionEnabled: opts.companyDeletionEnabled,
     databaseBackupHealth: opts.databaseBackupHealth,
-    isWarmStandby,
   });
   const captureRawBody = (
     req: express.Request,
@@ -625,11 +616,6 @@ export async function createApp(
   const publicMcpOAuth = mcpConfig ? createPublicMcpOAuth(db, mcpConfig) : null;
   const publicMcpIngress = Router();
 
-  app.use(cloudRuntimeIdentityMiddleware(db));
-  // A signed claim above commits identity before any normal request can seed
-  // company data. Unclaimed probes bypass session resolution as well as SQL.
-  app.use(cloudWarmStandbyMiddleware(isWarmStandby, health, staticUi));
-  app.use("/api/customer-success/v1", customerSuccessRoutes(db, opts.storageService));
   app.use(publicMcpIngress);
   // Connection-intent tools carry their own short-lived, run-bound bearer and
   // must be reachable by remote adapters that intentionally do not receive an
@@ -638,7 +624,7 @@ export async function createApp(
   const hostServicesDisposers = new Map<string, () => void>();
   const workerManager = opts.pluginWorkerManager ?? createPluginWorkerManager();
   let lifecyclePluginsReady = false;
-  const agentLifecycle = startAgentLifecycle(db, createLifecycleDriver(db, workerManager), () => lifecyclePluginsReady && !isWarmStandby() && !isIdleTaskDrainActive());
+  const agentLifecycle = startAgentLifecycle(db, createLifecycleDriver(db, workerManager), () => lifecyclePluginsReady && !isIdleTaskDrainActive());
   const connectionIntentHeartbeat = heartbeatService(db, {
     pluginWorkerManager: workerManager,
   });
@@ -667,10 +653,6 @@ export async function createApp(
     }),
   );
   app.use(agentAuthorityAudit(db));
-  // After the actor middleware on purpose: a valid Cloud control assertion
-  // REPLACES whatever actor the request otherwise resolved to, and only on
-  // the one endpoint it authorizes (see the middleware for the contract).
-  app.use(cloudControlMiddleware());
   app.use("/api/auth", authRoutes(db));
   if (opts.betterAuthHandler) {
     app.all("/api/auth/{*authPath}", opts.betterAuthHandler);
@@ -681,8 +663,8 @@ export async function createApp(
   // mutation guard. The Chat SDK adapter verifies the provider signature
   // before Paperclip persists or acts on any event.
   const emailChannels = emailChannelService(db, {
-    isReconciliationEnabled: () => !isWarmStandby(),
-    isBackgroundWorkEnabled: () => !isWarmStandby() && !isIdleTaskDrainActive(),
+    isReconciliationEnabled: () => true,
+    isBackgroundWorkEnabled: () => !isIdleTaskDrainActive(),
     heartbeat: connectionIntentHeartbeat,
     storage: opts.storageService,
     publicBaseUrl: opts.chatWebhookPublicBaseUrl ?? opts.authPublicBaseUrl,
@@ -756,7 +738,6 @@ export async function createApp(
   api.use(boardMutationGuard());
   api.use("/health", health);
   api.use(openApiRoutes());
-  api.use("/cloud", cloudRoutes());
   api.use("/companies", companyRoutes(db, opts.storageService));
   api.use(llmRoutes(db));
   api.use(folderRoutes(db));
@@ -935,7 +916,7 @@ export async function createApp(
   const jobStore = pluginJobStore(db);
   const lifecycle = pluginLifecycleManager(db, { workerManager });
   const scheduler = createPluginJobScheduler({
-    isBackgroundWorkEnabled: () => !isWarmStandby() && !isIdleTaskDrainActive(),
+    isBackgroundWorkEnabled: () => !isIdleTaskDrainActive(),
     db,
     jobStore,
     workerManager,
@@ -1098,14 +1079,14 @@ export async function createApp(
   if (publicMcpOAuth) {
     const dispatch = createMcpApiDispatch(api);
     publicMcpEvents = createPublicMcpEvents(db, publicMcpOAuth, dispatch, {
-      isBackgroundWorkEnabled: () => !isWarmStandby() && !isIdleTaskDrainActive(),
+      isBackgroundWorkEnabled: () => !isIdleTaskDrainActive(),
     });
     publicMcpEvents.start();
     const transfers = createPublicMcpTransfers(db, publicMcpOAuth, dispatch, opts.storageService);
     publicMcpIngress.use(transfers.router);
     publicMcpIngress.use(publicMcpIngressRoutes(publicMcpOAuth, createPublicMcpExecutor(db, publicMcpOAuth, dispatch, transfers), publicMcpEvents));
     const dotOAuth = createPublicMcpOAuth(db, { ...publicMcpOAuth.config, resource: publicMcpOAuth.config.origin + "/mcp/runner" });
-    dotMcpEvents = createPublicMcpEvents(db, dotOAuth, dispatch, { enableDotRunner: true, isBackgroundWorkEnabled: () => !isWarmStandby() && !isIdleTaskDrainActive() });
+    dotMcpEvents = createPublicMcpEvents(db, dotOAuth, dispatch, { enableDotRunner: true, isBackgroundWorkEnabled: () => !isIdleTaskDrainActive() });
     dotMcpEvents.start();
     publicMcpIngress.use(publicMcpIngressRoutes(dotOAuth, createPublicMcpExecutor(db, dotOAuth, dispatch), dotMcpEvents, createDotRunnerMcpTools(db, connectionIntentHeartbeat)));
     api.use(publicMcpManagementRoutes(publicMcpOAuth, dotOAuth));
@@ -1284,8 +1265,8 @@ export async function createApp(
   scheduler.start();
   const deliveryWork = createDeliveryWorkCoordinator({
     owner: db,
-    canRun: () => !isWarmStandby() && !isIdleTaskDrainActive(),
-    canReconcile: () => !isWarmStandby(),
+    canRun: () => !isIdleTaskDrainActive(),
+    canReconcile: () => true,
     onError: (err, queue) => logger.error({ err, queue }, "Delivery reconciliation failed"),
   });
   app.locals.deliveryWork = deliveryWork;
@@ -1321,7 +1302,7 @@ export async function createApp(
   });
   const unsubscribeChatPublicationSignals = subscribeAllCompanyLiveEvents(
     (event) => {
-      if (!isWarmStandby() && !isIdleTaskDrainActive() && isChatPublicationCommitSignal(event))
+      if (!isIdleTaskDrainActive() && isChatPublicationCommitSignal(event))
         chatReconciliation.notifyPublications();
     },
   );
@@ -1329,19 +1310,19 @@ export async function createApp(
   // Inbox, outbox, and file receipt queues have independent commit/deadline wakes.
   let chatPublicationTimer: ReturnType<typeof setInterval> | null = setInterval(
     () => {
-      if (!isWarmStandby() && !isIdleTaskDrainActive()) chatReconciliation.reconcile();
+      if (!isIdleTaskDrainActive()) chatReconciliation.reconcile();
     },
     CHAT_PUBLICATION_FLUSH_INTERVAL_MS,
   );
   chatPublicationTimer.unref?.();
-  if (!isWarmStandby() && !isIdleTaskDrainActive()) chatReconciliation.reconcile();
+  if (!isIdleTaskDrainActive()) chatReconciliation.reconcile();
   // Abandoned chunked-import spool sweep: hourly (plus once at startup),
   // deleting spool dirs whose transfer saw no activity for 24h and cancelling
   // their still-open ledger runs. Same setInterval + unref + shutdown-clear
   // shape as the feedback export flush above.
   const importTransferSpoolRoot = resolveDefaultImportTransferSpoolRoot();
   const sweepImportTransferSpools = () => {
-    if (isWarmStandby() || isIdleTaskDrainActive()) return;
+    if (isIdleTaskDrainActive()) return;
     sweepAbandonedImportTransferSpools(db, importTransferSpoolRoot)
       .then((result) => {
         if (result.swept > 0) {
