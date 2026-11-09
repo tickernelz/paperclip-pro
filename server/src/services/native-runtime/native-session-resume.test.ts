@@ -41,7 +41,7 @@ import {
   parseNativeExecutionInput,
   type NativeExecutionInput,
   type NativeSession,
-} from "../../vendor/paperclip-runner/index.js";
+} from "../../vendor/wardmote-runner/index.js";
 import {
   runnerPrpWebSocketInternals,
   setupRunnerPrpWebSocketServer,

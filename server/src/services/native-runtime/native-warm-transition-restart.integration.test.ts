@@ -105,9 +105,9 @@ const seam = vi.hoisted(() => ({
     }),
   ),
 }));
-vi.mock("../../vendor/paperclip-runner/index.js", async (original) => ({
+vi.mock("../../vendor/wardmote-runner/index.js", async (original) => ({
   ...(await original<
-    typeof import("../../vendor/paperclip-runner/index.js")
+    typeof import("../../vendor/wardmote-runner/index.js")
   >()),
   createNativeSessionBackend: seam.backend,
   createRunnerdCodexTransport: seam.transport,
@@ -127,7 +127,7 @@ vi.mock("./current-wake-comments.js", () => ({
   assertCurrentWakeCommentsRead: async () => undefined,
 }));
 import { createRunnerdBackend } from "./native-session-executor.js";
-import { readRunnerdArtifactBinding } from "../../vendor/paperclip-runner/index.js";
+import { readRunnerdArtifactBinding } from "../../vendor/wardmote-runner/index.js";
 
 function executionFor(
   fixture: Fixture,

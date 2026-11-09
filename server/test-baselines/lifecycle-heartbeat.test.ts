@@ -28,7 +28,7 @@ import type {
 import {
   CONTROL_PLANE_CONFORMANCE_RESULT,
   CONTROL_PLANE_CONFORMANCE_TERMINAL,
-} from "../src/vendor/paperclip-runner/testing.js";
+} from "../src/vendor/wardmote-runner/testing.js";
 import { observe } from "../../tests/lifecycle-baseline/observe.js";
 import { PaperclipRunnerToolAuthority } from "../src/services/native-runtime/paperclip-runner-tool-authority.js";
 import { issueThreadInteractionService } from "../src/services/issue-thread-interactions.js";

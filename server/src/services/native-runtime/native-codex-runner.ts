@@ -15,7 +15,7 @@ import {
   createPaperclipRunnerAuthorizedToolSet,
   defaultCapabilityRunnerdBinary,
   type PaperclipSemanticToolDefinition,
-} from "../../vendor/paperclip-runner/index.js";
+} from "../../vendor/wardmote-runner/index.js";
 import { runnerPrpCoordinator } from "./runner-prp-coordinator.js";
 
 const moduleDirectory = dirname(fileURLToPath(import.meta.url));

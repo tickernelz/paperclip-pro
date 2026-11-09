@@ -14,7 +14,7 @@ import {
   type PrpIgnoredAttentionRequest,
   type PrpNormalizedAttentionRequest,
   type PrpVerificationReasonCode,
-} from "../../vendor/paperclip-runner/index.js";
+} from "../../vendor/wardmote-runner/index.js";
 
 export type NativeEvidenceOutcome = "accepted" | "missing" | "rejected" | "unverifiable";
 

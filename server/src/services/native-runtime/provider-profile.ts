@@ -1,4 +1,4 @@
-import { resolveQualifiedAcpxProfile } from "../../vendor/paperclip-runner/index.js";
+import { resolveQualifiedAcpxProfile } from "../../vendor/wardmote-runner/index.js";
 import {
   isPaperclipRunnerProvider,
   PAPERCLIP_RUNNER_PERMISSION_CAPABILITIES,
@@ -71,7 +71,7 @@ export type PaperclipRunnerProviderProfile =
     };
 
 export type PaperclipRunnerNativeProviderInput =
-  | { provider: "openai_dot"; model: null; dotBinding: import("../../vendor/paperclip-runner/index.js").DotBindingSnapshot }
+  | { provider: "openai_dot"; model: null; dotBinding: import("../../vendor/wardmote-runner/index.js").DotBindingSnapshot }
   | {
       provider: "codex";
       model: string | null;
@@ -529,7 +529,7 @@ export function resolvePaperclipRunnerNativeProviderInput(input: {
   adapterConfig: unknown;
   /** Verified image CLI version for a fresh remote Codex run only. */
   codexCliVersion?: string | null;
-  dotBinding?: import("../../vendor/paperclip-runner/index.js").DotBindingSnapshot;
+  dotBinding?: import("../../vendor/wardmote-runner/index.js").DotBindingSnapshot;
   managedProfile?: {
     id: string;
     profileKey: string;

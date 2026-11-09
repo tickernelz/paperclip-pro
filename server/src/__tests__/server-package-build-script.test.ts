@@ -9,7 +9,7 @@ const packageJsonPath = fileURLToPath(
   new URL("../../package.json", import.meta.url),
 );
 const runnerShimPath = fileURLToPath(
-  new URL("../vendor/paperclip-runner/index.ts", import.meta.url),
+  new URL("../vendor/wardmote-runner/index.ts", import.meta.url),
 );
 const evidenceClassifierPath = fileURLToPath(
   new URL("../services/native-runtime/evidence-classifier.ts", import.meta.url),
@@ -61,7 +61,7 @@ describe("server package build script", () => {
       "pnpm --filter @tickernelz/wardmote-runner build",
     );
     expect(packageJson.scripts?.build).toContain(
-      "cp -Rf ../packages/wardmote-runner/dist/. dist/vendor/paperclip-runner/",
+      "cp -Rf ../packages/wardmote-runner/dist/. dist/vendor/wardmote-runner/",
     );
   });
 
@@ -75,7 +75,7 @@ describe("server package build script", () => {
     try {
       const relative = "remote-provider-packs/linux-x64/provider-pack.json";
       const source = path.join(root, "packages/wardmote-runner/dist", relative);
-      const destination = path.join(root, "server/dist/vendor/paperclip-runner", relative);
+      const destination = path.join(root, "server/dist/vendor/wardmote-runner", relative);
       mkdirSync(path.dirname(source), { recursive: true });
       mkdirSync(path.dirname(destination), { recursive: true });
       writeFileSync(source, "qualified image identity", { mode: 0o444 });
@@ -161,7 +161,7 @@ describe("server package build script", () => {
     ]) {
       const consumer = readFileSync(consumerPath, "utf8");
 
-      expect(consumer).toContain('vendor/paperclip-runner/index.js"');
+      expect(consumer).toContain('vendor/wardmote-runner/index.js"');
       expect(consumer).not.toContain('from "@tickernelz/wardmote-runner"');
     }
   });

@@ -11,7 +11,7 @@ import { buildNativeRuntimeContext } from "../native-runtime/runtime-context.js"
 import { nativeRuntimeContextFixture } from "../native-runtime/runtime-context.test-fixture.js";
 import { prepareNativeWorkspaceSync } from "../native-runtime/native-workspace-sync.js";
 import { resolveHeartbeatNativeRuntimeMode } from "../native-runtime/runtime-mode.js";
-import { canonicalNativeRuntimeContextDigest } from "../../vendor/paperclip-runner/index.js";
+import { canonicalNativeRuntimeContextDigest } from "../../vendor/wardmote-runner/index.js";
 import { selectHeartbeatRuntime, type HeartbeatRuntimeSelectionInput } from "./runtime-selection.js";
 
 // Keep the real contract, session, and runtime-selection transactions. Replace only

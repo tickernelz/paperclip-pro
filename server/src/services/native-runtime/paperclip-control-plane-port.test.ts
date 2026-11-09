@@ -33,13 +33,13 @@ import {
   type PrpEvent,
   type PrpStructuredRunResult,
   type PrpTerminalState,
-} from "../../vendor/paperclip-runner/index.js";
+} from "../../vendor/wardmote-runner/index.js";
 import {
   CONTROL_PLANE_CONFORMANCE_RESULT,
   CONTROL_PLANE_CONFORMANCE_TERMINAL,
   CONTROL_PLANE_CONFORMANCE_OPEN,
   runControlPlanePortConformance,
-} from "../../vendor/paperclip-runner/testing.js";
+} from "../../vendor/wardmote-runner/testing.js";
 import { startEmbeddedPostgresTestDatabase } from "../../__tests__/helpers/embedded-postgres.js";
 import { PaperclipControlPlanePort } from "./paperclip-control-plane-port.js";
 import { NativeRunCoordinatorStore } from "./native-run-coordinator-store.js";

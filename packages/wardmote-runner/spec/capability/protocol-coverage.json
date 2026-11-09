@@ -3899,7 +3899,7 @@
     {
       "id": "paperclip-thread-projection",
       "requirement": "committed PRP reasoning and semantic tool items render in the existing Paperclip task chat",
-      "deterministicOwner": "ui/src/adapters/paperclip-runner/index.test.ts; server/src/services/native-runtime/paperclip-control-plane-port.test.ts"
+      "deterministicOwner": "ui/src/adapters/wardmote-runner/index.test.ts; server/src/services/native-runtime/paperclip-control-plane-port.test.ts"
     }
   ]
 }

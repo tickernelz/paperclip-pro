@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { PgDialect } from "drizzle-orm/pg-core";
 import type { Db } from "@tickernelz/wardmote-db";
-import type { PrpEvent } from "../../vendor/paperclip-runner/index.js";
+import type { PrpEvent } from "../../vendor/wardmote-runner/index.js";
 import { hasCompletedNativePermissionDecline, readCompletedNativePermissionDecline } from "./native-permission-decline.js";
 
 const provider = { kind: "acpx", agent: "cursor" };

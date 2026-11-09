@@ -25,7 +25,7 @@ import {
   createRunnerdCodexTransport,
   defaultCapabilityRunnerdBinary,
   parseNativeExecutionInput,
-} from "../../vendor/paperclip-runner/index.js";
+} from "../../vendor/wardmote-runner/index.js";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

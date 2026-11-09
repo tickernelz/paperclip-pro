@@ -1,6 +1,6 @@
 import { and, eq } from "drizzle-orm";
 import { heartbeatRuns, type Db } from "@tickernelz/wardmote-db";
-import type { HarnessRuntimeRequestResolution, PrpEvent } from "../../vendor/paperclip-runner/index.js";
+import type { HarnessRuntimeRequestResolution, PrpEvent } from "../../vendor/wardmote-runner/index.js";
 import { flushNativeQuestionResponses, projectNativeRuntimeRequest, registerNativeQuestionCommandTarget } from "./native-question-bridge.js";
 import { readPendingNativeRuntimeRequest } from "./runtime-request-resolution-authority.js";
 

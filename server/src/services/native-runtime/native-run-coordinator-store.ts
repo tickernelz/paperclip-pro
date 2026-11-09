@@ -17,7 +17,7 @@ import {
   type PrpTerminalState,
   validatePrpEvent,
   validatePrpStructuredRunResult,
-} from "../../vendor/paperclip-runner/index.js";
+} from "../../vendor/wardmote-runner/index.js";
 
 export interface NativeRunStoreBinding {
   readonly companyId: string;

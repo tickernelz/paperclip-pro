@@ -11,10 +11,10 @@ import { issueThreadInteractionService } from "../issue-thread-interactions.js";
 import { nativeCompletionFeedback } from "./native-completion-feedback.js";
 import { finalizeNativeRun, pendingNativeGovernance } from "./native-run-finalizer.js";
 import { PaperclipControlPlanePort } from "./paperclip-control-plane-port.js";
-import { CONTROL_PLANE_CONFORMANCE_RESULT, CONTROL_PLANE_CONFORMANCE_TERMINAL } from "../../vendor/paperclip-runner/testing.js";
+import { CONTROL_PLANE_CONFORMANCE_RESULT, CONTROL_PLANE_CONFORMANCE_TERMINAL } from "../../vendor/wardmote-runner/testing.js";
 import { PaperclipRunnerToolAuthority } from "./paperclip-runner-tool-authority.js";
 import { PaperclipRunnerSemanticAuthority } from "./runner-semantic-authority.js";
-import type { PrpStructuredRunResult } from "../../vendor/paperclip-runner/index.js";
+import type { PrpStructuredRunResult } from "../../vendor/wardmote-runner/index.js";
 
 const questionTime = new Date("2026-01-01T12:00:00Z");
 const messageTime = new Date("2026-01-01T12:01:00Z");

@@ -61,7 +61,7 @@ import {
   describeRunnerdNativeSessionBackend,
   parseNativeExecutionInput,
   type NativeExecutionInput,
-} from "../../vendor/paperclip-runner/index.js";
+} from "../../vendor/wardmote-runner/index.js";
 import { PROVIDER_TRACE_MAX_BYTES } from "../provider-trace-store.js";
 import type { AdapterRuntimeEvent } from "../../adapters/index.js";
 import { parseObject } from "../../adapters/utils.js";
