@@ -1,8 +1,7 @@
 # Automatic idle sleep safety
 
 `GET /api/instance/task-drain?idleSleepSafety=1&ownerId=<owner>` adds an
-instance-wide `idleSleepSafety` report for instance administrators and signed
-Cloud control callers. Ordinary task drains keep their existing behavior.
+instance-wide `idleSleepSafety` report for instance administrators. Ordinary task drains keep their existing behavior.
 Company members and agents cannot read this report.
 
 ## Hosting protocol
@@ -64,9 +63,7 @@ unknown until startup recovery and HTTP tracking are installed.
 backups enabled into this mode. Keep its database and persistent backup volume
 attached across sleep. All writers must use the instance's admission protocol;
 this mode cannot cover independent writers to the same database.
-On managed instances, checkpoint-enabled safety reads require a verified signed
-Cloud control actor. Tenant instance-admin elevation does not grant platform
-backup authority. Self-hosted instance administrators retain operator access.
+Instance administrators retain operator access.
 
 Each owned safety read first checks local work, plugin drains and durable work.
 Known local blockers return before opening a database transaction. If every
