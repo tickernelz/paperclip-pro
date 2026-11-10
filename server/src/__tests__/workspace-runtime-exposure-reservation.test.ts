@@ -99,7 +99,7 @@ let NEXT_HMR_PORT: number;
  * The real, unredirected Paperclip home directory. `beforeEach` later points
  * `WARDMOTE_HOME` at a throwaway temp dir for the suite under test, so this
  * must be read before that happens. Mirrors the default in
- * `resolvePaperclipHomeDir`.
+ * `resolveWardmoteHomeDir`.
  */
 const REAL_WARDMOTE_HOME = process.env.WARDMOTE_TEST_HOST_HOME?.trim()
   || process.env.WARDMOTE_HOME?.trim()
@@ -262,7 +262,7 @@ const DECLARED_EXPOSE = {
   type: "tailscale_https",
   hostname: "auto",
   publicPort: "same",
-  includePaperclipViteHmr: true,
+  includeWardmoteViteHmr: true,
   failurePolicy: "fail_closed",
 } as const;
 
@@ -287,7 +287,7 @@ const GUEST_COMMAND =
     let db: Db;
     let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;
     let previousHttpsMode: string | undefined;
-    let previousPaperclipHome: string | undefined;
+    let previousWardmoteHome: string | undefined;
     let previousInstanceId: string | undefined;
     /**
      * An EMPTY workspace root, never the repo checkout.
@@ -321,7 +321,7 @@ const GUEST_COMMAND =
       // Redirect the local-service registry into a throwaway instance. Without
       // this the suite would write runtime-service records into the real
       // Paperclip instance on this host and could confuse a live server.
-      previousPaperclipHome = process.env.WARDMOTE_HOME;
+      previousWardmoteHome = process.env.WARDMOTE_HOME;
       previousInstanceId = process.env.WARDMOTE_INSTANCE_ID;
       process.env.WARDMOTE_HOME = paperclipHome;
       process.env.WARDMOTE_INSTANCE_ID = `pap17419-${randomUUID()}`;
@@ -336,8 +336,8 @@ const GUEST_COMMAND =
     afterEach(async () => {
       // Terminate first, while the suite's fake broker is still installed.
       await resetRuntimeServicesForTests({ terminateProcesses: true });
-      if (previousPaperclipHome === undefined) delete process.env.WARDMOTE_HOME;
-      else process.env.WARDMOTE_HOME = previousPaperclipHome;
+      if (previousWardmoteHome === undefined) delete process.env.WARDMOTE_HOME;
+      else process.env.WARDMOTE_HOME = previousWardmoteHome;
       if (previousInstanceId === undefined) delete process.env.WARDMOTE_INSTANCE_ID;
       else process.env.WARDMOTE_INSTANCE_ID = previousInstanceId;
       await fs.rm(workspaceRoot, { recursive: true, force: true });

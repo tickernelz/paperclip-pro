@@ -5,8 +5,8 @@ import { afterEach, describe, expect, it } from "vitest";
 import {
   describeLocalInstancePaths,
   expandHomePrefix,
-  resolvePaperclipHomeDir,
-  resolvePaperclipInstanceId,
+  resolveWardmoteHomeDir,
+  resolveWardmoteInstanceId,
 } from "../config/home.js";
 
 const ORIGINAL_ENV = { ...process.env };
@@ -30,13 +30,13 @@ describe("home path resolution", () => {
   it("supports WARDMOTE_HOME and explicit instance ids", () => {
     process.env.WARDMOTE_HOME = "~/paperclip-home";
 
-    const home = resolvePaperclipHomeDir();
+    const home = resolveWardmoteHomeDir();
     expect(home).toBe(path.resolve(os.homedir(), "paperclip-home"));
-    expect(resolvePaperclipInstanceId("dev_1")).toBe("dev_1");
+    expect(resolveWardmoteInstanceId("dev_1")).toBe("dev_1");
   });
 
   it("rejects invalid instance ids", () => {
-    expect(() => resolvePaperclipInstanceId("bad/id")).toThrow(/Invalid WARDMOTE_INSTANCE_ID/);
+    expect(() => resolveWardmoteInstanceId("bad/id")).toThrow(/Invalid WARDMOTE_INSTANCE_ID/);
   });
 
   it("expands ~ prefixes", () => {

@@ -19,7 +19,7 @@ import {
   migrateEmbeddedPostgresIdentity,
 } from "@tickernelz/wardmote-db";
 import { eq, inArray } from "drizzle-orm";
-import { loadPaperclipEnvFile } from "../config/env.js";
+import { loadWardmoteEnvFile } from "../config/env.js";
 import { readConfig, resolveConfigPath } from "../config/store.js";
 
 type RoutinesDisableAllOptions = {
@@ -251,7 +251,7 @@ export async function disableAllRoutinesInConfig(
   options: Pick<RoutinesDisableAllOptions, "config" | "companyId">,
 ): Promise<DisableAllRoutinesResult> {
   const configPath = resolveConfigPath(options.config);
-  loadPaperclipEnvFile(configPath);
+  loadWardmoteEnvFile(configPath);
   const companyId =
     nonEmpty(options.companyId)
     ?? nonEmpty(process.env.WARDMOTE_COMPANY_ID)

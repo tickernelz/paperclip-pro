@@ -7,9 +7,9 @@ import { describe, expect, it } from "vitest";
 
 import { WARDMOTE_RUNNERD_BUILD_METADATA_SCHEMA } from "./build-metadata.js";
 import {
-  PaperclipRunnerdArtifactError,
-  parsePaperclipRunnerdBuildMetadata,
-  resolvePaperclipRunnerdArtifact,
+  WardmoteRunnerdArtifactError,
+  parseWardmoteRunnerdBuildMetadata,
+  resolveWardmoteRunnerdArtifact,
 } from "./runnerd-artifact.js";
 
 const valid = {
@@ -25,18 +25,18 @@ const valid = {
 
 describe("runnerd artifact metadata", () => {
   it("parses the exact runnerd identity", () => {
-    expect(parsePaperclipRunnerdBuildMetadata(valid)).toEqual(valid);
+    expect(parseWardmoteRunnerdBuildMetadata(valid)).toEqual(valid);
   });
 
   it("rejects an unknown binary metadata schema", () => {
-    expect(() => parsePaperclipRunnerdBuildMetadata({ ...valid, schema: "runnerd/v2" }))
-      .toThrow(PaperclipRunnerdArtifactError);
-    expect(() => parsePaperclipRunnerdBuildMetadata({ ...valid, schema: "runnerd/v2" }))
+    expect(() => parseWardmoteRunnerdBuildMetadata({ ...valid, schema: "runnerd/v2" }))
+      .toThrow(WardmoteRunnerdArtifactError);
+    expect(() => parseWardmoteRunnerdBuildMetadata({ ...valid, schema: "runnerd/v2" }))
       .toThrow(/unsupported/);
   });
 
   it("rejects an invalid or mismatched explicit artifact digest before execution", async () => {
-    await expect(resolvePaperclipRunnerdArtifact({
+    await expect(resolveWardmoteRunnerdArtifact({
       executablePath: "/does/not/matter",
       expectedSha256: "not-a-digest",
     })).rejects.toMatchObject({ issue: "digest_invalid" });
@@ -45,7 +45,7 @@ describe("runnerd artifact metadata", () => {
     const executablePath = join(root, "wardmote-runnerd");
     try {
       await writeFile(executablePath, "not the expected binary");
-      await expect(resolvePaperclipRunnerdArtifact({
+      await expect(resolveWardmoteRunnerdArtifact({
         executablePath,
         expectedSha256: `sha256:${"0".repeat(64)}`,
       })).rejects.toMatchObject({
@@ -78,7 +78,7 @@ describe("runnerd artifact metadata", () => {
           },
         };
 
-        await expect(resolvePaperclipRunnerdArtifact(input)).resolves.toMatchObject({
+        await expect(resolveWardmoteRunnerdArtifact(input)).resolves.toMatchObject({
           executablePath: canonicalExecutablePath,
           sha256: expectedSha256,
           byteSize: Buffer.byteLength(verifiedScript),

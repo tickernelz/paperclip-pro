@@ -9,13 +9,13 @@ import {
   type AdapterExecutionResult,
 } from "@tickernelz/wardmote-adapter-utils";
 import {
-  type AdapterExecutionTargetPaperclipBridgeHandle,
+  type AdapterExecutionTargetWardmoteBridgeHandle,
   adapterExecutionTargetIsRemote,
   adapterExecutionTargetSessionIdentity,
   adapterExecutionTargetSessionMatches,
   adapterExecutionTargetSupportsLiveStdin,
   adapterExecutionTargetUsesManagedHome,
-  adapterExecutionTargetUsesPaperclipBridge,
+  adapterExecutionTargetUsesWardmoteBridge,
   describeAdapterExecutionTarget,
   ensureAdapterExecutionTargetCommandResolvable,
   ensureAdapterExecutionTargetDirectory,
@@ -26,7 +26,7 @@ import {
   resolveAdapterExecutionTargetCommandForLogs,
   resolveAdapterExecutionTargetTimeoutSec,
   runAdapterExecutionTargetProcess,
-  startAdapterExecutionTargetPaperclipBridge,
+  startAdapterExecutionTargetWardmoteBridge,
 } from "@tickernelz/wardmote-adapter-utils/execution-target";
 import {
   paperclipAgentPromptTemplate,
@@ -35,24 +35,24 @@ import {
   asNumber,
   asString,
   buildInvocationEnvForLogs,
-  buildPaperclipEnv,
+  buildWardmoteEnv,
   buildRuntimeToolsEnv,
   ensureAbsoluteDirectory,
   ensurePathInEnv,
   joinPromptSections,
   parseObject,
-  readPaperclipIssueWorkModeFromContext,
-  refreshPaperclipWorkspaceEnvForExecution,
-  renderPaperclipWakePrompt,
+  readWardmoteIssueWorkModeFromContext,
+  refreshWardmoteWorkspaceEnvForExecution,
+  renderWardmoteWakePrompt,
   renderTemplate,
   isForbiddenConfigEnvKey,
-  isPaperclipRuntimeEnvKey,
-  sanitizeInheritedPaperclipEnv,
-  selectPaperclipTaskMarkdown,
+  isWardmoteRuntimeEnvKey,
+  sanitizeInheritedWardmoteEnv,
+  selectWardmoteTaskMarkdown,
 } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import {
   paperclipRestGuidance,
-  type PaperclipAccessMode,
+  type WardmoteAccessMode,
 } from "@tickernelz/wardmote-adapter-utils/wardmote-mcp";
 import { OMP_INSTALL_COMMAND } from "../metadata.js";
 import {
@@ -90,13 +90,13 @@ import {
   paperclipMcpGuidance,
   paperclipMcpEndpoint,
   paperclipMcpTransport,
-  probePaperclipMcpEndpoint,
+  probeWardmoteMcpEndpoint,
   paperclipMcpToolsets,
-  probePaperclipMcpServer,
-  resolvePaperclipMcpServerCommand,
-  writePaperclipMcpExtension,
-  type PaperclipMcpExtension,
-  type PaperclipMcpProbe,
+  probeWardmoteMcpServer,
+  resolveWardmoteMcpServerCommand,
+  writeWardmoteMcpExtension,
+  type WardmoteMcpExtension,
+  type WardmoteMcpProbe,
 } from "./wardmote-mcp.js";
 
 const RESULT_TRANSCRIPT_MAX_CHARS = 16 * 1024;
@@ -290,7 +290,7 @@ function addWakeEnvironment(
   const linkedIssueIds = Array.isArray(context.issueIds)
     ? context.issueIds.filter((value): value is string => typeof value === "string" && value.trim().length > 0)
     : [];
-  const issueWorkMode = readPaperclipIssueWorkModeFromContext(context);
+  const issueWorkMode = readWardmoteIssueWorkModeFromContext(context);
   if (taskId) env.WARDMOTE_TASK_ID = taskId;
   if (wakeReason) env.WARDMOTE_WAKE_REASON = wakeReason;
   if (wakeCommentId) env.WARDMOTE_WAKE_COMMENT_ID = wakeCommentId;
@@ -448,7 +448,7 @@ async function buildPrompts(input: {
   runId: string;
   resumedSession: boolean;
   cwd: string;
-  paperclipAccess: PaperclipAccessMode;
+  paperclipAccess: WardmoteAccessMode;
   onLog: AdapterExecutionContext["onLog"];
 }): Promise<{
   systemPrompt: string;
@@ -492,8 +492,8 @@ async function buildPrompts(input: {
   const bootstrapPrompt = !input.resumedSession && bootstrapTemplate.trim()
     ? renderTemplate(bootstrapTemplate, templateData).trim()
     : "";
-  const taskContextNote = selectPaperclipTaskMarkdown(input.context, { resumedSession: input.resumedSession });
-  const wakePrompt = renderPaperclipWakePrompt(input.context.paperclipWake, {
+  const taskContextNote = selectWardmoteTaskMarkdown(input.context, { resumedSession: input.resumedSession });
+  const wakePrompt = renderWardmoteWakePrompt(input.context.paperclipWake, {
     resumedSession: input.resumedSession,
     suppressIssueDescription: taskContextNote.length > 0,
     paperclipAccess: input.paperclipAccess,
@@ -610,16 +610,16 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   const preparedConfig = await prepareOmpRuntimeConfig(config, { forceMaterialized: remote });
   const providerStop = createProviderStoppedBoundary(ctx.onProviderStopped);
   let restoreWorkspace: (() => Promise<void>) | null = null;
-  let paperclipBridge: AdapterExecutionTargetPaperclipBridgeHandle | null = null;
+  let paperclipBridge: AdapterExecutionTargetWardmoteBridgeHandle | null = null;
   let settingsOverlay: OmpSettingsOverlay | null = null;
-  let mcpExtension: PaperclipMcpExtension | null = null;
+  let mcpExtension: WardmoteMcpExtension | null = null;
   let toolGuardExtension: OmpToolGuardExtension | null = null;
   let pythonEnvBridge: OmpPythonEnvBridge | null = null;
   try {
     await ensureOmpSkills(config, preparedConfig.agentDir ?? undefined);
 
     const configuredEnv = parseObject(config.env);
-    const env: Record<string, string> = buildPaperclipEnv(agent, { sameHost: !remote }, ctx.agentIdentity);
+    const env: Record<string, string> = buildWardmoteEnv(agent, { sameHost: !remote }, ctx.agentIdentity);
     addWakeEnvironment(env, runId, context);
     const workspaceHints = Array.isArray(context.paperclipWorkspaces)
       ? context.paperclipWorkspaces.filter(
@@ -627,7 +627,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
         )
       : [];
     let effectiveExecutionCwd = executionTarget?.kind === "remote" ? executionTarget.remoteCwd : cwd;
-    refreshPaperclipWorkspaceEnvForExecution({
+    refreshWardmoteWorkspaceEnvForExecution({
       env,
       envConfig: {},
       workspaceCwd: effectiveWorkspaceCwd,
@@ -646,14 +646,14 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     for (const [key, value] of Object.entries(configuredEnv)) {
       if (typeof value !== "string") continue;
       if (isForbiddenConfigEnvKey(key)) continue;
-      if (isPaperclipRuntimeEnvKey(key) && Object.hasOwn(env, key)) continue;
+      if (isWardmoteRuntimeEnvKey(key) && Object.hasOwn(env, key)) continue;
       env[key] = value;
     }
     if (!env.WARDMOTE_API_KEY && authToken) env.WARDMOTE_API_KEY = authToken;
     const runtimeToolGuidance = applyRuntimeToolAccess(env, ctx.runtimeTools, ctx.runtimeMcp);
     applyPreparedOmpAgentEnvironment(env, preparedConfig);
 
-    const inheritedLocalEnv = stringsOnly(sanitizeInheritedPaperclipEnv(process.env));
+    const inheritedLocalEnv = stringsOnly(sanitizeInheritedWardmoteEnv(process.env));
     applyPreparedOmpAgentEnvironment(inheritedLocalEnv, preparedConfig, null);
     if (preparedConfig.materialized || (preparedConfig.profileSpecified && preparedConfig.profile === null)) {
       inheritedLocalEnv.OMP_PROFILE = "";
@@ -713,7 +713,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       runtimeRootDir = preparedTarget.runtimeRootDir;
       applyPreparedOmpAgentEnvironment(env, preparedConfig, preparedTarget.assetDirs.agentDir ?? null);
       if (adapterExecutionTargetUsesManagedHome(executionTarget) && runtimeRootDir) env.HOME = runtimeRootDir;
-      refreshPaperclipWorkspaceEnvForExecution({
+      refreshWardmoteWorkspaceEnvForExecution({
         env,
         envConfig: {},
         workspaceCwd: effectiveWorkspaceCwd,
@@ -733,8 +733,8 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     }
 
     const runtimeTarget = overrideAdapterExecutionTargetRemoteCwd(executionTarget, effectiveExecutionCwd);
-    if (remote && adapterExecutionTargetUsesPaperclipBridge(runtimeTarget)) {
-      paperclipBridge = await startAdapterExecutionTargetPaperclipBridge({
+    if (remote && adapterExecutionTargetUsesWardmoteBridge(runtimeTarget)) {
+      paperclipBridge = await startAdapterExecutionTargetWardmoteBridge({
         runId,
         target: runtimeTarget,
         runtimeRootDir,
@@ -822,18 +822,18 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     const mcpTransport = paperclipMcpTransport(executionConfig);
     const mcpCommand = remote || mcpTransport === "http"
       ? { command: WARDMOTE_MCP_BIN, args: ["--toolsets", mcpToolsets], source: "path" as const }
-      : resolvePaperclipMcpServerCommand();
+      : resolveWardmoteMcpServerCommand();
     const mcpApiKey = asString(invocationEnv.WARDMOTE_API_KEY, "").trim();
     const mcpEndpoint = paperclipMcpEndpoint(asString(invocationEnv.WARDMOTE_API_URL, ""), mcpToolsets);
-    let mcpProbe: PaperclipMcpProbe | null = null;
+    let mcpProbe: WardmoteMcpProbe | null = null;
     if (mcpEnabled && mcpApiKey && (mcpTransport === "http" || !remote)) {
       mcpProbe = mcpTransport === "http"
-        ? await probePaperclipMcpEndpoint({
+        ? await probeWardmoteMcpEndpoint({
             url: mcpEndpoint,
             apiKey: mcpApiKey,
             runId: asString(invocationEnv.WARDMOTE_RUN_ID, runId),
           })
-        : await probePaperclipMcpServer({
+        : await probeWardmoteMcpServer({
             command: mcpCommand,
             env: { ...invocationEnv, [WARDMOTE_MCP_TOOLSETS_ENV]: mcpToolsets },
           });
@@ -887,7 +887,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       );
     }
     if (mcpApiKey) {
-      mcpExtension = await writePaperclipMcpExtension({
+      mcpExtension = await writeWardmoteMcpExtension({
         runId,
         target: runtimeTarget,
         remote,
@@ -928,7 +928,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     }
     const launchOmp = pythonEnvBridge.launch;
     const mcpArmed = mcpEnabled && mcpExtension !== null;
-    const paperclipAccess: PaperclipAccessMode = mcpArmed ? "mcp" : "rest";
+    const paperclipAccess: WardmoteAccessMode = mcpArmed ? "mcp" : "rest";
 
     const prompts = await buildPrompts({
       config: executionConfig,

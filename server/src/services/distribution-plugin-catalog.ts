@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { createHash } from "node:crypto";
 import { z } from "zod";
-import type { PaperclipPluginManifestV1 } from "@tickernelz/wardmote-shared";
+import type { WardmotePluginManifestV1 } from "@tickernelz/wardmote-shared";
 import { pluginCapabilityValidator } from "./plugin-capability-validator.js";
 
 const segment = z.string().regex(/^[a-z][a-z0-9.-]{0,99}$/);
@@ -31,7 +31,7 @@ function bundleEntrypoint(declared: unknown): string {
   return relative;
 }
 
-export function assertDistributionManifestCapabilities(manifest: PaperclipPluginManifestV1): void {
+export function assertDistributionManifestCapabilities(manifest: WardmotePluginManifestV1): void {
   const result = pluginCapabilityValidator().validateManifestCapabilities(manifest);
   if (!result.allowed) {
     throw new Error(`Distribution manifest is missing required capabilities: ${result.missing.join(", ")}`);
@@ -55,7 +55,7 @@ export function distributionPluginActivationGuard(
   selectedKeys: readonly string[] | null,
 ) {
   const root = distributionPluginsRoot(catalogRoot);
-  return (input: { pluginKey?: string; packageRoot: string; installedPackagePath?: string | null; manifest?: PaperclipPluginManifestV1; previousManifest?: PaperclipPluginManifestV1 }) => {
+  return (input: { pluginKey?: string; packageRoot: string; installedPackagePath?: string | null; manifest?: WardmotePluginManifestV1; previousManifest?: WardmotePluginManifestV1 }) => {
     let packageRoot: string;
     try { packageRoot = fs.realpathSync(input.packageRoot); }
     catch (error) {

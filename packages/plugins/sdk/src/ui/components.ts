@@ -474,7 +474,7 @@ export interface ManagedRoutinesListProps {
  * @see PLUGIN_SPEC.md §19.6 — Shared Components
  */
 function createSdkUiComponent<TProps>(name: string): React.ComponentType<TProps> {
-  return function PaperclipSdkUiComponent(props: TProps) {
+  return function WardmoteSdkUiComponent(props: TProps) {
     return renderSdkUiComponent(name, props) as React.ReactNode;
   };
 }

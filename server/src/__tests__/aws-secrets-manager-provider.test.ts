@@ -688,7 +688,7 @@ describe("awsSecretsManagerProvider", () => {
       provider: "aws_secrets_manager",
       nextToken: "next-page",
       sampledSecretCount: 1,
-      skippedForeignPaperclipSampleCount: 1,
+      skippedForeignWardmoteSampleCount: 1,
       candidates: [
         expect.objectContaining({
           displayName: "AWS production",
@@ -702,7 +702,7 @@ describe("awsSecretsManagerProvider", () => {
           }),
           signals: expect.objectContaining({
             paperclipManagedSampleCount: 1,
-            skippedForeignPaperclipSampleCount: 1,
+            skippedForeignWardmoteSampleCount: 1,
           }),
         }),
       ],

@@ -89,7 +89,7 @@ import { execFileSync } from 'node:child_process';
 import { userInfo } from 'node:os';
 import { join } from 'node:path';
 import { defaultCapabilityRunnerdBinary } from '/consumer/node_modules/@tickernelz/wardmote-server/dist/vendor/wardmote-runner/live/runnerd-codex-transport.js';
-import { resolvePaperclipRunnerBinary } from '/consumer/node_modules/@tickernelz/wardmote-server/dist/services/native-runtime/native-codex-runner.js';
+import { resolveWardmoteRunnerBinary } from '/consumer/node_modules/@tickernelz/wardmote-server/dist/services/native-runtime/native-codex-runner.js';
 import { requireServerAdapter } from '/consumer/node_modules/@tickernelz/wardmote-server/dist/adapters/registry.js';
 import { runnerBinaryTarget } from '/consumer/node_modules/@tickernelz/wardmote-server/dist/vendor/wardmote-runner/live/runner-binary.js';
 import { bundledRemoteRunnerBinary, bundledRemoteProviderPackManifestPath } from '/consumer/node_modules/@tickernelz/wardmote-server/dist/vendor/wardmote-runner/live/bundled-remote-provider-pack.js';
@@ -118,7 +118,7 @@ for (const [target, artifact] of Object.entries(manifest.platforms)) {
 }
 const binary = defaultCapabilityRunnerdBinary();
 assert.equal(binary, binaryRoot + '/linux-x64/wardmote-runnerd');
-assert.equal(resolvePaperclipRunnerBinary(), binary, 'The installed server must use the same verified platform daemon');
+assert.equal(resolveWardmoteRunnerBinary(), binary, 'The installed server must use the same verified platform daemon');
 assert.equal(bundledRemoteRunnerBinary(), binary);
 const remotePack = JSON.parse(readFileSync(bundledRemoteProviderPackManifestPath(), 'utf8'));
 assert.equal(remotePack.digest, manifest.remoteProviderPack.digest);

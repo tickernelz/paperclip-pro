@@ -20,7 +20,7 @@ import type { SpekoToolEnvelope } from "../services/voice/speko-protocol.js";
 import { getEmbeddedPostgresTestSupport, startEmbeddedPostgresTestDatabase } from "./helpers/embedded-postgres.js";
 
 import { liveVoiceExecutionGuidance } from "../services/voice/voice-execution-guidance.js";
-import { buildPaperclipRuntimeMcpServers } from "../services/heartbeat.js";
+import { buildWardmoteRuntimeMcpServers } from "../services/heartbeat.js";
 import { createToolGatewayService } from "../services/tool-gateway.js";
 import { initializeRunIdentity } from "../services/run-identity.js";
 import { syncSpekoVoiceTools, spekoToolsForSession, executeSpekoVoiceTool } from "../services/voice/speko-agent-tools.js";
@@ -1337,7 +1337,7 @@ const support = await getEmbeddedPostgresTestSupport();
     const previousUrl = process.env.WARDMOTE_API_URL;
     process.env.WARDMOTE_API_URL = "http://127.0.0.1:3100";
     try {
-      const servers = await buildPaperclipRuntimeMcpServers({ db, agent: { id: f.agentId, companyId: f.companyId, name: "Phone tool agent" }, runId: f.runId });
+      const servers = await buildWardmoteRuntimeMcpServers({ db, agent: { id: f.agentId, companyId: f.companyId, name: "Phone tool agent" }, runId: f.runId });
       expect(servers).toHaveLength(1);
       expect(servers[0]).toMatchObject({ url: expect.stringContaining("/mcp/gateways/") });
     } finally { if (previousUrl === undefined) delete process.env.WARDMOTE_API_URL; else process.env.WARDMOTE_API_URL = previousUrl; }

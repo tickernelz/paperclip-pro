@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { ManagedOAuthHandoffState } from "@/pages/apps/PaperclipCloudOAuthHandoff";
+import { ManagedOAuthHandoffState } from "@/pages/apps/OAuthHandoff";
 
 const meta: Meta<typeof ManagedOAuthHandoffState> = {
   title: "Apps/Managed Cloud OAuth handoff",

@@ -24,8 +24,8 @@ import {
 } from "lucide-react";
 import type { IssueDocument } from "@tickernelz/wardmote-shared";
 import type {
-  PaperclipQuestionResponse,
-  PaperclipQuestionSet,
+  WardmoteQuestionResponse,
+  WardmoteQuestionSet,
 } from "@tickernelz/wardmote-adapter-utils";
 import { InteractionPreparationNotice } from "@/components/InteractionPreparationNotice";
 import { IssueThreadInteractionCard } from "@/components/IssueThreadInteractionCard";
@@ -708,7 +708,7 @@ function ReceiptDisclosure({
 
 function questionSetForInteraction(
   interaction: AskUserQuestionsInteraction,
-): PaperclipQuestionSet {
+): WardmoteQuestionSet {
   if (interaction.payload.questionSet) return interaction.payload.questionSet;
   return {
     schema: "paperclip.question_set.v1",
@@ -754,8 +754,8 @@ function questionSetForInteraction(
 
 function questionResponseForInteraction(
   interaction: AskUserQuestionsInteraction,
-  questionSet: PaperclipQuestionSet,
-): PaperclipQuestionResponse | null {
+  questionSet: WardmoteQuestionSet,
+): WardmoteQuestionResponse | null {
   if (!interaction.result?.answers) return null;
   return {
     schema: "paperclip.question_response.v1",

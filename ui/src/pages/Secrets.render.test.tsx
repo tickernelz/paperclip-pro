@@ -211,7 +211,7 @@ function makeDiscoveryPreview(
     provider: "aws_secrets_manager",
     nextToken: null,
     sampledSecretCount: 2,
-    skippedForeignPaperclipSampleCount: 0,
+    skippedForeignWardmoteSampleCount: 0,
     warnings: [],
     candidates: [
       {
@@ -242,7 +242,7 @@ function makeDiscoveryPreview(
           hasKmsKey: true,
           sampleCount: 2,
           paperclipManagedSampleCount: 0,
-          skippedForeignPaperclipSampleCount: 0,
+          skippedForeignWardmoteSampleCount: 0,
         },
         warnings: [],
       },

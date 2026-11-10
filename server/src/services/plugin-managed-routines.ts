@@ -28,7 +28,7 @@ const MANAGED_ROUTINE_RESOURCE_KIND = "routine";
 interface PluginManagedRoutineServiceOptions {
   pluginId: string;
   pluginKey: string;
-  manifest?: import("@tickernelz/wardmote-shared").PaperclipPluginManifestV1 | null;
+  manifest?: import("@tickernelz/wardmote-shared").WardmotePluginManifestV1 | null;
   pluginWorkerManager?: PluginWorkerManager;
 }
 

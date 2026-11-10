@@ -39,7 +39,7 @@ import {
   stripWorkspaceRuntimeFromExecutionRunConfig,
   shouldResetTaskSessionForModelChange,
   stripConfiguredModelFromSessionParams,
-  stripPaperclipSessionMetadataFromSessionParams,
+  stripWardmoteSessionMetadataFromSessionParams,
   normalizeSessionParams,
   isTaskSessionCredentialCompatible,
   shouldResetTaskSessionForWake,
@@ -2908,10 +2908,10 @@ describe("stripConfiguredModelFromSessionParams", () => {
   });
 });
 
-describe("stripPaperclipSessionMetadataFromSessionParams", () => {
+describe("stripWardmoteSessionMetadataFromSessionParams", () => {
   it("removes all internal Paperclip session metadata before adapter invocation", () => {
     expect(
-      stripPaperclipSessionMetadataFromSessionParams({
+      stripWardmoteSessionMetadataFromSessionParams({
         sessionId: "thread-1",
         cwd: "/tmp/project",
         paperclipAiCredentialIdentity: "grant:user:generation",

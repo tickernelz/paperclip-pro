@@ -7,10 +7,10 @@ import {
   asNumber,
   asStringArray,
   parseObject,
-  buildPaperclipEnv,
+  buildWardmoteEnv,
   buildRuntimeToolsEnv,
   isForbiddenConfigEnvKey,
-  isPaperclipRuntimeEnvKey,
+  isWardmoteRuntimeEnvKey,
   buildInvocationEnvForLogs,
   ensurePathInEnv,
   resolveCommandForLogs,
@@ -44,7 +44,7 @@ async function executeProcess(ctx: AdapterExecutionContext): Promise<AdapterExec
   const cwd = asString(config.cwd, process.cwd());
   const envConfig = parseObject(config.env);
   const env: Record<string, string> = {
-    ...buildPaperclipEnv(agent, { sameHost: true }, ctx.agentIdentity),
+    ...buildWardmoteEnv(agent, { sameHost: true }, ctx.agentIdentity),
     ...buildRuntimeToolsEnv(ctx.runtimeTools),
   };
   for (const [k, v] of Object.entries(envConfig)) {
@@ -53,14 +53,14 @@ async function executeProcess(ctx: AdapterExecutionContext): Promise<AdapterExec
     // never accepted from config — the harness-minted run token is the only
     // source. Other WARDMOTE_* keys Paperclip did not assign flow through.
     if (isForbiddenConfigEnvKey(k)) continue;
-    if (isPaperclipRuntimeEnvKey(k) && k in env) continue;
+    if (isWardmoteRuntimeEnvKey(k) && k in env) continue;
     env[k] = v;
   }
   env.WARDMOTE_RUN_ID = runId;
   if (authToken) env.WARDMOTE_API_KEY = authToken;
   // runtimeEnv is only used to resolve the command path and log HOME below;
   // the child env is built inside runChildProcess from
-  // sanitizeInheritedPaperclipEnv(process.env) + env, so a WARDMOTE_API_KEY
+  // sanitizeInheritedWardmoteEnv(process.env) + env, so a WARDMOTE_API_KEY
   // on the server process never reaches the child.
   const runtimeEnv = ensurePathInEnv({ ...process.env, ...env });
   const resolvedCommand = await resolveCommandForLogs(command, cwd, runtimeEnv);

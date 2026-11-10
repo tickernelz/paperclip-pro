@@ -12,18 +12,18 @@ type RunnerModule = typeof import("@tickernelz/wardmote-runner");
 export type {
   DotHarnessDriver,
   DotAssignment,
-  PaperclipJsonValue,
-  PaperclipQuestionResponse,
-  PaperclipSemanticActionBinding,
-  PaperclipSemanticActionId,
-  PaperclipSemanticAuthorizationRecord,
-  PaperclipSemanticRunContext,
-  PaperclipSemanticToolCall,
-  PaperclipSemanticToolDefinition,
-  PaperclipSemanticToolResult,
-  PaperclipRunnerAuthorizedToolSet,
-  PaperclipQuestionSet,
-  PaperclipRuntimeInputRequest,
+  WardmoteJsonValue,
+  WardmoteQuestionResponse,
+  WardmoteSemanticActionBinding,
+  WardmoteSemanticActionId,
+  WardmoteSemanticAuthorizationRecord,
+  WardmoteSemanticRunContext,
+  WardmoteSemanticToolCall,
+  WardmoteSemanticToolDefinition,
+  WardmoteSemanticToolResult,
+  WardmoteRunnerAuthorizedToolSet,
+  WardmoteQuestionSet,
+  WardmoteRuntimeInputRequest,
   CompleteControlPlaneRunInput,
   ControlPlanePort,
   HarnessRuntimeRequestKind,
@@ -68,8 +68,8 @@ export type {
 } from "@tickernelz/wardmote-runner";
 export type DurablePrpControlPlane =
   import("@tickernelz/wardmote-runner").DurablePrpControlPlane;
-export type PaperclipSemanticDispatcher =
-  import("@tickernelz/wardmote-runner").PaperclipSemanticDispatcher;
+export type WardmoteSemanticDispatcher =
+  import("@tickernelz/wardmote-runner").WardmoteSemanticDispatcher;
 
 const sourceUrl = new URL(
   "../../../../packages/wardmote-runner/src/index.ts",
@@ -87,7 +87,7 @@ export const NativeSessionCleanupQuarantinedError =
 export const NativeSessionProtocolIntegrityError =
   runner.NativeSessionProtocolIntegrityError;
 export const SemanticToolOutcomeUnknownError = runner.SemanticToolOutcomeUnknownError;
-export const PaperclipSemanticDispatcher = runner.PaperclipSemanticDispatcher;
+export const WardmoteSemanticDispatcher = runner.WardmoteSemanticDispatcher;
 export const CAPABILITY_SEMANTIC_TOOL_CATALOG =
   runner.CAPABILITY_SEMANTIC_TOOL_CATALOG;
 export const HarnessRuntimeRequestResolutionError =
@@ -102,8 +102,8 @@ export const canonicalNativeRuntimeContextDigest =
   runner.canonicalNativeRuntimeContextDigest;
 export const createNativeSessionBackend = runner.createNativeSessionBackend;
 export const describeRunnerdNativeSessionBackend = runner.describeRunnerdNativeSessionBackend;
-export const createPaperclipRunnerAuthorizedToolSet =
-  runner.createPaperclipRunnerAuthorizedToolSet;
+export const createWardmoteRunnerAuthorizedToolSet =
+  runner.createWardmoteRunnerAuthorizedToolSet;
 export const createRunnerdCodexTransport: (
   options?: import("@tickernelz/wardmote-runner").RunnerdCodexTransportOptions,
 ) => import("@tickernelz/wardmote-runner").RunnerdCodexTransport =
@@ -128,9 +128,9 @@ export const parseNativeExecutionInput = runner.parseNativeExecutionInput;
 export const buildNativeModelEnvelope = runner.buildNativeModelEnvelope;
 export const isProviderMode = runner.isProviderMode;
 export const parseNativeRuntimeContext = runner.parseNativeRuntimeContext;
-export const parsePaperclipQuestionSet = runner.parsePaperclipQuestionSet;
-export const parsePaperclipQuestionResponse =
-  runner.parsePaperclipQuestionResponse;
+export const parseWardmoteQuestionSet = runner.parseWardmoteQuestionSet;
+export const parseWardmoteQuestionResponse =
+  runner.parseWardmoteQuestionResponse;
 export const resolveQualifiedAcpxProfile = runner.resolveQualifiedAcpxProfile;
 export const QUALIFIED_ACPX_PROFILES = runner.QUALIFIED_ACPX_PROFILES;
 export const QUALIFIED_ACPX_VERSION = runner.QUALIFIED_ACPX_VERSION;

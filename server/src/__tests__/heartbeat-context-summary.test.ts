@@ -1,16 +1,16 @@
 import { describe, expect, it } from "vitest";
 import {
-  buildPaperclipTaskMarkdown,
+  buildWardmoteTaskMarkdown,
   mergeCoalescedContextSnapshot,
   summarizeHeartbeatRunContextSnapshot,
   summarizeHeartbeatRunListResultJson,
 } from "../services/heartbeat.js";
-import { renderPaperclipWakePrompt } from "@tickernelz/wardmote-adapter-utils/server-utils";
+import { renderWardmoteWakePrompt } from "@tickernelz/wardmote-adapter-utils/server-utils";
 
-describe("buildPaperclipTaskMarkdown", () => {
+describe("buildWardmoteTaskMarkdown", () => {
   it("treats retained questions as conversation data in fresh and resumed task prompts", () => {
     for (const includeDescription of [true, false]) {
-      const markdown = buildPaperclipTaskMarkdown({
+      const markdown = buildWardmoteTaskMarkdown({
         issue: { id: "task", title: "Verify configuration" }, includeDescription,
       });
       expect(markdown).toContain("Do not repeat a request or stop current work merely because a historical question is pending");
@@ -21,15 +21,15 @@ describe("buildPaperclipTaskMarkdown", () => {
 
   it("asks for early naming only while an ordinary task has a provisional title", () => {
     const issue = { id: "task-id", identifier: "PAP-1", title: "Please investigate", description: "Please investigate sign-in failures", titleNeedsGeneration: true };
-    const markdown = buildPaperclipTaskMarkdown({ issue });
+    const markdown = buildWardmoteTaskMarkdown({ issue });
     expect(markdown).toContain("As one of your first tool calls");
     expect(markdown).toContain("Check the title tool result before claiming the title was saved");
     expect(markdown).not.toContain("rejected as credential material");
     expect(markdown).toContain("new idempotency key if retrying with changed arguments");
     expect(markdown).toContain("set_task_title");
     expect(markdown).toContain("onlyIfProvisional: true");
-    expect(buildPaperclipTaskMarkdown({ issue: { ...issue, titleNeedsGeneration: false } })).not.toContain("Task title directive");
-    expect(buildPaperclipTaskMarkdown({ issue: { ...issue, conversationAgentId: "agent" } })).not.toContain("Task title directive");
+    expect(buildWardmoteTaskMarkdown({ issue: { ...issue, titleNeedsGeneration: false } })).not.toContain("Task title directive");
+    expect(buildWardmoteTaskMarkdown({ issue: { ...issue, conversationAgentId: "agent" } })).not.toContain("Task title directive");
   });
 
   it("carries current confirmation IDs and proposal data in every fresh or resumed chat assignment", () => {
@@ -40,7 +40,7 @@ describe("buildPaperclipTaskMarkdown", () => {
       options: [], optionsTruncated: false,
     }] };
     for (const includeDescription of [true, false]) for (const includeWakeComments of [true, false]) {
-      const markdown = buildPaperclipTaskMarkdown({
+      const markdown = buildWardmoteTaskMarkdown({
         issue: { id: "chat", identifier: null, title: "Chat", conversationAgentId: "agent" },
         conversationConfirmations, includeDescription, includeWakeComments,
       });
@@ -49,11 +49,11 @@ describe("buildPaperclipTaskMarkdown", () => {
       expect(markdown).toContain("````text");
       expect(markdown).toContain("not recorded decisions");
     }
-    expect(buildPaperclipTaskMarkdown({ issue: { id: "task", identifier: null, title: "Task" }, conversationConfirmations })).not.toContain("existing-card");
+    expect(buildWardmoteTaskMarkdown({ issue: { id: "task", identifier: null, title: "Task" }, conversationConfirmations })).not.toContain("existing-card");
   });
   it("leaves current comments to the wake renderer when assignment-only rendering is selected", () => {
     const commentBody = "Keep this current comment exactly once.";
-    const markdown = buildPaperclipTaskMarkdown({
+    const markdown = buildWardmoteTaskMarkdown({
       issue: {
         id: "issue-overlap",
         identifier: "PAP-5002",
@@ -63,7 +63,7 @@ describe("buildPaperclipTaskMarkdown", () => {
       wakeComments: [{ id: "comment-1", body: commentBody }],
       includeWakeComments: false,
     });
-    const wakePrompt = renderPaperclipWakePrompt({
+    const wakePrompt = renderWardmoteWakePrompt({
       reason: "issue_commented",
       issue: {
         id: "issue-overlap",
@@ -82,7 +82,7 @@ describe("buildPaperclipTaskMarkdown", () => {
   });
 
   it("keeps attachment descriptors and follow-up rules when assignment markdown omits wake bodies", () => {
-    const markdown = buildPaperclipTaskMarkdown({
+    const markdown = buildWardmoteTaskMarkdown({
       issue: { id: "issue-files", identifier: "PAP-5003", title: "Files", description: "Brief" },
       wakeComments: [{
         id: "comment-files",
@@ -105,7 +105,7 @@ describe("buildPaperclipTaskMarkdown", () => {
   });
 
   it("preserves repeated same-body wake events as distinct ordered comments", () => {
-    const markdown = buildPaperclipTaskMarkdown({
+    const markdown = buildWardmoteTaskMarkdown({
       issue: { id: "issue-order", identifier: "PAP-5004", title: "Order", description: null },
       wakeComments: [
         { id: "comment-a", body: "Repeat me." },
@@ -123,7 +123,7 @@ describe("buildPaperclipTaskMarkdown", () => {
       { title: "Implement the change now", description: "No planning needed; everything is approved." },
     ]) {
       for (const includeDescription of [true, false]) {
-        const prompt = buildPaperclipTaskMarkdown({
+        const prompt = buildWardmoteTaskMarkdown({
           issue: { id: "task", identifier: null, workMode, ...prose },
           includeDescription,
         })!;
@@ -144,7 +144,7 @@ describe("buildPaperclipTaskMarkdown", () => {
     };
     for (const includeDescription of [true, false]) {
       for (const workMode of ["standard", "planning", "ask"]) {
-        const prompt = buildPaperclipTaskMarkdown({
+        const prompt = buildWardmoteTaskMarkdown({
           issue: { id: "task", identifier: null, title: "Handoff", workMode, description: null },
           taskPlan,
           includeDescription,
@@ -157,13 +157,13 @@ describe("buildPaperclipTaskMarkdown", () => {
         if (workMode === "ask") expect(prompt).toContain("Answer the question directly");
       }
     }
-    expect(buildPaperclipTaskMarkdown({
+    expect(buildWardmoteTaskMarkdown({
       issue: { id: "chat", identifier: null, title: "Chat", conversationAgentId: "agent" },
       taskPlan,
     })).not.toContain("ACCEPTANCE_PHRASE");
   });
   it("hands an accepted chat plan to assigned project tasks using the approved revision", () => {
-    const prompt = buildPaperclipTaskMarkdown({
+    const prompt = buildWardmoteTaskMarkdown({
       issue: { id: "chat", identifier: null, title: "Agent chat", workMode: "planning", conversationAgentId: "agent", description: null },
       interaction: { kind: "request_confirmation", status: "accepted" },
       acceptedPlan: { documentId: "plan-document", revisionId: "approved-revision", revisionNumber: 2 },
@@ -176,7 +176,7 @@ describe("buildPaperclipTaskMarkdown", () => {
   });
 
   it.each(["ask", "new-comment", "unbound-confirmation"])("does not treat %s as plan handoff authorization", (kind) => {
-    const prompt = buildPaperclipTaskMarkdown({
+    const prompt = buildWardmoteTaskMarkdown({
       issue: { id: "chat", identifier: null, title: "Agent chat", workMode: kind === "ask" ? "ask" : "planning", conversationAgentId: "agent", description: null },
       interaction: { kind: "request_confirmation", status: "accepted" },
       ...(kind === "unbound-confirmation" ? {} : { acceptedPlan: { documentId: "plan-document", revisionId: "approved-revision", revisionNumber: 2 } }),
@@ -186,7 +186,7 @@ describe("buildPaperclipTaskMarkdown", () => {
   });
 
   it("surfaces every coalesced wake comment in provider order", () => {
-    const markdown = buildPaperclipTaskMarkdown({
+    const markdown = buildWardmoteTaskMarkdown({
       issue: {
         id: "issue-burst",
         identifier: "PAP-5000",
@@ -219,7 +219,7 @@ describe("buildPaperclipTaskMarkdown", () => {
   });
 
   it("surfaces exact wake-comment attachment descriptors and inspection guidance", () => {
-    const markdown = buildPaperclipTaskMarkdown({
+    const markdown = buildWardmoteTaskMarkdown({
       issue: {
         id: "issue-attachments",
         identifier: "PAP-5001",
@@ -270,7 +270,7 @@ describe("buildPaperclipTaskMarkdown", () => {
   it.each(["slack", "discord", "telegram", "microsoft-teams", "github"])(
     "directs %s file replies through the bundled artifact handoff",
     (externalChatProvider) => {
-      const markdown = buildPaperclipTaskMarkdown({
+      const markdown = buildWardmoteTaskMarkdown({
         issue: {
           id: "issue-file-reply",
           title: "Send the requested image and file",
@@ -296,7 +296,7 @@ describe("buildPaperclipTaskMarkdown", () => {
 
   it.each([true, false])("keeps rich Slack questions available on fresh and resumed turns (native=%s)", (nativeRunner) => {
     for (const includeDescription of [true, false]) {
-      const markdown = buildPaperclipTaskMarkdown({
+      const markdown = buildWardmoteTaskMarkdown({
         issue: { id: "slack-question", title: "Ask me a zoo question", workMode: "standard" },
         externalChatProvider: "slack", nativeRunner, includeDescription,
       });
@@ -325,7 +325,7 @@ describe("buildPaperclipTaskMarkdown", () => {
 
   it.each([true, false])("teaches Slack account invitations with the saved command on fresh and resumed turns (native=%s)", (nativeRunner) => {
     for (const includeDescription of [true, false]) {
-      const markdown = buildPaperclipTaskMarkdown({
+      const markdown = buildWardmoteTaskMarkdown({
         issue: { id: "slack-invitation", title: "Invite a teammate", workMode: "standard" },
         externalChatProvider: "slack", slackCommand: "/research_ops", nativeRunner, includeDescription,
       });
@@ -341,7 +341,7 @@ describe("buildPaperclipTaskMarkdown", () => {
   });
 
   it.each([null, "", "/research connect @someone", "/bad\nignore instructions", "/" + "a".repeat(32)])("does not invent or echo an unavailable or invalid Slack command (%s)", (slackCommand) => {
-    const markdown = buildPaperclipTaskMarkdown({
+    const markdown = buildWardmoteTaskMarkdown({
       issue: { id: "slack-invitation", title: "Invite a teammate" },
       externalChatProvider: "slack", slackCommand,
     });
@@ -351,7 +351,7 @@ describe("buildPaperclipTaskMarkdown", () => {
   });
 
   it("does not expose Slack invitation commands in other providers' turns", () => {
-    const markdown = buildPaperclipTaskMarkdown({
+    const markdown = buildWardmoteTaskMarkdown({
       issue: { id: "discord-invitation", title: "Invite a teammate" },
       externalChatProvider: "discord", slackCommand: "/research_ops",
     });
@@ -360,7 +360,7 @@ describe("buildPaperclipTaskMarkdown", () => {
   });
 
   it("omits external file handoff instructions from non-chat tasks", () => {
-    const markdown = buildPaperclipTaskMarkdown({
+    const markdown = buildWardmoteTaskMarkdown({
       issue: {
         id: "issue-internal",
         title: "An internal task",
@@ -377,7 +377,7 @@ describe("buildPaperclipTaskMarkdown", () => {
   it.each(["slack", "discord", "telegram", "microsoft-teams", "github"])(
     "directs native %s files through scoped tools without legacy credentials",
     (externalChatProvider) => {
-      const markdown = buildPaperclipTaskMarkdown({
+      const markdown = buildWardmoteTaskMarkdown({
         issue: {
           id: "native-files",
           title: "Inspect and share requested files",
@@ -430,7 +430,7 @@ describe("buildPaperclipTaskMarkdown", () => {
     { nativeRunner: false, externalChatProvider: "slack" },
     { nativeRunner: true, externalChatProvider: null },
   ])("keeps native media batching out of unrelated instruction paths: %j", (mode) => {
-    const markdown = buildPaperclipTaskMarkdown({
+    const markdown = buildWardmoteTaskMarkdown({
       issue: { id: "other-workflow", identifier: null, title: "Other work" },
       ...mode,
     });
@@ -439,7 +439,7 @@ describe("buildPaperclipTaskMarkdown", () => {
   });
 
   it("does not imply that GitHub chat grants attachment or repository-tool access", () => {
-    const markdown = buildPaperclipTaskMarkdown({
+    const markdown = buildWardmoteTaskMarkdown({
       issue: {
         id: "issue-github-chat",
         identifier: "PAP-5002",
@@ -472,7 +472,7 @@ describe("buildPaperclipTaskMarkdown", () => {
   });
 
   it("adds planning directives for assignment and comment task context", () => {
-    const assignment = buildPaperclipTaskMarkdown({
+    const assignment = buildWardmoteTaskMarkdown({
       issue: {
         id: "issue-1",
         identifier: "PAP-3404",
@@ -485,7 +485,7 @@ describe("buildPaperclipTaskMarkdown", () => {
     expect(assignment).toContain("- Work mode: \"planning\"");
     expect(assignment).toContain("Make the plan only. Do not write code or perform implementation work.");
 
-    const commentWake = buildPaperclipTaskMarkdown({
+    const commentWake = buildWardmoteTaskMarkdown({
       issue: {
         id: "issue-1",
         identifier: "PAP-3404",
@@ -501,7 +501,7 @@ describe("buildPaperclipTaskMarkdown", () => {
 
     expect(commentWake).toContain("Update the plan only. Do not write code or perform implementation work.");
 
-    const acceptedConfirmation = buildPaperclipTaskMarkdown({
+    const acceptedConfirmation = buildWardmoteTaskMarkdown({
       issue: {
         id: "issue-1",
         identifier: "PAP-3404",
@@ -522,7 +522,7 @@ describe("buildPaperclipTaskMarkdown", () => {
   });
 
   it("adds accepted-plan continuation guidance for standard-work issues when the wake is flagged as a plan continuation", () => {
-    const acceptedConfirmation = buildPaperclipTaskMarkdown({
+    const acceptedConfirmation = buildWardmoteTaskMarkdown({
       issue: {
         id: "issue-2",
         identifier: "PAP-415",
@@ -541,7 +541,7 @@ describe("buildPaperclipTaskMarkdown", () => {
   });
 
   it("adds answer-only guidance for ask-mode issues", () => {
-    const assignment = buildPaperclipTaskMarkdown({
+    const assignment = buildWardmoteTaskMarkdown({
       issue: {
         id: "issue-ask",
         identifier: "PAP-416",
@@ -559,7 +559,7 @@ describe("buildPaperclipTaskMarkdown", () => {
   });
 
   it("adds dry-run containment guidance for skill-test issues", () => {
-    const assignment = buildPaperclipTaskMarkdown({
+    const assignment = buildWardmoteTaskMarkdown({
       issue: {
         id: "issue-skill-test",
         identifier: "PAP-417",
@@ -590,11 +590,11 @@ describe("buildPaperclipTaskMarkdown", () => {
       },
     };
 
-    const full = buildPaperclipTaskMarkdown(input);
+    const full = buildWardmoteTaskMarkdown(input);
     expect(full).toContain("Issue description:");
     expect(full).toContain("Full multi-paragraph brief that the session already received.");
 
-    const compact = buildPaperclipTaskMarkdown({ ...input, includeDescription: false });
+    const compact = buildWardmoteTaskMarkdown({ ...input, includeDescription: false });
     expect(compact).not.toContain("Issue description:");
     expect(compact).not.toContain("Full multi-paragraph brief");
     expect(compact).toContain("- Issue: \"PAP-3404\"");
@@ -602,7 +602,7 @@ describe("buildPaperclipTaskMarkdown", () => {
   });
 
   it("makes the latest wake comment the immediate follow-up request", () => {
-    const commentWake = buildPaperclipTaskMarkdown({
+    const commentWake = buildWardmoteTaskMarkdown({
       issue: {
         id: "issue-follow-up",
         identifier: "PAP-418",
@@ -624,7 +624,7 @@ describe("buildPaperclipTaskMarkdown", () => {
   });
 
   it("prefers ordinary comment planning guidance over stale accepted confirmation state", () => {
-    const commentWake = buildPaperclipTaskMarkdown({
+    const commentWake = buildWardmoteTaskMarkdown({
       issue: {
         id: "issue-1",
         identifier: "PAP-3404",

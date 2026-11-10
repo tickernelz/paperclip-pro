@@ -1,4 +1,4 @@
-import { redactPaperclipSemanticValue } from "../../semantic-tools/redaction.js";
+import { redactWardmoteSemanticValue } from "../../semantic-tools/redaction.js";
 import { safeAcpxLocations } from "./safe-locations.js";
 
 export const COPILOT_PERMISSION_CONTEXT_CONTRACT = "copilot-edit-permission-context-v1";
@@ -18,5 +18,5 @@ export function safeCopilotEditTarget(value: unknown, workingDirectory: string |
   const names = safe.map(x => x.path).filter((x): x is string => typeof x === "string" && x.length <= 1024 && x.trim() === x && !x.includes(":"));
   if (names.length !== paths.length || new Set(names).size !== 1) return;
   const target = names[0];
-  return target && redactPaperclipSemanticValue(target) === target ? target : undefined;
+  return target && redactWardmoteSemanticValue(target) === target ? target : undefined;
 }

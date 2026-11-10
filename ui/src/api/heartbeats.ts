@@ -105,7 +105,7 @@ export type RuntimeRequestResolution =
   | { action: "accept" | "accept_for_session" | "decline" | "cancel" }
   | { action: "submit"; answers: Record<string, { answers: string[] }> }
   | { action: "submit"; content: Record<string, unknown> }
-  | { action: "submit"; response: import("@tickernelz/wardmote-adapter-utils").PaperclipQuestionResponse };
+  | { action: "submit"; response: import("@tickernelz/wardmote-adapter-utils").WardmoteQuestionResponse };
 
 export interface HeartbeatRunListOptions {
   summary?: boolean;

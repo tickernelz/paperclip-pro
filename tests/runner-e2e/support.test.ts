@@ -10,10 +10,10 @@ import { FixtureRegistry } from "./fixture-registry.js";
 import { classifyFailure, shouldRetryFailure } from "./failure-classifier.js";
 import {
   assertIsolatedServerEnvironment,
-  buildPaperclipServerEnvironment,
+  buildWardmoteServerEnvironment,
   buildRunnerE2EProcessEnvironment,
-  resolvePaperclipRemoteRunnerBinaryForHarness,
-  resolvePaperclipRunnerBinaryForHarness,
+  resolveWardmoteRemoteRunnerBinaryForHarness,
+  resolveWardmoteRunnerBinaryForHarness,
   runnerE2EServerControlPaths,
 } from "./harness-env.js";
 import { runnerExecutionById, runnerMatrix } from "./catalog.js";
@@ -131,7 +131,7 @@ describe("runner E2E local binary resolution", () => {
 
   it("uses the debug runner binary built by the E2E workflow", () => {
     expect(
-      resolvePaperclipRunnerBinaryForHarness(
+      resolveWardmoteRunnerBinaryForHarness(
         [localNativeExecution],
         "/repository",
         undefined,
@@ -147,7 +147,7 @@ describe("runner E2E local binary resolution", () => {
 
   it("preserves an explicit runner binary override", () => {
     expect(
-      resolvePaperclipRunnerBinaryForHarness(
+      resolveWardmoteRunnerBinaryForHarness(
         [localNativeExecution],
         "/repository",
         "/custom/wardmote-runnerd",
@@ -157,7 +157,7 @@ describe("runner E2E local binary resolution", () => {
   });
 
   it("uses and stages the same build-once binary for remote native cells", () => {
-    const runnerBinary = resolvePaperclipRunnerBinaryForHarness(
+    const runnerBinary = resolveWardmoteRunnerBinaryForHarness(
       [remoteNativeExecution],
       "/repository",
       undefined,
@@ -170,7 +170,7 @@ describe("runner E2E local binary resolution", () => {
       ),
     );
     expect(
-      resolvePaperclipRemoteRunnerBinaryForHarness(
+      resolveWardmoteRemoteRunnerBinaryForHarness(
         [remoteNativeExecution],
         runnerBinary,
         undefined,
@@ -178,7 +178,7 @@ describe("runner E2E local binary resolution", () => {
       ),
     ).toBe(runnerBinary);
     expect(
-      resolvePaperclipRemoteRunnerBinaryForHarness(
+      resolveWardmoteRemoteRunnerBinaryForHarness(
         [localNativeExecution],
         runnerBinary,
         undefined,
@@ -186,7 +186,7 @@ describe("runner E2E local binary resolution", () => {
       ),
     ).toBeUndefined();
     expect(
-      resolvePaperclipRemoteRunnerBinaryForHarness(
+      resolveWardmoteRemoteRunnerBinaryForHarness(
         [remoteNativeExecution],
         runnerBinary,
         undefined,
@@ -194,7 +194,7 @@ describe("runner E2E local binary resolution", () => {
       ),
     ).toBeUndefined();
     expect(
-      resolvePaperclipRemoteRunnerBinaryForHarness(
+      resolveWardmoteRemoteRunnerBinaryForHarness(
         [remoteNativeExecution],
         runnerBinary,
         "/cross-compiled/wardmote-runnerd",
@@ -242,7 +242,7 @@ describe("runner E2E provider environment", () => {
     for (const execution of runnerMatrix) {
       const source = { WARDMOTE_ANNOUNCEMENTS_ENABLED: "true" };
       const env = buildRunnerE2EProcessEnvironment(source, [execution]);
-      expect(buildPaperclipServerEnvironment(env).WARDMOTE_ANNOUNCEMENTS_ENABLED).toBe("false");
+      expect(buildWardmoteServerEnvironment(env).WARDMOTE_ANNOUNCEMENTS_ENABLED).toBe("false");
       expect(source.WARDMOTE_ANNOUNCEMENTS_ENABLED).toBe("true");
     }
   });
@@ -910,7 +910,7 @@ describe("runner E2E server isolation", () => {
   });
 
   it("strips database and paid-provider credentials from the Paperclip process", () => {
-    const env = buildPaperclipServerEnvironment(
+    const env = buildWardmoteServerEnvironment(
       {
         PATH: "/bin",
         DATABASE_URL: "postgres://existing",

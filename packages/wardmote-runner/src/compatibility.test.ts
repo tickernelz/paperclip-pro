@@ -4,8 +4,8 @@ import { describe, expect, it } from "vitest";
 
 import {
   WARDMOTE_RUNNER_COMPATIBILITY,
-  PaperclipRunnerCompatibilityError,
-  assertPaperclipRunnerCompatibility,
+  WardmoteRunnerCompatibilityError,
+  assertWardmoteRunnerCompatibility,
 } from "./compatibility.js";
 
 describe("runner compatibility preflight", () => {
@@ -16,7 +16,7 @@ describe("runner compatibility preflight", () => {
   });
 
   it("accepts the supported product/test/eval bundle", () => {
-    expect(assertPaperclipRunnerCompatibility({
+    expect(assertWardmoteRunnerCompatibility({
       consumer: "paperclip-evals",
       components: {
         catalog: 1,
@@ -35,16 +35,16 @@ describe("runner compatibility preflight", () => {
   });
 
   it("fails with stable component, corpus, catalog, and provider issues", () => {
-    expect(() => assertPaperclipRunnerCompatibility({
+    expect(() => assertWardmoteRunnerCompatibility({
       consumer: "incompatible-eval-bundle",
       components: { protocol: 2 },
       evalCorpusVersion: 2,
       requiredOperationIds: ["missing_operation", "finish_task"],
       provider: { id: "limited-provider", supportedOperationIds: [] },
-    })).toThrow(PaperclipRunnerCompatibilityError);
+    })).toThrow(WardmoteRunnerCompatibilityError);
 
     try {
-      assertPaperclipRunnerCompatibility({
+      assertWardmoteRunnerCompatibility({
         consumer: "incompatible-eval-bundle",
         components: { protocol: 2 },
         evalCorpusVersion: 2,
@@ -52,9 +52,9 @@ describe("runner compatibility preflight", () => {
         provider: { id: "limited-provider", supportedOperationIds: [] },
       });
     } catch (error) {
-      expect(error).toBeInstanceOf(PaperclipRunnerCompatibilityError);
-      expect((error as PaperclipRunnerCompatibilityError).code).toBe("wardmote_runner_incompatible");
-      expect((error as PaperclipRunnerCompatibilityError).issues.map((issue) => issue.code)).toEqual([
+      expect(error).toBeInstanceOf(WardmoteRunnerCompatibilityError);
+      expect((error as WardmoteRunnerCompatibilityError).code).toBe("wardmote_runner_incompatible");
+      expect((error as WardmoteRunnerCompatibilityError).issues.map((issue) => issue.code)).toEqual([
         "component_version_mismatch",
         "eval_corpus_version_unsupported",
         "catalog_operation_unknown",
@@ -64,7 +64,7 @@ describe("runner compatibility preflight", () => {
   });
 
   it("requires explicit provider capabilities when operations are required", () => {
-    expect(() => assertPaperclipRunnerCompatibility({
+    expect(() => assertWardmoteRunnerCompatibility({
       consumer: "undeclared-provider",
       requiredOperationIds: ["finish_task"],
     })).toThrow(/provider_capabilities_missing/);

@@ -37,7 +37,7 @@ import { createRuntimeToolsToken } from "../runtime-tools-token.js";
 import { runtimeConnectionIntentRoutes } from "../routes/connection-intents.js";
 import { connectionIntentService } from "../services/connection-intents.js";
 import { projectToolContext } from "../services/project-tool-context.js";
-import { PaperclipRunnerToolAuthority } from "../services/native-runtime/paperclip-runner-tool-authority.js";
+import { WardmoteRunnerToolAuthority } from "../services/native-runtime/paperclip-runner-tool-authority.js";
 import { createToolGatewayService } from "../services/tool-gateway.js";
 import { chatChannelService } from "../services/chat-channels.js";
 import { ChatSdkRuntime } from "../services/chat-sdk-runtime.js";
@@ -979,7 +979,7 @@ describeEmbeddedPostgres("OpenWA run authority", () => {
 
   describe("native runner tool seam", () => {
     function authority(seed: Seed, runId: string) {
-      return new PaperclipRunnerToolAuthority(db, {
+      return new WardmoteRunnerToolAuthority(db, {
         companyId: seed.companyId, agentId: seed.agentId, issueId: seed.issueId, runId, workMode: "standard",
         enqueueWakeup: async () => null,
       });
@@ -1022,7 +1022,7 @@ describeEmbeddedPostgres("OpenWA run authority", () => {
         executionRunId: otherRunId, responsibleUserId: BOARD_USER,
       });
       const stops: string[] = [];
-      const tool = new PaperclipRunnerToolAuthority(db, {
+      const tool = new WardmoteRunnerToolAuthority(db, {
         companyId: seed.companyId, agentId: seed.agentId, issueId: seed.issueId, runId: run.runId, workMode: "standard",
         enqueueWakeup: async () => null,
         stopTaskForReassignment: async () => {

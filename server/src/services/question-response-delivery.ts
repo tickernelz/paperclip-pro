@@ -13,9 +13,9 @@ import {
 } from "@tickernelz/wardmote-db";
 import type {
   AskUserQuestionsInteraction,
-  PaperclipQuestionSetPayload,
+  WardmoteQuestionSetPayload,
 } from "@tickernelz/wardmote-shared";
-import type { PaperclipQuestionResponse } from "../vendor/wardmote-runner/index.js";
+import type { WardmoteQuestionResponse } from "../vendor/wardmote-runner/index.js";
 import { isUniqueViolation } from "../db-errors.js";
 import { getTelemetryClient } from "../telemetry.js";
 import { logger } from "../middleware/logger.js";
@@ -63,8 +63,8 @@ export interface QuestionResponseDeliveryEnvelope {
   schema: "paperclip.question_response_delivery.v1";
   interactionId: string;
   sourceRunId: string | null;
-  questionSet: PaperclipQuestionSetPayload;
-  response: PaperclipQuestionResponse;
+  questionSet: WardmoteQuestionSetPayload;
+  response: WardmoteQuestionResponse;
 }
 
 export interface QuestionResponseDeliveryOutcome {
@@ -100,7 +100,7 @@ function compactLine(value: unknown): string | null {
 
 function canonicalQuestionSet(
   interaction: Pick<AskUserQuestionsInteraction, "title" | "payload">,
-): PaperclipQuestionSetPayload {
+): WardmoteQuestionSetPayload {
   if (interaction.payload.questionSet)
     return structuredClone(interaction.payload.questionSet);
   return {
@@ -159,7 +159,7 @@ export function buildQuestionResponseDeliveryEnvelope(
   const questionById = new Map(
     questionSet.questions.map((question) => [question.id, question]),
   );
-  const response: PaperclipQuestionResponse = {
+  const response: WardmoteQuestionResponse = {
     schema: "paperclip.question_response.v1",
     answers: Object.fromEntries(
       interaction.result.answers.map((answer) => {

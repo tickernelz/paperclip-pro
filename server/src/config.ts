@@ -4,7 +4,7 @@ import { execFileSync } from "node:child_process";
 import { existsSync, realpathSync } from "node:fs";
 import { basename, dirname, resolve } from "node:path";
 import { config as loadDotenv } from "dotenv";
-import { resolvePaperclipEnvPath } from "./paths.js";
+import { resolveWardmoteEnvPath } from "./paths.js";
 import { maybeRepairLegacyWorktreeConfigAndEnvFiles } from "./worktree-config.js";
 import { shouldLoadWorkingDirectoryEnv } from "./env-file-policy.js";
 import { applyEmptyWorktreeSigningSecrets } from "./dev-runner-worktree.js";
@@ -32,7 +32,7 @@ import {
   resolveHomeAwarePath,
 } from "./home-paths.js";
 
-const WARDMOTE_ENV_FILE_PATH = resolvePaperclipEnvPath();
+const WARDMOTE_ENV_FILE_PATH = resolveWardmoteEnvPath();
 if (existsSync(WARDMOTE_ENV_FILE_PATH)) {
   loadDotenv({ path: WARDMOTE_ENV_FILE_PATH, override: false, quiet: true });
 }
@@ -44,7 +44,7 @@ const isSameFile = cwdEnvExists && existsSync(WARDMOTE_ENV_FILE_PATH)
   : CWD_ENV_PATH === WARDMOTE_ENV_FILE_PATH;
 if (shouldLoadWorkingDirectoryEnv({
   cwdEnvExists,
-  isPaperclipEnvFile: isSameFile,
+  isWardmoteEnvFile: isSameFile,
 })) {
   loadDotenv({ path: CWD_ENV_PATH, override: false, quiet: true });
 }

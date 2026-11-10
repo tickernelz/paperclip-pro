@@ -38,10 +38,10 @@ export type {
   QuotaWindow,
   ProviderQuotaResult,
   TranscriptEntry,
-  PaperclipQuestion,
-  PaperclipQuestionOption,
-  PaperclipQuestionResponse,
-  PaperclipQuestionSet,
+  WardmoteQuestion,
+  WardmoteQuestionOption,
+  WardmoteQuestionResponse,
+  WardmoteQuestionSet,
   StdoutLineParser,
   CLIAdapterModule,
   CreateConfigValues,
@@ -119,26 +119,26 @@ export {
   WARDMOTE_RUNNER_DEFAULT_MODELS,
   WARDMOTE_RUNNER_PERMISSION_CAPABILITIES,
   WARDMOTE_RUNNER_ACPX_PROFILES,
-  isPaperclipRunnerProvider,
-  resolvePaperclipRunnerIdleTimeoutMs,
-  resolvePaperclipRunnerModel,
+  isWardmoteRunnerProvider,
+  resolveWardmoteRunnerIdleTimeoutMs,
+  resolveWardmoteRunnerModel,
   paperclipRunnerTransitionConfig,
   normalizeLegacyRunnerProvider,
-  resolvePaperclipRunnerPermissionMode,
-  resolvePaperclipRunnerCursorMode,
-  resolvePaperclipRunnerPiThinkingLevel,
+  resolveWardmoteRunnerPermissionMode,
+  resolveWardmoteRunnerCursorMode,
+  resolveWardmoteRunnerPiThinkingLevel,
 } from "./wardmote-runner-permissions.js";
 export {
   WARDMOTE_RUNNER_INGRESS_PORT,
   WARDMOTE_RUNNER_CONNECT_PATH_PREFIX,
-  PaperclipRunnerTransportError,
+  WardmoteRunnerTransportError,
   buildDirectRunnerConnectUrl,
-  resolvePaperclipRunnerTransport,
+  resolveWardmoteRunnerTransport,
 } from "./runner-connectivity.js";
 export type {
   SecretHeader,
   RunnerIngressEndpoint,
-  PaperclipRunnerTransport,
+  WardmoteRunnerTransport,
 } from "./runner-connectivity.js";
 export { RUN_TOOL_PROFILE_CONTEXT_KEY, runToolProfile } from "./tool-profile.js";
 export type { ReadOnlyToolProfileSupport, RunToolProfile } from "./tool-profile.js";
@@ -146,10 +146,10 @@ export type {
   AcpxPermissionMode,
   CodexPermissionMode,
   OpenCodePermissionMode,
-  PaperclipRunnerPermissionCapability,
-  PaperclipRunnerPermissionMode,
-  PaperclipRunnerPermissionOption,
-  PaperclipRunnerProvider,
+  WardmoteRunnerPermissionCapability,
+  WardmoteRunnerPermissionMode,
+  WardmoteRunnerPermissionOption,
+  WardmoteRunnerProvider,
 } from "./wardmote-runner-permissions.js";
 // Keep the root adapter-utils entry browser-safe because the UI imports it.
 // The sandbox callback bridge stays available via its dedicated subpath export.

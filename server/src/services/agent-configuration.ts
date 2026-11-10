@@ -2,7 +2,7 @@ import { and, eq } from "drizzle-orm";
 import { markOpenwaEndpointsForAgentAdapter } from "./openwa/agent-adapter.js";
 import { assets, agentConfigRevisions, agentTaskSessions, agentRuntimeState, type Db } from "@tickernelz/wardmote-db";
 import { normalizeAgentUrlKey } from "@tickernelz/wardmote-shared";
-import { normalizePaperclipRunnerAdapterConfig } from "@tickernelz/wardmote-adapter-utils/server-utils";
+import { normalizeWardmoteRunnerAdapterConfig } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import { conflict, notFound, unprocessable } from "../errors.js";
 import { agentRecordQueries, type UpdateAgentOptions, type AgentConfigurationPatch, type AgentConfigurationRecord, isPlainRecord, buildConfigSnapshot,
   hasConfigPatchFields, changedPendingApprovalConfigFields, diffConfigSnapshot } from "../lib/agent-records.js";
@@ -68,7 +68,7 @@ export async function prepareAgentConfiguration(db: Db, existing: AgentConfigura
       normalizedPatch.adapterConfig,
       { adapterType: (normalizedPatch.adapterType ?? existing.adapterType) as string },
     );
-    normalizedPatch.adapterConfig = normalizePaperclipRunnerAdapterConfig(
+    normalizedPatch.adapterConfig = normalizeWardmoteRunnerAdapterConfig(
       (normalizedPatch.adapterType ?? existing.adapterType) as string,
       normalizedAdapterConfig,
     );
@@ -76,7 +76,7 @@ export async function prepareAgentConfiguration(db: Db, existing: AgentConfigura
     Object.prototype.hasOwnProperty.call(normalizedPatch, "adapterType")
     && isPlainRecord(existing.adapterConfig)
   ) {
-    normalizedPatch.adapterConfig = normalizePaperclipRunnerAdapterConfig(
+    normalizedPatch.adapterConfig = normalizeWardmoteRunnerAdapterConfig(
       normalizedPatch.adapterType as string,
       existing.adapterConfig,
     );

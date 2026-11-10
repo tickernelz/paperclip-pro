@@ -27,7 +27,7 @@ import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
 } from "./helpers/embedded-postgres.js";
-import { buildPaperclipRuntimeMcpServers } from "../services/heartbeat.js";
+import { buildWardmoteRuntimeMcpServers } from "../services/heartbeat.js";
 import { createToolGatewayService, ToolGatewayHttpError } from "../services/tool-gateway.js";
 
 import { toolAccessService } from "../services/tool-access.js";
@@ -140,7 +140,7 @@ describeEmbeddedPostgres("heartbeat runtime MCP servers", () => {
 
   it("rejects another agent's run token on a run-scoped gateway", async () => {
     const [owner, other] = await seedAssignedAgents(2);
-    const [server] = await buildPaperclipRuntimeMcpServers({ db, agent: owner!.agent, runId: owner!.run.id });
+    const [server] = await buildWardmoteRuntimeMcpServers({ db, agent: owner!.agent, runId: owner!.run.id });
     const [gateway] = await db.select().from(toolMcpGateways);
     const service = createToolGatewayService(db);
     const otherToken = await service.createNamedGatewayToken({
@@ -168,11 +168,11 @@ describeEmbeddedPostgres("heartbeat runtime MCP servers", () => {
 
   it("binds a reused run-scoped gateway that was created without an agent", async () => {
     const [owner] = await seedAssignedAgents(1);
-    await buildPaperclipRuntimeMcpServers({ db, agent: owner!.agent, runId: owner!.run.id });
+    await buildWardmoteRuntimeMcpServers({ db, agent: owner!.agent, runId: owner!.run.id });
     // Simulate a gateway provisioned before the agentId column was set.
     await db.update(toolMcpGateways).set({ agentId: null });
 
-    await buildPaperclipRuntimeMcpServers({ db, agent: owner!.agent, runId: owner!.run.id });
+    await buildWardmoteRuntimeMcpServers({ db, agent: owner!.agent, runId: owner!.run.id });
 
     const gateways = await db.select().from(toolMcpGateways);
     expect(gateways).toHaveLength(1);
@@ -181,7 +181,7 @@ describeEmbeddedPostgres("heartbeat runtime MCP servers", () => {
 
   it("rejects another run on a legacy native gateway before the owner runs again", async () => {
     const [owner, other] = await seedAssignedAgents(2);
-    const [server] = await buildPaperclipRuntimeMcpServers({ db, agent: owner!.agent, runId: owner!.run.id });
+    const [server] = await buildWardmoteRuntimeMcpServers({ db, agent: owner!.agent, runId: owner!.run.id });
     const [gateway] = await db.select().from(toolMcpGateways);
     await db.update(toolMcpGateways).set({ agentId: null }).where(eq(toolMcpGateways.id, gateway!.id));
     const service = createToolGatewayService(db);
@@ -212,7 +212,7 @@ describeEmbeddedPostgres("heartbeat runtime MCP servers", () => {
 
   it("rejects JSON null profile metadata with an HTTP authentication response", async () => {
     const [owner] = await seedAssignedAgents(1);
-    const [server] = await buildPaperclipRuntimeMcpServers({ db, agent: owner!.agent, runId: owner!.run.id });
+    const [server] = await buildWardmoteRuntimeMcpServers({ db, agent: owner!.agent, runId: owner!.run.id });
     const [gateway] = await db.select().from(toolMcpGateways);
     await db.update(toolProfiles).set({ metadata: sql`'null'::jsonb` }).where(eq(toolProfiles.id, gateway!.profileId));
     const service = createToolGatewayService(db);
@@ -225,10 +225,10 @@ describeEmbeddedPostgres("heartbeat runtime MCP servers", () => {
 
   it("does not repair a gateway with conflicting ownership metadata", async () => {
     const [owner, other] = await seedAssignedAgents(2);
-    const [server] = await buildPaperclipRuntimeMcpServers({ db, agent: owner!.agent, runId: owner!.run.id });
+    const [server] = await buildWardmoteRuntimeMcpServers({ db, agent: owner!.agent, runId: owner!.run.id });
     await db.update(toolMcpGateways).set({ agentId: null,
       metadata: { nativeRuntimeAssignmentDigest: server!.connectionId.slice("assignment:".length), agentId: other!.agent.id } });
-    await expect(buildPaperclipRuntimeMcpServers({ db, agent: owner!.agent, runId: owner!.run.id }))
+    await expect(buildWardmoteRuntimeMcpServers({ db, agent: owner!.agent, runId: owner!.run.id }))
       .rejects.toThrow("Invalid native runtime gateway provenance");
     const [gateway] = await db.select().from(toolMcpGateways);
     expect(gateway!.agentId).toBeNull();
@@ -286,7 +286,7 @@ describeEmbeddedPostgres("heartbeat runtime MCP servers", () => {
       companyId: company!.id, connectionId: connection!.id, targetType: "agent", targetId: agent!.id,
     });
 
-    const servers = await buildPaperclipRuntimeMcpServers({ db, agent: agent!, runId: randomUUID() });
+    const servers = await buildWardmoteRuntimeMcpServers({ db, agent: agent!, runId: randomUUID() });
     expect(servers).toHaveLength(1);
     const [gateway] = await db.select().from(toolMcpGateways);
     const generatedEntries = await db.select().from(toolProfileEntries)
@@ -307,7 +307,7 @@ describeEmbeddedPostgres("heartbeat runtime MCP servers", () => {
     expect(effective.allowedToolNames).not.toContain("unassigned");
     expect(effective.allowedToolNames).not.toContain("new_after_snapshot");
 
-    const reused = await buildPaperclipRuntimeMcpServers({ db, agent: agent!, runId: randomUUID() });
+    const reused = await buildWardmoteRuntimeMcpServers({ db, agent: agent!, runId: randomUUID() });
     expect(reused[0]!.connectionId).toBe(servers[0]!.connectionId);
     expect(await db.select().from(toolMcpGateways)).toHaveLength(1);
   });
@@ -428,7 +428,7 @@ describeEmbeddedPostgres("heartbeat runtime MCP servers", () => {
       contextSnapshot: {},
     }).returning();
 
-    const servers = await buildPaperclipRuntimeMcpServers({ db, agent: agent!, runId: run!.id });
+    const servers = await buildWardmoteRuntimeMcpServers({ db, agent: agent!, runId: run!.id });
 
     expect(servers).toHaveLength(1);
     const [runtimeGateway] = await db.select().from(toolMcpGateways);
@@ -496,7 +496,7 @@ describeEmbeddedPostgres("heartbeat runtime MCP servers", () => {
       contextSnapshot: {},
     });
 
-    const servers = await buildPaperclipRuntimeMcpServers({ db, agent: agent!, runId });
+    const servers = await buildWardmoteRuntimeMcpServers({ db, agent: agent!, runId });
 
     expect(servers).toEqual([]);
     const [activity] = await db

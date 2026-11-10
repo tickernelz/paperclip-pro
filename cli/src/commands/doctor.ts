@@ -1,6 +1,6 @@
 import * as p from "@clack/prompts";
 import pc from "picocolors";
-import type { PaperclipConfig } from "../config/schema.js";
+import type { WardmoteConfig } from "../config/schema.js";
 import { readConfig, resolveConfigPath } from "../config/store.js";
 import {
   agentJwtSecretCheck,
@@ -17,7 +17,7 @@ import {
   storageCheck,
   type CheckResult,
 } from "../checks/index.js";
-import { loadPaperclipEnvFile } from "../config/env.js";
+import { loadWardmoteEnvFile } from "../config/env.js";
 import { printWardmoteCliBanner } from "../utils/banner.js";
 import { printUpdateNotice } from "../update-notice.js";
 
@@ -37,7 +37,7 @@ export async function doctor(opts: {
   p.intro(pc.bgCyan(pc.black(" paperclip doctor ")));
 
   const configPath = resolveConfigPath(opts.config);
-  loadPaperclipEnvFile(configPath);
+  loadWardmoteEnvFile(configPath);
   const results: CheckResult[] = [];
 
   // 1. Config check (must pass before others)
@@ -49,7 +49,7 @@ export async function doctor(opts: {
     return printSummary(results);
   }
 
-  let config: PaperclipConfig;
+  let config: WardmoteConfig;
   try {
     config = readConfig(opts.config)!;
   } catch (err) {
@@ -193,7 +193,7 @@ async function runRepairableCheck(input: {
   if (!repaired) return result;
 
   // Repairs may create/update the adjacent .env file or other local resources.
-  loadPaperclipEnvFile(input.configPath);
+  loadWardmoteEnvFile(input.configPath);
   result = await input.run();
   printResult(result);
   return result;

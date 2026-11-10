@@ -8,7 +8,7 @@ import pc from "picocolors";
 import { assertManagedShimWritable, writeManagedShim, buildNextManifest, flipCurrentAtomic, isManagedExecutable, pruneInstallPayloads, readInstallManifest, resolveInstallStorePaths, withInstallStoreLock, writeInstallManifestAtomic, type InstallChannel, type InstallManifest, type InstallRecord, type InstallStorePaths } from "../install-store.js";
 import { dbBackupCommand } from "./db-backup.js";
 import { assertReleaseSetPublished, assertSupportedNodeVersion, installGitPayload, installNpmPayload, PUBLIC_NPM_REGISTRY, resolveGitHubRef, resolvePublishedVersion, writeManagedNpmrc, type CommandRunner } from "./install.js";
-import { resolvePaperclipInstanceId, resolvePaperclipInstanceRoot } from "../config/home.js";
+import { resolveWardmoteInstanceId, resolveWardmoteInstanceRoot } from "../config/home.js";
 import { resolveConfigPath } from "../config/store.js";
 import { detectServiceManager } from "../services/service-manager.js";
 import { restartManagedService } from "./service.js";
@@ -21,10 +21,10 @@ type Dependencies = { executablePath: string; runCommand: CommandRunner; backup:
 
 const DATABASE_UNREACHABLE_CODES = new Set(["ECONNREFUSED", "EHOSTUNREACH", "ENETUNREACH", "ETIMEDOUT"]);
 
-function hasPaperclipInstanceData(): boolean {
+function hasWardmoteInstanceData(): boolean {
   return Boolean(process.env.DATABASE_URL?.trim())
     || fs.existsSync(resolveConfigPath())
-    || fs.existsSync(resolvePaperclipInstanceRoot());
+    || fs.existsSync(resolveWardmoteInstanceRoot());
 }
 
 function isDatabaseUnreachableError(error: unknown): boolean {
@@ -48,7 +48,7 @@ function isDatabaseUnreachableError(error: unknown): boolean {
   return false;
 }
 
-async function runPreUpdateBackup(options: UpdateOptions, backup: () => Promise<void>, hasInstanceData = hasPaperclipInstanceData): Promise<void> {
+async function runPreUpdateBackup(options: UpdateOptions, backup: () => Promise<void>, hasInstanceData = hasWardmoteInstanceData): Promise<void> {
   if (!hasInstanceData()) {
     const message = "Skipping the pre-update backup because this Wardmote instance has not been onboarded and has no data to back up.";
     if (options.json) console.error(message); else console.log(pc.yellow(message));
@@ -68,7 +68,7 @@ async function runPreUpdateBackup(options: UpdateOptions, backup: () => Promise<
 }
 
 async function restartActiveManagedService(expectedVersion: string): Promise<boolean> {
-  const instanceId = resolvePaperclipInstanceId();
+  const instanceId = resolveWardmoteInstanceId();
   const detection = await detectServiceManager({ instanceId });
   if (!detection.supported || !(await detection.manager.status()).active) return false;
   await restartManagedService({ instanceId, expectedVersion });

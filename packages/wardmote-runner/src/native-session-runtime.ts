@@ -32,7 +32,7 @@ import {
   type PrpStructuredRunResult,
   type PrpTerminalState,
 } from "./protocol/replay-contract.js";
-import { parsePaperclipQuestionSet } from "./contracts/question-set.js";
+import { parseWardmoteQuestionSet } from "./contracts/question-set.js";
 import {
   retainedRunnerdCleanupProofIsCurrent,
   type RetainedRunnerdCleanupProof,
@@ -1107,7 +1107,7 @@ async function consumeTurn(
         typeof request.turnId === "string"
       ) {
         try {
-          parsePaperclipQuestionSet(request.input);
+          parseWardmoteQuestionSet(request.input);
           const requestId = request.requestId;
           const turnId = request.turnId;
           clearInputTimer(requestId);

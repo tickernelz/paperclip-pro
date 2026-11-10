@@ -2839,7 +2839,7 @@
       "assertAgentEnvironmentSelection",
       "assertCanCreateAgentsForCompany",
       "assertExternalInstructionsAdmin",
-      "assertFreshPaperclipRunnerProvider",
+      "assertFreshWardmoteRunnerProvider",
       "assertNoAgentAdapterConfigMutation",
       "assertNoAgentAuthorityEscalation",
       "assertNoAgentLocalAdapterHostCommandMutation",
@@ -3402,7 +3402,7 @@
       "assertAgentEnvironmentSelection",
       "assertCanCreateAgentsForCompany",
       "assertExternalInstructionsAdmin",
-      "assertFreshPaperclipRunnerProvider",
+      "assertFreshWardmoteRunnerProvider",
       "assertNoAgentAdapterConfigMutation",
       "assertNoAgentAuthorityEscalation",
       "assertNoAgentLocalAdapterHostCommandMutation",
@@ -39680,7 +39680,7 @@
       "assertAgentKeepsMaxConcurrentRuns",
       "assertCanUpdateAgent",
       "assertExternalInstructionsAdmin",
-      "assertFreshPaperclipRunnerProvider",
+      "assertFreshWardmoteRunnerProvider",
       "assertKnownAdapterType",
       "assertNoAgentAdapterConfigMutation",
       "assertNoAgentLocalAdapterHostCommandMutation",
@@ -46183,7 +46183,7 @@
       "assertCanManageInstructionsPath",
       "assertCanUpdateAgent",
       "assertExternalInstructionsAdmin",
-      "assertFreshPaperclipRunnerProvider",
+      "assertFreshWardmoteRunnerProvider",
       "assertKnownAdapterType",
       "assertNoAgentAdapterConfigMutation",
       "assertNoAgentAuthorityEscalation",
@@ -48251,9 +48251,6 @@
           "enableOwnerInstanceAdmin": {
             "type": "boolean"
           },
-          "enablePaperclipDeveloperMode": {
-            "type": "boolean"
-          },
           "enablePipelines": {
             "type": "boolean"
           },
@@ -48288,6 +48285,9 @@
             "type": "boolean"
           },
           "enableSummaries": {
+            "type": "boolean"
+          },
+          "enableWardmoteDeveloperMode": {
             "type": "boolean"
           },
           "enableWorkspaceBranchReconcileForward": {

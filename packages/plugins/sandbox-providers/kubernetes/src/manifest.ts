@@ -1,9 +1,9 @@
-import type { PaperclipPluginManifestV1 } from "@tickernelz/wardmote-plugin-sdk";
+import type { WardmotePluginManifestV1 } from "@tickernelz/wardmote-plugin-sdk";
 
 const PLUGIN_ID = "paperclip.kubernetes-sandbox-provider";
 const PLUGIN_VERSION = "0.1.0-alpha.1";
 
-const manifest: PaperclipPluginManifestV1 = {
+const manifest: WardmotePluginManifestV1 = {
   id: PLUGIN_ID,
   apiVersion: 1,
   version: PLUGIN_VERSION,

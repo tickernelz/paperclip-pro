@@ -167,7 +167,7 @@ Example minimum policy shape:
   "Version": "2012-10-17",
   "Statement": [
     {
-      "Sid": "PaperclipDeploymentSecrets",
+      "Sid": "WardmoteDeploymentSecrets",
       "Effect": "Allow",
       "Action": [
         "secretsmanager:CreateSecret",
@@ -178,7 +178,7 @@ Example minimum policy shape:
       "Resource": "arn:aws:secretsmanager:<region>:<account-id>:secret:paperclip/<deployment-id>/*"
     },
     {
-      "Sid": "PaperclipDeploymentKms",
+      "Sid": "WardmoteDeploymentKms",
       "Effect": "Allow",
       "Action": [
         "kms:Encrypt",
@@ -203,7 +203,7 @@ Remote import preview needs one additional AWS permission:
 
 ```json
 {
-  "Sid": "PaperclipRemoteSecretInventory",
+  "Sid": "WardmoteRemoteSecretInventory",
   "Effect": "Allow",
   "Action": "secretsmanager:ListSecrets",
   "Resource": "*"
@@ -228,7 +228,7 @@ operator-approved external prefixes that Paperclip is allowed to consume:
 
 ```json
 {
-  "Sid": "PaperclipResolveImportedExternalReferences",
+  "Sid": "WardmoteResolveImportedExternalReferences",
   "Effect": "Allow",
   "Action": "secretsmanager:GetSecretValue",
   "Resource": [

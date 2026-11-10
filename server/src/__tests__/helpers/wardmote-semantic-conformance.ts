@@ -35,7 +35,7 @@ import { issueRoutes } from "../../routes/issues.js";
 
 type Db = ReturnType<typeof createDb>;
 
-export interface PaperclipSemanticConformanceIds {
+export interface WardmoteSemanticConformanceIds {
   readonly companyId: string;
   readonly actorId: string;
   readonly foreignCompanyId: string;
@@ -50,7 +50,7 @@ interface IdempotencyRecord {
 }
 
 interface ProductionWorld {
-  readonly port: PaperclipRouteSemanticPort;
+  readonly port: WardmoteRouteSemanticPort;
   readonly dispatcher: CapabilitySemanticDispatcher;
   readonly taskId: string;
   readonly runId: string;
@@ -61,17 +61,17 @@ interface ProductionWorld {
  * issueRoutes, so authorization, service transactions, audit logging, document
  * revisions, interactions, and terminal arbitration remain production-owned.
  */
-export class PaperclipProductionSemanticConformanceAdapter implements SemanticConformanceAdapter {
+export class WardmoteProductionSemanticConformanceAdapter implements SemanticConformanceAdapter {
   readonly id = "paperclip-production-services";
   readonly kind = "production_binding" as const;
 
   private constructor(readonly worlds: ReadonlyMap<string, ProductionWorld>) {}
 
-  static async create(db: Db, ids: PaperclipSemanticConformanceIds): Promise<PaperclipProductionSemanticConformanceAdapter> {
+  static async create(db: Db, ids: WardmoteSemanticConformanceIds): Promise<WardmoteProductionSemanticConformanceAdapter> {
     const app = createProductionAuthorityApp(db, ids);
     const worlds = new Map<string, ProductionWorld>();
     for (const [id, binding] of Object.entries(ids.worlds)) {
-      const port = new PaperclipRouteSemanticPort(db, app, ids, binding);
+      const port = new WardmoteRouteSemanticPort(db, app, ids, binding);
       await port.refresh();
       worlds.set(id, {
         port,
@@ -80,7 +80,7 @@ export class PaperclipProductionSemanticConformanceAdapter implements SemanticCo
         runId: binding.runId,
       });
     }
-    return new PaperclipProductionSemanticConformanceAdapter(worlds);
+    return new WardmoteProductionSemanticConformanceAdapter(worlds);
   }
 
   async execute(vector: SemanticConformanceVector): Promise<SemanticConformanceObservation> {
@@ -105,9 +105,9 @@ export class PaperclipProductionSemanticConformanceAdapter implements SemanticCo
   }
 }
 
-export async function seedPaperclipSemanticConformance(
+export async function seedWardmoteSemanticConformance(
   db: Db,
-  ids: PaperclipSemanticConformanceIds,
+  ids: WardmoteSemanticConformanceIds,
 ): Promise<void> {
   await db.insert(companies).values([
     { id: ids.companyId, name: "Semantic Conformance", issuePrefix: "SCF" },
@@ -179,14 +179,14 @@ export async function seedPaperclipSemanticConformance(
   });
 }
 
-class PaperclipRouteSemanticPort {
+class WardmoteRouteSemanticPort {
   readonly #idempotency = new Map<string, IdempotencyRecord>();
   #state: CapabilityFixtureState;
 
   constructor(
     readonly db: Db,
     readonly app: Application,
-    readonly ids: PaperclipSemanticConformanceIds,
+    readonly ids: WardmoteSemanticConformanceIds,
     readonly binding: { taskId: string; runId: string; capabilities: readonly string[] },
   ) {
     this.#state = createCapabilityFixtureState();
@@ -526,7 +526,7 @@ function toFixtureRunStatus(status: string): CapabilityFixtureState["runs"][numb
   }
 }
 
-function createProductionAuthorityApp(db: Db, ids: PaperclipSemanticConformanceIds): Application {
+function createProductionAuthorityApp(db: Db, ids: WardmoteSemanticConformanceIds): Application {
   const app = express();
   app.use(express.json());
   app.use((req, _res, next) => {

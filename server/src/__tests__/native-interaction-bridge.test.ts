@@ -23,7 +23,7 @@ import {
   materializeNativeInteractionResponses,
   NativeInteractionBridgeError,
 } from "../services/native-runtime/native-interaction-bridge.js";
-import { PaperclipControlPlanePort } from "../services/native-runtime/paperclip-control-plane-port.js";
+import { WardmoteControlPlanePort } from "../services/native-runtime/paperclip-control-plane-port.js";
 import { finalizeNativeRun } from "../services/native-runtime/native-run-finalizer.js";
 
 describe("P6-19 native interaction bridge", () => {
@@ -413,7 +413,7 @@ describe("P6-19 native interaction bridge", () => {
         completionContractSha256: contractSha,
         contextSnapshot: { issueId: scenario.issueId },
       });
-      const port = new PaperclipControlPlanePort(db, {
+      const port = new WardmoteControlPlanePort(db, {
         companyId,
         issueId: scenario.issueId,
         runId: scenario.runId,
@@ -579,7 +579,7 @@ describe("P6-19 native interaction bridge", () => {
           issueId: interaction.issueId ?? localIssueId,
         })));
       }
-      const port = new PaperclipControlPlanePort(db, {
+      const port = new WardmoteControlPlanePort(db, {
         companyId,
         issueId: localIssueId,
         runId: localRunId,

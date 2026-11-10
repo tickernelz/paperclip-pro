@@ -1,4 +1,4 @@
-import type { NotificationCreatedLivePayload, PaperclipNotification } from "@tickernelz/wardmote-shared";
+import type { NotificationCreatedLivePayload, WardmoteNotification } from "@tickernelz/wardmote-shared";
 import { getPageVisibility } from "../page-visibility";
 import { NOTIFICATION_BADGE, NOTIFICATION_ICON, getServiceWorkerRegistration, notificationPermission } from "./browser";
 import { claimNotificationKey } from "./dedupe";
@@ -11,7 +11,7 @@ export type NotificationAction = "none" | "sound" | "os";
 export const SW_NOTIFICATION_MESSAGE = "paperclip.notification";
 export const SW_NAVIGATE_MESSAGE = "paperclip.navigate";
 
-function kindEnabled(notification: PaperclipNotification, settings: NotificationSettings): boolean {
+function kindEnabled(notification: WardmoteNotification, settings: NotificationSettings): boolean {
   return settings.enabled && settings.kinds[notification.kind]?.enabled === true;
 }
 
@@ -30,7 +30,7 @@ export function decideLiveNotification(input: {
 }
 
 export function decideServiceWorkerNotification(input: {
-  notification: PaperclipNotification;
+  notification: WardmoteNotification;
   settings: NotificationSettings;
   visible: boolean;
 }): NotificationAction {
@@ -40,11 +40,11 @@ export function decideServiceWorkerNotification(input: {
 
 export interface NotificationDeliveryDeps {
   claim: (key: string) => Promise<boolean>;
-  playSound: (notification: PaperclipNotification, settings: NotificationSettings) => Promise<unknown>;
-  showOsNotification: (notification: PaperclipNotification) => Promise<unknown>;
+  playSound: (notification: WardmoteNotification, settings: NotificationSettings) => Promise<unknown>;
+  showOsNotification: (notification: WardmoteNotification) => Promise<unknown>;
 }
 
-async function showOsNotification(notification: PaperclipNotification): Promise<void> {
+async function showOsNotification(notification: WardmoteNotification): Promise<void> {
   if (notificationPermission() !== "granted") return;
   const options: NotificationOptions = {
     body: notification.body,
@@ -69,7 +69,7 @@ const defaultDeps: NotificationDeliveryDeps = {
 
 async function perform(
   action: NotificationAction,
-  notification: PaperclipNotification,
+  notification: WardmoteNotification,
   settings: NotificationSettings,
   deps: NotificationDeliveryDeps,
 ): Promise<NotificationAction> {
@@ -98,7 +98,7 @@ export function deliverLiveNotification(
 }
 
 export function deliverServiceWorkerNotification(
-  notification: PaperclipNotification,
+  notification: WardmoteNotification,
   deps: NotificationDeliveryDeps = defaultDeps,
   context: { settings?: NotificationSettings; visible?: boolean } = {},
 ): Promise<NotificationAction> {
@@ -111,11 +111,11 @@ export function deliverServiceWorkerNotification(
   return perform(action, notification, settings, deps);
 }
 
-function readNotification(value: unknown): PaperclipNotification | null {
+function readNotification(value: unknown): WardmoteNotification | null {
   if (!value || typeof value !== "object") return null;
-  const candidate = value as Partial<PaperclipNotification>;
+  const candidate = value as Partial<WardmoteNotification>;
   return typeof candidate.key === "string" && typeof candidate.kind === "string" && typeof candidate.title === "string"
-    ? (candidate as PaperclipNotification)
+    ? (candidate as WardmoteNotification)
     : null;
 }
 
@@ -132,7 +132,7 @@ export function readNotificationCreatedPayload(value: unknown): NotificationCrea
 
 export function readServiceWorkerMessage(
   data: unknown,
-): { type: "notification"; notification: PaperclipNotification } | { type: "navigate"; url: string } | null {
+): { type: "notification"; notification: WardmoteNotification } | { type: "navigate"; url: string } | null {
   if (!data || typeof data !== "object") return null;
   const message = data as { type?: unknown; notification?: unknown; url?: unknown };
   if (message.type === SW_NOTIFICATION_MESSAGE) {

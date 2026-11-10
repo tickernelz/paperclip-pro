@@ -2,13 +2,13 @@ import fs from "node:fs";
 import path from "node:path";
 import { isDeepStrictEqual } from "node:util";
 import {
-  mergePaperclipConfig,
+  mergeWardmoteConfig,
   paperclipConfigSchema,
-  type PaperclipConfig,
+  type WardmoteConfig,
 } from "./schema.js";
 import {
   resolveDefaultConfigPath,
-  resolvePaperclipInstanceId,
+  resolveWardmoteInstanceId,
 } from "./home.js";
 
 const DEFAULT_CONFIG_BASENAME = "config.json";
@@ -34,7 +34,7 @@ function findConfigFileFromAncestors(startDir: string): string | null {
 export function resolveConfigPath(overridePath?: string): string {
   if (overridePath) return path.resolve(overridePath);
   if (process.env.WARDMOTE_CONFIG) return path.resolve(process.env.WARDMOTE_CONFIG);
-  return findConfigFileFromAncestors(process.cwd()) ?? resolveDefaultConfigPath(resolvePaperclipInstanceId());
+  return findConfigFileFromAncestors(process.cwd()) ?? resolveDefaultConfigPath(resolveWardmoteInstanceId());
 }
 
 function parseJson(filePath: string): unknown {
@@ -88,7 +88,7 @@ function formatValidationError(err: unknown): string {
   return err instanceof Error ? err.message : String(err);
 }
 
-export function readConfig(configPath?: string): PaperclipConfig | null {
+export function readConfig(configPath?: string): WardmoteConfig | null {
   const filePath = resolveConfigPath(configPath);
   if (!fs.existsSync(filePath)) return null;
   const raw = parseJson(filePath);
@@ -100,7 +100,7 @@ export function readConfig(configPath?: string): PaperclipConfig | null {
   return parsed.data;
 }
 
-function effectiveConfig(config: PaperclipConfig): Record<string, unknown> {
+function effectiveConfig(config: WardmoteConfig): Record<string, unknown> {
   const meta = { ...config.$meta } as Record<string, unknown>;
   delete meta.updatedAt;
   delete meta.source;
@@ -184,7 +184,7 @@ export function backupInvalidConfig(configPath?: string): string {
 }
 
 export function writeConfig(
-  config: PaperclipConfig,
+  config: WardmoteConfig,
   configPath?: string,
   options: { invalidBackupPath?: string } = {},
 ): boolean {
@@ -196,7 +196,7 @@ export function writeConfig(
   if (fs.existsSync(filePath)) {
     try {
       const source = paperclipConfigSchema.parse(migrateLegacyConfig(parseJson(filePath)));
-      nextConfig = paperclipConfigSchema.parse(mergePaperclipConfig(source, nextConfig));
+      nextConfig = paperclipConfigSchema.parse(mergeWardmoteConfig(source, nextConfig));
       if (isDeepStrictEqual(effectiveConfig(source), effectiveConfig(nextConfig))) {
         return false;
       }

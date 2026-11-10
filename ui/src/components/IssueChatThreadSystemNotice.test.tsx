@@ -49,8 +49,8 @@ vi.mock("./IssueLinkQuicklook", () => ({
     to: string;
   }) => <a href={to}>{children}</a>,
 }));
-vi.mock("../hooks/usePaperclipIssueRuntime", () => ({
-  usePaperclipIssueRuntime: () => ({}),
+vi.mock("../hooks/useWardmoteIssueRuntime", () => ({
+  useWardmoteIssueRuntime: () => ({}),
 }));
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

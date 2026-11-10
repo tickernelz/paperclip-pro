@@ -21,16 +21,16 @@ import {
 const digest = "a".repeat(64);
 
 describe("native workspace sync durable metadata", () => {
-  const originalPaperclipHome = process.env.WARDMOTE_HOME;
-  const originalPaperclipInstanceId = process.env.WARDMOTE_INSTANCE_ID;
+  const originalWardmoteHome = process.env.WARDMOTE_HOME;
+  const originalWardmoteInstanceId = process.env.WARDMOTE_INSTANCE_ID;
   const cleanupDirs: string[] = [];
 
   afterEach(async () => {
-    if (originalPaperclipHome === undefined) delete process.env.WARDMOTE_HOME;
-    else process.env.WARDMOTE_HOME = originalPaperclipHome;
-    if (originalPaperclipInstanceId === undefined)
+    if (originalWardmoteHome === undefined) delete process.env.WARDMOTE_HOME;
+    else process.env.WARDMOTE_HOME = originalWardmoteHome;
+    if (originalWardmoteInstanceId === undefined)
       delete process.env.WARDMOTE_INSTANCE_ID;
-    else process.env.WARDMOTE_INSTANCE_ID = originalPaperclipInstanceId;
+    else process.env.WARDMOTE_INSTANCE_ID = originalWardmoteInstanceId;
     await Promise.all(
       cleanupDirs
         .splice(0)

@@ -11,13 +11,13 @@ import {
   paperclipMcpHttpHeaders,
 } from "./wardmote-mcp.js";
 
-export interface PaperclipMcpMount {
+export interface WardmoteMcpMount {
   dir: string;
   filePath: string;
   cleanup: () => Promise<void>;
 }
 
-export interface PaperclipMcpHttpTarget {
+export interface WardmoteMcpHttpTarget {
   url: string;
   headers: Record<string, string>;
 }
@@ -26,7 +26,7 @@ export interface PaperclipMcpHttpTarget {
 export function paperclipMcpHttpTarget(input: {
   env: Record<string, string | undefined>;
   toolsets: string;
-}): PaperclipMcpHttpTarget {
+}): WardmoteMcpHttpTarget {
   return {
     url: paperclipMcpEndpoint(input.env.WARDMOTE_API_URL ?? "", input.toolsets),
     headers: paperclipMcpHttpHeaders({
@@ -37,7 +37,7 @@ export function paperclipMcpHttpTarget(input: {
 }
 
 /** Gemini CLI settings.json: streamable HTTP servers use `httpUrl`. */
-export function renderPaperclipGeminiSettings(target: PaperclipMcpHttpTarget): string {
+export function renderWardmoteGeminiSettings(target: WardmoteMcpHttpTarget): string {
   const settings = {
     mcpServers: {
       [WARDMOTE_MCP_SERVER_NAME]: { httpUrl: target.url, headers: target.headers },
@@ -47,7 +47,7 @@ export function renderPaperclipGeminiSettings(target: PaperclipMcpHttpTarget): s
 }
 
 /** OpenCode config: remote servers live under `mcp` with `type: "remote"`. */
-export function renderPaperclipOpenCodeConfig(target: PaperclipMcpHttpTarget): string {
+export function renderWardmoteOpenCodeConfig(target: WardmoteMcpHttpTarget): string {
   const config = {
     $schema: "https://opencode.ai/config.json",
     mcp: {
@@ -68,7 +68,7 @@ function tomlString(value: string): string {
 }
 
 /** Grok CLI config overlay: `[mcp_servers.<name>]` with an inline headers table. */
-export function renderPaperclipGrokConfig(target: PaperclipMcpHttpTarget): string {
+export function renderWardmoteGrokConfig(target: WardmoteMcpHttpTarget): string {
   const headers = Object.entries(target.headers)
     .map(([key, value]) => `${tomlString(key)} = ${tomlString(value)}`)
     .join(", ");
@@ -86,7 +86,7 @@ function shellQuoteSingle(value: string): string {
 }
 
 /** Write a run-scoped config file locally or on the execution target, with a cleanup that removes it. */
-export async function writePaperclipMcpMount(input: {
+export async function writeWardmoteMcpMount(input: {
   runId: string;
   target: AdapterExecutionTarget | null | undefined;
   remote: boolean;
@@ -98,7 +98,7 @@ export async function writePaperclipMcpMount(input: {
   env: Record<string, string>;
   timeoutSec: number;
   graceSec: number;
-}): Promise<PaperclipMcpMount> {
+}): Promise<WardmoteMcpMount> {
   if (!input.remote) {
     const dir = await fs.mkdtemp(path.join(os.tmpdir(), input.localPrefix));
     await fs.chmod(dir, 0o700);

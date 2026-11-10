@@ -30,12 +30,12 @@ import {
   toolConnections,
 } from "@tickernelz/wardmote-db";
 import { OPENWA_APPROVAL_CATEGORIES, type OpenwaApprovalCategory } from "@tickernelz/wardmote-shared";
-import { selectPaperclipTaskMarkdown } from "@tickernelz/wardmote-adapter-utils/server-utils";
+import { selectWardmoteTaskMarkdown } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
 } from "../helpers/embedded-postgres.js";
-import { buildPaperclipTaskMarkdown, heartbeatService } from "../../services/heartbeat.ts";
+import { buildWardmoteTaskMarkdown, heartbeatService } from "../../services/heartbeat.ts";
 import { registerServerAdapter, unregisterServerAdapter } from "../../adapters/index.ts";
 import { assertOpenwaRunMay } from "../../services/openwa/authority.ts";
 import { createDurableChatWakeupRequest } from "../../services/durable-chat-wakeup.ts";
@@ -399,7 +399,7 @@ describeEmbeddedPostgres("OpenWA guidance at run start", () => {
       expect(result.full).toContain("Issue description:");
       expect(result.compact).not.toContain("Issue description:");
       expect(result.persisted[OPENWA_WAKE_CONTEXT_KEY]).toEqual(result.wake);
-      const resumed = selectPaperclipTaskMarkdown(
+      const resumed = selectWardmoteTaskMarkdown(
         { ...result.context, paperclipWake: { reason: "issue_commented", commentIds: [randomUUID()] } },
         { resumedSession: true },
       );
@@ -784,8 +784,8 @@ describeEmbeddedPostgres("OpenWA guidance at run start", () => {
     const issue = { id: randomUUID(), identifier: "WA-1", title: "WhatsApp chat", workMode: "standard" as const };
     for (const includeDescription of [true, false]) {
       for (const nativeRunner of [true, false]) {
-        const openwa = buildPaperclipTaskMarkdown({ issue, externalChatProvider: "openwa", nativeRunner, includeDescription }) ?? "";
-        const telegram = buildPaperclipTaskMarkdown({ issue, externalChatProvider: "telegram", nativeRunner, includeDescription }) ?? "";
+        const openwa = buildWardmoteTaskMarkdown({ issue, externalChatProvider: "openwa", nativeRunner, includeDescription }) ?? "";
+        const telegram = buildWardmoteTaskMarkdown({ issue, externalChatProvider: "telegram", nativeRunner, includeDescription }) ?? "";
         expect(telegram).toContain("External chat file delivery:");
         expect(openwa).not.toContain("External chat file delivery:");
         expect(openwa).not.toContain("register_deliverable");

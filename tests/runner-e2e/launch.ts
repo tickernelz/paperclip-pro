@@ -32,8 +32,8 @@ import { effectiveAutomaticRetryLimit, executeWithAutomaticRetry } from "./autom
 import { buildRunnerCampaign } from "./history.js";
 import {
   buildRunnerE2EProcessEnvironment,
-  resolvePaperclipRemoteRunnerBinaryForHarness,
-  resolvePaperclipRunnerBinaryForHarness,
+  resolveWardmoteRemoteRunnerBinaryForHarness,
+  resolveWardmoteRunnerBinaryForHarness,
 } from "./harness-env.js";
 import { assertEmbeddedDatabaseIsolation } from "./instance-isolation.js";
 import {
@@ -532,7 +532,7 @@ async function runAttempt(input: {
     attemptSecrets = credentials;
     if (installedCli) await writeFile(path.join(privateDir, "installed-cli-admission.json"), `${JSON.stringify(installedCli, null, 2)}\n`, { mode: 0o600 });
     if (installedPlugin) await writeFile(path.join(privateDir, "installed-daytona-plugin-admission.json"), `${JSON.stringify(installedPlugin, null, 2)}\n`, { mode: 0o600 });
-    const runnerBinary = installedCli ? undefined : resolvePaperclipRunnerBinaryForHarness(
+    const runnerBinary = installedCli ? undefined : resolveWardmoteRunnerBinaryForHarness(
       executions,
       repositoryRoot,
     );
@@ -552,7 +552,7 @@ async function runAttempt(input: {
       WARDMOTE_RUNNER_E2E_SERVER_LOG: path.join(privateDir, "server.log"),
       WARDMOTE_RUNNER_BINARY: runnerBinary,
       WARDMOTE_RUNNER_REMOTE_BINARY_PATH:
-        installedCli ? undefined : resolvePaperclipRemoteRunnerBinaryForHarness(executions, runnerBinary),
+        installedCli ? undefined : resolveWardmoteRemoteRunnerBinaryForHarness(executions, runnerBinary),
       // Vite's optimized dependency cache embeds revision query strings. A
       // private per-attempt cache prevents an earlier cell or local rebuild
       // from producing `504 Outdated Optimize Dep` during browser bootstrap.

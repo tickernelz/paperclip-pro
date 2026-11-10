@@ -38,8 +38,8 @@ describeEmbeddedPostgres("companySkillService.list", () => {
   let db!: ReturnType<typeof createDb>;
   let svc!: ReturnType<typeof companySkillService>;
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
-  let oldPaperclipHome: string | undefined;
-  let oldPaperclipInstanceId: string | undefined;
+  let oldWardmoteHome: string | undefined;
+  let oldWardmoteInstanceId: string | undefined;
   let paperclipHome: string | null = null;
   const cleanupDirs = new Set<string>();
 
@@ -54,8 +54,8 @@ describeEmbeddedPostgres("companySkillService.list", () => {
 
   beforeAll(async () => {
     tempDb = await startEmbeddedPostgresTestDatabase("paperclip-company-skills-service-");
-    oldPaperclipHome = process.env.WARDMOTE_HOME;
-    oldPaperclipInstanceId = process.env.WARDMOTE_INSTANCE_ID;
+    oldWardmoteHome = process.env.WARDMOTE_HOME;
+    oldWardmoteInstanceId = process.env.WARDMOTE_INSTANCE_ID;
     paperclipHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-company-skills-home-"));
     process.env.WARDMOTE_HOME = paperclipHome;
     process.env.WARDMOTE_INSTANCE_ID = "default";
@@ -79,10 +79,10 @@ describeEmbeddedPostgres("companySkillService.list", () => {
   });
 
   afterAll(async () => {
-    if (oldPaperclipHome === undefined) delete process.env.WARDMOTE_HOME;
-    else process.env.WARDMOTE_HOME = oldPaperclipHome;
-    if (oldPaperclipInstanceId === undefined) delete process.env.WARDMOTE_INSTANCE_ID;
-    else process.env.WARDMOTE_INSTANCE_ID = oldPaperclipInstanceId;
+    if (oldWardmoteHome === undefined) delete process.env.WARDMOTE_HOME;
+    else process.env.WARDMOTE_HOME = oldWardmoteHome;
+    if (oldWardmoteInstanceId === undefined) delete process.env.WARDMOTE_INSTANCE_ID;
+    else process.env.WARDMOTE_INSTANCE_ID = oldWardmoteInstanceId;
     if (paperclipHome) {
       await fs.rm(paperclipHome, { recursive: true, force: true });
     }

@@ -4,17 +4,17 @@ import { join, relative, sep } from "node:path";
 
 export const WARDMOTE_WORKSPACE_DIFF_SCHEMA = "paperclip.workspace.diff.v1" as const;
 
-export type PaperclipWorkspaceChangeSource = "harness_reported" | "runner_verified";
-export type PaperclipWorkspaceFileOperation =
+export type WardmoteWorkspaceChangeSource = "harness_reported" | "runner_verified";
+export type WardmoteWorkspaceFileOperation =
   | "create"
   | "modify"
   | "delete"
   | "rename"
   | "mode_change";
 
-export interface PaperclipWorkspaceFileChange {
+export interface WardmoteWorkspaceFileChange {
   path: string;
-  operation: PaperclipWorkspaceFileOperation;
+  operation: WardmoteWorkspaceFileOperation;
   previousPath: string | null;
   additions: number | null;
   deletions: number | null;
@@ -22,13 +22,13 @@ export interface PaperclipWorkspaceFileChange {
   diff: string | null;
 }
 
-export interface PaperclipWorkspaceDiff {
+export interface WardmoteWorkspaceDiff {
   schema: typeof WARDMOTE_WORKSPACE_DIFF_SCHEMA;
   changeSetId: string;
   revision: number;
-  source: PaperclipWorkspaceChangeSource;
+  source: WardmoteWorkspaceChangeSource;
   complete: boolean;
-  files: PaperclipWorkspaceFileChange[];
+  files: WardmoteWorkspaceFileChange[];
   totals: { files: number; additions: number | null; deletions: number | null };
   patchArtifactRef: string | null;
 }
@@ -39,7 +39,7 @@ interface WorkspaceFileSnapshot {
   binary: boolean;
 }
 
-export type PaperclipWorkspaceSnapshot = Map<string, WorkspaceFileSnapshot>;
+export type WardmoteWorkspaceSnapshot = Map<string, WorkspaceFileSnapshot>;
 
 const IGNORED_DIRECTORY_NAMES = new Set([
   ".git",
@@ -72,11 +72,11 @@ function appearsBinary(content: Buffer): boolean {
  * dependency/VCS directories are excluded, symlinks are never followed, and
  * hard limits make this safe to run around an interactive turn.
  */
-export async function capturePaperclipWorkspace(
+export async function captureWardmoteWorkspace(
   root: string,
   options: { signal?: AbortSignal } = {},
-): Promise<PaperclipWorkspaceSnapshot> {
-  const result: PaperclipWorkspaceSnapshot = new Map();
+): Promise<WardmoteWorkspaceSnapshot> {
+  const result: WardmoteWorkspaceSnapshot = new Map();
   let retainedBytes = 0;
   let visitedDirectories = 0;
   const throwIfAborted = () => options.signal?.throwIfAborted();
@@ -170,12 +170,12 @@ function unifiedDiff(path: string, before: Buffer | null, after: Buffer | null):
   };
 }
 
-export function diffPaperclipWorkspace(
-  before: PaperclipWorkspaceSnapshot,
-  after: PaperclipWorkspaceSnapshot,
+export function diffWardmoteWorkspace(
+  before: WardmoteWorkspaceSnapshot,
+  after: WardmoteWorkspaceSnapshot,
   changeSetId: string,
-): PaperclipWorkspaceDiff | null {
-  const files: PaperclipWorkspaceFileChange[] = [];
+): WardmoteWorkspaceDiff | null {
+  const files: WardmoteWorkspaceFileChange[] = [];
   const paths = [...new Set([...before.keys(), ...after.keys()])].sort();
   for (const path of paths) {
     const prior = before.get(path);
@@ -192,7 +192,7 @@ export function diffPaperclipWorkspace(
 
   // Exact-content delete/create pairs are represented as a rename. This keeps
   // the protocol semantic even when the harness only used shell commands.
-  const deletedByHash = new Map<string, PaperclipWorkspaceFileChange>();
+  const deletedByHash = new Map<string, WardmoteWorkspaceFileChange>();
   for (const file of files) {
     if (file.operation === "delete") deletedByHash.set(before.get(file.path)!.hash, file);
   }

@@ -6,7 +6,7 @@ import path from "node:path";
 import { promisify } from "node:util";
 import { afterEach, describe, expect, it } from "vitest";
 import {
-  listPaperclipSkillEntries,
+  listWardmoteSkillEntries,
   removeMaintainerOnlySkillSymlinks,
 } from "@tickernelz/wardmote-adapter-utils/server-utils";
 
@@ -250,7 +250,7 @@ describe("paperclip skill utils", () => {
     await fs.mkdir(path.join(root, ".agents", "skills", "release"), { recursive: true });
     await fs.mkdir(path.join(root, ".agents", "skills", "terminal-bench-loop"), { recursive: true });
 
-    const entries = await listPaperclipSkillEntries(moduleDir);
+    const entries = await listWardmoteSkillEntries(moduleDir);
 
     expect(entries.map((entry) => entry.key)).toEqual([
       "tickernelz/wardmote/wardmote",

@@ -33,7 +33,7 @@ import {
 import { errorHandler } from "../middleware/index.js";
 import { issueRoutes } from "../routes/issues.js";
 import { companySearchService } from "../services/company-search.js";
-import { buildPaperclipWakePayload } from "../services/heartbeat.js";
+import { buildWardmoteWakePayload } from "../services/heartbeat.js";
 import { issueReferenceService } from "../services/issue-references.js";
 import { issueService } from "../services/issues.js";
 import type { StorageService } from "../storage/types.js";
@@ -202,7 +202,7 @@ describeEmbeddedPostgres("deleted issue comment redaction", () => {
       "secret metadata",
     );
 
-    const wakePayload = await buildPaperclipWakePayload({
+    const wakePayload = await buildWardmoteWakePayload({
       db,
       companyId,
       contextSnapshot: {
@@ -257,7 +257,7 @@ describeEmbeddedPostgres("deleted issue comment redaction", () => {
       ])
       .returning();
 
-    const wakePayload = await buildPaperclipWakePayload({
+    const wakePayload = await buildWardmoteWakePayload({
       db,
       companyId,
       contextSnapshot: {
@@ -412,7 +412,7 @@ describeEmbeddedPostgres("deleted issue comment redaction", () => {
       });
     }
 
-    const wakePayload = await buildPaperclipWakePayload({
+    const wakePayload = await buildWardmoteWakePayload({
       db,
       companyId,
       contextSnapshot: {
@@ -455,7 +455,7 @@ describeEmbeddedPostgres("deleted issue comment redaction", () => {
     expect(JSON.stringify(wakePayload)).not.toContain("other-company.txt");
     expect(JSON.stringify(wakePayload)).not.toContain("quarantined.txt");
 
-    const lowTrustWakePayload = await buildPaperclipWakePayload({
+    const lowTrustWakePayload = await buildWardmoteWakePayload({
       db,
       companyId,
       contextSnapshot: {

@@ -915,7 +915,7 @@ function isKnownPrpEventDiscriminator(
   );
 }
 
-function isPaperclipSchemaDiscriminator(
+function isWardmoteSchemaDiscriminator(
   key: string,
   value: unknown,
 ): value is string {
@@ -964,7 +964,7 @@ export function sanitizeRecord(
       redacted[key] = value;
       continue;
     }
-    if (isPaperclipSchemaDiscriminator(key, value)) {
+    if (isWardmoteSchemaDiscriminator(key, value)) {
       redacted[key] = value;
       continue;
     }
@@ -976,7 +976,7 @@ export function sanitizeRecord(
       typeof value === "string" &&
       looksLikeCredentialJwt(value) &&
       !isPublicExecutorToolSelector(value) &&
-      !isPaperclipSchemaDiscriminator(key, value)
+      !isWardmoteSchemaDiscriminator(key, value)
     ) {
       redacted[key] = REDACTED_EVENT_VALUE;
       continue;

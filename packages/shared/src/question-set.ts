@@ -1,4 +1,4 @@
-import type { AskUserQuestionsPayload, PaperclipQuestionSetPayload } from "./types/issue.js";
+import type { AskUserQuestionsPayload, WardmoteQuestionSetPayload } from "./types/issue.js";
 
 function syntheticOptionId(existing: readonly string[], preferred: string): string {
   const ids = new Set(existing);
@@ -9,7 +9,7 @@ function syntheticOptionId(existing: readonly string[], preferred: string): stri
 
 /** Project a complete canonical form into the legacy storage/answer contract. */
 export function questionSetToAskUserQuestionsPayload(
-  questionSet: PaperclipQuestionSetPayload,
+  questionSet: WardmoteQuestionSetPayload,
 ): AskUserQuestionsPayload {
   return {
     version: 1,

@@ -82,7 +82,7 @@
         "ui/src/pages/apps/ConnectionProvenanceChip.tsx",
         "ui/src/pages/apps/Connections.tsx",
         "ui/src/pages/apps/ExecutorManagementSetup.tsx",
-        "ui/src/pages/apps/PaperclipCloudOAuthHandoff.tsx",
+        "ui/src/pages/apps/OAuthHandoff.tsx",
         "ui/src/pages/apps/ReviewQueueCard.tsx",
         "ui/src/pages/apps/UnverifiedServerBadge.tsx",
         "ui/src/pages/apps/app-detail/ActionTestDialog.tsx",

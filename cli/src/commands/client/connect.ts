@@ -4,7 +4,7 @@ import pc from "picocolors";
 import type { Agent, Company } from "@tickernelz/wardmote-shared";
 import { createAgentKeySchema, createBoardApiKeySchema } from "@tickernelz/wardmote-shared";
 import { loginBoardCli } from "../../client/board-auth.js";
-import { PaperclipApiClient } from "../../client/http.js";
+import { WardmoteApiClient } from "../../client/http.js";
 import { resolveProfile, readContext, setCurrentProfile, upsertProfile } from "../../client/context.js";
 import {
   addCommonClientOptions,
@@ -79,7 +79,7 @@ async function connectWizard(opts: ConnectOptions) {
     requestedCompanyId: opts.companyId ?? resolvedProfile.profile.companyId ?? null,
     command: "wardmote connect",
   });
-  const boardApi = new PaperclipApiClient({ apiBase, apiKey: boardLogin.token });
+  const boardApi = new WardmoteApiClient({ apiBase, apiKey: boardLogin.token });
   const companies = (await boardApi.get<Company[]>("/api/companies")) ?? [];
 
   const persona = await choosePersona(opts.persona);
@@ -157,7 +157,7 @@ async function connectWizard(opts: ConnectOptions) {
 }
 
 async function verifyHealth(apiBase: string): Promise<void> {
-  const api = new PaperclipApiClient({ apiBase });
+  const api = new WardmoteApiClient({ apiBase });
   await api.get("/api/health");
 }
 

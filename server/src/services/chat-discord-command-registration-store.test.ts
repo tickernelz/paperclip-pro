@@ -21,7 +21,7 @@ import {
   toolApplications,
   toolConnections,
 } from "@tickernelz/wardmote-db";
-import { discordPaperclipCommandDefinition } from "./chat-discord-command-registration.js";
+import { discordWardmoteCommandDefinition } from "./chat-discord-command-registration.js";
 import {
   readRegisteredDiscordCommandRegistration,
   reconcileStoredDiscordCommandRegistration,
@@ -246,7 +246,7 @@ suite("Discord command ownership store (real PostgreSQL, no network)", () => {
       ownerId: string;
       receipt: Record<string, unknown>;
     };
-    const prior = discordPaperclipCommandDefinition(registration.ownerId);
+    const prior = discordWardmoteCommandDefinition(registration.ownerId);
     prior.options[2]!.description = "Close the current Paperclip task";
     const remote = f.remote[0]!;
     f.remote[0] = {
@@ -287,7 +287,7 @@ suite("Discord command ownership store (real PostgreSQL, no network)", () => {
       receipt: { commandId: remote.id },
     });
     expect(f.remote[0]).toMatchObject(
-      discordPaperclipCommandDefinition(registration.ownerId),
+      discordWardmoteCommandDefinition(registration.ownerId),
     );
   });
 
@@ -509,7 +509,7 @@ suite("Discord command ownership store (real PostgreSQL, no network)", () => {
     await f.reconcile();
     f.remote[0] = {
       ...f.remote[0],
-      ...discordPaperclipCommandDefinition("b".repeat(32)),
+      ...discordWardmoteCommandDefinition("b".repeat(32)),
     };
     f.options.force = true;
     expect(await f.reconcile()).toMatchObject({ kind: "conflict" });

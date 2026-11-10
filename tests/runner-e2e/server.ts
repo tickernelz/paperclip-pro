@@ -12,7 +12,7 @@ import { prepareRunnerE2EServerConfig } from "./server-config.js";
 import { installedReleaseEnvironment, installedReleaseLaunch } from "./installed-release.js";
 import {
   assertIsolatedServerEnvironment,
-  buildPaperclipServerEnvironment,
+  buildWardmoteServerEnvironment,
   runnerE2EServerControlPaths,
 } from "./harness-env.js";
 
@@ -44,7 +44,7 @@ const restartTimeoutMs = 180_000;
 const gracefulStopTimeoutMs = 30_000;
 const installedRelease = process.env.WARDMOTE_RUNNER_E2E_INSTALLED_CLI
   ? installedReleaseLaunch(process.env.WARDMOTE_RUNNER_E2E_INSTALLED_CLI) : null;
-const serverEnvironment = buildPaperclipServerEnvironment(installedRelease
+const serverEnvironment = buildWardmoteServerEnvironment(installedRelease
   ? installedReleaseEnvironment(process.env, repositoryRoot, path.join(temporaryRoot, "provider-bin"))
   : process.env, {
   NODE_ENV: "test",

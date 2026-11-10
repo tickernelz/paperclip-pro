@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildCodexLocalConfig, buildPaperclipRunnerConfig } from "./build-config.js";
+import { buildCodexLocalConfig, buildWardmoteRunnerConfig } from "./build-config.js";
 import type { CreateConfigValues } from "@tickernelz/wardmote-adapter-utils";
 
 function makeValues(overrides: Partial<CreateConfigValues> = {}): CreateConfigValues {
@@ -39,7 +39,7 @@ describe("buildCodexLocalConfig", () => {
   it.each([undefined, "approve-all", "approve-paperclip", "approve-reads", "deny-all"])(
     "defaults Grok to full auto while preserving an explicit %s permission mode",
     (acpxPermissionMode) => {
-      const config = buildPaperclipRunnerConfig(makeValues({
+      const config = buildWardmoteRunnerConfig(makeValues({
         adapterType: "wardmote_runner",
         model: "",
         adapterSchemaValues: { provider: "acpx", acpxAgent: "grok", acpxPermissionMode },
@@ -58,7 +58,7 @@ describe("buildCodexLocalConfig", () => {
       model,
       adapterSchemaValues: { provider: "acpx", acpxAgent: "grok", acpxPermissionMode: "approve-paperclip" },
     });
-    expect(buildPaperclipRunnerConfig(values)).toMatchObject({
+    expect(buildWardmoteRunnerConfig(values)).toMatchObject({
       provider: "acpx",
       acpxAgent: "grok",
       model: model || "grok-4.7",
@@ -117,14 +117,14 @@ describe("buildCodexLocalConfig", () => {
   });
 });
 
-describe("buildPaperclipRunnerConfig", () => {
+describe("buildWardmoteRunnerConfig", () => {
   it.each([undefined, false, true])("preserves Dot attachment consent in create/import forms: %s", value => {
-    const config = buildPaperclipRunnerConfig(makeValues({ adapterType: "wardmote_runner", adapterSchemaValues: { provider: "openai_dot", dotAttachmentAccess: value } }));
+    const config = buildWardmoteRunnerConfig(makeValues({ adapterType: "wardmote_runner", adapterSchemaValues: { provider: "openai_dot", dotAttachmentAccess: value } }));
     expect(config.dotAttachmentAccess).toBe(value === true);
     expect(config.dotWorkspaceAccess).toBe(false);
   });
   it("keeps only settings implemented by the Codex runner profile", () => {
-    const config = buildPaperclipRunnerConfig(makeValues({
+    const config = buildWardmoteRunnerConfig(makeValues({
       codexEngine: "acp",
       codexAcpAgentCommand: "custom-acp",
       codexAcpStateDir: "/tmp/acp",
@@ -161,7 +161,7 @@ describe("buildPaperclipRunnerConfig", () => {
   });
 
   it("persists bounded Codex permission and warm lifecycle values", () => {
-    const config = buildPaperclipRunnerConfig(makeValues({
+    const config = buildWardmoteRunnerConfig(makeValues({
       adapterType: "wardmote_runner",
       codexPermissionMode: "never",
       paperclipRunnerLifecycleMode: "warm",
@@ -177,7 +177,7 @@ describe("buildPaperclipRunnerConfig", () => {
   });
 
   it("rejects an unsupported persisted Codex permission instead of coercing it", () => {
-    expect(() => buildPaperclipRunnerConfig(makeValues({
+    expect(() => buildWardmoteRunnerConfig(makeValues({
       adapterSchemaValues: {
         provider: "unknown",
         codexPermissionMode: "unrestricted",
@@ -188,7 +188,7 @@ describe("buildPaperclipRunnerConfig", () => {
   });
 
   it("builds a qualified OpenCode profile from schema-backed values", () => {
-    expect(buildPaperclipRunnerConfig(makeValues({
+    expect(buildWardmoteRunnerConfig(makeValues({
       adapterType: "wardmote_runner",
       model: "",
       adapterSchemaValues: {
@@ -205,7 +205,7 @@ describe("buildPaperclipRunnerConfig", () => {
   });
 
   it("does not let a stale schema model override the active Codex model", () => {
-    expect(buildPaperclipRunnerConfig(makeValues({
+    expect(buildWardmoteRunnerConfig(makeValues({
       adapterType: "wardmote_runner",
       model: "gpt-5.6-sol",
       adapterSchemaValues: {
@@ -221,18 +221,18 @@ describe("buildPaperclipRunnerConfig", () => {
   });
 
   it.each(["claude-opus-5", "my-custom-model"])("preserves the selected ACPX Claude model %s", (model) => {
-    expect(buildPaperclipRunnerConfig(makeValues({ model, adapterSchemaValues: { provider: "acpx" } })))
+    expect(buildWardmoteRunnerConfig(makeValues({ model, adapterSchemaValues: { provider: "acpx" } })))
       .toMatchObject({ provider: "acpx", acpxAgent: "claude", model });
   });
 
   it("normalizes the removed ACPX Codex configuration to native Codex", () => {
-    const config = buildPaperclipRunnerConfig(makeValues({ model: "gpt-5.6-sol", adapterSchemaValues: { provider: "acpx", acpxAgent: "codex" } }));
+    const config = buildWardmoteRunnerConfig(makeValues({ model: "gpt-5.6-sol", adapterSchemaValues: { provider: "acpx", acpxAgent: "codex" } }));
     expect(config).toMatchObject({ provider: "codex", model: "gpt-5.6-sol" });
     expect(config).not.toHaveProperty("acpxAgent");
   });
 
   it.each(["copilot"])("rejects unavailable ACPX %s without selecting another provider", (acpxAgent) => {
-    expect(() => buildPaperclipRunnerConfig(makeValues({
+    expect(() => buildWardmoteRunnerConfig(makeValues({
       adapterType: "wardmote_runner",
       model: "explicit-provider-model",
       adapterSchemaValues: {
@@ -243,23 +243,23 @@ describe("buildPaperclipRunnerConfig", () => {
   });
 
   it.each(["agent", "plan", "ask"])("preserves Cursor's explicit model and %s mode", (mode) => {
-    expect(buildPaperclipRunnerConfig(makeValues({
+    expect(buildWardmoteRunnerConfig(makeValues({
       model: "explicit-cursor-model",
       adapterSchemaValues: { provider: "acpx", acpxAgent: "cursor", acpxSessionMode: mode },
     }))).toMatchObject({ provider: "acpx", acpxAgent: "cursor", model: "explicit-cursor-model", acpxSessionMode: mode });
   });
 
   it("defaults Cursor to Agent and requires an explicit model", () => {
-    expect(buildPaperclipRunnerConfig(makeValues({
+    expect(buildWardmoteRunnerConfig(makeValues({
       model: "explicit-cursor-model", adapterSchemaValues: { provider: "acpx", acpxAgent: "cursor" },
     }))).toMatchObject({ acpxAgent: "cursor", acpxSessionMode: "agent", model: "explicit-cursor-model" });
-    expect(() => buildPaperclipRunnerConfig(makeValues({
+    expect(() => buildWardmoteRunnerConfig(makeValues({
       model: "", adapterSchemaValues: { provider: "acpx", acpxAgent: "cursor" },
     }))).toThrow("cursor requires an explicit provider model");
   });
 
   it("builds a Claude Managed profile reference with explicit retention and spend controls", () => {
-    const config = buildPaperclipRunnerConfig(makeValues({
+    const config = buildWardmoteRunnerConfig(makeValues({
       adapterType: "wardmote_runner",
       model: "claude-sonnet-5",
       adapterSchemaValues: {
@@ -281,7 +281,7 @@ describe("buildPaperclipRunnerConfig", () => {
   });
 
   it("builds an AgentCore profile reference with bounded invocation controls", () => {
-    expect(buildPaperclipRunnerConfig(makeValues({
+    expect(buildWardmoteRunnerConfig(makeValues({
       adapterType: "wardmote_runner",
       model: "",
       adapterSchemaValues: {
@@ -312,7 +312,7 @@ describe("buildPaperclipRunnerConfig", () => {
     ["maxOutputTokens", 4_097],
     ["timeoutSeconds", 301],
   ])("rejects an unsafe AgentCore %s value", (field, value) => {
-    expect(() => buildPaperclipRunnerConfig(makeValues({
+    expect(() => buildWardmoteRunnerConfig(makeValues({
       adapterType: "wardmote_runner",
       adapterSchemaValues: {
         provider: "aws_agentcore",
@@ -324,14 +324,14 @@ describe("buildPaperclipRunnerConfig", () => {
   });
 
   it("uses the Codex default when no model was selected", () => {
-    expect(buildPaperclipRunnerConfig(makeValues({ model: "" }))).toMatchObject({
+    expect(buildWardmoteRunnerConfig(makeValues({ model: "" }))).toMatchObject({
       provider: "codex",
       model: "gpt-5.6-sol",
     });
   });
 
   it("bounds warm lifecycle values to the shared safe default", () => {
-    expect(buildPaperclipRunnerConfig(makeValues({
+    expect(buildWardmoteRunnerConfig(makeValues({
       paperclipRunnerLifecycleMode: "warm",
       paperclipRunnerIdleTimeoutMs: 86_400_001,
     }))).toMatchObject({
@@ -341,7 +341,7 @@ describe("buildPaperclipRunnerConfig", () => {
   });
 
   it("omits an idle timeout for turn-by-turn sessions", () => {
-    const config = buildPaperclipRunnerConfig(makeValues({
+    const config = buildWardmoteRunnerConfig(makeValues({
       paperclipRunnerLifecycleMode: "per_turn",
       paperclipRunnerIdleTimeoutMs: 45_000,
     }));
@@ -351,9 +351,9 @@ describe("buildPaperclipRunnerConfig", () => {
 });
 
 it.each([undefined, "off", "low", "high", "max"] as const)("builds exact Pi thinking configuration %s", piThinkingLevel => {
-  const config = buildPaperclipRunnerConfig(makeValues({ adapterType: "wardmote_runner", model: "openrouter/deepseek/deepseek-v4-flash-0731", adapterSchemaValues: { provider: "acpx", acpxAgent: "pi", piThinkingLevel } }));
+  const config = buildWardmoteRunnerConfig(makeValues({ adapterType: "wardmote_runner", model: "openrouter/deepseek/deepseek-v4-flash-0731", adapterSchemaValues: { provider: "acpx", acpxAgent: "pi", piThinkingLevel } }));
   expect(config.piThinkingLevel).toBe(piThinkingLevel ?? "low");
 });
 it("rejects silently clamped Pi aliases during configuration", () => {
-  expect(() => buildPaperclipRunnerConfig(makeValues({ adapterType: "wardmote_runner", adapterSchemaValues: { provider: "acpx", acpxAgent: "pi", piThinkingLevel: "medium" } }))).toThrow();
+  expect(() => buildWardmoteRunnerConfig(makeValues({ adapterType: "wardmote_runner", adapterSchemaValues: { provider: "acpx", acpxAgent: "pi", piThinkingLevel: "medium" } }))).toThrow();
 });

@@ -1,16 +1,16 @@
 import { WARDMOTE_SEMANTIC_ACTION_CATALOG } from "../catalog/semantic-action-catalog.js";
 import type {
-  PaperclipSemanticActionDescriptor,
-  PaperclipSemanticActionId,
+  WardmoteSemanticActionDescriptor,
+  WardmoteSemanticActionId,
 } from "../catalog/semantic-action-types.js";
-import { decidePaperclipSemanticAuthorization } from "./authorization.js";
+import { decideWardmoteSemanticAuthorization } from "./authorization.js";
 import type {
-  PaperclipSemanticDiscoveryResult,
-  PaperclipSemanticRunContext,
-  PaperclipSemanticToolDefinition,
+  WardmoteSemanticDiscoveryResult,
+  WardmoteSemanticRunContext,
+  WardmoteSemanticToolDefinition,
 } from "./types.js";
 
-const NAMESPACE: Readonly<Record<PaperclipSemanticActionId, string>> =
+const NAMESPACE: Readonly<Record<WardmoteSemanticActionId, string>> =
   Object.freeze({
     set_task_title: "active_task",
   set_task_monitor: "continuation",
@@ -47,28 +47,28 @@ const NAMESPACE: Readonly<Record<PaperclipSemanticActionId, string>> =
   });
 
 export function paperclipSemanticActionNamespace(
-  operationId: PaperclipSemanticActionId,
+  operationId: WardmoteSemanticActionId,
 ): string {
   return NAMESPACE[operationId];
 }
 
-export function projectPaperclipSemanticTools(input: {
+export function projectWardmoteSemanticTools(input: {
   readonly runId: string;
-  readonly context: PaperclipSemanticRunContext;
-  readonly boundOperationIds: ReadonlySet<PaperclipSemanticActionId>;
-  readonly placement?: PaperclipSemanticActionDescriptor["placement"];
-}): readonly PaperclipSemanticToolDefinition[] {
+  readonly context: WardmoteSemanticRunContext;
+  readonly boundOperationIds: ReadonlySet<WardmoteSemanticActionId>;
+  readonly placement?: WardmoteSemanticActionDescriptor["placement"];
+}): readonly WardmoteSemanticToolDefinition[] {
   return deepFreeze(authorizedBoundDescriptors(input).map(toToolDefinition));
 }
 
-export function discoverPaperclipSemanticTools(input: {
+export function discoverWardmoteSemanticTools(input: {
   readonly runId: string;
-  readonly context: PaperclipSemanticRunContext;
-  readonly boundOperationIds: ReadonlySet<PaperclipSemanticActionId>;
+  readonly context: WardmoteSemanticRunContext;
+  readonly boundOperationIds: ReadonlySet<WardmoteSemanticActionId>;
   readonly query: string;
   readonly namespace?: string;
   readonly limit?: number;
-}): PaperclipSemanticDiscoveryResult {
+}): WardmoteSemanticDiscoveryResult {
   const normalized = input.query.trim().toLowerCase();
   if (normalized.length === 0 || normalized.length > 500) {
     throw new Error("semantic_discovery_query_invalid");
@@ -112,24 +112,24 @@ export function discoverPaperclipSemanticTools(input: {
   });
 }
 
-export function toPaperclipSemanticToolDefinition(
-  descriptor: PaperclipSemanticActionDescriptor,
-): PaperclipSemanticToolDefinition {
+export function toWardmoteSemanticToolDefinition(
+  descriptor: WardmoteSemanticActionDescriptor,
+): WardmoteSemanticToolDefinition {
   return deepFreeze(toToolDefinition(descriptor));
 }
 
 function authorizedBoundDescriptors(input: {
   readonly runId: string;
-  readonly context: PaperclipSemanticRunContext;
-  readonly boundOperationIds: ReadonlySet<PaperclipSemanticActionId>;
-  readonly placement?: PaperclipSemanticActionDescriptor["placement"];
-}): PaperclipSemanticActionDescriptor[] {
+  readonly context: WardmoteSemanticRunContext;
+  readonly boundOperationIds: ReadonlySet<WardmoteSemanticActionId>;
+  readonly placement?: WardmoteSemanticActionDescriptor["placement"];
+}): WardmoteSemanticActionDescriptor[] {
   return WARDMOTE_SEMANTIC_ACTION_CATALOG.filter(
     (descriptor) =>
       input.boundOperationIds.has(descriptor.operationId) &&
       (input.placement === undefined ||
         descriptor.placement === input.placement) &&
-      decidePaperclipSemanticAuthorization(
+      decideWardmoteSemanticAuthorization(
         descriptor,
         input.context,
         "exposure",
@@ -139,7 +139,7 @@ function authorizedBoundDescriptors(input: {
 }
 
 function scoreDescriptor(
-  descriptor: PaperclipSemanticActionDescriptor,
+  descriptor: WardmoteSemanticActionDescriptor,
   query: string,
   tokens: readonly string[],
 ): number {
@@ -157,8 +157,8 @@ function scoreDescriptor(
 }
 
 function toToolDefinition(
-  descriptor: PaperclipSemanticActionDescriptor,
-): PaperclipSemanticToolDefinition {
+  descriptor: WardmoteSemanticActionDescriptor,
+): WardmoteSemanticToolDefinition {
   return {
     name: descriptor.operationId,
     description: descriptor.description,

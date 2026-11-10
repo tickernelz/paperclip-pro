@@ -1,4 +1,4 @@
-import type { PaperclipPluginManifestV1 } from "@tickernelz/wardmote-plugin-sdk";
+import type { WardmotePluginManifestV1 } from "@tickernelz/wardmote-plugin-sdk";
 
 /**
  * Stable plugin ID used by host registration and namespacing.
@@ -11,7 +11,7 @@ const DASHBOARD_WIDGET_EXPORT_NAME = "HelloWorldDashboardWidget";
 /**
  * Minimal manifest demonstrating a UI-only plugin with one dashboard widget slot.
  */
-const manifest: PaperclipPluginManifestV1 = {
+const manifest: WardmotePluginManifestV1 = {
   id: PLUGIN_ID,
   apiVersion: 1,
   version: PLUGIN_VERSION,

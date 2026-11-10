@@ -2,8 +2,8 @@ import { parseNativeSessionGoalControl } from "./scheduling.js";
 import { isHeartbeatRunTerminalStatus } from "./run-lifecycle.js";
 import {
   WARDMOTE_WAKE_PAYLOAD_KEY,
-  configuredPaperclipApiBaseUrl,
-  buildPaperclipRuntimeMcpServers,
+  configuredWardmoteApiBaseUrl,
+  buildWardmoteRuntimeMcpServers,
   createAdapterRuntimeToolAccess,
   paperclipApiBaseUrl,
   createAdapterRuntimeMcpAccess,
@@ -13,7 +13,7 @@ import {
   WorkspaceValidationFailure,
   isWorkspaceValidationFailure,
   fingerprintFinalizeWorkspaceBranchValidation,
-  attachPaperclipSessionMetadataToSessionParams,
+  attachWardmoteSessionMetadataToSessionParams,
 } from "./workspaces.js";
 import { recordLegacyWorkspaceRestoreFailure } from "../legacy-execution-recovery.js";
 import { configuredEnvironmentProjection } from "../../vendor/wardmote-runner/index.js";
@@ -42,7 +42,7 @@ import { getStartupTraceContext } from "../../instrumentation.js";
 import { logger } from "../../middleware/logger.js";
 import {
   buildNativeProviderEnvironment,
-  executePaperclipNativeSession,
+  executeWardmoteNativeSession,
   finalizeNativeRun,
   isRunnerIngressAuthorized,
   materializeLegacyQuestionResponseWakeProjection,
@@ -92,7 +92,7 @@ import type { reserveWarmNativeInstructionDirectory } from "../native-runtime/in
 
 type Selection = HeartbeatRuntimeSelectionInput;
 type Selected = Extract<HeartbeatRuntimeSelectionResult, { selected: true }>;
-type NativeSessionInput = Parameters<typeof executePaperclipNativeSession>[0];
+type NativeSessionInput = Parameters<typeof executeWardmoteNativeSession>[0];
 type RunState = ReturnType<typeof createHeartbeatRunState>;
 type Lifecycle = ReturnType<typeof createHeartbeatLifecycle>;
 
@@ -498,7 +498,7 @@ export async function executeHeartbeatRuntime(db: Db, input: HeartbeatRuntimeExe
         nativeExecution.runtimeContext.mcp.bindingId
           ? nativeExecution.runtimeContext.mcp.digest
           : null;
-      const nativeMcpServers = await buildPaperclipRuntimeMcpServers({
+      const nativeMcpServers = await buildWardmoteRuntimeMcpServers({
         db,
         agent,
         runId: run.id,
@@ -568,7 +568,7 @@ export async function executeHeartbeatRuntime(db: Db, input: HeartbeatRuntimeExe
       const guardedDispatch =
         await dispatchResolvedInteractionContinuationWithAtomicGate(
           (markDispatchStarted) => {
-            return executePaperclipNativeSession({
+            return executeWardmoteNativeSession({
               db,
               execution: nativeExecution,
               getFreshSessionHandoff: getNativeFreshSessionHandoff,
@@ -589,7 +589,7 @@ export async function executeHeartbeatRuntime(db: Db, input: HeartbeatRuntimeExe
               onGoalCheckpoint: async (snapshot) => {
                 if (!taskKey) return;
                 const params =
-                  attachPaperclipSessionMetadataToSessionParams(
+                  attachWardmoteSessionMetadataToSessionParams(
                     {
                       ...runtimeSessionParamsForAdapter,
                       sessionId: snapshot.identity.sessionId,
@@ -751,7 +751,7 @@ export async function executeHeartbeatRuntime(db: Db, input: HeartbeatRuntimeExe
           "runtime connection tools could not be delivered",
         );
       }
-      const runtimeMcpServers = await buildPaperclipRuntimeMcpServers({
+      const runtimeMcpServers = await buildWardmoteRuntimeMcpServers({
         db,
         agent,
         runId: run.id,
@@ -766,7 +766,7 @@ export async function executeHeartbeatRuntime(db: Db, input: HeartbeatRuntimeExe
           connectionId: "paperclip-runtime-tools",
         });
       }
-      if (authToken && configuredPaperclipApiBaseUrl() && issueRef) {
+      if (authToken && configuredWardmoteApiBaseUrl() && issueRef) {
         runtimeMcpServers.unshift({ name: "Paperclip projects", url: `${paperclipApiBaseUrl()}/api/mcp/project-tools`,
           token: authToken, connectionId: "paperclip-project-tools" });
       }

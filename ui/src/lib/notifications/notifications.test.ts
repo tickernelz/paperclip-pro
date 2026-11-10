@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { NOTIFICATION_KINDS, type NotificationCreatedLivePayload, type PaperclipNotification } from "@tickernelz/wardmote-shared";
+import { NOTIFICATION_KINDS, type NotificationCreatedLivePayload, type WardmoteNotification } from "@tickernelz/wardmote-shared";
 import {
   NOTIFICATION_SETTINGS_STORAGE_KEY,
   defaultNotificationSettings,
@@ -18,7 +18,7 @@ import {
   type NotificationDeliveryDeps,
 } from "./delivery";
 
-function notification(overrides: Partial<PaperclipNotification> = {}): PaperclipNotification {
+function notification(overrides: Partial<WardmoteNotification> = {}): WardmoteNotification {
   return {
     key: "approval:1",
     kind: "approval",
@@ -32,7 +32,7 @@ function notification(overrides: Partial<PaperclipNotification> = {}): Paperclip
   };
 }
 
-function livePayload(overrides: Partial<PaperclipNotification> = {}, recipients = ["user-1"]): NotificationCreatedLivePayload {
+function livePayload(overrides: Partial<WardmoteNotification> = {}, recipients = ["user-1"]): NotificationCreatedLivePayload {
   return { notification: notification(overrides), recipientUserIds: recipients };
 }
 

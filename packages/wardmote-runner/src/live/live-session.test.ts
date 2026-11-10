@@ -785,8 +785,8 @@ describe("Capability live runnerd and Codex session", () => {
     // Test the file-change evidence, not whether a loaded CI worker scans the
     // fixture within the production admission deadline. Keep both snapshots
     // real; make only the already-captured baseline immediately available.
-    const baseline = await workspaceDiff.capturePaperclipWorkspace(root);
-    const capture = vi.spyOn(workspaceDiff, "capturePaperclipWorkspace")
+    const baseline = await workspaceDiff.captureWardmoteWorkspace(root);
+    const capture = vi.spyOn(workspaceDiff, "captureWardmoteWorkspace")
       .mockResolvedValueOnce(baseline);
     try {
       const result = await session.sendMessage("edit the workspace");
@@ -1173,8 +1173,8 @@ describe("Capability live runnerd and Codex session", () => {
     expect(first.snapshot.evidence.some((entry) => entry.kind === "tool_call")).toBe(true);
     expect(first.snapshot.evidence.some((entry) => entry.kind === "tool_result")).toBe(true);
     expect(first.snapshot.networkEvidence).toEqual({
-      realPaperclipRequests: 0,
-      childPaperclipEnvironmentKeys: [],
+      realWardmoteRequests: 0,
+      childWardmoteEnvironmentKeys: [],
     });
     expect(fetchSpy).not.toHaveBeenCalled();
     fetchSpy.mockRestore();

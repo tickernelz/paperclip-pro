@@ -59,4 +59,4 @@ export const WARDMOTE_RUNNER_BUILD_METADATA = Object.freeze({
   }),
 });
 
-export type PaperclipRunnerBuildMetadata = typeof WARDMOTE_RUNNER_BUILD_METADATA;
+export type WardmoteRunnerBuildMetadata = typeof WARDMOTE_RUNNER_BUILD_METADATA;

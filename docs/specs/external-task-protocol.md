@@ -275,7 +275,7 @@ Fields:
 - `baseSnapshot` (object)
   - Last agreed projected state of both sides; the three-way merge base for conflict detection.
 - `lastExternalRevision` (string or null)
-- `lastPaperclipFingerprint` (string or null)
+- `lastWardmoteFingerprint` (string or null)
   - Hash of the last Paperclip-side state this connector projected outbound.
 - `lastInboundAt`, `lastOutboundAt`, `lastReconcileAt` (timestamps or null)
 - `status` (enum, Section 4.2.3)

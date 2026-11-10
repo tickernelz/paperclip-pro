@@ -7,12 +7,12 @@ import {
   WARDMOTE_RUNNERD_BUILD_METADATA_SCHEMA,
 } from "./build-metadata.js";
 import {
-  PaperclipRunnerEvalCompatibilityError,
-  assertPaperclipRunnerEvalCompatibility,
-  type PaperclipRunnerEvalCompatibilityRequirement,
+  WardmoteRunnerEvalCompatibilityError,
+  assertWardmoteRunnerEvalCompatibility,
+  type WardmoteRunnerEvalCompatibilityRequirement,
 } from "./compatibility.js";
 
-function compatible(): PaperclipRunnerEvalCompatibilityRequirement {
+function compatible(): WardmoteRunnerEvalCompatibilityRequirement {
   return {
     consumer: "paperclip-evals",
     packageVersion: WARDMOTE_RUNNER_BUILD_METADATA.package.version,
@@ -64,7 +64,7 @@ describe("Paperclip Evals integration compatibility", () => {
   });
 
   it("negotiates package, binary, PRP, catalog, and driver V1", () => {
-    expect(assertPaperclipRunnerEvalCompatibility(compatible())).toMatchObject({
+    expect(assertWardmoteRunnerEvalCompatibility(compatible())).toMatchObject({
       schema: "paperclip-runner/evals-integration/v1",
       consumer: "paperclip-evals",
       negotiatedPrpVersion: 1,
@@ -88,11 +88,11 @@ describe("Paperclip Evals integration compatibility", () => {
     requirement.driver.descriptor.capabilities.dynamicTools = false;
 
     try {
-      assertPaperclipRunnerEvalCompatibility(requirement);
+      assertWardmoteRunnerEvalCompatibility(requirement);
       throw new Error("expected compatibility failure");
     } catch (error) {
-      expect(error).toBeInstanceOf(PaperclipRunnerEvalCompatibilityError);
-      expect((error as PaperclipRunnerEvalCompatibilityError).issues.map((item) => item.code))
+      expect(error).toBeInstanceOf(WardmoteRunnerEvalCompatibilityError);
+      expect((error as WardmoteRunnerEvalCompatibilityError).issues.map((item) => item.code))
         .toEqual([
           "package_version_mismatch",
           "binary_package_version_mismatch",
@@ -112,7 +112,7 @@ describe("Paperclip Evals integration compatibility", () => {
     const requirement = compatible();
     requirement.driver.descriptor.protocolVersion = "prp.v2";
 
-    expect(() => assertPaperclipRunnerEvalCompatibility(requirement)).toThrow(
+    expect(() => assertWardmoteRunnerEvalCompatibility(requirement)).toThrow(
       expect.objectContaining({
         issues: [expect.objectContaining({ code: "driver_protocol_version_mismatch" })],
       }),

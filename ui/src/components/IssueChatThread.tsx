@@ -62,9 +62,9 @@ import { findUIAdapter } from "../adapters/registry";
 import { useLiveRunTranscripts } from "./transcript/useLiveRunTranscripts";
 import { useSecondTick } from "../hooks/useSecondTick";
 import {
-  usePaperclipIssueRuntime,
-  type PaperclipIssueRuntimeReassignment,
-} from "../hooks/usePaperclipIssueRuntime";
+  useWardmoteIssueRuntime,
+  type WardmoteIssueRuntimeReassignment,
+} from "../hooks/useWardmoteIssueRuntime";
 import { useOptionalToastActions } from "../context/ToastContext";
 import { copyTextToClipboard } from "../lib/clipboard";
 import {
@@ -1026,7 +1026,7 @@ function toValidIsoString(
 
 function parseReassignment(
   target: string,
-): PaperclipIssueRuntimeReassignment | null {
+): WardmoteIssueRuntimeReassignment | null {
   if (!target || target === "__none__") {
     return { assigneeAgentId: null, assigneeUserId: null };
   }
@@ -6146,7 +6146,7 @@ export function IssueChatThread({
     },
     [onAdd],
   );
-  const runtime = usePaperclipIssueRuntime({
+  const runtime = useWardmoteIssueRuntime({
     messages,
     isRunning,
     onSend: async ({ body, reopen, reassignment, attachmentIds }) => {

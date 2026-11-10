@@ -19,11 +19,11 @@ import type {
   IssueWorkProduct,
 } from "@tickernelz/wardmote-shared";
 import type {
-  PaperclipQuestionResponse,
-  PaperclipQuestionSet,
+  WardmoteQuestionResponse,
+  WardmoteQuestionSet,
 } from "@tickernelz/wardmote-adapter-utils";
 
-export type { PaperclipQuestionResponse, PaperclipQuestionSet };
+export type { WardmoteQuestionResponse, WardmoteQuestionSet };
 
 export type TaskChatProviderActivityFamily =
   | "plan"
@@ -434,15 +434,15 @@ export interface TaskChatRuntimeRequestItem {
   prompt: string;
   choices: Array<{ key: string; label: string }>;
   fields: Array<{ name: string; label: string; placeholder: string | null }>;
-  questionSet?: PaperclipQuestionSet | null;
+  questionSet?: WardmoteQuestionSet | null;
   resolvedAction?: string | null;
-  response?: PaperclipQuestionResponse | null;
+  response?: WardmoteQuestionResponse | null;
 }
 
 export type TaskChatRuntimeRequestDecision =
   | { action: "accept" | "accept_for_session" | "decline" | "cancel" }
   | { action: "submit"; values: Record<string, string> }
-  | { action: "submit"; response: PaperclipQuestionResponse };
+  | { action: "submit"; response: WardmoteQuestionResponse };
 
 export interface TaskChatRunResultItem {
   id: string;

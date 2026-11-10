@@ -30,7 +30,7 @@ import {
   resolveWorkspaceHandoffLocalKey,
   resolveWorkspaceHandoffLocalWorkspaceId,
 } from "../auth/workspace-login-handoff.js";
-import { resolvePaperclipInstanceId } from "../home-paths.js";
+import { resolveWardmoteInstanceId } from "../home-paths.js";
 import { logger } from "../middleware/logger.js";
 
 const WORKSPACE_SEED_MANIFEST_BASENAME = "seed-manifest.json";
@@ -183,7 +183,7 @@ export type WorkspaceReadinessDeps = {
 export async function resolveWorkspaceReadiness(deps: WorkspaceReadinessDeps): Promise<WorkspaceReadiness> {
   const env = deps.env ?? process.env;
   const seed = readSeedManifestSummary(resolveWorkspaceSeedMarkerDir(env));
-  const instanceId = resolvePaperclipInstanceId();
+  const instanceId = resolveWardmoteInstanceId();
   const executionWorkspaceId = resolveWorkspaceHandoffLocalWorkspaceId(env);
   // The company this workspace's board represents. Both product probes below are
   // scoped to it: "some company in the clone has issues" and "some user has some

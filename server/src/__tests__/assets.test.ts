@@ -8,12 +8,12 @@ import { Readable } from "node:stream";
 import request from "supertest";
 import type { StorageService } from "../storage/types.js";
 
-const previousPaperclipHome = process.env.WARDMOTE_HOME;
+const previousWardmoteHome = process.env.WARDMOTE_HOME;
 const uploadHome = mkdtempSync(path.join(os.tmpdir(), "paperclip-assets-upload-"));
 process.env.WARDMOTE_HOME = uploadHome;
 afterAll(async () => {
-  if (previousPaperclipHome === undefined) delete process.env.WARDMOTE_HOME;
-  else process.env.WARDMOTE_HOME = previousPaperclipHome;
+  if (previousWardmoteHome === undefined) delete process.env.WARDMOTE_HOME;
+  else process.env.WARDMOTE_HOME = previousWardmoteHome;
   await rm(uploadHome, { recursive: true, force: true });
 });
 

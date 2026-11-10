@@ -6069,8 +6069,8 @@ describe("company portability", () => {
     expect(agentSvc.create).toHaveBeenCalledWith("company-1", expect.objectContaining({ adapterType: "wardmote_runner", adapterConfig: expect.objectContaining({ provider: "openai_dot", allowUnmeteredProvider: true }) }), { createdByUserId: "user-1" });
     const createdConfig = agentSvc.create.mock.calls[0]![1].adapterConfig;
     expect(createdConfig.dotBindingId).toBeUndefined();
-    const { resolvePaperclipRunnerProviderProfile } = await import("../services/native-runtime/provider-profile.js");
-    expect(() => resolvePaperclipRunnerProviderProfile(createdConfig)).toThrow(expect.objectContaining({ code: "wardmote_runner_dot_config_invalid" }));
+    const { resolveWardmoteRunnerProviderProfile } = await import("../services/native-runtime/provider-profile.js");
+    expect(() => resolveWardmoteRunnerProviderProfile(createdConfig)).toThrow(expect.objectContaining({ code: "wardmote_runner_dot_config_invalid" }));
   });
 
   it("rejects runner imports while disabled and accepts the same selection when enabled", async () => {

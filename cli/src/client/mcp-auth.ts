@@ -5,7 +5,7 @@ import { DatabaseSync } from "node:sqlite";
 import { createHash, randomUUID } from "node:crypto";
 import { setTimeout as sleep } from "node:timers/promises";
 import { PUBLIC_MCP_PATH, PUBLIC_MCP_SCOPES } from "@tickernelz/wardmote-shared";
-import { resolvePaperclipHomeDir } from "../config/home.js";
+import { resolveWardmoteHomeDir } from "../config/home.js";
 
 const deviceGrant = "urn:ietf:params:oauth:grant-type:device_code";
 type Json = Record<string, unknown>;
@@ -20,7 +20,7 @@ export function mcpResource(raw: string) {
   return url.toString();
 }
 export function credentialPath(resource: string) {
-  return path.join(resolvePaperclipHomeDir(), "mcp", createHash("sha256").update(resource).digest("hex") + ".json");
+  return path.join(resolveWardmoteHomeDir(), "mcp", createHash("sha256").update(resource).digest("hex") + ".json");
 }
 async function readCredential(file: string): Promise<McpCredential | null> {
   let handle;

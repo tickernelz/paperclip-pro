@@ -50,7 +50,7 @@ interface ApiClientOptions {
   recoverAuth?: (input: RecoverAuthInput) => Promise<string | null>;
 }
 
-export class PaperclipApiClient {
+export class WardmoteApiClient {
   readonly apiBase: string;
   apiKey?: string;
   readonly runId?: string;

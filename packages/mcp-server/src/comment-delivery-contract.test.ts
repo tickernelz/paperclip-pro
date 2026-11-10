@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
-import { PaperclipApiClient } from "./client.js";
+import { WardmoteApiClient } from "./client.js";
 import { routeBodySchemas } from "./route-body-schemas.js";
 import { CURATED_OPERATIONS } from "./tool-overrides.js";
 import { createToolDefinitions, type ToolDefinition } from "./tools.js";
@@ -14,8 +14,8 @@ function isDeliveryField(name: string): boolean {
   return DELIVERY_FIELDS.includes(name);
 }
 
-function curatedClient(): PaperclipApiClient {
-  return new PaperclipApiClient({
+function curatedClient(): WardmoteApiClient {
+  return new WardmoteApiClient({
     apiUrl: "http://localhost:3100/api",
     apiKey: "token-123",
     companyId: "11111111-1111-1111-1111-111111111111",

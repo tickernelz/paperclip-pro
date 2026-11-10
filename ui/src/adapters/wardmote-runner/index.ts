@@ -1,13 +1,13 @@
-import type { PaperclipQuestion, PaperclipQuestionResponse, PaperclipQuestionSet, TranscriptEntry } from "@tickernelz/wardmote-adapter-utils";
+import type { WardmoteQuestion, WardmoteQuestionResponse, WardmoteQuestionSet, TranscriptEntry } from "@tickernelz/wardmote-adapter-utils";
 import type { UIAdapterModule } from "../types";
 import { parseCodexStdoutLine } from "./parse-stdout";
-import { buildPaperclipRunnerConfig } from "./build-config";
+import { buildWardmoteRunnerConfig } from "./build-config";
 import { CodexLocalConfigFields } from "./config-fields";
 import { isRunLogOnlyProviderEvent } from "@/components/transcript/run-log-only-events";
 
 type JsonRecord = Record<string, unknown>;
 
-interface PaperclipRunnerParserState {
+interface WardmoteRunnerParserState {
   assistantDeltaItemIds: Set<string>;
   reasoningDeltaItemIds: Set<string>;
   resultSummaries: Set<string>;
@@ -213,7 +213,7 @@ function parseItemEvent(
   payload: JsonRecord,
   phase: "started" | "completed",
   ts: string,
-  state: PaperclipRunnerParserState,
+  state: WardmoteRunnerParserState,
 ): TranscriptEntry[] {
   const item = record(payload.item);
   const type = normalizedItemType(item, payload);
@@ -269,7 +269,7 @@ function parseDeltaEvent(
   event: JsonRecord,
   payload: JsonRecord,
   ts: string,
-  state: PaperclipRunnerParserState,
+  state: WardmoteRunnerParserState,
 ): TranscriptEntry[] {
   const kind = text(payload.kind).replaceAll("_", "").toLowerCase();
   const value = text(payload.text);
@@ -411,7 +411,7 @@ function runtimeRequestEntry(
   payload: JsonRecord,
   event: JsonRecord,
   ts: string,
-  state: PaperclipRunnerParserState,
+  state: WardmoteRunnerParserState,
 ): TranscriptEntry | null {
   const request = record(payload.request ?? payload);
   const requestId = text(request.requestId, text(payload.requestId));
@@ -504,11 +504,11 @@ function runtimeRequestEntry(
   return entry;
 }
 
-function parseQuestionResponse(value: unknown): PaperclipQuestionResponse | null {
+function parseQuestionResponse(value: unknown): WardmoteQuestionResponse | null {
   const response = record(value);
   if (response.schema !== "paperclip.question_response.v1") return null;
   const rawAnswers = record(response.answers);
-  const answers: PaperclipQuestionResponse["answers"] = {};
+  const answers: WardmoteQuestionResponse["answers"] = {};
   for (const [questionId, rawAnswer] of Object.entries(rawAnswers).slice(0, 64)) {
     const answer = record(rawAnswer);
     const selectedOptionIds = (Array.isArray(answer.selectedOptionIds) ? answer.selectedOptionIds : [])
@@ -526,7 +526,7 @@ function parseQuestionResponse(value: unknown): PaperclipQuestionResponse | null
   return { schema: "paperclip.question_response.v1", answers };
 }
 
-function parseQuestionSet(value: unknown): PaperclipQuestionSet | null {
+function parseQuestionSet(value: unknown): WardmoteQuestionSet | null {
   const input = record(value);
   if (!Array.isArray(input.questions) || input.questions.length === 0) return null;
   // Early v2 events passed through a broad JWT redactor that replaced the
@@ -536,8 +536,8 @@ function parseQuestionSet(value: unknown): PaperclipQuestionSet | null {
   if (input.schema !== undefined
     && input.schema !== "paperclip.question_set.v1"
     && input.schema !== "***REDACTED***") return null;
-  const questions = input.questions.map(record).slice(0, 64).map((question, questionIndex): PaperclipQuestion => {
-    const answerMode: PaperclipQuestion["answerMode"] = question.answerMode === "single_select" || question.answerMode === "multi_select" ? question.answerMode : "text";
+  const questions = input.questions.map(record).slice(0, 64).map((question, questionIndex): WardmoteQuestion => {
+    const answerMode: WardmoteQuestion["answerMode"] = question.answerMode === "single_select" || question.answerMode === "multi_select" ? question.answerMode : "text";
     const options = (Array.isArray(question.options) ? question.options : []).map(record).slice(0, 128).map((option, optionIndex) => ({
       id: text(option.id, `option-${optionIndex + 1}`).slice(0, 160),
       label: text(option.label, `Option ${optionIndex + 1}`).slice(0, 1_000),
@@ -545,11 +545,11 @@ function parseQuestionSet(value: unknown): PaperclipQuestionSet | null {
     }));
     const customAnswer = record(question.customAnswer);
     const validation = record(question.textValidation);
-    const inputType: NonNullable<PaperclipQuestion["textValidation"]>["inputType"] =
+    const inputType: NonNullable<WardmoteQuestion["textValidation"]>["inputType"] =
       validation.inputType === "number" || validation.inputType === "integer" || validation.inputType === "text"
         ? validation.inputType
         : undefined;
-    const parsedQuestion: PaperclipQuestion = {
+    const parsedQuestion: WardmoteQuestion = {
       id: text(question.id, `question-${questionIndex + 1}`).slice(0, 160),
       ...(nullableText(question.header) ? { header: text(question.header).slice(0, 1_000) } : {}),
       prompt: text(question.prompt, `Question ${questionIndex + 1}`).slice(0, 4_000),
@@ -686,7 +686,7 @@ function piRuntimeFailureKey(event: JsonRecord, payload: JsonRecord): string | n
 function parsePrpEvent(
   event: JsonRecord,
   ts: string,
-  state: PaperclipRunnerParserState,
+  state: WardmoteRunnerParserState,
 ): TranscriptEntry[] {
   const eventType = text(event.eventType);
   const payload = record(event.payload);
@@ -782,7 +782,7 @@ function parsePrpEvent(
   return [];
 }
 
-function createParserState(): PaperclipRunnerParserState {
+function createParserState(): WardmoteRunnerParserState {
   return {
     assistantDeltaItemIds: new Set(),
     reasoningDeltaItemIds: new Set(),
@@ -795,7 +795,7 @@ function createParserState(): PaperclipRunnerParserState {
   };
 }
 
-function parsePaperclipRunnerLine(line: string, ts: string, state: PaperclipRunnerParserState): TranscriptEntry[] {
+function parseWardmoteRunnerLine(line: string, ts: string, state: WardmoteRunnerParserState): TranscriptEntry[] {
   let parsed: unknown;
   try {
     parsed = JSON.parse(line);
@@ -814,21 +814,21 @@ function parsePaperclipRunnerLine(line: string, ts: string, state: PaperclipRunn
   return [];
 }
 
-export function parsePaperclipRunnerStdoutLine(line: string, ts: string): TranscriptEntry[] {
-  return parsePaperclipRunnerLine(line, ts, createParserState());
+export function parseWardmoteRunnerStdoutLine(line: string, ts: string): TranscriptEntry[] {
+  return parseWardmoteRunnerLine(line, ts, createParserState());
 }
 
 export const paperclipRunnerUIAdapter: UIAdapterModule = {
   type: "wardmote_runner",
   label: "Wardmote Runner",
-  parseStdoutLine: parsePaperclipRunnerStdoutLine,
+  parseStdoutLine: parseWardmoteRunnerStdoutLine,
   createStdoutParser: () => {
     let state = createParserState();
     return {
-      parseLine: (line, ts) => parsePaperclipRunnerLine(line, ts, state),
+      parseLine: (line, ts) => parseWardmoteRunnerLine(line, ts, state),
       reset: () => { state = createParserState(); },
     };
   },
   ConfigFields: CodexLocalConfigFields,
-  buildAdapterConfig: buildPaperclipRunnerConfig,
+  buildAdapterConfig: buildWardmoteRunnerConfig,
 };

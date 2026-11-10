@@ -34,7 +34,7 @@ import { createStorageService } from "../../storage/service.js";
 import type { StorageService } from "../../storage/types.js";
 import { issueService } from "../issues.js";
 import { NativeChatAttachmentReadScope } from "./chat-attachment-read.js";
-import { PaperclipRunnerToolAuthority } from "./paperclip-runner-tool-authority.js";
+import { WardmoteRunnerToolAuthority } from "./paperclip-runner-tool-authority.js";
 
 const stagingControl = vi.hoisted(() => ({
   beforeStage: undefined as (() => Promise<void>) | undefined,
@@ -624,7 +624,7 @@ describe("native same-conversation historical attachment reading", () => {
       },
     };
     const reader = scope({ storage: emptyStorage });
-    const authority = new PaperclipRunnerToolAuthority(db, {
+    const authority = new WardmoteRunnerToolAuthority(db, {
       ...binding,
       workspaceRoot,
       executionTargetKind: "local",
@@ -676,7 +676,7 @@ describe("native same-conversation historical attachment reading", () => {
           arguments: { ...selection(), workspaceRoot: "/" },
         }),
       ).rejects.toThrow("arguments_invalid");
-      const unbound = new PaperclipRunnerToolAuthority(db, {
+      const unbound = new WardmoteRunnerToolAuthority(db, {
         ...binding,
         workspaceRoot,
       });
@@ -978,7 +978,7 @@ describe("native same-conversation historical attachment reading", () => {
       });
       const filename = `attachment-${attachment.id}.${extension}`;
       const reader = scope();
-      const authority = new PaperclipRunnerToolAuthority(db, {
+      const authority = new WardmoteRunnerToolAuthority(db, {
         ...binding,
         workspaceRoot,
         executionTargetKind: "local",

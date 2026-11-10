@@ -4,7 +4,7 @@ import { slackChatAgentGuidance } from "../connectors/slack/agent-guidance.js";
 import type { ConversationConfirmationContext } from "../conversation-confirmation-context.js";
 import { TASK_QUESTION_GUIDANCE } from "../issue-question-context.js";
 
-export function buildPaperclipTaskMarkdown(input: {
+export function buildWardmoteTaskMarkdown(input: {
   issue: {
     id: string;
     identifier: string | null;

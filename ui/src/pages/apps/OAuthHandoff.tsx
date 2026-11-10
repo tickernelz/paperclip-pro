@@ -56,7 +56,7 @@ export function ManagedOAuthHandoffState({
 }
 
 /** Fixed tenant landing used only after Paperclip Cloud refreshes login. */
-export function PaperclipCloudOAuthHandoffPage() {
+export function OAuthHandoffPage() {
   const [phase, setPhase] = useState<ManagedOAuthHandoffPhase>("loading");
   const [error, setError] = useState<string | null>(null);
 

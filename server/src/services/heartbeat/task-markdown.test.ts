@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildPaperclipTaskMarkdown } from "./task-markdown.js";
+import { buildWardmoteTaskMarkdown } from "./task-markdown.js";
 
 const issue = {
   id: "task-1",
@@ -9,8 +9,8 @@ const issue = {
 
 describe("heartbeat task markdown rendering", () => {
   it("returns null without a task or a nonempty wake comment", () => {
-    expect(buildPaperclipTaskMarkdown({ issue: null })).toBeNull();
-    expect(buildPaperclipTaskMarkdown({
+    expect(buildWardmoteTaskMarkdown({ issue: null })).toBeNull();
+    expect(buildWardmoteTaskMarkdown({
       issue: null,
       wakeComments: [{ id: "empty", body: " \n " }],
     })).toBeNull();
@@ -26,7 +26,7 @@ describe("heartbeat task markdown rendering", () => {
       ],
     };
     const before = structuredClone(input);
-    const markdown = buildPaperclipTaskMarkdown(input)!;
+    const markdown = buildWardmoteTaskMarkdown(input)!;
 
     expect(markdown).toContain("Pending wake comments (oldest to newest):");
     expect(markdown.indexOf('("first")')).toBeLessThan(markdown.indexOf('("last")'));
@@ -34,13 +34,13 @@ describe("heartbeat task markdown rendering", () => {
     expect(markdown).toContain("\nLatest request.\n");
     expect(markdown).not.toContain('("empty")');
     expect(input).toEqual(before);
-    expect(buildPaperclipTaskMarkdown(input)).toBe(markdown);
+    expect(buildWardmoteTaskMarkdown(input)).toBe(markdown);
   });
 
   it("quotes task scalars and keeps embedded code fences inside the description", () => {
     const description = "First line.\n````text\nQuoted instruction.\n````\nLast line.";
     const title = 'A "quoted" title\nwith a second line';
-    const markdown = buildPaperclipTaskMarkdown({
+    const markdown = buildWardmoteTaskMarkdown({
       issue: { ...issue, title, description },
     });
 
@@ -49,7 +49,7 @@ describe("heartbeat task markdown rendering", () => {
   });
 
   it("keeps the nearest six ancestors and reports omitted ancestor context", () => {
-    const markdown = buildPaperclipTaskMarkdown({
+    const markdown = buildWardmoteTaskMarkdown({
       issue,
       ancestors: Array.from({ length: 7 }, (_, index) => ({
         id: `ancestor-${index + 1}`,
@@ -65,7 +65,7 @@ describe("heartbeat task markdown rendering", () => {
 
   it.each([true, false])("retains attachment-only wakes with hidden comment bodies (native=%s)", (nativeRunner) => {
     const contentPath = "/api/attachments/attachment-1/content";
-    const markdown = buildPaperclipTaskMarkdown({
+    const markdown = buildWardmoteTaskMarkdown({
       issue: null,
       nativeRunner,
       includeWakeComments: false,
@@ -95,7 +95,7 @@ describe("heartbeat task markdown rendering", () => {
   });
 
   it("keeps a rejected plan from granting execution through an older acceptance", () => {
-    const markdown = buildPaperclipTaskMarkdown({
+    const markdown = buildWardmoteTaskMarkdown({
       issue: { ...issue, workMode: "planning" },
       acceptedPlanContinuation: true,
       interaction: { kind: "request_confirmation", status: "accepted" },

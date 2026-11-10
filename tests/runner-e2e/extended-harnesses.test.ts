@@ -1,7 +1,7 @@
 import { assertRemoteNativeEvidencePrerequisites } from "./prerequisites.js";
 import { describe, expect, it } from "vitest";
 import { runnerMatrix, runnerSuites, extendedHarnessProfiles, extendedHarnessFileTask, daytonaWarmContinuityTask } from "./catalog.js";
-import { buildRunnerE2EProcessEnvironment, buildPaperclipServerEnvironment } from "./harness-env.js";
+import { buildRunnerE2EProcessEnvironment, buildWardmoteServerEnvironment } from "./harness-env.js";
 import { parseRunnerSelectors, selectRunnerExecutions } from "./selectors.js";
 import { findSecretLeak, redactText } from "./redaction.js";
 
@@ -33,7 +33,7 @@ describe("extended ACP harness qualification", () => {
     const ambient = { WARDMOTE_RUNNER_ACPX_QUALIFICATION: "ambient", CURSOR_AUTH_TOKEN: "cursor", CURSOR_API_KEY: "cursor-key", COPILOT_GITHUB_TOKEN: "copilot", GH_TOKEN: "github", GITHUB_TOKEN: "github" };
     const env = buildRunnerE2EProcessEnvironment(ambient, [cell]);
     expect(env.WARDMOTE_RUNNER_ACPX_QUALIFICATION).toBeUndefined();
-    const server = buildPaperclipServerEnvironment(env);
+    const server = buildWardmoteServerEnvironment(env);
     for (const name of Object.keys(ambient).filter(name => name !== "WARDMOTE_RUNNER_ACPX_QUALIFICATION")) expect(server[name]).toBeUndefined();
     expect(buildRunnerE2EProcessEnvironment(ambient, []).WARDMOTE_RUNNER_ACPX_QUALIFICATION).toBeUndefined();
     const pending = selected.find(value => value.profile.qualificationCandidate === "copilot")!;

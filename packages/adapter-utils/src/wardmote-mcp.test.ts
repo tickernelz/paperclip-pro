@@ -5,17 +5,17 @@ import {
   paperclipMcpEndpoint,
   paperclipMcpHttpHeaders,
   paperclipMcpToolsets,
-  renderPaperclipMcpConfig,
+  renderWardmoteMcpConfig,
 } from "./wardmote-mcp.js";
 import {
   paperclipMcpHttpTarget,
-  renderPaperclipGeminiSettings,
-  renderPaperclipGrokConfig,
-  renderPaperclipOpenCodeConfig,
+  renderWardmoteGeminiSettings,
+  renderWardmoteGrokConfig,
+  renderWardmoteOpenCodeConfig,
 } from "./wardmote-mcp-mount.js";
 import {
   paperclipAgentPromptTemplate,
-  renderPaperclipWakePrompt,
+  renderWardmoteWakePrompt,
 } from "./server-utils.js";
 
 const TOOL_NAME_RE = /\bpaperclip[A-Z]\w*/;
@@ -57,7 +57,7 @@ describe("paperclipAgentPromptTemplate", () => {
   });
 });
 
-describe("renderPaperclipWakePrompt", () => {
+describe("renderWardmoteWakePrompt", () => {
   const wake = {
     reason: "issue_assigned",
     issue: { id: "issue-1", identifier: "PC-1", title: "Ship it", status: "todo" },
@@ -65,8 +65,8 @@ describe("renderPaperclipWakePrompt", () => {
   };
 
   it("points the already-checked-out note at the surface the run actually has", () => {
-    expect(renderPaperclipWakePrompt(wake)).toContain("`wardmoteCheckoutIssue`");
-    const rest = renderPaperclipWakePrompt(wake, { paperclipAccess: "rest" });
+    expect(renderWardmoteWakePrompt(wake)).toContain("`wardmoteCheckoutIssue`");
+    const rest = renderWardmoteWakePrompt(wake, { paperclipAccess: "rest" });
     expect(rest).not.toMatch(TOOL_NAME_RE);
     expect(rest).toContain("POST /api/issues/$WARDMOTE_TASK_ID/checkout");
   });
@@ -143,17 +143,17 @@ describe("per-runtime MCP config renderers", () => {
   });
 
   it("renders the shape each runtime reads", () => {
-    expect(JSON.parse(renderPaperclipGeminiSettings(target))).toEqual({
+    expect(JSON.parse(renderWardmoteGeminiSettings(target))).toEqual({
       mcpServers: { wardmote: { httpUrl: target.url, headers: target.headers } },
     });
-    expect(JSON.parse(renderPaperclipOpenCodeConfig(target)).mcp.wardmote).toEqual({
+    expect(JSON.parse(renderWardmoteOpenCodeConfig(target)).mcp.wardmote).toEqual({
       type: "remote",
       url: target.url,
       enabled: true,
       oauth: false,
       headers: target.headers,
     });
-    const grok = renderPaperclipGrokConfig(target);
+    const grok = renderWardmoteGrokConfig(target);
     expect(grok).toContain('[mcp_servers."wardmote"]');
     expect(grok).toContain(`url = ${JSON.stringify(target.url)}`);
     expect(grok).toContain('"Authorization" = "Bearer run-key"');
@@ -162,7 +162,7 @@ describe("per-runtime MCP config renderers", () => {
 
   it("keeps the credential out of the omp config file as an env reference", () => {
     const config = JSON.parse(
-      renderPaperclipMcpConfig({
+      renderWardmoteMcpConfig({
         enabled: true,
         transport: "http",
         command: { command: "paperclip-mcp-server", args: [], source: "path" },

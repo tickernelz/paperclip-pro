@@ -161,7 +161,7 @@ async function mcpRequest(method, params) {
   return response.json();
 }
 
-async function callFirstPaperclipTool() {
+async function callFirstWardmoteTool() {
   if (!mcp?.url) return;
   await mcpRequest("initialize", {
     protocolVersion: "2025-03-26",
@@ -441,7 +441,7 @@ const server = createServer(async (request, response) => {
         }
       }
       setTimeout(async () => {
-        await callFirstPaperclipTool();
+        await callFirstWardmoteTool();
         const parsedPrompt = parsedPromptText(promptPayload);
         if (String(parsedPrompt.message ?? "").includes("incremental-stream")) {
           const messageID = `stream-message-${promptTurnSeq}`;

@@ -4,7 +4,7 @@ import { buildExecutionContinuation } from "../execution-continuation.js";
 import { issueService } from "../issues.js";
 import { activityService } from "../activity.js";
 import { instanceSettingsService } from "../instance-settings.js";
-import { buildPaperclipWakePayload, heartbeatService } from "../heartbeat.js";
+import { buildWardmoteWakePayload, heartbeatService } from "../heartbeat.js";
 import { legacyExecutionNeedsReconciliation, terminalizeLegacyExecution } from "../legacy-execution-recovery.js";
 import { deliverExecutionStatuses } from "../execution-status-delivery.js";
 import { publishLiveEvent } from "../live-events.js";
@@ -502,7 +502,7 @@ const support = externalDatabaseUrl
     it("does not turn an already reconciled continuation into a recovery assignment", async () => {
       const source = await seed();
       const [action] = await db.insert(issueRecoveryActions).values({ companyId: source.companyId, sourceIssueId: source.issueId, kind: "active_run_watchdog", status: "resolved", ownerType: "board", returnOwnerAgentId: source.agentId, cause: "native_event_replay_conflict", fingerprint: source.runId, nextAction: "Old recovery instruction", evidence: { executionReconciliation: { runId: source.runId } } }).returning();
-      const wake = await buildPaperclipWakePayload({ db, companyId: source.companyId, contextSnapshot: { issueId: source.issueId, recoveryActionId: action.id, wakeReason: "issue_recovery_action_restored" } });
+      const wake = await buildWardmoteWakePayload({ db, companyId: source.companyId, contextSnapshot: { issueId: source.issueId, recoveryActionId: action.id, wakeReason: "issue_recovery_action_restored" } });
       expect(wake?.recovery).toBeNull();
       expect(wake?.reason).toBe("issue_recovery_action_restored");
     });

@@ -24,7 +24,7 @@ import { NativeSessionProtocolIntegrityError } from "../contracts/native-session
 import { createCapabilityRunnerdCodexTransport, createCapabilityRunnerdProviderEnvironment } from "../live/runnerd-codex-transport.js";
 import { ACPX_CREDENTIAL_BINDING_ENV, createAcpxSidecarHostEnvironment } from "../drivers/acpx/environment.js";
 import { validatePrpEvent } from "../protocol/replay-contract.js";
-import { digestPaperclipSemanticContent } from "../semantic-tools/receipts.js";
+import { digestWardmoteSemanticContent } from "../semantic-tools/receipts.js";
 import {
   DurablePrpControlPlane,
   durableRecoveryInternals,
@@ -1778,14 +1778,14 @@ describe("DurablePrpControlPlane", () => {
         const input = { password: "fixture-before", safe: true };
         const event = semanticInputEvent(1, input);
         const semantic = (event.payload as any).payload.semantic_tool;
-        const redactedDigest = digestPaperclipSemanticContent(input);
+        const redactedDigest = digestWardmoteSemanticContent(input);
         expect(redactedDigest).not.toBe(semantic.content.digest);
         if (fault === "redacted_digest") semantic.content.digest = redactedDigest;
         if (fault === "forged_digest") semantic.content.digest = `sha256:${"0".repeat(64)}`;
         if (fault === "protected_field_tampering") {
           semantic.input = { ...input, password: "fixture-after" };
           // Redacted receipt hashes intentionally cannot prove byte integrity.
-          expect(digestPaperclipSemanticContent(semantic.input)).toBe(redactedDigest);
+          expect(digestWardmoteSemanticContent(semantic.input)).toBe(redactedDigest);
         }
         if (fault === "over_node_limit") semantic.input = { values: Array(10_001).fill(0) };
         if (fault === "over_depth_limit") {

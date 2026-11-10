@@ -264,7 +264,7 @@ This is the most important file. It receives an `AdapterExecutionContext` and mu
 **Required behavior:**
 
 1. **Read config** — extract typed values from `ctx.config` using helpers (`asString`, `asNumber`, `asBoolean`, `asStringArray`, `parseObject` from `@tickernelz/wardmote-adapter-utils/server-utils`)
-2. **Build environment** — call `buildPaperclipEnv(agent)` then layer in `WARDMOTE_RUN_ID`, context vars (`WARDMOTE_TASK_ID`, `WARDMOTE_WAKE_REASON`, `WARDMOTE_WAKE_COMMENT_ID`, `WARDMOTE_APPROVAL_ID`, `WARDMOTE_APPROVAL_STATUS`, `WARDMOTE_LINKED_ISSUE_IDS`), user env overrides, and auth token
+2. **Build environment** — call `buildWardmoteEnv(agent)` then layer in `WARDMOTE_RUN_ID`, context vars (`WARDMOTE_TASK_ID`, `WARDMOTE_WAKE_REASON`, `WARDMOTE_WAKE_COMMENT_ID`, `WARDMOTE_APPROVAL_ID`, `WARDMOTE_APPROVAL_STATUS`, `WARDMOTE_LINKED_ISSUE_IDS`), user env overrides, and auth token
 3. **Resolve session** — check `runtime.sessionParams` / `runtime.sessionId` for an existing session; validate it's compatible (e.g. same cwd); decide whether to resume or start fresh
 4. **Render prompt** — use `renderTemplate(template, data)` with the template variables: `agentId`, `companyId`, `runId`, `company`, `agent`, `run`, `context`
 5. **Call onMeta** — emit adapter invocation metadata before spawning the process
@@ -522,7 +522,7 @@ Import from `@tickernelz/wardmote-adapter-utils/server-utils`:
 | `parseObject(val)` | Safe `Record<string, unknown>` extraction |
 | `parseJson(str)` | Safe JSON.parse returning `Record` or null |
 | `renderTemplate(tmpl, data)` | `{{path.to.value}}` template rendering |
-| `buildPaperclipEnv(agent)` | Standard `WARDMOTE_*` env vars |
+| `buildWardmoteEnv(agent)` | Standard `WARDMOTE_*` env vars |
 | `redactEnvForLogs(env)` | Redact sensitive keys for onMeta |
 | `ensureAbsoluteDirectory(cwd)` | Validate cwd exists and is absolute |
 | `ensureCommandResolvable(cmd, cwd, env)` | Validate command is in PATH |

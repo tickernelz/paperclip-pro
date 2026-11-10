@@ -122,7 +122,7 @@ import {
   type GitHubAttachmentCommentRequest,
 } from "./chat-github-attachments.js";
 import {
-  createPaperclipChatSdkState,
+  createWardmoteChatSdkState,
   type ChatSdkStatePersistence,
 } from "./chat-sdk-state.js";
 
@@ -2192,7 +2192,7 @@ export class ChatSdkEndpointRuntime {
         processUpdate(update, webhookOptions);
       };
     }
-    const durableState = createPaperclipChatSdkState({
+    const durableState = createWardmoteChatSdkState({
       companyId: options.companyId,
       endpointId: options.endpointId,
       persistence: options.persistence,

@@ -3,14 +3,14 @@ import type {
   HarnessRuntimeRequest,
   HarnessRuntimeRequestKind,
   HarnessRuntimeRequestResolution,
-  PaperclipQuestion,
-  PaperclipQuestionResponse,
-  PaperclipQuestionSet,
+  WardmoteQuestion,
+  WardmoteQuestionResponse,
+  WardmoteQuestionSet,
 } from "../../contracts/harness-driver.js";
 import {
   WARDMOTE_QUESTION_SET_SCHEMA,
   WARDMOTE_RUNTIME_REQUEST_SCHEMA_V2,
-  parsePaperclipQuestionSet,
+  parseWardmoteQuestionSet,
 } from "../../contracts/harness-driver.js";
 import { redactCodexDiagnostic } from "./app-server-transport.js";
 
@@ -33,7 +33,7 @@ export function createCodexQuestionResponseContext(): CodexQuestionResponseConte
 }
 
 interface NormalizedQuestionOptions {
-  options: NonNullable<PaperclipQuestion["options"]>;
+  options: NonNullable<WardmoteQuestion["options"]>;
   nativeValues: ReadonlyMap<string, unknown>;
 }
 
@@ -251,10 +251,10 @@ function jsonSchemaOptions(schema: Record<string, unknown>): NormalizedQuestionO
 }
 
 function retainNativeOptionValues(
-  questionSet: PaperclipQuestionSet,
+  questionSet: WardmoteQuestionSet,
   nativeValues: ReadonlyMap<string, ReadonlyMap<string, unknown>>,
   responseContext: CodexQuestionResponseContext,
-): PaperclipQuestionSet {
+): WardmoteQuestionSet {
   if (!NATIVE_OPTION_VALUES.has(responseContext)) {
     throw new Error("Codex question response context was not created by this adapter");
   }
@@ -267,8 +267,8 @@ export function normalizeCodexQuestionSet(
   method: string,
   params: Record<string, unknown>,
   responseContext: CodexQuestionResponseContext,
-): PaperclipQuestionSet | null {
-  if (isAcpxCanonicalInputMethod(method)) return parsePaperclipQuestionSet(params.questionSet);
+): WardmoteQuestionSet | null {
+  if (isAcpxCanonicalInputMethod(method)) return parseWardmoteQuestionSet(params.questionSet);
   if (method === "item/tool/requestUserInput" || method === "tool/requestUserInput") {
     if (!Array.isArray(params.questions) || params.questions.length === 0) return null;
     if (params.questions.length > 64) throw new Error("Codex question form exceeds 64 questions");
@@ -285,7 +285,7 @@ export function normalizeCodexQuestionSet(
       usedQuestionIds.add(id);
     }
     const nativeValues = new Map<string, ReadonlyMap<string, unknown>>();
-    const questions = params.questions.map((rawQuestion, index): PaperclipQuestion => {
+    const questions = params.questions.map((rawQuestion, index): WardmoteQuestion => {
       const question = record(rawQuestion);
       const normalizedOptions = codexOptions(question.options);
       let questionId = explicitQuestionIds[index];
@@ -344,7 +344,7 @@ export function normalizeCodexQuestionSet(
           : {}),
       };
     });
-    return retainNativeOptionValues(parsePaperclipQuestionSet({
+    return retainNativeOptionValues(parseWardmoteQuestionSet({
       schema: WARDMOTE_QUESTION_SET_SCHEMA,
       title: exactRedactedQuestionText(
         text(params.title, "Codex needs your input"),
@@ -374,7 +374,7 @@ export function normalizeCodexQuestionSet(
   const propertyEntries = Object.entries(properties);
   if (propertyEntries.length > 64) throw new Error("Codex question form exceeds 64 questions");
   const nativeValues = new Map<string, ReadonlyMap<string, unknown>>();
-  const questions = propertyEntries.map(([id, rawProperty]): PaperclipQuestion => {
+  const questions = propertyEntries.map(([id, rawProperty]): WardmoteQuestion => {
     const property = record(rawProperty);
     const propertyType = text(property.type);
     const itemSchema = record(property.items);
@@ -388,7 +388,7 @@ export function normalizeCodexQuestionSet(
     if (normalizedOptions.options.length > 0) {
       nativeValues.set(id, normalizedOptions.nativeValues);
     }
-    const answerMode: PaperclipQuestion["answerMode"] = propertyType === "array" && normalizedOptions.options.length > 0
+    const answerMode: WardmoteQuestion["answerMode"] = propertyType === "array" && normalizedOptions.options.length > 0
       ? "multi_select"
       : normalizedOptions.options.length > 0
         ? "single_select"
@@ -431,7 +431,7 @@ export function normalizeCodexQuestionSet(
     };
   });
   if (questions.length === 0) return null;
-  return retainNativeOptionValues(parsePaperclipQuestionSet({
+  return retainNativeOptionValues(parseWardmoteQuestionSet({
     schema: WARDMOTE_QUESTION_SET_SCHEMA,
     title: "A tool needs your input",
     ...(text(params.message).length > 0
@@ -470,7 +470,7 @@ export function runtimeRequestProtocolPayload(request: HarnessRuntimeRequest): R
 
 function canonicalCodexAnswers(
   request: HarnessRuntimeRequest,
-  response: PaperclipQuestionResponse,
+  response: WardmoteQuestionResponse,
   responseContext: CodexQuestionResponseContext,
 ): Record<string, { answers: string[] }> {
   const result: Record<string, { answers: string[] }> = {};
@@ -515,7 +515,7 @@ function jsonSchemaOptionValue(
 
 function canonicalElicitationContent(
   request: HarnessRuntimeRequest,
-  response: PaperclipQuestionResponse,
+  response: WardmoteQuestionResponse,
   responseContext: CodexQuestionResponseContext,
 ): Record<string, unknown> {
   const requestedSchema = record(request.details.requestedSchema ?? request.details.schema);

@@ -34,7 +34,7 @@ export interface NativeExecutionContentRef {
   [key: string]: unknown;
 }
 
-export interface PaperclipNativeExecutionV1 {
+export interface WardmoteNativeExecutionV1 {
   schema: typeof WARDMOTE_RUNNER_NATIVE_EXECUTION_SCHEMA;
   provenance: "seeded" | "replay" | "live";
   identity: {
@@ -109,7 +109,7 @@ export interface PaperclipNativeExecutionV1 {
   [key: string]: unknown;
 }
 
-export class PaperclipNativeExecutionError extends Error {
+export class WardmoteNativeExecutionError extends Error {
   readonly code = "paperclip_native_execution_invalid" as const;
 
   constructor(
@@ -117,12 +117,12 @@ export class PaperclipNativeExecutionError extends Error {
     readonly path: string,
   ) {
     super(`${path}: ${message}`);
-    this.name = "PaperclipNativeExecutionError";
+    this.name = "WardmoteNativeExecutionError";
   }
 }
 
 function fail(path: string, message: string): never {
-  throw new PaperclipNativeExecutionError(message, path);
+  throw new WardmoteNativeExecutionError(message, path);
 }
 
 function record(value: unknown, path: string): Record<string, unknown> {
@@ -200,9 +200,9 @@ function semanticEntry(
  * fields. Required identities, digests, event bindings, terminal consistency,
  * semantic-tool outcomes, usage, and transcript completeness fail closed.
  */
-export function parsePaperclipNativeExecution(
+export function parseWardmoteNativeExecution(
   value: unknown,
-): PaperclipNativeExecutionV1 {
+): WardmoteNativeExecutionV1 {
   const bundle = record(value, "bundle");
   if (bundle.schema !== WARDMOTE_RUNNER_NATIVE_EXECUTION_SCHEMA) {
     fail(
@@ -312,19 +312,19 @@ export function parsePaperclipNativeExecution(
       "operationId",
       "eventId",
     ]);
-    return parsed as PaperclipNativeExecutionV1["semanticTools"]["calls"][number];
+    return parsed as WardmoteNativeExecutionV1["semanticTools"]["calls"][number];
   });
   const results = array(semanticTools.results, "bundle.semanticTools.results").map((entry, index) => {
     const path = `bundle.semanticTools.results[${index}]`;
     const parsed = semanticEntry(entry, path, ["callId", "operationId", "eventId", "outcome"]);
     if (!TOOL_OUTCOMES.has(parsed.outcome as string)) fail(`${path}.outcome`, "is unsupported");
-    return parsed as PaperclipNativeExecutionV1["semanticTools"]["results"][number];
+    return parsed as WardmoteNativeExecutionV1["semanticTools"]["results"][number];
   });
   const denials = array(semanticTools.denials, "bundle.semanticTools.denials").map((entry, index) => {
     const path = `bundle.semanticTools.denials[${index}]`;
     const parsed = semanticEntry(entry, path, ["callId", "code", "authorizationBoundary"]);
     parsed.retryable = boolean(parsed.retryable, `${path}.retryable`);
-    return parsed as PaperclipNativeExecutionV1["semanticTools"]["denials"][number];
+    return parsed as WardmoteNativeExecutionV1["semanticTools"]["denials"][number];
   });
   const callById = new Map(calls.map((call) => [call.callId, call]));
   if (callById.size !== calls.length) {
@@ -507,7 +507,7 @@ export function parsePaperclipNativeExecution(
     artifactRoot,
     artifacts,
     failure,
-  } as PaperclipNativeExecutionV1;
+  } as WardmoteNativeExecutionV1;
 }
 
 function semanticToolEnvelope(
@@ -544,9 +544,9 @@ function semanticToolEnvelope(
   return envelope;
 }
 
-export async function loadPaperclipNativeExecutionFixture(
+export async function loadWardmoteNativeExecutionFixture(
   url: URL = paperclipNativeExecutionFixtureUrl,
-): Promise<PaperclipNativeExecutionV1> {
+): Promise<WardmoteNativeExecutionV1> {
   const value = JSON.parse(await readFile(url, "utf8")) as unknown;
-  return parsePaperclipNativeExecution(value);
+  return parseWardmoteNativeExecution(value);
 }

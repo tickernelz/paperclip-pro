@@ -2397,7 +2397,7 @@ function reportRetainedAcpxCleanupFailure(
     }),
     {
       code: "WARDMOTE_ACPX_RETAINED_CLEANUP_FAILURE",
-      type: "PaperclipRunnerCleanupWarning",
+      type: "WardmoteRunnerCleanupWarning",
     },
   );
 }

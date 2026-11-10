@@ -1,5 +1,5 @@
-import type { PaperclipTurnContext } from "@tickernelz/wardmote-adapter-utils/server-utils";
-import { resolvePaperclipRunnerCursorMode, resolvePaperclipRunnerPiThinkingLevel } from "@tickernelz/wardmote-adapter-utils";
+import type { WardmoteTurnContext } from "@tickernelz/wardmote-adapter-utils/server-utils";
+import { resolveWardmoteRunnerCursorMode, resolveWardmoteRunnerPiThinkingLevel } from "@tickernelz/wardmote-adapter-utils";
 import { createHash } from "node:crypto";
 import { buildNativeContinuationPrompt } from "./native-continuation.js";
 import type {
@@ -21,9 +21,9 @@ import {
   resolveQualifiedAcpxProfile,
 } from "../../vendor/wardmote-runner/index.js";
 import {
-  isPaperclipExternalChatContractTurn,
-  isPaperclipExternalChatQuestionResponseTurn,
-  selectPaperclipPromptSections,
+  isWardmoteExternalChatContractTurn,
+  isWardmoteExternalChatQuestionResponseTurn,
+  selectWardmotePromptSections,
 } from "@tickernelz/wardmote-adapter-utils/server-utils";
 
 const NATIVE_GITHUB_ATTACHMENT_RECOVERY_GUIDANCE = [
@@ -115,8 +115,8 @@ export function buildNativeExecutionInput(input: BuildNativeExecutionInput): Nat
   if (input.issue.workMode !== "standard" && input.issue.workMode !== "planning" && input.issue.workMode !== "ask") {
     throw new Error("native_execution_input_invalid: issue work mode must be standard, planning, or ask");
   }
-  const mode = resolvePaperclipRunnerCursorMode(input.provider, input.acpxAgent, input.acpxSessionMode);
-  const piThinkingLevel = resolvePaperclipRunnerPiThinkingLevel(input.provider, input.acpxAgent, input.piThinkingLevel);
+  const mode = resolveWardmoteRunnerCursorMode(input.provider, input.acpxAgent, input.acpxSessionMode);
+  const piThinkingLevel = resolveWardmoteRunnerPiThinkingLevel(input.provider, input.acpxAgent, input.piThinkingLevel);
   const executionMode = input.executionMode
     ?? (input.issue.workMode === "planning" ? "plan" : "default");
   const acpxProfile = input.provider === "acpx"
@@ -174,7 +174,7 @@ export function buildNativeExecutionInput(input: BuildNativeExecutionInput): Nat
       : input.wakePayload;
   // Build the full bootstrap through the same owner as legacy adapters.
   // Verified native resume selection stays at the existing session boundary.
-  const { taskContextNote, wakePrompt } = selectPaperclipPromptSections({
+  const { taskContextNote, wakePrompt } = selectWardmotePromptSections({
     paperclipTaskMarkdownAssignment: input.taskPrompt,
     paperclipWake: wakePayload,
     conversationMode: input.conversationMode,
@@ -184,8 +184,8 @@ export function buildNativeExecutionInput(input: BuildNativeExecutionInput): Nat
     nativeWakeReaderAvailable: true,
   });
   const externalChatTurn =
-    isPaperclipExternalChatContractTurn(wakePayload) ||
-    isPaperclipExternalChatQuestionResponseTurn(wakePayload);
+    isWardmoteExternalChatContractTurn(wakePayload) ||
+    isWardmoteExternalChatQuestionResponseTurn(wakePayload);
   const configuredGitHubSkillKeys = new Set(input.githubInstructionSkillKeys ?? []);
   const configuredGitHubSkills = externalChatTurn && wake?.externalChatProvider === "github"
     ? input.runtimeContext.skills.filter((skill) => configuredGitHubSkillKeys.has(skill.key))
@@ -344,7 +344,7 @@ function verifiedCompletionSources(
   sources: Array<{ id: string; source: NativeCompletionSource }>,
 ): Array<{ id: string; source: NativeCompletionSource }> {
   if (!value || typeof value !== "object" || Array.isArray(value)) return [];
-  const context = value as Partial<PaperclipTurnContext>;
+  const context = value as Partial<WardmoteTurnContext>;
   if (context.version !== 1) return [];
   return sources.filter(({ source }) => {
     if (source.kind === "description") {

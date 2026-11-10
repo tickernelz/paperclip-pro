@@ -17,7 +17,7 @@ import type { AgentLifecycleRequest, AgentLifecycleResult } from "@tickernelz/wa
  */
 
 import type {
-  PaperclipPluginManifestV1,
+  WardmotePluginManifestV1,
   PluginLauncherBounds,
   PluginLauncherRenderContextSnapshot,
   PluginLauncherRenderEnvironment,
@@ -329,7 +329,7 @@ export interface WorkerHostCallContext {
  */
 export interface InitializeParams {
   /** Full plugin manifest snapshot. */
-  manifest: PaperclipPluginManifestV1;
+  manifest: WardmotePluginManifestV1;
   /** Bootstrap configuration. Company-scoped config is read via `ctx.config.get(companyId)`. */
   config: Record<string, unknown>;
   /** Instance-level metadata. */

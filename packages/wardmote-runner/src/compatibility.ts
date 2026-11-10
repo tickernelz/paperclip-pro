@@ -19,19 +19,19 @@ export const WARDMOTE_RUNNER_COMPATIBILITY = Object.freeze({
   evalCorpus: Object.freeze({ minimum: 1, maximum: 1 }),
 });
 
-export type PaperclipRunnerCompatibilityComponent =
+export type WardmoteRunnerCompatibilityComponent =
   keyof typeof WARDMOTE_RUNNER_COMPATIBILITY.components;
 
-export type PaperclipRunnerCompatibilityIssueCode =
+export type WardmoteRunnerCompatibilityIssueCode =
   | "component_version_mismatch"
   | "eval_corpus_version_unsupported"
   | "catalog_operation_unknown"
   | "provider_capabilities_missing"
   | "provider_operation_unsupported";
 
-export interface PaperclipRunnerCompatibilityIssue {
-  readonly code: PaperclipRunnerCompatibilityIssueCode;
-  readonly component?: PaperclipRunnerCompatibilityComponent | "evalCorpus" | "provider";
+export interface WardmoteRunnerCompatibilityIssue {
+  readonly code: WardmoteRunnerCompatibilityIssueCode;
+  readonly component?: WardmoteRunnerCompatibilityComponent | "evalCorpus" | "provider";
   readonly expected?: string;
   readonly received?: string;
   readonly operationId?: string;
@@ -39,33 +39,33 @@ export interface PaperclipRunnerCompatibilityIssue {
   readonly message: string;
 }
 
-export interface PaperclipProviderCompatibility {
+export interface WardmoteProviderCompatibility {
   readonly id: string;
   readonly supportedOperationIds: readonly string[];
 }
 
-export interface PaperclipRunnerCompatibilityRequirement {
+export interface WardmoteRunnerCompatibilityRequirement {
   readonly consumer: string;
-  readonly components?: Partial<Readonly<Record<PaperclipRunnerCompatibilityComponent, number>>>;
+  readonly components?: Partial<Readonly<Record<WardmoteRunnerCompatibilityComponent, number>>>;
   readonly evalCorpusVersion?: number;
   readonly requiredOperationIds?: readonly string[];
-  readonly provider?: PaperclipProviderCompatibility;
+  readonly provider?: WardmoteProviderCompatibility;
 }
 
-export class PaperclipRunnerCompatibilityError extends Error {
+export class WardmoteRunnerCompatibilityError extends Error {
   readonly code = "wardmote_runner_incompatible" as const;
-  readonly issues: readonly PaperclipRunnerCompatibilityIssue[];
+  readonly issues: readonly WardmoteRunnerCompatibilityIssue[];
 
   constructor(
     readonly consumer: string,
-    issues: readonly PaperclipRunnerCompatibilityIssue[],
+    issues: readonly WardmoteRunnerCompatibilityIssue[],
   ) {
     super(
       `Paperclip runner compatibility check failed for ${consumer}: ${issues
         .map((issue) => `${issue.code}: ${issue.message}`)
         .join("; ")}`,
     );
-    this.name = "PaperclipRunnerCompatibilityError";
+    this.name = "WardmoteRunnerCompatibilityError";
     this.issues = Object.freeze(issues.map((issue) => Object.freeze({ ...issue })));
   }
 }
@@ -75,13 +75,13 @@ export class PaperclipRunnerCompatibilityError extends Error {
  * eval bundles. Provider limitations are reported as stable compatibility
  * issues instead of being inferred from provider-specific failures later.
  */
-export function assertPaperclipRunnerCompatibility(
-  requirement: PaperclipRunnerCompatibilityRequirement,
+export function assertWardmoteRunnerCompatibility(
+  requirement: WardmoteRunnerCompatibilityRequirement,
 ): typeof WARDMOTE_RUNNER_COMPATIBILITY {
-  const issues: PaperclipRunnerCompatibilityIssue[] = [];
+  const issues: WardmoteRunnerCompatibilityIssue[] = [];
 
   for (const [component, received] of Object.entries(requirement.components ?? {}) as Array<
-    [PaperclipRunnerCompatibilityComponent, number]
+    [WardmoteRunnerCompatibilityComponent, number]
   >) {
     const expected = WARDMOTE_RUNNER_COMPATIBILITY.components[component];
     if (received !== expected) {
@@ -148,7 +148,7 @@ export function assertPaperclipRunnerCompatibility(
   }
 
   if (issues.length > 0) {
-    throw new PaperclipRunnerCompatibilityError(requirement.consumer, issues);
+    throw new WardmoteRunnerCompatibilityError(requirement.consumer, issues);
   }
   return WARDMOTE_RUNNER_COMPATIBILITY;
 }

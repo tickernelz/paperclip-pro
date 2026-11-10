@@ -22,7 +22,7 @@ import {
   type ExternalObjectResolver,
 } from "../services/external-objects.js";
 import { canonicalizeExternalObjectUrl } from "@tickernelz/wardmote-shared/external-objects-server";
-import type { PaperclipPluginManifestV1 } from "@tickernelz/wardmote-shared";
+import type { WardmotePluginManifestV1 } from "@tickernelz/wardmote-shared";
 import type { PluginWorkerManager } from "../services/plugin-worker-manager.js";
 import { createGitHubExternalObjectProvider } from "../services/github-external-object-provider.js";
 
@@ -809,7 +809,7 @@ describeEmbeddedPostgres("externalObjectService", () => {
       })
       .where(eq(issues.id, issueId));
 
-    const manifest: PaperclipPluginManifestV1 = {
+    const manifest: WardmotePluginManifestV1 = {
       id: "paperclip.mock-object-provider",
       apiVersion: 1,
       version: "1.0.0",

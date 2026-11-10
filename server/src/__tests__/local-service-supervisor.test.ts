@@ -26,7 +26,7 @@ describe("local service supervision", () => {
   it("keeps request-logging runtime stdio usable after the supervisor side closes", async () => {
     const workspaceRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-service-stdio-"));
     const paperclipHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-service-home-"));
-    const previousPaperclipHome = process.env.WARDMOTE_HOME;
+    const previousWardmoteHome = process.env.WARDMOTE_HOME;
     const previousInstanceId = process.env.WARDMOTE_INSTANCE_ID;
     process.env.WARDMOTE_HOME = paperclipHome;
     process.env.WARDMOTE_INSTANCE_ID = `service-stdio-${randomUUID()}`;
@@ -97,8 +97,8 @@ describe("local service supervision", () => {
       registryRecord = null;
     } finally {
       if (registryRecord) await terminateLocalService(registryRecord).catch(() => undefined);
-      if (previousPaperclipHome === undefined) delete process.env.WARDMOTE_HOME;
-      else process.env.WARDMOTE_HOME = previousPaperclipHome;
+      if (previousWardmoteHome === undefined) delete process.env.WARDMOTE_HOME;
+      else process.env.WARDMOTE_HOME = previousWardmoteHome;
       if (previousInstanceId === undefined) delete process.env.WARDMOTE_INSTANCE_ID;
       else process.env.WARDMOTE_INSTANCE_ID = previousInstanceId;
       await fs.rm(paperclipHome, { recursive: true, force: true });

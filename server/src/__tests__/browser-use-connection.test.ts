@@ -1,5 +1,5 @@
 import { budgetService } from "../services/budgets.js";
-import { buildPaperclipRuntimeMcpServers } from "../services/heartbeat.js";
+import { buildWardmoteRuntimeMcpServers } from "../services/heartbeat.js";
 import { resolveNativeRuntimeMcpSnapshot } from "../services/native-runtime/runtime-context.js";
 import express from "express";
 import http from "supertest";
@@ -39,7 +39,7 @@ import { registerBrowserUseCleanup } from "../services/browser-use-work.js";
 import { browserUseService } from "../services/browser-use.js";
 import { applyConnectorSkills, prepareConnectorSkillDelivery, resolveConnectorAssignments } from "../services/connector-runtime.js";
 import { registerAssignedMcpGateway } from "../services/native-runtime/assigned-mcp-tools.js";
-import { listPaperclipSkillEntries } from "@tickernelz/wardmote-adapter-utils/server-utils";
+import { listWardmoteSkillEntries } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import {
@@ -357,7 +357,7 @@ const actor = { actorType: "user" as const, actorId: "browser-reviewer" };
       }
     });
     it("keeps Cloud instructions out of universal skills and unassigned runtime overlays", async () => {
-      const skills = await listPaperclipSkillEntries(fileURLToPath(new URL("../", import.meta.url)), [fileURLToPath(new URL("../../../skills", import.meta.url))]);
+      const skills = await listWardmoteSkillEntries(fileURLToPath(new URL("../", import.meta.url)), [fileURLToPath(new URL("../../../skills", import.meta.url))]);
       expect(skills.some(skill => skill.runtimeName === "wardmote")).toBe(true);
       expect(skills.some(skill => ["browser-use", "browser-use-cloud"].includes(skill.runtimeName))).toBe(false);
       const base = { wardmoteSkillSync: { desiredSkills: ["tickernelz/wardmote/browser-use", "tickernelz/wardmote/browser-use-cloud"] } };
@@ -464,7 +464,7 @@ const actor = { actorType: "user" as const, actorId: "browser-reviewer" };
         runId: f.run.id,
       });
       expect(snapshot.bindingId).not.toBeNull();
-      const servers = await buildPaperclipRuntimeMcpServers({
+      const servers = await buildWardmoteRuntimeMcpServers({
         db,
         agent: f.agent,
         runId: f.run.id,

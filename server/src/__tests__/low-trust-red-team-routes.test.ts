@@ -58,8 +58,8 @@ import {
   joinPromptSections,
   paperclipWakeCommentsArePromptOwned,
   selectInitialCommunicationGuidance,
-  selectPaperclipPromptSections,
-  stringifyPaperclipWakePayload,
+  selectWardmotePromptSections,
+  stringifyWardmoteWakePayload,
 } from "@tickernelz/wardmote-adapter-utils/server-utils";
 
 const GATEWAY_ADAPTER = "acme_gateway";
@@ -235,7 +235,7 @@ async function createControlledGatewayServer(beforeComplete?: (turn: number) => 
       }
       const resumedSession = Boolean(ctx.runtime?.sessionId);
       await hydrateFreshSessionHandoff(ctx, { resumedSession });
-      const { taskContextNote, wakePrompt } = selectPaperclipPromptSections(ctx.context, {
+      const { taskContextNote, wakePrompt } = selectWardmotePromptSections(ctx.context, {
         resumedSession,
         includeExecutionContract: true,
         includeCommunicationGuidance: false,
@@ -243,7 +243,7 @@ async function createControlledGatewayServer(beforeComplete?: (turn: number) => 
       });
       const wakeJson = paperclipWakeCommentsArePromptOwned(ctx.context)
         ? null
-        : stringifyPaperclipWakePayload(ctx.context.paperclipWake, {
+        : stringifyWardmoteWakePayload(ctx.context.paperclipWake, {
             omitIssueDescription: Boolean(taskContextNote),
           });
       const message = joinPromptSections([

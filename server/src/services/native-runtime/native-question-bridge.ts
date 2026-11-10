@@ -11,8 +11,8 @@ import { questionSetToAskUserQuestionsPayload } from "@tickernelz/wardmote-share
 
 import type { PrpEvent } from "../../vendor/wardmote-runner/index.js";
 import {
-  parsePaperclipQuestionSet,
-  type PaperclipQuestionSet,
+  parseWardmoteQuestionSet,
+  type WardmoteQuestionSet,
 } from "../../vendor/wardmote-runner/index.js";
 import { logger } from "../../middleware/logger.js";
 import { unprocessable } from "../../errors.js";
@@ -80,7 +80,7 @@ function requestIdForInteraction(
     : requestId;
 }
 
-function toInteractionPayload(questionSet: PaperclipQuestionSet, runtimeRequestId: string) {
+function toInteractionPayload(questionSet: WardmoteQuestionSet, runtimeRequestId: string) {
   return {
     ...questionSetToAskUserQuestionsPayload(questionSet),
     runtimeRequestId,
@@ -167,7 +167,7 @@ export async function projectNativeRuntimeRequest(input: {
   if (request.requestKind !== "runtime" || request.type !== "input") {
     throw new Error("native_runtime_request_invalid");
   }
-  const questionSet = parsePaperclipQuestionSet(request.input);
+  const questionSet = parseWardmoteQuestionSet(request.input);
   if (questionSet.questions.some((question) => question.textValidation?.pattern !== undefined)) {
     // JavaScript regular expressions have no execution budget. Provider-authored
     // patterns therefore stay fail-closed until the runner contract supplies a

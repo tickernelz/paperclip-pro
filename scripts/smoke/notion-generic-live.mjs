@@ -153,7 +153,7 @@ async function gotoWithVisibleMarker(
   fail(checkpoint, code);
 }
 
-async function loginPaperclipBoard(page, context, config) {
+async function loginWardmoteBoard(page, context, config) {
   const loginUrl = new URL("/auth?next=/", config.baseUrl).toString();
   for (let attempt = 1; attempt <= 2; attempt += 1) {
     await gotoWithVisibleMarker(
@@ -588,7 +588,7 @@ async function runSmoke({ config, chromium }) {
     });
     const page = await context.newPage();
 
-    await loginPaperclipBoard(page, context, config);
+    await loginWardmoteBoard(page, context, config);
 
     activeCheckpoint = "A.company-selection";
     const companies = await apiJson(context.request, config, "GET", "/api/companies", undefined, "A.company-selection");

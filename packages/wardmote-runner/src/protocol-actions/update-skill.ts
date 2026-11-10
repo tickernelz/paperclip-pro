@@ -5,7 +5,7 @@ export const updateSkillAction = {
     operationId: "update_skill", surfaces: ["scenario", "live"], placement: "optional_agent_tool",
     optionalGroup: "company_skills", requiredClaims: [], taskModes: ["standard", "skill_test"],
     sideEffectClass: "company_write", idempotency: "required", disabledByDefault: false,
-    realBindingStatus: "live_codex", realServiceBinding: "PaperclipRunnerToolAuthority",
+    realBindingStatus: "live_codex", realServiceBinding: "WardmoteRunnerToolAuthority",
     prpEvidence: "Authenticated skill file API with version guard, durable receipt, and attributed activity.",
     prpBindingStatus: "bound", legacyAliases: [],
   },

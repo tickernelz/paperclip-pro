@@ -387,7 +387,7 @@ describe("Capability live projection", () => {
         },
       ],
       process: null,
-      networkEvidence: { realPaperclipRequests: 0, childPaperclipEnvironmentKeys: [] },
+      networkEvidence: { realWardmoteRequests: 0, childWardmoteEnvironmentKeys: [] },
     } as CapabilityLiveSessionSnapshot;
   }
 

@@ -25,8 +25,8 @@ import {
   writeConfig,
 } from "../config/store.js";
 import {
-  findPaperclipConfigKeyWarnings,
-  type PaperclipConfig,
+  findWardmoteConfigKeyWarnings,
+  type WardmoteConfig,
 } from "../config/schema.js";
 import { ensureAgentJwtSecret, ensureToolActionSigningSecret, resolveAgentJwtEnvFile } from "../config/env.js";
 import { ensureLocalSecretsKeyFile } from "../config/secrets-key.js";
@@ -43,7 +43,7 @@ import {
   resolveDefaultBackupDir,
   resolveDefaultEmbeddedPostgresDir,
   resolveDefaultLogsDir,
-  resolvePaperclipInstanceId,
+  resolveWardmoteInstanceId,
 } from "../config/home.js";
 import { bootstrapCeoInvite } from "./auth-bootstrap-ceo.js";
 import { printWardmoteCliBanner } from "../utils/banner.js";
@@ -75,7 +75,7 @@ type OnboardOptions = {
   installService?: boolean;
 };
 
-type OnboardDefaults = Pick<PaperclipConfig, "database" | "logging" | "server" | "auth" | "storage" | "secrets">;
+type OnboardDefaults = Pick<WardmoteConfig, "database" | "logging" | "server" | "auth" | "storage" | "secrets">;
 
 const TAILNET_BIND_WARNING =
   "No Tailscale address was detected during setup. The saved config will stay on loopback until Tailscale is available or WARDMOTE_TAILNET_BIND_HOST is set.";
@@ -164,7 +164,7 @@ function resolvePathFromEnv(rawValue: string | undefined): string | null {
   return path.resolve(expandHomePrefix(rawValue.trim()));
 }
 
-function describeServerBinding(server: Pick<PaperclipConfig["server"], "bind" | "customBindHost" | "host" | "port">): string {
+function describeServerBinding(server: Pick<WardmoteConfig["server"], "bind" | "customBindHost" | "host" | "port">): string {
   const bind = server.bind ?? inferBindModeFromHost(server.host);
   const detail =
     bind === "custom"
@@ -181,7 +181,7 @@ function quickstartDefaultsFromEnv(opts?: { preferTrustedLocal?: boolean }): {
   ignoredEnvKeys: Array<{ key: string; reason: string }>;
 } {
   const preferTrustedLocal = opts?.preferTrustedLocal ?? false;
-  const instanceId = resolvePaperclipInstanceId();
+  const instanceId = resolveWardmoteInstanceId();
   const defaultStorage = defaultStorageConfig();
   const defaultSecrets = defaultSecretsConfig();
   const databaseUrl = process.env.DATABASE_URL?.trim() || undefined;
@@ -366,7 +366,7 @@ function quickstartDefaultsFromEnv(opts?: { preferTrustedLocal?: boolean }): {
   return { defaults, usedEnvKeys, ignoredEnvKeys };
 }
 
-function canCreateBootstrapInviteImmediately(config: Pick<PaperclipConfig, "database" | "server">): boolean {
+function canCreateBootstrapInviteImmediately(config: Pick<WardmoteConfig, "database" | "server">): boolean {
   return config.server.deploymentMode === "authenticated" && config.database.mode !== "embedded-postgres";
 }
 
@@ -415,7 +415,7 @@ export async function onboard(opts: OnboardOptions): Promise<void> {
   printWardmoteCliBanner();
   p.intro(pc.bgCyan(pc.black(" wardmote onboard ")));
   const configPath = resolveConfigPath(opts.config);
-  const instance = describeLocalInstancePaths(resolvePaperclipInstanceId());
+  const instance = describeLocalInstancePaths(resolveWardmoteInstanceId());
   p.log.message(
     pc.dim(
       `Local home: ${instance.homeDir} | instance: ${instance.instanceId} | config: ${configPath}`,
@@ -423,14 +423,14 @@ export async function onboard(opts: OnboardOptions): Promise<void> {
   );
   if (!(await checkOmpForOnboard())) return;
 
-  let existingConfig: PaperclipConfig | null = null;
+  let existingConfig: WardmoteConfig | null = null;
   let invalidBackupPath: string | undefined;
   if (configExists(opts.config)) {
     p.log.message(pc.dim(`${configPath} exists`));
 
     try {
       existingConfig = readConfig(opts.config);
-      for (const warning of findPaperclipConfigKeyWarnings(existingConfig)) {
+      for (const warning of findWardmoteConfigKeyWarnings(existingConfig)) {
         p.log.warn(`Unknown config key ${warning.path}; did you mean ${warning.suggestion}? It will be preserved.`);
       }
     } catch (err) {
@@ -580,7 +580,7 @@ export async function onboard(opts: OnboardOptions): Promise<void> {
   const tc = getTelemetryClient();
   if (tc) trackInstallStarted(tc);
 
-  let llm: PaperclipConfig["llm"] | undefined;
+  let llm: WardmoteConfig["llm"] | undefined;
   const { defaults: derivedDefaults, usedEnvKeys, ignoredEnvKeys } = quickstartDefaultsFromEnv({
     preferTrustedLocal: opts.yes === true && !opts.bind,
   });
@@ -726,7 +726,7 @@ export async function onboard(opts: OnboardOptions): Promise<void> {
     p.log.success(`Created ${pc.cyan("WARDMOTE_TOOL_ACTION_SIGNING_SECRET")} in ${pc.dim(envFilePath)}`);
   }
 
-  const config: PaperclipConfig = {
+  const config: WardmoteConfig = {
     $meta: {
       version: 1,
       updatedAt: new Date().toISOString(),

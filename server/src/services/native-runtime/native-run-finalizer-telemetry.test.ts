@@ -52,7 +52,7 @@ function captureRunFailureCallsFrom(fromIndex: number) {
   return mockCaptureRunFailure.mock.calls.slice(fromIndex);
 }
 
-import { PaperclipControlPlanePort } from "./paperclip-control-plane-port.js";
+import { WardmoteControlPlanePort } from "./paperclip-control-plane-port.js";
 import { restoreNativeWorkspaceBestEffort } from "./native-workspace-best-effort.js";
 import { reconcileNativeFinalizations } from "./native-finalization-reconciler.js";
 import { recoverLegacyUnsafeWorkspaceExports } from "./native-workspace-export-recovery.js";
@@ -148,7 +148,7 @@ describeEmbeddedPostgres("native run finalizer / status decision committer — a
   }
 
   function newPort(fixture: Awaited<ReturnType<typeof seedNativeRun>>) {
-    return new PaperclipControlPlanePort(db, {
+    return new WardmoteControlPlanePort(db, {
       companyId,
       issueId: fixture.issueId,
       runId: fixture.runId,

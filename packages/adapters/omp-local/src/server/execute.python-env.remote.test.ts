@@ -14,7 +14,7 @@ const {
   restoreWorkspaceFromSshExecution,
   runSshCommand,
   syncDirectoryToSsh,
-  startAdapterExecutionTargetPaperclipBridge,
+  startAdapterExecutionTargetWardmoteBridge,
 } = vi.hoisted(() => ({
   runAdapterExecutionTargetProcess: vi.fn(async () => ({
     exitCode: 0,
@@ -31,7 +31,7 @@ const {
   restoreWorkspaceFromSshExecution: vi.fn(async () => undefined),
   runSshCommand: vi.fn(async () => ({ stdout: "/home/agent", stderr: "", exitCode: 0 })),
   syncDirectoryToSsh: vi.fn(async () => undefined),
-  startAdapterExecutionTargetPaperclipBridge: vi.fn(async () => ({
+  startAdapterExecutionTargetWardmoteBridge: vi.fn(async () => ({
     env: {
       WARDMOTE_API_URL: "http://127.0.0.1:4310",
       WARDMOTE_API_KEY: "bridge-token",
@@ -65,7 +65,7 @@ vi.mock("@tickernelz/wardmote-adapter-utils/execution-target", async () => {
   const actual = await vi.importActual<typeof ExecutionTarget>(
     "@tickernelz/wardmote-adapter-utils/execution-target",
   );
-  return { ...actual, runAdapterExecutionTargetProcess, startAdapterExecutionTargetPaperclipBridge };
+  return { ...actual, runAdapterExecutionTargetProcess, startAdapterExecutionTargetWardmoteBridge };
 });
 
 import { execute } from "./execute.js";

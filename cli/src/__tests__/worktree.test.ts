@@ -66,7 +66,7 @@ import {
   rewriteLocalUrlPort,
   sanitizeWorktreeInstanceId,
 } from "../commands/worktree-lib.js";
-import type { PaperclipConfig } from "../config/schema.js";
+import type { WardmoteConfig } from "../config/schema.js";
 import {
   EMBEDDED_POSTGRES_TEST_TIMEOUT_MS,
   getEmbeddedPostgresTestSupport,
@@ -225,7 +225,7 @@ afterEach(() => {
   }
 });
 
-function buildSourceConfig(): PaperclipConfig {
+function buildSourceConfig(): WardmoteConfig {
   return {
     $meta: {
       version: 1,
@@ -614,7 +614,7 @@ describe("worktree helpers", () => {
     try {
       const configPath = path.join(tempRoot, "config.json");
       const sourceConfig = buildSourceConfig();
-      const config: PaperclipConfig = {
+      const config: WardmoteConfig = {
         ...sourceConfig,
         database: {
           ...sourceConfig.database,
@@ -1630,7 +1630,7 @@ describe("worktree helpers", () => {
       });
 
       const targetConfigPath = path.join(worktreeRoot, ".paperclip", "config.json");
-      const targetConfig = JSON.parse(fs.readFileSync(targetConfigPath, "utf8")) as PaperclipConfig;
+      const targetConfig = JSON.parse(fs.readFileSync(targetConfigPath, "utf8")) as WardmoteConfig;
       expect(readWorktreeSeedManifest(targetConfigPath)).toMatchObject({
         state: "verified",
         phase: "complete",
@@ -1819,7 +1819,7 @@ describe("worktree helpers", () => {
 
       const targetConfig = JSON.parse(
         fs.readFileSync(path.join(worktreeRoot, ".paperclip", "config.json"), "utf8"),
-      ) as PaperclipConfig;
+      ) as WardmoteConfig;
       const manifestText = fs.readFileSync(
         path.join(worktreeRoot, ".paperclip", "seed-manifest.json"),
         "utf8",
@@ -2006,7 +2006,7 @@ describe("worktree helpers", () => {
     const repoRoot = path.join(tempRoot, "repo");
     const localConfigPath = path.join(repoRoot, ".paperclip", "config.json");
     const originalCwd = process.cwd();
-    const originalPaperclipConfig = process.env.WARDMOTE_CONFIG;
+    const originalWardmoteConfig = process.env.WARDMOTE_CONFIG;
 
     try {
       fs.mkdirSync(path.dirname(localConfigPath), { recursive: true });
@@ -2017,10 +2017,10 @@ describe("worktree helpers", () => {
       expect(fs.realpathSync(resolveSourceConfigPath({}))).toBe(fs.realpathSync(localConfigPath));
     } finally {
       process.chdir(originalCwd);
-      if (originalPaperclipConfig === undefined) {
+      if (originalWardmoteConfig === undefined) {
         delete process.env.WARDMOTE_CONFIG;
       } else {
-        process.env.WARDMOTE_CONFIG = originalPaperclipConfig;
+        process.env.WARDMOTE_CONFIG = originalWardmoteConfig;
       }
       fs.rmSync(tempRoot, { recursive: true, force: true });
     }
@@ -2047,7 +2047,7 @@ describe("worktree helpers", () => {
     const sourceConfigPath = path.join(tempRoot, "source", "config.json");
     const targetRoot = path.join(tempRoot, "target");
     const originalCwd = process.cwd();
-    const originalPaperclipConfig = process.env.WARDMOTE_CONFIG;
+    const originalWardmoteConfig = process.env.WARDMOTE_CONFIG;
 
     try {
       fs.mkdirSync(path.dirname(sourceConfigPath), { recursive: true });
@@ -2061,10 +2061,10 @@ describe("worktree helpers", () => {
       );
     } finally {
       process.chdir(originalCwd);
-      if (originalPaperclipConfig === undefined) {
+      if (originalWardmoteConfig === undefined) {
         delete process.env.WARDMOTE_CONFIG;
       } else {
-        process.env.WARDMOTE_CONFIG = originalPaperclipConfig;
+        process.env.WARDMOTE_CONFIG = originalWardmoteConfig;
       }
       fs.rmSync(tempRoot, { recursive: true, force: true });
     }
@@ -2159,7 +2159,7 @@ describe("worktree helpers", () => {
       instanceId: "default",
     });
     const originalCwd = process.cwd();
-    const originalPaperclipConfig = process.env.WARDMOTE_CONFIG;
+    const originalWardmoteConfig = process.env.WARDMOTE_CONFIG;
     const currentDatabaseReservation = await reserveTestPort();
     const currentDatabasePort = currentDatabaseReservation.port;
     const sourceDb = await startEmbeddedPostgresTestDatabase("paperclip-worktree-reseed-source-");
@@ -2238,10 +2238,10 @@ describe("worktree helpers", () => {
     } finally {
       await currentDatabaseReservation.release();
       process.chdir(originalCwd);
-      if (originalPaperclipConfig === undefined) {
+      if (originalWardmoteConfig === undefined) {
         delete process.env.WARDMOTE_CONFIG;
       } else {
-        process.env.WARDMOTE_CONFIG = originalPaperclipConfig;
+        process.env.WARDMOTE_CONFIG = originalWardmoteConfig;
       }
       fs.rmSync(tempRoot, { recursive: true, force: true });
     }
@@ -2264,7 +2264,7 @@ describe("worktree helpers", () => {
       instanceId: "default",
     });
     const originalCwd = process.cwd();
-    const originalPaperclipConfig = process.env.WARDMOTE_CONFIG;
+    const originalWardmoteConfig = process.env.WARDMOTE_CONFIG;
 
     try {
       fs.mkdirSync(path.dirname(currentPaths.configPath), { recursive: true });
@@ -2293,7 +2293,7 @@ describe("worktree helpers", () => {
             keyFilePath: sourcePaths.secretsKeyFilePath,
           },
         },
-      } as PaperclipConfig;
+      } as WardmoteConfig;
 
       fs.writeFileSync(currentPaths.configPath, JSON.stringify(currentConfig, null, 2), "utf8");
       fs.writeFileSync(currentPaths.envPath, `WARDMOTE_HOME=${homeDir}\nWARDMOTE_INSTANCE_ID=${currentInstanceId}\n`, "utf8");
@@ -2319,10 +2319,10 @@ describe("worktree helpers", () => {
       expect(restoredMarker).toBe("keep me");
     } finally {
       process.chdir(originalCwd);
-      if (originalPaperclipConfig === undefined) {
+      if (originalWardmoteConfig === undefined) {
         delete process.env.WARDMOTE_CONFIG;
       } else {
-        process.env.WARDMOTE_CONFIG = originalPaperclipConfig;
+        process.env.WARDMOTE_CONFIG = originalWardmoteConfig;
       }
       fs.rmSync(tempRoot, { recursive: true, force: true });
     }

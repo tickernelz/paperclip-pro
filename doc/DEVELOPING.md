@@ -1468,7 +1468,7 @@ the updated sandbox image with the matching runner qualification changes.
 ### Native runner restart recovery
 
 Custom source-mode HTTP launchers should create their listener with
-`createPaperclipHttpServer` from `server/src/http/server.ts`, passing the selected
+`createWardmoteHttpServer` from `server/src/http/server.ts`, passing the selected
 API origin as `apiUrl`. This registers the native Runner WebSocket transport
 before execution is admitted. Plain Express `app.listen()` or Node
 `createServer(app)` alone does not initialize that transport and native runs

@@ -10,7 +10,7 @@ import {
   type ExternalObjectMentionSourceKind,
   type ExternalObjectStatusCategory,
   type ExternalObjectStatusTone,
-  type PaperclipPluginManifestV1,
+  type WardmotePluginManifestV1,
 } from "@tickernelz/wardmote-shared";
 import { extractExternalObjectCanonicalUrls } from "@tickernelz/wardmote-shared/external-objects-server";
 import type { PluginExternalObjectRecordSnapshot, PluginExternalObjectResolveResult } from "@tickernelz/wardmote-plugin-sdk";
@@ -207,7 +207,7 @@ export function createExternalObjectResolverRegistry(resolvers: ExternalObjectRe
 }
 
 function manifestProvidesObject(
-  manifest: PaperclipPluginManifestV1,
+  manifest: WardmotePluginManifestV1,
   object: Pick<ExternalObjectRecord, "providerKey" | "objectType">,
 ) {
   return (manifest.objectReferences ?? []).some(

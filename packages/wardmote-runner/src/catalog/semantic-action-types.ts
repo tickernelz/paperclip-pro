@@ -1,4 +1,4 @@
-export type PaperclipSemanticActionId =
+export type WardmoteSemanticActionId =
   | "search_api"
   | "call_api"
   | "set_task_title"
@@ -38,31 +38,31 @@ export type PaperclipSemanticActionId =
   | "comment_on_approval"
   | "schedule_wake";
 
-export type PaperclipSemanticActionPlacement = "always" | "optional";
-export type PaperclipSemanticActionMode =
+export type WardmoteSemanticActionPlacement = "always" | "optional";
+export type WardmoteSemanticActionMode =
   "standard" | "ask" | "planning" | "skill_test";
-export type PaperclipSemanticActionEffect = "read" | "write" | "governance";
+export type WardmoteSemanticActionEffect = "read" | "write" | "governance";
 
-export type PaperclipJsonValue =
+export type WardmoteJsonValue =
   | null
   | boolean
   | number
   | string
-  | readonly PaperclipJsonValue[]
-  | { readonly [key: string]: PaperclipJsonValue };
+  | readonly WardmoteJsonValue[]
+  | { readonly [key: string]: WardmoteJsonValue };
 
 /** The JSON Schema subset used by the v1 semantic action catalog. */
-export interface PaperclipJsonSchema {
+export interface WardmoteJsonSchema {
   readonly type?: string | readonly string[];
   readonly title?: string;
   readonly description?: string;
-  readonly properties?: Readonly<Record<string, PaperclipJsonSchema>>;
+  readonly properties?: Readonly<Record<string, WardmoteJsonSchema>>;
   readonly required?: readonly string[];
-  readonly additionalProperties?: boolean | PaperclipJsonSchema;
-  readonly items?: PaperclipJsonSchema;
-  readonly enum?: readonly PaperclipJsonValue[];
-  readonly oneOf?: readonly PaperclipJsonSchema[];
-  readonly anyOf?: readonly PaperclipJsonSchema[];
+  readonly additionalProperties?: boolean | WardmoteJsonSchema;
+  readonly items?: WardmoteJsonSchema;
+  readonly enum?: readonly WardmoteJsonValue[];
+  readonly oneOf?: readonly WardmoteJsonSchema[];
+  readonly anyOf?: readonly WardmoteJsonSchema[];
   readonly minimum?: number;
   readonly maximum?: number;
   readonly minLength?: number;
@@ -72,24 +72,24 @@ export interface PaperclipJsonSchema {
   readonly uniqueItems?: boolean;
   readonly pattern?: string;
   readonly format?: string;
-  readonly default?: PaperclipJsonValue;
+  readonly default?: WardmoteJsonValue;
 }
 
 /**
  * A transport-neutral declaration. Catalog membership never grants discovery
  * or invocation authority; a run-scoped authorization layer must do that.
  */
-export interface PaperclipSemanticActionDescriptor {
+export interface WardmoteSemanticActionDescriptor {
   readonly schema: "paperclip.semantic-action.v1";
-  readonly operationId: PaperclipSemanticActionId;
+  readonly operationId: WardmoteSemanticActionId;
   readonly version: 1;
   readonly title: string;
   readonly description: string;
-  readonly placement: PaperclipSemanticActionPlacement;
-  readonly effect: PaperclipSemanticActionEffect;
+  readonly placement: WardmoteSemanticActionPlacement;
+  readonly effect: WardmoteSemanticActionEffect;
   readonly requiredClaims: readonly string[];
-  readonly allowedModes: readonly PaperclipSemanticActionMode[];
+  readonly allowedModes: readonly WardmoteSemanticActionMode[];
   readonly allowedRoles?: readonly string[];
-  readonly inputSchema: PaperclipJsonSchema;
-  readonly outputSchema: PaperclipJsonSchema;
+  readonly inputSchema: WardmoteJsonSchema;
+  readonly outputSchema: WardmoteJsonSchema;
 }

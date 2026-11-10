@@ -31,7 +31,7 @@ import {
 } from "lucide-react";
 import { heartbeatsApi, type ProviderTraceInspection } from "@/api/heartbeats";
 import { accessApi } from "@/api/access";
-import { parsePaperclipRunnerStdoutLine } from "@/adapters/wardmote-runner";
+import { parseWardmoteRunnerStdoutLine } from "@/adapters/wardmote-runner";
 import { TaskChatProtocolCard } from "@/components/task-chat/TaskChatProtocolCard";
 import type { TaskChatProtocolItem } from "@/components/task-chat/task-chat-model";
 import { transcriptToTaskChatItems } from "@/components/task-chat/transcript-adapter";
@@ -604,7 +604,7 @@ function typedPrpFields(event: HeartbeatRunEvent) {
 function ProductionSurfacePreview({ event, runId }: { event: HeartbeatRunEvent; runId: string }) {
   const prp = eventPrp(event);
   const ts = new Date(event.createdAt).toISOString();
-  const entries = parsePaperclipRunnerStdoutLine(
+  const entries = parseWardmoteRunnerStdoutLine(
     JSON.stringify({ type: "paperclip.prp.event", event: prp }),
     ts,
   );

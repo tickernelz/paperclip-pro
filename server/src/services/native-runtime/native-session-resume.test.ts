@@ -52,7 +52,7 @@ import {
   retainedNativeCleanupJournalMatches,
 } from "./native-session-executor.js";
 import * as publicationSignals from "../chat-publication-reconciliation.js";
-import { PaperclipControlPlanePort } from "./paperclip-control-plane-port.js";
+import { WardmoteControlPlanePort } from "./paperclip-control-plane-port.js";
 import {
   LIST_CHAT_ATTACHMENTS_TOOL_DEFINITION,
   REUSE_CHAT_ATTACHMENT_TOOL_DEFINITION,
@@ -610,7 +610,7 @@ const recoveryFakeCodex = resolve(
       });
       expect(normalized.sourceEventId).toBe(`${runnerInstanceId}:${runId}:1`);
       expect(normalized.payload).not.toHaveProperty("processId");
-      const port = new PaperclipControlPlanePort(db, {
+      const port = new WardmoteControlPlanePort(db, {
         companyId,
         issueId,
         agentId,
@@ -1035,7 +1035,7 @@ const recoveryFakeCodex = resolve(
       });
       let continuity: Record<string, unknown> | undefined;
       const controlPlaneInstanceId = randomUUID();
-      const port = new PaperclipControlPlanePort(db, {
+      const port = new WardmoteControlPlanePort(db, {
         companyId,
         issueId,
         runId: currentRunId,

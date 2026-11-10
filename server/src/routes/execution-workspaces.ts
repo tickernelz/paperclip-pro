@@ -21,7 +21,7 @@ import {
   resolveCanonicalWorktreeSeedSource,
   type CanonicalWorktreeSeedSource,
 } from "@tickernelz/wardmote-shared/worktree-seed-source";
-import { resolvePaperclipConfigPath } from "../paths.js";
+import { resolveWardmoteConfigPath } from "../paths.js";
 import { validate } from "../middleware/validate.js";
 import {
   accessService,
@@ -82,7 +82,7 @@ function isReadableFile(filePath: string) {
  * still rejected.
  */
 function resolveFallbackSeedSourceConfigPath(baseWorkspaceCwd: string): string | null {
-  return baseWorkspaceDeclaresInstanceConfig(baseWorkspaceCwd) ? null : resolvePaperclipConfigPath();
+  return baseWorkspaceDeclaresInstanceConfig(baseWorkspaceCwd) ? null : resolveWardmoteConfigPath();
 }
 
 export function executionWorkspaceRoutes(db: Db, opts: { pluginWorkerManager?: PluginWorkerManager } = {}) {

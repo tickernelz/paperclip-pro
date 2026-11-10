@@ -63,7 +63,7 @@ describe("instance settings service", () => {
       enableBuiltInAgents: true,
       enableGoalsSidebarLink: true,
       enableServerInfoDebugView: true,
-      enablePaperclipDeveloperMode: true,
+      enableWardmoteDeveloperMode: true,
       autoRestartDevServerWhenIdle: true,
       enableWorkspaceBranchReconcileForward: true,
       enableWorkspaceDirtyQuarantineRepair: false,
@@ -102,7 +102,7 @@ describe("instance settings service", () => {
       enableFastResponses: false,
       enableGoalsSidebarLink: true,
       enableServerInfoDebugView: true,
-      enablePaperclipDeveloperMode: true,
+      enableWardmoteDeveloperMode: true,
       enableSimplifiedEnglishInteractions: false,
       enableFirstTaskPlanProposal: false,
       enablePixelsOffice: false,
@@ -166,7 +166,7 @@ describe("instance settings service", () => {
       enableSmokeLab: false, enableBuiltInAgents: false, enableBetaSkills: false,
       enableSummaries: true, enableStatusCards: true, enableDecisions: true,
       enableFastResponses: false, enableGoalsSidebarLink: false, enableServerInfoDebugView: false,
-      enablePaperclipDeveloperMode: true, enableSimplifiedEnglishInteractions: false, enableFirstTaskPlanProposal: false,
+      enableWardmoteDeveloperMode: true, enableSimplifiedEnglishInteractions: false, enableFirstTaskPlanProposal: false,
       enablePixelsOffice: true, autoRestartDevServerWhenIdle: false, enableWorkspaceBranchReconcileForward: true,
       enableWorkspaceDirtyQuarantineRepair: true, enableOwnerInstanceAdmin: false, enableSandboxDuplexBridge: false,
       enableRunnerPreviewIngress: false, enableWorktreeRunExecution: false,
@@ -234,12 +234,12 @@ describe("instance settings service", () => {
     ).toBe(false);
   });
 
-  it("defaults enablePaperclipDeveloperMode to false for empty and legacy settings", () => {
-    expect(normalizeExperimentalSettings(undefined).enablePaperclipDeveloperMode).toBe(false);
-    expect(normalizeExperimentalSettings({}).enablePaperclipDeveloperMode).toBe(false);
+  it("defaults enableWardmoteDeveloperMode to false for empty and legacy settings", () => {
+    expect(normalizeExperimentalSettings(undefined).enableWardmoteDeveloperMode).toBe(false);
+    expect(normalizeExperimentalSettings({}).enableWardmoteDeveloperMode).toBe(false);
     expect(
       normalizeExperimentalSettings({ enableServerInfoDebugView: true })
-        .enablePaperclipDeveloperMode,
+        .enableWardmoteDeveloperMode,
     ).toBe(false);
   });
 

@@ -6,11 +6,11 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { and, eq } from "drizzle-orm";
 import { heartbeatRuns, type Db } from "@tickernelz/wardmote-db";
-import type { PaperclipSkillEntry } from "@tickernelz/wardmote-adapter-utils/server-utils";
+import type { WardmoteSkillEntry } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import { isToolConnectionAttentionHealth } from "@tickernelz/wardmote-shared";
 import {
   WARDMOTE_OPERATIONAL_SKILL_KEY,
-  resolvePaperclipDesiredSkillNames,
+  resolveWardmoteDesiredSkillNames,
 } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import {
   NATIVE_RUNTIME_ASSET_SCHEMA,
@@ -22,7 +22,7 @@ import {
   type NativeRuntimeAssetReference,
   type NativeRuntimeContextSnapshot,
 } from "../../vendor/wardmote-runner/index.js";
-import { resolvePaperclipInstanceRoot } from "../../home-paths.js";
+import { resolveWardmoteInstanceRoot } from "../../home-paths.js";
 import { agentInstructionsService, agentInstructionsBundleMode } from "../agent-instructions.js";
 import { agentInstructionRevisionService } from "../agent-instruction-revisions.js";
 import { toolAccessService } from "../tool-access.js";
@@ -99,7 +99,7 @@ export async function materializeAsset(files: AssetFile[]): Promise<NativeRuntim
   const assetDigest = sha256(JSON.stringify(manifestFiles));
   const manifestText = `${JSON.stringify({ schema: "paperclip.runtime-asset-manifest.v1", digest: assetDigest, fileCount: manifestFiles.length, totalBytes, files: manifestFiles })}\n`;
   const manifestDigest = sha256(manifestText);
-  const assetsRoot = path.join(resolvePaperclipInstanceRoot(), "runtime-context-assets");
+  const assetsRoot = path.join(resolveWardmoteInstanceRoot(), "runtime-context-assets");
   const rootPath = path.join(assetsRoot, "bundles", assetDigest);
   const manifestPath = path.join(assetsRoot, "manifests", `${assetDigest}.json`);
   const existing = await fs.readFile(manifestPath, "utf8").catch(() => null);
@@ -172,8 +172,8 @@ async function materializeInstructionBundle(db: Db, agent: RuntimeAgent, agentFi
   return { entryPath, bundle: await materializeAsset(files) };
 }
 
-async function materializeSelectedSkills(runtimeConfig: Record<string, unknown>, entries: PaperclipSkillEntry[], omitLegacy: boolean) {
-  const desiredKeys = resolvePaperclipDesiredSkillNames(runtimeConfig, entries).filter(
+async function materializeSelectedSkills(runtimeConfig: Record<string, unknown>, entries: WardmoteSkillEntry[], omitLegacy: boolean) {
+  const desiredKeys = resolveWardmoteDesiredSkillNames(runtimeConfig, entries).filter(
     (key) => !omitLegacy || key !== WARDMOTE_OPERATIONAL_SKILL_KEY,
   );
   const byKey = new Map(entries.map((entry) => [entry.key, entry]));
@@ -244,7 +244,7 @@ export async function resolveNativeRuntimeMcpSnapshot(input: { db: Db; agent: Pi
   return { assignmentSetId: `sha256:${assignmentDigest}`, digest: assignmentDigest, bindingId: assignment.connections.length ? `native-mcp:${input.runId}` : null };
 }
 
-export async function buildNativeRuntimeContext(input: { db: Db; agent: RuntimeAgent; runId: string; runtimeConfig: Record<string, unknown>; runtimeSkillEntries: PaperclipSkillEntry[]; instructionWorkingCopy?: { rootPath: string; entryPath: string; kind?: "agent_files" } }): Promise<NativeRuntimeContextSnapshot> {
+export async function buildNativeRuntimeContext(input: { db: Db; agent: RuntimeAgent; runId: string; runtimeConfig: Record<string, unknown>; runtimeSkillEntries: WardmoteSkillEntry[]; instructionWorkingCopy?: { rootPath: string; entryPath: string; kind?: "agent_files" } }): Promise<NativeRuntimeContextSnapshot> {
   const [instructions, skills, mcp] = await Promise.all([
     materializeInstructionBundle(input.db, input.agent, input.instructionWorkingCopy?.kind === "agent_files"),
     materializeSelectedSkills(input.runtimeConfig, input.runtimeSkillEntries, input.agent.adapterType === "wardmote_runner"),

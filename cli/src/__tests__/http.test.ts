@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ApiConnectionError, ApiRequestError, PaperclipApiClient } from "../client/http.js";
+import { ApiConnectionError, ApiRequestError, WardmoteApiClient } from "../client/http.js";
 
-describe("PaperclipApiClient", () => {
+describe("WardmoteApiClient", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
@@ -13,7 +13,7 @@ describe("PaperclipApiClient", () => {
     );
     vi.stubGlobal("fetch", fetchMock);
 
-    const client = new PaperclipApiClient({
+    const client = new WardmoteApiClient({
       apiBase: "http://localhost:3100",
       apiKey: "token-123",
       runId: "run-abc",
@@ -37,7 +37,7 @@ describe("PaperclipApiClient", () => {
     );
     vi.stubGlobal("fetch", fetchMock);
 
-    const client = new PaperclipApiClient({ apiBase: "http://localhost:3100" });
+    const client = new WardmoteApiClient({ apiBase: "http://localhost:3100" });
     const result = await client.get("/api/missing", { ignoreNotFound: true });
     expect(result).toBeNull();
   });
@@ -51,7 +51,7 @@ describe("PaperclipApiClient", () => {
     );
     vi.stubGlobal("fetch", fetchMock);
 
-    const client = new PaperclipApiClient({ apiBase: "http://localhost:3100" });
+    const client = new WardmoteApiClient({ apiBase: "http://localhost:3100" });
 
     await expect(client.post("/api/issues/1/checkout", {})).rejects.toMatchObject({
       status: 409,
@@ -64,7 +64,7 @@ describe("PaperclipApiClient", () => {
     const fetchMock = vi.fn().mockRejectedValue(new TypeError("fetch failed"));
     vi.stubGlobal("fetch", fetchMock);
 
-    const client = new PaperclipApiClient({ apiBase: "http://localhost:3100" });
+    const client = new WardmoteApiClient({ apiBase: "http://localhost:3100" });
 
     await expect(client.post("/api/companies/import/preview", {})).rejects.toBeInstanceOf(ApiConnectionError);
     await expect(client.post("/api/companies/import/preview", {})).rejects.toMatchObject({
@@ -91,7 +91,7 @@ describe("PaperclipApiClient", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     const recoverAuth = vi.fn().mockResolvedValue("board-token-123");
-    const client = new PaperclipApiClient({
+    const client = new WardmoteApiClient({
       apiBase: "http://localhost:3100",
       recoverAuth,
     });

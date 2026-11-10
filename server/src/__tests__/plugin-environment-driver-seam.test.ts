@@ -10,10 +10,10 @@ import {
 } from "../../../packages/plugins/sdk/src/protocol.js";
 import { definePlugin } from "../../../packages/plugins/sdk/src/define-plugin.js";
 import { startWorkerRpcHost } from "../../../packages/plugins/sdk/src/worker-rpc-host.js";
-import { pluginManifestV1Schema, type PaperclipPluginManifestV1 } from "@tickernelz/wardmote-shared";
+import { pluginManifestV1Schema, type WardmotePluginManifestV1 } from "@tickernelz/wardmote-shared";
 import { pluginCapabilityValidator } from "../services/plugin-capability-validator.js";
 
-const baseManifest: PaperclipPluginManifestV1 = {
+const baseManifest: WardmotePluginManifestV1 = {
   id: "test.environment-driver",
   apiVersion: 1,
   version: "1.0.0",
@@ -82,7 +82,7 @@ describe("plugin environment driver seam", () => {
     const withoutCapability = {
       ...baseManifest,
       capabilities: ["http.outbound"],
-    } satisfies PaperclipPluginManifestV1;
+    } satisfies WardmotePluginManifestV1;
 
     expect(validator.checkOperation(withoutCapability, "environment.execute")).toMatchObject({
       allowed: false,
@@ -204,7 +204,7 @@ describe("plugin environment driver seam", () => {
   });
 });
 
-const objectReferenceManifest: PaperclipPluginManifestV1 = {
+const objectReferenceManifest: WardmotePluginManifestV1 = {
   id: "test.external-object-provider",
   apiVersion: 1,
   version: "1.0.0",
@@ -262,7 +262,7 @@ describe("plugin external object provider seam", () => {
     const withoutCapability = {
       ...objectReferenceManifest,
       capabilities: ["external.objects.detect"],
-    } satisfies PaperclipPluginManifestV1;
+    } satisfies WardmotePluginManifestV1;
 
     expect(validator.checkOperation(withoutCapability, "external.objects.read")).toMatchObject({
       allowed: false,

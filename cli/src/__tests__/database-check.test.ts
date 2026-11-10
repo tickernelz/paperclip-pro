@@ -3,7 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { databaseCheck } from "../checks/database-check.js";
-import type { PaperclipConfig } from "../config/schema.js";
+import type { WardmoteConfig } from "../config/schema.js";
 
 const created: string[] = [];
 const ORIGINAL_IN_WORKTREE = process.env.WARDMOTE_IN_WORKTREE;
@@ -14,14 +14,14 @@ function makeBase(): string {
   return base;
 }
 
-function embeddedConfig(dataDir: string): PaperclipConfig {
+function embeddedConfig(dataDir: string): WardmoteConfig {
   return {
     database: {
       mode: "embedded-postgres",
       embeddedPostgresDataDir: dataDir,
       embeddedPostgresPort: 54321,
     },
-  } as unknown as PaperclipConfig;
+  } as unknown as WardmoteConfig;
 }
 
 afterEach(() => {

@@ -18,11 +18,11 @@ const RUN_ENV_KEYS = [
 ] as const;
 
 /** Which Paperclip access surface an adapter arms for a run. */
-export type PaperclipAccessMode = "mcp" | "rest";
+export type WardmoteAccessMode = "mcp" | "rest";
 
-export type PaperclipMcpTransportKind = "http" | "stdio";
+export type WardmoteMcpTransportKind = "http" | "stdio";
 
-export interface PaperclipMcpCommand {
+export interface WardmoteMcpCommand {
   command: string;
   args: string[];
   source: "bin" | "dist" | "path";
@@ -46,7 +46,7 @@ export function paperclipMcpToolsets(config: Record<string, unknown>): string {
   return parts.length > 0 ? parts.join(",") : WARDMOTE_MCP_DEFAULT_TOOLSETS;
 }
 
-export function paperclipMcpTransport(config: Record<string, unknown>): PaperclipMcpTransportKind {
+export function paperclipMcpTransport(config: Record<string, unknown>): WardmoteMcpTransportKind {
   return config.paperclipMcpTransport === "stdio" ? "stdio" : "http";
 }
 
@@ -61,7 +61,7 @@ export function paperclipMcpEndpoint(apiUrl: string, toolsets: string): string {
 export function paperclipAccessMode(
   config: Record<string, unknown>,
   env: Record<string, string | undefined>,
-): PaperclipAccessMode {
+): WardmoteAccessMode {
   if (!readToggle(config.paperclipMcp, true)) return "rest";
   if (!(env.WARDMOTE_API_URL ?? "").trim()) return "rest";
   if (!(env.WARDMOTE_API_KEY ?? "").trim()) return "rest";
@@ -79,11 +79,11 @@ export function paperclipMcpHttpHeaders(input: {
 }
 
 /** Locate the stdio MCP server shipped with this install: nearest `.bin` shim, then `dist/stdio.js`, then PATH. */
-export function resolvePaperclipMcpServerCommand(options: {
+export function resolveWardmoteMcpServerCommand(options: {
   searchFrom?: string;
   exists?: (candidate: string) => boolean;
   nodePath?: string;
-} = {}): PaperclipMcpCommand {
+} = {}): WardmoteMcpCommand {
   const exists = options.exists ?? existsSync;
   const nodePath = options.nodePath ?? process.execPath;
   let dir = path.resolve(options.searchFrom ?? import.meta.dirname);
@@ -99,18 +99,18 @@ export function resolvePaperclipMcpServerCommand(options: {
   }
 }
 
-export interface PaperclipMcpServerEntryInput {
+export interface WardmoteMcpServerEntryInput {
   enabled: boolean;
-  transport: PaperclipMcpTransportKind;
-  command: PaperclipMcpCommand;
+  transport: WardmoteMcpTransportKind;
+  command: WardmoteMcpCommand;
   toolsets: string;
   env: Record<string, string>;
   /** `placeholder` emits `${WARDMOTE_API_KEY}` for runtimes that expand env references; `literal` writes the token. */
   credential?: "placeholder" | "literal";
 }
 
-export function buildPaperclipMcpServerEntry(
-  input: PaperclipMcpServerEntryInput,
+export function buildWardmoteMcpServerEntry(
+  input: WardmoteMcpServerEntryInput,
 ): Record<string, unknown> {
   const literal = input.credential === "literal";
   const apiKey = (input.env.WARDMOTE_API_KEY ?? "").trim();
@@ -141,8 +141,8 @@ export function buildPaperclipMcpServerEntry(
   };
 }
 
-export function renderPaperclipMcpConfig(input: PaperclipMcpServerEntryInput): string {
-  const servers = { [WARDMOTE_MCP_SERVER_NAME]: buildPaperclipMcpServerEntry(input) };
+export function renderWardmoteMcpConfig(input: WardmoteMcpServerEntryInput): string {
+  const servers = { [WARDMOTE_MCP_SERVER_NAME]: buildWardmoteMcpServerEntry(input) };
   return `${JSON.stringify({ mcpServers: servers }, null, 2)}\n`;
 }
 
@@ -180,7 +180,7 @@ export function paperclipRestGuidance(options: { shellHint?: string } = {}): str
 }
 
 export function paperclipAccessGuidance(
-  access: PaperclipAccessMode,
+  access: WardmoteAccessMode,
   options: { toolsets?: string; toolCount?: number | null; shellHint?: string } = {},
 ): string {
   return access === "mcp"

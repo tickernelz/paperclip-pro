@@ -5,7 +5,7 @@ import { Transform } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import type { Request, Response } from "express";
 import multer from "multer";
-import { resolvePaperclipInstanceRoot } from "./home-paths.js";
+import { resolveWardmoteInstanceRoot } from "./home-paths.js";
 import { badRequest, payloadTooLarge } from "./errors.js";
 import { formatAttachmentSize, getMaxAttachmentBytes } from "./attachment-types.js";
 
@@ -21,7 +21,7 @@ export interface StagedUploadFile {
 
 /** Temp directory for in-flight uploads; lives under the instance data dir so large files never land on a small /tmp. */
 export function resolveAttachmentUploadTempDir(): string {
-  return path.resolve(resolvePaperclipInstanceRoot(), "data", "tmp", "uploads");
+  return path.resolve(resolveWardmoteInstanceRoot(), "data", "tmp", "uploads");
 }
 
 function createStagingStorage(tempDir: string): multer.StorageEngine {

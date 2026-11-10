@@ -5,11 +5,11 @@ import path from "node:path";
 import { eq } from "drizzle-orm";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { agents, heartbeatRuns, issueAttachments, issueComments, issues, issueWorkProducts } from "@tickernelz/wardmote-db";
-import { startAdapterExecutionTargetPaperclipBridge, type AdapterSandboxExecutionTarget } from "@tickernelz/wardmote-adapter-utils/execution-target";
+import { startAdapterExecutionTargetWardmoteBridge, type AdapterSandboxExecutionTarget } from "@tickernelz/wardmote-adapter-utils/execution-target";
 import type { CommandManagedRuntimeRunner } from "@tickernelz/wardmote-adapter-utils/command-managed-runtime";
 import { runChildProcess } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import { createLocalAgentJwt } from "../agent-auth-jwt.js";
-import { PaperclipRunnerToolAuthority } from "../services/native-runtime/paperclip-runner-tool-authority.js";
+import { WardmoteRunnerToolAuthority } from "../services/native-runtime/paperclip-runner-tool-authority.js";
 import { readVerifiedRemoteWorkspaceFile } from "../services/native-runtime/remote-deliverable-file.js";
 import { startFileDeliveryDaytona } from "./helpers/file-delivery-daytona.js";
 import { startRunnerApiTestServer } from "./helpers/runner-api-server.js";
@@ -93,7 +93,7 @@ describe(`durable file delivery (${liveDaytona ? "Daytona" : "local processes"})
         duplexCommandStream: true, runnerWebSocketIngress: false,
       },
     };
-    const bridge = await startAdapterExecutionTargetPaperclipBridge({
+    const bridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: fixture.runId, target, runtimeRootDir: path.join(remote.workspace, ".runtime"),
       adapterKey: "codex", hostApiToken: token, hostApiUrl: server.apiUrl,
       enableSandboxDuplexBridge: duplex,
@@ -141,7 +141,7 @@ describe(`durable file delivery (${liveDaytona ? "Daytona" : "local processes"})
   it("registers native files with API tools disabled and returns durable download receipts", async () => {
     const fixture = await server.fixture({ apiToolsEnabled: false });
     const remote = await execution(fixture.workspace);
-    const authority = new PaperclipRunnerToolAuthority(server.db, { ...fixture,
+    const authority = new WardmoteRunnerToolAuthority(server.db, { ...fixture,
       workspaceRoot: remote.workspace, executionTargetKind: liveDaytona ? "remote" : "local",
       readRemoteWorkspaceFile: liveDaytona ? request => readVerifiedRemoteWorkspaceFile({ ...request, runner: remote.runner, workspaceRoot: remote.workspace }) : undefined,
     });

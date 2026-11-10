@@ -1,6 +1,6 @@
-import type { PaperclipMcpConfig } from "./config.js";
+import type { WardmoteMcpConfig } from "./config.js";
 
-export class PaperclipApiError extends Error {
+export class WardmoteApiError extends Error {
   readonly status: number;
   readonly method: string;
   readonly path: string;
@@ -14,7 +14,7 @@ export class PaperclipApiError extends Error {
     message: string;
   }) {
     super(input.message);
-    this.name = "PaperclipApiError";
+    this.name = "WardmoteApiError";
     this.status = input.status;
     this.method = input.method;
     this.path = input.path;
@@ -48,8 +48,8 @@ async function parseResponseBody(response: Response): Promise<unknown> {
   }
 }
 
-export class PaperclipApiClient {
-  constructor(private readonly config: PaperclipMcpConfig) {}
+export class WardmoteApiClient {
+  constructor(private readonly config: WardmoteMcpConfig) {}
 
   get defaults() {
     return {
@@ -100,7 +100,7 @@ export class PaperclipApiClient {
     const parsedBody = await parseResponseBody(response);
 
     if (!response.ok) {
-      throw new PaperclipApiError({
+      throw new WardmoteApiError({
         status: response.status,
         method: method.toUpperCase(),
         path,

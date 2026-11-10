@@ -6,9 +6,9 @@ import type {
 } from "@tickernelz/wardmote-adapter-utils";
 import {
   buildRuntimeMountedSkillSnapshot,
-  readPaperclipRuntimeSkillEntries,
-  resolveLegacyPaperclipDesiredSkillNames,
-  resolvePaperclipDesiredSkillNames,
+  readWardmoteRuntimeSkillEntries,
+  resolveLegacyWardmoteDesiredSkillNames,
+  resolveWardmoteDesiredSkillNames,
 } from "@tickernelz/wardmote-adapter-utils/server-utils";
 
 const __moduleDir = path.dirname(fileURLToPath(import.meta.url));
@@ -17,10 +17,10 @@ async function buildCodexSkillSnapshot(
   config: Record<string, unknown>,
   adapterType: string,
 ): Promise<AdapterSkillSnapshot> {
-  const availableEntries = await readPaperclipRuntimeSkillEntries(config, __moduleDir);
+  const availableEntries = await readWardmoteRuntimeSkillEntries(config, __moduleDir);
   const desiredSkills = adapterType === "wardmote_runner"
-    ? resolvePaperclipDesiredSkillNames(config, availableEntries)
-    : resolveLegacyPaperclipDesiredSkillNames(config, availableEntries);
+    ? resolveWardmoteDesiredSkillNames(config, availableEntries)
+    : resolveLegacyWardmoteDesiredSkillNames(config, availableEntries);
   return buildRuntimeMountedSkillSnapshot({
     adapterType,
     availableEntries,
@@ -44,5 +44,5 @@ export function resolveCodexDesiredSkillNames(
   config: Record<string, unknown>,
   availableEntries: Array<{ key: string; required?: boolean }>,
 ) {
-  return resolveLegacyPaperclipDesiredSkillNames(config, availableEntries);
+  return resolveLegacyWardmoteDesiredSkillNames(config, availableEntries);
 }

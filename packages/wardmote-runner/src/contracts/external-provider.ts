@@ -1,4 +1,4 @@
-import { digestPaperclipSemanticContent } from "../semantic-tools/receipts.js";
+import { digestWardmoteSemanticContent } from "../semantic-tools/receipts.js";
 
 export const DOT_BRIDGE_REVISION = "dot-mcp-v1" as const;
 export interface DotBindingSnapshot {
@@ -34,5 +34,5 @@ export interface ExternalProviderPort {
   attach(send: (operation: ExternalProviderOperation) => Promise<void>, revoke?: () => Promise<void>, hasProviderCheckpoint?: boolean): Promise<() => Promise<void>>;
 }
 export function externalOperationDigest(action: ExternalProviderOperation["action"], input: Record<string, unknown>): string {
-  return digestPaperclipSemanticContent({ action, input });
+  return digestWardmoteSemanticContent({ action, input });
 }

@@ -31,7 +31,7 @@ The dependency direction is one way:
 
 ```text
 server heartbeat orchestration
-  -> PaperclipNativeRuntimeAdapter (core seam)
+  -> WardmoteNativeRuntimeAdapter (core seam)
       -> @tickernelz/wardmote-runner public contracts
           -> NativeSessionBackend -> package-owned driver/runner logic
           -> ControlPlanePort      -> server-bound Paperclip implementation
@@ -500,7 +500,7 @@ The package exports one table-driven `ControlPlanePort` conformance suite. It
 runs unchanged against:
 
 1. `MockControlPlaneAdapter`, with deterministic in-memory storage; and
-2. `PaperclipControlPlanePort`, with a real test database, heartbeat run, issue,
+2. `WardmoteControlPlanePort`, with a real test database, heartbeat run, issue,
    agent, and company binding.
 
 Both adapters produce a normalized snapshot containing canonical PRP events,
@@ -578,7 +578,7 @@ Required shared cases:
 4. Replace every heartbeat event writer with the shared per-run transactional
    allocator, backfill `next_event_seq`, add unique `(run_id, seq)`, and prove
    concurrent lifecycle/cancel/native/log appends.
-5. Implement the server-bound `PaperclipControlPlanePort` with constructor
+5. Implement the server-bound `WardmoteControlPlanePort` with constructor
    binding, canonical-byte deduplication, commit-before-ACK replay, and terminal
    result idempotency.
 6. Add the default-off instance flag, parse the per-agent profile, materialize
@@ -873,7 +873,7 @@ Accepted native attention now enters through the runtime finalization call
 graph, not through a corpus-owned call to `routeNativeAttention`:
 
 ```text
-PaperclipControlPlanePort.completeRun
+WardmoteControlPlanePort.completeRun
   -> native_run_results (accepted immutable package result)
   -> finalizeNativeRun
   -> routePersistedNativeResultAttention
@@ -891,7 +891,7 @@ into an immutable decision, recovery action, failed native finalization, and
 activity receipt. The corpus mutates the accepted result row and calls
 `finalizeNativeRun`, which owns the persisted-result ingress. The database
 integration test starts one layer earlier at
-`PaperclipControlPlanePort.completeRun` and then calls the same production
+`WardmoteControlPlanePort.completeRun` and then calls the same production
 finalizer. `routePersistedNativeResultAttention` and `routeNativeAttention`
 remain internal helpers and are no longer accepted as the operational proof.
 

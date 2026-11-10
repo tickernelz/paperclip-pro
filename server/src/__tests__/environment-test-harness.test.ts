@@ -9,9 +9,9 @@ import {
   assertExecutionLifecycle,
   assertEnvironmentError,
 } from "@tickernelz/wardmote-plugin-sdk/testing";
-import type { PaperclipPluginManifestV1 } from "@tickernelz/wardmote-shared";
+import type { WardmotePluginManifestV1 } from "@tickernelz/wardmote-shared";
 
-const FAKE_MANIFEST: PaperclipPluginManifestV1 = {
+const FAKE_MANIFEST: WardmotePluginManifestV1 = {
   id: "test-env-plugin",
   apiVersion: 1,
   version: "0.1.0",

@@ -313,7 +313,7 @@ Suggested `package.json` keys:
 Normative manifest shape:
 
 ```ts
-export interface PaperclipPluginManifestV1 {
+export interface WardmotePluginManifestV1 {
   id: string;
   apiVersion: 1;
   version: string;
@@ -323,7 +323,7 @@ export interface PaperclipPluginManifestV1 {
   categories: Array<"connector" | "workspace" | "automation" | "ui">;
   minimumHostVersion?: string;
   /** @deprecated Use `minimumHostVersion` instead. Retained for backwards compatibility. */
-  minimumPaperclipVersion?: string;
+  minimumWardmoteVersion?: string;
   capabilities: string[];
   entrypoints: {
     worker: string;
@@ -385,7 +385,7 @@ Rules:
 - `id` must be globally unique
 - `id` should normally equal the npm package name
 - `apiVersion` must match the host-supported plugin API version
-- `minimumHostVersion` is preferred, with `minimumPaperclipVersion` retained for
+- `minimumHostVersion` is preferred, with `minimumWardmoteVersion` retained for
   backwards compatibility
 - `capabilities` must be static and install-time visible
 - config schema must be JSON Schema compatible
@@ -732,13 +732,13 @@ Scoped API routes:
 
 ```ts
 /** Top-level helper for defining a plugin with type checking */
-export function definePlugin(definition: PluginDefinition): PaperclipPlugin;
+export function definePlugin(definition: PluginDefinition): WardmotePlugin;
 
 /** Re-exported from Zod for config schema definitions */
 export { z } from "zod";
 
 export interface PluginContext {
-  manifest: PaperclipPluginManifestV1;
+  manifest: WardmotePluginManifestV1;
   config: {
     get(companyId: string): Promise<Record<string, unknown>>;
   };

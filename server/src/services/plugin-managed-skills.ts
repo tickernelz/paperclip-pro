@@ -6,7 +6,7 @@ import {
 import { normalizeAgentUrlKey } from "@tickernelz/wardmote-shared";
 import type {
   CompanySkill,
-  PaperclipPluginManifestV1,
+  WardmotePluginManifestV1,
   PluginManagedSkillDeclaration,
   PluginManagedSkillResolution,
 } from "@tickernelz/wardmote-shared";
@@ -19,7 +19,7 @@ const MANAGED_SKILL_RESOURCE_KIND = "skill";
 interface PluginManagedSkillServiceOptions {
   pluginId: string;
   pluginKey: string;
-  manifest?: PaperclipPluginManifestV1 | null;
+  manifest?: WardmotePluginManifestV1 | null;
 }
 
 function pluginKeySlug(pluginKey: string) {

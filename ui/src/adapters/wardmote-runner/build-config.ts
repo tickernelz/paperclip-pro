@@ -1,12 +1,12 @@
 import {
   buildAdapterEnvConfig,
-  isPaperclipRunnerProvider,
+  isWardmoteRunnerProvider,
   normalizeLegacyRunnerProvider,
-  resolvePaperclipRunnerModel,
-  resolvePaperclipRunnerIdleTimeoutMs,
-  resolvePaperclipRunnerPermissionMode,
-  resolvePaperclipRunnerCursorMode,
-  resolvePaperclipRunnerPiThinkingLevel,
+  resolveWardmoteRunnerModel,
+  resolveWardmoteRunnerIdleTimeoutMs,
+  resolveWardmoteRunnerPermissionMode,
+  resolveWardmoteRunnerCursorMode,
+  resolveWardmoteRunnerPiThinkingLevel,
   WARDMOTE_RUNNER_ACPX_PROFILES,
   type CreateConfigValues,
 } from "@tickernelz/wardmote-adapter-utils";
@@ -73,7 +73,7 @@ export function buildCodexLocalConfig(v: CreateConfigValues): Record<string, unk
 }
 
 /** Build a provider profile accepted by the experimental Rust runner. */
-export function buildPaperclipRunnerConfig(v: CreateConfigValues): Record<string, unknown> {
+export function buildWardmoteRunnerConfig(v: CreateConfigValues): Record<string, unknown> {
   const config = buildCodexLocalConfig(v);
   const schemaValues = normalizeLegacyRunnerProvider({ ...(v.adapterSchemaValues ?? {}) });
   for (const unsupportedKey of [
@@ -95,7 +95,7 @@ export function buildPaperclipRunnerConfig(v: CreateConfigValues): Record<string
     delete schemaValues[unsupportedKey];
   }
   const providerCandidate = schemaValues.provider;
-  const provider = isPaperclipRunnerProvider(providerCandidate)
+  const provider = isWardmoteRunnerProvider(providerCandidate)
     ? providerCandidate
     : "codex";
   if (provider === "openai_dot") {
@@ -107,8 +107,8 @@ export function buildPaperclipRunnerConfig(v: CreateConfigValues): Record<string
     throw new Error(`${selectedAcpxProfile.label} is not enabled for production`);
   }
   const acpxAgent = selectedAcpxProfile?.value ?? "claude";
-  const cursorMode = resolvePaperclipRunnerCursorMode(provider, acpxAgent, schemaValues.acpxSessionMode);
-  const piThinkingLevel = resolvePaperclipRunnerPiThinkingLevel(provider, acpxAgent, schemaValues.piThinkingLevel);
+  const cursorMode = resolveWardmoteRunnerCursorMode(provider, acpxAgent, schemaValues.acpxSessionMode);
+  const piThinkingLevel = resolveWardmoteRunnerPiThinkingLevel(provider, acpxAgent, schemaValues.piThinkingLevel);
 
   const schemaModel = typeof schemaValues.model === "string"
     ? schemaValues.model.trim()
@@ -172,7 +172,7 @@ export function buildPaperclipRunnerConfig(v: CreateConfigValues): Record<string
   const lifecycleMode = lifecycleCandidate === "warm" ? "warm" : "per_turn";
   const configuredIdleTimeoutMs =
     v.paperclipRunnerIdleTimeoutMs ?? schemaValues.idleTimeoutMs;
-  const idleTimeoutMs = resolvePaperclipRunnerIdleTimeoutMs(
+  const idleTimeoutMs = resolveWardmoteRunnerIdleTimeoutMs(
     configuredIdleTimeoutMs,
   );
   const configuredCodexPermissionMode =
@@ -232,14 +232,14 @@ export function buildPaperclipRunnerConfig(v: CreateConfigValues): Record<string
     ...schemaValues,
     provider,
     ...(provider === "codex"
-      ? { model: resolvePaperclipRunnerModel("codex", config.model) }
+      ? { model: resolveWardmoteRunnerModel("codex", config.model) }
       : {}),
     codexPermissionMode: "never",
-    opencodePermissionMode: resolvePaperclipRunnerPermissionMode(
+    opencodePermissionMode: resolveWardmoteRunnerPermissionMode(
       "opencode",
       v.adapterSchemaValues?.opencodePermissionMode,
     ),
-    acpxPermissionMode: resolvePaperclipRunnerPermissionMode(
+    acpxPermissionMode: resolveWardmoteRunnerPermissionMode(
       "acpx",
       v.adapterSchemaValues?.acpxPermissionMode,
     ),
@@ -255,7 +255,7 @@ export function buildPaperclipRunnerConfig(v: CreateConfigValues): Record<string
           acpxAgent,
           ...(cursorMode === undefined ? {} : { acpxSessionMode: cursorMode }),
           ...(piThinkingLevel === undefined ? {} : { piThinkingLevel }),
-          model: configuredModel || schemaModel || (acpxAgent === "grok" ? "grok-4.7" : resolvePaperclipRunnerModel("acpx", undefined)),
+          model: configuredModel || schemaModel || (acpxAgent === "grok" ? "grok-4.7" : resolveWardmoteRunnerModel("acpx", undefined)),
         }
       : {}),
     ...(provider === "claude_managed"

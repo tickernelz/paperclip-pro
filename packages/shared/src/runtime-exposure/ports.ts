@@ -68,7 +68,7 @@ export function deriveViteHmrPort(appPort: number): number {
         `[${RUNTIME_EXPOSURE_APP_PORT_MIN}, ${RUNTIME_EXPOSURE_APP_PORT_MAX}]`,
     );
   }
-  return derivePaperclipViteHmrPort(appPort);
+  return deriveWardmoteViteHmrPort(appPort);
 }
 
 /**
@@ -79,7 +79,7 @@ export function deriveViteHmrPort(appPort: number): number {
  * Keeping the generic derivation here prevents the app server and exposure
  * allocator from drifting while preserving the historical overflow fallback.
  */
-export function derivePaperclipViteHmrPort(serverPort: number): number {
+export function deriveWardmoteViteHmrPort(serverPort: number): number {
   if (!Number.isInteger(serverPort) || serverPort < 1 || serverPort > 65_535) {
     throw new RangeError(`server port ${serverPort} is not a valid TCP port`);
   }

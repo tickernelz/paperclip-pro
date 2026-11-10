@@ -1,6 +1,6 @@
 import { getStoredBoardCredential } from "../client/board-auth.js";
 import { readConfig, resolveConfigPath } from "../config/store.js";
-import { readRuntimeInfo, type PaperclipRuntimeInfo } from "../runtime-info.js";
+import { readRuntimeInfo, type WardmoteRuntimeInfo } from "../runtime-info.js";
 import { buildLocalAppUrl } from "../utils/health-url.js";
 
 export interface LiveRunSummary {
@@ -52,7 +52,7 @@ export interface InstanceEndpoint {
 }
 
 export interface InstanceEndpointDeps {
-  readRuntime?: (instanceId: string) => PaperclipRuntimeInfo | null;
+  readRuntime?: (instanceId: string) => WardmoteRuntimeInfo | null;
   isProcessAlive?: (pid: number) => boolean;
 }
 

@@ -50,7 +50,7 @@ import fs from "node:fs";
 import { fileURLToPath } from "node:url";
 import type { Db } from "@tickernelz/wardmote-db";
 import {
-  derivePaperclipViteHmrPort,
+  deriveWardmoteViteHmrPort,
   type DeploymentExposure,
   type DeploymentMode,
 } from "@tickernelz/wardmote-shared";
@@ -261,7 +261,7 @@ export function isDatabaseConnectionUnavailableError(err: unknown): boolean {
 }
 
 export function resolveViteHmrPort(serverPort: number): number {
-  return derivePaperclipViteHmrPort(serverPort);
+  return deriveWardmoteViteHmrPort(serverPort);
 }
 
 export function resolveViteHmrHost(bindHost: string): string | undefined {

@@ -11,7 +11,7 @@ import { activityLog, agentApiKeys, agentCommentary, agents, authUsers, companyM
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createLocalAgentJwt } from "../agent-auth-jwt.js";
 import { submitAgentCommentary } from "../services/agent-commentary.js";
-import { PaperclipRunnerToolAuthority } from "../services/native-runtime/paperclip-runner-tool-authority.js";
+import { WardmoteRunnerToolAuthority } from "../services/native-runtime/paperclip-runner-tool-authority.js";
 import { isSecretSensitiveHttpRequest } from "../middleware/http-log-policy.js";
 import { startRunnerApiTestServer } from "./helpers/runner-api-server.js";
 import { ensureNativeCompletionContract } from "../services/native-runtime/completion-contracts.js";
@@ -64,7 +64,7 @@ describe("internal agent commentary through both transports", () => {
 
   it.each(["standard", "ask", "planning"] as const)("exposes native feedback in %s and persists only feedback plus a content-free audit", async (mode) => {
     const f = await server.fixture({ mode });
-    const authority = new PaperclipRunnerToolAuthority(server.db, { ...f, workMode: mode });
+    const authority = new WardmoteRunnerToolAuthority(server.db, { ...f, workMode: mode });
     expect(authority.definitions().map(t => t.name)).toEqual(expect.arrayContaining(["submit_complaint", "submit_suggestion"]));
     const before = await f.snapshot();
     for (const tool of ["submit_complaint", "submit_suggestion"]) {
@@ -173,7 +173,7 @@ describe("internal agent commentary through both transports", () => {
     await server.db.insert(heartbeatRuns).values({ id: replacementId, companyId: native.companyId, agentId: native.agentId, status: "running", invocationSource: "on_demand" });
     await server.db.update(issues).set({ executionRunId: replacementId }).where(eq(issues.id, native.issueId));
     await expect(native.authority.execute({ tool: "submit_suggestion", callId: "stale", arguments: input })).rejects.toThrow();
-    const reviewer = new PaperclipRunnerToolAuthority(server.db, { ...native, nativeReview: { nativeReviewInteractionId: randomUUID(), nativeReviewDecisionId: randomUUID() } });
+    const reviewer = new WardmoteRunnerToolAuthority(server.db, { ...native, nativeReview: { nativeReviewInteractionId: randomUUID(), nativeReviewDecisionId: randomUUID() } });
     expect(reviewer.definitions().map(t => t.name)).not.toContain("submit_complaint");
     expect(reviewer.definitions().map(t => t.name)).not.toContain("submit_suggestion");
     await expect(reviewer.execute({ tool: "submit_complaint", callId: "review", arguments: input })).rejects.toThrow();

@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 import { paperclipToolCatalog } from "./catalog.js";
-import { PaperclipApiClient } from "./client.js";
+import { WardmoteApiClient } from "./client.js";
 import { parseToolsets, resolveToolsets, FULL_TOOLSET, OPENWA_TOOLSET, TOOLSET_NAMES } from "./config.js";
 import type { ToolsetName } from "./tool-overrides.js";
 
 function makeClient() {
-  return new PaperclipApiClient({
+  return new WardmoteApiClient({
     apiUrl: "http://localhost:3100/api",
     apiKey: "token-123",
     companyId: "11111111-1111-1111-1111-111111111111",

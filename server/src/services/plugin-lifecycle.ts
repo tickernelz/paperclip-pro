@@ -40,7 +40,7 @@ import type { Db } from "@tickernelz/wardmote-db";
 import type {
   PluginStatus,
   PluginRecord,
-  PaperclipPluginManifestV1,
+  WardmotePluginManifestV1,
 } from "@tickernelz/wardmote-shared";
 import { pluginRegistryService } from "./plugin-registry.js";
 import { pluginLoader, type PluginLoader } from "./plugin-loader.js";

@@ -1,5 +1,5 @@
 import { agentAppearanceSchema, randomAgentAppearance } from "@tickernelz/wardmote-shared";
-import { normalizePaperclipRunnerAdapterConfig } from "@tickernelz/wardmote-adapter-utils/server-utils";
+import { normalizeWardmoteRunnerAdapterConfig } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import { agents, toolConnectionInstalls, principalPermissionGrants, type Db } from "@tickernelz/wardmote-db";
 import { eq } from "drizzle-orm";
 import { unprocessable } from "../errors.js";
@@ -34,7 +34,7 @@ export async function prepareAgentHire(db: Db, companyId: string, data: CreateAg
   const rawAdapterConfig = isPlainRecord(data.adapterConfig)
     ? await secretService(db).normalizeAdapterConfigForPersistence(companyId, data.adapterConfig, { adapterType })
     : {};
-  const adapterConfig = normalizePaperclipRunnerAdapterConfig(adapterType, rawAdapterConfig);
+  const adapterConfig = normalizeWardmoteRunnerAdapterConfig(adapterType, rawAdapterConfig);
   await agentCredentialService(db).enforceClaudeOAuthBindingClaim(db, {
     companyId, consume: true, environmentId: data.defaultEnvironmentId ?? null,
     childAdapterConfig: adapterConfig, claudeLogin: options?.claudeLogin,
@@ -88,7 +88,7 @@ export async function prepareAgentHireApproval(txDb: Db, existing: AgentHireReco
     const normalizedAdapterConfig = await secretService(txDb).normalizeAdapterConfigForPersistence(
       existing.companyId, patch.adapterConfig, { adapterType: (patch.adapterType ?? existing.adapterType) as string },
     );
-    patch.adapterConfig = normalizePaperclipRunnerAdapterConfig(
+    patch.adapterConfig = normalizeWardmoteRunnerAdapterConfig(
       (patch.adapterType ?? existing.adapterType) as string,
       normalizedAdapterConfig,
     );
@@ -96,7 +96,7 @@ export async function prepareAgentHireApproval(txDb: Db, existing: AgentHireReco
     Object.prototype.hasOwnProperty.call(patch, "adapterType")
     && isPlainRecord(existing.adapterConfig)
   ) {
-    patch.adapterConfig = normalizePaperclipRunnerAdapterConfig(
+    patch.adapterConfig = normalizeWardmoteRunnerAdapterConfig(
       patch.adapterType as string,
       existing.adapterConfig,
     );

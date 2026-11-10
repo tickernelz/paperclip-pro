@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import type { APIRequestContext } from "@playwright/test";
 import { reserveRunnerE2EServerPort } from "./ports.js";
-import { resolvePaperclipRunnerBinaryForHarness } from "./harness-env.js";
+import { resolveWardmoteRunnerBinaryForHarness } from "./harness-env.js";
 import { runnerE2ETypeScriptProcessArgs } from "./web-server-command.js";
 import { ConnectionBlock, ConnectionFailure, targetOrigin, type ConnectionConfig } from "./connection-config.js";
 import type { MatrixExecution } from "./types.js";
@@ -65,7 +65,7 @@ export async function startConnectionTarget(config: ConnectionConfig, executions
     Object.assign(env, {
       WARDMOTE_HOME: home, WARDMOTE_INSTANCE_ID: instance, WARDMOTE_CONFIG: path.join(home, "instances", instance, "config.json"),
       WARDMOTE_RUNNER_E2E_TEMP_ROOT: root, WARDMOTE_RUNNER_E2E_PORT: String(port), WARDMOTE_RUNNER_E2E_SERVER_LOG: path.join(root, "server.log"),
-      WARDMOTE_RUNNER_BINARY: resolvePaperclipRunnerBinaryForHarness(executions, repositoryRoot),
+      WARDMOTE_RUNNER_BINARY: resolveWardmoteRunnerBinaryForHarness(executions, repositoryRoot),
       WARDMOTE_VITE_CACHE_DIR: path.join(root, "vite-cache"), WARDMOTE_ANNOUNCEMENTS_ENABLED: "false",
       WARDMOTE_AGENT_JWT_SECRET: randomBytes(48).toString("hex"), WARDMOTE_DECISION_SIGNING_SECRET: randomBytes(48).toString("hex"),
       WARDMOTE_TOOL_ACTION_SIGNING_SECRET: randomBytes(48).toString("hex"), BETTER_AUTH_SECRET: randomBytes(48).toString("hex"),

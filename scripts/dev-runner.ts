@@ -558,7 +558,7 @@ async function getNativeRunnerRequired(): Promise<boolean> {
   return requirement.nativeRunnerRequired;
 }
 
-async function buildPaperclipRunner() {
+async function buildWardmoteRunner() {
   console.log("[paperclip] building paperclip runner...");
   const typescriptResult = await runPnpm(
     ["--filter", "@tickernelz/wardmote-runner", "build:typescript"],
@@ -707,7 +707,7 @@ async function stopChildForRestart() {
 }
 
 async function startServerChild() {
-  await buildPaperclipRunner();
+  await buildWardmoteRunner();
   await buildPluginSdk();
 
   const serverScript = mode === "watch" ? "dev:watch" : "dev";

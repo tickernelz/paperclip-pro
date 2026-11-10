@@ -7,7 +7,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vites
 import { activityLog, agents, authUsers, companies, companyMemberships, principalPermissionGrants, heartbeatRuns, issues, agentInstructionRevisions, createDb } from "@tickernelz/wardmote-db";
 import { startEmbeddedPostgresTestDatabase } from "../../__tests__/helpers/embedded-postgres.js";
 import { resolveManagedInstructionsRoot } from "../agent-instructions.js";
-import { PaperclipRunnerToolAuthority } from "./paperclip-runner-tool-authority.js";
+import { WardmoteRunnerToolAuthority } from "./paperclip-runner-tool-authority.js";
 
 describe("canonical instruction tools through native authority", () => {
   let database: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;
@@ -15,7 +15,7 @@ describe("canonical instruction tools through native authority", () => {
   let home: string;
   const previousHome = process.env.WARDMOTE_HOME;
   let companyId: string, agentId: string, targetAgentId: string, userId: string, runId: string, issueId: string, root: string;
-  let authority: PaperclipRunnerToolAuthority;
+  let authority: WardmoteRunnerToolAuthority;
   const entryFile = "policy/ENTRY.md";
   const original = "\uFEFF# Original\r\n\0☃\n";
   beforeAll(async () => {
@@ -49,7 +49,7 @@ describe("canonical instruction tools through native authority", () => {
     await db.insert(issues).values({ id: issueId, companyId, title: "Maintain instructions", status: "in_progress", workMode: "standard", assigneeAgentId: agentId });
     await db.insert(heartbeatRuns).values({ id: runId, companyId, agentId, status: "running", runtimeMode: "native", nativeIssueId: issueId, invocationSource: "on_demand", responsibleUserId: userId });
     await db.update(issues).set({ executionRunId: runId }).where(eq(issues.id, issueId));
-    authority = new PaperclipRunnerToolAuthority(db, { companyId, agentId, issueId, runId });
+    authority = new WardmoteRunnerToolAuthority(db, { companyId, agentId, issueId, runId });
     await fs.mkdir(path.dirname(path.join(root, entryFile)), { recursive: true });
     await fs.writeFile(path.join(root, entryFile), original);
   });
@@ -86,12 +86,12 @@ describe("canonical instruction tools through native authority", () => {
     try {
       const pending = authority.execute(request);
       await atCommit;
-      const duplicate = new PaperclipRunnerToolAuthority(db, { companyId, agentId, issueId, runId }).execute(request);
+      const duplicate = new WardmoteRunnerToolAuthority(db, { companyId, agentId, issueId, runId }).execute(request);
       expect(await fs.readFile(path.join(root, entryFile), "utf8")).toBe(original);
       release();
       const receipt = await pending as any;
       expect(await duplicate).toEqual(receipt);
-      authority = new PaperclipRunnerToolAuthority(db, { companyId, agentId, issueId, runId });
+      authority = new WardmoteRunnerToolAuthority(db, { companyId, agentId, issueId, runId });
       expect(await authority.execute(request)).toEqual(receipt);
       const bytes = await fs.readFile(path.join(root, entryFile));
       expect(bytes).toEqual(Buffer.from(content));
@@ -150,7 +150,7 @@ describe("canonical instruction tools through native authority", () => {
       const audit = await db.select().from(activityLog).where(eq(activityLog.runId, runId));
       expect(audit.filter((event) => event.action === "agent.instruction_write_attempted")).toHaveLength(1);
       expect(audit.filter((event) => event.action === "agent.files_updated")).toHaveLength(0);
-      authority = new PaperclipRunnerToolAuthority(db, { companyId, agentId, issueId, runId });
+      authority = new WardmoteRunnerToolAuthority(db, { companyId, agentId, issueId, runId });
       await expect(authority.execute(request)).rejects.toMatchObject({ code: "semantic_tool_outcome_unknown" });
       await expect(authority.execute({ ...request, arguments: { ...request.arguments, content: "different" } }))
         .rejects.toThrow("idempotency_conflict");
@@ -183,7 +183,7 @@ describe("canonical instruction tools through native authority", () => {
       const [run] = await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, runId));
       const receipt = (run!.resultJson as any).semanticToolReceipts[`instruction:${request.callId}`].result;
       expect(receipt).toMatchObject({ changed: true, content: request.arguments.content });
-      authority = new PaperclipRunnerToolAuthority(db, { companyId, agentId, issueId, runId });
+      authority = new WardmoteRunnerToolAuthority(db, { companyId, agentId, issueId, runId });
       expect(await authority.execute(request)).toEqual(receipt);
       const audit = await db.select().from(activityLog).where(eq(activityLog.runId, runId));
       expect(audit.filter((event) => event.action === "agent.instruction_write_attempted")).toHaveLength(1);
@@ -213,7 +213,7 @@ describe("canonical instruction tools through native authority", () => {
       expect(saved).toMatchObject({ status: failure.status, message: failure.message });
       // The stale request would now pass CAS if it were executed again.
       await fs.writeFile(path.join(root, entryFile), original);
-      authority = new PaperclipRunnerToolAuthority(db, { companyId, agentId, issueId, runId });
+      authority = new WardmoteRunnerToolAuthority(db, { companyId, agentId, issueId, runId });
       await expect(authority.execute(request)).rejects.toMatchObject(saved);
       await expect(authority.execute(request)).rejects.toMatchObject(saved);
       await expect(authority.execute({ ...request, arguments: { ...request.arguments, content: "different" } }))
@@ -241,7 +241,7 @@ describe("canonical instruction tools through native authority", () => {
       await expect(authority.execute(request)).rejects.toMatchObject({ code: "semantic_tool_outcome_unknown" });
       const [run] = await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, runId));
       expect((run!.resultJson as any).instructionToolAttempts[`instruction:${request.callId}`].failure).toBeUndefined();
-      authority = new PaperclipRunnerToolAuthority(db, { companyId, agentId, issueId, runId });
+      authority = new WardmoteRunnerToolAuthority(db, { companyId, agentId, issueId, runId });
       await expect(authority.execute(request)).rejects.toMatchObject({ code: "semantic_tool_outcome_unknown" });
       expect(await fs.readFile(path.join(root, entryFile), "utf8")).toBe(original);
     } finally { spy.mockRestore(); }

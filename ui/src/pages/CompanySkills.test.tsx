@@ -648,7 +648,7 @@ describe("skills discovery card reconciliation", () => {
   it("renders one installed card when installed and catalog data share a key", () => {
     const installed = {
       id: "installed-new",
-      key: "PaperclipAI/Review",
+      key: "AcmeAI/Review",
       name: "Review",
       slug: "review",
       updatedAt: new Date("2026-08-30T00:00:00Z"),
@@ -672,12 +672,12 @@ describe("skills discovery card reconciliation", () => {
     const olderDuplicate = {
       ...installed,
       id: "installed-old",
-      key: "paperclipai/review",
+      key: "acmeai/review",
       updatedAt: new Date("2026-08-01T00:00:00Z"),
     } as CompanySkillListItem;
     const catalog = {
       id: "catalog-review",
-      key: "paperclipai/review",
+      key: "acmeai/review",
       name: "Review",
       slug: "review",
       kind: "optional",

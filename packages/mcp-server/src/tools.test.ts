@@ -1,12 +1,12 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { createPaperclipMcpServer } from "./index.js";
-import { PaperclipApiClient } from "./client.js";
+import { createWardmoteMcpServer } from "./index.js";
+import { WardmoteApiClient } from "./client.js";
 import { createToolDefinitions } from "./tools.js";
 
 function makeClient() {
-  return new PaperclipApiClient({
+  return new WardmoteApiClient({
     apiUrl: "http://localhost:3100/api",
     apiKey: "token-123",
     companyId: "11111111-1111-1111-1111-111111111111",
@@ -31,7 +31,7 @@ function mockJsonResponse(body: unknown, status = 200) {
 }
 
 async function connectedClient() {
-  const { server } = createPaperclipMcpServer({
+  const { server } = createWardmoteMcpServer({
     apiUrl: "http://localhost:3100/api",
     apiKey: "token-123",
     companyId: "11111111-1111-1111-1111-111111111111",

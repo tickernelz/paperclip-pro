@@ -1,11 +1,11 @@
 import { spawn, type ChildProcess } from "node:child_process";
 import path from "node:path";
 import type { AdapterExecutionTarget } from "@tickernelz/wardmote-adapter-utils/execution-target";
-import { writePaperclipMcpMount } from "@tickernelz/wardmote-adapter-utils/wardmote-mcp-mount";
+import { writeWardmoteMcpMount } from "@tickernelz/wardmote-adapter-utils/wardmote-mcp-mount";
 import {
   WARDMOTE_MCP_SERVER_NAME,
-  renderPaperclipMcpConfig,
-  type PaperclipMcpCommand,
+  renderWardmoteMcpConfig,
+  type WardmoteMcpCommand,
 } from "@tickernelz/wardmote-adapter-utils/wardmote-mcp";
 
 export {
@@ -15,14 +15,14 @@ export {
   WARDMOTE_MCP_PACKAGE,
   WARDMOTE_MCP_SERVER_NAME,
   WARDMOTE_MCP_TOOLSETS_ENV,
-  buildPaperclipMcpServerEntry,
+  buildWardmoteMcpServerEntry,
   paperclipMcpEndpoint,
   paperclipMcpGuidance,
   paperclipMcpToolsets,
   paperclipMcpTransport,
-  renderPaperclipMcpConfig,
-  resolvePaperclipMcpServerCommand,
-  type PaperclipMcpCommand,
+  renderWardmoteMcpConfig,
+  resolveWardmoteMcpServerCommand,
+  type WardmoteMcpCommand,
 } from "@tickernelz/wardmote-adapter-utils/wardmote-mcp";
 
 export const WARDMOTE_MCP_UNAVAILABLE_CODE = "paperclip_mcp_unavailable";
@@ -117,12 +117,12 @@ function isTransientNetworkError(error: unknown): boolean {
   return false;
 }
 
-export interface PaperclipMcpExtension {
+export interface WardmoteMcpExtension {
   path: string;
   cleanup: () => Promise<void>;
 }
 
-export interface PaperclipMcpProbe {
+export interface WardmoteMcpProbe {
   ok: boolean;
   detail: string;
   toolCount: number | null;
@@ -132,13 +132,13 @@ export interface PaperclipMcpProbe {
 }
 
 /** POST `initialize` at the server-hosted endpoint; 401/403 is a credential fault, anything else is downtime. */
-export async function probePaperclipMcpEndpoint(input: {
+export async function probeWardmoteMcpEndpoint(input: {
   url: string;
   apiKey: string;
   runId: string;
   timeoutMs?: number;
   fetchImpl?: typeof fetch;
-}): Promise<PaperclipMcpProbe> {
+}): Promise<WardmoteMcpProbe> {
   const startedAt = Date.now();
   const call = input.fetchImpl ?? fetch;
   const controller = new AbortController();
@@ -218,14 +218,14 @@ export async function probePaperclipMcpEndpoint(input: {
 }
 
 /** Start the resolved server, complete the MCP handshake and list its tools. */
-export async function probePaperclipMcpServer(input: {
-  command: PaperclipMcpCommand;
+export async function probeWardmoteMcpServer(input: {
+  command: WardmoteMcpCommand;
   env: Record<string, string>;
   timeoutMs?: number;
-}): Promise<PaperclipMcpProbe> {
+}): Promise<WardmoteMcpProbe> {
   const startedAt = Date.now();
-  let resolve!: (value: PaperclipMcpProbe) => void;
-  const promise = new Promise<PaperclipMcpProbe>((resolveProbe) => {
+  let resolve!: (value: WardmoteMcpProbe) => void;
+  const promise = new Promise<WardmoteMcpProbe>((resolveProbe) => {
     resolve = resolveProbe;
   });
   let child: ChildProcess;
@@ -246,7 +246,7 @@ export async function probePaperclipMcpServer(input: {
   let stdout = "";
   let stderr = "";
   let settled = false;
-  const finish = (result: Omit<PaperclipMcpProbe, "durationMs">) => {
+  const finish = (result: Omit<WardmoteMcpProbe, "durationMs">) => {
     if (settled) return;
     settled = true;
     clearTimeout(timer);
@@ -326,25 +326,25 @@ export async function probePaperclipMcpServer(input: {
   return await promise;
 }
 
-export async function writePaperclipMcpExtension(input: {
+export async function writeWardmoteMcpExtension(input: {
   runId: string;
   target: AdapterExecutionTarget | null | undefined;
   remote: boolean;
   enabled: boolean;
   transport: "http" | "stdio";
   toolsets: string;
-  command: PaperclipMcpCommand;
+  command: WardmoteMcpCommand;
   env: Record<string, string>;
   remoteRootDir: string | null;
   cwd: string;
   timeoutSec: number;
   graceSec: number;
-}): Promise<PaperclipMcpExtension> {
-  const mount = await writePaperclipMcpMount({
+}): Promise<WardmoteMcpExtension> {
+  const mount = await writeWardmoteMcpMount({
     runId: input.runId,
     target: input.target,
     remote: input.remote,
-    content: renderPaperclipMcpConfig({
+    content: renderWardmoteMcpConfig({
       enabled: input.enabled,
       transport: input.transport,
       command: input.command,

@@ -28,7 +28,7 @@ import {
   adapterExecutionTargetEnablesSandboxDuplexBridge,
   adapterExecutionTargetSessionIdentity,
   adapterExecutionTargetToRemoteSpec,
-  adapterExecutionTargetUsesPaperclipBridge,
+  adapterExecutionTargetUsesWardmoteBridge,
   ensureAdapterExecutionTargetCommandResolvable,
   formatAdapterExecutionTimeoutErrorMessage,
   formatAdapterExecutionTimeoutStartLogLine,
@@ -39,7 +39,7 @@ import {
   runAdapterExecutionTargetProcess,
   runAdapterExecutionTargetShellCommand,
   startAdapterExecutionTargetProcessSessionBridge,
-  startAdapterExecutionTargetPaperclipBridge,
+  startAdapterExecutionTargetWardmoteBridge,
   type AdapterSandboxExecutionTarget,
   type EffectiveExecutionCapabilities,
   type EffectiveSandboxCapabilities,
@@ -2484,7 +2484,7 @@ describe("sandbox adapter execution targets", () => {
       },
     };
 
-    expect(adapterExecutionTargetUsesPaperclipBridge(target)).toBe(true);
+    expect(adapterExecutionTargetUsesWardmoteBridge(target)).toBe(true);
     expect(adapterExecutionTargetSessionIdentity(target)).toEqual({
       transport: "ssh",
       host: "ssh.example.test",
@@ -2567,7 +2567,7 @@ describe("sandbox adapter execution targets", () => {
       timeoutMs: 30_000,
     };
 
-    const bridge = await startAdapterExecutionTargetPaperclipBridge({
+    const bridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: "run-bridge",
       target,
       runtimeRootDir,
@@ -2622,7 +2622,7 @@ describe("sandbox adapter execution targets", () => {
       timeoutMs: 30_000,
     };
 
-    const bridge = await startAdapterExecutionTargetPaperclipBridge({
+    const bridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: "run-bridge-stream",
       target,
       runtimeRootDir,
@@ -2664,7 +2664,7 @@ describe("sandbox adapter execution targets", () => {
       timeoutMs: 30_000,
     };
 
-    const defaultBridge = await startAdapterExecutionTargetPaperclipBridge({
+    const defaultBridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: "run-bridge-stream-default",
       target: baseTarget,
       runtimeRootDir,
@@ -2678,7 +2678,7 @@ describe("sandbox adapter execution targets", () => {
       await defaultBridge?.stop();
     }
 
-    const optOutBridge = await startAdapterExecutionTargetPaperclipBridge({
+    const optOutBridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: "run-bridge-stream-opt-out",
       target: { ...baseTarget, streamRunLogs: false },
       runtimeRootDir,
@@ -2883,7 +2883,7 @@ describe("sandbox adapter execution targets", () => {
       timeoutMs: 30_000,
     };
 
-    const bridge = await startAdapterExecutionTargetPaperclipBridge({
+    const bridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: "run-bridge-shell",
       target,
       runtimeRootDir,
@@ -2990,7 +2990,7 @@ describe("sandbox adapter execution targets", () => {
       timeoutMs: 30_000,
     };
 
-    const bridge = await startAdapterExecutionTargetPaperclipBridge({
+    const bridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: "run-bridge-timeout",
       target,
       runtimeRootDir,
@@ -3064,7 +3064,7 @@ describe("sandbox adapter execution targets", () => {
       timeoutMs: 30_000,
     };
 
-    const bridge = await startAdapterExecutionTargetPaperclipBridge({
+    const bridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: "run-bridge-limit",
       target,
       runtimeRootDir,
@@ -3153,7 +3153,7 @@ describe("sandbox adapter execution targets", () => {
       timeoutMs: 30_000,
     };
 
-    const bridge = await startAdapterExecutionTargetPaperclipBridge({
+    const bridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: "run-bridge-safe-limit",
       target,
       runtimeRootDir,
@@ -3224,7 +3224,7 @@ describe("sandbox adapter execution targets", () => {
       timeoutMs: 30_000,
     };
 
-    const bridge = await startAdapterExecutionTargetPaperclipBridge({
+    const bridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: "run-bridge-outcome",
       target,
       runtimeRootDir,
@@ -3306,7 +3306,7 @@ describe("sandbox adapter execution targets", () => {
       timeoutMs: 30_000,
     };
 
-    const bridge = await startAdapterExecutionTargetPaperclipBridge({
+    const bridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: "run-bridge-local",
       target,
       runtimeRootDir,
@@ -3376,7 +3376,7 @@ describe("sandbox adapter execution targets", () => {
       timeoutMs: 30_000,
     };
 
-    const bridge = await startAdapterExecutionTargetPaperclipBridge({
+    const bridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: "run-bridge-override",
       target,
       runtimeRootDir,
@@ -3767,7 +3767,7 @@ describe("sandbox adapter execution targets", () => {
       effectiveCapabilities: duplexCapabilities(true),
     };
 
-    const bridge = await startAdapterExecutionTargetPaperclipBridge({
+    const bridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: "run-startup-fail",
       target,
       runtimeRootDir: path.join(remoteCwd, ".paperclip-runtime", "codex"),
@@ -3831,7 +3831,7 @@ describe("sandbox adapter execution targets", () => {
       effectiveCapabilities: duplexCapabilities(true),
     };
 
-    const bridge = await startAdapterExecutionTargetPaperclipBridge({
+    const bridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: "run-http2",
       target,
       runtimeRootDir: path.join(remoteCwd, ".paperclip-runtime", "codex"),
@@ -3894,7 +3894,7 @@ describe("sandbox adapter execution targets", () => {
       effectiveCapabilities: duplexCapabilities(true),
     };
 
-    const bridge = await startAdapterExecutionTargetPaperclipBridge({
+    const bridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: "run-duplex-log",
       target,
       runtimeRootDir: path.join(remoteCwd, ".paperclip-runtime", "codex"),
@@ -3939,7 +3939,7 @@ describe("sandbox adapter execution targets", () => {
       effectiveCapabilities: duplexCapabilities(true),
     };
 
-    const bridge = await startAdapterExecutionTargetPaperclipBridge({
+    const bridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: "run-http2-log-off",
       target,
       runtimeRootDir: path.join(remoteCwd, ".paperclip-runtime", "codex"),
@@ -3986,7 +3986,7 @@ describe("sandbox adapter execution targets", () => {
       effectiveCapabilities: duplexCapabilities(true),
       duplexObservabilityRecorder: recorder,
     };
-    const openBridge = await startAdapterExecutionTargetPaperclipBridge({
+    const openBridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: "run-http2-open",
       target: openTarget,
       runtimeRootDir: path.join(remoteCwd, ".paperclip-runtime", "codex"),
@@ -4018,7 +4018,7 @@ describe("sandbox adapter execution targets", () => {
       effectiveCapabilities: duplexCapabilities(true),
       duplexObservabilityRecorder: recorder,
     };
-    const fallbackBridge = await startAdapterExecutionTargetPaperclipBridge({
+    const fallbackBridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: "run-duplex-fallback",
       target: fallbackTarget,
       runtimeRootDir: path.join(remoteCwd, ".paperclip-runtime", "codex"),
@@ -4059,7 +4059,7 @@ describe("sandbox adapter execution targets", () => {
       effectiveCapabilities: duplexCapabilities(capability),
     };
 
-    const bridge = await startAdapterExecutionTargetPaperclipBridge({
+    const bridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: "run-gate",
       target,
       runtimeRootDir: path.join(remoteCwd, ".paperclip-runtime", "codex"),
@@ -4118,7 +4118,7 @@ describe("sandbox adapter execution targets", () => {
       effectiveCapabilities: duplexCapabilities(true),
     };
 
-    const bridge = await startAdapterExecutionTargetPaperclipBridge({
+    const bridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: "run-fail",
       target,
       runtimeRootDir: path.join(remoteCwd, ".paperclip-runtime", "codex"),
@@ -4193,7 +4193,7 @@ describe("sandbox adapter execution targets", () => {
         effectiveCapabilities: duplexCapabilities(true),
       };
 
-      const bridge = await startAdapterExecutionTargetPaperclipBridge({
+      const bridge = await startAdapterExecutionTargetWardmoteBridge({
         runId: "run-addr",
         target,
         runtimeRootDir: path.join(remoteCwd, ".paperclip-runtime", "codex"),
@@ -4245,7 +4245,7 @@ describe("sandbox adapter execution targets", () => {
       effectiveCapabilities: duplexCapabilities(true),
     };
 
-    const bridge = await startAdapterExecutionTargetPaperclipBridge({
+    const bridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: "run-http2-403",
       target,
       runtimeRootDir: path.join(remoteCwd, ".paperclip-runtime", "codex"),
@@ -4372,7 +4372,7 @@ describe("sandbox adapter execution targets", () => {
       effectiveCapabilities: duplexCapabilities(true),
     };
 
-    const bridge = await startAdapterExecutionTargetPaperclipBridge({
+    const bridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: "run-raw-bytes",
       target,
       runtimeRootDir: path.join(remoteCwd, ".paperclip-runtime", "codex"),
@@ -4479,7 +4479,7 @@ describe("sandbox adapter execution targets", () => {
       effectiveCapabilities: duplexCapabilities(true),
     };
 
-    const bridge = await startAdapterExecutionTargetPaperclipBridge({
+    const bridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: "run-obs",
       target,
       runtimeRootDir: path.join(remoteCwd, ".paperclip-runtime", "codex"),
@@ -4545,7 +4545,7 @@ describe("sandbox adapter execution targets", () => {
       effectiveCapabilities: duplexCapabilities(false),
     };
 
-    const bridge = await startAdapterExecutionTargetPaperclipBridge({
+    const bridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: "run-fb",
       target,
       runtimeRootDir: path.join(remoteCwd, ".paperclip-runtime", "codex"),
@@ -4623,7 +4623,7 @@ describe("sandbox adapter execution targets", () => {
         effectiveCapabilities: duplexCapabilities(true),
       };
 
-      const bridge = await startAdapterExecutionTargetPaperclipBridge({
+      const bridge = await startAdapterExecutionTargetWardmoteBridge({
         runId: "run-stage",
         target,
         runtimeRootDir: path.join(remoteCwd, ".paperclip-runtime", "codex"),
@@ -4686,7 +4686,7 @@ describe("sandbox adapter execution targets", () => {
       effectiveCapabilities: duplexCapabilities(true),
     };
 
-    const bridge = await startAdapterExecutionTargetPaperclipBridge({
+    const bridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: "run-loss",
       target,
       runtimeRootDir: path.join(remoteCwd, ".paperclip-runtime", "codex"),
@@ -4749,7 +4749,7 @@ describe("sandbox adapter execution targets", () => {
       effectiveCapabilities: duplexCapabilities(true),
     };
 
-    const bridge = await startAdapterExecutionTargetPaperclipBridge({
+    const bridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: "run-guard",
       target,
       runtimeRootDir: path.join(remoteCwd, ".paperclip-runtime", "codex"),
@@ -4820,9 +4820,9 @@ describe("sandbox adapter execution targets", () => {
 
     const previousDebug = process.env.WARDMOTE_BRIDGE_DEBUG;
     process.env.WARDMOTE_BRIDGE_DEBUG = "1";
-    let bridge: Awaited<ReturnType<typeof startAdapterExecutionTargetPaperclipBridge>> = null;
+    let bridge: Awaited<ReturnType<typeof startAdapterExecutionTargetWardmoteBridge>> = null;
     try {
-      bridge = await startAdapterExecutionTargetPaperclipBridge({
+      bridge = await startAdapterExecutionTargetWardmoteBridge({
         runId: "run-redact",
         target,
         runtimeRootDir: path.join(remoteCwd, ".paperclip-runtime", "codex"),
@@ -4900,7 +4900,7 @@ describe("sandbox adapter execution targets", () => {
       effectiveCapabilities: duplexCapabilities(true),
     };
 
-    const bridge = await startAdapterExecutionTargetPaperclipBridge({
+    const bridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: "run-prov",
       target,
       runtimeRootDir: path.join(remoteCwd, ".paperclip-runtime", "codex"),
@@ -4971,7 +4971,7 @@ describe("sandbox adapter execution targets", () => {
       effectiveCapabilities: duplexCapabilities(true),
     };
 
-    const bridge = await startAdapterExecutionTargetPaperclipBridge({
+    const bridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: "run-cap",
       target,
       runtimeRootDir: path.join(remoteCwd, ".paperclip-runtime", "codex"),
@@ -5029,7 +5029,7 @@ describe("sandbox adapter execution targets", () => {
       effectiveCapabilities: duplexCapabilities(true),
     };
 
-    const bridge = await startAdapterExecutionTargetPaperclipBridge({
+    const bridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: "run-cap-small",
       target,
       runtimeRootDir: path.join(remoteCwd, ".paperclip-runtime", "codex"),
@@ -5087,7 +5087,7 @@ describe("sandbox adapter execution targets", () => {
     };
 
     __duplexReadinessTesting.resetNewlineScanUnits();
-    const bridge = await startAdapterExecutionTargetPaperclipBridge({
+    const bridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: "run-scan-bound",
       target,
       runtimeRootDir: path.join(remoteCwd, ".paperclip-runtime", "codex"),
@@ -5144,7 +5144,7 @@ describe("sandbox adapter execution targets", () => {
     };
 
     __duplexReadinessTesting.resetBufferGrowthCopyUnits();
-    const bridge = await startAdapterExecutionTargetPaperclipBridge({
+    const bridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: "run-growth-bound",
       target,
       runtimeRootDir: path.join(remoteCwd, ".paperclip-runtime", "codex"),
@@ -5202,7 +5202,7 @@ describe("sandbox adapter execution targets", () => {
     };
 
     __duplexReadinessTesting.resetNewlineScanUnits();
-    const bridge = await startAdapterExecutionTargetPaperclipBridge({
+    const bridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: "run-blank-scan",
       target,
       runtimeRootDir: path.join(remoteCwd, ".paperclip-runtime", "codex"),
@@ -5262,7 +5262,7 @@ describe("sandbox adapter execution targets", () => {
       effectiveCapabilities: duplexCapabilities(true),
     };
 
-    const bridge = await startAdapterExecutionTargetPaperclipBridge({
+    const bridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: "run-noise-ready",
       target,
       runtimeRootDir: path.join(remoteCwd, ".paperclip-runtime", "codex"),
@@ -5313,7 +5313,7 @@ describe("sandbox adapter execution targets", () => {
       effectiveCapabilities: duplexCapabilities(true),
     };
 
-    const bridge = await startAdapterExecutionTargetPaperclipBridge({
+    const bridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: "run-noise-nonce",
       target,
       runtimeRootDir: path.join(remoteCwd, ".paperclip-runtime", "codex"),
@@ -5370,7 +5370,7 @@ describe("sandbox adapter execution targets", () => {
       effectiveCapabilities: duplexCapabilities(true),
     };
 
-    const bridge = await startAdapterExecutionTargetPaperclipBridge({
+    const bridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: "run-cap-bypass",
       target,
       runtimeRootDir: path.join(remoteCwd, ".paperclip-runtime", "codex"),
@@ -5421,7 +5421,7 @@ describe("sandbox adapter execution targets", () => {
       effectiveCapabilities: duplexCapabilities(true),
     };
 
-    const bridge = await startAdapterExecutionTargetPaperclipBridge({
+    const bridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: "run-open-span",
       target,
       runtimeRootDir: path.join(remoteCwd, ".paperclip-runtime", "codex"),
@@ -5473,7 +5473,7 @@ describe("sandbox adapter execution targets", () => {
       effectiveCapabilities: duplexCapabilities(true),
     };
 
-    const bridge = await startAdapterExecutionTargetPaperclipBridge({
+    const bridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: "run-hdr",
       target,
       runtimeRootDir: path.join(remoteCwd, ".paperclip-runtime", "codex"),
@@ -5540,7 +5540,7 @@ describe("sandbox adapter execution targets", () => {
     // holds no nested-budget derivation (that budget set belonged to the retired
     // duplex_v1 broker only), so a large forward budget must still select and
     // serve normally.
-    const bridge = await startAdapterExecutionTargetPaperclipBridge({
+    const bridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: "run-budget",
       target,
       runtimeRootDir: path.join(remoteCwd, ".paperclip-runtime", "codex"),
@@ -5592,7 +5592,7 @@ describe("sandbox adapter execution targets", () => {
       effectiveCapabilities: duplexCapabilities(true),
     };
 
-    const bridge = await startAdapterExecutionTargetPaperclipBridge({
+    const bridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: "run-no-preface",
       target,
       runtimeRootDir: path.join(remoteCwd, ".paperclip-runtime", "codex"),
@@ -5639,7 +5639,7 @@ describe("sandbox adapter execution targets", () => {
     };
 
     // The kill switch is off. The host must never open the channel at all.
-    const bridge = await startAdapterExecutionTargetPaperclipBridge({
+    const bridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: "run-disabled",
       target,
       runtimeRootDir: path.join(remoteCwd, ".paperclip-runtime", "codex"),
@@ -5685,7 +5685,7 @@ describe("sandbox adapter execution targets", () => {
       effectiveCapabilities: duplexCapabilities(true),
     };
 
-    const bridge = await startAdapterExecutionTargetPaperclipBridge({
+    const bridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: "run-one-way",
       target,
       runtimeRootDir: path.join(remoteCwd, ".paperclip-runtime", "codex"),
@@ -5771,7 +5771,7 @@ describe("sandbox adapter execution targets", () => {
       effectiveCapabilities: duplexCapabilities(true),
     };
 
-    const bridge = await startAdapterExecutionTargetPaperclipBridge({
+    const bridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: "run-no-early-write",
       target,
       runtimeRootDir: path.join(remoteCwd, ".paperclip-runtime", "codex"),
@@ -5824,7 +5824,7 @@ describe("sandbox adapter execution targets", () => {
       effectiveCapabilities: duplexCapabilities(true),
     };
 
-    const bridge = await startAdapterExecutionTargetPaperclipBridge({
+    const bridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: "run-invalid-ready-bytes",
       target,
       runtimeRootDir: path.join(remoteCwd, ".paperclip-runtime", "codex"),
@@ -5873,7 +5873,7 @@ describe("sandbox adapter execution targets", () => {
       effectiveCapabilities: duplexCapabilities(true),
     };
 
-    const bridge = await startAdapterExecutionTargetPaperclipBridge({
+    const bridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: "run-orderly-close",
       target,
       runtimeRootDir: path.join(remoteCwd, ".paperclip-runtime", "codex"),
@@ -5928,7 +5928,7 @@ describe("sandbox adapter execution targets", () => {
       effectiveCapabilities: duplexCapabilities(true),
     };
 
-    const bridge = await startAdapterExecutionTargetPaperclipBridge({
+    const bridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: "run-safe-retry",
       target,
       runtimeRootDir: path.join(remoteCwd, ".paperclip-runtime", "codex"),
@@ -5989,7 +5989,7 @@ describe("sandbox adapter execution targets", () => {
       effectiveCapabilities: duplexCapabilities(true),
     };
 
-    const bridge = await startAdapterExecutionTargetPaperclipBridge({
+    const bridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: "run-unsafe-indeterminate",
       target,
       runtimeRootDir: path.join(remoteCwd, ".paperclip-runtime", "codex"),
@@ -6064,7 +6064,7 @@ describe("sandbox adapter execution targets", () => {
       effectiveCapabilities: duplexCapabilities(true),
     };
 
-    const bridge = await startAdapterExecutionTargetPaperclipBridge({
+    const bridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: "run-abort-forward",
       target,
       runtimeRootDir: path.join(remoteCwd, ".paperclip-runtime", "codex"),
@@ -6149,7 +6149,7 @@ describe("sandbox adapter execution targets", () => {
       effectiveCapabilities: duplexCapabilities(true),
     };
 
-    const bridge = await startAdapterExecutionTargetPaperclipBridge({
+    const bridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: "run-denied-response-chunk",
       target,
       runtimeRootDir: path.join(remoteCwd, ".paperclip-runtime", "codex"),
@@ -6237,7 +6237,7 @@ describe("sandbox adapter execution targets", () => {
       effectiveCapabilities: duplexCapabilities(true),
     };
 
-    const bridge = await startAdapterExecutionTargetPaperclipBridge({
+    const bridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: "run-denied-response-concat",
       target,
       runtimeRootDir: path.join(remoteCwd, ".paperclip-runtime", "codex"),
@@ -6352,7 +6352,7 @@ describe("sandbox adapter execution targets", () => {
       effectiveCapabilities: duplexCapabilities(true),
     };
 
-    const bridge = await startAdapterExecutionTargetPaperclipBridge({
+    const bridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: "run-denied-response-mutation",
       target,
       runtimeRootDir: path.join(remoteCwd, ".paperclip-runtime", "codex"),
@@ -6431,7 +6431,7 @@ describe("sandbox adapter execution targets", () => {
       runner,
       effectiveCapabilities: duplexCapabilities(true),
     };
-    const bridge = await startAdapterExecutionTargetPaperclipBridge({
+    const bridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: "run-ceiling-aggregate",
       target,
       runtimeRootDir: path.join(remoteCwd, ".paperclip-runtime", "codex"),
@@ -6499,7 +6499,7 @@ describe("sandbox adapter execution targets", () => {
       effectiveCapabilities: duplexCapabilities(true),
     };
 
-    const bridge = await startAdapterExecutionTargetPaperclipBridge({
+    const bridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: "run-host-body-limit",
       target,
       runtimeRootDir: path.join(remoteCwd, ".paperclip-runtime", "codex"),
@@ -6574,7 +6574,7 @@ describe("sandbox adapter execution targets", () => {
       timeoutMs: 30_000,
     };
 
-    const bridge = await startAdapterExecutionTargetPaperclipBridge({
+    const bridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: "run-queue-no-reservation",
       target,
       runtimeRootDir,
@@ -6628,7 +6628,7 @@ describe("sandbox adapter execution targets", () => {
       runner,
       effectiveCapabilities: duplexCapabilities(true),
     };
-    const bridge = await startAdapterExecutionTargetPaperclipBridge({
+    const bridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: "run-pty-replay",
       target,
       runtimeRootDir: path.join(remoteCwd, ".paperclip-runtime", "codex"),
@@ -6771,7 +6771,7 @@ describe("sandbox adapter execution targets", () => {
       runner,
       effectiveCapabilities: duplexCapabilities(true),
     };
-    const bridge = await startAdapterExecutionTargetPaperclipBridge({
+    const bridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: "run-preface-offset",
       target,
       runtimeRootDir: path.join(remoteCwd, ".paperclip-runtime", "codex"),
@@ -6826,7 +6826,7 @@ describe("sandbox adapter execution targets", () => {
       runner,
       effectiveCapabilities: duplexCapabilities(true),
     };
-    const bridge = await startAdapterExecutionTargetPaperclipBridge({
+    const bridge = await startAdapterExecutionTargetWardmoteBridge({
       runId: "run-preface-lookalike",
       target,
       runtimeRootDir: path.join(remoteCwd, ".paperclip-runtime", "codex"),

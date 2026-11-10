@@ -88,7 +88,7 @@ function makeSite(overrides: Partial<SandboxRunSiteOptions> = {}) {
     measureStageStep: (run) => run(),
     publishStagedProjectHints: () => {},
     onReuseLog: async () => {},
-    startPaperclipBridge: async () => {
+    startWardmoteBridge: async () => {
       bridgeCalls.push("paperclip:start");
       return { env: { WARDMOTE_API_KEY: "run-token" }, stop: async () => {} } as never;
     },
@@ -103,7 +103,7 @@ function makeSite(overrides: Partial<SandboxRunSiteOptions> = {}) {
       for (const contribution of contributions) Object.assign(merged, contribution.env);
       return merged;
     },
-    onPaperclipBridgeLog: async () => {},
+    onWardmoteBridgeLog: async () => {},
     stopBridges: async () => {},
     ...overrides,
   };
@@ -169,7 +169,7 @@ describe("sandbox run site", () => {
     });
     let processLaunchEnv: Record<string, string> | null = null;
     const { site } = makeSite({
-      startPaperclipBridge: async () => {
+      startWardmoteBridge: async () => {
         events.push("paperclip:start");
         await paperclipGate;
         events.push("paperclip:env-ready");

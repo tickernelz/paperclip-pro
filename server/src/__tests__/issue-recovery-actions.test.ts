@@ -6,7 +6,7 @@ import express from "express";
 import request from "supertest";
 import { and, eq, sql } from "drizzle-orm";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import { renderPaperclipWakePrompt } from "@tickernelz/wardmote-adapter-utils/server-utils";
+import { renderWardmoteWakePrompt } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import {
   costEvents,
   agents,
@@ -33,7 +33,7 @@ import {
 } from "./helpers/embedded-postgres.js";
 import { errorHandler } from "../middleware/index.js";
 import { issueRoutes } from "../routes/issues.js";
-import { buildPaperclipWakePayload, heartbeatService } from "../services/heartbeat.js";
+import { buildWardmoteWakePayload, heartbeatService } from "../services/heartbeat.js";
 import { deliverReconciledExecutions } from "../services/execution-recovery-resolution.js";
 import { workspaceOperationService, isNativeWorkspaceFinalizationOperationActive } from "../services/workspace-operations.js";
 import { issueRecoveryActionService } from "../services/issue-recovery-actions.js";
@@ -1772,7 +1772,7 @@ describeEmbeddedPostgres("issue recovery actions", () => {
       maxAttempts: 3,
     });
 
-    const payload = await buildPaperclipWakePayload({
+    const payload = await buildWardmoteWakePayload({
       db,
       companyId,
       contextSnapshot: {
@@ -1804,13 +1804,13 @@ describeEmbeddedPostgres("issue recovery actions", () => {
     });
     await db.update(issueRecoveryActions).set({ status, outcome: "handed_back", resolvedAt: new Date() })
       .where(eq(issueRecoveryActions.id, action.id));
-    const payload = await buildPaperclipWakePayload({ db, companyId, contextSnapshot: {
+    const payload = await buildWardmoteWakePayload({ db, companyId, contextSnapshot: {
       issueId: sourceIssueId, wakeReason: "issue_recovery_action_restored",
       recoveryActionId: action.id, recoveryCause: action.cause,
     } });
     expect(payload?.issue?.id).toBe(sourceIssueId);
     expect(payload?.recovery).toBeNull();
-    const prompt = renderPaperclipWakePrompt(payload);
+    const prompt = renderWardmoteWakePrompt(payload);
     expect(prompt).toContain("Implement backend recovery");
     expect(prompt).not.toContain("Recovery contract:");
     expect(prompt).not.toContain(action.nextAction);

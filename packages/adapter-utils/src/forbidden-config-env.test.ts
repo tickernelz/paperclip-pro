@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isForbiddenConfigEnvKey, sanitizeInheritedPaperclipEnv } from "./server-utils.js";
+import { isForbiddenConfigEnvKey, sanitizeInheritedWardmoteEnv } from "./server-utils.js";
 import { RETIRED_ENV_PREFIX } from "@tickernelz/wardmote-shared/retired-env-file";
 
 describe("agent run config env", () => {
@@ -20,7 +20,7 @@ describe("agent run config env", () => {
 
 
   it("drops inherited runtime identity keys under both prefixes", () => {
-    expect(sanitizeInheritedPaperclipEnv({
+    expect(sanitizeInheritedWardmoteEnv({
       WARDMOTE_API_KEY: "leak",
       WARDMOTE_AGENT_PRIVATE_KEY: "leak",
       wardmote_agent_key_id: "leak",

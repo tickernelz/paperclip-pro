@@ -1,14 +1,14 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
-import { resolvePaperclipInstanceRoot } from "../home-paths.js";
+import { resolveWardmoteInstanceRoot } from "../home-paths.js";
 import { idleWorkSnapshot } from "./task-admission.js";
 
 export type IdleLocalWork = "none" | "present" | "unknown";
 const spoolDirectories = new Set<string>();
 export function registerIdleSpoolDirectory(directory: string): void { spoolDirectories.add(path.resolve(directory)); }
-export const idleAccountingSpoolPath = () => path.join(resolvePaperclipInstanceRoot(), "accounting-receipts");
+export const idleAccountingSpoolPath = () => path.join(resolveWardmoteInstanceRoot(), "accounting-receipts");
 export const idleOrphanSpoolPath = () => process.env.SANDBOX_ORPHAN_CLEANUP_SPOOL_DIR ??
-  path.join(resolvePaperclipInstanceRoot(), "data", "sandbox-orphan-cleanup");
+  path.join(resolveWardmoteInstanceRoot(), "data", "sandbox-orphan-cleanup");
 let startupComplete = false;
 let ingressTracked = false;
 let scheduledBackups = false;

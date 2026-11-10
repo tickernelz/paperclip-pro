@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import type { AdapterExecutionTarget } from "@tickernelz/wardmote-adapter-utils/execution-target";
-import { writePaperclipMcpMount } from "@tickernelz/wardmote-adapter-utils/wardmote-mcp-mount";
+import { writeWardmoteMcpMount } from "@tickernelz/wardmote-adapter-utils/wardmote-mcp-mount";
 
 export const OMP_PYTHON_ENV_FILE_NAME = "paperclip-env.json";
 export const OMP_PYTHON_SITECUSTOMIZE_FILE_NAME = "sitecustomize.py";
@@ -146,19 +146,19 @@ export async function writeOmpPythonEnvBridge(input: {
     timeoutSec: input.timeoutSec,
     graceSec: input.graceSec,
   };
-  const data = await writePaperclipMcpMount({
+  const data = await writeWardmoteMcpMount({
     ...mountInput,
     content: renderOmpPythonEnvData(input.env),
     fileName: OMP_PYTHON_ENV_FILE_NAME,
   });
   try {
     if (input.remote) {
-      await writePaperclipMcpMount({
+      await writeWardmoteMcpMount({
         ...mountInput,
         content: renderOmpSitecustomize(),
         fileName: OMP_PYTHON_SITECUSTOMIZE_FILE_NAME,
       });
-      const launcher = await writePaperclipMcpMount({
+      const launcher = await writeWardmoteMcpMount({
         ...mountInput,
         content: renderOmpPythonEnvLauncher(data.dir),
         fileName: OMP_PYTHON_LAUNCHER_FILE_NAME,

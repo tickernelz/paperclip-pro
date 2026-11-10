@@ -185,7 +185,7 @@ function isSafeSkillName(skillName: string): boolean {
 }
 
 /** Resolve the Paperclip repo skills directory (built-in / managed skills). */
-function resolvePaperclipSkillsDir(): string | null {
+function resolveWardmoteSkillsDir(): string | null {
   const moduleDir = path.dirname(fileURLToPath(import.meta.url));
   const candidates = [
     path.resolve(moduleDir, "../../skills"),         // published
@@ -224,7 +224,7 @@ function parseSkillFrontmatter(markdown: string): { description: string } {
 interface AvailableSkill {
   name: string;
   description: string;
-  isPaperclipManaged: boolean;
+  isWardmoteManaged: boolean;
 }
 
 /** Discover all available Claude Code skills from CLAUDE_HOME or ~/.claude. */
@@ -238,7 +238,7 @@ function resolveClaudeSkillsDir(): string {
 
 function listAvailableSkills(): AvailableSkill[] {
   const claudeSkillsDir = resolveClaudeSkillsDir();
-  const paperclipSkillsDir = resolvePaperclipSkillsDir();
+  const paperclipSkillsDir = resolveWardmoteSkillsDir();
 
   // Build set of Paperclip-managed skill names
   const paperclipSkillNames = new Set<string>();
@@ -266,7 +266,7 @@ function listAvailableSkills(): AvailableSkill[] {
       skills.push({
         name: entry.name,
         description,
-        isPaperclipManaged: paperclipSkillNames.has(entry.name),
+        isWardmoteManaged: paperclipSkillNames.has(entry.name),
       });
     }
   } catch { /* Claude skills directory doesn't exist */ }
@@ -285,7 +285,7 @@ function listAvailableSkills(): AvailableSkill[] {
         skills.push({
           name: entry.name,
           description,
-          isPaperclipManaged: true,
+          isWardmoteManaged: true,
         });
       }
     } catch { /* skip Paperclip skills directory */ }

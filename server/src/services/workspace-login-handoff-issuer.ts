@@ -24,7 +24,7 @@ import {
   sanitizeWorkspaceHandoffRedirectPath,
   WORKSPACE_HANDOFF_TICKET_TTL_SECONDS,
 } from "../auth/workspace-login-handoff.js";
-import { resolvePaperclipInstanceId } from "../home-paths.js";
+import { resolveWardmoteInstanceId } from "../home-paths.js";
 import {
   probeManagedWorkspaceReadiness,
   resolveManagedWorkspaceIdentity,
@@ -181,7 +181,7 @@ export async function issueWorkspaceLoginHandoff(input: {
     companyId: identity.companyId,
     instanceId: identity.instanceId,
     origin,
-    issuerInstanceId: resolvePaperclipInstanceId(),
+    issuerInstanceId: resolveWardmoteInstanceId(),
     next: sanitizeWorkspaceHandoffRedirectPath(input.next),
     ttlSeconds: input.ttlSeconds ?? WORKSPACE_HANDOFF_TICKET_TTL_SECONDS,
     now: input.now,

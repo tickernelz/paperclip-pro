@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { buildPaperclipEnv } from "../adapters/utils.js";
+import { buildWardmoteEnv } from "../adapters/utils.js";
 
 const ORIGINAL_WARDMOTE_RUNTIME_API_URL = process.env.WARDMOTE_RUNTIME_API_URL;
 const ORIGINAL_WARDMOTE_API_URL = process.env.WARDMOTE_API_URL;
@@ -32,14 +32,14 @@ afterEach(() => {
   else process.env.PORT = ORIGINAL_PORT;
 });
 
-describe("buildPaperclipEnv", () => {
+describe("buildWardmoteEnv", () => {
   it("prefers an explicit WARDMOTE_API_URL override over the derived runtime URL", () => {
     process.env.WARDMOTE_RUNTIME_API_URL = "http://203.0.113.42:3102";
     process.env.WARDMOTE_API_URL = "http://localhost:4100";
     process.env.WARDMOTE_LISTEN_HOST = "127.0.0.1";
     process.env.WARDMOTE_LISTEN_PORT = "3101";
 
-    const env = buildPaperclipEnv({ id: "agent-1", companyId: "company-1" });
+    const env = buildWardmoteEnv({ id: "agent-1", companyId: "company-1" });
 
     expect(env.WARDMOTE_API_URL).toBe("http://localhost:4100");
   });
@@ -50,7 +50,7 @@ describe("buildPaperclipEnv", () => {
     process.env.WARDMOTE_LISTEN_HOST = "127.0.0.1";
     process.env.WARDMOTE_LISTEN_PORT = "3101";
 
-    const env = buildPaperclipEnv({ id: "agent-1", companyId: "company-1" });
+    const env = buildWardmoteEnv({ id: "agent-1", companyId: "company-1" });
 
     expect(env.WARDMOTE_API_URL).toBe("http://203.0.113.42:3102");
   });
@@ -61,7 +61,7 @@ describe("buildPaperclipEnv", () => {
     process.env.WARDMOTE_LISTEN_HOST = "127.0.0.1";
     process.env.WARDMOTE_LISTEN_PORT = "3101";
 
-    const env = buildPaperclipEnv({ id: "agent-1", companyId: "company-1" });
+    const env = buildWardmoteEnv({ id: "agent-1", companyId: "company-1" });
 
     expect(env.WARDMOTE_API_URL).toBe("http://localhost:4100");
   });
@@ -73,7 +73,7 @@ describe("buildPaperclipEnv", () => {
     process.env.WARDMOTE_LISTEN_PORT = "3101";
     process.env.PORT = "3100";
 
-    const env = buildPaperclipEnv({ id: "agent-1", companyId: "company-1" });
+    const env = buildWardmoteEnv({ id: "agent-1", companyId: "company-1" });
 
     expect(env.WARDMOTE_API_URL).toBe("http://localhost:3101");
   });
@@ -84,7 +84,7 @@ describe("buildPaperclipEnv", () => {
     process.env.WARDMOTE_LISTEN_HOST = "::1";
     process.env.WARDMOTE_LISTEN_PORT = "3101";
 
-    const env = buildPaperclipEnv({ id: "agent-1", companyId: "company-1" });
+    const env = buildWardmoteEnv({ id: "agent-1", companyId: "company-1" });
 
     expect(env.WARDMOTE_API_URL).toBe("http://[::1]:3101");
   });
@@ -100,28 +100,28 @@ describe("buildPaperclipEnv", () => {
 
     it("hands same-host agents the loopback listener instead of the tunnel", () => {
       bootLikeServer("127.0.0.1");
-      const env = buildPaperclipEnv({ id: "agent-1", companyId: "company-1" }, { sameHost: true });
+      const env = buildWardmoteEnv({ id: "agent-1", companyId: "company-1" }, { sameHost: true });
       expect(env.WARDMOTE_API_URL).toBe("http://127.0.0.1:3100");
     });
 
     it("maps a wildcard bind to the loopback of the same address family", () => {
       bootLikeServer("0.0.0.0");
-      expect(buildPaperclipEnv({ id: "a", companyId: "c" }, { sameHost: true }).WARDMOTE_API_URL).toBe(
+      expect(buildWardmoteEnv({ id: "a", companyId: "c" }, { sameHost: true }).WARDMOTE_API_URL).toBe(
         "http://127.0.0.1:3100",
       );
       bootLikeServer("::");
-      expect(buildPaperclipEnv({ id: "a", companyId: "c" }, { sameHost: true }).WARDMOTE_API_URL).toBe(
+      expect(buildWardmoteEnv({ id: "a", companyId: "c" }, { sameHost: true }).WARDMOTE_API_URL).toBe(
         "http://[::1]:3100",
       );
     });
 
     it("keeps the public origin for agents that run elsewhere", () => {
       bootLikeServer("127.0.0.1");
-      expect(buildPaperclipEnv({ id: "agent-1", companyId: "company-1" }).WARDMOTE_API_URL).toBe(
+      expect(buildWardmoteEnv({ id: "agent-1", companyId: "company-1" }).WARDMOTE_API_URL).toBe(
         "https://paperclip.example.com",
       );
       expect(
-        buildPaperclipEnv({ id: "agent-1", companyId: "company-1" }, { sameHost: false }).WARDMOTE_API_URL,
+        buildWardmoteEnv({ id: "agent-1", companyId: "company-1" }, { sameHost: false }).WARDMOTE_API_URL,
       ).toBe("https://paperclip.example.com");
     });
 
@@ -129,7 +129,7 @@ describe("buildPaperclipEnv", () => {
       bootLikeServer("127.0.0.1");
       process.env.WARDMOTE_API_URL = "http://10.0.0.5:3100";
       process.env.WARDMOTE_API_URL_OVERRIDE = "http://10.0.0.5:3100";
-      expect(buildPaperclipEnv({ id: "a", companyId: "c" }, { sameHost: true }).WARDMOTE_API_URL).toBe(
+      expect(buildWardmoteEnv({ id: "a", companyId: "c" }, { sameHost: true }).WARDMOTE_API_URL).toBe(
         "http://10.0.0.5:3100",
       );
     });

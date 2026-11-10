@@ -9,7 +9,7 @@ export const NOTIFICATION_KINDS = [
 ] as const;
 export type NotificationKind = (typeof NOTIFICATION_KINDS)[number];
 
-export interface PaperclipNotification {
+export interface WardmoteNotification {
   key: string;
   kind: NotificationKind;
   companyId: string;
@@ -21,7 +21,7 @@ export interface PaperclipNotification {
 }
 
 export interface NotificationCreatedLivePayload {
-  notification: PaperclipNotification;
+  notification: WardmoteNotification;
   recipientUserIds: string[];
 }
 

@@ -1,11 +1,11 @@
-export type PaperclipRunnerProvider =
+export type WardmoteRunnerProvider =
   "codex" | "opencode" | "claude_managed" | "aws_agentcore" | "acpx" | "openai_dot";
 
 export type CodexPermissionMode = "never" | "on-request" | "untrusted";
 export type OpenCodePermissionMode = "allow" | "ask" | "deny";
 export type AcpxPermissionMode = "approve-all" | "approve-paperclip" | "approve-reads" | "deny-all";
 
-export type PaperclipRunnerPermissionMode =
+export type WardmoteRunnerPermissionMode =
   CodexPermissionMode | OpenCodePermissionMode | AcpxPermissionMode;
 
 export const WARDMOTE_RUNNER_IDLE_TIMEOUT_DEFAULT_MS = 300_000;
@@ -16,7 +16,7 @@ export const WARDMOTE_RUNNER_DEFAULT_MODELS = {
   opencode: "openrouter/deepseek/deepseek-v4-flash-0731",
 } as const;
 
-export interface PaperclipRunnerPermissionOption<
+export interface WardmoteRunnerPermissionOption<
   TMode extends string = string,
 > {
   value: TMode;
@@ -24,13 +24,13 @@ export interface PaperclipRunnerPermissionOption<
   description: string;
 }
 
-export type PaperclipRunnerPermissionCapability =
+export type WardmoteRunnerPermissionCapability =
   | {
       configurable: true;
       configKey:
         "codexPermissionMode" | "opencodePermissionMode" | "acpxPermissionMode";
-      defaultMode: PaperclipRunnerPermissionMode;
-      options: readonly PaperclipRunnerPermissionOption<PaperclipRunnerPermissionMode>[];
+      defaultMode: WardmoteRunnerPermissionMode;
+      options: readonly WardmoteRunnerPermissionOption<WardmoteRunnerPermissionMode>[];
       description: string;
     }
   | {
@@ -136,13 +136,13 @@ export const WARDMOTE_RUNNER_PERMISSION_CAPABILITIES = {
     ],
   },
 } as const satisfies Record<
-  PaperclipRunnerProvider,
-  PaperclipRunnerPermissionCapability
+  WardmoteRunnerProvider,
+  WardmoteRunnerPermissionCapability
 >;
 
-export function isPaperclipRunnerProvider(
+export function isWardmoteRunnerProvider(
   value: unknown,
-): value is PaperclipRunnerProvider {
+): value is WardmoteRunnerProvider {
   return (
     value === "codex" ||
     value === "opencode" ||
@@ -152,19 +152,19 @@ export function isPaperclipRunnerProvider(
   );
 }
 
-export function resolvePaperclipRunnerPermissionMode(
-  provider: PaperclipRunnerProvider,
+export function resolveWardmoteRunnerPermissionMode(
+  provider: WardmoteRunnerProvider,
   value: unknown,
-): PaperclipRunnerPermissionMode | "provider-managed" {
+): WardmoteRunnerPermissionMode | "provider-managed" {
   const capability = WARDMOTE_RUNNER_PERMISSION_CAPABILITIES[provider];
   if (!capability.configurable) return capability.defaultMode;
   return capability.options.some((option) => option.value === value)
-    ? (value as PaperclipRunnerPermissionMode)
+    ? (value as WardmoteRunnerPermissionMode)
     : capability.defaultMode;
 }
 
 /** Native session behavior is independent of tool permission policy. */
-export function resolvePaperclipRunnerCursorMode(
+export function resolveWardmoteRunnerCursorMode(
   provider: unknown,
   agent: unknown,
   value: unknown,
@@ -178,7 +178,7 @@ export function resolvePaperclipRunnerCursorMode(
   throw new Error("Cursor session mode must be agent, plan, or ask");
 }
 
-export function resolvePaperclipRunnerModel(
+export function resolveWardmoteRunnerModel(
   provider: keyof typeof WARDMOTE_RUNNER_DEFAULT_MODELS,
   value: unknown,
 ): string {
@@ -187,7 +187,7 @@ export function resolvePaperclipRunnerModel(
     : WARDMOTE_RUNNER_DEFAULT_MODELS[provider];
 }
 
-export function resolvePaperclipRunnerIdleTimeoutMs(value: unknown): number {
+export function resolveWardmoteRunnerIdleTimeoutMs(value: unknown): number {
   return typeof value === "number" &&
     Number.isSafeInteger(value) &&
     value > 0 &&
@@ -216,7 +216,7 @@ export function paperclipRunnerTransitionConfig(
       : previousProvider;
   return {
     provider,
-    model: resolvePaperclipRunnerModel(
+    model: resolveWardmoteRunnerModel(
       provider,
       provider === previousProvider ? previousModel : undefined,
     ),
@@ -250,8 +250,8 @@ export const WARDMOTE_RUNNER_ACPX_PROFILES = Object.freeze([
 ] as const);
 
 /** Exact Pi native thinking levels; aliases that silently clamp are not configuration. */
-export type PaperclipRunnerPiThinkingLevel = "off" | "low" | "high" | "max";
-export function resolvePaperclipRunnerPiThinkingLevel(provider: unknown, agent: unknown, value: unknown): PaperclipRunnerPiThinkingLevel | undefined {
+export type WardmoteRunnerPiThinkingLevel = "off" | "low" | "high" | "max";
+export function resolveWardmoteRunnerPiThinkingLevel(provider: unknown, agent: unknown, value: unknown): WardmoteRunnerPiThinkingLevel | undefined {
   if (provider !== "acpx" || agent !== "pi") {
     if (value !== undefined) throw new Error("piThinkingLevel is supported only for Pi");
     return undefined;

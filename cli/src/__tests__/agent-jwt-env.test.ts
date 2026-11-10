@@ -5,9 +5,9 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   ensureAgentJwtSecret,
   ensureToolActionSigningSecret,
-  mergePaperclipEnvEntries,
+  mergeWardmoteEnvEntries,
   readAgentJwtSecretFromEnv,
-  readPaperclipEnvEntries,
+  readWardmoteEnvEntries,
   resolveAgentJwtEnvFile,
 } from "../config/env.js";
 import { agentJwtSecretCheck } from "../checks/agent-jwt-secret-check.js";
@@ -50,7 +50,7 @@ describe("agent jwt env helpers", () => {
 
     expect(result.created).toBe(true);
     expect(result.secret).toHaveLength(64);
-    const entries = readPaperclipEnvEntries(resolveAgentJwtEnvFile(configPath));
+    const entries = readWardmoteEnvEntries(resolveAgentJwtEnvFile(configPath));
     expect(entries.WARDMOTE_TOOL_ACTION_SIGNING_SECRET).toBe(result.secret);
     expect(entries.WARDMOTE_AGENT_JWT_SECRET).toBeUndefined();
   });
@@ -78,7 +78,7 @@ describe("agent jwt env helpers", () => {
     const configPath = tempConfigPath();
     const envPath = resolveAgentJwtEnvFile(configPath);
 
-    mergePaperclipEnvEntries(
+    mergeWardmoteEnvEntries(
       {
         WARDMOTE_WORKTREE_COLOR: "#439edb",
       },
@@ -87,7 +87,7 @@ describe("agent jwt env helpers", () => {
 
     const contents = fs.readFileSync(envPath, "utf-8");
     expect(contents).toContain('WARDMOTE_WORKTREE_COLOR="#439edb"');
-    expect(readPaperclipEnvEntries(envPath).WARDMOTE_WORKTREE_COLOR).toBe("#439edb");
+    expect(readWardmoteEnvEntries(envPath).WARDMOTE_WORKTREE_COLOR).toBe("#439edb");
   });
 
   it("preserves operator content and CRLF while updating only managed entries", () => {
@@ -105,7 +105,7 @@ describe("agent jwt env helpers", () => {
     ].join("\r\n");
     fs.writeFileSync(envPath, original, { mode: 0o600 });
 
-    mergePaperclipEnvEntries(
+    mergeWardmoteEnvEntries(
       {
         WARDMOTE_HOME: "/new path",
         WARDMOTE_DUPLICATE: "current",
@@ -142,7 +142,7 @@ describe("agent jwt env helpers", () => {
     fs.writeFileSync(envPath, original, { mode: 0o600 });
     const previousInode = fs.statSync(envPath).ino;
 
-    mergePaperclipEnvEntries({ WARDMOTE_HOME: "/same path" }, envPath);
+    mergeWardmoteEnvEntries({ WARDMOTE_HOME: "/same path" }, envPath);
 
     expect(fs.readFileSync(envPath, "utf8")).toBe(original);
     expect(fs.statSync(envPath).ino).toBe(previousInode);

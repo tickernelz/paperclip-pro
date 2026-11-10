@@ -1,6 +1,6 @@
 import {
   ConfigurationIncompleteFailure,
-  type buildPaperclipWakePayload,
+  type buildWardmoteWakePayload,
   type createHeartbeatRunPreparation,
 } from "./run-preparation.js";
 import { dotRunnerBroker } from "../dot-runner-broker.js";
@@ -53,8 +53,8 @@ import {
 import {
   assertAgentCoreProfileRecoveryBinding,
   assertManagedProfileRecoveryBinding,
-  projectPaperclipRunnerTaskConfig,
-  resolvePaperclipRunnerNativeProviderInput,
+  projectWardmoteRunnerTaskConfig,
+  resolveWardmoteRunnerNativeProviderInput,
 } from "../native-runtime/provider-profile.js";
 import { readRemoteCodexModelCliVersion } from "../native-runtime/codex-model-fallback.js";
 import {
@@ -72,8 +72,8 @@ import {
 import { CHAT_CONTROL_RECOVERY_ADMISSION_KEY } from "../chat-control-recovery-stop.js";
 import type { issueService } from "../issues.js";
 import { buildPlanReviewContext } from "../plan-review-context.js";
-import { resolvePaperclipRunnerIdleTimeoutMs } from "@tickernelz/wardmote-adapter-utils";
-import { selectPaperclipTaskMarkdown } from "@tickernelz/wardmote-adapter-utils/server-utils";
+import { resolveWardmoteRunnerIdleTimeoutMs } from "@tickernelz/wardmote-adapter-utils";
+import { selectWardmoteTaskMarkdown } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import type { ProviderResourceDisposition } from "../environment-runtime.js";
 
 type Run = typeof heartbeatRuns.$inferSelect;
@@ -99,7 +99,7 @@ export interface HeartbeatRuntimeSelectionInput {
     executionContinuation: Awaited<ReturnType<typeof buildExecutionContinuation>> | null;
     safeWakeComments: Parameters<typeof nativeCompletionRequestsWithSources>[0];
     safeWakeCommentContext: { id: string; body: string } | null;
-    paperclipWakePayload: Awaited<ReturnType<typeof buildPaperclipWakePayload>>;
+    paperclipWakePayload: Awaited<ReturnType<typeof buildWardmoteWakePayload>>;
     acceptedPlanContinuationWake: boolean;
   };
   session: {
@@ -488,7 +488,7 @@ export async function selectHeartbeatRuntime(db: Db, input: HeartbeatRuntimeSele
       parseObject(agent.adapterConfig).lifecycleMode === "warm"
         ? {
             mode: "warm" as const,
-            idleTimeoutMs: resolvePaperclipRunnerIdleTimeoutMs(
+            idleTimeoutMs: resolveWardmoteRunnerIdleTimeoutMs(
               parseObject(agent.adapterConfig).idleTimeoutMs,
             ),
           }
@@ -697,14 +697,14 @@ export async function selectHeartbeatRuntime(db: Db, input: HeartbeatRuntimeSele
       getNativeFreshSessionHandoff = nativeReviewRequest ? undefined : getFreshSessionHandoff;
       const nativeProviderConfig = nativeRuntimeResolution.profile.backend === "codex_app_server"
         || nativeRuntimeResolution.profile.backend === "opencode_server"
-        ? projectPaperclipRunnerTaskConfig(
+        ? projectWardmoteRunnerTaskConfig(
             nativeRuntimeResolution.profile.backend,
             agent.adapterConfig,
             issueAssigneeOverrides?.adapterConfig,
             managedAiRuntime ? readNonEmptyString(resolvedConfig.model) ?? undefined : undefined,
           )
         : agent.adapterConfig;
-      const requestedNativeProvider = resolvePaperclipRunnerNativeProviderInput({
+      const requestedNativeProvider = resolveWardmoteRunnerNativeProviderInput({
         backend: nativeRuntimeResolution.profile.backend,
         adapterConfig: nativeProviderConfig, managedProfile, agentCoreProfile, dotBinding,
       });
@@ -716,7 +716,7 @@ export async function selectHeartbeatRuntime(db: Db, input: HeartbeatRuntimeSele
             remoteCodexNpmSpec: runtimeEnv.WARDMOTE_RUNNER_REMOTE_CODEX_NPM_SPEC,
           }) : null;
       const nativeProvider = codexCliVersion
-        ? resolvePaperclipRunnerNativeProviderInput({
+        ? resolveWardmoteRunnerNativeProviderInput({
             backend: nativeRuntimeResolution.profile.backend,
             adapterConfig: nativeProviderConfig, codexCliVersion, managedProfile, agentCoreProfile, dotBinding,
           }) : requestedNativeProvider;
@@ -735,7 +735,7 @@ export async function selectHeartbeatRuntime(db: Db, input: HeartbeatRuntimeSele
               issue: nativeReviewRequest ? { ...issueRef, title: `Review: ${issueRef.title}`, description: nativeReviewRequest } : issueRef,
               taskPrompt: [
                 nativeReviewRequest ?? readNonEmptyString(
-                  selectPaperclipTaskMarkdown(context, {
+                  selectWardmoteTaskMarkdown(context, {
                     resumedSession: false,
                     includeCommunicationGuidance: false,
                   }),

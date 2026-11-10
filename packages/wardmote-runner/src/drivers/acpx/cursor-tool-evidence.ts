@@ -1,6 +1,6 @@
 import { updateSingleReadEvidence, type SingleReadEvidence } from "./single-read-evidence.js";
 import { createHash } from "node:crypto";
-import { redactPaperclipSemanticValue } from "../../semantic-tools/redaction.js";
+import { redactWardmoteSemanticValue } from "../../semantic-tools/redaction.js";
 import type { CanonicalProviderEvent } from "../../provider-events.js";
 import { cursorToolIdentity } from "./cursor-plan-tool-identity.js";
 
@@ -38,7 +38,7 @@ export function createCursorToolEvidence(binding: {
     if (!binding.active() || !id(binding.sessionId) || !id(binding.turnId)) return;
     if (++sequence > 2048 && stage !== "evidence_incomplete") throw new ProjectionFailure("evidence_limit");
     const itemId = `cursor-evidence-${digest(`${binding.sessionId}:${binding.turnId}`).slice(0, 24)}-${sequence}`;
-    binding.emit({ eventType: "provider.notice.recorded", itemId, payload: redactPaperclipSemanticValue({
+    binding.emit({ eventType: "provider.notice.recorded", itemId, payload: redactWardmoteSemanticValue({
       schema: "paperclip.provider.notice.v1", noticeId: itemId, severity: "info", category: "cursor_tool_evidence_v1", scope: "turn", recoverable: true, userActionable: false,
       summary: stage === "evidence_incomplete" ? "Some Cursor activity details are unavailable." : stage === "permission_delivered" ? "Cursor received your permission decision." : "Cursor native tool activity recorded.",
       provenance: { method, eventType: stage, sessionId: binding.sessionId, turnId: binding.turnId },

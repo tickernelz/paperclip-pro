@@ -17,7 +17,7 @@ import {
   issueDocuments,
   issues,
 } from "@tickernelz/wardmote-db";
-import { readPaperclipSkillSyncPreference } from "@tickernelz/wardmote-adapter-utils/server-utils";
+import { readWardmoteSkillSyncPreference } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import {
   DEFAULT_FEEDBACK_DATA_SHARING_PREFERENCE,
   DEFAULT_FEEDBACK_DATA_SHARING_TERMS_VERSION,
@@ -660,7 +660,7 @@ async function buildAgentContext(
 
   const adapterConfig = asRecord(agent.adapterConfig) ?? {};
   const runtimeConfig = asRecord(agent.runtimeConfig) ?? {};
-  const desiredSkillRefs = uniqueNonEmpty(readPaperclipSkillSyncPreference(adapterConfig).desiredSkills).slice(0, MAX_SKILLS);
+  const desiredSkillRefs = uniqueNonEmpty(readWardmoteSkillSyncPreference(adapterConfig).desiredSkills).slice(0, MAX_SKILLS);
   const availableSkills = desiredSkillRefs.length === 0
     ? []
     : await db

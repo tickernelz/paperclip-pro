@@ -17,7 +17,7 @@ import {
   toolProfiles,
 } from "@tickernelz/wardmote-db";
 import type { AdapterRuntimeMcpServer } from "@tickernelz/wardmote-adapter-utils";
-import type { PaperclipSkillEntry } from "@tickernelz/wardmote-adapter-utils/server-utils";
+import type { WardmoteSkillEntry } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -55,12 +55,12 @@ async function waitForRunToFinish(
 describeEmbeddedPostgres("heartbeat runtime skill version pins", () => {
   let db!: ReturnType<typeof createDb>;
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
-  let oldPaperclipHome: string | undefined;
-  let oldPaperclipApiUrl: string | undefined;
+  let oldWardmoteHome: string | undefined;
+  let oldWardmoteApiUrl: string | undefined;
   let paperclipHome: string | null = null;
   const capturedRuns: Array<{
     agentId: string;
-    skills: PaperclipSkillEntry[];
+    skills: WardmoteSkillEntry[];
     mcpServers: AdapterRuntimeMcpServer[];
     config: Record<string, unknown>;
     serializedRuntimeInput: string;
@@ -70,13 +70,13 @@ describeEmbeddedPostgres("heartbeat runtime skill version pins", () => {
   beforeAll(async () => {
     tempDb = await startEmbeddedPostgresTestDatabase("heartbeat-runtime-skills-");
     db = createDb(tempDb.connectionString);
-    oldPaperclipHome = process.env.WARDMOTE_HOME;
+    oldWardmoteHome = process.env.WARDMOTE_HOME;
     paperclipHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-skills-home-"));
     process.env.WARDMOTE_HOME = paperclipHome;
     // The server normalizes WARDMOTE_API_URL into its own env at boot
     // (server/src/index.ts); heartbeat gateway delivery requires it, so pin
     // a deterministic value for tests that never boot the full server.
-    oldPaperclipApiUrl = process.env.WARDMOTE_API_URL;
+    oldWardmoteApiUrl = process.env.WARDMOTE_API_URL;
     process.env.WARDMOTE_API_URL = "http://127.0.0.1:3100/api";
     registerServerAdapter({
       type: TEST_ADAPTER_TYPE,
@@ -89,7 +89,7 @@ describeEmbeddedPostgres("heartbeat runtime skill version pins", () => {
         await ctx.onLog("stdout", `${serializedRuntimeInput}\n`);
         capturedRuns.push({
           agentId: ctx.agent.id,
-          skills: (ctx.config.paperclipRuntimeSkills ?? []) as PaperclipSkillEntry[],
+          skills: (ctx.config.paperclipRuntimeSkills ?? []) as WardmoteSkillEntry[],
           mcpServers: ctx.runtimeMcp?.getServers() ?? [],
           config: ctx.config,
           serializedRuntimeInput,
@@ -135,10 +135,10 @@ describeEmbeddedPostgres("heartbeat runtime skill version pins", () => {
 
   afterAll(async () => {
     unregisterServerAdapter(TEST_ADAPTER_TYPE);
-    if (oldPaperclipHome === undefined) delete process.env.WARDMOTE_HOME;
-    else process.env.WARDMOTE_HOME = oldPaperclipHome;
-    if (oldPaperclipApiUrl === undefined) delete process.env.WARDMOTE_API_URL;
-    else process.env.WARDMOTE_API_URL = oldPaperclipApiUrl;
+    if (oldWardmoteHome === undefined) delete process.env.WARDMOTE_HOME;
+    else process.env.WARDMOTE_HOME = oldWardmoteHome;
+    if (oldWardmoteApiUrl === undefined) delete process.env.WARDMOTE_API_URL;
+    else process.env.WARDMOTE_API_URL = oldWardmoteApiUrl;
     if (paperclipHome) {
       await fs.rm(paperclipHome, { recursive: true, force: true });
     }

@@ -8,7 +8,7 @@ import type {
   ProviderTraceFrame,
   ProviderTraceMetadata,
 } from "@tickernelz/wardmote-shared";
-import { resolvePaperclipInstanceRoot } from "../home-paths.js";
+import { resolveWardmoteInstanceRoot } from "../home-paths.js";
 import { logActivity } from "./activity-log.js";
 
 export const PROVIDER_TRACE_MAX_BYTES = 64 * 1024 * 1024;
@@ -26,7 +26,7 @@ type TraceRow = typeof providerTraceRecords.$inferSelect;
 function traceRoot() {
   return (
     process.env.PROVIDER_TRACE_BASE_PATH ??
-    path.resolve(resolvePaperclipInstanceRoot(), "data", "provider-traces")
+    path.resolve(resolveWardmoteInstanceRoot(), "data", "provider-traces")
   );
 }
 

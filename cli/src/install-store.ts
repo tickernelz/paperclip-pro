@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { resolvePaperclipHomeDir } from "./config/home.js";
+import { resolveWardmoteHomeDir } from "./config/home.js";
 
 export const INSTALL_MANIFEST_VERSION = 1;
 export const MANAGED_SHIM_MARKER = "wardmote managed install shim v1";
@@ -71,7 +71,7 @@ export function resolveInstallStorePaths(options: {
   paperclipHome?: string;
   homeDir?: string;
 } = {}): InstallStorePaths {
-  const paperclipHome = path.resolve(options.paperclipHome ?? resolvePaperclipHomeDir());
+  const paperclipHome = path.resolve(options.paperclipHome ?? resolveWardmoteHomeDir());
   const homeDir = path.resolve(options.homeDir ?? process.env.HOME ?? path.dirname(paperclipHome));
   const cliRoot = path.join(paperclipHome, "cli");
   const shimPath = process.env.WARDMOTE_SHIM_PATH?.trim() || path.join(homeDir, ".local", "bin", "wardmote");

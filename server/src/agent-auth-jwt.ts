@@ -1,6 +1,6 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { normalizeAgentApiKeyScope, type AgentApiKeyScope } from "@tickernelz/wardmote-shared";
-import { resolvePaperclipInstanceId } from "./home-paths.js";
+import { resolveWardmoteInstanceId } from "./home-paths.js";
 
 interface JwtHeader {
   alg: string;
@@ -56,7 +56,7 @@ function jwtConfig() {
     // name) even though it deliberately shares WARDMOTE_AGENT_JWT_SECRET with
     // the source instance. Folding this into the signing-key derivation is what
     // prevents a fork-minted token from authenticating against the live plane.
-    instanceId: resolvePaperclipInstanceId(),
+    instanceId: resolveWardmoteInstanceId(),
     disableLegacyFallback: parseBooleanEnv(process.env.WARDMOTE_AGENT_JWT_DISABLE_LEGACY_FALLBACK),
   };
 }

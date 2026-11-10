@@ -14,25 +14,25 @@ import {
 import {
   bootstrapWikiRoot,
   bootstrapSpace,
-  assemblePaperclipSourceBundle,
+  assembleWardmoteSourceBundle,
   archiveSpace,
   captureWikiSource,
   createSpace,
-  createPaperclipDistillationRun,
-  createPaperclipDistillationWorkItem,
+  createWardmoteDistillationRun,
+  createWardmoteDistillationWorkItem,
   createOperationIssue,
-  distillPaperclipProjectPage,
+  distillWardmoteProjectPage,
   enableActiveProjectDistillation,
   fileQueryAnswerAsPage,
   getDistillationOverview,
   getDistillationPageProvenance,
   getDistillationAutoApplyRestriction,
   getEventIngestionSettings,
-  listPaperclipIngestionCandidates,
-  getPaperclipIngestionProfile,
+  listWardmoteIngestionCandidates,
+  getWardmoteIngestionProfile,
   getOverview,
   listSpaces,
-  handlePaperclipEventIngestion,
+  handleWardmoteEventIngestion,
   listWikiAgentOptions,
   listWikiProjectOptions,
   listOperations,
@@ -41,7 +41,7 @@ import {
   readCompanyIdFromParams,
   readTemplate,
   readWikiPage,
-  recordPaperclipDistillationOutcome,
+  recordWardmoteDistillationOutcome,
   reconcileWikiAgentResource,
   reconcileWikiProjectResource,
   reconcileWikiRoutineResources,
@@ -55,7 +55,7 @@ import {
   startWikiQuerySession,
   spaceFolderStatus,
   updateEventIngestionSettings,
-  updatePaperclipIngestionProfile,
+  updateWardmoteIngestionProfile,
   updateSpace,
   writeTemplate,
   writeWikiPage,
@@ -190,7 +190,7 @@ const plugin = definePlugin({
 
     for (const eventName of WARDMOTE_EVENT_INGESTION_EVENTS) {
       ctx.events.on(eventName, async (event) => {
-        const result = await handlePaperclipEventIngestion(ctx, event);
+        const result = await handleWardmoteEventIngestion(ctx, event);
         if (result.status === "recorded") {
           ctx.logger.info("LLM Wiki recorded Paperclip event for cursor discovery", {
             eventType: event.eventType,
@@ -371,7 +371,7 @@ const plugin = definePlugin({
     });
 
     ctx.data.register("paperclip-ingestion-profile", async (params) => {
-      return getPaperclipIngestionProfile(ctx, {
+      return getWardmoteIngestionProfile(ctx, {
         companyId: readCompanyIdFromParams(params),
         wikiId: stringField(params.wikiId),
         spaceSlug: stringField(params.spaceSlug),
@@ -379,7 +379,7 @@ const plugin = definePlugin({
     });
 
     ctx.data.register("paperclip-ingestion-candidates", async (params) => {
-      return listPaperclipIngestionCandidates(ctx, {
+      return listWardmoteIngestionCandidates(ctx, {
         companyId: readCompanyIdFromParams(params),
         wikiId: stringField(params.wikiId),
         spaceSlug: stringField(params.spaceSlug),
@@ -388,7 +388,7 @@ const plugin = definePlugin({
     });
 
     ctx.actions.register("update-paperclip-ingestion-profile", async (params) => {
-      return updatePaperclipIngestionProfile(ctx, {
+      return updateWardmoteIngestionProfile(ctx, {
         companyId: readCompanyIdFromParams(params),
         wikiId: stringField(params.wikiId),
         spaceSlug: stringField(params.spaceSlug),
@@ -426,7 +426,7 @@ const plugin = definePlugin({
       const queued: Array<{ workItemId: string; issueId: string; projectId: string | null; rootIssueId: string | null }> = [];
       for (const scope of scopes) {
         const idempotencyScope = scope.rootIssueId ? `root:${scope.rootIssueId}` : `project:${scope.projectId}`;
-        const workItem = await createPaperclipDistillationWorkItem(ctx, {
+        const workItem = await createWardmoteDistillationWorkItem(ctx, {
           companyId,
           wikiId,
           spaceSlug,
@@ -509,7 +509,7 @@ const plugin = definePlugin({
     });
 
     ctx.actions.register("assemble-paperclip-source-bundle", async (params) => {
-      return assemblePaperclipSourceBundle(ctx, {
+      return assembleWardmoteSourceBundle(ctx, {
         companyId: readCompanyIdFromParams(params),
         wikiId: stringField(params.wikiId),
         spaceSlug: stringField(params.spaceSlug),
@@ -526,7 +526,7 @@ const plugin = definePlugin({
     });
 
     ctx.actions.register("create-paperclip-distillation-run", async (params) => {
-      return createPaperclipDistillationRun(ctx, {
+      return createWardmoteDistillationRun(ctx, {
         companyId: readCompanyIdFromParams(params),
         wikiId: stringField(params.wikiId),
         spaceSlug: stringField(params.spaceSlug),
@@ -551,7 +551,7 @@ const plugin = definePlugin({
       }
       const runId = stringField(params.runId);
       if (!runId) throw new Error("runId is required");
-      return recordPaperclipDistillationOutcome(ctx, {
+      return recordWardmoteDistillationOutcome(ctx, {
         companyId: readCompanyIdFromParams(params),
         wikiId: stringField(params.wikiId),
         spaceSlug: stringField(params.spaceSlug),
@@ -567,7 +567,7 @@ const plugin = definePlugin({
     });
 
     ctx.actions.register("distill-paperclip-project-page", async (params) => {
-      return distillPaperclipProjectPage(ctx, {
+      return distillWardmoteProjectPage(ctx, {
         companyId: readCompanyIdFromParams(params),
         wikiId: stringField(params.wikiId),
         spaceSlug: stringField(params.spaceSlug),
@@ -594,7 +594,7 @@ const plugin = definePlugin({
       const projectId = stringField(params.projectId);
       const rootIssueId = stringField(params.rootIssueId);
       const idempotencyScope = rootIssueId ? `root:${rootIssueId}` : projectId ? `project:${projectId}` : "company";
-      const workItem = await createPaperclipDistillationWorkItem(ctx, {
+      const workItem = await createWardmoteDistillationWorkItem(ctx, {
         companyId,
         wikiId: stringField(params.wikiId),
         spaceSlug,
@@ -639,7 +639,7 @@ const plugin = definePlugin({
       const backfillStartAt = stringField(params.backfillStartAt);
       const backfillEndAt = stringField(params.backfillEndAt);
       const idempotencyScope = rootIssueId ? `root:${rootIssueId}` : `project:${projectId}`;
-      const workItem = await createPaperclipDistillationWorkItem(ctx, {
+      const workItem = await createWardmoteDistillationWorkItem(ctx, {
         companyId,
         wikiId: stringField(params.wikiId),
         spaceSlug,
@@ -666,7 +666,7 @@ const plugin = definePlugin({
           "Do not process whole-company history; stay within the selected project/root issue and date window.",
         ].filter(Boolean).join("\n"),
       });
-      const result = await distillPaperclipProjectPage(ctx, {
+      const result = await distillWardmoteProjectPage(ctx, {
         companyId,
         wikiId: stringField(params.wikiId),
         spaceSlug,
@@ -703,7 +703,7 @@ const plugin = definePlugin({
       if (priority && priority !== "critical" && priority !== "high" && priority !== "medium" && priority !== "low") {
         throw new Error("priority must be critical, high, medium, or low");
       }
-      return createPaperclipDistillationWorkItem(ctx, {
+      return createWardmoteDistillationWorkItem(ctx, {
         companyId: readCompanyIdFromParams(params),
         wikiId: stringField(params.wikiId),
         spaceSlug: stringField(params.spaceSlug),

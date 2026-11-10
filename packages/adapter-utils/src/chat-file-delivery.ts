@@ -1,4 +1,4 @@
-export interface PaperclipChatFilePreparationDelivery {
+export interface WardmoteChatFilePreparationDelivery {
   readonly provider:
     "slack" | "github" | "discord" | "microsoft-teams" | "telegram" | "imessage-photon" | "speko" | null;
   readonly mode: "provider_attachment" | "paperclip_task_only" | "unknown";
@@ -10,7 +10,7 @@ export interface PaperclipChatFilePreparationDelivery {
 /** Describe the transport contract, never a delivery receipt or new authority. */
 export function paperclipChatFilePreparationDelivery(
   authenticatedProvider: unknown,
-): PaperclipChatFilePreparationDelivery {
+): WardmoteChatFilePreparationDelivery {
   const common = {
     preparationState: "prepared" as const,
     providerDeliveryConfirmed: false as const,

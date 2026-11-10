@@ -21,7 +21,7 @@ import { startEmbeddedPostgresTestDatabase } from "../../__tests__/helpers/embed
 import { initializeRunIdentity, reserveSteeredIdentity, reconcileSteeredIdentity } from "../run-identity.js";
 import { documentService } from "../documents.js";
 import { issueService } from "../issues.js";
-import { PaperclipRunnerToolAuthority } from "./paperclip-runner-tool-authority.js";
+import { WardmoteRunnerToolAuthority } from "./paperclip-runner-tool-authority.js";
 import { createAssignedMcpTools } from "./assigned-mcp-tools.js";
 import type { ToolGatewayService } from "../tool-gateway.js";
 import { READ_CURRENT_WAKE_COMMENTS_TOOL_NAME } from "./current-wake-comments.js";
@@ -29,7 +29,7 @@ import { CAPABILITY_SEMANTIC_TOOL_CATALOG, runnerCodexDynamicToolsFit } from "..
 
 const PUBLIC_BASE_URL_ENV = "WARDMOTE_AUTH_PUBLIC_BASE_URL";
 
-describe("PaperclipRunnerToolAuthority", () => {
+describe("WardmoteRunnerToolAuthority", () => {
   const credentialDocumentBody = "Use a secret manager for credential handling.\nAuthorization: Bearer intentional-document-credential";
   let temporary: Awaited<
     ReturnType<typeof startEmbeddedPostgresTestDatabase>
@@ -98,7 +98,7 @@ describe("PaperclipRunnerToolAuthority", () => {
   });
 
   it("advertises only real bindings and reads the bound task", async () => {
-    const authority = new PaperclipRunnerToolAuthority(db, {
+    const authority = new WardmoteRunnerToolAuthority(db, {
       companyId,
       agentId,
       issueId,
@@ -183,7 +183,7 @@ describe("PaperclipRunnerToolAuthority", () => {
 
   it("returns public task URLs from the configured origin in context and search results", async () => {
     vi.stubEnv(PUBLIC_BASE_URL_ENV, "https://board.example");
-    const authority = new PaperclipRunnerToolAuthority(db, { companyId, agentId, issueId, runId });
+    const authority = new WardmoteRunnerToolAuthority(db, { companyId, agentId, issueId, runId });
     try {
       expect(await authority.execute({ tool: "get_task_context", callId: "public-task-url", arguments: {} }))
         .toMatchObject({ activeTask: { id: issueId, url: `https://board.example/issues/${issueId}` } });
@@ -219,7 +219,7 @@ describe("PaperclipRunnerToolAuthority", () => {
         hiddenAt: new Date(), createdAt: new Date(Date.now() + 1000) })),
     ]);
     try {
-      const authority = new PaperclipRunnerToolAuthority(db, { companyId, agentId, issueId, runId });
+      const authority = new WardmoteRunnerToolAuthority(db, { companyId, agentId, issueId, runId });
       const context = await authority.execute({ tool: "get_task_context", callId: "context-existing-children", arguments: {} });
       expect(context).toMatchObject({
         childTasks: expect.arrayContaining([
@@ -243,7 +243,7 @@ describe("PaperclipRunnerToolAuthority", () => {
     const previousCompanies =
       process.env.WARDMOTE_RUNNER_API_TOOLS_COMPANY_IDS;
     const createAuthority = () =>
-      new PaperclipRunnerToolAuthority(db, {
+      new WardmoteRunnerToolAuthority(db, {
         companyId,
         agentId,
         issueId,
@@ -323,7 +323,7 @@ describe("PaperclipRunnerToolAuthority", () => {
       }),
     );
     try {
-      const authority = new PaperclipRunnerToolAuthority(db, {
+      const authority = new WardmoteRunnerToolAuthority(db, {
         companyId,
         agentId,
         issueId,
@@ -390,7 +390,7 @@ describe("PaperclipRunnerToolAuthority", () => {
       return new Response(JSON.stringify(saved.document), { status: 200, headers: { "content-type": "application/json" } });
     });
     try {
-      const authority = new PaperclipRunnerToolAuthority(db, { companyId, agentId, issueId, runId,
+      const authority = new WardmoteRunnerToolAuthority(db, { companyId, agentId, issueId, runId,
         apiToolsEnabled: true, apiUrl: "http://runner-test.invalid" });
       const first = { tool: "write_task_document", callId: "cross-task-document-create", arguments: {
         taskId, key: "notes", title: "Notes", body: "# First revision", baseRevisionId: null,
@@ -417,7 +417,7 @@ describe("PaperclipRunnerToolAuthority", () => {
   });
 
   it("advertises structured human input in ask mode", () => {
-    const authority = new PaperclipRunnerToolAuthority(db, {
+    const authority = new WardmoteRunnerToolAuthority(db, {
       companyId,
       agentId,
       issueId,
@@ -442,7 +442,7 @@ describe("PaperclipRunnerToolAuthority", () => {
         (tool) => tool.operationId === "request_human_input",
       )!;
       const originalSnapshot = structuredClone(original);
-      const authority = new PaperclipRunnerToolAuthority(db, {
+      const authority = new WardmoteRunnerToolAuthority(db, {
         companyId,
         agentId,
         issueId,
@@ -518,7 +518,7 @@ describe("PaperclipRunnerToolAuthority", () => {
       .update(issues)
       .set({ executionRunId: binding.runId })
       .where(eq(issues.id, binding.issueId));
-    const authority = new PaperclipRunnerToolAuthority(db, binding);
+    const authority = new WardmoteRunnerToolAuthority(db, binding);
     const advertised = authority
       .definitions()
       .find((tool) => tool.name === "request_human_input")!;
@@ -643,7 +643,7 @@ describe("PaperclipRunnerToolAuthority", () => {
       linkedByAgentId: agentId,
     });
 
-    const authority = new PaperclipRunnerToolAuthority(db, {
+    const authority = new WardmoteRunnerToolAuthority(db, {
       companyId,
       agentId,
       issueId,
@@ -661,7 +661,7 @@ describe("PaperclipRunnerToolAuthority", () => {
   it("rejects Dot artifact publication from instance state before reading a file", async () => {
     const [actor] = await db.select().from(agents).where(eq(agents.id, agentId));
     await db.update(agents).set({ adapterConfig: { ...actor.adapterConfig, dotWorkspaceAccess: true } }).where(eq(agents.id, agentId));
-    const authority = new PaperclipRunnerToolAuthority(db, { companyId, agentId, issueId, runId,
+    const authority = new WardmoteRunnerToolAuthority(db, { companyId, agentId, issueId, runId,
       dotRuntime: true, workspaceBridge: true, workspaceRoot: "/tmp/fixture-workspace" });
     try {
       for (const contentRef of [".paperclip/.env", "nested/.PaPeRcLiP/config.json"]) {
@@ -685,9 +685,9 @@ describe("PaperclipRunnerToolAuthority", () => {
       gatewayPublicId: "fixture", bearerToken: "fixture-token",
     });
     const binding = { companyId, agentId, issueId, runId, workspaceRoot: "/tmp/fixture-workspace" };
-    const baseline = new PaperclipRunnerToolAuthority(db, binding).definitions();
+    const baseline = new WardmoteRunnerToolAuthority(db, binding).definitions();
     expect(runnerCodexDynamicToolsFit([...baseline, ...assignedMcpTools.definitions()])).toBe(false);
-    const authority = new PaperclipRunnerToolAuthority(db, { ...binding, assignedMcpTools });
+    const authority = new WardmoteRunnerToolAuthority(db, { ...binding, assignedMcpTools });
     const tools = authority.definitions();
     expect(runnerCodexDynamicToolsFit(tools)).toBe(true);
     expect(tools).toEqual(expect.arrayContaining(baseline));
@@ -710,7 +710,7 @@ describe("PaperclipRunnerToolAuthority", () => {
   it("relays assigned MCP calls only while the native run still owns its task", async () => {
     const tool = { name: "app_mem0_recall", description: "Recall memory", inputSchema: { type: "object" } };
     const execute = vi.fn().mockResolvedValue({ content: "synthetic memory" });
-    const authority = new PaperclipRunnerToolAuthority(db, {
+    const authority = new WardmoteRunnerToolAuthority(db, {
       companyId, agentId, issueId, runId,
       assignedMcpTools: { definitions: () => [tool], has: (name) => name === tool.name, execute },
     });
@@ -736,7 +736,7 @@ describe("PaperclipRunnerToolAuthority", () => {
   });
 
   it("does not advertise delegation tools during pre-acceptance planning", () => {
-    const authority = new PaperclipRunnerToolAuthority(db, {
+    const authority = new WardmoteRunnerToolAuthority(db, {
       companyId,
       agentId,
       issueId,
@@ -752,7 +752,7 @@ describe("PaperclipRunnerToolAuthority", () => {
   });
 
   it("writes progress through the real issue service and replays idempotently", async () => {
-    const authority = new PaperclipRunnerToolAuthority(db, {
+    const authority = new WardmoteRunnerToolAuthority(db, {
       companyId,
       agentId,
       issueId,
@@ -804,7 +804,7 @@ describe("PaperclipRunnerToolAuthority", () => {
   });
 
   it("creates checkbox interactions through the real interaction service", async () => {
-    const authority = new PaperclipRunnerToolAuthority(db, {
+    const authority = new WardmoteRunnerToolAuthority(db, {
       companyId,
       agentId,
       issueId,
@@ -862,7 +862,7 @@ describe("PaperclipRunnerToolAuthority", () => {
 
   it("writes a real revisioned document and replays the mutation receipt", async () => {
     const body = credentialDocumentBody;
-    const authority = new PaperclipRunnerToolAuthority(db, {
+    const authority = new WardmoteRunnerToolAuthority(db, {
       companyId,
       agentId,
       issueId,
@@ -937,7 +937,7 @@ describe("PaperclipRunnerToolAuthority", () => {
       "plan",
     );
     expect(plan).not.toBeNull();
-    const authority = new PaperclipRunnerToolAuthority(db, {
+    const authority = new WardmoteRunnerToolAuthority(db, {
       companyId,
       agentId,
       issueId,
@@ -1031,7 +1031,7 @@ describe("PaperclipRunnerToolAuthority", () => {
   it("creates ordinary children, preserves blockers, and deduplicates across runs", async () => {
     const wakes: Array<{ agentId: string; options: Record<string, unknown> }> =
       [];
-    const authority = new PaperclipRunnerToolAuthority(db, {
+    const authority = new WardmoteRunnerToolAuthority(db, {
       companyId,
       agentId,
       issueId,
@@ -1153,7 +1153,7 @@ describe("PaperclipRunnerToolAuthority", () => {
       .set({ executionRunId: nextRunId })
       .where(eq(issues.id, issueId));
     const retryWakes: Array<unknown> = [];
-    const retryAuthority = new PaperclipRunnerToolAuthority(db, {
+    const retryAuthority = new WardmoteRunnerToolAuthority(db, {
       companyId,
       agentId,
       issueId,
@@ -1288,7 +1288,7 @@ describe("PaperclipRunnerToolAuthority", () => {
       .update(issues)
       .set({ executionRunId: guardedRunId })
       .where(eq(issues.id, guardedIssueId));
-    const authority = new PaperclipRunnerToolAuthority(db, {
+    const authority = new WardmoteRunnerToolAuthority(db, {
       companyId,
       agentId,
       issueId: guardedIssueId,
@@ -1360,7 +1360,7 @@ describe("PaperclipRunnerToolAuthority", () => {
     const [message] = await db.insert(issueComments).values({
       companyId, issueId, body: "New instruction", authorUserId: "person-b",
     }).returning();
-    const authority = new PaperclipRunnerToolAuthority(db, { companyId, agentId, issueId, runId });
+    const authority = new WardmoteRunnerToolAuthority(db, { companyId, agentId, issueId, runId });
     const call = { tool: "create_task", callId: "identity-child", arguments: {
       idempotencyKey: "identity-child", title: "Keep the initiating identity",
       responsibleUserId: "forged-user", originIdentityContextId: "forged-context",
@@ -1390,7 +1390,7 @@ describe("PaperclipRunnerToolAuthority", () => {
       .update(heartbeatRuns)
       .set({ status: "succeeded" })
       .where(eq(heartbeatRuns.id, runId));
-    const authority = new PaperclipRunnerToolAuthority(db, {
+    const authority = new WardmoteRunnerToolAuthority(db, {
       companyId,
       agentId,
       issueId,

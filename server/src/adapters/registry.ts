@@ -35,10 +35,10 @@ import { processAdapter } from "./process/index.js";
 import { httpAdapter } from "./http/index.js";
 import {
   DEFAULT_OPENCODE_RUNNER_MODEL,
-  PaperclipRunnerProviderProfileError,
+  WardmoteRunnerProviderProfileError,
   DEFAULT_ACPX_RUNNER_MODELS,
   QUALIFIED_OPENCODE_RUNNER_VERSION,
-  resolvePaperclipRunnerProviderProfile,
+  resolveWardmoteRunnerProviderProfile,
 } from "../services/native-runtime/provider-profile.js";
 
 function readConfiguredCommand(config: Record<string, unknown>, fallback: string): string {
@@ -137,13 +137,13 @@ const paperclipRunnerAdapter: ServerAdapterModule = {
     };
   },
   async testEnvironment(context) {
-    let profile: ReturnType<typeof resolvePaperclipRunnerProviderProfile>;
+    let profile: ReturnType<typeof resolveWardmoteRunnerProviderProfile>;
     try {
-      profile = resolvePaperclipRunnerProviderProfile(context.config);
+      profile = resolveWardmoteRunnerProviderProfile(context.config);
     } catch (error) {
-      const profileError = error instanceof PaperclipRunnerProviderProfileError
+      const profileError = error instanceof WardmoteRunnerProviderProfileError
         ? error
-        : new PaperclipRunnerProviderProfileError(
+        : new WardmoteRunnerProviderProfileError(
             "wardmote_runner_provider_unsupported",
             "Paperclip Runner provider configuration is invalid.",
           );

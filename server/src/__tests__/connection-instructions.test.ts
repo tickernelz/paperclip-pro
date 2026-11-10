@@ -11,7 +11,7 @@ import { createToolGatewayService } from "../services/tool-gateway.js";
 import { toolDiscoveryScheduler } from "../services/tool-discovery-scheduler.js";
 import { toolAccessService, projectedConnectionToolArguments, projectedConnectionToolInputSchema } from "../services/tool-access.js";
 import { composeConnectionInstructions, prepareConnectionInstructionDelivery } from "../services/connection-instructions.js";
-import { renderPaperclipWakePrompt } from "@tickernelz/wardmote-adapter-utils/server-utils";
+import { renderWardmoteWakePrompt } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import { canonicalNativeRuntimeContextDigest, parseNativeRuntimeContext } from "../vendor/wardmote-runner/index.js";
 import { nativeRuntimeContextFixture } from "../services/native-runtime/runtime-context.test-fixture.js";
 import { execute as executeProcess } from "../adapters/process/execute.js";
@@ -139,7 +139,7 @@ async function createRemoteMcpToolFixture(db: ReturnType<typeof createDb>, compa
     const snapshot = config.paperclipConnectionInstructions as { text: string; digest: string };
     expect(snapshot.text).toContain(paragraph);
     expect(snapshot.text).not.toContain("forged");
-    expect(renderPaperclipWakePrompt(context.paperclipWake)).toContain(paragraph);
+    expect(renderWardmoteWakePrompt(context.paperclipWake)).toContain(paragraph);
     const runtimeContext = { ...nativeRuntimeContextFixture(), connectionInstructions: snapshot };
     runtimeContext.aggregateDigest = canonicalNativeRuntimeContextDigest(runtimeContext);
     const parsed = parseNativeRuntimeContext(runtimeContext);
@@ -188,7 +188,7 @@ async function createRemoteMcpToolFixture(db: ReturnType<typeof createDb>, compa
     const context: Record<string, unknown> = { connectionInstructions: first, paperclipWake: { connectionInstructions: first } };
     const config = await prepareConnectionInstructionDelivery({ resolve: f.resolve, context, config: { paperclipConnectionInstructions: first }, native: false });
     expect(config.paperclipConnectionInstructions).toBeNull();
-    expect(renderPaperclipWakePrompt(context.paperclipWake)).not.toContain(paragraph);
+    expect(renderWardmoteWakePrompt(context.paperclipWake)).not.toContain(paragraph);
   });
 
   it("follows assignment, action policy, grant revocation, and company boundaries", async () => {

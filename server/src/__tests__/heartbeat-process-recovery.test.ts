@@ -105,7 +105,7 @@ import {
 import { runningProcesses } from "../adapters/index.ts";
 import {
   resolveDefaultAgentWorkspaceDir,
-  resolvePaperclipInstanceRoot,
+  resolveWardmoteInstanceRoot,
 } from "../home-paths.js";
 import { buildNativeExecutionInput } from "../services/native-runtime/native-execution-input.js";
 import { nativeRuntimeContextFixture } from "../services/native-runtime/runtime-context.test-fixture.js";
@@ -145,9 +145,9 @@ const mockRetainedNativeCleanup = vi.hoisted(() =>
     typeof import("../services/native-runtime/native-session-executor.js").reconcileRetainedNativeSessionCleanup
   >(),
 );
-const mockExecutePaperclipNativeSession = vi.hoisted(() =>
+const mockExecuteWardmoteNativeSession = vi.hoisted(() =>
   vi.fn<
-    typeof import("../services/native-runtime/native-session-executor.js").executePaperclipNativeSession
+    typeof import("../services/native-runtime/native-session-executor.js").executeWardmoteNativeSession
   >(),
 );
 const mockAdapterExecute = vi.hoisted(() =>
@@ -182,15 +182,15 @@ vi.mock("../services/native-runtime/native-session-executor.js", async () => {
   mockRetainedNativeCleanup.mockImplementation(
     actual.reconcileRetainedNativeSessionCleanup,
   );
-  mockExecutePaperclipNativeSession.mockImplementation(
-    actual.executePaperclipNativeSession,
+  mockExecuteWardmoteNativeSession.mockImplementation(
+    actual.executeWardmoteNativeSession,
   );
   mockDetachNativeSessionsForRestart.mockImplementation(actual.detachNativeSessionsForRestart);
   mockCloseIdleWarmNativeSessionsForRestart.mockImplementation(actual.closeIdleWarmNativeSessionsForRestart);
   return {
     ...actual,
     reconcileRetainedNativeSessionCleanup: mockRetainedNativeCleanup,
-    executePaperclipNativeSession: mockExecutePaperclipNativeSession,
+    executeWardmoteNativeSession: mockExecuteWardmoteNativeSession,
     detachNativeSessionsForRestart: mockDetachNativeSessionsForRestart,
     closeIdleWarmNativeSessionsForRestart: mockCloseIdleWarmNativeSessionsForRestart,
   };
@@ -245,7 +245,7 @@ import {
   currentNativeControllerIdentity,
 } from "../services/native-runtime/native-restart-recovery.ts";
 import { claimNativeSessionResumptions } from "../services/native-runtime/native-finalization-reconciler.ts";
-import { PaperclipControlPlanePort } from "../services/native-runtime/paperclip-control-plane-port.js";
+import { WardmoteControlPlanePort } from "../services/native-runtime/paperclip-control-plane-port.js";
 import { finalizeNativeRun } from "../services/native-runtime/native-run-finalizer.js";
 import { recordNativeAttentionAssessment } from "../services/native-runtime/work-assessments.js";
 import { routeNativeAttention } from "../services/native-runtime/native-interaction-bridge.js";
@@ -2190,7 +2190,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     await db.update(heartbeatRuns).set({ nativeIssueId: issueId, nativeSessionId: runId,
       runnerInstanceId, completionContractId: contractId, completionContractSha256: contractSha,
     }).where(eq(heartbeatRuns.id, runId));
-    const makePort = (targetDb = db) => new PaperclipControlPlanePort(targetDb, { companyId, issueId, runId, agentId, sessionId: runId,
+    const makePort = (targetDb = db) => new WardmoteControlPlanePort(targetDb, { companyId, issueId, runId, agentId, sessionId: runId,
       completionContractId: contractId, completionContractSha256: contractSha,
       sourceInstanceId: runnerInstanceId, controlPlaneSourceInstanceId: `finalization-control-${runId}`,
     });
@@ -2251,7 +2251,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
       expect(release).not.toHaveBeenCalled();
       expect(destroy).not.toHaveBeenCalled();
       expect(mockAdapterExecute).not.toHaveBeenCalled();
-      expect(mockExecutePaperclipNativeSession).not.toHaveBeenCalled();
+      expect(mockExecuteWardmoteNativeSession).not.toHaveBeenCalled();
       await waitForPendingRunFailureReports();
       expect(mockCaptureRunFailure).not.toHaveBeenCalled();
       await heartbeat.drainActiveRunExecutions();
@@ -2321,7 +2321,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
       expect((await db.select().from(environmentLeases).where(eq(environmentLeases.id, f.leaseId)))[0].status).toBe("active");
       expect(releaseLease).not.toHaveBeenCalled();
       expect(mockAdapterExecute).not.toHaveBeenCalled();
-      expect(mockExecutePaperclipNativeSession).not.toHaveBeenCalled();
+      expect(mockExecuteWardmoteNativeSession).not.toHaveBeenCalled();
       await waitForPendingRunFailureReports();
       expect(mockCaptureRunFailure).not.toHaveBeenCalled();
     } finally {
@@ -2371,7 +2371,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     expect((await db.select().from(issueRecoveryActions).where(eq(issueRecoveryActions.id, hold.id)))[0])
       .toMatchObject({ status: "resolved", outcome: "restored" });
     expect(await db.select().from(nativeRunResults).where(eq(nativeRunResults.runId, f.runId))).toEqual(accepted);
-    expect(mockExecutePaperclipNativeSession).not.toHaveBeenCalled();
+    expect(mockExecuteWardmoteNativeSession).not.toHaveBeenCalled();
     expect(mockAdapterExecute).not.toHaveBeenCalled();
     await heartbeat.drainActiveRunExecutions();
   });
@@ -2430,7 +2430,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
   it.each(["settled", "rejected", "late_callback", "provider_transport_failed"] as const)(
     "joins startup and reap retained cleanup, keeps recovery live, and drains its %s operation",
     async (outcome) => {
-      await withTempPaperclipHome(async () => {
+      await withTempWardmoteHome(async () => {
         const fixture = await seedRunFixture({ runtimeMode: "native" });
         const { companyId, agentId, issueId, runId } = fixture;
         const contractId = randomUUID();
@@ -2467,7 +2467,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
           .where(eq(heartbeatRuns.id, runId));
         // Use the real accepted-result/finalization path. Only physical cleanup
         // is held below; startup, candidate discovery, reaping and drain are real.
-        const port = new PaperclipControlPlanePort(db, {
+        const port = new WardmoteControlPlanePort(db, {
           companyId,
           issueId,
           runId,
@@ -2628,7 +2628,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
           });
           expect(heartbeat.getTaskDrainStatus().activeRuns).toBeGreaterThan(0);
           expect(mockAdapterExecute).not.toHaveBeenCalled();
-          expect(mockExecutePaperclipNativeSession).not.toHaveBeenCalled();
+          expect(mockExecuteWardmoteNativeSession).not.toHaveBeenCalled();
           release();
           if (pendingOperationDrain) {
             await vi.waitFor(() =>
@@ -2648,7 +2648,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
           });
           expect(mockRetainedNativeCleanup).toHaveBeenCalledTimes(1);
           expect(mockAdapterExecute).not.toHaveBeenCalled();
-          expect(mockExecutePaperclipNativeSession).not.toHaveBeenCalled();
+          expect(mockExecuteWardmoteNativeSession).not.toHaveBeenCalled();
           expect(
             await db
               .select()
@@ -3114,7 +3114,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     expect(retries).toHaveLength(0);
   });
 
-  async function withTempPaperclipHome<T>(
+  async function withTempWardmoteHome<T>(
     fn: (home: string) => Promise<T>,
   ): Promise<T> {
     const home = await fs.mkdtemp(
@@ -3148,7 +3148,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
   }
 
   it("fences native selection when cancellation wins during preparation", async () => {
-    await withTempPaperclipHome(async () => {
+    await withTempWardmoteHome(async () => {
       const { agentId, issueId, runId } = await seedQueuedIssueRunFixture();
       await db.update(agents).set({ adapterType: "wardmote_runner",
         adapterConfig: { provider: "codex", model: "gpt-5.6-luna" },
@@ -3179,7 +3179,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
   });
 
   it("does not dispatch when cancellation wins after native selection", async () => {
-    await withTempPaperclipHome(async () => {
+    await withTempWardmoteHome(async () => {
       const { agentId, issueId, runId } = await seedQueuedIssueRunFixture();
       await db.update(agents).set({ adapterType: "wardmote_runner",
         adapterConfig: { provider: "codex", model: "gpt-5.6-luna" },
@@ -3211,10 +3211,10 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
   });
 
   it("dispatches local native external chat inside the server-selected task root", async () => {
-    await withTempPaperclipHome(async () => {
+    await withTempWardmoteHome(async () => {
       const { companyId, agentId, issueId, runId } =
         await seedQueuedIssueRunFixture();
-      await fs.mkdir(resolvePaperclipInstanceRoot(), { recursive: true });
+      await fs.mkdir(resolveWardmoteInstanceRoot(), { recursive: true });
       await db
         .update(agents)
         .set({
@@ -3253,7 +3253,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
       const input = nativeSessionBackendFactory.mock.calls[0]![0];
       expect(input.workspace.cwd).toBe(
         path.join(
-          await fs.realpath(resolvePaperclipInstanceRoot()),
+          await fs.realpath(resolveWardmoteInstanceRoot()),
           "chat-workspaces",
           companyId,
           agentId,
@@ -3268,7 +3268,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
   });
 
   it("carries the ordinary initial description provenance through native heartbeat assembly", async () => {
-    await withTempPaperclipHome(async () => {
+    await withTempWardmoteHome(async () => {
       const { agentId, issueId, runId } = await seedQueuedIssueRunFixture();
       await db.update(agents).set({
         adapterType: "wardmote_runner",
@@ -3313,7 +3313,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
   });
 
   it("holds admitted native chat with a legacy shared cwd without replacing input or releasing ownership", async () => {
-    await withTempPaperclipHome(async () => {
+    await withTempWardmoteHome(async () => {
       const { companyId, agentId, issueId, runId } =
         await seedQueuedIssueRunFixture();
       const legacyCwd = resolveDefaultAgentWorkspaceDir(agentId);
@@ -3422,7 +3422,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
       expect(mockAdapterExecute).not.toHaveBeenCalled();
       expect(mockTerminateLocalService).not.toHaveBeenCalled();
       await expect(
-        fs.stat(path.join(resolvePaperclipInstanceRoot(), "chat-workspaces")),
+        fs.stat(path.join(resolveWardmoteInstanceRoot(), "chat-workspaces")),
       ).rejects.toMatchObject({ code: "ENOENT" });
       expect(
         await db
@@ -3434,7 +3434,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
   });
 
   it("checkpoints idle warm sessions even when no hot restart was requested", async () => {
-    await withTempPaperclipHome(async () => {
+    await withTempWardmoteHome(async () => {
       mockCloseIdleWarmNativeSessionsForRestart.mockClear();
       const heartbeat = heartbeatService(db);
       await expect(heartbeat.prepareHotRestartShutdown("SIGTERM")).resolves.toMatchObject({ mode: "not_requested" });
@@ -3456,7 +3456,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
       },
     });
 
-    await withTempPaperclipHome(async () => {
+    await withTempWardmoteHome(async () => {
       await writeHotRestartIntent({
         previousServerPid: process.pid,
         previousServerVersion: "old-version",
@@ -3518,7 +3518,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
         processPid: child.pid ?? null,
         processGroupId: null,
       });
-      await withTempPaperclipHome(async () => {
+      await withTempWardmoteHome(async () => {
         await writeHotRestartIntent({
           previousServerPid: process.pid,
           previousServerVersion: "old-version",
@@ -3576,7 +3576,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
       },
     });
 
-    await withTempPaperclipHome(async (home) => {
+    await withTempWardmoteHome(async (home) => {
       await writeHotRestartIntent({
         previousServerPid: process.pid,
         previousServerVersion: "old-acp-version",
@@ -3666,7 +3666,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
       },
     });
 
-    await withTempPaperclipHome(async (home) => {
+    await withTempWardmoteHome(async (home) => {
       await writeHotRestartIntent({
         previousServerPid: process.pid,
         previousServerVersion: "old-acp-persistence-failure-version",
@@ -3718,7 +3718,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
       processGroupId: null,
     });
 
-    await withTempPaperclipHome(async (home) => {
+    await withTempWardmoteHome(async (home) => {
       await writeHotRestartIntent({
         previousServerPid: process.pid,
         previousServerVersion: "missing-snapshot-version",
@@ -3755,7 +3755,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
       processGroupId: null,
     });
 
-    await withTempPaperclipHome(async (home) => {
+    await withTempWardmoteHome(async (home) => {
       await writeHotRestartIntent({
         previousServerPid: process.pid,
         previousServerVersion: "preflight-race-version",
@@ -13049,7 +13049,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
         errorCode: CHAT_CONTROL_RECOVERY_STOP_CODE,
       });
       expect(mockAdapterExecute).not.toHaveBeenCalled();
-      expect(mockExecutePaperclipNativeSession).not.toHaveBeenCalled();
+      expect(mockExecuteWardmoteNativeSession).not.toHaveBeenCalled();
       expect(
         (
           await db.select().from(issues).where(eq(issues.id, source.issueId))
@@ -13246,7 +13246,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
       errorCode: CHAT_CONTROL_RECOVERY_STOP_CODE,
     });
     expect(mockAdapterExecute).not.toHaveBeenCalled();
-    expect(mockExecutePaperclipNativeSession).not.toHaveBeenCalled();
+    expect(mockExecuteWardmoteNativeSession).not.toHaveBeenCalled();
     expect(runningProcesses.size).toBe(0);
   });
 
@@ -13384,8 +13384,8 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
   it.each(["required", "admitted", "historical"] as const)(
     "rechecks only unadmitted native bootstrap recovery after a committed close: %s",
     async (admission) => {
-      await withTempPaperclipHome(async () => {
-        await fs.mkdir(resolvePaperclipInstanceRoot(), { recursive: true });
+      await withTempWardmoteHome(async () => {
+        await fs.mkdir(resolveWardmoteInstanceRoot(), { recursive: true });
         const { source, child } = await seedPreparedChatRecovery(admission);
         const [prepared] = await db
           .select()
@@ -13426,8 +13426,8 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
   it.each(["admitted", "historical"] as const)(
     "does not acquire a new chat gate lock for protected native recovery: %s",
     async (admission) => {
-      await withTempPaperclipHome(async () => {
-        await fs.mkdir(resolvePaperclipInstanceRoot(), { recursive: true });
+      await withTempWardmoteHome(async () => {
+        await fs.mkdir(resolveWardmoteInstanceRoot(), { recursive: true });
         const { source, child } = await seedPreparedChatRecovery(admission);
         let release!: () => void;
         let locked: Promise<unknown> | undefined;
@@ -14791,7 +14791,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
         },
       })
       .where(eq(heartbeatRuns.id, runId));
-    const port = new PaperclipControlPlanePort(db, {
+    const port = new WardmoteControlPlanePort(db, {
       companyId,
       issueId,
       runId,
@@ -15146,7 +15146,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
             .where(eq(agentWakeupRequests.companyId, f.companyId)),
         ).toEqual([{ id: f.wakeupRequestId }]);
         expect(mockAdapterExecute).not.toHaveBeenCalled();
-        expect(mockExecutePaperclipNativeSession).not.toHaveBeenCalled();
+        expect(mockExecuteWardmoteNativeSession).not.toHaveBeenCalled();
       },
     );
 
@@ -15316,7 +15316,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
           ?.status,
       ).toBe("in_progress");
       expect(mockAdapterExecute).not.toHaveBeenCalled();
-      expect(mockExecutePaperclipNativeSession).not.toHaveBeenCalled();
+      expect(mockExecuteWardmoteNativeSession).not.toHaveBeenCalled();
     });
 
     it.each(["edited_source", "newer_request"] as const)(
@@ -15348,7 +15348,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
             ?.status,
         ).toBe("in_progress");
         expect(mockAdapterExecute).not.toHaveBeenCalled();
-        expect(mockExecutePaperclipNativeSession).not.toHaveBeenCalled();
+        expect(mockExecuteWardmoteNativeSession).not.toHaveBeenCalled();
       },
     );
   });
@@ -15965,7 +15965,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
         runnerInstanceId,
       })
       .where(eq(heartbeatRuns.id, runId));
-    const port = new PaperclipControlPlanePort(db, {
+    const port = new WardmoteControlPlanePort(db, {
       companyId,
       issueId,
       runId,
@@ -16592,11 +16592,11 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     expect(runs).toHaveLength(1);
   });
   describe("accepted Cursor planning boundaries", () => {
-  const nativeImplementation = mockExecutePaperclipNativeSession.getMockImplementation();
+  const nativeImplementation = mockExecuteWardmoteNativeSession.getMockImplementation();
   beforeEach(() => {
-    mockExecutePaperclipNativeSession.mockImplementation(async () => { throw new Error("Accepted-plan tests must never execute a provider"); });
+    mockExecuteWardmoteNativeSession.mockImplementation(async () => { throw new Error("Accepted-plan tests must never execute a provider"); });
   });
-  afterEach(() => { mockExecutePaperclipNativeSession.mockImplementation(nativeImplementation!); });
+  afterEach(() => { mockExecuteWardmoteNativeSession.mockImplementation(nativeImplementation!); });
 
   async function seedAcceptedCursorPlanWait(semanticFinish = false, sourceSequenceOffset = 0) {
     const f = await seedStrandedIssueFixture({ status: "in_progress", runStatus: "succeeded", livenessState: "advanced" });
@@ -16628,7 +16628,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     const answer = buildQuestionResponseDeliveryEnvelope(interaction as never);
     const [delivery] = await db.insert(issueQuestionResponseDeliveries).values({ companyId: f.companyId, issueId: f.issueId, interactionId,
       sourceRunId: f.runId, targetRunId: f.runId, correlationId: randomUUID(), status: "delivered", deliveryMode: "steered", acknowledgedAt: new Date(), payloadSha256: nativeSha256(answer) }).returning();
-    const port = new PaperclipControlPlanePort(db, { companyId: f.companyId, issueId: f.issueId, runId: f.runId, agentId: f.agentId,
+    const port = new WardmoteControlPlanePort(db, { companyId: f.companyId, issueId: f.issueId, runId: f.runId, agentId: f.agentId,
       sessionId: f.runId, completionContractId: contractId, completionContractSha256: contractSha, sourceInstanceId: instance, controlPlaneSourceInstanceId: `control-${f.runId}` });
     const events = [
       { eventType: "runtime_request.created", payload: { request: { schema: "paperclip.runtime_request.v2", requestKind: "runtime", requestId: "request", type: "input", status: "pending", turnId: "turn", itemId: "native-plan-tool", prompt: "Review plan",
@@ -16685,7 +16685,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
       expect(await hasCommittedNativePlanWait(db, f)).toBe(true);
     } finally { resolver.mockRestore(); }
     expect(await db.select().from(agentWakeupRequests).where(eq(agentWakeupRequests.companyId, f.companyId))).toHaveLength(1);
-    expect(mockAdapterExecute).not.toHaveBeenCalled(); expect(mockExecutePaperclipNativeSession).not.toHaveBeenCalled();
+    expect(mockAdapterExecute).not.toHaveBeenCalled(); expect(mockExecuteWardmoteNativeSession).not.toHaveBeenCalled();
   });
 
   it("retains an exact historical Cursor6 committed wait across more than 1000 ignored progress rows without allowing new unbound admission", async () => {
@@ -16769,7 +16769,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
       const [agent] = await db.select().from(agents).where(eq(agents.id, f.agentId));
       expect(agent!.adapterConfig.acpxSessionMode).toBe("plan");
       expect(await hasCommittedNativePlanWait(db, f)).toBe(false);
-      expect(mockExecutePaperclipNativeSession).not.toHaveBeenCalled();
+      expect(mockExecuteWardmoteNativeSession).not.toHaveBeenCalled();
     } finally {
       await db.update(heartbeatRuns).set({ status: "cancelled", finishedAt: new Date() }).where(and(eq(heartbeatRuns.companyId, f.companyId), inArray(heartbeatRuns.status, ["running", "queued"])));
       await db.update(agentWakeupRequests).set({ status: "cancelled", finishedAt: new Date() }).where(and(eq(agentWakeupRequests.companyId, f.companyId), inArray(agentWakeupRequests.status, ["queued", "claimed"])));

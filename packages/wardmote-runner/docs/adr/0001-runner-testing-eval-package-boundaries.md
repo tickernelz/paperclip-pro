@@ -91,7 +91,7 @@ contracts are published in `WARDMOTE_RUNNER_COMPATIBILITY`:
 | Testkit | 1 | Breaking mock seed, vector, observation, or conformance behavior requires a new version |
 | Eval corpus | 1 | Runner declares a supported inclusive corpus-version range; out-of-range bundles fail before execution |
 
-`assertPaperclipRunnerCompatibility` performs a fail-closed preflight. It emits
+`assertWardmoteRunnerCompatibility` performs a fail-closed preflight. It emits
 `wardmote_runner_incompatible` with stable issue codes for component mismatch,
 unsupported corpus versions, unknown catalog operations, missing provider
 capability declarations, and provider-operation gaps. Provider-specific runtime

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { createTestHarness } from "../src/testing.js";
-import type { PaperclipPluginManifestV1 } from "../src/types.js";
+import type { WardmotePluginManifestV1 } from "../src/types.js";
 
 const manifest = {
   id: "paperclip.test-actions",
@@ -13,7 +13,7 @@ const manifest = {
   categories: ["automation"],
   capabilities: [],
   entrypoints: {},
-} satisfies PaperclipPluginManifestV1;
+} satisfies WardmotePluginManifestV1;
 
 describe("createTestHarness action context", () => {
   it("passes immutable authenticated actor context and overrides caller company scope", async () => {

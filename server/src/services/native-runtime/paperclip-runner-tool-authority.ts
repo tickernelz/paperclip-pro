@@ -31,8 +31,8 @@ import { connectionsSearchInputSchema, connectionRequestInputSchema, CONNECTION_
 import { createHash, randomUUID } from "node:crypto";
 import { paperclipChatFilePreparationDelivery } from "@tickernelz/wardmote-adapter-utils/chat-file-delivery";
 import {
-  isPaperclipExternalChatContractTurn,
-  normalizePaperclipWakePayload,
+  isWardmoteExternalChatContractTurn,
+  normalizeWardmoteWakePayload,
 } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import { runnerApiToolsEnabled } from "./runner-api-rollout.js";
 import { openRunnerApiWorkspaceFile } from "./runner-api-files.js";
@@ -211,7 +211,7 @@ function canonicalJson(value: unknown): string {
   return JSON.stringify(value) ?? "null";
 }
 
-export class PaperclipRunnerToolAuthority {
+export class WardmoteRunnerToolAuthority {
   #taskAttachmentCache = new TaskAttachmentReadCache();
   close() { this.#taskAttachmentCache.close(); }
   constructor(readonly db: Db, readonly binding: Binding) {}
@@ -373,7 +373,7 @@ export class PaperclipRunnerToolAuthority {
       if (!(this.binding.connectorAssignments ?? []).some((assignment) => assignment.tools.some((tool) => tool.name === call.tool))) throw forbidden("Connector tool is not available to this run");
       const { run } = await this.#boundContext();
       const snapshot = record(run.contextSnapshot);
-      if (call.tool.startsWith("agentmail_") && (isPaperclipExternalChatContractTurn(snapshot.paperclipWake) || String(snapshot.source ?? "").startsWith("chat:") || snapshot.paperclipExternalChatQuestionResponse)) throw forbidden("Restricted chat runs cannot use email actions");
+      if (call.tool.startsWith("agentmail_") && (isWardmoteExternalChatContractTurn(snapshot.paperclipWake) || String(snapshot.source ?? "").startsWith("chat:") || snapshot.paperclipExternalChatQuestionResponse)) throw forbidden("Restricted chat runs cannot use email actions");
       return executeConnectorTool(this.db, this.binding, call.tool, call.arguments);
     }
     if (RUNTIME_CONNECTION_TOOL_DEFINITIONS.some((tool) => tool.name === call.tool)) {
@@ -2010,10 +2010,10 @@ export class PaperclipRunnerToolAuthority {
           operationId === REUSE_CHAT_ATTACHMENT_TOOL_NAME;
         const snapshot = record(context.run.contextSnapshot);
         const wake = snapshot.paperclipWake;
-        const normalized = normalizePaperclipWakePayload(wake);
+        const normalized = normalizeWardmoteWakePayload(wake);
         let provider =
           normalized?.issue?.id === this.binding.issueId &&
-          isPaperclipExternalChatContractTurn(wake)
+          isWardmoteExternalChatContractTurn(wake)
             ? normalized.externalChatProvider
             : null;
         if (

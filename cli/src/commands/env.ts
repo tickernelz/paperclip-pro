@@ -1,6 +1,6 @@
 import * as p from "@clack/prompts";
 import pc from "picocolors";
-import type { PaperclipConfig } from "../config/schema.js";
+import type { WardmoteConfig } from "../config/schema.js";
 import { configExists, readConfig, resolveConfigPath } from "../config/store.js";
 import {
   readAgentJwtSecretFromEnv,
@@ -10,7 +10,7 @@ import {
 import {
   resolveDefaultSecretsKeyFilePath,
   resolveDefaultStorageDir,
-  resolvePaperclipInstanceId,
+  resolveWardmoteInstanceId,
 } from "../config/home.js";
 
 type EnvSource = "env" | "config" | "file" | "default" | "missing";
@@ -30,17 +30,17 @@ const DEFAULT_HEARTBEAT_SCHEDULER_INTERVAL_MS = "30000";
 const DEFAULT_SECRETS_PROVIDER = "local_encrypted";
 const DEFAULT_STORAGE_PROVIDER = "local_disk";
 function defaultSecretsKeyFilePath(): string {
-  return resolveDefaultSecretsKeyFilePath(resolvePaperclipInstanceId());
+  return resolveDefaultSecretsKeyFilePath(resolveWardmoteInstanceId());
 }
 function defaultStorageBaseDir(): string {
-  return resolveDefaultStorageDir(resolvePaperclipInstanceId());
+  return resolveDefaultStorageDir(resolveWardmoteInstanceId());
 }
 
 export async function envCommand(opts: { config?: string }): Promise<void> {
   p.intro(pc.bgCyan(pc.black(" wardmote env ")));
 
   const configPath = resolveConfigPath(opts.config);
-  let config: PaperclipConfig | null = null;
+  let config: WardmoteConfig | null = null;
   let configReadError: string | null = null;
 
   if (configExists(opts.config)) {
@@ -109,7 +109,7 @@ export async function envCommand(opts: { config?: string }): Promise<void> {
   p.outro("Done");
 }
 
-function collectDeploymentEnvRows(config: PaperclipConfig | null, configPath: string): EnvVarRow[] {
+function collectDeploymentEnvRows(config: WardmoteConfig | null, configPath: string): EnvVarRow[] {
   const agentJwtEnvFile = resolveAgentJwtEnvFile(configPath);
   const jwtEnv = readAgentJwtSecretFromEnv(configPath);
   const jwtFile = jwtEnv ? null : readAgentJwtSecretFromEnvFile(agentJwtEnvFile);

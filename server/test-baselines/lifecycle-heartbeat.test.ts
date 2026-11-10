@@ -30,7 +30,7 @@ import {
   CONTROL_PLANE_CONFORMANCE_TERMINAL,
 } from "../src/vendor/wardmote-runner/testing.js";
 import { observe } from "../../tests/lifecycle-baseline/observe.js";
-import { PaperclipRunnerToolAuthority } from "../src/services/native-runtime/paperclip-runner-tool-authority.js";
+import { WardmoteRunnerToolAuthority } from "../src/services/native-runtime/paperclip-runner-tool-authority.js";
 import { issueThreadInteractionService } from "../src/services/issue-thread-interactions.js";
 import { questionResponseDeliveryService } from "../src/services/question-response-delivery.js";
 const execute = vi.hoisted(() => vi.fn());
@@ -190,7 +190,7 @@ describe("LCA full heartbeat observation", () => {
           providerTurns++;
           operations++;
           if (result.reportedWorkDisposition === "yielded") {
-            await new PaperclipRunnerToolAuthority(db, input.binding).execute({
+            await new WardmoteRunnerToolAuthority(db, input.binding).execute({
               tool: "request_human_input", callId: `step-${providerTurns}`,
               arguments: {
                 interactionKind: "questions", idempotencyKey: `step-${providerTurns}`,

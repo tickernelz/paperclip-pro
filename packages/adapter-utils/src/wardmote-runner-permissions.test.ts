@@ -1,14 +1,14 @@
-import { resolvePaperclipRunnerPiThinkingLevel } from "./wardmote-runner-permissions.js";
+import { resolveWardmoteRunnerPiThinkingLevel } from "./wardmote-runner-permissions.js";
 import { describe, expect, it } from "vitest";
 
 import {
   WARDMOTE_RUNNER_DEFAULT_MODELS,
   WARDMOTE_RUNNER_ACPX_PROFILES,
   paperclipRunnerTransitionConfig,
-  isPaperclipRunnerProvider,
-  resolvePaperclipRunnerModel,
-  resolvePaperclipRunnerPermissionMode,
-  resolvePaperclipRunnerCursorMode,
+  isWardmoteRunnerProvider,
+  resolveWardmoteRunnerModel,
+  resolveWardmoteRunnerPermissionMode,
+  resolveWardmoteRunnerCursorMode,
 } from "./wardmote-runner-permissions.js";
 
 describe("Paperclip Runner permission defaults", () => {
@@ -20,24 +20,24 @@ describe("Paperclip Runner permission defaults", () => {
     }
   });
   it("defaults Codex to the only qualified non-interactive mode", () => {
-    expect(resolvePaperclipRunnerPermissionMode("codex", undefined)).toBe(
+    expect(resolveWardmoteRunnerPermissionMode("codex", undefined)).toBe(
       "never",
     );
-    expect(resolvePaperclipRunnerPermissionMode("codex", "on-request")).toBe("never");
-    expect(resolvePaperclipRunnerPermissionMode("codex", "untrusted")).toBe("never");
+    expect(resolveWardmoteRunnerPermissionMode("codex", "on-request")).toBe("never");
+    expect(resolveWardmoteRunnerPermissionMode("codex", "untrusted")).toBe("never");
   });
 
   it("defaults Claude and OpenCode to full auto", () => {
-    expect(resolvePaperclipRunnerPermissionMode("opencode", undefined)).toBe(
+    expect(resolveWardmoteRunnerPermissionMode("opencode", undefined)).toBe(
       "allow",
     );
-    expect(resolvePaperclipRunnerPermissionMode("acpx", undefined)).toBe(
+    expect(resolveWardmoteRunnerPermissionMode("acpx", undefined)).toBe(
       "approve-all",
     );
   });
 
   it.each(["approve-paperclip", "approve-reads", "deny-all", "approve-all"])("preserves explicit Claude %s settings", (mode) => {
-    expect(resolvePaperclipRunnerPermissionMode("acpx", mode)).toBe(mode);
+    expect(resolveWardmoteRunnerPermissionMode("acpx", mode)).toBe(mode);
   });
 
   it.each([
@@ -49,61 +49,61 @@ describe("Paperclip Runner permission defaults", () => {
   });
 
   it("recognizes only exact provider identifiers", () => {
-    expect(isPaperclipRunnerProvider("codex")).toBe(true);
-    expect(isPaperclipRunnerProvider("opencode")).toBe(true);
-    expect(isPaperclipRunnerProvider("claude_managed")).toBe(true);
-    expect(isPaperclipRunnerProvider("aws_agentcore")).toBe(true);
-    expect(isPaperclipRunnerProvider("acpx")).toBe(true);
-    expect(isPaperclipRunnerProvider("toString")).toBe(false);
-    expect(isPaperclipRunnerProvider("__proto__")).toBe(false);
+    expect(isWardmoteRunnerProvider("codex")).toBe(true);
+    expect(isWardmoteRunnerProvider("opencode")).toBe(true);
+    expect(isWardmoteRunnerProvider("claude_managed")).toBe(true);
+    expect(isWardmoteRunnerProvider("aws_agentcore")).toBe(true);
+    expect(isWardmoteRunnerProvider("acpx")).toBe(true);
+    expect(isWardmoteRunnerProvider("toString")).toBe(false);
+    expect(isWardmoteRunnerProvider("__proto__")).toBe(false);
   });
 
   it("keeps managed provider permissions under the qualified profile", () => {
-    expect(resolvePaperclipRunnerPermissionMode("claude_managed", "never"))
+    expect(resolveWardmoteRunnerPermissionMode("claude_managed", "never"))
       .toBe("provider-managed");
-    expect(resolvePaperclipRunnerPermissionMode("aws_agentcore", "approve-all"))
+    expect(resolveWardmoteRunnerPermissionMode("aws_agentcore", "approve-all"))
       .toBe("provider-managed");
   });
 
   it("uses the Codex default for missing or blank models", () => {
-    expect(resolvePaperclipRunnerModel("codex", undefined)).toBe(
+    expect(resolveWardmoteRunnerModel("codex", undefined)).toBe(
       WARDMOTE_RUNNER_DEFAULT_MODELS.codex,
     );
-    expect(resolvePaperclipRunnerModel("codex", "   ")).toBe(
+    expect(resolveWardmoteRunnerModel("codex", "   ")).toBe(
       WARDMOTE_RUNNER_DEFAULT_MODELS.codex,
     );
   });
 
   it("preserves an explicit Codex model", () => {
-    expect(resolvePaperclipRunnerModel("codex", "gpt-5.5")).toBe("gpt-5.5");
-    expect(resolvePaperclipRunnerModel("codex", "  gpt-5.5  ")).toBe("gpt-5.5");
+    expect(resolveWardmoteRunnerModel("codex", "gpt-5.5")).toBe("gpt-5.5");
+    expect(resolveWardmoteRunnerModel("codex", "  gpt-5.5  ")).toBe("gpt-5.5");
   });
 });
 
 
 describe("Cursor session mode admission", () => {
   it.each([undefined, "agent", "plan", "ask"])("retains mode %s with an explicit Cursor default", mode => {
-    expect(resolvePaperclipRunnerCursorMode("acpx", "cursor", mode)).toBe(mode ?? "agent");
+    expect(resolveWardmoteRunnerCursorMode("acpx", "cursor", mode)).toBe(mode ?? "agent");
   });
   it.each([null, "", "auto", "PLAN", true, {}, ["plan"]])("rejects invalid mode %j", mode => {
-    expect(() => resolvePaperclipRunnerCursorMode("acpx", "cursor", mode)).toThrow("Cursor session mode");
+    expect(() => resolveWardmoteRunnerCursorMode("acpx", "cursor", mode)).toThrow("Cursor session mode");
   });
   it.each([["codex", "cursor"], ["acpx", "copilot"], ["acpx", "pi"], ["acpx", "claude"]])("rejects mode on %s/%s", (provider, agent) => {
-    expect(resolvePaperclipRunnerCursorMode(provider, agent, undefined)).toBeUndefined();
-    expect(() => resolvePaperclipRunnerCursorMode(provider, agent, "plan")).toThrow("only for Cursor");
+    expect(resolveWardmoteRunnerCursorMode(provider, agent, undefined)).toBeUndefined();
+    expect(() => resolveWardmoteRunnerCursorMode(provider, agent, "plan")).toThrow("only for Cursor");
   });
 });
 
 describe("Pi thinking configuration", () => {
   it.each([undefined, "off", "low", "high", "max"] as const)("persists exact level %s with low as the fresh-config default", value => {
-    expect(resolvePaperclipRunnerPiThinkingLevel("acpx", "pi", value)).toBe(value ?? "low");
+    expect(resolveWardmoteRunnerPiThinkingLevel("acpx", "pi", value)).toBe(value ?? "low");
   });
   it.each(["medium", "minimal", "xhigh", "", null, 1])("rejects unsupported alias %s", value => {
-    expect(() => resolvePaperclipRunnerPiThinkingLevel("acpx", "pi", value)).toThrow();
+    expect(() => resolveWardmoteRunnerPiThinkingLevel("acpx", "pi", value)).toThrow();
   });
   it("rejects foreign provider settings", () => {
-    expect(() => resolvePaperclipRunnerPiThinkingLevel("codex", "pi", "low")).toThrow(/only/);
-    expect(() => resolvePaperclipRunnerPiThinkingLevel("acpx", "cursor", "low")).toThrow(/only/);
-    expect(resolvePaperclipRunnerPiThinkingLevel("codex", undefined, undefined)).toBeUndefined();
+    expect(() => resolveWardmoteRunnerPiThinkingLevel("codex", "pi", "low")).toThrow(/only/);
+    expect(() => resolveWardmoteRunnerPiThinkingLevel("acpx", "cursor", "low")).toThrow(/only/);
+    expect(resolveWardmoteRunnerPiThinkingLevel("codex", undefined, undefined)).toBeUndefined();
   });
 });

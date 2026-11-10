@@ -41,7 +41,7 @@ import { PRP_PROTOCOL_VERSION } from "../protocol/replay-contract.js";
 import { executeNativeSession } from "../native-session-runtime.js";
 import { redactCapabilityEvidenceData } from "./evidence-redaction.js";
 import { NativeSessionCloseUnrecoverableError } from "../contracts/native-session-backend.js";
-import { parsePaperclipQuestionSet } from "../contracts/question-set.js";
+import { parseWardmoteQuestionSet } from "../contracts/question-set.js";
 import { ACPX_CREDENTIAL_BINDING_ENV, createAcpxCredentialBinding, createAcpxSidecarHostEnvironment } from "../drivers/acpx/environment.js";
 import { DurablePrpControlPlane } from "../control-plane/durable-prp-control-plane.js";
 import * as durableControlPlane from "../control-plane/durable-prp-control-plane.js";
@@ -4392,7 +4392,7 @@ it("bridges a runnerd-native question into the server request handler and resolv
     };
     const created = controlState.committedEvents.filter(event => event.eventType === "runtime_request.created");
     expect(created).toHaveLength(1);
-    const input = parsePaperclipQuestionSet(created[0]!.envelope.payload.payload.request!.input);
+    const input = parseWardmoteQuestionSet(created[0]!.envelope.payload.payload.request!.input);
     expect(input.questions[0]!.options![0]!.description).toBe("Deploy safely.");
     expect(input.questions[1]!.options![0]).not.toHaveProperty("description");
     expect(controlState.commands.filter(command => command.type === "request.resolve"))

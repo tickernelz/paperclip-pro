@@ -11,25 +11,25 @@ import {
   renderSystemdUnit,
 } from "../services/service-manager.js";
 import { resolveRestartExpectedVersion, withHotRestartLock } from "../commands/service.js";
-import type { PaperclipConfig } from "../config/schema.js";
+import type { WardmoteConfig } from "../config/schema.js";
 import { buildLocalHealthUrl } from "../utils/health-url.js";
 
 const config = {
   server: { host: "127.0.0.1", port: 3100 },
-} as PaperclipConfig;
+} as WardmoteConfig;
 
-let previousPaperclipHome: string | undefined;
+let previousWardmoteHome: string | undefined;
 let previousServiceManaged: string | undefined;
 
 beforeEach(() => {
-  previousPaperclipHome = process.env.WARDMOTE_HOME;
+  previousWardmoteHome = process.env.WARDMOTE_HOME;
   previousServiceManaged = process.env.WARDMOTE_SERVICE_MANAGED;
   process.env.WARDMOTE_HOME = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-service-restart-"));
 });
 
 afterEach(() => {
-  if (previousPaperclipHome === undefined) delete process.env.WARDMOTE_HOME;
-  else process.env.WARDMOTE_HOME = previousPaperclipHome;
+  if (previousWardmoteHome === undefined) delete process.env.WARDMOTE_HOME;
+  else process.env.WARDMOTE_HOME = previousWardmoteHome;
   if (previousServiceManaged === undefined) delete process.env.WARDMOTE_SERVICE_MANAGED;
   else process.env.WARDMOTE_SERVICE_MANAGED = previousServiceManaged;
 });

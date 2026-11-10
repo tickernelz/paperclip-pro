@@ -7,7 +7,7 @@ import type { AdapterExecutionContext, AdapterRuntimeMcpAccess } from "@tickerne
 import {
   DEFAULT_REMOTE_SANDBOX_ADAPTER_TIMEOUT_SEC,
   prepareAdapterExecutionTargetRuntime,
-  startAdapterExecutionTargetPaperclipBridge,
+  startAdapterExecutionTargetWardmoteBridge,
   startAdapterExecutionTargetProcessSessionBridge,
 } from "@tickernelz/wardmote-adapter-utils/execution-target";
 
@@ -21,7 +21,7 @@ vi.mock("@tickernelz/wardmote-adapter-utils/execution-target", async (importActu
   return {
     ...actual,
     prepareAdapterExecutionTargetRuntime: vi.fn(actual.prepareAdapterExecutionTargetRuntime),
-    startAdapterExecutionTargetPaperclipBridge: vi.fn(actual.startAdapterExecutionTargetPaperclipBridge),
+    startAdapterExecutionTargetWardmoteBridge: vi.fn(actual.startAdapterExecutionTargetWardmoteBridge),
     startAdapterExecutionTargetProcessSessionBridge: vi.fn(actual.startAdapterExecutionTargetProcessSessionBridge),
   };
 });
@@ -1805,8 +1805,8 @@ describe("shared ACPX engine runtime behavior", () => {
     await fs.writeFile(managedAuth, "{\"stale\":true}", "utf8");
 
     const previousCodexHome = process.env.CODEX_HOME;
-    const previousPaperclipHome = process.env.WARDMOTE_HOME;
-    const previousPaperclipInstanceId = process.env.WARDMOTE_INSTANCE_ID;
+    const previousWardmoteHome = process.env.WARDMOTE_HOME;
+    const previousWardmoteInstanceId = process.env.WARDMOTE_INSTANCE_ID;
     try {
       process.env.CODEX_HOME = sourceCodexHome;
       process.env.WARDMOTE_HOME = paperclipHome;
@@ -1820,10 +1820,10 @@ describe("shared ACPX engine runtime behavior", () => {
     } finally {
       if (previousCodexHome === undefined) delete process.env.CODEX_HOME;
       else process.env.CODEX_HOME = previousCodexHome;
-      if (previousPaperclipHome === undefined) delete process.env.WARDMOTE_HOME;
-      else process.env.WARDMOTE_HOME = previousPaperclipHome;
-      if (previousPaperclipInstanceId === undefined) delete process.env.WARDMOTE_INSTANCE_ID;
-      else process.env.WARDMOTE_INSTANCE_ID = previousPaperclipInstanceId;
+      if (previousWardmoteHome === undefined) delete process.env.WARDMOTE_HOME;
+      else process.env.WARDMOTE_HOME = previousWardmoteHome;
+      if (previousWardmoteInstanceId === undefined) delete process.env.WARDMOTE_INSTANCE_ID;
+      else process.env.WARDMOTE_INSTANCE_ID = previousWardmoteInstanceId;
     }
 
     const authStat = await fs.lstat(managedAuth);
@@ -1883,8 +1883,8 @@ describe("shared ACPX engine runtime behavior", () => {
   it("sets GROK_HOME for a Grok run from the company Grok home, and leaves CODEX_HOME unchanged for a Codex run", async () => {
     const root = await makeTempRoot();
     const paperclipHome = path.join(root, "paperclip-home");
-    const previousPaperclipHome = process.env.WARDMOTE_HOME;
-    const previousPaperclipInstanceId = process.env.WARDMOTE_INSTANCE_ID;
+    const previousWardmoteHome = process.env.WARDMOTE_HOME;
+    const previousWardmoteInstanceId = process.env.WARDMOTE_INSTANCE_ID;
     try {
       process.env.WARDMOTE_HOME = paperclipHome;
       process.env.WARDMOTE_INSTANCE_ID = "default";
@@ -1920,10 +1920,10 @@ describe("shared ACPX engine runtime behavior", () => {
       expect(codexEnv.CODEX_HOME).toBe(codexHome);
       expect(codexEnv.GROK_HOME).toBeUndefined();
     } finally {
-      if (previousPaperclipHome === undefined) delete process.env.WARDMOTE_HOME;
-      else process.env.WARDMOTE_HOME = previousPaperclipHome;
-      if (previousPaperclipInstanceId === undefined) delete process.env.WARDMOTE_INSTANCE_ID;
-      else process.env.WARDMOTE_INSTANCE_ID = previousPaperclipInstanceId;
+      if (previousWardmoteHome === undefined) delete process.env.WARDMOTE_HOME;
+      else process.env.WARDMOTE_HOME = previousWardmoteHome;
+      if (previousWardmoteInstanceId === undefined) delete process.env.WARDMOTE_INSTANCE_ID;
+      else process.env.WARDMOTE_INSTANCE_ID = previousWardmoteInstanceId;
     }
   });
 
@@ -3564,7 +3564,7 @@ describe("ACPX engine remote sandbox staging seam (PR 1: workspace + cwd)", () =
     expect(stageArgs.installCommand ?? null).toBeNull();
 
     // Both bridges receive the real (non-null) runtimeRootDir from staging.
-    const paperclipArgs = vi.mocked(startAdapterExecutionTargetPaperclipBridge).mock.calls[0]![0];
+    const paperclipArgs = vi.mocked(startAdapterExecutionTargetWardmoteBridge).mock.calls[0]![0];
     const processArgs = vi.mocked(startAdapterExecutionTargetProcessSessionBridge).mock.calls[0]![0];
     expect(paperclipArgs.runtimeRootDir).toBeTruthy();
     expect(processArgs.runtimeRootDir).toBeTruthy();
@@ -3739,7 +3739,7 @@ describe("ACPX engine remote sandbox staging seam (PR 1: workspace + cwd)", () =
     // with it — still resolves a live handle. The abandon path must stop that
     // handle so no started bridge leaks on partial failure.
     const stop = vi.fn(async () => {});
-    vi.mocked(startAdapterExecutionTargetPaperclipBridge).mockImplementationOnce(async () => {
+    vi.mocked(startAdapterExecutionTargetWardmoteBridge).mockImplementationOnce(async () => {
       throw new Error("paperclip bridge boom");
     });
     vi.mocked(startAdapterExecutionTargetProcessSessionBridge).mockImplementationOnce(
@@ -3849,7 +3849,7 @@ describe("ACPX engine remote sandbox staging seam (PR 1: workspace + cwd)", () =
     // A local (non-remote) run never crosses the staging seam or starts a
     // bridge, and session/new stays on the HOST cwd — byte-identical to today.
     expect(vi.mocked(prepareAdapterExecutionTargetRuntime)).not.toHaveBeenCalled();
-    expect(vi.mocked(startAdapterExecutionTargetPaperclipBridge)).not.toHaveBeenCalled();
+    expect(vi.mocked(startAdapterExecutionTargetWardmoteBridge)).not.toHaveBeenCalled();
     expect(vi.mocked(startAdapterExecutionTargetProcessSessionBridge)).not.toHaveBeenCalled();
     expect(sessionInputs[0]?.cwd).toBe(localCwd);
     expect(runtimeOptions[0]?.cwd).toBe(localCwd);
@@ -4266,7 +4266,7 @@ describe("ACPX engine Claude skill bundle staging (remote ACP lane)", () => {
     const skillsRoot = path.join(localCwd, "skills");
     const review = await createSkill(skillsRoot, "review");
 
-    // A skill whose source is a symlink. `materializePaperclipSkillCopy`
+    // A skill whose source is a symlink. `materializeWardmoteSkillCopy`
     // refuses a symlinked skill root, so this skill's copy fails while its
     // source still exists (it does not hit the separate missing-source
     // filter).
@@ -4344,7 +4344,7 @@ describe("ACPX engine Claude skill bundle staging (remote ACP lane)", () => {
     const review = await createSkill(skillsRoot, "review");
 
     // A skill root that is a real directory (so the copy itself does not
-    // throw), but whose `SKILL.md` is a symlink. `materializePaperclipSkillCopy`
+    // throw), but whose `SKILL.md` is a symlink. `materializeWardmoteSkillCopy`
     // skips a symlinked file entry instead of copying it, so the staged
     // directory ends up with no `SKILL.md`.
     const linkedSkillMdTarget = path.join(skillsRoot, "linked-skill-md-target.md");
@@ -4976,7 +4976,7 @@ describe("ACPX engine remote session-lifecycle re-staging (PR 3: stage once / re
 
     // Run B resumes the same session and borrows the cached staged runtime, but a
     // bridge fails during bring-up.
-    vi.mocked(startAdapterExecutionTargetPaperclipBridge).mockImplementationOnce(async () => {
+    vi.mocked(startAdapterExecutionTargetWardmoteBridge).mockImplementationOnce(async () => {
       throw new Error("paperclip bridge boom");
     });
     await expect(
@@ -6471,7 +6471,7 @@ describe("ACPX engine run lifecycle corrections (F1: settle every failure after 
     const { stateDir, localCwd, executionTarget } = await setupRemoteSandbox();
     const paperclipStop = vi.fn(async () => {});
     const processStop = vi.fn(async () => {});
-    vi.mocked(startAdapterExecutionTargetPaperclipBridge).mockImplementationOnce(
+    vi.mocked(startAdapterExecutionTargetWardmoteBridge).mockImplementationOnce(
       async () => ({ env: {}, stop: paperclipStop }) as never,
     );
     vi.mocked(startAdapterExecutionTargetProcessSessionBridge).mockImplementationOnce(
@@ -6861,7 +6861,7 @@ describe("ACPX engine run lifecycle corrections (F3: one teardown error policy)"
   function stubBridges() {
     const paperclipStops: Array<ReturnType<typeof vi.fn>> = [];
     const processStops: Array<ReturnType<typeof vi.fn>> = [];
-    vi.mocked(startAdapterExecutionTargetPaperclipBridge).mockImplementation(async () => {
+    vi.mocked(startAdapterExecutionTargetWardmoteBridge).mockImplementation(async () => {
       const stop = vi.fn(async () => {});
       paperclipStops.push(stop);
       return { env: {}, stop } as never;
@@ -7475,7 +7475,7 @@ describe("ACPX engine sandbox bridge run-disposition seam (fail-closed)", () => 
     sandbox: Awaited<ReturnType<typeof setupRemoteSandbox>>,
     deps: Partial<AcpxEngineExecutorOptions> = {},
   ) {
-    vi.mocked(startAdapterExecutionTargetPaperclipBridge).mockImplementationOnce(
+    vi.mocked(startAdapterExecutionTargetWardmoteBridge).mockImplementationOnce(
       async () => handle as never,
     );
     vi.mocked(startAdapterExecutionTargetProcessSessionBridge).mockImplementationOnce(
@@ -8288,7 +8288,7 @@ describe("ACPX startup handshake guard and late-completion fence", () => {
       markOrderlyCompletion: () => {},
       stop: async () => {},
     };
-    vi.mocked(startAdapterExecutionTargetPaperclipBridge).mockImplementationOnce(
+    vi.mocked(startAdapterExecutionTargetWardmoteBridge).mockImplementationOnce(
       async () => bridgeHandle as never,
     );
     vi.mocked(startAdapterExecutionTargetProcessSessionBridge).mockImplementationOnce(

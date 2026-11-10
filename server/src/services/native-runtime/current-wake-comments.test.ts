@@ -17,7 +17,7 @@ import {
   readCurrentWakeComments,
   resolveCurrentWakeCommentsBinding,
 } from "./current-wake-comments.js";
-import { buildPaperclipTaskMarkdown } from "../heartbeat.js";
+import { buildWardmoteTaskMarkdown } from "../heartbeat.js";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -306,7 +306,7 @@ describeEmbeddedPostgres("current external-chat wake comment reader", () => {
     );
     expect(JSON.stringify(page)).not.toContain("credential_token");
     expect(
-      buildPaperclipTaskMarkdown({
+      buildWardmoteTaskMarkdown({
         issue: {
           id: seeded.issueId,
           identifier: "WAKE-1",

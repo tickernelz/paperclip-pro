@@ -6,7 +6,7 @@ import type {
   AskUserQuestionsAnswer,
   AskUserQuestionsInteraction,
   AskUserQuestionsQuestion,
-  PaperclipQuestionSetQuestion,
+  WardmoteQuestionSetQuestion,
 } from "@tickernelz/wardmote-shared";
 import {
   Modal,
@@ -203,7 +203,7 @@ function canonicalQuestion(
 function questionSetQuestion(
   interaction: AskUserQuestionsInteraction,
   questionId: string,
-): PaperclipQuestionSetQuestion | null {
+): WardmoteQuestionSetQuestion | null {
   return (
     interaction.payload.questionSet?.questions.find(
       (question) => question.id === questionId,

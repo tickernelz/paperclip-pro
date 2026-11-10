@@ -149,7 +149,7 @@ type LooseRow = {
 // Build a minimal manifest for a persisted row or a shipped bundle. The reconcile
 // step compares the bundle version with the persisted version.
 function makeManifest(pluginKey: string, version: string) {
-  return { id: pluginKey, apiVersion: 1, version, capabilities: [] } as unknown as import("@tickernelz/wardmote-shared").PaperclipPluginManifestV1;
+  return { id: pluginKey, apiVersion: 1, version, capabilities: [] } as unknown as import("@tickernelz/wardmote-shared").WardmotePluginManifestV1;
 }
 
 function makeDeps(overrides?: {

@@ -3,7 +3,7 @@ import type { ExecutionContinuationEnvelope, AskUserQuestionsInteraction } from 
 
 import { formatDurableQuestionResponseSummary } from "../question-response-delivery.js";
 import { nativeCompletionSource, buildNativeCompletionContract } from "./completion-contracts.js";
-import { renderPaperclipWakePrompt } from "@tickernelz/wardmote-adapter-utils/server-utils";
+import { renderWardmoteWakePrompt } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import { buildNativeExecutionInput } from "./native-execution-input.js";
 import { nativeRuntimeContextFixture } from "./runtime-context.test-fixture.js";
 import { buildNativeModelEnvelope, canonicalNativeRuntimeContextDigest } from "../../vendor/wardmote-runner/index.js";
@@ -563,8 +563,8 @@ describe("follow-up context size", () => {
       coverage: { kind: "full_task_history", throughCommentId: "new", summaryThroughCommentId: null },
     };
     const wake = { executionContinuation: continuation };
-    const fresh = renderPaperclipWakePrompt(wake);
-    const resumed = renderPaperclipWakePrompt(wake, { resumedSession: true });
+    const fresh = renderWardmoteWakePrompt(wake);
+    const resumed = renderWardmoteWakePrompt(wake, { resumedSession: true });
     const contract = buildNativeCompletionContract({ title: "Welcome", description: oldBody }, {
       immediateRequest: newBody, humanResponseId: "answer-id",
     });

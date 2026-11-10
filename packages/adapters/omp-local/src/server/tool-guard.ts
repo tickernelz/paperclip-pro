@@ -1,6 +1,6 @@
 import path from "node:path";
 import type { AdapterExecutionTarget } from "@tickernelz/wardmote-adapter-utils/execution-target";
-import { writePaperclipMcpMount } from "@tickernelz/wardmote-adapter-utils/wardmote-mcp-mount";
+import { writeWardmoteMcpMount } from "@tickernelz/wardmote-adapter-utils/wardmote-mcp-mount";
 import type { RunToolProfile } from "@tickernelz/wardmote-adapter-utils/tool-profile";
 
 export const OMP_ASYNC_BASH_TIMEOUT_SEC = 3600;
@@ -106,7 +106,7 @@ export async function writeOmpToolGuardExtension(input: {
   graceSec: number;
   profile: RunToolProfile;
 }): Promise<OmpToolGuardExtension> {
-  const mount = await writePaperclipMcpMount({
+  const mount = await writeWardmoteMcpMount({
     runId: input.runId,
     target: input.target,
     remote: input.remote,

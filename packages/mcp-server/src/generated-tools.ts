@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { z } from "zod";
-import type { PaperclipApiClient } from "./client.js";
+import type { WardmoteApiClient } from "./client.js";
 import { expandToolsetUnion } from "./config.js";
 import { assertKnownArguments, formatErrorResponse, formatTextResponse } from "./format.js";
 import type { ToolDefinition } from "./tools.js";
@@ -137,7 +137,7 @@ function inputSchema(spec: GeneratedToolSpec): z.ZodObject {
   });
 }
 
-function requestPath(client: PaperclipApiClient, spec: GeneratedToolSpec, values: Record<string, unknown>) {
+function requestPath(client: WardmoteApiClient, spec: GeneratedToolSpec, values: Record<string, unknown>) {
   let path = spec.path;
   const query = new URLSearchParams();
   for (const parameter of spec.parameters) {
@@ -166,7 +166,7 @@ function requestPath(client: PaperclipApiClient, spec: GeneratedToolSpec, values
 
 export function bindGeneratedTools(
   prepared: ReadonlyArray<PreparedGeneratedTool>,
-  client: PaperclipApiClient,
+  client: WardmoteApiClient,
 ): ToolDefinition[] {
   return prepared.map(({ spec, schema }) => ({
     name: spec.name,
@@ -207,7 +207,7 @@ export function bindGeneratedTools(
 }
 
 export function createGeneratedToolDefinitions(
-  client: PaperclipApiClient,
+  client: WardmoteApiClient,
   toolsets: ReadonlyArray<ToolsetName>,
   management = false,
 ): ToolDefinition[] {

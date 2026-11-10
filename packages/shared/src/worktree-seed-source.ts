@@ -1,6 +1,6 @@
 import { existsSync, lstatSync, readFileSync, realpathSync, statSync, type Stats } from "node:fs";
 import path from "node:path";
-import { resolvePaperclipInstanceId } from "./home-paths.js";
+import { resolveWardmoteInstanceId } from "./home-paths.js";
 
 export type WorktreeSeedSourceDiagnostic = {
   configPath?: unknown;
@@ -29,7 +29,7 @@ function readInstanceId(configPath: string, label: "source" | "target"): string 
     // An instance-root config (`<home>/instances/<id>/config.json`) names its instance
     // by directory rather than by an adjacent .env; worktree configs always ship one.
     if (path.basename(path.dirname(configDir)) === "instances") {
-      return resolvePaperclipInstanceId(path.basename(configDir));
+      return resolveWardmoteInstanceId(path.basename(configDir));
     }
     throw new Error(`Registered ${label} Wardmote config is missing its adjacent .env instance pointer.`);
   }

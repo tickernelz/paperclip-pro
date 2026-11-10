@@ -3,8 +3,8 @@ import path from "node:path";
 import {
   expandHomePrefix,
   resolveDefaultEmbeddedPostgresDir,
-  resolvePaperclipConfigPathForInstance,
-  resolvePaperclipEnvPathForConfig,
+  resolveWardmoteConfigPathForInstance,
+  resolveWardmoteEnvPathForConfig,
 } from "@tickernelz/wardmote-shared/home-paths";
 
 const CONFIG_BASENAME = "config.json";
@@ -54,15 +54,15 @@ function findConfigFileFromAncestors(startDir: string): string | null {
   }
 }
 
-function resolvePaperclipConfigPath(): string {
+function resolveWardmoteConfigPath(): string {
   if (process.env.WARDMOTE_CONFIG?.trim()) {
     return path.resolve(process.env.WARDMOTE_CONFIG.trim());
   }
-  return findConfigFileFromAncestors(process.cwd()) ?? resolvePaperclipConfigPathForInstance();
+  return findConfigFileFromAncestors(process.cwd()) ?? resolveWardmoteConfigPathForInstance();
 }
 
-function resolvePaperclipEnvPath(configPath: string): string {
-  return resolvePaperclipEnvPathForConfig(configPath);
+function resolveWardmoteEnvPath(configPath: string): string {
+  return resolveWardmoteEnvPathForConfig(configPath);
 }
 
 function parseEnvFile(contents: string): Record<string, string> {
@@ -182,8 +182,8 @@ function readConfig(configPath: string): PartialConfig | null {
 }
 
 export function resolveDatabaseTarget(): ResolvedDatabaseTarget {
-  const configPath = resolvePaperclipConfigPath();
-  const envPath = resolvePaperclipEnvPath(configPath);
+  const configPath = resolveWardmoteConfigPath();
+  const envPath = resolveWardmoteEnvPath(configPath);
   const envEntries = readEnvEntries(envPath);
 
   const envUrl = process.env.DATABASE_URL?.trim();
