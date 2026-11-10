@@ -2,7 +2,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { migrateHomeCommand, type MigrateHomeDependencies } from "../commands/migrate-home.js";
+import { hasLegacyInstall, migrateHomeCommand, type MigrateHomeDependencies } from "../commands/migrate-home.js";
 
 let userHome: string;
 let legacy: string;
@@ -87,6 +87,30 @@ describe("migrate-home", () => {
     const log = vi.fn();
     await migrateHomeCommand({}, deps({ log }));
     expect(log).toHaveBeenCalledWith("Nothing to migrate: this install already uses the Wardmote names.");
+  });
+
+  it("reports a retired-marker shim it cannot recognise once and does not loop on it", async () => {
+    const binDir = path.join(userHome, ".local", "bin");
+    fs.mkdirSync(binDir, { recursive: true });
+    const odd = path.join(binDir, path.basename(unitPath, ".service"));
+    fs.writeFileSync(odd, `#!/bin/sh\n# ${legacyShimMarker}\nexec node x "$@"\n`);
+    const log = vi.fn();
+    await migrateHomeCommand({}, deps({ log }));
+    const lines = log.mock.calls.map(([line]) => String(line));
+    expect(lines.some((line) => line.includes(`Left ${odd} in place`))).toBe(true);
+    expect(lines.some((line) => line.includes("shim with"))).toBe(false);
+    expect(fs.existsSync(odd)).toBe(true);
+    expect(hasLegacyInstall(userHome, "linux")).toBe(false);
+  });
+
+  it("moves the unit's drop-in directory with it", async () => {
+    const dropIns = `${unitPath}.d`;
+    fs.mkdirSync(dropIns);
+    fs.writeFileSync(path.join(dropIns, "memory.conf"), `[Service]\nMemoryMax=4G\nEnvironmentFile=-${legacy}/x.env\n`);
+    await migrateHomeCommand({}, deps());
+    expect(fs.existsSync(dropIns)).toBe(false);
+    expect(fs.readFileSync(path.join(path.dirname(unitPath), "wardmote.service.d", "memory.conf"), "utf8"))
+      .toBe(`[Service]\nMemoryMax=4G\nEnvironmentFile=-${target}/x.env\n`);
   });
 
   it("leaves a command it does not manage in place", async () => {

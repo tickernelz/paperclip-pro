@@ -9,6 +9,7 @@ import {
   MANAGED_STORE_MARKER,
   PATH_BLOCK_END,
   PATH_BLOCK_START,
+  isManagedShimContents,
   removeShimFile,
   resolveInstallStorePaths,
   writeFileAtomic,
@@ -144,12 +145,17 @@ function readIfExists(filePath: string): string | null {
 }
 
 /** True when the default home or managed install still uses the retired layout. */
+function isLegacyShim(file: string): boolean {
+  const contents = readIfExists(file);
+  return contents !== null && isManagedShimContents(contents, LEGACY_SHIM_MARKER);
+}
+
 export function hasLegacyInstall(userHomeDir = os.homedir(), platform: NodeJS.Platform = process.platform): boolean {
   const source = path.join(userHomeDir, LEGACY_HOME_DIRNAME);
   const stat = fs.lstatSync(source, { throwIfNoEntry: false });
   return Boolean(stat && !stat.isSymbolicLink())
     || legacyDefinitions(platform, userHomeDir).length > 0
-    || Boolean(readIfExists(path.join(userHomeDir, ".local", "bin", LEGACY_PRODUCT))?.includes(`# ${LEGACY_SHIM_MARKER}\n`));
+    || isLegacyShim(path.join(userHomeDir, ".local", "bin", LEGACY_PRODUCT));
 }
 
 /** Moves the retired home, service definitions, shims and markers to the Wardmote names; idempotent. */
@@ -173,6 +179,7 @@ export async function migrateHomeCommand(
     if (state === "running") live.push(`service ${unit}`);
     if (state === "unknown") live.push(`service ${unit} (state could not be read)`);
     if (fs.existsSync(definition.to)) throw new Error(`Refusing to migrate ${unit}: ${definition.to} already exists.`);
+    if (fs.existsSync(`${definition.to}.d`)) throw new Error(`Refusing to migrate ${unit}: ${definition.to}.d already exists.`);
   }
   if (live.length > 0) {
     throw new Error(`Stop Wardmote before migrating the home; still running: ${live.join(", ")}.`);
@@ -181,7 +188,9 @@ export async function migrateHomeCommand(
   const binDir = path.join(deps.userHomeDir, ".local", "bin");
   const legacyShim = path.join(binDir, LEGACY_PRODUCT);
   const shim = path.join(binDir, "wardmote");
-  const legacyShims = [legacyShim, shim].filter((file) => readIfExists(file)?.includes(`# ${LEGACY_SHIM_MARKER}\n`));
+  const legacyShims = [legacyShim, shim].filter(isLegacyShim);
+  const unrecognizedShims = [legacyShim, shim]
+    .filter((file) => !legacyShims.includes(file) && readIfExists(file)?.includes(`# ${LEGACY_SHIM_MARKER}\n`));
   const rcFiles = [".bashrc", ".zshrc"].map((name) => path.join(deps.userHomeDir, name))
     .filter((file) => readIfExists(file)?.includes(LEGACY_PATH_BLOCK_START));
   const storeHome = home === "absent" ? source : target;
@@ -190,11 +199,14 @@ export async function migrateHomeCommand(
 
   const steps = [
     home === "move" ? `move ${source} to ${target} and link ${source} -> ${target}` : null,
-    ...definitions.map((definition) => `replace ${path.basename(definition.from)} with ${path.basename(definition.to)}`),
+    ...definitions.map((definition) => `replace ${path.basename(definition.from)}${fs.existsSync(`${definition.from}.d`) ? " and its drop-in directory" : ""} with ${path.basename(definition.to)}`),
     legacyStore ? "rewrite the managed install store marker" : null,
     ...legacyShims.map((file) => `replace the ${path.basename(file)} shim with ${shim}`),
     ...rcFiles.map((file) => `rename the managed PATH block in ${file}`),
   ].filter((step): step is string => step !== null);
+  for (const file of unrecognizedShims) {
+    deps.log(pc.yellow(`Left ${file} in place: it carries the retired shim marker but not the shape this release writes. Remove it yourself.`));
+  }
   if (steps.length === 0) {
     deps.log("Nothing to migrate: this install already uses the Wardmote names.");
     return;
@@ -216,15 +228,27 @@ export async function migrateHomeCommand(
     fs.symlinkSync(target, source, "dir");
   }
 
-  for (const definition of definitions) {
-    const content = fs.readFileSync(definition.from, "utf8")
+  const rewrite = (file: string, to: string) => {
+    const content = fs.readFileSync(file, "utf8")
       .replaceAll(source, target)
       .replaceAll(legacyShim, shim)
       .replaceAll(LEGACY_LAUNCHD_LABEL, launchdServiceName("default"));
+    writeFileAtomic(to, content, fs.statSync(file).mode & 0o777);
+    fs.rmSync(file);
+  };
+  for (const definition of definitions) {
     const enabled = deps.platform === "linux" && await deps.unitEnabled(path.basename(definition.from));
     if (enabled) await deps.setUnitEnabled(path.basename(definition.from), false);
-    writeFileAtomic(definition.to, content, fs.statSync(definition.from).mode & 0o777);
-    fs.rmSync(definition.from);
+    rewrite(definition.from, definition.to);
+    const dropIns = `${definition.from}.d`;
+    if (fs.existsSync(dropIns)) {
+      fs.mkdirSync(`${definition.to}.d`, { mode: fs.statSync(dropIns).mode & 0o777 });
+      for (const entry of fs.readdirSync(dropIns, { withFileTypes: true })) {
+        if (!entry.isFile()) throw new Error(`Refusing to move ${path.join(dropIns, entry.name)}: it is not a regular file.`);
+        rewrite(path.join(dropIns, entry.name), path.join(`${definition.to}.d`, entry.name));
+      }
+      fs.rmdirSync(dropIns);
+    }
     if (enabled) {
       await deps.reloadUnits();
       await deps.setUnitEnabled(path.basename(definition.to), true);
