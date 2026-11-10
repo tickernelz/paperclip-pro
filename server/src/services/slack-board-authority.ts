@@ -40,7 +40,7 @@ export async function slackBoardAuthor(db: Reader, endpoint: Endpoint, userId: s
     .where(and(
       eq(chatIdentityLinks.companyId, endpoint.companyId),
       eq(chatIdentityLinks.endpointId, endpoint.id),
-      eq(chatIdentityLinks.paperclipUserId, userId),
+      eq(chatIdentityLinks.wardmoteUserId, userId),
       eq(chatIdentityLinks.status, "linked"),
       isNull(chatIdentityLinks.revokedAt),
     ))

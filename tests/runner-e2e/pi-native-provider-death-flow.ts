@@ -93,7 +93,7 @@ export async function runPiPendingProviderDeath(input: {
     const workspaceId = run.contextSnapshot?.executionWorkspaceId;
     demand(typeof workspaceId === "string" && workspaceId.length > 0
       && run.runnerProfileJson?.nativeExecutionInput?.binding?.executionWorkspaceId === workspaceId
-      && run.contextSnapshot?.paperclipEnvironment?.leaseId === input.fixture.binding.leaseId
+      && run.contextSnapshot?.wardmoteEnvironment?.leaseId === input.fixture.binding.leaseId
       && input.fixture.baseline.scope.observedPrpEnvironmentLeaseId === workspaceId, "native run/lease/workspace binding unavailable");
     await expect(input.page.getByTestId("question-text-answer-composer").filter({ visible: true })).toHaveCount(1);
     await input.capture("pi-provider-death-pending", "Unanswered native Pi input before provider loss", "pi-provider-death-pending.png");

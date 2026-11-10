@@ -10,7 +10,7 @@ import { queryKeys } from "@/lib/queryKeys";
 import { isImageLikeOutput, isVideoLikeOutput } from "@/lib/issue-output";
 import { TaskChatBubble } from "@/components/task-chat/TaskChatBubble";
 import { workProductHref } from "@/lib/issue-artifacts";
-import { createIssue, storybookAgents } from "../fixtures/paperclipData";
+import { createIssue, storybookAgents } from "../fixtures/wardmoteData";
 import manila from "../fixtures/artifact-media/manila-ledger.mp4?url";
 import night from "../fixtures/artifact-media/night-pills.mp4?url";
 import tickets from "../fixtures/artifact-media/ticket-board.mp4?url";

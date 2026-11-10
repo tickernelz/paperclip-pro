@@ -1,6 +1,6 @@
 export interface BuildCiliumNetworkPolicyInput {
   namespace: string;
-  paperclipServerNamespace: string;
+  wardmoteServerNamespace: string;
   egressAllowFqdns: string[];
   egressAllowCidrs: string[];
   name?: string;
@@ -42,7 +42,7 @@ export function buildCiliumNetworkPolicyManifest(input: BuildCiliumNetworkPolicy
     toEndpoints: [
       {
         matchLabels: {
-          "k8s:io.kubernetes.pod.namespace": input.paperclipServerNamespace,
+          "k8s:io.kubernetes.pod.namespace": input.wardmoteServerNamespace,
           app: "paperclip-server",
         },
       },

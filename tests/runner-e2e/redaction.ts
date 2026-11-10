@@ -40,10 +40,10 @@ export function normalizedSecrets(values: readonly (string | undefined)[]) {
 }
 
 export function isEphemeralCodexRuntimeAuthFile(
-  paperclipHome: string,
+  wardmoteHome: string,
   file: string,
 ) {
-  const relative = path.relative(paperclipHome, file).split(path.sep).join("/");
+  const relative = path.relative(wardmoteHome, file).split(path.sep).join("/");
   return (
     /^instances\/[^/]+\/companies\/[^/]+\/agents\/[^/]+\/codex-home\/auth\.json$/.test(
       relative,
@@ -177,16 +177,16 @@ export function assertSecretFree(
   if (leak) throw new Error(`Secret leak in ${label}: ${leak}`);
 }
 
-export function isEphemeralPostgresPidFile(paperclipHome: string, file: string): boolean {
-  const relative = path.relative(paperclipHome, file).split(path.sep).join("/");
+export function isEphemeralPostgresPidFile(wardmoteHome: string, file: string): boolean {
+  const relative = path.relative(wardmoteHome, file).split(path.sep).join("/");
   return /^instances\/[^/]+\/db\/postmaster\.pid$/.test(relative);
 }
 
-export function isEphemeralPostgresScanFile(paperclipHome: string, file: string): boolean {
-  const relative = path.relative(paperclipHome, file).split(path.sep).join("/");
+export function isEphemeralPostgresScanFile(wardmoteHome: string, file: string): boolean {
+  const relative = path.relative(wardmoteHome, file).split(path.sep).join("/");
   // A relation can be unlinked during PostgreSQL shutdown/checkpoint. Existing
   // files are always scanned; this predicate only permits ENOENT after readdir.
-  return isEphemeralPostgresPidFile(paperclipHome, file) ||
+  return isEphemeralPostgresPidFile(wardmoteHome, file) ||
     /^instances\/[^/]+\/db\/base\/\d+\/\d+(?:_(?:fsm|vm|init))?(?:\.\d+)?$/.test(relative);
 }
 

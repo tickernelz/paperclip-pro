@@ -419,7 +419,7 @@ describe("WikiRouteSidebar", () => {
 
     expect(navigatedTo).toEqual({
       to: "/wiki/page/wiki/concepts/sidebar-navigation.md",
-      options: { state: { paperclipWikiSidebarTreePath: "wiki/concepts/sidebar-navigation.md" } },
+      options: { state: { wardmoteWikiSidebarTreePath: "wiki/concepts/sidebar-navigation.md" } },
     });
     // The default space stays the active space, so its tree is rendered in the
     // sidebar; non-default spaces only render their tree once activated.

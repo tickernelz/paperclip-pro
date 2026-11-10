@@ -276,8 +276,8 @@ function buildContext(root: string, overrides: Partial<AdapterExecutionContext> 
     },
     context: {
       issueId: "issue-1",
-      paperclipTaskMarkdown: "Task context",
-      paperclipWorkspace: {
+      wardmoteTaskMarkdown: "Task context",
+      wardmoteWorkspace: {
         cwd: root,
         source: "project_workspace",
         workspaceId: "workspace-1",
@@ -750,7 +750,7 @@ describe("codex_local ACP lane", () => {
         modelReasoningEffort: "high",
         fastMode: true,
         promptTemplate: "Do the assigned work.",
-        paperclipRuntimeSkills: [skill],
+        wardmoteRuntimeSkills: [skill],
         wardmoteSkillSync: { desiredSkills: [skill.key] },
       },
       onMeta: async (payload: AdapterInvocationMeta) => {
@@ -823,9 +823,9 @@ describe("codex_local ACP lane", () => {
     const result = await execute(buildContext(root, {
       context: {
         issueId: issue.id,
-        paperclipTaskMarkdown: historicalMarkdown,
-        paperclipTaskMarkdownAssignment: assignmentMarkdown,
-        paperclipWake: {
+        wardmoteTaskMarkdown: historicalMarkdown,
+        wardmoteTaskMarkdownAssignment: assignmentMarkdown,
+        wardmoteWake: {
           reason: "issue_commented",
           issue: { ...issue, status: "in_progress" },
           comments: comments.map((comment, index) => ({
@@ -836,7 +836,7 @@ describe("codex_local ACP lane", () => {
           commentWindow: { requestedCount: 2, includedCount: 2, missingCount: 0 },
           fallbackFetchNeeded: false,
         },
-        paperclipTurnContext: {
+        wardmoteTurnContext: {
           version: 1,
           assignment: { owner: "task_markdown" },
           events: {
@@ -847,7 +847,7 @@ describe("codex_local ACP lane", () => {
             ],
           },
         },
-        paperclipWorkspace: { cwd: root, source: "project_workspace", workspaceId: "workspace-1" },
+        wardmoteWorkspace: { cwd: root, source: "project_workspace", workspaceId: "workspace-1" },
       },
     }));
     expect(result.exitCode).toBe(0);
@@ -888,8 +888,8 @@ describe("codex_local ACP lane", () => {
         },
         context: {
           issueId: "issue-1",
-          paperclipTaskMarkdown: "Task context",
-          paperclipWorkspace: { cwd: localCwd, source: "project_workspace", workspaceId: "workspace-1" },
+          wardmoteTaskMarkdown: "Task context",
+          wardmoteWorkspace: { cwd: localCwd, source: "project_workspace", workspaceId: "workspace-1" },
         },
         executionTarget: {
           kind: "remote",
@@ -946,7 +946,7 @@ describe("codex_local ACP lane", () => {
         },
         context: {
           issueId: "issue-1",
-          paperclipWorkspace: { cwd: localCwd, source: "project_workspace", workspaceId: "workspace-1" },
+          wardmoteWorkspace: { cwd: localCwd, source: "project_workspace", workspaceId: "workspace-1" },
         },
         executionTarget: {
           kind: "remote",
@@ -1018,7 +1018,7 @@ describe("codex_local ACP lane", () => {
         },
         context: {
           issueId: "issue-1",
-          paperclipWorkspace: { cwd: localCwd, source: "project_workspace", workspaceId: "workspace-1" },
+          wardmoteWorkspace: { cwd: localCwd, source: "project_workspace", workspaceId: "workspace-1" },
         },
         executionTarget: {
           kind: "remote",
@@ -1072,7 +1072,7 @@ describe("codex_local ACP lane", () => {
       },
       context: {
         issueId: "issue-1",
-        paperclipWorkspace: { cwd: localCwd, source: "project_workspace", workspaceId: "workspace-1" },
+        wardmoteWorkspace: { cwd: localCwd, source: "project_workspace", workspaceId: "workspace-1" },
       },
       executionTarget: {
         kind: "remote",
@@ -1122,7 +1122,7 @@ describe("codex_local ACP lane", () => {
       },
       context: {
         issueId: "issue-1",
-        paperclipWorkspace: { cwd: localCwd, source: "project_workspace", workspaceId: "workspace-1" },
+        wardmoteWorkspace: { cwd: localCwd, source: "project_workspace", workspaceId: "workspace-1" },
       },
       executionTarget: {
         kind: "remote",
@@ -1180,7 +1180,7 @@ describe("codex_local ACP lane", () => {
         },
         context: {
           issueId: "issue-1",
-          paperclipWorkspace: { cwd: localCwd, source: "project_workspace", workspaceId: "workspace-1" },
+          wardmoteWorkspace: { cwd: localCwd, source: "project_workspace", workspaceId: "workspace-1" },
         },
         executionTarget: {
           kind: "remote",
@@ -1248,7 +1248,7 @@ describe("codex_local ACP lane", () => {
         },
         context: {
           issueId: "issue-1",
-          paperclipWorkspace: { cwd: localCwd, source: "project_workspace", workspaceId: "workspace-1" },
+          wardmoteWorkspace: { cwd: localCwd, source: "project_workspace", workspaceId: "workspace-1" },
         },
         executionTarget: {
           kind: "remote",
@@ -1326,7 +1326,7 @@ describe("codex_local ACP lane", () => {
         },
         context: {
           issueId: "issue-1",
-          paperclipWorkspace: { cwd: localCwd, source: "project_workspace", workspaceId: "workspace-1" },
+          wardmoteWorkspace: { cwd: localCwd, source: "project_workspace", workspaceId: "workspace-1" },
         },
         executionTarget: {
           kind: "remote",
@@ -1382,7 +1382,7 @@ describe("codex_local ACP lane", () => {
         },
         context: {
           issueId: "issue-1",
-          paperclipWorkspace: { cwd: localCwd, source: "project_workspace", workspaceId: "workspace-1" },
+          wardmoteWorkspace: { cwd: localCwd, source: "project_workspace", workspaceId: "workspace-1" },
         },
         executionTarget: {
           kind: "remote",

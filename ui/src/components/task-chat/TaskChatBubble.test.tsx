@@ -8,7 +8,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { IssueGalleryContext } from "@/context/IssueGalleryContext";
 import { TaskChatBubble } from "./TaskChatBubble";
-import { paperclipHumanAvatarUrl } from "@/lib/issue-chat-human-author";
+import { wardmoteHumanAvatarUrl } from "@/lib/issue-chat-human-author";
 import type { TaskChatMessageItem } from "./task-chat-model";
 
 describe("TaskChatBubble attachment chips", () => {
@@ -77,9 +77,9 @@ describe("TaskChatBubble attachment chips", () => {
     const identity = container.querySelector('[data-testid="task-chat-human-identity"]');
     expect(identity?.querySelector("img")).toBeNull();
     expect(identity?.querySelector('[data-slot="avatar-fallback"]')?.textContent).toBe("SR");
-    expect(paperclipHumanAvatarUrl("/api/assets/sam/content")).toBe("/api/assets/sam/content");
-    expect(paperclipHumanAvatarUrl("https://example.com/track.png")).toBeNull();
-    expect(paperclipHumanAvatarUrl("//example.com/track.png")).toBeNull();
+    expect(wardmoteHumanAvatarUrl("/api/assets/sam/content")).toBe("/api/assets/sam/content");
+    expect(wardmoteHumanAvatarUrl("https://example.com/track.png")).toBeNull();
+    expect(wardmoteHumanAvatarUrl("//example.com/track.png")).toBeNull();
   });
 
   it("shows persistent iMessage attribution only on inbound human bubbles", () => {

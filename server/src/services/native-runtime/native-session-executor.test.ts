@@ -11170,7 +11170,7 @@ describe("runnerd provider runtime wiring", () => {
                       scenario === "missing process identity" ? null : 90000001,
                     processGroupId: 90000001,
                     contextSnapshot: {
-                      paperclipEnvironment: { driver: "local" },
+                      wardmoteEnvironment: { driver: "local" },
                     },
                   },
                 ]),

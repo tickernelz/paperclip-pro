@@ -176,13 +176,13 @@ describe("withQueuedCommentIdsInRunContext", () => {
     const result = withQueuedCommentIdsInRunContext({
       issueId: "issue-1",
       preserved: "keep",
-      paperclipWake: { comments: [{ id: "comment-1" }] },
-      paperclipWakeComment: { id: "comment-1" },
-      paperclipTaskMarkdown: "historical",
-      paperclipTaskMarkdownCompact: "historical compact",
-      paperclipTaskMarkdownAssignment: "assignment",
-      paperclipTaskMarkdownAssignmentCompact: "assignment compact",
-      paperclipTurnContext: { version: 1, events: { owner: "wake_prompt" } },
+      wardmoteWake: { comments: [{ id: "comment-1" }] },
+      wardmoteWakeComment: { id: "comment-1" },
+      wardmoteTaskMarkdown: "historical",
+      wardmoteTaskMarkdownCompact: "historical compact",
+      wardmoteTaskMarkdownAssignment: "assignment",
+      wardmoteTaskMarkdownAssignmentCompact: "assignment compact",
+      wardmoteTurnContext: { version: 1, events: { owner: "wake_prompt" } },
     }, ["comment-2"]);
 
     expect(result).toMatchObject({
@@ -192,12 +192,12 @@ describe("withQueuedCommentIdsInRunContext", () => {
       wakeCommentId: "comment-2",
       commentId: "comment-2",
     });
-    expect(result).not.toHaveProperty("paperclipWake");
-    expect(result).not.toHaveProperty("paperclipWakeComment");
-    expect(result).not.toHaveProperty("paperclipTaskMarkdown");
-    expect(result).not.toHaveProperty("paperclipTaskMarkdownCompact");
-    expect(result).not.toHaveProperty("paperclipTaskMarkdownAssignment");
-    expect(result).not.toHaveProperty("paperclipTaskMarkdownAssignmentCompact");
-    expect(result).not.toHaveProperty("paperclipTurnContext");
+    expect(result).not.toHaveProperty("wardmoteWake");
+    expect(result).not.toHaveProperty("wardmoteWakeComment");
+    expect(result).not.toHaveProperty("wardmoteTaskMarkdown");
+    expect(result).not.toHaveProperty("wardmoteTaskMarkdownCompact");
+    expect(result).not.toHaveProperty("wardmoteTaskMarkdownAssignment");
+    expect(result).not.toHaveProperty("wardmoteTaskMarkdownAssignmentCompact");
+    expect(result).not.toHaveProperty("wardmoteTurnContext");
   });
 });

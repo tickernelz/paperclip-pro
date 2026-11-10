@@ -288,7 +288,7 @@ function readContainmentComments(db: Db, issueIds: string[]) {
 
 function readAdapterWorkspace(input: unknown) {
   const context = (input as { context?: Record<string, unknown> }).context ?? {};
-  const workspace = context.paperclipWorkspace as Record<string, unknown> | undefined;
+  const workspace = context.wardmoteWorkspace as Record<string, unknown> | undefined;
   const cwd = typeof workspace?.cwd === "string" ? workspace.cwd : null;
   const branchName = typeof workspace?.branchName === "string" ? workspace.branchName : null;
   const executionWorkspaceId =
@@ -296,7 +296,7 @@ function readAdapterWorkspace(input: unknown) {
   if (!cwd || !branchName || !executionWorkspaceId) {
     throw new Error("Adapter input is missing execution workspace context");
   }
-  const wake = context.paperclipWake as { executionWorkspace?: { branchName?: string } } | undefined;
+  const wake = context.wardmoteWake as { executionWorkspace?: { branchName?: string } } | undefined;
   if (wake?.executionWorkspace?.branchName !== branchName) {
     throw new Error("Adapter wake payload is missing the execution workspace branch pin");
   }
@@ -1015,7 +1015,7 @@ describeEmbeddedPostgres("heartbeat workspace branch containment", () => {
     expect(run).toMatchObject({ status: "succeeded" });
     expect(adapterExecute).toHaveBeenCalledTimes(1);
     expect(readAdapterWorkspace(adapterExecute.mock.calls[0]?.[0])).toEqual({ cwd: seeded.worktree, branchName: seeded.branch, executionWorkspaceId: seeded.executionWorkspaceId });
-    expect(adapterExecute.mock.calls[0]?.[0]).toMatchObject({ context: { paperclipWorkspace: {
+    expect(adapterExecute.mock.calls[0]?.[0]).toMatchObject({ context: { wardmoteWorkspace: {
       projectId: seeded.projectId, workspaceId: null, repoUrl: seeded.repoUrl, repoRef: "HEAD", source: "task_session",
     } } });
     const [workspace] = await db.select().from(executionWorkspaces).where(eq(executionWorkspaces.id, seeded.executionWorkspaceId));

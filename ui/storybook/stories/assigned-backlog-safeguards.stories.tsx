@@ -5,7 +5,7 @@ import type { IssueRelationIssueSummary } from "@tickernelz/wardmote-shared";
 import { IssueAssignedBacklogNotice } from "@/components/IssueAssignedBacklogNotice";
 import { IssueBlockedNotice } from "@/components/IssueBlockedNotice";
 import { IssueRow } from "@/components/IssueRow";
-import { storybookAgents, createIssue } from "../fixtures/paperclipData";
+import { storybookAgents, createIssue } from "../fixtures/wardmoteData";
 
 const codexAgent = storybookAgents.find((agent) => agent.id === "agent-codex") ?? storybookAgents[0]!;
 const qaAgent = storybookAgents.find((agent) => agent.id === "agent-qa") ?? storybookAgents[0]!;

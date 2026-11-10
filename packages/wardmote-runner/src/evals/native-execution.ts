@@ -17,11 +17,11 @@ const TOOL_OUTCOMES = new Set([
   "failed",
 ]);
 
-export const paperclipNativeExecutionSchemaUrl = new URL(
+export const wardmoteNativeExecutionSchemaUrl = new URL(
   "../../protocol/schemas/native-execution.schema.json",
   import.meta.url,
 );
-export const paperclipNativeExecutionFixtureUrl = new URL(
+export const wardmoteNativeExecutionFixtureUrl = new URL(
   "../../protocol/fixtures/evals/native-execution-seeded.json",
   import.meta.url,
 );
@@ -545,7 +545,7 @@ function semanticToolEnvelope(
 }
 
 export async function loadWardmoteNativeExecutionFixture(
-  url: URL = paperclipNativeExecutionFixtureUrl,
+  url: URL = wardmoteNativeExecutionFixtureUrl,
 ): Promise<WardmoteNativeExecutionV1> {
   const value = JSON.parse(await readFile(url, "utf8")) as unknown;
   return parseWardmoteNativeExecution(value);

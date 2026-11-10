@@ -35,7 +35,7 @@ interface CurrentLiveAuthority {
 }
 
 interface RunnerPrpUpgradeRequest extends IncomingMessage {
-  paperclipWebSocketHandled?: boolean;
+  wardmoteWebSocketHandled?: boolean;
 }
 
 const registrations = new Map<string, RegisteredAuthority>();
@@ -90,8 +90,8 @@ export function setupRunnerPrpWebSocketServer(
       if (!url.pathname.startsWith(CONNECT_PATH_PREFIX)) return;
 
       const ownedRequest = request as RunnerPrpUpgradeRequest;
-      if (ownedRequest.paperclipWebSocketHandled) return;
-      ownedRequest.paperclipWebSocketHandled = true;
+      if (ownedRequest.wardmoteWebSocketHandled) return;
+      ownedRequest.wardmoteWebSocketHandled = true;
       socket.on("error", (error) => {
         logger.warn(
           { errorName: error.name },

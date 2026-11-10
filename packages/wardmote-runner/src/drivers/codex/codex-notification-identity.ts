@@ -62,7 +62,7 @@ export function classifyCodexNotification(input: {
     ) ||
     new Set(threads).size > 1 ||
     new Set(turns).size > 1 ||
-    [params.runId, params.paperclipRunId].some(
+    [params.runId, params.wardmoteRunId].some(
       (v) => v !== undefined && v !== input.runId,
     )
   )

@@ -13,7 +13,7 @@ import {
 } from "@tickernelz/wardmote-db";
 import { errorHandler } from "../middleware/index.js";
 import { companySkillRoutes } from "../routes/company-skills.js";
-import { paperclipMcpRoutes } from "../routes/wardmote-mcp.js";
+import { wardmoteMcpRoutes } from "../routes/wardmote-mcp.js";
 import { toolAccessRoutes } from "../routes/tool-access.js";
 import {
   describeEmbeddedPostgres,
@@ -125,7 +125,7 @@ describeEmbeddedPostgres("hosted Paperclip MCP required-body tools", () => {
       req.actor = actor;
       next();
     });
-    api.use(paperclipMcpRoutes(ctx.db));
+    api.use(wardmoteMcpRoutes(ctx.db));
     api.use(companySkillRoutes(ctx.db));
     api.use(toolAccessRoutes(ctx.db, {} as never));
     app.use("/api", api);

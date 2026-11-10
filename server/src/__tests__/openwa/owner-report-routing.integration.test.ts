@@ -301,7 +301,7 @@ describe("OpenWA owner report routing (embedded Postgres + fake gateway)", () =>
     const openwaPayload = (wake.request.payload as { openwa: { triggerClass: string } }).openwa;
     const contextSnapshot: Record<string, unknown> = {
       ...wake.wake.contextSnapshot,
-      paperclipOpenwa: { triggerClass: openwaPayload.triggerClass, ...authority },
+      wardmoteOpenwa: { triggerClass: openwaPayload.triggerClass, ...authority },
     };
     await db.insert(heartbeatRuns).values({
       id: runId,

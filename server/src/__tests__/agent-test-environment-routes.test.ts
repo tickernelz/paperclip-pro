@@ -646,7 +646,7 @@ describe("agent test-environment route", () => {
         code: "sandbox_test_identity",
         level: "info",
         message: 'Environment test identity for "Sandbox QA".',
-        detail: expect.stringContaining("paperclipLeaseId=lease-1"),
+        detail: expect.stringContaining("wardmoteLeaseId=lease-1"),
       }),
       expect.objectContaining({
         code: "external_test_hello_probe_passed",

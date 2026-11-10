@@ -39,7 +39,7 @@ async function waitForRunToFinish(heartbeat: ReturnType<typeof heartbeatService>
 describeEmbeddedPostgres("heartbeat OpenWA run profile at run start", () => {
   let db!: ReturnType<typeof createDb>;
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
-  let paperclipHome: string | null = null;
+  let wardmoteHome: string | null = null;
   const previousHome = process.env.WARDMOTE_HOME;
   const previousApiUrl = process.env.WARDMOTE_API_URL;
   const captured = new Map<string, Record<string, unknown>>();
@@ -47,8 +47,8 @@ describeEmbeddedPostgres("heartbeat OpenWA run profile at run start", () => {
   beforeAll(async () => {
     tempDb = await startEmbeddedPostgresTestDatabase("heartbeat-openwa-profile-");
     db = createDb(tempDb.connectionString);
-    paperclipHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-openwa-profile-home-"));
-    process.env.WARDMOTE_HOME = paperclipHome;
+    wardmoteHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-openwa-profile-home-"));
+    process.env.WARDMOTE_HOME = wardmoteHome;
     process.env.WARDMOTE_API_URL = "http://127.0.0.1:3100/api";
     registerServerAdapter({
       type: TEST_ADAPTER_TYPE,
@@ -70,7 +70,7 @@ describeEmbeddedPostgres("heartbeat OpenWA run profile at run start", () => {
     else process.env.WARDMOTE_HOME = previousHome;
     if (previousApiUrl === undefined) delete process.env.WARDMOTE_API_URL;
     else process.env.WARDMOTE_API_URL = previousApiUrl;
-    if (paperclipHome) await fs.rm(paperclipHome, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
+    if (wardmoteHome) await fs.rm(wardmoteHome, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
     await tempDb?.cleanup();
   });
 
@@ -121,7 +121,7 @@ describeEmbeddedPostgres("heartbeat OpenWA run profile at run start", () => {
       payload: { issueId: target.issueId },
       requestedByActorType: actor.type,
       requestedByActorId: actor.id,
-      contextSnapshot: { issueId: target.issueId, taskId: target.issueId, paperclipToolProfile: "full" },
+      contextSnapshot: { issueId: target.issueId, taskId: target.issueId, wardmoteToolProfile: "full" },
     });
     expect(queued).not.toBeNull();
     const finished = await waitForRunToFinish(heartbeat, queued!.id);
@@ -133,27 +133,27 @@ describeEmbeddedPostgres("heartbeat OpenWA run profile at run start", () => {
   it("writes read_only for a non-owner run on an OpenWA conversation issue before the adapter runs", async () => {
     const target = await seed({ openwa: true });
     const { adapterContext, persisted } = await run(target, { type: "agent", id: target.agentId });
-    expect(adapterContext.paperclipToolProfile).toBe("read_only");
-    expect(adapterContext.paperclipOpenwa).toEqual({
+    expect(adapterContext.wardmoteToolProfile).toBe("read_only");
+    expect(adapterContext.wardmoteOpenwa).toEqual({
       endpointId: target.endpointId, chatKey: "628111@c.us", triggerClass: "other", profile: "read_only",
       toolProfile: "read_only", event: null, grantIds: [], deliveryIds: [], grantedCategories: [], runAllowedCategories: [],
       requesterPrincipalId: null, approvalRequestId: null, triggerPrincipalId: null,
     });
-    expect(persisted).toMatchObject({ paperclipToolProfile: "read_only", paperclipOpenwa: { profile: "read_only" } });
+    expect(persisted).toMatchObject({ wardmoteToolProfile: "read_only", wardmoteOpenwa: { profile: "read_only" } });
   });
 
   it("writes full for a board-user-requested run on an OpenWA conversation issue", async () => {
     const target = await seed({ openwa: true });
     const { adapterContext } = await run(target, { type: "user", id: "board-user" });
-    expect(adapterContext.paperclipToolProfile).toBe("full");
-    expect(adapterContext.paperclipOpenwa).toMatchObject({ triggerClass: "other", profile: "full" });
+    expect(adapterContext.wardmoteToolProfile).toBe("full");
+    expect(adapterContext.wardmoteOpenwa).toMatchObject({ triggerClass: "other", profile: "full" });
   });
 
   it("leaves run contexts on non-OpenWA issues untouched", async () => {
     const target = await seed({ openwa: false });
     const { adapterContext } = await run(target, { type: "agent", id: target.agentId });
-    expect(adapterContext.paperclipToolProfile).toBe("full");
-    expect(adapterContext).not.toHaveProperty("paperclipOpenwa");
+    expect(adapterContext.wardmoteToolProfile).toBe("full");
+    expect(adapterContext).not.toHaveProperty("wardmoteOpenwa");
     expect(adapterContext.issueId).toBe(target.issueId);
   });
 });

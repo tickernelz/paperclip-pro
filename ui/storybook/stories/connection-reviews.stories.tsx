@@ -17,7 +17,7 @@ import { toolsApi } from "@/api/tools";
 import { issuesApi } from "@/api/issues";
 import { ReviewQueueCard } from "@/pages/apps/ReviewQueueCard";
 import type { ToolActionRequestListItem } from "@tickernelz/wardmote-shared";
-import { storybookAgentMap } from "../fixtures/paperclipData";
+import { storybookAgentMap } from "../fixtures/wardmoteData";
 
 const readRequest: RequestConfirmationInteraction = {
   ...pendingToolActionWriteInteraction,

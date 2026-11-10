@@ -71,7 +71,7 @@ export const slackAvatarStateSchema = z.discriminatedUnion("status", [
 export type SlackAvatarState = z.infer<typeof slackAvatarStateSchema>;
 export const slackAccountStateSchema = z.object({
   externalUserId: z.string().regex(/^[UW][A-Z0-9]+$/),
-  paperclipUserId: z.string().min(1),
+  wardmoteUserId: z.string().min(1),
   status: z.enum(["pending", "linked"]),
   welcomeStatus: z.enum(["pending", "sending", "sent", "failed", "uncertain"]),
   verificationStatus: z.enum(["pending", "sending", "sent", "failed", "uncertain"]).optional(),

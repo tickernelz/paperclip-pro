@@ -3805,7 +3805,7 @@ it("rejects active work and buffered tools from a resumed stopped checkpoint", a
               payload: expect.objectContaining({
                 payload: expect.objectContaining({
                   code: "prepared_provider_checkpoint_has_active_work",
-                  paperclipAccepted: false,
+                  wardmoteAccepted: false,
                   providerReportedActive: true,
                 }),
               }),

@@ -119,7 +119,7 @@ fn checkpoints_the_sidecar_and_rebinds_consecutive_warm_runs_before_accepting_wo
                 "run.attach",
                 json!({
                     "provider": descriptor,
-                    "paperclipNextAuthority": {
+                    "wardmoteNextAuthority": {
                         "identity": {
                             "runnerInstanceId": config.runner_instance_id,
                             "environmentLeaseId": config.environment_lease_id,

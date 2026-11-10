@@ -255,8 +255,8 @@ function buildContext(root: string, overrides: Partial<AdapterExecutionContext> 
     },
     context: {
       issueId: "issue-1",
-      paperclipTaskMarkdown: "Task context",
-      paperclipWorkspace: {
+      wardmoteTaskMarkdown: "Task context",
+      wardmoteWorkspace: {
         cwd: root,
         source: "project_workspace",
         workspaceId: "workspace-1",
@@ -559,7 +559,7 @@ describe("claude_local ACP lane", () => {
         model: "claude-opus-4-7",
         effort: "high",
         promptTemplate: "Do the assigned work.",
-        paperclipRuntimeSkills: [skill],
+        wardmoteRuntimeSkills: [skill],
         wardmoteSkillSync: { desiredSkills: [skill.key] },
       },
       onMeta: async (payload: AdapterInvocationMeta) => {
@@ -615,13 +615,13 @@ describe("claude_local ACP lane", () => {
           agentCommand: "node ./fake-acp.js",
           stateDir: path.join(root, "state"),
           promptTemplate: "Do the assigned work.",
-          paperclipRuntimeSkills: [skill],
+          wardmoteRuntimeSkills: [skill],
           wardmoteSkillSync: { desiredSkills: [skill.key] },
         },
         context: {
           issueId: "issue-1",
-          paperclipTaskMarkdown: "Task context",
-          paperclipWorkspace: { cwd: localCwd, source: "project_workspace", workspaceId: "workspace-1" },
+          wardmoteTaskMarkdown: "Task context",
+          wardmoteWorkspace: { cwd: localCwd, source: "project_workspace", workspaceId: "workspace-1" },
         },
         executionTarget: {
           kind: "remote",
@@ -663,7 +663,7 @@ describe("claude_local ACP lane", () => {
     const root = await makeTempRoot("paperclip-claude-acp-skills-remote-empty-");
     // An available-but-undesired skill, so the run resolves a real (empty)
     // selection instead of falling back to the package's own default skill
-    // set (that fallback only fires when `paperclipRuntimeSkills` is absent).
+    // set (that fallback only fires when `wardmoteRuntimeSkills` is absent).
     const skill = await createRuntimeSkill(root);
     const localCwd = path.join(root, "worktree");
     const remoteCwd = path.join(root, "remote-workspace");
@@ -687,12 +687,12 @@ describe("claude_local ACP lane", () => {
           agentCommand: "node ./fake-acp.js",
           stateDir: path.join(root, "state"),
           promptTemplate: "Do the assigned work.",
-          paperclipRuntimeSkills: [skill],
+          wardmoteRuntimeSkills: [skill],
           wardmoteSkillSync: { desiredSkills: [] },
         },
         context: {
           issueId: "issue-1",
-          paperclipWorkspace: { cwd: localCwd, source: "project_workspace", workspaceId: "workspace-1" },
+          wardmoteWorkspace: { cwd: localCwd, source: "project_workspace", workspaceId: "workspace-1" },
         },
         executionTarget: {
           kind: "remote",
@@ -742,12 +742,12 @@ describe("claude_local ACP lane", () => {
           agentCommand: "node ./fake-acp.js",
           stateDir: path.join(root, "state"),
           promptTemplate: "Do the assigned work.",
-          paperclipRuntimeSkills: [skill],
+          wardmoteRuntimeSkills: [skill],
           wardmoteSkillSync: { desiredSkills: [skill.key] },
         },
         context: {
           issueId: "issue-1",
-          paperclipWorkspace: { cwd: localCwd, source: "project_workspace", workspaceId: "workspace-1" },
+          wardmoteWorkspace: { cwd: localCwd, source: "project_workspace", workspaceId: "workspace-1" },
         },
         executionTarget: {
           kind: "remote",
@@ -830,8 +830,8 @@ describe("claude_local ACP lane", () => {
         },
         context: {
           issueId: "issue-1",
-          paperclipTaskMarkdown: "Task context",
-          paperclipWorkspace: { cwd: localCwd, source: "project_workspace", workspaceId: "workspace-1" },
+          wardmoteTaskMarkdown: "Task context",
+          wardmoteWorkspace: { cwd: localCwd, source: "project_workspace", workspaceId: "workspace-1" },
         },
         executionTarget: {
           kind: "remote",
@@ -884,7 +884,7 @@ describe("claude_local ACP lane", () => {
         },
         context: {
           issueId: "issue-1",
-          paperclipWorkspace: { cwd: localCwd, source: "project_workspace", workspaceId: "workspace-1" },
+          wardmoteWorkspace: { cwd: localCwd, source: "project_workspace", workspaceId: "workspace-1" },
         },
         executionTarget: {
           kind: "remote",
@@ -970,7 +970,7 @@ describe("claude_local ACP lane", () => {
         },
         context: {
           issueId: "issue-1",
-          paperclipWorkspace: { cwd: localCwd, source: "project_workspace", workspaceId: "workspace-1" },
+          wardmoteWorkspace: { cwd: localCwd, source: "project_workspace", workspaceId: "workspace-1" },
         },
         executionTarget: {
           kind: "remote",
@@ -1045,7 +1045,7 @@ describe("claude_local ACP lane", () => {
           },
           context: {
             issueId: "issue-1",
-            paperclipWorkspace: { cwd: localCwd, source: "project_workspace", workspaceId: "workspace-1" },
+            wardmoteWorkspace: { cwd: localCwd, source: "project_workspace", workspaceId: "workspace-1" },
           },
           executionTarget: {
             kind: "remote",
@@ -1116,7 +1116,7 @@ describe("claude_local ACP lane", () => {
         },
         context: {
           issueId: "issue-1",
-          paperclipWorkspace: { cwd: localCwd, source: "project_workspace", workspaceId: "workspace-1" },
+          wardmoteWorkspace: { cwd: localCwd, source: "project_workspace", workspaceId: "workspace-1" },
         },
         executionTarget: {
           kind: "remote",
@@ -1187,7 +1187,7 @@ describe("claude_local ACP lane", () => {
         },
         context: {
           issueId: "issue-1",
-          paperclipWorkspace: { cwd: localCwd, source: "project_workspace", workspaceId: "workspace-1" },
+          wardmoteWorkspace: { cwd: localCwd, source: "project_workspace", workspaceId: "workspace-1" },
         },
         executionTarget: {
           kind: "remote",
@@ -1275,9 +1275,9 @@ describe("claude_local ACP lane", () => {
     const result = await execute(buildContext(root, {
       context: {
         issueId: issue.id,
-        paperclipTaskMarkdown: historicalMarkdown,
-        paperclipTaskMarkdownAssignment: assignmentMarkdown,
-        paperclipWake: {
+        wardmoteTaskMarkdown: historicalMarkdown,
+        wardmoteTaskMarkdownAssignment: assignmentMarkdown,
+        wardmoteWake: {
           reason: "issue_commented",
           issue: { ...issue, status: "in_progress" },
           comments: comments.map((comment, index) => ({
@@ -1288,7 +1288,7 @@ describe("claude_local ACP lane", () => {
           commentWindow: { requestedCount: 2, includedCount: 2, missingCount: 0 },
           fallbackFetchNeeded: false,
         },
-        paperclipTurnContext: {
+        wardmoteTurnContext: {
           version: 1,
           assignment: { owner: "task_markdown" },
           events: {
@@ -1299,7 +1299,7 @@ describe("claude_local ACP lane", () => {
             ],
           },
         },
-        paperclipWorkspace: { cwd: root, source: "project_workspace", workspaceId: "workspace-1" },
+        wardmoteWorkspace: { cwd: root, source: "project_workspace", workspaceId: "workspace-1" },
       },
     }));
     expect(result.exitCode).toBe(0);
@@ -1316,7 +1316,7 @@ describe("claude_local ACP lane", () => {
     const context = {
       ...fixture,
       issueId: "issue-1",
-      paperclipWorkspace: { cwd: root, source: "project_workspace", workspaceId: "workspace-1" },
+      wardmoteWorkspace: { cwd: root, source: "project_workspace", workspaceId: "workspace-1" },
     };
     const execute = createClaudeAcpExecutor({
       createRuntime: (options: FakeRuntimeOptions) => {
@@ -1329,17 +1329,17 @@ describe("claude_local ACP lane", () => {
     const fresh = await execute(buildContext(root, { context }));
     const freshPrompt = String(runtimes[0]?.startInputs[0]?.text ?? "");
     expect(fresh.exitCode).toBe(0);
-    expect(freshPrompt).toContain(context.paperclipTaskMarkdownAssignment);
-    expect(freshPrompt.split(context.paperclipTaskMarkdownAssignment).length).toBe(2);
-    expect(freshPrompt).toContain(context.paperclipTaskCommunicationGuidance);
-    expect(freshPrompt).not.toContain(context.paperclipTaskMarkdownAssignmentCompact);
+    expect(freshPrompt).toContain(context.wardmoteTaskMarkdownAssignment);
+    expect(freshPrompt.split(context.wardmoteTaskMarkdownAssignment).length).toBe(2);
+    expect(freshPrompt).toContain(context.wardmoteTaskCommunicationGuidance);
+    expect(freshPrompt).not.toContain(context.wardmoteTaskMarkdownAssignmentCompact);
     expect(freshPrompt).toContain("\"id\":\"comment-first\"");
     expect(freshPrompt).toContain("\"id\":\"comment-second\"");
     expect(freshPrompt).toContain("\"id\":\"comment-scope\"");
     expect(freshPrompt.indexOf("\"id\":\"comment-first\"")).toBeLessThan(freshPrompt.indexOf("\"id\":\"comment-second\""));
     expect(freshPrompt.indexOf("\"id\":\"comment-second\"")).toBeLessThan(freshPrompt.indexOf("\"id\":\"comment-scope\""));
     expect(freshPrompt.split("Append the same ledger entry.")).toHaveLength(3);
-    expect(freshPrompt.split(fixture.paperclipWake.issue.description)).toHaveLength(2);
+    expect(freshPrompt.split(fixture.wardmoteWake.issue.description)).toHaveLength(2);
     expect(freshPrompt).not.toContain('"objective":"');
     expect(freshPrompt).toContain("Untrusted continuation evidence");
     expect(freshPrompt).toContain("receipt-1");
@@ -1356,8 +1356,8 @@ describe("claude_local ACP lane", () => {
     const resumedPrompt = String(runtimes[1]?.startInputs[0]?.text ?? "");
     expect(resumed.exitCode).toBe(0);
     expect(runtimes[1]?.ensureInputs[0]?.resumeSessionId).toBe("acp-1");
-    expect(resumedPrompt).toContain(context.paperclipTaskMarkdownAssignmentCompact);
-    expect(resumedPrompt).not.toContain(context.paperclipTaskCommunicationGuidance);
+    expect(resumedPrompt).toContain(context.wardmoteTaskMarkdownAssignmentCompact);
+    expect(resumedPrompt).not.toContain(context.wardmoteTaskCommunicationGuidance);
     expect(resumedPrompt).not.toContain("\"id\":\"comment-first\"");
     expect(resumedPrompt).toContain("\"id\":\"comment-second\"");
     expect(resumedPrompt).toContain("\"id\":\"comment-scope\"");
@@ -1371,17 +1371,17 @@ describe("claude_local ACP lane", () => {
     const compact = "## Compact assignment";
     const context = {
       issueId: "issue-1",
-      paperclipTaskMarkdownAssignment: assignment,
-      paperclipTaskMarkdownAssignmentCompact: compact,
-      paperclipTaskCommunicationGuidance: "Explain the next step before starting work.",
-      paperclipWake: {
+      wardmoteTaskMarkdownAssignment: assignment,
+      wardmoteTaskMarkdownAssignmentCompact: compact,
+      wardmoteTaskCommunicationGuidance: "Explain the next step before starting work.",
+      wardmoteWake: {
         reason: "issue_commented",
         issue: { id: "issue-1", identifier: "PAP-1", title: "Launch card", description: "Rebuild the launch card.", status: "in_progress" },
         comments: [{ id: "comment-retry", body: "Preserve this retry request." }],
         commentWindow: { requestedCount: 1, includedCount: 1, missingCount: 0 },
         fallbackFetchNeeded: false,
       },
-      paperclipWorkspace: { cwd: root, source: "project_workspace", workspaceId: "workspace-1" },
+      wardmoteWorkspace: { cwd: root, source: "project_workspace", workspaceId: "workspace-1" },
     };
     const execute = createClaudeAcpExecutor({
       createRuntime: (options: FakeRuntimeOptions) => {
@@ -1438,9 +1438,9 @@ describe("claude_local ACP lane", () => {
     ].join("\n");
     const wakeContext = (reason: string) => ({
       issueId: "issue-1",
-      paperclipTaskMarkdown: fullTaskMarkdown,
-      paperclipTaskMarkdownCompact: compactTaskMarkdown,
-      paperclipWake: {
+      wardmoteTaskMarkdown: fullTaskMarkdown,
+      wardmoteTaskMarkdownCompact: compactTaskMarkdown,
+      wardmoteWake: {
         reason,
         issue: {
           id: "issue-1",
@@ -1454,7 +1454,7 @@ describe("claude_local ACP lane", () => {
         comments: [],
         fallbackFetchNeeded: false,
       },
-      paperclipWorkspace: {
+      wardmoteWorkspace: {
         cwd: root,
         source: "project_workspace",
         workspaceId: "workspace-1",

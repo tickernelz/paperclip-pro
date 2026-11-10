@@ -15,10 +15,10 @@ import {
   isNestableLiveChild,
   ISSUE_BRIEF_ITEM_ID,
   omitProgressRepeatedByResponseAcrossSegments,
-  paperclipRunnerActivityItems,
-  paperclipRunnerFinalResponse,
-  paperclipRunnerHistoryItems,
-  paperclipRunnerTimelineItems,
+  wardmoteRunnerActivityItems,
+  wardmoteRunnerFinalResponse,
+  wardmoteRunnerHistoryItems,
+  wardmoteRunnerTimelineItems,
   prependIssueBrief,
   settledRunChildren,
   splitTranscriptAtAnchors,
@@ -181,7 +181,7 @@ describe("accepted native response-wake answers", () => {
     "renders the exact accepted response-wake summary instead of commentary: %s",
     (mode) => {
       expect(
-        paperclipRunnerFinalResponse(fixture(mode), { runId }),
+        wardmoteRunnerFinalResponse(fixture(mode), { runId }),
       ).toMatchObject({
         text: summary,
         channel: "final",
@@ -201,16 +201,16 @@ describe("accepted native response-wake answers", () => {
     "failed_terminal",
   ])("keeps %s evidence out of the response-wake final exception", (mode) => {
     expect(
-      paperclipRunnerFinalResponse(fixture(mode), { runId }),
+      wardmoteRunnerFinalResponse(fixture(mode), { runId }),
     ).toBeUndefined();
   });
 
   it("does not grant the exception to another run or a live fallback", () => {
     expect(
-      paperclipRunnerFinalResponse(fixture(), { runId: "other-run" }),
+      wardmoteRunnerFinalResponse(fixture(), { runId: "other-run" }),
     ).toBeUndefined();
     expect(
-      paperclipRunnerFinalResponse(fixture(), { runId, allowFallback: false }),
+      wardmoteRunnerFinalResponse(fixture(), { runId, allowFallback: false }),
     ).toBeUndefined();
   });
 });
@@ -244,12 +244,12 @@ describe("completion tool feed visibility", () => {
       ];
       const parsed = transcriptToTaskChatItems(entries, { runId: "finish-visibility", running });
       expect(parsed).toHaveLength(4);
-      const activity = paperclipRunnerActivityItems(parsed);
+      const activity = wardmoteRunnerActivityItems(parsed);
       expect(activity).toHaveLength(2);
       expect(JSON.stringify(activity)).not.toContain("wardmote_finish");
       expect(JSON.stringify(activity)).toContain("search_tasks");
       expect(JSON.stringify(activity)).toContain("Repository is not trusted");
-      expect(paperclipRunnerTimelineItems(parsed)).toEqual(activity);
+      expect(wardmoteRunnerTimelineItems(parsed)).toEqual(activity);
     }
   });
 });
@@ -1220,7 +1220,7 @@ describe("buildTurnTimelineRows (DOT-217)", () => {
   it("keeps runtime requests in the Paperclip Runner timeline input", () => {
     const pending = request("pending", "pending");
     expect(
-      paperclipRunnerTimelineItems([
+      wardmoteRunnerTimelineItems([
         commentary("commentary", "Checking."),
         pending,
         { id: "usage", kind: "usage", usage: { used: 1, size: 10 } },
@@ -1230,7 +1230,7 @@ describe("buildTurnTimelineRows (DOT-217)", () => {
 
   it("keeps aggregate workspace changes at the turn boundary outside activity", () => {
     const rows = buildTurnTimelineRows(
-      paperclipRunnerTimelineItems([tool("before"), workspace, tool("after")]),
+      wardmoteRunnerTimelineItems([tool("before"), workspace, tool("after")]),
       false, "turn");
     expect(rows.map((row) => row.kind)).toEqual([
       "activity_phase",
@@ -1252,15 +1252,15 @@ describe("buildTurnTimelineRows (DOT-217)", () => {
       status: "completed",
       diff: { path: "src/App.tsx", added: 2, removed: 1 },
     };
-    expect(paperclipRunnerActivityItems([fileChange])).toEqual([fileChange]);
-    expect(paperclipRunnerActivityItems([fileChange, workspace])).toEqual([
+    expect(wardmoteRunnerActivityItems([fileChange])).toEqual([fileChange]);
+    expect(wardmoteRunnerActivityItems([fileChange, workspace])).toEqual([
       workspace,
     ]);
   });
 
   it("keeps a yielded run-result and provider wait prose out of the durable final slot", () => {
     expect(
-      paperclipRunnerFinalResponse([
+      wardmoteRunnerFinalResponse([
         {
           id: "provider-wait",
           kind: "message",
@@ -1322,7 +1322,7 @@ describe("buildTurnTimelineRows (DOT-217)", () => {
     );
 
     const rows = buildTurnTimelineRows(
-      paperclipRunnerTimelineItems(embedded),
+      wardmoteRunnerTimelineItems(embedded),
       false, "turn");
     expect(
       rows.map((row) =>
@@ -2315,7 +2315,7 @@ describe("paperclip runner semantic channels", () => {
       },
     ];
 
-    expect(paperclipRunnerHistoryItems(items).map((item) => item.id)).toEqual([
+    expect(wardmoteRunnerHistoryItems(items).map((item) => item.id)).toEqual([
       "tool",
       "interrupt",
       "runner",
@@ -2413,7 +2413,7 @@ describe("paperclip runner semantic channels", () => {
       },
     ];
 
-    expect(paperclipRunnerActivityItems(items).map((item) => item.id)).toEqual([
+    expect(wardmoteRunnerActivityItems(items).map((item) => item.id)).toEqual([
       "progress",
       "thinking",
       "tool",

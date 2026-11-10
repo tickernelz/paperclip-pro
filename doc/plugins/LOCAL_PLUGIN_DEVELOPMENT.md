@@ -179,7 +179,7 @@ You can, but you usually should not. The control-plane host is shared and may be
 
 ## Reload semantics, honestly
 
-Paperclip watches the on-disk plugin package after a local install. The watcher targets the runtime entrypoints declared in the package's `paperclipPlugin` field (`dist/manifest.js`, `dist/worker.js`, `dist/ui/`).
+Paperclip watches the on-disk plugin package after a local install. The watcher targets the runtime entrypoints declared in the package's `wardmotePlugin` field (`dist/manifest.js`, `dist/worker.js`, `dist/ui/`).
 
 What that means in practice:
 
@@ -209,8 +209,8 @@ When you are done iterating locally, publish the package and reinstall the npm-p
 
 ## Troubleshooting
 
-- **`Plugin install returned no plugin record` or `error` status.** Run `wardmote plugin inspect <key>` for the last error. The most common causes are (1) the plugin has not built yet — run `pnpm dev` or `pnpm build` first, (2) the `paperclipPlugin` entries in `package.json` point at files that do not exist on disk, or (3) the manifest failed validation. Bundled repo plugins may auto-build once during install, but external local-path plugins still require you to build them yourself. The Paperclip server log has the full validation error.
-- **Edits do not seem to reload.** Confirm `pnpm dev` is still running and writing to `dist/`. If you renamed entry files, update the `paperclipPlugin.manifest` / `paperclipPlugin.worker` / `paperclipPlugin.ui` fields in `package.json` so the watcher targets them.
+- **`Plugin install returned no plugin record` or `error` status.** Run `wardmote plugin inspect <key>` for the last error. The most common causes are (1) the plugin has not built yet — run `pnpm dev` or `pnpm build` first, (2) the `wardmotePlugin` entries in `package.json` point at files that do not exist on disk, or (3) the manifest failed validation. Bundled repo plugins may auto-build once during install, but external local-path plugins still require you to build them yourself. The Paperclip server log has the full validation error.
+- **Edits do not seem to reload.** Confirm `pnpm dev` is still running and writing to `dist/`. If you renamed entry files, update the `wardmotePlugin.manifest` / `wardmotePlugin.worker` / `wardmotePlugin.ui` fields in `package.json` so the watcher targets them.
 - **Worker restarts but UI is stale.** Hard-reload the page. If you want HMR, run `pnpm dev:ui` and set `devUiUrl` in your manifest to `http://127.0.0.1:4177` during development.
 - **Path arguments fail on Windows.** Quote paths that contain spaces, and prefer absolute paths over `~`-prefixed paths in non-bash shells.
 - **Plugin behaves as if a route or field is missing (e.g. `API route not found`, empty data, or a fallback path triggering unexpectedly).** You are probably installed into a Paperclip instance that does not run your branch code. Run `wardmote plugin target` and compare the reported API URL and `version` against the branch service you meant to test. See [Targeting a branch / issue-workspace runtime](#targeting-a-branch--issue-workspace-runtime) to run the branch server and point the CLI at it explicitly.

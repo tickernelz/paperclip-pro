@@ -164,7 +164,7 @@ export function buildListenerRequests(
   appPort: number,
 ): BrokerListenerRequest[] {
   const listeners: BrokerListenerRequest[] = [{ purpose: "app", port: appPort }];
-  if (config.includePaperclipViteHmr) {
+  if (config.includeWardmoteViteHmr) {
     listeners.push({ purpose: "vite_hmr", port: deriveViteHmrPort(appPort) });
   }
   return listeners;

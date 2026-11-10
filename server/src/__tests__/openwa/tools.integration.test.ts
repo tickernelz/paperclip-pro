@@ -54,7 +54,7 @@ import { openwaAttachmentLocalPaths } from "../../services/openwa/media.js";
 import { executeOpenwaTool, openwaMentionText, OpenwaToolError } from "../../services/openwa/tools.js";
 import { resolveOpenwaApproval } from "../../services/openwa/approvals.js";
 import { openwaToolRoutes } from "../../routes/openwa-tools.js";
-import { paperclipMcpRoutes } from "../../routes/wardmote-mcp.js";
+import { wardmoteMcpRoutes } from "../../routes/wardmote-mcp.js";
 import { errorHandler } from "../../middleware/index.js";
 import { FAKE_OPENWA_KEY, FakeOpenwaGateway } from "./fake-gateway.js";
 
@@ -284,9 +284,9 @@ describe("OpenWA agent tools (embedded Postgres + fake gateway)", () => {
       contextSnapshot: {
         source: "chat:openwa",
         issueId: input.issueId ?? c.issueId,
-        paperclipToolProfile: profile,
+        wardmoteToolProfile: profile,
         openwa: { event: input.event ?? "message", triggerClass: input.triggerClass, deliveryIds: [] },
-        paperclipOpenwa: {
+        wardmoteOpenwa: {
           endpointId: t.endpointId,
           chatKey: openwaChatKey(c.chatId),
           triggerClass: input.triggerClass,
@@ -412,7 +412,7 @@ describe("OpenWA agent tools (embedded Postgres + fake gateway)", () => {
       .returning();
     const [link] = await db
       .insert(chatIdentityLinks)
-      .values({ companyId: t.companyId, endpointId: t.endpointId, principalId: principal!.id, paperclipUserId: t.userId, status: "linked" })
+      .values({ companyId: t.companyId, endpointId: t.endpointId, principalId: principal!.id, wardmoteUserId: t.userId, status: "linked" })
       .returning();
     await db.insert(chatEndpointOwners).values({ companyId: t.companyId, endpointId: t.endpointId, identityLinkId: link!.id, addedByUserId: t.userId });
     const c = await conversation(t, GROUP);
@@ -420,7 +420,7 @@ describe("OpenWA agent tools (embedded Postgres + fake gateway)", () => {
     const absent = await run(t, c, { triggerClass: "other" });
     await db
       .update(heartbeatRuns)
-      .set({ contextSnapshot: sql`jsonb_set(${heartbeatRuns.contextSnapshot}, '{paperclipOpenwa,event}', '"owner_absent"')` })
+      .set({ contextSnapshot: sql`jsonb_set(${heartbeatRuns.contextSnapshot}, '{wardmoteOpenwa,event}', '"owner_absent"')` })
       .where(eq(heartbeatRuns.id, absent.runId));
     t.gateway.lids.set("628444000222", "105000000006444@lid");
     await expect(executeOpenwaTool(db, absent, "openwa_find", { lid: "105000000006444@lid" })).resolves.toMatchObject({ role: "owner" });
@@ -438,7 +438,7 @@ describe("OpenWA agent tools (embedded Postgres + fake gateway)", () => {
     const ownerPrincipal = await principalFor(OTHER);
     const [link] = await db
       .insert(chatIdentityLinks)
-      .values({ companyId: t.companyId, endpointId: t.endpointId, principalId: ownerPrincipal, paperclipUserId: t.userId, status: "linked" })
+      .values({ companyId: t.companyId, endpointId: t.endpointId, principalId: ownerPrincipal, wardmoteUserId: t.userId, status: "linked" })
       .returning();
     await db.insert(chatEndpointOwners).values({ companyId: t.companyId, endpointId: t.endpointId, identityLinkId: link!.id, addedByUserId: t.userId });
     const stranger = await principalFor(MEMBER);
@@ -534,7 +534,7 @@ describe("OpenWA agent tools (embedded Postgres + fake gateway)", () => {
       (await db.insert(chatExternalPrincipals).values({ companyId: t.companyId, provider: "openwa", providerAccountId: endpoint!.providerAccountId!, externalId }).returning())[0]!.id;
     const [link] = await db
       .insert(chatIdentityLinks)
-      .values({ companyId: t.companyId, endpointId: t.endpointId, principalId: await principalFor(OTHER), paperclipUserId: t.userId, status: "linked" })
+      .values({ companyId: t.companyId, endpointId: t.endpointId, principalId: await principalFor(OTHER), wardmoteUserId: t.userId, status: "linked" })
       .returning();
     await db.insert(chatEndpointOwners).values({ companyId: t.companyId, endpointId: t.endpointId, identityLinkId: link!.id, addedByUserId: t.userId });
     const stranger = await principalFor(MEMBER);
@@ -620,7 +620,7 @@ describe("OpenWA agent tools (embedded Postgres + fake gateway)", () => {
       (await db.insert(chatExternalPrincipals).values({ companyId: t.companyId, provider: "openwa", providerAccountId: endpoint!.providerAccountId!, externalId }).returning())[0]!.id;
     const [link] = await db
       .insert(chatIdentityLinks)
-      .values({ companyId: t.companyId, endpointId: t.endpointId, principalId: await principalFor(OTHER), paperclipUserId: t.userId, status: "linked" })
+      .values({ companyId: t.companyId, endpointId: t.endpointId, principalId: await principalFor(OTHER), wardmoteUserId: t.userId, status: "linked" })
       .returning();
     await db.insert(chatEndpointOwners).values({ companyId: t.companyId, endpointId: t.endpointId, identityLinkId: link!.id, addedByUserId: t.userId });
     const stranger = await principalFor(MEMBER);
@@ -663,7 +663,7 @@ describe("OpenWA agent tools (embedded Postgres + fake gateway)", () => {
       (await db.insert(chatExternalPrincipals).values({ companyId: t.companyId, provider: "openwa", providerAccountId: endpoint!.providerAccountId!, externalId }).returning())[0]!.id;
     const [link] = await db
       .insert(chatIdentityLinks)
-      .values({ companyId: t.companyId, endpointId: t.endpointId, principalId: await principalFor(OTHER), paperclipUserId: t.userId, status: "linked" })
+      .values({ companyId: t.companyId, endpointId: t.endpointId, principalId: await principalFor(OTHER), wardmoteUserId: t.userId, status: "linked" })
       .returning();
     await db.insert(chatEndpointOwners).values({ companyId: t.companyId, endpointId: t.endpointId, identityLinkId: link!.id, addedByUserId: t.userId });
     const stranger = await principalFor(MEMBER);
@@ -716,7 +716,7 @@ describe("OpenWA agent tools (embedded Postgres + fake gateway)", () => {
     const binding = await run(t, ownerDm, { triggerClass: "owner", event: "approval_reply" });
     await db
       .update(heartbeatRuns)
-      .set({ contextSnapshot: sql`jsonb_set(jsonb_set(${heartbeatRuns.contextSnapshot}, '{paperclipOpenwa,event}', '"approval_reply"'), '{paperclipOpenwa,approvalRequestId}', to_jsonb(${requestRow!.id}::text))` })
+      .set({ contextSnapshot: sql`jsonb_set(jsonb_set(${heartbeatRuns.contextSnapshot}, '{wardmoteOpenwa,event}', '"approval_reply"'), '{wardmoteOpenwa,approvalRequestId}', to_jsonb(${requestRow!.id}::text))` })
       .where(eq(heartbeatRuns.id, binding.runId));
     const toGroup = await rejection(executeOpenwaTool(db, binding, "openwa_send", { chat: GROUP, text: "posting it myself", idempotencyKey: randomUUID() }));
     expect(toGroup.code).toBe("approval_action_pending");
@@ -1273,7 +1273,7 @@ describe("OpenWA agent tools (embedded Postgres + fake gateway)", () => {
     await db.update(issues).set({ executionRunId: binding.runId }).where(eq(issues.id, c.issueId));
     await expect(authority.execute({ tool: "openwa_read_chat", callId: "c1", arguments: {} })).resolves.toMatchObject({ chatRef: c.chatRef });
     const configured = await applyConnectorSkills({ wardmoteSkillSync: { desiredSkills: [] } }, [], assignments);
-    const bundle = configured.paperclipRuntimeSkills.find((entry) => entry.key === "tickernelz/wardmote/openwa")!;
+    const bundle = configured.wardmoteRuntimeSkills.find((entry) => entry.key === "tickernelz/wardmote/openwa")!;
     expect(JSON.parse(await readFile(path.join(bundle.source, "TOOLS.json"), "utf8")).map((tool: { name: string }) => tool.name)).toContain("openwa_send");
     const native = await prepareConnectorSkillDelivery(configured, "wardmote_runner");
     expect(native.instructions).toContain("openwa_send");
@@ -1303,7 +1303,7 @@ describe("OpenWA agent tools (embedded Postgres + fake gateway)", () => {
       req.actor = actor as never;
       next();
     });
-    app.use("/api", paperclipMcpRoutes(db));
+    app.use("/api", wardmoteMcpRoutes(db));
     app.use(errorHandler);
     const list = async () =>
       (await request(app).post("/api/mcp/wardmote?toolsets=full").set("authorization", "Bearer token").send({ jsonrpc: "2.0", id: 1, method: "tools/list" }).expect(200)).body.result.tools.map(

@@ -78,7 +78,7 @@ function workspaceRelativePath(root: string, target: string): string | null {
   return candidate.split(sep).join("/");
 }
 
-export function paperclipWorkspaceFileReferencesFromText(
+export function wardmoteWorkspaceFileReferencesFromText(
   workspace: string,
   assistantText: string,
   turnId: string,
@@ -124,7 +124,7 @@ export async function discoverWardmoteWorkspaceFileReferences(
   // Resolve references from the same canonical root used for the containment
   // check. Do not consult a caller-controlled workspace symlink again after
   // canonicalizing it above.
-  const references = paperclipWorkspaceFileReferencesFromText(canonicalRoot, assistantText, turnId, "runner_verified");
+  const references = wardmoteWorkspaceFileReferencesFromText(canonicalRoot, assistantText, turnId, "runner_verified");
   const verified: WardmoteWorkspaceFileReference[] = [];
   for (const reference of references) {
     let canonicalPath: string;

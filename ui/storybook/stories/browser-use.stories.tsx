@@ -4,7 +4,7 @@ import { expect, userEvent, within } from "storybook/test";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { TaskSidePanel } from "@/components/task-side-panel/TaskSidePanel";
 import { TaskBrowserPanel } from "@/components/task-side-panel/TaskBrowserPanel";
-import { storybookIssues } from "../fixtures/paperclipData";
+import { storybookIssues } from "../fixtures/wardmoteData";
 import {
   BrowserStoryProviders,
   InteractiveBrowserStory,

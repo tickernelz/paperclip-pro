@@ -407,7 +407,7 @@ describeEmbeddedPostgres("tool gateway service", () => {
     expect(wakeup.mock.calls[0][1].payload.toolAction).toMatchObject({ executionStatus: "executed", resultSummary: expect.stringContaining("bodyLength"), instructions: expect.stringContaining("Do not call it again") });
     expect((await db.select().from(toolActionDeliveries))[0].deliveredAt).not.toBeNull();
     expect((await db.select().from(toolActionRequests))[0].decidedByUserId).toBe("reviewer");
-    const message = wakeup.mock.calls[0][1].payload.paperclipAgentMessage;
+    const message = wakeup.mock.calls[0][1].payload.wardmoteAgentMessage;
     expect(message.text).toContain("Do not call it again");
     expect(message.text).not.toContain("bodyLength");
     expect(message.untrustedToolResults).toMatchObject([{ actionRequestId: request.id, resultSummary: expect.stringContaining("bodyLength") }]);
@@ -491,7 +491,7 @@ describeEmbeddedPostgres("tool gateway service", () => {
     expect(payload.interactionIds.length).toBe(payload.toolActions.length);
     expect(payload.toolActionOutcomeCount).toBe(12);
     expect(payload.toolActionResultsUrl).toBe(`/api/issues/${payload.issueId}/interactions`);
-    expect(payload.paperclipAgentMessage.text).toContain(`wardmoteListIssueInteractions on issue ${payload.issueId}`);
+    expect(payload.wardmoteAgentMessage.text).toContain(`wardmoteListIssueInteractions on issue ${payload.issueId}`);
     expect((await db.select().from(toolActionDeliveries)).every(row => row.deliveredAt)).toBe(true);
     // The reference retains all outcomes and their full notes, not just snippets.
     expect((await db.select().from(issueThreadInteractions)).every(row => JSON.stringify(row.result).length > 12_000)).toBe(true);

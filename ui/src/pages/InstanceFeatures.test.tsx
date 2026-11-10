@@ -22,7 +22,7 @@ const PRODUCTION_ON: InstanceFeatureKey[] = [
   "enableNativeRunner", "enableStreamlinedLeftNavigation", "enableStreamlinedUi", "enableApps",
   "enableMcpAggregators", "enableChatConnectors", "enableCases", "enableAgentChat",
   "enableExperimentalFileViewer", "enableExternalObjects", "enableSummaries", "enableStatusCards",
-  "enableDecisions", "enablePaperclipDeveloperMode", "enablePixelsOffice",
+  "enableDecisions", "enableWardmoteDeveloperMode", "enablePixelsOffice",
   "enableWorkspaceBranchReconcileForward", "enableWorkspaceDirtyQuarantineRepair",
 ];
 
@@ -177,7 +177,7 @@ describe("InstanceAdvanced", () => {
     const reset = [...container.querySelectorAll<HTMLButtonElement>("button")].find((b) => b.textContent?.includes("Reset to defaults"));
     flushSync(() => reset!.click());
     await flush();
-    expect(lastPatch()).toEqual({ enablePaperclipDeveloperMode: INSTANCE_FEATURE_CATALOG.enablePaperclipDeveloperMode.selfHostedDefault });
+    expect(lastPatch()).toEqual({ enableWardmoteDeveloperMode: INSTANCE_FEATURE_CATALOG.enableWardmoteDeveloperMode.selfHostedDefault });
   });
 
   it("disables reset when every row is at its default", async () => {

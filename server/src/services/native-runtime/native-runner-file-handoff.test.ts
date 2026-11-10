@@ -637,7 +637,7 @@ describe("native runner file handoff", () => {
       .set({
         contextSnapshot: {
           issueId,
-          paperclipWake: {
+          wardmoteWake: {
             comments: [
               {
                 id: comment.id,
@@ -893,7 +893,7 @@ describe("native runner file handoff", () => {
       .set({
         contextSnapshot: {
           issueId,
-          paperclipWake: {
+          wardmoteWake: {
             comments: [
               {
                 id: current.comment.id,
@@ -975,7 +975,7 @@ describe("native runner file handoff", () => {
       .set({
         contextSnapshot: {
           issueId,
-          paperclipWake: {
+          wardmoteWake: {
             comments: [
               {
                 id: currentComment.id,
@@ -1249,7 +1249,7 @@ describe("native runner file handoff", () => {
         await writeFile(path.join(workspaceRoot, filename), body);
         await db
           .update(heartbeatRuns)
-          .set({ contextSnapshot: { issueId, paperclipWake: testCase.wake } })
+          .set({ contextSnapshot: { issueId, wardmoteWake: testCase.wake } })
           .where(eq(heartbeatRuns.id, runId));
         const call = callFor(filename, body, `delivery-mode-${index}`);
         // A tool argument or user comment never selects delivery capability.

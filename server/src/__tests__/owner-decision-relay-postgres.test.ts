@@ -126,7 +126,7 @@ describeEmbeddedPostgres("owner-relayed decisions (routes + postgres)", () => {
       companyId, provider: "openwa", providerAccountId: "acct-" + endpointId, externalId: OWNER_DIGITS + "@c.us", displayName: "Zhafron WA",
     }).returning();
     const [link] = await db.insert(chatIdentityLinks).values({
-      companyId, endpointId, principalId: ownerPrincipal!.id, paperclipUserId: ownerUserId, status: "linked",
+      companyId, endpointId, principalId: ownerPrincipal!.id, wardmoteUserId: ownerUserId, status: "linked",
     }).returning();
     await db.insert(chatEndpointOwners).values({ companyId, endpointId, identityLinkId: link!.id, addedByUserId: ownerUserId });
     const [memberPrincipal] = await db.insert(chatExternalPrincipals).values({

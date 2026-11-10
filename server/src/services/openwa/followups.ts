@@ -281,7 +281,7 @@ async function stageFollowup(
 /** Stages at most one follow-up owner wake per finished run and conversation, from its handoff rows and still-pending steered owner triggers. */
 export async function scheduleOpenwaFollowupForRun(db: Db, input: { companyId: string; runId: string }): Promise<string[]> {
   const [run] = await db
-    .select({ status: heartbeatRuns.status, openwa: sql<boolean>`coalesce(${heartbeatRuns.contextSnapshot} ? 'paperclipOpenwa', false)` })
+    .select({ status: heartbeatRuns.status, openwa: sql<boolean>`coalesce(${heartbeatRuns.contextSnapshot} ? 'wardmoteOpenwa', false)` })
     .from(heartbeatRuns)
     .where(and(eq(heartbeatRuns.companyId, input.companyId), eq(heartbeatRuns.id, input.runId)))
     .limit(1);

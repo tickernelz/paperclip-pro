@@ -515,12 +515,12 @@ backstop.
 ## 11. Wardmote MCP tools per adapter
 
 Each adapter arms exactly one Wardmote surface per run and the prompt it sends
-describes that surface. `paperclipAccessMode(config, env)`
+describes that surface. `wardmoteAccessMode(config, env)`
 (`packages/adapter-utils/src/wardmote-mcp.ts`) returns `mcp` when the
-`paperclipMcp` toggle is on (default) and the run carries both
+`wardmoteMcp` toggle is on (default) and the run carries both
 `WARDMOTE_API_URL` and a run credential, `rest` otherwise.
-`paperclipAgentPromptTemplate(access)` and
-`renderWardmoteWakePrompt(..., { paperclipAccess })` render the heartbeat
+`wardmoteAgentPromptTemplate(access)` and
+`renderWardmoteWakePrompt(..., { wardmoteAccess })` render the heartbeat
 contract from that one value, so prompt text cannot drift from what the runtime
 actually mounted.
 
@@ -528,8 +528,8 @@ actually mounted.
 | --- | --- | --- |
 | `omp_local` | yes | per-run `--extension <tmpdir>` package with one `.mcp.json` |
 
-Adapters that cannot mount, and every run with `paperclipMcp` off, get
-`paperclipRestGuidance()` instead: `curl` with `$WARDMOTE_API_URL`,
+Adapters that cannot mount, and every run with `wardmoteMcp` off, get
+`wardmoteRestGuidance()` instead: `curl` with `$WARDMOTE_API_URL`,
 `Authorization: Bearer $WARDMOTE_API_KEY` and
 `X-Wardmote-Run-Id: $WARDMOTE_RUN_ID`. No `paperclip*` tool name reaches those
 prompts. The `paperclip` skill carries the same fallback under
@@ -546,9 +546,9 @@ By default the entry is `type: http` and points at the server-hosted endpoint
 `$WARDMOTE_API_URL/mcp/wardmote?toolsets=core`, with
 `Authorization: Bearer ${WARDMOTE_API_KEY}` (an env reference, never a literal)
 and `X-Wardmote-Run-Id`. That costs no process and no extra memory per run.
-`paperclipMcpTransport: stdio` is the fallback: it spawns the bundled
+`wardmoteMcpTransport: stdio` is the fallback: it spawns the bundled
 `paperclip-mcp-server` with the run's identity in its env. The adapter config
-also exposes `paperclipMcp` (default on) and `paperclipMcpToolsets`
+also exposes `wardmoteMcp` (default on) and `wardmoteMcpToolsets`
 (default `core`).
 
 MCP is the agents' only path to Wardmote, so the adapter completes an MCP
@@ -559,7 +559,7 @@ fails the run with `errorCode: paperclip_mcp_unavailable`, a 401/403 with
 raised again when OMP itself prints `Warning: MCP server "wardmote" failed to
 connect: …` on stderr or as a `notice` frame. The adapter reads whole lines and
 matches only a line that starts with that text, so a prompt, tool result or
-model message that quotes the warning cannot fail a run. Turning `paperclipMcp` off logs a warning on the run's stderr: that
+model message that quotes the warning cannot fail a run. Turning `wardmoteMcp` off logs a warning on the run's stderr: that
 agent has no Wardmote tools.
 
 Why the endpoint is the default, measured on 2026-09-25 (WSL, Node 24.18.0,
@@ -599,7 +599,7 @@ no migration. `buildIssueRunAdapterConfig`
 agent's resolved adapter config when the run's execution config is assembled
 (`server/src/services/heartbeat.ts`), which is how `omp_local` ends up passing
 `--model` and `--thinking`. The override is also written to the run's context
-snapshot as `paperclipRunModelOverride` so a run log shows which task-level
+snapshot as `wardmoteRunModelOverride` so a run log shows which task-level
 choice was in force. The agent's own `adapter_config` is never written.
 
 Allowed values come from the adapter, not from a list in the server:

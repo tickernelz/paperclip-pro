@@ -2022,7 +2022,7 @@ for (const execution of executions) {
             ? Date.parse(candidate.finishedAt)
             : Number.NaN;
           const acquisition = record(
-            record(candidate.contextSnapshot).paperclipEnvironment,
+            record(candidate.contextSnapshot).wardmoteEnvironment,
           ).sandboxLeaseAcquisition;
           const acquisitionOutcome = record(acquisition).outcome;
           return {
@@ -2260,8 +2260,8 @@ for (const execution of executions) {
       }
 
       const context = record(run.contextSnapshot);
-      const environmentContext = record(context.paperclipEnvironment);
-      const workspaceContext = record(context.paperclipWorkspace);
+      const environmentContext = record(context.wardmoteEnvironment);
+      const workspaceContext = record(context.wardmoteWorkspace);
       const environmentDriver =
         environmentContext.driver ?? persistedEnvironment.driver;
       const observedEnvironment =
@@ -2397,7 +2397,7 @@ for (const execution of executions) {
       }
       if (execution.task.flow === "warm_three_turn") {
         const runEnvironmentContexts = selectedRuns.map((candidate) =>
-          record(record(candidate.contextSnapshot).paperclipEnvironment),
+          record(record(candidate.contextSnapshot).wardmoteEnvironment),
         );
         const leaseIds = runEnvironmentContexts.map((entry) => entry.leaseId);
         const acquisitionOutcomes = runEnvironmentContexts.map(
@@ -2405,7 +2405,7 @@ for (const execution of executions) {
         );
         const projectWorkspaceIds = selectedRuns.map(
           (candidate) =>
-            record(record(candidate.contextSnapshot).paperclipWorkspace)
+            record(record(candidate.contextSnapshot).wardmoteWorkspace)
               .workspaceId,
         );
         const executionWorkspaceIds = selectedRuns.map(

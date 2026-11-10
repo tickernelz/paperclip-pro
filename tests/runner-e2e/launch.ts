@@ -495,19 +495,19 @@ async function runAttempt(input: {
   let startupReceiptPath: string | undefined;
   const rawCleanupResults: Array<{ cleanup: string; synthetic: boolean; status: string }> = [];
   try {
-    const paperclipHome = path.join(temporaryRoot, "paperclip-home");
+    const wardmoteHome = path.join(temporaryRoot, "paperclip-home");
     const workspace = path.join(temporaryRoot, "workspace");
     const privateDir = path.join(temporaryRoot, "artifacts-private");
     const instanceId = `runner-e2e-${randomBytes(8).toString("hex")}`;
     const configPath = path.join(
-      paperclipHome,
+      wardmoteHome,
       "instances",
       instanceId,
       "config.json",
     );
     const port = await reserveRunnerE2EServerPort();
     await Promise.all([
-      mkdir(paperclipHome, { recursive: true }),
+      mkdir(wardmoteHome, { recursive: true }),
       mkdir(workspace, { recursive: true }),
       mkdir(privateDir, { recursive: true }),
     ]);
@@ -565,7 +565,7 @@ async function runAttempt(input: {
           ),
         ) + 90_000,
       ),
-      WARDMOTE_HOME: paperclipHome,
+      WARDMOTE_HOME: wardmoteHome,
       WARDMOTE_INSTANCE_ID: instanceId,
       WARDMOTE_CONFIG: configPath,
       WARDMOTE_AGENT_JWT_SECRET: agentJwtSecret,
@@ -672,7 +672,7 @@ async function runAttempt(input: {
       try {
         const expectedEphemeralCredentials = new Set<string>();
         for (const [label, directory] of [
-          ["Paperclip home", paperclipHome],
+          ["Paperclip home", wardmoteHome],
           ["workspace", workspace],
         ] as const) {
           while (true) {
@@ -683,12 +683,12 @@ async function runAttempt(input: {
               ignoreFile: (file) => expectedEphemeralCredentials.has(file),
               allowDisappearedFile: (file) =>
                 label === "Paperclip home" &&
-                isEphemeralPostgresScanFile(paperclipHome, file),
+                isEphemeralPostgresScanFile(wardmoteHome, file),
             });
             if (!leak) break;
             const isManagedCodexRuntimeAuth =
               label === "Paperclip home" &&
-              isEphemeralCodexRuntimeAuthFile(paperclipHome, leak.file);
+              isEphemeralCodexRuntimeAuthFile(wardmoteHome, leak.file);
             if (isManagedCodexRuntimeAuth) {
               const metadata = await lstat(leak.file);
               if (metadata.isFile() && (metadata.mode & 0o777) === 0o600) {

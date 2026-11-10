@@ -52,9 +52,9 @@ function sendNestedHostRequest(originalRequest, invocationId) {
   };
 
   if (mode === "echo") {
-    nestedRequest.paperclipInvocationId = invocationId;
+    nestedRequest.wardmoteInvocationId = invocationId;
   } else if (mode === "unknown") {
-    nestedRequest.paperclipInvocationId = "unknown-invocation";
+    nestedRequest.wardmoteInvocationId = "unknown-invocation";
   }
 
   pendingNested.set(nestedId, originalRequest.id);
@@ -105,7 +105,7 @@ rl.on("line", (line) => {
   }
 
   if (method === "getData" || method === "performAction") {
-    sendNestedHostRequest(message, message.paperclipInvocation?.id);
+    sendNestedHostRequest(message, message.wardmoteInvocation?.id);
     return;
   }
 

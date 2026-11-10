@@ -2,7 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 import type { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
-import { canonicalToolName, paperclipToolCatalog } from "./catalog.js";
+import { canonicalToolName, wardmoteToolCatalog } from "./catalog.js";
 import { WardmoteApiClient } from "./client.js";
 import { hasManagementAuthority, readConfigFromEnv, type WardmoteMcpConfig } from "./config.js";
 import { sharedToolNotes } from "./generated-tools.js";
@@ -42,7 +42,7 @@ export function createWardmoteMcpServer(
   );
 
   const client = new WardmoteApiClient(config);
-  const { definitions: tools } = paperclipToolCatalog(client, config.toolsets, management);
+  const { definitions: tools } = wardmoteToolCatalog(client, config.toolsets, management);
   for (const tool of tools) {
     server.registerTool(
       tool.name,
@@ -55,7 +55,7 @@ export function createWardmoteMcpServer(
     );
   }
   server.server.setRequestHandler(ListToolsRequestSchema, () =>
-    paperclipToolCatalog(client, config.toolsets, management).listing,
+    wardmoteToolCatalog(client, config.toolsets, management).listing,
   );
 
   return {

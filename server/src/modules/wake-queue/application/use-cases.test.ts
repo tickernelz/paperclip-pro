@@ -472,9 +472,9 @@ describe("releaseIssueExecution", () => {
             wakeCommentIds: ["comment-1"],
             // A queue-time render from a prior coalesced run. Promotion must
             // not persist this alongside the current (unrelated) comment id.
-            paperclipTaskMarkdown: "queue-time markdown",
-            paperclipTaskMarkdownCompact: "queue-time compact markdown",
-            paperclipWake: { commentId: "comment-1" },
+            wardmoteTaskMarkdown: "queue-time markdown",
+            wardmoteTaskMarkdownCompact: "queue-time compact markdown",
+            wardmoteWake: { commentId: "comment-1" },
             executionStage: { stage: "review" },
             planReviewInteraction: { acceptedTargetRevision: { revisionId: "revision-1" } },
             acceptedPlanWakeRouting: { targetAgentId: "agent-1" },
@@ -495,9 +495,9 @@ describe("releaseIssueExecution", () => {
     // The rendered text is cleared; `executeRun` rebuilds it, with proper
     // trust-based redaction, from the current issue and comment rows before
     // the run dispatches.
-    expect(promotedContextSnapshot.paperclipTaskMarkdown).toBeUndefined();
-    expect(promotedContextSnapshot.paperclipTaskMarkdownCompact).toBeUndefined();
-    expect(promotedContextSnapshot.paperclipWake).toBeUndefined();
+    expect(promotedContextSnapshot.wardmoteTaskMarkdown).toBeUndefined();
+    expect(promotedContextSnapshot.wardmoteTaskMarkdownCompact).toBeUndefined();
+    expect(promotedContextSnapshot.wardmoteWake).toBeUndefined();
     // The raw fields that render depends on are not dropped.
     expect(promotedContextSnapshot.issueId).toBe(ISSUE.id);
     expect(promotedContextSnapshot.executionStage).toEqual({ stage: "review" });

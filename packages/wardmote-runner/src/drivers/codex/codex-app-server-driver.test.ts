@@ -267,7 +267,7 @@ class FakeCodexTransport implements CodexAppServerTransport {
     this.queue.push({
       method,
       params,
-      paperclipTrace: { sourceEventId, sourceEventType },
+      wardmoteTrace: { sourceEventId, sourceEventType },
     });
   }
 
@@ -929,7 +929,7 @@ describe("Codex app-server Codex driver", () => {
     expect(events.map((event) => event.sourceEventId)).toEqual(
       expect.arrayContaining(itemMapping?.emittedEventIds ?? []),
     );
-    expect(JSON.stringify(events)).not.toContain("paperclipTrace");
+    expect(JSON.stringify(events)).not.toContain("wardmoteTrace");
   });
 
   it("maps canonical workspace snapshots with monotonic revisions and one terminal diff", async () => {
@@ -2804,7 +2804,7 @@ describe("Codex app-server Codex driver", () => {
     const request = {
       id: 1,
       method: "item/tool/call",
-      paperclipTrace: {
+      wardmoteTrace: {
         sourceEventId: "event_runner_000101",
         sourceEventType: "semantic_tool.input",
       },

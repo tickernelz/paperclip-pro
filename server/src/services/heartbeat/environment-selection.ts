@@ -331,22 +331,22 @@ export async function selectHeartbeatEnvironment(db: Db, input: HeartbeatEnviron
           ? `${existing}\n${concurrentWorkspaceNote}`
           : concurrentWorkspaceNote;
       };
-      context.paperclipTaskMarkdown = appendConcurrentWorkspaceNote(
-        context.paperclipTaskMarkdown,
+      context.wardmoteTaskMarkdown = appendConcurrentWorkspaceNote(
+        context.wardmoteTaskMarkdown,
       );
-      context.paperclipTaskMarkdownAssignment = appendConcurrentWorkspaceNote(
-        context.paperclipTaskMarkdownAssignment,
+      context.wardmoteTaskMarkdownAssignment = appendConcurrentWorkspaceNote(
+        context.wardmoteTaskMarkdownAssignment,
       );
-      if (typeof context.paperclipTaskMarkdownCompact === "string") {
-        context.paperclipTaskMarkdownCompact =
+      if (typeof context.wardmoteTaskMarkdownCompact === "string") {
+        context.wardmoteTaskMarkdownCompact =
           appendConcurrentWorkspaceNote(
-            context.paperclipTaskMarkdownCompact,
+            context.wardmoteTaskMarkdownCompact,
           );
       }
-      if (typeof context.paperclipTaskMarkdownAssignmentCompact === "string") {
-        context.paperclipTaskMarkdownAssignmentCompact =
+      if (typeof context.wardmoteTaskMarkdownAssignmentCompact === "string") {
+        context.wardmoteTaskMarkdownAssignmentCompact =
           appendConcurrentWorkspaceNote(
-            context.paperclipTaskMarkdownAssignmentCompact,
+            context.wardmoteTaskMarkdownAssignmentCompact,
           );
       }
       logger.info(

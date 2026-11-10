@@ -16,7 +16,7 @@ import {
   buildRuntimeToolsEnv,
   DEFAULT_WARDMOTE_AGENT_PROMPT_TEMPLATE,
   DEFAULT_WARDMOTE_CONVERSATION_PROMPT_TEMPLATE,
-  paperclipAgentPromptTemplate,
+  wardmoteAgentPromptTemplate,
   isWardmoteExternalChatContractTurn,
   isWardmoteExternalChatQuestionResponseTurn,
   isWardmoteExternalChatTurn,
@@ -1559,7 +1559,7 @@ describe("renderWardmoteWakePrompt", () => {
   });
 
   it("keeps the explicit Paperclip MCP contract action-oriented", () => {
-    const template = paperclipAgentPromptTemplate("mcp");
+    const template = wardmoteAgentPromptTemplate("mcp");
     expect(template).toContain(
       "Start actionable work in this heartbeat",
     );
@@ -3202,14 +3202,14 @@ describe("selectWardmoteTaskMarkdown", () => {
 
   it("returns the full markdown for fresh sessions and assignment-shaped resumes", () => {
     const context = {
-      paperclipTaskMarkdown: fullMarkdown,
-      paperclipTaskMarkdownCompact: compactMarkdown,
-      paperclipWake: wake("issue_commented"),
+      wardmoteTaskMarkdown: fullMarkdown,
+      wardmoteTaskMarkdownCompact: compactMarkdown,
+      wardmoteWake: wake("issue_commented"),
     };
     expect(selectWardmoteTaskMarkdown(context)).toBe(fullMarkdown);
     expect(
       selectWardmoteTaskMarkdown(
-        { ...context, paperclipWake: wake("issue_assigned") },
+        { ...context, wardmoteWake: wake("issue_assigned") },
         { resumedSession: true },
       ),
     ).toBe(fullMarkdown);
@@ -3217,16 +3217,16 @@ describe("selectWardmoteTaskMarkdown", () => {
 
   it("prefers assignment-only fields while preserving historical fallback fields", () => {
     const context = {
-      paperclipTaskMarkdown: `${fullMarkdown}\nHistorical wake comment`,
-      paperclipTaskMarkdownCompact: `${compactMarkdown}\nHistorical compact comment`,
-      paperclipTaskMarkdownAssignment: fullMarkdown,
-      paperclipTaskMarkdownAssignmentCompact: compactMarkdown,
-      paperclipWake: wake("issue_commented"),
+      wardmoteTaskMarkdown: `${fullMarkdown}\nHistorical wake comment`,
+      wardmoteTaskMarkdownCompact: `${compactMarkdown}\nHistorical compact comment`,
+      wardmoteTaskMarkdownAssignment: fullMarkdown,
+      wardmoteTaskMarkdownAssignmentCompact: compactMarkdown,
+      wardmoteWake: wake("issue_commented"),
     };
     expect(selectWardmoteTaskMarkdown(context)).toBe(fullMarkdown);
     expect(selectWardmoteTaskMarkdown(context, { resumedSession: true })).toBe(compactMarkdown);
     expect(
-      selectWardmoteTaskMarkdown({ paperclipTaskMarkdown: "legacy", paperclipWake: wake("issue_commented") }),
+      selectWardmoteTaskMarkdown({ wardmoteTaskMarkdown: "legacy", wardmoteWake: wake("issue_commented") }),
     ).toBe("legacy");
   });
 
@@ -3234,9 +3234,9 @@ describe("selectWardmoteTaskMarkdown", () => {
     expect(
       selectWardmoteTaskMarkdown(
         {
-          paperclipTaskMarkdown: fullMarkdown,
-          paperclipTaskMarkdownCompact: compactMarkdown,
-          paperclipWake: wake("issue_commented"),
+          wardmoteTaskMarkdown: fullMarkdown,
+          wardmoteTaskMarkdownCompact: compactMarkdown,
+          wardmoteWake: wake("issue_commented"),
         },
         { resumedSession: true },
       ),
@@ -3245,21 +3245,21 @@ describe("selectWardmoteTaskMarkdown", () => {
 
   it("adds saved communication guidance only to a fresh session, including after recovery", () => {
     const context = {
-      paperclipTaskMarkdown: fullMarkdown,
-      paperclipTaskMarkdownCompact: compactMarkdown,
-      paperclipTaskCommunicationGuidance: "## Communication in Slack\nSaved initial guidance",
-      paperclipWake: wake("issue_commented"),
+      wardmoteTaskMarkdown: fullMarkdown,
+      wardmoteTaskMarkdownCompact: compactMarkdown,
+      wardmoteTaskCommunicationGuidance: "## Communication in Slack\nSaved initial guidance",
+      wardmoteWake: wake("issue_commented"),
     };
     expect(selectWardmoteTaskMarkdown(context)).toContain("Saved initial guidance");
-    expect(selectInitialCommunicationGuidance({ paperclipTaskCommunicationGuidance: "  Slack preference  " })).toBe("Slack preference");
+    expect(selectInitialCommunicationGuidance({ wardmoteTaskCommunicationGuidance: "  Slack preference  " })).toBe("Slack preference");
     expect(selectInitialCommunicationGuidance(context, { resumedSession: true })).toBe("");
     expect(selectInitialCommunicationGuidance({})).toBe("");
-    const handoffContext = { ...context, paperclipFreshSessionHandoffMarkdown: "Prior goal and approved decisions" };
+    const handoffContext = { ...context, wardmoteFreshSessionHandoffMarkdown: "Prior goal and approved decisions" };
     expect(selectInitialCommunicationGuidance(handoffContext, { resumedSession: true })).toBe("");
     expect(selectInitialCommunicationGuidance(handoffContext, { resumedSession: false })).toContain("Prior goal and approved decisions");
     expect(selectWardmoteTaskMarkdown(context, { resumedSession: true })).toBe(compactMarkdown);
     expect(selectWardmoteTaskMarkdown(context, { includeCommunicationGuidance: false })).toBe(fullMarkdown);
-    context.paperclipWake = { ...wake("issue_monitor_recovery"), recovery: { cause: "process_lost" } } as typeof context.paperclipWake;
+    context.wardmoteWake = { ...wake("issue_monitor_recovery"), recovery: { cause: "process_lost" } } as typeof context.wardmoteWake;
     expect(selectWardmoteTaskMarkdown(context, { resumedSession: true })).toBe(fullMarkdown);
     expect(selectWardmoteTaskMarkdown(context, { resumedSession: false }).match(/Saved initial guidance/g)).toHaveLength(1);
   });
@@ -3272,7 +3272,7 @@ describe("selectWardmoteTaskMarkdown", () => {
     } };
     await hydrateFreshSessionHandoff(ctx, { resumedSession: true });
     expect(reads).toBe(0);
-    expect(ctx.context.paperclipFreshSessionHandoffMarkdown).toBeUndefined();
+    expect(ctx.context.wardmoteFreshSessionHandoffMarkdown).toBeUndefined();
     await hydrateFreshSessionHandoff(ctx, { resumedSession: false });
     expect(reads).toBe(1);
     expect(selectInitialCommunicationGuidance(ctx.context)).toContain("Original goal and prior answer");
@@ -3282,8 +3282,8 @@ describe("selectWardmoteTaskMarkdown", () => {
     expect(
       selectWardmoteTaskMarkdown(
         {
-          paperclipTaskMarkdown: fullMarkdown,
-          paperclipWake: wake("issue_commented"),
+          wardmoteTaskMarkdown: fullMarkdown,
+          wardmoteWake: wake("issue_commented"),
         },
         { resumedSession: true },
       ),
@@ -3294,9 +3294,9 @@ describe("selectWardmoteTaskMarkdown", () => {
     expect(
       selectWardmoteTaskMarkdown(
         {
-          paperclipTaskMarkdown: fullMarkdown,
-          paperclipTaskMarkdownCompact: compactMarkdown,
-          paperclipWake: {
+          wardmoteTaskMarkdown: fullMarkdown,
+          wardmoteTaskMarkdownCompact: compactMarkdown,
+          wardmoteWake: {
             ...wake("issue_monitor_recovery"),
             recovery: { cause: "process_lost" },
           },
@@ -4034,7 +4034,7 @@ describe("runtime skill assignment boundaries", () => {
       await fs.writeFile(path.join(root, "agentmail", "SKILL.md"), "---\nname: agentmail\ndescription: Email connector\n---\n");
       const discovered = await readWardmoteRuntimeSkillEntries({}, root, [root]);
       expect(discovered.some((entry) => entry.runtimeName === "agentmail")).toBe(true);
-      expect(await readWardmoteRuntimeSkillEntries({ paperclipRuntimeSkills: [] }, root, [root])).toEqual([]);
+      expect(await readWardmoteRuntimeSkillEntries({ wardmoteRuntimeSkills: [] }, root, [root])).toEqual([]);
     } finally {
       await fs.rm(root, { recursive: true, force: true });
     }

@@ -2125,7 +2125,7 @@ export {
   suggestTasksResultSchema,
   askUserQuestionsQuestionOptionSchema,
   askUserQuestionsQuestionSchema,
-  paperclipQuestionSetPayloadSchema,
+  wardmoteQuestionSetPayloadSchema,
   askUserQuestionsPayloadSchema,
   askUserQuestionsAnswerSchema,
   interactionNoteSchema,
@@ -2697,7 +2697,7 @@ export {
 } from "./routine-variables.js";
 
 export {
-  paperclipConfigSchema,
+  wardmoteConfigSchema,
   configMetaSchema,
   llmConfigSchema,
   databaseBackupConfigSchema,

@@ -9,7 +9,7 @@ import { PluginLauncherProvider } from "@/plugins/launchers";
 import { ChatEndpointDetail } from "@/pages/apps/chat/ChatEndpointDetail";
 import { useCompany } from "@/context/CompanyContext";
 import type { ChatEndpoint, ChatEndpointResource, ChatIdentityLink } from "@/api/chatEndpoints";
-import { storybookAgents } from "../../fixtures/paperclipData";
+import { storybookAgents } from "../../fixtures/wardmoteData";
 
 type Scenario = "populated" | "empty" | "error" | "channel-added";
 function ChatManagementPage({ tab = "settings", scenario = "populated" }: { tab?: string; scenario?: Scenario }) {
@@ -33,7 +33,7 @@ function ChatManagementPage({ tab = "settings", scenario = "populated" }: { tab?
       { id: "general", type: "channel", providerResourceId: "CGENERAL", label: "#general", availability: "available", enabled: false },
     ];
     let principals: ChatIdentityLink[] = scenario === "empty" ? [] : [
-      { id: "ada", principalId: "ada", externalLabel: "@ada", paperclipUserLabel: "Ada Lovelace", paperclipUserId: "ada", status: "linked" },
+      { id: "ada", principalId: "ada", externalLabel: "@ada", wardmoteUserLabel: "Ada Lovelace", wardmoteUserId: "ada", status: "linked" },
       { id: "grace", principalId: "grace", externalLabel: "Grace Hopper", status: "pending" },
     ];
     let resourceReads = 0;
@@ -65,7 +65,7 @@ function ChatManagementPage({ tab = "settings", scenario = "populated" }: { tab?
       if (route === "principals") return json(principals);
       if (route.endsWith("/link-intent")) return json({ confirmationUrl: "https://example.test/chat-identity/confirm?token=storybook-only" });
       if (route.endsWith("/link") && init?.method === "DELETE") {
-        principals = principals.map(person => route.includes(person.id) ? { ...person, status: "revoked", paperclipUserId: null } : person);
+        principals = principals.map(person => route.includes(person.id) ? { ...person, status: "revoked", wardmoteUserId: null } : person);
         return json({ ok: true });
       }
       if (route === "conversations") return json(scenario === "empty" ? [] : [

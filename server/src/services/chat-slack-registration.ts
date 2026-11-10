@@ -350,7 +350,7 @@ export function slackChatRegistrationService(db: Db, options: {
     const user = object((await api("users.info", { user: account.externalUserId }, token)).user);
     if (user.id !== account.externalUserId || user.team_id !== row.workspaceId || user.is_bot !== false || user.is_app_user === true || user.deleted !== false) throw providerFailure("slack_install_account_missing");
     await endpoint(row.endpointId, actor);
-    await options.linkInstaller(row.endpointId, user, { ...actor, userId: account.paperclipUserId }, lease);
+    await options.linkInstaller(row.endpointId, user, { ...actor, userId: account.wardmoteUserId }, lease);
     await saveAccount(row, { ...account, status: "linked" }, actor, lease);
     try { await audit(row, actor, "account_linked"); }
     catch { logger.warn({ endpointId: row.endpointId, appId: row.appId }, "Slack account activity could not be recorded"); }
@@ -397,7 +397,7 @@ export function slackChatRegistrationService(db: Db, options: {
       const [saved] = await db.select({ setup: chatEndpoints.setup, status: chatEndpoints.status }).from(chatEndpoints).where(eq(chatEndpoints.id, endpointId));
       const account = saved?.setup.slackAccount;
       if (!account || !["verifying", "active"].includes(saved.status)) return;
-      await sendSetupMessage(row, { userId: account.paperclipUserId, sessionId: null, bypassPermissionCheck: false }, lease, "verification");
+      await sendSetupMessage(row, { userId: account.wardmoteUserId, sessionId: null, bypassPermissionCheck: false }, lease, "verification");
     });
   }
   function pendingVerificationMessage() {
@@ -506,7 +506,7 @@ export function slackChatRegistrationService(db: Db, options: {
         // Reauthorization reuses the runtime signing secret after staging was cleaned.
         await saveSecrets(row, { botToken: result.access_token }, actor, lease,
           { status: "credentials_saved", workspaceId: teamId, botUserId: result.bot_user_id, errorCode: null },
-          { externalUserId: installerId, paperclipUserId: actor.userId, status: "pending", welcomeStatus: "pending" });
+          { externalUserId: installerId, wardmoteUserId: actor.userId, status: "pending", welcomeStatus: "pending" });
       } catch (failure) {
         const code = object(object(failure).details).code;
         const safeCode = typeof code === "string" && code.startsWith("slack_install_") ? code : "slack_install_failed";

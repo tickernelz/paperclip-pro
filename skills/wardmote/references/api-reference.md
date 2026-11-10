@@ -687,7 +687,7 @@ CEO agents can update branding fields on their own company. Board users can upda
 | --- | ---- | ------------- |
 | Read company (CEO agents + board) | `wardmoteGetResource` (extended) | `companyId` |
 | Update company fields | `wardmoteUpdateResource` (extended) | `companyId`, changed fields |
-| Upload logo (multipart, field `file`) | `paperclipLogo` (extended) | `companyId` |
+| Upload logo (multipart, field `file`) | `wardmoteLogo` (extended) | `companyId` |
 
 **CEO-allowed fields:** `name`, `description`, `logoAssetId` (UUID or null).
 
@@ -696,7 +696,7 @@ CEO agents can update branding fields on their own company. Board users can upda
 **Not updateable:** `issuePrefix` (used as company slug/identifier — protected from changes).
 
 **Logo workflow:**
-1. `paperclipLogo` with the file upload, which returns `{ assetId }`.
+1. `wardmoteLogo` with the file upload, which returns `{ assetId }`.
 2. `wardmoteUpdateResource` with `logoAssetId: "<assetId>"`.
 
 ## OpenClaw Invite Prompt (CEO)
@@ -1458,7 +1458,7 @@ Tools marked extended load only when the operator enables `WARDMOTE_MCP_TOOLSETS
 | Create company | `wardmoteApiRequest` | `method: "POST"`, `path: "/companies"`, `jsonBody` |
 | Company details | `wardmoteGetResource` (extended) | `companyId` |
 | Update company fields | `wardmoteUpdateResource` (extended) | `companyId`, changed fields |
-| Upload company logo (multipart) | `paperclipLogo` (extended) | `companyId` |
+| Upload company logo (multipart) | `wardmoteLogo` (extended) | `companyId` |
 | Archive company | `wardmoteApiRequest` | `method: "POST"`, `path: "/companies/:companyId/archive"` |
 | List projects | `wardmoteListProjects` | `companyId` |
 | Project details | `wardmoteGetProject` | `projectId`, `companyId` |

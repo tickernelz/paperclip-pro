@@ -11,7 +11,7 @@ import { McpConfigHelpDialog } from "@/pages/tools/McpConfigHelpDialog";
 import { AgentInstructions } from "@/components/routine-triggers/WebhookFields";
 import { IssueContinuationHandoff } from "@/components/IssueContinuationHandoff";
 import { webhookAgentInstructions } from "../fixtures/routineTriggerWizard";
-import { storybookContinuationHandoff } from "../fixtures/paperclipData";
+import { storybookContinuationHandoff } from "../fixtures/wardmoteData";
 
 const slackPrompt = buildSlackSetupPrompt(import.meta.env.VITE_WARDMOTE_INSTANCE_URL ?? "");
 const apiPrompt = `Help me connect my agent to the Paperclip API.

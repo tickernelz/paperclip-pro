@@ -7,7 +7,7 @@ import { createInterface } from "node:readline/promises";
 import { stdin, stdout } from "node:process";
 import { createCapturedOutputBuffer, parseJsonResponseWithLimit } from "./dev-runner-output.ts";
 import {
-  paperclipRunnerBinaryNeedsBuild,
+  wardmoteRunnerBinaryNeedsBuild,
   resolveNativeRunnerRequirement,
 } from "./dev-runner-native-binary.mjs";
 import { applyDevRunnerOptions } from "./dev-runner-options.ts";
@@ -574,7 +574,7 @@ async function buildWardmoteRunner() {
   }
 
   if (
-    !paperclipRunnerBinaryNeedsBuild({
+    !wardmoteRunnerBinaryNeedsBuild({
       repoRoot,
       nativeRunnerRequired: await getNativeRunnerRequired(),
       configuredBinary: env.WARDMOTE_RUNNER_BINARY,

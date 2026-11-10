@@ -7,7 +7,7 @@ import {
   isMissingPullRequestError,
   issueSummary,
   normalizeRepository,
-  paperclipGet,
+  wardmoteGet,
   parseArgs,
   prUrl,
   repositoryFromGh,
@@ -16,7 +16,7 @@ import {
 } from "./lib.mjs";
 
 export async function findCandidates(options) {
-  const getPaperclip = options.paperclip_get ?? paperclipGet;
+  const getPaperclip = options.paperclip_get ?? wardmoteGet;
   const getGhJson = options.gh_json ?? ghJson;
   const repository = normalizeRepository(options.repo ?? repositoryFromGh());
   const authorAllowlist = resolveAuthorAllowlist(options, getGhJson);

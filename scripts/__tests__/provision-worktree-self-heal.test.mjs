@@ -106,8 +106,8 @@ function runProvision(baseCwd, { pathPrefix, setupWorktree, setupInstance, exist
   const worktreeCwd = existingWorktree ?? makeTempDir("paperclip-provision-worktree-");
   setupWorktree?.(worktreeCwd);
   const worktreesHome = makeTempDir("paperclip-provision-home-");
-  const paperclipHome = makeInstanceHome();
-  setupInstance?.(paperclipHome);
+  const wardmoteHome = makeInstanceHome();
+  setupInstance?.(wardmoteHome);
   const result = spawnSync("bash", [script], {
     cwd: worktreeCwd,
     encoding: "utf8",
@@ -118,19 +118,19 @@ function runProvision(baseCwd, { pathPrefix, setupWorktree, setupInstance, exist
       WARDMOTE_WORKSPACE_CWD: worktreeCwd,
       WARDMOTE_WORKSPACE_BRANCH: "feature/provision-test",
       WARDMOTE_WORKTREES_DIR: worktreesHome,
-      WARDMOTE_HOME: paperclipHome,
+      WARDMOTE_HOME: wardmoteHome,
       WARDMOTE_PROJECT_WORKSPACE_ID: "project-workspace-1",
       WARDMOTE_SEED_EXPECTED_COMPANY_ID: "company-1",
-      ...(typeof env === "function" ? env(paperclipHome) : env),
+      ...(typeof env === "function" ? env(wardmoteHome) : env),
     },
   });
-  return { result, worktreeCwd, worktreesHome, paperclipHome };
+  return { result, worktreeCwd, worktreesHome, wardmoteHome };
 }
 
 function runRuntimeProvision(baseCwd, worktreeCwd, { setupInstance } = {}) {
   const worktreesHome = makeTempDir("paperclip-provision-runtime-home-");
-  const paperclipHome = makeInstanceHome();
-  setupInstance?.(paperclipHome);
+  const wardmoteHome = makeInstanceHome();
+  setupInstance?.(wardmoteHome);
   return spawnSync("bash", [runtimeScript], {
     cwd: worktreeCwd,
     encoding: "utf8",
@@ -141,7 +141,7 @@ function runRuntimeProvision(baseCwd, worktreeCwd, { setupInstance } = {}) {
       WARDMOTE_WORKSPACE_CWD: worktreeCwd,
       WARDMOTE_WORKSPACE_BRANCH: "feature/provision-runtime-test",
       WARDMOTE_WORKTREES_DIR: worktreesHome,
-      WARDMOTE_HOME: paperclipHome,
+      WARDMOTE_HOME: wardmoteHome,
       WARDMOTE_PROJECT_WORKSPACE_ID: "project-workspace-1",
       WARDMOTE_COMPANY_ID: "company-1",
     },
@@ -372,7 +372,7 @@ test("falls back to an isolated config when the base CLI cannot boot", () => {
 
 test("reconciles deployment mode from the registered source when reusing a guest config", () => {
   const baseCwd = makeBaseWorkspace({ helpExit: 1, initExit: 0 });
-  const { result: first, worktreeCwd, worktreesHome, paperclipHome } = runProvision(baseCwd);
+  const { result: first, worktreeCwd, worktreesHome, wardmoteHome } = runProvision(baseCwd);
   assert.equal(first.status, 0, first.stderr);
   assert.equal(readWorktreeConfig(worktreeCwd).server.deploymentMode, "local_trusted");
 
@@ -398,7 +398,7 @@ test("reconciles deployment mode from the registered source when reusing a guest
       WARDMOTE_WORKSPACE_CWD: worktreeCwd,
       WARDMOTE_WORKSPACE_BRANCH: "feature/provision-test",
       WARDMOTE_WORKTREES_DIR: worktreesHome,
-      WARDMOTE_HOME: paperclipHome,
+      WARDMOTE_HOME: wardmoteHome,
       WARDMOTE_PROJECT_WORKSPACE_ID: "project-workspace-1",
       WARDMOTE_SEED_EXPECTED_COMPANY_ID: "company-1",
     },

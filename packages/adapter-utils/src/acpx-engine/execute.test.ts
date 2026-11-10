@@ -464,8 +464,8 @@ describe("shared ACPX engine runtime behavior", () => {
     const root = await makeTempRoot();
     const config = { agent, cwd: root, stateDir: path.join(root, "state") };
     const full = await runExecutor(config);
-    const explicitFull = await runExecutor(config, { context: { paperclipToolProfile: "full" } });
-    const readOnly = await runExecutor(config, { context: { paperclipToolProfile: "read_only" } });
+    const explicitFull = await runExecutor(config, { context: { wardmoteToolProfile: "full" } });
+    const readOnly = await runExecutor(config, { context: { wardmoteToolProfile: "read_only" } });
     for (const run of [full, explicitFull]) {
       expect(run.sessionModes).toEqual([]);
       expect(run.runtimeOptions[0]).not.toHaveProperty("onPermissionRequest");
@@ -481,7 +481,7 @@ describe("shared ACPX engine runtime behavior", () => {
     const root = await makeTempRoot();
     const run = await runExecutor(
       { agent: "gemini", cwd: root, stateDir: path.join(root, "state") },
-      { context: { paperclipToolProfile: "read_only" } },
+      { context: { wardmoteToolProfile: "read_only" } },
     );
     expect(run.sessionModes).toEqual([]);
     expect(typeof run.runtimeOptions[0]?.onPermissionRequest).toBe("function");
@@ -531,7 +531,7 @@ describe("shared ACPX engine runtime behavior", () => {
     };
     const context = {
       taskId: "issue-1",
-      paperclipWorkspace: { cwd: root },
+      wardmoteWorkspace: { cwd: root },
     };
     const firstOnSpawn = vi.fn(async (meta: unknown) => {
       expect(meta).toEqual({ pid: processPid, processGroupId: null, startedAt });
@@ -704,8 +704,8 @@ describe("shared ACPX engine runtime behavior", () => {
     expect(prompt).toContain("You are agent agent-1");
     expect(prompt).toContain("Connection tools:");
     expect(prompt).toContain("Execution contract:");
-    expect(prompt).toContain(context.paperclipTaskMarkdownAssignment);
-    expect(prompt).toContain(context.paperclipTaskCommunicationGuidance);
+    expect(prompt).toContain(context.wardmoteTaskMarkdownAssignment);
+    expect(prompt).toContain(context.wardmoteTaskCommunicationGuidance);
     expect(prompt).not.toContain('"objective":');
     expect(prompt).not.toContain("### Issue description");
     expect(prompt).toContain('"id":"comment-first"');
@@ -718,8 +718,8 @@ describe("shared ACPX engine runtime behavior", () => {
     expect(resumed.sessionInputs[0]?.resumeSessionId).toBe(fresh.result.sessionId);
     const resumedPrompt = String(resumed.turnInputs[0]?.text ?? "");
     expect(resumedPrompt).not.toContain("Execution contract:");
-    expect(resumedPrompt).toContain(context.paperclipTaskMarkdownAssignmentCompact);
-    expect(resumedPrompt).not.toContain(context.paperclipTaskCommunicationGuidance);
+    expect(resumedPrompt).toContain(context.wardmoteTaskMarkdownAssignmentCompact);
+    expect(resumedPrompt).not.toContain(context.wardmoteTaskCommunicationGuidance);
     expect(resumedPrompt).not.toContain('"id":"comment-first"');
     expect(resumedPrompt).toContain('"id":"comment-second"');
     const reset = await runExecutor(config, { context });
@@ -727,7 +727,7 @@ describe("shared ACPX engine runtime behavior", () => {
     const resetPrompt = String(reset.turnInputs[0]?.text ?? "");
     expect(resetPrompt).toContain("You are agent agent-1");
     expect(resetPrompt).toContain("Connection tools:");
-    expect(resetPrompt).toContain(context.paperclipTaskMarkdownAssignment);
+    expect(resetPrompt).toContain(context.wardmoteTaskMarkdownAssignment);
     expect(resetPrompt).toContain("Execution contract:");
   });
 
@@ -739,7 +739,7 @@ describe("shared ACPX engine runtime behavior", () => {
         context: {
           taskId: "issue-1",
           wakeReason: "issue_assigned",
-          paperclipWake: {
+          wardmoteWake: {
             reason: "issue_assigned",
             issue: { id: "issue-1", identifier: "TEST-1" },
           },
@@ -790,14 +790,14 @@ describe("shared ACPX engine runtime behavior", () => {
       completedActions, coverage: { kind: "full_task_history", throughCommentId: messages[49]!.id, summaryThroughCommentId: null },
     };
     expect(Buffer.byteLength(JSON.stringify(continuation))).toBeGreaterThan(128 * 1024);
-    const context = { taskId: "issue-1", paperclipWake: {
+    const context = { taskId: "issue-1", wardmoteWake: {
       reason: "issue_commented", issue: { id: "issue-1" }, executionContinuation: continuation,
     } };
     const fresh = await runExecutor(config, { context });
     const changedMessage = { ...messages[49]!, body: "Updated direction: preserve approval gates." };
     const resumed = await runExecutor(config, {
       runtime: { sessionParams: fresh.result.sessionParams },
-      context: { ...context, paperclipWake: { ...context.paperclipWake, executionContinuation: {
+      context: { ...context, wardmoteWake: { ...context.wardmoteWake, executionContinuation: {
         ...continuation, resumeDelta: { baseRunId: "run-1", messages: [changedMessage] },
       } } },
     });
@@ -828,10 +828,10 @@ describe("shared ACPX engine runtime behavior", () => {
     const context = {
       conversationMode: true,
       taskId: "chat-1",
-      paperclipTaskMarkdown: chatDirective,
-      paperclipTaskMarkdownCompact: chatDirective,
-      paperclipTaskCommunicationGuidance: "Frozen Slack communication preference.",
-      paperclipWake: {
+      wardmoteTaskMarkdown: chatDirective,
+      wardmoteTaskMarkdownCompact: chatDirective,
+      wardmoteTaskCommunicationGuidance: "Frozen Slack communication preference.",
+      wardmoteWake: {
         reason: "issue_commented",
         issue: { id: "chat-1", workMode: "planning", status: "in_progress" },
         interactionKind: "request_confirmation",
@@ -875,8 +875,8 @@ describe("shared ACPX engine runtime behavior", () => {
         authToken: "runtime-secret-token",
         context: {
           taskId: "issue-chat-1",
-          paperclipTaskMarkdown: "# CHAT-1 — Answer the provider message",
-          paperclipWake: {
+          wardmoteTaskMarkdown: "# CHAT-1 — Answer the provider message",
+          wardmoteWake: {
             reason: "External chat message received",
             externalChatProvider: "discord",
             checkedOutByHarness: true,
@@ -930,8 +930,8 @@ describe("shared ACPX engine runtime behavior", () => {
         authToken: "runtime-secret-token",
         context: {
           taskId: "issue-chat-overflow",
-          paperclipTaskMarkdown: "# CHAT-2 — Answer every queued message",
-          paperclipWake: {
+          wardmoteTaskMarkdown: "# CHAT-2 — Answer every queued message",
+          wardmoteWake: {
             reason: "External chat message received",
             externalChatProvider: "slack",
             checkedOutByHarness: true,
@@ -979,7 +979,7 @@ describe("shared ACPX engine runtime behavior", () => {
       {
         context: {
           taskId: "issue-chat-1",
-          paperclipWake: {
+          wardmoteWake: {
             reason: "External chat message received",
             externalChatProvider: "telegram",
             checkedOutByHarness: true,
@@ -1672,7 +1672,7 @@ describe("shared ACPX engine runtime behavior", () => {
     const { meta } = await runExecutor({
       agent: "claude",
       stateDir,
-      paperclipRuntimeSkills: [skill],
+      wardmoteRuntimeSkills: [skill],
       wardmoteSkillSync: { desiredSkills: [skill.key] },
     });
 
@@ -1701,7 +1701,7 @@ describe("shared ACPX engine runtime behavior", () => {
       agent: "codex",
       stateDir: path.join(root, "state"),
       env: { CODEX_HOME: codexHome },
-      paperclipRuntimeSkills: [keep, remove],
+      wardmoteRuntimeSkills: [keep, remove],
     };
 
     await runExecutor({
@@ -1734,7 +1734,7 @@ describe("shared ACPX engine runtime behavior", () => {
       agent: "codex",
       stateDir: path.join(root, "state"),
       env: { CODEX_HOME: codexHome },
-      paperclipRuntimeSkills: [operational],
+      wardmoteRuntimeSkills: [operational],
       wardmoteSkillSync: { desiredSkills: [] },
     });
 
@@ -1753,7 +1753,7 @@ describe("shared ACPX engine runtime behavior", () => {
         agent,
         stateDir: path.join(root, "state"),
         env: agent === "codex" ? { CODEX_HOME: home } : { HOME: home },
-        paperclipRuntimeSkills: [operational],
+        wardmoteRuntimeSkills: [operational],
         wardmoteSkillSync: { desiredSkills: [] },
       });
       const skillsHome = agent === "codex" ? path.join(home, "skills") : path.join(home, ".gemini", "skills");
@@ -1777,7 +1777,7 @@ describe("shared ACPX engine runtime behavior", () => {
       agent: "codex",
       stateDir: path.join(root, "state"),
       env: { CODEX_HOME: codexHome },
-      paperclipRuntimeSkills: [legacy],
+      wardmoteRuntimeSkills: [legacy],
       wardmoteSkillSync: { desiredSkills: [] },
     });
 
@@ -1787,12 +1787,12 @@ describe("shared ACPX engine runtime behavior", () => {
   it.skipIf(process.platform === "win32")("replaces stale managed Codex auth files with source symlinks", async () => {
     const root = await makeTempRoot();
     const sourceCodexHome = path.join(root, "source-codex-home");
-    const paperclipHome = path.join(root, "paperclip-home");
-    const paperclipInstanceId = "test-instance";
+    const wardmoteHome = path.join(root, "paperclip-home");
+    const wardmoteInstanceId = "test-instance";
     const managedCodexHome = path.join(
-      paperclipHome,
+      wardmoteHome,
       "instances",
-      paperclipInstanceId,
+      wardmoteInstanceId,
       "companies",
       "company-1",
       "codex-home",
@@ -1809,12 +1809,12 @@ describe("shared ACPX engine runtime behavior", () => {
     const previousWardmoteInstanceId = process.env.WARDMOTE_INSTANCE_ID;
     try {
       process.env.CODEX_HOME = sourceCodexHome;
-      process.env.WARDMOTE_HOME = paperclipHome;
-      process.env.WARDMOTE_INSTANCE_ID = paperclipInstanceId;
+      process.env.WARDMOTE_HOME = wardmoteHome;
+      process.env.WARDMOTE_INSTANCE_ID = wardmoteInstanceId;
       await runExecutor({
         agent: "codex",
         stateDir: path.join(root, "state"),
-        paperclipRuntimeSkills: [],
+        wardmoteRuntimeSkills: [],
         wardmoteSkillSync: { desiredSkills: [] },
       });
     } finally {
@@ -1836,12 +1836,12 @@ describe("shared ACPX engine runtime behavior", () => {
     async (keyName) => {
       const root = await makeTempRoot();
       const sourceCodexHome = path.join(root, "source-codex-home");
-      const paperclipHome = path.join(root, "paperclip-home");
+      const wardmoteHome = path.join(root, "paperclip-home");
       await fs.mkdir(sourceCodexHome, { recursive: true });
       const sourceAuth = path.join(sourceCodexHome, "auth.json");
       await fs.writeFile(sourceAuth, JSON.stringify({ tokens: "host-login" }), "utf8");
       const managedHome = path.join(
-        paperclipHome, "instances", "test-instance", "companies", "company-1",
+        wardmoteHome, "instances", "test-instance", "companies", "company-1",
         "acp-engine", "agents", "agent-1", "codex-home",
       );
       await fs.mkdir(managedHome, { recursive: true });
@@ -1853,7 +1853,7 @@ describe("shared ACPX engine runtime behavior", () => {
       }
 
       vi.stubEnv("CODEX_HOME", sourceCodexHome);
-      vi.stubEnv("WARDMOTE_HOME", paperclipHome);
+      vi.stubEnv("WARDMOTE_HOME", wardmoteHome);
       vi.stubEnv("WARDMOTE_INSTANCE_ID", "test-instance");
       vi.stubEnv("OPENAI_API_KEY", "");
       vi.stubEnv("CODEX_API_KEY", "");
@@ -1862,7 +1862,7 @@ describe("shared ACPX engine runtime behavior", () => {
           agent: "codex",
           stateDir: path.join(root, "state"),
           env: { [keyName]: "sk-acp-test-key" },
-          paperclipRuntimeSkills: [],
+          wardmoteRuntimeSkills: [],
           wardmoteSkillSync: { desiredSkills: [] },
         });
         const sessionEnv = (sessionInputs[0]!.sessionOptions as { env: Record<string, string> }).env;
@@ -1882,11 +1882,11 @@ describe("shared ACPX engine runtime behavior", () => {
 
   it("sets GROK_HOME for a Grok run from the company Grok home, and leaves CODEX_HOME unchanged for a Codex run", async () => {
     const root = await makeTempRoot();
-    const paperclipHome = path.join(root, "paperclip-home");
+    const wardmoteHome = path.join(root, "paperclip-home");
     const previousWardmoteHome = process.env.WARDMOTE_HOME;
     const previousWardmoteInstanceId = process.env.WARDMOTE_INSTANCE_ID;
     try {
-      process.env.WARDMOTE_HOME = paperclipHome;
+      process.env.WARDMOTE_HOME = wardmoteHome;
       process.env.WARDMOTE_INSTANCE_ID = "default";
 
       const grokRun = await runExecutor({
@@ -1897,7 +1897,7 @@ describe("shared ACPX engine runtime behavior", () => {
       expect(grokRun.sessionInputs[0]?.sessionOptions).toMatchObject({
         env: expect.objectContaining({
           GROK_HOME: path.join(
-            paperclipHome,
+            wardmoteHome,
             "instances",
             "default",
             "companies",
@@ -1912,7 +1912,7 @@ describe("shared ACPX engine runtime behavior", () => {
         agent: "codex",
         stateDir: path.join(root, "state-codex"),
         env: { CODEX_HOME: codexHome },
-        paperclipRuntimeSkills: [],
+        wardmoteRuntimeSkills: [],
         wardmoteSkillSync: { desiredSkills: [] },
       });
       const codexEnv = (codexRun.sessionInputs[0]?.sessionOptions as { env: Record<string, string> })
@@ -2002,7 +2002,7 @@ describe("shared ACPX engine runtime behavior", () => {
           CODEX_HOME: codexHome,
           [apiKeyName]: "sk-acp-test-key",
         },
-        paperclipRuntimeSkills: [],
+        wardmoteRuntimeSkills: [],
         wardmoteSkillSync: { desiredSkills: [] },
       });
 
@@ -2028,7 +2028,7 @@ describe("shared ACPX engine runtime behavior", () => {
           agent: "codex",
           stateDir: path.join(root, "state"),
           env: { CODEX_HOME: codexHome },
-          paperclipRuntimeSkills: [],
+          wardmoteRuntimeSkills: [],
           wardmoteSkillSync: { desiredSkills: [] },
         });
 
@@ -2078,7 +2078,7 @@ describe("shared ACPX engine runtime behavior", () => {
       return runExecutor({ ...config, env: {
         WARDMOTE_RUN_SCRATCH_DIR: dir, WARDMOTE_TASK_SCRATCH_DIR: dir,
         WARDMOTE_SCRATCH_DIR: dir, WARDMOTE_TMPDIR: dir, TEMP: dir, TMP: dir, TMPDIR: userTemp,
-      } }, { context: { taskId: "issue-1", paperclipScratch: { type: "heartbeat_run", dir, tempKeysApplied: ["TEMP", "TMP"] } } });
+      } }, { context: { taskId: "issue-1", wardmoteScratch: { type: "heartbeat_run", dir, tempKeysApplied: ["TEMP", "TMP"] } } });
     }
     const first = await withScratch(path.join(root, "run-1"), "/custom/tmp-1");
     const second = await withScratch(path.join(root, "run-2"), "/custom/tmp-1");
@@ -2095,7 +2095,7 @@ describe("shared ACPX engine runtime behavior", () => {
         WARDMOTE_RUN_SCRATCH_DIR: dir, WARDMOTE_TASK_SCRATCH_DIR: dir,
         WARDMOTE_SCRATCH_DIR: dir, WARDMOTE_TMPDIR: tempDir,
         TEMP: tempDir, TMP: tempDir, TMPDIR: userTemp ?? tempDir,
-      } }, { context: { taskId: "issue-1", paperclipScratch: {
+      } }, { context: { taskId: "issue-1", wardmoteScratch: {
         type: "heartbeat_run", dir, tempDir,
         tempKeysApplied: userTemp ? ["TEMP", "TMP"] : ["TMPDIR", "TEMP", "TMP"],
       } } });
@@ -2147,7 +2147,7 @@ describe("shared ACPX engine runtime behavior", () => {
       context: {
         taskId: "issue-1",
         wakeReason: "issue_assigned",
-        paperclipWorkspace: { cwd, realization: { additional } },
+        wardmoteWorkspace: { cwd, realization: { additional } },
       },
     });
     const projectA = {
@@ -2208,7 +2208,7 @@ describe("shared ACPX engine runtime behavior", () => {
         context: {
           taskId: "issue-1",
           wakeReason: "issue_assigned",
-          paperclipWorkspace: {
+          wardmoteWorkspace: {
             cwd,
             realization: {
               additional: projectPaths.map((localPath, index) => ({
@@ -2255,7 +2255,7 @@ describe("shared ACPX engine runtime behavior", () => {
       context: {
         taskId: "issue-1",
         wakeReason: "issue_assigned",
-        paperclipWorkspace: { cwd, realization: { additional: [referencedProject] } },
+        wardmoteWorkspace: { cwd, realization: { additional: [referencedProject] } },
       },
     });
     const fp = (r: { result: { sessionParams?: unknown } }) =>
@@ -2307,7 +2307,7 @@ describe("shared ACPX engine runtime behavior", () => {
       context: {
         taskId: "issue-1",
         wakeReason: "issue_assigned",
-        paperclipWorkspace: { cwd, realization: { additional: [referencedProject] } },
+        wardmoteWorkspace: { cwd, realization: { additional: [referencedProject] } },
       },
     });
     const fp = (r: { result: { sessionParams?: unknown } }) =>
@@ -2411,7 +2411,7 @@ describe("shared ACPX engine runtime behavior", () => {
     const remoteCwd = "/workspace/remote";
     const { sessionInputs, runtimeOptions } = await runExecutor(
       { agent: "custom", agentCommand: "node ./fake-acp.js", cwd: localCwd, stateDir: path.join(root, "state") },
-      { context: { paperclipWorkspace: { cwd: localCwd, workspaceWorktreePath: localCwd } }, executionTarget: { kind: "remote", transport: "ssh", remoteCwd } },
+      { context: { wardmoteWorkspace: { cwd: localCwd, workspaceWorktreePath: localCwd } }, executionTarget: { kind: "remote", transport: "ssh", remoteCwd } },
     );
     const env = (sessionInputs[0]!.sessionOptions as { env: Record<string, string> }).env;
     expect(env.WARDMOTE_WORKSPACE_CWD).toBe(localCwd);
@@ -2768,7 +2768,7 @@ describe("shared ACPX engine runtime behavior", () => {
 
     const { meta } = await runExecutor(
       { agent: "claude", stateDir, cwd },
-      { context: { paperclipWorkspace: { cwd, agentHome: path.join(root, "agent-home") } } },
+      { context: { wardmoteWorkspace: { cwd, agentHome: path.join(root, "agent-home") } } },
     );
 
     const settingsPath = path.join(cwd, ".claude", "settings.local.json");
@@ -2819,7 +2819,7 @@ describe("shared ACPX engine runtime behavior", () => {
 
     await runExecutor(
       { agent: "claude", stateDir, cwd },
-      { context: { paperclipWorkspace: { cwd } } },
+      { context: { wardmoteWorkspace: { cwd } } },
     );
 
     const written = JSON.parse(
@@ -2853,7 +2853,7 @@ describe("shared ACPX engine runtime behavior", () => {
 
     const { meta } = await runExecutor(
       { agent: "claude", stateDir, cwd },
-      { context: { paperclipWorkspace: { cwd } } },
+      { context: { wardmoteWorkspace: { cwd } } },
     );
 
     const written = JSON.parse(
@@ -2889,7 +2889,7 @@ describe("shared ACPX engine runtime behavior", () => {
           agent === "custom"
             ? { agent, agentCommand: "node ./fake-acp.js", stateDir: path.join(root, `state-${agent}`), cwd }
             : { agent, stateDir: path.join(root, `state-${agent}`), cwd },
-        context: { paperclipWorkspace: { cwd } },
+        context: { wardmoteWorkspace: { cwd } },
         onLog: async () => {},
         onMeta: async () => {},
       } as never);
@@ -2910,7 +2910,7 @@ describe("shared ACPX engine runtime behavior", () => {
 
     await runExecutor(
       { agent: "codex", stateDir, cwd },
-      { context: { paperclipWorkspace: { cwd } } },
+      { context: { wardmoteWorkspace: { cwd } } },
     );
 
     expect(await pathExists(path.join(cwd, ".claude", "settings.local.json"))).toBe(false);
@@ -2926,7 +2926,7 @@ describe("shared ACPX engine runtime behavior", () => {
 
     const first = await runExecutor(baseConfig, {
       context: {
-        paperclipSecrets: {
+        wardmoteSecrets: {
           manifest: [
             {
               configPath: "env.API_TOKEN",
@@ -2943,7 +2943,7 @@ describe("shared ACPX engine runtime behavior", () => {
     });
     const second = await runExecutor(baseConfig, {
       context: {
-        paperclipSecrets: {
+        wardmoteSecrets: {
           manifest: [
             {
               configPath: "env.API_TOKEN",
@@ -2968,7 +2968,7 @@ describe("shared ACPX engine runtime behavior", () => {
     const root = await makeTempRoot();
     // This fixture injects its runtime. Keep session identity independent of
     // host CLI discovery/version probes while testing MCP credential changes.
-    const config = { agent, agentCommand: "node ./fake-acp.js", cwd: root, stateDir: path.join(root, "state"), paperclipRuntimeSkills: [], wardmoteSkillSync: { desiredSkills: [] } };
+    const config = { agent, agentCommand: "node ./fake-acp.js", cwd: root, stateDir: path.join(root, "state"), wardmoteRuntimeSkills: [], wardmoteSkillSync: { desiredSkills: [] } };
     const first = await runExecutor(config);
     const server = { name: "github", url: "https://example.test/github/mcp", connectionId: "github", token: "current-token" };
     const second = await runExecutor(config, {
@@ -3564,12 +3564,12 @@ describe("ACPX engine remote sandbox staging seam (PR 1: workspace + cwd)", () =
     expect(stageArgs.installCommand ?? null).toBeNull();
 
     // Both bridges receive the real (non-null) runtimeRootDir from staging.
-    const paperclipArgs = vi.mocked(startAdapterExecutionTargetWardmoteBridge).mock.calls[0]![0];
+    const wardmoteArgs = vi.mocked(startAdapterExecutionTargetWardmoteBridge).mock.calls[0]![0];
     const processArgs = vi.mocked(startAdapterExecutionTargetProcessSessionBridge).mock.calls[0]![0];
-    expect(paperclipArgs.runtimeRootDir).toBeTruthy();
+    expect(wardmoteArgs.runtimeRootDir).toBeTruthy();
     expect(processArgs.runtimeRootDir).toBeTruthy();
-    expect(String(paperclipArgs.runtimeRootDir)).toContain(".paperclip-runtime");
-    expect(processArgs.runtimeRootDir).toBe(paperclipArgs.runtimeRootDir);
+    expect(String(wardmoteArgs.runtimeRootDir)).toContain(".paperclip-runtime");
+    expect(processArgs.runtimeRootDir).toBe(wardmoteArgs.runtimeRootDir);
 
     // The workspace really landed in the sandbox workspace dir.
     await expect(fs.readFile(path.join(remoteCwd, "hello.txt"), "utf8")).resolves.toBe("hi");
@@ -3582,13 +3582,13 @@ describe("ACPX engine remote sandbox staging seam (PR 1: workspace + cwd)", () =
     async () => {
       const { root, stateDir, localCwd, executionTarget } = await setupRemoteSandbox();
       const sourceCodexHome = path.join(root, "source-codex-home");
-      const paperclipHome = path.join(root, "paperclip-home");
+      const wardmoteHome = path.join(root, "paperclip-home");
       await fs.mkdir(sourceCodexHome, { recursive: true });
       const sourceAuth = path.join(sourceCodexHome, "auth.json");
       await fs.writeFile(sourceAuth, JSON.stringify({ tokens: "host-login" }), "utf8");
 
       vi.stubEnv("CODEX_HOME", sourceCodexHome);
-      vi.stubEnv("WARDMOTE_HOME", paperclipHome);
+      vi.stubEnv("WARDMOTE_HOME", wardmoteHome);
       vi.stubEnv("WARDMOTE_INSTANCE_ID", "test-instance");
       vi.stubEnv("OPENAI_API_KEY", "sk-host-only-key");
       try {
@@ -3597,7 +3597,7 @@ describe("ACPX engine remote sandbox staging seam (PR 1: workspace + cwd)", () =
             agent: "codex",
             stateDir,
             cwd: localCwd,
-            paperclipRuntimeSkills: [],
+            wardmoteRuntimeSkills: [],
             wardmoteSkillSync: { desiredSkills: [] },
           },
           { authToken: "real-run-jwt", executionTarget },
@@ -3606,7 +3606,7 @@ describe("ACPX engine remote sandbox staging seam (PR 1: workspace + cwd)", () =
         vi.unstubAllEnvs();
       }
 
-      const instanceRoot = path.join(paperclipHome, "instances", "test-instance", "companies", "company-1");
+      const instanceRoot = path.join(wardmoteHome, "instances", "test-instance", "companies", "company-1");
       const subscriptionAuth = path.join(instanceRoot, "codex-home", "auth.json");
       expect((await fs.lstat(subscriptionAuth)).isSymbolicLink()).toBe(true);
       await expect(
@@ -3690,7 +3690,7 @@ describe("ACPX engine remote sandbox staging seam (PR 1: workspace + cwd)", () =
         context: {
           taskId: "issue-1",
           wakeReason: "issue_assigned",
-          paperclipWorkspace: {
+          wardmoteWorkspace: {
             cwd: localCwd,
             realization: {
               additional: [
@@ -3706,7 +3706,7 @@ describe("ACPX engine remote sandbox staging seam (PR 1: workspace + cwd)", () =
           },
           // The plural workspace-hints channel the agent reads. The referenced hint points at the
           // host path today; on a remote target the run must repoint it at the staged directory.
-          paperclipWorkspaces: [
+          wardmoteWorkspaces: [
             {
               workspaceId: "ws-a",
               cwd: referencedProjectDir,
@@ -4127,7 +4127,7 @@ describe("ACPX engine Claude skill bundle staging (remote ACP lane)", () => {
     ].join("\n"));
     const { meta, result } = await runExecutor({
       agent: "claude", agentCommand: "node ./fake-acp.js", stateDir, cwd,
-      paperclipRuntimeSkills: [skill], wardmoteSkillSync: { desiredSkills: [skill.key] },
+      wardmoteRuntimeSkills: [skill], wardmoteSkillSync: { desiredSkills: [skill.key] },
     });
     const bundle = await onlyChildDir(path.join(stateDir, "runtime-skills", "claude"));
     const stagedFile = path.join(bundle, ".claude", "skills", skill.runtimeName, "SKILL.md");
@@ -4151,7 +4151,7 @@ describe("ACPX engine Claude skill bundle staging (remote ACP lane)", () => {
     const skills = [bounded, absent, malformed];
     const { meta } = await runExecutor({
       agent: "claude", agentCommand: "node ./fake-acp.js", stateDir, cwd,
-      paperclipRuntimeSkills: skills, wardmoteSkillSync: { desiredSkills: skills.map((skill) => skill.key) },
+      wardmoteRuntimeSkills: skills, wardmoteSkillSync: { desiredSkills: skills.map((skill) => skill.key) },
     });
     const prompt = String(meta[0]?.prompt ?? "");
     expect(prompt).toContain(`- bounded: ${"x".repeat(512)} (file: `);
@@ -4171,7 +4171,7 @@ describe("ACPX engine Claude skill bundle staging (remote ACP lane)", () => {
         agentCommand: "node ./fake-acp.js",
         stateDir,
         cwd: localCwd,
-        paperclipRuntimeSkills: [skill],
+        wardmoteRuntimeSkills: [skill],
         wardmoteSkillSync: { desiredSkills: [skill.key] },
       },
       { authToken: "real-run-jwt", executionTarget, prepareRemoteManagedHome: stagingClaudeSeam() },
@@ -4207,7 +4207,7 @@ describe("ACPX engine Claude skill bundle staging (remote ACP lane)", () => {
       agentCommand: "node ./fake-acp.js",
       stateDir,
       cwd: localCwd,
-      paperclipRuntimeSkills: [skill],
+      wardmoteRuntimeSkills: [skill],
       wardmoteSkillSync: { desiredSkills: [skill.key] },
     };
     const seamWithOverriddenSkillsDir = (
@@ -4250,7 +4250,7 @@ describe("ACPX engine Claude skill bundle staging (remote ACP lane)", () => {
         agentCommand: "node ./fake-acp.js",
         stateDir,
         cwd: localCwd,
-        paperclipRuntimeSkills: [],
+        wardmoteRuntimeSkills: [],
         wardmoteSkillSync: { desiredSkills: [] },
       },
       { authToken: "real-run-jwt", executionTarget, prepareRemoteManagedHome: stagingClaudeSeam() },
@@ -4288,7 +4288,7 @@ describe("ACPX engine Claude skill bundle staging (remote ACP lane)", () => {
         agentCommand: "node ./fake-acp.js",
         stateDir,
         cwd: localCwd,
-        paperclipRuntimeSkills: [review, broken],
+        wardmoteRuntimeSkills: [review, broken],
         wardmoteSkillSync: { desiredSkills: [review.key, broken.key] },
       },
       { authToken: "real-run-jwt", executionTarget, prepareRemoteManagedHome: stagingClaudeSeam() },
@@ -4327,7 +4327,7 @@ describe("ACPX engine Claude skill bundle staging (remote ACP lane)", () => {
         agentCommand: "node ./fake-acp.js",
         stateDir,
         cwd: localCwd,
-        paperclipRuntimeSkills: [broken],
+        wardmoteRuntimeSkills: [broken],
         wardmoteSkillSync: { desiredSkills: [broken.key] },
       },
       { authToken: "real-run-jwt", executionTarget, prepareRemoteManagedHome: stagingClaudeSeam() },
@@ -4376,7 +4376,7 @@ describe("ACPX engine Claude skill bundle staging (remote ACP lane)", () => {
         agentCommand: "node ./fake-acp.js",
         stateDir,
         cwd: localCwd,
-        paperclipRuntimeSkills: [review, symlinkedSkillMd, noSkillMd],
+        wardmoteRuntimeSkills: [review, symlinkedSkillMd, noSkillMd],
         wardmoteSkillSync: { desiredSkills: [review.key, symlinkedSkillMd.key, noSkillMd.key] },
       },
       { authToken: "real-run-jwt", executionTarget, prepareRemoteManagedHome: stagingClaudeSeam() },
@@ -6469,10 +6469,10 @@ describe("ACPX engine run lifecycle corrections (F1: settle every failure after 
 
   it("test_runtime_create_failure_stops_bridges_and_releases_staging_lease", async () => {
     const { stateDir, localCwd, executionTarget } = await setupRemoteSandbox();
-    const paperclipStop = vi.fn(async () => {});
+    const wardmoteStop = vi.fn(async () => {});
     const processStop = vi.fn(async () => {});
     vi.mocked(startAdapterExecutionTargetWardmoteBridge).mockImplementationOnce(
-      async () => ({ env: {}, stop: paperclipStop }) as never,
+      async () => ({ env: {}, stop: wardmoteStop }) as never,
     );
     vi.mocked(startAdapterExecutionTargetProcessSessionBridge).mockImplementationOnce(
       async () => ({ agentCommand: null, stop: processStop }) as never,
@@ -6503,7 +6503,7 @@ describe("ACPX engine run lifecycle corrections (F1: settle every failure after 
     expect(result.exitCode).toBe(1);
     expect(result.resultJson?.phase).toBe("create_runtime");
     // Both live bridges stop exactly once.
-    expect(paperclipStop).toHaveBeenCalledTimes(1);
+    expect(wardmoteStop).toHaveBeenCalledTimes(1);
     expect(processStop).toHaveBeenCalledTimes(1);
     // The per-session staging lease released, so the lock map does not strand the
     // next same-session run.
@@ -6530,7 +6530,7 @@ describe("ACPX engine run lifecycle corrections (F1: settle every failure after 
     // A throwing accessor on a field only `buildPrompt` reads makes the prompt
     // build fail after the session handshake succeeds.
     const context: Record<string, unknown> = {};
-    Object.defineProperty(context, "paperclipSessionHandoffMarkdown", {
+    Object.defineProperty(context, "wardmoteSessionHandoffMarkdown", {
       enumerable: false,
       get() {
         if (failure === "prompt") throw new Error("prompt build boom");
@@ -6859,11 +6859,11 @@ describe("ACPX engine run lifecycle corrections (F3: one teardown error policy)"
   // Stub both sandbox bridges with stop spies collected per start, so a test can
   // assert the bridges stopped without running the real bridge transport.
   function stubBridges() {
-    const paperclipStops: Array<ReturnType<typeof vi.fn>> = [];
+    const wardmoteStops: Array<ReturnType<typeof vi.fn>> = [];
     const processStops: Array<ReturnType<typeof vi.fn>> = [];
     vi.mocked(startAdapterExecutionTargetWardmoteBridge).mockImplementation(async () => {
       const stop = vi.fn(async () => {});
-      paperclipStops.push(stop);
+      wardmoteStops.push(stop);
       return { env: {}, stop } as never;
     });
     vi.mocked(startAdapterExecutionTargetProcessSessionBridge).mockImplementation(async () => {
@@ -6875,12 +6875,12 @@ describe("ACPX engine run lifecycle corrections (F3: one teardown error policy)"
       stops.some((stop) => stop.mock.calls.length > 0);
     const stoppedCount = (stops: Array<ReturnType<typeof vi.fn>>) =>
       stops.filter((stop) => stop.mock.calls.length > 0).length;
-    return { paperclipStops, processStops, anyStopped, stoppedCount };
+    return { wardmoteStops, processStops, anyStopped, stoppedCount };
   }
 
   function throwingHandoffContext(): Record<string, unknown> {
     const context: Record<string, unknown> = {};
-    Object.defineProperty(context, "paperclipSessionHandoffMarkdown", {
+    Object.defineProperty(context, "wardmoteSessionHandoffMarkdown", {
       enumerable: false,
       get() {
         throw new Error("prompt build boom");
@@ -6929,7 +6929,7 @@ describe("ACPX engine run lifecycle corrections (F3: one teardown error policy)"
 
   it("collects instructions after confirmed close on a thrown provider turn, before workspace restore", async () => {
     const { stateDir, localCwd, executionTarget } = await setupRemoteSandbox();
-    const { paperclipStops, anyStopped } = stubBridges();
+    const { wardmoteStops, anyStopped } = stubBridges();
     const order: string[] = [];
     const execute = createAcpxEngineExecutor({
       stagingLocks: new Map(), warmHandles: new Map(), stagedRuntimes: new Map(),
@@ -6938,7 +6938,7 @@ describe("ACPX engine run lifecycle corrections (F3: one teardown error policy)"
     });
     const result = await execute({ runId: "instruction-stop-failure",
       ...remoteArgs(stateDir, localCwd, executionTarget, { onProviderStopped: async () => {
-        expect(anyStopped(paperclipStops)).toBe(true);
+        expect(anyStopped(wardmoteStops)).toBe(true);
         order.push("collect");
       } }),
     } as never);
@@ -6948,7 +6948,7 @@ describe("ACPX engine run lifecycle corrections (F3: one teardown error policy)"
 
   it("test_teardown_continues_after_one_teardown_step_fails", async () => {
     const { stateDir, localCwd, executionTarget } = await setupRemoteSandbox();
-    const { paperclipStops, processStops, anyStopped } = stubBridges();
+    const { wardmoteStops, processStops, anyStopped } = stubBridges();
     const stagingLocks = new Map<string, Promise<unknown>>();
     const collectInstructions = vi.fn(async () => {});
     const logs: Array<{ stream: string; text: string }> = [];
@@ -6980,7 +6980,7 @@ describe("ACPX engine run lifecycle corrections (F3: one teardown error policy)"
     expect(result.exitCode).toBe(1);
     expect(collectInstructions).not.toHaveBeenCalled();
     // The close failure did not stop the bridge stops or the lease release.
-    expect(anyStopped(paperclipStops)).toBe(true);
+    expect(anyStopped(wardmoteStops)).toBe(true);
     expect(anyStopped(processStops)).toBe(true);
     expect(stagingLocks.size).toBe(0);
     // The close failure was recorded, not silently dropped.
@@ -6991,7 +6991,7 @@ describe("ACPX engine run lifecycle corrections (F3: one teardown error policy)"
 
   it("restores managed home and releases the lease when instruction collection rejects", async () => {
     const { stateDir, localCwd, executionTarget } = await setupRemoteSandbox();
-    const { paperclipStops, processStops, anyStopped } = stubBridges();
+    const { wardmoteStops, processStops, anyStopped } = stubBridges();
     const stagingLocks = new Map<string, Promise<unknown>>();
     const order: string[] = [];
     const logs: string[] = [];
@@ -7012,7 +7012,7 @@ describe("ACPX engine run lifecycle corrections (F3: one teardown error policy)"
     } as never);
     expect(result.exitCode).toBe(1);
     expect(order).toEqual(["close", "collect", "restore"]);
-    expect(anyStopped(paperclipStops)).toBe(true);
+    expect(anyStopped(wardmoteStops)).toBe(true);
     expect(anyStopped(processStops)).toBe(true);
     expect(stagingLocks.size).toBe(0);
     expect(logs.some(text => text.includes('teardown step "instruction-collection" failed: Instruction collection failed'))).toBe(true);
@@ -7100,7 +7100,7 @@ describe("ACPX engine run lifecycle corrections (F3: one teardown error policy)"
 
   it("test_result_emission_failure_does_not_skip_teardown", async () => {
     const { stateDir, localCwd, executionTarget } = await setupRemoteSandbox();
-    const { paperclipStops, processStops, anyStopped } = stubBridges();
+    const { wardmoteStops, processStops, anyStopped } = stubBridges();
     const stagingLocks = new Map<string, Promise<unknown>>();
     const execute = createAcpxEngineExecutor({
       stagingLocks,
@@ -7124,14 +7124,14 @@ describe("ACPX engine run lifecycle corrections (F3: one teardown error policy)"
       }),
     } as never).catch(() => {});
 
-    expect(anyStopped(paperclipStops)).toBe(true);
+    expect(anyStopped(wardmoteStops)).toBe(true);
     expect(anyStopped(processStops)).toBe(true);
     expect(stagingLocks.size).toBe(0);
   });
 
   it("test_result_mapping_throw_after_close_does_not_rerun_teardown", async () => {
     const { stateDir, localCwd, executionTarget } = await setupRemoteSandbox();
-    const { paperclipStops, processStops, stoppedCount } = stubBridges();
+    const { wardmoteStops, processStops, stoppedCount } = stubBridges();
     let closeCount = 0;
     const execute = createAcpxEngineExecutor({
       warmHandles: new Map(),
@@ -7167,7 +7167,7 @@ describe("ACPX engine run lifecycle corrections (F3: one teardown error policy)"
     // The completed turn closed the runtime once; the mapping throw did not re-run
     // the teardown through the turn catch.
     expect(closeCount).toBe(1);
-    expect(stoppedCount(paperclipStops)).toBe(1);
+    expect(stoppedCount(wardmoteStops)).toBe(1);
     expect(stoppedCount(processStops)).toBe(1);
   });
 

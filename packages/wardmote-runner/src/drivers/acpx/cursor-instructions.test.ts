@@ -41,10 +41,10 @@ it("refreshes trusted sandbox instructions on recovery and excludes ambient over
 it("scopes acknowledgements to their request, session and current connection", () => {
   const admission = createCursorInstructionAdmission(content);
   const first = admission.createGuard();
-  first("inbound", { id: 0, result: { sessionId: "forged", _meta: { paperclipCursorInstructions: ack } } });
+  first("inbound", { id: 0, result: { sessionId: "forged", _meta: { wardmoteCursorInstructions: ack } } });
   expect(admission.assertReady).toThrow(/did not acknowledge/);
   first("outbound", { id: 0, method: "session/new", params: {} });
-  first("inbound", { id: 0, result: { sessionId: "s", _meta: { paperclipCursorInstructions: ack } } });
+  first("inbound", { id: 0, result: { sessionId: "s", _meta: { wardmoteCursorInstructions: ack } } });
   admission.assertReady();
   first("outbound", { id: 1, method: "session/prompt", params: { sessionId: "s" } });
   const second = admission.createGuard();
@@ -59,7 +59,7 @@ const configOptions=[{id:'model',name:'Model',type:'select',currentValue:'fixtur
 require('node:readline').createInterface({input:process.stdin}).on('line',line=>{
  const m=JSON.parse(line);
  if(m.method==='initialize')send({id:m.id,result:{protocolVersion:1,agentCapabilities:{loadSession:true},authMethods:[]}});
- else if(m.method==='session/new'||m.method==='session/load')send({id:m.id,result:{configOptions,...(m.method==='session/new'?{sessionId:'cursor-session'}:{}),...(mode==='missing'?{}:{_meta:{paperclipCursorInstructions:mode==='wrong'?{...ack,digest:'sha256:'+'0'.repeat(64)}:ack}})}});
+ else if(m.method==='session/new'||m.method==='session/load')send({id:m.id,result:{configOptions,...(m.method==='session/new'?{sessionId:'cursor-session'}:{}),...(mode==='missing'?{}:{_meta:{wardmoteCursorInstructions:mode==='wrong'?{...ack,digest:'sha256:'+'0'.repeat(64)}:ack}})}});
  else if(m.method==='session/set_config_option')send(mode==='unsupported'?{id:m.id,error:{code:-32602,message:'Unsupported exact model'}}:{id:m.id,result:{configOptions}});
  else if(m.method==='session/prompt'){process.stderr.write('PROMPT\n');send({id:m.id,result:{stopReason:'end_turn'}});}
 });`;

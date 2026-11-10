@@ -92,21 +92,21 @@ export function AgentSkillsTab({ agent, companyId }: { agent: Agent; companyId?:
   });
   const betaSkillsEnabled = experimentalSettings?.enableBetaSkills === true;
 
-  const paperclipCoreSkill = useMemo(
+  const wardmoteCoreSkill = useMemo(
     () => (companySkills ?? []).find((skill) => skill.key === WARDMOTE_CORE_SKILL_KEY) ?? null,
     [companySkills, skillSnapshot],
   );
 
   // Seeded releases (release_id IS NOT NULL) for the paperclip core skill. Only
   // fetched when the flag is on and the skill is present in the library.
-  const { data: paperclipVersions } = useQuery({
-    queryKey: queryKeys.companySkills.versions(companyId ?? "", paperclipCoreSkill?.id ?? ""),
-    queryFn: () => companySkillsApi.versions(companyId!, paperclipCoreSkill!.id),
-    enabled: Boolean(companyId && betaSkillsEnabled && paperclipCoreSkill?.id),
+  const { data: wardmoteVersions } = useQuery({
+    queryKey: queryKeys.companySkills.versions(companyId ?? "", wardmoteCoreSkill?.id ?? ""),
+    queryFn: () => companySkillsApi.versions(companyId!, wardmoteCoreSkill!.id),
+    enabled: Boolean(companyId && betaSkillsEnabled && wardmoteCoreSkill?.id),
   });
-  const paperclipReleases = useMemo(
-    () => (paperclipVersions ?? []).filter((version) => version.releaseId != null),
-    [paperclipVersions],
+  const wardmoteReleases = useMemo(
+    () => (wardmoteVersions ?? []).filter((version) => version.releaseId != null),
+    [wardmoteVersions],
   );
 
   const syncSkills = useMutation({
@@ -330,7 +330,7 @@ export function AgentSkillsTab({ agent, companyId }: { agent: Agent; companyId?:
 
   // The release picker only applies to the enabled paperclip core skill while the
   // beta-skills flag is on and seeded releases exist.
-  const releasePickerActive = betaSkillsEnabled && paperclipReleases.length > 0;
+  const releasePickerActive = betaSkillsEnabled && wardmoteReleases.length > 0;
 
   const renderRow = (row: AgentSkillRowData, variant: "enabled" | "available") => {
     // Historical assignments stay interactive so the user can remove them.
@@ -347,7 +347,7 @@ export function AgentSkillsTab({ agent, companyId }: { agent: Agent; companyId?:
       releasePickerActive && variant === "enabled" && row.key === WARDMOTE_CORE_SKILL_KEY;
     const pinnedVersionId = versionPins[row.key] ?? null;
     const pinnedRelease = pinnedVersionId
-      ? paperclipReleases.find((release) => release.id === pinnedVersionId) ?? null
+      ? wardmoteReleases.find((release) => release.id === pinnedVersionId) ?? null
       : null;
 
     return (
@@ -369,7 +369,7 @@ export function AgentSkillsTab({ agent, companyId }: { agent: Agent; companyId?:
         accessory={
           showReleasePicker ? (
             <AgentSkillReleasePicker
-              releases={paperclipReleases}
+              releases={wardmoteReleases}
               value={pinnedVersionId}
               disabled={rowDisabled || syncSkills.isPending}
               onChange={(versionId) => handleReleaseChange(row.key, versionId)}

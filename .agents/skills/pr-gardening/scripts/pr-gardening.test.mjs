@@ -46,7 +46,7 @@ test("origin selection prioritizes work products then comment mentions", () => {
 
 function discoveryFixture() {
   let extractPath = "";
-  const paperclipGet = async (path) => {
+  const wardmoteGet = async (path) => {
     if (path.includes("search/extract")) {
       extractPath = path;
       return {
@@ -88,7 +88,7 @@ function discoveryFixture() {
       updatedAt: "2026-07-13T00:00:00Z",
     };
   };
-  return { paperclipGet, ghJson, extractPath: () => extractPath };
+  return { wardmoteGet, ghJson, extractPath: () => extractPath };
 }
 
 test("candidate discovery deduplicates mentions, drops closed PRs, and excludes community authors by default", async () => {
@@ -99,7 +99,7 @@ test("candidate discovery deduplicates mentions, drops closed PRs, and excludes 
     api_key: "test-key",
     company_id: "company-1",
     now: "2026-07-20T00:00:00Z",
-    paperclip_get: fixture.paperclipGet,
+    paperclip_get: fixture.wardmoteGet,
     gh_json: fixture.ghJson,
   });
   assert.deepEqual(result.candidates.map((candidate) => candidate.number), [1]);
@@ -120,8 +120,8 @@ test("candidate discovery deduplicates mentions, drops closed PRs, and excludes 
 
 test("capped match sets are recorded instead of aborting discovery", async () => {
   const fixture = discoveryFixture();
-  const paperclipGet = async (path) => {
-    const page = await fixture.paperclipGet(path);
+  const wardmoteGet = async (path) => {
+    const page = await fixture.wardmoteGet(path);
     if (!path.includes("search/extract")) return page;
     return { ...page, results: page.results.map((issue) => ({ ...issue, matchesTruncated: true })) };
   };
@@ -131,7 +131,7 @@ test("capped match sets are recorded instead of aborting discovery", async () =>
     api_key: "test-key",
     company_id: "company-1",
     now: "2026-07-20T00:00:00Z",
-    paperclip_get: paperclipGet,
+    paperclip_get: wardmoteGet,
     gh_json: fixture.ghJson,
   });
   assert.deepEqual(result.candidates.map((candidate) => candidate.number), [1]);
@@ -148,7 +148,7 @@ test("--include-community disables the author filter", async () => {
     company_id: "company-1",
     include_community: true,
     now: "2026-07-20T00:00:00Z",
-    paperclip_get: fixture.paperclipGet,
+    paperclip_get: fixture.wardmoteGet,
     gh_json: fixture.ghJson,
   });
   assert.deepEqual(result.candidates.map((candidate) => candidate.number), [1, 4]);
@@ -164,7 +164,7 @@ test("open PRs with no activity inside the window are dropped as stale", async (
     api_key: "test-key",
     company_id: "company-1",
     now: "2026-09-01T00:00:00Z",
-    paperclip_get: fixture.paperclipGet,
+    paperclip_get: fixture.wardmoteGet,
     gh_json: fixture.ghJson,
   });
   assert.deepEqual(result.candidates, []);

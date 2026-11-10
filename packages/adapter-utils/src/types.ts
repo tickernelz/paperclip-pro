@@ -593,7 +593,7 @@ export interface ServerAdapterModule {
   /**
    * Adapter needs runtime skill entries materialized (written to disk)
    * before being passed via config. Used by adapters that scan a directory
-   * rather than reading config.paperclipRuntimeSkills.
+   * rather than reading config.wardmoteRuntimeSkills.
    */
   requiresMaterializedRuntimeSkills?: boolean;
   /**
@@ -739,8 +739,8 @@ export interface CLIAdapterModule {
 export interface CreateConfigValues {
   adapterType: string;
   codexPermissionMode?: "never" | "on-request" | "untrusted";
-  paperclipRunnerLifecycleMode?: "per_turn" | "warm";
-  paperclipRunnerIdleTimeoutMs?: number;
+  wardmoteRunnerLifecycleMode?: "per_turn" | "warm";
+  wardmoteRunnerIdleTimeoutMs?: number;
   cwd: string;
   instructionsFilePath?: string;
   promptTemplate: string;

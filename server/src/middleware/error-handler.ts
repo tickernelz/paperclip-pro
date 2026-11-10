@@ -94,8 +94,8 @@ function reportCrash(error: Error, reportToSentry = true): void {
 }
 
 function getWardmoteDb(req: Request): Db | null {
-  const locals = req.app?.locals as { paperclipDb?: Db; db?: Db } | undefined;
-  return locals?.paperclipDb ?? locals?.db ?? null;
+  const locals = req.app?.locals as { wardmoteDb?: Db; db?: Db } | undefined;
+  return locals?.wardmoteDb ?? locals?.db ?? null;
 }
 
 function recordResponsibleUserDenialFromHttpError(

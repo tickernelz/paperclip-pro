@@ -121,7 +121,7 @@ describeEmbeddedPostgres("OpenWA audit and retention", () => {
       companyId, provider: "openwa", providerAccountId: "acct-" + endpointId, externalId: "628999888777@c.us", displayName: "Owner WA",
     }).returning();
     const [link] = await db.insert(chatIdentityLinks).values({
-      companyId, endpointId, principalId: principal!.id, paperclipUserId: endpointOwner.userId, status: "linked",
+      companyId, endpointId, principalId: principal!.id, wardmoteUserId: endpointOwner.userId, status: "linked",
     }).returning();
     await db.insert(chatEndpointOwners).values({ companyId, endpointId, identityLinkId: link!.id, addedByUserId: companyOwner.userId });
     const [conversation] = await db.insert(chatConversations).values({
@@ -243,7 +243,7 @@ describeEmbeddedPostgres("OpenWA audit and retention", () => {
       const id = randomUUID();
       await db.insert(heartbeatRuns).values({
         id, companyId: t.companyId, agentId: t.agentId, status: "running", startedAt: new Date(),
-        contextSnapshot: { paperclipOpenwa: { endpointId, chatKey: CHAT, triggerClass, profile: triggerClass === "owner" ? "full" : "read_only", grantIds: [] } },
+        contextSnapshot: { wardmoteOpenwa: { endpointId, chatKey: CHAT, triggerClass, profile: triggerClass === "owner" ? "full" : "read_only", grantIds: [] } },
       });
       return id;
     };
@@ -450,8 +450,8 @@ describeEmbeddedPostgres("OpenWA audit and retention", () => {
     const grant = await grantFixture(t, { expiresAt: new Date(Date.now() + DAY_MS) });
     const runId = randomUUID();
     const contextSnapshot = {
-      paperclipToolProfile: "read_only",
-      paperclipOpenwa: { endpointId: t.endpointId, chatKey: CHAT, triggerClass: "grant", profile: "read_only", grantIds: [grant.id] },
+      wardmoteToolProfile: "read_only",
+      wardmoteOpenwa: { endpointId: t.endpointId, chatKey: CHAT, triggerClass: "grant", profile: "read_only", grantIds: [grant.id] },
     };
     await db.insert(heartbeatRuns).values({ id: runId, companyId: t.companyId, agentId: t.agentId, status: "running", startedAt: new Date(), contextSnapshot });
     const run = { id: runId, companyId: t.companyId, contextSnapshot };

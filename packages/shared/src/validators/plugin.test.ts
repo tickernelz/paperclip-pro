@@ -39,6 +39,14 @@ describe("plugin manifest validators", () => {
     expect(pluginManifestV1Schema.parse({ ...manifest, capabilities: ["agents.lifecycle.manage"] }).agentLifecycle).toBe(true);
   });
 
+  it("refuses the retired minimum-version alias instead of dropping its host-version bound", () => {
+    const manifest = { id: "example.version", apiVersion: 1, version: "0.1.0", displayName: "Version", description: "Version", author: "Tests", categories: ["automation"], entrypoints: { worker: "worker.js" }, capabilities: ["companies.read"] };
+    const retired = pluginManifestV1Schema.safeParse({ ...manifest, ["minimum" + "Paper" + "clipVersion"]: "9.0.0" });
+    expect(retired.success).toBe(false);
+    expect(retired.error?.issues[0]?.message).toContain("minimumHostVersion");
+    expect(pluginManifestV1Schema.parse({ ...manifest, minimumHostVersion: "9.0.0" }).minimumHostVersion).toBe("9.0.0");
+  });
+
   it("accepts and drops the removed AI connection router declaration and capability", () => {
     const manifest = { id: "example.pool", apiVersion: 1, version: "0.1.0", displayName: "Pool", description: "Pool", author: "Tests", categories: ["connector"], entrypoints: { worker: "worker.js" }, aiConnectionRouter: { name: "AI connection pool", description: "Use saved connections" } };
     const parsed = pluginManifestV1Schema.parse({ ...manifest, capabilities: ["ai.connections.route", "companies.read"] });

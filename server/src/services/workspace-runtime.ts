@@ -6255,7 +6255,7 @@ async function spawnLocalRuntimeService(input: StartLocalRuntimeServiceInput): P
   // this default. Otherwise, leave the value unset so dev-runner keeps its
   // built-UI safeguard. Keep every explicit service/adapter value.
   const uiDevMiddlewareHasTransport =
-    !exposureConfig || exposureConfig.includePaperclipViteHmr;
+    !exposureConfig || exposureConfig.includeWardmoteViteHmr;
   if (
     uiDevMiddlewareHasTransport
     && isWardmoteDevRuntimeService({ serviceName, command })
@@ -6589,7 +6589,7 @@ async function spawnLocalRuntimeService(input: StartLocalRuntimeServiceInput): P
     ? exposureConfig
       ? [
           port,
-          ...(exposureConfig.includePaperclipViteHmr ? [deriveViteHmrPort(port)] : []),
+          ...(exposureConfig.includeWardmoteViteHmr ? [deriveViteHmrPort(port)] : []),
         ]
       : canAllocateFixedPort
         ? [port]
@@ -6710,7 +6710,7 @@ async function spawnLocalRuntimeService(input: StartLocalRuntimeServiceInput): P
     // bounded retries.
     const exposureAssignedPorts: number[] =
       exposureConfig && port
-        ? [port, ...(exposureConfig.includePaperclipViteHmr ? [deriveViteHmrPort(port)] : [])]
+        ? [port, ...(exposureConfig.includeWardmoteViteHmr ? [deriveViteHmrPort(port)] : [])]
         : [];
     const collisionText = `${failureMessage}\n${serviceOutputExcerpt}`;
     const exposureNamedPorts = exposureAssignedPorts.filter((candidate) =>

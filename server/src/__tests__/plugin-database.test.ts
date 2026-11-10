@@ -405,7 +405,7 @@ describeEmbeddedPostgres("plugin database namespaces", () => {
         name: pluginManifest.id,
         version: pluginManifest.version,
         type: "module",
-        paperclipPlugin: { manifest: "./manifest.js" },
+        wardmotePlugin: { manifest: "./manifest.js" },
       }),
       "utf8",
     );

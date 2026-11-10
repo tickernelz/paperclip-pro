@@ -117,6 +117,6 @@ export const WARDMOTE_PROTOCOL_ACTIONS = deepFreezeProtocolAction([
   writeDocumentAction,
 ] as const);
 
-export function paperclipProtocolAction(operationId: string) {
+export function wardmoteProtocolAction(operationId: string) {
   return WARDMOTE_PROTOCOL_ACTIONS.find((action) => action.id === operationId);
 }

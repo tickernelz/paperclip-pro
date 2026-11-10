@@ -207,7 +207,7 @@ test("Codex bundles retain pinned JavaScript and delegate official consumer plat
   const staged = stageBundledProviderOptionalDependencies(directory, publish, profiles);
   assert.deepEqual(staged.optionalDependencies, codexOptional);
   assert.deepEqual(staged.bundleDependencies, publish.bundleDependencies);
-  assert.equal(staged.paperclipProviderArtifacts, undefined);
+  assert.equal(staged.wardmoteProviderArtifacts, undefined);
   assert.equal(existsSync(producer), false);
   assert.equal(existsSync(nested), false, "Transitive producer platform packages must also be removed");
   assert.equal(existsSync(join(runtime, "vendor")), false, "Wrapper fallback native payload must be removed");
@@ -596,7 +596,7 @@ printf 'patched spawnEnvironment runtime\\n' > "$target/dist/runtime.js"
     assert.equal(stagedManifest.bundleDependencies.includes(name), false);
   }
   assert.equal(existsSync(join(destinationDir, "node_modules/@openai/codex/vendor")), false);
-  assert.equal(stagedManifest.paperclipProviderArtifacts, undefined);
+  assert.equal(stagedManifest.wardmoteProviderArtifacts, undefined);
   assert.equal(JSON.parse(readFileSync(join(destinationDir, "node_modules/@openai/codex/package.json"), "utf8")).optionalDependencies, undefined);
   assert.equal(stagedManifest.optionalDependencies["@esbuild/darwin-arm64"], "0.28.2");
   assert.equal(stagedManifest.optionalDependencies["@esbuild/darwin-x64"], "0.28.2");

@@ -401,7 +401,7 @@ describe("ACPX engine startup characterization", () => {
               context: {
                 taskId: "issue-1",
                 wakeReason: "issue_assigned",
-                paperclipSecrets: {
+                wardmoteSecrets: {
                   manifest: [
                     {
                       configPath: "env.API_TOKEN",
@@ -428,7 +428,7 @@ describe("ACPX engine startup characterization", () => {
               context: {
                 taskId: "issue-1",
                 wakeReason: "issue_assigned",
-                paperclipWorkspace: {
+                wardmoteWorkspace: {
                   cwd,
                   realization: {
                     additional: [
@@ -534,10 +534,10 @@ describe("ACPX engine startup characterization", () => {
       expect(typeof processArgs.env).toBe("function");
 
       // Both bridges receive the SAME real (non-null) runtimeRootDir from staging.
-      const paperclipArgs = vi.mocked(startAdapterExecutionTargetWardmoteBridge).mock.calls[0]![0];
-      expect(paperclipArgs.runtimeRootDir).toBeTruthy();
-      expect(String(paperclipArgs.runtimeRootDir)).toContain(".paperclip-runtime");
-      expect(processArgs.runtimeRootDir).toBe(paperclipArgs.runtimeRootDir);
+      const wardmoteArgs = vi.mocked(startAdapterExecutionTargetWardmoteBridge).mock.calls[0]![0];
+      expect(wardmoteArgs.runtimeRootDir).toBeTruthy();
+      expect(String(wardmoteArgs.runtimeRootDir)).toContain(".paperclip-runtime");
+      expect(processArgs.runtimeRootDir).toBe(wardmoteArgs.runtimeRootDir);
 
       // The ACP runtime + session/new both bind to the in-sandbox workspace cwd,
       // which the run resolves only after the bridges bring the sandbox up.
@@ -554,10 +554,10 @@ describe("ACPX engine startup characterization", () => {
 
     it("create_runtime failure: settles an error result, stops both bridges, releases the lease", async () => {
       const { stateDir, localCwd, executionTarget } = await setupRemoteSandbox();
-      const paperclipStop = vi.fn(async () => {});
+      const wardmoteStop = vi.fn(async () => {});
       const processStop = vi.fn(async () => {});
       vi.mocked(startAdapterExecutionTargetWardmoteBridge).mockImplementationOnce(
-        async () => ({ env: {}, stop: paperclipStop }) as never,
+        async () => ({ env: {}, stop: wardmoteStop }) as never,
       );
       vi.mocked(startAdapterExecutionTargetProcessSessionBridge).mockImplementationOnce(
         async () => ({ agentCommand: null, stop: processStop }) as never,
@@ -589,7 +589,7 @@ describe("ACPX engine startup characterization", () => {
       expect(result.exitCode).toBe(1);
       expect(result.resultJson?.phase).toBe("create_runtime");
       // Both live bridges stop exactly once and the per-session lease releases.
-      expect(paperclipStop).toHaveBeenCalledTimes(1);
+      expect(wardmoteStop).toHaveBeenCalledTimes(1);
       expect(processStop).toHaveBeenCalledTimes(1);
       expect(stagingLocks.size).toBe(0);
     });

@@ -3,7 +3,7 @@ import type { ValidateFunction } from "ajv/dist/2020.js";
 
 import {
   WARDMOTE_SEMANTIC_ACTION_CATALOG,
-  paperclipSemanticAction,
+  wardmoteSemanticAction,
 } from "../catalog/semantic-action-catalog.js";
 import type {
   WardmoteJsonValue,
@@ -22,8 +22,8 @@ import {
   digestWardmoteSemanticContent,
   isWardmoteSemanticStableId,
   normalizeWardmoteSemanticReferences,
-  paperclipSemanticAuthorizationBoundary,
-  paperclipSemanticOutcome,
+  wardmoteSemanticAuthorizationBoundary,
+  wardmoteSemanticOutcome,
 } from "./receipts.js";
 import {
   inspectWardmoteSemanticValue,
@@ -95,7 +95,7 @@ export class WardmoteSemanticDispatcher {
           `duplicate semantic action binding: ${binding.operationId}`,
         );
       }
-      if (paperclipSemanticAction(binding.operationId) === undefined) {
+      if (wardmoteSemanticAction(binding.operationId) === undefined) {
         throw new Error(
           `unknown semantic action binding: ${binding.operationId}`,
         );
@@ -159,7 +159,7 @@ export class WardmoteSemanticDispatcher {
     if (!validCallIdentity(call)) {
       return this.#identityDenial(call);
     }
-    const descriptor = paperclipSemanticAction(call.operationId);
+    const descriptor = wardmoteSemanticAction(call.operationId);
     const binding = descriptor && this.#bindings.get(descriptor.operationId);
     if (descriptor === undefined || binding === undefined) {
       return this.#denial(call, "operation_absent", null, null);
@@ -445,10 +445,10 @@ export class WardmoteSemanticDispatcher {
       content: safeValue,
       references,
       redacted: outputSafety.containsProtectedData,
-      outcome: paperclipSemanticOutcome({ ok: true, code }),
+      outcome: wardmoteSemanticOutcome({ ok: true, code }),
       code,
       retryable: false,
-      authorizationBoundary: paperclipSemanticAuthorizationBoundary(code),
+      authorizationBoundary: wardmoteSemanticAuthorizationBoundary(code),
       ...(validRevision(executed.stateRevision)
         ? { currentRevision: executed.stateRevision }
         : {}),
@@ -604,7 +604,7 @@ export class WardmoteSemanticDispatcher {
       outcome: "duplicate",
       code: stored.code,
       retryable: false,
-      authorizationBoundary: paperclipSemanticAuthorizationBoundary(
+      authorizationBoundary: wardmoteSemanticAuthorizationBoundary(
         stored.code,
       ),
       operationReceiptId: stored.operationReceiptId,
@@ -688,10 +688,10 @@ export class WardmoteSemanticDispatcher {
       idempotencyKey,
       content: { code },
       redacted,
-      outcome: paperclipSemanticOutcome({ ok: false, code }),
+      outcome: wardmoteSemanticOutcome({ ok: false, code }),
       code,
       retryable: denialRetryable(code),
-      authorizationBoundary: paperclipSemanticAuthorizationBoundary(code),
+      authorizationBoundary: wardmoteSemanticAuthorizationBoundary(code),
     });
     if (descriptor !== null && context !== null) {
       const finalDecision =

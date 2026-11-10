@@ -1,5 +1,5 @@
 import { appearanceForPalette, type Agent } from "@tickernelz/wardmote-shared";
-import { storybookAgents } from "../../fixtures/paperclipData";
+import { storybookAgents } from "../../fixtures/wardmoteData";
 
 export type SidebarScenario = "conversation" | "landing" | "large-team";
 

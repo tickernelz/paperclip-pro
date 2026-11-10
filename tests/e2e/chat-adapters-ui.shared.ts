@@ -370,7 +370,7 @@ export async function installChatControlPlaneMock(
     slackCreations: 0, slackInstallations: 0,
     setSlackInstalled: () => {
       slackIdentityLinked = true;
-      endpoint.setup.slackAccount = { externalUserId: "UINSTALLER", paperclipUserId: "local-board", status: "linked", welcomeStatus: "sent", dmChannelId: "DE2E" };
+      endpoint.setup.slackAccount = { externalUserId: "UINSTALLER", wardmoteUserId: "local-board", status: "linked", welcomeStatus: "sent", dmChannelId: "DE2E" };
       endpoint.setup.slackRegistration = { status: "configured", appId: "AE2E", managementUrl: "https://api.slack.com/apps/AE2E" };
       Object.assign(endpoint, { status: "verifying", providerAccountId: "TE2E", botExternalId: "UE2E", botUsername: "maya-paperclip" });
     },
@@ -750,7 +750,7 @@ export async function installChatControlPlaneMock(
           ...(provider.provider === "slack" && (slackIdentityLinked || endpoint.setup.step === "test") ? [{
             id: "link-slack-self", principalId: "principal-slack-self", externalLabel: "Test operator",
             externalDetail: "operator@slack", lastConnectAt: new Date().toISOString(),
-            paperclipUserId: slackIdentityLinked ? "local-board" : null,
+            wardmoteUserId: slackIdentityLinked ? "local-board" : null,
             status: slackIdentityLinked ? "linked" : "pending",
           }] : []),
           {
@@ -758,8 +758,8 @@ export async function installChatControlPlaneMock(
             principalId: `principal-${provider.provider}`,
             externalLabel: "Ada Lovelace",
             externalDetail: `ada@${provider.provider}`,
-            paperclipUserId: null,
-            paperclipUserLabel: null,
+            wardmoteUserId: null,
+            wardmoteUserLabel: null,
             status: "pending",
           },
           {
@@ -767,12 +767,12 @@ export async function installChatControlPlaneMock(
             principalId: `principal-${provider.provider}-linked`,
             externalLabel: "Grace Hopper",
             externalDetail: `grace@${provider.provider}`,
-            paperclipUserId:
+            wardmoteUserId:
               state.revokedPrincipalId ===
               `principal-${provider.provider}-linked`
                 ? null
                 : "paperclip-user-grace",
-            paperclipUserLabel:
+            wardmoteUserLabel:
               state.revokedPrincipalId ===
               `principal-${provider.provider}-linked`
                 ? null

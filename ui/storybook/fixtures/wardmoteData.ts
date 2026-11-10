@@ -1010,7 +1010,7 @@ export const storybookContinuationHandoff: IssueDocument = {
     "",
     "Next action: run the Storybook build, inspect the issue management story, then request QA visual review if the build passes.",
     "",
-    "Important files: `ui/storybook/stories/issue-management.stories.tsx` and `ui/storybook/fixtures/paperclipData.ts`.",
+    "Important files: `ui/storybook/stories/issue-management.stories.tsx` and `ui/storybook/fixtures/wardmoteData.ts`.",
   ].join("\n"),
   latestRevisionId: "revision-continuation-1",
   latestRevisionNumber: 1,
@@ -1458,7 +1458,7 @@ export const storybookSecretProviderDiscoveryPreview: SecretProviderConfigDiscov
   provider: "aws_secrets_manager",
   nextToken: null,
   sampledSecretCount: 6,
-  skippedForeignPaperclipSampleCount: 1,
+  skippedForeignWardmoteSampleCount: 1,
   warnings: ["Skipped 1 Paperclip-managed AWS secret from a different deployment namespace."],
   candidates: [
     {
@@ -1488,8 +1488,8 @@ export const storybookSecretProviderDiscoveryPreview: SecretProviderConfigDiscov
         kmsKeyId: "alias/paperclip-secrets",
         hasKmsKey: true,
         sampleCount: 5,
-        paperclipManagedSampleCount: 5,
-        skippedForeignPaperclipSampleCount: 1,
+        wardmoteManagedSampleCount: 5,
+        skippedForeignWardmoteSampleCount: 1,
       },
       warnings: [],
     },

@@ -7,7 +7,7 @@ import { ConnectionSetupFlow, type ConnectionSetupFlowProps } from "@/features/c
 import { pendingConnectionIntentInteraction } from "@/fixtures/issueThreadInteractionFixtures";
 import { AiConnectionAuth, type AiAuthState } from "@/components/ai-connections/AiConnectionAuth";
 import { AI_REVIEW_CONNECTIONS } from "../fixtures/aiConnections";
-import { storybookAgents } from "../fixtures/paperclipData";
+import { storybookAgents } from "../fixtures/wardmoteData";
 
 const initial: ConnectionIntentInteraction = {
   ...pendingConnectionIntentInteraction,

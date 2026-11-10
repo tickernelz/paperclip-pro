@@ -1238,7 +1238,7 @@ export function omitProgressRepeatedByResponseAcrossSegments(
  * presentation filter for the new-runner turn surface. Legacy adapters keep
  * their existing lifecycle and usage rows.
  */
-export function paperclipRunnerHistoryItems(
+export function wardmoteRunnerHistoryItems(
   parsed: readonly TaskChatItem[],
 ): TaskChatItem[] {
   return parsed.filter((item) => {
@@ -1261,7 +1261,7 @@ export function paperclipRunnerHistoryItems(
  * response. Logical provider/tool lifecycles have already been coalesced by
  * `transcriptToTaskChatItems`, so each returned item is one visible "thing".
  */
-export function paperclipRunnerActivityItems(
+export function wardmoteRunnerActivityItems(
   parsed: readonly TaskChatItem[],
 ): TaskChatItem[] {
   const hasAggregateWorkspaceChange = parsed.some(
@@ -1337,11 +1337,11 @@ export function paperclipRunnerActivityItems(
  * the shared projector can use each request as a phase boundary and place its
  * terminal receipt at the request's first-seen position.
  */
-export function paperclipRunnerTimelineItems(
+export function wardmoteRunnerTimelineItems(
   parsed: readonly TaskChatItem[],
 ): TaskChatItem[] {
   const activityIds = new Set(
-    paperclipRunnerActivityItems(parsed).map((item) => item.id),
+    wardmoteRunnerActivityItems(parsed).map((item) => item.id),
   );
   return parsed.filter(
     (item) =>
@@ -1356,7 +1356,7 @@ export function paperclipRunnerTimelineItems(
  * A response-wake can answer now while deliberately leaving the task open.
  * Its marker is derived by the native event projector, never from final prose.
  */
-export function paperclipRunnerAcceptedResponseWake(
+export function wardmoteRunnerAcceptedResponseWake(
   parsed: readonly TaskChatItem[],
   runId: string | undefined,
 ): TaskChatRunResultItem | undefined {
@@ -1385,7 +1385,7 @@ export function paperclipRunnerAcceptedResponseWake(
 }
 
 /** Resolve a terminal reply without presenting ordinary yielded waits as answers. */
-export function paperclipRunnerFinalResponse(
+export function wardmoteRunnerFinalResponse(
   parsed: readonly TaskChatItem[],
   options?: {
     runId?: string;
@@ -1408,7 +1408,7 @@ export function paperclipRunnerFinalResponse(
     const accepted =
       options?.allowFallback === false
         ? undefined
-        : paperclipRunnerAcceptedResponseWake(parsed, options?.runId);
+        : wardmoteRunnerAcceptedResponseWake(parsed, options?.runId);
     if (!accepted) return undefined;
     return {
       id: `${accepted.id}:final-response`,

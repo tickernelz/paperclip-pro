@@ -212,8 +212,8 @@ export class PhotonChatAdapter implements Adapter<PhotonThread, PhotonMessage> {
         "Photon message must have one authenticated conversation",
       );
     // The receiver supplies the authoritative chat shape; fetch paths set it too.
-    const isGroup = (raw as PhotonMessage & { paperclipIsGroup?: boolean })
-      .paperclipIsGroup;
+    const isGroup = (raw as PhotonMessage & { wardmoteIsGroup?: boolean })
+      .wardmoteIsGroup;
     if (typeof isGroup !== "boolean")
       throw new Error("Photon message is missing its authenticated chat shape");
     const chatGuid = raw.chatGuids[0];
@@ -295,7 +295,7 @@ export class PhotonChatAdapter implements Adapter<PhotonThread, PhotonMessage> {
     return this.parseMessage({
       ...raw,
       chatGuids: [chat.guid],
-      paperclipIsGroup: chat.isGroup,
+      wardmoteIsGroup: chat.isGroup,
     } as PhotonMessage);
   }
   async fetchMessage(id: string, messageId: string) {

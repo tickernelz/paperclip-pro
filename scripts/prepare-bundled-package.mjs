@@ -194,7 +194,7 @@ export function stageBundledProviderOptionalDependencies(destinationDir, publish
   for (const field of ["bundleDependencies", "bundledDependencies"]) {
     if (Array.isArray(result[field])) result[field] = result[field].filter(name => !Object.hasOwn(declarations, name));
   }
-  delete result.paperclipProviderArtifacts;
+  delete result.wardmoteProviderArtifacts;
   return result;
 }
 

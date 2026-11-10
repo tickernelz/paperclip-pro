@@ -2852,8 +2852,8 @@ export async function canPublishIssueToChatAudience(
         const [link] = await tx.select().from(chatIdentityLinks).where(and(
           eq(chatIdentityLinks.companyId, publication.companyId), eq(chatIdentityLinks.endpointId, publication.endpointId),
           eq(chatIdentityLinks.principalId, recipient.principalId!), eq(chatIdentityLinks.status, "linked"), isNull(chatIdentityLinks.revokedAt)));
-        if (!link?.paperclipUserId) return false;
-        const allowed = await authorizationService(tx).decide({ actor: { type: "board", userId: link.paperclipUserId, source: "session", ignoreInstanceAdmin: true },
+        if (!link?.wardmoteUserId) return false;
+        const allowed = await authorizationService(tx).decide({ actor: { type: "board", userId: link.wardmoteUserId, source: "session", ignoreInstanceAdmin: true },
           action: "issue:read", resource: { type: "issue", companyId: publication.companyId, issueId: publication.issueId } });
         if (!allowed.allowed) return false;
       }

@@ -189,13 +189,13 @@ export function assertIsolatedServerEnvironment(
   env: NodeJS.ProcessEnv,
   expected: {
     temporaryRoot: string;
-    paperclipHome: string;
+    wardmoteHome: string;
     configPath: string;
   },
 ) {
   const home = env.WARDMOTE_HOME;
   const config = env.WARDMOTE_CONFIG;
-  if (home !== expected.paperclipHome || config !== expected.configPath) {
+  if (home !== expected.wardmoteHome || config !== expected.configPath) {
     throw new Error(
       "Paperclip server environment does not use the allocated home/config paths",
     );

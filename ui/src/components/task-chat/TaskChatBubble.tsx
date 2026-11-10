@@ -4,7 +4,7 @@ import { ArtifactPreview } from "@/components/artifacts/ArtifactCard";
 import { isVideoLikeOutput } from "@/lib/issue-output";
 import { AgentAvatar, type AvatarAgent } from "../AgentAvatar";
 import { Identity } from "../Identity";
-import { paperclipHumanAvatarUrl } from "@/lib/issue-chat-human-author";
+import { wardmoteHumanAvatarUrl } from "@/lib/issue-chat-human-author";
 import { useCallback, useContext, useState, type ReactNode } from "react";
 import { useEmailComment } from "@/components/EmailMessageCard";
 import type { IssueAttachment } from "@tickernelz/wardmote-shared";
@@ -228,7 +228,7 @@ function TaskChatBubbleContent({
       {beforeTurn ? <div className="w-full pb-1">{beforeTurn}</div> : null}
       {isHuman && !item.isCurrentUser && item.authorName ? (
         <span className="px-1 text-sm font-semibold text-ink" data-testid="task-chat-human-identity" data-author-user-id={item.authorUserId}>
-          <Identity name={item.authorName} avatarUrl={paperclipHumanAvatarUrl(item.authorAvatarUrl)} size="default" className="gap-2" />
+          <Identity name={item.authorName} avatarUrl={wardmoteHumanAvatarUrl(item.authorAvatarUrl)} size="default" className="gap-2" />
         </span>
       ) : null}
       {!isHuman && item.authorName && !hideAgentIdentity ? (

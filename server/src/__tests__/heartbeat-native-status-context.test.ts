@@ -42,8 +42,8 @@ describe("native status wake context provenance", () => {
     source: "chat:telegram",
     wakeReason: "External chat message received",
     wakeCommentIds: ["comment-1"],
-    paperclipExternalChatExecutionBound: true,
-    paperclipWake: {
+    wardmoteExternalChatExecutionBound: true,
+    wardmoteWake: {
       issue: { id: "issue-1", status: "in_review" },
       commentIds: ["comment-1"],
       externalChatProvider: "telegram",
@@ -65,24 +65,24 @@ describe("native status wake context provenance", () => {
     );
     expect(merged).toMatchObject(reviewedContext);
     expect(merged.statusDecisionSource).toBe("native_status_decision");
-    expect(merged.paperclipWake).toBe(reviewedContext.paperclipWake);
-    expect(merged.paperclipHarnessCheckedOut).toBeUndefined();
+    expect(merged.wardmoteWake).toBe(reviewedContext.wardmoteWake);
+    expect(merged.wardmoteHarnessCheckedOut).toBeUndefined();
   });
 
   it("also retains the exact legacy checked-out chat wake for pure status control", () => {
     const checkedOut = {
       ...reviewedContext,
-      paperclipExternalChatExecutionBound: false,
-      paperclipHarnessCheckedOut: true,
-      paperclipWake: {
-        ...reviewedContext.paperclipWake,
+      wardmoteExternalChatExecutionBound: false,
+      wardmoteHarnessCheckedOut: true,
+      wardmoteWake: {
+        ...reviewedContext.wardmoteWake,
         checkedOutByHarness: true,
         externalChatExecutionBound: false,
       },
     };
     const merged = mergeCoalescedContextSnapshot(checkedOut, statusControl);
-    expect(merged.paperclipWake).toBe(checkedOut.paperclipWake);
-    expect(merged.paperclipExternalChatExecutionBound).toBeUndefined();
+    expect(merged.wardmoteWake).toBe(checkedOut.wardmoteWake);
+    expect(merged.wardmoteExternalChatExecutionBound).toBeUndefined();
   });
 
   it.each([
@@ -94,29 +94,29 @@ describe("native status wake context provenance", () => {
     "invalidates prior review binding when coalescence changes admitted scope: %j",
     (incoming) => {
       const merged = mergeCoalescedContextSnapshot(reviewedContext, incoming);
-      expect(merged.paperclipExternalChatExecutionBound).toBeUndefined();
-      expect(merged.paperclipWake).toBeUndefined();
+      expect(merged.wardmoteExternalChatExecutionBound).toBeUndefined();
+      expect(merged.wardmoteWake).toBeUndefined();
     },
   );
 
   it("does not preserve mismatched provider or payload-comment provenance", () => {
-    for (const paperclipWake of [
-      { ...reviewedContext.paperclipWake, externalChatProvider: "github" },
-      { ...reviewedContext.paperclipWake, commentIds: ["different-comment"] },
-      { ...reviewedContext.paperclipWake, externalChatExecutionBound: false },
+    for (const wardmoteWake of [
+      { ...reviewedContext.wardmoteWake, externalChatProvider: "github" },
+      { ...reviewedContext.wardmoteWake, commentIds: ["different-comment"] },
+      { ...reviewedContext.wardmoteWake, externalChatExecutionBound: false },
     ]) {
       const merged = mergeCoalescedContextSnapshot(
-        { ...reviewedContext, paperclipWake },
+        { ...reviewedContext, wardmoteWake },
         statusControl,
       );
-      expect(merged.paperclipExternalChatExecutionBound).toBeUndefined();
-      expect(merged.paperclipWake).toBeUndefined();
+      expect(merged.wardmoteExternalChatExecutionBound).toBeUndefined();
+      expect(merged.wardmoteWake).toBeUndefined();
     }
   });
 
   it("never adopts an attestation supplied only by an incoming wake", () => {
     const merged = mergeCoalescedContextSnapshot({}, reviewedContext);
-    expect(merged.paperclipExternalChatExecutionBound).toBeUndefined();
-    expect(merged.paperclipWake).toBeUndefined();
+    expect(merged.wardmoteExternalChatExecutionBound).toBeUndefined();
+    expect(merged.wardmoteWake).toBeUndefined();
   });
 });

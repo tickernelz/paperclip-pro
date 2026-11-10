@@ -350,7 +350,7 @@ function defaultSummaryGroup(action: Action): ToolSummaryGroup {
   }
 }
 
-function paperclipSummaryGroup(action: Action): ToolSummaryGroup {
+function wardmoteSummaryGroup(action: Action): ToolSummaryGroup {
   if (action === "read" || action === "list") return group("paperclip_read", "Wardmote read", "Wardmote reads");
   return group("task_operation", "task operation", "task operations");
 }
@@ -402,7 +402,7 @@ export function toolActivityPresentation(input: ToolActivityPresentationInput): 
       ? "MCP"
       : undefined;
   const summaryGroup = namespace.toLowerCase() === "paperclip"
-    ? paperclipSummaryGroup(action)
+    ? wardmoteSummaryGroup(action)
     : exact?.group ?? defaultSummaryGroup(action);
 
   return {

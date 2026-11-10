@@ -133,7 +133,7 @@ async function stopOwnedProcessGroup(
 describeEmbeddedPostgres("native runner restart recovery with real processes", () => {
   let temporary: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;
   let runtimeRoot: string;
-  let paperclipHome: string;
+  let wardmoteHome: string;
   let server: Server | null = null;
   let apiUrl: string;
   let originalWardmoteHome: string | undefined;
@@ -147,9 +147,9 @@ describeEmbeddedPostgres("native runner restart recovery with real processes", (
       "native-runner-restart-recovery-",
     );
     runtimeRoot = await mkdtemp(resolve(tmpdir(), "native-restart-runtime-"));
-    paperclipHome = await mkdtemp(resolve(tmpdir(), "native-restart-home-"));
+    wardmoteHome = await mkdtemp(resolve(tmpdir(), "native-restart-home-"));
     originalWardmoteHome = process.env.WARDMOTE_HOME;
-    process.env.WARDMOTE_HOME = paperclipHome;
+    process.env.WARDMOTE_HOME = wardmoteHome;
     const controllerStartedAt = await readProcessStartedAt(process.pid);
     successor = {
       bootId: randomUUID(),
@@ -195,7 +195,7 @@ describeEmbeddedPostgres("native runner restart recovery with real processes", (
     await temporary.cleanup();
     await Promise.all([
       rm(runtimeRoot, { recursive: true, force: true }),
-      rm(paperclipHome, { recursive: true, force: true }),
+      rm(wardmoteHome, { recursive: true, force: true }),
     ]);
     if (originalWardmoteHome === undefined) delete process.env.WARDMOTE_HOME;
     else process.env.WARDMOTE_HOME = originalWardmoteHome;

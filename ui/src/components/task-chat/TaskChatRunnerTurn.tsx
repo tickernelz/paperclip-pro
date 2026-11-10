@@ -22,8 +22,8 @@ import {
   buildTurnTimelineRows,
   isTerminalRunStatus,
   omitProgressRepeatedByResponse,
-  paperclipRunnerFinalResponse,
-  paperclipRunnerTimelineItems,
+  wardmoteRunnerFinalResponse,
+  wardmoteRunnerTimelineItems,
 } from "./transcript-adapter";
 
 function currentActivityStatusItems(
@@ -178,11 +178,11 @@ export function TaskChatRunnerTurn({
   const projection = useMemo(() => {
     const observedFinal = suppressFinal
       ? undefined
-      : paperclipRunnerFinalResponse(items, {
+      : wardmoteRunnerFinalResponse(items, {
           allowFallback: terminal,
         });
     return {
-      timelineItems: paperclipRunnerTimelineItems(items),
+      timelineItems: wardmoteRunnerTimelineItems(items),
       yielded: items.some(
         (item) =>
           item.kind === "protocol" &&

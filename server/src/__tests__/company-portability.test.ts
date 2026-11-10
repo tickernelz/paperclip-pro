@@ -201,7 +201,7 @@ function asTextFile(entry: CompanyPortabilityFileEntry | undefined) {
 }
 
 describe("company portability", () => {
-  const paperclipKey = "tickernelz/wardmote/wardmote";
+  const wardmoteKey = "tickernelz/wardmote/wardmote";
   const companyPlaybookKey = "company/company-1/company-playbook";
 
   beforeEach(() => {
@@ -263,7 +263,7 @@ describe("company portability", () => {
         adapterConfig: {
           promptTemplate: "You are ClaudeCoder.",
           wardmoteSkillSync: {
-            desiredSkills: [paperclipKey],
+            desiredSkills: [wardmoteKey],
           },
           instructionsFilePath: "/tmp/ignored.md",
           cwd: "/tmp/ignored",
@@ -397,7 +397,7 @@ describe("company portability", () => {
       {
         id: "skill-1",
         companyId: "company-1",
-        key: paperclipKey,
+        key: wardmoteKey,
         slug: "paperclip",
         name: "paperclip",
         description: "Paperclip coordination skill",
@@ -575,7 +575,7 @@ describe("company portability", () => {
     expect(asTextFile(exported.files["COMPANY.md"])).toContain('schema: "agentcompanies/v1"');
     expect(asTextFile(exported.files["agents/claudecoder/AGENTS.md"])).toContain("You are ClaudeCoder.");
     expect(asTextFile(exported.files["agents/claudecoder/AGENTS.md"])).toContain("skills:");
-    expect(asTextFile(exported.files["agents/claudecoder/AGENTS.md"])).toContain(`- "${paperclipKey}"`);
+    expect(asTextFile(exported.files["agents/claudecoder/AGENTS.md"])).toContain(`- "${wardmoteKey}"`);
     expect(asTextFile(exported.files["agents/cmo/AGENTS.md"])).not.toContain("skills:");
     expect(asTextFile(exported.files["skills/tickernelz/wardmote/wardmote/SKILL.md"])).toContain("metadata:");
     expect(asTextFile(exported.files["skills/tickernelz/wardmote/wardmote/SKILL.md"])).toContain('kind: "github-dir"');
@@ -618,7 +618,7 @@ describe("company portability", () => {
     expect(companySkillSvc.listFull).not.toHaveBeenCalled();
     expect(Object.keys(exported.files).some((filePath) => filePath.startsWith("skills/"))).toBe(false);
     expect(exported.manifest.skills).toEqual([]);
-    expect(asTextFile(exported.files["agents/claudecoder/AGENTS.md"])).toContain(`- "${paperclipKey}"`);
+    expect(asTextFile(exported.files["agents/claudecoder/AGENTS.md"])).toContain(`- "${wardmoteKey}"`);
   });
 
   it("refuses to read external instruction roots without an instance-admin export grant", async () => {
@@ -2548,7 +2548,7 @@ describe("company portability", () => {
         budgetMonthlyCents: 0,
         permissions: {},
         metadata: {
-          paperclipBuiltInAgent: {
+          wardmoteBuiltInAgent: {
             key: "reflection-coach",
             featureKeys: ["recent-agent-reflection"],
           },
@@ -3340,7 +3340,7 @@ describe("company portability", () => {
     companySkillSvc.importPackageFiles.mockResolvedValueOnce([{
       skill: {
         id: "skill-imported",
-        key: paperclipKey,
+        key: wardmoteKey,
         slug: "paperclip",
       },
       action: "renamed",
@@ -3388,7 +3388,7 @@ describe("company portability", () => {
     expect(result.skills).toEqual([{
       originalKey: "paperclip",
       originalSlug: "paperclip",
-      key: paperclipKey,
+      key: wardmoteKey,
       slug: "paperclip",
       id: "skill-imported",
       action: "renamed",
@@ -3397,7 +3397,7 @@ describe("company portability", () => {
     expect(agentSvc.create).toHaveBeenCalledWith("company-imported", expect.objectContaining({
       adapterConfig: expect.objectContaining({
         wardmoteSkillSync: {
-          desiredSkills: [paperclipKey],
+          desiredSkills: [wardmoteKey],
         },
       }),
     }), { createdByUserId: "user-1" });
@@ -3447,10 +3447,10 @@ describe("company portability", () => {
     // Declare the packaged logo in the bundle's company block. The exported
     // company map is empty for this fixture, so the block is appended rather
     // than patched into an existing one.
-    const paperclipYaml = `${exported.files[".paperclip.yaml"]}`;
-    expect(paperclipYaml).not.toContain("company:");
+    const wardmoteYaml = `${exported.files[".paperclip.yaml"]}`;
+    expect(wardmoteYaml).not.toContain("company:");
     exported.files[".paperclip.yaml"] =
-      `${paperclipYaml}company:\n  logoPath: "images/company-logo.png"\n`;
+      `${wardmoteYaml}company:\n  logoPath: "images/company-logo.png"\n`;
 
     agentSvc.list.mockResolvedValue([]);
 

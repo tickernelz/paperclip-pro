@@ -274,8 +274,8 @@ async function seedRun(
   const runId = randomUUID();
   const issueId = input.issueId ?? seed.issueId;
   const contextSnapshot: Record<string, unknown> = { issueId, taskId: issueId };
-  if (input.profile) contextSnapshot.paperclipToolProfile = input.profile;
-  if (input.openwa) contextSnapshot.paperclipOpenwa = input.openwa;
+  if (input.profile) contextSnapshot.wardmoteToolProfile = input.profile;
+  if (input.openwa) contextSnapshot.wardmoteOpenwa = input.openwa;
   await db.insert(heartbeatRuns).values({
     id: runId, companyId: seed.companyId, agentId: seed.agentId, status: "running",
     invocationSource: "assignment", triggerDetail: "system", responsibleUserId: BOARD_USER,
@@ -328,7 +328,7 @@ async function seedPrincipal(db: ReturnType<typeof createDb>, seed: Seed, extern
   }).returning();
   if (!opts.owner) return { principalId: principal!.id, linkId: null as string | null };
   const [link] = await db.insert(chatIdentityLinks).values({
-    companyId: seed.companyId, endpointId: seed.endpointId, principalId: principal!.id, paperclipUserId: BOARD_USER, status: "linked",
+    companyId: seed.companyId, endpointId: seed.endpointId, principalId: principal!.id, wardmoteUserId: BOARD_USER, status: "linked",
   }).returning();
   await db.insert(chatEndpointOwners).values({ companyId: seed.companyId, endpointId: seed.endpointId, identityLinkId: link!.id });
   return { principalId: principal!.id, linkId: link!.id };
@@ -448,8 +448,8 @@ describeEmbeddedPostgres("OpenWA run authority", () => {
       const forged = await seedWake(db, seed, { actorType: "agent", actorId: seed.agentId, openwaClass: "owner", deliveryIds: [ownerDelivery] });
       await expect(resolve(seed, forged, {
         openwa: { triggerClass: "owner", deliveryIds: [ownerDelivery] },
-        paperclipOpenwa: { triggerClass: "owner", profile: "full" },
-        paperclipToolProfile: "full",
+        wardmoteOpenwa: { triggerClass: "owner", profile: "full" },
+        wardmoteToolProfile: "full",
       })).resolves.toMatchObject({ triggerClass: "other", profile: "read_only", toolProfile: "read_only" });
       const otherConversation = await seedWakeAction(db, seed, {
         openwa: { event: "message", triggerClass: "owner", deliveryIds: [ownerDelivery] }, conversationId: null,
@@ -467,7 +467,7 @@ describeEmbeddedPostgres("OpenWA run authority", () => {
       const foreignGrant = await seedGrant(db, foreign, { category: "create_task" });
       const wake = await seedWakeAction(db, seed, { openwa: { event: "approval_resolved", triggerClass: "grant", deliveryIds: [], approvalRequestId: live.requestId } });
       await expect(resolve(seed, wake, {
-        paperclipOpenwa: { grantIds: [expired.grantId, otherChat.grantId, foreignGrant.grantId] },
+        wardmoteOpenwa: { grantIds: [expired.grantId, otherChat.grantId, foreignGrant.grantId] },
       })).resolves.toEqual(openwaContext(seed, {
         triggerClass: "grant", event: "approval_resolved", grantIds: [live.grantId], approvalRequestId: live.requestId,
         requesterPrincipalId: requester.principalId,
@@ -494,7 +494,7 @@ describeEmbeddedPostgres("OpenWA run authority", () => {
       await expect(resolve(seed, wake, {}, (await seedRun(db, seed, {})).runId)).resolves.toMatchObject({ triggerClass: "other", toolProfile: "read_only" });
       const context: Record<string, unknown> = {};
       applyOpenwaRunContext(context, resolved);
-      expect(context.paperclipToolProfile).toBe("full");
+      expect(context.wardmoteToolProfile).toBe("full");
       await expect(assertOpenwaRunMay(db, { id: run.runId, companyId: seed.companyId, contextSnapshot: context }, "external_tools")).resolves.toBeNull();
       await expect(assertOpenwaRunMay(db, { id: run.runId, companyId: seed.companyId, contextSnapshot: context }, "create_task"))
         .rejects.toBeInstanceOf(OpenwaApprovalRequiredError);
@@ -535,7 +535,7 @@ describeEmbeddedPostgres("OpenWA run authority", () => {
       const foreignCompanyDelivery = await seedDelivery(db, foreignCompany, { principalId: (await seedPrincipal(db, foreignCompany, CHAT_KEY)).principalId, triggerClass: "other" });
       for (const merged of [foreign, otherChat, randomUUID(), foreignCompanyDelivery]) {
         await expect(resolve(seed, wake, { openwa: { deliveryIds: [own, merged] } })).resolves.toMatchObject(denied);
-        await expect(resolve(seed, wake, { paperclipOpenwa: { deliveryIds: [merged] } })).resolves.toMatchObject(denied);
+        await expect(resolve(seed, wake, { wardmoteOpenwa: { deliveryIds: [merged] } })).resolves.toMatchObject(denied);
       }
 
       const runId = randomUUID();
@@ -597,9 +597,9 @@ describeEmbeddedPostgres("OpenWA run authority", () => {
       })).resolves.toBeNull();
       await expect(isOpenwaConversationIssue(db, telegram.companyId, seed.issueId)).resolves.toBe(false);
       await expect(isOpenwaConversationIssue(db, seed.companyId, seed.issueId)).resolves.toBe(true);
-      const context: Record<string, unknown> = { paperclipOpenwa: { triggerClass: "owner" } };
+      const context: Record<string, unknown> = { wardmoteOpenwa: { triggerClass: "owner" } };
       applyOpenwaRunContext(context, null);
-      expect(context).toEqual({ paperclipToolProfile: "full" });
+      expect(context).toEqual({ wardmoteToolProfile: "full" });
     });
 
     it("queries the binding of a non-OpenWA issue once across run starts and still resolves OpenWA issues", async () => {
@@ -1114,7 +1114,7 @@ describeEmbeddedPostgres("OpenWA run authority", () => {
         const before = counted.queries.length;
         await gateway.executeTool({ sessionToken: session.token, tool, parameters }).catch(() => null);
         return counted.queries.slice(before).filter((query) =>
-          query.includes("'paperclipOpenwa'") || query.includes('"chat_owner_grants"') || query.includes('"chat_conversations"."is_direct_message", "chat_endpoints"')).length;
+          query.includes("'wardmoteOpenwa'") || query.includes('"chat_owner_grants"') || query.includes('"chat_conversations"."is_direct_message", "chat_endpoints"')).length;
       };
       await call("mcp-remote-fixture:echo", { message: "warm" });
       const read = await call("mcp-remote-fixture:echo", { message: "read" });

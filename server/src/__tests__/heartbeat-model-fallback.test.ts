@@ -68,7 +68,7 @@ describeEmbeddedPostgres("per-agent fallback models", () => {
   let db!: ReturnType<typeof createDb>;
   let heartbeat!: ReturnType<typeof heartbeatService>;
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
-  let paperclipHome: string | null = null;
+  let wardmoteHome: string | null = null;
   const previousHome = process.env.WARDMOTE_HOME;
   const behaviors = new Map<string, Behavior[]>();
   const captured = new Map<string, { config: Record<string, unknown>; context: Record<string, unknown> }>();
@@ -77,8 +77,8 @@ describeEmbeddedPostgres("per-agent fallback models", () => {
     tempDb = await startEmbeddedPostgresTestDatabase("heartbeat-model-fallback-");
     db = createDb(tempDb.connectionString);
     heartbeat = heartbeatService(db);
-    paperclipHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-model-fallback-home-"));
-    process.env.WARDMOTE_HOME = paperclipHome;
+    wardmoteHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-model-fallback-home-"));
+    process.env.WARDMOTE_HOME = wardmoteHome;
     registerServerAdapter({
       type: "omp_local",
       execute: async (ctx) => {
@@ -101,7 +101,7 @@ describeEmbeddedPostgres("per-agent fallback models", () => {
     unregisterServerAdapter("omp_local");
     if (previousHome === undefined) delete process.env.WARDMOTE_HOME;
     else process.env.WARDMOTE_HOME = previousHome;
-    if (paperclipHome) await fs.rm(paperclipHome, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
+    if (wardmoteHome) await fs.rm(wardmoteHome, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
     await tempDb?.cleanup();
   });
 
@@ -208,7 +208,7 @@ describeEmbeddedPostgres("per-agent fallback models", () => {
     expect(second.seen.config.model).toBe(PRIMARY);
     expect(second.seen.config.fallbackModels).toEqual([BACKUP, SECOND]);
     expect(second.seen.config.modelEfforts).toEqual({ [BACKUP]: "low" });
-    expect(second.seen.context.paperclipModelFallback ?? null).toBeNull();
+    expect(second.seen.context.wardmoteModelFallback ?? null).toBeNull();
     const startEvents = await db.select().from(heartbeatRunEvents).where(and(
       eq(heartbeatRunEvents.runId, second.run.id),
       eq(heartbeatRunEvents.eventType, "model.fallback"),
@@ -236,10 +236,10 @@ describeEmbeddedPostgres("per-agent fallback models", () => {
     await expect.poll(() => retryOf(failed.run.id).then((row) => row?.status ?? null), { timeout: 5_000 }).toBe("scheduled_retry");
     const primaryRetry = await retryOf(failed.run.id);
     const primaryRetryContext = primaryRetry!.contextSnapshot as Record<string, unknown>;
-    expect(primaryRetryContext.paperclipForcedModel).toBe(PRIMARY);
-    expect(primaryRetryContext.paperclipModelAttempts).toEqual({ [PRIMARY]: 1 });
-    expect(primaryRetryContext.paperclipModelAttemptBudget).toBe(3);
-    expect(primaryRetryContext).not.toHaveProperty("paperclipModelFallbackExcluded");
+    expect(primaryRetryContext.wardmoteForcedModel).toBe(PRIMARY);
+    expect(primaryRetryContext.wardmoteModelAttempts).toEqual({ [PRIMARY]: 1 });
+    expect(primaryRetryContext.wardmoteModelAttemptBudget).toBe(3);
+    expect(primaryRetryContext).not.toHaveProperty("wardmoteModelFallbackExcluded");
     const primaryRetryDelayMs = primaryRetry!.scheduledRetryAt!.getTime() - Date.now();
     expect(primaryRetryDelayMs).toBeGreaterThan(3_000);
     expect(primaryRetryDelayMs).toBeLessThan(30_000);
@@ -251,8 +251,8 @@ describeEmbeddedPostgres("per-agent fallback models", () => {
     await expect.poll(() => retryOf(primaryRetry!.id).then((row) => row?.status ?? null), { timeout: 5_000 }).toBe("scheduled_retry");
     const fallbackRetry = await retryOf(primaryRetry!.id);
     const fallbackRetryContext = fallbackRetry!.contextSnapshot as Record<string, unknown>;
-    expect(fallbackRetryContext.paperclipForcedModel).toBe(BACKUP);
-    expect(fallbackRetryContext.paperclipModelAttempts).toEqual({ [PRIMARY]: 2 });
+    expect(fallbackRetryContext.wardmoteForcedModel).toBe(BACKUP);
+    expect(fallbackRetryContext.wardmoteModelAttempts).toEqual({ [PRIMARY]: 2 });
     const fallbackRetryDelayMs = fallbackRetry!.scheduledRetryAt!.getTime() - Date.now();
     expect(fallbackRetryDelayMs).toBeGreaterThan(20_000);
     expect(fallbackRetryDelayMs).toBeLessThan(60_000);
@@ -273,10 +273,10 @@ describeEmbeddedPostgres("per-agent fallback models", () => {
     await expect.poll(() => retryOf(failed.run.id).then((row) => row?.status ?? null), { timeout: 5_000 }).toBe("scheduled_retry");
     const retry = await retryOf(failed.run.id);
     const retryContext = retry!.contextSnapshot as Record<string, unknown>;
-    expect(retryContext.paperclipForcedModel).toBe(BACKUP);
-    expect(retryContext.paperclipModelAttempts).toEqual({ [PRIMARY]: 1 });
-    expect(retryContext.paperclipFallbackReason).toBe("refusal");
-    expect(retryContext).not.toHaveProperty("paperclipModelFallbackExcluded");
+    expect(retryContext.wardmoteForcedModel).toBe(BACKUP);
+    expect(retryContext.wardmoteModelAttempts).toEqual({ [PRIMARY]: 1 });
+    expect(retryContext.wardmoteFallbackReason).toBe("refusal");
+    expect(retryContext).not.toHaveProperty("wardmoteModelFallbackExcluded");
     const refusalRetryDelayMs = retry!.scheduledRetryAt!.getTime() - Date.now();
     expect(refusalRetryDelayMs).toBeGreaterThan(20_000);
     expect(refusalRetryDelayMs).toBeLessThan(60_000);
@@ -353,7 +353,7 @@ describeEmbeddedPostgres("per-agent fallback models", () => {
     const failed = await runOnce(target);
     expect(failed.seen.config.model).toBe(PRIMARY);
     expect(failed.seen.config).not.toHaveProperty("fallbackModels");
-    expect(failed.seen.context).not.toHaveProperty("paperclipPrimaryModel");
+    expect(failed.seen.context).not.toHaveProperty("wardmotePrimaryModel");
     expect(await cooldownRows(target.companyId)).toHaveLength(0);
     await expect.poll(() => retryOf(failed.run.id).then((row) => row?.status ?? null), { timeout: 5_000 }).toBe("scheduled_retry");
     const retry = await retryOf(failed.run.id);
@@ -366,8 +366,8 @@ describeEmbeddedPostgres("per-agent fallback models", () => {
     await new Promise((resolve) => setTimeout(resolve, 300));
     const refusalRetry = await retryOf(refused.run.id);
     const refusalContext = refusalRetry?.contextSnapshot as Record<string, unknown> | undefined;
-    expect(refusalContext?.paperclipForcedModel).toBeUndefined();
-    expect(refusalContext?.paperclipModelAttempts).toBeUndefined();
+    expect(refusalContext?.wardmoteForcedModel).toBeUndefined();
+    expect(refusalContext?.wardmoteModelAttempts).toBeUndefined();
     expect(await cooldownRows(refusal.companyId)).toHaveLength(0);
   }, 60_000);
 
@@ -377,7 +377,7 @@ describeEmbeddedPostgres("per-agent fallback models", () => {
     const failed = await runOnce(target);
     await expect.poll(() => retryOf(failed.run.id).then((row) => row?.status ?? null), { timeout: 5_000 }).toBe("scheduled_retry");
     const fallbackRun = await retryOf(failed.run.id);
-    expect((fallbackRun!.contextSnapshot as Record<string, unknown>).paperclipForcedModel).toBe(BACKUP);
+    expect((fallbackRun!.contextSnapshot as Record<string, unknown>).wardmoteForcedModel).toBe(BACKUP);
     await promoteAndResume(fallbackRun!.scheduledRetryAt!);
     const fallbackAttempt = await waitForRun(heartbeat, fallbackRun!.id);
     expect(fallbackAttempt?.status).toBe("failed");
@@ -386,9 +386,9 @@ describeEmbeddedPostgres("per-agent fallback models", () => {
     await expect.poll(() => retryOf(fallbackRun!.id).then((row) => row?.status ?? null), { timeout: 5_000 }).toBe("scheduled_retry");
     const primaryRun = await retryOf(fallbackRun!.id);
     const primaryRunContext = primaryRun!.contextSnapshot as Record<string, unknown>;
-    expect(primaryRunContext.paperclipForcedModel).toBe(PRIMARY);
-    expect(primaryRunContext.paperclipModelAttempts).toEqual({ [PRIMARY]: 1, [BACKUP]: 1 });
-    expect(primaryRunContext.paperclipModelAttemptBudget).toBe(3);
+    expect(primaryRunContext.wardmoteForcedModel).toBe(PRIMARY);
+    expect(primaryRunContext.wardmoteModelAttempts).toEqual({ [PRIMARY]: 1, [BACKUP]: 1 });
+    expect(primaryRunContext.wardmoteModelAttemptBudget).toBe(3);
     await promoteAndResume(primaryRun!.scheduledRetryAt!);
     const exhausted = await waitForRun(heartbeat, primaryRun!.id);
     expect(exhausted?.status).toBe("failed");

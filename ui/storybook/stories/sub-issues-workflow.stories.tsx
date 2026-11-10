@@ -11,7 +11,7 @@ import {
   storybookCompanies,
   storybookIssueLabels,
   storybookProjects,
-} from "../fixtures/paperclipData";
+} from "../fixtures/wardmoteData";
 
 const companyId = "company-storybook";
 const parentId = "issue-pap-1953";

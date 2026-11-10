@@ -160,7 +160,7 @@ describeEmbeddedPostgres("heartbeat local environment lifecycle", () => {
     expect(leases[0]?.releasedAt).not.toBeNull();
 
     const context = finished?.contextSnapshot as Record<string, unknown>;
-    expect(context.paperclipEnvironment).toMatchObject({
+    expect(context.wardmoteEnvironment).toMatchObject({
       id: localRows[0]?.id,
       name: "Local",
       driver: "local",

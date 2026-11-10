@@ -1,5 +1,5 @@
 import type { NativeAcpxPermissionMode } from "../../contracts/native-execution.js";
-import { paperclipSemanticAction } from "../../catalog/semantic-action-catalog.js";
+import { wardmoteSemanticAction } from "../../catalog/semantic-action-catalog.js";
 import { capabilityCanonicalOperation } from "../../catalog/canonical-operations.js";
 import { canonicalRunnerToolName } from "../runner-tool-bridge.js";
 import type { QualifiedAcpxAgent } from "./qualified-profiles.js";
@@ -39,7 +39,7 @@ export function claudeWardmotePermissionRules(
     // Effects come from Paperclip's implementation catalog, never tool hints
     // or the provider's permission-request metadata. Unknown operations stay
     // subject to approval even when their names or annotations claim a read.
-    const action = paperclipSemanticAction(name);
+    const action = wardmoteSemanticAction(name);
     // The semantic catalog groups approval reads under "governance". The
     // canonical side-effect class distinguishes those reads from decisions.
     const liveAction = capabilityCanonicalOperation(name);

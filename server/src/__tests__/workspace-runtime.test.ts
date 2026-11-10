@@ -1038,7 +1038,7 @@ describe("realizeExecutionWorkspace", () => {
 
   it.each([false, true])("realizes a plain Paperclip checkout without a local seed instance (image default env: %s)", async (defaultConfigInEnv) => {
     const repoRoot = await createTempRepo();
-    const paperclipHome = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-env-only-home-")));
+    const wardmoteHome = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-env-only-home-")));
     const previousEnv = {
       WARDMOTE_HOME: process.env.WARDMOTE_HOME,
       WARDMOTE_CONFIG: process.env.WARDMOTE_CONFIG,
@@ -1049,9 +1049,9 @@ describe("realizeExecutionWorkspace", () => {
       await fs.copyFile(provisionWorktreeScriptPath, path.join(repoRoot, "scripts", "provision-worktree.sh"));
       await runGit(repoRoot, ["add", "scripts/provision-worktree.sh"]);
       await runGit(repoRoot, ["commit", "-m", "Add Paperclip worktree provisioner"]);
-      process.env.WARDMOTE_HOME = paperclipHome;
+      process.env.WARDMOTE_HOME = wardmoteHome;
       process.env.WARDMOTE_INSTANCE_ID = "default";
-      if (defaultConfigInEnv) process.env.WARDMOTE_CONFIG = path.join(paperclipHome, "instances", "default", "config.json");
+      if (defaultConfigInEnv) process.env.WARDMOTE_CONFIG = path.join(wardmoteHome, "instances", "default", "config.json");
       else delete process.env.WARDMOTE_CONFIG;
 
       const workspace = await realizeWorktreeForTest(repoRoot, "HEAD");
@@ -1062,14 +1062,14 @@ describe("realizeExecutionWorkspace", () => {
       for (const file of ["config.json", ".env", "seed-manifest.json", "seed-pending", "seed-complete"]) {
         expect(existsSync(path.join(workspace.cwd, ".paperclip", file))).toBe(false);
       }
-      expect(await fs.readdir(paperclipHome)).toEqual([]);
+      expect(await fs.readdir(wardmoteHome)).toEqual([]);
     } finally {
       for (const [key, value] of Object.entries(previousEnv)) {
         if (value === undefined) delete process.env[key];
         else process.env[key] = value;
       }
       await fs.rm(repoRoot, { recursive: true, force: true });
-      await fs.rm(paperclipHome, { recursive: true, force: true });
+      await fs.rm(wardmoteHome, { recursive: true, force: true });
     }
   });
 
@@ -1985,15 +1985,15 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
     const previousHome = process.env.WARDMOTE_HOME;
     const previousInstanceId = process.env.WARDMOTE_INSTANCE_ID;
     const previousWorktreesDir = process.env.WARDMOTE_WORKTREES_DIR;
-    const paperclipHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-worktree-home-"));
+    const wardmoteHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-worktree-home-"));
     const isolatedWorktreeHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-worktrees-"));
     const isolatedBin = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-worktree-bin-"));
     const instanceId = "worktree-base";
-    const sharedConfigDir = path.join(paperclipHome, "instances", instanceId);
+    const sharedConfigDir = path.join(wardmoteHome, "instances", instanceId);
     const sharedConfigPath = path.join(sharedConfigDir, "config.json");
     const sharedEnvPath = path.join(sharedConfigDir, ".env");
 
-    process.env.WARDMOTE_HOME = paperclipHome;
+    process.env.WARDMOTE_HOME = wardmoteHome;
     process.env.WARDMOTE_INSTANCE_ID = instanceId;
     process.env.WARDMOTE_WORKTREES_DIR = isolatedWorktreeHome;
     delete process.env.WARDMOTE_CONFIG;
@@ -2520,17 +2520,17 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
     const fakeBin = path.join(tempRoot, "bin");
     const fakePnpmPath = path.join(fakeBin, "pnpm");
     const scriptPath = path.join(worktreeRoot, "provision-worktree.sh");
-    const paperclipDir = path.join(worktreeRoot, ".paperclip");
+    const wardmoteDir = path.join(worktreeRoot, ".paperclip");
 
     try {
       await fs.mkdir(baseRoot, { recursive: true });
       await writeRegisteredSourceConfig(baseRoot);
-      await fs.mkdir(paperclipDir, { recursive: true });
+      await fs.mkdir(wardmoteDir, { recursive: true });
       await fs.mkdir(fakeBin, { recursive: true });
       await fs.copyFile(provisionWorktreeScriptPath, scriptPath);
       await fs.chmod(scriptPath, 0o755);
       await fs.writeFile(
-        path.join(paperclipDir, "config.json"),
+        path.join(wardmoteDir, "config.json"),
         JSON.stringify({
           database: {
             mode: "embedded-postgres",
@@ -2556,7 +2556,7 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
         "utf8",
       );
       await fs.writeFile(
-        path.join(paperclipDir, ".env"),
+        path.join(wardmoteDir, ".env"),
         [
           "WARDMOTE_HOME=/Users/example/.paperclip-worktrees",
           "WARDMOTE_INSTANCE_ID=stale",
@@ -2596,10 +2596,10 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
       });
 
       expect(result.stderr).toContain("Existing isolated Paperclip worktree config is stale for this host; regenerating.");
-      await expect(fs.readFile(path.join(paperclipDir, ".env"), "utf8")).resolves.toContain(
+      await expect(fs.readFile(path.join(wardmoteDir, ".env"), "utf8")).resolves.toContain(
         `WARDMOTE_CONFIG=${worktreeRoot}/.paperclip/config.json`,
       );
-      await expect(fs.readFile(path.join(paperclipDir, "config.json"), "utf8")).resolves.toContain(worktreeRoot);
+      await expect(fs.readFile(path.join(wardmoteDir, "config.json"), "utf8")).resolves.toContain(worktreeRoot);
     } finally {
       await fs.rm(tempRoot, { recursive: true, force: true });
     }
@@ -5248,9 +5248,9 @@ describe("ensureRuntimeServicesForRun", () => {
         [
           "const fs = require('node:fs');",
           `fs.writeFileSync(${JSON.stringify(envCapturePath)}, JSON.stringify({`,
-          "paperclipConfig: process.env.WARDMOTE_CONFIG ?? null,",
-          "paperclipHome: process.env.WARDMOTE_HOME ?? null,",
-          "paperclipInstanceId: process.env.WARDMOTE_INSTANCE_ID ?? null,",
+          "wardmoteConfig: process.env.WARDMOTE_CONFIG ?? null,",
+          "wardmoteHome: process.env.WARDMOTE_HOME ?? null,",
+          "wardmoteInstanceId: process.env.WARDMOTE_INSTANCE_ID ?? null,",
           "databaseUrl: process.env.DATABASE_URL ?? null,",
           "customEnv: process.env.RUNTIME_CUSTOM_ENV ?? null,",
           "port: process.env.PORT ?? null,",
@@ -5307,9 +5307,9 @@ describe("ensureRuntimeServicesForRun", () => {
 
     expect(services).toHaveLength(1);
     const captured = JSON.parse(await fs.readFile(envCapturePath, "utf8")) as Record<string, string | null>;
-    expect(captured.paperclipConfig).toBeNull();
-    expect(captured.paperclipHome).toBeNull();
-    expect(captured.paperclipInstanceId).toBeNull();
+    expect(captured.wardmoteConfig).toBeNull();
+    expect(captured.wardmoteHome).toBeNull();
+    expect(captured.wardmoteInstanceId).toBeNull();
     expect(captured.databaseUrl).toBeNull();
     expect(captured.customEnv).toBe("from-adapter");
     expect(captured.port).toMatch(/^\d+$/);
@@ -5881,8 +5881,8 @@ describe("readLocalServicePortOwner", () => {
     const address = server.address();
     const port = typeof address === "object" && address ? address.port : null;
     const serviceKey = `unsupported-cwd-${randomUUID()}`;
-    const paperclipHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-home-"));
-    process.env.WARDMOTE_HOME = paperclipHome;
+    const wardmoteHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-home-"));
+    process.env.WARDMOTE_HOME = wardmoteHome;
     process.env.WARDMOTE_INSTANCE_ID = `unsupported-cwd-${randomUUID()}`;
     expect(port).toBeTypeOf("number");
 
@@ -5917,7 +5917,7 @@ describe("readLocalServicePortOwner", () => {
       await new Promise<void>((resolve, reject) => {
         server.close((error) => error ? reject(error) : resolve());
       });
-      await fs.rm(paperclipHome, { recursive: true, force: true });
+      await fs.rm(wardmoteHome, { recursive: true, force: true });
     }
   });
 
@@ -5942,8 +5942,8 @@ describe("readLocalServicePortOwner", () => {
 
     const targetWorkspace = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-target-"));
     const ownerWorkspace = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-owner-"));
-    const paperclipHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-home-"));
-    process.env.WARDMOTE_HOME = paperclipHome;
+    const wardmoteHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-home-"));
+    process.env.WARDMOTE_HOME = wardmoteHome;
     process.env.WARDMOTE_INSTANCE_ID = `cross-workspace-${randomUUID()}`;
     const serviceKey = `cross-workspace-${randomUUID()}`;
     const child = spawn(
@@ -6021,7 +6021,7 @@ describe("readLocalServicePortOwner", () => {
     } finally {
       child.kill("SIGTERM");
       await new Promise<void>((resolve) => child.once("exit", () => resolve()));
-      await fs.rm(paperclipHome, { recursive: true, force: true });
+      await fs.rm(wardmoteHome, { recursive: true, force: true });
     }
   });
 
@@ -6034,8 +6034,8 @@ describe("readLocalServicePortOwner", () => {
     }
 
     const workspace = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-adopt-"));
-    const paperclipHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-home-"));
-    process.env.WARDMOTE_HOME = paperclipHome;
+    const wardmoteHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-home-"));
+    process.env.WARDMOTE_HOME = wardmoteHome;
     process.env.WARDMOTE_INSTANCE_ID = `adopt-port-owner-${randomUUID()}`;
     const serviceKey = `adopt-port-owner-${randomUUID()}`;
     // Detach, because managed runtime services also start detached
@@ -6074,7 +6074,7 @@ describe("readLocalServicePortOwner", () => {
     } finally {
       child.kill("SIGTERM");
       await new Promise<void>((resolve) => child.once("exit", () => resolve()));
-      await fs.rm(paperclipHome, { recursive: true, force: true });
+      await fs.rm(wardmoteHome, { recursive: true, force: true });
       await fs.rm(workspace, { recursive: true, force: true });
     }
   });
@@ -6093,8 +6093,8 @@ describe("readLocalServicePortOwner", () => {
     // adopted into the other.
     const lookalike = `${workspace} `;
     await fs.mkdir(lookalike, { recursive: true });
-    const paperclipHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-home-"));
-    process.env.WARDMOTE_HOME = paperclipHome;
+    const wardmoteHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-home-"));
+    process.env.WARDMOTE_HOME = wardmoteHome;
     process.env.WARDMOTE_INSTANCE_ID = `adopt-whitespace-${randomUUID()}`;
     const serviceKey = `adopt-whitespace-${randomUUID()}`;
     const child = spawn(
@@ -6127,7 +6127,7 @@ describe("readLocalServicePortOwner", () => {
     } finally {
       child.kill("SIGTERM");
       await new Promise<void>((resolve) => child.once("exit", () => resolve()));
-      await fs.rm(paperclipHome, { recursive: true, force: true });
+      await fs.rm(wardmoteHome, { recursive: true, force: true });
       await fs.rm(lookalike, { recursive: true, force: true });
       await fs.rm(workspace, { recursive: true, force: true });
     }
@@ -6812,10 +6812,10 @@ describeEmbeddedPostgres("workspace runtime service control persistence", () => 
 
   it("persists provisioning before starting and excludes provision time from readiness timeout", async () => {
     const workspaceRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-slow-control-"));
-    const paperclipHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-control-home-"));
+    const wardmoteHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-control-home-"));
     const previousWardmoteHome = process.env.WARDMOTE_HOME;
     const previousWardmoteInstanceId = process.env.WARDMOTE_INSTANCE_ID;
-    process.env.WARDMOTE_HOME = paperclipHome;
+    process.env.WARDMOTE_HOME = wardmoteHome;
     process.env.WARDMOTE_INSTANCE_ID = `runtime-control-${randomUUID()}`;
 
     const companyId = randomUUID();
@@ -7025,7 +7025,7 @@ describeEmbeddedPostgres("workspace runtime service control persistence", () => 
         executionWorkspaceId,
         workspaceCwd: workspaceRoot,
       });
-      await fs.rm(paperclipHome, { recursive: true, force: true });
+      await fs.rm(wardmoteHome, { recursive: true, force: true });
       if (previousWardmoteHome === undefined) delete process.env.WARDMOTE_HOME;
       else process.env.WARDMOTE_HOME = previousWardmoteHome;
       if (previousWardmoteInstanceId === undefined) delete process.env.WARDMOTE_INSTANCE_ID;
@@ -7155,17 +7155,17 @@ describeEmbeddedPostgres("workspace runtime service control persistence", () => 
   }
 
   async function createRuntimeHome() {
-    const paperclipHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-port-home-"));
+    const wardmoteHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-port-home-"));
     const previousWardmoteHome = process.env.WARDMOTE_HOME;
     const previousWardmoteInstanceId = process.env.WARDMOTE_INSTANCE_ID;
-    process.env.WARDMOTE_HOME = paperclipHome;
+    process.env.WARDMOTE_HOME = wardmoteHome;
     process.env.WARDMOTE_INSTANCE_ID = `runtime-ports-${randomUUID()}`;
     return async () => {
       if (previousWardmoteHome === undefined) delete process.env.WARDMOTE_HOME;
       else process.env.WARDMOTE_HOME = previousWardmoteHome;
       if (previousWardmoteInstanceId === undefined) delete process.env.WARDMOTE_INSTANCE_ID;
       else process.env.WARDMOTE_INSTANCE_ID = previousWardmoteInstanceId;
-      await fs.rm(paperclipHome, { recursive: true, force: true });
+      await fs.rm(wardmoteHome, { recursive: true, force: true });
     };
   }
 
@@ -7197,7 +7197,7 @@ describeEmbeddedPostgres("workspace runtime service control persistence", () => 
             type: "tailscale_https",
             hostname: "auto",
             publicPort: "same",
-            includePaperclipViteHmr: true,
+            includeWardmoteViteHmr: true,
             failurePolicy: "fail_closed",
           },
           lifecycle: "shared",
@@ -7873,8 +7873,8 @@ describeEmbeddedPostgres("workspace runtime startup reconciliation", () => {
 
   it("restores desired services when one row is stopped and a live registered service has no row", async () => {
     const workspaceRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-desired-reconcile-"));
-    const paperclipHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-home-"));
-    process.env.WARDMOTE_HOME = paperclipHome;
+    const wardmoteHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-home-"));
+    process.env.WARDMOTE_HOME = wardmoteHome;
     process.env.WARDMOTE_INSTANCE_ID = `runtime-desired-reconcile-${randomUUID()}`;
 
     const reservePorts = async () => {
@@ -8053,7 +8053,7 @@ describeEmbeddedPostgres("workspace runtime startup reconciliation", () => {
         executionWorkspaceId,
         workspaceCwd: workspaceRoot,
       });
-      await fs.rm(paperclipHome, { recursive: true, force: true });
+      await fs.rm(wardmoteHome, { recursive: true, force: true });
     }
   }, 20_000);
 
@@ -8062,11 +8062,11 @@ describeEmbeddedPostgres("workspace runtime startup reconciliation", () => {
     // forward on the *same* workspace/runtime-service row — not by recreating it
     // — and must never keep its HTTP URL as a healthy fallback.
     const workspaceRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-https-backfill-"));
-    const paperclipHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-home-"));
+    const wardmoteHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-home-"));
     const previousWardmoteHome = process.env.WARDMOTE_HOME;
     const previousWardmoteInstanceId = process.env.WARDMOTE_INSTANCE_ID;
     const previousHttpsMode = process.env.WARDMOTE_MANAGED_RUNTIME_HTTPS;
-    process.env.WARDMOTE_HOME = paperclipHome;
+    process.env.WARDMOTE_HOME = wardmoteHome;
     process.env.WARDMOTE_INSTANCE_ID = `runtime-https-backfill-${randomUUID()}`;
 
     const reservePort = reserveLoopbackPortWithCompanion;
@@ -8253,7 +8253,7 @@ describeEmbeddedPostgres("workspace runtime startup reconciliation", () => {
         workspaceCwd: workspaceRoot,
       }).catch(() => undefined);
       await resetRuntimeServicesForTests();
-      await fs.rm(paperclipHome, { recursive: true, force: true });
+      await fs.rm(wardmoteHome, { recursive: true, force: true });
       await fs.rm(workspaceRoot, { recursive: true, force: true });
       if (previousWardmoteHome === undefined) delete process.env.WARDMOTE_HOME;
       else process.env.WARDMOTE_HOME = previousWardmoteHome;
@@ -8266,8 +8266,8 @@ describeEmbeddedPostgres("workspace runtime startup reconciliation", () => {
 
   it("re-adopts a request-logging service on the same auto port after supervisor stdio closes", async () => {
     const workspaceRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-reconcile-"));
-    const paperclipHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-home-"));
-    process.env.WARDMOTE_HOME = paperclipHome;
+    const wardmoteHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-home-"));
+    process.env.WARDMOTE_HOME = wardmoteHome;
     process.env.WARDMOTE_INSTANCE_ID = `runtime-reconcile-${randomUUID()}`;
 
     const companyId = randomUUID();
@@ -8380,7 +8380,7 @@ describeEmbeddedPostgres("workspace runtime startup reconciliation", () => {
 
     await resetRuntimeServicesForTests({ terminateProcesses: true });
     leasedRunIds.delete(runId);
-    await fs.rm(paperclipHome, { recursive: true, force: true });
+    await fs.rm(wardmoteHome, { recursive: true, force: true });
     await fs.rm(workspaceRoot, { recursive: true, force: true });
 
     await expect(fetch(service!.url!)).rejects.toThrow();
@@ -8388,10 +8388,10 @@ describeEmbeddedPostgres("workspace runtime startup reconciliation", () => {
 
   it("re-adopts a live service whose shell command differs from the surviving process argv", async () => {
     const workspaceRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-pnpm-reconcile-"));
-    const paperclipHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-home-"));
+    const wardmoteHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-home-"));
     const previousWardmoteHome = process.env.WARDMOTE_HOME;
     const previousInstanceId = process.env.WARDMOTE_INSTANCE_ID;
-    process.env.WARDMOTE_HOME = paperclipHome;
+    process.env.WARDMOTE_HOME = wardmoteHome;
     process.env.WARDMOTE_INSTANCE_ID = `runtime-pnpm-reconcile-${randomUUID()}`;
 
     // Reserve a port outside the runtime exposure app-port range (42000-42999).
@@ -8582,15 +8582,15 @@ describeEmbeddedPostgres("workspace runtime startup reconciliation", () => {
       else process.env.WARDMOTE_HOME = previousWardmoteHome;
       if (previousInstanceId === undefined) delete process.env.WARDMOTE_INSTANCE_ID;
       else process.env.WARDMOTE_INSTANCE_ID = previousInstanceId;
-      await fs.rm(paperclipHome, { recursive: true, force: true });
+      await fs.rm(wardmoteHome, { recursive: true, force: true });
       await fs.rm(workspaceRoot, { recursive: true, force: true });
     }
   }, 20_000);
 
   it("does not reuse a stopped auto-port service port while another process owns it", async () => {
     const workspaceRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-unhealthy-adopt-"));
-    const paperclipHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-home-"));
-    process.env.WARDMOTE_HOME = paperclipHome;
+    const wardmoteHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-home-"));
+    process.env.WARDMOTE_HOME = wardmoteHome;
     process.env.WARDMOTE_INSTANCE_ID = `runtime-unhealthy-adopt-${randomUUID()}`;
 
     const portProbe = net.createServer();

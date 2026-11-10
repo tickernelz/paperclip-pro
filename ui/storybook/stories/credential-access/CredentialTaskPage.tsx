@@ -7,7 +7,7 @@ import { PluginLauncherProvider } from "@/plugins/launchers";
 import { Navigate, Route, Routes } from "@/lib/router";
 import { queryKeys } from "@/lib/queryKeys";
 import { seedIssueDetailCache } from "@/lib/issueDetailCache";
-import { storybookAgents, storybookIssues, storybookAuthSession } from "../../fixtures/paperclipData";
+import { storybookAgents, storybookIssues, storybookAuthSession } from "../../fixtures/wardmoteData";
 import type { IssueChatComment, IssueChatLinkedRun } from "@/lib/issue-chat-messages";
 
 export function CredentialTaskPage({ otherPerson = false, runtimeMode = "native", newerAttempt = false }: {

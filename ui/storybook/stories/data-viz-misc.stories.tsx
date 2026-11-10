@@ -43,7 +43,7 @@ import {
   createIssue,
   storybookAgents,
   storybookIssues,
-} from "../fixtures/paperclipData";
+} from "../fixtures/wardmoteData";
 
 const companyId = "company-storybook";
 

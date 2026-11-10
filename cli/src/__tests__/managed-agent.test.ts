@@ -240,8 +240,8 @@ describe("managed-agent CLI setup", () => {
       metadata: { paperclip_profile: "primary" },
     });
 
-    const paperclipCreate = calls.find((call) => call.url.startsWith("http://localhost:3100"));
-    const persistedBody = JSON.parse(String(paperclipCreate?.init.body)) as Record<string, unknown>;
+    const wardmoteCreate = calls.find((call) => call.url.startsWith("http://localhost:3100"));
+    const persistedBody = JSON.parse(String(wardmoteCreate?.init.body)) as Record<string, unknown>;
     expect(persistedBody).toMatchObject({
       profileKey: "primary",
       anthropicAgentId: "agent-1",

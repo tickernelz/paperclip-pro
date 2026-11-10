@@ -71,7 +71,7 @@ describe("OpenWA settings", () => {
     vi.resetAllMocks();
     mocks.api.getOpenwaHealth.mockResolvedValue(health);
     mocks.api.listOpenwaOwners.mockResolvedValue([
-      { id: "owner-1", identityLinkId: "l", principalId: "p", numberMasked: "+62xxx...1111", displayName: "Ops Desk", linkStatus: "linked", paperclipUserId: "u", effective: true, createdAt: "2026-10-03T00:00:00.000Z" },
+      { id: "owner-1", identityLinkId: "l", principalId: "p", numberMasked: "+62xxx...1111", displayName: "Ops Desk", linkStatus: "linked", wardmoteUserId: "u", effective: true, createdAt: "2026-10-03T00:00:00.000Z" },
     ]);
     mocks.api.listOpenwaSenderRules.mockResolvedValue([
       { id: "rule-1", list: "allow", e164: "+628444000444", label: "Supplier", createdAt: "2026-10-03T00:00:00.000Z" },

@@ -1938,7 +1938,7 @@ package avatar PNGs using the API renderer; static hosting needs no API proxy.
 
 The company heartbeat-run and live-run lists load secret registries in one
 company-scoped query per response. Registry reads project only
-`paperclipSecretRedactions` from the run context. They do not load the full
+`wardmoteSecretRedactions` from the run context. They do not load the full
 prompt/context JSON. Decrypted values live only for that request and each run
 uses its own registry.
 

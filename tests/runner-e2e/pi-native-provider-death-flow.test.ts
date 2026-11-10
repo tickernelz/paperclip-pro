@@ -74,7 +74,7 @@ it.each([
 async function journey(staleStatus = 409, markerEffect = false) {
   const f = fixture(), evidence = new Map<string, unknown>(), posted: string[] = [];
   let lost = false, signals = 0, retired = false;
-  Object.assign(f.before.state.runs[0]!, { contextSnapshot: { executionWorkspaceId: "workspace", paperclipEnvironment: { leaseId: "lease" } },
+  Object.assign(f.before.state.runs[0]!, { contextSnapshot: { executionWorkspaceId: "workspace", wardmoteEnvironment: { leaseId: "lease" } },
     runnerProfileJson: { nativeExecutionInput: { binding: { executionWorkspaceId: "workspace" } } } });
   const root = { pid: 21, startTicks: "100", bootId: "boot" };
   const composer: any = { count: () => 1, filter: () => composer };

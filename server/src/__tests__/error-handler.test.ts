@@ -264,7 +264,7 @@ describe("errorHandler", () => {
     const db = { marker: "db" };
     const req = {
       ...makeReq(),
-      app: { locals: { paperclipDb: db } },
+      app: { locals: { wardmoteDb: db } },
       actor: {
         type: "agent",
         agentId: "agent-1",

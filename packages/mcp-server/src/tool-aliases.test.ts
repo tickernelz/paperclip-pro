@@ -1,7 +1,7 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { canonicalToolName, paperclipToolCatalog } from "./catalog.js";
+import { canonicalToolName, wardmoteToolCatalog } from "./catalog.js";
 import { WardmoteApiClient } from "./client.js";
 import { connectWardmoteMcpServer, createWardmoteMcpServer } from "./index.js";
 import type { WardmoteMcpConfig } from "./config.js";
@@ -30,7 +30,7 @@ describe("tool name aliases", () => {
   });
 
   it("maps the Features spellings to the advertised name and leaves retired names unmapped", () => {
-    expect(canonicalToolName("wardmoteGetIssue")).toBe("wardmoteGetIssue");
+    expect(canonicalToolName("paperclipGetIssue")).toBe("paperclipGetIssue");
     expect(canonicalToolName("paperclipGetIssue")).toBe("paperclipGetIssue");
     expect(canonicalToolName("wardmoteGetInstanceSettingFeatures")).toBe("wardmoteGetInstanceSettingExperimental");
     expect(canonicalToolName("wardmoteUpdateInstanceFeatures")).toBe("wardmoteUpdateInstanceExperimental");
@@ -41,7 +41,7 @@ describe("tool name aliases", () => {
   it("keeps tools/list on the wardmote* names only", async () => {
     const client = await connectedClient();
     const listed = (await client.listTools()).tools.map((tool) => tool.name);
-    const catalog = paperclipToolCatalog(new WardmoteApiClient(config), config.toolsets, true).listing.tools.map((tool) => tool.name);
+    const catalog = wardmoteToolCatalog(new WardmoteApiClient(config), config.toolsets, true).listing.tools.map((tool) => tool.name);
     expect(listed).toEqual(catalog);
     expect(listed.some((name) => name.startsWith("paperclip"))).toBe(false);
     expect(listed).toContain("wardmoteGetInstanceSettingExperimental");

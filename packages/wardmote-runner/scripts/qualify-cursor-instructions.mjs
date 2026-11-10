@@ -19,8 +19,8 @@ const awaiter = (self, args, _promise, fn) => { const it = fn.apply(self, args ?
 export async function qualifyCursorInstructions(source, platform, vendorRoot) {
   const text = "Paperclip governance\nCustom entry: résumé\nAGENT_HOME=/registered/agent";
   const payload = content => JSON.stringify({ schema: "paperclip.cursor.instructions.v1", content, digest: `sha256:${sha(content)}` });
-  const helper = segment(source, "const paperclipCursorInstructionCrypto=", "var o=n(");
-  const makeState = raw => runInNewContext(`${helper};paperclipCursorInstructionState`, {
+  const helper = segment(source, "const wardmoteCursorInstructionCrypto=", "var o=n(");
+  const makeState = raw => runInNewContext(`${helper};wardmoteCursorInstructionState`, {
     n: id => id === "node:crypto" ? crypto : { DX: Data, f5: Data, i9: Data }, process: { env: { WARDMOTE_CURSOR_INSTRUCTIONS: raw } }, Buffer,
   });
   for (const invalid of [undefined, "{", payload("x\0y"), payload("x".repeat(32769)), payload(text).replace(sha(text), "0".repeat(64))]) assert.throws(() => makeState(invalid)(), /instruction binding/);
@@ -31,7 +31,7 @@ export async function qualifyCursorInstructions(source, platform, vendorRoot) {
   assert.equal(state(), state());
   assert.equal(state().ack.byteLength, Buffer.byteLength(text));
   const constructor = segment(source, "se=(e=oe)=>new d.DvK(", ",ie=se(oe)").slice(3);
-  const resources = runInNewContext(`(${constructor})()`, { d: { DvK: Data }, n: {}, V: {}, J: {}, K: {}, q: "/workspace", U: "/workspace", H: undefined, ee: {}, Y: undefined, ne: {}, O: "session", oe: {}, paperclipCursorInstructionState: state });
+  const resources = runInNewContext(`(${constructor})()`, { d: { DvK: Data }, n: {}, V: {}, J: {}, K: {}, q: "/workspace", U: "/workspace", H: undefined, ee: {}, Y: undefined, ne: {}, O: "session", oe: {}, wardmoteCursorInstructionState: state });
   assert.equal(resources.additionalRules[0].content, text);
   const proof = { boundedPayloadRejected: true, explicitEmptyInstructions: true, nativeGlobalRule: true, nativeResourceAdditionalRules: true };
   if (platform !== "darwin-arm64") return proof;
@@ -43,12 +43,12 @@ export async function qualifyCursorInstructions(source, platform, vendorRoot) {
   const request = runInNewContext(`({${segment(main, "async computeCachedRequestContext(e,t)", "async execute(e,t)")}}).computeCachedRequestContext`, context);
   const captures = [];
   class Session { constructor(...args) { captures.push(args); } async replayConversationHistory() {} }
-  const scope = { S: awaiter, crypto: { randomUUID }, process: { cwd: () => "/workspace" }, s: { resolve }, h: { z() {} }, C: { it: async () => ({}), Ag: class extends Error {}, rY: class extends Error {} }, y: { Y: async () => ({ resources, mcpLease: {} }), paperclipInstructionState: state }, f: { m: Session }, d: { debugLog() {} }, setTimeout() {} };
+  const scope = { S: awaiter, crypto: { randomUUID }, process: { cwd: () => "/workspace" }, s: { resolve }, h: { z() {} }, C: { it: async () => ({}), Ag: class extends Error {}, rY: class extends Error {} }, y: { Y: async () => ({ resources, mcpLease: {} }), wardmoteInstructionState: state }, f: { m: Session }, d: { debugLog() {} }, setTimeout() {} };
   const host = { isAuthenticated: true, sharedServices: { configProvider: { get: () => ({}) }, modelManager: { awaitCurrentModel: async () => ({}) }, teamSettingsService: {} }, ctx: {}, options: {}, deps: {}, connection: {}, clientCapabilities: {}, clientMetadata: {}, initializeSessionState: async () => ({ configOptions: [], models: {} }), buildModesState: () => ({}) };
   for (const [name, end] of [["newSession", "loadSession(e)"], ["loadSession", "unstable_listSessions(e)"]]) {
     const method = segment(source, `${name}(e)`, end);
     const response = await runInNewContext(`({${method}}).${name}`, scope).call(host, { cwd: "/workspace", sessionId: "fixture-session", mcpServers: [] });
-    assert.equal(response._meta.paperclipCursorInstructions.digest, `sha256:${sha(text)}`);
+    assert.equal(response._meta.wardmoteCursorInstructions.digest, `sha256:${sha(text)}`);
     const globalCache = await global.call({ additionalRules: resources.additionalRules, cursorRulesService: { getAllCursorRules: async () => [{ content: "ambient project rules" }] }, repositoryProvider: { getCodebaseReference: async () => undefined } }, trace);
     const modelContext = await request.call({ globalCache: Promise.resolve(globalCache), mcpStateAccessor: { getState: async () => ({}) }, workspacePaths: [], collectWorkspaceCaches: async () => ({ gitRepos: [], gitRepoInfoComplete: true }) }, trace, {});
     assert.equal(modelContext.rules[0].content, text);

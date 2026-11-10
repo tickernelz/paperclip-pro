@@ -1,5 +1,5 @@
 import type { IssueComment } from "@tickernelz/wardmote-shared";
-import { storybookAgents } from "../../fixtures/paperclipData";
+import { storybookAgents } from "../../fixtures/wardmoteData";
 import type { CompanyUserProfile } from "@/lib/company-members";
 
 // Representative fixtures. No private task content or tenant identities.

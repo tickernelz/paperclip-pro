@@ -197,7 +197,7 @@ export function resolveWardmoteRunnerIdleTimeoutMs(value: unknown): number {
 }
 
 /** Defaults for converting a local adapter; the operator may override the provider. */
-export function paperclipRunnerTransitionConfig(
+export function wardmoteRunnerTransitionConfig(
   previousAdapterType: string,
   previousModel: unknown,
   providerOverride?: unknown,

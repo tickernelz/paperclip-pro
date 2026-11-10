@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ChatSetupSidebar } from "@/components/chat/ChatSetupNavigation";
 import { ChatSetupSidebarProvider } from "@/context/ChatSetupSidebarContext";
 import { type ChatEndpoint } from "@/api/chatEndpoints";
-import { storybookAgents, storybookAuthSession } from "./paperclipData";
+import { storybookAgents, storybookAuthSession } from "./wardmoteData";
 import { defaultSlackAppConfiguration } from "@tickernelz/wardmote-shared";
 
 export type SlackSetupScenario = "choose" | "create" | "manual" | "install" | "declined" | "uncertain" | "manifest_pending" | "recovery" | "verify" | "avatar_failed" | "welcome_failed" | "success";
@@ -34,7 +34,7 @@ export function SlackSetupFixture({ scenario = "create" }: { scenario?: SlackSet
     const installed = () => {
       created(); endpoint.setup!.slackRegistration!.status = "configured";
       linked = true;
-      endpoint.setup!.slackAccount = { externalUserId: "UPERSON", paperclipUserId: storybookAuthSession.user.id, status: "linked", welcomeStatus: scenario === "welcome_failed" ? "failed" : "sent", ...(scenario === "welcome_failed" ? {} : { dmChannelId: "DSTORY" }) };
+      endpoint.setup!.slackAccount = { externalUserId: "UPERSON", wardmoteUserId: storybookAuthSession.user.id, status: "linked", welcomeStatus: scenario === "welcome_failed" ? "failed" : "sent", ...(scenario === "welcome_failed" ? {} : { dmChannelId: "DSTORY" }) };
       endpoint.status = "verifying"; endpoint.providerAccountId = "TSTORY"; endpoint.botExternalId = "USTORY"; endpoint.botUsername = "maya";
     };
     if (["install", "declined", "recovery", "manifest_pending"].includes(scenario)) created();
@@ -83,7 +83,7 @@ export function SlackSetupFixture({ scenario = "create" }: { scenario?: SlackSet
       }
       if (path === "/api/chat-endpoints/slack-story/principals") return Response.json([{
         id: "slack-person", principalId: "slack-person", externalLabel: "Preview person", externalDetail: "Preview workspace",
-        status: linked ? "linked" : "pending", paperclipUserId: linked ? storybookAuthSession.user.id : null,
+        status: linked ? "linked" : "pending", wardmoteUserId: linked ? storybookAuthSession.user.id : null,
         lastConnectAt: new Date().toISOString(),
       }]);
       if (path.endsWith("/slack-person/link-intent")) return Response.json({ confirmationUrl: "https://board.example/confirm?token=fixture" });

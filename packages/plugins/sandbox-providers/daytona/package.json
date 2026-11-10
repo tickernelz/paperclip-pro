@@ -30,7 +30,7 @@
   "files": [
     "dist"
   ],
-  "paperclipPlugin": {
+  "wardmotePlugin": {
     "manifest": "./dist/manifest.js",
     "worker": "./dist/worker.js"
   },

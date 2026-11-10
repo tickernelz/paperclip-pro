@@ -92,7 +92,7 @@ export function digestWardmoteSemanticContent(value: unknown): string {
   return `sha256:${createHash("sha256").update(canonicalJson(safeValue)).digest("hex")}`;
 }
 
-export function paperclipSemanticAuthorizationBoundary(
+export function wardmoteSemanticAuthorizationBoundary(
   code: string,
 ): WardmoteSemanticAuthorizationBoundary {
   if (code.includes("company")) return "company";
@@ -114,7 +114,7 @@ export function paperclipSemanticAuthorizationBoundary(
   return "active_task";
 }
 
-export function paperclipSemanticOutcome(input: {
+export function wardmoteSemanticOutcome(input: {
   readonly ok: boolean;
   readonly code: string;
   readonly duplicate?: boolean;

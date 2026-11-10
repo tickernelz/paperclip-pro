@@ -435,10 +435,10 @@ describeEmbeddedPostgres("shared-workspace run serialization", () => {
     const finishedRun = await waitForRunToLeaveActiveStates(run!.id);
     expect(finishedRun?.status).toBe("succeeded");
     expect(executedRunIds).toContain(run!.id);
-    expect(executedInputs.get(run!.id)?.context.paperclipTaskMarkdown).toContain(
+    expect(executedInputs.get(run!.id)?.context.wardmoteTaskMarkdown).toContain(
       `shared workspace is concurrently held by run ${fixture.holderRunId}`,
     );
-    expect(executedInputs.get(run!.id)?.context.paperclipTaskMarkdown).toContain(
+    expect(executedInputs.get(run!.id)?.context.wardmoteTaskMarkdown).toContain(
       "expect concurrent mutations, coordinate via commits",
     );
   });
@@ -601,7 +601,7 @@ describeEmbeddedPostgres("shared-workspace run serialization", () => {
     expect(finishedRun?.status).toBe("succeeded");
     expect(finishedRun?.errorCode).not.toBe(WORKSPACE_BUSY_ERROR_CODE);
     expect(executedRunIds).toContain(run!.id);
-    expect(executedInputs.get(run!.id)?.context.paperclipTaskMarkdown).toContain(
+    expect(executedInputs.get(run!.id)?.context.wardmoteTaskMarkdown).toContain(
       `shared workspace is concurrently held by run ${fixture.holderRunId}`,
     );
     expect((await heartbeat.getRun(fixture.holderRunId))?.status).toBe("running");
@@ -628,7 +628,7 @@ describeEmbeddedPostgres("shared-workspace run serialization", () => {
     const finishedRun = await waitForRunToLeaveActiveStates(run!.id);
     expect(finishedRun?.errorCode).not.toBe(WORKSPACE_BUSY_ERROR_CODE);
     expect(executedRunIds).toContain(run!.id);
-    expect((finishedRun?.contextSnapshot as Record<string, unknown>)?.paperclipTaskMarkdown).toContain(
+    expect((finishedRun?.contextSnapshot as Record<string, unknown>)?.wardmoteTaskMarkdown).toContain(
       `shared workspace is concurrently held by run ${fixture.holderRunId}`,
     );
     const retryRuns = await db

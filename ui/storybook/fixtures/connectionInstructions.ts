@@ -1,7 +1,7 @@
 import { defaultConnectionAgentInstructions, getConnectableAppDefinition, instanceExperimentalSettingsSchema } from "@tickernelz/wardmote-shared";
 import type { QueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queryKeys";
-import { storybookAgents } from "./paperclipData";
+import { storybookAgents } from "./wardmoteData";
 import inventory from "../../../doc/connections/memory-tool-inventory.json";
 
 export const GUIDANCE_COMPANY = "company-storybook";

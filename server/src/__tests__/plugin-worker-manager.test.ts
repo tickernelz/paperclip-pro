@@ -594,7 +594,7 @@ describe("plugin host company context guards", () => {
 describe("plugin proactive company scope (LOOA-629)", () => {
   // A proactive plugin (e.g. the chat gateway) makes company-scoped worker→host
   // calls from its own timers/loops — outside any host-issued invocation, so
-  // those calls carry no paperclipInvocationId (the fixture's "omit" mode). The
+  // those calls carry no wardmoteInvocationId (the fixture's "omit" mode). The
   // host authorizes a bounded set of companies for such proactive work; calls
   // referencing an authorized company resolve to that scope, all others stay
   // denied. Each case drives a real worker so the nested call flows through the

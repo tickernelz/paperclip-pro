@@ -99,7 +99,7 @@ interface CompanyImportOptions extends BaseClientOptions {
   agents?: string;
   collision?: CompanyCollisionMode;
   ref?: string;
-  paperclipUrl?: string;
+  wardmoteUrl?: string;
   yes?: boolean;
   dryRun?: boolean;
 }
@@ -1622,7 +1622,7 @@ export function registerCompanyCommands(program: Command): void {
               out: path.resolve(opts.out!),
               rootPath: exported.rootPath,
               filesWritten: Object.keys(exported.files).length,
-              paperclipExtensionPath: exported.paperclipExtensionPath,
+              wardmoteExtensionPath: exported.wardmoteExtensionPath,
               warningCount: exported.warnings.length,
             },
             { json: ctx.json },
@@ -1655,8 +1655,8 @@ export function registerCompanyCommands(program: Command): void {
       .option("--dry-run", "Run preview only without applying", false)
       .action(async (fromPathOrUrl: string, opts: CompanyImportOptions) => {
         try {
-          if (!opts.apiBase?.trim() && opts.paperclipUrl?.trim()) {
-            opts.apiBase = opts.paperclipUrl.trim();
+          if (!opts.apiBase?.trim() && opts.wardmoteUrl?.trim()) {
+            opts.apiBase = opts.wardmoteUrl.trim();
           }
           const ctx = resolveCommandContext(opts);
           const interactiveView = isInteractiveTerminal() && !ctx.json;

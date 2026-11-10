@@ -23,8 +23,8 @@ import {
   WARDMOTE_MCP_SERVER_NAME,
   WARDMOTE_MCP_UNAVAILABLE_CODE,
   buildWardmoteMcpServerEntry,
-  paperclipMcpEndpoint,
-  paperclipMcpToolsets,
+  wardmoteMcpEndpoint,
+  wardmoteMcpToolsets,
   probeWardmoteMcpEndpoint,
   probeWardmoteMcpServer,
   resolveWardmoteMcpServerCommand,
@@ -182,7 +182,7 @@ describe("OMP local Paperclip MCP wiring", () => {
     expect(invocation.mcpServer).toMatchObject({
       type: "http",
       enabled: true,
-      url: paperclipMcpEndpoint(invocation.env.WARDMOTE_API_URL, "core"),
+      url: wardmoteMcpEndpoint(invocation.env.WARDMOTE_API_URL, "core"),
       headers: {
         Authorization: "Bearer ${WARDMOTE_API_KEY}",
         "X-Wardmote-Run-Id": "run-mcp",
@@ -193,8 +193,8 @@ describe("OMP local Paperclip MCP wiring", () => {
   });
 
   it("passes the configured toolsets to the endpoint", async () => {
-    const invocation = await run({ paperclipMcpToolsets: " extended , core " });
-    expect(invocation.mcpServer?.url).toBe(paperclipMcpEndpoint(invocation.env.WARDMOTE_API_URL, "extended,core"));
+    const invocation = await run({ wardmoteMcpToolsets: " extended , core " });
+    expect(invocation.mcpServer?.url).toBe(wardmoteMcpEndpoint(invocation.env.WARDMOTE_API_URL, "extended,core"));
     expect(invocation.mcpServer?.url).toContain("toolsets=extended%2Ccore");
     expect(invocation.systemPrompt).toContain("toolsets: extended,core");
   });
@@ -216,7 +216,7 @@ describe("OMP local Paperclip MCP wiring", () => {
     const invocation = await run({}, "run-jwt", {
       taskId: "issue-1",
       wakeReason: "issue_commented",
-      paperclipWake: { reason: "issue_commented", issue: { id: "issue-1", identifier: "ZHA-1", title: "Big" }, comments: [{ id: "c1", body }] },
+      wardmoteWake: { reason: "issue_commented", issue: { id: "issue-1", identifier: "ZHA-1", title: "Big" }, comments: [{ id: "c1", body }] },
     });
     expect(invocation.env).not.toHaveProperty("WARDMOTE_WAKE_PAYLOAD_JSON");
     expect(invocation.env.WARDMOTE_TASK_ID).toBe("issue-1");
@@ -249,7 +249,7 @@ describe("OMP local Paperclip MCP wiring", () => {
   });
 
   it("falls back to the bundled stdio server when configured", async () => {
-    const invocation = await run({ paperclipMcpTransport: "stdio" });
+    const invocation = await run({ wardmoteMcpTransport: "stdio" });
     expect(invocation.mcpServer).toMatchObject({ type: "stdio", enabled: true });
     expect(invocation.mcpServer?.args).toEqual(expect.arrayContaining(["--toolsets", "core"]));
     expect(invocation.mcpServer?.env).toMatchObject({
@@ -262,7 +262,7 @@ describe("OMP local Paperclip MCP wiring", () => {
   });
 
   it("pins the server off and warns that the agent has no Paperclip tools", async () => {
-    const invocation = await run({ paperclipMcp: false });
+    const invocation = await run({ wardmoteMcp: false });
     expect(invocation.mcpDir).toBeTruthy();
     expect(invocation.mcpServer).toMatchObject({ enabled: false });
     expect(invocation.systemPrompt).not.toMatch(/\bpaperclip[A-Z]\w*/);
@@ -272,7 +272,7 @@ describe("OMP local Paperclip MCP wiring", () => {
     expect(probeMock).not.toHaveBeenCalled();
     expect(endpointProbeMock).not.toHaveBeenCalled();
     const logs: Array<{ stream: string; chunk: string }> = [];
-    await runResult({ paperclipMcp: false }, logs);
+    await runResult({ wardmoteMcp: false }, logs);
     expect(logs.some((entry) => entry.stream === "stderr" && entry.chunk.includes("has no Paperclip tools this run"))).toBe(true);
   });
 
@@ -320,7 +320,7 @@ describe("OMP local Paperclip MCP wiring", () => {
         command: { ...input.command, command: path.join(root, "missing-wardmote-mcp"), args: [] },
       }),
     );
-    const result = await runResult({ paperclipMcpTransport: "stdio" });
+    const result = await runResult({ wardmoteMcpTransport: "stdio" });
     expect(probeMock).toHaveBeenCalled();
     expect(result.errorCode).toBe(WARDMOTE_MCP_UNAVAILABLE_CODE);
     expect(result.errorMessage).toContain("ENOENT");
@@ -591,9 +591,9 @@ describe("OMP local Paperclip MCP wiring", () => {
         runtime: { sessionId, sessionParams: sessionId ? { sessionId, cwd: workspaceCwd } : null, sessionDisplayId: null, taskKey: null },
         config: { command: commandPath, cwd: workspaceCwd, rpcSteering: false },
         context: {
-          paperclipWake: { reason: "External chat message received", issue: { id: "issue-1", identifier: "ZHA-1", title: "OpenWA chat" } },
-          paperclipTaskMarkdown: brief,
-          paperclipTaskMarkdownCompact: brief,
+          wardmoteWake: { reason: "External chat message received", issue: { id: "issue-1", identifier: "ZHA-1", title: "OpenWA chat" } },
+          wardmoteTaskMarkdown: brief,
+          wardmoteTaskMarkdownCompact: brief,
         },
         onLog: async () => {},
         authToken: "run-jwt",
@@ -664,8 +664,8 @@ describe("Paperclip MCP server resolution", () => {
 
 describe("Paperclip MCP server entry", () => {
   it("defaults to the core toolset and omits env the run does not carry", () => {
-    expect(paperclipMcpToolsets({})).toBe("core");
-    expect(paperclipMcpToolsets({ paperclipMcpToolsets: " , " })).toBe("core");
+    expect(wardmoteMcpToolsets({})).toBe("core");
+    expect(wardmoteMcpToolsets({ wardmoteMcpToolsets: " , " })).toBe("core");
     const entry = buildWardmoteMcpServerEntry({
       enabled: true,
       transport: "stdio",

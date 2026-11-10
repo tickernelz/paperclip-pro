@@ -118,7 +118,7 @@ export function extractPullRequestNumber(value, repository) {
   return identity?.startsWith(prefix) ? Number(identity.slice(prefix.length)) : null;
 }
 
-export async function paperclipGet(path, { apiUrl, apiKey }) {
+export async function wardmoteGet(path, { apiUrl, apiKey }) {
   const response = await fetch(`${apiUrl.replace(/\/$/, "")}/api${path}`, {
     headers: { Authorization: `Bearer ${apiKey}` },
   });

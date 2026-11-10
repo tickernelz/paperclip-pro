@@ -95,5 +95,5 @@ export async function uninstallCommand(
     console.log(pc.yellow(`Left ${paths.shimPath} unchanged because it is not a Wardmote-managed shim.`));
   }
   console.log(pc.green("Removed the managed Wardmote CLI install."));
-  console.log(pc.dim(`User data was left untouched under ${paths.paperclipHome}.`));
+  console.log(pc.dim(`User data was left untouched under ${paths.wardmoteHome}.`));
 }

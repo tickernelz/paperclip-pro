@@ -25,7 +25,7 @@ import {
   storybookExecutionWorkspaces,
   storybookProjects,
   storybookIssues,
-} from "../fixtures/paperclipData";
+} from "../fixtures/wardmoteData";
 
 const COMPANY_ID = "company-storybook";
 const NEW_TASK_AGENTS = [...storybookAgents, { ...storybookAgents[2]!, id: "agent-ceo", name: "CEO", role: "ceo" }].map((agent) =>

@@ -6,7 +6,7 @@ import { agents, heartbeatRuns, issues, principalPermissionGrants } from "@ticke
 import { errorHandler } from "../middleware/index.js";
 import { accessRoutes } from "../routes/access.js";
 import { issueRoutes } from "../routes/issues.js";
-import { paperclipMcpRoutes } from "../routes/wardmote-mcp.js";
+import { wardmoteMcpRoutes } from "../routes/wardmote-mcp.js";
 import {
   describeEmbeddedPostgres,
   seedCompanyWithBoardAccess,
@@ -67,7 +67,7 @@ describeEmbeddedPostgres("server-hosted Wardmote MCP endpoint", () => {
       req.actor = actor;
       next();
     });
-    api.use(paperclipMcpRoutes(ctx.db));
+    api.use(wardmoteMcpRoutes(ctx.db));
     api.use(issueRoutes(ctx.db, {} as never));
     api.use(
       accessRoutes(ctx.db, {

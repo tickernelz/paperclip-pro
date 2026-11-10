@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { paperclipChatFilePreparationDelivery } from "./chat-file-delivery.js";
+import { wardmoteChatFilePreparationDelivery } from "./chat-file-delivery.js";
 import { renderWardmoteWakePrompt } from "./server-utils.js";
 
 function chatWake(provider: unknown) {
@@ -22,7 +22,7 @@ describe("chat file preparation delivery contract", () => {
   it.each(["github", "microsoft-teams", "speko"])(
     "describes %s as task-only, never a native attachment",
     (provider) => {
-      const delivery = paperclipChatFilePreparationDelivery(provider);
+      const delivery = wardmoteChatFilePreparationDelivery(provider);
       expect(delivery).toMatchObject({
         provider,
         mode: "paperclip_task_only",
@@ -43,7 +43,7 @@ describe("chat file preparation delivery contract", () => {
   it.each(["slack", "discord", "telegram"])(
     "describes %s attachment capability without claiming delivery",
     (provider) => {
-      const delivery = paperclipChatFilePreparationDelivery(provider);
+      const delivery = wardmoteChatFilePreparationDelivery(provider);
       expect(delivery).toMatchObject({
         provider,
         mode: "provider_attachment",
@@ -73,7 +73,7 @@ describe("chat file preparation delivery contract", () => {
   it.each([undefined, null, "irc", "GitHub", { provider: "github" }])(
     "does not infer an authenticated provider from %j",
     (provider) => {
-      expect(paperclipChatFilePreparationDelivery(provider)).toMatchObject({
+      expect(wardmoteChatFilePreparationDelivery(provider)).toMatchObject({
         provider: null,
         mode: "unknown",
         providerDeliveryConfirmed: false,
@@ -104,7 +104,7 @@ describe("chat file preparation delivery contract", () => {
             { resumedSession, nativeWakeReaderAvailable: true },
           );
           expect(prompt).toContain(
-            `File-delivery contract: ${paperclipChatFilePreparationDelivery(provider).guidance}`,
+            `File-delivery contract: ${wardmoteChatFilePreparationDelivery(provider).guidance}`,
           );
         }
       }

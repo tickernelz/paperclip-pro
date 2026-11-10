@@ -3,7 +3,7 @@ import { WardmoteApiClient } from "./client.js";
 import { hasManagementAuthority, resolveToolsets } from "./config.js";
 import { createGeneratedToolDefinitions, generatedToolSpecs } from "./generated-tools.js";
 import { createToolDefinitions } from "./tools.js";
-import { paperclipToolCatalog } from "./catalog.js";
+import { wardmoteToolCatalog } from "./catalog.js";
 import { resolveManagementAuthority } from "./index.js";
 import { CURATED_OPERATIONS } from "./tool-overrides.js";
 
@@ -295,7 +295,7 @@ describe("generated Paperclip API tools", () => {
   });
 
   it("lists core tools without JSON Schema validation metadata", () => {
-    const { listing } = paperclipToolCatalog(makeClient(), ["core"], false);
+    const { listing } = wardmoteToolCatalog(makeClient(), ["core"], false);
     const serialized = JSON.stringify(listing.tools);
     expect(serialized).not.toContain('"$schema":');
     expect(Buffer.byteLength(serialized)).toBeLessThan(49_000);

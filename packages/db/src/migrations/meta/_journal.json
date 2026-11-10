@@ -2528,6 +2528,13 @@
       "when": 1794296492924,
       "tag": "0362_wardmote_runner_adapter_type",
       "breakpoints": true
+    },
+    {
+      "idx": 363,
+      "version": "7",
+      "when": 1794302163376,
+      "tag": "0363_wardmote_camel_keys",
+      "breakpoints": true
     }
   ]
 }

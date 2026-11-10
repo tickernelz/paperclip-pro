@@ -6,7 +6,7 @@ import { BlockedInboxView } from "@/components/BlockedInboxView";
 import { BlockedReasonChip } from "@/components/BlockedReasonChip";
 import { defaultIssueFilterState } from "@/lib/issue-filters";
 import { queryKeys } from "@/lib/queryKeys";
-import { storybookIssues } from "../fixtures/paperclipData";
+import { storybookIssues } from "../fixtures/wardmoteData";
 
 const companyId = "company-storybook";
 const blockedViewDefaults = {

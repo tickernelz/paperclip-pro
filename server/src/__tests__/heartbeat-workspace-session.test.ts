@@ -1958,9 +1958,9 @@ function sessionParamsWithConfigMetadata(
 
 describe("effective run session config freshness", () => {
   it("resets legacy sessions after connection instructions change or disappear", async () => {
-    const first = await buildSessionConfigMetadata({ effectiveAdapterConfig: { paperclipConnectionInstructions: { text: "Use the handbook.", digest: "before" } } });
+    const first = await buildSessionConfigMetadata({ effectiveAdapterConfig: { wardmoteConnectionInstructions: { text: "Use the handbook.", digest: "before" } } });
     for (const instructions of [null, { text: "Use the updated handbook.", digest: "after" }]) {
-      const next = await buildSessionConfigMetadata({ effectiveAdapterConfig: { paperclipConnectionInstructions: instructions } });
+      const next = await buildSessionConfigMetadata({ effectiveAdapterConfig: { wardmoteConnectionInstructions: instructions } });
       expect(resolveTaskSessionConfigFreshness({ hasTaskSession: true, configuredModel: "gpt-5.4-mini", taskSessionParams: sessionParamsWithConfigMetadata(first), configMetadata: next }).reset).toBe(true);
     }
   });
@@ -2279,13 +2279,13 @@ describe("effective run session config freshness", () => {
       const decision = await freshness({
         adapterType: "omp_local",
         first: ompConfig({
-          paperclipRuntimeSkills: [connectorEntry("/assets/bundles/aaa")],
-          paperclipConnectorSkillDigest: "digest-a",
+          wardmoteRuntimeSkills: [connectorEntry("/assets/bundles/aaa")],
+          wardmoteConnectorSkillDigest: "digest-a",
           wardmoteSkillSync: { desiredSkillEntries: [{ key: "connector-openwa", versionId: null }] },
         }),
         next: ompConfig({
-          paperclipRuntimeSkills: [connectorEntry("/assets/bundles/bbb")],
-          paperclipConnectorSkillDigest: "digest-b",
+          wardmoteRuntimeSkills: [connectorEntry("/assets/bundles/bbb")],
+          wardmoteConnectorSkillDigest: "digest-b",
           wardmoteSkillSync: { desiredSkillEntries: [] },
         }),
       });
@@ -2914,7 +2914,7 @@ describe("stripWardmoteSessionMetadataFromSessionParams", () => {
       stripWardmoteSessionMetadataFromSessionParams({
         sessionId: "thread-1",
         cwd: "/tmp/project",
-        paperclipAiCredentialIdentity: "grant:user:generation",
+        wardmoteAiCredentialIdentity: "grant:user:generation",
         __paperclipConfiguredModel: "gpt-5.4-mini",
         __paperclipConfigFingerprint: "v1:sha256:abc",
         __paperclipConfigFingerprintVersion: 1,
@@ -2931,7 +2931,7 @@ describe("stripWardmoteSessionMetadataFromSessionParams", () => {
 
 describe("isTaskSessionCredentialCompatible", () => {
   it("retains the server-owned identity even when the Codex codec drops it", () => {
-    const saved = { sessionId: "thread-1", paperclipAiCredentialIdentity: "grant:user:generation" };
+    const saved = { sessionId: "thread-1", wardmoteAiCredentialIdentity: "grant:user:generation" };
     const decoded = codexSessionCodec.deserialize(saved);
     expect(decoded).toEqual({ sessionId: "thread-1" });
     expect(isTaskSessionCredentialCompatible(saved, "grant:user:generation")).toBe(true);
@@ -2941,9 +2941,9 @@ describe("isTaskSessionCredentialCompatible", () => {
     undefined,
     null,
     {},
-    { paperclipAiCredentialIdentity: "other-grant:user:generation" },
-    { paperclipAiCredentialIdentity: "grant:other-user:generation" },
-    { paperclipAiCredentialIdentity: "grant:user:new-generation" },
+    { wardmoteAiCredentialIdentity: "other-grant:user:generation" },
+    { wardmoteAiCredentialIdentity: "grant:other-user:generation" },
+    { wardmoteAiCredentialIdentity: "grant:user:new-generation" },
   ])("requires the same saved grant, responsible user, and credential generation: %j", (saved) => {
     expect(isTaskSessionCredentialCompatible(saved, "grant:user:generation")).toBe(false);
   });
@@ -3025,7 +3025,7 @@ describe("comment wake batching", () => {
         wakeReason: "issue_commented",
         wakeCommentId: "comment-1",
         wakeCommentIds: ["comment-1"],
-        paperclipWake: {
+        wardmoteWake: {
           latestCommentId: "comment-1",
         },
       },
@@ -3039,7 +3039,7 @@ describe("comment wake batching", () => {
     expect(merged.wakeCommentIds).toEqual(["comment-1", "comment-2"]);
     expect(merged.commentId).toBe("comment-2");
     expect(merged.wakeCommentId).toBe("comment-2");
-    expect(merged.paperclipWake).toBeUndefined();
+    expect(merged.wardmoteWake).toBeUndefined();
   });
 
   it("keeps forceFreshSession sticky once any coalesced wake requests it", () => {

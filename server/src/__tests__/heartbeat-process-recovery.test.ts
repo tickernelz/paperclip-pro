@@ -249,7 +249,7 @@ import { WardmoteControlPlanePort } from "../services/native-runtime/paperclip-c
 import { finalizeNativeRun } from "../services/native-runtime/native-run-finalizer.js";
 import { recordNativeAttentionAssessment } from "../services/native-runtime/work-assessments.js";
 import { routeNativeAttention } from "../services/native-runtime/native-interaction-bridge.js";
-import * as paperclipRunner from "../vendor/wardmote-runner/index.js";
+import * as wardmoteRunner from "../vendor/wardmote-runner/index.js";
 import {
   CONTROL_PLANE_CONFORMANCE_OPEN,
   CONTROL_PLANE_CONFORMANCE_RESULT,
@@ -2554,7 +2554,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
           outcome === "late_callback"
             ? vi
                 .spyOn(
-                  paperclipRunner,
+                  wardmoteRunner,
                   "drainRetainedRunnerdMaintenanceOperations",
                 )
                 .mockImplementation(() => lateCallback)
@@ -14034,7 +14034,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
 
   it("lets a child waiting for the shared workspace run before recovering its lead", async () => {
     const { companyId, agentId, issueId, runId } = await seedStrandedIssueFixture({ status: "in_progress", runStatus: "succeeded", livenessState: "advanced" });
-    await db.update(heartbeatRuns).set({ contextSnapshot: { issueId, paperclipWorkspace: { mode: "shared_workspace" } } }).where(eq(heartbeatRuns.id, runId));
+    await db.update(heartbeatRuns).set({ contextSnapshot: { issueId, wardmoteWorkspace: { mode: "shared_workspace" } } }).where(eq(heartbeatRuns.id, runId));
     const projectId = randomUUID(), workspaceId = randomUUID(), childId = randomUUID(), workerId = randomUUID();
     await db.insert(projects).values({ id: projectId, companyId, name: "Shared project" });
     await db.insert(projectWorkspaces).values({ id: workspaceId, companyId, projectId, name: "Primary", sourceType: "local_path", cwd: "/tmp/recovery-shared", isPrimary: true });
@@ -14055,7 +14055,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
 
   it("recovers a shared-workspace lead whose only open child is blocked by the lead", async () => {
     const { companyId, agentId, issueId, runId } = await seedStrandedIssueFixture({ status: "in_progress", runStatus: "succeeded", livenessState: "advanced" });
-    await db.update(heartbeatRuns).set({ contextSnapshot: { issueId, paperclipWorkspace: { mode: "shared_workspace" } } }).where(eq(heartbeatRuns.id, runId));
+    await db.update(heartbeatRuns).set({ contextSnapshot: { issueId, wardmoteWorkspace: { mode: "shared_workspace" } } }).where(eq(heartbeatRuns.id, runId));
     const projectId = randomUUID(), workspaceId = randomUUID(), childId = randomUUID(), workerId = randomUUID();
     await db.insert(projects).values({ id: projectId, companyId, name: "Shared project" });
     await db.insert(projectWorkspaces).values({ id: workspaceId, companyId, projectId, name: "Primary", sourceType: "local_path", cwd: "/tmp/recovery-shared", isPrimary: true });
@@ -14074,7 +14074,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
 
   it("resumes a shared-workspace lead when its child needs review", async () => {
     const { companyId, agentId, issueId, runId } = await seedStrandedIssueFixture({ status: "in_progress", runStatus: "succeeded", livenessState: "advanced" });
-    await db.update(heartbeatRuns).set({ contextSnapshot: { issueId, paperclipWorkspace: { mode: "shared_workspace" } } }).where(eq(heartbeatRuns.id, runId));
+    await db.update(heartbeatRuns).set({ contextSnapshot: { issueId, wardmoteWorkspace: { mode: "shared_workspace" } } }).where(eq(heartbeatRuns.id, runId));
     const projectId = randomUUID(), workspaceId = randomUUID(), childId = randomUUID(), workerId = randomUUID();
     await db.insert(projects).values({ id: projectId, companyId, name: "Shared project" });
     await db.insert(projectWorkspaces).values({ id: workspaceId, companyId, projectId, name: "Primary", sourceType: "local_path", cwd: "/tmp/recovery-shared", isPrimary: true });
@@ -15054,10 +15054,10 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
             contextSnapshot: {
               issueId: fixture.issueId,
               source: "chat:slack",
-              paperclipHarnessCheckedOut: true,
+              wardmoteHarnessCheckedOut: true,
               wakeCommentId: fixture.commentId,
               wakeCommentIds: [fixture.commentId],
-              paperclipWake: {
+              wardmoteWake: {
                 externalChatProvider: "slack",
                 checkedOutByHarness: true,
                 issue: { id: fixture.issueId },
@@ -16616,7 +16616,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     await db.update(heartbeatRuns).set({ runtimeMode: "native", nativeIssueId: f.issueId, nativeSessionId: f.runId,
       completionContractId: contractId, completionContractSha256: contractSha, runnerInstanceId: instance,
       runnerProfileJson: { nativeExecutionInput: { binding: { companyId: f.companyId, issueId: f.issueId, runId: f.runId, agentId: f.agentId }, provider: { kind: "acpx", agent: "cursor", model, mode: "plan", permissionMode: "approve-all",
-        profile: paperclipRunner.resolveQualifiedAcpxProfile("cursor", model) }, session: { normalizedSessionId: f.runId },
+        profile: wardmoteRunner.resolveQualifiedAcpxProfile("cursor", model) }, session: { normalizedSessionId: f.runId },
         completionContract: { id: contractId, sha256: contractSha, contract } } } }).where(eq(heartbeatRuns.id, f.runId));
     const planId = `plan-${"a".repeat(64)}`;
     const questionSet = { schema: "paperclip.question_set.v1", title: "Native plan", description: "Exact accepted revision", questions: [{ id: planId, prompt: "Proceed?", required: true,
@@ -16640,7 +16640,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     ];
     for (const [index, event] of events.entries()) await port.appendEvent({ schema: "paperclip.prp.event.v1", sourceEventId: `${instance}:${sourceSequenceOffset + index + 1}`, sourceSeq: sourceSequenceOffset + index + 1,
       sourceInstanceId: instance, sourceKind: "runner", runId: f.runId, normalizedSessionId: f.runId, turnId: "turn", schemaVersion: 1, priority: 0,
-      emittedAt: new Date().toISOString(), ...event } as paperclipRunner.PrpEvent);
+      emittedAt: new Date().toISOString(), ...event } as wardmoteRunner.PrpEvent);
     const proof = await readNativePlanWait(db, f);
     expect(proof).not.toBeNull();
     const result = semanticFinish ? { ...proof!.result, reportedWorkDisposition: "done" as const, summary: "Explicit semantic finish wins", continuation: undefined,
@@ -16657,8 +16657,8 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     expect(await db.select().from(statusDecisions).where(eq(statusDecisions.runId, f.runId))).toEqual([expect.objectContaining({ reasonCode: "native_plan_accepted_waiting_for_continuation", toStatus: "in_progress" })]);
     expect(await db.select().from(statusDecisionEffects).where(eq(statusDecisionEffects.issueId, f.issueId))).toEqual([expect.objectContaining({ effectKind: "issue_status_projection", targetType: "issue", deliveryState: "delivered" })]);
     expect(await db.select().from(issueComments).where(eq(issueComments.createdByRunId, f.runId))).toEqual([expect.objectContaining({ body: expect.stringContaining("next message") })]);
-    const current = paperclipRunner.resolveQualifiedAcpxProfile("cursor", "gpt-5.6-luna[context=272k,reasoning=medium,fast=false]");
-    const resolver = vi.spyOn(paperclipRunner, "resolveQualifiedAcpxProfile").mockReturnValue({ ...current,
+    const current = wardmoteRunner.resolveQualifiedAcpxProfile("cursor", "gpt-5.6-luna[context=272k,reasoning=medium,fast=false]");
+    const resolver = vi.spyOn(wardmoteRunner, "resolveQualifiedAcpxProfile").mockReturnValue({ ...current,
       agentProfileVersion: current.agentProfileVersion + 1, commandDigest: `sha256:${"b".repeat(64)}` });
     try {
       expect(await readNativePlanWait(db, f)).toBeNull(); // Old profile cannot create a new wait.

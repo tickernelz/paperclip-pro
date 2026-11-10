@@ -98,7 +98,7 @@ function buildExportPreviewResult() {
     fileInventory: [],
     counts: { files: 1, agents: 0, skills: 0, projects: 0, issues: 0 },
     warnings: [],
-    paperclipExtensionPath: ".paperclip.yaml",
+    wardmoteExtensionPath: ".paperclip.yaml",
   };
 }
 

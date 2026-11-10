@@ -1351,7 +1351,7 @@ fn durable_backend_closes_when_identity_rollover_resumes_unowned_work() {
     assert!(events.iter().any(|event| {
         event.event_type == "harness.diagnostic"
             && event.payload["code"] == "provider_turn_identity_invalid"
-            && event.payload["paperclipAccepted"] == false
+            && event.payload["wardmoteAccepted"] == false
             && event.payload["providerAccepted"] == true
     }));
 

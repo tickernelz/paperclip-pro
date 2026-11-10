@@ -62,8 +62,8 @@ const BUILT_IN_MARKER_UNIQUE_INDEX = "agents_company_built_in_agent_key_unique_i
 // test needs to simulate legacy duplicates that predate the constraint.
 const BUILT_IN_MARKER_UNIQUE_INDEX_DDL = `
   CREATE UNIQUE INDEX IF NOT EXISTS "${BUILT_IN_MARKER_UNIQUE_INDEX}"
-    ON "agents" ("company_id", ((metadata -> 'paperclipBuiltInAgent' ->> 'key')))
-    WHERE (metadata -> 'paperclipBuiltInAgent' ->> 'key') IS NOT NULL
+    ON "agents" ("company_id", ((metadata -> 'wardmoteBuiltInAgent' ->> 'key')))
+    WHERE (metadata -> 'wardmoteBuiltInAgent' ->> 'key') IS NOT NULL
       AND status <> 'terminated'
 `;
 
@@ -1006,7 +1006,7 @@ describeEmbeddedPostgres("built-in agents", () => {
       id: builtIn.agentId,
       metadata: {
         note: "allowed",
-        paperclipBuiltInAgent: { key: "briefs", featureKeys: ["briefs"] },
+        wardmoteBuiltInAgent: { key: "briefs", featureKeys: ["briefs"] },
       },
     });
   });

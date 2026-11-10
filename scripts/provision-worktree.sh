@@ -499,7 +499,7 @@ function resolveRuntimeLikePath(value, configPath) {
 
 async function main() {
   const worktreeName = process.env.WORKTREE_NAME;
-  const paperclipDir = process.env.WARDMOTE_DIR;
+  const wardmoteDir = process.env.WARDMOTE_DIR;
   const sourceConfigPath = process.env.SOURCE_CONFIG_PATH;
   const sourceEnvPath = process.env.SOURCE_ENV_PATH;
   const worktreeHome = path.resolve(expandHomePrefix(nonEmpty(process.env.WARDMOTE_WORKTREES_DIR) ?? "~/.paperclip-worktrees"));
@@ -508,8 +508,8 @@ async function main() {
     throw new Error("WORKTREE_INSTANCE_ID is missing or unsafe");
   }
   const instanceRoot = path.resolve(worktreeHome, "instances", instanceId);
-  const configPath = path.resolve(paperclipDir, "config.json");
-  const envPath = path.resolve(paperclipDir, ".env");
+  const configPath = path.resolve(wardmoteDir, "config.json");
+  const envPath = path.resolve(wardmoteDir, ".env");
 
   let sourceConfig = null;
   if (sourceConfigPath && fs.existsSync(sourceConfigPath)) {

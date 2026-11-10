@@ -199,7 +199,7 @@ describe("native same-conversation historical attachment reading", () => {
       companyId,
       endpointId,
       principalId,
-      paperclipUserId: userId,
+      wardmoteUserId: userId,
       status: "linked",
     });
     await db.insert(companyMemberships).values({
@@ -295,10 +295,10 @@ describe("native same-conversation historical attachment reading", () => {
       .set({
         contextSnapshot: {
           source: "chat:discord",
-          paperclipHarnessCheckedOut: true,
+          wardmoteHarnessCheckedOut: true,
           wakeCommentIds: [currentCommentId],
           commentId: currentCommentId,
-          paperclipWake: {
+          wardmoteWake: {
             reason: "External chat message received",
             externalChatProvider: "discord",
             checkedOutByHarness: true,

@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queryKeys";
 import { TaskChatThread } from "@/components/TaskChatThread";
 import { pendingAskUserQuestionsInteraction } from "@/fixtures/issueThreadInteractionFixtures";
-import { storybookAgentMap } from "./paperclipData";
+import { storybookAgentMap } from "./wardmoteData";
 
 export const question: AskUserQuestionsInteraction = {
   ...pendingAskUserQuestionsInteraction,

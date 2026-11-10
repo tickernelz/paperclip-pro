@@ -403,7 +403,7 @@ Per-link execution posture:
 - `Idempotency key` for inbound effects — `(connectorInstanceId, externalTaskId, eventId)` where
   the provider supplies event IDs, else a content hash of the normalized change. Replayed webhooks
   MUST NOT duplicate issues or comments.
-- `Idempotency key` for outbound effects — `(linkId, effectKind, paperclipSourceId)` (e.g. the
+- `Idempotency key` for outbound effects — `(linkId, effectKind, wardmoteSourceId)` (e.g. the
   Wardmote comment ID being mirrored). Retried jobs MUST NOT double-post.
 - State names compare after trim + lowercase.
 - Labels normalize to trimmed, lowercased strings.
@@ -442,7 +442,7 @@ Write operations are OPTIONAL per connector and gated by policy (Section 10):
 - `updateTaskState(externalTaskId, targetStateName)`
 - `postComment(externalTaskId, body, attribution) -> externalCommentId`
 - `setFields(externalTaskId, partial fields per fieldPolicy)`
-- `setBacklink(externalTaskId, paperclipUrl)`
+- `setBacklink(externalTaskId, wardmoteUrl)`
   - Via link field, custom field, or pinned comment — provider-dependent.
 
 A connector MUST declare a static capability set (readable by host UI) enumerating which
@@ -854,7 +854,7 @@ Wardmote value.
 ### 11.2 Conflict Entry
 
 Fields: `linkId`, `kind` (`field`, `deletion`, `closure`, `routing`, `policy`), `field` (when
-applicable), `baseValue`, `externalValue`, `paperclipValue`, `detectedAt`, `actors` (both sides
+applicable), `baseValue`, `externalValue`, `wardmoteValue`, `detectedAt`, `actors` (both sides
 where known), `status` (`open`, `resolved`, `dismissed`), `resolution`.
 
 ### 11.3 Resolution Actions

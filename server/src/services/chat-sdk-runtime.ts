@@ -956,12 +956,12 @@ interface TeamsAdapterInternals {
   getIncomingUser?: (...args: unknown[]) => Promise<unknown>;
   getUser?: (...args: unknown[]) => Promise<unknown>;
   openDM?: (userId: string) => Promise<unknown>;
-  paperclipRecordAcceptedActivity?: (activity: unknown) => Promise<void>;
-  paperclipRecordThreadServiceUrl?: (
+  wardmoteRecordAcceptedActivity?: (activity: unknown) => Promise<void>;
+  wardmoteRecordThreadServiceUrl?: (
     threadId: string,
     serviceUrl: unknown,
   ) => Promise<void>;
-  paperclipSendFileCard?: (
+  wardmoteSendFileCard?: (
     threadId: string,
     kind: "consent" | "file_info",
     card: unknown,
@@ -1088,12 +1088,12 @@ export function scopeMicrosoftTeamsEgress(
   // members or Graph APIs before Chat dispatches to Paperclip's reach and
   // tenant checks. Keep authenticated but unadmitted events observationally
   // inert. Accepted activities explicitly persist the minimum routing context
-  // through paperclipRecordAcceptedActivity below.
+  // through wardmoteRecordAcceptedActivity below.
   teams.cacheUserContext = () => {};
   teams.getIncomingUser = async () => null;
   teams.getUser = async () => null;
 
-  teams.paperclipRecordAcceptedActivity = async (activityValue: unknown) => {
+  teams.wardmoteRecordAcceptedActivity = async (activityValue: unknown) => {
     if (!isRecord(activityValue)) return;
     const from = isRecord(activityValue.from) ? activityValue.from : null;
     const conversation = isRecord(activityValue.conversation)
@@ -1257,7 +1257,7 @@ export function scopeMicrosoftTeamsEgress(
         "file-consent App hooks are unavailable",
       );
     }
-    teams.paperclipSendFileCard = async (threadId, kind, input) => {
+    teams.wardmoteSendFileCard = async (threadId, kind, input) => {
       const card =
         kind === "consent"
           ? parseTeamsFileConsentCard(input)
@@ -1313,7 +1313,7 @@ export function scopeMicrosoftTeamsEgress(
     };
   }
 
-  teams.paperclipRecordThreadServiceUrl = async (
+  teams.wardmoteRecordThreadServiceUrl = async (
     threadId: string,
     serviceUrlValue: unknown,
   ) => {
@@ -1356,7 +1356,7 @@ export function scopeMicrosoftTeamsEgress(
     return await withServiceUrl(serviceUrl, async () => {
       const threadId = await Reflect.apply(originalOpenDM, teams, [userId]);
       if (typeof threadId === "string") {
-        await teams.paperclipRecordThreadServiceUrl!(threadId, serviceUrl);
+        await teams.wardmoteRecordThreadServiceUrl!(threadId, serviceUrl);
       }
       return threadId;
     });
@@ -1789,7 +1789,7 @@ async function telegramWebhookUpdateId(
  * deliberately bypassed while subscriptions and all other adapter state stay
  * durable.
  */
-function paperclipAuthoritativeIngressState(
+function wardmoteAuthoritativeIngressState(
   state: StateAdapter,
   recordFailure: (error: unknown) => void,
 ): StateAdapter {
@@ -2198,7 +2198,7 @@ export class ChatSdkEndpointRuntime {
       persistence: options.persistence,
       maxValueBytes: options.maxStateValueBytes,
     });
-    const state = paperclipAuthoritativeIngressState(durableState, (error) => {
+    const state = wardmoteAuthoritativeIngressState(durableState, (error) => {
       const attempt = this.webhookIngress.getStore();
       if (attempt && attempt.callbackError === undefined) {
         attempt.callbackError = error;
@@ -2620,7 +2620,7 @@ export class ChatSdkEndpointRuntime {
   ): Promise<void> {
     if (this.provider !== "microsoft-teams") return;
     const teams = this.adapter as unknown as TeamsAdapterInternals;
-    const recorder = teams.paperclipRecordThreadServiceUrl;
+    const recorder = teams.wardmoteRecordThreadServiceUrl;
     if (typeof recorder !== "function") {
       throw new TeamsAdapterCompatibilityError(
         "durable route recorder is unavailable",
@@ -2628,7 +2628,7 @@ export class ChatSdkEndpointRuntime {
     }
     await recorder.call(this.adapter, threadId, serviceUrl);
     if (raw !== undefined) {
-      const acceptedActivityRecorder = teams.paperclipRecordAcceptedActivity;
+      const acceptedActivityRecorder = teams.wardmoteRecordAcceptedActivity;
       if (typeof acceptedActivityRecorder !== "function") {
         throw new TeamsAdapterCompatibilityError(
           "durable accepted-activity recorder is unavailable",
@@ -2660,13 +2660,13 @@ export class ChatSdkEndpointRuntime {
     const teams = this.adapter as unknown as TeamsAdapterInternals;
     if (
       !this.teamsFileConsentEnabled ||
-      typeof teams.paperclipSendFileCard !== "function"
+      typeof teams.wardmoteSendFileCard !== "function"
     ) {
       throw new TeamsAdapterCompatibilityError(
         "file-consent runtime is not enabled",
       );
     }
-    return await teams.paperclipSendFileCard(threadId, kind, card);
+    return await teams.wardmoteSendFileCard(threadId, kind, card);
   }
 
   channel(channelId: string): Channel {

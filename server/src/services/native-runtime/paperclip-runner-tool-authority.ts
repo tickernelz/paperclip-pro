@@ -29,7 +29,7 @@ import { connectionIntentService } from "../connection-intents.js";
 import { RUNTIME_CONNECTION_TOOL_DEFINITIONS } from "../connection-tool-definitions.js";
 import { connectionsSearchInputSchema, connectionRequestInputSchema, CONNECTION_INTENT_AGENT_GUIDANCE } from "@tickernelz/wardmote-shared";
 import { createHash, randomUUID } from "node:crypto";
-import { paperclipChatFilePreparationDelivery } from "@tickernelz/wardmote-adapter-utils/chat-file-delivery";
+import { wardmoteChatFilePreparationDelivery } from "@tickernelz/wardmote-adapter-utils/chat-file-delivery";
 import {
   isWardmoteExternalChatContractTurn,
   normalizeWardmoteWakePayload,
@@ -373,7 +373,7 @@ export class WardmoteRunnerToolAuthority {
       if (!(this.binding.connectorAssignments ?? []).some((assignment) => assignment.tools.some((tool) => tool.name === call.tool))) throw forbidden("Connector tool is not available to this run");
       const { run } = await this.#boundContext();
       const snapshot = record(run.contextSnapshot);
-      if (call.tool.startsWith("agentmail_") && (isWardmoteExternalChatContractTurn(snapshot.paperclipWake) || String(snapshot.source ?? "").startsWith("chat:") || snapshot.paperclipExternalChatQuestionResponse)) throw forbidden("Restricted chat runs cannot use email actions");
+      if (call.tool.startsWith("agentmail_") && (isWardmoteExternalChatContractTurn(snapshot.wardmoteWake) || String(snapshot.source ?? "").startsWith("chat:") || snapshot.wardmoteExternalChatQuestionResponse)) throw forbidden("Restricted chat runs cannot use email actions");
       return executeConnectorTool(this.db, this.binding, call.tool, call.arguments);
     }
     if (RUNTIME_CONNECTION_TOOL_DEFINITIONS.some((tool) => tool.name === call.tool)) {
@@ -2009,7 +2009,7 @@ export class WardmoteRunnerToolAuthority {
           operationId === "register_deliverable" ||
           operationId === REUSE_CHAT_ATTACHMENT_TOOL_NAME;
         const snapshot = record(context.run.contextSnapshot);
-        const wake = snapshot.paperclipWake;
+        const wake = snapshot.wardmoteWake;
         const normalized = normalizeWardmoteWakePayload(wake);
         let provider =
           normalized?.issue?.id === this.binding.issueId &&
@@ -2019,7 +2019,7 @@ export class WardmoteRunnerToolAuthority {
         if (
           isFilePreparation &&
           snapshot.source === "issue.interaction.respond" &&
-          snapshot.paperclipExternalChatQuestionResponse
+          snapshot.wardmoteExternalChatQuestionResponse
         ) {
           // Answer text is invocation-only, so the persisted wake cannot use
           // the prompt-shape question predicate. Resolve the durable answer
@@ -2053,7 +2053,7 @@ export class WardmoteRunnerToolAuthority {
           if (!isFilePreparation) return result;
           return {
             ...record(result),
-            fileDelivery: paperclipChatFilePreparationDelivery(provider),
+            fileDelivery: wardmoteChatFilePreparationDelivery(provider),
           };
         };
         const resultJson = record(context.run.resultJson);

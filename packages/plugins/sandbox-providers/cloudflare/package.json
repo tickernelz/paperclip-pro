@@ -31,7 +31,7 @@
     "dist",
     "bridge-template"
   ],
-  "paperclipPlugin": {
+  "wardmotePlugin": {
     "manifest": "./dist/manifest.js",
     "worker": "./dist/worker.js"
   },

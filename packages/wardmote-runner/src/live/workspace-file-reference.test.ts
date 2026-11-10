@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   discoverWardmoteWorkspaceFileReferences,
-  paperclipWorkspaceFileReferencesFromText,
+  wardmoteWorkspaceFileReferencesFromText,
 } from "./workspace-file-reference.js";
 
 describe("workspace file references", () => {
@@ -37,7 +37,7 @@ describe("workspace file references", () => {
   });
 
   it("rejects external URLs and paths outside the authorized workspace", () => {
-    const references = paperclipWorkspaceFileReferencesFromText(
+    const references = wardmoteWorkspaceFileReferencesFromText(
       "/workspace",
       "[external](https://example.com/file.md) [outside](/etc/passwd) [safe](docs/safe.md)",
       "turn-1",

@@ -1,20 +1,20 @@
 import { describe, expect, it } from "vitest";
 import {
-  paperclipAccessGuidance,
-  paperclipAccessMode,
-  paperclipMcpEndpoint,
-  paperclipMcpHttpHeaders,
-  paperclipMcpToolsets,
+  wardmoteAccessGuidance,
+  wardmoteAccessMode,
+  wardmoteMcpEndpoint,
+  wardmoteMcpHttpHeaders,
+  wardmoteMcpToolsets,
   renderWardmoteMcpConfig,
 } from "./wardmote-mcp.js";
 import {
-  paperclipMcpHttpTarget,
+  wardmoteMcpHttpTarget,
   renderWardmoteGeminiSettings,
   renderWardmoteGrokConfig,
   renderWardmoteOpenCodeConfig,
 } from "./wardmote-mcp-mount.js";
 import {
-  paperclipAgentPromptTemplate,
+  wardmoteAgentPromptTemplate,
   renderWardmoteWakePrompt,
 } from "./server-utils.js";
 
@@ -26,31 +26,31 @@ const runEnv = {
   WARDMOTE_RUN_ID: "run-7",
 };
 
-describe("paperclipAccessMode", () => {
+describe("wardmoteAccessMode", () => {
   it("arms MCP only when the toggle is on and the run carries a reachable credential", () => {
-    expect(paperclipAccessMode({}, runEnv)).toBe("mcp");
-    expect(paperclipAccessMode({ paperclipMcp: false }, runEnv)).toBe("rest");
-    expect(paperclipAccessMode({ paperclipMcp: "false" }, runEnv)).toBe("rest");
-    expect(paperclipAccessMode({}, { ...runEnv, WARDMOTE_API_KEY: "  " })).toBe("rest");
-    expect(paperclipAccessMode({}, { ...runEnv, WARDMOTE_API_URL: undefined })).toBe("rest");
+    expect(wardmoteAccessMode({}, runEnv)).toBe("mcp");
+    expect(wardmoteAccessMode({ wardmoteMcp: false }, runEnv)).toBe("rest");
+    expect(wardmoteAccessMode({ wardmoteMcp: "false" }, runEnv)).toBe("rest");
+    expect(wardmoteAccessMode({}, { ...runEnv, WARDMOTE_API_KEY: "  " })).toBe("rest");
+    expect(wardmoteAccessMode({}, { ...runEnv, WARDMOTE_API_URL: undefined })).toBe("rest");
   });
 });
 
-describe("paperclipAgentPromptTemplate", () => {
+describe("wardmoteAgentPromptTemplate", () => {
   it("names the MCP tools only on the mcp surface and the REST routes otherwise", () => {
-    const mcp = paperclipAgentPromptTemplate("mcp");
+    const mcp = wardmoteAgentPromptTemplate("mcp");
     expect(mcp).toContain("wardmoteAddComment");
     expect(mcp).toContain("wardmoteSuggestTasks");
 
-    const rest = paperclipAgentPromptTemplate("rest");
+    const rest = wardmoteAgentPromptTemplate("rest");
     expect(rest).not.toMatch(TOOL_NAME_RE);
     expect(rest).toContain("POST /api/issues/$WARDMOTE_TASK_ID/interactions");
     expect(rest).toContain("PATCH /api/issues/$WARDMOTE_TASK_ID");
   });
 
   it("keeps the execution contract identical apart from the access-surface lines", () => {
-    const mcpLines = paperclipAgentPromptTemplate("mcp").split("\n");
-    const restLines = paperclipAgentPromptTemplate("rest").split("\n");
+    const mcpLines = wardmoteAgentPromptTemplate("mcp").split("\n");
+    const restLines = wardmoteAgentPromptTemplate("rest").split("\n");
     expect(restLines).toHaveLength(mcpLines.length);
     const differing = mcpLines.filter((line, index) => line !== restLines[index]);
     expect(differing).toHaveLength(2);
@@ -66,19 +66,19 @@ describe("renderWardmoteWakePrompt", () => {
 
   it("points the already-checked-out note at the surface the run actually has", () => {
     expect(renderWardmoteWakePrompt(wake)).toContain("`wardmoteCheckoutIssue`");
-    const rest = renderWardmoteWakePrompt(wake, { paperclipAccess: "rest" });
+    const rest = renderWardmoteWakePrompt(wake, { wardmoteAccess: "rest" });
     expect(rest).not.toMatch(TOOL_NAME_RE);
     expect(rest).toContain("POST /api/issues/$WARDMOTE_TASK_ID/checkout");
   });
 });
 
-describe("paperclipAccessGuidance", () => {
+describe("wardmoteAccessGuidance", () => {
   it("teaches tools on mcp and curl with the run headers on rest", () => {
-    const mcp = paperclipAccessGuidance("mcp", { toolsets: "core,extended" });
+    const mcp = wardmoteAccessGuidance("mcp", { toolsets: "core,extended" });
     expect(mcp).toContain("toolsets: core,extended");
     expect(mcp).toContain("wardmoteListIssues");
 
-    const rest = paperclipAccessGuidance("rest", { shellHint: "run_shell_command" });
+    const rest = wardmoteAccessGuidance("rest", { shellHint: "run_shell_command" });
     expect(rest).not.toMatch(TOOL_NAME_RE);
     expect(rest).toContain("Authorization: Bearer $WARDMOTE_API_KEY");
     expect(rest).toContain("X-Wardmote-Run-Id: $WARDMOTE_RUN_ID");
@@ -88,11 +88,11 @@ describe("paperclipAccessGuidance", () => {
   it("advertises the escape hatch only when the mounted surface is large", () => {
     const escapeHatch = /escape hatch is cheaper than carrying the extended surface/;
 
-    expect(paperclipAccessGuidance("mcp", { toolsets: "core" })).not.toMatch(escapeHatch);
-    expect(paperclipAccessGuidance("mcp", { toolsets: "extended" })).toMatch(escapeHatch);
-    expect(paperclipAccessGuidance("mcp", { toolsets: "all" })).toMatch(escapeHatch);
-    expect(paperclipAccessGuidance("mcp", { toolsets: "extended,core" })).toMatch(escapeHatch);
-    expect(paperclipAccessGuidance("mcp", { toolsets: "extended" })).toContain(
+    expect(wardmoteAccessGuidance("mcp", { toolsets: "core" })).not.toMatch(escapeHatch);
+    expect(wardmoteAccessGuidance("mcp", { toolsets: "extended" })).toMatch(escapeHatch);
+    expect(wardmoteAccessGuidance("mcp", { toolsets: "all" })).toMatch(escapeHatch);
+    expect(wardmoteAccessGuidance("mcp", { toolsets: "extended,core" })).toMatch(escapeHatch);
+    expect(wardmoteAccessGuidance("mcp", { toolsets: "extended" })).toContain(
       "wardmoteApiRequest is always available",
     );
   });
@@ -100,37 +100,37 @@ describe("paperclipAccessGuidance", () => {
   it("advertises the escape hatch for the canonical full toolset", () => {
     const escapeHatch = /escape hatch is cheaper than carrying the extended surface/;
 
-    expect(paperclipAccessGuidance("mcp", { toolsets: "full" })).toMatch(escapeHatch);
-    expect(paperclipAccessGuidance("mcp", { toolsets: "full,core" })).toMatch(escapeHatch);
-    expect(paperclipAccessGuidance("mcp", { toolsets: "core" })).not.toMatch(escapeHatch);
+    expect(wardmoteAccessGuidance("mcp", { toolsets: "full" })).toMatch(escapeHatch);
+    expect(wardmoteAccessGuidance("mcp", { toolsets: "full,core" })).toMatch(escapeHatch);
+    expect(wardmoteAccessGuidance("mcp", { toolsets: "core" })).not.toMatch(escapeHatch);
   });
 });
 
 describe("paperclip MCP endpoint", () => {
   it("normalizes the API base and encodes the toolsets", () => {
-    expect(paperclipMcpEndpoint("https://paperclip.test/", "core")).toBe(
+    expect(wardmoteMcpEndpoint("https://paperclip.test/", "core")).toBe(
       "https://paperclip.test/api/mcp/wardmote?toolsets=core",
     );
-    expect(paperclipMcpEndpoint("https://paperclip.test/api", "core,extended")).toBe(
+    expect(wardmoteMcpEndpoint("https://paperclip.test/api", "core,extended")).toBe(
       "https://paperclip.test/api/mcp/wardmote?toolsets=core%2Cextended",
     );
   });
 
   it("defaults the toolsets and drops empty entries", () => {
-    expect(paperclipMcpToolsets({})).toBe("core");
-    expect(paperclipMcpToolsets({ paperclipMcpToolsets: " , " })).toBe("core");
-    expect(paperclipMcpToolsets({ paperclipMcpToolsets: " extended , core " })).toBe("extended,core");
+    expect(wardmoteMcpToolsets({})).toBe("core");
+    expect(wardmoteMcpToolsets({ wardmoteMcpToolsets: " , " })).toBe("core");
+    expect(wardmoteMcpToolsets({ wardmoteMcpToolsets: " extended , core " })).toBe("extended,core");
   });
 
   it("omits the run-id header when the run does not carry one", () => {
-    expect(paperclipMcpHttpHeaders({ apiKey: "k", runId: "  " })).toEqual({
+    expect(wardmoteMcpHttpHeaders({ apiKey: "k", runId: "  " })).toEqual({
       Authorization: "Bearer k",
     });
   });
 });
 
 describe("per-runtime MCP config renderers", () => {
-  const target = paperclipMcpHttpTarget({ env: runEnv, toolsets: "core" });
+  const target = wardmoteMcpHttpTarget({ env: runEnv, toolsets: "core" });
 
   it("resolves the endpoint and the authenticating headers once", () => {
     expect(target).toEqual({

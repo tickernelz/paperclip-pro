@@ -61,8 +61,8 @@ export function isLiveEventVisibleToActor(event: LiveEvent, context: Pick<Upgrad
 }
 
 interface IncomingMessageWithContext extends IncomingMessage {
-  paperclipWebSocketHandled?: boolean;
-  paperclipUpgradeContext?: UpgradeContext;
+  wardmoteWebSocketHandled?: boolean;
+  wardmoteUpgradeContext?: UpgradeContext;
 }
 
 function hashToken(token: string) {
@@ -239,7 +239,7 @@ export function setupLiveEventsWebSocketServer(
   }, 30000);
 
   wss.on("connection", (socket: WsSocket, req: IncomingMessage) => {
-    const context = (req as IncomingMessageWithContext).paperclipUpgradeContext;
+    const context = (req as IncomingMessageWithContext).wardmoteUpgradeContext;
     if (!context) {
       socket.close(1008, "missing context");
       return;
@@ -341,7 +341,7 @@ export function setupLiveEventsWebSocketServer(
   });
 
   server.on("upgrade", (req, socket, head) => {
-    if ((req as IncomingMessageWithContext).paperclipWebSocketHandled) {
+    if ((req as IncomingMessageWithContext).wardmoteWebSocketHandled) {
       return;
     }
 
@@ -386,7 +386,7 @@ export function setupLiveEventsWebSocketServer(
         }
 
         const reqWithContext = req as IncomingMessageWithContext;
-        reqWithContext.paperclipUpgradeContext = context;
+        reqWithContext.wardmoteUpgradeContext = context;
 
         cleanupRawSocketListeners();
         wss.handleUpgrade(req, socket, head, (ws: WsSocket) => {

@@ -727,7 +727,7 @@ async function main() {
       maxParallel: Number(argument(args, "--max-parallel", "100")),
       grokAuthenticationMode: argument(args, "--grok-authentication", "api_key"),
       source: {
-        paperclipSha: process.env.WARDMOTE_PROTOCOL_EVAL_SOURCE_SHA ?? null,
+        wardmoteSha: process.env.WARDMOTE_PROTOCOL_EVAL_SOURCE_SHA ?? null,
         evalsSha: process.env.WARDMOTE_PROTOCOL_EVALS_SHA ?? null,
       },
     });

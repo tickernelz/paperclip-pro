@@ -5,7 +5,7 @@ import { agentAuthorityCapabilities, isCompanyOwnerAgent } from "@tickernelz/war
 import {
   canonicalToolName,
   OpenwaMcpToolError,
-  paperclipToolCatalog,
+  wardmoteToolCatalog,
   parseToolsets,
   WardmoteApiClient,
   type ToolsetName,
@@ -60,7 +60,7 @@ function loopbackApiUrl(req: Request): string {
 }
 
 /** Mounted after actor middleware; only run-scoped agent credentials authenticate here. */
-export function paperclipMcpRoutes(db: Db) {
+export function wardmoteMcpRoutes(db: Db) {
   const router = Router();
   const access = accessService(db);
   const connections = connectionIntentService(db);
@@ -131,7 +131,7 @@ export function paperclipMcpRoutes(db: Db) {
       if (!responsibleUserId) throw forbidden("This task needs a responsible user to connect a service");
       return { sub: agentId, company_id: companyId, run_id: signedRunId, responsible_user_id: responsibleUserId };
     };
-    const { definitions, listing } = paperclipToolCatalog(client, toolsets, management, {
+    const { definitions, listing } = wardmoteToolCatalog(client, toolsets, management, {
       boardSurface: {
         capabilities,
         permissionKeys: new Set(grants.map((row) => row.permissionKey)),

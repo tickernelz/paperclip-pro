@@ -25,7 +25,7 @@ export function observeCheckoutActivity(input: {
     successfulCheckoutRequests: complete ? rows.length : null,
     runs: input.runs.map(run => ({
       runId: run.id, status: run.status,
-      checkedOutByHarness: run.contextSnapshot?.paperclipWake?.checkedOutByHarness === true,
+      checkedOutByHarness: run.contextSnapshot?.wardmoteWake?.checkedOutByHarness === true,
       successfulCheckoutRequests: complete ? rows.filter(row => row.runId === run.id).length : null,
     })),
     receipts: rows.map(row => ({

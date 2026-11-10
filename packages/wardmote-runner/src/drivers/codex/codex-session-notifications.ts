@@ -1,6 +1,6 @@
 import { observeCodexUsage, codexRunUsage } from "./codex-usage-baseline.js";
 import { classifyCodexNotification } from "./codex-notification-identity.js";
-import { paperclipWorkspaceFileReferencesFromText } from "../../live/workspace-file-reference.js";
+import { wardmoteWorkspaceFileReferencesFromText } from "../../live/workspace-file-reference.js";
 import { canonicalProviderEventsFromCodex, isCanonicalProviderEventType } from "../../provider-events.js";
 import { harnessRuntimeRequestOutcome } from "../../contracts/harness-driver.js";
 import { NativeSessionProtocolIntegrityError } from "../../contracts/native-session-backend.js";
@@ -67,7 +67,7 @@ async function mapNotification(state: CodexSessionState, notification: CodexRpcN
       rejected = true;
       throw error;
     } finally {
-      const correlation = notification.paperclipTrace;
+      const correlation = notification.wardmoteTrace;
       if (correlation !== undefined) {
         const emittedEventIds: string[] = [];
         for (
@@ -473,7 +473,7 @@ async function mapNotificationBody(state: CodexSessionState, notification: Codex
         { turnId, itemId },
       );
       if (text(item.type) === "agentMessage") {
-        for (const reference of paperclipWorkspaceFileReferencesFromText(
+        for (const reference of wardmoteWorkspaceFileReferencesFromText(
           state.opened.context.workingDirectory,
           text(item.text),
           turnId,

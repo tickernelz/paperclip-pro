@@ -163,7 +163,7 @@ describe("resolveEnvironmentExecutionTarget", () => {
       },
       leaseId: "lease-1",
       leaseMetadata: {
-        paperclipApiUrl: "https://paperclip.example.test",
+        wardmoteApiUrl: "https://paperclip.example.test",
       },
       lease: null,
       environmentRuntime: null,
@@ -175,8 +175,8 @@ describe("resolveEnvironmentExecutionTarget", () => {
       providerKey: "fake-plugin",
       remoteCwd: DEFAULT_SANDBOX_REMOTE_CWD,
     });
-    expect(target).not.toHaveProperty("paperclipApiUrl");
-    expect(target).not.toHaveProperty("paperclipTransport");
+    expect(target).not.toHaveProperty("wardmoteApiUrl");
+    expect(target).not.toHaveProperty("wardmoteTransport");
   });
 
   it("passes through a provider-declared sandbox shell command from lease metadata", async () => {
@@ -436,7 +436,7 @@ describe("resolveEnvironmentExecutionTarget", () => {
         remoteCwd: "/srv/paperclip",
       },
     });
-    expect(target).not.toHaveProperty("paperclipApiUrl");
+    expect(target).not.toHaveProperty("wardmoteApiUrl");
   });
 
   it("exposes a sandbox runner with single-stream stdin upload disabled", async () => {

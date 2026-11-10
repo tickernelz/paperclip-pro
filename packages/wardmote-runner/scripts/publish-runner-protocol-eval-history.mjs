@@ -352,7 +352,7 @@ export function buildProtocolEvalPointers(history) {
           campaignId: campaign.campaignId,
           generatedAt: campaign.generatedAt,
           publicUrl: campaign.publicUrl,
-          paperclipSha: campaign.source?.paperclip?.sha ?? null,
+          wardmoteSha: campaign.source?.paperclip?.sha ?? null,
           evalsSha: campaign.source?.evals?.sha ?? null,
         }
       : null;

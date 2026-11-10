@@ -3,7 +3,7 @@ import fsSync from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { mergeWardmoteConfig, paperclipConfigSchema } from "@tickernelz/wardmote-shared";
+import { mergeWardmoteConfig, wardmoteConfigSchema } from "@tickernelz/wardmote-shared";
 import {
   updateEnvFileContents,
   writeEnvFileAtomicallyIfChanged,
@@ -17,7 +17,7 @@ import { agentInstructionsService, resolveManagedInstructionsRoot } from "../ser
  * Seeds hand edits across every formerly-destructive setup/sync surface, reruns the
  * setup/sync mechanism, and asserts each edit survives. Each block drives the SAME
  * production code the writers/reconcilers use:
- *   - config.json          -> mergeWardmoteConfig + paperclipConfigSchema (shared core
+ *   - config.json          -> mergeWardmoteConfig + wardmoteConfigSchema (shared core
  *                             used by BOTH writers: cli/src/config/store.ts:writeConfig
  *                             and server/src/worktree-config.ts:writeConfigFile)
  *   - .env                 -> updateEnvFileContents + writeEnvFileAtomicallyIfChanged
@@ -62,11 +62,11 @@ const BASE_CONFIG = {
 
 /** Emulates a writer round-trip on disk: parse the update, merge over the parsed source. */
 function writerRoundTrip(configPath: string, update: unknown): void {
-  const parsedUpdate = paperclipConfigSchema.parse(update);
-  const source = paperclipConfigSchema.parse(
+  const parsedUpdate = wardmoteConfigSchema.parse(update);
+  const source = wardmoteConfigSchema.parse(
     JSON.parse(fsSync.readFileSync(configPath, "utf8")),
   );
-  const next = paperclipConfigSchema.parse(mergeWardmoteConfig(source, parsedUpdate));
+  const next = wardmoteConfigSchema.parse(mergeWardmoteConfig(source, parsedUpdate));
   fsSync.writeFileSync(configPath, JSON.stringify(next, null, 2) + "\n");
 }
 
@@ -76,7 +76,7 @@ describe("setup/sync rerun survival — cross-cutting", () => {
     const configPath = path.join(dir, "config.json");
 
     // Seed a config that carries operator extension keys the schema does not know about.
-    const seeded = paperclipConfigSchema.parse({
+    const seeded = wardmoteConfigSchema.parse({
       ...BASE_CONFIG,
       customTopLevel: { keepMe: true, nested: [1, 2, 3] },
       server: { ...BASE_CONFIG.server, customServerKey: "operator-owned" },

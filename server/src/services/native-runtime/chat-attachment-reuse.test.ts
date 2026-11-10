@@ -181,7 +181,7 @@ describe("native same-conversation chat attachment reuse", () => {
       companyId,
       endpointId,
       principalId,
-      paperclipUserId: userId,
+      wardmoteUserId: userId,
       status: "linked",
     });
     await db.insert(companyMemberships).values({
@@ -277,10 +277,10 @@ describe("native same-conversation chat attachment reuse", () => {
       .set({
         contextSnapshot: {
           source: "chat:discord",
-          paperclipHarnessCheckedOut: true,
+          wardmoteHarnessCheckedOut: true,
           wakeCommentIds: [currentCommentId],
           commentId: currentCommentId,
-          paperclipWake: {
+          wardmoteWake: {
             reason: "External chat message received",
             externalChatProvider: "discord",
             checkedOutByHarness: true,
@@ -375,7 +375,7 @@ describe("native same-conversation chat attachment reuse", () => {
       const spoofedContext = {
         ...((run?.contextSnapshot as Record<string, unknown> | null) ?? {}),
       };
-      delete spoofedContext.paperclipWake;
+      delete spoofedContext.wardmoteWake;
       await db
         .update(heartbeatRuns)
         .set({

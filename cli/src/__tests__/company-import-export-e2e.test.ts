@@ -106,7 +106,7 @@ function writeTestConfig(configPath: string, tempRoot: string, port: number, con
 
 interface TestWardmoteEnv {
   configPath: string;
-  paperclipHome: string;
+  wardmoteHome: string;
   instanceId: string;
   shellHome?: string;
 }
@@ -120,10 +120,10 @@ function createBaseWardmoteEnv(options: TestWardmoteEnv) {
   }
 
   env.WARDMOTE_CONFIG = options.configPath;
-  env.WARDMOTE_HOME = options.paperclipHome;
+  env.WARDMOTE_HOME = options.wardmoteHome;
   env.WARDMOTE_INSTANCE_ID = options.instanceId;
-  env.WARDMOTE_CONTEXT = path.join(options.paperclipHome, "context.json");
-  env.WARDMOTE_AUTH_STORE = path.join(options.paperclipHome, "auth.json");
+  env.WARDMOTE_CONTEXT = path.join(options.wardmoteHome, "context.json");
+  env.WARDMOTE_AUTH_STORE = path.join(options.wardmoteHome, "auth.json");
   if (options.shellHome) {
     env.HOME = options.shellHome;
   }
@@ -210,7 +210,7 @@ async function api<T>(baseUrl: string, pathname: string, init?: RequestInit): Pr
 }
 
 function isPortableAgent(agent: { metadata?: Record<string, unknown> | null }) {
-  const marker = agent.metadata?.paperclipBuiltInAgent;
+  const marker = agent.metadata?.wardmoteBuiltInAgent;
   return typeof marker !== "object" || marker === null;
 }
 
@@ -277,9 +277,9 @@ describeEmbeddedPostgres("wardmote company import/export e2e", () => {
   let configPath = "";
   let exportDir = "";
   let apiBase = "";
-  let paperclipHome = "";
+  let wardmoteHome = "";
   let cliShellHome = "";
-  let paperclipInstanceId = "";
+  let wardmoteInstanceId = "";
   let serverProcess: ServerProcess | null = null;
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
@@ -287,10 +287,10 @@ describeEmbeddedPostgres("wardmote company import/export e2e", () => {
     tempRoot = mkdtempSync(path.join(os.tmpdir(), "paperclip-company-cli-e2e-"));
     configPath = path.join(tempRoot, "config", "config.json");
     exportDir = path.join(tempRoot, "exported-company");
-    paperclipHome = path.join(tempRoot, "paperclip-home");
+    wardmoteHome = path.join(tempRoot, "paperclip-home");
     cliShellHome = path.join(tempRoot, "shell-home");
-    paperclipInstanceId = "company-cli-e2e";
-    mkdirSync(paperclipHome, { recursive: true });
+    wardmoteInstanceId = "company-cli-e2e";
+    mkdirSync(wardmoteHome, { recursive: true });
     mkdirSync(cliShellHome, { recursive: true });
 
     tempDb = await startEmbeddedPostgresTestDatabase("paperclip-company-cli-db-");
@@ -307,8 +307,8 @@ describeEmbeddedPostgres("wardmote company import/export e2e", () => {
       {
         cwd: repoRoot,
         env: createServerEnv(configPath, port, tempDb.connectionString, {
-          paperclipHome,
-          instanceId: paperclipInstanceId,
+          wardmoteHome,
+          instanceId: wardmoteInstanceId,
           shellHome: cliShellHome,
         }),
         stdio: ["ignore", "pipe", "pipe"],
@@ -344,14 +344,14 @@ describeEmbeddedPostgres("wardmote company import/export e2e", () => {
       ["context", "set", "--profile", "isolation-check", "--api-base", "https://example.test"],
       {
         configPath,
-        paperclipHome,
-        instanceId: paperclipInstanceId,
+        wardmoteHome,
+        instanceId: wardmoteInstanceId,
         shellHome: cliShellHome,
         includeConfigArg: false,
       },
     );
 
-    const expectedContextPath = path.join(paperclipHome, "context.json");
+    const expectedContextPath = path.join(wardmoteHome, "context.json");
     const leakedContextPath = path.join(cliShellHome, ".paperclip", "context.json");
     expect(cliContext.contextPath).toBe(expectedContextPath);
     expect(cliContext.profileName).toBe("isolation-check");
@@ -440,8 +440,8 @@ describeEmbeddedPostgres("wardmote company import/export e2e", () => {
       {
         apiBase,
         configPath,
-        paperclipHome,
-        instanceId: paperclipInstanceId,
+        wardmoteHome,
+        instanceId: wardmoteInstanceId,
         shellHome: cliShellHome,
       },
     );
@@ -470,8 +470,8 @@ describeEmbeddedPostgres("wardmote company import/export e2e", () => {
       {
         apiBase,
         configPath,
-        paperclipHome,
-        instanceId: paperclipInstanceId,
+        wardmoteHome,
+        instanceId: wardmoteInstanceId,
         shellHome: cliShellHome,
       },
     );
@@ -524,8 +524,8 @@ describeEmbeddedPostgres("wardmote company import/export e2e", () => {
       {
         apiBase,
         configPath,
-        paperclipHome,
-        instanceId: paperclipInstanceId,
+        wardmoteHome,
+        instanceId: wardmoteInstanceId,
         shellHome: cliShellHome,
       },
     );
@@ -557,8 +557,8 @@ describeEmbeddedPostgres("wardmote company import/export e2e", () => {
       {
         apiBase,
         configPath,
-        paperclipHome,
-        instanceId: paperclipInstanceId,
+        wardmoteHome,
+        instanceId: wardmoteInstanceId,
         shellHome: cliShellHome,
       },
     );
@@ -611,8 +611,8 @@ describeEmbeddedPostgres("wardmote company import/export e2e", () => {
       {
         apiBase,
         configPath,
-        paperclipHome,
-        instanceId: paperclipInstanceId,
+        wardmoteHome,
+        instanceId: wardmoteInstanceId,
         shellHome: cliShellHome,
       },
     );

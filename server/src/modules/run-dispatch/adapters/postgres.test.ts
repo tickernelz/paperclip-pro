@@ -707,7 +707,7 @@ describeEmbeddedPostgres("run-dispatch postgres adapter", () => {
           issueId,
           wakeReason: "issue_assigned",
           ...(source === undefined ? {} : { source }),
-          paperclipWake: { privateTestMarker: "not-for-the-status-effect" },
+          wardmoteWake: { privateTestMarker: "not-for-the-status-effect" },
         },
       });
       const outcome = await createPostgresRunDispatchAdapter(db).cancelStaleQueuedRun({
@@ -741,7 +741,7 @@ describeEmbeddedPostgres("run-dispatch postgres adapter", () => {
         .then((rows) => rows[0]);
       expect(persisted?.status).toBe("cancelled");
       expect(persisted?.contextSnapshot).toMatchObject({
-        paperclipWake: { privateTestMarker: "not-for-the-status-effect" },
+        wardmoteWake: { privateTestMarker: "not-for-the-status-effect" },
       });
     });
 

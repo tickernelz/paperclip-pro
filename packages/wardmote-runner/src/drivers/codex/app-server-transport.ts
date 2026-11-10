@@ -11,7 +11,7 @@ export interface CodexRpcNotification {
   method: string;
   params: Record<string, unknown>;
   /** Internal-only correlation retained outside provider params and canonical PRP payloads. */
-  paperclipTrace?: {
+  wardmoteTrace?: {
     sourceEventId: string;
     sourceEventType: string;
   };

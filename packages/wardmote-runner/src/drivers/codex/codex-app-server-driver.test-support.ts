@@ -273,7 +273,7 @@ export class FakeCodexTransport implements CodexAppServerTransport {
     this.queue.push({
       method,
       params,
-      paperclipTrace: { sourceEventId, sourceEventType },
+      wardmoteTrace: { sourceEventId, sourceEventType },
     });
   }
 

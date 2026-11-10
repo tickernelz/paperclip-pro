@@ -29,7 +29,7 @@ import {
   storybookCompanies,
   storybookIssues,
   storybookIssueDocuments,
-} from "../../fixtures/paperclipData";
+} from "../../fixtures/wardmoteData";
 import { chatAgents, chatIdentifier } from "./AgentChatSidebar";
 import { AgentChatSidebarReviewLayout, AgentChatSidebarLanding } from "../agent-chat-sidebar/AgentChatSidebarReview";
 import { sidebarAgents, sidebarRoster, type SidebarScenario } from "../agent-chat-sidebar/fixtures";

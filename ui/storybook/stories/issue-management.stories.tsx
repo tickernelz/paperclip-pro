@@ -49,7 +49,7 @@ import {
   storybookIssueRuns,
   storybookIssues,
   storybookProjects,
-} from "../fixtures/paperclipData";
+} from "../fixtures/wardmoteData";
 
 const companyId = "company-storybook";
 const issueListViewKey = "storybook:issue-management:list";

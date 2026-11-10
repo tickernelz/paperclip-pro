@@ -456,7 +456,7 @@ describe("secret routes", () => {
       provider: "aws_secrets_manager",
       nextToken: null,
       sampledSecretCount: 2,
-      skippedForeignPaperclipSampleCount: 0,
+      skippedForeignWardmoteSampleCount: 0,
       candidates: [
         {
           provider: "aws_secrets_manager",
@@ -481,8 +481,8 @@ describe("secret routes", () => {
             kmsKeyId: null,
             hasKmsKey: false,
             sampleCount: 2,
-            paperclipManagedSampleCount: 0,
-            skippedForeignPaperclipSampleCount: 0,
+            wardmoteManagedSampleCount: 0,
+            skippedForeignWardmoteSampleCount: 0,
           },
           warnings: [],
         },

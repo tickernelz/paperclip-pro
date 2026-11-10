@@ -132,7 +132,7 @@ describeEmbeddedPostgres("continuing a recovery-held issue (routes + postgres)",
       status: "active", providerAccountId: "http://gw#" + SESSION + "-" + endpointId, policy: {} });
     const [ownerPrincipal] = await db.insert(chatExternalPrincipals).values({ companyId, provider: "openwa", providerAccountId: "acct-" + endpointId,
       externalId: OWNER_DIGITS + "@c.us", displayName: "Owner WA" }).returning();
-    const [link] = await db.insert(chatIdentityLinks).values({ companyId, endpointId, principalId: ownerPrincipal!.id, paperclipUserId: ownerUserId, status: "linked" }).returning();
+    const [link] = await db.insert(chatIdentityLinks).values({ companyId, endpointId, principalId: ownerPrincipal!.id, wardmoteUserId: ownerUserId, status: "linked" }).returning();
     await db.insert(chatEndpointOwners).values({ companyId, endpointId, identityLinkId: link!.id, addedByUserId: ownerUserId });
     const [memberPrincipal] = await db.insert(chatExternalPrincipals).values({ companyId, provider: "openwa", providerAccountId: "acct-" + endpointId,
       externalId: MEMBER_DIGITS + "@c.us", displayName: "Member" }).returning();

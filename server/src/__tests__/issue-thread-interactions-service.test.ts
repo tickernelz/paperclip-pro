@@ -517,7 +517,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
   });
 
   it("rejects a source-run question when a newer human comment was not delivered", async () => {
-    const fixture = await seedSourceQuestionFixture({ paperclipWake: { comments: [] } });
+    const fixture = await seedSourceQuestionFixture({ wardmoteWake: { comments: [] } });
     const commentId = randomUUID();
     await db.insert(issueComments).values({
       id: commentId,
@@ -546,7 +546,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
 
   it("allows a source-run question when the newer human comment is explicitly delivered", async () => {
     const commentId = randomUUID();
-    const fixture = await seedSourceQuestionFixture({ paperclipWake: { comments: [{ id: commentId }] } });
+    const fixture = await seedSourceQuestionFixture({ wardmoteWake: { comments: [{ id: commentId }] } });
     await db.insert(issueComments).values({
       id: commentId,
       companyId: fixture.companyId,
@@ -587,7 +587,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
   });
 
   it("does not apply the delivery guard to approval interactions", async () => {
-    const fixture = await seedSourceQuestionFixture({ paperclipWake: { comments: [] } });
+    const fixture = await seedSourceQuestionFixture({ wardmoteWake: { comments: [] } });
     await db.insert(issueComments).values({
       companyId: fixture.companyId,
       issueId: fixture.issueId,
@@ -612,7 +612,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
   });
 
   it("does not treat the board concierge reply as human direction", async () => {
-    const fixture = await seedSourceQuestionFixture({ paperclipWake: { comments: [] } });
+    const fixture = await seedSourceQuestionFixture({ wardmoteWake: { comments: [] } });
     await db.insert(issueComments).values({
       companyId: fixture.companyId,
       issueId: fixture.issueId,
@@ -632,7 +632,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
   });
 
   it("rejects an explicitly mismatched source-run issue or agent", async () => {
-    const fixture = await seedSourceQuestionFixture({ paperclipWake: { comments: [] } });
+    const fixture = await seedSourceQuestionFixture({ wardmoteWake: { comments: [] } });
     const otherAgentId = randomUUID();
     await db.insert(agents).values({
       id: otherAgentId,
@@ -659,7 +659,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
 
     await db.transaction(async (tx) => {
       await tx.execute(sql`set local session_replication_role = replica`);
-      await tx.update(heartbeatRuns).set({ nativeIssueId: null, contextSnapshot: { issueId: randomUUID(), paperclipWake: { comments: [] } } }).where(eq(heartbeatRuns.id, fixture.runId));
+      await tx.update(heartbeatRuns).set({ nativeIssueId: null, contextSnapshot: { issueId: randomUUID(), wardmoteWake: { comments: [] } } }).where(eq(heartbeatRuns.id, fixture.runId));
     });
     await expect(interactionsSvc.create(
       { id: fixture.issueId, companyId: fixture.companyId },
@@ -668,7 +668,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
     )).rejects.toMatchObject({ status: 422, message: "sourceRunId must belong to the same issue" });
 
     await db.update(heartbeatRuns)
-      .set({ contextSnapshot: { issueId: fixture.issueId, paperclipWake: { comments: [] } } })
+      .set({ contextSnapshot: { issueId: fixture.issueId, wardmoteWake: { comments: [] } } })
       .where(eq(heartbeatRuns.id, fixture.runId));
     await expect(interactionsSvc.create(
       { id: fixture.issueId, companyId: fixture.companyId },

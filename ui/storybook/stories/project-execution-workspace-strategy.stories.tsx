@@ -4,7 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import type { Project } from "@tickernelz/wardmote-shared";
 import { ProjectProperties, type ProjectConfigFieldKey, type ProjectFieldSaveState } from "@/components/ProjectProperties";
 import { queryKeys } from "@/lib/queryKeys";
-import { storybookProjects } from "../fixtures/paperclipData";
+import { storybookProjects } from "../fixtures/wardmoteData";
 
 const COMPANY_ID = "company-storybook";
 const boardProject = storybookProjects.find((project) => project.id === "project-board-ui") ?? storybookProjects[0]!;

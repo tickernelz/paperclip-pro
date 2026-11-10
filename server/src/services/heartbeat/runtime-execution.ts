@@ -5,7 +5,7 @@ import {
   configuredWardmoteApiBaseUrl,
   buildWardmoteRuntimeMcpServers,
   createAdapterRuntimeToolAccess,
-  paperclipApiBaseUrl,
+  wardmoteApiBaseUrl,
   createAdapterRuntimeMcpAccess,
   revokeHeartbeatRunGatewayTokens,
 } from "./run-preparation.js";
@@ -544,9 +544,9 @@ export async function executeHeartbeatRuntime(db: Db, input: HeartbeatRuntimeExe
       const runCreatedAtMs = run.createdAt.getTime();
       const runStartedAtMs = (run.startedAt ?? run.createdAt).getTime();
       const wakeComments = Array.isArray(
-        parseObject(context.paperclipWake).comments,
+        parseObject(context.wardmoteWake).comments,
       )
-        ? (parseObject(context.paperclipWake).comments as unknown[])
+        ? (parseObject(context.wardmoteWake).comments as unknown[])
         : [];
       const wakeIngressSpan = buildNativeWakeIngressSpan({
         runCreatedAtMs,
@@ -767,12 +767,12 @@ export async function executeHeartbeatRuntime(db: Db, input: HeartbeatRuntimeExe
         });
       }
       if (authToken && configuredWardmoteApiBaseUrl() && issueRef) {
-        runtimeMcpServers.unshift({ name: "Paperclip projects", url: `${paperclipApiBaseUrl()}/api/mcp/project-tools`,
+        runtimeMcpServers.unshift({ name: "Paperclip projects", url: `${wardmoteApiBaseUrl()}/api/mcp/project-tools`,
           token: authToken, connectionId: "paperclip-project-tools" });
       }
       const runtimeMcp = createAdapterRuntimeMcpAccess(runtimeMcpServers);
       if (runtimeTools && runtimeToolDelivery === "invocation_context") {
-        adapterContext.paperclipRuntimeTools = runtimeTools;
+        adapterContext.wardmoteRuntimeTools = runtimeTools;
       }
       const guardedDispatch =
         await dispatchResolvedInteractionContinuationWithAtomicGate(

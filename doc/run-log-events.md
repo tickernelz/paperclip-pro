@@ -22,7 +22,7 @@ payload is `{ "prpEvent": <canonical PRP event> }`.
 PostgreSQL JSONB cannot represent NUL (U+0000), which can occur in command
 output such as Vite virtual-module paths. The run-event payload column uses a
 lossless storage codec for these events: the JSONB projection renders NUL as
-the literal `\u0000`, and the reserved `$paperclipRunEventJsonV1` field contains
+the literal `\u0000`, and the reserved `$wardmoteRunEventJsonV1` field contains
 the original serialized JSON as a doubly escaped string. Ordinary payloads
 retain their existing representation. Drizzle reads restore the exact original
 payload before replay, hash validation, redaction, or API presentation. SQL

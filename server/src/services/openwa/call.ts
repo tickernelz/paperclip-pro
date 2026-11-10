@@ -404,7 +404,7 @@ async function selfSessionConfirmation(ctx: ToolContext, operation: OpenwaOperat
   });
 }
 
-async function paperclipAuditList(ctx: ToolContext, args: Args, cursor: string | null): Promise<Record<string, unknown>> {
+async function wardmoteAuditList(ctx: ToolContext, args: Args, cursor: string | null): Promise<Record<string, unknown>> {
   if (!isOwnerRun(ctx)) throw refusal(403, "owner_only", "Only owner-triggered runs may read this endpoint's audit");
   const parsed = openwaAuditListArgsSchema.safeParse(args);
   if (!parsed.success)
@@ -628,7 +628,7 @@ export async function openwaCallTool(ctx: ToolContext, input: Args): Promise<Rec
   const operationId = String(input.operation);
   ctx.audit.operation = operationId;
   const rawArgs = record(input.args);
-  if (operationId === OPENWA_AUDIT_LIST_OPERATION) return paperclipAuditList(ctx, rawArgs, str(input.cursor));
+  if (operationId === OPENWA_AUDIT_LIST_OPERATION) return wardmoteAuditList(ctx, rawArgs, str(input.cursor));
   const operation = openwaCatalogOperation(operationId);
   if (!operation) throw refusal(404, "not_found", "Unknown OpenWA operation; list operations with openwa_catalog", { operationId });
   if (OPENWA_SECRET_ISSUING_OPERATIONS.has(operationId)) throw secretIssuingError(operationId);

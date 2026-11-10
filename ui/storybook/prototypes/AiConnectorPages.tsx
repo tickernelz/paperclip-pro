@@ -14,7 +14,7 @@ import { AiConnectionAuth, type AiAuthState } from "@/components/ai-connections/
 import { CredentialModeLink } from "@/components/onboarding/CredentialModeLink";
 import { AI_PROVIDERS, aiMethodLabel, type AiConnectionSummary, type AiProvider, type AiAuthMethod } from "@/components/ai-connections/model";
 import { AI_REVIEW_CONNECTIONS } from "../fixtures/aiConnections";
-import { storybookAgents } from "../fixtures/paperclipData";
+import { storybookAgents } from "../fixtures/wardmoteData";
 
 const companyId = "company-storybook";
 const date = new Date("2026-09-10T12:00:00Z");

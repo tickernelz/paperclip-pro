@@ -92,8 +92,8 @@ describe("OMP remote Python env bridge", () => {
       runId: "run-remote-pyenv",
       agent: { id: "agent-1", companyId: "company-1", name: "OMP", adapterType: "omp_local", adapterConfig: {} },
       runtime: { sessionId: null, sessionParams: null, sessionDisplayId: null, taskKey: null },
-      config: { command: "omp", paperclipMcp: false },
-      context: { paperclipWorkspace: { cwd: workspaceDir, source: "project_primary" } },
+      config: { command: "omp", wardmoteMcp: false },
+      context: { wardmoteWorkspace: { cwd: workspaceDir, source: "project_primary" } },
       executionTransport: {
         remoteExecution: {
           host: "127.0.0.1",

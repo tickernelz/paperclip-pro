@@ -1888,7 +1888,7 @@ export function resolveRuntimeSessionParamsForWorkspace(input: {
   };
 }
 
-const SESSION_AI_CREDENTIAL_IDENTITY_KEY = "paperclipAiCredentialIdentity";
+const SESSION_AI_CREDENTIAL_IDENTITY_KEY = "wardmoteAiCredentialIdentity";
 
 const SESSION_CONFIGURED_MODEL_KEY = "__paperclipConfiguredModel";
 
@@ -1963,8 +1963,8 @@ const RESUME_NEUTRAL_ADAPTER_CONFIG_KEYS = [
   "promptTemplate",
   "bootstrapPromptTemplate",
   "wardmoteSkillSync",
-  "paperclipRuntimeSkills",
-  "paperclipConnectorSkillDigest",
+  "wardmoteRuntimeSkills",
+  "wardmoteConnectorSkillDigest",
 ] as const;
 
 function withoutConnectorDeliverySkills(runtimeSkills: unknown) {

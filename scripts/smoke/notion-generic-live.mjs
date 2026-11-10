@@ -163,11 +163,11 @@ async function loginWardmoteBoard(page, context, config) {
       "A.paperclip-login",
       "email_field_missing",
     );
-    const paperclipEmailInput = page.getByLabel(/^email$/i);
-    const paperclipPasswordInput = page.getByLabel(/^password$/i);
-    await expectVisible(paperclipPasswordInput, "A.paperclip-login", "password_field_missing");
-    await paperclipEmailInput.fill(config.paperclipEmail);
-    await paperclipPasswordInput.fill(config.paperclipPassword);
+    const wardmoteEmailInput = page.getByLabel(/^email$/i);
+    const wardmotePasswordInput = page.getByLabel(/^password$/i);
+    await expectVisible(wardmotePasswordInput, "A.paperclip-login", "password_field_missing");
+    await wardmoteEmailInput.fill(config.wardmoteEmail);
+    await wardmotePasswordInput.fill(config.wardmotePassword);
     const loginResponsePromise = page.waitForResponse((response) =>
       response.request().method() === "POST" && new URL(response.url()).pathname === "/api/auth/sign-in/email",
     );
@@ -263,7 +263,7 @@ async function fetchNotionVerificationCodeFromAgentMail({ notBefore }) {
 }
 
 async function completeNotionAuthorization(page, config, credential, connectionId) {
-  const paperclipOrigin = new URL(config.baseUrl).origin;
+  const wardmoteOrigin = new URL(config.baseUrl).origin;
   const permissionsPath = `/${TARGET_COMPANY_PREFIX}/apps/${connectionId}/permissions`;
   const deadline = Date.now() + 6 * 60_000;
   const verificationNotBefore = new Date();
@@ -276,7 +276,7 @@ async function completeNotionAuthorization(page, config, credential, connectionI
     } catch {
       fail("C.oauth-callback", "invalid_navigation_url");
     }
-    if (current.origin === paperclipOrigin) {
+    if (current.origin === wardmoteOrigin) {
       if (providerSeen && current.pathname === permissionsPath) return;
       await page.waitForTimeout(300);
       continue;
@@ -352,7 +352,7 @@ async function safeScreenshot(page, outputPath, config, credential, checkpoint) 
     if (current.searchParams.has(queryKey)) fail(checkpoint, "credential_query_in_screenshot_url");
   }
   const bodyText = await page.locator("body").innerText();
-  if (bodyText.includes(config.paperclipPassword)
+  if (bodyText.includes(config.wardmotePassword)
     || bodyText.includes(credential.password)
     || /[?&](?:code|state|access_token|refresh_token)=/i.test(bodyText)) {
     fail(checkpoint, "credential_material_in_screenshot");
@@ -362,7 +362,7 @@ async function safeScreenshot(page, outputPath, config, credential, checkpoint) 
     fullPage: true,
     animations: "disabled",
     mask: [
-      page.getByText(config.paperclipEmail, { exact: false }),
+      page.getByText(config.wardmoteEmail, { exact: false }),
       page.getByText(credential.username, { exact: false }),
     ],
   });
@@ -680,12 +680,12 @@ async function runSmoke({ config, chromium }) {
     const connectionNameInput = page.getByText("Connection name", { exact: true }).locator("input");
     await expectVisible(connectionNameInput, "B.generic-connect", "connection_name_input_missing");
     await connectionNameInput.fill(connectionName);
-    const paperclipOrigin = new URL(config.baseUrl).origin;
+    const wardmoteOrigin = new URL(config.baseUrl).origin;
     const authorizationRequestPromise = page.waitForRequest((request) => {
       if (!request.isNavigationRequest() || request.frame() !== page.mainFrame()) return false;
       try {
         const target = new URL(request.url());
-        return target.protocol === "https:" && target.origin !== paperclipOrigin;
+        return target.protocol === "https:" && target.origin !== wardmoteOrigin;
       } catch {
         return false;
       }
@@ -798,7 +798,7 @@ async function runSmoke({ config, chromium }) {
       fail("C.connection-detail", "generic_provenance_lost");
     }
     const endpointProof = oauthEndpointProof(connection, startResult, config);
-    assertNoCredentialMaterial(connection, [config.paperclipPassword, credential.username, credential.password], "C.connection-detail");
+    assertNoCredentialMaterial(connection, [config.wardmotePassword, credential.username, credential.password], "C.connection-detail");
     summary.connection = {
       id: connectionId,
       applicationId: connection.applicationId,

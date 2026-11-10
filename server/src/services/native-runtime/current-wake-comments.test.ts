@@ -121,7 +121,7 @@ describeEmbeddedPostgres("current external-chat wake comment reader", () => {
       contextSnapshot: {
         issueId,
         taskId: issueId,
-        paperclipWake: {
+        wardmoteWake: {
           reason: "External chat message received",
           externalChatProvider: "slack",
           checkedOutByHarness: true,
@@ -341,7 +341,7 @@ describeEmbeddedPostgres("current external-chat wake comment reader", () => {
     const contextSnapshot = structuredClone(
       run!.contextSnapshot as Record<string, unknown>,
     );
-    const wake = contextSnapshot.paperclipWake as Record<string, unknown>;
+    const wake = contextSnapshot.wardmoteWake as Record<string, unknown>;
     wake.attachmentOmissions = [
       {
         commentId: seeded.commentIds[0],
@@ -389,7 +389,7 @@ describeEmbeddedPostgres("current external-chat wake comment reader", () => {
               contextSnapshot: {
                 issueId: seeded.issueId,
                 taskId: seeded.issueId,
-                paperclipWake: {
+                wardmoteWake: {
                   reason: "External chat message received",
                   externalChatProvider: "slack",
                   checkedOutByHarness: true,

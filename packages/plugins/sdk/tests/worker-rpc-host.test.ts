@@ -195,7 +195,7 @@ describe("worker invocation scope propagation", () => {
       const id = `host-${nextRequestId++}`;
       const request = {
         ...createRequest(method, params, id),
-        ...(invocation ? { paperclipInvocation: invocation } : {}),
+        ...(invocation ? { wardmoteInvocation: invocation } : {}),
       };
       const result = new Promise<unknown>((resolve, reject) => {
         pending.set(id, (response) => {
@@ -221,7 +221,7 @@ describe("worker invocation scope propagation", () => {
       if (!isJsonRpcRequest(message)) return;
       if (message.method !== "companies.get") return;
 
-      const invocationId = (message as { paperclipInvocationId?: string }).paperclipInvocationId ?? "";
+      const invocationId = (message as { wardmoteInvocationId?: string }).wardmoteInvocationId ?? "";
       const requestedCompanyId = (message.params as { companyId?: string }).companyId;
       const allowedCompanyId = invocationCompanies.get(invocationId);
       nestedInvocationIds.push(invocationId);
@@ -546,7 +546,7 @@ describe("worker provider tracer", () => {
       const id = `host-${nextRequestId++}`;
       const request = {
         ...createRequest(method, params, id),
-        ...(inv ? { paperclipInvocation: inv } : {}),
+        ...(inv ? { wardmoteInvocation: inv } : {}),
       };
       const result = new Promise<unknown>((resolve, reject) => {
         pending.set(id, (response) => {
@@ -572,7 +572,7 @@ describe("worker provider tracer", () => {
       if (message.method === "span.record") {
         spanRecords.push({
           params: message.params,
-          invocationId: (message as { paperclipInvocationId?: string }).paperclipInvocationId,
+          invocationId: (message as { wardmoteInvocationId?: string }).wardmoteInvocationId,
         });
         hostToWorker.write(serializeMessage(createSuccessResponse(message.id, null)));
       }
@@ -681,7 +681,7 @@ describe("worker execute.log emitter", () => {
       const id = `host-${nextRequestId++}`;
       const request = {
         ...createRequest(method, params, id),
-        ...(inv ? { paperclipInvocation: inv } : {}),
+        ...(inv ? { wardmoteInvocation: inv } : {}),
       };
       const result = new Promise<unknown>((resolve, reject) => {
         pending.set(id, (response) => {
@@ -708,7 +708,7 @@ describe("worker execute.log emitter", () => {
       if ((message as { method?: string }).method === "execute.log") {
         logRecords.push({
           params: (message as { params?: unknown }).params,
-          invocationId: (message as { paperclipInvocationId?: string }).paperclipInvocationId,
+          invocationId: (message as { wardmoteInvocationId?: string }).wardmoteInvocationId,
         });
       }
     });

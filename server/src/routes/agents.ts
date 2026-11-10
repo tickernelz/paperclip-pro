@@ -28,7 +28,7 @@ import { applyConnectorSkills, resolveConnectorAssignments, annotateConnectorSki
 import { getExecutionBlocker } from "../services/execution-blocker.js";
 import { canRetryStoppedRun } from "../services/cancelled-native-startup.js";
 import { getNativeReviewAssignment, readNativeReviewAssignmentContext, type NativeReviewAssignmentContext } from "../services/native-runtime/native-review-participant.js";
-import { paperclipRunnerTransitionConfig, normalizeLegacyRunnerProvider, isWardmoteRunnerProvider } from "@tickernelz/wardmote-adapter-utils";
+import { wardmoteRunnerTransitionConfig, normalizeLegacyRunnerProvider, isWardmoteRunnerProvider } from "@tickernelz/wardmote-adapter-utils";
 import { executionProjectionForRun, executionProjectionsForRunRows, executionProjectionsForRuns, executionRunColumns } from "../services/execution-projection.js";
 import { applyMcpReasoningEffort } from "../services/public-mcp/agent-config.js";
 import { selectDashboardRunIds } from "../services/dashboard-run-selection.js";
@@ -337,8 +337,8 @@ function readLiveRunsQueryInt(value: unknown, max: number, fallback = 0) {
 function readRunIssueId(context: Record<string, unknown> | null) {
   const directIssueId = context?.issueId;
   if (typeof directIssueId === "string" && isUuidLike(directIssueId)) return directIssueId;
-  const paperclipIssue = readObject(context?.paperclipIssue);
-  const nestedIssueId = paperclipIssue?.id;
+  const wardmoteIssue = readObject(context?.wardmoteIssue);
+  const nestedIssueId = wardmoteIssue?.id;
   return typeof nestedIssueId === "string" && isUuidLike(nestedIssueId) ? nestedIssueId : null;
 }
 
@@ -1903,7 +1903,7 @@ export function agentRoutes(
       return input.nextAdapterConfig;
     }
     if (input.nextAdapterConfig.provider === "openai_dot") return input.nextAdapterConfig;
-    const defaults = paperclipRunnerTransitionConfig(input.previousAdapterType, input.previousAdapterConfig.model, input.nextAdapterConfig.provider);
+    const defaults = wardmoteRunnerTransitionConfig(input.previousAdapterType, input.previousAdapterConfig.model, input.nextAdapterConfig.provider);
     if (!["claude_local", "codex_local", "opencode_local"].includes(input.previousAdapterType)
       && !isWardmoteRunnerProvider(input.nextAdapterConfig.provider)) {
       throw unprocessable("Select a Paperclip Runner provider before converting this agent.");
@@ -2611,7 +2611,7 @@ export function agentRoutes(
     });
     return {
       ...config,
-      paperclipRuntimeSkills: runtimeSkillEntries,
+      wardmoteRuntimeSkills: runtimeSkillEntries,
     };
   }
 
@@ -3530,7 +3530,7 @@ export function agentRoutes(
       { materializeMissing: false },
     );
     const connectorAssignments = await resolveConnectorAssignments(db, { companyId: agent.companyId, agentId: agent.id });
-    const connectorConfig = await applyConnectorSkills(runtimeSkillConfig, runtimeSkillConfig.paperclipRuntimeSkills, connectorAssignments);
+    const connectorConfig = await applyConnectorSkills(runtimeSkillConfig, runtimeSkillConfig.wardmoteRuntimeSkills, connectorAssignments);
     const snapshot = await adapter.listSkills({
       agentId: agent.id,
       companyId: agent.companyId,
@@ -6732,7 +6732,7 @@ export function agentRoutes(
       triggerDetail: heartbeatRuns.triggerDetail,
       contextCommentId: sql<string | null>`${heartbeatRuns.contextSnapshot} ->> 'commentId'`.as("contextCommentId"),
       contextWakeCommentId: sql<string | null>`${heartbeatRuns.contextSnapshot} ->> 'wakeCommentId'`.as("contextWakeCommentId"),
-      modelFallback: sql<RunModelFallbackState | null>`case when ${heartbeatRuns.status} in ('queued', 'running') then nullif(${heartbeatRuns.contextSnapshot} -> 'paperclipModelFallback', 'null'::jsonb) else null end`.as("modelFallback"),
+      modelFallback: sql<RunModelFallbackState | null>`case when ${heartbeatRuns.status} in ('queued', 'running') then nullif(${heartbeatRuns.contextSnapshot} -> 'wardmoteModelFallback', 'null'::jsonb) else null end`.as("modelFallback"),
       startedAt: heartbeatRuns.startedAt,
       finishedAt: heartbeatRuns.finishedAt,
       createdAt: heartbeatRuns.createdAt,
@@ -7422,7 +7422,7 @@ export function agentRoutes(
         triggerDetail: heartbeatRuns.triggerDetail,
         contextCommentId: sql<string | null>`${heartbeatRuns.contextSnapshot} ->> 'commentId'`.as("contextCommentId"),
         contextWakeCommentId: sql<string | null>`${heartbeatRuns.contextSnapshot} ->> 'wakeCommentId'`.as("contextWakeCommentId"),
-        modelFallback: sql<RunModelFallbackState | null>`case when ${heartbeatRuns.status} in ('queued', 'running') then nullif(${heartbeatRuns.contextSnapshot} -> 'paperclipModelFallback', 'null'::jsonb) else null end`.as("modelFallback"),
+        modelFallback: sql<RunModelFallbackState | null>`case when ${heartbeatRuns.status} in ('queued', 'running') then nullif(${heartbeatRuns.contextSnapshot} -> 'wardmoteModelFallback', 'null'::jsonb) else null end`.as("modelFallback"),
         startedAt: heartbeatRuns.startedAt,
         finishedAt: heartbeatRuns.finishedAt,
         createdAt: heartbeatRuns.createdAt,

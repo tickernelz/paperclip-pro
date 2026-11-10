@@ -457,7 +457,7 @@ async function importPluginModule(url: string): Promise<Record<string, unknown>>
  * component registry.
  *
  * This replaces the previous approach where plugin bundles had to
- * self-register via `window.paperclipPlugins.registerReactComponent()`.
+ * self-register via `window.wardmotePlugins.registerReactComponent()`.
  * Now the host is responsible for importing the module and binding
  * exports to the correct `pluginKey:exportName` registry keys.
  *

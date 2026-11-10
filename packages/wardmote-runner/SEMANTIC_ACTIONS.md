@@ -22,14 +22,14 @@ reviewed schemas and authority boundaries.
 ```ts
 import {
   WARDMOTE_SEMANTIC_ACTION_CATALOG,
-  paperclipSemanticAction,
+  wardmoteSemanticAction,
 } from "@tickernelz/wardmote-runner";
 
-const writeDocument = paperclipSemanticAction("write_document");
+const writeDocument = wardmoteSemanticAction("write_document");
 ```
 
 `WARDMOTE_SEMANTIC_ACTION_CATALOG` and every nested declaration are frozen.
-`paperclipSemanticAction` returns `undefined` for unknown operation IDs.
+`wardmoteSemanticAction` returns `undefined` for unknown operation IDs.
 
 ## Run-scoped authority
 

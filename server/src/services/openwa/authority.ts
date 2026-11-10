@@ -27,7 +27,7 @@ import { openwaCurrentOwners, openwaPrincipalAuthorization } from "./owners.js";
 import { logOpenwaActivity } from "./audit.js";
 import { isOpenwaCompletionTurn } from "../chat-completion-delivery.js";
 
-export const OPENWA_RUN_CONTEXT_KEY = "paperclipOpenwa";
+export const OPENWA_RUN_CONTEXT_KEY = "wardmoteOpenwa";
 export const OPENWA_APPROVAL_REQUIRED_CODE = "openwa_approval_required";
 export const OPENWA_AGENT_KEY_READ_ONLY_CODE = "openwa_agent_key_read_only";
 
@@ -86,8 +86,8 @@ const grantScopes = new AsyncLocalStorage<GrantScope>();
 
 export function openwaRunAuthoritySnapshot() {
   return sql<Record<string, unknown> | null>`jsonb_build_object(
-  'paperclipOpenwa', ${heartbeatRuns.contextSnapshot} -> 'paperclipOpenwa',
-  'paperclipToolProfile', ${heartbeatRuns.contextSnapshot} -> 'paperclipToolProfile',
+  'wardmoteOpenwa', ${heartbeatRuns.contextSnapshot} -> 'wardmoteOpenwa',
+  'wardmoteToolProfile', ${heartbeatRuns.contextSnapshot} -> 'wardmoteToolProfile',
   'issueId', ${heartbeatRuns.contextSnapshot} -> 'issueId',
   'taskId', ${heartbeatRuns.contextSnapshot} -> 'taskId')`;
 }

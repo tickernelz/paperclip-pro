@@ -84,13 +84,13 @@ describeEmbeddedPostgres("process-loss continuation session resume", () => {
   let db!: Db;
   let tempDb: EmbeddedPostgresTestDatabase | null = null;
   const previousHome = process.env.WARDMOTE_HOME;
-  let paperclipHome: string | null = null;
+  let wardmoteHome: string | null = null;
 
   beforeAll(async () => {
-    paperclipHome = await fs.realpath(
+    wardmoteHome = await fs.realpath(
       await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-process-loss-home-")),
     );
-    process.env.WARDMOTE_HOME = paperclipHome;
+    process.env.WARDMOTE_HOME = wardmoteHome;
     tempDb = await startEmbeddedPostgresTestDatabase("paperclip-process-loss-session-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
@@ -106,7 +106,7 @@ describeEmbeddedPostgres("process-loss continuation session resume", () => {
     await tempDb?.cleanup();
     if (previousHome === undefined) delete process.env.WARDMOTE_HOME;
     else process.env.WARDMOTE_HOME = previousHome;
-    if (paperclipHome) await fs.rm(paperclipHome, { recursive: true, force: true });
+    if (wardmoteHome) await fs.rm(wardmoteHome, { recursive: true, force: true });
   });
 
   async function seedAgentWithSavedSession(adapterType = "acme_local") {

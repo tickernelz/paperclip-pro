@@ -82,16 +82,16 @@ function triggerClass(value: unknown): OpenwaTriggerClass | null {
 }
 
 export function openwaRunTriggerClass(contextSnapshot: unknown): OpenwaTriggerClass | null {
-  return triggerClass(record(record(contextSnapshot).paperclipOpenwa).triggerClass);
+  return triggerClass(record(record(contextSnapshot).wardmoteOpenwa).triggerClass);
 }
 
 function runGrantIds(contextSnapshot: unknown): Set<string> {
-  const ids = record(record(contextSnapshot).paperclipOpenwa).grantIds;
+  const ids = record(record(contextSnapshot).wardmoteOpenwa).grantIds;
   return new Set(Array.isArray(ids) ? ids.filter((id): id is string => typeof id === "string") : []);
 }
 
 function runEvent(contextSnapshot: unknown): string | null {
-  const event = record(record(contextSnapshot).paperclipOpenwa).event;
+  const event = record(record(contextSnapshot).wardmoteOpenwa).event;
   return typeof event === "string" ? event : null;
 }
 
@@ -654,7 +654,7 @@ export async function openwaTypingAllowed(
         eq(heartbeatRuns.agentId, input.agentId),
         eq(sql<string>`${heartbeatRuns.contextSnapshot}->>'issueId'`, sql<string>`${chatConversations.issueId}::text`),
         inArray(heartbeatRuns.status, ["queued", "running"]),
-        sql`(${heartbeatRuns.contextSnapshot} -> 'openwa' ->> 'triggerClass' is not null or ${heartbeatRuns.contextSnapshot} -> 'paperclipOpenwa' ->> 'triggerClass' is not null)`,
+        sql`(${heartbeatRuns.contextSnapshot} -> 'openwa' ->> 'triggerClass' is not null or ${heartbeatRuns.contextSnapshot} -> 'wardmoteOpenwa' ->> 'triggerClass' is not null)`,
       ),
     )
     .where(and(eq(chatEndpoints.companyId, input.companyId), eq(chatEndpoints.id, input.endpointId)))

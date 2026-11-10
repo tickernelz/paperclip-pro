@@ -57,7 +57,7 @@ describeEmbeddedPostgres("heartbeat runtime skill version pins", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
   let oldWardmoteHome: string | undefined;
   let oldWardmoteApiUrl: string | undefined;
-  let paperclipHome: string | null = null;
+  let wardmoteHome: string | null = null;
   const capturedRuns: Array<{
     agentId: string;
     skills: WardmoteSkillEntry[];
@@ -71,8 +71,8 @@ describeEmbeddedPostgres("heartbeat runtime skill version pins", () => {
     tempDb = await startEmbeddedPostgresTestDatabase("heartbeat-runtime-skills-");
     db = createDb(tempDb.connectionString);
     oldWardmoteHome = process.env.WARDMOTE_HOME;
-    paperclipHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-skills-home-"));
-    process.env.WARDMOTE_HOME = paperclipHome;
+    wardmoteHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-skills-home-"));
+    process.env.WARDMOTE_HOME = wardmoteHome;
     // The server normalizes WARDMOTE_API_URL into its own env at boot
     // (server/src/index.ts); heartbeat gateway delivery requires it, so pin
     // a deterministic value for tests that never boot the full server.
@@ -89,7 +89,7 @@ describeEmbeddedPostgres("heartbeat runtime skill version pins", () => {
         await ctx.onLog("stdout", `${serializedRuntimeInput}\n`);
         capturedRuns.push({
           agentId: ctx.agent.id,
-          skills: (ctx.config.paperclipRuntimeSkills ?? []) as WardmoteSkillEntry[],
+          skills: (ctx.config.wardmoteRuntimeSkills ?? []) as WardmoteSkillEntry[],
           mcpServers: ctx.runtimeMcp?.getServers() ?? [],
           config: ctx.config,
           serializedRuntimeInput,
@@ -139,8 +139,8 @@ describeEmbeddedPostgres("heartbeat runtime skill version pins", () => {
     else process.env.WARDMOTE_HOME = oldWardmoteHome;
     if (oldWardmoteApiUrl === undefined) delete process.env.WARDMOTE_API_URL;
     else process.env.WARDMOTE_API_URL = oldWardmoteApiUrl;
-    if (paperclipHome) {
-      await fs.rm(paperclipHome, { recursive: true, force: true });
+    if (wardmoteHome) {
+      await fs.rm(wardmoteHome, { recursive: true, force: true });
     }
     await tempDb?.cleanup();
   });
@@ -429,7 +429,7 @@ describeEmbeddedPostgres("heartbeat runtime skill version pins", () => {
     const bearer = captured?.mcpServers[0]?.token;
     expect(bearer).toMatch(/^pcgw_/);
     if (!bearer) throw new Error("Expected runtime MCP bearer");
-    expect(captured?.config).not.toHaveProperty("paperclipRuntimeMcpServers");
+    expect(captured?.config).not.toHaveProperty("wardmoteRuntimeMcpServers");
     expect(JSON.stringify(captured?.config)).not.toContain(bearer);
     expect(captured?.serializedRuntimeInput).not.toContain(bearer);
     const log = await heartbeat.readLog(run!.id);

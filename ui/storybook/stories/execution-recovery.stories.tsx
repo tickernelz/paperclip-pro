@@ -6,7 +6,7 @@ import { TaskChatRunnerTurn } from "@/components/task-chat/TaskChatRunnerTurn";
 import { TaskChatLiveRunPill } from "@/components/task-chat/TaskChatLiveRunPill";
 import { Textarea } from "@/components/ui/textarea";
 import { queryKeys } from "@/lib/queryKeys";
-import { createIssue, storybookLiveRuns } from "../fixtures/paperclipData";
+import { createIssue, storybookLiveRuns } from "../fixtures/wardmoteData";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import type { ExecutionProjection } from "@tickernelz/wardmote-shared";
 import { expect, userEvent, within } from "storybook/test";

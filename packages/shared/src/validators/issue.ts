@@ -1363,14 +1363,14 @@ export const askUserQuestionsQuestionSchema = z.object({
   options: z.array(askUserQuestionsQuestionOptionSchema).min(1).max(129),
 });
 
-const paperclipQuestionOptionSchema = z.object({
+const wardmoteQuestionOptionSchema = z.object({
   id: z.string().min(1).max(160),
   label: z.string().min(1).max(1000),
   description: z.string().max(4000).optional(),
   recommended: z.boolean().optional(),
 });
 
-const paperclipQuestionSchema = z
+const wardmoteQuestionSchema = z
   .object({
     id: z.string().min(1).max(160),
     header: z.string().max(1000).optional(),
@@ -1379,7 +1379,7 @@ const paperclipQuestionSchema = z
     required: z.boolean(),
     answerMode: z.enum(["single_select", "multi_select", "text"]),
     initialText: z.string().refine(value => value.length <= 200000 && Array.from(value).length <= 100000, "initial text exceeds 100000 Unicode code points").optional(),
-    options: z.array(paperclipQuestionOptionSchema).max(128).optional(),
+    options: z.array(wardmoteQuestionOptionSchema).max(128).optional(),
     customAnswer: z
       .object({
         enabled: z.literal(true),
@@ -1473,13 +1473,13 @@ const paperclipQuestionSchema = z
     }
   });
 
-export const paperclipQuestionSetPayloadSchema = z
+export const wardmoteQuestionSetPayloadSchema = z
   .object({
     schema: z.literal("paperclip.question_set.v1"),
     title: z.string().max(1000).optional(),
     description: z.string().max(100_000).optional(),
     submitLabel: z.string().max(200).optional(),
-    questions: z.array(paperclipQuestionSchema).min(1).max(64),
+    questions: z.array(wardmoteQuestionSchema).min(1).max(64),
   })
   .superRefine((value, ctx) => {
     const questionIds = value.questions.map((question) => question.id);
@@ -1499,7 +1499,7 @@ const askUserQuestionsPayloadFields = {
   supersedeOnUserComment: z.boolean().optional(),
   questions: z.array(askUserQuestionsQuestionSchema).min(1).max(64),
   /** Exact canonical presentation retained for a recovered harness request. */
-  questionSet: paperclipQuestionSetPayloadSchema.optional(),
+  questionSet: wardmoteQuestionSetPayloadSchema.optional(),
   /** Stable correlation for draft handoff from a live runtime request. */
   runtimeRequestId: z.string().trim().min(1).max(255).nullable().optional(),
 };
@@ -2079,7 +2079,7 @@ const createAskUserQuestionsPayloadSchema = z.union([
     ...askUserQuestionsPayloadFields,
     // Do not discard an explicitly supplied conflicting compatibility form.
     questions: z.never().optional(),
-    questionSet: paperclipQuestionSetPayloadSchema,
+    questionSet: wardmoteQuestionSetPayloadSchema,
   }).transform(({ questions: _questions, ...value }): z.input<typeof createLegacyAskUserQuestionsPayloadSchema> => ({
     ...questionSetToAskUserQuestionsPayload(value.questionSet),
     ...value,

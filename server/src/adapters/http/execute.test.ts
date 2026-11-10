@@ -18,7 +18,7 @@ describe("http adapter execute", () => {
     guardedFetchMock.mockImplementation(async (_url: string, init?: RequestInit) => {
       expect(onDispatch).toHaveBeenCalledOnce();
       const body = JSON.parse(String(init?.body)) as Record<string, unknown>;
-      expect(body.paperclipRuntimeTools).toEqual({
+      expect(body.wardmoteRuntimeTools).toEqual({
         version: 1,
         guidance: CONNECTION_INTENT_AGENT_GUIDANCE,
         mcpEndpoint: "https://paperclip.test/mcp/runtime-tools",

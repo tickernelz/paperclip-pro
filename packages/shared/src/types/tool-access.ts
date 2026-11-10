@@ -1521,7 +1521,7 @@ export interface ToolPolicyConditions {
     applicationKey?: string;
     applicationKeys?: string[];
     remoteHttpOnly?: boolean;
-    paperclipSelfOnly?: boolean;
+    wardmoteSelfOnly?: boolean;
   };
   timeWindow?: {
     startAt?: string;

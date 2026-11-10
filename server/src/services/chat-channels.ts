@@ -5098,7 +5098,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     const link = await tx
       .select({
         status: chatIdentityLinks.status,
-        userId: chatIdentityLinks.paperclipUserId,
+        userId: chatIdentityLinks.wardmoteUserId,
       })
       .from(chatIdentityLinks)
       .where(
@@ -10546,7 +10546,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         eq(companyMemberships.principalId, userId), eq(companyMemberships.status, "active"), ne(companyMemberships.membershipRole, "viewer"),
       ))
       .where(and(eq(chatIdentityLinks.companyId, endpoint.companyId), eq(chatIdentityLinks.endpointId, endpoint.id),
-        eq(chatIdentityLinks.paperclipUserId, userId), eq(chatIdentityLinks.status, "linked")))
+        eq(chatIdentityLinks.wardmoteUserId, userId), eq(chatIdentityLinks.status, "linked")))
       .limit(1).then((rows) => rows[0] ?? null);
   }
 
@@ -10557,7 +10557,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     if (!startedAt) return { messageReceivedAt: null };
     const links = await db.select({ principalId: chatIdentityLinks.principalId }).from(chatIdentityLinks).where(and(
       eq(chatIdentityLinks.companyId, record.endpoint.companyId), eq(chatIdentityLinks.endpointId, endpointId),
-      eq(chatIdentityLinks.paperclipUserId, userId), eq(chatIdentityLinks.status, "linked"),
+      eq(chatIdentityLinks.wardmoteUserId, userId), eq(chatIdentityLinks.status, "linked"),
     ));
     if (!links.length) return { messageReceivedAt: null };
     const principalIds = links.map((link) => link.principalId);
@@ -10792,7 +10792,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
           await credentialLease.assertOwned(tx);
           if (optionalSlackTest) {
             const linked = await tx.select({ principalId: chatIdentityLinks.principalId }).from(chatIdentityLinks).where(and(
-              eq(chatIdentityLinks.endpointId, endpoint.id), eq(chatIdentityLinks.paperclipUserId, finishOptions!.optionalSlackTestForUser), eq(chatIdentityLinks.status, "linked"),
+              eq(chatIdentityLinks.endpointId, endpoint.id), eq(chatIdentityLinks.wardmoteUserId, finishOptions!.optionalSlackTestForUser), eq(chatIdentityLinks.status, "linked"),
             )).limit(1).then((rows) => rows[0]);
             if (!linked || !(await lockCurrentPrincipalAuthorization(tx, endpoint, linked.principalId)).allowed) throw forbidden("Your connected account is no longer authorized");
           }
@@ -10904,7 +10904,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     }
     const link = await db
       .select({
-        userId: chatIdentityLinks.paperclipUserId,
+        userId: chatIdentityLinks.wardmoteUserId,
         status: chatIdentityLinks.status,
       })
       .from(chatIdentityLinks)
@@ -11005,7 +11005,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     const link = await tx
       .select({
         status: chatIdentityLinks.status,
-        userId: chatIdentityLinks.paperclipUserId,
+        userId: chatIdentityLinks.wardmoteUserId,
       })
       .from(chatIdentityLinks)
       .where(
@@ -23766,7 +23766,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
           if (principal && !principal.isBot && principal.kind === "user") {
             const link = await db
               .select({
-                paperclipUserId: chatIdentityLinks.paperclipUserId,
+                wardmoteUserId: chatIdentityLinks.wardmoteUserId,
                 status: chatIdentityLinks.status,
               })
               .from(chatIdentityLinks)
@@ -23777,7 +23777,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
                 ),
               )
               .then((rows) => rows[0] ?? null);
-            if (link?.status === "linked" && link.paperclipUserId) {
+            if (link?.status === "linked" && link.wardmoteUserId) {
               principalAllowed = await db
                 .select({ id: companyMemberships.id })
                 .from(companyMemberships)
@@ -23785,7 +23785,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
                   and(
                     eq(companyMemberships.companyId, record.endpoint.companyId),
                     eq(companyMemberships.principalType, "user"),
-                    eq(companyMemberships.principalId, link.paperclipUserId),
+                    eq(companyMemberships.principalId, link.wardmoteUserId),
                     eq(companyMemberships.status, "active"),
                     ne(companyMemberships.membershipRole, "viewer"),
                   ),
@@ -24589,7 +24589,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
             status: "pending", confirmationTokenHash: tokenHash, expiresAt,
           }).onConflictDoUpdate({
             target: [chatIdentityLinks.endpointId, chatIdentityLinks.principalId],
-            set: { paperclipUserId: null, status: "pending", confirmationTokenHash: tokenHash, expiresAt, confirmedAt: null, revokedAt: null, updatedAt: new Date() },
+            set: { wardmoteUserId: null, status: "pending", confirmationTokenHash: tokenHash, expiresAt, confirmedAt: null, revokedAt: null, updatedAt: new Date() },
           });
           await tx.update(chatActions).set({ payload: {
             version: 1, channelId: event.event.channel.id, userId: event.event.user.userId, identityLinkHash: tokenHash,
@@ -29496,7 +29496,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       .groupBy(chatActions.principalId) : [];
     const connectByPrincipal = new Map(connects.map((row) => [row.principalId, new Date(row.lastConnectAt).toISOString()]));
     const userIds = links.flatMap((link) =>
-      link.paperclipUserId ? [link.paperclipUserId] : [],
+      link.wardmoteUserId ? [link.wardmoteUserId] : [],
     );
     const users = userIds.length
       ? await db
@@ -29514,8 +29514,8 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     const userById = new Map(users.map((user) => [user.id, user]));
     return principals.map((principal) => {
       const link = linkByPrincipal.get(principal.id);
-      const user = link?.paperclipUserId
-        ? userById.get(link.paperclipUserId)
+      const user = link?.wardmoteUserId
+        ? userById.get(link.wardmoteUserId)
         : null;
       return {
         id: link?.id ?? principal.id,
@@ -29526,8 +29526,8 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         externalDetail: principal.handle
           ? `@${principal.handle.replace(/^@/, "")}`
           : principal.externalId,
-        paperclipUserId: link?.paperclipUserId ?? null,
-        paperclipUserLabel: user?.name ?? user?.email ?? null,
+        wardmoteUserId: link?.wardmoteUserId ?? null,
+        wardmoteUserLabel: user?.name ?? user?.email ?? null,
         status: link?.status ?? "pending",
         lastConnectAt: connectByPrincipal.get(principal.id) ?? null,
       };
@@ -29596,7 +29596,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         .onConflictDoUpdate({
           target: [chatIdentityLinks.endpointId, chatIdentityLinks.principalId],
           set: {
-            paperclipUserId: null,
+            wardmoteUserId: null,
             status: "pending",
             confirmationTokenHash: tokenHash,
             expiresAt,
@@ -29716,7 +29716,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     });
   }
 
-  async function confirmIdentityLink(token: string, paperclipUserId: string) {
+  async function confirmIdentityLink(token: string, wardmoteUserId: string) {
     const tokenHash = createHash("sha256").update(token).digest("hex");
     const link = await db
       .select()
@@ -29780,7 +29780,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
           and(
             eq(companyMemberships.companyId, currentLink.companyId),
             eq(companyMemberships.principalType, "user"),
-            eq(companyMemberships.principalId, paperclipUserId),
+            eq(companyMemberships.principalId, wardmoteUserId),
           ),
         )
         .for("update")
@@ -29793,7 +29793,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       const conflictingLink = await tx
         .select({
           id: chatIdentityLinks.id,
-          paperclipUserId: chatIdentityLinks.paperclipUserId,
+          wardmoteUserId: chatIdentityLinks.wardmoteUserId,
         })
         .from(chatIdentityLinks)
         .where(
@@ -29801,7 +29801,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
             eq(chatIdentityLinks.companyId, link.companyId),
             eq(chatIdentityLinks.principalId, link.principalId),
             eq(chatIdentityLinks.status, "linked"),
-            ne(chatIdentityLinks.paperclipUserId, paperclipUserId),
+            ne(chatIdentityLinks.wardmoteUserId, wardmoteUserId),
           ),
         )
         .limit(1)
@@ -29817,7 +29817,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       const confirmedLink = await tx
         .update(chatIdentityLinks)
         .set({
-          paperclipUserId,
+          wardmoteUserId,
           status: "linked",
           confirmationTokenHash: null,
           confirmedAt: now,
@@ -29888,7 +29888,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       return tx
         .update(chatIdentityLinks)
         .set({
-          paperclipUserId: null,
+          wardmoteUserId: null,
           status: "revoked",
           confirmationTokenHash: null,
           revokedAt: new Date(),
@@ -31565,7 +31565,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         }
         const link = await db
           .select({
-            paperclipUserId: chatIdentityLinks.paperclipUserId,
+            wardmoteUserId: chatIdentityLinks.wardmoteUserId,
             status: chatIdentityLinks.status,
           })
           .from(chatIdentityLinks)
@@ -31577,7 +31577,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
           )
           .then((rows) => rows[0] ?? null);
         let principalAllowed = false;
-        if (link?.status === "linked" && link.paperclipUserId) {
+        if (link?.status === "linked" && link.wardmoteUserId) {
           principalAllowed = await db
             .select({ membershipRole: companyMemberships.membershipRole })
             .from(companyMemberships)
@@ -31585,7 +31585,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
               and(
                 eq(companyMemberships.companyId, record.endpoint.companyId),
                 eq(companyMemberships.principalType, "user"),
-                eq(companyMemberships.principalId, link.paperclipUserId),
+                eq(companyMemberships.principalId, link.wardmoteUserId),
                 eq(companyMemberships.status, "active"),
                 ne(companyMemberships.membershipRole, "viewer"),
               ),
@@ -32579,7 +32579,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       )
       .for("update", { noWait: true });
     const userId =
-      link?.status === "linked" ? link.paperclipUserId : endpoint.sponsorUserId;
+      link?.status === "linked" ? link.wardmoteUserId : endpoint.sponsorUserId;
     if (userId)
       await tx
         .select()
@@ -39950,8 +39950,8 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       if (!connection || connection.status !== "active" || !connection.enabled) return false;
       const [link] = await db.select({ id: chatIdentityLinks.id }).from(chatIdentityLinks)
         .innerJoin(chatExternalPrincipals, and(eq(chatExternalPrincipals.id, chatIdentityLinks.principalId), eq(chatExternalPrincipals.companyId, chatIdentityLinks.companyId)))
-        .innerJoin(companyMemberships, and(eq(companyMemberships.companyId, chatIdentityLinks.companyId), eq(companyMemberships.principalType, "user"), eq(companyMemberships.principalId, account.paperclipUserId), eq(companyMemberships.status, "active"), ne(companyMemberships.membershipRole, "viewer")))
-        .where(and(eq(chatIdentityLinks.companyId, record.endpoint.companyId), eq(chatIdentityLinks.endpointId, endpointId), eq(chatIdentityLinks.status, "linked"), eq(chatIdentityLinks.paperclipUserId, account.paperclipUserId), eq(chatExternalPrincipals.externalId, account.externalUserId), eq(chatExternalPrincipals.providerAccountId, record.endpoint.providerAccountId!)));
+        .innerJoin(companyMemberships, and(eq(companyMemberships.companyId, chatIdentityLinks.companyId), eq(companyMemberships.principalType, "user"), eq(companyMemberships.principalId, account.wardmoteUserId), eq(companyMemberships.status, "active"), ne(companyMemberships.membershipRole, "viewer")))
+        .where(and(eq(chatIdentityLinks.companyId, record.endpoint.companyId), eq(chatIdentityLinks.endpointId, endpointId), eq(chatIdentityLinks.status, "linked"), eq(chatIdentityLinks.wardmoteUserId, account.wardmoteUserId), eq(chatExternalPrincipals.externalId, account.externalUserId), eq(chatExternalPrincipals.providerAccountId, record.endpoint.providerAccountId!)));
       return Boolean(link);
     },
     linkInstaller: async (endpointId, user, actor, lease) => {
@@ -39967,12 +39967,12 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         const membership = (await tx.select().from(companyMemberships).where(and(eq(companyMemberships.companyId, record.endpoint.companyId), eq(companyMemberships.principalType, "user"), eq(companyMemberships.principalId, actor.userId))).for("update"))[0];
         if (membership?.status !== "active" || membership.membershipRole === "viewer") throw forbidden("The signed-in Paperclip account cannot use this connection");
         const links = await tx.select().from(chatIdentityLinks).where(and(eq(chatIdentityLinks.companyId, record.endpoint.companyId), eq(chatIdentityLinks.principalId, principal.id))).for("update");
-        if (links.some(link => link.status === "linked" && link.paperclipUserId !== actor.userId) || links.some(link => link.endpointId === endpointId && link.status === "revoked")) throw conflict("This Slack account has an existing link", { code: "chat_identity_link_conflict" });
+        if (links.some(link => link.status === "linked" && link.wardmoteUserId !== actor.userId) || links.some(link => link.endpointId === endpointId && link.status === "revoked")) throw conflict("This Slack account has an existing link", { code: "chat_identity_link_conflict" });
         if (links.some(link => link.endpointId === endpointId && link.status === "linked")) return;
         await tx.insert(chatIdentityLinks).values({ companyId: record.endpoint.companyId, endpointId, principalId: principal.id,
-          paperclipUserId: actor.userId, status: "linked", confirmedAt: new Date() })
+          wardmoteUserId: actor.userId, status: "linked", confirmedAt: new Date() })
           .onConflictDoUpdate({ target: [chatIdentityLinks.endpointId, chatIdentityLinks.principalId], set: {
-            paperclipUserId: actor.userId, status: "linked", confirmationTokenHash: null, expiresAt: null, confirmedAt: new Date(), revokedAt: null, updatedAt: new Date(),
+            wardmoteUserId: actor.userId, status: "linked", confirmationTokenHash: null, expiresAt: null, confirmedAt: new Date(), revokedAt: null, updatedAt: new Date(),
           } });
         await lease.assertOwned(tx);
       });
@@ -40128,7 +40128,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         const links = await tx.select({ principal: chatExternalPrincipals }).from(chatIdentityLinks)
           .innerJoin(chatExternalPrincipals, and(eq(chatExternalPrincipals.id, chatIdentityLinks.principalId), eq(chatExternalPrincipals.companyId, binding.companyId)))
           .where(and(eq(chatIdentityLinks.companyId, binding.companyId), eq(chatIdentityLinks.endpointId, endpoint.id),
-            eq(chatIdentityLinks.paperclipUserId, run.responsibleUserId!), eq(chatIdentityLinks.status, "linked"),
+            eq(chatIdentityLinks.wardmoteUserId, run.responsibleUserId!), eq(chatIdentityLinks.status, "linked"),
             eq(chatExternalPrincipals.provider, "slack"), eq(chatExternalPrincipals.providerAccountId, endpoint.providerAccountId!), eq(chatExternalPrincipals.isBot, false)));
         if (links.length !== 1) throw forbidden("Link your Slack account to this connection before using it from tasks or routines");
         // A Board message changes who is directing the work, not the privacy

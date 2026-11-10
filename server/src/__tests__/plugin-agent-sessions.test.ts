@@ -78,7 +78,7 @@ describe("plugin agent sessions", () => {
           wakeReason: "gateway_chat_message",
           wakeSource: "automation",
           wakeTriggerDetail: "system",
-          paperclipAgentMessage: {
+          wardmoteAgentMessage: {
             text: "hello",
             source: "plugin_session",
             pluginKey: "paperclip.gateway",

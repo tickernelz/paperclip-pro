@@ -131,7 +131,7 @@ describe("Codex app-server Codex driver", () => {
     expect(events.map((event) => event.sourceEventId)).toEqual(
       expect.arrayContaining(itemMapping?.emittedEventIds ?? []),
     );
-    expect(JSON.stringify(events)).not.toContain("paperclipTrace");
+    expect(JSON.stringify(events)).not.toContain("wardmoteTrace");
   });
 
   it("maps canonical workspace snapshots with monotonic revisions and one terminal diff", async () => {

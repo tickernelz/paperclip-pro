@@ -2005,8 +2005,8 @@ async function startServerWithDatabaseTeardown(
       logger.error({ err, signal }, "run-log in-flight mirror flush failed");
     }
 
-    const appShutdown = (app as { locals?: { paperclipShutdown?: () => Promise<void> } }).locals
-      ?.paperclipShutdown;
+    const appShutdown = (app as { locals?: { wardmoteShutdown?: () => Promise<void> } }).locals
+      ?.wardmoteShutdown;
     const stopEmbeddedPostgres = embeddedPostgres && embeddedPostgresStartedByThisProcess
       ? () => embeddedPostgresSupervisor?.shutdown() ?? embeddedPostgres!.stop()
       : null;

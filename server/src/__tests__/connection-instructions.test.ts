@@ -134,12 +134,12 @@ async function createRemoteMcpToolFixture(db: ReturnType<typeof createDb>, compa
   it("persists a non-memory paragraph and captures it in actual process input and both prompt composers", async () => {
     const f = await fixture();
     expect((await f.service.getConnection(f.connection.id)).agentInstructions).toEqual({ enabled: true, text: paragraph });
-    const context: Record<string, unknown> = { connectionInstructions: { text: "forged" }, paperclipWake: { connectionInstructions: { text: "forged wake" } } };
-    const config = await prepareConnectionInstructionDelivery({ resolve: f.resolve, context, config: { paperclipConnectionInstructions: { text: "forged config" } }, native: false });
-    const snapshot = config.paperclipConnectionInstructions as { text: string; digest: string };
+    const context: Record<string, unknown> = { connectionInstructions: { text: "forged" }, wardmoteWake: { connectionInstructions: { text: "forged wake" } } };
+    const config = await prepareConnectionInstructionDelivery({ resolve: f.resolve, context, config: { wardmoteConnectionInstructions: { text: "forged config" } }, native: false });
+    const snapshot = config.wardmoteConnectionInstructions as { text: string; digest: string };
     expect(snapshot.text).toContain(paragraph);
     expect(snapshot.text).not.toContain("forged");
-    expect(renderWardmoteWakePrompt(context.paperclipWake)).toContain(paragraph);
+    expect(renderWardmoteWakePrompt(context.wardmoteWake)).toContain(paragraph);
     const runtimeContext = { ...nativeRuntimeContextFixture(), connectionInstructions: snapshot };
     runtimeContext.aggregateDigest = canonicalNativeRuntimeContextDigest(runtimeContext);
     const parsed = parseNativeRuntimeContext(runtimeContext);
@@ -185,10 +185,10 @@ async function createRemoteMcpToolFixture(db: ReturnType<typeof createDb>, compa
     expect(await f.resolve()).toBeNull();
     const session = await f.gateway.createSession(f.binding);
     expect((await f.gateway.listToolsForSession(session.token)).some(tool => tool.connectionId === f.connection.id)).toBe(true);
-    const context: Record<string, unknown> = { connectionInstructions: first, paperclipWake: { connectionInstructions: first } };
-    const config = await prepareConnectionInstructionDelivery({ resolve: f.resolve, context, config: { paperclipConnectionInstructions: first }, native: false });
-    expect(config.paperclipConnectionInstructions).toBeNull();
-    expect(renderWardmoteWakePrompt(context.paperclipWake)).not.toContain(paragraph);
+    const context: Record<string, unknown> = { connectionInstructions: first, wardmoteWake: { connectionInstructions: first } };
+    const config = await prepareConnectionInstructionDelivery({ resolve: f.resolve, context, config: { wardmoteConnectionInstructions: first }, native: false });
+    expect(config.wardmoteConnectionInstructions).toBeNull();
+    expect(renderWardmoteWakePrompt(context.wardmoteWake)).not.toContain(paragraph);
   });
 
   it("follows assignment, action policy, grant revocation, and company boundaries", async () => {

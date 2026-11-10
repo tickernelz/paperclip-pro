@@ -115,14 +115,14 @@ import { currentEnvKey } from "@tickernelz/wardmote-shared/retired-env-file";
 
 const EXTERNAL_ATTACHMENT_OMISSIONS_KEY = "externalAttachmentOmissions";
 
-export const WARDMOTE_WAKE_PAYLOAD_KEY = "paperclipWake";
+export const WARDMOTE_WAKE_PAYLOAD_KEY = "wardmoteWake";
 
-const WARDMOTE_AGENT_MESSAGE_KEY = "paperclipAgentMessage";
+const WARDMOTE_AGENT_MESSAGE_KEY = "wardmoteAgentMessage";
 
-export const WARDMOTE_HARNESS_CHECKOUT_KEY = "paperclipHarnessCheckedOut";
+export const WARDMOTE_HARNESS_CHECKOUT_KEY = "wardmoteHarnessCheckedOut";
 
 export const WARDMOTE_EXTERNAL_CHAT_EXECUTION_BOUND_KEY =
-  "paperclipExternalChatExecutionBound";
+  "wardmoteExternalChatExecutionBound";
 
 const MAX_INLINE_WAKE_COMMENTS = 8;
 
@@ -815,7 +815,7 @@ export function configuredWardmoteApiBaseUrl(): string | null {
     : null;
 }
 
-export function paperclipApiBaseUrl(): string {
+export function wardmoteApiBaseUrl(): string {
   const configured = configuredWardmoteApiBaseUrl();
   if (!configured) {
     throw new Error(
@@ -1159,7 +1159,7 @@ export async function buildWardmoteRuntimeMcpServers(input: {
   return [
     {
       name: ASSIGNED_MCP_SERVER_NAME,
-      url: `${paperclipApiBaseUrl()}/mcp/gateways/${gateway!.gatewayPublicId}`,
+      url: `${wardmoteApiBaseUrl()}/mcp/gateways/${gateway!.gatewayPublicId}`,
       token: token.token,
       connectionId: `assignment:${assignmentDigest}`,
     },
@@ -2441,7 +2441,7 @@ export async function buildWardmoteWakePayload(input: {
     executionStage:
       Object.keys(executionStage).length > 0 ? executionStage : null,
     taskWatchdog: (input.contextSnapshot.taskWatchdog ?? null) as unknown,
-    skillTest: (input.contextSnapshot.paperclipSkillTest ?? null) as unknown,
+    skillTest: (input.contextSnapshot.wardmoteSkillTest ?? null) as unknown,
     continuationSummary: safeContinuationSummary
       ? {
           key: safeContinuationSummary.key,

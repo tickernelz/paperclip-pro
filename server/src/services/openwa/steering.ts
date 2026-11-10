@@ -181,7 +181,7 @@ function steeredSenders(rows: Array<{ normalizedEvent: unknown }>): string[] {
   return [...labels];
 }
 
-/** Adds steered trigger ids to the running run's visible deliveries (openwa.deliveryIds and paperclipOpenwa.deliveryIds). */
+/** Adds steered trigger ids to the running run's visible deliveries (openwa.deliveryIds and wardmoteOpenwa.deliveryIds). */
 export async function appendOpenwaSteeredDeliveries(db: Db, input: { companyId: string; runId: string; deliveryIds: string[] }): Promise<void> {
   if (!input.deliveryIds.length) return;
   const ids = JSON.stringify(input.deliveryIds);
@@ -190,13 +190,13 @@ export async function appendOpenwaSteeredDeliveries(db: Db, input: { companyId: 
   await db
     .update(heartbeatRuns)
     .set({
-      contextSnapshot: sql`jsonb_set(jsonb_set(${heartbeatRuns.contextSnapshot}, '{openwa}', coalesce(${heartbeatRuns.contextSnapshot} -> 'openwa', '{}'::jsonb) || jsonb_build_object('deliveryIds', ${merged("openwa")})), '{paperclipOpenwa,deliveryIds}', ${merged("paperclipOpenwa")})`,
+      contextSnapshot: sql`jsonb_set(jsonb_set(${heartbeatRuns.contextSnapshot}, '{openwa}', coalesce(${heartbeatRuns.contextSnapshot} -> 'openwa', '{}'::jsonb) || jsonb_build_object('deliveryIds', ${merged("openwa")})), '{wardmoteOpenwa,deliveryIds}', ${merged("wardmoteOpenwa")})`,
     })
     .where(and(
       eq(heartbeatRuns.companyId, input.companyId),
       eq(heartbeatRuns.id, input.runId),
       eq(heartbeatRuns.status, "running"),
-      sql`${heartbeatRuns.contextSnapshot} -> 'paperclipOpenwa' is not null`,
+      sql`${heartbeatRuns.contextSnapshot} -> 'wardmoteOpenwa' is not null`,
     ));
 }
 
@@ -329,9 +329,9 @@ export async function openwaOwnerAbsentRunActive(db: Db, input: { companyId: str
     .where(and(
       eq(heartbeatRuns.companyId, input.companyId),
       eq(heartbeatRuns.status, "running"),
-      sql`${heartbeatRuns.contextSnapshot} -> 'paperclipOpenwa' ->> 'endpointId' = ${input.endpointId}`,
-      sql`${heartbeatRuns.contextSnapshot} -> 'paperclipOpenwa' ->> 'chatKey' = ${input.chatKey}`,
-      sql`${heartbeatRuns.contextSnapshot} -> 'paperclipOpenwa' ->> 'event' = 'owner_absent'`,
+      sql`${heartbeatRuns.contextSnapshot} -> 'wardmoteOpenwa' ->> 'endpointId' = ${input.endpointId}`,
+      sql`${heartbeatRuns.contextSnapshot} -> 'wardmoteOpenwa' ->> 'chatKey' = ${input.chatKey}`,
+      sql`${heartbeatRuns.contextSnapshot} -> 'wardmoteOpenwa' ->> 'event' = 'owner_absent'`,
     ))
     .limit(1);
   return Boolean(row);

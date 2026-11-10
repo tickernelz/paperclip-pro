@@ -40,28 +40,28 @@ export function patchCursorRuntimeSource(source, platform) {
   // through the native global-rule request context, for both new and load. The
   // process-owned snapshot never discovers an instruction path in the workspace.
   const instructionModule = 'n.d(t,{Y:()=>K});';
-  replace(instructionModule, `n.d(t,{Y:()=>K,paperclipInstructionState:()=>paperclipCursorInstructionState});
-const paperclipCursorInstructionCrypto=n("node:crypto"),paperclipCursorInstructionRules=n("../proto/dist/generated/agent/v1/cursor_rules_pb.js");
-let paperclipCursorInstructionSnapshot;
-function paperclipCursorInstructionState(){
-if(paperclipCursorInstructionSnapshot)return paperclipCursorInstructionSnapshot;
+  replace(instructionModule, `n.d(t,{Y:()=>K,wardmoteInstructionState:()=>wardmoteCursorInstructionState});
+const wardmoteCursorInstructionCrypto=n("node:crypto"),wardmoteCursorInstructionRules=n("../proto/dist/generated/agent/v1/cursor_rules_pb.js");
+let wardmoteCursorInstructionSnapshot;
+function wardmoteCursorInstructionState(){
+if(wardmoteCursorInstructionSnapshot)return wardmoteCursorInstructionSnapshot;
 const raw=process.env.WARDMOTE_CURSOR_INSTRUCTIONS;
 if(typeof raw!=="string"||Buffer.byteLength(raw)>200000)throw new Error("Cursor instruction binding missing or oversized");
 let value;try{value=JSON.parse(raw)}catch{throw new Error("Cursor instruction binding invalid")}
 if(!value||typeof value!=="object"||Array.isArray(value)||Object.keys(value).sort().join(",")!=="content,digest,schema"||value.schema!=="paperclip.cursor.instructions.v1"||typeof value.content!=="string"||value.content.includes("\\0")||Buffer.byteLength(value.content)>32768||typeof value.digest!=="string"||!/^sha256:[a-f0-9]{64}$/.test(value.digest))throw new Error("Cursor instruction binding invalid");
-const digest="sha256:"+paperclipCursorInstructionCrypto.createHash("sha256").update(value.content,"utf8").digest("hex");
+const digest="sha256:"+wardmoteCursorInstructionCrypto.createHash("sha256").update(value.content,"utf8").digest("hex");
 if(value.digest!==digest)throw new Error("Cursor instruction binding digest mismatch");
-const rules=value.content.length===0?[]:[new paperclipCursorInstructionRules.DX({fullPath:"paperclip://runtime/instructions",content:value.content,type:new paperclipCursorInstructionRules.f5({type:{case:"global",value:new paperclipCursorInstructionRules.i9}})})];
-return paperclipCursorInstructionSnapshot=Object.freeze({rules,ack:Object.freeze({schema:"paperclip.cursor.instructions.v1",digest,byteLength:Buffer.byteLength(value.content)})});
+const rules=value.content.length===0?[]:[new wardmoteCursorInstructionRules.DX({fullPath:"paperclip://runtime/instructions",content:value.content,type:new wardmoteCursorInstructionRules.f5({type:{case:"global",value:new wardmoteCursorInstructionRules.i9}})})];
+return wardmoteCursorInstructionSnapshot=Object.freeze({rules,ack:Object.freeze({schema:"paperclip.cursor.instructions.v1",digest,byteLength:Buffer.byteLength(value.content)})});
 }`);
-  replace("cursorRulesService:n.cursorRulesService,", "cursorRulesService:n.cursorRulesService,additionalRules:paperclipCursorInstructionState().rules,");
-  replace("S={sessionId:o,modes:this.buildModesState(a),models:I,configOptions:w}", "S={sessionId:o,modes:this.buildModesState(a),models:I,configOptions:w,_meta:{paperclipCursorInstructions:y.paperclipInstructionState().ack}}");
+  replace("cursorRulesService:n.cursorRulesService,", "cursorRulesService:n.cursorRulesService,additionalRules:wardmoteCursorInstructionState().rules,");
+  replace("S={sessionId:o,modes:this.buildModesState(a),models:I,configOptions:w}", "S={sessionId:o,modes:this.buildModesState(a),models:I,configOptions:w,_meta:{wardmoteCursorInstructions:y.wardmoteInstructionState().ack}}");
   const loadConfig = platform === "darwin-x64" ? "f" : "m";
-  replace(`w={modes:this.buildModesState(r),models:b,configOptions:${loadConfig}}`, `w={modes:this.buildModesState(r),models:b,configOptions:${loadConfig},_meta:{paperclipCursorInstructions:y.paperclipInstructionState().ack}}`);
+  replace(`w={modes:this.buildModesState(r),models:b,configOptions:${loadConfig}}`, `w={modes:this.buildModesState(r),models:b,configOptions:${loadConfig},_meta:{wardmoteCursorInstructions:y.wardmoteInstructionState().ack}}`);
   // Use the exact SDK module already present in this verified vendor chunk.
   const sdk = [...source.matchAll(/n\("([^"\n]+@agentclientprotocol\/sdk\/dist\/acp\.js)"\)/g)].map(match => match[1]);
   if (new Set(sdk).size !== 1) throw new Error("Cursor runtime patch SDK identity is ambiguous");
-  const errorType = "paperclipCursorResponseError";
+  const errorType = "wardmoteCursorResponseError";
   // processPrompt(e,t,n) shadows the webpack require name n. Bind the SDK
   // constructor at module scope rather than invoking that turn-ID argument.
   const sessionClass = platform === "darwin-arm64" ? "B" : "z";
@@ -73,20 +73,20 @@ return paperclipCursorInstructionSnapshot=Object.freeze({rules,ack:Object.freeze
     `if(e instanceof g.T&&e.code===${platform === "darwin-x64" ? "f" : "m"}.C.Unauthenticated)throw new (${errorType})(-32000,"Cursor provider authentication rejected",{schema:"paperclip.cursor.provider-error.v1",kind:"authentication_required"});`);
   // This diagnostic envelope never emits standard ACP usage or cost. Keep the
   // collector local to handlePrompt, including overlapping cancelled prompts.
-  replace(`const ${errorType}=`, `const paperclipCreateCursorUsage=${cursorNativeUsageSource};const ${errorType}=`);
-  replace("handlePrompt(e){return V(this,void 0,void 0,(function*(){var t,n,o;", "handlePrompt(e){return V(this,void 0,void 0,(function*(){var t,n,o;const paperclipUsage=paperclipCreateCursorUsage(crypto.randomUUID());let paperclipUsagePublisher,paperclipUsageTurn;try{");
-  replace("n.beginTurn(),d=()=>", "n.beginTurn();paperclipUsagePublisher=this.subagentPublisher;paperclipUsageTurn=l;if(paperclipUsagePublisher&&l!==undefined){paperclipUsagePublisher.paperclipUsageCollectors??=new Map;paperclipUsagePublisher.paperclipUsageCollectors.set(l,paperclipUsage)}const d=()=>");
-  replace("yield this.processPrompt(e,s,l)", "yield this.processPrompt(e,s,l,paperclipUsage)");
-  replace('{stopReason:"cancelled"}):{stopReason:"end_turn"}}))}claimTaskToolCall', '{stopReason:"cancelled",_meta:{paperclipCursorUsage:paperclipUsage.finish()}}):{stopReason:"end_turn",_meta:{paperclipCursorUsage:paperclipUsage.finish()}}}finally{paperclipUsage.close();paperclipUsagePublisher?.paperclipUsageCollectors?.delete(paperclipUsageTurn)}}))}claimTaskToolCall');
-  replace("processPrompt(e,t,n){", "processPrompt(e,t,n,paperclipUsage){");
+  replace(`const ${errorType}=`, `const wardmoteCreateCursorUsage=${cursorNativeUsageSource};const ${errorType}=`);
+  replace("handlePrompt(e){return V(this,void 0,void 0,(function*(){var t,n,o;", "handlePrompt(e){return V(this,void 0,void 0,(function*(){var t,n,o;const wardmoteUsage=wardmoteCreateCursorUsage(crypto.randomUUID());let wardmoteUsagePublisher,wardmoteUsageTurn;try{");
+  replace("n.beginTurn(),d=()=>", "n.beginTurn();wardmoteUsagePublisher=this.subagentPublisher;wardmoteUsageTurn=l;if(wardmoteUsagePublisher&&l!==undefined){wardmoteUsagePublisher.wardmoteUsageCollectors??=new Map;wardmoteUsagePublisher.wardmoteUsageCollectors.set(l,wardmoteUsage)}const d=()=>");
+  replace("yield this.processPrompt(e,s,l)", "yield this.processPrompt(e,s,l,wardmoteUsage)");
+  replace('{stopReason:"cancelled"}):{stopReason:"end_turn"}}))}claimTaskToolCall', '{stopReason:"cancelled",_meta:{paperclipCursorUsage:wardmoteUsage.finish()}}):{stopReason:"end_turn",_meta:{paperclipCursorUsage:wardmoteUsage.finish()}}}finally{wardmoteUsage.close();wardmoteUsagePublisher?.wardmoteUsageCollectors?.delete(wardmoteUsageTurn)}}))}claimTaskToolCall');
+  replace("processPrompt(e,t,n){", "processPrompt(e,t,n,wardmoteUsage){");
   // A fresh sendUpdate closure for EACH native invocation prevents a delayed
   // callback from an earlier follow-up from being attributed to the next one.
   const invocation = /D=e=>this\.sharedServices\.agentClient\.run\(t,this\.agentStore\.getConversationStateStructure\(\),e,b\.modelDetails,\$,this\.resources,this\.agentStore\.getBlobStore\(\),u,this\.agentStore,([A-Za-z]+),([A-Za-z]+)\)/g;
   const invocations = [...source.matchAll(invocation)];
   if (invocations.length !== 1) throw new Error("Cursor usage invocation anchor is ambiguous");
   const call = invocations[0];
-  replace(call[0], `D=async e=>{const observation=paperclipUsage?.beginParent();try{return await this.sharedServices.agentClient.run(t,this.agentStore.getConversationStateStructure(),e,b.modelDetails,{...$,sendUpdate:async(context,update)=>{observation?.observe(update);return $.sendUpdate(context,update)}},this.resources,this.agentStore.getBlobStore(),u,this.agentStore,${call[1]},${call[2]})}finally{observation?.end()}}`);
-  replace("onInteractionUpdate(e,t){if(!this.enabled)return;const n=this.children.get(e),o=null==n?void 0:n.presenter;", "onInteractionUpdate(e,t){if(!this.enabled)return;const n=this.children.get(e),o=null==n?void 0:n.presenter;if(n&&!n.terminal)this.paperclipUsageCollectors?.get(n.turn)?.observeChild(n,t);");
+  replace(call[0], `D=async e=>{const observation=wardmoteUsage?.beginParent();try{return await this.sharedServices.agentClient.run(t,this.agentStore.getConversationStateStructure(),e,b.modelDetails,{...$,sendUpdate:async(context,update)=>{observation?.observe(update);return $.sendUpdate(context,update)}},this.resources,this.agentStore.getBlobStore(),u,this.agentStore,${call[1]},${call[2]})}finally{observation?.end()}}`);
+  replace("onInteractionUpdate(e,t){if(!this.enabled)return;const n=this.children.get(e),o=null==n?void 0:n.presenter;", "onInteractionUpdate(e,t){if(!this.enabled)return;const n=this.children.get(e),o=null==n?void 0:n.presenter;if(n&&!n.terminal)this.wardmoteUsageCollectors?.get(n.turn)?.observeChild(n,t);");
   return source;
 }
 

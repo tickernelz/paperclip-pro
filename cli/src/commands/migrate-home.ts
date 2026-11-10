@@ -264,7 +264,7 @@ export async function migrateHomeCommand(
   if (legacyShims.length > 0) {
     for (const file of legacyShims) removeShimFile(file, LEGACY_SHIM_MARKER);
     if (legacyStore || readIfExists(path.join(storeHome, "cli", ".managed-install")) === MANAGED_STORE_MARKER) {
-      writeManagedShim(resolveInstallStorePaths({ paperclipHome: storeHome, homeDir: deps.userHomeDir }));
+      writeManagedShim(resolveInstallStorePaths({ wardmoteHome: storeHome, homeDir: deps.userHomeDir }));
     }
   }
   for (const file of rcFiles) {

@@ -1,7 +1,7 @@
 import { mkdir, mkdtemp, realpath, readFile, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { paperclipConfigSchema } from "../../packages/shared/src/config-schema.js";
+import { wardmoteConfigSchema } from "../../packages/shared/src/config-schema.js";
 import { reserveRunnerE2EDatabasePort } from "./ports.js";
 
 /** Runtime instructions and native filesystem grants must use the same path. */
@@ -28,7 +28,7 @@ export async function prepareRunnerE2EServerConfig(input: {
   );
   try {
     const instanceRoot = path.dirname(input.configPath);
-    const config = paperclipConfigSchema.parse({
+    const config = wardmoteConfigSchema.parse({
       $meta: {
         version: 1,
         updatedAt: new Date().toISOString(),

@@ -224,7 +224,7 @@ function parseSkillFrontmatter(markdown: string): { description: string } {
 interface AvailableSkill {
   name: string;
   description: string;
-  isPaperclipManaged: boolean;
+  isWardmoteManaged: boolean;
 }
 
 /** Discover all available Claude Code skills from CLAUDE_HOME or ~/.claude. */
@@ -238,14 +238,14 @@ function resolveClaudeSkillsDir(): string {
 
 function listAvailableSkills(): AvailableSkill[] {
   const claudeSkillsDir = resolveClaudeSkillsDir();
-  const paperclipSkillsDir = resolveWardmoteSkillsDir();
+  const wardmoteSkillsDir = resolveWardmoteSkillsDir();
 
   // Build set of Paperclip-managed skill names
-  const paperclipSkillNames = new Set<string>();
-  if (paperclipSkillsDir) {
+  const wardmoteSkillNames = new Set<string>();
+  if (wardmoteSkillsDir) {
     try {
-      for (const entry of fs.readdirSync(paperclipSkillsDir, { withFileTypes: true })) {
-        if (entry.isDirectory()) paperclipSkillNames.add(entry.name);
+      for (const entry of fs.readdirSync(wardmoteSkillsDir, { withFileTypes: true })) {
+        if (entry.isDirectory()) wardmoteSkillNames.add(entry.name);
       }
     } catch { /* skip */ }
   }
@@ -266,17 +266,17 @@ function listAvailableSkills(): AvailableSkill[] {
       skills.push({
         name: entry.name,
         description,
-        isPaperclipManaged: paperclipSkillNames.has(entry.name),
+        isWardmoteManaged: wardmoteSkillNames.has(entry.name),
       });
     }
   } catch { /* Claude skills directory doesn't exist */ }
 
-  if (paperclipSkillsDir) {
+  if (wardmoteSkillsDir) {
     const existingNames = new Set(skills.map((skill) => skill.name));
     try {
-      for (const entry of fs.readdirSync(paperclipSkillsDir, { withFileTypes: true })) {
+      for (const entry of fs.readdirSync(wardmoteSkillsDir, { withFileTypes: true })) {
         if (!entry.isDirectory() || entry.name.startsWith(".") || existingNames.has(entry.name)) continue;
-        const skillMdPath = path.join(paperclipSkillsDir, entry.name, "SKILL.md");
+        const skillMdPath = path.join(wardmoteSkillsDir, entry.name, "SKILL.md");
         let description = "";
         try {
           const md = fs.readFileSync(skillMdPath, "utf8");
@@ -285,7 +285,7 @@ function listAvailableSkills(): AvailableSkill[] {
         skills.push({
           name: entry.name,
           description,
-          isPaperclipManaged: true,
+          isWardmoteManaged: true,
         });
       }
     } catch { /* skip Paperclip skills directory */ }
@@ -1244,7 +1244,7 @@ export function buildInviteOnboardingTextDocument(
 
       Test each candidate with:
       - GET <candidate>/api/health
-      - set the first reachable candidate as agentDefaultsPayload.paperclipApiUrl when submitting your join request
+      - set the first reachable candidate as agentDefaultsPayload.wardmoteApiUrl when submitting your join request
 
       If none are reachable: ask your human operator for a reachable hostname/address and help them update network configuration.
       For authenticated/private mode, they may need:

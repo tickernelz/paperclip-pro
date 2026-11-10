@@ -34,7 +34,7 @@ function emptyEnvFileContents() {
   ].join("\n");
 }
 
-function paperclipOwnedEntries(entries: Record<string, string>): Record<string, string> {
+function wardmoteOwnedEntries(entries: Record<string, string>): Record<string, string> {
   return Object.fromEntries(
     Object.entries(entries).filter(
       ([key, value]) => WARDMOTE_OWNED_ENV_KEY_PATTERN.test(key) && value.trim().length > 0,
@@ -125,7 +125,7 @@ export function readWardmoteEnvEntries(filePath = resolveEnvFilePath()): Record<
 
 export function writeWardmoteEnvEntries(entries: Record<string, string>, filePath = resolveEnvFilePath()): void {
   const previousContents = fs.existsSync(filePath) ? fs.readFileSync(filePath, "utf8") : null;
-  const nextContents = updateEnvFileContents(previousContents ?? emptyEnvFileContents(), paperclipOwnedEntries(entries), {
+  const nextContents = updateEnvFileContents(previousContents ?? emptyEnvFileContents(), wardmoteOwnedEntries(entries), {
     valueEncoding: "minimal",
   });
   writeEnvFileAtomicallyIfChanged(filePath, previousContents, nextContents);
@@ -136,7 +136,7 @@ export function mergeWardmoteEnvEntries(
   filePath = resolveEnvFilePath(),
 ): Record<string, string> {
   const current = readWardmoteEnvEntries(filePath);
-  const managedEntries = paperclipOwnedEntries(entries);
+  const managedEntries = wardmoteOwnedEntries(entries);
   const next = {
     ...current,
     ...managedEntries,

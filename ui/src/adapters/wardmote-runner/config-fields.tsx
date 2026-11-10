@@ -128,7 +128,7 @@ export function CodexLocalConfigFields({
   };
   const runnerLifecycleMode = runnerManaged
     ? isCreate
-      ? (values!.paperclipRunnerLifecycleMode ?? "per_turn")
+      ? (values!.wardmoteRunnerLifecycleMode ?? "per_turn")
       : eff(
           "adapterConfig",
           "lifecycleMode",
@@ -138,7 +138,7 @@ export function CodexLocalConfigFields({
   const runnerIdleTimeoutMs = runnerManaged
     ? resolveWardmoteRunnerIdleTimeoutMs(
         isCreate
-          ? values!.paperclipRunnerIdleTimeoutMs
+          ? values!.wardmoteRunnerIdleTimeoutMs
           : eff("adapterConfig", "idleTimeoutMs", config.idleTimeoutMs),
       )
     : WARDMOTE_RUNNER_IDLE_TIMEOUT_DEFAULT_MS;
@@ -527,7 +527,7 @@ export function CodexLocalConfigFields({
             onChange={(event) => {
               const value = event.target.value === "warm" ? "warm" : "per_turn";
               isCreate
-                ? set!({ paperclipRunnerLifecycleMode: value })
+                ? set!({ wardmoteRunnerLifecycleMode: value })
                 : mark("adapterConfig", "lifecycleMode", value);
             }}
           >
@@ -550,7 +550,7 @@ export function CodexLocalConfigFields({
               value={runnerIdleTimeoutMs}
               onChange={(event) =>
                 set!({
-                  paperclipRunnerIdleTimeoutMs:
+                  wardmoteRunnerIdleTimeoutMs:
                     resolveWardmoteRunnerIdleTimeoutMs(
                       Number(event.target.value),
                     ),

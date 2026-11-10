@@ -82,7 +82,7 @@ async function createBundledPluginFixture(
         ...(postinstallScript ? { postinstall: postinstallScript } : {}),
         build: "node ./scripts/build.mjs",
       },
-      paperclipPlugin: {
+      wardmotePlugin: {
         manifest: "./dist/manifest.js",
         worker: "./dist/worker.js",
         ui: "./dist/ui/",
@@ -185,7 +185,7 @@ describe("ensureLocalPluginBuilt", () => {
       packageRoot,
       {
         name: "@tickernelz/wardmote-plugin-outside",
-        paperclipPlugin: {
+        wardmotePlugin: {
           manifest: "./dist/manifest.js",
           worker: "./dist/worker.js",
         },

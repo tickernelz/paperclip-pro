@@ -228,7 +228,7 @@ function throwingTurn() {
 // fails after the session handshake succeeds and before the turn starts.
 function throwingHandoffContext(): Record<string, unknown> {
   const context: Record<string, unknown> = {};
-  Object.defineProperty(context, "paperclipSessionHandoffMarkdown", {
+  Object.defineProperty(context, "wardmoteSessionHandoffMarkdown", {
     enumerable: false,
     get() {
       throw new Error("prompt build boom");
@@ -240,11 +240,11 @@ function throwingHandoffContext(): Record<string, unknown> {
 // Stub both sandbox bridges with stop spies collected per start, so a test can
 // assert the bridges stopped without running the real bridge transport.
 function stubBridges() {
-  const paperclipStops: Array<ReturnType<typeof vi.fn>> = [];
+  const wardmoteStops: Array<ReturnType<typeof vi.fn>> = [];
   const processStops: Array<ReturnType<typeof vi.fn>> = [];
   vi.mocked(startAdapterExecutionTargetWardmoteBridge).mockImplementation(async () => {
     const stop = vi.fn(async () => {});
-    paperclipStops.push(stop);
+    wardmoteStops.push(stop);
     return { env: {}, stop } as never;
   });
   vi.mocked(startAdapterExecutionTargetProcessSessionBridge).mockImplementation(async () => {
@@ -256,7 +256,7 @@ function stubBridges() {
     stops.some((stop) => stop.mock.calls.length > 0);
   const stoppedCount = (stops: Array<ReturnType<typeof vi.fn>>) =>
     stops.filter((stop) => stop.mock.calls.length > 0).length;
-  return { paperclipStops, processStops, anyStopped, stoppedCount };
+  return { wardmoteStops, processStops, anyStopped, stoppedCount };
 }
 
 function remoteArgs(
@@ -613,7 +613,7 @@ describe("composed ACPX run: finalization set fires exactly once per exit path",
 
     for (const scenario of scenarios) {
       const { stateDir, localCwd, executionTarget } = await setupRemoteSandbox();
-      const { paperclipStops, processStops, stoppedCount } = stubBridges();
+      const { wardmoteStops, processStops, stoppedCount } = stubBridges();
       const stagingLocks = new Map<string, Promise<unknown>>();
       const execute = createAcpxEngineExecutor({
         stagingLocks,
@@ -642,7 +642,7 @@ describe("composed ACPX run: finalization set fires exactly once per exit path",
       // The finalization set fires exactly once: each bridge stops once and the
       // per-session staging lease releases, so the lock map never strands the next
       // same-session run.
-      expect(stoppedCount(paperclipStops), `paperclip bridge must stop once on ${scenario.name}`).toBe(1);
+      expect(stoppedCount(wardmoteStops), `paperclip bridge must stop once on ${scenario.name}`).toBe(1);
       expect(stoppedCount(processStops), `process-session bridge must stop once on ${scenario.name}`).toBe(1);
       expect(stagingLocks.size, `lease must release on ${scenario.name}`).toBe(0);
     }
@@ -650,7 +650,7 @@ describe("composed ACPX run: finalization set fires exactly once per exit path",
 
   it("does not re-run the turn teardown when the result mapping throws after the close", async () => {
     const { stateDir, localCwd, executionTarget } = await setupRemoteSandbox();
-    const { paperclipStops, processStops, stoppedCount } = stubBridges();
+    const { wardmoteStops, processStops, stoppedCount } = stubBridges();
     let closeCount = 0;
     const execute = createAcpxEngineExecutor({
       warmHandles: new Map(),
@@ -686,7 +686,7 @@ describe("composed ACPX run: finalization set fires exactly once per exit path",
     // The completed turn closed the runtime once; the mapping throw did not re-run
     // the teardown through the turn catch.
     expect(closeCount).toBe(1);
-    expect(stoppedCount(paperclipStops)).toBe(1);
+    expect(stoppedCount(wardmoteStops)).toBe(1);
     expect(stoppedCount(processStops)).toBe(1);
   });
 });

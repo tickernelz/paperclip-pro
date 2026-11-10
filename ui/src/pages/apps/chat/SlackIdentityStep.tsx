@@ -30,7 +30,7 @@ export function SlackIdentityStep({ endpointId, command, testStartedAt, onConnec
   const userLabel = local ? "Local Board" : session.data?.user.name || session.data?.user.email;
   const candidates = (identities.data ?? []).filter((identity) => identity.lastConnectAt &&
     (!testStartedAt || Date.parse(identity.lastConnectAt) >= Date.parse(testStartedAt)));
-  const linkedToMe = candidates.some((identity) => identity.status === "linked" && identity.paperclipUserId === userId);
+  const linkedToMe = candidates.some((identity) => identity.status === "linked" && identity.wardmoteUserId === userId);
   const connectCommand = `${command} connect`;
   const link = useMutation({
     mutationFn: async (principalId: string) => {
@@ -70,7 +70,7 @@ export function SlackIdentityStep({ endpointId, command, testStartedAt, onConnec
           : "border-(--status-task-todo)/30 bg-(--status-task-todo)/10"}`}>
           <p className="text-sm">Choose your Slack account below to link it to <strong>{userLabel ?? "your Wardmote account"}</strong>. Only confirm an account that belongs to you. Future messages will use your Wardmote permissions.</p>
           {candidates.map((identity) => {
-            const mine = identity.status === "linked" && identity.paperclipUserId === userId;
+            const mine = identity.status === "linked" && identity.wardmoteUserId === userId;
             return (
               <div key={identity.principalId} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-line p-3">
                 <div className="min-w-0">
@@ -78,7 +78,7 @@ export function SlackIdentityStep({ endpointId, command, testStartedAt, onConnec
                   <p className="text-xs text-ink-3">{identity.externalDetail}</p>
                 </div>
                 {mine ? <p role="status" className="flex items-center gap-2 text-sm"><CheckCircle2 className="size-4 text-(--status-task-done)" />Linked to you</p>
-                  : identity.status === "linked" ? <p className="text-sm text-ink-3">Linked to {identity.paperclipUserLabel ?? "another Wardmote account"}</p>
+                  : identity.status === "linked" ? <p className="text-sm text-ink-3">Linked to {identity.wardmoteUserLabel ?? "another Wardmote account"}</p>
                   : <Button variant="secondary" disabled={!userId || link.isPending} onClick={() => link.mutate(identity.principalId)} aria-label={`Link ${identity.externalLabel} to my Wardmote account`}>
                     {link.isPending && link.variables === identity.principalId && <Loader2 className="size-4 animate-spin" />}This is my Slack account
                   </Button>}

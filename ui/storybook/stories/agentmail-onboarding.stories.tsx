@@ -6,7 +6,7 @@ import { ChatSetupSidebar } from "@/components/chat/ChatSetupNavigation";
 import { ChatSetupSidebarProvider } from "@/context/ChatSetupSidebarContext";
 import { useCompany } from "@/context/CompanyContext";
 import { useLocation, useNavigate } from "@/lib/router";
-import { storybookAgents } from "../fixtures/paperclipData";
+import { storybookAgents } from "../fixtures/wardmoteData";
 
 const COMPANY = "company-storybook";
 const CONNECTION = "agentmail-storybook-account";

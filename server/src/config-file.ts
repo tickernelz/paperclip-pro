@@ -2,7 +2,7 @@ import fs from "node:fs";
 import {
   DEPLOYMENT_MODES,
   findWardmoteConfigKeyWarnings,
-  paperclipConfigSchema,
+  wardmoteConfigSchema,
   type WardmoteConfig,
   type DeploymentMode,
 } from "@tickernelz/wardmote-shared";
@@ -32,7 +32,7 @@ export function readConfigFile(): WardmoteConfig | null {
   }
 
   try {
-    const config = paperclipConfigSchema.parse(raw);
+    const config = wardmoteConfigSchema.parse(raw);
     for (const warning of findWardmoteConfigKeyWarnings(config)) {
       console.warn(
         `Unknown config key ${warning.path}; did you mean ${warning.suggestion}? It will be preserved.`,

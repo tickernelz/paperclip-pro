@@ -256,7 +256,7 @@ async function boardAccess(
       .where(and(
         eq(chatEndpointOwners.companyId, companyId),
         eq(chatEndpointOwners.endpointId, endpointId),
-        eq(chatIdentityLinks.paperclipUserId, viewer.userId),
+        eq(chatIdentityLinks.wardmoteUserId, viewer.userId),
       ))
       .limit(1),
   ]);

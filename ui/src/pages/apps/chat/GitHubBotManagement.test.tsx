@@ -161,8 +161,8 @@ describe("GitHub bot management", () => {
         status: "linked",
         githubUserId: "42",
         githubLogin: "maya",
-        paperclipUserId: "member",
-        paperclipUserLabel: "Maya",
+        wardmoteUserId: "member",
+        wardmoteUserLabel: "Maya",
       },
     ]);
     mocks.members.mockResolvedValue({

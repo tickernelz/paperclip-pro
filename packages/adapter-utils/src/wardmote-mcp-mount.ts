@@ -7,8 +7,8 @@ import {
 } from "./execution-target.js";
 import {
   WARDMOTE_MCP_SERVER_NAME,
-  paperclipMcpEndpoint,
-  paperclipMcpHttpHeaders,
+  wardmoteMcpEndpoint,
+  wardmoteMcpHttpHeaders,
 } from "./wardmote-mcp.js";
 
 export interface WardmoteMcpMount {
@@ -23,13 +23,13 @@ export interface WardmoteMcpHttpTarget {
 }
 
 /** Resolve the run's server-hosted MCP endpoint and the headers that authenticate it. */
-export function paperclipMcpHttpTarget(input: {
+export function wardmoteMcpHttpTarget(input: {
   env: Record<string, string | undefined>;
   toolsets: string;
 }): WardmoteMcpHttpTarget {
   return {
-    url: paperclipMcpEndpoint(input.env.WARDMOTE_API_URL ?? "", input.toolsets),
-    headers: paperclipMcpHttpHeaders({
+    url: wardmoteMcpEndpoint(input.env.WARDMOTE_API_URL ?? "", input.toolsets),
+    headers: wardmoteMcpHttpHeaders({
       apiKey: (input.env.WARDMOTE_API_KEY ?? "").trim(),
       runId: input.env.WARDMOTE_RUN_ID ?? "",
     }),

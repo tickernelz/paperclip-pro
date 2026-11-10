@@ -16,7 +16,7 @@ import type {
   IssueChatTranscriptEntry,
 } from "@/lib/issue-chat-messages";
 import type { IssueTimelineEvent } from "@/lib/issue-timeline-events";
-import { storybookAgentMap, storybookAgents } from "../fixtures/paperclipData";
+import { storybookAgentMap, storybookAgents } from "../fixtures/wardmoteData";
 
 const companyId = "company-storybook";
 const projectId = "project-board-ui";

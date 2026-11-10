@@ -10,7 +10,7 @@ import { IssueArtifactFile } from "@/components/artifacts/IssueArtifactCard";
 import { TextAttachmentContext } from "@/context/TextAttachmentContext";
 import { PluginLauncherProvider } from "@/plugins/launchers";
 import { queryKeys } from "@/lib/queryKeys";
-import { createIssue, storybookAgents } from "../../fixtures/paperclipData";
+import { createIssue, storybookAgents } from "../../fixtures/wardmoteData";
 import { reportHtml } from "./fixtures";
 import reportDownload from "./report.html?url";
 

@@ -43,7 +43,7 @@ describe("ensureTenant", () => {
   const baseInput = {
     namespace: "paperclip-acme",
     companyId: "11111111-1111-1111-1111-111111111111",
-    paperclipServerNamespace: "paperclip",
+    wardmoteServerNamespace: "paperclip",
     serviceAccountAnnotations: {},
     egressMode: "standard" as const,
     egressAllowFqdns: ["api.anthropic.com"],

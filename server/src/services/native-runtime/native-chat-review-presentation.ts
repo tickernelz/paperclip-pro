@@ -42,8 +42,8 @@ function presentationContextSha256(value: unknown): string {
   // finalization. They do not change the authenticated chat actor or wake.
   // Keep every other context field in the hash, including unknown fields.
   const {
-    paperclipRuntimeServices: _services,
-    paperclipRuntimePrimaryUrl: _url,
+    wardmoteRuntimeServices: _services,
+    wardmoteRuntimePrimaryUrl: _url,
     ...scope
   } = record(value);
   return nativeSha256(scope);

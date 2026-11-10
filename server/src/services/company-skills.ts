@@ -621,7 +621,7 @@ function readCanonicalSkillKey(frontmatter: Record<string, unknown>, metadata: R
     ?? asString(frontmatter.skillKey)
     ?? asString(metadata?.skillKey)
     ?? asString(metadata?.canonicalKey)
-    ?? asString(metadata?.paperclipSkillKey),
+    ?? asString(metadata?.wardmoteSkillKey),
   );
   if (direct) return direct;
   const paperclip = isPlainRecord(metadata?.paperclip) ? metadata?.paperclip as Record<string, unknown> : null;
@@ -1318,7 +1318,7 @@ function isWardmoteBundledSkillKey(key: string) {
   return key.startsWith("tickernelz/wardmote/");
 }
 
-function paperclipBundledFolderCategory(key: string, metadata?: unknown) {
+function wardmoteBundledFolderCategory(key: string, metadata?: unknown) {
   const keyParts = key.split("/");
   if (keyParts[0] === "paperclipai" && keyParts[1] === "bundled" && keyParts[2]) {
     return keyParts[2];
@@ -3053,8 +3053,8 @@ export function companySkillService(db: Db) {
   }
 
   async function ensureBundledSkillReleases(companyId: string, bundledSkills: CompanySkill[]) {
-    const paperclipSkill = bundledSkills.find((skill) => skill.key === "tickernelz/wardmote/wardmote");
-    if (!paperclipSkill) return;
+    const wardmoteSkill = bundledSkills.find((skill) => skill.key === "tickernelz/wardmote/wardmote");
+    if (!wardmoteSkill) return;
     for (const release of await readBundledSkillReleaseRegistry()) {
       const fileInventory = serializeVersionFileInventory(
         await collectVersionFileInventoryFromDirectory(release.releaseDir),
@@ -3064,7 +3064,7 @@ export function companySkillService(db: Db) {
         .from(companySkillVersions)
         .where(and(
           eq(companySkillVersions.companyId, companyId),
-          eq(companySkillVersions.companySkillId, paperclipSkill.id),
+          eq(companySkillVersions.companySkillId, wardmoteSkill.id),
           eq(companySkillVersions.releaseId, release.id),
         ))
         .then((rows) => rows[0] ?? null);
@@ -3087,12 +3087,12 @@ export function companySkillService(db: Db) {
       if (Number.isNaN(releasedAt.getTime())) {
         throw new Error(`Invalid bundled skill release date: ${release.releasedAt}`);
       }
-      await createVersion(companyId, paperclipSkill.id, { label: release.releaseName }, null, {
+      await createVersion(companyId, wardmoteSkill.id, { label: release.releaseName }, null, {
         fileInventory,
         release: { id: release.id, name: release.releaseName, releasedAt },
         updateCurrentVersion: false,
         skipInventoryRefresh: true,
-        skill: paperclipSkill,
+        skill: wardmoteSkill,
       });
     }
   }
@@ -3108,7 +3108,7 @@ export function companySkillService(db: Db) {
       .from(companySkills)
       .where(eq(companySkills.companyId, companyId))
       .then((rows) => rows.flatMap((skill) => {
-        const category = paperclipBundledFolderCategory(skill.key, skill.metadata);
+        const category = wardmoteBundledFolderCategory(skill.key, skill.metadata);
         return category ? [{ ...skill, category }] : [];
       }));
     const foldersByCategory = new Map<string, Awaited<ReturnType<typeof folderSvc.ensureBundledCategory>>>();
@@ -5780,7 +5780,7 @@ export function companySkillService(db: Db) {
     }
     const markdown = await fs.readFile(path.join(originSnapshotLocator, catalogSkill.entrypoint), "utf8");
     const metadata = buildCatalogSkillMetadata(catalogSkill, existingByKey, originSnapshotLocator);
-    const bundledCategory = paperclipBundledFolderCategory(catalogSkill.key, metadata);
+    const bundledCategory = wardmoteBundledFolderCategory(catalogSkill.key, metadata);
     const bundledFolder = bundledCategory
       ? await folderSvc.ensureBundledCategory(companyId, bundledFolderLabel(bundledCategory))
       : null;
@@ -6264,7 +6264,7 @@ export function companySkillService(db: Db) {
       };
       const parsed = parseFrontmatterMarkdown(skill.markdown);
       const storeMetadata = readSkillStoreMetadata(parsed.frontmatter, metadata);
-      const bundledCategory = paperclipBundledFolderCategory(skill.key, incomingMeta);
+      const bundledCategory = wardmoteBundledFolderCategory(skill.key, incomingMeta);
       const bundledFolder = bundledCategory
         ? await folderSvc.ensureBundledCategory(companyId, bundledFolderLabel(bundledCategory))
         : null;

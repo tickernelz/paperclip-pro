@@ -12769,7 +12769,7 @@
                       "type": "string"
                     }
                   },
-                  "paperclipSelfOnly": {
+                  "wardmoteSelfOnly": {
                     "type": "boolean"
                   },
                   "providerType": {
@@ -48251,7 +48251,7 @@
           "enableOwnerInstanceAdmin": {
             "type": "boolean"
           },
-          "enablePaperclipDeveloperMode": {
+          "enableWardmoteDeveloperMode": {
             "type": "boolean"
           },
           "enablePipelines": {
@@ -51355,7 +51355,7 @@
                       "type": "string"
                     }
                   },
-                  "paperclipSelfOnly": {
+                  "wardmoteSelfOnly": {
                     "type": "boolean"
                   },
                   "providerType": {

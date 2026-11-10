@@ -23,7 +23,7 @@ describe("ordinary installed release smoke", () => {
     mkdirSync(path.join(cliRoot, "dist"), { recursive: true }); mkdirSync(path.join(plugin, "dist"), { recursive: true });
     const cli = path.join(cliRoot, "dist/index.js"); writeFileSync(cli, "");
     writeFileSync(path.join(cliRoot, "package.json"), JSON.stringify({ name: "@tickernelz/wardmote", version: "0.0.0-verify" }));
-    const manifest = { name: "@tickernelz/wardmote-plugin-daytona", version: "0.0.0-verify", paperclipPlugin: { manifest: "./dist/manifest.js", worker: "./dist/worker.js" }, exports: { ".": { import: "./dist/index.js" } } };
+    const manifest = { name: "@tickernelz/wardmote-plugin-daytona", version: "0.0.0-verify", wardmotePlugin: { manifest: "./dist/manifest.js", worker: "./dist/worker.js" }, exports: { ".": { import: "./dist/index.js" } } };
     for (const file of ["manifest.js", "worker.js", "index.js"]) writeFileSync(path.join(plugin, "dist", file), "");
     writeFileSync(path.join(plugin, "package.json"), JSON.stringify(manifest));
     expect(installedReleaseDaytonaPlugin(cli)).toBe(plugin);

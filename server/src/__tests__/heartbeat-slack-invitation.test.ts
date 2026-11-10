@@ -72,7 +72,7 @@ describePostgres("saved Slack invitation command in heartbeat prompts", () => {
     await db.insert(issues).values({ id: issueId, companyId, title: "Invite a teammate", description: "Help teammates connect their own Slack accounts.", status: "todo", assigneeAgentId: agentId, responsibleUserId: userId, issueNumber: 1, originKind: "chat_channel" });
     await db.insert(chatConversations).values({ id: conversationId, companyId, endpointId, resourceId, issueId, externalConversationId: "D-INVITE", externalThreadId: "slack:D-INVITE:1", externalLabel: "DM", sessionGeneration: 1, isDirectMessage: true, state: "active" });
     await db.insert(chatExternalPrincipals).values({ id: principalId, companyId, provider: "slack", providerAccountId: "T-INVITE", externalId: "U-INVITE", kind: "user" });
-    await db.insert(chatIdentityLinks).values({ companyId, endpointId, principalId, paperclipUserId: userId, status: "linked" });
+    await db.insert(chatIdentityLinks).values({ companyId, endpointId, principalId, wardmoteUserId: userId, status: "linked" });
     // Renaming must not change the provider's registered command.
     await db.update(agents).set({ name: "Renamed analyst" }).where(eq(agents.id, agentId));
     return { companyId, agentId, issueId, endpointId, conversationId, principalId, userId };
@@ -107,7 +107,7 @@ describePostgres("saved Slack invitation command in heartbeat prompts", () => {
       const input = await turn(f);
       expect(input.runtime.sessionId).toBe(index === 0 ? null : "invitation-session");
       const context = input.context;
-      for (const key of ["paperclipTaskMarkdown", "paperclipTaskMarkdownCompact", "paperclipTaskMarkdownAssignment", "paperclipTaskMarkdownAssignmentCompact"]) {
+      for (const key of ["wardmoteTaskMarkdown", "wardmoteTaskMarkdownCompact", "wardmoteTaskMarkdownAssignment", "wardmoteTaskMarkdownAssignmentCompact"]) {
         const prompt = String(context[key]);
         expect(prompt).toContain("saved account-linking command is /research_ops connect");
         expect(prompt).not.toContain("/renamed");
@@ -121,9 +121,9 @@ describePostgres("saved Slack invitation command in heartbeat prompts", () => {
     const f = await seed();
     await db.update(chatEndpoints).set({ setup: { step: "complete" } }).where(eq(chatEndpoints.id, f.endpointId));
     const { context } = await turn(f);
-    expect(context.paperclipTaskMarkdown).toContain("No saved account-linking command is available");
-    expect(context.paperclipTaskMarkdown).toContain("Access → Invite people");
-    expect(context.paperclipTaskMarkdown).not.toContain("/forged");
+    expect(context.wardmoteTaskMarkdown).toContain("No saved account-linking command is available");
+    expect(context.wardmoteTaskMarkdown).toContain("Access → Invite people");
+    expect(context.wardmoteTaskMarkdown).not.toContain("/forged");
   }, 30_000);
 
   it.each(["inactive", "different-agent"])("excludes the command from an unauthorized endpoint (%s)", async (change) => {
@@ -136,7 +136,7 @@ describePostgres("saved Slack invitation command in heartbeat prompts", () => {
       await db.update(chatEndpoints).set({ assignedAgentId: otherId }).where(eq(chatEndpoints.id, f.endpointId));
     }
     const { context } = await turn(f);
-    expect(context.paperclipTaskMarkdown).not.toContain("/research_ops");
-    expect(context.paperclipTaskMarkdown).not.toContain("/forged");
+    expect(context.wardmoteTaskMarkdown).not.toContain("/research_ops");
+    expect(context.wardmoteTaskMarkdown).not.toContain("/forged");
   }, 30_000);
 });

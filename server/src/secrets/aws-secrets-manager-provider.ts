@@ -631,13 +631,13 @@ function pathSegments(name: string) {
 function inferPathSignals(entry: AwsSecretsManagerListSecretEntry, tags: Map<string, string>) {
   const name = entry.Name?.trim() || entry.ARN?.trim() || "";
   const segments = pathSegments(name);
-  const paperclipDeploymentId = tagValue(tags, ["paperclip:deployment-id"]);
-  const paperclipManaged = tagValue(tags, ["paperclip:managed-by"])?.toLowerCase() === "paperclip";
+  const wardmoteDeploymentId = tagValue(tags, ["paperclip:deployment-id"]);
+  const wardmoteManaged = tagValue(tags, ["paperclip:managed-by"])?.toLowerCase() === "paperclip";
 
-  if (paperclipDeploymentId || paperclipManaged) {
+  if (wardmoteDeploymentId || wardmoteManaged) {
     return {
       prefix: segments[0] ?? DEFAULT_PREFIX,
-      namespace: paperclipDeploymentId ?? segments[1] ?? null,
+      namespace: wardmoteDeploymentId ?? segments[1] ?? null,
     };
   }
 
@@ -685,22 +685,22 @@ function discoverAwsProviderConfigCandidates(input: {
     environmentTag: string | null;
     ownerTag: string | null;
     kmsKeyId: string | null;
-    paperclipManaged: boolean;
-    paperclipCompanyId: string | null;
+    wardmoteManaged: boolean;
+    wardmoteCompanyId: string | null;
   };
 
   const skippedWarnings: string[] = [];
-  let skippedForeignPaperclipSampleCount = 0;
+  let skippedForeignWardmoteSampleCount = 0;
   const samples: DiscoverySample[] = [];
 
   for (const entry of input.entries) {
     const name = entry.Name?.trim() || entry.ARN?.trim();
     if (!name) continue;
     const tags = normalizeAwsTags(entry.Tags);
-    const paperclipManaged = tagValue(tags, ["paperclip:managed-by"])?.toLowerCase() === "paperclip";
-    const paperclipCompanyId = tagValue(tags, ["paperclip:company-id"]);
-    if (paperclipManaged && paperclipCompanyId !== input.companyId) {
-      skippedForeignPaperclipSampleCount += 1;
+    const wardmoteManaged = tagValue(tags, ["paperclip:managed-by"])?.toLowerCase() === "paperclip";
+    const wardmoteCompanyId = tagValue(tags, ["paperclip:company-id"]);
+    if (wardmoteManaged && wardmoteCompanyId !== input.companyId) {
+      skippedForeignWardmoteSampleCount += 1;
       continue;
     }
     const path = inferPathSignals(entry, tags);
@@ -713,14 +713,14 @@ function discoverAwsProviderConfigCandidates(input: {
       environmentTag: tagValue(tags, ["paperclip:environment", "environment", "env", "stage"]),
       ownerTag: tagValue(tags, ["paperclip:provider-owner", "owner", "team", "service", "application"]),
       kmsKeyId: asOptionalNonEmptyString(entry.KmsKeyId),
-      paperclipManaged,
-      paperclipCompanyId,
+      wardmoteManaged,
+      wardmoteCompanyId,
     });
   }
 
-  if (skippedForeignPaperclipSampleCount > 0) {
+  if (skippedForeignWardmoteSampleCount > 0) {
     skippedWarnings.push(
-      `Skipped ${skippedForeignPaperclipSampleCount} Paperclip-managed AWS secret sample(s) that were not tagged for this company.`,
+      `Skipped ${skippedForeignWardmoteSampleCount} Paperclip-managed AWS secret sample(s) that were not tagged for this company.`,
     );
   }
 
@@ -764,7 +764,7 @@ function discoverAwsProviderConfigCandidates(input: {
       if (kmsKeys.length > 1 && !draftKmsKeyId) {
         candidateWarnings.push("Sampled AWS secrets use multiple KMS keys; choose the intended KMS key before saving.");
       }
-      if (group.some((sample) => sample.paperclipManaged && sample.paperclipCompanyId === input.companyId)) {
+      if (group.some((sample) => sample.wardmoteManaged && sample.wardmoteCompanyId === input.companyId)) {
         candidateWarnings.push("Sample includes Paperclip-managed secrets for this company; do not import them as external references.");
       }
 
@@ -798,8 +798,8 @@ function discoverAwsProviderConfigCandidates(input: {
           kmsKeyId: kmsKeyId ?? null,
           hasKmsKey: kmsKeys.length > 0,
           sampleCount: group.length,
-          paperclipManagedSampleCount: group.filter((sample) => sample.paperclipManaged).length,
-          skippedForeignPaperclipSampleCount,
+          wardmoteManagedSampleCount: group.filter((sample) => sample.wardmoteManaged).length,
+          skippedForeignWardmoteSampleCount,
         },
         warnings: candidateWarnings,
       };
@@ -817,7 +817,7 @@ function discoverAwsProviderConfigCandidates(input: {
     provider: "aws_secrets_manager",
     nextToken: input.nextToken,
     sampledSecretCount: samples.length,
-    skippedForeignPaperclipSampleCount,
+    skippedForeignWardmoteSampleCount,
     candidates,
     warnings,
   };

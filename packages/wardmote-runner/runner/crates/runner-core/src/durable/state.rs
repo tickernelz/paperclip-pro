@@ -274,7 +274,7 @@ impl WarmRunTransition {
             old_acked_source_seq: ack,
             connection: command
                 .payload
-                .pointer("/paperclipNextAuthority/connection")
+                .pointer("/wardmoteNextAuthority/connection")
                 .cloned()
                 .ok_or_else(|| DurableRunnerError::invalid("warm transition connection missing"))?,
             runner_version: config.runner_version.clone(),
@@ -2774,7 +2774,7 @@ mod tests {
         next.item_id = "item_2".to_owned();
         let mut attach = command("attach_exact", 1);
         attach.command_type = "run.attach".to_owned();
-        attach.payload = json!({"paperclipNextAuthority": {
+        attach.payload = json!({"wardmoteNextAuthority": {
             "identity": WarmRunIdentity::from_config(&next),
             "connection": {"mode": "connect", "connectUrl": next.connect_url},
         }});
@@ -2833,7 +2833,7 @@ mod tests {
             ),
             ("/warmTransition/result/status", json!("failed")),
             (
-                "/warmTransition/command/payload/paperclipNextAuthority/identity/itemId",
+                "/warmTransition/command/payload/wardmoteNextAuthority/identity/itemId",
                 json!("foreign_item"),
             ),
             ("/ackedSourceSeq", json!(1)),

@@ -85,7 +85,7 @@ export function guardBashInput(input) {
   return changed ? next : null;
 }
 
-${readOnly ? READ_ONLY_GATE : ""}export default function paperclipToolGuard(pi) {
+${readOnly ? READ_ONLY_GATE : ""}export default function wardmoteToolGuard(pi) {
   pi.on("tool_call", (event) => {
 ${readOnly ? "    const blocked = readOnlyBlock(event);\n    if (blocked) return blocked;\n" : ""}    if (event.toolName !== "bash") return undefined;
     const input = guardBashInput(event.input);

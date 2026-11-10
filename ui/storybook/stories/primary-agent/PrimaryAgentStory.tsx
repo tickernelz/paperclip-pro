@@ -17,7 +17,7 @@ import { useToastActions } from "@/context/ToastContext";
 import { queryKeys } from "@/lib/queryKeys";
 import { agentChatDraft } from "@/lib/agent-chat-draft";
 import { Navigate, Route, Routes } from "@/lib/router";
-import { storybookAgents, storybookAuthSession, storybookCompanies, storybookIssues, storybookDashboardSummary } from "../../fixtures/paperclipData";
+import { storybookAgents, storybookAuthSession, storybookCompanies, storybookIssues, storybookDashboardSummary } from "../../fixtures/wardmoteData";
 
 export const companyId = "company-storybook";
 export const mobile = { viewport: { value: "mobile", isRotated: false } };

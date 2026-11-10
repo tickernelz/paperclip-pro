@@ -56,7 +56,7 @@ export interface TerminalWebSocketOptions {
 }
 
 interface IncomingMessageWithTerminal extends IncomingMessage {
-  paperclipWebSocketHandled?: boolean;
+  wardmoteWebSocketHandled?: boolean;
 }
 
 interface AttachedConnection {
@@ -301,7 +301,7 @@ export function setupTerminalWebSocketServer(server: HttpServer, options: Termin
 
   server.on("upgrade", (req: IncomingMessage, socket: Duplex, head: Buffer) => {
     const request = req as IncomingMessageWithTerminal;
-    if (request.paperclipWebSocketHandled || !request.url) return;
+    if (request.wardmoteWebSocketHandled || !request.url) return;
     let pathname: string;
     try {
       pathname = new URL(request.url, "http://localhost").pathname;
@@ -309,7 +309,7 @@ export function setupTerminalWebSocketServer(server: HttpServer, options: Termin
       return;
     }
     if (pathname !== TERMINAL_WEBSOCKET_PATH) return;
-    request.paperclipWebSocketHandled = true;
+    request.wardmoteWebSocketHandled = true;
     const origin = typeof req.headers.origin === "string" ? req.headers.origin : undefined;
     if (!terminalOriginAllowed({ origin, host: req.headers.host }, options.originPolicy)) {
       rejectUpgrade(socket, "403 Forbidden", "Terminal websocket origin is not allowed");

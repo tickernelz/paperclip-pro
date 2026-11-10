@@ -453,7 +453,7 @@ function warmTransitionReceipt(
   runnerVersion: string,
   runnerDigest: string,
 ): DurableWarmRunTransition {
-  const boundary = command.payload.paperclipNextAuthority;
+  const boundary = command.payload.wardmoteNextAuthority;
   if (
     !exactIdentity(identity) ||
     !isRecord(boundary) ||
@@ -1717,7 +1717,7 @@ export class DurablePrpControlPlane {
       canonicalJson(identity) === canonicalJson(this.#identity) &&
       canonicalJson(identity) === canonicalJson(completed.receipt.newIdentity)
     ) {
-      const { paperclipNextAuthority: _boundary, ...template } =
+      const { wardmoteNextAuthority: _boundary, ...template } =
         completed.command.payload;
       if (
         runAttachTemplate !== undefined &&
@@ -1744,7 +1744,7 @@ export class DurablePrpControlPlane {
       // The new authenticated peer, not an attach-result observer, owns the
       // activation boundary. Keep the old credential and command replay lane.
       if (runAttachTemplate !== undefined) {
-        const { paperclipNextAuthority: _boundary, ...expectedTemplate } =
+        const { wardmoteNextAuthority: _boundary, ...expectedTemplate } =
           transition.command.payload;
         if (
           canonicalJson(runAttachTemplate) !== canonicalJson(expectedTemplate)
@@ -1930,7 +1930,7 @@ export class DurablePrpControlPlane {
     }
     if (
       type === "run.attach" &&
-      payload.paperclipNextAuthority !== undefined &&
+      payload.wardmoteNextAuthority !== undefined &&
       ![...this.#connections].some(
         (connection) =>
           connection.secureChannel !== null &&
@@ -2387,7 +2387,7 @@ export class DurablePrpControlPlane {
           (command) =>
             command.status === "pending" &&
             command.type === "run.attach" &&
-            command.payload.paperclipNextAuthority !== undefined,
+            command.payload.wardmoteNextAuthority !== undefined,
         )
       )
         return null;
@@ -2977,7 +2977,7 @@ export class DurablePrpControlPlane {
     }
     if (
       command.type === "run.attach" &&
-      command.payload.paperclipNextAuthority !== undefined &&
+      command.payload.wardmoteNextAuthority !== undefined &&
       status === "completed"
     ) {
       if (connection.warmTransitionVersion !== 1 || connection.lease === null) {

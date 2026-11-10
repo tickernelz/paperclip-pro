@@ -75,16 +75,16 @@ export async function githubChatPrincipalAccess(
       .for("share");
     return !!membership && membership.membershipRole !== "viewer";
   };
-  if (link?.status === "linked" && link.paperclipUserId) {
+  if (link?.status === "linked" && link.wardmoteUserId) {
     const allowed =
-      (await activeMember(link.paperclipUserId)) &&
+      (await activeMember(link.wardmoteUserId)) &&
       (config.memberAccess === "all_linked" ||
-        (person?.kind === "member" && person.userId === link.paperclipUserId));
+        (person?.kind === "member" && person.userId === link.wardmoteUserId));
     return {
       ...denied,
       allowed,
       linkedDenied: !allowed,
-      userId: allowed ? link.paperclipUserId : null,
+      userId: allowed ? link.wardmoteUserId : null,
     };
   }
   // Revocation is not an invitation to fall back to a guest identity.

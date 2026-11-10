@@ -56,7 +56,7 @@ import { registerServerAdapter, unregisterServerAdapter } from "../adapters/inde
 import {
   hydrateFreshSessionHandoff,
   joinPromptSections,
-  paperclipWakeCommentsArePromptOwned,
+  wardmoteWakeCommentsArePromptOwned,
   selectInitialCommunicationGuidance,
   selectWardmotePromptSections,
   stringifyWardmoteWakePayload,
@@ -239,11 +239,11 @@ async function createControlledGatewayServer(beforeComplete?: (turn: number) => 
         resumedSession,
         includeExecutionContract: true,
         includeCommunicationGuidance: false,
-        paperclipAccess: "rest",
+        wardmoteAccess: "rest",
       });
-      const wakeJson = paperclipWakeCommentsArePromptOwned(ctx.context)
+      const wakeJson = wardmoteWakeCommentsArePromptOwned(ctx.context)
         ? null
-        : stringifyWardmoteWakePayload(ctx.context.paperclipWake, {
+        : stringifyWardmoteWakePayload(ctx.context.wardmoteWake, {
             omitIssueDescription: Boolean(taskContextNote),
           });
       const message = joinPromptSections([
@@ -824,7 +824,7 @@ describeEmbeddedPostgres(
         .then((rows) => rows[0] ?? null);
       const context = run?.contextSnapshot;
       const wake = context && typeof context === "object" && !Array.isArray(context)
-        ? (context as Record<string, unknown>).paperclipWake
+        ? (context as Record<string, unknown>).wardmoteWake
         : null;
       if (!wake || typeof wake !== "object" || Array.isArray(wake)) {
         throw new Error("Gateway payload omitted JSON without a structured wake context");
