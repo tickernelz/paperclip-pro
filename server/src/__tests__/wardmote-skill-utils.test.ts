@@ -546,9 +546,6 @@ describe("paperclip skill utils", () => {
     expect(skillBody).toContain("Verify writes — never infer them");
     expect(skillBody).toContain("An error result means the write FAILED");
     expect(skillBody).toContain('must say the write FAILED — not that it "was sent"');
-    // The helper's verification behavior (HTTP status parsing, retry
-    // classification, attempt bound, exit codes) is exercised end-to-end in
-    // wardmote-issue-update-helper.test.ts against a live local server.
   });
 
   it("keeps the create-issue-interaction-ui guide as a maintainer-only skill", async () => {
