@@ -12,7 +12,7 @@ import { getSecretProvider } from "../secrets/provider-registry.js";
 // https://learn.microsoft.com/en-us/microsoftteams/platform/bots/how-to/bots-filesv4
 // https://learn.microsoft.com/en-us/graph/api/driveitem-createuploadsession
 const SCHEMA = "wardmote.teams.file-consent.v1";
-const INSTALLED_HOOK = Symbol("paperclip.teams.file-consent.hook");
+const INSTALLED_HOOK = Symbol("wardmote.teams.file-consent.hook");
 const MAX_RESPONSE_BYTES = 64 * 1024;
 const MAX_URL_LENGTH = 8192;
 const opaqueId = z

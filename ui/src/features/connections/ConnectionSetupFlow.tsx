@@ -449,7 +449,7 @@ export function readConnectionIntentOAuthOutcome(
     outcome?: unknown;
   };
   if (
-    message.type !== "paperclip.connection-intent.oauth"
+    message.type !== "wardmote.connection-intent.oauth"
     || message.interactionId !== interactionId
   ) return null;
   return message.outcome === "connected"

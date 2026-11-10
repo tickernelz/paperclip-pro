@@ -45,19 +45,8 @@ export function normalizeProviderFamily(key: string | undefined): string {
  * The common prefix for every sandbox-startup span attribute. One prefix keeps
  * the attribute namespace closed and easy to find in the OpenTelemetry backend.
  */
-export const SANDBOX_STARTUP_SPAN_ATTR_PREFIX = "paperclip.sandbox.startup.";
+export const SANDBOX_STARTUP_SPAN_ATTR_PREFIX = "wardmote.sandbox.startup.";
 
-/**
- * The closed attribute-name contract for every sandbox-startup span. This is
- * the single source of truth for the harness span attributes. Each name uses
- * the `paperclip.sandbox.startup.` prefix and a type suffix:
- *
- * - `*.wall_ms` — one wall-clock time in float milliseconds.
- * - `*.count` — a count.
- *
- * The producer sets only these keys. It never sets a free-form key, so a
- * command, a path, an argument, or an environment value can never ride a span.
- */
 export const SANDBOX_STARTUP_SPAN_ATTRS = {
   /** The low-cardinality provider family (through `normalizeProviderFamily`). */
   provider: `${SANDBOX_STARTUP_SPAN_ATTR_PREFIX}provider`,
@@ -706,13 +695,6 @@ export interface SandboxRootSpanContext {
   leaseId?: string;
 }
 
-/**
- * Assemble every root-span (`sandbox.startup`) attribute in one place. This is
- * the single producer-side boundary for the root span: it sets only the closed
- * `paperclip.sandbox.startup.` allowlist. It records the wall, work, and diff
- * times, and the bounded context. A raw id, an image reference, or a region
- * never rides the span un-bounded, and an absent value sets no attribute.
- */
 export function setSandboxRootSpanAttributes(
   span: StartupSpan,
   timings: SandboxRootSpanTimings,

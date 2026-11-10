@@ -3894,7 +3894,7 @@ const RUN_ROOT_SPAN_ATTR_PREFIX = "paperclip.task.run.";
 
 /** The attribute prefix for the agent turn span. It groups the turn-level span
  * attributes under one namespace, the same shape as the run root prefix. */
-const TURN_SPAN_ATTR_PREFIX = "paperclip.agent.turn.";
+const TURN_SPAN_ATTR_PREFIX = "wardmote.agent.turn.";
 
 /** Map a run id to a non-reversible 12-hex hash for a span attribute. The raw
  * run id never rides a span; only this hash does. This mirrors the id-hash rule

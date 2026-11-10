@@ -154,7 +154,7 @@ export function connectionIntentOAuthOutcomeHtml(input: {
   // authorization URL stay server-side; the opener refreshes the task from the
   // interaction id instead of trusting provider-window data.
   const message = JSON.stringify({
-    type: "paperclip.connection-intent.oauth",
+    type: "wardmote.connection-intent.oauth",
     interactionId: input.interactionId,
     outcome: input.outcome,
   }).replace(/</g, "\\u003c");

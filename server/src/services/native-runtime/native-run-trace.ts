@@ -205,7 +205,7 @@ export function createNativeRunTrace(input: {
   traceContext?: StartupTraceContextHandle;
 }) {
   const tracing =
-    input.traceContext ?? getStartupTraceContext("paperclip.native-runner");
+    input.traceContext ?? getStartupTraceContext("wardmote.native-runner");
   const traceStartedAtMs = finiteMs(input.startedAtMs ?? Date.now());
   const runIdHash = hashedId(input.runId);
   let rootSpan: SpanHandle;
@@ -271,7 +271,7 @@ export function createNativeRunTrace(input: {
   ): void => {
     for (const [key, value] of Object.entries(attributes)) {
       try {
-        span.setAttribute(`paperclip.native.span.${key}`, value);
+        span.setAttribute(`wardmote.native.span.${key}`, value);
       } catch {
         // Tracing is diagnostic-only and must never change runner control flow.
       }
@@ -328,11 +328,11 @@ export function createNativeRunTrace(input: {
         {
           startTime: startedAtMs,
           attributes: {
-            "paperclip.native.span.trace_schema_version":
+            "wardmote.native.span.trace_schema_version":
               NATIVE_RUN_TRACE_SCHEMA_VERSION,
             ...Object.fromEntries(
               Object.entries(attributes).map(([key, value]) => [
-                `paperclip.native.span.${key}`,
+                `wardmote.native.span.${key}`,
                 value,
               ]),
             ),

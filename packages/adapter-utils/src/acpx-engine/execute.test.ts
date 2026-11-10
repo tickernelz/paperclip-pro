@@ -357,10 +357,6 @@ function issueSandboxExecFromStore(
   tracing.tracer.startSpan("sandbox.exec", undefined, activeStep?.parentContext);
 }
 
-// The closed span-attribute allowlist for a sandbox-start span. A test asserts
-// every recorded attribute key is in this set, so a command, path, id, or
-// error-text key can never ride a span. Every key uses the closed
-// `paperclip.sandbox.startup.` prefix from the attribute contract.
 const A = SANDBOX_STARTUP_SPAN_ATTRS;
 const ALLOWED_STARTUP_SPAN_ATTRIBUTE_KEYS = new Set<string>([
   // Step-span keys.
@@ -394,7 +390,7 @@ const ALLOWED_RUN_SPAN_ATTRIBUTE_KEYS = new Set<string>([
 // own wall time, so no command, path, id, prompt, or error text can ride the
 // `agent.turn` span.
 const ALLOWED_TURN_SPAN_ATTRIBUTE_KEYS = new Set<string>([
-  "paperclip.agent.turn.wall_ms",
+  "wardmote.agent.turn.wall_ms",
 ]);
 
 describe("shared ACPX engine runtime behavior", () => {

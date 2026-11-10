@@ -13,7 +13,7 @@ export function createIssueReadTiming() {
   const durations = new Map<IssueReadPhase, number>();
   return {
     time<T>(phase: IssueReadPhase, read: () => Promise<T>): Promise<T> {
-      return trace.getTracer("paperclip.issue-read").startActiveSpan(`issue.read.${phase}`, async (span) => {
+      return trace.getTracer("wardmote.issue-read").startActiveSpan(`issue.read.${phase}`, async (span) => {
         const phaseStart = performance.now();
         try {
           return await read();

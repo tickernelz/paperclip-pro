@@ -158,15 +158,6 @@ interface SandboxExecSpanInput {
   cacheHit: boolean | undefined;
 }
 
-/**
- * Assemble every `sandbox.exec` span attribute in one place. This is the single
- * producer-side boundary for the exec span: it sets only the closed
- * `paperclip.sandbox.startup.exec.*` allowlist. The command rides only as a
- * clamped label, so a full command line, an argument, a path, an environment
- * value, or any standard-stream text can never ride the span. A non-finite
- * numeric input yields no attribute (fail open — never `NaN`, never a
- * misleading `0`).
- */
 function setSandboxExecSpanAttributes(span: ExecSpan, input: SandboxExecSpanInput): void {
   const A = SANDBOX_STARTUP_SPAN_ATTRS;
   span.setAttribute(A.provider, input.provider);
@@ -532,12 +523,6 @@ export async function resolveEnvironmentExecutionTarget(input: {
                 const finishedAtMs = Date.now();
                 const finishedAt = new Date(finishedAtMs).toISOString();
                 const durationMs = finishedAtMs - startedAtMs;
-                // `setSandboxExecSpanAttributes` sets ONLY the closed
-                // `paperclip.sandbox.startup.exec.*` allowlist: the normalized
-                // provider family, the clamped command label, the numeric exit
-                // code, the wall / wait-before / sandbox / network times, the
-                // critical-path flag, and the outcome. The full command, args,
-                // env, stdout, and stderr never ride the span.
                 if (span) {
                   try {
                     setSandboxExecSpanAttributes(span, {
