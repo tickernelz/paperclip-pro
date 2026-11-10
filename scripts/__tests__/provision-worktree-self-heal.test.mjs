@@ -368,6 +368,28 @@ test("falls back to an isolated config when the base CLI cannot boot", () => {
   );
 });
 
+test("falls back to the installed wardmote CLI when the base CLI cannot boot", () => {
+  const baseCwd = makeBaseWorkspace({ helpExit: 1, initExit: 0 });
+  const fakeBin = makeTempDir("wardmote-provision-installed-cli-");
+  fs.writeFileSync(
+    path.join(fakeBin, "wardmote"),
+    `#!/usr/bin/env bash
+if [[ "$1" == "worktree" && "$2" == "init" ]]; then
+  mkdir -p .wardmote
+  printf '{"$meta":{"source":"installed-cli"}}' > .wardmote/config.json
+  printf 'WARDMOTE_IN_WORKTREE=true\\n' > .wardmote/.env
+fi
+exit 0
+`,
+    { mode: 0o755 },
+  );
+
+  const { result, worktreeCwd } = runProvision(baseCwd, { pathPrefix: fakeBin });
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(readWorktreeConfig(worktreeCwd).$meta.source, "installed-cli");
+});
+
 test("reconciles deployment mode from the registered source when reusing a guest config", () => {
   const baseCwd = makeBaseWorkspace({ helpExit: 1, initExit: 0 });
   const { result: first, worktreeCwd, worktreesHome, wardmoteHome } = runProvision(baseCwd);

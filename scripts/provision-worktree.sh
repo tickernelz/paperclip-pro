@@ -179,18 +179,18 @@ run_isolated_worktree_init() {
     return
   fi
 
-  if command -v pnpm >/dev/null 2>&1 && pnpm paperclip-pro --help >/dev/null 2>&1; then
+  if command -v pnpm >/dev/null 2>&1 && pnpm wardmote --help >/dev/null 2>&1; then
     (
       cd "$worktree_cwd" &&
-        pnpm paperclip-pro worktree init --force --no-seed --seed-mode minimal --name "$worktree_name" --instance "$worktree_instance_id" --from-config "$source_config_path"
+        pnpm wardmote worktree init --force --no-seed --seed-mode minimal --name "$worktree_name" --instance "$worktree_instance_id" --from-config "$source_config_path"
     )
     return
   fi
 
-  if command -v paperclip-pro >/dev/null 2>&1; then
+  if command -v wardmote >/dev/null 2>&1; then
     (
       cd "$worktree_cwd" &&
-        paperclip-pro worktree init --force --no-seed --seed-mode minimal --name "$worktree_name" --instance "$worktree_instance_id" --from-config "$source_config_path"
+        wardmote worktree init --force --no-seed --seed-mode minimal --name "$worktree_name" --instance "$worktree_instance_id" --from-config "$source_config_path"
     )
     return
   fi
@@ -199,7 +199,7 @@ run_isolated_worktree_init() {
 }
 
 paperclipai_command_available() {
-  if command -v pnpm >/dev/null 2>&1 && pnpm paperclip-pro --help >/dev/null 2>&1; then
+  if command -v pnpm >/dev/null 2>&1 && pnpm wardmote --help >/dev/null 2>&1; then
     return 0
   fi
 
@@ -207,7 +207,7 @@ paperclipai_command_available() {
     return 0
   fi
 
-  if command -v paperclip-pro >/dev/null 2>&1; then
+  if command -v wardmote >/dev/null 2>&1; then
     return 0
   fi
 
@@ -664,17 +664,17 @@ if [[ -n "$source_config_path" ]]; then
         if [[ "$init_exit_code" -eq 127 ]]; then
           # Every CLI candidate was unusable (e.g. an unhealthy base install that
           # the repair could not fix); degrade instead of stranding the run.
-          echo "No usable paperclip-pro CLI found; writing isolated fallback config without DB seeding." >&2
+          echo "No usable wardmote CLI found; writing isolated fallback config without DB seeding." >&2
           write_fallback_worktree_config
         else
           # A CLI that ran and failed signals a real problem; do not paper over
           # it with an unseeded fallback config.
-          echo "paperclip-pro worktree init failed (exit $init_exit_code); failing provisioning instead of writing an unseeded fallback config." >&2
+          echo "wardmote worktree init failed (exit $init_exit_code); failing provisioning instead of writing an unseeded fallback config." >&2
           exit "$init_exit_code"
         fi
       fi
     else
-      echo "paperclip-pro worktree init unavailable; writing isolated fallback config without DB seeding." >&2
+      echo "wardmote worktree init unavailable; writing isolated fallback config without DB seeding." >&2
       write_fallback_worktree_config
     fi
     created_worktree_config=1

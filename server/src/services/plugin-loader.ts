@@ -210,7 +210,7 @@ export interface DiscoveredPlugin {
  * @see PLUGIN_SPEC.md §8.1 — On-Disk Layout
  */
 export type PluginSource =
-  | "local-filesystem"  // ~/.paperclip-pro/plugins/ local directory
+  | "local-filesystem"
   | "npm"               // npm packages matching paperclip-plugin-* convention
   | "registry";         // future: remote plugin registry URL
 
@@ -272,7 +272,6 @@ export interface PluginLoaderOptions {
   }) => void;
   /**
    * Path to the local plugin directory to scan.
-   * Defaults to ~/.paperclip-pro/plugins/
    */
   localPluginDir?: string;
 
