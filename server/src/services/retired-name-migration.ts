@@ -232,7 +232,10 @@ export async function migrateRetiredNames(
     }
   });
 
-  report.quarantinedRunnerStates = quarantineRetiredRunnerdStateRoots({ dryRun });
+  report.quarantinedRunnerStates = quarantineRetiredRunnerdStateRoots({
+    dryRun,
+    ...(options.instanceRoot ? { stateBase: path.join(options.instanceRoot, "runtime", "paperclip-runner", "durable-sessions") } : {}),
+  });
 
   if (!dryRun && (report.files.length > 0 || report.rows.length > 0)) {
     report.backupDir = backupDir;
