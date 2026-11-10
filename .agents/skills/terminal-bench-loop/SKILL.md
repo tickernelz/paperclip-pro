@@ -50,7 +50,7 @@ Collect these on the top-level loop issue before iteration 1. Any input that can
 - **Terminal-Bench task name.** Single-task identifier (e.g. `terminal-bench/fix-git`). Multi-task suites are out of scope for this skill.
 - **Iteration budget.** Maximum number of iterations before the loop must stop without further fixes (typical: 3–5). Also record a per-iteration wall-clock cap.
 - **Paperclip App worktree issue.** The implementation-side issue under the Paperclip App project whose execution workspace owns the isolated worktree. First iteration creates it; later iterations reuse it via `inheritExecutionWorkspaceFromIssueId` or equivalent.
-- **Benchmark command.** The exact `paperclip-bench` invocation, including the `PAPERCLIPAI_CMD` (or equivalent) binding pinned to the Paperclip App worktree under test. Record verbatim on the loop issue.
+- **Benchmark command.** The exact `paperclip-bench` invocation, including the `WARDMOTE_CMD` (or equivalent) binding pinned to the Paperclip App worktree under test. Record verbatim on the loop issue.
 - **Dispatch runner config.** The exact Harbor/Paperclip runner dispatch config required for the smoke to actually start a Paperclip heartbeat. For the current Harbor wrapper, record the `WARDMOTE_HARBOR_RUNNER_CONFIG` JSON (or equivalent config file) verbatim enough to preserve: `assignee`, `heartbeat_strategy`, `agent_adapter` / `agent_adapters`, `reuse_host_home` when local credentials are intentionally needed, and the stop budget. A bare Harbor command that creates `BEN-1` as unassigned `todo` with zero heartbeat-enabled agents is a harness/setup failure, not a valid product diagnosis.
 - **Latest artifact root.** Filesystem or storage path under which `paperclip-bench` writes run artifacts (manifest, `results.jsonl`, Harbor raw job folders, redacted telemetry). Each iteration appends; nothing is overwritten.
 - **Approval policy.** Who must accept a proposed product fix before implementation (default: board via `request_confirmation`; CTO if delegated; never the loop driver alone).
@@ -87,7 +87,7 @@ Before opening or advancing a loop, read `doc/execution-semantics.md`. Use that 
 
 ### 3. Run the bounded smoke
 
-- The benchmark command must use the Paperclip App worktree under test. Set `PAPERCLIPAI_CMD` (or the equivalent command binding) to the CLI entrypoint inside that worktree. Never let the smoke run against the operator's current Paperclip checkout.
+- The benchmark command must use the Paperclip App worktree under test. Set `WARDMOTE_CMD` (or the equivalent command binding) to the CLI entrypoint inside that worktree. Never let the smoke run against the operator's current Paperclip checkout.
 - The same command block must include the runner dispatch config that makes the benchmark issue actionable. For the current Harbor wrapper, export `WARDMOTE_HARBOR_RUNNER_CONFIG` with the intended assignee, heartbeat strategy, agent adapter, credential/home mode, and stop budget. Do not treat a bare `uvx harbor run ...` as the canonical smoke if it omits the dispatch config; record that as a harness/setup miss and rerun with the recorded config.
 - Bound the run by wall-clock and by Paperclip's run-budget controls. If the smoke would exceed the per-iteration cap, kill it and record the truncation reason.
 - Capture, in the iteration child or a dedicated `run` document:
@@ -135,7 +135,7 @@ When the iteration ends in **product fix proposed**:
 
 ### 7. Rerun against the same worktree
 
-After implementation and QA complete (or immediately, in the **non-product failure with retry** case), the rerun child runs the same `paperclip-bench` invocation with `PAPERCLIPAI_CMD` still pinned to the Paperclip App worktree under test.
+After implementation and QA complete (or immediately, in the **non-product failure with retry** case), the rerun child runs the same `paperclip-bench` invocation with `WARDMOTE_CMD` still pinned to the Paperclip App worktree under test.
 
 - The rerun must use the same worktree the fix landed in. If the workspace was reset between iterations, the loop is invalid — open a blocker on the loop issue and stop.
 - On completion, the rerun child becomes the next iteration's run record. If the smoke now passes, jump to Step 8. Otherwise return to Step 4 with a new iteration child (subject to the iteration budget).
@@ -168,7 +168,7 @@ The loop must not test whatever Paperclip checkout happens to be current for the
 - The first iteration creates the Paperclip App implementation child; that project's git-worktree policy spawns a fresh worktree.
 - The loop issue records the worktree-owning issue id and the workspace path (or workspace id).
 - Every later implementation, QA, and rerun child sets `inheritExecutionWorkspaceFromIssueId` to that worktree-owning issue, so all subsequent loop work shares one workspace.
-- The benchmark command always sets `PAPERCLIPAI_CMD` (or the equivalent command binding) to the CLI entrypoint inside that worktree, and it carries the recorded dispatch runner config (`WARDMOTE_HARBOR_RUNNER_CONFIG` or equivalent) needed to assign the benchmark issue and start the heartbeat. The benchmark command stored on the loop issue is the source of truth — if a heartbeat needs to run the smoke from a different shell, it copies the recorded command block verbatim, not only the Harbor invocation line.
+- The benchmark command always sets `WARDMOTE_CMD` (or the equivalent command binding) to the CLI entrypoint inside that worktree, and it carries the recorded dispatch runner config (`WARDMOTE_HARBOR_RUNNER_CONFIG` or equivalent) needed to assign the benchmark issue and start the heartbeat. The benchmark command stored on the loop issue is the source of truth — if a heartbeat needs to run the smoke from a different shell, it copies the recorded command block verbatim, not only the Harbor invocation line.
 - If the workspace is pruned or the worktree path no longer resolves, the loop is invalid until rebuilt. Mark the loop `blocked` and name the unblock owner (typically CodexCoder or the Paperclip App owner).
 
 ## Liveness rule
@@ -184,7 +184,7 @@ If a loop issue does not fit one of these on exit, the heartbeat is not done. Fi
 
 ## Pitfalls
 
-- **Running the smoke against the operator's Paperclip checkout.** The whole point of the worktree rule is that the bench tests the worktree the fix lands in. Always set `PAPERCLIPAI_CMD` and verify the path before launching the run.
+- **Running the smoke against the operator's Paperclip checkout.** The whole point of the worktree rule is that the bench tests the worktree the fix lands in. Always set `WARDMOTE_CMD` and verify the path before launching the run.
 - **Dropping the dispatch config.** A Harbor run that omits `WARDMOTE_HARBOR_RUNNER_CONFIG` (or equivalent) may boot Paperclip and create `BEN-1`, but leave it unassigned with zero heartbeat-enabled agents. That is not a Terminal-Bench product signal. Preserve and rerun the full command block, including assignee and adapter config.
 - **Coding before approval.** No implementation child exists until a board confirmation accepts the iteration's `plan` document. Do not push code in the diagnostic phase.
 - **Skipping the recent-work survey.** When proposing a Paperclip product rule, check what already shipped in the affected liveness/execution area in the last few days. A rule that contradicts last-week's accepted contract is rework.
@@ -197,7 +197,7 @@ If a loop issue does not fit one of these on exit, the heartbeat is not done. Fi
 
 ## Verification checklist (before exiting a heartbeat that touched the loop)
 
-- [ ] All inputs are recorded on the top-level loop issue, including the exact benchmark command, `PAPERCLIPAI_CMD` binding, and dispatch runner config.
+- [ ] All inputs are recorded on the top-level loop issue, including the exact benchmark command, `WARDMOTE_CMD` binding, and dispatch runner config.
 - [ ] Iteration counter is up to date and within budget.
 - [ ] The Paperclip App worktree pointer still resolves, and the iteration's run/implementation/rerun children share that workspace.
 - [ ] The smoke run is captured with run ids, manifest, `results.jsonl`, Harbor raw job folder, and stop reason.

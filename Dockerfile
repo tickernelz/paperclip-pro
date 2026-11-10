@@ -11,7 +11,7 @@ RUN apt-get update \
 # Modify the existing node user/group to have the specified UID/GID to match host user
 RUN usermod -u $USER_UID --non-unique node \
   && groupmod -g $USER_GID --non-unique node \
-  && usermod -g $USER_GID -d /paperclip node
+  && usermod -g $USER_GID -d /wardmote node
 
 FROM base AS deps
 WORKDIR /app
@@ -173,8 +173,8 @@ RUN echo "cli-tools-epoch: ${CLI_TOOLS_CACHE_EPOCH}" \
   && apt-get update \
   && apt-get install -y --no-install-recommends openssh-client jq \
   && rm -rf /var/lib/apt/lists/* \
-  && mkdir -p /paperclip \
-  && chown node:node /paperclip
+  && mkdir -p /wardmote \
+  && chown node:node /wardmote
 
 COPY scripts/docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
@@ -183,16 +183,16 @@ COPY --from=omp /opt/omp/bin/omp /usr/local/bin/omp
 
 COPY --chown=node:node --from=build /app /app
 
-COPY --from=runner-provider-pack /provider-pack /opt/paperclip-runner/provider-pack
+COPY --from=runner-provider-pack /provider-pack /opt/wardmote-runner/provider-pack
 # Managed deployments can remap node's UID at startup. This immutable pack
 # contains public code and integrity metadata, never credentials; it must remain
 # readable afterward.
 # Keep it root-owned and verify access as an unrelated unprivileged UID.
-RUN chmod -R a+rX /opt/paperclip-runner/provider-pack \
-  && if [ -f /opt/paperclip-runner/provider-pack/provider-pack.json ]; then \
-    gosu 65534:65534 node -e 'const fs = require("node:fs"); const path = require("node:path"); const root = "/opt/paperclip-runner/provider-pack"; const manifest = JSON.parse(fs.readFileSync(path.join(root, "provider-pack.json"), "utf8")); for (const artifact of Object.values(manifest.payload.artifacts)) fs.readFileSync(path.join(root, artifact.path)); fs.accessSync(path.join(root, manifest.payload.artifacts.nodeCommand.path), fs.constants.X_OK);'; \
+RUN chmod -R a+rX /opt/wardmote-runner/provider-pack \
+  && if [ -f /opt/wardmote-runner/provider-pack/provider-pack.json ]; then \
+    gosu 65534:65534 node -e 'const fs = require("node:fs"); const path = require("node:path"); const root = "/opt/wardmote-runner/provider-pack"; const manifest = JSON.parse(fs.readFileSync(path.join(root, "provider-pack.json"), "utf8")); for (const artifact of Object.values(manifest.payload.artifacts)) fs.readFileSync(path.join(root, artifact.path)); fs.accessSync(path.join(root, manifest.payload.artifacts.nodeCommand.path), fs.constants.X_OK);'; \
   fi
-ENV WARDMOTE_RUNNER_REMOTE_PROVIDER_PACK_PATH=/opt/paperclip-runner/provider-pack
+ENV WARDMOTE_RUNNER_REMOTE_PROVIDER_PACK_PATH=/opt/wardmote-runner/provider-pack
 
 # Declare per-build metadata after the stable RUN layers. Docker includes
 # in-scope ARG values in a RUN's environment even when its command does not
@@ -203,17 +203,17 @@ ARG WARDMOTE_BUILD_VERSION=""
 ARG WARDMOTE_BUILD_COMMIT=""
 ARG OMP_VERSION
 ENV NODE_ENV=production \
-  HOME=/paperclip \
+  HOME=/wardmote \
   HOST=0.0.0.0 \
   PORT=3100 \
   SERVE_UI=true \
-  WARDMOTE_HOME=/paperclip \
+  WARDMOTE_HOME=/wardmote \
   WARDMOTE_INSTANCE_ID=default \
   WARDMOTE_BUILD_VERSION=${WARDMOTE_BUILD_VERSION} \
   WARDMOTE_BUILD_COMMIT=${WARDMOTE_BUILD_COMMIT} \
   USER_UID=${USER_UID} \
   USER_GID=${USER_GID} \
-  WARDMOTE_CONFIG=/paperclip/instances/default/config.json \
+  WARDMOTE_CONFIG=/wardmote/instances/default/config.json \
   WARDMOTE_DEPLOYMENT_MODE=authenticated \
   WARDMOTE_DEPLOYMENT_EXPOSURE=private \
   OPENCODE_ALLOW_ALL_MODELS=true \
@@ -309,7 +309,7 @@ WORKDIR /app/.cloud-server-deps
 ARG CLOUD_BUNDLED_SERVER_DEPS="@sentry/node"
 RUN set -eu; \
   test -n "$CLOUD_BUNDLED_SERVER_DEPS" || { echo "ERROR: CLOUD_BUNDLED_SERVER_DEPS is empty; name at least one optional peer package to install" >&2; exit 1; }; \
-  echo '{"name":"paperclip-cloud-server-deps","private":true}' > package.json; \
+  echo '{"name":"wardmote-cloud-server-deps","private":true}' > package.json; \
   specifiers=""; \
   for name in $CLOUD_BUNDLED_SERVER_DEPS; do \
     version="$(node -e "const pkg=require('/app/server/package.json'); const name=process.argv[1]; const version=(pkg.peerDependencies||{})[name]; if(!version){console.error('ERROR: server/package.json declares no peerDependencies version for '+JSON.stringify(name));process.exit(1);} const meta=(pkg.peerDependenciesMeta||{})[name]; if(!meta||meta.optional!==true){console.error('ERROR: '+JSON.stringify(name)+' is not declared as an optional peer dependency in server/package.json; CLOUD_BUNDLED_SERVER_DEPS may name only optional peer packages');process.exit(1);} process.stdout.write(version);" "$name")"; \

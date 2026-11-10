@@ -1,4 +1,3 @@
-# Quickstart: single-container Paperclip with embedded database.
 # Copy this file and set the required env vars before running.
 #
 #   cd docker
@@ -7,7 +6,7 @@
 #   docker compose -f docker-compose.quickstart.yml up --build
 #
 services:
-  paperclip:
+  wardmote:
     build:
       context: ..
       dockerfile: Dockerfile
@@ -20,7 +19,7 @@ services:
       - "${WARDMOTE_PORT:-3100}:3100"
     environment:
       HOST: "0.0.0.0"
-      WARDMOTE_HOME: "/paperclip"
+      WARDMOTE_HOME: "/wardmote"
 
       # ── LLM provider keys (at least one is needed for agents to work) ──
       OPENAI_API_KEY: "${OPENAI_API_KEY:-}"
@@ -41,4 +40,4 @@ services:
       BETTER_AUTH_SECRET: "${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET must be set}"
     volumes:
       # Persistent data directory (database, agent workspaces, uploads)
-      - "${WARDMOTE_DATA_DIR:-../data/docker-paperclip}:/paperclip"
+      - "${WARDMOTE_DATA_DIR:-../data/docker-wardmote}:/wardmote"

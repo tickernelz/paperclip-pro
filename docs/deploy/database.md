@@ -16,7 +16,7 @@ pnpm dev
 On first start, the server:
 
 1. Creates `~/.wardmote/instances/default/db/` for storage
-2. Ensures the `paperclip` database exists
+2. Ensures the `wardmote` database exists
 3. Runs migrations automatically
 4. Starts serving requests
 
@@ -36,13 +36,13 @@ This starts PostgreSQL 17 on `localhost:5432`. Set the connection string:
 
 ```sh
 cp .env.example .env
-# DATABASE_URL=postgres://paperclip:paperclip@localhost:5432/paperclip
+# DATABASE_URL=postgres://wardmote:wardmote@localhost:5432/wardmote
 ```
 
 Push the schema:
 
 ```sh
-DATABASE_URL=postgres://paperclip:paperclip@localhost:5432/paperclip \
+DATABASE_URL=postgres://wardmote:wardmote@localhost:5432/wardmote \
   npx drizzle-kit push
 ```
 
@@ -62,7 +62,7 @@ If using connection pooling (transaction mode), disable prepared statements via 
 DATABASE_PREPARED_STATEMENTS=false
 ```
 
-Related optional client tuning: `DATABASE_POOL_MAX`, `DATABASE_IDLE_TIMEOUT_SECONDS`, `DATABASE_CONNECT_TIMEOUT_SECONDS`, `DATABASE_MAX_LIFETIME_SECONDS`, `DATABASE_APPLICATION_NAME`. Driver defaults apply when unset, except that idle pooled connections close after 60 seconds (`DATABASE_IDLE_TIMEOUT_SECONDS=0` keeps them open) and the pool reports `application_name=paperclip`. See [Connection pool settings](#connection-pool-settings).
+Related optional client tuning: `DATABASE_POOL_MAX`, `DATABASE_IDLE_TIMEOUT_SECONDS`, `DATABASE_CONNECT_TIMEOUT_SECONDS`, `DATABASE_MAX_LIFETIME_SECONDS`, `DATABASE_APPLICATION_NAME`. Driver defaults apply when unset, except that idle pooled connections close after 60 seconds (`DATABASE_IDLE_TIMEOUT_SECONDS=0` keeps them open) and the pool reports `application_name=wardmote`. See [Connection pool settings](#connection-pool-settings).
 
 ## Connection Pool Settings
 
@@ -74,7 +74,7 @@ The server opens one postgres.js pool for its own queries (and a second one when
 | `DATABASE_IDLE_TIMEOUT_SECONDS` | `60` | Close a pooled connection after this much idle time. `0` keeps idle connections open forever (the driver default). |
 | `DATABASE_CONNECT_TIMEOUT_SECONDS` | `30` (driver) | Give up on a connection attempt after this long. |
 | `DATABASE_MAX_LIFETIME_SECONDS` | 30–60 min, randomized (driver) | Recycle a pooled connection once it is this old. |
-| `DATABASE_APPLICATION_NAME` | `paperclip` | Value of `application_name` in `pg_stat_activity`, so you can find Wardmote's backends: `SELECT * FROM pg_stat_activity WHERE application_name = 'paperclip';` |
+| `DATABASE_APPLICATION_NAME` | `wardmote` | Value of `application_name` in `pg_stat_activity`, so you can find Wardmote's backends: `SELECT * FROM pg_stat_activity WHERE application_name = 'wardmote';` |
 | `DATABASE_PREPARED_STATEMENTS` | `true` (driver) | Set `false` behind a transaction-mode pooler (see above). |
 
 The server ends its pools during shutdown (SIGINT/SIGTERM) and when startup fails after the pool was opened, so a restarting server does not leave idle backends behind. Size `max_connections` on the PostgreSQL side for at least `DATABASE_POOL_MAX` per server process plus your other clients.

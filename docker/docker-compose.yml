@@ -2,11 +2,11 @@ services:
   db:
     image: postgres:17-alpine
     environment:
-      POSTGRES_USER: paperclip
-      POSTGRES_PASSWORD: paperclip
-      POSTGRES_DB: paperclip
+      POSTGRES_USER: "${POSTGRES_USER:-wardmote}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-wardmote}"
+      POSTGRES_DB: "${POSTGRES_DB:-wardmote}"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U paperclip -d paperclip"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 2s
       timeout: 5s
       retries: 30
@@ -31,7 +31,7 @@ services:
     ports:
       - "3100:3100"
     environment:
-      DATABASE_URL: postgres://paperclip:paperclip@db:5432/paperclip
+      DATABASE_URL: postgres://${POSTGRES_USER:-wardmote}:${POSTGRES_PASSWORD:-wardmote}@db:5432/${POSTGRES_DB:-wardmote}
       PORT: "3100"
       SERVE_UI: "true"
       WARDMOTE_DEPLOYMENT_MODE: "authenticated"
@@ -39,11 +39,11 @@ services:
       WARDMOTE_PUBLIC_URL: "${WARDMOTE_PUBLIC_URL:-http://localhost:3100}"
       BETTER_AUTH_SECRET: "${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET must be set}"
     volumes:
-      - paperclip-data:/paperclip
+      - wardmote-data:/wardmote
     depends_on:
       db:
         condition: service_healthy
 
 volumes:
   pgdata:
-  paperclip-data:
+  wardmote-data:

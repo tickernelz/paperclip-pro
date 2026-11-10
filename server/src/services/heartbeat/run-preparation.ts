@@ -1702,7 +1702,7 @@ export async function attestReviewedExternalChatRun(input: {
     input.db.transaction(
       async (
         transaction,
-      ): Promise<boolean | "pending_delivery" | { answeredAtMs: number }> => {
+      ): Promise<boolean | "pending_delivery" | "delivery_settled" | { answeredAtMs: number }> => {
         const tx = transaction as unknown as Db;
         const [issue] = await tx
           .select()
@@ -1832,10 +1832,11 @@ export async function attestReviewedExternalChatRun(input: {
                   inArray(chatMessageLinks.commentId, admittedIds),
                 ),
               );
+            const covered = admittedIds.every((id) =>
+              links.some((link) => link.commentId === id),
+            );
             if (
-              admittedIds.every((id) =>
-                links.some((link) => link.commentId === id),
-              ) &&
+              covered &&
               links.some((link) => link.state === "processing") &&
               links.every(
                 (link) =>
@@ -1844,6 +1845,8 @@ export async function attestReviewedExternalChatRun(input: {
             ) {
               return "pending_delivery";
             }
+            if (covered && links.every((link) => link.state === "processed"))
+              return "delivery_settled";
           }
           if (
             error instanceof Error &&
@@ -1861,9 +1864,15 @@ export async function attestReviewedExternalChatRun(input: {
   // Release every lock before retrying and re-prove the current execution
   // owner, admitted batch, and policy. Routine control-plane contention is not
   // evidence that the user lost access; neither is it permission to bypass it.
+  let settledRecheck = false;
   for (let attemptNumber = 0; attemptNumber < 51; attemptNumber += 1) {
     try {
       const result = await attempt();
+      if (result === "delivery_settled") {
+        if (settledRecheck) return false;
+        settledRecheck = true;
+        continue;
+      }
       if (typeof result === "object") {
         // The transaction (including COMMIT) must succeed before any attempt-
         // local timing is accepted. A retry/rollback cannot publish this value.
