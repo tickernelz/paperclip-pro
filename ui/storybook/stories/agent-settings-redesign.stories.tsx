@@ -34,7 +34,7 @@ const meta = {
         "codex_local",
         "opencode_local",
         "pi_local",
-        "paperclip_runner",
+        "wardmote_runner",
       ],
     },
     testOutcome: { control: "select", options: ["pass", "fail"] },
@@ -62,7 +62,7 @@ export const PiRuntime: Story = {
   args: { initialTab: "runtime", adapterType: "pi_local" },
 };
 export const RunnerRuntime: Story = {
-  args: { initialTab: "runtime", adapterType: "paperclip_runner" },
+  args: { initialTab: "runtime", adapterType: "wardmote_runner" },
 };
 export const Secrets: Story = {
   name: "Secrets & variables",

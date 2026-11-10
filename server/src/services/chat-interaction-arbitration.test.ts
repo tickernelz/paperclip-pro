@@ -50,7 +50,7 @@ describe("provider-owned interaction arbitration", () => {
         id,
         companyId,
         name: "Chat agent",
-        adapterType: "paperclip_runner",
+        adapterType: "wardmote_runner",
         status: "active",
       })),
     );

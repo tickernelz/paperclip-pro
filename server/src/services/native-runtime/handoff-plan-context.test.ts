@@ -15,7 +15,7 @@ const support = await getEmbeddedPostgresTestSupport();
     const companyId = randomUUID(), agentId = randomUUID(), sourceId = randomUUID(), runId = randomUUID();
     const documentId = randomUUID(), revisionId = randomUUID(), interactionId = randomUUID();
     await db.insert(companies).values({ id: companyId, name: "Handoff", issuePrefix: companyId.slice(0, 8) });
-    await db.insert(agents).values({ id: agentId, companyId, name: "Planner", adapterType: "paperclip_runner" });
+    await db.insert(agents).values({ id: agentId, companyId, name: "Planner", adapterType: "wardmote_runner" });
     await db.insert(issues).values({ id: sourceId, companyId, title: "Source chat", conversationAgentId: agentId, assigneeAgentId: agentId, conversationUserId: "operator", conversationState: "active" });
     await db.insert(heartbeatRuns).values({ id: runId, companyId, agentId, nativeIssueId: sourceId, status: "succeeded" });
     await db.insert(documents).values({ id: documentId, companyId, latestBody: "A newer unapproved plan" });

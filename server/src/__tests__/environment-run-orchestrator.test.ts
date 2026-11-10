@@ -760,7 +760,7 @@ describe("native runner lifecycle changes before lease acquisition", () => {
     const orchestrator = environmentRunOrchestrator({} as never, { environmentRuntime: makeMockRuntime({ acquireRunLease }) });
     const input = {
       companyId: "company-1", selectedEnvironmentId: "env-1", localEnvironmentId: "local",
-      adapterType: "paperclip_runner", issueId: "existing-task", heartbeatRunId: "run-1", agentId: "agent-1",
+      adapterType: "wardmote_runner", issueId: "existing-task", heartbeatRunId: "run-1", agentId: "agent-1",
       persistedExecutionWorkspace: { id: "existing-workspace", mode: "shared_workspace" as const },
       executionWorkspaceSettings: null,
     };
@@ -777,11 +777,11 @@ describe("native runner lifecycle changes before lease acquisition", () => {
   });
 
   it.each([
-    ["paperclip_runner", undefined, undefined, false],
-    ["paperclip_runner", "inherit", "per_turn", false],
-    ["paperclip_runner", "per_turn", "warm", false],
-    ["paperclip_runner", "warm", "per_turn", true],
-    ["paperclip_runner", "inherit", "warm", true],
+    ["wardmote_runner", undefined, undefined, false],
+    ["wardmote_runner", "inherit", "per_turn", false],
+    ["wardmote_runner", "per_turn", "warm", false],
+    ["wardmote_runner", "warm", "per_turn", true],
+    ["wardmote_runner", "inherit", "warm", true],
     ["codex_local", "inherit", "warm", false],
   ])("respects environment precedence and adapter scope (%s, %s, %s)", async (adapterType, runnerLifecycleMode, lifecycleMode, expectedReuse) => {
     const environment = { ...makeEnvironment("sandbox"), config: { provider: "daytona", reuseLease: false, runnerLifecycleMode } };
@@ -809,7 +809,7 @@ describe("admitted native lifecycle recovery", () => {
     const orchestrator = environmentRunOrchestrator({} as never, { environmentRuntime: makeMockRuntime({ acquireRunLease }) });
     await orchestrator.acquireForRun({
       companyId: "company-1", selectedEnvironmentId: "env-1", localEnvironmentId: "local",
-      adapterType: "paperclip_runner", adapterConfig: { lifecycleMode }, admittedLifecycleMode,
+      adapterType: "wardmote_runner", adapterConfig: { lifecycleMode }, admittedLifecycleMode,
       issueId: "task-1", heartbeatRunId: "run-1", agentId: "agent-1",
       persistedExecutionWorkspace: null, executionWorkspaceSettings: null,
     });
@@ -821,7 +821,7 @@ describe("admitted native lifecycle recovery", () => {
 describe("live remote runner lease reattachment", () => {
   const input = {
     companyId: "company-1", selectedEnvironmentId: "env-1", localEnvironmentId: "local",
-    adapterType: "paperclip_runner", admittedLifecycleMode: "per_turn" as const,
+    adapterType: "wardmote_runner", admittedLifecycleMode: "per_turn" as const,
     issueId: "task-1", heartbeatRunId: "run-1", agentId: "agent-1",
     persistedExecutionWorkspace: { id: "ew-1", mode: "shared_workspace" as const },
     executionWorkspaceSettings: null,

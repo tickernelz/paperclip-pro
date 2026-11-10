@@ -311,7 +311,7 @@ export function createSettingsFixtures(
             url.pathname.includes("claude")
               ? claudeModels
               : url.pathname.includes("codex") ||
-                  url.pathname.includes("paperclip_runner")
+                  url.pathname.includes("wardmote_runner")
                 ? codexModels
                 : url.pathname.includes("opencode")
                   ? openCodeModels

@@ -85,7 +85,7 @@ describe("native same-conversation chat attachment reuse", () => {
       id: agentId,
       companyId,
       name: "Native chat agent",
-      adapterType: "paperclip_runner",
+      adapterType: "wardmote_runner",
       adapterConfig: { provider: "codex" },
       runtimeConfig: {},
       status: "active",
@@ -602,7 +602,7 @@ describe("native same-conversation chat attachment reuse", () => {
     const reuseActivity = (
       await db.select().from(activityLog).where(eq(activityLog.runId, runId))
     ).find(
-      (row) => row.details?.source === "paperclip_runner_chat_attachment_reuse",
+      (row) => row.details?.source === "wardmote_runner_chat_attachment_reuse",
     );
     expect(reuseActivity?.details).toMatchObject({
       sourceAttachmentId,
@@ -663,7 +663,7 @@ describe("native same-conversation chat attachment reuse", () => {
         storageTimeoutMs: 20,
       }),
     ).rejects.toThrow(
-      "paperclip_runner_chat_attachment_storage_write_timed_out",
+      "wardmote_runner_chat_attachment_storage_write_timed_out",
     );
     releaseWrite();
     const deletedObjectKey = await Promise.race([
@@ -804,7 +804,7 @@ describe("native same-conversation chat attachment reuse", () => {
         callId: "malformed-cursor",
         arguments: { cursor: invalidCursor },
       }),
-    ).rejects.toThrow("paperclip_runner_chat_attachment_cursor_invalid");
+    ).rejects.toThrow("wardmote_runner_chat_attachment_cursor_invalid");
   });
 
   it("keeps an older confirmed lineage when a newer publication was deleted", async () => {
@@ -916,7 +916,7 @@ describe("native same-conversation chat attachment reuse", () => {
           title: "Deleted newer copy",
         },
       }),
-    ).rejects.toThrow("paperclip_runner_chat_attachment_source_denied");
+    ).rejects.toThrow("wardmote_runner_chat_attachment_source_denied");
     await expect(
       authority().execute({
         tool: "reuse_chat_attachment",
@@ -991,7 +991,7 @@ describe("native same-conversation chat attachment reuse", () => {
           title: "Must remain internal",
         },
       }),
-    ).rejects.toThrow("paperclip_runner_chat_attachment_source_denied");
+    ).rejects.toThrow("wardmote_runner_chat_attachment_source_denied");
   });
 
   it("rejects forged source pairs, stale reach, and deleted historical sources", async () => {
@@ -1030,7 +1030,7 @@ describe("native same-conversation chat attachment reuse", () => {
           title: "Must not escape",
         },
       }),
-    ).rejects.toThrow("paperclip_runner_chat_attachment_source_denied");
+    ).rejects.toThrow("wardmote_runner_chat_attachment_source_denied");
 
     await db
       .update(issues)
@@ -1042,7 +1042,7 @@ describe("native same-conversation chat attachment reuse", () => {
         callId: "reassigned-list",
         arguments: {},
       }),
-    ).rejects.toThrow("paperclip_runner_tool_binding_not_authorized");
+    ).rejects.toThrow("wardmote_runner_tool_binding_not_authorized");
     await db
       .update(issues)
       .set({ assigneeAgentId: agentId })
@@ -1058,7 +1058,7 @@ describe("native same-conversation chat attachment reuse", () => {
         callId: "paused-endpoint-list",
         arguments: {},
       }),
-    ).rejects.toThrow("paperclip_runner_chat_attachment_binding_denied");
+    ).rejects.toThrow("wardmote_runner_chat_attachment_binding_denied");
     await db
       .update(chatEndpoints)
       .set({ status: "active" })
@@ -1079,7 +1079,7 @@ describe("native same-conversation chat attachment reuse", () => {
           title: "Earlier requested file",
         },
       }),
-    ).rejects.toThrow("paperclip_runner_chat_attachment_principal_denied");
+    ).rejects.toThrow("wardmote_runner_chat_attachment_principal_denied");
     await db
       .update(companyMemberships)
       .set({ status: "active" })
@@ -1100,7 +1100,7 @@ describe("native same-conversation chat attachment reuse", () => {
           title: "Earlier requested file",
         },
       }),
-    ).rejects.toThrow("paperclip_runner_tool_mode_denied");
+    ).rejects.toThrow("wardmote_runner_tool_mode_denied");
     await db
       .update(issues)
       .set({ workMode: "standard" })
@@ -1116,7 +1116,7 @@ describe("native same-conversation chat attachment reuse", () => {
         callId: "disabled-reach",
         arguments: {},
       }),
-    ).rejects.toThrow("paperclip_runner_chat_attachment_destination_denied");
+    ).rejects.toThrow("wardmote_runner_chat_attachment_destination_denied");
     await db
       .update(chatEndpointResources)
       .set({ enabled: true })
@@ -1137,7 +1137,7 @@ describe("native same-conversation chat attachment reuse", () => {
           title: "Earlier requested file",
         },
       }),
-    ).rejects.toThrow("paperclip_runner_chat_attachment_source_denied");
+    ).rejects.toThrow("wardmote_runner_chat_attachment_source_denied");
     expect(
       await runner.execute({
         tool: "list_chat_attachments",
@@ -1176,6 +1176,6 @@ describe("native same-conversation chat attachment reuse", () => {
           title: "Earlier requested file",
         },
       }),
-    ).rejects.toThrow("paperclip_runner_chat_attachment_source_denied");
+    ).rejects.toThrow("wardmote_runner_chat_attachment_source_denied");
   });
 });

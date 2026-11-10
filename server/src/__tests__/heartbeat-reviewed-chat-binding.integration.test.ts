@@ -79,7 +79,7 @@ describe.each(["slack", "discord"] as const)("reviewed %s execution binding", (p
         id: agentId,
         companyId,
         name: "Chat runner",
-        adapterType: "paperclip_runner",
+        adapterType: "wardmote_runner",
         adapterConfig: { provider: "codex" },
         status: "active",
       });

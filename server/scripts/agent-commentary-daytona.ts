@@ -49,7 +49,7 @@ export async function acquireCommentaryDaytonaTarget(db: Db, fixture: {
   console.error(`Acquiring disposable ${mode} Daytona sandbox.`);
   const lease = await acquireDaytonaLeaseWithCleanup({ ...fixture, environmentId,
     acquire: () => hooks.onEnvironmentAcquireLease!({ ...base, runId: fixture.runId, agentId: fixture.agentId,
-      adapterType: mode === "legacy" ? "codex_local" : "paperclip_runner",
+      adapterType: mode === "legacy" ? "codex_local" : "wardmote_runner",
       requestedExpiresAt: new Date(Date.now() + 20 * 60_000).toISOString() }),
     destroy: cleanup => hooks.onEnvironmentDestroyLease!({ ...base, providerLeaseId: cleanup.providerLeaseId,
       leaseMetadata: { failedCreateCleanup: cleanup } }),

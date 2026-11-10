@@ -166,7 +166,7 @@ describe("InviteLandingPage", () => {
     );
     expect(adapterSelect).toBeTruthy();
     expect(Array.from(adapterSelect!.options).map((option) => option.value))
-      .not.toContain("paperclip_runner");
+      .not.toContain("wardmote_runner");
 
     await act(async () => {
       root.unmount();

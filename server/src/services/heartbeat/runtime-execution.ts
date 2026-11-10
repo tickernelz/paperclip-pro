@@ -580,7 +580,7 @@ export async function executeHeartbeatRuntime(db: Db, input: HeartbeatRuntimeExe
               restartRecovery: runOptions.nativeRestartRecovery,
               backend:
                 options.nativeSessionBackendFactory?.(nativeExecution),
-              useRunnerd: agent.adapterType === "paperclip_runner",
+              useRunnerd: agent.adapterType === "wardmote_runner",
               adapterType: agent.adapterType,
               sessionGoalControl,
               resumeSessionGoalHeartbeat:

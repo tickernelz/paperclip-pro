@@ -37,7 +37,7 @@ export function defaultAiConnectionForHire(
     // OpenCode also supports explicitly configured providers whose models are
     // outside the managed OpenRouter catalog. Their auth still takes precedence.
     const childProvider = adapterType === "opencode_local"
-      || (adapterType === "paperclip_runner" && config.provider === "opencode")
+      || (adapterType === "wardmote_runner" && config.provider === "opencode")
       ? "openrouter"
       : AI_PROVIDERS.find((provider) =>
         compatible({ provider, method: "api_key", mode: "responsible_user" }));

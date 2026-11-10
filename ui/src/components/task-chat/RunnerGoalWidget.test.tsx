@@ -12,7 +12,7 @@ vi.mock("@/api/issues", () => ({ issuesApi: { getRunnerGoal: vi.fn(), actOnRunne
 vi.mock("@/context/LiveUpdatesProvider", () => ({ useCompanyLiveEvent: vi.fn() }));
 
 const projection: RunnerGoalProjection = {
-  issueId: "issue-goal", agentId: "agent-goal", adapterType: "paperclip_runner", sessionId: "session-goal",
+  issueId: "issue-goal", agentId: "agent-goal", adapterType: "wardmote_runner", sessionId: "session-goal",
   capability: { availability: "available", verified: true, actions: ["set", "pause", "resume", "clear"], autonomousUpdates: true,
     persistentAcrossResume: true, maxObjectiveChars: 4_000, tokenBudgetControl: true, usageReporting: true },
   goal: { objective: "Original objective", status: "active", tokenBudget: null, tokensUsed: 20, elapsedSeconds: 2,

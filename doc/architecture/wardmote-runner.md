@@ -27,7 +27,7 @@ Add a standalone package named `@tickernelz/wardmote-runner`. The package owns
 the language-neutral Paperclip Runner Protocol (PRP), the Rust runner process,
 provider drivers, deterministic replay, and semantic action dispatch contracts.
 
-Add one explicit adapter named `paperclip_runner`. The adapter is available only
+Add one explicit adapter named `wardmote_runner`. The adapter is available only
 when an instance-level, default-off rollout flag is enabled. Provider selection
 is persisted per run and may use only a qualified provider profile.
 
@@ -233,7 +233,7 @@ finalization of that run.
 The rollout has three gates:
 
 1. The instance flag is enabled.
-2. The agent explicitly selects `paperclip_runner`.
+2. The agent explicitly selects `wardmote_runner`.
 3. The adapter selects a provider from the qualified catalog: Codex, OpenCode,
    pinned Claude/Codex ACPX, Claude Managed, or AWS AgentCore.
 

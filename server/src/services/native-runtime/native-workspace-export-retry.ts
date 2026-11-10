@@ -78,7 +78,7 @@ export async function retryNativeWorkspaceExport(input: {
         // The operator resumes and repairs the exact retained sandbox through its
         // provider console. Never acquire a replacement or seed over saved work.
         const target = await resolveEnvironmentExecutionTarget({ db: input.db, companyId: input.companyId,
-          adapterType: "paperclip_runner", environment: initial.environment, leaseId: initial.lease.id,
+          adapterType: "wardmote_runner", environment: initial.environment, leaseId: initial.lease.id,
           leaseMetadata: initial.lease.metadata, lease: initial.lease as EnvironmentLease, environmentRuntime: input.environmentRuntime });
         if (target?.kind !== "remote" || target.transport !== "sandbox" || !target.runner
           || target.remoteCwd !== initial.reference.remoteCwd) throw changed();

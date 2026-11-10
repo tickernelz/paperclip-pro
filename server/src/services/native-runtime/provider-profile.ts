@@ -160,7 +160,7 @@ export function validatePaperclipRunnerDotConfig(config: Record<string, unknown>
   if ((requireBinding && !bindingId) || (bindingId && !/^[0-9a-f-]{36}$/i.test(bindingId))
       || config.allowUnmeteredProvider !== true || (config.lifecycleMode && config.lifecycleMode !== "per_turn")
       || optionalString(config.model)) {
-    throw new PaperclipRunnerProviderProfileError("paperclip_runner_dot_config_invalid", "Dot requires per-turn lifecycle and explicit externally billed, unmetered-provider acknowledgement. Pair a binding before assigning work.");
+    throw new PaperclipRunnerProviderProfileError("wardmote_runner_dot_config_invalid", "Dot requires per-turn lifecycle and explicit externally billed, unmetered-provider acknowledgement. Pair a binding before assigning work.");
   }
   return bindingId;
 }
@@ -239,7 +239,7 @@ function assertPermissionMode(
   ) {
     if (provider === "codex") {
       throw new PaperclipRunnerProviderProfileError(
-        "paperclip_runner_codex_permission_mode_unqualified",
+        "wardmote_runner_codex_permission_mode_unqualified",
         "Paperclip Runner currently supports Codex only with codexPermissionMode set to never. Update the agent configuration before starting a new native run.",
       );
     }
@@ -283,7 +283,7 @@ export function assertManagedProfileRecoveryBinding(input: {
     || snapshot.betaVersion !== stored.betaVersion
   ) {
     throw new PaperclipRunnerProviderProfileError(
-      "paperclip_runner_claude_managed_recovery_identity_mismatch",
+      "wardmote_runner_claude_managed_recovery_identity_mismatch",
       "The persisted Claude Managed identity no longer matches its qualified profile.",
     );
   }
@@ -291,7 +291,7 @@ export function assertManagedProfileRecoveryBinding(input: {
   const boundSecretId = asRecord(rawBinding).secretId;
   if (boundSecretId !== stored.apiKeySecretId) {
     throw new PaperclipRunnerProviderProfileError(
-      "paperclip_runner_claude_managed_recovery_secret_mismatch",
+      "wardmote_runner_claude_managed_recovery_secret_mismatch",
       "The persisted Claude Managed run is not bound to its profile's current API-key secret.",
     );
   }
@@ -346,7 +346,7 @@ export function assertAgentCoreProfileRecoveryBinding(input: {
     || fields.some((field) => snapshot[field] !== configuration[field])
   ) {
     throw new PaperclipRunnerProviderProfileError(
-      "paperclip_runner_aws_agentcore_recovery_identity_mismatch",
+      "wardmote_runner_aws_agentcore_recovery_identity_mismatch",
       "The persisted AWS AgentCore identity no longer matches its qualified profile.",
     );
   }
@@ -365,7 +365,7 @@ export function resolvePaperclipRunnerProviderProfile(
   const candidate = config.provider ?? "codex";
   if (!isPaperclipRunnerProvider(candidate)) {
     throw new PaperclipRunnerProviderProfileError(
-      "paperclip_runner_provider_unsupported",
+      "wardmote_runner_provider_unsupported",
       "Paperclip Runner provider must be Codex, OpenCode, Claude Managed, AWS AgentCore, or ACPX.",
     );
   }
@@ -379,12 +379,12 @@ export function resolvePaperclipRunnerProviderProfile(
     resolvePaperclipRunnerCursorMode(candidate, config.acpxAgent, config.acpxSessionMode);
   } catch (error) {
     throw new PaperclipRunnerProviderProfileError(
-      "paperclip_runner_mode_invalid",
+      "wardmote_runner_mode_invalid",
       error instanceof Error ? error.message : "Invalid Cursor session mode",
     );
   }
   try { resolvePaperclipRunnerPiThinkingLevel(candidate, config.acpxAgent, config.piThinkingLevel); } catch (error) {
-    throw new PaperclipRunnerProviderProfileError("paperclip_runner_pi_thinking_invalid", error instanceof Error ? error.message : "Invalid Pi thinking level");
+    throw new PaperclipRunnerProviderProfileError("wardmote_runner_pi_thinking_invalid", error instanceof Error ? error.message : "Invalid Pi thinking level");
   }
   const model = optionalString(config.model);
   if (candidate === "codex") {
@@ -398,7 +398,7 @@ export function resolvePaperclipRunnerProviderProfile(
   if (candidate === "opencode") {
     if (!model || !model.includes("/") || model.endsWith("/")) {
       throw new PaperclipRunnerProviderProfileError(
-        "paperclip_runner_opencode_model_invalid",
+        "wardmote_runner_opencode_model_invalid",
         "Paperclip Runner OpenCode requires model in provider/model form.",
       );
     }
@@ -413,19 +413,19 @@ export function resolvePaperclipRunnerProviderProfile(
     const managedProfileId = optionalString(config.managedProfileId);
     if (!managedProfileId) {
       throw new PaperclipRunnerProviderProfileError(
-        "paperclip_runner_claude_managed_profile_required",
+        "wardmote_runner_claude_managed_profile_required",
         "Paperclip Runner Claude Managed requires a company managed-agent profile.",
       );
     }
     if (config.managedAgentsRetentionAcknowledged !== true) {
       throw new PaperclipRunnerProviderProfileError(
-        "paperclip_runner_claude_managed_retention_required",
+        "wardmote_runner_claude_managed_retention_required",
         "Paperclip Runner Claude Managed requires acknowledgement of stateful beta retention.",
       );
     }
     if (model !== null && model !== CLAUDE_MANAGED_QUALIFIED_MODEL) {
       throw new PaperclipRunnerProviderProfileError(
-        "paperclip_runner_claude_managed_model_unqualified",
+        "wardmote_runner_claude_managed_model_unqualified",
         `The Claude Managed profile requires exact model ${CLAUDE_MANAGED_QUALIFIED_MODEL}.`,
       );
     }
@@ -436,7 +436,7 @@ export function resolvePaperclipRunnerProviderProfile(
       model,
       maxSessionListCostUsd: positiveNumberOrNull(
         config.maxSessionListCostUsd,
-        "paperclip_runner_claude_managed_spend_cap_invalid",
+        "wardmote_runner_claude_managed_spend_cap_invalid",
         "Paperclip Runner Claude Managed requires a positive session spend ceiling when overridden.",
       ),
     };
@@ -446,19 +446,19 @@ export function resolvePaperclipRunnerProviderProfile(
     const agentCoreProfileId = optionalString(config.agentCoreProfileId);
     if (!agentCoreProfileId) {
       throw new PaperclipRunnerProviderProfileError(
-        "paperclip_runner_aws_agentcore_profile_required",
+        "wardmote_runner_aws_agentcore_profile_required",
         "Paperclip Runner AWS AgentCore requires a company remote-agent profile.",
       );
     }
     if (config.agentCoreRetentionAcknowledged !== true) {
       throw new PaperclipRunnerProviderProfileError(
-        "paperclip_runner_aws_agentcore_retention_required",
+        "wardmote_runner_aws_agentcore_retention_required",
         "Paperclip Runner AWS AgentCore requires acknowledgement of 90-day Memory retention.",
       );
     }
     if (model !== null && model !== AGENTCORE_QUALIFIED_MODEL) {
       throw new PaperclipRunnerProviderProfileError(
-        "paperclip_runner_aws_agentcore_model_unqualified",
+        "wardmote_runner_aws_agentcore_model_unqualified",
         `The AWS AgentCore profile requires exact model ${AGENTCORE_QUALIFIED_MODEL}.`,
       );
     }
@@ -469,7 +469,7 @@ export function resolvePaperclipRunnerProviderProfile(
       model,
       maxEstimatedSessionCostUsd: positiveNumberOrNull(
         config.maxEstimatedSessionCostUsd,
-        "paperclip_runner_aws_agentcore_spend_cap_invalid",
+        "wardmote_runner_aws_agentcore_spend_cap_invalid",
         "Paperclip Runner AWS AgentCore requires a positive estimated session spend ceiling when overridden.",
       ),
     };
@@ -478,26 +478,26 @@ export function resolvePaperclipRunnerProviderProfile(
   const acpxAgent = config.acpxAgent ?? "claude";
   const pendingAcpxProfile = WARDMOTE_RUNNER_ACPX_PROFILES.find(profile => profile.value === acpxAgent && !profile.qualified);
   if (pendingAcpxProfile) {
-    if (!model) throw new PaperclipRunnerProviderProfileError("paperclip_runner_acpx_model_required", `${pendingAcpxProfile.label} requires an explicit model ID; there is no default model.`);
+    if (!model) throw new PaperclipRunnerProviderProfileError("wardmote_runner_acpx_model_required", `${pendingAcpxProfile.label} requires an explicit model ID; there is no default model.`);
     // Qualification authority belongs to the isolated server operator. Never
     // read this allowlist from adapter config, credential refs, or run env.
     let qualification: AcpxQualificationCandidate | undefined;
     try {
       qualification = resolveAcpxQualification({ kind: "acpx", agent: pendingAcpxProfile.value, model }, process.env);
     } catch {
-      throw new PaperclipRunnerProviderProfileError("paperclip_runner_acpx_qualification_invalid", "ACPX qualification requires an exact host-authorized candidate and model.");
+      throw new PaperclipRunnerProviderProfileError("wardmote_runner_acpx_qualification_invalid", "ACPX qualification requires an exact host-authorized candidate and model.");
     }
     if (qualification) {
       return { provider: "acpx", backend: "acpx_runtime", model, acpxAgent: qualification };
     }
-    throw new PaperclipRunnerProviderProfileError("paperclip_runner_acpx_agent_unavailable", `${pendingAcpxProfile.label} is awaiting local and Daytona qualification. Its profile is not enabled for production runs.`);
+    throw new PaperclipRunnerProviderProfileError("wardmote_runner_acpx_agent_unavailable", `${pendingAcpxProfile.label} is awaiting local and Daytona qualification. Its profile is not enabled for production runs.`);
   }
   if ((acpxAgent === "cursor" || acpxAgent === "pi") && !model) {
-    throw new PaperclipRunnerProviderProfileError("paperclip_runner_acpx_model_required", "This ACPX agent requires an explicit model ID; there is no default model.");
+    throw new PaperclipRunnerProviderProfileError("wardmote_runner_acpx_model_required", "This ACPX agent requires an explicit model ID; there is no default model.");
   }
   if (acpxAgent !== "claude" && acpxAgent !== "codex" && acpxAgent !== "grok" && acpxAgent !== "cursor" && acpxAgent !== "pi") {
     throw new PaperclipRunnerProviderProfileError(
-      "paperclip_runner_acpx_agent_unavailable",
+      "wardmote_runner_acpx_agent_unavailable",
       "Paperclip Runner ACPX requires a qualified agent profile.",
     );
   }
@@ -506,7 +506,7 @@ export function resolvePaperclipRunnerProviderProfile(
     resolveQualifiedAcpxProfile(acpxAgent, selectedModel);
   } catch (error) {
     throw new PaperclipRunnerProviderProfileError(
-      "paperclip_runner_acpx_model_unqualified",
+      "wardmote_runner_acpx_model_unqualified",
       error instanceof Error ? error.message : "Paperclip Runner ACPX requires an admitted model.",
     );
   }
@@ -550,12 +550,12 @@ export function resolvePaperclipRunnerNativeProviderInput(input: {
   const profile = resolvePaperclipRunnerProviderProfile(config);
   if (profile.backend !== input.backend) {
     throw new PaperclipRunnerProviderProfileError(
-      "paperclip_runner_provider_changed",
+      "wardmote_runner_provider_changed",
       "Paperclip Runner provider changed after this run selected its native backend.",
     );
   }
   if (profile.provider === "openai_dot") {
-    if (!input.dotBinding || input.dotBinding.bindingId !== profile.dotBindingId) throw new PaperclipRunnerProviderProfileError("paperclip_runner_dot_binding_unavailable", "Dot binding must be resolved by the server after normal admission.");
+    if (!input.dotBinding || input.dotBinding.bindingId !== profile.dotBindingId) throw new PaperclipRunnerProviderProfileError("wardmote_runner_dot_binding_unavailable", "Dot binding must be resolved by the server after normal admission.");
     return { provider: "openai_dot", model: null, dotBinding: input.dotBinding };
   }
   if (profile.provider === "opencode") {
@@ -593,13 +593,13 @@ export function resolvePaperclipRunnerNativeProviderInput(input: {
       )
     ) {
       throw new PaperclipRunnerProviderProfileError(
-        "paperclip_runner_claude_managed_profile_mismatch",
+        "wardmote_runner_claude_managed_profile_mismatch",
         "The qualified Claude Managed profile does not match the adapter selection.",
       );
     }
     if (stored.betaVersion !== CLAUDE_MANAGED_BETA_VERSION) {
       throw new PaperclipRunnerProviderProfileError(
-        "paperclip_runner_claude_managed_beta_unqualified",
+        "wardmote_runner_claude_managed_beta_unqualified",
         "The Claude Managed profile beta version is not qualified.",
       );
     }
@@ -608,19 +608,19 @@ export function resolvePaperclipRunnerNativeProviderInput(input: {
       ?? stored.defaultMaxListCostCents / 100;
     if (!model) {
       throw new PaperclipRunnerProviderProfileError(
-        "paperclip_runner_claude_managed_model_invalid",
+        "wardmote_runner_claude_managed_model_invalid",
         "The Claude Managed profile requires a model.",
       );
     }
     if (model !== CLAUDE_MANAGED_QUALIFIED_MODEL) {
       throw new PaperclipRunnerProviderProfileError(
-        "paperclip_runner_claude_managed_model_unqualified",
+        "wardmote_runner_claude_managed_model_unqualified",
         `The Claude Managed profile requires exact model ${CLAUDE_MANAGED_QUALIFIED_MODEL}.`,
       );
     }
     if (!Number.isFinite(maxSessionListCostUsd) || maxSessionListCostUsd <= 0) {
       throw new PaperclipRunnerProviderProfileError(
-        "paperclip_runner_claude_managed_spend_cap_invalid",
+        "wardmote_runner_claude_managed_spend_cap_invalid",
         "The Claude Managed profile requires a positive session spend ceiling.",
       );
     }
@@ -647,7 +647,7 @@ export function resolvePaperclipRunnerNativeProviderInput(input: {
       )
     ) {
       throw new PaperclipRunnerProviderProfileError(
-        "paperclip_runner_aws_agentcore_profile_mismatch",
+        "wardmote_runner_aws_agentcore_profile_mismatch",
         "The qualified AWS AgentCore profile does not match the adapter selection.",
       );
     }
@@ -656,7 +656,7 @@ export function resolvePaperclipRunnerNativeProviderInput(input: {
       const value = optionalString(remote[key]);
       if (!value) {
         throw new PaperclipRunnerProviderProfileError(
-          "paperclip_runner_aws_agentcore_profile_invalid",
+          "wardmote_runner_aws_agentcore_profile_invalid",
           `The qualified AWS AgentCore profile is missing ${key}.`,
         );
       }
@@ -664,26 +664,26 @@ export function resolvePaperclipRunnerNativeProviderInput(input: {
     };
     if (remote.eventExpiryDays !== 90) {
       throw new PaperclipRunnerProviderProfileError(
-        "paperclip_runner_aws_agentcore_retention_unqualified",
+        "wardmote_runner_aws_agentcore_retention_unqualified",
         "The qualified AWS AgentCore profile must retain Memory events for exactly 90 days.",
       );
     }
     const maxEstimatedSessionCostUsd = profile.maxEstimatedSessionCostUsd
       ?? positiveNumberOrNull(
         remote.defaultMaxEstimatedSessionCostUsd,
-        "paperclip_runner_aws_agentcore_spend_cap_invalid",
+        "wardmote_runner_aws_agentcore_spend_cap_invalid",
         "The AWS AgentCore profile requires a positive estimated session spend ceiling.",
       );
     if (maxEstimatedSessionCostUsd === null) {
       throw new PaperclipRunnerProviderProfileError(
-        "paperclip_runner_aws_agentcore_spend_cap_invalid",
+        "wardmote_runner_aws_agentcore_spend_cap_invalid",
         "The AWS AgentCore profile requires a positive estimated session spend ceiling.",
       );
     }
     const model = profile.model ?? required("defaultModel");
     if (model !== AGENTCORE_QUALIFIED_MODEL) {
       throw new PaperclipRunnerProviderProfileError(
-        "paperclip_runner_aws_agentcore_model_unqualified",
+        "wardmote_runner_aws_agentcore_model_unqualified",
         `The AWS AgentCore profile requires exact model ${AGENTCORE_QUALIFIED_MODEL}.`,
       );
     }
@@ -714,21 +714,21 @@ export function resolvePaperclipRunnerNativeProviderInput(input: {
           config.maxIterations,
           8,
           8,
-          "paperclip_runner_aws_agentcore_max_iterations_invalid",
+          "wardmote_runner_aws_agentcore_max_iterations_invalid",
           "AWS AgentCore maxIterations",
         ),
         maxOutputTokens: boundedPositiveInteger(
           config.maxOutputTokens,
           4_096,
           4_096,
-          "paperclip_runner_aws_agentcore_max_output_tokens_invalid",
+          "wardmote_runner_aws_agentcore_max_output_tokens_invalid",
           "AWS AgentCore maxOutputTokens",
         ),
         timeoutSeconds: boundedPositiveInteger(
           config.timeoutSeconds,
           300,
           300,
-          "paperclip_runner_aws_agentcore_timeout_invalid",
+          "wardmote_runner_aws_agentcore_timeout_invalid",
           "AWS AgentCore timeoutSeconds",
         ),
       },
@@ -742,7 +742,7 @@ export function resolvePaperclipRunnerNativeProviderInput(input: {
       && !codexLocalReasoningEffortsForModel(profile.model).includes(effort as "minimal" | "low" | "medium" | "high" | "xhigh" | "max" | "ultra"))
   )) {
     throw new PaperclipRunnerProviderProfileError(
-      "paperclip_runner_codex_effort_invalid",
+      "wardmote_runner_codex_effort_invalid",
       "Paperclip Runner Codex reasoning effort is not supported for this model.",
     );
   }

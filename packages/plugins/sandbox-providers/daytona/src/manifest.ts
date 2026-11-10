@@ -12,7 +12,7 @@ export const DEFAULT_DAYTONA_OPERATION_TIMEOUT_MS = 300_000;
 // neutral `supportsLoginPty`.
 // 0.1.4 adds the `concurrentSyncOperations` sandbox capability to the driver.
 // 0.1.5 adds the `duplexCommandStream` sandbox capability to the driver.
-// 0.1.6 adds private authenticated WebSocket ingress for paperclip_runner.
+// 0.1.6 adds private authenticated WebSocket ingress for wardmote_runner.
 // 0.1.7 exposes host-owned warm/cold runner lifecycle controls.
 // 0.1.8 declares the default provider acquisition budget to the host.
 const PLUGIN_VERSION = "0.1.8";
@@ -179,13 +179,13 @@ const manifest: PaperclipPluginManifestV1 = {
             type: "string",
             enum: ["inherit", "per_turn", "warm"],
             description:
-              "paperclip_runner lifecycle for this environment. Inherit uses the agent setting; warm keeps runnerd and the sandbox available between turns.",
+              "wardmote_runner lifecycle for this environment. Inherit uses the agent setting; warm keeps runnerd and the sandbox available between turns.",
             default: "inherit",
           },
           runnerIdleTimeoutMs: {
             type: "integer",
             description:
-              "How long an idle warm paperclip_runner stays alive before it checkpoints and suspends.",
+              "How long an idle warm wardmote_runner stays alive before it checkpoints and suspends.",
             minimum: 1000,
             maximum: 86400000,
             default: 300000,

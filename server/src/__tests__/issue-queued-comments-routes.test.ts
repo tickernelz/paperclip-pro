@@ -125,7 +125,7 @@ describeEmbeddedPostgres("issue queued-comment routes", () => {
       name: "Paperclip Runner",
       role: "engineer",
       status: "idle",
-      adapterType: "paperclip_runner",
+      adapterType: "wardmote_runner",
       adapterConfig: {},
       runtimeConfig: {},
       permissions: {},
@@ -1221,7 +1221,7 @@ describeEmbeddedPostgres("issue queued-comment routes", () => {
       queueId: seeded.wakeId,
       state: "deferred",
       targetRunId: seeded.runId,
-      protocol: "paperclip_runner_v1",
+      protocol: "wardmote_runner_v1",
       entries: [
         { position: 0, canEdit: true, canDiscard: true, comment: { id: seeded.commentIds[0] } },
         { position: 1, canEdit: true, canDiscard: true, comment: { id: seeded.commentIds[1] } },
@@ -1739,19 +1739,19 @@ describeEmbeddedPostgres("issue queued-comment routes", () => {
     });
   });
 
-  it.each(["paperclip_runner", "omp_local"])("keeps Steer during native preparation even after agent settings change to %s", async adapterType => {
+  it.each(["wardmote_runner", "omp_local"])("keeps Steer during native preparation even after agent settings change to %s", async adapterType => {
     const seeded = await seedQueue();
     const steeringCalls = steerNativeSessionMock.mock.calls.length;
     await db.update(heartbeatRuns).set({ runtimeMode: "legacy", runtimeModeResolvedAt: null,
-      runnerProfileJson: { adapterDispatch: { adapterType: "paperclip_runner" } },
+      runnerProfileJson: { adapterDispatch: { adapterType: "wardmote_runner" } },
     }).where(eq(heartbeatRuns.id, seeded.runId));
     await db.update(agents).set({ adapterType }).where(eq(agents.id, seeded.agentId));
     const client = app(seeded.companyId);
     const initial = await request(client).get(`/api/issues/${seeded.issueId}/queued-comments`).expect(200);
-    expect(initial.body).toMatchObject({ protocol: "paperclip_runner_v1", steeringDisposition: "temporarily_unavailable" });
+    expect(initial.body).toMatchObject({ protocol: "wardmote_runner_v1", steeringDisposition: "temporarily_unavailable" });
     const edited = await request(client).patch(`/api/issues/${seeded.issueId}/queued-comments/${seeded.commentIds[0]}`)
       .send({ queueId: seeded.wakeId, revision: initial.body.revision, body: "Updated direction" }).expect(200);
-    expect(edited.body).toMatchObject({ protocol: "paperclip_runner_v1", steeringDisposition: "temporarily_unavailable" });
+    expect(edited.body).toMatchObject({ protocol: "wardmote_runner_v1", steeringDisposition: "temporarily_unavailable" });
     expect(steerNativeSessionMock.mock.calls).toHaveLength(steeringCalls);
   });
 
@@ -1888,7 +1888,7 @@ describeEmbeddedPostgres("issue queued-comment routes", () => {
   it("allows the runner to persist its acknowledgement while steering, preserving concurrent run updates", async () => {
     const seeded = await seedQueue();
     await seedDispatchIdentity(seeded);
-    const originalProfile = { adapterDispatch: { adapterType: "paperclip_runner" },
+    const originalProfile = { adapterDispatch: { adapterType: "wardmote_runner" },
       nativeExecutionInput: { provider: { kind: "codex", model: "gpt-5.6-sol", reasoningEffort: "medium" } } };
     await db.update(heartbeatRuns).set({ runnerProfileJson: originalProfile }).where(eq(heartbeatRuns.id, seeded.runId));
     await db.update(issues).set({ assigneeAdapterOverrides: { model: "gpt-6-sol", reasoningEffort: "xhigh" } })

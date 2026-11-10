@@ -6056,21 +6056,21 @@ describe("company portability", () => {
       include: { company: false, agents: true, projects: false, issues: false },
       target: { mode: "existing_company" as const, companyId: "company-1" },
       agents: "all" as const, collisionStrategy: "rename" as const,
-      adapterOverrides: { claudecoder: { adapterType: "paperclip_runner", adapterConfig: { provider: "openai_dot", allowUnmeteredProvider: true, lifecycleMode: "per_turn" } } },
+      adapterOverrides: { claudecoder: { adapterType: "wardmote_runner", adapterConfig: { provider: "openai_dot", allowUnmeteredProvider: true, lifecycleMode: "per_turn" } } },
     };
     instanceSettingsSvc.getExperimental.mockResolvedValue({ enableNativeRunner: true, enableOpenAiDot: false });
-    await expect(portability.importBundle(input, "user-1")).rejects.toMatchObject({ status: 422, details: { code: "paperclip_runner_dot_disabled" } });
+    await expect(portability.importBundle(input, "user-1")).rejects.toMatchObject({ status: 422, details: { code: "wardmote_runner_dot_disabled" } });
     expect(agentSvc.create).not.toHaveBeenCalled();
     instanceSettingsSvc.getExperimental.mockResolvedValue({ enableNativeRunner: false, enableOpenAiDot: true });
-    await expect(portability.importBundle({ ...input, adapterOverrides: { claudecoder: { adapterType: "paperclip_runner", adapterConfig: { provider: "codex" } } } }, "user-1"))
-      .rejects.toMatchObject({ status: 422, details: { code: "paperclip_runner_rollout_disabled" } });
+    await expect(portability.importBundle({ ...input, adapterOverrides: { claudecoder: { adapterType: "wardmote_runner", adapterConfig: { provider: "codex" } } } }, "user-1"))
+      .rejects.toMatchObject({ status: 422, details: { code: "wardmote_runner_rollout_disabled" } });
     expect(agentSvc.create).not.toHaveBeenCalled();
     await portability.importBundle(input, "user-1");
-    expect(agentSvc.create).toHaveBeenCalledWith("company-1", expect.objectContaining({ adapterType: "paperclip_runner", adapterConfig: expect.objectContaining({ provider: "openai_dot", allowUnmeteredProvider: true }) }), { createdByUserId: "user-1" });
+    expect(agentSvc.create).toHaveBeenCalledWith("company-1", expect.objectContaining({ adapterType: "wardmote_runner", adapterConfig: expect.objectContaining({ provider: "openai_dot", allowUnmeteredProvider: true }) }), { createdByUserId: "user-1" });
     const createdConfig = agentSvc.create.mock.calls[0]![1].adapterConfig;
     expect(createdConfig.dotBindingId).toBeUndefined();
     const { resolvePaperclipRunnerProviderProfile } = await import("../services/native-runtime/provider-profile.js");
-    expect(() => resolvePaperclipRunnerProviderProfile(createdConfig)).toThrow(expect.objectContaining({ code: "paperclip_runner_dot_config_invalid" }));
+    expect(() => resolvePaperclipRunnerProviderProfile(createdConfig)).toThrow(expect.objectContaining({ code: "wardmote_runner_dot_config_invalid" }));
   });
 
   it("rejects runner imports while disabled and accepts the same selection when enabled", async () => {
@@ -6095,7 +6095,7 @@ describe("company portability", () => {
       collisionStrategy: "rename" as const,
       adapterOverrides: {
         claudecoder: {
-          adapterType: "paperclip_runner",
+          adapterType: "wardmote_runner",
           adapterConfig: { provider: "codex" },
         },
       },
@@ -6103,7 +6103,7 @@ describe("company portability", () => {
 
     await expect(portability.importBundle(request, "user-1")).rejects.toMatchObject({
       status: 422,
-      details: { code: "paperclip_runner_rollout_disabled" },
+      details: { code: "wardmote_runner_rollout_disabled" },
     });
     expect(agentSvc.create).not.toHaveBeenCalled();
 
@@ -6112,7 +6112,7 @@ describe("company portability", () => {
       ...request,
       adapterOverrides: {
         claudecoder: {
-          adapterType: "paperclip_runner",
+          adapterType: "wardmote_runner",
           adapterConfig: {
             provider: "opencode",
             model: "openrouter/deepseek/deepseek-v4-flash-0731",
@@ -6121,13 +6121,13 @@ describe("company portability", () => {
       },
     }, "user-1");
     expect(agentSvc.create).toHaveBeenCalledWith("company-1", expect.objectContaining({
-      adapterType: "paperclip_runner",
+      adapterType: "wardmote_runner",
       adapterConfig: expect.objectContaining({ provider: "opencode" }),
     }), { createdByUserId: "user-1" });
 
     await portability.importBundle(request, "user-1");
     expect(agentSvc.create).toHaveBeenCalledWith("company-1", expect.objectContaining({
-      adapterType: "paperclip_runner",
+      adapterType: "wardmote_runner",
       adapterConfig: expect.objectContaining({ provider: "codex" }),
     }), { createdByUserId: "user-1" });
 
@@ -6135,7 +6135,7 @@ describe("company portability", () => {
       ...request,
       adapterOverrides: {
         claudecoder: {
-          adapterType: "paperclip_runner",
+          adapterType: "wardmote_runner",
           adapterConfig: {
             provider: "claude_managed",
             managedProfileId: "managed-primary",
@@ -6158,7 +6158,7 @@ describe("company portability", () => {
       ...request,
       adapterOverrides: {
         claudecoder: {
-          adapterType: "paperclip_runner",
+          adapterType: "wardmote_runner",
           adapterConfig: {
             provider: "claude_managed",
             managedProfileId: "managed-other-company",

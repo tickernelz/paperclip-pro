@@ -1197,7 +1197,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         name: "Maya",
         role: "engineer",
         status: "idle",
-        adapterType: "paperclip_runner",
+        adapterType: "wardmote_runner",
         adapterConfig: {},
         runtimeConfig: {},
         permissions: {},
@@ -1208,7 +1208,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         name: "Linus",
         role: "engineer",
         status: "idle",
-        adapterType: "paperclip_runner",
+        adapterType: "wardmote_runner",
         adapterConfig: {},
         runtimeConfig: {},
         permissions: {},
@@ -6585,7 +6585,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     expect(assignments.map(a => a.key)).toEqual(["slack"]);
     expect(assignments[0].resources[0].metadata?.channelId).toBe("CTOOLS");
     const skillConfig = await applyConnectorSkills({}, [], assignments);
-    const runnerDelivery = await prepareConnectorSkillDelivery(skillConfig, "paperclip_runner");
+    const runnerDelivery = await prepareConnectorSkillDelivery(skillConfig, "wardmote_runner");
     expect(runnerDelivery.instructions).toContain('"channelId": "CTOOLS"');
     expect(runnerDelivery.instructions).toContain("untrusted source material");
     expect(runnerDelivery.instructions).not.toContain("xoxb-test-token");
@@ -6741,7 +6741,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     await expect(resolveChatRunPresentationAuthorizationReason(db, presentation)).resolves.toBe(CHAT_RUN_PRESENTATION_AUTHORIZATION_REASON);
     const approvalBookkeeping = await issueService(db).addComment(
       conversation.issueId, "Recorded approved operation", { agentId: fixture.assignedAgentId, runId: continuationRunId },
-      { authorType: "agent", authorizationReason: "paperclip_runner_protocol" },
+      { authorType: "agent", authorizationReason: "wardmote_runner_protocol" },
     );
     expect(await db.select().from(chatPublications).where(eq(chatPublications.commentId, approvalBookkeeping.id))).toHaveLength(0);
     const approvalFinal = await issueService(db).addComment(
@@ -27776,7 +27776,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       { agentId: fixture.assignedAgentId, runId },
       {
         authorType: "agent",
-        authorizationReason: "paperclip_runner_protocol",
+        authorizationReason: "wardmote_runner_protocol",
       },
     );
     await expect(
@@ -27929,7 +27929,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       { agentId: fixture.assignedAgentId, runId },
       {
         authorType: "agent",
-        authorizationReason: "paperclip_runner_protocol",
+        authorizationReason: "wardmote_runner_protocol",
       },
     );
     await expect(
@@ -29288,7 +29288,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       oldConversation.issueId,
       "late-old-generation-final-stays-in-paperclip",
       { agentId: fixture.assignedAgentId, runId: oldRunId },
-      { authorType: "agent", authorizationReason: "paperclip_runner_protocol" },
+      { authorType: "agent", authorizationReason: "wardmote_runner_protocol" },
     );
     await expect(
       db
@@ -29817,7 +29817,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
           { agentId: f.assignedAgentId, runId: f.runId },
           {
             authorType: "agent",
-            authorizationReason: "paperclip_runner_protocol",
+            authorizationReason: "wardmote_runner_protocol",
           },
         );
         await expect(
@@ -30642,7 +30642,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
             { agentId: fixture.assignedAgentId, runId },
             {
               authorType: "agent",
-              authorizationReason: "paperclip_runner_protocol",
+              authorizationReason: "wardmote_runner_protocol",
             },
           ),
         );
@@ -39218,7 +39218,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       { agentId: fixture.assignedAgentId, runId: unrelatedRunId },
       {
         authorType: "agent",
-        authorizationReason: "paperclip_runner_protocol",
+        authorizationReason: "wardmote_runner_protocol",
       },
     );
     await expect(
@@ -39238,7 +39238,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       { agentId: fixture.assignedAgentId, runId: sourceRunId },
       {
         authorType: "agent",
-        authorizationReason: "paperclip_runner_protocol",
+        authorizationReason: "wardmote_runner_protocol",
       },
     );
     await expect(
@@ -39258,7 +39258,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       { agentId: fixture.assignedAgentId, runId: sourceRunId },
       {
         authorType: "agent",
-        authorizationReason: "paperclip_runner_protocol",
+        authorizationReason: "wardmote_runner_protocol",
       },
     );
     await expect(
@@ -39331,7 +39331,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       { agentId: fixture.replacementAgentId, runId: reassignedRunId },
       {
         authorType: "agent",
-        authorizationReason: "paperclip_runner_protocol",
+        authorizationReason: "wardmote_runner_protocol",
       },
     );
     await expect(
@@ -40957,7 +40957,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       { agentId: fixture.assignedAgentId, runId: sourceRunId },
       {
         authorType: "agent",
-        authorizationReason: "paperclip_runner_protocol",
+        authorizationReason: "wardmote_runner_protocol",
       },
     );
     await expect(
@@ -47809,7 +47809,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       conversation.issueId,
       "Recorded a direct upload before final presentation.",
       { agentId: fixture.assignedAgentId, runId },
-      { authorType: "agent", authorizationReason: "paperclip_runner_protocol" },
+      { authorType: "agent", authorizationReason: "wardmote_runner_protocol" },
     );
     const storedDirect = await storage.storage.putFile({
       companyId: fixture.companyId,
@@ -55140,7 +55140,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
               callId: "edited-source-read",
               arguments: selection,
             }),
-          ).rejects.toThrow("paperclip_runner_chat_attachment_source_denied");
+          ).rejects.toThrow("wardmote_runner_chat_attachment_source_denied");
           await expect(
             tools.execute({
               tool: "reuse_chat_attachment",
@@ -55151,7 +55151,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
                 idempotencyKey: "edited-source-reuse",
               },
             }),
-          ).rejects.toThrow("paperclip_runner_chat_attachment_source_denied");
+          ).rejects.toThrow("wardmote_runner_chat_attachment_source_denied");
           expect(storage.putFile).toHaveBeenCalledTimes(1);
           const textEdit = {
             ...original,
@@ -55733,7 +55733,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
               arguments: selection,
             }),
           ).rejects.toThrow(
-            "paperclip_runner_chat_attachment_read_not_authorized",
+            "wardmote_runner_chat_attachment_read_not_authorized",
           );
           await db
             .update(chatIdentityLinks)
@@ -55767,14 +55767,14 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
               title: "Must remain unavailable",
             },
           }),
-        ).rejects.toThrow("paperclip_runner_chat_attachment_source_denied");
+        ).rejects.toThrow("wardmote_runner_chat_attachment_source_denied");
         await expect(
           authority.execute({
             tool: "read_chat_attachment",
             callId: "deleted-source-read",
             arguments: selection,
           }),
-        ).rejects.toThrow("paperclip_runner_chat_attachment_source_denied");
+        ).rejects.toThrow("wardmote_runner_chat_attachment_source_denied");
         await expect(
           authority.execute({
             tool: "list_chat_attachments",
@@ -58117,7 +58117,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
 
   it.each([
     {
-      authorizationReason: "paperclip_runner_protocol",
+      authorizationReason: "wardmote_runner_protocol",
       chatId: "77112241",
       publishesComment: false,
     },
@@ -67996,7 +67996,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       issueId,
       "Prepared the exact requested files for this response.",
       { agentId: fixture.assignedAgentId, runId },
-      { authorizationReason: "paperclip_runner_protocol" },
+      { authorizationReason: "wardmote_runner_protocol" },
     );
     const attachments = [];
     for (const [originalFilename, contentType, body] of [

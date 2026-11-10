@@ -465,7 +465,7 @@ export function gradeFirstTask(e: FirstTaskEvidence): FirstTaskCheck[] {
     "Runs succeeded, were suppressed before execution, stopped with a recorded refusal response, or paused on an answerable first-response native question",
     [last.id],
   );
-  if (e.runtimeSettings?.adapterType === "paperclip_runner" &&
+  if (e.runtimeSettings?.adapterType === "wardmote_runner" &&
     ["task-reply-accept", "task-card-accept"].includes(e.caseId) && last.phase === "finished") {
     checks.push({ ...gradeNativeSessionContinuity(e.checkpoints.flatMap((checkpoint) => checkpoint.runs), e.onboardingIssueId), evidence: [last.id] });
   }

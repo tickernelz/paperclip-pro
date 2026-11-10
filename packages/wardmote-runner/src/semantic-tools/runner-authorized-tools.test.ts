@@ -81,6 +81,6 @@ describe("runner authorized tool projection", () => {
         definition("get_task_context"),
         definition("get_task_context"),
       ]),
-    ).toThrow("paperclip_runner_authorized_tools_invalid");
+    ).toThrow("wardmote_runner_authorized_tools_invalid");
   });
 });

@@ -122,7 +122,7 @@ it("keeps invite routes company-scoped and denies viewers and agent actors", asy
 
 it("does not trust editable agent metadata as an invitation ownership receipt", async () => {
   const f = await fixture();
-  const [spoof] = await db.insert(agents).values({ companyId: f.companyId, name: "Unrelated agent", adapterType: "paperclip_runner",
+  const [spoof] = await db.insert(agents).values({ companyId: f.companyId, name: "Unrelated agent", adapterType: "wardmote_runner",
     adapterConfig: { provider: "openai_dot" }, metadata: { dotInvitation: { operatorId: f.userId } } }).returning();
   const service = dotInvitationService(db);
   expect(await service.resume(f.companyId, f.userId)).toBeNull();

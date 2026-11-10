@@ -35,7 +35,7 @@ async function renderRunner(config: Record<string, unknown>, expand?: string, in
       <CodexLocalConfigFields
         mode="edit"
         isCreate={false}
-        adapterType="paperclip_runner"
+        adapterType="wardmote_runner"
         values={null}
         set={null}
         config={config}

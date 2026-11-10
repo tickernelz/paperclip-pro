@@ -193,7 +193,7 @@ describe("chat agent comment publication authorization", () => {
   });
 
   it.each([
-    "paperclip_runner_protocol",
+    "wardmote_runner_protocol",
     "allow_visible_issue_write",
     "allow_scoped_agent_write",
     "allow_chat_run_presentation",

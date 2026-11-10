@@ -110,7 +110,7 @@ describe("buildNativeRuntimeContext", () => {
     });
     const context = await buildNativeRuntimeContext({
       db: {} as Db,
-      agent: { id: "agent-1", companyId: "company-1", name: "Reviewer", adapterType: "paperclip_runner", adapterConfig: { instructionsBundleMode: "managed" } },
+      agent: { id: "agent-1", companyId: "company-1", name: "Reviewer", adapterType: "wardmote_runner", adapterConfig: { instructionsBundleMode: "managed" } },
       runId: "run-1", runtimeConfig: {}, runtimeSkillEntries: [],
     });
     expect(await readFile(path.join(context.instructions.bundle.rootPath, context.instructions.entryPath), "utf8"))
@@ -142,7 +142,7 @@ describe("buildNativeRuntimeContext", () => {
     await writeFile(path.join(workingRoot, "instructions/CHARter.md"), "Original instructions.\n");
     const context = await buildNativeRuntimeContext({
       db: {} as Db,
-      agent: { id: "agent-1", companyId: "company-1", name: "Reviewer", adapterType: "paperclip_runner", adapterConfig: {} },
+      agent: { id: "agent-1", companyId: "company-1", name: "Reviewer", adapterType: "wardmote_runner", adapterConfig: {} },
       runId: "run-1",
       runtimeConfig: {},
       runtimeSkillEntries: [],
@@ -183,7 +183,7 @@ describe("buildNativeRuntimeContext", () => {
           id: "agent-1",
           companyId: "company-1",
           name: "Reviewer",
-          adapterType: "paperclip_runner",
+          adapterType: "wardmote_runner",
           adapterConfig: {},
         },
         runId: "run-1",
@@ -238,7 +238,7 @@ describe("buildNativeRuntimeContext", () => {
         id: "agent-1",
         companyId: "company-1",
         name: "Reviewer",
-        adapterType: "paperclip_runner",
+        adapterType: "wardmote_runner",
         adapterConfig: {},
       },
       runId: "run-1",
@@ -277,7 +277,7 @@ describe("buildNativeRuntimeContext", () => {
         id: "agent-1",
         companyId: "company-1",
         name: "Reviewer",
-        adapterType: "paperclip_runner",
+        adapterType: "wardmote_runner",
         adapterConfig: {},
       },
       runId: "run-1",
@@ -328,7 +328,7 @@ describe("buildNativeRuntimeContext", () => {
         id: "agent-1",
         companyId: "company-1",
         name: "Reviewer",
-        adapterType: "paperclip_runner",
+        adapterType: "wardmote_runner",
         adapterConfig: {},
       },
       runId: "run-1",

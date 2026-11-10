@@ -3548,7 +3548,7 @@ export function companyPortabilityService(db: Db, storage?: StorageService) {
     adapterType: string,
     adapterConfig: Record<string, unknown>,
   ) {
-    if (adapterType === "paperclip_runner") {
+    if (adapterType === "wardmote_runner") {
       let profile;
       try {
         if (adapterConfig.provider === "openai_dot") {
@@ -5199,7 +5199,7 @@ export function companyPortabilityService(db: Db, storage?: StorageService) {
       const runnerSelections = sourceManifest.agents.filter((agent) =>
         importedAgentSlugs.has(agent.slug)
         && (input.adapterOverrides?.[agent.slug]?.adapterType ?? agent.adapterType)
-          === "paperclip_runner",
+          === "wardmote_runner",
       );
       if (runnerSelections.length > 0) {
         const experimental = await instanceSettingsService(db).getExperimental();
@@ -5208,12 +5208,12 @@ export function companyPortabilityService(db: Db, storage?: StorageService) {
           if (config.provider === "openai_dot") {
             if (experimental.enableOpenAiDot !== true) throw unprocessable(
               "OpenAI Dot is turned off on this instance. Turn it on in Settings > Features.",
-              { code: "paperclip_runner_dot_disabled" },
+              { code: "wardmote_runner_dot_disabled" },
             );
           } else if (experimental.enableNativeRunner !== true) {
             throw unprocessable(
               "The native runner is turned off on this instance. Turn it on in Settings > Advanced.",
-              { code: "paperclip_runner_rollout_disabled" },
+              { code: "wardmote_runner_rollout_disabled" },
             );
           }
         }

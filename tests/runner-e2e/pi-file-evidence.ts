@@ -164,7 +164,7 @@ export function gradePiFileEvidence(input: {
     && rec(row.details).attachmentId === a.id);
   requireEvidence(publications.length === 1 && publications[0]!.companyId === input.companyId
     && publications[0]!.runId === run.id && publications[0]!.actorId === input.agentId
-    && publications[0]!.entityId === input.issueId && rec(publications[0]!.details).source === "paperclip_runner_protocol",
+    && publications[0]!.entityId === input.issueId && rec(publications[0]!.details).source === "wardmote_runner_protocol",
   "publication activity must belong to this run and task");
   return {
     schema: "paperclip.e2e.pi-file-evidence.v1", passed: true, workspaceProvenance,

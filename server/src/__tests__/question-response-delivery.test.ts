@@ -514,7 +514,7 @@ describeEmbeddedPostgres("question response delivery", () => {
 
   it("resolves an in-flight native input request before creating a continuation", async () => {
     const seeded = await seed({
-      adapterType: "paperclip_runner",
+      adapterType: "wardmote_runner",
       runtimeMode: "native",
       sourceStatus: "running",
     });
@@ -542,7 +542,7 @@ describeEmbeddedPostgres("question response delivery", () => {
 
   it("keeps native input delivery pending while its PRP session is unavailable", async () => {
     const seeded = await seed({
-      adapterType: "paperclip_runner",
+      adapterType: "wardmote_runner",
       runtimeMode: "native",
       sourceStatus: "running",
     });

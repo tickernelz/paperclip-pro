@@ -1080,7 +1080,7 @@ export function nativeRunEventsToTranscript(events: readonly HeartbeatRunEvent[]
       kind: "result",
       ...usageSummary,
       text: "",
-      subtype: "paperclip_runner_usage",
+      subtype: "wardmote_runner_usage",
       isError: false,
       errors: [],
     });
@@ -1089,7 +1089,7 @@ export function nativeRunEventsToTranscript(events: readonly HeartbeatRunEvent[]
       kind: "result",
       ...cumulativeUsageSummary,
       text: "Provider-reported session-cumulative usage; a per-run delta was unavailable.",
-      subtype: "paperclip_runner_session_usage",
+      subtype: "wardmote_runner_session_usage",
       isError: false,
       errors: [],
     });

@@ -97,7 +97,7 @@ export async function completeAgentConfiguration(txDb: Db, existing: AgentConfig
   const priorAdapterConfig = isPlainRecord(existing.adapterConfig) ? existing.adapterConfig : {};
   const afterConfig = isPlainRecord(updated.adapterConfig) ? updated.adapterConfig : {};
   const changedExecution = updated.adapterType !== existing.adapterType
-    || (updated.adapterType === "paperclip_runner" && ["provider", "acpxAgent", "model"].some(
+    || (updated.adapterType === "wardmote_runner" && ["provider", "acpxAgent", "model"].some(
       (key) => priorAdapterConfig[key] !== afterConfig[key],
     ));
   if (updated.adapterType !== existing.adapterType) {

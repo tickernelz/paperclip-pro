@@ -83,7 +83,7 @@ describe("native runner file handoff", () => {
       id: agentId,
       companyId,
       name: "Native file agent",
-      adapterType: "paperclip_runner",
+      adapterType: "wardmote_runner",
       adapterConfig: { provider: "codex" },
       runtimeConfig: {},
       status: "active",
@@ -277,7 +277,7 @@ describe("native runner file handoff", () => {
     const root = await mkdtemp(path.join(temporaryRoot, "empty-wake-unauthorized-"));
     try {
       await expect(stageEmptyWake(root, "00000000-0000-4000-8000-000000009199"))
-        .rejects.toThrow("paperclip_runner_attachment_staging_not_authorized");
+        .rejects.toThrow("wardmote_runner_attachment_staging_not_authorized");
       await expect(readdir(root)).resolves.toEqual([]);
     } finally {
       await rm(root, { recursive: true, force: true });
@@ -501,7 +501,7 @@ describe("native runner file handoff", () => {
         createdByRunId: runId,
         body: "Prepared Requested answer for this response.",
         metadata: expect.objectContaining({
-          authorizationReason: "paperclip_runner_protocol",
+          authorizationReason: "wardmote_runner_protocol",
         }),
       }),
     ]);
@@ -516,7 +516,7 @@ describe("native runner file handoff", () => {
           attachmentId: first.entityRefs[0],
           workProductId: first.entityRefs[1],
           commentId: first.entityRefs[2],
-          source: "paperclip_runner_protocol",
+          source: "wardmote_runner_protocol",
         }),
       }),
     ]);
@@ -550,10 +550,10 @@ describe("native runner file handoff", () => {
       authority({ executionTargetKind: "remote" }).execute(
         callFor("checked.txt", body, "remote-denied"),
       ),
-    ).rejects.toThrow("paperclip_runner_file_handoff_remote_unsupported");
+    ).rejects.toThrow("wardmote_runner_file_handoff_remote_unsupported");
     await expect(
       authority().execute(callFor("linked.txt", body, "symlink-denied")),
-    ).rejects.toThrow("paperclip_runner_file_handoff_symlink_denied");
+    ).rejects.toThrow("wardmote_runner_file_handoff_symlink_denied");
     await expect(
       authority().execute(
         callFor(
@@ -562,13 +562,13 @@ describe("native runner file handoff", () => {
           "intermediate-symlink-denied",
         ),
       ),
-    ).rejects.toThrow("paperclip_runner_file_handoff_symlink_denied");
+    ).rejects.toThrow("wardmote_runner_file_handoff_symlink_denied");
     await expect(
       authority().execute(callFor("hardlinked.txt", body, "hardlink-denied")),
-    ).rejects.toThrow("paperclip_runner_file_handoff_file_changed");
+    ).rejects.toThrow("wardmote_runner_file_handoff_file_changed");
     await expect(
       authority().execute(callFor("../checked.txt", body, "traversal-denied")),
-    ).rejects.toThrow("paperclip_runner_file_handoff_path_denied");
+    ).rejects.toThrow("wardmote_runner_file_handoff_path_denied");
     await expect(
       authority().execute({
         ...callFor("checked.txt", body, "hash-denied"),
@@ -577,12 +577,12 @@ describe("native runner file handoff", () => {
           sha256: "0".repeat(64),
         },
       }),
-    ).rejects.toThrow("paperclip_runner_file_handoff_hash_mismatch");
+    ).rejects.toThrow("wardmote_runner_file_handoff_hash_mismatch");
     await expect(
       authority({ companyId: "00000000-0000-4000-8000-000000009999" }).execute(
         callFor("checked.txt", body, "foreign-denied"),
       ),
-    ).rejects.toThrow("paperclip_runner_tool_binding_not_authorized");
+    ).rejects.toThrow("wardmote_runner_tool_binding_not_authorized");
   });
 
   it("registers a verified remote output without reading a controller path", async () => {
@@ -804,7 +804,7 @@ describe("native runner file handoff", () => {
         },
         storage,
       }),
-    ).rejects.toThrow("paperclip_runner_attachment_staging_residue_denied");
+    ).rejects.toThrow("wardmote_runner_attachment_staging_residue_denied");
     await expect(readFile(outsideResidue, "utf8")).resolves.toBe(
       "outside bytes must remain intact",
     );
@@ -840,7 +840,7 @@ describe("native runner file handoff", () => {
         },
         storage,
       }),
-    ).rejects.toThrow("paperclip_runner_attachment_staging_not_authorized");
+    ).rejects.toThrow("wardmote_runner_attachment_staging_not_authorized");
 
     const remoteStage = await stageNativeRunnerWakeAttachments({
       db,
@@ -1064,7 +1064,7 @@ describe("native runner file handoff", () => {
       authority().execute(
         callFor("out/answer.txt", originalBody, "reminted-work-product"),
       ),
-    ).rejects.toThrow("paperclip_runner_file_handoff_work_product_missing");
+    ).rejects.toThrow("wardmote_runner_file_handoff_work_product_missing");
 
     const failureBody = Buffer.from("storage mismatch cleanup\n", "utf8");
     await writeFile(path.join(workspaceRoot, "mismatch.txt"), failureBody);
@@ -1096,7 +1096,7 @@ describe("native runner file handoff", () => {
       mismatchingAuthority.execute(
         callFor("mismatch.txt", failureBody, "storage-mismatch"),
       ),
-    ).rejects.toThrow("paperclip_runner_file_handoff_storage_mismatch");
+    ).rejects.toThrow("wardmote_runner_file_handoff_storage_mismatch");
     expect(deletedObjectKey).toEqual(expect.any(String));
     await expect(
       realStorage.headObject(companyId, deletedObjectKey!),

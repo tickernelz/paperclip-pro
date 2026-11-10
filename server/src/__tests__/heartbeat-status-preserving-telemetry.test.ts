@@ -86,7 +86,7 @@ describeEmbeddedPostgres(
         id: agentId,
         companyId,
         name: "Native worker",
-        adapterType: "paperclip_runner",
+        adapterType: "wardmote_runner",
         status: "running",
       });
       await db.insert(issues).values({

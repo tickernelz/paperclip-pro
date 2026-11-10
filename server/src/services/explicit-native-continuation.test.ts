@@ -37,7 +37,7 @@ const support = await getEmbeddedPostgresTestSupport();
     const sourceRunId = randomUUID(), successorRunId = randomUUID();
     const commentId: string = randomUUID();
     await db.insert(companies).values({ id: companyId, name: "Explicit turn", defaultResponsibleUserId: "board", issuePrefix: `E${companyId.replace(/-/g, "")}` });
-    await db.insert(agents).values({ id: agentId, companyId, name: "Native", role: "engineer", adapterType: "paperclip_runner", status: "idle", runtimeConfig: { heartbeat: { maxConcurrentRuns: 1 } } });
+    await db.insert(agents).values({ id: agentId, companyId, name: "Native", role: "engineer", adapterType: "wardmote_runner", status: "idle", runtimeConfig: { heartbeat: { maxConcurrentRuns: 1 } } });
     await db.insert(issues).values({ id: issueId, companyId, title: "Deploy", status: "blocked", assigneeAgentId: agentId });
     await db.insert(heartbeatRuns).values({ id: sourceRunId, companyId, agentId,
       nativeIssueId: issueId, runtimeMode: "native", status: "failed", processPid: 999999999,
@@ -58,7 +58,7 @@ const support = await getEmbeddedPostgresTestSupport();
     const f = await seed(), nextAgentId = randomUUID(), queueId = randomUUID();
     await db.delete(issueRecoveryActions).where(eq(issueRecoveryActions.sourceIssueId, f.issueId));
     await db.delete(nativeRunFinalizations).where(eq(nativeRunFinalizations.runId, f.sourceRunId));
-    await db.insert(agents).values({ id: nextAgentId, companyId: f.companyId, name: "Replacement", role: "engineer", adapterType: "paperclip_runner", runtimeConfig: { heartbeat: { maxConcurrentRuns: 1 } } });
+    await db.insert(agents).values({ id: nextAgentId, companyId: f.companyId, name: "Replacement", role: "engineer", adapterType: "wardmote_runner", runtimeConfig: { heartbeat: { maxConcurrentRuns: 1 } } });
     await db.insert(heartbeatRuns).values({ companyId: f.companyId, agentId: nextAgentId, status: "running" });
     await db.update(issues).set({ status: "in_progress", assigneeAgentId: kind === "different_owner" ? f.agentId : nextAgentId }).where(eq(issues.id, f.issueId));
     await db.update(heartbeatRuns).set({ status: kind === "running_source" ? "running" : "cancelled", errorCode: "issue_reassigned",
@@ -844,7 +844,7 @@ const support = await getEmbeddedPostgresTestSupport();
     const f = await seedCancelledStartup();
     await db.delete(nativeRunFinalizations).where(eq(nativeRunFinalizations.runId, f.sourceRunId));
     await db.update(heartbeatRuns).set({ runtimeMode: "legacy", runtimeModeResolvedAt: null, nativeIssueId: null,
-      runnerProfileJson: { adapterDispatch: { adapterType: "paperclip_runner" } },
+      runnerProfileJson: { adapterDispatch: { adapterType: "wardmote_runner" } },
       resultJson: { startupCancellation: { beforeNativeSelection: true }, startupPreparationSettledAt: new Date().toISOString() },
     }).where(eq(heartbeatRuns.id, f.sourceRunId));
     expect(await admit(f)).toMatchObject({ previousRunId: f.sourceRunId });
@@ -856,7 +856,7 @@ const support = await getEmbeddedPostgresTestSupport();
     await db.delete(environmentLeases).where(eq(environmentLeases.heartbeatRunId, f.sourceRunId));
     await db.update(heartbeatRuns).set({ runtimeMode: "legacy", runtimeModeResolvedAt: null,
       nativeIssueId: null, nativeSessionId: null, executionStage: "preparing", errorCode: "operator_interrupted",
-      runnerProfileJson: { adapterDispatch: { adapterType: "paperclip_runner" } },
+      runnerProfileJson: { adapterDispatch: { adapterType: "wardmote_runner" } },
       resultJson: retainedReceipt ? { operatorInterrupted: true, stopReason: "cancelled",
         startupCancellation: { beforeNativeSelection: true, requestedAt: "2026-09-11T10:00:00Z" } } : null,
     }).where(eq(heartbeatRuns.id, f.sourceRunId));
@@ -1030,7 +1030,7 @@ const support = await getEmbeddedPostgresTestSupport();
       if (Object.keys(patch).length) await db.update(heartbeatRuns).set(patch).where(eq(heartbeatRuns.id, f.sourceRunId));
       if (kind === "launch" || kind === "invoked") await db.insert(heartbeatRunEvents).values({ companyId: f.companyId,
         agentId: f.agentId, runId: f.sourceRunId, seq: 1,
-        eventType: kind === "launch" ? PROCESS_START_REQUESTED : "adapter.invoke", payload: { adapterType: "paperclip_runner" } });
+        eventType: kind === "launch" ? PROCESS_START_REQUESTED : "adapter.invoke", payload: { adapterType: "wardmote_runner" } });
       if (kind === "coordinator") {
         await db.update(heartbeatRuns).set({ nativeIssueId: f.issueId }).where(eq(heartbeatRuns.id, f.sourceRunId));
         await db.insert(nativeRunFinalizations).values({ companyId: f.companyId,
@@ -1049,7 +1049,7 @@ const support = await getEmbeddedPostgresTestSupport();
   );
 
   it.each([
-    ["paperclip_runner", true],
+    ["wardmote_runner", true],
     ["omp_local", false],
     ["process", false],
     ["hermes_gateway", false],
@@ -1600,7 +1600,7 @@ const support = await getEmbeddedPostgresTestSupport();
     if (phase === "before_selection") {
       await db.delete(nativeRunFinalizations).where(eq(nativeRunFinalizations.runId, f.sourceRunId));
       await db.update(heartbeatRuns).set({ runtimeMode: "legacy", runtimeModeResolvedAt: null, nativeIssueId: null,
-        runnerProfileJson: { adapterDispatch: { adapterType: "paperclip_runner" } },
+        runnerProfileJson: { adapterDispatch: { adapterType: "wardmote_runner" } },
         resultJson: { startupCancellation: { beforeNativeSelection: true }, startupPreparationSettledAt: new Date().toISOString() },
       }).where(eq(heartbeatRuns.id, f.sourceRunId));
     }

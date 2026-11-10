@@ -92,7 +92,7 @@ contracts are published in `WARDMOTE_RUNNER_COMPATIBILITY`:
 | Eval corpus | 1 | Runner declares a supported inclusive corpus-version range; out-of-range bundles fail before execution |
 
 `assertPaperclipRunnerCompatibility` performs a fail-closed preflight. It emits
-`paperclip_runner_incompatible` with stable issue codes for component mismatch,
+`wardmote_runner_incompatible` with stable issue codes for component mismatch,
 unsupported corpus versions, unknown catalog operations, missing provider
 capability declarations, and provider-operation gaps. Provider-specific runtime
 errors must not stand in for this preflight.

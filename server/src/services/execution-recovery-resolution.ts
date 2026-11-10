@@ -530,7 +530,7 @@ export async function settleUnrecoverableExecutions(
             nativeFailureBlock = { runId: run.id, statusVersion: projected!.statusVersion };
           }
           if (task.status !== "blocked" && run.runtimeMode === "legacy" && !run.runtimeModeResolvedAt &&
-              run.errorCode === "server_shutdown_interrupted" && claimedAdapterType(run) === "paperclip_runner") {
+              run.errorCode === "server_shutdown_interrupted" && claimedAdapterType(run) === "wardmote_runner") {
             nativeBootstrapFailureBlock = { runId: run.id, statusVersion: projected!.statusVersion, previousStatus: task.status };
           }
         }

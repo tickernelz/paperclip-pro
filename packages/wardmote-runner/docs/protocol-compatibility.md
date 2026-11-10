@@ -271,7 +271,7 @@ PRP is one independently versioned component of the runner bundle. Catalog,
 runner-client, control-plane-adapter, testkit, and eval-corpus compatibility is
 declared by `WARDMOTE_RUNNER_COMPATIBILITY` and checked before execution by
 `assertPaperclipRunnerCompatibility`. A mismatch fails with
-`paperclip_runner_incompatible` and stable per-issue codes; a provider-specific
+`wardmote_runner_incompatible` and stable per-issue codes; a provider-specific
 tool error is not a compatibility negotiation mechanism.
 
 See [ADR 0001](adr/0001-runner-testing-eval-package-boundaries.md) for the
@@ -284,7 +284,7 @@ App/Evals join. `assertPaperclipRunnerEvalCompatibility` requires simultaneous
 agreement on package semver, runnerd build metadata, a common PRP version,
 semantic catalog version and SHA-256 digest, harness-driver contract and
 required capabilities, and the native-execution version. It reports
-`paperclip_runner_eval_incompatible` with expected/received values for every
+`wardmote_runner_eval_incompatible` with expected/received values for every
 mismatch and must run before launching a provider.
 
 runnerd itself reports `paperclip-runner/runnerd-build-metadata/v1` from

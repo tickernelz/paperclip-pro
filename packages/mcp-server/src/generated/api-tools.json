@@ -7774,7 +7774,7 @@
             "enum": [
               "process",
               "http",
-              "paperclip_runner",
+              "wardmote_runner",
               "omp_local"
             ]
           },

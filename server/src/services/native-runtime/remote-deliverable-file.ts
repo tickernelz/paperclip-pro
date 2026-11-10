@@ -4,7 +4,7 @@ import type { CommandManagedRuntimeRunner } from "@tickernelz/wardmote-adapter-u
 
 import { getMaxAttachmentBytes } from "../../attachment-types.js";
 
-const PREFIX = "paperclip_runner_file_handoff_";
+const PREFIX = "wardmote_runner_file_handoff_";
 const READ_TIMEOUT_MS = 10_000;
 
 // Runs only in the server-bound remote workspace. No file is opened on the
@@ -14,7 +14,7 @@ const fs = require('node:fs/promises');
 const { constants } = require('node:fs');
 const path = require('node:path');
 const { createHash } = require('node:crypto');
-const fail = code => { throw new Error('paperclip_runner_file_handoff_' + code); };
+const fail = code => { throw new Error('wardmote_runner_file_handoff_' + code); };
 const same = (a, b) => ['dev', 'ino', 'size', 'mtimeNs', 'ctimeNs'].every(key => a[key] === b[key]);
 const within = (root, file) => {
   const relative = path.relative(root, file);
@@ -64,8 +64,8 @@ async function noSymlinks(root, relative) {
     await new Promise((resolve, reject) => process.stdout.write(body.toString('base64'), error => error ? reject(error) : resolve()));
   } finally { await handle.close(); }
 })().catch(error => {
-  const allowed = /^paperclip_runner_file_handoff_(path_denied|symlink_denied|file_changed|hash_mismatch)$/;
-  process.stderr.write(allowed.test(error.message) ? error.message : 'paperclip_runner_file_handoff_remote_read_failed');
+  const allowed = /^wardmote_runner_file_handoff_(path_denied|symlink_denied|file_changed|hash_mismatch)$/;
+  process.stderr.write(allowed.test(error.message) ? error.message : 'wardmote_runner_file_handoff_remote_read_failed');
   process.exitCode = 1;
 });
 `;
@@ -103,7 +103,7 @@ export async function readVerifiedRemoteWorkspaceFile(input: {
   if (result.timedOut) throw new Error(`${PREFIX}remote_read_timeout`);
   if (result.exitCode !== 0) {
     const code = result.stderr.trim();
-    throw new Error(/^paperclip_runner_file_handoff_(path_denied|symlink_denied|file_changed|hash_mismatch)$/u.test(code)
+    throw new Error(/^wardmote_runner_file_handoff_(path_denied|symlink_denied|file_changed|hash_mismatch)$/u.test(code)
       ? code : `${PREFIX}remote_read_failed`);
   }
   const encoded = result.stdout;

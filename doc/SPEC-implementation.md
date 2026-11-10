@@ -159,7 +159,7 @@ Invariant: every business record belongs to exactly one company.
 - `status` enum: `active | paused | idle | running | error | pending_approval | terminated`
 - `reports_to` uuid fk `agents.id` null
 - `capabilities` text null
-- `adapter_type` text; built-ins are `omp_local`, `paperclip_runner`, `process`, and `http`; rows with a removed adapter type stay readable and disabled
+- `adapter_type` text; built-ins are `omp_local`, `wardmote_runner`, `process`, and `http`; rows with a removed adapter type stay readable and disabled
 - `adapter_config` jsonb not null
 - `runtime_config` jsonb not null default `{}`; contains Paperclip runtime policy such as heartbeat scheduling and debug settings
 - `default_environment_id` uuid fk `environments.id` null

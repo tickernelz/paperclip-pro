@@ -39,7 +39,7 @@ beforeAll(async () => {
 afterAll(async () => { await temporary?.cleanup(); if (root) await rm(root, { recursive: true, force: true }); });
 async function fixture() {
   const [company] = await db.insert(companies).values({ name: "Avatar test", issuePrefix: randomUUID().slice(0, 8) }).returning();
-  const [agent] = await db.insert(agents).values({ companyId: company!.id, name: "Dot", status: "active", adapterType: "paperclip_runner", appearance: appearanceForPalette("deep-tide") }).returning();
+  const [agent] = await db.insert(agents).values({ companyId: company!.id, name: "Dot", status: "active", adapterType: "wardmote_runner", appearance: appearanceForPalette("deep-tide") }).returning();
   const actor = { actorType: "agent" as const, actorId: agent!.id, agentId: agent!.id };
   return { company: company!, agent: agent!, actor };
 }

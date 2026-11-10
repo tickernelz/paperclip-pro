@@ -283,7 +283,7 @@ for (const journey of [
         .click();
       await expect
         .poll(async () => (await api(`/agents/${agent.id}`)).adapterType)
-        .toBe("paperclip_runner");
+        .toBe("wardmote_runner");
       const nativeAgent = await api(`/agents/${agent.id}`);
       expect(nativeAgent.adapterConfig.env).toEqual(agent.adapterConfig.env);
       if (journey !== "ceo_lineage") {
@@ -292,7 +292,7 @@ for (const journey of [
         agent = await api(`/companies/${company.id}/agents`, "POST", {
           name: "Executor",
           role: "engineer",
-          adapterType: "paperclip_runner",
+          adapterType: "wardmote_runner",
           adapterConfig: executorConfig,
         });
       }

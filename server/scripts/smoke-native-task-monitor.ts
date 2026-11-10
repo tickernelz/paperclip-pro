@@ -42,7 +42,7 @@ try {
   await db.insert(companies).values({ id: companyId, name: "Isolated monitor smoke", issuePrefix: "MON", defaultResponsibleUserId: "monitor-smoke", requireBoardApprovalForNewAgents: false });
   await db.insert(authUsers).values({ id: "monitor-smoke", name: "Monitor smoke", email: "monitor-smoke@example.test", createdAt: new Date(), updatedAt: new Date() });
   await db.insert(companyMemberships).values({ companyId, principalType: "user", principalId: "monitor-smoke", status: "active", membershipRole: "owner" });
-  await createAgentLifecycle(db).requestHire(companyId, { id: agentId, name: "Monitor verifier", status: "active", adapterType: "paperclip_runner",
+  await createAgentLifecycle(db).requestHire(companyId, { id: agentId, name: "Monitor verifier", status: "active", adapterType: "wardmote_runner",
     adapterConfig: { provider: "codex", cwd, lifecycleMode: "warm", idleTimeoutMs: 300_000, timeoutSeconds: 180 },
     runtimeConfig: { heartbeat: { enabled: false, wakeOnDemand: true } } });
   const setupDeadline = Date.now() + 3 * 60_000;

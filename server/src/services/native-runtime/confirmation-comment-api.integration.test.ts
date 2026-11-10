@@ -49,7 +49,7 @@ describe("confirmation reply through the native API tool", () => {
     const { f, card, call, comment } = await seed();
     const url = `${server.apiUrl}/api/issues/${f.issueId}/interactions/${card.id}/resolve-from-comment`;
     expect((await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(call.arguments.body) })).status).toBe(404);
-    const token = createLocalAgentJwt(f.agentId, f.companyId, "paperclip_runner", f.runId, f.userId);
+    const token = createLocalAgentJwt(f.agentId, f.companyId, "wardmote_runner", f.runId, f.userId);
     expect((await fetch(url, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ ...call.arguments.body, actorUserId: f.userId }) })).status).toBe(400);
   });
   it("does not open the ordinary interaction or governance mutation routes", () => {

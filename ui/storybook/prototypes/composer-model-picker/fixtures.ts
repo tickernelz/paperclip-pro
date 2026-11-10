@@ -55,7 +55,7 @@ export const composerAgents: ComposerAgent[] = [
     { id: "sonnet-4.6", label: "Sonnet 4.6" },
   ], manualPattern: "Cursor model ID" },
   { id: "cursor-cloud", name: "Cloudy", role: "Remote engineering", harness: "Cursor Cloud", adapterType: "cursor_cloud", defaultLabel: "Account default", models: [], manualPattern: "Cursor Cloud model ID" },
-  { id: "runner", name: "Runa", role: "Operations", harness: "Paperclip Runner", adapterType: "paperclip_runner", provider: "Codex profile", defaultModel: "gpt-5.6-sol", models: codexModels, manualPattern: "Codex model ID" },
+  { id: "runner", name: "Runa", role: "Operations", harness: "Paperclip Runner", adapterType: "wardmote_runner", provider: "Codex profile", defaultModel: "gpt-5.6-sol", models: codexModels, manualPattern: "Codex model ID" },
   { id: "grok", name: "Grok", role: "Investigation", harness: "Grok CLI", adapterType: "grok_local", defaultModel: "grok-build", models: [
     { id: "grok-build", label: "Grok Build" },
     { id: "grok-4.7", label: "Grok 4.7" },

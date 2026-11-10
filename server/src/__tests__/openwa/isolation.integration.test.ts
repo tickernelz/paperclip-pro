@@ -133,7 +133,7 @@ describe("OpenWA company isolation and invite-link joins (embedded Postgres + fa
       name: "OpenWA Agent " + input.label,
       role: "engineer",
       status: "idle",
-      adapterType: "paperclip_runner",
+      adapterType: "wardmote_runner",
       adapterConfig: {},
       runtimeConfig: {},
       permissions: {},

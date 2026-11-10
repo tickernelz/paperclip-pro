@@ -36,7 +36,7 @@ describe("historical task questions", () => {
   async function fixture(conversationMode = false) {
     const companyId = randomUUID(), agentId = randomUUID(), issueId = randomUUID(), runId = randomUUID();
     await db.insert(companies).values({ id: companyId, name: "Question history", issuePrefix: `Q${companyId.slice(0, 8)}` });
-    await db.insert(agents).values({ id: agentId, companyId, name: "Worker", adapterType: "paperclip_runner", status: "active" });
+    await db.insert(agents).values({ id: agentId, companyId, name: "Worker", adapterType: "wardmote_runner", status: "active" });
     await db.insert(issues).values({ id: issueId, companyId, title: "Verify configuration", status: "in_progress",
       assigneeAgentId: agentId, ...(conversationMode ? { conversationAgentId: agentId,
         conversationUserId: "board-user", conversationState: "active" as const } : {}) });

@@ -815,7 +815,7 @@ describe.each(["unchanged", "newer_active", "stale_idle"] as const)(
         id: agentId,
         companyId,
         name: "Native recovery agent",
-        adapterType: "paperclip_runner",
+        adapterType: "wardmote_runner",
         // Match the persisted fixture workspace's strategy explicitly. A
         // metadata-free workspace is not proof of the current config; an actual
         // strategy change correctly refuses immutable native-input rebinding.

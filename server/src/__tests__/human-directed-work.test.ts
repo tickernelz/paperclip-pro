@@ -27,7 +27,7 @@ const support = await getEmbeddedPostgresTestSupport();
     await db.insert(companies).values({ id: companyId, name: companyId, issuePrefix: companyId.slice(0, 8) });
     const [project] = await db.insert(projects).values({ companyId, name: "Contained intake" }).returning();
     const [agent] = await db.insert(agents).values({
-      companyId, name: "Contained agent", role: "engineer", adapterType: "paperclip_runner",
+      companyId, name: "Contained agent", role: "engineer", adapterType: "wardmote_runner",
       permissions: { authorizationPolicy: { trustPreset: LOW_TRUST_REVIEW_PRESET,
         trustBoundary: { mode: LOW_TRUST_REVIEW_PRESET, companyId, projectIds: [project.id] } } },
     }).returning();
@@ -230,7 +230,7 @@ const support = await getEmbeddedPostgresTestSupport();
       sourceIssue: { ...completed, isRecoveryOriginKind: false },
       evidence: { kind: "activity", id: randomUUID(), createdAt: new Date(), action: "issue.updated" },
       existingEvaluation: null, silenceStartedAt: null, silenceAgeMs: null,
-      cleanup: { attempted: false, outcome: "no_process_metadata", adapterType: "paperclip_runner" }, now: new Date(),
+      cleanup: { attempted: false, outcome: "no_process_metadata", adapterType: "wardmote_runner" }, now: new Date(),
     })).toMatchObject({ kind: "folded" });
     expect((await db.select().from(agentWakeupRequests).where(eq(agentWakeupRequests.id, first.wake.id)))[0].status).toBe("cancelled");
     const retry = await launch(f, issue, { retryOfRunId: first.run.id });

@@ -51,7 +51,7 @@ const support = await getEmbeddedPostgresTestSupport();
           companyId,
           name: "Executor",
           role: "engineer",
-          adapterType: "paperclip_runner",
+          adapterType: "wardmote_runner",
         });
       const [task] = await db
         .insert(issues)

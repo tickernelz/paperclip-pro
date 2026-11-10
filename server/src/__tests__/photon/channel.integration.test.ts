@@ -122,7 +122,7 @@ describe("iMessage Photon channel control plane", () => {
       name: "Photon Agent",
       role: "engineer",
       status: "idle",
-      adapterType: "paperclip_runner",
+      adapterType: "wardmote_runner",
       adapterConfig: {},
       runtimeConfig: {},
       permissions: {},

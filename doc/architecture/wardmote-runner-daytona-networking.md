@@ -36,7 +36,7 @@ The PRP identity binds company, issue, agent, run, environment lease, runner ins
 
 ## Deployment-mode boundary
 
-Daytona always selects provider ingress for `paperclip_runner`; it does not fall
+Daytona always selects provider ingress for `wardmote_runner`; it does not fall
 back to direct outbound WSS or a legacy callback bridge. Same-host native runs
 keep loopback `ws://`, and other remote providers may use direct outbound
 `wss://` only when an operator explicitly configures a reachable Paperclip

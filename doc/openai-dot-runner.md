@@ -1,6 +1,6 @@
 # OpenAI Dot with Paperclip Runner
 
-OpenAI Dot is an experimental provider of `paperclip_runner`. A dedicated
+OpenAI Dot is an experimental provider of `wardmote_runner`. A dedicated
 agent OAuth connection and MCP Events wake an existing Dot. The Rust Runner
 owns the assignment lifecycle and durable tool receipts. Dot uses Paperclip's
 existing agent permissions and task tools, including document writes and

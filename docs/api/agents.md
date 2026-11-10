@@ -142,7 +142,7 @@ GET /api/companies/{companyId}/adapters/{adapterType}/models
 
 Returns selectable models for an adapter type.
 
-- For `paperclip_runner`, pass `provider` to list the models of the selected runner provider.
+- For `wardmote_runner`, pass `provider` to list the models of the selected runner provider.
 
 ## Config Revisions
 

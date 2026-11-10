@@ -5,7 +5,7 @@ import { buildEffectiveRunSessionConfigMetadata, resolveTaskSessionConfigFreshne
 const binding = { mode: "shared" as const, provider: "openai" as const, method: "subscription" as const, connectionId: "account", grantId: "grant" };
 const sessionIdentity = "grant:alice:0", credentialIdentity = "grant:alice:token";
 const config = { provider: "codex", model: "gpt-5.6-sol", env: { OPENAI_API_KEY: "fixture-token" }, managedAiConnection: { ...binding, identity: credentialIdentity, sessionIdentity } };
-const base = { adapterType: "paperclip_runner", effectiveAdapterConfig: config, agentRuntimeConfig: { aiConnection: binding }, agentConfigRevision: null as unknown, issueOverrides: null as unknown, workspaceConfig: {}, environment: {}, environmentEnv: null, projectEnv: null, routineEnv: null, runtimeSkills: [] };
+const base = { adapterType: "wardmote_runner", effectiveAdapterConfig: config, agentRuntimeConfig: { aiConnection: binding }, agentConfigRevision: null as unknown, issueOverrides: null as unknown, workspaceConfig: {}, environment: {}, environmentEnv: null, projectEnv: null, routineEnv: null, runtimeSkills: [] };
 type MetadataInput = Parameters<typeof buildEffectiveRunSessionConfigMetadata>[0];
 type CompatibilityInput = Parameters<typeof aiConnectionSessionCompatibilityInputs>[0];
 async function decision(previous: Partial<MetadataInput>, next: Partial<MetadataInput> = {}, compatibility: Partial<CompatibilityInput> = {}, wakeResetReason?: string) {

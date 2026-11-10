@@ -184,7 +184,7 @@ export async function resumeNativeWorkspaceFinalization(input: {
         const target = await resolveEnvironmentExecutionTarget({
           db: input.db,
           companyId: bound.companyId,
-          adapterType: "paperclip_runner",
+          adapterType: "wardmote_runner",
           environment,
           leaseId: lease.id,
           leaseMetadata: lease.metadata,

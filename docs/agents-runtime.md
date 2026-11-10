@@ -35,7 +35,7 @@ If an agent is already running, new wakeups are merged (coalesced) instead of la
 Built-in adapters:
 
 - `omp_local`: runs the OMP coding agent
-- `paperclip_runner`: experimental native runner, enabled per instance
+- `wardmote_runner`: experimental native runner, enabled per instance
 - `process`: generic shell command adapter (existing agents only; not selectable in the UI)
 - `http`: calls an external HTTP endpoint (existing agents only; not selectable in the UI)
 

@@ -28,7 +28,7 @@ async function task(
 async function running(
   request: APIRequestContext,
   issueId: string,
-  adapter: "process" | "paperclip_runner",
+  adapter: "process" | "wardmote_runner",
 ) {
   let run:
     | { id: string; status: string; runtimeMode?: string; processPid?: number }
@@ -132,13 +132,13 @@ function processAlive(pid: number) {
 
 test.setTimeout(120_000);
 
-for (const adapter of ["process", "paperclip_runner"] as const) {
+for (const adapter of ["process", "wardmote_runner"] as const) {
   test(`${adapter}: queue, composer Stop, subtree pause/cancel, and resume`, async ({
     page,
     request,
   }, testInfo) => {
     test.skip(
-      adapter === "paperclip_runner" && !process.env.WARDMOTE_STOP_FAKE_CODEX,
+      adapter === "wardmote_runner" && !process.env.WARDMOTE_STOP_FAKE_CODEX,
       "Set WARDMOTE_STOP_FAKE_CODEX and WARDMOTE_RUNNER_BINARY for real runnerd with the deterministic provider.",
     );
     const company = await json(
@@ -247,7 +247,7 @@ for (const adapter of ["process", "paperclip_runner"] as const) {
       const parentRun = await running(request, parent.id, adapter);
       const childRun = await running(request, child.id, adapter);
       const otherRun = await running(request, other.id, adapter);
-      if (adapter === "paperclip_runner") {
+      if (adapter === "wardmote_runner") {
         // A run row becomes live before its provider turn starts. Prove that the
         // deterministic provider is active before attempting interruption.
         await expect
@@ -360,7 +360,7 @@ for (const adapter of ["process", "paperclip_runner"] as const) {
       await expect(
         page.getByRole("button", { name: "Dismiss notification" }),
       ).toHaveCount(0);
-      if (adapter === "paperclip_runner") {
+      if (adapter === "wardmote_runner") {
         await expect(
           page.getByRole("button", { name: /^Run cancelled/ }),
         ).toHaveClass(/text-ink-3/);
@@ -400,7 +400,7 @@ for (const adapter of ["process", "paperclip_runner"] as const) {
       const resumedChildRun = await running(request, child.id, adapter);
       expect(resumedParentRun.id).not.toBe(parentRun.id);
       expect(resumedChildRun.id).not.toBe(childRun.id);
-      if (adapter === "paperclip_runner") {
+      if (adapter === "wardmote_runner") {
         await expect.poll(async () => {
           const calls = await readFile(process.env.WARDMOTE_STOP_CODEX_LOG!, "utf8");
           return calls.split("turn/start").length - 1;

@@ -82,7 +82,7 @@ describe("durable Dot Runner integration", () => {
       enabled: true,
       runtimeConfig: {},
       adapterConfig: { provider: "openai_dot", dotBindingId: randomUUID(), allowUnmeteredProvider: true },
-      agent: { status: "active", adapterType: "paperclip_runner" },
+      agent: { status: "active", adapterType: "wardmote_runner" },
       issue: { id: randomUUID(), workMode: "standard" },
       target: { kind: "local" },
       workspaceId: null,
@@ -102,7 +102,7 @@ describe("durable Dot Runner integration", () => {
     await db.insert(authUsers).values({ id: userId, name: "Dot operator", email: userId + "@example.test", createdAt: new Date(), updatedAt: new Date() });
     const [company] = await db.insert(companies).values({ name: "Dot test", issuePrefix: "DT" + randomBytes(3).toString("hex") }).returning();
     await db.insert(companyMemberships).values({ companyId: company!.id, principalType: "user", principalId: userId, membershipRole: "owner", status: "active" });
-    const [agent] = await db.insert(agents).values({ companyId: company!.id, name: "Dot", adapterType: "paperclip_runner", status: "active", adapterConfig: { provider: "openai_dot", allowUnmeteredProvider: true } }).returning();
+    const [agent] = await db.insert(agents).values({ companyId: company!.id, name: "Dot", adapterType: "wardmote_runner", status: "active", adapterConfig: { provider: "openai_dot", allowUnmeteredProvider: true } }).returning();
     const config = { origin: "https://paperclip.example", resource: "https://paperclip.example/mcp/runner" };
     const oauth = createPublicMcpOAuth(db, config);
     const client = await oauth.register({ client_name: "Dedicated Dot", redirect_uris: ["https://chatgpt.com/connector_platform/oauth/callback"] }, randomUUID());
@@ -507,7 +507,7 @@ describe("durable Dot Runner integration", () => {
   it("authorizes admitted Dot reviews while preserving the worker and rejecting stale review authority", async () => {
     const f = await fixture();
     const companyId = f.company.id;
-    const [worker] = await db.insert(agents).values({ companyId, name: "Original worker", status: "active", adapterType: "paperclip_runner" }).returning();
+    const [worker] = await db.insert(agents).values({ companyId, name: "Original worker", status: "active", adapterType: "wardmote_runner" }).returning();
     const [issue] = await db.insert(issues).values({ companyId, title: "Review another agent's work", status: "in_review", statusVersion: 3, assigneeAgentId: worker!.id }).returning();
     const issueId = issue!.id;
     const [contract] = await db.insert(completionContracts).values({ companyId, issueId, revision: 1, schemaVersion: "paperclip.completion-contract.v1", policyVersion: "fixture",

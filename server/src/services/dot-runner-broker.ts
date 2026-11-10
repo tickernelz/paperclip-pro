@@ -129,7 +129,7 @@ function createBroker(db: Db) {
       const code = randomBytes(24).toString("base64url");
       const binding = await db.transaction(async tx => {
         const [agent] = await tx.select().from(agents).where(and(eq(agents.id, input.agentId), eq(agents.companyId, input.companyId))).for("update");
-        if (!agent || agent.adapterType !== "paperclip_runner" || agent.adapterConfig.provider !== "openai_dot" || !canConfigureAgentConnection(agent)) throw fail("Choose an approved Paperclip Runner agent.");
+        if (!agent || agent.adapterType !== "wardmote_runner" || agent.adapterConfig.provider !== "openai_dot" || !canConfigureAgentConnection(agent)) throw fail("Choose an approved Paperclip Runner agent.");
         const [existing] = await tx.select().from(bindings).where(and(eq(bindings.companyId, input.companyId), eq(bindings.agentId, input.agentId), isNull(bindings.revokedAt)));
         if (existing) {
           if (existing.id !== input.replaceBindingId || existing.status !== "pairing" || existing.operatorId !== input.operatorId) {

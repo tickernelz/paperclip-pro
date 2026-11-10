@@ -281,7 +281,7 @@ function isNativePaperclipRunnerRun(
     | undefined,
 ): boolean {
   return (
-    run?.runtimeMode === "native" && run.adapterType === "paperclip_runner"
+    run?.runtimeMode === "native" && run.adapterType === "wardmote_runner"
   );
 }
 const LEGACY_WITHHELD_RUN_COMMENT =
@@ -645,7 +645,7 @@ export function TaskChatThread(props: TaskChatThreadProps) {
       state: null,
       targetRunId: null,
       revision: "empty",
-      protocol: "paperclip_runner_v1",
+      protocol: "wardmote_runner_v1",
       steeringDisposition: "temporarily_unavailable",
       entries: [],
     }),
@@ -2609,7 +2609,7 @@ export function TaskChatThread(props: TaskChatThreadProps) {
   const runtimeComposerDisabledReason = composerDisabledReason ?? undefined;
   const assigneeUsesPaperclipRunner = Boolean(
     issueAssigneeAgentId &&
-    agentMap?.get(issueAssigneeAgentId)?.adapterType === "paperclip_runner",
+    agentMap?.get(issueAssigneeAgentId)?.adapterType === "wardmote_runner",
   );
   const [runnerSubmissionPending, setRunnerSubmissionPending] = useState(false);
   useEffect(() => {

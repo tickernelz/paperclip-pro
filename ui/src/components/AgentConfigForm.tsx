@@ -177,7 +177,7 @@ const emptyOverlay: AgentConfigOverlay = {
 const EMPTY_ENV: Record<string, EnvBinding> = {};
 
 export function supportsAdapterModelRefresh(adapterType: string): boolean {
-  return adapterType === "paperclip_runner";
+  return adapterType === "wardmote_runner";
 }
 
 export function resolvePaperclipRunnerTransitionModel(
@@ -395,9 +395,9 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
     // their current value in edit mode, but the picker does not offer a fresh
     // native selection until the explicit experimental opt-in is known true.
     if (experimentalSettings?.enableNativeRunner !== true) {
-      next.add("paperclip_runner");
+      next.add("wardmote_runner");
     }
-    if (experimentalSettings?.enableOpenAiDot !== true || disabledTypes.has("paperclip_runner")) {
+    if (experimentalSettings?.enableOpenAiDot !== true || disabledTypes.has("wardmote_runner")) {
       next.add("openai_dot");
     }
     return next;
@@ -599,7 +599,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
     : overlay.adapterType ?? props.agent.adapterType;
   const getCapabilities = useAdapterCapabilities();
   const adapterCaps = getCapabilities(adapterType);
-  const isDotRunner = adapterType === "paperclip_runner" && (isCreate ? props.values.adapterSchemaValues?.provider : eff("adapterConfig", "provider", config.provider)) === "openai_dot";
+  const isDotRunner = adapterType === "wardmote_runner" && (isCreate ? props.values.adapterSchemaValues?.provider : eff("adapterConfig", "provider", config.provider)) === "openai_dot";
   const isLocal = !isDotRunner && (adapterCaps.supportsInstructionsBundle || adapterCaps.supportsSkills || adapterCaps.supportsLocalAgentJwt);
   
   // The legacy working directory is an absolute path on the host, so the
@@ -886,7 +886,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
       ? "Wardmote Computer"
       : "Local";
 
-  const runnerProvider = adapterType === "paperclip_runner"
+  const runnerProvider = adapterType === "wardmote_runner"
     ? String(isCreate ? props.values.adapterSchemaValues?.provider ?? "codex"
       : eff("adapterConfig", "provider", config.provider === "acpx" && config.acpxAgent === "codex" ? "codex" : config.provider ?? "codex"))
     : undefined;
@@ -926,7 +926,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
       }
       return agentsApi.detectModel(selectedCompanyId, adapterType);
     },
-    enabled: Boolean(selectedCompanyId && isLocal && adapterType !== "paperclip_runner"),
+    enabled: Boolean(selectedCompanyId && isLocal && adapterType !== "wardmote_runner"),
   });
   const detectedModel = detectedModelData?.model ?? null;
   const detectedModelCandidates = detectedModelData?.candidates ?? [];
@@ -1070,7 +1070,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
         (overlay.runtime.runtimeConfig as Record<string, unknown> | undefined)?.aiConnection ?? props.agent.runtimeConfig.aiConnection,
       ).data;
       if (props.compactTestFeedback) {
-        const providerAdapter = adapterType === "paperclip_runner"
+        const providerAdapter = adapterType === "wardmote_runner"
           ? adapterConfig.provider === "codex" ? "codex_local"
             : adapterConfig.provider === "acpx" && adapterConfig.acpxAgent === "grok" ? "grok_local"
             : adapterConfig.provider === "acpx" && adapterConfig.acpxAgent === "claude" ? "claude_local"
@@ -1274,7 +1274,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
   const currentThinkingEffort = isCreate
     ? mergesEffortIntoModel ? String(val!.adapterSchemaValues?.thinking ?? "") : val!.thinkingEffort
     : eff("adapterConfig", thinkingEffortKey, String(config[thinkingEffortKey] ?? ""));
-  const showThinkingEffort = adapterType !== "paperclip_runner" && !mergesEffortIntoModel;
+  const showThinkingEffort = adapterType !== "wardmote_runner" && !mergesEffortIntoModel;
   const setThinkingEffort = (effort: string | null) => {
     if (isCreate) {
       if (mergesEffortIntoModel) {
@@ -1575,12 +1575,12 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                 openAiDotEnabled={experimentalSettings?.enableOpenAiDot === true}
                 onChange={(choice) => {
                   const dot = choice === "openai_dot";
-                  const t = dot ? "paperclip_runner" : choice;
+                  const t = dot ? "wardmote_runner" : choice;
                   if (isCreate) {
                     // Reset all adapter-specific fields to defaults when switching adapter type
                     const { adapterType: _at, ...defaults } = defaultCreateValues;
                     const nextValues: CreateConfigValues = { ...defaults, adapterType: t };
-                    if (t === "paperclip_runner") {
+                    if (t === "wardmote_runner") {
                       nextValues.model = DEFAULT_CODEX_LOCAL_MODEL;
                     }
                     if (dot) {
@@ -1597,7 +1597,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                       adapterConfig: {
                         model:
                           dot ? ""
-                            : t === "paperclip_runner"
+                            : t === "wardmote_runner"
                               ? resolvePaperclipRunnerTransitionModel(adapterType, config.model)
                               : "",
                         effort: "",
@@ -1606,7 +1606,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                         mode: "",
                         ...(dot
                             ? { provider: "openai_dot", lifecycleMode: "per_turn", allowUnmeteredProvider: false, dotAttachmentAccess: false, dotWorkspaceAccess: false }
-                          : t === "paperclip_runner"
+                          : t === "wardmote_runner"
                             ? {
                                 ...paperclipRunnerTransitionConfig(adapterType, eff("adapterConfig", "model", config.model)),
                               }
@@ -1695,14 +1695,14 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                 }}
                 open={modelOpen}
                 onOpenChange={setModelOpen}
-                allowDefault={adapterType !== "paperclip_runner"}
+                allowDefault={adapterType !== "wardmote_runner"}
                 required={false}
                 groupByProvider={false}
                 preserveOrder={Boolean(connectionModels) || adapterCuratesModelOrder(adapterType)}
                 creatable
                 detectedModel={connectionModels ? undefined : detectedModel}
                 detectedModelCandidates={[]}
-                onDetectModel={connectionModels || adapterType === "paperclip_runner"
+                onDetectModel={connectionModels || adapterType === "wardmote_runner"
                   ? undefined
                   : async () => {
                       const result = await refetchDetectedModel();

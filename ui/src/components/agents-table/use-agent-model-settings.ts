@@ -69,7 +69,7 @@ function readString(config: Record<string, unknown>, key: string): string | null
 }
 
 function catalogProviderFor(agent: Agent): string | undefined {
-  return agent.adapterType === "paperclip_runner" ? String(asConfig(agent).provider ?? "codex") : undefined;
+  return agent.adapterType === "wardmote_runner" ? String(asConfig(agent).provider ?? "codex") : undefined;
 }
 
 function catalogKey(adapterType: string, provider: string | undefined): string {

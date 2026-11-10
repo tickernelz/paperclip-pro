@@ -204,7 +204,7 @@ const support = await getEmbeddedPostgresTestSupport();
   async function interruptedBootstrap() {
     const f = await seed(); await f.finish(); const run = await f.run();
     const interrupted = await terminalizeLegacyExecution({ db, run, status: "interrupted", patch: {
-      errorCode: "server_shutdown_interrupted", runnerProfileJson: { adapterDispatch: { adapterType: "paperclip_runner" } },
+      errorCode: "server_shutdown_interrupted", runnerProfileJson: { adapterDispatch: { adapterType: "wardmote_runner" } },
     } });
     expect(await getExecutionBlocker(db, f.companyId, f.sourceId)).toMatchObject({ runId: run.id });
     return { f, run: interrupted! };

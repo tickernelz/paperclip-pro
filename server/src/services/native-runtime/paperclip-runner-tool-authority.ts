@@ -313,7 +313,7 @@ export class PaperclipRunnerToolAuthority {
     if (Object.hasOwn(TASK_ATTACHMENT_SCHEMAS, call.tool)) {
       const authorize = async () => {
         const current = await this.#boundContext();
-        if (!this.binding.taskAttachmentRead || current.actor.adapterType !== "paperclip_runner"
+        if (!this.binding.taskAttachmentRead || current.actor.adapterType !== "wardmote_runner"
           || current.actor.adapterConfig?.provider !== "openai_dot" || current.actor.adapterConfig?.dotAttachmentAccess !== true)
           throw forbidden("Dot task attachment reading was not enabled or was disabled");
         await this.binding.assertBridgeAuthority?.();
@@ -419,7 +419,7 @@ export class PaperclipRunnerToolAuthority {
       call.tool !== REUSE_CHAT_ATTACHMENT_TOOL_NAME &&
       call.tool !== READ_CHAT_ATTACHMENT_TOOL_NAME
     ) {
-      throw new Error("paperclip_runner_tool_not_advertised");
+      throw new Error("wardmote_runner_tool_not_advertised");
     }
     if (
       !runnerApiToolsEnabled(
@@ -428,7 +428,7 @@ export class PaperclipRunnerToolAuthority {
       ) &&
       ["search_api", "call_api", "hire_agent"].includes(call.tool)
     ) {
-      throw new Error("paperclip_runner_tool_not_advertised");
+      throw new Error("wardmote_runner_tool_not_advertised");
     }
     const context = await this.#boundContext();
     const input = record(call.arguments);
@@ -436,10 +436,10 @@ export class PaperclipRunnerToolAuthority {
       const scope = this.binding.chatAttachmentReadScope;
       const identityKeys = ["companyId", "issueId", "runId", "agentId"] as const;
       if (!scope || identityKeys.some((key) => scope.options.binding[key] !== this.binding[key])) {
-        throw new Error("paperclip_runner_chat_attachment_read_scope_unavailable");
+        throw new Error("wardmote_runner_chat_attachment_read_scope_unavailable");
       }
       if (Object.keys(input).some((key) => key !== "sourceCommentId" && key !== "attachmentId")) {
-        throw new Error("paperclip_runner_chat_attachment_read_arguments_invalid");
+        throw new Error("wardmote_runner_chat_attachment_read_arguments_invalid");
       }
       return scope.read({
         sourceCommentId: requiredUuid(input.sourceCommentId),
@@ -448,7 +448,7 @@ export class PaperclipRunnerToolAuthority {
     }
     if (call.tool === READ_CURRENT_WAKE_COMMENTS_TOOL_NAME) {
       if (!this.binding.currentWakeComments) {
-        throw new Error("paperclip_runner_tool_not_advertised");
+        throw new Error("wardmote_runner_tool_not_advertised");
       }
       return readCurrentWakeComments(
         this.db,
@@ -483,7 +483,7 @@ export class PaperclipRunnerToolAuthority {
         context.issue.workMode as "standard" | "planning" | "ask",
       )
     ) {
-      throw new Error("paperclip_runner_tool_mode_denied");
+      throw new Error("wardmote_runner_tool_mode_denied");
     }
     switch (call.tool) {
       case "submit_complaint":
@@ -529,7 +529,7 @@ export class PaperclipRunnerToolAuthority {
       case "hire_agent": {
         const body: Record<string, unknown> = {
           name: requiredString(input.name),
-          adapterType: "paperclip_runner",
+          adapterType: "wardmote_runner",
           inheritRuntimeFrom: "caller",
           reportsTo: this.binding.agentId,
           sourceIssueId: this.binding.issueId,
@@ -625,7 +625,7 @@ export class PaperclipRunnerToolAuthority {
         return { documents: await documentService(this.db).listIssueDocuments(this.binding.issueId) };
       case "read_document": {
         const document = await documentService(this.db).getIssueDocumentByKey(this.binding.issueId, requiredString(input.key));
-        if (!document) throw new Error("paperclip_runner_document_not_found");
+        if (!document) throw new Error("wardmote_runner_document_not_found");
         return { document };
       }
       case "list_document_revisions":
@@ -635,7 +635,7 @@ export class PaperclipRunnerToolAuthority {
         return { actors: (await agentService(this.db).list(this.binding.companyId)).map(redactedActor) };
       case "get_agent": {
         const actor = await agentService(this.db).getById(requiredString(input.actorId));
-        if (!actor || actor.companyId !== this.binding.companyId) throw new Error("paperclip_runner_agent_not_found");
+        if (!actor || actor.companyId !== this.binding.companyId) throw new Error("wardmote_runner_agent_not_found");
         return { actor: redactedActor(actor) };
       }
       case "list_approvals":
@@ -666,7 +666,7 @@ export class PaperclipRunnerToolAuthority {
       case "set_task_monitor": return this.#setTaskMonitor(input);
       case "set_dependencies": return this.#setDependencies(input);
       case "register_deliverable": return this.#registerDeliverable(input);
-      default: throw new Error("paperclip_runner_tool_not_bound");
+      default: throw new Error("wardmote_runner_tool_not_bound");
     }
   }
 
@@ -714,12 +714,12 @@ export class PaperclipRunnerToolAuthority {
       let reservationId: string | undefined;
       let storageAttempted = false;
       const current = await this.#boundContext();
-      if (!runnerApiToolsEnabled(this.binding.companyId, this.binding.apiToolsEnabled)) throw new Error("paperclip_runner_tool_not_advertised");
+      if (!runnerApiToolsEnabled(this.binding.companyId, this.binding.apiToolsEnabled)) throw new Error("wardmote_runner_tool_not_advertised");
       const result = await executeRunnerApi(input, { ...context, workMode: current.issue.workMode }, {
         apiUrl, token,
         beforeDispatch: async () => {
           const fresh = await this.#boundContext();
-          if (!runnerApiToolsEnabled(this.binding.companyId, this.binding.apiToolsEnabled)) throw new Error("paperclip_runner_tool_not_advertised");
+          if (!runnerApiToolsEnabled(this.binding.companyId, this.binding.apiToolsEnabled)) throw new Error("wardmote_runner_tool_not_advertised");
           validateRunnerApiCall(input, { ...context, workMode: fresh.issue.workMode });
           await this.#assertDotApiFileAccess(operation.path, input);
         },
@@ -945,9 +945,9 @@ export class PaperclipRunnerToolAuthority {
 
   async #approval(id: string) {
     const approval = await approvalService(this.db).getById(id);
-    if (!approval || approval.companyId !== this.binding.companyId) throw new Error("paperclip_runner_approval_not_found");
+    if (!approval || approval.companyId !== this.binding.companyId) throw new Error("wardmote_runner_approval_not_found");
     const context = await this.#boundContext();
-    if (!(await canActorReadApproval(this.db, this.#privacyActor(context.run), id))) throw new Error("paperclip_runner_approval_not_found");
+    if (!(await canActorReadApproval(this.db, this.#privacyActor(context.run), id))) throw new Error("wardmote_runner_approval_not_found");
     return approval;
   }
 
@@ -980,7 +980,7 @@ export class PaperclipRunnerToolAuthority {
       || row.run.status !== "running"
       || ["paused", "terminated", "pending_approval", "error"].includes(row.actor.status)
     ) {
-      throw new Error("paperclip_runner_tool_binding_not_authorized");
+      throw new Error("wardmote_runner_tool_binding_not_authorized");
     }
     const [company] = await this.db.select().from(companies).where(eq(companies.id, this.binding.companyId));
     if (company?.status !== "active" || (company.budgetMonthlyCents > 0 && company.spentMonthlyCents >= company.budgetMonthlyCents)
@@ -1042,7 +1042,7 @@ export class PaperclipRunnerToolAuthority {
   async #reportProgress(input: Record<string, unknown>): Promise<unknown> {
     const body = typeof input.body === "string" ? input.body.trim() : "";
     const idempotencyKey = typeof input.idempotencyKey === "string" ? input.idempotencyKey.trim() : "";
-    if (!body || !idempotencyKey) throw new Error("paperclip_runner_tool_input_invalid");
+    if (!body || !idempotencyKey) throw new Error("wardmote_runner_tool_input_invalid");
     let publication: Awaited<ReturnType<typeof persistActivity>>["publication"] | null = null;
     const result = await this.#withMutationReceipt(
       "report_progress",
@@ -1053,7 +1053,7 @@ export class PaperclipRunnerToolAuthority {
           this.binding.issueId,
           body,
           { agentId: this.binding.agentId, runId: this.binding.runId },
-          { authorizationReason: "paperclip_runner_protocol" },
+          { authorizationReason: "wardmote_runner_protocol" },
           tx,
         );
         const result = { commentId: comment.id, issueId: this.binding.issueId, disposition: "applied" };
@@ -1072,8 +1072,8 @@ export class PaperclipRunnerToolAuthority {
             bodySnippet: comment.body.slice(0, 120),
             identifier: context.issue.identifier,
             issueTitle: context.issue.title,
-            authorizationReason: "paperclip_runner_protocol",
-            source: "paperclip_runner_protocol",
+            authorizationReason: "wardmote_runner_protocol",
+            source: "wardmote_runner_protocol",
           },
         });
         publication = activity.publication;
@@ -1117,14 +1117,14 @@ export class PaperclipRunnerToolAuthority {
           title: write.document.title,
           format: write.document.format,
           revisionNumber: write.document.latestRevisionNumber,
-          source: "paperclip_runner_protocol",
+          source: "wardmote_runner_protocol",
         },
       });
       publication = activity.publication;
       const [target] = await tx.select({ identifier: issues.identifier, issuePrefix: companies.issuePrefix })
         .from(issues).innerJoin(companies, eq(companies.id, issues.companyId))
         .where(and(eq(issues.id, this.binding.issueId), eq(issues.companyId, this.binding.companyId)));
-      if (!target) throw new Error("paperclip_runner_document_task_not_found");
+      if (!target) throw new Error("wardmote_runner_document_task_not_found");
       return {
         disposition: "applied",
         created: write.created,
@@ -1145,14 +1145,14 @@ export class PaperclipRunnerToolAuthority {
   async #createTask(input: Record<string, unknown>, identityContextId: string | null): Promise<unknown> {
     const idempotencyKey = requiredString(input.idempotencyKey);
     if (input.status !== undefined && input.status !== "backlog" && input.status !== "todo") {
-      throw new Error("paperclip_runner_tool_input_invalid");
+      throw new Error("wardmote_runner_tool_input_invalid");
     }
     const assigneeUserId = input.assigneeUserId == null ? null : requiredString(input.assigneeUserId);
     if (assigneeUserId && input.assigneeActorId != null) throw badRequest("Choose one agent or person assignee");
     const assigneeAgentId = assigneeUserId ? null : input.assigneeActorId == null ? this.binding.agentId : requiredString(input.assigneeActorId);
     if (assigneeAgentId) {
       const assignee = await agentService(this.db).getById(assigneeAgentId);
-      if (!assignee || assignee.companyId !== this.binding.companyId) throw new Error("paperclip_runner_agent_not_found");
+      if (!assignee || assignee.companyId !== this.binding.companyId) throw new Error("wardmote_runner_agent_not_found");
     }
     const priority = input.priority === "critical" || input.priority === "high"
       || input.priority === "medium" || input.priority === "low"
@@ -1204,7 +1204,7 @@ export class PaperclipRunnerToolAuthority {
       )).limit(1).then((rows) => rows[0] ?? null);
       if (existingChild) {
         if (existingChild.originFingerprint !== inputFingerprint) {
-          throw new Error("paperclip_runner_tool_idempotency_conflict");
+          throw new Error("wardmote_runner_tool_idempotency_conflict");
         }
         return {
           commandId: `create-task:${existingChild.id}`,
@@ -1260,7 +1260,7 @@ export class PaperclipRunnerToolAuthority {
         ? await issueService(tx).create(this.binding.companyId, createInput)
         : (await issueService(tx).createChild(this.binding.issueId, createInput)).issue;
       if (deduplicated && child.originFingerprint !== inputFingerprint) {
-        throw new Error("paperclip_runner_tool_idempotency_conflict");
+        throw new Error("wardmote_runner_tool_idempotency_conflict");
       }
       let childStatus = child.status;
       let childStatusVersion = child.statusVersion;
@@ -1283,7 +1283,7 @@ export class PaperclipRunnerToolAuthority {
           agentId: this.binding.agentId, runId: this.binding.runId, issueId: child.id,
           action: "issue.created", entityType: "issue", entityId: child.id,
           details: { identifier: child.identifier, title: child.title, parentId: child.parentId,
-            assigneeAgentId: child.assigneeAgentId, status: childStatus, source: "paperclip_runner_protocol" },
+            assigneeAgentId: child.assigneeAgentId, status: childStatus, source: "wardmote_runner_protocol" },
         });
         publication = activity.publication;
       }
@@ -1331,7 +1331,7 @@ export class PaperclipRunnerToolAuthority {
         requestedByActorId: this.binding.agentId,
         contextSnapshot: {
           issueId: childId,
-          source: "paperclip_runner.create_task",
+          source: "wardmote_runner.create_task",
           parentIssueId: task.parentId ?? null,
         },
       });
@@ -1351,10 +1351,10 @@ export class PaperclipRunnerToolAuthority {
     const expectedVersion = input.expectedStatusVersion;
     const reason = requiredString(input.reason);
     if (!Number.isSafeInteger(expectedVersion) || Number(expectedVersion) < 0 || key.length > 240 || reason.length > 20_000) {
-      throw new Error("paperclip_runner_tool_input_invalid");
+      throw new Error("wardmote_runner_tool_input_invalid");
     }
     if (taskId === this.binding.issueId) {
-      throw new Error("paperclip_runner_reassignment_current_task: delegate with create_task; this tool cannot interrupt its own caller");
+      throw new Error("wardmote_runner_reassignment_current_task: delegate with create_task; this tool cannot interrupt its own caller");
     }
     const durableKey = `reassign:${this.binding.issueId}:${key}`;
     const fingerprint = createHash("sha256").update(canonicalJson(input)).digest("hex");
@@ -1364,12 +1364,12 @@ export class PaperclipRunnerToolAuthority {
         sql`${activityLog.details}->>'reassignmentKey' = ${durableKey}`,
       )).limit(1);
       if (!prior) return null;
-      if (prior.details?.inputFingerprint !== fingerprint) throw new Error("paperclip_runner_tool_idempotency_conflict");
+      if (prior.details?.inputFingerprint !== fingerprint) throw new Error("wardmote_runner_tool_idempotency_conflict");
       return record(prior.details?.receipt);
     };
     const authorize = async (tx: Db, run: typeof heartbeatRuns.$inferSelect) => {
       const [target] = await tx.select().from(issues).where(and(eq(issues.id, taskId), eq(issues.companyId, this.binding.companyId))).for("update");
-      if (!target) throw new Error("paperclip_runner_task_not_found");
+      if (!target) throw new Error("wardmote_runner_task_not_found");
       const actor = { type: "agent" as const, source: "agent_jwt" as const, companyId: this.binding.companyId,
         agentId: this.binding.agentId, runId: this.binding.runId, onBehalfOfUserId: run.responsibleUserId };
       for (const action of ["issue:read", "tasks:assign"] as const) {
@@ -1385,16 +1385,16 @@ export class PaperclipRunnerToolAuthority {
       const [externalChat] = await tx.select({ id: chatConversations.id }).from(chatConversations).where(and(
         eq(chatConversations.companyId, this.binding.companyId), eq(chatConversations.issueId, taskId),
       )).limit(1);
-      if (externalChat) throw new Error("paperclip_runner_reassignment_conversation_locked");
+      if (externalChat) throw new Error("wardmote_runner_reassignment_conversation_locked");
       return target;
     };
     const validate = (target: typeof issues.$inferSelect) => {
-      if (target.conversationAgentId) throw new Error("paperclip_runner_reassignment_conversation_locked");
+      if (target.conversationAgentId) throw new Error("wardmote_runner_reassignment_conversation_locked");
       if (["done", "cancelled", "in_review"].includes(target.status) || record(target.executionState).status === "pending") {
-        throw new Error("paperclip_runner_reassignment_state_denied");
+        throw new Error("wardmote_runner_reassignment_state_denied");
       }
       if (target.assigneeUserId !== expectedUser || target.assigneeAgentId !== expectedOwner || target.statusVersion !== expectedVersion) {
-        throw new Error("paperclip_runner_reassignment_conflict: refresh search_tasks before deciding again");
+        throw new Error("wardmote_runner_reassignment_conflict: refresh search_tasks before deciding again");
       }
     };
     // Stop outside row locks: the runtime needs those locks to acknowledge cancellation.
@@ -1402,7 +1402,7 @@ export class PaperclipRunnerToolAuthority {
     let openwaGrantId: string | null = null;
     const prepared = await this.db.transaction(async (tx) => {
       const context = await this.#lockAuthorizedMutationContext(tx as unknown as Db);
-      if (context.issue.workMode !== "standard") throw new Error("paperclip_runner_tool_mode_denied");
+      if (context.issue.workMode !== "standard") throw new Error("wardmote_runner_tool_mode_denied");
       await assertOpenwaRunMay(tx as unknown as Db, context.run, "create_task", { consume: false });
       const target = await authorize(tx as unknown as Db, context.run);
       if (await priorReceipt(tx as unknown as Db)) return null;
@@ -1438,17 +1438,17 @@ export class PaperclipRunnerToolAuthority {
           payload: { issueId: taskId, mutation: "reassign_task_rollback", interruptedRunId: prepared.executionRunId },
           idempotencyKey: `${durableKey}:restore:${prepared.executionRunId}:${current.statusVersion}`,
           requestedByActorType: "agent", requestedByActorId: this.binding.agentId,
-          contextSnapshot: { issueId: taskId, source: "paperclip_runner.reassign_task_rollback", forceFreshSession: true },
+          contextSnapshot: { issueId: taskId, source: "wardmote_runner.reassign_task_rollback", forceFreshSession: true },
           issueStateGuard: { statuses: ["todo", "in_progress"], assigneeAgentId: current.assigneeAgentId, statusVersion: current.statusVersion },
         });
       } catch (restoreError) {
-        throw new AggregateError([error, restoreError], "paperclip_runner_reassignment_restore_failed");
+        throw new AggregateError([error, restoreError], "wardmote_runner_reassignment_restore_failed");
       }
     };
     if (prepared && prepared.assigneeAgentId && prepared.assigneeAgentId !== assigneeAgentId) {
       if (prepared.executionRunId && (!this.binding.stopTaskForReassignment || !this.binding.enqueueWakeup)) {
         await restoreOpenwaGrantOnFailure();
-        throw new Error("paperclip_runner_reassignment_stop_unavailable");
+        throw new Error("wardmote_runner_reassignment_stop_unavailable");
       }
       try {
         await this.binding.stopTaskForReassignment?.({ companyId: this.binding.companyId, issueId: taskId,
@@ -1462,17 +1462,17 @@ export class PaperclipRunnerToolAuthority {
     let publication: Awaited<ReturnType<typeof persistActivity>>["publication"] | null = null;
     const result = await openwaGrantScope({ companyId: this.binding.companyId, runId: this.binding.runId, grantId: openwaGrantId }, () =>
       this.#withMutationReceipt("reassign_task", key, input, async (tx, context) => {
-      if (context.issue.workMode !== "standard") throw new Error("paperclip_runner_tool_mode_denied");
+      if (context.issue.workMode !== "standard") throw new Error("wardmote_runner_tool_mode_denied");
       const target = await authorize(tx, context.run);
       const prior = await priorReceipt(tx);
       if (prior) return prior;
       validate(target);
       if (target.executionRunId && target.executionRunId !== prepared?.executionRunId) {
-        throw new Error("paperclip_runner_reassignment_conflict: a new execution started; refresh before retrying");
+        throw new Error("wardmote_runner_reassignment_conflict: a new execution started; refresh before retrying");
       }
       if (target.executionRunId && target.assigneeAgentId !== assigneeAgentId) {
         const [run] = await tx.select({ status: heartbeatRuns.status }).from(heartbeatRuns).where(eq(heartbeatRuns.id, target.executionRunId));
-        if (run && ["running", "queued", "scheduled_retry"].includes(run.status)) throw new Error("paperclip_runner_reassignment_stop_unconfirmed");
+        if (run && ["running", "queued", "scheduled_retry"].includes(run.status)) throw new Error("wardmote_runner_reassignment_stop_unconfirmed");
       }
       const changed = target.assigneeAgentId !== assigneeAgentId || target.assigneeUserId !== assigneeUserId;
       const updated = changed ? await issueService(tx).update(taskId, {
@@ -1480,7 +1480,7 @@ export class PaperclipRunnerToolAuthority {
         status: target.status === "in_progress" ? "todo" : target.status,
         statusVersion: target.statusVersion + 1, actorAgentId: this.binding.agentId,
       }, tx) : target;
-      if (!updated) throw new Error("paperclip_runner_task_not_found");
+      if (!updated) throw new Error("wardmote_runner_task_not_found");
       const receipt = {
         commandId: `reassign-task:${taskId}:${updated.statusVersion}`, disposition: changed ? "applied" : "duplicate",
         stateRevision: updated.statusVersion, entityRefs: [taskId],
@@ -1491,7 +1491,7 @@ export class PaperclipRunnerToolAuthority {
         companyId: this.binding.companyId, actorType: "agent", actorId: this.binding.agentId,
         agentId: this.binding.agentId, runId: this.binding.runId, issueId: taskId,
         action: "issue.reassigned", entityType: "issue", entityId: taskId,
-        details: { source: "paperclip_runner_protocol", reassignmentKey: durableKey, inputFingerprint: fingerprint,
+        details: { source: "wardmote_runner_protocol", reassignmentKey: durableKey, inputFingerprint: fingerprint,
           previousAssigneeAgentId: target.assigneeAgentId, assigneeAgentId, reason, changed, receipt },
       });
       publication = activity.publication;
@@ -1511,7 +1511,7 @@ export class PaperclipRunnerToolAuthority {
         source: "assignment", triggerDetail: "system", reason: "issue_assigned",
         payload: { issueId: taskId, mutation: "reassign_task", reason },
         idempotencyKey: result.scheduledWakeIds[0]!, requestedByActorType: "agent", requestedByActorId: this.binding.agentId,
-        contextSnapshot: { issueId: taskId, source: "paperclip_runner.reassign_task", reassignmentReason: reason },
+        contextSnapshot: { issueId: taskId, source: "wardmote_runner.reassign_task", reassignmentReason: reason },
         issueStateGuard: { statuses: ["todo"], assigneeAgentId, statusVersion: result.stateRevision },
       });
     }
@@ -1582,7 +1582,7 @@ export class PaperclipRunnerToolAuthority {
       )).orderBy(desc(heartbeatRuns.createdAt)).limit(1);
       if (earlier?.receipt) {
         if (earlier.receipt.operationId !== "set_task_monitor" || canonicalJson(earlier.receipt.input) !== canonicalJson(input)) {
-          throw new Error("paperclip_runner_tool_idempotency_conflict");
+          throw new Error("wardmote_runner_tool_idempotency_conflict");
         }
         replayed = true;
         replayStatus = target.status;
@@ -1618,7 +1618,7 @@ export class PaperclipRunnerToolAuthority {
   async #setDependencies(input: Record<string, unknown>): Promise<unknown> {
     const idempotencyKey = requiredString(input.idempotencyKey);
     if (!Array.isArray(input.blockedByTaskIds)) {
-      throw new Error("paperclip_runner_tool_input_invalid");
+      throw new Error("wardmote_runner_tool_input_invalid");
     }
     const blockedByIssueIds = input.blockedByTaskIds.map(requiredString);
     return this.#withMutationReceipt("set_dependencies", idempotencyKey, input, async (tx) => {
@@ -1626,7 +1626,7 @@ export class PaperclipRunnerToolAuthority {
         blockedByIssueIds,
         actorAgentId: this.binding.agentId,
       }, tx);
-      if (!updated) throw new Error("paperclip_runner_task_not_found");
+      if (!updated) throw new Error("wardmote_runner_task_not_found");
       return {
         commandId: `set-dependencies:${updated.id}:${updated.statusVersion}`,
         disposition: "applied",
@@ -1641,7 +1641,7 @@ export class PaperclipRunnerToolAuthority {
     const idempotencyKey = requiredString(input.idempotencyKey);
     const workspaceRoot = this.binding.workspaceRoot?.trim();
     if (!workspaceRoot) {
-      throw new Error("paperclip_runner_file_handoff_workspace_unavailable");
+      throw new Error("wardmote_runner_file_handoff_workspace_unavailable");
     }
     let publication:
       Awaited<ReturnType<typeof persistActivity>>["publication"] | null = null;
@@ -1700,7 +1700,7 @@ export class PaperclipRunnerToolAuthority {
               commentId: prepared.result.entityRefs[2],
               identifier: context.issue.identifier,
               issueTitle: context.issue.title,
-              source: "paperclip_runner_protocol",
+              source: "wardmote_runner_protocol",
             },
           });
           publication = activity.publication;
@@ -1722,12 +1722,12 @@ export class PaperclipRunnerToolAuthority {
   async #reuseChatAttachment(input: Record<string, unknown>): Promise<unknown> {
     const idempotencyKey = requiredString(input.idempotencyKey);
     if (idempotencyKey.length > 200) {
-      throw new Error("paperclip_runner_tool_input_invalid");
+      throw new Error("wardmote_runner_tool_input_invalid");
     }
     const sourceCommentId = requiredUuid(input.sourceCommentId);
     const attachmentId = requiredUuid(input.attachmentId);
     const title = requiredString(input.title);
-    if (title.length > 500) throw new Error("paperclip_runner_tool_input_invalid");
+    if (title.length > 500) throw new Error("wardmote_runner_tool_input_invalid");
     let source: ChatAttachmentReuseSource | null = null;
     let publication:
       Awaited<ReturnType<typeof persistActivity>>["publication"] | null = null;
@@ -1747,7 +1747,7 @@ export class PaperclipRunnerToolAuthority {
       input,
       async (tx, context) => {
         if (context.issue.workMode === "ask") {
-          throw new Error("paperclip_runner_tool_mode_denied");
+          throw new Error("wardmote_runner_tool_mode_denied");
         }
         await authorize(tx, context.run.contextSnapshot);
         const resultJson = record(context.run.resultJson);
@@ -1787,7 +1787,7 @@ export class PaperclipRunnerToolAuthority {
             commentId: prepared.result.prepared.commentId,
             identifier: context.issue.identifier,
             issueTitle: context.issue.title,
-            source: "paperclip_runner_chat_attachment_reuse",
+            source: "wardmote_runner_chat_attachment_reuse",
             sourceCommentId,
             sourceAttachmentId: attachmentId,
             sourceSha256: source!.sha256,
@@ -1799,7 +1799,7 @@ export class PaperclipRunnerToolAuthority {
       {
         beforeReceiptReplay: async (tx, context) => {
           if (context.issue.workMode === "ask") {
-            throw new Error("paperclip_runner_tool_mode_denied");
+            throw new Error("wardmote_runner_tool_mode_denied");
           }
           await authorize(tx, context.run.contextSnapshot);
         },
@@ -1905,14 +1905,14 @@ export class PaperclipRunnerToolAuthority {
         const prior = record(attempts[key]);
         if (attempts[key] !== undefined) {
           if (prior.operationId !== tool || prior.inputDigest !== digest) {
-            throw new Error("paperclip_runner_tool_idempotency_conflict");
+            throw new Error("wardmote_runner_tool_idempotency_conflict");
           }
           const failure = record(prior.failure);
           if (typeof failure.status === "number" && instructionPreWriteFailureStatuses.has(failure.status)
             && typeof failure.message === "string") {
             throw new HttpError(failure.status, failure.message, failure.details);
           }
-          throw new SemanticToolOutcomeUnknownError(`paperclip_runner_instruction_outcome_unknown call_id=${callId} operation_id=${tool} input_digest=${digest}`);
+          throw new SemanticToolOutcomeUnknownError(`wardmote_runner_instruction_outcome_unknown call_id=${callId} operation_id=${tool} input_digest=${digest}`);
         }
         if (Object.keys(attempts).length >= 512) throw badRequest("Run instruction mutation limit reached");
         attempts[key] = { operationId: tool, inputDigest: digest, targetAgentId };
@@ -1962,14 +1962,14 @@ export class PaperclipRunnerToolAuthority {
             });
           } catch (persistenceError) {
             throw new SemanticToolOutcomeUnknownError(
-              `paperclip_runner_instruction_failure_receipt_unavailable call_id=${callId}`,
+              `wardmote_runner_instruction_failure_receipt_unavailable call_id=${callId}`,
               { cause: new AggregateError([error, persistenceError], "Definite instruction failure could not be saved") },
             );
           }
           throw error;
         }
         throw new SemanticToolOutcomeUnknownError(
-          `paperclip_runner_instruction_outcome_unknown call_id=${callId}: ${error instanceof Error ? error.message : String(error)}`,
+          `wardmote_runner_instruction_outcome_unknown call_id=${callId}: ${error instanceof Error ? error.message : String(error)}`,
           { cause: error },
         );
       }
@@ -2042,7 +2042,7 @@ export class PaperclipRunnerToolAuthority {
               ),
             );
           if (!endpoint || endpoint.provider === "agentmail" || endpoint.provider === "openwa") {
-            throw new Error("paperclip_runner_chat_attachment_binding_denied");
+            throw new Error("wardmote_runner_chat_attachment_binding_denied");
           }
           provider = endpoint.provider;
         }
@@ -2064,7 +2064,7 @@ export class PaperclipRunnerToolAuthority {
             prior.operationId !== operationId ||
             canonicalJson(prior.input) !== canonicalJson(input)
           ) {
-            throw new Error("paperclip_runner_tool_idempotency_conflict");
+            throw new Error("wardmote_runner_tool_idempotency_conflict");
           }
           await options.beforeReceiptReplay?.(tx as unknown as Db, context);
           return describeResult(prior.result);
@@ -2140,7 +2140,7 @@ export class PaperclipRunnerToolAuthority {
       || context.actor.companyId !== this.binding.companyId
       || ["paused", "terminated", "pending_approval", "error"].includes(context.actor.status)
     ) {
-      throw new Error("paperclip_runner_tool_binding_not_authorized");
+      throw new Error("wardmote_runner_tool_binding_not_authorized");
     }
     return context;
   }
@@ -2157,7 +2157,7 @@ export class PaperclipRunnerToolAuthority {
     const kind = interactionKinds[
       interactionKind as keyof typeof interactionKinds
     ];
-    if (!kind) throw new Error("paperclip_runner_interaction_kind_invalid");
+    if (!kind) throw new Error("wardmote_runner_interaction_kind_invalid");
     const prompt = requiredString(input.prompt);
     const idempotencyKey = requiredString(input.idempotencyKey);
     let publication: Awaited<ReturnType<typeof persistActivity>>["publication"] | null = null;
@@ -2181,7 +2181,7 @@ export class PaperclipRunnerToolAuthority {
             }
           : null;
         if (targetRevisionId !== null && suppliedPayload.target === undefined && inferredPlanningTarget === null) {
-          throw new Error('paperclip_runner_interaction_target_incomplete: targetRevisionId also requires payload.target = { type: "issue_document", key: "plan", revisionId: targetRevisionId }. Use the actual document key. If the source plan already authorized this scope, do not request approval again merely because the execution task has a new plan document.');
+          throw new Error('wardmote_runner_interaction_target_incomplete: targetRevisionId also requires payload.target = { type: "issue_document", key: "plan", revisionId: targetRevisionId }. Use the actual document key. If the source plan already authorized this scope, do not request approval again merely because the execution task has a new plan document.');
         }
         const normalizedPayload = inferredPlanningTarget !== null
           ? { ...suppliedPayload, target: inferredPlanningTarget }
@@ -2230,7 +2230,7 @@ export class PaperclipRunnerToolAuthority {
             interactionKind: interaction.kind,
             interactionStatus: interaction.status,
             continuationPolicy: interaction.continuationPolicy,
-            source: "paperclip_runner_protocol",
+            source: "wardmote_runner_protocol",
           },
         });
         publication = activity.publication;
@@ -2243,7 +2243,7 @@ export class PaperclipRunnerToolAuthority {
 }
 
 function requiredString(value: unknown): string {
-  if (typeof value !== "string" || value.trim() === "") throw new Error("paperclip_runner_tool_input_invalid");
+  if (typeof value !== "string" || value.trim() === "") throw new Error("wardmote_runner_tool_input_invalid");
   return value.trim();
 }
 
@@ -2263,7 +2263,7 @@ function nullableProviderId(value: unknown): string | null {
 function requiredUuid(value: unknown): string {
   const normalized = requiredString(value);
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(normalized)) {
-    throw new Error("paperclip_runner_tool_input_invalid");
+    throw new Error("wardmote_runner_tool_input_invalid");
   }
   return normalized;
 }

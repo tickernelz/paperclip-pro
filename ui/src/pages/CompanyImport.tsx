@@ -564,7 +564,7 @@ const IMPORT_ADAPTER_OPTIONS: { value: string; label: string }[] = [
 function importAdapterValues(choice: string, sourceConfig?: Record<string, unknown>): CreateConfigValues {
   return {
     ...defaultCreateValues,
-    adapterType: choice === "openai_dot" ? "paperclip_runner" : choice,
+    adapterType: choice === "openai_dot" ? "wardmote_runner" : choice,
     ...(choice === "openai_dot" ? {
       adapterSchemaValues: {
         provider: "openai_dot",
@@ -1054,12 +1054,12 @@ export function CompanyImport() {
   });
   // Each Runner provider choice fails closed until its own opt-in and the
   // shared adapter's availability are known. Dot does not enable other providers.
-  const runnerInstalled = availableAdapterTypes?.has("paperclip_runner") === true;
+  const runnerInstalled = availableAdapterTypes?.has("wardmote_runner") === true;
   const nativeRunnerAvailable = runnerInstalled && experimentalSettings?.enableNativeRunner === true;
   const dotAvailable = runnerInstalled && experimentalSettings?.enableOpenAiDot === true;
   const importAdapterOptions = useMemo(
     () => IMPORT_ADAPTER_OPTIONS.filter((option) =>
-      option.value === "paperclip_runner" ? nativeRunnerAvailable
+      option.value === "wardmote_runner" ? nativeRunnerAvailable
         : option.value === "openai_dot" ? dotAvailable : true,
     ),
     [nativeRunnerAvailable, dotAvailable],
@@ -1543,7 +1543,7 @@ export function CompanyImport() {
     // Reset config values when adapter type changes
     setAdapterConfigValues((prev) => {
       const next = { ...prev };
-      if (adapterType === "openai_dot" || adapterType === "paperclip_runner") {
+      if (adapterType === "openai_dot" || adapterType === "wardmote_runner") {
         next[slug] = importAdapterValues(adapterType);
       } else {
         delete next[slug];
@@ -1622,15 +1622,15 @@ export function CompanyImport() {
   const adapterAgents = useMemo<AdapterPickerItem[]>(() => {
     if (!importPreview) return [];
     return importPreview.manifest.agents.map((a) => {
-      const adapterChoice = a.adapterType === "paperclip_runner" && a.adapterConfig?.provider === "openai_dot"
+      const adapterChoice = a.adapterType === "wardmote_runner" && a.adapterConfig?.provider === "openai_dot"
         ? "openai_dot" : a.adapterType;
       let fallbackAdapterType: string | null = null;
-      if (a.adapterType === "paperclip_runner" && !(adapterChoice === "openai_dot" ? dotAvailable : nativeRunnerAvailable)) {
+      if (a.adapterType === "wardmote_runner" && !(adapterChoice === "openai_dot" ? dotAvailable : nativeRunnerAvailable)) {
         const firstEnabledLegacyAdapter = availableAdapterTypes
-          ? [...availableAdapterTypes].find((type) => type !== "paperclip_runner") ?? null
+          ? [...availableAdapterTypes].find((type) => type !== "wardmote_runner") ?? null
           : null;
         fallbackAdapterType =
-          ceoAdapterType !== "paperclip_runner" &&
+          ceoAdapterType !== "wardmote_runner" &&
           (!availableAdapterTypes || availableAdapterTypes.has(ceoAdapterType))
             ? ceoAdapterType
             : firstEnabledLegacyAdapter ?? FALLBACK_IMPORT_ADAPTER_TYPE;
@@ -1639,7 +1639,7 @@ export function CompanyImport() {
         // else any installed adapter, else null so the manifest adapter stands
         // and the server's unknown-adapter rejection is the backstop.
         const selectableTypes = [...availableAdapterTypes].filter((type) =>
-          type !== "paperclip_runner" || nativeRunnerAvailable,
+          type !== "wardmote_runner" || nativeRunnerAvailable,
         );
         fallbackAdapterType = selectableTypes.includes(ceoAdapterType)
           ? ceoAdapterType
@@ -1672,7 +1672,7 @@ export function CompanyImport() {
       const selectedType = effectiveAdapterType(agent);
       const configVals = adapterConfigValues[agent.slug];
       if (selectedType === agent.adapterChoice && !configVals) continue;
-      const apiType = selectedType === "openai_dot" ? "paperclip_runner" : selectedType;
+      const apiType = selectedType === "openai_dot" ? "wardmote_runner" : selectedType;
       const override: CompanyPortabilityAdapterOverride = { adapterType: apiType };
       if (configVals) {
         if (selectedType === "openai_dot" && configVals.adapterSchemaValues?.allowUnmeteredProvider !== true) {

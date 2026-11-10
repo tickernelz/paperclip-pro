@@ -477,7 +477,7 @@ export async function claimNativeRestartRecoveries(input: {
     .where(
       and(
         eq(heartbeatRuns.runtimeMode, "native"),
-        eq(agents.adapterType, "paperclip_runner"),
+        eq(agents.adapterType, "wardmote_runner"),
         inArray(heartbeatRuns.status, ["running", "failed"]),
         isNull(nativeRunFinalizations.resultId),
         or(

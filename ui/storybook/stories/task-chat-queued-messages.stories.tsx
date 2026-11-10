@@ -9,7 +9,7 @@ function queueWithBodies(bodies: string[]): IssueQueuedCommentQueue {
     state: "deferred",
     targetRunId: "run-1",
     revision: "rev-1",
-    protocol: "paperclip_runner_v1",
+    protocol: "wardmote_runner_v1",
     steeringDisposition: "available",
     entries: bodies.map((body, position) => ({
       comment: {

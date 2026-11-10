@@ -80,7 +80,7 @@ const meta: Meta = {
       if (scenario.ai && url.pathname.endsWith("/ai-connections") && init?.method === "POST") return scenario.completeError
         ? Response.json({ error: "This key could not be verified. Check it and try again." }, { status: 422 })
         : Response.json({ connectionId: aiAccount.id, grantId: aiAccount.grantId });
-      if (url.pathname.endsWith("/agents")) return Response.json([{ id: pending.payload.requestingAgentId, companyId: pending.companyId, name: pending.payload.requestingAgentName, status: "active", adapterType: "paperclip_runner", role: "researcher" }]);
+      if (url.pathname.endsWith("/agents")) return Response.json([{ id: pending.payload.requestingAgentId, companyId: pending.companyId, name: pending.payload.requestingAgentName, status: "active", adapterType: "wardmote_runner", role: "researcher" }]);
       if (scenario.access && url.pathname === `/api/agents/${accessPending.payload.requestingAgentId}`) return Response.json({
         ...storybookAgents[0], id: accessPending.payload.requestingAgentId, name: accessPending.payload.requestingAgentName,
       });

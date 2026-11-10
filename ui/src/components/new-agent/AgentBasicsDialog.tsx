@@ -114,7 +114,7 @@ export function AgentBasicsDialog({
             if (step === "name") setStep("adapter");
             else if (validAdapter)
               onContinue({ name: name.trim(),
-                adapterType: adapterType === "openai_dot" ? "paperclip_runner" : adapterType,
+                adapterType: adapterType === "openai_dot" ? "wardmote_runner" : adapterType,
                 runnerProvider: adapterType === "openai_dot" ? "openai_dot" : runnerProvider });
           }}
         >
@@ -208,7 +208,7 @@ export function AgentBasicsDialog({
                     );
                   })}
                 </div>
-                {validAdapter && adapterType === "paperclip_runner" && (
+                {validAdapter && adapterType === "wardmote_runner" && (
                   <label className="flex flex-col gap-2 text-sm font-medium">
                     Runner
                     <select

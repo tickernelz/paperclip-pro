@@ -49,7 +49,7 @@ describe.skipIf(!support.supported)("heartbeat runtime selection boundary", () =
     });
   });
 
-  async function fixture(adapterType = "paperclip_runner") {
+  async function fixture(adapterType = "wardmote_runner") {
     const [company] = await db.insert(companies).values({ name: "Runtime selection", issuePrefix: "SEL" }).returning();
     const [agent] = await db.insert(agents).values({ companyId: company.id, name: "Selecting agent", status: "running", adapterType, adapterConfig: { provider: "codex", model: "gpt-5.6-luna" } }).returning();
     const [issue] = await db.insert(issues).values({ companyId: company.id, title: "Complete this task", description: "Preserve the requested work", assigneeAgentId: agent.id }).returning();

@@ -15,7 +15,7 @@ export function extractModelName(modelId: string): string {
   return trimmed.slice(trimmed.indexOf("/") + 1).trim();
 }
 
-const CURATED_MODEL_ORDER_ADAPTERS: ReadonlySet<string> = new Set(["paperclip_runner"]);
+const CURATED_MODEL_ORDER_ADAPTERS: ReadonlySet<string> = new Set(["wardmote_runner"]);
 
 export function adapterCuratesModelOrder(adapterType: string): boolean {
   return CURATED_MODEL_ORDER_ADAPTERS.has(adapterType);

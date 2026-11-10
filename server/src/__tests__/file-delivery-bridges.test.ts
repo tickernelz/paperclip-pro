@@ -147,7 +147,7 @@ describe(`durable file delivery (${liveDaytona ? "Daytona" : "local processes"})
     });
     expect(authority.definitions().some(definition => definition.name === "register_deliverable")).toBe(true);
     expect(authority.definitions().some(definition => definition.name === "api_post")).toBe(false);
-    const token = createLocalAgentJwt(fixture.agentId, fixture.companyId, "paperclip_runner", fixture.runId)!;
+    const token = createLocalAgentJwt(fixture.agentId, fixture.companyId, "wardmote_runner", fixture.runId)!;
     const receipts: Array<{ downloadPath: string }> = [];
     for (const file of files) {
       await remote.write(`out/${file.name}`, file.body);

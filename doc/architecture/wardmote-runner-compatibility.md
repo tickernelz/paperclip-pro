@@ -34,13 +34,13 @@ The server resolves and persists the runtime once, before provider launch.
 | Persisted runtime | Adapter | Flag | Result |
 | --- | --- | --- | --- |
 | none | Any direct adapter | off or on | Use the existing direct path. |
-| none | `paperclip_runner` with any qualified provider | off | Reject the fresh start with a stable rollout-disabled error. |
-| none | `paperclip_runner` with a qualified provider | on | Use PRP v1 and the provider's persisted runnerd backend. |
-| none | `paperclip_runner` with an incomplete or unqualified profile | on | Reject the profile before runnerd starts. |
+| none | `wardmote_runner` with any qualified provider | off | Reject the fresh start with a stable rollout-disabled error. |
+| none | `wardmote_runner` with a qualified provider | on | Use PRP v1 and the provider's persisted runnerd backend. |
+| none | `wardmote_runner` with an incomplete or unqualified profile | on | Reject the profile before runnerd starts. |
 | direct | Any | changed later | Keep the persisted direct path. |
 | native | Any | changed later | Keep the persisted native path for read, cancel, recovery, and finalization. |
 
-The server must not fall back from a selected `paperclip_runner` start to
+The server must not fall back from a selected `wardmote_runner` start to
 `codex_local`. A configuration or rollout error must be visible. Silent fallback
 would hide the runtime that executed the task.
 
@@ -123,9 +123,9 @@ For a flag-off `codex_local` heartbeat, compatibility proof must show:
 
 When the rollout flag is off:
 
-- creation UI does not offer `paperclip_runner`;
-- edit UI does not offer switching to `paperclip_runner`;
-- server creation and import reject a new `paperclip_runner` selection;
+- creation UI does not offer `wardmote_runner`;
+- edit UI does not offer switching to `wardmote_runner`;
+- server creation and import reject a new `wardmote_runner` selection;
 - the server rejects a fresh start for an existing runner-configured agent;
 - read and export preserve an existing runner configuration;
 - unrelated edits to an existing runner-configured agent do not erase its
@@ -134,7 +134,7 @@ When the rollout flag is off:
 
 When the rollout flag is on:
 
-- creation, import, and edit accept `paperclip_runner` only with a qualified
+- creation, import, and edit accept `wardmote_runner` only with a qualified
   Codex, OpenCode, Claude Managed, AWS AgentCore, or Claude/Codex ACPX profile;
 - switching from a direct adapter affects only future unresolved runs; and
 - switching away from the runner affects only future unresolved runs.

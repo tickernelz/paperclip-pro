@@ -660,7 +660,7 @@ export const runnerApiReference: Record<string, { section: string; description?:
           "role": "researcher",
           "reportsTo": "{manager-agent-id}",
           "capabilities": "Market research, competitor analysis",
-          "adapterType": "paperclip_runner",
+          "adapterType": "wardmote_runner",
           "inheritRuntimeFrom": "caller",
           "instructionsBundle": {
             "entryFile": "AGENTS.md",
