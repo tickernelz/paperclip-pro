@@ -13,6 +13,7 @@ import { createLifecycleWorker } from "./application/worker.js";
 import type { LifecycleDriver } from "./application/ports.js";
 
 export { AgentLifecycleConflict, canConfigureAgentConnection, isAgentAwaitingSetup } from "./domain/policy.js";
+export { rewriteStoredAdapterConfig } from "./adapters/configuration.js";
 
 export type { HireDecisionTarget } from "./adapters/approvals.js";
 export type { LifecycleDriver, LifecycleAgent, LifecycleFailure } from "./application/ports.js";
