@@ -2,8 +2,6 @@ import { createHash, randomInt } from "node:crypto";
 
 const ULID_ALPHABET = "0123456789abcdefghjkmnpqrstvwxyz";
 
-// Namespace names are capped at 63 chars (RFC 1123). The default "paperclip-"
-// prefix leaves 53 for the slug, which fits a full 36-char UUID untruncated.
 const MAX_SLUG_LENGTH = 53;
 
 export function deriveCompanySlug(input: string): string {

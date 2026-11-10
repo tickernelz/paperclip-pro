@@ -30,7 +30,7 @@ In a separate terminal:
 
 ```bash
 cd /path/to/paperclip
-export WARDMOTE_HOME=/tmp/paperclip-smoke
+export WARDMOTE_HOME=/tmp/wardmote-smoke
 export WARDMOTE_INSTANCE_ID=smoke
 export WARDMOTE_DEPLOYMENT_MODE=local_trusted
 pnpm --filter @tickernelz/wardmote-server dev
@@ -83,7 +83,7 @@ curl -s -X POST -d '{}' -H "Content-Type: application/json" \
 ```
 
 Expected: `{"ok": true, ...}` with a summary mentioning the tenant namespace
-(`paperclip-smoke`). On first probe the namespace may not yet exist —
+(`wardmote-smoke`). On first probe the namespace may not yet exist —
 the plugin treats a 404 on `listNamespacedPod` as a successful reachability
 check.
 
@@ -92,7 +92,7 @@ check.
 Use the UI or the API to dispatch a run against the `k8s-sandbox` environment.
 The plugin's `onEnvironmentAcquireLease` will:
 
-1. `ensureTenant` — provision the `paperclip-smoke` namespace, SA, Role,
+1. `ensureTenant` — provision the `wardmote-smoke` namespace, SA, Role,
    RoleBinding, ResourceQuota, LimitRange, NetworkPolicies
 2. `buildJobManifest` — render the security-hardened Job manifest
 3. `createJob` — submit to `batch/v1`
@@ -101,13 +101,13 @@ The plugin's `onEnvironmentAcquireLease` will:
 ### 7. Verify the tenant resources
 
 ```bash
-kubectl --context kind-paperclip get namespace paperclip-smoke
-kubectl --context kind-paperclip get all,networkpolicy,resourcequota,limitrange,sa,role,rolebinding -n paperclip-smoke
+kubectl --context kind-paperclip get namespace wardmote-smoke
+kubectl --context kind-paperclip get all,networkpolicy,resourcequota,limitrange,sa,role,rolebinding -n wardmote-smoke
 ```
 
 Expected:
 
-- Namespace `paperclip-smoke` exists with PSS labels
+- Namespace `wardmote-smoke` exists with PSS labels
   (`pod-security.kubernetes.io/enforce=restricted`)
 - ServiceAccount `wardmote-tenant-sa`
 - Role `wardmote-tenant-role`, RoleBinding `wardmote-tenant-rb`
@@ -119,7 +119,7 @@ Expected:
 ### 8. Tear down
 
 ```bash
-kubectl --context kind-paperclip delete namespace paperclip-smoke
+kubectl --context kind-paperclip delete namespace wardmote-smoke
 kill %1  # paperclip-server
 ```
 
@@ -130,6 +130,6 @@ record:
 
 - Date + git SHA
 - `kubectl version` server version
-- Output of `kubectl get all -n paperclip-smoke` after step 6
+- Output of `kubectl get all -n wardmote-smoke` after step 6
 - Probe response from step 5
 - Time-to-acquire-lease (target: <30s on kind for a cold tenant)

@@ -62,7 +62,7 @@ Common optional fields:
 |---|---|---|
 | `backend` | `"sandbox-cr"` | `sandbox-cr` (alpha, requires agent-sandbox controller) or `job` (stable, one-shot entrypoint). |
 | `adapterType` | `"claude_local"` | One of the supported adapter types (claude_local, codex_local, gemini_local, cursor_local, opencode_local, pi_local). Determines runtime image + env keys + egress allow-list. |
-| `namespacePrefix` | `"paperclip-"` | Prefix for the per-company tenant namespace. |
+| `namespacePrefix` | `"wardmote-"` | Prefix for the per-company tenant namespace. |
 | `companySlug` | derived from companyId | Override the auto-derived company slug. |
 | `imageRegistry` | (none) | Override the default registry for agent runtime images. |
 | `imageAllowList` | `[]` | Glob patterns of allowed `target.imageOverride` values. Empty = no override permitted. |
@@ -99,7 +99,7 @@ The provider creates a workload-owned policy selected by the task run label, so 
 For each company that runs agents (created lazily on first dispatch):
 
 ```
-Namespace          paperclip-{companySlug}        (PSS: restricted enforce + audit)
+Namespace          wardmote-{companySlug}        (PSS: restricted enforce + audit)
 ServiceAccount     wardmote-tenant-sa
 Role               wardmote-tenant-role          (only get pods/log)
 RoleBinding        wardmote-tenant-rb
