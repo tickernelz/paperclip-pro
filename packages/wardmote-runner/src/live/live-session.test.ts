@@ -930,8 +930,8 @@ describe("Capability live runnerd and Codex session", () => {
     const first = await firstService.create();
     const opened = state.transports[0]!.requests.find((request) => request.method === "thread/start")!;
     const names = (opened.params.dynamicTools as Array<{ name: string }>).map((tool) => tool.name);
-    expect(names.filter((name) => name === "paperclip_finish")).toHaveLength(1);
-    expect(names.filter((name) => name === "paperclip_block")).toHaveLength(1);
+    expect(names.filter((name) => name === "wardmote_finish")).toHaveLength(1);
+    expect(names.filter((name) => name === "wardmote_block")).toHaveLength(1);
     expect(names).not.toContain("create_task");
     expect(opened.params).not.toHaveProperty("baseInstructions");
     expect(opened.params.developerInstructions).toContain('"revision":"paperclip-capability-live-v1"');
@@ -941,7 +941,7 @@ describe("Capability live runnerd and Codex session", () => {
     const restored = await restoredService.restore(first.id);
     // The facade appends native completion schemas to this admitted semantic list.
     expect(authority[1]?.resumeDynamicTools?.map((tool) => tool.name)).toEqual(
-      names.filter((name) => name !== "paperclip_finish" && name !== "paperclip_block"),
+      names.filter((name) => name !== "wardmote_finish" && name !== "wardmote_block"),
     );
     const resumed = state.transports[1]!.requests.find((request) => request.method === "thread/resume")!;
     expect(resumed.params).not.toHaveProperty("baseInstructions");
@@ -969,18 +969,18 @@ describe("Capability live runnerd and Codex session", () => {
         id: `call-${outcomes.length}`, method: "item/tool/call",
         params: { threadId: state.threadId, turnId: overrideTurn, callId: `call-${outcomes.length}`, tool, arguments: arguments_ },
       });
-      outcomes.push(await call("paperclip_finish", { ...result, completionClaim: { ...result.completionClaim, contractRevision: "stale" } }));
-      outcomes.push(await call("paperclip_finish", result, "wrong-turn"));
-      outcomes.push(await call("paperclip_block", result));
-      outcomes.push(await call("paperclip_finish", result));
-      outcomes.push(await call("paperclip_finish", { ...result, summary: "Conflicting report" }));
+      outcomes.push(await call("wardmote_finish", { ...result, completionClaim: { ...result.completionClaim, contractRevision: "stale" } }));
+      outcomes.push(await call("wardmote_finish", result, "wrong-turn"));
+      outcomes.push(await call("wardmote_block", result));
+      outcomes.push(await call("wardmote_finish", result));
+      outcomes.push(await call("wardmote_finish", { ...result, summary: "Conflicting report" }));
       outcomes.push(await call("create_task", { title: "Unauthorized task", idempotencyKey: "unauthorized-task" }));
       expect(session.snapshot().terminalTurns).toHaveLength(0);
     };
     await session.sendMessage("Orient to the assigned task.");
     expect(outcomes.map((outcome) => outcome.success)).toEqual([false, false, false, true, false, false]);
     expect(session.snapshot().semanticResult).toMatchObject(result);
-    const completionEvidence = session.snapshot().evidence.filter((entry) => entry.data.operationId === "paperclip_finish");
+    const completionEvidence = session.snapshot().evidence.filter((entry) => entry.data.operationId === "wardmote_finish");
     expect(completionEvidence.map((entry) => entry.kind)).toEqual(["tool_call", "tool_result"]);
     expect(completionEvidence[1]?.data.beforeRevision).toBe(completionEvidence[1]?.data.afterRevision);
     expect(session.mockState().tasks).toEqual(before.tasks);

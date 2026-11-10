@@ -2552,7 +2552,7 @@ export async function executeNativeSession(
               "Paperclip semantic-result recovery for a prior completed provider turn.",
               "The prior turn already performed the work and its user-facing final answer is recorded.",
               "Do not repeat implementation, tests, research, or the final answer.",
-              "Use the existing session context to invoke exactly one paperclip_finish or paperclip_block with the accurate current disposition, then stop without additional user-facing prose.",
+              "Use the existing session context to invoke exactly one wardmote_finish or wardmote_block with the accurate current disposition, then stop without additional user-facing prose.",
             ].join("\n");
           }
           if (!(dispositionOnlyRecovery && !effectFreeInitialAcpxTurn) && "requestedSkills" in modelEnvelope && options.backend.preparedTaskConstraints) {

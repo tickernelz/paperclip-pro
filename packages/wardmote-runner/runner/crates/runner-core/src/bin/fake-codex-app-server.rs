@@ -1499,7 +1499,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
                                 "senderThreadId":state.thread_id, "receiverThreadIds":["helper-thread"]}
                         }}))?;
                     }
-                    for (index, tool) in ["get_task_context", "paperclip_finish"].iter().enumerate()
+                    for (index, tool) in ["get_task_context", "wardmote_finish"].iter().enumerate()
                     {
                         send(
                             json!({"id":format!("helper-request-{index}"), "method":"item/tool/call", "params":{

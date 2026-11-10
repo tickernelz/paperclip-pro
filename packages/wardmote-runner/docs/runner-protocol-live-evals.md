@@ -200,7 +200,7 @@ delivery short during parallel fleet startup. Other providers retain their
 existing admission timeout.
 
 The runtime instructions distinguish the fixture's `finish_task`/`block_task`
-state changes from native `paperclip_finish`/`paperclip_block` run-result
+state changes from native `wardmote_finish`/`wardmote_block` run-result
 reporting. This layer has no production server to apply a reported run result
 to a task. Its completion cases still require the actual semantic operation
 and durable mock-state change; reporting success alone does not pass them.

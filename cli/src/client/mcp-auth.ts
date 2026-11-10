@@ -168,7 +168,7 @@ export async function loginMcpDevice(raw: string, companyId?: string, notify: (m
       throw new Error(result.data.error === "access_denied" ? "Connection declined. No access was granted." : "Device authorization expired or failed. Start login again.");
     }
     const credential = tokens(result.data, { resource, issuer, clientId, companyId: companyId ?? "" });
-    const identity = await mcpRpc(resource, credential.accessToken, "tools/call", { name: "paperclip_connection", arguments: {} });
+    const identity = await mcpRpc(resource, credential.accessToken, "tools/call", { name: "wardmote_connection", arguments: {} });
     const connected = identity.structuredContent as Json | undefined;
     if (identity.isError || typeof connected?.companyId !== "string" || (companyId && connected.companyId !== companyId)) throw new Error("The approved organization did not match. Reconnect before doing work.");
     credential.companyId = connected.companyId;

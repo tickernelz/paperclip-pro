@@ -2368,7 +2368,7 @@ export class CapabilityLiveSession {
       this.#transportOptions.baseInstructions ?? LIVE_BASE_INSTRUCTIONS,
       "",
       "Native completion report contract: " + JSON.stringify(LIVE_COMPLETION_CONTRACT),
-      "For paperclip_finish or paperclip_block, use that exact contract revision and criterion IDs. These tools report the current provider run result; they do not change mock task state. Mock task mutations still require separately authorized semantic tools and an explicit user request.",
+      "For wardmote_finish or wardmote_block, use that exact contract revision and criterion IDs. These tools report the current provider run result; they do not change mock task state. Mock task mutations still require separately authorized semantic tools and an explicit user request.",
     ].join("\n");
     const authorizedTools = this.#dispatcher.listTools(this.#authority.runId);
     const tools = (this.#config.toolExposure ?? "eager") === "lazy"

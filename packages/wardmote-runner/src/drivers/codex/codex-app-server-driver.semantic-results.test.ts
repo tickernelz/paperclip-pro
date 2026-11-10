@@ -55,7 +55,7 @@ describe("Codex app-server Codex driver", () => {
     });
     await session.startTurn({ message: { role: "user", text: "Finish" } });
     const call = (callId: string) => transport.invoke({ id: callId, method: "item/tool/call",
-      params: { threadId: "thread-1", turnId: "turn-1", callId, tool: "paperclip_finish", arguments: result } });
+      params: { threadId: "thread-1", turnId: "turn-1", callId, tool: "wardmote_finish", arguments: result } });
     expect(await call("first")).toMatchObject({ success: false });
     expect((await session.snapshot()).semanticResult).toBeNull();
     expect(await call("corrected")).toMatchObject({ success: true,
@@ -64,7 +64,7 @@ describe("Codex app-server Codex driver", () => {
     await session.close();
   });
 
-  it("accepts an explicit response-wake yield through paperclip_finish", async () => {
+  it("accepts an explicit response-wake yield through wardmote_finish", async () => {
     const transport = new FakeCodexTransport();
     const session = await makeDriver([transport]).openSession({
       runId: "run-response-wake",
@@ -101,7 +101,7 @@ describe("Codex app-server Codex driver", () => {
         threadId: "thread-1",
         turnId: "turn-1",
         callId: "response-wake",
-        tool: "paperclip_finish",
+        tool: "wardmote_finish",
         arguments: yielded,
       },
     })).toMatchObject({ success: true });
@@ -133,7 +133,7 @@ describe("Codex app-server Codex driver", () => {
         threadId: "thread-1",
         turnId: "turn-1",
         callId: "same-agent-yield",
-        tool: "paperclip_finish",
+        tool: "wardmote_finish",
         arguments: {
           ...yielded,
           continuation: {
@@ -166,7 +166,7 @@ describe("Codex app-server Codex driver", () => {
         threadId: "thread-1",
         turnId: "turn-1",
         callId: "call-1",
-        tool: "paperclip_finish",
+        tool: "wardmote_finish",
         arguments: result,
       },
     };
@@ -250,7 +250,7 @@ describe("Codex app-server Codex driver", () => {
           threadId: "thread-1",
           turnId: "turn-1",
           callId: "tool-result",
-          tool: "paperclip_finish",
+          tool: "wardmote_finish",
           arguments: toolShaped,
         },
       }),
@@ -360,7 +360,7 @@ describe("Codex app-server Codex driver", () => {
           threadId: "thread-1",
           turnId: "turn-1",
           callId: "tool-result",
-          tool: "paperclip_finish",
+          tool: "wardmote_finish",
           arguments: result,
         },
       }),
@@ -407,7 +407,7 @@ describe("Codex app-server Codex driver", () => {
           threadId: "thread-1",
           turnId: "turn-1",
           callId: "tool-result",
-          tool: "paperclip_finish",
+          tool: "wardmote_finish",
           arguments: result,
         },
       }),
@@ -474,7 +474,7 @@ describe("Codex app-server Codex driver", () => {
           threadId: "thread-1",
           turnId: "turn-1",
           callId: "tool-result",
-          tool: "paperclip_finish",
+          tool: "wardmote_finish",
           arguments: changed,
         },
       }),
@@ -513,7 +513,7 @@ describe("Codex app-server Codex driver", () => {
           threadId: "thread-1",
           turnId: "turn-1",
           callId: "tool-result",
-          tool: "paperclip_finish",
+          tool: "wardmote_finish",
           arguments: result,
         },
       }),
@@ -557,7 +557,7 @@ describe("Codex app-server Codex driver", () => {
           threadId: "thread-1",
           turnId: "turn-1",
           callId: "tool-result",
-          tool: "paperclip_finish",
+          tool: "wardmote_finish",
           arguments: result,
         },
       }),
@@ -614,7 +614,7 @@ describe("Codex app-server Codex driver", () => {
             threadId,
             turnId,
             callId: "hostile-call",
-            tool: "paperclip_finish",
+            tool: "wardmote_finish",
             arguments: result,
           },
         }),
@@ -709,7 +709,7 @@ describe("Codex app-server Codex driver", () => {
           threadId: "thread-1",
           turnId: "turn-1",
           callId: "late-call",
-          tool: "paperclip_finish",
+          tool: "wardmote_finish",
           arguments: result,
         },
       }),
@@ -766,7 +766,7 @@ describe("Codex app-server Codex driver", () => {
           threadId: "thread-1",
           turnId: "turn-1",
           callId: "large-call",
-          tool: "paperclip_finish",
+          tool: "wardmote_finish",
           arguments: { ...result, summary: "x".repeat(70 * 1024) },
         },
       }),
@@ -834,7 +834,7 @@ describe("Codex app-server Codex driver", () => {
         threadId: "thread-1",
         turnId: "turn-1",
         callId: "call-block",
-        tool: "paperclip_block",
+        tool: "wardmote_block",
         arguments: blocked,
       },
     };
@@ -842,7 +842,7 @@ describe("Codex app-server Codex driver", () => {
       await transport.invoke({
         ...request,
         id: 9,
-        params: { ...request.params, tool: "paperclip_finish" },
+        params: { ...request.params, tool: "wardmote_finish" },
       }),
     ).toMatchObject({ success: false });
     expect(await transport.invoke(request)).toMatchObject({ success: true });

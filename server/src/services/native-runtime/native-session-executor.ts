@@ -2268,7 +2268,7 @@ export function retainedNativeCleanupJournalMatches(input: {
       event.eventType === "semantic_tool.input" &&
       record(event.payload).semantic_tool &&
       record(record(event.payload).semantic_tool).operationId ===
-        "paperclip_finish",
+        "wardmote_finish",
   );
   if (submissions.length !== 1) return false;
   const event = submissions[0]!;
@@ -2822,7 +2822,7 @@ export async function verifyStoppedNativeSessionForReplacement(
     for (const event of events.filter(event => event.eventType === "semantic_tool.input")) {
       const semantic = record(record(event.payload).semantic_tool);
       const correlation = record(semantic.correlation);
-      if (!bound(event) || semantic.operationId !== "paperclip_finish" || semantic.phase !== "input" ||
+      if (!bound(event) || semantic.operationId !== "wardmote_finish" || semantic.phase !== "input" ||
           typeof semantic.callId !== "string" || !validatePrpStructuredRunResult(semantic.input).ok ||
           correlation.runId !== run.id || correlation.normalizedSessionId !== run.nativeSessionId ||
           correlation.turnId !== identity.turnId || correlation.itemId !== identity.itemId ||
@@ -9126,9 +9126,6 @@ async function executePaperclipNativeSessionWithinScope(
       activeNativeSessions.delete(input.execution.binding.runId);
       clearSteeringDeliveries(input.execution.binding.runId);
       clearNativeRuntimeRequestResolutions(input.execution.binding.runId);
-      // Stop before paperclip_finish is normal. Bounded provider teardown has
-      // finished; a missing result must not overwrite cancellation or trigger
-      // another turn to perform completion bookkeeping.
       const stoppedBeforeFirstTurn = error instanceof Error && error.message === "native_session_cancelled";
       if (protocolIntegrityFailure === null && error instanceof Error &&
           (stoppedBeforeFirstTurn || error instanceof NativePermissionDeclinedError || error.message === "native_finalization_missing: session returned no semantic result")) {

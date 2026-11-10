@@ -77,5 +77,5 @@ it("requires the exact passive accepted-plan disposition without mode promotion 
   for (const mutate of mutations) { const changed = structuredClone(state); mutate(changed); expect(hasCursorAcceptedPlanWait(changed)).toBe(false); }
   expect(cursorNativeTasks.find(task => task.id === "native-plan-reject-revise-accept")!.expectedTerminalState).toEqual({ issue: "in_progress", run: "succeeded" });
   const prompt = cursorNativeTasks.find(task => task.id === "native-plan-reject-revise-accept")!.buildPrompt("test");
-  expect(prompt).toContain("do not implement, change modes, call paperclip_finish, or start another turn");
+  expect(prompt).toContain("do not implement, change modes, call wardmote_finish, or start another turn");
 });

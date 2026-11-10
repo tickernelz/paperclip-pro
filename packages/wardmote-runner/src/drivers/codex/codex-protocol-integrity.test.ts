@@ -250,7 +250,7 @@ describe("Codex protocol integrity propagation", () => {
             threadId: "thread-1",
             turnId: binding === "matching" ? "turn-1" : "foreign-turn",
             callId: "early-finish",
-            tool: "paperclip_finish",
+            tool: "wardmote_finish",
             arguments: result,
           },
         });
@@ -374,7 +374,7 @@ describe("Codex protocol integrity propagation", () => {
               threadId: "thread-1",
               turnId: "turn-1",
               callId: "early-rejected-finish",
-              tool: "paperclip_finish",
+              tool: "wardmote_finish",
               arguments: result,
             },
           })
@@ -692,7 +692,7 @@ describe("Codex protocol integrity propagation", () => {
                 schemaVersion: 1,
                 phase: "input",
                 callId: "early-composed-finish",
-                operationId: "paperclip_finish",
+                operationId: "wardmote_finish",
                 correlation: {
                   runId: identity.runId,
                   normalizedSessionId: identity.normalizedSessionId,
@@ -735,7 +735,7 @@ describe("Codex protocol integrity propagation", () => {
                   schemaVersion: 1,
                   phase: "input",
                   callId: "corrupt-while-admission-pending",
-                  operationId: "paperclip_finish",
+                  operationId: "wardmote_finish",
                   correlation: {
                     runId: identity.runId,
                     normalizedSessionId: identity.normalizedSessionId,

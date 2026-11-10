@@ -289,10 +289,10 @@ describe("qualified ACPX runtime sidecar", () => {
     try {
       projector.tool({ type: "tool_call", tag: "tool_call", toolCallId: "native-call", kind: "other", status: "pending", rawInput: raw });
       const response = fetch(bridge.url, { method: "POST", headers: { Authorization: `Bearer ${bridge.secret}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ jsonrpc: "2.0", id: 3, method: "tools/call", params: { name: "paperclip_finish", arguments: raw } }) });
+        body: JSON.stringify({ jsonrpc: "2.0", id: 3, method: "tools/call", params: { name: "wardmote_finish", arguments: raw } }) });
       if (mode === "forwarded") {
         await vi.waitFor(() => expect(tools.has("3")).toBe(true));
-        expect(emitted).toEqual([{ callId: "3", operationId: "paperclip_finish", input: validated.result }]);
+        expect(emitted).toEqual([{ callId: "3", operationId: "wardmote_finish", input: validated.result }]);
         // The receipt hashes the actual emitted input, not a second normalization.
         await loadActualToolCommands(tools).resolve({ callId: "3", turnId: "test-turn", result: { accepted: true }, error: null });
       }
@@ -317,7 +317,7 @@ describe("qualified ACPX runtime sidecar", () => {
   it("does not capture normalized authority when actual sidecar validation fails", async () => {
     const emitted: unknown[] = [], capture = vi.fn(() => vi.fn());
     const wait = loadWaitForTool({ tools: new Map(), emitted, validate: validatePrpStructuredRunResult });
-    await expect(wait({ tool: "paperclip_finish", callId: "bad", arguments: {}, signal: new AbortController().signal,
+    await expect(wait({ tool: "wardmote_finish", callId: "bad", arguments: {}, signal: new AbortController().signal,
       captureNormalizedInput: capture })).rejects.toThrow("ACPX semantic result failed PRP schema validation");
     expect(capture).not.toHaveBeenCalled();
     expect(emitted).toEqual([]);
@@ -326,7 +326,7 @@ describe("qualified ACPX runtime sidecar", () => {
   it("rejects normalized/envelope expansion at the actual frame writer before committing a receipt", async () => {
     const raw = { reportedWorkDisposition: "done", summary: "Complete", evidence: [{ ref: "" }], verification: [],
       completionClaim: { contractRevision: "1", objectiveSatisfied: true, criteria: [], remainingWork: [] } };
-    const request = { jsonrpc: "2.0", id: 3, method: "tools/call", params: { name: "paperclip_finish", arguments: raw } };
+    const request = { jsonrpc: "2.0", id: 3, method: "tools/call", params: { name: "wardmote_finish", arguments: raw } };
     raw.evidence[0]!.ref = "x".repeat(ACPX_SIDECAR_MAX_FRAME_BYTES - 1 - Buffer.byteLength(JSON.stringify(request)));
     expect(Buffer.byteLength(JSON.stringify(request))).toBe(ACPX_SIDECAR_MAX_FRAME_BYTES - 1);
     const validation = validatePrpStructuredRunResult(raw);
@@ -358,7 +358,7 @@ describe("qualified ACPX runtime sidecar", () => {
     const raw = { reportedWorkDisposition: "done", summary: "Complete", evidence: [], verification: [],
       completionClaim: { contractRevision: "1", objectiveSatisfied: true, criteria: [], remainingWork: [] } };
     const handler = loadWaitForTool({ tools, emitted, validate: validatePrpStructuredRunResult, emit: wire.emit });
-    const pending = handler({ tool: "paperclip_finish", callId: "3", arguments: raw, signal: new AbortController().signal, captureNormalizedInput: capture });
+    const pending = handler({ tool: "wardmote_finish", callId: "3", arguments: raw, signal: new AbortController().signal, captureNormalizedInput: capture });
     if (mode === "throws") {
       await expect(pending).rejects.toThrow("fixture write failed");
       expect(commit).not.toHaveBeenCalled(); expect(tools.size).toBe(0); expect(wire.sequence()).toBe(0);
@@ -387,7 +387,7 @@ describe("qualified ACPX runtime sidecar", () => {
       const params = { callId: "3", turnId: "test-turn", result: { accepted: mode !== "accepted-false" }, error: null };
       try {
         const response = fetch(bridge.url, { method: "POST", headers,
-          body: JSON.stringify({ jsonrpc: "2.0", id: 3, method: "tools/call", params: { name: "paperclip_finish", arguments: raw } }) });
+          body: JSON.stringify({ jsonrpc: "2.0", id: 3, method: "tools/call", params: { name: "wardmote_finish", arguments: raw } }) });
         await vi.waitFor(() => expect(tools.has("3")).toBe(true), { interval: 5, timeout: 400 });
         expect(wire.writes).toHaveLength(1);
         expect(JSON.parse(wire.writes[0]!).payload.input).toEqual(validation.result);
@@ -435,7 +435,7 @@ describe("qualified ACPX runtime sidecar", () => {
     expect(validatePrpStructuredRunResult(raw).ok).toBe(true);
     const wire = loadActualSidecarWriter(), tools = new Map<string, unknown>(), emitted: unknown[] = [], capture = vi.fn(() => vi.fn());
     const handler = loadWaitForTool({ tools, emitted, validate: validatePrpStructuredRunResult, emit: wire.emit });
-    await expect(handler({ tool: "paperclip_finish", callId: "3", arguments: raw, signal: new AbortController().signal,
+    await expect(handler({ tool: "wardmote_finish", callId: "3", arguments: raw, signal: new AbortController().signal,
       captureNormalizedInput: capture })).rejects.toThrow("cannot be encoded without changing its identity");
     expect(capture).not.toHaveBeenCalled(); expect(tools.size).toBe(0); expect(emitted).toEqual([]);
     expect(wire.writes).toEqual([]); expect(wire.sequence()).toBe(0);
@@ -600,7 +600,7 @@ describe("qualified ACPX runtime sidecar", () => {
     expect(source).toContain("? boundedTool.inputUpdated");
   });
 
-  it.each(["paperclip_finish", "paperclip_block"])(
+  it.each(["wardmote_finish", "wardmote_block"])(
     "bounds pending %s calls before reserved handling and resumes admission",
     async (operationId) => {
       const tools = new Map<string, unknown>();
@@ -610,7 +610,7 @@ describe("qualified ACPX runtime sidecar", () => {
       const signal = new AbortController();
       await expect(waitForTool({
         callId: `${operationId}-at-capacity`, tool: operationId,
-        arguments: operationId === "paperclip_block" ? { reportedWorkDisposition: "blocked" } : { reportedWorkDisposition: "done" },
+        arguments: operationId === "wardmote_block" ? { reportedWorkDisposition: "blocked" } : { reportedWorkDisposition: "done" },
         signal: signal.signal,
       })).rejects.toThrow("ACPX pending tool limit reached");
       expect(emitted).toEqual([]);
@@ -619,7 +619,7 @@ describe("qualified ACPX runtime sidecar", () => {
       tools.delete("pending-0");
       const admitted = waitForTool({
         callId: `${operationId}-after-release`, tool: operationId,
-        arguments: operationId === "paperclip_block" ? { reportedWorkDisposition: "blocked" } : { reportedWorkDisposition: "done" },
+        arguments: operationId === "wardmote_block" ? { reportedWorkDisposition: "blocked" } : { reportedWorkDisposition: "done" },
         signal: signal.signal,
       });
       await Promise.resolve();
@@ -1290,8 +1290,8 @@ function loadWaitForTool(input: {
     input.tools,
     "test-turn",
     (eventType: string, payload: unknown) => { const accepted = input.emit?.(eventType, payload) ?? true; if (accepted) input.emitted.push(payload); return accepted; },
-    "paperclip_finish",
-    "paperclip_block",
+    "wardmote_finish",
+    "wardmote_block",
     input.validate ?? ((argumentsValue: unknown) => ({
       ok: true,
       result: argumentsValue,

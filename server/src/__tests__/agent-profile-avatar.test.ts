@@ -140,14 +140,14 @@ it("lets a paired Dot upload without an assignment, with feature and current gra
   await db.insert(dotAgentBindings).values({ companyId: f.company.id, agentId: f.agent.id, operatorId: userId, grantId: grant!.id, status: "connected" });
   const principal: McpPrincipal = { grant: grant!, company: f.company, actor: { type: "agent", companyId: f.company.id, agentId: f.agent.id } };
   const tools = createDotRunnerMcpTools(db);
-  expect((await tools.listTools(principal)).find(tool => tool.name === "paperclip_dot_set_avatar")?.annotations).toMatchObject({ readOnlyHint: false });
-  expect(await tools.callTool(principal, "paperclip_dot_set_avatar", { imageBase64 })).toMatchObject({ outcome: "completed", result: { agentId: f.agent.id } });
-  await expect(tools.callTool(principal, "paperclip_dot_set_avatar", { imageBase64, agentId: randomUUID() })).rejects.toThrow();
+  expect((await tools.listTools(principal)).find(tool => tool.name === "wardmote_dot_set_avatar")?.annotations).toMatchObject({ readOnlyHint: false });
+  expect(await tools.callTool(principal, "wardmote_dot_set_avatar", { imageBase64 })).toMatchObject({ outcome: "completed", result: { agentId: f.agent.id } });
+  await expect(tools.callTool(principal, "wardmote_dot_set_avatar", { imageBase64, agentId: randomUUID() })).rejects.toThrow();
   await instanceSettingsService(db).updateExperimental({ enableOpenAiDot: false });
-  try { await expect(tools.callTool(principal, "paperclip_dot_set_avatar", { imageBase64 })).rejects.toThrow("turned off"); }
+  try { await expect(tools.callTool(principal, "wardmote_dot_set_avatar", { imageBase64 })).rejects.toThrow("turned off"); }
   finally { await instanceSettingsService(db).updateExperimental({ enableOpenAiDot: true }); }
   await db.update(mcpOauthGrants).set({ revokedAt: new Date() }).where(eq(mcpOauthGrants.id, grant!.id));
-  await expect(tools.callTool(principal, "paperclip_dot_set_avatar", { imageBase64 })).rejects.toThrow("authority");
+  await expect(tools.callTool(principal, "wardmote_dot_set_avatar", { imageBase64 })).rejects.toThrow("authority");
 });
 
 it("redacts HTTP diagnostics containing image bytes", () => {

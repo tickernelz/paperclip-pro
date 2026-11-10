@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { appendSemanticToolReceipt, parseSemanticToolReceipt, readNativeSemanticReceipt, semanticInputSha256 } from "./semantic-tool-receipt.js";
-const call = { tool: "paperclip_finish", callId: "3", arguments: { revision: "current", summary: "private" } };
+const call = { tool: "wardmote_finish", callId: "3", arguments: { revision: "current", summary: "private" } };
 const original = { content: [{ type: "text" as const, text: '{"accepted":false}' }] };
 describe("bounded semantic receipt carrier", () => {
   it("preserves existing content and transport-vs-semantic acceptance", () => {

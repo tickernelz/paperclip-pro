@@ -353,7 +353,7 @@ describe("owned Pi runtime extension", () => {
     config.servers = [{ type: "http", name: "paperclip", url: "http://127.0.0.1:1234", headers: [] }];
     const calls = new Map<string, { fingerprint: string; result: Record<string, unknown> }>();
     const request = vi.fn(async (_server, method, params, id) => {
-      if (method === "tools/list") return { tools: ["paperclip_finish", "get_task_context"].map(name => ({ name, inputSchema: { type: "object" } })) };
+      if (method === "tools/list") return { tools: ["wardmote_finish", "get_task_context"].map(name => ({ name, inputSchema: { type: "object" } })) };
       if (method !== "tools/call") return {};
       const fingerprint = JSON.stringify(params);
       const previous = calls.get(id);
@@ -390,7 +390,7 @@ describe("owned Pi runtime extension", () => {
   it("keeps real authenticated bridge replay authority across corrected calls and warm iterations", async () => {
     const { config } = await workspace(); const h = harness();
     const handler = vi.fn(async ({ tool, arguments: args }: { tool: string; arguments: unknown }) => {
-      if (tool === "paperclip_finish" && (args as any).completionClaim.contractRevision === "1") throw new Error("Use contractRevision2 and human_response.");
+      if (tool === "wardmote_finish" && (args as any).completionClaim.contractRevision === "1") throw new Error("Use contractRevision2 and human_response.");
       return { accepted: tool };
     });
     const bridge = await startRunnerToolBridge({ tools: [{ name: "get_task_context", inputSchema: { type: "object" } }], handler });
@@ -402,7 +402,7 @@ describe("owned Pi runtime extension", () => {
         if (method === "tools/call") deliveries.push({ id, params });
         return piMcpRequest(assigned, method, params, id, signal);
       });
-      const finish = h.tools.find(tool => tool.name.endsWith("__paperclip_finish"))!;
+      const finish = h.tools.find(tool => tool.name.endsWith("__wardmote_finish"))!;
       const contextTool = h.tools.find(tool => tool.name.endsWith("__get_task_context"))!;
       const result = (revision: string) => ({ reportedWorkDisposition: "done", summary: "Complete", completionClaim: { contractRevision: revision, objectiveSatisfied: true, criteria: [{ criterionId: "human_response", status: "satisfied", evidenceRefs: [] }], remainingWork: [] }, evidence: [], verification: [], attentionRequests: [], artifacts: [] });
       h.handlers.get("turn_start")!();
@@ -411,7 +411,7 @@ describe("owned Pi runtime extension", () => {
       await expect(finish.execute("call_0", result("1"))).rejects.toThrow("human_response");
       expect(handler).toHaveBeenCalledTimes(1); // Cached semantic failure, not another mutation.
       expect(deliveries.at(-1)!.id).toBe(stale.id);
-      expect(await piMcpRequest(server, "tools/call", { name: "paperclip_finish", arguments: result("2") }, stale.id)).toMatchObject({ isError: true, content: [{ text: "Duplicate call identity conflict." }] });
+      expect(await piMcpRequest(server, "tools/call", { name: "wardmote_finish", arguments: result("2") }, stale.id)).toMatchObject({ isError: true, content: [{ text: "Duplicate call identity conflict." }] });
       expect(handler).toHaveBeenCalledTimes(1);
       h.handlers.get("turn_end")!(); h.handlers.get("turn_start")!();
       await Promise.all([finish.execute("call_0", result("2")), finish.execute("call_0", result("2"))]);
@@ -444,7 +444,7 @@ describe("owned Pi runtime extension", () => {
     const authorization = "Bearer assigned-mcp-token-123456789";
     config.servers = [{ type: "http", name: "paperclip", url: "http://127.0.0.1:1234", headers: [{ name: "Authorization", value: authorization }] }];
     const request = vi.fn(async (_server, method) => method === "tools/list"
-      ? { tools: [{ name: "paperclip_finish", inputSchema: { type: "object" } }] }
+      ? { tools: [{ name: "wardmote_finish", inputSchema: { type: "object" } }] }
       : method === "tools/call" ? { isError: true, content: [{ type: "text", text: `completionClaim.contractRevision must equal 1; verification.items[0].status is invalid; Authorization: ${authorization}; token=other-private-value; \"password\":\"another-secret\"` }], structuredContent: { code: "INVALID_VERIFICATION", field: "verification.items[0].status" } } : {});
     await installPiRuntimeExtension(h.api, config, request); h.handlers.get("turn_start")!();
     const error = await h.tools[0]!.execute("original-call", {}).catch(value => value);
@@ -468,7 +468,7 @@ describe("owned Pi runtime extension", () => {
     const { config } = await workspace(); const h = harness();
     config.servers = [{ type: "http", name: "paperclip", url: "http://127.0.0.1:1234", headers: [] }];
     const request = vi.fn(async (_server, method) => method === "tools/list"
-      ? { tools: [{ name: "paperclip_finish", inputSchema: { type: "object" } }] }
+      ? { tools: [{ name: "wardmote_finish", inputSchema: { type: "object" } }] }
       : method === "tools/call" ? result : {});
     await installPiRuntimeExtension(h.api, config, request); h.handlers.get("turn_start")!();
     const error = await h.tools[0]!.execute("call", {}).catch(value => value);

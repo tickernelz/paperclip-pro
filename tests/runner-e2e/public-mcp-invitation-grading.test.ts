@@ -5,8 +5,8 @@ function good(): InvitationEvidence {
   return { kind: "invitation-cold-start", companyId: "company", fetched: true, configured: true, approved: true, configurationWrites: 1, existingPreserved: true,
     grants: [{ companyId: "company" }], turns: [{ calls: [
       { name: "request_user_approval", result: { decision: "approved" } },
-      { name: "paperclip_connection", result: { structuredContent: { companyId: "company" } } },
-      { name: "paperclip_create_task", result: {} },
+      { name: "wardmote_connection", result: { structuredContent: { companyId: "company" } } },
+      { name: "wardmote_create_task", result: {} },
     ] }] };
 }
 describe("invitation approval oracle calibration", () => {
@@ -24,7 +24,7 @@ describe("invitation approval oracle calibration", () => {
     const denied: InvitationEvidence = { ...good(), kind: "invitation-denied", approved: false, grants: [], turns: [{ calls: [{ name: "request_user_approval", result: { decision: "declined" } }] }] };
     expect(gradeInvitation(denied)).toBe(true);
     expect(gradeInvitation({ ...denied, grants: [{ companyId: "company" }] })).toBe(false);
-    denied.turns[0]!.calls.push({ name: "paperclip_connection", result: {} }); expect(gradeInvitation(denied)).toBe(false);
+    denied.turns[0]!.calls.push({ name: "wardmote_connection", result: {} }); expect(gradeInvitation(denied)).toBe(false);
   });
   it("does not count a host without setup capabilities as configured", () => {
     const unavailable: InvitationEvidence = { ...good(), kind: "invitation-unavailable-host", approved: false, configured: false, grants: [], configurationWrites: 0, turns: [{ calls: [] }] };

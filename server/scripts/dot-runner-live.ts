@@ -143,7 +143,7 @@ try {
   await writeFile(join(scratch, "control.json"), JSON.stringify({ origin, controlOrigin: `http://127.0.0.1:${port + 1}`, token: controlToken, companyId: company.id, taskId: task.id }), { mode: 0o600 });
   console.log(`LIVE LAB READY ${origin}/mcp/wardmote`);
   console.log(`Local control file: ${join(scratch, "control.json")}`);
-  console.log(`Standing instruction: Subscribe to paperclip.dot.work_available for companyId ${company.id}, taskId ${task.id}. When an event arrives, check paperclip_dot_inbox; read, accept, execute and finish its assignment. Do not poll. Wait for the event before taking work.`);
+  console.log(`Standing instruction: Subscribe to paperclip.dot.work_available for companyId ${company.id}, taskId ${task.id}. When an event arrives, check wardmote_dot_inbox; read, accept, execute and finish its assignment. Do not poll. Wait for the event before taking work.`);
   process.once("SIGINT", stopLab); process.once("SIGTERM", stopLab);
   const timer = setTimeout(stopLab, 2 * 3600_000); timer.unref();
   await stopped; clearTimeout(timer);

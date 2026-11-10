@@ -1969,7 +1969,7 @@ pub(crate) fn validate_semantic_tool_input(
             "semantic tool input exceeds the 480 KiB encrypted transport limit",
         ));
     }
-    if matches!(operation_id, "paperclip_finish" | "paperclip_block")
+    if matches!(operation_id, "wardmote_finish" | "wardmote_block")
         && input
             .get("summary")
             .and_then(Value::as_str)
@@ -3252,14 +3252,13 @@ mod tests {
             "A complete paragraph for the user. ".repeat(180)
         );
         let input = json!({"summary": summary});
-        let once_sanitized_input =
-            validate_semantic_tool_input("paperclip_finish", &input).unwrap();
+        let once_sanitized_input = validate_semantic_tool_input("wardmote_finish", &input).unwrap();
         let payload = json!({
             "semantic_tool": {
                 "schema": "paperclip.prp.semantic_tool.v1",
                 "schemaVersion": 1,
                 "phase": "input",
-                "operationId": "paperclip_finish",
+                "operationId": "wardmote_finish",
                 "callId": "call-1",
                 "correlation": {
                     "runId": "run_1",
@@ -3344,13 +3343,13 @@ mod tests {
         small_frame.max_frame_bytes = 8_000;
         let mut state = DurableState::new(&small_frame);
         let long_input = json!({"summary": "C".repeat(12_000)});
-        let safe_input = validate_semantic_tool_input("paperclip_finish", &long_input).unwrap();
+        let safe_input = validate_semantic_tool_input("wardmote_finish", &long_input).unwrap();
         let exact_payload = json!({
             "semantic_tool": {
                 "schema": "paperclip.prp.semantic_tool.v1",
                 "schemaVersion": 1,
                 "phase": "input",
-                "operationId": "paperclip_finish",
+                "operationId": "wardmote_finish",
                 "content": {
                     "digest": semantic_value_digest(&safe_input),
                 },
@@ -3368,7 +3367,7 @@ mod tests {
             .to_string()
             .contains("transport frame limit"));
         assert!(validate_semantic_tool_input(
-            "paperclip_finish",
+            "wardmote_finish",
             &json!({"summary": "C".repeat(MAX_COMPLETION_SUMMARY_CHARS + 1)}),
         )
         .unwrap_err()
@@ -3383,7 +3382,7 @@ mod tests {
             "semantic_tool": {
                 "schema": "paperclip.prp.semantic_tool.tampered",
                 "phase": "input",
-                "operationId": "paperclip_finish",
+                "operationId": "wardmote_finish",
                 "content": {"digest": original_digest.clone()},
                 "input": once_sanitized,
             },

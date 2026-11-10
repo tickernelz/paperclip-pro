@@ -39,7 +39,7 @@ use crate::provider_events::{
 use crate::qualified_launch::{verify_executable_launch_artifact, verify_launch_artifact};
 
 fn is_reserved_terminal_operation_id(operation_id: &str) -> bool {
-    matches!(operation_id, "paperclip_finish" | "paperclip_block")
+    matches!(operation_id, "wardmote_finish" | "wardmote_block")
 }
 use crate::stable_identity::{is_stable_id, DURABLE_STABLE_ID_CHARS};
 

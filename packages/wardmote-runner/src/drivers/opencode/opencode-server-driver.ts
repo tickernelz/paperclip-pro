@@ -2319,12 +2319,12 @@ async function startRuntime(input: {
       permission: {
         "*": input.options.permissionMode ?? "allow",
         question: "allow",
-        "paperclip_*": "allow",
+        "wardmote_*": "allow",
         "mcp__wardmote__*": "allow",
         external_directory: externalDirectories,
       },
       mcp: {
-        paperclip: {
+        wardmote: {
           type: "remote",
           url: bridge.url,
           enabled: true,

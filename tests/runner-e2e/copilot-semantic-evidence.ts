@@ -58,7 +58,7 @@ export function readCopilotSemanticCompletion(rows: readonly unknown[], expected
     fields[d.name] = d.value;
   }
   if (Object.keys(fields).sort().join(",") !== receiptKeys || fields.stage !== "semantic_result" || fields.schema !== "paperclip.semantic_tool_receipt.v2"
-    || fields.operationId !== "paperclip_finish" || fields.outcome !== "returned"
+    || fields.operationId !== "wardmote_finish" || fields.outcome !== "returned"
     || ![fields.callIdentitySha256, fields.inputSha256, fields.normalizedInputSha256, fields.resultSha256].every(v => /^[a-f0-9]{64}$/.test(v!))) fail("invalid finish receipt");
   const matches = notices.filter(n => n.semanticCallIdentitySha256 === fields.callIdentitySha256);
   if (matches.length !== 1) fail("missing or duplicate native match");

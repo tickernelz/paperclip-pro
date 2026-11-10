@@ -114,9 +114,9 @@ class RunnerdDotSession implements HarnessSession {
         this.#wake();
       },
       onSemanticToolInput: async call => {
-        if (call.operationId === "paperclip_finish" || call.operationId === "paperclip_block") {
+        if (call.operationId === "wardmote_finish" || call.operationId === "wardmote_block") {
           const result = validatePrpStructuredRunResult(call.input);
-          if (!result.ok || (call.operationId === "paperclip_block") !== (result.ok && result.result.reportedWorkDisposition === "blocked")) {
+          if (!result.ok || (call.operationId === "wardmote_block") !== (result.ok && result.result.reportedWorkDisposition === "blocked")) {
             return { result: { error: "Invalid completion report. Use the admitted completion contract and the correct completion tool." }, isError: true };
           }
           try { return { result: { accepted: true, completionReport: result.result, feedback: await o.completionFeedback?.(result.result) ?? "Completion accepted; finish the external turn." } }; }
@@ -184,7 +184,7 @@ class RunnerdDotSession implements HarnessSession {
     }, () => this.interrupt(), !!checkpoint);
     await this.#command("run.prepare", {
       provider: { kind: "openai_dot", ...o.execution.provider.binding,
-        instructions: `${nativeSystemInstructions(o.execution)}\n\nAccept the assignment before calling tools. Invoke paperclip_finish or paperclip_block, then submit the same structured result with paperclip_dot_finish. Keep request IDs stable across retries.` },
+        instructions: `${nativeSystemInstructions(o.execution)}\n\nAccept the assignment before calling tools. Invoke wardmote_finish or wardmote_block, then submit the same structured result with wardmote_dot_finish. Keep request IDs stable across retries.` },
       authorizedTools: authorizedToolSetForProvider(undefined, [...o.dynamicTools ?? [], ...codexSemanticToolSpecs()]),
       completionContract: { revision: o.execution.completionContract.contract.revision,
         criterionIds: o.execution.completionContract.contract.criteria.map(c => c.id) },

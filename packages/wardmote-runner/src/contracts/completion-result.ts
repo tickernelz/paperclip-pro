@@ -1,6 +1,6 @@
 /** Provider-neutral semantic completion tools and their strict model-facing schemas. */
-export const PRP_COMPLETION_TOOL_NAME = "paperclip_finish" as const;
-export const PRP_BLOCK_TOOL_NAME = "paperclip_block" as const;
+export const PRP_COMPLETION_TOOL_NAME = "wardmote_finish" as const;
+export const PRP_BLOCK_TOOL_NAME = "wardmote_block" as const;
 /** Native Runner guidance; legacy adapters use their own skill/API completion paths. */
 export const PRP_COMPLETION_TOOL_DESCRIPTION =
   "Report completed work (done), work requiring review (needs_review), or an explicit wait (yielded with response_wake for a response, or monitor after set_task_monitor confirms a schedule on this task). Use the current completion contract and supporting evidence. If rejected, correct the report and retry. After acceptance, read the returned outcome; do not claim completion while gated. Explain any required approval with its supplied link and action, then write the final response and end the turn without further tool calls.";
@@ -318,9 +318,9 @@ const providerCommonResultProperties = {
   schema: {
     enum: [
       "paperclip.run_result.v1",
-      "paperclip_finish",
-      "paperclip_paperclip_finish",
-      "paperclip_finish.v1",
+      "wardmote_finish",
+      "wardmote_wardmote_finish",
+      "wardmote_finish.v1",
     ],
   },
   completionClaim: providerCompletionClaimCompatibilitySchema,

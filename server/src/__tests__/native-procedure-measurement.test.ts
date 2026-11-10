@@ -101,7 +101,7 @@ describe("production native procedure instruction measurement", () => {
         const turn = captured.calls.find(call => call.method === "turn/start")!.params;
         const instructions = setup.developerInstructions ?? setup.baseInstructions;
         const delivered = setup.dynamicTools as Record<string, unknown>[];
-        expect(delivered.filter(tool => !["paperclip_finish", "paperclip_block"].includes(String(tool.name)))).toEqual(tools);
+        expect(delivered.filter(tool => !["wardmote_finish", "wardmote_block"].includes(String(tool.name)))).toEqual(tools);
         expect(delivered).toHaveLength(tools.length + 2);
         expect(instructions).toContain(WARDMOTE_EXECUTION_PROMPT);
         expect(JSON.parse((turn.input as {text: string}[])[0]!.text)).toEqual(envelope);
@@ -118,7 +118,7 @@ describe("production native procedure instruction measurement", () => {
         body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/list", params: {} }) });
       expect(response.ok).toBe(true);
       const result = await response.json() as { result: { tools: Record<string, unknown>[] } };
-      expect(result.result.tools.filter(tool => !["paperclip_finish", "paperclip_block"].includes(String(tool.name)))).toEqual(
+      expect(result.result.tools.filter(tool => !["wardmote_finish", "wardmote_block"].includes(String(tool.name)))).toEqual(
         tools.map(({ name, description, inputSchema }) => ({ name, description, inputSchema })),
       );
       mcpReceipt = { boundary: "authenticated loopback MCP tools/list; no OpenCode/provider process", serverAnnotationsForwarded: false, tools: measure(result.result.tools), count: result.result.tools.length };

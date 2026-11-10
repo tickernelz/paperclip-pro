@@ -91,10 +91,10 @@ export async function runExpandedMcpScenario(input: {
       match("skill-metadata-updated", found[0].tagline === `Citations ${nonce}` && found[0].sharingScope !== "public_link");
     }
   } else if (input.id === "expanded-api") {
-    const answer = await converse(`Using paperclip_search_api and paperclip_call_api, find the existing task "${title}" and set its description to exactly "API${nonce}". Discover the operation schemas, keep the company explicit, and do not create tasks, alter status or use a non-Paperclip URL.`);
+    const answer = await converse(`Using wardmote_search_api and wardmote_call_api, find the existing task "${title}" and set its description to exactly "API${nonce}". Discover the operation schemas, keep the company explicit, and do not create tasks, alter status or use a non-Paperclip URL.`);
     const saved = await api.get<any>(taskPath);
     match("generic-api-durable-edit", saved.description === `API${nonce}`);
-    match("generic-api-used", answer.calls.some(c => c.name === "paperclip_search_api") && answer.calls.some(c => c.name === "paperclip_call_api"));
+    match("generic-api-used", answer.calls.some(c => c.name === "wardmote_search_api") && answer.calls.some(c => c.name === "wardmote_call_api"));
   } else throw new Error("Unknown expanded MCP evaluation case");
 }
 
@@ -115,13 +115,13 @@ export function hasRequestedTaskEditSequence(history: any[], nonce: string): boo
 export function hasReadLaterDocument(turn: AssistantTurn, companyId: string, taskId: string, ...references: string[]): boolean {
   if (!references.every(value => value && turn.final.includes(value)) || !turn.calls.every(isReadOnlyMcpCall)) return false;
   return turn.calls.some(call => {
-    const name = call.name === "paperclip_call_api" ? call.arguments.operationId : call.name;
-    const args = call.name === "paperclip_call_api" ? call.arguments.arguments as Record<string, unknown> | undefined : call.arguments;
+    const name = call.name === "wardmote_call_api" ? call.arguments.operationId : call.name;
+    const args = call.name === "wardmote_call_api" ? call.arguments.arguments as Record<string, unknown> | undefined : call.arguments;
     if (!args || args.companyId !== companyId || args.taskId !== taskId
-      || !["paperclip_read_document", "paperclip_list_deliverables"].includes(String(name))) return false;
+      || !["wardmote_read_document", "wardmote_list_deliverables"].includes(String(name))) return false;
     const result = call.result as { isError?: boolean; structuredContent?: Record<string, unknown> } | null;
     if (!result || result.isError || !result.structuredContent) return false;
-    const documents = name === "paperclip_list_deliverables" ? result.structuredContent.documents : [result.structuredContent.document];
+    const documents = name === "wardmote_list_deliverables" ? result.structuredContent.documents : [result.structuredContent.document];
     return Array.isArray(documents) && documents.some(doc => doc && doc.key === "report"
       && typeof doc.body === "string" && references.every(value => doc.body.includes(value)));
   });

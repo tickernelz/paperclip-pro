@@ -121,7 +121,7 @@ describe("Codex app-server Codex driver", () => {
       },
       permissions: "paperclip-runner-workspace-only",
       runtimeWorkspaceRoots: [WORKSPACE],
-      dynamicTools: [{ name: "paperclip_finish" }, { name: "paperclip_block" }],
+      dynamicTools: [{ name: "wardmote_finish" }, { name: "wardmote_block" }],
     });
     const commandPolicy = transport.calls.find(
       (call) => call.method === "thread/start",

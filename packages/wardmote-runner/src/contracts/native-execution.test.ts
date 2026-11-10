@@ -150,7 +150,7 @@ describe("NativeExecutionInputV1", () => {
       schema: "paperclip.native-continuation.v1",
       events: '{"messages":[{"authorType":"user","body":"Just this new comment"}]}',
       completion: { revision: "1", criterionIds: ["objective"],
-        instruction: "Before ending this turn, obtain one accepted paperclip_finish or paperclip_block result. Earlier reports belong to earlier turns; a final message alone does not complete this turn." },
+        instruction: "Before ending this turn, obtain one accepted wardmote_finish or wardmote_block result. Earlier reports belong to earlier turns; a final message alone does not complete this turn." },
     });
     expect(JSON.stringify(delta)).not.toContain(input.task.title);
     expect(JSON.stringify(delta)).not.toContain(input.completionContract.contract.objective);

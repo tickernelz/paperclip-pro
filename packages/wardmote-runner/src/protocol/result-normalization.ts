@@ -132,7 +132,7 @@ export function normalizeLegacyPrpStructuredRunResult(value: unknown): unknown {
   const reportedSchema = text(normalized.schema);
   if (
     reportedSchema === null
-    || ["paperclip_finish", "paperclip_paperclip_finish", "paperclip_finish.v1"].includes(reportedSchema)
+    || ["wardmote_finish", "wardmote_wardmote_finish", "wardmote_finish.v1"].includes(reportedSchema)
   ) {
     normalized.schema = "paperclip.run_result.v1";
   }

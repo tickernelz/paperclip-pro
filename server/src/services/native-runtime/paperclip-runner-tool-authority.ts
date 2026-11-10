@@ -226,7 +226,7 @@ export class PaperclipRunnerToolAuthority {
           .map((tool) => ({ name: tool.operationId, description: tool.description, inputSchema: tool.inputSchema })),
         {
           name: "resolve_review",
-          description: "Record your decision on the one completion review assigned to this run. Inspect the submitted work first. Accept only if it meets the request; otherwise reject with specific changes. This does not change task ownership. After recording the decision, report your review complete with paperclip_finish. Do not redo the worker's task or wait for your own parent task to become runnable.",
+          description: "Record your decision on the one completion review assigned to this run. Inspect the submitted work first. Accept only if it meets the request; otherwise reject with specific changes. This does not change task ownership. After recording the decision, report your review complete with wardmote_finish. Do not redo the worker's task or wait for your own parent task to become runnable.",
           inputSchema: {
             type: "object", additionalProperties: false,
             properties: {

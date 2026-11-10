@@ -443,7 +443,7 @@ impl DotCommandExecutor {
                 if state.completion.as_ref() != Some(submitted)
                     && state.completion_input.as_ref() != Some(submitted)
                 {
-                    return Err(invalid("Dot must successfully invoke paperclip_finish or paperclip_block with this result first"));
+                    return Err(invalid("Dot must successfully invoke wardmote_finish or wardmote_block with this result first"));
                 }
                 let result = state
                     .completion
@@ -488,7 +488,7 @@ impl DotCommandExecutor {
         }
         if matches!(
             result.operation_id.as_str(),
-            "paperclip_finish" | "paperclip_block"
+            "wardmote_finish" | "wardmote_block"
         ) && !result.is_error
             && result
                 .result
@@ -797,7 +797,7 @@ mod tests {
             fs::set_permissions(path, fs::Permissions::from_mode(0o700)).unwrap();
         }
         let now = crate::durable::current_unix_ms().unwrap();
-        let tools = ["save_report", "paperclip_finish"]
+        let tools = ["save_report", "wardmote_finish"]
             .into_iter()
             .map(|name| AuthorizedTool {
                 operation_id: name.into(),
@@ -986,7 +986,7 @@ mod tests {
             operation(
                 "completion-1",
                 "tool",
-                json!({"name":"paperclip_finish","arguments":result}),
+                json!({"name":"wardmote_finish","arguments":result}),
             ),
         );
         assert!(e
@@ -998,7 +998,7 @@ mod tests {
         call(
             &mut e,
             "semantic_tool.result",
-            json!({"callId":"completion-1","operationId":"paperclip_finish","result":{"accepted":true},"isError":false}),
+            json!({"callId":"completion-1","operationId":"wardmote_finish","result":{"accepted":true},"isError":false}),
         );
         call(
             &mut e,
@@ -1034,13 +1034,13 @@ mod tests {
             operation(
                 "completion-1",
                 "tool",
-                json!({"name":"paperclip_finish","arguments":input}),
+                json!({"name":"wardmote_finish","arguments":input}),
             ),
         );
         call(
             &mut e,
             "semantic_tool.result",
-            json!({"callId":"completion-1","operationId":"paperclip_finish","result":{"accepted":true,"completionReport":canonical},"isError":false}),
+            json!({"callId":"completion-1","operationId":"wardmote_finish","result":{"accepted":true,"completionReport":canonical},"isError":false}),
         );
         drop(e);
         let mut e = DotCommandExecutor::with_runner_config(dir.path(), &config(dir.path()));

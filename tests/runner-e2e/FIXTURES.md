@@ -764,7 +764,7 @@ process death is not simulated by substituting the chat runner-worker crash hook
 
 ### Copilot attached semantic completion evidence (suite 8)
 
-Attached settlement now requires one native `paperclip_finish` lifecycle joined
+Attached settlement now requires one native `wardmote_finish` lifecycle joined
 to an invocation-captured, bounded Paperclip bridge receipt by exact call, input
 and result digests in the same run/turn/native session and durable source stream.
 A matching display title is not authority. The exact proposed completion input

@@ -147,7 +147,7 @@ export function gradeHiringCompletionActions(notifications: JsonRecord[], readRu
       const finish = completed.get(id) ?? {}, native = nativeStarts.get(id);
       if (start.name !== finish.name) { unresolved(); continue; }
       if (forbiddenWorkTools.has(String(start.name))) { violation(); continue; }
-      if (start.name === "paperclip_finish") {
+      if (start.name === "wardmote_finish") {
         const proposals = events.filter(event => event.eventType === "run.result.proposed");
         const proposal = eventEnvelope(proposals[0] ?? {});
         if (start.transport !== "dynamic" || finish.transport !== "dynamic" || proposals.length !== 1

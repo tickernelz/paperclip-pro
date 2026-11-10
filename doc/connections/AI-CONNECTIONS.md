@@ -709,7 +709,7 @@ follow-up timeout also remain live qualification limits.
 
 ### Gateway completion compatibility
 
-Provider-facing `paperclip_finish` accepts an omitted or `null` continuation for
+Provider-facing `wardmote_finish` accepts an omitted or `null` continuation for
 `done`, `completed`, and `needs_review`. This supports gateways that require all
 declared tool properties to be present. Normalization removes only `null`;
 non-yielding tool calls still reject a continuation object, and `yielded` still

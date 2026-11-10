@@ -66,7 +66,7 @@ describe("native runtime context files", () => {
     ).join("\n");
 
     expect(constraints).toContain(
-      "Obtain one accepted result from paperclip_finish or paperclip_block before writing",
+      "Obtain one accepted result from wardmote_finish or wardmote_block before writing",
     );
     expect(constraints).toContain("before writing the complete user-facing final response.");
     expect(constraints).toContain("If blocked, explain why work cannot continue, name the owner and give the unblock action.");

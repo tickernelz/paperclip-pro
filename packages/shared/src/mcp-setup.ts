@@ -19,17 +19,17 @@ export function mcpSetupSteps(serverUrl: string, assistant: AssistantClient) {
     case "codex": return [
       { text: "Check for an existing paperclip server first. Reuse it only if its URL matches this instance. Add the remote server with the Codex CLI.", code: `codex mcp add paperclip --url ${quoted}` },
       { text: "Start browser authorization and give the user the approval link.", code: "codex mcp login paperclip --scopes paperclip:read,paperclip:write,paperclip:configure,offline_access" },
-      { text: "If the current conversation does not reload its MCP tools, start a new conversation or restart the client. Verify the connection with paperclip_connection before claiming success." },
+      { text: "If the current conversation does not reload its MCP tools, start a new conversation or restart the client. Verify the connection with wardmote_connection before claiming success." },
     ];
     case "claude": return [
       { text: "Check existing servers and reuse a matching instance. Add the remote server using Claude Code.", code: `claude mcp add --transport http paperclip ${quoted}` },
       { text: "In Claude Code, run /mcp, select paperclip, and choose Authenticate. Versions that offer `claude mcp login --help` can also start authorization with `claude mcp login paperclip`. Give the user the approval link." },
-      { text: "Reconnect through /mcp, or start a new session if needed. Verify the account and organization with paperclip_connection." },
+      { text: "Reconnect through /mcp, or start a new session if needed. Verify the account and organization with wardmote_connection." },
     ];
     case "opencode": return [
       { text: "Check `opencode --version` and existing configuration. For OpenCode 1.x, merge this entry into opencode.json without replacing other settings. OpenCode 2.x uses mcp.servers; use that version's documented format instead.", code: JSON.stringify({ mcp: { paperclip: { type: "remote", url: serverUrl, enabled: true, oauth: { scope: scopes } } } }, null, 2) },
       { text: "Run from the same project directory. OpenCode opens Wardmote's sign-in and consent page; give the user the approval link.", code: "opencode mcp auth paperclip" },
-      { text: "If OpenCode was already running, restart it to load the connection. For the browser app, use this command. Verify the tools with paperclip_connection.", code: "opencode web" },
+      { text: "If OpenCode was already running, restart it to load the connection. For the browser app, use this command. Verify the tools with wardmote_connection.", code: "opencode web" },
     ];
     case "browser": return [
       { text: "Open your assistant's Apps / Connectors settings and add a custom remote MCP connection using this URL. Availability depends on the account and workspace policy. Reading this page in chat does not install a connector.", code: serverUrl },
@@ -38,11 +38,11 @@ export function mcpSetupSteps(serverUrl: string, assistant: AssistantClient) {
     case "headless": return [
       { text: "Use a Wardmote CLI version with `mcp login --device` support. This needs no callback listener; it prints a verification URL and user code, then waits for human approval.", code: `wardmote mcp login --device --url ${quoted}` },
       { text: "After approval, configure a local stdio MCP server running the command below. Credentials stay in the CLI's private credential store. Do not copy tokens or device codes into chat or project configuration.", code: `wardmote mcp proxy --url ${quoted}` },
-      { text: "The user code is for the human to verify the request. The private device code remains inside the CLI. After connecting, call paperclip_connection to verify the account and organization." },
+      { text: "The user code is for the human to verify the request. The private device code remains inside the CLI. After connecting, call wardmote_connection to verify the account and organization." },
     ];
     default: return [
       { text: "Add a remote HTTP MCP server at this URL, then choose OAuth / browser sign-in.", code: serverUrl },
-      { text: "If the client cannot install MCP servers from chat, use its connection settings. If it cannot receive a browser callback, use the Headless instructions. After approval, verify the account and organization with paperclip_connection." },
+      { text: "If the client cannot install MCP servers from chat, use its connection settings. If it cannot receive a browser callback, use the Headless instructions. After approval, verify the account and organization with wardmote_connection." },
     ];
   }
 }
@@ -57,6 +57,6 @@ export function mcpSetupMarkdown(serverUrl: string, companyId?: string) {
     mcpAuthorizationHandoffInstructions, "",
     ...Object.entries(assistantClientNames).flatMap(([client, name]) => [`## ${name}`, "", ...mcpSetupSteps(serverUrl, client as AssistantClient).flatMap((step) => [step.text, ...(step.code ? ["", "```", step.code, "```"] : []), ""])]),
     "## After approval", "",
-    "Call paperclip_connection, verify the human and organization, then summarize agents and open tasks. If the approved organization differs from the requested one, stop and reconnect. Do not create tasks or comments merely to test a connection. Creating tasks or comments can start paid agent work; do that only when requested. Access is governed by the consenting human's permissions, not a selected agent's identity.", "",
+    "Call wardmote_connection, verify the human and organization, then summarize agents and open tasks. If the approved organization differs from the requested one, stop and reconnect. Do not create tasks or comments merely to test a connection. Creating tasks or comments can start paid agent work; do that only when requested. Access is governed by the consenting human's permissions, not a selected agent's identity.", "",
   ].join("\n");
 }

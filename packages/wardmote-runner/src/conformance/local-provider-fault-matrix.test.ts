@@ -331,7 +331,7 @@ async function proposeResult(
       threadId: transport.threadId,
       turnId,
       callId: `finish-${profile.key}`,
-      tool: "paperclip_finish",
+      tool: "wardmote_finish",
       arguments: completionResult(profile),
     },
   });

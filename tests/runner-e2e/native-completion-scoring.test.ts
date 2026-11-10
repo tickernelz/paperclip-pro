@@ -10,7 +10,7 @@ function sample(blocked = true, compatibility = false): NativeCompletionObservat
     sourceEventId: `event${seq}`, sourceInstanceId: sourceKind, sourceSeq: seq,
     payload: { prpEvent: { schema: "paperclip.prp.event.v1", schemaVersion: 1, runId: "run", eventType,
       sourceKind, sourceEventId: `event${seq}`, sourceInstanceId: sourceKind, sourceSeq: seq, payload } } });
-  const tool = blocked ? "paperclip_block" : "paperclip_finish";
+  const tool = blocked ? "wardmote_block" : "wardmote_finish";
   return { caseId: blocked ? "native-blocked-report" : "assigned-skill-explicit-invocation", companyId: "company", agentId: "agent", marker: "BLOCKED_probe",
     issue: { id: "issue", companyId: "company", assigneeAgentId: "agent", status: result.reportedWorkDisposition },
     runs: [{ id: "run", nativeIssueId: "issue", companyId: "company", agentId: "agent", status: "succeeded", runtimeMode: "native", resultJson: { nativeResult: result } }],
@@ -57,7 +57,7 @@ describe("native completion independent oracle", () => {
     expect(gradeNativeCompletion(value).passed).toBe(false);
   });
   it.each([[true, false], [true, true], [false, false], [false, true]])("accepts disposition %s compatibility %s with final before late control-plane acceptance", (blocked, compatibility) => expect(gradeNativeCompletion(sample(blocked, compatibility)).passed).toBe(true));
-  it.each(["paperclip_finish", "paperclip_block"])("carries normalized %s identity through rehydration into the exact-call oracle", name => {
+  it.each(["wardmote_finish", "wardmote_block"])("carries normalized %s identity through rehydration into the exact-call oracle", name => {
     // The Rust normalization calibration asserts these exact fixture bytes.
     const fixture = JSON.parse(readFileSync(new URL("./fixtures/native-completion/terminal-tool-carrier.json", import.meta.url), "utf8")) as {
       cases: Array<{ name: string; normalizedPayload: Row }>;
@@ -66,7 +66,7 @@ describe("native completion independent oracle", () => {
     const started = rehydrateRunnerdItemNotification(normalized, "thread", "turn");
     expect(started.item).toMatchObject({ id: "terminal-call", type: "tool_call", name });
     const completed = rehydrateRunnerdItemNotification({ provider: "codex", itemId: "terminal-call", kind: "tool_result", status: "completed", channel: "detail", text: null }, "thread", "turn");
-    const value = sample(name === "paperclip_block", true);
+    const value = sample(name === "wardmote_block", true);
     payload(value, 0).item = started.item;
     payload(value, 2).item = completed.item;
     expect(gradeNativeCompletion(value).passed).toBe(true);

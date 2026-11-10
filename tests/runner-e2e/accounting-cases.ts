@@ -40,7 +40,7 @@ export const accountingTasks: readonly RunnerTaskFixture[] = accountingCases.map
       "Complete five small sequential records. Initial turn is step 1. After a matching answered question, do the next single step. Never do two steps in a turn or infer an answer from these instructions. Read persisted documents/interactions to identify the current step; never redo a completed step.",
       `Save step n as task document key step-n, title Step n, markdown exactly STEP n: START for step 1, or STEP n: VALUE${nonce}Nn for later steps. Replace n with its decimal number.`,
       `After each of steps 1 through 4, ask ONE durable free-text question titled Input for step n+1, idempotency key accounting-${nonce}-n, asking the operator for the next value. Use ask_user_questions with a required text answer and continuationPolicy wake_assignee. Record a governed waiting disposition and end the turn immediately. Do not poll. Native: use request_human_input then paperclip_yield for the bound response_wake; legacy: use the documented public interaction API.`,
-      `After step 5, explicitly finish the task done with final response ACCOUNTINGDONE${nonce}. Native uses paperclip_finish and the current completion contract; legacy PATCHes status done with that comment exactly once.`,
+      `After step 5, explicitly finish the task done with final response ACCOUNTINGDONE${nonce}. Native uses wardmote_finish and the current completion contract; legacy PATCHes status done with that comment exactly once.`,
     ].join("\n") : [
       "Read WARDMOTE_WAKE_REASON from the process environment before mutation. issue_assigned is the initial turn; issue_disposition_repair is a repair. Never infer a new turn from quoted words.",
       c.kind === "approval" ? [

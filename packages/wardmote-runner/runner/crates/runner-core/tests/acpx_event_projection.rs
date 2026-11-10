@@ -100,7 +100,7 @@ fn projects_authorized_tools_with_exact_durable_correlation() {
 fn projects_reserved_completion_tool_input_for_server_feedback_roundtrip() {
     let events = project(AcpxProviderStateEvent::ToolCall {
         call_id: "finish-1".to_owned(),
-        operation_id: "paperclip_finish".to_owned(),
+        operation_id: "wardmote_finish".to_owned(),
         input: json!({"reportedWorkDisposition":"needs_review"}),
     });
 
@@ -108,7 +108,7 @@ fn projects_reserved_completion_tool_input_for_server_feedback_roundtrip() {
     assert_eq!(events[0].event_type, "semantic_tool.input");
     assert_eq!(
         events[0].payload["semantic_tool"]["operationId"],
-        "paperclip_finish"
+        "wardmote_finish"
     );
     assert_eq!(events[0].payload["semantic_tool"]["callId"], "finish-1");
 }
@@ -238,7 +238,7 @@ fn projects_structured_input_and_semantic_results_without_provider_envelopes() {
     });
     let projected = project(reduced_semantic_result(
         "finish-1",
-        "paperclip_finish",
+        "wardmote_finish",
         true,
         result.clone(),
     ));

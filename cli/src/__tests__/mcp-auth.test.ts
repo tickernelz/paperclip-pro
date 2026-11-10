@@ -54,7 +54,7 @@ describe("MCP protected credential transport", () => {
   });
   it("does not expose upstream response text in protocol errors or retry writes", async () => {
     const fetcher = vi.fn(async () => new Response("private-upstream-token", { status: 200 })); vi.stubGlobal("fetch", fetcher);
-    await expect(mcpRpc(resource, "private-access", "tools/call", { name: "paperclip_create_task" })).rejects.toThrow("invalid response");
+    await expect(mcpRpc(resource, "private-access", "tools/call", { name: "wardmote_create_task" })).rejects.toThrow("invalid response");
     expect(fetcher).toHaveBeenCalledTimes(1);
   });
   it("releases the refresh mutex after failed work", async () => {

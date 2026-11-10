@@ -173,10 +173,10 @@ export function createPublicMcpTransfers(db: Db, oauth: PublicMcpOAuth, api: Api
 }
 export type PublicMcpTransfers = ReturnType<typeof createPublicMcpTransfers>;
 export const fileTransferCapabilities: Capability[] = [
-  { name: "paperclip_get_upload_url", write: true, ephemeral: true,
+  { name: "wardmote_get_upload_url", write: true, ephemeral: true,
     description: "Get a temporary URL to attach a file, video or document to a task. Compute its size and SHA-256 locally, then PUT the exact bytes to the URL. A successful upload saves the attachment immediately and returns its ID. Reuse requestId after a lost response. Requires host file/HTTP tools; if unavailable explain the manual upload step.",
     schema: uploadSchema, run: async (p, a, _api, _origin, transfers) => { if (!transfers) throw unavailable(); return transfers.getUploadUrl(p, a); } },
-  { name: "paperclip_get_download_url", ephemeral: true,
-    description: "Get a ten-minute download URL for one task attachment from paperclip_list_deliverables. Use your host's HTTP/file tools to download it. This temporary credential does not grant access to other files.",
+  { name: "wardmote_get_download_url", ephemeral: true,
+    description: "Get a ten-minute download URL for one task attachment from wardmote_list_deliverables. Use your host's HTTP/file tools to download it. This temporary credential does not grant access to other files.",
     schema: z.object({ ...company, attachmentId: z.uuid() }).strict(), run: async (p, a, _api, _origin, transfers) => { if (!transfers) throw unavailable(); return transfers.getDownloadUrl(p, String(a.attachmentId)); } },
 ];

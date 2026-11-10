@@ -198,7 +198,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
                     turn_id,
                     json!({
                         "callId":"call-finish-2",
-                        "operationId":"paperclip_finish",
+                        "operationId":"wardmote_finish",
                         "input":valid_reserved_completion_result(),
                     }),
                 )?;
@@ -562,7 +562,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
                 {
                     let (operation_id, result) = if mode == "turns-reserved-feedback-roundtrip" {
                         (
-                            "paperclip_finish",
+                            "wardmote_finish",
                             json!({
                                 "schema":"paperclip.run_result.v1",
                                 "reportedWorkDisposition":"needs_review",
@@ -576,7 +576,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
                         "turns-reserved-block-terminal" | "turns-invalid-reserved-block-terminal"
                     ) {
                         (
-                            "paperclip_block",
+                            "wardmote_block",
                             json!({
                                 "schema":"paperclip.run_result.v1",
                                 "reportedWorkDisposition":"blocked",
@@ -608,7 +608,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
                         )
                     } else if mode == "turns-reserved-yielded-terminal" {
                         (
-                            "paperclip_finish",
+                            "wardmote_finish",
                             json!({
                                 "schema":"paperclip.run_result.v1",
                                 "reportedWorkDisposition":"yielded",
@@ -632,7 +632,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
                         )
                     } else {
                         (
-                            "paperclip_finish",
+                            "wardmote_finish",
                             json!({
                                 "schema":"paperclip.run_result.v1",
                                 "reportedWorkDisposition":"done",

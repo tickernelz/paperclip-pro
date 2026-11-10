@@ -58,7 +58,7 @@
   "resumedToolResults": [
     {
       "executionId": "call_0",
-      "name": "paperclip_finish",
+      "name": "wardmote_finish",
       "namespace": "paperclip",
       "transport": "mcp",
       "status": "failed",
@@ -67,7 +67,7 @@
     },
     {
       "executionId": "call_0",
-      "name": "paperclip_finish",
+      "name": "wardmote_finish",
       "namespace": "paperclip",
       "transport": "mcp",
       "status": "failed",

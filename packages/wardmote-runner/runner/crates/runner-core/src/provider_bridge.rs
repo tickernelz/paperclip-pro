@@ -39,9 +39,9 @@ const MAX_SETTLED_CALL_IDS: usize = 65_536;
 const REPLAY_FILTER_WORDS: usize = 32_768;
 const ACTIVE_TURN_RECEIPT_LIMIT_MESSAGE: &str =
     "durable provider tool receipt limit reached for the active turn";
-const COMPLETION_INPUT_SCHEMA_HINT: &str = "Invalid paperclip_finish arguments. Required fields: reportedWorkDisposition, summary, completionClaim, evidence, and verification. When reportedWorkDisposition is yielded, continuation must include kind=response_wake or monitor, summary, and idempotencyKey.";
+const COMPLETION_INPUT_SCHEMA_HINT: &str = "Invalid wardmote_finish arguments. Required fields: reportedWorkDisposition, summary, completionClaim, evidence, and verification. When reportedWorkDisposition is yielded, continuation must include kind=response_wake or monitor, summary, and idempotencyKey.";
 const QUESTION_INPUT_SCHEMA_HINT: &str = "Invalid request_human_input arguments. Required fields: idempotencyKey, interactionKind, title, prompt, and continuationPolicy. For questions, use payload.version=1 and a complete payload.questionSet matching the authorized schema. Preserve the supplied question and option IDs.";
-const BLOCK_INPUT_SCHEMA_HINT: &str = "Invalid paperclip_block arguments. Required fields: reportedWorkDisposition=blocked, summary, completionClaim, evidence, verification, and blocker. blocker must include reasonCode, owner, unblockAction, and scope.";
+const BLOCK_INPUT_SCHEMA_HINT: &str = "Invalid wardmote_block arguments. Required fields: reportedWorkDisposition=blocked, summary, completionClaim, evidence, verification, and blocker. blocker must include reasonCode, owner, unblockAction, and scope.";
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
@@ -241,8 +241,8 @@ impl ProviderBridgeError {
 
     fn input_schema_validation(operation_id: &str) -> Self {
         let safe_provider_message = match operation_id {
-            "paperclip_finish" => Some(COMPLETION_INPUT_SCHEMA_HINT),
-            "paperclip_block" => Some(BLOCK_INPUT_SCHEMA_HINT),
+            "wardmote_finish" => Some(COMPLETION_INPUT_SCHEMA_HINT),
+            "wardmote_block" => Some(BLOCK_INPUT_SCHEMA_HINT),
             "request_human_input" => Some(QUESTION_INPUT_SCHEMA_HINT),
             _ => None,
         };
@@ -661,13 +661,11 @@ impl ProviderToolBridge {
             return Err(ProviderBridgeError::input_schema_validation(&operation_id)
                 .with_schema_locations(&validator, &input));
         }
-        if matches!(
-            operation_id.as_str(),
-            "paperclip_finish" | "paperclip_block"
-        ) && input
-            .get("summary")
-            .and_then(Value::as_str)
-            .is_some_and(|summary| summary.chars().count() > MAX_COMPLETION_SUMMARY_CHARS)
+        if matches!(operation_id.as_str(), "wardmote_finish" | "wardmote_block")
+            && input
+                .get("summary")
+                .and_then(Value::as_str)
+                .is_some_and(|summary| summary.chars().count() > MAX_COMPLETION_SUMMARY_CHARS)
         {
             return Err(ProviderBridgeError::input_schema_validation(&operation_id));
         }
@@ -1503,7 +1501,7 @@ mod tests {
 
     fn completion_bridge() -> ProviderToolBridge {
         let operation = AuthorizedTool {
-            operation_id: "paperclip_finish".to_owned(),
+            operation_id: "wardmote_finish".to_owned(),
             version: 1,
             description: "Report the completed turn.".to_owned(),
             input_schema: json!({
@@ -1532,7 +1530,7 @@ mod tests {
         within_limit
             .begin_call(
                 "call-within-limit".to_owned(),
-                "paperclip_finish".to_owned(),
+                "wardmote_finish".to_owned(),
                 json!({"summary": "🛰".repeat(MAX_COMPLETION_SUMMARY_CHARS)}),
             )
             .unwrap();
@@ -1541,7 +1539,7 @@ mod tests {
         let error = over_limit
             .begin_call(
                 "call-over-limit".to_owned(),
-                "paperclip_finish".to_owned(),
+                "wardmote_finish".to_owned(),
                 json!({"summary": "🛰".repeat(MAX_COMPLETION_SUMMARY_CHARS + 1)}),
             )
             .expect_err("an over-limit completion summary must fail before durable emission");
@@ -1558,7 +1556,7 @@ mod tests {
         let error = bridge
             .begin_call(
                 "bad-summary".to_owned(),
-                "paperclip_finish".to_owned(),
+                "wardmote_finish".to_owned(),
                 json!({"summary": {"PRIVATE_FIELD": "PRIVATE_VALUE"}}),
             )
             .unwrap_err();
@@ -1570,7 +1568,7 @@ mod tests {
         bridge
             .begin_call(
                 "corrected-summary".to_owned(),
-                "paperclip_finish".to_owned(),
+                "wardmote_finish".to_owned(),
                 json!({"summary": "Saved the requested output."}),
             )
             .unwrap();
@@ -1582,7 +1580,7 @@ mod tests {
         let error = bridge
             .begin_call(
                 "missing-summary".to_owned(),
-                "paperclip_finish".to_owned(),
+                "wardmote_finish".to_owned(),
                 json!({}),
             )
             .unwrap_err();
@@ -1596,7 +1594,7 @@ mod tests {
             "c": {"type": "string"}, "d": {"type": "string"},
         }});
         let validator = jsonschema::validator_for(&schema).unwrap();
-        let error = ProviderBridgeError::input_schema_validation("paperclip_finish")
+        let error = ProviderBridgeError::input_schema_validation("wardmote_finish")
             .with_schema_locations(&validator, &json!({"a": 1, "b": 2, "c": 3, "d": 4}));
         assert_eq!(
             error

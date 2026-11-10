@@ -94,7 +94,7 @@ export function canonicalRunnerToolName(name: string): string {
   if (trimmed === PRP_COMPLETION_TOOL_NAME || trimmed === PRP_BLOCK_TOOL_NAME) {
     return trimmed;
   }
-  for (const prefix of ["paperclip__", "paperclip_", "paperclip."]) {
+  for (const prefix of ["wardmote__", "wardmote_", "wardmote."]) {
     if (trimmed.startsWith(prefix)) return trimmed.slice(prefix.length);
   }
   return trimmed;

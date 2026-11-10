@@ -568,9 +568,9 @@ describe("runner E2E run observations", () => {
       taskId: "hello-complete",
       expectedMarker,
       finalRunMessage:
-        "I'll complete this deterministic hello task by calling paperclip_finish once.",
+        "I'll complete this deterministic hello task by calling wardmote_finish once.",
       allAgentMessages:
-        "I'll complete this deterministic hello task by calling paperclip_finish once.",
+        "I'll complete this deterministic hello task by calling wardmote_finish once.",
       semanticSummary: expectedMarker,
       issueStatus: "done",
       runStatuses: ["succeeded"],

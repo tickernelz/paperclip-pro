@@ -23,7 +23,7 @@ and skill compatibility still gate recovery. An MCP-only assignment change can
 resume only when the selected harness explicitly supports refreshing tools.
 
 Compact continuation messages include the active completion revision and criterion
-IDs plus a reminder to obtain an accepted `paperclip_finish` or `paperclip_block`
+IDs plus a reminder to obtain an accepted `wardmote_finish` or `wardmote_block`
 result for this turn. Reports from earlier turns do not finish the new turn.
 Provider final text alone remains insufficient; governed waits and strict native
 completion validation keep their existing behavior. This reminder changes the

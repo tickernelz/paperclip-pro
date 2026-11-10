@@ -48,7 +48,7 @@ const DEFAULT_MAX_BODY_BYTES = 1_048_576;
 export function canonicalOpenCodeMcpToolName(name: string): string {
   const trimmed = name.trim();
   if (trimmed === PRP_COMPLETION_TOOL_NAME || trimmed === PRP_BLOCK_TOOL_NAME) return trimmed;
-  for (const prefix of ["paperclip__", "paperclip_", "paperclip."]) {
+  for (const prefix of ["wardmote__", "wardmote_", "wardmote."]) {
     if (trimmed.startsWith(prefix)) return trimmed.slice(prefix.length);
   }
   return trimmed;

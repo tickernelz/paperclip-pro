@@ -230,8 +230,8 @@ describe("completion tool feed visibility", () => {
   it("keeps completion events inspectable but hides both tool representations from live and settled feed activity", () => {
     for (const running of [true, false]) {
       const entries: TranscriptEntry[] = [
-        { kind: "tool_call", ts: TS, toolUseId: "legacy-finish", name: "paperclip_finish", input: {} },
-        ...["paperclip_finish", "search_tasks"].map((name) => ({
+        { kind: "tool_call", ts: TS, toolUseId: "legacy-finish", name: "wardmote_finish", input: {} },
+        ...["wardmote_finish", "search_tasks"].map((name) => ({
           kind: "provider_activity" as const, ts: TS, family: "tool_execution" as const,
           eventType: running ? "tool.execution.started" : "tool.execution.completed",
           status: running ? "running" as const : "completed" as const,
@@ -246,7 +246,7 @@ describe("completion tool feed visibility", () => {
       expect(parsed).toHaveLength(4);
       const activity = paperclipRunnerActivityItems(parsed);
       expect(activity).toHaveLength(2);
-      expect(JSON.stringify(activity)).not.toContain("paperclip_finish");
+      expect(JSON.stringify(activity)).not.toContain("wardmote_finish");
       expect(JSON.stringify(activity)).toContain("search_tasks");
       expect(JSON.stringify(activity)).toContain("Repository is not trusted");
       expect(paperclipRunnerTimelineItems(parsed)).toEqual(activity);
@@ -1082,7 +1082,7 @@ describe("buildActivityPhases provider summaries", () => {
       providerTool("history", "get_task_history", "read", "paperclip"),
       providerTool("tasks", "search_tasks", "search", "paperclip"),
       providerTool("progress", "report_progress", "edit", "paperclip"),
-      providerTool("block", "paperclip_block", "edit", "paperclip"),
+      providerTool("block", "wardmote_block", "edit", "paperclip"),
     ];
     expect(buildActivityPhases(items, false, "turn")[0]?.summary).toBe(
       "Searched available tools 6 times, read from Wardmote 3 times, used Wardmote 3 times",
@@ -2362,7 +2362,7 @@ describe("paperclip runner semantic channels", () => {
         id: "finish",
         kind: "tool",
         name: "Paperclip_finish",
-        rawName: "paperclip_finish",
+        rawName: "wardmote_finish",
         status: "completed",
       },
       {

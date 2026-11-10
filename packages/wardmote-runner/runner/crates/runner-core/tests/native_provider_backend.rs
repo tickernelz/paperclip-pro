@@ -945,7 +945,7 @@ fn routes_reserved_completion_feedback_with_the_full_controller_catalog() {
     let mode = "turns-reserved-feedback-roundtrip";
     let config = acpx_config(&directory, mode);
     let mut executor = NativeProviderCommandExecutor::with_runner_config(&directory, &config);
-    let operations = ["paperclip_block", "paperclip_finish"]
+    let operations = ["wardmote_block", "wardmote_finish"]
         .map(|name| AuthorizedTool {
             operation_id: name.to_owned(),
             version: 1,
@@ -986,7 +986,7 @@ fn routes_reserved_completion_feedback_with_the_full_controller_catalog() {
         .any(|event| event.event_type == "turn.completed"));
     executor.acknowledge_events(events.len()).unwrap();
     executor.execute(&command(4, "semantic_tool.result", json!({
-        "callId":"call-finish", "operationId":"paperclip_finish", "isError":true,
+        "callId":"call-finish", "operationId":"wardmote_finish", "isError":true,
         "result":{"success":false,"contentItems":[{"type":"inputText","text":"Name the reviewer and decision."}]},
     }))).unwrap();
     // The sidecar emits this correction only after receiving the exact reason.
@@ -1004,11 +1004,11 @@ fn routes_reserved_completion_feedback_with_the_full_controller_catalog() {
         .any(|event| event.event_type == "turn.completed"));
     executor.acknowledge_events(events.len()).unwrap();
     assert!(executor.execute(&command(5, "semantic_tool.result", json!({
-        "callId":"call-finish-2", "operationId":"paperclip_finish", "isError":false,
+        "callId":"call-finish-2", "operationId":"wardmote_finish", "isError":false,
         "result":{"success":true,"contentItems":[{"type":"inputText","text":"Accepted"}],"unchecked":true},
     }))).is_err(), "Unexpected fields must not weaken the acknowledgement contract");
     executor.execute(&command(6, "semantic_tool.result", json!({
-        "callId":"call-finish-2", "operationId":"paperclip_finish", "isError":false,
+        "callId":"call-finish-2", "operationId":"wardmote_finish", "isError":false,
         "result":{"success":true,"contentItems":[{"type":"inputText","text":"Completion report accepted."}]},
     }))).unwrap();
     let events = executor.poll_events().unwrap();

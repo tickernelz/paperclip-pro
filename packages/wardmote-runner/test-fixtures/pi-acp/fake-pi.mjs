@@ -107,8 +107,8 @@ createInterface({ input: process.stdin }).on("line", (line) => {
     if (["narration-final", "tool-only", "empty-final"].includes(request.message)) {
       output({ type: "message_update", assistantMessageEvent: { type: "text_delta", delta: "Calling finish." } });
       endMessage("toolUse", {});
-      const args = {}; output({ type: "tool_execution_start", toolCallId: "finish", toolName: "paperclip_finish", args });
-      output({ type: "tool_execution_end", toolCallId: "finish", toolName: "paperclip_finish", result: { content: [{ type: "text", text: "accepted" }] } });
+      const args = {}; output({ type: "tool_execution_start", toolCallId: "finish", toolName: "wardmote_finish", args });
+      output({ type: "tool_execution_end", toolCallId: "finish", toolName: "wardmote_finish", result: { content: [{ type: "text", text: "accepted" }] } });
       if (request.message === "tool-only") { output({ type: "turn_end" }); active = false; output({ type: "agent_settled" }); }
       else finish(request.message === "empty-final" ? "" : "EXACT_MARKER");
       return;

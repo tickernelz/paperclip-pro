@@ -400,7 +400,7 @@ describe("runner E2E catalog", () => {
     ]) {
       const terminalTextInstruction = prompt?.match(/then emit (?:exactly|only)/)?.[0];
       expect(terminalTextInstruction).toBeDefined();
-      expect(prompt!.indexOf("paperclip_finish exactly once")).toBeLessThan(
+      expect(prompt!.indexOf("wardmote_finish exactly once")).toBeLessThan(
         prompt!.indexOf(terminalTextInstruction!),
       );
       expect(prompt).toContain("Wait for that tool call to succeed");
@@ -423,14 +423,14 @@ describe("runner E2E catalog", () => {
       .find((task) => task.id === "hello-complete")
       ?.buildPrompt("nonce");
     expect(breadthHello).toContain(
-      "Your first response action must be the paperclip_finish tool call",
+      "Your first response action must be the wardmote_finish tool call",
     );
     expect(breadthHello).toContain(
       "Do not emit any assistant text, acknowledgement, or preamble before calling it",
     );
 
     const nativeAsk = ask?.buildPrompt("nonce");
-    expect(nativeAsk).toContain("paperclip_finish must be your only tool call");
+    expect(nativeAsk).toContain("wardmote_finish must be your only tool call");
     expect(nativeAsk).toContain(
       "never call report_progress or any other tool before or after it",
     );
@@ -593,7 +593,7 @@ describe("runner E2E catalog", () => {
       "identifies the exact revised Plan revision used as the confirmation target as accepted",
     );
     expect(task!.buildPrompt("nonce")).toContain(
-      "After that verification succeeds, your immediate next action must be the paperclip_finish tool call",
+      "After that verification succeeds, your immediate next action must be the wardmote_finish tool call",
     );
     expect(task!.buildPrompt("nonce")).not.toContain(
       "trust that inline acceptance",

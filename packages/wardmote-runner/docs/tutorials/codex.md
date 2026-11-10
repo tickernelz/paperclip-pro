@@ -108,7 +108,7 @@ Confirm:
 - `instructionSources` is empty;
 - all three instruction-policy values are `false`;
 - `modelInputKinds` contains only `text`;
-- the semantic tools are `paperclip_finish` and `paperclip_block`;
+- the semantic tools are `wardmote_finish` and `wardmote_block`;
 - no environment **value** is present;
 - the requested permission profile denies root and host-home access, exposes
   read-only minimal runtime files, grants write access to the assigned

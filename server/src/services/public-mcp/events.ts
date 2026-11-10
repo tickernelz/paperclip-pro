@@ -70,7 +70,7 @@ export function createPublicMcpEvents(db: Db, oauth: PublicMcpOAuth, api: ApiDis
     const response = await fetcher(cloudOrigin + "/mcp/wardmote", {
       method: "POST", redirect: "error", signal: AbortSignal.timeout(10_000),
       headers: { Authorization: `Bearer ${authority.token}`, "Content-Type": "application/json", Accept: "application/json, text/event-stream" },
-      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/call", params: { name: "paperclip_connection", arguments: {} } }),
+      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/call", params: { name: "wardmote_connection", arguments: {} } }),
     });
     if (!response.ok) { await response.body?.cancel(); throw new McpEventError(-32602, "Hosted connection access is unavailable."); }
     const body = await boundedJson(response);
@@ -344,7 +344,7 @@ export function createPublicMcpEvents(db: Db, oauth: PublicMcpOAuth, api: ApiDis
   })().finally(() => { running = null; }));
   let timer: NodeJS.Timeout | undefined;
   return { subscribe, unsubscribe, tick,
-    definitions: options.enableDotRunner ? [{ name: names[4], description: "The bound Dot mailbox changed. Drain paperclip_dot_inbox, read and accept current work. Duplicate/out-of-order events do not imply new assignments. Readiness challenges require paperclip_dot_confirm_event.", delivery: ["webhook"],
+    definitions: options.enableDotRunner ? [{ name: names[4], description: "The bound Dot mailbox changed. Drain wardmote_dot_inbox, read and accept current work. Duplicate/out-of-order events do not imply new assignments. Readiness challenges require wardmote_dot_confirm_event.", delivery: ["webhook"],
       inputSchema: z.toJSONSchema(z.object({ companyId: z.uuid(), bindingId: z.uuid() }).strict()),
       payloadSchema: z.toJSONSchema(z.object({ companyId: z.uuid(), bindingId: z.uuid(), bindingGeneration: z.number().int(), mailboxItemId: z.number().int(), kind: z.string() }).passthrough()),
     }] : [...publicMcpEventDefinitions, ...(options.enableDotPrototype ? [dotEventDefinition] : [])],
