@@ -1628,7 +1628,7 @@ export function routineService(
           name: input.name,
           provider: input.provider,
           status: "active",
-          managedMode: "paperclip_managed",
+          managedMode: "wardmote_managed",
           externalRef: prepared.externalRef,
           providerMetadata: null,
           latestVersion: 1,

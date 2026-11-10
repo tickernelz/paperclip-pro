@@ -2547,7 +2547,7 @@ describe("AgentConfigForm environment selector", () => {
       description: null,
       status: "active",
       provider: "local_encrypted",
-      managedMode: "paperclip_managed",
+      managedMode: "wardmote_managed",
       providerConfigId: null,
       providerMetadata: null,
       usageGuidance: null,

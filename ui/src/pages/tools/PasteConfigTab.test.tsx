@@ -91,7 +91,7 @@ function connectResult(overrides: Partial<ConnectToolAppResult> = {}): ConnectTo
       ownership: "customer",
       transport: "mcp_remote",
       authKind: "none",
-      credentialSource: "paperclip_vault",
+      credentialSource: "wardmote_vault",
       credentialPolicy: "shared",
       status: "draft",
       enabled: false,

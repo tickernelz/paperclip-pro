@@ -752,7 +752,7 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
     const choice = { id: "conn-archive", applicationId: "app-archive", name: "Archive", status: "active" as const, enabled: true };
     listApplicationsMock.mockResolvedValue({ applications: [{ id: choice.applicationId, name: "Archive", applicationKey: "archive", type: "mcp_http" }] });
     listConnectionsMock.mockResolvedValue({ connections: [{
-      ...choice, companyId: "company-1", transport: "mcp_remote", authKind: "none", credentialPolicy: "shared", credentialSource: "paperclip_vault",
+      ...choice, companyId: "company-1", transport: "mcp_remote", authKind: "none", credentialPolicy: "shared", credentialSource: "wardmote_vault",
       config: source === "config-url" ? { url: endpoint } : {},
       transportConfig: source === "transport-url" ? { url: endpoint } : source === "transport-serverUrl" ? { serverUrl: endpoint } : {},
     }] });
@@ -775,13 +775,13 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
     const choice = { id: "conn-archive", applicationId: "app-archive", name: "Archive", status: "active" as const, enabled: true };
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     listApplicationsMock.mockResolvedValue({ applications: [{ id: choice.applicationId, name: "Archive", applicationKey: "archive", type: "mcp_http" }] });
-    listConnectionsMock.mockResolvedValue({ connections: [{ ...choice, companyId: "company-1", transport: "mcp_remote", authKind: "none", credentialPolicy: "shared", credentialSource: "paperclip_vault", config: { url: "https://archive.example.test/mcp" } }] });
+    listConnectionsMock.mockResolvedValue({ connections: [{ ...choice, companyId: "company-1", transport: "mcp_remote", authKind: "none", credentialPolicy: "shared", credentialSource: "wardmote_vault", config: { url: "https://archive.example.test/mcp" } }] });
     getConnectionMock.mockImplementation(async () => (await listConnectionsMock()).connections[0]);
     await render(client, false, <ConnectionSetupFlow host="dialog" configuredConnection={choice} requestedAgentId="agent-1" />);
     const input = container.querySelector<HTMLInputElement>('input[aria-label="MCP server URL"]');
     expect(input?.value).toBe("https://archive.example.test/mcp");
     await act(async () => setInputValue(input!, "https://edited.example.test/mcp"));
-    listConnectionsMock.mockResolvedValue({ connections: [{ ...choice, companyId: "company-1", transport: "mcp_remote", authKind: "none", credentialPolicy: "shared", credentialSource: "paperclip_vault", config: { url: "https://refreshed.example.test/mcp" } }] });
+    listConnectionsMock.mockResolvedValue({ connections: [{ ...choice, companyId: "company-1", transport: "mcp_remote", authKind: "none", credentialPolicy: "shared", credentialSource: "wardmote_vault", config: { url: "https://refreshed.example.test/mcp" } }] });
     await act(async () => { await client.invalidateQueries(); });
     await flushReact();
     expect(container.querySelector<HTMLInputElement>('input[aria-label="MCP server URL"]')?.value).toBe("https://edited.example.test/mcp");
@@ -1564,7 +1564,7 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
       galleryKey: "posthog",
       connectionMethodKey: "mcp-api-key",
       name: "PostHog for the organization",
-      credentialSource: "paperclip_vault",
+      credentialSource: "wardmote_vault",
       credentialValues: { "credentials.authorization": "phx_test-key" },
       configValues: {
         readOnly: false,
@@ -1841,7 +1841,7 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
       galleryKey: "notion",
       connectionMethodKey: "mcp-oauth",
       name: "Notion for the organization",
-      credentialSource: "paperclip_vault",
+      credentialSource: "wardmote_vault",
       credentialValues: {},
       configValues: undefined,
       applicationId: undefined,
@@ -2566,7 +2566,7 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
       galleryKey: "notion",
       connectionMethodKey: "mcp-oauth",
       name: "Notion for the organization",
-      credentialSource: "paperclip_vault",
+      credentialSource: "wardmote_vault",
       credentialValues: {},
       configValues: undefined,
       applicationId: "app-notion",

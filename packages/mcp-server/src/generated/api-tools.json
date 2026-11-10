@@ -2288,7 +2288,7 @@
           "credentialSource": {
             "type": "string",
             "enum": [
-              "paperclip_vault",
+              "wardmote_vault",
               "vercel_connect"
             ]
           },

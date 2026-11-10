@@ -7212,7 +7212,7 @@ export function toolAccessService(
     if (
       response.status === 401 &&
       connection.authKind === "oauth" &&
-      connection.credentialSource === "paperclip_vault"
+      connection.credentialSource === "wardmote_vault"
     ) {
       headers = {
         ...projectedConnectionHeaders(connection),
@@ -11339,7 +11339,7 @@ export function toolAccessService(
       typeof oauth.tokenUrl === "string" ? oauth.tokenUrl : null;
     if (
       connection.authKind !== "oauth" ||
-      connection.credentialSource !== "paperclip_vault" ||
+      connection.credentialSource !== "wardmote_vault" ||
       !oauthTokenUrl ||
       !oauthProvider
     ) {
@@ -12381,7 +12381,7 @@ export function toolAccessService(
     }
     const transport = method?.transport ?? "mcp_remote";
     const credentialSource: ToolConnectionCredentialSource =
-      input.credentialSource ?? "paperclip_vault";
+      input.credentialSource ?? "wardmote_vault";
     if (
       retainedConnection &&
       retainedConnection.credentialSource !== credentialSource

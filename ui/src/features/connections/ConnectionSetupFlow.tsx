@@ -517,7 +517,7 @@ export function ConnectionSetupFlow(props: ConnectionSetupFlowProps = {}) {
     if (!memory.loaded) return <p className="p-6 text-sm text-ink-3">Loading connection settings…</p>;
     if (!memory.enabled) return <p role="status" className="p-6 text-sm text-ink-3">Memory connectors are not finished yet and are off on this instance.</p>;
   }
-  if (!props.byoOnly && (props.credentialSource ?? "paperclip_vault") === "paperclip_vault"
+  if (!props.byoOnly && (props.credentialSource ?? "wardmote_vault") === "wardmote_vault"
     && isRemoteMcpConnectorId(provider) && (!method || isRemoteMcpConnectorMethod(provider, method))) {
     const target = findAggregatorApp(provider, searchParams.get("targetToolkit"));
     return <RemoteMcpProductionSetup key={`${interactionId || "page"}:${provider}`} {...props} upstreamServiceName={props.upstreamServiceName ?? target?.name} interactionId={interactionId} providerId={provider} connection={existing.data} />;
@@ -530,7 +530,7 @@ function StandardConnectionSetupFlow({
   connectionSettings,
   additionalSettingsValid = true,
   byoOnly = false,
-  credentialSource = "paperclip_vault",
+  credentialSource = "wardmote_vault",
   host = "page",
   serviceSlug,
   requestedAgentId,
@@ -582,7 +582,7 @@ function StandardConnectionSetupFlow({
       : null;
   const vercelConnectMode = credentialSource === "vercel_connect";
   const directOAuthCandidate = serviceSlug ?? sourceSlug;
-  const directOAuthSource = credentialSource === "paperclip_vault"
+  const directOAuthSource = credentialSource === "wardmote_vault"
     && isMcpDirectOAuthConnectSlug(directOAuthCandidate)
     ? directOAuthCandidate
     : null;
@@ -853,7 +853,7 @@ function StandardConnectionSetupFlow({
    * definition — the generic path stays available either way.
    */
   const useMatchedGalleryEntry = (picked: AppDefinition) => {
-    if (host === "page" && !connectionIntentId && credentialSource === "paperclip_vault" && isRemoteMcpConnectorId(picked.slug)) {
+    if (host === "page" && !connectionIntentId && credentialSource === "wardmote_vault" && isRemoteMcpConnectorId(picked.slug)) {
       navigate(`/apps/connect?source=${picked.slug}`);
       return;
     }
@@ -871,7 +871,7 @@ function StandardConnectionSetupFlow({
       navigate(withConnectionIntent("/apps/connect?source=zapier", connectionIntentId));
       return;
     }
-    if (credentialSource === "paperclip_vault" && canUseAutomaticOAuthFastPath(picked)) {
+    if (credentialSource === "wardmote_vault" && canUseAutomaticOAuthFastPath(picked)) {
       navigate(appSourceConnectHref(picked.slug, connectionIntentId));
       return;
     }
@@ -1072,8 +1072,8 @@ function StandardConnectionSetupFlow({
   const entryAutomaticOAuthMethod = selectedSetupMethod && connectionMethodSupportsAutomaticOAuth(selectedSetupMethod)
     ? selectedSetupMethod
     : automaticOAuthMethod(entry);
-  const automaticOAuthEntry = credentialSource === "paperclip_vault" && entryAutomaticOAuthMethod ? entry : null;
-  const directOAuthEntry = credentialSource === "paperclip_vault" && canUseAutomaticOAuthFastPath(entry) ? entry : null;
+  const automaticOAuthEntry = credentialSource === "wardmote_vault" && entryAutomaticOAuthMethod ? entry : null;
+  const directOAuthEntry = credentialSource === "wardmote_vault" && canUseAutomaticOAuthFastPath(entry) ? entry : null;
   const directOAuthLookupPending = Boolean(directOAuthSource) && (
     !applicationsQuery.isFetchedAfterMount || !connectionsQuery.isFetchedAfterMount
   );
@@ -1181,7 +1181,7 @@ function StandardConnectionSetupFlow({
           ...(connectionMethodKey ? { connectionMethodKey } : {}),
           name: connectionName,
           credentialSource,
-          ...(credentialSource === "paperclip_vault" ? { credentialValues: credentials } : {}),
+          ...(credentialSource === "wardmote_vault" ? { credentialValues: credentials } : {}),
           ...(credentialSource === "vercel_connect"
             ? { vercelConnect: { connector: vercelConnector.trim() } }
             : {}),
@@ -1384,7 +1384,7 @@ function StandardConnectionSetupFlow({
       : candidate.key === requestedMethodKey);
     const initialMethod = explicitMethod ?? recommendedSetupConnectionMethod(methods);
     const method = methods.length === 1 ? methods[0]! : null;
-    const automaticOAuth = credentialSource === "paperclip_vault" && Boolean(automaticOAuthMethod(requestedEntry));
+    const automaticOAuth = credentialSource === "wardmote_vault" && Boolean(automaticOAuthMethod(requestedEntry));
     const vercelUnavailable = isVercelConnectUnavailable({
       credentialSource,
       available: galleryQuery.data.credentialSources?.vercelConnect.available === true,

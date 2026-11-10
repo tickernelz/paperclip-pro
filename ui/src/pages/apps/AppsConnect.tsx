@@ -16,7 +16,7 @@ import { consumeSkillSourceReturn, skillSourceReturnPath } from "@/lib/skill-sou
 export { AccessStep, OAuthConnectStateScreen, type OAuthConnectPhase } from "@/features/connections/ConnectionSetupFlow";
 
 /** Full-page host for the same setup used by inline connection requests. */
-export function AppsConnect({ byoOnly = false, credentialSource = "paperclip_vault" }: {
+export function AppsConnect({ byoOnly = false, credentialSource = "wardmote_vault" }: {
   byoOnly?: boolean;
   credentialSource?: ToolConnectionCredentialSource;
 } = {}) {
@@ -33,7 +33,7 @@ export function AppsConnect({ byoOnly = false, credentialSource = "paperclip_vau
   const toolkit = searchParams.get("targetToolkit");
   const reuseComposio = source === "composio" && Boolean(toolkit && findComposioCatalogApp(toolkit))
     && searchParams.get("new") !== "1" && !searchParams.get("resume") && !searchParams.get("reconnect")
-    && !byoOnly && credentialSource === "paperclip_vault";
+    && !byoOnly && credentialSource === "wardmote_vault";
   const saved = useQuery({ queryKey: queryKeys.tools.connections(selectedCompanyId ?? "__none__"),
     queryFn: () => toolsApi.listConnections(selectedCompanyId!), enabled: reuseComposio && Boolean(selectedCompanyId), retry: false });
   const hasSavedComposio = reuseComposio && saved.data?.connections.some(connection =>

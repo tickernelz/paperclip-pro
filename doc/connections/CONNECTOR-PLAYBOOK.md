@@ -242,7 +242,7 @@ chooses all five axes below.
 | Transport | `mcp_remote`, `local_stdio`, `rest_api` | How does Paperclip reach actions? |
 | Authentication | `oauth`, `api_key`, `none` | How does the provider authorize requests? |
 | OAuth client ownership | `dcr`, `customer`, `platform_shared`, `platform_provisioned` | Who supplies and controls the OAuth client registration? |
-| Credential source | `paperclip_vault`, reviewed `vercel_connect` | Where does durable provider credential material live? |
+| Credential source | `wardmote_vault`, reviewed `vercel_connect` | Where does durable provider credential material live? |
 | Grant identity | `organization`, `user`, `agent` | Does the credential act for the company, one person, or one dedicated agent? |
 
 These axes produce combinations such as:

@@ -112,7 +112,7 @@ describe("OpenWA gateway administration from the board (embedded Postgres + fake
     for (const [label, value] of keys) {
       const secret = await secretService(db).create(
         companyId,
-        { name: "openwa-" + label + "-" + endpoint.id.slice(0, 8), provider: "local_encrypted", managedMode: "paperclip_managed", value },
+        { name: "openwa-" + label + "-" + endpoint.id.slice(0, 8), provider: "local_encrypted", managedMode: "wardmote_managed", value },
         { userId },
       );
       const ref = { secretId: secret.id, versionSelector: "latest" as const, configPath: "credentials." + label, required: label === "apiKey", label, projectionClass: "unclassified" as const };

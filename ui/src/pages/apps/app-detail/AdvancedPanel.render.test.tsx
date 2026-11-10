@@ -60,7 +60,7 @@ describe("DangerZone", () => {
           ownership: "customer",
           transport: "rest_api",
           authKind: "api_key",
-          credentialSource: "paperclip_vault",
+          credentialSource: "wardmote_vault",
           credentialPolicy: "shared",
           transportConfig: {},
           config: { sourceTemplateKey: "anthropic", connectionMethodKey: "api-key" },

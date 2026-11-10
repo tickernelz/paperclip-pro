@@ -238,7 +238,7 @@ describeEmbeddedPostgres("tool OAuth legacy backfill", () => {
       provider: "aws_secrets_manager",
       providerConfigId: awsVault.id,
       status: "active",
-      managedMode: "paperclip_managed",
+      managedMode: "wardmote_managed",
       externalRef,
       latestVersion: 1,
       createdByUserId: "test",

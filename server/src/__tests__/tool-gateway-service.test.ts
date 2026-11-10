@@ -1584,7 +1584,7 @@ describeEmbeddedPostgres("tool gateway service", () => {
   it("keeps managed GitHub personal identity even under a legacy shared policy", async () => {
     const { company, agent, issue, run } = await createRunFixture(db);
     const { connection } = await createRemoteMcpToolFixture(db, company.id);
-    await db.update(toolConnections).set({ authKind: "oauth", credentialSource: "paperclip_vault",
+    await db.update(toolConnections).set({ authKind: "oauth", credentialSource: "wardmote_vault",
       config: { ...connection.config, sourceTemplateKey: "github" },
     }).where(eq(toolConnections.id, connection.id));
     await db.insert(toolConnectionInstalls).values({ companyId: company.id,
@@ -1640,7 +1640,7 @@ describeEmbeddedPostgres("tool gateway service", () => {
       });
       await db.insert(companySecretBindings).values({ companyId: company.id, secretId: secret.id,
         targetType: "tool_connection", targetId: connection.id, configPath: "oauth.access_token" });
-      await db.update(toolConnections).set({ authKind: "oauth", credentialSource: "paperclip_vault",
+      await db.update(toolConnections).set({ authKind: "oauth", credentialSource: "wardmote_vault",
         config: { ...connection.config, sourceTemplateKey: "github" },
       }).where(eq(toolConnections.id, connection.id));
       await db.insert(toolConnectionInstalls).values({ companyId: company.id,
@@ -1702,7 +1702,7 @@ describeEmbeddedPostgres("tool gateway service", () => {
     });
     await db.update(toolConnections).set({
       authKind: "oauth",
-      credentialSource: "paperclip_vault",
+      credentialSource: "wardmote_vault",
       credentialRefs: [{ name: "oauth.access_token", placement: "header", key: "Authorization", prefix: "Bearer ", secretId: accessSecret.id, versionSelector: "latest" }],
       config: {
         url: "https://example.invalid/mcp",
@@ -1837,7 +1837,7 @@ describeEmbeddedPostgres("tool gateway service", () => {
     });
     await db.update(toolConnections).set({
       authKind: "oauth",
-      credentialSource: "paperclip_vault",
+      credentialSource: "wardmote_vault",
       config: {
         url: "https://example.invalid/mcp",
         oauth: {},
