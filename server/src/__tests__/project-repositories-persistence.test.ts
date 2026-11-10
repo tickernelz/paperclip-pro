@@ -18,7 +18,7 @@ const support = await getEmbeddedPostgresTestSupport();
   let companyId: string;
   const repo = (id: string) => ({ id, fullName: `org/repo-${id}`, url: `https://github.com/org/repo-${id}`, connections: [] });
   beforeAll(async () => {
-    temp = await startEmbeddedPostgresTestDatabase("paperclip-repositories-");
+    temp = await startEmbeddedPostgresTestDatabase("wardmote-repositories-");
     db = createDb(temp.connectionString);
     [companyId] = (await db.insert(companies).values({ name: "Repositories", issuePrefix: "REPO" }).returning()).map((company) => company.id);
   }, 20_000);

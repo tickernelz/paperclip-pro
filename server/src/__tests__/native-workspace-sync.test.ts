@@ -233,7 +233,7 @@ describe("native workspace sync durable metadata", () => {
       baseline: serializeDirectorySnapshot(baseline),
       gitSnapshot: multipleRepositories ? {
         headCommit: "a".repeat(40), branchName: "main", overlayPaths: [], deletedPaths: [], ignoredPaths: [],
-        repositories: [{ path: ".paperclip-repositories/backend", snapshot: {
+        repositories: [{ path: ".wardmote-repositories/backend", snapshot: {
           headCommit: "b".repeat(40), branchName: "backend-work", overlayPaths: ["dirty.txt"], deletedPaths: [], ignoredPaths: ["secret.txt"],
         } }],
       } : null,
