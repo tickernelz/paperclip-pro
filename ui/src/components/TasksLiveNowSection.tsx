@@ -111,7 +111,7 @@ export function resolveLiveNowParentPath(
 
 /** Storage key holding whether the Live now section is collapsed for a company. */
 export function liveNowCollapsedStorageKey(companyId: string): string {
-  return `paperclip:tasks-live-now:collapsed:${companyId}`;
+  return `wardmote:tasks-live-now:collapsed:${companyId}`;
 }
 
 function readCollapsed(companyId: string): boolean {

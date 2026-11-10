@@ -123,12 +123,12 @@ function NewTaskStory({
     }
     if (opened.current) return;
     opened.current = true;
-    localStorage.removeItem("paperclip:issue-draft");
-    localStorage.removeItem("paperclip:recent-assignees");
-    localStorage.removeItem(`paperclip:recent-assignees:${COMPANY_ID}`);
-    localStorage.removeItem("paperclip:recent-projects");
-    localStorage.removeItem(`paperclip:recent-projects:${COMPANY_ID}`);
-    localStorage.removeItem(`paperclip:composer-effort:${COMPANY_ID}`);
+    localStorage.removeItem("wardmote:issue-draft");
+    localStorage.removeItem("wardmote:recent-assignees");
+    localStorage.removeItem(`wardmote:recent-assignees:${COMPANY_ID}`);
+    localStorage.removeItem("wardmote:recent-projects");
+    localStorage.removeItem(`wardmote:recent-projects:${COMPANY_ID}`);
+    localStorage.removeItem(`wardmote:composer-effort:${COMPANY_ID}`);
     if (rememberedAssignee === "agent") trackRecentAssignee("agent-codex", COMPANY_ID);
     if (rememberedAssignee === "human") trackRecentAssigneeUser(storybookAuthSession.user.id, COMPANY_ID);
     if (rememberedProject) trackRecentProject("project-board-ui", COMPANY_ID);

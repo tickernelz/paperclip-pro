@@ -546,7 +546,7 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
     await act(async () => buttonByText("Save & exit")!.click());
     await vi.waitFor(() => expect(onCancel).toHaveBeenCalled());
     expect(connectAppMock).toHaveBeenCalledWith("company-1", expect.objectContaining({ saveDraft: true }));
-    expect(sessionStorage.getItem("paperclip:mcp-intent-draft:company-1:intent-inline")).toBe(connection.id);
+    expect(sessionStorage.getItem("wardmote:mcp-intent-draft:company-1:intent-inline")).toBe(connection.id);
     expect(JSON.stringify(sessionStorage)).not.toContain("fixture-secret");
     expect(finishAppMock).not.toHaveBeenCalled();
     expect(putConnectionInstallsMock).not.toHaveBeenCalled();
@@ -671,11 +671,11 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
     expect(putConnectionInstallsMock).toHaveBeenCalledWith("new-composio", [{ targetType: "company", targetId: "company-1" }]);
     expect(finishAppMock).toHaveBeenCalledWith("company-1", "new-composio", expect.objectContaining({ access: "all_agents" }));
     expect(openAggregatorTaskMock).not.toHaveBeenCalled();
-    expect(window.sessionStorage.getItem("paperclip:mcp-upstream-app:company-1:new-composio")).toBeNull();
+    expect(window.sessionStorage.getItem("wardmote:mcp-upstream-app:company-1:new-composio")).toBeNull();
   });
 
   it("recovers upstream app context after a gateway OAuth redirect", async () => {
-    window.sessionStorage.setItem("paperclip:mcp-upstream-app:company-1:composio-draft", "hubspot");
+    window.sessionStorage.setItem("wardmote:mcp-upstream-app:company-1:composio-draft", "hubspot");
     mockSearch.value = "source=composio&resume=composio-draft&oauth=connected";
     getConnectionMock.mockResolvedValue({ id: "composio-draft", status: "draft", credentialPolicy: "per_user", config: { sourceTemplateKey: "composio", connectionMethodKey: "mcp" } });
     await render();

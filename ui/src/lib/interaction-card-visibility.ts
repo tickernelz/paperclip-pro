@@ -3,7 +3,7 @@ import { useState } from "react";
 export type InteractionCardSurface = "dock" | "thread";
 
 function storageKey(surface: InteractionCardSurface, id: string): string {
-  return `paperclip.interaction-card-hidden.${surface}:${id}`;
+  return `wardmote.interaction-card-hidden.${surface}:${id}`;
 }
 
 function readHidden(key: string | null): boolean {

@@ -85,7 +85,7 @@ const defaultCaseViewState: CaseViewState = {
 };
 
 function getCaseViewStorageKey(companyId: string | null | undefined): string | null {
-  return companyId ? `paperclip:cases:${companyId}:view` : null;
+  return companyId ? `wardmote:cases:${companyId}:view` : null;
 }
 
 function normalizeCaseColumns(value: unknown): CaseColumn[] {

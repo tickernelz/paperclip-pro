@@ -268,7 +268,7 @@ describe("TaskSidePanel", () => {
     await act(async () => container.querySelector<HTMLButtonElement>("#side-panel-tab-properties")?.click());
     expect(container.querySelector("iframe")).toBe(iframe);
     expect(iframe?.closest("[hidden]")).toBeTruthy();
-    expect(localStorage.getItem("paperclip:task-side-panel:v1:user-1:company-1")).not.toContain("test-viewer");
+    expect(localStorage.getItem("wardmote:task-side-panel:v1:user-1:company-1")).not.toContain("test-viewer");
     await act(async () => container.querySelector<HTMLButtonElement>(`[id="side-panel-tab-browser:${id}"]`)?.click());
     const close = Array.from(container.querySelectorAll<HTMLButtonElement>("button")).find(b => b.getAttribute("aria-label")?.startsWith("Close Browser"));
     expect(close).toBeTruthy();
@@ -282,7 +282,7 @@ describe("TaskSidePanel", () => {
     const next = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
     const acknowledged = vi.fn(() => {
       expect(container.querySelector('[role="tab"][aria-selected="true"]')?.id).toBe(`side-panel-tab-browser:${next}`);
-      expect(localStorage.getItem("paperclip:task-side-panel:v1:user-1:company-1")).toContain(next);
+      expect(localStorage.getItem("wardmote:task-side-panel:v1:user-1:company-1")).toContain(next);
     });
     await render(panel({ openBrowserId: first }));
     await render(panel({ openBrowserId: next, onBrowserOpened: acknowledged }));
@@ -605,7 +605,7 @@ describe("TaskSidePanel", () => {
     expect(stub?.textContent).toBe("Terminal for task-1");
     expect(stub?.dataset.active).toBe("true");
     expect(stub?.closest("[hidden]")).toBeNull();
-    expect(localStorage.getItem("paperclip:task-side-panel:v1:user-1:company-1")).toContain('"kind":"terminal"');
+    expect(localStorage.getItem("wardmote:task-side-panel:v1:user-1:company-1")).toContain('"kind":"terminal"');
 
     await act(async () => container.querySelector<HTMLButtonElement>("#side-panel-tab-properties")?.click());
     expect(container.querySelector('[data-testid="task-terminal-stub"]')).toBe(stub);

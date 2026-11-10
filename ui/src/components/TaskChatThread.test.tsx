@@ -3229,7 +3229,7 @@ describe.each([true, false])("Unanswered question history (conversationMode=%s)"
   it("preserves a question dismissal saved by another tab", async () => {
     render(<TaskChatThread {...props} comments={[]} interactions={[old]} />);
     // The other tab saves after this thread has loaded its dismissal state.
-    localStorage.setItem("paperclip:task-question-dismissals:user-board:issue-1", JSON.stringify([newer.id]));
+    localStorage.setItem("wardmote:task-question-dismissals:user-board:issue-1", JSON.stringify([newer.id]));
     await dismiss();
     flushSync(() => root!.unmount());
     root = createRoot(container);

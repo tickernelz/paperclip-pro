@@ -46,8 +46,8 @@ const meta = {
   args: { savedConnection: true },
   beforeEach(context) {
     const scenario = (context.parameters.agentmailScenario ?? {}) as Scenario;
-    sessionStorage.removeItem(`paperclip.agentmail-setup:${COMPANY}:${CONNECTION}:choose`);
-    sessionStorage.removeItem(`paperclip.agentmail-setup:${COMPANY}:new:choose`);
+    sessionStorage.removeItem(`wardmote.agentmail-setup:${COMPANY}:${CONNECTION}:choose`);
+    sessionStorage.removeItem(`wardmote.agentmail-setup:${COMPANY}:new:choose`);
     const fixtureAgents = agents.map(agent => ({ ...agent, permissions: scenario.missingBoundary ? { trustPreset: "low_trust_review" } : {} }));
     const original = window.fetch;
     window.fetch = async (input, init) => {

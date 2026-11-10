@@ -15,7 +15,7 @@ import {
 } from "./composer-draft";
 
 describe("task draft upload receipts", () => {
-  const key = "paperclip:issue-comment-draft:task-one";
+  const key = "wardmote:issue-comment-draft:task-one";
   const id = "9af8228f-0be7-45ae-a104-6fbe0af6f1d3";
   const receipt = {
     attachmentId: id,
@@ -84,7 +84,7 @@ describe("task draft upload receipts", () => {
   });
   it("keeps chat drafts and pending submission fences within the current tab", () => {
     sessionStorage.clear();
-    const chatKey = "paperclip:agent-chat-draft:company:user:agent";
+    const chatKey = "wardmote:agent-chat-draft:company:user:agent";
     saveDraft(chatKey, "My chat draft");
     saveDraftSubmission(chatKey, { attemptId: id, reviewed: false });
     expect(loadDraft(chatKey)).toBe("My chat draft");

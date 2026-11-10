@@ -302,7 +302,7 @@ function OrganizationIssues({
       projects={projects}
       liveIssueIds={liveIssueIds}
       liveRuns={liveRuns}
-      viewStateKey="paperclip:issues-view"
+      viewStateKey="wardmote:issues-view"
       rowPresentation={issuesPresentation.rowPresentation}
       toolbarPresentation={issuesPresentation.toolbarPresentation}
       issueLinkState={issueLinkState}

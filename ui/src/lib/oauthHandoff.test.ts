@@ -8,6 +8,7 @@ import {
   readPendingCloudHandoff,
   savePendingCloudHandoff,
 } from "./oauthHandoff";
+import { migrateRetiredStorageKeys } from "./retired-storage-keys";
 
 const SESSION = "cloud_session_abcdefghijklmnop";
 
@@ -78,6 +79,12 @@ describe("Wardmote Cloud OAuth handoff", () => {
       handoff: { kind: "paperclip_cloud", session: "bad session" },
     }, { request: request as typeof fetch })).rejects.toBeInstanceOf(OAuthHandoffError);
     expect(request).not.toHaveBeenCalled();
+  });
+
+  it("still reads a pending handoff after the boot storage migration", () => {
+    savePendingCloudHandoff(SESSION);
+    migrateRetiredStorageKeys(window.sessionStorage);
+    expect(readPendingCloudHandoff()).toMatchObject({ session: SESSION });
   });
 
   it("keeps the opaque handoff in per-tab storage for reauthentication resume", () => {

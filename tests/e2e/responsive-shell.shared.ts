@@ -104,7 +104,7 @@ export async function checkCoreScreens(
   const touch = pointer === "coarse";
   const context = await browser.newContext({ baseURL, viewport: size, hasTouch: touch, isMobile: touch });
   const page = await context.newPage();
-  await page.addInitScript((value) => window.localStorage.setItem("paperclip.theme", value), theme);
+  await page.addInitScript((value) => window.localStorage.setItem("wardmote.theme", value), theme);
   const failures: Array<{ screen: string } & ResponsiveFinding> = [];
   for (const [screen, route] of SCREENS) {
     await page.goto(screenUrl(route));

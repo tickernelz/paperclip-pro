@@ -54,7 +54,7 @@ import { InlineBanner } from "./InlineBanner";
 import { InlineEntitySelector, type InlineEntityOption } from "./InlineEntitySelector";
 import { getTrustPreset } from "../lib/trust-policy-ui";
 
-const DRAFT_KEY = "paperclip:issue-draft";
+const DRAFT_KEY = "wardmote:issue-draft";
 const DEBOUNCE_MS = 800;
 
 type VisualViewportLayout = {

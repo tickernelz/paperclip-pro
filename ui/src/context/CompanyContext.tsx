@@ -45,7 +45,7 @@ interface CompanyContextValue {
   }) => Promise<Company>;
 }
 
-const STORAGE_KEY = "paperclip.selectedCompanyId";
+const STORAGE_KEY = "wardmote.selectedCompanyId";
 
 // A refresh can replace consumers before a mounted provider is replaced. Keep
 // their context identity in Vite's per-module data; never store account state.

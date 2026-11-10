@@ -100,7 +100,7 @@ export function SkillSources() {
 function SourceDialog({ companyId, source, onClose, onSaved }: {
   companyId: string; source?: SkillSource; onClose: () => void; onSaved: (result: SkillSourceRefreshResult) => Promise<void>;
 }) {
-  const draftKey = `paperclip.skill-source-draft:${companyId}:${source?.id ?? 'new'}`;
+  const draftKey = `wardmote.skill-source-draft:${companyId}:${source?.id ?? 'new'}`;
   const [selectionRevision] = useState(source?.revision);
   const [draft] = useState(() => { try { const saved = JSON.parse(sessionStorage.getItem(draftKey) ?? '{}'); return !source || saved.revision === source.revision ? saved : {}; } catch { return {}; } });
   const [repositoryUrl, setRepositoryUrl] = useState<string>(draft.repositoryUrl ?? source?.repositoryUrl ?? '');

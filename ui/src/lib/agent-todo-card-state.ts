@@ -1,4 +1,4 @@
-const STORAGE_KEY = "paperclip:agent-todo-card:v1";
+const STORAGE_KEY = "wardmote:agent-todo-card:v1";
 const EXPANDED = "expanded";
 const COLLAPSED = "collapsed";
 

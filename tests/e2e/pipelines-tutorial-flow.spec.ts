@@ -453,7 +453,7 @@ test.describe("Pipelines tutorial UI flow", () => {
     try {
       await page.goto("/");
       await page.evaluate((companyId) => {
-        window.localStorage.setItem("paperclip.selectedCompanyId", companyId);
+        window.localStorage.setItem("wardmote.selectedCompanyId", companyId);
       }, company.id);
       const companyPath = `/${company.issuePrefix}`;
 

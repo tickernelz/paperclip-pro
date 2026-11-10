@@ -20,7 +20,7 @@ import { storybookCompanies, storybookSecrets } from "../fixtures/wardmoteData";
 const COMPANY_ID = "company-storybook";
 
 if (typeof window !== "undefined") {
-  window.localStorage.setItem("paperclip.selectedCompanyId", COMPANY_ID);
+  window.localStorage.setItem("wardmote.selectedCompanyId", COMPANY_ID);
 }
 
 function StorybookRoutineFixtures({

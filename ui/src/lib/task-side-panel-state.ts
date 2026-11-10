@@ -71,7 +71,7 @@ interface TaskSidePanelStore {
 }
 
 function storageKey(accountScope: string, companyId: string) {
-  return `paperclip:task-side-panel:v${STORAGE_VERSION}:${accountScope}:${companyId}`;
+  return `wardmote:task-side-panel:v${STORAGE_VERSION}:${accountScope}:${companyId}`;
 }
 
 function record(value: unknown): Record<string, unknown> | null {
