@@ -1,5 +1,5 @@
 {
-  "schema": "paperclip.copilot-v4-owned-instruction-delivery.v1",
+  "schema": "wardmote.copilot-v4-owned-instruction-delivery.v1",
   "date": "2026-09-29",
   "candidateBaseRevision": "0f33a9080ab05f92b909261a20d79ca487889346",
   "profileIdentity": {

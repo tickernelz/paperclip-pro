@@ -170,7 +170,7 @@ describe("CapabilityMockControlPlaneAdapter", () => {
     const right = await runScenario();
     expect(left.adapter.serialize()).toBe(right.adapter.serialize());
     expect(left.snapshot).toMatchObject({
-      schema: "paperclip.capability.mock-state.v1",
+      schema: "wardmote.capability.mock-state.v1",
       comments: [{ body: "Fixture work started." }],
       documents: [{ key: "plan", revisions: [{ revision: 1 }] }],
       interactions: [{ kind: "confirmation", status: "pending" }],
@@ -314,7 +314,7 @@ describe("CapabilityMockControlPlaneAdapter", () => {
     await adapter.start();
     await adapter.openFixtureRun(OPEN);
     const event = (sourceSeq: number) => ({
-      schema: "paperclip.prp.event.v1" as const,
+      schema: "wardmote.prp.event.v1" as const,
       sourceEventId: `fixture-source:event:${sourceSeq}`,
       sourceSeq,
       sourceInstanceId: "fixture-source",
@@ -403,7 +403,7 @@ describe("CapabilityMockControlPlaneAdapter", () => {
       reportedWorkDisposition: "done" as const,
     };
     const result = {
-      schema: "paperclip.run_result.v1" as const,
+      schema: "wardmote.run_result.v1" as const,
       reportedWorkDisposition: "done" as const,
       summary: "Blocking work completed.",
       completionClaim: {
@@ -418,7 +418,7 @@ describe("CapabilityMockControlPlaneAdapter", () => {
       artifacts: [],
     };
     await adapter.appendEvent({
-      schema: "paperclip.prp.event.v1",
+      schema: "wardmote.prp.event.v1",
       sourceEventId: "fixture-source:terminal:1",
       sourceSeq: 1,
       sourceInstanceId: "fixture-source",
@@ -484,7 +484,7 @@ describe("CapabilityMockControlPlaneAdapter", () => {
     expect(adapter.snapshot().faults[0]?.remaining).toBe(1);
 
     await adapter.appendEvent({
-      schema: "paperclip.prp.event.v1",
+      schema: "wardmote.prp.event.v1",
       sourceEventId: "fixture-source:terminal:completion-retry",
       sourceSeq: 1,
       sourceInstanceId: "fixture-source",
@@ -1233,7 +1233,7 @@ describe("CapabilityMockControlPlaneAdapter", () => {
       },
     });
     await completedBlockerAdapter.appendEvent({
-      schema: "paperclip.prp.event.v1",
+      schema: "wardmote.prp.event.v1",
       sourceEventId: "fixture-source:terminal:completed-blocker-requester",
       sourceSeq: 1,
       sourceInstanceId: "fixture-source",

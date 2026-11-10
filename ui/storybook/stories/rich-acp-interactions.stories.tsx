@@ -28,7 +28,7 @@ function Frame({ children }: { children: ReactNode }) {
 }
 
 const questionSet: WardmoteQuestionSet = {
-  schema: "paperclip.question_set.v1",
+  schema: "wardmote.question_set.v1",
   title: "Deployment details",
   questions: [
     {
@@ -100,7 +100,7 @@ const revisionId = "77777777-7777-4777-8777-777777777777";
 const cursorPlanRevision = "eedc589b367de4f6366ff76090d93676adb1e2238d4c5af280ac88393e1adef3";
 const cursorPlanQuestionId = `plan-${cursorPlanRevision}`;
 const cursorPlanQuestions: WardmoteQuestionSet = {
-  schema: "paperclip.question_set.v1", title: "Review Cursor's plan", description: fullPlan, submitLabel: "Send decision",
+  schema: "wardmote.question_set.v1", title: "Review Cursor's plan", description: fullPlan, submitLabel: "Send decision",
   questions: [
     { id: cursorPlanQuestionId, prompt: "How should Cursor proceed with this plan?", required: true, answerMode: "single_select", options: [
       { id: "accept", label: "Accept plan" }, { id: "reject", label: "Reject plan" }, { id: "cancel", label: "Cancel plan request" },
@@ -162,7 +162,7 @@ const notice: TranscriptEntry = {
   eventType: "provider.notice.recorded", title: "Provider notice", status: "informational",
   summary: "The provider is retrying after a temporary capacity limit.",
   payload: {
-    schema: "paperclip.provider.notice.v1", severity: "warning", category: "retry", scope: "turn",
+    schema: "wardmote.provider.notice.v1", severity: "warning", category: "retry", scope: "turn",
     recoverable: true, userActionable: false, summary: "The provider is retrying after a temporary capacity limit.",
     details: [
       { name: "Provider", value: "pi / ACP" },
@@ -307,7 +307,7 @@ function nativePlanVerification(choice: "accept" | "reject" | "cancel"): Story["
     await userEvent.click(canvas.getByRole("button", { name: "Send decision" }));
     await waitFor(() => expect(JSON.parse(canvas.getByTestId("native-plan-receipt").textContent!)).toMatchObject({
       requestId: "cursor-create-plan-revision-7", decision: {
-        action: "submit", response: { schema: "paperclip.question_response.v1", answers: {
+        action: "submit", response: { schema: "wardmote.question_response.v1", answers: {
           [cursorPlanQuestionId]: { selectedOptionIds: [choice] },
           ...(choice === "reject" ? { reason: { text: "Add per-region rollback checks." } } : {}),
         } },

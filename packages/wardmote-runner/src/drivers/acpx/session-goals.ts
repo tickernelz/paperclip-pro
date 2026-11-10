@@ -16,7 +16,7 @@ export function acpxGoalProjection(
     return Number.isFinite(date.getTime()) ? date.toISOString() : null;
   };
   return {
-    schema: "paperclip.session_goal.snapshot.v1",
+    schema: "wardmote.session_goal.snapshot.v1",
     sessionGoals: {
       availability: available ? "available" : "unsupported",
       actions: available ? [...new Set(capability.actions)] : [],

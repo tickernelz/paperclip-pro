@@ -1,5 +1,5 @@
 {
-  "schema": "paperclip.pi-startup-diagnostic.v1",
+  "schema": "wardmote.pi-startup-diagnostic.v1",
   "recordedAt": "2026-09-28T20:14:44.089567+00:00",
   "sourceRevision": "9f2d0420ed9a398e3bacd1d7e996614f3296ac56",
   "providerPackDigest": "sha256:2a6f457205743487cdd35ed3634532028e6e0200001f70e087d0e084fc85d452",

@@ -2222,7 +2222,7 @@ describe("TaskChatComposer", () => {
             id={id}
             draftKey={`draft:${id}`}
             questionSet={{
-              schema: "paperclip.question_set.v1",
+              schema: "wardmote.question_set.v1",
               questions: [
                 {
                   id: "scope",
@@ -2291,7 +2291,7 @@ describe("TaskChatComposer", () => {
               <QuestionForm
                 id="release-decisions"
                 questionSet={{
-                  schema: "paperclip.question_set.v1",
+                  schema: "wardmote.question_set.v1",
                   questions: [
                     {
                       id: "scope",
@@ -2353,7 +2353,7 @@ describe("TaskChatComposer", () => {
               <QuestionForm
                 id="first-task-opening"
                 questionSet={{
-                  schema: "paperclip.question_set.v1",
+                  schema: "wardmote.question_set.v1",
                   submitLabel: "Continue",
                   questions: [
                     {
@@ -2424,7 +2424,7 @@ describe("TaskChatComposer", () => {
               <QuestionForm
                 id="interview"
                 questionSet={{
-                  schema: "paperclip.question_set.v1",
+                  schema: "wardmote.question_set.v1",
                   questions: [
                     {
                       id: "env",
@@ -2509,7 +2509,7 @@ describe("TaskChatComposer", () => {
       render(<QuestionForm
         id="selection-modes"
         questionSet={{
-          schema: "paperclip.question_set.v1",
+          schema: "wardmote.question_set.v1",
           questions: [
             { id: "storage", prompt: "Storage?", required: true, answerMode: "single_select",
               options: [{ id: "sqlite", label: "SQLite" }], customAnswer: { enabled: true } },
@@ -2518,7 +2518,7 @@ describe("TaskChatComposer", () => {
             { id: "notes", prompt: "Notes?", required: false, answerMode: "text" },
           ],
         }}
-        initialResponse={{ schema: "paperclip.question_response.v1", answers: { storage: { selectedOptionIds: ["sqlite"] } } }}
+        initialResponse={{ schema: "wardmote.question_response.v1", answers: { storage: { selectedOptionIds: ["sqlite"] } } }}
         onSubmit={onSubmit}
       />);
       const byLabel = (label: string) => Array.from(container.querySelectorAll<HTMLButtonElement>("button"))
@@ -2558,14 +2558,14 @@ describe("TaskChatComposer", () => {
       flushSync(() => byLabel("Submit answers").click());
       await flushAsync();
       expect(onSubmit).toHaveBeenCalledExactlyOnceWith({
-        schema: "paperclip.question_response.v1",
+        schema: "wardmote.question_response.v1",
         answers: { storage: { selectedOptionIds: ["sqlite"] }, features: { selectedOptionIds: ["auth", "search"] } },
       }, {});
     });
 
     describe("single-choice selection stays on the page", () => {
       const questionSet = {
-        schema: "paperclip.question_set.v1" as const,
+        schema: "wardmote.question_set.v1" as const,
         questions: ["First", "Second", "Third"].map((prompt) => ({
           id: prompt, prompt, required: true, answerMode: "single_select" as const,
           options: [{ id: "yes", label: "Yes" }, { id: "no", label: "No" }],
@@ -2632,7 +2632,7 @@ describe("TaskChatComposer", () => {
           <QuestionForm
             id="failed-send"
             questionSet={{
-              schema: "paperclip.question_set.v1" as const,
+              schema: "wardmote.question_set.v1" as const,
               questions: [{
                 id: "only", prompt: "Only", required: true,
                 answerMode: "single_select" as const,
@@ -2660,7 +2660,7 @@ describe("TaskChatComposer", () => {
           <QuestionForm
             id="missing-answer"
             questionSet={{
-              schema: "paperclip.question_set.v1" as const,
+              schema: "wardmote.question_set.v1" as const,
               questions: [
                 {
                   id: "First", prompt: "First", required: true,
@@ -2705,7 +2705,7 @@ describe("TaskChatComposer", () => {
               <QuestionForm
                 id="optional-tail"
                 questionSet={{
-                  schema: "paperclip.question_set.v1",
+                  schema: "wardmote.question_set.v1",
                   questions: [
                     {
                       id: "env",
@@ -2763,7 +2763,7 @@ describe("TaskChatComposer", () => {
               <QuestionForm
                 id="walked-past"
                 questionSet={{
-                  schema: "paperclip.question_set.v1",
+                  schema: "wardmote.question_set.v1",
                   questions: [
                     {
                       id: "env",
@@ -2828,7 +2828,7 @@ describe("TaskChatComposer", () => {
               <QuestionForm
                 id="cancelable"
                 questionSet={{
-                  schema: "paperclip.question_set.v1",
+                  schema: "wardmote.question_set.v1",
                   questions: [
                     {
                       id: "env",
@@ -2873,7 +2873,7 @@ describe("TaskChatComposer", () => {
               <QuestionForm
                 id="deployment-target"
                 questionSet={{
-                  schema: "paperclip.question_set.v1",
+                  schema: "wardmote.question_set.v1",
                   questions: [
                     {
                       id: "environment",

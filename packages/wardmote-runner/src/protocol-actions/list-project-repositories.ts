@@ -43,7 +43,7 @@ export const listProjectRepositoriesAction = {
   "live": {
     "order": 44,
     "descriptor": {
-      "schema": "paperclip.semantic-tool.v1",
+      "schema": "wardmote.semantic-tool.v1",
       "operationId": "list_project_repositories",
       "version": 1,
       "title": "List available repositories",

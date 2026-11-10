@@ -27,12 +27,12 @@ function fixture() {
     const canonical = canonicalProviderEventsFromAcpxRuntimeEvent(event, executionId, "turn")[0]!;
     return { companyId: "company", runId: "run", seq, protocolSchemaVersion: 1, eventType: canonical.eventType,
       sourceInstanceId: "runner", sourceSeq: seq, sourceEventId: `runner:run:${seq}`,
-      payload: { prpEvent: { schema: "paperclip.prp.event.v1", schemaVersion: 1, sourceKind: "runner", sourceInstanceId: "runner",
+      payload: { prpEvent: { schema: "wardmote.prp.event.v1", schemaVersion: 1, sourceKind: "runner", sourceInstanceId: "runner",
         sourceSeq: seq, sourceEventId: `runner:run:${seq}`, runId: "run", turnId: "turn", normalizedSessionId: "session", ...canonical } } };
   };
   return {
     environment: "local" as const, environmentId: "environment", nonce: "fixture", companyId: "company", issueId: "issue", agentId: "agent", attachmentId,
-    seed: { schema: "paperclip.e2e.pi-file-seed.v1", filename: c.filename,
+    seed: { schema: "wardmote.e2e.pi-file-seed.v1", filename: c.filename,
       beforeSha256: createHash("sha256").update("ready-fixture\n").digest("hex"), byteSize: Buffer.byteLength(c.before) },
     workspaceBytes: Buffer.from(c.after), downloadedBytes: Buffer.from(c.after),
     run: { id: "run", companyId: "company", agentId: "agent", runtimeMode: "native", nativeSessionId: "session", runnerInstanceId: "runner", status: "succeeded", resultJson: { semanticToolReceipts: {
@@ -66,7 +66,7 @@ describe("Pi edit, validation and public artifact oracle", () => {
     f.events = retained.events.map((x: any) => ({ companyId: "company", runId: "run", seq: x.seq,
       protocolSchemaVersion: 1, eventType: x.eventType, sourceInstanceId: "runner", sourceSeq: x.sourceSeq,
       sourceEventId: `runner:run:${x.sourceSeq}`, payload: { prpEvent: {
-        schema: "paperclip.prp.event.v1", schemaVersion: 1, sourceKind: "runner", sourceInstanceId: "runner",
+        schema: "wardmote.prp.event.v1", schemaVersion: 1, sourceKind: "runner", sourceInstanceId: "runner",
         sourceSeq: x.sourceSeq, sourceEventId: `runner:run:${x.sourceSeq}`, runId: "run", turnId: "turn",
         normalizedSessionId: "session", eventType: x.eventType, payload: x.payload,
       } } }));
@@ -167,7 +167,7 @@ describe("Pi edit, validation and public artifact oracle", () => {
     const c = piFileContract("0123456789ab-1");
     expect([...c.validationCommand].length).toBeLessThanOrEqual(240);
     expect(safeAcpxLocations([{ path: `/workspace/${c.filename}` }], "/workspace", "edit", "edit")[0]).toMatchObject({
-      path: c.filename, pathBoundary: "paperclip.workspace_relative_display.v2",
+      path: c.filename, pathBoundary: "wardmote.workspace_relative_display.v2",
     });
     expect(() => piFileContract("a".repeat(100))).toThrow("native Rust tool-name bound");
   });

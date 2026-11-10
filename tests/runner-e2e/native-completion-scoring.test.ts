@@ -8,7 +8,7 @@ function sample(blocked = true, compatibility = false): NativeCompletionObservat
   const result = { reportedWorkDisposition: blocked ? "blocked" : "done", ...(blocked ? { blocker: { owner: { name: "Release Owner" }, unblockAction: "Grant deployment access", scope: "task_wide" } } : {}) };
   const event = (seq: number, eventType: string, payload: Row, sourceKind = "runner"): Row => ({ seq, eventType, protocolSchemaVersion: 1,
     sourceEventId: `event${seq}`, sourceInstanceId: sourceKind, sourceSeq: seq,
-    payload: { prpEvent: { schema: "paperclip.prp.event.v1", schemaVersion: 1, runId: "run", eventType,
+    payload: { prpEvent: { schema: "wardmote.prp.event.v1", schemaVersion: 1, runId: "run", eventType,
       sourceKind, sourceEventId: `event${seq}`, sourceInstanceId: sourceKind, sourceSeq: seq, payload } } });
   const tool = blocked ? "wardmote_block" : "wardmote_finish";
   return { caseId: blocked ? "native-blocked-report" : "assigned-skill-explicit-invocation", companyId: "company", agentId: "agent", marker: "BLOCKED_probe",
@@ -30,8 +30,8 @@ describe("native completion independent oracle", () => {
     const value = sample(false);
     const text = "Saved the requested document.";
     (payload(value, 3).item as Row).text = text; value.comments[0]!.body = text;
-    expect(gradeLegacyNativeCompletion(value)).toMatchObject({ schema: "paperclip.native-completion-observation.v2", passed: true });
-    expect(gradeNativeCompletion(value)).toMatchObject({ schema: "paperclip.native-completion-observation.v3", passed: false });
+    expect(gradeLegacyNativeCompletion(value)).toMatchObject({ schema: "wardmote.native-completion-observation.v2", passed: true });
+    expect(gradeNativeCompletion(value)).toMatchObject({ schema: "wardmote.native-completion-observation.v3", passed: false });
     expect(gradeLegacyNativeCompletion(value).checks.some(check => check.id === "saved-document-final-link")).toBe(false);
   });
 

@@ -27,7 +27,7 @@ const tools = [
   { name: "wardmote_dot_progress", read: false, schema: z.object({ ...binding, text: z.string().trim().min(1).max(16000) }).strict(),
     description: "Report useful progress to the runner transcript. Do not echo a wakeup event or another comment. Reuse requestId on retries." },
   { name: "wardmote_dot_finish", read: false, schema: z.object({ ...binding, result: z.record(z.string(), z.unknown()) }).strict(),
-    description: "Propose a paperclip.run_result.v1 structured result to the runner. Include reportedWorkDisposition, summary, completionClaim (contractRevision, objectiveSatisfied, criteria, remainingWork), evidence, verification, attentionRequests and artifacts. Wardmote owns final disposition. Do not claim unobserved usage or independent verification." },
+    description: "Propose a wardmote.run_result.v1 structured result to the runner. Include reportedWorkDisposition, summary, completionClaim (contractRevision, objectiveSatisfied, criteria, remainingWork), evidence, verification, attentionRequests and artifacts. Wardmote owns final disposition. Do not claim unobserved usage or independent verification." },
 ] as const;
 
 /** In-process prototype registry. Registration is a trusted host operation,

@@ -118,7 +118,48 @@ describe("retired product name migration", () => {
     expect(await fs.readFile(path.join(root, "notes", "extra.md"), "utf8")).toBe("Use wardmoteMe.\n");
 
     const idle = await migrateRetiredNames(db, { instanceRoot, now: new Date("2026-11-10T00:02:00Z") });
-    expect(idle).toEqual({ dryRun: false, files: [], rows: [], externalBundles: [], failedBundles: [], backupDir: null });
+    expect(idle).toEqual({ dryRun: false, files: [], rows: [], externalBundles: [], failedBundles: [], quarantinedRunnerStates: [], backupDir: null });
+  }, 60_000);
+
+  it("accepts the retired adoption marker, rewrites it, and migrates the bundle", async () => {
+    const instanceRoot = path.join(home, "instances", "default");
+    const adoptedId = randomUUID();
+    await db.insert(agents).values({ id: adoptedId, companyId, name: "Adopted", adapterConfig: {} });
+    const root = resolveManagedInstructionsRoot({ id: adoptedId, companyId, adapterConfig: {} } as never);
+    const markerPath = path.join(path.dirname(root), "file-sync", "adopted.json");
+    await fs.mkdir(path.dirname(markerPath), { recursive: true });
+    await fs.writeFile(markerPath, JSON.stringify({ schema: ["paper", "clip.agent-files.v1"].join("") }));
+    await fs.mkdir(root, { recursive: true });
+    await fs.writeFile(path.join(root, "AGENTS.md"), "Use paperclipMe.\n");
+
+    const report = await migrateRetiredNames(db, { instanceRoot, now: new Date("2026-11-10T00:02:30Z") });
+
+    expect(report.failedBundles).toEqual([]);
+    expect(report.files).toContainEqual({ companyId, agentId: adoptedId, file: "AGENTS.md", replacements: 1 });
+    expect(JSON.parse(await fs.readFile(markerPath, "utf8"))).toEqual({ schema: "wardmote.agent-files.v1" });
+    expect(await fs.readFile(path.join(root, "AGENTS.md"), "utf8")).toBe("Use wardmoteMe.\n");
+  }, 60_000);
+
+  it("quarantines native runner state written under retired schema ids and keeps current state", async () => {
+    const instanceRoot = path.join(home, "instances", "default");
+    const stateBase = path.join(instanceRoot, "runtime", "paperclip-runner", "durable-sessions");
+    const retiredKey = "a".repeat(64);
+    const currentKey = "b".repeat(64);
+    const retiredSchema = ["paper", "clip.runner.durable.control-plane-state.v1"].join("");
+    for (const [key, schema] of [[retiredKey, retiredSchema], [currentKey, "wardmote.runner.durable.control-plane-state.v1"]] as const) {
+      await fs.mkdir(path.join(stateBase, key, "control-plane"), { recursive: true });
+      await fs.writeFile(path.join(stateBase, key, "control-plane", "control-plane-state.json"), JSON.stringify({ schema }));
+    }
+
+    const preview = await migrateRetiredNames(db, { instanceRoot, dryRun: true, now: new Date("2026-11-10T00:02:40Z") });
+    expect(preview.quarantinedRunnerStates).toEqual([retiredKey]);
+    expect((await fs.readdir(stateBase)).sort()).toEqual([retiredKey, currentKey]);
+
+    const report = await migrateRetiredNames(db, { instanceRoot, now: new Date("2026-11-10T00:02:50Z") });
+    expect(report.quarantinedRunnerStates).toEqual([retiredKey]);
+    expect((await fs.readdir(stateBase)).sort()).toEqual([currentKey, "quarantine"]);
+    expect((await fs.readdir(path.join(stateBase, "quarantine")))[0]).toMatch(new RegExp(`^${retiredKey}\\.identity_indeterminate\\.`));
+    await fs.rm(stateBase, { recursive: true, force: true });
   }, 60_000);
 
   it("reports a bundle it cannot adopt and still rewrites the other agents", async () => {

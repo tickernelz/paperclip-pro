@@ -19,7 +19,7 @@ import type { PrpStructuredRunResult } from "../../vendor/wardmote-runner/index.
 const questionTime = new Date("2026-01-01T12:00:00Z");
 const messageTime = new Date("2026-01-01T12:01:00Z");
 const done: PrpStructuredRunResult = {
-  schema: "paperclip.run_result.v1", reportedWorkDisposition: "done", summary: "Configuration verified.",
+  schema: "wardmote.run_result.v1", reportedWorkDisposition: "done", summary: "Configuration verified.",
   completionClaim: { contractRevision: "test", objectiveSatisfied: true, criteria: [], remainingWork: [] },
   evidence: [], verification: [], attentionRequests: [], artifacts: [],
 };
@@ -102,7 +102,7 @@ describe("historical task questions", () => {
     const contractId = randomUUID(), sessionId = randomUUID(), runnerId = randomUUID();
     const contractSha256 = "historical-question-contract";
     await db.insert(completionContracts).values({ id: contractId, companyId: f.companyId, issueId: f.issueId,
-      revision: 1, schemaVersion: "paperclip.completion-contract.v1", policyVersion: "test", risk: "standard",
+      revision: 1, schemaVersion: "wardmote.completion-contract.v1", policyVersion: "test", risk: "standard",
       completionAuthority: "server_arbiter", incompleteCriteriaPolicy: "preserve_non_terminal",
       contractJson: { revision: "standalone-v1", objective: "Verify configuration", criteria: [{ id: "objective", requirement: "Verify configuration" }] },
       canonicalSha256: contractSha256, createdByActorType: "system", createdByActorId: "test" });

@@ -122,7 +122,7 @@ export function sourceFingerprint() {
 export function assertPreflightReceipt(report, current) {
   const instructionVariant = readStockInstructionVariant();
   const expected = [...stockHarnessGates.map(gate => gate.id), "SH-1-rust"];
-  if (report?.schema !== "paperclip.stock-harness-preflight.v3" || report.passed !== true ||
+  if (report?.schema !== "wardmote.stock-harness-preflight.v3" || report.passed !== true ||
       report.setup?.passed !== true || report.setup?.exitCode !== 0 ||
       report.setup?.sdkExitCode !== 0 || report.setup?.runnerdExitCode !== 0 ||
       report.setup?.runnerdSha256 !== current.runnerdSha256 ||
@@ -196,7 +196,7 @@ export function main(args = process.argv.slice(2)) {
   if (!setup.passed) {
     const source = sourceFingerprint();
     writeFileSync(join(output, "preflight.json"), JSON.stringify({
-      schema: "paperclip.stock-harness-preflight.v3", instructionVariant, sourceSha: git.stdout?.trim() || null,
+      schema: "wardmote.stock-harness-preflight.v3", instructionVariant, sourceSha: git.stdout?.trim() || null,
       sourceFingerprint: source.fingerprint, measuredAt: new Date().toISOString(), providerCalls: 0,
       live: "not_run", passed: false, sourceErrors: source.sourceErrors, setup, gates: [],
     }, null, 2) + "\n");
@@ -230,7 +230,7 @@ export function main(args = process.argv.slice(2)) {
   writeFileSync(join(output, "rust.txt"), rustOutput);
   results.push({ id: "SH-1-rust", passed: rust.status === 0 && /test runtime_instructions_are_additive_for_codex_on_start_and_resume \.\.\. ok/.test(rustOutput), exitCode: rust.status });
   const { fingerprint, sourceErrors } = sourceFingerprint();
-  const report = { schema: "paperclip.stock-harness-preflight.v3", instructionVariant, sourceSha: git.stdout?.trim() || null,
+  const report = { schema: "wardmote.stock-harness-preflight.v3", instructionVariant, sourceSha: git.stdout?.trim() || null,
     sourceFingerprint: fingerprint, measuredAt: new Date().toISOString(), providerCalls: 0,
     live: "not_run", passed: git.status === 0 && sourceErrors.length === 0 && results.every(row => row.passed), sourceErrors, setup, gates: results };
   writeFileSync(join(output, "preflight.json"), JSON.stringify(report, null, 2) + "\n");

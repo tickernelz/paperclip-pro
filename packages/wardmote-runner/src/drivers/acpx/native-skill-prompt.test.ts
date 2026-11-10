@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { claudeNativeSkillPrompt } from "./native-skill-prompt.js";
 
 const envelope = (description: unknown, prompt = "Write the welcome note now.") => JSON.stringify({
-  schema: "paperclip.native-model-envelope.v2",
+  schema: "wardmote.native-model-envelope.v2",
   task: { description, prompt },
   interactionResponses: [{ response: { status: "accepted" } }],
 });
@@ -30,14 +30,14 @@ describe("Claude native task skill invocation", () => {
 
 describe("prepared context skill selection", () => {
   it("uses server-selected names without scanning comments or the task prompt", () => {
-    const text = JSON.stringify({ schema: "paperclip.native-model-envelope.v3", task: { prompt: "Quoted comment: /other" }, requestedSkills: ["first-task"] });
+    const text = JSON.stringify({ schema: "wardmote.native-model-envelope.v3", task: { prompt: "Quoted comment: /other" }, requestedSkills: ["first-task"] });
     expect(claudeNativeSkillPrompt(text, ["first-task", "other"])).toBe(`/first-task ${text}`);
-    const noRequest = JSON.stringify({ schema: "paperclip.native-model-envelope.v3", task: { prompt: "/first-task" }, requestedSkills: [] });
+    const noRequest = JSON.stringify({ schema: "wardmote.native-model-envelope.v3", task: { prompt: "/first-task" }, requestedSkills: [] });
     expect(claudeNativeSkillPrompt(noRequest, ["first-task"])).toBe(noRequest);
   });
   it("refuses unassigned, ambiguous, or malformed selections", () => {
     for (const requestedSkills of [["unknown"], ["first-task", "other"], [123], "/first-task"]) {
-      const text = JSON.stringify({ schema: "paperclip.native-model-envelope.v3", task: { prompt: "Task" }, requestedSkills });
+      const text = JSON.stringify({ schema: "wardmote.native-model-envelope.v3", task: { prompt: "Task" }, requestedSkills });
       expect(claudeNativeSkillPrompt(text, ["first-task", "other"])).toBe(text);
     }
   });

@@ -61,7 +61,7 @@ export const LIST_CHAT_ATTACHMENTS_TOOL_DEFINITION = Object.freeze({
     additionalProperties: false,
   },
   annotations: {
-    semanticContract: "paperclip.server-chat-attachment-reuse.v1",
+    semanticContract: "wardmote.server-chat-attachment-reuse.v1",
     operationId: LIST_CHAT_ATTACHMENTS_TOOL_NAME,
     version: 1,
     exposure: "run_scoped",
@@ -85,7 +85,7 @@ export const REUSE_CHAT_ATTACHMENT_TOOL_DEFINITION = Object.freeze({
     additionalProperties: false,
   },
   annotations: {
-    semanticContract: "paperclip.server-chat-attachment-reuse.v1",
+    semanticContract: "wardmote.server-chat-attachment-reuse.v1",
     operationId: REUSE_CHAT_ATTACHMENT_TOOL_NAME,
     version: 1,
     exposure: "run_scoped",
@@ -160,7 +160,7 @@ export type ListedChatAttachmentPage = {
 };
 
 type ListCursor = {
-  schema: "paperclip.chat-attachment-list-cursor.v1";
+  schema: "wardmote.chat-attachment-list-cursor.v1";
   conversationId: string;
   sourceCommentId: string | null;
   createdAt: string;
@@ -251,7 +251,7 @@ function decodeListCursor(
       typeof parsed.createdAt === "string" ? parsed.createdAt : "";
     const parsedDate = new Date(createdAt);
     if (
-      parsed.schema !== "paperclip.chat-attachment-list-cursor.v1" ||
+      parsed.schema !== "wardmote.chat-attachment-list-cursor.v1" ||
       parsed.conversationId !== conversationId ||
       (parsed.sourceCommentId ?? null) !== sourceCommentId ||
       Number.isNaN(parsedDate.getTime()) ||
@@ -1212,7 +1212,7 @@ export async function listAuthorizedChatAttachments(input: {
       nextCursor:
         hasMore && lastScanned
           ? encodeListCursor({
-              schema: "paperclip.chat-attachment-list-cursor.v1",
+              schema: "wardmote.chat-attachment-list-cursor.v1",
               conversationId: conversation.conversationId,
               sourceCommentId: sourceFilter,
               createdAt: lastScanned.createdAt.toISOString(),

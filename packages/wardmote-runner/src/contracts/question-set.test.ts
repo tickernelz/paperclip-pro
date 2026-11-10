@@ -95,7 +95,7 @@ describe("Wardmote question-set contract", () => {
     })).toThrow(/replicas.*required/);
     expect(() => parseWardmoteQuestionResponse(questionSet, {
       answers: { environment: { answers: ["Staging"] } },
-    })).toThrow(/paperclip.question_response.v1/);
+    })).toThrow(/wardmote.question_response.v1/);
     expect(() => parseWardmoteQuestionResponse(questionSet, {
       schema: WARDMOTE_QUESTION_RESPONSE_SCHEMA,
       answers: {

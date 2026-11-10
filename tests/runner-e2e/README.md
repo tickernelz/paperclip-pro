@@ -1827,7 +1827,7 @@ command origin before emitting permission evidence; Copilot can emit the
 permission notice first. Both still require the exact tool origin before Stop.
 
 Suite version 4 uses the normalized Product cancellation contract and writes
-`paperclip.e2e.native-active-stop-settlement.v2`. It requires the exact request,
+`wardmote.e2e.native-active-stop-settlement.v2`. It requires the exact request,
 item and turn closure with `reason: turn_terminal`, followed by the same stream's
 `turn.cancelled` with `status: cancelled` and `error: null`. The Product harness
 emits these fields; raw backend-only cancellation metadata is not its contract.
@@ -1883,7 +1883,7 @@ the native lifecycle; its normalized input hash must also match the authority.
 Exactly one proposed body must hash to that normalized digest and equal exactly
 one accepted body; identical duplicate proposals or receipts still fail.
 
-Suite 8 writes `paperclip.e2e.copilot-semantic-completion.v2` and requires
+Suite 8 writes `wardmote.e2e.copilot-semantic-completion.v2` and requires
 `paperclip.semantic_tool_receipt.v2` under `paperclip_semantic_tool_receipt_v2`.
 The authority has exactly eight bounded details. An explicit null normalized
 digest is diagnostic only and cannot qualify a successful finish. Legacy v1
@@ -1960,7 +1960,7 @@ contribute to the existing billing contract. Evidence includes the waiting and
 final task screenshots, saved checkpoints, final observations, source revision,
 profile/model, catalog digest, and SHA-256 fingerprints of both changed skill
 files and the grader/flow in `snapshots/blocker-guidance.json`. Grader version
-`paperclip.blocker-guidance.v6` requires the approved public note, a saved answer
+`wardmote.blocker-guidance.v6` requires the approved public note, a saved answer
 before the confirmation wake, and a new worker reply after the waiting checkpoint,
 accepts writable confirmations and multiple questions, and records `inputUx` separately from
 the blocking checks. Direct text input is the preferred UX for these open-ended
@@ -1998,7 +1998,7 @@ matching public package versions. Build/install provenance and the complete
 installed dependency/assets inventory remain separate required evidence; the
 entrypoint checks alone do not prove that closure.
 
-Run the explicit `paperclip-pro runtime setup pi` for that installation first.
+Run the explicit `wardmote runtime setup pi` for that installation first.
 This lane rejects candidate flags, local/remote daemon overrides, provider asset
 or pack overrides, and Node injection. It launches the installed JavaScript CLI
 without a TypeScript loader, rechecks its pins on controller restart, and records
@@ -2082,7 +2082,7 @@ failed, retried or extra work runs, and notification-created tasks fail. Every
 actual run remains in usage/cost accounting. The hiring scorer and final chat
 count guard use the same rule. All other chat count guards stay unchanged.
 
-The versioned `paperclip.hiring-templates.v3` oracle separately checks the production CEO bundle, assigned hiring
+The versioned `wardmote.hiring-templates.v3` oracle separately checks the production CEO bundle, assigned hiring
 skill, source hashes, completed pre-hire read receipts, the saved source-derived
 coder example, and durable instruction/skill selections.
 

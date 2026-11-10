@@ -444,7 +444,7 @@ it.each([
         openSession: async () => session,
       };
       const nativeInput: NativeExecutionInputV1 = {
-        schema: "paperclip.native-execution-input.v1",
+        schema: "wardmote.native-execution-input.v1",
         binding: {
           companyId: input.binding.companyId,
           issueId: input.binding.issueId,
@@ -474,7 +474,7 @@ it.each([
         completionContract: {
           id: "contract-maintenance",
           sha256: "contract-maintenance-sha",
-          schemaVersion: "paperclip.completion-contract.v1",
+          schemaVersion: "wardmote.completion-contract.v1",
           contract: {
             revision: "1",
             objective: "Fixture",
@@ -760,7 +760,7 @@ it.each([
               "directChildExitObserved", "exitCode", "signal", "processTreeRetired",
             ].sort());
             expect(fact).toMatchObject({
-              schema: "paperclip.provider_startup.v1",
+              schema: "wardmote.provider_startup.v1",
               launchId: intent!.launchId,
               trigger: "restore",
               attemptedProcessGeneration: providerBefore.providerProcessGeneration + 1,
@@ -1146,7 +1146,7 @@ it.each([
         expect(
           JSON.parse(failedBytes[2]!.toString("utf8")).startupAttempt,
         ).toMatchObject({
-          schema: "paperclip.provider_startup.v1",
+          schema: "wardmote.provider_startup.v1",
           phase: "initialization_failed",
           failedStage: "spawn",
           requestedThreadId: thread.thread.id,

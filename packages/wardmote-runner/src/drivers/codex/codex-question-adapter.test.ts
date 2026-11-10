@@ -63,7 +63,7 @@ describe("Codex structured question adapter", () => {
     });
 
     expect(questions).toMatchObject({
-      schema: "paperclip.question_set.v1",
+      schema: "wardmote.question_set.v1",
       title: "Deployment",
       questions: [
         { id: "environment", required: false, answerMode: "single_select" },
@@ -141,7 +141,7 @@ describe("Codex structured question adapter", () => {
     expect(runtimeRequestResponseWithContext(request, {
       action: "submit",
       response: {
-        schema: "paperclip.question_response.v1",
+        schema: "wardmote.question_response.v1",
         answers: { target: { selectedOptionIds: ["question-1", "option-1"] } },
       },
     }, responseContext)).toEqual({
@@ -181,7 +181,7 @@ describe("Codex structured question adapter", () => {
     expect(runtimeRequestResponseWithContext(request, {
       action: "submit",
       response: {
-        schema: "paperclip.question_response.v1",
+        schema: "wardmote.question_response.v1",
         answers: {
           environment: { selectedOptionIds: ["production"] },
         },
@@ -225,7 +225,7 @@ describe("Codex structured question adapter", () => {
     expect(runtimeRequestResponseWithContext(request, {
       action: "submit",
       response: {
-        schema: "paperclip.question_response.v1",
+        schema: "wardmote.question_response.v1",
         answers: {
           settings: {
             selectedOptionIds: ["retries", "enabled", "policy"],
@@ -381,7 +381,7 @@ describe("Codex structured question adapter", () => {
       origin: { adapter: "codex", method: "tool/requestUserInput" },
     };
     const response = {
-      schema: "paperclip.question_response.v1" as const,
+      schema: "wardmote.question_response.v1" as const,
       answers: { environment: { selectedOptionIds: ["staging"] } },
     };
 
@@ -389,7 +389,7 @@ describe("Codex structured question adapter", () => {
       answers: { environment: { answers: ["Staging"] } },
     });
     expect(runtimeRequestProtocolPayload(request)).toMatchObject({
-      schema: "paperclip.runtime_request.v2",
+      schema: "wardmote.runtime_request.v2",
       requestKind: "runtime",
       requestId: "request-1",
       type: "input",
@@ -425,7 +425,7 @@ describe("Codex structured question adapter", () => {
     expect(runtimeRequestResponse(elicitationRequest, {
       action: "submit",
       response: {
-        schema: "paperclip.question_response.v1",
+        schema: "wardmote.question_response.v1",
         answers: {
           retries: { text: "3" },
           enabled: { selectedOptionIds: ["true"] },
@@ -466,7 +466,7 @@ describe("Codex structured question adapter", () => {
     expect(runtimeRequestResponseWithContext(rehydratedRequest, {
       action: "submit",
       response: {
-        schema: "paperclip.question_response.v1",
+        schema: "wardmote.question_response.v1",
         answers: { credential: { selectedOptionIds: ["configured"] } },
       },
     }, responseContext)).toEqual({
@@ -531,7 +531,7 @@ describe("Codex structured question adapter", () => {
     expect(runtimeRequestResponseWithContext(structuredClone(request), {
       action: "submit",
       response: {
-        schema: "paperclip.question_response.v1",
+        schema: "wardmote.question_response.v1",
         answers: { environment: { selectedOptionIds: ["option-2"] } },
       },
     }, responseContext)).toEqual({

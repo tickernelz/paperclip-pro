@@ -381,7 +381,7 @@ if (args.length === 0 || (args.length === 1 && args[0] === "--help")) {
       "valid_recorded_pid_required",
     );
     for (const fact of facts) {
-      assert.equal(fact.schema, "paperclip.provider_startup.v1");
+      assert.equal(fact.schema, "wardmote.provider_startup.v1");
       assert.equal(fact.launchId, intent.launchId);
       assert.equal(fact.requestedThreadId, missingThread);
       assert.equal(fact.authenticatedThreadId, null);

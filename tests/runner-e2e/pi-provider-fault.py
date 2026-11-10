@@ -213,7 +213,7 @@ def terminate(config):
         fields = dict(line.split(':', 1) for line in Path(f'/proc/self/fdinfo/{fd}').read_text().splitlines() if ':' in line)
         require(int(fields.get('Pid', '-1').strip()) == pid, 'pidfd_retired')
         signal.pidfd_send_signal(fd, signal.SIGKILL, None, 0)
-        return {'schema': 'paperclip.e2e.pi-provider-death.v1', 'binding': config['binding'], 'runtimeEnvironmentLeaseId': config['runtimeEnvironmentLeaseId'],
+        return {'schema': 'wardmote.e2e.pi-provider-death.v1', 'binding': config['binding'], 'runtimeEnvironmentLeaseId': config['runtimeEnvironmentLeaseId'],
                 **before, 'signalled': True, 'signal': 'SIGKILL', 'targetKind': 'pi_native_child', 'workerSignalled': False}
     finally:
         os.close(fd)

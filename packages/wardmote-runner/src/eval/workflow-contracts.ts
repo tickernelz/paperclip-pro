@@ -1,8 +1,8 @@
 import type { EvalObservation } from "./eval-scoring.js";
 
-export const RUNNER_WORKFLOW_EVAL_CASE_SCHEMA = "paperclip.runner.workflow-eval-case.v1" as const;
-export const RUNNER_WORKFLOW_OBSERVATION_SCHEMA = "paperclip.runner.workflow-observation.v1" as const;
-export const RUNNER_WORKFLOW_SCORECARD_SCHEMA = "paperclip.runner.eval-scorecard.v2" as const;
+export const RUNNER_WORKFLOW_EVAL_CASE_SCHEMA = "wardmote.runner.workflow-eval-case.v1" as const;
+export const RUNNER_WORKFLOW_OBSERVATION_SCHEMA = "wardmote.runner.workflow-observation.v1" as const;
+export const RUNNER_WORKFLOW_SCORECARD_SCHEMA = "wardmote.runner.eval-scorecard.v2" as const;
 
 export const RUNNER_WORKFLOW_IDS = [
   "final-response",

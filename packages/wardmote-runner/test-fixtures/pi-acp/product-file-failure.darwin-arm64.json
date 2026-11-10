@@ -1,5 +1,5 @@
 {
-  "schema": "paperclip.pi-product-file-failure.v1",
+  "schema": "wardmote.pi-product-file-failure.v1",
   "sourceRevision": "dd78df1ef8b279c30c710c9b7a7f9fda22e321d6",
   "repositoryRevision": "06e3bae33be97d014f4d9add8d3a46a995568050",
   "providerPackDigest": "sha256:f75d3de7814276508f3706edb6e4510ce1dcecbc3e8fa674991fd554e5a75273",

@@ -566,7 +566,7 @@ await import(${JSON.stringify(pathToFileURL(join(wrapperRoot, "dist/index.js")).
     if (warm) {
       const low = await call("session/set_config_option", { sessionId: session.sessionId, configId: "thought_level", value: "low" });
       assert.equal(low.configOptions.find(option => option.id === "thought_level").currentValue, "low");
-      const prompt = index => [{ type: "text", text: JSON.stringify({ schema: "paperclip.native-continuation.v1", completion: contracts[index], events: [{ type: "fixture", agentHome: agentHomes[index] }] }) }];
+      const prompt = index => [{ type: "text", text: JSON.stringify({ schema: "wardmote.native-continuation.v1", completion: contracts[index], events: [{ type: "fixture", agentHome: agentHomes[index] }] }) }];
       assert.equal((await call("session/prompt", { sessionId: session.sessionId, prompt: prompt(0) })).stopReason, "end_turn");
       assert.equal(await readFile(join(agentHomes[0], "memory.txt"), "utf8"), "T1 fixture memory\n");
       const firstUpdates = notifications.map(event => event.params?.update).filter(Boolean);

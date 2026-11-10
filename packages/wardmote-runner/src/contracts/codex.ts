@@ -14,7 +14,7 @@ import {
   PRP_SEMANTIC_TOOL_NAMES,
 } from "./completion-result.js";
 
-export const CODEX_TASK_ENVELOPE_SCHEMA = "paperclip.skillless_task.v1" as const;
+export const CODEX_TASK_ENVELOPE_SCHEMA = "wardmote.skillless_task.v1" as const;
 export const CODEX_CODEX_PROTOCOL_VERSION = "v2" as const;
 /** @deprecated Use the provider-neutral PRP completion contract exports. */
 export const CODEX_COMPLETION_TOOL_NAME = PRP_COMPLETION_TOOL_NAME;
@@ -33,7 +33,7 @@ export interface CodexTaskEnvelope {
     criteria: Array<{ id: string; requirement: string }>;
   };
   constraints: string[];
-  expectedResultSchema: "paperclip.run_result.v1";
+  expectedResultSchema: "wardmote.run_result.v1";
 }
 
 export interface CodexModelContextSnapshot {
@@ -72,10 +72,10 @@ export interface CodexModelContextSnapshot {
 }
 
 export interface CodexRunMetadata {
-  schema: "paperclip.runner.codex.metadata.v1";
+  schema: "wardmote.runner.codex.metadata.v1";
   fixtureName: string;
   identity: {
-    schema: "paperclip.prp.identity.v1";
+    schema: "wardmote.prp.identity.v1";
     companyId: string;
     issueId: string;
     runId: string;
@@ -89,7 +89,7 @@ export interface CodexRunMetadata {
 }
 
 export interface CodexRunTrace {
-  schema: "paperclip.runner.codex.trace.v1";
+  schema: "wardmote.runner.codex.trace.v1";
   metadata: CodexRunMetadata;
   context: CodexModelContextSnapshot;
   events: PrpEvent[];
@@ -147,7 +147,7 @@ export function createCodexTaskEnvelope(input: {
       "Do not call a control-plane API.",
       "Return one semantic completion result.",
     ],
-    expectedResultSchema: "paperclip.run_result.v1",
+    expectedResultSchema: "wardmote.run_result.v1",
   };
 }
 

@@ -143,14 +143,14 @@ type RunnerTransportOptions = {
 };
 
 const durableControlPlaneState = (identity: Record<string, unknown>) => ({
-  schema: "paperclip.runner.durable.control-plane-state.v1",
+  schema: "wardmote.runner.durable.control-plane-state.v1",
   identity,
 });
 const durableRunnerState = (
   identity: Record<string, unknown>,
   lifecycle: string,
 ) => ({
-  schema: "paperclip.runner.durable.state.v1",
+  schema: "wardmote.runner.durable.state.v1",
   ...identity,
   lifecycle,
 });
@@ -988,7 +988,7 @@ describe("native incomplete-bootstrap evidence", () => {
     await mkdir(controlPlaneRoot, { recursive: true });
     const statePath = join(controlPlaneRoot, "control-plane-state.json");
     const base = {
-      schema: "paperclip.runner.durable.control-plane-state.v1",
+      schema: "wardmote.runner.durable.control-plane-state.v1",
       connectionCount: 0,
       committedEvents: [],
       commands: [
@@ -1937,7 +1937,7 @@ describe("verified native harness backups", () => {
       expect(
         verifyNativeHarnessBackupStamp(
           {
-            schema: "paperclip.native-harness-backup-stamp.v1",
+            schema: "wardmote.native-harness-backup-stamp.v1",
             normalizedSessionId: "native-session",
             runnerInstanceId: "runner-1",
             manifestSha256: `sha256:${createHash("sha256").update(manifestBytes).digest("hex")}`,
@@ -1988,7 +1988,7 @@ describe("split durable provider checkpoint identity", () => {
       providerLifetimeFenceCandidates: [53001, 53002, 53003],
     };
     const state = {
-      schema: "paperclip.runner.acpx-provider-state.v3", lifecycle: "suspended",
+      schema: "wardmote.runner.acpx-provider-state.v3", lifecycle: "suspended",
       activeTurnId: null, providerExitUnconfirmed: false,
       descriptor: { kind: "acpx", provider: "acpx", driver: "acpx_runtime", agent: "cursor",
         model: "explicit-model", commandDigest: profileDigest, normalizedSessionId: "native-session", mode: mode },
@@ -2035,7 +2035,7 @@ describe("split durable provider checkpoint identity", () => {
           "acpx_runtime",
         ),
         providerState: {
-          schema: "paperclip.runner.acpx-provider-state.v3",
+          schema: "wardmote.runner.acpx-provider-state.v3",
           lifecycle: "suspended",
           activeTurnId: null,
           providerExitUnconfirmed: false,
@@ -2062,7 +2062,7 @@ describe("split durable provider checkpoint identity", () => {
     const profileDigest = `sha256:${"a".repeat(64)}`;
     const input = execution({ kind: "acpx", agent: "cursor", model: "explicit-model", permissionMode: "deny-all", mode: "plan" }, "acpx_runtime");
     const providerState = {
-      schema: "paperclip.runner.acpx-provider-state.v3", lifecycle: "suspended", activeTurnId: null, providerExitUnconfirmed: false,
+      schema: "wardmote.runner.acpx-provider-state.v3", lifecycle: "suspended", activeTurnId: null, providerExitUnconfirmed: false,
       descriptor: { kind: "acpx", provider: "acpx", driver: "acpx_runtime", agent: "cursor", model: "explicit-model", commandDigest: profileDigest, normalizedSessionId: "native-session", mode: "plan" },
       identity: { kind: "acpx", normalizedSessionId: "native-session", acpxRecordId: "record-1", backendSessionId: "backend-1", agentSessionId: "agent-1", profileDigest,
         workspaceDigest: `sha256:${"b".repeat(64)}`, requestedModel: "explicit-model", effectiveModel: "explicit-model", permissionMode: "deny-all", mode: "plan", providerLifetimeFenceCandidates: [53001, 53002, 53003] },
@@ -2089,7 +2089,7 @@ describe("split durable provider checkpoint identity", () => {
         providerSessionIdentityFromDurableProviderState({
           execution: execution({ kind: provider }, driverKind),
           providerState: {
-            schema: "paperclip.runner.codex-provider-state.v1",
+            schema: "wardmote.runner.codex-provider-state.v1",
             lifecycle: "prepared",
             config: { provider, driver: driverKind },
             threadId: "driver-session-1",
@@ -2119,7 +2119,7 @@ describe("split durable provider checkpoint identity", () => {
     );
     for (const providerState of [
       {
-        schema: "paperclip.runner.acpx-provider-state.v3",
+        schema: "wardmote.runner.acpx-provider-state.v3",
         lifecycle: "turn_active",
         activeTurnId: "turn-1",
         providerExitUnconfirmed: false,
@@ -2147,7 +2147,7 @@ describe("split durable provider checkpoint identity", () => {
         },
       },
       {
-        schema: "paperclip.runner.acpx-provider-state.v3",
+        schema: "wardmote.runner.acpx-provider-state.v3",
         lifecycle: "suspended",
         activeTurnId: null,
         providerExitUnconfirmed: false,
@@ -2195,7 +2195,7 @@ describe("split durable provider checkpoint identity", () => {
         providerSessionIdentityFromDurableProviderState({
           execution: execution({ kind: provider }, `${provider}_driver`),
           providerState: {
-            schema: "paperclip.runner.managed-provider-state.v1",
+            schema: "wardmote.runner.managed-provider-state.v1",
             lifecycle: "suspended",
             normalizedSessionId: "native-session",
             descriptor: { kind: provider, config: {} },
@@ -2679,7 +2679,7 @@ describe("required remote checkpoint completion", () => {
 
 describe("runtime question fallback", () => {
   const questionSet = {
-    schema: "paperclip.question_set.v1" as const,
+    schema: "wardmote.question_set.v1" as const,
     title: "Configure deployment",
     description: "These answers are required before work can continue.",
     submitLabel: "Continue",
@@ -2717,7 +2717,7 @@ describe("runtime question fallback", () => {
           reason,
           replayAllowed: false,
           request: {
-            schema: "paperclip.runtime_request.v2",
+            schema: "wardmote.runtime_request.v2",
             requestKind: "runtime",
             requestId: "elicitation-1",
             type: "input",
@@ -2775,7 +2775,7 @@ describe("runtime question fallback", () => {
             reason,
             replayAllowed,
             request: {
-              schema: "paperclip.runtime_request.v2",
+              schema: "wardmote.runtime_request.v2",
               requestKind: "runtime",
               requestId: "elicitation-1",
               type: "input",
@@ -2914,7 +2914,7 @@ describe("native provider bootstrap environment", () => {
 });
 
 const execution = {
-  schema: "paperclip.native-execution-input.v1",
+  schema: "wardmote.native-execution-input.v1",
   provider: { kind: "codex", model: null },
   binding: {
     companyId: "company",
@@ -2945,7 +2945,7 @@ const execution = {
   completionContract: {
     id: "contract",
     sha256: "sha",
-    schemaVersion: "paperclip.completion-contract.v1",
+    schemaVersion: "wardmote.completion-contract.v1",
     contract: {
       revision: "1",
       objective: "Exercise the native session.",
@@ -3055,7 +3055,7 @@ describe("retained native cleanup activation", () => {
     const key = createHash("sha256")
       .update(
         canonical({
-          schema: "paperclip.native-session-scope.v2",
+          schema: "wardmote.native-session-scope.v2",
           companyId: execution.binding.companyId,
           agentId: execution.binding.agentId,
           workspace: {
@@ -3101,7 +3101,7 @@ describe("retained native cleanup activation", () => {
       ? "exact-account"
       : "exact-thread";
     const event = {
-      schema: "paperclip.prp.event.v1",
+      schema: "wardmote.prp.event.v1",
       schemaVersion: 1,
       sourceKind: "runner",
       sourceSeq: 1,
@@ -3962,7 +3962,7 @@ describe("retained native cleanup activation", () => {
           stagingName: input.stateDirectory.split("/").at(-1),
         });
         const epoch = {
-          schema: "paperclip.native_cleanup_runner_epoch.v1",
+          schema: "wardmote.native_cleanup_runner_epoch.v1",
           requestId: input.requestId,
           epoch: 0,
           launchId: "fixture-launch",
@@ -4428,12 +4428,12 @@ describe("stopped native conversation physical cleanup", () => {
       : JSON.stringify(value);
     const hash = (value: unknown) => createHash("sha256").update(canonical(value)).digest("hex");
     const providerScope = input.provider.kind === "acpx" ? { kind: "acpx", agent: input.provider.agent, profile: input.provider.profile } : { kind: "codex" };
-    const root = join(base, hash({ schema: "paperclip.native-session-scope.v2", companyId: input.binding.companyId,
+    const root = join(base, hash({ schema: "wardmote.native-session-scope.v2", companyId: input.binding.companyId,
       agentId: input.binding.agentId, workspace: { kind: "managed", executionWorkspaceId: input.binding.executionWorkspaceId },
       provider: { driverKind: input.session.driverKind, identity: providerScope }, normalizedSessionId: input.session.normalizedSessionId }));
     const identity = { runId: input.binding.runId, normalizedSessionId: input.session.normalizedSessionId,
       runnerInstanceId: "runner-crashed", environmentLeaseId: "lease", turnId: "turn", itemId: "item" };
-    const event = { schema: "paperclip.prp.event.v1", schemaVersion: 1, sourceKind: "runner", sourceSeq: 1,
+    const event = { schema: "wardmote.prp.event.v1", schemaVersion: 1, sourceKind: "runner", sourceSeq: 1,
       sourceEventId: "provider-identity", sourceInstanceId: identity.runnerInstanceId, runId: identity.runId,
       normalizedSessionId: identity.normalizedSessionId, turnId: identity.turnId, itemId: identity.itemId,
       priority: 0, emittedAt: new Date().toISOString(), eventType: "session.started",
@@ -4443,7 +4443,7 @@ describe("stopped native conversation physical cleanup", () => {
     const providerEvents = mode.startsWith("replacement") ? [event, replacement] : [event];
     if (mode === "diagnostic_owner_alive") providerEvents.push({ ...event, eventType: "harness.diagnostic",
       payload: { providerMethod: "acpx/process", role: "acp_agent", pid: process.pid } } as unknown as typeof event);
-    const providerState = { schema: mode === "wrong_schema" ? "unknown" : `paperclip.runner.${provider}-provider-state.${provider === "codex" ? "v1" : "v3"}`, lifecycle: "turn_active",
+    const providerState = { schema: mode === "wrong_schema" ? "unknown" : `wardmote.runner.${provider}-provider-state.${provider === "codex" ? "v1" : "v3"}`, lifecycle: "turn_active",
       ...(mode === "startup_intent" ? { startupAttempt: { phase: "intent" } } : {}),
       ...(mode === "pending_identity" ? { pendingEvents: [{ eventType: "session.started" }] } : {}),
     };
@@ -4525,7 +4525,7 @@ describe("explicit failed native retry physical evidence", () => {
     const key = createHash("sha256")
       .update(
         canonical({
-          schema: "paperclip.native-session-scope.v2",
+          schema: "wardmote.native-session-scope.v2",
           companyId: execution.binding.companyId,
           agentId: execution.binding.agentId,
           workspace: {
@@ -4595,7 +4595,7 @@ describe("explicit failed native retry physical evidence", () => {
         await writeFile(
           join(root, "runner", "codex-provider-state.json"),
           JSON.stringify({
-            schema: "paperclip.runner.codex-provider-state.v1",
+            schema: "wardmote.runner.codex-provider-state.v1",
             lifecycle: "prepared",
             threadId: "exact-thread",
             providerSessionId: providerAccount,
@@ -4861,7 +4861,7 @@ describe("provider plan synchronization", () => {
 
 describe("native conversation replies", () => {
   const reply: PrpEvent = {
-    schema: "paperclip.prp.event.v1", sourceInstanceId: "runner-1",
+    schema: "wardmote.prp.event.v1", sourceInstanceId: "runner-1",
     sourceEventId: "runner-1:run-1:8", sourceSeq: 8, sourceKind: "runner",
     runId: "run-1", normalizedSessionId: "session-1", turnId: "turn-1",
     eventType: "item.completed", schemaVersion: 1, priority: 1,
@@ -4947,7 +4947,7 @@ describe("native governed waits", () => {
       }),
     ).toEqual(
       expect.objectContaining({
-        schema: "paperclip.run_result.v1",
+        schema: "wardmote.run_result.v1",
         reportedWorkDisposition: "yielded",
         summary: "Waiting for Choose an output format.",
         completionClaim: expect.objectContaining({
@@ -5014,7 +5014,7 @@ describe("native governed waits", () => {
       async () => waitResult,
     );
     const replayedEvent: PrpEvent = {
-      schema: "paperclip.prp.event.v1" as const,
+      schema: "wardmote.prp.event.v1" as const,
       sourceInstanceId: "runner-recovered",
       sourceEventId: "runner-recovered:item:7",
       sourceSeq: 7,
@@ -6139,7 +6139,7 @@ describe("native session cancellation", () => {
     expect(cancellationUpdate?.values.resultJson).toMatchObject({
       durableReceipt: { operationId: "operation-1" },
       nativeCancellation: {
-        schema: "paperclip.native-cancellation.v1",
+        schema: "wardmote.native-cancellation.v1",
         dispatchState: "acknowledged",
         scope: "run",
         dispatched: false,
@@ -6384,7 +6384,7 @@ describe("native session execution lease fencing", () => {
             {},
             {
               nativeCancellation: {
-                schema: "paperclip.native-cancellation.v1",
+                schema: "wardmote.native-cancellation.v1",
                 intentId: "native-cancellation:intent-1",
                 intentAuditId: "native-cancellation-audit",
                 companyId: execution.binding.companyId,
@@ -6922,9 +6922,9 @@ describe("native warm session supervision", () => {
         await prepareNativeHeartbeatRun({ db, run: run!, issue: issue!, environmentLeaseId: currentLease });
         const [contract] = await db.select().from(tables.completionContracts).where(eq(tables.completionContracts.issueId, issueId));
         const target = { kind: "remote" as const, transport: "sandbox" as const, providerKey: "daytona", environmentId, leaseId: currentLease, remoteCwd, runner: commandRunner(currentLease) };
-        const current: NativeExecutionInputV3 = { ...execution, schema: "paperclip.native-execution-input.v3",
+        const current: NativeExecutionInputV3 = { ...execution, schema: "wardmote.native-execution-input.v3",
           executionMode: "default", planningContext: null, runtimeContext: nativeRuntimeContextFixture(),
-          completionContract: { id: contract!.id, sha256: contract!.canonicalSha256, schemaVersion: "paperclip.completion-contract.v1",
+          completionContract: { id: contract!.id, sha256: contract!.canonicalSha256, schemaVersion: "wardmote.completion-contract.v1",
             contract: buildNativeCompletionContract(issue!, { revision: contract!.revision }) }, binding: { companyId, agentId, issueId, runId, executionWorkspaceId: runId },
           workspace: { cwd: remoteCwd, repoUrl: null, repoRef: null, branchName: null },
           session: { ...execution.session, normalizedSessionId: environmentId, lifecyclePolicy: { mode: "warm", idleTimeoutMs: 60_000 } } };
@@ -8705,7 +8705,7 @@ describe("native warm session supervision", () => {
     const secondSession = { close: secondClose };
     const base = {
       ...execution,
-      schema: "paperclip.native-execution-input.v4",
+      schema: "wardmote.native-execution-input.v4",
       provider: change === "ACPX runtime contract"
         ? { kind: "acpx", agent: "claude", model: "claude-sonnet-5", permissionMode: "approve-all" }
         : { kind: "codex", model: null, approvalPolicy: "never" },
@@ -8821,7 +8821,7 @@ describe("native session bounded recovery", () => {
       Object.assign(stop, { ...(source === "operator"
         ? { cancelledByActorType: "user", cancelledByUserId: "board" }
         : { reassignmentStopRequested: true }), nativeCancellation: {
-        schema: "paperclip.native-cancellation.v1", ...execution.binding, scope: "run", reasonCode: "cancellation_run_only",
+        schema: "wardmote.native-cancellation.v1", ...execution.binding, scope: "run", reasonCode: "cancellation_run_only",
         dispatched: true, dispatchState: "acknowledged", intentAuditId: "intent", acknowledgementAuditId: "ack",
       } });
       throw failureKind === "permission-declined" ? new NativePermissionDeclinedError() : new Error("native_finalization_missing: session returned no semantic result");
@@ -8840,7 +8840,7 @@ describe("native session bounded recovery", () => {
     const stop: Record<string, unknown> = {};
     state.execute.mockReset().mockImplementationOnce(async () => {
       Object.assign(stop, { nativeCancellation: {
-        schema: "paperclip.native-cancellation.v1", ...execution.binding,
+        schema: "wardmote.native-cancellation.v1", ...execution.binding,
         scope: "run", reasonCode: "cancellation_run_only", dispatchState,
         dispatched: true, intentAuditId: "intent", acknowledgementAuditId: "ack",
       } });
@@ -9477,7 +9477,7 @@ describe("native session bounded recovery", () => {
 describe("native process ownership", () => {
   it("checks the complete wake-comment receipt before finalizing a successful provider turn", async () => {
     const expectedBinding = {
-      schema: "paperclip.current-wake-comments-binding.v1",
+      schema: "wardmote.current-wake-comments-binding.v1",
       companyId: execution.binding.companyId,
       issueId: execution.binding.issueId,
       runId: execution.binding.runId,
@@ -10208,7 +10208,7 @@ describe("runnerd provider runtime wiring", () => {
       itemId: "item-authority-archive",
     };
     const archivedState = {
-      schema: "paperclip.runner.durable.state.v1",
+      schema: "wardmote.runner.durable.state.v1",
       ...archiveIdentity,
       lifecycle: "suspended",
     };
@@ -10550,7 +10550,7 @@ describe("runnerd provider runtime wiring", () => {
           eventType: "item.delta",
           priority: 1,
           envelope: {
-            schema: "paperclip.prp.event.v1",
+            schema: "wardmote.prp.event.v1",
             schemaVersion: 1,
             sourceKind: "runner",
             sourceInstanceId: identity.runnerInstanceId,
@@ -11214,7 +11214,7 @@ describe("runnerd provider runtime wiring", () => {
           await writeFile(
             join(root, "runner", "codex-provider-state.json"),
             JSON.stringify({
-              schema: "paperclip.runner.codex-provider-state.v1",
+              schema: "wardmote.runner.codex-provider-state.v1",
               lifecycle: "session_open",
               config: { provider: "codex", driver: "codex_app_server" },
               threadId: "recovery-thread",
@@ -11561,7 +11561,7 @@ describe("runnerd provider runtime wiring", () => {
           eventType: "item.delta",
           priority: 1,
           envelope: {
-            schema: "paperclip.prp.event.v1",
+            schema: "wardmote.prp.event.v1",
             schemaVersion: 1,
             sourceKind: "runner",
             sourceInstanceId: identity.runnerInstanceId,
@@ -11682,7 +11682,7 @@ describe("runnerd provider runtime wiring", () => {
         const pending = {
           phase: variant === "awaiting_result" ? "awaiting_result" : "prepared",
           receipt: {
-            schema: "paperclip.runner.warm-transition.v1",
+            schema: "wardmote.runner.warm-transition.v1",
             newIdentity: {
               ...identity,
               runId:
@@ -11699,7 +11699,7 @@ describe("runnerd provider runtime wiring", () => {
             : {
                 ...durableControlPlaneState(identity),
                 schema:
-                  "paperclip.runner.durable.control-plane-state.warm-transition.v1",
+                  "wardmote.runner.durable.control-plane-state.warm-transition.v1",
                 ...(variant === "schema_only"
                   ? {}
                   : { warmTransition: pending }),
@@ -11712,12 +11712,12 @@ describe("runnerd provider runtime wiring", () => {
               };
         const runner = {
           ...durableRunnerState(identity, "ready"),
-          schema: "paperclip.runner.durable.state.warm-transition.v1",
+          schema: "wardmote.runner.durable.state.warm-transition.v1",
           warmTransition: pending,
         };
         const coreBytes =
           variant === "malformed"
-            ? '{"schema":"paperclip.runner.durable.control-plane-state.warm-transition.v1",'
+            ? '{"schema":"wardmote.runner.durable.control-plane-state.warm-transition.v1",'
             : JSON.stringify(core);
         const runnerBytes = JSON.stringify(runner);
         const corePath = join(
@@ -11814,7 +11814,7 @@ describe("runnerd provider runtime wiring", () => {
             caseName === "unknown_schema"
               ? {
                   ...runnerState,
-                  schema: "paperclip.runner.durable.state.v999",
+                  schema: "wardmote.runner.durable.state.v999",
                 }
               : runnerState,
           ),
@@ -11902,7 +11902,7 @@ describe("runnerd provider runtime wiring", () => {
                       environmentLeaseId:
                         scopedExecution.binding.executionWorkspaceId,
                     }),
-                    schema: "paperclip.runner.durable.control-plane-state.v999",
+                    schema: "wardmote.runner.durable.control-plane-state.v999",
                   })
                 : JSON.stringify(
                     durableControlPlaneState({
@@ -12246,7 +12246,7 @@ describe("runnerd provider runtime wiring", () => {
     const scopedExecution = (companyId: string, runId: string) =>
       ({
         ...execution,
-        schema: "paperclip.native-execution-input.v4",
+        schema: "wardmote.native-execution-input.v4",
         binding: {
           ...execution.binding,
           companyId,
@@ -12327,7 +12327,7 @@ describe("runnerd provider runtime wiring", () => {
     }) =>
       ({
         ...execution,
-        schema: "paperclip.native-execution-input.v4",
+        schema: "wardmote.native-execution-input.v4",
         binding: {
           ...execution.binding,
           companyId: "company-session-scope",
@@ -12767,7 +12767,7 @@ describe("runnerd provider runtime wiring", () => {
     };
     await mkdir(join(options.stateDirectory!, "control-plane"), { recursive: true });
     await writeFile(join(options.stateDirectory!, "control-plane", "control-plane-state.json"), JSON.stringify({
-      schema: "paperclip.runner.durable.control-plane-state.v1",
+      schema: "wardmote.runner.durable.control-plane-state.v1",
       identity: { ...options.prpIdentity, ...(scenario === "wrong_identity" ? { runId: "other-run" } : {}) },
       connectionCount: scenario === "connected" ? 1 : 0, committedEvents: [],
       commands: [{ type: "run.prepare", status: "pending" }, { type: scenario === "pending_turn" ? "turn.start" : "session.open", status: "pending" }],
@@ -13150,7 +13150,7 @@ describe("runnerd provider runtime wiring", () => {
   it("passes the isolated ACPX runtime directory to the native backend factory", async () => {
     const acpxExecution = {
       ...execution,
-      schema: "paperclip.native-execution-input.v4",
+      schema: "wardmote.native-execution-input.v4",
       task: {
         identifier: "DOT-ACPX",
         title: "ACPX task",
@@ -13227,7 +13227,7 @@ describe("runnerd provider runtime wiring", () => {
   it("passes the persisted OpenCode permission mode to runnerd", async () => {
     const opencodeExecution = {
       ...execution,
-      schema: "paperclip.native-execution-input.v4",
+      schema: "wardmote.native-execution-input.v4",
       binding: { ...execution.binding, runId: "run-opencode-permissions" },
       session: {
         ...execution.session,

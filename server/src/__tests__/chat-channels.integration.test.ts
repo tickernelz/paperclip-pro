@@ -36152,7 +36152,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
                 },
               ],
               questionSet: {
-                schema: "paperclip.question_set.v1",
+                schema: "wardmote.question_set.v1",
                 title: "Deployment details",
                 questions: [
                   {
@@ -37355,7 +37355,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       payload: {
         text: source,
         card: {
-          schema: "paperclip.chat.card.v1",
+          schema: "wardmote.chat.card.v1",
           kind: "status",
           title: "Long structured card",
         },
@@ -45155,7 +45155,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
           phase: "delivered",
           privateState: {
             resolution: {
-              schema: "paperclip.teams.file-resolution.v1",
+              schema: "wardmote.teams.file-resolution.v1",
               action: "mark_delivered",
               fromPhase: "upload_unknown",
             },
@@ -49186,7 +49186,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
             .set({
               payload: { registration: priorRegistration },
               result: {
-                schema: "paperclip.discord.command-registration-result.v1",
+                schema: "wardmote.discord.command-registration-result.v1",
                 outcome: legacyCopy ? "registered" : "unavailable",
                 retryAt: legacyCopy
                   ? new Date(0).toISOString()
@@ -58721,7 +58721,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         const nativeSessionId = context.binding.normalizedSessionId;
         const runnerInstanceId = context.binding.runnerSourceInstanceId;
         const inputFor = (id: string) => ({
-          schema: "paperclip.native-execution-input.v1",
+          schema: "wardmote.native-execution-input.v1",
           provider: { kind: "codex", model: null },
           binding: {
             companyId: context.fixture.companyId,
@@ -58752,7 +58752,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
           completionContract: {
             id: context.binding.completionContractId,
             sha256: context.binding.completionContractSha256,
-            schemaVersion: "paperclip.completion-contract.v1",
+            schemaVersion: "wardmote.completion-contract.v1",
             contract: {
               revision: "recovered-response-v1",
               objective: "Exact request",
@@ -58899,7 +58899,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         const key = createHash("sha256")
           .update(
             canonical({
-              schema: "paperclip.native-session-scope.v2",
+              schema: "wardmote.native-session-scope.v2",
               companyId: context.fixture.companyId,
               agentId: context.fixture.assignedAgentId,
               workspace: { kind: "transient", ...inputFor(runId).workspace },
@@ -58924,14 +58924,14 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
           [
             "control-plane/control-plane-state.json",
             {
-              schema: "paperclip.runner.durable.control-plane-state.v1",
+              schema: "wardmote.runner.durable.control-plane-state.v1",
               identity,
             },
           ],
           [
             "runner/runner-state.json",
             {
-              schema: "paperclip.runner.durable.state.v1",
+              schema: "wardmote.runner.durable.state.v1",
               ...identity,
               lifecycle: "suspended",
               outbox: [],
@@ -58940,7 +58940,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
           [
             "runner/codex-provider-state.json",
             {
-              schema: "paperclip.runner.codex-provider-state.v1",
+              schema: "wardmote.runner.codex-provider-state.v1",
               lifecycle: "prepared",
               threadId: "same-retained-thread",
               providerSessionId: providerAccount,
@@ -58999,7 +58999,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
           writeFileSync(
             path.join(root, "cleanup-activation.json"),
             JSON.stringify({
-              schema: "paperclip.native_cleanup_activation.v1",
+              schema: "wardmote.native_cleanup_activation.v1",
               companyId: context.fixture.companyId,
               issueId: context.issue.id,
               runId: context.runId,
@@ -59153,7 +59153,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         const nativeSessionId = randomUUID();
         const runnerInstanceId = randomUUID();
         const nativeExecutionInput = {
-          schema: "paperclip.native-execution-input.v1",
+          schema: "wardmote.native-execution-input.v1",
           provider: { kind: "codex", model: null },
           binding: {
             companyId: context.fixture.companyId,
@@ -59184,7 +59184,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
           completionContract: {
             id: randomUUID(),
             sha256: "sha",
-            schemaVersion: "paperclip.completion-contract.v1",
+            schemaVersion: "wardmote.completion-contract.v1",
             contract: {
               revision: "1",
               objective: "Exact request",
@@ -59287,7 +59287,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
                   .join(",")}}`
               : JSON.stringify(value);
           const scope = {
-            schema: "paperclip.native-session-scope.v2",
+            schema: "wardmote.native-session-scope.v2",
             companyId: context.fixture.companyId,
             agentId: context.fixture.assignedAgentId,
             workspace: { kind: "transient", ...nativeExecutionInput.workspace },
@@ -59312,14 +59312,14 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
           writeFileSync(
             path.join(root, "control-plane", "control-plane-state.json"),
             JSON.stringify({
-              schema: "paperclip.runner.durable.control-plane-state.v1",
+              schema: "wardmote.runner.durable.control-plane-state.v1",
               identity,
             }),
           );
           writeFileSync(
             path.join(root, "runner", "runner-state.json"),
             JSON.stringify({
-              schema: "paperclip.runner.durable.state.v1",
+              schema: "wardmote.runner.durable.state.v1",
               ...identity,
               lifecycle: "suspended",
               outbox: [],
@@ -59328,7 +59328,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
           writeFileSync(
             path.join(root, "runner", "codex-provider-state.json"),
             JSON.stringify({
-              schema: "paperclip.runner.codex-provider-state.v1",
+              schema: "wardmote.runner.codex-provider-state.v1",
               lifecycle: "prepared",
               threadId: "exact-retry-thread",
               providerSessionId: providerAccount,
@@ -61598,7 +61598,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
             payload: {
               code: "provider_startup_ownership",
               startup: {
-                schema: "paperclip.provider_startup.v1",
+                schema: "wardmote.provider_startup.v1",
                 phase,
                 launchId: "PRIVATE-STARTUP-LAUNCH",
                 requestedThreadId: "PRIVATE-REQUESTED-THREAD",
@@ -66634,7 +66634,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       companyId: context.fixture.companyId,
       issueId: context.issue.id,
       revision: 1,
-      schemaVersion: "paperclip.completion-contract.v1",
+      schemaVersion: "wardmote.completion-contract.v1",
       policyVersion: "phase6-v3",
       risk: "low",
       completionAuthority: "agent_claim_policy",
@@ -66674,7 +66674,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       .set({ status: "in_review", executionRunId: null })
       .where(eq(issues.id, context.issue.id));
     const result: PrpStructuredRunResult = {
-      schema: "paperclip.run_result.v1",
+      schema: "wardmote.run_result.v1",
       reportedWorkDisposition: "yielded",
       summary:
         summary?.(context.issue.id) ??
@@ -67799,7 +67799,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       companyId: fixture.companyId,
       issueId,
       revision: 1,
-      schemaVersion: "paperclip.completion-contract.v1",
+      schemaVersion: "wardmote.completion-contract.v1",
       policyVersion: "phase6-v3",
       risk: "low",
       completionAuthority: "agent_claim_policy",
@@ -67857,7 +67857,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       sourceInstanceId: runnerInstanceId,
     });
     const responseResult: PrpStructuredRunResult = {
-      schema: "paperclip.run_result.v1",
+      schema: "wardmote.run_result.v1",
       reportedWorkDisposition: "yielded",
       summary: "The exact response and files are prepared. I will wait.",
       completionClaim: {
@@ -69517,7 +69517,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         };
         const proof = received!.normalizedEvent.teamsPersonalRecipient;
         expect(proof).toEqual({
-          schema: "paperclip.teams.personal-recipient.v1",
+          schema: "wardmote.teams.personal-recipient.v1",
           companyId: context.fixture.companyId,
           endpointId: context.endpoint.id,
           runtimeGeneration: origin.generation,
@@ -71393,7 +71393,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         companyId: context.fixture.companyId,
         issueId: context.issue.id,
         revision: 1,
-        schemaVersion: "paperclip.completion-contract.v1",
+        schemaVersion: "wardmote.completion-contract.v1",
         policyVersion: "phase6-v3",
         risk: "low",
         completionAuthority: "agent_claim_policy",
@@ -71469,7 +71469,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         .set({ status: "in_review", executionRunId: null })
         .where(eq(issues.id, context.issue.id));
       const result: PrpStructuredRunResult = {
-        schema: "paperclip.run_result.v1",
+        schema: "wardmote.run_result.v1",
         reportedWorkDisposition: "yielded",
         summary:
           "Here is the exact requested file. I will wait for your next message.",
@@ -71529,7 +71529,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         status: "succeeded",
         resultJson: {
           nativeCommittedChatResponse: {
-            schema: "paperclip.native_committed_chat_response.v1",
+            schema: "wardmote.native_committed_chat_response.v1",
           },
         },
       });

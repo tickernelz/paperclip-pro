@@ -234,7 +234,7 @@ class FakeCleanRoomTransport implements CodexAppServerTransport {
         interactionKind: "questions",
         title: "Which way should I take this?",
         prompt: "Pick a direction for the clean-room issue.",
-        payload: { version: 1, questionSet: { schema: "paperclip.question_set.v1", questions: [{ id: "path", prompt: "Which path?", required: true, answerMode: "single_select", options: [{ id: "a", label: "Path A" }, { id: "b", label: "Path B" }] }] } },
+        payload: { version: 1, questionSet: { schema: "wardmote.question_set.v1", questions: [{ id: "path", prompt: "Which path?", required: true, answerMode: "single_select", options: [{ id: "a", label: "Path A" }, { id: "b", label: "Path B" }] }] } },
         continuationPolicy: "wake_assignee",
       });
     }
@@ -842,7 +842,7 @@ describe("Capability clean-room chat server", () => {
       schema: string;
       revisions: Array<{ revision: number; operationId: string; state: Record<string, unknown> }>;
     };
-    expect(inspected.schema).toBe("paperclip.capability.devtools.v1");
+    expect(inspected.schema).toBe("wardmote.capability.devtools.v1");
     expect(inspected.revisions[0]?.operationId).toBe("fixture.seed");
     expect(inspected.revisions.at(-1)?.state).toEqual(expect.objectContaining({
       company: expect.any(Object),

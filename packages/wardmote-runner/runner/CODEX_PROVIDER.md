@@ -19,7 +19,7 @@ execution and finalization path.
 - `turn.start` requires bounded non-empty `payload.text`. `turn.steer`,
   `turn.interrupt`, `turn.stop`, and `run.cancel` use Codex's native turn IDs,
   while PRP continues to use its own stable run and turn identities.
-- `request.resolve` translates a validated `paperclip.question_response.v1`
+- `request.resolve` translates a validated `wardmote.question_response.v1`
   response back to Codex's user-input response shape.
 - `session.close` and `session.destroy` explicitly terminate the provider
   process group. Runner suspend and shutdown also stop the process without

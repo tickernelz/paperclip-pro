@@ -23,7 +23,7 @@ fn tool_set() -> AuthorizedToolSet {
         response_schema: json!({"type":"object"}),
     }];
     AuthorizedToolSet {
-        schema: "paperclip.runner.authorized-tools.v1".to_owned(),
+        schema: "wardmote.runner.authorized-tools.v1".to_owned(),
         schema_version: 1,
         catalog_digest: authorized_tool_catalog_digest(&operations).unwrap(),
         operations,
@@ -82,7 +82,7 @@ fn input_resolution(option_id: &str) -> serde_json::Value {
     json!({
         "action":"submit",
         "response":{
-            "schema":"paperclip.question_response.v1",
+            "schema":"wardmote.question_response.v1",
             "answers":{"target":{"selectedOptionIds":[option_id]}}
         }
     })
@@ -261,7 +261,7 @@ fn fake_sidecar_rejects_the_unsupported_permission_resolution_command() {
             stdin,
             "{}",
             json!({
-                "protocolVersion":"paperclip.runner.acpx-sidecar.v1",
+                "protocolVersion":"wardmote.runner.acpx-sidecar.v1",
                 "id":1,
                 "command":"permission.resolve",
                 "params":{"requestId":"permission-1","resolution":"approved"}

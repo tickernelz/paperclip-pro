@@ -94,7 +94,7 @@ export function assertPiNodeSystemDependencies(listing, platform) {
 
 export async function writePiDistributionManifest(runtimeRoot) {
   const manifest = {
-    schema: "paperclip.pi-runtime-files.v1",
+    schema: "wardmote.pi-runtime-files.v1",
     node: "node/bin/node",
     piEntrypoint: "node_modules/@earendil-works/pi-coding-agent/dist/cli.js",
     extension: "extensions/paperclip.js",
@@ -246,7 +246,7 @@ export async function materializePiDistribution({ outputRoot, nodeExecutable, np
     if (nativeClosureSha256 !== PI_DISTRIBUTION_CLOSURE_SHA256[target]) throw new Error("Pi native closure differs from its trusted target pin");
     await writeFile(join(staging, "native-closure.json"), `${JSON.stringify({ entries })}\n`);
     const metadata = {
-      schema: "paperclip.pi-distribution.v1", pins: PI_DISTRIBUTION_PINS,
+      schema: "wardmote.pi-distribution.v1", pins: PI_DISTRIBUTION_PINS,
       target: { platform: process.platform, architecture: process.arch, nodeVersion: version.slice(1) },
       packageCount, lockSha256: hash(await readFile(join(runtimeRoot, "package-lock.json"))), manifestDigest,
       runtimeRoot: "runtime", nativeClosureSha256, manifest,

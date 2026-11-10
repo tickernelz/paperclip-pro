@@ -22,7 +22,7 @@ function execution(root: string): NativeExecutionInputV6 {
     skills: [], mcp: { assignmentSetId: "none", digest, bindingId: null },
   };
   return parseNativeExecutionInput({
-    schema: "paperclip.native-execution-input.v6",
+    schema: "wardmote.native-execution-input.v6",
     binding: { companyId, agentId, runId: randomUUID(), issueId: randomUUID(), executionWorkspaceId: randomUUID() },
     task: { identifier: "DOT-1", title: "Synthetic bridge recovery", description: null, prompt: "Read the synthetic counter.", workMode: "standard" },
     provider: { kind: "openai_dot", model: null, binding: { companyId, agentId, bindingId: randomUUID(), bindingGeneration: 1,
@@ -30,7 +30,7 @@ function execution(root: string): NativeExecutionInputV6 {
     workspace: { access: "none", cwd: null, repoUrl: null, repoRef: null, branchName: null },
     session: { normalizedSessionId: randomUUID(), driverKind: "openai_dot_mcp", protocolVersion: 1, lifecyclePolicy: { mode: "per_turn", idleTimeoutMs: null } },
     executionMode: "default", planningContext: null,
-    completionContract: { id: randomUUID(), sha256: "sha256:" + digest, schemaVersion: "paperclip.completion-contract.v1",
+    completionContract: { id: randomUUID(), sha256: "sha256:" + digest, schemaVersion: "wardmote.completion-contract.v1",
       contract: { revision: "1", objective: "Read the counter", criteria: [{ id: "objective", requirement: "Read the counter" }] } },
     runtimeContext: { ...context, aggregateDigest: canonicalNativeRuntimeContextDigest(context) }, interactionResponses: [], credentialBindings: [],
   }) as NativeExecutionInputV6;

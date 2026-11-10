@@ -68,7 +68,7 @@ describe("Pi pending control identity", () => {
 });
 describe("Pi active Stop settlement", () => {
   it("uses the production terminal mapper and actually cancels the pending callback", () => {
-    const s = cancelled(); expect(s.f.responses).toHaveLength(1); expect(s.read()).toMatchObject({ normalCompletionAccepted: false, schema: "paperclip.e2e.pi-stop-settlement.v1" });
+    const s = cancelled(); expect(s.f.responses).toHaveLength(1); expect(s.read()).toMatchObject({ normalCompletionAccepted: false, schema: "wardmote.e2e.pi-stop-settlement.v1" });
   });
   it.each([
     ["normal terminal", (s: ReturnType<typeof cancelled>) => { event(s.f.events.at(-1)!).eventType = s.f.events.at(-1)!.eventType = "turn.completed"; }],

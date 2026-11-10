@@ -46,7 +46,7 @@ export const getTaskContextAction = {
   "live": {
     "order": 0,
     "descriptor": {
-      "schema": "paperclip.semantic-tool.v1",
+      "schema": "wardmote.semantic-tool.v1",
       "operationId": "get_task_context",
       "version": 1,
       "title": "Get active task context",
@@ -74,7 +74,7 @@ export const getTaskContextAction = {
   "scenario": {
     "order": 0,
     "successExample": {
-      "schema": "paperclip.capability.tool-result.v1",
+      "schema": "wardmote.capability.tool-result.v1",
       "ok": true,
       "operationId": "get_task_context",
       "operationResultId": "example-result",
@@ -99,7 +99,7 @@ export const getTaskContextAction = {
           "schema": {
             "type": "string",
             "enum": [
-              "paperclip.capability.tool-result.v1"
+              "wardmote.capability.tool-result.v1"
             ]
           },
           "ok": {

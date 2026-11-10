@@ -153,7 +153,7 @@ describe("canonical local-provider boundary corpus", () => {
         payload: {
           request: {
             requestId: fixture.expected.questionRequestId,
-            input: { schema: "paperclip.question_set.v1" },
+            input: { schema: "wardmote.question_set.v1" },
           },
         },
       });

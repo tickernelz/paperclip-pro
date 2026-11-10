@@ -42,7 +42,7 @@ export function productionDefaultHireProfile(profile: RunnerProfileFixture): Run
 }
 
 export interface StockHarnessEvidence {
-  schema: "paperclip.stock-harness.v1";
+  schema: "wardmote.stock-harness.v1";
   generation: "legacy" | "native";
   agentId: string;
   budgets: { companyMonthlyCents: unknown; agentMonthlyCents: unknown };
@@ -145,7 +145,7 @@ export async function captureStockHarness(input: {
     throw new Error("Stock invocation mode receipt is missing or bound to a different run/company/agent.");
   }
   return {
-    schema: "paperclip.stock-harness.v1", generation: input.generation,
+    schema: "wardmote.stock-harness.v1", generation: input.generation,
     budgets: { companyMonthlyCents: company.budgetMonthlyCents, agentMonthlyCents: agent.budgetMonthlyCents },
     agentId: input.agentId, bundle: { entryFile: bundle.entryFile, files }, runIds: input.runIds,
     invocations: events.flatMap(({ runId, rows, run }) => rows.filter(row => row.eventType === "adapter.invoke")

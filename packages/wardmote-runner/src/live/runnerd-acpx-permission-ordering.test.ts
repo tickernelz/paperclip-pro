@@ -84,7 +84,7 @@ describe("permission and tool order through the actual transport and harness", (
         if (seen.some(e => e.eventType === "runtime_request.created") && seen.some(e => e.eventType === "tool.execution.started")) break;
       } })();
       const tool = () => peer.current!.emit("tool.execution.started", {
-        schema: "paperclip.tool.execution.v1", executionId, transport: "builtin", namespace: null,
+        schema: "wardmote.tool.execution.v1", executionId, transport: "builtin", namespace: null,
         name: "Run command", operation: "execute", target: null, status: "running", readOnly: false,
         inputUpdated: true, output: null, outputBytes: 0, outputTruncated: false, outputDigest: null,
         durationMs: null, exitCode: null, progress: [],

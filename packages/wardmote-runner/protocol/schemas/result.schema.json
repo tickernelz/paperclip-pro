@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://paperclip.dev/schemas/prp/v1/result.schema.json",
+  "$id": "https://wardmote.dev/schemas/prp/v1/result.schema.json",
   "title": "PRP structured run result",
   "type": "object",
   "required": [
@@ -14,7 +14,7 @@
     "artifacts"
   ],
   "properties": {
-    "schema": { "const": "paperclip.run_result.v1" },
+    "schema": { "const": "wardmote.run_result.v1" },
     "reportedWorkDisposition": {
       "enum": ["done", "blocked", "needs_review", "yielded"]
     },

@@ -192,7 +192,7 @@ async function callTerminalTool(promptBody) {
   const prompt = parsedPromptText(promptBody);
   const blocked = String(prompt.message ?? "").includes("block-result");
   const result = {
-    schema: "paperclip.run_result.v1",
+    schema: "wardmote.run_result.v1",
     reportedWorkDisposition: blocked ? "blocked" : "done",
     summary: blocked
       ? "Fake provider is blocked."

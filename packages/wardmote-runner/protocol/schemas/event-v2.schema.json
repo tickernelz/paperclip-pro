@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://paperclip.dev/schemas/prp/v2/event.schema.json",
+  "$id": "https://wardmote.dev/schemas/prp/v2/event.schema.json",
   "title": "PRP v2 native event",
   "type": "object",
   "required": [
@@ -8,7 +8,7 @@
     "eventType", "schemaVersion", "priority", "emittedAt", "payload"
   ],
   "properties": {
-    "schema": { "const": "paperclip.prp.event.v2" },
+    "schema": { "const": "wardmote.prp.event.v2" },
     "sourceEventId": { "type": "string", "minLength": 1, "maxLength": 160 },
     "sourceSeq": { "type": "integer", "minimum": 1, "maximum": 9007199254740991 },
     "sourceInstanceId": { "type": "string", "minLength": 1, "maxLength": 160 },
@@ -56,7 +56,7 @@
             "properties": {
               "goal": {
                 "oneOf": [
-                  { "$ref": "https://paperclip.dev/schemas/prp/v2/session-goal.schema.json#/$defs/snapshot" },
+                  { "$ref": "https://wardmote.dev/schemas/prp/v2/session-goal.schema.json#/$defs/snapshot" },
                   { "type": "null" }
                 ]
               }
@@ -74,8 +74,8 @@
             "type": "object",
             "required": ["sessionGoals"],
             "properties": {
-              "sessionGoals": { "$ref": "https://paperclip.dev/schemas/prp/v2/session-goal.schema.json#/$defs/capability" },
-              "turnControls": { "$ref": "https://paperclip.dev/schemas/prp/v1/provider-descriptor.schema.json#/$defs/turnControls" }
+              "sessionGoals": { "$ref": "https://wardmote.dev/schemas/prp/v2/session-goal.schema.json#/$defs/capability" },
+              "turnControls": { "$ref": "https://wardmote.dev/schemas/prp/v1/provider-descriptor.schema.json#/$defs/turnControls" }
             },
             "additionalProperties": true
           }

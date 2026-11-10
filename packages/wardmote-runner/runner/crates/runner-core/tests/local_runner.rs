@@ -53,7 +53,7 @@ fn run_fixture(script_name: &str, commands: &[Value]) -> (std::process::ExitStat
 
 fn command(id: &str, sequence: u64, command_type: &str, payload: Value) -> Value {
     json!({
-        "schema": "paperclip.prp.command.v1",
+        "schema": "wardmote.prp.command.v1",
         "commandId": id,
         "controllerSeq": sequence,
         "type": command_type,

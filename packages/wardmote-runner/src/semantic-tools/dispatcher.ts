@@ -443,7 +443,7 @@ export class CapabilitySemanticDispatcher {
   ): void {
     this.#recordCounter += 1;
     this.#records.push(deepFreeze({
-      schema: "paperclip.semantic-authorization-record.v1",
+      schema: "wardmote.semantic-authorization-record.v1",
       id: `semantic-auth-${String(this.#recordCounter).padStart(6, "0")}`,
       runId: context.runId,
       scenarioId: context.scenario.id,
@@ -462,7 +462,7 @@ export class CapabilitySemanticDispatcher {
       operationId: call.operationId,
       callId: call.callId,
       denial: {
-        schema: "paperclip.semantic-denial.v1",
+        schema: "wardmote.semantic-denial.v1",
         code: "tool_not_exposed",
         message: "The requested semantic tool is not in the stable catalog.",
         retryable: false,
@@ -484,7 +484,7 @@ export class CapabilitySemanticDispatcher {
       operationId,
       callId: call.callId,
       denial: {
-        schema: "paperclip.semantic-denial.v1",
+        schema: "wardmote.semantic-denial.v1",
         code,
         ...(controlPlaneCode === undefined ? {} : { controlPlaneCode }),
         message: redactSemanticValue(message) as string,

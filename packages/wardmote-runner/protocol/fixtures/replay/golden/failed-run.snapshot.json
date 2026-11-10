@@ -1,8 +1,8 @@
 {
-  "schema": "paperclip.prp.session-snapshot.v1",
+  "schema": "wardmote.prp.session-snapshot.v1",
   "fixtureName": "Failed run",
   "identity": {
-    "schema": "paperclip.prp.identity.v1",
+    "schema": "wardmote.prp.identity.v1",
     "companyId": "company_replay",
     "issueId": "issue_replay_failed",
     "runId": "run_replay_failed",
@@ -12,7 +12,7 @@
     "driverSessionId": "driver_replay_failed"
   },
   "capabilities": {
-    "schema": "paperclip.prp.capabilities.v1",
+    "schema": "wardmote.prp.capabilities.v1",
     "sessionReusePolicy": "new_per_run",
     "driver": {
       "kind": "fake",
@@ -39,7 +39,7 @@
   ],
   "requests": [],
   "proposedResult": {
-    "schema": "paperclip.run_result.v1",
+    "schema": "wardmote.run_result.v1",
     "reportedWorkDisposition": "yielded",
     "summary": "The scripted command failed and needs a retry.",
     "completionClaim": {

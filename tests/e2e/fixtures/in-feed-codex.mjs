@@ -50,7 +50,7 @@ async function mcp(method, params = {}) {
   return envelope.result;
 }
 async function finish(text, evidenceRef) {
-  return call('wardmote_finish', { schema: 'paperclip.run_result.v1', reportedWorkDisposition: 'done', summary: text,
+  return call('wardmote_finish', { schema: 'wardmote.run_result.v1', reportedWorkDisposition: 'done', summary: text,
     completionClaim: { contractRevision: completionContract.revision, objectiveSatisfied: true, criteria: completionContract.criterionIds.map((criterionId) => ({ criterionId, status: 'satisfied', evidenceRefs: [evidenceRef] })), remainingWork: [] },
     evidence: [{ ref: evidenceRef }], verification: [{ commandOrCheck: 'Fixture outcome', status: 'passed' }], attentionRequests: [], artifacts: [] });
 }

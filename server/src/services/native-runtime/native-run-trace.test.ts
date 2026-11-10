@@ -260,7 +260,7 @@ describe("native runner performance trace", () => {
       eventType: NATIVE_RUN_SPAN_EVENT_TYPE,
       stream: "system",
       payload: {
-        schema: "paperclip.run-performance-span.v1",
+        schema: "wardmote.run-performance-span.v1",
         traceSchemaVersion: NATIVE_RUN_TRACE_SCHEMA_VERSION,
         span: "runner.transport.selected",
         parentSpan: "task.run",

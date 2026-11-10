@@ -1101,7 +1101,7 @@ async function consumeTurn(
       if (
         receipt.disposition === "committed" &&
         event.eventType === "runtime_request.created" &&
-        request?.schema === "paperclip.runtime_request.v2" &&
+        request?.schema === "wardmote.runtime_request.v2" &&
         request.type === "input" &&
         typeof request.requestId === "string" &&
         typeof request.turnId === "string"
@@ -1510,7 +1510,7 @@ function sessionGoalResult(
       ? "blocked"
       : "yielded";
   const result: PrpStructuredRunResult = {
-    schema: "paperclip.run_result.v1",
+    schema: "wardmote.run_result.v1",
     reportedWorkDisposition: disposition,
     summary: status === "complete"
       ? `Session goal completed: ${objective}`
@@ -1861,7 +1861,7 @@ function checkpointedResultlessDispositionFallback(input: {
     throw new Error("native_disposition_recovery_checkpoint_conflict");
   }
   return {
-    schema: "paperclip.prp.event.v1",
+    schema: "wardmote.prp.event.v1",
     sourceEventId: `${input.controlPlaneInstanceId}:${input.persisted.identity.runId}:checkpointed-disposition-terminal`,
     sourceSeq: 1,
     sourceInstanceId: input.controlPlaneInstanceId,
@@ -2282,7 +2282,7 @@ export async function executeNativeSession(
     const recoveredSnapshot = await session.snapshot();
     const restartContinuation = () => ({
       message: { role: "user" as const, text: JSON.stringify({
-        schema: "paperclip.native-continuation.v1",
+        schema: "wardmote.native-continuation.v1",
         events: [
           "Wardmote restarted and restored this same conversation. The previous turn was interrupted.",
           "Continue the current user request from the recorded progress and preserved workspace.",
@@ -2560,7 +2560,7 @@ export async function executeNativeSession(
           }
           await session.startTurn({
             message: { role: "user", text: JSON.stringify(modelEnvelope) },
-            ...(recovered && modelEnvelope.schema === "paperclip.native-continuation.v1"
+            ...(recovered && modelEnvelope.schema === "wardmote.native-continuation.v1"
               ? { continuation: true as const } : {}),
             requestedCollaborationMode:
               "executionMode" in input ? input.executionMode : "default",
@@ -2705,7 +2705,7 @@ export async function executeNativeSession(
           eventType: PrpEvent["eventType"],
           payload: Record<string, unknown>,
         ): PrpEvent => ({
-          schema: "paperclip.prp.event.v1",
+          schema: "wardmote.prp.event.v1",
           sourceEventId: `${options.controlPlaneInstanceId}:${input.binding.runId}:${sourceSeq}`,
           sourceSeq,
           sourceInstanceId: options.controlPlaneInstanceId,

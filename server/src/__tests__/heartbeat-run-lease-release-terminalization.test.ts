@@ -158,7 +158,7 @@ describeEmbeddedPostgres("heartbeat terminalizeRunOnLeaseRelease", () => {
     const [run] = await db.update(heartbeatRuns).set({
       nativeIssueId: issueId,
       resultJson: { cancelledByActorType: "user", cancelledByUserId: "board", nativeCancellation: {
-        schema: "paperclip.native-cancellation.v1", runId, companyId, issueId, scope: "run",
+        schema: "wardmote.native-cancellation.v1", runId, companyId, issueId, scope: "run",
         reasonCode: "cancellation_run_only", dispatched: true, dispatchState: "acknowledged",
         intentAuditId: randomUUID(), acknowledgementAuditId: randomUUID(),
       } },

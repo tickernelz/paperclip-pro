@@ -602,7 +602,7 @@ describeEmbeddedPostgres("native runner restart recovery with real processes", (
       workspace: { id: fixture.runId, cwd: tmpdir(), repoUrl: null, repoRef: null, branchName: null },
       normalizedSessionId: fixture.native.normalizedSessionId,
       provider: "codex",
-      completionContract: { id: randomUUID(), sha256: `sha256:${"a".repeat(64)}`, schemaVersion: "paperclip.run-result.v1", contract: { revision: "1", objective: "Recover the same turn", criteria: [{ id: "objective", requirement: "Resume without a duplicate turn" }] } },
+      completionContract: { id: randomUUID(), sha256: `sha256:${"a".repeat(64)}`, schemaVersion: "wardmote.run-result.v1", contract: { revision: "1", objective: "Recover the same turn", criteria: [{ id: "objective", requirement: "Resume without a duplicate turn" }] } },
       runtimeContext: context,
     }), runtimeContext };
     const stateDirectory = resolve(runtimeRoot, fixture.runId);
@@ -850,7 +850,7 @@ describeEmbeddedPostgres("native runner restart recovery with real processes", (
       serverFingerprint: "result-before-restart",
       schemaStatus: "accepted",
       resultJson: {
-        schema: "paperclip.run_result.v1",
+        schema: "wardmote.run_result.v1",
         reportedWorkDisposition: "done",
         summary: "Durable result proposed before restart.",
       },

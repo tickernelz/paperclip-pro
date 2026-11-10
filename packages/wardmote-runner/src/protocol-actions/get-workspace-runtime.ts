@@ -46,7 +46,7 @@ export const getWorkspaceRuntimeAction = {
   "live": {
     "order": 19,
     "descriptor": {
-      "schema": "paperclip.semantic-tool.v1",
+      "schema": "wardmote.semantic-tool.v1",
       "operationId": "get_workspace_runtime",
       "version": 1,
       "title": "Get workspace runtime",
@@ -92,7 +92,7 @@ export const getWorkspaceRuntimeAction = {
           "schema": {
             "type": "string",
             "enum": [
-              "paperclip.capability.tool-result.v1"
+              "wardmote.capability.tool-result.v1"
             ]
           },
           "ok": {

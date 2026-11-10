@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://paperclip.dev/schemas/prp/v1/semantic-tool.schema.json",
+  "$id": "https://wardmote.dev/schemas/prp/v1/semantic-tool.schema.json",
   "title": "PRP provider-neutral semantic tool envelope",
   "type": "object",
   "required": [
@@ -14,7 +14,7 @@
     "content"
   ],
   "properties": {
-    "schema": { "const": "paperclip.prp.semantic_tool.v1" },
+    "schema": { "const": "wardmote.prp.semantic_tool.v1" },
     "schemaVersion": { "const": 1 },
     "phase": { "enum": ["input", "result", "reconciled"] },
     "operationId": { "$ref": "#/$defs/stableId" },

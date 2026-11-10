@@ -35,7 +35,7 @@ function invoke(action: "accept" | "decline") {
     value: {
       type: "fileUpload",
       action,
-      context: { schema: "paperclip.teams.file-consent.v1", token, action },
+      context: { schema: "wardmote.teams.file-consent.v1", token, action },
       ...(action === "accept"
         ? {
             uploadInfo: {

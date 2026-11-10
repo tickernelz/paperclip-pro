@@ -4,7 +4,7 @@ import type { AcpxExtensionInput } from "./profile-extensions.js";
 // Match the sidecar's provider identity boundary before Rust's opaque tool ID.
 export function cursorToolIdentity(value: string): string {
   if (Buffer.byteLength(value) <= 240 && !/[\u0000-\u001f\u007f-\u009f]/.test(value)) return value;
-  return `acpx-tool-${createHash("sha256").update("paperclip.acpx.provider-identity.v1\0tool\0").update(value).digest("hex")}`;
+  return `acpx-tool-${createHash("sha256").update("wardmote.acpx.provider-identity.v1\0tool\0").update(value).digest("hex")}`;
 }
 
 /** Only the admitted native Cursor plan extension can attest a parent tool. */
@@ -19,5 +19,5 @@ export function cursorPlanToolIdentity(agent: string | null | undefined, input: 
 export function cursorToolExecutionId(value: string): string {
   const bounded = cursorToolIdentity(value);
   if (/^[A-Za-z0-9][A-Za-z0-9._:-]{0,159}$/.test(bounded)) return bounded;
-  return `acpx-tool-${createHash("sha256").update("paperclip.acpx.opaque-item.v1\0tool\0").update(bounded).digest("hex")}`;
+  return `acpx-tool-${createHash("sha256").update("wardmote.acpx.opaque-item.v1\0tool\0").update(bounded).digest("hex")}`;
 }

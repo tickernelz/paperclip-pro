@@ -123,8 +123,8 @@ describe("Copilot sealed remote proof", () => {
     const read = { ...notice, toolCallId: "bootstrap", operation: "read", status: "completed", seq: 1 } as CopilotToolNotice;
     const actionFile = `.paperclip-eval-action-${"a".repeat(36)}.txt`;
     const event = { runId: "run", seq: 2, protocolSchemaVersion: 1, eventType: "tool.execution.completed", payload: { prpEvent: {
-      schema: "paperclip.prp.event.v1", schemaVersion: 1, sourceKind: "runner", runId: "run", turnId: "turn", eventType: "tool.execution.completed", emittedAt: new Date(2).toISOString(),
-      payload: { schema: "paperclip.tool.execution.v1", executionId: "bootstrap", transport: "builtin", operation: "read", target: actionFile, status: "completed" },
+      schema: "wardmote.prp.event.v1", schemaVersion: 1, sourceKind: "runner", runId: "run", turnId: "turn", eventType: "tool.execution.completed", emittedAt: new Date(2).toISOString(),
+      payload: { schema: "wardmote.tool.execution.v1", executionId: "bootstrap", transport: "builtin", operation: "read", target: actionFile, status: "completed" },
     } } };
     read.readTargetSha256 = `sha256:${createHash("sha256").update(actionFile).digest("hex")}`;
     const proof = { actionFile, events: [event] };

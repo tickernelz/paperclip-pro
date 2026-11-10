@@ -131,7 +131,7 @@ export async function prepareNativeHeartbeatRun(input: {
         runtimeModeReason: locked.runtimeModeReason ?? "explicit_wardmote_runner",
         runtimeModeResolvedAt: locked.runtimeModeResolvedAt ?? new Date(),
         runnerProfileJson: {
-          schema: "paperclip.runner.profile.v1",
+          schema: "wardmote.runner.profile.v1",
           provider: "codex",
           turnId,
           itemId,

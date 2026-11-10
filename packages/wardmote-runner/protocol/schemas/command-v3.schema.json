@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://paperclip.dev/schemas/prp/v3/command.schema.json",
+  "$id": "https://wardmote.dev/schemas/prp/v3/command.schema.json",
   "title": "PRP v3 runner command",
   "type": "object",
   "required": [
@@ -13,7 +13,7 @@
   ],
   "properties": {
     "schema": {
-      "const": "paperclip.prp.command.v3"
+      "const": "wardmote.prp.command.v3"
     },
     "commandId": {
       "type": "string",

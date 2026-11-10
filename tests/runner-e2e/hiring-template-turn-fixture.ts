@@ -32,7 +32,7 @@ export const hiringTurnFixtureTimestamp = (seconds: number) => new Date(Date.UTC
 /** Complete canonical/native read-action stream with one exact execution ID. */
 export function hiringNotificationActionEvents() {
   const id = "read-action";
-  const payload = { schema: "paperclip.tool.execution.v1", executionId: id, transport: "dynamic",
+  const payload = { schema: "wardmote.tool.execution.v1", executionId: id, transport: "dynamic",
     operation: "unknown", name: "call_api", readOnly: null, status: "running", exitCode: null };
   const items: Array<{ eventType: string; payload: Record<string, unknown> }> = [
     { eventType: "tool.execution.started", payload },
@@ -41,11 +41,11 @@ export function hiringNotificationActionEvents() {
     { eventType: "item.completed", payload: { kind: "tool", item: { id, tool_use_id: id, type: "tool_result",
       result: { apiOperationId: "GET /api/issues/{id}/documents", ok: true, status: 200 } } } },
     { eventType: "tool.execution.completed", payload: { ...payload, status: "completed" } },
-    { eventType: "run.result.accepted", payload: { result: { schema: "paperclip.run_result.v1" } } },
+    { eventType: "run.result.accepted", payload: { result: { schema: "wardmote.run_result.v1" } } },
     { eventType: "run.terminal", payload: { schema: "paperclip.prp.terminal.v1", runTerminalState: "succeeded", turnTerminalState: "completed" } },
   ];
   return items.map((event, i) => ({ seq: i + 1, eventType: event.eventType, payload: { prpEvent: {
-    schema: "paperclip.prp.event.v1", schemaVersion: 1, sourceKind: event.eventType.startsWith("run.") ? "control_plane" : "runner", payload: event.payload,
+    schema: "wardmote.prp.event.v1", schemaVersion: 1, sourceKind: event.eventType.startsWith("run.") ? "control_plane" : "runner", payload: event.payload,
   } } }));
 }
 

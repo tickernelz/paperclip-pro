@@ -8,7 +8,7 @@ import type {
   NativeRunStatus,
 } from "../contracts/types.js";
 
-export const CONFORMANCE_FIXTURE_SCHEMA = "paperclip.runner.conformance.fixture.v1";
+export const CONFORMANCE_FIXTURE_SCHEMA = "wardmote.runner.conformance.fixture.v1";
 
 export interface ConformanceFixture {
   schemaVersion: typeof CONFORMANCE_FIXTURE_SCHEMA;

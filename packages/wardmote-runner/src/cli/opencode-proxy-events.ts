@@ -5,7 +5,7 @@ export function openCodeProxyToolNotification(input: {
   const phase = ({ "tool.execution.started": "started", "tool.execution.progressed": "updated", "tool.execution.completed": "completed" } as Record<string, string>)[input.eventType];
   if (!phase) return null;
   const p = input.payload;
-  if (!input.turnId || typeof p.executionId !== "string" || !p.executionId || p.schema !== "paperclip.tool.execution.v1")
+  if (!input.turnId || typeof p.executionId !== "string" || !p.executionId || p.schema !== "wardmote.tool.execution.v1")
     throw new Error("OpenCode tool activity omitted its bound identity");
   const type = ({ builtin: "builtinToolCall", mcp: "mcpToolCall", dynamic: "dynamicToolCall", process: "commandExecution" } as Record<string, string>)[String(p.transport)];
   if (!type) throw new Error("OpenCode tool activity has an unsupported transport");

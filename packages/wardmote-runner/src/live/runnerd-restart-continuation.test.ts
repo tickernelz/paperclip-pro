@@ -13,13 +13,13 @@ it.each(["none", "before-start", "after-start"] as const)("completes after the r
   const root = await mkdtemp(join(tmpdir(), "runner-restart-continuation-"));
   const identity = { runId: "run-restart", sessionId: "session-restart", companyId: "company-restart", issueId: "issue-restart", agentId: "agent-restart" };
   const execution: NativeExecutionInputV1 = {
-    schema: "paperclip.native-execution-input.v1",
+    schema: "wardmote.native-execution-input.v1",
     binding: { runId: identity.runId, companyId: identity.companyId, issueId: identity.issueId, agentId: identity.agentId, executionWorkspaceId: "workspace-restart" },
     session: { normalizedSessionId: identity.sessionId, driverKind: "codex_app_server", protocolVersion: 1 },
     task: { identifier: "TEST-1", title: "Finish checks", description: null, prompt: "Watch the already running checks and finish the request.", workMode: "standard" },
     workspace: { cwd: root, repoUrl: null, repoRef: null, branchName: null },
     provider: { kind: "codex", model: null },
-    completionContract: { id: "contract-restart", sha256: "digest", schemaVersion: "paperclip.completion-contract.v1", contract: {
+    completionContract: { id: "contract-restart", sha256: "digest", schemaVersion: "wardmote.completion-contract.v1", contract: {
       revision: "1", objective: "Finish checks", criteria: [{ id: "checks", requirement: "Check the outcome" }],
     } },
     interactionResponses: [], credentialBindings: [],

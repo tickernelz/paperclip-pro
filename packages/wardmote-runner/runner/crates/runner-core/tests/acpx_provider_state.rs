@@ -22,7 +22,7 @@ fn event(
 
 fn question_set() -> Value {
     json!({
-        "schema":"paperclip.question_set.v1",
+        "schema":"wardmote.question_set.v1",
         "title":"Choose",
         "questions":[{
             "id":"question-1",

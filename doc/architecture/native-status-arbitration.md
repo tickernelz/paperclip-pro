@@ -33,7 +33,7 @@ replayable and auditable.
 
 ## Inputs to finalization
 
-The runner returns a `paperclip.run_result.v1` result and a matching terminal
+The runner returns a `wardmote.run_result.v1` result and a matching terminal
 record. Important result fields include:
 
 - `reportedWorkDisposition`: `done`, `blocked`, `needs_review`, or `yielded`;

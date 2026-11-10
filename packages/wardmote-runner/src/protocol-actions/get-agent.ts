@@ -50,7 +50,7 @@ export const getAgentAction = {
   "live": {
     "order": 14,
     "descriptor": {
-      "schema": "paperclip.semantic-tool.v1",
+      "schema": "wardmote.semantic-tool.v1",
       "operationId": "get_agent",
       "version": 1,
       "title": "Get company agent",

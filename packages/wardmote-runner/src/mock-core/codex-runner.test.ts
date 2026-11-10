@@ -33,7 +33,7 @@ const envelope = createCodexTaskEnvelope({
 
 function completedResult(): PrpStructuredRunResult {
   return {
-    schema: "paperclip.run_result.v1",
+    schema: "wardmote.run_result.v1",
     reportedWorkDisposition: "done",
     summary: "Created hello.txt.",
     completionClaim: {
@@ -143,7 +143,7 @@ class TraceConformanceDriver implements HarnessDriver {
       payload: Record<string, unknown>,
       withTurn = true,
     ): PrpEvent => ({
-      schema: "paperclip.prp.event.v1",
+      schema: "wardmote.prp.event.v1",
       sourceEventId: `provider:${sourceSeq}`,
       sourceSeq,
       sourceInstanceId: "codex-trace-provider",
@@ -239,7 +239,7 @@ describe("Codex trace conformance", () => {
       import.meta.url,
     ));
     await expect(loadLiveConsoleConformanceFixture(fixturePath)).resolves.toMatchObject({
-      schema: "paperclip.runner.live-console.conformance.v1",
+      schema: "wardmote.runner.live-console.conformance.v1",
       runtimeRequests: expect.arrayContaining([
         expect.objectContaining({ requestKind: "user_input" }),
       ]),

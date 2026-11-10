@@ -199,7 +199,7 @@ export const runnerApiReference: Record<string, { section: string; description?:
           "payload": {
             "version": 1,
             "questionSet": {
-              "schema": "paperclip.question_set.v1",
+              "schema": "wardmote.question_set.v1",
               "questions": [
                 {
                   "id": "responsibility",
@@ -222,7 +222,7 @@ export const runnerApiReference: Record<string, { section: string; description?:
           "payload": {
             "version": 1,
             "questionSet": {
-              "schema": "paperclip.question_set.v1",
+              "schema": "wardmote.question_set.v1",
               "questions": [
                 {
                   "id": "responsibility",

@@ -37,7 +37,7 @@ if (!LOCAL_RUNNER_SCENARIOS.includes(scenarioInput as LocalRunnerScenario)) {
   }
   process.stdout.write(
     `${JSON.stringify({
-      schema: "paperclip.runner.local-runner.summary.v1",
+      schema: "wardmote.runner.local-runner.summary.v1",
       scenario,
       eventCount: trace.events.length,
       terminalCount: trace.events.filter((event) => event.eventType === "run.terminal").length,

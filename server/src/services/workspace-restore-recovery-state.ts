@@ -1,7 +1,7 @@
 import { hasWorkspaceRestoreFailure } from "@tickernelz/wardmote-shared";
 
 export const LEGACY_WORKSPACE_RECOVERY_KEY = "workspaceRestoreRecovery";
-export const LEGACY_WORKSPACE_RECOVERY_SCHEMA = "paperclip.workspace-restore-recovery.v1";
+export const LEGACY_WORKSPACE_RECOVERY_SCHEMA = "wardmote.workspace-restore-recovery.v1";
 
 export function hasRequiredWorkspaceRecovery(result: Record<string, unknown> | null | undefined): boolean {
   const value = result?.[LEGACY_WORKSPACE_RECOVERY_KEY];

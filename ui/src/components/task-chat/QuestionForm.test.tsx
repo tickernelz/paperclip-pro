@@ -11,7 +11,7 @@ vi.mock("./TaskChatRichInput", () => ({
 }));
 vi.mock("@/components/MarkdownBody", () => ({ MarkdownBody: ({ children }: { children: string }) => <div>{children}</div> }));
 
-const questionSet: WardmoteQuestionSet = { schema: "paperclip.question_set.v1", questions: [
+const questionSet: WardmoteQuestionSet = { schema: "wardmote.question_set.v1", questions: [
   { id: "draft", prompt: "Edit the draft", required: true, answerMode: "text", initialText: "  Draft\n漢字\n" },
 ] };
 
@@ -37,7 +37,7 @@ describe("QuestionForm initial text", () => {
     expect(input().value).toBe("  Draft\n漢字\n");
     expect(submit).not.toHaveBeenCalled();
     await act(async () => Array.from(container.querySelectorAll("button")).find(button => button.textContent === "Submit answers")!.click());
-    expect(submit).toHaveBeenCalledExactlyOnceWith({ schema: "paperclip.question_response.v1", answers: { draft: { text: "  Draft\n漢字\n" } } }, {});
+    expect(submit).toHaveBeenCalledExactlyOnceWith({ schema: "wardmote.question_response.v1", answers: { draft: { text: "  Draft\n漢字\n" } } }, {});
   });
   it("preserves edits through a refreshed request and reload instead of reapplying a default", async () => {
     await render(); await edit("Operator edit\n");
@@ -77,11 +77,11 @@ describe("QuestionForm initial text", () => {
     expect(storedText("request-b")).toBe("Operator edit B");
     expect(submit).not.toHaveBeenCalled();
     await act(async () => Array.from(container.querySelectorAll("button")).find(button => button.textContent === "Submit answers")!.click());
-    expect(submit).toHaveBeenCalledExactlyOnceWith({ schema: "paperclip.question_response.v1", answers: { draft: { text: "Operator edit B" } } }, {});
+    expect(submit).toHaveBeenCalledExactlyOnceWith({ schema: "wardmote.question_response.v1", answers: { draft: { text: "Operator edit B" } } }, {});
   });
 
   it("prefers an existing response and keeps text constraints on defaults", async () => {
-    await render(questionSet, { schema: "paperclip.question_response.v1", answers: { draft: { text: "Existing answer" } } });
+    await render(questionSet, { schema: "wardmote.question_response.v1", answers: { draft: { text: "Existing answer" } } });
     expect(input().value).toBe("Existing answer");
     await act(async () => root.unmount()); localStorage.clear(); root = createRoot(container);
     await render({ ...questionSet, questions: [{ ...questionSet.questions[0]!, initialText: "bad", textValidation: { minLength: 5 } }] });

@@ -33,7 +33,7 @@ import type { EvalFaultClass } from "./eval-bundle.js";
  * scorecard, and no secret ever enters an observation (call ids and safe
  * identifiers only).
  */
-export const EVAL_SCORECARD_SCHEMA = "paperclip.runner.eval-scorecard.v1" as const;
+export const EVAL_SCORECARD_SCHEMA = "wardmote.runner.eval-scorecard.v1" as const;
 
 export type EvalDimensionKey =
   | "hard_invariants"
@@ -253,7 +253,7 @@ export function traceEvidenceFromPrpEvents(
   const stopReason = asRecord(terminalPayload?.stopReason);
   const stopReasonPresent = stopReason !== null;
   const stopReasonReceiptValid = !stopReasonPresent || (
-    stopReason?.schema === "paperclip.prp.stop_reason.v1"
+    stopReason?.schema === "wardmote.prp.stop_reason.v1"
     && stopReason.schemaVersion === 1
     && typeof stopReason.receiptId === "string"
     && stopReason.receiptId.length > 0

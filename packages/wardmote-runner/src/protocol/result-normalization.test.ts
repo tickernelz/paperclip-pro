@@ -38,7 +38,7 @@ describe("normalizePrpResultSignals", () => {
 
   it("accepts legacy completion aliases as one canonical PRP result", () => {
     const legacy = {
-      schema: "paperclip.run_result.v1",
+      schema: "wardmote.run_result.v1",
       reportedWorkDisposition: "completed",
       summary: "Implemented and verified the utility.",
       completionClaim: {
@@ -78,7 +78,7 @@ describe("normalizePrpResultSignals", () => {
     };
     expect(validatePrpStructuredRunResult(withoutSchema)).toMatchObject({
       ok: true,
-      result: { schema: "paperclip.run_result.v1" },
+      result: { schema: "wardmote.run_result.v1" },
     });
   });
 
@@ -137,7 +137,7 @@ describe("normalizePrpResultSignals", () => {
     expect(validatePrpStructuredRunResult(toolShaped)).toMatchObject({
       ok: true,
       result: {
-        schema: "paperclip.run_result.v1",
+        schema: "wardmote.run_result.v1",
         reportedWorkDisposition: "done",
         completionClaim: {
           criteria: [{ status: "satisfied" }],
@@ -192,7 +192,7 @@ describe("normalizePrpResultSignals", () => {
     })]);
 
     const canonical = normalizeLegacyPrpStructuredRunResult({
-      schema: "paperclip.run_result.v1",
+      schema: "wardmote.run_result.v1",
       reportedWorkDisposition: "done",
       summary: "Work is complete; local verification was unavailable.",
       completionClaim: {

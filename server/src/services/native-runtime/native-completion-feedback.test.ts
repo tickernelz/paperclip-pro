@@ -9,7 +9,7 @@ import { nativeCompletionFeedback } from "./native-completion-feedback.js";
 import { WardmoteRunnerToolAuthority } from "./wardmote-runner-tool-authority.js";
 
 const done: PrpStructuredRunResult = {
-  schema: "paperclip.run_result.v1", reportedWorkDisposition: "done", summary: "Document saved.",
+  schema: "wardmote.run_result.v1", reportedWorkDisposition: "done", summary: "Document saved.",
   completionClaim: { contractRevision: "test", objectiveSatisfied: true, criteria: [], remainingWork: [] },
   evidence: [], verification: [], attentionRequests: [], artifacts: [],
 };

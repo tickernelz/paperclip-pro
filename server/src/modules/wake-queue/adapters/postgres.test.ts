@@ -329,7 +329,7 @@ describeEmbeddedPostgres("wake-queue postgres adapter", () => {
     const runId = await seedRun({ companyId, agentId, status: "cancelled", contextSnapshot: { issueId } });
     await db.update(heartbeatRuns).set({ runtimeMode: "native", nativeIssueId: issueId, resultJson: {
       reassignmentStopRequested: true,
-      nativeCancellation: { schema: "paperclip.native-cancellation.v1", runId, companyId, issueId,
+      nativeCancellation: { schema: "wardmote.native-cancellation.v1", runId, companyId, issueId,
         scope: "run", reasonCode: "cancellation_run_only", dispatchState: "acknowledged", dispatched: true,
         intentAuditId: randomUUID(), acknowledgementAuditId: randomUUID() },
     } }).where(eq(heartbeatRuns.id, runId));

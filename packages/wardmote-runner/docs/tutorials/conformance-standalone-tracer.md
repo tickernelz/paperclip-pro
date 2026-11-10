@@ -69,7 +69,7 @@ pnpm --filter @tickernelz/wardmote-runner trace:conformance
 Expected final line:
 
 ```json
-{"schemaVersion":"paperclip.runner.conformance.output.v1","runIdentity":{"runId":"run_conformance_0001","sessionId":"session_conformance_0001"},"result":{"status":"succeeded","summary":"Standalone Conformance fixture accepted."}}
+{"schemaVersion":"wardmote.runner.conformance.output.v1","runIdentity":{"runId":"run_conformance_0001","sessionId":"session_conformance_0001"},"result":{"status":"succeeded","summary":"Standalone Conformance fixture accepted."}}
 ```
 
 The command exits successfully after the mock core stops. No service remains

@@ -514,7 +514,7 @@ deterministic calibration do not constitute paid qualification.
 
 Both cases create a task through the browser and select `approve-reads` and
 `per_turn` through the public agent API before startup. They retain
-`paperclip.e2e.pi-control-pending.v1` while an exact native Pi write and its
+`wardmote.e2e.pi-control-pending.v1` while an exact native Pi write and its
 permission card are pending in one run/turn/session/source. The card's native
 tool ID is joined to the canonical execution ID using the existing runnerd
 identity mapping. Pi does not emit Cursor/Copilot diagnostic notices; those
@@ -582,7 +582,7 @@ provider timeout, 300s attempt budget). `native-permission-deny-write` denies on
 exact native edit through its browser card, waits for the delivered rejection and
 failed tool, then cancels through the public run API. Its expected outcome is a
 cancelled run and an unfinished task, not successful task completion.
-The retained `paperclip.e2e.copilot-denial-settlement.v3` proof separates the exact
+The retained `wardmote.e2e.copilot-denial-settlement.v3` proof separates the exact
 provider terminal from the audited controller Stop. It records either
 `provider_cancelled_or_interrupted` or `provider_completed_observed_before_stop`.
 The latter requires the exact terminal row to be returned by the operator API
@@ -692,8 +692,8 @@ Default clients may omit the field; they preserve and join an existing reserved
 intent rather than overwrite it.
 
 The denial fixture generates its UUID before observation, retains it in
-`paperclip.e2e.copilot-pre-stop-observation.v2`, and requires the same intent in
-the response and final `paperclip.e2e.copilot-denial-settlement.v3` receipt.
+`wardmote.e2e.copilot-pre-stop-observation.v2`, and requires the same intent in
+the response and final `wardmote.e2e.copilot-denial-settlement.v3` receipt.
 It refuses a non-running controller or existing Stop marker before dispatch.
 The completed-provider branch still requires a running controller that this
 request can stop; it does not accept a no-op Stop of an already terminal run.
@@ -702,7 +702,7 @@ request can stop; it does not accept a no-op Stop of an already terminal run.
 
 `native-active-stop` / `pending-permission-stop` has four explicit-only cells:
 Cursor and Copilot, each local and Daytona. Its `native_active_stop` flow retains
-`paperclip.e2e.native-active-stop-pending.v2` from the public API while exactly one
+`wardmote.e2e.native-active-stop-pending.v2` from the public API while exactly one
 native permission remains pending, the exact controller run is running, and no
 Stop or answer marker exists. The receipt independently binds native session,
 normalized session, turn, source instance, request/tool IDs, source sequences and
@@ -726,7 +726,7 @@ both input orders. Neither policy claims the original ACP wire order of a live
 attempt. Old v1 receipts are not valid inputs to the
 new grader. Earlier paid failures retain their original definition and grade.
 
-Suite version 4 and `paperclip.e2e.native-active-stop-settlement.v2` accept only
+Suite version 4 and `wardmote.e2e.native-active-stop-settlement.v2` accept only
 `pending_permission_cancelled`: the Product harness's exact
 `runtime_request.cancelled` closure (`reason: turn_terminal`, matching request,
 item and turn, no answer), then one exact `turn.cancelled` (`status: cancelled`,
@@ -748,7 +748,7 @@ retired. Local files require four fresh observations through cleanup. Daytona
 instead retains two live snapshots (baseline and pending) plus one automatic
 owned-process-retirement seal, with a continuous zero-mutation watcher and the
 same complete root/descendant journal. Since suite version 2, this is retained as
-`paperclip.e2e.native-active-stop-remote-retirement.v1`; it explicitly records
+`wardmote.e2e.native-active-stop-remote-retirement.v1`; it explicitly records
 `filesystemAfterRetirementObserved:false`. The per-turn observer seals itself
 when the owned tree retires, before the sandbox is released. Reading that receipt
 later is not a fresh post-UI or post-cleanup filesystem observation. Relabeled,
@@ -789,7 +789,7 @@ the native lifecycle; its normalized input hash must also match the authority.
 Exactly one proposed body must hash to that normalized digest and equal exactly
 one accepted body; identical duplicate proposals or receipts still fail.
 
-Suite 8 writes `paperclip.e2e.copilot-semantic-completion.v2` and requires
+Suite 8 writes `wardmote.e2e.copilot-semantic-completion.v2` and requires
 `paperclip.semantic_tool_receipt.v2` under `paperclip_semantic_tool_receipt_v2`.
 The authority has exactly eight bounded details. An explicit null normalized
 digest is diagnostic only and cannot qualify a successful finish. Legacy v1

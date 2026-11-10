@@ -31,6 +31,9 @@ export async function migrateNamesCommand(options: MigrateNamesOptions): Promise
     for (const failed of report.failedBundles) {
       console.log(pc.red(`  bundle not rewritten: ${failed.companyId}/${failed.agentId}: ${failed.error}`));
     }
+    for (const key of report.quarantinedRunnerStates) {
+      console.log(pc.yellow(`  native runner state written under retired names ${report.dryRun ? "would be" : "was"} moved to quarantine: ${key}`));
+    }
     if (report.backupDir) console.log(pc.dim(`Backup: ${report.backupDir}`));
   } finally {
     await db.$client?.end?.({ timeout: 5 }).catch(() => undefined);

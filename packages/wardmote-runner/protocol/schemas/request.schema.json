@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://paperclip.dev/schemas/prp/v1/request.schema.json",
+  "$id": "https://wardmote.dev/schemas/prp/v1/request.schema.json",
   "title": "PRP request",
   "oneOf": [
     {
@@ -18,7 +18,7 @@
       ],
       "properties": {
         "schema": {
-          "const": "paperclip.runtime_request.v2"
+          "const": "wardmote.runtime_request.v2"
         },
         "requestKind": {
           "const": "permission_approval"
@@ -182,13 +182,13 @@
       "type": "object",
       "required": ["schema", "requestKind", "requestId", "type", "status", "prompt", "input"],
       "properties": {
-        "schema": { "const": "paperclip.runtime_request.v2" },
+        "schema": { "const": "wardmote.runtime_request.v2" },
         "requestKind": { "const": "runtime" },
         "requestId": { "type": "string", "minLength": 1, "maxLength": 160 },
         "type": { "const": "input" },
         "status": { "enum": ["pending", "resolved", "expired", "cancelled"] },
         "prompt": { "type": "string", "minLength": 1, "maxLength": 4000 },
-        "input": { "$ref": "https://paperclip.dev/schemas/prp/v1/question-set.schema.json" },
+        "input": { "$ref": "https://wardmote.dev/schemas/prp/v1/question-set.schema.json" },
         "origin": {
           "type": "object",
           "required": ["adapter"],
@@ -208,7 +208,7 @@
       "type": "object",
       "required": ["schema", "requestKind", "requestId", "type", "status", "prompt"],
       "properties": {
-        "schema": { "const": "paperclip.runtime_request.v1" },
+        "schema": { "const": "wardmote.runtime_request.v1" },
         "requestKind": { "const": "runtime" },
         "requestId": { "type": "string", "minLength": 1, "maxLength": 160 },
         "type": { "enum": ["permission", "input"] },
@@ -233,7 +233,7 @@
       "type": "object",
       "required": ["schema", "requestKind", "requestId", "kind", "blocking", "payload"],
       "properties": {
-        "schema": { "const": "paperclip.interaction_request.v1" },
+        "schema": { "const": "wardmote.interaction_request.v1" },
         "requestKind": { "const": "issue_thread" },
         "requestId": { "type": "string", "minLength": 1, "maxLength": 160 },
         "kind": {

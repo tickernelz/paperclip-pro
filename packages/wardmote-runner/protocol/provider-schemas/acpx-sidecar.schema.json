@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://paperclip.dev/schemas/acpx-sidecar/v2/message.schema.json",
+  "$id": "https://wardmote.dev/schemas/acpx-sidecar/v2/message.schema.json",
   "title": "Paperclip ACPX sidecar message",
   "oneOf": [
     { "$ref": "#/$defs/request" },

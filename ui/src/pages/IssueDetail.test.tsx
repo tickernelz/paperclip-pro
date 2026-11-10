@@ -3355,7 +3355,7 @@ describe("IssueDetail", () => {
           contextIssueId: "issue-1",
           resultJson: {
             presentationDecision: {
-              schema: "paperclip.run_presentation_decision.v1",
+              schema: "wardmote.run_presentation_decision.v1",
               chosenSource: "existing_issue_comment",
               commentId: "private-board-answer",
             },
@@ -3654,7 +3654,7 @@ describe("IssueDetail", () => {
             },
           ],
           questionSet: {
-            schema: "paperclip.question_set.v1",
+            schema: "wardmote.question_set.v1",
             questions: [
               {
                 id: "runtime",

@@ -131,7 +131,7 @@ export async function prepareEvalRuntimeContext(
     .update(JSON.stringify(manifestFiles))
     .digest("hex");
   const manifestText = `${JSON.stringify({
-    schema: "paperclip.runtime-asset-manifest.v1",
+    schema: "wardmote.runtime-asset-manifest.v1",
     digest: assetDigest,
     fileCount: manifestFiles.length,
     totalBytes: entry.byteLength,

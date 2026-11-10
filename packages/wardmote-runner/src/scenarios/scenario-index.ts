@@ -266,7 +266,7 @@ export function buildCapabilityScenarioIndex(manifestSource: string): Capability
   const counts = new Map<string, number>();
   for (const entry of entries) counts.set(entry.group, (counts.get(entry.group) ?? 0) + 1);
   return Object.freeze({
-    schema: "paperclip.capability.scenario-index.v1",
+    schema: "wardmote.capability.scenario-index.v1",
     generatedFrom: "spec/capability/eval-traceability.yaml",
     groups: [...counts.entries()]
       .map(([id, count]) => ({ id, count }))

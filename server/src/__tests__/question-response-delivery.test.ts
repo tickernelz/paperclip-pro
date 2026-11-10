@@ -222,7 +222,7 @@ describeEmbeddedPostgres("question response delivery", () => {
             },
           ],
           questionSet: {
-            schema: "paperclip.question_set.v1",
+            schema: "wardmote.question_set.v1",
             title: "Server choices",
             questions: [
               {
@@ -1194,7 +1194,7 @@ describeEmbeddedPostgres("question response delivery", () => {
     const seeded = await seed();
     const envelope = buildQuestionResponseDeliveryEnvelope(seeded.interaction);
     expect(envelope.response).toEqual({
-      schema: "paperclip.question_response.v1",
+      schema: "wardmote.question_response.v1",
       answers: {
         purpose: { text: "Internal API" },
         runtime: { selectedOptionIds: ["node"] },

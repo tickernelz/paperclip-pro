@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://paperclip.dev/schemas/prp/v2/session-goal.schema.json",
+  "$id": "https://wardmote.dev/schemas/prp/v2/session-goal.schema.json",
   "title": "PRP v2 session goal capability and snapshot",
   "$defs": {
     "capability": {

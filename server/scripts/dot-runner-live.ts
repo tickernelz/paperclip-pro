@@ -134,7 +134,7 @@ try {
     const subscriptions = await db.select().from(mcpEventSubscriptions);
     assert(subscriptions.some(s => s.grantId === grantId && s.name === "paperclip.dot.work_available" && !s.stoppedAt && s.expiresAt > new Date()), "Dot must establish its event subscription first");
     queued = true;
-    await native.startTurn({ message: { role: "user", text: "Live integration test: compute 17 + 25. Call the projected save_report tool with body 'Dot received the Wardmote event. 17 + 25 = 42.' Then finish with schema paperclip.run_result.v1, reportedWorkDisposition 'done', summary stating the saved result, completionClaim {contractRevision:'dot-live-v1',objectiveSatisfied:true,criteria:[],remainingWork:[]}, and empty arrays for evidence, verification, attentionRequests, artifacts. Do not use any other apps, private data, external messages, or additional tasks." } });
+    await native.startTurn({ message: { role: "user", text: "Live integration test: compute 17 + 25. Call the projected save_report tool with body 'Dot received the Wardmote event. 17 + 25 = 42.' Then finish with schema wardmote.run_result.v1, reportedWorkDisposition 'done', summary stating the saved result, completionClaim {contractRevision:'dot-live-v1',objectiveSatisfied:true,criteria:[],remainingWork:[]}, and empty arrays for evidence, verification, attentionRequests, artifacts. Do not use any other apps, private data, external messages, or additional tasks." } });
     await service!.tick(); res.json({ queued: true });
   });
   control.post("/stop", (_req, res) => { res.json({ stopping: true }); stopLab(); });

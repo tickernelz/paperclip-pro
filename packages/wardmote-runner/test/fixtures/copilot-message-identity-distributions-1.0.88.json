@@ -1,5 +1,5 @@
 {
-  "schema": "paperclip.copilot_message_identity_distributions.v1",
+  "schema": "wardmote.copilot_message_identity_distributions.v1",
   "upstreamVersion": "1.0.88",
   "status": "offline_candidate_not_paid_qualified",
   "upstreamAppSha256": "7b48282a19b5b0814a0c96ad5e3a125173d792cc55f9525b2effea962f6063c0",

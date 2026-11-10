@@ -123,7 +123,7 @@ async function main() {
       assert(!pattern.test(serialized), `browser payload excludes ${pattern}`);
     }
     process.stdout.write(`${JSON.stringify({
-      schema: "paperclip.capability.aws-agentcore-smoke.v1",
+      schema: "wardmote.capability.aws-agentcore-smoke.v1",
       sessionId: opened.sessionId,
       runtimeSessionId: second.runtime.providerSessionId,
       model: configuration.model,

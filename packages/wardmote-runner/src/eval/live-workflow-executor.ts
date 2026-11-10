@@ -94,7 +94,7 @@ function workflowResult(
   idempotencyKey: string,
 ): PrpStructuredRunResult {
   return {
-    schema: "paperclip.run_result.v1",
+    schema: "wardmote.run_result.v1",
     reportedWorkDisposition: disposition,
     summary,
     completionClaim: {
@@ -161,7 +161,7 @@ async function completeWorkflowRun(
     )
   ) {
     await adapter.appendEvent({
-      schema: "paperclip.prp.event.v1",
+      schema: "wardmote.prp.event.v1",
       sourceEventId: `${input.source}:terminal:1`,
       sourceSeq: 1,
       sourceInstanceId: input.source,

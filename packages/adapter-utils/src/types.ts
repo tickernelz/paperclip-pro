@@ -690,7 +690,7 @@ export interface WardmoteQuestion {
 }
 
 export interface WardmoteQuestionSet {
-  schema: "paperclip.question_set.v1";
+  schema: "wardmote.question_set.v1";
   title?: string;
   description?: string;
   submitLabel?: string;
@@ -698,7 +698,7 @@ export interface WardmoteQuestionSet {
 }
 
 export interface WardmoteQuestionResponse {
-  schema: "paperclip.question_response.v1";
+  schema: "wardmote.question_response.v1";
   answers: Record<string, { selectedOptionIds?: string[]; text?: string; customText?: string }>;
 }
 

@@ -2181,7 +2181,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     const contractSha = `finalization-contract-${runId}`;
     await db.insert(completionContracts).values({
       id: contractId, companyId, issueId, revision: 1,
-      schemaVersion: "paperclip.completion-contract.v1", policyVersion: "phase6-v1",
+      schemaVersion: "wardmote.completion-contract.v1", policyVersion: "phase6-v1",
       risk: "low", completionAuthority: "agent_claim_policy", incompleteCriteriaPolicy: "preserve_non_terminal",
       contractJson: { revision: CONTROL_PLANE_CONFORMANCE_RESULT.completionClaim.contractRevision,
         objective: "Keep completed work", criteria: [{ id: "objective", requirement: "Keep completed work" }] },
@@ -2441,7 +2441,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
           companyId,
           issueId,
           revision: 1,
-          schemaVersion: "paperclip.completion-contract.v1",
+          schemaVersion: "wardmote.completion-contract.v1",
           policyVersion: "phase6-v1",
           risk: "low",
           completionAuthority: "agent_claim_policy",
@@ -3302,7 +3302,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
       expect(input.task.prompt).toContain(description);
       expect(input.task.prompt.split(description)).toHaveLength(2);
       const modelEnvelope = buildNativeModelEnvelope(input);
-      expect(modelEnvelope.schema).toBe("paperclip.native-model-envelope.v3");
+      expect(modelEnvelope.schema).toBe("wardmote.native-model-envelope.v3");
       expect(modelEnvelope.task).not.toHaveProperty("description");
       expect(modelEnvelope.task.prompt.split(description)).toHaveLength(2);
       expect(modelEnvelope.completionContract.criteria).toEqual([{
@@ -3342,7 +3342,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
         completionContract: {
           id: randomUUID(),
           sha256: `sha256:${"a".repeat(64)}`,
-          schemaVersion: "paperclip.run-result.v1",
+          schemaVersion: "wardmote.run-result.v1",
           contract: {
             revision: "1",
             objective: "Retain ownership",
@@ -4028,7 +4028,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     const { runId } = await seedRunFixture({ adapterType: "omp_local", agentStatus: "running", runtimeMode: "legacy" });
     if (unrestored) await db.update(heartbeatRuns).set({ resultJson: {
       workspaceRestoreFailure: "restore_failed",
-      workspaceRestoreRecovery: { schema: "paperclip.workspace-restore-recovery.v1", runId, leaseIds: [] },
+      workspaceRestoreRecovery: { schema: "wardmote.workspace-restore-recovery.v1", runId, leaseIds: [] },
     } }).where(eq(heartbeatRuns.id, runId));
     const drain = await heartbeatService(db).drainRunningRunsForShutdown("SIGTERM", new Date("2026-03-19T00:06:00.000Z"));
     const [stopped] = await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, runId));
@@ -8584,7 +8584,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
       const payload = Array.from({ length: 8192 }, () => randomUUID()).join("");
       const [run] = await db.update(heartbeatRuns).set({ resultJson: { payload } }).where(eq(heartbeatRuns.id, runId)).returning();
       await recordLegacyWorkspaceRestoreFailure(db, run, { workspaceRestoreFailure: "restore_failed" });
-      expect((await heartbeat.getRun(runId))?.resultJson?.workspaceRestoreRecovery).toEqual({ schema: "paperclip.workspace-restore-recovery.v1" });
+      expect((await heartbeat.getRun(runId))?.resultJson?.workspaceRestoreRecovery).toEqual({ schema: "wardmote.workspace-restore-recovery.v1" });
       stopping = heartbeat.cancelRun(runId, "Stopped by test operator");
       await expect(stopping).resolves.toMatchObject({ status: "cancelled" });
       await heartbeat.waitForRunExecutionDrain(runId);
@@ -8593,7 +8593,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
       expect(finished).toMatchObject({ status: "cancelled", resultJson: {
         lateAdapterReceipt: true,
         workspaceRestoreFailure: "restore_failed",
-        workspaceRestoreRecovery: { schema: "paperclip.workspace-restore-recovery.v1", leaseIds: [lease.id] },
+        workspaceRestoreRecovery: { schema: "wardmote.workspace-restore-recovery.v1", leaseIds: [lease.id] },
         cancellation: { expected: true },
       } });
       expect((await db.select().from(environmentLeases).where(eq(environmentLeases.id, lease.id)))[0])
@@ -13642,7 +13642,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
         companyId: source.companyId,
         issueId: source.issueId,
         revision: 1,
-        schemaVersion: "paperclip.completion-contract.v1",
+        schemaVersion: "wardmote.completion-contract.v1",
         policyVersion: "phase6-v3",
         risk: "low",
         completionAuthority: "agent_claim_policy",
@@ -14756,7 +14756,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
       companyId,
       issueId,
       revision: 1,
-      schemaVersion: "paperclip.completion-contract.v1",
+      schemaVersion: "wardmote.completion-contract.v1",
       policyVersion: "phase6-v4",
       risk: "low",
       completionAuthority: "agent_claim_policy",
@@ -14804,7 +14804,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     });
     await port.completeRun({
       result: {
-        schema: "paperclip.run_result.v1",
+        schema: "wardmote.run_result.v1",
         reportedWorkDisposition: "yielded",
         summary,
         continuation: {
@@ -15932,7 +15932,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
       companyId,
       issueId,
       revision: 1,
-      schemaVersion: "paperclip.completion-contract.v1",
+      schemaVersion: "wardmote.completion-contract.v1",
       policyVersion: "phase6-v3",
       risk: "low",
       completionAuthority: "agent_claim_policy",
@@ -15978,7 +15978,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     });
     await port.completeRun({
       result: {
-        schema: "paperclip.run_result.v1",
+        schema: "wardmote.run_result.v1",
         reportedWorkDisposition: "blocked",
         summary: "The current Board attachment could not be read.",
         blocker: {
@@ -16294,7 +16294,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
       livenessState: "advanced",
       resultJson: {
         nativeResult: {
-          schema: "paperclip.run_result.v1",
+          schema: "wardmote.run_result.v1",
           reportedWorkDisposition: "blocked",
           blocker: {
             scope: "current_track",
@@ -16619,7 +16619,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
         profile: wardmoteRunner.resolveQualifiedAcpxProfile("cursor", model) }, session: { normalizedSessionId: f.runId },
         completionContract: { id: contractId, sha256: contractSha, contract } } } }).where(eq(heartbeatRuns.id, f.runId));
     const planId = `plan-${"a".repeat(64)}`;
-    const questionSet = { schema: "paperclip.question_set.v1", title: "Native plan", description: "Exact accepted revision", questions: [{ id: planId, prompt: "Proceed?", required: true,
+    const questionSet = { schema: "wardmote.question_set.v1", title: "Native plan", description: "Exact accepted revision", questions: [{ id: planId, prompt: "Proceed?", required: true,
       answerMode: "single_select", options: [{ id: "accept", label: "Accept" }, { id: "reject", label: "Reject" }, { id: "cancel", label: "Cancel" }] }] };
     const [interaction] = await db.insert(issueThreadInteractions).values({ id: interactionId, companyId: f.companyId, issueId: f.issueId, sourceRunId: f.runId,
       createdByAgentId: f.agentId, kind: "ask_user_questions", status: "answered", continuationPolicy: "none",
@@ -16631,14 +16631,14 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     const port = new WardmoteControlPlanePort(db, { companyId: f.companyId, issueId: f.issueId, runId: f.runId, agentId: f.agentId,
       sessionId: f.runId, completionContractId: contractId, completionContractSha256: contractSha, sourceInstanceId: instance, controlPlaneSourceInstanceId: `control-${f.runId}` });
     const events = [
-      { eventType: "runtime_request.created", payload: { request: { schema: "paperclip.runtime_request.v2", requestKind: "runtime", requestId: "request", type: "input", status: "pending", turnId: "turn", itemId: "native-plan-tool", prompt: "Review plan",
+      { eventType: "runtime_request.created", payload: { request: { schema: "wardmote.runtime_request.v2", requestKind: "runtime", requestId: "request", type: "input", status: "pending", turnId: "turn", itemId: "native-plan-tool", prompt: "Review plan",
         origin: { adapter: "acpx-runtime-sidecar", provider: "cursor", method: "cursor/create_plan" }, input: questionSet } } },
-      { eventType: "tool.execution.started", payload: { schema: "paperclip.tool.execution.v1", executionId: "native-plan-tool", transport: "builtin", operation: "execute", status: "running", readOnly: false, namespace: null, name: "Create Plan", target: null, inputUpdated: true, output: null, outputBytes: 0, outputTruncated: false, outputDigest: null, progress: null, exitCode: null, durationMs: null } },
+      { eventType: "tool.execution.started", payload: { schema: "wardmote.tool.execution.v1", executionId: "native-plan-tool", transport: "builtin", operation: "execute", status: "running", readOnly: false, namespace: null, name: "Create Plan", target: null, inputUpdated: true, output: null, outputBytes: 0, outputTruncated: false, outputDigest: null, progress: null, exitCode: null, durationMs: null } },
       { eventType: "runtime_request.resolved", payload: { requestId: "request", turnId: "turn", action: "submit", response: answer.response } },
-      { eventType: "tool.execution.completed", payload: { schema: "paperclip.tool.execution.v1", executionId: "native-plan-tool", transport: "builtin", operation: "execute", status: "completed", readOnly: false, namespace: null, name: "Create Plan", target: null, inputUpdated: false, output: null, outputBytes: 0, outputTruncated: false, outputDigest: null, progress: null, exitCode: null, durationMs: null } },
+      { eventType: "tool.execution.completed", payload: { schema: "wardmote.tool.execution.v1", executionId: "native-plan-tool", transport: "builtin", operation: "execute", status: "completed", readOnly: false, namespace: null, name: "Create Plan", target: null, inputUpdated: false, output: null, outputBytes: 0, outputTruncated: false, outputDigest: null, progress: null, exitCode: null, durationMs: null } },
       { eventType: "turn.completed", payload: { status: "completed", error: null } },
     ];
-    for (const [index, event] of events.entries()) await port.appendEvent({ schema: "paperclip.prp.event.v1", sourceEventId: `${instance}:${sourceSequenceOffset + index + 1}`, sourceSeq: sourceSequenceOffset + index + 1,
+    for (const [index, event] of events.entries()) await port.appendEvent({ schema: "wardmote.prp.event.v1", sourceEventId: `${instance}:${sourceSequenceOffset + index + 1}`, sourceSeq: sourceSequenceOffset + index + 1,
       sourceInstanceId: instance, sourceKind: "runner", runId: f.runId, normalizedSessionId: f.runId, turnId: "turn", schemaVersion: 1, priority: 0,
       emittedAt: new Date().toISOString(), ...event } as wardmoteRunner.PrpEvent);
     const proof = await readNativePlanWait(db, f);
@@ -16707,7 +16707,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     profile.nativeExecutionInput.provider.cursorMode = profile.nativeExecutionInput.provider.mode;
     delete profile.nativeExecutionInput.provider.mode;
     await db.update(heartbeatRuns).set({ runnerProfileJson: profile }).where(eq(heartbeatRuns.id, f.runId));
-    const legacy = { ...f.proof.source, schema: "paperclip.native_cursor_plan_wait.v1" }; delete legacy.toolExecutionId; delete legacy.toolLifecycleSha256;
+    const legacy = { ...f.proof.source, schema: "wardmote.native_cursor_plan_wait.v1" }; delete legacy.toolExecutionId; delete legacy.toolLifecycleSha256;
     legacy.authoritySha256 = nativeSha256({ admission: profile.nativeExecutionInput, contract, created: event("runtime_request.created"), resolved: event("runtime_request.resolved"), terminal: event("turn.completed"), interaction, delivery, resolvedAt: interaction!.resolvedAt!.toISOString(), acknowledgedAt: delivery!.acknowledgedAt!.toISOString() });
     const [decision] = await db.select().from(statusDecisions).where(eq(statusDecisions.runId, f.runId));
     const [savedResult] = await db.select().from(nativeRunResults).where(eq(nativeRunResults.runId, f.runId));
@@ -16729,7 +16729,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     const progress = Array.from({ length: progressCount }, (_, index) => {
       const seq = index + 1;
       const prpEvent = { ...event("runtime_request.created"), sourceEventId: `${run!.runnerInstanceId}:${seq}`, sourceSeq: seq, eventType: "tool.execution.progressed",
-        payload: { schema: "paperclip.tool.execution.v1", executionId: "earlier-tool", transport: "builtin", operation: "read", status: "running" } };
+        payload: { schema: "wardmote.tool.execution.v1", executionId: "earlier-tool", transport: "builtin", operation: "read", status: "running" } };
       return { companyId: f.companyId, runId: f.runId, agentId: f.agentId, seq, eventType: prpEvent.eventType, payload: { prpEvent }, sourceInstanceId: run!.runnerInstanceId,
         sourceEventId: prpEvent.sourceEventId, sourceSeq: seq, sourcePayloadSha256: nativeSha256(prpEvent), protocolSchemaVersion: 1 };
     });

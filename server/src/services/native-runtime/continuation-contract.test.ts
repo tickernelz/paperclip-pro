@@ -84,7 +84,7 @@ const support = await getEmbeddedPostgresTestSupport();
         contract: value.contract,
       });
       const oldInput = parseNativeExecutionInput({
-        schema: "paperclip.native-execution-input.v1",
+        schema: "wardmote.native-execution-input.v1",
         binding: {
           companyId,
           issueId,

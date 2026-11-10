@@ -44,7 +44,7 @@ describe("bounded semantic receipt carrier", () => {
     expect(parseSemanticToolReceipt({ ...receipt, outcome: "accepted" })).toBeNull();
   });
   it("keeps raw and forwarded input identities separate and versions historical receipts honestly", () => {
-    const normalizedInputSha256 = semanticInputSha256({ ...call.arguments, schema: "paperclip.run_result.v1" });
+    const normalizedInputSha256 = semanticInputSha256({ ...call.arguments, schema: "wardmote.run_result.v1" });
     const { receipt, result } = appendSemanticToolReceipt({ ...call, normalizedInputSha256 }, original);
     expect(receipt).toMatchObject({ schema: "paperclip.semantic_tool_receipt.v2", normalizedInputSha256,
       inputSha256: semanticInputSha256(call.arguments) });

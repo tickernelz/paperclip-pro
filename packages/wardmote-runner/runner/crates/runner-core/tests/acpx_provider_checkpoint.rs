@@ -57,7 +57,7 @@ fn config(directory: &std::path::Path) -> AcpxProviderSessionConfig {
         system_instructions: "Complete the supplied task.".to_owned(),
         runtime_context: serde_json::Value::Null,
         tool_set: AuthorizedToolSet {
-            schema: "paperclip.runner.authorized-tools.v1".to_owned(),
+            schema: "wardmote.runner.authorized-tools.v1".to_owned(),
             schema_version: 1,
             catalog_digest: authorized_tool_catalog_digest(&operations).unwrap(),
             operations,
@@ -137,7 +137,7 @@ fn admits_recovery_only_for_the_exact_run_catalog_and_provider_identity() {
         response_schema: json!({"type":"object"}),
     }];
     changed_catalog.tool_set = AuthorizedToolSet {
-        schema: "paperclip.runner.authorized-tools.v1".to_owned(),
+        schema: "wardmote.runner.authorized-tools.v1".to_owned(),
         schema_version: 1,
         catalog_digest: authorized_tool_catalog_digest(&operations).unwrap(),
         operations,

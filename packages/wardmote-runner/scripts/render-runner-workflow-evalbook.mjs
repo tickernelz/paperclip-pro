@@ -345,7 +345,7 @@ export async function renderRunnerWorkflowWithCanonicalEvalbook({
   ]);
   const programBytes = await readFile(program);
   const manifest = {
-    schema: "paperclip.runner.workflow-evalbook-render.v1",
+    schema: "wardmote.runner.workflow-evalbook-render.v1",
     generatedAt: report.generatedAt,
     generator: {
       path: program,

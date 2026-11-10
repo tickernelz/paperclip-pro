@@ -67,7 +67,7 @@ test("unknown required versions and schemas fail closed", async () => {
   assert.throws(() => assertReplayFixtureCompatibility(eventVersion), /unsupported_required_version/);
 
   const commandSchema = structuredClone(await fixture("replay/happy-path.json"));
-  commandSchema.commands[0].schema = "paperclip.prp.command.v4";
+  commandSchema.commands[0].schema = "wardmote.prp.command.v4";
   assert.throws(() => assertReplayFixtureCompatibility(commandSchema), /unsupported_required_schema/);
 });
 
@@ -95,12 +95,12 @@ test("PRP v3 external operations are closed and Dot has no native model or threa
   const binding = { companyId: "company", agentId: "agent", bindingId: "binding", bindingGeneration: 1,
     runId: happy.identity.runId, normalizedSessionId: happy.identity.normalizedSessionId, turnId: "turn", assignmentRevision: 1 };
   const { companyId, agentId, ...commandBinding } = binding;
-  const command = { ...happy.commands[0], schema: "paperclip.prp.command.v3", type: "external_provider.operation",
+  const command = { ...happy.commands[0], schema: "wardmote.prp.command.v3", type: "external_provider.operation",
     payload: { ...commandBinding, requestId: "request", digest: "sha256:" + "a".repeat(64), action: "tool", input: { name: "write_document", arguments: {} } } };
   assert.equal(validators.commandV3(command), true);
   assert.equal(validators.commandV3({ ...command, payload: { ...command.payload, apiKey: "hidden" } }), false);
   assert.equal(validators.commandV3({ ...command, payload: { ...command.payload, input: { ...command.payload.input, unexpected: true } } }), false);
-  const event = { ...happy.events[0], schema: "paperclip.prp.event.v3", schemaVersion: 3,
+  const event = { ...happy.events[0], schema: "wardmote.prp.event.v3", schemaVersion: 3,
     eventType: "external_provider.dispatch_requested", payload: { binding, kind: "authority_revoked", externalStopConfirmed: false } };
   assert.equal(validators.eventV3(event), true);
   assert.equal(validators.eventV3({ ...event, payload: { ...event.payload, externalStopConfirmed: true } }), false);

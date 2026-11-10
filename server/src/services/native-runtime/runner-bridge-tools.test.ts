@@ -1,7 +1,7 @@
-import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promises";
-import { createHash } from "node:crypto";
+import { chmod, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promises";
+import { createHash, randomUUID } from "node:crypto";
 import { materializeAsset } from "./runtime-context.js";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { tmpdir } from "node:os";
 import { afterEach, describe, expect, it } from "vitest";
 import { executeWorkspaceTool, readAssignedSkill, readWorkspaceUploadFile, runnerBridgeDefinitions, workspaceCommandSandboxAvailable, settleRunnerBridgeRead } from "./runner-bridge-tools.js";
@@ -173,6 +173,22 @@ if sys.argv[1] != "completion":
     await expect(readAssignedSkill(context, { skill: "assigned", path: "../private" })).rejects.toThrow();
     await expect(readAssignedSkill(context, { skill: "assigned", path: "not-pinned.txt" })).rejects.toThrow("not_pinned");
     await expect(readAssignedSkill({ ...context, skills: [{ ...context.skills[0], bundle: { ...bundle, manifestDigest: createHash("sha256").update("different").digest("hex") } }] }, { skill: "assigned" })).rejects.toThrow("manifest_digest");
+  });
+
+  it("upgrades a retired asset manifest in place and still rejects any other manifest", async () => {
+    const files = [{ path: "SKILL.md", content: Buffer.from(`# Retired manifest ${randomUUID()}`), mode: 0o444 }];
+    const bundle = await materializeAsset(files);
+    const manifestPath = join(dirname(dirname(bundle.rootPath)), "manifests", `${bundle.digest}.json`);
+    const current = await readFile(manifestPath, "utf8");
+    await chmod(manifestPath, 0o600);
+    await writeFile(manifestPath, current.replace("\"schema\":\"wardmote.", `"schema":"${["paper", "clip"].join("")}.`));
+    expect(await materializeAsset(files)).toEqual(bundle);
+    expect(await readFile(manifestPath, "utf8")).toBe(current);
+    const context = { skills: [{ key: "assigned", runtimeName: "assigned", versionId: "version-1", bundle }] } as any;
+    expect(await readAssignedSkill(context, { skill: "assigned" })).toMatchObject({ versionId: "version-1" });
+    await chmod(manifestPath, 0o600);
+    await writeFile(manifestPath, current.replace("\"schema\":\"wardmote.", "\"schema\":\"other."));
+    await expect(materializeAsset(files)).rejects.toThrow("runtime context asset verification failed");
   });
 
   it("settles missing-file reads without disclosing host paths or leaving an unknown effect", async () => {

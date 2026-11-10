@@ -46,7 +46,7 @@ export const restoreAgentInstructionsAction = {
   "live": {
     "order": 43,
     "descriptor": {
-      "schema": "paperclip.semantic-tool.v1",
+      "schema": "wardmote.semantic-tool.v1",
       "operationId": "restore_agent_instructions",
       "version": 1,
       "title": "Restore canonical agent instructions",

@@ -19,7 +19,7 @@ describe("ACPX questions through the shared runner transport", () => {
     const shown = normalizeCodexQuestionSet(origin.method, params, context)!;
     expect(shown).toEqual(form.questionSet);
     const [org, goal, timing] = shown.questions;
-    const response = { schema: "paperclip.question_response.v1" as const, answers: {
+    const response = { schema: "wardmote.question_response.v1" as const, answers: {
       [org!.id]: { text: "Garden club" }, [goal!.id]: { text: "Welcome note" },
       [timing!.id]: { selectedOptionIds: [timing!.options![1]!.id] },
     } };

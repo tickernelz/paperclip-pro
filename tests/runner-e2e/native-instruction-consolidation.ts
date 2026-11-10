@@ -238,7 +238,7 @@ export function validateNativeInstructionMeasurement(measurement: {
   const files = NATIVE_INSTRUCTION_VARIANTS[source.variant as keyof typeof NATIVE_INSTRUCTION_VARIANTS];
   const directExpected = ["v4", "v5"].flatMap(schema => ["start", "resume", "continuation"].map(phase => `opencode/${schema}/${phase}`)).sort();
   const directActual = measurement.directOpenCodeReceipts?.map(value => `${value.provider}/${value.schema}/${value.phase}`).sort();
-  if (measurement.schema !== "paperclip.native-instruction-measurement.v2"
+  if (measurement.schema !== "wardmote.native-instruction-measurement.v2"
     || JSON.stringify(directActual) !== JSON.stringify(directExpected)
     || measurement.sourceSha !== source.sourceSha || measurement.sourceDirty !== false || measurement.providerCalls !== 0
     || measurement.fixtureSha256 !== hash(readFileSync(join(root, "packages/wardmote-runner/src/backends/native-instruction-measurement.test.ts")))
@@ -270,7 +270,7 @@ export function prepareNativeInstructionPreflight(directory: string) {
   validateNativeInstructionMeasurement(measurement, source);
   if (JSON.stringify(sourceReceipt()) !== JSON.stringify(source)) throw new Error("Source changed during native instruction admission");
   const output = join(directory, "native-instruction-preflight.json");
-  writeFileSync(output, `${JSON.stringify({ schema: "paperclip.native-instruction-preflight.v1", ...source,
+  writeFileSync(output, `${JSON.stringify({ schema: "wardmote.native-instruction-preflight.v1", ...source,
     measurementPath, measurementSha256: hash(readFileSync(measurementPath)),
     sdkBuild, nativeBuild, runnerd, buildSha256, providerCalls: 0, live: "not_run" }, null, 2)}\n`);
   return output;
@@ -280,7 +280,7 @@ export function verifyNativeInstructionPreflight(path: string | undefined) {
   if (!path) throw new Error("Missing native instruction source admission");
   const receipt = JSON.parse(readFileSync(path, "utf8"));
   const source = sourceReceipt();
-  if (receipt.schema !== "paperclip.native-instruction-preflight.v1"
+  if (receipt.schema !== "wardmote.native-instruction-preflight.v1"
     || receipt.sourceSha !== source.sourceSha || receipt.variant !== source.variant
     || receipt.sourceTree !== source.sourceTree || receipt.sourceMetadataFingerprint !== source.sourceMetadataFingerprint
     || receipt.fixtureDigest !== source.fixtureDigest

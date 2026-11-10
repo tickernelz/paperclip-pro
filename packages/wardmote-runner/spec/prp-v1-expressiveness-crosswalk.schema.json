@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://paperclip.dev/schemas/runner/prp-v1-expressiveness-crosswalk.schema.json",
+  "$id": "https://wardmote.dev/schemas/runner/prp-v1-expressiveness-crosswalk.schema.json",
   "title": "PRP v1 expressiveness crosswalk",
   "description": "Machine-checked source for the PRP v1 expressiveness audit. Every required semantic-parity fact is classified against exactly one support strategy, justified by concrete wire evidence and an invariant that never rests on a permissive payload field.",
   "type": "object",

@@ -8,7 +8,7 @@ const response = {
   error: { type: "invalid_request_error", message: `The '${model}' model is not supported when using Codex with a ChatGPT account.` },
 };
 const event: PrpEvent = {
-  schema: "paperclip.prp.event.v1", runId: "run", normalizedSessionId: "session", turnId: "turn",
+  schema: "wardmote.prp.event.v1", runId: "run", normalizedSessionId: "session", turnId: "turn",
   sourceInstanceId: "runner", sourceEventId: "failure", sourceSeq: 1, sourceKind: "runner",
   eventType: "turn.failed", schemaVersion: 1, priority: 0, emittedAt: "2026-01-01T00:00:00.000Z",
   payload: { status: "failed", error: { message: JSON.stringify(response), codexErrorInfo: "other" } },

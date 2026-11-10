@@ -93,7 +93,7 @@ export async function observeCompletionUpdate(input: {
       catch (error) { evidenceErrors.push(`${label}: ${error instanceof Error ? error.message : String(error)}`); }
     };
     await preserve("observation", () => input.evidence("completion-update.json", {
-      schema: "paperclip.completion-update-probe.v8", startedAt, finishedAt: new Date().toISOString(),
+      schema: "wardmote.completion-update-probe.v8", startedAt, finishedAt: new Date().toISOString(),
       observation, delivery: observation ? completionDelivery(observation) : null,
       observedFailure: failure instanceof Error ? failure.message : null,
     }));

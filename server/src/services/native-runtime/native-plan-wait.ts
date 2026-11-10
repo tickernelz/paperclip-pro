@@ -86,7 +86,7 @@ function planWaitFromFacts(facts: PlanWaitFacts, committedSource?: NativePlanWai
       const event = record(record(row.payload).prpEvent);
       if (!event.schema) continue; // Non-PRP aggregate rows are not native evidence.
       if (row.companyId !== b.companyId || row.runId !== b.runId || row.agentId !== b.agentId || row.seq <= lastRowSeq ||
-        event.schema !== "paperclip.prp.event.v1" || event.schemaVersion !== 1 || event.sourceInstanceId !== run.runnerInstanceId || event.sourceKind !== "runner" || event.runId !== b.runId || event.normalizedSessionId !== sessionId ||
+        event.schema !== "wardmote.prp.event.v1" || event.schemaVersion !== 1 || event.sourceInstanceId !== run.runnerInstanceId || event.sourceKind !== "runner" || event.runId !== b.runId || event.normalizedSessionId !== sessionId ||
         row.eventType !== event.eventType || row.sourceEventId !== event.sourceEventId || row.sourceInstanceId !== event.sourceInstanceId || row.sourceSeq !== event.sourceSeq || row.protocolSchemaVersion !== event.schemaVersion ||
         typeof event.sourceInstanceId !== "string" || !event.sourceInstanceId || typeof event.sourceEventId !== "string" || !event.sourceEventId || !Number.isSafeInteger(event.sourceSeq) || event.sourceSeq < 1 || row.sourcePayloadSha256 !== nativeSha256(event) ||
         (lastSourceSeq.get(event.sourceInstanceId) ?? 0) >= event.sourceSeq || ids.has(event.sourceEventId) || seqs.has(`${event.sourceInstanceId}:${event.sourceSeq}`)) return null;
@@ -99,7 +99,7 @@ function planWaitFromFacts(facts: PlanWaitFacts, committedSource?: NativePlanWai
     if (turn.some(e => e.sourceInstanceId !== terminal.sourceInstanceId) || turn.filter(e => ["turn.completed", "turn.failed", "turn.cancelled"].includes(e.eventType)).length !== 1) return null;
     const requests = turn.filter(e => e.eventType === "runtime_request.created");
     const created = requests.at(-1), request = record(record(created?.payload).request);
-    if (!created || request.schema !== "paperclip.runtime_request.v2" || request.type !== "input" || request.requestKind !== "runtime" || request.status !== "pending" || request.turnId !== terminal.turnId ||
+    if (!created || request.schema !== "wardmote.runtime_request.v2" || request.type !== "input" || request.requestKind !== "runtime" || request.status !== "pending" || request.turnId !== terminal.turnId ||
       !adapter.isRequest(request) || typeof request.requestId !== "string") return null;
     if (new Set(requests.map(e => record(record(e.payload).request).requestId)).size !== requests.length) return null;
     // No unresolved earlier input or later work is disguised as an accepted plan boundary.
@@ -127,7 +127,7 @@ function planWaitFromFacts(facts: PlanWaitFacts, committedSource?: NativePlanWai
       const ends = lifecycle.filter(e => e.eventType === "tool.execution.completed");
       if (starts.length !== 1 || ends.length !== 1 || starts[0]!.sourceSeq >= resolved.sourceSeq || ends[0]!.sourceSeq <= resolved.sourceSeq || ends[0]!.sourceSeq >= terminal.sourceSeq ||
         lifecycle[0] !== starts[0] || lifecycle.at(-1) !== ends[0] ||
-        lifecycle.some(e => record(e.payload).schema !== "paperclip.tool.execution.v1" || record(e.payload).transport !== "builtin" || record(e.payload).operation !== "execute" || record(e.payload).status !== (e.eventType === "tool.execution.completed" ? "completed" : "running")) ||
+        lifecycle.some(e => record(e.payload).schema !== "wardmote.tool.execution.v1" || record(e.payload).transport !== "builtin" || record(e.payload).operation !== "execute" || record(e.payload).status !== (e.eventType === "tool.execution.completed" ? "completed" : "running")) ||
         tools.some(e => e.sourceSeq > created.sourceSeq && record(e.payload).executionId !== id)) return null;
       toolBinding = { toolExecutionId: id, toolLifecycleSha256: nativeSha256(lifecycle) };
     }
@@ -153,7 +153,7 @@ function planWaitFromFacts(facts: PlanWaitFacts, committedSource?: NativePlanWai
     if (committedSource && !same(source, committedSource)) return null;
     const ref = `interaction:${i.id}`;
     const result: PrpStructuredRunResult = {
-      schema: "paperclip.run_result.v1", reportedWorkDisposition: "yielded", summary: SUMMARY,
+      schema: "wardmote.run_result.v1", reportedWorkDisposition: "yielded", summary: SUMMARY,
       completionClaim: { contractRevision: String(contract.contractJson.revision), objectiveSatisfied: false,
         criteria: (contract.contractJson.criteria as Array<{id: string}>).map(c => ({ criterionId: c.id, status: "unknown", evidenceRefs: [ref] })),
         remainingWork: [{ description: "Continue or finalize the accepted plan only after explicit direction; remain in the selected mode.", blocksCompletion: true }] },

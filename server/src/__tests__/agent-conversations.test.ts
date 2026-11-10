@@ -1071,7 +1071,7 @@ describe("chat prompt policy", () => {
 describe("native conversation finalization", () => {
   it("does not require execution completion or schedule a continuation after a successful chat turn", () => {
     const decision = {
-      policyVersion: "paperclip.native-status-arbiter.v1",
+      policyVersion: "wardmote.native-status-arbiter.v1",
       statusAction: "in_progress",
       toStatus: "in_progress",
       reasonCode: "completion_evidence_incomplete",

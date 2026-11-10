@@ -1,5 +1,5 @@
 {
-  "schema": "paperclip.native-completion-terminal-carrier.fixture.v1",
+  "schema": "wardmote.native-completion-terminal-carrier.fixture.v1",
   "cases": [
     {
       "name": "wardmote_finish",

@@ -66,7 +66,7 @@ export const requestApprovalAction = {
   "live": {
     "order": 23,
     "descriptor": {
-      "schema": "paperclip.semantic-tool.v1",
+      "schema": "wardmote.semantic-tool.v1",
       "operationId": "request_approval",
       "version": 1,
       "title": "Request approval",
@@ -185,7 +185,7 @@ export const requestApprovalAction = {
           "schema": {
             "type": "string",
             "enum": [
-              "paperclip.capability.tool-result.v1"
+              "wardmote.capability.tool-result.v1"
             ]
           },
           "ok": {

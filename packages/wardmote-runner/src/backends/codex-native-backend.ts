@@ -208,7 +208,7 @@ function createTransportBackedNativeSessionBackend(
 export function describeRunnerdNativeSessionBackend(
   input: NativeExecutionInput,
 ): Promise<NativeSessionBackendDescriptor> {
-  if (input.schema === "paperclip.native-execution-input.v6") {
+  if (input.schema === "wardmote.native-execution-input.v6") {
     // Dot uses its dedicated Rust bridge, rather than the JSON-RPC facade.
     const descriptor = describeRunnerdDotDriver();
     return Promise.resolve({

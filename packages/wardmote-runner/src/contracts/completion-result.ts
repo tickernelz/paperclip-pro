@@ -163,7 +163,7 @@ const waitContinuationSchema = {
 } as const;
 
 const commonResultProperties = {
-  schema: { type: "string", const: "paperclip.run_result.v1" },
+  schema: { type: "string", const: "wardmote.run_result.v1" },
   summary: {
     type: "string",
     minLength: 1,
@@ -317,7 +317,7 @@ const providerCommonResultProperties = {
   ...commonResultProperties,
   schema: {
     enum: [
-      "paperclip.run_result.v1",
+      "wardmote.run_result.v1",
       "wardmote_finish",
       "wardmote_wardmote_finish",
       "wardmote_finish.v1",

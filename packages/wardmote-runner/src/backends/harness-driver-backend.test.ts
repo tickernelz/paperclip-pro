@@ -6,7 +6,7 @@ import { NativeSessionProtocolIntegrityError } from "../contracts/native-session
 import { HarnessDriverBackend } from "./harness-driver-backend.js";
 
 const result: PrpStructuredRunResult = {
-  schema: "paperclip.run_result.v1",
+  schema: "wardmote.run_result.v1",
   reportedWorkDisposition: "done",
   summary: "Backend adapter completed.",
   completionClaim: {
@@ -36,7 +36,7 @@ const providerIdentity = {
 
 function prpEvent(sourceSeq: number, eventType: PrpEvent["eventType"], payload: Record<string, unknown>): PrpEvent {
   return {
-    schema: "paperclip.prp.event.v1",
+    schema: "wardmote.prp.event.v1",
     sourceEventId: `fake:${sourceSeq}`,
     sourceSeq,
     sourceInstanceId: "fake",
@@ -821,7 +821,7 @@ describe("HarnessDriverBackend", () => {
         override async *events() {
           yield prpEvent(1, "runtime_request.created", {
             request: {
-              schema: "paperclip.runtime_request.v2",
+              schema: "wardmote.runtime_request.v2",
               requestKind: "runtime",
               requestId: "input-1",
               type: "input",
@@ -829,7 +829,7 @@ describe("HarnessDriverBackend", () => {
               turnId: "turn-1",
               itemId: "input-1",
               input: {
-                schema: "paperclip.question_set.v1",
+                schema: "wardmote.question_set.v1",
                 questions: [
                   {
                     id: "color",
@@ -928,13 +928,13 @@ describe("HarnessDriverBackend", () => {
 
   it("expires pending input without converting provider loss into a successful wait", async () => {
     const questionSet = {
-      schema: "paperclip.question_set.v1" as const,
+      schema: "wardmote.question_set.v1" as const,
       questions: [{ id: "target", prompt: "Which target?", required: true, answerMode: "text" as const }],
     };
     class LostProviderSession extends FakeHarnessSession {
       override async *events() {
         yield prpEvent(1, "runtime_request.created", { request: {
-          schema: "paperclip.runtime_request.v2",
+          schema: "wardmote.runtime_request.v2",
           requestKind: "runtime",
           requestId: "input-1",
           type: "input",
@@ -982,13 +982,13 @@ describe("HarnessDriverBackend", () => {
     class ResolvedThenLostSession extends FakeHarnessSession {
       override async *events() {
         yield prpEvent(1, "runtime_request.created", { request: {
-          schema: "paperclip.runtime_request.v2",
+          schema: "wardmote.runtime_request.v2",
           requestKind: "runtime",
           requestId: "input-1",
           type: "input",
           status: "pending",
           prompt: "Which target?",
-          input: { schema: "paperclip.question_set.v1", questions: [{ id: "target", prompt: "Which target?", required: true, answerMode: "text" }] },
+          input: { schema: "wardmote.question_set.v1", questions: [{ id: "target", prompt: "Which target?", required: true, answerMode: "text" }] },
         } });
         yield prpEvent(2, "runtime_request.resolved", { requestId: "input-1", action: "submit" });
         throw new Error("provider transport lost after resolution");
@@ -1097,13 +1097,13 @@ describe("HarnessDriverBackend", () => {
     class CancelledProviderSession extends FakeHarnessSession {
       override async *events() {
         yield prpEvent(1, "runtime_request.created", { request: {
-          schema: "paperclip.runtime_request.v2",
+          schema: "wardmote.runtime_request.v2",
           requestKind: "runtime",
           requestId: "input-1",
           type: "input",
           status: "pending",
           prompt: "Which target?",
-          input: { schema: "paperclip.question_set.v1", questions: [{ id: "target", prompt: "Which target?", required: true, answerMode: "text" }] },
+          input: { schema: "wardmote.question_set.v1", questions: [{ id: "target", prompt: "Which target?", required: true, answerMode: "text" }] },
         } });
         throw new Error("provider stopped after cancellation");
       }

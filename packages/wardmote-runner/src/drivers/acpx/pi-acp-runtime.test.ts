@@ -147,9 +147,9 @@ describe("Pi ACP bridge", () => {
       const question = normalized.questionSet.questions[0]!;
       expect(question.required).toBe(true);
       for (const text of ["", " \n\t"]) {
-        expect(() => normalized.accept({ schema: "paperclip.question_response.v1", answers: { [question.id]: { text } } })).toThrow("is required");
+        expect(() => normalized.accept({ schema: "wardmote.question_response.v1", answers: { [question.id]: { text } } })).toThrow("is required");
       }
-      return normalized.accept({ schema: "paperclip.question_response.v1", answers: { [question.id]: { text: "\nAccepted text\n" } } });
+      return normalized.accept({ schema: "wardmote.question_response.v1", answers: { [question.id]: { text: "\nAccepted text\n" } } });
     });
     await f.bridge.handle({ id: "canonical", method, title: "Draft", prefill: "" });
     expect(f.process.sendExtensionUiResponse).toHaveBeenCalledExactlyOnceWith({ id: "canonical", value: "\nAccepted text\n" });
@@ -164,9 +164,9 @@ describe("Pi ACP bridge", () => {
       expect(question).toMatchObject({ answerMode: "text", initialText: prefill, required: true });
       // Initial content is an editable draft, never an implicit answer.
       expect(f.process.sendExtensionUiResponse).not.toHaveBeenCalled();
-      expect(() => normalized.accept({ schema: "paperclip.question_response.v1", answers: {} })).toThrow();
-      expect(() => normalized.accept({ schema: "paperclip.question_response.v1", answers: { [question.id]: { text: "" } } })).toThrow("is required");
-      return normalized.accept({ schema: "paperclip.question_response.v1", answers: { [question.id]: { text: edited } } });
+      expect(() => normalized.accept({ schema: "wardmote.question_response.v1", answers: {} })).toThrow();
+      expect(() => normalized.accept({ schema: "wardmote.question_response.v1", answers: { [question.id]: { text: "" } } })).toThrow("is required");
+      return normalized.accept({ schema: "wardmote.question_response.v1", answers: { [question.id]: { text: edited } } });
     });
     await f.bridge.handle({ id: "canonical-prefill", method: "editor", title: "Draft", prefill });
     expect(f.process.sendExtensionUiResponse).toHaveBeenCalledExactlyOnceWith({ id: "canonical-prefill", value: edited });
@@ -178,7 +178,7 @@ describe("Pi ACP bridge", () => {
       const normalized = normalizeAcpFormElicitation(request)!;
       expect(normalized.questionSet.title).toBe(label);
       expect(normalized.questionSet.questions[0]!.options![0]!.label).toBe(label);
-      return normalized.accept({ schema: "paperclip.question_response.v1", answers: { [normalized.questionSet.questions[0]!.id]: { selectedOptionIds: ["option-1"] } } });
+      return normalized.accept({ schema: "wardmote.question_response.v1", answers: { [normalized.questionSet.questions[0]!.id]: { selectedOptionIds: ["option-1"] } } });
     });
     await f.bridge.handle({ id: "boundary", method: "select", title: label, options: [label] });
     expect(f.process.sendExtensionUiResponse).toHaveBeenCalledWith({ id: "boundary", value: label });

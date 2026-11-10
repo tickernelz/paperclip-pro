@@ -237,7 +237,7 @@ describeEmbeddedPostgres("native Codex server vertical slice", () => {
       resultJson: {
         nativeRunner: {
           result: {
-            schema: "paperclip.run_result.v1",
+            schema: "wardmote.run_result.v1",
             completionClaim: {
               contractRevision: "1",
               objectiveSatisfied: true,

@@ -292,7 +292,7 @@ function wireTrace(): PrpEvent[] {
   };
   return [
     {
-      schema: "paperclip.prp.event.v1",
+      schema: "wardmote.prp.event.v1",
       sourceEventId: "wire-event-1",
       sourceSeq: 1,
       sourceInstanceId: "wire-test",
@@ -320,7 +320,7 @@ function wireTrace(): PrpEvent[] {
       },
     },
     {
-      schema: "paperclip.prp.event.v1",
+      schema: "wardmote.prp.event.v1",
       sourceEventId: "wire-event-2",
       sourceSeq: 2,
       sourceInstanceId: "wire-test",

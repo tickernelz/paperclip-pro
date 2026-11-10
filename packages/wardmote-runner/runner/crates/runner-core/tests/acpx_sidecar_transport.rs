@@ -284,7 +284,7 @@ fn assigned_gateway_binding_reaches_qualified_sidecar_without_unrelated_secrets(
             .env("UNRELATED_EVAL_SECRET", "must-not-cross-boundary")
             .env(
                 "WARDMOTE_ACPX_CREDENTIAL_BINDING",
-                r#"{"schema":"paperclip.acpx_credential_binding.v1","agent":"pi","sessionId":"session-1","names":["OPENROUTER_API_KEY","GEMINI_API_KEY","MY_PI_SERVICE_KEY","LD_API_KEY","DYLD_API_KEY","WARDMOTE_PI_PROVIDERS"]}"#,
+                r#"{"schema":"wardmote.acpx_credential_binding.v1","agent":"pi","sessionId":"session-1","names":["OPENROUTER_API_KEY","GEMINI_API_KEY","MY_PI_SERVICE_KEY","LD_API_KEY","DYLD_API_KEY","WARDMOTE_PI_PROVIDERS"]}"#,
             )
             .envs(
                 [
@@ -354,7 +354,7 @@ fn assigned_gateway_binding_reaches_qualified_sidecar_without_unrelated_secrets(
             response["credentialBinding"],
             if matches!(agent, "pi" | "cursor" | "copilot") {
                 json!(
-                    r#"{"schema":"paperclip.acpx_credential_binding.v1","agent":"pi","sessionId":"session-1","names":["OPENROUTER_API_KEY","GEMINI_API_KEY","MY_PI_SERVICE_KEY","LD_API_KEY","DYLD_API_KEY","WARDMOTE_PI_PROVIDERS"]}"#
+                    r#"{"schema":"wardmote.acpx_credential_binding.v1","agent":"pi","sessionId":"session-1","names":["OPENROUTER_API_KEY","GEMINI_API_KEY","MY_PI_SERVICE_KEY","LD_API_KEY","DYLD_API_KEY","WARDMOTE_PI_PROVIDERS"]}"#
                 )
             } else {
                 serde_json::Value::Null

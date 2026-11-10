@@ -21,7 +21,7 @@ export class CapabilityToolAuthorizationEngine {
       return record;
     });
     return deepFreeze({
-      schema: "paperclip.capability.visible-tools.v1",
+      schema: "wardmote.capability.visible-tools.v1",
       tools: clone(tools),
       authorizationRecords,
     });
@@ -145,7 +145,7 @@ export class CapabilityToolAuthorizationEngine {
     const grants = [...new Set([...context.actor.capabilityGrants, ...context.scenarioGrants])].sort();
     const consideredClaims = [...tool.requiredClaims].sort();
     return this.#store({
-      schema: "paperclip.capability.authorization-record.v1",
+      schema: "wardmote.capability.authorization-record.v1",
       sequence: ++this.#sequence,
       runId: context.runId,
       actorId: context.actor.id,
@@ -169,7 +169,7 @@ export class CapabilityToolAuthorizationEngine {
     reason: string,
   ): CapabilityAuthorizationRecord {
     return this.#store({
-      schema: "paperclip.capability.authorization-record.v1",
+      schema: "wardmote.capability.authorization-record.v1",
       sequence: ++this.#sequence,
       runId: context.runId,
       actorId: context.actor.id,

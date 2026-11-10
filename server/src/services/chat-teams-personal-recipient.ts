@@ -30,7 +30,7 @@ const admissionSchema = z
   .strict();
 const recipientSchema = z
   .object({
-    schema: z.literal("paperclip.teams.personal-recipient.v1"),
+    schema: z.literal("wardmote.teams.personal-recipient.v1"),
     ...scopeFields,
     aadObjectId: z.uuid(),
     providerUserId: opaqueId,
@@ -53,7 +53,7 @@ const bindingScopeSchema = z
   .strict();
 const bindingSchema = z
   .object({
-    schema: z.literal("paperclip.teams.personal-recipient-binding.v1"),
+    schema: z.literal("wardmote.teams.personal-recipient-binding.v1"),
     recipient: recipientSchema,
     ...bindingFields,
   })
@@ -162,7 +162,7 @@ export function deriveTeamsPersonalRecipient(
     return null;
   return parseTeamsPersonalRecipient(
     {
-      schema: "paperclip.teams.personal-recipient.v1",
+      schema: "wardmote.teams.personal-recipient.v1",
       companyId: expected.data.companyId,
       endpointId: expected.data.endpointId,
       runtimeGeneration: expected.data.runtimeGeneration,
@@ -223,7 +223,7 @@ export function bindTeamsPersonalRecipient(
   if (!recipient || recipient.aadObjectId !== expected.data.externalPrincipalId)
     return null;
   return Object.freeze({
-    schema: "paperclip.teams.personal-recipient-binding.v1",
+    schema: "wardmote.teams.personal-recipient-binding.v1",
     recipient,
     deliveryId: expected.data.deliveryId,
     principalId: expected.data.principalId,

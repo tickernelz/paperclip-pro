@@ -1,5 +1,5 @@
 {
-  "schema": "paperclip.fake_harness.script.v1",
+  "schema": "wardmote.fake_harness.script.v1",
   "name": "error",
   "steps": [
     { "kind": "delay", "milliseconds": 5 },
@@ -13,7 +13,7 @@
     {
       "kind": "result",
       "payload": {
-        "schema": "paperclip.run_result.v1",
+        "schema": "wardmote.run_result.v1",
         "reportedWorkDisposition": "yielded",
         "summary": "The fake harness reported a scripted error.",
         "completionClaim": {

@@ -161,7 +161,7 @@ describe("Codex app-server Codex driver", () => {
     expect(JSON.stringify(appServerArgs)).not.toContain("HOME=");
     expect(CODEX_RESULT_OUTPUT_SCHEMA.properties.schema).toEqual({
       type: "string",
-      const: "paperclip.run_result.v1",
+      const: "wardmote.run_result.v1",
     });
     expect(
       CODEX_BLOCK_RESULT_OUTPUT_SCHEMA.properties.reportedWorkDisposition,

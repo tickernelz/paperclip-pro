@@ -43,7 +43,7 @@ import type {
 } from "./types.js";
 import { CAPABILITY_ISSUE_THREAD_VIEW_SCHEMA } from "./types.js";
 
-const INTERACTION_RESULT_SCHEMA = "paperclip.semantic-interaction-result.v1";
+const INTERACTION_RESULT_SCHEMA = "wardmote.semantic-interaction-result.v1";
 
 const PROVIDER_FAMILY_PREFIXES = {
   "plan.": "plan", "tool.execution.": "tool_execution", "research.": "research",

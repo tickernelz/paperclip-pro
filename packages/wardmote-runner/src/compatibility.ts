@@ -1,7 +1,7 @@
 import { capabilityCanonicalOperation } from "./catalog/index.js";
 
 export const WARDMOTE_RUNNER_COMPATIBILITY = Object.freeze({
-  schema: "paperclip.runner.compatibility.v1" as const,
+  schema: "wardmote.runner.compatibility.v1" as const,
   packageName: "@tickernelz/wardmote-runner" as const,
   packageVersion: "0.0.0" as const,
   components: Object.freeze({

@@ -10,10 +10,10 @@ harness are all inside `packages/wardmote-runner/`.
 
 | Boundary | Transport | Input | Output |
 |---|---|---|---|
-| Mock core → runner | stdin JSONL | `paperclip.prp.command.v1` | — |
-| Runner → mock core | stdout JSONL | — | `paperclip.runner.stream.v1` |
-| Runner → fake harness | stdin JSONL | `paperclip.fake_harness.command.v1` | — |
-| Fake harness → runner | stdout JSONL | — | `paperclip.fake_harness.message.v1` |
+| Mock core → runner | stdin JSONL | `wardmote.prp.command.v1` | — |
+| Runner → mock core | stdout JSONL | — | `wardmote.runner.stream.v1` |
+| Runner → fake harness | stdin JSONL | `wardmote.fake_harness.command.v1` | — |
+| Fake harness → runner | stdout JSONL | — | `wardmote.fake_harness.message.v1` |
 | Mock core → browser | local HTTP + NDJSON | start/actions | validated events and final trace |
 
 Stderr is diagnostic input. It never becomes a command or canonical event.

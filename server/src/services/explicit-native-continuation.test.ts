@@ -98,7 +98,7 @@ const support = await getEmbeddedPostgresTestSupport();
     const [source] = await db.update(heartbeatRuns).set({ status: "cancelled",
       processPid: gate === "process_running" ? process.pid : gate === "identity_missing" ? null : 999999999, resultJson: {
       cancelledByActorType: "user", cancelledByUserId: "board", nativeCancellation: {
-        schema: "paperclip.native-cancellation.v1", runId: f.sourceRunId, companyId: f.companyId,
+        schema: "wardmote.native-cancellation.v1", runId: f.sourceRunId, companyId: f.companyId,
         issueId: f.issueId, scope: "run", reasonCode: "cancellation_run_only", dispatched: true,
         dispatchState: gate === "unacknowledged" ? "requested" : "acknowledged",
         intentAuditId: randomUUID(), acknowledgementAuditId: randomUUID(),
@@ -710,7 +710,7 @@ const support = await getEmbeddedPostgresTestSupport();
       await db.update(heartbeatRuns).set({ errorCode: "native_session_cleanup_quarantined" }).where(eq(heartbeatRuns.id, f.sourceRunId));
       const retire = vi.fn(() => mode !== "changed");
       const verify = vi.spyOn(nativeExecutor, "verifyStoppedNativeSessionForContinuation").mockResolvedValue(
-        mode === "unproven" ? null : { evidence: { runId: f.sourceRunId, schema: "paperclip.stopped_native_conversation.v1" }, retire });
+        mode === "unproven" ? null : { evidence: { runId: f.sourceRunId, schema: "wardmote.stopped_native_conversation.v1" }, retire });
       try {
         const result = mode === "retry"
           ? await db.transaction(tx => admitExplicitNativeContinuation({ ...f, db: tx as unknown as typeof db,
@@ -739,12 +739,12 @@ const support = await getEmbeddedPostgresTestSupport();
       try {
         const nativeSessionId = randomUUID(), runnerInstanceId = randomUUID();
         const execution = {
-          schema: "paperclip.native-execution-input.v1", provider: { kind: "codex", model: null },
+          schema: "wardmote.native-execution-input.v1", provider: { kind: "codex", model: null },
           binding: { companyId: f.companyId, issueId: f.issueId, agentId: f.agentId, runId: f.sourceRunId, executionWorkspaceId: "workspace" },
           task: { identifier: "TEST", title: "Continue", description: null, prompt: "Continue", workMode: "standard" },
           workspace: { cwd: stateBase, repoUrl: null, repoRef: null, branchName: null },
           session: { normalizedSessionId: nativeSessionId, driverKind: "codex_app_server", protocolVersion: 1, lifecyclePolicy: { mode: "per_turn", idleTimeoutMs: null } },
-          completionContract: { id: "contract", sha256: "sha", schemaVersion: "paperclip.completion-contract.v1",
+          completionContract: { id: "contract", sha256: "sha", schemaVersion: "wardmote.completion-contract.v1",
             contract: { revision: "1", objective: "Continue", criteria: [{ id: "objective", requirement: "Continue" }] } },
           interactionResponses: [], credentialBindings: [],
         };
@@ -756,7 +756,7 @@ const support = await getEmbeddedPostgresTestSupport();
           ? `{${Object.entries(value).sort(([a], [b]) => a.localeCompare(b)).map(([key, entry]) => `${JSON.stringify(key)}:${canonical(entry)}`).join(",")}}`
           : JSON.stringify(value);
         const root = join(stateBase, createHash("sha256").update(canonical({
-          schema: "paperclip.native-session-scope.v2", companyId: f.companyId, agentId: f.agentId,
+          schema: "wardmote.native-session-scope.v2", companyId: f.companyId, agentId: f.agentId,
           workspace: { kind: "managed", executionWorkspaceId: "workspace" },
           provider: { driverKind: "codex_app_server", identity: { kind: "codex" } }, normalizedSessionId: nativeSessionId,
         })).digest("hex"));
@@ -765,11 +765,11 @@ const support = await getEmbeddedPostgresTestSupport();
           await mkdir(join(root, "runner"), { recursive: true });
           const identity = { runId: kind === "wrong_run" ? randomUUID() : f.sourceRunId, runnerInstanceId,
             normalizedSessionId: nativeSessionId, environmentLeaseId: "workspace" };
-          await writeFile(join(root, "control-plane/control-plane-state.json"), JSON.stringify({ schema: "paperclip.runner.durable.control-plane-state.v1", identity }));
-          await writeFile(join(root, "runner/runner-state.json"), JSON.stringify({ schema: "paperclip.runner.durable.state.v1",
+          await writeFile(join(root, "control-plane/control-plane-state.json"), JSON.stringify({ schema: "wardmote.runner.durable.control-plane-state.v1", identity }));
+          await writeFile(join(root, "runner/runner-state.json"), JSON.stringify({ schema: "wardmote.runner.durable.state.v1",
             ...identity, lifecycle: kind === "ready" ? "ready" : "suspended", outbox: kind === "pending_output" ? [{}] : [] }));
           await writeFile(join(root, "runner/codex-provider-state.json"), JSON.stringify({
-            schema: "paperclip.runner.codex-provider-state.v1", lifecycle: "prepared",
+            schema: "wardmote.runner.codex-provider-state.v1", lifecycle: "prepared",
             threadId: kind === "wrong_thread" ? "another-thread" : "exact-thread", providerSessionId: "backend-account",
             activeProviderTurnId: kind === "active_provider" ? "unfinished-turn" : null, ambiguousTurnStartPending: false,
             config: { provider: "codex", driver: "codex_app_server" }, pendingEvents: [], queuedEvents: [],
@@ -1617,7 +1617,7 @@ const support = await getEmbeddedPostgresTestSupport();
     "requires a fully committed failed result and verified stop for a new turn (%s)", async scenario => {
       const f = await seed(), contractId = randomUUID(), resultId = randomUUID();
       await db.insert(completionContracts).values({ id: contractId, companyId: f.companyId, issueId: f.issueId,
-        revision: 1, schemaVersion: "paperclip.completion-contract.v1", policyVersion: "test",
+        revision: 1, schemaVersion: "wardmote.completion-contract.v1", policyVersion: "test",
         risk: "standard", completionAuthority: "server_arbiter", incompleteCriteriaPolicy: "preserve_non_terminal",
         contractJson: {}, canonicalSha256: contractId, createdByActorType: "system", createdByActorId: "test" });
       await db.update(heartbeatRuns).set({ completionContractId: contractId,
@@ -1646,7 +1646,7 @@ const support = await getEmbeddedPostgresTestSupport();
   async function seedResultBeforeTerminalFailure(f: Fixture) {
     const contractId = randomUUID(), resultId = randomUUID();
     await db.insert(completionContracts).values({ id: contractId, companyId: f.companyId, issueId: f.issueId,
-      revision: 1, schemaVersion: "paperclip.completion-contract.v1", policyVersion: "test",
+      revision: 1, schemaVersion: "wardmote.completion-contract.v1", policyVersion: "test",
       risk: "standard", completionAuthority: "server_arbiter", incompleteCriteriaPolicy: "preserve_non_terminal",
       contractJson: {}, canonicalSha256: contractId, createdByActorType: "system", createdByActorId: "test" });
     await db.update(heartbeatRuns).set({ completionContractId: contractId, errorCode: "provider_transport_failed" })

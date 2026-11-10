@@ -38,7 +38,7 @@ export interface LocalIntegrityGoldenFixture {
 }
 
 export interface LocalIntegrityGoldenEvent {
-  schema: "paperclip.prp.event.v1";
+  schema: "wardmote.prp.event.v1";
   sourceEventId: string;
   sourceSeq: number;
   sourceInstanceId: string;
@@ -81,7 +81,7 @@ export function localIntegrityEventsFor(
   profile: LocalIntegrityGoldenProfile,
 ): LocalIntegrityGoldenEvent[] {
   return localIntegrityBoundaryGolden.events.map((template) => ({
-    schema: "paperclip.prp.event.v1",
+    schema: "wardmote.prp.event.v1",
     sourceEventId: `${profile.id}:${template.sourceEventId}`,
     sourceSeq: template.sourceSeq,
     sourceInstanceId: profile.sourceInstanceId,

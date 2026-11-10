@@ -52,7 +52,7 @@ export function capabilityStateDiff(
   after: CapabilityFixtureState,
 ): CapabilityStateDiff {
   return {
-    schema: "paperclip.capability.state-diff.v1",
+    schema: "wardmote.capability.state-diff.v1",
     beforeRevision: before.revision,
     afterRevision: after.revision,
     domains: DOMAINS.map(({ domain, select, noun }) =>

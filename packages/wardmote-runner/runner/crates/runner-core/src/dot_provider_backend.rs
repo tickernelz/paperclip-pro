@@ -19,7 +19,7 @@ use crate::provider_bridge::{
 };
 
 pub const DOT_PROVIDER_STATE_FILE: &str = "dot-provider-state.json";
-const SCHEMA: &str = "paperclip.runner.dot-provider-state.v1";
+const SCHEMA: &str = "wardmote.runner.dot-provider-state.v1";
 const MAX_STATE_BYTES: u64 = 32 * 1024 * 1024;
 const MAX_OPERATIONS: usize = 4096;
 const MAX_EVENTS: usize = 8192;
@@ -403,7 +403,7 @@ impl DotCommandExecutor {
                     .begin_call(id.clone(), tool.to_owned(), args.clone())
                     .map_err(|e| invalid(e.to_string()))?;
                 state.push("semantic_tool.input", json!({"semantic_tool":{
-                    "schema":"paperclip.prp.semantic_tool.v1","schemaVersion":1,"phase":"input",
+                    "schema":"wardmote.prp.semantic_tool.v1","schemaVersion":1,"phase":"input",
                     "operationId":tool,"callId":id,"idempotencyKey":id,
                     "correlation":{"runId":state.run_id,"normalizedSessionId":state.session_id,"turnId":state.turn_id,"itemId":self.config.item_id},
                     "content":{"digest":semantic_value_digest(&args),"redactionDisposition":"digest_only","references":[]},"input":args}}))?;
@@ -505,7 +505,7 @@ impl DotCommandExecutor {
                 .get("completionReport")
                 .cloned()
                 .unwrap_or_else(|| accepted_input.clone());
-            completion["schema"] = json!("paperclip.run_result.v1");
+            completion["schema"] = json!("wardmote.run_result.v1");
             let schema: Value = serde_json::from_str(include_str!(
                 "../../../../protocol/schemas/result.schema.json"
             ))
@@ -772,7 +772,7 @@ mod tests {
     }
     fn command(kind: &str, payload: Value) -> Command {
         Command {
-            schema: "paperclip.prp.command.v3".into(),
+            schema: "wardmote.prp.command.v3".into(),
             command_id: "test-command".into(),
             controller_seq: 1,
             command_type: kind.into(),
@@ -808,7 +808,7 @@ mod tests {
             })
             .collect::<Vec<_>>();
         let catalog = AuthorizedToolSet {
-            schema: "paperclip.runner.authorized-tools.v1".into(),
+            schema: "wardmote.runner.authorized-tools.v1".into(),
             schema_version: 1,
             catalog_digest: authorized_tool_catalog_digest(&tools).unwrap(),
             operations: tools,
@@ -971,7 +971,7 @@ mod tests {
         let dir = TestDirectory::new();
         let mut e = prepared(dir.path());
         accept(&mut e);
-        let result = json!({"schema":"paperclip.run_result.v1","reportedWorkDisposition":"done","summary":"Saved report",
+        let result = json!({"schema":"wardmote.run_result.v1","reportedWorkDisposition":"done","summary":"Saved report",
             "completionClaim":{"contractRevision":"contract-1","objectiveSatisfied":true,"criteria":[{"criterionId":"criterion-1","status":"satisfied","evidenceRefs":[]}],"remainingWork":[]},
             "evidence":[],"verification":[],"attentionRequests":[],"artifacts":[]});
         assert!(e
@@ -1023,7 +1023,7 @@ mod tests {
             "completionClaim":{"contractRevision":"contract-1","objectiveSatisfied":true,"criteria":[{"criterionId":"criterion-1","status":"passed","evidenceRefs":[]}],"remainingWork":[]},
             "evidence":[],"verification":[]});
         let mut canonical = input.clone();
-        canonical["schema"] = json!("paperclip.run_result.v1");
+        canonical["schema"] = json!("wardmote.run_result.v1");
         canonical["reportedWorkDisposition"] = json!("done");
         canonical["completionClaim"]["criteria"][0]["status"] = json!("satisfied");
         canonical["attentionRequests"] = json!([]);

@@ -48,7 +48,7 @@ export const searchTasksAction = {
   "live": {
     "order": 15,
     "descriptor": {
-      "schema": "paperclip.semantic-tool.v1",
+      "schema": "wardmote.semantic-tool.v1",
       "operationId": "search_tasks",
       "version": 1,
       "title": "Search company tasks",
@@ -128,7 +128,7 @@ export const searchTasksAction = {
           "schema": {
             "type": "string",
             "enum": [
-              "paperclip.capability.tool-result.v1"
+              "wardmote.capability.tool-result.v1"
             ]
           },
           "ok": {

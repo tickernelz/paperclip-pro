@@ -48,7 +48,7 @@ export const listAgentsAction = {
   "live": {
     "order": 13,
     "descriptor": {
-      "schema": "paperclip.semantic-tool.v1",
+      "schema": "wardmote.semantic-tool.v1",
       "operationId": "list_agents",
       "version": 1,
       "title": "List company agents",
@@ -94,7 +94,7 @@ export const listAgentsAction = {
           "schema": {
             "type": "string",
             "enum": [
-              "paperclip.capability.tool-result.v1"
+              "wardmote.capability.tool-result.v1"
             ]
           },
           "ok": {

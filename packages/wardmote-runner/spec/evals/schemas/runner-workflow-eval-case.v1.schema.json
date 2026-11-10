@@ -1,12 +1,12 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://paperclip.dev/schemas/runner-workflow-eval-case.v1.schema.json",
+  "$id": "https://wardmote.dev/schemas/runner-workflow-eval-case.v1.schema.json",
   "title": "RunnerWorkflowEvalCase v1",
   "type": "object",
   "additionalProperties": false,
   "required": ["schema", "id", "title", "version", "tags", "providers", "steps", "assertions"],
   "properties": {
-    "schema": { "const": "paperclip.runner.workflow-eval-case.v1" },
+    "schema": { "const": "wardmote.runner.workflow-eval-case.v1" },
     "id": { "enum": ["final-response", "rich-activity", "verification-policy", "governed-interaction", "steering-causality", "planning-lifecycle", "review-lifecycle", "delegation-return", "completion-robustness", "restart-recovery", "cancellation-permissions", "trace-lineage"] },
     "title": { "type": "string", "minLength": 1 },
     "version": { "const": 1 },

@@ -201,7 +201,7 @@ class DotSession implements HarnessSession {
   #emit(eventType: PrpEvent["eventType"], payload: Record<string, unknown>, itemId?: string) {
     const sequence = this.#events.length + 1;
     this.#events.push({
-      schema: "paperclip.prp.event.v1", sourceEventId: `${this.options.identity.runId}:${sequence}`,
+      schema: "wardmote.prp.event.v1", sourceEventId: `${this.options.identity.runId}:${sequence}`,
       sourceSeq: sequence, sourceInstanceId: `dot:${this.options.identity.sessionId}`, sourceKind: "runner",
       runId: this.options.identity.runId, normalizedSessionId: this.options.identity.sessionId,
       ...(this.#turnId ? { turnId: this.#turnId } : {}), ...(itemId ? { itemId } : {}),

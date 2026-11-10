@@ -36,8 +36,8 @@ use std::fmt::{self, Display, Formatter};
 
 use serde::{Deserialize, Serialize};
 
-pub const CONFORMANCE_FIXTURE_SCHEMA: &str = "paperclip.runner.conformance.fixture.v1";
-pub const CONFORMANCE_OUTPUT_SCHEMA: &str = "paperclip.runner.conformance.output.v1";
+pub const CONFORMANCE_FIXTURE_SCHEMA: &str = "wardmote.runner.conformance.fixture.v1";
+pub const CONFORMANCE_OUTPUT_SCHEMA: &str = "wardmote.runner.conformance.output.v1";
 pub const CONFORMANCE_FIXTURE: &str =
     include_str!("../../../../protocol/fixtures/conformance-minimal-run.json");
 pub const CONFORMANCE_EXPECTED_OUTPUT: &str =

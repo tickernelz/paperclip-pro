@@ -316,7 +316,7 @@ async function readJson(request: IncomingMessage): Promise<Record<string, unknow
 
 function prpCapabilities(capabilities: NativeSessionCapabilities): PrpCapabilities {
   return {
-    schema: "paperclip.prp.capabilities.v1",
+    schema: "wardmote.prp.capabilities.v1",
     sessionReusePolicy: "reuse_per_issue",
     driver: { kind: "live-console-demo", version: "1" },
     steer: capabilities.steering,
@@ -860,7 +860,7 @@ export class LiveConsoleDemoServer {
     const metadata = {
       fixtureName: "live-console-demo",
       identity: {
-        schema: "paperclip.prp.identity.v1" as const,
+        schema: "wardmote.prp.identity.v1" as const,
         companyId: "package-local-demo",
         issueId: "live-console-demo",
         runId: entry.runId,

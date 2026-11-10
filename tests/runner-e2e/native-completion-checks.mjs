@@ -11,7 +11,7 @@ import {
 import { inspectNativeCompletionSourceMetadata, inspectNativeCompletionRunnerd, NATIVE_COMPLETION_RUNNERD_PATH } from "./native-completion-git-source.mjs";
 
 const root = resolve(import.meta.dirname, "../..");
-export const NATIVE_COMPLETION_PREFLIGHT_SCHEMA = "paperclip.native-completion-preflight.v1";
+export const NATIVE_COMPLETION_PREFLIGHT_SCHEMA = "wardmote.native-completion-preflight.v1";
 export const NATIVE_COMPLETION_CELL_IDS = ["runner-codex", "runner-acpx-claude", "runner-opencode"].flatMap(profile =>
   ["assigned-skill-explicit-invocation", "native-blocked-report"].map(task => `native-completion.${profile}.local.${task}`));
 export function nativeCompletionGates(variant) {

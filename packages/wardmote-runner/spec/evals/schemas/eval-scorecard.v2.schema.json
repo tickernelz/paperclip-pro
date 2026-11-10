@@ -1,12 +1,12 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://paperclip.dev/schemas/eval-scorecard.v2.schema.json",
+  "$id": "https://wardmote.dev/schemas/eval-scorecard.v2.schema.json",
   "title": "EvalScorecardV2",
   "type": "object",
   "additionalProperties": false,
   "required": ["schema", "bundleId", "caseId", "candidateId", "classification", "dimensions", "overall"],
   "properties": {
-    "schema": { "const": "paperclip.runner.eval-scorecard.v2" },
+    "schema": { "const": "wardmote.runner.eval-scorecard.v2" },
     "bundleId": { "type": "string", "minLength": 1 },
     "caseId": { "type": "string", "minLength": 1 },
     "candidateId": { "type": "string", "minLength": 1 },

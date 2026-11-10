@@ -1,11 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://paperclip.dev/schemas/prp/v1/command.schema.json",
+  "$id": "https://wardmote.dev/schemas/prp/v1/command.schema.json",
   "title": "PRP runner command",
   "type": "object",
   "required": ["schema", "commandId", "controllerSeq", "type", "issuedAt", "payload"],
   "properties": {
-    "schema": { "const": "paperclip.prp.command.v1" },
+    "schema": { "const": "wardmote.prp.command.v1" },
     "commandId": { "type": "string", "minLength": 1, "maxLength": 160 },
     "controllerSeq": { "type": "integer", "minimum": 1 },
     "type": {

@@ -586,7 +586,7 @@ it.each([
         expect(launch.environment[key]).toBe(explicit ? "explicit-fixture-credential" : undefined);
         const receipt = launch.environment[ACPX_CREDENTIAL_BINDING_ENV];
         expect(receipt).toBeDefined();
-        expect(JSON.parse(receipt!)).toEqual({ schema: "paperclip.acpx_credential_binding.v1", agent,
+        expect(JSON.parse(receipt!)).toEqual({ schema: "wardmote.acpx_credential_binding.v1", agent,
           sessionId: identity.normalizedSessionId, names: explicit ? [...(key === "CUSTOM_PI_API_KEY" ? ["WARDMOTE_PI_PROVIDERS"] : []), key] : [] });
         expect(receipt).not.toContain("fixture-credential");
         expect(launch.environment.DATABASE_URL).toBeUndefined();
@@ -1060,7 +1060,7 @@ function secureAad(
   counter: bigint,
 ): Buffer {
   return Buffer.from(
-    `paperclip.runner.secure-frame.v1\0${client.sessionId}\0${direction}\0${counter}`,
+    `wardmote.runner.secure-frame.v1\0${client.sessionId}\0${direction}\0${counter}`,
   );
 }
 
@@ -1148,7 +1148,7 @@ function sendSecure(
     cipher.getAuthTag(),
   ]);
   sendMaskedJson(client.socket, {
-    schema: "paperclip.runner.secure-frame.v1",
+    schema: "wardmote.runner.secure-frame.v1",
     counter: Number(counter),
     ciphertext: encrypted.toString("hex"),
   });
@@ -1217,13 +1217,13 @@ function semanticInputEvent(sourceSeq = 1, input: Record<string, unknown> = {}):
       turnId: identity.turnId,
       itemId: identity.itemId,
       eventType: "semantic_tool.input",
-      schema: "paperclip.prp.event.v1",
+      schema: "wardmote.prp.event.v1",
       schemaVersion: 1,
       priority: 0,
       emittedAt: "2026-08-25T18:00:00.000Z",
       payload: {
         semantic_tool: {
-          schema: "paperclip.prp.semantic_tool.v1",
+          schema: "wardmote.prp.semantic_tool.v1",
           schemaVersion: 1,
           phase: "input",
           callId: "call-1",
@@ -1526,7 +1526,7 @@ describe("DurablePrpControlPlane", () => {
         ).semantic_tool as Record<string, unknown>;
         const commandId = `command_tool_${createHash("sha256").update(`${identity.runId}\0call-1`).digest("hex").slice(0, 32)}`;
         core.store.state.commands.push({
-          schema: "paperclip.prp.command.v1",
+          schema: "wardmote.prp.command.v1",
           commandId,
           controllerSeq: 1,
           type: "semantic_tool.result",
@@ -2937,7 +2937,7 @@ describe("DurablePrpControlPlane", () => {
       } else if (mode.includes("bootstrap")) {
         const { status: _status, result: _result, ...wire } = command;
         const runnerState = {
-          schema: "paperclip.runner.durable.state.warm-transition.v1",
+          schema: "wardmote.runner.durable.state.warm-transition.v1",
           ...identity,
           ackedSourceSeq: receipt.oldAckedSourceSeq,
           nextSourceSeq: Number(receipt.oldAckedSourceSeq) + 1,
@@ -3077,7 +3077,7 @@ describe("DurablePrpControlPlane", () => {
                     if (
                       !dropped &&
                       (value as { schema?: string }).schema ===
-                        "paperclip.runner.secure-frame.v1"
+                        "wardmote.runner.secure-frame.v1"
                     ) {
                       dropped = true;
                       wire.close();
@@ -3216,7 +3216,7 @@ describe("DurablePrpControlPlane", () => {
           expect(core.store.state.warmTransition).toBeUndefined(),
         );
         expect(core.store.state.schema).toBe(
-          "paperclip.runner.durable.control-plane-state.v1",
+          "wardmote.runner.durable.control-plane-state.v1",
         );
         await expect(receiveSecure(successor!)).resolves.toMatchObject({
           kind: "command",

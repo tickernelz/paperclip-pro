@@ -68,7 +68,7 @@ export const setDependenciesAction = {
   "live": {
     "order": 21,
     "descriptor": {
-      "schema": "paperclip.semantic-tool.v1",
+      "schema": "wardmote.semantic-tool.v1",
       "operationId": "set_dependencies",
       "version": 1,
       "title": "Set task dependencies",
@@ -187,7 +187,7 @@ export const setDependenciesAction = {
           "schema": {
             "type": "string",
             "enum": [
-              "paperclip.capability.tool-result.v1"
+              "wardmote.capability.tool-result.v1"
             ]
           },
           "ok": {

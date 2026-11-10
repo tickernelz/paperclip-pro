@@ -3,7 +3,7 @@
  * server completion turns are separately admitted and still count toward costs.
  * Outcome artifacts and source/read coverage are graded by their own checks.
  */
-export const HIRING_TEMPLATE_TURN_ACCOUNTING_VERSION = "paperclip.hiring-template-turn-accounting.v2";
+export const HIRING_TEMPLATE_TURN_ACCOUNTING_VERSION = "wardmote.hiring-template-turn-accounting.v2";
 const predicateIds = [
   "known-fixture-context",
   "complete-public-run-ledger",
@@ -98,14 +98,14 @@ export function gradeHiringCompletionActions(notifications: JsonRecord[], readRu
     if (!events.length || terminals.length !== 1 || acceptedResults.length !== 1
       || terminalEnvelope.sourceKind !== "control_plane" || terminal.schema !== "paperclip.prp.terminal.v1"
       || terminal.runTerminalState !== "succeeded" || terminal.turnTerminalState !== "completed"
-      || acceptedEnvelope.sourceKind !== "control_plane" || object(object(acceptedEnvelope.payload).result).schema !== "paperclip.run_result.v1"
+      || acceptedEnvelope.sourceKind !== "control_plane" || object(object(acceptedEnvelope.payload).result).schema !== "wardmote.run_result.v1"
       || !events.every((event, i) => Number.isSafeInteger(event.seq) && event.seq === i + 1)) { unresolved(); continue; }
     const starts = new Map<unknown, JsonRecord>(), completed = new Map<unknown, JsonRecord>();
     const nativeStarts = new Map<unknown, JsonRecord>(), nativeResults = new Map<unknown, JsonRecord>();
     for (const event of events) {
       const envelope = eventEnvelope(event), payload = object(envelope.payload), item = object(payload.item);
       if (event.eventType?.toString().startsWith("tool.execution.")) {
-        if (payload.schema !== "paperclip.tool.execution.v1" || !present(payload.executionId)) { unresolved(); continue; }
+        if (payload.schema !== "wardmote.tool.execution.v1" || !present(payload.executionId)) { unresolved(); continue; }
         if (event.eventType === "tool.execution.started") {
           if (starts.has(payload.executionId)) violation();
           starts.set(payload.executionId, payload);
@@ -116,7 +116,7 @@ export function gradeHiringCompletionActions(notifications: JsonRecord[], readRu
         } else if (["tool.execution.failed", "tool.execution.cancelled", "tool.execution.interrupted"].includes(String(event.eventType))) violation();
       }
       if (item.type !== "tool_use" && item.type !== "tool_result") continue;
-      if (envelope.schema !== "paperclip.prp.event.v1" || envelope.schemaVersion !== 1 || envelope.sourceKind !== "runner"
+      if (envelope.schema !== "wardmote.prp.event.v1" || envelope.schemaVersion !== 1 || envelope.sourceKind !== "runner"
         || !present(item.id) || errored(item)) { unresolved(); continue; }
       if (event.eventType === "item.started" && item.type === "tool_use") {
         if (nativeStarts.has(item.id)) violation();
@@ -152,7 +152,7 @@ export function gradeHiringCompletionActions(notifications: JsonRecord[], readRu
         const proposal = eventEnvelope(proposals[0] ?? {});
         if (start.transport !== "dynamic" || finish.transport !== "dynamic" || proposals.length !== 1
           || proposal.sourceKind !== "runner" || proposal.itemId !== id
-          || object(proposal.payload).schema !== "paperclip.run_result.v1") unresolved();
+          || object(proposal.payload).schema !== "wardmote.run_result.v1") unresolved();
         continue;
       }
       if (start.name === "ToolSearch" && start.transport === "builtin" && finish.transport === "builtin") continue;

@@ -1,5 +1,5 @@
 {
-  "schema": "paperclip.pi-paid-qualification-progress.v1",
+  "schema": "wardmote.pi-paid-qualification-progress.v1",
   "recordedAt": "2026-09-28T22:41:36.062345+00:00",
   "qualificationStatus": "pending",
   "environment": {

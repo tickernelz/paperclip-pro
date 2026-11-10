@@ -501,7 +501,7 @@ function executionPayload(
   );
   const target = text(action.path) || null;
   return {
-    schema: "paperclip.tool.execution.v1",
+    schema: "wardmote.tool.execution.v1",
     executionId: id,
     transport:
       text(item.type) === "mcpToolCall"
@@ -549,7 +549,7 @@ function turnPlanPayload(
   const planId = safeId(text(params.turnId), "turn-plan");
   const revision = Number(params.revision);
   return {
-    schema: "paperclip.plan.updated.v1",
+    schema: "wardmote.plan.updated.v1",
     planId,
     revision: Number.isSafeInteger(revision) && revision > 0 ? revision : 1,
     explanation: text(params.explanation).slice(0, 4000) || null,
@@ -673,7 +673,7 @@ export function canonicalProviderEventsFromCodex(
       {
         eventType: completed ? "research.completed" : "research.started",
         payload: {
-          schema: "paperclip.research.v1",
+          schema: "wardmote.research.v1",
           researchId: itemId,
           action: actionType,
           status: completed ? "completed" : "running",
@@ -697,7 +697,7 @@ export function canonicalProviderEventsFromCodex(
       {
         eventType: completed ? "delegation.completed" : "delegation.started",
         payload: {
-          schema: "paperclip.delegation.v1",
+          schema: "wardmote.delegation.v1",
           delegationId: itemId,
           action: text(item.tool, "spawnAgent")
             .replace("spawnAgent", "spawn")
@@ -716,7 +716,7 @@ export function canonicalProviderEventsFromCodex(
       {
         eventType: "model.route.changed",
         payload: {
-          schema: "paperclip.model.route_changed.v1",
+          schema: "wardmote.model.route_changed.v1",
           routeId: safeId(text(params.turnId), "model-route"),
           provider: "openai",
           requestedModel: text(params.fromModel, "unknown"),
@@ -736,7 +736,7 @@ export function canonicalProviderEventsFromCodex(
       {
         eventType: "model.verification.updated",
         payload: {
-          schema: "paperclip.model.verification.v1",
+          schema: "wardmote.model.verification.v1",
           verificationId: safeId(text(params.turnId), "model-verification"),
           status: params.showBufferingUi === true ? "running" : "completed",
           classes: Array.isArray(params.verifications)
@@ -760,7 +760,7 @@ export function canonicalProviderEventsFromCodex(
       {
         eventType: "context.compacted",
         payload: {
-          schema: "paperclip.context.compacted.v1",
+          schema: "wardmote.context.compacted.v1",
           compactionId: itemId,
           reason: "provider",
           preTokens: null,
@@ -777,7 +777,7 @@ export function canonicalProviderEventsFromCodex(
       {
         eventType: "artifact.viewed",
         payload: {
-          schema: "paperclip.artifact.viewed.v1",
+          schema: "wardmote.artifact.viewed.v1",
           artifactId: itemId,
           reference:
             path.startsWith("/") || path.split("/").includes("..")
@@ -796,7 +796,7 @@ export function canonicalProviderEventsFromCodex(
       {
         eventType: "artifact.generated",
         payload: {
-          schema: "paperclip.artifact.generated.v1",
+          schema: "wardmote.artifact.generated.v1",
           artifactId: itemId,
           status: completed ? text(item.status, "completed") : "running",
           reference:
@@ -823,7 +823,7 @@ export function canonicalProviderEventsFromCodex(
       {
         eventType: "review.mode.changed",
         payload: {
-          schema: "paperclip.review.mode_changed.v1",
+          schema: "wardmote.review.mode_changed.v1",
           reviewId: itemId,
           state: type === "enteredReviewMode" ? "entered" : "exited",
           scope: text(item.review) || null,
@@ -839,7 +839,7 @@ export function canonicalProviderEventsFromCodex(
         eventType:
           method === "hook/started" ? "hook.started" : "hook.completed",
         payload: {
-          schema: "paperclip.hook.v1",
+          schema: "wardmote.hook.v1",
           hookId: safeId(text(run.id), "hook"),
           event: text(run.eventName, "unknown"),
           scope: text(run.scope, "provider"),
@@ -863,7 +863,7 @@ export function canonicalProviderEventsFromCodex(
       .map((entry, index) => ({
         eventType: "memory.citation.referenced" as const,
         payload: {
-          schema: "paperclip.memory.citation.v1",
+          schema: "wardmote.memory.citation.v1",
           citationId: `${itemId}:citation:${index + 1}`,
           messageItemId: itemId,
           label: text(record(entry).label, `Memory source ${index + 1}`).slice(
@@ -886,7 +886,7 @@ export function canonicalProviderEventsFromCodex(
           ? "safety.review.started"
           : "safety.review.completed",
         payload: {
-          schema: "paperclip.safety.review.v1",
+          schema: "wardmote.safety.review.v1",
           reviewId: safeId(text(params.reviewId), "safety-review"),
           targetExecutionId: text(params.targetItemId) || null,
           status: method.endsWith("started") ? "running" : "completed",
@@ -902,7 +902,7 @@ export function canonicalProviderEventsFromCodex(
       {
         eventType: "terminal.input.sent",
         payload: {
-          schema: "paperclip.terminal.input_sent.v1",
+          schema: "wardmote.terminal.input_sent.v1",
           executionId: safeId(text(params.itemId), "execution"),
           origin: "agent",
           inputClass: "text",
@@ -917,7 +917,7 @@ export function canonicalProviderEventsFromCodex(
       {
         eventType: completed ? "wait.completed" : "wait.started",
         payload: {
-          schema: "paperclip.wait.v1",
+          schema: "wardmote.wait.v1",
           waitId: itemId,
           reason: "timer",
           status: completed ? "completed" : "running",
@@ -942,7 +942,7 @@ export function canonicalProviderEventsFromCodex(
       {
         eventType: "provider.notice.recorded",
         payload: {
-          schema: "paperclip.provider.notice.v1",
+          schema: "wardmote.provider.notice.v1",
           noticeId: safeId(
             `${method}:${text(params.code, "notice")}`,
             "provider-notice",
@@ -988,7 +988,7 @@ export function canonicalProviderEventsFromOpenCodePart(
     // Preserve the bounded provider message so a failed row is actionable.
     const output = text(state.output, text(part.output, text(state.error)));
     const payload = {
-      schema: "paperclip.tool.execution.v1",
+      schema: "wardmote.tool.execution.v1",
       executionId: itemId,
       transport:
         type === "tool" || type.includes("tool") ? "builtin" : "process",
@@ -1026,7 +1026,7 @@ export function canonicalProviderEventsFromOpenCodePart(
         eventType:
           status === "running" ? "research.progressed" : "research.completed",
         payload: {
-          schema: "paperclip.research.v1",
+          schema: "wardmote.research.v1",
           researchId: itemId,
           action: "search",
           status: status === "interrupted" ? "cancelled" : status,
@@ -1045,7 +1045,7 @@ export function canonicalProviderEventsFromOpenCodePart(
         eventType:
           status === "running" ? "delegation.updated" : "delegation.completed",
         payload: {
-          schema: "paperclip.delegation.v1",
+          schema: "wardmote.delegation.v1",
           delegationId: itemId,
           action: "spawn",
           status: status === "cancelled" ? "interrupted" : status,
@@ -1060,7 +1060,7 @@ export function canonicalProviderEventsFromOpenCodePart(
       {
         eventType: "context.compacted",
         payload: {
-          schema: "paperclip.context.compacted.v1",
+          schema: "wardmote.context.compacted.v1",
           compactionId: itemId,
           reason: "provider",
           preTokens: null,
@@ -1090,7 +1090,7 @@ export function canonicalProviderEventsFromAcpxRuntimeEvent(
       {
         eventType: "provider.notice.recorded",
         payload: {
-          schema: "paperclip.provider.notice.v1",
+          schema: "wardmote.provider.notice.v1",
           noticeId: safeId(
             `${fallbackItemId}:${runtimeType || "unknown"}`,
             "acpx-unclassified-update",
@@ -1139,7 +1139,7 @@ export function canonicalProviderEventsFromAcpxRuntimeEvent(
       {
         eventType: "plan.updated",
         payload: {
-          schema: "paperclip.plan.updated.v1",
+          schema: "wardmote.plan.updated.v1",
           planId: safeId(text(turnId, fallbackItemId), "turn-plan"),
           revision: 1,
           explanation: null,
@@ -1167,7 +1167,7 @@ export function canonicalProviderEventsFromAcpxRuntimeEvent(
     const name = mcp?.name ?? title;
     const operation = acpxToolOperation(event.kind, name);
     const payload = {
-      schema: "paperclip.tool.execution.v1",
+      schema: "wardmote.tool.execution.v1",
       executionId: itemId,
       transport: mcp ? "mcp" : "builtin",
       operation,
@@ -1207,7 +1207,7 @@ export function canonicalProviderEventsFromAcpxRuntimeEvent(
       {
         eventType: "review.mode.changed",
         payload: {
-          schema: "paperclip.review.mode_changed.v1",
+          schema: "wardmote.review.mode_changed.v1",
           reviewId: itemId,
           state,
           scope: statusText.slice(0, 4000) || null,
@@ -1230,7 +1230,7 @@ export function canonicalProviderEventsFromAcpxRuntimeEvent(
       {
         eventType: "provider.notice.recorded",
         payload: {
-          schema: "paperclip.provider.notice.v1",
+          schema: "wardmote.provider.notice.v1",
           noticeId: itemId,
           severity: "info",
           category: `acp_${event.tag}`.slice(0, 160),

@@ -41,7 +41,7 @@ export const inspectOperationResultAction = {
       "ok": true,
       "operationId": "inspect_operation_result",
       "result": {
-        "schema": "paperclip.capability.tool-result.v1",
+        "schema": "wardmote.capability.tool-result.v1",
         "ok": true,
         "operationId": "inspect_operation_result",
         "operationResultId": "example",
@@ -55,7 +55,7 @@ export const inspectOperationResultAction = {
   "scenario": {
     "order": 13,
     "successExample": {
-      "schema": "paperclip.capability.tool-result.v1",
+      "schema": "wardmote.capability.tool-result.v1",
       "ok": true,
       "operationId": "inspect_operation_result",
       "operationResultId": "example",
@@ -87,7 +87,7 @@ export const inspectOperationResultAction = {
           "schema": {
             "type": "string",
             "enum": [
-              "paperclip.capability.tool-result.v1"
+              "wardmote.capability.tool-result.v1"
             ]
           },
           "ok": {

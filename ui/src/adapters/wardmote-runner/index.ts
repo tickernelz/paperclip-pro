@@ -29,7 +29,7 @@ function structuredResultSummary(value: string): string | null {
   if (!value.trimStart().startsWith("{")) return null;
   try {
     const parsed = record(JSON.parse(value));
-    return text(parsed.schema) === "paperclip.run_result.v1" && text(parsed.summary)
+    return text(parsed.schema) === "wardmote.run_result.v1" && text(parsed.summary)
       ? text(parsed.summary)
       : null;
   } catch {
@@ -506,7 +506,7 @@ function runtimeRequestEntry(
 
 function parseQuestionResponse(value: unknown): WardmoteQuestionResponse | null {
   const response = record(value);
-  if (response.schema !== "paperclip.question_response.v1") return null;
+  if (response.schema !== "wardmote.question_response.v1") return null;
   const rawAnswers = record(response.answers);
   const answers: WardmoteQuestionResponse["answers"] = {};
   for (const [questionId, rawAnswer] of Object.entries(rawAnswers).slice(0, 64)) {
@@ -523,7 +523,7 @@ function parseQuestionResponse(value: unknown): WardmoteQuestionResponse | null 
       ...(customText != null ? { customText } : {}),
     };
   }
-  return { schema: "paperclip.question_response.v1", answers };
+  return { schema: "wardmote.question_response.v1", answers };
 }
 
 function parseQuestionSet(value: unknown): WardmoteQuestionSet | null {
@@ -534,7 +534,7 @@ function parseQuestionSet(value: unknown): WardmoteQuestionSet | null {
   // intact. Recover those already-persisted requests on replay; reject other
   // explicit schema families so this remains a narrow migration path.
   if (input.schema !== undefined
-    && input.schema !== "paperclip.question_set.v1"
+    && input.schema !== "wardmote.question_set.v1"
     && input.schema !== "***REDACTED***") return null;
   const questions = input.questions.map(record).slice(0, 64).map((question, questionIndex): WardmoteQuestion => {
     const answerMode: WardmoteQuestion["answerMode"] = question.answerMode === "single_select" || question.answerMode === "multi_select" ? question.answerMode : "text";
@@ -574,7 +574,7 @@ function parseQuestionSet(value: unknown): WardmoteQuestionSet | null {
     return parsedQuestion;
   });
   return {
-    schema: "paperclip.question_set.v1",
+    schema: "wardmote.question_set.v1",
     ...(nullableText(input.title) ? { title: text(input.title).slice(0, 1_000) } : {}),
     // Native plan decisions bind to the complete canonical question context.
     // The event boundary rejects oversized context rather than approving a slice.
@@ -672,7 +672,7 @@ function piRuntimeFailureKey(event: JsonRecord, payload: JsonRecord): string | n
   // facts. Coalesce their identical consecutive display rows, retaining the
   // original PRP log and requiring the complete run/turn/session binding.
   if (event.eventType !== "provider.notice.recorded"
-    || payload.schema !== "paperclip.provider.notice.v1"
+    || payload.schema !== "wardmote.provider.notice.v1"
     || payload.category !== "pi.runtime_failure"
     || !text(event.runId) || !text(event.turnId) || !text(event.normalizedSessionId)) return null;
   const details = Array.isArray(payload.details) ? payload.details.map(record) : [];

@@ -14,8 +14,8 @@ const hashId = (domain: string, id: string) => `acpx-tool-${createHash("sha256")
  * this path. Mirror the sidecar byte bound followed by the Rust opaque ID. */
 export function bootstrapReadExecutionId(toolCallId: string): string {
   if (!toolCallId || toolCallId.length > 240 || /[\u0000-\u001f\u007f]/u.test(toolCallId) || toolCallId.includes("[REDACTED]")) throw new Error("Invalid bootstrap native tool identity");
-  const bounded = Buffer.byteLength(toolCallId) > 240 ? hashId("paperclip.acpx.provider-identity.v1\0", toolCallId) : toolCallId;
-  return /^[A-Za-z0-9][A-Za-z0-9._:-]*$/u.test(bounded) && Buffer.byteLength(bounded) <= 160 ? bounded : hashId("paperclip.acpx.opaque-item.v1\0", bounded);
+  const bounded = Buffer.byteLength(toolCallId) > 240 ? hashId("wardmote.acpx.provider-identity.v1\0", toolCallId) : toolCallId;
+  return /^[A-Za-z0-9][A-Za-z0-9._:-]*$/u.test(bounded) && Buffer.byteLength(bounded) <= 160 ? bounded : hashId("wardmote.acpx.opaque-item.v1\0", bounded);
 }
 
 /** Exempt only completed reads with the exact single-path native attestation on
@@ -55,10 +55,10 @@ export function withoutProvenBootstrapReads<T extends BootstrapReadNotice>(
     const earlierRead = family && payload.operation === "read" && row.seq < origin.seq;
     if (!correlated && !earlierRead) continue;
     if (!family || !["tool.execution.started", "tool.execution.progressed", "tool.execution.completed"].includes(type)
-      || row.runId !== origin.runId || row.protocolSchemaVersion !== 1 || event.schema !== "paperclip.prp.event.v1"
+      || row.runId !== origin.runId || row.protocolSchemaVersion !== 1 || event.schema !== "wardmote.prp.event.v1"
       || event.schemaVersion !== 1 || event.sourceKind !== "runner" || event.runId !== origin.runId || event.turnId !== origin.turnId
       || event.eventType !== type || !Number.isFinite(Date.parse(event.emittedAt))
-      || payload.schema !== "paperclip.tool.execution.v1" || payload.transport !== "builtin" || !["read", "unknown"].includes(payload.operation)
+      || payload.schema !== "wardmote.tool.execution.v1" || payload.transport !== "builtin" || !["read", "unknown"].includes(payload.operation)
       || (payload.target !== null && payload.target !== proof.actionFile) || !groups.has(payload.executionId)
       || !Number.isSafeInteger(row.seq) || row.seq < 0 || row.seq >= origin.seq || receiptSeq.has(row.seq) || noticeSeq.has(row.seq)) throw invalid();
     receiptSeq.add(row.seq);

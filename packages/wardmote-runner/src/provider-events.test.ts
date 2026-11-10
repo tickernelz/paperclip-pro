@@ -16,7 +16,7 @@ function envelope(
   event: ReturnType<typeof canonicalProviderEventsFromCodex>[number],
 ) {
   return {
-    schema: "paperclip.prp.event.v1",
+    schema: "wardmote.prp.event.v1",
     sourceEventId: `source:${event.itemId}`,
     sourceSeq: 1,
     sourceInstanceId: "runner-1",
@@ -494,7 +494,7 @@ describe("provider-neutral events", () => {
     expect(event).toMatchObject({
       eventType: "tool.execution.started",
       payload: {
-        schema: "paperclip.tool.execution.v1",
+        schema: "wardmote.tool.execution.v1",
         transport: "builtin",
         status: "running",
         name: "paperclip_report_progress",

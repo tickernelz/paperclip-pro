@@ -85,7 +85,7 @@ describe("PRP provider-neutral semantic receipts", () => {
         aggregate: { unit: "usd_micros", observed: 100, limit: 100, window: "run" },
       }),
     ).toMatchObject({
-      schema: "paperclip.prp.stop_reason.v1",
+      schema: "wardmote.prp.stop_reason.v1",
       kind: "cost",
       decisionId: "decision_receipt_test",
     });
@@ -131,7 +131,7 @@ function event(
   semanticTool: Record<string, unknown>,
 ): PrpEvent {
   return {
-    schema: "paperclip.prp.event.v1",
+    schema: "wardmote.prp.event.v1",
     sourceEventId: `${eventType}:receipt_test`,
     sourceSeq: eventType === "mcp_app.tool_input" ? 1 : eventType === "mcp_app.tool_result" ? 2 : 3,
     sourceInstanceId: "runner_receipt_test",

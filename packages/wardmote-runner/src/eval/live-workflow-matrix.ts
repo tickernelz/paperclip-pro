@@ -8,9 +8,9 @@ import type {
 import { RUNNER_WORKFLOW_CATALOG } from "./workflow-catalog.js";
 
 export const RUNNER_LIVE_CANDIDATE_SCHEMA =
-  "paperclip.runner.live-eval-candidate.v1" as const;
+  "wardmote.runner.live-eval-candidate.v1" as const;
 export const RUNNER_LIVE_SCHEDULE_SCHEMA =
-  "paperclip.runner.live-eval-schedule.v1" as const;
+  "wardmote.runner.live-eval-schedule.v1" as const;
 
 export function parseRunnerLiveCampaignCostLimit(
   value: string | undefined,

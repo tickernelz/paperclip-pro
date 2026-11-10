@@ -31,7 +31,7 @@ export const setTaskTitleAction = {
   live: {
     order: 50,
     descriptor: {
-      schema: "paperclip.semantic-tool.v1", operationId: "set_task_title", version: 1,
+      schema: "wardmote.semantic-tool.v1", operationId: "set_task_title", version: 1,
       title: "Set task title", description, exposure: "optional", requiredClaims: [],
       allowedModes: ["standard", "ask", "planning", "skill_test"], inputSchema,
       outputSchema: { type: "object", additionalProperties: true },

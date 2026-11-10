@@ -141,7 +141,7 @@ test("every ACPX sidecar message family uses the shared version", () => {
 test("the ACPX sidecar schema id carries the declared protocol version", () => {
   assert.equal(
     schema.$id,
-    `https://paperclip.dev/schemas/acpx-sidecar/v${protocolVersion}/message.schema.json`,
+    `https://wardmote.dev/schemas/acpx-sidecar/v${protocolVersion}/message.schema.json`,
   );
 });
 

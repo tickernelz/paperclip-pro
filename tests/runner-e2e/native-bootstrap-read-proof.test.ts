@@ -6,8 +6,8 @@ const origin: BootstrapReadNotice = { runId: "run", sessionId: "session", turnId
 function read(status = "completed", seq = 1): BootstrapReadNotice { return { ...origin, toolCallId: "bootstrap", operation: "read", readTargetSha256: `sha256:${createHash("sha256").update(actionFile).digest("hex")}`, status, seq }; }
 function receipt(type = "completed", status = "completed", seq = 2) {
   return { runId: "run", seq, protocolSchemaVersion: 1, eventType: `tool.execution.${type}`, payload: { prpEvent: {
-    schema: "paperclip.prp.event.v1", schemaVersion: 1, sourceKind: "runner", runId: "run", turnId: "turn", eventType: `tool.execution.${type}`, emittedAt: new Date(seq).toISOString(),
-    payload: { schema: "paperclip.tool.execution.v1", executionId: "bootstrap", transport: "builtin", operation: "read", target: actionFile, status },
+    schema: "wardmote.prp.event.v1", schemaVersion: 1, sourceKind: "runner", runId: "run", turnId: "turn", eventType: `tool.execution.${type}`, emittedAt: new Date(seq).toISOString(),
+    payload: { schema: "wardmote.tool.execution.v1", executionId: "bootstrap", transport: "builtin", operation: "read", target: actionFile, status },
   } } };
 }
 it.each(["completed", "failed"])("accepts an exact %s read even when the first native event is terminal", status => {
@@ -91,7 +91,7 @@ it.each(["cursor", "copilot"] as const)("correlates actual %s passive notices th
     const rows: any[] = [];
     const projector = create({ sessionId: "session", turnId: "turn", workingDirectory: "/workspace", active: () => true,
       emit: event => rows.push({ runId: "run", seq: rows.length * 2 + 1, protocolSchemaVersion: 1, eventType: event.eventType, payload: { prpEvent: {
-        schema: "paperclip.prp.event.v1", schemaVersion: 1, sourceKind: "runner", runId: "run", turnId: "turn", emittedAt: new Date(1).toISOString(), eventType: event.eventType, payload: event.payload,
+        schema: "wardmote.prp.event.v1", schemaVersion: 1, sourceKind: "runner", runId: "run", turnId: "turn", emittedAt: new Date(1).toISOString(), eventType: event.eventType, payload: event.payload,
       } } }),
     });
     const path = variant === "wrong-path" ? "private.txt" : actionFile;

@@ -27,7 +27,7 @@ export interface SemanticConformanceObservation {
   readonly audit: readonly SemanticConformanceJsonValue[];
   /** Provider-neutral normalized view of the PRP semantic result receipt. */
   readonly receipt?: {
-    readonly schema: "paperclip.prp.semantic_tool.v1";
+    readonly schema: "wardmote.prp.semantic_tool.v1";
     readonly schemaVersion: 1;
     readonly phase: "result";
     readonly operationId: string;
@@ -62,7 +62,7 @@ export interface SemanticConformanceReportRow {
 }
 
 export interface SemanticConformanceReport {
-  readonly schema: "paperclip.semantic-conformance-report.v1";
+  readonly schema: "wardmote.semantic-conformance-report.v1";
   readonly rows: readonly SemanticConformanceReportRow[];
 }
 
@@ -195,7 +195,7 @@ export async function runSemanticConformanceKit(input: {
     }));
   }
   return Object.freeze({
-    schema: "paperclip.semantic-conformance-report.v1",
+    schema: "wardmote.semantic-conformance-report.v1",
     rows: Object.freeze(rows),
   });
 }

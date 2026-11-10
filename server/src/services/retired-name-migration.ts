@@ -20,6 +20,7 @@ import {
 import { resolveWardmoteInstanceRoot } from "../home-paths.js";
 import { rewriteStoredAdapterConfig } from "../modules/agent-lifecycle/index.js";
 import { adoptAgentFiles } from "./agent-file-store.js";
+import { quarantineRetiredRunnerdStateRoots, runnerdStateBaseForInstance } from "./native-runtime/native-session-executor.js";
 import { materializeInstructionBytes } from "./agent-instruction-files.js";
 import { agentInstructionsBundleMode, resolveManagedInstructionsRoot } from "./agent-instructions.js";
 
@@ -32,6 +33,7 @@ export type RetiredNameMigrationReport = {
   rows: RetiredNameRowChange[];
   externalBundles: Array<{ companyId: string; agentId: string }>;
   failedBundles: Array<{ companyId: string; agentId: string; error: string }>;
+  quarantinedRunnerStates: string[];
   backupDir: string | null;
 };
 
@@ -122,7 +124,7 @@ export async function migrateRetiredNames(
   const dryRun = options.dryRun === true;
   const instanceRoot = options.instanceRoot ?? resolveWardmoteInstanceRoot();
   const backupDir = path.join(instanceRoot, "backups", `wardmote-rename-${stamp(options.now ?? new Date())}`);
-  const report: RetiredNameMigrationReport = { dryRun, files: [], rows: [], externalBundles: [], failedBundles: [], backupDir: null };
+  const report: RetiredNameMigrationReport = { dryRun, files: [], rows: [], externalBundles: [], failedBundles: [], quarantinedRunnerStates: [], backupDir: null };
   const rowBackups: Array<{ table: string; id: string; column: string; before: unknown }> = [];
   const allAgents = await db.select().from(agents);
   const companyKeep = new Map<string, Set<string>>();
@@ -228,6 +230,11 @@ export async function migrateRetiredNames(
     if (!dryRun && rowBackups.length > 0) {
       await writeBackup(backupDir, "rows.json", JSON.stringify(rowBackups, null, 2));
     }
+  });
+
+  report.quarantinedRunnerStates = quarantineRetiredRunnerdStateRoots({
+    dryRun,
+    ...(options.instanceRoot ? { stateBase: runnerdStateBaseForInstance(options.instanceRoot) } : {}),
   });
 
   if (!dryRun && (report.files.length > 0 || report.rows.length > 0)) {

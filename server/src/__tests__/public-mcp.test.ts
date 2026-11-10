@@ -1129,7 +1129,7 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
       expect((await call("wardmote_dot_progress", { text: "Saved the report." })).isError).toBe(false);
       const other = await fixture();
       expect((await rpc("tools/call", { name: "wardmote_dot_read", arguments: { ...base, requestId: randomUUID() } }, other.tokens.access_token)).body.result.isError).toBe(true);
-      const result = { schema: "paperclip.run_result.v1", reportedWorkDisposition: "done", summary: "Report saved.",
+      const result = { schema: "wardmote.run_result.v1", reportedWorkDisposition: "done", summary: "Report saved.",
         completionClaim: { contractRevision: "dot-prototype-v1", objectiveSatisfied: true, criteria: [], remainingWork: [] },
         evidence: [], verification: [], attentionRequests: [], artifacts: [] };
       expect((await call("wardmote_dot_finish", { result })).isError).toBe(false);

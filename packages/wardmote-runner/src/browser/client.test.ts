@@ -55,7 +55,7 @@ describe("public runner browser client", () => {
       eventSourceFactory: (nextUrl) => { url = nextUrl; return source; },
     });
     const event = {
-      schema: "paperclip.prp.event.v1",
+      schema: "wardmote.prp.event.v1",
       sourceEventId: "event-9",
       sourceKind: "harness",
       sourceInstanceId: "driver",

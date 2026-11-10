@@ -6954,7 +6954,7 @@ export function agentRoutes(
             resolution = { action };
           } else if (
             action === "submit" &&
-            candidate?.response?.schema === "paperclip.question_response.v1" &&
+            candidate?.response?.schema === "wardmote.question_response.v1" &&
             candidate.response.answers &&
             typeof candidate.response.answers === "object" &&
             !Array.isArray(candidate.response.answers)

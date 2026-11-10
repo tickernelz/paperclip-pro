@@ -54,7 +54,7 @@ harness-specific branch is required in the mock core.
 
 ## Skillless context boundary
 
-The model receives one text input containing `paperclip.skillless_task.v1`:
+The model receives one text input containing `wardmote.skillless_task.v1`:
 
 - objective;
 - completion-contract revision and criteria;
@@ -111,7 +111,7 @@ Two dynamic semantic tools are registered when supported:
 - `wardmote_block` accepts `blocked` and requires a blocker owner, action,
   reason, and scope.
 
-Both normalize through the canonical `paperclip.run_result.v1` validator. The
+Both normalize through the canonical `wardmote.run_result.v1` validator. The
 first valid result is proposed. Any canonically identical result retry is
 idempotent even when the provider assigned a new call ID; the original call
 binding remains persisted for audit, while changed content is rejected. Tool

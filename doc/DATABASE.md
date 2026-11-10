@@ -571,7 +571,7 @@ instance storage as other workspaces. `agent_instruction_revisions` and
 `agent_instruction_heads` are retained as read-only upgrade input. Their heads
 are adopted once into the managed directory; new saves never append revisions.
 `agent_instruction_working_copies` holds per-run baseline hashes, state, and
-capture receipts. New receipts identify `paperclip.agent-files.v1`; historical
+capture receipts. New receipts identify `wardmote.agent-files.v1`; historical
 rows retain the instruction-only format. Completed directory runs discard their
 baseline and private copies. See [Persistent agent files](agent-files.md).
 

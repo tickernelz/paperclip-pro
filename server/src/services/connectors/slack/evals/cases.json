@@ -1,5 +1,5 @@
 {
-  "schema": "paperclip.slack_connector_probes.v1",
+  "schema": "wardmote.slack_connector_probes.v1",
   "version": 1,
   "automatedModelCoverage": "not_registered",
   "cases": [

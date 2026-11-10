@@ -213,7 +213,7 @@ describe("LCA full heartbeat observation", () => {
             .from(heartbeatRuns)
             .where(eq(heartbeatRuns.id, input.binding.runId));
           yield {
-            schema: "paperclip.prp.event.v1",
+            schema: "wardmote.prp.event.v1",
             sourceEventId: `${row.runnerInstanceId}:terminal`,
             sourceSeq: 1,
             sourceInstanceId: row.runnerInstanceId!,

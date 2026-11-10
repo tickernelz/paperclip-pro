@@ -122,7 +122,7 @@ describe("chat publication projection", () => {
       progressState: "waiting_for_input",
       interactionId: "interaction:123",
       card: {
-        schema: "paperclip.chat.card.v1",
+        schema: "wardmote.chat.card.v1",
         kind: "question",
         title: "Choose a path",
         body: "Do not leak token: [REDACTED]",

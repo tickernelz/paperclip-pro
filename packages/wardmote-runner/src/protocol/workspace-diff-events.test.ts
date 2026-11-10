@@ -4,7 +4,7 @@ import { validatePrpEvent, type PrpEvent } from "./replay-contract.js";
 
 function workspaceEvent(eventType: "workspace.change.updated" | "workspace.diff.recorded"): PrpEvent {
   return {
-    schema: "paperclip.prp.event.v1",
+    schema: "wardmote.prp.event.v1",
     sourceEventId: `workspace:${eventType}`,
     sourceSeq: eventType === "workspace.change.updated" ? 1 : 2,
     sourceInstanceId: "runner-1",
@@ -16,7 +16,7 @@ function workspaceEvent(eventType: "workspace.change.updated" | "workspace.diff.
     priority: 1,
     emittedAt: "2026-08-21T12:00:00.000Z",
     payload: {
-      schema: "paperclip.workspace.diff.v1",
+      schema: "wardmote.workspace.diff.v1",
       changeSetId: "turn-1:workspace",
       revision: 1,
       source: "runner_verified",
@@ -53,7 +53,7 @@ describe("PRP workspace change events", () => {
 
   it("validates a canonical individual workspace-file reference", () => {
     const event: PrpEvent = {
-      schema: "paperclip.prp.event.v1",
+      schema: "wardmote.prp.event.v1",
       sourceEventId: "workspace:file:1",
       sourceSeq: 1,
       sourceInstanceId: "runner-1",
@@ -65,7 +65,7 @@ describe("PRP workspace change events", () => {
       priority: 1,
       emittedAt: "2026-08-21T12:00:00.000Z",
       payload: {
-        schema: "paperclip.workspace.file_reference.v1",
+        schema: "wardmote.workspace.file_reference.v1",
         referenceId: "turn-1:file:guide",
         source: "runner_verified",
         path: "docs/guide.md",

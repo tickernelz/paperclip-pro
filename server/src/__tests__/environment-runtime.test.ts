@@ -5204,7 +5204,7 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
     }
     await db.update(environmentLeases).set({ status: "pending_cleanup", cleanupStatus: "failed", metadata: {
       ...lease.metadata,
-      nativeWorkspaceExportResume: { schema: outcome === "v2_missing_pin" ? "paperclip.workspace-export-resume.v2" : "paperclip.workspace-export-resume.v1", requestId, companyId: seeded.companyId,
+      nativeWorkspaceExportResume: { schema: outcome === "v2_missing_pin" ? "wardmote.workspace-export-resume.v2" : "wardmote.workspace-export-resume.v1", requestId, companyId: seeded.companyId,
         ...(["legacy_intent", "v2_missing_pin"].includes(outcome) ? {} : { pluginId: outcome === "foreign_plugin_pin" ? randomUUID() : seeded.pluginId }),
         runId: outcome === "foreign_marker" ? randomUUID() : lease.heartbeatRunId, leaseId: lease.id,
         provider: lease.provider, providerLeaseId: lease.providerLeaseId, resultId: randomUUID() },
@@ -5248,7 +5248,7 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
     await db.update(heartbeatRuns).set({ status: outcome === "committed_release" ? "succeeded" : "failed" }).where(eq(heartbeatRuns.id, seeded.runId));
     await db.update(environmentLeases).set({ status: outcome === "committed_release" ? "active" : "pending_cleanup", leasePolicy: "ephemeral", cleanupStatus: "failed", metadata: {
       ...lease.metadata, reuseLease: false,
-      nativeWorkspaceExportResume: { schema: "paperclip.workspace-export-resume.v2", purpose: "terminal_export", requestId,
+      nativeWorkspaceExportResume: { schema: "wardmote.workspace-export-resume.v2", purpose: "terminal_export", requestId,
         companyId: seeded.companyId, pluginId: seeded.pluginId, runId: seeded.runId, resultId: randomUUID(),
         leaseId: lease.id, provider: lease.provider, providerLeaseId: lease.providerLeaseId },
       pendingCleanupAttemptId: requestId, pendingCleanupInFlight: outcome === "inflight",
@@ -6935,7 +6935,7 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
       status: "expired",
       failureReason: "environment_deleted",
       cleanupStatus: "success",
-      metadata: { remoteExecutionTermination: { schema: "paperclip.remote-termination.v1",
+      metadata: { remoteExecutionTermination: { schema: "wardmote.remote-termination.v1",
         leaseId: reusableLease.id, runId, providerLeaseId: reusableLease.providerLeaseId, state: "destroyed" } },
     });
   });

@@ -46,7 +46,7 @@ export const getAgentInstructionHistoryAction = {
   "live": {
     "order": 42,
     "descriptor": {
-      "schema": "paperclip.semantic-tool.v1",
+      "schema": "wardmote.semantic-tool.v1",
       "operationId": "get_agent_instruction_history",
       "version": 1,
       "title": "Get agent instruction history",

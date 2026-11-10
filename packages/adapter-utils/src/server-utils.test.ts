@@ -1744,7 +1744,7 @@ describe("renderWardmoteWakePrompt", () => {
   );
 
   const externalQuestionMarker = {
-    schema: "paperclip.external_chat_question_response.v1",
+    schema: "wardmote.external_chat_question_response.v1",
     interactionId: "10000000-0000-4000-8000-000000000001",
     responseDeliveryId: "20000000-0000-4000-8000-000000000002",
     sourceRunId: "30000000-0000-4000-8000-000000000003",

@@ -61,7 +61,7 @@ interface SeededNativeRun {
 }
 
 const result: PrpStructuredRunResult = {
-  schema: "paperclip.run_result.v1",
+  schema: "wardmote.run_result.v1",
   reportedWorkDisposition: "done",
   summary: "The hidden runner completed the bounded task.",
   completionClaim: {
@@ -85,7 +85,7 @@ const terminal: PrpTerminalState = {
 
 function runnerEvent(seed: SeededNativeRun, sourceSeq = 1): PrpEvent {
   return {
-    schema: "paperclip.prp.event.v1",
+    schema: "wardmote.prp.event.v1",
     sourceEventId: `event-${sourceSeq}`,
     sourceSeq,
     sourceInstanceId: seed.runnerInstanceId,
@@ -177,7 +177,7 @@ describeEmbeddedPostgres("hidden runner PRP coordinator", () => {
       companyId,
       issueId,
       revision: 1,
-      schemaVersion: "paperclip.completion-contract.v1",
+      schemaVersion: "wardmote.completion-contract.v1",
       policyVersion: "policy-v1",
       risk: "low",
       completionAuthority: "runner",
@@ -345,7 +345,7 @@ describeEmbeddedPostgres("hidden runner PRP coordinator", () => {
     const nativeStore = store(seed);
     const output = "transforming (6) ../\u0000virtual:/@storybook/builder-vite/storybook-stories.js";
     const payload = {
-      schema: "paperclip.tool.execution.v1",
+      schema: "wardmote.tool.execution.v1",
       executionId: "storybook-build",
       transport: "process",
       operation: "execute",

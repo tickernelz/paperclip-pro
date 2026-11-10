@@ -23,7 +23,7 @@ test("allows unnumbered domain phase terminology and semantic protocol versions"
     "runtime.phase.changed",
     "phase: LifecyclePhase",
     "transition to the recovery phase",
-    "paperclip.prp.control.v1",
+    "wardmote.prp.control.v1",
   ];
 
   assert.ok(candidates.every((candidate) => findNumberedMilestoneNames(candidate).length === 0));

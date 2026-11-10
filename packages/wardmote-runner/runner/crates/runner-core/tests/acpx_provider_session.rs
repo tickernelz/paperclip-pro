@@ -21,7 +21,7 @@ fn tool_set() -> AuthorizedToolSet {
         response_schema: json!({"type":"object"}),
     }];
     AuthorizedToolSet {
-        schema: "paperclip.runner.authorized-tools.v1".to_owned(),
+        schema: "wardmote.runner.authorized-tools.v1".to_owned(),
         schema_version: 1,
         catalog_digest: authorized_tool_catalog_digest(&operations).unwrap(),
         operations,

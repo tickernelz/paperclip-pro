@@ -46,7 +46,7 @@ function rehydrationTracePath(traceRef: string) {
 
 function asMetadata(row: TraceRow): ProviderTraceMetadata {
   return {
-    schema: "paperclip.provider_trace_metadata.v1",
+    schema: "wardmote.provider_trace_metadata.v1",
     id: row.id,
     runId: row.runId,
     companyId: row.companyId,

@@ -42,7 +42,7 @@ const identity = {
 };
 
 const result: PrpStructuredRunResult = {
-  schema: "paperclip.run_result.v1",
+  schema: "wardmote.run_result.v1",
   reportedWorkDisposition: "done",
   summary: "Recovered native work completed.",
   completionClaim: {
@@ -67,7 +67,7 @@ const terminal: PrpTerminalState = {
 };
 
 const yieldedResult: PrpStructuredRunResult = {
-  schema: "paperclip.run_result.v1",
+  schema: "wardmote.run_result.v1",
   reportedWorkDisposition: "yielded",
   summary: "Waiting for the requested response.",
   completionClaim: {
@@ -96,7 +96,7 @@ const yieldedResult: PrpStructuredRunResult = {
 };
 
 const input: NativeExecutionInputV1 = {
-  schema: "paperclip.native-execution-input.v1",
+  schema: "wardmote.native-execution-input.v1",
   binding: {
     companyId: identity.companyId,
     runId: identity.runId,
@@ -126,7 +126,7 @@ const input: NativeExecutionInputV1 = {
   completionContract: {
     id: "contract-recovery",
     sha256: "contract-recovery-sha",
-    schemaVersion: "paperclip.completion-contract.v1",
+    schemaVersion: "wardmote.completion-contract.v1",
     contract: {
       revision: "1",
       objective: "Recover native work",
@@ -147,7 +147,7 @@ function preparedInput(): NativeExecutionInputV5 {
   const requirement = input.completionContract.contract.criteria[0]!.requirement;
   const prompt = `${input.task.prompt}\n\n${requirement}`;
   return {
-    ...input, schema: "paperclip.native-execution-input.v5", executionMode: "default", planningContext: null,
+    ...input, schema: "wardmote.native-execution-input.v5", executionMode: "default", planningContext: null,
     task: { ...input.task, description: requirement, prompt },
     provider: { kind: "codex", model: null, approvalPolicy: "never" },
     runtimeContext: { ...context, aggregateDigest: canonicalNativeRuntimeContextDigest(context) },
@@ -165,7 +165,7 @@ function controlEvent(
   payload: Record<string, unknown>,
 ): PrpEvent {
   return {
-    schema: "paperclip.prp.event.v1",
+    schema: "wardmote.prp.event.v1",
     sourceEventId: `control-recovery:${identity.runId}:${sourceSeq}`,
     sourceSeq,
     sourceInstanceId: "control-recovery",
@@ -201,7 +201,7 @@ function runnerEvent(
   payload: Record<string, unknown> = {},
 ): PrpEvent {
   return {
-    schema: "paperclip.prp.event.v1",
+    schema: "wardmote.prp.event.v1",
     sourceEventId: `runner-recovery:${identity.runId}:${sourceSeq}`,
     sourceSeq,
     sourceInstanceId: "runner-recovery",
@@ -476,7 +476,7 @@ describe("executeNativeSession recovery", () => {
     } as const;
     const completed = await executeNativeSession({
       input: snapshotBeforeUpdate ? {
-        ...input, schema: "paperclip.native-execution-input.v4", executionMode: "default", planningContext: null,
+        ...input, schema: "wardmote.native-execution-input.v4", executionMode: "default", planningContext: null,
         provider: { kind: "codex", model: null, approvalPolicy: "never" },
         runtimeContext: { ...context, aggregateDigest: canonicalNativeRuntimeContextDigest(context) },
         continuationPrompt: "Say bye",
@@ -508,7 +508,7 @@ describe("executeNativeSession recovery", () => {
     const submitted = startTurn.mock.calls[0]![0]!;
     if (snapshotBeforeUpdate) {
       expect(submitted.continuation).toBe(true);
-      expect(JSON.parse(submitted.message.text)).toMatchObject({ schema: "paperclip.native-continuation.v1", events: "Say bye",
+      expect(JSON.parse(submitted.message.text)).toMatchObject({ schema: "wardmote.native-continuation.v1", events: "Say bye",
         completion: { instruction: expect.stringContaining("Earlier reports belong to earlier turns") } });
     } else {
       expect(submitted).not.toHaveProperty("continuation");
@@ -2088,7 +2088,7 @@ describe("executeNativeSession recovery", () => {
       executeNativeSession({
         input: {
           ...input,
-          schema: "paperclip.native-execution-input.v3",
+          schema: "wardmote.native-execution-input.v3",
           executionMode: "default",
           planningContext: null,
           runtimeContext: {
@@ -5876,7 +5876,7 @@ describe("executeNativeSession recovery", () => {
       activeTurnId: "turn-recovery",
     };
     const terminalEvent: PrpEvent = {
-      schema: "paperclip.prp.event.v1",
+      schema: "wardmote.prp.event.v1",
       sourceEventId: "provider-recovery:1",
       sourceSeq: 1,
       sourceInstanceId: "provider-recovery",
@@ -6359,7 +6359,7 @@ describe("executeNativeSession recovery", () => {
       : {
           ...input,
           task: { ...input.task, prompt: "FULL_ASSIGNMENT_CONTEXT\nCURRENT_EVENT_CONTEXT" },
-          schema: "paperclip.native-execution-input.v4" as const,
+          schema: "wardmote.native-execution-input.v4" as const,
           executionMode: "default" as const,
           planningContext: null,
           provider: { kind: "codex" as const, model: null, approvalPolicy: "never" as const },
@@ -6501,7 +6501,7 @@ describe("executeNativeSession recovery", () => {
       completionContract: executionInput.completionContract.contract,
     });
     expect(replacementEnvelope.schema).toBe(
-      preparedMode ? "paperclip.native-model-envelope.v3" : "paperclip.native-model-envelope.v2",
+      preparedMode ? "wardmote.native-model-envelope.v3" : "wardmote.native-model-envelope.v2",
     );
     if (preparedMode) expect(replacementEnvelope.requestedSkills).toEqual(["recovery-skill"]);
     else expect(replacementEnvelope).not.toHaveProperty("requestedSkills");
@@ -6540,7 +6540,7 @@ describe("executeNativeSession recovery", () => {
       dispositionOnlyRecoveryTurnId: null,
     };
     const terminalEvent: PrpEvent = {
-      schema: "paperclip.prp.event.v1",
+      schema: "wardmote.prp.event.v1",
       sourceEventId: "provider-recovery:2",
       sourceSeq: 2,
       sourceInstanceId: "provider-recovery",
@@ -6717,7 +6717,7 @@ describe("executeNativeSession recovery", () => {
     expect(recoveryEnvelope.task.prompt).toBe(executionInput.task.prompt);
     if (prepared) {
       expect(recoveryEnvelope).toMatchObject({
-        schema: "paperclip.native-model-envelope.v3",
+        schema: "wardmote.native-model-envelope.v3",
         constraints: ["Retain the original workspace rule."],
         completionContract: { criteria: [{ id: "objective", source: { id: identity.issueId, location: "task.prompt" } }] },
       });
@@ -6836,7 +6836,7 @@ describe("executeNativeSession recovery", () => {
         dispositionOnlyRecoveryConsumed: dispositionRecovery,
       };
       const terminalEvent: PrpEvent = {
-        schema: "paperclip.prp.event.v1",
+        schema: "wardmote.prp.event.v1",
         sourceEventId: "provider-recovery:2",
         sourceSeq: 2,
         sourceInstanceId: "provider-recovery",
@@ -7020,7 +7020,7 @@ describe("executeNativeSession recovery", () => {
       lineage: [],
     };
     const terminalEvent: PrpEvent = {
-      schema: "paperclip.prp.event.v1",
+      schema: "wardmote.prp.event.v1",
       sourceEventId: "runner-recovery:run-native:4",
       sourceSeq: 4,
       sourceInstanceId: "runner-recovery",
@@ -7532,7 +7532,7 @@ describe("executeNativeSession recovery", () => {
 
   it("accepts a control-plane governed wait when a completed turn omitted its semantic result", async () => {
     const terminalEvent: PrpEvent = {
-      schema: "paperclip.prp.event.v1",
+      schema: "wardmote.prp.event.v1",
       sourceEventId: "provider-recovery:1",
       sourceSeq: 1,
       sourceInstanceId: "provider-recovery",
@@ -7547,7 +7547,7 @@ describe("executeNativeSession recovery", () => {
       payload: {},
     };
     const yielded: PrpStructuredRunResult = {
-      schema: "paperclip.run_result.v1",
+      schema: "wardmote.run_result.v1",
       reportedWorkDisposition: "yielded",
       summary: "Waiting for the requested response.",
       completionClaim: {
@@ -7874,7 +7874,7 @@ describe("executeNativeSession recovery", () => {
     vi.useFakeTimers();
     try {
     const yielded: PrpStructuredRunResult = {
-      schema: "paperclip.run_result.v1",
+      schema: "wardmote.run_result.v1",
       reportedWorkDisposition: "yielded",
       summary: "Waiting for the requested response.",
       completionClaim: {
@@ -8048,7 +8048,7 @@ describe("executeNativeSession recovery", () => {
     vi.useFakeTimers();
     try {
       const questionSet = {
-        schema: "paperclip.question_set.v1" as const,
+        schema: "wardmote.question_set.v1" as const,
         questions: [
           {
             id: "region",
@@ -8063,7 +8063,7 @@ describe("executeNativeSession recovery", () => {
         ],
       };
       const request = {
-        schema: "paperclip.runtime_request.v2",
+        schema: "wardmote.runtime_request.v2",
         requestKind: "runtime",
         requestId: "input-1",
         type: "input",
@@ -8241,14 +8241,14 @@ describe("executeNativeSession recovery", () => {
 
   it("aborts and bounds a durable handoff that never settles", async () => {
     const request = {
-      schema: "paperclip.runtime_request.v2",
+      schema: "wardmote.runtime_request.v2",
       requestKind: "runtime",
       requestId: "input-stalled",
       type: "input",
       status: "pending",
       prompt: "Which region?",
       input: {
-        schema: "paperclip.question_set.v1",
+        schema: "wardmote.question_set.v1",
         questions: [
           {
             id: "region",
@@ -8474,14 +8474,14 @@ describe("executeNativeSession recovery", () => {
 
   it("preserves terminal success while quarantining stalled handoff cleanup", async () => {
     const request = {
-      schema: "paperclip.runtime_request.v2",
+      schema: "wardmote.runtime_request.v2",
       requestKind: "runtime",
       requestId: "input-terminal",
       type: "input",
       status: "pending",
       prompt: "Which region?",
       input: {
-        schema: "paperclip.question_set.v1",
+        schema: "wardmote.question_set.v1",
         questions: [
           {
             id: "region",
@@ -8615,14 +8615,14 @@ describe("executeNativeSession recovery", () => {
 
   it("keeps a settling structured input in the original turn while its append crosses expiry", async () => {
     const request = {
-      schema: "paperclip.runtime_request.v2",
+      schema: "wardmote.runtime_request.v2",
       requestKind: "runtime",
       requestId: "input-live",
       type: "input",
       status: "pending",
       prompt: "Which region?",
       input: {
-        schema: "paperclip.question_set.v1",
+        schema: "wardmote.question_set.v1",
         questions: [
           {
             id: "region",

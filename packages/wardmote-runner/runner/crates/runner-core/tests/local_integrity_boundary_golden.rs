@@ -37,7 +37,7 @@ fn canonical_boundary_fixture_names_all_qualified_local_profiles() {
     let fixture = fixture();
     assert_eq!(
         fixture["schema"],
-        "paperclip.local-provider-boundary-golden.v1"
+        "wardmote.local-provider-boundary-golden.v1"
     );
     let profiles = fixture["profiles"].as_array().expect("qualified profiles");
     assert_eq!(profiles.len(), 4);
@@ -269,7 +269,7 @@ fn acpx_projection_matches_shared_plan_question_final_and_terminal_identity() {
     // than reusing the presentation item ID supplied by the shared fixture.
     assert_eq!(
         final_message.payload["itemId"],
-        "acpx-assistant-a7736694c69c42e1b7d7220b4274f274c9dbba97f2e693ddbc584158015f0123"
+        "acpx-assistant-e43ed643a12ab06a5e7beb73f672a022292ac7571871b4ce8e3dc352b25a6e15"
     );
     assert_eq!(final_message.payload["channel"], "final");
     assert_eq!(final_message.payload["text"], expected_final["text"]);

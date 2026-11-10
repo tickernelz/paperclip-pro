@@ -66,7 +66,7 @@ export function persistedCursorUsageNotice(before: unknown, after: unknown, requ
   // Eight closed observations fit within each 4,000-byte detail, without dropping any counters.
   return {
     eventType: "provider.notice.recorded", itemId,
-    payload: { schema: "paperclip.provider.notice.v1", noticeId: itemId, severity: "info", category: "cursor_native_usage_observed", scope: "turn", recoverable: true, userActionable: false,
+    payload: { schema: "wardmote.provider.notice.v1", noticeId: itemId, severity: "info", category: "cursor_native_usage_observed", scope: "turn", recoverable: true, userActionable: false,
       summary: "Cursor reported partial native counters. These observations are not authoritative token usage or billing cost.", details },
   };
 }

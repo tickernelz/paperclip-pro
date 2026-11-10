@@ -1,6 +1,6 @@
-export const WARDMOTE_QUESTION_SET_SCHEMA = "paperclip.question_set.v1" as const;
-export const WARDMOTE_QUESTION_RESPONSE_SCHEMA = "paperclip.question_response.v1" as const;
-export const WARDMOTE_RUNTIME_REQUEST_SCHEMA_V2 = "paperclip.runtime_request.v2" as const;
+export const WARDMOTE_QUESTION_SET_SCHEMA = "wardmote.question_set.v1" as const;
+export const WARDMOTE_QUESTION_RESPONSE_SCHEMA = "wardmote.question_response.v1" as const;
+export const WARDMOTE_RUNTIME_REQUEST_SCHEMA_V2 = "wardmote.runtime_request.v2" as const;
 
 export type WardmoteQuestionAnswerMode = "single_select" | "multi_select" | "text";
 

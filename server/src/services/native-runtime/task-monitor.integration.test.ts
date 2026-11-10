@@ -167,7 +167,7 @@ describeEmbeddedPostgres("native task monitors", () => {
   it("accepts unfinished monitor waits only after scheduling the current task", async () => {
     const value = await fixture();
     const result: PrpStructuredRunResult = {
-      schema: "paperclip.run_result.v1", reportedWorkDisposition: "yielded", summary: "I will compare the next run.",
+      schema: "wardmote.run_result.v1", reportedWorkDisposition: "yielded", summary: "I will compare the next run.",
       completionClaim: { contractRevision: "test", objectiveSatisfied: false, criteria: [], remainingWork: [{ description: "Compare next run", blocksCompletion: true }] },
       continuation: { kind: "monitor", summary: "Wait for the scheduled check", idempotencyKey: "wait" },
       evidence: [], verification: [], attentionRequests: [], artifacts: [],

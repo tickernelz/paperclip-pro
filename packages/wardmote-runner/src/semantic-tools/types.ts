@@ -87,7 +87,7 @@ export interface CapabilityJsonSchema {
 }
 
 export interface CapabilitySemanticToolDescriptor {
-  readonly schema: "paperclip.semantic-tool.v1";
+  readonly schema: "wardmote.semantic-tool.v1";
   readonly operationId: CapabilitySemanticOperationId;
   readonly version: 1;
   readonly title: string;
@@ -149,7 +149,7 @@ export interface CapabilitySemanticAuthorizationDecision {
 
 export interface CapabilitySemanticAuthorizationRecord
   extends CapabilitySemanticAuthorizationDecision {
-  readonly schema: "paperclip.semantic-authorization-record.v1";
+  readonly schema: "wardmote.semantic-authorization-record.v1";
   readonly id: string;
   readonly runId: string;
   readonly scenarioId: string;
@@ -166,7 +166,7 @@ export interface CapabilitySemanticToolDefinition {
   readonly inputSchema: CapabilityJsonSchema;
   readonly outputSchema: CapabilityJsonSchema;
   readonly annotations: {
-    readonly semanticContract: "paperclip.semantic-tool.v1";
+    readonly semanticContract: "wardmote.semantic-tool.v1";
     readonly operationId: CapabilitySemanticOperationId;
     readonly version: 1;
     readonly exposure: CapabilitySemanticToolExposure;
@@ -194,7 +194,7 @@ export interface CapabilitySemanticToolDenial {
   readonly operationId: string;
   readonly callId: string;
   readonly denial: {
-    readonly schema: "paperclip.semantic-denial.v1";
+    readonly schema: "wardmote.semantic-denial.v1";
     readonly code: CapabilitySemanticDenialCode;
     /** Stable authority error code when the semantic boundary was allowed. */
     readonly controlPlaneCode?: string;
@@ -244,7 +244,7 @@ export interface WardmoteSemanticToolDefinition {
   readonly inputSchema: WardmoteJsonSchema;
   readonly outputSchema: WardmoteJsonSchema;
   readonly annotations: {
-    readonly semanticContract: "paperclip.semantic-action.v1";
+    readonly semanticContract: "wardmote.semantic-action.v1";
     readonly version: 1;
     readonly placement: WardmoteSemanticActionDescriptor["placement"];
     readonly effect: WardmoteSemanticActionEffect;
@@ -253,7 +253,7 @@ export interface WardmoteSemanticToolDefinition {
 }
 
 export interface WardmoteSemanticDiscoveryResult {
-  readonly schema: "paperclip.semantic-discovery.v1";
+  readonly schema: "wardmote.semantic-discovery.v1";
   readonly query: string;
   readonly namespace: string | null;
   readonly operations: readonly WardmoteSemanticToolDefinition[];
@@ -295,7 +295,7 @@ export interface WardmoteSemanticAuthorizationDecision {
 }
 
 export interface WardmoteSemanticAuthorizationRecord extends WardmoteSemanticAuthorizationDecision {
-  readonly schema: "paperclip.semantic-authorization-record.v1";
+  readonly schema: "wardmote.semantic-authorization-record.v1";
   readonly id: string;
   readonly runId: string;
   readonly companyId: string;

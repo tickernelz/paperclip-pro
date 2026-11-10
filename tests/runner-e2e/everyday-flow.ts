@@ -56,7 +56,7 @@ import {
 
 type Row = Record<string, any>;
 export interface EverydayEvidence {
-  schema: "paperclip.everyday-workflow.v1";
+  schema: "wardmote.everyday-workflow.v1";
   caseId: string;
   prompt: string;
   harnessDigest?: string;
@@ -135,7 +135,7 @@ export async function runEverydayFlow(input: Input) {
   const { page, api, fixtures, execution, nonce } = input;
   const prefix = fixtures.company.issuePrefix!;
   const ev: EverydayEvidence = {
-    schema: "paperclip.everyday-workflow.v1",
+    schema: "wardmote.everyday-workflow.v1",
     caseId: execution.task.id,
     prompt: execution.task.buildPrompt(nonce),
     fixtureConfiguration: {

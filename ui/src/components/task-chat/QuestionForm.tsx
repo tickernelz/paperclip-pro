@@ -454,7 +454,7 @@ function QuestionFormForRequest({
     try {
       await onSubmit(
         {
-          schema: "paperclip.question_response.v1",
+          schema: "wardmote.question_response.v1",
           answers: structuredClone(responseAnswers),
         },
         submittedNotes,

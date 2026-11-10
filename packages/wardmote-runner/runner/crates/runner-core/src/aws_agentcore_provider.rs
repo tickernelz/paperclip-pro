@@ -533,7 +533,7 @@ fn prepare_agentcore_runtime_context_assets(
     config: &AwsAgentCoreProviderConfig,
 ) -> Result<Vec<AgentCoreContextAsset>, String> {
     let context = config.runtime_context.as_ref().ok_or_else(|| {
-        "AgentCore requires paperclip.native-execution-input.v3 runtimeContext".to_owned()
+        "AgentCore requires wardmote.native-execution-input.v3 runtimeContext".to_owned()
     })?;
     let instruction_digest = context_text(context, "/instructions/bundle/digest")?;
     let instruction_root = Path::new(context_text(context, "/instructions/bundle/rootPath")?);
