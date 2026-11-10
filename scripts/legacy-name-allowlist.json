@@ -2461,7 +2461,6 @@
     ["server/src/__tests__/http-log-policy.test.ts",3,"belum-diganti"],
     ["server/src/__tests__/http-log-redaction.test.ts",1,"belum-diganti"],
     ["server/src/__tests__/human-directed-work.test.ts",8,"belum-diganti"],
-    ["server/src/__tests__/idle-database-backup.test.ts",1,"belum-diganti"],
     ["server/src/__tests__/idle-sleep-safety.test.ts",2,"belum-diganti"],
     ["server/src/__tests__/inbox-agent-policy-routes.test.ts",1,"belum-diganti"],
     ["server/src/__tests__/inbox-archive-routes.test.ts",1,"belum-diganti"],
