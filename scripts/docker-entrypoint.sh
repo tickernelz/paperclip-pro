@@ -40,9 +40,15 @@ fi
 # (init containers, backup restores, files written before a remap) is
 # found immediately and repaired recursively, a GID-only remap is caught,
 # and a fully-correct tree costs one metadata-only walk with no chown.
-home_dir="${WARDMOTE_HOME:-/paperclip}"
+home_dir="${WARDMOTE_HOME:-/wardmote}"
 if [ -d "$home_dir" ] && [ -n "$(find "$home_dir" \( ! -user node -o ! -group node \) -print -quit 2>/dev/null)" ]; then
     chown -R node:node "$home_dir"
+fi
+
+legacy_home=/paperclip
+if [ "$home_dir" != "$legacy_home" ] && [ ! -e "$legacy_home" ] \
+    && grep -qs "\"$legacy_home/" "$home_dir/instances/${WARDMOTE_INSTANCE_ID:-default}/config.json"; then
+    ln -s "$home_dir" "$legacy_home"
 fi
 
 exec gosu node "$@"

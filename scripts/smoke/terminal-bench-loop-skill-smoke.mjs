@@ -90,7 +90,7 @@ async function assertLocalSkillPackage() {
     "request_confirmation",
     "diagnosis",
     "blockedByIssueIds",
-    "PAPERCLIPAI_CMD",
+    "WARDMOTE_CMD",
     "WARDMOTE_HARBOR_RUNNER_CONFIG",
   ]) {
     assert(markdown.includes(expected), `Skill smoke expected ${skillPath} to mention ${expected}`);

@@ -4,16 +4,16 @@ Requires=wardmote-db.service
 After=wardmote-db.service
 
 [Container]
-Image=paperclip-local
+Image=wardmote-local
 ContainerName=wardmote
 Pod=wardmote.pod
-Volume=%h/.local/share/paperclip:/paperclip:Z
+Volume=%h/.local/share/wardmote:/wardmote:Z
 Environment=HOST=0.0.0.0
-Environment=WARDMOTE_HOME=/paperclip
+Environment=WARDMOTE_HOME=/wardmote
 Environment=WARDMOTE_DEPLOYMENT_MODE=authenticated
 Environment=WARDMOTE_DEPLOYMENT_EXPOSURE=private
 Environment=WARDMOTE_PUBLIC_URL=http://localhost:3100
-EnvironmentFile=%h/.config/containers/systemd/paperclip.env
+EnvironmentFile=%h/.config/containers/systemd/wardmote.env
 
 [Service]
 Restart=on-failure

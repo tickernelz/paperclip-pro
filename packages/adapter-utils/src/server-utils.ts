@@ -3572,7 +3572,7 @@ export function sanitizeInheritedWardmoteEnv(
   baseEnv: NodeJS.ProcessEnv,
 ): NodeJS.ProcessEnv {
   const env: NodeJS.ProcessEnv = { ...baseEnv };
-  delete env.PAPERCLIPAI_CMD;
+  delete env.WARDMOTE_CMD;
   delete env.NOTIFY_SOCKET;
   delete env.WATCHDOG_USEC;
   delete env.WATCHDOG_PID;

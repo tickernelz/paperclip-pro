@@ -16,7 +16,7 @@ Open [http://localhost:3100](http://localhost:3100).
 Defaults:
 
 - Host port: `3100`
-- Data directory: `./data/docker-paperclip`
+- Data directory: `./data/docker-wardmote`
 
 Override with environment variables:
 
@@ -30,18 +30,18 @@ WARDMOTE_PORT=3200 WARDMOTE_DATA_DIR=../data/pc \
 ## Manual Docker Build
 
 ```sh
-docker build -t paperclip-local .
-docker run --name paperclip \
+docker build -t wardmote-local .
+docker run --name wardmote \
   -p 3100:3100 \
   -e HOST=0.0.0.0 \
-  -e WARDMOTE_HOME=/paperclip \
-  -v "$(pwd)/data/docker-paperclip:/paperclip" \
-  paperclip-local
+  -e WARDMOTE_HOME=/wardmote \
+  -v "$(pwd)/data/docker-wardmote:/wardmote" \
+  wardmote-local
 ```
 
 ## Data Persistence
 
-All data is persisted under the bind mount (`./data/docker-paperclip`):
+All data is persisted under the bind mount (`./data/docker-wardmote`):
 
 - Embedded PostgreSQL data
 - Uploaded assets
@@ -55,14 +55,14 @@ The Docker image pre-installs the `claude`, `codex`, and `opencode` CLIs. The ex
 Pass provider keys when you use those features:
 
 ```sh
-docker run --name paperclip \
+docker run --name wardmote \
   -p 3100:3100 \
   -e HOST=0.0.0.0 \
-  -e WARDMOTE_HOME=/paperclip \
+  -e WARDMOTE_HOME=/wardmote \
   -e OPENAI_API_KEY=sk-... \
   -e ANTHROPIC_API_KEY=sk-... \
-  -v "$(pwd)/data/docker-paperclip:/paperclip" \
-  paperclip-local
+  -v "$(pwd)/data/docker-wardmote:/wardmote" \
+  wardmote-local
 ```
 
 Without API keys, the app runs normally — adapter environment checks will surface missing prerequisites.

@@ -1,6 +1,6 @@
 import { expect, test, type APIRequestContext } from "@playwright/test";
 
-const expectedVersion = process.env.PAPERCLIPAI_VERSION!;
+const expectedVersion = process.env.WARDMOTE_VERSION!;
 const ONBOARDING_HEADINGS = /^(Install OMP|Update OMP|You are offline|Connect a model|What should your first agent do\?)$/;
 
 async function getJson<T>(request: APIRequestContext, url: string): Promise<T> {

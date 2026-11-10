@@ -2,9 +2,9 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-IMAGE_NAME="${IMAGE_NAME:-paperclip-onboard-smoke}"
+IMAGE_NAME="${IMAGE_NAME:-wardmote-onboard-smoke}"
 HOST_PORT="${HOST_PORT:-3131}"
-PAPERCLIPAI_VERSION="${PAPERCLIPAI_VERSION:-latest}"
+WARDMOTE_VERSION="${WARDMOTE_VERSION:-latest}"
 DATA_DIR="${DATA_DIR:-$REPO_ROOT/data/docker-onboard-smoke}"
 HOST_UID="${HOST_UID:-$(id -u)}"
 SMOKE_DETACH="${SMOKE_DETACH:-false}"
@@ -23,14 +23,10 @@ WARDMOTE_DEPLOYMENT_EXPOSURE="${WARDMOTE_DEPLOYMENT_EXPOSURE:-private}"
 SMOKE_PROVIDER_MOCK="${SMOKE_PROVIDER_MOCK:-true}"
 WARDMOTE_PUBLIC_URL="${WARDMOTE_PUBLIC_URL:-http://localhost:${HOST_PORT}}"
 SMOKE_AUTO_BOOTSTRAP="${SMOKE_AUTO_BOOTSTRAP:-true}"
-# Seconds to wait for /api/health after the container starts. The container
-# cold-installs paperclip-pro from npm and initializes embedded postgres before
-# it can serve health, so CI callers with no warm caches need far more than
-# the local default.
 SMOKE_READY_TIMEOUT_SECONDS="${SMOKE_READY_TIMEOUT_SECONDS:-90}"
 SMOKE_ADMIN_NAME="${SMOKE_ADMIN_NAME:-Smoke Admin}"
 SMOKE_ADMIN_EMAIL="${SMOKE_ADMIN_EMAIL:-smoke-admin@wardmote.local}"
-SMOKE_ADMIN_PASSWORD="${SMOKE_ADMIN_PASSWORD:-paperclip-smoke-password}"
+SMOKE_ADMIN_PASSWORD="${SMOKE_ADMIN_PASSWORD:-wardmote-smoke-password}"
 # Overridable so a caller can fix the name before this script runs. CI needs
 # that: a name it only learns from this script's output is a name it does not
 # have when this script fails, which is precisely when its diagnostics steps
@@ -144,7 +140,7 @@ write_metadata_file() {
     printf 'SMOKE_LOG_FILE=%q\n' "$SMOKE_LOG_FILE"
     printf 'SMOKE_DATA_DIR=%q\n' "$DATA_DIR"
     printf 'SMOKE_IMAGE_NAME=%q\n' "$IMAGE_NAME"
-    printf 'SMOKE_PAPERCLIPAI_VERSION=%q\n' "$PAPERCLIPAI_VERSION"
+    printf 'SMOKE_WARDMOTE_VERSION=%q\n' "$WARDMOTE_VERSION"
   } >"$SMOKE_METADATA_FILE"
 }
 
@@ -156,9 +152,9 @@ generate_bootstrap_invite_url() {
       -e WARDMOTE_DEPLOYMENT_MODE="$WARDMOTE_DEPLOYMENT_MODE" \
       -e WARDMOTE_DEPLOYMENT_EXPOSURE="$WARDMOTE_DEPLOYMENT_EXPOSURE" \
       -e WARDMOTE_PUBLIC_URL="$WARDMOTE_PUBLIC_URL" \
-      -e WARDMOTE_HOME="/paperclip" \
+      -e WARDMOTE_HOME="/wardmote" \
       "$CONTAINER_NAME" bash -lc \
-      'timeout 20s npx --yes "@tickernelz/wardmote@${PAPERCLIPAI_VERSION}" auth bootstrap-ceo --data-dir "$WARDMOTE_HOME" --base-url "$WARDMOTE_PUBLIC_URL"' \
+      'timeout 20s npx --yes "@tickernelz/wardmote@${WARDMOTE_VERSION}" auth bootstrap-ceo --data-dir "$WARDMOTE_HOME" --base-url "$WARDMOTE_PUBLIC_URL"' \
       2>&1
   )"; then
     bootstrap_status=0
@@ -306,7 +302,7 @@ auto_bootstrap_authenticated_smoke() {
 echo "==> Building onboard smoke image"
 OMP_VERSION="${OMP_VERSION:-$(sed -n 's/^ARG OMP_VERSION=//p' "$REPO_ROOT/Dockerfile" | head -n 1)}"
 docker build \
-  --build-arg PAPERCLIPAI_VERSION="$PAPERCLIPAI_VERSION" \
+  --build-arg WARDMOTE_VERSION="$WARDMOTE_VERSION" \
   --build-arg OMP_VERSION="$OMP_VERSION" \
   --build-arg HOST_UID="$HOST_UID" \
   -f "$REPO_ROOT/docker/Dockerfile.onboard-smoke" \
@@ -421,7 +417,7 @@ docker run -d \
   -e WARDMOTE_DEPLOYMENT_MODE="$WARDMOTE_DEPLOYMENT_MODE" \
   -e WARDMOTE_DEPLOYMENT_EXPOSURE="$WARDMOTE_DEPLOYMENT_EXPOSURE" \
   -e WARDMOTE_PUBLIC_URL="$WARDMOTE_PUBLIC_URL" \
-  -v "$DATA_DIR:/paperclip" \
+  -v "$DATA_DIR:/wardmote" \
   ${PROVIDER_MOCK_RUN_ARGS[@]+"${PROVIDER_MOCK_RUN_ARGS[@]}"} \
   "$IMAGE_NAME" >/dev/null
 
@@ -430,7 +426,7 @@ if [[ "$SMOKE_DETACH" != "true" ]]; then
   LOG_PID=$!
 fi
 
-TMP_DIR="$(mktemp -d "${TMPDIR:-/tmp}/paperclip-onboard-smoke.XXXXXX")"
+TMP_DIR="$(mktemp -d "${TMPDIR:-/tmp}/wardmote-onboard-smoke.XXXXXX")"
 COOKIE_JAR="$TMP_DIR/cookies.txt"
 
 if ! wait_for_http "$WARDMOTE_PUBLIC_URL/api/health" "$SMOKE_READY_TIMEOUT_SECONDS" 1; then

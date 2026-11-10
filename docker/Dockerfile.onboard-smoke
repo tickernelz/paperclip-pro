@@ -1,21 +1,21 @@
 FROM ubuntu:24.04
 
 ARG NODE_MAJOR=24
-ARG PAPERCLIPAI_VERSION=latest
+ARG WARDMOTE_VERSION=latest
 ARG HOST_UID=10001
 ARG OMP_VERSION
 
 ENV DEBIAN_FRONTEND=noninteractive \
-  WARDMOTE_HOME=/paperclip \
+  WARDMOTE_HOME=/wardmote \
   WARDMOTE_OPEN_ON_LISTEN=false \
   HOST=0.0.0.0 \
   PORT=3100 \
-  HOME=/home/paperclip \
+  HOME=/home/wardmote \
   LANG=en_US.UTF-8 \
   LC_ALL=en_US.UTF-8 \
   NPM_CONFIG_UPDATE_NOTIFIER=false \
   NODE_MAJOR=${NODE_MAJOR} \
-  PAPERCLIPAI_VERSION=${PAPERCLIPAI_VERSION}
+  WARDMOTE_VERSION=${WARDMOTE_VERSION}
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends ca-certificates curl gnupg locales \
@@ -30,20 +30,20 @@ RUN apt-get update \
   && curl -fsSL https://omp.sh/install | PI_INSTALL_DIR=/usr/local/bin sh -s -- --binary --ref "v${OMP_VERSION}" \
   && test "$(omp --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -n 1)" = "${OMP_VERSION}" \
   && locale-gen en_US.UTF-8 \
-  && groupadd --gid 10001 paperclip \
-  && useradd --create-home --shell /bin/bash --uid "${HOST_UID}" --gid 10001 paperclip \
-  && mkdir -p /paperclip /home/paperclip/workspace \
-  && chown -R paperclip:paperclip /paperclip /home/paperclip \
+  && groupadd --gid 10001 wardmote \
+  && useradd --create-home --shell /bin/bash --uid "${HOST_UID}" --gid 10001 wardmote \
+  && mkdir -p /wardmote /home/wardmote/workspace \
+  && chown -R wardmote:wardmote /wardmote /home/wardmote \
   && rm -rf /var/lib/apt/lists/*
 
-VOLUME ["/paperclip"]
-WORKDIR /home/paperclip/workspace
+VOLUME ["/wardmote"]
+WORKDIR /home/wardmote/workspace
 EXPOSE 3100
-USER paperclip
+USER wardmote
 
 # --bind lan is required: `onboard --yes` without an explicit --bind prefers
 # trusted-local defaults, which write a loopback bind into the instance config
 # and ignore the deployment env vars. A loopback listener inside the container
 # is unreachable through Docker's port mapping, so the smoke health check can
 # never pass without this flag.
-CMD ["bash", "-lc", "set -euo pipefail; mkdir -p \"$WARDMOTE_HOME\"; npx --yes \"@tickernelz/wardmote@${PAPERCLIPAI_VERSION}\" onboard --yes --bind lan --data-dir \"$WARDMOTE_HOME\""]
+CMD ["bash", "-lc", "set -euo pipefail; mkdir -p \"$WARDMOTE_HOME\"; npx --yes \"@tickernelz/wardmote@${WARDMOTE_VERSION}\" onboard --yes --bind lan --data-dir \"$WARDMOTE_HOME\""]

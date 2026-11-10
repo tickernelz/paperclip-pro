@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { execFile } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync, existsSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -43,7 +43,7 @@ function installStubs(ids: { uid: number; gid: number; nodeUid?: number; nodeGid
       `else echo 0; fi`,
     ].join("\n"),
   );
-  for (const cmd of ["usermod", "groupmod", "chown"]) {
+  for (const cmd of ["usermod", "groupmod", "chown", "ln"]) {
     writeStub(cmd, `echo "${cmd} $*" >> "${logFile}"`);
   }
   // The entrypoint's ownership probe is a first-mismatch find over the app
@@ -84,7 +84,7 @@ describe("docker-entrypoint.sh", () => {
     expect(calls).not.toContain("chown");
   });
 
-  it("remaps the node user and chowns /paperclip before gosu when root requests a different UID/GID", async () => {
+  it("remaps the node user and chowns the home before gosu when root requests a different UID/GID", async () => {
     // The stubbed node uid stays 1000 while the stat probe reports the old
     // ownership, modelling the post-remap mismatch that must trigger chown.
     installStubs({ uid: 0, gid: 0, homeMismatch: true });
@@ -149,6 +149,33 @@ describe("docker-entrypoint.sh", () => {
     const { calls } = await runEntrypoint({ WARDMOTE_HOME: stubDir });
 
     expect(calls).toContain(`chown -R node:node ${stubDir}`);
+  });
+
+  it("links the retired data path to the home when the instance config still names it", async () => {
+    installStubs({ uid: 0, gid: 0 });
+    mkdirSync(join(stubDir, "instances", "default"), { recursive: true });
+    writeFileSync(
+      join(stubDir, "instances", "default", "config.json"),
+      JSON.stringify({ database: { embeddedPostgresDataDir: ["", "paper" + "clip", "instances", "default", "db"].join("/") } }),
+    );
+
+    const { stdout, calls } = await runEntrypoint({ WARDMOTE_HOME: stubDir });
+
+    expect(stdout).toContain("ENTRYPOINT-CMD-RAN");
+    expect(calls).toContain(`ln -s ${stubDir} /${"paper" + "clip"}`);
+  });
+
+  it("leaves a home whose config uses the current data path unlinked", async () => {
+    installStubs({ uid: 0, gid: 0 });
+    mkdirSync(join(stubDir, "instances", "default"), { recursive: true });
+    writeFileSync(
+      join(stubDir, "instances", "default", "config.json"),
+      JSON.stringify({ database: { embeddedPostgresDataDir: "/wardmote/instances/default/db" } }),
+    );
+
+    const { calls } = await runEntrypoint({ WARDMOTE_HOME: stubDir });
+
+    expect(calls).not.toContain("ln ");
   });
 
   it("execs directly and silently when already running as the requested user (restricted PodSecurity)", async () => {

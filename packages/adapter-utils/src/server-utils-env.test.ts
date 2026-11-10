@@ -4,7 +4,7 @@ import { sanitizeInheritedWardmoteEnv } from "./server-utils.js";
 describe("sanitizeInheritedWardmoteEnv", () => {
   it("drops the host-only Wardmote CLI command pointer", () => {
     expect(sanitizeInheritedWardmoteEnv({
-      PAPERCLIPAI_CMD: "node /missing/@tickernelz/wardmote/dist/index.js",
+      WARDMOTE_CMD: "node /missing/@tickernelz/wardmote/dist/index.js",
       WARDMOTE_RUNTIME_API_URL: "http://127.0.0.1:3100",
       PATH: "/usr/bin",
     })).toEqual({

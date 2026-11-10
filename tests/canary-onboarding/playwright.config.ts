@@ -3,10 +3,10 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
-const canaryVersion = process.env.PAPERCLIPAI_VERSION?.trim();
+const canaryVersion = process.env.WARDMOTE_VERSION?.trim();
 if (!canaryVersion || !/^[0-9A-Za-z.+-]+$/.test(canaryVersion)) {
   throw new Error(
-    "PAPERCLIPAI_VERSION must name the exact published canary version to test",
+    "WARDMOTE_VERSION must name the exact published canary version to test",
   );
 }
 
@@ -18,7 +18,7 @@ if (parsedBaseUrl.hostname !== "127.0.0.1" || !parsedBaseUrl.port) {
 }
 
 const workspace = fs.mkdtempSync(
-  path.join(os.tmpdir(), "paperclip-canary-onboarding-smoke-"),
+  path.join(os.tmpdir(), "wardmote-canary-onboarding-smoke-"),
 );
 const dataDir = path.join(workspace, "data");
 const npmCache = path.join(workspace, "npm-cache");
