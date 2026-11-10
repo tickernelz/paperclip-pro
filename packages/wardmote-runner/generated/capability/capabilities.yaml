@@ -337,8 +337,8 @@
     {
       "id": "skill:skills/paperclip/references/api-reference.md:11",
       "kind": "skill_heading",
-      "sourceAnchor": "skills/paperclip/references/api-reference.md#L11:agent-record-paperclipme-paperclipgetagent",
-      "heading": "Agent Record (`paperclipMe`, `paperclipGetAgent`)",
+      "sourceAnchor": "skills/paperclip/references/api-reference.md#L11:agent-record-wardmoteme-wardmotegetagent",
+      "heading": "Agent Record (`wardmoteMe`, `wardmoteGetAgent`)",
       "primaryDisposition": "optional_agent_tool",
       "semanticOperation": "scoped_discovery",
       "expectedMockState": "operation_result"
@@ -355,8 +355,8 @@
     {
       "id": "skill:skills/paperclip/references/api-reference.md:108",
       "kind": "skill_heading",
-      "sourceAnchor": "skills/paperclip/references/api-reference.md#L108:issue-with-ancestors-paperclipgetissue",
-      "heading": "Issue with Ancestors (`paperclipGetIssue`)",
+      "sourceAnchor": "skills/paperclip/references/api-reference.md#L108:issue-with-ancestors-wardmotegetissue",
+      "heading": "Issue with Ancestors (`wardmoteGetIssue`)",
       "primaryDisposition": "optional_agent_tool",
       "semanticOperation": "scoped_discovery",
       "expectedMockState": "operation_result"
@@ -364,8 +364,8 @@
     {
       "id": "skill:skills/paperclip/references/api-reference.md:194",
       "kind": "skill_heading",
-      "sourceAnchor": "skills/paperclip/references/api-reference.md#L194:issue-update-response-paperclipupdateissue",
-      "heading": "Issue Update Response (`paperclipUpdateIssue`)",
+      "sourceAnchor": "skills/paperclip/references/api-reference.md#L194:issue-update-response-wardmoteupdateissue",
+      "heading": "Issue Update Response (`wardmoteUpdateIssue`)",
       "primaryDisposition": "optional_agent_tool",
       "semanticOperation": "scoped_discovery",
       "expectedMockState": "operation_result"
@@ -373,8 +373,8 @@
     {
       "id": "skill:skills/paperclip/references/api-reference.md:222",
       "kind": "skill_heading",
-      "sourceAnchor": "skills/paperclip/references/api-reference.md#L222:blocker-diagnostics-papercliplistissuediagnosticblockers-extended",
-      "heading": "Blocker Diagnostics (`paperclipListIssueDiagnosticBlockers`, extended)",
+      "sourceAnchor": "skills/paperclip/references/api-reference.md#L222:blocker-diagnostics-wardmotelistissuediagnosticblockers-extended",
+      "heading": "Blocker Diagnostics (`wardmoteListIssueDiagnosticBlockers`, extended)",
       "primaryDisposition": "optional_agent_tool",
       "semanticOperation": "scoped_discovery",
       "expectedMockState": "operation_result"
@@ -382,8 +382,8 @@
     {
       "id": "skill:skills/paperclip/references/api-reference.md:261",
       "kind": "skill_heading",
-      "sourceAnchor": "skills/paperclip/references/api-reference.md#L261:wake-diagnostics-papercliplistissuediagnosticwakes-extended",
-      "heading": "Wake Diagnostics (`paperclipListIssueDiagnosticWakes`, extended)",
+      "sourceAnchor": "skills/paperclip/references/api-reference.md#L261:wake-diagnostics-wardmotelistissuediagnosticwakes-extended",
+      "heading": "Wake Diagnostics (`wardmoteListIssueDiagnosticWakes`, extended)",
       "primaryDisposition": "control_plane_owned",
       "semanticOperation": "runtime_reconciliation",
       "expectedMockState": "runtime_decision_record"
@@ -391,8 +391,8 @@
     {
       "id": "skill:skills/paperclip/references/api-reference.md:305",
       "kind": "skill_heading",
-      "sourceAnchor": "skills/paperclip/references/api-reference.md#L305:subtree-diagnostics-paperclipgetissuediagnosticsubtree-extended",
-      "heading": "Subtree Diagnostics (`paperclipGetIssueDiagnosticSubtree`, extended)",
+      "sourceAnchor": "skills/paperclip/references/api-reference.md#L305:subtree-diagnostics-wardmotegetissuediagnosticsubtree-extended",
+      "heading": "Subtree Diagnostics (`wardmoteGetIssueDiagnosticSubtree`, extended)",
       "primaryDisposition": "optional_agent_tool",
       "semanticOperation": "scoped_discovery",
       "expectedMockState": "operation_result"

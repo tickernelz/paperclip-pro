@@ -76,7 +76,7 @@ async function readSkillHeadings(paths) {
 async function readLegacyTools() {
   const path = "packages/mcp-server/src/tools.ts";
   const contents = await readFile(resolve(repositoryRoot, path), "utf8");
-  return [...contents.matchAll(/makeTool\(\s*\n?\s*"(paperclip[A-Za-z0-9]+)"/g)].map((match) => ({
+  return [...contents.matchAll(/makeTool\(\s*\n?\s*"(wardmote[A-Za-z0-9]+)"/g)].map((match) => ({
     name: match[1],
     sourceAnchor: sourceAnchor(path, contents.slice(0, match.index).split("\n").length, match[1]),
   }));

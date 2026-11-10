@@ -188,7 +188,7 @@ function advancedFields(route: string) {
     .record(z.string(), z.unknown())
     .optional()
     .describe(
-      `any other field accepted by ${route}; see paperclipApiRequest for the full schema`,
+      `any other field accepted by ${route}; see wardmoteApiRequest for the full schema`,
     );
 }
 
@@ -383,30 +383,30 @@ async function getIssueWorkspaceRuntime(client: PaperclipApiClient, issueId: str
 }
 
 const READ_ONLY_CURATED_TOOLS: Record<string, true> = {
-  paperclipMe: true,
-  paperclipInboxLite: true,
-  paperclipListAgents: true,
-  paperclipListSkills: true,
-  paperclipGetAgent: true,
-  paperclipListIssues: true,
-  paperclipGetIssue: true,
-  paperclipGetHeartbeatContext: true,
-  paperclipListComments: true,
-  paperclipGetComment: true,
-  paperclipListIssueApprovals: true,
-  paperclipListDocuments: true,
-  paperclipGetDocument: true,
-  paperclipListDocumentRevisions: true,
-  paperclipListProjects: true,
-  paperclipGetProject: true,
-  paperclipGetIssueWorkspaceRuntime: true,
-  paperclipWaitForIssueWorkspaceService: true,
-  paperclipListGoals: true,
-  paperclipGetGoal: true,
-  paperclipListApprovals: true,
-  paperclipGetApproval: true,
-  paperclipGetApprovalIssues: true,
-  paperclipListApprovalComments: true,
+  wardmoteMe: true,
+  wardmoteInboxLite: true,
+  wardmoteListAgents: true,
+  wardmoteListSkills: true,
+  wardmoteGetAgent: true,
+  wardmoteListIssues: true,
+  wardmoteGetIssue: true,
+  wardmoteGetHeartbeatContext: true,
+  wardmoteListComments: true,
+  wardmoteGetComment: true,
+  wardmoteListIssueApprovals: true,
+  wardmoteListDocuments: true,
+  wardmoteGetDocument: true,
+  wardmoteListDocumentRevisions: true,
+  wardmoteListProjects: true,
+  wardmoteGetProject: true,
+  wardmoteGetIssueWorkspaceRuntime: true,
+  wardmoteWaitForIssueWorkspaceService: true,
+  wardmoteListGoals: true,
+  wardmoteGetGoal: true,
+  wardmoteListApprovals: true,
+  wardmoteGetApproval: true,
+  wardmoteGetApprovalIssues: true,
+  wardmoteListApprovalComments: true,
 };
 
 export function createToolDefinitions(
@@ -427,20 +427,20 @@ export function createToolDefinitions(
       async (input) => runtimeConnections.request(input),
     ),
     makeTool(
-      "paperclipMe",
+      "wardmoteMe",
       "Get the current authenticated Paperclip actor details",
       z.object({}),
       async () => client.requestJson("GET", "/agents/me"),
     ),
     makeTool(
-      "paperclipInboxLite",
+      "wardmoteInboxLite",
       "Get the current authenticated agent inbox-lite assignment list",
       z.object({}),
       async () => client.requestJson("GET", "/agents/me/inbox-lite"),
     ),
     makeTool(
-      "paperclipListAgents",
-      "List agents in a company. Defaults to the compact row shape, which omits orgChainHealth, appearance, avatarUrl and adapterConfig; pass view `full` for the complete shape, or read one agent with paperclipGetAgent.",
+      "wardmoteListAgents",
+      "List agents in a company. Defaults to the compact row shape, which omits orgChainHealth, appearance, avatarUrl and adapterConfig; pass view `full` for the complete shape, or read one agent with wardmoteGetAgent.",
       z.object({ companyId: companyIdOptional, view: z.enum(["compact", "full"]).optional().describe("compact drops orgChainHealth, appearance, avatarUrl and adapterConfig; full keeps them") }),
       async ({ companyId, view }) => {
         const path = `/companies/${client.resolveCompanyId(companyId)}/agents`;
@@ -449,13 +449,13 @@ export function createToolDefinitions(
       },
     ),
     makeTool(
-      "paperclipListSkills",
+      "wardmoteListSkills",
       "List the company skill library (all installed skills, independent of which agents have them enabled)",
       z.object({ companyId: companyIdOptional }),
       async ({ companyId }) => client.requestJson("GET", `/companies/${client.resolveCompanyId(companyId)}/skills`),
     ),
     makeTool(
-      "paperclipGetAgent",
+      "wardmoteGetAgent",
       "Get a single agent by id",
       z.object({ agentId: z.string().min(1), companyId: companyIdOptional }),
       async ({ agentId, companyId }) => {
@@ -464,7 +464,7 @@ export function createToolDefinitions(
       },
     ),
     makeTool(
-      "paperclipListIssues",
+      "wardmoteListIssues",
       "List issues for a company with optional filters; returns at most `limit` issues (default 25) and supports `view=compact` for smaller rows without descriptions",
       listIssuesSchema,
       async (input) => {
@@ -480,13 +480,13 @@ export function createToolDefinitions(
       },
     ),
     makeTool(
-      "paperclipGetIssue",
+      "wardmoteGetIssue",
       "Get a single issue by UUID or identifier",
       z.object({ issueId: issueIdSchema }),
       async ({ issueId }) => client.requestJson("GET", `/issues/${encodeURIComponent(issueId)}`),
     ),
     makeTool(
-      "paperclipGetHeartbeatContext",
+      "wardmoteGetHeartbeatContext",
       "Get compact heartbeat context for an issue",
       z.object({ issueId: issueIdSchema, wakeCommentId: z.string().guid().optional() }),
       async ({ issueId, wakeCommentId }) => {
@@ -495,7 +495,7 @@ export function createToolDefinitions(
       },
     ),
     makeTool(
-      "paperclipListComments",
+      "wardmoteListComments",
       "List issue comments with incremental options",
       listCommentsSchema,
       async ({ issueId, after, order, limit }) => {
@@ -508,33 +508,33 @@ export function createToolDefinitions(
       },
     ),
     makeTool(
-      "paperclipGetComment",
+      "wardmoteGetComment",
       "Get a specific issue comment by id",
       z.object({ issueId: issueIdSchema, commentId: z.string().guid() }),
       async ({ issueId, commentId }) =>
         client.requestJson("GET", `/issues/${encodeURIComponent(issueId)}/comments/${encodeURIComponent(commentId)}`),
     ),
     makeTool(
-      "paperclipListIssueApprovals",
+      "wardmoteListIssueApprovals",
       "List approvals linked to an issue",
       z.object({ issueId: issueIdSchema }),
       async ({ issueId }) => client.requestJson("GET", `/issues/${encodeURIComponent(issueId)}/approvals`),
     ),
     makeTool(
-      "paperclipListDocuments",
+      "wardmoteListDocuments",
       "List issue documents",
       z.object({ issueId: issueIdSchema }),
       async ({ issueId }) => client.requestJson("GET", `/issues/${encodeURIComponent(issueId)}/documents`),
     ),
     makeTool(
-      "paperclipGetDocument",
+      "wardmoteGetDocument",
       "Get one issue document by key",
       z.object({ issueId: issueIdSchema, key: documentKeySchema }),
       async ({ issueId, key }) =>
         client.requestJson("GET", `/issues/${encodeURIComponent(issueId)}/documents/${encodeURIComponent(key)}`),
     ),
     makeTool(
-      "paperclipListDocumentRevisions",
+      "wardmoteListDocumentRevisions",
       "List revisions for an issue document",
       z.object({ issueId: issueIdSchema, key: documentKeySchema }),
       async ({ issueId, key }) =>
@@ -544,7 +544,7 @@ export function createToolDefinitions(
         ),
     ),
     makeTool(
-      "paperclipListProjects",
+      "wardmoteListProjects",
       "List projects in a company. Defaults to the compact shape, which omits primaryWorkspace because the same workspace is in workspaces with isPrimary; pass view `full` for the complete shape.",
       z.object({ companyId: companyIdOptional, view: z.enum(["compact", "full"]).optional() }),
       async ({ companyId, view }) => {
@@ -553,7 +553,7 @@ export function createToolDefinitions(
       },
     ),
     makeTool(
-      "paperclipGetProject",
+      "wardmoteGetProject",
       "Get a project by id or company-scoped short reference",
       z.object({ projectId: projectIdSchema, companyId: companyIdOptional }),
       async ({ projectId, companyId }) => {
@@ -562,13 +562,13 @@ export function createToolDefinitions(
       },
     ),
     makeTool(
-      "paperclipGetIssueWorkspaceRuntime",
+      "wardmoteGetIssueWorkspaceRuntime",
       "Get the current execution workspace and runtime services for an issue, including service URLs",
       z.object({ issueId: issueIdSchema }),
       async ({ issueId }) => getIssueWorkspaceRuntime(client, issueId),
     ),
     makeTool(
-      "paperclipControlIssueWorkspaceServices",
+      "wardmoteControlIssueWorkspaceServices",
       "Start, stop, or restart the current issue execution workspace runtime services",
       issueWorkspaceRuntimeControlSchema,
       async ({ issueId, action, ...target }) => {
@@ -586,7 +586,7 @@ export function createToolDefinitions(
       { destructiveHint: true },
     ),
     makeTool(
-      "paperclipWaitForIssueWorkspaceService",
+      "wardmoteWaitForIssueWorkspaceService",
       "Wait until an issue execution workspace runtime service is running and has a URL when one is exposed",
       waitForIssueWorkspaceServiceSchema,
       async ({ issueId, runtimeServiceId, serviceName, timeoutSeconds }) => {
@@ -612,19 +612,19 @@ export function createToolDefinitions(
       },
     ),
     makeTool(
-      "paperclipListGoals",
+      "wardmoteListGoals",
       "List goals in a company",
       z.object({ companyId: companyIdOptional }),
       async ({ companyId }) => client.requestJson("GET", `/companies/${client.resolveCompanyId(companyId)}/goals`),
     ),
     makeTool(
-      "paperclipGetGoal",
+      "wardmoteGetGoal",
       "Get a goal by id",
       z.object({ goalId: goalIdSchema }),
       async ({ goalId }) => client.requestJson("GET", `/goals/${encodeURIComponent(goalId)}`),
     ),
     makeTool(
-      "paperclipListApprovals",
+      "wardmoteListApprovals",
       "List approvals in a company",
       z.object({ companyId: companyIdOptional, status: z.string().optional() }),
       async ({ companyId, status }) => {
@@ -633,7 +633,7 @@ export function createToolDefinitions(
       },
     ),
     makeTool(
-      "paperclipCreateApproval",
+      "wardmoteCreateApproval",
       "Create a board approval request, optionally linked to one or more issues",
       createApprovalToolSchema,
       async ({ companyId, ...body }) =>
@@ -642,26 +642,26 @@ export function createToolDefinitions(
         }),
     ),
     makeTool(
-      "paperclipGetApproval",
+      "wardmoteGetApproval",
       "Get an approval by id",
       z.object({ approvalId: approvalIdSchema }),
       async ({ approvalId }) => client.requestJson("GET", `/approvals/${encodeURIComponent(approvalId)}`),
     ),
     makeTool(
-      "paperclipGetApprovalIssues",
+      "wardmoteGetApprovalIssues",
       "List issues linked to an approval",
       z.object({ approvalId: approvalIdSchema }),
       async ({ approvalId }) => client.requestJson("GET", `/approvals/${encodeURIComponent(approvalId)}/issues`),
     ),
     makeTool(
-      "paperclipListApprovalComments",
+      "wardmoteListApprovalComments",
       "List comments for an approval",
       z.object({ approvalId: approvalIdSchema }),
       async ({ approvalId }) => client.requestJson("GET", `/approvals/${encodeURIComponent(approvalId)}/comments`),
     ),
     makeTool(
-      "paperclipCreateIssue",
-      "Create a new issue. An issue created because of the task you are working on (follow-up, deploy, fix, review) must set parentId to that task, or use paperclipCreateChildIssue; omit parentId only for independent work, a conversation handoff, or a deliberate non-child follow-up that sets inheritExecutionWorkspaceFromIssueId. If an agent run working on an issue creates one without parentId or inheritExecutionWorkspaceFromIssueId, the issue is still created and the response carries warnings[] with code parent_missing and suggestedParentIssueId; set parentId with paperclipUpdateIssue when the new issue belongs to that work.",
+      "wardmoteCreateIssue",
+      "Create a new issue. An issue created because of the task you are working on (follow-up, deploy, fix, review) must set parentId to that task, or use wardmoteCreateChildIssue; omit parentId only for independent work, a conversation handoff, or a deliberate non-child follow-up that sets inheritExecutionWorkspaceFromIssueId. If an agent run working on an issue creates one without parentId or inheritExecutionWorkspaceFromIssueId, the issue is still created and the response carries warnings[] with code parent_missing and suggestedParentIssueId; set parentId with wardmoteUpdateIssue when the new issue belongs to that work.",
       createIssueToolSchema,
       async ({ companyId, advanced, ...body }) =>
         client.requestJson("POST", `/companies/${client.resolveCompanyId(companyId)}/issues`, {
@@ -669,8 +669,8 @@ export function createToolDefinitions(
         }),
     ),
     makeTool(
-      "paperclipUpdateIssue",
-      "Patch an issue, optionally including a comment; include resume=true when intentionally requesting follow-up on resumable closed work. Agents cannot hand their own task to a reviewer: executionPolicy.stages in advanced is board-controlled, a handoff started by agent-authored stages is rejected with 422 agent_review_handoff_requires_subtask, and changing assigneeAgentId or assigneeUserId on the task you are assigned is rejected with 422 agent_reassign_requires_subtask (returning the issue to its creator user is still allowed). To get your work reviewed, create a review subtask with paperclipCreateChildIssue on your issue with reviewOfParent: true, assigned to the reviewer, with a self-contained description (reviewOfParent adds it to blockedByIssueIds on your issue and is allowed even when the reviewer created an open ancestor), then set status to in_review: you stay the assignee and the issue_blockers_resolved wake brings you the verdict. Schedule a timed re-check (the issue monitor) with advanced.executionPolicy.monitor.nextCheckAt; executionPolicy replaces the stored policy as a whole.",
+      "wardmoteUpdateIssue",
+      "Patch an issue, optionally including a comment; include resume=true when intentionally requesting follow-up on resumable closed work. Agents cannot hand their own task to a reviewer: executionPolicy.stages in advanced is board-controlled, a handoff started by agent-authored stages is rejected with 422 agent_review_handoff_requires_subtask, and changing assigneeAgentId or assigneeUserId on the task you are assigned is rejected with 422 agent_reassign_requires_subtask (returning the issue to its creator user is still allowed). To get your work reviewed, create a review subtask with wardmoteCreateChildIssue on your issue with reviewOfParent: true, assigned to the reviewer, with a self-contained description (reviewOfParent adds it to blockedByIssueIds on your issue and is allowed even when the reviewer created an open ancestor), then set status to in_review: you stay the assignee and the issue_blockers_resolved wake brings you the verdict. Schedule a timed re-check (the issue monitor) with advanced.executionPolicy.monitor.nextCheckAt; executionPolicy replaces the stored policy as a whole.",
       updateIssueToolSchema,
       async ({ issueId, advanced, ...body }) =>
         client.requestJson("PATCH", `/issues/${encodeURIComponent(issueId)}`, {
@@ -678,7 +678,7 @@ export function createToolDefinitions(
         }),
     ),
     makeTool(
-      "paperclipCheckoutIssue",
+      "wardmoteCheckoutIssue",
       "Checkout an issue for an agent",
       checkoutIssueToolSchema,
       async ({ issueId, agentId, expectedStatuses }) =>
@@ -690,20 +690,20 @@ export function createToolDefinitions(
         }),
     ),
     makeTool(
-      "paperclipReleaseIssue",
+      "wardmoteReleaseIssue",
       "Release an issue checkout",
       z.object({ issueId: issueIdSchema }),
       async ({ issueId }) => client.requestJson("POST", `/issues/${encodeURIComponent(issueId)}/release`, { body: {} }),
     ),
     makeTool(
-      "paperclipAddComment",
+      "wardmoteAddComment",
       "Add a comment to an issue; include resume=true when intentionally requesting follow-up on resumable closed work. A message you post on another agent's task steers into that agent's running turn by default, so it is read immediately instead of after the turn; set deliver to queue when it must wait for the current turn to finish, or to steer to override an instance default of queue. Comments on your own assigned task always wait for your next turn. The response reports the disposition, with deliveredAs as queued or steered, and steeringUnavailable naming why whenever deliveredAs is queued: not_requested when no steer was needed (queue was asked for, or the default steer found no running turn), identity_mismatch when the message answers to a different user than the running turn does, board_only when the author cannot steer that run at all, and otherwise no_active_run, legacy_protocol, conversation_order or steering_failed.",
       addCommentToolSchema,
       async ({ issueId, ...body }) =>
         client.requestJson("POST", `/issues/${encodeURIComponent(issueId)}/comments`, { body }),
     ),
     makeTool(
-      "paperclipSuggestTasks",
+      "wardmoteSuggestTasks",
       "Create a suggest_tasks interaction on an issue",
       createSuggestTasksToolSchema,
       async ({ issueId, ...body }) =>
@@ -715,7 +715,7 @@ export function createToolDefinitions(
         }),
     ),
     makeTool(
-      "paperclipAskUserQuestions",
+      "wardmoteAskUserQuestions",
       "Create an ask_user_questions interaction on an issue. It stays pending when the user posts an ordinary comment; set payload.supersedeOnUserComment to true only when a new comment should replace it.",
       createAskUserQuestionsToolSchema,
       async ({ issueId, ...body }) =>
@@ -727,7 +727,7 @@ export function createToolDefinitions(
         }),
     ),
     makeTool(
-      "paperclipRequestConfirmation",
+      "wardmoteRequestConfirmation",
       "Create a request_confirmation interaction on an issue. It stays pending when the user posts an ordinary comment; set payload.supersedeOnUserComment to true only when a new comment should replace it.",
       createRequestConfirmationToolSchema,
       async ({ issueId, ...body }) =>
@@ -739,7 +739,7 @@ export function createToolDefinitions(
         }),
     ),
     makeTool(
-      "paperclipRequestCheckboxConfirmation",
+      "wardmoteRequestCheckboxConfirmation",
       "Create a request_checkbox_confirmation interaction on an issue. It stays pending when the user posts an ordinary comment; set payload.supersedeOnUserComment to true only when a new comment should replace it.",
       createRequestCheckboxConfirmationToolSchema,
       async ({ issueId, ...body }) =>
@@ -751,7 +751,7 @@ export function createToolDefinitions(
         }),
     ),
     makeTool(
-      "paperclipUpsertIssueDocument",
+      "wardmoteUpsertIssueDocument",
       "Create or update an issue document",
       upsertDocumentToolSchema,
       async ({ issueId, key, ...body }) =>
@@ -762,7 +762,7 @@ export function createToolDefinitions(
         ),
     ),
     makeTool(
-      "paperclipRestoreIssueDocumentRevision",
+      "wardmoteRestoreIssueDocumentRevision",
       "Restore a prior revision of an issue document",
       z.object({
         issueId: issueIdSchema,
@@ -777,7 +777,7 @@ export function createToolDefinitions(
         ),
     ),
     makeTool(
-      "paperclipLinkIssueApproval",
+      "wardmoteLinkIssueApproval",
       "Link an approval to an issue",
       z.object({ issueId: issueIdSchema }).merge(linkIssueApprovalSchema),
       async ({ issueId, approvalId }) =>
@@ -786,7 +786,7 @@ export function createToolDefinitions(
         }),
     ),
     makeTool(
-      "paperclipUnlinkIssueApproval",
+      "wardmoteUnlinkIssueApproval",
       "Unlink an approval from an issue. The approval itself is kept; only the link is removed.",
       z.object({ issueId: issueIdSchema, approvalId: approvalIdSchema }),
       async ({ issueId, approvalId }) =>
@@ -797,7 +797,7 @@ export function createToolDefinitions(
       { destructiveHint: true, idempotentHint: true },
     ),
     makeTool(
-      "paperclipApprovalDecision",
+      "wardmoteApprovalDecision",
       "Approve, reject, request revision, or resubmit an approval. Agents may only use resubmit; approve, reject, and requestRevision require a board actor and return 403 for an agent key.",
       approvalDecisionSchema,
       async ({ approvalId, action, decisionNote, payloadJson }) => {
@@ -820,7 +820,7 @@ export function createToolDefinitions(
       { destructiveHint: true },
     ),
     makeTool(
-      "paperclipAddApprovalComment",
+      "wardmoteAddApprovalComment",
       "Add a comment to an approval",
       z.object({ approvalId: approvalIdSchema, body: z.string().min(1) }),
       async ({ approvalId, body }) =>
@@ -829,7 +829,7 @@ export function createToolDefinitions(
         }),
     ),
     makeTool(
-      "paperclipApiRequest",
+      "wardmoteApiRequest",
       "Make a JSON request to an existing Paperclip /api endpoint for unsupported operations. Send the request body as jsonBody, a JSON object such as {body: 'Done'} for POST /issues/PAP-1/comments, or the same object as a JSON string; body is accepted as an alias of jsonBody.",
       apiRequestSchema,
       async ({ method, path, jsonBody, body }) => {

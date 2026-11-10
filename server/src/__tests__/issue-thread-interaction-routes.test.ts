@@ -1490,7 +1490,7 @@ describe("issue thread interaction routes", () => {
             proposalId,
             configPath: "access.NEW_ALIAS",
             executionStatus: "executed",
-            instructions: expect.stringContaining('paperclipApiRequest with method: "GET" and path: "/agents/me/secrets"'),
+            instructions: expect.stringContaining('wardmoteApiRequest with method: "GET" and path: "/agents/me/secrets"'),
           }),
         }),
       }),

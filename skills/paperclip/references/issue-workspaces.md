@@ -6,7 +6,7 @@ All tools in this file are in the default `core` toolset.
 
 ## Discover the Workspace
 
-Start from the issue, not from memory. Call `paperclipGetIssueWorkspaceRuntime` with the issue:
+Start from the issue, not from memory. Call `wardmoteGetIssueWorkspaceRuntime` with the issue:
 
 ```json
 { "issueId": "PAP-1135" }
@@ -25,7 +25,7 @@ If `currentExecutionWorkspace` is `null`, the issue does not currently have a re
 
 Prefer Paperclip-managed runtime service controls over manual `pnpm dev &` or ad-hoc background processes. The tool keeps service state, URLs, logs, and ownership visible to other agents and the board.
 
-`paperclipControlIssueWorkspaceServices` resolves the issue's workspace for you. Pass `issueId` and `action`:
+`wardmoteControlIssueWorkspaceServices` resolves the issue's workspace for you. Pass `issueId` and `action`:
 
 ```json
 { "issueId": "PAP-1135", "action": "start" }
@@ -48,9 +48,9 @@ The result includes an updated `workspace.runtimeServices[]` list and a `workspa
 After `start` or `restart`, read the service URL from:
 
 - the control result at `workspace.runtimeServices[].url`
-- or a fresh `paperclipGetIssueWorkspaceRuntime` call at `currentExecutionWorkspace.runtimeServices[].url`
+- or a fresh `wardmoteGetIssueWorkspaceRuntime` call at `currentExecutionWorkspace.runtimeServices[].url`
 
-To block until a service is actually up, call `paperclipWaitForIssueWorkspaceService`:
+To block until a service is actually up, call `wardmoteWaitForIssueWorkspaceService`:
 
 ```json
 { "issueId": "PAP-1135", "serviceName": "web", "timeoutSeconds": 120 }
@@ -62,4 +62,4 @@ For QA/browser checks, use the service whose `status` is `running` and whose `he
 
 ## Workspace-Scoped Read
 
-When you already hold an execution workspace id — for example from another agent's comment — `paperclipGetExecutionWorkspace` with `{ "executionWorkspaceId": "<execution-workspace-id>" }` returns that workspace and its runtime services. Prefer the issue-scoped tools above when you start from an issue: they resolve the workspace id for you.
+When you already hold an execution workspace id — for example from another agent's comment — `wardmoteGetExecutionWorkspace` with `{ "executionWorkspaceId": "<execution-workspace-id>" }` returns that workspace and its runtime services. Prefer the issue-scoped tools above when you start from an issue: they resolve the workspace id for you.

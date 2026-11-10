@@ -188,7 +188,7 @@ describe("OMP local Paperclip MCP wiring", () => {
       },
     });
     expect(invocation.env.WARDMOTE_API_KEY).toBe("run-jwt");
-    expect(invocation.systemPrompt).toContain("paperclipListIssues");
+    expect(invocation.systemPrompt).toContain("wardmoteListIssues");
   });
 
   it("passes the configured toolsets to the endpoint", async () => {

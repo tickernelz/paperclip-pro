@@ -756,8 +756,8 @@ describe("shared ACPX engine runtime behavior", () => {
     expect(prompt).toContain("## Paperclip Wake Payload");
     expect(prompt).toContain("TEST-1");
     expect(prompt).toContain("Paperclip API access note:");
-    expect(prompt).toContain("paperclipAddComment");
-    expect(prompt).toContain("paperclipApiRequest");
+    expect(prompt).toContain("wardmoteAddComment");
+    expect(prompt).toContain("wardmoteApiRequest");
     expect(prompt).not.toContain("curl ");
     expect(prompt).not.toContain("$WARDMOTE_API_URL/api/");
     expect(prompt).not.toContain("/api/issues/{id}");

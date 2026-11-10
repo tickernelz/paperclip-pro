@@ -15,7 +15,7 @@ You run in **heartbeats** — short execution windows triggered by Paperclip. Ea
 
 In Paperclip, **task** and **issue** refer to the same work item. The UI may use "task" while APIs, database fields, route names, and older docs may still say "issue"; treat them as the same entity unless a local context explicitly distinguishes them.
 
-**Task documents (API runtimes).** When asked for a task document, save it on the Paperclip issue with `paperclipUpsertIssueDocument`, unless the requester specifies another destination. Confirm the returned document's saved revision and add a clickable Markdown link before reporting completion; read [references/issue-documents.md](references/issue-documents.md) for the payload and revision-safe updates. Downloadable files follow [Generated Artifacts and Work Products](#generated-artifacts-and-work-products).
+**Task documents (API runtimes).** When asked for a task document, save it on the Paperclip issue with `wardmoteUpsertIssueDocument`, unless the requester specifies another destination. Confirm the returned document's saved revision and add a clickable Markdown link before reporting completion; read [references/issue-documents.md](references/issue-documents.md) for the payload and revision-safe updates. Downloadable files follow [Generated Artifacts and Work Products](#generated-artifacts-and-work-products).
 
 ## Authentication
 
@@ -33,9 +33,9 @@ Manual local CLI mode (outside heartbeat runs): use `paperclip-pro agent local-c
 
 The `paperclip*` tools are how you talk to Paperclip. They carry your credential, your company id, and the current run id for you, and they validate arguments before the request leaves.
 
-- Hot paths map one-to-one: `paperclipMe`, `paperclipInboxLite`, `paperclipCheckoutIssue`, `paperclipGetHeartbeatContext`, `paperclipListComments`, `paperclipAddComment`, `paperclipUpdateIssue`, `paperclipCreateChildIssue`, `paperclipUpsertIssueDocument`, `paperclipCreateIssueWorkProduct`, `paperclipReleaseIssue`. The table in **Key Endpoints (Hot Routes)** names the tool for each action.
-- The default toolset is `core` (about 60 tools). The rest of the agent-callable surface ships in the `full` toolset, available when the operator enables `WARDMOTE_MCP_TOOLSETS=full`; until then reach those operations with `paperclipApiRequest`.
-- `paperclipApiRequest` is the escape hatch for anything without a dedicated tool. Arguments: `method`, `path` relative to `/api`, and `jsonBody` as a JSON string.
+- Hot paths map one-to-one: `wardmoteMe`, `wardmoteInboxLite`, `wardmoteCheckoutIssue`, `wardmoteGetHeartbeatContext`, `wardmoteListComments`, `wardmoteAddComment`, `wardmoteUpdateIssue`, `wardmoteCreateChildIssue`, `wardmoteUpsertIssueDocument`, `wardmoteCreateIssueWorkProduct`, `wardmoteReleaseIssue`. The table in **Key Endpoints (Hot Routes)** names the tool for each action.
+- The default toolset is `core` (about 60 tools). The rest of the agent-callable surface ships in the `full` toolset, available when the operator enables `WARDMOTE_MCP_TOOLSETS=full`; until then reach those operations with `wardmoteApiRequest`.
+- `wardmoteApiRequest` is the escape hatch for anything without a dedicated tool. Arguments: `method`, `path` relative to `/api`, and `jsonBody` as a JSON string.
 - Tools marked destructive (deletes, terminations, workspace stops) do what they say and are not undone by a follow-up comment. Read before you write.
 
 ## No `paperclip*` tools in this runtime
@@ -69,7 +69,7 @@ relationship back to the conversation. Link them in your reply and let them run
 normally; do not wait for them or change the conversation's status.
 
 Copy the relevant approved plan into each execution task **at creation**, using
-`create_task.initialPlan` or the `initialPlan` argument of `paperclipCreateIssue`.
+`create_task.initialPlan` or the `initialPlan` argument of `wardmoteCreateIssue`.
 Include an `idempotencyKey`. A copy in `description` is not a plan document, and a
 later document write can race execution. Verify the created task's `plan`
 document before claiming handoff. Preserve the source plan in this conversation.
@@ -121,20 +121,20 @@ they mention a chat provider.
 Follow these steps every time you wake up unless the server-verified external
 chat shortcut above applies:
 
-**Scoped-wake fast path.** If the user message includes a **"Paperclip Resume Delta"** or **"Paperclip Wake Payload"** section that names a specific issue, **skip Steps 1–4 entirely**. Go straight to **Step 5 (Checkout)** for that issue, then continue with Steps 6–9. The scoped wake already tells you which issue to work on — do NOT call `paperclipMe`, do NOT fetch your inbox, do NOT pick work. When the payload says `checkout: already claimed by the harness for this run`, the issue is already yours: skip Step 5 and do not call `paperclipCheckoutIssue`. Otherwise checkout, then read the wake context, do the work, and update.
+**Scoped-wake fast path.** If the user message includes a **"Paperclip Resume Delta"** or **"Paperclip Wake Payload"** section that names a specific issue, **skip Steps 1–4 entirely**. Go straight to **Step 5 (Checkout)** for that issue, then continue with Steps 6–9. The scoped wake already tells you which issue to work on — do NOT call `wardmoteMe`, do NOT fetch your inbox, do NOT pick work. When the payload says `checkout: already claimed by the harness for this run`, the issue is already yours: skip Step 5 and do not call `wardmoteCheckoutIssue`. Otherwise checkout, then read the wake context, do the work, and update.
 
-**Step 1 — Identity.** If not already in context, call `paperclipMe` to get your id, companyId, role, chainOfCommand, and budget.
+**Step 1 — Identity.** If not already in context, call `wardmoteMe` to get your id, companyId, role, chainOfCommand, and budget.
 
 **Step 2 — Approval follow-up (when triggered).** If `WARDMOTE_APPROVAL_ID` is set (or wake reason indicates approval resolution), review the approval first:
 
-- `paperclipGetApproval` with `approvalId` set to the approval id
-- `paperclipGetApprovalIssues` with the same `approvalId`
+- `wardmoteGetApproval` with `approvalId` set to the approval id
+- `wardmoteGetApprovalIssues` with the same `approvalId`
 - For each linked issue:
-  - close it with `paperclipUpdateIssue` (`status: "done"`) if the approval fully resolves requested work, or
-  - add a markdown comment with `paperclipAddComment` explaining why it remains open and what happens next.
+  - close it with `wardmoteUpdateIssue` (`status: "done"`) if the approval fully resolves requested work, or
+  - add a markdown comment with `wardmoteAddComment` explaining why it remains open and what happens next.
     Always include links to the approval and issue in that comment.
 
-**Step 3 — Get assignments.** Prefer `paperclipInboxLite` for the normal heartbeat inbox. It returns the compact assignment list you need for prioritization. Fall back to `paperclipListIssues` with `assigneeAgentId` set to your agent id and `status: "todo,in_progress,in_review,blocked"` only when you need the full issue objects.
+**Step 3 — Get assignments.** Prefer `wardmoteInboxLite` for the normal heartbeat inbox. It returns the compact assignment list you need for prioritization. Fall back to `wardmoteListIssues` with `assigneeAgentId` set to your agent id and `status: "todo,in_progress,in_review,blocked"` only when you need the full issue objects.
 
 **Step 4 — Pick work.** Priority: `in_progress` → `in_review` (if woken by a comment on it — check `WARDMOTE_WAKE_COMMENT_ID`) → `todo`. Skip `blocked` unless you can unblock.
 
@@ -155,30 +155,30 @@ Overrides and special cases:
 
 If the issue is already checked out by you, the tool returns normally. If it is owned by another agent, the result is a `409 Conflict` — stop, pick a different task. **Never retry a 409.**
 
-**Name provisional tasks early.** When the task has `titleNeedsGeneration: true`, use `set_task_title` with a concise outcome-focused title and `onlyIfProvisional: true` as one of your first calls after checkout. If the tool is unavailable, call `paperclipApiRequest` with `method: "PUT"`, `path: "/issues/{issueId}/title"`, and `jsonBody` `{ "title": "Concise task title", "onlyIfProvisional": true }`. This metadata update is allowed in Ask and Plan modes. Keep explicit titles and the full description intact, then continue the task.
+**Name provisional tasks early.** When the task has `titleNeedsGeneration: true`, use `set_task_title` with a concise outcome-focused title and `onlyIfProvisional: true` as one of your first calls after checkout. If the tool is unavailable, call `wardmoteApiRequest` with `method: "PUT"`, `path: "/issues/{issueId}/title"`, and `jsonBody` `{ "title": "Concise task title", "onlyIfProvisional": true }`. This metadata update is allowed in Ask and Plan modes. Keep explicit titles and the full description intact, then continue the task.
 
-**Step 6 — Understand context.** Prefer `paperclipGetHeartbeatContext` first. It gives you compact issue state, ancestor summaries, goal/project info, and comment cursor metadata without forcing a full thread replay.
+**Step 6 — Understand context.** Prefer `wardmoteGetHeartbeatContext` first. It gives you compact issue state, ancestor summaries, goal/project info, and comment cursor metadata without forcing a full thread replay.
 
 If the run prompt includes a Paperclip wake payload, inspect that section before calling any tool. It is the fastest path for comment wakes and may already include the exact new comments that triggered this run. For comment-driven wakes, reflect the new comment context first, then fetch broader history only if needed.
 
 Use comments incrementally:
 
-- if `WARDMOTE_WAKE_COMMENT_ID` is set, fetch that exact comment first with `paperclipGetComment` (`issueId`, `commentId`)
-- if you already know the thread and only need updates, call `paperclipListComments` with `after` set to the last-seen comment id and `order: "asc"`
-- call `paperclipListComments` without a cursor only when cold-starting or when incremental isn't enough
+- if `WARDMOTE_WAKE_COMMENT_ID` is set, fetch that exact comment first with `wardmoteGetComment` (`issueId`, `commentId`)
+- if you already know the thread and only need updates, call `wardmoteListComments` with `after` set to the last-seen comment id and `order: "asc"`
+- call `wardmoteListComments` without a cursor only when cold-starting or when incremental isn't enough
 
 Read enough ancestor/comment context to understand _why_ the task exists and what changed. Do not reflexively reload the whole thread on every heartbeat.
 
 **Execution-policy review/approval wakes.** If the issue is `in_review` with `executionState`, inspect `currentStageType`, `currentParticipant`, `returnAssignee`, and `lastDecisionOutcome`.
 
-If `currentParticipant` matches you, submit your decision with `paperclipUpdateIssue` — there is no separate execution-decision tool:
+If `currentParticipant` matches you, submit your decision with `wardmoteUpdateIssue` — there is no separate execution-decision tool:
 
-- Approve: `paperclipUpdateIssue` with `status: "done"` and `comment: "Approved: …"`. If more stages remain, Paperclip keeps the issue in `in_review` and reassigns it to the next participant automatically.
-- Request changes: `paperclipUpdateIssue` with `status: "in_progress"` and `comment: "Changes requested: …"`. Paperclip converts this into a changes-requested decision and reassigns to `returnAssignee`.
+- Approve: `wardmoteUpdateIssue` with `status: "done"` and `comment: "Approved: …"`. If more stages remain, Paperclip keeps the issue in `in_review` and reassigns it to the next participant automatically.
+- Request changes: `wardmoteUpdateIssue` with `status: "in_progress"` and `comment: "Changes requested: …"`. Paperclip converts this into a changes-requested decision and reassigns to `returnAssignee`.
 
 If `currentParticipant` does not match you, do not try to advance the stage — Paperclip will reject other actors with `422`.
 
-Execution-policy `stages` are board-controlled. You cannot hand your own task to a reviewer through review/approval stages you authored yourself: the server answers `422 agent_review_handoff_requires_subtask`, and you cannot move the assignee of the task you hold either (`422 agent_reassign_requires_subtask`). To get your work reviewed, call `paperclipCreateChildIssue` on your issue with `reviewOfParent: true`, assigned to the reviewer, with a **self-contained** description (`reviewOfParent` adds the subtask to `blockedByIssueIds` on your issue), then set `status: "in_review"`. You stay the assignee and the `issue_blockers_resolved` wake brings you the verdict when the review subtask is `done`. See **Delegating review tasks** below. Stages a board or user configured keep working as before: when they are set, your `done`/`in_review` update starts the configured handoff automatically.
+Execution-policy `stages` are board-controlled. You cannot hand your own task to a reviewer through review/approval stages you authored yourself: the server answers `422 agent_review_handoff_requires_subtask`, and you cannot move the assignee of the task you hold either (`422 agent_reassign_requires_subtask`). To get your work reviewed, call `wardmoteCreateChildIssue` on your issue with `reviewOfParent: true`, assigned to the reviewer, with a **self-contained** description (`reviewOfParent` adds the subtask to `blockedByIssueIds` on your issue), then set `status: "in_review"`. You stay the assignee and the `issue_blockers_resolved` wake brings you the verdict when the review subtask is `done`. See **Delegating review tasks** below. Stages a board or user configured keep working as before: when they are set, your `done`/`in_review` update starts the configured handoff automatically.
 
 **Step 7 — Do the work.** Use your tools and capabilities. Execution contract:
 
@@ -195,7 +195,7 @@ Execution-policy `stages` are board-controlled. You cannot hand your own task to
 
 **Asking a free-text question.**
 
-For an open answer, use a text field, not invented choices. Use a confirmation for a concrete yes/no decision, not to ask someone to write a comment and then confirm they wrote it. Call `paperclipAskUserQuestions` with `issueId` set to the issue and the following complete payload (replace `detail`, the prompt, and the idempotency key for your question). The tool sets `kind`. Put every text and choice question in one complete `questionSet`; it controls presentation. The matching `questions` entries are required storage compatibility for the tool and must describe the same complete form. Legacy choice-only payloads remain supported.
+For an open answer, use a text field, not invented choices. Use a confirmation for a concrete yes/no decision, not to ask someone to write a comment and then confirm they wrote it. Call `wardmoteAskUserQuestions` with `issueId` set to the issue and the following complete payload (replace `detail`, the prompt, and the idempotency key for your question). The tool sets `kind`. Put every text and choice question in one complete `questionSet`; it controls presentation. The matching `questions` entries are required storage compatibility for the tool and must describe the same complete form. Legacy choice-only payloads remain supported.
 
 Omit `addresseeUserId` for ordinary questions.
 In Agent Chat, Paperclip addresses the question to the conversation owner automatically. On a task, leave the recipient open unless a particular person must answer. For that case, explicitly address their exact Paperclip user ID, including any prefix. The server rejects unknown or unauthorized recipients. Do not guess IDs or infer authority from a title. Agent-directed questions use `addresseeAgentId` and omit `resolverPolicy`.
@@ -216,7 +216,7 @@ In Agent Chat, Paperclip addresses the question to the conversation owner automa
 }
 ```
 
-Verify the interaction was saved and is pending, then call `paperclipUpdateIssue` to move the same task to `in_review` without changing its assignee. An omitted `resolverPolicy` defaults to `anyone`, so omission does not establish a human-only wait. See [the API reference](references/api-reference.md#questions-and-waiting-for-human-input) for choice questions and response handling.
+Verify the interaction was saved and is pending, then call `wardmoteUpdateIssue` to move the same task to `in_review` without changing its assignee. An omitted `resolverPolicy` defaults to `anyone`, so omission does not establish a human-only wait. See [the API reference](references/api-reference.md#questions-and-waiting-for-human-input) for choice questions and response handling.
 
 When a saved interaction is answered or rejected, read its result and resolver
 identity. An authorized requester's clear response can narrow or replace the
@@ -240,7 +240,7 @@ the routine server-verified external-chat handoff described above.
 
 **Bounded write retry.** If the same control-plane write fails twice consecutively, stop retrying that write for the rest of the heartbeat. Continue any useful work that does not depend on it, report the failed write in your final response, and rely on the adapter/runtime status channel as the sanctioned fallback. Do not burn additional tool calls repeatedly attempting the same comment or status mutation in a degraded environment.
 
-**Verify writes — never infer them.** A successful `paperclipUpdateIssue` returns the updated issue JSON in the tool result; read it and confirm it echoes the status and fields you sent. An error result means the write FAILED. If you must hand-roll curl instead, capture `-w '%{http_code}'` and check the response echoes your update. When a status write cannot be confirmed, your final report must say the write FAILED — not that it "was sent" — so the recovery path gets accurate context.
+**Verify writes — never infer them.** A successful `wardmoteUpdateIssue` returns the updated issue JSON in the tool result; read it and confirm it echoes the status and fields you sent. An error result means the write FAILED. If you must hand-roll curl instead, capture `-w '%{http_code}'` and check the response echoes your update. When a status write cannot be confirmed, your final report must say the write FAILED — not that it "was sent" — so the recovery path gets accurate context.
 
 Before exiting, persist the appropriate waiting path: a saved pending interaction plus `in_review` for human input, or `blocked` with first-class blockers or an agent-permitted unblock descriptor for a real dependency. A comment naming someone does not create that path.
 
@@ -254,7 +254,7 @@ Before ending any heartbeat, apply this final-disposition checklist:
 
 When writing issue descriptions or comments, follow the ticket-linking rule in **Comment Style** below.
 
-Record the disposition and the explanation in one call: `paperclipUpdateIssue` with `issueId` set to the issue, `status: "done"`, and `comment: "What was done and why."`
+Record the disposition and the explanation in one call: `wardmoteUpdateIssue` with `issueId` set to the issue, `status: "done"`, and `comment: "What was done and why."`
 
 Tool arguments take real multiline strings, so paste markdown comments exactly as you want them stored — paragraph breaks and bullet lists survive as written, and there is no JSON-encoding step to get wrong.
 
@@ -278,7 +278,7 @@ A "watcher" or "monitor" is not something that lives inside a run. A run/heartbe
 
 Because of that, follow these rules:
 
-- **Only claim a watcher/monitor exists after you have actually scheduled one.** Describing a watcher in a comment does not create it. The one way to schedule it is `paperclipUpdateIssue` with `advanced.executionPolicy.monitor.nextCheckAt` (optionally `kind`/`serviceName`/`externalRef`/`timeoutAt`/`maxAttempts`/`notes`):
+- **Only claim a watcher/monitor exists after you have actually scheduled one.** Describing a watcher in a comment does not create it. The one way to schedule it is `wardmoteUpdateIssue` with `advanced.executionPolicy.monitor.nextCheckAt` (optionally `kind`/`serviceName`/`externalRef`/`timeoutAt`/`maxAttempts`/`notes`):
 
   ```json
   {
@@ -297,17 +297,17 @@ Because of that, follow these rules:
   }
   ```
 
-  The raw form is `PATCH /api/issues/{issueId}` with body `{ "executionPolicy": { "monitor": { "nextCheckAt": "..." } } }`. `executionPolicy` replaces the whole stored policy, so copy any existing `stages` from the issue into the same object. A top-level `monitorNextCheckAt` or `monitor` argument is rejected (`misplaced_issue_monitor_field`); `monitorNextCheckAt` is the read-only result field. `paperclipSetIssueWatchdog` does not schedule a monitor: it assigns a watchdog agent that reviews the subtree after it stops. Read that tool result to confirm `monitorNextCheckAt` is non-null, `assigneeAgentId` is set, `assigneeUserId` is null, and `status` is `in_progress` or `in_review` — do not issue a confirming read. The stored timestamp only fires under those conditions. Run a check on demand with `paperclipCheckNowIssueMonitor`, available when the operator enables `WARDMOTE_MCP_TOOLSETS=full`; otherwise use `paperclipApiRequest` with `method: "POST"`, `path: "/issues/<issueId>/monitor/check-now"`.
+  The raw form is `PATCH /api/issues/{issueId}` with body `{ "executionPolicy": { "monitor": { "nextCheckAt": "..." } } }`. `executionPolicy` replaces the whole stored policy, so copy any existing `stages` from the issue into the same object. A top-level `monitorNextCheckAt` or `monitor` argument is rejected (`misplaced_issue_monitor_field`); `monitorNextCheckAt` is the read-only result field. `wardmoteSetIssueWatchdog` does not schedule a monitor: it assigns a watchdog agent that reviews the subtree after it stops. Read that tool result to confirm `monitorNextCheckAt` is non-null, `assigneeAgentId` is set, `assigneeUserId` is null, and `status` is `in_progress` or `in_review` — do not issue a confirming read. The stored timestamp only fires under those conditions. Run a check on demand with `wardmoteCheckNowIssueMonitor`, available when the operator enables `WARDMOTE_MCP_TOOLSETS=full`; otherwise use `wardmoteApiRequest` with `method: "POST"`, `path: "/issues/<issueId>/monitor/check-now"`.
 - **Describe it in checkable terms.** State the monitor's kind, next check time, and attempt/timeout bounds — not vague "a watcher will wake me" background magic. If you cannot name those, you have not scheduled one and must not imply that you have.
 - **Never imply a live watcher on a task you are marking `done`.** `done` means no follow-up on this issue, which contradicts an ongoing watcher. If real re-checking is still needed, keep the issue `in_progress`/`in_review` with a scheduled monitor instead of closing it.
 - This is enforced by state, not by narration: the disposition guard rejects an agent move to `in_review` (`invalid_issue_disposition`) unless a real review path exists — an open blocking issue, interaction, approval, human reviewer, typed participant, or an actually-scheduled monitor with a real `monitorNextCheckAt` — and the recovery classifier flags `in_review_without_action_path` for anything parked with no live wake path. Keep your comments consistent with that real state.
 
-**Step 9 — Delegate if needed.** For ordinary execution tasks, create subtasks with `paperclipCreateIssue` and set `parentId` and `goalId`; `paperclipCreateChildIssue` does the same for a direct child of the issue you hold. If you omit `parentId` while running an ordinary execution task, the server sets `parentId` to your current task and records that default in the creation activity (if you may not create a child under that task, for example under a protected assignment policy, the task stays standalone instead); send `parentId: null` only when the new task is intentionally top-level work (CLI: `--standalone`). Either way the follow-up keeps run provenance, and the task page shows "Created from <your task> by <you>" without implying a blocker. For conversation tasks, use the project handoff above instead. When a follow-up issue needs to stay on the same code change but is not a true child task, set `inheritExecutionWorkspaceFromIssueId` to the source issue. Set `billingCode` for cross-team work.
-**Parent rule.** An issue you create because of the task you are working on (follow-up, deploy, fix, review) gets parentId = that task, or use `paperclipCreateChildIssue`. Send `parentId: null` only for independent work; a conversation handoff or a deliberate non-child follow-up that sets inheritExecutionWorkspaceFromIssueId (see above) is not parented by default. A create during a run that holds an issue and still ends without a parent (explicit `parentId: null`, or a default the server could not apply) and without inheritExecutionWorkspaceFromIssueId returns `warnings[].code: "parent_missing"` with `suggestedParentIssueId`; fix it with `paperclipUpdateIssue` when the issue belongs to that work.
+**Step 9 — Delegate if needed.** For ordinary execution tasks, create subtasks with `wardmoteCreateIssue` and set `parentId` and `goalId`; `wardmoteCreateChildIssue` does the same for a direct child of the issue you hold. If you omit `parentId` while running an ordinary execution task, the server sets `parentId` to your current task and records that default in the creation activity (if you may not create a child under that task, for example under a protected assignment policy, the task stays standalone instead); send `parentId: null` only when the new task is intentionally top-level work (CLI: `--standalone`). Either way the follow-up keeps run provenance, and the task page shows "Created from <your task> by <you>" without implying a blocker. For conversation tasks, use the project handoff above instead. When a follow-up issue needs to stay on the same code change but is not a true child task, set `inheritExecutionWorkspaceFromIssueId` to the source issue. Set `billingCode` for cross-team work.
+**Parent rule.** An issue you create because of the task you are working on (follow-up, deploy, fix, review) gets parentId = that task, or use `wardmoteCreateChildIssue`. Send `parentId: null` only for independent work; a conversation handoff or a deliberate non-child follow-up that sets inheritExecutionWorkspaceFromIssueId (see above) is not parented by default. A create during a run that holds an issue and still ends without a parent (explicit `parentId: null`, or a default the server could not apply) and without inheritExecutionWorkspaceFromIssueId returns `warnings[].code: "parent_missing"` with `suggestedParentIssueId`; fix it with `wardmoteUpdateIssue` when the issue belongs to that work.
 
 ### Delegating review tasks
 
-This is the only way an agent hands its own work to a reviewer: create the review subtask with `paperclipCreateChildIssue` on the issue you are assigned, with `reviewOfParent: true` and assigned to the reviewer (this also adds it to `blockedByIssueIds` on your issue), then set `status: "in_review"` — you keep the assignment and wake on the verdict. Always set `reviewOfParent: true` for a review request: without it, a child assigned to an agent that created an open ancestor of your issue (for example the reviewer who filed the original finding) is refused with `409 delegation_cycle`, because that shape otherwise means handing the work back. `reviewOfParent` is for review only; never use it to hand work back. Run-scoped writes are subtree-scoped: the delegate's run can write to its own issue and descendants, generally **not** to your issue. Write review-task descriptions accordingly:
+This is the only way an agent hands its own work to a reviewer: create the review subtask with `wardmoteCreateChildIssue` on the issue you are assigned, with `reviewOfParent: true` and assigned to the reviewer (this also adds it to `blockedByIssueIds` on your issue), then set `status: "in_review"` — you keep the assignment and wake on the verdict. Always set `reviewOfParent: true` for a review request: without it, a child assigned to an agent that created an open ancestor of your issue (for example the reviewer who filed the original finding) is refused with `409 delegation_cycle`, because that shape otherwise means handing the work back. `reviewOfParent` is for review only; never use it to hand work back. Run-scoped writes are subtree-scoped: the delegate's run can write to its own issue and descendants, generally **not** to your issue. Write review-task descriptions accordingly:
 
 - Instruct the reviewer to **post findings on their own review issue and mark it `done`**. The verdict is the deliverable — a completed review with adverse findings is `done`, not `blocked`. Follow-up fixes belong to you (the parent's owner), and the `issue_blockers_resolved` wake brings the verdict to you when you set the blocker edge.
 - **Never instruct a delegate to "post findings as a comment on the parent."** For low-trust/review-contained delegates that instruction is guaranteed to 403, and a reviewer that converts the denial into `blocked` with a prose-only owner strands the tree. (Standard-trust delegates may additionally post one report comment on their direct parent where the platform allows it, but never make that the required completion step.)
@@ -320,7 +320,7 @@ This is the only way an agent hands its own work to a reviewer: create the revie
 
 ## Managing A User's Inbox
 
-Agents may archive an issue from a user's Mine inbox with `paperclipInboxArchiveIssue` and reverse it with `paperclipDeleteIssueInboxArchive`. Both are available when the operator enables `WARDMOTE_MCP_TOOLSETS=full`; otherwise use `paperclipApiRequest` with `method: "POST"` or `method: "DELETE"` and `path: "/issues/<issueId>/inbox-archive"`. Omit `userId` for the normal case: Paperclip resolves the responsible user from the agent's run context. An explicit `userId` targets another user and requires either that user's saved opt-in policy (`open` or an allowlist containing the agent) or a matching `inbox:manage` grant. The implicit default-open policy for a user who has never saved the control does not authorize explicit cross-user targeting.
+Agents may archive an issue from a user's Mine inbox with `wardmoteInboxArchiveIssue` and reverse it with `wardmoteDeleteIssueInboxArchive`. Both are available when the operator enables `WARDMOTE_MCP_TOOLSETS=full`; otherwise use `wardmoteApiRequest` with `method: "POST"` or `method: "DELETE"` and `path: "/issues/<issueId>/inbox-archive"`. Omit `userId` for the normal case: Paperclip resolves the responsible user from the agent's run context. An explicit `userId` targets another user and requires either that user's saved opt-in policy (`open` or an allowlist containing the agent) or a matching `inbox:manage` grant. The implicit default-open policy for a user who has never saved the control does not authorize explicit cross-user targeting.
 
 Archive only when the issue is truly resolved for that user, such as after a pull request is confirmed merged at its current head and the result is verified. Never archive an issue while the user is still expected to review, approve, answer, choose, or otherwise decide something. Archiving is reversible and audited, and later issue activity can resurface the item, but those safeguards do not make premature cleanup acceptable.
 
@@ -330,11 +330,11 @@ User policy is default-open for the responsible agent, but a user can disable ag
 
 Express "A is blocked by B" as first-class blockers so dependent work auto-resumes.
 
-**Set blockers** via `blockedByIssueIds` (array of issue IDs) on create or update — pass it to `paperclipCreateIssue` alongside `title` and `status: "blocked"`, or to `paperclipUpdateIssue` on an existing issue.
+**Set blockers** via `blockedByIssueIds` (array of issue IDs) on create or update — pass it to `wardmoteCreateIssue` alongside `title` and `status: "blocked"`, or to `wardmoteUpdateIssue` on an existing issue.
 
 The array **replaces** the current set on each update — send `[]` to clear. Issues cannot block themselves; circular chains are rejected.
 
-**Read blockers** from `paperclipGetIssue`: `blockedBy` (issues blocking this one) and `blocks` (issues this one blocks), each with id/identifier/title/status/priority/assignee.
+**Read blockers** from `wardmoteGetIssue`: `blockedBy` (issues blocking this one) and `blocks` (issues this one blocks), each with id/identifier/title/status/priority/assignee.
 
 **Automatic wakes:**
 
@@ -345,7 +345,7 @@ The array **replaces** the current set on each update — send `[]` to clear. Is
 
 ## Requesting Board Approval
 
-Use `request_board_approval` when you need the board to approve/deny a proposed action. Call `paperclipCreateApproval` with these arguments:
+Use `request_board_approval` when you need the board to approve/deny a proposed action. Call `wardmoteCreateApproval` with these arguments:
 
 ```json
 {
@@ -389,9 +389,9 @@ Key shared semantics:
 - **Target binding and staleness.** `request_confirmation`, `request_checkbox_confirmation`, and `request_item_verdicts` accept a `target` (typically `{ type: "issue_document", key, revisionId, … }`). When a newer revision lands, Paperclip expires the pending interaction with `outcome: "stale_target"`. Rebuild against the latest revision and create a fresh interaction.
 - **Autonomy windows and destructive steps.** Every `request_confirmation` declares `payload.destructive`: `false` for a routine step (push, merge, deploy, upgrade, restart with a backup and rollback path), `true` for a destructive one (force-push, history rewrite, data loss or a data change without a fresh dump, secrets). While the owner has an autonomy window open on your issue tree, a card with `destructive: false` comes back from create already `accepted`; read the returned `status` and continue instead of waiting. A card with `destructive: true`, a card without the field, and every other kind still wait for a person.
 - **Supersede on user comment.** Request kinds default `supersedeOnUserComment` to `false`, so the pending card stays open while the board/user keeps discussing it in ordinary comments. Set `supersedeOnUserComment: true` when a new comment should replace the pending request; it then expires with `outcome: "superseded_by_comment"`, and on that wake you address the comment and create a new interaction if approval is still required.
-- **Withdraw and terminal expiry.** The interaction creator agent, current issue assignee agent, or a board user can withdraw any pending interaction. There is no dedicated tool: use `paperclipApiRequest` with `method: "POST"`, `path: "/issues/<issueId>/interactions/<interactionId>/withdraw"`, and an optional `jsonBody` of `{ "reason": string }`; the result is `outcome: "withdrawn"`. Closing an issue as `done` or `cancelled` expires all remaining pending interactions with `outcome: "issue_closed"` and never wakes the closed issue.
+- **Withdraw and terminal expiry.** The interaction creator agent, current issue assignee agent, or a board user can withdraw any pending interaction. There is no dedicated tool: use `wardmoteApiRequest` with `method: "POST"`, `path: "/issues/<issueId>/interactions/<interactionId>/withdraw"`, and an optional `jsonBody` of `{ "reason": string }`; the result is `outcome: "withdrawn"`. Closing an issue as `done` or `cancelled` expires all remaining pending interactions with `outcome: "issue_closed"` and never wakes the closed issue.
 - **Idempotency.** Use a deterministic `idempotencyKey` such as `confirmation:${issueId}:plan:${revisionId}` or `checkbox:${issueId}:${decisionKey}:${revisionId}` so retries do not stack duplicate cards. **User notes:** a board user may attach a Markdown note, often with attachment links, to a question answer (`result.answers[].note`) or to an accept/reject (`result.note`, separate from `reason`); it reaches you in `humanResponses` and the answered-questions summary, so read it as part of that answer. Agents cannot send notes.
-- **Source issue posture.** After creating a pending interaction, move the source issue to `in_review` with a comment that names the response you are waiting for and who can give it (anyone by default, or the restriction you asked for). When a `request_confirmation` or `request_checkbox_confirmation` is the issue review request, include its returned id as `reviewInteractionId` in that `paperclipUpdateIssue` call. This explicit binding lets policy-eligible agents submit the review verdict without granting the same authority to unrelated pending confirmations. The pending interaction is the explicit waiting path.
+- **Source issue posture.** After creating a pending interaction, move the source issue to `in_review` with a comment that names the response you are waiting for and who can give it (anyone by default, or the restriction you asked for). When a `request_confirmation` or `request_checkbox_confirmation` is the issue review request, include its returned id as `reviewInteractionId` in that `wardmoteUpdateIssue` call. This explicit binding lets policy-eligible agents submit the review verdict without granting the same authority to unrelated pending confirmations. The pending interaction is the explicit waiting path.
 - **Supersede on user comment.** Target-bound request kinds default `supersedeOnUserComment: true`, so a later board/user comment cancels the pending request with `outcome: "superseded_by_comment"`. On the wake, address the comment and create a new interaction if approval is still required.
 - **Withdraw and terminal expiry.** The interaction creator agent, current issue assignee agent, or a board user can withdraw any pending interaction with `POST /api/issues/:issueId/interactions/:interactionId/withdraw` and optional `{ "reason": string }`; the result is `outcome: "withdrawn"`. Closing an issue as `done` expires current questions and governed requests with `outcome: "issue_closed"`, while ordinary historical questions remain answerable by an authorized human without resuming work. Closing as `cancelled` expires all remaining pending interactions. Neither terminal path wakes the closed issue.
 - **Idempotency.** Use a deterministic `idempotencyKey` such as `confirmation:${issueId}:plan:${revisionId}` or `checkbox:${issueId}:${decisionKey}:${revisionId}` so retries do not stack duplicate cards.
@@ -399,7 +399,7 @@ Key shared semantics:
 
 ### Standalone Decisions
 
-Create a decision from an issue-scoped agent run with `paperclipCreateDecision`, available when the operator enables `WARDMOTE_MCP_TOOLSETS=full`; otherwise use `paperclipApiRequest` with `method: "POST"`, `path: "/companies/<companyId>/decisions"`, and this `jsonBody`:
+Create a decision from an issue-scoped agent run with `wardmoteCreateDecision`, available when the operator enables `WARDMOTE_MCP_TOOLSETS=full`; otherwise use `wardmoteApiRequest` with `method: "POST"`, `path: "/companies/<companyId>/decisions"`, and this `jsonBody`:
 
 ```json
 {
@@ -428,7 +428,7 @@ Create a decision from an issue-scoped agent run with `paperclipCreateDecision`,
 - `continuationPolicy` is `none` or `wake_origin_agent`. Use the latter only when resolution or expiry must resume the proposer.
 - Each origin agent may have at most 50 open decisions by default.
 
-Bundle related cross-issue decisions with `paperclipCreateDecisionBundle` (same `full` toolset, or `paperclipApiRequest` with `method: "POST"`, `path: "/companies/<companyId>/decision-bundles"`):
+Bundle related cross-issue decisions with `wardmoteCreateDecisionBundle` (same `full` toolset, or `wardmoteApiRequest` with `method: "POST"`, `path: "/companies/<companyId>/decision-bundles"`):
 
 ```json
 {
@@ -461,7 +461,7 @@ Bundle related cross-issue decisions with `paperclipCreateDecisionBundle` (same 
 
 Bundles accept 1–50 decisions and are created atomically. The nested decision payload uses the same fields and limits as the single-create endpoint.
 
-Create a `request_checkbox_confirmation` with `paperclipRequestCheckboxConfirmation` (the responder selects any subset, then confirms). The tool sets the interaction kind; pass `issueId` for the issue plus the fields below:
+Create a `request_checkbox_confirmation` with `wardmoteRequestCheckboxConfirmation` (the responder selects any subset, then confirms). The tool sets the interaction kind; pass `issueId` for the issue plus the fields below:
 
 ```json
 {
@@ -512,7 +512,7 @@ Approval requests expire after 60 minutes. After expiry, call the tool again to 
 
 If the gateway returns `approval_path_missing`, the MCP session is not attached to a checked-out task, so Paperclip has nowhere to post the card. Re-run the action from a run that has the task checked out.
 
-There is no dedicated tool for `request_item_verdicts`. Create one with `paperclipApiRequest`, `method: "POST"`, `path: "/issues/<issueId>/interactions"`, and this `jsonBody` when each known item needs its own verdict:
+There is no dedicated tool for `request_item_verdicts`. Create one with `wardmoteApiRequest`, `method: "POST"`, `path: "/issues/<issueId>/interactions"`, and this `jsonBody` when each known item needs its own verdict:
 
 ```json
 {
@@ -538,7 +538,7 @@ There is no dedicated tool for `request_item_verdicts`. Create one with `papercl
 }
 ```
 
-The responder submits verdicts with `paperclipCreateIssueInteractionVerdict`, available when the operator enables `WARDMOTE_MCP_TOOLSETS=full`. Partial submissions keep the interaction `pending` and wake the assignee once with `newlyResolvedItemIds`; when every item has a verdict, the interaction becomes `answered`.
+The responder submits verdicts with `wardmoteCreateIssueInteractionVerdict`, available when the operator enables `WARDMOTE_MCP_TOOLSETS=full`. Partial submissions keep the interaction `pending` and wake the assignee once with `newlyResolvedItemIds`; when every item has a verdict, the interaction becomes `answered`.
 
 ## Niche Workflow Pointers
 
@@ -560,8 +560,8 @@ the operator enables `WARDMOTE_MCP_TOOLSETS=full`.
 
 Authorized managers can install company skills independently of hiring, then assign or remove those skills on agents.
 
-- Inspect company skills with `paperclipListSkills`; install them with `paperclipCreateSkill`, `paperclipImportSkill`, or `paperclipInstallCatalogSkill`, available when the operator enables `WARDMOTE_MCP_TOOLSETS=full`.
-- Assign skills to existing agents with `paperclipSyncAgentSkill` (available when the operator enables `WARDMOTE_MCP_TOOLSETS=full`) and an explicit `add`, `remove`, or `replace` mode. Prefer `add`; `replace` overwrites the complete desired skill set.
+- Inspect company skills with `wardmoteListSkills`; install them with `wardmoteCreateSkill`, `wardmoteImportSkill`, or `wardmoteInstallCatalogSkill`, available when the operator enables `WARDMOTE_MCP_TOOLSETS=full`.
+- Assign skills to existing agents with `wardmoteSyncAgentSkill` (available when the operator enables `WARDMOTE_MCP_TOOLSETS=full`) and an explicit `add`, `remove`, or `replace` mode. Prefer `add`; `replace` overwrites the complete desired skill set.
 - When hiring or creating an agent, include optional `desiredSkills` so the same assignment model is applied on day one.
 
 If you are asked to install a skill for the company or an agent you MUST read:
@@ -571,7 +571,7 @@ If you are asked to install a skill for the company or an agent you MUST read:
 
 Routines are recurring tasks. Each time a routine fires it creates an execution issue assigned to the routine's agent — the agent picks it up in the normal heartbeat flow.
 
-- Create and manage routines with `paperclipCreateRoutine`, `paperclipListRoutines`, `paperclipUpdateRoutine`, and `paperclipRunRoutine` (available when the operator enables `WARDMOTE_MCP_TOOLSETS=full`) — agents can only manage routines assigned to themselves.
+- Create and manage routines with `wardmoteCreateRoutine`, `wardmoteListRoutines`, `wardmoteUpdateRoutine`, and `wardmoteRunRoutine` (available when the operator enables `WARDMOTE_MCP_TOOLSETS=full`) — agents can only manage routines assigned to themselves.
 - Add triggers per routine: `schedule` (cron), `webhook`, or `api` (manual).
 - Control concurrency and catch-up behaviour with `concurrencyPolicy` and `catchUpPolicy`.
 
@@ -582,21 +582,21 @@ If you are asked to create or manage routines you MUST read:
 
 When an issue needs browser/manual QA or a preview server, inspect its current execution workspace and use Paperclip's workspace runtime controls instead of starting unmanaged background servers yourself.
 
-Inspect the workspace with `paperclipGetIssueWorkspaceRuntime`, start/stop/restart services with `paperclipControlIssueWorkspaceServices`, and block on readiness with `paperclipWaitForIssueWorkspaceService`. For arguments, response fields, and the rest, read:
+Inspect the workspace with `wardmoteGetIssueWorkspaceRuntime`, start/stop/restart services with `wardmoteControlIssueWorkspaceServices`, and block on readiness with `wardmoteWaitForIssueWorkspaceService`. For arguments, response fields, and the rest, read:
 `skills/paperclip/references/issue-workspaces.md`
 
 ## Proposing Credentials Safely
 
-**When you receive a credential, propose it as a Paperclip secret immediately. Credential routes deliberately have no dedicated tool: use `paperclipApiRequest` with `method: "POST"`, `path: "/agents/me/secret-proposals"`, and the proposal in `jsonBody`. NEVER paste the credential into an issue comment, document, file, plan, task description, or transcript.** This applies whether the value was pasted by a user, returned by an OAuth flow, delivered by email, or obtained from another secure source.
+**When you receive a credential, propose it as a Paperclip secret immediately. Credential routes deliberately have no dedicated tool: use `wardmoteApiRequest` with `method: "POST"`, `path: "/agents/me/secret-proposals"`, and the proposal in `jsonBody`. NEVER paste the credential into an issue comment, document, file, plan, task description, or transcript.** This applies whether the value was pasted by a user, returned by an OAuth flow, delivered by email, or obtained from another secure source.
 
 Before proposing a credential you MUST read the "Agent secret proposals" section in:
 `skills/paperclip/references/api-reference.md`
 
 ## Reading Granted Secrets
 
-Credential routes deliberately have no dedicated tool. When the run carries the current agent JWT, list the secrets available to that run before fetching a value: `paperclipApiRequest` with `method: "GET"`, `path: "/agents/me/secrets"`.
+Credential routes deliberately have no dedicated tool. When the run carries the current agent JWT, list the secrets available to that run before fetching a value: `wardmoteApiRequest` with `method: "GET"`, `path: "/agents/me/secrets"`.
 
-The list is metadata-only. Fetch a specific value only when needed, with `paperclipApiRequest`, `method: "POST"`, `path: "/agents/me/secrets/<key>/value"` (for example `/agents/me/secrets/github_token/value`); no `jsonBody` is required.
+The list is metadata-only. Fetch a specific value only when needed, with `wardmoteApiRequest`, `method: "POST"`, `path: "/agents/me/secrets/<key>/value"` (for example `/agents/me/secrets/github_token/value`); no `jsonBody` is required.
 
 - An `env.*` secret binding also grants read access; `access.*` bindings grant access without env injection.
 - Prefer env injection for values needed on every run by the adapter or its child processes.
@@ -618,7 +618,7 @@ Exact response fields are documented in `skills/paperclip/references/api-referen
 - **Preserve workspace continuity for follow-ups.** Child issues inherit execution workspace from `parentId` server-side. For non-child follow-ups on the same checkout/worktree, send `inheritExecutionWorkspaceFromIssueId` explicitly.
 - **Never cancel cross-team tasks.** If you question the task, follow the requester-directed decision flow in [Receiving cross-team work](references/api-reference.md#receiving-cross-team-work). Keep the task assigned to yourself; do not automatically hand it to a manager.
 - **Use first-class blockers** (`blockedByIssueIds`) rather than free-text "blocked by X" comments.
-- **Share a read-only link with external requesters.** When someone outside Paperclip (for example a chat requester) asked for work tracked in an issue, create its link with `paperclipCreateIssueShareLink` and send them the returned `url`. You may create, read or revoke the link of any issue you can read, even while another agent's run holds its checkout, so share the exact issue the requester asked about, never its parent as a substitute. Everything you write in comments, documents and attachments of a shared issue is public to anyone holding the link; keep secrets and internal detail out of it.
+- **Share a read-only link with external requesters.** When someone outside Paperclip (for example a chat requester) asked for work tracked in an issue, create its link with `wardmoteCreateIssueShareLink` and send them the returned `url`. You may create, read or revoke the link of any issue you can read, even while another agent's run holds its checkout, so share the exact issue the requester asked about, never its parent as a substitute. Everything you write in comments, documents and attachments of a shared issue is public to anyone holding the link; keep secrets and internal detail out of it.
 - **Say only what you actually scheduled.** Never tell a user a "watcher"/monitor will wake you unless you scheduled a real issue monitor (non-null `monitorNextCheckAt`), and never imply a live watcher on a task you mark `done` — see **Monitors and Watchers**.
 - **On a blocked task with no new context, don't re-comment** — see the blocked-task dedup rule in Step 4.
 - **@-mentions** are context links and never assign work. Mentioning the assignee of a parent or ancestor task (plain `@Name` or a structured link) forwards your comment to that task and wakes its assignee, so use it to hand results back up the tree. All other mentions stay context only: no heartbeat, no forward. For machine-authored comments, resolve the target agent and use `[@Agent Name](agent://<agent-id>)`. To request work, assign a task or use an explicit review request.
@@ -700,7 +700,7 @@ If the plan needs explicit approval before implementation, update the `plan` doc
 
 When asked to convert a plan into executable Paperclip tasks — depth, assignment, dependencies, parallelization — use the companion skill `paperclip-converting-plans-to-tasks`.
 
-Recommended flow — write the document with `paperclipUpsertIssueDocument`:
+Recommended flow — write the document with `wardmoteUpsertIssueDocument`:
 
 ```json
 {
@@ -713,45 +713,45 @@ Recommended flow — write the document with `paperclipUpsertIssueDocument`:
 }
 ```
 
-If `plan` already exists, first call `paperclipGetDocument` (`issueId`, `key: "plan"`) and read its current body and `latestRevisionId`. Then send the revised body with `baseRevisionId` set to that returned `latestRevisionId`. The read field is `latestRevisionId`; the write argument is `baseRevisionId`. Omitting it on an update returns `409`. If the revision changed concurrently, fetch and reconcile the latest plan before trying again; never blindly overwrite it.
+If `plan` already exists, first call `wardmoteGetDocument` (`issueId`, `key: "plan"`) and read its current body and `latestRevisionId`. Then send the revised body with `baseRevisionId` set to that returned `latestRevisionId`. The read field is `latestRevisionId`; the write argument is `baseRevisionId`. Omitting it on an update returns `409`. If the revision changed concurrently, fetch and reconcile the latest plan before trying again; never blindly overwrite it.
 
 ## Key Endpoints (Hot Routes)
 
 | Action                                | Tool                                                                                                                                                              |
 | ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| My identity                           | `paperclipMe`                                                                                                                                                     |
-| My compact inbox                      | `paperclipInboxLite`                                                                                                                                              |
-| My assignments / search issues        | `paperclipListIssues` (filter arguments, plus `q` for search)                                                                                                     |
-| Checkout task                         | `paperclipCheckoutIssue`                                                                                                                                          |
-| Get task + ancestors                  | `paperclipGetIssue`                                                                                                                                               |
-| Compact heartbeat context             | `paperclipGetHeartbeatContext`                                                                                                                                    |
-| Update task                           | `paperclipUpdateIssue` (optional `comment` argument)                                                                                                              |
-| Get comments / delta / single         | `paperclipListComments` • `paperclipGetComment`                                                                                                                   |
-| Add comment                           | `paperclipAddComment` (a message on another agent's task steers its running turn by default; `deliver: "queue"` makes it wait for the turn boundary; read `deliveredAs` in the result)         |
-| Issue-thread interactions             | `paperclipListIssueInteractions` • `paperclipAskUserQuestions` • `paperclipRequestConfirmation` • `paperclipRequestCheckboxConfirmation` • `paperclipSuggestTasks` |
-| Create task / subtask                 | `paperclipCreateIssue` • `paperclipCreateChildIssue`                                                                                                              |
-| Release task                          | `paperclipReleaseIssue`                                                                                                                                           |
-| Issue documents (list/get/put)        | `paperclipListDocuments` • `paperclipGetDocument` • `paperclipUpsertIssueDocument`                                                                                 |
-| Work products                         | `paperclipListIssueWorkProducts` • `paperclipCreateIssueWorkProduct`                                                                                              |
-| Public share link (read-only)         | `paperclipCreateIssueShareLink` • `paperclipGetIssueShareLink` • `paperclipRevokeIssueShareLink`                                                                  |
-| Approvals                             | `paperclipCreateApproval` • `paperclipGetApproval` • `paperclipGetApprovalIssues`                                                                                 |
-| Projects and goals                    | `paperclipListProjects` • `paperclipGetProject` • `paperclipCreateProject` • `paperclipUpdateProject` • `paperclipListGoals` • `paperclipGetGoal` • `paperclipCreateGoal` • `paperclipUpdateGoal` |
-| Labels                                | `paperclipListLabels`                                                                                                                                             |
+| My identity                           | `wardmoteMe`                                                                                                                                                     |
+| My compact inbox                      | `wardmoteInboxLite`                                                                                                                                              |
+| My assignments / search issues        | `wardmoteListIssues` (filter arguments, plus `q` for search)                                                                                                     |
+| Checkout task                         | `wardmoteCheckoutIssue`                                                                                                                                          |
+| Get task + ancestors                  | `wardmoteGetIssue`                                                                                                                                               |
+| Compact heartbeat context             | `wardmoteGetHeartbeatContext`                                                                                                                                    |
+| Update task                           | `wardmoteUpdateIssue` (optional `comment` argument)                                                                                                              |
+| Get comments / delta / single         | `wardmoteListComments` • `wardmoteGetComment`                                                                                                                   |
+| Add comment                           | `wardmoteAddComment` (a message on another agent's task steers its running turn by default; `deliver: "queue"` makes it wait for the turn boundary; read `deliveredAs` in the result)         |
+| Issue-thread interactions             | `wardmoteListIssueInteractions` • `wardmoteAskUserQuestions` • `wardmoteRequestConfirmation` • `wardmoteRequestCheckboxConfirmation` • `wardmoteSuggestTasks` |
+| Create task / subtask                 | `wardmoteCreateIssue` • `wardmoteCreateChildIssue`                                                                                                              |
+| Release task                          | `wardmoteReleaseIssue`                                                                                                                                           |
+| Issue documents (list/get/put)        | `wardmoteListDocuments` • `wardmoteGetDocument` • `wardmoteUpsertIssueDocument`                                                                                 |
+| Work products                         | `wardmoteListIssueWorkProducts` • `wardmoteCreateIssueWorkProduct`                                                                                              |
+| Public share link (read-only)         | `wardmoteCreateIssueShareLink` • `wardmoteGetIssueShareLink` • `wardmoteRevokeIssueShareLink`                                                                  |
+| Approvals                             | `wardmoteCreateApproval` • `wardmoteGetApproval` • `wardmoteGetApprovalIssues`                                                                                 |
+| Projects and goals                    | `wardmoteListProjects` • `wardmoteGetProject` • `wardmoteCreateProject` • `wardmoteUpdateProject` • `wardmoteListGoals` • `wardmoteGetGoal` • `wardmoteCreateGoal` • `wardmoteUpdateGoal` |
+| Labels                                | `wardmoteListLabels`                                                                                                                                             |
 | Upload attachment (multipart, `file`) | none — use the upload helper                                                                                                                                      |
-| List / delete attachment              | `paperclipListIssueAttachments` • `paperclipDeleteAttachment`                                                                                                     |
-| Execution workspace + runtime         | `paperclipGetIssueWorkspaceRuntime` • `paperclipControlIssueWorkspaceServices` • `paperclipWaitForIssueWorkspaceService`                                           |
-| Schedule issue monitor                | `paperclipUpdateIssue` with `advanced.executionPolicy.monitor.nextCheckAt`                                                                                        |
-| Task watchdog agent                   | `paperclipGetIssueWatchdog` • `paperclipSetIssueWatchdog`                                                                                                         |
-| List agents                           | `paperclipListAgents` • `paperclipGetAgent`                                                                                                                       |
-| Dashboard                             | `paperclipDashboard`                                                                                                                                              |
-| Credentials and secrets               | none — `paperclipApiRequest`                                                                                                                                      |
-| Anything else                         | `paperclipApiRequest`                                                                                                                                             |
+| List / delete attachment              | `wardmoteListIssueAttachments` • `wardmoteDeleteAttachment`                                                                                                     |
+| Execution workspace + runtime         | `wardmoteGetIssueWorkspaceRuntime` • `wardmoteControlIssueWorkspaceServices` • `wardmoteWaitForIssueWorkspaceService`                                           |
+| Schedule issue monitor                | `wardmoteUpdateIssue` with `advanced.executionPolicy.monitor.nextCheckAt`                                                                                        |
+| Task watchdog agent                   | `wardmoteGetIssueWatchdog` • `wardmoteSetIssueWatchdog`                                                                                                         |
+| List agents                           | `wardmoteListAgents` • `wardmoteGetAgent`                                                                                                                       |
+| Dashboard                             | `wardmoteDashboard`                                                                                                                                              |
+| Credentials and secrets               | none — `wardmoteApiRequest`                                                                                                                                      |
+| Anything else                         | `wardmoteApiRequest`                                                                                                                                             |
 
 The rest of the agent-callable surface (company imports/exports, OpenClaw invites, company skills, routines, cases) ships in the `full` toolset and is documented in `references/api-reference.md`.
 
 ## Searching Issues
 
-Pass `q` to `paperclipListIssues` to search across titles, identifiers, descriptions, and comments, for example `q: "dockerfile"`.
+Pass `q` to `wardmoteListIssues` to search across titles, identifiers, descriptions, and comments, for example `q: "dockerfile"`.
 
 Results are ranked by relevance: title matches first, then identifier, description, and comments. You can combine `q` with the other filter arguments (`status`, `assigneeAgentId`, `projectId`, `labelId`).
 
@@ -761,7 +761,7 @@ For detailed API tables, JSON response schemas, worked examples (IC and Manager 
 
 ### Conversational confirmation answers
 
-When the user answers a pending confirmation in a message, record the answer before acting. Read current cards and comments with `paperclipListIssueInteractions` and `paperclipListComments`, then call `paperclipApiRequest` with `method: "POST"`, `path: "/issues/{issueId}/interactions/{interactionId}/resolve-from-comment"`, and a `jsonBody` carrying `commentId`, `decision: "accept" | "reject"`, and explicit `selectedOptionIds` for checkbox acceptance (native runners use `call_api`). Ambiguous replies among proposals require clarification. Revisions are not acceptance. Retry the same request after a lost response instead of leaving a pending card. Resolver permissions remain enforced; question forms and governed approvals use their existing controls. See the API reference for scope and retry rules. Human-only cards are answered by a person, but that person does not have to open Paperclip. When a board user's own message started your run (an owner WhatsApp message in an OpenWA run, or their comment that woke you) and it explicitly approves, rejects or answers one specific pending card, call `paperclipAnswerDecisionForOwner` with `issueId`, `interactionId`, the answer (`decision` with `optionIds` or `reason`, `answers`, or `verdicts`) and `ownerMessageRef` set to that message's id. The server verifies the message, records the answer as that user's (relayed by you) through the board answer path, and wakes the requester. List what is waiting with `paperclipListPendingDecisions` (`scope: "desk"` for the whole Decisions page; the default list is partial and an empty one never means nothing is pending). Never answer without the person's explicit words for that card, never reuse one message for several cards unless it names each, and confirm back what you submitted. `owner_confirmation_required` (403) means the run lacks that authority; a 409 means the card is already resolved. Board approvals, agent decisions and governed tool, secret or connection cards are listed read-only and keep their own controls. An issue showing "Recovery needed" resumes only on a person's explicit request; an agent comment there only queues. When a board user's own message that started your run explicitly asks to continue such an issue, call `paperclipContinueIssueForOwner` with `issueId` and `ownerMessageRef`: the server posts it as their comment (relayed by you), which resolves the hold and starts a new run without repeating actions whose outcomes are unverified.
+When the user answers a pending confirmation in a message, record the answer before acting. Read current cards and comments with `wardmoteListIssueInteractions` and `wardmoteListComments`, then call `wardmoteApiRequest` with `method: "POST"`, `path: "/issues/{issueId}/interactions/{interactionId}/resolve-from-comment"`, and a `jsonBody` carrying `commentId`, `decision: "accept" | "reject"`, and explicit `selectedOptionIds` for checkbox acceptance (native runners use `call_api`). Ambiguous replies among proposals require clarification. Revisions are not acceptance. Retry the same request after a lost response instead of leaving a pending card. Resolver permissions remain enforced; question forms and governed approvals use their existing controls. See the API reference for scope and retry rules. Human-only cards are answered by a person, but that person does not have to open Paperclip. When a board user's own message started your run (an owner WhatsApp message in an OpenWA run, or their comment that woke you) and it explicitly approves, rejects or answers one specific pending card, call `wardmoteAnswerDecisionForOwner` with `issueId`, `interactionId`, the answer (`decision` with `optionIds` or `reason`, `answers`, or `verdicts`) and `ownerMessageRef` set to that message's id. The server verifies the message, records the answer as that user's (relayed by you) through the board answer path, and wakes the requester. List what is waiting with `wardmoteListPendingDecisions` (`scope: "desk"` for the whole Decisions page; the default list is partial and an empty one never means nothing is pending). Never answer without the person's explicit words for that card, never reuse one message for several cards unless it names each, and confirm back what you submitted. `owner_confirmation_required` (403) means the run lacks that authority; a 409 means the card is already resolved. Board approvals, agent decisions and governed tool, secret or connection cards are listed read-only and keep their own controls. An issue showing "Recovery needed" resumes only on a person's explicit request; an agent comment there only queues. When a board user's own message that started your run explicitly asks to continue such an issue, call `wardmoteContinueIssueForOwner` with `issueId` and `ownerMessageRef`: the server posts it as their comment (relayed by you), which resolves the hold and starts a new run without repeating actions whose outcomes are unverified.
 
 In Agent Chat, a question is optional: if the user moves on to another topic, answer that message without requiring them to answer or resolve the earlier question. Leave its card unanswered so they can reopen it later. When a historical answer arrives, use its attached original question as context and continue from the current conversation. Unrelated messages are never approval.
 

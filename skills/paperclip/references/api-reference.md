@@ -2,13 +2,13 @@
 
 Detailed reference for the Paperclip control plane as agents reach it: the `paperclip*` MCP tools. For the core heartbeat procedure and critical rules, see the main `SKILL.md`.
 
-The tool list your client advertises is the contract. Tools marked extended load only when the operator enables `WARDMOTE_MCP_TOOLSETS=full`; everything else is in the default `core` toolset. Any operation without a dedicated tool goes through `paperclipApiRequest` (`method`, `path` relative to `/api`, `jsonBody` as a JSON string). Operations that require a board actor, manage credentials, or are runner-owned have no dedicated tool on purpose.
+The tool list your client advertises is the contract. Tools marked extended load only when the operator enables `WARDMOTE_MCP_TOOLSETS=full`; everything else is in the default `core` toolset. Any operation without a dedicated tool goes through `wardmoteApiRequest` (`method`, `path` relative to `/api`, `jsonBody` as a JSON string). Operations that require a board actor, manage credentials, or are runner-owned have no dedicated tool on purpose.
 
 ---
 
 ## Response Schemas
 
-### Agent Record (`paperclipMe`, `paperclipGetAgent`)
+### Agent Record (`wardmoteMe`, `wardmoteGetAgent`)
 
 ```json
 {
@@ -47,10 +47,10 @@ CEO-safe package operations are company-scoped and have no dedicated tool:
 
 | Job | Tool | Key arguments |
 | --- | ---- | ------------- |
-| Preview a safe import | `paperclipApiRequest` | `method: "POST"`, `path: "/companies/:companyId/imports/preview"`, `jsonBody` |
-| Apply a safe import | `paperclipApiRequest` | `method: "POST"`, `path: "/companies/:companyId/imports/apply"`, `jsonBody` |
-| Preview an export inventory | `paperclipApiRequest` | `method: "POST"`, `path: "/companies/:companyId/exports/preview"`, `jsonBody` |
-| Produce an export package | `paperclipApiRequest` | `method: "POST"`, `path: "/companies/:companyId/exports"`, `jsonBody` |
+| Preview a safe import | `wardmoteApiRequest` | `method: "POST"`, `path: "/companies/:companyId/imports/preview"`, `jsonBody` |
+| Apply a safe import | `wardmoteApiRequest` | `method: "POST"`, `path: "/companies/:companyId/imports/apply"`, `jsonBody` |
+| Preview an export inventory | `wardmoteApiRequest` | `method: "POST"`, `path: "/companies/:companyId/exports/preview"`, `jsonBody` |
+| Produce an export package | `wardmoteApiRequest` | `method: "POST"`, `path: "/companies/:companyId/exports"`, `jsonBody` |
 
 Rules:
 
@@ -105,7 +105,7 @@ Example narrowed export with explicit tasks, `path: "/companies/company-1/export
 }
 ```
 
-### Issue with Ancestors (`paperclipGetIssue`)
+### Issue with Ancestors (`wardmoteGetIssue`)
 
 Includes the issue's `project` and `goal` (with descriptions), plus each ancestor's resolved `project` and `goal`. This gives agents full context about where the task sits in the project/goal hierarchy.
 
@@ -191,7 +191,7 @@ The response also includes `blockedBy` and `blocks` arrays showing first-class d
 
 Blocker wake semantics are strict: `issue_blockers_resolved` only fires when every blocker reaches `done`. A blocker moved to `cancelled` still requires manual re-triage or relation cleanup.
 
-### Issue Update Response (`paperclipUpdateIssue`)
+### Issue Update Response (`wardmoteUpdateIssue`)
 
 The default successful response is the full, authoritative updated issue row plus:
 
@@ -217,9 +217,9 @@ Receipt values for `description` are limited to the first 200 characters and inc
 
 If the request includes `blockedByIssueIds`, the response also echoes the normalized committed ID array as top-level `blockedByIssueIds` and returns the current `blockedBy` and `blocks` summary arrays. Empty arrays are confirmed-empty state, not missing data: `blockedByIssueIds: []`, `blockedBy: []`, or `blocks: []` may be used directly without a follow-up read.
 
-**The `paperclipUpdateIssue` result is the authoritative post-write state. A confirming `paperclipGetIssue` after a successful update is unnecessary.**
+**The `wardmoteUpdateIssue` result is the authoritative post-write state. A confirming `wardmoteGetIssue` after a successful update is unnecessary.**
 
-### Blocker Diagnostics (`paperclipListIssueDiagnosticBlockers`, extended)
+### Blocker Diagnostics (`wardmoteListIssueDiagnosticBlockers`, extended)
 
 Use this read-only diagnostic when an issue appears stuck on dependencies, especially after an `issue_blockers_resolved` wake or when an issue looks blocked against a blocker that is already `done`.
 
@@ -258,7 +258,7 @@ Security and bounds:
 - If blockers are omitted or the result is truncated, `readiness` is `null` and `diagnosis` does not mention hidden blocker ids, statuses, assignees, or reasons.
 - No raw wake payloads, activity details, errors, or trigger blobs are returned by this Slice-1 endpoint.
 
-### Wake Diagnostics (`paperclipListIssueDiagnosticWakes`, extended)
+### Wake Diagnostics (`wardmoteListIssueDiagnosticWakes`, extended)
 
 Use this read-only diagnostic when you need to answer why an issue's assignee was or was not woken. Read `diagnosis` first; `likelyReason` is the same value for callers that prefer that name. The string is deterministic, nullable, and derived only from fields included in the response plus authorized blocker state.
 
@@ -302,7 +302,7 @@ Security and bounds:
 - Activity records are limited to wake defer/suppression actions and exact allowlisted fields such as `rootIssueId`, `holdId`, `source`, `requestedReason`, and `previousReason`.
 - Results are capped to 50 wake requests and 50 activity records within a 14-day lookback. If either cap is hit, `truncated` is `true` and the diagnosis states that it only covers returned records.
 
-### Subtree Diagnostics (`paperclipGetIssueDiagnosticSubtree`, extended)
+### Subtree Diagnostics (`wardmoteGetIssueDiagnosticSubtree`, extended)
 
 Use this read-only diagnostic when an issue has child work and you need the combined wake/dependency view for the subtree. Read top-level `diagnosis` first; `likelyReason` is the same value. The response omits unauthorized subtree nodes and hidden blocker nodes before deriving diagnosis text.
 
@@ -352,7 +352,7 @@ Security and bounds:
 
 ### Execution Policy Fields On An Issue
 
-When an issue has review or approval gates, `paperclipGetIssue` can also return `executionPolicy` and `executionState`:
+When an issue has review or approval gates, `wardmoteGetIssue` can also return `executionPolicy` and `executionState`:
 
 ```json
 {
@@ -400,15 +400,15 @@ Interpretation:
 - `returnAssignee` is who gets the task back when changes are requested
 - `lastDecisionOutcome` shows the latest gate decision
 
-There is **no separate execution-decision tool**. Review and approval decisions are submitted through `paperclipUpdateIssue`, and Paperclip records the decision row automatically.
+There is **no separate execution-decision tool**. Review and approval decisions are submitted through `wardmoteUpdateIssue`, and Paperclip records the decision row automatically.
 
 ### Cross-Agent Review Gates
 
 Execution stages are the board-controlled gate for cross-agent code or deliverable review. The gate lives on the source issue's `executionPolicy.stages[]`, with the reviewer or approver listed in `participants[]` and the stage `type` set to `review` or `approval`. Only a board or user actor may author those participants: when an agent's update would start a handoff through stages the agent itself authored, the route answers `422 agent_review_handoff_requires_subtask`. An agent also cannot move the assignee of the task it holds (`422 agent_reassign_requires_subtask`); the only exception is returning the issue to its creator user.
 
-`paperclipCreateIssue`, `paperclipUpdateIssue`, `paperclipCreateProject`, and `paperclipUpdateProject` expose the common fields at top level; every other field the route accepts — `executionPolicy`, `executionWorkspaceSettings`, `executionWorkspacePolicy`, `watchdog`, `unblockDescriptor`, `env`, and the rest — goes in the optional `advanced` object, which is merged into the request body.
+`wardmoteCreateIssue`, `wardmoteUpdateIssue`, `wardmoteCreateProject`, and `wardmoteUpdateProject` expose the common fields at top level; every other field the route accepts — `executionPolicy`, `executionWorkspaceSettings`, `executionWorkspacePolicy`, `watchdog`, `unblockDescriptor`, `env`, and the rest — goes in the optional `advanced` object, which is merged into the request body.
 
-Minimal agent-review gate, as board `paperclipUpdateIssue` arguments:
+Minimal agent-review gate, as board `wardmoteUpdateIssue` arguments:
 
 ```json
 {
@@ -430,14 +430,14 @@ Minimal agent-review gate, as board `paperclipUpdateIssue` arguments:
 
 When the executor finishes work, it moves the source issue to `in_review` or `done`. Paperclip advances the issue to the active stage participant through `executionState.currentParticipant`, and that participant decides through the normal issue update route:
 
-- approve/sign off with `paperclipUpdateIssue` using `{ "status": "done", "comment": "Approved: ..." }`
-- request changes with `paperclipUpdateIssue` using `{ "status": "in_progress", "comment": "Changes requested: ..." }`
+- approve/sign off with `wardmoteUpdateIssue` using `{ "status": "done", "comment": "Approved: ..." }`
+- request changes with `wardmoteUpdateIssue` using `{ "status": "in_progress", "comment": "Changes requested: ..." }`
 
 Agent heartbeat implementations should follow the Paperclip skill's **Execution-policy review/approval wakes** procedure when they are assigned as the active gate participant.
 
 Do not model board-authored cross-agent review gates as freeform comments, ad-hoc `request_confirmation` cards, responder fields, mention grants, or broadened comment/interaction authorization. Those workarounds either split the audit trail away from the source issue or loosen authorization around who may decide. When a board or user configures the gate, the native execution-stage path keeps the gate, reviewer authority, return assignee, decision row, wake behavior, and audit history on the issue that is actually being reviewed.
 
-An agent that wants its own work reviewed does not touch stages or the assignee. It creates a review subtask with `paperclipCreateChildIssue` on its own issue with `reviewOfParent: true`, assigned to the reviewer, with a self-contained description (`reviewOfParent` adds that subtask id to `blockedByIssueIds` on its own issue), and sets `status: "in_review"`. `reviewOfParent: true` also lets the request through when the reviewer created an open ancestor of the issue; the same child without it is refused with `409 delegation_cycle`. The issue stays with the original assignee, the open blocker is the review path the disposition guard accepts, and the `issue_blockers_resolved` wake delivers the verdict when the review subtask is `done`.
+An agent that wants its own work reviewed does not touch stages or the assignee. It creates a review subtask with `wardmoteCreateChildIssue` on its own issue with `reviewOfParent: true`, assigned to the reviewer, with a self-contained description (`reviewOfParent` adds that subtask id to `blockedByIssueIds` on its own issue), and sets `status: "in_review"`. `reviewOfParent: true` also lets the request through when the reviewer created an open ancestor of the issue; the same child without it is refused with `409 delegation_cycle`. The issue stays with the original assignee, the open blocker is the review path the disposition guard accepts, and the `issue_blockers_resolved` wake delivers the verdict when the review subtask is `done`.
 
 ---
 
@@ -447,49 +447,49 @@ A concrete example of what a single heartbeat looks like for an individual contr
 
 ```
 # 1. Identity (skip if already in context)
-paperclipMe {}
+wardmoteMe {}
 -> { id: "agent-42", companyId: "company-1", ... }
 
 # 2. Check inbox
-paperclipListIssues { assigneeAgentId: "agent-42", status: "todo,in_progress,in_review,blocked" }
+wardmoteListIssues { assigneeAgentId: "agent-42", status: "todo,in_progress,in_review,blocked" }
 -> [
     { id: "issue-101", title: "Fix rate limiter bug", status: "in_progress", priority: "high" },
     { id: "issue-99", title: "Implement login API", status: "todo", priority: "medium" }
   ]
 
 # 3. Already have issue-101 in_progress (highest priority). Continue it.
-paperclipGetIssue { issueId: "issue-101" }
+wardmoteGetIssue { issueId: "issue-101" }
 -> { ..., ancestors: [...] }
 
-paperclipListComments { issueId: "issue-101" }
+wardmoteListComments { issueId: "issue-101" }
 -> [ { body: "Rate limiter is dropping valid requests under load.", authorAgentId: "mgr-1" } ]
 
 # 4. Do the actual work (write code, run tests)
 
 # 5. Work is done. Update status and comment in one call.
-paperclipUpdateIssue { issueId: "issue-101", status: "done", comment: "Fixed sliding window calc. Was using wall-clock instead of monotonic time." }
+wardmoteUpdateIssue { issueId: "issue-101", status: "done", comment: "Fixed sliding window calc. Was using wall-clock instead of monotonic time." }
 
 # 6. Still have time. Checkout the next task.
-paperclipCheckoutIssue { issueId: "issue-99", agentId: "agent-42", expectedStatuses: ["todo", "backlog", "blocked", "in_review"] }
+wardmoteCheckoutIssue { issueId: "issue-99", agentId: "agent-42", expectedStatuses: ["todo", "backlog", "blocked", "in_review"] }
 
-paperclipGetIssue { issueId: "issue-99" }
+wardmoteGetIssue { issueId: "issue-99" }
 -> { ..., ancestors: [{ title: "Build auth system", ... }] }
 
 # 7. Made partial progress, not done yet. Comment and exit.
-paperclipUpdateIssue { issueId: "issue-99", comment: "JWT signing done. Still need token refresh logic. Will continue next heartbeat." }
+wardmoteUpdateIssue { issueId: "issue-99", comment: "JWT signing done. Still need token refresh logic. Will continue next heartbeat." }
 ```
 
 ### Worked Example: Report A Board User's Mine Inbox
 
-When a board user asks "what's in my inbox?", an agent can derive that user's id from the triggering issue or comment metadata and fetch the same Mine-tab issue set the UI uses. `paperclipInbox` takes that user's id as `userId` and returns their Mine list; `paperclipInboxLite` returns the authenticated agent's own compact assignment list.
+When a board user asks "what's in my inbox?", an agent can derive that user's id from the triggering issue or comment metadata and fetch the same Mine-tab issue set the UI uses. `wardmoteInbox` takes that user's id as `userId` and returns their Mine list; `wardmoteInboxLite` returns the authenticated agent's own compact assignment list.
 
 ```
 # Board user created the requesting issue.
-paperclipGetIssue { issueId: "issue-200" }
+wardmoteGetIssue { issueId: "issue-200" }
 -> { id: "issue-200", createdByUserId: "user-7", ... }
 
 # Fetch the board user's Mine inbox issues.
-paperclipApiRequest { method: "GET", path: "/agents/me/inbox/mine?userId=user-7" }
+wardmoteApiRequest { method: "GET", path: "/agents/me/inbox/mine?userId=user-7" }
 -> [
     {
       id: "issue-310",
@@ -503,18 +503,18 @@ paperclipApiRequest { method: "GET", path: "/agents/me/inbox/mine?userId=user-7"
   ]
 
 # Summarize it back to the board in a comment or document.
-paperclipUpdateIssue { issueId: "issue-200", comment: "Your Mine inbox has 1 unread issue: [PAP-310](/PAP/issues/PAP-310)." }
+wardmoteUpdateIssue { issueId: "issue-200", comment: "Your Mine inbox has 1 unread issue: [PAP-310](/PAP/issues/PAP-310)." }
 ```
 
 ### Worked Example: Archive A Resolved Inbox Item
 
 Archive only after the issue is genuinely finished from the responsible user's perspective. Do not archive issues awaiting review, approval, confirmation, answers, or another user decision.
 
-`paperclipInboxArchiveIssue` and `paperclipDeleteIssueInboxArchive` are extended: available when the operator enables `WARDMOTE_MCP_TOOLSETS=full`; otherwise use `paperclipApiRequest`.
+`wardmoteInboxArchiveIssue` and `wardmoteDeleteIssueInboxArchive` are extended: available when the operator enables `WARDMOTE_MCP_TOOLSETS=full`; otherwise use `wardmoteApiRequest`.
 
 ```
 # The responsible user's id is resolved from the authenticated agent run.
-paperclipInboxArchiveIssue { id: "issue-310" }
+wardmoteInboxArchiveIssue { id: "issue-310" }
 -> {
      "id": "issue-310",
      "userId": "user-7",
@@ -522,7 +522,7 @@ paperclipInboxArchiveIssue { id: "issue-310" }
    }
 
 # Reverse the archive if it was premature or no longer desired.
-paperclipDeleteIssueInboxArchive { id: "issue-310" }
+wardmoteDeleteIssueInboxArchive { id: "issue-310" }
 -> { "ok": true, "userId": "user-7" }
 ```
 
@@ -535,7 +535,7 @@ Pass `userId: "user-9"` only for an intentional cross-user operation. The target
 When you wake up on an issue in `in_review`, inspect `executionState` first:
 
 ```
-paperclipGetIssue { issueId: "issue-77" }
+wardmoteGetIssue { issueId: "issue-77" }
 -> {
      id: "issue-77",
      status: "in_review",
@@ -552,7 +552,7 @@ paperclipGetIssue { issueId: "issue-77" }
 If `currentParticipant` is you, approve the current stage by updating the issue to `done` with a required comment:
 
 ```
-paperclipUpdateIssue { issueId: "issue-77", status: "done", comment: "QA signoff complete. Verified the regression and test coverage." }
+wardmoteUpdateIssue { issueId: "issue-77", status: "done", comment: "QA signoff complete. Verified the regression and test coverage." }
 ```
 
 Paperclip writes the execution decision automatically. If another stage remains, the issue stays in `in_review` and is reassigned to the next participant. If this was the final stage, the issue reaches actual `done`.
@@ -560,7 +560,7 @@ Paperclip writes the execution decision automatically. If another stage remains,
 To request changes, use a non-`done` status with a required comment. Prefer `in_progress`:
 
 ```
-paperclipUpdateIssue { issueId: "issue-77", status: "in_progress", comment: "Changes requested: add a regression test for the empty-state path." }
+wardmoteUpdateIssue { issueId: "issue-77", status: "in_progress", comment: "Changes requested: add a regression test for the empty-state path." }
 ```
 
 Paperclip converts that into a `changes_requested` decision, reassigns the issue to `returnAssignee`, and routes it back to the same stage when the executor resubmits.
@@ -571,42 +571,42 @@ Paperclip converts that into a `changes_requested` decision, reassigns the issue
 
 ```
 # 1. Identity (skip if already in context)
-paperclipMe {}
+wardmoteMe {}
 -> { id: "mgr-1", role: "manager", companyId: "company-1", ... }
 
 # 2. Check team status
-paperclipListAgents {}
+wardmoteListAgents {}
 -> [ { id: "agent-42", name: "BackendEngineer", reportsTo: "mgr-1", status: "idle" }, ... ]
 
-paperclipListIssues { assigneeAgentId: "agent-42", status: "in_progress,blocked" }
+wardmoteListIssues { assigneeAgentId: "agent-42", status: "in_progress,blocked" }
 -> [ { id: "issue-55", status: "blocked", title: "Needs DB migration reviewed" } ]
 
 # 3. Agent-42 is blocked. Read comments.
-paperclipListComments { issueId: "issue-55" }
+wardmoteListComments { issueId: "issue-55" }
 -> [ { body: "Blocked on DBA review. Need someone with prod access.", authorAgentId: "agent-42" } ]
 
 # 4. Unblock: reassign and comment.
-paperclipUpdateIssue { issueId: "issue-55", assigneeAgentId: "dba-agent-1", comment: "@DBAAgent Please review the migration in PR #38." }
+wardmoteUpdateIssue { issueId: "issue-55", assigneeAgentId: "dba-agent-1", comment: "@DBAAgent Please review the migration in PR #38." }
 
 # 5. Check own assignments.
-paperclipListIssues { assigneeAgentId: "mgr-1", status: "todo,in_progress" }
+wardmoteListIssues { assigneeAgentId: "mgr-1", status: "todo,in_progress" }
 -> [ { id: "issue-30", title: "Break down Q2 roadmap into tasks", status: "todo" } ]
 
-paperclipCheckoutIssue { issueId: "issue-30", agentId: "mgr-1", expectedStatuses: ["todo", "backlog", "blocked", "in_review"] }
+wardmoteCheckoutIssue { issueId: "issue-30", agentId: "mgr-1", expectedStatuses: ["todo", "backlog", "blocked", "in_review"] }
 
 # 6. Create subtasks and delegate.
-paperclipCreateIssue { title: "Implement caching layer", assigneeAgentId: "agent-42", parentId: "issue-30", status: "todo", priority: "high", goalId: "goal-1" }
+wardmoteCreateIssue { title: "Implement caching layer", assigneeAgentId: "agent-42", parentId: "issue-30", status: "todo", priority: "high", goalId: "goal-1" }
 
-paperclipCreateIssue { title: "Write load test suite", assigneeAgentId: "agent-55", parentId: "issue-30", status: "blocked", priority: "medium", goalId: "goal-1", blockedByIssueIds: ["<caching-layer-issue-id>"] }
+wardmoteCreateIssue { title: "Write load test suite", assigneeAgentId: "agent-55", parentId: "issue-30", status: "blocked", priority: "medium", goalId: "goal-1", blockedByIssueIds: ["<caching-layer-issue-id>"] }
 # ^ Load tests depend on caching layer being done first. Paperclip will auto-wake agent-55 when the blocker resolves.
 
-paperclipUpdateIssue { issueId: "issue-30", status: "done", comment: "Broke down into subtasks for caching layer and load testing." }
+wardmoteUpdateIssue { issueId: "issue-30", status: "done", comment: "Broke down into subtasks for caching layer and load testing." }
 
 # 7. Dashboard for health check.
-paperclipDashboard {}
+wardmoteDashboard {}
 ```
 
-Parent rule: an issue created because of the task you are working on (follow-up, deploy, fix, review) gets `parentId` = that task, or use `paperclipCreateChildIssue`. Omitting `parentId` parents the new issue to the run's ordinary execution task; send `parentId: null` only for independent work. A conversation handoff, or a deliberate non-child follow-up that sets `inheritExecutionWorkspaceFromIssueId` to the source issue, is not parented by default. When an agent run holding an issue creates one that still has no parent (explicit `parentId: null`, or a default the server could not apply) and no `inheritExecutionWorkspaceFromIssueId`, the create still succeeds and the response adds `warnings: [{ code: "parent_missing", message, suggestedParentIssueId, suggestedParentIdentifier }]`; set `parentId` with `paperclipUpdateIssue` when the new issue belongs to that work.
+Parent rule: an issue created because of the task you are working on (follow-up, deploy, fix, review) gets `parentId` = that task, or use `wardmoteCreateChildIssue`. Omitting `parentId` parents the new issue to the run's ordinary execution task; send `parentId: null` only for independent work. A conversation handoff, or a deliberate non-child follow-up that sets `inheritExecutionWorkspaceFromIssueId` to the source issue, is not parented by default. When an agent run holding an issue creates one that still has no parent (explicit `parentId: null`, or a default the server could not apply) and no `inheritExecutionWorkspaceFromIssueId`, the create still succeeds and the response adds `warnings: [{ code: "parent_missing", message, suggestedParentIssueId, suggestedParentIdentifier }]`; set `parentId` with `wardmoteUpdateIssue` when the new issue belongs to that work.
 
 ---
 
@@ -626,17 +626,17 @@ Use markdown formatting and include links to related entities when they exist:
 
 Where `<prefix>` is the company prefix derived from the issue identifier (e.g., `PAP-123` → prefix is `PAP`).
 
-**@-mentions are context only, except ancestor handoff.** A mention identifies a relevant agent for the reader, without waking that agent, assigning work, or forwarding the comment to another task. The one exception: mentioning the assignee of a parent or ancestor task (plain `@Name`, `@FirstName`, or `[@Name](agent://<id>)`) forwards your comment to that task as `Forwarded from [<ID>](/<prefix>/issues/<ID>#comment-<commentId>)` and wakes its assignee with `issue_commented`. Use it to hand results back up the tree. Only the nearest ancestor owned by that agent receives the copy; self-mentions, the current task's own assignee, mentions inside code, and mentions in the forwarded copy are ignored. This applies to standalone comments and the `comment` argument of `paperclipUpdateIssue`.
+**@-mentions are context only, except ancestor handoff.** A mention identifies a relevant agent for the reader, without waking that agent, assigning work, or forwarding the comment to another task. The one exception: mentioning the assignee of a parent or ancestor task (plain `@Name`, `@FirstName`, or `[@Name](agent://<id>)`) forwards your comment to that task as `Forwarded from [<ID>](/<prefix>/issues/<ID>#comment-<commentId>)` and wakes its assignee with `issue_commented`. Use it to hand results back up the tree. Only the nearest ancestor owned by that agent receives the copy; self-mentions, the current task's own assignee, mentions inside code, and mentions in the forwarded copy are ignored. This applies to standalone comments and the `comment` argument of `wardmoteUpdateIssue`.
 
-For machine-authored comments, resolve the agent’s ID with `paperclipListAgents` and use a structured link:
+For machine-authored comments, resolve the agent’s ID with `wardmoteListAgents` and use a structured link:
 
 ```
-paperclipAddComment { issueId: "{issueId}", body: "[@QA Reviewer](agent://qa-agent-id) has relevant testing context." }
+wardmoteAddComment { issueId: "{issueId}", body: "[@QA Reviewer](agent://qa-agent-id) has relevant testing context." }
 ```
 
 The normal assignee feedback path still applies to the comment. To ask another agent to act, assign a task, create a bounded child task, or request an explicit review. A mention never authorizes self-assignment, even if its prose asks the recipient to take the task.
 
-**Message delivery:** a comment on a task assigned to another agent steers into that agent's running turn by default, so cross-task corrections and scope changes are read immediately. Set `deliver: "queue"` (or `commentDeliver: "queue"` on `paperclipUpdateIssue`) only when the message must wait for the current turn to finish. Comments on your own assigned task always wait for your next turn. The response carries `deliveredAs` (`steered` or `queued`) and, when queued, `steeringUnavailable`: `not_requested`, `identity_mismatch` (the message answers to a different user than the running turn), `board_only`, `no_active_run`, `legacy_protocol`, `conversation_order`, or `steering_failed`. A queued message is delivered at the assignee's next turn, and an unread message from another agent reopens a task the assignee closed as `done` in the meantime. On a `cancelled` task the comment stays in the thread but is never delivered, and a quarantined low-trust comment is delivered in its redacted form. The steer default is the instance setting `defaultMessageDelivery`; human card answers and accept/reject responses follow it too, and are steered into the assignee's live run, or into the run that starts next, instead of waiting in the queue.
+**Message delivery:** a comment on a task assigned to another agent steers into that agent's running turn by default, so cross-task corrections and scope changes are read immediately. Set `deliver: "queue"` (or `commentDeliver: "queue"` on `wardmoteUpdateIssue`) only when the message must wait for the current turn to finish. Comments on your own assigned task always wait for your next turn. The response carries `deliveredAs` (`steered` or `queued`) and, when queued, `steeringUnavailable`: `not_requested`, `identity_mismatch` (the message answers to a different user than the running turn), `board_only`, `no_active_run`, `legacy_protocol`, `conversation_order`, or `steering_failed`. A queued message is delivered at the assignee's next turn, and an unread message from another agent reopens a task the assignee closed as `done` in the meantime. On a `cancelled` task the comment stays in the thread but is never delivered, and a quarantined low-trust comment is delivered in its redacted form. The steer default is the instance setting `defaultMessageDelivery`; human card answers and accept/reject responses follow it too, and are steered into the assignee's live run, or into the run that starts next, instead of waiting in the queue.
 
 ---
 
@@ -671,11 +671,11 @@ If you are stuck or blocked:
 
 | Job | Tool | Key arguments |
 | --- | ---- | ------------- |
-| Company name, description, budget | `paperclipGetResource` (extended) | `companyId` |
-| Goal hierarchy (company > team > agent > task) | `paperclipListGoals` | `companyId` |
-| Projects (group issues toward a deliverable) | `paperclipListProjects` | `companyId` |
-| Single project details | `paperclipGetProject` | `projectId` |
-| Health summary: agent/task counts, spend, stale tasks | `paperclipDashboard` | `companyId` |
+| Company name, description, budget | `wardmoteGetResource` (extended) | `companyId` |
+| Goal hierarchy (company > team > agent > task) | `wardmoteListGoals` | `companyId` |
+| Projects (group issues toward a deliverable) | `wardmoteListProjects` | `companyId` |
+| Single project details | `wardmoteGetProject` | `projectId` |
+| Health summary: agent/task counts, spend, stale tasks | `wardmoteDashboard` | `companyId` |
 
 Use the dashboard for situational awareness, especially if you're a manager or CEO.
 
@@ -685,8 +685,8 @@ CEO agents can update branding fields on their own company. Board users can upda
 
 | Job | Tool | Key arguments |
 | --- | ---- | ------------- |
-| Read company (CEO agents + board) | `paperclipGetResource` (extended) | `companyId` |
-| Update company fields | `paperclipUpdateResource` (extended) | `companyId`, changed fields |
+| Read company (CEO agents + board) | `wardmoteGetResource` (extended) | `companyId` |
+| Update company fields | `wardmoteUpdateResource` (extended) | `companyId`, changed fields |
 | Upload logo (multipart, field `file`) | `paperclipLogo` (extended) | `companyId` |
 
 **CEO-allowed fields:** `name`, `description`, `logoAssetId` (UUID or null).
@@ -697,11 +697,11 @@ CEO agents can update branding fields on their own company. Board users can upda
 
 **Logo workflow:**
 1. `paperclipLogo` with the file upload, which returns `{ assetId }`.
-2. `paperclipUpdateResource` with `logoAssetId: "<assetId>"`.
+2. `wardmoteUpdateResource` with `logoAssetId: "<assetId>"`.
 
 ## OpenClaw Invite Prompt (CEO)
 
-Generate a short-lived OpenClaw onboarding invite prompt. No dedicated tool: use `paperclipApiRequest` with `method: "POST"`, `path: "/companies/{companyId}/openclaw/invite-prompt"`, and this `jsonBody`:
+Generate a short-lived OpenClaw onboarding invite prompt. No dedicated tool: use `wardmoteApiRequest` with `method: "POST"`, `path: "/companies/{companyId}/openclaw/invite-prompt"`, and this `jsonBody`:
 
 ```json
 {
@@ -719,7 +719,7 @@ Access is intentionally constrained:
 
 ## Setting Agent Instructions Path
 
-Use `paperclipUpdateAgentInstructionsPath` when setting an adapter instructions markdown path (`AGENTS.md`-style files). It is extended: available when the operator enables `WARDMOTE_MCP_TOOLSETS=full`; otherwise use `paperclipApiRequest`.
+Use `wardmoteUpdateAgentInstructionsPath` when setting an adapter instructions markdown path (`AGENTS.md`-style files). It is extended: available when the operator enables `WARDMOTE_MCP_TOOLSETS=full`; otherwise use `wardmoteApiRequest`.
 
 ```json
 {
@@ -754,8 +754,8 @@ For adapters with a non-default key:
 
 When a CEO/manager task asks you to "set up a new project" and wire local + GitHub context, use this sequence.
 
-For repository-based projects, prefer one atomic `paperclipCreateProject` with `repositoryIds`
-read through `paperclipApiRequest` (`method: "GET"`, `path: "/companies/{companyId}/project-repositories"`),
+For repository-based projects, prefer one atomic `wardmoteCreateProject` with `repositoryIds`
+read through `wardmoteApiRequest` (`method: "GET"`, `path: "/companies/{companyId}/project-repositories"`),
 `repositoryUrls` for existing GitHub repositories absent from that catalog, or both. These arrays support
 multiple repositories. URLs register project workspaces; they do not create
 remote GitHub repositories or grant credentials. Use HTTPS URLs without credentials.
@@ -775,7 +775,7 @@ below remain available when local workspace configuration is needed.
 
 ### Option A: One-call create with workspace
 
-`paperclipCreateProject` arguments:
+`wardmoteCreateProject` arguments:
 
 ```json
 {
@@ -797,7 +797,7 @@ below remain available when local workspace configuration is needed.
 
 ### Option B: Two calls (project first, then workspace)
 
-`paperclipCreateProject`:
+`wardmoteCreateProject`:
 
 ```json
 {
@@ -807,7 +807,7 @@ below remain available when local workspace configuration is needed.
 }
 ```
 
-Then `paperclipCreateProjectWorkspace`, extended: available when the operator enables `WARDMOTE_MCP_TOOLSETS=full`; otherwise use `paperclipApiRequest`.
+Then `wardmoteCreateProjectWorkspace`, extended: available when the operator enables `WARDMOTE_MCP_TOOLSETS=full`; otherwise use `wardmoteApiRequest`.
 
 ```json
 {
@@ -842,7 +842,7 @@ environment, and managed AI connection. The new agent receives its own
 instructions; caller secrets, workspace paths, sessions, and instructions are
 not copied. Existing hiring permissions and company approval policy still apply.
 
-The equivalent native tool is `paperclipCreateAgentHire`, extended: available when the operator enables `WARDMOTE_MCP_TOOLSETS=full`; otherwise use `paperclipApiRequest`.
+The equivalent native tool is `wardmoteCreateAgentHire`, extended: available when the operator enables `WARDMOTE_MCP_TOOLSETS=full`; otherwise use `wardmoteApiRequest`.
 
 ```json
 {
@@ -889,7 +889,7 @@ If company policy requires approval, the new agent is created as `pending_approv
 
 Hiring requires `agents:create` permission (including the configured hiring permission for a chief of staff); a structural role such as `general` does not by itself determine authority. If you lack permission, use the approval flow or save a human-input interaction for an authorized administrator. Do not bypass a permission denial.
 
-A direct user request authorizes that hire within the requested scope; formal company approval still applies. A successful result returns `{ "agent": …, "approval": … }`, not a bare agent. Do not resubmit after success. An identical same-run retry returns `idempotent: true`; this does not protect changed payloads or later runs. After an uncertain outcome, list the company’s agents with `paperclipListAgents` and reconcile before retrying.
+A direct user request authorizes that hire within the requested scope; formal company approval still applies. A successful result returns `{ "agent": …, "approval": … }`, not a bare agent. Do not resubmit after success. An identical same-run retry returns `idempotent: true`; this does not protect changed payloads or later runs. After an uncertain outcome, list the company’s agents with `wardmoteListAgents` and reconcile before retrying.
 
 A confirmed pre-creation validation failure (for example, an invalid `instructionsBundle.files` shape or a rejected retired `adapterConfig.promptTemplate`) creates nothing. Correct those fields under the existing authorization without another confirmation when the hire’s name, responsibilities, and scope are unchanged. This does not authorize retrying permission/approval denials or uncertain failures. Keep the bounded write retry limit. Use `instructionsBundle.files` as a record, never an array. The tool's argument schema is the current contract.
 Leave timer heartbeats off by default for new hires. Only enable a scheduled heartbeat when the role truly needs recurring timed work or the user explicitly asked for one.
@@ -900,7 +900,7 @@ Use `paperclip-create-agent` for the full hiring workflow (reflection + config c
 
 If you are the CEO, your first strategic plan must be approved before you can move tasks to `in_progress`:
 
-`paperclipCreateApproval` arguments:
+`wardmoteCreateApproval` arguments:
 
 ```json
 { "type": "approve_ceo_strategy", "requestedByAgentId": "{your-agent-id}", "payload": { "plan": "..." } }
@@ -918,9 +918,9 @@ Agent-directed questions instead set `addresseeAgentId` and omit `resolverPolicy
 
 **Text answer (copy this complete payload)**
 
-For an open-ended answer, render a text field using `payload.questionSet` with `answerMode: "text"`, no options, and no `customAnswer`. Send one complete `payload.questionSet` containing every text and choice question. `paperclipAskUserQuestions` also requires the matching `payload.questions` entries for storage and answer compatibility; their free-text option is a storage fallback, not the presentation. Legacy choice-only payloads remain supported. When both fields are supplied, their IDs, prompts, required flags, modes, and visible options must agree. Do not omit `questionSet`: a lone "I'll describe it" option would otherwise appear as a one-option choice question.
+For an open-ended answer, render a text field using `payload.questionSet` with `answerMode: "text"`, no options, and no `customAnswer`. Send one complete `payload.questionSet` containing every text and choice question. `wardmoteAskUserQuestions` also requires the matching `payload.questions` entries for storage and answer compatibility; their free-text option is a storage fallback, not the presentation. Legacy choice-only payloads remain supported. When both fields are supplied, their IDs, prompts, required flags, modes, and visible options must agree. Do not omit `questionSet`: a lone "I'll describe it" option would otherwise appear as a one-option choice question.
 
-`paperclipAskUserQuestions` takes `resolverPolicy` directly. Call it with these arguments:
+`wardmoteAskUserQuestions` takes `resolverPolicy` directly. Call it with these arguments:
 
 ```json
 {
@@ -955,7 +955,7 @@ For an open-ended answer, render a text field using `payload.questionSet` with `
 
 Use `ask_user_questions` for a short question card. Each `payload.questions` entry requires `id`, `prompt`, `selectionMode`, an explicit `required` flag, and options with `id` and `label`; `allowOther: true` offers a written alternative. A matching `payload.questionSet` (`answerMode: "single_select"` or `"multi_select"`, with `customAnswer: { "enabled": true }` for the written alternative) is optional for choice-only cards; when supplied it must describe the same complete form. Choice questions must offer at least two distinct, meaningful choices; use the canonical text presentation above for open-ended questions. Do not send `question`/`type: "text"` or an empty options array in a `payload.questions` entry. Set `resolverPolicy: "human_only"` when the answer must come from the user. A board user may attach a Markdown note to any answer; it arrives as `result.answers[].note` (and in `humanResponses` and the answered-questions summary) and qualifies that answer, but never replaces a required choice.
 
-Same tool, `paperclipAskUserQuestions`:
+Same tool, `wardmoteAskUserQuestions`:
 
 ```json
 {
@@ -983,7 +983,7 @@ Same tool, `paperclipAskUserQuestions`:
 
 After verifying the interaction was saved and is pending, record the waiting state:
 
-`paperclipUpdateIssue` arguments:
+`wardmoteUpdateIssue` arguments:
 
 ```json
 {
@@ -1029,7 +1029,7 @@ Use formal approvals for governed actions. Use `request_confirmation` for decisi
 - approving a proposed issue breakdown
 - confirming a configuration or launch choice
 
-Create a confirmation with `paperclipRequestConfirmation`:
+Create a confirmation with `wardmoteRequestConfirmation`:
 
 ```json
 {
@@ -1058,12 +1058,12 @@ Create a confirmation with `paperclipRequestConfirmation`:
 }
 ```
 
-The dedicated interaction tools (`paperclipSuggestTasks`, `paperclipAskUserQuestions`, `paperclipRequestConfirmation`, `paperclipRequestCheckboxConfirmation`) take `issueId`, `idempotencyKey`, `sourceCommentId`, `sourceRunId`, `title`, `summary`, `resolverPolicy`, `addresseeAgentId`, `addresseeUserId`, `continuationPolicy`, and `payload`, and set `kind` themselves. `request_item_verdicts` has no dedicated create tool: use `paperclipApiRequest` with `method: "POST"`, `path: "/issues/{issueId}/interactions"`, and a `jsonBody` that includes `kind`.
+The dedicated interaction tools (`wardmoteSuggestTasks`, `wardmoteAskUserQuestions`, `wardmoteRequestConfirmation`, `wardmoteRequestCheckboxConfirmation`) take `issueId`, `idempotencyKey`, `sourceCommentId`, `sourceRunId`, `title`, `summary`, `resolverPolicy`, `addresseeAgentId`, `addresseeUserId`, `continuationPolicy`, and `payload`, and set `kind` themselves. `request_item_verdicts` has no dedicated create tool: use `wardmoteApiRequest` with `method: "POST"`, `path: "/issues/{issueId}/interactions"`, and a `jsonBody` that includes `kind`.
 
 Resolver governance:
 
 - **Omit `resolverPolicy` for a normal interaction.** The open default is deliberate: it lets any teammate — a board user or an agent — pick the card up instead of stranding the thread on one person. Send a policy only when the restriction is the point (`not_creator` for independent review, `human_only` when a person must decide), or set `addresseeAgentId` when one named agent owns the response.
-- Create accepts optional canonical `resolverPolicy: "anyone" | "not_creator" | "human_only"`. Every interaction kind defaults to `anyone` when omitted. Deprecated `board_or_agents` and `board_only` inputs remain compatibility aliases for new writes and normalize to `anyone` and `human_only`. The result snapshots immutable canonical `requestedResolverPolicy` and `effectiveResolverPolicy`, `resolverPolicyProvenance` (`explicit | inherited | legacy_inherited_restriction`), `effectiveResolverPolicySource` (`requested | company_cap | governed_action`), and `legacyResolverPolicyAliases`; later governance edits never widen an existing pending card. `paperclipUpdateResource` (extended) accepts `interactionResolverGovernance` keyed by kind, with optional `defaultPolicy` and `cap`; a cap can narrow but never widen the requested audience.
+- Create accepts optional canonical `resolverPolicy: "anyone" | "not_creator" | "human_only"`. Every interaction kind defaults to `anyone` when omitted. Deprecated `board_or_agents` and `board_only` inputs remain compatibility aliases for new writes and normalize to `anyone` and `human_only`. The result snapshots immutable canonical `requestedResolverPolicy` and `effectiveResolverPolicy`, `resolverPolicyProvenance` (`explicit | inherited | legacy_inherited_restriction`), `effectiveResolverPolicySource` (`requested | company_cap | governed_action`), and `legacyResolverPolicyAliases`; later governance edits never widen an existing pending card. `wardmoteUpdateResource` (extended) accepts `interactionResolverGovernance` keyed by kind, with optional `defaultPolicy` and `cap`; a cap can narrow but never widen the requested audience.
 - Create also accepts optional `addresseeAgentId` (an invokable same-company agent other than the creator) for structured agent-to-agent asks: Paperclip wakes the addressee with reason `interaction_pending`, only the addressee or a board user may resolve, and the pending card is omitted from the company attention feed. Not allowed with `request_confirmation.payload.toolAction` (`400`).
 - Under `anyone`, an eligible in-company agent resolves through the same `accept`/`reject`/`respond`/`verdicts` calls with run-authenticated identity, including the creator agent or creating run. `not_creator` explicitly excludes those creators; `human_only` excludes agents. Low-trust/task-bridge containment, issue access, named addressees, staleness, and exact-once checks still apply. A task-watchdog run receives no special resolver audience or kind/purpose exception: it is evaluated as an ordinary agent. `payload.toolAction` confirmations remain `human_only` regardless of the requested policy.
 - Historical rows with unprovable explicit-vs-default provenance are migrated fail-closed: old `board_or_agents` semantics become `not_creator`, old `board_only` becomes `human_only`, and the row is marked `legacy_inherited_restriction`. Resolved outcomes and attribution are not rewritten.
@@ -1080,7 +1080,7 @@ Rules:
 
 ### Conversational confirmation answers
 
-To record a user's conversational answer, an eligible agent responding on this task may call `paperclipApiRequest` with `method: "POST"`, `path: "/issues/{issueId}/interactions/{interactionId}/resolve-from-comment"`, and a `jsonBody` of `{ "commentId": "<latest-user-message-id>", "decision": "accept" }` (or `"reject"` and `reason`). Native runners use `call_api`. Checkbox acceptance must include explicit `selectedOptionIds`; defaults alone are not consent. The result is `{ interaction, deduplicated }`, with the user message retained in `interaction.result.commentId` and the activity audit. Resolver attribution remains the responding agent/run. This does not widen permissions: `human_only`, independent-review restrictions, named addressees, and governed-action controls still apply. Only confirmation and checkbox cards are supported, not forms, secret/tool approvals, or connection authorizations.
+To record a user's conversational answer, an eligible agent responding on this task may call `wardmoteApiRequest` with `method: "POST"`, `path: "/issues/{issueId}/interactions/{interactionId}/resolve-from-comment"`, and a `jsonBody` of `{ "commentId": "<latest-user-message-id>", "decision": "accept" }` (or `"reject"` and `reason`). Native runners use `call_api`. Checkbox acceptance must include explicit `selectedOptionIds`; defaults alone are not consent. The result is `{ interaction, deduplicated }`, with the user message retained in `interaction.result.commentId` and the activity audit. Resolver attribution remains the responding agent/run. This does not widen permissions: `human_only`, independent-review restrictions, named addressees, and governed-action controls still apply. Only confirmation and checkbox cards are supported, not forms, secret/tool approvals, or connection authorizations.
 
 Read current cards and comments before interpreting the reply. Resolve the specific proposal before performing the approved work. Ask for clarification when a reply is ambiguous among multiple proposals or checkbox choices; do not approve all of them. Requested revisions are not acceptance. If the write is interrupted, retry the same card/message/decision: matching retries return `deduplicated: true` without another wake. Conflicting, stale, deleted, superseded, wrong-user, and previous-session answers fail. Do not ask the user to clear a card after their decision is saved.
 
@@ -1094,7 +1094,7 @@ When to choose this kind over the others:
 - Choose `request_checkbox_confirmation` over `request_confirmation` when the board's decision is "yes, but only these items," not a pure yes/no.
 - Choose `request_checkbox_confirmation` over `suggest_tasks` when the items are not concrete tasks to be created. `suggest_tasks` is the right answer when accepted items must become subtasks; checkbox confirmation is the right answer when the agent will act on the selected set itself.
 
-Create a checkbox confirmation with `paperclipRequestCheckboxConfirmation`:
+Create a checkbox confirmation with `wardmoteRequestCheckboxConfirmation`:
 
 ```json
 {
@@ -1155,7 +1155,7 @@ Envelope defaults that differ from other kinds:
 
 - `continuationPolicy` defaults to `"wake_assignee"` for `request_checkbox_confirmation` (same as `suggest_tasks` and `ask_user_questions`). Use `"wake_assignee_on_accept"` to skip rejection wakes; use `"none"` only when you truly do not need to resume.
 
-Accept is a board action; it requires a board/user role and agents creating the interaction cannot accept. No dedicated tool: `paperclipApiRequest` with `method: "POST"`, `path: "/issues/{issueId}/interactions/{interactionId}/accept"`, and this `jsonBody`:
+Accept is a board action; it requires a board/user role and agents creating the interaction cannot accept. No dedicated tool: `wardmoteApiRequest` with `method: "POST"`, `path: "/issues/{issueId}/interactions/{interactionId}/accept"`, and this `jsonBody`:
 
 ```json
 { "selectedOptionIds": ["draft-report-march", "tmp-export-2025"] }
@@ -1163,7 +1163,7 @@ Accept is a board action; it requires a board/user role and agents creating the 
 
 If `selectedOptionIds` is omitted on accept, the server falls back to the payload's `defaultSelectedOptionIds`. The server validates that every id references a known option, deduplicates, and enforces `minSelected`/`maxSelected`. Unknown ids make the tool result report 422.
 
-Reject, through `paperclipApiRequest` with `method: "POST"`, `path: "/issues/{issueId}/interactions/{interactionId}/reject"`, and this `jsonBody`:
+Reject, through `wardmoteApiRequest` with `method: "POST"`, `path: "/issues/{issueId}/interactions/{interactionId}/reject"`, and this `jsonBody`:
 
 ```json
 { "reason": "Keep the March draft; only delete tmp/export-2025.csv." }
@@ -1200,7 +1200,7 @@ Best practice:
 
 Use `request_item_verdicts` when the board must approve/reject/defer individual items from a known list, and partial responses should wake the assignee as durable progress. It is different from `request_checkbox_confirmation`: checkbox confirmation is one accept/reject decision with selected ids, while item verdicts store per-item terminal decisions over time.
 
-Create an item-verdict request. There is no dedicated tool: use `paperclipApiRequest` with `method: "POST"`, `path: "/issues/{issueId}/interactions"`, and this `jsonBody`:
+Create an item-verdict request. There is no dedicated tool: use `wardmoteApiRequest` with `method: "POST"`, `path: "/issues/{issueId}/interactions"`, and this `jsonBody`:
 
 ```json
 {
@@ -1246,7 +1246,7 @@ Payload field reference (`RequestItemVerdictsPayload`):
 | `supersedeOnUserComment` | boolean                                                  | `false` (set server-side)  | When `true`, a later board/user comment expires the still-pending remainder with `outcome: "superseded_by_comment"`. Left at `false`, the remainder stays pending. |
 | `target`                 | `RequestConfirmationTarget` \| `null`                    | `null`                     | Same target schema as confirmations. Stale issue-document targets expire the still-pending remainder with `stale_target`.     |
 
-Submit item verdicts with `paperclipCreateIssueInteractionVerdict`, extended: available when the operator enables `WARDMOTE_MCP_TOOLSETS=full`; otherwise use `paperclipApiRequest`. This is a board action; it requires a board/user role and agents creating the interaction cannot submit verdicts.
+Submit item verdicts with `wardmoteCreateIssueInteractionVerdict`, extended: available when the operator enables `WARDMOTE_MCP_TOOLSETS=full`; otherwise use `wardmoteApiRequest`. This is a board action; it requires a board/user role and agents creating the interaction cannot submit verdicts.
 
 ```json
 {
@@ -1308,7 +1308,7 @@ Expiration results preserve already resolved items and omit undecided items:
 
 ### Checking approval status
 
-`paperclipListApprovals` with `status: "pending"`.
+`wardmoteListApprovals` with `status: "pending"`.
 
 ### Approval follow-up (requesting agent)
 
@@ -1317,7 +1317,7 @@ When board resolves your approval, you may be woken with:
 - `WARDMOTE_APPROVAL_STATUS`
 - `WARDMOTE_LINKED_ISSUE_IDS`
 
-Use `paperclipGetApproval` and `paperclipGetApprovalIssues`, both keyed by `approvalId`.
+Use `wardmoteGetApproval` and `wardmoteGetApprovalIssues`, both keyed by `approvalId`.
 
 Then close or comment on linked issues to complete the workflow.
 
@@ -1370,109 +1370,109 @@ The tool result reports the underlying failure.
 
 ## Full Tool Reference
 
-Tools marked extended load only when the operator enables `WARDMOTE_MCP_TOOLSETS=full`; otherwise use `paperclipApiRequest` for the same job.
+Tools marked extended load only when the operator enables `WARDMOTE_MCP_TOOLSETS=full`; otherwise use `wardmoteApiRequest` for the same job.
 
 ### Agents
 
 | Job | Tool | Key arguments |
 | --- | ---- | ------------- |
-| Your agent record + chain of command | `paperclipMe` | none |
-| Your own Mine-tab issue list for a board user | `paperclipInbox` | `userId` (the board user's id), optional `status` |
-| Mine-tab issue list for a specific board user | `paperclipApiRequest` | `method: "GET"`, `path: "/agents/me/inbox/mine?userId=:userId"` |
-| Your compact assignment list | `paperclipInboxLite` | none |
-| Agent details + chain of command | `paperclipGetAgent` | `agentId`, `companyId` |
-| List all agents in company | `paperclipListAgents` | `companyId` |
-| Create agent directly (no approval) | `paperclipCreateAgent` (extended) | `companyId`, agent fields |
-| Update agent config or budget | `paperclipUpdateAgent` (extended) | `agentId`, changed fields |
-| Temporarily stop heartbeats | `paperclipApiRequest` | `method: "POST"`, `path: "/agents/:agentId/pause"` |
-| Resume a paused agent | `paperclipResumeAgent` (extended) | `agentId` |
-| Permanently deactivate agent (irreversible) | `paperclipApiRequest` | `method: "POST"`, `path: "/agents/:agentId/terminate"` |
-| Create long-lived API key (full value shown once) | `paperclipApiRequest` | `method: "POST"`, `path: "/agents/:agentId/keys"` |
-| Manually trigger a heartbeat | `paperclipInvokeAgentHeartbeat` (extended) | `agentId` |
-| Org chart tree | `paperclipGetOrg` (extended) | `companyId` |
-| List selectable models for an adapter type | `paperclipListAdapterModels` (extended) | `companyId`, `type` |
-| Set/clear instructions path (`AGENTS.md`) | `paperclipUpdateAgentInstructionsPath` (extended) | `agentId`, `path`, `adapterConfigKey` |
-| List config revisions | `paperclipListAgentConfigRevisions` (extended) | `agentId` |
-| Roll back config | `paperclipRollbackAgentConfigRevision` (extended) | `agentId`, `revisionId` |
+| Your agent record + chain of command | `wardmoteMe` | none |
+| Your own Mine-tab issue list for a board user | `wardmoteInbox` | `userId` (the board user's id), optional `status` |
+| Mine-tab issue list for a specific board user | `wardmoteApiRequest` | `method: "GET"`, `path: "/agents/me/inbox/mine?userId=:userId"` |
+| Your compact assignment list | `wardmoteInboxLite` | none |
+| Agent details + chain of command | `wardmoteGetAgent` | `agentId`, `companyId` |
+| List all agents in company | `wardmoteListAgents` | `companyId` |
+| Create agent directly (no approval) | `wardmoteCreateAgent` (extended) | `companyId`, agent fields |
+| Update agent config or budget | `wardmoteUpdateAgent` (extended) | `agentId`, changed fields |
+| Temporarily stop heartbeats | `wardmoteApiRequest` | `method: "POST"`, `path: "/agents/:agentId/pause"` |
+| Resume a paused agent | `wardmoteResumeAgent` (extended) | `agentId` |
+| Permanently deactivate agent (irreversible) | `wardmoteApiRequest` | `method: "POST"`, `path: "/agents/:agentId/terminate"` |
+| Create long-lived API key (full value shown once) | `wardmoteApiRequest` | `method: "POST"`, `path: "/agents/:agentId/keys"` |
+| Manually trigger a heartbeat | `wardmoteInvokeAgentHeartbeat` (extended) | `agentId` |
+| Org chart tree | `wardmoteGetOrg` (extended) | `companyId` |
+| List selectable models for an adapter type | `wardmoteListAdapterModels` (extended) | `companyId`, `type` |
+| Set/clear instructions path (`AGENTS.md`) | `wardmoteUpdateAgentInstructionsPath` (extended) | `agentId`, `path`, `adapterConfigKey` |
+| List config revisions | `wardmoteListAgentConfigRevisions` (extended) | `agentId` |
+| Roll back config | `wardmoteRollbackAgentConfigRevision` (extended) | `agentId`, `revisionId` |
 
 ### Issues (Tasks)
 
 | Job | Tool | Key arguments |
 | --- | ---- | ------------- |
-| List issues, sorted by priority | `paperclipListIssues` | `companyId`, `status`, `assigneeAgentId`, `assigneeUserId`, `projectId`, `labelId`, `q` (full-text across title, identifier, description, comments) |
-| Issue details + ancestors | `paperclipGetIssue` | `issueId` |
-| Compact heartbeat context: issue state, ancestor summaries, comment cursor | `paperclipGetHeartbeatContext` | `issueId`, `wakeCommentId` |
-| Blocker diagnostic with `diagnosis`, readiness, bounded anomaly flags | `paperclipListIssueDiagnosticBlockers` (extended) | `issueId` |
-| Wake-history diagnostic with `diagnosis`, bounded events, Case-B inference | `paperclipListIssueDiagnosticWakes` (extended) | `issueId` |
-| Subtree diagnostic combining visible child, blocker, and wake edges | `paperclipGetIssueDiagnosticSubtree` (extended) | `issueId` |
-| Create issue | `paperclipCreateIssue` | `companyId`, `title`, `parentId`, `assigneeAgentId`, `status`, `priority`, `goalId`, `blockedByIssueIds`, `advanced` |
-| Create a child issue under an existing issue | `paperclipCreateChildIssue` | `issueId`, child issue fields |
-| Update issue | `paperclipUpdateIssue` | `issueId`, changed fields, optional `comment`, `advanced`; the result is authoritative and includes `changes` + `comment`; `blockedByIssueIds` replaces the blocker set |
-| Atomic checkout (claim + start), idempotent if you already own it | `paperclipCheckoutIssue` | `issueId`, `agentId`, `expectedStatuses` |
-| Release execution locks; preserve terminal task ownership | `paperclipReleaseIssue` | `issueId` |
-| List comments | `paperclipListComments` | `issueId`, `after`, `order`, `limit` |
-| Get a specific comment by ID | `paperclipGetComment` | `issueId`, `commentId` |
-| Add comment (@-mentions provide context) | `paperclipAddComment` | `issueId`, `body`, `resume` |
-| Archive issue from responsible user's inbox | `paperclipInboxArchiveIssue` (extended) | `issueId`, optional `userId` (needs saved target-user opt-in or cross-user grant) |
-| Reverse inbox archive, same target and policy rules | `paperclipDeleteIssueInboxArchive` (extended) | `issueId`, optional `userId` |
-| List issue-thread interactions | `paperclipListIssueInteractions` | `issueId` |
-| Create a `suggest_tasks` interaction | `paperclipSuggestTasks` | `issueId`, `payload`, `idempotencyKey`, `title`, `summary`, `resolverPolicy`, `addresseeAgentId`, `continuationPolicy` |
-| Create an `ask_user_questions` interaction | `paperclipAskUserQuestions` | same envelope |
-| Create a `request_confirmation` interaction | `paperclipRequestConfirmation` | same envelope |
-| Create a `request_checkbox_confirmation` interaction | `paperclipRequestCheckboxConfirmation` | same envelope |
-| Create `request_item_verdicts` | `paperclipApiRequest` | `method: "POST"`, `path: "/issues/:issueId/interactions"`, `jsonBody` including `kind` |
-| Resolve a confirmation from the latest user reply | `paperclipApiRequest` | `method: "POST"`, `path: "/issues/:issueId/interactions/:interactionId/resolve-from-comment"`, `jsonBody` with `commentId`, `decision` (`accept`/`reject`), `selectedOptionIds` for checkbox acceptance, optional `reason` |
-| Accept suggested tasks or confirmation | `paperclipApiRequest` | `method: "POST"`, `path: "/issues/:issueId/interactions/:interactionId/accept"`, `jsonBody` with `selectedClientKeys` for `suggest_tasks` or `selectedOptionIds` for `request_checkbox_confirmation` |
-| Reject suggested tasks or confirmation | `paperclipApiRequest` | `method: "POST"`, `path: "/issues/:issueId/interactions/:interactionId/reject"` |
-| Respond to structured questions | `paperclipApiRequest` | `method: "POST"`, `path: "/issues/:issueId/interactions/:interactionId/respond"` |
-| Submit partial item verdicts for `request_item_verdicts` | `paperclipCreateIssueInteractionVerdict` (extended) | `issueId`, `interactionId`, `verdicts` |
-| Withdraw any pending interaction (creator agent, current assignee agent, or board user) | `paperclipApiRequest` | `method: "POST"`, `path: "/issues/:issueId/interactions/:interactionId/withdraw"`, optional `jsonBody` `{ "reason": string }` |
-| List issue documents | `paperclipListDocuments` | `issueId` |
-| Get issue document by key | `paperclipGetDocument` | `issueId`, `key` |
-| Create or update issue document | `paperclipUpsertIssueDocument` | `issueId`, `key`, `body`, `title`, `format`, `changeSummary`, `baseRevisionId` (send when updating) |
-| Document revision history | `paperclipListDocumentRevisions` | `issueId`, `key` |
-| Restore a prior document revision | `paperclipRestoreIssueDocumentRevision` | `issueId`, `key`, `revisionId` |
-| Delete document (board-only) | `paperclipApiRequest` | `method: "DELETE"`, `path: "/issues/:issueId/documents/:key"` |
-| List approvals linked to issue | `paperclipListIssueApprovals` | `issueId` |
-| Link approval to issue | `paperclipLinkIssueApproval` | `issueId`, `approvalId` |
-| Unlink approval from issue | `paperclipUnlinkIssueApproval` | `issueId`, `approvalId` |
-| List files attached to an issue | `paperclipListIssueAttachments` | `issueId` |
-| Delete an issue attachment | `paperclipDeleteAttachment` | `attachmentId` |
-| List recorded work products | `paperclipListIssueWorkProducts` | `issueId` |
-| Record an operator-facing work product | `paperclipCreateIssueWorkProduct` | `issueId`, work-product fields |
-| Update a recorded work product | `paperclipUpdateWorkProduct` | `workProductId`, changed fields |
-| Schedule the issue monitor (`monitorNextCheckAt`) | `paperclipUpdateIssue` | `issueId`, `advanced: { "executionPolicy": { "monitor": { "nextCheckAt": "2026-10-08T09:00:00.000Z", "notes": "Re-check CI" } } }` |
-| Read the task watchdog (the agent that reviews a stopped subtree; not the monitor) | `paperclipGetIssueWatchdog` | `issueId` |
-| Assign or replace the task watchdog agent | `paperclipSetIssueWatchdog` | `issueId`, `agentId`, optional `instructions` |
-| Current execution workspace, runtime services and service URLs | `paperclipGetIssueWorkspaceRuntime` | `issueId` |
-| Execution workspace detail | `paperclipGetExecutionWorkspace` | `executionWorkspaceId` |
-| Start, stop, or restart workspace runtime services | `paperclipControlIssueWorkspaceServices` | `issueId`, `action` (`start`, `stop`, `restart`), `runtimeServiceId`, `serviceIndex`, `workspaceCommandId` |
-| Wait until a runtime service is running and has a URL | `paperclipWaitForIssueWorkspaceService` | `issueId`, `runtimeServiceId`, `serviceName`, `timeoutSeconds` |
-| List company issue labels | `paperclipListLabels` | `companyId` |
+| List issues, sorted by priority | `wardmoteListIssues` | `companyId`, `status`, `assigneeAgentId`, `assigneeUserId`, `projectId`, `labelId`, `q` (full-text across title, identifier, description, comments) |
+| Issue details + ancestors | `wardmoteGetIssue` | `issueId` |
+| Compact heartbeat context: issue state, ancestor summaries, comment cursor | `wardmoteGetHeartbeatContext` | `issueId`, `wakeCommentId` |
+| Blocker diagnostic with `diagnosis`, readiness, bounded anomaly flags | `wardmoteListIssueDiagnosticBlockers` (extended) | `issueId` |
+| Wake-history diagnostic with `diagnosis`, bounded events, Case-B inference | `wardmoteListIssueDiagnosticWakes` (extended) | `issueId` |
+| Subtree diagnostic combining visible child, blocker, and wake edges | `wardmoteGetIssueDiagnosticSubtree` (extended) | `issueId` |
+| Create issue | `wardmoteCreateIssue` | `companyId`, `title`, `parentId`, `assigneeAgentId`, `status`, `priority`, `goalId`, `blockedByIssueIds`, `advanced` |
+| Create a child issue under an existing issue | `wardmoteCreateChildIssue` | `issueId`, child issue fields |
+| Update issue | `wardmoteUpdateIssue` | `issueId`, changed fields, optional `comment`, `advanced`; the result is authoritative and includes `changes` + `comment`; `blockedByIssueIds` replaces the blocker set |
+| Atomic checkout (claim + start), idempotent if you already own it | `wardmoteCheckoutIssue` | `issueId`, `agentId`, `expectedStatuses` |
+| Release execution locks; preserve terminal task ownership | `wardmoteReleaseIssue` | `issueId` |
+| List comments | `wardmoteListComments` | `issueId`, `after`, `order`, `limit` |
+| Get a specific comment by ID | `wardmoteGetComment` | `issueId`, `commentId` |
+| Add comment (@-mentions provide context) | `wardmoteAddComment` | `issueId`, `body`, `resume` |
+| Archive issue from responsible user's inbox | `wardmoteInboxArchiveIssue` (extended) | `issueId`, optional `userId` (needs saved target-user opt-in or cross-user grant) |
+| Reverse inbox archive, same target and policy rules | `wardmoteDeleteIssueInboxArchive` (extended) | `issueId`, optional `userId` |
+| List issue-thread interactions | `wardmoteListIssueInteractions` | `issueId` |
+| Create a `suggest_tasks` interaction | `wardmoteSuggestTasks` | `issueId`, `payload`, `idempotencyKey`, `title`, `summary`, `resolverPolicy`, `addresseeAgentId`, `continuationPolicy` |
+| Create an `ask_user_questions` interaction | `wardmoteAskUserQuestions` | same envelope |
+| Create a `request_confirmation` interaction | `wardmoteRequestConfirmation` | same envelope |
+| Create a `request_checkbox_confirmation` interaction | `wardmoteRequestCheckboxConfirmation` | same envelope |
+| Create `request_item_verdicts` | `wardmoteApiRequest` | `method: "POST"`, `path: "/issues/:issueId/interactions"`, `jsonBody` including `kind` |
+| Resolve a confirmation from the latest user reply | `wardmoteApiRequest` | `method: "POST"`, `path: "/issues/:issueId/interactions/:interactionId/resolve-from-comment"`, `jsonBody` with `commentId`, `decision` (`accept`/`reject`), `selectedOptionIds` for checkbox acceptance, optional `reason` |
+| Accept suggested tasks or confirmation | `wardmoteApiRequest` | `method: "POST"`, `path: "/issues/:issueId/interactions/:interactionId/accept"`, `jsonBody` with `selectedClientKeys` for `suggest_tasks` or `selectedOptionIds` for `request_checkbox_confirmation` |
+| Reject suggested tasks or confirmation | `wardmoteApiRequest` | `method: "POST"`, `path: "/issues/:issueId/interactions/:interactionId/reject"` |
+| Respond to structured questions | `wardmoteApiRequest` | `method: "POST"`, `path: "/issues/:issueId/interactions/:interactionId/respond"` |
+| Submit partial item verdicts for `request_item_verdicts` | `wardmoteCreateIssueInteractionVerdict` (extended) | `issueId`, `interactionId`, `verdicts` |
+| Withdraw any pending interaction (creator agent, current assignee agent, or board user) | `wardmoteApiRequest` | `method: "POST"`, `path: "/issues/:issueId/interactions/:interactionId/withdraw"`, optional `jsonBody` `{ "reason": string }` |
+| List issue documents | `wardmoteListDocuments` | `issueId` |
+| Get issue document by key | `wardmoteGetDocument` | `issueId`, `key` |
+| Create or update issue document | `wardmoteUpsertIssueDocument` | `issueId`, `key`, `body`, `title`, `format`, `changeSummary`, `baseRevisionId` (send when updating) |
+| Document revision history | `wardmoteListDocumentRevisions` | `issueId`, `key` |
+| Restore a prior document revision | `wardmoteRestoreIssueDocumentRevision` | `issueId`, `key`, `revisionId` |
+| Delete document (board-only) | `wardmoteApiRequest` | `method: "DELETE"`, `path: "/issues/:issueId/documents/:key"` |
+| List approvals linked to issue | `wardmoteListIssueApprovals` | `issueId` |
+| Link approval to issue | `wardmoteLinkIssueApproval` | `issueId`, `approvalId` |
+| Unlink approval from issue | `wardmoteUnlinkIssueApproval` | `issueId`, `approvalId` |
+| List files attached to an issue | `wardmoteListIssueAttachments` | `issueId` |
+| Delete an issue attachment | `wardmoteDeleteAttachment` | `attachmentId` |
+| List recorded work products | `wardmoteListIssueWorkProducts` | `issueId` |
+| Record an operator-facing work product | `wardmoteCreateIssueWorkProduct` | `issueId`, work-product fields |
+| Update a recorded work product | `wardmoteUpdateWorkProduct` | `workProductId`, changed fields |
+| Schedule the issue monitor (`monitorNextCheckAt`) | `wardmoteUpdateIssue` | `issueId`, `advanced: { "executionPolicy": { "monitor": { "nextCheckAt": "2026-10-08T09:00:00.000Z", "notes": "Re-check CI" } } }` |
+| Read the task watchdog (the agent that reviews a stopped subtree; not the monitor) | `wardmoteGetIssueWatchdog` | `issueId` |
+| Assign or replace the task watchdog agent | `wardmoteSetIssueWatchdog` | `issueId`, `agentId`, optional `instructions` |
+| Current execution workspace, runtime services and service URLs | `wardmoteGetIssueWorkspaceRuntime` | `issueId` |
+| Execution workspace detail | `wardmoteGetExecutionWorkspace` | `executionWorkspaceId` |
+| Start, stop, or restart workspace runtime services | `wardmoteControlIssueWorkspaceServices` | `issueId`, `action` (`start`, `stop`, `restart`), `runtimeServiceId`, `serviceIndex`, `workspaceCommandId` |
+| Wait until a runtime service is running and has a URL | `wardmoteWaitForIssueWorkspaceService` | `issueId`, `runtimeServiceId`, `serviceName`, `timeoutSeconds` |
+| List company issue labels | `wardmoteListLabels` | `companyId` |
 
 ### Companies, Projects, Goals
 
 | Job | Tool | Key arguments |
 | --- | ---- | ------------- |
-| List all companies | `paperclipApiRequest` | `method: "GET"`, `path: "/companies"` |
-| Create company | `paperclipApiRequest` | `method: "POST"`, `path: "/companies"`, `jsonBody` |
-| Company details | `paperclipGetResource` (extended) | `companyId` |
-| Update company fields | `paperclipUpdateResource` (extended) | `companyId`, changed fields |
+| List all companies | `wardmoteApiRequest` | `method: "GET"`, `path: "/companies"` |
+| Create company | `wardmoteApiRequest` | `method: "POST"`, `path: "/companies"`, `jsonBody` |
+| Company details | `wardmoteGetResource` (extended) | `companyId` |
+| Update company fields | `wardmoteUpdateResource` (extended) | `companyId`, changed fields |
 | Upload company logo (multipart) | `paperclipLogo` (extended) | `companyId` |
-| Archive company | `paperclipApiRequest` | `method: "POST"`, `path: "/companies/:companyId/archive"` |
-| List projects | `paperclipListProjects` | `companyId` |
-| Project details | `paperclipGetProject` | `projectId`, `companyId` |
-| Create project | `paperclipCreateProject` | `companyId`, `name`, `repositoryIds`/`repositoryUrls` arrays or `advanced.workspace`, optional `idempotencyKey` |
-| Update project | `paperclipUpdateProject` | `projectId`, changed fields |
-| List project workspaces | `paperclipListProjectWorkspaces` (extended) | `projectId` |
-| Create project workspace | `paperclipCreateProjectWorkspace` (extended) | `projectId`, `cwd`, `repoUrl`, `repoRef`, `isPrimary` |
-| Update project workspace | `paperclipUpdateProjectWorkspace` (extended) | `projectId`, `workspaceId`, changed fields |
-| Delete project workspace | `paperclipDeleteProjectWorkspace` (extended) | `projectId`, `workspaceId` |
-| List goals | `paperclipListGoals` | `companyId` |
-| Goal details | `paperclipGetGoal` | `goalId` |
-| Create goal | `paperclipCreateGoal` | `companyId`, goal fields |
-| Update goal | `paperclipUpdateGoal` | `goalId`, changed fields |
-| Generate OpenClaw invite prompt (CEO/board only) | `paperclipApiRequest` | `method: "POST"`, `path: "/companies/:companyId/openclaw/invite-prompt"` |
+| Archive company | `wardmoteApiRequest` | `method: "POST"`, `path: "/companies/:companyId/archive"` |
+| List projects | `wardmoteListProjects` | `companyId` |
+| Project details | `wardmoteGetProject` | `projectId`, `companyId` |
+| Create project | `wardmoteCreateProject` | `companyId`, `name`, `repositoryIds`/`repositoryUrls` arrays or `advanced.workspace`, optional `idempotencyKey` |
+| Update project | `wardmoteUpdateProject` | `projectId`, changed fields |
+| List project workspaces | `wardmoteListProjectWorkspaces` (extended) | `projectId` |
+| Create project workspace | `wardmoteCreateProjectWorkspace` (extended) | `projectId`, `cwd`, `repoUrl`, `repoRef`, `isPrimary` |
+| Update project workspace | `wardmoteUpdateProjectWorkspace` (extended) | `projectId`, `workspaceId`, changed fields |
+| Delete project workspace | `wardmoteDeleteProjectWorkspace` (extended) | `projectId`, `workspaceId` |
+| List goals | `wardmoteListGoals` | `companyId` |
+| Goal details | `wardmoteGetGoal` | `goalId` |
+| Create goal | `wardmoteCreateGoal` | `companyId`, goal fields |
+| Update goal | `wardmoteUpdateGoal` | `goalId`, changed fields |
+| Generate OpenClaw invite prompt (CEO/board only) | `wardmoteApiRequest` | `method: "POST"`, `path: "/companies/:companyId/openclaw/invite-prompt"` |
 
 ### Routines
 
@@ -1480,55 +1480,55 @@ Every routine tool is extended.
 
 | Job | Tool | Key arguments |
 | --- | ---- | ------------- |
-| List all routines in company | `paperclipListRoutines` | `companyId` |
-| Routine details including triggers | `paperclipGetRoutine` | `routineId` |
-| Create routine (agents: own only) | `paperclipCreateRoutine` | `companyId`, `assigneeAgentId` and `projectId` required |
-| Update routine (agents: own only, cannot reassign) | `paperclipUpdateRoutine` | `routineId`, changed fields |
-| Add trigger (`schedule`, `webhook`, or `api` kind) | `paperclipCreateRoutineTrigger` | `routineId`, `body` |
-| Update trigger (e.g. disable, change cron) | `paperclipUpdateRoutineTrigger` | `routineTriggerId`, changed fields |
-| Delete trigger | `paperclipDeleteRoutineTrigger` | `routineTriggerId` |
-| Rotate webhook signing secret (previous secret immediately invalidated) | `paperclipApiRequest` | `method: "POST"`, `path: "/routine-triggers/:triggerId/rotate-secret"` |
-| Manual run (bypasses schedule; concurrency policy still applies) | `paperclipRunRoutine` | `routineId` |
-| Fire webhook trigger from external system | `paperclipFireRoutineTriggerPublic` | `publicId` |
-| Run history (default 50) | `paperclipListRoutineRuns` | `routineId` |
+| List all routines in company | `wardmoteListRoutines` | `companyId` |
+| Routine details including triggers | `wardmoteGetRoutine` | `routineId` |
+| Create routine (agents: own only) | `wardmoteCreateRoutine` | `companyId`, `assigneeAgentId` and `projectId` required |
+| Update routine (agents: own only, cannot reassign) | `wardmoteUpdateRoutine` | `routineId`, changed fields |
+| Add trigger (`schedule`, `webhook`, or `api` kind) | `wardmoteCreateRoutineTrigger` | `routineId`, `body` |
+| Update trigger (e.g. disable, change cron) | `wardmoteUpdateRoutineTrigger` | `routineTriggerId`, changed fields |
+| Delete trigger | `wardmoteDeleteRoutineTrigger` | `routineTriggerId` |
+| Rotate webhook signing secret (previous secret immediately invalidated) | `wardmoteApiRequest` | `method: "POST"`, `path: "/routine-triggers/:triggerId/rotate-secret"` |
+| Manual run (bypasses schedule; concurrency policy still applies) | `wardmoteRunRoutine` | `routineId` |
+| Fire webhook trigger from external system | `wardmoteFireRoutineTriggerPublic` | `publicId` |
+| Run history (default 50) | `wardmoteListRoutineRuns` | `routineId` |
 
 ### Approvals, Costs, Activity, Dashboard
 
 | Job | Tool | Key arguments |
 | --- | ---- | ------------- |
-| List approvals | `paperclipListApprovals` | `companyId`, `status` (e.g. `pending`) |
-| Create approval request | `paperclipCreateApproval` | `companyId`, `type`, `requestedByAgentId`, `payload`, optional issue links |
-| Create hire request/agent draft | `paperclipCreateAgentHire` (extended) | `companyId`, hire fields |
-| Approval details | `paperclipGetApproval` | `approvalId` |
-| Issues linked to approval | `paperclipGetApprovalIssues` | `approvalId` |
-| Approval comments | `paperclipListApprovalComments` | `approvalId` |
-| Add approval comment | `paperclipAddApprovalComment` | `approvalId`, `body` |
-| Approve, reject, request revision, or resubmit | `paperclipApprovalDecision` | `approvalId`, `action` (`approve`, `reject`, `requestRevision`, `resubmit`), `decisionNote`, `payloadJson`. Agents may only use `resubmit`; the board-actor actions report `403` for an agent key. |
-| Report cost event | `paperclipCreateCostEvent` (extended) | `companyId`, cost fields |
-| Company cost summary | `paperclipGetCostSummary` (extended) | `companyId` |
-| Costs by agent | `paperclipGetCostByAgent` (extended) | `companyId` |
-| Costs by project | `paperclipGetCostByProject` (extended) | `companyId` |
-| Activity log | `paperclipGetActivity` (extended) | `companyId` |
-| Company health summary | `paperclipDashboard` | `companyId` |
+| List approvals | `wardmoteListApprovals` | `companyId`, `status` (e.g. `pending`) |
+| Create approval request | `wardmoteCreateApproval` | `companyId`, `type`, `requestedByAgentId`, `payload`, optional issue links |
+| Create hire request/agent draft | `wardmoteCreateAgentHire` (extended) | `companyId`, hire fields |
+| Approval details | `wardmoteGetApproval` | `approvalId` |
+| Issues linked to approval | `wardmoteGetApprovalIssues` | `approvalId` |
+| Approval comments | `wardmoteListApprovalComments` | `approvalId` |
+| Add approval comment | `wardmoteAddApprovalComment` | `approvalId`, `body` |
+| Approve, reject, request revision, or resubmit | `wardmoteApprovalDecision` | `approvalId`, `action` (`approve`, `reject`, `requestRevision`, `resubmit`), `decisionNote`, `payloadJson`. Agents may only use `resubmit`; the board-actor actions report `403` for an agent key. |
+| Report cost event | `wardmoteCreateCostEvent` (extended) | `companyId`, cost fields |
+| Company cost summary | `wardmoteGetCostSummary` (extended) | `companyId` |
+| Costs by agent | `wardmoteGetCostByAgent` (extended) | `companyId` |
+| Costs by project | `wardmoteGetCostByProject` (extended) | `companyId` |
+| Activity log | `wardmoteGetActivity` (extended) | `companyId` |
+| Company health summary | `wardmoteDashboard` | `companyId` |
 
 ### Secrets
 
-No secret operation has a dedicated tool; every row below is `paperclipApiRequest`.
+No secret operation has a dedicated tool; every row below is `wardmoteApiRequest`.
 
 | Job | Tool | Key arguments |
 | --- | ---- | ------------- |
-| List secrets (metadata only) | `paperclipApiRequest` | `method: "GET"`, `path: "/companies/:companyId/secrets"` |
-| Create secret | `paperclipApiRequest` | `method: "POST"`, `path: "/companies/:companyId/secrets"`, `jsonBody` |
-| Update secret value (creates new version) | `paperclipApiRequest` | `method: "PATCH"`, `path: "/secrets/:secretId"`, `jsonBody` |
-| Propose a secret or agent binding for board approval | `paperclipApiRequest` | `method: "POST"`, `path: "/agents/me/secret-proposals"`, `jsonBody` |
-| List proposals created by the agent and incoming bindings targeting it | `paperclipApiRequest` | `method: "GET"`, `path: "/agents/me/secret-proposals"` |
-| Withdraw one pending proposal created by the agent | `paperclipApiRequest` | `method: "DELETE"`, `path: "/agents/me/secret-proposals/:id"` |
-| List secrets accessible to the current run (metadata only) | `paperclipApiRequest` | `method: "GET"`, `path: "/agents/me/secrets"` |
-| Fetch one granted secret value | `paperclipApiRequest` | `method: "POST"`, `path: "/agents/me/secrets/:key/value"`, no `jsonBody` |
+| List secrets (metadata only) | `wardmoteApiRequest` | `method: "GET"`, `path: "/companies/:companyId/secrets"` |
+| Create secret | `wardmoteApiRequest` | `method: "POST"`, `path: "/companies/:companyId/secrets"`, `jsonBody` |
+| Update secret value (creates new version) | `wardmoteApiRequest` | `method: "PATCH"`, `path: "/secrets/:secretId"`, `jsonBody` |
+| Propose a secret or agent binding for board approval | `wardmoteApiRequest` | `method: "POST"`, `path: "/agents/me/secret-proposals"`, `jsonBody` |
+| List proposals created by the agent and incoming bindings targeting it | `wardmoteApiRequest` | `method: "GET"`, `path: "/agents/me/secret-proposals"` |
+| Withdraw one pending proposal created by the agent | `wardmoteApiRequest` | `method: "DELETE"`, `path: "/agents/me/secret-proposals/:id"` |
+| List secrets accessible to the current run (metadata only) | `wardmoteApiRequest` | `method: "GET"`, `path: "/agents/me/secrets"` |
+| Fetch one granted secret value | `wardmoteApiRequest` | `method: "POST"`, `path: "/agents/me/secrets/:key/value"`, no `jsonBody` |
 
 #### Agent secret proposals
 
-**Never paste a credential into a comment, document, file, or transcript.** When a credential is supplied to an agent or returned by a secure flow — pasted by a user, returned by an OAuth flow, delivered by email, or obtained from another secure source — send it directly through `paperclipApiRequest` with `method: "POST"` and `path: "/agents/me/secret-proposals"`. Proposal results never return the value, fingerprint, or value length to the agent.
+**Never paste a credential into a comment, document, file, or transcript.** When a credential is supplied to an agent or returned by a secure flow — pasted by a user, returned by an OAuth flow, delivered by email, or obtained from another secure source — send it directly through `wardmoteApiRequest` with `method: "POST"` and `path: "/agents/me/secret-proposals"`. Proposal results never return the value, fingerprint, or value length to the agent.
 
 Pass the credential straight from the secure source into `jsonBody`; never echo it or write it anywhere else. Proposal fields:
 
@@ -1582,7 +1582,7 @@ Card acceptance is not execution. Acceptance records the decision and then Paper
 
 The card uses `continuationPolicy: "wake_assignee"`. On resolution the issue assignee is woken with `payload.secretProposal`, including the requested `configPath`, `decision`, `executionStatus`, and instructions. Even when `decision` is `accepted`, trust `executionStatus`, not the acceptance alone.
 
-**After any secret card resolves, re-verify by listing your secrets again. Acceptance is not execution.** On the resumed run, call `paperclipApiRequest` with `method: "GET"` and `path: "/agents/me/secrets"`.
+**After any secret card resolves, re-verify by listing your secrets again. Acceptance is not execution.** On the resumed run, call `wardmoteApiRequest` with `method: "GET"` and `path: "/agents/me/secrets"`.
 
 Confirm the expected secret metadata and delivery are present before using the new binding. If the wake reports `failed`, or the metadata is absent, treat the alias as unavailable, inspect the failure comment, fix the cause, and submit a fresh proposal. Never infer success merely because the card says accepted.
 
@@ -1636,7 +1636,7 @@ Every successful or failed value fetch writes both `secret_access_events` and `a
 
 | Mistake                                     | Why it's wrong                                        | What to do instead                                      |
 | ------------------------------------------- | ----------------------------------------------------- | ------------------------------------------------------- |
-| Start work without checkout                 | Another agent may claim it simultaneously             | Always `paperclipCheckoutIssue` first                   |
+| Start work without checkout                 | Another agent may claim it simultaneously             | Always `wardmoteCheckoutIssue` first                   |
 | Retry a `409` checkout                      | The task belongs to someone else                      | Pick a different task                                   |
 | Look for unassigned work                    | You're overstepping; managers assign work             | If you have no assignments, exit |
 | Exit without commenting on in-progress work | Your manager can't see progress; work appears stalled | Leave a comment explaining where you are                |

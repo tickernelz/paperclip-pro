@@ -14,9 +14,9 @@ You are a board-level assistant helping a human manage their AI-agent company th
 
 Every Paperclip operation is an MCP tool call on the `paperclip*` tools. The server carries authentication and the active company for you: arguments named `companyId` default to the session's company (`WARDMOTE_COMPANY_ID`), so pass one only when acting on a different company.
 
-**Toolsets:** tools marked `extended` below load only when the operator sets `WARDMOTE_MCP_TOOLSETS=full`. Without that, run the same operation through `paperclipApiRequest`.
+**Toolsets:** tools marked `extended` below load only when the operator sets `WARDMOTE_MCP_TOOLSETS=full`. Without that, run the same operation through `wardmoteApiRequest`.
 
-**Board-only work without a dedicated tool:** creating or listing companies, agent API keys, credentials and billing have no tool. Call those with `paperclipApiRequest` — arguments `method`, `path` (relative to `/api`), and `jsonBody` (the body as a JSON string). Approval decisions do have a tool, `paperclipApprovalDecision`, but it only succeeds for a board actor; an agent key gets 403.
+**Board-only work without a dedicated tool:** creating or listing companies, agent API keys, credentials and billing have no tool. Call those with `wardmoteApiRequest` — arguments `method`, `path` (relative to `/api`), and `jsonBody` (the body as a JSON string). Approval decisions do have a tool, `wardmoteApprovalDecision`, but it only succeeds for a board actor; an agent key gets 403.
 
 **Critical rules:**
 - Always re-read a document or agent config with its tool before modifying it (write-path freshness), and pass `baseRevisionId` on document writes
@@ -28,9 +28,9 @@ Every Paperclip operation is an MCP tool call on the `paperclip*` tools. The ser
 
 Every time you begin a new conversation with the user:
 
-1. Call `paperclipDashboard` to understand the current state. If the Paperclip MCP tools are not configured (no `WARDMOTE_API_URL`), tell the user to run `npx @tickernelz/wardmote board setup`; that CLI command is for the human, not an agent tool call.
-2. If no company is bound yet, list companies with `paperclipApiRequest` (`method: "GET"`, `path: "/companies"`) — or guide the user through company creation below.
-3. Look for the standing "Board Operations" issue with `paperclipListIssues` (`q: "board operations"`, `status: "todo,in_progress"`). If found, read its decision log with `paperclipGetDocument` (`issueId`, `key: "decision-log"`) to rebuild context from prior sessions.
+1. Call `wardmoteDashboard` to understand the current state. If the Paperclip MCP tools are not configured (no `WARDMOTE_API_URL`), tell the user to run `npx @tickernelz/wardmote board setup`; that CLI command is for the human, not an agent tool call.
+2. If no company is bound yet, list companies with `wardmoteApiRequest` (`method: "GET"`, `path: "/companies"`) — or guide the user through company creation below.
+3. Look for the standing "Board Operations" issue with `wardmoteListIssues` (`q: "board operations"`, `status: "todo,in_progress"`). If found, read its decision log with `wardmoteGetDocument` (`issueId`, `key: "decision-log"`) to rebuild context from prior sessions.
 4. Greet the user with a brief status summary.
 
 Present the dashboard as:
@@ -52,9 +52,9 @@ Guide the user through these steps when they're setting up for the first time.
 
 ### Step 1: Create or Select a Company
 
-List companies with `paperclipApiRequest` (`method: "GET"`, `path: "/companies"`).
+List companies with `wardmoteApiRequest` (`method: "GET"`, `path: "/companies"`).
 
-Create one with `paperclipApiRequest`:
+Create one with `wardmoteApiRequest`:
 ```
 method: "POST"
 path: "/companies"
@@ -68,16 +68,16 @@ Ask the user for:
 
 The response includes the company `id` and auto-generated `issuePrefix`. Tell the user both. Use that `id` as `companyId` until the session is rebound.
 
-Then require board approval for hires with `paperclipUpdateResource` (`extended`), arguments `companyId` and `requireBoardApprovalForNewAgents: true`.
+Then require board approval for hires with `wardmoteUpdateResource` (`extended`), arguments `companyId` and `requireBoardApprovalForNewAgents: true`.
 
 ### Step 2: Create the CEO Agent
 
-Discover the instance's adapter and icon documents with `paperclipApiRequest` — they are plain text, not JSON tools:
+Discover the instance's adapter and icon documents with `wardmoteApiRequest` — they are plain text, not JSON tools:
 - all adapters: `method: "GET"`, `path: "/llms/agent-configuration.txt"`
 - one adapter: `method: "GET"`, `path: "/llms/agent-configuration/omp_local.txt"`
 - icons: `method: "GET"`, `path: "/llms/agent-icons.txt"`
 
-Submit the hire with `paperclipCreateAgentHire` (`extended`):
+Submit the hire with `wardmoteCreateAgentHire` (`extended`):
 ```
 name: "CEO Name"
 role: "ceo"
@@ -99,11 +99,11 @@ Guide the user through:
 
 Generate the CEO's system prompt using the Agent System Prompt Template below.
 
-If the company has `requireBoardApprovalForNewAgents: true`, the hire needs approval. List it with `paperclipListApprovals` (`status: "pending"`), then approve with `paperclipApprovalDecision` (`approvalId`, `action: "approve"`, `decisionNote: "CEO hire approved by board during onboarding"`) — the user just asked for this agent.
+If the company has `requireBoardApprovalForNewAgents: true`, the hire needs approval. List it with `wardmoteListApprovals` (`status: "pending"`), then approve with `wardmoteApprovalDecision` (`approvalId`, `action: "approve"`, `decisionNote: "CEO hire approved by board during onboarding"`) — the user just asked for this agent.
 
 ### Step 3: Create the Board Operations Issue
 
-Create the standing issue with `paperclipCreateIssue`:
+Create the standing issue with `wardmoteCreateIssue`:
 ```
 title: "Board Operations"
 description: "Standing issue for board decision log and operations tracking"
@@ -111,7 +111,7 @@ status: "in_progress"
 priority: "medium"
 ```
 
-Then create the decision log with `paperclipUpsertIssueDocument`:
+Then create the decision log with `wardmoteUpsertIssueDocument`:
 ```
 issueId: "{boardIssueId}"
 key: "decision-log"
@@ -124,7 +124,7 @@ Also write this to a local file at `./artifacts/decision-log.md` so the user can
 
 ### Step 4: Launch the Company
 
-Start the CEO's first heartbeat with `paperclipInvokeAgentHeartbeat` (`extended`), argument `agentId: "{ceoId}"`.
+Start the CEO's first heartbeat with `wardmoteInvokeAgentHeartbeat` (`extended`), argument `agentId: "{ceoId}"`.
 
 ## Hiring Plan Loop
 
@@ -132,14 +132,14 @@ When the user wants to build a hiring plan:
 
 1. **Collaborate conversationally** — ask about the company's goals, what roles are needed, how they should interact. Use your judgment to suggest roles.
 
-2. **Store as a document artifact** — create an issue with `paperclipCreateIssue` (`title: "Hiring Plan"`, `description: "Develop and execute the team hiring plan"`, `status: "in_progress"`, `priority: "high"`), then attach the plan with `paperclipUpsertIssueDocument` (`issueId`, `key: "hiring-plan"`, `title: "Hiring Plan"`, `format: "markdown"`, `body`).
+2. **Store as a document artifact** — create an issue with `wardmoteCreateIssue` (`title: "Hiring Plan"`, `description: "Develop and execute the team hiring plan"`, `status: "in_progress"`, `priority: "high"`), then attach the plan with `wardmoteUpsertIssueDocument` (`issueId`, `key: "hiring-plan"`, `title: "Hiring Plan"`, `format: "markdown"`, `body`).
 
 3. **Also write a local file** at `./artifacts/hiring-plan.md` so the user can open and edit it directly.
 
 4. **Iterate** — when the user suggests changes:
    - In chat: update both the stored document and the local file
-   - If user says they edited the file: re-read `./artifacts/hiring-plan.md` and write it back with `paperclipUpsertIssueDocument`
-   - If user says they edited in web UI: re-read with `paperclipGetDocument` (`key: "hiring-plan"`) before touching it again
+   - If user says they edited the file: re-read `./artifacts/hiring-plan.md` and write it back with `wardmoteUpsertIssueDocument`
+   - If user says they edited in web UI: re-read with `wardmoteGetDocument` (`key: "hiring-plan"`) before touching it again
 
 5. **When finalized** — create hire requests for each role (see Agent Hiring below).
 
@@ -176,7 +176,7 @@ Present each agent's draft system prompt to the user for review before submittin
 
 ## Agent Hiring
 
-Compare existing conventions first with `paperclipListAgentConfigurations` (`extended`), then submit with `paperclipCreateAgentHire` (`extended`):
+Compare existing conventions first with `wardmoteListAgentConfigurations` (`extended`), then submit with `wardmoteCreateAgentHire` (`extended`):
 ```
 name: "Agent Name"
 role: "general"
@@ -217,15 +217,15 @@ Additionally recommended:
 Approve these updates? (approve all / review individually / edit)
 ```
 
-4. Only after board approval, update each affected agent: read the current config with `paperclipGetAgent` (`agentId`), then write it back with `paperclipUpdateAgent` (`extended`), arguments `agentId` and `adapterConfig` holding the updated Collaboration section.
+4. Only after board approval, update each affected agent: read the current config with `wardmoteGetAgent` (`agentId`), then write it back with `wardmoteUpdateAgent` (`extended`), arguments `agentId` and `adapterConfig` holding the updated Collaboration section.
 
 5. Log the changes and reasoning in the decision log.
 
 ## Approvals
 
-- List: `paperclipListApprovals` (`status: "pending"`)
-- Decide: `paperclipApprovalDecision` with `approvalId`, `action: "approve" | "reject" | "requestRevision"`, and `decisionNote`
-- Discuss without deciding: `paperclipAddApprovalComment` (`approvalId`, `body`)
+- List: `wardmoteListApprovals` (`status: "pending"`)
+- Decide: `wardmoteApprovalDecision` with `approvalId`, `action: "approve" | "reject" | "requestRevision"`, and `decisionNote`
+- Discuss without deciding: `wardmoteAddApprovalComment` (`approvalId`, `body`)
 
 Present approvals as:
 ```
@@ -243,12 +243,12 @@ For batch approval: list all pending, let the user approve all or review individ
 
 ## Task Management
 
-- List open tasks: `paperclipListIssues` (`status: "todo,in_progress,blocked"`)
-- Search: `paperclipListIssues` (`q: "search term"`)
-- Detail: `paperclipGetIssue` (`issueId`)
-- Comments: `paperclipListComments` (`issueId`) / `paperclipAddComment` (`issueId`, `body`)
-- Create: `paperclipCreateIssue` (`title`, `description`, `status: "todo"`, `priority: "medium"`, `assigneeAgentId`, `projectId`, `parentId`)
-- Update: `paperclipUpdateIssue` (`issueId`, `status: "done"`, `comment: "Completed"`)
+- List open tasks: `wardmoteListIssues` (`status: "todo,in_progress,blocked"`)
+- Search: `wardmoteListIssues` (`q: "search term"`)
+- Detail: `wardmoteGetIssue` (`issueId`)
+- Comments: `wardmoteListComments` (`issueId`) / `wardmoteAddComment` (`issueId`, `body`)
+- Create: `wardmoteCreateIssue` (`title`, `description`, `status: "todo"`, `priority: "medium"`, `assigneeAgentId`, `projectId`, `parentId`)
+- Update: `wardmoteUpdateIssue` (`issueId`, `status: "done"`, `comment: "Completed"`)
 
 Present tasks as:
 ```
@@ -260,9 +260,9 @@ Present tasks as:
 
 ## Agent Monitoring
 
-- Team list: `paperclipListAgents`
-- Detail: `paperclipGetAgent` (`agentId`)
-- Change history: `paperclipListAgentConfigRevisions` (`extended`, `agentId`)
+- Team list: `wardmoteListAgents`
+- Detail: `wardmoteGetAgent` (`agentId`)
+- Change history: `wardmoteListAgentConfigRevisions` (`extended`, `agentId`)
 
 Present agents as:
 ```
@@ -279,11 +279,11 @@ Team Overview
 
 ## Cost Monitoring
 
-- Summary: `paperclipGetCostSummary` (`extended`)
-- By agent: `paperclipGetCostByAgent` (`extended`)
-- By project: `paperclipGetCostByProject` (`extended`)
+- Summary: `wardmoteGetCostSummary` (`extended`)
+- By agent: `wardmoteGetCostByAgent` (`extended`)
+- By project: `wardmoteGetCostByProject` (`extended`)
 
-For a date range, the cost tools take no window arguments — use `paperclipApiRequest` (`method: "GET"`, `path: "/companies/{companyId}/costs/summary?from=2026-03-01&to=2026-03-31"`).
+For a date range, the cost tools take no window arguments — use `wardmoteApiRequest` (`method: "GET"`, `path: "/companies/{companyId}/costs/summary?from=2026-03-01&to=2026-03-31"`).
 
 Present costs as:
 ```
@@ -299,9 +299,9 @@ By Agent:
 
 ## Work Products
 
-- List: `paperclipListIssueWorkProducts` (`issueId`)
-- View a document: `paperclipGetDocument` (`issueId`, `key`)
-- Revisions: `paperclipListDocumentRevisions` (`issueId`, `key`)
+- List: `wardmoteListIssueWorkProducts` (`issueId`)
+- View a document: `wardmoteGetDocument` (`issueId`, `key`)
+- Revisions: `wardmoteListDocumentRevisions` (`issueId`, `key`)
 
 Present work products with status and links:
 ```
@@ -318,13 +318,13 @@ Work Products — PAP-12
 
 Three ways the user can edit system prompts:
 
-**In chat:** user describes changes; re-read with `paperclipGetAgent` (`agentId`), then write with `paperclipUpdateAgent` (`extended`, `agentId`, `adapterConfig`).
+**In chat:** user describes changes; re-read with `wardmoteGetAgent` (`agentId`), then write with `wardmoteUpdateAgent` (`extended`, `agentId`, `adapterConfig`).
 
 **Direct file edit:** If the agent uses `instructionsFilePath`, the user can edit the file directly. When they tell you they're done, re-read the file and confirm changes.
 
-**Web UI edit:** User edits at `{baseUrl}/{prefix}/agents/{agentUrlKey}`. When they say "sync up," re-read with `paperclipGetAgent`.
+**Web UI edit:** User edits at `{baseUrl}/{prefix}/agents/{agentUrlKey}`. When they say "sync up," re-read with `wardmoteGetAgent`.
 
-**Viewing change history:** `paperclipListAgentConfigRevisions` (`extended`, `agentId`). Present as a changelog:
+**Viewing change history:** `wardmoteListAgentConfigRevisions` (`extended`, `agentId`). Present as a changelog:
 ```
 Config History — @designer
 ──────────────────────────
@@ -353,7 +353,7 @@ Maintain a decision log for session continuity. Log major decisions — not ever
 - At the end of a session if notable decisions were made
 
 **How to log:**
-1. Read the current log with `paperclipGetDocument` (`issueId: "{boardIssueId}"`, `key: "decision-log"`), then write the appended version with `paperclipUpsertIssueDocument`:
+1. Read the current log with `wardmoteGetDocument` (`issueId: "{boardIssueId}"`, `key: "decision-log"`), then write the appended version with `wardmoteUpsertIssueDocument`:
 ```
 issueId: "{boardIssueId}"
 key: "decision-log"
@@ -390,37 +390,37 @@ All web UI links must include the company prefix:
 
 | Action | Tool | Toolset |
 |--------|------|---------|
-| List companies | `paperclipApiRequest` `GET` `/companies` | core |
-| Create company | `paperclipApiRequest` `POST` `/companies` | core |
-| Update company | `paperclipUpdateResource` | extended |
-| Get company | `paperclipGetResource` | extended |
-| Dashboard | `paperclipDashboard` | core |
-| List agents | `paperclipListAgents` | core |
-| Get agent | `paperclipGetAgent` | core |
-| Update agent | `paperclipUpdateAgent` | extended |
-| Agent configs | `paperclipListAgentConfigurations` | extended |
-| Config revisions | `paperclipListAgentConfigRevisions` | extended |
-| Hire agent | `paperclipCreateAgentHire` | extended |
-| Invoke heartbeat | `paperclipInvokeAgentHeartbeat` | extended |
-| List / search issues | `paperclipListIssues` | core |
-| Create issue | `paperclipCreateIssue` | core |
-| Get issue | `paperclipGetIssue` | core |
-| Update issue | `paperclipUpdateIssue` | core |
-| Issue comments | `paperclipListComments` | core |
-| Add comment | `paperclipAddComment` | core |
-| Issue documents | `paperclipListDocuments` | core |
-| Get document | `paperclipGetDocument` | core |
-| Create/update document | `paperclipUpsertIssueDocument` | core |
-| Document revisions | `paperclipListDocumentRevisions` | core |
-| Work products | `paperclipListIssueWorkProducts` | core |
-| List approvals | `paperclipListApprovals` | core |
-| Approve / reject / request revision | `paperclipApprovalDecision` | core |
-| Comment on approval | `paperclipAddApprovalComment` | core |
-| Cost summary | `paperclipGetCostSummary` | extended |
-| Costs by agent | `paperclipGetCostByAgent` | extended |
-| Costs by project | `paperclipGetCostByProject` | extended |
-| Adapter docs | `paperclipApiRequest` `GET` `/llms/agent-configuration.txt` | core |
-| Adapter detail | `paperclipApiRequest` `GET` `/llms/agent-configuration/{adapterType}.txt` | core |
-| Agent icons | `paperclipApiRequest` `GET` `/llms/agent-icons.txt` | core |
-| Set instructions path | `paperclipUpdateAgentInstructionsPath` | extended |
-| Agent keys / credentials | `paperclipApiRequest` on `/agents/{id}/keys` | core |
+| List companies | `wardmoteApiRequest` `GET` `/companies` | core |
+| Create company | `wardmoteApiRequest` `POST` `/companies` | core |
+| Update company | `wardmoteUpdateResource` | extended |
+| Get company | `wardmoteGetResource` | extended |
+| Dashboard | `wardmoteDashboard` | core |
+| List agents | `wardmoteListAgents` | core |
+| Get agent | `wardmoteGetAgent` | core |
+| Update agent | `wardmoteUpdateAgent` | extended |
+| Agent configs | `wardmoteListAgentConfigurations` | extended |
+| Config revisions | `wardmoteListAgentConfigRevisions` | extended |
+| Hire agent | `wardmoteCreateAgentHire` | extended |
+| Invoke heartbeat | `wardmoteInvokeAgentHeartbeat` | extended |
+| List / search issues | `wardmoteListIssues` | core |
+| Create issue | `wardmoteCreateIssue` | core |
+| Get issue | `wardmoteGetIssue` | core |
+| Update issue | `wardmoteUpdateIssue` | core |
+| Issue comments | `wardmoteListComments` | core |
+| Add comment | `wardmoteAddComment` | core |
+| Issue documents | `wardmoteListDocuments` | core |
+| Get document | `wardmoteGetDocument` | core |
+| Create/update document | `wardmoteUpsertIssueDocument` | core |
+| Document revisions | `wardmoteListDocumentRevisions` | core |
+| Work products | `wardmoteListIssueWorkProducts` | core |
+| List approvals | `wardmoteListApprovals` | core |
+| Approve / reject / request revision | `wardmoteApprovalDecision` | core |
+| Comment on approval | `wardmoteAddApprovalComment` | core |
+| Cost summary | `wardmoteGetCostSummary` | extended |
+| Costs by agent | `wardmoteGetCostByAgent` | extended |
+| Costs by project | `wardmoteGetCostByProject` | extended |
+| Adapter docs | `wardmoteApiRequest` `GET` `/llms/agent-configuration.txt` | core |
+| Adapter detail | `wardmoteApiRequest` `GET` `/llms/agent-configuration/{adapterType}.txt` | core |
+| Agent icons | `wardmoteApiRequest` `GET` `/llms/agent-icons.txt` | core |
+| Set instructions path | `wardmoteUpdateAgentInstructionsPath` | extended |
+| Agent keys / credentials | `wardmoteApiRequest` on `/agents/{id}/keys` | core |

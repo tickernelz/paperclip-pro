@@ -41,7 +41,7 @@ describe("paperclip MCP error responses", () => {
         vi.fn().mockResolvedValue(mockJsonResponse({ error: `denied ${status}` }, status)),
       );
 
-      const response = await getTool("paperclipGetIssue").execute({ issueId: "PAP-1" });
+      const response = await getTool("wardmoteGetIssue").execute({ issueId: "PAP-1" });
 
       expect(response.isError).toBe(true);
       expect(response.content[0]?.text).toContain(`denied ${status}`);
@@ -52,14 +52,14 @@ describe("paperclip MCP error responses", () => {
   it("leaves a successful tool response unflagged", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(mockJsonResponse({ id: "PAP-1" })));
 
-    const response = await getTool("paperclipGetIssue").execute({ issueId: "PAP-1" });
+    const response = await getTool("wardmoteGetIssue").execute({ issueId: "PAP-1" });
 
     expect(response.isError).toBeUndefined();
     expect(response._meta).toBeUndefined();
   });
 
   it("flattens a validation failure into one readable line per problem", async () => {
-    const response = await getTool("paperclipGetIssue").execute({});
+    const response = await getTool("wardmoteGetIssue").execute({});
 
     expect(response.isError).toBe(true);
     expect(response.content[0]?.text).toBe("issueId: expected string, received undefined");
@@ -67,7 +67,7 @@ describe("paperclip MCP error responses", () => {
   });
 
   it("lists every invalid field on its own line", async () => {
-    const response = await getTool("paperclipListComments").execute({ issueId: "PAP-1", limit: -3 });
+    const response = await getTool("wardmoteListComments").execute({ issueId: "PAP-1", limit: -3 });
 
     expect(response.isError).toBe(true);
     expect(response.content[0]?.text.split("\n")).toEqual([

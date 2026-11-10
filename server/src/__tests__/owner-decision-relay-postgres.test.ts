@@ -233,7 +233,7 @@ describeEmbeddedPostgres("owner-relayed decisions (routes + postgres)", () => {
       .send({});
     expect(blocked.status).toBe(403);
     expect(blocked.body.code).toBe("interaction_human_only");
-    expect(blocked.body.details.remediation).toContain("paperclipAnswerDecisionForOwner");
+    expect(blocked.body.details.remediation).toContain("wardmoteAnswerDecisionForOwner");
 
     const res = await request(wira(seed, run.runId))
       .post(`/api/issues/${plan.issueId}/interactions/${plan.interactionId}/answer-for-owner`)
@@ -528,7 +528,7 @@ describeEmbeddedPostgres("owner-relayed decisions (routes + postgres)", () => {
     });
     expect(byKind("approval")).toMatchObject({ id: desk.approvalId, relayable: false, relayBlockedReason: expect.stringContaining("Board approvals") });
     expect(byKind("recovery_action")).toMatchObject({
-      issueIdentifier: seed.prefix + "-2001", relayable: false, relayBlockedReason: expect.stringContaining("paperclipContinueIssueForOwner"),
+      issueIdentifier: seed.prefix + "-2001", relayable: false, relayBlockedReason: expect.stringContaining("wardmoteContinueIssueForOwner"),
     });
     expect(byKind("review")).toMatchObject({ issueIdentifier: seed.prefix + "-2002", relayable: false });
     for (const item of res.body.items) {

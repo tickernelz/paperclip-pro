@@ -24,7 +24,7 @@ Inside an active heartbeat, Paperclip also injects `WARDMOTE_RUNTIME_TOOLS_*` va
 
 The tool surface is generated from the server's OpenAPI registry, so it tracks the API. Two independent filters decide what a client sees:
 
-- **Toolset.** `core` is the default: the curated hand-written tools plus the everyday generated ones (61 tools, ~33 KB of `tools/list` JSON, ~8k tokens). `full` is a **superset of `core`**, not a sibling: selecting it registers `core` plus the rest of the generated surface (441 tools, ~190 KB; an agent carrying company authority also sees the board-authority tools, 716 tools, ~304 KB). Select with `WARDMOTE_MCP_TOOLSETS=full` or `--toolsets full`; the CLI flag wins, an empty or unknown value falls back to `core`. Requesting `full` alone therefore never drops a core-only tool such as `paperclipCreateChildIssue` or the watchdog pair.
+- **Toolset.** `core` is the default: the curated hand-written tools plus the everyday generated ones (61 tools, ~33 KB of `tools/list` JSON, ~8k tokens). `full` is a **superset of `core`**, not a sibling: selecting it registers `core` plus the rest of the generated surface (441 tools, ~190 KB; an agent carrying company authority also sees the board-authority tools, 716 tools, ~304 KB). Select with `WARDMOTE_MCP_TOOLSETS=full` or `--toolsets full`; the CLI flag wins, an empty or unknown value falls back to `core`. Requesting `full` alone therefore never drops a core-only tool such as `wardmoteCreateChildIssue` or the watchdog pair.
   - `full` is the one canonical name for the whole surface. `all` and `extended` are **deprecated aliases**: both still resolve to the same union, and each warns once per process on stderr so an operator can find and migrate the caller. A caller that keeps passing `?toolsets=extended` keeps working; it never stops resolving.
 - **Names.** Generated tool names are capped at 40 characters (`NAME_LENGTH_LIMIT` in `scripts/generate-mcp-tools.ts`) because a host that truncates an over-long name cannot call the truncated form. An over-long name is shortened by dropping redundant path words, then by a deterministic six-hex path digest, so a name is stable across regenerations.
 - **Parameter names.** A bare `{id}` or `{key}` path placeholder is renamed after the resource segment that precedes it (`/issues/{id}` becomes `issueId`, `/cases/{key}` becomes `caseId`), so a caller never has to guess which `id` a tool wants. The rename is internal: the request path substitution and the wire path are unchanged.
@@ -94,14 +94,14 @@ A `tools/call` that fails is still a JSON-RPC success with a `result`, but the r
 
 ## Tool Surface
 
-Curated tools keep their names and behaviour: the run-scoped `connections_search` and `connection_request`, the issue/comment/document/approval/workspace helpers (`paperclipMe`, `paperclipInboxLite`, `paperclipListIssues`, `paperclipCheckoutIssue`, `paperclipGetHeartbeatContext`, `paperclipUpdateIssue`, `paperclipAddComment`, `paperclipUpsertIssueDocument`, `paperclipGetIssueWorkspaceRuntime`, `paperclipApprovalDecision`, and the rest), and the `paperclipApiRequest` escape hatch.
+Curated tools keep their names and behaviour: the run-scoped `connections_search` and `connection_request`, the issue/comment/document/approval/workspace helpers (`wardmoteMe`, `wardmoteInboxLite`, `wardmoteListIssues`, `wardmoteCheckoutIssue`, `wardmoteGetHeartbeatContext`, `wardmoteUpdateIssue`, `wardmoteAddComment`, `wardmoteUpsertIssueDocument`, `wardmoteGetIssueWorkspaceRuntime`, `wardmoteApprovalDecision`, and the rest), and the `wardmoteApiRequest` escape hatch.
 
-`paperclipListIssues` returns at most `limit` issues and defaults to **25**, not the route's 500, so one call cannot pull the whole board into context. It accepts `limit` (max 1000), `offset`, `view: "compact"`, `updatedSince`, `sortField`, `sortDir` and `includeConversations`, alongside the existing filters. Raise `limit` explicitly when a complete listing is genuinely needed.
+`wardmoteListIssues` returns at most `limit` issues and defaults to **25**, not the route's 500, so one call cannot pull the whole board into context. It accepts `limit` (max 1000), `offset`, `view: "compact"`, `updatedSince`, `sortField`, `sortDir` and `includeConversations`, alongside the existing filters. Raise `limit` explicitly when a complete listing is genuinely needed.
 
 Everything else is generated from the OpenAPI registry into `src/generated/api-tools.json`, one tool per operation, with a zod input schema built from its path parameters, query parameters and JSON body, and `companyId` filled from `WARDMOTE_COMPANY_ID` when the route is company-scoped. MCP annotations (`readOnlyHint`, `destructiveHint`, `idempotentHint`) are derived from the registry and held on each definition, but omitted from the listing unless asked for (see [Annotations](#annotations)).
 
-`paperclipListAgents` returns the compact row shape when called with no arguments, which omits `orgChainHealth`, `appearance` and `avatarUrl`; pass `view: "full"` for the complete shape.
+`wardmoteListAgents` returns the compact row shape when called with no arguments, which omits `orgChainHealth`, `appearance` and `avatarUrl`; pass `view: "full"` for the complete shape.
 
-`paperclipApiRequest` is limited to paths under `/api` and JSON bodies. It is
+`wardmoteApiRequest` is limited to paths under `/api` and JSON bodies. It is
 meant for endpoints that have no dedicated MCP tool, including the credential
 routes that are deliberately kept off the generated surface.

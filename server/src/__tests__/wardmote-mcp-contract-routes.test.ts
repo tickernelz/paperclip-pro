@@ -104,23 +104,23 @@ describeEmbeddedPostgres("hosted Paperclip MCP error and paging contract", () =>
   }
 
   it("pages the curated issue listing instead of returning the whole board", async () => {
-    const result = await callTool("paperclipListIssues", {});
+    const result = await callTool("wardmoteListIssues", {});
 
     expect(result.isError).toBeUndefined();
     const payload = JSON.parse(result.content![0]!.text) as unknown[];
     expect(payload).toHaveLength(25);
-    const compact = await callTool("paperclipListIssues", { limit: 5, view: "compact" });
+    const compact = await callTool("wardmoteListIssues", { limit: 5, view: "compact" });
     expect(JSON.parse(compact.content![0]!.text)).toHaveLength(5);
   });
 
   it("returns exactly one issue for limit 1", async () => {
-    const result = await callTool("paperclipListIssues", { limit: 1 });
+    const result = await callTool("wardmoteListIssues", { limit: 1 });
 
     expect(JSON.parse(result.content![0]!.text)).toHaveLength(1);
   });
 
   it("flags a 404 from the REST API as an MCP error with the status in _meta", async () => {
-    const result = await callTool("paperclipGetIssue", { issueId: randomUUID() });
+    const result = await callTool("wardmoteGetIssue", { issueId: randomUUID() });
 
     expect(result.isError).toBe(true);
     expect(result._meta).toEqual({ "paperclip/httpStatus": 404 });
@@ -129,7 +129,7 @@ describeEmbeddedPostgres("hosted Paperclip MCP error and paging contract", () =>
 
   it("flags a 403 from the REST API as an MCP error with the status in _meta", async () => {
     const result = await callTool(
-      "paperclipGetIssueCount",
+      "wardmoteGetIssueCount",
       { companyId: seeded.otherCompanyId, attention: "blocked" },
       "extended",
     );
@@ -139,7 +139,7 @@ describeEmbeddedPostgres("hosted Paperclip MCP error and paging contract", () =>
   });
 
   it("flags a 400 from the REST API as an MCP error with the status in _meta", async () => {
-    const result = await callTool("paperclipApiRequest", {
+    const result = await callTool("wardmoteApiRequest", {
       method: "GET",
       path: `/companies/${seeded.companyId}/issues?limit=abc`,
     });
@@ -150,7 +150,7 @@ describeEmbeddedPostgres("hosted Paperclip MCP error and paging contract", () =>
   });
 
   it("flags a bad argument as an MCP error without inventing a status", async () => {
-    const result = await callTool("paperclipGetIssue", {});
+    const result = await callTool("wardmoteGetIssue", {});
 
     expect(result.isError).toBe(true);
     expect(result._meta).toBeUndefined();
@@ -158,7 +158,7 @@ describeEmbeddedPostgres("hosted Paperclip MCP error and paging contract", () =>
   });
 
   it("keeps a successful call unflagged", async () => {
-    const result = await callTool("paperclipGetIssue", { issueId: seeded.issueId });
+    const result = await callTool("wardmoteGetIssue", { issueId: seeded.issueId });
 
     expect(result.isError).toBeUndefined();
     expect(result._meta).toBeUndefined();

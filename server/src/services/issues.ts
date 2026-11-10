@@ -7360,7 +7360,7 @@ export function issueService(db: Db) {
         .then((rows) => rows[0] ?? null);
       if (!project) {
         throw unprocessable(
-          `Project ${projectId} was not found in this company. Use paperclipListProjects to get the exact id.`,
+          `Project ${projectId} was not found in this company. Use wardmoteListProjects to get the exact id.`,
           { code: "project_not_found", projectId },
         );
       }
@@ -7373,7 +7373,7 @@ export function issueService(db: Db) {
         .then((rows) => rows[0] ?? null);
       if (!goal) {
         throw unprocessable(
-          `Goal ${goalId} was not found in this company. Use paperclipListGoals to get the exact id.`,
+          `Goal ${goalId} was not found in this company. Use wardmoteListGoals to get the exact id.`,
           { code: "goal_not_found", goalId },
         );
       }

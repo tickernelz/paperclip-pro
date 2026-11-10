@@ -260,7 +260,7 @@ The eval acceptance surface:
   missing claim, and the denial reason — and never any protected state. An
   **absent** tool simply does not appear in exposure lists; the Context tab’s
   control-plane section is the affordance proving absence is intentional.
-- The generic escape hatch (`paperclipApiRequest` successor), when a test
+- The generic escape hatch (`wardmoteApiRequest` successor), when a test
   scenario grants it, renders with a persistent `--pcr-warning-surface`
   “test-only escape hatch” banner on every call card (plan §4: visually
   flagged).

@@ -388,7 +388,7 @@ describeEmbeddedPostgres("issue create deduplication routes", () => {
           code: "parent_missing",
           suggestedParentIssueId: working.id,
           suggestedParentIdentifier: "PAR-7",
-          message: expect.stringContaining("paperclipCreateChildIssue"),
+          message: expect.stringContaining("wardmoteCreateChildIssue"),
         }),
       ]);
     });

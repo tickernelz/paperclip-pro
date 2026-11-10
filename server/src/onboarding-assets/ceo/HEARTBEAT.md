@@ -4,7 +4,7 @@ Run this checklist on every heartbeat. This covers both your local planning/memo
 
 ## 1. Identity and Context
 
-- `paperclipMe` -- confirm your id, role, budget, chainOfCommand.
+- `wardmoteMe` -- confirm your id, role, budget, chainOfCommand.
 - Check wake context: `WARDMOTE_TASK_ID`, `WARDMOTE_WAKE_REASON`, `WARDMOTE_WAKE_COMMENT_ID`.
 
 ## 2. Local Planning Check
@@ -24,7 +24,7 @@ If `WARDMOTE_APPROVAL_ID` is set:
 
 ## 4. Get Assignments
 
-- `paperclipListIssues` with `companyId`, `assigneeAgentId` set to your id, and `status: "todo,in_progress,in_review,blocked"`.
+- `wardmoteListIssues` with `companyId`, `assigneeAgentId` set to your id, and `status: "todo,in_progress,in_review,blocked"`.
 - Prioritize: `in_progress` first, then `in_review` when you were woken by a comment on it, then `todo`. Skip `blocked` unless you can unblock it.
 - If there is already an active run on an `in_progress` task, just move on to the next thing.
 - If `WARDMOTE_TASK_ID` is set and assigned to you, prioritize that task.
@@ -32,7 +32,7 @@ If `WARDMOTE_APPROVAL_ID` is set:
 ## 5. Checkout and Work
 
 - For scoped issue wakes, Paperclip may already checkout the current issue in the harness before your run starts.
-- Only call `paperclipCheckoutIssue` yourself when you intentionally switch to a different task or the wake context did not already claim the issue.
+- Only call `wardmoteCheckoutIssue` yourself when you intentionally switch to a different task or the wake context did not already claim the issue.
 - Never retry a conflict -- that task belongs to someone else.
 - Do the work. Update status and comment when done.
 
@@ -47,8 +47,8 @@ Status quick guide:
 
 ## 6. Delegation
 
-- Create subtasks with `paperclipCreateChildIssue`. Always set `goalId`. For non-child follow-ups that must stay on the same checkout/worktree, use `paperclipCreateIssue` and set `inheritExecutionWorkspaceFromIssueId` to the source issue.
-- When you know the needed work and owner, create those subtasks directly. When the board/user must choose from a proposed task tree, answer structured questions, or confirm a proposal before you can proceed, create an issue-thread interaction on the current issue with `paperclipSuggestTasks`, `paperclipAskUserQuestions`, or `paperclipRequestConfirmation`, setting `continuationPolicy: "wake_assignee"` when the answer should wake you.
+- Create subtasks with `wardmoteCreateChildIssue`. Always set `goalId`. For non-child follow-ups that must stay on the same checkout/worktree, use `wardmoteCreateIssue` and set `inheritExecutionWorkspaceFromIssueId` to the source issue.
+- When you know the needed work and owner, create those subtasks directly. When the board/user must choose from a proposed task tree, answer structured questions, or confirm a proposal before you can proceed, create an issue-thread interaction on the current issue with `wardmoteSuggestTasks`, `wardmoteAskUserQuestions`, or `wardmoteRequestConfirmation`, setting `continuationPolicy: "wake_assignee"` when the answer should wake you.
 - For plan approval, update the `plan` document first, create `request_confirmation` targeting the latest `plan` revision, use an idempotency key like `confirmation:{issueId}:plan:{revisionId}`, set the source issue to `in_review`, and do not create implementation subtasks until the board/user accepts it.
 - `ask_user_questions` and confirmations default `supersedeOnUserComment` to `false`, so a later board/user comment keeps the pending card open while discussion continues. Set it to `true` when a new comment should replace the pending request. If you are woken by a superseding comment, revise the question set or proposal and create a fresh interaction if input is still needed.
 - Use `paperclip-create-agent` skill when hiring new agents.

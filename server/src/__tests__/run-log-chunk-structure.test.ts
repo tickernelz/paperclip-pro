@@ -137,7 +137,7 @@ describe("run-log chunk structure-aware redaction", () => {
     const chunk = `${JSON.stringify({
       type: "tool_execution_end",
       toolCallId: "toolu_01EyHjw8gipigp44NGtydR2W",
-      toolName: "paperclipListAgents",
+      toolName: "wardmoteListAgents",
       result: { content: [{ type: "text", text: JSON.stringify(agents, null, 2) }] },
     })}\n`;
 
@@ -150,7 +150,7 @@ describe("run-log chunk structure-aware redaction", () => {
     expect(JSON.parse(line!)).toMatchObject({
       type: "tool_execution_end",
       toolCallId: "toolu_01EyHjw8gipigp44NGtydR2W",
-      toolName: "paperclipListAgents",
+      toolName: "wardmoteListAgents",
       truncated: true,
     });
     expect(compacted.length).toBeLessThanOrEqual(64 * 1024);

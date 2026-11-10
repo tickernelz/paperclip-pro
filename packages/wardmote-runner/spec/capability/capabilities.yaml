@@ -570,11 +570,11 @@
       ]
     },
     {
-      "id": "skill:skills/paperclip/references/api-reference.md:agent-record-paperclipme-paperclipgetagent:11",
+      "id": "skill:skills/paperclip/references/api-reference.md:agent-record-wardmoteme-wardmotegetagent:11",
       "sourceKind": "skill_heading",
       "sourceAnchor": "skills/paperclip/references/api-reference.md:11",
-      "title": "Agent Record (`paperclipMe`, `paperclipGetAgent`)",
-      "expectedSemantics": "Skill guidance headed “Agent Record (`paperclipMe`, `paperclipGetAgent`)”.",
+      "title": "Agent Record (`wardmoteMe`, `wardmoteGetAgent`)",
+      "expectedSemantics": "Skill guidance headed “Agent Record (`wardmoteMe`, `wardmoteGetAgent`)”.",
       "primaryDisposition": "optional_agent_tool",
       "requiredGrants": [],
       "assertionClasses": [
@@ -600,11 +600,11 @@
       ]
     },
     {
-      "id": "skill:skills/paperclip/references/api-reference.md:issue-with-ancestors-paperclipgetissue:108",
+      "id": "skill:skills/paperclip/references/api-reference.md:issue-with-ancestors-wardmotegetissue:108",
       "sourceKind": "skill_heading",
       "sourceAnchor": "skills/paperclip/references/api-reference.md:108",
-      "title": "Issue with Ancestors (`paperclipGetIssue`)",
-      "expectedSemantics": "Skill guidance headed “Issue with Ancestors (`paperclipGetIssue`)”.",
+      "title": "Issue with Ancestors (`wardmoteGetIssue`)",
+      "expectedSemantics": "Skill guidance headed “Issue with Ancestors (`wardmoteGetIssue`)”.",
       "primaryDisposition": "optional_agent_tool",
       "requiredGrants": [],
       "assertionClasses": [
@@ -615,11 +615,11 @@
       ]
     },
     {
-      "id": "skill:skills/paperclip/references/api-reference.md:issue-update-response-paperclipupdateissue:194",
+      "id": "skill:skills/paperclip/references/api-reference.md:issue-update-response-wardmoteupdateissue:194",
       "sourceKind": "skill_heading",
       "sourceAnchor": "skills/paperclip/references/api-reference.md:194",
-      "title": "Issue Update Response (`paperclipUpdateIssue`)",
-      "expectedSemantics": "Skill guidance headed “Issue Update Response (`paperclipUpdateIssue`)”.",
+      "title": "Issue Update Response (`wardmoteUpdateIssue`)",
+      "expectedSemantics": "Skill guidance headed “Issue Update Response (`wardmoteUpdateIssue`)”.",
       "primaryDisposition": "optional_agent_tool",
       "requiredGrants": [],
       "assertionClasses": [
@@ -630,11 +630,11 @@
       ]
     },
     {
-      "id": "skill:skills/paperclip/references/api-reference.md:blocker-diagnostics-papercliplistissuediagnosticblockers-extended:222",
+      "id": "skill:skills/paperclip/references/api-reference.md:blocker-diagnostics-wardmotelistissuediagnosticblockers-extended:222",
       "sourceKind": "skill_heading",
       "sourceAnchor": "skills/paperclip/references/api-reference.md:222",
-      "title": "Blocker Diagnostics (`paperclipListIssueDiagnosticBlockers`, extended)",
-      "expectedSemantics": "Skill guidance headed “Blocker Diagnostics (`paperclipListIssueDiagnosticBlockers`, extended)”.",
+      "title": "Blocker Diagnostics (`wardmoteListIssueDiagnosticBlockers`, extended)",
+      "expectedSemantics": "Skill guidance headed “Blocker Diagnostics (`wardmoteListIssueDiagnosticBlockers`, extended)”.",
       "primaryDisposition": "control_plane_owned",
       "requiredGrants": [],
       "assertionClasses": [
@@ -645,11 +645,11 @@
       ]
     },
     {
-      "id": "skill:skills/paperclip/references/api-reference.md:wake-diagnostics-papercliplistissuediagnosticwakes-extended:261",
+      "id": "skill:skills/paperclip/references/api-reference.md:wake-diagnostics-wardmotelistissuediagnosticwakes-extended:261",
       "sourceKind": "skill_heading",
       "sourceAnchor": "skills/paperclip/references/api-reference.md:261",
-      "title": "Wake Diagnostics (`paperclipListIssueDiagnosticWakes`, extended)",
-      "expectedSemantics": "Skill guidance headed “Wake Diagnostics (`paperclipListIssueDiagnosticWakes`, extended)”.",
+      "title": "Wake Diagnostics (`wardmoteListIssueDiagnosticWakes`, extended)",
+      "expectedSemantics": "Skill guidance headed “Wake Diagnostics (`wardmoteListIssueDiagnosticWakes`, extended)”.",
       "primaryDisposition": "control_plane_owned",
       "requiredGrants": [],
       "assertionClasses": [
@@ -660,11 +660,11 @@
       ]
     },
     {
-      "id": "skill:skills/paperclip/references/api-reference.md:subtree-diagnostics-paperclipgetissuediagnosticsubtree-extended:305",
+      "id": "skill:skills/paperclip/references/api-reference.md:subtree-diagnostics-wardmotegetissuediagnosticsubtree-extended:305",
       "sourceKind": "skill_heading",
       "sourceAnchor": "skills/paperclip/references/api-reference.md:305",
-      "title": "Subtree Diagnostics (`paperclipGetIssueDiagnosticSubtree`, extended)",
-      "expectedSemantics": "Skill guidance headed “Subtree Diagnostics (`paperclipGetIssueDiagnosticSubtree`, extended)”.",
+      "title": "Subtree Diagnostics (`wardmoteGetIssueDiagnosticSubtree`, extended)",
+      "expectedSemantics": "Skill guidance headed “Subtree Diagnostics (`wardmoteGetIssueDiagnosticSubtree`, extended)”.",
       "primaryDisposition": "optional_agent_tool",
       "requiredGrants": [],
       "assertionClasses": [

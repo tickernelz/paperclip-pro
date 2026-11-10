@@ -2,7 +2,7 @@
 
 Reference material for niche workflows that are pointed to from `SKILL.md`. Load only when the task matches.
 
-Some playbooks below use `extended` toolset tools: they are available when the operator enables `WARDMOTE_MCP_TOOLSETS=full`; otherwise use `paperclipApiRequest`. Each step names the toolset when it matters.
+Some playbooks below use `extended` toolset tools: they are available when the operator enables `WARDMOTE_MCP_TOOLSETS=full`; otherwise use `wardmoteApiRequest`. Each step names the toolset when it matters.
 
 ---
 
@@ -10,8 +10,8 @@ Some playbooks below use `extended` toolset tools: they are available when the o
 
 When asked to set up a new project with workspace config (local folder and/or GitHub repo):
 
-1. `paperclipCreateProject` (core) with the project fields. `companyId` is optional and defaults to your company.
-2. Optionally include `advanced.workspace` in that same create call, or call `paperclipCreateProjectWorkspace` (extended) right after create with `{ "projectId": "<project-id>", ... }`.
+1. `wardmoteCreateProject` (core) with the project fields. `companyId` is optional and defaults to your company.
+2. Optionally include `advanced.workspace` in that same create call, or call `wardmoteCreateProjectWorkspace` (extended) right after create with `{ "projectId": "<project-id>", ... }`.
 
 Workspace rules:
 
@@ -25,7 +25,7 @@ Workspace rules:
 
 Use this when asked to invite a new OpenClaw employee.
 
-1. Generate a fresh OpenClaw invite prompt. There is no dedicated tool, so use `paperclipApiRequest` with `method: "POST"`, `path: "/companies/<companyId>/openclaw/invite-prompt"`, and `jsonBody: "{\"agentMessage\":\"optional onboarding note for OpenClaw\"}"`.
+1. Generate a fresh OpenClaw invite prompt. There is no dedicated tool, so use `wardmoteApiRequest` with `method: "POST"`, `path: "/companies/<companyId>/openclaw/invite-prompt"`, and `jsonBody: "{\"agentMessage\":\"optional onboarding note for OpenClaw\"}"`.
 
 Access control:
 
@@ -46,7 +46,7 @@ Access control:
 
 ## Setting Agent Instructions Path
 
-Use `paperclipUpdateAgentInstructionsPath` (extended) instead of the generic agent patch when you need to set an agent's instructions markdown path (for example `AGENTS.md`):
+Use `wardmoteUpdateAgentInstructionsPath` (extended) instead of the generic agent patch when you need to set an agent's instructions markdown path (for example `AGENTS.md`):
 
 ```json
 {
@@ -75,7 +75,7 @@ Rules:
 
 ## Company Import / Export
 
-Whole-company package moves have no dedicated tool by design. Use `paperclipApiRequest` with the company-scoped paths when a CEO agent needs to inspect or move package content.
+Whole-company package moves have no dedicated tool by design. Use `wardmoteApiRequest` with the company-scoped paths when a CEO agent needs to inspect or move package content.
 
 - CEO-safe imports — `method: "POST"` with `path: "/companies/<companyId>/imports/preview"`, then `path: "/companies/<companyId>/imports/apply"`
 - Allowed callers: board users and the CEO agent of that same company.
@@ -101,7 +101,7 @@ Send the request body as `jsonBody`, a JSON string.
 
 Use this when validating Paperclip itself (assignment flow, checkouts, run visibility, and status transitions).
 
-1. Create a throwaway issue assigned to a known local agent (`claudecoder` or `codexcoder`) with `paperclipCreateIssue` (core):
+1. Create a throwaway issue assigned to a known local agent (`claudecoder` or `codexcoder`) with `wardmoteCreateIssue` (core):
 
 ```json
 {
@@ -112,16 +112,16 @@ Use this when validating Paperclip itself (assignment flow, checkouts, run visib
 }
 ```
 
-2. Trigger a heartbeat for that assignee with `paperclipInvokeAgentHeartbeat` (extended): `{ "agentId": "<agent-id>" }`.
+2. Trigger a heartbeat for that assignee with `wardmoteInvokeAgentHeartbeat` (extended): `{ "agentId": "<agent-id>" }`.
 
-3. Verify the issue transitions (`todo -> in_progress -> done` or `blocked`) and that comments are posted, with `paperclipGetIssue`: `{ "issueId": "<issue-id-or-identifier>" }`.
+3. Verify the issue transitions (`todo -> in_progress -> done` or `blocked`) and that comments are posted, with `wardmoteGetIssue`: `{ "issueId": "<issue-id-or-identifier>" }`.
 
-4. Reassignment test (optional): move the same issue between `claudecoder` and `codexcoder` with `paperclipUpdateIssue` and confirm wake/run behavior:
+4. Reassignment test (optional): move the same issue between `claudecoder` and `codexcoder` with `wardmoteUpdateIssue` and confirm wake/run behavior:
 
 ```json
 { "issueId": "<issue-id>", "assigneeAgentId": "<other-agent-id>", "status": "todo" }
 ```
 
-5. Cleanup: mark temporary issues done/cancelled with `paperclipUpdateIssue` and a clear note.
+5. Cleanup: mark temporary issues done/cancelled with `wardmoteUpdateIssue` and a clear note.
 
 The tools carry the current run context for you, so mutating calls stay attributed to the heartbeat run without any extra argument.

@@ -16,13 +16,13 @@ The helper uses `WARDMOTE_API_URL`, `WARDMOTE_API_KEY`, `WARDMOTE_COMPANY_ID`, `
 
 ## Inspect What Is Already On The Issue
 
-- `paperclipListIssueAttachments` with `{ "issueId": "<issue-id>" }` lists the files attached to the issue, including each `attachmentId`.
-- `paperclipListIssueWorkProducts` with `{ "issueId": "<issue-id>" }` lists the recorded work products. Add `"refreshPullRequests": "true"` when you need pull request state refreshed first.
-- `paperclipDeleteAttachment` with `{ "attachmentId": "<attachment-id>" }` removes an attachment you uploaded by mistake. It is destructive; do not delete attachments you did not create.
+- `wardmoteListIssueAttachments` with `{ "issueId": "<issue-id>" }` lists the files attached to the issue, including each `attachmentId`.
+- `wardmoteListIssueWorkProducts` with `{ "issueId": "<issue-id>" }` lists the recorded work products. Add `"refreshPullRequests": "true"` when you need pull request state refreshed first.
+- `wardmoteDeleteAttachment` with `{ "attachmentId": "<attachment-id>" }` removes an attachment you uploaded by mistake. It is destructive; do not delete attachments you did not create.
 
 ## Record The Work Product
 
-When the uploaded file is the deliverable, record it with `paperclipCreateIssueWorkProduct`. The server canonicalizes attachment-backed artifact metadata from the `attachmentId`:
+When the uploaded file is the deliverable, record it with `wardmoteCreateIssueWorkProduct`. The server canonicalizes attachment-backed artifact metadata from the `attachmentId`:
 
 ```json
 {
@@ -39,7 +39,7 @@ When the uploaded file is the deliverable, record it with `paperclipCreateIssueW
 
 Read the returned work product record before you report the deliverable. If the tool returns an error instead of a record, the work product does not exist — fix the cause and retry rather than describing it as recorded.
 
-When a recorded work product changes later, for example when its pull request merges, patch it with `paperclipUpdateWorkProduct` using the work product id:
+When a recorded work product changes later, for example when its pull request merges, patch it with `wardmoteUpdateWorkProduct` using the work product id:
 
 ```json
 { "workProductId": "<work-product-id>", "status": "done" }
@@ -54,7 +54,7 @@ uploading a deliverable file that a board user should be able to inspect outside
 the workspace.
 
 Annotate the work product with `metadata.resourceRef`, again through
-`paperclipCreateIssueWorkProduct`:
+`wardmoteCreateIssueWorkProduct`:
 
 ```json
 {
@@ -144,7 +144,7 @@ remote workspace. Supply a workspace-relative `contentRef`, basename `filename`,
 `contentType`, exact `byteSize` and SHA-256, `title`, and a stable `idempotencyKey`.
 The tool verifies the file, stores an attachment and artifact work product, and
 binds it to the response. Do not also record the same file with
-`paperclipCreateIssueWorkProduct`; the receipt already covers it.
+`wardmoteCreateIssueWorkProduct`; the receipt already covers it.
 
 Wait for the receipt. It includes `attachmentId`, `contentPath`, and
 `downloadPath`, along with the existing command, revision, entity references,

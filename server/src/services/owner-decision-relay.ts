@@ -492,7 +492,7 @@ export function pendingDecisionCardShape(kind: string, payload: Record<string, u
 }
 
 const GOVERNED_APPROVAL_REASON =
-  "Board approvals (hires, budgets, governed actions) carry company-level effects and budget stops; the owner decides them in Paperclip, or an agent holding company:approvals authority uses paperclipApprovalDecision";
+  "Board approvals (hires, budgets, governed actions) carry company-level effects and budget stops; the owner decides them in Paperclip, or an agent holding company:approvals authority uses wardmoteApprovalDecision";
 const AGENT_DECISION_REASON = "Agent decision bundles are decided on the Paperclip Decisions desk";
 
 const RELAY_SOURCE_KINDS: AttentionSourceKind[] = ["issue_thread_interaction", "approval", "decision"];
@@ -505,7 +505,7 @@ export function isOpenAttentionItem(item: AttentionItem, now: number) {
 
 const DESK_ONLY_REASONS: Partial<Record<AttentionSourceKind, string>> = {
   recovery_action:
-    "A recovery action is resolved on the Paperclip Decisions desk; when the owner explicitly asks to continue the issue, paperclipContinueIssueForOwner relays that",
+    "A recovery action is resolved on the Paperclip Decisions desk; when the owner explicitly asks to continue the issue, wardmoteContinueIssueForOwner relays that",
   review: "A review verdict is given on the issue by its reviewer, not relayed",
   productivity_review: "A productivity review is closed on the Paperclip Decisions desk",
   blocker_attention: "A blocked dependency clears when the blocking issue finishes or the dependency changes; there is no card to answer",

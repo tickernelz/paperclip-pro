@@ -37,13 +37,12 @@ export type ToolListing = {
 };
 
 const FEATURE_TOOL_ALIASES: Readonly<Record<string, string>> = {
-  paperclipGetInstanceSettingFeatures: "paperclipGetInstanceSettingExperimental",
-  paperclipUpdateInstanceFeatures: "paperclipUpdateInstanceExperimental",
+  wardmoteGetInstanceSettingFeatures: "wardmoteGetInstanceSettingExperimental",
+  wardmoteUpdateInstanceFeatures: "wardmoteUpdateInstanceExperimental",
 };
 
 export function canonicalToolName(name: string): string {
-  const legacy = /^wardmote[A-Z]/.test(name) ? `paperclip${name.slice("wardmote".length)}` : name;
-  return FEATURE_TOOL_ALIASES[legacy] ?? legacy;
+  return FEATURE_TOOL_ALIASES[name] ?? name;
 }
 
 export function resolveListingAnnotations(env: NodeJS.ProcessEnv = process.env): boolean {

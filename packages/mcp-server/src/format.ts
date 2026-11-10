@@ -50,7 +50,7 @@ function editDistance(left: string, right: string): number {
 }
 
 const MONITOR_ARGUMENT_HINT =
-  "schedule the issue monitor with advanced.executionPolicy.monitor.nextCheckAt on paperclipUpdateIssue";
+  "schedule the issue monitor with advanced.executionPolicy.monitor.nextCheckAt on wardmoteUpdateIssue";
 
 function isMonitorArgument(key: string): boolean {
   return key === "monitor" || /^monitor[A-Z]/.test(key);

@@ -2,7 +2,7 @@
 
 Use this reference when a board user, CEO, or manager asks you to find a skill, install it into the company library, or assign it to an agent.
 
-**Toolset:** `paperclipListSkills` is in the default `core` toolset. Every other tool on this page is in the `extended` toolset: it is available when the operator enables `WARDMOTE_MCP_TOOLSETS=full`; otherwise use `paperclipApiRequest`. `companyId` is optional on company-scoped tools and defaults to your company.
+**Toolset:** `wardmoteListSkills` is in the default `core` toolset. Every other tool on this page is in the `extended` toolset: it is available when the operator enables `WARDMOTE_MCP_TOOLSETS=full`; otherwise use `wardmoteApiRequest`. `companyId` is optional on company-scoped tools and defaults to your company.
 
 ## What Exists
 
@@ -13,8 +13,8 @@ Use this reference when a board user, CEO, or manager asks you to find a skill, 
 
 The canonical model is:
 
-1. add the skill to the company library — either from the app catalog (`paperclipInstallCatalogSkill`), an external source (`paperclipImportSkill`), or a managed local skill (`paperclipCreateSkill` / `paperclipCreateSkillScanProject`)
-2. attach the company skill to the agent (`paperclipSyncAgentSkill`)
+1. add the skill to the company library — either from the app catalog (`wardmoteInstallCatalogSkill`), an external source (`wardmoteImportSkill`), or a managed local skill (`wardmoteCreateSkill` / `wardmoteCreateSkillScanProject`)
+2. attach the company skill to the agent (`wardmoteSyncAgentSkill`)
 3. optionally do step 2 during hire/create with `desiredSkills`
 
 Catalog install ≠ agent attach. Installing a catalog skill only adds the row to
@@ -32,28 +32,28 @@ set.
 
 App-shipped catalog (read-only browse + company install):
 
-- `paperclipGetSkillCatalog` — browse catalog entries; each entry reports its `kind` (`bundled` or `optional`)
-- `paperclipGetSkillCatalogByCatalogId` — `{ "catalogId": "<catalog-id>" }`
-- resolving a catalog ref and reading catalog files have no dedicated tool: use `paperclipApiRequest` with `method: "GET"`, `path: "/skills/catalog/ref?ref=<id|key|slug>"` or `path: "/skills/catalog/<catalogId>/files?path=SKILL.md"`
-- `paperclipInstallCatalogSkill` — install a catalog skill into the company
+- `wardmoteGetSkillCatalog` — browse catalog entries; each entry reports its `kind` (`bundled` or `optional`)
+- `wardmoteGetSkillCatalogByCatalogId` — `{ "catalogId": "<catalog-id>" }`
+- resolving a catalog ref and reading catalog files have no dedicated tool: use `wardmoteApiRequest` with `method: "GET"`, `path: "/skills/catalog/ref?ref=<id|key|slug>"` or `path: "/skills/catalog/<catalogId>/files?path=SKILL.md"`
+- `wardmoteInstallCatalogSkill` — install a catalog skill into the company
 
 Company library:
 
-- `paperclipListSkills` — the installed company skill library
-- `paperclipGetSkill` — `{ "skillId": "<skill-id>" }`
-- reading a company skill file has no dedicated tool: use `paperclipApiRequest` with `method: "GET"`, `path: "/companies/<companyId>/skills/<skillId>/files?path=SKILL.md"`
-- `paperclipCreateSkill` — managed local create
-- `paperclipImportSkill` — import from an external source
-- `paperclipCreateSkillScanProject` — discover skills in the company project workspaces
-- `paperclipListSkillUpdateStatus` / `paperclipInstallUpdateSkill` — check and apply an update
-- `paperclipAuditSkill`, `paperclipResetSkill`, `paperclipDeleteSkill`
+- `wardmoteListSkills` — the installed company skill library
+- `wardmoteGetSkill` — `{ "skillId": "<skill-id>" }`
+- reading a company skill file has no dedicated tool: use `wardmoteApiRequest` with `method: "GET"`, `path: "/companies/<companyId>/skills/<skillId>/files?path=SKILL.md"`
+- `wardmoteCreateSkill` — managed local create
+- `wardmoteImportSkill` — import from an external source
+- `wardmoteCreateSkillScanProject` — discover skills in the company project workspaces
+- `wardmoteListSkillUpdateStatus` / `wardmoteInstallUpdateSkill` — check and apply an update
+- `wardmoteAuditSkill`, `wardmoteResetSkill`, `wardmoteDeleteSkill`
 
 Agent attach and hire/create composition:
 
-- `paperclipListAgentSkills` — `{ "agentId": "<agent-id>" }`
-- `paperclipSyncAgentSkill` — attach or detach company skills on an agent
-- `paperclipCreateAgentHire` — hire with `desiredSkills`
-- `paperclipCreateAgent` — direct create with `desiredSkills`
+- `wardmoteListAgentSkills` — `{ "agentId": "<agent-id>" }`
+- `wardmoteSyncAgentSkill` — attach or detach company skills on an agent
+- `wardmoteCreateAgentHire` — hire with `desiredSkills`
+- `wardmoteCreateAgent` — direct create with `desiredSkills`
 
 ## Install A Skill Into The Company
 
@@ -61,9 +61,9 @@ Two paths cover the common cases:
 
 1. **App-shipped catalog** (preferred when the right skill exists in the
    bundled/optional catalog) — browse it first, then install with
-   `paperclipInstallCatalogSkill`. No external network fetch happens.
+   `wardmoteInstallCatalogSkill`. No external network fetch happens.
 2. **External source** (skills.sh, GitHub, local path, or URL) — use
-   `paperclipImportSkill`.
+   `wardmoteImportSkill`.
 
 ### App-shipped catalog
 
@@ -71,8 +71,8 @@ Browse, inspect, and install catalog skills before reaching for an external
 source. Bundled skills are the curated defaults for any company; optional
 skills are role- or domain-specific.
 
-Browse with `paperclipGetSkillCatalog`, inspect one entry with
-`paperclipGetSkillCatalogByCatalogId`, then install with `paperclipInstallCatalogSkill`:
+Browse with `wardmoteGetSkillCatalog`, inspect one entry with
+`wardmoteGetSkillCatalogByCatalogId`, then install with `wardmoteInstallCatalogSkill`:
 
 ```json
 {
@@ -102,7 +102,7 @@ Import using a **skills.sh URL**, a key-style source string, a GitHub URL, or a 
 
 ### Example: skills.sh import (preferred)
 
-`paperclipImportSkill`:
+`wardmoteImportSkill`:
 
 ```json
 { "source": "https://skills.sh/google-labs-code/stitch-skills/design-md" }
@@ -126,12 +126,12 @@ You can also use source strings such as:
 - `vercel-labs/agent-browser/agent-browser`
 - `npx skills add https://github.com/vercel-labs/agent-browser --skill agent-browser`
 
-If the task is to discover skills from the company project workspaces first, call `paperclipCreateSkillScanProject` with no arguments beyond the optional `companyId`.
+If the task is to discover skills from the company project workspaces first, call `wardmoteCreateSkillScanProject` with no arguments beyond the optional `companyId`.
 
 ## Inspect What Was Installed
 
-Call `paperclipListSkills` for the library, then `paperclipGetSkill` with the
-`skillId` for one entry. To read its `SKILL.md`, use `paperclipApiRequest` with
+Call `wardmoteListSkills` for the library, then `wardmoteGetSkill` with the
+`skillId` for one entry. To read its `SKILL.md`, use `wardmoteApiRequest` with
 `method: "GET"`, `path: "/companies/<companyId>/skills/<skillId>/files?path=SKILL.md"`.
 
 ## Assign Skills To An Existing Agent
@@ -144,7 +144,7 @@ Call `paperclipListSkills` for the library, then `paperclipGetSkill` with the
 
 The server persists canonical company skill keys.
 
-`paperclipSyncAgentSkill` requires a merge mode:
+`wardmoteSyncAgentSkill` requires a merge mode:
 
 - `add` adds the named skills and keeps every other assignment.
 - `remove` removes only the named skills.
@@ -158,12 +158,12 @@ The server persists canonical company skill keys.
 }
 ```
 
-If you need the current state first, call `paperclipListAgentSkills` with
+If you need the current state first, call `wardmoteListAgentSkills` with
 `{ "agentId": "<agent-id>" }`.
 
 ## Include Skills During Hire Or Create
 
-Use the same company skill keys or references in `desiredSkills` when hiring with `paperclipCreateAgentHire`:
+Use the same company skill keys or references in `desiredSkills` when hiring with `wardmoteCreateAgentHire`:
 
 ```json
 {
@@ -175,12 +175,12 @@ Use the same company skill keys or references in `desiredSkills` when hiring wit
 }
 ```
 
-For direct create without approval, pass the same arguments to `paperclipCreateAgent`.
+For direct create without approval, pass the same arguments to `wardmoteCreateAgent`.
 
 ## Notes
 
 - Built-in Paperclip runtime skills are still added automatically when required by the adapter.
 - If a reference is missing or ambiguous, the tool returns a `422` error and nothing was installed or assigned.
 - Prefer linking back to the relevant issue, approval, and agent when you comment about skill changes.
-- Whole-package company import/export has no dedicated tool. Use `paperclipApiRequest` with `method: "POST"` and one of `path: "/companies/<companyId>/imports/preview"`, `path: "/companies/<companyId>/imports/apply"`, `path: "/companies/<companyId>/exports/preview"`, `path: "/companies/<companyId>/exports"`.
+- Whole-package company import/export has no dedicated tool. Use `wardmoteApiRequest` with `method: "POST"` and one of `path: "/companies/<companyId>/imports/preview"`, `path: "/companies/<companyId>/imports/apply"`, `path: "/companies/<companyId>/exports/preview"`, `path: "/companies/<companyId>/exports"`.
 - Use skill-only import when the task is specifically to add a skill to the company library without importing the surrounding company/team/package structure.
