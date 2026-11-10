@@ -381,10 +381,10 @@ describe("paperclip runner transcript projection", () => {
     }), "2026-08-21T12:00:00.000Z");
 
     expect(event("mcp_app.tool_input", {
-      semantic_tool: { callId: "mcp-1", operationId: "paperclip.tasks.create", content: { references: [{ kind: "issue", id: "PAP-2" }] } },
-    })).toEqual([expect.objectContaining({ kind: "tool_call", toolUseId: "mcp-1", name: "paperclip.tasks.create" })]);
+      semantic_tool: { callId: "mcp-1", operationId: "wardmote.tasks.create", content: { references: [{ kind: "issue", id: "PAP-2" }] } },
+    })).toEqual([expect.objectContaining({ kind: "tool_call", toolUseId: "mcp-1", name: "wardmote.tasks.create" })]);
     expect(event("mcp_app.tool_result", {
-      semantic_tool: { callId: "mcp-1", operationId: "paperclip.tasks.create", outcome: "denied", code: "audience_denied" },
+      semantic_tool: { callId: "mcp-1", operationId: "wardmote.tasks.create", outcome: "denied", code: "audience_denied" },
     })).toEqual([expect.objectContaining({ kind: "tool_result", toolUseId: "mcp-1", isError: true })]);
     expect(event("usage.reported", {
       runDelta: { inputTokens: 240, outputTokens: 60, cacheReadTokens: 120 },

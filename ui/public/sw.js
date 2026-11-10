@@ -189,8 +189,8 @@ function handleNavigation(event) {
   );
 }
 
-const NOTIFICATION_MESSAGE = "paperclip.notification";
-const NAVIGATE_MESSAGE = "paperclip.navigate";
+const NOTIFICATION_MESSAGE = "wardmote.notification";
+const NAVIGATE_MESSAGE = "wardmote.navigate";
 
 function readPushNotification(event) {
   if (!event.data) return null;

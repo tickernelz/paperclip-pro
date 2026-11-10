@@ -351,8 +351,8 @@ export function Routines() {
     variables: [],
   });
   const routineViewStateKey = selectedCompanyId
-    ? `paperclip:routines-view:${selectedCompanyId}`
-    : "paperclip:routines-view";
+    ? `wardmote:routines-view:${selectedCompanyId}`
+    : "wardmote:routines-view";
   const [routineViewState, setRoutineViewState] = useState<RoutineViewState>(() => getRoutineViewState(routineViewStateKey));
   const folderSelection = normalizeFolderSelection(searchParams.get("folder"));
 
@@ -1205,7 +1205,7 @@ export function Routines() {
           ) : null}
           {routineViewState.groupBy === "folder" && !hasRoutineFolders && !foldersLoading && visibleRoutines.length > 0 ? (
             <AllUnfiledBanner
-              storageKey={`paperclip:routines-folder-nudge:${selectedCompanyId ?? "none"}`}
+              storageKey={`wardmote:routines-folder-nudge:${selectedCompanyId ?? "none"}`}
               itemLabelPlural="routines"
               onCreateFolder={() => openCreateFolder()}
             />

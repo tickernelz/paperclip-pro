@@ -30,7 +30,7 @@ export function AgentMailIntentSetup({ companyId, agentId, requestId, savedCrede
   onDecline(): void;
   declining?: boolean;
 }) {
-  const draftKey = `paperclip.agentmail-inline:${companyId}:${requestId}`;
+  const draftKey = `wardmote.agentmail-inline:${companyId}:${requestId}`;
   const [draft] = useState(() => readDraft(draftKey));
   const [setupRequestId, setSetupRequestId] = useState(draft?.setupRequestId ?? requestId);
   const [apiKey, setApiKey] = useState("");

@@ -4,9 +4,9 @@ import { QuestionChat, question } from "../fixtures/unansweredQuestionChat";
 
 const meta = { title: "Chat & Comments/Agent Chat Unanswered Questions", parameters: { layout: "fullscreen" }, component: QuestionChat,
   beforeEach: () => {
-    localStorage.removeItem(`paperclip:task-question-dismissals:user-board:${question.issueId}`);
+    localStorage.removeItem(`wardmote:task-question-dismissals:user-board:${question.issueId}`);
     for (const key of Object.keys(localStorage)) {
-      if (key.includes(`paperclip:task-input:${question.issueId}:`)) localStorage.removeItem(key);
+      if (key.includes(`wardmote:task-input:${question.issueId}:`)) localStorage.removeItem(key);
     }
   },
 } satisfies Meta<typeof QuestionChat>;

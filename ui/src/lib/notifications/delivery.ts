@@ -8,8 +8,8 @@ import { getNotificationSettings, type NotificationSettings } from "./settings";
 
 export type NotificationAction = "none" | "sound" | "os";
 
-export const SW_NOTIFICATION_MESSAGE = "paperclip.notification";
-export const SW_NAVIGATE_MESSAGE = "paperclip.navigate";
+export const SW_NOTIFICATION_MESSAGE = "wardmote.notification";
+export const SW_NAVIGATE_MESSAGE = "wardmote.navigate";
 
 function kindEnabled(notification: WardmoteNotification, settings: NotificationSettings): boolean {
   return settings.enabled && settings.kinds[notification.kind]?.enabled === true;

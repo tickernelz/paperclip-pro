@@ -561,10 +561,10 @@ export interface AttentionFilterOptions {
   hasNoWorkspace: boolean;
 }
 
-export const ATTENTION_GROUP_BY_KEY = "paperclip:attention:group-by";
-export const ATTENTION_SORT_KEY = "paperclip:attention:sort";
-export const ATTENTION_FILTERS_KEY_PREFIX = "paperclip:attention:filters";
-export const ATTENTION_COLLAPSED_GROUPS_KEY_PREFIX = "paperclip:attention:collapsed-groups";
+export const ATTENTION_GROUP_BY_KEY = "wardmote:attention:group-by";
+export const ATTENTION_SORT_KEY = "wardmote:attention:sort";
+export const ATTENTION_FILTERS_KEY_PREFIX = "wardmote:attention:filters";
+export const ATTENTION_COLLAPSED_GROUPS_KEY_PREFIX = "wardmote:attention:collapsed-groups";
 
 function isAttentionGroupBy(value: unknown): value is AttentionGroupBy {
   return value === "none" || value === "date" || value === "type" || value === "project" || value === "severity";

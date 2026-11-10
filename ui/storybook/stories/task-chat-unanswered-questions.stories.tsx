@@ -19,7 +19,7 @@ export const AnsweredHistory: Story = { args: { answered: true } };
 export const Mobile: Story = { args: { movedOn: true }, globals: { viewport: { value: "mobile", isRotated: false } } };
 export const DismissAndAnswerLater: Story = {
   beforeEach: () => {
-    localStorage.removeItem("paperclip:task-question-dismissals:user-board:task-unanswered-questions-demo");
+    localStorage.removeItem("wardmote:task-question-dismissals:user-board:task-unanswered-questions-demo");
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
