@@ -544,7 +544,7 @@ per-run `--extension <tmpdir>` package holding a single `.mcp.json`
 appended, so the operator's own `~/.omp/agent/mcp.json` servers keep loading.
 
 By default the entry is `type: http` and points at the server-hosted endpoint
-`$WARDMOTE_API_URL/mcp/paperclip?toolsets=core`, with
+`$WARDMOTE_API_URL/mcp/wardmote?toolsets=core`, with
 `Authorization: Bearer ${WARDMOTE_API_KEY}` (an env reference, never a literal)
 and `X-Wardmote-Run-Id`. That costs no process and no extra memory per run.
 `paperclipMcpTransport: stdio` is the fallback: it spawns the bundled

@@ -57,7 +57,7 @@ cloudflared tunnel --protocol http2 --url http://127.0.0.1:43127 --no-autoupdate
 DOT_LAB_ORIGIN=https://YOUR-TUNNEL-HOST pnpm prototype:dot:live
 ```
 
-Add `https://YOUR-TUNNEL-HOST/mcp/paperclip` as an OAuth MCP plugin in the
+Add `https://YOUR-TUNNEL-HOST/mcp/wardmote` as an OAuth MCP plugin in the
 account that owns the Dot. The consent page waits for local operator approval.
 The lab prints a local `control.json` path; it contains a temporary credential,
 must stay local, and is removed when the lab stops. The separate control port

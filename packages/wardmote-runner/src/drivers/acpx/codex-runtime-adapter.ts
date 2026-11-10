@@ -434,7 +434,7 @@ export async function openQualifiedAcpxRuntime(
             // This URL comes from the runner-owned authenticated tool bridge,
             // never provider-supplied permission-request metadata.
             WARDMOTE_ACPX_TASK_TOOL_BRIDGE_URL: options.mcpServers.find(
-              (server) => server.runnerOwned && server.name === "paperclip",
+              (server) => server.runnerOwned && server.name === "wardmote",
             )?.url ?? "",
           }
         : {}),

@@ -340,8 +340,8 @@ fn does_not_label_non_usd_acpx_cost_as_usd() {
 fn matches_typescript_mcp_display_identity_across_tool_lifecycle() {
     for (title, namespace, name) in [
         (
-            "mcp__paperclip__write_document",
-            "paperclip",
+            "mcp__wardmote__write_document",
+            "wardmote",
             "write_document",
         ),
         (
@@ -355,7 +355,7 @@ fn matches_typescript_mcp_display_identity_across_tool_lifecycle() {
             "write_document",
         ),
         ("McP.other.read_document", "other", "read_document"),
-        ("mcp__paperclip__nested__tool", "paperclip", "nested__tool"),
+        ("mcp__wardmote__nested__tool", "wardmote", "nested__tool"),
         ("mcp.paperclip.nested.tool", "paperclip", "nested.tool"),
         ("mcp_____write_document", "_", "write_document"),
         ("mcp__é__write_document", "é", "write_document"),
@@ -446,10 +446,10 @@ fn leaves_builtin_and_malformed_mcp_titles_as_display_only_builtin_names() {
         "write_document",
         "paperclip__write_document",
         "mcp____write_document",
-        "mcp__paperclip__",
+        "mcp__wardmote__",
         "mcp..write_document",
         "mcp.paperclip.",
-        "mcp__paperclip__write\ndocument",
+        "mcp__wardmote__write\ndocument",
     ] {
         let events = normalize(
             AcpxRuntimeEventKind::ToolCall,

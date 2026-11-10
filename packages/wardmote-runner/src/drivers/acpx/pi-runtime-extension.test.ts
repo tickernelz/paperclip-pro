@@ -199,7 +199,7 @@ describe("owned Pi runtime extension", () => {
     const endpoint = "https://paperclip.example/api/mcp/gateway/assigned";
     const authorization = "Bearer 1234567890123456";
     const assigned = readPiRuntimeConfiguration({ PAPERCLIP_PI_RUNTIME_CONFIGURATION: JSON.stringify({
-      ...config, servers: [{ type: "http", name: "paperclip-assigned", url: endpoint, headers: [{ name: "Authorization", value: authorization }] }],
+      ...config, servers: [{ type: "http", name: "wardmote-assigned", url: endpoint, headers: [{ name: "Authorization", value: authorization }] }],
     }) });
     const fetch_ = vi.fn<typeof fetch>(async (_url, init) => {
       const body = JSON.parse(String(init!.body));
@@ -210,7 +210,7 @@ describe("owned Pi runtime extension", () => {
     });
     await installPiRuntimeExtension(h.api, assigned, (server, method, params, id, signal) => piMcpRequest(server, method, params, id, signal, fetch_)); h.handlers.get("turn_start")!();
     expect(h.tools).toHaveLength(1);
-    expect(h.tools[0]!.name).toBe("mcp__paperclip-assigned__report_progress");
+    expect(h.tools[0]!.name).toBe("mcp__wardmote-assigned__report_progress");
     const signal = new AbortController().signal;
     await expect(h.tools[0]!.execute("assigned-call-1", { text: "done" }, signal)).resolves.toMatchObject({ content: [{ text: "recorded" }] });
     expect(fetch_.mock.calls.map(([, init]) => JSON.parse(String(init!.body)).method)).toEqual(["initialize", "tools/list", "tools/call"]);
@@ -333,18 +333,18 @@ describe("owned Pi runtime extension", () => {
 
   it("registers exact authenticated MCP tools with stable idempotency and abort signal", async () => {
     const { config } = await workspace(); const h = harness();
-    config.servers = [{ type: "http", name: "paperclip", url: "http://127.0.0.1:1234", headers: [] }];
+    config.servers = [{ type: "http", name: "wardmote", url: "http://127.0.0.1:1234", headers: [] }];
     const request = vi.fn(async (_server, method) => method === "tools/list"
       ? { tools: [{ name: "report_progress", description: "Report progress", inputSchema: { type: "object", properties: {} } }] }
       : method === "tools/call" ? { content: [{ type: "text", text: "recorded" }] } : {});
     await installPiRuntimeExtension(h.api, config, request); h.handlers.get("turn_start")!();
-    const tool = h.tools[0]!; expect(tool.name).toBe("mcp__paperclip__report_progress");
+    const tool = h.tools[0]!; expect(tool.name).toBe("mcp__wardmote__report_progress");
     const signal = new AbortController().signal;
     await expect(tool.execute("call-1", { text: "done" }, signal)).resolves.toMatchObject({ content: [{ text: "recorded" }] });
     expect(request).toHaveBeenLastCalledWith(config.servers[0], "tools/call", { name: "report_progress", arguments: { text: "done" } }, expect.stringMatching(/^pi-[a-f0-9]{64}$/), signal);
     const select = vi.fn(); const context = { cwd: config.workspace, ui: { select } };
     expect(await h.handlers.get("tool_call")!({ toolName: tool.name, toolCallId: "m", input: {} }, context)).toBeUndefined();
-    expect(await h.handlers.get("tool_call")!({ toolName: "mcp__paperclip__invented", toolCallId: "i", input: {} }, context)).toMatchObject({ block: true });
+    expect(await h.handlers.get("tool_call")!({ toolName: "mcp__wardmote__invented", toolCallId: "i", input: {} }, context)).toMatchObject({ block: true });
     expect(select).not.toHaveBeenCalled();
   });
 

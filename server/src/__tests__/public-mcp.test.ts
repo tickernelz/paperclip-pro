@@ -37,7 +37,7 @@ import { eventFetch, signingKey, type EventFetch } from "../services/public-mcp/
 
 const support = await getEmbeddedPostgresTestSupport();
 if (!support.supported) console.warn(`Public MCP database checks unavailable: ${support.reason}`);
-const config = { origin: "https://paperclip.example", resource: "https://paperclip.example/mcp/paperclip" };
+const config = { origin: "https://paperclip.example", resource: "https://paperclip.example/mcp/wardmote" };
 const redirectUri = "https://client.example/callback";
 const verifier = randomBytes(32).toString("base64url");
 const challenge = createHash("sha256").update(verifier).digest("base64url");
@@ -46,7 +46,7 @@ describe("public MCP configuration", () => {
   it("uses the configured origin independently of the retired environment gate", () => {
     expect(publicMcpConfig({})).toBeNull();
     expect(() => publicMcpConfig({ WARDMOTE_PUBLIC_URL: "http://example.com" })).toThrow();
-    expect(publicMcpConfig({ WARDMOTE_PUBLIC_URL: "http://localhost:3100" })?.resource).toBe("http://localhost:3100/mcp/paperclip");
+    expect(publicMcpConfig({ WARDMOTE_PUBLIC_URL: "http://localhost:3100" })?.resource).toBe("http://localhost:3100/mcp/wardmote");
     expect(publicMcpConfig({}, "https://paperclip.example")?.origin).toBe("https://paperclip.example");
     expect(publicMcpConfig({ WARDMOTE_PUBLIC_MCP_ENABLED: "true" })).toBeNull();
     expect(publicMcpCapabilities.map((c) => c.name)).not.toEqual(expect.arrayContaining(["run_tool", "call_api"]));
@@ -286,7 +286,7 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
     const client = await oauth.register({ client_name: "Client", redirect_uris: [redirectUri] });
     const input = { client_id: client.client_id, redirect_uri: redirectUri, response_type: "code", resource: config.resource, code_challenge: challenge, code_challenge_method: "S256" };
     await expect(oauth.authorize({ ...input, redirect_uri: "https://evil.example" })).rejects.toThrow();
-    await expect(oauth.authorize({ ...input, resource: "https://other.example/mcp/paperclip" })).rejects.toThrow();
+    await expect(oauth.authorize({ ...input, resource: "https://other.example/mcp/wardmote" })).rejects.toThrow();
     await expect(oauth.authorize({ ...input, code_challenge_method: "plain" })).rejects.toThrow();
     const id = (await oauth.authorize(input)).split("/").at(-1)!;
     await expect(oauth.consent(id, { type: "board", source: "local_implicit", userId: "board" }, { decision: "approve", companyId: randomUUID(), allowWrites: true })).rejects.toThrow();
@@ -388,10 +388,10 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
     try {
       await settings.updateExperimental({ enablePublicMcp: false });
       expect(await createPublicMcpOAuth(db, config).isEnabled()).toBe(false);
-      for (const path of ["/.well-known/oauth-authorization-server", "/.well-known/oauth-protected-resource/mcp/paperclip"]) {
+      for (const path of ["/.well-known/oauth-authorization-server", "/.well-known/oauth-protected-resource/mcp/wardmote"]) {
         expect((await request(app).get(path)).status).toBe(503);
       }
-      expect((await request(app).post("/mcp/paperclip").set("Authorization", `Bearer ${f.tokens.access_token}`).send({})).status).toBe(503);
+      expect((await request(app).post("/mcp/wardmote").set("Authorization", `Bearer ${f.tokens.access_token}`).send({})).status).toBe(503);
       await expect(oauth.register({ client_name: "disabled", redirect_uris: [redirectUri] })).rejects.toMatchObject({ status: 503 });
       await expect(oauth.token({ grant_type: "refresh_token", client_id: f.client.client_id, resource: config.resource, refresh_token: f.tokens.refresh_token })).rejects.toMatchObject({ status: 503 });
       await expect(execute(f.tokens.access_token, "paperclip_list_agents", { companyId: f.company.id })).rejects.toMatchObject({ status: 503 });
@@ -948,9 +948,9 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
     app.use((req, _res, next) => { req.actor = f.actor; next(); }); app.use("/api", publicMcpManagementRoutes(oauth));
     const discovery = await request(app).get("/.well-known/oauth-authorization-server");
     expect(discovery.body.code_challenge_methods_supported).toEqual(["S256"]);
-    expect((await request(app).post("/mcp/paperclip").send({})).status).toBe(401);
-    const rpc = (method: string, params?: unknown) => request(app).post("/mcp/paperclip").timeout({ response: 5000, deadline: 7000 }).set("Authorization", `Bearer ${f.tokens.access_token}`).set("Accept", "application/json, text/event-stream").send({ jsonrpc: "2.0", id: 1, method, ...(params ? { params } : {}) });
-    expect((await rpc("initialize", { protocolVersion: "2025-03-26", capabilities: {}, clientInfo: { name: "test", version: "1" } })).body.result.serverInfo.name).toBe("paperclip");
+    expect((await request(app).post("/mcp/wardmote").send({})).status).toBe(401);
+    const rpc = (method: string, params?: unknown) => request(app).post("/mcp/wardmote").timeout({ response: 5000, deadline: 7000 }).set("Authorization", `Bearer ${f.tokens.access_token}`).set("Accept", "application/json, text/event-stream").send({ jsonrpc: "2.0", id: 1, method, ...(params ? { params } : {}) });
+    expect((await rpc("initialize", { protocolVersion: "2025-03-26", capabilities: {}, clientInfo: { name: "test", version: "1" } })).body.result.serverInfo.name).toBe("wardmote");
     const catalog = await rpc("tools/list");
     expect(catalog.body.result.tools).toHaveLength(publicMcpCapabilities.length);
     expect(catalog.body.result.tools.find((t: { name: string }) => t.name === "paperclip_create_task").annotations.readOnlyHint).toBe(false);
@@ -1049,7 +1049,7 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
     let goodChallenge = true;
     let duringVerification: (() => Promise<void>) | undefined;
     const fetcher: EventFetch = async (url, init) => {
-      if (cloudOrigin && url === cloudOrigin + "/mcp/paperclip") return cloudAllowed
+      if (cloudOrigin && url === cloudOrigin + "/mcp/wardmote") return cloudAllowed
         ? Response.json({ result: { structuredContent: { user: { id: f.actor.userId }, companyId: f.company.id, connectionId: principal.grant.id } } })
         : new Response(null, { status: 403 });
       const headers = new Headers(init.headers);
@@ -1100,7 +1100,7 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
     const app = express(); app.use(express.json());
     app.use(publicMcpIngressRoutes(oauth, createPublicMcpExecutor(db, oauth, f.dispatch), events, extension));
     const meta = { "io.modelcontextprotocol/protocolVersion": "2026-07-28", "io.modelcontextprotocol/clientCapabilities": {} };
-    const rpc = (method: string, params: Record<string, unknown> = {}, token = f.tokens.access_token) => request(app).post("/mcp/paperclip")
+    const rpc = (method: string, params: Record<string, unknown> = {}, token = f.tokens.access_token) => request(app).post("/mcp/wardmote")
       .set("Authorization", `Bearer ${token}`).set("MCP-Protocol-Version", "2026-07-28").set("Mcp-Method", method)
       .set("Mcp-Name", String(params.name ?? "")).send({ jsonrpc: "2.0", id: 1, method, params: { ...params, _meta: meta } });
     const tool = async (name: string, args: Record<string, unknown>) => (await rpc("tools/call", { name, arguments: args })).body.result;
@@ -1150,7 +1150,7 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
     const app = express(); app.use(express.json());
     app.use(publicMcpIngressRoutes(oauth, createPublicMcpExecutor(db, oauth, f.dispatch), f.service));
     const params = { _meta: { "io.modelcontextprotocol/protocolVersion": "2026-07-28", "io.modelcontextprotocol/clientCapabilities": {} } };
-    const rpc = (method: string, extra = {}, headers: Record<string, string> = {}) => request(app).post("/mcp/paperclip")
+    const rpc = (method: string, extra = {}, headers: Record<string, string> = {}) => request(app).post("/mcp/wardmote")
       .set({ Authorization: `Bearer ${f.tokens.access_token}`, "MCP-Protocol-Version": "2026-07-28", "Mcp-Method": method, ...headers })
       .send({ jsonrpc: "2.0", id: 1, method, params: { ...params, ...extra } });
     expect((await rpc("server/discover")).body.result).toMatchObject({ resultType: "complete", supportedVersions: ["2026-07-28"], capabilities: { tools: {}, events: {} } });

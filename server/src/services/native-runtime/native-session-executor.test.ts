@@ -10140,7 +10140,7 @@ describe("runnerd provider runtime wiring", () => {
   });
 
   it.each([
-    { WARDMOTE_NATIVE_MCP_NAME: "paperclip-assigned" },
+    { WARDMOTE_NATIVE_MCP_NAME: "wardmote-assigned" },
     { WARDMOTE_NATIVE_MCP_URL: "http://127.0.0.1:3217/mcp/gateways/test" },
     { WARDMOTE_NATIVE_MCP_TOKEN: "private-run-token" },
   ])("rejects partial remote assigned MCP bindings", async (runnerEnvironment) => {
@@ -10164,7 +10164,7 @@ describe("runnerd provider runtime wiring", () => {
     await createRunnerdBackend({
       db: leaseDb(execution), execution, runnerInstanceId: "runner-assigned-mcp",
       runnerEnvironment: {
-        WARDMOTE_NATIVE_MCP_NAME: "paperclip-assigned",
+        WARDMOTE_NATIVE_MCP_NAME: "wardmote-assigned",
         WARDMOTE_NATIVE_MCP_URL: "http://127.0.0.1:3217/mcp/gateways/assigned-test",
         WARDMOTE_NATIVE_MCP_TOKEN: "private-run-token",
       },

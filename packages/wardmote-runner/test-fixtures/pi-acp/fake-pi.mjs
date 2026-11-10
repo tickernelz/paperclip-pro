@@ -87,8 +87,8 @@ createInterface({ input: process.stdin }).on("line", (line) => {
   if (request.type === "get_available_models") { response({ models: [{ provider: "openrouter", id: "fixture-model", name: "Fixture" }, { provider: "openrouter", id: "fixture-alternate", name: "Alternate" }] }); return; }
   if (request.type === "set_model") { model = request.modelId; if (!availableThinkingLevels().includes(thinkingLevel)) thinkingLevel = "high"; response({ model: { provider: request.provider, id: model } }); return; }
   if (request.type === "get_messages") { response({ messages: process.env.PI_FIXTURE_HISTORY ? [
-    { role: "toolResult", toolName: "mcp__paperclip__paperclip_finish", toolCallId: "call_0", content: [{ type: "text", text: "correct criteria" }], isError: true },
-    { role: "toolResult", toolName: "mcp__paperclip__paperclip_finish", toolCallId: "call_0", content: [{ type: "text", text: "accepted" }] },
+    { role: "toolResult", toolName: "mcp__wardmote__paperclip_finish", toolCallId: "call_0", content: [{ type: "text", text: "correct criteria" }], isError: true },
+    { role: "toolResult", toolName: "mcp__wardmote__paperclip_finish", toolCallId: "call_0", content: [{ type: "text", text: "accepted" }] },
     { role: "assistant", content: [{ type: "text", text: "Historical reply" }] },
   ] : [] }); return; }
   if (request.type === "get_commands") { response({ commands: process.env.PI_FIXTURE_EXTENSION_FAIL ? [] : [{ name: "paperclip-runtime-ready-v1", description: "Paperclip runtime gate v1", source: "extension" }] }); return; }
@@ -114,7 +114,7 @@ createInterface({ input: process.stdin }).on("line", (line) => {
       return;
     }
     if (request.message === "reused-tool-ids") {
-      for (const [index, toolName] of ["mcp__paperclip__paperclip_finish", "mcp__paperclip__paperclip_finish", "mcp__paperclip__get_task_context"].entries()) {
+      for (const [index, toolName] of ["mcp__wardmote__paperclip_finish", "mcp__wardmote__paperclip_finish", "mcp__wardmote__get_task_context"].entries()) {
         if (index) { output({ type: "turn_end" }); begin(); }
         const args = { revision: index + 1 };
         output({ type: "message_update", assistantMessageEvent: { type: "toolcall_start", contentIndex: 0, partial: { content: [{ type: "toolCall", id: "call_0", name: toolName, arguments: args }] } } });

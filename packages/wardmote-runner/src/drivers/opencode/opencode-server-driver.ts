@@ -2320,7 +2320,7 @@ async function startRuntime(input: {
         "*": input.options.permissionMode ?? "allow",
         question: "allow",
         "paperclip_*": "allow",
-        "mcp__paperclip__*": "allow",
+        "mcp__wardmote__*": "allow",
         external_directory: externalDirectories,
       },
       mcp: {

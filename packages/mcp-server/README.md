@@ -57,7 +57,7 @@ node packages/mcp-server/dist/stdio.js
 
 ## Server-hosted endpoint
 
-The Paperclip server hosts the same tool surface at `POST /api/mcp/paperclip`, so a run does not have to spawn this package as a child process. It is stateless streamable HTTP: one endpoint, JSON responses, no `Mcp-Session-Id`, `GET` and `DELETE` answer `405`.
+The Paperclip server hosts the same tool surface at `POST /api/mcp/wardmote`, so a run does not have to spawn this package as a child process. It is stateless streamable HTTP: one endpoint, JSON responses, no `Mcp-Session-Id`, `GET` and `DELETE` answer `405`.
 
 - Authentication is the REST API's: `Authorization: Bearer <run agent key>` plus `X-Wardmote-Run-Id`. Only agent actors are accepted; a board actor gets `403`, a missing credential `401`.
 - `companyId` and `agentId` come from the authenticated agent, never from a request header, and board-authority tools are exposed only when that agent's `agentAuthorityCapabilities` include company-level authority.

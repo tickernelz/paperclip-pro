@@ -142,7 +142,7 @@ describeEmbeddedPostgres("hosted Paperclip MCP required-body tools", () => {
   });
 
   async function callTool(name: string, args: Record<string, unknown>): Promise<RpcResult> {
-    const response = await fetch(`${origin}/api/mcp/paperclip?toolsets=core,extended`, {
+    const response = await fetch(`${origin}/api/mcp/wardmote?toolsets=core,extended`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

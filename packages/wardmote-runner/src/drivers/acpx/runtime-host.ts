@@ -330,7 +330,7 @@ export class AcpxRuntimeHost {
       throw new Error("Pi admission requires an explicit task execution policy");
     }
     const nativeMcp = nativeMcpLaunchBinding(options.environment);
-    if (nativeMcp?.name === "paperclip") {
+    if (nativeMcp?.name === "wardmote") {
       throw new Error("assigned native MCP name conflicts with the task bridge");
     }
     if (options.runtimeContext?.mcp.bindingId && !nativeMcp) {
@@ -594,7 +594,7 @@ export class AcpxRuntimeHost {
               : { assertWorkspaceHeld: () => { options.assertWorkspaceHeld?.(); agentFiles?.assertHeld(); } }),
             ...(options.signal === undefined ? {} : { signal: options.signal }),
             mcpServers: [
-              ...(toolBridge ? [{ name: "paperclip", url: toolBridge.url,
+              ...(toolBridge ? [{ name: "wardmote", url: toolBridge.url,
                 bearerToken: toolBridge.secret, runnerOwned: true }] : []),
               // This is Paperclip's authenticated gateway, not a direct upstream
               // binding. Its existing grants and approval checks remain authoritative.

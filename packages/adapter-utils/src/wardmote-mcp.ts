@@ -1,12 +1,12 @@
 import { existsSync } from "node:fs";
 import path from "node:path";
 
-export const WARDMOTE_MCP_SERVER_NAME = "paperclip";
+export const WARDMOTE_MCP_SERVER_NAME = "wardmote";
 export const WARDMOTE_MCP_PACKAGE = "@tickernelz/wardmote-mcp-server";
 export const WARDMOTE_MCP_BIN = "paperclip-mcp-server";
 export const WARDMOTE_MCP_DEFAULT_TOOLSETS = "core";
 export const WARDMOTE_MCP_TOOLSETS_ENV = "WARDMOTE_MCP_TOOLSETS";
-export const WARDMOTE_MCP_HTTP_PATH = "/mcp/paperclip";
+export const WARDMOTE_MCP_HTTP_PATH = "/mcp/wardmote";
 export const WARDMOTE_MCP_RUN_ID_HEADER = "X-Wardmote-Run-Id";
 
 const RUN_ENV_KEYS = [

@@ -1121,7 +1121,7 @@ describe("TaskChatThread runtime transcript selection", () => {
 
   it.each([
     { name: "write_document", anchored: true },
-    { name: "mcp__paperclip__write_document", anchored: false },
+    { name: "mcp__wardmote__write_document", anchored: false },
   ])("anchors a settled ACP Plan only at the normalized display name $name", ({ name, anchored }) => {
     const runId = "acpx-plan";
     planState.data = planDocument({ updatedAt: new Date("2026-08-25T18:00:02.000Z") });

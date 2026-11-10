@@ -90,7 +90,7 @@ describeEmbeddedPostgres("Paperclip MCP connector tools", () => {
   }
 
   async function rpc(body: Record<string, unknown>) {
-    const response = await fetch(`${origin}/api/mcp/paperclip`, {
+    const response = await fetch(`${origin}/api/mcp/wardmote`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

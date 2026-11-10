@@ -513,10 +513,10 @@ describe("provider-neutral events", () => {
       type: "tool_call",
       tag: "tool_call",
       toolCallId: "tool-1",
-      title: "mcp__paperclip__search_tasks",
+      title: "mcp__wardmote__search_tasks",
       kind: "other",
       status: "pending",
-      text: "mcp__paperclip__search_tasks (pending)",
+      text: "mcp__wardmote__search_tasks (pending)",
       locations: [{ path: "doc/plan.md", line: 4 }],
     } as never);
     const progressed = normalize({
@@ -538,13 +538,13 @@ describe("provider-neutral events", () => {
     } as never);
 
     expect(progressed).toMatchObject({
-      title: "mcp__paperclip__search_tasks",
+      title: "mcp__wardmote__search_tasks",
       kind: "other",
       text: "Searching the task index",
       locations: [{ path: "doc/plan.md", line: 4 }],
     });
     expect(completed).toMatchObject({
-      title: "mcp__paperclip__search_tasks",
+      title: "mcp__wardmote__search_tasks",
       kind: "other",
       locations: [{ path: "doc/plan.md", line: 4 }],
     });
@@ -556,7 +556,7 @@ describe("provider-neutral events", () => {
       eventType: "tool.execution.completed",
       payload: {
         transport: "mcp",
-        namespace: "paperclip",
+        namespace: "wardmote",
         name: "search_tasks",
         operation: "search",
         target: "doc/plan.md",

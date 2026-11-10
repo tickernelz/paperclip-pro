@@ -413,7 +413,7 @@ describeEmbeddedPostgres("heartbeat runtime skill version pins", () => {
     expect(captured?.mcpServers).toHaveLength(1);
     expect(captured?.mcpServers[0]).toMatchObject({
       connectionId: expect.stringMatching(/^assignment:[a-f0-9]{64}$/),
-      name: "paperclip-assigned",
+      name: "wardmote-assigned",
       token: expect.stringMatching(/^pcgw_/),
       url: expect.stringMatching(/\/mcp\/gateways\/gw_[a-f0-9]{32}$/),
     });

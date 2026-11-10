@@ -462,7 +462,7 @@ describe("Codex ACPX runtime adapter", () => {
       options.profile = resolveQualifiedAcpxProfile("claude", "claude-sonnet-5");
       options.launchEnvironment = { WARDMOTE_ACPX_TASK_TOOL_BRIDGE_URL: "http://untrusted.invalid/mcp" };
       options.mcpServers = binding === "absent" ? [] : [{
-        name: "paperclip", url: "http://127.0.0.1:3210/mcp",
+        name: "wardmote", url: "http://127.0.0.1:3210/mcp",
         bearerToken: "bridge-secret", runnerOwned: binding === "runner-owned",
       }];
       let runtimeOptions: AcpRuntimeOptions | undefined;

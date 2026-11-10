@@ -11,7 +11,7 @@ impersonation and generic connected-tool execution are not included.
 node integrations/assistant-plugins/build.mjs
 
 # Replace with the operator's actual deployed endpoint before testing remotely:
-node integrations/assistant-plugins/build.mjs https://YOUR-PAPERCLIP-HOST/mcp/paperclip
+node integrations/assistant-plugins/build.mjs https://YOUR-PAPERCLIP-HOST/mcp/wardmote
 ```
 
 The builder accepts a fixed HTTPS endpoint (HTTP loopback is allowed for local

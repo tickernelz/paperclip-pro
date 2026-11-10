@@ -43,7 +43,7 @@ const escape = (value: string) => value.replace(/[&<>"']/g, c => ({ "&": "&amp;"
 try {
   database = await startEmbeddedPostgresTestDatabase("paperclip-dot-live-");
   const db = createDb(database.connectionString);
-  const oauth = createPublicMcpOAuth(db, { origin, resource: origin + "/mcp/paperclip" });
+  const oauth = createPublicMcpOAuth(db, { origin, resource: origin + "/mcp/wardmote" });
   await instanceSettingsService(db).updateExperimental({ enablePublicMcp: true });
   const userId = randomUUID();
   await db.insert(authUsers).values({ id: userId, name: "Dot lab operator", email: `${userId}@example.test`, createdAt: new Date(), updatedAt: new Date() });
@@ -76,14 +76,14 @@ try {
   service = createPublicMcpEvents(db, oauth, api, { enableDotPrototype: true });
   app.use((req, res, next) => {
     res.setHeader("Cache-Control", "no-store"); res.setHeader("Referrer-Policy", "no-referrer");
-    if (req.path === "/mcp/paperclip" && req.method === "POST") {
+    if (req.path === "/mcp/wardmote" && req.method === "POST") {
       const method = String(req.body?.method ?? "").slice(0, 100);
       const tool = method === "tools/call" ? String(req.body?.params?.name ?? "").slice(0, 100) : undefined;
       res.on("finish", () => record("mcp", { method, ...(tool ? { tool } : {}), status: res.statusCode }));
     }
     next();
   });
-  app.get("/", (_req, res) => res.type("text").send("Disposable Paperclip Dot lab. Authenticated MCP endpoint: /mcp/paperclip. No production data."));
+  app.get("/", (_req, res) => res.type("text").send("Disposable Paperclip Dot lab. Authenticated MCP endpoint: /mcp/wardmote. No production data."));
   app.get("/mcp-connect/:id", async (req, res) => {
     const id = requestIdSchema.parse(req.params.id);
     const redirect = redirects.get(id);
@@ -141,7 +141,7 @@ try {
   control.use(errors);
   await listen(http, port); await listen(admin, port + 1); service.start();
   await writeFile(join(scratch, "control.json"), JSON.stringify({ origin, controlOrigin: `http://127.0.0.1:${port + 1}`, token: controlToken, companyId: company.id, taskId: task.id }), { mode: 0o600 });
-  console.log(`LIVE LAB READY ${origin}/mcp/paperclip`);
+  console.log(`LIVE LAB READY ${origin}/mcp/wardmote`);
   console.log(`Local control file: ${join(scratch, "control.json")}`);
   console.log(`Standing instruction: Subscribe to paperclip.dot.work_available for companyId ${company.id}, taskId ${task.id}. When an event arrives, check paperclip_dot_inbox; read, accept, execute and finish its assignment. Do not poll. Wait for the event before taking work.`);
   process.once("SIGINT", stopLab); process.once("SIGTERM", stopLab);

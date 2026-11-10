@@ -87,7 +87,7 @@ describe("openwaReadOnlyRestDecision", () => {
     ["POST", `/api/issues/${own}/checkout`, {}],
     ["POST", `/api/issues/${own}/release`, {}],
     ["PATCH", `/api/issues/${own}`, { status: "done", comment: "Finished" }],
-    ["POST", "/api/mcp/paperclip", {}],
+    ["POST", "/api/mcp/wardmote", {}],
     ["POST", "/api/tool-gateway/tools/call", {}],
     ["POST", "/api/companies/c/email/send", {}],
     ["POST", `/api/companies/c/openwa/tasks/${own}/tools`, {}],

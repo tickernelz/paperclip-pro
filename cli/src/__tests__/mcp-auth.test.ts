@@ -6,7 +6,7 @@ import { once } from "node:events";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { credentialPath, mcpAccessToken, mcpResource, mcpRpc, replaceMcpCredential, withMcpCredentialLock } from "../client/mcp-auth.js";
 
-const resource = "https://paperclip.example/mcp/paperclip";
+const resource = "https://paperclip.example/mcp/wardmote";
 let home: string;
 beforeEach(async () => { home = await fs.mkdtemp(path.join(os.tmpdir(), "mcp-credentials-")); vi.stubEnv("WARDMOTE_HOME", home); });
 afterEach(async () => { vi.restoreAllMocks(); vi.unstubAllGlobals(); vi.unstubAllEnvs(); await fs.rm(home, { recursive: true, force: true }); });
@@ -19,9 +19,9 @@ async function seed(value: unknown, mode = 0o600) {
 const stored = () => ({ resource, issuer: "https://paperclip.example", clientId: "client", companyId: "company", accessToken: "private-access", refreshToken: "private-refresh", expiresAt: 0 });
 describe("MCP protected credential transport", () => {
   it("rejects noncanonical resources and isolates credential files by resource", () => {
-    for (const url of ["http://evil.example/mcp/paperclip", resource + "?token=secret", resource + "#x", "https://u:p@paperclip.example/mcp/paperclip", "https://paperclip.example/other"]) expect(() => mcpResource(url)).toThrow();
-    expect(mcpResource("http://127.0.0.1:3100/mcp/paperclip")).toContain("127.0.0.1");
-    expect(credentialPath(resource)).not.toBe(credentialPath("https://other.example/mcp/paperclip"));
+    for (const url of ["http://evil.example/mcp/wardmote", resource + "?token=secret", resource + "#x", "https://u:p@paperclip.example/mcp/wardmote", "https://paperclip.example/other"]) expect(() => mcpResource(url)).toThrow();
+    expect(mcpResource("http://127.0.0.1:3100/mcp/wardmote")).toContain("127.0.0.1");
+    expect(credentialPath(resource)).not.toBe(credentialPath("https://other.example/mcp/wardmote"));
   });
   it("serializes rotating refreshes and persists only the replacement token privately", async () => {
     const file = await seed(stored()); let refreshes = 0;

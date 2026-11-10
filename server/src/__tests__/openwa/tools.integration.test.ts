@@ -1306,7 +1306,7 @@ describe("OpenWA agent tools (embedded Postgres + fake gateway)", () => {
     app.use("/api", paperclipMcpRoutes(db));
     app.use(errorHandler);
     const list = async () =>
-      (await request(app).post("/api/mcp/paperclip?toolsets=full").set("authorization", "Bearer token").send({ jsonrpc: "2.0", id: 1, method: "tools/list" }).expect(200)).body.result.tools.map(
+      (await request(app).post("/api/mcp/wardmote?toolsets=full").set("authorization", "Bearer token").send({ jsonrpc: "2.0", id: 1, method: "tools/list" }).expect(200)).body.result.tools.map(
         (tool: { name: string }) => tool.name,
       ) as string[];
     actor = { type: "agent", source: "agent_jwt", companyId: t.companyId, agentId: t.agentId, runId: binding.runId };
@@ -1330,13 +1330,13 @@ describe("OpenWA agent tools (embedded Postgres + fake gateway)", () => {
       "openwa_stay_silent",
     ]);
     const called = await request(app)
-      .post("/api/mcp/paperclip")
+      .post("/api/mcp/wardmote")
       .set("authorization", "Bearer token")
       .send({ jsonrpc: "2.0", id: 2, method: "tools/call", params: { name: "openwa_read_chat", arguments: {} } })
       .expect(200);
     expect(JSON.parse(called.body.result.content[0].text)).toMatchObject({ chatRef: c.chatRef });
     const gated = await request(app)
-      .post("/api/mcp/paperclip")
+      .post("/api/mcp/wardmote")
       .set("authorization", "Bearer token")
       .send({ jsonrpc: "2.0", id: 3, method: "tools/call", params: { name: "openwa_send", arguments: { chat: "+628444000222", text: "x", idempotencyKey: randomUUID() } } })
       .expect(200);

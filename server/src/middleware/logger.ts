@@ -6,6 +6,7 @@ import {
   isPrivateWebhookHttpRequest,
   isSecretSensitiveHttpRequest,
   isPrivateAgentCommentaryHttpRequest,
+  PUBLIC_MCP_SECRET_PATH,
   shouldSilenceHttpSuccessLog,
 } from "./http-log-policy.js";
 import {
@@ -169,7 +170,7 @@ export function createHttpLogger(baseLogger: Logger) {
     customProps(req, res) {
       if (res.statusCode >= 400) {
         const ctx = (res as any).__errorContext;
-        if (/^\/mcp\/(?:oauth|paperclip)(?:\/|$)/.test(requestClassificationUrl(req) ?? "")) {
+        if (PUBLIC_MCP_SECRET_PATH.test(requestClassificationUrl(req) ?? "")) {
           return { reqBody: "[REDACTED]", ...(ctx ? { errorContext: { name: "Error" } } : {}) };
         }
         if (isPrivateWebhook(req) || isPrivateAgentCommentaryHttpRequest(requestClassificationUrl(req))) {

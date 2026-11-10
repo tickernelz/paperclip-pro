@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const DOT_RUNNER_MCP_PATH = "/mcp/runner";
 export const DOT_RUNNER_MCP_SCOPES = ["paperclip:agent", "offline_access"] as const;
-export const PUBLIC_MCP_PATH = "/mcp/paperclip";
+export const PUBLIC_MCP_PATH = "/mcp/wardmote";
 export const PUBLIC_MCP_SCOPES = ["paperclip:read", "paperclip:write", "paperclip:configure", "offline_access"] as const;
 export const mcpConsentSchema = z.object({
   decision: z.enum(["approve", "deny"]),

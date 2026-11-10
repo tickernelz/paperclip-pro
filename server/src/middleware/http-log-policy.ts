@@ -1,3 +1,5 @@
+import { RETIRED_MCP_PATH_SEGMENT } from "../services/retired-header-names.js";
+
 const SILENCED_SUCCESS_METHODS = new Set(["GET", "HEAD"]);
 
 const SILENCED_SUCCESS_API_PATHS = [
@@ -37,9 +39,11 @@ function normalizePath(url: string): string {
   return pathname.length > 0 ? pathname : "/";
 }
 
+export const PUBLIC_MCP_SECRET_PATH = new RegExp(`^/mcp/(?:oauth|wardmote|${RETIRED_MCP_PATH_SEGMENT})(?:/|$)`);
+
 const SECRET_SENSITIVE_HTTP_PATHS = [
   /^\/api\/companies\/[^/]+\/voice-sessions(?:\/|$)/,
-  /^\/mcp\/(?:oauth|paperclip)(?:\/|$)/,
+  PUBLIC_MCP_SECRET_PATH,
   /^\/api\/mcp(?:\/|$)/,
   /^\/api\/chat-endpoints\/[^/]+\/setup(?:-secret)?(?:\/|$)/,
 ];

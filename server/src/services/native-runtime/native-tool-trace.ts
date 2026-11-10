@@ -3,7 +3,7 @@ import type { NativeRunTrace } from "./native-run-trace.js";
 
 const SAFE_OPERATIONS = new Set<string>(CAPABILITY_SEMANTIC_TOOL_CATALOG.map((tool) => tool.operationId));
 function operation(value: unknown): string {
-  const name = typeof value === "string" ? value.replace(/^mcp__paperclip__/, "") : "";
+  const name = typeof value === "string" ? value.replace(/^mcp__wardmote__/, "") : "";
   return SAFE_OPERATIONS.has(name) ? name : "other";
 }
 

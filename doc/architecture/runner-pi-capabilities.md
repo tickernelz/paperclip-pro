@@ -1024,7 +1024,7 @@ without changing the provider timeout, canonical oracle or evidence scanner.
 The explicit [hello06 Product proof](../../packages/wardmote-runner/test-fixtures/pi-acp/product-hello-proof.darwin-arm64.json)
 passes all six canonical matchers, including the exact response once, task `done`,
 run `succeeded`, native runtime and local environment. Pi executes
-`mcp__paperclip__paperclip_finish`, then reports a completed turn and succeeded run.
+`mcp__wardmote__paperclip_finish`, then reports a completed turn and succeeded run.
 The case took 32.668 seconds; cleanup and evidence inspection passed. Its receipt
 contains 26,867 input tokens, 283 output tokens and zero cached input tokens.
 The catalog notice estimates $0.00384062; measured key billing is $0.000654767.
@@ -1121,7 +1121,7 @@ The [plan failure](../../packages/wardmote-runner/test-fixtures/pi-acp/product-p
 retains a complete two-step Plan at revision 1 and an unanswered confirmation
 bound to that exact revision. The provider run succeeds and the task remains in
 review. The real browser trace shows `task-chat-plan-preview-fallback` inside a
-settled turn. Rust had retained `mcp__paperclip__write_document` as a builtin tool
+settled turn. Rust had retained `mcp__wardmote__write_document` as a builtin tool
 with no namespace, so the UI could not embed the Plan at its `write_document`
 boundary. The meaningful canonical matcher remains unchanged. No approval was
 submitted, terminal usage is unavailable, and the measured key delta is
