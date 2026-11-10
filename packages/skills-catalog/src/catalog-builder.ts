@@ -270,8 +270,8 @@ async function buildCatalogSkill(
   validateSlug("category", candidate.category, prefix, errors);
   validateSlug("slug", candidate.slug, prefix, errors);
 
-  const id = `paperclipai:${candidate.kind}:${candidate.category}:${candidate.slug}`;
-  const key = `paperclipai/${candidate.kind}/${candidate.category}/${candidate.slug}`;
+  const id = `tickernelz:${candidate.kind}:${candidate.category}:${candidate.slug}`;
+  const key = `tickernelz/${candidate.kind}/${candidate.category}/${candidate.slug}`;
   const skillMarkdownPath = path.join(candidate.absolutePath, SKILL_ENTRYPOINT);
   const parsed = parseFrontmatterMarkdown(await fs.readFile(skillMarkdownPath, "utf8"));
 
@@ -325,7 +325,7 @@ async function buildCatalogSkill(
 }
 
 function skillIdForCandidate(candidate: BaseSkillCandidate) {
-  return `paperclipai:${candidate.kind}:${candidate.category}:${candidate.slug}`;
+  return `tickernelz:${candidate.kind}:${candidate.category}:${candidate.slug}`;
 }
 
 async function buildReferencedCatalogSkill(
@@ -341,8 +341,8 @@ async function buildReferencedCatalogSkill(
   const descriptor = await readReferencedSkillDescriptor(candidate.descriptorPath, prefix, errors);
   if (!descriptor) return null;
 
-  const id = `paperclipai:${candidate.kind}:${candidate.category}:${candidate.slug}`;
-  const key = `paperclipai/${candidate.kind}/${candidate.category}/${candidate.slug}`;
+  const id = `tickernelz:${candidate.kind}:${candidate.category}:${candidate.slug}`;
+  const key = `tickernelz/${candidate.kind}/${candidate.category}/${candidate.slug}`;
   const source = buildCatalogSkillSource(descriptor.source, errors, `${prefix}/${CATALOG_REFERENCE_FILE}`);
   if (!source) return null;
   const fallbackSkill = canReuseExistingReferencedSkill(
@@ -782,8 +782,8 @@ function collectUniquenessErrors(skills: CatalogSkill[], errors: string[]) {
 
 function collectCandidateUniquenessErrors(candidates: SkillCandidate[], errors: string[]) {
   const projected = candidates.map((candidate) => ({
-    id: `paperclipai:${candidate.kind}:${candidate.category}:${candidate.slug}`,
-    key: `paperclipai/${candidate.kind}/${candidate.category}/${candidate.slug}`,
+    id: `tickernelz:${candidate.kind}:${candidate.category}:${candidate.slug}`,
+    key: `tickernelz/${candidate.kind}/${candidate.category}/${candidate.slug}`,
     slug: candidate.slug,
     path: toPosixPath(path.join("catalog", candidate.kind, candidate.category, candidate.slug)),
   })) as CatalogSkill[];

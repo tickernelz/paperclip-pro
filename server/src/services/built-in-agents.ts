@@ -175,7 +175,7 @@ const FALLBACK_REFLECTION_COACH_SKILL = [
   "---",
   "name: reflection-coach",
   "description: Reflect on another agent's recent execution record and propose the smallest review-gated improvement.",
-  "key: paperclipai/bundled/paperclip-operations/reflection-coach",
+  "key: tickernelz/bundled/wardmote-operations/reflection-coach",
   "---",
   "",
   "# Reflection Coach",
@@ -204,7 +204,7 @@ const FALLBACK_SUMMARIZER_SKILL = [
   "---",
   "name: summarize-status",
   "description: Write a short, colloquial summary for a Wardmote summary slot: open with the 1–3 specific, concrete actions the reader needs to take right now to unblock the work, then a brief plain-language status, streaming progress as it works.",
-  "key: paperclipai/bundled/paperclip-operations/summarize-status",
+  "key: tickernelz/bundled/wardmote-operations/summarize-status",
   "---",
   "",
   "# Summarize status",
@@ -278,10 +278,10 @@ const REFLECTION_COACH_SKILL = readBuiltInTextWithFallback(
   [
     path.resolve(
       moduleDir,
-      "../../../packages/skills-catalog/catalog/bundled/paperclip-operations/reflection-coach/SKILL.md",
+      "../../../packages/skills-catalog/catalog/bundled/wardmote-operations/reflection-coach/SKILL.md",
     ),
     ...(skillsCatalogRoot
-      ? [path.join(skillsCatalogRoot, "catalog/bundled/paperclip-operations/reflection-coach/SKILL.md")]
+      ? [path.join(skillsCatalogRoot, "catalog/bundled/wardmote-operations/reflection-coach/SKILL.md")]
       : []),
   ],
   FALLBACK_REFLECTION_COACH_SKILL,
@@ -297,10 +297,10 @@ const SUMMARIZER_SKILL = readBuiltInTextWithFallback(
   [
     path.resolve(
       moduleDir,
-      "../../../packages/skills-catalog/catalog/bundled/paperclip-operations/summarize-status/SKILL.md",
+      "../../../packages/skills-catalog/catalog/bundled/wardmote-operations/summarize-status/SKILL.md",
     ),
     ...(skillsCatalogRoot
-      ? [path.join(skillsCatalogRoot, "catalog/bundled/paperclip-operations/summarize-status/SKILL.md")]
+      ? [path.join(skillsCatalogRoot, "catalog/bundled/wardmote-operations/summarize-status/SKILL.md")]
       : []),
   ],
   FALLBACK_SUMMARIZER_SKILL,
@@ -364,7 +364,7 @@ const DEFINITIONS = validateBuiltInAgentDefinitions([
         skillKey: "reflection-coach",
         displayName: "Reflection Coach",
         slug: "reflection-coach",
-        canonicalKey: "paperclipai/bundled/paperclip-operations/reflection-coach",
+        canonicalKey: "tickernelz/bundled/wardmote-operations/reflection-coach",
         files: {
           "reflection-coach/SKILL.md": REFLECTION_COACH_SKILL,
         },
@@ -434,7 +434,7 @@ const DEFINITIONS = validateBuiltInAgentDefinitions([
         skillKey: "summarize-status",
         displayName: "Summarize status",
         slug: "summarize-status",
-        canonicalKey: "paperclipai/bundled/paperclip-operations/summarize-status",
+        canonicalKey: "tickernelz/bundled/wardmote-operations/summarize-status",
         files: {
           "summarize-status/SKILL.md": SUMMARIZER_SKILL,
         },

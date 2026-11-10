@@ -44,7 +44,7 @@ The catalog splits skills into two **kinds**:
 Every catalog skill carries metadata used for discovery and safety:
 
 - **`category`** — grouping such as `software-development`, `quality`, `product`,
-  `research`, `content`, `browser`, `paperclip-operations`, `docs`.
+  `research`, `content`, `browser`, `wardmote-operations`, `docs`.
 - **`recommendedForRoles`** — agent roles the skill suits (`engineer`, `qa`, `designer`,
   `product`, `researcher`, …), used to suggest skills when staffing a company.
 - **`trustLevel`** — see [Trust levels](#trust-levels-what-a-skill-is-allowed-to-carry).

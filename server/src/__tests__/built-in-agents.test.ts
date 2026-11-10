@@ -655,13 +655,13 @@ describeEmbeddedPostgres("built-in agents", () => {
     const [skill] = await db
       .select()
       .from(companySkills)
-      .where(eq(companySkills.key, "paperclipai/bundled/paperclip-operations/reflection-coach"));
+      .where(eq(companySkills.key, "tickernelz/bundled/wardmote-operations/reflection-coach"));
     expect(skill).toMatchObject({
-      key: "paperclipai/bundled/paperclip-operations/reflection-coach",
+      key: "tickernelz/bundled/wardmote-operations/reflection-coach",
       slug: "reflection-coach",
     });
     expect(readWardmoteSkillSyncPreference(state.agent!.adapterConfig as Record<string, unknown>).desiredSkills).toContain(
-      "paperclipai/bundled/paperclip-operations/reflection-coach",
+      "tickernelz/bundled/wardmote-operations/reflection-coach",
     );
 
     const [routine] = await db.select().from(routines).where(eq(routines.companyId, companyId));
@@ -1273,9 +1273,9 @@ describeEmbeddedPostgres("built-in agents", () => {
     const [skill] = await db
       .select()
       .from(companySkills)
-      .where(eq(companySkills.key, "paperclipai/bundled/paperclip-operations/reflection-coach"));
+      .where(eq(companySkills.key, "tickernelz/bundled/wardmote-operations/reflection-coach"));
     expect(skill).toMatchObject({
-      key: "paperclipai/bundled/paperclip-operations/reflection-coach",
+      key: "tickernelz/bundled/wardmote-operations/reflection-coach",
       slug: "reflection-coach",
     });
     expect(readWardmoteSkillSyncPreference(state.agent!.adapterConfig).desiredSkills).toContain(skill!.key);
@@ -1344,9 +1344,9 @@ describeEmbeddedPostgres("built-in agents", () => {
     const [skill] = await db
       .select()
       .from(companySkills)
-      .where(eq(companySkills.key, "paperclipai/bundled/paperclip-operations/summarize-status"));
+      .where(eq(companySkills.key, "tickernelz/bundled/wardmote-operations/summarize-status"));
     expect(skill).toMatchObject({
-      key: "paperclipai/bundled/paperclip-operations/summarize-status",
+      key: "tickernelz/bundled/wardmote-operations/summarize-status",
       slug: "summarize-status",
     });
     expect(readWardmoteSkillSyncPreference(state.agent!.adapterConfig).desiredSkills).toContain(skill!.key);

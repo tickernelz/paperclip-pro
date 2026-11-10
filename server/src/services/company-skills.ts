@@ -1011,8 +1011,8 @@ function deriveImportedSkillSource(
         : null);
     const [owner, repoName] = (repo ?? "").split("/");
     if (repo && owner && repoName) {
-      const sourceKind = owner === "paperclipai"
-        && repoName === "paperclip"
+      const sourceKind = owner === "tickernelz"
+        && repoName === "wardmote"
         && canonicalKey?.startsWith("tickernelz/wardmote/")
         ? "wardmote_bundled"
         : "github";
@@ -1320,12 +1320,12 @@ function isWardmoteBundledSkillKey(key: string) {
 
 function wardmoteBundledFolderCategory(key: string, metadata?: unknown) {
   const keyParts = key.split("/");
-  if (keyParts[0] === "paperclipai" && keyParts[1] === "bundled" && keyParts[2]) {
+  if (keyParts[0] === "tickernelz" && keyParts[1] === "bundled" && keyParts[2]) {
     return keyParts[2];
   }
-  if (isWardmoteBundledSkillKey(key)) return "paperclip-core";
+  if (isWardmoteBundledSkillKey(key)) return "wardmote-core";
   if (isPlainRecord(metadata) && asString(metadata.sourceKind) === "wardmote_bundled") {
-    return "paperclip-core";
+    return "wardmote-core";
   }
   return null;
 }
@@ -6251,8 +6251,8 @@ export function companySkillService(db: Db) {
         existing
         && existingMeta.sourceKind === "wardmote_bundled"
         && incomingKind === "github"
-        && incomingOwner === "paperclipai"
-        && incomingRepo === "paperclip"
+        && incomingOwner === "tickernelz"
+        && incomingRepo === "wardmote"
       ) {
         out.push(existing);
         continue;

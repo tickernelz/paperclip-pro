@@ -32,7 +32,7 @@ One markdown-only `SKILL.md` (trust level stays `markdown_only`):
 ---
 name: simplified-english
 description: Write user-facing comments, plans, and documents in ASD-STE100 Simplified Technical English — short, unambiguous sentences with approved words and one meaning each — so readers understand them the first time.
-key: paperclipai/optional/content/simplified-english
+key: tickernelz/optional/content/simplified-english
 recommendedForRoles:
   - engineer
   - product
@@ -67,7 +67,7 @@ Note the frontmatter hits every builder rule: description is 40–300 chars,
   comment rewritten under the rules (before/after).
 - `pnpm --filter @tickernelz/wardmote-skills-catalog build:manifest` → regenerates
   `generated/catalog.json` with the new entry.
-- Add `"paperclipai/optional/content/simplified-english"` to
+- Add `"tickernelz/optional/content/simplified-english"` to
   `EXPECTED_OPTIONAL_KEYS` in `src/shipped-catalog.test.ts` (alphabetical).
 - `pnpm --filter @tickernelz/wardmote-skills-catalog test` → green.
 

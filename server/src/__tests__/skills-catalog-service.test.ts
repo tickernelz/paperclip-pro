@@ -41,8 +41,8 @@ vi.doMock("../middleware/logger.js", () => ({
 
 function catalogSkill(slug: string, name = slug): CatalogSkill {
   return {
-    id: `paperclipai:bundled:software-development:${slug}`,
-    key: `paperclipai/bundled/software-development/${slug}`,
+    id: `tickernelz:bundled:software-development:${slug}`,
+    key: `tickernelz/bundled/software-development/${slug}`,
     kind: "bundled",
     category: "software-development",
     slug,
@@ -107,10 +107,10 @@ describe("skills catalog service", () => {
     const service = await import("../services/skills-catalog.js");
 
     expect(service.listCatalogSkills().map((skill) => skill.key)).toEqual([
-      "paperclipai/bundled/software-development/old-skill",
+      "tickernelz/bundled/software-development/old-skill",
     ]);
     expect(service.listCatalogSkills().map((skill) => skill.key)).toEqual([
-      "paperclipai/bundled/software-development/old-skill",
+      "tickernelz/bundled/software-development/old-skill",
     ]);
     expect(mockReadFileSync).toHaveBeenCalledTimes(1);
 
@@ -118,7 +118,7 @@ describe("skills catalog service", () => {
     manifestMtimeMs += 1;
 
     expect(service.listCatalogSkills().map((skill) => skill.key)).toEqual([
-      "paperclipai/bundled/software-development/new-skill",
+      "tickernelz/bundled/software-development/new-skill",
     ]);
     expect(mockReadFileSync).toHaveBeenCalledTimes(2);
     expect(() => service.getCatalogSkillOrThrow("old-skill")).toThrow("Catalog skill not found");

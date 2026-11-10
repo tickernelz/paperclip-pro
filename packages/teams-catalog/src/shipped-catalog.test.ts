@@ -8,13 +8,13 @@ import { asBoolean, asString, parseFrontmatterMarkdown } from "./frontmatter.js"
 import type { CatalogTeam } from "./types.js";
 
 const EXPECTED_BUNDLED_KEYS = [
-  "paperclipai/bundled/company-defaults/core-exec-team",
-  "paperclipai/bundled/product/product-design",
-  "paperclipai/bundled/software-development/product-engineering",
+  "tickernelz/bundled/company-defaults/core-exec-team",
+  "tickernelz/bundled/product/product-design",
+  "tickernelz/bundled/software-development/product-engineering",
 ];
 
 const EXPECTED_OPTIONAL_KEYS = [
-  "paperclipai/optional/content/content-machine",
+  "tickernelz/optional/content/content-machine",
 ];
 
 const PACKAGE_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -66,8 +66,8 @@ describe("shipped teams catalog", () => {
   it("uses canonical wardmote keys derived from kind/category/slug", () => {
     const violations: string[] = [];
     for (const team of catalogTeams) {
-      const expectedKey = `paperclipai/${team.kind}/${team.category}/${team.slug}`;
-      const expectedId = `paperclipai:${team.kind}:${team.category}:${team.slug}`;
+      const expectedKey = `tickernelz/${team.kind}/${team.category}/${team.slug}`;
+      const expectedId = `tickernelz:${team.kind}:${team.category}:${team.slug}`;
       if (team.key !== expectedKey) violations.push(`${team.key} should be ${expectedKey}`);
       if (team.id !== expectedId) violations.push(`${team.id} should be ${expectedId}`);
     }
@@ -81,7 +81,7 @@ describe("shipped teams catalog", () => {
   });
 
   it("resolves shipped teams by id, key, and unique slug", () => {
-    const sample = catalogTeams.find((team) => team.key === "paperclipai/bundled/company-defaults/core-exec-team");
+    const sample = catalogTeams.find((team) => team.key === "tickernelz/bundled/company-defaults/core-exec-team");
     expect(sample, "expected core-exec-team to ship in the bundled catalog").toBeDefined();
     if (!sample) return;
 

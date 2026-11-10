@@ -76,7 +76,7 @@ Browse with `wardmoteGetSkillCatalog`, inspect one entry with
 
 ```json
 {
-  "catalogSkillId": "paperclipai:bundled:software-development:github-pr-workflow"
+  "catalogSkillId": "tickernelz:bundled:software-development:github-pr-workflow"
 }
 ```
 

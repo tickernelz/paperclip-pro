@@ -101,11 +101,11 @@ if (typeof Element !== "undefined" && !Element.prototype.scrollIntoView) {
 
 describe("TeamCatalog routes", () => {
   it("round-trips file paths containing literal tildes", () => {
-    const route = teamRoute("paperclipai/bundled/test/team", "agents/a~b/AGENTS.md");
+    const route = teamRoute("tickernelz/bundled/test/team", "agents/a~b/AGENTS.md");
 
-    expect(route).toBe("/teams-catalog/paperclipai%2Fbundled%2Ftest%2Fteam/files/agents%7Ea~b%7EAGENTS.md");
+    expect(route).toBe("/teams-catalog/tickernelz%2Fbundled%2Ftest%2Fteam/files/agents%7Ea~b%7EAGENTS.md");
     expect(parseTeamRoute(route.replace("/teams-catalog/", ""))).toEqual({
-      catalogRef: "paperclipai/bundled/test/team",
+      catalogRef: "tickernelz/bundled/test/team",
       filePath: "agents/a~b/AGENTS.md",
     });
   });
@@ -144,7 +144,7 @@ async function flushReact() {
 function makeTeam(overrides: Partial<CatalogTeam> = {}): CatalogTeam {
   return {
     id: "team-no-deps",
-    key: "paperclipai/bundled/company-defaults/team-no-deps",
+    key: "tickernelz/bundled/company-defaults/team-no-deps",
     kind: "bundled",
     category: "company-defaults",
     slug: "team-no-deps",
@@ -437,7 +437,7 @@ describe("TeamCatalog install preview path", () => {
     mockTeamCatalogApi.installed.mockResolvedValue([
       {
         catalogId: "team-no-deps",
-        catalogKey: "paperclipai/bundled/company-defaults/team-no-deps",
+        catalogKey: "tickernelz/bundled/company-defaults/team-no-deps",
         present: true,
         currentContentHash: "sha256:deadbeefdeadbeefdeadbeef",
         installedOriginHashes: ["sha256:stale"],
@@ -465,7 +465,7 @@ describe("TeamCatalog install preview path", () => {
     mockTeamCatalogApi.installed.mockResolvedValue([
       {
         catalogId: "team-no-deps",
-        catalogKey: "paperclipai/bundled/company-defaults/team-no-deps",
+        catalogKey: "tickernelz/bundled/company-defaults/team-no-deps",
         present: true,
         currentContentHash: "sha256:deadbeefdeadbeefdeadbeef",
         installedOriginHashes: ["sha256:deadbeefdeadbeefdeadbeef"],

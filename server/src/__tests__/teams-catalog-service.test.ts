@@ -41,7 +41,7 @@ const {
   teamsCatalogService,
 } = await import("../services/teams-catalog.js");
 
-const CORE_EXEC_TEAM_ID = "paperclipai:bundled:company-defaults:core-exec-team";
+const CORE_EXEC_TEAM_ID = "tickernelz:bundled:company-defaults:core-exec-team";
 const CORE_EXEC_TEAM_HASH = (await listCatalogTeams()).find((team) => team.id === CORE_EXEC_TEAM_ID)!.contentHash;
 
 function agentWithCatalogTeam(originHash: string | null, extra: Record<string, unknown> = {}) {
@@ -52,7 +52,7 @@ function agentWithCatalogTeam(originHash: string | null, extra: Record<string, u
       paperclip: {
         catalogTeam: {
           catalogId: CORE_EXEC_TEAM_ID,
-          catalogKey: "paperclipai/bundled/company-defaults/core-exec-team",
+          catalogKey: "tickernelz/bundled/company-defaults/core-exec-team",
           ...(originHash ? { originHash } : {}),
         },
       },
@@ -91,8 +91,8 @@ describe("teamsCatalogService", () => {
     });
     mockCompanySkillService.installFromCatalog.mockResolvedValue({
       action: "created",
-      skill: { key: "paperclipai/bundled/paperclip-operations/task-planning" },
-      catalogSkill: { id: "paperclipai:bundled:paperclip-operations:task-planning" },
+      skill: { key: "tickernelz/bundled/wardmote-operations/task-planning" },
+      catalogSkill: { id: "tickernelz:bundled:wardmote-operations:task-planning" },
       warnings: [],
     });
     mockCompanySkillService.importFromSource.mockResolvedValue({
@@ -110,8 +110,8 @@ describe("teamsCatalogService", () => {
 
     expect(prepared.errors).toEqual([]);
     expect(prepared.source.files["COMPANY.md"]).toEqual(expect.stringContaining("Core Exec Team"));
-    expect(prepared.source.files["agents/ceo/AGENTS.md"]).toEqual(expect.stringContaining("paperclipai/bundled/paperclip-operations/task-planning"));
-    expect(prepared.source.files["agents/cto/AGENTS.md"]).toEqual(expect.stringContaining("paperclipai/bundled/software-development/github-pr-workflow"));
+    expect(prepared.source.files["agents/ceo/AGENTS.md"]).toEqual(expect.stringContaining("tickernelz/bundled/wardmote-operations/task-planning"));
+    expect(prepared.source.files["agents/cto/AGENTS.md"]).toEqual(expect.stringContaining("tickernelz/bundled/software-development/github-pr-workflow"));
     expect(prepared.source.files[".wardmote.yaml"]).toEqual(expect.stringContaining("reportsToExistingAgentId: \"manager-1\""));
     expect(prepared.source.files[".wardmote.yaml"]).toEqual(expect.stringContaining("reportsToExistingAgentSlug: \"engineering-manager\""));
   });
@@ -462,7 +462,7 @@ describe("teamsCatalogService", () => {
         {
           id: "removed",
           companyId: "company-1",
-          metadata: { paperclip: { catalogTeam: { catalogId: "paperclipai:bundled:gone:removed", originHash: "sha256:x" } } },
+          metadata: { paperclip: { catalogTeam: { catalogId: "tickernelz:bundled:gone:removed", originHash: "sha256:x" } } },
         },
       ]);
       const svc = teamsCatalogService({} as any);
@@ -484,8 +484,8 @@ describe("teamsCatalogService", () => {
 
   it("classifies unresolved and unsafe external skill requirements as blocked", () => {
     const fakeTeam: CatalogTeam = {
-      id: "paperclipai:optional:test:unsafe",
-      key: "paperclipai/optional/test/unsafe",
+      id: "tickernelz:optional:test:unsafe",
+      key: "tickernelz/optional/test/unsafe",
       kind: "optional",
       category: "test",
       slug: "unsafe",

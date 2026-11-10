@@ -57,8 +57,8 @@ function skill(overrides: Record<string, unknown> = {}) {
 
 function catalogSkill(overrides: Record<string, unknown> = {}) {
   return {
-    id: "paperclipai:bundled:software-development:github-pr-workflow",
-    key: "paperclipai/bundled/software-development/github-pr-workflow",
+    id: "tickernelz:bundled:software-development:github-pr-workflow",
+    key: "tickernelz/bundled/software-development/github-pr-workflow",
     kind: "bundled",
     category: "software-development",
     slug: "github-pr-workflow",
@@ -250,7 +250,7 @@ describe("skills CLI commands", () => {
     );
     const rendered = logSpy.mock.calls.map((call: unknown[]) => String(call[0])).join("\n");
     expect(rendered).toContain("id");
-    expect(rendered).toContain("paperclipai:bundled:software-development:github-pr-workflow");
+    expect(rendered).toContain("tickernelz:bundled:software-development:github-pr-workflow");
     expect(rendered).toContain("roles");
   });
 
@@ -285,7 +285,7 @@ describe("skills CLI commands", () => {
     await runCommand([
       "skills",
       "inspect",
-      "paperclipai/bundled/software-development/github-pr-workflow",
+      "tickernelz/bundled/software-development/github-pr-workflow",
       "--api-base",
       "http://wardmote.test",
       "--api-key",
@@ -294,7 +294,7 @@ describe("skills CLI commands", () => {
     ]);
 
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://wardmote.test/api/skills/catalog/ref?ref=paperclipai%2Fbundled%2Fsoftware-development%2Fgithub-pr-workflow",
+      "http://wardmote.test/api/skills/catalog/ref?ref=tickernelz%2Fbundled%2Fsoftware-development%2Fgithub-pr-workflow",
       expect.objectContaining({ method: "GET" }),
     );
     expect(JSON.parse(String(logSpy.mock.calls[0]?.[0]))).toEqual(detail);
@@ -304,7 +304,7 @@ describe("skills CLI commands", () => {
     const result = {
       action: "created",
       skill: skill({
-        key: "paperclipai/bundled/software-development/github-pr-workflow",
+        key: "tickernelz/bundled/software-development/github-pr-workflow",
         slug: "pr-flow",
         sourceType: "catalog",
       }),

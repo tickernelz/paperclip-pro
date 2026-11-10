@@ -2,11 +2,11 @@
   "schemaVersion": 1,
   "packageName": "@tickernelz/wardmote-skills-catalog",
   "packageVersion": "0.3.1",
-  "generatedAt": "2026-10-06T01:21:47.421Z",
+  "generatedAt": "2026-11-10T18:09:07.283Z",
   "skills": [
     {
-      "id": "paperclipai:bundled:docs:doc-maintenance",
-      "key": "paperclipai/bundled/docs/doc-maintenance",
+      "id": "tickernelz:bundled:docs:doc-maintenance",
+      "key": "tickernelz/bundled/docs/doc-maintenance",
       "kind": "bundled",
       "category": "docs",
       "slug": "doc-maintenance",
@@ -32,196 +32,21 @@
         {
           "path": "SKILL.md",
           "kind": "skill",
-          "sizeBytes": 4478,
-          "sha256": "fb0353386c5e5e5e13bcbb3233f044e3dccecf371f429d6328f26c26d7cb6169"
+          "sizeBytes": 4477,
+          "sha256": "bbe7602b6eccb96a17270f6dfc413d99e5dd1b04c25c304e91d1573cfb7ca54d"
         }
       ],
-      "contentHash": "sha256:2e02299210fd17c1fe1867b4ee8c144a11b6fe1fe481f83b8268cfbaaf10f9aa"
+      "contentHash": "sha256:9875acefda406a39e161fe8add3e2ffc4b5fb64d0e81e207fa8f10b1843dcf4c"
     },
     {
-      "id": "paperclipai:bundled:paperclip-operations:issue-triage",
-      "key": "paperclipai/bundled/paperclip-operations/issue-triage",
-      "kind": "bundled",
-      "category": "paperclip-operations",
-      "slug": "issue-triage",
-      "name": "issue-triage",
-      "description": "Triage Wardmote inbox issues that are stale, blocked, in-review, or assigned-but-not-progressing, and decide a single next action per issue (resume, reassign, unblock, escalate, or close).",
-      "path": "catalog/bundled/paperclip-operations/issue-triage",
-      "entrypoint": "SKILL.md",
-      "trustLevel": "markdown_only",
-      "compatibility": "compatible",
-      "defaultInstall": false,
-      "recommendedForRoles": [
-        "manager",
-        "ceo",
-        "engineer"
-      ],
-      "requires": [],
-      "tags": [
-        "paperclip",
-        "triage",
-        "inbox",
-        "workflow"
-      ],
-      "files": [
-        {
-          "path": "SKILL.md",
-          "kind": "skill",
-          "sizeBytes": 4042,
-          "sha256": "df5bdc8bf5e017b7ba5f70a4b5323fad51d0c323278f386580f26cf43ad09160"
-        }
-      ],
-      "contentHash": "sha256:88dc13560371fb364963782cb4f6eeb4090fcde92ee3774479428ed6b90e11c1"
-    },
-    {
-      "id": "paperclipai:bundled:paperclip-operations:reflection-coach",
-      "key": "paperclipai/bundled/paperclip-operations/reflection-coach",
-      "kind": "bundled",
-      "category": "paperclip-operations",
-      "slug": "reflection-coach",
-      "name": "reflection-coach",
-      "description": "Reflect on another agent's recent execution record and propose the smallest durable instruction, skill, or tool-description change. Use for evidence-backed coaching proposals, never hot-swaps.",
-      "path": "catalog/bundled/paperclip-operations/reflection-coach",
-      "entrypoint": "SKILL.md",
-      "trustLevel": "markdown_only",
-      "compatibility": "compatible",
-      "defaultInstall": false,
-      "recommendedForRoles": [
-        "manager",
-        "general"
-      ],
-      "requires": [],
-      "tags": [
-        "paperclip",
-        "reflection",
-        "coaching",
-        "agents",
-        "skills"
-      ],
-      "files": [
-        {
-          "path": "SKILL.md",
-          "kind": "skill",
-          "sizeBytes": 12028,
-          "sha256": "083d5fa8dc43c3ce7747e89c1afb6f6f42d0603a31808bffc5f8e56735f2d865"
-        }
-      ],
-      "contentHash": "sha256:f2592d81f616628a3eba92636616424f2eed82ec22bb504240a58f6be115e407"
-    },
-    {
-      "id": "paperclipai:bundled:paperclip-operations:status-card-query",
-      "key": "paperclipai/bundled/paperclip-operations/status-card-query",
-      "kind": "bundled",
-      "category": "paperclip-operations",
-      "slug": "status-card-query",
-      "name": "status-card-query",
-      "description": "Create and maintain agent-authored Wardmote status cards, or compile a prose interest prompt into bounded CompanySearchQuery objects and write the first summary from the assigned Summarizer run.",
-      "path": "catalog/bundled/paperclip-operations/status-card-query",
-      "entrypoint": "SKILL.md",
-      "trustLevel": "markdown_only",
-      "compatibility": "compatible",
-      "defaultInstall": false,
-      "recommendedForRoles": [
-        "general",
-        "manager"
-      ],
-      "requires": [],
-      "tags": [
-        "paperclip",
-        "status",
-        "search",
-        "reporting",
-        "operations"
-      ],
-      "files": [
-        {
-          "path": "SKILL.md",
-          "kind": "skill",
-          "sizeBytes": 6368,
-          "sha256": "0c6140f51d503cbadc98723ce54c0def48e7e31ea159b0935b8ad6369291498a"
-        }
-      ],
-      "contentHash": "sha256:2b6e53bf8491f027afdbd6961ad84f677cfd385a0a6a73616ea84111ca8886ed"
-    },
-    {
-      "id": "paperclipai:bundled:paperclip-operations:summarize-status",
-      "key": "paperclipai/bundled/paperclip-operations/summarize-status",
-      "kind": "bundled",
-      "category": "paperclip-operations",
-      "slug": "summarize-status",
-      "name": "summarize-status",
-      "description": "Write a short, colloquial summary for a Wardmote summary slot: open with the 1–3 specific, concrete actions the reader needs to take right now to unblock the work, then a brief plain-language status, streaming progress as it works.",
-      "path": "catalog/bundled/paperclip-operations/summarize-status",
-      "entrypoint": "SKILL.md",
-      "trustLevel": "markdown_only",
-      "compatibility": "compatible",
-      "defaultInstall": false,
-      "recommendedForRoles": [
-        "general",
-        "manager"
-      ],
-      "requires": [],
-      "tags": [
-        "paperclip",
-        "summary",
-        "status",
-        "reporting",
-        "operations"
-      ],
-      "files": [
-        {
-          "path": "SKILL.md",
-          "kind": "skill",
-          "sizeBytes": 8877,
-          "sha256": "4cb3d177f5d16e3cc2052d2f80e7fb245ab95e79c1e947abdc84cd4ee3d8c61e"
-        }
-      ],
-      "contentHash": "sha256:3e49ee2b8d83d1371fb0f59197bb96c46b64f722540405f46d4a5a756fbe1b89"
-    },
-    {
-      "id": "paperclipai:bundled:paperclip-operations:task-planning",
-      "key": "paperclipai/bundled/paperclip-operations/task-planning",
-      "kind": "bundled",
-      "category": "paperclip-operations",
-      "slug": "task-planning",
-      "name": "task-planning",
-      "description": "Write or revise a useful Wardmote plan with a clear outcome and verification. Use when a plan is requested or uncertainty needs resolving before execution.",
-      "path": "catalog/bundled/paperclip-operations/task-planning",
-      "entrypoint": "SKILL.md",
-      "trustLevel": "markdown_only",
-      "compatibility": "compatible",
-      "defaultInstall": false,
-      "recommendedForRoles": [
-        "manager",
-        "engineer",
-        "product"
-      ],
-      "requires": [],
-      "tags": [
-        "paperclip",
-        "planning",
-        "issues",
-        "delegation"
-      ],
-      "files": [
-        {
-          "path": "SKILL.md",
-          "kind": "skill",
-          "sizeBytes": 1517,
-          "sha256": "48d6501d6ef481d5b19d0e0cd1507436d1cee1acf155e5038e1f0b2f0230d9e1"
-        }
-      ],
-      "contentHash": "sha256:a1724bde58be85c445590aeaa2f5f2f1de2bee24fe62f07fa3b579c6e4b28e6d"
-    },
-    {
-      "id": "paperclipai:bundled:product:paperclip-capsules",
-      "key": "paperclipai/bundled/product/paperclip-capsules",
+      "id": "tickernelz:bundled:product:wardmote-capsules",
+      "key": "tickernelz/bundled/product/wardmote-capsules",
       "kind": "bundled",
       "category": "product",
-      "slug": "paperclip-capsules",
-      "name": "paperclip-capsules",
+      "slug": "wardmote-capsules",
+      "name": "wardmote-capsules",
       "description": "Generate, implement, or review Wardmote capsule visuals. Use for capsule art, agent capsules, heartbeat status capsules, identicons, capsule banks, or brand-usage validation.",
-      "path": "catalog/bundled/product/paperclip-capsules",
+      "path": "catalog/bundled/product/wardmote-capsules",
       "entrypoint": "SKILL.md",
       "trustLevel": "markdown_only",
       "compatibility": "compatible",
@@ -245,39 +70,39 @@
         {
           "path": "SKILL.md",
           "kind": "skill",
-          "sizeBytes": 5831,
-          "sha256": "dd659ccb46e105336eb00fbe689b1d5531347fc69493c3156390d40ee413c93e"
+          "sizeBytes": 5820,
+          "sha256": "8ae0eb45136897928474dfb9f1630ac79a5b93f578ecb6d4652535898e0c120b"
         },
         {
           "path": "references/generator-workflows.md",
           "kind": "reference",
-          "sizeBytes": 4356,
-          "sha256": "b5f72e5b6683e8f93f2d852e84c2cc19e6ab438b250bf777dfb2480dd4f6e1b6"
+          "sizeBytes": 4349,
+          "sha256": "d1a3a5fb7df4208cb2f5f79cf2f718c5ce0fefadbbdbbcb8d9f9ca90116003bb"
         },
         {
           "path": "references/hero-capsule-bank.md",
           "kind": "reference",
-          "sizeBytes": 5981,
-          "sha256": "ec3d34113aa7bb527560d1eb4d8ab7667c73e18284c85a2019122743a767525a"
+          "sizeBytes": 5979,
+          "sha256": "8b8dc668618c47dc7d4074e296fe71097dc456ea15b1a6b150efda5c3cb61656"
         },
         {
           "path": "references/identicon-prototyper.md",
           "kind": "reference",
-          "sizeBytes": 6669,
-          "sha256": "0b19419efa1396a402097decabe24ea9ae649678569449c8ce855e0678df6bfe"
+          "sizeBytes": 6667,
+          "sha256": "a13c864a4b129f5b99f1c2ae08bdfbde28aaf2f0dfa33475c0c1a14753c341f1"
         },
         {
           "path": "references/individual-status-capsules.md",
           "kind": "reference",
-          "sizeBytes": 5031,
-          "sha256": "be1f2eccf96b4d2deefe45b3bc1dd0a3597278472c2ffedadc43c57161e9103d"
+          "sizeBytes": 5030,
+          "sha256": "34ef1c050c6dea40b605d35a6173f31a4e42fe95a27b1fbb50bf2025a2744f6b"
         }
       ],
-      "contentHash": "sha256:a2b26cf6895affeeb70c85567a061094450a59bd3c4fdcf28ee65858599ac12c"
+      "contentHash": "sha256:9ed648d0ebfd6b12a57906fcfce8a83049a60eaa946d8740157186cb16d6759c"
     },
     {
-      "id": "paperclipai:bundled:product:wireframe",
-      "key": "paperclipai/bundled/product/wireframe",
+      "id": "tickernelz:bundled:product:wireframe",
+      "key": "tickernelz/bundled/product/wireframe",
       "kind": "bundled",
       "category": "product",
       "slug": "wireframe",
@@ -305,8 +130,8 @@
         {
           "path": "SKILL.md",
           "kind": "skill",
-          "sizeBytes": 11509,
-          "sha256": "6992047cc97b67211cc8c1183718ab9aa26b8afc34c70d54d20558c215daaf48"
+          "sizeBytes": 11508,
+          "sha256": "b4426b18eafb0e92dd30f63013eeca772847546893232767414c4f97d10e09c3"
         },
         {
           "path": "assets/site-template.html",
@@ -345,11 +170,11 @@
           "sha256": "017260d2216859d57e5fa869e0efc6b88c7ed4d8a8a4f5af04fe89a3ef2445bd"
         }
       ],
-      "contentHash": "sha256:7106d84fc9db2053090f692706e41cfc586e7dd85a44f568e3319c4eefbdde46"
+      "contentHash": "sha256:6c5486e02e2f81eb999f689915022e6d54cf0f2a9846e0d8e525432b72cfba4d"
     },
     {
-      "id": "paperclipai:bundled:quality:qa-acceptance",
-      "key": "paperclipai/bundled/quality/qa-acceptance",
+      "id": "tickernelz:bundled:quality:qa-acceptance",
+      "key": "tickernelz/bundled/quality/qa-acceptance",
       "kind": "bundled",
       "category": "quality",
       "slug": "qa-acceptance",
@@ -376,15 +201,15 @@
         {
           "path": "SKILL.md",
           "kind": "skill",
-          "sizeBytes": 3861,
-          "sha256": "c631b437ab26d104af6cdb963d8f679a9341439041b3cb3ec8835f4ff551b378"
+          "sizeBytes": 3860,
+          "sha256": "a74320cbd62cc1e2057b6dca72cd29cc417c496119c240e1070aea91ded5dd07"
         }
       ],
-      "contentHash": "sha256:32372dacaf62e93454b9855968c4eec96456ba78b509f450b3dfaa48e31ef356"
+      "contentHash": "sha256:60a557b003253ecb297ee85edd0cdce6eeef31f484e1589aca36c3a368595cf0"
     },
     {
-      "id": "paperclipai:bundled:software-development:github-pr-workflow",
-      "key": "paperclipai/bundled/software-development/github-pr-workflow",
+      "id": "tickernelz:bundled:software-development:github-pr-workflow",
+      "key": "tickernelz/bundled/software-development/github-pr-workflow",
       "kind": "bundled",
       "category": "software-development",
       "slug": "github-pr-workflow",
@@ -409,15 +234,190 @@
         {
           "path": "SKILL.md",
           "kind": "skill",
-          "sizeBytes": 3970,
-          "sha256": "f498ec4ebb1779dea37adeb1db8a8b22316282798e35ee02e2fc5ff627d7e261"
+          "sizeBytes": 3969,
+          "sha256": "362a539653f67b6cb8b699bb1c88c0a09249abe87ed172f470e0fcda3a492f0e"
         }
       ],
-      "contentHash": "sha256:90f278c89aa0711be150c1cd2456ca25620d02f36995b113ca9837d756a37f6c"
+      "contentHash": "sha256:0e5e9bd63a73a59c0899858c73f8cc3e5e1d8f9f25c2ce4f2d2615efa8140206"
     },
     {
-      "id": "paperclipai:optional:browser:agent-browser",
-      "key": "paperclipai/optional/browser/agent-browser",
+      "id": "tickernelz:bundled:wardmote-operations:issue-triage",
+      "key": "tickernelz/bundled/wardmote-operations/issue-triage",
+      "kind": "bundled",
+      "category": "wardmote-operations",
+      "slug": "issue-triage",
+      "name": "issue-triage",
+      "description": "Triage Wardmote inbox issues that are stale, blocked, in-review, or assigned-but-not-progressing, and decide a single next action per issue (resume, reassign, unblock, escalate, or close).",
+      "path": "catalog/bundled/wardmote-operations/issue-triage",
+      "entrypoint": "SKILL.md",
+      "trustLevel": "markdown_only",
+      "compatibility": "compatible",
+      "defaultInstall": false,
+      "recommendedForRoles": [
+        "manager",
+        "ceo",
+        "engineer"
+      ],
+      "requires": [],
+      "tags": [
+        "paperclip",
+        "triage",
+        "inbox",
+        "workflow"
+      ],
+      "files": [
+        {
+          "path": "SKILL.md",
+          "kind": "skill",
+          "sizeBytes": 4039,
+          "sha256": "03d44f52b40e2677a339fcc9f26364965ff28e1e791c7874aea5ee0e4f97f52c"
+        }
+      ],
+      "contentHash": "sha256:7dfcf3fbceba701c25d0c059f00556c3336e80cbd5f21889301ac7e831cf4489"
+    },
+    {
+      "id": "tickernelz:bundled:wardmote-operations:reflection-coach",
+      "key": "tickernelz/bundled/wardmote-operations/reflection-coach",
+      "kind": "bundled",
+      "category": "wardmote-operations",
+      "slug": "reflection-coach",
+      "name": "reflection-coach",
+      "description": "Reflect on another agent's recent execution record and propose the smallest durable instruction, skill, or tool-description change. Use for evidence-backed coaching proposals, never hot-swaps.",
+      "path": "catalog/bundled/wardmote-operations/reflection-coach",
+      "entrypoint": "SKILL.md",
+      "trustLevel": "markdown_only",
+      "compatibility": "compatible",
+      "defaultInstall": false,
+      "recommendedForRoles": [
+        "manager",
+        "general"
+      ],
+      "requires": [],
+      "tags": [
+        "paperclip",
+        "reflection",
+        "coaching",
+        "agents",
+        "skills"
+      ],
+      "files": [
+        {
+          "path": "SKILL.md",
+          "kind": "skill",
+          "sizeBytes": 12013,
+          "sha256": "a76ede0da56975d69f545c85c7fdb502bf30882b272ac17b5055b3c6d9f1db77"
+        }
+      ],
+      "contentHash": "sha256:5698e783bd688453447177f5f2f3f768f5f2c067ad9515158b3812f065fb8e7d"
+    },
+    {
+      "id": "tickernelz:bundled:wardmote-operations:status-card-query",
+      "key": "tickernelz/bundled/wardmote-operations/status-card-query",
+      "kind": "bundled",
+      "category": "wardmote-operations",
+      "slug": "status-card-query",
+      "name": "status-card-query",
+      "description": "Create and maintain agent-authored Wardmote status cards, or compile a prose interest prompt into bounded CompanySearchQuery objects and write the first summary from the assigned Summarizer run.",
+      "path": "catalog/bundled/wardmote-operations/status-card-query",
+      "entrypoint": "SKILL.md",
+      "trustLevel": "markdown_only",
+      "compatibility": "compatible",
+      "defaultInstall": false,
+      "recommendedForRoles": [
+        "general",
+        "manager"
+      ],
+      "requires": [],
+      "tags": [
+        "paperclip",
+        "status",
+        "search",
+        "reporting",
+        "operations"
+      ],
+      "files": [
+        {
+          "path": "SKILL.md",
+          "kind": "skill",
+          "sizeBytes": 6353,
+          "sha256": "a1a09ebf7de40a6478cdb93377189844b8b64bfcbf872fe7ef666ec9be449ff4"
+        }
+      ],
+      "contentHash": "sha256:f86953671518363046b093fee7919ebce46e7ba22933e6d395d1a7c25ee553e4"
+    },
+    {
+      "id": "tickernelz:bundled:wardmote-operations:summarize-status",
+      "key": "tickernelz/bundled/wardmote-operations/summarize-status",
+      "kind": "bundled",
+      "category": "wardmote-operations",
+      "slug": "summarize-status",
+      "name": "summarize-status",
+      "description": "Write a short, colloquial summary for a Wardmote summary slot: open with the 1–3 specific, concrete actions the reader needs to take right now to unblock the work, then a brief plain-language status, streaming progress as it works.",
+      "path": "catalog/bundled/wardmote-operations/summarize-status",
+      "entrypoint": "SKILL.md",
+      "trustLevel": "markdown_only",
+      "compatibility": "compatible",
+      "defaultInstall": false,
+      "recommendedForRoles": [
+        "general",
+        "manager"
+      ],
+      "requires": [],
+      "tags": [
+        "paperclip",
+        "summary",
+        "status",
+        "reporting",
+        "operations"
+      ],
+      "files": [
+        {
+          "path": "SKILL.md",
+          "kind": "skill",
+          "sizeBytes": 8869,
+          "sha256": "55324ed79fe77502b3c24e09e2f9ecc14a61ef5dbe9e4226d227ccf02b3d97ce"
+        }
+      ],
+      "contentHash": "sha256:4993bb2953c1d3886fc713a5aefbb6f0ed29316a600c539cf727e0e2e9a65de2"
+    },
+    {
+      "id": "tickernelz:bundled:wardmote-operations:task-planning",
+      "key": "tickernelz/bundled/wardmote-operations/task-planning",
+      "kind": "bundled",
+      "category": "wardmote-operations",
+      "slug": "task-planning",
+      "name": "task-planning",
+      "description": "Write or revise a useful Wardmote plan with a clear outcome and verification. Use when a plan is requested or uncertainty needs resolving before execution.",
+      "path": "catalog/bundled/wardmote-operations/task-planning",
+      "entrypoint": "SKILL.md",
+      "trustLevel": "markdown_only",
+      "compatibility": "compatible",
+      "defaultInstall": false,
+      "recommendedForRoles": [
+        "manager",
+        "engineer",
+        "product"
+      ],
+      "requires": [],
+      "tags": [
+        "paperclip",
+        "planning",
+        "issues",
+        "delegation"
+      ],
+      "files": [
+        {
+          "path": "SKILL.md",
+          "kind": "skill",
+          "sizeBytes": 1513,
+          "sha256": "ad22e194a156b260c0a3983a6fa2e57b645441098a843bb2566d16fd5fa7138a"
+        }
+      ],
+      "contentHash": "sha256:095c25622be80f12585d779f8326b89247a5a71b4b2e7f7cec65133d6661c075"
+    },
+    {
+      "id": "tickernelz:optional:browser:agent-browser",
+      "key": "tickernelz/optional/browser/agent-browser",
       "kind": "optional",
       "category": "browser",
       "slug": "agent-browser",
@@ -444,15 +444,15 @@
         {
           "path": "SKILL.md",
           "kind": "skill",
-          "sizeBytes": 5133,
-          "sha256": "362f7b9d02297782bc6f0c093f495b8a0304a75bcf4b42e5c280a42b1f757b7d"
+          "sizeBytes": 5132,
+          "sha256": "7e46a66b52b50d171bb01dda4dcce39d88c7f4235c24e9f499224d8c0e6db2d8"
         }
       ],
-      "contentHash": "sha256:eabb2c9f7b5e1a27ebb1e05a711d61433a266478154cd671a685e99e67aadea2"
+      "contentHash": "sha256:b3b8201f3ce744396a734b6369f28371f505a5d5f5742c63ad92ac9d01571cb0"
     },
     {
-      "id": "paperclipai:optional:content:release-announcement",
-      "key": "paperclipai/optional/content/release-announcement",
+      "id": "tickernelz:optional:content:release-announcement",
+      "key": "tickernelz/optional/content/release-announcement",
       "kind": "optional",
       "category": "content",
       "slug": "release-announcement",
@@ -479,15 +479,15 @@
         {
           "path": "SKILL.md",
           "kind": "skill",
-          "sizeBytes": 6945,
-          "sha256": "d745cca96350518fabae14f5c407d779e1df2c5d091b5b4a5c55bb888b569e5f"
+          "sizeBytes": 6936,
+          "sha256": "4b188256f1d2049bbc30446f0e5533583049f84f02e3fd5eefd9d20079876f54"
         }
       ],
-      "contentHash": "sha256:efe8ea89b552df95222609867c9c75f1b40e16f457d34e7e4a124f54daa33efa"
+      "contentHash": "sha256:5566a121d050bb22410bde0532500999aeeefef1bb377dd247cc58b075c51ed1"
     },
     {
-      "id": "paperclipai:optional:content:simplified-english",
-      "key": "paperclipai/optional/content/simplified-english",
+      "id": "tickernelz:optional:content:simplified-english",
+      "key": "tickernelz/optional/content/simplified-english",
       "kind": "optional",
       "category": "content",
       "slug": "simplified-english",
@@ -515,15 +515,15 @@
         {
           "path": "SKILL.md",
           "kind": "skill",
-          "sizeBytes": 1578,
-          "sha256": "a0f7385599873910e2fabf400346016a07dacbc7ece27c0e3616ae8fd94ebfbb"
+          "sizeBytes": 1577,
+          "sha256": "534cf934fa6c25da699de757bb405d7d370164f2ed771563e63322de2f383038"
         }
       ],
-      "contentHash": "sha256:642321f40d51e0125df05c6fbace49aeb07ec30392058756909c259c9c5eac6a"
+      "contentHash": "sha256:cc1167632028f58eee3a9a140c26cb76932ccb507b267462330cdeb0db661f4f"
     },
     {
-      "id": "paperclipai:optional:finance:ramp",
-      "key": "paperclipai/optional/finance/ramp",
+      "id": "tickernelz:optional:finance:ramp",
+      "key": "tickernelz/optional/finance/ramp",
       "kind": "optional",
       "category": "finance",
       "slug": "ramp",
@@ -552,15 +552,15 @@
         {
           "path": "SKILL.md",
           "kind": "skill",
-          "sizeBytes": 7016,
-          "sha256": "698cd69ebf2f2481ed83c8e9477b56ae78288cc4c751d7d35f649ff2483802a3"
+          "sizeBytes": 6998,
+          "sha256": "7d7e1c5b322dbcc89c58511c30af6c9092a15562c3b4bcc1b44b5bdf0fb597f0"
         }
       ],
-      "contentHash": "sha256:276d85e98a4732f278204e26438aa95fde158dd2d15c1e427c4c7c7d492e769d"
+      "contentHash": "sha256:dd94464a485a8b7ca2758b07a94c600df1d359bd1bf57683cd7396898a5e307c"
     },
     {
-      "id": "paperclipai:optional:product:design-critique",
-      "key": "paperclipai/optional/product/design-critique",
+      "id": "tickernelz:optional:product:design-critique",
+      "key": "tickernelz/optional/product/design-critique",
       "kind": "optional",
       "category": "product",
       "slug": "design-critique",
@@ -587,15 +587,15 @@
         {
           "path": "SKILL.md",
           "kind": "skill",
-          "sizeBytes": 4851,
-          "sha256": "022e619baf6cc25725946279cb8052d22af090dd6cd6dc8c20f17867f71a5d8e"
+          "sizeBytes": 4850,
+          "sha256": "7da73a75b45fc38fc9d4b0530dcaad0d07e01abe87a9580974506a427a5ba3ea"
         }
       ],
-      "contentHash": "sha256:429f94df398a0697042b5bbe4755b1ff1a230aa5f41d99118ad37493ac65d21c"
+      "contentHash": "sha256:9a4bc2794994acea37357f38a02b2ebbbfdf288f874503294af274a9e7967ab8"
     },
     {
-      "id": "paperclipai:optional:research:last30days",
-      "key": "paperclipai/optional/research/last30days",
+      "id": "tickernelz:optional:research:last30days",
+      "key": "tickernelz/optional/research/last30days",
       "kind": "optional",
       "category": "research",
       "slug": "last30days",
@@ -1115,8 +1115,8 @@
       }
     },
     {
-      "id": "paperclipai:optional:software-development:prepare-mcp-integration",
-      "key": "paperclipai/optional/software-development/prepare-mcp-integration",
+      "id": "tickernelz:optional:software-development:prepare-mcp-integration",
+      "key": "tickernelz/optional/software-development/prepare-mcp-integration",
       "kind": "optional",
       "category": "software-development",
       "slug": "prepare-mcp-integration",
@@ -1149,17 +1149,17 @@
         {
           "path": "SKILL.md",
           "kind": "skill",
-          "sizeBytes": 12409,
-          "sha256": "5278d288a0cbfe10fdda4ef3d99cf61e6ed068f4b6c1282406b0e001c9f45253"
+          "sizeBytes": 12392,
+          "sha256": "82a8f92b10f62f0aed59224fefd74b4f6635f8f195f4775553e8e9b8a3171f01"
         },
         {
           "path": "examples/notion-mcp-research-gate.md",
           "kind": "markdown",
-          "sizeBytes": 1900,
-          "sha256": "944b13ac67c06c65643eb236e856f1479106749861535648d29334f84cf1b50b"
+          "sizeBytes": 1897,
+          "sha256": "b4c5da904e1ae920a5268af7534c5b26dd8ed7264917d7808e3e36524ffde879"
         }
       ],
-      "contentHash": "sha256:84f2a28d7d004393719684f2b435e5ee01ddc58591e0dfeb73d72c7605db7f49"
+      "contentHash": "sha256:09c9bd565c6e1342b82f56487305b0fbbca723182c2eef1c32731b099f6e6f2b"
     }
   ]
 }

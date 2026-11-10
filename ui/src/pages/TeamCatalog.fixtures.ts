@@ -12,8 +12,8 @@ import type {
 // ---------------------------------------------------------------------------
 
 export const sampleTeam: CatalogTeam = {
-  id: "paperclipai:bundled:company-defaults:core-exec-team",
-  key: "paperclipai/bundled/company-defaults/core-exec-team",
+  id: "tickernelz:bundled:company-defaults:core-exec-team",
+  key: "tickernelz/bundled/company-defaults/core-exec-team",
   kind: "bundled",
   category: "company-defaults",
   slug: "core-exec-team",
@@ -67,8 +67,8 @@ export const sampleTeam: CatalogTeam = {
 
 export const optionalTeam: CatalogTeam = {
   ...sampleTeam,
-  id: "paperclipai:optional:software-development:platform-pod",
-  key: "paperclipai/optional/software-development/platform-pod",
+  id: "tickernelz:optional:software-development:platform-pod",
+  key: "tickernelz/optional/software-development/platform-pod",
   kind: "optional",
   category: "software-development",
   slug: "platform-pod",
@@ -84,7 +84,7 @@ export const optionalTeam: CatalogTeam = {
 
 export const warnTeam: CatalogTeam = {
   ...sampleTeam,
-  id: "paperclipai:optional:research:lab-with-local-source",
+  id: "tickernelz:optional:research:lab-with-local-source",
   slug: "lab-with-local-source",
   name: "Research Lab (local source)",
   kind: "optional",
@@ -133,8 +133,8 @@ export const onboardingTeams: CatalogTeam[] = [
   },
   {
     ...sampleTeam,
-    id: "paperclipai:bundled:company-defaults:growth-pod",
-    key: "paperclipai/bundled/company-defaults/growth-pod",
+    id: "tickernelz:bundled:company-defaults:growth-pod",
+    key: "tickernelz/bundled/company-defaults/growth-pod",
     slug: "growth-pod",
     name: "Growth Pod",
     description:
@@ -149,8 +149,8 @@ export const onboardingTeams: CatalogTeam[] = [
   },
   {
     ...sampleTeam,
-    id: "paperclipai:bundled:company-defaults:support-pod",
-    key: "paperclipai/bundled/company-defaults/support-pod",
+    id: "tickernelz:bundled:company-defaults:support-pod",
+    key: "tickernelz/bundled/company-defaults/support-pod",
     slug: "support-pod",
     name: "Support Pod",
     description: "A two-person support desk with a lead and an agent, plus a triage routine.",

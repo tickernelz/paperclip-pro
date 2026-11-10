@@ -11,13 +11,13 @@ import {
 const tempDirs: string[] = [];
 const catalogSkills = [
   {
-    id: "paperclipai:bundled:software-development:github-pr-workflow",
-    key: "paperclipai/bundled/software-development/github-pr-workflow",
+    id: "tickernelz:bundled:software-development:github-pr-workflow",
+    key: "tickernelz/bundled/software-development/github-pr-workflow",
     slug: "github-pr-workflow",
   },
   {
-    id: "paperclipai:bundled:paperclip-operations:task-planning",
-    key: "paperclipai/bundled/paperclip-operations/task-planning",
+    id: "tickernelz:bundled:wardmote-operations:task-planning",
+    key: "tickernelz/bundled/wardmote-operations/task-planning",
     slug: "task-planning",
   },
 ];
@@ -34,7 +34,7 @@ describe("teams catalog manifest", () => {
         "name: Product Engineering",
         "description: Product engineering team for implementation and review work.",
         "schema: agentcompanies/v1",
-        "key: paperclipai/bundled/software-development/product-engineering",
+        "key: tickernelz/bundled/software-development/product-engineering",
         "manager: agents/cto/AGENTS.md",
         "recommendedForCompanyTypes:",
         "  - software",
@@ -84,8 +84,8 @@ describe("teams catalog manifest", () => {
     expect(result.errors).toEqual([]);
     expect(result.manifest.teams).toHaveLength(1);
     expect(result.manifest.teams[0]).toMatchObject({
-      id: "paperclipai:bundled:software-development:product-engineering",
-      key: "paperclipai/bundled/software-development/product-engineering",
+      id: "tickernelz:bundled:software-development:product-engineering",
+      key: "tickernelz/bundled/software-development/product-engineering",
       kind: "bundled",
       category: "software-development",
       slug: "product-engineering",
@@ -113,7 +113,7 @@ describe("teams catalog manifest", () => {
         type: "catalog",
         ref: "github-pr-workflow",
         resolved: true,
-        catalogSkillKey: "paperclipai/bundled/software-development/github-pr-workflow",
+        catalogSkillKey: "tickernelz/bundled/software-development/github-pr-workflow",
         agentSlugs: ["cto"],
       }),
     ]);
@@ -132,7 +132,7 @@ describe("teams catalog manifest", () => {
       frontmatter: [
         "name: Duplicate",
         "schema: agentcompanies/v1",
-        "key: paperclipai/bundled/software-development/other",
+        "key: tickernelz/bundled/software-development/other",
         "manager: agents/missing/AGENTS.md",
         "recommendedForCompanyTypes: software",
       ],
@@ -189,7 +189,7 @@ describe("teams catalog manifest", () => {
         expect.stringContaining("catalog/bundled/software-development/missing-team is missing TEAM.md"),
         expect.stringContaining("has invalid category"),
         expect.stringContaining("frontmatter must include description"),
-        expect.stringContaining("key must be paperclipai/bundled/Bad_Category/duplicate"),
+        expect.stringContaining("key must be tickernelz/bundled/Bad_Category/duplicate"),
         expect.stringContaining("field recommendedForCompanyTypes must be an array of strings"),
         expect.stringContaining("manager must resolve to an AGENTS.md file"),
         expect.stringContaining("reportsTo references unknown agent slug"),

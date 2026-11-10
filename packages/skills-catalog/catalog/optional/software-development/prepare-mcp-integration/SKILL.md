@@ -5,7 +5,7 @@ description: >
   exact-revision human approval, and one governed Wardmote connector PR per
   approved connection. Use for new integration research and delivery; not for
   ad hoc connector coding that bypasses the playbooks.
-key: paperclipai/optional/software-development/prepare-mcp-integration
+key: tickernelz/optional/software-development/prepare-mcp-integration
 recommendedForRoles:
   - engineer
   - product-manager

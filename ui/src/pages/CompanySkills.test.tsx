@@ -992,7 +992,7 @@ describe("install-time agent enablement", () => {
   function makeCatalogSkill(): CatalogSkill {
     return {
       id: "catalog-1",
-      key: "paperclipai/bundled/product/wireframe",
+      key: "tickernelz/bundled/product/wireframe",
       kind: "bundled",
       category: "product",
       slug: "wireframe",

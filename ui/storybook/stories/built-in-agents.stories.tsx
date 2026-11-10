@@ -275,7 +275,7 @@ const reflectionBundle = {
     skillKey: "reflection-coach",
     displayName: "reflection-coach",
     slug: "reflection-coach",
-    canonicalKey: "paperclipai/bundled/paperclip-operations/reflection-coach",
+    canonicalKey: "tickernelz/bundled/wardmote-operations/reflection-coach",
     files: ["reflection-coach/SKILL.md"],
   },
   routine: {

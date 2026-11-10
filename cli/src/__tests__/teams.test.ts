@@ -28,8 +28,8 @@ function jsonResponse(body: unknown, status = 200): Response {
 
 function catalogTeam(overrides: Record<string, unknown> = {}) {
   return {
-    id: "paperclipai:bundled:software-development:product-engineering",
-    key: "paperclipai/bundled/software-development/product-engineering",
+    id: "tickernelz:bundled:software-development:product-engineering",
+    key: "tickernelz/bundled/software-development/product-engineering",
     kind: "bundled",
     category: "software-development",
     slug: "product-engineering",
@@ -58,8 +58,8 @@ function catalogTeam(overrides: Record<string, unknown> = {}) {
 
 function installedCatalogTeam(overrides: Record<string, unknown> = {}) {
   return {
-    catalogId: "paperclipai:bundled:software-development:product-engineering",
-    catalogKey: "paperclipai/bundled/software-development/product-engineering",
+    catalogId: "tickernelz:bundled:software-development:product-engineering",
+    catalogKey: "tickernelz/bundled/software-development/product-engineering",
     present: true,
     currentContentHash: "sha256:catalog-team",
     installedOriginHashes: ["sha256:catalog-team"],
@@ -116,7 +116,7 @@ describe("teams CLI commands", () => {
     );
     const rendered = logSpy.mock.calls.map((call: unknown[]) => String(call[0])).join("\n");
     expect(rendered).toContain("id");
-    expect(rendered).toContain("paperclipai:bundled:software-development:product-engineering");
+    expect(rendered).toContain("tickernelz:bundled:software-development:product-engineering");
   });
 
   it("searches catalog teams as JSON", async () => {
@@ -148,8 +148,8 @@ describe("teams CLI commands", () => {
       .mockResolvedValueOnce(jsonResponse([
         catalogTeam(),
         catalogTeam({
-          id: "paperclipai:optional:content:content-machine",
-          key: "paperclipai/optional/content/content-machine",
+          id: "tickernelz:optional:content:content-machine",
+          key: "tickernelz/optional/content/content-machine",
           kind: "optional",
           category: "content",
           slug: "content-machine",
@@ -224,8 +224,8 @@ describe("teams CLI commands", () => {
     const rows = JSON.parse(String(logSpy.mock.calls[0]?.[0]));
     expect(rows).toMatchObject([
       {
-        catalogId: "paperclipai:bundled:software-development:product-engineering",
-        catalogKey: "paperclipai/bundled/software-development/product-engineering",
+        catalogId: "tickernelz:bundled:software-development:product-engineering",
+        catalogKey: "tickernelz/bundled/software-development/product-engineering",
         installedStatus: "installed",
         installedAgentCount: 3,
         outOfDate: false,
@@ -247,7 +247,7 @@ describe("teams CLI commands", () => {
     await runCommand([
       "teams",
       "inspect",
-      "paperclipai/bundled/software-development/product-engineering",
+      "tickernelz/bundled/software-development/product-engineering",
       "--api-base",
       "http://wardmote.test",
       "--api-key",
@@ -256,7 +256,7 @@ describe("teams CLI commands", () => {
     ]);
 
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://wardmote.test/api/teams/catalog/ref?ref=paperclipai%2Fbundled%2Fsoftware-development%2Fproduct-engineering",
+      "http://wardmote.test/api/teams/catalog/ref?ref=tickernelz%2Fbundled%2Fsoftware-development%2Fproduct-engineering",
       expect.objectContaining({ method: "GET" }),
     );
     expect(JSON.parse(String(logSpy.mock.calls[0]?.[0]))).toEqual(detail);

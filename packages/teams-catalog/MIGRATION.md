@@ -17,13 +17,13 @@ The approved plan for this package lives at [PAP-10206 plan document](/PAP/issue
 
 ## Bundled entries shipped in Phase H
 
-- `paperclipai/bundled/company-defaults/core-exec-team` — defaults: CEO, CTO, QA, starter project, recurring CEO heartbeat task. `defaultInstall: true`. This is the smallest team that mirrors the historical CEO onboarding flow while staying inside catalog rules.
-- `paperclipai/bundled/software-development/product-engineering` — optional engineering pod: CTO, Senior Coder, QA, weekly engineering sync routine.
-- `paperclipai/bundled/product/product-design` — single-designer product design team with `wireframe`, `design-critique`, and weekly design review routine.
+- `tickernelz/bundled/company-defaults/core-exec-team` — defaults: CEO, CTO, QA, starter project, recurring CEO heartbeat task. `defaultInstall: true`. This is the smallest team that mirrors the historical CEO onboarding flow while staying inside catalog rules.
+- `tickernelz/bundled/software-development/product-engineering` — optional engineering pod: CTO, Senior Coder, QA, weekly engineering sync routine.
+- `tickernelz/bundled/product/product-design` — single-designer product design team with `wireframe`, `design-critique`, and weekly design review routine.
 
 ## Optional entries shipped in Phase H
 
-- `paperclipai/optional/content/content-machine` — vendored local `content-calendar` skill, single content lead, recurring weekly content review. Kept from Phase B as the canonical fixture for local-skill resolution.
+- `tickernelz/optional/content/content-machine` — vendored local `content-calendar` skill, single content lead, recurring weekly content review. Kept from Phase B as the canonical fixture for local-skill resolution.
 
 ## Intentionally deferred
 
@@ -40,7 +40,7 @@ The plan in [PAP-10206](/PAP/issues/PAP-10206#document-plan) lists additional re
 
 Before removing `server/src/onboarding-assets/ceo/` or the `skills/wardmote-create-agent/references/agents/*.md` templates, the following tests should be in place. None are written yet — they are tracked here so a future remove-legacy issue does not skip them:
 
-1. **Onboarding parity test** — a server-level integration test that runs the current onboarding flow on a fresh company and verifies the resulting agent/project/task tree is byte-equivalent (modulo timestamps and ids) to a `paperclipai/bundled/company-defaults/core-exec-team` install via the catalog service.
+1. **Onboarding parity test** — a server-level integration test that runs the current onboarding flow on a fresh company and verifies the resulting agent/project/task tree is byte-equivalent (modulo timestamps and ids) to a `tickernelz/bundled/company-defaults/core-exec-team` install via the catalog service.
 2. **Slug stability test** — covers that the agent slugs `ceo`, `cto`, `qa` keep stable values when reparenting under an existing target manager, so downstream UI links don't churn.
 3. **Skill resolution drift test** — fails if a bundled team's `requiredSkills` references a catalog skill key that no longer exists in the latest `@tickernelz/wardmote-skills-catalog` manifest.
 4. **Adapter default fallback test** — confirms that imported agents with no explicit `adapterType` pick up the same adapter the legacy onboarding path used.

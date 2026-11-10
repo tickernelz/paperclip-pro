@@ -912,7 +912,7 @@ describe("company portability", () => {
 
   it("exports catalog skill provenance in portable Wardmote frontmatter", async () => {
     const portability = companyPortabilityService({} as any);
-    const catalogKey = "paperclipai/bundled/software-development/review";
+    const catalogKey = "tickernelz/bundled/software-development/review";
     const originHash = "sha256:catalog-origin";
     const catalogSkill = {
       id: "skill-catalog",
@@ -934,7 +934,7 @@ describe("company portability", () => {
       metadata: {
         sourceKind: "catalog",
         skillKey: catalogKey,
-        catalogId: "paperclipai:bundled:software-development:review",
+        catalogId: "tickernelz:bundled:software-development:review",
         catalogKey,
         catalogKind: "bundled",
         catalogCategory: "software-development",
@@ -977,11 +977,11 @@ describe("company portability", () => {
       expandReferencedSkills: true,
     });
 
-    const skillMarkdown = asTextFile(exported.files["skills/paperclipai/bundled/software-development/review/SKILL.md"]);
+    const skillMarkdown = asTextFile(exported.files["skills/tickernelz/bundled/software-development/review/SKILL.md"]);
     expect(skillMarkdown).toContain("paperclip:");
     expect(skillMarkdown).toContain("catalog:");
     expect(skillMarkdown).toContain(`sourceRef: "${originHash}"`);
-    expect(skillMarkdown).toContain('catalogId: "paperclipai:bundled:software-development:review"');
+    expect(skillMarkdown).toContain('catalogId: "tickernelz:bundled:software-development:review"');
     expect(skillMarkdown).toContain(`catalogKey: "${catalogKey}"`);
     expect(skillMarkdown).toContain('catalogKind: "bundled"');
     expect(skillMarkdown).toContain('catalogPath: "catalog/bundled/software-development/review"');
@@ -998,7 +998,7 @@ describe("company portability", () => {
         sourceKind: "catalog",
         skillKey: catalogKey,
         originHash,
-        catalogId: "paperclipai:bundled:software-development:review",
+        catalogId: "tickernelz:bundled:software-development:review",
         catalogKey,
         catalogKind: "bundled",
         catalogPath: "catalog/bundled/software-development/review",

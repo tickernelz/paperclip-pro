@@ -5,26 +5,26 @@ import { describe, expect, it } from "vitest";
 import { catalogManifest, catalogSkills, resolveCatalogSkillRef } from "./index.js";
 
 const EXPECTED_BUNDLED_KEYS = [
-  "paperclipai/bundled/docs/doc-maintenance",
-  "paperclipai/bundled/paperclip-operations/issue-triage",
-  "paperclipai/bundled/paperclip-operations/reflection-coach",
-  "paperclipai/bundled/paperclip-operations/status-card-query",
-  "paperclipai/bundled/paperclip-operations/summarize-status",
-  "paperclipai/bundled/paperclip-operations/task-planning",
-  "paperclipai/bundled/product/paperclip-capsules",
-  "paperclipai/bundled/product/wireframe",
-  "paperclipai/bundled/quality/qa-acceptance",
-  "paperclipai/bundled/software-development/github-pr-workflow",
+  "tickernelz/bundled/docs/doc-maintenance",
+  "tickernelz/bundled/product/wardmote-capsules",
+  "tickernelz/bundled/product/wireframe",
+  "tickernelz/bundled/quality/qa-acceptance",
+  "tickernelz/bundled/software-development/github-pr-workflow",
+  "tickernelz/bundled/wardmote-operations/issue-triage",
+  "tickernelz/bundled/wardmote-operations/reflection-coach",
+  "tickernelz/bundled/wardmote-operations/status-card-query",
+  "tickernelz/bundled/wardmote-operations/summarize-status",
+  "tickernelz/bundled/wardmote-operations/task-planning",
 ];
 
 const EXPECTED_OPTIONAL_KEYS = [
-  "paperclipai/optional/browser/agent-browser",
-  "paperclipai/optional/content/release-announcement",
-  "paperclipai/optional/content/simplified-english",
-  "paperclipai/optional/finance/ramp",
-  "paperclipai/optional/product/design-critique",
-  "paperclipai/optional/research/last30days",
-  "paperclipai/optional/software-development/prepare-mcp-integration",
+  "tickernelz/optional/browser/agent-browser",
+  "tickernelz/optional/content/release-announcement",
+  "tickernelz/optional/content/simplified-english",
+  "tickernelz/optional/finance/ramp",
+  "tickernelz/optional/product/design-critique",
+  "tickernelz/optional/research/last30days",
+  "tickernelz/optional/software-development/prepare-mcp-integration",
 ];
 
 const MAX_FRONTMATTER_DESCRIPTION_LENGTH = 300;
@@ -77,7 +77,7 @@ describe("shipped skills catalog", () => {
     const skill = readFileSync(
       path.join(
         REPO_ROOT,
-        "packages/skills-catalog/catalog/bundled/paperclip-operations/summarize-status/SKILL.md",
+        "packages/skills-catalog/catalog/bundled/wardmote-operations/summarize-status/SKILL.md",
       ),
       "utf8",
     );
@@ -131,7 +131,7 @@ describe("shipped skills catalog", () => {
     // carry the "assets" trust level and are installable.
     const scriptBearing = catalogSkills.filter((skill) => skill.trustLevel === "scripts_executables");
     expect(scriptBearing.map((skill) => skill.key)).toEqual([
-      "paperclipai/optional/research/last30days",
+      "tickernelz/optional/research/last30days",
     ]);
   });
 
@@ -157,8 +157,8 @@ describe("shipped skills catalog", () => {
   it("uses canonical wardmote keys derived from kind/category/slug", () => {
     const violations: string[] = [];
     for (const skill of catalogSkills) {
-      const expectedKey = `paperclipai/${skill.kind}/${skill.category}/${skill.slug}`;
-      const expectedId = `paperclipai:${skill.kind}:${skill.category}:${skill.slug}`;
+      const expectedKey = `tickernelz/${skill.kind}/${skill.category}/${skill.slug}`;
+      const expectedId = `tickernelz:${skill.kind}:${skill.category}:${skill.slug}`;
       if (skill.key !== expectedKey) violations.push(`${skill.key} should be ${expectedKey}`);
       if (skill.id !== expectedId) violations.push(`${skill.id} should be ${expectedId}`);
     }
@@ -172,7 +172,7 @@ describe("shipped skills catalog", () => {
   });
 
   it("resolves shipped skills by id, key, and unique slug", () => {
-    const sample = catalogSkills.find((skill) => skill.key === "paperclipai/bundled/software-development/github-pr-workflow");
+    const sample = catalogSkills.find((skill) => skill.key === "tickernelz/bundled/software-development/github-pr-workflow");
     expect(sample, "expected github-pr-workflow to ship in the bundled catalog").toBeDefined();
     if (!sample) return;
 
