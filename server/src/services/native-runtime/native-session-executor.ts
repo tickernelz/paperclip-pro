@@ -1780,16 +1780,12 @@ function legacyCompanyNativeSessionScopeKey(
   ]);
 }
 
+export function runnerdStateBaseForInstance(instanceRoot: string): string {
+  return resolve(instanceRoot, "runtime", "paperclip-runner", "durable-sessions");
+}
+
 function runnerdStateBase(): string {
-  return (
-    process.env.WARDMOTE_RUNNER_STATE_DIR ??
-    resolve(
-      resolveWardmoteInstanceRoot(),
-      "runtime",
-      "paperclip-runner",
-      "durable-sessions",
-    )
-  );
+  return process.env.WARDMOTE_RUNNER_STATE_DIR ?? runnerdStateBaseForInstance(resolveWardmoteInstanceRoot());
 }
 
 function scopedRunnerdStateRoot(execution: NativeExecutionInput): string {

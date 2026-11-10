@@ -20,7 +20,7 @@ import {
 import { resolveWardmoteInstanceRoot } from "../home-paths.js";
 import { rewriteStoredAdapterConfig } from "../modules/agent-lifecycle/index.js";
 import { adoptAgentFiles } from "./agent-file-store.js";
-import { quarantineRetiredRunnerdStateRoots } from "./native-runtime/native-session-executor.js";
+import { quarantineRetiredRunnerdStateRoots, runnerdStateBaseForInstance } from "./native-runtime/native-session-executor.js";
 import { materializeInstructionBytes } from "./agent-instruction-files.js";
 import { agentInstructionsBundleMode, resolveManagedInstructionsRoot } from "./agent-instructions.js";
 
@@ -234,7 +234,7 @@ export async function migrateRetiredNames(
 
   report.quarantinedRunnerStates = quarantineRetiredRunnerdStateRoots({
     dryRun,
-    ...(options.instanceRoot ? { stateBase: path.join(options.instanceRoot, "runtime", "paperclip-runner", "durable-sessions") } : {}),
+    ...(options.instanceRoot ? { stateBase: runnerdStateBaseForInstance(options.instanceRoot) } : {}),
   });
 
   if (!dryRun && (report.files.length > 0 || report.rows.length > 0)) {
