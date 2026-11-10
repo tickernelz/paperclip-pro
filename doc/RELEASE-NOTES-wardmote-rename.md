@@ -11,6 +11,7 @@ This release uses only the Wardmote names. Nothing reads the old names any more;
 - **Stored agent text.** On every start the server rewrites the retired env, tool, header, route and skill names in agent instruction files, agent settings and their history, routines and chat endpoints. It backs up each changed file and row under `backups/wardmote-rename-<time>/`; a second start changes nothing. `wardmote migrate-names --dry-run` lists the changes without writing.
 - **Embedded database.** The embedded PostgreSQL role and database are `wardmote`. On the first start the server renames the old role and database in place through a temporary superuser, which it drops afterwards; it refuses while another process is connected to the old database. Backup files are named `wardmote-*.sql.gz`, and older backups with the retired prefix in the same folder are renamed on the next backup so retention keeps pruning them. Agent run tokens use the `wardmote` issuer and `wardmote-api` audience; tokens minted before the upgrade stop working, so upgrade with no run live.
 - **Paperclip Cloud, Labs and EE** are removed: managed-cloud mode, Cloud sign-in, the Cloud connector broker, onboarding seeds and the related routes and UI.
+- **Stored channel values.** Approvals, grants, autonomy windows and owner relays decided in the board record `wardmote` as their channel, and the local board user's address is `local@wardmote.local`; database migration 0360 rewrites existing rows. API responses carry `wardmote` where they carried the old value.
 
 ## Upgrading an existing install
 

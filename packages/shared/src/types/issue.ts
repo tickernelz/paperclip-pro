@@ -1284,7 +1284,7 @@ export interface IssueThreadInteractionActorFields {
   resolvedByUserId?: string | null;
 }
 
-export type IssueThreadInteractionOwnerRelayChannel = "whatsapp" | "paperclip";
+export type IssueThreadInteractionOwnerRelayChannel = "whatsapp" | "wardmote";
 
 export interface IssueThreadInteractionOwnerRelay {
   channel: IssueThreadInteractionOwnerRelayChannel;

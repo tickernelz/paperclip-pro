@@ -520,7 +520,7 @@ describe("OpenWA catalog, describe and call (embedded Postgres + fake gateway)",
         .returning();
       const [grant] = await db
         .insert(chatOwnerGrants)
-        .values({ companyId: t.companyId, endpointId: t.endpointId, requestId: request!.id, originChatKey: openwaChatKey(MEMBER), category, scope: "one_action", approvedVia: "paperclip", expiresAt: new Date(Date.now() + 3_600_000) })
+        .values({ companyId: t.companyId, endpointId: t.endpointId, requestId: request!.id, originChatKey: openwaChatKey(MEMBER), category, scope: "one_action", approvedVia: "wardmote", expiresAt: new Date(Date.now() + 3_600_000) })
         .returning();
       return grant!.id;
     };

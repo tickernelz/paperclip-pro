@@ -136,7 +136,7 @@ async function seedValidWorktreeSource(
     VALUES (
       ${userId},
       ${userId === "local-board" ? "Board" : "Existing User"},
-      ${userId === "local-board" ? "local@paperclip.local" : "existing@paperclip.ing"},
+      ${userId === "local-board" ? "local@wardmote.local" : "existing@paperclip.ing"},
       true, ${now.toISOString()}, ${now.toISOString()}
     )
   `;

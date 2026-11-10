@@ -489,7 +489,7 @@ describe("OpenWA agent tools (embedded Postgres + fake gateway)", () => {
       endpointId: t.endpointId,
       requestId: fresh.requestId,
       decision: "reject",
-      via: "paperclip",
+      via: "wardmote",
       owner: { userId: t.userId },
       ownerText: null,
     });
@@ -505,7 +505,7 @@ describe("OpenWA agent tools (embedded Postgres + fake gateway)", () => {
       endpointId: t.endpointId,
       requestId: first.requestId,
       decision: "approve",
-      via: "paperclip",
+      via: "wardmote",
       owner: { userId: t.userId },
       ownerText: null,
     });
@@ -596,7 +596,7 @@ describe("OpenWA agent tools (embedded Postgres + fake gateway)", () => {
       endpointId: t.endpointId,
       requestId: first.requestId,
       decision: "approve",
-      via: "paperclip",
+      via: "wardmote",
       owner: { userId: t.userId },
       ownerText: null,
     });
@@ -686,7 +686,7 @@ describe("OpenWA agent tools (embedded Postgres + fake gateway)", () => {
       endpointId: t.endpointId,
       requestId: created.requestId,
       decision: "approve",
-      via: "paperclip",
+      via: "wardmote",
       owner: { userId: t.userId },
       ownerText: null,
     });
@@ -733,7 +733,7 @@ describe("OpenWA agent tools (embedded Postgres + fake gateway)", () => {
       .returning();
     const [grant] = await db
       .insert(chatOwnerGrants)
-      .values({ companyId: t.companyId, endpointId: t.endpointId, requestId: requestRow!.id, originChatKey: openwaChatKey(MEMBER), category: "cross_chat_send", scope: "one_action", approvedVia: "paperclip", expiresAt: new Date(Date.now() + 3_600_000) })
+      .values({ companyId: t.companyId, endpointId: t.endpointId, requestId: requestRow!.id, originChatKey: openwaChatKey(MEMBER), category: "cross_chat_send", scope: "one_action", approvedVia: "wardmote", expiresAt: new Date(Date.now() + 3_600_000) })
       .returning();
     const binding = await run(t, c, { triggerClass: "grant", grantIds: [grant!.id] });
     t.gateway.failNextSend({ dropResponseAfterStore: true });

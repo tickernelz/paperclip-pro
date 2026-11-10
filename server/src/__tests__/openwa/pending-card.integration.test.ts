@@ -442,7 +442,7 @@ describe("OpenWA pending_card wakes (embedded Postgres + fake gateway)", () => {
     await ownerConversation(t);
     const issueId = await taskIssue(t, "Windowed work");
     const [identifier] = (await db.select({ identifier: issues.identifier }).from(issues).where(eq(issues.id, issueId))).map((row) => row.identifier!);
-    await autonomyWindows.autonomyWindowService(db).open(t.companyId, { issueIds: [identifier], hours: 1 }, { userId: t.userId, grantedVia: "paperclip" });
+    await autonomyWindows.autonomyWindowService(db).open(t.companyId, { issueIds: [identifier], hours: 1 }, { userId: t.userId, grantedVia: "wardmote" });
     const serviceFactory = autonomyWindows.autonomyWindowService;
     const lookups = { count: 0 };
     vi.spyOn(autonomyWindows, "autonomyWindowService").mockImplementation((target) => {

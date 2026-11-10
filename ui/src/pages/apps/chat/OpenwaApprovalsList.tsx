@@ -45,7 +45,7 @@ const statusLabels: Record<ChatOwnerApprovalStatus, string> = {
   withdrawn: "Withdrawn",
 };
 
-const channelLabels: Record<ChatOwnerApprovalChannel, string> = { whatsapp: "WhatsApp", paperclip: "Wardmote" };
+const channelLabels: Record<ChatOwnerApprovalChannel, string> = { whatsapp: "WhatsApp", wardmote: "Wardmote" };
 
 const OWNER_ONLY_MESSAGE = "Only owners of this WhatsApp connection can approve or reject requests. Ask an owner, or add and link your number under Settings → Owners.";
 const NETWORK_MESSAGE = "Couldn't reach Wardmote. Check your connection and try again.";

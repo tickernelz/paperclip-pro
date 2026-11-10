@@ -384,7 +384,7 @@ describeEmbeddedPostgres("owner-relayed decisions (routes + postgres)", () => {
     expect(res.body).toMatchObject({
       status: "rejected",
       resolvedByUserId: seed.ownerUserId,
-      resolutionRelay: { channel: "paperclip", ownerMessageRef: comment!.id, relayedByAgentId: seed.wiraId },
+      resolutionRelay: { channel: "wardmote", ownerMessageRef: comment!.id, relayedByAgentId: seed.wiraId },
     });
   }, 60_000);
 

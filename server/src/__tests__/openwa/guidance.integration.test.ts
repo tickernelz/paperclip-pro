@@ -359,7 +359,7 @@ describeEmbeddedPostgres("OpenWA guidance at run start", () => {
     }).returning();
     const [grant] = await db.insert(chatOwnerGrants).values({
       companyId: seed.companyId, endpointId: seed.endpointId, requestId: request!.id, originChatKey: PEER,
-      requesterPrincipalId: seed.peerPrincipalId, category, scope: "one_action", status: "live", approvedVia: "paperclip",
+      requesterPrincipalId: seed.peerPrincipalId, category, scope: "one_action", status: "live", approvedVia: "wardmote",
       approvedByUserId: "board-user", expiresAt: new Date(Date.now() + 3_600_000),
     }).returning();
     return { requestId: request!.id, grantId: grant!.id };

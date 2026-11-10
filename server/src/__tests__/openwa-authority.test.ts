@@ -250,7 +250,7 @@ async function seedGrant(
     companyId: seed.companyId, endpointId: seed.endpointId, requestId: approval!.id,
     originChatKey: input.chatKey ?? CHAT_KEY, category: input.category, scope: input.scope ?? "one_action",
     requesterPrincipalId: input.requesterPrincipalId ?? null,
-    status: input.status ?? "live", approvedVia: "paperclip", approvedByUserId: BOARD_USER,
+    status: input.status ?? "live", approvedVia: "wardmote", approvedByUserId: BOARD_USER,
     expiresAt: input.expiresAt ?? new Date(Date.now() + 3_600_000),
   }).returning();
   return { grantId: grant!.id, requestId: approval!.id };

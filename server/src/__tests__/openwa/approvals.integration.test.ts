@@ -630,9 +630,9 @@ describe("OpenWA owner approvals and grants (embedded Postgres + fake gateway)",
     const accepted = await supertest(channelApp(t, t.userId)).post("/api/chat-endpoints/" + t.endpointId + "/openwa/approvals/" + request.id + "/resolve").send({ decision: "approve" });
     expect(accepted.status).toBe(200);
     expect(accepted.body).toMatchObject({ status: "approved" });
-    expect(await requestRow(request.id)).toMatchObject({ status: "approved", resolvedVia: "paperclip", resolvedByUserId: t.userId });
+    expect(await requestRow(request.id)).toMatchObject({ status: "approved", resolvedVia: "wardmote", resolvedByUserId: t.userId });
     const grants = await grantsOf(request.id);
-    expect(grants).toEqual([expect.objectContaining({ category: "external_tools", scope: "requester", approvedVia: "paperclip", requesterPrincipalId: wakeA.delivery.principalId, originChatKey: GROUP })]);
+    expect(grants).toEqual([expect.objectContaining({ category: "external_tools", scope: "requester", approvedVia: "wardmote", requesterPrincipalId: wakeA.delivery.principalId, originChatKey: GROUP })]);
     await approvalWake(t, request.id);
 
     const wakeB = await admitted(t, mention(MEMBER_B, "kirim juga email saya"));
@@ -667,7 +667,7 @@ describe("OpenWA owner approvals and grants (embedded Postgres + fake gateway)",
     });
     expect(one("openwa.approval_resolved")).toMatchObject({
       ...base, actorType: "user", actorId: t.userId,
-      details: { endpointId: t.endpointId, provider: "openwa", requestId: request.id, decision: "approved", via: "paperclip" },
+      details: { endpointId: t.endpointId, provider: "openwa", requestId: request.id, decision: "approved", via: "wardmote" },
     });
     expect(one("openwa.grant_created")).toMatchObject({
       ...base, actorType: "user", actorId: t.userId,
@@ -896,14 +896,14 @@ describe("OpenWA owner approvals and grants (embedded Postgres + fake gateway)",
     const cancelled = await supertest(channelApp(t, t.userId)).post(cancelPath).send({});
     expect(cancelled.status).toBe(200);
     expect(cancelled.body).toEqual({ requestId: request.id, status: "cancelled" });
-    expect(await requestRow(request.id)).toMatchObject({ status: "cancelled", resolvedVia: "paperclip", resolvedByUserId: t.userId });
+    expect(await requestRow(request.id)).toMatchObject({ status: "cancelled", resolvedVia: "wardmote", resolvedByUserId: t.userId });
     expect(await reminderStates(request.id)).toEqual(scheduled.map((state) => state.replace(":pending", ":cancelled")));
     expect(await db.select().from(issueThreadInteractions).where(eq(issueThreadInteractions.issueId, runA.issueId))).toEqual([]);
     expect(await grantsOf(request.id)).toEqual([]);
     expect(t.wakeup.mock.calls.length).toBe(wakesBefore);
     expect(await db.select().from(chatActions).where(eq(chatActions.providerActionId, "openwa-approval-resolved:" + request.id))).toEqual([]);
     const audit = await db.select().from(chatAuditEntries).where(and(eq(chatAuditEntries.endpointId, t.endpointId), eq(chatAuditEntries.kind, "approval_cancelled")));
-    expect(audit).toEqual([expect.objectContaining({ actorKind: "user", actorRef: t.userId, metadata: expect.objectContaining({ requestId: request.id, via: "paperclip" }) })]);
+    expect(audit).toEqual([expect.objectContaining({ actorKind: "user", actorRef: t.userId, metadata: expect.objectContaining({ requestId: request.id, via: "wardmote" }) })]);
     const activity = await db.select().from(activityLog).where(and(eq(activityLog.companyId, t.companyId), eq(activityLog.action, "openwa.approval_cancelled")));
     expect(activity).toEqual([expect.objectContaining({ actorType: "user", actorId: t.userId, entityId: t.endpointId })]);
 

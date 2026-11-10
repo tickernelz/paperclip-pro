@@ -397,7 +397,7 @@ describeEmbeddedPostgres("OpenWA audit and retention", () => {
     }).returning();
     const [grant] = await db.insert(chatOwnerGrants).values({
       companyId: t.companyId, endpointId: t.endpointId, requestId: request!.id, originChatKey: CHAT,
-      category: "create_task", scope, approvedVia: "paperclip", approvedByUserId: t.endpointOwner.userId,
+      category: "create_task", scope, approvedVia: "wardmote", approvedByUserId: t.endpointOwner.userId,
       expiresAt: input.expiresAt,
     }).returning();
     return grant!;

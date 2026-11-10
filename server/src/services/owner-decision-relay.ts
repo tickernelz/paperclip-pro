@@ -178,7 +178,7 @@ export async function resolveOwnerRelayAuthority(
   }
   const relayRun = { id: run.id, companyId: run.companyId, contextSnapshot: run.contextSnapshot as Record<string, unknown> | null };
   const whatsapp = await whatsappAuthority(db, relayRun, input.ownerMessageRef);
-  const authority = whatsapp ? { channel: "whatsapp" as const, ...whatsapp } : { channel: "paperclip" as const, ...(await commentAuthority(db, relayRun, input.ownerMessageRef)) };
+  const authority = whatsapp ? { channel: "whatsapp" as const, ...whatsapp } : { channel: "wardmote" as const, ...(await commentAuthority(db, relayRun, input.ownerMessageRef)) };
   const access = await boardAuthService(db).resolveBoardAccess(authority.ownerUserId);
   if (!access.user || (!access.isInstanceAdmin && !access.companyIds.includes(input.companyId))) {
     throw ownerConfirmationRequired("owner_not_member", "The owner is not an active board member of this company");

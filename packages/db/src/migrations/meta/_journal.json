@@ -2507,6 +2507,13 @@
       "when": 1794184792579,
       "tag": "0359_wardmote_bundled_skill_slugs",
       "breakpoints": true
+    },
+    {
+      "idx": 360,
+      "version": "7",
+      "when": 1794285812153,
+      "tag": "0360_wardmote_channel_values",
+      "breakpoints": true
     }
   ]
 }
