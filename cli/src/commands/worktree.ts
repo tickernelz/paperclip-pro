@@ -301,7 +301,8 @@ function formatSeededWorktreeExecutionQuarantineSummary(
   ].join(", ");
 }
 
-const WORKTREE_NAME_PREFIX = "paperclip-";
+const WORKTREE_NAME_PREFIX = "wardmote-";
+const RETIRED_WORKTREE_NAME_PREFIX = "paperclip-";
 
 function resolveWorktreeMakeName(name: string): string {
   const value = nonEmpty(name);
@@ -313,7 +314,8 @@ function resolveWorktreeMakeName(name: string): string {
       "Worktree name must contain only letters, numbers, dots, underscores, or dashes.",
     );
   }
-  return value.startsWith(WORKTREE_NAME_PREFIX) ? value : `${WORKTREE_NAME_PREFIX}${value}`;
+  if (value.startsWith(WORKTREE_NAME_PREFIX) || value.startsWith(RETIRED_WORKTREE_NAME_PREFIX)) return value;
+  return `${WORKTREE_NAME_PREFIX}${value}`;
 }
 
 function resolveWorktreeHome(explicit?: string): string {
@@ -4479,7 +4481,7 @@ export function registerWorktreeCommands(program: Command): void {
   program
     .command("worktree:make")
     .description("Create ~/NAME as a git worktree, then initialize an isolated Wardmote instance inside it")
-    .argument("<name>", "Worktree name — auto-prefixed with paperclip- if needed (created at ~/paperclip-NAME)")
+    .argument("<name>", "Worktree name — auto-prefixed with wardmote- if needed (created at ~/wardmote-NAME)")
     .option("--start-point <ref>", "Remote ref to base the new branch on (env: WARDMOTE_WORKTREE_START_POINT)")
     .option("--instance <id>", "Explicit isolated instance id")
     .option("--home <path>", `Home root for worktree instances (env: WARDMOTE_WORKTREES_DIR, default: ${DEFAULT_WORKTREE_HOME})`)
@@ -4581,7 +4583,7 @@ export function registerWorktreeCommands(program: Command): void {
   program
     .command("worktree:cleanup")
     .description("Safely remove a worktree, its branch, and its isolated instance data")
-    .argument("<name>", "Worktree name — auto-prefixed with paperclip- if needed")
+    .argument("<name>", "Worktree name — auto-prefixed with wardmote- if needed")
     .option("--instance <id>", "Explicit instance id (if different from the worktree name)")
     .option("--home <path>", `Home root for worktree instances (env: WARDMOTE_WORKTREES_DIR, default: ${DEFAULT_WORKTREE_HOME})`)
     .option("--force", "Bypass safety checks (uncommitted changes, unique commits)", false)

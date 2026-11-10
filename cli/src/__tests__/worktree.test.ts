@@ -335,13 +335,16 @@ describe("worktree helpers", () => {
   });
 
   it("resolves worktree:make target paths under the user home directory", () => {
-    expect(resolveWorktreeMakeTargetPath("paperclip-pr-432")).toBe(
-      path.resolve(os.homedir(), "paperclip-pr-432"),
-    );
+    expect(resolveWorktreeMakeTargetPath("pr-432")).toBe(path.resolve(os.homedir(), "wardmote-pr-432"));
+    expect(resolveWorktreeMakeTargetPath("wardmote-pr-432")).toBe(path.resolve(os.homedir(), "wardmote-pr-432"));
+  });
+
+  it("keeps addressing worktrees created under the retired name prefix", () => {
+    expect(resolveWorktreeMakeTargetPath("paperclip-pr-432")).toBe(path.resolve(os.homedir(), "paperclip-pr-432"));
   });
 
   it("rejects worktree:make names that are not safe directory/branch names", () => {
-    expect(() => resolveWorktreeMakeTargetPath("paperclip/pr-432")).toThrow(
+    expect(() => resolveWorktreeMakeTargetPath("wardmote/pr-432")).toThrow(
       "Worktree name must contain only letters, numbers, dots, underscores, or dashes.",
     );
   });
