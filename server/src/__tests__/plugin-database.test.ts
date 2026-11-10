@@ -279,7 +279,7 @@ describe("buildPluginWorkerEnv", () => {
         environmentDrivers: [{ driverKey: "daytona" }],
       },
       packageName: "@tickernelz/wardmote-plugin-daytona",
-      packagePath: "/home/operator/.paperclip/plugins/fake-daytona",
+      packagePath: "/home/operator/.wardmote/plugins/fake-daytona",
       trustedLocalPluginRoots: ["/app/packages/plugins"],
       instanceInfo,
       processEnv: {

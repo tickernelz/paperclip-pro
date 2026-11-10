@@ -49,7 +49,7 @@ if (shouldLoadWorkingDirectoryEnv({
   loadDotenv({ path: CWD_ENV_PATH, override: false, quiet: true });
 }
 
-if (basename(dirname(WARDMOTE_ENV_FILE_PATH)) === ".paperclip") {
+if (basename(dirname(WARDMOTE_ENV_FILE_PATH)) === ".wardmote") {
   applyEmptyWorktreeSigningSecrets(dirname(dirname(WARDMOTE_ENV_FILE_PATH)));
 }
 maybeRepairLegacyWorktreeConfigAndEnvFiles();

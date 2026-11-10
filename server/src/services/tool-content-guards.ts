@@ -48,7 +48,7 @@ export class ToolActionSigningSecretMissingError extends Error {
   constructor() {
     super(
       "WARDMOTE_TOOL_ACTION_SIGNING_SECRET is not configured; signed tool action approvals cannot be issued. " +
-        "Set WARDMOTE_TOOL_ACTION_SIGNING_SECRET in this instance's environment (worktrees inherit it from .paperclip/.env).",
+        "Set WARDMOTE_TOOL_ACTION_SIGNING_SECRET in this instance's environment (worktrees inherit it from .wardmote/.env).",
     );
     this.name = "ToolActionSigningSecretMissingError";
   }

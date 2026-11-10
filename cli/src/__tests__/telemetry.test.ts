@@ -7,7 +7,7 @@ const ORIGINAL_ENV = { ...process.env };
 const CI_ENV_VARS = ["CI", "CONTINUOUS_INTEGRATION", "BUILD_NUMBER", "GITHUB_ACTIONS", "GITLAB_CI"];
 
 function makeConfigPath(root: string, enabled: boolean): string {
-  const configPath = path.join(root, ".paperclip", "config.json");
+  const configPath = path.join(root, ".wardmote", "config.json");
   fs.mkdirSync(path.dirname(configPath), { recursive: true });
   fs.writeFileSync(configPath, JSON.stringify({
     $meta: {

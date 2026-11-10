@@ -23,10 +23,10 @@ let previousSecret: string | undefined;
 function createWorkspaceCwd(instanceId: string | null) {
   const cwd = mkdtempSync(path.join(os.tmpdir(), "paperclip-handoff-issuer-"));
   tempDirs.push(cwd);
-  mkdirSync(path.join(cwd, ".paperclip"), { recursive: true });
+  mkdirSync(path.join(cwd, ".wardmote"), { recursive: true });
   if (instanceId) {
     writeFileSync(
-      path.join(cwd, ".paperclip", ".env"),
+      path.join(cwd, ".wardmote", ".env"),
       `WARDMOTE_HOME=/srv/home\nWARDMOTE_INSTANCE_ID=${instanceId}\n`,
       "utf8",
     );

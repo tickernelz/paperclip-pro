@@ -68,9 +68,9 @@ if (cliArgs[0] === "worktree" && cliArgs[1] === "init") {
     console.error("fake worktree init failure");
     process.exit(${initExit});
   }
-  fs.mkdirSync(".paperclip", { recursive: true });
-  fs.writeFileSync(".paperclip/config.json", JSON.stringify({ $meta: { source: "fake-cli" } }));
-  fs.writeFileSync(".paperclip/.env", "WARDMOTE_IN_WORKTREE=true\\n");
+  fs.mkdirSync(".wardmote", { recursive: true });
+  fs.writeFileSync(".wardmote/config.json", JSON.stringify({ $meta: { source: "fake-cli" } }));
+  fs.writeFileSync(".wardmote/.env", "WARDMOTE_IN_WORKTREE=true\\n");
   process.exit(0);
 }
 if (cliArgs[0] === "worktree" && cliArgs[1] === "ensure-seeded") {
@@ -78,11 +78,11 @@ if (cliArgs[0] === "worktree" && cliArgs[1] === "ensure-seeded") {
     console.error("fake worktree ensure-seeded failure");
     process.exit(${ensureExit});
   }
-  fs.rmSync(".paperclip/seed-pending", { force: true });
-  fs.rmSync(".paperclip/seed-complete", { force: true });
-  fs.writeFileSync(".paperclip/seed-manifest.json", JSON.stringify({
+  fs.rmSync(".wardmote/seed-pending", { force: true });
+  fs.rmSync(".wardmote/seed-complete", { force: true });
+  fs.writeFileSync(".wardmote/seed-manifest.json", JSON.stringify({
     version: 2,
-    source: { instanceId: "base-source", configPath: ${JSON.stringify(path.join(baseCwd, ".paperclip", "config.json"))} },
+    source: { instanceId: "base-source", configPath: ${JSON.stringify(path.join(baseCwd, ".wardmote", "config.json"))} },
     snapshotAt: "2026-08-19T00:00:00.000Z",
     seedMode: "minimal",
     migrationRevision: "0142_test.sql",
@@ -160,7 +160,7 @@ function readCliInvocations(baseCwd) {
 }
 
 function readWorktreeConfig(worktreeCwd) {
-  const configPath = path.join(worktreeCwd, ".paperclip", "config.json");
+  const configPath = path.join(worktreeCwd, ".wardmote", "config.json");
   assert.ok(fs.existsSync(configPath), `expected ${configPath} to exist`);
   return JSON.parse(fs.readFileSync(configPath, "utf8"));
 }
@@ -173,7 +173,7 @@ test("uses the base CLI when its import graph boots", () => {
   const config = readWorktreeConfig(worktreeCwd);
   assert.equal(config.$meta.source, "fake-cli");
   assert.equal(
-    JSON.parse(fs.readFileSync(path.join(worktreeCwd, ".paperclip", "seed-manifest.json"), "utf8")).state,
+    JSON.parse(fs.readFileSync(path.join(worktreeCwd, ".wardmote", "seed-manifest.json"), "utf8")).state,
     "pending",
   );
   const initInvocation = readCliInvocations(baseCwd).find(
@@ -196,7 +196,7 @@ for (const defaultConfigInEnv of [false, true]) {
     assert.equal(result.status, 0, result.stderr);
     assert.match(result.stderr, /preparing checkout dependencies without a seeded development instance/);
     for (const file of ["config.json", ".env", "seed-manifest.json", "seed-pending", "seed-complete"]) {
-      assert.equal(fs.existsSync(path.join(worktreeCwd, ".paperclip", file)), false);
+      assert.equal(fs.existsSync(path.join(worktreeCwd, ".wardmote", file)), false);
     }
     assert.equal(fs.realpathSync(path.join(worktreeCwd, "cli", "node_modules")), path.join(baseCwd, "cli", "node_modules"));
     assert.deepEqual(readCliInvocations(baseCwd), []);
@@ -212,7 +212,7 @@ test("rejects a missing custom seed source", () => {
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /config is unavailable \(control-plane instance\)/);
   assert.match(result.stderr, /For a seeded development instance, configure a canonical config/);
-  assert.equal(fs.existsSync(path.join(worktreeCwd, ".paperclip")), false);
+  assert.equal(fs.existsSync(path.join(worktreeCwd, ".wardmote")), false);
   assert.deepEqual(readCliInvocations(baseCwd), []);
 });
 
@@ -227,7 +227,7 @@ test("initializes a previously plain checkout once a registered seed source is a
   const second = runProvision(baseCwd, { existingWorktree: first.worktreeCwd });
   assert.equal(second.result.status, 0, second.result.stderr);
   assert.equal(readWorktreeConfig(first.worktreeCwd).$meta.source, "fake-cli");
-  assert.equal(JSON.parse(fs.readFileSync(path.join(first.worktreeCwd, ".paperclip", "seed-manifest.json"), "utf8")).state, "pending");
+  assert.equal(JSON.parse(fs.readFileSync(path.join(first.worktreeCwd, ".wardmote", "seed-manifest.json"), "utf8")).state, "pending");
 });
 
 test("a plain checkout without a source is not ready for a seeded runtime", () => {
@@ -241,7 +241,7 @@ test("a plain checkout without a source is not ready for a seeded runtime", () =
   const runtime = runRuntimeProvision(baseCwd, worktreeCwd, { setupInstance });
   assert.notEqual(runtime.status, 0);
   assert.match(runtime.stderr, /Worktree config still does not exist after built-in provisioning/);
-  assert.equal(fs.existsSync(path.join(worktreeCwd, ".paperclip", "seed-manifest.json")), false);
+  assert.equal(fs.existsSync(path.join(worktreeCwd, ".wardmote", "seed-manifest.json")), false);
   assert.deepEqual(readCliInvocations(baseCwd), []);
 });
 
@@ -257,7 +257,7 @@ for (const relativePath of ["instances/default/config.json", "instances/default"
     });
     assert.notEqual(result.status, 0);
     assert.match(result.stderr, /canonical/);
-    assert.equal(fs.existsSync(path.join(worktreeCwd, ".paperclip")), false);
+    assert.equal(fs.existsSync(path.join(worktreeCwd, ".wardmote")), false);
     assert.deepEqual(readCliInvocations(baseCwd), []);
   });
 }
@@ -268,13 +268,13 @@ for (const file of ["config.json", ".env", "seed-manifest.json", "seed-pending",
     const { result, worktreeCwd } = runProvision(baseCwd, {
       setupInstance: (home) => fs.rmSync(path.join(home, "instances", "default", "config.json")),
       setupWorktree(root) {
-        fs.mkdirSync(path.join(root, ".paperclip"));
-        fs.writeFileSync(path.join(root, ".paperclip", file), "retained state\n");
+        fs.mkdirSync(path.join(root, ".wardmote"));
+        fs.writeFileSync(path.join(root, ".wardmote", file), "retained state\n");
       },
     });
     assert.notEqual(result.status, 0);
     assert.match(result.stderr, /config is unavailable/);
-    assert.equal(fs.readFileSync(path.join(worktreeCwd, ".paperclip", file), "utf8"), "retained state\n");
+    assert.equal(fs.readFileSync(path.join(worktreeCwd, ".wardmote", file), "utf8"), "retained state\n");
     assert.deepEqual(readCliInvocations(baseCwd), []);
   });
 }
@@ -294,24 +294,24 @@ for (const installExit of [0, 42]) {
     });
     assert.equal(result.status, installExit, result.stderr);
     assert.match(fs.readFileSync(path.join(worktreeCwd, "pnpm-calls"), "utf8"), /^install --prod=false --frozen-lockfile/);
-    assert.equal(fs.existsSync(path.join(worktreeCwd, ".paperclip", "pnpm-install-fingerprint")), installExit === 0);
-    assert.equal(fs.existsSync(path.join(worktreeCwd, ".paperclip", "config.json")), false);
-    assert.equal(fs.existsSync(path.join(worktreeCwd, ".paperclip", "seed-manifest.json")), false);
+    assert.equal(fs.existsSync(path.join(worktreeCwd, ".wardmote", "pnpm-install-fingerprint")), installExit === 0);
+    assert.equal(fs.existsSync(path.join(worktreeCwd, ".wardmote", "config.json")), false);
+    assert.equal(fs.existsSync(path.join(worktreeCwd, ".wardmote", "seed-manifest.json")), false);
     assert.deepEqual(readCliInvocations(baseCwd), []);
   });
 }
 
 test("rejects a dangling base workspace config symlink instead of falling back", () => {
   const baseCwd = makeBaseWorkspace({ helpExit: 0, initExit: 0 });
-  fs.mkdirSync(path.join(baseCwd, ".paperclip"), { recursive: true });
-  fs.symlinkSync(path.join(baseCwd, "absent.json"), path.join(baseCwd, ".paperclip", "config.json"));
+  fs.mkdirSync(path.join(baseCwd, ".wardmote"), { recursive: true });
+  fs.symlinkSync(path.join(baseCwd, "absent.json"), path.join(baseCwd, ".wardmote", "config.json"));
 
   const { result, worktreeCwd } = runProvision(baseCwd);
 
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /is not a canonical file \(base project workspace\)/);
   assert.doesNotMatch(result.stderr, /checkout-only|provisionCommand/);
-  assert.equal(fs.existsSync(path.join(worktreeCwd, ".paperclip")), false);
+  assert.equal(fs.existsSync(path.join(worktreeCwd, ".wardmote")), false);
   assert.deepEqual(readCliInvocations(baseCwd), []);
 });
 
@@ -329,20 +329,18 @@ test("rejects a non-regular instance config without suggesting a setup bypass", 
   assert.match(result.stderr, /is not a canonical file \(control-plane instance\)/);
   assert.match(result.stderr, /Repair the registered source path/);
   assert.doesNotMatch(result.stderr, /checkout-only|provisionCommand/);
-  assert.equal(fs.existsSync(path.join(worktreeCwd, ".paperclip")), false);
+  assert.equal(fs.existsSync(path.join(worktreeCwd, ".wardmote")), false);
   assert.deepEqual(readCliInvocations(baseCwd), []);
 });
 
 test("rejects a dangling base workspace .paperclip symlink instead of falling back", () => {
   const baseCwd = makeBaseWorkspace({ helpExit: 0, initExit: 0 });
-  // `-e`/`-L` on the config resolve `.paperclip` first, so the config reads as absent
-  // here even though the workspace is malformed rather than a plain checkout.
-  fs.symlinkSync(path.join(baseCwd, "absent-dir"), path.join(baseCwd, ".paperclip"));
+  fs.symlinkSync(path.join(baseCwd, "absent-dir"), path.join(baseCwd, ".wardmote"));
 
   const { result } = runProvision(baseCwd);
 
   assert.notEqual(result.status, 0);
-  assert.match(result.stderr, /\.paperclip is a broken symlink/);
+  assert.match(result.stderr, /\.wardmote is a broken symlink/);
 });
 
 test("falls back to an isolated config when the base CLI cannot boot", () => {
@@ -362,10 +360,10 @@ test("falls back to an isolated config when the base CLI cannot boot", () => {
     !path.relative(worktreesHome, dataDir).startsWith(".."),
     `expected ${dataDir} to live under ${worktreesHome}`,
   );
-  const env = fs.readFileSync(path.join(worktreeCwd, ".paperclip", ".env"), "utf8");
+  const env = fs.readFileSync(path.join(worktreeCwd, ".wardmote", ".env"), "utf8");
   assert.match(env, /WARDMOTE_IN_WORKTREE=true/);
   assert.equal(
-    JSON.parse(fs.readFileSync(path.join(worktreeCwd, ".paperclip", "seed-manifest.json"), "utf8")).state,
+    JSON.parse(fs.readFileSync(path.join(worktreeCwd, ".wardmote", "seed-manifest.json"), "utf8")).state,
     "pending",
   );
 });
@@ -377,9 +375,9 @@ test("reconciles deployment mode from the registered source when reusing a guest
   assert.equal(readWorktreeConfig(worktreeCwd).server.deploymentMode, "local_trusted");
 
   // A base workspace that does carry its own instance config outranks the fallback.
-  fs.mkdirSync(path.join(baseCwd, ".paperclip"), { recursive: true });
+  fs.mkdirSync(path.join(baseCwd, ".wardmote"), { recursive: true });
   fs.writeFileSync(
-    path.join(baseCwd, ".paperclip", "config.json"),
+    path.join(baseCwd, ".wardmote", "config.json"),
     `${JSON.stringify({
       server: {
         deploymentMode: "authenticated",
@@ -438,9 +436,9 @@ if (cliArgs.includes("--help")) {
   process.exit(fs.existsSync(${JSON.stringify(healthFlag)}) ? 0 : 1);
 }
 if (cliArgs[0] === "worktree" && cliArgs[1] === "init") {
-  fs.mkdirSync(".paperclip", { recursive: true });
-  fs.writeFileSync(".paperclip/config.json", JSON.stringify({ $meta: { source: "fake-cli" } }));
-  fs.writeFileSync(".paperclip/.env", "WARDMOTE_IN_WORKTREE=true\\n");
+  fs.mkdirSync(".wardmote", { recursive: true });
+  fs.writeFileSync(".wardmote/config.json", JSON.stringify({ $meta: { source: "fake-cli" } }));
+  fs.writeFileSync(".wardmote/.env", "WARDMOTE_IN_WORKTREE=true\\n");
   process.exit(0);
 }
 process.exit(0);
@@ -490,23 +488,23 @@ test("a failed CLI init fails provisioning instead of being masked as success", 
 
   assert.equal(result.status, 3, result.stderr);
   assert.match(result.stderr, /fake worktree init failure/);
-  assert.ok(!fs.existsSync(path.join(worktreeCwd, ".paperclip", "config.json")));
+  assert.ok(!fs.existsSync(path.join(worktreeCwd, ".wardmote", "config.json")));
 });
 
 test("runtime provisioning invokes ensure-seeded once and fast-exits after success", () => {
   const baseCwd = makeBaseWorkspace({ helpExit: 0, initExit: 0 });
   const worktreeCwd = makeTempDir("paperclip-provision-runtime-worktree-");
-  fs.mkdirSync(path.join(worktreeCwd, ".paperclip"), { recursive: true });
-  fs.writeFileSync(path.join(worktreeCwd, ".paperclip", "config.json"), "{}\n");
-  fs.writeFileSync(path.join(worktreeCwd, ".paperclip", "seed-pending"), "{}\n");
+  fs.mkdirSync(path.join(worktreeCwd, ".wardmote"), { recursive: true });
+  fs.writeFileSync(path.join(worktreeCwd, ".wardmote", "config.json"), "{}\n");
+  fs.writeFileSync(path.join(worktreeCwd, ".wardmote", "seed-pending"), "{}\n");
 
   const first = runRuntimeProvision(baseCwd, worktreeCwd);
   assert.equal(first.status, 0, first.stderr);
   assert.equal(
-    JSON.parse(fs.readFileSync(path.join(worktreeCwd, ".paperclip", "seed-manifest.json"), "utf8")).state,
+    JSON.parse(fs.readFileSync(path.join(worktreeCwd, ".wardmote", "seed-manifest.json"), "utf8")).state,
     "verified",
   );
-  assert.ok(!fs.existsSync(path.join(worktreeCwd, ".paperclip", "seed-pending")));
+  assert.ok(!fs.existsSync(path.join(worktreeCwd, ".wardmote", "seed-pending")));
 
   const ensureCallsAfterFirst = readCliInvocations(baseCwd)
     .filter((args) => args[0] === "worktree" && args[1] === "ensure-seeded");
@@ -524,11 +522,11 @@ test("runtime provisioning invokes ensure-seeded once and fast-exits after succe
 
 test("runtime provisioning omits the source override when the base config exists", () => {
   const baseCwd = makeBaseWorkspace({ helpExit: 0, initExit: 0 });
-  fs.mkdirSync(path.join(baseCwd, ".paperclip"), { recursive: true });
-  fs.writeFileSync(path.join(baseCwd, ".paperclip", "config.json"), "{}\n");
+  fs.mkdirSync(path.join(baseCwd, ".wardmote"), { recursive: true });
+  fs.writeFileSync(path.join(baseCwd, ".wardmote", "config.json"), "{}\n");
   const worktreeCwd = makeTempDir("paperclip-provision-runtime-base-config-");
-  fs.mkdirSync(path.join(worktreeCwd, ".paperclip"), { recursive: true });
-  fs.writeFileSync(path.join(worktreeCwd, ".paperclip", "config.json"), "{}\n");
+  fs.mkdirSync(path.join(worktreeCwd, ".wardmote"), { recursive: true });
+  fs.writeFileSync(path.join(worktreeCwd, ".wardmote", "config.json"), "{}\n");
 
   const result = runRuntimeProvision(baseCwd, worktreeCwd);
 
@@ -558,8 +556,8 @@ test("runtime provisioning guards every optional source-config expansion for Bas
 test("runtime provisioning seeds a worktree config that has no seed markers", () => {
   const baseCwd = makeBaseWorkspace({ helpExit: 0, initExit: 0 });
   const worktreeCwd = makeTempDir("paperclip-provision-runtime-unmarked-config-");
-  fs.mkdirSync(path.join(worktreeCwd, ".paperclip"), { recursive: true });
-  fs.writeFileSync(path.join(worktreeCwd, ".paperclip", "config.json"), "{}\n");
+  fs.mkdirSync(path.join(worktreeCwd, ".wardmote"), { recursive: true });
+  fs.writeFileSync(path.join(worktreeCwd, ".wardmote", "config.json"), "{}\n");
 
   const result = runRuntimeProvision(baseCwd, worktreeCwd);
 
@@ -570,7 +568,7 @@ test("runtime provisioning seeds a worktree config that has no seed markers", ()
     1,
   );
   assert.equal(
-    JSON.parse(fs.readFileSync(path.join(worktreeCwd, ".paperclip", "seed-manifest.json"), "utf8")).state,
+    JSON.parse(fs.readFileSync(path.join(worktreeCwd, ".wardmote", "seed-manifest.json"), "utf8")).state,
     "verified",
   );
 });
@@ -580,7 +578,7 @@ test("runtime provisioning bootstraps and seeds an empty .paperclip directory", 
   fs.mkdirSync(path.join(baseCwd, "scripts"), { recursive: true });
   fs.copyFileSync(script, path.join(baseCwd, "scripts", "provision-worktree.sh"));
   const worktreeCwd = makeTempDir("paperclip-provision-runtime-empty-state-");
-  fs.mkdirSync(path.join(worktreeCwd, ".paperclip"), { recursive: true });
+  fs.mkdirSync(path.join(worktreeCwd, ".wardmote"), { recursive: true });
 
   const result = runRuntimeProvision(baseCwd, worktreeCwd);
 
@@ -596,7 +594,7 @@ test("runtime provisioning bootstraps and seeds an empty .paperclip directory", 
     1,
   );
   assert.equal(
-    JSON.parse(fs.readFileSync(path.join(worktreeCwd, ".paperclip", "seed-manifest.json"), "utf8")).state,
+    JSON.parse(fs.readFileSync(path.join(worktreeCwd, ".wardmote", "seed-manifest.json"), "utf8")).state,
     "verified",
   );
 });
@@ -604,24 +602,24 @@ test("runtime provisioning bootstraps and seeds an empty .paperclip directory", 
 test("runtime provisioning leaves seed-pending in place when ensure-seeded fails", () => {
   const baseCwd = makeBaseWorkspace({ helpExit: 0, initExit: 0, ensureExit: 4 });
   const worktreeCwd = makeTempDir("paperclip-provision-runtime-failure-");
-  fs.mkdirSync(path.join(worktreeCwd, ".paperclip"), { recursive: true });
-  fs.writeFileSync(path.join(worktreeCwd, ".paperclip", "config.json"), "{}\n");
-  fs.writeFileSync(path.join(worktreeCwd, ".paperclip", "seed-pending"), "{}\n");
+  fs.mkdirSync(path.join(worktreeCwd, ".wardmote"), { recursive: true });
+  fs.writeFileSync(path.join(worktreeCwd, ".wardmote", "config.json"), "{}\n");
+  fs.writeFileSync(path.join(worktreeCwd, ".wardmote", "seed-pending"), "{}\n");
 
   const result = runRuntimeProvision(baseCwd, worktreeCwd);
   assert.equal(result.status, 4, result.stderr);
   assert.match(result.stderr, /fake worktree ensure-seeded failure/);
-  assert.ok(fs.existsSync(path.join(worktreeCwd, ".paperclip", "seed-pending")));
-  assert.ok(!fs.existsSync(path.join(worktreeCwd, ".paperclip", "seed-complete")));
+  assert.ok(fs.existsSync(path.join(worktreeCwd, ".wardmote", "seed-pending")));
+  assert.ok(!fs.existsSync(path.join(worktreeCwd, ".wardmote", "seed-complete")));
 });
 
 test("runtime provisioning does not trust a truncated verified manifest", () => {
   const baseCwd = makeBaseWorkspace({ helpExit: 0, initExit: 0, ensureExit: 4 });
   const worktreeCwd = makeTempDir("paperclip-provision-runtime-truncated-");
-  fs.mkdirSync(path.join(worktreeCwd, ".paperclip"), { recursive: true });
-  fs.writeFileSync(path.join(worktreeCwd, ".paperclip", "config.json"), "{}\n");
+  fs.mkdirSync(path.join(worktreeCwd, ".wardmote"), { recursive: true });
+  fs.writeFileSync(path.join(worktreeCwd, ".wardmote", "config.json"), "{}\n");
   fs.writeFileSync(
-    path.join(worktreeCwd, ".paperclip", "seed-manifest.json"),
+    path.join(worktreeCwd, ".wardmote", "seed-manifest.json"),
     JSON.stringify({ version: 2, state: "verified" }),
   );
 
@@ -686,7 +684,7 @@ esac
     });
     const recovers = failure.startsWith("ERR_PNPM_");
     assert.equal(result.status, recovers ? 0 : failure === "ENOTFOUND" ? 42 : 1, result.stderr);
-    assert.equal(fs.existsSync(path.join(worktreeCwd, ".paperclip/pnpm-install-fingerprint")), recovers);
+    assert.equal(fs.existsSync(path.join(worktreeCwd, ".wardmote/pnpm-install-fingerprint")), recovers);
     const calls = fs.readFileSync(path.join(worktreeCwd, "pnpm-calls"), "utf8").trim().split("\n").filter((call) => call.startsWith("install "));
     assert.equal(calls.length, failure === "ENOTFOUND" ? 1 : 2);
     if (calls.length === 2) assert.match(calls[1], /--no-frozen-lockfile/);

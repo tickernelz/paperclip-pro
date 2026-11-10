@@ -21,7 +21,7 @@ async function makeTempRoot(prefix: string): Promise<string> {
 }
 
 async function writeWorkspaceEnv(workspacePath: string, homeDir: string, instanceId: string): Promise<void> {
-  const envDir = path.join(workspacePath, ".paperclip");
+  const envDir = path.join(workspacePath, ".wardmote");
   await fs.mkdir(envDir, { recursive: true });
   await fs.writeFile(
     path.join(envDir, ".env"),

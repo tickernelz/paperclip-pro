@@ -156,7 +156,7 @@ async function runPnpm(cwd: string, args: string[]) {
 }
 
 async function writeRegisteredSourceConfig(baseCwd: string, instanceId = "source-instance") {
-  const configDir = path.join(baseCwd, ".paperclip");
+  const configDir = path.join(baseCwd, ".wardmote");
   await fs.mkdir(configDir, { recursive: true });
   await fs.writeFile(path.join(configDir, "config.json"), "{}\n", "utf8");
   await fs.writeFile(
@@ -577,13 +577,13 @@ describe("resolveRuntimeProvisionCommand", () => {
         "bash ./scripts/provision-worktree-runtime.sh",
       );
 
-      await fs.mkdir(path.join(cwd, ".paperclip"), { recursive: true });
-      await fs.writeFile(path.join(cwd, ".paperclip", "config.json"), "{}\n");
+      await fs.mkdir(path.join(cwd, ".wardmote"), { recursive: true });
+      await fs.writeFile(path.join(cwd, ".wardmote", "config.json"), "{}\n");
       expect(resolveRuntimeProvisionCommand({ config: {}, workspace })).toBe(
         "bash ./scripts/provision-worktree-runtime.sh",
       );
 
-      await fs.writeFile(path.join(cwd, ".paperclip", "seed-pending"), "{}\n");
+      await fs.writeFile(path.join(cwd, ".wardmote", "seed-pending"), "{}\n");
       expect(resolveRuntimeProvisionCommand({ config: {}, workspace })).toBe(
         "bash ./scripts/provision-worktree-runtime.sh",
       );
@@ -592,27 +592,27 @@ describe("resolveRuntimeProvisionCommand", () => {
         workspace,
       })).toBe("./custom-provision.sh");
 
-      await fs.writeFile(path.join(cwd, ".paperclip", "seed-complete"), "{}\n");
+      await fs.writeFile(path.join(cwd, ".wardmote", "seed-complete"), "{}\n");
       expect(resolveRuntimeProvisionCommand({ config: {}, workspace })).toBe(
         "bash ./scripts/provision-worktree-runtime.sh",
       );
 
       await fs.writeFile(
-        path.join(cwd, ".paperclip", "seed-manifest.json"),
+        path.join(cwd, ".wardmote", "seed-manifest.json"),
         JSON.stringify({ version: 2, state: "failed" }),
       );
       expect(resolveRuntimeProvisionCommand({ config: {}, workspace })).toBe(
         "bash ./scripts/provision-worktree-runtime.sh",
       );
       await fs.writeFile(
-        path.join(cwd, ".paperclip", "seed-manifest.json"),
+        path.join(cwd, ".wardmote", "seed-manifest.json"),
         JSON.stringify({ version: 2, state: "verified" }),
       );
       expect(resolveRuntimeProvisionCommand({ config: {}, workspace })).toBe(
         "bash ./scripts/provision-worktree-runtime.sh",
       );
       await fs.writeFile(
-        path.join(cwd, ".paperclip", "seed-manifest.json"),
+        path.join(cwd, ".wardmote", "seed-manifest.json"),
         JSON.stringify({
           version: 2,
           source: { instanceId: "source", configPath: "/source/config.json" },
@@ -973,7 +973,7 @@ describe("realizeExecutionWorkspace", () => {
     expect(first.created).toBe(true);
     expect(first.branchCreatedByRuntime).toBe(true);
     expect(first.branchName).toBe("PAP-447-add-worktree-support");
-    expect(first.cwd).toContain(path.join(".paperclip", "worktrees"));
+    expect(first.cwd).toContain(path.join(".wardmote", "worktrees"));
     await expect(fs.stat(path.join(first.cwd, ".git"))).resolves.toBeTruthy();
 
     const second = await realizeExecutionWorkspace({
@@ -1060,7 +1060,7 @@ describe("realizeExecutionWorkspace", () => {
       expect(workspace.created).toBe(true);
       expect(await readGit(workspace.cwd, ["branch", "--show-current"])).toBe(workspace.branchName);
       for (const file of ["config.json", ".env", "seed-manifest.json", "seed-pending", "seed-complete"]) {
-        expect(existsSync(path.join(workspace.cwd, ".paperclip", file))).toBe(false);
+        expect(existsSync(path.join(workspace.cwd, ".wardmote", file))).toBe(false);
       }
       expect(await fs.readdir(wardmoteHome)).toEqual([]);
     } finally {
@@ -1081,8 +1081,8 @@ describe("realizeExecutionWorkspace", () => {
       [
         "#!/usr/bin/env bash",
         "set -euo pipefail",
-        "mkdir -p .paperclip",
-        "printf 'provisioned\\n' > .paperclip/default-provision-ran",
+        "mkdir -p .wardmote",
+        "printf 'provisioned\\n' > .wardmote/default-provision-ran",
         "",
       ].join("\n"),
       "utf8",
@@ -1118,7 +1118,7 @@ describe("realizeExecutionWorkspace", () => {
     });
 
     await expect(
-      fs.readFile(path.join(workspace.cwd, ".paperclip", "default-provision-ran"), "utf8"),
+      fs.readFile(path.join(workspace.cwd, ".wardmote", "default-provision-ran"), "utf8"),
     ).resolves.toBe("provisioned\n");
   });
 
@@ -1362,7 +1362,7 @@ describe("realizeExecutionWorkspace", () => {
     expect(readUnresolvedWorkspaceBaseRefDiagnostic(forged)).toBeNull();
     // No worktree directory was created for the fresh-create path.
     await expect(
-      fs.stat(path.join(repoRoot, ".paperclip", "worktrees", "PAP-447-add-worktree-support")),
+      fs.stat(path.join(repoRoot, ".wardmote", "worktrees", "PAP-447-add-worktree-support")),
     ).rejects.toThrow();
   });
 
@@ -1378,7 +1378,7 @@ describe("realizeExecutionWorkspace", () => {
     expect(unresolved.message).toContain("Check that the ref exists");
     expect(unresolved.message).not.toContain("authenticated fetch");
     await expect(
-      fs.stat(path.join(repoRoot, ".paperclip", "worktrees", "PAP-447-add-worktree-support")),
+      fs.stat(path.join(repoRoot, ".wardmote", "worktrees", "PAP-447-add-worktree-support")),
     ).rejects.toThrow();
 
     const workspace = await realizeWorktreeForTest(repoRoot, "master");
@@ -1522,7 +1522,7 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
   it("rejects reusing an empty directory that only looks like a worktree because it sits inside the repo", async () => {
     const repoRoot = await createTempRepo();
     const branchName = "PAP-447-add-worktree-support";
-    const poisonedPath = path.join(repoRoot, ".paperclip", "worktrees", branchName);
+    const poisonedPath = path.join(repoRoot, ".wardmote", "worktrees", branchName);
     await fs.mkdir(poisonedPath, { recursive: true });
 
     await expect(
@@ -1558,7 +1558,7 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
   it("reuses the current linked worktree instead of nesting another worktree inside it", async () => {
     const repoRoot = await createTempRepo();
     const branchName = "PAP-1355-worktree-reuse";
-    const currentWorktree = path.join(repoRoot, ".paperclip", "worktrees", branchName);
+    const currentWorktree = path.join(repoRoot, ".wardmote", "worktrees", branchName);
 
     await fs.mkdir(path.dirname(currentWorktree), { recursive: true });
     await execFileAsync("git", ["worktree", "add", "-b", branchName, currentWorktree, "HEAD"], { cwd: repoRoot });
@@ -1680,7 +1680,7 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
   it("reuses an already checked out branch from git worktree metadata even when the target path differs", async () => {
     const repoRoot = await createTempRepo();
     const branchName = "PAP-1355-worktree-reuse";
-    const existingWorktree = path.join(repoRoot, ".paperclip", "worktrees", branchName);
+    const existingWorktree = path.join(repoRoot, ".wardmote", "worktrees", branchName);
     const { recorder, operations } = createWorkspaceOperationRecorderDouble();
 
     await fs.mkdir(path.dirname(existingWorktree), { recursive: true });
@@ -1699,7 +1699,7 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
         workspaceStrategy: {
           type: "git_worktree",
           branchTemplate: "{{issue.identifier}}-{{slug}}",
-          worktreeParentDir: ".paperclip/other-worktrees",
+          worktreeParentDir: ".wardmote/other-worktrees",
         },
       },
       issue: {
@@ -2104,8 +2104,8 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
       } satisfies Parameters<typeof realizeExecutionWorkspace>[0];
       const workspace = await realizeExecutionWorkspace(workspaceInput);
 
-      const configPath = path.join(workspace.cwd, ".paperclip", "config.json");
-      const envPath = path.join(workspace.cwd, ".paperclip", ".env");
+      const configPath = path.join(workspace.cwd, ".wardmote", "config.json");
+      const envPath = path.join(workspace.cwd, ".wardmote", ".env");
       const envContents = await fs.readFile(envPath, "utf8");
       const configContents = JSON.parse(await fs.readFile(configPath, "utf8"));
       const configStats = await fs.lstat(configPath);
@@ -2357,7 +2357,7 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
       },
     });
 
-    await expect(fs.readFile(path.join(workspace.cwd, ".paperclip", "config.json"), "utf8")).resolves.toContain(
+    await expect(fs.readFile(path.join(workspace.cwd, ".wardmote", "config.json"), "utf8")).resolves.toContain(
       "\"database\"",
     );
   }, 30_000);
@@ -2506,8 +2506,8 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
 
       expect(caught).toBeTruthy();
       expect(String(caught)).toContain("simulated init failure");
-      await expect(fs.stat(path.join(worktreeRoot, ".paperclip", "config.json"))).rejects.toThrow();
-      await expect(fs.stat(path.join(worktreeRoot, ".paperclip", ".env"))).rejects.toThrow();
+      await expect(fs.stat(path.join(worktreeRoot, ".wardmote", "config.json"))).rejects.toThrow();
+      await expect(fs.stat(path.join(worktreeRoot, ".wardmote", ".env"))).rejects.toThrow();
     } finally {
       await fs.rm(tempRoot, { recursive: true, force: true });
     }
@@ -2520,7 +2520,7 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
     const fakeBin = path.join(tempRoot, "bin");
     const fakePnpmPath = path.join(fakeBin, "pnpm");
     const scriptPath = path.join(worktreeRoot, "provision-worktree.sh");
-    const wardmoteDir = path.join(worktreeRoot, ".paperclip");
+    const wardmoteDir = path.join(worktreeRoot, ".wardmote");
 
     try {
       await fs.mkdir(baseRoot, { recursive: true });
@@ -2534,22 +2534,22 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
         JSON.stringify({
           database: {
             mode: "embedded-postgres",
-            embeddedPostgresDataDir: "/Users/example/.paperclip-worktrees/instances/stale/db",
+            embeddedPostgresDataDir: "/Users/example/.wardmote-worktrees/instances/stale/db",
           },
           logging: {
             mode: "file",
-            logDir: "/Users/example/.paperclip-worktrees/instances/stale/logs",
+            logDir: "/Users/example/.wardmote-worktrees/instances/stale/logs",
           },
           storage: {
             provider: "local_disk",
             localDisk: {
-              baseDir: "/Users/example/.paperclip-worktrees/instances/stale/data/storage",
+              baseDir: "/Users/example/.wardmote-worktrees/instances/stale/data/storage",
             },
           },
           secrets: {
             provider: "local_encrypted",
             localEncrypted: {
-              keyFilePath: "/Users/example/.paperclip-worktrees/instances/stale/secrets/master.key",
+              keyFilePath: "/Users/example/.wardmote-worktrees/instances/stale/secrets/master.key",
             },
           },
         }),
@@ -2558,9 +2558,9 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
       await fs.writeFile(
         path.join(wardmoteDir, ".env"),
         [
-          "WARDMOTE_HOME=/Users/example/.paperclip-worktrees",
+          "WARDMOTE_HOME=/Users/example/.wardmote-worktrees",
           "WARDMOTE_INSTANCE_ID=stale",
-          `WARDMOTE_CONFIG=/Users/example/paperclip/${path.basename(worktreeRoot)}/.paperclip/config.json`,
+          `WARDMOTE_CONFIG=/Users/example/paperclip/${path.basename(worktreeRoot)}/.wardmote/config.json`,
           "",
         ].join("\n"),
         "utf8",
@@ -2574,8 +2574,8 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
           "fi",
           "if [ \"$1\" = \"paperclip-pro\" ] && [ \"$2\" = \"worktree\" ] && [ \"$3\" = \"init\" ]; then",
           "  mkdir -p \"$PWD/.paperclip\"",
-          "  printf '%s\\n' '{\"database\":{\"embeddedPostgresDataDir\":\"'$PWD'/.paperclip/runtime/db\"}}' > \"$PWD/.paperclip/config.json\"",
-          "  printf '%s\\n' \"WARDMOTE_HOME=$PWD/.paperclip/runtime\" \"WARDMOTE_INSTANCE_ID=healthy\" \"WARDMOTE_CONFIG=$PWD/.paperclip/config.json\" > \"$PWD/.paperclip/.env\"",
+          "  printf '%s\\n' '{\"database\":{\"embeddedPostgresDataDir\":\"'$PWD'/.wardmote/runtime/db\"}}' > \"$PWD/.wardmote/config.json\"",
+          "  printf '%s\\n' \"WARDMOTE_HOME=$PWD/.wardmote/runtime\" \"WARDMOTE_INSTANCE_ID=healthy\" \"WARDMOTE_CONFIG=$PWD/.wardmote/config.json\" > \"$PWD/.wardmote/.env\"",
           "  exit 0",
           "fi",
           "exit 0",
@@ -2597,7 +2597,7 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
 
       expect(result.stderr).toContain("Existing isolated Wardmote worktree config is stale for this host; regenerating.");
       await expect(fs.readFile(path.join(wardmoteDir, ".env"), "utf8")).resolves.toContain(
-        `WARDMOTE_CONFIG=${worktreeRoot}/.paperclip/config.json`,
+        `WARDMOTE_CONFIG=${worktreeRoot}/.wardmote/config.json`,
       );
       await expect(fs.readFile(path.join(wardmoteDir, "config.json"), "utf8")).resolves.toContain(worktreeRoot);
     } finally {
@@ -2673,7 +2673,7 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
 
       expect(result.stderr).toContain("retrying install without --frozen-lockfile");
       await expect(fs.readFile(path.join(worktreeRoot, "node_modules", ".retry-success"), "utf8")).resolves.toBe("");
-      await expect(fs.readFile(path.join(worktreeRoot, ".paperclip", "config.json"), "utf8")).resolves.toContain(
+      await expect(fs.readFile(path.join(worktreeRoot, ".wardmote", "config.json"), "utf8")).resolves.toContain(
         "\"database\"",
       );
     } finally {
@@ -3040,8 +3040,8 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
     const repoRoot = await createTempRepo();
     const expectedBranch = "PAP-454-repair-clean-branch-mismatch";
     const actualBranch = "PAP-454-publish-head";
-    const realWorktreeRoot = path.join(repoRoot, ".paperclip", "real-worktrees");
-    const symlinkedWorktreeRoot = path.join(repoRoot, ".paperclip", "worktrees");
+    const realWorktreeRoot = path.join(repoRoot, ".wardmote", "real-worktrees");
+    const symlinkedWorktreeRoot = path.join(repoRoot, ".wardmote", "worktrees");
     const realWorktreePath = path.join(realWorktreeRoot, expectedBranch);
     const worktreePath = path.join(symlinkedWorktreeRoot, expectedBranch);
     await fs.mkdir(realWorktreeRoot, { recursive: true });
@@ -3108,7 +3108,7 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
   it("reattaches a clean forward detached HEAD to the recorded persisted git worktree branch", async () => {
     const repoRoot = await createTempRepo();
     const branchName = "PAP-454-reattach-detached-head";
-    const worktreePath = path.join(repoRoot, ".paperclip", "worktrees", branchName);
+    const worktreePath = path.join(repoRoot, ".wardmote", "worktrees", branchName);
     await fs.mkdir(path.dirname(worktreePath), { recursive: true });
     await runGit(repoRoot, ["branch", branchName]);
     await runGit(repoRoot, ["worktree", "add", worktreePath, branchName]);
@@ -3164,7 +3164,7 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
     const repoRoot = await createTempRepo();
     const expectedBranch = "PAP-455-reject-dirty-branch-mismatch";
     const actualBranch = "PAP-455-publish-head";
-    const worktreePath = path.join(repoRoot, ".paperclip", "worktrees", expectedBranch);
+    const worktreePath = path.join(repoRoot, ".wardmote", "worktrees", expectedBranch);
     await fs.mkdir(path.dirname(worktreePath), { recursive: true });
     await runGit(repoRoot, ["branch", expectedBranch]);
     await runGit(repoRoot, ["worktree", "add", "-b", actualBranch, worktreePath, "HEAD"]);
@@ -3237,7 +3237,7 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
   it("routes non-reusable persisted git worktrees through workspace validation recovery", async () => {
     const repoRoot = await createTempRepo();
     const expectedBranch = "PAP-455-not-registered-worktree";
-    const detachedWorktreePath = path.join(repoRoot, ".paperclip", "worktrees", expectedBranch);
+    const detachedWorktreePath = path.join(repoRoot, ".wardmote", "worktrees", expectedBranch);
     await fs.mkdir(path.dirname(detachedWorktreePath), { recursive: true });
     await execFileAsync("git", ["clone", repoRoot, detachedWorktreePath]);
     await runGit(detachedWorktreePath, ["checkout", "-B", expectedBranch]);
@@ -3368,7 +3368,7 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
     const repoRoot = await createTempRepo();
     const expectedBranch = "PAP-457-recorded-work";
     const actualBranch = "PAP-457-sibling-work";
-    const worktreePath = path.join(repoRoot, ".paperclip", "worktrees", expectedBranch);
+    const worktreePath = path.join(repoRoot, ".wardmote", "worktrees", expectedBranch);
 
     await fs.mkdir(path.dirname(worktreePath), { recursive: true });
     await runGit(repoRoot, ["branch", expectedBranch]);
@@ -3450,7 +3450,7 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
     const repoRoot = await createTempRepo();
     const expectedBranch = "PAP-458-deleted-recorded-branch";
     const actualBranch = "PAP-458-actual-work";
-    const worktreePath = path.join(repoRoot, ".paperclip", "worktrees", expectedBranch);
+    const worktreePath = path.join(repoRoot, ".wardmote", "worktrees", expectedBranch);
 
     await fs.mkdir(path.dirname(worktreePath), { recursive: true });
     await runGit(repoRoot, ["branch", expectedBranch]);
@@ -3532,7 +3532,7 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
     const repoRoot = await createTempRepo();
     const expectedBranch = "PAP-458-deleted-recorded-branch-flag-off";
     const actualBranch = "PAP-458-actual-work-flag-off";
-    const worktreePath = path.join(repoRoot, ".paperclip", "worktrees", expectedBranch);
+    const worktreePath = path.join(repoRoot, ".wardmote", "worktrees", expectedBranch);
 
     await fs.mkdir(path.dirname(worktreePath), { recursive: true });
     await runGit(repoRoot, ["branch", expectedBranch]);
@@ -3604,7 +3604,7 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
     const repoRoot = await createTempRepo();
     const expectedBranch = "PAP-459-recorded-content";
     const actualBranch = "PAP-459-rewritten-content";
-    const worktreePath = path.join(repoRoot, ".paperclip", "worktrees", expectedBranch);
+    const worktreePath = path.join(repoRoot, ".wardmote", "worktrees", expectedBranch);
 
     await runGit(repoRoot, ["checkout", "-b", expectedBranch]);
     await fs.writeFile(path.join(repoRoot, "same-content.txt"), "same content\n", "utf8");
@@ -3634,7 +3634,7 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
     const repoRoot = await createTempRepo();
     const expectedBranch = "PAP-459-recorded-task";
     const actualBranch = "PAP-999-unrelated-task";
-    const worktreePath = path.join(repoRoot, ".paperclip", "worktrees", expectedBranch);
+    const worktreePath = path.join(repoRoot, ".wardmote", "worktrees", expectedBranch);
 
     await runGit(repoRoot, ["checkout", "-b", expectedBranch]);
     await fs.writeFile(path.join(repoRoot, "recorded-task.txt"), "recorded task work\n", "utf8");
@@ -3664,7 +3664,7 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
     const repoRoot = await createTempRepo();
     const expectedBranch = "PAP-459-recorded-ahead";
     const actualBranch = "PAP-459-live-behind";
-    const worktreePath = path.join(repoRoot, ".paperclip", "worktrees", expectedBranch);
+    const worktreePath = path.join(repoRoot, ".wardmote", "worktrees", expectedBranch);
 
     await fs.mkdir(path.dirname(worktreePath), { recursive: true });
     await runGit(repoRoot, ["branch", expectedBranch]);
@@ -4314,9 +4314,9 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
     const instanceId = deriveWorktreeInstanceId(workspace.cwd);
     const instanceRoot = path.join(worktreesDir, "instances", instanceId);
     await fs.mkdir(path.join(instanceRoot, "db"), { recursive: true });
-    await fs.mkdir(path.join(workspace.cwd, ".paperclip"), { recursive: true });
+    await fs.mkdir(path.join(workspace.cwd, ".wardmote"), { recursive: true });
     await fs.writeFile(
-      path.join(workspace.cwd, ".paperclip", ".env"),
+      path.join(workspace.cwd, ".wardmote", ".env"),
       `WARDMOTE_HOME=${JSON.stringify(worktreesDir)}\nWARDMOTE_INSTANCE_ID=${JSON.stringify(instanceId)}\n`,
       "utf8",
     );
@@ -4535,7 +4535,7 @@ describe("ensureRuntimeServicesForRun", () => {
     const workspaceRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-workspace-seed-operation-"));
     const restoreWardmoteEnv = configureRuntimeProvisionTestHome(workspaceRoot, "workspace-seed-operation");
     const scriptsDir = path.join(workspaceRoot, "scripts");
-    const markerDir = path.join(workspaceRoot, ".paperclip");
+    const markerDir = path.join(workspaceRoot, ".wardmote");
     await fs.mkdir(scriptsDir, { recursive: true });
     await fs.mkdir(markerDir, { recursive: true });
     await fs.writeFile(path.join(markerDir, "seed-pending"), "{}\n", "utf8");
@@ -4544,7 +4544,7 @@ describe("ensureRuntimeServicesForRun", () => {
       [
         "#!/usr/bin/env bash",
         "set -euo pipefail",
-        `printf '%s\\n' '${JSON.stringify({ version: 2, state: "failed", phase: "source_validation" })}' > .paperclip/seed-manifest.json`,
+        `printf '%s\\n' '${JSON.stringify({ version: 2, state: "failed", phase: "source_validation" })}' > .wardmote/seed-manifest.json`,
       ].join("\n"),
       "utf8",
     );
@@ -5143,7 +5143,7 @@ describe("ensureRuntimeServicesForRun", () => {
 
   it("does not reuse project-scoped shared services across different workspace launch contexts", async () => {
     const primaryWorkspaceRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-primary-"));
-    const worktreeWorkspaceRoot = path.join(primaryWorkspaceRoot, ".paperclip", "worktrees", "PAP-874-chat-speed-issues");
+    const worktreeWorkspaceRoot = path.join(primaryWorkspaceRoot, ".wardmote", "worktrees", "PAP-874-chat-speed-issues");
     await fs.mkdir(worktreeWorkspaceRoot, { recursive: true });
 
     const primaryWorkspace = buildWorkspace(primaryWorkspaceRoot);
@@ -5167,7 +5167,7 @@ describe("ensureRuntimeServicesForRun", () => {
             command: serviceCommand,
             cwd: ".",
             env: {
-              WARDMOTE_HOME: "{{workspace.cwd}}/.paperclip/runtime-services",
+              WARDMOTE_HOME: "{{workspace.cwd}}/.wardmote/runtime-services",
             },
             port: { type: "auto" },
             readiness: {
@@ -5232,10 +5232,10 @@ describe("ensureRuntimeServicesForRun", () => {
     expect(executionServices[0]?.url).not.toBe(primaryServices[0]?.url);
 
     const primaryResponse = await fetch(primaryServices[0]!.url!);
-    expect(await primaryResponse.text()).toBe(path.join(primaryWorkspaceRoot, ".paperclip", "runtime-services"));
+    expect(await primaryResponse.text()).toBe(path.join(primaryWorkspaceRoot, ".wardmote", "runtime-services"));
 
     const executionResponse = await fetch(executionServices[0]!.url!);
-    expect(await executionResponse.text()).toBe(path.join(worktreeWorkspaceRoot, ".paperclip", "runtime-services"));
+    expect(await executionResponse.text()).toBe(path.join(worktreeWorkspaceRoot, ".wardmote", "runtime-services"));
   });
 
   it("does not leak parent Wardmote instance env into runtime service commands", async () => {
@@ -6165,7 +6165,7 @@ describeEmbeddedPostgres("workspace dirty quarantine branch repair", () => {
     actualBranch: string;
   }) {
     const repoRoot = await createTempRepo();
-    const worktreePath = path.join(repoRoot, ".paperclip", "worktrees", input.expectedBranch);
+    const worktreePath = path.join(repoRoot, ".wardmote", "worktrees", input.expectedBranch);
     await fs.mkdir(path.dirname(worktreePath), { recursive: true });
     await runGit(repoRoot, ["branch", input.expectedBranch]);
     await runGit(repoRoot, ["worktree", "add", "-b", input.actualBranch, worktreePath, input.expectedBranch]);
@@ -6311,8 +6311,8 @@ describeEmbeddedPostgres("workspace dirty quarantine branch repair", () => {
         strategyType: "git_worktree",
         name: input.actualBranch,
         status: "active",
-        cwd: path.join(input.repoRoot, ".paperclip", "claimants", claimantWorkspaceId),
-        providerRef: path.join(input.repoRoot, ".paperclip", "claimants", claimantWorkspaceId),
+        cwd: path.join(input.repoRoot, ".wardmote", "claimants", claimantWorkspaceId),
+        providerRef: path.join(input.repoRoot, ".wardmote", "claimants", claimantWorkspaceId),
         baseRef: "HEAD",
         branchName: input.actualBranch,
         providerType: "git_worktree",
@@ -6485,7 +6485,7 @@ describeEmbeddedPostgres("workspace dirty quarantine branch repair", () => {
   it("quarantines a worktree wedged mid-rebase and clears the interrupted rebase state", async () => {
     const expectedBranch = "PAP-456-recorded";
     const repoRoot = await createTempRepo("master");
-    const worktreePath = path.join(repoRoot, ".paperclip", "worktrees", expectedBranch);
+    const worktreePath = path.join(repoRoot, ".wardmote", "worktrees", expectedBranch);
     await fs.mkdir(path.dirname(worktreePath), { recursive: true });
     await runGit(repoRoot, ["branch", expectedBranch]);
     await runGit(repoRoot, ["worktree", "add", worktreePath, expectedBranch]);
@@ -9919,7 +9919,7 @@ describe("realizeExecutionWorkspace with an exact existing branch", () => {
     expect(workspace.created).toBe(true);
     expect(workspace.branchCreatedByRuntime).toBe(false);
     expect(workspace.cwd).not.toBe(repoRoot);
-    expect(workspace.cwd).toContain(path.join(".paperclip", "worktrees"));
+    expect(workspace.cwd).toContain(path.join(".wardmote", "worktrees"));
     expect(await readGit(workspace.cwd, ["branch", "--show-current"])).toBe("feature/preexisting-work");
     expect(await readGit(workspace.cwd, ["rev-parse", "HEAD"])).toBe(branchTip);
     expect(await readGit(repoRoot, ["rev-parse", "feature/preexisting-work"])).toBe(branchTip);
@@ -9975,14 +9975,14 @@ describe("realizeExecutionWorkspace with an exact existing branch", () => {
 
     expect(await readGit(repoRoot, ["branch", "--list", "feature/never-created"])).toBe("");
     expect(
-      existsSync(path.join(repoRoot, ".paperclip", "worktrees", "feature", "never-created")),
+      existsSync(path.join(repoRoot, ".wardmote", "worktrees", "feature", "never-created")),
     ).toBe(false);
   });
 
   it("fails closed instead of reconciling when the managed worktree path holds another branch", async () => {
     const repoRoot = await createTempRepo();
     const branchTip = await createBranchWithCommit(repoRoot, "feature/pinned", "pinned.txt");
-    const managedPath = path.join(repoRoot, ".paperclip", "worktrees", "feature/pinned");
+    const managedPath = path.join(repoRoot, ".wardmote", "worktrees", "feature/pinned");
     await runGit(repoRoot, ["worktree", "add", "-b", "stale-occupant", managedPath]);
 
     await expect(realizeExistingBranch(repoRoot, "feature/pinned")).rejects.toMatchObject({

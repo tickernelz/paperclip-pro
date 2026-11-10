@@ -237,9 +237,9 @@ describe("service runtime shim awareness", () => {
 
 describe("definition executable extraction", () => {
   it("round-trips through both renderers", () => {
-    const unit = renderSystemdUnit({ instanceId: "default", shimPath: "/custom/bin/wardmote", homeDir: "/home/x/.paperclip" });
+    const unit = renderSystemdUnit({ instanceId: "default", shimPath: "/custom/bin/wardmote", homeDir: "/home/x/.wardmote" });
     expect(extractExecutableFromSystemdUnit(unit)).toBe("/custom/bin/wardmote");
-    const plist = renderLaunchdPlist({ instanceId: "default", shimPath: "/custom/bin/wardmote", homeDir: "/home/x/.paperclip", stdoutPath: "/tmp/o.log", stderrPath: "/tmp/e.log" });
+    const plist = renderLaunchdPlist({ instanceId: "default", shimPath: "/custom/bin/wardmote", homeDir: "/home/x/.wardmote", stdoutPath: "/tmp/o.log", stderrPath: "/tmp/e.log" });
     expect(extractExecutableFromLaunchdPlist(plist)).toBe("/custom/bin/wardmote");
     expect(extractExecutableFromSystemdUnit("garbage")).toBe(null);
     expect(extractExecutableFromLaunchdPlist("garbage")).toBe(null);
@@ -247,9 +247,9 @@ describe("definition executable extraction", () => {
 
   it("round-trips paths the renderers escape", () => {
     const hostile = '/tmp/we"ird $pa%th & <x>/paperclip-pro';
-    const unit = renderSystemdUnit({ instanceId: "default", shimPath: hostile, homeDir: "/home/x/.paperclip" });
+    const unit = renderSystemdUnit({ instanceId: "default", shimPath: hostile, homeDir: "/home/x/.wardmote" });
     expect(extractExecutableFromSystemdUnit(unit)).toBe(hostile);
-    const plist = renderLaunchdPlist({ instanceId: "default", shimPath: hostile, homeDir: "/home/x/.paperclip", stdoutPath: "/tmp/o.log", stderrPath: "/tmp/e.log" });
+    const plist = renderLaunchdPlist({ instanceId: "default", shimPath: hostile, homeDir: "/home/x/.wardmote", stdoutPath: "/tmp/o.log", stderrPath: "/tmp/e.log" });
     expect(extractExecutableFromLaunchdPlist(plist)).toBe(hostile);
   });
 });

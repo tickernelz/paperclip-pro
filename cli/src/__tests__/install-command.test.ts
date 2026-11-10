@@ -52,7 +52,7 @@ describe("managed install commands", () => {
     process.env = {
       ...ORIGINAL_ENV,
       HOME: path.join(root, "home"),
-      WARDMOTE_HOME: path.join(root, "home", ".paperclip"),
+      WARDMOTE_HOME: path.join(root, "home", ".wardmote"),
       PATH: "/usr/bin:/bin",
       SHELL: "/bin/bash",
     };

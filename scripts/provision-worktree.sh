@@ -9,7 +9,7 @@ if [ -z "$paperclip_home" ]; then
 fi
 paperclip_instance_id="${WARDMOTE_INSTANCE_ID:-default}"
 default_source_config_path="$paperclip_home/instances/$paperclip_instance_id/config.json"
-paperclip_dir="$worktree_cwd/.paperclip"
+paperclip_dir="$worktree_cwd/.wardmote"
 worktree_config_path="$paperclip_dir/config.json"
 worktree_env_path="$paperclip_dir/.env"
 seed_manifest_path="$paperclip_dir/seed-manifest.json"
@@ -45,13 +45,13 @@ if [[ ! -d "$worktree_cwd" ]]; then
 fi
 
 canonical_base_cwd="$(cd "$base_cwd" && pwd -P)"
-if [[ -L "$canonical_base_cwd/.paperclip" && ! -d "$canonical_base_cwd/.paperclip" ]]; then
+if [[ -L "$canonical_base_cwd/.wardmote" && ! -d "$canonical_base_cwd/.wardmote" ]]; then
   # A broken link hides whatever it points at, so the config below would read as absent
   # on a workspace that is malformed rather than plain. Refuse instead of falling back.
-  echo "Registered base project workspace .paperclip is a broken symlink: $canonical_base_cwd/.paperclip" >&2
+  echo "Registered base project workspace .wardmote is a broken symlink: $canonical_base_cwd/.wardmote" >&2
   exit 1
 fi
-source_config_path="$canonical_base_cwd/.paperclip/config.json"
+source_config_path="$canonical_base_cwd/.wardmote/config.json"
 source_config_origin="base project workspace"
 if [[ ! -e "$source_config_path" && ! -L "$source_config_path" ]]; then
   # A base workspace that is a plain checkout carries no instance config of its own.
@@ -502,7 +502,7 @@ async function main() {
   const wardmoteDir = process.env.WARDMOTE_DIR;
   const sourceConfigPath = process.env.SOURCE_CONFIG_PATH;
   const sourceEnvPath = process.env.SOURCE_ENV_PATH;
-  const worktreeHome = path.resolve(expandHomePrefix(nonEmpty(process.env.WARDMOTE_WORKTREES_DIR) ?? "~/.paperclip-worktrees"));
+  const worktreeHome = path.resolve(expandHomePrefix(nonEmpty(process.env.WARDMOTE_WORKTREES_DIR) ?? "~/.wardmote-worktrees"));
   const instanceId = process.env.WORKTREE_INSTANCE_ID;
   if (!/^[A-Za-z0-9_-]+$/.test(instanceId ?? "")) {
     throw new Error("WORKTREE_INSTANCE_ID is missing or unsafe");
@@ -699,7 +699,7 @@ list_base_node_modules_paths() {
       -type d \
       -name node_modules \
       ! -path './.git/*' \
-      ! -path './.paperclip/*' \
+      ! -path './.wardmote/*' \
       | sed 's#^\./##'
 }
 
@@ -710,7 +710,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 
 const root = process.env.WORKTREE_CWD;
-const ignoredDirs = new Set([".git", ".paperclip", "node_modules", "dist", "storybook-static"]);
+const ignoredDirs = new Set([".git", ".wardmote", "node_modules", "dist", "storybook-static"]);
 const files = [];
 
 function walk(dir) {

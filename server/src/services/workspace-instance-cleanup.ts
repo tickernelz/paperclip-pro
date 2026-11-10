@@ -37,7 +37,7 @@ export function deriveWorktreeInstanceId(workspacePath: string): string {
  * unreadable pointer must fail closed rather than fall back to a guess.
  */
 export function readWorktreeInstanceId(workspacePath: string): string | null {
-  const envPath = path.join(path.resolve(workspacePath), ".paperclip", ".env");
+  const envPath = path.join(path.resolve(workspacePath), ".wardmote", ".env");
   let contents: string;
   try {
     contents = readFileSync(envPath, "utf8");
@@ -184,7 +184,7 @@ export async function stopEmbeddedPostgresIfRunning(
 }
 
 export async function readWorktreeInstancePointer(workspacePath: string): Promise<WorktreeInstancePointer | null> {
-  const envPath = path.join(workspacePath, ".paperclip", ".env");
+  const envPath = path.join(workspacePath, ".wardmote", ".env");
   try {
     return {
       envPath,
@@ -237,7 +237,7 @@ function resolveManagedInstancesDir(worktreesDir?: string): string {
     expandHomePrefix(
       worktreesDir?.trim()
       || process.env.WARDMOTE_WORKTREES_DIR?.trim()
-      || path.join(os.homedir(), ".paperclip-worktrees"),
+      || path.join(os.homedir(), ".wardmote-worktrees"),
     ),
   );
   return path.join(managedWorktreesDir, "instances");

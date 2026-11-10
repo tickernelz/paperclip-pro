@@ -19,6 +19,7 @@ coverage/
 .LSOverride
 data/
 .paperclip/
+.wardmote/
 .pnpm-store/
 tmp-*
 cli/tmp/

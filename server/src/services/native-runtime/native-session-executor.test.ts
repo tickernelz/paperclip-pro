@@ -2903,12 +2903,12 @@ describe("native provider bootstrap environment", () => {
           WARDMOTE_WORKSPACE_CWD: "/untrusted/configured-workspace",
         },
         { HOME: "/Users/runner" },
-        "/Users/runner/.paperclip/instances/default/workspaces/agent-1",
+        "/Users/runner/.wardmote/instances/default/workspaces/agent-1",
       ),
     ).toEqual({
       HOME: "/Users/runner",
       WARDMOTE_WORKSPACE_CWD:
-        "/Users/runner/.paperclip/instances/default/workspaces/agent-1",
+        "/Users/runner/.wardmote/instances/default/workspaces/agent-1",
     });
   });
 });

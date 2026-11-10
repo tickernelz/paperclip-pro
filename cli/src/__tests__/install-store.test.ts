@@ -42,7 +42,7 @@ describe("managed install store", () => {
     root = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-install-store-"));
     paths = resolveInstallStorePaths({
       homeDir: path.join(root, "home"),
-      wardmoteHome: path.join(root, "home", ".paperclip"),
+      wardmoteHome: path.join(root, "home", ".wardmote"),
     });
   });
 
