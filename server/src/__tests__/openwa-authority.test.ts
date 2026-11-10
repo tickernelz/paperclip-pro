@@ -37,7 +37,7 @@ import { createRuntimeToolsToken } from "../runtime-tools-token.js";
 import { runtimeConnectionIntentRoutes } from "../routes/connection-intents.js";
 import { connectionIntentService } from "../services/connection-intents.js";
 import { projectToolContext } from "../services/project-tool-context.js";
-import { WardmoteRunnerToolAuthority } from "../services/native-runtime/paperclip-runner-tool-authority.js";
+import { WardmoteRunnerToolAuthority } from "../services/native-runtime/wardmote-runner-tool-authority.js";
 import { createToolGatewayService } from "../services/tool-gateway.js";
 import { chatChannelService } from "../services/chat-channels.js";
 import { ChatSdkRuntime } from "../services/chat-sdk-runtime.js";

@@ -146,7 +146,7 @@
     "replay:fixture": "pnpm run build:typescript && node dist/cli/replay.js",
     "trace:local-runner": "pnpm run build:typescript && pnpm run build:runner-binaries && node dist/cli/local-runner.js",
     "trace:codex": "pnpm run build:typescript && node dist/cli/codex.js",
-    "trace:standalone": "pnpm run build:typescript && node dist/cli/paperclip-adapter.js",
+    "trace:standalone": "pnpm run build:typescript && node dist/cli/wardmote-adapter.js",
     "trace:live-runner": "pnpm run build:typescript && cargo build --manifest-path runner/Cargo.toml --locked -p wardmote-runner-core --bin wardmote-runnerd && node dist/cli/live-runner.js",
     "demo:standalone": "pnpm run build:typescript && vite --config vite.standalone.config.ts --host 127.0.0.1 --port 4182",
     "demo:scenarios": "pnpm run build:typescript && vite --config vite.scenarios.config.ts --host 127.0.0.1 --port 4183",

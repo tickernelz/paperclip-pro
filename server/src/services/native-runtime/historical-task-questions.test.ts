@@ -10,9 +10,9 @@ import { readTaskQuestionContext } from "../issue-question-context.js";
 import { issueThreadInteractionService } from "../issue-thread-interactions.js";
 import { nativeCompletionFeedback } from "./native-completion-feedback.js";
 import { finalizeNativeRun, pendingNativeGovernance } from "./native-run-finalizer.js";
-import { WardmoteControlPlanePort } from "./paperclip-control-plane-port.js";
+import { WardmoteControlPlanePort } from "./wardmote-control-plane-port.js";
 import { CONTROL_PLANE_CONFORMANCE_RESULT, CONTROL_PLANE_CONFORMANCE_TERMINAL } from "../../vendor/wardmote-runner/testing.js";
-import { WardmoteRunnerToolAuthority } from "./paperclip-runner-tool-authority.js";
+import { WardmoteRunnerToolAuthority } from "./wardmote-runner-tool-authority.js";
 import { WardmoteRunnerSemanticAuthority } from "./runner-semantic-authority.js";
 import type { PrpStructuredRunResult } from "../../vendor/wardmote-runner/index.js";
 

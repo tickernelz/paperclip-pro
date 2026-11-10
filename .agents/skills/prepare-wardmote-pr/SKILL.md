@@ -1,5 +1,5 @@
 ---
-name: prepare-paperclip-pr
+name: prepare-wardmote-pr
 description: Prepare a Paperclip branch for PR with commits, template body, and checks.
 ---
 # Prepare Paperclip PR

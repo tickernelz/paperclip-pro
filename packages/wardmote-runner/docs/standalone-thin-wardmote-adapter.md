@@ -54,4 +54,4 @@ not claimed by this standalone checkpoint. Testing those concerns in a real
 Wardmote instance remains outside this package and requires a separately
 reviewed integration.
 
-See the [runnable tutorial](tutorials/standalone-thin-paperclip-adapter.md).
+See the [runnable tutorial](tutorials/standalone-thin-wardmote-adapter.md).

@@ -871,7 +871,7 @@ describe("EnvironmentVariablesEditor", () => {
         secrets={[
           makeSecret("provider-key", { name: cloudProviderKey, key: cloudProviderKey }),
           makeSecret("migration-key", { name: cloudMigrationKey, key: cloudMigrationKey }),
-          makeSecret("plain-key", { name: "paperclip-page-aws-access-key-id", key: "paperclip-page-aws-access-key-id" }),
+          makeSecret("plain-key", { name: "wardmote-page-aws-access-key-id", key: "wardmote-page-aws-access-key-id" }),
         ]}
         onSelect={onSelect}
         onCreateNew={() => {}}
@@ -890,8 +890,8 @@ describe("EnvironmentVariablesEditor", () => {
     const rowTitle = (item: HTMLElement | undefined) => item?.querySelector<HTMLElement>("[title]")?.getAttribute("title");
 
     expect(rowTitle(itemByText("paperclip-cloud"))).toBe("/paperclip-cloud");
-    expect(rowTitle(itemByText("paperclip-page-aws-access-key-id"))).toBe(
-      "paperclip-page-aws-access-key-id",
+    expect(rowTitle(itemByText("wardmote-page-aws-access-key-id"))).toBe(
+      "wardmote-page-aws-access-key-id",
     );
 
     itemByText("paperclip-cloud")!.click();

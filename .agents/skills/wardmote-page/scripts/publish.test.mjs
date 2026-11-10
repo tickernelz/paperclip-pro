@@ -24,7 +24,7 @@ after(() => {
   }
 });
 
-function createSite(name = "paperclip-page-test") {
+function createSite(name = "wardmote-page-test") {
   const siteDir = mkdtempSync(join(tmpdir(), `${name}-`));
   tempDirs.add(siteDir);
   writeFileSync(join(siteDir, "index.html"), "<!doctype html><title>Wardmote</title>\n");
@@ -37,8 +37,8 @@ function writeExecutable(path, body) {
 }
 
 function writeState(siteDir, state) {
-  mkdirSync(join(siteDir, ".paperclip-page"), { recursive: true });
-  writeFileSync(join(siteDir, ".paperclip-page", "state.json"), `${JSON.stringify(state)}\n`);
+  mkdirSync(join(siteDir, ".wardmote-page"), { recursive: true });
+  writeFileSync(join(siteDir, ".wardmote-page", "state.json"), `${JSON.stringify(state)}\n`);
 }
 
 function runPublish(args, env = {}) {
@@ -48,7 +48,7 @@ function runPublish(args, env = {}) {
         encoding: "utf8",
         env: {
           ...process.env,
-          WARDMOTE_PAGE_BUCKET: "paperclip-pages-test",
+          WARDMOTE_PAGE_BUCKET: "wardmote-pages-test",
           WARDMOTE_PAGE_BASE_URL: "https://pages.example.test/",
           ...env,
         },
@@ -77,9 +77,9 @@ test("dry run validates and prints the planned target without requiring AWS", ()
   ]);
 
   assert.equal(result.status, 0);
-  assert.match(result.output, /^paperclip-page dry run$/m);
+  assert.match(result.output, /^wardmote-page dry run$/m);
   assert.match(result.output, /^mode: publish$/m);
-  assert.match(result.output, /^bucket: paperclip-pages-test$/m);
+  assert.match(result.output, /^bucket: wardmote-pages-test$/m);
   assert.match(result.output, /^prefix: demo-page\/$/m);
   assert.match(result.output, /^url: https:\/\/pages\.example\.test\/demo-page\/$/m);
 });
@@ -103,7 +103,7 @@ test("dry run update requires matching local ownership state", () => {
   assert.match(missingState.output, /requires ownership state/);
 
   writeState(siteDir, {
-    bucket: "paperclip-pages-test",
+    bucket: "wardmote-pages-test",
     prefix: "demo-page/",
   });
 
@@ -157,7 +157,7 @@ test("namespaced page keys conflict with WARDMOTE_PAGE_AWS_PROFILE", () => {
     {
       WARDMOTE_PAGE_AWS_ACCESS_KEY_ID: "AKIAPAGEUPLOADER",
       WARDMOTE_PAGE_AWS_SECRET_ACCESS_KEY: "page-secret",
-      WARDMOTE_PAGE_AWS_PROFILE: "paperclip-page-uploader",
+      WARDMOTE_PAGE_AWS_PROFILE: "wardmote-page-uploader",
     },
   );
 
@@ -167,7 +167,7 @@ test("namespaced page keys conflict with WARDMOTE_PAGE_AWS_PROFILE", () => {
 
 test("namespaced page keys are scoped to the helper's aws calls", () => {
   const siteDir = createSite();
-  const binDir = mkdtempSync(join(tmpdir(), "paperclip-page-bin-"));
+  const binDir = mkdtempSync(join(tmpdir(), "wardmote-page-bin-"));
   tempDirs.add(binDir);
   const envDump = join(binDir, "aws-env.txt");
 
@@ -224,7 +224,7 @@ exit 0
 
 test("credential values never pass through an external env command's argv", () => {
   const siteDir = createSite();
-  const binDir = mkdtempSync(join(tmpdir(), "paperclip-page-bin-"));
+  const binDir = mkdtempSync(join(tmpdir(), "wardmote-page-bin-"));
   tempDirs.add(binDir);
   const envArgvDump = join(binDir, "env-argv.txt");
 
@@ -280,7 +280,7 @@ exec /usr/bin/env "$@"
 
 test("WARDMOTE_PAGE_AWS_PROFILE strips ambient static credentials", () => {
   const siteDir = createSite();
-  const binDir = mkdtempSync(join(tmpdir(), "paperclip-page-bin-"));
+  const binDir = mkdtempSync(join(tmpdir(), "wardmote-page-bin-"));
   tempDirs.add(binDir);
   const envDump = join(binDir, "aws-env.txt");
 
@@ -327,13 +327,13 @@ exit 0
     AWS_SECRET_ACCESS_KEY: "ambient-secret",
     AWS_SESSION_TOKEN: "ambient-session-token",
     AWS_PROFILE: "ambient-profile",
-    WARDMOTE_PAGE_AWS_PROFILE: "paperclip-page-uploader",
+    WARDMOTE_PAGE_AWS_PROFILE: "wardmote-page-uploader",
   });
 
   assert.equal(result.status, 0);
 
   const seen = readFileSync(envDump, "utf8");
-  assert.match(seen, /^PROFILE_ARG=paperclip-page-uploader$/m);
+  assert.match(seen, /^PROFILE_ARG=wardmote-page-uploader$/m);
   assert.match(seen, /^AWS_ACCESS_KEY_ID=<unset>$/m);
   assert.match(seen, /^AWS_SECRET_ACCESS_KEY=<unset>$/m);
   assert.match(seen, /^AWS_SESSION_TOKEN=<unset>$/m);
@@ -342,7 +342,7 @@ exit 0
 
 test("live publish writes state before URL verification", () => {
   const siteDir = createSite();
-  const binDir = mkdtempSync(join(tmpdir(), "paperclip-page-bin-"));
+  const binDir = mkdtempSync(join(tmpdir(), "wardmote-page-bin-"));
   tempDirs.add(binDir);
 
   writeExecutable(
@@ -379,10 +379,10 @@ exit 22
 
   assert.notEqual(result.status, 0);
   assert.match(result.output, /simulated CloudFront propagation miss/);
-  assert.equal(existsSync(join(siteDir, ".paperclip-page", "state.json")), true);
+  assert.equal(existsSync(join(siteDir, ".wardmote-page", "state.json")), true);
 
-  const state = JSON.parse(readFileSync(join(siteDir, ".paperclip-page", "state.json"), "utf8"));
-  assert.equal(state.bucket, "paperclip-pages-test");
+  const state = JSON.parse(readFileSync(join(siteDir, ".wardmote-page", "state.json"), "utf8"));
+  assert.equal(state.bucket, "wardmote-pages-test");
   assert.equal(state.prefix, "demo-page/");
   assert.equal(state.url, "https://pages.example.test/demo-page/");
 });

@@ -4,7 +4,7 @@ description: >
   Discover the pull requests this Paperclip instance opened (never community
   contributions), report what each is for and how confident we are that it is
   merge-ready, and automatically drive the non-ready ones back to green with
-  /prepare-paperclip-pr — without ever merging.
+  /prepare-wardmote-pr — without ever merging.
 compatibility: Requires Node.js 20+, gh authenticated for GitHub read access, and Paperclip run credentials.
 allowed-tools: Bash(node:*) Bash(gh:*) Bash(curl:*)
 ---
@@ -21,7 +21,7 @@ By default the workflow gardens only pull requests authored by this instance's G
 
 - **Never merge, approve, or close a pull request.**
 - **Never instruct another person or agent to merge, approve, or close a pull request.**
-- **Never garden, comment on, or run `/prepare-paperclip-pr` against a community PR.** Only PRs from the Stage A author allowlist are actionable.
+- **Never garden, comment on, or run `/prepare-wardmote-pr` against a community PR.** Only PRs from the Stage A author allowlist are actionable.
 - Never use mutating `gh` commands or mutating GitHub API requests. The scripts only use `gh pr view` and read-only `gh api` GET requests.
 - Draft pull requests are report-only. Do not post gardening comments for drafts.
 - Comment only on existing originating issues. Never create a gardening issue per pull request.
@@ -85,11 +85,11 @@ For each branch, process one branch at a time and do this serially:
 
 Never fan out follow-up task creation in parallel. Do not issue concurrent `POST /api/companies/:companyId/issues` calls for create-PR or prepare-PR tasks. After P1's issue-create idempotency support is available, every create-PR follow-up task creation must include `idempotencyKey: "pr-gardening:create-pr:{branch}"` and every prepare-PR task `idempotencyKey: "pr-gardening:prepare-pr:{owner/repo}#{number}"`.
 
-## Stage C — Drive Our PRs to Ready with /prepare-paperclip-pr
+## Stage C — Drive Our PRs to Ready with /prepare-wardmote-pr
 
 Skip this stage in `--dry-run` mode and for `ready` or `report_only` entries.
 
-Every `needs_gardening` PR here was opened by this instance (Stage A guarantees it), so do not just report — actively get it merge-ready by running the `/prepare-paperclip-pr` skill against it. Process PRs one at a time:
+Every `needs_gardening` PR here was opened by this instance (Stage A guarantees it), so do not just report — actively get it merge-ready by running the `/prepare-wardmote-pr` skill against it. Process PRs one at a time:
 
 1. **Cooldown and rounds.** Locate the `originatingIssue` from `candidates.json` (selection priority: issue carrying the exact PR URL as a `pull_request` work product; then issue whose comment mentions the PR; then most recently active mentioning issue). Fetch its comments and search for the marker:
 
@@ -101,7 +101,7 @@ Every `needs_gardening` PR here was opened by this instance (Stage A guarantees 
 
 2. **Deduplicate.** Search open Paperclip issues for the PR number/branch. If an equivalent open prepare-PR task already exists, reuse it with a concise status comment instead of creating another (see the deduplication section above).
 
-3. **Run the prepare skill.** Create one focused child task per PR assigned to a coder agent (prefer CodexCoder) instructing it to run `/prepare-paperclip-pr` for that PR — include the PR URL, branch, current head SHA, and the exact machine-detected `reasons[]` from `readiness.json`. If you are the gardener and already have the PR's branch checked out in a worktree, you may run `/prepare-paperclip-pr` directly instead of delegating. Either way, the prepare work must never merge, approve, or close the PR.
+3. **Run the prepare skill.** Create one focused child task per PR assigned to a coder agent (prefer CodexCoder) instructing it to run `/prepare-wardmote-pr` for that PR — include the PR URL, branch, current head SHA, and the exact machine-detected `reasons[]` from `readiness.json`. If you are the gardener and already have the PR's branch checked out in a worktree, you may run `/prepare-wardmote-pr` directly instead of delegating. Either way, the prepare work must never merge, approve, or close the PR.
 
 4. **Leave the marker comment.** Comment on the originating issue with the marker above, the current head SHA, the copied `reasons[]`, the round counter, and a link to the prepare task. Use `POST /api/issues/:issueId/comments` with `X-Wardmote-Run-Id`. Include `resume: true` when the issue is terminal so the comment creates a live continuation.
 
@@ -109,7 +109,7 @@ Suggested body:
 
 ```markdown
 <!-- pr-gardening:paperclipai/paperclip#1234 -->
-Gardening: dispatched `/prepare-paperclip-pr` for https://github.com/paperclipai/paperclip/pull/1234 via PAP-XXXX.
+Gardening: dispatched `/prepare-wardmote-pr` for https://github.com/paperclipai/paperclip/pull/1234 via PAP-XXXX.
 
 Current-head verification at `abc123` found:
 - failing check: test

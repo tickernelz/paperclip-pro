@@ -34,7 +34,7 @@ EOF
 }
 
 die() {
-  printf 'paperclip-page: %s\n' "$*" >&2
+  printf 'wardmote-page: %s\n' "$*" >&2
   exit 1
 }
 
@@ -84,7 +84,7 @@ derive_slug() {
   base="$(basename "$source_dir")"
   base="$(printf '%s' "$base" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//; s/-{2,}/-/g')"
   if [[ -z "$base" ]]; then
-    base="paperclip-page"
+    base="wardmote-page"
   fi
   printf '%.48s\n' "$base" | sed -E 's/-+$//'
 }
@@ -183,7 +183,7 @@ assert_safe_source_tree() {
   found="$(
     cd "$source_dir"
     find . -mindepth 1 \
-      \( -path './.paperclip-page' -o -path './.paperclip-page/*' \) -prune -o \
+      \( -path './.wardmote-page' -o -path './.wardmote-page/*' \) -prune -o \
       \( -name '.*' -o -path '*/.*' \) -print -quit
   )"
   [[ -z "$found" ]] || die "hidden files and dot paths are not allowed in published content: $found"
@@ -199,7 +199,7 @@ assert_update_ownership() {
   local source_dir="$1"
   local bucket="$2"
   local prefix="$3"
-  local state_file="$source_dir/.paperclip-page/state.json"
+  local state_file="$source_dir/.wardmote-page/state.json"
   local state_bucket
   local state_prefix
 
@@ -221,7 +221,7 @@ compute_source_hash() {
 
   (
     cd "$source_dir"
-    find . -type f ! -path './.paperclip-page/*' -print0 |
+    find . -type f ! -path './.wardmote-page/*' -print0 |
       LC_ALL=C sort -z |
       while IFS= read -r -d '' path; do
         sha256sum "$path"
@@ -237,7 +237,7 @@ write_state() {
   local url="$5"
   local base_url="$6"
   local source_hash="$7"
-  local state_dir="$source_dir/.paperclip-page"
+  local state_dir="$source_dir/.wardmote-page"
   local state_file="$state_dir/state.json"
   local temp_file
 
@@ -405,7 +405,7 @@ fi
 
 if [[ "$dry_run" == "1" ]]; then
   cat <<EOF
-paperclip-page dry run
+wardmote-page dry run
 mode: $mode
 source: $source_dir
 bucket: $bucket
@@ -417,7 +417,7 @@ fi
 
 aws_cli s3 sync "$source_dir/" "s3://$bucket/$prefix" \
   --no-follow-symlinks \
-  --exclude '.paperclip-page/*' \
+  --exclude '.wardmote-page/*' \
   --cache-control 'public,max-age=60' \
   --only-show-errors
 
@@ -427,10 +427,10 @@ write_state "$source_dir" "$bucket" "$prefix" "$slug" "$url" "$base_url" "$sourc
 curl -fsSIL --max-time 20 "$url" >/dev/null
 
 cat <<EOF
-paperclip-page published
+wardmote-page published
 mode: $mode
 url: $url
 bucket: $bucket
 prefix: $prefix
-state: $source_dir/.paperclip-page/state.json
+state: $source_dir/.wardmote-page/state.json
 EOF

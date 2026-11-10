@@ -73,7 +73,7 @@ App only after a human accepts the exact research revision and connection set.
 
 1. Load the current Wardmote skill for checkout, comments, interactions,
    durable state, and final disposition. Load the standard PR-preparation skill
-   (`prepare-paperclip-pr` for Wardmote agents) before opening any PR.
+   (`prepare-wardmote-pr` for Wardmote agents) before opening any PR.
 2. Resolve the input URL(s), vendor/platform, intended MCP endpoint or API,
    target repositories and branches, and the Wardmote issue that owns the
    work. Ask only when these cannot be determined safely from the brief.

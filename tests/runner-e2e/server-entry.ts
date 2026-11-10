@@ -1,7 +1,7 @@
 // This entrypoint is used only by isolated Runner E2E instances. Production
 // service code has no test flag, delay, altered prompt, or private test API.
 import { ServerResponse } from "node:http";
-import { WardmoteRunnerToolAuthority } from "../../server/src/services/native-runtime/paperclip-runner-tool-authority.js";
+import { WardmoteRunnerToolAuthority } from "../../server/src/services/native-runtime/wardmote-runner-tool-authority.js";
 import { canonicalDocumentIssueId, contextCommentGateSelected, holdCommittedDocumentResponse, isArmed } from "./context-comment-gate.js";
 import { holdInteractionResponse } from "./interaction-response-gate.js";
 

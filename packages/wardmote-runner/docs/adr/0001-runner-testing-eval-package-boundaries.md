@@ -26,7 +26,7 @@ Ownership is:
 | Eval consumers | Scenario corpus, provider configuration, experiment reports, and provider-backed orchestration |
 
 The production binding remains App code at
-`server/src/services/native-runtime/paperclip-control-plane-port.ts`. It
+`server/src/services/native-runtime/wardmote-control-plane-port.ts`. It
 implements the App-owned `ControlPlanePort`; the runner package never imports
 the server, database, UI, or CLI.
 

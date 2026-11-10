@@ -211,8 +211,8 @@ const state = vi.hoisted(() => ({
 }));
 
 const accountingEvents = vi.hoisted(() => ({ committed: undefined as undefined | ((event: PrpEvent) => Promise<void>), duplicate: undefined as undefined | ((event: PrpEvent) => Promise<void>) }));
-vi.mock("./paperclip-control-plane-port.js", async importOriginal => {
-  const original = await importOriginal<typeof import("./paperclip-control-plane-port.js")>();
+vi.mock("./wardmote-control-plane-port.js", async importOriginal => {
+  const original = await importOriginal<typeof import("./wardmote-control-plane-port.js")>();
   return { ...original, WardmoteControlPlanePort: class extends original.WardmoteControlPlanePort {
     constructor(...args: ConstructorParameters<typeof original.WardmoteControlPlanePort>) {
       super(...args);
@@ -253,7 +253,7 @@ vi.mock("../ai-providers/codex/codex-auth-copyback.js", async (importOriginal) =
   copyBackCodexAuth: state.copyBackCodexAuth,
 }));
 
-vi.mock("./paperclip-runner-tool-authority.js", () => ({
+vi.mock("./wardmote-runner-tool-authority.js", () => ({
   WardmoteRunnerToolAuthority: class {
     close() {}
     readonly binding: Record<string, unknown>;

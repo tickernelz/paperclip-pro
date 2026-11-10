@@ -14,7 +14,7 @@ vi.mock("../../vendor/wardmote-runner/index.js", async (importOriginal) => ({
 
 import { executeWardmoteNativeSession } from "./native-session-executor.js";
 import { buildNativeCompletionContract } from "./completion-contracts.js";
-import { WardmoteControlPlanePort } from "./paperclip-control-plane-port.js";
+import { WardmoteControlPlanePort } from "./wardmote-control-plane-port.js";
 import { prepareNativeHeartbeatRun } from "./prepare-native-run.js";
 import { NATIVE_MODEL_REJECTION_DIAGNOSTIC, NATIVE_MODEL_REJECTION_MESSAGE } from "./native-provider-failure.js";
 import { collectRunFailureDiagnostics } from "../run-failure-diagnostics.js";

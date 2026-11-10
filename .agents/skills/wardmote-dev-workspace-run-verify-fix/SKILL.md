@@ -1,5 +1,5 @@
 ---
-name: paperclip-dev-workspace-run-verify-fix
+name: wardmote-dev-workspace-run-verify-fix
 description: >
   Run, verify, reseed, and repair Paperclip isolated dev workspace services. Use
   when asked to start or fix a managed project/worktree service and prove health,

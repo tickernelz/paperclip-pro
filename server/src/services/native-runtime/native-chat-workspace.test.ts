@@ -21,7 +21,7 @@ import {
 } from "@tickernelz/wardmote-db";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { startEmbeddedPostgresTestDatabase } from "../../__tests__/helpers/embedded-postgres.js";
-import { WardmoteRunnerToolAuthority } from "./paperclip-runner-tool-authority.js";
+import { WardmoteRunnerToolAuthority } from "./wardmote-runner-tool-authority.js";
 import { stageNativeRunnerAttachmentBytes } from "./native-runner-file-handoff.js";
 import {
   findNativeChatWorkspaceScope,

@@ -1,7 +1,7 @@
 import type {
   EventDimensionsMap,
   WardmoteEventName,
-} from "./generated/paperclip-telemetry.js";
+} from "./generated/wardmote-telemetry.js";
 
 export interface TelemetryState {
   installId: string;

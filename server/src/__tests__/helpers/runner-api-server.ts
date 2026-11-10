@@ -13,7 +13,7 @@ import { createApp } from "../../app.js";
 import { createLocalDiskStorageProvider } from "../../storage/local-disk-provider.js";
 import { createStorageService } from "../../storage/service.js";
 import { setupRunnerPrpWebSocketServer, runnerPrpWebSocketInternals } from "../../realtime/runner-prp-ws.js";
-import { WardmoteRunnerToolAuthority } from "../../services/native-runtime/paperclip-runner-tool-authority.js";
+import { WardmoteRunnerToolAuthority } from "../../services/native-runtime/wardmote-runner-tool-authority.js";
 
 export type RunnerConnectionScenario = "fresh" | "pending" | "declined" | "custom" | "foreign" | "stale_owner" | "ready";
 const CONNECTION_SCENARIOS: readonly RunnerConnectionScenario[] = ["fresh", "pending", "declined", "custom", "foreign", "stale_owner", "ready"];

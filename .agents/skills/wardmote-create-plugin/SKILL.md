@@ -1,5 +1,5 @@
 ---
-name: paperclip-create-plugin
+name: wardmote-create-plugin
 description: >
   Create and develop external Paperclip plugins with the CLI-first workflow. Use
   when scaffolding a plugin, iterating on a local plugin, installing it into

@@ -8,5 +8,5 @@ export * from "./types.js";
 export * from "./catalog.js";
 export * from "./policy.js";
 export * from "./provider-neutral.js";
-export * from "./paperclip-discovery.js";
-export * from "./paperclip-dispatcher.js";
+export * from "./wardmote-discovery.js";
+export * from "./wardmote-dispatcher.js";

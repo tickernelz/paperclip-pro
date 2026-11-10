@@ -107,7 +107,7 @@ This repo has three separate data paths. Do not confuse them. Match a change to 
 
 - **Telemetry** is the Paperclip first-party event system. It is opt-out and it sends data to a Paperclip endpoint by default. Its paths are:
   - `packages/shared/src/telemetry/`
-  - the generated contract `packages/shared/src/telemetry/generated/paperclip-telemetry.ts`
+  - the generated contract `packages/shared/src/telemetry/generated/wardmote-telemetry.ts`
   - each caller of `packages/shared/src/telemetry/events.ts` or `packages/shared/src/telemetry/client.ts`
 - **Observability** is the OpenTelemetry trace path. An operator must set an OTLP endpoint. Until an operator sets the endpoint, the tracer is a no-operation. Its paths are:
   - `server/src/instrumentation.ts`

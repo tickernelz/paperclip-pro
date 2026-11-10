@@ -219,7 +219,7 @@ afterAll(() => {
   if (receipts.length !== 18 || directOpenCodeReceipts.length !== 6) throw new Error("Incomplete native instruction measurement; refusing a partial receipt");
   const repositoryRoot = new URL("../../../../", import.meta.url);
   const sourcePaths = ["runtime-context.ts", "codex-native-backend.ts", "opencode-native-backend.ts"].map(file => `packages/wardmote-runner/src/backends/${file}`);
-  sourcePaths.push("server/src/services/native-runtime/paperclip-runner-tool-authority.ts",
+  sourcePaths.push("server/src/services/native-runtime/wardmote-runner-tool-authority.ts",
     "server/src/services/native-runtime/native-completion-feedback.ts",
     "ui/src/lib/issue-reference.ts", "ui/src/components/MarkdownBody.tsx",
     "packages/wardmote-runner/src/backends/native-backend-factory.ts",

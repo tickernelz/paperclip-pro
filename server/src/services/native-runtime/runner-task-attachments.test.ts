@@ -7,7 +7,7 @@ import { startEmbeddedPostgresTestDatabase } from "../../__tests__/helpers/embed
 import type { StorageService } from "../../storage/types.js";
 import { TaskAttachmentReadCache } from "./runner-task-attachments.js";
 import { runnerApiCatalog } from "./runner-api-catalog.js";
-import { WardmoteRunnerToolAuthority } from "./paperclip-runner-tool-authority.js";
+import { WardmoteRunnerToolAuthority } from "./wardmote-runner-tool-authority.js";
 
 const sha = (body: Buffer) => createHash("sha256").update(body).digest("hex");
 describe("Dot assigned-task attachment reading", () => {

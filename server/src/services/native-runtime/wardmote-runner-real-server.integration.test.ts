@@ -18,7 +18,7 @@ import {
   runnerPrpWebSocketInternals,
   setupRunnerPrpWebSocketServer,
 } from "../../realtime/runner-prp-ws.js";
-import { WardmoteRunnerToolAuthority } from "./paperclip-runner-tool-authority.js";
+import { WardmoteRunnerToolAuthority } from "./wardmote-runner-tool-authority.js";
 
 const fakeCodexAppServer = resolve(
   import.meta.dirname,
@@ -37,7 +37,7 @@ describe("paperclip-runner real server vertical slice", () => {
   const resumedRunId = "00000000-0000-4000-8000-000000000705";
 
   beforeAll(async () => {
-    temporary = await startEmbeddedPostgresTestDatabase("paperclip-runner-real-server-");
+    temporary = await startEmbeddedPostgresTestDatabase("wardmote-runner-real-server-");
   });
 
   afterAll(async () => {

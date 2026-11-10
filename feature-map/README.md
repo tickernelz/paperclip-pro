@@ -114,8 +114,8 @@ fixture integration. Record executed results separately from the map.
    evidence; creating state through the API does not prove the creation UI.
 
 For agent-driven acceptance work, the existing
-[dev-workspace run/verify skill](../.agents/skills/paperclip-dev-workspace-run-verify-fix/SKILL.md)
-and [evaluation skill](../.agents/skills/paperclip-evals/SKILL.md) describe runtime
+[dev-workspace run/verify skill](../.agents/skills/wardmote-dev-workspace-run-verify-fix/SKILL.md)
+and [evaluation skill](../.agents/skills/wardmote-evals/SKILL.md) describe runtime
 ownership and evidence handling. Reuse them; this map introduces no environment
 launcher, credentials, scheduled job, or second test framework.
 

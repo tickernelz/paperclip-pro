@@ -20,7 +20,7 @@ Eval/conformance consumers --> use packed runtime + ./evals + ./testing exports
 The dependency arrow always points from an implementation toward a contract.
 The standalone package does not reach backward into a Wardmote implementation.
 The production implementation lives in
-`server/src/services/native-runtime/paperclip-control-plane-port.ts`; it depends
+`server/src/services/native-runtime/wardmote-control-plane-port.ts`; it depends
 on the public port, never the reverse. The accepted package/export ownership is
 recorded in [ADR 0001](adr/0001-runner-testing-eval-package-boundaries.md).
 
@@ -307,7 +307,7 @@ adapter, but this package must remain independently buildable, testable, and
 runnable against the mock adapter.
 
 The proposed Standalone seam is recorded in
-[Standalone Thin Wardmote Adapter Boundary](design/standalone-thin-paperclip-adapter.md).
+[Standalone Thin Wardmote Adapter Boundary](design/standalone-thin-wardmote-adapter.md).
 It keeps one dependency direction, branches only after Wardmote workspace and
 environment realization, composes a package-owned `NativeSessionBackend` with
 a server-bound `ControlPlanePort`, and returns to the existing Wardmote

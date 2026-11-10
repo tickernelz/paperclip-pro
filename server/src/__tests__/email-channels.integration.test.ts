@@ -3,7 +3,7 @@ import { fastResponseService } from "../services/fast-responses.js";
 import { fastResponseReceipt } from "../services/fast-response-provider.js";
 import { connectionIntentService } from "../services/connection-intents.js";
 import { applyConnectorSkills, prepareConnectorSkillDelivery, resolveConnectorAssignments, annotateConnectorSkills } from "../services/connector-runtime.js";
-import { WardmoteRunnerToolAuthority } from "../services/native-runtime/paperclip-runner-tool-authority.js";
+import { WardmoteRunnerToolAuthority } from "../services/native-runtime/wardmote-runner-tool-authority.js";
 import { renderWardmoteWakePrompt, resolveWardmoteDesiredSkillNames, resolveLegacyWardmoteDesiredSkillNames } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import express from "express";
 import type WebSocket from "ws";

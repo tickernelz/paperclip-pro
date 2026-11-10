@@ -52,7 +52,7 @@ import {
   retainedNativeCleanupJournalMatches,
 } from "./native-session-executor.js";
 import * as publicationSignals from "../chat-publication-reconciliation.js";
-import { WardmoteControlPlanePort } from "./paperclip-control-plane-port.js";
+import { WardmoteControlPlanePort } from "./wardmote-control-plane-port.js";
 import {
   LIST_CHAT_ATTACHMENTS_TOOL_DEFINITION,
   REUSE_CHAT_ATTACHMENT_TOOL_DEFINITION,

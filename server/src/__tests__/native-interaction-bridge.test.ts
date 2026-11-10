@@ -23,7 +23,7 @@ import {
   materializeNativeInteractionResponses,
   NativeInteractionBridgeError,
 } from "../services/native-runtime/native-interaction-bridge.js";
-import { WardmoteControlPlanePort } from "../services/native-runtime/paperclip-control-plane-port.js";
+import { WardmoteControlPlanePort } from "../services/native-runtime/wardmote-control-plane-port.js";
 import { finalizeNativeRun } from "../services/native-runtime/native-run-finalizer.js";
 
 describe("P6-19 native interaction bridge", () => {

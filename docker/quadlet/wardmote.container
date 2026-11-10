@@ -1,12 +1,12 @@
 [Unit]
-Description=Paperclip AI Agent Orchestrator
-Requires=paperclip-db.service
-After=paperclip-db.service
+Description=Wardmote agent orchestrator
+Requires=wardmote-db.service
+After=wardmote-db.service
 
 [Container]
 Image=paperclip-local
-ContainerName=paperclip
-Pod=paperclip.pod
+ContainerName=wardmote
+Pod=wardmote.pod
 Volume=%h/.local/share/paperclip:/paperclip:Z
 Environment=HOST=0.0.0.0
 Environment=WARDMOTE_HOME=/paperclip

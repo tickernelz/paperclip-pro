@@ -6,7 +6,7 @@ import { startEmbeddedPostgresTestDatabase } from "../../__tests__/helpers/embed
 import type { PrpStructuredRunResult } from "../../vendor/wardmote-runner/index.js";
 import { documentService } from "../documents.js";
 import { nativeCompletionFeedback } from "./native-completion-feedback.js";
-import { WardmoteRunnerToolAuthority } from "./paperclip-runner-tool-authority.js";
+import { WardmoteRunnerToolAuthority } from "./wardmote-runner-tool-authority.js";
 
 const done: PrpStructuredRunResult = {
   schema: "paperclip.run_result.v1", reportedWorkDisposition: "done", summary: "Document saved.",
