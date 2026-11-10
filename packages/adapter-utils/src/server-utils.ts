@@ -4405,7 +4405,7 @@ export function writePaperclipSkillSyncPreference(
   return next;
 }
 
-export async function ensurePaperclipSkillSymlink(
+export async function ensureWardmoteSkillSymlink(
   source: string,
   target: string,
   linkSkill: (source: string, target: string) => Promise<void> = (
@@ -4459,12 +4459,16 @@ async function placePaperclipSkillLink(
   target: string,
   linkSkill: (source: string, target: string) => Promise<void>,
 ): Promise<void> {
-  try {
-    await linkSkill(source, target);
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code !== "EEXIST") throw error;
-    const linkedPath = await fs.readlink(target).catch(() => null);
-    if (!linkedPath || path.resolve(path.dirname(target), linkedPath) !== source) throw error;
+  for (let attempt = 0; ; attempt += 1) {
+    try {
+      await linkSkill(source, target);
+      return;
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== "EEXIST") throw error;
+      const linkedPath = await fs.readlink(target).catch(() => null);
+      if (linkedPath && path.resolve(path.dirname(target), linkedPath) === source) return;
+      if (linkedPath || attempt >= 4) throw error;
+    }
   }
 }
 
