@@ -99,7 +99,7 @@ export interface Config {
   companyDeletionEnabled: boolean;
   telemetryEnabled: boolean;
   announcementsEnabled: boolean;
-  announcementsFeedUrl: string;
+  announcementsFeedUrl: string | undefined;
 }
 
 function detectTailnetBindHost(): string | undefined {
@@ -365,6 +365,6 @@ export function loadConfig(): Config {
     companyDeletionEnabled,
     telemetryEnabled: fileConfig?.telemetry?.enabled ?? true,
     announcementsEnabled: process.env.WARDMOTE_ANNOUNCEMENTS_ENABLED !== "false",
-    announcementsFeedUrl: process.env.WARDMOTE_ANNOUNCEMENTS_FEED_URL?.trim() || "https://pages.paperclip.ing/announcements/v1/current.json",
+    announcementsFeedUrl: process.env.WARDMOTE_ANNOUNCEMENTS_FEED_URL?.trim() || undefined,
   };
 }

@@ -11,10 +11,6 @@ import type {
 import { type ResolvedTelemetryCaps, resolveCaps } from "./config.js";
 import { WARDMOTE_EVENTS } from "./generated/wardmote-telemetry.js";
 
-const DEFAULT_ENDPOINTS = [
-  "https://telemetry.paperclip.ing/ingest",
-  "https://rusqrrg391.execute-api.us-east-1.amazonaws.com/ingest",
-] as const;
 // Queue-pressure valve: auto-flush once this many events are buffered. This is
 // an in-memory backpressure trigger, independent of the wire caps that
 // `chunkForSend` enforces on each POST.
@@ -490,6 +486,6 @@ export class TelemetryClient {
 
   private resolveEndpoints(): readonly string[] {
     const configured = this.config.endpoint?.trim();
-    return configured ? [configured] : DEFAULT_ENDPOINTS;
+    return configured ? [configured] : [];
   }
 }

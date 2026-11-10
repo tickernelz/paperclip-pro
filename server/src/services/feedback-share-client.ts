@@ -4,8 +4,6 @@ import type { Config } from "../config.js";
 
 export const FEEDBACK_UPLOAD_TIMEOUT_MS = 30_000;
 
-const DEFAULT_FEEDBACK_EXPORT_BACKEND_URL = "https://telemetry.paperclip.ing";
-
 function buildFeedbackShareObjectKey(bundle: FeedbackTraceBundle, exportedAt: Date) {
   const year = String(exportedAt.getUTCFullYear());
   const month = String(exportedAt.getUTCMonth() + 1).padStart(2, "0");
@@ -19,8 +17,9 @@ export interface FeedbackTraceShareClient {
 
 export function createFeedbackTraceShareClientFromConfig(
   config: Pick<Config, "feedbackExportBackendUrl" | "feedbackExportBackendToken">,
-): FeedbackTraceShareClient {
-  const baseUrl = config.feedbackExportBackendUrl?.trim() || DEFAULT_FEEDBACK_EXPORT_BACKEND_URL;
+): FeedbackTraceShareClient | undefined {
+  const baseUrl = config.feedbackExportBackendUrl?.trim();
+  if (!baseUrl) return undefined;
   const token = config.feedbackExportBackendToken?.trim();
   const endpoint = new URL("/feedback-traces", baseUrl).toString();
 

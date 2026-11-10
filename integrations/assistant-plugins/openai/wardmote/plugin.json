@@ -1,14 +1,14 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
-  "name": "paperclip",
+  "name": "wardmote",
   "version": "0.1.0",
   "description": "Review your team, delegate work and retrieve durable results in Wardmote.",
   "author": {
     "name": "Wardmote",
-    "url": "https://paperclip.ing"
+    "url": "https://github.com/tickernelz/wardmote"
   },
-  "homepage": "https://paperclip.ing",
-  "repository": "https://github.com/paperclipai/paperclip",
+  "homepage": "https://github.com/tickernelz/wardmote",
+  "repository": "https://github.com/tickernelz/wardmote",
   "license": "MIT",
   "extensions": {
     "com.openai": {
