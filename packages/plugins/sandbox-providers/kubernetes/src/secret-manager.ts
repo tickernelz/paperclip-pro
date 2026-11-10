@@ -29,8 +29,8 @@ export async function createPerRunSecret(clients: KubeClients, input: CreatePerR
         name: input.secretName,
         namespace: input.namespace,
         labels: {
-          "paperclip.io/run-id": input.runId,
-          "paperclip.io/managed-by": "paperclip-k8s-plugin",
+          "wardmote.dev/run-id": input.runId,
+          "wardmote.dev/managed-by": "wardmote-k8s-plugin",
         },
         ownerReferences: [
           {

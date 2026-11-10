@@ -74,7 +74,7 @@ describe("ensureTenant", () => {
     expect(cnpCall).toBeDefined();
     const npCalls = clients.calls.filter((c) => c.kind === "NetworkPolicy");
     expect(npCalls).toHaveLength(1);
-    expect((npCalls[0].body as { metadata: { name: string } }).metadata.name).toBe("paperclip-deny-all");
+    expect((npCalls[0].body as { metadata: { name: string } }).metadata.name).toBe("wardmote-deny-all");
   });
 
   it("applies serviceAccountAnnotations to the ServiceAccount", async () => {

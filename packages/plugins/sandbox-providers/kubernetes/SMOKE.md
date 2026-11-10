@@ -109,10 +109,10 @@ Expected:
 
 - Namespace `paperclip-smoke` exists with PSS labels
   (`pod-security.kubernetes.io/enforce=restricted`)
-- ServiceAccount `paperclip-tenant-sa`
-- Role `paperclip-tenant-role`, RoleBinding `paperclip-tenant-rb`
-- ResourceQuota `paperclip-quota`, LimitRange `paperclip-limits`
-- NetworkPolicies `paperclip-deny-all` + `paperclip-egress-allow`
+- ServiceAccount `wardmote-tenant-sa`
+- Role `wardmote-tenant-role`, RoleBinding `wardmote-tenant-rb`
+- ResourceQuota `wardmote-quota`, LimitRange `wardmote-limits`
+- NetworkPolicies `wardmote-deny-all` + `wardmote-egress-allow`
 - Job `pc-{ulid}` and its child Pod
 - Secret `pc-{ulid}-env` with `ownerReferences` pointing at the Job
 

@@ -52,10 +52,10 @@ export interface LabelsInput {
 
 export function wardmoteLabels(input: LabelsInput): Record<string, string> {
   return {
-    "paperclip.io/run-id": input.runId,
-    "paperclip.io/agent-id": input.agentId,
-    "paperclip.io/company-id": input.companyId,
-    "paperclip.io/adapter": input.adapterType,
-    "paperclip.io/managed-by": "paperclip-k8s-plugin",
+    "wardmote.dev/run-id": input.runId,
+    "wardmote.dev/agent-id": input.agentId,
+    "wardmote.dev/company-id": input.companyId,
+    "wardmote.dev/adapter": input.adapterType,
+    "wardmote.dev/managed-by": "wardmote-k8s-plugin",
   };
 }

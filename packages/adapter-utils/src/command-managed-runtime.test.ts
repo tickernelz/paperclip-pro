@@ -496,7 +496,7 @@ describe("command managed runtime", () => {
     expect(progress.at(-1)).toEqual({ done: payload.length, total: payload.length });
   });
 
-  it("stages a single-file write to <path>.paperclip-upload then atomically renames it (single-stream path)", async () => {
+  it("stages a single-file write to <path>.wardmote-upload then atomically renames it (single-stream path)", async () => {
     const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-command-atomic-"));
     cleanupDirs.push(rootDir);
     const remotePath = path.join(rootDir, "nested", "payload.bin");
@@ -505,13 +505,11 @@ describe("command managed runtime", () => {
     const client = createCommandManagedRuntimeClient({ runner, commandCwd: "/", timeoutMs: 30_000 });
     await client.writeFile(remotePath, toArrayBuffer(Buffer.from("hello atomic\n")));
 
-    // Characterization guardrail: the legacy single-file transport must keep its
-    // stage-then-atomic-rename shape (temp .paperclip-upload + `mv -f`).
     const script = (calls[0].args ?? []).join(" ");
-    expect(script).toContain(`${remotePath}.paperclip-upload`);
+    expect(script).toContain(`${remotePath}.wardmote-upload`);
     expect(script).toContain(`trap cleanup EXIT`);
     expect(script).toContain(`mv -f`);
-    expect(script.indexOf(".paperclip-upload")).toBeLessThan(script.indexOf("mv -f"));
+    expect(script.indexOf(".wardmote-upload")).toBeLessThan(script.indexOf("mv -f"));
     expect(await readFile(remotePath, "utf8")).toBe("hello atomic\n");
   });
 
@@ -525,7 +523,7 @@ describe("command managed runtime", () => {
     const delegatedExecute = runner.execute.bind(runner);
     runner.execute = async (input) => {
       const script = (input.args ?? []).join(" ");
-      if (script.includes("mv -f") && script.includes(".paperclip-upload.")) {
+      if (script.includes("mv -f") && script.includes(".wardmote-upload.")) {
         calls.push({ command: input.command, args: input.args, cwd: input.cwd, stdin: input.stdin });
         return {
           exitCode: 1,
@@ -543,9 +541,9 @@ describe("command managed runtime", () => {
 
     await expect(client.writeFile(remotePath, toArrayBuffer(payload))).rejects.toThrow(/rename failed/);
 
-    const uploadCall = calls.find((call) => (call.args ?? []).join(" ").includes(".paperclip-upload."));
+    const uploadCall = calls.find((call) => (call.args ?? []).join(" ").includes(".wardmote-upload."));
     expect(uploadCall).toBeDefined();
-    const stagedPath = (uploadCall?.args ?? []).join(" ").match(/([/A-Za-z0-9_.-]+\.paperclip-upload\.[A-Za-z0-9-]+)/)?.[1];
+    const stagedPath = (uploadCall?.args ?? []).join(" ").match(/([/A-Za-z0-9_.-]+\.wardmote-upload\.[A-Za-z0-9-]+)/)?.[1];
     expect(stagedPath).toBeDefined();
     await expect(readFile(stagedPath!, "utf8")).rejects.toMatchObject({ code: "ENOENT" });
     expect(calls.some((call) => (call.args ?? []).join(" ").includes(`rm -rf '${stagedPath}'`))).toBe(true);
@@ -564,7 +562,7 @@ describe("command managed runtime", () => {
     await client.writeFile(remotePath, toArrayBuffer(payload));
 
     const scripts = calls.map((call) => (call.args ?? []).join(" "));
-    expect(scripts.some((script) => script.includes(`${remotePath}.paperclip-upload`))).toBe(true);
+    expect(scripts.some((script) => script.includes(`${remotePath}.wardmote-upload`))).toBe(true);
     expect(scripts.some((script) => script.includes(`mv -f`))).toBe(true);
     expect((await readFile(remotePath)).equals(payload)).toBe(true);
   });

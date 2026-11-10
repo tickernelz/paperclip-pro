@@ -51,10 +51,10 @@ describe("newRunUlidDns", () => {
 describe("wardmoteLabels", () => {
   it("returns canonical label map", () => {
     const labels = wardmoteLabels({ runId: "r1", agentId: "a1", companyId: "c1", adapterType: "claude_local" });
-    expect(labels["paperclip.io/run-id"]).toBe("r1");
-    expect(labels["paperclip.io/agent-id"]).toBe("a1");
-    expect(labels["paperclip.io/company-id"]).toBe("c1");
-    expect(labels["paperclip.io/adapter"]).toBe("claude_local");
-    expect(labels["paperclip.io/managed-by"]).toBe("paperclip-k8s-plugin");
+    expect(labels["wardmote.dev/run-id"]).toBe("r1");
+    expect(labels["wardmote.dev/agent-id"]).toBe("a1");
+    expect(labels["wardmote.dev/company-id"]).toBe("c1");
+    expect(labels["wardmote.dev/adapter"]).toBe("claude_local");
+    expect(labels["wardmote.dev/managed-by"]).toBe("wardmote-k8s-plugin");
   });
 });

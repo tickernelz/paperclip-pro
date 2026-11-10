@@ -58,7 +58,7 @@ import {
 const WARDMOTE_SERVER_NAMESPACE = "paperclip";
 
 // Name of the ServiceAccount created inside each tenant namespace by ensureTenant.
-const TENANT_SERVICE_ACCOUNT = "paperclip-tenant-sa";
+const TENANT_SERVICE_ACCOUNT = "wardmote-tenant-sa";
 
 // Resource quota defaults applied to every tenant namespace (tunable via
 // config in a future iteration).

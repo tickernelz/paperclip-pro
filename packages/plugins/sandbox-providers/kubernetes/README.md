@@ -100,14 +100,14 @@ For each company that runs agents (created lazily on first dispatch):
 
 ```
 Namespace          paperclip-{companySlug}        (PSS: restricted enforce + audit)
-ServiceAccount     paperclip-tenant-sa
-Role               paperclip-tenant-role          (only get pods/log)
-RoleBinding        paperclip-tenant-rb
-ResourceQuota      paperclip-quota                (pods, requests/limits cpu+memory)
-LimitRange         paperclip-limits               (container max/min/default/defaultRequest)
-NetworkPolicy      paperclip-deny-all             (deny ingress + egress baseline)
-NetworkPolicy      paperclip-egress-allow         (DNS + paperclip-server callback + user CIDRs)
-                   OR CiliumNetworkPolicy paperclip-egress-fqdn if egressMode=cilium
+ServiceAccount     wardmote-tenant-sa
+Role               wardmote-tenant-role          (only get pods/log)
+RoleBinding        wardmote-tenant-rb
+ResourceQuota      wardmote-quota                (pods, requests/limits cpu+memory)
+LimitRange         wardmote-limits               (container max/min/default/defaultRequest)
+NetworkPolicy      wardmote-deny-all             (deny ingress + egress baseline)
+NetworkPolicy      wardmote-egress-allow         (DNS + paperclip-server callback + user CIDRs)
+                   OR CiliumNetworkPolicy wardmote-egress-fqdn if egressMode=cilium
 ```
 
 For each agent run (sandbox-cr backend):

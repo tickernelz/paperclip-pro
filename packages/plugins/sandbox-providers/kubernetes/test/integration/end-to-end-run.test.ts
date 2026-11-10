@@ -74,13 +74,13 @@ describe("plugin-kubernetes end-to-end", () => {
       const all = kubectl(
         `get sa,role,rolebinding,resourcequota,limitrange,networkpolicy -n ${NAMESPACE} -o name`,
       );
-      expect(all).toContain("serviceaccount/paperclip-tenant-sa");
-      expect(all).toContain("role.rbac.authorization.k8s.io/paperclip-tenant-role");
-      expect(all).toContain("rolebinding.rbac.authorization.k8s.io/paperclip-tenant-rb");
-      expect(all).toContain("resourcequota/paperclip-quota");
-      expect(all).toContain("limitrange/paperclip-limits");
-      expect(all).toContain("networkpolicy.networking.k8s.io/paperclip-deny-all");
-      expect(all).toContain("networkpolicy.networking.k8s.io/paperclip-egress-allow");
+      expect(all).toContain("serviceaccount/wardmote-tenant-sa");
+      expect(all).toContain("role.rbac.authorization.k8s.io/wardmote-tenant-role");
+      expect(all).toContain("rolebinding.rbac.authorization.k8s.io/wardmote-tenant-rb");
+      expect(all).toContain("resourcequota/wardmote-quota");
+      expect(all).toContain("limitrange/wardmote-limits");
+      expect(all).toContain("networkpolicy.networking.k8s.io/wardmote-deny-all");
+      expect(all).toContain("networkpolicy.networking.k8s.io/wardmote-egress-allow");
 
       // Verify the namespace has PSS-restricted labels
       const ns = kubectl(`get namespace ${NAMESPACE} -o jsonpath='{.metadata.labels}'`);
