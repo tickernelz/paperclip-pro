@@ -896,7 +896,7 @@ Instead, create a repo-local Paperclip config plus an isolated instance for the 
 ```sh
 wardmote worktree init
 # or create the git worktree and initialize it in one step:
-npx @tickernelz/wardmote worktree:make paperclip-pr-432
+npx @tickernelz/wardmote worktree:make wardmote-pr-432
 ```
 
 This command:
@@ -1129,7 +1129,7 @@ Managed workspace repair uses this same verified full-reseed contract through `P
 Examples:
 
 ```sh
-npx @tickernelz/wardmote worktree:make paperclip-pr-432
+npx @tickernelz/wardmote worktree:make wardmote-pr-432
 npx @tickernelz/wardmote worktree:make my-feature --start-point origin/main
 npx @tickernelz/wardmote worktree:make experiment --no-seed
 ```
