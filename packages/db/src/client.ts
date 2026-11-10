@@ -166,7 +166,7 @@ export interface DatabaseClientOptions {
  */
 export const DEFAULT_DATABASE_IDLE_TIMEOUT_SECONDS = 60;
 /** `application_name` reported to PostgreSQL unless `DATABASE_APPLICATION_NAME` overrides it. */
-export const DEFAULT_DATABASE_APPLICATION_NAME = "paperclip";
+export const DEFAULT_DATABASE_APPLICATION_NAME = "wardmote";
 
 function envBoolean(env: NodeJS.ProcessEnv, name: string): boolean | undefined {
   const value = env[name]?.trim().toLowerCase();

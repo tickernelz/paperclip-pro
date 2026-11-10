@@ -11,6 +11,12 @@ import {
   formatEmbeddedPostgresError,
   prepareEmbeddedPostgresNativeRuntime,
   routines,
+  EMBEDDED_POSTGRES_USER,
+  EMBEDDED_POSTGRES_PASSWORD,
+  EMBEDDED_POSTGRES_DATABASE,
+  embeddedPostgresUrl,
+  embeddedPostgresAdminUrl,
+  migrateEmbeddedPostgresIdentity,
 } from "@tickernelz/wardmote-db";
 import { eq, inArray } from "drizzle-orm";
 import { loadPaperclipEnvFile } from "../config/env.js";
@@ -122,8 +128,10 @@ async function ensureEmbeddedPostgres(dataDir: string, preferredPort: number): P
   const postmasterPidFile = path.resolve(dataDir, "postmaster.pid");
   const runningPid = readRunningPostmasterPid(postmasterPidFile);
   if (runningPid) {
+    const runningPort = readPidFilePort(postmasterPidFile) ?? preferredPort;
+    await migrateEmbeddedPostgresIdentity({ port: runningPort, dataDir });
     return {
-      port: readPidFilePort(postmasterPidFile) ?? preferredPort,
+      port: runningPort,
       startedByThisProcess: false,
       stop: async () => {},
     };
@@ -133,8 +141,8 @@ async function ensureEmbeddedPostgres(dataDir: string, preferredPort: number): P
   const logBuffer = createEmbeddedPostgresLogBuffer();
   const instance = new EmbeddedPostgres({
     databaseDir: dataDir,
-    user: "paperclip",
-    password: "paperclip",
+    user: EMBEDDED_POSTGRES_USER,
+    password: EMBEDDED_POSTGRES_PASSWORD,
     port,
     persistent: true,
     initdbFlags: ["--encoding=UTF8", "--locale=C", "--lc-messages=C"],
@@ -166,6 +174,13 @@ async function ensureEmbeddedPostgres(dataDir: string, preferredPort: number): P
     });
   }
 
+  try {
+    await migrateEmbeddedPostgresIdentity({ port, dataDir });
+  } catch (error) {
+    await instance.stop();
+    throw error;
+  }
+
   return {
     port,
     startedByThisProcess: true,
@@ -195,9 +210,9 @@ async function openConfiguredDb(configPath: string): Promise<{
         config.database.embeddedPostgresDataDir,
         config.database.embeddedPostgresPort,
       );
-      const adminConnectionString = `postgres://paperclip:paperclip@127.0.0.1:${embeddedHandle.port}/postgres`;
-      await ensurePostgresDatabase(adminConnectionString, "paperclip");
-      const connectionString = `postgres://paperclip:paperclip@127.0.0.1:${embeddedHandle.port}/paperclip`;
+      const adminConnectionString = embeddedPostgresAdminUrl(embeddedHandle.port);
+      await ensurePostgresDatabase(adminConnectionString, EMBEDDED_POSTGRES_DATABASE);
+      const connectionString = embeddedPostgresUrl(embeddedHandle.port);
       await applyPendingMigrations(connectionString);
       const db = createDb(connectionString) as ClosableDb;
       return {
@@ -258,9 +273,9 @@ export async function disableAllRoutinesInConfig(
         config.database.embeddedPostgresDataDir,
         config.database.embeddedPostgresPort,
       );
-      const adminConnectionString = `postgres://paperclip:paperclip@127.0.0.1:${embeddedHandle.port}/postgres`;
-      await ensurePostgresDatabase(adminConnectionString, "paperclip");
-      const connectionString = `postgres://paperclip:paperclip@127.0.0.1:${embeddedHandle.port}/paperclip`;
+      const adminConnectionString = embeddedPostgresAdminUrl(embeddedHandle.port);
+      await ensurePostgresDatabase(adminConnectionString, EMBEDDED_POSTGRES_DATABASE);
+      const connectionString = embeddedPostgresUrl(embeddedHandle.port);
       await applyPendingMigrations(connectionString);
       db = createDb(connectionString) as ClosableDb;
     } else {

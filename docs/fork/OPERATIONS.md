@@ -224,7 +224,7 @@ wardmote auth bootstrap-ceo --force --expires-hours 2 \
 The invite token is stored hashed (`cli/src/commands/auth-bootstrap-ceo.ts:10`);
 the plaintext is printed once. The database URL is resolved from
 `DATABASE_URL`, then `config.json`; for an embedded instance it defaults to
-`postgres://paperclip:paperclip@127.0.0.1:<embeddedPostgresPort>/paperclip`
+`postgres://wardmote:wardmote@127.0.0.1:<embeddedPostgresPort>/wardmote`
 (`cli/src/commands/auth-bootstrap-ceo.ts:18`).
 
 ## 6. Public hostname

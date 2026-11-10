@@ -1,7 +1,7 @@
 import path from "node:path";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
-import { formatDatabaseBackupResult, runDatabaseBackup } from "@tickernelz/wardmote-db";
+import { formatDatabaseBackupResult, runDatabaseBackup, embeddedPostgresUrl, DATABASE_BACKUP_FILENAME_PREFIX } from "@tickernelz/wardmote-db";
 import {
   expandHomePrefix,
   resolveDefaultBackupDir,
@@ -29,7 +29,7 @@ export function resolveConnectionString(configPath?: string): { value: string; s
 
   const port = config?.database.embeddedPostgresPort ?? 54329;
   return {
-    value: `postgres://paperclip:paperclip@127.0.0.1:${port}/paperclip`,
+    value: embeddedPostgresUrl(port),
     source: `embedded-postgres@${port}`,
   };
 }
@@ -60,7 +60,7 @@ export async function dbBackupCommand(opts: DbBackupOptions): Promise<void> {
     opts.retentionDays,
     config?.database.backup.retentionDays ?? 30,
   );
-  const filenamePrefix = opts.filenamePrefix?.trim() || "paperclip";
+  const filenamePrefix = opts.filenamePrefix?.trim() || DATABASE_BACKUP_FILENAME_PREFIX;
 
   p.log.message(pc.dim(`Config: ${configPath}`));
   p.log.message(pc.dim(`Connection source: ${connection.source}`));

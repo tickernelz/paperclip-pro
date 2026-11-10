@@ -1647,8 +1647,8 @@ describe("worktree helpers", () => {
       };
       const targetPg = new EmbeddedPostgres({
         databaseDir: targetConfig.database.embeddedPostgresDataDir,
-        user: "paperclip",
-        password: "paperclip",
+        user: "wardmote",
+        password: "wardmote",
         port: targetConfig.database.embeddedPostgresPort,
         persistent: true,
         initdbFlags: ["--encoding=UTF8", "--locale=C", "--lc-messages=C"],
@@ -1661,7 +1661,7 @@ describe("worktree helpers", () => {
         targetPgStartupResolved = true;
         onTestFinished(() => targetPg.stop());
         const targetDb = createDb(
-          `postgres://paperclip:paperclip@127.0.0.1:${targetConfig.database.embeddedPostgresPort}/paperclip`,
+          `postgres://wardmote:wardmote@127.0.0.1:${targetConfig.database.embeddedPostgresPort}/wardmote`,
         );
         const [seededLocalBoard] = await targetDb
           .select({ id: authUsers.id })
@@ -1836,8 +1836,8 @@ describe("worktree helpers", () => {
       const { default: EmbeddedPostgres } = await import("embedded-postgres");
       const targetPg = new EmbeddedPostgres({
         databaseDir: targetConfig.database.embeddedPostgresDataDir,
-        user: "paperclip",
-        password: "paperclip",
+        user: "wardmote",
+        password: "wardmote",
         port: targetConfig.database.embeddedPostgresPort,
         persistent: true,
         initdbFlags: ["--encoding=UTF8", "--locale=C", "--lc-messages=C"],
@@ -1848,7 +1848,7 @@ describe("worktree helpers", () => {
       await targetPg.start();
       onTestFinished(() => targetPg.stop());
       const targetDb = createDb(
-        `postgres://paperclip:paperclip@127.0.0.1:${targetConfig.database.embeddedPostgresPort}/paperclip`,
+        `postgres://wardmote:wardmote@127.0.0.1:${targetConfig.database.embeddedPostgresPort}/wardmote`,
       );
       const seededUsers = await targetDb.select().from(authUsers);
       expect(seededUsers.some((row) => row.email === "existing@paperclip.ing")).toBe(true);
@@ -1973,7 +1973,7 @@ describe("worktree helpers", () => {
       firstConfig.database = {
         ...firstConfig.database,
         mode: "postgres",
-        connectionString: "postgres://paperclip:paperclip@127.0.0.1:54330/paperclip",
+        connectionString: "postgres://wardmote:wardmote@127.0.0.1:54330/wardmote",
       };
       fs.writeFileSync(firstConfigPath, `${JSON.stringify(firstConfig, null, 2)}\n`, "utf8");
 
