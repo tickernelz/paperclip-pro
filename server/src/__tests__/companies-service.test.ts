@@ -126,7 +126,7 @@ describeEmbeddedPostgres("companyService", () => {
       .from(companySkills)
       .where(and(
         eq(companySkills.companyId, created.id),
-        eq(companySkills.key, "paperclipai/bundled/paperclip-operations/reflection-coach"),
+        eq(companySkills.key, "tickernelz/bundled/wardmote-operations/reflection-coach"),
       ));
     expect(skill).toMatchObject({
       slug: "reflection-coach",

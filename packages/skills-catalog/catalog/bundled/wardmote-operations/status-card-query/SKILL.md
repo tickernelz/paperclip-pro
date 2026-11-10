@@ -1,7 +1,7 @@
 ---
 name: status-card-query
 description: Create and maintain agent-authored Wardmote status cards, or compile a prose interest prompt into bounded CompanySearchQuery objects and write the first summary from the assigned Summarizer run.
-key: paperclipai/bundled/paperclip-operations/status-card-query
+key: tickernelz/bundled/wardmote-operations/status-card-query
 recommendedForRoles:
   - general
   - manager

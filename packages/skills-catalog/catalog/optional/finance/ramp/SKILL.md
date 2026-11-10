@@ -1,7 +1,7 @@
 ---
 name: ramp
 description: Fetch and follow Ramp's published agent playbooks inside Wardmote, with mandatory approval gates for spend, incorporation, cards, account setup, and other financial actions.
-key: paperclipai/optional/finance/ramp
+key: tickernelz/optional/finance/ramp
 recommendedForRoles:
   - finance
   - operations

@@ -4,7 +4,7 @@ description: Default leadership and engineering team for bootstrapping a Wardmot
 schema: agentcompanies/v1
 slug: core-exec-team
 category: company-defaults
-key: paperclipai/bundled/company-defaults/core-exec-team
+key: tickernelz/bundled/company-defaults/core-exec-team
 manager: agents/ceo/AGENTS.md
 includes:
   - agents/cto/AGENTS.md
@@ -21,10 +21,10 @@ tags:
   - engineering
   - qa
 requiredSkills:
-  - paperclipai/bundled/paperclip-operations/task-planning
-  - paperclipai/bundled/paperclip-operations/issue-triage
-  - paperclipai/bundled/software-development/github-pr-workflow
-  - paperclipai/bundled/quality/qa-acceptance
+  - tickernelz/bundled/wardmote-operations/task-planning
+  - tickernelz/bundled/wardmote-operations/issue-triage
+  - tickernelz/bundled/software-development/github-pr-workflow
+  - tickernelz/bundled/quality/qa-acceptance
 ---
 
 # Core Exec Team

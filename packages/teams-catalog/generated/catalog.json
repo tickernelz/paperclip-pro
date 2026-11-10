@@ -2,11 +2,11 @@
   "schemaVersion": 1,
   "packageName": "@tickernelz/wardmote-teams-catalog",
   "packageVersion": "0.1.0",
-  "generatedAt": "2026-11-10T13:22:24.937Z",
+  "generatedAt": "2026-11-10T18:09:09.538Z",
   "teams": [
     {
-      "id": "paperclipai:bundled:company-defaults:core-exec-team",
-      "key": "paperclipai/bundled/company-defaults/core-exec-team",
+      "id": "tickernelz:bundled:company-defaults:core-exec-team",
+      "key": "tickernelz/bundled/company-defaults/core-exec-team",
       "kind": "bundled",
       "category": "company-defaults",
       "slug": "core-exec-team",
@@ -55,8 +55,8 @@
             "cto"
           ],
           "resolved": true,
-          "catalogSkillId": "paperclipai:bundled:software-development:github-pr-workflow",
-          "catalogSkillKey": "paperclipai/bundled/software-development/github-pr-workflow"
+          "catalogSkillId": "tickernelz:bundled:software-development:github-pr-workflow",
+          "catalogSkillKey": "tickernelz/bundled/software-development/github-pr-workflow"
         },
         {
           "type": "catalog",
@@ -65,8 +65,8 @@
             "ceo"
           ],
           "resolved": true,
-          "catalogSkillId": "paperclipai:bundled:paperclip-operations:issue-triage",
-          "catalogSkillKey": "paperclipai/bundled/paperclip-operations/issue-triage"
+          "catalogSkillId": "tickernelz:bundled:wardmote-operations:issue-triage",
+          "catalogSkillKey": "tickernelz/bundled/wardmote-operations/issue-triage"
         },
         {
           "type": "catalog",
@@ -75,8 +75,8 @@
             "qa"
           ],
           "resolved": true,
-          "catalogSkillId": "paperclipai:bundled:quality:qa-acceptance",
-          "catalogSkillKey": "paperclipai/bundled/quality/qa-acceptance"
+          "catalogSkillId": "tickernelz:bundled:quality:qa-acceptance",
+          "catalogSkillKey": "tickernelz/bundled/quality/qa-acceptance"
         },
         {
           "type": "catalog",
@@ -86,8 +86,8 @@
             "cto"
           ],
           "resolved": true,
-          "catalogSkillId": "paperclipai:bundled:paperclip-operations:task-planning",
-          "catalogSkillKey": "paperclipai/bundled/paperclip-operations/task-planning"
+          "catalogSkillId": "tickernelz:bundled:wardmote-operations:task-planning",
+          "catalogSkillKey": "tickernelz/bundled/wardmote-operations/task-planning"
         }
       ],
       "envInputs": [],
@@ -96,8 +96,8 @@
         {
           "path": "TEAM.md",
           "kind": "team",
-          "sizeBytes": 2012,
-          "sha256": "da56f91f0965c7b60ac582789b4bddc63a706b70f4e1e981256226ce6ec910e6"
+          "sizeBytes": 2005,
+          "sha256": "454487b4e8c49005e7e709ff6282ac3053df21bf64e085457980bb9e3469b851"
         },
         {
           "path": "agents/ceo/AGENTS.md",
@@ -132,11 +132,11 @@
       ],
       "trustLevel": "markdown_only",
       "compatibility": "compatible",
-      "contentHash": "sha256:c69d25cd8941be4918cdfa96d4c7eb2d34d2c36927311eff9eef0f84d8b2609b"
+      "contentHash": "sha256:ae7fa4a49adbe82c6744501eb8e751187d06631115b59d727937289436e2ef7c"
     },
     {
-      "id": "paperclipai:bundled:product:product-design",
-      "key": "paperclipai/bundled/product/product-design",
+      "id": "tickernelz:bundled:product:product-design",
+      "key": "tickernelz/bundled/product/product-design",
       "kind": "bundled",
       "category": "product",
       "slug": "product-design",
@@ -182,8 +182,8 @@
             "ux-designer"
           ],
           "resolved": true,
-          "catalogSkillId": "paperclipai:optional:product:design-critique",
-          "catalogSkillKey": "paperclipai/optional/product/design-critique"
+          "catalogSkillId": "tickernelz:optional:product:design-critique",
+          "catalogSkillKey": "tickernelz/optional/product/design-critique"
         },
         {
           "type": "catalog",
@@ -192,8 +192,8 @@
             "ux-designer"
           ],
           "resolved": true,
-          "catalogSkillId": "paperclipai:bundled:paperclip-operations:task-planning",
-          "catalogSkillKey": "paperclipai/bundled/paperclip-operations/task-planning"
+          "catalogSkillId": "tickernelz:bundled:wardmote-operations:task-planning",
+          "catalogSkillKey": "tickernelz/bundled/wardmote-operations/task-planning"
         },
         {
           "type": "catalog",
@@ -202,8 +202,8 @@
             "ux-designer"
           ],
           "resolved": true,
-          "catalogSkillId": "paperclipai:bundled:product:wireframe",
-          "catalogSkillKey": "paperclipai/bundled/product/wireframe"
+          "catalogSkillId": "tickernelz:bundled:product:wireframe",
+          "catalogSkillKey": "tickernelz/bundled/product/wireframe"
         }
       ],
       "envInputs": [],
@@ -212,8 +212,8 @@
         {
           "path": "TEAM.md",
           "kind": "team",
-          "sizeBytes": 2024,
-          "sha256": "ba295e6fce0f7e021fc45deda770cdd03041448d12a3cbb8546f26e377bf189a"
+          "sizeBytes": 2019,
+          "sha256": "43a81bb1d609df0888da556c96f864a900ca96bdeecf3779f58c862ebae21df8"
         },
         {
           "path": "agents/ux-designer/AGENTS.md",
@@ -236,11 +236,11 @@
       ],
       "trustLevel": "markdown_only",
       "compatibility": "compatible",
-      "contentHash": "sha256:90fc976aa0bf31798c9f48f3edd27cfe3ff06b0961f8a40eea2832a82dea54f2"
+      "contentHash": "sha256:5469782c7a9cecf44cb4a340dc104b4724a2b93a82ce38a36ee31ad3e0c7dc3f"
     },
     {
-      "id": "paperclipai:bundled:software-development:product-engineering",
-      "key": "paperclipai/bundled/software-development/product-engineering",
+      "id": "tickernelz:bundled:software-development:product-engineering",
+      "key": "tickernelz/bundled/software-development/product-engineering",
       "kind": "bundled",
       "category": "software-development",
       "slug": "product-engineering",
@@ -290,8 +290,8 @@
             "senior-coder"
           ],
           "resolved": true,
-          "catalogSkillId": "paperclipai:bundled:docs:doc-maintenance",
-          "catalogSkillKey": "paperclipai/bundled/docs/doc-maintenance"
+          "catalogSkillId": "tickernelz:bundled:docs:doc-maintenance",
+          "catalogSkillKey": "tickernelz/bundled/docs/doc-maintenance"
         },
         {
           "type": "catalog",
@@ -301,8 +301,8 @@
             "senior-coder"
           ],
           "resolved": true,
-          "catalogSkillId": "paperclipai:bundled:software-development:github-pr-workflow",
-          "catalogSkillKey": "paperclipai/bundled/software-development/github-pr-workflow"
+          "catalogSkillId": "tickernelz:bundled:software-development:github-pr-workflow",
+          "catalogSkillKey": "tickernelz/bundled/software-development/github-pr-workflow"
         },
         {
           "type": "catalog",
@@ -311,8 +311,8 @@
             "qa"
           ],
           "resolved": true,
-          "catalogSkillId": "paperclipai:bundled:quality:qa-acceptance",
-          "catalogSkillKey": "paperclipai/bundled/quality/qa-acceptance"
+          "catalogSkillId": "tickernelz:bundled:quality:qa-acceptance",
+          "catalogSkillKey": "tickernelz/bundled/quality/qa-acceptance"
         },
         {
           "type": "catalog",
@@ -321,8 +321,8 @@
             "cto"
           ],
           "resolved": true,
-          "catalogSkillId": "paperclipai:bundled:paperclip-operations:task-planning",
-          "catalogSkillKey": "paperclipai/bundled/paperclip-operations/task-planning"
+          "catalogSkillId": "tickernelz:bundled:wardmote-operations:task-planning",
+          "catalogSkillKey": "tickernelz/bundled/wardmote-operations/task-planning"
         }
       ],
       "envInputs": [],
@@ -331,8 +331,8 @@
         {
           "path": "TEAM.md",
           "kind": "team",
-          "sizeBytes": 2582,
-          "sha256": "ad587bc0f635cf7564570c01a2cd011ac2b15d78c014d4c6b51358c5ffa0bcf4"
+          "sizeBytes": 2576,
+          "sha256": "719e88ea0c725cc9e779583fce64578d3f3463674714e9d311f78ab6240d5a8c"
         },
         {
           "path": ".wardmote.yaml",
@@ -373,11 +373,11 @@
       ],
       "trustLevel": "assets",
       "compatibility": "compatible",
-      "contentHash": "sha256:de541ecdf2c660ac5f4e5ca7f27bedcb7e833d0173b003d57ef879add52ad738"
+      "contentHash": "sha256:23db2c4fe36d605d907bab960bf057c166757f99fd858a77b35dc29d3ce4a588"
     },
     {
-      "id": "paperclipai:optional:content:content-machine",
-      "key": "paperclipai/optional/content/content-machine",
+      "id": "tickernelz:optional:content:content-machine",
+      "key": "tickernelz/optional/content/content-machine",
       "kind": "optional",
       "category": "content",
       "slug": "content-machine",
@@ -431,8 +431,8 @@
         {
           "path": "TEAM.md",
           "kind": "team",
-          "sizeBytes": 1032,
-          "sha256": "f7c272c8b0c183fc840d49eb4851b7cdd1a30a5aa8d6415d215110f3238f6f13"
+          "sizeBytes": 1031,
+          "sha256": "26bcfbde56da006814987f568c086ab685e742872f8480a0791cdd64a14e2f42"
         },
         {
           "path": "agents/content-lead/AGENTS.md",
@@ -461,7 +461,7 @@
       ],
       "trustLevel": "markdown_only",
       "compatibility": "compatible",
-      "contentHash": "sha256:06822cec5f2b6910cb37ba0ebd5e04ed5c7e34f77225564ddddc2470779cdaa6"
+      "contentHash": "sha256:ecfa7392ddb2bbd45c2b45109645ff97683e9e6f39f11e46fce18f975a47f303"
     }
   ]
 }

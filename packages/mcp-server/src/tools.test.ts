@@ -75,7 +75,7 @@ describe("paperclip MCP tools", () => {
 
   it("lists the company skill library with the default company id", async () => {
     const fetchMock = vi.fn().mockResolvedValue(
-      mockJsonResponse([{ key: "paperclipai/bundled/product/wireframe", name: "wireframe" }]),
+      mockJsonResponse([{ key: "tickernelz/bundled/product/wireframe", name: "wireframe" }]),
     );
     vi.stubGlobal("fetch", fetchMock);
 

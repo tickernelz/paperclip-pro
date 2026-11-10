@@ -699,7 +699,7 @@ Catalog semantics:
 
 - **Bundled** skills live in `packages/skills-catalog/catalog/bundled/<category>/<slug>`
   and are recommended defaults for most companies. They use canonical key
-  `paperclipai/bundled/<category>/<slug>`.
+  `tickernelz/bundled/<category>/<slug>`.
 - **Optional** skills live in `packages/skills-catalog/catalog/optional/<category>/<slug>`
   and are role-specific or domain-specific (browser, AWS ops, etc.). Same key
   shape with `optional` in place of `bundled`.
@@ -717,7 +717,7 @@ npx @tickernelz/wardmote skills browse --kind bundled --company-id <company-id>
 npx @tickernelz/wardmote skills search "pull request" --kind bundled
 npx @tickernelz/wardmote skills inspect github-pr-workflow
 npx @tickernelz/wardmote skills install github-pr-workflow --company-id <company-id>
-npx @tickernelz/wardmote skills install paperclipai:optional:browser:agent-browser --company-id <company-id>
+npx @tickernelz/wardmote skills install tickernelz:optional:browser:agent-browser --company-id <company-id>
 ```
 
 External GitHub, skills.sh, local-path, and URL sources still go through

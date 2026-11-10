@@ -1,7 +1,7 @@
 ---
 name: task-planning
 description: Write or revise a useful Wardmote plan with a clear outcome and verification. Use when a plan is requested or uncertainty needs resolving before execution.
-key: paperclipai/bundled/paperclip-operations/task-planning
+key: tickernelz/bundled/wardmote-operations/task-planning
 recommendedForRoles:
   - manager
   - engineer

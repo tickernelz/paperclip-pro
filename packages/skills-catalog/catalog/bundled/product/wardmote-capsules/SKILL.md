@@ -1,7 +1,7 @@
 ---
-name: paperclip-capsules
+name: wardmote-capsules
 description: Generate, implement, or review Wardmote capsule visuals. Use for capsule art, agent capsules, heartbeat status capsules, identicons, capsule banks, or brand-usage validation.
-key: paperclipai/bundled/product/paperclip-capsules
+key: tickernelz/bundled/product/wardmote-capsules
 recommendedForRoles:
   - designer
   - product

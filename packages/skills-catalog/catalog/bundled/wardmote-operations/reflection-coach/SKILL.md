@@ -1,7 +1,7 @@
 ---
 name: reflection-coach
 description: Reflect on another agent's recent execution record and propose the smallest durable instruction, skill, or tool-description change. Use for evidence-backed coaching proposals, never hot-swaps.
-key: paperclipai/bundled/paperclip-operations/reflection-coach
+key: tickernelz/bundled/wardmote-operations/reflection-coach
 recommendedForRoles:
   - manager
   - general

@@ -1,7 +1,7 @@
 ---
 name: task-planning
 description: Turn a Wardmote issue or request into a structured implementation plan with child task graph, blockers, owners, and acceptance criteria, then save it as the issue `plan` document.
-key: paperclipai/bundled/paperclip-operations/task-planning
+key: tickernelz/bundled/wardmote-operations/task-planning
 recommendedForRoles:
   - manager
   - engineer

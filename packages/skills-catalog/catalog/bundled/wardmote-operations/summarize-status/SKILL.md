@@ -1,7 +1,7 @@
 ---
 name: summarize-status
 description: Write a short, colloquial summary for a Wardmote summary slot: open with the 1–3 specific, concrete actions the reader needs to take right now to unblock the work, then a brief plain-language status, streaming progress as it works.
-key: paperclipai/bundled/paperclip-operations/summarize-status
+key: tickernelz/bundled/wardmote-operations/summarize-status
 recommendedForRoles:
   - general
   - manager

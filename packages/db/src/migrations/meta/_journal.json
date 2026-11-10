@@ -2535,6 +2535,13 @@
       "when": 1794302163376,
       "tag": "0363_wardmote_camel_keys",
       "breakpoints": true
+    },
+    {
+      "idx": 364,
+      "version": "7",
+      "when": 1794302223376,
+      "tag": "0364_wardmote_catalog_keys",
+      "breakpoints": true
     }
   ]
 }

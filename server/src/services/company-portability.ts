@@ -2584,11 +2584,11 @@ async function buildSkillSourceEntry(skill: CompanySkill) {
     const commit = await resolveBundledSkillsCommit();
     return {
       kind: "github-dir",
-      repo: "paperclipai/paperclip",
+      repo: "tickernelz/wardmote",
       path: `skills/${skill.slug}`,
       commit,
-      trackingRef: "master",
-      url: `https://github.com/paperclipai/paperclip/tree/master/skills/${skill.slug}`,
+      trackingRef: "main",
+      url: `https://github.com/tickernelz/wardmote/tree/main/skills/${skill.slug}`,
     };
   }
 
@@ -3259,8 +3259,8 @@ function buildManifestFromPackageFiles(
       const sourceHostname = asString(primarySource?.hostname) || "github.com";
       const [owner, repoName] = (repo ?? "").split("/");
       const canonicalKey = readSkillKey(frontmatter);
-      const normalizedSourceKind = owner === "paperclipai"
-        && repoName === "paperclip"
+      const normalizedSourceKind = owner === "tickernelz"
+        && repoName === "wardmote"
         && canonicalKey?.startsWith("tickernelz/wardmote/")
         ? "wardmote_bundled"
         : "github";

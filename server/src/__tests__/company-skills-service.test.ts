@@ -679,8 +679,8 @@ describeEmbeddedPostgres("companySkillService.list", () => {
       ? await db.select().from(folders).where(eq(folders.id, bundledSkill.folderId)).then((rows) => rows[0])
       : null;
     expect(bundledFolder).toMatchObject({
-      name: "Paperclip Core",
-      systemKey: "bundled:paperclip-core",
+      name: "Wardmote Core",
+      systemKey: "bundled:wardmote-core",
     });
 
     const preservedUpdatedAt = new Date("2026-01-01T00:00:00.000Z");

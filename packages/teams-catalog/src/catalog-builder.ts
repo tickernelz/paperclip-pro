@@ -262,8 +262,8 @@ async function buildCatalogTeam(
   validateSlug("category", candidate.category, prefix, errors);
   validateSlug("slug", candidate.slug, prefix, errors);
 
-  const id = `paperclipai:${candidate.kind}:${candidate.category}:${candidate.slug}`;
-  const key = `paperclipai/${candidate.kind}/${candidate.category}/${candidate.slug}`;
+  const id = `tickernelz:${candidate.kind}:${candidate.category}:${candidate.slug}`;
+  const key = `tickernelz/${candidate.kind}/${candidate.category}/${candidate.slug}`;
   const teamMarkdownPath = path.join(candidate.absolutePath, TEAM_ENTRYPOINT);
   const parsed = parseFrontmatterMarkdown(await fs.readFile(teamMarkdownPath, "utf8"));
 
@@ -865,8 +865,8 @@ function collectUniquenessErrors(teams: CatalogTeam[], errors: string[]) {
 
 function collectCandidateUniquenessErrors(candidates: TeamCandidate[], errors: string[]) {
   const projected = candidates.map((candidate) => ({
-    id: `paperclipai:${candidate.kind}:${candidate.category}:${candidate.slug}`,
-    key: `paperclipai/${candidate.kind}/${candidate.category}/${candidate.slug}`,
+    id: `tickernelz:${candidate.kind}:${candidate.category}:${candidate.slug}`,
+    key: `tickernelz/${candidate.kind}/${candidate.category}/${candidate.slug}`,
     slug: candidate.slug,
     path: toPosixPath(path.join("catalog", candidate.kind, candidate.category, candidate.slug)),
   })) as CatalogTeam[];

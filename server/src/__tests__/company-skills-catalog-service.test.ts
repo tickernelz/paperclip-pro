@@ -36,8 +36,8 @@ const sampleFiles: CatalogSkillFile[] = [
 ];
 
 const sampleCatalogSkill: CatalogSkill = {
-  id: "paperclipai:bundled:software-development:review",
-  key: "paperclipai/bundled/software-development/review",
+  id: "tickernelz:bundled:software-development:review",
+  key: "tickernelz/bundled/software-development/review",
   kind: "bundled",
   category: "software-development",
   slug: "review",
@@ -300,7 +300,7 @@ describeEmbeddedPostgres("companySkillService.installFromCatalog", () => {
   it("restores portable catalog provenance when importing packaged skills", async () => {
     const companyId = await createCompany();
     const importedFiles = {
-      "skills/paperclipai/bundled/software-development/review/SKILL.md": [
+      "skills/tickernelz/bundled/software-development/review/SKILL.md": [
         "---",
         `key: "${sampleCatalogSkill.key}"`,
         'slug: "review"',
@@ -332,7 +332,7 @@ describeEmbeddedPostgres("companySkillService.installFromCatalog", () => {
         "# Review",
         "",
       ].join("\n"),
-      "skills/paperclipai/bundled/software-development/review/references/checklist.md": sampleReferenceMarkdown,
+      "skills/tickernelz/bundled/software-development/review/references/checklist.md": sampleReferenceMarkdown,
     };
 
     const [result] = await svc.importPackageFiles(companyId, importedFiles, { onConflict: "replace" });

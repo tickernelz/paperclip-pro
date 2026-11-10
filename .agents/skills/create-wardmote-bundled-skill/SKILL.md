@@ -103,7 +103,7 @@ Is the license compatible with redistribution? Then pick a path:
   ship to every Paperclip company by default — that needs explicit human/board
   direction, not your judgment call.
 - **category**: reuse an existing directory when one fits (`browser`,
-  `content`, `docs`, `finance`, `paperclip-operations`, `product`, `quality`,
+  `content`, `docs`, `finance`, `wardmote-operations`, `product`, `quality`,
   `research`, `software-development`). New categories are allowed but must be
   lowercase kebab-case slugs.
 - **slug**: lowercase kebab-case (`^[a-z0-9]+(-[a-z0-9]+)*$`), unique across
