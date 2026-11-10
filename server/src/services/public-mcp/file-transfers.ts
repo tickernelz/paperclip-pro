@@ -22,7 +22,7 @@ const uploadSchema = z.object({ ...task, requestId,
 const attachmentFields = ["id", "issueId", "originalFilename", "contentType", "byteSize", "sha256", "createdAt"];
 const unavailable = () => new McpCapabilityError("This transfer is expired, revoked, invalid or no longer authorized. Request a new transfer link from Wardmote.");
 function requireWrite(p: McpPrincipal) {
-  if (!p.grant.scopes.includes("paperclip:write") || p.actor.memberships?.[0]?.membershipRole === "viewer") throw unavailable();
+  if (!p.grant.scopes.includes("wardmote:write") || p.actor.memberships?.[0]?.membershipRole === "viewer") throw unavailable();
 }
 
 export function createPublicMcpTransfers(db: Db, oauth: PublicMcpOAuth, api: ApiDispatch, storage: StorageService) {

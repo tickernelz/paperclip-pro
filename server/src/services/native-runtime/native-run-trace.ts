@@ -213,9 +213,9 @@ export function createNativeRunTrace(input: {
     rootSpan = tracing.tracer.startSpan("task.run", {
       startTime: traceStartedAtMs,
       attributes: {
-        "paperclip.task.run.run_id": runIdHash,
-        "paperclip.task.run.runtime": "wardmote_runner",
-        "paperclip.task.run.trace_schema_version":
+        "wardmote.task.run.run_id": runIdHash,
+        "wardmote.task.run.runtime": "wardmote_runner",
+        "wardmote.task.run.trace_schema_version":
           NATIVE_RUN_TRACE_SCHEMA_VERSION,
       },
     });
@@ -496,10 +496,10 @@ export function createNativeRunTrace(input: {
     }
     try {
       rootSpan.setAttribute(
-        "paperclip.task.run.wall_ms",
+        "wardmote.task.run.wall_ms",
         endedAtMs - traceStartedAtMs,
       );
-      rootSpan.setAttribute("paperclip.task.run.outcome", outcome);
+      rootSpan.setAttribute("wardmote.task.run.outcome", outcome);
       if (outcome === "failed") rootSpan.setStatus({ code: 2 });
       rootSpan.end(endedAtMs);
     } catch {

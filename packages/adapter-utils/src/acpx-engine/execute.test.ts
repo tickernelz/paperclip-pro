@@ -386,8 +386,8 @@ const ALLOWED_STARTUP_SPAN_ATTRIBUTE_KEYS = new Set<string>([
 // non-reversible run-id hash and its own wall time, so no command, path, id, or
 // error text can ride the `task.run` span.
 const ALLOWED_RUN_SPAN_ATTRIBUTE_KEYS = new Set<string>([
-  "paperclip.task.run.run_id",
-  "paperclip.task.run.wall_ms",
+  "wardmote.task.run.run_id",
+  "wardmote.task.run.wall_ms",
 ]);
 
 // The closed attribute allowlist for the agent turn span. It carries only its
@@ -5322,8 +5322,8 @@ describe("ACPX engine sandbox-start spans (opt-in root + child parenting)", () =
     expect(runSpan.status).toBeNull();
     // The run id rides only as a non-reversible hash; the raw run id never rides
     // the span.
-    expect(runSpan.attributes["paperclip.task.run.run_id"]).toMatch(/^[0-9a-f]{12}$/);
-    expect(String(runSpan.attributes["paperclip.task.run.run_id"])).not.toContain("run-");
+    expect(runSpan.attributes["wardmote.task.run.run_id"]).toMatch(/^[0-9a-f]{12}$/);
+    expect(String(runSpan.attributes["wardmote.task.run.run_id"])).not.toContain("run-");
   });
 
   it("test_sandbox_startup_parents_to_task_run", async () => {
