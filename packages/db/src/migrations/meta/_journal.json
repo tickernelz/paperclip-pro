@@ -2570,6 +2570,13 @@
       "when": 1794345057710,
       "tag": "0368_wardmote_mcp_scopes",
       "breakpoints": true
+    },
+    {
+      "idx": 369,
+      "version": "7",
+      "when": 1794345117710,
+      "tag": "0369_wardmote_chat_state_key",
+      "breakpoints": true
     }
   ]
 }
