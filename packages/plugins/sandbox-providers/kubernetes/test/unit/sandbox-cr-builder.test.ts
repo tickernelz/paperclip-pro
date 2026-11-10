@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { buildSandboxCrManifest } from "../../src/sandbox-cr-builder.js";
 
 const baseInput = {
-  namespace: "paperclip-acme",
+  namespace: "wardmote-acme",
   sandboxName: "pc-01h00000000000000000000000",
   adapterType: "claude_local",
   image: "ghcr.io/paperclipai/agent-runtime-claude:v1",

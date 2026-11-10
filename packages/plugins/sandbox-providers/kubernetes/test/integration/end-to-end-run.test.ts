@@ -15,8 +15,6 @@
  *   4. Set the env var and run:
  *        RUN_K8S_INTEGRATION_TESTS=1 pnpm test
  *
- * The namespace is derived from companySlug ("spike-e2e") + namespacePrefix
- * ("paperclip-"), resolving to "paperclip-spike-e2e".
  */
 
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
@@ -26,7 +24,7 @@ import { execInPod } from "../../src/pod-exec.js";
 import { sandboxCrOrchestrator } from "../../src/sandbox-cr-orchestrator.js";
 import { deleteNamespaceIfExists, kubectl, readKindKubeconfig } from "./_kind-harness.js";
 
-const NAMESPACE = "paperclip-spike-e2e";
+const NAMESPACE = "wardmote-spike-e2e";
 
 describe("plugin-kubernetes end-to-end", () => {
   beforeAll(() => {

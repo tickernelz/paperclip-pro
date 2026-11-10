@@ -41,7 +41,7 @@ function makeMockClients() {
 
 describe("ensureTenant", () => {
   const baseInput = {
-    namespace: "paperclip-acme",
+    namespace: "wardmote-acme",
     companyId: "11111111-1111-1111-1111-111111111111",
     wardmoteServerNamespace: "paperclip",
     serviceAccountAnnotations: {},

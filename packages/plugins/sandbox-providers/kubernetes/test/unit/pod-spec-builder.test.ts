@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { buildJobManifest } from "../../src/pod-spec-builder.js";
 
 const baseInput = {
-  namespace: "paperclip-acme",
+  namespace: "wardmote-acme",
   jobName: "r-01h00000000000000000000000",
   adapterType: "claude_local",
   image: "ghcr.io/paperclipai/agent-runtime-claude:v1",

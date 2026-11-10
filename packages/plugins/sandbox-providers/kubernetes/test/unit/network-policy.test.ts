@@ -3,7 +3,7 @@ import { buildNetworkPolicyManifests } from "../../src/network-policy.js";
 
 describe("buildNetworkPolicyManifests", () => {
   const baseInput = {
-    namespace: "paperclip-acme",
+    namespace: "wardmote-acme",
     wardmoteServerNamespace: "paperclip",
     egressAllowCidrs: [] as string[],
   };

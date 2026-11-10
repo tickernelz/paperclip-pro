@@ -37,7 +37,7 @@ describe("deriveCompanySlug", () => {
 
 describe("deriveNamespaceName", () => {
   it("concatenates prefix and slug", () => {
-    expect(deriveNamespaceName("paperclip-", "acme-co")).toBe("paperclip-acme-co");
+    expect(deriveNamespaceName("wardmote-", "acme-co")).toBe("wardmote-acme-co");
   });
 });
 
