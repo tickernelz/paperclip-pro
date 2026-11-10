@@ -22,7 +22,7 @@ Existing tiers already in index.css (~80+ tokens) — extraction maps to these o
 
 1. **Semantic tier** — shadcn core set: `--background`, `--foreground`, `--card`, `--primary`, `--secondary`, `--muted`, `--accent`, `--destructive`, `--border`, `--input`, `--ring`, `--sidebar-*`, `--chart-1..5` (OKLCH, light/dark overrides).
 2. **Brand tier** — agent gradients `--agent-1a/1b..10a/10b` (fixed hex) and status hues `--status-task-*` / `--status-agent-*` (WCAG-tuned; see inline comments).
-3. **Domain tier** — match-chip tokens `--chip-match-*`, annotation highlights `--paperclip-doc-annotation-highlight-*`, plus motion/typography tokens.
+3. **Domain tier** — match-chip tokens `--chip-match-*`, annotation highlights `--wardmote-doc-annotation-highlight-*`, plus motion/typography tokens.
 
 ## Principles
 

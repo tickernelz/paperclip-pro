@@ -110,9 +110,9 @@ export const NativeSelects: Story = {
 
 function StoryFrame({ children }: { children: React.ReactNode }) {
   return (
-    <div className="paperclip-story">
-      <main className="paperclip-story__inner">
-        <section className="paperclip-story__frame p-6">{children}</section>
+    <div className="wardmote-story">
+      <main className="wardmote-story__inner">
+        <section className="wardmote-story__frame p-6">{children}</section>
       </main>
     </div>
   );

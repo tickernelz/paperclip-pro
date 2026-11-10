@@ -42,7 +42,7 @@ export function RemovableIssueReferencePill({
       ? `${issue.identifier}: ${issue.title}`
       : issue.title;
   const chipClassName = cn(
-    "paperclip-mention-chip paperclip-mention-chip--issue",
+    "wardmote-mention-chip wardmote-mention-chip--issue",
     "inline-flex items-center gap-1 rounded-full border border-line px-2 py-0.5 text-xs no-underline",
     !locked && issue.identifier && "hover:bg-bg-3/50 focus-visible:outline-none focus-visible:ring-(length:--rad-3) focus-visible:ring-focus",
   );

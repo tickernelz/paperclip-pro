@@ -88,8 +88,8 @@ const boardUserLabels = new Map<string, string>([
 
 function StoryFrame({ children }: { children: React.ReactNode }) {
   return (
-    <div className="paperclip-story">
-      <main className="paperclip-story__inner space-y-6">{children}</main>
+    <div className="wardmote-story">
+      <main className="wardmote-story__inner space-y-6">{children}</main>
     </div>
   );
 }
@@ -104,10 +104,10 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="paperclip-story__frame overflow-hidden">
+    <section className="wardmote-story__frame overflow-hidden">
       <div className="flex flex-wrap items-start justify-between gap-3 border-b border-line px-5 py-4">
         <div>
-          <div className="paperclip-story__label">{eyebrow}</div>
+          <div className="wardmote-story__label">{eyebrow}</div>
           <h2 className="mt-1 text-xl font-semibold">{title}</h2>
         </div>
       </div>
@@ -1507,8 +1507,8 @@ export const ItemVerdictsManyItems: Story = {
 export const ReviewSurface: Story = {
   render: () => (
     <StoryFrame>
-      <section className="paperclip-story__frame p-6">
-        <div className="paperclip-story__label">Thread interactions</div>
+      <section className="wardmote-story__frame p-6">
+        <div className="wardmote-story__label">Thread interactions</div>
         <div className="mt-2 max-w-3xl text-sm leading-6 text-ink-3">
           This review surface pressure-tests the thread interaction kinds
           directly inside the issue chat surface. The card language leans closer

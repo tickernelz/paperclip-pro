@@ -21,7 +21,7 @@ export function InteractionInlineMarkdown({
 }) {
   return (
     <MarkdownBody
-      className={cn("paperclip-markdown-inherit", className)}
+      className={cn("wardmote-markdown-inherit", className)}
       mediaMode="reference"
       linkIssueReferences={false}
     >
@@ -45,7 +45,7 @@ export function InteractionNoteReceipt({
   return (
     <div className={cn("text-sm", className)} data-testid="interaction-note-receipt">
       <div className="text-xs font-medium text-ink-3">Note</div>
-      <MarkdownBody className="paperclip-markdown-inherit" externalReferences={externalReferences}>
+      <MarkdownBody className="wardmote-markdown-inherit" externalReferences={externalReferences}>
         {value}
       </MarkdownBody>
     </div>

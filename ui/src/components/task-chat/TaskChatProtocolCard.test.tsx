@@ -695,7 +695,7 @@ describe("TaskChatProtocolCard", () => {
     expect(context?.textContent).toContain("https://provider.invalid/track.png");
     expect(context?.querySelector("img, video, audio, iframe, object, embed, image, link")).toBeNull();
     expect(context?.querySelector('.language-mermaid')?.textContent).toContain('https://provider.invalid/diagram.png');
-    expect(context?.querySelector('.paperclip-mermaid')).toBeNull();
+    expect(context?.querySelector('.wardmote-mermaid')).toBeNull();
   });
 
   it("submits the canonical response from a v2 harness question set", async () => {

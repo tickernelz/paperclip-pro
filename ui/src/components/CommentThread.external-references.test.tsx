@@ -97,14 +97,14 @@ describe("CommentThread external object decoration (integration)", () => {
     expect(resolvedLink, "resolved URL should be wrapped by the external-link decorator").not.toBeNull();
     expect(resolvedLink?.getAttribute("data-external-link")).toBe("resolved");
     expect(resolvedLink?.getAttribute("data-external-status")).toBe("open");
-    expect(resolvedLink?.classList.contains("paperclip-markdown-external-ref")).toBe(true);
+    expect(resolvedLink?.classList.contains("wardmote-markdown-external-ref")).toBe(true);
 
     const unknownLink = container.querySelector(
       'a[href="https://elsewhere.example.com/page"]',
     );
     expect(unknownLink, "unknown URL should still render as a plain link").not.toBeNull();
     expect(unknownLink?.getAttribute("data-external-link")).toBeNull();
-    expect(unknownLink?.classList.contains("paperclip-markdown-external-ref")).toBe(false);
+    expect(unknownLink?.classList.contains("wardmote-markdown-external-ref")).toBe(false);
 
     act(() => {
       root.unmount();

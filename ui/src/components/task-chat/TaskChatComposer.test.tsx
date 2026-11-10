@@ -953,7 +953,7 @@ describe("TaskChatComposer", () => {
     );
 
     const composer = container.querySelector<HTMLElement>(
-      ".paperclip-task-chat-composer",
+      ".wardmote-task-chat-composer",
     )!;
 
     expect(composer.classList).toContain("border");
@@ -970,7 +970,7 @@ describe("TaskChatComposer", () => {
     render(<TaskChatComposer onAdd={vi.fn()} workMode="standard" />);
 
     expect(
-      container.querySelector(".paperclip-task-chat-composer"),
+      container.querySelector(".wardmote-task-chat-composer"),
     ).not.toBeNull();
   });
 
@@ -3297,7 +3297,7 @@ describe("pending interaction card above the composer", () => {
     );
 
     const card = container.querySelector('[data-testid="task-chat-composer-takeover"]')!;
-    const composer = container.querySelector(".paperclip-task-chat-composer")!;
+    const composer = container.querySelector(".wardmote-task-chat-composer")!;
     expect(card.compareDocumentPosition(composer)).toBe(
       Node.DOCUMENT_POSITION_FOLLOWING,
     );

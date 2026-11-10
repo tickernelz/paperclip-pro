@@ -85,7 +85,7 @@ export function WorkspaceFileLink({
       aria-label={ariaLabel}
       title={tooltip}
       className={cn(
-        "paperclip-workspace-file-link inline-flex items-center gap-1 rounded-sm border border-line bg-bg-3/60 px-1.5 py-0.5 font-mono text-xs leading-tight text-ink/90 align-middle no-underline hover:bg-bg-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-1",
+        "wardmote-workspace-file-link inline-flex items-center gap-1 rounded-sm border border-line bg-bg-3/60 px-1.5 py-0.5 font-mono text-xs leading-tight text-ink/90 align-middle no-underline hover:bg-bg-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-1",
         className,
       )}
       onClick={handleClick}

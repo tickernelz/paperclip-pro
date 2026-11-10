@@ -260,7 +260,7 @@ function TaskChatBubbleContent({
             // `paperclip-markdown-on-accent` flips prose tokens to currentColor
             // (== inherited white) in both themes; dark mode was already correct
             // only because `prose-invert` happened to lighten the text.
-            className={isOwnMessage ? "paperclip-markdown-on-accent" : undefined}
+            className={isOwnMessage ? "wardmote-markdown-on-accent" : undefined}
             softBreaks
             linkIssueReferences
             onImageClick={openImage}

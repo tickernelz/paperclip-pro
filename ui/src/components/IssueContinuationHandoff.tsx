@@ -78,7 +78,7 @@ export function IssueContinuationHandoff({
       {expanded ? (
         <div className="mt-3 rounded-md border border-line bg-bg/80 p-3">
           <MarkdownBody
-            className="paperclip-edit-in-place-content text-sm leading-6"
+            className="wardmote-edit-in-place-content text-sm leading-6"
             softBreaks={false}
             externalReferences={externalReferences}
           >

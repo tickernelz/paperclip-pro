@@ -643,7 +643,7 @@ describe("NewIssueDialog", () => {
     mockAgentsApi.list.mockResolvedValue([{ id: "agent-1", name: "Coder", status: "active", adapterType: "codex_local", adapterConfig: {}, runtimeConfig: {}, permissions: {} }]);
     const { root } = renderDialog(container);
     await flush();
-    const composer = container.querySelector(".paperclip-task-chat-composer");
+    const composer = container.querySelector(".wardmote-task-chat-composer");
     expect(composer).not.toBeNull();
     expect(composer?.querySelector('[data-testid="task-chat-composer-input"]')).not.toBeNull();
     expect(composer?.querySelector('[aria-label="Create task"]')).not.toBeNull();
@@ -1669,7 +1669,7 @@ describe("NewIssueDialog", () => {
     expect(modeChip()).toBeNull();
 
     await act(async () => {
-      container.querySelector(".paperclip-task-chat-composer")?.dispatchEvent(new KeyboardEvent("keydown", {
+      container.querySelector(".wardmote-task-chat-composer")?.dispatchEvent(new KeyboardEvent("keydown", {
         bubbles: true,
         code: "",
         key: ".",
@@ -1680,7 +1680,7 @@ describe("NewIssueDialog", () => {
     expect(modeChip()?.textContent).toContain("Plan mode");
 
     await act(async () => {
-      container.querySelector(".paperclip-task-chat-composer")?.dispatchEvent(new KeyboardEvent("keydown", {
+      container.querySelector(".wardmote-task-chat-composer")?.dispatchEvent(new KeyboardEvent("keydown", {
         bubbles: true,
         code: "Period",
         key: ".",
@@ -1691,7 +1691,7 @@ describe("NewIssueDialog", () => {
     expect(modeChip()?.textContent).toContain("Ask mode");
 
     await act(async () => {
-      container.querySelector(".paperclip-task-chat-composer")?.dispatchEvent(new KeyboardEvent("keydown", {
+      container.querySelector(".wardmote-task-chat-composer")?.dispatchEvent(new KeyboardEvent("keydown", {
         bubbles: true,
         code: "Period",
         key: ".",
@@ -1761,7 +1761,7 @@ describe("NewIssueDialog", () => {
     expect(modeChip()).toBeNull();
 
     await act(async () => {
-      container.querySelector(".paperclip-task-chat-composer")?.dispatchEvent(new KeyboardEvent("keydown", {
+      container.querySelector(".wardmote-task-chat-composer")?.dispatchEvent(new KeyboardEvent("keydown", {
         bubbles: true,
         code: "Period",
         key: ".",

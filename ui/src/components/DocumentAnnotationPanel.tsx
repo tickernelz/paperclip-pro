@@ -71,7 +71,7 @@ export function DocumentAnnotationPanel(props: AnnotationPanelProps) {
         <SheetContent
           side="bottom"
           showCloseButton={false}
-          className="paperclip-doc-annotation-sheet z-(--z-60) flex max-h-(--sz-88vh) flex-col rounded-none border-t border-line bg-bg-2 p-0 text-ink shadow-2xl"
+          className="wardmote-doc-annotation-sheet z-(--z-60) flex max-h-(--sz-88vh) flex-col rounded-none border-t border-line bg-bg-2 p-0 text-ink shadow-2xl"
         >
           <SheetTitle className="sr-only">
             Comments on {props.documentKey} revision {props.documentRevisionNumber}

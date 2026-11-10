@@ -177,9 +177,9 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="paperclip-story__frame overflow-hidden">
+    <section className="wardmote-story__frame overflow-hidden">
       <div className="border-b border-line px-5 py-4">
-        <div className="paperclip-story__label">{eyebrow}</div>
+        <div className="wardmote-story__label">{eyebrow}</div>
         <h2 className="mt-1 text-xl font-semibold">{title}</h2>
       </div>
       <div className="p-5">{children}</div>
@@ -301,7 +301,7 @@ function LongValueStorybookData({ children }: { children: React.ReactNode }) {
 function IssuePropertiesLongValuePane({ inline = false }: { inline?: boolean }) {
   return (
     <LongValueStorybookData>
-      <div className="paperclip-story p-6">
+      <div className="wardmote-story p-6">
         <div
           className={
             inline
@@ -352,7 +352,7 @@ function IssuePropertiesRelationshipBadgesPane({ inline = false }: { inline?: bo
   const location = useLocation();
   return (
     <LongValueStorybookData>
-      <div className="paperclip-story flex flex-wrap items-start gap-6 p-6">
+      <div className="wardmote-story flex flex-wrap items-start gap-6 p-6">
         <div className="w-80 max-w-full border border-line bg-bg-2">
           <div className="border-b border-line px-4 py-2 text-sm font-medium">Properties</div>
           <div className="p-4">
@@ -386,7 +386,7 @@ function IssuePropertiesRelationshipBadgesPane({ inline = false }: { inline?: bo
 function IssuePropertiesModelOverridePane() {
   return (
     <StorybookData>
-      <div className="paperclip-story p-6">
+      <div className="wardmote-story p-6">
         <div className="mx-auto w-80 border border-line bg-bg-2">
           <div className="border-b border-line px-4 py-2 text-sm font-medium">Properties</div>
           <div className="p-4">
@@ -421,7 +421,7 @@ function IssuePropertiesMobileBlockerActionsPane() {
 
   return (
     <StorybookData>
-      <div ref={rootRef} className="paperclip-story min-h-screen p-4">
+      <div ref={rootRef} className="wardmote-story min-h-screen p-4">
         <div className="mx-auto max-w-sm border border-line bg-bg">
           <div className="border-b border-line px-4 py-2 text-sm font-medium">Properties</div>
           <div className="p-4">
@@ -736,12 +736,12 @@ function QuicklookSurfaces() {
 function IssueManagementStories() {
   return (
     <StorybookData>
-      <div className="paperclip-story">
-        <main className="paperclip-story__inner space-y-6">
-          <section className="paperclip-story__frame p-6">
+      <div className="wardmote-story">
+        <main className="wardmote-story__inner space-y-6">
+          <section className="wardmote-story__frame p-6">
             <div className="flex flex-wrap items-start justify-between gap-5">
               <div>
-                <div className="paperclip-story__label">Issue management</div>
+                <div className="wardmote-story__label">Issue management</div>
                 <h1 className="mt-2 text-3xl font-semibold tracking-tight">List, detail, filters, runs, and workspace states</h1>
                 <p className="mt-3 max-w-3xl text-sm leading-6 text-ink-3">
                   Fixture-backed issue management stories cover the operational states used by the board when reviewing,
@@ -855,7 +855,7 @@ function IssueManagementStories() {
             ].map((item) => {
               const Icon = item.icon;
               return (
-                <Card key={item.label} className="paperclip-story__frame shadow-none">
+                <Card key={item.label} className="wardmote-story__frame shadow-none">
                   <CardHeader>
                     <Icon className="h-4 w-4 text-ink-3" />
                     <CardTitle>{item.label}</CardTitle>
@@ -894,7 +894,7 @@ export const IssuePropertiesUnavailablePolicy: Story = {
   name: "IssueProperties - unavailable execution policy",
   render: () => (
     <StorybookData>
-      <div className="paperclip-story p-6">
+      <div className="wardmote-story p-6">
         <IssueProperties
           issue={{ ...primaryIssue, executionPolicy: { stages: {} } as unknown as Issue["executionPolicy"] }}
           onUpdate={() => undefined}

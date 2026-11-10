@@ -14,7 +14,7 @@ body {
   color: var(--ink);
 }
 
-.paperclip-story {
+.wardmote-story {
   min-height: 100vh;
   background:
     linear-gradient(180deg, color-mix(in oklab, var(--bg-3) 28%, transparent), transparent 340px),
@@ -23,18 +23,18 @@ body {
   padding: 24px;
 }
 
-.paperclip-story__inner {
+.wardmote-story__inner {
   margin: 0 auto;
   max-width: 1180px;
 }
 
-.paperclip-story__frame {
+.wardmote-story__frame {
   border: 1px solid var(--line);
   background: color-mix(in oklab, var(--bg-2) 86%, transparent);
   box-shadow: 0 24px 90px color-mix(in oklab, black 16%, transparent);
 }
 
-.paperclip-story__label {
+.wardmote-story__label {
   color: var(--ink-3);
   font-size: 11px;
   font-weight: 700;
@@ -43,7 +43,7 @@ body {
 }
 
 @media (max-width: 640px) {
-  .paperclip-story {
+  .wardmote-story {
     padding: 16px;
   }
 }

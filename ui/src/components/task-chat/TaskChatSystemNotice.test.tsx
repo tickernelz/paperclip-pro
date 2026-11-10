@@ -178,7 +178,7 @@ describe("TaskChatSystemNotice (PAP-443)", () => {
     expect(details?.textContent?.match(/git_worktree/g)).toHaveLength(1);
     expect(details?.textContent?.match(/fix\/workspace-ready-notice/g)).toHaveLength(1);
     expect(details?.textContent).toContain("/worktrees/workspace-ready-notice");
-    expect(details?.querySelector(".paperclip-markdown")).toBeNull();
+    expect(details?.querySelector(".wardmote-markdown")).toBeNull();
   });
 
   it("shows Try again while folded and invokes it without expanding the notice", async () => {
