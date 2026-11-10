@@ -253,6 +253,8 @@ const support = await getEmbeddedPostgresTestSupport();
     const held = new Promise<void>(resolve => { release = resolve; });
     f.onList(() => held);
     await Promise.all([f.access.syncComposioApps(f.connection.id, true, f.actor), f.access.syncComposioApps(f.connection.id, true, f.actor)]);
+    await vi.waitFor(() => expect(f.batches.length).toBeGreaterThan(0));
+    await new Promise(resolve => setTimeout(resolve, 100));
     expect(f.batches).toHaveLength(1);
     release();
     const result = await finishSync(f);
