@@ -499,6 +499,7 @@ describeEmbeddedPostgres("plugin database namespaces", () => {
       "001_llm_wiki.sql",
       "002_paperclip_distillation.sql",
       "003_spaces.sql",
+      "004_wardmote_settings_keys.sql",
     ]);
 
     const constraintRows = Array.from(
