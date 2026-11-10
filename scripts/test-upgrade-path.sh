@@ -28,7 +28,7 @@ server_pid=""
 
 stop_server() {
   [ -n "$server_pid" ] || return 0
-  kill "$server_pid" 2>/dev/null || true
+  kill -TERM -- "-$server_pid" 2>/dev/null || kill "$server_pid" 2>/dev/null || true
   wait "$server_pid" 2>/dev/null || true
   server_pid=""
   local pid_file postgres_pid
@@ -54,7 +54,7 @@ trap cleanup EXIT
 start_server() {
   local label="$1"
   shift
-  PORT="$PORT" "$@" >"$ROOT/$label.log" 2>&1 &
+  PORT="$PORT" setsid "$@" >"$ROOT/$label.log" 2>&1 &
   server_pid=$!
   for _ in $(seq 1 120); do
     if curl -fsS "http://127.0.0.1:$PORT/api/health" >"$ROOT/$label-health.json" 2>/dev/null; then
