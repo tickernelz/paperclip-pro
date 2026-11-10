@@ -548,21 +548,21 @@ describe("sandbox managed runtime", () => {
     const targetDir = path.join(rootDir, "target");
     await mkdir(path.join(sourceDir, "src"), { recursive: true });
     await mkdir(path.join(targetDir, ".claude"), { recursive: true });
-    await mkdir(path.join(targetDir, ".paperclip-runtime"), { recursive: true });
+    await mkdir(path.join(targetDir, ".wardmote-runtime"), { recursive: true });
     await writeFile(path.join(sourceDir, "src", "app.ts"), "export const value = 2;\n", "utf8");
     await writeFile(path.join(targetDir, "stale.txt"), "remove me\n", "utf8");
     await writeFile(path.join(targetDir, ".claude", "settings.json"), "{\"keep\":true}\n", "utf8");
     await writeFile(path.join(targetDir, ".claude.json"), "{\"keep\":true}\n", "utf8");
-    await writeFile(path.join(targetDir, ".paperclip-runtime", "state.json"), "{}\n", "utf8");
+    await writeFile(path.join(targetDir, ".wardmote-runtime", "state.json"), "{}\n", "utf8");
 
     await mirrorDirectory(sourceDir, targetDir, {
-      preserveAbsent: [".paperclip-runtime", ".claude", ".claude.json"],
+      preserveAbsent: [".wardmote-runtime", ".claude", ".claude.json"],
     });
 
     await expect(readFile(path.join(targetDir, "src", "app.ts"), "utf8")).resolves.toBe("export const value = 2;\n");
     await expect(readFile(path.join(targetDir, ".claude", "settings.json"), "utf8")).resolves.toBe("{\"keep\":true}\n");
     await expect(readFile(path.join(targetDir, ".claude.json"), "utf8")).resolves.toBe("{\"keep\":true}\n");
-    await expect(readFile(path.join(targetDir, ".paperclip-runtime", "state.json"), "utf8")).resolves.toBe("{}\n");
+    await expect(readFile(path.join(targetDir, ".wardmote-runtime", "state.json"), "utf8")).resolves.toBe("{}\n");
     await expect(readFile(path.join(targetDir, "stale.txt"), "utf8")).rejects.toMatchObject({ code: "ENOENT" });
   });
 
@@ -698,8 +698,8 @@ describe("sandbox managed runtime", () => {
 
     await writeFile(path.join(remoteWorkspaceDir, "README.md"), "remote workspace\n", "utf8");
     await writeFile(path.join(remoteWorkspaceDir, "remote-only.txt"), "sync back\n", "utf8");
-    await mkdir(path.join(localWorkspaceDir, ".paperclip-runtime"), { recursive: true });
-    await writeFile(path.join(localWorkspaceDir, ".paperclip-runtime", "state.json"), "{}\n", "utf8");
+    await mkdir(path.join(localWorkspaceDir, ".wardmote-runtime"), { recursive: true });
+    await writeFile(path.join(localWorkspaceDir, ".wardmote-runtime", "state.json"), "{}\n", "utf8");
     await writeFile(path.join(localWorkspaceDir, "local-stale.txt"), "remove\n", "utf8");
     await prepared.restoreWorkspace();
 
@@ -707,7 +707,7 @@ describe("sandbox managed runtime", () => {
     await expect(readFile(path.join(localWorkspaceDir, "remote-only.txt"), "utf8")).resolves.toBe("sync back\n");
     await expect(readFile(path.join(localWorkspaceDir, "local-stale.txt"), "utf8")).resolves.toBe("remove\n");
     await expect(readFile(path.join(localWorkspaceDir, ".claude", "settings.json"), "utf8")).resolves.toBe("{\"local\":true}\n");
-    await expect(readFile(path.join(localWorkspaceDir, ".paperclip-runtime", "state.json"), "utf8")).resolves.toBe("{}\n");
+    await expect(readFile(path.join(localWorkspaceDir, ".wardmote-runtime", "state.json"), "utf8")).resolves.toBe("{}\n");
     expect(runtimeStatuses).toEqual(expect.arrayContaining([
       "config_sync:Syncing workspace to environment",
       "config_sync:Syncing runtime assets to environment",
@@ -2082,7 +2082,7 @@ describe("sandbox managed runtime", () => {
     await expect(readFile(path.join(prepared.assetDirs.widget, "seed.txt"), "utf8")).resolves.toBe("seed\n");
   });
 
-  it("stages git and workspace via syncIn preserving .paperclip-runtime (native runner → 0 direct writeFile/run)", async () => {
+  it("stages git and workspace via syncIn preserving .wardmote-runtime (native runner → 0 direct writeFile/run)", async () => {
     const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-sandbox-native-git-"));
     cleanupDirs.push(rootDir);
     const sourceRepoDir = path.join(rootDir, "source-repo");
@@ -2098,8 +2098,8 @@ describe("sandbox managed runtime", () => {
     await git(sourceRepoDir, ["commit", "-m", "base"]);
     await git(sourceRepoDir, ["worktree", "add", "-b", "work", localWorkspaceDir, "HEAD"]);
     // Pre-seed the sandbox with a `.paperclip-runtime` dir that MUST survive.
-    await mkdir(path.join(remoteWorkspaceDir, ".paperclip-runtime"), { recursive: true });
-    await writeFile(path.join(remoteWorkspaceDir, ".paperclip-runtime", "keep.txt"), "keep\n", "utf8");
+    await mkdir(path.join(remoteWorkspaceDir, ".wardmote-runtime"), { recursive: true });
+    await writeFile(path.join(remoteWorkspaceDir, ".wardmote-runtime", "keep.txt"), "keep\n", "utf8");
 
     const directWrites: string[] = [];
     const directRuns: string[] = [];
@@ -2155,12 +2155,12 @@ describe("sandbox managed runtime", () => {
     // The first post-upload command extracts the git history and preserves
     // `.paperclip-runtime` while replacing the rest of the tree (wipe-except-preserved).
     const gitCommand = op.postUploadCommands![0].command;
-    expect(gitCommand).toContain(".paperclip-runtime");
+    expect(gitCommand).toContain(".wardmote-runtime");
     expect(gitCommand).toContain("tar -xf");
 
     // The pre-seeded runtime dir survived the git+workspace staging.
     await expect(
-      readFile(path.join(remoteWorkspaceDir, ".paperclip-runtime", "keep.txt"), "utf8"),
+      readFile(path.join(remoteWorkspaceDir, ".wardmote-runtime", "keep.txt"), "utf8"),
     ).resolves.toBe("keep\n");
     await expect(readFile(path.join(remoteWorkspaceDir, "tracked.txt"), "utf8")).resolves.toBe("tracked\n");
     expect(prepared.workspaceRemoteDir).toBe(remoteWorkspaceDir);
@@ -2305,8 +2305,8 @@ describe("sandbox managed runtime", () => {
     await git(sourceRepoDir, ["commit", "-m", "base"]);
     await git(sourceRepoDir, ["worktree", "add", "-b", "work", localWorkspaceDir, "HEAD"]);
     // Pre-seed the sandbox with a `.paperclip-runtime` dir that MUST survive.
-    await mkdir(path.join(remoteWorkspaceDir, ".paperclip-runtime"), { recursive: true });
-    await writeFile(path.join(remoteWorkspaceDir, ".paperclip-runtime", "keep.txt"), "keep\n", "utf8");
+    await mkdir(path.join(remoteWorkspaceDir, ".wardmote-runtime"), { recursive: true });
+    await writeFile(path.join(remoteWorkspaceDir, ".wardmote-runtime", "keep.txt"), "keep\n", "utf8");
 
     const client: SandboxManagedRuntimeClient = {
       makeDir: async (remotePath) => {
@@ -2369,7 +2369,7 @@ describe("sandbox managed runtime", () => {
     // (which preserves `.paperclip-runtime`) cannot delete the overlay tar before
     // the overlay extract runs.
     for (const mapping of op.files) {
-      expect(mapping.targetPath).toContain("/.paperclip-runtime/");
+      expect(mapping.targetPath).toContain("/.wardmote-runtime/");
     }
 
     // Two ordered extract commands: git history first (wipe-except-preserved),
@@ -2377,7 +2377,7 @@ describe("sandbox managed runtime", () => {
     const commands = op.postUploadCommands ?? [];
     expect(commands).toHaveLength(2);
     expect(commands[0].command).toContain("git-workspace-upload.tar");
-    expect(commands[0].command).toContain(".paperclip-runtime");
+    expect(commands[0].command).toContain(".wardmote-runtime");
     expect(commands[0].command).toContain("find ");
     expect(commands[1].command).toContain("workspace-upload.tar");
     expect(commands[1].command).not.toContain("git-workspace-upload.tar");
@@ -2385,13 +2385,13 @@ describe("sandbox managed runtime", () => {
 
     // The pre-seeded runtime dir survived and the workspace overlay applied.
     await expect(
-      readFile(path.join(remoteWorkspaceDir, ".paperclip-runtime", "keep.txt"), "utf8"),
+      readFile(path.join(remoteWorkspaceDir, ".wardmote-runtime", "keep.txt"), "utf8"),
     ).resolves.toBe("keep\n");
     await expect(readFile(path.join(remoteWorkspaceDir, "tracked.txt"), "utf8")).resolves.toBe("tracked\n");
   });
 
   it("the merged workspace confine guard covers both tar mappings (escape in either trips it)", () => {
-    const runtimeRoot = "/home/daytona/paperclip-workspace/.paperclip-runtime/test-adapter";
+    const runtimeRoot = "/home/daytona/paperclip-workspace/.wardmote-runtime/test-adapter";
     const tempRoot = "/tmp/paperclip-sandbox-sync-abc";
     const gitMapping = {
       sourcePath: `${tempRoot}/git-workspace.tar`,
@@ -2629,7 +2629,7 @@ describe("sandbox managed runtime", () => {
     // directory that the post-upload extract command fills: the workspace
     // directory for the workspace and git tars, and the asset directory for the
     // asset tar.
-    const remoteAssetDir = path.posix.join(remoteWorkspaceDir, ".paperclip-runtime", "test-adapter", "home");
+    const remoteAssetDir = path.posix.join(remoteWorkspaceDir, ".wardmote-runtime", "test-adapter", "home");
     expect(findMapping("workspace-upload.tar")?.writablePath).toBe(remoteWorkspaceDir);
     expect(findMapping("git-workspace-upload.tar")?.writablePath).toBe(remoteWorkspaceDir);
     expect(findMapping("home-upload.tar")?.writablePath).toBe(remoteAssetDir);
@@ -2828,7 +2828,7 @@ describe("sandbox managed runtime", () => {
         ],
       });
 
-      const runtimeRootDir = path.posix.join(remoteWorkspaceDir, ".paperclip-runtime", "test-adapter");
+      const runtimeRootDir = path.posix.join(remoteWorkspaceDir, ".wardmote-runtime", "test-adapter");
 
       // The anchor workspace synced normally and stays byte-identical.
       await expect(readFile(path.join(remoteWorkspaceDir, "README.md"), "utf8")).resolves.toBe("anchor content\n");
@@ -3075,7 +3075,7 @@ describe("sandbox managed runtime", () => {
         "byte-breach",
         "count-breach",
       ]);
-      const runtimeRootDir = path.posix.join(remoteWorkspaceDir, ".paperclip-runtime", "test-adapter");
+      const runtimeRootDir = path.posix.join(remoteWorkspaceDir, ".wardmote-runtime", "test-adapter");
       await expect(readFile(path.join(runtimeRootDir, "project-count-breach", "should-never-ship.txt"), "utf8")).rejects
         .toMatchObject({ code: "ENOENT" });
       await expect(readFile(path.join(runtimeRootDir, "project-byte-breach", "should-never-ship.txt"), "utf8")).rejects
@@ -3269,7 +3269,7 @@ describe("sandbox managed runtime", () => {
     expect(Object.keys(prepared.additionalSourceDirs)).toEqual(["healthy"]);
     expect(prepared.additionalSourceFailures.map((failure) => failure.projectId)).toEqual(["failed"]);
     expect(prepared.additionalSourceFailures[0]!.error).toContain("boom: git status timed out");
-    const runtimeRootDir = path.posix.join(remoteWorkspaceDir, ".paperclip-runtime", "test-adapter");
+    const runtimeRootDir = path.posix.join(remoteWorkspaceDir, ".wardmote-runtime", "test-adapter");
     await expect(readFile(path.join(runtimeRootDir, "project-failed", "should-never-ship.txt"), "utf8")).rejects
       .toMatchObject({ code: "ENOENT" });
   });

@@ -45,7 +45,7 @@ function storageWarning(size: number, count: number, fullFile?: string) {
 
 export function agentFilePath(value: string): string {
   const relative = instructionPath(value);
-  if (relative.split("/").includes(".paperclip-runtime") || relative === "promptTemplate.legacy.md") {
+  if (relative.split("/").includes(".wardmote-runtime") || relative === "promptTemplate.legacy.md") {
     throw unprocessable(`${relative} is reserved and cannot be used for agent files`);
   }
   return relative;

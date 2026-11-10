@@ -786,8 +786,8 @@ async function importGitWorkspaceToSsh(input: {
 
     const remoteSetupScript = [
       "set -e",
-      `mkdir -p ${shellQuote(path.posix.join(input.remoteDir, ".paperclip-runtime"))}`,
-      `tmp_bundle=$(mktemp ${shellQuote(path.posix.join(input.remoteDir, ".paperclip-runtime", "import-XXXXXX.bundle"))})`,
+      `mkdir -p ${shellQuote(path.posix.join(input.remoteDir, ".wardmote-runtime"))}`,
+      `tmp_bundle=$(mktemp ${shellQuote(path.posix.join(input.remoteDir, ".wardmote-runtime", "import-XXXXXX.bundle"))})`,
       'trap \'rm -f "$tmp_bundle"\' EXIT',
       'cat > "$tmp_bundle"',
       `if [ ! -d ${shellQuote(path.posix.join(input.remoteDir, ".git"))} ]; then git init ${shellQuote(input.remoteDir)} >/dev/null; fi`,
@@ -805,7 +805,7 @@ async function importGitWorkspaceToSsh(input: {
         ? `git -C ${shellQuote(input.remoteDir)} checkout --force -B ${shellQuote(input.snapshot.branchName)} ${shellQuote(input.snapshot.headCommit)} >/dev/null`
         : `git -C ${shellQuote(input.remoteDir)} -c advice.detachedHead=false checkout --force --detach ${shellQuote(input.snapshot.headCommit)} >/dev/null`,
       `git -C ${shellQuote(input.remoteDir)} reset --hard ${shellQuote(input.snapshot.headCommit)} >/dev/null`,
-      `git -C ${shellQuote(input.remoteDir)} clean -fdx -e .paperclip-runtime >/dev/null`,
+      `git -C ${shellQuote(input.remoteDir)} clean -fdx -e .wardmote-runtime >/dev/null`,
       // Drop the per-import ref on the remote side too so it can't accumulate.
       `git -C ${shellQuote(input.remoteDir)} update-ref -d ${shellQuote(tempRef)} >/dev/null 2>&1 || true`,
     ].join("\n");
@@ -860,8 +860,8 @@ async function exportGitWorkspaceFromSsh(input: {
     const exportScript = [
       "set -e",
       `git -C ${shellQuote(input.remoteDir)} update-ref refs/paperclip/ssh-sync/export HEAD`,
-      `mkdir -p ${shellQuote(path.posix.join(input.remoteDir, ".paperclip-runtime"))}`,
-      `tmp_bundle=$(mktemp ${shellQuote(path.posix.join(input.remoteDir, ".paperclip-runtime", "export-XXXXXX.bundle"))})`,
+      `mkdir -p ${shellQuote(path.posix.join(input.remoteDir, ".wardmote-runtime"))}`,
+      `tmp_bundle=$(mktemp ${shellQuote(path.posix.join(input.remoteDir, ".wardmote-runtime", "export-XXXXXX.bundle"))})`,
       'cleanup() { rm -f "$tmp_bundle"; git -C ' + shellQuote(input.remoteDir) + ' update-ref -d refs/paperclip/ssh-sync/export >/dev/null 2>&1 || true; }',
       'trap cleanup EXIT',
       `git -C ${shellQuote(input.remoteDir)} bundle create "$tmp_bundle" refs/paperclip/ssh-sync/export >/dev/null`,
@@ -1134,7 +1134,7 @@ async function transportGitWorkspaceToSsh(input: {
     spec: input.spec,
     localDir: input.localDir,
     remoteDir: input.remoteDir,
-    exclude: [".git", ".paperclip-runtime", ...(input.exclude ?? [])],
+    exclude: [".git", ".wardmote-runtime", ...(input.exclude ?? [])],
     onProgress: input.onProgress,
     progressLabel: input.progressLabel,
   });
@@ -1683,13 +1683,13 @@ export async function prepareWorkspaceForSshExecution(input: {
   await clearRemoteDirectory({
     spec: input.spec,
     remoteDir,
-    preserveEntries: [".paperclip-runtime"],
+    preserveEntries: [".wardmote-runtime"],
   });
   await syncDirectoryToSsh({
     spec: input.spec,
     localDir: input.localDir,
     remoteDir,
-    exclude: [".paperclip-runtime", ...(input.workspaceFileMode === "all" ? input.workspaceExclude ?? [] : [])],
+    exclude: [".wardmote-runtime", ...(input.workspaceFileMode === "all" ? input.workspaceExclude ?? [] : [])],
     onProgress: input.onProgress,
     progressLabel: "workspace",
   });
@@ -1823,7 +1823,7 @@ async function restoreWorkspaceRootFromSsh(input: {
       spec: input.spec,
       remoteDir,
       localDir: input.localDir,
-      exclude: [".git", ".paperclip-runtime", ...projectRepositoryEntries],
+      exclude: [".git", ".wardmote-runtime", ...projectRepositoryEntries],
       preserveLocalEntries: [".git", ...projectRepositoryEntries],
       onProgress: input.onProgress,
       progressLabel: input.progressLabel,
@@ -1835,7 +1835,7 @@ async function restoreWorkspaceRootFromSsh(input: {
     spec: input.spec,
     remoteDir,
     localDir: input.localDir,
-    exclude: [".paperclip-runtime"],
+    exclude: [".wardmote-runtime"],
     onProgress: input.onProgress,
     progressLabel: input.progressLabel,
   });

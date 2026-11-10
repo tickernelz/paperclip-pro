@@ -3568,7 +3568,7 @@ describe("ACPX engine remote sandbox staging seam (PR 1: workspace + cwd)", () =
     const processArgs = vi.mocked(startAdapterExecutionTargetProcessSessionBridge).mock.calls[0]![0];
     expect(wardmoteArgs.runtimeRootDir).toBeTruthy();
     expect(processArgs.runtimeRootDir).toBeTruthy();
-    expect(String(wardmoteArgs.runtimeRootDir)).toContain(".paperclip-runtime");
+    expect(String(wardmoteArgs.runtimeRootDir)).toContain(".wardmote-runtime");
     expect(processArgs.runtimeRootDir).toBe(wardmoteArgs.runtimeRootDir);
 
     // The workspace really landed in the sandbox workspace dir.
@@ -3967,7 +3967,7 @@ describe("ACPX engine remote managed-home seam (PR 2: per-adapter home seed)", (
     await expect(fs.readFile(path.join(remoteAssetDir, "config.json"), "utf8")).resolves.toBe("{}");
     // ...the staged asset dir resolves under the run's managed runtime root (an
     // in-sandbox path), not the host managed-home dir.
-    expect(remoteAssetDir).toContain(".paperclip-runtime");
+    expect(remoteAssetDir).toContain(".wardmote-runtime");
     expect(remoteAssetDir).not.toBe(managedHomeDir);
     expect(path.isAbsolute(remoteAssetDir)).toBe(true);
   });

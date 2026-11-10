@@ -12,7 +12,7 @@ import { syncFiles } from "./file-sync.js";
 const CWD = "/paperclip-workspace";
 // The host excludes .paperclip-runtime from workspace export, so the lease
 // marker never becomes a user repository file.
-const MARKER = `${CWD}/.paperclip-runtime/.paperclip-createos-lease`;
+const MARKER = `${CWD}/.wardmote-runtime/.paperclip-createos-lease`;
 
 function metadataMatches(params: PluginEnvironmentDriverBaseParams, metadata?: Record<string, unknown>): boolean {
   return metadata?.provider === "createos" && metadata.companyId === params.companyId &&

@@ -385,7 +385,7 @@ function listGuidanceFiles(rootDir = repoRoot): string[] {
       if (entry.isDirectory()) {
         if (SKIP_DIRS.has(entry.name)) continue;
         if (SKIP_PATH_PREFIXES.some((prefix) => `${relPath}/`.startsWith(prefix))) continue;
-        if (SKIP_DIRS.has(entry.name) || relPath === ".paperclip-runtime") continue;
+        if (SKIP_DIRS.has(entry.name) || relPath === ".wardmote-runtime") continue;
         walk(path.join(absDir, entry.name), relPath);
         continue;
       }
@@ -518,8 +518,8 @@ describe("wardmote CLI invocation safety", () => {
       const fixtures = [
         "doc/CLI.md",
         "src/guidance.ts",
-        "src/.paperclip-runtime/guidance.md",
-        ".paperclip-runtime/sessions/recording.json",
+        "src/.wardmote-runtime/guidance.md",
+        ".wardmote-runtime/sessions/recording.json",
       ];
       for (const relPath of fixtures) {
         const file = path.join(fixtureRoot, relPath);
@@ -529,7 +529,7 @@ describe("wardmote CLI invocation safety", () => {
       const files = listGuidanceFiles(fixtureRoot).sort();
       expect(files).toEqual([
         "doc/CLI.md",
-        "src/.paperclip-runtime/guidance.md",
+        "src/.wardmote-runtime/guidance.md",
         "src/guidance.ts",
       ]);
       for (const relPath of files) {

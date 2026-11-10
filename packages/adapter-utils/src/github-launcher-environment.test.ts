@@ -72,13 +72,13 @@ describe("managed GitHub launcher environment", () => {
   // filesystem regression on that platform; shell/launcher tests cover both.
   it.runIf(process.platform === "linux")("keeps launcher restaging and command scratch inside the runner runtime", async () => {
     const fixture = await sandbox("usr/bin");
-    const privateRoot = path.join(fixture.root, ".paperclip-runtime");
+    const privateRoot = path.join(fixture.root, ".wardmote-runtime");
     await mkdir(path.join(privateRoot, "paperclip-runner"), { recursive: true });
     await writeFile(path.join(fixture.root, "user.txt"), "Existing work\n");
     const mutations: string[] = [];
     const watchers = [fixture.root, privateRoot].map((directory) => watch(directory, (_kind, name) => {
       const changed = path.relative(fixture.root, path.join(directory, String(name)));
-      if (changed !== ".paperclip-runtime/paperclip-runner") mutations.push(changed);
+      if (changed !== ".wardmote-runtime/paperclip-runner") mutations.push(changed);
     }));
     try {
       const input = { runId: "restart-same-launchers", target: fixture.target, cwd: fixture.root,
@@ -96,7 +96,7 @@ describe("managed GitHub launcher environment", () => {
       expect(mutations).toEqual([]);
       // The watcher must still notice housekeeping outside that exact runtime.
       await mkdir(path.join(privateRoot, "outside-runtime-control"));
-      await vi.waitFor(() => expect(mutations).toContain(".paperclip-runtime/outside-runtime-control"));
+      await vi.waitFor(() => expect(mutations).toContain(".wardmote-runtime/outside-runtime-control"));
     } finally { for (const watcher of watchers) watcher.close(); }
   });
 

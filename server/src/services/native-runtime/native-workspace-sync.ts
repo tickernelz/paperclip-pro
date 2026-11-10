@@ -653,7 +653,7 @@ async function writeRemoteStamp(input: {
   }
   const runtimeDir = path.posix.join(
     input.target.remoteCwd,
-    ".paperclip-runtime",
+    ".wardmote-runtime",
     "paperclip-runner",
   );
   const stampPath = path.posix.join(runtimeDir, REMOTE_STAMP_NAME);
@@ -685,7 +685,7 @@ async function remoteStampMatches(input: {
   if (!input.target.runner) return false;
   const stampPath = path.posix.join(
     input.target.remoteCwd,
-    ".paperclip-runtime",
+    ".wardmote-runtime",
     "paperclip-runner",
     REMOTE_STAMP_NAME,
   );

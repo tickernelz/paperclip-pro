@@ -536,7 +536,7 @@ describe("ACPX engine startup characterization", () => {
       // Both bridges receive the SAME real (non-null) runtimeRootDir from staging.
       const wardmoteArgs = vi.mocked(startAdapterExecutionTargetWardmoteBridge).mock.calls[0]![0];
       expect(wardmoteArgs.runtimeRootDir).toBeTruthy();
-      expect(String(wardmoteArgs.runtimeRootDir)).toContain(".paperclip-runtime");
+      expect(String(wardmoteArgs.runtimeRootDir)).toContain(".wardmote-runtime");
       expect(processArgs.runtimeRootDir).toBe(wardmoteArgs.runtimeRootDir);
 
       // The ACP runtime + session/new both bind to the in-sandbox workspace cwd,

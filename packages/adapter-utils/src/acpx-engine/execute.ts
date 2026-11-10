@@ -2574,7 +2574,7 @@ async function buildRuntime(input: {
       stagedRuntime.assetDirs.skills ??
       path.posix.join(
         stagedRuntime.runtimeRootDir ??
-          path.posix.join(stagedRuntime.workspaceRemoteDir ?? cwd, ".paperclip-runtime", acpxAgent),
+          path.posix.join(stagedRuntime.workspaceRemoteDir ?? cwd, ".wardmote-runtime", acpxAgent),
         "skills",
       );
     const rebaseToSandbox = (value: string) => value.split(claudeSkillsBundleDir!).join(inSandboxSkillsRoot);

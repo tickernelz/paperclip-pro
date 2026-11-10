@@ -354,7 +354,7 @@ export async function writeWardmoteMcpExtension(input: {
     fileName: ".mcp.json",
     localPrefix: "paperclip-omp-mcp-",
     remoteDir: path.posix.join(
-      input.remoteRootDir ?? path.posix.join(input.cwd, ".paperclip-runtime", "omp"),
+      input.remoteRootDir ?? path.posix.join(input.cwd, ".wardmote-runtime", "omp"),
       "mcp-extension",
     ),
     cwd: input.cwd,

@@ -184,10 +184,10 @@ describe("command managed runtime", () => {
 
     const localWorkspaceDir = path.join(rootDir, "local-workspace");
     const remoteWorkspaceDir = path.join(rootDir, "remote-workspace");
-    await mkdir(path.join(localWorkspaceDir, ".paperclip-runtime"), { recursive: true });
+    await mkdir(path.join(localWorkspaceDir, ".wardmote-runtime"), { recursive: true });
     await mkdir(remoteWorkspaceDir, { recursive: true });
     await writeFile(path.join(localWorkspaceDir, "README.md"), "local workspace\n", "utf8");
-    await writeFile(path.join(localWorkspaceDir, ".paperclip-runtime", "state.json"), "{\"keep\":true}\n", "utf8");
+    await writeFile(path.join(localWorkspaceDir, ".wardmote-runtime", "state.json"), "{\"keep\":true}\n", "utf8");
 
     const calls: Array<{
       command: string;
@@ -272,21 +272,21 @@ describe("command managed runtime", () => {
     });
 
     await expect(readFile(path.join(remoteWorkspaceDir, "README.md"), "utf8")).resolves.toBe("local workspace\n");
-    await expect(readFile(path.join(remoteWorkspaceDir, ".paperclip-runtime", "state.json"), "utf8")).rejects
+    await expect(readFile(path.join(remoteWorkspaceDir, ".wardmote-runtime", "state.json"), "utf8")).rejects
       .toMatchObject({ code: "ENOENT" });
     // The single-stream upload pipes the tarball through exactly one stdin-backed
     // process (the speed fix); nothing else streams stdin.
     expect(calls.filter((call) => call.stdin != null).length).toBe(1);
 
-    await mkdir(path.join(remoteWorkspaceDir, ".paperclip-runtime"), { recursive: true });
+    await mkdir(path.join(remoteWorkspaceDir, ".wardmote-runtime"), { recursive: true });
     await writeFile(path.join(remoteWorkspaceDir, "README.md"), "remote workspace\n", "utf8");
-    await writeFile(path.join(remoteWorkspaceDir, ".paperclip-runtime", "remote-state.json"), "{\"remote\":true}\n", "utf8");
+    await writeFile(path.join(remoteWorkspaceDir, ".wardmote-runtime", "remote-state.json"), "{\"remote\":true}\n", "utf8");
     await prepared.restoreWorkspace();
 
     await expect(readFile(path.join(localWorkspaceDir, "README.md"), "utf8")).resolves.toBe("remote workspace\n");
-    await expect(readFile(path.join(localWorkspaceDir, ".paperclip-runtime", "state.json"), "utf8")).resolves
+    await expect(readFile(path.join(localWorkspaceDir, ".wardmote-runtime", "state.json"), "utf8")).resolves
       .toBe("{\"keep\":true}\n");
-    await expect(readFile(path.join(localWorkspaceDir, ".paperclip-runtime", "remote-state.json"), "utf8")).rejects
+    await expect(readFile(path.join(localWorkspaceDir, ".wardmote-runtime", "remote-state.json"), "utf8")).rejects
       .toMatchObject({ code: "ENOENT" });
     // Restore streams the download through `base64`/onLog (no stdin), so the only
     // stdin-backed call remains the single upload from prepare.
@@ -330,7 +330,7 @@ describe("command managed runtime", () => {
     });
 
     expect(prepared.workspaceRemoteDir).toBe(remoteWorkspaceDir);
-    expect(prepared.assetDirs.home).toBe(path.join(remoteWorkspaceDir, ".paperclip-runtime", "codex", "home"));
+    expect(prepared.assetDirs.home).toBe(path.join(remoteWorkspaceDir, ".wardmote-runtime", "codex", "home"));
     await expect(readFile(path.join(remoteWorkspaceDir, "README.md"), "utf8")).resolves.toBe(
       "authoritative workspace\n",
     );
@@ -383,7 +383,7 @@ describe("command managed runtime", () => {
       ],
     });
 
-    const runtimeRootDir = path.posix.join(remoteWorkspaceDir, ".paperclip-runtime", "claude");
+    const runtimeRootDir = path.posix.join(remoteWorkspaceDir, ".wardmote-runtime", "claude");
     expect(Object.keys(prepared.additionalSourceDirs).sort()).toEqual(["one", "two"]);
     expect(prepared.additionalSourceDirs.one).toBe(path.posix.join(runtimeRootDir, "project-one"));
     expect(prepared.additionalSourceDirs.two).toBe(path.posix.join(runtimeRootDir, "project-two"));
@@ -436,7 +436,7 @@ describe("command managed runtime", () => {
 
     const localWorkspaceDir = path.join(rootDir, "local-workspace");
     const remoteBaseDir = path.join(rootDir, "remote-base");
-    const remoteWorkspaceDir = path.join(remoteBaseDir, ".paperclip-runtime", "runs", "test", "workspace");
+    const remoteWorkspaceDir = path.join(remoteBaseDir, ".wardmote-runtime", "runs", "test", "workspace");
     await mkdir(localWorkspaceDir, { recursive: true });
     await mkdir(remoteBaseDir, { recursive: true });
     await writeFile(path.join(localWorkspaceDir, "README.md"), "local workspace\n", "utf8");

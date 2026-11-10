@@ -335,7 +335,7 @@ export async function prepareSandboxClaudeProbeRuntime(input: {
       });
       const runtimeRootDir =
         preparedRuntime.runtimeRootDir ??
-        path.posix.join(managedRemoteCwd, ".paperclip-runtime", "claude");
+        path.posix.join(managedRemoteCwd, ".wardmote-runtime", "claude");
       const remoteClaudeConfigSeedDir =
         preparedRuntime.assetDirs["config-seed"] ??
         path.posix.join(runtimeRootDir, "config-seed");

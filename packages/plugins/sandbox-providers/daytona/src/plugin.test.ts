@@ -952,18 +952,18 @@ describe("Daytona sandbox provider plugin", () => {
         remoteCwd: "/home/daytona/paperclip-workspace",
         reuseLease: true,
         workspaceSentinel: {
-          path: "/home/daytona/paperclip-workspace/.paperclip-runtime/reusable-sandbox-lease.json",
+          path: "/home/daytona/paperclip-workspace/.wardmote-runtime/reusable-sandbox-lease.json",
           result: "written",
         },
       },
     });
     expect(sandbox.fs.createFolder).toHaveBeenCalledWith(
-      "/home/daytona/paperclip-workspace/.paperclip-runtime",
+      "/home/daytona/paperclip-workspace/.wardmote-runtime",
       "755",
     );
     expect(sandbox.fs.uploadFile).toHaveBeenCalledWith(
       expect.any(Buffer),
-      "/home/daytona/paperclip-workspace/.paperclip-runtime/reusable-sandbox-lease.json",
+      "/home/daytona/paperclip-workspace/.wardmote-runtime/reusable-sandbox-lease.json",
       300,
     );
   });
@@ -1618,7 +1618,7 @@ describe("Daytona sandbox provider plugin", () => {
       },
       leaseMetadata: {
         workspaceSentinel: {
-          path: "/home/daytona/paperclip-workspace/.paperclip-runtime/reusable-sandbox-lease.json",
+          path: "/home/daytona/paperclip-workspace/.wardmote-runtime/reusable-sandbox-lease.json",
           token: "sentinel-token",
           result: "written",
         },
@@ -1646,7 +1646,7 @@ describe("Daytona sandbox provider plugin", () => {
     const params = {
       driverKey: "daytona", companyId: "company-1", environmentId: "env-1", providerLeaseId: sandboxId,
       config: { apiKey: "host-key", timeoutMs: 300000, livenessTimeoutMs: 100, reuseLease: true },
-      leaseMetadata: { workspaceSentinel: { path: "/home/daytona/paperclip-workspace/.paperclip-runtime/reusable-sandbox-lease.json", token: "sentinel-token" } },
+      leaseMetadata: { workspaceSentinel: { path: "/home/daytona/paperclip-workspace/.wardmote-runtime/reusable-sandbox-lease.json", token: "sentinel-token" } },
     };
     const resume = () => plugin.definition.onEnvironmentResumeLease!(params);
     function missingSandbox() {
@@ -1787,7 +1787,7 @@ describe("Daytona sandbox provider plugin", () => {
       },
       leaseMetadata: {
         workspaceSentinel: {
-          path: "/home/daytona/paperclip-workspace/.paperclip-runtime/reusable-sandbox-lease.json",
+          path: "/home/daytona/paperclip-workspace/.wardmote-runtime/reusable-sandbox-lease.json",
           token: "sentinel-token",
           result: "written",
         },
@@ -1797,7 +1797,7 @@ describe("Daytona sandbox provider plugin", () => {
       metadata: {
         expired: true,
         workspaceSentinel: {
-          path: "/home/daytona/paperclip-workspace/.paperclip-runtime/reusable-sandbox-lease.json",
+          path: "/home/daytona/paperclip-workspace/.wardmote-runtime/reusable-sandbox-lease.json",
           token: "sentinel-token",
           result: "mismatch",
         },
@@ -2294,7 +2294,7 @@ describe("Daytona sandbox provider plugin", () => {
         leaseMetadata: {
           remoteCwd: "/home/daytona/paperclip-workspace",
           workspaceSentinel: {
-            path: "/home/daytona/paperclip-workspace/.paperclip-runtime/reusable-sandbox-lease.json",
+            path: "/home/daytona/paperclip-workspace/.wardmote-runtime/reusable-sandbox-lease.json",
             token: "token-1",
           },
         },
@@ -2325,7 +2325,7 @@ describe("Daytona sandbox provider plugin", () => {
         leaseMetadata: {
           remoteCwd: "/home/daytona/paperclip-workspace",
           workspaceSentinel: {
-            path: "/home/daytona/paperclip-workspace/.paperclip-runtime/reusable-sandbox-lease.json",
+            path: "/home/daytona/paperclip-workspace/.wardmote-runtime/reusable-sandbox-lease.json",
             token: "token-1",
           },
         },
@@ -4215,7 +4215,7 @@ describe("Daytona sandbox provider plugin", () => {
         config: { timeoutMs: 300000, reuseLease: true },
         leaseMetadata: {
           workspaceSentinel: {
-            path: "/home/daytona/paperclip-workspace/.paperclip-runtime/reusable-sandbox-lease.json",
+            path: "/home/daytona/paperclip-workspace/.wardmote-runtime/reusable-sandbox-lease.json",
             token: "expected-token",
             result: "written",
           },
@@ -4657,7 +4657,7 @@ describe("daytona native file-sync hooks", () => {
               // post-upload command extracts it into the workspace directory. So
               // `writablePath` names the real read-write destination.
               sourcePath: source,
-              targetPath: `${REMOTE_DIR}/.paperclip-runtime/workspace-upload.tar`,
+              targetPath: `${REMOTE_DIR}/.wardmote-runtime/workspace-upload.tar`,
               kind: "file" as const,
               access: "rw" as const,
               writablePath: REMOTE_DIR,
@@ -4671,7 +4671,7 @@ describe("daytona native file-sync hooks", () => {
     // The set holds the extract destination, not the staging archive parent.
     const recorded = __getDaytonaWritableDirsForTest(params);
     expect(recorded).toContain(REMOTE_DIR);
-    expect(recorded).not.toContain(`${REMOTE_DIR}/.paperclip-runtime`);
+    expect(recorded).not.toContain(`${REMOTE_DIR}/.wardmote-runtime`);
   });
 
   it("falls back to the parent directory of an rw mapping with no writablePath", async () => {
@@ -4732,14 +4732,14 @@ describe("daytona native file-sync hooks", () => {
           files: [
             {
               sourcePath: roSource,
-              targetPath: `${REMOTE_DIR}/.paperclip-runtime/project-proj-first`,
+              targetPath: `${REMOTE_DIR}/.wardmote-runtime/project-proj-first`,
               kind: "directory" as const,
               access: "ro" as const,
             },
             {
               // An absent `access` defaults to read-only, so it is not recorded.
               sourcePath: defaultSource,
-              targetPath: `${REMOTE_DIR}/.paperclip-runtime/default-upload.tar`,
+              targetPath: `${REMOTE_DIR}/.wardmote-runtime/default-upload.tar`,
               kind: "file" as const,
             },
           ],
@@ -4970,7 +4970,7 @@ describe("daytona native file-sync hooks", () => {
           {
             operationId: "sync-op-dir",
             files: [
-              { sourcePath: sourceDir, targetPath: `${REMOTE_DIR}/.paperclip-runtime/assets`, kind: "directory" },
+              { sourcePath: sourceDir, targetPath: `${REMOTE_DIR}/.wardmote-runtime/assets`, kind: "directory" },
             ],
           },
         ],
@@ -5055,7 +5055,7 @@ describe("daytona native file-sync hooks", () => {
           {
             operationId: "sync-op-dir-order",
             files: [
-              { sourcePath: sourceDir, targetPath: `${REMOTE_DIR}/.paperclip-runtime/assets`, kind: "directory" },
+              { sourcePath: sourceDir, targetPath: `${REMOTE_DIR}/.wardmote-runtime/assets`, kind: "directory" },
             ],
           },
         ],
@@ -5096,7 +5096,7 @@ describe("daytona native file-sync hooks", () => {
           {
             operationId: "sync-op-pack",
             files: [
-              { sourcePath: sourceDir, targetPath: `${REMOTE_DIR}/.paperclip-runtime/assets`, kind: "directory" },
+              { sourcePath: sourceDir, targetPath: `${REMOTE_DIR}/.wardmote-runtime/assets`, kind: "directory" },
             ],
           },
         ],
@@ -5182,7 +5182,7 @@ describe("daytona native file-sync hooks", () => {
           files: [
             {
               sourcePath: sourceDir,
-              targetPath: `${REMOTE_DIR}/.paperclip-runtime/assets`,
+              targetPath: `${REMOTE_DIR}/.wardmote-runtime/assets`,
               kind: "directory",
               exclude: ["*.log"],
             },
@@ -5207,7 +5207,7 @@ describe("daytona native file-sync hooks", () => {
     const mkdirCall = sandbox.process.executeCommand.mock.calls.find(
       ([cmd]) =>
         String(cmd).includes("mkdir -p") &&
-        String(cmd).includes(`'${REMOTE_DIR}/.paperclip-runtime/assets'`) &&
+        String(cmd).includes(`'${REMOTE_DIR}/.wardmote-runtime/assets'`) &&
         !String(cmd).includes("tar -xf"),
     );
     expect(mkdirCall).toBeDefined();
@@ -5217,7 +5217,7 @@ describe("daytona native file-sync hooks", () => {
     const extractCommand = String(extractCall?.[0]);
     // The extract is one plain `tar -xf <scratch-tar> -C <target>` command,
     // followed by removing the scratch tar.
-    expect(extractCommand).toContain(".paperclip-runtime/assets");
+    expect(extractCommand).toContain(".wardmote-runtime/assets");
     expect(extractCommand).toContain("tar -xf");
     expect(extractCommand).toMatch(/rm -f .*\.paperclip-upload-.*\.tar\.gz/);
   });
@@ -5845,7 +5845,7 @@ describe("daytona native file-sync hooks", () => {
     const overlayTar = path.join(hostDir, "workspace.tar");
     await fs.writeFile(gitTar, "git-bytes");
     await fs.writeFile(overlayTar, "overlay-bytes");
-    const runtimeDir = `${REMOTE_DIR}/.paperclip-runtime/adapter`;
+    const runtimeDir = `${REMOTE_DIR}/.wardmote-runtime/adapter`;
 
     const sandbox = createMockSandbox();
     mockGet.mockResolvedValue(sandbox);
@@ -5903,7 +5903,7 @@ describe("daytona native file-sync hooks", () => {
     const overlayTar = path.join(hostDir, "workspace.tar");
     await fs.writeFile(gitTar, "git-bytes");
     await fs.writeFile(overlayTar, "overlay-bytes");
-    const runtimeDir = `${REMOTE_DIR}/.paperclip-runtime/adapter`;
+    const runtimeDir = `${REMOTE_DIR}/.wardmote-runtime/adapter`;
 
     const sandbox = createMockSandbox();
     // The first (git-history) extract exits non-zero; every transfer/guard script

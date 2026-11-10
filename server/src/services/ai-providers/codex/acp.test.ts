@@ -968,7 +968,7 @@ describe("codex_local ACP lane", () => {
     // the host managed home; it is NOT the host CODEX_HOME.
     expect(remappedCodexHome).not.toBe(sourceHome);
     expect(remappedCodexHome).not.toBe(sharedHostHome);
-    expect(remappedCodexHome).toContain(".paperclip-runtime");
+    expect(remappedCodexHome).toContain(".wardmote-runtime");
     // Seeded: the credential materialized into the in-sandbox home (the local
     // runner uses the host FS, so the in-sandbox path is a real host path).
     await expect(fs.readFile(path.join(remappedCodexHome, "auth.json"), "utf8")).resolves.toContain(

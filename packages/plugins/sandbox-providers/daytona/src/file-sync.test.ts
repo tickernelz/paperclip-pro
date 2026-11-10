@@ -73,7 +73,7 @@ describe("daytona file-sync inbound scratch cleanup", () => {
     await fs.writeFile(path.join(sourceDir, "README.md"), "referenced project\n", "utf8");
 
     const remoteDir = "/workspace";
-    const targetPath = "/workspace/.paperclip-runtime/test-adapter/project-abc";
+    const targetPath = "/workspace/.wardmote-runtime/test-adapter/project-abc";
     const uploadedDestinations: string[] = [];
     const commands: RecordedCommand[] = [];
     // Fail the extract round trip (the only command that runs `tar -xf`).
@@ -127,7 +127,7 @@ describe("daytona file-sync inbound scratch cleanup", () => {
     await fs.writeFile(path.join(sourceDir, "README.md"), "referenced project\n", "utf8");
 
     const remoteDir = "/workspace";
-    const targetPath = "/workspace/.paperclip-runtime/test-adapter/project-abc";
+    const targetPath = "/workspace/.wardmote-runtime/test-adapter/project-abc";
     const uploadedDestinations: string[] = [];
     const commands: RecordedCommand[] = [];
     // No failure: every command succeeds, so the extract's own `rm -f` clears the

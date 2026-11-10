@@ -10757,7 +10757,7 @@ export async function verifyRemoteRunnerReattachment(input: {
   const runner = target.runner;
   const stateDirectory = posix.join(
     target.remoteCwd,
-    ".paperclip-runtime",
+    ".wardmote-runtime",
     "paperclip-runner",
     "sessions",
     createHash("sha256").update(input.normalizedSessionId).digest("hex"),
@@ -11288,7 +11288,7 @@ async function prepareRemoteDotRunner({ input, target, runner, root, identity }:
   identity: NonNullable<NonNullable<Parameters<typeof createNativeSessionBackend>[1]>["dotRunnerOptions"]>["identity"];
 }) {
   const runnerBinary = input.runnerRemoteBinaryPath?.trim() || resolveWardmoteRunnerBinary();
-  const remoteRoot = posix.join(target.remoteCwd, ".paperclip-runtime", "paperclip-runner");
+  const remoteRoot = posix.join(target.remoteCwd, ".wardmote-runtime", "paperclip-runner");
   const remoteBinary = posix.join(remoteRoot, "bin", "wardmote-runnerd");
   const runnerStateDirectory = posix.join(remoteRoot, "sessions",
     createHash("sha256").update(identity.normalizedSessionId).digest("hex"), "runner");
@@ -11561,7 +11561,7 @@ async function createRunnerdBackendWithinSessionClaim(
   const remoteRuntimeRoot = remoteTarget
     ? posix.join(
         remoteTarget.remoteCwd,
-        ".paperclip-runtime",
+        ".wardmote-runtime",
         "paperclip-runner",
       )
     : null;

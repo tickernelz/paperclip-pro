@@ -114,7 +114,7 @@ export async function writeOmpToolGuardExtension(input: {
     fileName: OMP_TOOL_GUARD_FILE_NAME,
     localPrefix: "paperclip-omp-guard-",
     remoteDir: path.posix.join(
-      input.remoteRootDir ?? path.posix.join(input.cwd, ".paperclip-runtime", "omp"),
+      input.remoteRootDir ?? path.posix.join(input.cwd, ".wardmote-runtime", "omp"),
       "tool-guard",
     ),
     cwd: input.cwd,

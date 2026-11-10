@@ -34,14 +34,14 @@ registered writable agent copy. Adapter `HOME` and `CODEX_HOME` keep their
 existing meanings and are not personal-file storage. Local copies are outside
 the task workspace. Remote providers currently confine file sync to their
 workspace: their independent agent copy therefore lives under the excluded
-`.paperclip-runtime/agent-files/<agent>/<run>/` area. It is not included in task
+`.wardmote-runtime/agent-files/<agent>/<run>/` area. It is not included in task
 workspace sync, Git staging, or task deliverables.
 
 Sandbox transfer scratch lives separately under
-`.paperclip-runtime/paperclip-runner/agent-file-transfers/<agent>/<run>/`.
+`.wardmote-runtime/paperclip-runner/agent-file-transfers/<agent>/<run>/`.
 Workspace-staging transfer scratch stays outside `AGENT_HOME`, including
 recovery after controller restart. Remote warm Codex checkpoints may temporarily
-stage changed-file payloads under `AGENT_HOME/.paperclip-runtime/checkpoint-*`;
+stage changed-file payloads under `AGENT_HOME/.wardmote-runtime/checkpoint-*`;
 these are checkpoint scratch, not managed personal files. Cleanup removes
 only the original materialization's agent directory and transfer scratch
 through its owned lease. A later warm turn keeps that original materialization
@@ -59,7 +59,7 @@ hardlinks, and special
 files are rejected, rather than followed or silently skipped. The instruction
 entry remains valid UTF-8, at most 1 MiB, and cannot be deleted. The editor edits
 text up to 1 MiB and offers downloads for binary or larger files. The reserved
-`.paperclip-runtime` directory and the compatibility-only virtual file
+`.wardmote-runtime` directory and the compatibility-only virtual file
 `promptTemplate.legacy.md` are not user storage. Task cache and Git ignore
 exclusions do not apply to this directory.
 

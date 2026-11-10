@@ -131,7 +131,7 @@ export async function writeOmpSettingsOverlay(input: {
     };
   }
 
-  const rootDir = input.remoteRootDir ?? path.posix.join(input.cwd, ".paperclip-runtime", "omp");
+  const rootDir = input.remoteRootDir ?? path.posix.join(input.cwd, ".wardmote-runtime", "omp");
   const dir = path.posix.join(rootDir, "settings-overlay");
   const file = path.posix.join(dir, "config.yml");
   const shellOptions = {

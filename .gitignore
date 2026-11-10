@@ -52,7 +52,7 @@ diagnostics/
 .vscode/
 **/.claude/settings.local.json
 .paperclip-local/
-.paperclip-runtime/
+.wardmote-runtime/
 /.idea/
 /.agents/
 

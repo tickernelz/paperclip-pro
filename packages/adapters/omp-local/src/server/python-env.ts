@@ -132,7 +132,7 @@ export async function writeOmpPythonEnvBridge(input: {
   graceSec: number;
 }): Promise<OmpPythonEnvBridge> {
   const remoteDir = path.posix.join(
-    input.remoteRootDir ?? path.posix.join(input.cwd, ".paperclip-runtime", "omp"),
+    input.remoteRootDir ?? path.posix.join(input.cwd, ".wardmote-runtime", "omp"),
     "python-env",
   );
   const mountInput = {

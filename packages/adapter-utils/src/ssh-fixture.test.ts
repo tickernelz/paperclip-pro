@@ -1038,13 +1038,13 @@ describe("ssh env-lab fixture", () => {
 
   it("rejects inconsistent project repository restores before any SSH connection", async () => {
     const localDir = await createFixtureRootDir();
-    const repositoryBaseline = { exclude: [".git", ".git/*", ".paperclip-runtime"], entries: new Map() };
+    const repositoryBaseline = { exclude: [".git", ".git/*", ".wardmote-runtime"], entries: new Map() };
     const restore = (input: Partial<Parameters<typeof restoreWorkspaceFromSshExecution>[0]>) =>
       restoreWorkspaceFromSshExecution({
         spec: UNREACHABLE_SSH_SPEC,
         localDir,
         remoteDir: "/nonexistent",
-        baselineSnapshot: { exclude: [".git", ".git/*", ".paperclip-runtime", ".paperclip-repositories"], entries: new Map() },
+        baselineSnapshot: { exclude: [".git", ".git/*", ".wardmote-runtime", ".paperclip-repositories"], entries: new Map() },
         restoreGitHistory: true,
         ...input,
       });
@@ -1054,7 +1054,7 @@ describe("ssh env-lab fixture", () => {
     await expect(restore({ repositories: [{ path: ".paperclip-repositories/frontend-0123456789ab" }] }))
       .rejects.toThrow("Project repository has no workspace baseline: .paperclip-repositories/frontend-0123456789ab");
     await expect(restore({
-      baselineSnapshot: { exclude: [".git", ".git/*", ".paperclip-runtime"], entries: new Map() },
+      baselineSnapshot: { exclude: [".git", ".git/*", ".wardmote-runtime"], entries: new Map() },
       repositories: [{ path: ".paperclip-repositories/frontend-0123456789ab", baselineSnapshot: repositoryBaseline }],
     })).rejects.toThrow("Workspace baseline must exclude .paperclip-repositories");
   }, SSH_FIXTURE_TEST_TIMEOUT_MS);

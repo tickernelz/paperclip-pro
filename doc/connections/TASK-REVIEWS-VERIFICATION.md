@@ -49,7 +49,7 @@ provider calls. Traces and screenshots accompany each case.
 [Playwright report](http://127.0.0.1:6020/report/). The final run passed all five
 journeys in 1.4 minutes and released its port after teardown.
 
-The local evidence directory is `.paperclip-runtime/reviews-evidence/`. It contains
+The local evidence directory is `.wardmote-runtime/reviews-evidence/`. It contains
 the Playwright report, traces/screenshots, focused/full-check logs, baseline logs,
 and `final-journey-identifiers.json` with request, invocation, interaction, and run IDs
 from the passing port-3226 run. The report's attachments also contain
@@ -101,7 +101,7 @@ or credential store, not in this report or chat.
 
 Before the master rebase, 155 component tests and all five browser journeys passed.
 The final UI checks include the split approval menu, keyboard selection of Always
-allow, and one-click decline. Evidence is in `.paperclip-runtime/reviews-evidence/minimal/`.
+allow, and one-click decline. Evidence is in `.wardmote-runtime/reviews-evidence/minimal/`.
 The browser run took 2.7 minutes; its restarted server required explicit process
 cleanup after the tests completed. Live provider and model-runner dependencies
 remain separate from this deterministic evidence.

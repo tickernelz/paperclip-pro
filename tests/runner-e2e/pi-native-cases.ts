@@ -35,7 +35,7 @@ export function gradePiNativeMemory(actual: unknown, nonce: string): boolean {
 export function hasPiNativeMemoryRead(events: readonly Record<string, any>[], nonce: string, remoteRun?: { agentId: string; runId: string }): boolean {
   const uuid = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/u;
   if (remoteRun && (!uuid.test(remoteRun.agentId) || !uuid.test(remoteRun.runId))) return false;
-  const target = remoteRun ? `.paperclip-runtime/agent-files/${remoteRun.agentId}/${remoteRun.runId}/${PI_NATIVE_MEMORY_PATH}` : null;
+  const target = remoteRun ? `.wardmote-runtime/agent-files/${remoteRun.agentId}/${remoteRun.runId}/${PI_NATIVE_MEMORY_PATH}` : null;
   const tools = events.filter(row => row.eventType === "tool.execution.completed")
     .map(row => row.payload?.prpEvent?.payload)
     .filter(payload => payload?.schema === "paperclip.tool.execution.v1" && payload.transport === "builtin");

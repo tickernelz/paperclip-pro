@@ -209,7 +209,7 @@ describe("native workspace sync durable metadata", () => {
     process.env.WARDMOTE_HOME = wardmoteHome;
     process.env.WARDMOTE_INSTANCE_ID = "descriptor-test";
     const baseline = {
-      exclude: [".paperclip-runtime"],
+      exclude: [".wardmote-runtime"],
       entries: new Map([
         [
           "continuity.txt",
@@ -277,7 +277,7 @@ describe("native workspace sync durable metadata", () => {
     process.env.WARDMOTE_HOME = wardmoteHome;
     process.env.WARDMOTE_INSTANCE_ID = "descriptor-repair-test";
     const baseline = {
-      exclude: [".paperclip-runtime"],
+      exclude: [".wardmote-runtime"],
       entries: new Map([
         [
           "continuity.txt",

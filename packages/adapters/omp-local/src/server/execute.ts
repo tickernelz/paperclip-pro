@@ -784,7 +784,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     const configuredSessionDir = asString(executionConfig.sessionDir, "").trim();
     const defaultSessionDir = remote
       ? path.posix.join(
-          runtimeRootDir ?? path.posix.join(effectiveExecutionCwd, ".paperclip-runtime", "omp"),
+          runtimeRootDir ?? path.posix.join(effectiveExecutionCwd, ".wardmote-runtime", "omp"),
           "sessions",
           safePathSegment(agent.id),
         )

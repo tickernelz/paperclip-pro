@@ -1130,9 +1130,9 @@ export async function prepareSandboxManagedRuntime(input: {
   runtimeSpan?: RuntimeSpanRunner;
 }): Promise<PreparedSandboxManagedRuntime> {
   const workspaceRemoteDir = input.workspaceRemoteDir ?? input.spec.remoteCwd;
-  const runtimeRootDir = input.runtimeRootDir ?? path.posix.join(workspaceRemoteDir, ".paperclip-runtime", input.adapterKey);
+  const runtimeRootDir = input.runtimeRootDir ?? path.posix.join(workspaceRemoteDir, ".wardmote-runtime", input.adapterKey);
   if (input.runtimeRootDir !== undefined) {
-    const reservedRoot = path.posix.join(input.spec.remoteCwd, ".paperclip-runtime");
+    const reservedRoot = path.posix.join(input.spec.remoteCwd, ".wardmote-runtime");
     if (!path.posix.isAbsolute(runtimeRootDir) || path.posix.normalize(runtimeRootDir) !== runtimeRootDir
       || runtimeRootDir.includes("\0") || runtimeRootDir.endsWith("/") || !runtimeRootDir.startsWith(`${reservedRoot}/`)) {
       throw new Error("Transfer scratch must remain within the lease runtime tree");
@@ -1226,7 +1226,7 @@ export async function prepareSandboxManagedRuntime(input: {
   const restoreExclude = mergeExcludes(
     input.workspaceFileMode === "all" ? [] : SANDBOX_WORKSPACE_HEAVY_DIR_EXCLUDES,
     input.workspaceFileMode === "all" ? [] : [...GIT_ARCHIVE_EXCLUDES],
-    [".paperclip-runtime"],
+    [".wardmote-runtime"],
     input.preserveAbsentOnRestore,
     input.workspaceExclude,
     gitIgnoredExcludes,
@@ -1302,7 +1302,7 @@ export async function prepareSandboxManagedRuntime(input: {
 
   await withTempDir("paperclip-sandbox-sync-", async (tempDir) => {
     const preservedNames = new Set([
-      ".paperclip-runtime",
+      ".wardmote-runtime",
       ...(gitSnapshot ? [".git"] : []),
       ...(input.preserveAbsentOnRestore ?? []),
     ]);
@@ -1424,7 +1424,7 @@ export async function prepareSandboxManagedRuntime(input: {
                     await createTarballFromDirectory({
                       localDir: cloneDir,
                       archivePath: gitTarPath,
-                      exclude: [".paperclip-runtime"],
+                      exclude: [".wardmote-runtime"],
                     });
                   },
                 );
@@ -1446,7 +1446,7 @@ export async function prepareSandboxManagedRuntime(input: {
                 command: buildWorkspaceTarExtractCommand({
                   workspaceRemoteDir,
                   remoteTar: remoteGitTar,
-                  wipeExceptNames: [".paperclip-runtime"],
+                  wipeExceptNames: [".wardmote-runtime"],
                 }),
               });
               workspaceUploadBytes += (await fs.stat(gitTarPath)).size;
@@ -1768,7 +1768,7 @@ export async function prepareSandboxManagedRuntime(input: {
                 workspaceExclude: nestedExclude,
                 workspaceBaseline: await selectDirectorySnapshot(baselineSnapshot!, {
                   prefix,
-                  exclude: mergeExcludes(SANDBOX_WORKSPACE_HEAVY_DIR_EXCLUDES, [...GIT_ARCHIVE_EXCLUDES], [".paperclip-runtime"], nestedExclude),
+                  exclude: mergeExcludes(SANDBOX_WORKSPACE_HEAVY_DIR_EXCLUDES, [...GIT_ARCHIVE_EXCLUDES], [".wardmote-runtime"], nestedExclude),
                   ignoredPaths: repository.snapshot.ignoredPaths,
                 }),
                 onRuntimeProgress: input.onRuntimeProgress,

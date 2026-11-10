@@ -74,7 +74,7 @@ export async function captureAgentFileCheckpoint(input: {
   const target = input.target?.kind === "remote" ? input.target : null;
   // Scratch lives inside this session's reserved runtime area, so retirement
   // reclaims it even if a transient transport failure interrupted cleanup.
-  const remoteDirectory = target ? path.posix.join(input.executionRoot, ".paperclip-runtime", path.basename(directory)) : null;
+  const remoteDirectory = target ? path.posix.join(input.executionRoot, ".wardmote-runtime", path.basename(directory)) : null;
   let restore: Awaited<ReturnType<typeof prepareAdapterExecutionTargetRuntime>> | undefined;
   let cacheRuntime: Awaited<ReturnType<typeof prepareAdapterExecutionTargetRuntime>> | undefined;
   const cleanup = async () => {
