@@ -36,7 +36,7 @@ Runner setting in addition to Dot and Assistant connections (MCP).
 4. The OAuth code approval pairs Dot atomically. Attach the connected plugin
    to the Dot conversation if ChatGPT has not exposed its action tools. Dot calls
    `wardmote_dot_inbox` to verify access, then subscribes to
-   `paperclip.dot.mailbox_updated` with the setup company and inbox binding IDs.
+   `wardmote.dot.mailbox_updated` with the setup company and inbox binding IDs.
    Its callback must pass the signed webhook verification. The prompt stays
    only in page memory and disappears when its code expires; if you leave the
    page or the code expires, revoke the pending connection and pair again.

@@ -129,7 +129,7 @@ describe("mutation identity oracle", () => {
 
 describe("event follow-up independent oracle", () => {
   const valid: EventFollowUpEvidence = { companyId: "company", taskId: "task", marker: "REPORT", final: "REPORT", callbackVerified: true, signatureVerified: true, humanCommentCount: 0,
-    event: { eventId: "event", name: "paperclip.task.status_changed", data: { companyId: "company", taskId: "task", status: "done" }, cursor: null },
+    event: { eventId: "event", name: "wardmote.task.status_changed", data: { companyId: "company", taskId: "task", status: "done" }, cursor: null },
     calls: [{ name: "wardmote_read_document", arguments: { companyId: "company", taskId: "task" }, result: { structuredContent: { document: { key: "report", body: "REPORT" } } } }] };
   it("accepts a verified event followed by actual durable retrieval", () => { expect(gradeEventFollowUp(valid)).toBe(true); });
   it.each([

@@ -35,7 +35,7 @@ export function useAssistantConnections(poll = false) {
     queryKey: connectionsKey, queryFn: publicMcpApi.connections, retry: false,
     enabled: Boolean(selectedCompanyId), refetchInterval: poll ? 5000 : false,
   });
-  return { ...query, rows: (query.data ?? []).filter(row => row.companyId === selectedCompanyId && !row.revokedAt && !row.scopes.includes("paperclip:agent")) };
+  return { ...query, rows: (query.data ?? []).filter(row => row.companyId === selectedCompanyId && !row.revokedAt && !row.scopes.includes("wardmote:agent")) };
 }
 
 /** Inbound assistant access belongs beside the existing outbound connectors. */
@@ -144,7 +144,7 @@ export function AssistantConnection({ initialAssistant = "codex" }: { initialAss
       {(connections.error || revoke.error) && <p role="alert" className="text-sm text-bad">{revoke.error ? "Couldn’t revoke this connection. Try again." : "Couldn’t load your connections. Try again."} <button type="button" className="underline" onClick={() => void connections.refetch()}>Refresh</button></p>}
       {connections.isSuccess && connections.rows.length === 0 && <p className="text-sm text-ink-3">No assistants connected to {selectedCompany.name} yet.</p>}
       <div className="divide-y divide-line">{connections.rows.map(row => <div key={row.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
-        <div className="min-w-0 flex-1 space-y-1"><Identity name={assistantConnectionDisplayName(row)} avatarUrl={row.user?.image} initials={deriveInitials(row.user?.name ?? "You")} className="font-medium" /><p className="text-xs text-ink-3">{`Connected as you · ${row.scopes.includes("paperclip:write") ? "Read and write" : "Read only"}${row.scopes.includes("paperclip:configure") ? " · Configure agents, projects and skills" : ""}`}</p></div>
+        <div className="min-w-0 flex-1 space-y-1"><Identity name={assistantConnectionDisplayName(row)} avatarUrl={row.user?.image} initials={deriveInitials(row.user?.name ?? "You")} className="font-medium" /><p className="text-xs text-ink-3">{`Connected as you · ${row.scopes.includes("wardmote:write") ? "Read and write" : "Read only"}${row.scopes.includes("wardmote:configure") ? " · Configure agents, projects and skills" : ""}`}</p></div>
         <Button variant="secondary" size="sm" disabled={revoke.isPending} onClick={() => revoke.mutate(row.id)} aria-label={`Revoke ${assistantConnectionDisplayName(row)}`}>Revoke</Button>
       </div>)}</div>
     </section>

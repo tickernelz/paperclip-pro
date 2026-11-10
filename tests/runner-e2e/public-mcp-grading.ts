@@ -143,7 +143,7 @@ export interface EventFollowUpEvidence extends ReportRetrievalEvidence {
 }
 export function gradeEventFollowUp(input: EventFollowUpEvidence | null) {
   return Boolean(input?.callbackVerified && input.signatureVerified && input.event?.eventId
-    && input.event.name === "paperclip.task.status_changed" && input.event.cursor === null
+    && input.event.name === "wardmote.task.status_changed" && input.event.cursor === null
     && input.event.data.companyId === input.companyId && input.event.data.taskId === input.taskId && input.event.data.status === "done"
     && input.humanCommentCount === 0 && gradeReportRetrieval(input)
     && input.calls.every(isReadOnlyMcpCall));
