@@ -147,7 +147,7 @@ full contents; the original trace file retains them. Do not restore a full
 synchronous trace scan for each pending event: it blocks event delivery and can
 leave the board showing an active run after the provider turn has already ended.
 
-The package also builds `paperclip-runner-acpx-sidecar`. This bounded v2
+The package also builds `wardmote-runner-acpx-sidecar`. This bounded v2
 stdin/stdout bridge admits the pinned Claude, Codex, Grok and Cursor ACPX profiles.
 It validates the exact model, session identity, tool catalog, structured input,
 and terminal settlement at the process boundary. Copilot and Pi remain gated.
@@ -463,7 +463,7 @@ The canonical direct live protocol suite lives in the separate
 this package's TypeScript output, release `wardmote-runnerd`, package tarball,
 and `dist-issue-thread` viewer, then use the roster runner documented in that
 repository. The package ships the required orchestration entry point as
-`paperclip-runner-eval-session` (`dist/cli/eval-session.js`). Evalbook owns the
+`wardmote-runner-eval-session` (`dist/cli/eval-session.js`). Evalbook owns the
 consistent HTML matrix and read-only attempt drill-down pages.
 
 The hosted full-campaign workflow, parallel matrix, credential boundaries,

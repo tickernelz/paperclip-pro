@@ -166,7 +166,7 @@ export function scaffoldPluginProject(options: ScaffoldPluginOptions): string {
       build: "node ./esbuild.config.mjs",
       "build:rollup": "rollup -c",
       dev: "node ./esbuild.config.mjs --watch",
-      "dev:ui": "paperclip-plugin-dev-server --root . --ui-dir dist/ui --port 4177",
+      "dev:ui": "wardmote-plugin-dev-server --root . --ui-dir dist/ui --port 4177",
       test: "vitest run --config ./vitest.config.ts",
       typecheck: "tsc --noEmit"
     },

@@ -248,7 +248,7 @@ describe("OpenWA pending_card wakes (embedded Postgres + fake gateway)", () => {
 
   async function taskIssue(t: Setup, title: string) {
     const id = randomUUID();
-    await db.insert(issues).values({ id, companyId: t.companyId, title, status: "in_progress", assigneeAgentId: t.agentId, identifier: "P-" + id.slice(0, 4) });
+    await db.insert(issues).values({ id, companyId: t.companyId, title, status: "in_progress", assigneeAgentId: t.agentId, identifier: "P-" + id.replaceAll("-", "") });
     return id;
   }
 
@@ -399,7 +399,7 @@ describe("OpenWA pending_card wakes (embedded Postgres + fake gateway)", () => {
     const t = await setup();
     await ownerConversation(t);
     const issueId = randomUUID();
-    await db.insert(issues).values({ id: issueId, companyId: t.companyId, title: "Secret deal X", status: "in_progress", assigneeAgentId: t.agentId, visibility: "private", identifier: "P-" + issueId.slice(0, 4) });
+    await db.insert(issues).values({ id: issueId, companyId: t.companyId, title: "Secret deal X", status: "in_progress", assigneeAgentId: t.agentId, visibility: "private", identifier: "P-" + issueId.replaceAll("-", "") });
     const card = await createCard(t, issueId, { payload: { version: 1, prompt: "Approve secret deal X?" } });
     expect(card.status).toBe("pending");
     expect(await cardActions(t)).toEqual([]);
