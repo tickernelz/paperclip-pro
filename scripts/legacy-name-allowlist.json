@@ -3295,7 +3295,7 @@
     ["ui/src/lib/managed-sandbox-environment.ts",2,"belum-diganti"],
     ["ui/src/lib/notifications/custom-sounds.ts",1,"belum-diganti"],
     ["ui/src/lib/oauthHandoff.test.ts",6,"belum-diganti"],
-    ["ui/src/lib/oauthHandoff.ts",7,"belum-diganti"],
+    ["ui/src/lib/oauthHandoff.ts",6,"belum-diganti"],
     ["ui/src/lib/optimistic-issue-comments.test.ts",3,"belum-diganti"],
     ["ui/src/lib/perf-measure-reaper.test.ts",8,"belum-diganti"],
     ["ui/src/lib/perf-measure-reaper.ts",4,"belum-diganti"],
