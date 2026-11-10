@@ -83,4 +83,4 @@ env \
   HOST="$WARDMOTE_HOST" \
   PORT="$WARDMOTE_PORT" \
   WARDMOTE_OPEN_ON_LISTEN="$WARDMOTE_OPEN_ON_LISTEN" \
-  pnpm paperclip-pro onboard --yes --data-dir "$PC_DATA"
+  pnpm wardmote onboard --yes --data-dir "$PC_DATA"
