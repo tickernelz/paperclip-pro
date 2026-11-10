@@ -87,6 +87,7 @@ import {
 import { isUnsafeSessionWorkspaceCwd } from "../session-workspace-cwd.js";
 import { isConnectorSkill } from "../connector-runtime.js";
 import { assertLowTrustWorkspaceIsolation } from "../low-trust-runtime-containment.js";
+import { adoptRetiredProjectRepositoriesDir } from "./retired-project-repositories-dir.js";
 import type { TrustPresetResolution } from "../trust-preset-resolver.js";
 import {
   createEffectiveRunConfigFingerprints,
@@ -605,6 +606,7 @@ export async function prepareProjectRepositoryWorkspaces(input: {
     return true;
   });
   const root = path.join(input.cwd, PROJECT_REPOSITORIES_DIR);
+  await adoptRetiredProjectRepositoriesDir(input.cwd, root);
   if (selected.length === 0 && !(await fs.lstat(root).catch(() => null))) return [];
   await fs.mkdir(root, { recursive: true });
   if (await fs.realpath(root) !== path.join(await fs.realpath(input.cwd), PROJECT_REPOSITORIES_DIR)) {
