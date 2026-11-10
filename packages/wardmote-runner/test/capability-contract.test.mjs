@@ -19,7 +19,7 @@ test("generated Capability inventory has full source coverage", async () => {
   ]);
 
   assert.equal(capabilities.length, 165);
-  assert.equal(capabilities.filter(row => row.sourceAnchor.startsWith("skills/paperclip/references/issue-documents.md#")).length, 3);
+  assert.equal(capabilities.filter(row => row.sourceAnchor.startsWith("skills/wardmote/references/issue-documents.md#")).length, 3);
   assert.equal(tools.length, 42);
   assert.equal(evals.length, 106);
   assert.equal(new Set(evals.map((row) => row.group)).size, 16);
@@ -62,5 +62,5 @@ test("both capability inventories cover every declared skill source", async () =
     assert.ok(generated.some(row => row.sourceAnchor.startsWith(`${source}#`)), `Missing generated source ${source}`);
     assert.ok(normative.rows.some(row => row.sourceAnchor.startsWith(`${source}:`)), `Missing normative source ${source}`);
   }
-  assert.equal(normative.rows.filter(row => row.sourceAnchor.startsWith("skills/paperclip/references/issue-documents.md:")).length, 3);
+  assert.equal(normative.rows.filter(row => row.sourceAnchor.startsWith("skills/wardmote/references/issue-documents.md:")).length, 3);
 });

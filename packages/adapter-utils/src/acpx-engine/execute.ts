@@ -83,6 +83,7 @@ import {
   selectPaperclipPromptSections,
   resolveLegacyPaperclipDesiredSkillNames,
   removeMaintainerOnlySkillSymlinks,
+  removeRetiredBundledSkillLinks,
   rewriteWorkspaceCwdEnvVarsForExecution,
   shapePaperclipWorkspaceEnvForExecution,
   type PaperclipSkillEntry,
@@ -1436,6 +1437,9 @@ async function prepareGeminiSkillRuntime(input: {
   await fs.mkdir(skillsHome, { recursive: true });
 
   const allowedSkillNames = selectedSkills.map((entry) => entry.runtimeName);
+  for (const skillName of await removeRetiredBundledSkillLinks(skillsHome)) {
+    await input.onLog("stdout", `[wardmote] Removed retired bundled ACPX Gemini skill link "${skillName}" from ${skillsHome}\n`);
+  }
   const removedSkills = await removeMaintainerOnlySkillSymlinks(skillsHome, allowedSkillNames);
   for (const skillName of removedSkills) {
     await input.onLog("stdout", `[paperclip] Removed maintainer-only ACPX Gemini skill "${skillName}" from ${skillsHome}\n`);
@@ -2666,7 +2670,7 @@ async function buildRuntime(input: {
       `Skill root for this run: ${currentSkillRoot}`,
       `Selected skills: ${skillsIdentity.selectedSkills.join(", ")}`,
       "When a task calls for one of these skills, read its SKILL.md from this root and follow it. Resolve referenced scripts and files relative to that skill. Use this run's root even when an earlier turn used a different path.",
-      ...(acpxAgent === "gemini" && skillsIdentity.selectedSkills.includes("paperclip")
+      ...(acpxAgent === "gemini" && skillsIdentity.selectedSkills.includes("wardmote")
         ? [
           "Before calling Paperclip APIs or delivering task artifacts, read the selected paperclip skill's SKILL.md and its referenced artifact workflow. A completion comment does not upload an artifact or change task status.",
           "Gemini's shell tool rejects command substitution. Write JSON request bodies to a workspace file and use curl --data-binary @file, or use the selected skill's helpers, instead of constructing a body with command substitution.",

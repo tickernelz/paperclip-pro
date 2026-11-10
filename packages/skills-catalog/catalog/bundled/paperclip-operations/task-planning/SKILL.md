@@ -33,4 +33,4 @@ skill's document and planning API mechanics.
 Respect planning mode and explicit approval requests. When approval is required,
 request confirmation of the latest plan revision and wait for that decision.
 After acceptance, execute cohesive work on the current ordinary task. Use
-`paperclip-converting-plans-to-tasks` when delegation is justified.
+`wardmote-converting-plans-to-tasks` when delegation is justified.

@@ -90,7 +90,7 @@ describe("parseFrontmatterMarkdown", () => {
       "  sources:",
       "    - kind: github-dir",
       "      repo: paperclipai/paperclip",
-      "      path: skills/paperclip",
+      "      path: skills/wardmote",
       "---",
       "",
       "Body",
@@ -102,7 +102,7 @@ describe("parseFrontmatterMarkdown", () => {
           {
             kind: "github-dir",
             repo: "paperclipai/paperclip",
-            path: "skills/paperclip",
+            path: "skills/wardmote",
           },
         ],
       },
@@ -170,7 +170,7 @@ describe("stringifyFrontmatter", () => {
           source: {
             kind: "github-dir",
             repo: "paperclipai/paperclip",
-            path: "skills/paperclip",
+            path: "skills/wardmote",
           },
         },
       },

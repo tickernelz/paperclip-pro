@@ -55,7 +55,7 @@ describe("explicit Paperclip document delivery", () => {
     { identifier: "ACME-17", issuePrefix: "ACME", key: "report" },
     { identifier: "TEAM-902", issuePrefix: "TEAM", key: "report-agent-redirected" },
   ])("the shipped recipe delivers the current $identifier and returned $key", ({ identifier, issuePrefix, key }) => {
-    const reference = readFileSync(new URL("../../skills/paperclip/references/issue-documents.md", import.meta.url), "utf8");
+    const reference = readFileSync(new URL("../../skills/wardmote/references/issue-documents.md", import.meta.url), "utf8");
     const recipe = reference.match(/```javascript\n([\s\S]*?)```/)?.[1];
     expect(recipe).toBeDefined();
     const { scenario, initial, final } = recording();
@@ -68,7 +68,7 @@ describe("explicit Paperclip document delivery", () => {
     expect(gradeContextIntegrity({ ...scenario, checkpoints: [initial, final] }).every(row => row.passed)).toBe(true);
   });
   it.each([null, undefined])("the shipped recipe supports an unnumbered issue with identifier %s", identifier => {
-    const reference = readFileSync(new URL("../../skills/paperclip/references/issue-documents.md", import.meta.url), "utf8");
+    const reference = readFileSync(new URL("../../skills/wardmote/references/issue-documents.md", import.meta.url), "utf8");
     const recipe = reference.match(/```javascript\n([\s\S]*?)```/)?.[1];
     expect(recipe).toBeDefined();
     const comment = runInNewContext(`${recipe}\ncomment`, {

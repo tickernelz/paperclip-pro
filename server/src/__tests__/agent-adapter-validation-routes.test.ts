@@ -605,8 +605,8 @@ describe("agent routes adapter validation", () => {
           adapterType: "paperclip_runner",
           adapterConfig: {
             provider: "codex",
-            paperclipSkillSync: {
-              desiredSkills: ["tickernelz/wardmote/paperclip", "company-1/reviewer"],
+            wardmoteSkillSync: {
+              desiredSkills: ["tickernelz/wardmote/wardmote", "company-1/reviewer"],
             },
           },
         }),
@@ -621,7 +621,7 @@ describe("agent routes adapter validation", () => {
           model: "gpt-5.6-sol",
           codexPermissionMode: "never",
           lifecycleMode: "per_turn",
-          paperclipSkillSync: { desiredSkills: ["company-1/reviewer"] },
+          wardmoteSkillSync: { desiredSkills: ["company-1/reviewer"] },
         }),
       }),
       expect.any(Object),
@@ -695,8 +695,8 @@ describe("agent routes adapter validation", () => {
       adapterType: "codex_local",
       adapterConfig: {
         model: "gpt-5.5",
-        paperclipSkillSync: {
-          desiredSkills: ["tickernelz/wardmote/paperclip", "company-1/reviewer"],
+        wardmoteSkillSync: {
+          desiredSkills: ["tickernelz/wardmote/wardmote", "company-1/reviewer"],
         },
       },
     });
@@ -718,7 +718,7 @@ describe("agent routes adapter validation", () => {
           model: "gpt-5.5",
           codexPermissionMode: "never",
           lifecycleMode: "per_turn",
-          paperclipSkillSync: { desiredSkills: ["company-1/reviewer"] },
+          wardmoteSkillSync: { desiredSkills: ["company-1/reviewer"] },
         }),
       }),
       expect.any(Object),

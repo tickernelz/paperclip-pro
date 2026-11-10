@@ -92,9 +92,9 @@ export async function setupFirstTaskFixtures(input: {
   expect(migrated.adapterConfig?.instructionsFilePath).toBe(
     agents[0].adapterConfig?.instructionsFilePath,
   );
-  expect(migrated.adapterConfig?.paperclipSkillSync?.desiredSkills).toEqual(
+  expect(migrated.adapterConfig?.wardmoteSkillSync?.desiredSkills).toEqual(
     (
-      runtimePatch.adapterConfig.paperclipSkillSync as {
+      runtimePatch.adapterConfig.wardmoteSkillSync as {
         desiredSkills?: unknown[];
       }
     )?.desiredSkills,
@@ -321,7 +321,7 @@ export async function runFirstTaskFlow(input: {
       permissions: agent.permissions,
     };
     const desired =
-      agent.adapterConfig?.paperclipSkillSync?.desiredSkills ?? [];
+      agent.adapterConfig?.wardmoteSkillSync?.desiredSkills ?? [];
     expect(
       desired.map((s: string | { key: string }) =>
         typeof s === "string" ? s : s.key,

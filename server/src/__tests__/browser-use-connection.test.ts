@@ -358,9 +358,9 @@ const actor = { actorType: "user" as const, actorId: "browser-reviewer" };
     });
     it("keeps Cloud instructions out of universal skills and unassigned runtime overlays", async () => {
       const skills = await listPaperclipSkillEntries(fileURLToPath(new URL("../", import.meta.url)), [fileURLToPath(new URL("../../../skills", import.meta.url))]);
-      expect(skills.some(skill => skill.runtimeName === "paperclip")).toBe(true);
+      expect(skills.some(skill => skill.runtimeName === "wardmote")).toBe(true);
       expect(skills.some(skill => ["browser-use", "browser-use-cloud"].includes(skill.runtimeName))).toBe(false);
-      const base = { paperclipSkillSync: { desiredSkills: ["tickernelz/wardmote/browser-use", "tickernelz/wardmote/browser-use-cloud"] } };
+      const base = { wardmoteSkillSync: { desiredSkills: ["tickernelz/wardmote/browser-use", "tickernelz/wardmote/browser-use-cloud"] } };
       const unassigned = await applyConnectorSkills(base, [
         { key: "tickernelz/wardmote/browser-use", runtimeName: "browser-use", source: "/retired-browser-skill" },
         { key: "tickernelz/wardmote/browser-use-cloud", runtimeName: "browser-use-cloud", source: "/unassigned-cloud-skill" },
@@ -368,7 +368,7 @@ const actor = { actorType: "user" as const, actorId: "browser-reviewer" };
       ], []);
       expect(unassigned.paperclipRuntimeSkills).toEqual([{ key: "custom/browser-use", runtimeName: "browser-use", source: "/another-browser-skill" }]);
       expect(unassigned.paperclipConnectorSkillDigest).toBeNull();
-      expect(base.paperclipSkillSync.desiredSkills).toHaveLength(2);
+      expect(base.wardmoteSkillSync.desiredSkills).toHaveLength(2);
     });
     it("delivers the Cloud skill only with authorized connection tools in a task run", async () => {
       const f = await fixture();

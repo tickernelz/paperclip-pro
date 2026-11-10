@@ -7,15 +7,15 @@ import { readStockInstructionVariant } from "./stock-harness-instruction-variant
 // constants. Otherwise a larger shipped manual could silently update the oracle.
 export const STOCK_HIRE_IDENTITY = "You are an agent in a Paperclip company.\n";
 export const STOCK_TEMPLATE_IDENTITY = "You are agent";
-const SKILL_SOURCES = ["../../skills/paperclip/SKILL.md", "../../skills/paperclip/references/issue-documents.md",
-  "../../scripts/paperclip-issue-update.sh", "../../skills/paperclip/scripts/paperclip-issue-update.sh"];
+const SKILL_SOURCES = ["../../skills/wardmote/SKILL.md", "../../skills/wardmote/references/issue-documents.md",
+  "../../scripts/paperclip-issue-update.sh", "../../skills/wardmote/scripts/paperclip-issue-update.sh"];
 export function stockHarnessSkillSources() {
   return SKILL_SOURCES.map(source => {
     try {
       return { path: source.replace(/^\.\.\/\.\.\//, ""), present: true,
         sha256: createHash("sha256").update(readFileSync(new URL(source, import.meta.url))).digest("hex") };
     } catch (error) {
-      if ((source.endsWith("/references/issue-documents.md") || source === "../../skills/paperclip/scripts/paperclip-issue-update.sh")
+      if ((source.endsWith("/references/issue-documents.md") || source === "../../skills/wardmote/scripts/paperclip-issue-update.sh")
         && (error as NodeJS.ErrnoException).code === "ENOENT")
         return { path: source.replace(/^\.\.\/\.\.\//, ""), present: false, sha256: null };
       throw error;

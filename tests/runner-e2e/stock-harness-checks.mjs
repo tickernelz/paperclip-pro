@@ -104,15 +104,15 @@ export function sourceFingerprint() {
     "packages/wardmote-runner/runner/crates/runner-core/tests/codex_provider.rs",
   ]);
   const sourceErrors = [];
-  sources.add("skills/paperclip/SKILL.md");
-  sources.add("skills/paperclip/references/issue-documents.md");
+  sources.add("skills/wardmote/SKILL.md");
+  sources.add("skills/wardmote/references/issue-documents.md");
   sources.add("scripts/paperclip-issue-update.sh");
-  sources.add("skills/paperclip/scripts/paperclip-issue-update.sh");
+  sources.add("skills/wardmote/scripts/paperclip-issue-update.sh");
   for (const source of [...sources].sort()) {
     hash.update(source);
     try { hash.update("present\0").update(readFileSync(join(root, source))); }
     catch (error) {
-      if ((source === "skills/paperclip/references/issue-documents.md" || source === "skills/paperclip/scripts/paperclip-issue-update.sh") && error.code === "ENOENT") hash.update("absent\0");
+      if ((source === "skills/wardmote/references/issue-documents.md" || source === "skills/wardmote/scripts/paperclip-issue-update.sh") && error.code === "ENOENT") hash.update("absent\0");
       else sourceErrors.push(source);
     }
   }

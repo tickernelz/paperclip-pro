@@ -117,11 +117,6 @@ export interface SandboxCallbackBridgeRouteRule {
   path: RegExp;
 }
 
-// Routes the in-sandbox heartbeat skill is documented to call. The server
-// still enforces actor-level permissions on top of this allowlist; the list
-// exists to bound the surface area a compromised CLI could reach via the
-// reverse bridge. Keep this in sync with the Paperclip skill in
-// `skills/paperclip/SKILL.md` and `references/api-reference.md`.
 export const DEFAULT_SANDBOX_CALLBACK_BRIDGE_ROUTE_ALLOWLIST: readonly SandboxCallbackBridgeRouteRule[] = [
   // Runtime capability authentication is independently checked by the controller.
   { method: "POST", path: /^\/runtime-tools\/github\/credentials$/ },
@@ -190,11 +185,6 @@ export const DEFAULT_SANDBOX_CALLBACK_BRIDGE_ROUTE_ALLOWLIST: readonly SandboxCa
   // Subtasks / delegation
   { method: "POST", path: /^\/api\/companies\/[^/]+\/issues$/ },
 
-  // Hiring (paperclip-create-agent skill): adapter/icon discovery, comparing
-  // existing agent configs, submitting the hire request, and linking the
-  // resulting approval to its source issue. Direct agent creation
-  // (POST /api/companies/:id/agents) stays denied — hires must go through the
-  // approval-gated agent-hires endpoint, which the server still permission-checks.
   { method: "GET", path: /^\/llms\/agent-configuration\.txt$/ },
   { method: "GET", path: /^\/llms\/agent-configuration\/[^/]+\.txt$/ },
   { method: "GET", path: /^\/llms\/agent-icons\.txt$/ },

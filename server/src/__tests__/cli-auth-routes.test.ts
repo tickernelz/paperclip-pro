@@ -140,7 +140,7 @@ describe("cli auth routes", () => {
     const skillApp = await createApp({ type: "none", source: "none" });
 
     const indexRes = await request(indexApp).get("/api/skills/index");
-    const skillRes = await request(skillApp).get("/api/skills/paperclip");
+    const skillRes = await request(skillApp).get("/api/skills/wardmote");
 
     expect(indexRes.status, JSON.stringify(indexRes.body)).toBe(401);
     expect(skillRes.status, skillRes.text || JSON.stringify(skillRes.body)).toBe(401);
@@ -170,7 +170,7 @@ describe("cli auth routes", () => {
     };
 
     const app = await createApp({ type: "none", source: "none" }, db);
-    const res = await request(app).get("/api/invites/token-123/skills/paperclip");
+    const res = await request(app).get("/api/invites/token-123/skills/wardmote");
 
     expect(res.status).toBe(200);
     expect(res.headers["content-type"]).toContain("text/markdown");

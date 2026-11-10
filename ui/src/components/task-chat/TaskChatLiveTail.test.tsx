@@ -223,7 +223,7 @@ describe("TaskChatLiveTail", () => {
 
   it("bounds long tool targets on the row and wraps the full value in the open detail", () => {
     const longPath =
-      "/Users/dotta/paperclip/instances/default/companies/company-id/codex/home/skills/paperclip/references/API-reference.md";
+      "/Users/dotta/paperclip/instances/default/companies/company-id/codex/home/skills/wardmote/references/API-reference.md";
     const items = parse([
       {
         kind: "tool_call",

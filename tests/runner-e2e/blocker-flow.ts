@@ -69,18 +69,18 @@ export async function runBlockerFlow(input: {
     if (failed.length) throw new Error(`Blocker outcome checks failed: ${failed.map(c => c.id).join(", ")}`);
   }
   try {
-    for (const file of ["skills/paperclip/SKILL.md", "skills/paperclip/references/api-reference.md", "skills/paperclip-create-agent/SKILL.md",
+    for (const file of ["skills/wardmote/SKILL.md", "skills/wardmote/references/api-reference.md", "skills/wardmote-create-agent/SKILL.md",
       ...["blocker-cases.ts", "blocker-flow.ts", "blocker-input.ts", "blocker-fixtures.ts", "blocker-scoring.ts"].map(f => `tests/runner-e2e/${f}`)]) {
       hashes[file] = createHash("sha256").update(await readFile(path.resolve(import.meta.dirname, "../..", file))).digest("hex");
     }
     const setup = await setupBlockerFixtures(input);
     managerId = setup.manager.id;
-    const skill = (await api.get<Row[]>(`${company}/skills`)).find(s => s.key === "tickernelz/wardmote/paperclip");
+    const skill = (await api.get<Row[]>(`${company}/skills`)).find(s => s.key === "tickernelz/wardmote/wardmote");
     if (!skill) throw new Error("Missing assigned operational skill");
     const servedHashes: Record<string, string> = {};
     for (const file of ["SKILL.md", "references/api-reference.md"]) {
       const served = await api.get<{ content: string }>(`${company}/skills/${skill.id}/files?path=${encodeURIComponent(file)}`);
-      servedHashes[`skills/paperclip/${file}`] = createHash("sha256").update(served.content).digest("hex");
+      servedHashes[`skills/wardmote/${file}`] = createHash("sha256").update(served.content).digest("hex");
     }
     await input.evidence("blocker-skill-source.json", { skillId: skill.id, servedHashes,
       agentSkills: await api.get(`/api/agents/${fixtures.agent.id}/skills`) });

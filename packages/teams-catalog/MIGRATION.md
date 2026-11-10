@@ -10,10 +10,10 @@ The approved plan for this package lives at [PAP-10206 plan document](/PAP/issue
 | --- | --- |
 | `server/src/onboarding-assets/ceo/` | **Keep compatibility assets.** New default CEO hires receive only the short `AGENTS.md`. The legacy `HEARTBEAT.md`, `SOUL.md`, and `TOOLS.md` remain on disk but are not selected into new default bundles. Existing managed/custom bundles are not rewritten. The directory can be removed when onboarding switches to the teams-catalog service (post-Phase E/G). |
 | `server/src/onboarding-assets/default/` | **Keep as-is.** Generic `AGENTS.md` fallback used outside the catalog path. |
-| `skills/paperclip-create-agent/references/agents/coder.md` | **Short role description mirrored** in `bundled/software-development/product-engineering/agents/senior-coder/AGENTS.md` (runtime procedures come from the harness, repository instructions, and installed skills). Keep the template as a reference for ad-hoc hiring until onboarding switches. |
-| `skills/paperclip-create-agent/references/agents/qa.md` | **Short role description mirrored** in both `bundled/company-defaults/core-exec-team/agents/qa/AGENTS.md` and `bundled/software-development/product-engineering/agents/qa/AGENTS.md`. Keep the template. |
-| `skills/paperclip-create-agent/references/agents/uxdesigner.md` | **Short role description mirrored** in `bundled/product/product-design/agents/ux-designer/AGENTS.md`. Both copies describe role responsibility without a default lens dictionary. |
-| `skills/paperclip-create-agent/references/agents/securityengineer.md` | **Not migrated.** No `SecurityEngineer` team ships in Phase H — see deferred entries below. |
+| `skills/wardmote-create-agent/references/agents/coder.md` | **Short role description mirrored** in `bundled/software-development/product-engineering/agents/senior-coder/AGENTS.md` (runtime procedures come from the harness, repository instructions, and installed skills). Keep the template as a reference for ad-hoc hiring until onboarding switches. |
+| `skills/wardmote-create-agent/references/agents/qa.md` | **Short role description mirrored** in both `bundled/company-defaults/core-exec-team/agents/qa/AGENTS.md` and `bundled/software-development/product-engineering/agents/qa/AGENTS.md`. Keep the template. |
+| `skills/wardmote-create-agent/references/agents/uxdesigner.md` | **Short role description mirrored** in `bundled/product/product-design/agents/ux-designer/AGENTS.md`. Both copies describe role responsibility without a default lens dictionary. |
+| `skills/wardmote-create-agent/references/agents/securityengineer.md` | **Not migrated.** No `SecurityEngineer` team ships in Phase H — see deferred entries below. |
 
 ## Bundled entries shipped in Phase H
 
@@ -29,7 +29,7 @@ The approved plan for this package lives at [PAP-10206 plan document](/PAP/issue
 
 The plan in [PAP-10206](/PAP/issues/PAP-10206#document-plan) lists additional recommended entry classes that are **not** part of the Phase H catalog. They wait on:
 
-- `optional/ops/cloud-operations` — needs a `CloudOpsEngineer` role template under `skills/paperclip-create-agent/references/agents/` first, plus an explicit security review of the deployment/secrets routines it implies. Defer until a follow-up curation pass.
+- `optional/ops/cloud-operations` — needs a `CloudOpsEngineer` role template under `skills/wardmote-create-agent/references/agents/` first, plus an explicit security review of the deployment/secrets routines it implies. Defer until a follow-up curation pass.
 - `optional/research/benchmark-quality` — needs a benchmark/evals/forensics role template and concrete starter routines from a real benchmark engagement. Defer until that engagement exists.
 - `optional/quality/security-review` — could wrap the existing `securityengineer.md` template, but the plan's Phase D security review of external-source handling has to land before bundling a security-focused team with default skill imports. Defer until Phase D is complete.
 - Adapter overrides per agent — intentionally omitted from frontmatter so the import preview lets operators choose `claude_local`, `codex_local`, etc. at install time. Lock these only when onboarding adopts the catalog and needs a deterministic default.
@@ -38,7 +38,7 @@ The plan in [PAP-10206](/PAP/issues/PAP-10206#document-plan) lists additional re
 
 ## Compatibility tests required before deleting legacy sources
 
-Before removing `server/src/onboarding-assets/ceo/` or the `skills/paperclip-create-agent/references/agents/*.md` templates, the following tests should be in place. None are written yet — they are tracked here so a future remove-legacy issue does not skip them:
+Before removing `server/src/onboarding-assets/ceo/` or the `skills/wardmote-create-agent/references/agents/*.md` templates, the following tests should be in place. None are written yet — they are tracked here so a future remove-legacy issue does not skip them:
 
 1. **Onboarding parity test** — a server-level integration test that runs the current onboarding flow on a fresh company and verifies the resulting agent/project/task tree is byte-equivalent (modulo timestamps and ids) to a `paperclipai/bundled/company-defaults/core-exec-team` install via the catalog service.
 2. **Slug stability test** — covers that the agent slugs `ceo`, `cto`, `qa` keep stable values when reparenting under an existing target manager, so downstream UI links don't churn.

@@ -356,7 +356,7 @@ function deriveManifestSkillKey(
   if ((sourceType === "github" || sourceType === "skills_sh" || sourceKind === "github" || sourceKind === "skills_sh") && owner && repo) {
     return `${owner}/${repo}/${slug}`;
   }
-  if (sourceKind === "paperclip_bundled") {
+  if (sourceKind === "wardmote_bundled") {
     return `tickernelz/wardmote/${slug}`;
   }
   if (sourceType === "url" || sourceKind === "url") {
@@ -498,7 +498,7 @@ function deriveSkillExportDirCandidates(
     }
   };
 
-  if (sourceKind === "paperclip_bundled") {
+  if (sourceKind === "wardmote_bundled") {
     pushSuffix("paperclip");
   }
 
@@ -2208,7 +2208,7 @@ function normalizePortableConfig(
       key === "instructionsEntryFile" ||
       key === "promptTemplate" ||
       key === "bootstrapPromptTemplate" || // deprecated — kept for backward compat
-      key === "paperclipSkillSync"
+      key === "wardmoteSkillSync"
     ) continue;
     if (key === "env") continue;
     next[key] = entry;
@@ -2579,7 +2579,7 @@ async function resolveBundledSkillsCommit() {
 
 async function buildSkillSourceEntry(skill: CompanySkill) {
   const metadata = isPlainRecord(skill.metadata) ? skill.metadata : null;
-  if (asString(metadata?.sourceKind) === "paperclip_bundled") {
+  if (asString(metadata?.sourceKind) === "wardmote_bundled") {
     const commit = await resolveBundledSkillsCommit();
     return {
       kind: "github-dir",
@@ -2621,7 +2621,7 @@ function shouldReferenceSkillOnExport(skill: CompanySkill, expandReferencedSkill
   // Bundled Paperclip skills ship with every build and may contain executable
   // scripts that import policy rejects when expanded; the target re-resolves
   // them from its own catalog via the pinned reference stub instead.
-  if (asString(metadata?.sourceKind) === "paperclip_bundled") return true;
+  if (asString(metadata?.sourceKind) === "wardmote_bundled") return true;
   if (expandReferencedSkills) return false;
   return skill.sourceType === "github" || skill.sourceType === "skills_sh" || skill.sourceType === "url";
 }
@@ -3261,7 +3261,7 @@ function buildManifestFromPackageFiles(
       const normalizedSourceKind = owner === "paperclipai"
         && repoName === "paperclip"
         && canonicalKey?.startsWith("tickernelz/wardmote/")
-        ? "paperclip_bundled"
+        ? "wardmote_bundled"
         : "github";
       sourceType = "github";
       sourceLocator = asString(primarySource?.url)

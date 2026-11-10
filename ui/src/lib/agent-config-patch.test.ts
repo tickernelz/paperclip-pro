@@ -151,14 +151,10 @@ describe("buildAgentUpdatePatch", () => {
   });
 
   it("preserves paperclip skill-sync selections when changing adapter types", () => {
-    // Desired skills are adapter-agnostic (company-level selections) but are
-    // persisted inside the per-adapter config under `paperclipSkillSync`. A
-    // patch that switches adapters must carry them over instead of wiping the
-    // agent's skills.
     const agent = makeAgent();
     agent.adapterConfig = {
       ...agent.adapterConfig,
-      paperclipSkillSync: { desiredSkills: ["research", "code-review"] },
+      wardmoteSkillSync: { desiredSkills: ["research", "code-review"] },
     };
 
     const patch = buildAgentUpdatePatch(
@@ -169,7 +165,7 @@ describe("buildAgentUpdatePatch", () => {
       }),
     );
 
-    expect((patch.adapterConfig as Record<string, unknown>).paperclipSkillSync).toEqual({
+    expect((patch.adapterConfig as Record<string, unknown>).wardmoteSkillSync).toEqual({
       desiredSkills: ["research", "code-review"],
     });
   });

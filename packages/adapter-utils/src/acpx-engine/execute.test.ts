@@ -1673,7 +1673,7 @@ describe("shared ACPX engine runtime behavior", () => {
       agent: "claude",
       stateDir,
       paperclipRuntimeSkills: [skill],
-      paperclipSkillSync: { desiredSkills: [skill.key] },
+      wardmoteSkillSync: { desiredSkills: [skill.key] },
     });
 
     const mountedRoot = await onlyChildDir(path.join(stateDir, "runtime-skills", "claude"));
@@ -1706,13 +1706,13 @@ describe("shared ACPX engine runtime behavior", () => {
 
     await runExecutor({
       ...baseConfig,
-      paperclipSkillSync: { desiredSkills: [keep.key, remove.key] },
+      wardmoteSkillSync: { desiredSkills: [keep.key, remove.key] },
     });
     expect(await pathExists(path.join(codexHome, "skills", remove.runtimeName, "SKILL.md"))).toBe(true);
 
     await runExecutor({
       ...baseConfig,
-      paperclipSkillSync: { desiredSkills: [keep.key] },
+      wardmoteSkillSync: { desiredSkills: [keep.key] },
     });
 
     expect(await pathExists(path.join(codexHome, "skills", keep.runtimeName, "SKILL.md"))).toBe(true);
@@ -1727,7 +1727,7 @@ describe("shared ACPX engine runtime behavior", () => {
     const codexHome = path.join(root, "codex-home");
     const operational = {
       ...await createSkill(skillRoot, "paperclip"),
-      key: "tickernelz/wardmote/paperclip",
+      key: "tickernelz/wardmote/wardmote",
     };
 
     await runExecutor({
@@ -1735,7 +1735,7 @@ describe("shared ACPX engine runtime behavior", () => {
       stateDir: path.join(root, "state"),
       env: { CODEX_HOME: codexHome },
       paperclipRuntimeSkills: [operational],
-      paperclipSkillSync: { desiredSkills: [] },
+      wardmoteSkillSync: { desiredSkills: [] },
     });
 
     expect(await pathExists(path.join(codexHome, "skills", operational.runtimeName, "SKILL.md"))).toBe(true);
@@ -1745,7 +1745,7 @@ describe("shared ACPX engine runtime behavior", () => {
     const root = await makeTempRoot();
     const operational = {
       ...await createSkill(path.join(root, "skills"), "paperclip"),
-      key: "tickernelz/wardmote/paperclip",
+      key: "tickernelz/wardmote/wardmote",
     };
     const homes = [path.join(root, "first-home"), path.join(root, "next-home")];
     for (const home of homes) {
@@ -1754,7 +1754,7 @@ describe("shared ACPX engine runtime behavior", () => {
         stateDir: path.join(root, "state"),
         env: agent === "codex" ? { CODEX_HOME: home } : { HOME: home },
         paperclipRuntimeSkills: [operational],
-        paperclipSkillSync: { desiredSkills: [] },
+        wardmoteSkillSync: { desiredSkills: [] },
       });
       const skillsHome = agent === "codex" ? path.join(home, "skills") : path.join(home, ".gemini", "skills");
       expect(String(meta[0]?.prompt ?? "")).toContain(`Skill root for this run: ${skillsHome}`);
@@ -1778,7 +1778,7 @@ describe("shared ACPX engine runtime behavior", () => {
       stateDir: path.join(root, "state"),
       env: { CODEX_HOME: codexHome },
       paperclipRuntimeSkills: [legacy],
-      paperclipSkillSync: { desiredSkills: [] },
+      wardmoteSkillSync: { desiredSkills: [] },
     });
 
     expect(await pathExists(path.join(skillsHome, legacy.runtimeName))).toBe(false);
@@ -1815,7 +1815,7 @@ describe("shared ACPX engine runtime behavior", () => {
         agent: "codex",
         stateDir: path.join(root, "state"),
         paperclipRuntimeSkills: [],
-        paperclipSkillSync: { desiredSkills: [] },
+        wardmoteSkillSync: { desiredSkills: [] },
       });
     } finally {
       if (previousCodexHome === undefined) delete process.env.CODEX_HOME;
@@ -1863,7 +1863,7 @@ describe("shared ACPX engine runtime behavior", () => {
           stateDir: path.join(root, "state"),
           env: { [keyName]: "sk-acp-test-key" },
           paperclipRuntimeSkills: [],
-          paperclipSkillSync: { desiredSkills: [] },
+          wardmoteSkillSync: { desiredSkills: [] },
         });
         const sessionEnv = (sessionInputs[0]!.sessionOptions as { env: Record<string, string> }).env;
         expect(sessionEnv.CODEX_HOME).toBe(managedHome);
@@ -1913,7 +1913,7 @@ describe("shared ACPX engine runtime behavior", () => {
         stateDir: path.join(root, "state-codex"),
         env: { CODEX_HOME: codexHome },
         paperclipRuntimeSkills: [],
-        paperclipSkillSync: { desiredSkills: [] },
+        wardmoteSkillSync: { desiredSkills: [] },
       });
       const codexEnv = (codexRun.sessionInputs[0]?.sessionOptions as { env: Record<string, string> })
         .env;
@@ -2003,7 +2003,7 @@ describe("shared ACPX engine runtime behavior", () => {
           [apiKeyName]: "sk-acp-test-key",
         },
         paperclipRuntimeSkills: [],
-        paperclipSkillSync: { desiredSkills: [] },
+        wardmoteSkillSync: { desiredSkills: [] },
       });
 
       const env = (sessionInputs[0]!.sessionOptions as { env: Record<string, string> }).env;
@@ -2029,7 +2029,7 @@ describe("shared ACPX engine runtime behavior", () => {
           stateDir: path.join(root, "state"),
           env: { CODEX_HOME: codexHome },
           paperclipRuntimeSkills: [],
-          paperclipSkillSync: { desiredSkills: [] },
+          wardmoteSkillSync: { desiredSkills: [] },
         });
 
         const env = (sessionInputs[0]!.sessionOptions as { env: Record<string, string> }).env;
@@ -2968,7 +2968,7 @@ describe("shared ACPX engine runtime behavior", () => {
     const root = await makeTempRoot();
     // This fixture injects its runtime. Keep session identity independent of
     // host CLI discovery/version probes while testing MCP credential changes.
-    const config = { agent, agentCommand: "node ./fake-acp.js", cwd: root, stateDir: path.join(root, "state"), paperclipRuntimeSkills: [], paperclipSkillSync: { desiredSkills: [] } };
+    const config = { agent, agentCommand: "node ./fake-acp.js", cwd: root, stateDir: path.join(root, "state"), paperclipRuntimeSkills: [], wardmoteSkillSync: { desiredSkills: [] } };
     const first = await runExecutor(config);
     const server = { name: "github", url: "https://example.test/github/mcp", connectionId: "github", token: "current-token" };
     const second = await runExecutor(config, {
@@ -3598,7 +3598,7 @@ describe("ACPX engine remote sandbox staging seam (PR 1: workspace + cwd)", () =
             stateDir,
             cwd: localCwd,
             paperclipRuntimeSkills: [],
-            paperclipSkillSync: { desiredSkills: [] },
+            wardmoteSkillSync: { desiredSkills: [] },
           },
           { authToken: "real-run-jwt", executionTarget },
         );
@@ -4127,7 +4127,7 @@ describe("ACPX engine Claude skill bundle staging (remote ACP lane)", () => {
     ].join("\n"));
     const { meta, result } = await runExecutor({
       agent: "claude", agentCommand: "node ./fake-acp.js", stateDir, cwd,
-      paperclipRuntimeSkills: [skill], paperclipSkillSync: { desiredSkills: [skill.key] },
+      paperclipRuntimeSkills: [skill], wardmoteSkillSync: { desiredSkills: [skill.key] },
     });
     const bundle = await onlyChildDir(path.join(stateDir, "runtime-skills", "claude"));
     const stagedFile = path.join(bundle, ".claude", "skills", skill.runtimeName, "SKILL.md");
@@ -4151,7 +4151,7 @@ describe("ACPX engine Claude skill bundle staging (remote ACP lane)", () => {
     const skills = [bounded, absent, malformed];
     const { meta } = await runExecutor({
       agent: "claude", agentCommand: "node ./fake-acp.js", stateDir, cwd,
-      paperclipRuntimeSkills: skills, paperclipSkillSync: { desiredSkills: skills.map((skill) => skill.key) },
+      paperclipRuntimeSkills: skills, wardmoteSkillSync: { desiredSkills: skills.map((skill) => skill.key) },
     });
     const prompt = String(meta[0]?.prompt ?? "");
     expect(prompt).toContain(`- bounded: ${"x".repeat(512)} (file: `);
@@ -4172,7 +4172,7 @@ describe("ACPX engine Claude skill bundle staging (remote ACP lane)", () => {
         stateDir,
         cwd: localCwd,
         paperclipRuntimeSkills: [skill],
-        paperclipSkillSync: { desiredSkills: [skill.key] },
+        wardmoteSkillSync: { desiredSkills: [skill.key] },
       },
       { authToken: "real-run-jwt", executionTarget, prepareRemoteManagedHome: stagingClaudeSeam() },
     );
@@ -4208,7 +4208,7 @@ describe("ACPX engine Claude skill bundle staging (remote ACP lane)", () => {
       stateDir,
       cwd: localCwd,
       paperclipRuntimeSkills: [skill],
-      paperclipSkillSync: { desiredSkills: [skill.key] },
+      wardmoteSkillSync: { desiredSkills: [skill.key] },
     };
     const seamWithOverriddenSkillsDir = (
       overridePath: string,
@@ -4251,7 +4251,7 @@ describe("ACPX engine Claude skill bundle staging (remote ACP lane)", () => {
         stateDir,
         cwd: localCwd,
         paperclipRuntimeSkills: [],
-        paperclipSkillSync: { desiredSkills: [] },
+        wardmoteSkillSync: { desiredSkills: [] },
       },
       { authToken: "real-run-jwt", executionTarget, prepareRemoteManagedHome: stagingClaudeSeam() },
     );
@@ -4289,7 +4289,7 @@ describe("ACPX engine Claude skill bundle staging (remote ACP lane)", () => {
         stateDir,
         cwd: localCwd,
         paperclipRuntimeSkills: [review, broken],
-        paperclipSkillSync: { desiredSkills: [review.key, broken.key] },
+        wardmoteSkillSync: { desiredSkills: [review.key, broken.key] },
       },
       { authToken: "real-run-jwt", executionTarget, prepareRemoteManagedHome: stagingClaudeSeam() },
     );
@@ -4328,7 +4328,7 @@ describe("ACPX engine Claude skill bundle staging (remote ACP lane)", () => {
         stateDir,
         cwd: localCwd,
         paperclipRuntimeSkills: [broken],
-        paperclipSkillSync: { desiredSkills: [broken.key] },
+        wardmoteSkillSync: { desiredSkills: [broken.key] },
       },
       { authToken: "real-run-jwt", executionTarget, prepareRemoteManagedHome: stagingClaudeSeam() },
     );
@@ -4377,7 +4377,7 @@ describe("ACPX engine Claude skill bundle staging (remote ACP lane)", () => {
         stateDir,
         cwd: localCwd,
         paperclipRuntimeSkills: [review, symlinkedSkillMd, noSkillMd],
-        paperclipSkillSync: { desiredSkills: [review.key, symlinkedSkillMd.key, noSkillMd.key] },
+        wardmoteSkillSync: { desiredSkills: [review.key, symlinkedSkillMd.key, noSkillMd.key] },
       },
       { authToken: "real-run-jwt", executionTarget, prepareRemoteManagedHome: stagingClaudeSeam() },
     );

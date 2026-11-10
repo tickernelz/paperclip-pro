@@ -160,7 +160,7 @@ const manifest: PaperclipPluginManifestV1 = {
       adapterType: "omp_local",
       adapterPreference: ["omp_local"],
       adapterConfig: {
-        paperclipSkillSync: {
+        wardmoteSkillSync: {
           desiredSkills: WIKI_MANAGED_SKILL_CANONICAL_KEYS
         }
       },

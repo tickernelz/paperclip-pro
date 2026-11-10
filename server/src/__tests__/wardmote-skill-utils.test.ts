@@ -16,7 +16,7 @@ async function makeTempDir(prefix: string): Promise<string> {
 
 const execFileAsync = promisify(execFile);
 const artifactHelperPath = path.resolve(
-  "skills/paperclip/scripts/paperclip-upload-artifact.sh",
+  "skills/wardmote/scripts/paperclip-upload-artifact.sh",
 );
 
 async function makeArtifactHelperHarness(
@@ -243,8 +243,8 @@ describe("paperclip skill utils", () => {
 
     const moduleDir = path.join(root, "a", "b", "c", "d", "e");
     await fs.mkdir(moduleDir, { recursive: true });
-    await fs.mkdir(path.join(root, "skills", "paperclip"), { recursive: true });
-    await fs.mkdir(path.join(root, "skills", "paperclip-create-agent"), { recursive: true });
+    await fs.mkdir(path.join(root, "skills", "wardmote"), { recursive: true });
+    await fs.mkdir(path.join(root, "skills", "wardmote-create-agent"), { recursive: true });
     await fs.mkdir(path.join(root, ".agents", "skills", "diagnose-why-work-stopped"), { recursive: true });
     await fs.mkdir(path.join(root, ".agents", "skills", "paperclip-create-plugin"), { recursive: true });
     await fs.mkdir(path.join(root, ".agents", "skills", "release"), { recursive: true });
@@ -253,21 +253,21 @@ describe("paperclip skill utils", () => {
     const entries = await listPaperclipSkillEntries(moduleDir);
 
     expect(entries.map((entry) => entry.key)).toEqual([
-      "tickernelz/wardmote/paperclip",
-      "tickernelz/wardmote/paperclip-create-agent",
+      "tickernelz/wardmote/wardmote",
+      "tickernelz/wardmote/wardmote-create-agent",
     ]);
     expect(entries.map((entry) => entry.runtimeName)).toEqual([
-      "paperclip",
-      "paperclip-create-agent",
+      "wardmote",
+      "wardmote-create-agent",
     ]);
-    expect(entries[0]?.source).toBe(path.join(root, "skills", "paperclip"));
-    expect(entries[1]?.source).toBe(path.join(root, "skills", "paperclip-create-agent"));
+    expect(entries[0]?.source).toBe(path.join(root, "skills", "wardmote"));
+    expect(entries[1]?.source).toBe(path.join(root, "skills", "wardmote-create-agent"));
   });
 
   it("documents artifact uploads in the installed Paperclip skill", async () => {
-    const skillBody = await fs.readFile(path.resolve("skills/paperclip/SKILL.md"), "utf8");
-    const referenceBody = await fs.readFile(path.resolve("skills/paperclip/references/artifacts.md"), "utf8");
-    const helperBody = await fs.readFile(path.resolve("skills/paperclip/scripts/paperclip-upload-artifact.sh"), "utf8");
+    const skillBody = await fs.readFile(path.resolve("skills/wardmote/SKILL.md"), "utf8");
+    const referenceBody = await fs.readFile(path.resolve("skills/wardmote/references/artifacts.md"), "utf8");
+    const helperBody = await fs.readFile(path.resolve("skills/wardmote/scripts/paperclip-upload-artifact.sh"), "utf8");
     const normalizedReferenceBody = referenceBody.replace(/\s+/g, " ");
 
     expect(skillBody).toContain("Generated Artifacts and Work Products");
@@ -289,13 +289,13 @@ describe("paperclip skill utils", () => {
     expect(helperBody).toContain('"$api_base/issues/$issue_id/comments"');
     expect(helperBody).toContain("attachmentIds: [$attachmentId]");
     await expect(
-      fs.access(path.resolve("skills/paperclip/scripts/paperclip-upload-artifact.sh")),
+      fs.access(path.resolve("skills/wardmote/scripts/paperclip-upload-artifact.sh")),
     ).resolves.toBeUndefined();
     await expect(fs.access(path.resolve("scripts/paperclip-upload-artifact.sh"))).rejects.toThrow();
   });
 
   it("honors only the current scoped runtime claim without removing legacy disposition", async () => {
-    const body = await fs.readFile(path.resolve("skills/paperclip/SKILL.md"), "utf8");
+    const body = await fs.readFile(path.resolve("skills/wardmote/SKILL.md"), "utf8");
     const checkout = body.split("**Step 5 — Checkout.**")[1]?.split("**Step 6")[0];
     expect(checkout).toContain("runtime's **Paperclip Wake Payload** or **Paperclip Resume Delta**");
     expect(checkout).toContain("only to that issue in that run");
@@ -307,7 +307,7 @@ describe("paperclip skill utils", () => {
   });
 
   it("keeps the external-chat shortcut behind the server-verified harness boundary", async () => {
-    const skillBody = await fs.readFile(path.resolve("skills/paperclip/SKILL.md"), "utf8");
+    const skillBody = await fs.readFile(path.resolve("skills/wardmote/SKILL.md"), "utf8");
     const shortcut = skillBody.match(
       /## Server-Verified External Chat Turns(?<body>[\s\S]*?)\n## The Heartbeat Procedure/,
     )?.groups?.body;
@@ -515,7 +515,7 @@ describe("paperclip skill utils", () => {
   });
 
   it("documents governed agent interaction resolution invariants", async () => {
-    const apiReference = await fs.readFile(path.resolve("skills/paperclip/references/api-reference.md"), "utf8");
+    const apiReference = await fs.readFile(path.resolve("skills/wardmote/references/api-reference.md"), "utf8");
     const issueDocs = await fs.readFile(path.resolve("docs/api/issues.md"), "utf8");
     for (const body of [apiReference, issueDocs]) {
       expect(body).toContain('resolverPolicy: "anyone" | "not_creator" | "human_only"');
@@ -531,7 +531,7 @@ describe("paperclip skill utils", () => {
   });
 
   it("uses the authoritative PATCH response to confirm monitor scheduling", async () => {
-    const skillBody = await fs.readFile(path.resolve("skills/paperclip/SKILL.md"), "utf8");
+    const skillBody = await fs.readFile(path.resolve("skills/wardmote/SKILL.md"), "utf8");
 
     expect(skillBody).toContain("Read that tool result to confirm");
     expect(skillBody).toContain("do not issue a confirming read");
@@ -541,7 +541,7 @@ describe("paperclip skill utils", () => {
   });
 
   it("requires issue-update writes to be verified, not inferred", async () => {
-    const skillBody = await fs.readFile(path.resolve("skills/paperclip/SKILL.md"), "utf8");
+    const skillBody = await fs.readFile(path.resolve("skills/wardmote/SKILL.md"), "utf8");
 
     expect(skillBody).toContain("Verify writes — never infer them");
     expect(skillBody).toContain("An error result means the write FAILED");

@@ -134,7 +134,7 @@ describeEmbeddedPostgres("companySkillService.detail", () => {
       role: "engineer",
       adapterType: "codex_local",
       adapterConfig: {
-        paperclipSkillSync: {
+        wardmoteSkillSync: {
           desiredSkills: [skillKey],
         },
       },
@@ -208,7 +208,7 @@ describeEmbeddedPostgres("companySkillService.detail", () => {
       role: "engineer",
       adapterType: "codex_local",
       adapterConfig: {
-        paperclipSkillSync: {
+        wardmoteSkillSync: {
           desiredSkills: ["reflection-coach"],
         },
       },

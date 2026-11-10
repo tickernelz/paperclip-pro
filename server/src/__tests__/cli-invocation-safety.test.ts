@@ -898,7 +898,7 @@ describe("wardmote CLI invocation safety", () => {
   });
 
   it("emits the setup form from the board skill", () => {
-    const source = read("skills/paperclip-board/SKILL.md");
+    const source = read("skills/wardmote-board/SKILL.md");
     expect(source).toContain("npx @tickernelz/wardmote board setup");
     expect(source).not.toContain("pnpm wardmote board setup");
     expect(source).not.toContain("pnpm exec wardmote board setup");
@@ -933,7 +933,7 @@ describe("wardmote CLI invocation safety", () => {
   });
 
   it("documents the safe form in the agent-facing skill", () => {
-    const skill = read("skills/paperclip/SKILL.md");
+    const skill = read("skills/wardmote/SKILL.md");
     expect(skill).toContain("CLI safety");
     expect(skill).toContain("npx @tickernelz/wardmote");
     expect(skill).toContain("Do not use `pnpm paperclip-pro`");

@@ -2055,7 +2055,7 @@ the WebServer. Arbitrary ambient `NODE_OPTIONS` and `NODE_PATH` remain rejected.
 The fixture creates a CEO through the public API without an instructions bundle
 override, using production permission defaults and a personal managed AI
 connection. Chromium sends the same user request on candidate and baseline:
-use `paperclip-create-agent`, read its skill, drafting guide, review checklist
+use `wardmote-create-agent`, read its skill, drafting guide, review checklist
 and coder example, fill its name/company/manager/issue-prefix placeholders,
 hire one permanent coder with that example, and delegate a
 saved JSON label-normalization fixture. Reading the optional references is an

@@ -751,7 +751,7 @@ describe("codex_local ACP lane", () => {
         fastMode: true,
         promptTemplate: "Do the assigned work.",
         paperclipRuntimeSkills: [skill],
-        paperclipSkillSync: { desiredSkills: [skill.key] },
+        wardmoteSkillSync: { desiredSkills: [skill.key] },
       },
       onMeta: async (payload: AdapterInvocationMeta) => {
         meta.push(payload);

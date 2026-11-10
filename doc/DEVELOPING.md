@@ -795,7 +795,7 @@ rely on a local workspace path as the only access path.
 Use the helper bundled with the Paperclip skill from the repo root:
 
 ```sh
-skills/paperclip/scripts/paperclip-upload-artifact.sh dist/demo.mp4 \
+skills/wardmote/scripts/paperclip-upload-artifact.sh dist/demo.mp4 \
   --title "Demo video render" \
   --summary "MP4 render for board review"
 ```
@@ -803,7 +803,7 @@ skills/paperclip/scripts/paperclip-upload-artifact.sh dist/demo.mp4 \
 For WebM output:
 
 ```sh
-skills/paperclip/scripts/paperclip-upload-artifact.sh out/walkthrough.webm \
+skills/wardmote/scripts/paperclip-upload-artifact.sh out/walkthrough.webm \
   --title "Walkthrough video" \
   --summary "WebM walkthrough render"
 ```
@@ -1606,7 +1606,7 @@ skill supplies the control-plane workflow that those adapters need for
 heartbeats. The `complain` and `suggestion-box` runtime skills are also selected
 automatically alongside it; see [Agent commentary](agent-commentary.md).
 Other runtime skills remain controlled by
-`paperclipSkillSync.desiredSkills`. The native `paperclip_runner` does not use
+`wardmoteSkillSync.desiredSkills`. The native `paperclip_runner` does not use
 this legacy default because its protocol supplies the control-plane contract.
 
 Validate the catalog without writing the manifest:
@@ -1889,7 +1889,7 @@ The board UI generates agent onboarding prompts from the add-agent modal (`+` in
 - `GET /api/invites/:token/onboarding` returns onboarding manifest details (registration endpoint, claim endpoint template, skill install hints).
 - `GET /api/invites/:token/onboarding.txt` returns a plain-text onboarding doc intended for both human operators and agents (llm.txt-style handoff), including optional inviter message and suggested network host candidates.
 - `GET /api/skills/index` lists available skill documents.
-- `GET /api/skills/paperclip` returns the Paperclip heartbeat skill markdown.
+- `GET /api/skills/wardmote` returns the Paperclip heartbeat skill markdown.
 
 ## PostHog MCP Live Smoke Test
 

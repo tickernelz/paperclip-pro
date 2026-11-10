@@ -560,7 +560,7 @@ describe("claude_local ACP lane", () => {
         effort: "high",
         promptTemplate: "Do the assigned work.",
         paperclipRuntimeSkills: [skill],
-        paperclipSkillSync: { desiredSkills: [skill.key] },
+        wardmoteSkillSync: { desiredSkills: [skill.key] },
       },
       onMeta: async (payload: AdapterInvocationMeta) => {
         meta.push(payload);
@@ -616,7 +616,7 @@ describe("claude_local ACP lane", () => {
           stateDir: path.join(root, "state"),
           promptTemplate: "Do the assigned work.",
           paperclipRuntimeSkills: [skill],
-          paperclipSkillSync: { desiredSkills: [skill.key] },
+          wardmoteSkillSync: { desiredSkills: [skill.key] },
         },
         context: {
           issueId: "issue-1",
@@ -688,7 +688,7 @@ describe("claude_local ACP lane", () => {
           stateDir: path.join(root, "state"),
           promptTemplate: "Do the assigned work.",
           paperclipRuntimeSkills: [skill],
-          paperclipSkillSync: { desiredSkills: [] },
+          wardmoteSkillSync: { desiredSkills: [] },
         },
         context: {
           issueId: "issue-1",
@@ -743,7 +743,7 @@ describe("claude_local ACP lane", () => {
           stateDir: path.join(root, "state"),
           promptTemplate: "Do the assigned work.",
           paperclipRuntimeSkills: [skill],
-          paperclipSkillSync: { desiredSkills: [skill.key] },
+          wardmoteSkillSync: { desiredSkills: [skill.key] },
         },
         context: {
           issueId: "issue-1",

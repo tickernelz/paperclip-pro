@@ -30,6 +30,7 @@ import type {
   AdapterSkillSnapshot,
 } from "./types.js";
 import type { BoundLiveStdinChannel } from "./live-stdin-channel.js";
+import { RETIRED_BUNDLED_SKILL_RUNTIME_NAMES } from "./retired-skill-names.js";
 
 export function buildRuntimeToolsEnv(
   access: AdapterRuntimeToolAccess | null | undefined,
@@ -4203,7 +4204,7 @@ export function readPaperclipSkillSyncPreference(
   desiredSkills: string[];
   desiredSkillEntries: PaperclipDesiredSkillEntry[];
 } {
-  const raw = config.paperclipSkillSync;
+  const raw = config.wardmoteSkillSync;
   if (typeof raw !== "object" || raw === null || Array.isArray(raw)) {
     return { explicit: false, desiredSkills: [], desiredSkillEntries: [] };
   }
@@ -4294,7 +4295,7 @@ export function resolvePaperclipDesiredSkillNames(
  * resolver above.
  */
 export const WARDMOTE_OPERATIONAL_SKILL_KEY =
-  "tickernelz/wardmote/paperclip";
+  "tickernelz/wardmote/wardmote";
 
 export const WARDMOTE_FEEDBACK_SKILL_KEYS = [
   "tickernelz/wardmote/complain",
@@ -4376,7 +4377,7 @@ export function writePaperclipSkillSyncPreference(
   desiredSkills: Array<string | PaperclipDesiredSkillEntry>,
 ): Record<string, unknown> {
   const next = { ...config };
-  const raw = next.paperclipSkillSync;
+  const raw = next.wardmoteSkillSync;
   const current =
     typeof raw === "object" && raw !== null && !Array.isArray(raw)
       ? { ...(raw as Record<string, unknown>) }
@@ -4400,7 +4401,7 @@ export function writePaperclipSkillSyncPreference(
   current.desiredSkills = normalized.some((entry) => entry.versionId)
     ? normalized
     : normalized.map((entry) => entry.key);
-  next.paperclipSkillSync = current;
+  next.wardmoteSkillSync = current;
   return next;
 }
 
@@ -4482,6 +4483,21 @@ function bundledSkillRelativePath(skillPath: string): string | null {
 function isSameBundledSkillFromAnotherInstall(linkedPath: string, source: string): boolean {
   const linked = bundledSkillRelativePath(linkedPath);
   return linked !== null && linked === bundledSkillRelativePath(source);
+}
+
+export async function removeRetiredBundledSkillLinks(skillsHome: string): Promise<string[]> {
+  const removed: string[] = [];
+  for (const name of RETIRED_BUNDLED_SKILL_RUNTIME_NAMES) {
+    const target = path.join(skillsHome, name);
+    const linkedPath = await fs.readlink(target).catch(() => null);
+    if (!linkedPath) continue;
+    if (bundledSkillRelativePath(path.resolve(skillsHome, linkedPath)) !== name) continue;
+    await fs.unlink(target).catch((error: NodeJS.ErrnoException) => {
+      if (error.code !== "ENOENT") throw error;
+    });
+    removed.push(name);
+  }
+  return removed;
 }
 
 export async function relinkPaperclipSkillsFromOtherInstalls(

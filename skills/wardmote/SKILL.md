@@ -1,5 +1,5 @@
 ---
-name: paperclip
+name: wardmote
 description: >
   Use for Paperclip-managed tasks and heartbeats: reading task context, delivering
   task documents or files, updating completion or blockers, coordinating or
@@ -565,7 +565,7 @@ Authorized managers can install company skills independently of hiring, then ass
 - When hiring or creating an agent, include optional `desiredSkills` so the same assignment model is applied on day one.
 
 If you are asked to install a skill for the company or an agent you MUST read:
-`skills/paperclip/references/company-skills.md`
+`skills/wardmote/references/company-skills.md`
 
 ## Routines
 
@@ -576,21 +576,21 @@ Routines are recurring tasks. Each time a routine fires it creates an execution 
 - Control concurrency and catch-up behaviour with `concurrencyPolicy` and `catchUpPolicy`.
 
 If you are asked to create or manage routines you MUST read:
-`skills/paperclip/references/routines.md`
+`skills/wardmote/references/routines.md`
 
 ## Issue Workspace Runtime Controls
 
 When an issue needs browser/manual QA or a preview server, inspect its current execution workspace and use Paperclip's workspace runtime controls instead of starting unmanaged background servers yourself.
 
 Inspect the workspace with `wardmoteGetIssueWorkspaceRuntime`, start/stop/restart services with `wardmoteControlIssueWorkspaceServices`, and block on readiness with `wardmoteWaitForIssueWorkspaceService`. For arguments, response fields, and the rest, read:
-`skills/paperclip/references/issue-workspaces.md`
+`skills/wardmote/references/issue-workspaces.md`
 
 ## Proposing Credentials Safely
 
 **When you receive a credential, propose it as a Paperclip secret immediately. Credential routes deliberately have no dedicated tool: use `wardmoteApiRequest` with `method: "POST"`, `path: "/agents/me/secret-proposals"`, and the proposal in `jsonBody`. NEVER paste the credential into an issue comment, document, file, plan, task description, or transcript.** This applies whether the value was pasted by a user, returned by an OAuth flow, delivered by email, or obtained from another secure source.
 
 Before proposing a credential you MUST read the "Agent secret proposals" section in:
-`skills/paperclip/references/api-reference.md`
+`skills/wardmote/references/api-reference.md`
 
 ## Reading Granted Secrets
 
@@ -604,7 +604,7 @@ The list is metadata-only. Fetch a specific value only when needed, with `wardmo
 - Every value fetch, including failures, is audited in `secret_access_events` and `activity_log`; never print, persist, or paste fetched values into task comments.
 - These routes require the current run-bound agent JWT. Long-lived agent keys, low-trust review agents, task-bridge keys, and skill-test tokens are denied.
 
-Exact response fields are documented in `skills/paperclip/references/api-reference.md`.
+Exact response fields are documented in `skills/wardmote/references/api-reference.md`.
 
 ## Critical Rules
 
@@ -625,7 +625,7 @@ Exact response fields are documented in `skills/paperclip/references/api-referen
 - **Budget**: auto-paused at 100%. Above 80%, focus on critical tasks only.
 - **Handle blockers directly.** Identify the exact missing capability or authority. Do not reassign blocked work or create a task for a manager or another agent merely because you are stuck. A title or reporting line does not grant access or authority. For a human-only action, use the connection/approval flow when available; otherwise save an interaction with `resolverPolicy: "human_only"` and `continuationPolicy: "wake_assignee"` on the current task, keep yourself assigned, and leave it `in_review`. Use the complete [human-input payload](#asking-for-human-input). Verify the recipient's actual capability and permission before offering delegation as an option or creating a bounded task for them. Never delegate to bypass a permission denial; a human answer also does not grant a missing permission.
 - **Keep scope decisions on the current task.** Save a human-input interaction with `resolverPolicy: "human_only"` and `continuationPolicy: "wake_assignee"`. Keep the task assigned to yourself and `in_review` while waiting. If the decision requires a particular person's answer, explicitly address that person; otherwise leave the recipient open to eligible humans. For an agent-directed question, set `addresseeAgentId` and omit `resolverPolicy`. Do not substitute a manager or invent an identity.
-- **Hiring**: use the `paperclip-create-agent` skill for new agent creation workflows (links to reusable `AGENTS.md` templates like `Coder` and `QA`).
+- **Hiring**: use the `wardmote-create-agent` skill for new agent creation workflows (links to reusable `AGENTS.md` templates like `Coder` and `QA`).
 
 ## Comment Style (Required)
 
@@ -698,7 +698,7 @@ If you're asked to make a plan, _do not mark the issue as done_. When the plan i
 
 If the plan needs explicit approval before implementation, update the `plan` document, create a `request_confirmation` issue-thread interaction bound to the latest plan revision, then update the source issue to `in_review` with a comment that links the plan and names the pending confirmation. This is a deliberate waiting path, not an abandoned productive run. Wait for acceptance before creating implementation subtasks. See `references/api-reference.md` for the interaction payload.
 
-When asked to convert a plan into executable Paperclip tasks — depth, assignment, dependencies, parallelization — use the companion skill `paperclip-converting-plans-to-tasks`.
+When asked to convert a plan into executable Paperclip tasks — depth, assignment, dependencies, parallelization — use the companion skill `wardmote-converting-plans-to-tasks`.
 
 Recommended flow — write the document with `wardmoteUpsertIssueDocument`:
 
@@ -757,7 +757,7 @@ Results are ranked by relevance: title matches first, then identifier, descripti
 
 ## Full Reference
 
-For detailed API tables, JSON response schemas, worked examples (IC and Manager heartbeats), governance/approvals, cross-team delegation rules, error codes, issue lifecycle diagram, and the common mistakes table, read: `skills/paperclip/references/api-reference.md`
+For detailed API tables, JSON response schemas, worked examples (IC and Manager heartbeats), governance/approvals, cross-team delegation rules, error codes, issue lifecycle diagram, and the common mistakes table, read: `skills/wardmote/references/api-reference.md`
 
 ### Conversational confirmation answers
 

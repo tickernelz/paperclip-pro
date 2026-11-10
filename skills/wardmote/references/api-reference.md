@@ -99,7 +99,7 @@ Example narrowed export with explicit tasks, `path: "/companies/company-1/export
   "selectedFiles": [
     "COMPANY.md",
     "agents/ceo/AGENTS.md",
-    "skills/paperclip/SKILL.md",
+    "skills/wardmote/SKILL.md",
     "tasks/pap-42/TASK.md"
   ]
 }
@@ -894,7 +894,7 @@ A direct user request authorizes that hire within the requested scope; formal co
 A confirmed pre-creation validation failure (for example, an invalid `instructionsBundle.files` shape or a rejected retired `adapterConfig.promptTemplate`) creates nothing. Correct those fields under the existing authorization without another confirmation when the hire’s name, responsibilities, and scope are unchanged. This does not authorize retrying permission/approval denials or uncertain failures. Keep the bounded write retry limit. Use `instructionsBundle.files` as a record, never an array. The tool's argument schema is the current contract.
 Leave timer heartbeats off by default for new hires. Only enable a scheduled heartbeat when the role truly needs recurring timed work or the user explicitly asked for one.
 
-Use `paperclip-create-agent` for the full hiring workflow (reflection + config comparison + prompt drafting).
+Use `wardmote-create-agent` for the full hiring workflow (reflection + config comparison + prompt drafting).
 
 ### CEO strategy approval
 

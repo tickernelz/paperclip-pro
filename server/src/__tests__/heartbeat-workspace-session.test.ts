@@ -2281,12 +2281,12 @@ describe("effective run session config freshness", () => {
         first: ompConfig({
           paperclipRuntimeSkills: [connectorEntry("/assets/bundles/aaa")],
           paperclipConnectorSkillDigest: "digest-a",
-          paperclipSkillSync: { desiredSkillEntries: [{ key: "connector-openwa", versionId: null }] },
+          wardmoteSkillSync: { desiredSkillEntries: [{ key: "connector-openwa", versionId: null }] },
         }),
         next: ompConfig({
           paperclipRuntimeSkills: [connectorEntry("/assets/bundles/bbb")],
           paperclipConnectorSkillDigest: "digest-b",
-          paperclipSkillSync: { desiredSkillEntries: [] },
+          wardmoteSkillSync: { desiredSkillEntries: [] },
         }),
       });
 
@@ -2465,11 +2465,11 @@ describe("effective run session config freshness", () => {
         const decision = await revisionEdit({
           adapterType: "omp_local",
           first: {
-            effectiveAdapterConfig: ompConfig({ paperclipSkillSync: { desiredSkills: ["paperclip"] } }),
+            effectiveAdapterConfig: ompConfig({ wardmoteSkillSync: { desiredSkills: ["paperclip"] } }),
             runtimeSkills: [skill("paperclip", "skill-version-1")],
           },
           next: {
-            effectiveAdapterConfig: ompConfig({ paperclipSkillSync: { desiredSkills: ["paperclip", "reviewer"] } }),
+            effectiveAdapterConfig: ompConfig({ wardmoteSkillSync: { desiredSkills: ["paperclip", "reviewer"] } }),
             runtimeSkills: [skill("paperclip", "skill-version-1"), skill("reviewer", "skill-version-1")],
           },
         });

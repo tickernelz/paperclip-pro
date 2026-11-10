@@ -71,15 +71,12 @@ export function boardChatRoutes(
   const router = Router();
   let liveBoardChats = 0;
 
-  // The board skill is read from disk once and cached. Resolves to the
-  // repo-root `skills/paperclip-board/SKILL.md` whether running from
-  // `server/src/routes` (tsx) or `server/dist/routes` (compiled).
   let _boardSkillCache: string | null = null;
 
   function loadBoardSkill(): string {
     if (_boardSkillCache) return _boardSkillCache;
     const here = path.dirname(fileURLToPath(import.meta.url));
-    const skillPath = path.resolve(here, "../../../skills/paperclip-board/SKILL.md");
+    const skillPath = path.resolve(here, "../../../skills/wardmote-board/SKILL.md");
     try {
       let content = fs.readFileSync(skillPath, "utf-8");
       // Strip YAML frontmatter — the model only needs the body.

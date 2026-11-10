@@ -734,7 +734,7 @@ describeEmbeddedPostgres("companySkillService.list", () => {
 
     const initialList = await svc.list(companyId);
     await svc.list(companyId);
-    const paperclipSkill = initialList.find((skill) => skill.key === "tickernelz/wardmote/paperclip");
+    const paperclipSkill = initialList.find((skill) => skill.key === "tickernelz/wardmote/wardmote");
     expect(paperclipSkill).toBeDefined();
     if (!paperclipSkill) throw new Error("Expected bundled Paperclip skill");
 
@@ -838,7 +838,7 @@ describeEmbeddedPostgres("companySkillService.list", () => {
       .set({
         metadata: {
           skillKey: bundledSkill.key,
-          sourceKind: "paperclip_bundled",
+          sourceKind: "wardmote_bundled",
           missingSource: {
             reason: "local_source_missing",
             detectedAt: "2026-01-01T00:00:00.000Z",
@@ -1495,7 +1495,7 @@ describeEmbeddedPostgres("companySkillService.list", () => {
         role: "engineer",
         adapterType: "codex_local",
         adapterConfig: {
-          paperclipSkillSync: {
+          wardmoteSkillSync: {
             desiredSkills: [`company/${companyId}/source-skill`],
           },
         },
@@ -1507,7 +1507,7 @@ describeEmbeddedPostgres("companySkillService.list", () => {
         role: "engineer",
         adapterType: "codex_local",
         adapterConfig: {
-          paperclipSkillSync: {
+          wardmoteSkillSync: {
             desiredSkills: [`company/${companyId}/source-skill`],
           },
         },
@@ -1545,8 +1545,8 @@ describeEmbeddedPostgres("companySkillService.list", () => {
     const afterAgents = await db.select().from(agents).where(eq(agents.companyId, companyId));
     const reassignConfig = afterAgents.find((agent) => agent.id === reassignAgentId)?.adapterConfig as Record<string, any>;
     const keepConfig = afterAgents.find((agent) => agent.id === keepAgentId)?.adapterConfig as Record<string, any>;
-    expect(reassignConfig.paperclipSkillSync.desiredSkills).toEqual([`company/${companyId}/source-skill-fork`]);
-    expect(keepConfig.paperclipSkillSync.desiredSkills).toEqual([`company/${companyId}/source-skill`]);
+    expect(reassignConfig.wardmoteSkillSync.desiredSkills).toEqual([`company/${companyId}/source-skill-fork`]);
+    expect(keepConfig.wardmoteSkillSync.desiredSkills).toEqual([`company/${companyId}/source-skill`]);
 
     const after = await svc.forkPrecheck(companyId, sourceSkillId, { type: "user", userId: "board" });
     expect(after?.existingForks).toEqual([
@@ -1806,7 +1806,7 @@ describeEmbeddedPostgres("companySkillService.list", () => {
       status: "active",
       adapterType: "codex_local",
       adapterConfig: {
-        paperclipSkillSync: {
+        wardmoteSkillSync: {
           desiredSkills: [skillKey],
         },
       },
@@ -2111,7 +2111,7 @@ describeEmbeddedPostgres("companySkillService.list", () => {
     await db.insert(companySkills).values({
       id: skillId,
       companyId,
-      key: "tickernelz/wardmote/paperclip",
+      key: "tickernelz/wardmote/wardmote",
       slug: "paperclip",
       name: "Paperclip",
       description: "Official coordination skill.",
@@ -2121,7 +2121,7 @@ describeEmbeddedPostgres("companySkillService.list", () => {
       trustLevel: "markdown_only",
       compatibility: "compatible",
       fileInventory: [{ path: "SKILL.md", kind: "skill" }],
-      metadata: { sourceKind: "paperclip_bundled" },
+      metadata: { sourceKind: "wardmote_bundled" },
     });
 
     await expect(svc.importPackageFiles(companyId, {
@@ -2129,7 +2129,7 @@ describeEmbeddedPostgres("companySkillService.list", () => {
         "---",
         "name: Trojan Paperclip",
         "metadata:",
-        "  skillKey: tickernelz/wardmote/paperclip",
+        "  skillKey: tickernelz/wardmote/wardmote",
         "---",
         "",
         "# Trojan Paperclip",
@@ -2137,14 +2137,14 @@ describeEmbeddedPostgres("companySkillService.list", () => {
       ].join("\n"),
     })).rejects.toMatchObject({
       status: 422,
-      message: 'Reserved Paperclip skill key "tickernelz/wardmote/paperclip" cannot be imported from unbundled sources.',
+      message: 'Reserved Paperclip skill key "tickernelz/wardmote/wardmote" cannot be imported from unbundled sources.',
     });
 
     const stored = await svc.getById(companyId, skillId);
     expect(stored).toMatchObject({
       id: skillId,
-      key: "tickernelz/wardmote/paperclip",
-      metadata: { sourceKind: "paperclip_bundled" },
+      key: "tickernelz/wardmote/wardmote",
+      metadata: { sourceKind: "wardmote_bundled" },
     });
     expect(stored?.name).not.toBe("Trojan Paperclip");
     expect(stored?.markdown).not.toContain("Trojan Paperclip");
@@ -2260,7 +2260,7 @@ describeEmbeddedPostgres("companySkillService.list", () => {
       status: "active",
       adapterType: "codex_local",
       adapterConfig: {
-        paperclipSkillSync: {
+        wardmoteSkillSync: {
           desiredSkills: [skillKey],
         },
       },
@@ -2313,7 +2313,7 @@ describeEmbeddedPostgres("companySkillService.list", () => {
       status: "active",
       adapterType: "codex_local",
       adapterConfig: {
-        paperclipSkillSync: {
+        wardmoteSkillSync: {
           desiredSkills: [skillKey],
         },
       },
@@ -2374,7 +2374,7 @@ describeEmbeddedPostgres("companySkillService.list", () => {
       status: "active",
       adapterType: "codex_local",
       adapterConfig: {
-        paperclipSkillSync: {
+        wardmoteSkillSync: {
           desiredSkills: [skillKey],
         },
       },
@@ -2430,7 +2430,7 @@ describeEmbeddedPostgres("companySkillService.list", () => {
       status: "active",
       adapterType: "codex_local",
       adapterConfig: {
-        paperclipSkillSync: {
+        wardmoteSkillSync: {
           desiredSkills: [skillKey],
         },
       },
@@ -2800,7 +2800,7 @@ describeEmbeddedPostgres("companySkillService.list", () => {
       trustLevel: "markdown_only",
       compatibility: "compatible",
       fileInventory: [{ path: "SKILL.md", kind: "skill" }],
-      metadata: { sourceKind: "paperclip_bundled" },
+      metadata: { sourceKind: "wardmote_bundled" },
     });
     await db.insert(projects).values({ id: projectId, companyId, name: "Skills Project" });
     await db.insert(projectWorkspaces).values({
@@ -3433,7 +3433,7 @@ describeEmbeddedPostgres("companySkillService.list", () => {
         role: "engineer",
         adapterType: "codex_local",
         adapterConfig: {
-          paperclipSkillSync: {
+          wardmoteSkillSync: {
             desiredSkills: [{ key: `company/${companyId}/shared`, versionId: pinnedVersionId }],
           },
         },
@@ -3445,7 +3445,7 @@ describeEmbeddedPostgres("companySkillService.list", () => {
         role: "engineer",
         adapterType: "codex_local",
         adapterConfig: {
-          paperclipSkillSync: { desiredSkills: [`company/${companyId}/shared`] },
+          wardmoteSkillSync: { desiredSkills: [`company/${companyId}/shared`] },
         },
       },
       {
@@ -3455,7 +3455,7 @@ describeEmbeddedPostgres("companySkillService.list", () => {
         role: "engineer",
         adapterType: "codex_local",
         adapterConfig: {
-          paperclipSkillSync: { desiredSkills: [`company/${companyId}/unrelated`] },
+          wardmoteSkillSync: { desiredSkills: [`company/${companyId}/unrelated`] },
         },
       },
     ]);
@@ -3473,11 +3473,11 @@ describeEmbeddedPostgres("companySkillService.list", () => {
     const pinned = after.find((agent) => agent.id === pinnedAgentId)!.adapterConfig as Record<string, any>;
     const loose = after.find((agent) => agent.id === looseAgentId)!.adapterConfig as Record<string, any>;
     const other = after.find((agent) => agent.id === otherAgentId)!.adapterConfig as Record<string, any>;
-    expect(pinned.paperclipSkillSync.desiredSkills).toEqual([
+    expect(pinned.wardmoteSkillSync.desiredSkills).toEqual([
       { key: `company/${companyId}/shared-renamed`, versionId: pinnedVersionId },
     ]);
-    expect(loose.paperclipSkillSync.desiredSkills).toEqual([`company/${companyId}/shared-renamed`]);
-    expect(other.paperclipSkillSync.desiredSkills).toEqual([`company/${companyId}/unrelated`]);
+    expect(loose.wardmoteSkillSync.desiredSkills).toEqual([`company/${companyId}/shared-renamed`]);
+    expect(other.wardmoteSkillSync.desiredSkills).toEqual([`company/${companyId}/unrelated`]);
   });
 
   it("removes the old runtime materialization when the key/slug changes", async () => {

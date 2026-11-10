@@ -21,7 +21,7 @@ describe("standalone Node commentary helper", () => {
     root = await mkdtemp(join(tmpdir(), "paperclip-node-feedback-"));
     helper = join(root, "submit-agent-commentary.mjs");
     // An installed skill must work outside the repository/package boundary.
-    await copyFile(fileURLToPath(new URL("../../../skills/paperclip/scripts/submit-agent-commentary.mjs", import.meta.url)), helper);
+    await copyFile(fileURLToPath(new URL("../../../skills/wardmote/scripts/submit-agent-commentary.mjs", import.meta.url)), helper);
   });
   afterAll(async () => { await rm(root, { recursive: true, force: true }); });
   afterEach(async () => {

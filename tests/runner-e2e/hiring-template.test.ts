@@ -21,13 +21,13 @@ const reuseValues = ["launch_queue", "api_key_rotation", "mixed_case_42", "alrea
 function commandEvents(file: string) {
   return canonicalProviderEventsFromCodex("item/completed", { item: {
     type: "commandExecution", id: `read-${file}`, status: "completed", exitCode: 0,
-    command: `cat /workspace/.agents/skills/paperclip-create-agent/${file}`, aggregatedOutput: "source bytes",
+    command: `cat /workspace/.agents/skills/wardmote-create-agent/${file}`, aggregatedOutput: "source bytes",
   } }).map(event => ({ eventType: event.eventType, createdAt: beforeHire, payload: { prpEvent: event } }));
 }
 function validEvidence(notificationCount = 0): HiringTemplateEvidence {
   const turnFixture = createHiringTemplateTurnFixture(notificationCount);
-  const sourceFiles = [...HIRING_TEMPLATE_READ_FILES.map(file => `skills/paperclip-create-agent/${file}`),
-    "skills/paperclip-create-agent/references/baseline-role-guide.md", "server/src/onboarding-assets/ceo/AGENTS.md"];
+  const sourceFiles = [...HIRING_TEMPLATE_READ_FILES.map(file => `skills/wardmote-create-agent/${file}`),
+    "skills/wardmote-create-agent/references/baseline-role-guide.md", "server/src/onboarding-assets/ceo/AGENTS.md"];
   const hashes = Object.fromEntries(sourceFiles.map(file => [file, hiringTemplateHash(file)]));
   const tasks = turnFixture.evidence.tasks;
   const runs = turnFixture.evidence.runs;
@@ -90,9 +90,6 @@ describe("production hiring template oracle", () => {
     historical.expectedCeoFiles = oldFiles;
     historical.leadInstructions!.files = oldFiles;
     for (const file of Object.keys(oldFiles)) historical.expectedSourceHashes[`server/src/onboarding-assets/ceo/${file}`] = historical.servedSourceHashes[`server/src/onboarding-assets/ceo/${file}`] = hiringTemplateHash(oldFiles[file as keyof typeof oldFiles]);
-    // Exact baseline source: skills/paperclip-create-agent/references/agents/coder.md
-    // at d7bdfc422cadcc407f2945e211833a8382b80117. Its SHA-256 below
-    // preserves the actual historical text and all four placeholder kinds.
     const historicalReference = await readFile(new URL("./fixtures/hiring-templates/coder.d7bdfc4.md", import.meta.url), "utf8");
     expect(hiringTemplateHash(historicalReference)).toBe("766c6f5db907f3dc2e317d540feb80e77358202c59d759449228a32450fa6202");
     historical.coderExample = renderHiringCoderExample(historicalReference, "Casey", "Fixture Company", "CEO", "FIX");
@@ -114,20 +111,20 @@ describe("production hiring template oracle", () => {
   it("separates successful workflow outcomes from missing or mismatched source coverage", () => {
     const e = validEvidence();
     for (const patch of [{ readRuns: e.readRuns.filter(run => run.runId !== "lead-1") }, { assignedSkills: [] }, { expectedSourceHashes: {} }, { servedSourceHashes: {} },
-      { servedSourceHashes: { ...e.servedSourceHashes, "skills/paperclip-create-agent/SKILL.md": hiringTemplateHash("other checkout") } }]) {
+      { servedSourceHashes: { ...e.servedSourceHashes, "skills/wardmote-create-agent/SKILL.md": hiringTemplateHash("other checkout") } }]) {
       expect(gradeHiringTemplate({ ...e, ...patch })).toMatchObject({ outcomePassed: true, comparisonStatus: "uncomparable" });
     }
     const incomplete = { ...e.expectedSourceHashes };
-    delete incomplete["skills/paperclip-create-agent/references/agents/coder.md"];
+    delete incomplete["skills/wardmote-create-agent/references/agents/coder.md"];
     fails({ ...e, expectedSourceHashes: incomplete }, "source-fingerprints");
   });
 
   it("requires a completed pre-hire lead read rather than an echoed path, failed read or listing", () => {
     const e = validEvidence(), good = e.readRuns.find(run => run.runId === "lead-1")!;
-    for (const command of ["echo /workspace/.agents/skills/paperclip-create-agent/SKILL.md", "ls /workspace/.agents/skills/paperclip-create-agent/SKILL.md",
-      "cat /workspace/.agents/skills/wrong-skill/SKILL.md", "cat $SKILL/SKILL.md", "cat /workspace/.agents/skills/paperclip-create-agent/SKILL.md > /dev/null",
-      ...["cat --help", "cat --version", "head --help", "tail --version", "head -n 0", "tail -c 0", "sed -n ''", "sed -n '1q'", "sed -n 'q'", "sed --help", "sed -n '1,200w /tmp/other'", "cat -n"].map(prefix => `${prefix} /workspace/.agents/skills/paperclip-create-agent/SKILL.md`),
-      'cat "/workspace/.agents/skills/paperclip-create-agent/SKILL.md""suffix"' ]) {
+    for (const command of ["echo /workspace/.agents/skills/wardmote-create-agent/SKILL.md", "ls /workspace/.agents/skills/wardmote-create-agent/SKILL.md",
+      "cat /workspace/.agents/skills/wrong-skill/SKILL.md", "cat $SKILL/SKILL.md", "cat /workspace/.agents/skills/wardmote-create-agent/SKILL.md > /dev/null",
+      ...["cat --help", "cat --version", "head --help", "tail --version", "head -n 0", "tail -c 0", "sed -n ''", "sed -n '1q'", "sed -n 'q'", "sed --help", "sed -n '1,200w /tmp/other'", "cat -n"].map(prefix => `${prefix} /workspace/.agents/skills/wardmote-create-agent/SKILL.md`),
+      'cat "/workspace/.agents/skills/wardmote-create-agent/SKILL.md""suffix"' ]) {
       const events = commandEvents("SKILL.md");
       const payload = events[0]!.payload.prpEvent.payload as Record<string, unknown>;
       payload.name = command;
@@ -146,7 +143,7 @@ describe("production hiring template oracle", () => {
   });
 
   it("accepts only supported direct read arguments and does not trust process read hints", () => {
-    const path = "/workspace/.agents/skills/paperclip-create-agent/SKILL.md";
+    const path = "/workspace/.agents/skills/wardmote-create-agent/SKILL.md";
     for (const command of [`cat ${path}`, `cat -- '${path}'`, `head -n 200 ${path}`, `head -n200 ${path}`, `tail -c 200 ${path}`,
       `sed -n '1,200p' ${path}`, `sed -n -e 'p' ${path}`]) {
       const events = commandEvents("SKILL.md");
@@ -154,18 +151,18 @@ describe("production hiring template oracle", () => {
       expect(hiringTemplateReadReceipts([{ runId: "lead-1", agentId: "lead", events }], "lead"), command).toHaveLength(1);
     }
     const events = commandEvents("SKILL.md");
-    Object.assign(events[0]!.payload.prpEvent.payload, { name: `cat --help ${path}`, operation: "read", readOnly: true, target: ".agents/skills/paperclip-create-agent/SKILL.md" });
+    Object.assign(events[0]!.payload.prpEvent.payload, { name: `cat --help ${path}`, operation: "read", readOnly: true, target: ".agents/skills/wardmote-create-agent/SKILL.md" });
     expect(hiringTemplateReadReceipts([{ runId: "lead-1", agentId: "lead", events }], "lead")).toHaveLength(0);
   });
 
   it("uses the production ACPX event mapper and leaves redacted absolute read paths uncomparable", () => {
     const events = HIRING_TEMPLATE_READ_FILES.flatMap(file => canonicalProviderEventsFromAcpxRuntimeEvent({
       type: "tool_call", tag: "tool_call_update", toolCallId: `read-${file}`, title: "Read", kind: "read", status: "completed",
-      locations: [{ path: `.agents/skills/paperclip-create-agent/${file}` }], rawOutput: "Source bytes",
+      locations: [{ path: `.agents/skills/wardmote-create-agent/${file}` }], rawOutput: "Source bytes",
     } as never, `read-${file}`).map(event => ({ eventType: event.eventType, createdAt: beforeHire, payload: { prpEvent: event } })));
     expect(gradeHiringTemplate({ ...validEvidence(), readRuns: [{ runId: "lead-1", agentId: "lead", events }] }).comparisonStatus).toBe("comparable");
     const absolute = canonicalProviderEventsFromAcpxRuntimeEvent({ type: "tool_call", tag: "tool_call_update", toolCallId: "read", title: "Read", kind: "read", status: "completed",
-      locations: [{ path: "/workspace/.agents/skills/paperclip-create-agent/SKILL.md" }], rawOutput: "Source bytes" } as never, "read");
+      locations: [{ path: "/workspace/.agents/skills/wardmote-create-agent/SKILL.md" }], rawOutput: "Source bytes" } as never, "read");
     expect(hiringTemplateReadReceipts([{ runId: "lead-1", agentId: "lead", events: absolute.map(event => ({ eventType: event.eventType, payload: { prpEvent: event } })) }], "lead")).toHaveLength(0);
   });
 });
@@ -257,7 +254,7 @@ describe("production hiring fixture wiring and source observations", () => {
       if (path.includes("instructions-bundle/file?")) return { content: files[new URL(path, "http://fixture").searchParams.get("path")!] };
       if (path === "/api/companies/company/skills") return [{ id: "creator", key: HIRING_TEMPLATE_SKILL_KEY }];
       if (path === "/api/agents/lead/skills?companyId=company") return { desiredSkills: [HIRING_TEMPLATE_SKILL_KEY] };
-      if (path.startsWith("/api/companies/company/skills/creator/files?")) return { content: await readFile(new URL(`../../skills/paperclip-create-agent/${new URL(path, "http://fixture").searchParams.get("path")}`, import.meta.url), "utf8") };
+      if (path.startsWith("/api/companies/company/skills/creator/files?")) return { content: await readFile(new URL(`../../skills/wardmote-create-agent/${new URL(path, "http://fixture").searchParams.get("path")}`, import.meta.url), "utf8") };
       throw new Error(`Unexpected public read ${path}`);
     };
     const api = { get } as Pick<RunnerApi, "get">;
