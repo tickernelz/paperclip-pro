@@ -118,11 +118,11 @@ describe("worktree config repair", () => {
   it("repairs legacy repo-local worktree config and env files into an isolated instance", async () => {
     const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-worktree-repair-"));
     const worktreeRoot = path.join(tempRoot, "PAP-884-ai-commits-component");
-    const wardmoteDir = path.join(worktreeRoot, ".paperclip");
+    const wardmoteDir = path.join(worktreeRoot, ".wardmote");
     const configPath = path.join(wardmoteDir, "config.json");
     const envPath = path.join(wardmoteDir, ".env");
-    const sharedRoot = path.join(tempRoot, ".paperclip", "instances", "default");
-    const isolatedHome = path.join(tempRoot, ".paperclip-worktrees");
+    const sharedRoot = path.join(tempRoot, ".wardmote", "instances", "default");
+    const isolatedHome = path.join(tempRoot, ".wardmote-worktrees");
 
     await fs.mkdir(wardmoteDir, { recursive: true });
     await fs.writeFile(configPath, JSON.stringify(buildLegacyConfig(sharedRoot), null, 2) + "\n", "utf8");
@@ -182,10 +182,10 @@ describe("worktree config repair", () => {
   it("disables backups in an otherwise isolated existing worktree config", async () => {
     const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-worktree-backup-migration-"));
     const worktreeRoot = path.join(tempRoot, "disable-worktree-backups");
-    const wardmoteDir = path.join(worktreeRoot, ".paperclip");
+    const wardmoteDir = path.join(worktreeRoot, ".wardmote");
     const configPath = path.join(wardmoteDir, "config.json");
     const envPath = path.join(wardmoteDir, ".env");
-    const isolatedHome = path.join(tempRoot, ".paperclip-worktrees");
+    const isolatedHome = path.join(tempRoot, ".wardmote-worktrees");
     const instanceRoot = path.join(isolatedHome, "instances", "disable-worktree-backups");
 
     await fs.mkdir(wardmoteDir, { recursive: true });
@@ -234,11 +234,11 @@ describe("worktree config repair", () => {
   it("preserves an externally supplied PORT while repairing worktree config", async () => {
     const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-worktree-repair-external-port-"));
     const worktreeRoot = path.join(tempRoot, "PAP-10341-runtime-managed-port");
-    const wardmoteDir = path.join(worktreeRoot, ".paperclip");
+    const wardmoteDir = path.join(worktreeRoot, ".wardmote");
     const configPath = path.join(wardmoteDir, "config.json");
     const envPath = path.join(wardmoteDir, ".env");
-    const sharedRoot = path.join(tempRoot, ".paperclip", "instances", "default");
-    const isolatedHome = path.join(tempRoot, ".paperclip-worktrees");
+    const sharedRoot = path.join(tempRoot, ".wardmote", "instances", "default");
+    const isolatedHome = path.join(tempRoot, ".wardmote-worktrees");
 
     await fs.mkdir(wardmoteDir, { recursive: true });
     await fs.writeFile(configPath, JSON.stringify(buildLegacyConfig(sharedRoot), null, 2) + "\n", "utf8");
@@ -274,7 +274,7 @@ describe("worktree config repair", () => {
 
   it("never rewrites a main-instance env when ambient worktree flags leak into the process", async () => {
     const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-worktree-leak-"));
-    const homeDir = path.join(tempRoot, ".paperclip");
+    const homeDir = path.join(tempRoot, ".wardmote");
     const instanceRoot = path.join(homeDir, "instances", "default");
     const configPath = path.join(instanceRoot, "config.json");
     const envPath = path.join(instanceRoot, ".env");
@@ -311,7 +311,7 @@ describe("worktree config repair", () => {
 
   it("does not persist runtime ports into a main-instance config when ambient worktree flags leak in", async () => {
     const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-worktree-leak-ports-"));
-    const homeDir = path.join(tempRoot, ".paperclip");
+    const homeDir = path.join(tempRoot, ".wardmote");
     const instanceRoot = path.join(homeDir, "instances", "default");
     const configPath = path.join(instanceRoot, "config.json");
 
@@ -337,7 +337,7 @@ describe("worktree config repair", () => {
   it("does not adopt a .paperclip config whose own env does not declare a worktree", async () => {
     const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-worktree-unattested-"));
     const repoRoot = path.join(tempRoot, "repo");
-    const wardmoteDir = path.join(repoRoot, ".paperclip");
+    const wardmoteDir = path.join(repoRoot, ".wardmote");
     const configPath = path.join(wardmoteDir, "config.json");
     const envPath = path.join(wardmoteDir, ".env");
 
@@ -355,7 +355,7 @@ describe("worktree config repair", () => {
     process.chdir(repoRoot);
     process.env.WARDMOTE_IN_WORKTREE = "true";
     process.env.WARDMOTE_WORKTREE_NAME = "PAP-884-ai-commits-component";
-    process.env.WARDMOTE_WORKTREES_DIR = path.join(tempRoot, ".paperclip-worktrees");
+    process.env.WARDMOTE_WORKTREES_DIR = path.join(tempRoot, ".wardmote-worktrees");
     delete process.env.WARDMOTE_HOME;
     delete process.env.WARDMOTE_INSTANCE_ID;
     delete process.env.WARDMOTE_CONFIG;
@@ -370,11 +370,11 @@ describe("worktree config repair", () => {
   it("avoids sibling worktree ports when repairing legacy configs", async () => {
     const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-worktree-repair-ports-"));
     const worktreeRoot = path.join(tempRoot, "PAP-880-thumbs-capture-for-evals-feature");
-    const wardmoteDir = path.join(worktreeRoot, ".paperclip");
+    const wardmoteDir = path.join(worktreeRoot, ".wardmote");
     const configPath = path.join(wardmoteDir, "config.json");
     const envPath = path.join(wardmoteDir, ".env");
-    const sharedRoot = path.join(tempRoot, ".paperclip", "instances", "default");
-    const isolatedHome = path.join(tempRoot, ".paperclip-worktrees");
+    const sharedRoot = path.join(tempRoot, ".wardmote", "instances", "default");
+    const isolatedHome = path.join(tempRoot, ".wardmote-worktrees");
     const siblingInstanceRoot = path.join(isolatedHome, "instances", "pap-878-create-a-mine-tab-in-inbox");
 
     await fs.mkdir(wardmoteDir, { recursive: true });
@@ -440,18 +440,18 @@ describe("worktree config repair", () => {
 
   it("serializes and persists cross-repo worktree port reservations", async () => {
     const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-worktree-port-registry-"));
-    const isolatedHome = path.join(tempRoot, ".paperclip-worktrees");
+    const isolatedHome = path.join(tempRoot, ".wardmote-worktrees");
     const firstWorktreeRoot = path.join(tempRoot, "repo-one", "PAP-14013-import-bulk-skills");
     const secondWorktreeRoot = path.join(tempRoot, "repo-two", "PAP-14069-port-conflicts");
-    const firstConfigPath = path.join(firstWorktreeRoot, ".paperclip", "config.json");
-    const secondConfigPath = path.join(secondWorktreeRoot, ".paperclip", "config.json");
+    const firstConfigPath = path.join(firstWorktreeRoot, ".wardmote", "config.json");
+    const secondConfigPath = path.join(secondWorktreeRoot, ".wardmote", "config.json");
 
     const writeWorktree = async (
       worktreeRoot: string,
       name: string,
       databaseMode: "embedded-postgres" | "postgres" = "embedded-postgres",
     ) => {
-      const wardmoteDir = path.join(worktreeRoot, ".paperclip");
+      const wardmoteDir = path.join(worktreeRoot, ".wardmote");
       const instanceRoot = path.join(isolatedHome, "instances", name.toLowerCase());
       const config = buildIsolatedConfig(instanceRoot, 45439, 55439);
       await fs.mkdir(wardmoteDir, { recursive: true });
@@ -491,7 +491,7 @@ describe("worktree config repair", () => {
       process.env.WARDMOTE_WORKTREES_DIR = isolatedHome;
       process.env.WARDMOTE_HOME = isolatedHome;
       process.env.WARDMOTE_INSTANCE_ID = name.toLowerCase();
-      process.env.WARDMOTE_CONFIG = path.join(worktreeRoot, ".paperclip", "config.json");
+      process.env.WARDMOTE_CONFIG = path.join(worktreeRoot, ".wardmote", "config.json");
       delete process.env.PORT;
       delete process.env.DATABASE_URL;
     };
@@ -537,11 +537,11 @@ describe("worktree config repair", () => {
   it("ignores stale migrated env paths when the dev runner resolved the local config", async () => {
     const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-worktree-migrated-env-"));
     const worktreeRoot = path.join(tempRoot, "PAP-9940-what-can-we-learn");
-    const wardmoteDir = path.join(worktreeRoot, ".paperclip");
+    const wardmoteDir = path.join(worktreeRoot, ".wardmote");
     const configPath = path.join(wardmoteDir, "config.json");
     const envPath = path.join(wardmoteDir, ".env");
-    const oldHome = "/old/home/.paperclip-worktrees";
-    const isolatedHome = path.join(tempRoot, ".paperclip-worktrees");
+    const oldHome = "/old/home/.wardmote-worktrees";
+    const isolatedHome = path.join(tempRoot, ".wardmote-worktrees");
 
     await fs.mkdir(wardmoteDir, { recursive: true });
     await fs.writeFile(configPath, JSON.stringify(buildLegacyConfig(oldHome), null, 2) + "\n", "utf8");
@@ -549,10 +549,10 @@ describe("worktree config repair", () => {
       envPath,
       [
         "# Wardmote environment variables",
-        "WARDMOTE_HOME=/old/home/.paperclip-worktrees",
+        "WARDMOTE_HOME=/old/home/.wardmote-worktrees",
         "WARDMOTE_INSTANCE_ID=pap-9940-what-can-we-learn",
-        "WARDMOTE_CONFIG=/old/home/paperclip/.paperclip/worktrees/PAP-9940-what-can-we-learn/.paperclip/config.json",
-        "WARDMOTE_CONTEXT=/old/home/.paperclip-worktrees/context.json",
+        "WARDMOTE_CONFIG=/old/home/paperclip/.wardmote/worktrees/PAP-9940-what-can-we-learn/.wardmote/config.json",
+        "WARDMOTE_CONTEXT=/old/home/.wardmote-worktrees/context.json",
         "WARDMOTE_IN_WORKTREE=true",
         "WARDMOTE_WORKTREE_NAME=PAP-9940-what-can-we-learn",
         "",
@@ -586,10 +586,10 @@ describe("worktree config repair", () => {
 
   it("does not persist transient runtime home overrides over repo-local worktree env", async () => {
     const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-worktree-runtime-override-"));
-    const isolatedHome = path.join(tempRoot, ".paperclip-worktrees");
+    const isolatedHome = path.join(tempRoot, ".wardmote-worktrees");
     const transientHome = path.join(tempRoot, "tests", "e2e", ".tmp", "multiuser-authenticated");
     const worktreeRoot = path.join(tempRoot, "PAP-989-multi-user-implementation-using-plan-from-pap-958");
-    const wardmoteDir = path.join(worktreeRoot, ".paperclip");
+    const wardmoteDir = path.join(worktreeRoot, ".wardmote");
     const configPath = path.join(wardmoteDir, "config.json");
     const envPath = path.join(wardmoteDir, ".env");
     const instanceId = "pap-989-multi-user-implementation-using-plan-from-pap-958";
@@ -694,16 +694,16 @@ describe("worktree config repair", () => {
 
   it("rebalances duplicate ports for already isolated worktree configs", async () => {
     const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-worktree-rebalance-"));
-    const isolatedHome = path.join(tempRoot, ".paperclip-worktrees");
-    const repoWorktreesRoot = path.join(tempRoot, "repo", ".paperclip", "worktrees");
+    const isolatedHome = path.join(tempRoot, ".wardmote-worktrees");
+    const repoWorktreesRoot = path.join(tempRoot, "repo", ".wardmote", "worktrees");
     const siblingWorktreeRoot = path.join(repoWorktreesRoot, "PAP-878-create-a-mine-tab-in-inbox");
     const siblingInstanceRoot = path.join(isolatedHome, "instances", "pap-878-create-a-mine-tab-in-inbox");
     const currentWorktreeRoot = path.join(repoWorktreesRoot, "PAP-884-ai-commits-component");
-    const wardmoteDir = path.join(currentWorktreeRoot, ".paperclip");
+    const wardmoteDir = path.join(currentWorktreeRoot, ".wardmote");
     const configPath = path.join(wardmoteDir, "config.json");
     const envPath = path.join(wardmoteDir, ".env");
     const currentInstanceRoot = path.join(isolatedHome, "instances", "pap-884-ai-commits-component");
-    const siblingConfigPath = path.join(siblingWorktreeRoot, ".paperclip", "config.json");
+    const siblingConfigPath = path.join(siblingWorktreeRoot, ".wardmote", "config.json");
 
     await fs.mkdir(wardmoteDir, { recursive: true });
     await fs.mkdir(path.dirname(siblingConfigPath), { recursive: true });
@@ -821,9 +821,9 @@ describe("worktree config repair", () => {
   it("persists runtime-selected worktree ports back into explicit-port auth URLs", async () => {
     const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-worktree-ports-"));
     const worktreeRoot = path.join(tempRoot, "PAP-878-create-a-mine-tab-in-inbox");
-    const wardmoteDir = path.join(worktreeRoot, ".paperclip");
+    const wardmoteDir = path.join(worktreeRoot, ".wardmote");
     const configPath = path.join(wardmoteDir, "config.json");
-    const isolatedHome = path.join(tempRoot, ".paperclip-worktrees");
+    const isolatedHome = path.join(tempRoot, ".wardmote-worktrees");
     const instanceRoot = path.join(isolatedHome, "instances", "pap-878-create-a-mine-tab-in-inbox");
 
     await fs.mkdir(wardmoteDir, { recursive: true });
@@ -911,9 +911,9 @@ describe("worktree config repair", () => {
   it("does not rewrite no-port public auth URLs when persisting runtime-selected ports", async () => {
     const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-worktree-public-ports-"));
     const worktreeRoot = path.join(tempRoot, "PAP-125-public-base-url");
-    const wardmoteDir = path.join(worktreeRoot, ".paperclip");
+    const wardmoteDir = path.join(worktreeRoot, ".wardmote");
     const configPath = path.join(wardmoteDir, "config.json");
-    const isolatedHome = path.join(tempRoot, ".paperclip-worktrees");
+    const isolatedHome = path.join(tempRoot, ".wardmote-worktrees");
     const instanceRoot = path.join(isolatedHome, "instances", "pap-125-public-base-url");
 
     await fs.mkdir(wardmoteDir, { recursive: true });
@@ -1001,9 +1001,9 @@ describe("worktree config repair", () => {
   it("preserves top-level and nested config extensions while persisting runtime ports", async () => {
     const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-worktree-config-extensions-"));
     const worktreeRoot = path.join(tempRoot, "config-extensions");
-    const wardmoteDir = path.join(worktreeRoot, ".paperclip");
+    const wardmoteDir = path.join(worktreeRoot, ".wardmote");
     const configPath = path.join(wardmoteDir, "config.json");
-    const isolatedHome = path.join(tempRoot, ".paperclip-worktrees");
+    const isolatedHome = path.join(tempRoot, ".wardmote-worktrees");
     const instanceRoot = path.join(isolatedHome, "instances", "config-extensions");
     const base = buildIsolatedConfig(instanceRoot, 3101, 54331);
     const config = {

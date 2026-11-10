@@ -4,6 +4,7 @@ import { constants, existsSync } from "node:fs";
 import * as fs from "node:fs/promises";
 import path from "node:path";
 import { z } from "zod";
+import { REPO_CONFIG_DIR_NAMES } from "@tickernelz/wardmote-shared/repo-config-dir";
 import type { NativeRuntimeContextSnapshot } from "../../vendor/wardmote-runner/index.js";
 import { openRunnerApiWorkspaceFile, openRunnerWorkspaceFile } from "./runner-api-files.js";
 const relativeFile = z.string().min(1).max(1000).refine(value => !value.includes("\\") && !value.includes("\0") && !path.isAbsolute(value) && value.split("/").every(part => part && part !== "." && part !== ".."), "Use a relative path without traversal");
@@ -35,13 +36,13 @@ export function runnerBridgeDefinitions(options: { workspace: boolean; skills: b
 }
 const digest = (bytes: Buffer | string) => createHash("sha256").update(bytes).digest("hex");
 const PAGE_BYTES = 24000;
-const instanceStateName = (name: string) => name.toLowerCase() === ".paperclip";
+const instanceStateName = (name: string) => REPO_CONFIG_DIR_NAMES.includes(name.toLowerCase());
 /** Instance state is never part of the remotely exposed task workspace. */
 export function assertRunnerWorkspacePathAllowed(name: string) {
   if (name.split(/[\\/]/u).some(instanceStateName)) throw new Error("runner_workspace_instance_state_denied");
 }
 async function protectedWorkspaceDirectories(root: string) {
-  const protectedPaths = new Set([path.join(root, ".paperclip")]);
+  const protectedPaths = new Set(REPO_CONFIG_DIR_NAMES.map((name) => path.join(root, name)));
   const pending = [root];
   let scanned = 0;
   while (pending.length) {

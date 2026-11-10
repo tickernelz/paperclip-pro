@@ -27,7 +27,7 @@ const ORIGINAL_EXIT_CODE = process.exitCode;
 function createExistingConfigFixture() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-onboard-"));
   const runtimeRoot = path.join(root, "runtime");
-  const configPath = path.join(root, ".paperclip", "config.json");
+  const configPath = path.join(root, ".wardmote", "config.json");
   const config: WardmoteConfig = {
     $meta: {
       version: 1,
@@ -93,7 +93,7 @@ function createExistingConfigFixture() {
 
 function createFreshConfigPath() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-onboard-fresh-"));
-  return path.join(root, ".paperclip", "config.json");
+  return path.join(root, ".wardmote", "config.json");
 }
 
 describe("onboard", () => {

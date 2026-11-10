@@ -352,7 +352,7 @@ describeEmbeddedPostgres("wardmote company import/export e2e", () => {
     );
 
     const expectedContextPath = path.join(wardmoteHome, "context.json");
-    const leakedContextPath = path.join(cliShellHome, ".paperclip", "context.json");
+    const leakedContextPath = path.join(cliShellHome, ".wardmote", "context.json");
     expect(cliContext.contextPath).toBe(expectedContextPath);
     expect(cliContext.profileName).toBe("isolation-check");
     expect(cliContext.profile.apiBase).toBe("https://example.test");

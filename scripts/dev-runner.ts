@@ -60,8 +60,8 @@ const scanIntervalMs = 1500;
 const autoRestartPollIntervalMs = 2500;
 const gracefulShutdownTimeoutMs = 10_000;
 const changedPathSampleLimit = 5;
-const devServerStatusFilePath = path.join(repoRoot, ".paperclip", "dev-server-status.json");
-const devServerRestartRequestFilePath = path.join(repoRoot, ".paperclip", "dev-server-restart-request.json");
+const devServerStatusFilePath = path.join(repoRoot, ".wardmote", "dev-server-status.json");
+const devServerRestartRequestFilePath = path.join(repoRoot, ".wardmote", "dev-server-restart-request.json");
 const devServerStatusToken = mode === "dev" ? randomUUID() : null;
 const devServerStatusTokenHeader = "x-wardmote-dev-server-status-token";
 
@@ -97,8 +97,8 @@ const ignoredDirectoryNames = new Set([
 ]);
 
 const ignoredRelativePaths = new Set([
-  ".paperclip/dev-server-restart-request.json",
-  ".paperclip/dev-server-status.json",
+  ".wardmote/dev-server-restart-request.json",
+  ".wardmote/dev-server-status.json",
 ]);
 
 const tailscaleAuthFlagNames = new Set([

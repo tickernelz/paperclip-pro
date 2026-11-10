@@ -399,7 +399,7 @@ export function executionWorkspaceRoutes(db: Db, opts: { pluginWorkerManager?: P
     let repairPreviousAttemptId: string | null = null;
     let repairCliArgs: string[] | null = null;
     if (action === "repair") {
-      const manifestPath = path.join(workspaceCwd, ".paperclip", "seed-manifest.json");
+      const manifestPath = path.join(workspaceCwd, ".wardmote", "seed-manifest.json");
       let manifest: {
         attemptId?: unknown;
         source?: { configPath?: unknown; instanceId?: unknown };
@@ -426,7 +426,7 @@ export function executionWorkspaceRoutes(db: Db, opts: { pluginWorkerManager?: P
         repairSeedSource = resolveCanonicalWorktreeSeedSource({
           registeredBaseWorkspaceCwd: projectWorkspace.cwd,
           explicitSourceConfigPath: resolveFallbackSeedSourceConfigPath(projectWorkspace.cwd),
-          targetConfigPath: path.join(workspaceCwd, ".paperclip", "config.json"),
+          targetConfigPath: path.join(workspaceCwd, ".wardmote", "config.json"),
           expectedTargetInstanceId,
           manifestSource: manifest.source,
           manifestTargetInstanceId: manifest.targetInstanceId,
@@ -695,7 +695,7 @@ export function executionWorkspaceRoutes(db: Db, opts: { pluginWorkerManager?: P
             if (!repairSeedSource?.baseWorkspaceCwd || !repairCliArgs) {
               throw new Error("Workspace repair source preflight did not complete.");
             }
-            const manifestPath = path.join(workspaceCwd, ".paperclip", "seed-manifest.json");
+            const manifestPath = path.join(workspaceCwd, ".wardmote", "seed-manifest.json");
             const sourceConfigPath = repairSeedSource.configPath;
             const baseWorkspaceCwd = repairSeedSource.baseWorkspaceCwd;
 
@@ -814,7 +814,7 @@ export function executionWorkspaceRoutes(db: Db, opts: { pluginWorkerManager?: P
             resolveCanonicalWorktreeSeedSource({
               registeredBaseWorkspaceCwd: baseWorkspaceCwd,
               explicitSourceConfigPath: resolveFallbackSeedSourceConfigPath(baseWorkspaceCwd),
-              targetConfigPath: path.join(workspaceCwd, ".paperclip", "config.json"),
+              targetConfigPath: path.join(workspaceCwd, ".wardmote", "config.json"),
               expectedTargetInstanceId: repairSeedSource.targetInstanceId,
               manifestSource: manifest.source as { configPath?: unknown; instanceId?: unknown } | undefined,
               manifestTargetInstanceId: manifest.targetInstanceId,

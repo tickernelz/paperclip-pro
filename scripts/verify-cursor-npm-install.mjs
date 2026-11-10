@@ -78,7 +78,7 @@ isolated(GROK_PUBLIC_INSTALL_LIFECYCLE, { download: true });
 assert.equal(readFileSync(sentinel,'utf8'),'ok'); assert.equal(readFileSync(join(consumer,'package-lock.json'),'utf8'),lock);
 const installedRunner = join(consumer,'node_modules/@tickernelz/wardmote-server/dist/vendor/wardmote-runner');
 assert.equal(existsSync(join(installedRunner,'provider-assets/cursor')),false,'npm must never download Cursor');
-assert.equal(existsSync(join(account.home,'.paperclip/runtimes/cursor')),false,'npm must not provision the account runtime cache');
+assert.equal(existsSync(join(account.home,'.wardmote/runtimes/cursor')),false,'npm must not provision the account runtime cache');
 const setupOutput = isolated(['node','node_modules/@tickernelz/wardmote/dist/index.js','runtime','setup','cursor'],{download:true,readOnlyConsumer:true}).toString();
 console.log(setupOutput.trim());
 assert.match(setupOutput,/Verified Cursor 2026\.09\.26-dd393fe \(linux-x64\), paperclip-cursor-usage-v4/);
@@ -99,7 +99,7 @@ import { CURSOR_DISTRIBUTION_PINS } from '/consumer/node_modules/@tickernelz/war
 const profile = resolveQualifiedAcpxProfile('cursor', 'gpt-5.6-luna[context=272k,reasoning=medium,fast=false]');
 const installation = await verifyAcpxProfileInstallation(profile);
 assert.equal(userInfo().homedir, '/home/paperclip');
-assert.equal(installation.agentServerPackageJsonPath,join(userInfo().homedir,'.paperclip/runtimes/cursor/linux-x64',CURSOR_DISTRIBUTION_PINS['linux-x64'].closureSha256,'.paperclip-cursor-closure.json'));
+assert.equal(installation.agentServerPackageJsonPath,join(userInfo().homedir,'.wardmote/runtimes/cursor/linux-x64',CURSOR_DISTRIBUTION_PINS['linux-x64'].closureSha256,'.paperclip-cursor-closure.json'));
 assert.equal(installation.agentRuntimePackageJsonPath,null);
 assert.equal(installation.commandDigest,profile.commandDigest);
 await (await installation.openCommand()).close();

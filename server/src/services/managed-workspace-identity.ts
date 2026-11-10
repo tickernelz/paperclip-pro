@@ -50,14 +50,6 @@ export type ManagedWorkspaceIdentity = {
   secretSource: "dedicated" | "derived";
 };
 
-/**
- * Resolve the isolated instance id a worktree actually runs as.
- *
- * The worktree's `.paperclip/.env` pointer is authoritative because it is what
- * the guest process itself loads. The path-derived id is only a fallback for a
- * worktree provisioned before the pointer existed, and the two agree by
- * construction for anything Paperclip provisioned.
- */
 export function resolveManagedWorkspaceInstanceId(workspaceCwd: string): string | null {
   const recorded = readWorktreeInstanceId(workspaceCwd);
   if (recorded) return recorded;

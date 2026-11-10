@@ -31,7 +31,7 @@ async function readOptionalSecret(
 function resolveEnvLabStatePath(): string {
   const instanceRoot =
     process.env.WARDMOTE_INSTANCE_ROOT?.trim() ||
-    path.join(process.env.HOME ?? "/tmp", ".paperclip-worktrees", "instances", "live-ssh-test");
+    path.join(process.env.HOME ?? "/tmp", ".wardmote-worktrees", "instances", "live-ssh-test");
   return path.join(instanceRoot, "env-lab", "ssh-fixture", "state.json");
 }
 

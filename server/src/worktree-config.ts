@@ -3,6 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import { randomBytes } from "node:crypto";
 import { isDeepStrictEqual } from "node:util";
+import { REPO_CONFIG_DIR_NAMES } from "@tickernelz/wardmote-shared/repo-config-dir";
 import {
   mergeWardmoteConfig,
   wardmoteConfigSchema,
@@ -116,13 +117,7 @@ function resolveWorktreeRuntimeContext(
   const envPath = resolveWardmoteEnvPath(configPath);
   const persistedEnv = readEnvEntries(envPath);
 
-  // WARDMOTE_IN_WORKTREE can leak in from a parent process or a sourced env
-  // file while config resolution still points at a non-worktree target (for
-  // example the default instance under <home>/instances/default). Only adopt
-  // a target as a worktree when its config sits in a `<root>/.paperclip/`
-  // layout and its own persisted env already declares it a worktree;
-  // otherwise the repair would rewrite main-instance config and env files.
-  if (path.basename(path.dirname(configPath)) !== ".paperclip") return null;
+  if (path.basename(path.dirname(configPath)) !== ".wardmote") return null;
   if (persistedEnv.WARDMOTE_IN_WORKTREE !== "true") return null;
 
   const persistedConfigPath = nonEmpty(persistedEnv.WARDMOTE_CONFIG);
@@ -144,7 +139,7 @@ function resolveWorktreeRuntimeContext(
     nonEmpty(stablePersistedEnv.WARDMOTE_HOME) ??
       nonEmpty(env.WARDMOTE_HOME) ??
       nonEmpty(env.WARDMOTE_WORKTREES_DIR) ??
-      "~/.paperclip-worktrees",
+      "~/.wardmote-worktrees",
   );
   const instanceRoot = path.resolve(homeDir, "instances", instanceId);
 
@@ -222,11 +217,11 @@ function writeConfigFile(configPath: string, config: WardmoteConfig): boolean {
 
 function resolveRepoManagedWorktreesRoot(worktreeRoot: string): string | null {
   const normalized = path.resolve(worktreeRoot);
-  const marker = `${path.sep}.paperclip${path.sep}worktrees${path.sep}`;
-  const index = normalized.indexOf(marker);
-  if (index === -1) return null;
-  const repoRoot = normalized.slice(0, index);
-  return path.resolve(repoRoot, ".paperclip", "worktrees");
+  for (const name of REPO_CONFIG_DIR_NAMES) {
+    const index = normalized.indexOf(`${path.sep}${name}${path.sep}worktrees${path.sep}`);
+    if (index !== -1) return path.resolve(normalized.slice(0, index), name, "worktrees");
+  }
+  return null;
 }
 
 function collectSiblingWorktreePorts(
@@ -263,10 +258,10 @@ function collectSiblingWorktreePorts(
     for (const entry of fs.readdirSync(repoManagedWorktreesRoot, { withFileTypes: true })) {
       if (!entry.isDirectory()) continue;
 
-      const siblingConfigPath = path.resolve(repoManagedWorktreesRoot, entry.name, ".paperclip", "config.json");
-      if (path.resolve(siblingConfigPath) === path.resolve(context.configPath)) continue;
-      if (fs.existsSync(siblingConfigPath)) {
-        siblingConfigPaths.add(siblingConfigPath);
+      for (const name of REPO_CONFIG_DIR_NAMES) {
+        const siblingConfigPath = path.resolve(repoManagedWorktreesRoot, entry.name, name, "config.json");
+        if (path.resolve(siblingConfigPath) === path.resolve(context.configPath)) continue;
+        if (fs.existsSync(siblingConfigPath)) siblingConfigPaths.add(siblingConfigPath);
       }
     }
   }

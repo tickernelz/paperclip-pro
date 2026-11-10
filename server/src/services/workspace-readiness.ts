@@ -53,7 +53,7 @@ type SeedManifestSummary = {
 export function resolveWorkspaceSeedMarkerDir(env: NodeJS.ProcessEnv = process.env): string {
   const configPath = env.WARDMOTE_CONFIG?.trim();
   if (configPath) return path.dirname(path.resolve(configPath));
-  return path.resolve(process.cwd(), ".paperclip");
+  return path.resolve(process.cwd(), ".wardmote");
 }
 
 function readSeedManifestSummary(markerDir: string): SeedManifestSummary {
