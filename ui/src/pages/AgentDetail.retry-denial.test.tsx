@@ -82,7 +82,7 @@ async function settle(turns = 12) {
 
 beforeEach(() => {
   agentUrlKey = "maya";
-  localStorage.setItem("paperclip.selectedCompanyId", companyId);
+  localStorage.setItem("wardmote.selectedCompanyId", companyId);
   vi.stubGlobal("matchMedia", (query: string) => ({
     matches: false,
     media: query,

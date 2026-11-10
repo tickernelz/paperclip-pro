@@ -208,7 +208,7 @@ for (const theme of THEMES) {
       for (const state of STATES) {
         const context = await browser.newContext({ baseURL, viewport: size, hasTouch: touch, isMobile: touch });
         const page = await context.newPage();
-        await page.addInitScript((value) => window.localStorage.setItem("paperclip.theme", value), theme);
+        await page.addInitScript((value) => window.localStorage.setItem("wardmote.theme", value), theme);
         await state.prepare(page);
         await page.evaluate(() => document.fonts.ready);
         await page.evaluate(() => document.getElementById("root")?.setAttribute("inert", ""));

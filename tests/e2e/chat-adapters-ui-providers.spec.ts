@@ -983,7 +983,7 @@ test.describe("iMessage Photon setup and management", () => {
         enableChatConnectors: true,
       });
       await page.addInitScript(
-        (value) => localStorage.setItem("paperclip.theme", value),
+        (value) => localStorage.setItem("wardmote.theme", value),
         theme,
       );
       await page.goto(`/${seed.prefix}/apps`);

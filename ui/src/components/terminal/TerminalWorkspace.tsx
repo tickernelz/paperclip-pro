@@ -32,11 +32,11 @@ interface TerminalLayout {
 const MAX_PANES = 2;
 
 function layoutKey(companyId: string) {
-  return `paperclip:terminal-layout:v1:${companyId}`;
+  return `wardmote:terminal-layout:v1:${companyId}`;
 }
 
 function titlesKey(companyId: string) {
-  return `paperclip:terminal-titles:v1:${companyId}`;
+  return `wardmote:terminal-titles:v1:${companyId}`;
 }
 
 function readJson(key: string): unknown {

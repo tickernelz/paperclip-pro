@@ -66,7 +66,7 @@ describe("agent persona presentation", () => {
   it("selects the correct saved draft when the company changes without remounting", async () => {
     let draft!: ReturnType<typeof useAgentAppearanceDraft>;
     function Draft({ company }: { company: string }) { draft = useAgentAppearanceDraft(`${company}:new-agent`); return null; }
-    sessionStorage.setItem("paperclip.agent-appearance.two:new-agent", JSON.stringify(appearance));
+    sessionStorage.setItem("wardmote.agent-appearance.two:new-agent", JSON.stringify(appearance));
     await act(async () => root.render(<Draft company="one" />));
     const first = draft.appearance;
     await act(async () => root.render(<Draft company="two" />));
@@ -82,8 +82,8 @@ describe("agent persona presentation", () => {
     await act(async () => root.render(null));
     await act(async () => root.render(<Draft />));
     expect(draft.appearance).toEqual(first);
-    expect(JSON.parse(sessionStorage.getItem("paperclip.agent-appearance.company:new-agent")!)).toEqual(first);
+    expect(JSON.parse(sessionStorage.getItem("wardmote.agent-appearance.company:new-agent")!)).toEqual(first);
     draft.clear();
-    expect(sessionStorage.getItem("paperclip.agent-appearance.company:new-agent")).toBeNull();
+    expect(sessionStorage.getItem("wardmote.agent-appearance.company:new-agent")).toBeNull();
   });
 });

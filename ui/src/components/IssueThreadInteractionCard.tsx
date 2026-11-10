@@ -63,7 +63,7 @@ import { QuestionForm } from "./task-chat/QuestionForm";
 const OTHER_ANSWER_ID = "__paperclip_other__";
 
 function interactionCardDraftKey(interactionId: string) {
-  return `paperclip:interaction-card-draft:${interactionId}`;
+  return `wardmote:interaction-card-draft:${interactionId}`;
 }
 
 function loadInteractionCardDraft<T extends object>(interaction: { id: string; status: string }): Partial<T> {

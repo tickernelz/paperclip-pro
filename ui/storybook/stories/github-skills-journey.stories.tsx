@@ -44,7 +44,7 @@ function GitHubSkillsJourney({ step = "start" }: { step?: Step }) {
   useEffect(() => {
     const empty = ["start", "repository", "selection", "scanning", "saving"].includes(step);
     const cleanup = installFixtures(empty, false, { journey: true, scan: step === "scanning" ? "large" : undefined, saving: step === "saving", refreshed: step === "new-skills", assigned: step === "assigned" });
-    const draftKeys = ["new", SOURCE_ID].map(id => `paperclip.skill-source-draft:${COMPANY_ID}:${id}`);
+    const draftKeys = ["new", SOURCE_ID].map(id => `wardmote.skill-source-draft:${COMPANY_ID}:${id}`);
     const previousDrafts = draftKeys.map(key => sessionStorage.getItem(key));
     draftKeys.forEach(key => sessionStorage.removeItem(key));
     if (step === "scanning") sessionStorage.setItem(draftKeys[0]!, JSON.stringify({ repositoryUrl: "https://github.com/acme/team-skills" }));

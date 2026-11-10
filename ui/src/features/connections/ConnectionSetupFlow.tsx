@@ -502,7 +502,7 @@ export function ConnectionSetupFlow(props: ConnectionSetupFlowProps = {}) {
   const source = props.serviceSlug || searchParams.get("source") || params.appKey || searchParams.get("appKey");
   const draftId = useMemo(() => {
     if (interactionId && isRemoteMcpConnectorId(source)) {
-      try { return sessionStorage.getItem(`paperclip:mcp-intent-draft:${selectedCompanyId}:${interactionId}`); } catch { /* Storage may be disabled. */ }
+      try { return sessionStorage.getItem(`wardmote:mcp-intent-draft:${selectedCompanyId}:${interactionId}`); } catch { /* Storage may be disabled. */ }
     }
     return null;
   }, [interactionId, selectedCompanyId, source]);

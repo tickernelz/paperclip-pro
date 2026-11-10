@@ -1,11 +1,11 @@
 import { useCallback, useSyncExternalStore } from "react";
 import type { Agent } from "@tickernelz/wardmote-shared";
-const eventName = "paperclip:recent-agent-chats";
+const eventName = "wardmote:recent-agent-chats";
 const key = (company: string, user?: string | null) =>
-  `paperclip.recentAgentChats:${company}:${user ?? "__local_board__"}`;
+  `wardmote.recentAgentChats:${company}:${user ?? "__local_board__"}`;
 const memory = new Map<string, string>();
 const issueKey = (company: string, user: string | null | undefined, agentId: string) =>
-  `paperclip.recentAgentChatIssue:${company}:${user ?? "__local_board__"}:${agentId}`;
+  `wardmote.recentAgentChatIssue:${company}:${user ?? "__local_board__"}:${agentId}`;
 const rememberedIssues = new Map<string, string>();
 function read(storageKey: string): string {
   try {

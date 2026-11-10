@@ -186,8 +186,8 @@ describe("live notification decision", () => {
   });
 
   it("accepts only same-origin navigation messages from the service worker", () => {
-    expect(readServiceWorkerMessage({ type: "paperclip.navigate", url: "/PAP/issues/PAP-1" })).toEqual({ type: "navigate", url: "/PAP/issues/PAP-1" });
-    expect(readServiceWorkerMessage({ type: "paperclip.navigate", url: "https://evil.example/" })).toBeNull();
-    expect(readServiceWorkerMessage({ type: "paperclip.notification", notification: notification() })?.type).toBe("notification");
+    expect(readServiceWorkerMessage({ type: "wardmote.navigate", url: "/PAP/issues/PAP-1" })).toEqual({ type: "navigate", url: "/PAP/issues/PAP-1" });
+    expect(readServiceWorkerMessage({ type: "wardmote.navigate", url: "https://evil.example/" })).toBeNull();
+    expect(readServiceWorkerMessage({ type: "wardmote.notification", notification: notification() })?.type).toBe("notification");
   });
 });

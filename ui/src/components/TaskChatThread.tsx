@@ -2575,7 +2575,7 @@ export function TaskChatThread(props: TaskChatThreadProps) {
     currentPendingInputs[0] ??
     null;
   const interactionDraftKey = selectedPendingInput
-    ? `paperclip:task-input:${issueId ?? "unknown"}:${selectedPendingInput.key}`
+    ? `wardmote:task-input:${issueId ?? "unknown"}:${selectedPendingInput.key}`
     : undefined;
   const openPendingTakeover = useCallback(() => {
     if (!pendingReminderInputs.some(input => input.key === selectedPendingInput?.key)) {
