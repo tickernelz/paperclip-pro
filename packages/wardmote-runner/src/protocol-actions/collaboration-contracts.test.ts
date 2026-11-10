@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { WARDMOTE_COLLABORATION_PROTOCOL_ACTIONS } from "./collaboration.js";
 
-describe("collaboration Paperclip protocol action contracts", () => {
+describe("collaboration Wardmote protocol action contracts", () => {
   const ajv = new Ajv2020({ allErrors: true, allowUnionTypes: true, strict: false });
 
   it.each(WARDMOTE_COLLABORATION_PROTOCOL_ACTIONS.map((action) => [action.id, action] as const))(

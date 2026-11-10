@@ -32,12 +32,12 @@ export function llmRoutes(db: Db) {
       .filter((adapter) => !isRetiredAdapterModule(adapter))
       .sort((a, b) => a.type.localeCompare(b.type));
     const lines = [
-      "# Paperclip Agent Configuration Index",
+      "# Wardmote Agent Configuration Index",
       "",
       "Installed adapters:",
       ...adapters.map((adapter) => `- ${adapter.type}: /llms/agent-configuration/${adapter.type}.txt`),
       "",
-      "Related Paperclip MCP tools:",
+      "Related Wardmote MCP tools:",
       "- wardmoteListAgentConfigurations",
       "- wardmoteGetAgentConfiguration",
       "- wardmoteCreateAgentHire",
@@ -59,7 +59,7 @@ export function llmRoutes(db: Db) {
   router.get("/llms/agent-icons.txt", async (req, res) => {
     await assertCanRead(req);
     const lines = [
-      "# Paperclip Agent Icon Names",
+      "# Wardmote Agent Icon Names",
       "",
       "Set the `icon` field on hire/create payloads to one of:",
       ...AGENT_ICON_NAMES.map((name) => `- ${name}`),

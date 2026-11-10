@@ -14,7 +14,7 @@ import {
 
 type Actor = Express.Request["actor"];
 
-describeEmbeddedPostgres("Paperclip MCP connector tools", () => {
+describeEmbeddedPostgres("Wardmote MCP connector tools", () => {
   const ctx = useEmbeddedPostgres("wardmote-mcp-connectors-");
   let server: Server;
   let origin = "";

@@ -2,9 +2,9 @@
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "paperclip",
   "version": "0.1.0",
-  "description": "Review your team, delegate work and retrieve durable results in Paperclip.",
+  "description": "Review your team, delegate work and retrieve durable results in Wardmote.",
   "author": {
-    "name": "Paperclip",
+    "name": "Wardmote",
     "url": "https://paperclip.ing"
   },
   "homepage": "https://paperclip.ing",
@@ -13,16 +13,16 @@
   "extensions": {
     "com.openai": {
       "interface": {
-        "displayName": "Paperclip",
+        "displayName": "Wardmote",
         "shortDescription": "Your persistent team behind your assistant.",
-        "longDescription": "Use your Paperclip team as yourself. Review tasks, delegate work to agents, add feedback and retrieve documents. Delegation can start autonomous work using your team's configured execution capacity and budget.",
-        "developerName": "Paperclip",
+        "longDescription": "Use your Wardmote team as yourself. Review tasks, delegate work to agents, add feedback and retrieve documents. Delegation can start autonomous work using your team's configured execution capacity and budget.",
+        "developerName": "Wardmote",
         "category": "Productivity",
         "capabilities": [
           "Read",
           "Write"
         ],
-        "defaultPrompt": "Review my Paperclip team and show what needs my attention."
+        "defaultPrompt": "Review my Wardmote team and show what needs my attention."
       }
     }
   }

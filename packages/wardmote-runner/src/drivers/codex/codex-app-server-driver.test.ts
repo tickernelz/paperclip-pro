@@ -597,10 +597,10 @@ describe("Codex app-server Codex driver", () => {
     });
   });
 
-  it("adds Paperclip developer instructions without replacing the Codex base and enables selected skills", async () => {
+  it("adds Wardmote developer instructions without replacing the Codex base and enables selected skills", async () => {
     const transport = new FakeCodexTransport();
     const baseInstructions = [
-      "You are running as a Paperclip agent.",
+      "You are running as a Wardmote agent.",
       "Follow the attached AGENTS.md instructions.",
       "Read-only instruction sibling root: /paperclip/context/instructions",
     ].join("\n\n");
@@ -2563,7 +2563,7 @@ describe("Codex app-server Codex driver", () => {
     };
     const requestHumanInput = {
       name: "request_human_input",
-      description: "Ask one structured question through Paperclip.",
+      description: "Ask one structured question through Wardmote.",
       inputSchema: { type: "object", properties: {} },
     };
     const listChatAttachments = {

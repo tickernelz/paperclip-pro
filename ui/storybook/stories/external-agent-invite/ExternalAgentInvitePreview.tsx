@@ -25,7 +25,7 @@ export interface ExternalAgentInvitePreviewProps {
 /** Storybook owns simulation. No timer, fixture code, or fake status ships in the UI component. */
 export function ExternalAgentInvitePreview({
   initialScreen = "entry", initialPreset = "dot", initialConnection = { phase: "waiting" },
-  companyName = "Paperclip", simulate = true, failTest = false, stepDelayMs = 2000, shell = true, preparing = false,
+  companyName = "Wardmote", simulate = true, failTest = false, stepDelayMs = 2000, shell = true, preparing = false,
 }: ExternalAgentInvitePreviewProps) {
   const [screen, setScreen] = useState<"entry" | "picker" | "setup" | "closed">(initialScreen);
   const [preset, setPreset] = useState<ExternalAgentPreset>(initialPreset);

@@ -575,7 +575,7 @@ function evaluatePolicyConditions(
       return conditionGroupFail("trustBoundary", "Policy condition requires a remote HTTP MCP tool.");
     }
     if (boolCondition(boundary.wardmoteSelfOnly) === true && ctx.providerType !== "paperclip_self") {
-      return conditionGroupFail("trustBoundary", "Policy condition requires a Paperclip self tool.");
+      return conditionGroupFail("trustBoundary", "Policy condition requires a Wardmote self tool.");
     }
     matchedGroups.push("trustBoundary");
   }

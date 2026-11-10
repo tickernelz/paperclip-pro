@@ -622,7 +622,7 @@ describe("codex_local ACP lane", () => {
     );
   });
 
-  it("explains the Paperclip server credential boundary when ACP auth is missing", async () => {
+  it("explains the Wardmote server credential boundary when ACP auth is missing", async () => {
     const root = await makeTempRoot("paperclip-codex-acp-missing-auth-");
     const commandPath = path.join(root, "bin", "codex-acp");
     const sharedCodexHome = path.join(root, "shared-codex-home");
@@ -660,7 +660,7 @@ describe("codex_local ACP lane", () => {
       expect.objectContaining({
         code: "codex_acp_credentials_missing",
         level: "warn",
-        message: expect.stringContaining("Paperclip server"),
+        message: expect.stringContaining("Wardmote server"),
         hint: expect.stringContaining("separate Codex/chat session"),
       }),
     );
@@ -811,7 +811,7 @@ describe("codex_local ACP lane", () => {
     // The adapter receives server-rendered fields. Keep the server builder's
     // own tests in the server package; adapter packages compile independently.
     const assignmentMarkdown = [
-      "Paperclip task context:",
+      "Wardmote task context:",
       `- Issue: ${JSON.stringify(issue.identifier)}`,
       `- Title: ${JSON.stringify(issue.title)}`,
       "", "Issue description:", "```text", issue.description, "```",

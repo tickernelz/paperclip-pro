@@ -156,7 +156,7 @@ describe.skipIf(!support.supported)("heartbeat run completion boundary", () => {
     } else expect(f.deps.finalizeAgentStatus).not.toHaveBeenCalled();
   });
 
-  it("records a controller-lease stop as a Paperclip control-plane cancellation, not an unexplained exit", async () => {
+  it("records a controller-lease stop as a Wardmote control-plane cancellation, not an unexplained exit", async () => {
     const f = await fixture();
     Object.assign(f.input.adapterResult, { exitCode: 130, errorMessage: "OMP exited with code 130." });
     f.controller.abort(new LegacyControllerLeaseLostError());

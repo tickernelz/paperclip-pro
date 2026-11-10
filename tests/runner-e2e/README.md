@@ -11,15 +11,15 @@ with authenticated browser consent, real MCP tool use and independently graded
 team execution. Select `--suite public-mcp`; it is excluded from `--all`.
 
 For family selection, ownership, provenance, history, and failure taxonomy,
-see the [Paperclip evaluation guide](../../doc/evals.md). This README is the
+see the [Wardmote evaluation guide](../../doc/evals.md). This README is the
 authoritative runbook for Product E2E runner cells; the separate Runner Evals
 protocol guide lives at
 `packages/wardmote-runner/docs/runner-protocol-live-evals.md`.
 
-This is the billable browser acceptance campaign system for Paperclip runner
+This is the billable browser acceptance campaign system for Wardmote runner
 profiles. It is deliberately separate from `tests/e2e`: every independently
 scheduled execution gets
-a fresh Paperclip home, embedded Postgres database, instance configuration,
+a fresh Wardmote home, embedded Postgres database, instance configuration,
 port, workspace, company, encrypted secrets, environment, and agent.
 
 ## Native connection guidance (explicit only)
@@ -132,7 +132,7 @@ remains pending; catalog presence is not live qualification.
 loaded before and after the production service worker takes control. It keeps
 full traces and checks that Vite module loads do not create worker fetches or
 leave the page empty. This isolates browser loading; it does not create a
-Paperclip task, run an agent, or replace a Product E2E result.
+Wardmote task, run an agent, or replace a Product E2E result.
 
 ## Conversational confirmation replies (explicit only)
 
@@ -274,9 +274,9 @@ Shell variables take precedence over the local file. The recognized names are:
 The image must be an immutable `image@sha256:...` reference. The launcher
 reports missing variable names but never prints values. It passes raw provider
 keys only to Playwright, which posts each value once to the company-secrets API.
-Paperclip receives secret references in agent/environment payloads. Provider
+Wardmote receives secret references in agent/environment payloads. Provider
 keys, Daytona keys, `DATABASE_URL`, and `DATABASE_MIGRATION_URL` are removed
-from the Paperclip child process.
+from the Wardmote child process.
 
 Kimi keys are recognized for local catalog, schema, and isolation tests only.
 Its explicit context-integrity profiles are blocked before credential loading
@@ -298,7 +298,7 @@ pnpm exec playwright install chromium
 pnpm --filter @tickernelz/wardmote-runner build:runner-binaries
 ```
 
-List cells without loading credentials or starting Paperclip:
+List cells without loading credentials or starting Wardmote:
 
 ```bash
 pnpm test:e2e:runner -- --list
@@ -353,7 +353,7 @@ local native and direct-adapter profiles × two two-run structured-question
 workflows: 14 cells. Both prove that a required structured interaction is
 rendered, answered in the browser, and resumed once on the same task without
 duplicating the final response. The second workflow restarts the isolated
-Paperclip server while the interaction is waiting, reloads that state, and
+Wardmote server while the interaction is waiting, reloads that state, and
 then resumes it. The suite has no Daytona cells.
 
 `instruction-persistence` is an explicit-only three-cell workflow: legacy and
@@ -364,7 +364,7 @@ nested text, editor-created content, and exact binary bytes. The oracle checks t
 current files, a stopped-run save receipt, and absence of newly appended history.
 The first task also publishes a small verification receipt for the normal
 completion contract; the personal files stay in the agent directory.
-After a Paperclip restart, a fresh task must upload a downloaded proof attachment
+After a Wardmote restart, a fresh task must upload a downloaded proof attachment
 containing independent saved nonces absent from its prompt. A third task edits its
 private copy while the browser edits the same current file. The later run sync
 must win for that changed file, preserve an unrelated board-created file, and
@@ -490,7 +490,7 @@ status. Mentioning the right blocker only as resolved history cannot pass.
 
 The committed-send case drops the browser's acknowledgement after the server
 saves its comment. It waits for the agent to save one backlog task, restarts
-Paperclip, and replays the exact public request with the original client request ID. It
+Wardmote, and replays the exact public request with the original client request ID. It
 requires the original comment, task, plan, and single consuming run. This proves
 HTTP request idempotency across restart, not replay safety for an ambiguous
 provider tool response. Existing native tool-receipt tests cover that boundary.
@@ -525,7 +525,7 @@ pnpm test:e2e:runner -- --id agent-chat-hardening.runner-codex.local.stop-startu
 
 The independent, explicit-only `native-completion` suite qualifies native finish/block descriptions on unchanged master defaults. It preserves the original assigned-skill document journey and pairs it with whole-task blocking across three native profiles, with enforced single attempts. See [NATIVE-COMPLETION.md](NATIVE-COMPLETION.md) for admission, provenance and limits.
 
-The separate, explicit-only `native-instruction-consolidation` suite reuses those original tasks and strict graders to compare completion constraints on the production defaults at `2a8a99e4a5f69aa803b3f10b982f583e75a87042`. It declares six local cells: document completion and whole-task blocking on native Codex, ACPX Claude, and OpenCode. Each cell allows one attempt and applies a 1,000-cent company and agent budget hard stop. Its source gate rejects dirty, mixed, unknown, or unrelated source changes before credentials load. A provider-free fixture captures the complete Paperclip instruction/tool/message projection at the scripted runnerd RPC boundary on start, full-task resume and compact user-follow-up continuation for native input v4 and v5. That capture measures bytes; it does not measure vendor-owned prompts, tokens, billing, or model behavior. See the [comparison plan](../../doc/plans/2026-10-03-native-completion-consolidation.md) for exact scope and live qualification limits. Existing `native-completion` results do not qualify this new reduction.
+The separate, explicit-only `native-instruction-consolidation` suite reuses those original tasks and strict graders to compare completion constraints on the production defaults at `2a8a99e4a5f69aa803b3f10b982f583e75a87042`. It declares six local cells: document completion and whole-task blocking on native Codex, ACPX Claude, and OpenCode. Each cell allows one attempt and applies a 1,000-cent company and agent budget hard stop. Its source gate rejects dirty, mixed, unknown, or unrelated source changes before credentials load. A provider-free fixture captures the complete Wardmote instruction/tool/message projection at the scripted runnerd RPC boundary on start, full-task resume and compact user-follow-up continuation for native input v4 and v5. That capture measures bytes; it does not measure vendor-owned prompts, tokens, billing, or model behavior. See the [comparison plan](../../doc/plans/2026-10-03-native-completion-consolidation.md) for exact scope and live qualification limits. Existing `native-completion` results do not qualify this new reduction.
 
 The corrected source variants add explicit blocker explanations and canonical document citations. Accepted feedback repeats links only for this run's current saved revisions, and Markdown navigation preserves document anchors after issue details load. Observation v3 independently requires the persisted provider final to explain missing release/deployment access and, for completion, link this task's one revisioned document on the same origin. A correct structured blocker, an unblock action alone, or an unbound/foreign document URL cannot pass. These stricter checks and browser navigation apply only to the manual instruction comparison; the existing `native-completion` suite keeps v2 checks. Task prompts and the durable-output oracle remain unchanged. Admission now requires eighteen shared runnerd RPC captures and six direct OpenCode HTTP captures using a local fake server, all provider-free. Replay of retained v2 evidence is a separate diagnostic, never a replacement for its original verdict. See the [answer correction](../../doc/plans/2026-10-04-native-completion-answer-fix.md).
 
@@ -599,7 +599,7 @@ values in one dimension use OR semantics; dimensions and repeated groups use
 AND semantics. `--id` is exclusive with dimension selectors and `--all`.
 `--headed`, `--ui`, and `--debug` are forwarded to Playwright. An unknown
 selector, an empty selection, or a run with no explicit selector exits before
-Paperclip starts. `--max-parallel <n>` controls the number of isolated
+Wardmote starts. `--max-parallel <n>` controls the number of isolated
 profile/environment/case harnesses that can overlap (default 1, also configurable
 with `WARDMOTE_E2E_MAX_PARALLEL`). `--max-automatic-retries <0|1>` controls the
 launcher retry budget (default 1). Set it to 0 for a single-attempt comparison;
@@ -611,7 +611,7 @@ it runs in parallel with unrelated scenarios.
 
 Use a single `--id` smoke test for routine local verification. Full-matrix
 parallelism is intended for GitHub Actions; raising local parallelism starts
-multiple Paperclip/Postgres/Chromium stacks and can consume substantial CPU and
+multiple Wardmote/Postgres/Chromium stacks and can consume substantial CPU and
 memory.
 
 Credential-free checks are:
@@ -724,7 +724,7 @@ Packaged, access-controlled evidence is written beneath
 `final-state.png`, Plan draft/revision screenshots when applicable, matcher
 outcomes, sanitized fixture/API metadata, a result record, JUnit, HTML, and a
 blob report. Failures additionally retain the Playwright trace/video, browser
-diagnostics, failure screenshot, and sanitized Paperclip/run logs when
+diagnostics, failure screenshot, and sanitized Wardmote/run logs when
 produced. WebM files remain limited to the local results directory and
 access-controlled GitHub Actions artifact. Declared PNG screenshots are also
 published with permanent campaign dashboards; fixture authors must therefore
@@ -820,7 +820,7 @@ to inspect branch-only results; an absent dashboard card is not passing coverage
 Case details show the overall failure reason separately from behavioral matcher
 results. For first-task cases, **Read full conversation** starts collapsed and displays retained
 comments, question and approval cards, card answers, and document revisions in
-time order, using Paperclip chat styling: user bubbles on the right, agent replies
+time order, using Wardmote chat styling: user bubbles on the right, agent replies
 on the left, and separate cards for questions and documents. This presentation
 is defined in the shared dashboard renderer for every campaign and regeneration,
 not in a particular published report. GitHub publication uses the trusted
@@ -855,20 +855,20 @@ pnpm test:e2e:runner:dashboard -- /tmp/runner-e2e-site --history /tmp/history.js
 ```
 
 Serve that directory with any static file server. This path does not start
-Paperclip, invoke an agent, create a Daytona lease, or consume provider tokens.
+Wardmote, invoke an agent, create a Daytona lease, or consume provider tokens.
 
 Before an access-controlled evidence artifact is uploaded, the launcher:
 
 1. copies only allowlisted file types;
 2. scans raw API snapshots before sanitizing them;
-3. scans the closed Paperclip home/database and workspace as streams;
+3. scans the closed Wardmote home/database and workspace as streams;
 4. redacts loaded exact values and known provider-key shapes from text;
 5. expands ZIP reports for secret scanning;
 6. rejects SVG and other unsafe files and fails the cell if a leak is detected;
    and
 7. verifies that a passing attempt has its final-state screenshot.
 
-The temporary Paperclip home, embedded database, raw workspace, master key,
+The temporary Wardmote home, embedded database, raw workspace, master key,
 and unredacted logs are removed after confirmed cleanup. If process or remote
 cleanup is unconfirmed, the harness retains the owner-only temporary root and
 its recovery database for reconciliation; that private state is never packaged
@@ -994,11 +994,11 @@ separate Pages stage. Both surfaces publish only per-result PNG screenshots
 with the explicit `public-runner-fixture` marker alongside sanitized structured
 evidence. The runner capture helper refuses to mark a screenshot outside the
 exact live fixture issue route. Neither surface publishes video, archives,
-SVG/active content, databases, Paperclip homes, workspaces, raw/unallowlisted
+SVG/active content, databases, Wardmote homes, workspaces, raw/unallowlisted
 logs, or credentials.
 
 See [FIXTURES.md](./FIXTURES.md) before adding or changing a profile,
-environment, task, matcher, or future Paperclip object fixture.
+environment, task, matcher, or future Wardmote object fixture.
 See [SECURITY.md](./SECURITY.md) before enabling paid dispatch, the runner
 group, or permanent public history in this public repository.
 
@@ -1091,7 +1091,7 @@ public API before its first task is created. The `legacy-codex` and
 retired adapters the server refuses to hire. Persona, managed instructions, skills, seeded
 question, and task invocation are preserved. Explicit model choices are retained;
 an unset model resolves through the production runtime-switch defaults. The
-production switch removes the legacy Paperclip operational skill because Runner
+production switch removes the legacy Wardmote operational skill because Runner
 supplies its control-plane contract through its protocol; other assigned skills,
 including `/first-task`, are retained. Native runtime permissions come from the
 existing qualified profile. Evidence labels
@@ -1157,7 +1157,7 @@ artifact checks still apply.
 Behavioral checks inspect persisted comments, interactions, tasks, documents,
 agent counts, creation timestamps, and terminal runs. Planning and clarification
 are allowed before acceptance. Premature durable work fails immediately. The
-suite checks persisted Paperclip effects; it does not claim to prove the absence
+suite checks persisted Wardmote effects; it does not claim to prove the absence
 of arbitrary external side effects from a provider process.
 
 ```bash
@@ -1296,7 +1296,7 @@ placement; it is not a statistical comparison with the former prompt arrangement
 
 The separate explicit-only `question-resume` suite uses the same neutral two-question
 request on native Codex and ACPX Claude. It qualifies the user journey through
-either the provider's built-in question or Paperclip's semantic question tool.
+either the provider's built-in question or Wardmote's semantic question tool.
 It does not replace or regrade `question-tool-documentation`.
 
 The oracle classifies each wait from its exact task/agent/run identity. Provider
@@ -1338,12 +1338,12 @@ The check excludes child runs and applies only to native profiles.
 For ordinary native comment and child-completion wakes, a verified provider resume
 receives only new attributed messages, the current authenticated interaction result,
 actual task edits, child results, and completion-report identifiers. The provider
-retains conversation history. Paperclip retains task state and authorization. A new
+retains conversation history. Wardmote retains task state and authorization. A new
 or replacement session still receives the full bootstrap; specialized recovery,
 review, external-chat and planning paths retain their existing context. Legacy
 adapter prompts are unchanged.
 
-The ACPX Claude-only `provider-question-bridge` case exercises the provider’s built-in question tool, verifies that its card appears in Paperclip, answers it in the browser, and requires the same paused run to finish with the selected fact. The `accept-while-running` fixture holds the committed card’s creation response until browser acceptance, making the overlap deterministic without changing production behavior.
+The ACPX Claude-only `provider-question-bridge` case exercises the provider’s built-in question tool, verifies that its card appears in Wardmote, answers it in the browser, and requires the same paused run to finish with the selected fact. The `accept-while-running` fixture holds the committed card’s creation response until browser acceptance, making the overlap deterministic without changing production behavior.
 
 Local Legacy Claude cells qualify Claude Code `2.1.277` before starting the server.
 If the ambient CLI differs, the harness installs the exact version under the
@@ -1371,7 +1371,7 @@ lockfile from its own trusted checkout, never from the tested branch.
 
 ### Injected interruption diagnostics
 
-The restart supervisor starts Paperclip with the TypeScript loader in the same
+The restart supervisor starts Wardmote with the TypeScript loader in the same
 Node process it owns. A forced stop therefore cannot leave an old controller
 alive to stop the embedded database after the replacement starts. On Unix, the
 server has its own process group so Playwright's wrapper-group shutdown cannot
@@ -1627,7 +1627,7 @@ pnpm test:e2e:runner -- --id pi-native.runner-acpx-pi.local.native-questions
 
 Native questions exercise the runner-owned `paperclip_native_question` tool and
 the durable browser form bridge. The existing five extended-harness journeys
-continue to prove semantic Paperclip questions and planning separately. Personal
+continue to prove semantic Wardmote questions and planning separately. Personal
 file persistence uses two fresh task runs and independent byte checks; restrictive
 denial uses one run and requires both a failed tool receipt and no file effect.
 The first managed-file API response is saved before its byte assertion, including
@@ -1684,7 +1684,7 @@ removal. Complete server and database cleanup remains the outer supervisor's
 responsibility. These cases remain unqualified until paid runs pass.
 
 The full native plan text is retained in the interaction card. Exporting a plan
-file from Cursor's private HOME as a downloadable Paperclip artifact remains a
+file from Cursor's private HOME as a downloadable Wardmote artifact remains a
 separate capability gap; these callback tests do not claim that export works.
 
 
@@ -1859,7 +1859,7 @@ safe ownership of the native provider process in both environments.
 ### Copilot attached semantic completion evidence (suite 8)
 
 Attached settlement now requires one native `wardmote_finish` lifecycle joined
-to an invocation-captured, bounded Paperclip bridge receipt by exact call, input
+to an invocation-captured, bounded Wardmote bridge receipt by exact call, input
 and result digests in the same run/turn/native session and durable source stream.
 A matching display title is not authority. The exact proposed completion input
 must match a control-plane `run.result.accepted` body and the requested summary.

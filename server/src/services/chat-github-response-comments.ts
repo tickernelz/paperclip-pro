@@ -175,8 +175,8 @@ export function githubResponseCommentService(db: Db, fetchImpl = fetch) {
           if (reply === "unsettled") throw conflict("GitHub reply is still being resolved");
           onlyExisting = reply === "confirmed" && !existing.result?.id;
           finalBody = reply === "confirmed" ? "This request has been handled. See the response in this conversation."
-            : run.heartbeat_runs.status === "succeeded" ? "This turn ended without publishing a final response. See the Paperclip task for details."
-            : "This turn stopped before completing. See the Paperclip task for details.";
+            : run.heartbeat_runs.status === "succeeded" ? "This turn ended without publishing a final response. See the Wardmote task for details."
+            : "This turn stopped before completing. See the Wardmote task for details.";
         } else if (existing.result?.id) return { id: String(existing.result.id), url: String(existing.result.url) };
         if (finalBody === undefined) {
           const [fast] = await db.select({ request: fastResponseRequests, publicationState: chatPublications.state })

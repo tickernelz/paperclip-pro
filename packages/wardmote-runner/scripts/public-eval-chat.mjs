@@ -178,7 +178,7 @@ export function publicChatView(artifact, evalCase) {
       agentLabel: "Recorded agent",
       runnerLabel: "Recorded runner",
       runnerAttached: false,
-      controlPlaneLabel: "Mock Paperclip",
+      controlPlaneLabel: "Mock Wardmote",
       controlPlaneTooltip: PUBLIC_CHAT_NOTICE,
       replaySource: "live",
     },

@@ -16,8 +16,8 @@ const manifest: WardmotePluginManifestV1 = {
   apiVersion: 1,
   version: PLUGIN_VERSION,
   displayName: "Hello World Widget (Example)",
-  description: "Reference UI plugin that adds a simple Hello World widget to the Paperclip dashboard.",
-  author: "Paperclip",
+  description: "Reference UI plugin that adds a simple Hello World widget to the Wardmote dashboard.",
+  author: "Wardmote",
   categories: ["ui"],
   capabilities: ["ui.dashboardWidget.register"],
   entrypoints: {

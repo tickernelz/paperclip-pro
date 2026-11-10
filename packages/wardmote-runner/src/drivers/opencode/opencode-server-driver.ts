@@ -144,7 +144,7 @@ export function resolvePinnedOpenCodeCommand(
     throw new Error("OpenCode qualified platform dependency is missing");
   } catch (error) {
     throw new Error(
-      `Pinned OpenCode runtime unavailable: ${(error as Error).message}. Restore Paperclip's runtime dependencies.`,
+      `Pinned OpenCode runtime unavailable: ${(error as Error).message}. Restore Wardmote's runtime dependencies.`,
       { cause: error },
     );
   }
@@ -400,7 +400,7 @@ export class OpenCodeServerDriver implements HarnessDriver {
         } else {
           const created = await api(fetcher, runtime, "/session", {
             method: "POST",
-            body: JSON.stringify({ title: `Paperclip ${input.runId}` }),
+            body: JSON.stringify({ title: `Wardmote ${input.runId}` }),
           });
           providerSessionId = text(record(created).id);
           if (!providerSessionId)
@@ -1120,7 +1120,7 @@ class OpenCodeHarnessSession implements HarnessSession {
       }
     }
     if (!this.#dynamicToolHandler)
-      throw new Error("Unsupported Paperclip operation");
+      throw new Error("Unsupported Wardmote operation");
     try {
       const result = await this.#dynamicToolHandler({
         tool,
@@ -2294,7 +2294,7 @@ async function startRuntime(input: {
         [modelProvider!]: {
           ...(providerProxy ? {
             npm: "@ai-sdk/openai-compatible",
-            name: "Paperclip connection",
+            name: "Wardmote connection",
             options: {
               baseURL: providerProxy.baseURL,
               apiKey: providerProxy.token,

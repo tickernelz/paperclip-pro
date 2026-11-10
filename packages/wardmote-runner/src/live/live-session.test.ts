@@ -1140,7 +1140,7 @@ describe("Capability live runnerd and Codex session", () => {
     await service.shutdown(session.id);
   });
 
-  it("returns typed mock results to the same multi-turn Codex thread without Paperclip network calls", async () => {
+  it("returns typed mock results to the same multi-turn Codex thread without Wardmote network calls", async () => {
     const state = providerState();
     const fetchSpy = vi.spyOn(globalThis, "fetch");
     const service = new CapabilityLiveSessionService({ transportFactory: fakeTransportFactory(state) });

@@ -345,7 +345,7 @@ export const demoProfiles = [
   {
     id: "paperclip-self-read",
     profileId: "read-only",
-    title: "Paperclip self-read",
+    title: "Wardmote self-read",
     steps: ["time.now", "echo.echo"],
   },
   {

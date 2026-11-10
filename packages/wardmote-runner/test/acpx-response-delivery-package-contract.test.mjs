@@ -93,7 +93,7 @@ for (const mode of ["extension", "permission", "elicitation"]) {
     });
     try {
       await client.start(); await client.createSession();
-      const result = await client.prompt("session", mode, undefined, async (_params, context) => { remember(context); return { action: "accept", content: { name: "Paperclip" } }; });
+      const result = await client.prompt("session", mode, undefined, async (_params, context) => { remember(context); return { action: "accept", content: { name: "Wardmote" } }; });
       assert.equal(result.stopReason, "end_turn"); assert.equal(seen, 1); await delivery;
     } finally { await client.close(); await rm(cwd, { recursive: true, force: true }); }
   });

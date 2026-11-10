@@ -135,7 +135,7 @@ function describeChildExit(candidate: ChildProcess) {
 
 async function startServer() {
   if (shutdownRequested()) {
-    throw new Error("Refusing to start Paperclip after wrapper shutdown");
+    throw new Error("Refusing to start Wardmote after wrapper shutdown");
   }
   // Recheck bytes and dependency resolution on every controller restart.
   const installed = await verifyInstalledCli(process.env, selectedExecutions);
@@ -165,7 +165,7 @@ async function startServer() {
     childErrors.set(candidate, error);
     if (!expectedStops.has(candidate) && !shutdownRequested()) {
       unexpectedChildFailure = new Error(
-        `Paperclip server spawn failed: ${error.message}`,
+        `Wardmote server spawn failed: ${error.message}`,
       );
     }
   });
@@ -173,7 +173,7 @@ async function startServer() {
     appendLog(`\n${describeChildExit(candidate)}\n`);
     if (!expectedStops.has(candidate) && !shutdownRequested()) {
       unexpectedChildFailure = new Error(
-        `Paperclip server stopped unexpectedly: ${describeChildExit(candidate)}`,
+        `Wardmote server stopped unexpectedly: ${describeChildExit(candidate)}`,
       );
     }
   });
@@ -205,11 +205,11 @@ async function waitForHealth(candidate: ChildProcess) {
   const healthUrl = `http://127.0.0.1:${port}/api/health`;
   while (Date.now() < deadline) {
     if (shutdownRequested()) {
-      throw new Error("Wrapper shutdown interrupted the Paperclip restart");
+      throw new Error("Wrapper shutdown interrupted the Wardmote restart");
     }
     if (childErrors.has(candidate) || childExited(candidate)) {
       throw new Error(
-        `Replacement Paperclip server could not start: ${describeChildExit(candidate)}`,
+        `Replacement Wardmote server could not start: ${describeChildExit(candidate)}`,
       );
     }
     try {
@@ -223,7 +223,7 @@ async function waitForHealth(candidate: ChildProcess) {
     await delay(250);
   }
   throw new Error(
-    `Replacement Paperclip server did not become healthy within ${restartTimeoutMs}ms`,
+    `Replacement Wardmote server did not become healthy within ${restartTimeoutMs}ms`,
   );
 }
 
@@ -232,7 +232,7 @@ async function waitForHealthToStop() {
   const deadline = Date.now() + gracefulStopTimeoutMs;
   while (Date.now() < deadline) {
     if (shutdownRequested()) {
-      throw new Error("Wrapper shutdown interrupted the Paperclip restart");
+      throw new Error("Wrapper shutdown interrupted the Wardmote restart");
     }
     try {
       await fetch(healthUrl, { signal: AbortSignal.timeout(500) });
@@ -242,7 +242,7 @@ async function waitForHealthToStop() {
     await delay(100);
   }
   throw new Error(
-    "The old Paperclip server remained healthy after its launcher exited",
+    "The old Wardmote server remained healthy after its launcher exited",
   );
 }
 
@@ -299,9 +299,9 @@ async function writeRestartAck(
 
 async function restartServer({ requestId, preserveRunner }: RestartRequest) {
   activeRestartRequestId = requestId;
-  appendLog(`\nRestart request ${requestId}: stopping Paperclip\n`);
+  appendLog(`\nRestart request ${requestId}: stopping Wardmote\n`);
   const previous = child;
-  if (!previous) throw new Error("No Paperclip server is available to restart");
+  if (!previous) throw new Error("No Wardmote server is available to restart");
   if (preserveRunner) await stopServer.forRestart(previous, preserveRunner);
   else await stopServer(previous);
   if (child === previous) child = null;
@@ -309,17 +309,17 @@ async function restartServer({ requestId, preserveRunner }: RestartRequest) {
   // must stop answering before the next launcher is allowed to start.
   await waitForHealthToStop();
   if (shutdownRequested()) {
-    throw new Error("Wrapper shutdown interrupted the Paperclip restart");
+    throw new Error("Wrapper shutdown interrupted the Wardmote restart");
   }
 
-  appendLog(`Restart request ${requestId}: starting Paperclip\n`);
+  appendLog(`Restart request ${requestId}: starting Wardmote\n`);
   const replacement = await startServer();
   await waitForHealth(replacement);
   if (shutdownRequested()) {
-    throw new Error("Wrapper shutdown interrupted the Paperclip restart");
+    throw new Error("Wrapper shutdown interrupted the Wardmote restart");
   }
   await writeRestartAck(requestId, "ready");
-  appendLog(`Restart request ${requestId}: Paperclip is healthy\n`);
+  appendLog(`Restart request ${requestId}: Wardmote is healthy\n`);
   activeRestartRequestId = null;
 }
 
@@ -380,7 +380,7 @@ try {
   try {
     await stopServer.stopAll();
   } catch (stopError) {
-    appendLog(`Failed to stop Paperclip after supervisor failure: ${stopError instanceof Error ? stopError.message : String(stopError)}\n`);
+    appendLog(`Failed to stop Wardmote after supervisor failure: ${stopError instanceof Error ? stopError.message : String(stopError)}\n`);
   }
 }
 

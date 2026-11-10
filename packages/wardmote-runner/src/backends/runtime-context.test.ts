@@ -33,7 +33,7 @@ function runtimeInput(
   return {
     provider: { kind: "codex" },
     runtimeContext: {
-      prompt: { text: "Paperclip runtime." },
+      prompt: { text: "Wardmote runtime." },
       instructions: { bundle: { rootPath }, entryPath },
     },
   } as unknown as NativeExecutionInput;
@@ -85,9 +85,9 @@ describe("native runtime context files", () => {
     );
   });
 
-  it("distinguishes durable Paperclip documents from requested file deliverables", () => {
+  it("distinguishes durable Wardmote documents from requested file deliverables", () => {
     const constraints = nativeTaskConstraints(runtimeInput("/bundle", "AGENTS.md")).join("\n");
-    expect(constraints).toContain("Paperclip documents directly with write_document");
+    expect(constraints).toContain("Wardmote documents directly with write_document");
     expect(constraints).toContain("unless the user also requests a downloadable file");
     expect(constraints).toContain("register_deliverable");
     expect(constraints).toContain("deliverable:");
@@ -324,7 +324,7 @@ describe("native runtime context files", () => {
       },
       provider: { kind: "codex", model: "gpt-test", approvalPolicy: "never" },
       runtimeContext: {
-        prompt: { text: "Paperclip runtime." },
+        prompt: { text: "Wardmote runtime." },
         instructions: {
           bundle: { rootPath: "/workspace" },
           entryPath: "AGENTS.md",

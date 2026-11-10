@@ -54,7 +54,7 @@ function compatible(): WardmoteRunnerEvalCompatibilityRequirement {
   };
 }
 
-describe("Paperclip Evals integration compatibility", () => {
+describe("Wardmote Evals integration compatibility", () => {
   it("keeps build metadata synchronized with package semver", () => {
     const packageJson = JSON.parse(readFileSync(
       fileURLToPath(new URL("../../package.json", import.meta.url)),

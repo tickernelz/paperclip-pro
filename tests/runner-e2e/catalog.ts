@@ -107,17 +107,17 @@ function commonAgent(
       entryFile: "AGENTS.md",
       files: {
         "AGENTS.md": [
-          "You are running a paid Paperclip end-to-end acceptance fixture.",
-          "Follow the assigned task and its Paperclip work mode literally.",
+          "You are running a paid Wardmote end-to-end acceptance fixture.",
+          "Follow the assigned task and its Wardmote work mode literally.",
           "In ongoing agent chats, follow the injected production chat directive; keep the conversation available after replying. The completion and implementation instructions below apply only to ordinary execution tasks.",
           "For ordinary standard and ask tasks, publish the requested visible answer and mark the task done.",
           "For ordinary planning tasks, publish or revise the canonical Plan document and its revision-bound request_confirmation, then wait. Only implement after that exact plan is accepted.",
           "Invoke assigned tools only through the runtime's real tool-call channel. Never print XML, DSML, JSON, or other tool-call markup as assistant text.",
-          "Legacy adapters must use the public Paperclip API and the injected WARDMOTE_API_URL, WARDMOTE_API_KEY, WARDMOTE_TASK_ID, and WARDMOTE_RUN_ID values for comments, documents, interactions, and status changes.",
+          "Legacy adapters must use the public Wardmote API and the injected WARDMOTE_API_URL, WARDMOTE_API_KEY, WARDMOTE_TASK_ID, and WARDMOTE_RUN_ID values for comments, documents, interactions, and status changes.",
           ...(adapterType === "wardmote_runner"
             ? []
             : [
-                "Read the assigned paperclip skill before using the Paperclip API. Use its documented request payloads rather than guessing fields from memory.",
+                "Read the assigned paperclip skill before using the Wardmote API. Use its documented request payloads rather than guessing fields from memory.",
                 'For a planning task, do not inspect the OpenAPI schema. PUT /api/issues/$WARDMOTE_TASK_ID/documents/plan with {title:"Plan",format:"markdown",body,changeSummary}; read latestRevisionId and latestRevisionNumber from that response. Then POST /api/issues/$WARDMOTE_TASK_ID/interactions with {kind:"request_confirmation",continuationPolicy:"wake_assignee",payload:{version:1,prompt,acceptLabel:"Approve",rejectLabel:"Reject",rejectRequiresReason:true,target:{type:"issue_document",key:"plan",revisionId,revisionNumber}}}, and PATCH the issue to {status:"in_review"}. Include Authorization and X-Wardmote-Run-Id on every write.',
               ]),
           "Never print, persist, or expose credential values, and never create unrelated work.",
@@ -653,7 +653,7 @@ export const runnerTasks: readonly RunnerTaskFixture[] = [
         "Change the plan from two steps to exactly three numbered steps, with verification as step 3.",
         "Publish the revised canonical Plan revision and request confirmation for that new revision.",
         "In a native runner, call write_document for key `plan`, then call request_human_input exactly once with interactionKind `confirmation`, targetRevisionId set to the returned latest Plan revision, and continuationPolicy `wake_assignee`; do not call wardmote_finish while waiting. After write_document succeeds, request_human_input must be your immediate next action using that call's returned latestRevisionId; do not emit assistant text, end the response or heartbeat, or stop after write_document alone.",
-        "In a legacy runner, first GET the current `plan` issue document, then PUT the revised Plan with `baseRevisionId` set to that response's `latestRevisionId`; after the update succeeds, create the equivalent request_confirmation targeting the newly returned `latestRevisionId` through the public Paperclip API.",
+        "In a legacy runner, first GET the current `plan` issue document, then PUT the revised Plan with `baseRevisionId` set to that response's `latestRevisionId`; after the update succeeds, create the equivalent request_confirmation targeting the newly returned `latestRevisionId` through the public Wardmote API.",
       ].join(" "),
     buildPrompt: (nonce) =>
       [
@@ -666,7 +666,7 @@ export const runnerTasks: readonly RunnerTaskFixture[] = [
           `WARDMOTE_E2E_PLAN_DONE_${nonce}` +
           " and mark the task Done.",
         `For a native runner, remain in the requested planning collaboration mode. Call write_document for key \`plan\`, then call request_human_input exactly once with interactionKind \`confirmation\`, targetRevisionId set to the returned latest Plan revision, and continuationPolicy \`wake_assignee\`. For both the initial Plan and the revised Plan, those two tool calls form one indivisible response sequence: immediately after write_document succeeds, request_human_input must be your next action using that call's returned latestRevisionId. Do not emit assistant text, end the response or heartbeat, or stop after write_document alone before the matching confirmation request succeeds. Do not call wardmote_finish while waiting for either Plan confirmation. When an acceptance wake arrives, first call get_task_context. Treat the wake as valid only when that control-plane result is for the current task and identifies the exact revised Plan revision used as the confirmation target as accepted; otherwise do not finish and continue waiting for the matching revision-bound confirmation. After that verification succeeds, your immediate next action must be the wardmote_finish tool call. Do not call list_documents or any other tool, and do not emit any assistant text, acknowledgement, progress note, or preamble between verification and wardmote_finish. Use the current turn completion revision and criterion IDs (CURRENT_TURN_REVISION below is a placeholder, not a literal). Call wardmote_finish exactly once with {reportedWorkDisposition:"done",summary:"WARDMOTE_E2E_PLAN_DONE_${nonce}",completionClaim:{contractRevision:CURRENT_TURN_REVISION,objectiveSatisfied:true,criteria:[{criterionId:"objective",status:"satisfied",evidenceRefs:[]}],remainingWork:[]},evidence:[],verification:[]}. Wait for that tool call to succeed, then emit only WARDMOTE_E2E_PLAN_DONE_${nonce} as the complete final response. Do not write a user-facing final response before wardmote_finish succeeds, and do not call another tool.`,
-        `For a legacy runner, use the public Paperclip API. The first PUT of the \`plan\` issue document creates it. For every later PUT, first GET the current document and set \`baseRevisionId\` to its \`latestRevisionId\`; a 409 means you must GET again and retry with the new latest revision. Create a \`request_confirmation\` targeting the successful PUT response's \`latestRevisionId\` with \`continuationPolicy: wake_assignee\`, and move the issue to \`in_review\` while waiting. After the revised Plan is accepted, write WARDMOTE_E2E_PLAN_DONE_${nonce} exactly once through one atomic issue PATCH with status \`done\` and that exact comment; do not POST a separate comment or perform a second write.`,
+        `For a legacy runner, use the public Wardmote API. The first PUT of the \`plan\` issue document creates it. For every later PUT, first GET the current document and set \`baseRevisionId\` to its \`latestRevisionId\`; a 409 means you must GET again and retry with the new latest revision. Create a \`request_confirmation\` targeting the successful PUT response's \`latestRevisionId\` with \`continuationPolicy: wake_assignee\`, and move the issue to \`in_review\` while waiting. After the revised Plan is accepted, write WARDMOTE_E2E_PLAN_DONE_${nonce} exactly once through one atomic issue PATCH with status \`done\` and that exact comment; do not POST a separate comment or perform a second write.`,
         "Do not create files, child tasks, or unrelated work, and do not expose credentials.",
       ].join("\n"),
     buildMatchers(nonce, execution) {
@@ -968,7 +968,7 @@ function managedWarmTurnInstructions(turn: 1 | 2 | 3, nonce: string) {
     turn === 1
       ? `Create notes/warm-memory.txt containing exactly T1-${nonce} followed by a newline. Create notes/unchanged.bin with exactly 8388608 bytes, each byte equal to 93. Create notes/delete-me.txt containing temporary.`
       : `Read notes/warm-memory.txt under AGENT_HOME and verify it contains exactly the prior turn lines ${Array.from({ length: turn - 1 }, (_, i) => `T${i + 1}-${nonce}`).join(" | ")}, each followed by a newline. Append exactly T${turn}-${nonce} and a newline. Verify notes/unchanged.bin still has 8388608 bytes, each equal to 93, and leave it unchanged. ${turn === 2 ? "Delete notes/delete-me.txt." : "Verify notes/delete-me.txt is absent."}`,
-    "Perform these personal-file edits and verification before calling wardmote_finish. Paperclip saves them at the turn boundary.",
+    "Perform these personal-file edits and verification before calling wardmote_finish. Wardmote saves them at the turn boundary.",
   ].join("\n");
 }
 
@@ -1169,7 +1169,7 @@ export const runnerSuites: readonly RunnerSuiteFixture[] = [
     definitionMetadata: { version: 2, qualification: "pending", scheduling: "explicit-only", identity: "native-session-runner-provider-session-process-start", agentFiles: "unchanged-home-process-continuity" },
   },
   {
-    id: "public-mcp", label: "Paperclip through an assistant", manualOnly: true,
+    id: "public-mcp", label: "Wardmote through an assistant", manualOnly: true,
     description: "Paid assistant tool use plus actual team execution, browser OAuth consent, durable outcomes and authorization boundaries.",
     groups: ["local"], environments: [localEnvironment], tasks: publicMcpTasks, expectedMatrixSize: 63,
     profiles: [
@@ -1220,7 +1220,7 @@ export const runnerSuites: readonly RunnerSuiteFixture[] = [
     definitionMetadata: { version: 1, qualification: "pending", scheduling: "explicit-only", fault: "observed-per-turn-run-root-loss", remoteFaultAuthority: "pidfd-start-ticks-boot-id", replayAllowed: false },
   },  {
     id: "extended-harnesses", label: "Extended ACP harnesses", manualOnly: true,
-    description: "Explicit candidate qualification through real Paperclip tools, browser interactions, file edits and restart recovery.",
+    description: "Explicit candidate qualification through real Wardmote tools, browser interactions, file edits and restart recovery.",
     groups: ["native"], profiles: extendedHarnessProfiles, environments: runnerEnvironments,
     tasks: [...openRouterBreadthTasks, localIntegrityTasks[1]!, extendedHarnessFileTask],
     expectedMatrixSize: 30,
@@ -1340,7 +1340,7 @@ export const runnerSuites: readonly RunnerSuiteFixture[] = [
       grading: "original-workflow-plus-attributed-decline-output", scheduling: "explicit-only" },
   },
   {
-    id: "everyday-workflows", label: "Everyday Paperclip Work", manualOnly: true,
+    id: "everyday-workflows", label: "Everyday Wardmote Work", manualOnly: true,
     description: "Real user requests, useful downloaded work, and durable continuation using production instructions.",
     groups: ["native"], profiles: [...everydayProfiles,
       productionStoryProfile(runnerProfiles.find(profile => profile.id === "runner-opencode")!),
@@ -1400,7 +1400,7 @@ export const runnerSuites: readonly RunnerSuiteFixture[] = [
   },
   {
     id: "stock-harness",
-    label: "Stock harness with Paperclip",
+    label: "Stock harness with Wardmote",
     manualOnly: true,
     description: "Production-default hires, reduced shared prompts, assigned skills, continuation, and persistent chat.",
     groups: ["stock-harness", "native", "legacy"],

@@ -6,7 +6,7 @@ Run the repeatable baseline from the repository root:
 pnpm exec playwright test --config tests/perf/issue-detail/playwright.config.ts
 ```
 
-The rig starts an isolated seeded Paperclip instance, runs five samples for each scenario/profile, and writes median-ready raw data plus a Markdown table to `test-results/issue-detail-perf/`.
+The rig starts an isolated seeded Wardmote instance, runs five samples for each scenario/profile, and writes median-ready raw data plus a Markdown table to `test-results/issue-detail-perf/`.
 
 Scenarios:
 
@@ -51,10 +51,10 @@ The suite creates its own company and fixtures. The URL override accepts only
 loopback origins and rejects remote hosts. Use a disposable local instance,
 not a shared or production instance. Without the override, the harness starts its own
 isolated instance as before. Live provider walkthroughs additionally require a
-configured native Paperclip runner and Codex authentication; deterministic
+configured native Wardmote runner and Codex authentication; deterministic
 browser fixtures do not substitute for watching an actual provider run.
 
-For the live walkthrough, first assign a disposable task to a native Paperclip
+For the live walkthrough, first assign a disposable task to a native Wardmote
 runner configured with the Codex provider. Its scratch project should contain
 a small `sum.mjs` fixture. The script sends a paced job, scrolls up, disconnects
 and reconnects, steers a follow-up, and records through completion:

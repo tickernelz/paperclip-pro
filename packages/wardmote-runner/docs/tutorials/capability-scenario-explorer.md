@@ -2,15 +2,15 @@
 
 **Time to first success: about 5 minutes.** Two commands take you from a clean
 checkout to 106 passing conformance cases and a browser you can click through.
-The whole tutorial runs from the repository root. It starts no Paperclip
-service, contacts no Paperclip control plane, clones no external eval
+The whole tutorial runs from the repository root. It starts no Wardmote
+service, contacts no Wardmote control plane, clones no external eval
 repository, and holds no provider credential. Everything it needs is checked in
 under `packages/wardmote-runner/`.
 
-Capability does not integrate the runner into Paperclip. It builds a package-local
-model of what a native Paperclip run *would* do — a deterministic mock control
+Capability does not integrate the runner into Wardmote. It builds a package-local
+model of what a native Wardmote run *would* do — a deterministic mock control
 plane, a transport-neutral semantic tool catalog, an authorization engine, a
-106-case conformance suite derived from the Paperclip Evals corpus, and a
+106-case conformance suite derived from the Wardmote Evals corpus, and a
 read-only browser explorer over all of it. Real integration is future upload integration and
 requires separate approval. See
 [the future binding boundary reference](../capability-future-binding-boundary.md).
@@ -164,7 +164,7 @@ pnpm --filter @tickernelz/wardmote-runner docs:validate
 - **Codex mode is disabled.** The explorer offers a bounded real-Codex binding
   sample only through `report:capability-evals`; the browser holds no credential
   and the in-page Codex mode is inert with a stated reason.
-- **No Paperclip integration.** Nothing here touches a real control plane,
+- **No Wardmote integration.** Nothing here touches a real control plane,
   database, or provider. future upload integration (ACPX) binds the real adapter behind the same
   seam and requires separate CTO approval.
 

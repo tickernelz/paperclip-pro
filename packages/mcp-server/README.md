@@ -1,15 +1,15 @@
-# Paperclip MCP Server
+# Wardmote MCP Server
 
-Model Context Protocol server for Paperclip.
+Model Context Protocol server for Wardmote.
 
-This package is a thin MCP wrapper over the existing Paperclip REST API. It does
+This package is a thin MCP wrapper over the existing Wardmote REST API. It does
 not talk to the database directly and it does not reimplement business logic.
 
 ## Authentication
 
 The server reads its configuration from environment variables:
 
-- `WARDMOTE_API_URL` - Paperclip base URL, for example `http://localhost:3100`
+- `WARDMOTE_API_URL` - Wardmote base URL, for example `http://localhost:3100`
 - `WARDMOTE_API_KEY` - bearer token used for `/api` requests
 - `WARDMOTE_COMPANY_ID` - optional default company for company-scoped tools
 - `WARDMOTE_AGENT_ID` - optional default agent for checkout helpers
@@ -18,7 +18,7 @@ The server reads its configuration from environment variables:
 - `WARDMOTE_MCP_LIST_ANNOTATIONS` - set to `1` to put MCP annotations back into the `tools/list` payload
 - `WARDMOTE_AGENT_ROLE` - caller role; management roles (`ceo`, `board`) also see board-authority tools
 
-Inside an active heartbeat, Paperclip also injects `WARDMOTE_RUNTIME_TOOLS_*` variables. They enable the run-scoped `connections_search` and `connection_request` tools and expire with the run.
+Inside an active heartbeat, Wardmote also injects `WARDMOTE_RUNTIME_TOOLS_*` variables. They enable the run-scoped `connections_search` and `connection_request` tools and expire with the run.
 
 ## Toolsets and authority
 
@@ -57,7 +57,7 @@ node packages/mcp-server/dist/stdio.js
 
 ## Server-hosted endpoint
 
-The Paperclip server hosts the same tool surface at `POST /api/mcp/wardmote`, so a run does not have to spawn this package as a child process. It is stateless streamable HTTP: one endpoint, JSON responses, no `Mcp-Session-Id`, `GET` and `DELETE` answer `405`.
+The Wardmote server hosts the same tool surface at `POST /api/mcp/wardmote`, so a run does not have to spawn this package as a child process. It is stateless streamable HTTP: one endpoint, JSON responses, no `Mcp-Session-Id`, `GET` and `DELETE` answer `405`.
 
 - Authentication is the REST API's: `Authorization: Bearer <run agent key>` plus `X-Wardmote-Run-Id`. Only agent actors are accepted; a board actor gets `403`, a missing credential `401`.
 - `companyId` and `agentId` come from the authenticated agent, never from a request header, and board-authority tools are exposed only when that agent's `agentAuthorityCapabilities` include company-level authority.

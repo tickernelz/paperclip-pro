@@ -35,7 +35,7 @@ import { openwaCurrentOwnerUserId } from "./openwa/owners.js";
 export const OWNER_CONFIRMATION_REQUIRED_CODE = "owner_confirmation_required";
 
 const OWNER_RELAY_REMEDIATION =
-  "Relay a card answer only from a run the owner's own message started (an owner WhatsApp message, or their board comment), quoting that message's id as ownerMessageRef. Otherwise ask the owner to answer the card in Paperclip.";
+  "Relay a card answer only from a run the owner's own message started (an owner WhatsApp message, or their board comment), quoting that message's id as ownerMessageRef. Otherwise ask the owner to answer the card in Wardmote.";
 
 type OwnerRelayDenial =
   | "run_not_active"
@@ -118,7 +118,7 @@ async function whatsappAuthority(db: Db, run: RelayRun, ownerMessageRef: string)
   }
   const owner = await openwaCurrentOwnerUserId(db, endpoint, principalId);
   if (!owner.userId) {
-    throw ownerConfirmationRequired("owner_not_linked", "This WhatsApp owner is not linked to a Paperclip user, so their answer cannot be recorded for them");
+    throw ownerConfirmationRequired("owner_not_linked", "This WhatsApp owner is not linked to a Wardmote user, so their answer cannot be recorded for them");
   }
   return {
     ownerUserId: owner.userId,
@@ -335,10 +335,10 @@ interface RelayableCard {
 }
 
 export function ownerRelayBlockedReason(card: RelayableCard): string | null {
-  if (card.kind === "connection_intent") return "Connection requests are completed by the connecting user in Paperclip";
+  if (card.kind === "connection_intent") return "Connection requests are completed by the connecting user in Wardmote";
   const payload = record(card.payload);
   if (payload.toolAction || payload.secretProposal || payload.connectionAuthorization) {
-    return "Governed actions (tool runs, secret bindings, connection authorizations) use their own approval control in Paperclip";
+    return "Governed actions (tool runs, secret bindings, connection authorizations) use their own approval control in Wardmote";
   }
   if (str(payload.openwaApprovalRequestId)) return "OpenWA approval requests are resolved with openwa_approval_resolve in the owner's chat";
   return null;
@@ -492,8 +492,8 @@ export function pendingDecisionCardShape(kind: string, payload: Record<string, u
 }
 
 const GOVERNED_APPROVAL_REASON =
-  "Board approvals (hires, budgets, governed actions) carry company-level effects and budget stops; the owner decides them in Paperclip, or an agent holding company:approvals authority uses wardmoteApprovalDecision";
-const AGENT_DECISION_REASON = "Agent decision bundles are decided on the Paperclip Decisions desk";
+  "Board approvals (hires, budgets, governed actions) carry company-level effects and budget stops; the owner decides them in Wardmote, or an agent holding company:approvals authority uses wardmoteApprovalDecision";
+const AGENT_DECISION_REASON = "Agent decision bundles are decided on the Wardmote Decisions desk";
 
 const RELAY_SOURCE_KINDS: AttentionSourceKind[] = ["issue_thread_interaction", "approval", "decision"];
 
@@ -505,14 +505,14 @@ export function isOpenAttentionItem(item: AttentionItem, now: number) {
 
 const DESK_ONLY_REASONS: Partial<Record<AttentionSourceKind, string>> = {
   recovery_action:
-    "A recovery action is resolved on the Paperclip Decisions desk; when the owner explicitly asks to continue the issue, wardmoteContinueIssueForOwner relays that",
+    "A recovery action is resolved on the Wardmote Decisions desk; when the owner explicitly asks to continue the issue, wardmoteContinueIssueForOwner relays that",
   review: "A review verdict is given on the issue by its reviewer, not relayed",
-  productivity_review: "A productivity review is closed on the Paperclip Decisions desk",
+  productivity_review: "A productivity review is closed on the Wardmote Decisions desk",
   blocker_attention: "A blocked dependency clears when the blocking issue finishes or the dependency changes; there is no card to answer",
-  failed_run: "A failed run is handled on the Paperclip Decisions desk",
-  budget_alert: "A budget incident is decided by the owner on the Paperclip Decisions desk",
-  agent_error_alert: "An agent error is inspected or dismissed on the Paperclip Decisions desk",
-  join_request: "A join request is approved or denied by a board member on the Paperclip Decisions desk",
+  failed_run: "A failed run is handled on the Wardmote Decisions desk",
+  budget_alert: "A budget incident is decided by the owner on the Wardmote Decisions desk",
+  agent_error_alert: "An agent error is inspected or dismissed on the Wardmote Decisions desk",
+  join_request: "A join request is approved or denied by a board member on the Wardmote Decisions desk",
 };
 
 async function loadRelayCards(db: Db, companyId: string, items: AttentionItem[]) {
@@ -547,7 +547,7 @@ export async function relayStateByItem(
       const reason =
         item.sourceKind === "approval" ? GOVERNED_APPROVAL_REASON
         : item.sourceKind === "decision" ? AGENT_DECISION_REASON
-        : (DESK_ONLY_REASONS[item.sourceKind] ?? "Resolved on the Paperclip Decisions desk");
+        : (DESK_ONLY_REASONS[item.sourceKind] ?? "Resolved on the Wardmote Decisions desk");
       return [item.id, { relayable: false, relayBlockedReason: reason }] as const;
     }),
   );

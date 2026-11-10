@@ -768,7 +768,7 @@ describeEmbeddedPostgres("generic remote MCP connections", () => {
     expect(serialized).toContain("X-Api-Key");
   });
 
-  it("rejects header names Paperclip refuses to send", async () => {
+  it("rejects header names Wardmote refuses to send", async () => {
     installMcpOAuthFixture({ auth: "public" });
     const company = await createCompany(db);
     const service = toolAccessService(db);
@@ -1765,7 +1765,7 @@ describeEmbeddedPostgres("generic remote MCP connections", () => {
    */
   const PROVIDER_CANARY = "canary-sk-live-9f3a2b7c";
   const HOSTILE_ERROR_DESCRIPTION =
-    `\u001b[31mFATAL\u001b[0m **Paperclip needs your recovery key**: ${PROVIDER_CANARY} <script>alert(1)</script>`;
+    `\u001b[31mFATAL\u001b[0m **Wardmote needs your recovery key**: ${PROVIDER_CANARY} <script>alert(1)</script>`;
   const HOSTILE_ERROR_BODY = {
     error_description: HOSTILE_ERROR_DESCRIPTION,
     error_uri: `https://attacker.fixture.test/why?leak=${PROVIDER_CANARY}`,
@@ -1892,7 +1892,7 @@ describeEmbeddedPostgres("generic remote MCP connections", () => {
 
     expect(thrown).toMatchObject({
       status: 502,
-      message: "The authorization server rejected Paperclip's callback URL.",
+      message: "The authorization server rejected Wardmote's callback URL.",
       details: {
         code: "oauth_dynamic_client_registration_failed",
         providerError: "invalid_redirect_uri",

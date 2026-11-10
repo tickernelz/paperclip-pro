@@ -1,6 +1,6 @@
 # Capability Capability Disposition
 
-This page explains how Capability classifies every Paperclip capability. The
+This page explains how Capability classifies every Wardmote capability. The
 classification itself lives in a generated file,
 [the Capability contract](capability-contract.md), which
 carries a "DO NOT EDIT" header and is rewritten by `generate:capability-inventory`.
@@ -11,11 +11,11 @@ the authoritative rows.
 
 Only two sources are normative:
 
-1. The Paperclip skill and its seven references (`SKILL.md` plus
+1. The Wardmote skill and its seven references (`SKILL.md` plus
    `references/*.md`), contributing **153 headings**.
-2. The Paperclip Evals corpus, contributing **106 cases across 16 groups**.
+2. The Wardmote Evals corpus, contributing **106 cases across 16 groups**.
 
-Together these produce **259 normative rows**. The legacy Paperclip MCP tool
+Together these produce **259 normative rows**. The legacy Wardmote MCP tool
 surface (**41 tools**) is not a production capability surface; each MCP name is
 folded one-to-one into a normative eval row as a traceability alias and inherits
 that row's disposition. The contract prints the alias index only so the
@@ -55,13 +55,13 @@ The contract has three parts:
 ## Regenerating and checking
 
 Generation reads the live in-repo skill/reference sources, the legacy MCP tool
-source, and the Paperclip Evals corpus, so it **requires** the external eval
+source, and the Wardmote Evals corpus, so it **requires** the external eval
 repository (via `WARDMOTE_EVALS_ROOT` or a known local path) and is not part of
 the offline path. Checking and testing read only the checked-in derivatives
 under `spec/capability/` and need no external repository.
 
 ```sh
-# Rewrite every generated file. Requires the external Paperclip Evals corpus.
+# Rewrite every generated file. Requires the external Wardmote Evals corpus.
 pnpm --filter @tickernelz/wardmote-runner generate:capability-inventory
 
 # Validate counts, uniqueness, normative dispositions, one-to-one MCP folds,

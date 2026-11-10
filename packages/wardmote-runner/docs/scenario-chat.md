@@ -3,8 +3,8 @@
 The scenario chat is an interactive surface over the same package-local Capability
 runner and [mock control plane](capability-mock-control-plane-port.md) that the
 [scenario explorer](capability-scenario-explorer.md) reads. You pick a scenario,
-send prompts, and watch the mock Paperclip activity for every turn instead of
-having it hidden behind the conversation. It contacts no Paperclip service,
+send prompts, and watch the mock Wardmote activity for every turn instead of
+having it hidden behind the conversation. It contacts no Wardmote service,
 holds no credential, and introduces no ACPX implementation.
 
 Sources: `src/scenarios/chat-session.ts`, `src/scenarios/chat-script.ts`,

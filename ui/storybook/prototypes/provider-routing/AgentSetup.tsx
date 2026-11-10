@@ -216,7 +216,7 @@ function AgentRoutingFields({
       </fieldset>
       {nativePending && (
         <Notice error>
-          This harness is not yet available through Paperclip Runner. Select a
+          This harness is not yet available through Wardmote Runner. Select a
           supported harness or configure its legacy adapter.
         </Notice>
       )}

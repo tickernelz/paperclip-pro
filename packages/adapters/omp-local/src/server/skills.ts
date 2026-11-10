@@ -83,8 +83,8 @@ async function buildOmpSkillSnapshot(config: Record<string, unknown>): Promise<A
     locationLabel: skillsLocationLabel(skillsHome, config),
     installedDetail: "Linked into the active OMP agent skills directory.",
     missingDetail: "Configured but not currently linked into the active OMP agent skills directory.",
-    externalConflictDetail: "Skill name is occupied by an external installation; Paperclip left it unchanged.",
-    externalDetail: "Installed outside Paperclip management.",
+    externalConflictDetail: "Skill name is occupied by an external installation; Wardmote left it unchanged.",
+    externalDetail: "Installed outside Wardmote management.",
   });
 }
 

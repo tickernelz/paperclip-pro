@@ -1,6 +1,6 @@
 # @tickernelz/wardmote-adapter-utils
 
-Shared utilities for Paperclip adapters: process spawning, environment
+Shared utilities for Wardmote adapters: process spawning, environment
 injection, sandbox/SSH transport, workspace sync, and the round-trip helpers
 that move code between the local execution-workspace cwd and wherever the
 agent actually runs.

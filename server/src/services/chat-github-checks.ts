@@ -313,7 +313,7 @@ export function githubReviewCheckService(db: Db, fetchImpl = fetch) {
                 app?: { id?: number };
               }>;
             }>(
-              `/commits/${event.headSha}/check-runs?check_name=Paperclip%20Review&per_page=100`,
+              `/commits/${event.headSha}/check-runs?check_name=Wardmote%20Review&per_page=100`,
             );
             const check = checks.check_runs.find(
               (check) =>
@@ -331,7 +331,7 @@ export function githubReviewCheckService(db: Db, fetchImpl = fetch) {
               {
                 method: updateCheck ? "PATCH" : "POST",
                 body: {
-                  name: "Paperclip Review",
+                  name: "Wardmote Review",
                   head_sha: event.headSha,
                   external_id: externalId,
                   ...(detailsUrl ? { details_url: detailsUrl } : {}),
@@ -341,7 +341,7 @@ export function githubReviewCheckService(db: Db, fetchImpl = fetch) {
                     : {}),
                   output: {
                     title,
-                    summary: `${title}. ${state === "manual_required" ? "An authorized person can mention the bot to request a review of this head. Automatic review was not authorized by the bot configuration." : "This check follows the assigned Paperclip agent's task execution. Only a validated assessment can produce a passing score."}\n\nCommit: ${event.headSha}`,
+                    summary: `${title}. ${state === "manual_required" ? "An authorized person can mention the bot to request a review of this head. Automatic review was not authorized by the bot configuration." : "This check follows the assigned Wardmote agent's task execution. Only a validated assessment can produce a passing score."}\n\nCommit: ${event.headSha}`,
                   },
                 },
               },

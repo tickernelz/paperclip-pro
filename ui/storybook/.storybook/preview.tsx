@@ -835,7 +835,7 @@ const preview: Preview = {
   ],
   globalTypes: {
     theme: {
-      description: "Paperclip color mode",
+      description: "Wardmote color mode",
       defaultValue: "dark",
       toolbar: {
         title: "Theme",

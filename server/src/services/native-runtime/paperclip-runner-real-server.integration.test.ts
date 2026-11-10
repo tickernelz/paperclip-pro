@@ -45,7 +45,7 @@ describe("paperclip-runner real server vertical slice", () => {
     await temporary.cleanup();
   });
 
-  runnerBinaryIt("runs Rust runnerd through Paperclip PRP and reads the real bound task", async () => {
+  runnerBinaryIt("runs Rust runnerd through Wardmote PRP and reads the real bound task", async () => {
     const db = createDb(temporary.connectionString);
     await db.insert(companies).values({ id: companyId, name: "Real runner slice", issuePrefix: "RRS" });
     await db.insert(agents).values({

@@ -52,7 +52,7 @@ describeEmbeddedPostgres("changeConsentGateService", () => {
 
     await db.insert(companies).values({
       id: companyId,
-      name: "Paperclip",
+      name: "Wardmote",
       issuePrefix: "PAP",
       defaultResponsibleUserId: "board-user",
     });

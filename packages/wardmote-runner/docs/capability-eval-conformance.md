@@ -1,6 +1,6 @@
 # Capability Eval-Derived Conformance
 
-Capability turns the Paperclip Evals corpus into an executable, offline
+Capability turns the Wardmote Evals corpus into an executable, offline
 conformance suite. The suite derives its cases from the checked-in Capability
 traceability derivative (`spec/capability/eval-traceability.yaml`) — it does
 **not** clone or read an external eval repository, and it starts only the

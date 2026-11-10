@@ -248,7 +248,7 @@ describe("adapter routes", () => {
     expect(res.body.fields).toEqual([]);
   });
 
-  it("serves provider-scoped Paperclip Runner configuration fields", async () => {
+  it("serves provider-scoped Wardmote Runner configuration fields", async () => {
     const app = createApp();
 
     const res = await request(app).get("/api/adapters/wardmote_runner/config-schema");

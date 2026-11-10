@@ -11,7 +11,7 @@ import {
   resolveWardmoteRunnerCursorMode,
 } from "./wardmote-runner-permissions.js";
 
-describe("Paperclip Runner permission defaults", () => {
+describe("Wardmote Runner permission defaults", () => {
   it("admits Pi with provider credentials while keeping Copilot pending", () => {
     expect(WARDMOTE_RUNNER_ACPX_PROFILES.find(profile => profile.value === "pi"))
       .toMatchObject({ qualified: true, credentialEnvironment: expect.arrayContaining(["OPENROUTER_API_KEY", "OPENAI_API_KEY", "ANTHROPIC_API_KEY", "GEMINI_API_KEY"]) });

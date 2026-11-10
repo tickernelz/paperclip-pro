@@ -39,7 +39,7 @@ export function QuestionChat({ movedOn = false, multiple = false, answered = fal
   const [comments, setComments] = useState<IssueComment[]>([
     comment("start", "Help me plan a welcome note for our garden club.", "2026-04-01T12:00:00Z"),
     ...(movedOn || multiple || answered ? [
-      comment("move-on", "Let's leave those choices for later. What can Paperclip tasks track?", "2026-04-01T12:04:00Z"),
+      comment("move-on", "Let's leave those choices for later. What can Wardmote tasks track?", "2026-04-01T12:04:00Z"),
       comment("reply", "Tasks track ownership, progress, and the work needed to reach a goal.", "2026-04-01T12:05:00Z", true),
     ] : []),
     ...(answered ? [comment("late-answer", "Blue it is. I'll use that preference when we return to the welcome note.", "2026-04-01T12:07:00Z", true)] : []),

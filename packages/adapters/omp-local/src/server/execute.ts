@@ -419,10 +419,10 @@ export function buildOmpArgs(input: {
 }
 
 export const OMP_TODO_PROMPT_LINE =
-  "For multi-step work, keep your plan in the todo tool; Paperclip shows it to the user live, so no separate checklist is needed.";
+  "For multi-step work, keep your plan in the todo tool; Wardmote shows it to the user live, so no separate checklist is needed.";
 
 const OMP_HEARTBEAT_PROMPT_TEMPLATE =
-  "You are agent {{agent.id}} ({{agent.name}}). Continue your Paperclip work under the execution contract in your system prompt.";
+  "You are agent {{agent.id}} ({{agent.name}}). Continue your Wardmote work under the execution contract in your system prompt.";
 
 async function findOmpSessionFile(sessionDir: string, sessionId: string) {
   const entries = await fs.readdir(sessionDir).catch(() => [] as string[]);
@@ -552,7 +552,7 @@ export function applyRuntimeToolAccess(
     Object.assign(env, buildRuntimeToolsEnv(tools));
     sections.push(
       [
-        "Paperclip runtime tools are delivered through the environment of this run.",
+        "Wardmote runtime tools are delivered through the environment of this run.",
         `Bearer token: $WARDMOTE_RUNTIME_TOOLS_TOKEN (valid until ${tools.expiresAt}).`,
         `Search connections: POST $WARDMOTE_RUNTIME_TOOLS_CONNECTIONS_SEARCH_URL`,
         `Request a connection: POST $WARDMOTE_RUNTIME_TOOLS_CONNECTION_REQUEST_URL`,
@@ -571,7 +571,7 @@ export function applyRuntimeToolAccess(
     );
     sections.push(
       [
-        `Paperclip provisioned ${servers.length} MCP server(s) for this run: ${servers.map((s) => s.name).join(", ")}.`,
+        `Wardmote provisioned ${servers.length} MCP server(s) for this run: ${servers.map((s) => s.name).join(", ")}.`,
         "Endpoints are in $WARDMOTE_RUNTIME_MCP_SERVERS and their bearer tokens in $WARDMOTE_RUNTIME_MCP_TOKENS, keyed by server name.",
         "OMP loads MCP servers from its agent directory, so reach these over HTTP for this run instead of expecting them in the tool list.",
       ].join("\n"),
@@ -840,8 +840,8 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       if (!mcpProbe.ok) {
         const source = mcpTransport === "http" ? mcpEndpoint : mcpCommand.command;
         const message = mcpProbe.credentialRejected
-          ? `Paperclip MCP endpoint (${source}) rejected this run's credentials: ${mcpProbe.detail}`
-          : `Paperclip MCP ${mcpTransport === "http" ? "endpoint" : "server"} (${source}) is unavailable: ${mcpProbe.detail}`;
+          ? `Wardmote MCP endpoint (${source}) rejected this run's credentials: ${mcpProbe.detail}`
+          : `Wardmote MCP ${mcpTransport === "http" ? "endpoint" : "server"} (${source}) is unavailable: ${mcpProbe.detail}`;
         await onLog("stderr", `[paperclip] ${message}\n`);
         return {
           exitCode: 1,
@@ -877,13 +877,13 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     if (mcpEnabled && !mcpApiKey) {
       await onLog(
         "stderr",
-        "[paperclip] Warning: this run carries no Paperclip API key, so the Paperclip MCP tools are not armed.\n",
+        "[paperclip] Warning: this run carries no Wardmote API key, so the Wardmote MCP tools are not armed.\n",
       );
     }
     if (!mcpEnabled) {
       await onLog(
         "stderr",
-        "[paperclip] Warning: wardmoteMcp is off for this agent. The agent has no Paperclip tools this run and cannot read issues, comment, or update status.\n",
+        "[paperclip] Warning: wardmoteMcp is off for this agent. The agent has no Wardmote tools this run and cannot read issues, comment, or update status.\n",
       );
     }
     if (mcpApiKey) {
@@ -957,10 +957,10 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
         ? "OMP runs in RPC mode: the prompt travels on stdin and same-turn steering is available for this run."
         : "OMP runs in one-shot print mode; same-turn steering is unavailable for this run.",
       mcpArmed
-        ? `Paperclip MCP server armed from ${mcpCommand.source === "path" ? WARDMOTE_MCP_BIN : mcpCommand.command} with toolsets ${mcpToolsets}${mcpProbe ? ` (${mcpProbe.toolCount ?? 0} tools, handshake ${mcpProbe.durationMs}ms)` : ""}`
+        ? `Wardmote MCP server armed from ${mcpCommand.source === "path" ? WARDMOTE_MCP_BIN : mcpCommand.command} with toolsets ${mcpToolsets}${mcpProbe ? ` (${mcpProbe.toolCount ?? 0} tools, handshake ${mcpProbe.durationMs}ms)` : ""}`
         : mcpEnabled
-          ? "Paperclip MCP server not armed: this run has no Paperclip API key."
-          : "Paperclip MCP server disabled by adapter configuration; the agent has no Paperclip tools this run.",
+          ? "Wardmote MCP server not armed: this run has no Wardmote API key."
+          : "Wardmote MCP server disabled by adapter configuration; the agent has no Wardmote tools this run.",
     ];
 
     const runAttempt = async (resumeSessionId: string | null): Promise<ProcessAttempt> => {

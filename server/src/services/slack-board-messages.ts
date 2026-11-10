@@ -138,7 +138,7 @@ export async function mirrorSlackBoardComment(
         payload: projectSafeChatPublication({
           classification: "external",
           source: "explicit_board_send",
-          text: `**${author} (via Paperclip)**\n\n${comment.body}`,
+          text: `**${author} (via Wardmote)**\n\n${comment.body}`,
         }),
         state: "pending",
       })

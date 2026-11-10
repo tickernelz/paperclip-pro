@@ -6,7 +6,7 @@ This tutorial runs the Live console server layer. It has no browser UI yet. You 
 use `curl` to act like the browser.
 
 The server starts Codex. Codex login data stays on the server. The JSON replies
-must not contain a Paperclip key, an OpenAI key, or a bearer value.
+must not contain a Wardmote key, an OpenAI key, or a bearer value.
 
 ## Step 1: Run deterministic checks
 

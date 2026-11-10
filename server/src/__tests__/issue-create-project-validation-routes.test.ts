@@ -47,7 +47,7 @@ describeEmbeddedPostgres("issue create project validation routes", () => {
     const companyId = randomUUID();
     await db.insert(companies).values({
       id: companyId,
-      name: "Paperclip",
+      name: "Wardmote",
       issuePrefix: `P${companyId.replace(/-/g, "").slice(0, 5).toUpperCase()}`,
       requireBoardApprovalForNewAgents: false,
     });

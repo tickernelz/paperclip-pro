@@ -146,7 +146,7 @@ function capResult(value: unknown, limit: number, limited: LocalBrowserLimited):
 }
 
 function raiseLimitHint(what: string): string {
-  return "Ask the user to raise the " + what + " limit in the Local Browser settings in Paperclip.";
+  return "Ask the user to raise the " + what + " limit in the Local Browser settings in Wardmote.";
 }
 
 const AGENT_NAME_CACHE_MS = 300_000;
@@ -184,7 +184,7 @@ export function localBrowserService(db: Db, options: LocalBrowserServiceOptions 
     const candidates = liveSessionsForCompany(binding.companyId);
     if (candidates.length === 0) {
       throw localBrowserFailure("local_browser_not_paired", "No browser is paired for this company", {
-        hint: "Ask the user to open the Paperclip Local Browser extension and pair it with the code from the Apps panel.",
+        hint: "Ask the user to open the Wardmote Local Browser extension and pair it with the code from the Apps panel.",
       });
     }
     if (binding.agentId) {
@@ -592,7 +592,7 @@ export function localBrowserService(db: Db, options: LocalBrowserServiceOptions 
         if (localBrowserIsInternalTool(name)) {
           throw localBrowserFailure(
             "local_browser_unsupported",
-            name + " is driven by Paperclip itself and is not an agent tool",
+            name + " is driven by Wardmote itself and is not an agent tool",
           );
         }
         const definition = localBrowserTool(name);

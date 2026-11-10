@@ -22,7 +22,7 @@ describe("external chat task link context", () => {
           const markdown = buildWardmoteTaskMarkdown({ issue, externalChatProvider, nativeRunner, includeDescription });
           expect(markdown).toContain("Public task URL: https://board.example/issues/task-123");
           expect(markdown).toContain("use this exact URL");
-          expect(markdown).toContain("Opening it still requires Paperclip access");
+          expect(markdown).toContain("Opening it still requires Wardmote access");
           expect(markdown).not.toContain("http://localhost:3100");
         }
       }

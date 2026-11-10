@@ -107,7 +107,7 @@ export const lifecycleLiveTasks: readonly RunnerTaskFixture[] =
         buildTitle: nonce => `Lifecycle disposition exercise ${nonce}`,
         buildVisibleMarker: nonce => `REPAIRED_${nonce}`,
         buildPrompt: nonce => [
-          "This is a bounded two-turn disposition repair exercise. Use the public Paperclip API with normal authorization and run attribution headers.",
+          "This is a bounded two-turn disposition repair exercise. Use the public Wardmote API with normal authorization and run attribution headers.",
           "Before any mutation, read WARDMOTE_WAKE_REASON from the process environment. Branch only on that exact value: issue_assigned is INITIAL; issue_disposition_repair is REPAIR. Never infer the phase from the task title, these instructions, or quoted words. Execute only the selected branch, then end this turn.",
           `INITIAL branch (WARDMOTE_WAKE_REASON is issue_assigned): post exactly one task comment whose complete body is ${JSON.stringify(probe.narrative)}, then end the provider turn with the same text. Leave task status in_progress. Do not record completion, a blocker, an approval, a question, a monitor, children, or a continuation. The quoted words do not describe actual authorization or missing prerequisites.`,
           `REPAIR branch (WARDMOTE_WAKE_REASON is issue_disposition_repair): PATCH the current task to status done, with the exact comment REPAIRED_${nonce}. End the provider turn. Do not repeat the initial comment or create further work.`,
@@ -156,7 +156,7 @@ export const lifecycleLiveTasks: readonly RunnerTaskFixture[] =
           blocked
             ? 'Native runtime: use wardmote_block, reportedWorkDisposition blocked, a current-revision completionClaim with objectiveSatisfied false and unsatisfied current criteria, and blocker {reasonCode:"dependency_missing",owner:{kind:"user",name:"fixture operator"},unblockAction:"Supply the missing dataset",scope:"task_wide"}. Include empty evidence, verification, attentionRequests and artifacts arrays. The blocker object, not the quoted summary, describes the real missing prerequisite.'
             : "Native runtime: use wardmote_finish with reportedWorkDisposition done, the current completion revision and criterion IDs marked satisfied, objectiveSatisfied true, remainingWork [], and empty evidence, verification, attentionRequests and artifacts arrays.",
-          `Legacy runtime: use the public Paperclip API to PATCH the current task with status ${blocked ? "blocked" : "done"}${blocked ? ' and blockedByIssueIds: ["{{LIFECYCLE_BLOCKER_ID}}"]' : ""} and that exact response as its comment, using the normal authorization and run attribution headers. Do not post the same response twice.`,
+          `Legacy runtime: use the public Wardmote API to PATCH the current task with status ${blocked ? "blocked" : "done"}${blocked ? ' and blockedByIssueIds: ["{{LIFECYCLE_BLOCKER_ID}}"]' : ""} and that exact response as its comment, using the normal authorization and run attribution headers. Do not post the same response twice.`,
           ...(blocked ? ["The harness has created the unassigned, unfinished dataset prerequisite {{LIFECYCLE_BLOCKER_ID}}. Do not complete it or name yourself as its unblock owner. Its completion belongs to the fixture operator."] : []),
           "Finish the provider turn after the successful disposition. Do not create files, children, extra interactions or scheduled work.",
         ].join("\n"),

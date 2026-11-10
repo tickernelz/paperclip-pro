@@ -1613,7 +1613,7 @@ function buildLegacyRoutineTriggerFromRecurrence(
   }
 
   if (issue.legacyRecurrence.until != null || issue.legacyRecurrence.count != null) {
-    warnings.push(`Recurring task ${issue.slug} uses legacy recurrence end bounds; Paperclip will import the routine trigger without those limits.`);
+    warnings.push(`Recurring task ${issue.slug} uses legacy recurrence end bounds; Wardmote will import the routine trigger without those limits.`);
   }
 
   let cronExpression: string | null = null;
@@ -3062,7 +3062,7 @@ function buildManifestFromPackageFiles(
     ? declaredSchemaVersion
     : UNSTAMPED_BUNDLE_SCHEMA_VERSION;
   if (bundleSchemaVersion > BUNDLE_SCHEMA_VERSION) {
-    throw unprocessable(`Company package declares schemaVersion ${bundleSchemaVersion}, which was produced by a newer Paperclip; this board reads up to schemaVersion ${BUNDLE_SCHEMA_VERSION}.`);
+    throw unprocessable(`Company package declares schemaVersion ${bundleSchemaVersion}, which was produced by a newer Wardmote; this board reads up to schemaVersion ${BUNDLE_SCHEMA_VERSION}.`);
   }
   const wardmoteCompany = isPlainRecord(wardmoteExtension.company) ? wardmoteExtension.company : {};
   const wardmoteSidebar = normalizePortableSidebarOrder(wardmoteExtension.sidebar);

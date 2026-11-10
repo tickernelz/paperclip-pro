@@ -81,7 +81,7 @@ describeEmbeddedPostgres("plugin tenant isolation (company_id FK)", () => {
         version: "0.0.1",
         displayName: "Tenant Isolation Test",
         description: "Test plugin",
-        author: "Paperclip",
+        author: "Wardmote",
         categories: ["automation"],
         capabilities: [],
         entrypoints: { worker: "./dist/worker.js" },

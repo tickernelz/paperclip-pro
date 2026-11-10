@@ -746,7 +746,7 @@ export async function prepareGitHubPublicAttachment(
           redirect: "manual",
           credentials: "omit",
           signal,
-          headers: { accept: "*/*", "user-agent": "Paperclip/ChatAttachments" },
+          headers: { accept: "*/*", "user-agent": "Wardmote/ChatAttachments" },
         },
         {
           allowPrivateNetwork: false,

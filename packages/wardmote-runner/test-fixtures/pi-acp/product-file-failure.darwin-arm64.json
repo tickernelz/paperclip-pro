@@ -30,7 +30,7 @@
       "revision": "1",
       "criterionId": "objective"
     },
-    "finishErrorText": "Paperclip tool request was rejected",
+    "finishErrorText": "Wardmote tool request was rejected",
     "fileOracleCaptured": false,
     "finalIssueState": "in_progress"
   },

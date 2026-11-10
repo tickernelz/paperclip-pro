@@ -62,7 +62,7 @@
       "namespace": "paperclip",
       "transport": "mcp",
       "status": "failed",
-      "output": "{\"content\":[{\"type\":\"text\",\"text\":\"Paperclip tool request was rejected: completionClaim.criteria must contain exactly these criterion IDs, once each: [\\\"human_response\\\"]. Keep contractRevision \\\"2\\\" and correct the report without repeating completed work.\"}],\"details\":{}}",
+      "output": "{\"content\":[{\"type\":\"text\",\"text\":\"Wardmote tool request was rejected: completionClaim.criteria must contain exactly these criterion IDs, once each: [\\\"human_response\\\"]. Keep contractRevision \\\"2\\\" and correct the report without repeating completed work.\"}],\"details\":{}}",
       "outputTruncated": false
     },
     {
@@ -71,7 +71,7 @@
       "namespace": "paperclip",
       "transport": "mcp",
       "status": "failed",
-      "output": "{\"content\":[{\"type\":\"text\",\"text\":\"Paperclip tool request was rejected: Duplicate call identity conflict.\"}],\"details\":{}}",
+      "output": "{\"content\":[{\"type\":\"text\",\"text\":\"Wardmote tool request was rejected: Duplicate call identity conflict.\"}],\"details\":{}}",
       "outputTruncated": false
     },
     {
@@ -80,7 +80,7 @@
       "namespace": "paperclip",
       "transport": "mcp",
       "status": "failed",
-      "output": "{\"content\":[{\"type\":\"text\",\"text\":\"Paperclip tool request was rejected: Duplicate call identity conflict.\"}],\"details\":{}}",
+      "output": "{\"content\":[{\"type\":\"text\",\"text\":\"Wardmote tool request was rejected: Duplicate call identity conflict.\"}],\"details\":{}}",
       "outputTruncated": false
     }
   ],

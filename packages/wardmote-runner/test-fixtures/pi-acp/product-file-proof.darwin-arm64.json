@@ -99,7 +99,7 @@
   },
   "semanticCorrection": {
     "failedFinishCalls": 1,
-    "retainedValidationError": "Paperclip tool request was rejected: Completion cites a workspace-only file that the user cannot download. Before finishing, use register_deliverable for requested file outputs and cite deliverable:<attachmentId> from the receipt, with /api/attachments/<attachmentId>/content as the download link. For repository changes, cite an accessible PR or registered work product instead. No human completion approval was created.",
+    "retainedValidationError": "Wardmote tool request was rejected: Completion cites a workspace-only file that the user cannot download. Before finishing, use register_deliverable for requested file outputs and cite deliverable:<attachmentId> from the receipt, with /api/attachments/<attachmentId>/content as the download link. For repository changes, cite an accessible PR or registered work product instead. No human completion approval was created.",
     "registeredDeliverableCalls": 1,
     "registrationDisposition": "applied",
     "filePreparationState": "prepared",

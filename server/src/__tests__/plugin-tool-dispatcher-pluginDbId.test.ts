@@ -33,7 +33,7 @@ const MANIFEST: WardmotePluginManifestV1 = {
   version: "1.0.0",
   displayName: "Demo plugin",
   description: "Regression fixture",
-  author: "Paperclip",
+  author: "Wardmote",
   categories: ["automation"],
   capabilities: [],
   entrypoints: { worker: "dist/worker.js" },

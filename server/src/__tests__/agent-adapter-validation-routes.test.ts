@@ -1001,7 +1001,7 @@ describe("agent routes adapter validation", () => {
       "wardmote_runner_codex_permission_mode_unqualified",
     ],
   ])(
-    "rejects a same-provider Paperclip Runner edit with %s",
+    "rejects a same-provider Wardmote Runner edit with %s",
     async (_label, existingAdapterConfig, adapterConfigPatch, expectedCode) => {
       const existing = await mockAgentService.getById();
       mockAgentService.getById.mockResolvedValue({

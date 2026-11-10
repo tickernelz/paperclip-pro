@@ -20,7 +20,7 @@ const evalRoot = process.env.WARDMOTE_EVALS_ROOT
     for (const candidate of evalCandidates) {
       if (await access(candidate).then(() => true, () => false)) return candidate;
     }
-    throw new Error(`Paperclip eval corpus not found. Set WARDMOTE_EVALS_ROOT. Checked:\n${evalCandidates.join("\n")}`);
+    throw new Error(`Wardmote eval corpus not found. Set WARDMOTE_EVALS_ROOT. Checked:\n${evalCandidates.join("\n")}`);
   })());
 const outputPaths = {
   capabilities: resolve(packageRoot, "spec/capability/capabilities.yaml"),

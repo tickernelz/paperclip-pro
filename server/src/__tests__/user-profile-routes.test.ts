@@ -59,7 +59,7 @@ describeEmbeddedPostgres("GET /companies/:companyId/users/:userSlug/profile", ()
 
     await db.insert(companies).values({
       id: companyId,
-      name: "Paperclip",
+      name: "Wardmote",
       issuePrefix: `U${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
       requireBoardApprovalForNewAgents: false,
     });

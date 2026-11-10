@@ -47,7 +47,7 @@ async function fixture(t, extra = {}) {
   const pending = new Map(); const notifications = []; const requests = [];
   let id = 0; let answer = async (request) => request.method === "session/request_permission"
     ? { outcome: { outcome: "selected", optionId: "allow_once" } }
-    : { action: "accept", content: { answer: "Paperclip" } };
+    : { action: "accept", content: { answer: "Wardmote" } };
   const send = (value) => child.stdin.write(JSON.stringify(value) + "\n");
   const receive = (line) => {
     const message = JSON.parse(line);

@@ -200,7 +200,7 @@ async function violationReason({ file, packageRoot, specifier, publicRunnerImpor
     !publicRunnerImports.has(specifier) &&
     !(specifier === REVIEWED_EVAL_KERNEL && reviewedEvalHarness && relativeFile === REVIEWED_EVAL_HARNESS)
   ) {
-    return "Paperclip workspace packages are outside the standalone boundary";
+    return "Wardmote workspace packages are outside the standalone boundary";
   }
 
   if (
@@ -211,7 +211,7 @@ async function violationReason({ file, packageRoot, specifier, publicRunnerImpor
   }
 
   if (["server", "ui", "cli"].some((root) => specifier === root || specifier.startsWith(`${root}/`))) {
-    return "Paperclip application internals are outside the standalone boundary";
+    return "Wardmote application internals are outside the standalone boundary";
   }
 
   if (specifier.startsWith(".") || specifier.startsWith("/")) {

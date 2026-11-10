@@ -19,20 +19,20 @@ export function openCodeProxyTaskEnvelope(params: Record<string, unknown>) {
         .map((value) => value.trim())
     : [];
   return createCodexTaskEnvelope({
-    objective: "Complete the provider turn supplied by Paperclip Runner.",
+    objective: "Complete the provider turn supplied by Wardmote Runner.",
     ...(revision && criterionIds.length > 0
       ? {
           contractRevision: revision,
           criteria: criterionIds.map((id) => ({
             id,
-            requirement: `Satisfy the Paperclip completion criterion ${id}.`,
+            requirement: `Satisfy the Wardmote completion criterion ${id}.`,
           })),
         }
       : {}),
     constraints: [
       // baseInstructions already travels in the system prompt. Keep task
       // constraints here without duplicating the agent instruction bundle.
-      "Use Paperclip MCP tools for semantic operations.",
+      "Use Wardmote MCP tools for semantic operations.",
     ],
   });
 }

@@ -16,7 +16,7 @@ const oauthErrors: ErrorRequestHandler = (error, _req, res, next) => {
   const known = error instanceof McpOAuthError;
   res.status(known ? error.status : 500).json({
     error: known ? error.code : "server_error",
-    error_description: known ? error.message : "Paperclip could not complete the connection request.",
+    error_description: known ? error.message : "Wardmote could not complete the connection request.",
   });
 };
 
@@ -72,7 +72,7 @@ export function publicMcpIngressRoutes(oauth: PublicMcpOAuth, execute: ReturnTyp
   });
   router.get(agentConnection ? ["/.well-known/oauth-protected-resource" + endpoint] : ["/.well-known/oauth-protected-resource", "/.well-known/oauth-protected-resource" + endpoint], (_req, res) => res.json({
     resource, authorization_servers: [issuer], scopes_supported: agentConnection ? DOT_RUNNER_MCP_SCOPES : ["paperclip:read", "paperclip:write", "paperclip:configure"], bearer_methods_supported: ["header"],
-    resource_name: agentConnection ? "Paperclip Dot agent" : "Paperclip",
+    resource_name: agentConnection ? "Wardmote Dot agent" : "Wardmote",
   }));
   router.get(metadataPath, (_req, res) => res.json({
     issuer, authorization_endpoint: (oauth.config.authorizationOrigin ?? origin) + oauthPath + "/authorize", token_endpoint: prefix + "/token",
@@ -130,7 +130,7 @@ export function publicMcpIngressRoutes(oauth: PublicMcpOAuth, execute: ReturnTyp
           return { isError: true, content: [{ type: "text", text: JSON.stringify(result) }], structuredContent: result };
         }
         const message = error instanceof McpApiError || error instanceof McpCapabilityError || error instanceof McpOAuthError ? error.message
-          : "Paperclip could not confirm this operation. Before retrying a write, inspect the task and comments and keep the same requestId.";
+          : "Wardmote could not confirm this operation. Before retrying a write, inspect the task and comments and keep the same requestId.";
         return { isError: true, content: [{ type: "text", text: message }] };
       }
     };
@@ -179,7 +179,7 @@ export function publicMcpIngressRoutes(oauth: PublicMcpOAuth, execute: ReturnTyp
       } catch (error) {
         if (error instanceof McpEventError) fail(error.code, error.message, error.reason ? { reason: error.reason } : undefined);
         else if (error instanceof z.ZodError || error instanceof McpApiError || error instanceof McpOAuthError) fail(-32602, "Invalid arguments or unavailable authority.");
-        else fail(-32603, "Paperclip could not complete the request.");
+        else fail(-32603, "Wardmote could not complete the request.");
       }
       return;
     }
@@ -211,7 +211,7 @@ export function publicMcpManagementRoutes(oauth: PublicMcpOAuth, agentOAuth?: Pu
   };
   const sameOrigin: RequestHandler = (req, _res, next) => {
     const origin = req.headers.origin ?? (req.headers.referer ? new URL(req.headers.referer).origin : "");
-    if (origin !== oauth.config.origin && origin !== oauth.config.authorizationOrigin) throw new McpOAuthError("access_denied", "Connection changes require the Paperclip browser origin.", 403);
+    if (origin !== oauth.config.origin && origin !== oauth.config.authorizationOrigin) throw new McpOAuthError("access_denied", "Connection changes require the Wardmote browser origin.", 403);
     next();
   };
   router.use(["/mcp", "/dot-mcp"], (_req, res, next) => { res.setHeader("Cache-Control", "no-store"); next(); });

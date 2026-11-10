@@ -1,9 +1,9 @@
 {
   "name": "paperclip",
   "version": "0.1.0",
-  "description": "Review your team, delegate work and retrieve durable results in Paperclip.",
+  "description": "Review your team, delegate work and retrieve durable results in Wardmote.",
   "author": {
-    "name": "Paperclip",
+    "name": "Wardmote",
     "url": "https://paperclip.ing"
   },
   "homepage": "https://paperclip.ing",

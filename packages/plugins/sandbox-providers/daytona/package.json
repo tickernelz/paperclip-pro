@@ -1,7 +1,7 @@
 {
   "name": "@tickernelz/wardmote-plugin-daytona",
   "version": "0.1.1",
-  "description": "Daytona sandbox provider plugin for Paperclip environments",
+  "description": "Daytona sandbox provider plugin for Wardmote environments",
   "license": "MIT",
   "homepage": "https://github.com/tickernelz/wardmote",
   "bugs": {

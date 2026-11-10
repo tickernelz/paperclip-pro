@@ -1,6 +1,6 @@
 # Telemetry Data Contract
 
-This document explains how contributors should use Paperclip's public telemetry
+This document explains how contributors should use Wardmote's public telemetry
 contract. It does not duplicate the full list of individual events or
 dimensions. It documents extra semantic and privacy rules where the generated
 shape is not sufficient.
@@ -35,7 +35,7 @@ will drift as the generated contract changes.
 
 ## Emission Boundary
 
-Paperclip telemetry uses named events with explicit dimension fields. Treat
+Wardmote telemetry uses named events with explicit dimension fields. Treat
 open-ended string dimensions as public contract values, not as a place for user
 content or private operational data. Do not send PII, secrets, credentials,
 private paths, prompts, model output, or other sensitive values through
@@ -104,7 +104,7 @@ the authority for its exact dimensions and optionality.
 
 ### Other Data Paths
 
-This document covers Paperclip Telemetry only. The generated Telemetry
+This document covers Wardmote Telemetry only. The generated Telemetry
 contract covers neither the Observability path nor the run-log path. Two other
 data paths document their own contract in their own file:
 

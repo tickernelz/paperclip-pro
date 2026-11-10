@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { classifyStockInstructionManual, readStockInstructionVariant } from "./stock-harness-instruction-variant.mjs";
 
-const reduced = "You are an agent in a Paperclip company.\n";
+const reduced = "You are an agent in a Wardmote company.\n";
 const historicalBytes = readFileSync(new URL("./fixtures/stock-harness/historical-default-agents.md", import.meta.url));
 const historical = historicalBytes.toString("utf8");
 const historicalSha256 = "e4d2375d722602cd744403292d99f6e6c9b7e8014d9cdfa6f9811ace03428e5f";

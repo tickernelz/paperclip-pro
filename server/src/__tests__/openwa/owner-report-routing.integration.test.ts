@@ -135,7 +135,7 @@ describe("OpenWA owner report routing (embedded Postgres + fake gateway)", () =>
     await gateway.start();
     gateways.push(gateway);
     gateway.groups.set(PROJECT, { id: PROJECT, name: "Tim DCM", participants: [{ id: jid(OWN_PHONE) }, { id: jid(OWNER_PHONE) }, { id: jid(MEMBER_A) }] });
-    gateway.groups.set(BOT_GROUP, { id: BOT_GROUP, name: "[BOT] DCM Paperclip", participants: [{ id: jid(OWN_PHONE) }, { id: jid(OWNER_PHONE) }] });
+    gateway.groups.set(BOT_GROUP, { id: BOT_GROUP, name: "[BOT] DCM Wardmote", participants: [{ id: jid(OWN_PHONE) }, { id: jid(OWNER_PHONE) }] });
     gateway.groups.set(NO_OWNER, { id: NO_OWNER, name: "Vendor chat", participants: [{ id: jid(OWN_PHONE) }, { id: jid(MEMBER_A) }] });
     const companyId = randomUUID();
     const agentId = randomUUID();
@@ -356,7 +356,7 @@ describe("OpenWA owner report routing (embedded Postgres + fake gateway)", () =>
       chatSettings: { ownerReportChat: BOT_GROUP },
     })) as { chat: { settings: { ownerReportChatKey?: string }; ownerReportChat: { label: string | null } | null } };
     expect(result.chat.settings.ownerReportChatKey).toBe(BOT_GROUP);
-    expect(result.chat.ownerReportChat).toMatchObject({ label: "[BOT] DCM Paperclip" });
+    expect(result.chat.ownerReportChat).toMatchObject({ label: "[BOT] DCM Wardmote" });
     return ownerRun;
   }
 
@@ -374,7 +374,7 @@ describe("OpenWA owner report routing (embedded Postgres + fake gateway)", () =>
       openwa: memberRun.openwa,
       contextSnapshot: memberRun.run.contextSnapshot,
     });
-    expect(guidance!.markdown).toContain("Owner reports for this chat go to the group \"[BOT] DCM Paperclip\"");
+    expect(guidance!.markdown).toContain("Owner reports for this chat go to the group \"[BOT] DCM Wardmote\"");
     expect(guidance!.markdown).toContain("Never ask for owner approval by writing in a group");
 
     const sendsBefore = t.gateway.sends.length;
@@ -521,7 +521,7 @@ describe("OpenWA owner report routing (embedded Postgres + fake gateway)", () =>
     await db
       .update(chatEndpointResources)
       .set({ availability: "unavailable", enabled: false })
-      .where(and(eq(chatEndpointResources.endpointId, t.endpointId), eq(chatEndpointResources.label, "[BOT] DCM Paperclip")));
+      .where(and(eq(chatEndpointResources.endpointId, t.endpointId), eq(chatEndpointResources.label, "[BOT] DCM Wardmote")));
     const memberRun = await runStart(t, await admitted(t, mention(PROJECT, MEMBER_A, "tolong buatkan task untuk invoice 42")));
     const sendsBefore = t.gateway.sends.length;
     const created = await requestApproval(memberRun.binding);

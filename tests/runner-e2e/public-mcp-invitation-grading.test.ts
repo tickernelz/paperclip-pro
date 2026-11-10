@@ -20,7 +20,7 @@ describe("invitation approval oracle calibration", () => {
     expect(gradeInvitation(null)).toBe(false);
     const early = good(); early.turns[0]!.calls.reverse(); expect(gradeInvitation(early)).toBe(false);
   });
-  it("requires denial to leave no authorized grant or Paperclip tool access", () => {
+  it("requires denial to leave no authorized grant or Wardmote tool access", () => {
     const denied: InvitationEvidence = { ...good(), kind: "invitation-denied", approved: false, grants: [], turns: [{ calls: [{ name: "request_user_approval", result: { decision: "declined" } }] }] };
     expect(gradeInvitation(denied)).toBe(true);
     expect(gradeInvitation({ ...denied, grants: [{ companyId: "company" }] })).toBe(false);

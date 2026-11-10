@@ -545,7 +545,7 @@ export interface CapabilityFixtureSeed {
 export function createCapabilityFixtureState(seed: CapabilityFixtureSeed = {}): CapabilityFixtureState {
   const company: CapabilityFixtureCompany = {
     id: "company-1",
-    name: "Mock Paperclip Company",
+    name: "Mock Wardmote Company",
     issuePrefix: "MCK",
     status: "active",
     budgetId: "budget-company-1",

@@ -1843,7 +1843,7 @@ describe("rebindNativeSessionCheckpoint", () => {
       );
       expect(result.execution.task.prompt).toContain("Full task instructions");
       expect(result.execution.task.prompt).not.toContain(
-        "Paperclip Resume Delta",
+        "Wardmote Resume Delta",
       );
       expect(result.execution.task.prompt).not.toContain("Compact context");
     },
@@ -1914,7 +1914,7 @@ describe("rebindNativeSessionCheckpoint", () => {
           task: {
             ...current.task,
             prompt: options.resumedSession
-              ? "Paperclip Resume Delta"
+              ? "Wardmote Resume Delta"
               : "Full task instructions",
           },
         };
@@ -1959,7 +1959,7 @@ describe("rebindNativeSessionCheckpoint", () => {
         "sha256:b64efcd063a575925aa95dbd2a20953386eaa760f05b0e0e73b4ae04a97679b0",
     },
   ])(
-    "refreshes retained $contract without changing the Paperclip task or prior history",
+    "refreshes retained $contract without changing the Wardmote task or prior history",
     ({ retainedFingerprint }) => {
       expect(NATIVE_TOOL_CONTRACT_FINGERPRINT).not.toBe(retainedFingerprint);
       const prior = previousRun({
@@ -1982,8 +1982,8 @@ describe("rebindNativeSessionCheckpoint", () => {
             task: {
               ...current.task,
               prompt: options.resumedSession
-                ? "Paperclip Resume Delta"
-                : "Full context for the same Paperclip task",
+                ? "Wardmote Resume Delta"
+                : "Full context for the same Wardmote task",
             },
           };
         },
@@ -2001,7 +2001,7 @@ describe("rebindNativeSessionCheckpoint", () => {
         execution(currentRunId).workspace,
       );
       expect(result.execution.task.prompt).toBe(
-        "Full context for the same Paperclip task",
+        "Full context for the same Wardmote task",
       );
       // No deletion/reset of the existing provider checkpoint or Paperclip history.
       expect(prior).toEqual(priorSnapshot);
@@ -2475,7 +2475,7 @@ describe("buildNativeExecutionInput wake projection", () => {
         workMode: "standard",
       },
       taskPrompt: [
-        "Paperclip task context:",
+        "Wardmote task context:",
         `- Title: ${JSON.stringify(staleRootTitle)}`,
         "Latest wake comment:",
         "```text",
@@ -2720,7 +2720,7 @@ describe("buildNativeExecutionInput wake projection", () => {
         description: "Use the child result.",
         workMode: "standard",
       },
-      taskPrompt: "Paperclip task context:\n- Issue: DOT-146",
+      taskPrompt: "Wardmote task context:\n- Issue: DOT-146",
       wakePayload: {
         reason: "issue_children_completed",
         issue: {
@@ -2775,14 +2775,14 @@ describe("buildNativeExecutionInput wake projection", () => {
     expect(input.task.prompt).not.toContain("Execution contract:");
     expect(input.task.prompt).not.toContain("Use child issues");
     // Full bootstrap stays available if provider recovery fails after admission.
-    expect(input.task.prompt).toContain("## Paperclip Wake Payload");
+    expect(input.task.prompt).toContain("## Wardmote Wake Payload");
     expect(input.task.prompt).toContain("reason: issue_children_completed");
     expect(input.task.prompt).toContain("DOT-147 Build utility (done)");
     expect(input.task.prompt).toContain(
       "Created three files and passed 7/7 tests.",
     );
     expect(input.task.prompt).toContain(
-      "Paperclip task context:\n- Issue: DOT-146",
+      "Wardmote task context:\n- Issue: DOT-146",
     );
     expect(input.task.prompt).not.toContain("Use the child result.");
   });

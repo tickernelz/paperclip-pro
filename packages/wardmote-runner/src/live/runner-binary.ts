@@ -27,7 +27,7 @@ export function resolvePackagedRunnerBinary(outputRoot: string, platform = proce
   for (const binary of [resolve(outputRoot, "bin", target, executable), resolve(outputRoot, "bin", executable)]) {
     if (!existsSync(binary)) continue;
     if (runnerBinaryTarget(readFileSync(binary)) !== target) {
-      throw new Error(`runner_runtime_incompatible: packaged daemon does not match ${target}; install the matching Paperclip release`);
+      throw new Error(`runner_runtime_incompatible: packaged daemon does not match ${target}; install the matching Wardmote release`);
     }
     return binary;
   }

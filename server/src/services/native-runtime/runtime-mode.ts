@@ -141,14 +141,14 @@ export function resolveNativeRuntimeMode(input: {
   ) {
     throw ineligible(
       "wardmote_runner_agent_ineligible",
-      "Paperclip Runner requires an active agent.",
+      "Wardmote Runner requires an active agent.",
     );
   }
   const allowedWorkModes = ["standard", "planning", "ask"];
   if (!input.issue || !allowedWorkModes.includes(input.issue.workMode)) {
     throw ineligible(
       "wardmote_runner_issue_ineligible",
-      "Paperclip Runner requires a standard, planning, or ask task.",
+      "Wardmote Runner requires a standard, planning, or ask task.",
     );
   }
   const rollout = resolveNativeMigrationStatus({
@@ -282,7 +282,7 @@ export function resolveHeartbeatNativeRuntimeMode(input: {
       if (input.agent.adapterType !== "wardmote_runner") {
         throw ineligible(
           "wardmote_runner_adapter_binding_mismatch",
-          "A persisted native run must remain bound to the Paperclip Runner adapter.",
+          "A persisted native run must remain bound to the Wardmote Runner adapter.",
         );
       }
       if (
@@ -291,7 +291,7 @@ export function resolveHeartbeatNativeRuntimeMode(input: {
       ) {
         throw ineligible(
           "wardmote_runner_agent_ineligible",
-          "A persisted Paperclip Runner run cannot recover through a non-invokable agent.",
+          "A persisted Wardmote Runner run cannot recover through a non-invokable agent.",
         );
       }
       const driverKind = input.persisted.driverKind;
@@ -313,7 +313,7 @@ export function resolveHeartbeatNativeRuntimeMode(input: {
       if (backend === null) {
         throw ineligible(
           "wardmote_runner_driver_unsupported",
-          `Persisted Paperclip Runner driver is unsupported: ${driverKind}`,
+          `Persisted Wardmote Runner driver is unsupported: ${driverKind}`,
         );
       }
       return {

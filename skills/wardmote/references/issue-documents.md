@@ -1,6 +1,6 @@
 # Issue documents through the API
 
-Use this procedure for requested Paperclip task documents in API-based runtimes.
+Use this procedure for requested Wardmote task documents in API-based runtimes.
 Honor a destination explicitly chosen by the requester. Native Runner runtimes
 use their document tool and its contract. Downloadable files follow
 [artifacts.md](artifacts.md).

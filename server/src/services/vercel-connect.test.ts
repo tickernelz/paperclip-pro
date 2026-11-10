@@ -24,7 +24,7 @@ const credential: VercelConnectCredentialReference = {
 afterEach(() => vi.unstubAllEnvs());
 
 describe("Vercel Connect credential adapter", () => {
-  it("canonicalizes Paperclip's loopback callback to Vercel's accepted localhost form", () => {
+  it("canonicalizes Wardmote's loopback callback to Vercel's accepted localhost form", () => {
     expect(vercelConnectCallbackUrl(
       "http://127.0.0.1:3200/api/tools/oauth/callback?stale=1#fragment",
       "one-time-state",

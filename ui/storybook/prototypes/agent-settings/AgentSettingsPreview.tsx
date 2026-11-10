@@ -56,7 +56,7 @@ const descriptions: Record<AgentLocalDetailView, string> = {
   tools: "Manage installed connections, available tools, and access policies.",
   channels: "Manage the external chat connections dedicated to this agent.",
   permissions: "Set the agent’s trust level, authority, and boundaries.",
-  "api-keys": "Manage the keys this agent uses to authenticate with Paperclip.",
+  "api-keys": "Manage the keys this agent uses to authenticate with Wardmote.",
   revisions:
     "Review past configuration changes and restore an earlier version.",
 };

@@ -87,7 +87,7 @@ function capabilityForAgent(agent: AgentBinding): RunnerGoalCapability {
       ? "Unsupported by OpenCode."
       : provider === "acpx"
         ? "This ACP agent does not advertise a structured session goal extension."
-        : "This Paperclip runner provider does not expose a durable session goal lifecycle.";
+        : "This Wardmote runner provider does not expose a durable session goal lifecycle.";
     return {
       availability: "unsupported",
       verified: true,

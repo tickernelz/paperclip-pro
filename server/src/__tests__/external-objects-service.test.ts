@@ -378,7 +378,7 @@ describeEmbeddedPostgres("externalObjectService", () => {
     const issueId = randomUUID();
     await db.insert(companies).values({
       id: companyId,
-      name: "Paperclip",
+      name: "Wardmote",
       issuePrefix: `E${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
       requireBoardApprovalForNewAgents: false,
     });
@@ -815,7 +815,7 @@ describeEmbeddedPostgres("externalObjectService", () => {
       version: "1.0.0",
       displayName: "Mock Object Provider",
       description: "Detects mock tracker tickets",
-      author: "Paperclip",
+      author: "Wardmote",
       categories: ["connector"],
       capabilities: ["external.objects.detect", "external.objects.read"],
       entrypoints: { worker: "dist/worker.js" },

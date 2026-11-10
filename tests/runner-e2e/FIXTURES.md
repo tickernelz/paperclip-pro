@@ -108,7 +108,7 @@ factory validated by the shared environment schema.
 The local environment is instance-managed: company creation ensures it exists,
 and the public API intentionally rejects a second local environment. The setup
 registry therefore discovers that row through the public environments API.
-This still provides full isolation because every cell starts a new Paperclip
+This still provides full isolation because every cell starts a new Wardmote
 instance and database.
 
 Daytona creates sandbox environments through the public API. The core fixture
@@ -167,9 +167,9 @@ provider retirement before collection. Pi's separate `agent-files-fresh-run`
 case retains changed-home save and fresh-task restoration coverage. This split
 does not weaken the stable-process oracle or change the Codex checkpoint fixture.
 
-Native turns 1 and 2 include an actionable human review in the completion report's `attentionRequests`. Paperclip creates the review gate from that report. An explicit question-tool wait yields the turn and suppresses its final prose, so it is not interchangeable with this completion-review fixture. Turn 3 reports Done without another review.
+Native turns 1 and 2 include an actionable human review in the completion report's `attentionRequests`. Wardmote creates the review gate from that report. An explicit question-tool wait yields the turn and suppresses its final prose, so it is not interchangeable with this completion-review fixture. Turn 3 reports Done without another review.
 
-Every selected case runs in its own isolated Paperclip process, and independent
+Every selected case runs in its own isolated Wardmote process, and independent
 cases may run concurrently. Follow-up turns inside one case retain their shared
 task state. Each case creates and tears down its own company, secrets,
 environment selection, agent, and browser-created task. The current plan case
@@ -208,7 +208,7 @@ The source digest versions the grader and request in catalog metadata. See
 [Automatic task titles](README.md#automatic-task-titles) for live selectors,
 coverage limits, evidence, and calibration.
 
-## New Paperclip object fixtures
+## New Wardmote object fixtures
 
 The explicit-only `lifecycle-baseline` suite reuses this registry and existing
 continuation, chat and governed-action flows. Its narrative pairs require actual
@@ -765,7 +765,7 @@ process death is not simulated by substituting the chat runner-worker crash hook
 ### Copilot attached semantic completion evidence (suite 8)
 
 Attached settlement now requires one native `wardmote_finish` lifecycle joined
-to an invocation-captured, bounded Paperclip bridge receipt by exact call, input
+to an invocation-captured, bounded Wardmote bridge receipt by exact call, input
 and result digests in the same run/turn/native session and durable source stream.
 A matching display title is not authority. The exact proposed completion input
 must match a control-plane `run.result.accepted` body and the requested summary.
@@ -847,7 +847,7 @@ Cursor native denial qualification requires one exact absolute-target command, a
 correlated browser Reject once delivered after reconnect, six independent absence
 samples, a complete continuous mutation watcher, and retirement of the actual
 run-owned process tree. The pinned Cursor transport may report the rejected call
-as completed and end the native turn; Paperclip must retain a failed run with
+as completed and end the native turn; Wardmote must retain a failed run with
 missing semantic finalization and an unfinished task. That is a denial outcome,
 not task success or operator cancellation. Stop during an unresolved permission
 remains a separate `native-active-stop/pending-permission-stop` gate.

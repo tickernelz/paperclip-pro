@@ -631,7 +631,7 @@ function networkGuardRecord(
     category: "session",
     outcome: realPaperclipRequests === 0 ? "no_real_paperclip_request" : "real_paperclip_request",
     reason:
-      `Real Paperclip API requests: ${realPaperclipRequests}. ` +
+      `Real Wardmote API requests: ${realPaperclipRequests}. ` +
       `Child WARDMOTE_* environment keys: ${
         childPaperclipEnvironmentKeys.length === 0
           ? "none"
@@ -926,8 +926,8 @@ export function projectCapabilityIssueThread(
       agentLabel,
       runnerLabel: mode === "live" ? "Real runnerd" : "In-process runner",
       runnerAttached: ["idle", "warm_idle", "waiting_input", "running"].includes(snapshot.status),
-      controlPlaneLabel: "Mock Paperclip",
-      controlPlaneTooltip: "All issue records are mock. No real Paperclip API is reachable.",
+      controlPlaneLabel: "Mock Wardmote",
+      controlPlaneTooltip: "All issue records are mock. No real Wardmote API is reachable.",
       replaySource: input.replaySource ?? null,
     },
     issue: {

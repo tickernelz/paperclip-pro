@@ -10,7 +10,7 @@ function manifest(capabilities: WardmotePluginManifestV1["capabilities"]): Wardm
     version: "0.1.0",
     displayName: "Test Orchestration",
     description: "Test plugin",
-    author: "Paperclip",
+    author: "Wardmote",
     categories: ["automation"],
     capabilities,
     entrypoints: { worker: "./dist/worker.js" },

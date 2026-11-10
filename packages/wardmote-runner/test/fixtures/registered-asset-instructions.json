@@ -41,7 +41,7 @@
       }
     },
     "entry": "Custom entry quoting /registered/run-copy stays unchanged.",
-    "instructions": "Pinned prompt.\n\nCustom entry quoting /registered/run-copy stays unchanged.\n\nPinned connection policy.\n\nYour editable agent instruction file is /registered/run-copy/AGENTS.md. Edit this registered private copy normally. After this run stops, Paperclip saves changed content as a persistent revision if your responsible user still has permission and the baseline has not changed. Check the run's instruction-save receipt before claiming persistence. Conflicts are preserved for explicit resolution. Repository instruction files, skills, and this run's loaded prompt are separate and are not collected.\n\nRead-only instruction sibling root: /registered/bundle"
+    "instructions": "Pinned prompt.\n\nCustom entry quoting /registered/run-copy stays unchanged.\n\nPinned connection policy.\n\nYour editable agent instruction file is /registered/run-copy/AGENTS.md. Edit this registered private copy normally. After this run stops, Wardmote saves changed content as a persistent revision if your responsible user still has permission and the baseline has not changed. Check the run's instruction-save receipt before claiming persistence. Conflicts are preserved for explicit resolution. Repository instruction files, skills, and this run's loaded prompt are separate and are not collected.\n\nRead-only instruction sibling root: /registered/bundle"
   },
   {
     "context": {

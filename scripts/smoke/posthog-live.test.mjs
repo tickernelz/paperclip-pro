@@ -53,7 +53,7 @@ test("preflight rejects credential-bearing and non-HTTPS remote URLs", () => {
   );
 });
 
-test("preflight derives the current Paperclip origin and accepts an explicit target", () => {
+test("preflight derives the current Wardmote origin and accepts an explicit target", () => {
   assert.equal(preflightPosthogLive(COMPLETE_ENV).baseUrl, "https://paperclip.example.test");
   assert.equal(
     preflightPosthogLive(COMPLETE_ENV, { baseUrl: "https://other-paperclip.example.test" }).baseUrl,
@@ -125,29 +125,29 @@ test("browser loading happens only after binding and health preflight", async ()
 test("project proof extraction retains only the expected id and name", () => {
   const result = {
     data: {
-      content: [{ type: "text", text: JSON.stringify({ id: 483530, name: "Paperclip", token: "discard-me" }) }],
+      content: [{ type: "text", text: JSON.stringify({ id: 483530, name: "Wardmote", token: "discard-me" }) }],
     },
   };
-  assert.deepEqual(extractProjectSummary(result, "483530"), { id: "483530", name: "Paperclip" });
+  assert.deepEqual(extractProjectSummary(result, "483530"), { id: "483530", name: "Wardmote" });
   assert.equal(extractProjectSummary(result, "42"), null);
 
   assert.deepEqual(
     parseSanitizedAgentProof(
-      '{"projectId":"483530","projectName":"Paperclip","invocationId":"inv-123"}',
+      '{"projectId":"483530","projectName":"Wardmote","invocationId":"inv-123"}',
       "483530",
     ),
-    { projectId: "483530", projectName: "Paperclip", invocationId: "inv-123" },
+    { projectId: "483530", projectName: "Wardmote", invocationId: "inv-123" },
   );
   assert.equal(
     parseSanitizedAgentProof(
-      'Done: {"projectId":"483530","projectName":"Paperclip","invocationId":"inv-123"}',
+      'Done: {"projectId":"483530","projectName":"Wardmote","invocationId":"inv-123"}',
       "483530",
     ),
     null,
   );
   assert.equal(
     parseSanitizedAgentProof(
-      '{"projectId":"483530","projectName":"Paperclip","invocationId":"inv-123","token":"unsafe"}',
+      '{"projectId":"483530","projectName":"Wardmote","invocationId":"inv-123","token":"unsafe"}',
       "483530",
     ),
     null,

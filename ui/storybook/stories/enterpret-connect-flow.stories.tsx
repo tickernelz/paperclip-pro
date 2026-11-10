@@ -270,7 +270,7 @@ export const OAuthError: Story = {
   render: () => (
     <OAuthStateHost
       phase="error"
-      error="Paperclip could not reach Enterpret's authorization service. Check the connection and try again."
+      error="Wardmote could not reach Enterpret's authorization service. Check the connection and try again."
     />
   ),
   play: async ({ canvasElement }) => {

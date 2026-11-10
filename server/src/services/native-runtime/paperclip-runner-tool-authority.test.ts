@@ -453,13 +453,13 @@ describe("WardmoteRunnerToolAuthority", () => {
         JSON.stringify(authority.definitions()),
       ).find((tool: { name: string }) => tool.name === "request_human_input");
       expect(advertised.description).toContain(
-        "current Paperclip task bound to this run",
+        "current Wardmote task bound to this run",
       );
       expect(advertised.description).toContain(
         "one complete payload.questionSet",
       );
       expect(advertised.description).toContain(
-        "Paperclip renders it and authenticates the response",
+        "Wardmote renders it and authenticates the response",
       );
       expect(advertised.description).toContain(
         "Preserve existing review gates",

@@ -6,7 +6,7 @@ Use this reference when a board user, CEO, or manager asks you to find a skill, 
 
 ## What Exists
 
-- App-shipped catalog: a curated set of company skills in `@tickernelz/wardmote-skills-catalog`, browseable and installable without leaving Paperclip.
+- App-shipped catalog: a curated set of company skills in `@tickernelz/wardmote-skills-catalog`, browseable and installable without leaving Wardmote.
 - Company skill library: install, inspect, update, audit, reset, and read company skills for the whole company.
 - Agent skill assignment: add or remove company skills on an existing agent.
 - Hire/create composition: pass `desiredSkills` when creating or hiring an agent so the same assignment model applies immediately.
@@ -179,7 +179,7 @@ For direct create without approval, pass the same arguments to `wardmoteCreateAg
 
 ## Notes
 
-- Built-in Paperclip runtime skills are still added automatically when required by the adapter.
+- Built-in Wardmote runtime skills are still added automatically when required by the adapter.
 - If a reference is missing or ambiguous, the tool returns a `422` error and nothing was installed or assigned.
 - Prefer linking back to the relevant issue, approval, and agent when you comment about skill changes.
 - Whole-package company import/export has no dedicated tool. Use `wardmoteApiRequest` with `method: "POST"` and one of `path: "/companies/<companyId>/imports/preview"`, `path: "/companies/<companyId>/imports/apply"`, `path: "/companies/<companyId>/exports/preview"`, `path: "/companies/<companyId>/exports"`.

@@ -6,9 +6,9 @@
 > in [the runner architecture](architecture.md): external control plane → PRP → one Rust `wardmote-runnerd` → provider. The TypeScript dispatcher below does not run in the sandbox.
 
 Capability binds the provider-neutral semantic catalog to a real package-local
-`wardmote-runnerd` process and a real Codex app-server session. Paperclip data
+`wardmote-runnerd` process and a real Codex app-server session. Wardmote data
 remains deterministic mock state behind `ControlPlanePort`; no request reaches
-the Paperclip API.
+the Wardmote API.
 
 ## Process and authority boundary
 
@@ -118,5 +118,5 @@ pnpm --filter @tickernelz/wardmote-runner trace:live-runner -- --json
 
 The smoke requires an authenticated local Codex installation. It checks a real
 semantic tool mutation, typed-result response, same-thread second turn, process
-ownership/cleanup, cleared authority, and zero Paperclip network/child-env
+ownership/cleanup, cleared authority, and zero Wardmote network/child-env
 exposure.

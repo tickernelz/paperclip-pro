@@ -96,7 +96,7 @@ const support = await getEmbeddedPostgresTestSupport();
   it("rejects Backlog voice work before claiming that it was accepted", async () => {
     const f = await fixture();
     await db.update(issues).set({status: "backlog"}).where(eq(issues.id, f.issueId));
-    await expect(f.store.runTool(f.toolInput("submit_request", {text: "Inspect disk space"}))).rejects.toMatchObject({status: 409, message: "Move this task to Todo in Paperclip before requesting voice work."});
+    await expect(f.store.runTool(f.toolInput("submit_request", {text: "Inspect disk space"}))).rejects.toMatchObject({status: 409, message: "Move this task to Todo in Wardmote before requesting voice work."});
     expect(await db.select().from(chatDeliveries).where(eq(chatDeliveries.endpointId, f.endpointId))).toHaveLength(0);
     expect(await db.select().from(chatVoiceToolCalls).where(eq(chatVoiceToolCalls.sessionId, f.sessionId))).toHaveLength(0);
   });
@@ -795,10 +795,10 @@ const support = await getEmbeddedPostgresTestSupport();
     expect(f.response.systemPrompt).not.toContain(f.call.approvalCode);
     // The provider must not inherit browser notification-only waiting or a
     // protected question tool that this public session cannot use.
-    expect(f.response.systemPrompt).toContain("Paperclip pushes approved task answers");
+    expect(f.response.systemPrompt).toContain("Wardmote pushes approved task answers");
     expect(f.response.systemPrompt).toContain("Do not repeatedly poll while pending.");
     expect(f.response.systemPrompt).toContain("Do not call answer_question");
-    expect(f.response.systemPrompt).toContain("Do not make the caller wait for a Paperclip turn");
+    expect(f.response.systemPrompt).toContain("Do not make the caller wait for a Wardmote turn");
     expect(f.response.systemPrompt).toContain("Submit follow-ups even while earlier work is running");
     expect(f.response.systemPrompt).toContain("inspect its actual environment");
     expect(f.response.systemPrompt).toContain("How much disk space do you have on your computer?");
@@ -1238,7 +1238,7 @@ const support = await getEmbeddedPostgresTestSupport();
     const skill = config.wardmoteRuntimeSkills[0];
     const markdown = await readFile(join(skill.source, "SKILL.md"), "utf8");
     expect(markdown).toContain("one focused clarification");
-    expect(markdown).toContain("durable Paperclip continuation");
+    expect(markdown).toContain("durable Wardmote continuation");
     expect(markdown).toContain("never blindly redial");
     expect(markdown).not.toContain("+12015551234");
     expect((await prepareConnectorSkillDelivery({ ...config, engine: "cli" }, "wardmote_runner")).config.wardmoteRuntimeSkills).toEqual([skill]);

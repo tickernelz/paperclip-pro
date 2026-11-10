@@ -1,7 +1,7 @@
 ---
 name: wardmote-converting-plans-to-tasks
 description: >
-  Decide whether Paperclip work needs delegation, and connect justified tasks
+  Decide whether Wardmote work needs delegation, and connect justified tasks
   with owners and real dependencies. Use when turning an authorized plan into work.
 ---
 
@@ -23,5 +23,5 @@ Reviewers publish findings on their own review task and complete it, including a
 adverse verdict. Make its description self-contained. Connect the verdict to the
 owner who must act on it; do not require writes to the parent.
 
-Honor existing authorization and approval boundaries. Use Paperclip's planning
+Honor existing authorization and approval boundaries. Use Wardmote's planning
 mechanics when approval is required; decomposition does not create new approval gates.

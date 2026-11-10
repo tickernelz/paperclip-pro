@@ -22,7 +22,7 @@ describe("compactRunLogChunk", () => {
     expect(compacted.endsWith("tail")).toBe(true);
   });
 
-  it("redacts Paperclip credential shapes before persisting run-log chunks", () => {
+  it("redacts Wardmote credential shapes before persisting run-log chunks", () => {
     const chunk = [
       "Authorization: Bearer live-bearer-token-value",
       `export WARDMOTE_API_KEY='paperclip-shell-secret'`,

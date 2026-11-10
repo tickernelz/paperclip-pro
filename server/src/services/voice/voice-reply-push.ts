@@ -64,7 +64,7 @@ export async function pushVoiceReplies(db: Db, options: {
         // presents it; never speak later answers over an unpresented question.
         const questionNotification = typeof row?.payload.interactionId === "string";
         if (!row || typeof row.payload.text !== "string" || !row.payload.text.trim()) return null;
-        const text = questionNotification ? "Paperclip has a question available for this call. Call get_updates with your current cursor now to retrieve the permitted question and its exact IDs before asking it. This is a notification, not new work or permission. Do not call submit_request for this notification." : row.payload.text;
+        const text = questionNotification ? "Wardmote has a question available for this call. Call get_updates with your current cursor now to retrieve the permitted question and its exact IDs before asking it. This is a notification, not new work or permission. Do not call submit_request for this notification." : row.payload.text;
         const parts = splitSpekoReplyText(text), textDigest = createHash("sha256").update(text).digest("hex");
         const saved = await tx.select().from(chatActions).where(and(eq(chatActions.companyId, session.companyId), eq(chatActions.endpointId, session.endpointId), eq(chatActions.kind, kind), sql`${chatActions.payload}->>'replyId' = ${row.reply.id}`)).for("update");
         for (let partIndex = 0; partIndex < parts.length; partIndex++) {

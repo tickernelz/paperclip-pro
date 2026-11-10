@@ -104,7 +104,7 @@ export async function escalateExhaustedIssueReviewPathRecovery(
       seed: {
         title: "No follow-up scheduled",
         tone: "danger",
-        body: "The automatic review-path repair finished without saving a scheduled check, reviewer, approval, or other maintained path. Paperclip has blocked this task for a board decision; no further automatic follow-up is scheduled.",
+        body: "The automatic review-path repair finished without saving a scheduled check, reviewer, approval, or other maintained path. Wardmote has blocked this task for a board decision; no further automatic follow-up is scheduled.",
         nextAction,
       },
       recoveryCause: ISSUE_REVIEW_PATH_LOST_WAKE_REASON,

@@ -311,7 +311,7 @@ export async function getConfigSchema(): Promise<AdapterConfigSchema> {
         label: "OMP thinking override",
         type: "select",
         options: ["auto", "off", "minimal", "low", "medium", "high", "xhigh", "max"].map((value) => ({ value, label: value })),
-        hint: "Full OMP thinking level. Overrides the top-level Paperclip effort setting.",
+        hint: "Full OMP thinking level. Overrides the top-level Wardmote effort setting.",
         group: "Models",
       },
       {
@@ -341,7 +341,7 @@ export async function getConfigSchema(): Promise<AdapterConfigSchema> {
         key: "cwd",
         label: "Fallback working directory",
         type: "text",
-        hint: "Used only when Paperclip does not provide an execution workspace.",
+        hint: "Used only when Wardmote does not provide an execution workspace.",
         group: "Runtime",
       },
       {
@@ -366,7 +366,7 @@ export async function getConfigSchema(): Promise<AdapterConfigSchema> {
         label: "Process timeout seconds",
         type: "number",
         default: 43200,
-        hint: "Paperclip terminates the OMP process after this many seconds. 43200 = 12 hours, sized for long autonomous runs.",
+        hint: "Wardmote terminates the OMP process after this many seconds. 43200 = 12 hours, sized for long autonomous runs.",
         group: "Runtime",
       },
       {
@@ -388,7 +388,7 @@ export async function getConfigSchema(): Promise<AdapterConfigSchema> {
         key: "sessionDir",
         label: "Session directory",
         type: "text",
-        hint: "Optional OMP session directory override. Paperclip otherwise uses an agent-scoped directory.",
+        hint: "Optional OMP session directory override. Wardmote otherwise uses an agent-scoped directory.",
         group: "Runtime",
       },
       {
@@ -396,7 +396,7 @@ export async function getConfigSchema(): Promise<AdapterConfigSchema> {
         label: "Ephemeral session",
         type: "toggle",
         default: false,
-        hint: "Pass --no-session and return no resumable Paperclip session metadata.",
+        hint: "Pass --no-session and return no resumable Wardmote session metadata.",
         group: "Runtime",
       },
       {
@@ -425,7 +425,7 @@ export async function getConfigSchema(): Promise<AdapterConfigSchema> {
         label: "Print thinking thoughts",
         type: "toggle",
         default: true,
-        hint: "Thinking blocks are streamed into the Paperclip transcript. Turn off to shrink run logs.",
+        hint: "Thinking blocks are streamed into the Wardmote transcript. Turn off to shrink run logs.",
         group: "Capabilities",
       },
       {
@@ -532,15 +532,15 @@ export async function getConfigSchema(): Promise<AdapterConfigSchema> {
       { key: "noLsp", label: "Disable LSP", type: "toggle", default: false, group: "Capabilities" },
       {
         key: "wardmoteMcp",
-        label: "Paperclip MCP tools",
+        label: "Wardmote MCP tools",
         type: "toggle",
         default: true,
-        hint: "Mount the Paperclip API as MCP tools (paperclip* tool names) for the run, instead of making the agent use curl.",
+        hint: "Mount the Wardmote API as MCP tools (paperclip* tool names) for the run, instead of making the agent use curl.",
         group: "Capabilities",
       },
       {
         key: "wardmoteMcpTransport",
-        label: "Paperclip MCP transport",
+        label: "Wardmote MCP transport",
         type: "select",
         default: "http",
         options: [
@@ -553,10 +553,10 @@ export async function getConfigSchema(): Promise<AdapterConfigSchema> {
       },
       {
         key: "wardmoteMcpToolsets",
-        label: "Paperclip MCP toolsets",
+        label: "Wardmote MCP toolsets",
         type: "text",
         default: "core",
-        hint: "Toolsets exposed by the Paperclip MCP server: core (default) or full (every agent-callable tool). extended and all are deprecated aliases of full.",
+        hint: "Toolsets exposed by the Wardmote MCP server: core (default) or full (every agent-callable tool). extended and all are deprecated aliases of full.",
         group: "Capabilities",
         meta: { visibleWhen: { key: "wardmoteMcp", notValues: ["false"] } },
       },
@@ -566,7 +566,7 @@ export async function getConfigSchema(): Promise<AdapterConfigSchema> {
         key: "systemPrompt",
         label: "OMP base system prompt",
         type: "textarea",
-        hint: "Optional replacement for OMP's base system prompt. Paperclip's execution contract is still appended.",
+        hint: "Optional replacement for OMP's base system prompt. Wardmote's execution contract is still appended.",
         group: "Advanced",
       },
       {
@@ -580,7 +580,7 @@ export async function getConfigSchema(): Promise<AdapterConfigSchema> {
         key: "instructionsFilePath",
         label: "Instructions bundle path",
         type: "text",
-        hint: "Optional Paperclip-managed instructions bundle path.",
+        hint: "Optional Wardmote-managed instructions bundle path.",
         group: "Advanced",
       },
     ],

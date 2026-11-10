@@ -683,7 +683,7 @@ describe("OpenWA owner approvals and grants (embedded Postgres + fake gateway)",
     });
   }, 120_000);
 
-  it("AC7: a Paperclip rejection reason reaches the agent's approval_resolved comment", async () => {
+  it("AC7: a Wardmote rejection reason reaches the agent's approval_resolved comment", async () => {
     const t = await setup();
     const wakeA = await admitted(t, { chatId: jid(MEMBER_A), body: "minta izin" });
     const runA = await runStart(t, wakeA);
@@ -697,7 +697,7 @@ describe("OpenWA owner approvals and grants (embedded Postgres + fake gateway)",
     const wake = await approvalWake(t, created.requestId);
     expect(wake.request.payload).toMatchObject({ openwa: { event: "approval_resolved", triggerClass: "other" } });
     const body = await resolvedComment(wake.action);
-    expect(body).toContain("rejected the approval request via Paperclip");
+    expect(body).toContain("rejected the approval request via Wardmote");
     expect(body).toContain("Owner note: " + reason);
   }, 120_000);
 
@@ -749,7 +749,7 @@ describe("OpenWA owner approvals and grants (embedded Postgres + fake gateway)",
     expect(statusChanges).toEqual([]);
   }, 120_000);
 
-  it("AC7: simultaneous WhatsApp and Paperclip resolution yields exactly one winner", async () => {
+  it("AC7: simultaneous WhatsApp and Wardmote resolution yields exactly one winner", async () => {
     const t = await setup();
     const wakeA = await admitted(t, { chatId: jid(MEMBER_A), body: "minta izin" });
     const runA = await runStart(t, wakeA);
@@ -875,7 +875,7 @@ describe("OpenWA owner approvals and grants (embedded Postgres + fake gateway)",
     expect((await runStart(t, wakeA3, { requesterPrincipalId: wakeA3.delivery.principalId })).openwa.grantIds).toEqual([]);
   }, 120_000);
 
-  it("spec 6.9: an owner cancels a pending request in Paperclip; non-owners and resolved requests are refused", async () => {
+  it("spec 6.9: an owner cancels a pending request in Wardmote; non-owners and resolved requests are refused", async () => {
     const t = await setup();
     const wakeA = await admitted(t, { chatId: jid(MEMBER_A), body: "minta izin buat task" });
     const runA = await runStart(t, wakeA);

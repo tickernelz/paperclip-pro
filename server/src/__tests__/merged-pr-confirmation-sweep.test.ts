@@ -163,7 +163,7 @@ describeEmbeddedPostgres("merged pull-request confirmation sweep", () => {
     const agentId = randomUUID();
     await db.insert(companies).values({
       id: companyId,
-      name: "Paperclip",
+      name: "Wardmote",
       issuePrefix: "MPR",
       requireBoardApprovalForNewAgents: false,
     });

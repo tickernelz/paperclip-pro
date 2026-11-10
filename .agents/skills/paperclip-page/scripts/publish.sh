@@ -7,7 +7,7 @@ usage() {
 Usage:
   publish.sh <dir> [--slug slug] [--update] [--dry-run]
 
-Publishes a static directory with a root index.html to the configured Paperclip
+Publishes a static directory with a root index.html to the configured Wardmote
 pages bucket and prints the public URL and S3 prefix.
 
 Required environment for live publish:

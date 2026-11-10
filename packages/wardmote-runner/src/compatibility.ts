@@ -61,7 +61,7 @@ export class WardmoteRunnerCompatibilityError extends Error {
     issues: readonly WardmoteRunnerCompatibilityIssue[],
   ) {
     super(
-      `Paperclip runner compatibility check failed for ${consumer}: ${issues
+      `Wardmote runner compatibility check failed for ${consumer}: ${issues
         .map((issue) => `${issue.code}: ${issue.message}`)
         .join("; ")}`,
     );

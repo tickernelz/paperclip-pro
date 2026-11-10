@@ -1015,7 +1015,7 @@ describe("ACP settlement — Layer B: restoreWorkspace order + native-sync selec
     await fs.mkdir(sourceRepoDir, { recursive: true });
     await git(sourceRepoDir, ["init"]);
     await git(sourceRepoDir, ["checkout", "-b", "main"]);
-    await git(sourceRepoDir, ["config", "user.name", "Paperclip Test"]);
+    await git(sourceRepoDir, ["config", "user.name", "Wardmote Test"]);
     await git(sourceRepoDir, ["config", "user.email", "test@paperclip.dev"]);
     await fs.writeFile(path.join(sourceRepoDir, "tracked.txt"), "base\n", "utf8");
     await git(sourceRepoDir, ["add", "tracked.txt"]);
@@ -1044,7 +1044,7 @@ describe("ACP settlement — Layer B: restoreWorkspace order + native-sync selec
 
     // The sandbox holds a real git worktree seeded from the host history.
     expect((await git(remoteWorkspaceDir, ["rev-list", "--count", "HEAD"]))).toBe("1");
-    await git(remoteWorkspaceDir, ["config", "user.name", "Paperclip Sandbox"]);
+    await git(remoteWorkspaceDir, ["config", "user.name", "Wardmote Sandbox"]);
     await git(remoteWorkspaceDir, ["config", "user.email", "sandbox@paperclip.dev"]);
     await git(remoteWorkspaceDir, ["add", "-A"]);
     await git(remoteWorkspaceDir, ["commit", "-m", "sandbox update"]);

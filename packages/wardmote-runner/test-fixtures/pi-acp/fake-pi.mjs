@@ -91,7 +91,7 @@ createInterface({ input: process.stdin }).on("line", (line) => {
     { role: "toolResult", toolName: "mcp__wardmote__paperclip_finish", toolCallId: "call_0", content: [{ type: "text", text: "accepted" }] },
     { role: "assistant", content: [{ type: "text", text: "Historical reply" }] },
   ] : [] }); return; }
-  if (request.type === "get_commands") { response({ commands: process.env.PI_FIXTURE_EXTENSION_FAIL ? [] : [{ name: "paperclip-runtime-ready-v1", description: "Paperclip runtime gate v1", source: "extension" }] }); return; }
+  if (request.type === "get_commands") { response({ commands: process.env.PI_FIXTURE_EXTENSION_FAIL ? [] : [{ name: "paperclip-runtime-ready-v1", description: "Wardmote runtime gate v1", source: "extension" }] }); return; }
   const inputDisposition = process.env.PI_FIXTURE_INPUT_DISPOSITION === "missing" ? {} : { disposition: process.env.PI_FIXTURE_INPUT_DISPOSITION === "malformed" ? { queued: true } : process.env.PI_FIXTURE_INPUT_DISPOSITION ?? "queued" };
   if (request.type === "steer") { response(inputDisposition); if (inputDisposition.disposition !== "queued") return; output({ type: "message_update", assistantMessageEvent: { type: "text_delta", delta: `steered:${request.message}` } }); return; }
   if (request.type === "follow_up") { response(inputDisposition); if (inputDisposition.disposition !== "queued") return; finish(`follow-up:${request.message}`); return; }

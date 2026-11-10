@@ -34,7 +34,7 @@ function projectedView(): CapabilityIssueThreadSnapshot {
       agentLabel: "Real Codex",
       runnerLabel: "Real runnerd",
       runnerAttached: true,
-      controlPlaneLabel: "Mock Paperclip",
+      controlPlaneLabel: "Mock Wardmote",
       controlPlaneTooltip: "All issue records are mock.",
       replaySource: null,
     },

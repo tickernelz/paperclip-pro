@@ -95,7 +95,7 @@ describeEmbeddedPostgres("artifactReviewDocumentService", () => {
 
     await db.insert(companies).values({
       id: companyId,
-      name: "Paperclip",
+      name: "Wardmote",
       issuePrefix: `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
       requireBoardApprovalForNewAgents: false,
     });
@@ -300,7 +300,7 @@ describeEmbeddedPostgres("artifactReviewDocumentService", () => {
     expect(unchanged.document.latestRevisionNumber).toBe(3);
   });
 
-  it("rejects work products that are not attachment-backed Paperclip artifacts", async () => {
+  it("rejects work products that are not attachment-backed Wardmote artifacts", async () => {
     const fixture = await seedFixture();
     await expect(
       fixture.svc.ensureForWorkProduct({

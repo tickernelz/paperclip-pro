@@ -52,7 +52,7 @@ export function resolveCodexCommand(
     accessSync(executable, constants.X_OK);
     return executable;
   } catch (error) {
-    throw new Error(`Codex runtime unavailable: ${(error as Error).message}. Install Codex or restore Paperclip's runtime dependencies.`, { cause: error });
+    throw new Error(`Codex runtime unavailable: ${(error as Error).message}. Install Codex or restore Wardmote's runtime dependencies.`, { cause: error });
   }
 }
 

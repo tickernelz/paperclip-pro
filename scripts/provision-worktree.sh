@@ -77,10 +77,10 @@ if [[ ! -e "$source_config_path" && ! -L "$source_config_path" ]]; then
         source_parent="$(dirname "$source_parent")"
       done
       if [[ ! -d "$source_parent" || -L "$source_parent" || "$(cd "$source_parent" && pwd -P)" != "$source_parent" ]]; then
-        echo "Registered Paperclip seed source config has a non-canonical parent: $source_config_path" >&2
+        echo "Registered Wardmote seed source config has a non-canonical parent: $source_config_path" >&2
         exit 1
       fi
-      echo "No local Paperclip seed source config; preparing checkout dependencies without a seeded development instance." >&2
+      echo "No local Wardmote seed source config; preparing checkout dependencies without a seeded development instance." >&2
       source_config_path=""
     fi
   fi
@@ -88,17 +88,17 @@ fi
 if [[ -n "$source_config_path" ]]; then
   if [[ ! -f "$source_config_path" || -L "$source_config_path" ]]; then
     if [[ ! -e "$source_config_path" && ! -L "$source_config_path" ]]; then
-      echo "Registered Paperclip seed source config is unavailable ($source_config_origin): $source_config_path" >&2
+      echo "Registered Wardmote seed source config is unavailable ($source_config_origin): $source_config_path" >&2
       echo "For a seeded development instance, configure a canonical config for that registered source before retrying." >&2
     else
-      echo "Registered Paperclip seed source config is not a canonical file ($source_config_origin): $source_config_path" >&2
+      echo "Registered Wardmote seed source config is not a canonical file ($source_config_origin): $source_config_path" >&2
       echo "Repair the registered source path; symlinks and non-regular files are not accepted." >&2
     fi
     exit 1
   fi
   canonical_source_dir="$(cd "$(dirname "$source_config_path")" && pwd -P)"
   if [[ "$canonical_source_dir/config.json" != "$source_config_path" ]]; then
-    echo "Registered Paperclip seed source config uses a symlink alias: $source_config_path" >&2
+    echo "Registered Wardmote seed source config uses a symlink alias: $source_config_path" >&2
     exit 1
   fi
   source_env_path="$(dirname "$source_config_path")/.env"
@@ -338,7 +338,7 @@ try {
 } finally {
   fs.rmSync(temporaryPath, { force: true });
 }
-console.error(`Reconciled isolated Paperclip worktree deployment mode from ${sourceConfigPath}: ${deploymentMode}/${exposure}`);
+console.error(`Reconciled isolated Wardmote worktree deployment mode from ${sourceConfigPath}: ${deploymentMode}/${exposure}`);
 EOF
 }
 
@@ -651,10 +651,10 @@ EOF
 
 if [[ -n "$source_config_path" ]]; then
   if [[ -e "$worktree_config_path" && -e "$worktree_env_path" ]] && existing_worktree_config_is_usable; then
-    echo "Reusing existing isolated Paperclip worktree config at $worktree_config_path" >&2
+    echo "Reusing existing isolated Wardmote worktree config at $worktree_config_path" >&2
   else
     if [[ -e "$worktree_config_path" || -e "$worktree_env_path" ]]; then
-      echo "Existing isolated Paperclip worktree config is stale for this host; regenerating." >&2
+      echo "Existing isolated Wardmote worktree config is stale for this host; regenerating." >&2
     fi
     if paperclipai_command_available; then
       if run_isolated_worktree_init; then

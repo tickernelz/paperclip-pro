@@ -87,7 +87,7 @@ describe("Speko hosted provider transport", () => {
     expect(transport.mock.calls[0]![1]?.method).toBe("PATCH");
     const body = JSON.parse(String(transport.mock.calls[0]![1]?.body));
     expect(body).toMatchObject({runMode: "s2s", idleRePrompts: {enabled: false}});
-    expect(body.systemPrompt).toContain("Paperclip pushes approved task answers");
+    expect(body.systemPrompt).toContain("Wardmote pushes approved task answers");
     expect(body.systemPrompt).toContain("do not call submit_request for it");
     expect(body.systemPrompt).toContain("submit_request exactly once");
     expect(body.systemPrompt).toContain("answer_question with its exact interaction and question IDs");

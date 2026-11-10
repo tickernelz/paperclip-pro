@@ -56,7 +56,7 @@ Usage:
   pnpm smoke:terminal-bench-loop-skill
 
 Options:
-  --source-issue-id <uuid>  Attach smoke issues under an existing Paperclip issue.
+  --source-issue-id <uuid>  Attach smoke issues under an existing Wardmote issue.
   --project-id <uuid>       Override inferred project id.
   --goal-id <uuid>          Override inferred goal id.
   --run-key <string>        Stable key used in smoke titles and mocked artifact paths.
@@ -67,7 +67,7 @@ Options:
 function requireEnv(name) {
   const value = process.env[name];
   if (!value) {
-    throw new Error(`${name} is required. Run against a local Paperclip server with an agent or board API token.`);
+    throw new Error(`${name} is required. Run against a local Wardmote server with an agent or board API token.`);
   }
   return value;
 }
@@ -215,7 +215,7 @@ async function main() {
         "",
         "Next-action owner: board/user must accept or reject the confirmation before implementation subtasks exist.",
         "",
-        "Failure taxonomy: Paperclip product gap, mocked for smoke coverage.",
+        "Failure taxonomy: Wardmote product gap, mocked for smoke coverage.",
         "",
         "Invariant check:",
         "",

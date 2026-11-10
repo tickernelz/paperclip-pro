@@ -182,7 +182,7 @@ class DotSession implements HarnessSession {
         return { accepted: true };
       }
       const parsed = validatePrpStructuredRunResult(input.result);
-      if (!parsed.ok) throw new DotBoundaryError("Invalid Paperclip structured run result.");
+      if (!parsed.ok) throw new DotBoundaryError("Invalid Wardmote structured run result.");
       this.#result = parsed.result;
       clearTimeout(this.#expiry);
       this.#emit("run.result.proposed", this.#result);

@@ -10,8 +10,8 @@ if (endpoint.username || endpoint.password || endpoint.search || endpoint.hash |
   throw new Error("Supply a deployed HTTPS /mcp/wardmote URL, or HTTP loopback for development.");
 }
 const root = path.dirname(fileURLToPath(import.meta.url));
-const identity = { name: "paperclip", version: "0.1.0", description: "Review your team, delegate work and retrieve durable results in Paperclip.", author: { name: "Paperclip", url: "https://paperclip.ing" }, homepage: "https://paperclip.ing", repository: "https://github.com/paperclipai/paperclip", license: "MIT" };
-const presentation = { displayName: "Paperclip", shortDescription: "Your persistent team behind your assistant.", longDescription: "Use your Paperclip team as yourself. Review tasks, delegate work to agents, add feedback and retrieve documents. Delegation can start autonomous work using your team's configured execution capacity and budget.", developerName: "Paperclip", category: "Productivity", capabilities: ["Read", "Write"], defaultPrompt: "Review my Paperclip team and show what needs my attention." };
+const identity = { name: "paperclip", version: "0.1.0", description: "Review your team, delegate work and retrieve durable results in Wardmote.", author: { name: "Wardmote", url: "https://paperclip.ing" }, homepage: "https://paperclip.ing", repository: "https://github.com/paperclipai/paperclip", license: "MIT" };
+const presentation = { displayName: "Wardmote", shortDescription: "Your persistent team behind your assistant.", longDescription: "Use your Wardmote team as yourself. Review tasks, delegate work to agents, add feedback and retrieve documents. Delegation can start autonomous work using your team's configured execution capacity and budget.", developerName: "Wardmote", category: "Productivity", capabilities: ["Read", "Write"], defaultPrompt: "Review my Wardmote team and show what needs my attention." };
 const json = (file, data) => writeFile(file, JSON.stringify(data, null, 2) + "\n");
 for (const vendor of ["openai", "claude"]) {
   const out = path.join(root, vendor, "paperclip");

@@ -31,7 +31,7 @@ if (!embeddedSupport.supported) {
   console.warn(`Skipping semantic production conformance: ${embeddedSupport.reason ?? "unsupported host"}`);
 }
 
-describeEmbedded("Paperclip semantic mock/production conformance", () => {
+describeEmbedded("Wardmote semantic mock/production conformance", () => {
   let temporary: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
   let mock: CapabilityMockSemanticConformanceAdapter | null = null;
 

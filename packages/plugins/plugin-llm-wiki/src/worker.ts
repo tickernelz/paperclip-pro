@@ -135,12 +135,12 @@ function buildManualDistillPrompt(input: { companyId: string; projectId?: string
     input.projectId ? `- Source project ID: ${input.projectId}` : null,
     input.rootIssueId ? `- Source root issue ID: ${input.rootIssueId}` : null,
     !input.projectId && !input.rootIssueId
-      ? "- Do not hardcode a single project. Find non-plugin Paperclip issues/comments/documents that changed in any project after the last processed cursor and are old enough for the stale/debounce threshold."
+      ? "- Do not hardcode a single project. Find non-plugin Wardmote issues/comments/documents that changed in any project after the last processed cursor and are old enough for the stale/debounce threshold."
       : null,
     "",
     "Process:",
     "1. Read the wiki root AGENTS.md, wiki/index.md, and recent wiki/log.md entries.",
-    "2. Assemble bounded Paperclip source bundles for every eligible project or root issue, excluding LLM Wiki plugin-operation issues.",
+    "2. Assemble bounded Wardmote source bundles for every eligible project or root issue, excluding LLM Wiki plugin-operation issues.",
     "3. Turn durable signal into project standups, wiki-insightful project pages, decisions, history, index, and log updates per the paperclip-distill skill.",
     "4. Surface clipped, low-signal, stale-hash, or source-window warnings instead of hiding them.",
   ].filter((line): line is string => line !== null).join("\n");
@@ -192,7 +192,7 @@ const plugin = definePlugin({
       ctx.events.on(eventName, async (event) => {
         const result = await handleWardmoteEventIngestion(ctx, event);
         if (result.status === "recorded") {
-          ctx.logger.info("LLM Wiki recorded Paperclip event for cursor discovery", {
+          ctx.logger.info("LLM Wiki recorded Wardmote event for cursor discovery", {
             eventType: event.eventType,
             companyId: event.companyId,
             sourceKind: result.sourceKind,
@@ -445,9 +445,9 @@ const plugin = definePlugin({
           wikiId,
           spaceSlug,
           operationType: "backfill",
-          title: scope.rootIssueId ? "Backfill Paperclip root issue wiki history" : "Backfill Paperclip project wiki history",
+          title: scope.rootIssueId ? "Backfill Wardmote root issue wiki history" : "Backfill Wardmote project wiki history",
           prompt: [
-            "Backfill LLM Wiki distillation was queued from a per-space Paperclip ingestion profile.",
+            "Backfill LLM Wiki distillation was queued from a per-space Wardmote ingestion profile.",
             scope.projectId ? `Project ID: ${scope.projectId}` : null,
             scope.rootIssueId ? `Root issue ID: ${scope.rootIssueId}` : null,
             backfillStartAt ? `Start: ${backfillStartAt}` : null,
@@ -612,10 +612,10 @@ const plugin = definePlugin({
         spaceSlug,
         operationType: "distill",
         title: rootIssueId
-          ? "Distill Paperclip root issue into wiki"
+          ? "Distill Wardmote root issue into wiki"
           : projectId
-            ? "Distill Paperclip project into wiki"
-            : "Distill Paperclip changes into wiki",
+            ? "Distill Wardmote project into wiki"
+            : "Distill Wardmote changes into wiki",
         prompt: buildManualDistillPrompt({ companyId, projectId, rootIssueId }),
       });
       return { status: "queued", workItem, operation };
@@ -656,9 +656,9 @@ const plugin = definePlugin({
         wikiId: stringField(params.wikiId),
         spaceSlug,
         operationType: "backfill",
-        title: rootIssueId ? "Backfill Paperclip root issue wiki history" : "Backfill Paperclip project wiki history",
+        title: rootIssueId ? "Backfill Wardmote root issue wiki history" : "Backfill Wardmote project wiki history",
         prompt: [
-          "Backfill LLM Wiki distillation requested for a bounded Paperclip source window.",
+          "Backfill LLM Wiki distillation requested for a bounded Wardmote source window.",
           projectId ? `Project ID: ${projectId}` : null,
           rootIssueId ? `Root issue ID: ${rootIssueId}` : null,
           backfillStartAt ? `Start: ${backfillStartAt}` : null,

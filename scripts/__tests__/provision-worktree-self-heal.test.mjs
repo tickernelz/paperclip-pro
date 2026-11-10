@@ -405,8 +405,8 @@ test("reconciles deployment mode from the registered source when reusing a guest
   });
 
   assert.equal(second.status, 0, second.stderr);
-  assert.match(second.stderr, /Reusing existing isolated Paperclip worktree config/);
-  assert.match(second.stderr, /Reconciled isolated Paperclip worktree deployment mode/);
+  assert.match(second.stderr, /Reusing existing isolated Wardmote worktree config/);
+  assert.match(second.stderr, /Reconciled isolated Wardmote worktree deployment mode/);
   assert.equal(readWorktreeConfig(worktreeCwd).server.deploymentMode, "authenticated");
   assert.equal(readWorktreeConfig(worktreeCwd).server.exposure, "private");
 });

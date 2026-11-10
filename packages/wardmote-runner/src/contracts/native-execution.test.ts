@@ -485,7 +485,7 @@ describe("NativeExecutionInputV2 planning", () => {
     });
   });
 
-  it("fails closed when plan mode omits its pinned Paperclip context", () => {
+  it("fails closed when plan mode omits its pinned Wardmote context", () => {
     expect(() => parseNativeExecutionInput({ ...planning, planningContext: null }))
       .toThrow("planningContext is required");
     expect(() => parseNativeExecutionInput({

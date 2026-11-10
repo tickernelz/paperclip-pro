@@ -48,7 +48,7 @@ export async function readCodexCommandVersion(input: {
 
 function sandboxUpgradeHint(targetIsSandbox: boolean): string {
   return targetIsSandbox
-    ? "Promote a sandbox image that ships the Codex CLI version Paperclip pins, then retry the Test. Adding a model to the catalog does not update the Codex CLI baked into existing sandbox images."
+    ? "Promote a sandbox image that ships the Codex CLI version Wardmote pins, then retry the Test. Adding a model to the catalog does not update the Codex CLI baked into existing sandbox images."
     : "Upgrade Codex (for example `npm install -g @openai/codex@latest`) where this agent runs, then retry the Test.";
 }
 

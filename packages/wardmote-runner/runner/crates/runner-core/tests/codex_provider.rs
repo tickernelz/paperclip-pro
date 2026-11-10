@@ -948,7 +948,7 @@ fn codex_completion_cancels_pending_tool_request_before_releasing_capacity() {
     assert_eq!(
         call_count(&directory, "tool-response:failure"),
         1,
-        "Paperclip explicitly resolves the provider RPC as cancelled",
+        "Wardmote explicitly resolves the provider RPC as cancelled",
     );
     assert!(provider
         .deliver_tool_result(&ToolResult {

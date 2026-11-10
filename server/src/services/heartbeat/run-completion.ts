@@ -72,7 +72,7 @@ type IssueContext = Awaited<ReturnType<ReturnType<typeof createHeartbeatRunPrepa
 type TaskSession = Awaited<ReturnType<RunState["getTaskSession"]>> | null;
 
 const CONTROLLER_LEASE_LOST_MESSAGE =
-  "Paperclip stopped this run because its controller lease passed to another server process or the run was already finalized.";
+  "Wardmote stopped this run because its controller lease passed to another server process or the run was already finalized.";
 
 /** Completion persists terminal outcomes; the executor retains dispatch and cleanup ownership. */
 export interface HeartbeatRunCompletionDependencies extends Pick<RunState,

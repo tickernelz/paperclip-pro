@@ -1,7 +1,7 @@
 # Capability semantic catalog and authorization
 
 Capability adds a transport-neutral tool boundary over the deterministic mock
-`ControlPlanePort`. It does not contain Paperclip REST routes, authentication
+`ControlPlanePort`. It does not contain Wardmote REST routes, authentication
 headers, credentials, ACPX code, or a real control-plane binding.
 
 ## Public boundary

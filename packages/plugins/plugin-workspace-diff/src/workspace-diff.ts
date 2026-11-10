@@ -103,7 +103,7 @@ async function resolveWorkspacePaths(workspace: WorkspaceDiffTarget) {
   if (!workspace.cwd?.trim()) {
     throw workspaceDiffError(
       "missing_cwd",
-      "Execution workspace needs a local path before Paperclip can inspect diffs",
+      "Execution workspace needs a local path before Wardmote can inspect diffs",
       { workspaceId: workspace.id },
     );
   }

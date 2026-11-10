@@ -92,7 +92,7 @@ async function main() {
     assertions.liveIdentity =
       created.view.identity.agentLabel === "Real Codex" &&
       created.view.identity.runnerLabel === "Real runnerd" &&
-      created.view.identity.controlPlaneLabel === "Mock Paperclip";
+      created.view.identity.controlPlaneLabel === "Mock Wardmote";
     assertions.mockIdentifier = created.view.issue.identifier.startsWith("MCK-");
     assertions.toolsProjected = created.view.evidence.tools.length >= 0;
 

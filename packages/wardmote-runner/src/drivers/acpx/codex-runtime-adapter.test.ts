@@ -398,7 +398,7 @@ describe("Codex ACPX runtime adapter", () => {
       cwd: "/workspace",
       sessionOptions: {
         model: "gpt-5.6-sol",
-        systemPrompt: { append: "Use Paperclip tools." },
+        systemPrompt: { append: "Use Wardmote tools." },
       },
     });
     expect(
@@ -3066,7 +3066,7 @@ function openOptions(
     // supplies both live credential-quorum listener descriptors.
     credentialFenceFds: [42, 43] as const,
     activateCredentialFenceOwner: async () => undefined,
-    systemInstructions: "Use Paperclip tools.",
+    systemInstructions: "Use Wardmote tools.",
     mcpServers: [],
     retainFailedAdmissionCleanup: vi.fn(),
   };

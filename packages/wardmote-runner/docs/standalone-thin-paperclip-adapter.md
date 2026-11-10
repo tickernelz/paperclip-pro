@@ -1,7 +1,7 @@
 # Standalone Standalone Adapter Demo
 
 Standalone currently proves the thin adapter boundary as a standalone package demo.
-It does not install or enable the runner in a Paperclip instance. All active
+It does not install or enable the runner in a Wardmote instance. All active
 implementation, documentation, tutorial, and evidence work remains under
 `packages/wardmote-runner/`.
 
@@ -37,7 +37,7 @@ pnpm --filter @tickernelz/wardmote-runner demo:standalone
 
 Then open `http://127.0.0.1:4182/standalone-demo/`. The page exposes mode
 selection, contract conformance, reducer projection, replay, finalization, and
-native/legacy invocation counters. It makes no network call to Paperclip.
+native/legacy invocation counters. It makes no network call to Wardmote.
 
 ## Verified boundary
 
@@ -51,7 +51,7 @@ The package-local tracer verifies:
 
 Company auth, budgets, approvals, audit, workspaces, and product persistence are
 not claimed by this standalone checkpoint. Testing those concerns in a real
-Paperclip instance remains outside this package and requires a separately
+Wardmote instance remains outside this package and requires a separately
 reviewed integration.
 
 See the [runnable tutorial](tutorials/standalone-thin-paperclip-adapter.md).

@@ -35,7 +35,7 @@ const questionSet: WardmoteQuestionSet = {
   ],
 };
 
-describe("Paperclip question-set contract", () => {
+describe("Wardmote question-set contract", () => {
   it("round-trips the portable presentation model", () => {
     expect(parseWardmoteQuestionSet(questionSet)).toEqual(questionSet);
     expect(parseWardmoteQuestionResponse(questionSet, {

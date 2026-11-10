@@ -431,7 +431,7 @@ export function ExplorerApp({
               {artifact === null ? (
                 <EmptyState title="Run to produce the deterministic timeline.">
                   <p className="pcr7-muted">
-                    Fake mode runs entirely in this page against checked-in fixtures. No Paperclip
+                    Fake mode runs entirely in this page against checked-in fixtures. No Wardmote
                     service is contacted and no credential is held.
                   </p>
                 </EmptyState>

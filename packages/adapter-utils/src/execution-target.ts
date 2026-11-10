@@ -4383,7 +4383,7 @@ export async function startAdapterExecutionTargetWardmoteBridge(input: {
   const onLog = input.onLog ?? (async () => {});
   const hostApiToken = input.hostApiToken?.trim() ?? "";
   if (hostApiToken.length === 0) {
-    throw new Error("Sandbox bridge mode requires a host-side Paperclip API token.");
+    throw new Error("Sandbox bridge mode requires a host-side Wardmote API token.");
   }
   // The forward budget for one relayed request. It stays at the broker's default
   // forward budget (30 s) when the caller sets no option, so current behavior

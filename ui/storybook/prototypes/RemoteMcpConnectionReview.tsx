@@ -112,7 +112,7 @@ export function RemoteMcpConnectionReview({ provider, scenario = "journey", inli
       }));
     },
     reconnect: () => edit({ step: "connect", connectStatus: "idle", notice: "Reconnect this connection. Saved agent access and tool permissions will be retained." }),
-    disconnect: () => { clearTimers(); edit({ connected: false, token: "", headers: [], url: "", notice: "Connection credentials revoked. Further calls through Paperclip are blocked." }); },
+    disconnect: () => { clearTimers(); edit({ connected: false, token: "", headers: [], url: "", notice: "Connection credentials revoked. Further calls through Wardmote are blocked." }); },
   };
   const reset = () => { clearTimers(); client.clear(); setState(initialReviewState(provider, scenario)); setCalls(0); setExternal(null); setConnectOutcome("success"); setCallOutcome("success"); };
 

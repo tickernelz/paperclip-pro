@@ -918,7 +918,7 @@ describe("OpenWA publication (embedded Postgres + fake gateway)", () => {
     expect(await answerStates([owner.id])).toEqual(["pending"]);
   }, 90_000);
 
-  it("never publishes the generic Paperclip interaction text and never yields the run's reply slot to an interaction", async () => {
+  it("never publishes the generic Wardmote interaction text and never yields the run's reply slot to an interaction", async () => {
     const t = await setup();
     const c = await conversation(t, MEMBER);
     const owner = await trigger(t, c, { triggerClass: "owner", role: "owner" });
@@ -930,7 +930,7 @@ describe("OpenWA publication (embedded Postgres + fake gateway)", () => {
     );
     const rows = await db.select().from(chatPublications).where(eq(chatPublications.endpointId, t.endpointId));
     expect(rows.filter((row) => row.idempotencyKey.startsWith("interaction:"))).toEqual([]);
-    expect(rows.some((row) => row.payload.text.includes("needs an authorized response in Paperclip"))).toBe(false);
+    expect(rows.some((row) => row.payload.text.includes("needs an authorized response in Wardmote"))).toBe(false);
     expect(await hasChatRunOwnedProviderInteraction(db, { companyId: t.companyId, issueId: c.issueId, runId: run.runId })).toBe(false);
     await drain(t);
     expect(t.gateway.sends.map((send) => send.text)).toEqual(["Need a decision"]);

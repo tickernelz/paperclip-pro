@@ -59,7 +59,7 @@
       "pendingRequestRecovery": "live-process-only"
     },
     "sessionNew": "rejected_authentication_missing",
-    "expectedError": "Bind the configured OpenRouter API credential to this Paperclip runtime.",
+    "expectedError": "Bind the configured OpenRouter API credential to this Wardmote runtime.",
     "missingCredentialRejected": true,
     "capabilityProvenance": "Unchanged pinned Pi closure from the previous complete capability receipt; integrated probe reasserted steering and missing-credential rejection."
   },

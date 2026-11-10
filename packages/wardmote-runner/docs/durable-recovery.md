@@ -2,7 +2,7 @@
 
 Durable recovery adds a real outbound WebSocket path to the standalone package. The
 Rust `wardmote-runnerd` process is the client. The TypeScript mock core is the
-remote peer. Neither side imports Paperclip server, UI, database, or shared
+remote peer. Neither side imports Wardmote server, UI, database, or shared
 control-plane code.
 
 This is a local reliability and authenticated-transport proof. The mock keeps

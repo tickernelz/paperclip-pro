@@ -49,7 +49,7 @@ export function openwaPhoneDigits(phone: string | null | undefined): string | nu
 function unreachable(baseUrl: string): HttpError {
   return new HttpError(
     503,
-    "Paperclip could not reach the OpenWA gateway at " + baseUrl + ". Check that the gateway is running and reachable from Paperclip; do not replace the API key or other credentials because of this error.",
+    "Wardmote could not reach the OpenWA gateway at " + baseUrl + ". Check that the gateway is running and reachable from Wardmote; do not replace the API key or other credentials because of this error.",
     { code: "openwa_gateway_unreachable" },
   );
 }
@@ -173,9 +173,9 @@ export async function inspectOpenwaGateway(
     const gatewayVersion = "version" in versionResult ? versionResult.version : null;
     const warnings: string[] = [];
     if (gatewayVersion === null) {
-      warnings.push("The gateway version is unknown because its API document is unavailable; Paperclip assumes OpenWA " + OPENWA_GATEWAY_VERSION + ".");
+      warnings.push("The gateway version is unknown because its API document is unavailable; Wardmote assumes OpenWA " + OPENWA_GATEWAY_VERSION + ".");
     } else if (gatewayVersion !== OPENWA_GATEWAY_VERSION) {
-      warnings.push("The gateway runs OpenWA " + gatewayVersion + "; Paperclip is tested with " + OPENWA_GATEWAY_VERSION + ", so some operations may behave differently.");
+      warnings.push("The gateway runs OpenWA " + gatewayVersion + "; Wardmote is tested with " + OPENWA_GATEWAY_VERSION + ", so some operations may behave differently.");
     }
     if (agentKeyMinted && input.apiKey) {
       warnings.push("The operator API key has the admin role. Wardmote keeps it only for session management and gives the agent a new key limited to the chosen session.");

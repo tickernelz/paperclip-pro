@@ -312,7 +312,7 @@ export function agentmailApi(apiKey: string, fetchImpl: typeof fetch = fetch) {
       request<{ api_key: string; api_key_id: string }>(
         `${inboxPath(id)}/api-keys`,
         "POST",
-        { name: "Paperclip email runtime" },
+        { name: "Wardmote email runtime" },
       ),
     deleteInboxKey: (id: string, keyId: string) =>
       request<void>(

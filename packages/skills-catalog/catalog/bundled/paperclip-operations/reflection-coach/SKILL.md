@@ -81,7 +81,7 @@ curl -sS "$WARDMOTE_API_URL/api/issues/<issueId>" -H "Authorization: Bearer $WAR
 curl -sS "$WARDMOTE_API_URL/api/issues/<issueId>/comments" -H "Authorization: Bearer $WARDMOTE_API_KEY"
 ```
 
-Keep status transitions, blocker reasons, reviewer comments, approval outcomes, human corrections, and PR-link comments. Comments are the closest thing Paperclip has to an execution trace — treat them as first-class evidence.
+Keep status transitions, blocker reasons, reviewer comments, approval outcomes, human corrections, and PR-link comments. Comments are the closest thing Wardmote has to an execution trace — treat them as first-class evidence.
 
 ### 3) Read the target's current guardrails
 

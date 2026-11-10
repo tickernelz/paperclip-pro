@@ -113,29 +113,29 @@ still subject to server-side attachment admission and should not be run
 concurrently.
 
 If the upload ends without a response, the helper records that ambiguous outcome
-locally. The same command polls briefly for Paperclip's immutable attachment
+locally. The same command polls briefly for Wardmote's immutable attachment
 record and otherwise stops instead of blindly creating a duplicate. Retry later.
 Use `--retry-unknown-upload` only after establishing that the first upload did
 not commit; this explicit override accepts the risk of creating a duplicate
 file.
 
-The binding is durable Paperclip state, but it is not proof of external
+The binding is durable Wardmote state, but it is not proof of external
 delivery—or even proof that the current run has an active external-chat origin.
-For an authorized active chat-origin run, Paperclip keeps this selection
+For an authorized active chat-origin run, Wardmote keeps this selection
 internal until it selects the run's final response, then attempts the provider
 publication. The final assistant response may use different prose from
 `--chat-comment`.
 
-Treat the helper's exit status as confirmation that the Paperclip attachment,
+Treat the helper's exit status as confirmation that the Wardmote attachment,
 work product, and requested comment binding were saved. Use neutral final prose
 such as “I prepared the requested image.” Do not claim the file is shown above,
 attached, queued, or delivered. If the bind step fails after upload, say that
-the artifact was saved to the Paperclip task but was **not** bound to the
+the artifact was saved to the Wardmote task but was **not** bound to the
 response comment; never also claim that it appears above or is attached.
 
 Do not infer sharing intent from other files on the task or bind every
 attachment from a run. Only the file passed with `--chat-comment` is eligible
-for external publication; unbound artifacts remain Paperclip-only.
+for external publication; unbound artifacts remain Wardmote-only.
 
 **Native runner**
 
@@ -149,7 +149,7 @@ binds it to the response. Do not also record the same file with
 Wait for the receipt. It includes `attachmentId`, `contentPath`, and
 `downloadPath`, along with the existing command, revision, entity references,
 and disposition. Reuse the original key after an ambiguous result. A receipt
-confirms storage and response binding in Paperclip; it does not confirm delivery
+confirms storage and response binding in Wardmote; it does not confirm delivery
 to an external chat provider. If registration fails, use the returned error to
 resolve the failure or explain the limitation; do not describe a workspace path
 as an uploaded file.

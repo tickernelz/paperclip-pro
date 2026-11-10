@@ -21,13 +21,13 @@ function recording() {
   return { scenario, initial, final };
 }
 
-describe("explicit Paperclip document delivery", () => {
+describe("explicit Wardmote document delivery", () => {
   it("checks the actual saved content, revision and exact document link", () => {
     const { scenario, initial, final } = recording();
     expect(gradeContextIntegrity({ ...scenario, checkpoints: [initial, final] }).every(row => row.passed)).toBe(true);
-    expect(scenario.prompt).toContain("Paperclip document");
+    expect(scenario.prompt).toContain("Wardmote document");
     expect(scenario.prompt).toContain("clickable Markdown link");
-    expect(scenario.prompt).toContain("Paperclip task UI");
+    expect(scenario.prompt).toContain("Wardmote task UI");
     expect(scenario.prompt).not.toContain(scenario.marker);
   });
   it.each(["https://paperclip.example/DOC/issues/DOC-1#document-report", "<https://paperclip.example/DOC/issues/DOC-1#document-report>"])("accepts the same-app document link %s", target => {

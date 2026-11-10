@@ -510,7 +510,7 @@ describe("OpenWA delegated task reports (embedded Postgres + fake gateway)", () 
       chatId: PROJECT,
       settings: { activation: "on", ownerReportChatKey: BOT_GROUP },
       creatorTriggerClass,
-      groups: [{ chatId: BOT_GROUP, label: "[BOT] DCM Paperclip", ownerPresent: true }],
+      groups: [{ chatId: BOT_GROUP, label: "[BOT] DCM Wardmote", ownerPresent: true }],
     });
     const task = await t.delegate("Fix invoice 42");
     const [handoff] = await db.select().from(chatTaskHandoffs).where(eq(chatTaskHandoffs.taskId, task.id));
@@ -527,7 +527,7 @@ describe("OpenWA delegated task reports (embedded Postgres + fake gateway)", () 
     const { t, handoff, turn, sent } = await reportTarget("owner");
     expect(handoff).toMatchObject({ channel: "openwa", reportToOwner: true });
     expect(turn.guidance!.markdown).toContain("This completion report is owed to the owner");
-    expect(turn.guidance!.markdown).toContain("[BOT] DCM Paperclip");
+    expect(turn.guidance!.markdown).toContain("[BOT] DCM Wardmote");
     expect(sent).toMatchObject({ state: "delivered", ownerReportChat: true, chatRef: "openwa:" + SESSION_ID + ":" + BOT_GROUP });
     expect(t.gateway.sends.map((send) => send.chatId)).toEqual([BOT_GROUP]);
     const again = await t.send(turn.runId, "Laporan lagi").catch((error) => error);

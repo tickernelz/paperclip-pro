@@ -1,7 +1,7 @@
 # Capability Verification Commands
 
 Every command here runs from the repository root, is offline and deterministic,
-starts no Paperclip service, and holds no credential. All are prefixed
+starts no Wardmote service, and holds no credential. All are prefixed
 `pnpm --filter @tickernelz/wardmote-runner`.
 
 | Surface | Command | Expected result |

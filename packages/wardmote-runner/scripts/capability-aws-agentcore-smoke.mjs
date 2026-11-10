@@ -108,7 +108,7 @@ async function main() {
       operationId: "get_task_context",
       input: {},
     })).json();
-    assert(read.toolResult && typeof read.toolResult === "object", "the mock Paperclip read operation succeeded");
+    assert(read.toolResult && typeof read.toolResult === "object", "the mock Wardmote read operation succeeded");
 
     const serialized = JSON.stringify({ opened, first, second, read });
     for (const pattern of [

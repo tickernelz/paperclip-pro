@@ -59,7 +59,7 @@ const agentmailErrorHandler: ErrorRequestHandler = (error, _req, res, next) => {
   } else if (error.status === 401) {
     message = "AgentMail rejected the API key. Check that it is correct and has not been revoked, then reconnect.";
   } else if (error.status === 403) {
-    message = `AgentMail did not allow Paperclip to ${action}. Check your API key permissions and AgentMail account limits, then try again.`;
+    message = `AgentMail did not allow Wardmote to ${action}. Check your API key permissions and AgentMail account limits, then try again.`;
   } else if (error.status === 429) {
     status = 429;
     res.set("Retry-After", String(Math.ceil(error.retryAfterMs / 1000)));

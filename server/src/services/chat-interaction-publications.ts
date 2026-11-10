@@ -45,12 +45,12 @@ function terminalNativeInteractionCopy(
       const outcome = interaction.result?.outcome;
       const body =
         outcome === "skipped"
-          ? "Skipped in Paperclip"
+          ? "Skipped in Wardmote"
           : outcome === "withdrawn"
-            ? "Withdrawn in Paperclip"
+            ? "Withdrawn in Wardmote"
             : outcome === "addressee_deleted"
               ? "Cancelled: addressed agent was removed"
-              : "Cancelled in Paperclip";
+              : "Cancelled in Wardmote";
       return { body, text: `${body}.` };
     }
     if (interaction.status === "expired") {
@@ -63,7 +63,7 @@ function terminalNativeInteractionCopy(
               ? "Expired: target is no longer current"
               : interaction.result?.outcome === "issue_closed"
                 ? "Expired: task is closed"
-                : "Expired in Paperclip";
+                : "Expired in Wardmote";
       return { body, text: `${body}.` };
     }
     return null;
@@ -89,10 +89,10 @@ function terminalNativeInteractionCopy(
     const outcome = interaction.result?.outcome;
     const body =
       outcome === "skipped"
-        ? "Skipped in Paperclip."
+        ? "Skipped in Wardmote."
         : outcome === "withdrawn"
-          ? "Withdrawn in Paperclip."
-          : "Cancelled in Paperclip.";
+          ? "Withdrawn in Wardmote."
+          : "Cancelled in Wardmote.";
     return { body, text: body };
   }
   if (interaction.status === "expired") {
@@ -104,7 +104,7 @@ function terminalNativeInteractionCopy(
           ? "Expired: replaced by a newer request"
           : interaction.result?.outcome === "issue_closed"
             ? "Expired: task is closed"
-            : "Expired in Paperclip";
+            : "Expired in Wardmote";
     return { body, text: `${body}.` };
   }
   return null;
@@ -200,18 +200,18 @@ function textForQuestionInteraction(
   }
   lines.push(
     taskUrl
-      ? `Open the task in Paperclip to respond: ${taskUrl}`
-      : "Open the task in Paperclip to respond.",
+      ? `Open the task in Wardmote to respond: ${taskUrl}`
+      : "Open the task in Wardmote to respond.",
   );
   return lines.join("\n");
 }
 
 function genericInteractionText(taskUrl: string | null): string {
   return [
-    "This task needs an authorized response in Paperclip.",
+    "This task needs an authorized response in Wardmote.",
     taskUrl
-      ? `Open the task in Paperclip to respond: ${taskUrl}`
-      : "Open the task in Paperclip to respond.",
+      ? `Open the task in Wardmote to respond: ${taskUrl}`
+      : "Open the task in Wardmote to respond.",
   ]
     .filter((value): value is string => Boolean(value))
     .join("\n\n");
@@ -369,7 +369,7 @@ export async function enqueueIssueInteractionChatPublications(
             ? [
                 {
                   type: "link" as const,
-                  label: "Open in Paperclip",
+                  label: "Open in Wardmote",
                   url: taskUrl,
                 },
               ]
@@ -400,13 +400,13 @@ export async function enqueueIssueInteractionChatPublications(
                 "Input needed")
               : interaction.kind === "request_confirmation"
                 ? interaction.payload.prompt
-                : "Response needed in Paperclip",
+                : "Response needed in Wardmote",
           body:
             interaction.kind === "ask_user_questions"
               ? (question?.helpText ?? undefined)
               : interaction.kind === "request_confirmation"
                 ? (interaction.payload.detailsMarkdown ?? undefined)
-                : "Open the task in Paperclip to review and respond.",
+                : "Open the task in Wardmote to review and respond.",
           actions,
         },
       },

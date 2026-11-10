@@ -319,7 +319,7 @@ async function getSandboxOrNull(
 function warnIfUnsupportedNode(logger: { warn: (msg: string) => void } | undefined): void {
   const major = Number.parseInt(process.versions.node.split(".")[0] ?? "0", 10);
   if (Number.isFinite(major) && major < 24) {
-    const message = `Modal sandbox provider is running on Node ${process.versions.node}; Paperclip requires Node 24+. Upgrade the host runtime before using this plugin.`;
+    const message = `Modal sandbox provider is running on Node ${process.versions.node}; Wardmote requires Node 24+. Upgrade the host runtime before using this plugin.`;
     logger?.warn(message);
   }
 }

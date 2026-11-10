@@ -292,9 +292,9 @@ export function createPublicMcpOAuth(db: Db, config: PublicMcpConfig, options: {
     async deviceAuthorize(input: unknown, source = "unknown") {
       await assertEnabled();
       const p = z.object({ client_id: z.string().min(1).max(2048), resource: z.literal(config.resource), scope: z.string().max(200).default(requiredScope), company_id: z.uuid().optional() }).safeParse(input);
-      if (!p.success) throw new McpOAuthError("invalid_request", "Supply a registered client and the exact Paperclip resource.");
+      if (!p.success) throw new McpOAuthError("invalid_request", "Supply a registered client and the exact Wardmote resource.");
       const scopes = [...new Set(p.data.scope.split(/\s+/).filter(Boolean))];
-      if (!scopes.includes(requiredScope) || scopes.some(s => !(scopesSupported as readonly string[]).includes(s))) throw new McpOAuthError("invalid_scope", "Unsupported Paperclip scope.");
+      if (!scopes.includes(requiredScope) || scopes.some(s => !(scopesSupported as readonly string[]).includes(s))) throw new McpOAuthError("invalid_scope", "Unsupported Wardmote scope.");
       const client = await resolveClient(p.data.client_id, source);
       if (!client?.grantTypes.includes(DEVICE_GRANT)) throw new McpOAuthError("unauthorized_client", "Register a device authorization client.");
       const deviceCode = secret("pcmcp_device_");
@@ -356,10 +356,10 @@ export function createPublicMcpOAuth(db: Db, config: PublicMcpConfig, options: {
       const parsed = authorizeSchema.extend({ scope: z.string().max(200).default(requiredScope) }).safeParse(input);
       if (!parsed.success) throw new McpOAuthError("invalid_request", "A registered client, exact redirect URI, resource, and S256 PKCE challenge are required.");
       const p = parsed.data;
-      if (p.resource !== config.resource) throw new McpOAuthError("invalid_target", "Resource does not match this Paperclip MCP endpoint.");
+      if (p.resource !== config.resource) throw new McpOAuthError("invalid_target", "Resource does not match this Wardmote MCP endpoint.");
       const scopes = [...new Set(p.scope.split(/\s+/).filter(Boolean))];
       if (!scopes.includes(requiredScope) || scopes.some((s) => !(scopesSupported as readonly string[]).includes(s))) {
-        throw new McpOAuthError("invalid_scope", "Unsupported Paperclip scope.");
+        throw new McpOAuthError("invalid_scope", "Unsupported Wardmote scope.");
       }
       const client = await resolveClient(p.client_id, source);
       if (!client || !client.grantTypes.includes("authorization_code") || !mcpRedirectMatches(client.redirectUris, p.redirect_uri, client.native)) {
@@ -548,9 +548,9 @@ export function createPublicMcpOAuth(db: Db, config: PublicMcpConfig, options: {
         .innerJoin(companies, eq(companies.id, mcpOauthGrants.companyId))
         .where(and(eq(mcpOauthTokens.tokenHash, hashMcpSecret(token)), eq(mcpOauthTokens.kind, "access"),
           gt(mcpOauthTokens.expiresAt, new Date()), isNull(mcpOauthGrants.revokedAt)));
-      if (!row) throw new McpOAuthError("invalid_token", "Connect Paperclip again.", 401);
+      if (!row) throw new McpOAuthError("invalid_token", "Connect Wardmote again.", 401);
       try { return { grant: row.grant, company: row.company, actor: await actorForGrant(row.grant) }; }
-      catch { throw new McpOAuthError("invalid_token", "Paperclip access is no longer available.", 401); }
+      catch { throw new McpOAuthError("invalid_token", "Wardmote access is no longer available.", 401); }
     },
     async revokeToken(token: string, clientId: string) {
       const grant = await db.transaction(async (tx) => {

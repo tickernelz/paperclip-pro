@@ -281,7 +281,7 @@ describe("plugin local folders", () => {
     }
   });
 
-  it("roots default plugin data in the configured Paperclip home, not the real user home", () => {
+  it("roots default plugin data in the configured Wardmote home, not the real user home", () => {
     const previous = process.env.WARDMOTE_HOME;
     process.env.WARDMOTE_HOME = path.join(os.tmpdir(), "paperclip-plugin-home-probe");
     try {

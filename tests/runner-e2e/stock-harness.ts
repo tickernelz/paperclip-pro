@@ -5,7 +5,7 @@ import { readStockInstructionVariant } from "./stock-harness-instruction-variant
 
 // These are an independent product contract, not imports of the implementation
 // constants. Otherwise a larger shipped manual could silently update the oracle.
-export const STOCK_HIRE_IDENTITY = "You are an agent in a Paperclip company.\n";
+export const STOCK_HIRE_IDENTITY = "You are an agent in a Wardmote company.\n";
 export const STOCK_TEMPLATE_IDENTITY = "You are agent";
 const SKILL_SOURCES = ["../../skills/wardmote/SKILL.md", "../../skills/wardmote/references/issue-documents.md",
   "../../scripts/paperclip-issue-update.sh", "../../skills/wardmote/scripts/paperclip-issue-update.sh"];
@@ -89,12 +89,12 @@ export function gradeStockHarness(evidence: StockHarnessEvidence, instructionVar
       check("historical-invocation-classification", prompts.length > 0 && classified,
         "Every invocation needs public run-scoped conversation mode and explicit template-delivery metrics.");
       check("historical-startup-contract", classified && fresh.length > 0 && fresh.every(row => row.conversationMode
-        ? String(row.prompt).includes("Continue your Paperclip conversation using the supplied chat mode directive.") &&
+        ? String(row.prompt).includes("Continue your Wardmote conversation using the supplied chat mode directive.") &&
           String(row.prompt).includes("After 2 consecutive failures of the same control-plane write")
         : String(row.prompt).includes("Execution contract:") && String(row.prompt).includes("Final disposition checklist:")),
       `Check each of ${fresh.length} fresh invocations against its historical task or conversation template.`);
       check("historical-continuation-contract", classified && resumed.every(row =>
-        String(row.prompt).includes("## Paperclip Resume Delta") && (row.conversationMode
+        String(row.prompt).includes("## Wardmote Resume Delta") && (row.conversationMode
           ? !String(row.prompt).includes("Execution contract:")
           : String(row.prompt).includes("Execution contract: take concrete action") &&
             String(row.prompt).includes("a successful process exit or final response is not sufficient"))),

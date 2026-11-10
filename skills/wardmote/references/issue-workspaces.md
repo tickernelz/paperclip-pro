@@ -19,11 +19,11 @@ Read `currentExecutionWorkspace` in the result:
 - `status` / `closedAt` — whether the workspace is usable
 - `runtimeServices[]` — current services, including `serviceName`, `status`, `healthStatus`, `url`, `port`, and `runtimeServiceId`
 
-If `currentExecutionWorkspace` is `null`, the issue does not currently have a realized execution workspace. For child/follow-up work, create the child with `parentId` or use `inheritExecutionWorkspaceFromIssueId` so Paperclip preserves workspace continuity.
+If `currentExecutionWorkspace` is `null`, the issue does not currently have a realized execution workspace. For child/follow-up work, create the child with `parentId` or use `inheritExecutionWorkspaceFromIssueId` so Wardmote preserves workspace continuity.
 
 ## Control Services
 
-Prefer Paperclip-managed runtime service controls over manual `pnpm dev &` or ad-hoc background processes. The tool keeps service state, URLs, logs, and ownership visible to other agents and the board.
+Prefer Wardmote-managed runtime service controls over manual `pnpm dev &` or ad-hoc background processes. The tool keeps service state, URLs, logs, and ownership visible to other agents and the board.
 
 `wardmoteControlIssueWorkspaceServices` resolves the issue's workspace for you. Pass `issueId` and `action`:
 

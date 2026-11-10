@@ -132,7 +132,7 @@ test("AgentCore wrapper is valid shell and writes only nonsecret profile metadat
   assert.match(provisionBlock, /existing_cost_center.*paperclip:cost-center/s);
   assert.ok(provisionBlock.indexOf("ownership tags or template provenance") < provisionBlock.indexOf("cloudformation delete-stack"));
   assert.ok(provisionBlock.indexOf("REPLACE_FAILED_STACK") < provisionBlock.indexOf("cloudformation delete-stack"));
-  assert.match(provisionBlock, /Unable to verify whether stack .* exists and is owned by Paperclip/);
+  assert.match(provisionBlock, /Unable to verify whether stack .* exists and is owned by Wardmote/);
   assert.match(source, /cloudformation wait stack-delete-complete/);
   assert.match(source, /--query harness\.status/);
   assert.match(source, /AgentCore tool allowlist drift/);
@@ -187,7 +187,7 @@ fi
     ...process.env,
     PATH: `${temp}:${process.env.PATH}`,
     MOCK_AWS_LOG: commandLog,
-    MOCK_STACK_DESCRIPTION: "Paperclip proof-of-concept Amazon Bedrock AgentCore Harness and least-privilege invocation roles.",
+    MOCK_STACK_DESCRIPTION: "Wardmote proof-of-concept Amazon Bedrock AgentCore Harness and least-privilege invocation roles.",
     MOCK_STACK_OWNED: "true",
   };
   try {

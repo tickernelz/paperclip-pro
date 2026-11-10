@@ -247,7 +247,7 @@ suite("Discord command ownership store (real PostgreSQL, no network)", () => {
       receipt: Record<string, unknown>;
     };
     const prior = discordWardmoteCommandDefinition(registration.ownerId);
-    prior.options[2]!.description = "Close the current Paperclip task";
+    prior.options[2]!.description = "Close the current Wardmote task";
     const remote = f.remote[0]!;
     f.remote[0] = {
       ...prior,

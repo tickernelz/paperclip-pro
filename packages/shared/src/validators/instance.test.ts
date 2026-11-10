@@ -33,7 +33,7 @@ describe("instance experimental settings validators", () => {
     expect(settings.enableServerInfoDebugView).toBe(false);
   });
 
-  it("defaults Paperclip developer mode off and accepts explicit patches", () => {
+  it("defaults Wardmote developer mode off and accepts explicit patches", () => {
     expect(instanceExperimentalSettingsSchema.parse({}).enableWardmoteDeveloperMode).toBe(false);
     expect(
       patchInstanceExperimentalSettingsSchema.parse({ enableWardmoteDeveloperMode: true }),

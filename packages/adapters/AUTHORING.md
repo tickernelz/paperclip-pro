@@ -10,7 +10,7 @@ package itself.
 The local execution-workspace cwd is the only persistence boundary across
 runs. No adapter may depend on a git remote for cross-run state.
 
-Why: Paperclip resolves a local execution workspace (a worktree) for each
+Why: Wardmote resolves a local execution workspace (a worktree) for each
 heartbeat. Code state is carried forward by syncing that local cwd to wherever
 the agent actually runs — over ssh, into a sandbox, into a managed runtime —
 and then syncing changes back when the run finishes. Treating a `git remote`
@@ -23,7 +23,7 @@ How to apply:
 
 - Never `git push` from adapter runtime code. Never assume the local worktree
   has any `git remote` configured. If you need data from the previous run,
-  read it from the local cwd Paperclip handed you.
+  read it from the local cwd Wardmote handed you.
 - If your adapter runs the agent on a different host (ssh, sandbox, remote
   container), use the round-trip helpers in `@tickernelz/wardmote-adapter-utils`:
   [`prepareWorkspaceForSshExecution`](../adapter-utils/src/ssh.ts) bundles the

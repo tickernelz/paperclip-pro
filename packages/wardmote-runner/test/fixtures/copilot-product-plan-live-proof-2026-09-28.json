@@ -48,7 +48,7 @@
     "displayedRevisionNumber": 1,
     "targetMatchesDisplayedRevision": true,
     "status": "accepted",
-    "surface": "Paperclip semantic Plan document and request_confirmation card",
+    "surface": "Wardmote semantic Plan document and request_confirmation card",
     "nativeCopilotPlanCallback": false
   },
   "continuation": {

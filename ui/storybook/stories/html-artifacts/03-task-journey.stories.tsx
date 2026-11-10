@@ -14,7 +14,7 @@ import { createIssue, storybookAgents } from "../../fixtures/wardmoteData";
 import { reportHtml } from "./fixtures";
 import reportDownload from "./report.html?url";
 
-const issue = createIssue({ id: "html-artifact-journey", identifier: "DEMO-101", title: "Find popular repositories that use Paperclip a lot", status: "done", completedAt: new Date("2026-10-07T12:54:00Z"), currentExecutionWorkspace: null, executionWorkspaceId: null });
+const issue = createIssue({ id: "html-artifact-journey", identifier: "DEMO-101", title: "Find popular repositories that use Wardmote a lot", status: "done", completedAt: new Date("2026-10-07T12:54:00Z"), currentExecutionWorkspace: null, executionWorkspaceId: null });
 const attachment: IssueAttachment = {
   id: "html-usage-report", companyId: issue.companyId, issueId: issue.id, issueCommentId: null,
   assetId: "html-usage-asset", provider: "local_disk", sha256: "storybook-fixture",
@@ -45,7 +45,7 @@ function TaskJourney({ openInitially = false }: { openInitially?: boolean }) {
       <div className="flex h-full min-h-0 flex-col gap-6 p-4 lg:flex-row">
         <section className="min-w-0 flex-1 space-y-6 overflow-auto">
           <h1 className="text-xl font-semibold">{issue.title}</h1>
-          <TaskChatBubble item={{ id: "request", kind: "message", author: "human", text: "Give me a report that combines repository popularity and repeated Paperclip usage." }} />
+          <TaskChatBubble item={{ id: "request", kind: "message", author: "human", text: "Give me a report that combines repository popularity and repeated Wardmote usage." }} />
           <TaskChatBubble item={{ id: "response", kind: "message", author: "agent", text: "Hyperswitch and Storybook lead the combined ranking. Open the report to explore the weighting and filter the results." }} />
           <IssueArtifactFile id={attachment.id} attachmentId={attachment.id} title="Interactive repository usage report" summary="" filename={attachment.originalFilename!} contentType={attachment.contentType} contentPath={attachment.contentPath} downloadPath={attachment.downloadPath!} byteSize={attachment.byteSize} author="CodexRunner" updatedAt="7:54 AM" />
         </section>

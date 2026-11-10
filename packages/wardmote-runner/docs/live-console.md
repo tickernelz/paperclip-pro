@@ -9,7 +9,7 @@ approved [interaction map](design/live-console-interaction-map.md) and
 [component decision record](design/live-console-component-decisions.md).
 
 Every file lives under `packages/wardmote-runner/`. The console does not
-import or change Paperclip server, UI, database, or control-plane code.
+import or change Wardmote server, UI, database, or control-plane code.
 
 ## Start it
 
@@ -100,7 +100,7 @@ discards and leaves recorded evidence files untouched.
 
 ## Credentials
 
-No provider or Paperclip credential reaches the browser. The Node process owns
+No provider or Wardmote credential reaches the browser. The Node process owns
 the driver, the working directory, and any provider login. Every JSON and event
 frame passes the demo server's redaction layer, and the inspector renders
 redaction markers verbatim without attempting to reconstruct them.

@@ -117,7 +117,7 @@ describe("native instruction payload measurement", () => {
         const turn = captured.calls.find(call => call.method === "turn/start")!.params;
         const instructions = setup.developerInstructions ?? setup.baseInstructions;
         expect(instructions).toContain(WARDMOTE_EXECUTION_PROMPT);
-        expect(instructions).toContain("You are an agent in a Paperclip company.");
+        expect(instructions).toContain("You are an agent in a Wardmote company.");
         const deliveredTools = setup.dynamicTools as Array<{ name: string; description: string }>;
         expect(deliveredTools.filter(tool => tool.name === "wardmote_finish")).toEqual([
           expect.objectContaining({ description: PRP_COMPLETION_TOOL_DESCRIPTION }),
@@ -236,7 +236,7 @@ afterAll(() => {
     sourceMetadata: source.sourceMetadata,
     sourceHashes: Object.fromEntries(sourcePaths.map(file => [file.split("/").at(-1)!, sha256(readFileSync(new URL(file, repositoryRoot)))])),
     fixtureSha256: sha256(readFileSync(new URL(import.meta.url))),
-    boundary: "scripted runnerd RPC; complete Paperclip instructions, fixture core tool schemas and turn input",
+    boundary: "scripted runnerd RPC; complete Wardmote instructions, fixture core tool schemas and turn input",
     providerCalls: 0, tokenCount: null, vendorStockPrompt: "unavailable", modelBehavior: "not_measured",
     receipts, directOpenCodeReceipts,
   }, null, 2)}\n`);

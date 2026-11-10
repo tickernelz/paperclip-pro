@@ -49,7 +49,7 @@ describe("per-turn OpenCode reasoning", () => {
       }
       const envelope = JSON.parse(submitted[0]!.parts[0].text);
       expect(envelope.task.completionContract.revision).toBe("17");
-      expect(envelope.task.constraints).toEqual(["Use Paperclip MCP tools for semantic operations."]);
+      expect(envelope.task.constraints).toEqual(["Use Wardmote MCP tools for semantic operations."]);
       const config = JSON.parse(await readFile(join(root, "reasoning/config/opencode/opencode.json"), "utf8"));
       expect(config.provider.openrouter.models["deepseek/deepseek-v4-flash-0731"]).toMatchObject({
         variants: { "paperclip-default": {}, "paperclip-no-reasoning": { reasoning: { enabled: false } } },

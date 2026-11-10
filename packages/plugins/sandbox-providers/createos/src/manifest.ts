@@ -5,7 +5,7 @@ const manifest: WardmotePluginManifestV1 = {
   apiVersion: 1,
   version: "0.1.0",
   displayName: "CreateOS Sandbox Provider",
-  description: "Runs Paperclip agents in CreateOS sandboxes.",
+  description: "Runs Wardmote agents in CreateOS sandboxes.",
   author: "CreateOS",
   categories: ["automation"],
   capabilities: ["environment.drivers.register"],
@@ -22,7 +22,7 @@ const manifest: WardmotePluginManifestV1 = {
       required: ["apiUrl", "shape"],
       properties: {
         apiUrl: { type: "string", title: "API URL", default: "https://api.sb.createos.sh", description: "https://api.sb.createos.sh" },
-        apiKey: { type: "string", format: "secret-ref", description: "CreateOS API key or Paperclip secret reference. Saved keys become company secrets. The official API endpoint can use CREATEOS_API_KEY from the host; custom endpoints require an explicit key." },
+        apiKey: { type: "string", format: "secret-ref", description: "CreateOS API key or Wardmote secret reference. Saved keys become company secrets. The official API endpoint can use CREATEOS_API_KEY from the host; custom endpoints require an explicit key." },
         shape: {
           type: "string",
           title: "Shape",

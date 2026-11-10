@@ -366,11 +366,11 @@ const GUEST_COMMAND =
 
       await db.insert(companies).values({
         id: companyId,
-        name: "Paperclip",
+        name: "Wardmote",
         issuePrefix: `Q${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
         requireBoardApprovalForNewAgents: false,
       });
-      await db.insert(projects).values({ id: projectId, companyId, name: "Paperclip App", status: "in_progress" });
+      await db.insert(projects).values({ id: projectId, companyId, name: "Wardmote App", status: "in_progress" });
       await db.insert(projectWorkspaces).values({
         id: projectWorkspaceId,
         companyId,
@@ -435,7 +435,7 @@ const GUEST_COMMAND =
     function startInput(seed: Awaited<ReturnType<typeof seedIncident>>, executionWorkspaceId: string) {
       return {
         invocationId: "pap-17419-reservation",
-        actor: { id: null, name: "Paperclip", companyId: seed.companyId },
+        actor: { id: null, name: "Wardmote", companyId: seed.companyId },
         issue: null,
         db,
         workspace: {

@@ -37,7 +37,7 @@ function CreationFormPanel() {
           </span>
           <span>in</span>
           <span className="inline-flex items-center gap-1.5 rounded-md border border-line px-2 py-1 text-xs">
-            Paperclip App
+            Wardmote App
           </span>
         </div>
         <div className="space-y-1.5">
@@ -205,7 +205,7 @@ function AllStates() {
 }
 
 const meta = {
-  title: "Paperclip/Assigned Backlog Safeguards",
+  title: "Wardmote/Assigned Backlog Safeguards",
   component: AllStates,
   parameters: { layout: "fullscreen" },
 } satisfies Meta<typeof AllStates>;

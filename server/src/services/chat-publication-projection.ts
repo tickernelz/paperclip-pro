@@ -241,7 +241,7 @@ function truncateByCodePoint(input: string, limit: number): string {
  * dangerous or token-bearing links, and neutralizes provider-wide mentions.
  */
 export function projectSafeChatPublicationText(input: string): string {
-  return projectSafeChatPublicationTextOrNull(input) ?? "Update available in Paperclip.";
+  return projectSafeChatPublicationTextOrNull(input) ?? "Update available in Wardmote.";
 }
 
 export function projectSafeChatPublicationTextOrNull(input: string): string | null {

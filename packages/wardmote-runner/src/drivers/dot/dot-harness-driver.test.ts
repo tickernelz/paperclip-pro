@@ -97,7 +97,7 @@ describe("Dot runner provider prototype", () => {
 
   it("rejects a malformed result and cannot execute after completion", async () => {
     const f = await fixture(); await f.call({ operation: "accept" });
-    await expect(f.call({ operation: "finish", result: { summary: "done" } })).rejects.toThrow("Invalid Paperclip");
+    await expect(f.call({ operation: "finish", result: { summary: "done" } })).rejects.toThrow("Invalid Wardmote");
     await f.call({ operation: "finish", result });
     await expect(f.call({ operation: "tool", name: "write_document", arguments: {} })).rejects.toThrow("already completed");
     expect(f.executeTool).not.toHaveBeenCalled(); f.driver.revoke();

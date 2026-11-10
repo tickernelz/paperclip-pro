@@ -427,7 +427,7 @@ We welcome contributions. See the [contributing guide](https://github.com/paperc
 
 ## License
 
-MIT &copy; 2026 [Paperclip Labs, Inc](https://paperclip.ing)
+MIT &copy; 2026 [Wardmote Labs, Inc](https://paperclip.ing)
 
 ## Star History
 

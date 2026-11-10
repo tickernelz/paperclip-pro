@@ -293,7 +293,7 @@ async function sendRequest(input: {
   // OAuth service sees the request (Coda returns 403 instead of its 401 OAuth
   // challenge), so give every guarded request a stable, non-identifying client
   // token while preserving an explicit caller value.
-  if (!headers.has("user-agent")) headers.set("user-agent", "Paperclip/1.0");
+  if (!headers.has("user-agent")) headers.set("user-agent", "Wardmote/1.0");
   if (body !== undefined && !headers.has("content-length") && !headers.has("transfer-encoding")) {
     headers.set("content-length", String(body.byteLength));
   }

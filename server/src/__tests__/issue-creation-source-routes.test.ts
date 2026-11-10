@@ -35,11 +35,11 @@ describePostgres("agent-created follow-ups: parent links and creation source", (
     database = await startEmbeddedPostgresTestDatabase("paperclip-creation-source-");
     db = createDb(database.connectionString);
     await db.insert(companies).values([
-      { id: companyId, name: "Paperclip", issuePrefix: "PAP", defaultResponsibleUserId: "board-user", requireBoardApprovalForNewAgents: false },
+      { id: companyId, name: "Wardmote", issuePrefix: "PAP", defaultResponsibleUserId: "board-user", requireBoardApprovalForNewAgents: false },
       { id: otherCompanyId, name: "Other", issuePrefix: "OTH", defaultResponsibleUserId: "board-user", requireBoardApprovalForNewAgents: false },
     ]);
     await db.insert(agents).values([
-      { id: qaAgentId, companyId, name: "Paperclip QA", role: "qa", adapterType: "codex_local", status: "active" },
+      { id: qaAgentId, companyId, name: "Wardmote QA", role: "qa", adapterType: "codex_local", status: "active" },
       { id: engineerAgentId, companyId, name: "Engineer", role: "engineer", adapterType: "codex_local", status: "active" },
       { id: foreignAgentId, companyId: otherCompanyId, name: "Other QA", role: "qa", adapterType: "codex_local", status: "active" },
     ]);
@@ -95,7 +95,7 @@ describePostgres("agent-created follow-ups: parent links and creation source", (
     expect(detail.body.createdFrom).toEqual({
       issue: { id: sourceId, identifier: "PAP-168", title: "Verify Tailscale fix", status: "in_progress" },
       run: { id: runOnSource, agentId: qaAgentId },
-      agent: { id: qaAgentId, name: "Paperclip QA" },
+      agent: { id: qaAgentId, name: "Wardmote QA" },
     });
   });
 
@@ -113,7 +113,7 @@ describePostgres("agent-created follow-ups: parent links and creation source", (
     expect(detail.body.parentId).toBeNull();
     expect(detail.body.createdFrom).toMatchObject({
       issue: { id: sourceId, identifier: "PAP-168" },
-      agent: { name: "Paperclip QA" },
+      agent: { name: "Wardmote QA" },
     });
   });
 

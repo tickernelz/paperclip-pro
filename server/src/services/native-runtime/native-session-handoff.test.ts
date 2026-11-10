@@ -16,7 +16,7 @@ describe("bounded fresh-session handoff", () => {
     expect(rendered).toContain('"truncated":true');
     expect(rendered).toContain("content omitted");
     expect(rendered).toContain("get_task_history");
-    expect(rendered).toContain("Legacy adapters can use the equivalent Paperclip");
+    expect(rendered).toContain("Legacy adapters can use the equivalent Wardmote");
   });
 
   it("restores the handoff on fresh bootstrap and resume failure, without replaying it on resume", () => {
@@ -97,7 +97,7 @@ const support = await getEmbeddedPostgresTestSupport();
     const result = await buildNativeSessionHandoff({ db, companyId, issueId, agentId, before: new Date(20_000) });
     expect(result).toContain("Build a GitHub PR review bot");
     expect(result).toContain('"author":"paperclip_receipt"');
-    expect(result).toContain("[Paperclip acknowledgement; not agent work] I’ll check the review request.");
+    expect(result).toContain("[Wardmote acknowledgement; not agent work] I’ll check the review request.");
     expect(result).toContain("Final constraint: require a team review");
     expect(result).toContain('"truncated":true');
     expect(Buffer.byteLength(result!)).toBeLessThanOrEqual(NATIVE_HANDOFF_MAX_BYTES);

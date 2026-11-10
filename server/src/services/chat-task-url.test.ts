@@ -13,7 +13,7 @@ afterEach(() => {
   vi.mocked(readConfigFile).mockReturnValue(null);
 });
 
-describe("external Paperclip task links", () => {
+describe("external Wardmote task links", () => {
   it("resolves the configured public origin at use time", () => {
     vi.stubEnv("WARDMOTE_AUTH_PUBLIC_BASE_URL", "https://board.example");
     expect(publicChatTaskUrl("issue-1")).toBe("https://board.example/issues/issue-1");
@@ -55,7 +55,7 @@ describe("external Paperclip task links", () => {
           publicBaseUrl: baseUrl,
         }),
       ).toBe(
-        "Maya stopped before completing this turn. Open the task in Paperclip for details.",
+        "Maya stopped before completing this turn. Open the task in Wardmote for details.",
       );
     },
   );

@@ -4,8 +4,8 @@
 
 Codex connects the mock core to a real Codex app-server session.
 
-Codex gets one small task envelope. Codex does not get the Paperclip skill.
-Codex does not get a Paperclip API key or API instructions.
+Codex gets one small task envelope. Codex does not get the Wardmote skill.
+Codex does not get a Wardmote API key or API instructions.
 
 ## What this phase proves
 
@@ -20,7 +20,7 @@ keep clear session identities and safe diagnostics.
 - Run commands from the repository root.
 - Install Node.js 20+, pnpm 9+, Rust, and the `codex` CLI.
 - Sign in to Codex with the normal local Codex setup.
-- Do not add a Paperclip or OpenAI API key for this tutorial.
+- Do not add a Wardmote or OpenAI API key for this tutorial.
 
 Check the installed harness:
 
@@ -32,7 +32,7 @@ codex app-server --help
 Run the real-Codex steps from an ordinary operator shell with a workspace that
 has no `AGENTS.md` in that directory or any ancestor. A child directory of this
 repository is not skillless because Codex discovers the repository
-`AGENTS.md`. In a Paperclip-managed agent run, `WARDMOTE_WORKSPACE_CWD` also
+`AGENTS.md`. In a Wardmote-managed agent run, `WARDMOTE_WORKSPACE_CWD` also
 prevents `mktemp -d` from selecting a directory outside the assigned workspace;
 use a separate clean operator workspace rather than bypassing that guard.
 
@@ -73,9 +73,9 @@ test "$(cat "$codex_workspace/hello.txt")" = "hello from Codex runner"
 
 ## Step 3: Inspect the exact model boundary
 
-Paperclip sends its runtime instructions as additive `developerInstructions`
+Wardmote sends its runtime instructions as additive `developerInstructions`
 on Codex thread start and resume. Codex retains its stock base instructions.
-The historical `context.baseInstructions` trace field contains the Paperclip
+The historical `context.baseInstructions` trace field contains the Wardmote
 fragment, not the full Codex base prompt. The driver option with the same name
 also supplies this additive fragment.
 

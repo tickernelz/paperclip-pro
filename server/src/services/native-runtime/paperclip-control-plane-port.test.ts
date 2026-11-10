@@ -445,7 +445,7 @@ describe("WardmoteControlPlanePort conformance", () => {
     }
   });
 
-  it("runs the unchanged package conformance suite against Paperclip persistence", async () => {
+  it("runs the unchanged package conformance suite against Wardmote persistence", async () => {
     const identity = CONTROL_PLANE_CONFORMANCE_OPEN.identity;
     const committedEventIds: string[] = [];
     const duplicateEventIds: string[] = [];

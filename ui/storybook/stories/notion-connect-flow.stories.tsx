@@ -371,7 +371,7 @@ export const ConnectError: Story = {
   render: () => (
     <OAuthStateHost
       phase="error"
-      error="Paperclip couldn’t reach Notion’s authorization service. Check the connection and try again."
+      error="Wardmote couldn’t reach Notion’s authorization service. Check the connection and try again."
     />
   ),
 };

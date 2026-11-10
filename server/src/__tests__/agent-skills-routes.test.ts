@@ -922,7 +922,7 @@ describe("agent skill routes", () => {
     expect(mockAdapter.syncSkills).toHaveBeenCalled();
   });
 
-  it("ignores the reserved legacy Paperclip skill for wardmote_runner", async () => {
+  it("ignores the reserved legacy Wardmote skill for wardmote_runner", async () => {
     mockAgentService.getById.mockResolvedValue(makeAgent("wardmote_runner"));
 
     const res = await requestApp(await createApp(), (baseUrl) => request(baseUrl)
@@ -945,7 +945,7 @@ describe("agent skill routes", () => {
     );
   });
 
-  it("allows wardmote_runner to remove a pre-existing legacy Paperclip skill", async () => {
+  it("allows wardmote_runner to remove a pre-existing legacy Wardmote skill", async () => {
     mockAgentService.getById.mockResolvedValue({
       ...makeAgent("wardmote_runner"),
       adapterConfig: {
@@ -1277,7 +1277,7 @@ describe("agent skill routes", () => {
           adapterType: "omp_local",
         }),
         expect.objectContaining({
-          "AGENTS.md": "You are an agent in a Paperclip company.\n",
+          "AGENTS.md": "You are an agent in a Wardmote company.\n",
         }),
         { entryFile: "AGENTS.md", replaceExisting: false },
       );

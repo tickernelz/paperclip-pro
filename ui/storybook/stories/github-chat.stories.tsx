@@ -417,7 +417,7 @@ export const VerifiedMemberAccess: Story = {
     const canvas = within(canvasElement);
     const body = within(canvasElement.ownerDocument.body);
     await userEvent.click(
-      canvas.getByRole("button", { name: "Add Paperclip member" }),
+      canvas.getByRole("button", { name: "Add Wardmote member" }),
     );
     await userEvent.selectOptions(await body.findByLabelText("Member"), "Sam");
     await expect(
@@ -425,7 +425,7 @@ export const VerifiedMemberAccess: Story = {
     ).toBeDisabled();
     await userEvent.selectOptions(body.getByLabelText("Member"), "Alex");
     await userEvent.click(body.getByRole("button", { name: "Add member" }));
-    await expect(canvas.getByLabelText("Paperclip members")).toHaveValue(
+    await expect(canvas.getByLabelText("Wardmote members")).toHaveValue(
       "selected",
     );
     await expect(

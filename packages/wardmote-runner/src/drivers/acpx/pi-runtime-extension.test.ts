@@ -19,7 +19,7 @@ async function workspace() {
     invocationNamespace: "00000000-0000-4000-8000-000000000000",
     workspace: join(root, "workspace"), readOnly: false,
     readRoots: [join(root, "skills")], protectedRoots: [join(root, "private")],
-    instructions: "Use the assigned Paperclip tools", servers: [],
+    instructions: "Use the assigned Wardmote tools", servers: [],
   } satisfies PiRuntimeConfiguration };
 }
 function harness() {

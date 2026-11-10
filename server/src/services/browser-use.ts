@@ -66,7 +66,7 @@ const argsSchema = z
   .strict();
 const terminalSessions = ["closed", "failed"];
 const liveSessions = ["starting", "running", "idle", "stopping"];
-const requestMarker = (invocationId: string) => `\n\n[Paperclip request: ${invocationId}]`;
+const requestMarker = (invocationId: string) => `\n\n[Wardmote request: ${invocationId}]`;
 
 export function browserUseService(
   db: Db,
@@ -185,7 +185,7 @@ export function browserUseService(
   async function assertBinding(binding: Binding, approved = false) {
     if (!binding.issueId || !binding.agentId || !binding.runId)
       throw forbidden(
-        "Browser tasks require an active Paperclip task and agent run. Use browser_profiles for a connection test.",
+        "Browser tasks require an active Wardmote task and agent run. Use browser_profiles for a connection test.",
       );
     const [issue] = await db
       .select()
@@ -510,7 +510,7 @@ export function browserUseService(
       // A lost create response can mean paid work exists. Never submit it again.
       const rejected = error instanceof BrowserUseError && error.requestRejected;
       const message = rejected ? error.message :
-        "Browser run creation could not be confirmed. Paperclip is locating and stopping possible provider work. Do not start another run yet.";
+        "Browser run creation could not be confirmed. Wardmote is locating and stopping possible provider work. Do not start another run yet.";
       await db.transaction(async tx => {
         await notifyDeliveryWork(tx, DELIVERY_QUEUES.browser);
         const [current] = await tx.select().from(sessions).where(eq(sessions.id, s.id)).for("update");
@@ -1185,7 +1185,7 @@ export function browserUseService(
         if (confirmed.status !== "stopped")
           throw new BrowserUseError(
             502,
-            "Browser shutdown is not confirmed. Paperclip will retry.",
+            "Browser shutdown is not confirmed. Wardmote will retry.",
           );
         await db
           .update(browsers)
@@ -1295,8 +1295,8 @@ export function browserUseService(
           .set({
             error:
               s.stopRequested === "end"
-                ? "Browser shutdown is not confirmed. Paperclip will retry."
-                : "Browser synchronization failed. Paperclip will retry.",
+                ? "Browser shutdown is not confirmed. Wardmote will retry."
+                : "Browser synchronization failed. Wardmote will retry.",
           })
           .where(eq(sessions.id, s.id));
       } finally {
@@ -1364,7 +1364,7 @@ export function browserUseService(
         .limit(1);
       if (pending)
         throw conflict(
-          "Browser access is disabled. Shutdown is still pending; retry removal after the browsers stop. Paperclip retains the key only for cleanup until then.",
+          "Browser access is disabled. Shutdown is still pending; retry removal after the browsers stop. Wardmote retains the key only for cleanup until then.",
         );
     },
     async availableProfiles(

@@ -106,7 +106,7 @@ describeEmbeddedPostgres("owner-relayed decisions (routes + postgres)", () => {
 
     const conversationIssueId = randomUUID();
     await db.insert(issues).values({
-      id: conversationIssueId, companyId, identifier: prefix + "-1", title: "[BOT] HMX Paperclip", status: "in_progress",
+      id: conversationIssueId, companyId, identifier: prefix + "-1", title: "[BOT] HMX Wardmote", status: "in_progress",
       priority: "medium", assigneeAgentId: wiraId,
     });
 
@@ -134,12 +134,12 @@ describeEmbeddedPostgres("owner-relayed decisions (routes + postgres)", () => {
     }).returning();
     const providerResourceId = "openwa:" + SESSION + ":" + GROUP;
     const [resource] = await db.insert(chatEndpointResources).values({
-      companyId, endpointId, type: "group_chat", providerResourceId, label: "[BOT] HMX Paperclip", enabled: true,
+      companyId, endpointId, type: "group_chat", providerResourceId, label: "[BOT] HMX Wardmote", enabled: true,
       metadata: { chatKey: GROUP }, settings: { activation: "on" },
     }).returning();
     const [conversation] = await db.insert(chatConversations).values({
       companyId, endpointId, issueId: conversationIssueId, resourceId: resource!.id, externalConversationId: providerResourceId,
-      externalThreadId: providerResourceId, externalLabel: "[BOT] HMX Paperclip", state: "active", isDirectMessage: false,
+      externalThreadId: providerResourceId, externalLabel: "[BOT] HMX Wardmote", state: "active", isDirectMessage: false,
     }).returning();
     return {
       prefix, companyId, wiraId, nadiaId, ownerUserId, conversationIssueId, endpointId,

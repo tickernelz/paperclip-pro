@@ -1,6 +1,6 @@
 # Bundled UI Fonts
 
-Paperclip bundles Inter for the board UI so screenshots and packaged installs use
+Wardmote bundles Inter for the board UI so screenshots and packaged installs use
 the same sans-serif text stack without relying on host font packages. It also
 bundles Symbols Nerd Font Mono as the Terminal's icon fallback, so shell prompt
 icons render on machines without a Nerd Font installed.

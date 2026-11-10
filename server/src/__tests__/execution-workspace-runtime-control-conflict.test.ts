@@ -479,7 +479,7 @@ describe("execution workspace runtime control conflict and failure reconciliatio
     }
   });
 
-  it("rejects repair when the registered base workspace has no runnable Paperclip CLI", async () => {
+  it("rejects repair when the registered base workspace has no runnable Wardmote CLI", async () => {
     const fixture = createRegisteredRepairFixture("paperclip-route-repair-no-cli-", { withCli: false });
     try {
       const res = await request(await createApp())

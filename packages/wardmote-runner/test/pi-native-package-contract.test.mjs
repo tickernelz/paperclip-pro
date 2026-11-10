@@ -122,7 +122,7 @@ for (const brokenCatalog of [false, true]) {
     assert.equal(result.success, true);
     assert.deepEqual(calls, ["initialize", "tools/list"]);
     const readiness = result.data.commands.find((command) => command.name === "paperclip-runtime-ready-v1");
-    assert.equal(readiness?.description, "Paperclip runtime gate v1");
+    assert.equal(readiness?.description, "Wardmote runtime gate v1");
   });
 }
 

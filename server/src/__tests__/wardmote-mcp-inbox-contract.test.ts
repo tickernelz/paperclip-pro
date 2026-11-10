@@ -21,7 +21,7 @@ type RpcResponse = {
   };
 };
 
-describeEmbeddedPostgres("hosted Paperclip MCP inbox tool", () => {
+describeEmbeddedPostgres("hosted Wardmote MCP inbox tool", () => {
   const ctx = useEmbeddedPostgres("wardmote-mcp-inbox-");
   let server: Server;
   let origin = "";

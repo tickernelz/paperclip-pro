@@ -17,7 +17,7 @@ const awaiter = (self, args, _promise, fn) => { const it = fn.apply(self, args ?
 /** Executes digest-bound native methods with dependency doubles. No inference or
  * claim that the model obeyed the rules; this proves their RequestContext path. */
 export async function qualifyCursorInstructions(source, platform, vendorRoot) {
-  const text = "Paperclip governance\nCustom entry: résumé\nAGENT_HOME=/registered/agent";
+  const text = "Wardmote governance\nCustom entry: résumé\nAGENT_HOME=/registered/agent";
   const payload = content => JSON.stringify({ schema: "paperclip.cursor.instructions.v1", content, digest: `sha256:${sha(content)}` });
   const helper = segment(source, "const wardmoteCursorInstructionCrypto=", "var o=n(");
   const makeState = raw => runInNewContext(`${helper};wardmoteCursorInstructionState`, {

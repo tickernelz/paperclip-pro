@@ -280,9 +280,9 @@ describe("Slack native multi-question modal adapter-to-runtime boundary", () => 
           user: {
             id: params.get("user"),
             name: "paperclip-agent",
-            real_name: "Paperclip Agent",
+            real_name: "Wardmote Agent",
             is_bot: true,
-            profile: { display_name: "Paperclip Agent" },
+            profile: { display_name: "Wardmote Agent" },
           },
         };
       } else if (method === "views.open") {
@@ -386,7 +386,7 @@ describe("Slack native multi-question modal adapter-to-runtime boundary", () => 
     };
   }
 
-  it("round-trips the actual Paperclip modal, opaque metadata and Slack state into canonical answers", async () => {
+  it("round-trips the actual Wardmote modal, opaque metadata and Slack state into canonical answers", async () => {
     const test = await harness();
     const view = await test.open();
     expect(view.callback_id).toBe(test.form.draft.submitActionId);

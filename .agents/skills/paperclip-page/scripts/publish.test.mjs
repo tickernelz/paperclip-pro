@@ -27,7 +27,7 @@ after(() => {
 function createSite(name = "paperclip-page-test") {
   const siteDir = mkdtempSync(join(tmpdir(), `${name}-`));
   tempDirs.add(siteDir);
-  writeFileSync(join(siteDir, "index.html"), "<!doctype html><title>Paperclip</title>\n");
+  writeFileSync(join(siteDir, "index.html"), "<!doctype html><title>Wardmote</title>\n");
   return siteDir;
 }
 

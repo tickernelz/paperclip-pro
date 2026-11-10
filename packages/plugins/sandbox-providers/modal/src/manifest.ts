@@ -9,8 +9,8 @@ const manifest: WardmotePluginManifestV1 = {
   version: PLUGIN_VERSION,
   displayName: "Modal Sandbox Provider",
   description:
-    "First-party sandbox provider plugin that provisions Modal sandboxes as Paperclip execution environments.",
-  author: "Paperclip",
+    "First-party sandbox provider plugin that provisions Modal sandboxes as Wardmote execution environments.",
+  author: "Wardmote",
   categories: ["automation"],
   capabilities: ["environment.drivers.register"],
   entrypoints: {
@@ -43,7 +43,7 @@ const manifest: WardmotePluginManifestV1 = {
             type: "string",
             format: "secret-ref",
             description:
-              "Modal token ID. Paste a token or an existing Paperclip secret reference; saved environments store pasted values as company secrets. Required.",
+              "Modal token ID. Paste a token or an existing Wardmote secret reference; saved environments store pasted values as company secrets. Required.",
           },
           tokenSecret: {
             type: "string",

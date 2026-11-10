@@ -782,7 +782,7 @@ fn upload_managed_runtime_skills_at(
     );
     let instruction_name = format!("paperclip-instructions-{}", &instruction_identity[..12]);
     let companion = format!(
-        "---\nname: {instruction_name}\ndescription: Paperclip agent instruction sibling bundle\n---\nRead `instructions/{entry_path}` and its sibling files when the system instructions require them. Treat all files as read-only.\n"
+        "---\nname: {instruction_name}\ndescription: Wardmote agent instruction sibling bundle\n---\nRead `instructions/{entry_path}` and its sibling files when the system instructions require them. Treat all files as read-only.\n"
     );
     let assigned = runtime_array(context, "skills").map_err(fresh_error)?;
     validate_managed_skill_upload_aggregate(assigned.len().saturating_add(1), 0, 0)
@@ -1602,9 +1602,7 @@ impl ClaudeManagedProvider {
                         )
                     })?;
                 let validator = jsonschema::validator_for(schema).map_err(|_| {
-                    LocalRunnerError::invalid(
-                        "authorized Paperclip tool has an invalid JSON Schema",
-                    )
+                    LocalRunnerError::invalid("authorized Wardmote tool has an invalid JSON Schema")
                 })?;
                 if !validator.is_valid(&input) {
                     return Err(LocalRunnerError::invalid(
@@ -2271,7 +2269,7 @@ fn encode_tools(
         .map(|tool| {
             jsonschema::validator_for(&tool.input_schema).map_err(|_| {
                 LocalRunnerError::invalid(format!(
-                    "Paperclip tool {} has an invalid JSON Schema",
+                    "Wardmote tool {} has an invalid JSON Schema",
                     tool.operation_id
                 ))
             })?;
@@ -2358,7 +2356,7 @@ fn verify_remote_session(
         || actual_budget.as_deref() != Some(expected_budget.as_str())
     {
         return Err(LocalRunnerError::invalid(
-            "Anthropic session identity does not match its immutable Paperclip profile",
+            "Anthropic session identity does not match its immutable Wardmote profile",
         ));
     }
     Ok(())
@@ -2458,7 +2456,7 @@ fn reconcile_managed_session(
                 )?;
             }
             Err(LocalRunnerError::invalid(
-                "Anthropic session reconciliation removed duplicate Paperclip-owned sessions",
+                "Anthropic session reconciliation removed duplicate Wardmote-owned sessions",
             ))
         }
     }
@@ -2910,7 +2908,7 @@ mod tests {
             environment_id: "env_test".to_owned(),
             beta_version: QUALIFIED_BETA.to_owned(),
             max_session_list_cost_usd: 1.0,
-            instructions: "Paperclip test system instructions".to_owned(),
+            instructions: "Wardmote test system instructions".to_owned(),
             runtime_context: None,
         }
     }
@@ -3028,7 +3026,7 @@ mod tests {
     fn managed_overrides_pin_inline_tools_and_never_embed_remote_mcp_credentials() {
         let overrides = managed_agent_overrides(
             &config(),
-            "Paperclip test system instructions",
+            "Wardmote test system instructions",
             vec![json!({ "type": "custom", "name": "pc_finish" })],
             &[ClaudeManagedSkillRef {
                 skill_id: "skill_1".to_owned(),
@@ -3037,7 +3035,7 @@ mod tests {
         );
         assert_eq!(
             overrides.get("system"),
-            Some(&json!("Paperclip test system instructions"))
+            Some(&json!("Wardmote test system instructions"))
         );
         assert_eq!(overrides.pointer("/skills/0/version"), Some(&json!("7")));
         assert_eq!(overrides.get("mcp_servers"), Some(&json!([])));
@@ -3664,7 +3662,7 @@ mod tests {
         .unwrap();
         let mut managed_config = config();
         managed_config.instructions = format!(
-            "Paperclip test system instructions\n\nRead-only instruction sibling root: {}",
+            "Wardmote test system instructions\n\nRead-only instruction sibling root: {}",
             instruction_root.display()
         );
         managed_config.runtime_context = Some(json!({

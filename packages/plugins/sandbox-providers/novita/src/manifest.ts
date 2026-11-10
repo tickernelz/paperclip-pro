@@ -9,7 +9,7 @@ const manifest: WardmotePluginManifestV1 = {
   version: PLUGIN_VERSION,
   displayName: "Novita Sandbox Provider",
   description:
-    "Sandbox provider plugin that provisions Novita Agent Sandbox environments for Paperclip agent runs.",
+    "Sandbox provider plugin that provisions Novita Agent Sandbox environments for Wardmote agent runs.",
   author: "Novita AI",
   categories: ["automation"],
   capabilities: ["environment.drivers.register"],
@@ -30,7 +30,7 @@ const manifest: WardmotePluginManifestV1 = {
             type: "string",
             format: "secret-ref",
             description:
-              "Environment-specific Novita API key. Paste a key or an existing Paperclip secret reference; saved environments store pasted values as company secrets. Falls back to NOVITA_API_KEY if omitted.",
+              "Environment-specific Novita API key. Paste a key or an existing Wardmote secret reference; saved environments store pasted values as company secrets. Falls back to NOVITA_API_KEY if omitted.",
           },
           domain: {
             type: "string",
@@ -73,7 +73,7 @@ const manifest: WardmotePluginManifestV1 = {
             type: "boolean",
             default: false,
             description:
-              "Pause and later resume the sandbox across Paperclip runs instead of killing it on release.",
+              "Pause and later resume the sandbox across Wardmote runs instead of killing it on release.",
           },
         },
       },

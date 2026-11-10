@@ -304,7 +304,7 @@ describe("effective run config fingerprints", () => {
 });
 
 
-describe("configured Paperclip environment freshness", () => {
+describe("configured Wardmote environment freshness", () => {
   const fingerprint = (env: Record<string, unknown>, secretManifest?: EffectiveRunConfigSecretManifestEntry[]) =>
     createEffectiveRunConfigFingerprints({ session: { env }, secretManifest }).sessionFingerprint;
 

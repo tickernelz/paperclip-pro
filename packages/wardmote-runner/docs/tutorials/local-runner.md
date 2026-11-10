@@ -9,7 +9,7 @@ stdio.
 ## What this phase proves
 
 This phase proves that a native session can run from start to finish without
-Paperclip, a network provider, or a real model. It proves cleanup, request
+Wardmote, a network provider, or a real model. It proves cleanup, request
 resolution, interruption, bounded logs, one terminal result, and live/replay
 parity.
 

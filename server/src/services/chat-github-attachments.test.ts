@@ -898,7 +898,7 @@ describe("public GitHub attachment download", () => {
       expect(init.credentials).toBe("omit");
       expect(init.headers).toEqual({
         accept: "*/*",
-        "user-agent": "Paperclip/ChatAttachments",
+        "user-agent": "Wardmote/ChatAttachments",
       });
       expect(guard.allowPrivateNetwork).toBe(false);
     }

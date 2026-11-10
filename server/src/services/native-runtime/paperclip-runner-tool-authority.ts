@@ -256,7 +256,7 @@ export class WardmoteRunnerToolAuthority {
         name: descriptor.operationId,
         description:
           descriptor.operationId === "register_deliverable"
-            ? "Prepare one verified workspace file for Paperclip's final task or external-chat response. This records the attachment, work product, and explicit same-run selection; it does not confirm provider delivery."
+            ? "Prepare one verified workspace file for Wardmote's final task or external-chat response. This records the attachment, work product, and explicit same-run selection; it does not confirm provider delivery."
             : descriptor.description,
         inputSchema:
           descriptor.operationId === "register_deliverable"
@@ -548,7 +548,7 @@ export class WardmoteRunnerToolAuthority {
           pathParams: { companyId: this.binding.companyId },
           body,
         }));
-        return { ...response, apiOperationId: operationId, ...(context.actor.adapterConfig?.provider === "openai_dot" ? { setupRequired: "This creates a separate Paperclip Dot agent. Its operator must pair a separate OpenAI Dot before it can run. The existing Dot binding and workspace permission are never inherited." } : {}) };
+        return { ...response, apiOperationId: operationId, ...(context.actor.adapterConfig?.provider === "openai_dot" ? { setupRequired: "This creates a separate Wardmote Dot agent. Its operator must pair a separate OpenAI Dot before it can run. The existing Dot binding and workspace permission are never inherited." } : {}) };
       }
       case "call_api": {
         // PRP reserves operationId/callId for semantic result identity. The
@@ -707,9 +707,9 @@ export class WardmoteRunnerToolAuthority {
     const { input, operation } = validateRunnerApiCall(value, context);
     await this.#assertDotApiFileAccess(operation.path, input);
     const apiUrl = this.binding.apiUrl ?? process.env.WARDMOTE_API_URL;
-    if (!apiUrl) throw new Error("Paperclip API origin is unavailable");
+    if (!apiUrl) throw new Error("Wardmote API origin is unavailable");
     const token = createLocalAgentJwt(this.binding.agentId, this.binding.companyId, bound.actor.adapterType, this.binding.runId, bound.run.responsibleUserId);
-    if (!token) throw new Error("Paperclip run authentication is unavailable");
+    if (!token) throw new Error("Wardmote run authentication is unavailable");
     const execute = async () => {
       let reservationId: string | undefined;
       let storageAttempted = false;

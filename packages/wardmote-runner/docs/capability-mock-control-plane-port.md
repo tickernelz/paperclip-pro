@@ -1,7 +1,7 @@
 # Capability Mock ControlPlanePort
 
 `CapabilityMockControlPlaneAdapter` is a deterministic, serializable, in-memory
-model of Paperclip's control-plane **semantics** — not its transport. It imports
+model of Wardmote's control-plane **semantics** — not its transport. It imports
 no server route, service, database, or provider binding, and it holds no
 credential.
 

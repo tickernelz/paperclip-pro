@@ -223,12 +223,12 @@ for line in "${record_lines[@]}"; do
 done
 
 if [[ ${#active_files[@]} -eq 0 && ${#stale_files[@]} -eq 0 ]]; then
-  echo "No Paperclip workspace runtime services found."
+  echo "No Wardmote workspace runtime services found."
   exit 0
 fi
 
 if [[ ${#active_files[@]} -gt 0 ]]; then
-  echo "Found ${#active_files[@]} Paperclip workspace runtime service record(s):"
+  echo "Found ${#active_files[@]} Wardmote workspace runtime service record(s):"
   echo ""
   printf '%s\n' "${display_lines[@]}"
   echo ""

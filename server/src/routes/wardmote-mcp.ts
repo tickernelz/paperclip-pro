@@ -52,7 +52,7 @@ function loopbackApiUrl(req: Request): string {
   const port = req.socket.localPort;
   if (!port) {
     const configured = process.env.WARDMOTE_API_URL?.replace(/\/+$/, "");
-    if (!configured) throw new Error("Paperclip API origin is unavailable");
+    if (!configured) throw new Error("Wardmote API origin is unavailable");
     return configured.endsWith("/api") ? configured : `${configured}/api`;
   }
   const address = req.socket.localAddress ?? "127.0.0.1";

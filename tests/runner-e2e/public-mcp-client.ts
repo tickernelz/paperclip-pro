@@ -31,7 +31,7 @@ export async function oauthPost(route: string, body: unknown) {
 }
 
 export async function beginConnection(write = true, redirect = origin + "/eval-client-callback", configure = false) {
-  const registration = await oauthPost("register", { client_name: "Paperclip acceptance client", redirect_uris: [redirect] });
+  const registration = await oauthPost("register", { client_name: "Wardmote acceptance client", redirect_uris: [redirect] });
   expect(registration.status, "public client registration").toBe(201);
   const { client_id: clientId } = await registration.json() as { client_id: string };
   const verifier = randomBytes(32).toString("base64url");
@@ -57,7 +57,7 @@ export async function connect(context: BrowserContext, team: Team, write = true,
     await page.goto(request.consentUrl);
     await expect(page.getByRole("heading", { name: /^Connect .+ to Paperclip$/ })).toBeVisible();
     await page.getByRole("radio", { name: team.name, exact: true }).check();
-    if (write || configure) await page.getByRole("checkbox", { name: "Write all of your Paperclip data", exact: true }).check();
+    if (write || configure) await page.getByRole("checkbox", { name: "Write all of your Wardmote data", exact: true }).check();
     await page.getByRole("button", { name: "Connect organization", exact: true }).click();
     await expect(page.getByRole("heading", { name: "Assistant connected" })).toBeVisible();
     redirectUrl = page.url();

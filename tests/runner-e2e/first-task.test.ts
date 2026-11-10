@@ -57,7 +57,7 @@ function recording(caseId = "task-reply-accept"): FirstTaskEvidence {
     tasks: [task],
     agents: [{ id: "agent" }],
     comments: [
-      { id: "greeting", authorAgentId: "agent", body: "Welcome to Paperclip" },
+      { id: "greeting", authorAgentId: "agent", body: "Welcome to Wardmote" },
     ],
     interactions: [
       {

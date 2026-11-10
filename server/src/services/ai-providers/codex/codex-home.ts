@@ -296,7 +296,7 @@ function buildManagedMcpBlock(input: {
   const usedNames = new Set<string>();
   const lines = [
     MANAGED_MCP_BLOCK_START,
-    "# Written by Paperclip for governed MCP gateway access. Do not edit this block by hand.",
+    "# Written by Wardmote for governed MCP gateway access. Do not edit this block by hand.",
   ];
   input.gateways.forEach((gateway, index) => {
     const baseName = sanitizeMcpServerName(gateway.name, `gateway-${index + 1}`);
@@ -310,7 +310,7 @@ function buildManagedMcpBlock(input: {
     usedNames.add(managedName);
     if (directOverlap) {
       warnings.push(
-        `Found unmanaged Codex MCP server "${gateway.name}" overlapping a Paperclip-governed gateway; leaving the direct entry in place and adding managed gateway "${managedName}". Paperclip cannot enforce policies for that direct entry.`,
+        `Found unmanaged Codex MCP server "${gateway.name}" overlapping a Wardmote-governed gateway; leaving the direct entry in place and adding managed gateway "${managedName}". Wardmote cannot enforce policies for that direct entry.`,
       );
     }
     const url = new URL(gateway.endpointPath, input.apiBaseUrl).toString();
@@ -752,7 +752,7 @@ export async function seedManagedCodexHome(
 
     await onLog(
       "stdout",
-      `[paperclip] Using ${isWorktreeMode(env) ? "worktree-isolated" : "Paperclip-managed"} Codex home "${targetHome}" (seeded from "${sourceHome}").\n`,
+      `[paperclip] Using ${isWorktreeMode(env) ? "worktree-isolated" : "Wardmote-managed"} Codex home "${targetHome}" (seeded from "${sourceHome}").\n`,
     );
   }
 

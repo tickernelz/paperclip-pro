@@ -15,7 +15,7 @@ function assertOwnedByCurrentUser(stats: Stats, description: string) {
 
   const currentUserId = process.getuid?.();
   if (currentUserId !== undefined && stats.uid !== currentUserId) {
-    throw new Error(`${description} must be owned by the Paperclip process user`);
+    throw new Error(`${description} must be owned by the Wardmote process user`);
   }
 }
 

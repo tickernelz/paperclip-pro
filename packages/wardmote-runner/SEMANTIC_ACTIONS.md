@@ -11,7 +11,7 @@ project only actions that have current actor, task, company, claim, mode, and
 application-binding authority. It rechecks that authority before each call.
 The package still adds no application binding, credential, server route, or
 Codex tool installation. Until a later server integration supplies those
-bindings, Codex receives no dynamic Paperclip tools.
+bindings, Codex receives no dynamic Wardmote tools.
 
 The initial catalog excludes scenario-only and lab operations, other-provider
 extensions, and a generic API escape hatch. Those additions need their own

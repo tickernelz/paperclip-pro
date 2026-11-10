@@ -197,7 +197,7 @@ export async function startPublishedCanary({
   signal = new AbortController().signal,
 }) {
   if (!version || !/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/.test(version)) {
-    throw new Error("An exact published Paperclip version is required");
+    throw new Error("An exact published Wardmote version is required");
   }
   let prefix;
   try {

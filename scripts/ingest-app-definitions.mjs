@@ -85,7 +85,7 @@ const channelMethod = (
   transport: "chat_sdk",
   auth: "api_key",
   ownershipModes: ["customer"],
-  whenToUse: `Let people in ${chatProviderName(provider)} start and continue work with one Paperclip agent.`,
+  whenToUse: `Let people in ${chatProviderName(provider)} start and continue work with one Wardmote agent.`,
   credentialFields,
   guidanceMd,
   consoleLinks,
@@ -167,7 +167,7 @@ const posthogConfigFields = () => [
     defaultValue: "tools",
     options: [{ value: "tools", label: "Individual tools" }],
     helperMd:
-      "Paperclip uses individual tools so every action can be governed. CLI mode remains unavailable until nested execution is governed.",
+      "Wardmote uses individual tools so every action can be governed. CLI mode remains unavailable until nested execution is governed.",
     transport: { location: "query", name: "mode" },
   },
 ];
@@ -235,7 +235,7 @@ const apps = [
         oauthAuthorizationParams: { prompt: "consent" },
       },
       "S4",
-      "Sign in to Railway and select the workspaces your agents may use. Paperclip adds direct service, deployment, and bounded log tools when Railway accepts the connection for API access. Container commands require the separate SSH setup on the connection. Project tokens are not supported by Railway's hosted connection.",
+      "Sign in to Railway and select the workspaces your agents may use. Wardmote adds direct service, deployment, and bounded log tools when Railway accepts the connection for API access. Container commands require the separate SSH setup on the connection. Project tokens are not supported by Railway's hosted connection.",
       {
         label: "Connect Railway",
         ownershipModes: ["dcr", "customer"],
@@ -248,8 +248,8 @@ const apps = [
         warnings: [
           "Railway enforces the workspaces selected at consent. Selected actions start Allowed; choose Ask first for operations you want to approve.",
           "Logs and container commands can expose application data and secrets. Grant access only to agents trusted with the selected services.",
-          "The general Railway agent and committing staged changes are unavailable because their internal changes cannot be individually reviewed in Paperclip.",
-          "Live Railway qualification is pending. If Railway rejects API access, reconnect with the required permissions; Paperclip never falls back to another credential.",
+          "The general Railway agent and committing staged changes are unavailable because their internal changes cannot be individually reviewed in Wardmote.",
+          "Live Railway qualification is pending. If Railway rejects API access, reconnect with the required permissions; Wardmote never falls back to another credential.",
         ],
         requiredResourceFilters: ["workspace", "project", "environment", "service"],
       },
@@ -312,7 +312,7 @@ const apps = [
         },
       ],
       ["organization", "repository"],
-      "Generate the webhook secret in Paperclip, then create one private GitHub App with active SSL-verified webhooks, Issues and Pull requests read/write permission, and the selectable issue_comment and pull_request_review_comment events. GitHub sends installation and installation_repositories automatically. Install the App only on repositories where people may mention the agent.",
+      "Generate the webhook secret in Wardmote, then create one private GitHub App with active SSL-verified webhooks, Issues and Pull requests read/write permission, and the selectable issue_comment and pull_request_review_comment events. GitHub sends installation and installation_repositories automatically. Install the App only on repositories where people may mention the agent.",
       {
         register: "https://github.com/settings/apps/new",
         docs: "https://docs.github.com/en/apps/creating-github-apps/registering-a-github-app/registering-a-github-app",
@@ -323,7 +323,7 @@ const apps = [
   [
     "slack",
     "Slack",
-    "Give agents Slack tools or let people start and continue Paperclip work from Slack.",
+    "Give agents Slack tools or let people start and continue Wardmote work from Slack.",
     "communication",
     "slack.com",
     ["https://mcp.slack.com/*", "https://app.slack.com/client/*"],
@@ -358,7 +358,7 @@ const apps = [
           ),
         ],
         ["workspace", "channel"],
-        "Create and install one Slack App for this agent. Paperclip receives verified Events API requests and interactive callbacks, acknowledges with reactions, responds in direct messages, and starts one Paperclip task per new mentioned channel thread.",
+        "Create and install one Slack App for this agent. Wardmote receives verified Events API requests and interactive callbacks, acknowledges with reactions, responds in direct messages, and starts one Wardmote task per new mentioned channel thread.",
         {
           register: "https://api.slack.com/apps",
           docs: "https://api.slack.com/start/quickstart",
@@ -369,7 +369,7 @@ const apps = [
   [
     "microsoft-teams",
     "Microsoft Teams",
-    "Let people start and continue Paperclip work with an agent from Microsoft Teams.",
+    "Let people start and continue Wardmote work with an agent from Microsoft Teams.",
     "communication",
     "teams.microsoft.com",
     ["https://teams.microsoft.com/*"],
@@ -406,28 +406,28 @@ const apps = [
   ],
   [
     "imessage-photon", "iMessage Photon",
-    "Message a Paperclip agent from Apple Messages using Photon Cloud. Pro supports DMs; dedicated lines also support groups.",
+    "Message a Wardmote agent from Apple Messages using Photon Cloud. Pro supports DMs; dedicated lines also support groups.",
     "communication", "photon.codes", ["https://photon.codes/*"],
     channelMethod("imessage-photon", [field("projectSecret", "Project secret", "Photon project secret")], ["direct_message", "group_chat"],
-      "Connect a Photon Cloud project. Pro shared lines support DMs after sender enrollment in Photon and identity linking in Paperclip. Dedicated lines also support individually enabled groups.",
+      "Connect a Photon Cloud project. Pro shared lines support DMs after sender enrollment in Photon and identity linking in Wardmote. Dedicated lines also support individually enabled groups.",
       { register: "https://photon.codes/", docs: "https://photon.codes/docs/spectrum-ts/providers/imessage/connection-and-routing" }),
   ],
   [
     "openwa", "OpenWA",
-    "Let the owner and people on a WhatsApp number work with one Paperclip agent through a self-hosted OpenWA gateway.",
+    "Let the owner and people on a WhatsApp number work with one Wardmote agent through a self-hosted OpenWA gateway.",
     "communication", "github.com", ["https://github.com/rmyndharis/OpenWA*"],
     channelMethod("openwa", [
       { key: "baseUrl", label: "Gateway URL", type: "text", required: true, placeholder: "http://localhost:2785", secret: false, helperMd: "The OpenWA gateway origin. Loopback addresses are allowed for self-hosted gateways." },
       { ...field("apiKey", "Operator API key", "OpenWA operator key scoped to one session"), helperMd: "Create an operator key whose allowedSessions contains only the agent's session and no allowedChats." },
       { ...field("adminApiKey", "Admin API key", "Optional unscoped admin key"), required: false, advanced: true, helperMd: "Only needed when gateway admin tools are enabled in Settings." },
     ], ["direct_message", "group_chat"],
-      "Connect a self-hosted OpenWA gateway session. Paperclip inspects the gateway read-only, then asks you to confirm that send pacing is enabled and that Paperclip is the only client sending as the session before an owner sends a test WhatsApp message.",
+      "Connect a self-hosted OpenWA gateway session. Wardmote inspects the gateway read-only, then asks you to confirm that send pacing is enabled and that Wardmote is the only client sending as the session before an owner sends a test WhatsApp message.",
       { register: "https://github.com/rmyndharis/OpenWA", docs: "https://github.com/rmyndharis/OpenWA" }),
   ],
   [
     "telegram",
     "Telegram",
-    "Let people start and continue Paperclip work with an agent from Telegram.",
+    "Let people start and continue Wardmote work with an agent from Telegram.",
     "communication",
     "telegram.org",
     ["https://t.me/*", "https://telegram.me/*", "https://api.telegram.org/*"],
@@ -435,7 +435,7 @@ const apps = [
       "telegram",
       [field("botToken", "Bot token", "123456789:AA...")],
       ["chat", "group", "topic"],
-      "Create one dedicated bot with BotFather, then connect its token to the public Paperclip webhook endpoint.",
+      "Create one dedicated bot with BotFather, then connect its token to the public Wardmote webhook endpoint.",
       {
         register: "https://t.me/BotFather",
         docs: "https://core.telegram.org/bots/tutorial",
@@ -445,7 +445,7 @@ const apps = [
   [
     "discord",
     "Discord",
-    "Let people start and continue Paperclip work with an agent from Discord.",
+    "Let people start and continue Wardmote work with an agent from Discord.",
     "communication",
     "discord.com",
     ["https://discord.com/*"],
@@ -465,7 +465,7 @@ const apps = [
         },
       ],
       ["channel"],
-      "Create one dedicated Discord application and bot, enable the Message Content intent, install it in one server with the documented bot permissions, then connect its bot token, Application ID, and server ID. Paperclip starts one Discord thread per root bot mention and keeps the linked Paperclip task authoritative.",
+      "Create one dedicated Discord application and bot, enable the Message Content intent, install it in one server with the documented bot permissions, then connect its bot token, Application ID, and server ID. Wardmote starts one Discord thread per root bot mention and keeps the linked Wardmote task authoritative.",
       {
         register: "https://discord.com/developers/applications",
         docs: "https://discord.com/developers/docs/quick-start/getting-started",
@@ -550,7 +550,7 @@ const apps = [
         scopesHint: ["read", "write"],
       },
       "S2",
-      "Register a Linear OAuth app and add Paperclip's redirect URI before connecting.",
+      "Register a Linear OAuth app and add Wardmote's redirect URI before connecting.",
       {
         ownershipModes: ["customer"],
         requiredResourceFilters: ["workspace", "team", "project"],
@@ -571,7 +571,7 @@ const apps = [
       "none",
       { templateKey: "paperclip.google-sheets" },
       "S3",
-      "Share each spreadsheet with the Paperclip robot email, then paste the sheet links.",
+      "Share each spreadsheet with the Wardmote robot email, then paste the sheet links.",
       { requiredResourceFilters: ["spreadsheet"] },
     ),
   ],
@@ -615,7 +615,7 @@ const apps = [
           },
         },
         "S3",
-        "Connect Shopify's current UCP server for shopper-facing catalog and commerce tools. Paperclip supplies the required agent profile automatically.",
+        "Connect Shopify's current UCP server for shopper-facing catalog and commerce tools. Wardmote supplies the required agent profile automatically.",
         {
           label: "Shopify UCP commerce",
           whenToUse:
@@ -641,7 +641,7 @@ const apps = [
           warnings: [
             "This is Shopify's shopper-facing UCP server, not Admin API access. It does not manage merchant products or customers.",
             "The storefront must be public. A private or password-protected storefront returns HTTP 401 even when the merchant is signed in to Shopify Admin.",
-            "Paperclip currently uses Shopify's documented hosted agent-profile fixture while Paperclip's production UCP profile is being established.",
+            "Wardmote currently uses Shopify's documented hosted agent-profile fixture while Wardmote's production UCP profile is being established.",
           ],
           requiredResourceFilters: ["store"],
         },
@@ -689,11 +689,11 @@ const apps = [
       setupPrerequisite: {
         title: "Launch the storefront before connecting",
         description:
-          "Shopify's Storefront MCP is a public, no-auth endpoint. Paperclip cannot use the merchant's Shopify Admin session to bypass a private storefront.",
+          "Shopify's Storefront MCP is a public, no-auth endpoint. Wardmote cannot use the merchant's Shopify Admin session to bypass a private storefront.",
         steps: [
           "Select a Shopify plan; Shopify keeps trial storefronts private until a plan is selected.",
           "In Shopify Admin, open Online Store → Preferences and set Storefront visibility to Public (remove password protection).",
-          "Use the permanent <store>.myshopify.com domain in Paperclip, even if the store also has a custom domain.",
+          "Use the permanent <store>.myshopify.com domain in Wardmote, even if the store also has a custom domain.",
         ],
         actionLabel: "Open Shopify Admin",
         actionUrl: "https://admin.shopify.com/",
@@ -723,7 +723,7 @@ const apps = [
       "oauth",
       {},
       "S3",
-      "Register an OAuth client with the provider and add Paperclip's redirect URI.",
+      "Register an OAuth client with the provider and add Wardmote's redirect URI.",
       {
         credentialFields: [
           {
@@ -870,8 +870,8 @@ const apps = [
             docs: "https://enterpret.support.site/article/enterpret-mcp-server",
           },
           warnings: [
-            "The official Enterpret MCP is read-only. Enterpret previously reported broader OAuth scopes, including mcp:write and email, than Paperclip requested. Enterpret is correcting this scope reporting; it does not establish access to the separate beta Agent MCP.",
-            "After revocation, Enterpret may cache token validity for up to 24 hours. Disconnect this connection to stop Paperclip access immediately. Enterpret is reducing this delay.",
+            "The official Enterpret MCP is read-only. Enterpret previously reported broader OAuth scopes, including mcp:write and email, than Wardmote requested. Enterpret is correcting this scope reporting; it does not establish access to the separate beta Agent MCP.",
+            "After revocation, Enterpret may cache token validity for up to 24 hours. Disconnect this connection to stop Wardmote access immediately. Enterpret is reducing this delay.",
             "You need an Enterpret account with access to your organization's feedback.",
             "This connection reads customer feedback, including verbatim quotes with speaker attribution.",
           ],
@@ -903,7 +903,7 @@ const apps = [
       },
     ),
   ],
-  ["browser-use-cloud", "Browser Use Cloud", "Delegate browser tasks and watch them live in Paperclip.", "productivity", "browser-use.com", ["https://cloud.browser-use.com/*"],
+  ["browser-use-cloud", "Browser Use Cloud", "Delegate browser tasks and watch them live in Wardmote.", "productivity", "browser-use.com", ["https://cloud.browser-use.com/*"],
     method("cloud-v4", "rest_api", "api_key", { serverUrl: "https://api.browser-use.com/api/v4" }, "S3",
       "Create an API key in [Browser Use settings](https://cloud.browser-use.com/settings) and paste it below. Your agents can browse websites while you watch and interact from the task's Browser tab.", {
         label: "Browser Use Cloud",
@@ -1185,14 +1185,14 @@ const specialMethodsFor = (entry) => {
     return [
       oauthMethodFor(entry, "mcp-oauth", entry.serverUrl, {
         guidanceMd:
-          "Connect Gauge in the browser and choose the organization this connection may use. Write tools start enabled and remain governed by Paperclip's action policies.",
+          "Connect Gauge in the browser and choose the organization this connection may use. Write tools start enabled and remain governed by Wardmote's action policies.",
         warnings: [entry.prerequisite, warning],
         capabilityProfile,
       }),
       apiKeyMethodFor(entry, "mcp-api-key", entry.serverUrl, {
         whenToUse: "Use a Gauge organization API key when browser sign-in is not suitable.",
         guidanceMd:
-          "In Gauge, open Settings → Integrations → API Keys, generate a key for Paperclip, and paste it below.",
+          "In Gauge, open Settings → Integrations → API Keys, generate a key for Wardmote, and paste it below.",
         warnings: [entry.prerequisite, warning],
         capabilityProfile,
       }),
@@ -1204,7 +1204,7 @@ const specialMethodsFor = (entry) => {
   if (entry.slug === "superagent") return [
     apiKeyMethodFor(entry, "mcp-api-key", entry.serverUrl, {
       whenToUse: "Connect with a Superagent organization API key.",
-      guidanceMd: "Open Superagent Settings → API keys, create a separate key for Paperclip, and paste it below.",
+      guidanceMd: "Open Superagent Settings → API keys, create a separate key for Wardmote, and paste it below.",
       consoleLinks: { keys: "https://www.superagent.sh/app/settings#api-keys", docs: entry.docsUrl },
     }),
   ];
@@ -1482,14 +1482,14 @@ const specialMethodsFor = (entry) => {
     return [
       oauthMethodFor(entry, "mcp-oauth", entry.serverUrl, {
         guidanceMd:
-          "Connect Supabase in the browser and scope the connection to one development project. Write tools start enabled and remain governed by Paperclip's action policies.",
+          "Connect Supabase in the browser and scope the connection to one development project. Write tools start enabled and remain governed by Wardmote's action policies.",
         tenantFields,
         warnings: [entry.prerequisite, warning],
         requiredResourceFilters: ["project"],
       }),
       apiKeyMethodFor(entry, "mcp-api-key", entry.serverUrl, {
         guidanceMd:
-          "Use a customer-created Supabase key scoped to one development project. Write tools start enabled and remain governed by Paperclip's action policies.",
+          "Use a customer-created Supabase key scoped to one development project. Write tools start enabled and remain governed by Wardmote's action policies.",
         tenantFields,
         warnings: [entry.prerequisite, warning],
         requiredResourceFilters: ["project"],
@@ -1533,14 +1533,14 @@ const specialMethodsFor = (entry) => {
     return [
       oauthMethodFor(entry, "mcp-oauth", entry.serverUrl, {
         guidanceMd:
-          "Connect Neon in the browser. Open Advanced to pin one project or enable read-only mode. Write tools start enabled and remain governed by Paperclip's action policies.",
+          "Connect Neon in the browser. Open Advanced to pin one project or enable read-only mode. Write tools start enabled and remain governed by Wardmote's action policies.",
         tenantFields,
         warnings: [entry.prerequisite, warning],
         requiredResourceFilters: ["project"],
       }),
       apiKeyMethodFor(entry, "mcp-api-key", entry.serverUrl, {
         guidanceMd:
-          "Use a customer-created Neon API key. Prefer a project-scoped key for one development project; personal and organization keys reach every project they can access. Write tools start enabled and remain governed by Paperclip's action policies.",
+          "Use a customer-created Neon API key. Prefer a project-scoped key for one development project; personal and organization keys reach every project they can access. Write tools start enabled and remain governed by Wardmote's action policies.",
         consoleLinks: {
           keys: "https://console.neon.tech/app/settings/api-keys",
           docs: entry.docsUrl,
@@ -1657,11 +1657,11 @@ apps.push({
   docsUrl: "https://docs.cognee.ai/cognee-cloud/connections/cloud-mcp",
   setupPrerequisite: {
     title: "Cognee Cloud and a local runtime",
-    description: "Use your Cognee Cloud tenant API URL and key. Paperclip's runtime host needs uv installed to run the official Cognee MCP client. Public deployments require a trusted MCP runtime host.",
+    description: "Use your Cognee Cloud tenant API URL and key. Wardmote's runtime host needs uv installed to run the official Cognee MCP client. Public deployments require a trusted MCP runtime host.",
     actionLabel: "Open Cognee API keys", actionUrl: "https://platform.cognee.ai/api-keys",
   },
   methods: [method("cloud-local", "local_stdio", "api_key", { templateKey: "paperclip.cognee-cloud" }, "S3",
-    "Copy the API Base URL and create an API key on Cognee's API Keys page. Use a Cloud workspace with an active subscription. Paperclip uses its bundled Cloud client; no extra runtime installation is required.", {
+    "Copy the API Base URL and create an API key on Cognee's API Keys page. Use a Cloud workspace with an active subscription. Wardmote uses its bundled Cloud client; no extra runtime installation is required.", {
       label: "Connect Cognee Cloud", whenToUse: "Connect your Cloud tenant through the official Cognee MCP client.",
       credentialFields: [
         { key: "COGNEE_BASE_URL", label: "API Base URL", type: "text", required: true, secret: false, placeholder: "https://your-tenant.aws.cognee.ai", validation: { pattern: "^https://[a-zA-Z0-9-]+\\.aws\\.cognee\\.ai/?$", maxLength: 255 }, helperMd: "Copy API Base URL from Cognee's API Keys page." },

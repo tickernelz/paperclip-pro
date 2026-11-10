@@ -53,7 +53,7 @@ describe("native chat question eligibility", () => {
     });
   });
 
-  it("keeps an explicitly open question on the Paperclip-only response path", () => {
+  it("keeps an explicitly open question on the Wardmote-only response path", () => {
     expect(nativeChatQuestion(closedQuestion(true))).toBeNull();
   });
 });

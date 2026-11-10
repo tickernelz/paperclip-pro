@@ -130,7 +130,7 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
 
     await db.insert(companies).values({
       id: companyId,
-      name: "Paperclip",
+      name: "Wardmote",
       issuePrefix,
       defaultResponsibleUserId,
       requireBoardApprovalForNewAgents: false,

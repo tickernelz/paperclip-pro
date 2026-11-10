@@ -124,7 +124,7 @@ export async function wardmoteGet(path, { apiUrl, apiKey }) {
   });
   if (!response.ok) {
     const body = await response.text();
-    throw new Error(`Paperclip GET ${path} failed (${response.status}): ${body}`);
+    throw new Error(`Wardmote GET ${path} failed (${response.status}): ${body}`);
   }
   return response.json();
 }

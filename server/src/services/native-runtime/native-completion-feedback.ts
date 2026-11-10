@@ -74,7 +74,7 @@ export async function nativeCompletionFeedback(
       throw new Error("Resolve your assigned review with resolve_review before finishing. If you cannot review the work, report the concrete blocker with wardmote_block.");
     }
     return review?.interaction.status === "pending"
-      ? "Review blocker recorded. Paperclip will preserve the task and record the reviewer recovery action."
+      ? "Review blocker recorded. Wardmote will preserve the task and record the reviewer recovery action."
       : "Review report accepted. The recorded review decision controls task completion; this report cannot override it.";
   }
   // Bind feedback to this run, not the first contract from a reused session or
@@ -209,7 +209,7 @@ export async function nativeCompletionFeedback(
         throw new Error(`The referenced tool-action approval is already resolved (${card.id}). Read its persisted interaction result and continue from that decision. Do not repeat the service call or request approval again.`);
       }
       if (card.status === "pending" && signals.actionableAttentionRequests.some(request => request.kind === "approval" && request.ownerClass === "human")) {
-        throw new Error(`This tool action already has an approval card (${card.id}). Wait on that existing interaction with a yielded response_wake report and no duplicate approval attentionRequest. Paperclip will resume from its decision; do not create a completion review or repeat the service call.`);
+        throw new Error(`This tool action already has an approval card (${card.id}). Wait on that existing interaction with a yielded response_wake report and no duplicate approval attentionRequest. Wardmote will resume from its decision; do not create a completion review or repeat the service call.`);
       }
     }
   }
@@ -234,7 +234,7 @@ export async function nativeCompletionFeedback(
     return `Completion report accepted; this task still has unresolved dependencies. Explain the blockers on [this task](/issues/${issue.identifier ?? issue.id}); do not say the task is done.`;
   }
   if (result.reportedWorkDisposition === "yielded" && result.continuation?.kind === "monitor") {
-    return `Monitor wait accepted. The task remains active and Paperclip will wake its assignee at or after ${issue.monitorNextCheckAt!.toISOString()} with issue_monitor_due. End this turn; do not poll or mark the task done.`;
+    return `Monitor wait accepted. The task remains active and Wardmote will wake its assignee at or after ${issue.monitorNextCheckAt!.toISOString()} with issue_monitor_due. End this turn; do not poll or mark the task done.`;
   }
   if (
     !isConversation(issue) &&
@@ -265,7 +265,7 @@ export async function nativeCompletionFeedback(
     signals.actionableAttentionRequests.length === 0
   ) {
     throw new Error(
-      "needs_review requires a concrete decision and a named reviewer in attentionRequests. Continue unfinished work or checks; report done when complete. Paperclip will not create an automatic completion approval.",
+      "needs_review requires a concrete decision and a named reviewer in attentionRequests. Continue unfinished work or checks; report done when complete. Wardmote will not create an automatic completion approval.",
     );
   }
   for (const request of signals.actionableAttentionRequests) {

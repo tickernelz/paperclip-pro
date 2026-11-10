@@ -12,7 +12,7 @@ describe("acquisition diagnostics through the built worker and real host client"
     const handle = createPluginWorkerHandle("test.acquisition", {
       entrypointPath: fileURLToPath(new URL("./fixtures/plugin-worker-acquisition-diagnostic.mjs", import.meta.url)),
       manifest: { id: "test.acquisition", apiVersion: 1, version: "1.0.0", displayName: "Acquisition fixture",
-        description: "Acquisition fixture", author: "Paperclip", categories: ["automation"], capabilities: [],
+        description: "Acquisition fixture", author: "Wardmote", categories: ["automation"], capabilities: [],
         entrypoints: { worker: "fixture.mjs" } },
       config: {}, instanceInfo: { instanceId: "instance-fixture", hostVersion: "1.0.0" }, apiVersion: 1,
       hostHandlers: {}, rpcTimeoutMs: 5_000,

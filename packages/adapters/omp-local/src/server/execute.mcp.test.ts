@@ -49,7 +49,7 @@ interface Invocation {
   userPrompt: string;
 }
 
-describe("OMP local Paperclip MCP wiring", () => {
+describe("OMP local Wardmote MCP wiring", () => {
   let root: string;
   let commandPath: string;
   let workspaceCwd: string;
@@ -261,7 +261,7 @@ describe("OMP local Paperclip MCP wiring", () => {
     });
   });
 
-  it("pins the server off and warns that the agent has no Paperclip tools", async () => {
+  it("pins the server off and warns that the agent has no Wardmote tools", async () => {
     const invocation = await run({ wardmoteMcp: false });
     expect(invocation.mcpDir).toBeTruthy();
     expect(invocation.mcpServer).toMatchObject({ enabled: false });
@@ -273,7 +273,7 @@ describe("OMP local Paperclip MCP wiring", () => {
     expect(endpointProbeMock).not.toHaveBeenCalled();
     const logs: Array<{ stream: string; chunk: string }> = [];
     await runResult({ wardmoteMcp: false }, logs);
-    expect(logs.some((entry) => entry.stream === "stderr" && entry.chunk.includes("has no Paperclip tools this run"))).toBe(true);
+    expect(logs.some((entry) => entry.stream === "stderr" && entry.chunk.includes("has no Wardmote tools this run"))).toBe(true);
   });
 
   it("fails the run before spawning OMP and schedules a retry when the MCP endpoint times out", async () => {
@@ -515,7 +515,7 @@ describe("OMP local Paperclip MCP wiring", () => {
     expect(invocation.extensionDirs[1]).toBe(userExtension);
   });
 
-  it("declares nothing when the run has no Paperclip API key", async () => {
+  it("declares nothing when the run has no Wardmote API key", async () => {
     const previous = process.env.WARDMOTE_API_KEY;
     delete process.env.WARDMOTE_API_KEY;
     try {
@@ -624,7 +624,7 @@ describe("OMP local Paperclip MCP wiring", () => {
   });
 });
 
-describe("Paperclip MCP server resolution", () => {
+describe("Wardmote MCP server resolution", () => {
   const root = path.join("/opt", "paperclip", "node_modules", "@tickernelz", "adapter", "dist", "server");
 
   it("prefers the nearest bin shim", () => {
@@ -662,7 +662,7 @@ describe("Paperclip MCP server resolution", () => {
   });
 });
 
-describe("Paperclip MCP server entry", () => {
+describe("Wardmote MCP server entry", () => {
   it("defaults to the core toolset and omits env the run does not carry", () => {
     expect(wardmoteMcpToolsets({})).toBe("core");
     expect(wardmoteMcpToolsets({ wardmoteMcpToolsets: " , " })).toBe("core");

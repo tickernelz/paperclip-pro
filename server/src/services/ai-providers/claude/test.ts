@@ -315,8 +315,8 @@ export async function testEnvironment(
       checks.push({
         code: "claude_hello_probe_skipped_unresolved_command",
         level: "warn",
-        message: "Skipped the Claude hello probe because `claude` is not installed on the Paperclip host.",
-        hint: "Install the `claude` CLI on the Paperclip host, then retry the Test.",
+        message: "Skipped the Claude hello probe because `claude` is not installed on the Wardmote host.",
+        hint: "Install the `claude` CLI on the Wardmote host, then retry the Test.",
       });
     } else {
       const model = configuredModel;

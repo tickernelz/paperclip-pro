@@ -85,7 +85,7 @@ describe.skipIf(process.platform === "win32")("local browser subscription login"
     process.env.PATH = "/usr/bin:/bin";
     const login = startLocalBrowserLogin("openai", home);
     await vi.waitFor(() => expect(login.outcome).toBe("failure"), { timeout: 5000 });
-    expect(login.error).toMatch(/requires the Codex CLI.*Install Codex.*Paperclip's PATH/);
+    expect(login.error).toMatch(/requires the Codex CLI.*Install Codex.*Wardmote's PATH/);
     expect(JSON.stringify(login)).not.toContain(process.env.PATH);
     expect(resolveCodexCommand).not.toHaveBeenCalled();
   });

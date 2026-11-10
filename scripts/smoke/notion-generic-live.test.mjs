@@ -254,7 +254,7 @@ test("workspace proof extraction and fresh-run comments retain only sanitized id
         text: JSON.stringify({
           id: "bot-123",
           type: "bot",
-          bot: { workspace_id: "workspace-123", workspace_name: "Paperclip" },
+          bot: { workspace_id: "workspace-123", workspace_name: "Wardmote" },
           token: "discard-me",
         }),
       }],
@@ -262,15 +262,15 @@ test("workspace proof extraction and fresh-run comments retain only sanitized id
   });
   assert.deepEqual(identity, {
     workspaceId: "workspace-123",
-    workspaceName: "Paperclip",
+    workspaceName: "Wardmote",
     botId: "bot-123",
   });
   assert.deepEqual(
     parseSanitizedAgentProof(
-      '{"workspaceId":"workspace-123","workspaceName":"Paperclip","invocationId":"inv-123"}',
+      '{"workspaceId":"workspace-123","workspaceName":"Wardmote","invocationId":"inv-123"}',
       identity,
     ),
-    { workspaceId: "workspace-123", workspaceName: "Paperclip", invocationId: "inv-123" },
+    { workspaceId: "workspace-123", workspaceName: "Wardmote", invocationId: "inv-123" },
   );
   assert.deepEqual(
     parseRuntimeAbsenceProof('{"connectionId":"conn-123","toolPresent":false}', "conn-123"),

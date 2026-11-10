@@ -342,7 +342,7 @@ describeEmbeddedPostgres(
       expect(await publicationsForInteraction(fixture.companyId, interaction.id)).toEqual([]);
     });
 
-    it("keeps unsupported governance interactions authoritative in Paperclip", async () => {
+    it("keeps unsupported governance interactions authoritative in Wardmote", async () => {
       const fixture = await seedBoundIssue();
       const interaction = await issueThreadInteractionService(db).create(
         { id: fixture.issueId, companyId: fixture.companyId },
@@ -564,7 +564,7 @@ describeEmbeddedPostgres(
           "private free-text label",
         );
         expect(JSON.stringify(settlement.payload)).not.toContain(
-          "Answered in Paperclip",
+          "Answered in Wardmote",
         );
       }
     });
@@ -700,7 +700,7 @@ describeEmbeddedPostgres(
       expect(skippedSettlements).toHaveLength(2);
       expect(
         skippedSettlements.every(
-          (row) => row.payload.card?.body === "Skipped in Paperclip.",
+          (row) => row.payload.card?.body === "Skipped in Wardmote.",
         ),
       ).toBe(true);
       expect(
@@ -746,7 +746,7 @@ describeEmbeddedPostgres(
           originals.find((row) => row.endpointId === fixture.endpointIds.slack)
             ?.payload.card?.actions,
         ).toEqual([
-          expect.objectContaining({ type: "link", label: "Open in Paperclip" }),
+          expect.objectContaining({ type: "link", label: "Open in Wardmote" }),
         ]);
         expect(
           originals.find(

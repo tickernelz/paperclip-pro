@@ -60,7 +60,7 @@ export function notificationRoutes(db: Db, webPush: WebPushRuntime) {
       key: `test:${randomUUID()}`,
       kind: "comment",
       companyId: req.actor.companyIds?.[0] ?? "",
-      title: "Paperclip test notification",
+      title: "Wardmote test notification",
       body: "Push notifications are working on this device.",
       url: "/",
       issueId: null,
