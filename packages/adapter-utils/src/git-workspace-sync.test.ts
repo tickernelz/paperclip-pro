@@ -263,8 +263,8 @@ describe("git workspace sync", () => {
     const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-git-nested-links-"));
     cleanupDirs.push(rootDir);
     const repo = await createRepo(rootDir);
-    const nested = await createRepo(path.join(repo, ".paperclip-repositories"));
-    await writeFile(path.join(repo, ".git/info/exclude"), ".paperclip-repositories/\n");
+    const nested = await createRepo(path.join(repo, ".wardmote-repositories"));
+    await writeFile(path.join(repo, ".git/info/exclude"), ".wardmote-repositories/\n");
     await mkdir(path.join(nested, "skills", "demo"), { recursive: true });
     await mkdir(path.join(nested, ".claude", "skills"), { recursive: true });
     await writeFile(path.join(nested, "skills", "demo", "SKILL.md"), "skill content\n");
@@ -283,7 +283,7 @@ describe("git workspace sync", () => {
     await withShallowGitWorkspaceClone({ localDir: repo, snapshot: snapshot! }, async (cloneDir) => {
       // The nested clone's callback has already returned and deleted its temp
       // directory. Relative links must keep their repository meaning here.
-      const copied = path.join(cloneDir, ".paperclip-repositories", "repo");
+      const copied = path.join(cloneDir, ".wardmote-repositories", "repo");
       for (const [name, target] of links) {
         expect((await lstat(path.join(copied, name))).isSymbolicLink()).toBe(true);
         expect(await readlink(path.join(copied, name))).toBe(target);

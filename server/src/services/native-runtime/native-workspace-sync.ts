@@ -404,7 +404,7 @@ function parseGitSnapshot(
     const seen = new Set<string>();
     for (const raw of candidate.repositories) {
       const repo = parseObject(raw);
-      if (typeof repo.path !== "string" || !/^\.paperclip-repositories\/[a-zA-Z0-9_-]+$/.test(repo.path) || seen.has(repo.path)) return undefined;
+      if (typeof repo.path !== "string" || !/^\.wardmote-repositories\/[a-zA-Z0-9_-]+$/.test(repo.path) || seen.has(repo.path)) return undefined;
       const snapshot = parseGitSnapshot(repo.snapshot, true);
       if (!snapshot) return undefined;
       seen.add(repo.path);
