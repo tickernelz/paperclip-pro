@@ -1,4 +1,4 @@
-import type { PaperclipPluginManifestV1 } from "@tickernelz/wardmote-plugin-sdk";
+import type { WardmotePluginManifestV1 } from "@tickernelz/wardmote-plugin-sdk";
 
 const PLUGIN_ID = "paperclip-file-browser-example";
 const FILES_SIDEBAR_SLOT_ID = "files-link";
@@ -6,7 +6,7 @@ const FILES_TAB_SLOT_ID = "files-tab";
 const COMMENT_FILE_LINKS_SLOT_ID = "comment-file-links";
 const COMMENT_OPEN_FILES_SLOT_ID = "comment-open-files";
 
-const manifest: PaperclipPluginManifestV1 = {
+const manifest: WardmotePluginManifestV1 = {
   id: PLUGIN_ID,
   apiVersion: 1,
   version: "0.2.0",

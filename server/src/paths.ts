@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { resolvePaperclipEnvPathForConfig } from "@tickernelz/wardmote-shared/home-paths";
+import { resolveWardmoteEnvPathForConfig } from "@tickernelz/wardmote-shared/home-paths";
 import { resolveDefaultConfigPath } from "./home-paths.js";
 
 const WARDMOTE_CONFIG_BASENAME = "config.json";
@@ -23,12 +23,12 @@ function findConfigFileFromAncestors(startDir: string): string | null {
   return null;
 }
 
-export function resolvePaperclipConfigPath(overridePath?: string): string {
+export function resolveWardmoteConfigPath(overridePath?: string): string {
   if (overridePath) return path.resolve(overridePath);
   if (process.env.WARDMOTE_CONFIG) return path.resolve(process.env.WARDMOTE_CONFIG);
   return findConfigFileFromAncestors(process.cwd()) ?? resolveDefaultConfigPath();
 }
 
-export function resolvePaperclipEnvPath(overrideConfigPath?: string): string {
-  return resolvePaperclipEnvPathForConfig(resolvePaperclipConfigPath(overrideConfigPath));
+export function resolveWardmoteEnvPath(overrideConfigPath?: string): string {
+  return resolveWardmoteEnvPathForConfig(resolveWardmoteConfigPath(overrideConfigPath));
 }

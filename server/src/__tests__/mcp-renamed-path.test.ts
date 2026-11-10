@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
-import { PaperclipApiClient } from "../../../packages/mcp-server/src/client.js";
+import { WardmoteApiClient } from "../../../packages/mcp-server/src/client.js";
 import { createGeneratedToolDefinitions } from "../../../packages/mcp-server/src/generated-tools.js";
 
 function client() {
-  return new PaperclipApiClient({
+  return new WardmoteApiClient({
     apiUrl: "http://localhost:3100/api",
     apiKey: "token",
     companyId: "11111111-1111-1111-1111-111111111111",

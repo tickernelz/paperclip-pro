@@ -6,7 +6,7 @@ Stable events must be present in `packages/shared/src/telemetry/generated/paperc
 
 ## Proposed Events
 
-A proposed event is a normal `client.track()` call whose event name is not yet in `PaperclipEventName`. The runtime client swallows unregistered first-party event names before queueing, state initialization, or network flush, so proposed events do not leave the process until the generated telemetry schema adopts the event name.
+A proposed event is a normal `client.track()` call whose event name is not yet in `WardmoteEventName`. The runtime client swallows unregistered first-party event names before queueing, state initialization, or network flush, so proposed events do not leave the process until the generated telemetry schema adopts the event name.
 
 Use this marker shape when possible:
 
@@ -54,6 +54,6 @@ Extractor provenance is deliberately repo-relative. Absolute paths, `..` segment
 
 ## Adoption
 
-When a proposed event is approved and registered in the telemetry backend, sync the regenerated telemetry artifact into the OSS repo. The event name is then part of `PaperclipEventName`, so the proposal marker should fail with TS2578. Remove the marker and keep the wrapper payload aligned with the registered dimensions in the same change.
+When a proposed event is approved and registered in the telemetry backend, sync the regenerated telemetry artifact into the OSS repo. The event name is then part of `WardmoteEventName`, so the proposal marker should fail with TS2578. Remove the marker and keep the wrapper payload aligned with the registered dimensions in the same change.
 
 Old clients that do not yet have the synced schema continue to swallow the proposed event. Clients with the synced schema emit it through the normal stable telemetry path.

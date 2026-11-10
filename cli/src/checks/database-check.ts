@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import type { PaperclipConfig } from "../config/schema.js";
+import type { WardmoteConfig } from "../config/schema.js";
 import type { CheckResult } from "./index.js";
 import { resolveRuntimeLikePath } from "./path-resolver.js";
 
@@ -11,7 +11,7 @@ function isInsideOsTmpDir(targetPath: string): boolean {
   return resolved === tmpRoot || resolved.startsWith(`${tmpRoot}${path.sep}`);
 }
 
-export async function databaseCheck(config: PaperclipConfig, configPath?: string): Promise<CheckResult> {
+export async function databaseCheck(config: WardmoteConfig, configPath?: string): Promise<CheckResult> {
   if (config.database.mode === "postgres") {
     if (!config.database.connectionString) {
       return {

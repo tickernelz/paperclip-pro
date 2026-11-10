@@ -5,31 +5,31 @@ export const WARDMOTE_EVAL_KERNEL_COMPATIBILITY = Object.freeze({
   apiVersion: 1 as const,
 });
 
-export interface PaperclipEvalScenario<TInput = unknown> {
+export interface WardmoteEvalScenario<TInput = unknown> {
   readonly id: string;
   readonly input: TInput;
 }
 
-export interface PaperclipEvalCandidate<TCandidate = unknown> {
+export interface WardmoteEvalCandidate<TCandidate = unknown> {
   readonly id: string;
   readonly config: TCandidate;
   /** Fail-closed runner/catalog/provider compatibility check. */
   readonly preflight?: () => void | Promise<void>;
 }
 
-export interface PaperclipEvalResult<TOutput = unknown, TScore = unknown> {
+export interface WardmoteEvalResult<TOutput = unknown, TScore = unknown> {
   readonly scenarioId: string;
   readonly candidateId: string;
   readonly output: TOutput;
   readonly score: TScore;
 }
 
-export class PaperclipEvalKernelConfigurationError extends Error {
+export class WardmoteEvalKernelConfigurationError extends Error {
   readonly code = "paperclip_eval_kernel_configuration_invalid" as const;
 
   constructor(message: string) {
     super(message);
-    this.name = "PaperclipEvalKernelConfigurationError";
+    this.name = "WardmoteEvalKernelConfigurationError";
   }
 }
 
@@ -37,24 +37,24 @@ export class PaperclipEvalKernelConfigurationError extends Error {
  * Generic deterministic matrix orchestration. Scenario definitions, provider
  * configuration, scorers, reports, and persistence remain caller-owned.
  */
-export async function runPaperclipEvalMatrix<
+export async function runWardmoteEvalMatrix<
   TInput,
   TCandidate,
   TOutput,
   TScore,
 >(input: {
-  readonly scenarios: readonly PaperclipEvalScenario<TInput>[];
-  readonly candidates: readonly PaperclipEvalCandidate<TCandidate>[];
+  readonly scenarios: readonly WardmoteEvalScenario<TInput>[];
+  readonly candidates: readonly WardmoteEvalCandidate<TCandidate>[];
   readonly execute: (context: {
-    readonly scenario: PaperclipEvalScenario<TInput>;
-    readonly candidate: PaperclipEvalCandidate<TCandidate>;
+    readonly scenario: WardmoteEvalScenario<TInput>;
+    readonly candidate: WardmoteEvalCandidate<TCandidate>;
   }) => Promise<TOutput>;
   readonly score: (context: {
-    readonly scenario: PaperclipEvalScenario<TInput>;
-    readonly candidate: PaperclipEvalCandidate<TCandidate>;
+    readonly scenario: WardmoteEvalScenario<TInput>;
+    readonly candidate: WardmoteEvalCandidate<TCandidate>;
     readonly output: TOutput;
   }) => Promise<TScore> | TScore;
-}): Promise<readonly PaperclipEvalResult<TOutput, TScore>[]> {
+}): Promise<readonly WardmoteEvalResult<TOutput, TScore>[]> {
   assertUniqueNonEmptyIds("scenario", input.scenarios);
   assertUniqueNonEmptyIds("candidate", input.candidates);
 
@@ -62,7 +62,7 @@ export async function runPaperclipEvalMatrix<
     await candidate.preflight?.();
   }
 
-  const results: PaperclipEvalResult<TOutput, TScore>[] = [];
+  const results: WardmoteEvalResult<TOutput, TScore>[] = [];
   for (const scenario of input.scenarios) {
     for (const candidate of input.candidates) {
       const output = await input.execute({ scenario, candidate });
@@ -83,15 +83,15 @@ function assertUniqueNonEmptyIds(
   values: readonly { readonly id: string }[],
 ): void {
   if (values.length === 0) {
-    throw new PaperclipEvalKernelConfigurationError(`${kind} list must not be empty`);
+    throw new WardmoteEvalKernelConfigurationError(`${kind} list must not be empty`);
   }
   const ids = new Set<string>();
   for (const value of values) {
     if (value.id.trim().length === 0) {
-      throw new PaperclipEvalKernelConfigurationError(`${kind} id must not be empty`);
+      throw new WardmoteEvalKernelConfigurationError(`${kind} id must not be empty`);
     }
     if (ids.has(value.id)) {
-      throw new PaperclipEvalKernelConfigurationError(`duplicate ${kind} id: ${value.id}`);
+      throw new WardmoteEvalKernelConfigurationError(`duplicate ${kind} id: ${value.id}`);
     }
     ids.add(value.id);
   }

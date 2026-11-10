@@ -270,7 +270,7 @@ remain in v1 only when old consumers can safely ignore them.
 PRP is one independently versioned component of the runner bundle. Catalog,
 runner-client, control-plane-adapter, testkit, and eval-corpus compatibility is
 declared by `WARDMOTE_RUNNER_COMPATIBILITY` and checked before execution by
-`assertPaperclipRunnerCompatibility`. A mismatch fails with
+`assertWardmoteRunnerCompatibility`. A mismatch fails with
 `wardmote_runner_incompatible` and stable per-issue codes; a provider-specific
 tool error is not a compatibility negotiation mechanism.
 
@@ -280,7 +280,7 @@ component rules and clean-consumer packaging gate.
 ## Evals integration negotiation
 
 The packed `./evals` entry point adds a stricter execution preflight for the
-App/Evals join. `assertPaperclipRunnerEvalCompatibility` requires simultaneous
+App/Evals join. `assertWardmoteRunnerEvalCompatibility` requires simultaneous
 agreement on package semver, runnerd build metadata, a common PRP version,
 semantic catalog version and SHA-256 digest, harness-driver contract and
 required capabilities, and the native-execution version. It reports
@@ -289,7 +289,7 @@ mismatch and must run before launching a provider.
 
 runnerd itself reports `paperclip-runner/runnerd-build-metadata/v1` from
 `--build-metadata`. The consumer passes its path and expected content digest to
-`resolvePaperclipRunnerdArtifact`; implicit PATH or source-tree discovery is
+`resolveWardmoteRunnerdArtifact`; implicit PATH or source-tree discovery is
 not part of the contract. Native attempt output is
 `paperclip-runner/native-execution/v1`, whose parser accepts unknown additive
 fields but rejects unknown required versions and inconsistent terminal,

@@ -50,14 +50,14 @@ import {
   type CapabilityRunnerdProcessEvidence,
 } from "./runnerd-codex-transport.js";
 import {
-  capturePaperclipWorkspace,
-  diffPaperclipWorkspace,
-  type PaperclipWorkspaceDiff,
-  type PaperclipWorkspaceSnapshot,
+  captureWardmoteWorkspace,
+  diffWardmoteWorkspace,
+  type WardmoteWorkspaceDiff,
+  type WardmoteWorkspaceSnapshot,
 } from "./workspace-diff.js";
 import {
-  discoverPaperclipWorkspaceFileReferences,
-  type PaperclipWorkspaceFileReference,
+  discoverWardmoteWorkspaceFileReferences,
+  type WardmoteWorkspaceFileReference,
 } from "./workspace-file-reference.js";
 
 const LIVE_SESSION_SCHEMA = "paperclip.capability.live-session.v1" as const;
@@ -233,13 +233,13 @@ export interface CapabilityLiveStateRevision {
 export interface CapabilityLiveWorkspaceDiffEntry {
   turnId: string;
   at: string;
-  diff: PaperclipWorkspaceDiff;
+  diff: WardmoteWorkspaceDiff;
 }
 
 export interface CapabilityLiveWorkspaceFileReferenceEntry {
   turnId: string;
   at: string;
-  reference: PaperclipWorkspaceFileReference;
+  reference: WardmoteWorkspaceFileReference;
 }
 
 export interface RecordCapabilityLiveUsageInput {
@@ -463,12 +463,12 @@ const CAPABILITY_ADMISSION_SHUTDOWN_DEADLINE_MS = 1_000;
 
 async function captureWorkspaceBaselineBeforeAdmission(
   workingDirectory: string,
-): Promise<PaperclipWorkspaceSnapshot | null> {
+): Promise<WardmoteWorkspaceSnapshot | null> {
   const controller = new AbortController();
   let timeout: ReturnType<typeof setTimeout> | null = null;
   try {
     return await Promise.race([
-      capturePaperclipWorkspace(workingDirectory, { signal: controller.signal }),
+      captureWardmoteWorkspace(workingDirectory, { signal: controller.signal }),
       new Promise<null>((resolveTimeout) => {
         timeout = setTimeout(() => {
           resolveTimeout(null);
@@ -1573,7 +1573,7 @@ export class CapabilityLiveSession {
       // turns inside this capability session's existing governed run. This is
       // distinct from reusing the provider under a different PRP authority.
     }
-    let workspaceBefore: PaperclipWorkspaceSnapshot | null = null;
+    let workspaceBefore: WardmoteWorkspaceSnapshot | null = null;
     try {
       workspaceBefore = await workspaceBeforePromise;
     } catch (error) {
@@ -1683,7 +1683,7 @@ export class CapabilityLiveSession {
       this.#releaseTurnAdmission(admission);
       result = await terminal;
     }
-    const workspaceFileReferences = await discoverPaperclipWorkspaceFileReferences(
+    const workspaceFileReferences = await discoverWardmoteWorkspaceFileReferences(
       this.#config.workingDirectory,
       result.assistantText,
       result.turnId,
@@ -1700,9 +1700,9 @@ export class CapabilityLiveSession {
     }
     const workspaceDiff = workspaceBefore === null
       ? null
-      : diffPaperclipWorkspace(
+      : diffWardmoteWorkspace(
           workspaceBefore,
-          await capturePaperclipWorkspace(this.#config.workingDirectory),
+          await captureWardmoteWorkspace(this.#config.workingDirectory),
           `${this.id}:${result.turnId}:workspace`,
         );
     if (workspaceDiff !== null) {

@@ -48,7 +48,7 @@ Parameters:
     AllowedPattern: "^prod-[a-z0-9]+$"
   HarnessName:
     Type: String
-    Default: PaperclipAgentCoreHarness
+    Default: WardmoteAgentCoreHarness
     AllowedPattern: "^[a-zA-Z][a-zA-Z0-9_]{0,39}$"
   HarnessEndpointName:
     Type: String
@@ -56,7 +56,7 @@ Parameters:
     AllowedPattern: "^[a-zA-Z][a-zA-Z0-9_]{0,47}$"
   MemoryName:
     Type: String
-    Default: PaperclipAgentCoreMemory
+    Default: WardmoteAgentCoreMemory
     AllowedPattern: "^[a-zA-Z][a-zA-Z0-9_]{0,47}$"
   ContextPrefix:
     Type: String

@@ -1,4 +1,4 @@
-import { parsePaperclipQuestionResponse } from "../../packages/wardmote-runner/src/contracts/question-set.js";
+import { parseWardmoteQuestionResponse } from "../../packages/wardmote-runner/src/contracts/question-set.js";
 import { normalizeCursorPlanRequest } from "../../packages/wardmote-runner/src/drivers/acpx/cursor-extensions.js";
 import { cursorNativePlanResponse, findCursorNativeRequest, hasCursorNativeCardBinding } from "./cursor-native-flow.js";
 import { cursorDeniedCommand, type CursorToolNotice } from "./cursor-native-evidence.js";
@@ -74,7 +74,7 @@ it.each(["accept", "cancel", "reject"] as const)("recognizes canonical delivered
   const native = normalizeCursorPlanRequest({ toolCallId: "native-plan", plan: "Verify the revised plan.", todos: [] });
   const planId = native.questionSet.questions[0]!.id;
   const response = cursorNativePlanResponse(planId, decision, "  Keep exact feedback 漢字\nSecond line  ");
-  const delivered = parsePaperclipQuestionResponse(native.questionSet, response);
+  const delivered = parseWardmoteQuestionResponse(native.questionSet, response);
   const rows = proof();
   (rows[0]!.payload.prpEvent.payload as any).request.origin.method = "cursor/create_plan";
   (rows[1]!.payload.prpEvent.payload as any).response = delivered;

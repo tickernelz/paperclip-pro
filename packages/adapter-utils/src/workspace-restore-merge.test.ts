@@ -6,7 +6,7 @@ import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { resolvePaperclipInstanceRootForAdapter } from "./server-utils.js";
+import { resolveWardmoteInstanceRootForAdapter } from "./server-utils.js";
 import {
   captureDirectorySnapshot,
   directorySnapshotSha256,
@@ -224,7 +224,7 @@ describe("workspace restore merge", () => {
     let previousHome: string | undefined;
     let previousInstanceId: string | undefined;
 
-    function useTempPaperclipHome(homeDir: string, instanceId: string): void {
+    function useTempWardmoteHome(homeDir: string, instanceId: string): void {
       previousHome = process.env.WARDMOTE_HOME;
       previousInstanceId = process.env.WARDMOTE_INSTANCE_ID;
       process.env.WARDMOTE_HOME = homeDir;
@@ -245,7 +245,7 @@ describe("workspace restore merge", () => {
       async () => {
         const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-restore-merge-"));
         cleanupDirs.push(rootDir);
-        useTempPaperclipHome(path.join(rootDir, "paperclip-home"), "test-instance");
+        useTempWardmoteHome(path.join(rootDir, "paperclip-home"), "test-instance");
 
         // The old lock sat beside the target, so it needed mkdir rights in the
         // target's parent. The new lock root lives under WARDMOTE_HOME instead,
@@ -277,7 +277,7 @@ describe("workspace restore merge", () => {
         const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-restore-merge-"));
         cleanupDirs.push(rootDir);
         const paperclipHome = path.join(rootDir, "paperclip-home");
-        useTempPaperclipHome(paperclipHome, "test-instance");
+        useTempWardmoteHome(paperclipHome, "test-instance");
 
         const targetDir = path.join(rootDir, "target");
         const aliasDir = path.join(rootDir, "target-alias");
@@ -307,7 +307,7 @@ describe("workspace restore merge", () => {
       const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-restore-merge-"));
       cleanupDirs.push(rootDir);
       const paperclipHome = path.join(rootDir, "paperclip-home");
-      useTempPaperclipHome(paperclipHome, "test-instance");
+      useTempWardmoteHome(paperclipHome, "test-instance");
 
       const locksDir = path.join(paperclipHome, "instances", "test-instance", "locks");
       const decoyDir = path.join(rootDir, "decoy");
@@ -327,7 +327,7 @@ describe("workspace restore merge", () => {
       const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-restore-merge-"));
       cleanupDirs.push(rootDir);
       const paperclipHome = path.join(rootDir, "paperclip-home");
-      useTempPaperclipHome(paperclipHome, "test-instance");
+      useTempWardmoteHome(paperclipHome, "test-instance");
 
       const locksDir = path.join(paperclipHome, "instances", "test-instance", "locks");
       await mkdir(locksDir, { recursive: true });
@@ -345,7 +345,7 @@ describe("workspace restore merge", () => {
       const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-restore-merge-"));
       cleanupDirs.push(rootDir);
       const paperclipHome = path.join(rootDir, "paperclip-home");
-      useTempPaperclipHome(paperclipHome, "test-instance");
+      useTempWardmoteHome(paperclipHome, "test-instance");
 
       const targetDir = path.join(rootDir, "target");
       await mkdir(targetDir, { recursive: true });
@@ -380,7 +380,7 @@ describe("workspace restore merge", () => {
       const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-restore-merge-"));
       cleanupDirs.push(rootDir);
       const paperclipHome = path.join(rootDir, "paperclip-home");
-      useTempPaperclipHome(paperclipHome, "test-instance");
+      useTempWardmoteHome(paperclipHome, "test-instance");
 
       const targetDir = path.join(rootDir, "target");
       await mkdir(targetDir, { recursive: true });
@@ -403,7 +403,7 @@ describe("workspace restore merge", () => {
       const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-restore-merge-"));
       cleanupDirs.push(rootDir);
       const paperclipHome = path.join(rootDir, "paperclip-home");
-      useTempPaperclipHome(paperclipHome, "test-instance");
+      useTempWardmoteHome(paperclipHome, "test-instance");
 
       const targetDir = path.join(rootDir, "target");
       await mkdir(targetDir, { recursive: true });
@@ -455,7 +455,7 @@ describe("workspace restore merge", () => {
     it("reports a known live holder without releasing it when a contender times out", async () => {
       const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-lock-holder-"));
       cleanupDirs.push(rootDir);
-      useTempPaperclipHome(path.join(rootDir, "home"), "test-instance");
+      useTempWardmoteHome(path.join(rootDir, "home"), "test-instance");
       const targetDir = path.join(rootDir, "target");
       await mkdir(targetDir);
       const lockRoot = path.join(rootDir, "home", "instances", "test-instance", "locks", "directory-merge");
@@ -480,7 +480,7 @@ describe("workspace restore merge", () => {
     it("delivers the timeout when the diagnostic owner read stalls and ignores its late rejection", async () => {
       const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-lock-read-stall-"));
       cleanupDirs.push(rootDir);
-      useTempPaperclipHome(path.join(rootDir, "home"), "test-instance");
+      useTempWardmoteHome(path.join(rootDir, "home"), "test-instance");
       const targetDir = path.join(rootDir, "target");
       await mkdir(targetDir);
       const contender = vi.fn();
@@ -532,7 +532,7 @@ describe("workspace restore merge", () => {
     ])("distinguishes $label in the diagnostic read", async ({ raw, code, ownerState }) => {
       const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-lock-read-state-"));
       cleanupDirs.push(rootDir);
-      useTempPaperclipHome(path.join(rootDir, "home"), "test-instance");
+      useTempWardmoteHome(path.join(rootDir, "home"), "test-instance");
       const targetDir = path.join(rootDir, "target");
       await mkdir(targetDir);
       const contender = vi.fn();
@@ -563,7 +563,7 @@ describe("workspace restore merge", () => {
     it("reports an owner older than this process without reclaiming a live PID", async () => {
       const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-lock-older-owner-"));
       cleanupDirs.push(rootDir);
-      useTempPaperclipHome(path.join(rootDir, "home"), "test-instance");
+      useTempWardmoteHome(path.join(rootDir, "home"), "test-instance");
       const targetDir = path.join(rootDir, "target");
       await mkdir(targetDir);
       const lockKey = createHash("sha256").update(await realpath(targetDir)).digest("hex");
@@ -593,7 +593,7 @@ describe("workspace restore merge", () => {
       async () => {
         const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-restore-merge-"));
         cleanupDirs.push(rootDir);
-        useTempPaperclipHome(path.join(rootDir, "paperclip-home"), "test-instance");
+        useTempWardmoteHome(path.join(rootDir, "paperclip-home"), "test-instance");
 
         const targetDir = path.join(rootDir, "target");
         const aliasDir = path.join(rootDir, "target-alias");
@@ -675,7 +675,7 @@ describe("workspace restore merge", () => {
 
       // Resolved with no `env` argument, so it reads `process.env` exactly the way
       // the real instance root does — unaffected by the explicit `env` above.
-      const realInstanceRoot = resolvePaperclipInstanceRootForAdapter();
+      const realInstanceRoot = resolveWardmoteInstanceRootForAdapter();
       const realLockPath = path.join(realInstanceRoot, "locks", "directory-merge", `${lockKey}.lock`);
 
       await withDirectoryMergeLock(targetDir, async () => undefined, env);
@@ -700,7 +700,7 @@ describe("workspace restore merge", () => {
 
         // The independent, no-caller-env resolution of "WARDMOTE_HOME set,
         // WARDMOTE_INSTANCE_ID unset" — the expected default instance id.
-        const expectedInstanceRoot = resolvePaperclipInstanceRootForAdapter({ homeDir: explicitHome, env: {} });
+        const expectedInstanceRoot = resolveWardmoteInstanceRootForAdapter({ homeDir: explicitHome, env: {} });
         const expectedLockRootDir = path.join(expectedInstanceRoot, "locks", "directory-merge");
         const wrongInstanceLockRootDir = path.join(explicitHome, "instances", "wrong-instance", "locks", "directory-merge");
 
@@ -732,7 +732,7 @@ describe("workspace restore merge", () => {
 
         // The independent, no-caller-env resolution of "neither variable set" —
         // the expected fallback root under the mocked home directory.
-        const expectedInstanceRoot = resolvePaperclipInstanceRootForAdapter({ env: {} });
+        const expectedInstanceRoot = resolveWardmoteInstanceRootForAdapter({ env: {} });
         const expectedLockRootDir = path.join(expectedInstanceRoot, "locks", "directory-merge");
 
         await withDirectoryMergeLock(targetDir, async () => undefined, {});

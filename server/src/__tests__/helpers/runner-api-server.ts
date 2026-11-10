@@ -13,7 +13,7 @@ import { createApp } from "../../app.js";
 import { createLocalDiskStorageProvider } from "../../storage/local-disk-provider.js";
 import { createStorageService } from "../../storage/service.js";
 import { setupRunnerPrpWebSocketServer, runnerPrpWebSocketInternals } from "../../realtime/runner-prp-ws.js";
-import { PaperclipRunnerToolAuthority } from "../../services/native-runtime/paperclip-runner-tool-authority.js";
+import { WardmoteRunnerToolAuthority } from "../../services/native-runtime/paperclip-runner-tool-authority.js";
 
 export type RunnerConnectionScenario = "fresh" | "pending" | "declined" | "custom" | "foreign" | "stale_owner" | "ready";
 const CONNECTION_SCENARIOS: readonly RunnerConnectionScenario[] = ["fresh", "pending", "declined", "custom", "foreign", "stale_owner", "ready"];
@@ -153,7 +153,7 @@ export async function startRunnerApiTestServer(options: {
         connectionScenario: options.connectionScenario ?? null, responsibleUserId, userId: responsibleUserId, sourceRunId: runId,
         customConnectionService, foreignConnectionService, pendingInteractionId,
         initialInteractionIds: pendingInteractionId ? [pendingInteractionId] : [],
-        authority: new PaperclipRunnerToolAuthority(db, binding),
+        authority: new WardmoteRunnerToolAuthority(db, binding),
         async snapshot() {
           return {
             issues: await db.select().from(issues).where(eq(issues.companyId, companyId)),

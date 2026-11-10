@@ -4,7 +4,7 @@ import {
   cleanupGitHubOperationLaunchers,
   githubOperationLauncherDirectory,
   prepareGitHubOperationLaunchers,
-  startAdapterExecutionTargetPaperclipBridge,
+  startAdapterExecutionTargetWardmoteBridge,
 } from "@tickernelz/wardmote-adapter-utils/execution-target";
 import { githubBrokerEnvironment } from "@tickernelz/wardmote-adapter-utils/github-launcher";
 
@@ -23,14 +23,14 @@ export async function createNativeGitHubAccess(input: {
   env: NodeJS.ProcessEnv;
   resolveCredentials: (binding: Binding) => Promise<unknown>;
   onLog?: (stream: "stdout" | "stderr", chunk: string) => Promise<void>;
-}, startBridge = startAdapterExecutionTargetPaperclipBridge) {
+}, startBridge = startAdapterExecutionTargetWardmoteBridge) {
   const token = randomBytes(32).toString("hex");
   const location = { runId: `native-session-${randomUUID()}`, target: input.target };
   let active: Binding | null = null;
   let stopped = false;
   let ready = true;
   let stopping: Promise<void> | undefined;
-  let bridge: Awaited<ReturnType<typeof startAdapterExecutionTargetPaperclipBridge>> = null;
+  let bridge: Awaited<ReturnType<typeof startAdapterExecutionTargetWardmoteBridge>> = null;
   const server = createServer(async (req, res) => {
     res.setHeader("Cache-Control", "no-store");
     res.setHeader("Content-Type", "application/json");

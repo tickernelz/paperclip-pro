@@ -1367,14 +1367,14 @@ export interface AskUserQuestionsQuestion {
  * mirrors `paperclip.question_set.v1` without making the shared package depend
  * on a particular runner implementation.
  */
-export interface PaperclipQuestionSetOption {
+export interface WardmoteQuestionSetOption {
   id: string;
   label: string;
   description?: string;
   recommended?: boolean;
 }
 
-export interface PaperclipQuestionSetQuestion {
+export interface WardmoteQuestionSetQuestion {
   id: string;
   header?: string;
   prompt: string;
@@ -1383,7 +1383,7 @@ export interface PaperclipQuestionSetQuestion {
   answerMode: "single_select" | "multi_select" | "text";
   /** Editable starting text, never an implicit or submitted answer. Text mode only. */
   initialText?: string;
-  options?: PaperclipQuestionSetOption[];
+  options?: WardmoteQuestionSetOption[];
   customAnswer?: {
     enabled: true;
     label?: string;
@@ -1399,12 +1399,12 @@ export interface PaperclipQuestionSetQuestion {
   };
 }
 
-export interface PaperclipQuestionSetPayload {
+export interface WardmoteQuestionSetPayload {
   schema: "paperclip.question_set.v1";
   title?: string;
   description?: string;
   submitLabel?: string;
-  questions: PaperclipQuestionSetQuestion[];
+  questions: WardmoteQuestionSetQuestion[];
 }
 
 export interface AskUserQuestionsPayload {
@@ -1414,7 +1414,7 @@ export interface AskUserQuestionsPayload {
   supersedeOnUserComment?: boolean;
   questions: AskUserQuestionsQuestion[];
   /** Exact presentation for a recovered harness request. */
-  questionSet?: PaperclipQuestionSetPayload;
+  questionSet?: WardmoteQuestionSetPayload;
   /** Correlates a recovered interaction with the live runtime request it replaces. */
   runtimeRequestId?: string | null;
 }

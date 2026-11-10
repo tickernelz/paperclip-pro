@@ -38,7 +38,7 @@ function parseArgs(argv) {
   return args;
 }
 
-function normalizePaperclipUrl(raw) {
+function normalizeWardmoteUrl(raw) {
   const url = new URL(raw);
   if (url.pathname.endsWith("/api")) {
     url.pathname = url.pathname.slice(0, -4) || "/";
@@ -46,8 +46,8 @@ function normalizePaperclipUrl(raw) {
   return url.toString().replace(/\/$/, "");
 }
 
-async function checkPaperclipHealth(rawUrl, required) {
-  const baseUrl = normalizePaperclipUrl(rawUrl);
+async function checkWardmoteHealth(rawUrl, required) {
+  const baseUrl = normalizeWardmoteUrl(rawUrl);
   try {
     const response = await fetch(`${baseUrl}/api/health`, { signal: AbortSignal.timeout(1500) });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -298,7 +298,7 @@ function assert(condition, message) {
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
-  const paperclip = await checkPaperclipHealth(args.paperclipUrl, args.requirePaperclip);
+  const paperclip = await checkWardmoteHealth(args.paperclipUrl, args.requirePaperclip);
   const stdioClient = new StdioFixtureClient();
   const httpClient = new HttpFixtureClient();
   const results = [];

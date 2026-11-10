@@ -24,7 +24,7 @@ function isLinkTo(link: string, target: string): boolean {
   return fs.lstatSync(link).isSymbolicLink() && fs.existsSync(target) && fs.realpathSync(link) === fs.realpathSync(target);
 }
 
-export function resolveDefaultPaperclipHomeDir(userHome: string = os.homedir()): string {
+export function resolveDefaultWardmoteHomeDir(userHome: string = os.homedir()): string {
   const cached = defaultHomeByUserHome.get(userHome);
   if (cached) return cached;
   const legacy = path.resolve(userHome, LEGACY_HOME_DIRNAME);
@@ -36,13 +36,13 @@ export function resolveDefaultPaperclipHomeDir(userHome: string = os.homedir()):
   return wardmote;
 }
 
-export function resolvePaperclipHomeDir(homeOverride?: string): string {
+export function resolveWardmoteHomeDir(homeOverride?: string): string {
   const raw = homeOverride?.trim() || process.env.WARDMOTE_HOME?.trim();
   if (raw) return path.resolve(expandHomePrefix(raw));
-  return resolveDefaultPaperclipHomeDir();
+  return resolveDefaultWardmoteHomeDir();
 }
 
-export function resolvePaperclipInstanceId(instanceIdOverride?: string): string {
+export function resolveWardmoteInstanceId(instanceIdOverride?: string): string {
   const raw = instanceIdOverride?.trim() || process.env.WARDMOTE_INSTANCE_ID?.trim() || DEFAULT_WARDMOTE_INSTANCE_ID;
   if (!PATH_SEGMENT_RE.test(raw)) {
     throw new Error(`Invalid WARDMOTE_INSTANCE_ID '${raw}'.`);
@@ -50,28 +50,28 @@ export function resolvePaperclipInstanceId(instanceIdOverride?: string): string 
   return raw;
 }
 
-export function resolvePaperclipInstanceRoot(input: {
+export function resolveWardmoteInstanceRoot(input: {
   homeDir?: string;
   instanceId?: string;
 } = {}): string {
-  return path.resolve(resolvePaperclipHomeDir(input.homeDir), "instances", resolvePaperclipInstanceId(input.instanceId));
+  return path.resolve(resolveWardmoteHomeDir(input.homeDir), "instances", resolveWardmoteInstanceId(input.instanceId));
 }
 
-export function resolvePaperclipInstanceConfigPath(input: {
+export function resolveWardmoteInstanceConfigPath(input: {
   homeDir?: string;
   instanceId?: string;
 } = {}): string {
-  return path.resolve(resolvePaperclipInstanceRoot(input), WARDMOTE_CONFIG_BASENAME);
+  return path.resolve(resolveWardmoteInstanceRoot(input), WARDMOTE_CONFIG_BASENAME);
 }
 
-export function resolvePaperclipConfigPathForInstance(input: {
+export function resolveWardmoteConfigPathForInstance(input: {
   homeDir?: string;
   instanceId?: string;
 } = {}): string {
-  return resolvePaperclipInstanceConfigPath(input);
+  return resolveWardmoteInstanceConfigPath(input);
 }
 
-export function resolvePaperclipEnvPathForConfig(configPath: string): string {
+export function resolveWardmoteEnvPathForConfig(configPath: string): string {
   const envPath = path.resolve(path.dirname(configPath), WARDMOTE_ENV_FILENAME);
   migrateRetiredEnvFile(envPath);
   return envPath;
@@ -81,35 +81,35 @@ export function resolveDefaultEmbeddedPostgresDir(input: {
   homeDir?: string;
   instanceId?: string;
 } = {}): string {
-  return path.resolve(resolvePaperclipInstanceRoot(input), "db");
+  return path.resolve(resolveWardmoteInstanceRoot(input), "db");
 }
 
 export function resolveDefaultLogsDir(input: {
   homeDir?: string;
   instanceId?: string;
 } = {}): string {
-  return path.resolve(resolvePaperclipInstanceRoot(input), "logs");
+  return path.resolve(resolveWardmoteInstanceRoot(input), "logs");
 }
 
 export function resolveDefaultSecretsKeyFilePath(input: {
   homeDir?: string;
   instanceId?: string;
 } = {}): string {
-  return path.resolve(resolvePaperclipInstanceRoot(input), "secrets", "master.key");
+  return path.resolve(resolveWardmoteInstanceRoot(input), "secrets", "master.key");
 }
 
 export function resolveDefaultStorageDir(input: {
   homeDir?: string;
   instanceId?: string;
 } = {}): string {
-  return path.resolve(resolvePaperclipInstanceRoot(input), "data", "storage");
+  return path.resolve(resolveWardmoteInstanceRoot(input), "data", "storage");
 }
 
 export function resolveDefaultBackupDir(input: {
   homeDir?: string;
   instanceId?: string;
 } = {}): string {
-  return path.resolve(resolvePaperclipInstanceRoot(input), "data", "backups");
+  return path.resolve(resolveWardmoteInstanceRoot(input), "data", "backups");
 }
 
 export function resolveHomeAwarePath(value: string): string {

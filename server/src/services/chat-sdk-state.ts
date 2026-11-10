@@ -59,7 +59,7 @@ interface StateEnvelope {
   value: unknown;
 }
 
-export interface PaperclipChatSdkStateOptions extends ChatSdkStateScope {
+export interface WardmoteChatSdkStateOptions extends ChatSdkStateScope {
   maxValueBytes?: number;
   now?: () => Date;
   persistence: ChatSdkStatePersistence;
@@ -115,14 +115,14 @@ function decodeEnvelope(
  * persistence. Instances are endpoint-scoped and never own or close the shared
  * database connection.
  */
-export class PaperclipChatSdkStateAdapter implements StateAdapter {
+export class WardmoteChatSdkStateAdapter implements StateAdapter {
   private readonly scope: ChatSdkStateScope;
   private readonly persistence: ChatSdkStatePersistence;
   private readonly now: () => Date;
   private readonly maxValueBytes: number;
   private connected = false;
 
-  constructor(options: PaperclipChatSdkStateOptions) {
+  constructor(options: WardmoteChatSdkStateOptions) {
     assertBoundedIdentifier(
       "companyId",
       options.companyId,
@@ -470,7 +470,7 @@ export class PaperclipChatSdkStateAdapter implements StateAdapter {
   private ensureConnected(): void {
     if (!this.connected) {
       throw new Error(
-        "PaperclipChatSdkStateAdapter is not connected. Call connect() first.",
+        "WardmoteChatSdkStateAdapter is not connected. Call connect() first.",
       );
     }
   }
@@ -602,8 +602,8 @@ export class PaperclipChatSdkStateAdapter implements StateAdapter {
   }
 }
 
-export function createPaperclipChatSdkState(
-  options: PaperclipChatSdkStateOptions,
-): PaperclipChatSdkStateAdapter {
-  return new PaperclipChatSdkStateAdapter(options);
+export function createWardmoteChatSdkState(
+  options: WardmoteChatSdkStateOptions,
+): WardmoteChatSdkStateAdapter {
+  return new WardmoteChatSdkStateAdapter(options);
 }

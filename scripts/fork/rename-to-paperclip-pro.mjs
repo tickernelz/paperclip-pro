@@ -159,22 +159,22 @@ const FILE_RULES = {
   "cli/src/commands/worktree.ts": [
     lit(
       `import { expandHomePrefix } from "../config/home.js";`,
-      `import { expandHomePrefix, resolvePaperclipHomeDir } from "../config/home.js";`,
+      `import { expandHomePrefix, resolveWardmoteHomeDir } from "../config/home.js";`,
     ),
     lit(
       `const sourceHome = path.resolve(expandHomePrefix(opts.fromDataDir ?? "~/.paperclip"));`,
-      `const sourceHome = opts.fromDataDir ? path.resolve(expandHomePrefix(opts.fromDataDir)) : resolvePaperclipHomeDir();`,
+      `const sourceHome = opts.fromDataDir ? path.resolve(expandHomePrefix(opts.fromDataDir)) : resolveWardmoteHomeDir();`,
     ),
   ],
   "server/src/services/plugin-local-folders.ts": [
     lit(`import os from "node:os";\n`, ``),
     r(
-      String.raw`import \{ badRequest, forbidden, notFound \} from "\.\./errors\.js";(?!\nimport \{ resolvePaperclipHomeDir \})`,
-      `import { badRequest, forbidden, notFound } from "../errors.js";\nimport { resolvePaperclipHomeDir } from "../home-paths.js";`,
+      String.raw`import \{ badRequest, forbidden, notFound \} from "\.\./errors\.js";(?!\nimport \{ resolveWardmoteHomeDir \})`,
+      `import { badRequest, forbidden, notFound } from "../errors.js";\nimport { resolveWardmoteHomeDir } from "../home-paths.js";`,
     ),
     lit(
       `return path.join(os.homedir(), ".paperclip", "plugin-data", companyId, pluginKey);`,
-      `return path.join(resolvePaperclipHomeDir(), "plugin-data", companyId, pluginKey);`,
+      `return path.join(resolveWardmoteHomeDir(), "plugin-data", companyId, pluginKey);`,
     ),
   ],
   "cli/src/__tests__/http.test.ts": [

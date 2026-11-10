@@ -18,7 +18,7 @@ import {
 } from "../commands/install.js";
 import { RELEASE_PACKAGE_NAMES } from "../release-packages.js";
 import { uninstallCommand } from "../commands/uninstall.js";
-import { resolvePaperclipInstanceId } from "../config/home.js";
+import { resolveWardmoteInstanceId } from "../config/home.js";
 import {
   INSTALL_MANIFEST_VERSION,
   flipCurrentAtomic,
@@ -441,7 +441,7 @@ describe("managed install commands", () => {
       ".config",
       "systemd",
       "user",
-      systemdServiceName(resolvePaperclipInstanceId()),
+      systemdServiceName(resolveWardmoteInstanceId()),
     );
     fs.mkdirSync(path.dirname(unitPath), { recursive: true });
     fs.writeFileSync(unitPath, "unit");

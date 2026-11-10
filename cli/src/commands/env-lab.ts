@@ -10,12 +10,12 @@ import {
   startSshEnvLabFixture,
   stopSshEnvLabFixture,
 } from "@tickernelz/wardmote-adapter-utils/ssh";
-import { resolvePaperclipInstanceId, resolvePaperclipInstanceRoot } from "../config/home.js";
+import { resolveWardmoteInstanceId, resolveWardmoteInstanceRoot } from "../config/home.js";
 
 export function resolveEnvLabSshStatePath(instanceId?: string): string {
-  const resolvedInstanceId = resolvePaperclipInstanceId(instanceId);
+  const resolvedInstanceId = resolveWardmoteInstanceId(instanceId);
   return path.resolve(
-    resolvePaperclipInstanceRoot(resolvedInstanceId),
+    resolveWardmoteInstanceRoot(resolvedInstanceId),
     "env-lab",
     "ssh-fixture",
     "state.json",
@@ -215,12 +215,12 @@ export async function envLabDoctorCommand(opts: { instance?: string; json?: bool
   // paths, so it works from any working directory. It passes an inert `argv`
   // value, so no shell reads the argument. See `doc/CLI.md`, "safe invocation".
   //
-  // The doctor diagnoses the instance that `resolvePaperclipInstanceId` selects
+  // The doctor diagnoses the instance that `resolveWardmoteInstanceId` selects
   // from `opts.instance` or the `WARDMOTE_INSTANCE_ID` environment variable.
   // The hint pins that resolved instance, so a contributor who pastes the hint
   // in a shell without `WARDMOTE_INSTANCE_ID` stops the diagnosed fixture, not
   // the default instance.
-  const cleanupInstance = resolvePaperclipInstanceId(opts.instance);
+  const cleanupInstance = resolveWardmoteInstanceId(opts.instance);
   p.log.message(`Cleanup: ${pc.dim(buildEnvLabCleanupCommand({ instance: cleanupInstance }))}`);
 }
 

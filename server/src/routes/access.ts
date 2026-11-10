@@ -185,7 +185,7 @@ function isSafeSkillName(skillName: string): boolean {
 }
 
 /** Resolve the Paperclip repo skills directory (built-in / managed skills). */
-function resolvePaperclipSkillsDir(): string | null {
+function resolveWardmoteSkillsDir(): string | null {
   const moduleDir = path.dirname(fileURLToPath(import.meta.url));
   const candidates = [
     path.resolve(moduleDir, "../../skills"),         // published
@@ -238,7 +238,7 @@ function resolveClaudeSkillsDir(): string {
 
 function listAvailableSkills(): AvailableSkill[] {
   const claudeSkillsDir = resolveClaudeSkillsDir();
-  const paperclipSkillsDir = resolvePaperclipSkillsDir();
+  const paperclipSkillsDir = resolveWardmoteSkillsDir();
 
   // Build set of Paperclip-managed skill names
   const paperclipSkillNames = new Set<string>();

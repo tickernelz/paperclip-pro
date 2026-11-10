@@ -1,5 +1,5 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
-import { resolvePaperclipInstanceId } from "./home-paths.js";
+import { resolveWardmoteInstanceId } from "./home-paths.js";
 
 export interface RuntimeToolsTokenClaims {
   sub: string;
@@ -48,7 +48,7 @@ export function createRuntimeToolsToken(input: {
 }) {
   if (!secret()) return null;
   const now = Math.floor(Date.now() / 1000);
-  const instanceId = resolvePaperclipInstanceId();
+  const instanceId = resolveWardmoteInstanceId();
   const claims: RuntimeToolsTokenClaims = {
     sub: input.agentId,
     company_id: input.companyId,
@@ -81,7 +81,7 @@ export function verifyRuntimeToolsToken(token: string, scope: RuntimeToolsTokenC
   if (header.alg !== "HS256") return null;
   const companyId = typeof claims.company_id === "string" ? claims.company_id : null;
   const instanceId = typeof claims.instance_id === "string" ? claims.instance_id : null;
-  if (!companyId || !instanceId || instanceId !== resolvePaperclipInstanceId()) return null;
+  if (!companyId || !instanceId || instanceId !== resolveWardmoteInstanceId()) return null;
   const expected = sign(`${parts[0]}.${parts[1]}`, companyId, instanceId);
   if (!expected || !safeEqual(parts[2]!, expected)) return null;
   if (

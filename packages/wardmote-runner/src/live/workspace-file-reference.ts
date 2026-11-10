@@ -4,7 +4,7 @@ import { basename, extname, isAbsolute, relative, resolve, sep } from "node:path
 
 export const WARDMOTE_WORKSPACE_FILE_REFERENCE_SCHEMA = "paperclip.workspace.file_reference.v1" as const;
 
-export interface PaperclipWorkspaceFileReference {
+export interface WardmoteWorkspaceFileReference {
   schema: typeof WARDMOTE_WORKSPACE_FILE_REFERENCE_SCHEMA;
   referenceId: string;
   source: "harness_reported" | "runner_verified";
@@ -21,7 +21,7 @@ export interface PaperclipWorkspaceFileReference {
 const MAX_REFERENCES = 32;
 const MAX_LINE_NUMBER = 1_000_000;
 
-function media(path: string): Pick<PaperclipWorkspaceFileReference, "mediaType" | "presentation"> {
+function media(path: string): Pick<WardmoteWorkspaceFileReference, "mediaType" | "presentation"> {
   const extension = extname(path).toLowerCase();
   if ([".md", ".mdx", ".txt", ".rst"].includes(extension)) {
     return { mediaType: extension === ".md" || extension === ".mdx" ? "text/markdown" : "text/plain", presentation: "document" };
@@ -82,10 +82,10 @@ export function paperclipWorkspaceFileReferencesFromText(
   workspace: string,
   assistantText: string,
   turnId: string,
-  source: PaperclipWorkspaceFileReference["source"] = "harness_reported",
-): PaperclipWorkspaceFileReference[] {
+  source: WardmoteWorkspaceFileReference["source"] = "harness_reported",
+): WardmoteWorkspaceFileReference[] {
   const root = resolve(workspace);
-  const references: PaperclipWorkspaceFileReference[] = [];
+  const references: WardmoteWorkspaceFileReference[] = [];
   const seen = new Set<string>();
   const links = assistantText.matchAll(/\[([^\]]+)]\((<[^>]+>|[^)\s]+)(?:\s+["'][^"']*["'])?\)/g);
   for (const match of links) {
@@ -114,18 +114,18 @@ export function paperclipWorkspaceFileReferencesFromText(
   return references;
 }
 
-export async function discoverPaperclipWorkspaceFileReferences(
+export async function discoverWardmoteWorkspaceFileReferences(
   workspace: string,
   assistantText: string,
   turnId: string,
-): Promise<PaperclipWorkspaceFileReference[]> {
+): Promise<WardmoteWorkspaceFileReference[]> {
   let canonicalRoot: string;
   try { canonicalRoot = await realpath(workspace); } catch { return []; }
   // Resolve references from the same canonical root used for the containment
   // check. Do not consult a caller-controlled workspace symlink again after
   // canonicalizing it above.
   const references = paperclipWorkspaceFileReferencesFromText(canonicalRoot, assistantText, turnId, "runner_verified");
-  const verified: PaperclipWorkspaceFileReference[] = [];
+  const verified: WardmoteWorkspaceFileReference[] = [];
   for (const reference of references) {
     let canonicalPath: string;
     try { canonicalPath = await realpath(resolve(canonicalRoot, reference.path)); } catch { continue; }

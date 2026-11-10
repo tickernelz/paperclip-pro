@@ -1,17 +1,17 @@
 import type { CapabilityJsonValue } from "../mock-core/capability-control-plane-types.js";
-import type { PaperclipJsonValue } from "../catalog/semantic-action-types.js";
+import type { WardmoteJsonValue } from "../catalog/semantic-action-types.js";
 
 export const CAPABILITY_REDACTED = "[REDACTED]";
 
 export function redactSemanticValue(value: unknown, key = ""): CapabilityJsonValue {
   if (key.length === 0) {
-    return redactPaperclipSemanticValue(value) as CapabilityJsonValue;
+    return redactWardmoteSemanticValue(value) as CapabilityJsonValue;
   }
-  const wrapped = redactPaperclipSemanticValue({ [key]: value });
+  const wrapped = redactWardmoteSemanticValue({ [key]: value });
   if (typeof wrapped !== "object" || wrapped === null || Array.isArray(wrapped)) {
     return CAPABILITY_REDACTED;
   }
-  const object = wrapped as { readonly [entryKey: string]: PaperclipJsonValue };
+  const object = wrapped as { readonly [entryKey: string]: WardmoteJsonValue };
   return (object[key] ?? CAPABILITY_REDACTED) as CapabilityJsonValue;
 }
 
@@ -33,26 +33,26 @@ const WARDMOTE_MAX_STRING_LENGTH = 200_000;
 export const WARDMOTE_SEMANTIC_REDACTED = "[REDACTED]";
 export const WARDMOTE_SEMANTIC_TRUNCATED = "[TRUNCATED]";
 
-export interface PaperclipSemanticValueSafety {
+export interface WardmoteSemanticValueSafety {
   readonly containsProtectedData: boolean;
   readonly withinBounds: boolean;
 }
 
-export function inspectPaperclipSemanticValue(
+export function inspectWardmoteSemanticValue(
   value: unknown,
-): PaperclipSemanticValueSafety {
+): WardmoteSemanticValueSafety {
   return inspectValueSafety(value, true);
 }
 
 /** Validate transport bounds without inspecting credential content. */
-export function isPaperclipSemanticValueWithinBounds(value: unknown): boolean {
+export function isWardmoteSemanticValueWithinBounds(value: unknown): boolean {
   return inspectValueSafety(value, false).withinBounds;
 }
 
 function inspectValueSafety(
   value: unknown,
   detectCredentials: boolean,
-): PaperclipSemanticValueSafety {
+): WardmoteSemanticValueSafety {
   const state = { nodes: 0, protected: false, withinBounds: true, detectCredentials };
   inspect(value, "", 0, state, new Set<object>());
   return Object.freeze({
@@ -61,9 +61,9 @@ function inspectValueSafety(
   });
 }
 
-export function redactPaperclipSemanticValue(
+export function redactWardmoteSemanticValue(
   value: unknown,
-): PaperclipJsonValue {
+): WardmoteJsonValue {
   const state = { nodes: 0 };
   return redact(value, "", 0, state, new Set<object>());
 }
@@ -143,7 +143,7 @@ function redact(
   depth: number,
   state: { nodes: number },
   ancestors: Set<object>,
-): PaperclipJsonValue {
+): WardmoteJsonValue {
   state.nodes += 1;
   if (state.nodes > WARDMOTE_MAX_NODES || depth > WARDMOTE_MAX_DEPTH) {
     return WARDMOTE_SEMANTIC_TRUNCATED;
@@ -185,7 +185,7 @@ function redact(
           ] as const,
       );
     ancestors.delete(value);
-    const result: Record<string, PaperclipJsonValue> =
+    const result: Record<string, WardmoteJsonValue> =
       Object.fromEntries(entries);
     if (Object.keys(value).length > WARDMOTE_MAX_OBJECT_KEYS) {
       result.__paperclip_truncated__ = WARDMOTE_SEMANTIC_TRUNCATED;

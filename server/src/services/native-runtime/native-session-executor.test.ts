@@ -64,7 +64,7 @@ import {
 } from "../../vendor/wardmote-runner/index.js";
 import * as issueServiceModule from "../issues.js";
 import { NativePermissionDeclinedError } from "./native-permission-decline.js";
-import { resolvePaperclipRunnerNativeProviderInput } from "./provider-profile.js";
+import { resolveWardmoteRunnerNativeProviderInput } from "./provider-profile.js";
 import {
   createNativeHarnessBackupStamp,
   verifyNativeHarnessBackupStamp,
@@ -213,8 +213,8 @@ const state = vi.hoisted(() => ({
 const accountingEvents = vi.hoisted(() => ({ committed: undefined as undefined | ((event: PrpEvent) => Promise<void>), duplicate: undefined as undefined | ((event: PrpEvent) => Promise<void>) }));
 vi.mock("./paperclip-control-plane-port.js", async importOriginal => {
   const original = await importOriginal<typeof import("./paperclip-control-plane-port.js")>();
-  return { ...original, PaperclipControlPlanePort: class extends original.PaperclipControlPlanePort {
-    constructor(...args: ConstructorParameters<typeof original.PaperclipControlPlanePort>) {
+  return { ...original, WardmoteControlPlanePort: class extends original.WardmoteControlPlanePort {
+    constructor(...args: ConstructorParameters<typeof original.WardmoteControlPlanePort>) {
       super(...args);
       accountingEvents.committed = args[2]?.onCommittedEvent;
       accountingEvents.duplicate = args[2]?.onDuplicateEvent;
@@ -242,7 +242,7 @@ vi.mock("../../vendor/wardmote-runner/index.js", async (importOriginal) => {
     settleRetainedRunnerdSession: state.cleanup,
     retainedRunnerdMaintenanceIsIdle: state.maintenanceIdle,
     completeRetainedNativeSessionCleanup: state.retireCleanup,
-    parsePaperclipQuestionSet: (value: unknown) => value,
+    parseWardmoteQuestionSet: (value: unknown) => value,
   };
 });
 
@@ -254,7 +254,7 @@ vi.mock("../ai-providers/codex/codex-auth-copyback.js", async (importOriginal) =
 }));
 
 vi.mock("./paperclip-runner-tool-authority.js", () => ({
-  PaperclipRunnerToolAuthority: class {
+  WardmoteRunnerToolAuthority: class {
     close() {}
     readonly binding: Record<string, unknown>;
 
@@ -300,7 +300,7 @@ vi.mock("../issue-recovery-actions.js", () => ({
 }));
 
 vi.mock("./native-codex-runner.js", () => ({
-  resolvePaperclipRunnerBinary: state.resolveRunnerBinary,
+  resolveWardmoteRunnerBinary: state.resolveRunnerBinary,
 }));
 
 import {
@@ -317,7 +317,7 @@ import {
   createGovernedWaitEventObservation,
   createRemoteRunnerProcessLauncher,
   createRunnerdBackend,
-  executePaperclipNativeSession,
+  executeWardmoteNativeSession,
   detachNativeSessionsForRestart,
   NativeControllerDetachedForRestartError,
   getNativeSessionSteeringState,
@@ -5339,7 +5339,7 @@ describe("native startup cancellation fence", () => {
       }
       throw new Error("provider should not have been submitted");
     });
-    await expect(executePaperclipNativeSession({
+    await expect(executeWardmoteNativeSession({
       db: leaseDb(execution, {}, resultJson), execution, runnerInstanceId: "startup-stop",
     })).rejects.toThrow("native_cancellation_pending_recovery");
     expect(cancel).toHaveBeenCalledOnce();
@@ -5363,7 +5363,7 @@ describe("native startup restart detachment", () => {
       await options.onSession(null);
       throw new Error("settlement test complete");
     });
-    const outcome = executePaperclipNativeSession({ db: leaseDb(restarting), execution: restarting, runnerInstanceId: "runner" }).catch(error => error);
+    const outcome = executeWardmoteNativeSession({ db: leaseDb(restarting), execution: restarting, runnerInstanceId: "runner" }).catch(error => error);
     await checkpointed;
     const detached = detachNativeSessionsForRestart([restarting.binding.runId]);
     try {
@@ -5390,7 +5390,7 @@ describe("native startup restart detachment", () => {
       await options.onSession(null);
       return { result: {}, terminal: { runTerminalState: "succeeded" }, usage: null };
     });
-    const outcome = executePaperclipNativeSession({ db: leaseDb(restarting), execution: restarting, runnerInstanceId: "runner", onUsage }).catch(error => error);
+    const outcome = executeWardmoteNativeSession({ db: leaseDb(restarting), execution: restarting, runnerInstanceId: "runner", onUsage }).catch(error => error);
     await checkpointed;
     vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "Date"] });
     const detaching = detachNativeSessionsForRestart([restarting.binding.runId]);
@@ -5424,7 +5424,7 @@ describe("native startup restart detachment", () => {
       await options.onSession(null);
       throw new Error("detachment closed the old event stream");
     });
-    const running = executePaperclipNativeSession({ db: leaseDb(restarting), execution: restarting, runnerInstanceId: "runner", useRunnerd: true });
+    const running = executeWardmoteNativeSession({ db: leaseDb(restarting), execution: restarting, runnerInstanceId: "runner", useRunnerd: true });
     const outcome = running.catch(error => error);
     let detaching: Promise<unknown> | undefined;
     try {
@@ -5461,7 +5461,7 @@ describe("native startup restart detachment", () => {
       return { result: {},
         terminal: { runTerminalState: "succeeded" }, usage: null };
     });
-    await expect(executePaperclipNativeSession({ db: leaseDb(restarting), execution: restarting,
+    await expect(executeWardmoteNativeSession({ db: leaseDb(restarting), execution: restarting,
       runnerInstanceId: "runner", onUsage })).rejects.toBeInstanceOf(NativeControllerDetachedForRestartError);
     expect(detach).toHaveBeenCalledOnce();
     expect(onUsage).not.toHaveBeenCalled();
@@ -5482,7 +5482,7 @@ describe("native startup restart detachment", () => {
       await opening;
       throw new Error("bootstrap failed before session publication");
     });
-    const outcome = executePaperclipNativeSession({ db: leaseDb(restarting), execution: restarting, runnerInstanceId: "runner", useRunnerd: true }).catch(error => error);
+    const outcome = executeWardmoteNativeSession({ db: leaseDb(restarting), execution: restarting, runnerInstanceId: "runner", useRunnerd: true }).catch(error => error);
     try {
       await admitted;
       if (exceedDeadline) vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
@@ -5516,7 +5516,7 @@ describe("native startup restart detachment", () => {
       await options.onSession(null);
       throw new Error("detachment closed the old event stream");
     });
-    await expect(executePaperclipNativeSession({ db: leaseDb(restarting), execution: restarting, runnerInstanceId: "runner" })).rejects.toBeInstanceOf(NativeControllerDetachedForRestartError);
+    await expect(executeWardmoteNativeSession({ db: leaseDb(restarting), execution: restarting, runnerInstanceId: "runner" })).rejects.toBeInstanceOf(NativeControllerDetachedForRestartError);
   });
 });
 
@@ -5532,7 +5532,7 @@ describe("native terminal-turn accounting", () => {
       await accountingEvents.committed!({ eventType: "turn.interrupted", turnId: "turn", payload: {} } as unknown as PrpEvent);
       return { result: { summary: "Waiting for approval" }, terminal: { runTerminalState: "succeeded" }, turnId: "turn", normalizedSessionId: "session", providerSessionId: null, driverKind: "acpx_runtime", driverVersion: "1", nativeEventCount: 2, highestContiguousSourceSeq: 2, usage: null };
     });
-    await executePaperclipNativeSession({ db: leaseDb(), execution: { ...execution, provider: { kind: "acpx", agent: "claude", model: "claude-sonnet-5" } } as NativeExecutionInput, runnerInstanceId: "runner", runnerEnvironment: { ANTHROPIC_API_KEY: "fixture" }, onUsage });
+    await executeWardmoteNativeSession({ db: leaseDb(), execution: { ...execution, provider: { kind: "acpx", agent: "claude", model: "claude-sonnet-5" } } as NativeExecutionInput, runnerInstanceId: "runner", runnerEnvironment: { ANTHROPIC_API_KEY: "fixture" }, onUsage });
     const receipt = onUsage.mock.calls.at(-1)![0];
     const priced = priceAnthropicReceipt(receipt);
     if (complete) expect(priced).toMatchObject({ complete: true, costStatus: "estimated", costUsdExact: "0.000150000" });
@@ -5561,7 +5561,7 @@ describe("native terminal-turn accounting", () => {
         normalizedSessionId: "session", providerSessionId: null, driverKind: "acpx_runtime", driverVersion: "1",
         nativeEventCount: 6, highestContiguousSourceSeq: 6, usage: null };
     });
-    const result = await executePaperclipNativeSession({ db: leaseDb(execution, {}, {}, [], {}, "running", restart ? first : []),
+    const result = await executeWardmoteNativeSession({ db: leaseDb(execution, {}, {}, [], {}, "running", restart ? first : []),
       execution: { ...execution, provider: { kind: "acpx", agent, model: agent === "codex" ? "gpt-6-astra" : "claude-sonnet-4-6" } } as NativeExecutionInput,
       runnerInstanceId: "runner", runnerEnvironment: { OPENAI_API_KEY: "fixture" }, onUsage });
     expect(result).toMatchObject({ usageComplete: !partialFirst,
@@ -5606,7 +5606,7 @@ describe("native terminal-turn accounting", () => {
         normalizedSessionId: "session", providerSessionId: null, driverKind: "acpx_runtime", driverVersion: "1", nativeEventCount: 2, highestContiguousSourceSeq: 2,
         usage: { runDelta: full, runDeltaComplete: true } };
     });
-    const result = await executePaperclipNativeSession({ db: leaseDb(), execution: { ...execution,
+    const result = await executeWardmoteNativeSession({ db: leaseDb(), execution: { ...execution,
       provider: { kind: "acpx", agent, model: agent === "codex" ? "gpt-6-astra" : "claude-sonnet-4-6" } } as NativeExecutionInput,
       runnerInstanceId: "runner", onUsage });
     expect(result).toMatchObject({ usageComplete: complete });
@@ -5628,7 +5628,7 @@ describe("native terminal-turn accounting", () => {
       return { result: { summary: "interrupted" }, terminal: { runTerminalState: "cancelled" }, turnId: "turn",
         normalizedSessionId: "session", providerSessionId: null, driverKind: "test", driverVersion: "1", nativeEventCount: 2, highestContiguousSourceSeq: 2, usage: { total } };
     });
-    const result = await executePaperclipNativeSession({ db: leaseDb(), execution: { ...execution, provider: { kind: "aws_agentcore", model: "managed-model", agentCoreProfile: { profileId: "agentcore-test" } } } as unknown as NativeExecutionInput, runnerInstanceId: "runner", onUsage });
+    const result = await executeWardmoteNativeSession({ db: leaseDb(), execution: { ...execution, provider: { kind: "aws_agentcore", model: "managed-model", agentCoreProfile: { profileId: "agentcore-test" } } } as unknown as NativeExecutionInput, runnerInstanceId: "runner", onUsage });
     expect(result).toMatchObject({ usageComplete: false, costStatus: "unpriced", billingType: "metered_api" });
   });
 
@@ -5649,7 +5649,7 @@ describe("native terminal-turn accounting", () => {
       return { result: { summary: "cancelled" }, terminal: { runTerminalState: "cancelled" },
         turnId: "turn", normalizedSessionId: "session", providerSessionId: null, driverKind: "test", driverVersion: "1", nativeEventCount: 2, highestContiguousSourceSeq: 2, usage: { total } };
     });
-    const result = await executePaperclipNativeSession({ db: leaseDb(), execution: { ...execution, provider: { kind, model: "managed-model", managedProfile: { profileId: "managed-test" }, agentCoreProfile: { profileId: "agentcore-test" } } } as unknown as NativeExecutionInput, runnerInstanceId: "runner", onUsage });
+    const result = await executeWardmoteNativeSession({ db: leaseDb(), execution: { ...execution, provider: { kind, model: "managed-model", managedProfile: { profileId: "managed-test" }, agentCoreProfile: { profileId: "agentcore-test" } } } as unknown as NativeExecutionInput, runnerInstanceId: "runner", onUsage });
     expect(result).toMatchObject({ usageComplete: true, costUsd: 0.25, billingType: "metered_api", costStatus: kind === "aws_agentcore" ? "estimated" : undefined });
   });
 
@@ -5674,7 +5674,7 @@ describe("native terminal-turn accounting", () => {
         normalizedSessionId: "session", providerSessionId: null, driverKind: "test", driverVersion: "1", nativeEventCount: 6,
         highestContiguousSourceSeq: 6, usage: null };
     });
-    const result = await executePaperclipNativeSession({
+    const result = await executeWardmoteNativeSession({
       db: leaseDb(execution, {}, {}, [], {}, "running", restart ? first : []),
       execution: { ...execution, provider: { kind: provider, model: provider === "opencode" ? "openai/test" : "gpt-6-astra" } } as NativeExecutionInput,
       runnerInstanceId: "runner", onUsage,
@@ -5710,7 +5710,7 @@ describe("native terminal-turn accounting", () => {
         normalizedSessionId: "session", providerSessionId: null, driverKind: "test", driverVersion: "1", nativeEventCount: seq,
         highestContiguousSourceSeq: seq, usage: null };
     });
-    const result = await executePaperclipNativeSession({ db: leaseDb(),
+    const result = await executeWardmoteNativeSession({ db: leaseDb(),
       execution: { ...execution, provider: { kind: "opencode", model: "openai/test" } } as NativeExecutionInput,
       runnerInstanceId: "runner", onUsage });
     const complete = ["unknown_price", "late_update"].includes(scenario);
@@ -5732,7 +5732,7 @@ describe("native terminal-turn accounting", () => {
       expect(onUsage).toHaveBeenLastCalledWith(expect.objectContaining({ complete: true, costUsd: 0.25, usage: { inputTokens: 20, cachedInputTokens: 100, outputTokens: 10 } }));
       throw failure;
     });
-    await expect(executePaperclipNativeSession({ db: leaseDb(), execution: { ...execution, provider: { kind: "codex", model: "gpt-6-astra" } } as NativeExecutionInput, runnerInstanceId: "runner", onUsage })).rejects.toBe(failure);
+    await expect(executeWardmoteNativeSession({ db: leaseDb(), execution: { ...execution, provider: { kind: "codex", model: "gpt-6-astra" } } as NativeExecutionInput, runnerInstanceId: "runner", onUsage })).rejects.toBe(failure);
     expect(onUsage).toHaveBeenLastCalledWith(expect.objectContaining({ complete: true }));
   });
   it("clears provisional unpriced status when direct database persistence receives complete usage", async () => {
@@ -5742,7 +5742,7 @@ describe("native terminal-turn accounting", () => {
       return { result: { summary: "cancelled" }, terminal: { runTerminalState: "cancelled" },
         turnId: "turn", normalizedSessionId: "session", providerSessionId: null, driverKind: "test", driverVersion: "1", nativeEventCount: 1, highestContiguousSourceSeq: 1, usage: null };
     });
-    await executePaperclipNativeSession({ db: leaseDb(execution, {}, {}, updates), execution, runnerInstanceId: "runner" });
+    await executeWardmoteNativeSession({ db: leaseDb(execution, {}, {}, updates), execution, runnerInstanceId: "runner" });
     const dialect = new PgDialect();
     const writes = updates.filter(update => update.values.usageJson).map(update =>
       JSON.parse(dialect.sqlToQuery(update.values.usageJson as SQL).params[0] as string) as Record<string, unknown>);
@@ -5768,7 +5768,7 @@ describe("native terminal-turn accounting", () => {
         usage: { runDelta: scenario === "stale_warm_zero" ? { inputTokens: 0, outputTokens: 0, providerCostUsd: 0 } : runDelta },
       };
     });
-    const result = await executePaperclipNativeSession({ db: leaseDb(), execution: { ...execution, provider: { kind: "codex", model: "gpt-6-astra" } } as NativeExecutionInput, runnerInstanceId: "runner", runnerEnvironment: { OPENAI_API_KEY: "fixture" }, onUsage });
+    const result = await executeWardmoteNativeSession({ db: leaseDb(), execution: { ...execution, provider: { kind: "codex", model: "gpt-6-astra" } } as NativeExecutionInput, runnerInstanceId: "runner", runnerEnvironment: { OPENAI_API_KEY: "fixture" }, onUsage });
     const complete = ["fresh", "fresh_zero"].includes(scenario);
     expect(result.usageComplete).toBe(complete);
     expect(onUsage).toHaveBeenLastCalledWith(expect.objectContaining({ complete }));
@@ -5789,7 +5789,7 @@ describe("native terminal-turn accounting", () => {
       if (scenario !== "missing_terminal") await accountingEvents.committed!({ eventType: scenario.startsWith("turn.") ? scenario : "turn.failed", turnId: scenario === "different_turn" ? "another-turn" : "turn", emittedAt: new Date().toISOString(), payload: { status: "failed" } } as unknown as PrpEvent);
       throw failure;
     });
-    await expect(executePaperclipNativeSession({ db: leaseDb(), execution: { ...execution, provider: { kind: "codex", model: "gpt-6-astra" } } as NativeExecutionInput, runnerInstanceId: "runner", onUsage })).rejects.toBe(failure);
+    await expect(executeWardmoteNativeSession({ db: leaseDb(), execution: { ...execution, provider: { kind: "codex", model: "gpt-6-astra" } } as NativeExecutionInput, runnerInstanceId: "runner", onUsage })).rejects.toBe(failure);
     if (scenario === "session_total") expect(onUsage).not.toHaveBeenCalled();
     else if (scenario === "empty_usage") expect(onUsage).toHaveBeenLastCalledWith(expect.objectContaining({ complete: false, usage: undefined, costUsd: null, costStatus: "unpriced" }));
     else {
@@ -5816,7 +5816,7 @@ describe("native resumed preparation timing", () => {
     });
     const clock = vi.spyOn(Date, "now").mockReturnValue(answeredAtMs + 100);
     try {
-      await executePaperclipNativeSession({
+      await executeWardmoteNativeSession({
         db: leaseDb(),
         execution,
         runnerInstanceId: "runner",
@@ -5875,7 +5875,7 @@ describe("native resumed preparation timing", () => {
       .spyOn(Date, "now")
       .mockReturnValue(attemptStartedAtMs + 50);
     try {
-      await executePaperclipNativeSession({
+      await executeWardmoteNativeSession({
         db: leaseDb(),
         execution,
         runnerInstanceId: "runner",
@@ -5968,7 +5968,7 @@ describe("native session cancellation", () => {
       };
     });
     const runResultJson: Record<string, unknown> = {};
-    const running = executePaperclipNativeSession({
+    const running = executeWardmoteNativeSession({
       db: leaseDb(execution, {}, runResultJson), execution, runnerInstanceId: "runner", useRunnerd,
     });
     const outcome = running.catch(error => error);
@@ -5977,7 +5977,7 @@ describe("native session cancellation", () => {
     let acknowledged = false;
     try {
       await admitted;
-      await expect(executePaperclipNativeSession({
+      await expect(executeWardmoteNativeSession({
         db: leaseDb(), execution, runnerInstanceId: "duplicate-runner", useRunnerd,
       })).rejects.toThrow("native_session_supervisor_busy");
       stopping = cancelNativeSession(execution.binding.runId, "operator Stop during startup", {
@@ -6023,7 +6023,7 @@ describe("native session cancellation", () => {
       submitTurn();
       throw new Error("a stopped startup must not reach prompt submission");
     });
-    const outcome = executePaperclipNativeSession({ db: leaseDb(), execution, runnerInstanceId: "runner", useRunnerd }).catch(error => error);
+    const outcome = executeWardmoteNativeSession({ db: leaseDb(), execution, runnerInstanceId: "runner", useRunnerd }).catch(error => error);
     const persistence = cancellationDb();
     try {
       await admitted;
@@ -6047,7 +6047,7 @@ describe("native session cancellation", () => {
   });
 
   it("routes control-plane cancellation to the active normalized session and removes the handle", async () => {
-    const running = executePaperclipNativeSession({
+    const running = executeWardmoteNativeSession({
       db: leaseDb(),
       execution,
       runnerInstanceId: "runner",
@@ -6077,7 +6077,7 @@ describe("native session cancellation", () => {
     state.cancel.mockImplementationOnce(() => {
       throw new Error("transport unavailable");
     });
-    const running = executePaperclipNativeSession({
+    const running = executeWardmoteNativeSession({
       db: leaseDb(),
       execution,
       runnerInstanceId: "runner",
@@ -6103,7 +6103,7 @@ describe("native session cancellation", () => {
     state.cancel.mockImplementationOnce(() => ({
       cleanup: Promise.reject(new Error("provider cleanup failed")),
     }));
-    const running = executePaperclipNativeSession({
+    const running = executeWardmoteNativeSession({
       db: leaseDb(),
       execution,
       runnerInstanceId: "runner",
@@ -6225,7 +6225,7 @@ describe("native session cancellation", () => {
 
   it("recovers a post-dispatch persistence failure without cancelling the provider twice", async () => {
     const persistence = cancellationDb({ failResultJsonUpdateAt: 2 });
-    const running = executePaperclipNativeSession({
+    const running = executeWardmoteNativeSession({
       db: leaseDb(),
       execution,
       runnerInstanceId: "runner",
@@ -6356,7 +6356,7 @@ describe("native session execution lease fencing", () => {
     state.createTransport.mockClear();
 
     await expect(
-      executePaperclipNativeSession({
+      executeWardmoteNativeSession({
         db: leaseDb(execution, {
           phase: "workspace_finalizing",
           resultId: "native-result-1",
@@ -6378,7 +6378,7 @@ describe("native session execution lease fencing", () => {
       state.createTransport.mockClear();
 
       await expect(
-        executePaperclipNativeSession({
+        executeWardmoteNativeSession({
           db: leaseDb(
             execution,
             {},
@@ -6448,7 +6448,7 @@ describe("native runtime request resolution", () => {
   });
 
   it("revalidates lifecycle after provider reads and blocks stale dispatch", async () => {
-    const running = executePaperclipNativeSession({
+    const running = executeWardmoteNativeSession({
       db: leaseDb(),
       execution,
       runnerInstanceId: "runner",
@@ -6477,7 +6477,7 @@ describe("native runtime request resolution", () => {
   });
 
   it("atomically joins duplicate responses and rejects a concurrent conflict", async () => {
-    const running = executePaperclipNativeSession({
+    const running = executeWardmoteNativeSession({
       db: leaseDb(),
       execution,
       runnerInstanceId: "runner",
@@ -6534,7 +6534,7 @@ describe("native runtime request resolution", () => {
   });
 
   it("clears completed response reservations when the session tears down", async () => {
-    const firstSession = executePaperclipNativeSession({
+    const firstSession = executeWardmoteNativeSession({
       db: leaseDb(),
       execution,
       runnerInstanceId: "runner",
@@ -6551,7 +6551,7 @@ describe("native runtime request resolution", () => {
     await firstSession;
 
     state.release = null;
-    const secondSession = executePaperclipNativeSession({
+    const secondSession = executeWardmoteNativeSession({
       db: leaseDb(),
       execution,
       runnerInstanceId: "runner",
@@ -6603,7 +6603,7 @@ describe("native session same-turn steering", () => {
   });
 
   async function startActiveSession() {
-    const running = executePaperclipNativeSession({
+    const running = executeWardmoteNativeSession({
       db: leaseDb(),
       execution,
       runnerInstanceId: "runner",
@@ -7001,7 +7001,7 @@ describe("native warm session supervision", () => {
         current.runtimeContext = await buildNativeRuntimeContext({ db, agent, runId, runtimeConfig: {}, runtimeSkillEntries: [],
           instructionWorkingCopy: { rootPath: active!.executionRoot, entryPath: "AGENTS.md", kind: "agent_files" } });
         expect(current.runtimeContext.instructions.workingCopy?.rootPath).toBe(originalRoot);
-        await executePaperclipNativeSession({ db, execution: current, runnerInstanceId: environmentId, runnerExecutionTarget: target, instructionWorkingCopy: capability() });
+        await executeWardmoteNativeSession({ db, execution: current, runnerInstanceId: environmentId, runnerExecutionTarget: target, instructionWorkingCopy: capability() });
         if (prior) expect(state.execute.mock.calls.at(-1)?.[0].existingSession).toBe(session);
         expect(closed).toBe(false);
         await release?.(); expect(closed).toBe(false);
@@ -7136,7 +7136,7 @@ describe("native warm session supervision", () => {
         driverKind: "test", driverVersion: "1", nativeEventCount: 1, highestContiguousSourceSeq: 1, usage: null };
     });
     try {
-      await executePaperclipNativeSession({ db: leaseDb(warmExecution), execution: warmExecution,
+      await executeWardmoteNativeSession({ db: leaseDb(warmExecution), execution: warmExecution,
         runnerInstanceId: identity, runnerExecutionTarget: { kind: "remote", transport: "sandbox", environmentId: identity, remoteCwd: `/tmp/${identity}` },
         instructionWorkingCopy: { runId: identity, root: localRoot, preparationKey: "same-preparation", hasChanges: () => copies.hasChanges(row), collectStopped } });
       expect(close).not.toHaveBeenCalled();
@@ -7165,7 +7165,7 @@ describe("native warm session supervision", () => {
         environmentId: identity, runId: second.binding.runId, preparationKey: "same-preparation",
         adopt: async () => currentCopy });
       expect(release).toBeTypeOf("function");
-      await executePaperclipNativeSession({ db: leaseDb(second), execution: second, runnerInstanceId: identity,
+      await executeWardmoteNativeSession({ db: leaseDb(second), execution: second, runnerInstanceId: identity,
         runnerExecutionTarget: { kind: "remote", transport: "sandbox", environmentId: identity, remoteCwd: `/tmp/${identity}` },
         instructionWorkingCopy: currentCopy });
       expect(state.execute.mock.calls.at(-1)?.[0].existingSession).toBe(session);
@@ -7221,7 +7221,7 @@ describe("native warm session supervision", () => {
       executionWorkspaceId: first.binding.executionWorkspaceId, workspace: first.workspace, environmentId: identity,
       runId: second.binding.runId, preparationKey: "key", adopt };
     try {
-      await executePaperclipNativeSession({ db: leaseDb(first), execution: first, runnerInstanceId: identity, runnerExecutionTarget: target, instructionWorkingCopy: copy });
+      await executeWardmoteNativeSession({ db: leaseDb(first), execution: first, runnerInstanceId: identity, runnerExecutionTarget: target, instructionWorkingCopy: copy });
       if (scenario.startsWith("foreign")) {
         expect(await claimWarmNativeInstructionCopy({ ...claim,
           ...(scenario === "foreign-company" ? { companyId: "other" } : { executionWorkspaceId: "other" }) })).toBeNull();
@@ -7232,7 +7232,7 @@ describe("native warm session supervision", () => {
         if (scenario === "final-config" || scenario === "changed-root" || scenario === "late-edit") {
           lateEdit = scenario === "late-edit";
           const changed = scenario !== "final-config" ? second : { ...second, session: { ...second.session, lifecyclePolicy: { mode: "warm" as const, idleTimeoutMs: 99_000 } } };
-          await expect(executePaperclipNativeSession({ db: leaseDb(changed), execution: changed, runnerInstanceId: identity,
+          await expect(executeWardmoteNativeSession({ db: leaseDb(changed), execution: changed, runnerInstanceId: identity,
             runnerExecutionTarget: target, instructionWorkingCopy: current })).rejects.toThrow(scenario === "late-edit"
               ? "native_instruction_preparation_copy_changed" : "native_instruction_preparation_configuration_changed");
           expect(state.execute).toHaveBeenCalledOnce();
@@ -7275,7 +7275,7 @@ describe("native warm session supervision", () => {
       return scenario === "wrong-capability" ? { ...current, runId: "foreign" } : current;
     });
     try {
-      await executePaperclipNativeSession({ db: leaseDb(first), execution: first, runnerInstanceId: identity, runnerExecutionTarget: target, instructionWorkingCopy: priorCopy });
+      await executeWardmoteNativeSession({ db: leaseDb(first), execution: first, runnerInstanceId: identity, runnerExecutionTarget: target, instructionWorkingCopy: priorCopy });
       priorCopy.hasChanges.mockClear();
       const claiming = claimWarmNativeInstructionCopy({ priorExecution: first, companyId: first.binding.companyId, agentId: first.binding.agentId,
         executionWorkspaceId: first.binding.executionWorkspaceId, workspace: first.workspace, environmentId: identity,
@@ -7325,10 +7325,10 @@ describe("native warm session supervision", () => {
       });
     vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
     try {
-      await executePaperclipNativeSession({ db: leaseDb(current), execution: current, runnerInstanceId: name,
+      await executeWardmoteNativeSession({ db: leaseDb(current), execution: current, runnerInstanceId: name,
         runnerEnvironment: configuredEnvironmentProjection(before) });
       const next = { ...current, binding: { ...current.binding, runId: `${name}-two` } };
-      await executePaperclipNativeSession({ db: leaseDb(next), execution: next, runnerInstanceId: name,
+      await executeWardmoteNativeSession({ db: leaseDb(next), execution: next, runnerInstanceId: name,
         runnerEnvironment: configuredEnvironmentProjection(after) });
       expect(first.close).toHaveBeenCalledTimes(replaced ? 1 : 0);
       if (replaced) expect(first.close).toHaveBeenCalledWith({ reason: "warm native session configuration changed" });
@@ -7364,7 +7364,7 @@ describe("native warm session supervision", () => {
       return terminalResult;
     });
     try {
-      const result = await executePaperclipNativeSession({ db: leaseDb(current), execution: current,
+      const result = await executeWardmoteNativeSession({ db: leaseDb(current), execution: current,
         runnerInstanceId: name, runnerExecutionTarget: target, ...(managedFiles ? { instructionWorkingCopy: copy } : {}) });
       expect(result.exitCode).toBe(1);
       // Heartbeat stops failed/cancelled sandboxes after the native executor
@@ -7386,7 +7386,7 @@ describe("native warm session supervision", () => {
         expect(options.existingSession).toBeUndefined();
         return { ...terminalResult, terminal: { runTerminalState: "succeeded" } };
       });
-      await expect(executePaperclipNativeSession({ db: leaseDb(next), execution: next,
+      await expect(executeWardmoteNativeSession({ db: leaseDb(next), execution: next,
         runnerInstanceId: `${name}-two`, runnerExecutionTarget: target })).resolves.toMatchObject({ exitCode: 0 });
       expect(close).toHaveBeenCalledOnce();
     } finally {
@@ -7411,7 +7411,7 @@ describe("native warm session supervision", () => {
         turnId: name, normalizedSessionId: name, providerSessionId: name, driverKind: "test", driverVersion: "1",
         nativeEventCount: 1, highestContiguousSourceSeq: 1, usage: null };
     });
-    await expect(executePaperclipNativeSession({ db: leaseDb(current), execution: current, runnerInstanceId: name,
+    await expect(executeWardmoteNativeSession({ db: leaseDb(current), execution: current, runnerInstanceId: name,
       instructionWorkingCopy: { runId: name, root: `/tmp/${name}`, checkpointWarm, collectStopped, hasChanges: vi.fn() },
     })).resolves.toMatchObject({ exitCode: 1 });
     expect(checkpointWarm).toHaveBeenCalledOnce();
@@ -7438,7 +7438,7 @@ describe("native warm session supervision", () => {
         turnId: name, normalizedSessionId: name, providerSessionId: name, driverKind: "test", driverVersion: "1",
         nativeEventCount: 1, highestContiguousSourceSeq: 1, usage: null };
     });
-    await expect(executePaperclipNativeSession({ db: leaseDb(current), execution: current, runnerInstanceId: name,
+    await expect(executeWardmoteNativeSession({ db: leaseDb(current), execution: current, runnerInstanceId: name,
       instructionWorkingCopy: { runId: name, root: `/tmp/${name}`, collectStopped, hasChanges: vi.fn(),
         checkpointWarm: async () => { throw failure; } },
     })).rejects.toBe(failure);
@@ -7465,7 +7465,7 @@ describe("native warm session supervision", () => {
         turnId: name, normalizedSessionId: name, providerSessionId: name, driverKind: "test", driverVersion: "1",
         nativeEventCount: 1, highestContiguousSourceSeq: 1, usage: null };
     });
-    await expect(executePaperclipNativeSession({ db: leaseDb(current), execution: current, runnerInstanceId: name,
+    await expect(executeWardmoteNativeSession({ db: leaseDb(current), execution: current, runnerInstanceId: name,
       instructionWorkingCopy: { runId: name, root: `/tmp/${name}`, checkpointWarm, collectStopped, hasChanges: vi.fn() },
     })).resolves.toMatchObject({ exitCode: 1 });
     expect(checkpointWarm).toHaveBeenCalledOnce();
@@ -7489,7 +7489,7 @@ describe("native warm session supervision", () => {
       const target = { kind: "remote" as const, transport: "sandbox" as const, environmentId: name, remoteCwd: `/tmp/${name}`, sandboxLeaseAcquisition: { outcome: "created" as const, providerLeaseId: name } };
       const copy = { runId: current.binding.runId, root: `/tmp/${name}/home`, collectStopped, checkpointWarm, hasChanges: vi.fn(async () => true) };
       state.execute.mockReset().mockImplementationOnce(async options => { await options.onSession?.(session); return result; });
-      const run = (next: NativeExecutionInputV1, nextCopy = copy) => executePaperclipNativeSession({
+      const run = (next: NativeExecutionInputV1, nextCopy = copy) => executeWardmoteNativeSession({
         db: leaseDb(next), execution: next, runnerInstanceId: name, runnerExecutionTarget: target, instructionWorkingCopy: nextCopy });
       await run(current);
       const reserve = (canReuse: () => Promise<boolean>, nextTarget = target) => reserveWarmNativeInstructionDirectory({
@@ -7613,7 +7613,7 @@ describe("native warm session supervision", () => {
         turnId: identity, normalizedSessionId: identity, providerSessionId: identity,
         driverKind: "test", driverVersion: "1", nativeEventCount: 1, highestContiguousSourceSeq: 1, usage: null };
     });
-    const running = executePaperclipNativeSession({ db: leaseDb(warmExecution), execution: warmExecution,
+    const running = executeWardmoteNativeSession({ db: leaseDb(warmExecution), execution: warmExecution,
       runnerInstanceId: identity, runnerExecutionTarget: { kind: "remote", transport: "sandbox", environmentId: identity, remoteCwd: `/tmp/${identity}` },
       instructionWorkingCopy: { hasChanges, collectStopped } });
     const observed = running.then(() => null, error => error);
@@ -7670,7 +7670,7 @@ describe("native warm session supervision", () => {
       } as NativeExecutionInputV1;
       const next = { ...base, binding: { ...base.binding, runId: `${name}-second` },
         session: { ...base.session, normalizedSessionId: `${name}-new` } };
-      const run = (input: NativeExecutionInputV1) => executePaperclipNativeSession({
+      const run = (input: NativeExecutionInputV1) => executeWardmoteNativeSession({
         db: leaseDb(input), execution: input, runnerInstanceId: "runner",
       });
       return { base, next, run };
@@ -7687,8 +7687,8 @@ describe("native warm session supervision", () => {
         expect(options.existingSession).toBeUndefined();
         return result;
       });
-      await executePaperclipNativeSession({ db: leaseDb(base), execution: base, runnerInstanceId: "runner" });
-      await executePaperclipNativeSession({ db: leaseDb(next), execution: next, runnerInstanceId: "runner",
+      await executeWardmoteNativeSession({ db: leaseDb(base), execution: base, runnerInstanceId: "runner" });
+      await executeWardmoteNativeSession({ db: leaseDb(next), execution: next, runnerInstanceId: "runner",
         runnerEnvironment: { WARDMOTE_AGENT_KEY_ID: "sha256:identity-key" } });
       expect(state.execute).toHaveBeenCalledTimes(2);
     });
@@ -7781,7 +7781,7 @@ describe("native warm session supervision", () => {
           highestContiguousSourceSeq: 1,
         };
       });
-      await executePaperclipNativeSession({
+      await executeWardmoteNativeSession({
         db: leaseDb(),
         execution,
         runnerInstanceId: "runner",
@@ -7814,7 +7814,7 @@ describe("native warm session supervision", () => {
       };
     });
     await expect(
-      executePaperclipNativeSession({
+      executeWardmoteNativeSession({
         db: leaseDb(),
         execution,
         runnerInstanceId: "runner",
@@ -7860,7 +7860,7 @@ describe("native warm session supervision", () => {
       };
     });
 
-    await executePaperclipNativeSession({
+    await executeWardmoteNativeSession({
       db: leaseDb(warmExecution),
       execution: warmExecution,
       runnerInstanceId: "runner-warm-environment-delete",
@@ -7892,7 +7892,7 @@ describe("native warm session supervision", () => {
 
   it.each(["checkpoint first", "turn first"])("serializes restart checkpoint and turn admission: %s", async (order) => {
     const stateBase = await mkdtemp(join(tmpdir(), "paperclip-close-race-"));
-    const previousPaperclipHome = process.env.WARDMOTE_HOME;
+    const previousWardmoteHome = process.env.WARDMOTE_HOME;
     process.env.WARDMOTE_HOME = stateBase;
     let finishClose!: () => void;
     const closing = new Promise<void>((resolve) => { finishClose = resolve; });
@@ -7927,7 +7927,7 @@ describe("native warm session supervision", () => {
         await options.onSession?.({ close });
         return result;
       });
-      await executePaperclipNativeSession({
+      await executeWardmoteNativeSession({
         db: leaseDb(first), execution: first,
         runnerInstanceId: "runner-close-race", useRunnerd: true,
       });
@@ -7943,7 +7943,7 @@ describe("native warm session supervision", () => {
       });
       const shutdown = order === "checkpoint first" ? closeIdleWarmNativeSessionsForRestart() : undefined;
       if (shutdown) await vi.waitFor(() => expect(close).toHaveBeenCalledOnce());
-      const continuation = executePaperclipNativeSession({
+      const continuation = executeWardmoteNativeSession({
         db: leaseDb(second), execution: second,
         runnerInstanceId: "runner-close-race", useRunnerd: true,
       }).catch((error) => error);
@@ -7964,8 +7964,8 @@ describe("native warm session supervision", () => {
     } finally {
       finishClose();
       await closeIdleWarmNativeSessionsForRestart();
-      if (previousPaperclipHome === undefined) delete process.env.WARDMOTE_HOME;
-      else process.env.WARDMOTE_HOME = previousPaperclipHome;
+      if (previousWardmoteHome === undefined) delete process.env.WARDMOTE_HOME;
+      else process.env.WARDMOTE_HOME = previousWardmoteHome;
       await rm(stateBase, { recursive: true, force: true });
     }
   });
@@ -8009,7 +8009,7 @@ describe("native warm session supervision", () => {
       };
     });
     let settled = false;
-    const running = executePaperclipNativeSession({
+    const running = executeWardmoteNativeSession({
       db: leaseDb(warmExecution),
       execution: warmExecution,
       runnerInstanceId: "runner-warm-restart-release",
@@ -8029,7 +8029,7 @@ describe("native warm session supervision", () => {
     const stateBase = await mkdtemp(
       join(tmpdir(), "paperclip-warm-same-run-recovery-"),
     );
-    const previousPaperclipHome = process.env.WARDMOTE_HOME;
+    const previousWardmoteHome = process.env.WARDMOTE_HOME;
     process.env.WARDMOTE_HOME = stateBase;
     const activeRun = {
       ...execution,
@@ -8094,7 +8094,7 @@ describe("native warm session supervision", () => {
       });
 
     try {
-      await executePaperclipNativeSession({
+      await executeWardmoteNativeSession({
         db: leaseDb(activeRun),
         execution: activeRun,
         runnerInstanceId: "runner-warm-same-run-recovery",
@@ -8103,17 +8103,17 @@ describe("native warm session supervision", () => {
         timeout: 500,
       });
       await expect(
-        executePaperclipNativeSession({
+        executeWardmoteNativeSession({
           db: leaseDb(activeRun),
           execution: activeRun,
           runnerInstanceId: "runner-warm-same-run-recovery",
         }),
       ).resolves.toBeDefined();
     } finally {
-      if (previousPaperclipHome === undefined) {
+      if (previousWardmoteHome === undefined) {
         delete process.env.WARDMOTE_HOME;
       } else {
-        process.env.WARDMOTE_HOME = previousPaperclipHome;
+        process.env.WARDMOTE_HOME = previousWardmoteHome;
       }
       await rm(stateBase, { recursive: true, force: true });
     }
@@ -8169,12 +8169,12 @@ describe("native warm session supervision", () => {
         return result;
       });
 
-    await executePaperclipNativeSession({
+    await executeWardmoteNativeSession({
       db: leaseDb(base),
       execution: base,
       runnerInstanceId: "runner",
     });
-    await executePaperclipNativeSession({
+    await executeWardmoteNativeSession({
       db: leaseDb(second),
       execution: second,
       runnerInstanceId: "runner",
@@ -8237,12 +8237,12 @@ describe("native warm session supervision", () => {
         return result;
       });
 
-    await executePaperclipNativeSession({
+    await executeWardmoteNativeSession({
       db: leaseDb(first),
       execution: first,
       runnerInstanceId: "runner-native-warm-quarantined",
     });
-    await executePaperclipNativeSession({
+    await executeWardmoteNativeSession({
       db: leaseDb(second),
       execution: second,
       runnerInstanceId: "runner-native-warm-quarantined",
@@ -8353,7 +8353,7 @@ describe("native warm session supervision", () => {
         join(tmpdir(), "wardmote-runnerd-warm-authority-"),
       );
       const previousStateDirectory = process.env.WARDMOTE_RUNNER_STATE_DIR;
-      const previousPaperclipHome = process.env.WARDMOTE_HOME;
+      const previousWardmoteHome = process.env.WARDMOTE_HOME;
       process.env.WARDMOTE_RUNNER_STATE_DIR = stateBase;
       process.env.WARDMOTE_HOME = stateBase;
       const firstClose = vi.fn(async () => undefined);
@@ -8461,7 +8461,7 @@ describe("native warm session supervision", () => {
         });
 
       try {
-        await executePaperclipNativeSession({
+        await executeWardmoteNativeSession({
           db: leaseDb(first),
           execution: first,
           runnerEnvironment: {
@@ -8556,7 +8556,7 @@ describe("native warm session supervision", () => {
             }),
           }),
         } as unknown as Db;
-        await executePaperclipNativeSession({
+        await executeWardmoteNativeSession({
           db: continuationDb,
           execution: second,
           runnerEnvironment: {
@@ -8607,10 +8607,10 @@ describe("native warm session supervision", () => {
         } else {
           process.env.WARDMOTE_RUNNER_STATE_DIR = previousStateDirectory;
         }
-        if (previousPaperclipHome === undefined) {
+        if (previousWardmoteHome === undefined) {
           delete process.env.WARDMOTE_HOME;
         } else {
-          process.env.WARDMOTE_HOME = previousPaperclipHome;
+          process.env.WARDMOTE_HOME = previousWardmoteHome;
         }
         await rm(stateBase, { recursive: true, force: true });
       }
@@ -8674,12 +8674,12 @@ describe("native warm session supervision", () => {
         return result;
       });
 
-    await executePaperclipNativeSession({
+    await executeWardmoteNativeSession({
       db: leaseDb(base),
       execution: base,
       runnerInstanceId: "runner-first",
     });
-    await executePaperclipNativeSession({
+    await executeWardmoteNativeSession({
       db: leaseDb(second),
       execution: second,
       runnerInstanceId: "runner-second",
@@ -8768,14 +8768,14 @@ describe("native warm session supervision", () => {
     // Advance that window only after proving the permission change closed it.
     vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
     try {
-      await executePaperclipNativeSession({
+      await executeWardmoteNativeSession({
         db: leaseDb(base),
         execution: base,
         managedAiCredentialIdentity: "first-identity",
         runnerInstanceId: "runner",
       });
       contract?.mockReturnValue(currentRuntimeContract);
-      await executePaperclipNativeSession({
+      await executeWardmoteNativeSession({
         db: leaseDb(lowered),
         execution: lowered,
         managedAiCredentialIdentity: change === "managed credential" ? "second-identity" : "first-identity",
@@ -8804,7 +8804,7 @@ describe("native session bounded recovery", () => {
     const updateIssue = vi.fn(async () => ({ status: "blocked", statusVersion: 7 }));
     const service = vi.spyOn(issueServiceModule, "issueService").mockReturnValue({ update: updateIssue } as unknown as ReturnType<typeof issueServiceModule.issueService>);
     try {
-    await expect(executePaperclipNativeSession({ db: leaseDb(execution, {}, {}, updates), execution, runnerInstanceId: "runner" })).rejects.toBe(failure);
+    await expect(executeWardmoteNativeSession({ db: leaseDb(execution, {}, {}, updates), execution, runnerInstanceId: "runner" })).rejects.toBe(failure);
     expect(updates.find(update => update.table === nativeRunFinalizations && update.values.phase === "terminal_failure")?.values).toMatchObject({
       failureCode: "native_permission_declined", nextAttemptAt: null,
       failureDetail: { recoverable: false, nextAction: expect.stringContaining("Automatic recovery is stopped") },
@@ -8827,7 +8827,7 @@ describe("native session bounded recovery", () => {
       throw failureKind === "permission-declined" ? new NativePermissionDeclinedError() : new Error("native_finalization_missing: session returned no semantic result");
     });
     state.upsertRecoveryAction.mockClear();
-    await expect(executePaperclipNativeSession({
+    await expect(executeWardmoteNativeSession({
       db: leaseDb(execution, {}, stop, updates), execution, runnerInstanceId: "stop-before-completion",
     })).rejects.toThrow("native_cancellation_pending_recovery");
     expect(updates.some(update => update.table === heartbeatRuns && update.values.status === "failed")).toBe(false);
@@ -8847,7 +8847,7 @@ describe("native session bounded recovery", () => {
       throw new Error("native_session_cancelled");
     });
     state.upsertRecoveryAction.mockClear();
-    await expect(executePaperclipNativeSession({
+    await expect(executeWardmoteNativeSession({
       db: leaseDb(execution, {}, stop, updates), execution, runnerInstanceId: "stop-before-first-turn",
     })).rejects.toThrow("native_cancellation_pending_recovery");
     expect(updates.some(update => update.table === heartbeatRuns && update.values.status === "failed")).toBe(false);
@@ -8936,7 +8936,7 @@ describe("native session bounded recovery", () => {
         >);
       try {
         await expect(
-          executePaperclipNativeSession({
+          executeWardmoteNativeSession({
             db,
             execution,
             runnerInstanceId: "runner",
@@ -9056,7 +9056,7 @@ describe("native session bounded recovery", () => {
       update: vi.fn(async () => ({ status: "blocked", statusVersion: 1 })),
     } as unknown as ReturnType<typeof issueServiceModule.issueService>);
     try {
-      await expect(executePaperclipNativeSession({
+      await expect(executeWardmoteNativeSession({
         db: leaseDb(execution, {}, {}, updates), execution, runnerInstanceId: "runner",
         runnerEnvironment: { WARDMOTE_AGENT_PRIVATE_KEY: privateKeyPem },
         onLog: async (_stream, text) => { logs.push(text); },
@@ -9085,7 +9085,7 @@ describe("native session bounded recovery", () => {
       >);
     try {
       await expect(
-        executePaperclipNativeSession({
+        executeWardmoteNativeSession({
           db: leaseDb(execution, {}, {}, updates),
           execution,
           runnerInstanceId: "runner",
@@ -9148,7 +9148,7 @@ describe("native session bounded recovery", () => {
         );
       }
       await expect(
-        executePaperclipNativeSession({
+        executeWardmoteNativeSession({
           db: leaseDb(execution, {}, {}, updates),
           execution,
           runnerInstanceId: "runner",
@@ -9500,7 +9500,7 @@ describe("native process ownership", () => {
       highestContiguousSourceSeq: 1,
       usage: null,
     });
-    await executePaperclipNativeSession({
+    await executeWardmoteNativeSession({
       db: leaseDb(),
       execution,
       runnerInstanceId: "runner-current-wake-receipt",
@@ -9516,7 +9516,7 @@ describe("native process ownership", () => {
     "refuses native provider claims after the run became %s", async status => {
       const updates: Array<{ table: unknown; values: Record<string, unknown> }> = [];
       state.createBackend.mockClear();
-      await expect(executePaperclipNativeSession({
+      await expect(executeWardmoteNativeSession({
         db: leaseDb(execution, {}, {}, updates, {}, status), execution, runnerInstanceId: "late-startup",
       })).rejects.toThrow();
       expect(state.createBackend).not.toHaveBeenCalled();
@@ -9527,7 +9527,7 @@ describe("native process ownership", () => {
 
   it("fences a cancellation request before its terminal status commits", async () => {
     state.createBackend.mockClear();
-    await expect(executePaperclipNativeSession({
+    await expect(executeWardmoteNativeSession({
       db: leaseDb(execution, {}, { startupCancellation: { requestedAt: new Date().toISOString() } }),
       execution, runnerInstanceId: "cancel-requested",
     })).rejects.toThrow();
@@ -9566,7 +9566,7 @@ describe("native process ownership", () => {
       return { kind: "test", onSpawn: options.onSpawn };
     });
 
-    await executePaperclipNativeSession({
+    await executeWardmoteNativeSession({
       db: leaseDb(execution, {}, {}, updates),
       execution,
       runnerInstanceId: "runner",
@@ -9643,7 +9643,7 @@ describe("native process ownership", () => {
         highestContiguousSourceSeq: 1,
       });
 
-      await executePaperclipNativeSession({
+      await executeWardmoteNativeSession({
         db: leaseDb(providerExecution),
         execution: providerExecution,
         runnerInstanceId: "runner",
@@ -9666,7 +9666,7 @@ describe("native process ownership", () => {
     state.createBackend.mockClear();
 
     await expect(
-      executePaperclipNativeSession({
+      executeWardmoteNativeSession({
         db: leaseDb(piExecution),
         execution: piExecution,
         runnerInstanceId: "runner",
@@ -9867,7 +9867,7 @@ describe("runnerd provider runtime wiring", () => {
     } as NativeExecutionInputV1;
 
     await expect(
-      executePaperclipNativeSession({
+      executeWardmoteNativeSession({
         db: leaseDb(stagedExecution),
         execution: stagedExecution,
         runnerInstanceId: "runner-attachment-cleanup",
@@ -9969,7 +9969,7 @@ describe("runnerd provider runtime wiring", () => {
         }),
     );
 
-    const active = executePaperclipNativeSession({
+    const active = executeWardmoteNativeSession({
       db: leaseDb(first),
       execution: first,
       runnerInstanceId: "runner-runnerd-overlap",
@@ -9984,7 +9984,7 @@ describe("runnerd provider runtime wiring", () => {
       }),
     );
     await expect(
-      executePaperclipNativeSession({
+      executeWardmoteNativeSession({
         db: leaseDb(second),
         execution: second,
         runnerInstanceId: "runner-runnerd-overlap",
@@ -10080,7 +10080,7 @@ describe("runnerd provider runtime wiring", () => {
         }),
       } as unknown as Db;
 
-      await executePaperclipNativeSession({
+      await executeWardmoteNativeSession({
         db: continuationDb,
         execution: continuation,
         runnerInstanceId: "runner-new-heartbeat",
@@ -12587,7 +12587,7 @@ describe("runnerd provider runtime wiring", () => {
       highestContiguousSourceSeq: 1,
     });
 
-    await executePaperclipNativeSession({
+    await executeWardmoteNativeSession({
       db: leaseDb(remoteExecution),
       execution: remoteExecution,
       runnerInstanceId: "runner",
@@ -12976,7 +12976,7 @@ describe("runnerd provider runtime wiring", () => {
     // with "not supported when using Codex with a ChatGPT account". The
     // verifier names the stale image instead of letting the run fail as an
     // account problem.
-    const preparedModel = recover ? resolvePaperclipRunnerNativeProviderInput({
+    const preparedModel = recover ? resolveWardmoteRunnerNativeProviderInput({
       backend: "codex_app_server", adapterConfig: { provider: "codex", model }, codexCliVersion: version,
     }).model : model;
     const gatedExecution = {

@@ -352,9 +352,9 @@ routine; if a ref is still missing, the routine resolution reports
 `missing_refs` instead of guessing.
 
 ```ts
-import type { PaperclipPluginManifestV1 } from "@tickernelz/wardmote-plugin-sdk";
+import type { WardmotePluginManifestV1 } from "@tickernelz/wardmote-plugin-sdk";
 
-const manifest: PaperclipPluginManifestV1 = {
+const manifest: WardmotePluginManifestV1 = {
   id: "example.research-plugin",
   apiVersion: 1,
   version: "0.1.0",

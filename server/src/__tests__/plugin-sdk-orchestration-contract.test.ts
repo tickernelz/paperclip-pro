@@ -1,9 +1,9 @@
 import { randomUUID } from "node:crypto";
 import { describe, expect, it } from "vitest";
-import type { Issue, PaperclipPluginManifestV1 } from "@tickernelz/wardmote-shared";
+import type { Issue, WardmotePluginManifestV1 } from "@tickernelz/wardmote-shared";
 import { createTestHarness } from "../../../packages/plugins/sdk/src/testing.js";
 
-function manifest(capabilities: PaperclipPluginManifestV1["capabilities"]): PaperclipPluginManifestV1 {
+function manifest(capabilities: WardmotePluginManifestV1["capabilities"]): WardmotePluginManifestV1 {
   return {
     id: "paperclip.test-orchestration",
     apiVersion: 1,

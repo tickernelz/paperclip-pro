@@ -2,7 +2,7 @@
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { PaperclipQuestionResponse, PaperclipQuestionSet } from "@tickernelz/wardmote-adapter-utils";
+import type { WardmoteQuestionResponse, WardmoteQuestionSet } from "@tickernelz/wardmote-adapter-utils";
 import { QuestionForm } from "./QuestionForm";
 
 vi.mock("./TaskChatRichInput", () => ({
@@ -11,7 +11,7 @@ vi.mock("./TaskChatRichInput", () => ({
 }));
 vi.mock("@/components/MarkdownBody", () => ({ MarkdownBody: ({ children }: { children: string }) => <div>{children}</div> }));
 
-const questionSet: PaperclipQuestionSet = { schema: "paperclip.question_set.v1", questions: [
+const questionSet: WardmoteQuestionSet = { schema: "paperclip.question_set.v1", questions: [
   { id: "draft", prompt: "Edit the draft", required: true, answerMode: "text", initialText: "  Draft\n漢字\n" },
 ] };
 
@@ -22,7 +22,7 @@ describe("QuestionForm initial text", () => {
   beforeEach(() => { localStorage.clear(); submit.mockReset(); container = document.createElement("div"); document.body.append(container); root = createRoot(container); });
   afterEach(async () => { await act(async () => root.unmount()); container.remove(); localStorage.clear(); });
   const input = () => container.querySelector("textarea")!;
-  async function render(set = questionSet, initialResponse?: PaperclipQuestionResponse) {
+  async function render(set = questionSet, initialResponse?: WardmoteQuestionResponse) {
     await act(async () => root.render(<QuestionForm id="edit" questionSet={set} initialResponse={initialResponse} draftKey="question-initial-text" onSubmit={submit} />));
   }
   async function edit(text: string) {

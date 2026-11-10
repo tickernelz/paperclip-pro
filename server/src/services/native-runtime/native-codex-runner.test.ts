@@ -4,11 +4,11 @@ import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import * as runner from "../../vendor/wardmote-runner/index.js";
 
-import type { PaperclipSemanticToolDefinition } from "../../vendor/wardmote-runner/index.js";
+import type { WardmoteSemanticToolDefinition } from "../../vendor/wardmote-runner/index.js";
 import {
   buildNativeRunnerArguments,
   buildNativeRunnerPreparePayload,
-  resolvePaperclipRunnerBinary,
+  resolveWardmoteRunnerBinary,
 } from "./native-codex-runner.js";
 
 afterEach(() => vi.restoreAllMocks());
@@ -20,9 +20,9 @@ describe("installed runner selection", () => {
     try {
       await writeFile(binary, "test executable", { mode: 0o700 });
       const select = vi.spyOn(runner, "defaultCapabilityRunnerdBinary").mockReturnValue(binary);
-      expect(resolvePaperclipRunnerBinary("")).toBe(binary);
+      expect(resolveWardmoteRunnerBinary("")).toBe(binary);
       expect(select).toHaveBeenCalledOnce();
-      expect(resolvePaperclipRunnerBinary(join(root, "missing"))).toBe(binary);
+      expect(resolveWardmoteRunnerBinary(join(root, "missing"))).toBe(binary);
     } finally {
       await rm(root, { recursive: true, force: true });
     }
@@ -36,9 +36,9 @@ describe("installed runner selection", () => {
       const select = vi.spyOn(runner, "defaultCapabilityRunnerdBinary").mockImplementation(() => {
         throw new Error("must not inspect package when override is usable");
       });
-      expect(resolvePaperclipRunnerBinary(binary)).toBe(binary);
+      expect(resolveWardmoteRunnerBinary(binary)).toBe(binary);
       expect(select).not.toHaveBeenCalled();
-      expect(() => resolvePaperclipRunnerBinary("relative-runnerd")).toThrow("absolute path");
+      expect(() => resolveWardmoteRunnerBinary("relative-runnerd")).toThrow("absolute path");
     } finally {
       await rm(root, { recursive: true, force: true });
     }
@@ -65,7 +65,7 @@ describe("buildNativeRunnerArguments", () => {
   });
 });
 
-const tool: PaperclipSemanticToolDefinition = {
+const tool: WardmoteSemanticToolDefinition = {
   name: "get_task_context",
   description: "Read the active task context.",
   inputSchema: { type: "object" },

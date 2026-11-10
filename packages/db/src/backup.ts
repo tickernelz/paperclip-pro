@@ -4,7 +4,7 @@ import { formatDatabaseBackupResult, runDatabaseBackup } from "./backup-lib.js";
 import {
   expandHomePrefix,
   resolveDefaultBackupDir,
-  resolvePaperclipConfigPathForInstance,
+  resolveWardmoteConfigPathForInstance,
 } from "@tickernelz/wardmote-shared/home-paths";
 import { embeddedPostgresUrl } from "./embedded-identity.js";
 
@@ -66,7 +66,7 @@ function resolveRetentionDays(config: PartialConfig | null): number {
 }
 
 async function main() {
-  const configPath = resolvePaperclipConfigPathForInstance();
+  const configPath = resolveWardmoteConfigPathForInstance();
   const config = readConfig(configPath);
   const connectionString = resolveConnectionString(config);
   const backupDir = resolveBackupDir(config);

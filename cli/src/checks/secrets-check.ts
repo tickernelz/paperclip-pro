@@ -1,7 +1,7 @@
 import { randomBytes } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import type { PaperclipConfig } from "../config/schema.js";
+import type { WardmoteConfig } from "../config/schema.js";
 import type { CheckResult } from "./index.js";
 import { resolveRuntimeLikePath } from "./path-resolver.js";
 
@@ -31,7 +31,7 @@ function decodeMasterKey(raw: string): Buffer | null {
 
 function withStrictModeNote(
   base: Pick<CheckResult, "name" | "status" | "message" | "canRepair" | "repair" | "repairHint">,
-  config: PaperclipConfig,
+  config: WardmoteConfig,
 ): CheckResult {
   const strictModeDisabledInDeployedSetup =
     config.database.mode === "postgres" && config.secrets.strictMode === false;
@@ -48,7 +48,7 @@ function withStrictModeNote(
   };
 }
 
-export function secretsCheck(config: PaperclipConfig, configPath?: string): CheckResult {
+export function secretsCheck(config: WardmoteConfig, configPath?: string): CheckResult {
   const provider = config.secrets.provider;
   if (provider === "aws_secrets_manager") {
     return withStrictModeNote(awsSecretsManagerCheck(), config);

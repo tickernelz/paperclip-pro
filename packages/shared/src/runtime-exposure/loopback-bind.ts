@@ -50,7 +50,7 @@ export function commandSelectsBindMode(command: string): boolean {
 const WARDMOTE_DEV_RUNNER_COMMAND =
   /(?:^|[\s;&|])(?:(?:pnpm|npm|yarn|bun)(?:\s+run)?\s+dev(?::once|:watch|:server)?(?=\s|$)|[^\s]*dev-runner(?:\.[cm]?[jt]s)?(?=\s|$))/;
 
-export function isPaperclipDevRunnerCommand(command: string): boolean {
+export function isWardmoteDevRunnerCommand(command: string): boolean {
   return WARDMOTE_DEV_RUNNER_COMMAND.test(command);
 }
 
@@ -59,17 +59,17 @@ export function isPaperclipDevRunnerCommand(command: string): boolean {
  * bind, replacing whatever bind selection it carried.
  *
  * A command that is not a dev-runner invocation is returned untouched — see
- * {@link isPaperclipDevRunnerCommand} for why that guard is not optional.
+ * {@link isWardmoteDevRunnerCommand} for why that guard is not optional.
  *
  * The legacy `--tailscale-auth` / `--authenticated-private` aliases are
  * deliberately *left in place*: an explicit `--bind` already wins over them in
  * every dev-runner version, they still correctly select the authenticated
- * deployment mode an exposed lane wants, and `isPaperclipDevRuntimeService`
+ * deployment mode an exposed lane wants, and `isWardmoteDevRuntimeService`
  * matches on `--tailscale-auth` as a substring, so stripping it would silently
  * change readiness handling.
  */
 export function forceLoopbackBindInCommand(command: string): string {
-  if (!isPaperclipDevRunnerCommand(command)) return command;
+  if (!isWardmoteDevRunnerCommand(command)) return command;
   const stripped = command.replace(BIND_SELECTING_ARG, "").trim();
   if (stripped.length === 0) return command;
   return `${stripped} --bind ${RUNTIME_EXPOSURE_BIND_MODE}`;

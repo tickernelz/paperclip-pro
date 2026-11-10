@@ -27,7 +27,7 @@ import { startEmbeddedPostgresTestDatabase } from "./helpers/embedded-postgres.j
 import { createLocalDiskStorageProvider } from "../storage/local-disk-provider.js";
 import { createStorageService } from "../storage/service.js";
 import {
-  buildPaperclipWakePayload,
+  buildWardmoteWakePayload,
   mergeCoalescedContextSnapshot,
 } from "../services/heartbeat.js";
 import { stageNativeRunnerWakeAttachments } from "../services/native-runtime/native-runner-file-handoff.js";
@@ -199,7 +199,7 @@ describe("Board upload receipt to native wake staging", () => {
         {},
         emitted![1].contextSnapshot!,
       );
-      const paperclipWake = await buildPaperclipWakePayload({
+      const paperclipWake = await buildWardmoteWakePayload({
         db,
         companyId,
         agentId: issue!.assigneeAgentId,
@@ -271,7 +271,7 @@ describe("Board upload receipt to native wake staging", () => {
       .where(eq(issueAttachments.id, attachment.id));
     expect(retained!.issueCommentId).toBeNull();
     await vi.waitFor(() => expect(wakeup).toHaveBeenCalled());
-    const wake = await buildPaperclipWakePayload({
+    const wake = await buildWardmoteWakePayload({
       db,
       companyId,
       agentId,

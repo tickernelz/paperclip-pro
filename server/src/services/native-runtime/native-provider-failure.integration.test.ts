@@ -12,9 +12,9 @@ vi.mock("../../vendor/wardmote-runner/index.js", async (importOriginal) => ({
   executeNativeSession: provider.execute,
 }));
 
-import { executePaperclipNativeSession } from "./native-session-executor.js";
+import { executeWardmoteNativeSession } from "./native-session-executor.js";
 import { buildNativeCompletionContract } from "./completion-contracts.js";
-import { PaperclipControlPlanePort } from "./paperclip-control-plane-port.js";
+import { WardmoteControlPlanePort } from "./paperclip-control-plane-port.js";
 import { prepareNativeHeartbeatRun } from "./prepare-native-run.js";
 import { NATIVE_MODEL_REJECTION_DIAGNOSTIC, NATIVE_MODEL_REJECTION_MESSAGE } from "./native-provider-failure.js";
 import { collectRunFailureDiagnostics } from "../run-failure-diagnostics.js";
@@ -100,7 +100,7 @@ describe("native completed failure diagnostics", () => {
       };
       const openInput = { identity: { companyId, issueId, runId, agentId, sessionId: native.normalizedSessionId }, backendKind: "mock" as const, sourceInstanceId: native.runnerInstanceId };
       if (scenario === "duplicate") {
-        const prior = new PaperclipControlPlanePort(db, { companyId, issueId, runId, agentId, sessionId: native.normalizedSessionId, sourceInstanceId: native.runnerInstanceId, controlPlaneSourceInstanceId: "prior-controller", completionContractId: contract.id, completionContractSha256: contract.canonicalSha256 });
+        const prior = new WardmoteControlPlanePort(db, { companyId, issueId, runId, agentId, sessionId: native.normalizedSessionId, sourceInstanceId: native.runnerInstanceId, controlPlaneSourceInstanceId: "prior-controller", completionContractId: contract.id, completionContractSha256: contract.canonicalSha256 });
         await prior.openRun(openInput);
         expect((await prior.appendEvent(event)).disposition).toBe("committed");
       }
@@ -126,7 +126,7 @@ describe("native completed failure diagnostics", () => {
         await options.controlPlane.completeRun({ result, terminal, turnId });
         return { result, terminal, turnId, normalizedSessionId: native.normalizedSessionId, providerSessionId: "fixture-provider-session", driverKind: "codex_app_server", driverVersion: "fixture", nativeEventCount: 1, highestContiguousSourceSeq: 1, usage: null };
       });
-      const adapter = await executePaperclipNativeSession({ db, execution, runnerInstanceId: native.runnerInstanceId, backend: {
+      const adapter = await executeWardmoteNativeSession({ db, execution, runnerInstanceId: native.runnerInstanceId, backend: {
         descriptor: async () => { throw new Error("Unexpected provider call"); },
         openSession: async () => { throw new Error("Unexpected provider call"); },
       } });

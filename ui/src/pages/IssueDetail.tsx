@@ -1405,7 +1405,7 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
       resolveIssueActiveRun({ status: issueStatus, executionRunId }, activeRun, liveRuns),
     [activeRun, executionRunId, issueStatus, liveRuns],
   );
-  const assigneeUsesPaperclipRunner = Boolean(
+  const assigneeUsesWardmoteRunner = Boolean(
     issueAssigneeAgentId &&
     agentMap.get(issueAssigneeAgentId)?.adapterType === "wardmote_runner",
   );
@@ -1971,7 +1971,7 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
     });
     const fallbackProtocol =
       liveRuntimeRun?.adapterType === "wardmote_runner" ||
-      (!liveRuntimeRun && assigneeUsesPaperclipRunner)
+      (!liveRuntimeRun && assigneeUsesWardmoteRunner)
         ? "wardmote_runner_v1"
         : "legacy";
     return mergePendingIssueQueuedComments({
@@ -1987,7 +1987,7 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
     discardedQueuedCommentIds,
     issueId,
     liveRuntimeRun,
-    assigneeUsesPaperclipRunner,
+    assigneeUsesWardmoteRunner,
     locallyQueuedCommentRunIds,
     queuedCommentQueueEnabled,
   ]);

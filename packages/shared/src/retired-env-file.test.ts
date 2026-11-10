@@ -7,7 +7,7 @@ import {
   migrateRetiredEnvFile,
   migrateRetiredEnvFileContents,
 } from "./retired-env-file.js";
-import { resolvePaperclipEnvPathForConfig } from "./home-paths.js";
+import { resolveWardmoteEnvPathForConfig } from "./home-paths.js";
 
 const retired = (name: string) => ["PAPER", "CLIP_", name].join("");
 const dirs: string[] = [];
@@ -65,7 +65,7 @@ describe("retired env file migration", () => {
   it("migrates the instance env file when its path is resolved", () => {
     const dir = tempDir();
     fs.writeFileSync(path.join(dir, ".env"), `${retired("AGENT_JWT_SECRET")}=keep\n`);
-    const envPath = resolvePaperclipEnvPathForConfig(path.join(dir, "config.json"));
+    const envPath = resolveWardmoteEnvPathForConfig(path.join(dir, "config.json"));
     expect(fs.readFileSync(envPath, "utf8")).toBe("WARDMOTE_AGENT_JWT_SECRET=keep\n");
   });
 

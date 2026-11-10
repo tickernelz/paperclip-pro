@@ -313,7 +313,7 @@ Suggested `package.json` keys:
 Normative manifest shape:
 
 ```ts
-export interface PaperclipPluginManifestV1 {
+export interface WardmotePluginManifestV1 {
   id: string;
   apiVersion: 1;
   version: string;
@@ -732,13 +732,13 @@ Scoped API routes:
 
 ```ts
 /** Top-level helper for defining a plugin with type checking */
-export function definePlugin(definition: PluginDefinition): PaperclipPlugin;
+export function definePlugin(definition: PluginDefinition): WardmotePlugin;
 
 /** Re-exported from Zod for config schema definitions */
 export { z } from "zod";
 
 export interface PluginContext {
-  manifest: PaperclipPluginManifestV1;
+  manifest: WardmotePluginManifestV1;
   config: {
     get(companyId: string): Promise<Record<string, unknown>>;
   };

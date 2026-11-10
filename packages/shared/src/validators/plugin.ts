@@ -725,7 +725,7 @@ export type PluginObjectReferenceProviderDeclarationInput = z.infer<
 // ---------------------------------------------------------------------------
 
 /**
- * Zod schema for {@link PaperclipPluginManifestV1} — the complete runtime
+ * Zod schema for {@link WardmotePluginManifestV1} — the complete runtime
  * validator for plugin manifests read at install time.
  *
  * Field-level constraints (see PLUGIN_SPEC.md §10.1 for the normative rules):
@@ -758,7 +758,7 @@ export type PluginObjectReferenceProviderDeclarationInput = z.infer<
  * - duplicate `ui.slots[].id` values are rejected
  *
  * @see PLUGIN_SPEC.md §10.1 — Manifest shape
- * @see {@link PaperclipPluginManifestV1} — the inferred TypeScript type
+ * @see {@link WardmotePluginManifestV1} — the inferred TypeScript type
  */
 const REMOVED_AI_CONNECTION_ROUTE_CAPABILITY = "ai.connections.route";
 

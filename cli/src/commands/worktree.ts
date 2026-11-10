@@ -73,9 +73,9 @@ import {
   migrateEmbeddedPostgresIdentity,
 } from "@tickernelz/wardmote-db";
 import type { Command } from "commander";
-import { ensureAgentJwtSecret, ensureToolActionSigningSecret, loadPaperclipEnvFile, mergePaperclipEnvEntries, readPaperclipEnvEntries, resolvePaperclipEnvFile } from "../config/env.js";
-import { expandHomePrefix, resolvePaperclipHomeDir } from "../config/home.js";
-import type { PaperclipConfig } from "../config/schema.js";
+import { ensureAgentJwtSecret, ensureToolActionSigningSecret, loadWardmoteEnvFile, mergeWardmoteEnvEntries, readWardmoteEnvEntries, resolveWardmoteEnvFile } from "../config/env.js";
+import { expandHomePrefix, resolveWardmoteHomeDir } from "../config/home.js";
+import type { WardmoteConfig } from "../config/schema.js";
 import { readConfig, resolveConfigPath, writeConfig } from "../config/store.js";
 import { printWardmoteCliBanner } from "../utils/banner.js";
 import { resolveRuntimeLikePath } from "../utils/path-resolver.js";
@@ -399,7 +399,7 @@ function buildS3ObjectKey(prefix: string, objectKey: string): string {
 
 const dynamicImport = new Function("specifier", "return import(specifier);") as (specifier: string) => Promise<any>;
 
-function createConfiguredStorageFromPaperclipConfig(config: PaperclipConfig): ConfiguredStorage {
+function createConfiguredStorageFromWardmoteConfig(config: WardmoteConfig): ConfiguredStorage {
   if (config.storage.provider === "local_disk") {
     const baseDir = expandHomePrefix(config.storage.localDisk.baseDir);
     return {
@@ -468,7 +468,7 @@ function openConfiguredStorage(configPath: string): ConfiguredStorage {
   if (!config) {
     throw new Error(`Config not found at ${configPath}.`);
   }
-  return createConfiguredStorageFromPaperclipConfig(config);
+  return createConfiguredStorageFromWardmoteConfig(config);
 }
 
 async function streamToBuffer(stream: NodeJS.ReadableStream): Promise<Buffer> {
@@ -866,7 +866,7 @@ export function resolveSourceConfigPath(opts: WorktreeInitOptions): string {
   if (!opts.fromDataDir && !opts.fromInstance) {
     return resolveConfigPath();
   }
-  const sourceHome = opts.fromDataDir ? path.resolve(expandHomePrefix(opts.fromDataDir)) : resolvePaperclipHomeDir();
+  const sourceHome = opts.fromDataDir ? path.resolve(expandHomePrefix(opts.fromDataDir)) : resolveWardmoteHomeDir();
   const sourceInstanceId = sanitizeWorktreeInstanceId(opts.fromInstance ?? "default");
   return path.resolve(sourceHome, "instances", sourceInstanceId, "config.json");
 }
@@ -928,7 +928,7 @@ export function resolveWorktreeReseedTargetPaths(input: {
   configPath: string;
   rootPath: string;
 }): WorktreeLocalPaths {
-  const envEntries = readPaperclipEnvEntries(resolvePaperclipEnvFile(input.configPath));
+  const envEntries = readWardmoteEnvEntries(resolveWardmoteEnvFile(input.configPath));
   const homeDir = nonEmpty(envEntries.WARDMOTE_HOME);
   const instanceId = nonEmpty(envEntries.WARDMOTE_INSTANCE_ID);
 
@@ -955,7 +955,7 @@ function resolveExistingGitWorktree(selector: string, cwd: string): MergeSourceC
       worktree: directPath,
       branch: null,
       branchLabel: path.basename(directPath),
-      hasPaperclipConfig: existsSync(path.resolve(directPath, ".paperclip", "config.json")),
+      hasWardmoteConfig: existsSync(path.resolve(directPath, ".paperclip", "config.json")),
       isCurrent: directPath === path.resolve(cwd),
     };
   }
@@ -1044,7 +1044,7 @@ async function ensureRepairTargetWorktree(input: {
   };
 }
 
-function resolveSourceConnectionString(config: PaperclipConfig, envEntries: Record<string, string>, portOverride?: number): string {
+function resolveSourceConnectionString(config: WardmoteConfig, envEntries: Record<string, string>, portOverride?: number): string {
   if (config.database.mode === "postgres") {
     const connectionString = nonEmpty(envEntries.DATABASE_URL) ?? nonEmpty(config.database.connectionString);
     if (!connectionString) {
@@ -1061,7 +1061,7 @@ function resolveSourceConnectionString(config: PaperclipConfig, envEntries: Reco
 
 export function copySeededSecretsKey(input: {
   sourceConfigPath: string;
-  sourceConfig: PaperclipConfig;
+  sourceConfig: WardmoteConfig;
   sourceEnvEntries: Record<string, string>;
   targetKeyFilePath: string;
 }): void {
@@ -1436,7 +1436,7 @@ type WorktreeSeedValidationExpectation = {
 };
 
 export function requiresWorktreeSeedCredentialAccount(
-  deploymentMode: PaperclipConfig["server"]["deploymentMode"],
+  deploymentMode: WardmoteConfig["server"]["deploymentMode"],
 ): boolean {
   return deploymentMode === "authenticated";
 }
@@ -1483,7 +1483,7 @@ export async function inspectLegacyWorktreeDatabase(
   const config = readConfig(configPath);
   if (!config) return null;
 
-  const envEntries = readPaperclipEnvEntries(resolvePaperclipEnvFile(configPath));
+  const envEntries = readWardmoteEnvEntries(resolveWardmoteEnvFile(configPath));
   let embeddedHandle: EmbeddedPostgresHandle | null = null;
   let db: ReturnType<typeof createDb> | null = null;
   try {
@@ -1518,7 +1518,7 @@ export async function inspectLegacyWorktreeDatabase(
 async function inspectVerifiedSeedDatabase(
   connectionString: string,
   options: {
-    deploymentMode: PaperclipConfig["server"]["deploymentMode"];
+    deploymentMode: WardmoteConfig["server"]["deploymentMode"];
     expected?: WorktreeSeedValidationExpectation;
     migrationRequirement?: "sourcePrefix" | "upToDate";
     requiredCompanyId?: string;
@@ -1658,8 +1658,8 @@ async function inspectVerifiedSeedDatabase(
 
 async function seedWorktreeDatabase(input: {
   sourceConfigPath: string;
-  sourceConfig: PaperclipConfig;
-  targetConfig: PaperclipConfig;
+  sourceConfig: WardmoteConfig;
+  targetConfig: WardmoteConfig;
   targetPaths: WorktreeLocalPaths;
   instanceId: string;
   seedMode: WorktreeSeedMode;
@@ -1668,8 +1668,8 @@ async function seedWorktreeDatabase(input: {
   onPhase?: (phase: WorktreeSeedPhase, status: "started" | "succeeded", message?: string) => void;
 }): Promise<SeedWorktreeDatabaseResult> {
   const seedPlan = resolveWorktreeSeedPlan(input.seedMode);
-  const sourceEnvFile = resolvePaperclipEnvFile(input.sourceConfigPath);
-  const sourceEnvEntries = readPaperclipEnvEntries(sourceEnvFile);
+  const sourceEnvFile = resolveWardmoteEnvFile(input.sourceConfigPath);
+  const sourceEnvEntries = readWardmoteEnvEntries(sourceEnvFile);
   let sourceHandle: EmbeddedPostgresHandle | null = null;
   let targetHandle: EmbeddedPostgresHandle | null = null;
 
@@ -1858,7 +1858,7 @@ type LegacyWorktreeSeedPendingMarker = {
 };
 
 function resolveSeedInstanceId(configPath: string): string {
-  const envEntries = readPaperclipEnvEntries(resolvePaperclipEnvFile(configPath));
+  const envEntries = readWardmoteEnvEntries(resolveWardmoteEnvFile(configPath));
   return nonEmpty(envEntries.WARDMOTE_INSTANCE_ID)
     ?? sanitizeWorktreeInstanceId(path.basename(path.dirname(path.resolve(configPath))));
 }
@@ -2143,8 +2143,8 @@ function startWorktreeSeedAttempt(configPath: string, now = new Date()): Worktre
 async function runVerifiedWorktreeSeed(input: {
   configPath: string;
   sourceConfigPath: string;
-  sourceConfig: PaperclipConfig;
-  targetConfig: PaperclipConfig;
+  sourceConfig: WardmoteConfig;
+  targetConfig: WardmoteConfig;
   targetPaths: WorktreeLocalPaths;
   instanceId: string;
   seedMode: WorktreeSeedMode;
@@ -2521,14 +2521,14 @@ async function runWorktreeInit(opts: WorktreeInitOptions): Promise<void> {
       seedMode,
     });
   }
-  const sourceEnvEntries = readPaperclipEnvEntries(resolvePaperclipEnvFile(sourceConfigPath));
+  const sourceEnvEntries = readWardmoteEnvEntries(resolveWardmoteEnvFile(sourceConfigPath));
   const existingAgentJwtSecret =
     opts.empty ? randomBytes(32).toString("base64url") : nonEmpty(sourceEnvEntries.WARDMOTE_AGENT_JWT_SECRET) ??
     nonEmpty(process.env.WARDMOTE_AGENT_JWT_SECRET);
   const existingToolActionSigningSecret =
     opts.empty ? randomBytes(32).toString("base64url") : nonEmpty(sourceEnvEntries.WARDMOTE_TOOL_ACTION_SIGNING_SECRET) ??
     nonEmpty(process.env.WARDMOTE_TOOL_ACTION_SIGNING_SECRET);
-  mergePaperclipEnvEntries(
+  mergeWardmoteEnvEntries(
     {
       ...buildWorktreeEnvEntries(paths, branding),
       ...(existingAgentJwtSecret ? { WARDMOTE_AGENT_JWT_SECRET: existingAgentJwtSecret } : {}),
@@ -2538,7 +2538,7 @@ async function runWorktreeInit(opts: WorktreeInitOptions): Promise<void> {
   );
   ensureAgentJwtSecret(paths.configPath);
   ensureToolActionSigningSecret(paths.configPath);
-  loadPaperclipEnvFile(paths.configPath);
+  loadWardmoteEnvFile(paths.configPath);
   const copiedGitHooks = copyGitHooksToWorktreeGitDir(cwd);
 
   let seedSummary: string | null = null;
@@ -2778,7 +2778,7 @@ type MergeSourceChoice = {
   worktree: string;
   branch: string | null;
   branchLabel: string;
-  hasPaperclipConfig: boolean;
+  hasWardmoteConfig: boolean;
   isCurrent: boolean;
 };
 
@@ -2849,7 +2849,7 @@ function toMergeSourceChoices(cwd: string): MergeSourceChoice[] {
       worktree: worktreePath,
       branch: entry.branch,
       branchLabel,
-      hasPaperclipConfig: existsSync(path.resolve(worktreePath, ".paperclip", "config.json")),
+      hasWardmoteConfig: existsSync(path.resolve(worktreePath, ".paperclip", "config.json")),
       isCurrent: worktreePath === currentCwd,
     };
   });
@@ -3032,8 +3032,8 @@ export async function worktreeCleanupCommand(nameArg: string, opts: WorktreeClea
 
 export async function worktreeEnvCommand(opts: WorktreeEnvOptions): Promise<void> {
   const configPath = resolveConfigPath(opts.config);
-  const envPath = resolvePaperclipEnvFile(configPath);
-  const envEntries = readPaperclipEnvEntries(envPath);
+  const envPath = resolveWardmoteEnvFile(configPath);
+  const envEntries = readWardmoteEnvEntries(envPath);
   const out = {
     WARDMOTE_CONFIG: configPath,
     ...(envEntries.WARDMOTE_HOME ? { WARDMOTE_HOME: envEntries.WARDMOTE_HOME } : {}),
@@ -3090,7 +3090,7 @@ function resolveAttachmentLookupStorages(input: {
     resolveCurrentWorktreeEndpoint().configPath,
     input.targetEndpoint.configPath,
     ...toMergeSourceChoices(process.cwd())
-      .filter((choice) => choice.hasPaperclipConfig)
+      .filter((choice) => choice.hasWardmoteConfig)
       .map((choice) => path.resolve(choice.worktree, ".paperclip", "config.json")),
   ];
   const seen = new Set<string>();
@@ -3109,7 +3109,7 @@ async function openConfiguredDb(configPath: string): Promise<OpenDbHandle> {
   if (!config) {
     throw new Error(`Config not found at ${configPath}.`);
   }
-  const envEntries = readPaperclipEnvEntries(resolvePaperclipEnvFile(configPath));
+  const envEntries = readWardmoteEnvEntries(resolveWardmoteEnvFile(configPath));
   let embeddedHandle: EmbeddedPostgresHandle | null = null;
 
   try {
@@ -3298,7 +3298,7 @@ function renderMergePlan(plan: Awaited<ReturnType<typeof collectMergePlan>>["pla
   return lines.join("\n");
 }
 
-function resolveRunningEmbeddedPostgresPid(config: PaperclipConfig): number | null {
+function resolveRunningEmbeddedPostgresPid(config: WardmoteConfig): number | null {
   if (config.database.mode !== "embedded-postgres") {
     return null;
   }
@@ -3650,7 +3650,7 @@ export async function worktreeListCommand(opts: WorktreeListOptions): Promise<vo
   for (const choice of choices) {
     const flags = [
       choice.isCurrent ? "current" : null,
-      choice.hasPaperclipConfig ? "paperclip" : "no-paperclip-config",
+      choice.hasWardmoteConfig ? "paperclip" : "no-paperclip-config",
     ].filter((value): value is string => value !== null);
     p.log.message(`${choice.branchLabel}  ${choice.worktree}  [${flags.join(", ")}]`);
   }
@@ -3712,7 +3712,7 @@ function resolveWorktreeEndpointFromSelector(
       `Could not resolve worktree "${selector}". Use a path, a listed worktree directory name, branch name, or "current".`,
     );
   }
-  if (!matched.hasPaperclipConfig && !matched.isCurrent) {
+  if (!matched.hasWardmoteConfig && !matched.isCurrent) {
     throw new Error(`Resolved worktree "${selector}" does not look like a Wardmote worktree.`);
   }
   return resolveEndpointFromChoice(matched);
@@ -3722,7 +3722,7 @@ async function promptForSourceEndpoint(excludeWorktreePath?: string): Promise<Re
   const excluded = excludeWorktreePath ? path.resolve(excludeWorktreePath) : null;
   const currentEndpoint = resolveCurrentWorktreeEndpoint();
   const choices = toMergeSourceChoices(process.cwd())
-    .filter((choice) => choice.hasPaperclipConfig || choice.isCurrent)
+    .filter((choice) => choice.hasWardmoteConfig || choice.isCurrent)
     .filter((choice) => path.resolve(choice.worktree) !== excluded)
     .map((choice) => ({
       value: choice.isCurrent ? "__current__" : choice.worktree,
@@ -4247,7 +4247,7 @@ export async function worktreeMergeHistoryCommand(sourceArg: string | undefined,
 }
 
 async function backupWorktreeReseedTarget(input: {
-  targetConfig: PaperclipConfig;
+  targetConfig: WardmoteConfig;
   targetPaths: WorktreeLocalPaths;
 }): Promise<string> {
   if (input.targetConfig.database.mode !== "embedded-postgres") {
@@ -4419,7 +4419,7 @@ export async function worktreeRepairCommand(opts: WorktreeRepairOptions): Promis
   }
 
   const targetConfig = existsSync(target.configPath) ? readConfig(target.configPath) : null;
-  const targetEnvEntries = readPaperclipEnvEntries(resolvePaperclipEnvFile(target.configPath));
+  const targetEnvEntries = readWardmoteEnvEntries(resolveWardmoteEnvFile(target.configPath));
   const targetHasWorktreeEnv = Boolean(
     nonEmpty(targetEnvEntries.WARDMOTE_HOME) && nonEmpty(targetEnvEntries.WARDMOTE_INSTANCE_ID),
   );

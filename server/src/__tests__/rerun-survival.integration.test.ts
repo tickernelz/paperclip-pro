@@ -3,7 +3,7 @@ import fsSync from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { mergePaperclipConfig, paperclipConfigSchema } from "@tickernelz/wardmote-shared";
+import { mergeWardmoteConfig, paperclipConfigSchema } from "@tickernelz/wardmote-shared";
 import {
   updateEnvFileContents,
   writeEnvFileAtomicallyIfChanged,
@@ -17,7 +17,7 @@ import { agentInstructionsService, resolveManagedInstructionsRoot } from "../ser
  * Seeds hand edits across every formerly-destructive setup/sync surface, reruns the
  * setup/sync mechanism, and asserts each edit survives. Each block drives the SAME
  * production code the writers/reconcilers use:
- *   - config.json          -> mergePaperclipConfig + paperclipConfigSchema (shared core
+ *   - config.json          -> mergeWardmoteConfig + paperclipConfigSchema (shared core
  *                             used by BOTH writers: cli/src/config/store.ts:writeConfig
  *                             and server/src/worktree-config.ts:writeConfigFile)
  *   - .env                 -> updateEnvFileContents + writeEnvFileAtomicallyIfChanged
@@ -66,7 +66,7 @@ function writerRoundTrip(configPath: string, update: unknown): void {
   const source = paperclipConfigSchema.parse(
     JSON.parse(fsSync.readFileSync(configPath, "utf8")),
   );
-  const next = paperclipConfigSchema.parse(mergePaperclipConfig(source, parsedUpdate));
+  const next = paperclipConfigSchema.parse(mergeWardmoteConfig(source, parsedUpdate));
   fsSync.writeFileSync(configPath, JSON.stringify(next, null, 2) + "\n");
 }
 

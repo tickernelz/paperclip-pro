@@ -1,7 +1,7 @@
 import { parseSemanticToolReceipt, readNativeSemanticReceipt, sameSemanticReceipt, semanticInputSha256, type SemanticToolReceipt } from "../semantic-tool-receipt.js";
 import { updateSingleReadEvidence, type SingleReadEvidence } from "./single-read-evidence.js";
 import { createHash } from "node:crypto";
-import { redactPaperclipSemanticValue } from "../../semantic-tools/redaction.js";
+import { redactWardmoteSemanticValue } from "../../semantic-tools/redaction.js";
 import type { CanonicalProviderEvent } from "../../provider-events.js";
 import { safeCopilotEditTarget } from "./copilot-permission-context.js";
 
@@ -50,7 +50,7 @@ export function createCopilotToolEvidence(binding: {
       incomplete = true; stage = "evidence_incomplete"; fields = { reason: "notice_limit" };
     }
     const itemId = `copilot-evidence-${digest(`${binding.sessionId}:${binding.turnId}`).slice(0, 24)}-${++sequence}`;
-    binding.emit({ eventType: "provider.notice.recorded", itemId, payload: redactPaperclipSemanticValue({
+    binding.emit({ eventType: "provider.notice.recorded", itemId, payload: redactWardmoteSemanticValue({
       schema: "paperclip.provider.notice.v1", noticeId: itemId, severity: "info",
       category, scope: "turn", recoverable: true, userActionable: false,
       summary: stage === "semantic_result" ? "Paperclip returned a semantic tool result." : stage === "evidence_incomplete" ? "Some Copilot activity details are unavailable."

@@ -6,7 +6,7 @@ import * as p from "@clack/prompts";
 import pc from "picocolors";
 import { Option, type Command } from "commander";
 import type { Agent, Company, InstanceExperimentalSettings } from "@tickernelz/wardmote-shared";
-import { PaperclipApiClient } from "../client/http.js";
+import { WardmoteApiClient } from "../client/http.js";
 import { openUrl } from "../client/board-auth.js";
 import {
   expandHomePrefix,
@@ -14,7 +14,7 @@ import {
   resolveDefaultContextPath,
 } from "../config/home.js";
 import { readConfig } from "../config/store.js";
-import type { PaperclipConfig } from "../config/schema.js";
+import type { WardmoteConfig } from "../config/schema.js";
 import { runCommand, type StartedServer } from "./run.js";
 import { isLinkedGitWorktree } from "./git-workspace.js";
 import { currentEnvKey } from "@tickernelz/wardmote-shared/retired-env-file";
@@ -27,7 +27,7 @@ export interface TestDriveOptions {
   browser?: boolean;
 }
 
-export type TestDriveApi = Pick<PaperclipApiClient, "get" | "post" | "patch" | "delete">;
+export type TestDriveApi = Pick<WardmoteApiClient, "get" | "post" | "patch" | "delete">;
 
 export type ResolvedTestDriveBootstrap = {
   companyName: string;
@@ -148,7 +148,7 @@ export async function prepareTestDriveEnvironment(
 export function assertTestDriveDatabaseIsolation(
   configPath?: string,
   env: NodeJS.ProcessEnv = process.env,
-  readConfigFile: (path?: string) => PaperclipConfig | null = readConfig,
+  readConfigFile: (path?: string) => WardmoteConfig | null = readConfig,
 ): void {
   if (env.DATABASE_URL?.trim() || env.DATABASE_MIGRATION_URL?.trim()) {
     throw new Error(
@@ -287,7 +287,7 @@ export async function testDriveCommand(
   options: TestDriveOptions,
   dependencies: TestDriveDependencies = {
     run: runCommand,
-    createApi: (apiBase) => new PaperclipApiClient({ apiBase }),
+    createApi: (apiBase) => new WardmoteApiClient({ apiBase }),
     openBrowser: openUrl,
   },
 ): Promise<void> {

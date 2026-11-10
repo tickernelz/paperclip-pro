@@ -103,8 +103,8 @@ import {
 import { redactSensitiveText } from "../../redaction.js";
 import { createRunSecretRedactionRegistry } from "../run-secret-redaction.js";
 import {
-  readPaperclipSkillSyncPreference,
-  writePaperclipSkillSyncPreference,
+  readWardmoteSkillSyncPreference,
+  writeWardmoteSkillSyncPreference,
 } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import {
   extractSkillMentionIds,
@@ -665,8 +665,8 @@ export function applyRunScopedMentionedSkillKeys(
   );
   if (normalizedSkillKeys.length === 0) return config;
 
-  const existingPreference = readPaperclipSkillSyncPreference(config);
-  return writePaperclipSkillSyncPreference(config, [
+  const existingPreference = readWardmoteSkillSyncPreference(config);
+  return writeWardmoteSkillSyncPreference(config, [
     ...existingPreference.desiredSkillEntries,
     ...normalizedSkillKeys,
   ]);
@@ -808,7 +808,7 @@ function sanitizeAgentSessionMessageText(value: unknown): string | null {
   return redacted.trim().length > 0 ? redacted : null;
 }
 
-export function configuredPaperclipApiBaseUrl(): string | null {
+export function configuredWardmoteApiBaseUrl(): string | null {
   const configured = readNonEmptyString(process.env.WARDMOTE_API_URL);
   return configured
     ? configured.replace(/\/+$/, "").replace(/\/api$/, "")
@@ -816,7 +816,7 @@ export function configuredPaperclipApiBaseUrl(): string | null {
 }
 
 export function paperclipApiBaseUrl(): string {
-  const configured = configuredPaperclipApiBaseUrl();
+  const configured = configuredWardmoteApiBaseUrl();
   if (!configured) {
     throw new Error(
       "WARDMOTE_API_URL is required to deliver managed runtime MCP servers",
@@ -844,7 +844,7 @@ export async function revokeHeartbeatRunGatewayTokens(input: {
     );
 }
 
-export async function buildPaperclipRuntimeMcpServers(input: {
+export async function buildWardmoteRuntimeMcpServers(input: {
   db: Db;
   agent: Pick<typeof agents.$inferSelect, "id" | "companyId" | "name">;
   runId: string;
@@ -1194,7 +1194,7 @@ export function createAdapterRuntimeToolAccess(input: {
   // tests invoke heartbeat execution without booting an HTTP server, however;
   // in that context there is no reachable endpoint to advertise and runtime
   // tools should simply remain unavailable instead of failing the run.
-  const baseUrl = configuredPaperclipApiBaseUrl();
+  const baseUrl = configuredWardmoteApiBaseUrl();
   if (!baseUrl) return undefined;
   return Object.freeze({
     version: 1,
@@ -1880,7 +1880,7 @@ export async function attestReviewedExternalChatRun(input: {
   throw new Error("reviewed_chat_execution_binding_not_ready");
 }
 
-export async function buildPaperclipWakePayload(input: {
+export async function buildWardmoteWakePayload(input: {
   db: Db;
   companyId: string;
   agentId?: string | null;

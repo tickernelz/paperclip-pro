@@ -9,12 +9,12 @@ import type { AdapterExecutionResult } from "@tickernelz/wardmote-adapter-utils"
 import type { Db } from "@tickernelz/wardmote-db";
 import { agentSessionGoalActions, agentTaskSessions } from "@tickernelz/wardmote-db";
 
-import { resolvePaperclipInstanceRoot } from "../../home-paths.js";
+import { resolveWardmoteInstanceRoot } from "../../home-paths.js";
 import { failRunnerGoalAction } from "../runner-goals.js";
 import {
-  createPaperclipRunnerAuthorizedToolSet,
+  createWardmoteRunnerAuthorizedToolSet,
   defaultCapabilityRunnerdBinary,
-  type PaperclipSemanticToolDefinition,
+  type WardmoteSemanticToolDefinition,
 } from "../../vendor/wardmote-runner/index.js";
 import { runnerPrpCoordinator } from "./runner-prp-coordinator.js";
 
@@ -137,7 +137,7 @@ interface NativeRunnerPrepareInput {
   readonly model: string | null;
   readonly resumeProviderSessionId: string | null;
   readonly completionContract: { revision: string; criterionIds: string[] };
-  readonly semanticTools: readonly PaperclipSemanticToolDefinition[];
+  readonly semanticTools: readonly WardmoteSemanticToolDefinition[];
   readonly providerLaunch?: NativeRunnerProviderLaunch;
 }
 
@@ -161,7 +161,7 @@ export function buildNativeRunnerPreparePayload(
       approvalPolicy: "never",
     },
     completionContract: input.completionContract,
-    authorizedTools: createPaperclipRunnerAuthorizedToolSet(input.semanticTools),
+    authorizedTools: createWardmoteRunnerAuthorizedToolSet(input.semanticTools),
   };
 }
 
@@ -169,7 +169,7 @@ function executableName(): string {
   return process.platform === "win32" ? "wardmote-runnerd.exe" : "wardmote-runnerd";
 }
 
-export function resolvePaperclipRunnerBinary(
+export function resolveWardmoteRunnerBinary(
   configuredPath = process.env.WARDMOTE_RUNNER_BINARY,
 ): string {
   if (configuredPath && !isAbsolute(configuredPath)) {
@@ -322,11 +322,11 @@ export async function executeNativeCodexRunner(input: {
     startedAt: string;
   }) => Promise<void>;
 }): Promise<AdapterExecutionResult> {
-  const binary = input.runnerBinary ?? resolvePaperclipRunnerBinary();
+  const binary = input.runnerBinary ?? resolveWardmoteRunnerBinary();
   const runnerDigest = `sha256:${createHash("sha256").update(readFileSync(binary)).digest("hex")}`;
   const runtimeRoot = input.runtimeRoot
     ? resolve(input.runtimeRoot)
-    : resolve(resolvePaperclipInstanceRoot(), "runtime", "paperclip-runner");
+    : resolve(resolveWardmoteInstanceRoot(), "runtime", "paperclip-runner");
   const runnerStateDirectory = resolve(runtimeRoot, "runner", input.runId);
   const goalControl = await readNativeGoalControl({
     db: input.db,

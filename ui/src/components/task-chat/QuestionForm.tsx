@@ -7,8 +7,8 @@ import {
   Search,
 } from "lucide-react";
 import type {
-  PaperclipQuestionResponse,
-  PaperclipQuestionSet,
+  WardmoteQuestionResponse,
+  WardmoteQuestionSet,
 } from "@tickernelz/wardmote-adapter-utils";
 import type { MentionOption } from "@/components/MarkdownEditor";
 import { MarkdownBody } from "@/components/MarkdownBody";
@@ -33,8 +33,8 @@ import {
 import { TaskChatRichInput } from "./TaskChatRichInput";
 import { matchSafeQuestionValidationPattern } from "./question-validation-pattern";
 
-type Question = PaperclipQuestionSet["questions"][number];
-type Answer = PaperclipQuestionResponse["answers"][string];
+type Question = WardmoteQuestionSet["questions"][number];
+type Answer = WardmoteQuestionResponse["answers"][string];
 
 /**
  * A form-level message, tagged with whether answering a question resolves it.
@@ -48,8 +48,8 @@ type FormError = { message: string; fromMissingAnswer?: boolean };
 
 export interface QuestionFormProps {
   id: string;
-  questionSet: PaperclipQuestionSet;
-  initialResponse?: PaperclipQuestionResponse | null;
+  questionSet: WardmoteQuestionSet;
+  initialResponse?: WardmoteQuestionResponse | null;
   implicitCustomAnswer?: boolean;
   draftKey?: string;
   disabled?: boolean;
@@ -57,7 +57,7 @@ export interface QuestionFormProps {
   mentions?: MentionOption[];
   notesEnabled?: boolean;
   onSubmit: (
-    response: PaperclipQuestionResponse,
+    response: WardmoteQuestionResponse,
     notes: Record<string, string>,
   ) => void | Promise<void>;
   /**
@@ -203,8 +203,8 @@ export function QuestionResponseSummary({
   questionSet,
   response,
 }: {
-  questionSet: PaperclipQuestionSet;
-  response: PaperclipQuestionResponse;
+  questionSet: WardmoteQuestionSet;
+  response: WardmoteQuestionResponse;
 }) {
   return (
     <dl className="grid gap-2 text-sm">

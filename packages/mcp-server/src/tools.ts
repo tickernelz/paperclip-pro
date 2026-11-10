@@ -23,7 +23,7 @@ import {
   updateIssueSchema,
   upsertIssueDocumentSchema,
 } from "@tickernelz/wardmote-shared/validators/issue";
-import { PaperclipApiClient } from "./client.js";
+import { WardmoteApiClient } from "./client.js";
 import { assertKnownArguments, formatErrorResponse, formatTextResponse } from "./format.js";
 
 export interface ToolAnnotations {
@@ -372,7 +372,7 @@ function selectRuntimeService(
     ?? null;
 }
 
-async function getIssueWorkspaceRuntime(client: PaperclipApiClient, issueId: string) {
+async function getIssueWorkspaceRuntime(client: WardmoteApiClient, issueId: string) {
   const context = await client.requestJson("GET", `/issues/${encodeURIComponent(issueId)}/heartbeat-context`);
   const workspace = readCurrentExecutionWorkspace(context);
   return {
@@ -410,7 +410,7 @@ const READ_ONLY_CURATED_TOOLS: Record<string, true> = {
 };
 
 export function createToolDefinitions(
-  client: PaperclipApiClient,
+  client: WardmoteApiClient,
   runtimeConnections: RuntimeConnectionTools = envRuntimeConnectionTools,
 ): ToolDefinition[] {
   const tools: ToolDefinition[] = [

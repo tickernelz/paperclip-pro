@@ -6,7 +6,7 @@ import { eq } from "drizzle-orm";
 import { activityLog, companyMemberships, heartbeatRuns, issues } from "@tickernelz/wardmote-db";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { startRunnerApiTestServer } from "../../__tests__/helpers/runner-api-server.js";
-import { PaperclipRunnerToolAuthority } from "./paperclip-runner-tool-authority.js";
+import { WardmoteRunnerToolAuthority } from "./paperclip-runner-tool-authority.js";
 import { companySkillPolicyService } from "../company-skill-policy.js";
 import { companySkillService } from "../company-skills.js";
 
@@ -55,7 +55,7 @@ describe("runner update_skill through the real skill API", () => {
     await server.db.insert(heartbeatRuns).values({ id: replacementRunId, companyId, agentId: testFixture.agentId,
       status: "running", runtimeMode: "native", nativeIssueId: issueId, invocationSource: "assignment", triggerDetail: "system", contextSnapshot: { issueId } });
     await server.db.update(issues).set({ executionRunId: replacementRunId }).where(eq(issues.id, issueId));
-    const replacement = new PaperclipRunnerToolAuthority(server.db, { ...testFixture, runId: replacementRunId });
+    const replacement = new WardmoteRunnerToolAuthority(server.db, { ...testFixture, runId: replacementRunId });
     expect(await replacement.execute({ tool: "update_skill", callId: "replacement", arguments: args })).toEqual(first);
     expect(await companySkillService(server.db).listVersions(companyId, skill.id)).toHaveLength(2);
     expect((await server.db.select().from(activityLog).where(eq(activityLog.action, "company.skill_file_updated")))
@@ -110,7 +110,7 @@ describe("runner update_skill through the real skill API", () => {
 
   it("hides the tool and rejects invocation in planning mode", async () => {
     const testFixture = await fixture({ mode: "planning" });
-    expect(new PaperclipRunnerToolAuthority(server.db, { ...testFixture, workMode: "planning" }).definitions().some(tool => tool.name === "update_skill")).toBe(false);
+    expect(new WardmoteRunnerToolAuthority(server.db, { ...testFixture, workMode: "planning" }).definitions().some(tool => tool.name === "update_skill")).toBe(false);
     await expect(testFixture.authority.execute({ tool: "update_skill", callId: "planning", arguments: testFixture.args })).rejects.toThrow();
   });
 });

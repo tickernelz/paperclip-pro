@@ -116,7 +116,7 @@ vi.mock("../../realtime/runner-prp-ws.js", () => ({
   registerRunnerPrpAuthority: seam.register,
 }));
 vi.mock("./paperclip-runner-tool-authority.js", () => ({
-  PaperclipRunnerToolAuthority: class {
+  WardmoteRunnerToolAuthority: class {
     definitions() {
       return Promise.resolve([]);
     }

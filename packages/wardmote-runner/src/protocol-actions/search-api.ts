@@ -21,7 +21,7 @@ export const searchApiAction = {
     "idempotency": "none",
     "disabledByDefault": false,
     "realBindingStatus": "live_codex",
-    "realServiceBinding": "PaperclipRunnerToolAuthority",
+    "realServiceBinding": "WardmoteRunnerToolAuthority",
     "prpEvidence": "Authenticated PRP tool input/result and existing HTTP route authorization/activity records.",
     "prpBindingStatus": "bound",
     "legacyAliases": []

@@ -7,7 +7,7 @@ import {
   OpenwaMcpToolError,
   paperclipToolCatalog,
   parseToolsets,
-  PaperclipApiClient,
+  WardmoteApiClient,
   type ToolsetName,
 } from "@tickernelz/wardmote-mcp-server/catalog";
 import { createConnectorToolDefinitions } from "@tickernelz/wardmote-mcp-server/connector-tools";
@@ -113,7 +113,7 @@ export function paperclipMcpRoutes(db: Db) {
     const openwa = signedRunId ? await openwaToolBindingForRun(db, { companyId, agentId, runId: signedRunId }) : null;
     const requestedToolsets = parseToolsets(typeof req.query.toolsets === "string" ? req.query.toolsets : null);
     const toolsets: ToolsetName[] = openwa && !requestedToolsets.includes("openwa") ? [...requestedToolsets, "openwa"] : requestedToolsets;
-    const client = new PaperclipApiClient({
+    const client = new WardmoteApiClient({
       apiUrl: loopbackApiUrl(req),
       apiKey: token,
       companyId,

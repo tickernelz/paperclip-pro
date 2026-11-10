@@ -1,7 +1,7 @@
 import { lstat, mkdir, realpath } from "node:fs/promises";
 import path from "node:path";
 import { parseObject } from "../adapters/utils.js";
-import { resolvePaperclipInstanceRoot } from "../home-paths.js";
+import { resolveWardmoteInstanceRoot } from "../home-paths.js";
 
 /** A repository-free sandbox task needs isolation, but has no Git base. */
 export function shouldUseIsolatedTaskDirectory(input: {
@@ -31,7 +31,7 @@ export async function materializeIsolatedTaskDirectory(input: {
   if (identities.some((value) => !/^[a-zA-Z0-9_-]+$/.test(value))) {
     throw new Error("Invalid isolated task workspace identity");
   }
-  const root = resolvePaperclipInstanceRoot();
+  const root = resolveWardmoteInstanceRoot();
   await mkdir(root, { recursive: true });
   let cwd = await realpath(root);
   for (const segment of ["isolated-workspaces", ...identities]) {

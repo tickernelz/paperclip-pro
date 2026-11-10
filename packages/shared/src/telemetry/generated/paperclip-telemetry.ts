@@ -1,16 +1,16 @@
 // GENERATED — DO NOT EDIT.
 
-export interface PaperclipAgentCreatedDimensions {
+export interface WardmoteAgentCreatedDimensions {
 agent_id: string
 agent_role: ("ceo" | "cto" | "cmo" | "cfo" | "security" | "engineer" | "designer" | "pm" | "qa" | "devops" | "researcher" | "general" | "other")
 }
 
-export interface PaperclipAgentFirstHeartbeatDimensions {
+export interface WardmoteAgentFirstHeartbeatDimensions {
 agent_id: string
 agent_role: ("ceo" | "cto" | "cmo" | "cfo" | "security" | "engineer" | "designer" | "pm" | "qa" | "devops" | "researcher" | "general" | "other")
 }
 
-export interface PaperclipAgentTaskCompletedDimensions {
+export interface WardmoteAgentTaskCompletedDimensions {
 adapter_type: ("process" | "http" | "acpx_local" | "claude_local" | "codex_local" | "cursor_cloud" | "gemini_local" | "hermes_gateway" | "hermes_local" | "opencode_local" | "pi_local" | "cursor" | "openclaw_gateway" | "grok_local" | "kimi_local" | "other")
 agent_id: string
 agent_role: ("ceo" | "cto" | "cmo" | "cfo" | "security" | "engineer" | "designer" | "pm" | "qa" | "devops" | "researcher" | "general" | "other")
@@ -18,7 +18,7 @@ model?: string
 task_id?: string
 }
 
-export interface PaperclipAgentTaskRunDimensions {
+export interface WardmoteAgentTaskRunDimensions {
 adapter_type?: ("process" | "http" | "acpx_local" | "claude_local" | "codex_local" | "cursor_cloud" | "gemini_local" | "hermes_gateway" | "hermes_local" | "opencode_local" | "pi_local" | "cursor" | "openclaw_gateway" | "grok_local" | "kimi_local" | "other")
 agent_id: string
 agent_role?: ("ceo" | "cto" | "cmo" | "cfo" | "security" | "engineer" | "designer" | "pm" | "qa" | "devops" | "researcher" | "general" | "other")
@@ -31,35 +31,35 @@ cached_tokens?: number
 task_id?: string
 }
 
-export interface PaperclipCompanyImportedDimensions {
+export interface WardmoteCompanyImportedDimensions {
 source_type: ("local_path" | "github" | "url" | "catalog" | "skills_sh" | "unknown")
 source_ref?: string
 source_ref_hashed?: boolean
 }
 
-export interface PaperclipErrorHandlerCrashDimensions {
+export interface WardmoteErrorHandlerCrashDimensions {
 error_code: string
 }
 
-export interface PaperclipGoalCreatedDimensions {
+export interface WardmoteGoalCreatedDimensions {
 goal_level: ("company" | "team" | "agent" | "task" | "other")
 }
 
-export interface PaperclipInstallCompletedDimensions {
+export interface WardmoteInstallCompletedDimensions {
 adapter_type: ("process" | "http" | "acpx_local" | "claude_local" | "codex_local" | "cursor_cloud" | "gemini_local" | "hermes_gateway" | "hermes_local" | "opencode_local" | "pi_local" | "cursor" | "openclaw_gateway" | "grok_local" | "kimi_local" | "other")
 }
 
-export interface PaperclipInstallStartedDimensions {
+export interface WardmoteInstallStartedDimensions {
 
 }
 
-export interface PaperclipInteractionCreatedDimensions {
+export interface WardmoteInteractionCreatedDimensions {
 interaction_kind: ("suggest_tasks" | "ask_user_questions" | "request_confirmation" | "request_checkbox_confirmation" | "request_item_verdicts" | "other")
 used_deprecated_resolver_policy_alias: boolean
 }
 
 /** Emit only after the complete resolution transaction commits, including response provenance. */
-export interface PaperclipInteractionResolvedDimensions {
+export interface WardmoteInteractionResolvedDimensions {
 interaction_kind: ("suggest_tasks" | "ask_user_questions" | "request_confirmation" | "request_checkbox_confirmation" | "request_item_verdicts" | "other")
 status: ("accepted" | "rejected" | "answered" | "cancelled" | "expired" | "failed" | "other")
 resolution_reason?: ("accepted" | "rejected" | "stale_target" | "superseded_by_comment" | "superseded_by_newer_request" | "expired" | "cancelled" | "skipped" | "other")
@@ -82,27 +82,27 @@ source_run_id?: string
 legacy_inherited_restriction: boolean
 }
 
-export interface PaperclipProjectCreatedDimensions {
+export interface WardmoteProjectCreatedDimensions {
 
 }
 
-export interface PaperclipRoutineCreatedDimensions {
+export interface WardmoteRoutineCreatedDimensions {
 
 }
 
-export interface PaperclipRoutineRunDimensions {
+export interface WardmoteRoutineRunDimensions {
 source: ("schedule" | "manual" | "api" | "webhook" | "other")
 status: ("received" | "coalesced" | "skipped" | "issue_created" | "completed" | "failed" | "other")
 }
 
-export interface PaperclipSkillImportedDimensions {
+export interface WardmoteSkillImportedDimensions {
 /** skill_ref may identify a known public catalog source only. Omit it for
  * GitHub-synced sources, which may be private; never emit repository paths or names. */
 source_type: ("local_path" | "github" | "url" | "catalog" | "skills_sh" | "unknown")
 skill_ref?: string
 }
 
-export type PaperclipEventName =
+export type WardmoteEventName =
   | "agent.created"
   | "agent.first_heartbeat"
   | "agent.task_completed"
@@ -120,21 +120,21 @@ export type PaperclipEventName =
   | "skill.imported";
 
 export interface EventDimensionsMap {
-  "agent.created": PaperclipAgentCreatedDimensions;
-  "agent.first_heartbeat": PaperclipAgentFirstHeartbeatDimensions;
-  "agent.task_completed": PaperclipAgentTaskCompletedDimensions;
-  "agent.task_run": PaperclipAgentTaskRunDimensions;
-  "company.imported": PaperclipCompanyImportedDimensions;
-  "error.handler_crash": PaperclipErrorHandlerCrashDimensions;
-  "goal.created": PaperclipGoalCreatedDimensions;
-  "install.completed": PaperclipInstallCompletedDimensions;
-  "install.started": PaperclipInstallStartedDimensions;
-  "interaction.created": PaperclipInteractionCreatedDimensions;
-  "interaction.resolved": PaperclipInteractionResolvedDimensions;
-  "project.created": PaperclipProjectCreatedDimensions;
-  "routine.created": PaperclipRoutineCreatedDimensions;
-  "routine.run": PaperclipRoutineRunDimensions;
-  "skill.imported": PaperclipSkillImportedDimensions;
+  "agent.created": WardmoteAgentCreatedDimensions;
+  "agent.first_heartbeat": WardmoteAgentFirstHeartbeatDimensions;
+  "agent.task_completed": WardmoteAgentTaskCompletedDimensions;
+  "agent.task_run": WardmoteAgentTaskRunDimensions;
+  "company.imported": WardmoteCompanyImportedDimensions;
+  "error.handler_crash": WardmoteErrorHandlerCrashDimensions;
+  "goal.created": WardmoteGoalCreatedDimensions;
+  "install.completed": WardmoteInstallCompletedDimensions;
+  "install.started": WardmoteInstallStartedDimensions;
+  "interaction.created": WardmoteInteractionCreatedDimensions;
+  "interaction.resolved": WardmoteInteractionResolvedDimensions;
+  "project.created": WardmoteProjectCreatedDimensions;
+  "routine.created": WardmoteRoutineCreatedDimensions;
+  "routine.run": WardmoteRoutineRunDimensions;
+  "skill.imported": WardmoteSkillImportedDimensions;
 }
 
 export const WARDMOTE_EVENTS = {
@@ -416,17 +416,17 @@ export const WARDMOTE_ENUM_DESCRIPTIONS = {
 
 export const SCHEMA_VERSION = "1" as const;
 
-export interface PaperclipTelemetryEvent<K extends PaperclipEventName = PaperclipEventName> {
+export interface WardmoteTelemetryEvent<K extends WardmoteEventName = WardmoteEventName> {
 name: K
 occurredAt: string
 dimensions: EventDimensionsMap[K]
 }
 
-export type AnyPaperclipTelemetryEvent = {
-  [K in PaperclipEventName]: PaperclipTelemetryEvent<K>
-}[PaperclipEventName];
+export type AnyWardmoteTelemetryEvent = {
+  [K in WardmoteEventName]: WardmoteTelemetryEvent<K>
+}[WardmoteEventName];
 
-export interface PaperclipTelemetryBatch {
+export interface WardmoteTelemetryBatch {
 app: "paperclip"
 schemaVersion: typeof SCHEMA_VERSION
 installId: string
@@ -437,20 +437,20 @@ installId: string
  * appear. Ingest documents this shape but does not strictly enforce PEP 440.
  */
 version?: string
-events: AnyPaperclipTelemetryEvent[]
+events: AnyWardmoteTelemetryEvent[]
 }
 
-export function makeEvent<K extends PaperclipEventName>(
+export function makeEvent<K extends WardmoteEventName>(
   name: K,
   dimensions: EventDimensionsMap[K],
   occurredAt: string
-): PaperclipTelemetryEvent<K> {
+): WardmoteTelemetryEvent<K> {
   return { name, occurredAt, dimensions };
 }
 
 export function makeBatch(
   installId: string,
-  events: readonly AnyPaperclipTelemetryEvent[],
+  events: readonly AnyWardmoteTelemetryEvent[],
   /**
    * Optional client application build version. Paperclip clients report PEP 440
    * local versions such as <nearest-tag>+<commits-since-tag>.git.<abbrev-sha>;
@@ -458,7 +458,7 @@ export function makeBatch(
    * appear. Ingest documents this shape but does not strictly enforce PEP 440.
    */
   version?: string
-): PaperclipTelemetryBatch {
+): WardmoteTelemetryBatch {
   return {
     app: "paperclip",
     schemaVersion: SCHEMA_VERSION,

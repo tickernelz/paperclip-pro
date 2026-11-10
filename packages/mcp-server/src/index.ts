@@ -3,13 +3,13 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 import type { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
 import { canonicalToolName, paperclipToolCatalog } from "./catalog.js";
-import { PaperclipApiClient } from "./client.js";
-import { hasManagementAuthority, readConfigFromEnv, type PaperclipMcpConfig } from "./config.js";
+import { WardmoteApiClient } from "./client.js";
+import { hasManagementAuthority, readConfigFromEnv, type WardmoteMcpConfig } from "./config.js";
 import { sharedToolNotes } from "./generated-tools.js";
 
 export async function resolveManagementAuthority(
-  client: PaperclipApiClient,
-  config: PaperclipMcpConfig,
+  client: WardmoteApiClient,
+  config: WardmoteMcpConfig,
 ): Promise<boolean> {
   try {
     const actor = await client.requestJson<{ role?: unknown; authorityCapabilities?: unknown }>(
@@ -27,8 +27,8 @@ export async function resolveManagementAuthority(
   }
 }
 
-export function createPaperclipMcpServer(
-  config: PaperclipMcpConfig = readConfigFromEnv(),
+export function createWardmoteMcpServer(
+  config: WardmoteMcpConfig = readConfigFromEnv(),
   management = false,
 ) {
   const server = new McpServer(
@@ -41,7 +41,7 @@ export function createPaperclipMcpServer(
     },
   );
 
-  const client = new PaperclipApiClient(config);
+  const client = new WardmoteApiClient(config);
   const { definitions: tools } = paperclipToolCatalog(client, config.toolsets, management);
   for (const tool of tools) {
     server.registerTool(
@@ -65,7 +65,7 @@ export function createPaperclipMcpServer(
   };
 }
 
-export async function connectPaperclipMcpServer(server: McpServer, transport: Transport): Promise<void> {
+export async function connectWardmoteMcpServer(server: McpServer, transport: Transport): Promise<void> {
   await server.connect(transport);
   const deliver = transport.onmessage;
   transport.onmessage = (message, extra) => {
@@ -75,8 +75,8 @@ export async function connectPaperclipMcpServer(server: McpServer, transport: Tr
   };
 }
 
-export async function runServer(config: PaperclipMcpConfig = readConfigFromEnv()) {
-  const management = await resolveManagementAuthority(new PaperclipApiClient(config), config);
-  const { server } = createPaperclipMcpServer(config, management);
-  await connectPaperclipMcpServer(server, new StdioServerTransport());
+export async function runServer(config: WardmoteMcpConfig = readConfigFromEnv()) {
+  const management = await resolveManagementAuthority(new WardmoteApiClient(config), config);
+  const { server } = createWardmoteMcpServer(config, management);
+  await connectWardmoteMcpServer(server, new StdioServerTransport());
 }

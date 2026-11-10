@@ -42,9 +42,9 @@ import type {
   HarnessRuntimeRequest,
   HarnessRuntimeRequestHandoff,
   HarnessRuntimeRequestResolution,
-  PaperclipQuestion,
-  PaperclipQuestionResponse,
-  PaperclipQuestionSet,
+  WardmoteQuestion,
+  WardmoteQuestionResponse,
+  WardmoteQuestionSet,
 } from "../../contracts/harness-driver.js";
 import {
   WARDMOTE_QUESTION_SET_SCHEMA,
@@ -52,7 +52,7 @@ import {
   harnessRuntimeInputExpiredOutcome,
   harnessRuntimeRequestOutcome,
   parseHarnessRuntimeRequestResolution,
-  parsePaperclipQuestionSet,
+  parseWardmoteQuestionSet,
 } from "../../contracts/harness-driver.js";
 import type {
   NativeSessionCapabilities,
@@ -500,7 +500,7 @@ class OpenCodeHarnessSession implements HarnessSession {
     {
       request: HarnessRuntimeRequest;
       nativeQuestions: Record<string, unknown>[];
-      submittedResponse?: PaperclipQuestionResponse;
+      submittedResponse?: WardmoteQuestionResponse;
       submittedAction?: "accept" | "accept_for_session" | "decline" | "cancel";
       settling?: boolean;
     }
@@ -1221,7 +1221,7 @@ class OpenCodeHarnessSession implements HarnessSession {
       return;
     }
     if (this.#pendingRuntimeRequests.has(requestId)) return;
-    let input: PaperclipQuestionSet;
+    let input: WardmoteQuestionSet;
     try {
       input = normalizeOpenCodeQuestionSet(nativeQuestions, properties);
     } catch {
@@ -2516,9 +2516,9 @@ async function startRuntime(input: {
 export function normalizeOpenCodeQuestionSet(
   nativeQuestions: Record<string, unknown>[],
   metadata: Record<string, unknown> = {},
-): PaperclipQuestionSet {
+): WardmoteQuestionSet {
   const questions = nativeQuestions.map(
-    (question, index): PaperclipQuestion => {
+    (question, index): WardmoteQuestion => {
       const options = (Array.isArray(question.options) ? question.options : [])
         .map(record)
         .slice(0, 128)
@@ -2564,7 +2564,7 @@ export function normalizeOpenCodeQuestionSet(
       };
     },
   );
-  return parsePaperclipQuestionSet({
+  return parseWardmoteQuestionSet({
     schema: WARDMOTE_QUESTION_SET_SCHEMA,
     title: text(metadata.title, "OpenCode needs your input").slice(0, 1_000),
     ...(text(metadata.description)
@@ -2580,7 +2580,7 @@ function openCodeAnswers(
     request: HarnessRuntimeRequest;
     nativeQuestions: Record<string, unknown>[];
   },
-  response: PaperclipQuestionResponse,
+  response: WardmoteQuestionResponse,
 ): string[][] {
   return pending.nativeQuestions.map((nativeQuestion, index) => {
     const questionId = openCodeQuestionId(nativeQuestion, index);

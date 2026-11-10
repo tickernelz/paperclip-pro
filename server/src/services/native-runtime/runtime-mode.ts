@@ -4,9 +4,9 @@ import {
   type NativeStatusDecision,
 } from "./status-arbiter.js";
 import {
-  PaperclipRunnerProviderProfileError,
-  resolvePaperclipRunnerProviderProfile,
-  type PaperclipRunnerProviderProfile,
+  WardmoteRunnerProviderProfileError,
+  resolveWardmoteRunnerProviderProfile,
+  type WardmoteRunnerProviderProfile,
 } from "./provider-profile.js";
 
 /**
@@ -29,7 +29,7 @@ export type HeartbeatRuntimeResolution =
       kind: "native";
       resolverVersion: typeof NATIVE_RUNTIME_RESOLVER_VERSION;
       reason: "explicit_wardmote_runner" | "persisted_native_selection";
-      provider: PaperclipRunnerProviderProfile["provider"];
+      provider: WardmoteRunnerProviderProfile["provider"];
     };
 
 export type NativeRuntimeResolution =
@@ -117,11 +117,11 @@ export function resolveNativeRuntimeMode(input: {
       reason: "direct_adapter",
     };
   }
-  let runnerProfile: PaperclipRunnerProviderProfile;
+  let runnerProfile: WardmoteRunnerProviderProfile;
   try {
-    runnerProfile = resolvePaperclipRunnerProviderProfile(input.adapterConfig);
+    runnerProfile = resolveWardmoteRunnerProviderProfile(input.adapterConfig);
   } catch (error) {
-    if (error instanceof PaperclipRunnerProviderProfileError) {
+    if (error instanceof WardmoteRunnerProviderProfileError) {
       throw ineligible(error.code, error.message);
     }
     throw error;

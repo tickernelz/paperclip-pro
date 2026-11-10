@@ -1,6 +1,6 @@
 import type { ToolsetName } from "./tool-overrides.js";
 
-export interface PaperclipMcpConfig {
+export interface WardmoteMcpConfig {
   apiUrl: string;
   apiKey: string;
   companyId: string | null;
@@ -95,7 +95,7 @@ export function normalizeApiUrl(apiUrl: string): string {
   return trimmed.endsWith("/api") ? trimmed : `${trimmed}/api`;
 }
 
-export function readConfigFromEnv(env: NodeJS.ProcessEnv = process.env): PaperclipMcpConfig {
+export function readConfigFromEnv(env: NodeJS.ProcessEnv = process.env): WardmoteMcpConfig {
   const apiUrl = nonEmpty(env.WARDMOTE_API_URL);
   if (!apiUrl) {
     throw new Error("Missing WARDMOTE_API_URL");

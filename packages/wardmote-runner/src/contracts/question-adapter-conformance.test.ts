@@ -10,9 +10,9 @@ import {
   runtimeRequestResponse,
 } from "../drivers/codex/codex-question-adapter.js";
 import {
-  parsePaperclipQuestionResponse,
-  parsePaperclipQuestionSet,
-  type PaperclipQuestionSet,
+  parseWardmoteQuestionResponse,
+  parseWardmoteQuestionSet,
+  type WardmoteQuestionSet,
 } from "./question-set.js";
 import type { HarnessRuntimeRequest } from "./harness-driver.js";
 
@@ -52,8 +52,8 @@ describe("question adapter conformance fixtures", () => {
     const acpxQuestionSet = normalizeAcpFormElicitation(
       acpx.nativeRequest.params as AcpElicitationRequest,
     )?.questionSet;
-    const codexExpected = parsePaperclipQuestionSet(codex.canonicalQuestionSet);
-    const acpxExpected = parsePaperclipQuestionSet(acpx.canonicalQuestionSet);
+    const codexExpected = parseWardmoteQuestionSet(codex.canonicalQuestionSet);
+    const acpxExpected = parseWardmoteQuestionSet(acpx.canonicalQuestionSet);
 
     expect(codexQuestionSet).toEqual(codexExpected);
     expect(acpxQuestionSet).toEqual(acpxExpected);
@@ -61,10 +61,10 @@ describe("question adapter conformance fixtures", () => {
       questionPresentation(codexExpected),
     );
     expect(
-      parsePaperclipQuestionResponse(codexExpected, codex.canonicalResponse),
+      parseWardmoteQuestionResponse(codexExpected, codex.canonicalResponse),
     ).toEqual(codex.canonicalResponse);
     expect(
-      parsePaperclipQuestionResponse(acpxExpected, acpx.canonicalResponse),
+      parseWardmoteQuestionResponse(acpxExpected, acpx.canonicalResponse),
     ).toEqual(acpx.canonicalResponse);
   });
 
@@ -97,14 +97,14 @@ describe("question adapter conformance fixtures", () => {
         method: String(codex.nativeRequest.method),
       },
     };
-    const codexResponse = parsePaperclipQuestionResponse(
+    const codexResponse = parseWardmoteQuestionResponse(
       codexQuestionSet,
       codex.canonicalResponse,
     );
     const normalizedAcpx = normalizeAcpFormElicitation(
       acpx.nativeRequest.params as AcpElicitationRequest,
     );
-    const acpxResponse = parsePaperclipQuestionResponse(
+    const acpxResponse = parseWardmoteQuestionResponse(
       normalizedAcpx!.questionSet,
       acpx.canonicalResponse,
     );
@@ -119,7 +119,7 @@ describe("question adapter conformance fixtures", () => {
   });
 });
 
-function questionPresentation(questionSet: PaperclipQuestionSet): unknown {
+function questionPresentation(questionSet: WardmoteQuestionSet): unknown {
   return {
     ...questionSet,
     questions: questionSet.questions.map(

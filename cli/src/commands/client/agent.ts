@@ -15,7 +15,7 @@ import {
 } from "@tickernelz/wardmote-shared";
 import {
   removeMaintainerOnlySkillSymlinks,
-  resolvePaperclipSkillsDir,
+  resolveWardmoteSkillsDir,
 } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import fs from "node:fs/promises";
 import os from "node:os";
@@ -798,7 +798,7 @@ export function registerAgentCommands(program: Command): void {
 
           const installSummaries: SkillsInstallSummary[] = [];
           if (opts.installSkills !== false) {
-            const skillsDir = await resolvePaperclipSkillsDir(__moduleDir, [path.resolve(process.cwd(), "skills")]);
+            const skillsDir = await resolveWardmoteSkillsDir(__moduleDir, [path.resolve(process.cwd(), "skills")]);
             if (!skillsDir) {
               throw new Error(
                 "Could not locate local Wardmote skills directory. Expected ./skills in the repo checkout.",

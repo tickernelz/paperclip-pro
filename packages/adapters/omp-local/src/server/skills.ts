@@ -10,10 +10,10 @@ import {
   buildPersistentSkillSnapshot,
   ensureWardmoteSkillSymlink,
   readInstalledSkillTargets,
-  readPaperclipRuntimeSkillEntries,
-  relinkPaperclipSkillsFromOtherInstalls,
+  readWardmoteRuntimeSkillEntries,
+  relinkWardmoteSkillsFromOtherInstalls,
   removeRetiredBundledSkillLinks,
-  resolvePaperclipDesiredSkillNames,
+  resolveWardmoteDesiredSkillNames,
 } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import { resolveOmpProfile } from "./profile.js";
 
@@ -69,8 +69,8 @@ function skillsLocationLabel(skillsHome: string, config: Record<string, unknown>
 }
 
 async function buildOmpSkillSnapshot(config: Record<string, unknown>): Promise<AdapterSkillSnapshot> {
-  const availableEntries = await readPaperclipRuntimeSkillEntries(config, __moduleDir);
-  const desiredSkills = resolvePaperclipDesiredSkillNames(config, availableEntries);
+  const availableEntries = await readWardmoteRuntimeSkillEntries(config, __moduleDir);
+  const desiredSkills = resolveWardmoteDesiredSkillNames(config, availableEntries);
   const skillsHome = path.join(resolveOmpAgentDir(config), "skills");
   const installed = await readInstalledSkillTargets(skillsHome);
 
@@ -96,7 +96,7 @@ export async function syncOmpSkills(
   ctx: AdapterSkillContext,
   desiredSkills: string[],
 ): Promise<AdapterSkillSnapshot> {
-  const availableEntries = await readPaperclipRuntimeSkillEntries(ctx.config, __moduleDir);
+  const availableEntries = await readWardmoteRuntimeSkillEntries(ctx.config, __moduleDir);
   const desiredSet = new Set(desiredSkills);
   const skillsHome = path.join(resolveOmpAgentDir(ctx.config), "skills");
   await fs.mkdir(skillsHome, { recursive: true });
@@ -126,11 +126,11 @@ export async function ensureOmpSkills(
   config: Record<string, unknown>,
   agentDirOverride?: string,
 ): Promise<void> {
-  const availableEntries = await readPaperclipRuntimeSkillEntries(config, __moduleDir);
+  const availableEntries = await readWardmoteRuntimeSkillEntries(config, __moduleDir);
   const skillsHome = path.join(resolveOmpAgentDir(config, agentDirOverride), "skills");
   await removeRetiredBundledSkillLinks(skillsHome);
-  await relinkPaperclipSkillsFromOtherInstalls(skillsHome, availableEntries);
-  const desiredSet = new Set(resolvePaperclipDesiredSkillNames(config, availableEntries));
+  await relinkWardmoteSkillsFromOtherInstalls(skillsHome, availableEntries);
+  const desiredSet = new Set(resolveWardmoteDesiredSkillNames(config, availableEntries));
   if (desiredSet.size === 0) return;
 
   await fs.mkdir(skillsHome, { recursive: true });

@@ -13,7 +13,7 @@ import {
   recordWorkspaceConfigFreshnessOperation,
   prepareProjectRepositoryWorkspaces,
 } from "./workspaces.js";
-import { resolvePaperclipInstanceRoot } from "../../home-paths.js";
+import { resolveWardmoteInstanceRoot } from "../../home-paths.js";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { and, asc, eq } from "drizzle-orm";
@@ -221,7 +221,7 @@ export async function prepareHeartbeatWorkspace(db: Db, input: HeartbeatWorkspac
       if (isDotRun) {
         // This is private controller storage, never a provider filesystem.
         // v6 projects workspace.access=none and cwd=null to Dot.
-        const cwd = path.resolve(resolvePaperclipInstanceRoot(), "runtime", "paperclip-runner", "dot-controllers", agent.companyId, run.id);
+        const cwd = path.resolve(resolveWardmoteInstanceRoot(), "runtime", "paperclip-runner", "dot-controllers", agent.companyId, run.id);
         await fs.mkdir(cwd, { recursive: true, mode: 0o700 });
         return { cwd, source: "agent_home" as const, projectId: null, workspaceId: null, repoUrl: null, repoRef: null,
           workspaceHints: [], warnings: [], baseCwdFallback: false, materializationFailures: [], additionalWorkspaces: [], referencedProjectFailures: [] };

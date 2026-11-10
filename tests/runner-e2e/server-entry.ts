@@ -1,7 +1,7 @@
 // This entrypoint is used only by isolated Runner E2E instances. Production
 // service code has no test flag, delay, altered prompt, or private test API.
 import { ServerResponse } from "node:http";
-import { PaperclipRunnerToolAuthority } from "../../server/src/services/native-runtime/paperclip-runner-tool-authority.js";
+import { WardmoteRunnerToolAuthority } from "../../server/src/services/native-runtime/paperclip-runner-tool-authority.js";
 import { canonicalDocumentIssueId, contextCommentGateSelected, holdCommittedDocumentResponse, isArmed } from "./context-comment-gate.js";
 import { holdInteractionResponse } from "./interaction-response-gate.js";
 
@@ -27,8 +27,8 @@ if (ids.some((id) => id.endsWith(".accept-while-running"))) {
       },
     });
   };
-  const execute = PaperclipRunnerToolAuthority.prototype.execute;
-  PaperclipRunnerToolAuthority.prototype.execute = async function (...args) {
+  const execute = WardmoteRunnerToolAuthority.prototype.execute;
+  WardmoteRunnerToolAuthority.prototype.execute = async function (...args) {
     const result = await execute.apply(this, args);
     if (args[0].tool === "request_human_input") await hold(result);
     return result;
@@ -55,8 +55,8 @@ if (contextCommentGate || completionBusyGate) {
     heldIssues.add(issueId);
     await holdCommittedDocumentResponse(issueId, Date.now() + (completionBusyGate ? 300_000 : 90_000));
   };
-  const execute = PaperclipRunnerToolAuthority.prototype.execute;
-  PaperclipRunnerToolAuthority.prototype.execute = async function (...args) {
+  const execute = WardmoteRunnerToolAuthority.prototype.execute;
+  WardmoteRunnerToolAuthority.prototype.execute = async function (...args) {
     const result = await execute.apply(this, args);
     if (args[0].tool === "write_document") {
       const issueId = this.binding?.issueId;

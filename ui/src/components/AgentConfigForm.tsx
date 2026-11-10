@@ -180,7 +180,7 @@ export function supportsAdapterModelRefresh(adapterType: string): boolean {
   return adapterType === "wardmote_runner";
 }
 
-export function resolvePaperclipRunnerTransitionModel(
+export function resolveWardmoteRunnerTransitionModel(
   previousAdapterType: string,
   previousModel: unknown,
 ): string {
@@ -1598,7 +1598,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                         model:
                           dot ? ""
                             : t === "wardmote_runner"
-                              ? resolvePaperclipRunnerTransitionModel(adapterType, config.model)
+                              ? resolveWardmoteRunnerTransitionModel(adapterType, config.model)
                               : "",
                         effort: "",
                         modelReasoningEffort: "",

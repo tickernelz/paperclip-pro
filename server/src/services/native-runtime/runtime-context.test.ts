@@ -4,7 +4,7 @@ import path from "node:path";
 import type { Db } from "@tickernelz/wardmote-db";
 import {
   WARDMOTE_OPERATIONAL_SKILL_KEY,
-  type PaperclipSkillEntry,
+  type WardmoteSkillEntry,
 } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -40,7 +40,7 @@ import { createHash } from "node:crypto";
 import { buildNativeRuntimeContext, resolveNativeRuntimeMcpSnapshot } from "./runtime-context.js";
 
 const temporaryRoots: string[] = [];
-let previousPaperclipHome: string | undefined;
+let previousWardmoteHome: string | undefined;
 let previousInstanceId: string | undefined;
 
 async function makeTreeWritable(target: string): Promise<void> {
@@ -61,7 +61,7 @@ beforeEach(async () => {
   serviceMocks.readCommittedForRuntime.mockResolvedValue(null);
   serviceMocks.githubBotConnectionIdsForRun.mockResolvedValue(new Set());
   serviceMocks.spekoToolsForSession.mockResolvedValue([]);
-  previousPaperclipHome = process.env.WARDMOTE_HOME;
+  previousWardmoteHome = process.env.WARDMOTE_HOME;
   previousInstanceId = process.env.WARDMOTE_INSTANCE_ID;
   const root = await mkdtemp(path.join(tmpdir(), "paperclip-native-context-"));
   temporaryRoots.push(root);
@@ -85,8 +85,8 @@ beforeEach(async () => {
 });
 
 afterEach(async () => {
-  if (previousPaperclipHome === undefined) delete process.env.WARDMOTE_HOME;
-  else process.env.WARDMOTE_HOME = previousPaperclipHome;
+  if (previousWardmoteHome === undefined) delete process.env.WARDMOTE_HOME;
+  else process.env.WARDMOTE_HOME = previousWardmoteHome;
   if (previousInstanceId === undefined) delete process.env.WARDMOTE_INSTANCE_ID;
   else process.env.WARDMOTE_INSTANCE_ID = previousInstanceId;
   // A rejected Promise.all does not cancel the other materializers. Let their
@@ -267,7 +267,7 @@ describe("buildNativeRuntimeContext", () => {
     await writeFile(path.join(selectedRoot, "SKILL.md"), "# Reviewer\nUse the checklist.\n");
     await writeFile(path.join(selectedRoot, "references", "checklist.md"), "- Verify tests\n");
     await writeFile(path.join(unselectedRoot, "SKILL.md"), "# Not selected\n");
-    const entries: PaperclipSkillEntry[] = [
+    const entries: WardmoteSkillEntry[] = [
       { key: "company-1/reviewer", runtimeName: "reviewer", source: selectedRoot, versionId: "version-1" },
       { key: "company-1/unused", runtimeName: "unused", source: unselectedRoot, versionId: "version-2" },
     ];

@@ -711,7 +711,7 @@ export function buildHostServices(
   notifyWorker?: (method: string, params: unknown) => void,
   options: {
     pluginWorkerManager?: PluginWorkerManager;
-    manifest?: import("@tickernelz/wardmote-shared").PaperclipPluginManifestV1;
+    manifest?: import("@tickernelz/wardmote-shared").WardmotePluginManifestV1;
     heartbeatRuntimeEnv?: Record<string, string | undefined>;
   } = {},
 ): HostServices & { dispose(): void } {

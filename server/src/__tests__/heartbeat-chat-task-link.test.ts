@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { buildPaperclipTaskMarkdown } from "../services/heartbeat.js";
+import { buildWardmoteTaskMarkdown } from "../services/heartbeat.js";
 import { readConfigFile } from "../config-file.js";
 
 vi.mock("../config-file.js", () => ({ readConfigFile: vi.fn(() => null) }));
@@ -19,7 +19,7 @@ describe("external chat task link context", () => {
       vi.stubEnv("WARDMOTE_API_URL", "http://localhost:3100");
       for (const includeDescription of [true, false]) {
         for (const nativeRunner of [true, false]) {
-          const markdown = buildPaperclipTaskMarkdown({ issue, externalChatProvider, nativeRunner, includeDescription });
+          const markdown = buildWardmoteTaskMarkdown({ issue, externalChatProvider, nativeRunner, includeDescription });
           expect(markdown).toContain("Public task URL: https://board.example/issues/task-123");
           expect(markdown).toContain("use this exact URL");
           expect(markdown).toContain("Opening it still requires Paperclip access");
@@ -36,7 +36,7 @@ describe("external chat task link context", () => {
       vi.stubEnv("WARDMOTE_PUBLIC_URL", publicUrl);
       vi.stubEnv("WARDMOTE_API_URL", "https://api.example");
       vi.stubEnv("WARDMOTE_CHAT_WEBHOOK_PUBLIC_URL", "https://ingress.example");
-      const markdown = buildPaperclipTaskMarkdown({ issue, externalChatProvider: "slack" });
+      const markdown = buildWardmoteTaskMarkdown({ issue, externalChatProvider: "slack" });
       expect(markdown).toContain("No public task URL is configured");
       expect(markdown).toContain("do not invent a URL");
       expect(markdown).not.toContain("Public task URL:");
@@ -50,11 +50,11 @@ describe("OpenWA external chat contract", () => {
   it("keeps OpenWA out of the generic external-chat file-delivery instructions", () => {
     for (const includeDescription of [true, false]) {
       for (const nativeRunner of [true, false]) {
-        const openwa = buildPaperclipTaskMarkdown({ issue, externalChatProvider: "openwa", nativeRunner, includeDescription }) ?? "";
+        const openwa = buildWardmoteTaskMarkdown({ issue, externalChatProvider: "openwa", nativeRunner, includeDescription }) ?? "";
         expect(openwa).not.toContain("External chat file delivery");
         expect(openwa).not.toContain("paperclip-upload-artifact.sh");
         expect(openwa).not.toContain("register_deliverable");
-        const slack = buildPaperclipTaskMarkdown({ issue, externalChatProvider: "slack", nativeRunner, includeDescription }) ?? "";
+        const slack = buildWardmoteTaskMarkdown({ issue, externalChatProvider: "slack", nativeRunner, includeDescription }) ?? "";
         expect(slack).toContain("External chat file delivery");
       }
     }

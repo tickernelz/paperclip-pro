@@ -83,7 +83,7 @@ import type {
   NativeRuntimeContextSnapshot,
   NativeSession,
   NativeSessionBackend,
-  PaperclipQuestionSet,
+  WardmoteQuestionSet,
   PersistedNativeSession,
   PrpEvent,
   PrpStructuredRunResult,
@@ -101,7 +101,7 @@ import {
   applyNativeSessionGoalControl,
   inspectWarmRunTransition,
   parseNativeExecutionInput,
-  parsePaperclipQuestionSet,
+  parseWardmoteQuestionSet,
   resolveSourceCodexHome,
   readRunnerdArtifactBinding,
   retainedRunnerdMaintenanceIsIdle,
@@ -119,8 +119,8 @@ import { discoverRemoteExecutable, parseRemoteExecutableCandidate } from "./code
 export { parseRemoteExecutableCandidate } from "./codex-model-fallback.js";
 import type { CommandManagedRuntimeRunner } from "@tickernelz/wardmote-adapter-utils/command-managed-runtime";
 import {
-  resolvePaperclipRunnerTransport,
-  type PaperclipRunnerTransport,
+  resolveWardmoteRunnerTransport,
+  type WardmoteRunnerTransport,
 } from "@tickernelz/wardmote-adapter-utils/runner-connectivity";
 import type { Db } from "@tickernelz/wardmote-db";
 import {
@@ -147,10 +147,10 @@ import {
   nativeRunFinalizations,
   nativeRunResults,
 } from "@tickernelz/wardmote-db";
-import { PaperclipControlPlanePort } from "./paperclip-control-plane-port.js";
+import { WardmoteControlPlanePort } from "./paperclip-control-plane-port.js";
 import { appendHeartbeatRunEvent } from "../heartbeat-run-events.js";
 import { nativeSha256 } from "./canonical.js";
-import { PaperclipRunnerToolAuthority } from "./paperclip-runner-tool-authority.js";
+import { WardmoteRunnerToolAuthority } from "./paperclip-runner-tool-authority.js";
 import { createAssignedMcpTools, getAssignedMcpGateway } from "./assigned-mcp-tools.js";
 import { getNativeReviewAssignment, readNativeReviewAssignmentContext } from "./native-review-participant.js";
 import { NativeChatAttachmentReadScope } from "./chat-attachment-read.js";
@@ -170,7 +170,7 @@ import { issueRecoveryActionService } from "../issue-recovery-actions.js";
 import { reportRunFailure } from "../run-failure-report.js";
 import { persistActivity, publishActivity } from "../activity-log.js";
 import { commitNativeStatusDecision } from "./status-decision-committer.js";
-import { resolvePaperclipInstanceRoot } from "../../home-paths.js";
+import { resolveWardmoteInstanceRoot } from "../../home-paths.js";
 import { documentService } from "../documents.js";
 import { issueThreadInteractionService } from "../issue-thread-interactions.js";
 import { issueService } from "../issues.js";
@@ -181,7 +181,7 @@ import {
 } from "./status-arbiter.js";
 import { conflict, HttpError } from "../../errors.js";
 import { redactSensitiveText } from "../../redaction.js";
-import { resolvePaperclipRunnerBinary } from "./native-codex-runner.js";
+import { resolveWardmoteRunnerBinary } from "./native-codex-runner.js";
 import {
   createNativeRunTrace,
   isNativeRunRootHistoricalSpan,
@@ -813,7 +813,7 @@ type RuntimeQuestionFallback = {
     submitLabel?: string;
     supersedeOnUserComment: false;
     runtimeRequestId: string;
-    questionSet: PaperclipQuestionSet;
+    questionSet: WardmoteQuestionSet;
     questions: Array<{
       id: string;
       prompt: string;
@@ -856,9 +856,9 @@ export function runtimeQuestionFallbackFromEvent(
     typeof request.itemId !== "string"
   )
     return null;
-  let questionSet: PaperclipQuestionSet;
+  let questionSet: WardmoteQuestionSet;
   try {
-    questionSet = parsePaperclipQuestionSet(request.input);
+    questionSet = parseWardmoteQuestionSet(request.input);
   } catch {
     return null;
   }
@@ -1622,10 +1622,10 @@ export async function synchronizeCompletedProviderPlan(input: {
 
 class SessionToolAuthorityEpoch {
   readonly runId: string;
-  #authority: PaperclipRunnerToolAuthority;
+  #authority: WardmoteRunnerToolAuthority;
   #revoked = false;
 
-  constructor(runId: string, authority: PaperclipRunnerToolAuthority, private readonly toolTrace?: NativeToolTrace) {
+  constructor(runId: string, authority: WardmoteRunnerToolAuthority, private readonly toolTrace?: NativeToolTrace) {
     this.runId = runId;
     this.#authority = authority;
   }
@@ -1646,7 +1646,7 @@ class SessionToolAuthorityEpoch {
     return this.#authority.definitions();
   }
 
-  async execute(call: Parameters<PaperclipRunnerToolAuthority["execute"]>[0]) {
+  async execute(call: Parameters<WardmoteRunnerToolAuthority["execute"]>[0]) {
     this.#assertCurrent();
     return this.toolTrace
       ? await this.toolTrace.execute(call, () => this.#authority.execute(call))
@@ -1783,7 +1783,7 @@ function runnerdStateBase(): string {
   return (
     process.env.WARDMOTE_RUNNER_STATE_DIR ??
     resolve(
-      resolvePaperclipInstanceRoot(),
+      resolveWardmoteInstanceRoot(),
       "runtime",
       "paperclip-runner",
       "durable-sessions",
@@ -4422,7 +4422,7 @@ async function verifyWarmTransitionRestart(input: {
     return deny();
   const root = scopedRunnerdStateRoot(input.execution);
   const snapshot = readWarmTransitionSnapshot(root);
-  const artifact = readRunnerdArtifactBinding(resolvePaperclipRunnerBinary());
+  const artifact = readRunnerdArtifactBinding(resolveWardmoteRunnerBinary());
   const controller = await currentNativeControllerIdentity();
   const binding = input.execution.binding;
   let finalAuthorityCheck: (() => boolean) | undefined;
@@ -4724,7 +4724,7 @@ async function verifyWarmTransitionRestart(input: {
       )
         return false;
       const selected = readRunnerdArtifactBinding(
-        resolvePaperclipRunnerBinary(),
+        resolveWardmoteRunnerBinary(),
       );
       if (
         selected.version !== artifact.version ||
@@ -5991,7 +5991,7 @@ export function verifyNativeHarnessBackup(input: {
 
 function nativeSessionCheckpointDirectory(): string {
   const directory = resolve(
-    resolvePaperclipInstanceRoot(),
+    resolveWardmoteInstanceRoot(),
     "runtime",
     "paperclip-runner",
     "sessions",
@@ -7491,7 +7491,7 @@ function startNativeSessionExecutionLeaseRenewal(input: {
   };
 }
 
-export async function executePaperclipNativeSession(input: {
+export async function executeWardmoteNativeSession(input: {
   getFreshSessionHandoff?: () => Promise<string | null>;
   /** Retire a retained transport so recovery can replace provider tool declarations. */
   refreshTools?: boolean;
@@ -7604,7 +7604,7 @@ export async function executePaperclipNativeSession(input: {
       ownerScope, nativeSessionScopeKey(input.execution),
     );
     if (!input.useRunnerd) {
-      return await executePaperclipNativeSessionWithinScope(input);
+      return await executeWardmoteNativeSessionWithinScope(input);
     }
     // The session scope is unaffected by appending server-staged attachment
     // descriptors. Claim it before any workspace scrub/write so a duplicate
@@ -7624,7 +7624,7 @@ export async function executePaperclipNativeSession(input: {
     await closingWarmNativeSessions.get(sessionScopeId);
 
     if (input.execution.provider.kind === "openai_dot") {
-      return await executePaperclipNativeSessionWithinScope(input);
+      return await executeWardmoteNativeSessionWithinScope(input);
     }
     const workspaceRoot = input.execution.workspace.cwd;
     if (workspaceRoot === null) throw new Error("native_workspace_required");
@@ -7672,7 +7672,7 @@ export async function executePaperclipNativeSession(input: {
         }),
       };
     }
-    return await executePaperclipNativeSessionWithinScope(preparedInput);
+    return await executeWardmoteNativeSessionWithinScope(preparedInput);
   } catch (error) {
     executionFailure = error;
     throw error;
@@ -7716,8 +7716,8 @@ export async function executePaperclipNativeSession(input: {
   }
 }
 
-async function executePaperclipNativeSessionWithinScope(
-  input: Parameters<typeof executePaperclipNativeSession>[0],
+async function executeWardmoteNativeSessionWithinScope(
+  input: Parameters<typeof executeWardmoteNativeSession>[0],
 ): Promise<AdapterExecutionResult> {
   const identityRedactor = createAgentIdentityRedactor(input.runnerEnvironment?.WARDMOTE_AGENT_PRIVATE_KEY);
   const redactIdentityText = (text: string) => redactSensitiveText(
@@ -8203,7 +8203,7 @@ async function executePaperclipNativeSessionWithinScope(
       throw new NativeControllerDetachedForRestartError();
     }
   };
-  const controlPlane = new PaperclipControlPlanePort(
+  const controlPlane = new WardmoteControlPlanePort(
     input.db,
     {
       companyId: input.execution.binding.companyId,
@@ -8754,13 +8754,13 @@ async function executePaperclipNativeSessionWithinScope(
                 opencodeEnvironment: resolveNativeProviderEnvironment(input.execution.provider, input.runnerEnvironment),
                 acpxEnvironment: resolveNativeProviderEnvironment(input.execution.provider, input.runnerEnvironment),
                 opencodeRuntimeDirectory: resolve(
-                  resolvePaperclipInstanceRoot(),
+                  resolveWardmoteInstanceRoot(),
                   "runtime",
                   "paperclip-runner",
                   "opencode",
                 ),
                 acpxRuntimeDirectory: resolve(
-                  resolvePaperclipInstanceRoot(),
+                  resolveWardmoteInstanceRoot(),
                   "runtime",
                   "paperclip-runner",
                   "acpx",
@@ -11245,7 +11245,7 @@ export async function createRunnerdBackend(input: {
   initializingSessionToolAuthorities.add(sessionScopeId);
   try {
     let retainedTransition: VerifiedWarmTransitionBinding | undefined;
-    // executePaperclipNativeSession holds the full session-scope claim and
+    // executeWardmoteNativeSession holds the full session-scope claim and
     // verifies/migrates the durable root before it acquires the coordinator
     // lease. Avoid reclassifying the same root after that path has marked its
     // retained warm owner busy for this run. Direct backend construction still
@@ -11287,7 +11287,7 @@ async function prepareRemoteDotRunner({ input, target, runner, root, identity }:
   root: string;
   identity: NonNullable<NonNullable<Parameters<typeof createNativeSessionBackend>[1]>["dotRunnerOptions"]>["identity"];
 }) {
-  const runnerBinary = input.runnerRemoteBinaryPath?.trim() || resolvePaperclipRunnerBinary();
+  const runnerBinary = input.runnerRemoteBinaryPath?.trim() || resolveWardmoteRunnerBinary();
   const remoteRoot = posix.join(target.remoteCwd, ".paperclip-runtime", "paperclip-runner");
   const remoteBinary = posix.join(remoteRoot, "bin", "wardmote-runnerd");
   const runnerStateDirectory = posix.join(remoteRoot, "sessions",
@@ -11358,17 +11358,17 @@ async function prepareRemoteDotRunner({ input, target, runner, root, identity }:
     return handle;
   };
   const controlPlaneRegistration: NonNullable<NonNullable<NonNullable<Parameters<typeof createNativeSessionBackend>[1]>["dotRunnerOptions"]>["controlPlaneRegistration"]> = async authority => {
-    let transport: PaperclipRunnerTransport;
+    let transport: WardmoteRunnerTransport;
     // Validate outbound URL before staging; provider ingress needs the staged
     // listener binary before requesting the provider's private endpoint.
     if (requiredMode === "dial_wss") {
-      transport = await resolvePaperclipRunnerTransport({ target, runId: input.execution.binding.runId,
+      transport = await resolveWardmoteRunnerTransport({ target, runId: input.execution.binding.runId,
         localConnectUrl: "ws://127.0.0.1/unused", runnerPublicUrl: input.runnerPublicUrl,
         runnerCaBundlePath: input.runnerCaBundlePath, runnerIngressAuthorized: input.runnerIngressAuthorized === true });
       await prepare();
     } else {
       await prepare();
-      transport = await resolvePaperclipRunnerTransport({ target, runId: input.execution.binding.runId,
+      transport = await resolveWardmoteRunnerTransport({ target, runId: input.execution.binding.runId,
         localConnectUrl: "ws://127.0.0.1/unused", runnerIngressAuthorized: input.runnerIngressAuthorized === true });
     }
     await input.onLog?.("stderr", `[paperclip-runner] Dot controller target=remote transport=${transport.mode}\n`);
@@ -11467,7 +11467,7 @@ async function createRunnerdBackendWithinSessionClaim(
     ? await input.db.select({ config: agents.adapterConfig }).from(agents).where(and(
         eq(agents.id, input.execution.binding.agentId), eq(agents.companyId, input.execution.binding.companyId),
       )).limit(1).then(rows => rows[0]) : undefined;
-  const authority = new PaperclipRunnerToolAuthority(input.db, {
+  const authority = new WardmoteRunnerToolAuthority(input.db, {
     ...(nativeReview ? { nativeReview } : {}),
     connectorAssignments: connectorAssignments.filter((assignment) => pinnedSkills.has(assignment.skillKey)),
     assignedMcpTools,
@@ -11539,7 +11539,7 @@ async function createRunnerdBackendWithinSessionClaim(
       dynamicToolHandler: async call => { await dotRunnerBroker(input.db).assertRunAuthority(input.execution as import("../../vendor/wardmote-runner/index.js").NativeExecutionInputV6); return authorityEpoch.execute(call); },
       completionFeedback: async result => { await dotRunnerBroker(input.db).assertRunAuthority(input.execution as import("../../vendor/wardmote-runner/index.js").NativeExecutionInputV6); await authorityEpoch.definitions(); return nativeCompletionFeedback(input.db, input.execution.binding.runId, result); },
       dotRunnerOptions: {
-        stateDirectory: root, runnerBinary: remoteDot?.runnerBinary ?? resolvePaperclipRunnerBinary(),
+        stateDirectory: root, runnerBinary: remoteDot?.runnerBinary ?? resolveWardmoteRunnerBinary(),
         ...(remoteDot ?? {}),
         identity: { runnerInstanceId: effectiveRunnerInstanceId, environmentLeaseId: effectiveEnvironmentLeaseId,
           runId: input.execution.binding.runId, normalizedSessionId: nativeSessionKey(input.execution),
@@ -11612,8 +11612,8 @@ async function createRunnerdBackendWithinSessionClaim(
   // When an explicit remote artifact is configured, prepareRemoteRunner stages
   // these exact bytes at remoteBinary before launch.
   const controllerRunnerBinary = remoteTarget
-    ? input.runnerRemoteBinaryPath?.trim() || remotePiCompanion?.runnerBinary || (useBundledRemoteImageAssets ? bundledRemoteRunnerBinary() : resolvePaperclipRunnerBinary())
-    : resolvePaperclipRunnerBinary();
+    ? input.runnerRemoteBinaryPath?.trim() || remotePiCompanion?.runnerBinary || (useBundledRemoteImageAssets ? bundledRemoteRunnerBinary() : resolveWardmoteRunnerBinary())
+    : resolveWardmoteRunnerBinary();
   const explicitRemoteCodex = input.runnerRemoteCodexPath?.trim() || null;
   const remoteCodexNpmSpec = input.runnerRemoteCodexNpmSpec?.trim() || null;
   if (explicitRemoteCodex && remoteCodexNpmSpec) {
@@ -13214,13 +13214,13 @@ async function createRunnerdBackendWithinSessionClaim(
     dynamicToolHandler: executeCurrentToolAuthority,
     acpxDynamicToolHandler: executeCurrentToolAuthority,
     opencodeRuntimeDirectory: resolve(
-      resolvePaperclipInstanceRoot(),
+      resolveWardmoteInstanceRoot(),
       "runtime",
       "paperclip-runner",
       "opencode",
     ),
     acpxRuntimeDirectory: resolve(
-      resolvePaperclipInstanceRoot(),
+      resolveWardmoteInstanceRoot(),
       "runtime",
       "paperclip-runner",
       "acpx",
@@ -13256,7 +13256,7 @@ async function createRunnerdBackendWithinSessionClaim(
               acpxRuntimeDirectory: remoteRunnerFilesystemRoot
                 ? posix.join(remoteRunnerFilesystemRoot, "acpx")
                 : resolve(
-                    resolvePaperclipInstanceRoot(),
+                    resolveWardmoteInstanceRoot(),
                     "runtime",
                     "paperclip-runner",
                     "acpx",
@@ -13486,14 +13486,14 @@ async function createRunnerdBackendWithinSessionClaim(
                 target,
                 runnerIngressAuthorized: input.runnerIngressAuthorized === true,
               });
-              let transport: PaperclipRunnerTransport;
+              let transport: WardmoteRunnerTransport;
               if (requiredMode === "dial_wss") {
                 // Validate eligibility before staging any artifact.
                 transport = await measureNativeRunnerSpan(
                   input.trace,
                   "runner.transport.resolve",
                   () =>
-                    resolvePaperclipRunnerTransport({
+                    resolveWardmoteRunnerTransport({
                       target,
                       runId:
                         attachmentIdentity?.runId ??
@@ -13531,7 +13531,7 @@ async function createRunnerdBackendWithinSessionClaim(
                   input.trace,
                   "runner.ingress.acquire",
                   () =>
-                    resolvePaperclipRunnerTransport({
+                    resolveWardmoteRunnerTransport({
                       target,
                       runId:
                         attachmentIdentity?.runId ??
@@ -13687,7 +13687,7 @@ async function createRunnerdBackendWithinSessionClaim(
       // The launch runtime directory already ends in "acpx"; ACPX adds its
       // own namespace beneath it in resolveAcpxRuntimeRoot.
       const relativeHome = `acpx/acpx/${acpxRuntimeSessionDirectoryName(nativeSessionKey(input.execution))}/grok-home`;
-      const localHome = resolve(resolvePaperclipInstanceRoot(), "runtime", "paperclip-runner", relativeHome);
+      const localHome = resolve(resolveWardmoteInstanceRoot(), "runtime", "paperclip-runner", relativeHome);
       const remoteHome = remoteRunnerFilesystemRoot ? posix.join(remoteRunnerFilesystemRoot, relativeHome) : null;
       const readAuth = async (name: string): Promise<Buffer> => {
         if (!remoteHome || !remoteCommandRunner) return Buffer.from(await readLocalAiCredentialFile(join(localHome, name)));

@@ -27,9 +27,9 @@ vi.mock("../../vendor/wardmote-runner/index.js", async (importOriginal) => ({
   executeNativeSession: provider.execute,
 }));
 
-import { executePaperclipNativeSession } from "./native-session-executor.js";
+import { executeWardmoteNativeSession } from "./native-session-executor.js";
 import { buildNativeCompletionContract } from "./completion-contracts.js";
-import { PaperclipControlPlanePort } from "./paperclip-control-plane-port.js";
+import { WardmoteControlPlanePort } from "./paperclip-control-plane-port.js";
 import { prepareNativeHeartbeatRun } from "./prepare-native-run.js";
 
 describe("native provider capacity failure persistence", () => {
@@ -203,7 +203,7 @@ describe("native provider capacity failure persistence", () => {
       if (replayed) {
         // Model a controller crash after the event commit but before its
         // observational callback or failure coordinator could run.
-        const priorPort = new PaperclipControlPlanePort(db, {
+        const priorPort = new WardmoteControlPlanePort(db, {
           companyId,
           issueId,
           runId,
@@ -234,7 +234,7 @@ describe("native provider capacity failure persistence", () => {
           },
         );
       await expect(
-        executePaperclipNativeSession({
+        executeWardmoteNativeSession({
           db,
           execution,
           runnerInstanceId: native.runnerInstanceId,

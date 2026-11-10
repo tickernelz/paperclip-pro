@@ -17,13 +17,13 @@ relevant entry points:
   negotiation, semantic receipts/catalog, and explicit runnerd resolution;
 - `./testing`: deterministic driver/control-plane fakes and conformance kits.
 
-`resolvePaperclipRunnerdArtifact` resolves only the supplied path, verifies its
+`resolveWardmoteRunnerdArtifact` resolves only the supplied path, verifies its
 bytes against the supplied digest, and invokes that exact executable with
 `--build-metadata`. It never searches `PATH` or the App repository.
 
 ## Versioned join
 
-`assertPaperclipRunnerEvalCompatibility` checks the complete join before any
+`assertWardmoteRunnerEvalCompatibility` checks the complete join before any
 provider process starts:
 
 | Dimension | V1 rule |

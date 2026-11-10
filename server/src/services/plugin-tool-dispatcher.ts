@@ -24,7 +24,7 @@
 
 import type { Db } from "@tickernelz/wardmote-db";
 import type {
-  PaperclipPluginManifestV1,
+  WardmotePluginManifestV1,
   PluginRecord,
 } from "@tickernelz/wardmote-shared";
 import type { ToolRunContext, ToolResult } from "@tickernelz/wardmote-plugin-sdk";
@@ -160,7 +160,7 @@ export interface PluginToolDispatcher {
    */
   registerPluginTools(
     pluginKey: string,
-    manifest: PaperclipPluginManifestV1,
+    manifest: WardmotePluginManifestV1,
     pluginDbId: string,
   ): void;
 
@@ -434,7 +434,7 @@ export function createPluginToolDispatcher(
 
     registerPluginTools(
       pluginKey: string,
-      manifest: PaperclipPluginManifestV1,
+      manifest: WardmotePluginManifestV1,
       pluginDbId: string,
     ): void {
       registry.registerPlugin(pluginKey, manifest, pluginDbId);

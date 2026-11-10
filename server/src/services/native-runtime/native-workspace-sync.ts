@@ -26,7 +26,7 @@ import type {
   WorkspaceInboundMode,
 } from "@tickernelz/wardmote-adapter-utils/sandbox-managed-runtime";
 import { assertWorkspaceManifestDiskSpace, isPathManifest, manifestFileSha256, readManifestRecords, type PathManifest, type WorkspacePaths } from "@tickernelz/wardmote-adapter-utils/workspace-manifest";
-import { resolvePaperclipInstanceRoot } from "../../home-paths.js";
+import { resolveWardmoteInstanceRoot } from "../../home-paths.js";
 import { parseObject } from "../../adapters/utils.js";
 import type { NativeRestartRecoveryClaim } from "./native-restart-recovery.js";
 
@@ -145,7 +145,7 @@ function requireSafeSegment(value: string, label: string): string {
 
 function descriptorDirectory(runId: string): string {
   return path.join(
-    resolvePaperclipInstanceRoot(),
+    resolveWardmoteInstanceRoot(),
     STATE_ROOT_NAME,
     requireSafeSegment(runId, "run_id"),
   );

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { PaperclipApiError } from "./client.js";
+import { WardmoteApiError } from "./client.js";
 
 type McpTextResponse = {
   content: Array<{ type: "text"; text: string }>;
@@ -72,7 +72,7 @@ export function assertKnownArguments(input: Record<string, unknown>, known: read
 }
 
 export function formatErrorResponse(error: unknown): McpTextResponse {
-  if (error instanceof PaperclipApiError) {
+  if (error instanceof WardmoteApiError) {
     return {
       ...formatTextResponse({
         error: error.message,

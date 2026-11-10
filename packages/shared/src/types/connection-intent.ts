@@ -1,6 +1,6 @@
 import type { ConnectionIntentInteraction } from "./issue.js";
 import type { ToolConnection } from "./tool-access.js";
-import type { AskUserQuestionsQuestion, PaperclipQuestionSetPayload } from "./issue.js";
+import type { AskUserQuestionsQuestion, WardmoteQuestionSetPayload } from "./issue.js";
 import type { RemoteMcpConnectorId } from "../remote-mcp-connectors.js";
 
 export type ConnectionAvailabilityState =
@@ -45,7 +45,7 @@ export interface ConnectionsSearchResult {
   instruction?: string;
   providerQuestion?: AskUserQuestionsQuestion;
   /** Canonical native form of the same provider choice; IDs and disclosure are identical. */
-  providerQuestionSet?: PaperclipQuestionSetPayload;
+  providerQuestionSet?: WardmoteQuestionSetPayload;
   selectionInteractionId?: string;
 }
 

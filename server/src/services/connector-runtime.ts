@@ -10,10 +10,10 @@ import { createHash } from "node:crypto";
 import type { Db } from "@tickernelz/wardmote-db";
 import type { AgentSkillSnapshot } from "@tickernelz/wardmote-shared";
 import {
-  resolvePaperclipSkillsDir,
-  readPaperclipSkillSyncPreference,
-  writePaperclipSkillSyncPreference,
-  type PaperclipSkillEntry,
+  resolveWardmoteSkillsDir,
+  readWardmoteSkillSyncPreference,
+  writeWardmoteSkillSyncPreference,
+  type WardmoteSkillEntry,
 } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import { forbidden } from "../errors.js";
 import { emailChannelService } from "./email-channels.js";
@@ -191,7 +191,7 @@ export async function executeConnectorTool(
 /** Runtime-only overlay: never persist automatic assignments into agent preferences. */
 export async function applyConnectorSkills(
   config: Record<string, unknown>,
-  entries: PaperclipSkillEntry[],
+  entries: WardmoteSkillEntry[],
   assignments: ConnectorAssignment[],
 ) {
   const reserved = new Set(
@@ -201,7 +201,7 @@ export async function applyConnectorSkills(
       ...(connector.legacySkillKeys ?? []),
     ]),
   );
-  const desired = readPaperclipSkillSyncPreference(
+  const desired = readWardmoteSkillSyncPreference(
     config,
   ).desiredSkillEntries.filter((entry) => !reserved.has(entry.key));
   const skills = entries.filter(
@@ -211,7 +211,7 @@ export async function applyConnectorSkills(
     const connector = connectors.find((entry) => entry.key === assignment.key)!;
     let markdown = connector.skillMarkdown;
     if (markdown === undefined) {
-      const root = await resolvePaperclipSkillsDir(
+      const root = await resolveWardmoteSkillsDir(
         path.dirname(fileURLToPath(import.meta.url)),
         [fileURLToPath(new URL("../../../skills", import.meta.url))],
       );
@@ -250,7 +250,7 @@ export async function applyConnectorSkills(
         .digest("hex")
     : null;
   return {
-    ...writePaperclipSkillSyncPreference(config, desired),
+    ...writeWardmoteSkillSyncPreference(config, desired),
     paperclipRuntimeSkills: skills,
     paperclipConnectorSkillDigest: connectorSkillDigest,
   };

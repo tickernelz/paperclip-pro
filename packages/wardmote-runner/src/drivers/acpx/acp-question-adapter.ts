@@ -2,12 +2,12 @@ import { createHash } from "node:crypto";
 
 import {
   WARDMOTE_QUESTION_SET_SCHEMA,
-  parsePaperclipQuestionResponse,
-  parsePaperclipQuestionSet,
-  type PaperclipQuestion,
-  type PaperclipQuestionOption,
-  type PaperclipQuestionResponse,
-  type PaperclipQuestionSet,
+  parseWardmoteQuestionResponse,
+  parseWardmoteQuestionSet,
+  type WardmoteQuestion,
+  type WardmoteQuestionOption,
+  type WardmoteQuestionResponse,
+  type WardmoteQuestionSet,
 } from "../../contracts/question-set.js";
 
 const MAX_ACP_FORM_FIELDS = 64;
@@ -32,12 +32,12 @@ export interface AcpAcceptElicitationResponse {
 interface AcpFieldBinding {
   propertyName: string;
   property: Record<string, unknown>;
-  question: PaperclipQuestion;
+  question: WardmoteQuestion;
   optionValues: Map<string, string>;
 }
 
 export interface NormalizedAcpForm {
-  questionSet: PaperclipQuestionSet;
+  questionSet: WardmoteQuestionSet;
   /** Convert a validated Paperclip response back into typed ACP content. */
   accept(response: unknown): AcpAcceptElicitationResponse;
 }
@@ -85,7 +85,7 @@ export function normalizeAcpFormElicitation(
       (value, position, all): value is string =>
         Boolean(value) && all.indexOf(value) === position,
     );
-  const questionSet = parsePaperclipQuestionSet({
+  const questionSet = parseWardmoteQuestionSet({
     schema: WARDMOTE_QUESTION_SET_SCHEMA,
     title,
     ...(descriptions.length > 0
@@ -98,7 +98,7 @@ export function normalizeAcpFormElicitation(
   return {
     questionSet,
     accept(response: unknown): AcpAcceptElicitationResponse {
-      const parsed = parsePaperclipQuestionResponse(questionSet, response);
+      const parsed = parseWardmoteQuestionResponse(questionSet, response);
       return {
         action: "accept",
         content: acpContent(bindings, parsed),
@@ -224,7 +224,7 @@ function normalizeField(
 
 function acpContent(
   bindings: AcpFieldBinding[],
-  response: PaperclipQuestionResponse,
+  response: WardmoteQuestionResponse,
 ): AcpFormContent {
   const content: AcpFormContent = {};
   for (const binding of bindings) {
@@ -319,10 +319,10 @@ function normalizeOptions(
     label: string;
     description?: string;
   }>,
-): { options: PaperclipQuestionOption[]; values: Map<string, string> } {
+): { options: WardmoteQuestionOption[]; values: Map<string, string> } {
   const values = new Map<string, string>();
   const options = nativeOptions.map(
-    (option, index): PaperclipQuestionOption => {
+    (option, index): WardmoteQuestionOption => {
       const id = `option-${index + 1}`;
       values.set(id, option.value);
       return {

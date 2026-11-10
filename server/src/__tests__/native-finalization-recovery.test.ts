@@ -25,7 +25,7 @@ import {
   reconcileNativeFinalizations,
   reconcileRetainedNativeSessionCleanups,
 } from "../services/native-runtime/native-finalization-reconciler.js";
-import { PaperclipControlPlanePort } from "../services/native-runtime/paperclip-control-plane-port.js";
+import { WardmoteControlPlanePort } from "../services/native-runtime/paperclip-control-plane-port.js";
 import { assertRetainedNativeSourceArchiveSettled } from "../services/native-runtime/native-session-executor.js";
 
 describe("P6-16/P6-25/P6-28 native finalization recovery", () => {
@@ -92,7 +92,7 @@ describe("P6-16/P6-25/P6-28 native finalization recovery", () => {
       completionContractSha256: "native-recovery-contract",
       contextSnapshot: { issueId },
     });
-    const port = new PaperclipControlPlanePort(db, {
+    const port = new WardmoteControlPlanePort(db, {
       companyId,
       issueId,
       runId,
@@ -170,7 +170,7 @@ describe("P6-16/P6-25/P6-28 native finalization recovery", () => {
       completionContractSha256: "stale-finalizer-contract",
       contextSnapshot: { issueId: staleIssueId },
     });
-    const stalePort = new PaperclipControlPlanePort(db, {
+    const stalePort = new WardmoteControlPlanePort(db, {
       companyId,
       issueId: staleIssueId,
       runId: staleRunId,

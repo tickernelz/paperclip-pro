@@ -1,7 +1,7 @@
-import type { PaperclipConfig } from "../config/schema.js";
+import type { WardmoteConfig } from "../config/schema.js";
 import type { CheckResult } from "./index.js";
 
-export async function llmCheck(config: PaperclipConfig): Promise<CheckResult> {
+export async function llmCheck(config: WardmoteConfig): Promise<CheckResult> {
   if (!config.llm) {
     return {
       name: "LLM provider",

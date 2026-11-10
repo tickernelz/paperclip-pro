@@ -3,7 +3,7 @@ import { createPiProfileExtensionAdapter } from "./pi-extension-adapter.js";
 import { COPILOT_ACP_CLIENT_CAPABILITIES } from "./copilot-events.js";
 import { createCursorProfileExtensionAdapter, CURSOR_CLIENT_CAPABILITIES } from "./cursor-extensions.js";
 import type { HarnessRuntimeRequestResolution } from "../../contracts/harness-driver.js";
-import { parsePaperclipQuestionSet, type PaperclipQuestionSet } from "../../contracts/question-set.js";
+import { parseWardmoteQuestionSet, type WardmoteQuestionSet } from "../../contracts/question-set.js";
 import { isCanonicalProviderEventType, type CanonicalProviderEvent } from "../../provider-events.js";
 import { validatePrpEvent } from "../../protocol/replay-contract.js";
 import type { QualifiedAcpxAgent } from "./qualified-profiles.js";
@@ -17,7 +17,7 @@ export function isAcpxCanonicalInputMethod(method: string): boolean {
 
 export interface AcpxExtensionInput {
   method: string;
-  questionSet: PaperclipQuestionSet;
+  questionSet: WardmoteQuestionSet;
   details?: Record<string, unknown>;
   resolve(resolution: HarnessRuntimeRequestResolution): Record<string, unknown>;
   cancel(): Record<string, unknown>;
@@ -54,7 +54,7 @@ export function acpxProfileClientCapabilities(agent: QualifiedAcpxAgent): Record
 /** Reject an oversized approval document; never silently approve a truncated revision. */
 export function validateAcpxExtensionInput(input: AcpxExtensionInput): void {
   if (!isAcpxCanonicalInputMethod(input.method)) throw new Error("Unsupported ACP input method");
-  parsePaperclipQuestionSet(input.questionSet);
+  parseWardmoteQuestionSet(input.questionSet);
   if (Buffer.byteLength(JSON.stringify(input.questionSet)) > 196 * 1024) {
     throw new Error("ACP input exceeds its complete-document byte limit");
   }

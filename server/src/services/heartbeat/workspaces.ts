@@ -57,7 +57,7 @@ import {
 import {
   resolveDefaultAgentWorkspaceDir,
   resolveManagedProjectWorkspaceDir,
-  resolvePaperclipInstanceRoot,
+  resolveWardmoteInstanceRoot,
 } from "../../home-paths.js";
 import {
   formatManagedGitWorktreeBranchInspection,
@@ -3119,7 +3119,7 @@ export function readConfiguredModelFromAdapterConfig(
   return readNonEmptyString(adapterConfig?.model);
 }
 
-export function attachPaperclipSessionMetadataToSessionParams(
+export function attachWardmoteSessionMetadataToSessionParams(
   sessionParams: Record<string, unknown> | null | undefined,
   configuredModel: string | null,
   configMetadata?: EffectiveRunSessionConfigMetadata | null,
@@ -3168,7 +3168,7 @@ export function stripConfiguredModelFromSessionParams(
   return next;
 }
 
-export function stripPaperclipSessionMetadataFromSessionParams(
+export function stripWardmoteSessionMetadataFromSessionParams(
   sessionParams: Record<string, unknown> | null | undefined,
 ) {
   if (!sessionParams) return null;
@@ -3372,7 +3372,7 @@ export function createHeartbeatWorkspaceResolver(db: Db) {
       workspace,
       boundProjectWorkspace,
       candidateBaseCwds,
-      managedSourceRoot: resolvePaperclipInstanceRoot(),
+      managedSourceRoot: resolveWardmoteInstanceRoot(),
       materializeOriginalRepository: workspace.repoUrl ? async () => {
         const original = await ensureManagedProjectWorkspace({
           companyId: agent.companyId,

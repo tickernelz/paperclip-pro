@@ -38,7 +38,7 @@ async function readVerifiedBuildMetadata(
   }
 }
 
-export interface PaperclipRunnerdBuildMetadata {
+export interface WardmoteRunnerdBuildMetadata {
   schema: typeof WARDMOTE_RUNNERD_BUILD_METADATA_SCHEMA;
   binaryName: "wardmote-runnerd";
   packageName: "@tickernelz/wardmote-runner";
@@ -53,14 +53,14 @@ export interface PaperclipRunnerdBuildMetadata {
   };
 }
 
-export interface PaperclipRunnerdArtifact {
+export interface WardmoteRunnerdArtifact {
   executablePath: string;
   sha256: string;
   byteSize: number;
-  buildMetadata: PaperclipRunnerdBuildMetadata;
+  buildMetadata: WardmoteRunnerdBuildMetadata;
 }
 
-export class PaperclipRunnerdArtifactError extends Error {
+export class WardmoteRunnerdArtifactError extends Error {
   readonly code = "wardmote_runnerd_artifact_invalid" as const;
 
   constructor(
@@ -73,50 +73,50 @@ export class PaperclipRunnerdArtifactError extends Error {
       | "metadata_invalid",
   ) {
     super(message);
-    this.name = "PaperclipRunnerdArtifactError";
+    this.name = "WardmoteRunnerdArtifactError";
   }
 }
 
 function record(value: unknown, path: string): Record<string, unknown> {
   if (typeof value !== "object" || value === null || Array.isArray(value)) {
-    throw new PaperclipRunnerdArtifactError(`${path} must be an object`, "metadata_invalid");
+    throw new WardmoteRunnerdArtifactError(`${path} must be an object`, "metadata_invalid");
   }
   return value as Record<string, unknown>;
 }
 
 function text(value: unknown, path: string): string {
   if (typeof value !== "string" || value.trim().length === 0) {
-    throw new PaperclipRunnerdArtifactError(`${path} must be a non-empty string`, "metadata_invalid");
+    throw new WardmoteRunnerdArtifactError(`${path} must be a non-empty string`, "metadata_invalid");
   }
   return value;
 }
 
 function version(value: unknown, path: string): number {
   if (!Number.isSafeInteger(value) || (value as number) < 1) {
-    throw new PaperclipRunnerdArtifactError(`${path} must be a positive integer`, "metadata_invalid");
+    throw new WardmoteRunnerdArtifactError(`${path} must be a positive integer`, "metadata_invalid");
   }
   return value as number;
 }
 
 /** Parse the runnerd response without accepting a look-alike binary. */
-export function parsePaperclipRunnerdBuildMetadata(
+export function parseWardmoteRunnerdBuildMetadata(
   value: unknown,
-): PaperclipRunnerdBuildMetadata {
+): WardmoteRunnerdBuildMetadata {
   const metadata = record(value, "runnerd build metadata");
   if (metadata.schema !== WARDMOTE_RUNNERD_BUILD_METADATA_SCHEMA) {
-    throw new PaperclipRunnerdArtifactError(
+    throw new WardmoteRunnerdArtifactError(
       `runnerd metadata schema ${String(metadata.schema)} is unsupported; expected ${WARDMOTE_RUNNERD_BUILD_METADATA_SCHEMA}`,
       "metadata_invalid",
     );
   }
   if (metadata.binaryName !== "wardmote-runnerd") {
-    throw new PaperclipRunnerdArtifactError(
+    throw new WardmoteRunnerdArtifactError(
       `runnerd metadata names unexpected binary ${String(metadata.binaryName)}`,
       "metadata_invalid",
     );
   }
   if (metadata.packageName !== WARDMOTE_RUNNER_BUILD_METADATA.package.name) {
-    throw new PaperclipRunnerdArtifactError(
+    throw new WardmoteRunnerdArtifactError(
       `runnerd metadata names unexpected package ${String(metadata.packageName)}`,
       "metadata_invalid",
     );
@@ -131,7 +131,7 @@ export function parsePaperclipRunnerdBuildMetadata(
     "runnerd build metadata.prp.maximumVersion",
   );
   if (minimumVersion > maximumVersion) {
-    throw new PaperclipRunnerdArtifactError(
+    throw new WardmoteRunnerdArtifactError(
       "runnerd build metadata.prp minimumVersion must not exceed maximumVersion",
       "metadata_invalid",
     );
@@ -166,13 +166,13 @@ export function parsePaperclipRunnerdBuildMetadata(
  * and read version metadata from that exact executable. This never searches
  * PATH or the App source tree.
  */
-export async function resolvePaperclipRunnerdArtifact(input: {
+export async function resolveWardmoteRunnerdArtifact(input: {
   executablePath: string;
   expectedSha256: string;
   metadataTimeoutMs?: number;
-}): Promise<PaperclipRunnerdArtifact> {
+}): Promise<WardmoteRunnerdArtifact> {
   if (!SHA256_PATTERN.test(input.expectedSha256)) {
-    throw new PaperclipRunnerdArtifactError(
+    throw new WardmoteRunnerdArtifactError(
       "expectedSha256 must use the sha256:<64 lowercase hex> form",
       "digest_invalid",
     );
@@ -187,7 +187,7 @@ export async function resolvePaperclipRunnerdArtifact(input: {
     if (!fileStat.isFile()) throw new Error("path is not a file");
     bytes = await readFile(executablePath);
   } catch (error) {
-    throw new PaperclipRunnerdArtifactError(
+    throw new WardmoteRunnerdArtifactError(
       `runnerd artifact ${input.executablePath} is unavailable: ${error instanceof Error ? error.message : String(error)}`,
       "path_invalid",
     );
@@ -195,7 +195,7 @@ export async function resolvePaperclipRunnerdArtifact(input: {
 
   const observedSha256 = `sha256:${createHash("sha256").update(bytes).digest("hex")}`;
   if (observedSha256 !== input.expectedSha256) {
-    throw new PaperclipRunnerdArtifactError(
+    throw new WardmoteRunnerdArtifactError(
       `runnerd artifact digest mismatch: expected ${input.expectedSha256}, observed ${observedSha256}`,
       "digest_mismatch",
     );
@@ -205,7 +205,7 @@ export async function resolvePaperclipRunnerdArtifact(input: {
   try {
     stdout = await readVerifiedBuildMetadata(bytes, input.metadataTimeoutMs ?? 5_000);
   } catch (error) {
-    throw new PaperclipRunnerdArtifactError(
+    throw new WardmoteRunnerdArtifactError(
       `runnerd artifact did not return build metadata: ${error instanceof Error ? error.message : String(error)}`,
       "metadata_unavailable",
     );
@@ -215,7 +215,7 @@ export async function resolvePaperclipRunnerdArtifact(input: {
   try {
     parsed = JSON.parse(stdout) as unknown;
   } catch (error) {
-    throw new PaperclipRunnerdArtifactError(
+    throw new WardmoteRunnerdArtifactError(
       `runnerd build metadata is not JSON: ${error instanceof Error ? error.message : String(error)}`,
       "metadata_invalid",
     );
@@ -225,6 +225,6 @@ export async function resolvePaperclipRunnerdArtifact(input: {
     executablePath,
     sha256: observedSha256,
     byteSize: bytes.byteLength,
-    buildMetadata: parsePaperclipRunnerdBuildMetadata(parsed),
+    buildMetadata: parseWardmoteRunnerdBuildMetadata(parsed),
   };
 }

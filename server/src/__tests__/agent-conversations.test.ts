@@ -37,7 +37,7 @@ import { documentService } from "../services/documents.js";
 import { getTaskPlanContext } from "../services/task-plan-context.js";
 import { terminalizeLegacyExecution, LEGACY_RECOVERY_CAUSE } from "../services/legacy-execution-recovery.js";
 import { settleUnrecoverableExecutions } from "../services/execution-recovery-resolution.js";
-import { renderPaperclipWakePrompt } from "@tickernelz/wardmote-adapter-utils/server-utils";
+import { renderWardmoteWakePrompt } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import { instanceSettingsService } from "../services/instance-settings.js";
 import {
   AGENT_CHAT_DIRECTIVE,
@@ -53,8 +53,8 @@ import {
 import { classifyIssueGraphLiveness } from "../services/recovery/issue-graph-liveness.js";
 import { runningProcesses } from "../adapters/index.js";
 import {
-  buildPaperclipTaskMarkdown,
-  buildPaperclipWakePayload,
+  buildWardmoteTaskMarkdown,
+  buildWardmoteWakePayload,
   heartbeatService,
 } from "../services/heartbeat.js";
 
@@ -417,7 +417,7 @@ const support = await getEmbeddedPostgresTestSupport();
       expect(
         await conversationReplay(db, companyId, issue.id, next.id),
       ).not.toContain("Old session");
-      const payload = await buildPaperclipWakePayload({
+      const payload = await buildWardmoteWakePayload({
         db, companyId,
         contextSnapshot: { issueId: issue.id, conversationMode: true, wakeCommentId: next.id },
         continuationSummary: { key: "summary", title: null, body: "Old session summary", updatedAt: new Date() },
@@ -452,25 +452,25 @@ const support = await getEmbeddedPostgresTestSupport();
       const input = { db, companyId, issueSummary: { ...issue, workMode: "planning" },
         contextSnapshot: { issueId: issue.id, conversationMode: true, interactionId: interaction!.id,
           interactionKind: "request_confirmation", interactionStatus: "rejected" } };
-      const payload = await buildPaperclipWakePayload(input);
+      const payload = await buildWardmoteWakePayload(input);
       expect(payload?.planReviewContext?.interaction).toMatchObject({
         status: "rejected", acceptedTargetRevision: null,
         result: { outcome: "rejected", reason: "Include CHAT_REVIEW_MARKER in the revised plan." },
       });
       for (const resumedSession of [false, true]) {
-        const prompt = renderPaperclipWakePrompt(payload, { resumedSession });
+        const prompt = renderWardmoteWakePrompt(payload, { resumedSession });
         expect(prompt).toContain("request_confirmation rejected");
         expect(prompt).toContain("Include CHAT_REVIEW_MARKER in the revised plan.");
         expect(prompt).toContain("not approval to implement or hand off execution tasks");
         expect(prompt).not.toContain("- accepted target:");
       }
-      const later = await buildPaperclipWakePayload({ ...input,
+      const later = await buildWardmoteWakePayload({ ...input,
         contextSnapshot: { issueId: issue.id, conversationMode: true } });
       expect(later?.planReviewContext).toBeNull();
       // An unrelated confirmation must not cause old plan context to be replayed.
       await db.update(issueThreadInteractions).set({ payload: { version: 1 } })
         .where(eq(issueThreadInteractions.id, interaction!.id));
-      expect((await buildPaperclipWakePayload(input))?.planReviewContext).toBeNull();
+      expect((await buildWardmoteWakePayload(input))?.planReviewContext).toBeNull();
     });
     it("includes an initial handoff plan in the first execution prompt and pins approved revisions", async () => {
       const task = await issueService(db).create(companyId, {
@@ -483,7 +483,7 @@ const support = await getEmbeddedPostgresTestSupport();
       expect(task.description).toBeNull();
       expect(initial?.body).toContain("HANDOFF_ACCEPTANCE_PHRASE");
       for (const includeDescription of [true, false]) {
-        const prompt = buildPaperclipTaskMarkdown({
+        const prompt = buildWardmoteTaskMarkdown({
           issue: task,
           taskPlan: initial,
           includeDescription,
@@ -1026,7 +1026,7 @@ describe("chat prompt policy", () => {
   });
 
   it.each([true, false])("preserves rejected-plan changes in task markdown (includeDescription=%s)", (includeDescription) => {
-    const prompt = buildPaperclipTaskMarkdown({
+    const prompt = buildWardmoteTaskMarkdown({
       issue: { id: "chat", title: "Chat", workMode: "planning", conversationAgentId: "agent" },
       interaction: { kind: "request_confirmation", status: "rejected" },
       planReview: { status: "rejected", reason: "Add CHAT_REVIEW_MARKER and a validation step." },
@@ -1046,7 +1046,7 @@ describe("chat prompt policy", () => {
   it.each(["standard", "ask", "planning"])(
     "keeps handoff instructions in %s, including accepted plans and resumes",
     (workMode) => {
-      const prompt = buildPaperclipTaskMarkdown({
+      const prompt = buildWardmoteTaskMarkdown({
         issue: {
           id: "chat",
           identifier: null,

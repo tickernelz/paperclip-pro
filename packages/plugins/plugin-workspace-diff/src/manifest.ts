@@ -1,9 +1,9 @@
-import type { PaperclipPluginManifestV1 } from "@tickernelz/wardmote-plugin-sdk";
+import type { WardmotePluginManifestV1 } from "@tickernelz/wardmote-plugin-sdk";
 
 const PLUGIN_ID = "paperclip.workspace-diff";
 const CHANGES_TAB_SLOT_ID = "workspace-changes-tab";
 
-const manifest: PaperclipPluginManifestV1 = {
+const manifest: WardmotePluginManifestV1 = {
   id: PLUGIN_ID,
   apiVersion: 1,
   version: "0.1.0",

@@ -9,7 +9,7 @@ import {
   resolveInstallStorePaths,
   withInstallStoreLock,
 } from "../install-store.js";
-import { resolvePaperclipInstanceId } from "../config/home.js";
+import { resolveWardmoteInstanceId } from "../config/home.js";
 import {
   detectServiceManager,
   LAUNCHD_PLIST_PATTERN,
@@ -43,7 +43,7 @@ function otherServiceDefinitions(platform: NodeJS.Platform, userHomeDir: string,
 export async function uninstallCommand(
   dependencies: Partial<UninstallDependencies> = {},
 ): Promise<void> {
-  const instanceId = resolvePaperclipInstanceId();
+  const instanceId = resolveWardmoteInstanceId();
   const detect = dependencies.detectServiceManager ?? detectServiceManager;
   const platform = dependencies.platform ?? process.platform;
   const userHomeDir = dependencies.userHomeDir ?? os.homedir();

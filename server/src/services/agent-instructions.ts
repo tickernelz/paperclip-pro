@@ -5,7 +5,7 @@ import { and, eq } from "drizzle-orm";
 import { agentInstructionHeads, agents, type Db } from "@tickernelz/wardmote-db";
 import { instructionPath, assertInstructionPathSafe, instructionBytes, readInstructionBytes } from "./agent-instruction-files.js";
 import { notFound, unprocessable } from "../errors.js";
-import { resolveHomeAwarePath, resolvePaperclipInstanceRoot } from "../home-paths.js";
+import { resolveHomeAwarePath, resolveWardmoteInstanceRoot } from "../home-paths.js";
 
 const ENTRY_FILE_DEFAULT = "AGENTS.md";
 const MODE_KEY = "instructionsBundleMode";
@@ -135,7 +135,7 @@ function resolvePathWithinRoot(rootPath: string, relativePath: string): string {
 
 export function resolveManagedInstructionsRoot(agent: AgentLike): string {
   return path.resolve(
-    resolvePaperclipInstanceRoot(),
+    resolveWardmoteInstanceRoot(),
     "companies",
     agent.companyId,
     "agents",

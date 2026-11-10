@@ -436,7 +436,7 @@ Attach it:
 aws iam put-user-policy \
   --profile "$AWS_PROFILE" \
   --user-name "$UPLOADER_USER" \
-  --policy-name PaperclipPagePublisher \
+  --policy-name WardmotePagePublisher \
   --policy-document file://paperclip-page-uploader-policy.json
 ```
 

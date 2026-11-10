@@ -661,14 +661,14 @@ export interface TranscriptRunArtifact {
   title?: string;
 }
 
-export interface PaperclipQuestionOption {
+export interface WardmoteQuestionOption {
   id: string;
   label: string;
   description?: string;
   recommended?: boolean;
 }
 
-export interface PaperclipQuestion {
+export interface WardmoteQuestion {
   id: string;
   header?: string;
   prompt: string;
@@ -677,7 +677,7 @@ export interface PaperclipQuestion {
   answerMode: "single_select" | "multi_select" | "text";
   /** Editable starting text, never an implicit or submitted answer. Text mode only. */
   initialText?: string;
-  options?: PaperclipQuestionOption[];
+  options?: WardmoteQuestionOption[];
   customAnswer?: { enabled: true; label?: string; placeholder?: string };
   textValidation?: {
     minLength?: number;
@@ -689,15 +689,15 @@ export interface PaperclipQuestion {
   };
 }
 
-export interface PaperclipQuestionSet {
+export interface WardmoteQuestionSet {
   schema: "paperclip.question_set.v1";
   title?: string;
   description?: string;
   submitLabel?: string;
-  questions: PaperclipQuestion[];
+  questions: WardmoteQuestion[];
 }
 
-export interface PaperclipQuestionResponse {
+export interface WardmoteQuestionResponse {
   schema: "paperclip.question_response.v1";
   answers: Record<string, { selectedOptionIds?: string[]; text?: string; customText?: string }>;
 }
@@ -717,7 +717,7 @@ export type TranscriptEntry =
   | { kind: "provider_activity"; ts: string; family: ProviderActivityFamily; eventType: string; status: ProviderActivityStatus; title: string; summary: string; payload: Record<string, unknown> }
   | { kind: "workspace_change"; ts: string; changeSetId: string; revision: number; source: "harness_reported" | "runner_verified"; complete: boolean; files: TranscriptWorkspaceChangeFile[]; totals: { files: number; additions: number | null; deletions: number | null }; patchArtifactRef: string | null }
   | { kind: "workspace_file_reference"; ts: string; referenceId: string; source: "harness_reported" | "runner_verified"; path: string; displayName: string; mediaType: string | null; presentation: "document" | "code" | "image" | "generic"; line: number | null; preview: string | null; previewTruncated: boolean; contentDigest: string | null }
-  | { kind: "runtime_request"; ts: string; requestId: string; requestKind: "runtime" | "command_approval" | "file_approval" | "permission_approval" | "user_input" | "elicitation" | null; turnId: string | null; requestType: "permission" | "input"; status: "pending" | "resolved" | "expired" | "cancelled"; prompt: string; choices: Array<{ key: string; label: string }>; fields: Array<{ name: string; label: string; placeholder: string | null }>; questionSet?: PaperclipQuestionSet | null; resolvedAction?: string | null; response?: PaperclipQuestionResponse | null }
+  | { kind: "runtime_request"; ts: string; requestId: string; requestKind: "runtime" | "command_approval" | "file_approval" | "permission_approval" | "user_input" | "elicitation" | null; turnId: string | null; requestType: "permission" | "input"; status: "pending" | "resolved" | "expired" | "cancelled"; prompt: string; choices: Array<{ key: string; label: string }>; fields: Array<{ name: string; label: string; placeholder: string | null }>; questionSet?: WardmoteQuestionSet | null; resolvedAction?: string | null; response?: WardmoteQuestionResponse | null }
   | { kind: "run_result"; ts: string; disposition: "done" | "blocked" | "needs_review" | "yielded"; summary: string; objectiveSatisfied: boolean | null; verification: TranscriptRunVerification[]; remainingWork: Array<{ description: string; blocksCompletion: boolean }>; blocker: { reasonCode: string; unblockAction: string; scope: "current_track" | "task_wide" } | null; artifacts: TranscriptRunArtifact[]; acceptedResponseWake?: { runId: string; sourceEventId: string } }
   | { kind: "run_terminal"; ts: string; turnState: "completed" | "failed" | "interrupted" | "cancelled"; runState: "succeeded" | "failed" | "cancelled"; disposition: "done" | "blocked" | "needs_review" | "yielded"; stopReason?: string };
 

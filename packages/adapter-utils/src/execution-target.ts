@@ -316,7 +316,7 @@ export interface AdapterExecutionTargetShellOptions {
   onLog?: (stream: "stdout" | "stderr", chunk: string) => Promise<void>;
 }
 
-export interface AdapterExecutionTargetPaperclipBridgeHandle {
+export interface AdapterExecutionTargetWardmoteBridgeHandle {
   env: Record<string, string>;
   /**
    * Present when the sandbox target opted into run-log streaming
@@ -426,7 +426,7 @@ function resolveHostForUrl(rawHost: string): string {
   return host;
 }
 
-function resolveDefaultPaperclipApiUrl(): string {
+function resolveDefaultWardmoteApiUrl(): string {
   const runtimeHost = resolveHostForUrl(
     process.env.WARDMOTE_LISTEN_HOST ?? process.env.HOST ?? "localhost",
   );
@@ -549,7 +549,7 @@ export function resolveAdapterExecutionTargetCwd(
   return adapterExecutionTargetRemoteCwd(target, localFallbackCwd);
 }
 
-export function adapterExecutionTargetUsesPaperclipBridge(
+export function adapterExecutionTargetUsesWardmoteBridge(
   target: AdapterExecutionTarget | null | undefined,
 ): boolean {
   return target?.kind === "remote";
@@ -4325,11 +4325,11 @@ async function closeDuplexChannelWithinBudget(
 let attachmentMaxBytesSource: (() => number) | null = null;
 
 /** Lets the host supply its live attachment size limit so the bridge body cap follows Instance Settings. */
-export function setPaperclipBridgeAttachmentMaxBytesSource(source: (() => number) | null): void {
+export function setWardmoteBridgeAttachmentMaxBytesSource(source: (() => number) | null): void {
   attachmentMaxBytesSource = source;
 }
 
-export async function startAdapterExecutionTargetPaperclipBridge(input: {
+export async function startAdapterExecutionTargetWardmoteBridge(input: {
   runId: string;
   target: AdapterExecutionTarget | null | undefined;
   runtimeRootDir: string | null | undefined;
@@ -4371,8 +4371,8 @@ export async function startAdapterExecutionTargetPaperclipBridge(input: {
   // default is a no-op recorder, so the surface stays inert until the host injects
   // a real recorder.
   duplexObservabilityRecorder?: DuplexObservabilityRecorder | null;
-}): Promise<AdapterExecutionTargetPaperclipBridgeHandle | null> {
-  if (!adapterExecutionTargetUsesPaperclipBridge(input.target)) {
+}): Promise<AdapterExecutionTargetWardmoteBridgeHandle | null> {
+  if (!adapterExecutionTargetUsesWardmoteBridge(input.target)) {
     return null;
   }
   if (!input.target || input.target.kind !== "remote") {
@@ -4416,11 +4416,11 @@ export async function startAdapterExecutionTargetPaperclipBridge(input: {
   // breaks deployments whose public origin sits behind a session-gated proxy
   // (every forwarded agent API call is rejected at the edge). Server boot
   // exports WARDMOTE_LISTEN_HOST / WARDMOTE_LISTEN_PORT before any run
-  // executes, and resolveDefaultPaperclipApiUrl() maps wildcard listen hosts
+  // executes, and resolveDefaultWardmoteApiUrl() maps wildcard listen hosts
   // to the loopback address of the same family (0.0.0.0 -> 127.0.0.1,
   // :: -> [::1]), so the fallback is always loopback-reachable.
   // input.hostApiUrl stays available as an explicit override seam.
-  const hostApiUrl = input.hostApiUrl?.trim() || resolveDefaultPaperclipApiUrl();
+  const hostApiUrl = input.hostApiUrl?.trim() || resolveDefaultWardmoteApiUrl();
   const shellCommand = adapterExecutionTargetShellCommand(target);
   const runner = adapterExecutionTargetCommandRunner(target);
   const bridgeTimeoutMs =

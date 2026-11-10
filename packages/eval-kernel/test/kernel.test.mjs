@@ -3,12 +3,12 @@ import test from "node:test";
 
 import {
   WARDMOTE_EVAL_KERNEL_COMPATIBILITY,
-  PaperclipEvalKernelConfigurationError,
-  runPaperclipEvalMatrix,
+  WardmoteEvalKernelConfigurationError,
+  runWardmoteEvalMatrix,
 } from "../dist/index.js";
 
 test("runs a caller-owned scenario/candidate matrix", async () => {
-  const results = await runPaperclipEvalMatrix({
+  const results = await runWardmoteEvalMatrix({
     scenarios: [{ id: "scenario-a", input: { value: 2 } }],
     candidates: [{ id: "candidate-a", config: { multiplier: 3 } }],
     execute: async ({ scenario, candidate }) => scenario.input.value * candidate.config.multiplier,
@@ -26,7 +26,7 @@ test("runs a caller-owned scenario/candidate matrix", async () => {
 test("fails before execution when compatibility preflight fails", async () => {
   let executed = false;
   await assert.rejects(
-    runPaperclipEvalMatrix({
+    runWardmoteEvalMatrix({
       scenarios: [{ id: "scenario-a", input: null }],
       candidates: [{
         id: "candidate-a",
@@ -43,12 +43,12 @@ test("fails before execution when compatibility preflight fails", async () => {
 
 test("rejects duplicate scenario ids", async () => {
   await assert.rejects(
-    runPaperclipEvalMatrix({
+    runWardmoteEvalMatrix({
       scenarios: [{ id: "duplicate", input: 1 }, { id: "duplicate", input: 2 }],
       candidates: [{ id: "candidate-a", config: null }],
       execute: async () => null,
       score: () => null,
     }),
-    PaperclipEvalKernelConfigurationError,
+    WardmoteEvalKernelConfigurationError,
   );
 });

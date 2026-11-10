@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, waitFor, within } from "storybook/test";
-import type { PaperclipQuestionSet, TranscriptEntry } from "@tickernelz/wardmote-adapter-utils";
+import type { WardmoteQuestionSet, TranscriptEntry } from "@tickernelz/wardmote-adapter-utils";
 import { IssueThreadInteractionCard } from "@/components/IssueThreadInteractionCard";
 import { TaskChatCompactInteractionCard } from "@/components/task-chat/TaskChatCompactInteractionCard";
 import { TaskChatProtocolActivityRow } from "@/components/task-chat/TaskChatProtocolActivityRow";
@@ -27,7 +27,7 @@ function Frame({ children }: { children: ReactNode }) {
   return <div className="paperclip-story"><main className="paperclip-story__inner space-y-6">{children}</main></div>;
 }
 
-const questionSet: PaperclipQuestionSet = {
+const questionSet: WardmoteQuestionSet = {
   schema: "paperclip.question_set.v1",
   title: "Deployment details",
   questions: [
@@ -99,7 +99,7 @@ const revisionId = "77777777-7777-4777-8777-777777777777";
 // This is the native runtime-question path, distinct from a synchronized plan document.
 const cursorPlanRevision = "eedc589b367de4f6366ff76090d93676adb1e2238d4c5af280ac88393e1adef3";
 const cursorPlanQuestionId = `plan-${cursorPlanRevision}`;
-const cursorPlanQuestions: PaperclipQuestionSet = {
+const cursorPlanQuestions: WardmoteQuestionSet = {
   schema: "paperclip.question_set.v1", title: "Review Cursor's plan", description: fullPlan, submitLabel: "Send decision",
   questions: [
     { id: cursorPlanQuestionId, prompt: "How should Cursor proceed with this plan?", required: true, answerMode: "single_select", options: [

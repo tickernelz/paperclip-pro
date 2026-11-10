@@ -18,7 +18,7 @@ import type {
 } from "acpx/runtime";
 
 import { acpxProfileClientCapabilities, bindAcpxExtensionTurn, validateAcpxRichEvent, createAcpxProfileExtensionAdapter, type AcpxExtensionInput } from "../drivers/acpx/profile-extensions.js";
-import type { PaperclipQuestionSet } from "../contracts/question-set.js";
+import type { WardmoteQuestionSet } from "../contracts/question-set.js";
 import { createAcpxToolEventNormalizer, createGrokMessageNormalizer } from "../provider-events.js";
 import { createPiMessageProjection, type PiProjectedMessageEvent } from "../drivers/acpx/pi-message-projection.js";
 import { parseNativeRuntimeContext } from "../contracts/runtime-context.js";
@@ -119,7 +119,7 @@ function reportRetainedAcpxCleanupFailure(
     }),
     {
       code: "WARDMOTE_ACPX_RETAINED_CLEANUP_FAILURE",
-      type: "PaperclipRunnerCleanupWarning",
+      type: "WardmoteRunnerCleanupWarning",
     },
   );
 }
@@ -134,7 +134,7 @@ interface PendingTool {
 interface PendingInput {
   turnId: string;
   responseDelivery: Promise<void>;
-  questionSet: PaperclipQuestionSet;
+  questionSet: WardmoteQuestionSet;
   prepareResolution(resolution: HarnessRuntimeRequestResolution): () => void;
   cancel(): void;
   cleanup(): void;

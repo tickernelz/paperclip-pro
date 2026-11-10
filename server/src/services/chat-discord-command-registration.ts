@@ -97,7 +97,7 @@ function freezeState(
 }
 
 /** The public marker is an identifier, never a credential or standalone proof. */
-export function discordPaperclipCommandDefinition(publicOwnerId: string) {
+export function discordWardmoteCommandDefinition(publicOwnerId: string) {
   if (!ownerId.safeParse(publicOwnerId).success)
     throw new Error("Invalid Discord command owner identifier");
   return {
@@ -131,7 +131,7 @@ export function discordPaperclipCommandDefinition(publicOwnerId: string) {
 // One explicitly shipped prior definition. This is maintenance evidence only:
 // it never enables command handling before a current definition is confirmed.
 function priorCloseCopyDefinition(id: string) {
-  const definition = discordPaperclipCommandDefinition(id);
+  const definition = discordWardmoteCommandDefinition(id);
   definition.options[2]!.description = "Close the current Paperclip task";
   return definition;
 }
@@ -142,7 +142,7 @@ function definitionDigest(id: string, priorCloseCopy = false): string {
       JSON.stringify(
         priorCloseCopy
           ? priorCloseCopyDefinition(id)
-          : discordPaperclipCommandDefinition(id),
+          : discordWardmoteCommandDefinition(id),
       ),
     )
     .digest("hex");
@@ -274,7 +274,7 @@ function exactDefinition(
     JSON.stringify(
       priorCloseCopy
         ? priorCloseCopyDefinition(id)
-        : discordPaperclipCommandDefinition(id),
+        : discordWardmoteCommandDefinition(id),
     )
   );
 }
@@ -338,7 +338,7 @@ async function request(
             ? {}
             : {
                 body: JSON.stringify(
-                  discordPaperclipCommandDefinition(
+                  discordWardmoteCommandDefinition(
                     (input.state as DiscordCommandRegistration).ownerId,
                   ),
                 ),

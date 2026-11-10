@@ -14,8 +14,8 @@ import type {
   CapabilityJsonValue,
   CapabilityTaskStatus,
 } from "../mock-core/capability-control-plane-types.js";
-import type { PaperclipWorkspaceDiff } from "../live/workspace-diff.js";
-import type { PaperclipWorkspaceFileReference } from "../live/workspace-file-reference.js";
+import type { WardmoteWorkspaceDiff } from "../live/workspace-diff.js";
+import type { WardmoteWorkspaceFileReference } from "../live/workspace-file-reference.js";
 export type { CapabilityJsonValue } from "../mock-core/capability-control-plane-types.js";
 import type { CapabilitySemanticOperationId } from "../semantic-tools/types.js";
 
@@ -215,13 +215,13 @@ export type CapabilityThreadItem =
       kind: "workspace_changes";
       id: string;
       at: string;
-      changeSet: PaperclipWorkspaceDiff;
+      changeSet: WardmoteWorkspaceDiff;
     }
   | {
       kind: "workspace_file_reference";
       id: string;
       at: string;
-      reference: PaperclipWorkspaceFileReference;
+      reference: WardmoteWorkspaceFileReference;
     }
   | {
       kind: "provider_activity";

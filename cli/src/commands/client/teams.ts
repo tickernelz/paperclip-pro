@@ -376,13 +376,13 @@ const INSTALL_APPROVAL_FALLBACK_MESSAGES = [
 const SECRET_VALUE_REDACTION = "[redacted]";
 
 function shouldRequestInstallApproval(error: unknown, opts: TeamInstallOptions): error is ApiRequestError {
-  if (!(opts.requestApprovalOnForbidden || isPaperclipTaskRun())) return false;
+  if (!(opts.requestApprovalOnForbidden || isWardmoteTaskRun())) return false;
   if (!(error instanceof ApiRequestError) || error.status !== 403) return false;
   const message = error.message.toLowerCase();
   return INSTALL_APPROVAL_FALLBACK_MESSAGES.some((expected) => message.includes(expected));
 }
 
-function isPaperclipTaskRun(): boolean {
+function isWardmoteTaskRun(): boolean {
   return Boolean(process.env.WARDMOTE_TASK_ID?.trim());
 }
 

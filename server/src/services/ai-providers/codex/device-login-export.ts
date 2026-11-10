@@ -1,7 +1,7 @@
 import { chmod, lstat, mkdir, rm } from "node:fs/promises";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
-import { resolvePaperclipInstanceRootForAdapter } from "@tickernelz/wardmote-adapter-utils/server-utils";
+import { resolveWardmoteInstanceRootForAdapter } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import { readSubscriptionAccountId, writeCodexAuthCacheEntry } from "./codex-auth-cache.js";
 import { copyBackCodexAuth } from "./codex-auth-copyback.js";
 import {
@@ -78,7 +78,7 @@ function toSafeRunSegment(value: string | null): string {
  */
 export function resolveProofHomeRoot(env: NodeJS.ProcessEnv = process.env, companyId: string): string {
   const safeCompanyId = requireSafeSegment(companyId, "companyId");
-  const instanceRoot = resolvePaperclipInstanceRootForAdapter({
+  const instanceRoot = resolveWardmoteInstanceRootForAdapter({
     homeDir: nonEmpty(env.WARDMOTE_HOME) ?? undefined,
     instanceId: nonEmpty(env.WARDMOTE_INSTANCE_ID) ?? undefined,
     env,

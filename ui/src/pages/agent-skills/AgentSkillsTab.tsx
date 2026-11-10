@@ -336,11 +336,11 @@ export function AgentSkillsTab({ agent, companyId }: { agent: Agent; companyId?:
     // Historical assignments stay interactive so the user can remove them.
     // The server rejects new assignments and omits stale ones from native
     // runtime context, so disabling an enabled row would only trap stale data.
-    const legacyPaperclipBlocked = agent.adapterType === "wardmote_runner"
+    const legacyWardmoteBlocked = agent.adapterType === "wardmote_runner"
       && variant === "available"
       && row.key === WARDMOTE_CORE_SKILL_KEY;
-    const rowDisabled = unsupported || legacyPaperclipBlocked;
-    const rowDisabledReason = legacyPaperclipBlocked
+    const rowDisabled = unsupported || legacyWardmoteBlocked;
+    const rowDisabledReason = legacyWardmoteBlocked
       ? "Wardmote Runner uses native semantic coordination and cannot attach the legacy Wardmote operational skill."
       : unsupportedMessage;
     const showReleasePicker =

@@ -39,7 +39,7 @@ import { secretService } from "../services/secrets.ts";
 const embeddedPostgresSupport = await getEmbeddedPostgresTestSupport();
 const describeEmbeddedPostgres = embeddedPostgresSupport.supported ? describe : describe.skip;
 const originalSecretsProviderEnv = process.env.WARDMOTE_SECRETS_PROVIDER;
-const originalPaperclipApiUrlEnv = process.env.WARDMOTE_API_URL;
+const originalWardmoteApiUrlEnv = process.env.WARDMOTE_API_URL;
 
 if (!embeddedPostgresSupport.supported) {
   console.warn(
@@ -88,10 +88,10 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
 
   afterAll(async () => {
     await tempDb?.cleanup();
-    if (originalPaperclipApiUrlEnv === undefined) {
+    if (originalWardmoteApiUrlEnv === undefined) {
       delete process.env.WARDMOTE_API_URL;
     } else {
-      process.env.WARDMOTE_API_URL = originalPaperclipApiUrlEnv;
+      process.env.WARDMOTE_API_URL = originalWardmoteApiUrlEnv;
     }
   });
 

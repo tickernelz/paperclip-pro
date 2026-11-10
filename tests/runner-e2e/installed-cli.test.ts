@@ -6,7 +6,7 @@ import { tmpdir } from "node:os";
 import { afterEach, expect, it } from "vitest";
 import { runnerMatrix } from "./catalog.js";
 import { assertInstalledCliSelection, installedCliKeys, verifyInstalledCli } from "./installed-cli.js";
-import { buildPaperclipServerEnvironment, buildRunnerE2EProcessEnvironment } from "./harness-env.js";
+import { buildWardmoteServerEnvironment, buildRunnerE2EProcessEnvironment } from "./harness-env.js";
 const cells = runnerMatrix.filter(e => e.profile.id === "runner-acpx-pi");
 const roots: string[] = [];
 afterEach(async () => { await Promise.all(roots.splice(0).map(root => rm(root, { recursive: true, force: true }))); });
@@ -57,7 +57,7 @@ it("rejects linked entrypoints and source-export package identities", async () =
   await expect(verifyInstalledCli(f.env, [cells[0]!])).rejects.toThrow("public package identity");
 });
 it("keeps installed proof inputs out of the production server environment", async () => {
-  const { env } = await fixture(); const server = buildPaperclipServerEnvironment(env);
+  const { env } = await fixture(); const server = buildWardmoteServerEnvironment(env);
   for (const key of installedCliKeys) expect(server[key]).toBeUndefined();
   await expect(verifyInstalledCli({}, [])).resolves.toBeUndefined();
 });

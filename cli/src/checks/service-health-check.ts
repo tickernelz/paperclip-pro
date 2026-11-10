@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import type { PaperclipConfig } from "../config/schema.js";
-import { resolvePaperclipInstanceId } from "../config/home.js";
+import type { WardmoteConfig } from "../config/schema.js";
+import { resolveWardmoteInstanceId } from "../config/home.js";
 import { readInstallManifest, resolveInstallStorePaths } from "../install-store.js";
 import {
   detectServiceManager,
@@ -15,11 +15,11 @@ import type { CheckResult } from "./index.js";
 type HealthResult = { ok: boolean; version: string | null; error?: string };
 type ServiceCheckDependencies = {
   detect: (instanceId: string) => Promise<ServiceManagerDetection>;
-  probe: (config: PaperclipConfig) => Promise<HealthResult>;
+  probe: (config: WardmoteConfig) => Promise<HealthResult>;
   shimPresent: (executablePath: string) => Promise<boolean>;
 };
 
-async function probeHealth(config: PaperclipConfig): Promise<HealthResult> {
+async function probeHealth(config: WardmoteConfig): Promise<HealthResult> {
   try {
     const response = await fetch(buildLocalHealthUrl(config.server.host, config.server.port), {
       signal: AbortSignal.timeout(2_000),
@@ -41,7 +41,7 @@ async function probeHealth(config: PaperclipConfig): Promise<HealthResult> {
 }
 
 export async function serviceHealthChecks(
-  config: PaperclipConfig,
+  config: WardmoteConfig,
   dependencies: Partial<ServiceCheckDependencies> = {},
 ): Promise<CheckResult[]> {
   if (process.env.WARDMOTE_SERVICE_MANAGED === "1") return [];
@@ -52,7 +52,7 @@ export async function serviceHealthChecks(
     shimPresent: (executablePath) => isExecutableFile(executablePath),
     ...dependencies,
   };
-  const instanceId = resolvePaperclipInstanceId();
+  const instanceId = resolveWardmoteInstanceId();
   const detection = await deps.detect(instanceId);
   if (!detection.supported) {
     return [{ name: "Background service", status: "pass", message: detection.reason }];

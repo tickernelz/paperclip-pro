@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { asc, eq, sql } from "drizzle-orm";
 import { generateKeyPairSync, randomUUID } from "node:crypto";
-import { renderPaperclipWakePrompt } from "@tickernelz/wardmote-adapter-utils/server-utils";
+import { renderWardmoteWakePrompt } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import { readCompletedAssistantMessageCandidate, resolveHeartbeatRunResponse, selectHeartbeatRunFinalAgentMessage } from "../heartbeat-run-summary.js";
 import {
   activityLog,
@@ -41,7 +41,7 @@ import {
   runControlPlanePortConformance,
 } from "../../vendor/wardmote-runner/testing.js";
 import { startEmbeddedPostgresTestDatabase } from "../../__tests__/helpers/embedded-postgres.js";
-import { PaperclipControlPlanePort } from "./paperclip-control-plane-port.js";
+import { WardmoteControlPlanePort } from "./paperclip-control-plane-port.js";
 import { NativeRunCoordinatorStore } from "./native-run-coordinator-store.js";
 import { finalizeNativeRun, repairCommittedNativeChatResponse } from "./native-run-finalizer.js";
 import { nativeRuntimeContextFixture } from "./runtime-context.test-fixture.js";
@@ -49,7 +49,7 @@ import { issueThreadInteractionService } from "../issue-thread-interactions.js";
 import { claimNativeReviewExecutionLock, getNativeReviewAssignment } from "./native-review-participant.js";
 import { claimQueuedNativeReviewRun } from "./native-review-dispatch.js";
 import { stageNativeRunnerWakeAttachments } from "./native-runner-file-handoff.js";
-import { PaperclipRunnerToolAuthority } from "./paperclip-runner-tool-authority.js";
+import { WardmoteRunnerToolAuthority } from "./paperclip-runner-tool-authority.js";
 import { nativeCompletionFeedback } from "./native-completion-feedback.js";
 import { assertCurrentWakeCommentsRead } from "./current-wake-comments.js";
 import { buildExecutionContinuation } from "../execution-continuation.js";
@@ -61,7 +61,7 @@ import {
   subscribeCompanyLiveEvents,
 } from "../live-events.js";
 
-describe("PaperclipControlPlanePort conformance", () => {
+describe("WardmoteControlPlanePort conformance", () => {
   let temporary: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
   let db: ReturnType<typeof createDb>;
   const contractId = "00000000-0000-4000-8000-000000000004";
@@ -317,7 +317,7 @@ describe("PaperclipControlPlanePort conformance", () => {
       sourceInstanceId: runnerId, controlPlaneSourceInstanceId: `detached-${identity.runId}` };
     let detached = false;
     const controller = new AbortController();
-    const port = new PaperclipControlPlanePort(db, binding, {
+    const port = new WardmoteControlPlanePort(db, binding, {
       assertControllerActive: () => { if (detached) throw new Error("controller_detached"); },
     });
     await port.openRun({ identity, backendKind: "mock", sourceInstanceId: runnerId });
@@ -355,7 +355,7 @@ describe("PaperclipControlPlanePort conformance", () => {
     expect(await db.select().from(nativeRunResults).where(eq(nativeRunResults.runId, identity.runId))).toEqual([]);
     expect(await db.select().from(nativeRunFinalizations).where(eq(nativeRunFinalizations.runId, identity.runId))).toEqual([]);
     // A new controller's independently authorized port can still settle it.
-    const replacement = new PaperclipControlPlanePort(db, binding);
+    const replacement = new WardmoteControlPlanePort(db, binding);
     await replacement.openRun({ identity, backendKind: "mock", sourceInstanceId: runnerId });
     await expect(replacement.completeRun({ result: CONTROL_PLANE_CONFORMANCE_RESULT,
       terminal: CONTROL_PLANE_CONFORMANCE_TERMINAL })).resolves.toBeUndefined();
@@ -374,7 +374,7 @@ describe("PaperclipControlPlanePort conformance", () => {
       contextSnapshot: { issueId: identity.issueId },
     });
     const observed: PrpEvent[] = [];
-    const port = new PaperclipControlPlanePort(db, {
+    const port = new WardmoteControlPlanePort(db, {
       ...identity, completionContractId: contractId, completionContractSha256: contractSha,
       sourceInstanceId: runnerId, controlPlaneSourceInstanceId: `identity-${identity.runId}`,
     }, { privateKeyPem, onCommittedEvent: async event => { observed.push(event); } });
@@ -449,7 +449,7 @@ describe("PaperclipControlPlanePort conformance", () => {
     const identity = CONTROL_PLANE_CONFORMANCE_OPEN.identity;
     const committedEventIds: string[] = [];
     const duplicateEventIds: string[] = [];
-    const port = new PaperclipControlPlanePort(
+    const port = new WardmoteControlPlanePort(
       db,
       {
         companyId: identity.companyId,
@@ -578,7 +578,7 @@ describe("PaperclipControlPlanePort conformance", () => {
         .from(heartbeatRunEvents)
         .where(eq(heartbeatRunEvents.runId, runId));
     });
-    const port = new PaperclipControlPlanePort(db, {
+    const port = new WardmoteControlPlanePort(db, {
       companyId: identity.companyId,
       issueId,
       runId,
@@ -797,7 +797,7 @@ describe("PaperclipControlPlanePort conformance", () => {
         },
       },
     };
-    const port = new PaperclipControlPlanePort(db, binding, {
+    const port = new WardmoteControlPlanePort(db, binding, {
       onCommittedEvent: async () => {
         throw new Error("simulated_post_commit_crash");
       },
@@ -939,7 +939,7 @@ describe("PaperclipControlPlanePort conformance", () => {
       credentialBindings: [],
       runtimeContext: nativeRuntimeContextFixture(),
     });
-    const port = new PaperclipControlPlanePort(db, {
+    const port = new WardmoteControlPlanePort(db, {
       companyId: identity.companyId,
       issueId: taskIssueId,
       runId: taskRunId,
@@ -1034,7 +1034,7 @@ describe("PaperclipControlPlanePort conformance", () => {
 
   it("fails closed when the bound company does not own the run", async () => {
     const identity = CONTROL_PLANE_CONFORMANCE_OPEN.identity;
-    const port = new PaperclipControlPlanePort(db, {
+    const port = new WardmoteControlPlanePort(db, {
       companyId: "00000000-0000-4000-8000-000000000099",
       issueId: identity.issueId,
       runId: identity.runId,
@@ -1096,7 +1096,7 @@ describe("PaperclipControlPlanePort conformance", () => {
       completionContractSha256: contractSha256,
       contextSnapshot: { issueId },
     });
-    const createPort = () => new PaperclipControlPlanePort(db, {
+    const createPort = () => new WardmoteControlPlanePort(db, {
       companyId: identity.companyId,
       issueId,
       runId,
@@ -1155,7 +1155,7 @@ describe("PaperclipControlPlanePort conformance", () => {
       nativeSessionId: identity.sessionId, runnerInstanceId: conformanceRunnerId,
       completionContractId: contractId, completionContractSha256: contractSha,
     });
-    const port = kind === "port" ? new PaperclipControlPlanePort(db, {
+    const port = kind === "port" ? new WardmoteControlPlanePort(db, {
       ...identity, runId, completionContractId: contractId, completionContractSha256: contractSha,
       sourceInstanceId: conformanceRunnerId, controlPlaneSourceInstanceId: "result-lock-order",
     }) : new NativeRunCoordinatorStore(db, {
@@ -1191,7 +1191,7 @@ describe("PaperclipControlPlanePort conformance", () => {
 
   it("does not let native completion bypass a pending issue interaction", async () => {
     const identity = CONTROL_PLANE_CONFORMANCE_OPEN.identity;
-    const port = new PaperclipControlPlanePort(db, {
+    const port = new WardmoteControlPlanePort(db, {
       companyId: identity.companyId,
       issueId: governanceIssueId,
       runId: governanceRunId,
@@ -1277,7 +1277,7 @@ describe("PaperclipControlPlanePort conformance", () => {
       completionContractSha256: "native-review-contract",
       contextSnapshot: { issueId },
     });
-    const port = new PaperclipControlPlanePort(db, {
+    const port = new WardmoteControlPlanePort(db, {
       companyId: identity.companyId,
       issueId,
       runId,
@@ -1411,7 +1411,7 @@ describe("PaperclipControlPlanePort conformance", () => {
     await expect(assertCurrentWakeCommentsRead(db, reviewBinding, null))
       .rejects.toThrow("native_current_wake_comments_binding_changed");
     await db.update(issues).set({ executionRunId: reviewRunId }).where(eq(issues.id, issueId));
-    const reviewAuthority = new PaperclipRunnerToolAuthority(db, {
+    const reviewAuthority = new WardmoteRunnerToolAuthority(db, {
       companyId: identity.companyId, issueId, agentId: reviewerAgentId, runId: reviewRunId, nativeReview,
     });
     expect(reviewAuthority.definitions().map((tool) => tool.name)).toEqual([
@@ -1515,7 +1515,7 @@ describe("PaperclipControlPlanePort conformance", () => {
       agentId: reviewerAgentId, nativeIssueId: parentId, status: "running", runtimeMode: "native" });
     await db.update(issues).set({ executionRunId: parentRunId }).where(eq(issues.id, parentId));
     await db.update(issues).set({ parentId }).where(eq(issues.id, issueId));
-    const parentAuthority = new PaperclipRunnerToolAuthority(db, {
+    const parentAuthority = new WardmoteRunnerToolAuthority(db, {
       companyId: identity.companyId, issueId: parentId, agentId: reviewerAgentId, runId: parentRunId,
     });
     const expectedChildReview = {
@@ -1546,7 +1546,7 @@ describe("PaperclipControlPlanePort conformance", () => {
       ...expectedChildReview, result: expect.objectContaining(expectedChildReview.result),
     }));
     for (const resumedSession of [false, true]) {
-      const prompt = renderPaperclipWakePrompt({ executionContinuation: continuation }, { resumedSession });
+      const prompt = renderWardmoteWakePrompt({ executionContinuation: continuation }, { resumedSession });
       const [request, evidence] = prompt.split("### Untrusted continuation evidence");
       expect(request).toContain(answerId);
       expect(request).not.toContain(agentReview.id);
@@ -1641,7 +1641,7 @@ describe("PaperclipControlPlanePort conformance", () => {
       completionContractSha256: "dot-29-contract",
       contextSnapshot: { issueId },
     });
-    const port = new PaperclipControlPlanePort(db, {
+    const port = new WardmoteControlPlanePort(db, {
       companyId: identity.companyId,
       issueId,
       runId,
@@ -1748,7 +1748,7 @@ describe("PaperclipControlPlanePort conformance", () => {
         status: "succeeded", runtimeMode: "native", nativeIssueId: issueId, nativeSessionId: identity.sessionId,
         runnerInstanceId, completionContractId: localContractId, completionContractSha256: localContractId,
         contextSnapshot: { issueId } });
-      const port = new PaperclipControlPlanePort(db, { ...identity, agentId, issueId, runId,
+      const port = new WardmoteControlPlanePort(db, { ...identity, agentId, issueId, runId,
         completionContractId: localContractId, completionContractSha256: localContractId,
         sourceInstanceId: runnerInstanceId, controlPlaneSourceInstanceId: "handoff-race" });
       await port.openRun({ identity: { ...identity, agentId, issueId, runId }, backendKind: "mock", sourceInstanceId: runnerInstanceId });
@@ -1905,7 +1905,7 @@ describe("PaperclipControlPlanePort conformance", () => {
         completionContractSha256: "child-wake-contract",
         contextSnapshot: { issueId: childIssueId },
       });
-      const port = new PaperclipControlPlanePort(db, {
+      const port = new WardmoteControlPlanePort(db, {
         companyId: identity.companyId,
         issueId: childIssueId,
         runId,
@@ -2037,7 +2037,7 @@ describe("PaperclipControlPlanePort conformance", () => {
 
   it("preserves the result and issue status when workspace finalization fails", async () => {
     const identity = CONTROL_PLANE_CONFORMANCE_OPEN.identity;
-    const port = new PaperclipControlPlanePort(db, {
+    const port = new WardmoteControlPlanePort(db, {
       companyId: identity.companyId,
       issueId: workspaceFailureIssueId,
       runId: workspaceFailureRunId,
@@ -2176,7 +2176,7 @@ describe("PaperclipControlPlanePort conformance", () => {
         runTerminalState: entry.terminalState ?? "succeeded",
         reportedWorkDisposition: entry.result.reportedWorkDisposition,
       };
-      const port = new PaperclipControlPlanePort(db, {
+      const port = new WardmoteControlPlanePort(db, {
         companyId: identity.companyId,
         issueId,
         runId,

@@ -5,10 +5,10 @@ import type {
 import type { NativeSessionCapabilities, NativeTurnControlCapabilities, NativeUserMessage } from "./types.js";
 import {
   WARDMOTE_RUNTIME_REQUEST_SCHEMA_V2,
-  parsePaperclipQuestionResponse,
-  type PaperclipQuestionResponse,
-  type PaperclipQuestionSet,
-  type PaperclipRuntimeRequestOrigin,
+  parseWardmoteQuestionResponse,
+  type WardmoteQuestionResponse,
+  type WardmoteQuestionSet,
+  type WardmoteRuntimeRequestOrigin,
 } from "./question-set.js";
 
 export * from "./question-set.js";
@@ -115,9 +115,9 @@ export interface HarnessRuntimeRequest {
   prompt: string;
   details: Record<string, unknown>;
   /** Provider-neutral presentation model for structured input requests. */
-  input?: PaperclipQuestionSet;
+  input?: WardmoteQuestionSet;
   /** Diagnostic origin only; provider response shapes never enter PRP. */
-  origin?: PaperclipRuntimeRequestOrigin;
+  origin?: WardmoteRuntimeRequestOrigin;
 }
 
 export type HarnessRuntimeRequestResolution =
@@ -132,7 +132,7 @@ export type HarnessRuntimeRequestResolution =
     }
   | {
       action: "submit";
-      response: PaperclipQuestionResponse;
+      response: WardmoteQuestionResponse;
     };
 
 export type HarnessRuntimeRequestAction =
@@ -200,7 +200,7 @@ function parseAnswers(
 export function parseHarnessRuntimeRequestResolution(
   requestKind: HarnessRuntimeRequestKind,
   value: unknown,
-  questionSet?: PaperclipQuestionSet,
+  questionSet?: WardmoteQuestionSet,
 ): HarnessRuntimeRequestResolution {
   const candidate = plainRecord(value) ?? {};
   const rawAction = candidate.action;
@@ -248,7 +248,7 @@ export function parseHarnessRuntimeRequestResolution(
     try {
       return {
         action,
-        response: parsePaperclipQuestionResponse(
+        response: parseWardmoteQuestionResponse(
           questionSet,
           candidate.response,
         ),
@@ -335,7 +335,7 @@ export type HarnessRuntimeRequestOutcome = {
   adapter?: string;
   requestType?: "input" | "permission";
   /** Canonical submitted answers retained for durable replay and audit UI. */
-  response?: PaperclipQuestionResponse;
+  response?: WardmoteQuestionResponse;
 };
 
 export function harnessRuntimeRequestOutcome(
@@ -346,7 +346,7 @@ export function harnessRuntimeRequestOutcome(
   outcome: {
     action?: HarnessRuntimeRequestAction | null;
     reason?: string | null;
-    response?: PaperclipQuestionResponse | null;
+    response?: WardmoteQuestionResponse | null;
   } = {},
 ): HarnessRuntimeRequestOutcome {
   return {

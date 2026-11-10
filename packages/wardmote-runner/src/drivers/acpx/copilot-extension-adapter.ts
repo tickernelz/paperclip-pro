@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import type { CanonicalProviderEvent } from "../../provider-events.js";
-import { redactPaperclipSemanticValue, redactSemanticValue } from "../../semantic-tools/redaction.js";
+import { redactWardmoteSemanticValue, redactSemanticValue } from "../../semantic-tools/redaction.js";
 import { COPILOT_ACP_EVENT_METHOD, normalizeCopilotSessionEvent, type CopilotSessionEvent } from "./copilot-events.js";
 import type { AcpxProfileExtensionAdapter, AcpxProfileExtensionContext } from "./profile-extensions.js";
 
@@ -94,6 +94,6 @@ function identity(context: AcpxProfileExtensionContext, family: string, source: 
   return `copilot-${family}-${createHash("sha256").update(JSON.stringify([context.sessionId, context.turnId, source])).digest("hex")}`;
 }
 function bounded(value: string, max: number): string {
-  const safe = String(redactPaperclipSemanticValue(value));
+  const safe = String(redactWardmoteSemanticValue(value));
   return safe.length <= max ? safe : `${safe.slice(0, max - 12)} [truncated]`;
 }

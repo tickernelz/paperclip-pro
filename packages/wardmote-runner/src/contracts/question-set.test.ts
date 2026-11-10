@@ -5,12 +5,12 @@ import { describe, expect, it } from "vitest";
 import {
   WARDMOTE_QUESTION_RESPONSE_SCHEMA,
   WARDMOTE_QUESTION_SET_SCHEMA,
-  parsePaperclipQuestionResponse,
-  parsePaperclipQuestionSet,
-  type PaperclipQuestionSet,
+  parseWardmoteQuestionResponse,
+  parseWardmoteQuestionSet,
+  type WardmoteQuestionSet,
 } from "./question-set.js";
 
-const questionSet: PaperclipQuestionSet = {
+const questionSet: WardmoteQuestionSet = {
   schema: WARDMOTE_QUESTION_SET_SCHEMA,
   title: "Release input",
   questions: [
@@ -37,8 +37,8 @@ const questionSet: PaperclipQuestionSet = {
 
 describe("Paperclip question-set contract", () => {
   it("round-trips the portable presentation model", () => {
-    expect(parsePaperclipQuestionSet(questionSet)).toEqual(questionSet);
-    expect(parsePaperclipQuestionResponse(questionSet, {
+    expect(parseWardmoteQuestionSet(questionSet)).toEqual(questionSet);
+    expect(parseWardmoteQuestionResponse(questionSet, {
       schema: WARDMOTE_QUESTION_RESPONSE_SCHEMA,
       answers: {
         environment: { selectedOptionIds: ["staging"] },
@@ -56,15 +56,15 @@ describe("Paperclip question-set contract", () => {
   it("preserves bounded initial text only as presentation, including empty text", () => {
     for (const initialText of ["", "  Draft\n漢字\n", "a".repeat(100_000)]) {
       const input = { schema: WARDMOTE_QUESTION_SET_SCHEMA, questions: [{ id: "draft", prompt: "Edit", required: true, answerMode: "text", initialText }] };
-      expect(parsePaperclipQuestionSet(input)).toEqual(input);
-      expect(() => parsePaperclipQuestionResponse(input, { schema: WARDMOTE_QUESTION_RESPONSE_SCHEMA, answers: {} })).toThrow(/required/);
+      expect(parseWardmoteQuestionSet(input)).toEqual(input);
+      expect(() => parseWardmoteQuestionResponse(input, { schema: WARDMOTE_QUESTION_RESPONSE_SCHEMA, answers: {} })).toThrow(/required/);
     }
     for (const initialText of [null, 1, "a".repeat(100_001), "a".repeat(100_000) + "😀"]) {
-      expect(() => parsePaperclipQuestionSet({ ...questionSet, questions: [{ ...questionSet.questions[1], initialText }] })).toThrow(/initialText/);
+      expect(() => parseWardmoteQuestionSet({ ...questionSet, questions: [{ ...questionSet.questions[1], initialText }] })).toThrow(/initialText/);
     }
-    expect(() => parsePaperclipQuestionSet({ ...questionSet, questions: [{ ...questionSet.questions[0], initialText: "staging" }] })).toThrow(/only text/);
+    expect(() => parseWardmoteQuestionSet({ ...questionSet, questions: [{ ...questionSet.questions[0], initialText: "staging" }] })).toThrow(/only text/);
     const input = { ...questionSet, questions: [{ ...questionSet.questions[1], initialText: "21" }] };
-    expect(() => parsePaperclipQuestionResponse(input, { schema: WARDMOTE_QUESTION_RESPONSE_SCHEMA, answers: { replicas: { text: "21" } } })).toThrow(/at most 20/);
+    expect(() => parseWardmoteQuestionResponse(input, { schema: WARDMOTE_QUESTION_RESPONSE_SCHEMA, answers: { replicas: { text: "21" } } })).toThrow(/at most 20/);
   });
 
   it("matches the published Unicode code-point draft limit within the wire byte cap", () => {
@@ -76,27 +76,27 @@ describe("Paperclip question-set contract", () => {
       expect(initialText.length).toBe(codePoints + 1);
       expect(validate(input)).toBe(codePoints === 100_000);
       if (codePoints === 100_000) {
-        expect(parsePaperclipQuestionSet(input)).toEqual(input);
-        expect(() => parsePaperclipQuestionResponse(input, { schema: WARDMOTE_QUESTION_RESPONSE_SCHEMA, answers: { draft: { text: initialText } } })).toThrow();
+        expect(parseWardmoteQuestionSet(input)).toEqual(input);
+        expect(() => parseWardmoteQuestionResponse(input, { schema: WARDMOTE_QUESTION_RESPONSE_SCHEMA, answers: { draft: { text: initialText } } })).toThrow();
       } else {
-        expect(() => parsePaperclipQuestionSet(input)).toThrow(/Unicode code points/);
+        expect(() => parseWardmoteQuestionSet(input)).toThrow(/Unicode code points/);
       }
     }
   });
 
   it("rejects missing, unknown, and provider-shaped answers", () => {
-    expect(() => parsePaperclipQuestionResponse(questionSet, {
+    expect(() => parseWardmoteQuestionResponse(questionSet, {
       schema: WARDMOTE_QUESTION_RESPONSE_SCHEMA,
       answers: { environment: { selectedOptionIds: ["unknown"] }, replicas: { text: "3" } },
     })).toThrow(/unknown option/);
-    expect(() => parsePaperclipQuestionResponse(questionSet, {
+    expect(() => parseWardmoteQuestionResponse(questionSet, {
       schema: WARDMOTE_QUESTION_RESPONSE_SCHEMA,
       answers: { environment: { selectedOptionIds: ["staging"] } },
     })).toThrow(/replicas.*required/);
-    expect(() => parsePaperclipQuestionResponse(questionSet, {
+    expect(() => parseWardmoteQuestionResponse(questionSet, {
       answers: { environment: { answers: ["Staging"] } },
     })).toThrow(/paperclip.question_response.v1/);
-    expect(() => parsePaperclipQuestionResponse(questionSet, {
+    expect(() => parseWardmoteQuestionResponse(questionSet, {
       schema: WARDMOTE_QUESTION_RESPONSE_SCHEMA,
       answers: {
         environment: { answers: ["Staging"] },
@@ -106,14 +106,14 @@ describe("Paperclip question-set contract", () => {
   });
 
   it("applies typed numeric validation before an adapter sees the answer", () => {
-    expect(() => parsePaperclipQuestionResponse(questionSet, {
+    expect(() => parseWardmoteQuestionResponse(questionSet, {
       schema: WARDMOTE_QUESTION_RESPONSE_SCHEMA,
       answers: {
         environment: { customText: "Canary" },
         replicas: { text: "3.5" },
       },
     })).toThrow(/valid integer/);
-    expect(() => parsePaperclipQuestionResponse(questionSet, {
+    expect(() => parseWardmoteQuestionResponse(questionSet, {
       schema: WARDMOTE_QUESTION_RESPONSE_SCHEMA,
       answers: {
         environment: { customText: "Canary" },

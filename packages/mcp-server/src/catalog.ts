@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { boardToolAdvertised, type BoardSurfaceContext } from "./board-surface.js";
-import type { PaperclipApiClient } from "./client.js";
+import type { WardmoteApiClient } from "./client.js";
 import { expandToolsetUnion } from "./config.js";
 import { bindGeneratedTools, prepareGeneratedTools } from "./generated-tools.js";
 import { leanJsonSchema, type JsonSchemaObject } from "./lean-schema.js";
@@ -13,7 +13,7 @@ import {
   type ToolDefinition,
 } from "./tools.js";
 
-export { PaperclipApiClient } from "./client.js";
+export { WardmoteApiClient } from "./client.js";
 export { hasManagementAuthority, parseToolsets } from "./config.js";
 export {
   ACTOR_NEUTRAL_GUARDS,
@@ -83,7 +83,7 @@ function toListingEntries(definitions: ReadonlyArray<ToolDefinition>, annotation
 
 /** Tool definitions bound to one caller, sharing schema and listing work per variant. */
 export function paperclipToolCatalog(
-  client: PaperclipApiClient,
+  client: WardmoteApiClient,
   toolsets: ReadonlyArray<ToolsetName>,
   management: boolean,
   options: CatalogOptions = {},

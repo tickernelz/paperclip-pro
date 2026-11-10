@@ -10,7 +10,7 @@ vi.mock("@tickernelz/wardmote-adapter-utils/execution-target", async (importOrig
 
 vi.mock("./wardmote-mcp.js", async (importOriginal) => {
   const actual = (await importOriginal()) as Record<string, unknown>;
-  return { ...actual, probePaperclipMcpServer: vi.fn(), probePaperclipMcpEndpoint: vi.fn() };
+  return { ...actual, probeWardmoteMcpServer: vi.fn(), probeWardmoteMcpEndpoint: vi.fn() };
 });
 
 import { execute } from "./execute.js";
@@ -22,20 +22,20 @@ import {
   WARDMOTE_MCP_CREDENTIAL_CODE,
   WARDMOTE_MCP_SERVER_NAME,
   WARDMOTE_MCP_UNAVAILABLE_CODE,
-  buildPaperclipMcpServerEntry,
+  buildWardmoteMcpServerEntry,
   paperclipMcpEndpoint,
   paperclipMcpToolsets,
-  probePaperclipMcpEndpoint,
-  probePaperclipMcpServer,
-  resolvePaperclipMcpServerCommand,
+  probeWardmoteMcpEndpoint,
+  probeWardmoteMcpServer,
+  resolveWardmoteMcpServerCommand,
 } from "./wardmote-mcp.js";
 import { runAdapterExecutionTargetProcess } from "@tickernelz/wardmote-adapter-utils/execution-target";
-import type * as PaperclipMcpModule from "./wardmote-mcp.js";
+import type * as WardmoteMcpModule from "./wardmote-mcp.js";
 
 const runProcessMock = vi.mocked(runAdapterExecutionTargetProcess);
-const probeMock = vi.mocked(probePaperclipMcpServer);
-const endpointProbeMock = vi.mocked(probePaperclipMcpEndpoint);
-const realMcp = await vi.importActual<typeof PaperclipMcpModule>("./wardmote-mcp.js");
+const probeMock = vi.mocked(probeWardmoteMcpServer);
+const endpointProbeMock = vi.mocked(probeWardmoteMcpEndpoint);
+const realMcp = await vi.importActual<typeof WardmoteMcpModule>("./wardmote-mcp.js");
 
 interface Invocation {
   args: string[];
@@ -278,7 +278,7 @@ describe("OMP local Paperclip MCP wiring", () => {
 
   it("fails the run before spawning OMP and schedules a retry when the MCP endpoint times out", async () => {
     endpointProbeMock.mockImplementation((input) =>
-      realMcp.probePaperclipMcpEndpoint({
+      realMcp.probeWardmoteMcpEndpoint({
         ...input,
         timeoutMs: 20,
         fetchImpl: ((_url: string, init: RequestInit) =>
@@ -301,7 +301,7 @@ describe("OMP local Paperclip MCP wiring", () => {
 
   it("does not schedule a retry when the MCP endpoint answers HTTP 404", async () => {
     endpointProbeMock.mockImplementation((input) =>
-      realMcp.probePaperclipMcpEndpoint({
+      realMcp.probeWardmoteMcpEndpoint({
         ...input,
         fetchImpl: (async () => new Response("not found", { status: 404 })) as typeof fetch,
       }),
@@ -315,7 +315,7 @@ describe("OMP local Paperclip MCP wiring", () => {
 
   it("does not schedule a retry when the stdio MCP server cannot be spawned", async () => {
     probeMock.mockImplementation((input) =>
-      realMcp.probePaperclipMcpServer({
+      realMcp.probeWardmoteMcpServer({
         ...input,
         command: { ...input.command, command: path.join(root, "missing-wardmote-mcp"), args: [] },
       }),
@@ -629,7 +629,7 @@ describe("Paperclip MCP server resolution", () => {
 
   it("prefers the nearest bin shim", () => {
     const bin = path.join("/opt", "paperclip", "node_modules", ".bin", WARDMOTE_MCP_BIN);
-    const resolved = resolvePaperclipMcpServerCommand({
+    const resolved = resolveWardmoteMcpServerCommand({
       searchFrom: root,
       exists: (candidate) => candidate === bin,
     });
@@ -638,7 +638,7 @@ describe("Paperclip MCP server resolution", () => {
 
   it("falls back to the package entry point when no shim exists", () => {
     const dist = path.join("/opt", "paperclip", "node_modules", WARDMOTE_MCP_PACKAGE, "dist", "stdio.js");
-    const resolved = resolvePaperclipMcpServerCommand({
+    const resolved = resolveWardmoteMcpServerCommand({
       searchFrom: root,
       exists: (candidate) => candidate === dist,
       nodePath: "/usr/bin/node",
@@ -647,12 +647,12 @@ describe("Paperclip MCP server resolution", () => {
   });
 
   it("falls back to PATH when the package is absent", () => {
-    const resolved = resolvePaperclipMcpServerCommand({ searchFrom: root, exists: () => false });
+    const resolved = resolveWardmoteMcpServerCommand({ searchFrom: root, exists: () => false });
     expect(resolved).toEqual({ command: WARDMOTE_MCP_BIN, args: [], source: "path" });
   });
 
   it("uses the package entry that ships with an install", () => {
-    const resolved = resolvePaperclipMcpServerCommand({
+    const resolved = resolveWardmoteMcpServerCommand({
       searchFrom: path.join("/opt", "paperclip", "node_modules", "@tickernelz", "adapter"),
       exists: (candidate) => candidate.endsWith(path.join("dist", "stdio.js")),
       nodePath: "/usr/bin/node",
@@ -666,7 +666,7 @@ describe("Paperclip MCP server entry", () => {
   it("defaults to the core toolset and omits env the run does not carry", () => {
     expect(paperclipMcpToolsets({})).toBe("core");
     expect(paperclipMcpToolsets({ paperclipMcpToolsets: " , " })).toBe("core");
-    const entry = buildPaperclipMcpServerEntry({
+    const entry = buildWardmoteMcpServerEntry({
       enabled: true,
       transport: "stdio",
       command: { command: "paperclip-mcp-server", args: [], source: "path" },
@@ -681,7 +681,7 @@ describe("Paperclip MCP server entry", () => {
   });
 
   it("never writes the api key itself into the generated config", () => {
-    const entry = buildPaperclipMcpServerEntry({
+    const entry = buildWardmoteMcpServerEntry({
       enabled: true,
       transport: "stdio",
       command: { command: "paperclip-mcp-server", args: [], source: "path" },

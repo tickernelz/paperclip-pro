@@ -6,7 +6,7 @@ import type { AcpRuntimeOptions } from "acpx/runtime";
 import type { AdapterExecutionContext, AdapterRuntimeMcpAccess } from "@tickernelz/wardmote-adapter-utils";
 import {
   prepareAdapterExecutionTargetRuntime,
-  startAdapterExecutionTargetPaperclipBridge,
+  startAdapterExecutionTargetWardmoteBridge,
   startAdapterExecutionTargetProcessSessionBridge,
 } from "@tickernelz/wardmote-adapter-utils/execution-target";
 
@@ -21,7 +21,7 @@ vi.mock("@tickernelz/wardmote-adapter-utils/execution-target", async (importActu
   return {
     ...actual,
     prepareAdapterExecutionTargetRuntime: vi.fn(actual.prepareAdapterExecutionTargetRuntime),
-    startAdapterExecutionTargetPaperclipBridge: vi.fn(actual.startAdapterExecutionTargetPaperclipBridge),
+    startAdapterExecutionTargetWardmoteBridge: vi.fn(actual.startAdapterExecutionTargetWardmoteBridge),
     startAdapterExecutionTargetProcessSessionBridge: vi.fn(actual.startAdapterExecutionTargetProcessSessionBridge),
   };
 });
@@ -242,7 +242,7 @@ function throwingHandoffContext(): Record<string, unknown> {
 function stubBridges() {
   const paperclipStops: Array<ReturnType<typeof vi.fn>> = [];
   const processStops: Array<ReturnType<typeof vi.fn>> = [];
-  vi.mocked(startAdapterExecutionTargetPaperclipBridge).mockImplementation(async () => {
+  vi.mocked(startAdapterExecutionTargetWardmoteBridge).mockImplementation(async () => {
     const stop = vi.fn(async () => {});
     paperclipStops.push(stop);
     return { env: {}, stop } as never;
@@ -516,7 +516,7 @@ describe("composed ACPX run: engine-boundary result form per exit path", () => {
     // bridge resolves a live handle. This is the second engine-boundary throw path;
     // the abandon path must stop the started sibling so no bridge leaks.
     const stop = vi.fn(async () => {});
-    vi.mocked(startAdapterExecutionTargetPaperclipBridge).mockImplementationOnce(async () => {
+    vi.mocked(startAdapterExecutionTargetWardmoteBridge).mockImplementationOnce(async () => {
       throw new Error("paperclip bridge boom");
     });
     vi.mocked(startAdapterExecutionTargetProcessSessionBridge).mockImplementationOnce(

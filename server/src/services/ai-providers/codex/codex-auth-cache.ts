@@ -2,7 +2,7 @@ import { AsyncLocalStorage } from "node:async_hooks";
 import { lstat, mkdir, open, readFile, realpath, rename, rm } from "node:fs/promises";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
-import { resolvePaperclipInstanceRootForAdapter } from "@tickernelz/wardmote-adapter-utils/server-utils";
+import { resolveWardmoteInstanceRootForAdapter } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import { withDirectoryMergeLock } from "@tickernelz/wardmote-adapter-utils/workspace-restore-merge";
 import { toAccountHandle } from "@tickernelz/wardmote-shared";
 import { USE_SOURCE_EXIT, decideCodexAuthMerge } from "./codex-auth-merge-decision.js";
@@ -105,7 +105,7 @@ export function resolveCodexAuthCacheDir(
   companyId: string,
 ): string {
   const safeCompanyId = toSafePathSegment(companyId, "companyId");
-  const instanceRoot = resolvePaperclipInstanceRootForAdapter({
+  const instanceRoot = resolveWardmoteInstanceRootForAdapter({
     homeDir: nonEmpty(env.WARDMOTE_HOME) ?? undefined,
     instanceId: nonEmpty(env.WARDMOTE_INSTANCE_ID) ?? undefined,
     env,
@@ -128,7 +128,7 @@ export function isCodexAuthCachePath(
   env: NodeJS.ProcessEnv,
   homePath: string,
 ): boolean {
-  const instanceRoot = resolvePaperclipInstanceRootForAdapter({
+  const instanceRoot = resolveWardmoteInstanceRootForAdapter({
     homeDir: nonEmpty(env.WARDMOTE_HOME) ?? undefined,
     instanceId: nonEmpty(env.WARDMOTE_INSTANCE_ID) ?? undefined,
     env,
@@ -270,7 +270,7 @@ function resolveCodexAuthCacheNamedLockDir(
   lockName: string,
 ): string {
   const safeCompanyId = toSafePathSegment(companyId, "companyId");
-  const instanceRoot = resolvePaperclipInstanceRootForAdapter({
+  const instanceRoot = resolveWardmoteInstanceRootForAdapter({
     homeDir: nonEmpty(env.WARDMOTE_HOME) ?? undefined,
     instanceId: nonEmpty(env.WARDMOTE_INSTANCE_ID) ?? undefined,
     env,

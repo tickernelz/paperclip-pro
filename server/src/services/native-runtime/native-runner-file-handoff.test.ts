@@ -45,7 +45,7 @@ import {
   stageNativeRunnerAttachmentBytes,
   stageNativeRunnerWakeAttachments,
 } from "./native-runner-file-handoff.js";
-import { PaperclipRunnerToolAuthority } from "./paperclip-runner-tool-authority.js";
+import { WardmoteRunnerToolAuthority } from "./paperclip-runner-tool-authority.js";
 
 describe("native runner file handoff", () => {
   let temporary: Awaited<
@@ -126,7 +126,7 @@ describe("native runner file handoff", () => {
       readRemoteWorkspaceFile: (input: { contentRef: string; byteSize: number; sha256: string }) => Promise<Buffer>;
     }> = {},
   ) {
-    return new PaperclipRunnerToolAuthority(db, {
+    return new WardmoteRunnerToolAuthority(db, {
       companyId: overrides.companyId ?? companyId,
       agentId,
       issueId,
@@ -1083,7 +1083,7 @@ describe("native runner file handoff", () => {
         await realStorage.deleteObject(deleteCompanyId, objectKey);
       },
     };
-    const mismatchingAuthority = new PaperclipRunnerToolAuthority(db, {
+    const mismatchingAuthority = new WardmoteRunnerToolAuthority(db, {
       companyId,
       agentId,
       issueId,
@@ -1139,7 +1139,7 @@ describe("native runner file handoff", () => {
       FOR EACH ROW EXECUTE FUNCTION paperclip_test_fail_native_receipt()
     `);
     try {
-      const receiptFailureAuthority = new PaperclipRunnerToolAuthority(db, {
+      const receiptFailureAuthority = new WardmoteRunnerToolAuthority(db, {
         companyId,
         agentId,
         issueId,
@@ -1331,7 +1331,7 @@ describe("native runner file handoff", () => {
       await db.update(heartbeatRuns).set({ contextSnapshot: { issueId } }).where(eq(heartbeatRuns.id, nextRunId));
 
       // The replacement can verify and publish the existing bytes itself. No user action is needed.
-      const replacement = new PaperclipRunnerToolAuthority(db, { companyId, agentId, issueId, runId: nextRunId,
+      const replacement = new WardmoteRunnerToolAuthority(db, { companyId, agentId, issueId, runId: nextRunId,
         workspaceRoot, executionTargetKind: "local", storage: createStorageService(createLocalDiskStorageProvider(storageRoot)) });
       const current = await replacement.execute(callFor(`${key}.txt`, body, `${key}-verified`)) as { entityRefs: string[] };
       expect(current.entityRefs[0]).not.toBe(prior.entityRefs[0]);

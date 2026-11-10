@@ -3,8 +3,8 @@ import { fastResponseService } from "../services/fast-responses.js";
 import { fastResponseReceipt } from "../services/fast-response-provider.js";
 import { connectionIntentService } from "../services/connection-intents.js";
 import { applyConnectorSkills, prepareConnectorSkillDelivery, resolveConnectorAssignments, annotateConnectorSkills } from "../services/connector-runtime.js";
-import { PaperclipRunnerToolAuthority } from "../services/native-runtime/paperclip-runner-tool-authority.js";
-import { renderPaperclipWakePrompt, resolvePaperclipDesiredSkillNames, resolveLegacyPaperclipDesiredSkillNames } from "@tickernelz/wardmote-adapter-utils/server-utils";
+import { WardmoteRunnerToolAuthority } from "../services/native-runtime/paperclip-runner-tool-authority.js";
+import { renderWardmoteWakePrompt, resolveWardmoteDesiredSkillNames, resolveLegacyWardmoteDesiredSkillNames } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import express from "express";
 import type WebSocket from "ws";
 import request from "supertest";
@@ -126,8 +126,8 @@ describe("AgentMail durable email pipeline", () => {
     const base = { wardmoteSkillSync: { desiredSkills: [] } };
     const configured = await applyConnectorSkills(base, [], assignments);
     expect(base.wardmoteSkillSync.desiredSkills).toEqual([]);
-    expect(resolvePaperclipDesiredSkillNames(configured, configured.paperclipRuntimeSkills)).toEqual(["tickernelz/wardmote/agentmail"]);
-    expect(resolveLegacyPaperclipDesiredSkillNames(configured, configured.paperclipRuntimeSkills)).toContain("tickernelz/wardmote/agentmail");
+    expect(resolveWardmoteDesiredSkillNames(configured, configured.paperclipRuntimeSkills)).toEqual(["tickernelz/wardmote/agentmail"]);
+    expect(resolveLegacyWardmoteDesiredSkillNames(configured, configured.paperclipRuntimeSkills)).toContain("tickernelz/wardmote/agentmail");
     const markdown = readFileSync(path.join(configured.paperclipRuntimeSkills[0].source, "SKILL.md"), "utf8");
     expect(markdown).toContain(f.endpointId);
     expect(markdown).toContain("agentmail_send");
@@ -137,13 +137,13 @@ describe("AgentMail durable email pipeline", () => {
       expect(delivery.config.paperclipRuntimeSkills).toEqual([]);
       expect(delivery.config.paperclipConnectorSkillDigest).toBe(configured.paperclipConnectorSkillDigest);
       for (const resumedSession of [false, true]) {
-        expect(renderPaperclipWakePrompt({ connectorSkillInstructions: delivery.instructions }, { resumedSession })).toContain(f.endpointId);
+        expect(renderWardmoteWakePrompt({ connectorSkillInstructions: delivery.instructions }, { resumedSession })).toContain(f.endpointId);
       }
     }
     const nativeDelivery = await prepareConnectorSkillDelivery(configured, "wardmote_runner");
     expect(nativeDelivery.instructions).toBe("");
     expect(nativeDelivery.config.paperclipRuntimeSkills).toHaveLength(1);
-    const authority = new PaperclipRunnerToolAuthority(db, { ...binding, issueId: randomUUID(), runId: randomUUID(), connectorAssignments: assignments });
+    const authority = new WardmoteRunnerToolAuthority(db, { ...binding, issueId: randomUUID(), runId: randomUUID(), connectorAssignments: assignments });
     expect(authority.definitions().filter((tool) => String(tool.name).startsWith("agentmail_")).map((tool) => tool.name)).toEqual([
       "agentmail_inboxes", "agentmail_read_thread", "agentmail_send", "agentmail_delivery",
     ]);
@@ -153,8 +153,8 @@ describe("AgentMail durable email pipeline", () => {
     const disconnected = await applyConnectorSkills(configured, configured.paperclipRuntimeSkills, []);
     expect(disconnected.paperclipRuntimeSkills).toEqual([]);
     expect(disconnected.paperclipConnectorSkillDigest).toBeNull();
-    expect(resolvePaperclipDesiredSkillNames(disconnected, [])).toEqual([]);
-    expect(new PaperclipRunnerToolAuthority(db, { ...binding, issueId: randomUUID(), runId: randomUUID() }).definitions().some((tool) => String(tool.name).startsWith("agentmail_"))).toBe(false);
+    expect(resolveWardmoteDesiredSkillNames(disconnected, [])).toEqual([]);
+    expect(new WardmoteRunnerToolAuthority(db, { ...binding, issueId: randomUUID(), runId: randomUUID() }).definitions().some((tool) => String(tool.name).startsWith("agentmail_"))).toBe(false);
     const snapshot = annotateConnectorSkills({ adapterType: "codex_local", supported: true, mode: "ephemeral", desiredSkills: [assignments[0].skillKey], entries: [{ key: assignments[0].skillKey, runtimeName: "agentmail", desired: true, managed: true, state: "configured" }], warnings: [] }, assignments);
     expect(snapshot.entries[0]).toMatchObject({ readOnly: true, originLabel: "AgentMail assignment" });
     expect(snapshot.entries[0].detail).toContain(assignments[0].resources[0].label);
@@ -1020,7 +1020,7 @@ describe("AgentMail durable email pipeline", () => {
       text: "Explicit agent reply",
       idempotencyKey: randomUUID(),
     });
-    const authority = new PaperclipRunnerToolAuthority(db, {
+    const authority = new WardmoteRunnerToolAuthority(db, {
       ...binding, workMode: "standard", connectorAssignments: await resolveConnectorAssignments(db, binding),
     });
     const queued = (await authority.execute({ tool: "agentmail_send", callId: randomUUID(), arguments: { request } })) as { id: string; outcome: string };
@@ -1089,7 +1089,7 @@ describe("AgentMail durable email pipeline", () => {
       text: "Gated agent reply",
       idempotencyKey: randomUUID(),
     });
-    const authority = new PaperclipRunnerToolAuthority(db, {
+    const authority = new WardmoteRunnerToolAuthority(db, {
       ...binding, workMode: "standard", connectorAssignments: await resolveConnectorAssignments(db, binding),
     });
     const send = authority.execute({ tool: "agentmail_send", callId: randomUUID(), arguments: { request } });

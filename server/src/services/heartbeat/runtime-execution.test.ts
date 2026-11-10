@@ -12,7 +12,7 @@ import { createAdapterExecutionControl } from "../adapter-execution-control.js";
 import { executionWorkspaceService } from "../execution-workspaces.js";
 import { workspaceOperationService } from "../workspace-operations.js";
 import { instanceSettingsService } from "../instance-settings.js";
-import { executePaperclipNativeSession, NativeCancellationPendingRecoveryError, NativeControllerDetachedForRestartError } from "../native-runtime/native-session-executor.js";
+import { executeWardmoteNativeSession, NativeCancellationPendingRecoveryError, NativeControllerDetachedForRestartError } from "../native-runtime/native-session-executor.js";
 import { NativeRunnerOwnershipUnverifiedError } from "../native-runtime/native-runner-ownership.js";
 import { NativeWorkspaceFinalizationBusyError, NativeWorkspaceFinalizationOwnershipLostError } from "../native-runtime/native-workspace-finalization-ownership.js";
 import { resolveHeartbeatNativeRuntimeMode } from "../native-runtime/runtime-mode.js";
@@ -27,11 +27,11 @@ import { executeHeartbeatRuntime, type HeartbeatRuntimeExecutionInput } from "./
 // and gateway delivery are external boundaries; browser acceptance covers their wiring.
 vi.mock("../native-runtime/native-session-executor.js", async original => ({
   ...await original<typeof import("../native-runtime/native-session-executor.js")>(),
-  executePaperclipNativeSession: vi.fn(),
+  executeWardmoteNativeSession: vi.fn(),
 }));
 vi.mock("./run-preparation.js", async original => ({
   ...await original<typeof import("./run-preparation.js")>(),
-  buildPaperclipRuntimeMcpServers: vi.fn(async () => []),
+  buildWardmoteRuntimeMcpServers: vi.fn(async () => []),
   createAdapterRuntimeToolAccess: vi.fn(() => null),
   revokeHeartbeatRunGatewayTokens: vi.fn(async () => {}),
 }));
@@ -52,7 +52,7 @@ describe.skipIf(!support.supported)("heartbeat runtime execution boundary", () =
   beforeEach(async () => {
     await db.execute(sql`truncate table companies restart identity cascade`);
     vi.clearAllMocks();
-    vi.mocked(executePaperclipNativeSession).mockResolvedValue({ exitCode: 0, signal: null, timedOut: false });
+    vi.mocked(executeWardmoteNativeSession).mockResolvedValue({ exitCode: 0, signal: null, timedOut: false });
   });
 
   async function fixture(native = false) {
@@ -117,7 +117,7 @@ describe.skipIf(!support.supported)("heartbeat runtime execution boundary", () =
     input.control.dispatchResolvedInteractionContinuationWithAtomicGate = async () => ({ dispatched: false });
     expect(await executeHeartbeatRuntime(db, input)).toEqual({ dispatched: false });
     expect(adapter.execute).not.toHaveBeenCalled();
-    expect(executePaperclipNativeSession).not.toHaveBeenCalled();
+    expect(executeWardmoteNativeSession).not.toHaveBeenCalled();
     expect(input.effects.onNativeDispatchStarted).not.toHaveBeenCalled();
     expect(input.effects.onLegacyAdapterEntered).not.toHaveBeenCalled();
     expect(await finalizations()).toHaveLength(0);
@@ -167,7 +167,7 @@ describe.skipIf(!support.supported)("heartbeat runtime execution boundary", () =
     [new NativeWorkspaceFinalizationOwnershipLostError(), "onNativeWorkspaceFinalizeScheduled"],
   ] as const)("transfers recovery ownership for %s before cleanup", async (error, effect) => {
     const { input } = await fixture(true);
-    vi.mocked(executePaperclipNativeSession).mockRejectedValueOnce(error);
+    vi.mocked(executeWardmoteNativeSession).mockRejectedValueOnce(error);
     input.instructions.releaseInstructionCopy = vi.fn(async () => {
       if (effect) expect(input.effects[effect]).toHaveBeenCalledOnce();
     });
@@ -180,7 +180,7 @@ describe.skipIf(!support.supported)("heartbeat runtime execution boundary", () =
 
   it("dispatches native execution with the selected session and persists its usage", async () => {
     const { input, adapter, run } = await fixture(true);
-    vi.mocked(executePaperclipNativeSession).mockImplementationOnce(async native => {
+    vi.mocked(executeWardmoteNativeSession).mockImplementationOnce(async native => {
       expect(native.execution).toBe(input.runtime.nativeExecution);
       expect(native.runnerInstanceId).toBe(input.runtime.nativeRunnerInstanceId);
       await native.onUsage?.({ usage: { inputTokens: 7, outputTokens: 3 }, complete: true });
@@ -199,7 +199,7 @@ describe.skipIf(!support.supported)("heartbeat runtime execution boundary", () =
     await db.update(heartbeatRuns).set({ nativeIssueId: input.task.issueId }).where(eq(heartbeatRuns.id, run.id));
     await db.insert(nativeRunFinalizations).values({ companyId: run.companyId, issueId: input.task.issueId!, runId: run.id, phase: "retryable_failure" });
     const error = new Error("session connection lost");
-    vi.mocked(executePaperclipNativeSession).mockRejectedValueOnce(error);
+    vi.mocked(executeWardmoteNativeSession).mockRejectedValueOnce(error);
     await expect(executeHeartbeatRuntime(db, input)).rejects.toMatchObject({
       name: "NativeSessionResumeScheduledError", original: error,
     });

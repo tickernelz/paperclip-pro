@@ -2,8 +2,8 @@ import path from "node:path";
 import {
   DEFAULT_WARDMOTE_INSTANCE_ID,
   expandHomePrefix,
-  resolvePaperclipConfigPathForInstance,
-  resolvePaperclipInstanceId,
+  resolveWardmoteConfigPathForInstance,
+  resolveWardmoteInstanceId,
 } from "../packages/shared/src/home-paths.ts";
 
 export interface AppliedDevRunnerOptions {
@@ -57,11 +57,11 @@ export function applyDevRunnerOptions(
 
   env.WARDMOTE_HOME = dataDir;
   if (!hasExplicitConfig) {
-    const instanceId = resolvePaperclipInstanceId(
+    const instanceId = resolveWardmoteInstanceId(
       env.WARDMOTE_INSTANCE_ID ?? DEFAULT_WARDMOTE_INSTANCE_ID,
     );
     env.WARDMOTE_INSTANCE_ID = instanceId;
-    env.WARDMOTE_CONFIG = resolvePaperclipConfigPathForInstance({
+    env.WARDMOTE_CONFIG = resolveWardmoteConfigPathForInstance({
       homeDir: dataDir,
       instanceId,
     });

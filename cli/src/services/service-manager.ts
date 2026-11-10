@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import { resolvePaperclipHomeDir, resolvePaperclipInstanceId } from "../config/home.js";
+import { resolveWardmoteHomeDir, resolveWardmoteInstanceId } from "../config/home.js";
 
 const execFileAsync = promisify(execFile);
 
@@ -309,7 +309,7 @@ export class SystemdServiceManager implements ServiceManager {
   readonly serviceName: string;
   readonly definitionPath: string;
 
-  constructor(readonly instanceId: string, private readonly runner: CommandRunner = defaultCommandRunner, private readonly homeDir = resolvePaperclipHomeDir(), private readonly shimPath = resolveServiceShimPath(), userHomeDir = os.homedir()) {
+  constructor(readonly instanceId: string, private readonly runner: CommandRunner = defaultCommandRunner, private readonly homeDir = resolveWardmoteHomeDir(), private readonly shimPath = resolveServiceShimPath(), userHomeDir = os.homedir()) {
     this.serviceName = systemdServiceName(instanceId);
     this.definitionPath = path.join(userHomeDir, ".config", "systemd", "user", this.serviceName);
   }
@@ -394,7 +394,7 @@ export class LaunchdServiceManager implements ServiceManager {
   private readonly stdoutPath: string;
   private readonly stderrPath: string;
 
-  constructor(readonly instanceId: string, private readonly runner: CommandRunner = defaultCommandRunner, private readonly homeDir = resolvePaperclipHomeDir(), private readonly shimPath = resolveServiceShimPath(), userHomeDir = os.homedir()) {
+  constructor(readonly instanceId: string, private readonly runner: CommandRunner = defaultCommandRunner, private readonly homeDir = resolveWardmoteHomeDir(), private readonly shimPath = resolveServiceShimPath(), userHomeDir = os.homedir()) {
     this.serviceName = launchdServiceName(instanceId);
     this.definitionPath = path.join(userHomeDir, "Library", "LaunchAgents", `${this.serviceName}.plist`);
     const logDir = path.join(homeDir, "instances", instanceId, "logs");
@@ -459,7 +459,7 @@ export class LaunchdServiceManager implements ServiceManager {
 export type ServiceManagerDetection = { supported: true; manager: ServiceManager } | { supported: false; reason: string };
 
 export async function detectServiceManager(input: { instanceId?: string; platform?: NodeJS.Platform; runner?: CommandRunner } = {}): Promise<ServiceManagerDetection> {
-  const instanceId = resolvePaperclipInstanceId(input.instanceId);
+  const instanceId = resolveWardmoteInstanceId(input.instanceId);
   const platform = input.platform ?? process.platform;
   const runner = input.runner ?? defaultCommandRunner;
   if (platform === "darwin") return { supported: true, manager: new LaunchdServiceManager(instanceId, runner) };

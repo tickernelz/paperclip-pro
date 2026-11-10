@@ -28,7 +28,7 @@ const AUTOMATIC_WARDMOTE_WORKFLOW_ACTIONS = new Set([
 ]);
 
 /** Exact SDK rules for the run's runner-owned Paperclip MCP connection. */
-export function claudePaperclipPermissionRules(
+export function claudeWardmotePermissionRules(
   tools: readonly Readonly<Record<string, unknown>>[],
   mode: NativeAcpxPermissionMode,
 ): string[] {

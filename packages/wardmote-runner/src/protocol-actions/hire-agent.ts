@@ -12,7 +12,7 @@ export const hireAgentAction = {
     idempotency: "required",
     disabledByDefault: false,
     realBindingStatus: "live_codex",
-    realServiceBinding: "PaperclipRunnerToolAuthority",
+    realServiceBinding: "WardmoteRunnerToolAuthority",
     prpEvidence: "Authenticated PRP tool input/result and agent-hire state diff with activity record.",
     prpBindingStatus: "bound",
     legacyAliases: [],

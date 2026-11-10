@@ -25,7 +25,7 @@ import { EXECUTION_RECONCILIATION_INTERVAL_MS } from "./services/execution-contr
 import { connectionIntentDeliveryService } from "./services/connection-intent-delivery.js";
 import { existsSync, readFileSync, rmSync } from "node:fs";
 import type { Server, RequestListener } from "node:http";
-import { createPaperclipHttpServer } from "./http/server.js";
+import { createWardmoteHttpServer } from "./http/server.js";
 import { resolve } from "node:path";
 import { createInterface } from "node:readline/promises";
 import { stdin, stdout } from "node:process";
@@ -137,7 +137,7 @@ import { flushInFlightRunLogMirrors } from "./services/run-log-store.js";
 import { migrateRetiredNames } from "./services/retired-name-migration.js";
 export { migrateRetiredNames } from "./services/retired-name-migration.js";
 import { getMaxAttachmentBytes } from "./attachment-types.js";
-import { setPaperclipBridgeAttachmentMaxBytesSource } from "@tickernelz/wardmote-adapter-utils/execution-target";
+import { setWardmoteBridgeAttachmentMaxBytesSource } from "@tickernelz/wardmote-adapter-utils/execution-target";
 import {
   createEmbeddedPostgresSupervisor,
   type EmbeddedPostgresSupervisor,
@@ -804,7 +804,7 @@ async function startServerWithDatabaseTeardown(
   if (await backupSettingsSvc.seedNewInstallFeatureDefaults()) {
     logger.info("Started a new install on the Standard feature preset");
   }
-  setPaperclipBridgeAttachmentMaxBytesSource(getMaxAttachmentBytes);
+  setWardmoteBridgeAttachmentMaxBytesSource(getMaxAttachmentBytes);
   await backupSettingsSvc.getGeneral().catch((err: unknown) => {
     logger.warn({ err }, "could not read the attachment size limit from instance settings at boot");
   });
@@ -953,7 +953,7 @@ async function startServerWithDatabaseTeardown(
   const operatorApiUrl = process.env.WARDMOTE_API_URL?.trim() || "";
   const configuredApiUrl = operatorApiUrl || runtimeApiUrl;
   // Upgrade admission runs before every WebSocket listener, outside Express.
-  const server = createPaperclipHttpServer(app as unknown as RequestListener, {
+  const server = createWardmoteHttpServer(app as unknown as RequestListener, {
     apiUrl: configuredApiUrl,
     httpOptions: { shouldUpgradeCallback: () => !isIdleTaskDrainActive() },
   });

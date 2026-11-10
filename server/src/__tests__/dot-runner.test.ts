@@ -22,7 +22,7 @@ import { createDotRunnerMcpTools, dotRunnerBroker } from "../services/dot-runner
 import { prepareNativeHeartbeatRun } from "../services/native-runtime/prepare-native-run.js";
 import { buildNativeExecutionInput } from "../services/native-runtime/native-execution-input.js";
 import { nativeRuntimeContextFixture } from "../services/native-runtime/runtime-context.test-fixture.js";
-import { executePaperclipNativeSession } from "../services/native-runtime/native-session-executor.js";
+import { executeWardmoteNativeSession } from "../services/native-runtime/native-session-executor.js";
 import { registerAssignedMcpGateway } from "../services/native-runtime/assigned-mcp-tools.js";
 import type { ToolGatewayService } from "../services/tool-gateway.js";
 import { documentService } from "../services/documents.js";
@@ -697,7 +697,7 @@ describe("durable Dot Runner integration", () => {
       const gatewayTools = [{ name: "fixture:read_status", displayName: "Read fixture status", description: "Read a synthetic app", parametersSchema: { type: "object", properties: {}, additionalProperties: false }, risk: "read" }];
       registerAssignedMcpGateway(db, { listToolsForNamedGateway: vi.fn().mockResolvedValue(gatewayTools), executeTool: appCall } as unknown as ToolGatewayService);
       await db.update(agents).set({ adapterConfig: { ...f.agent.adapterConfig, dotWorkspaceAccess: true, dotAttachmentAccess: true } }).where(eq(agents.id, f.agent.id));
-      const resultPromise = executePaperclipNativeSession({ db, execution,
+      const resultPromise = executeWardmoteNativeSession({ db, execution,
         ...(remote ? { runnerExecutionTarget: remote.target, runnerRemoteBinaryPath: remote.runnerBinary, runnerIngressAuthorized: true }
           : { dotWorkspaceRoot: root }),
         runnerInstanceId: prepared.runnerInstanceId,

@@ -213,7 +213,7 @@ import { createHash } from "node:crypto";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { defaultCapabilityRunnerdBinary } from "@tickernelz/wardmote-runner";
-import { parsePaperclipRunnerdBuildMetadata, WARDMOTE_RUNNER_BUILD_METADATA } from "@tickernelz/wardmote-runner/evals";
+import { parseWardmoteRunnerdBuildMetadata, WARDMOTE_RUNNER_BUILD_METADATA } from "@tickernelz/wardmote-runner/evals";
 // This is the installed package's default lookup. The separate eval artifact
 // below must not hide an unusable bundled daemon or repair its permissions.
 const bundledRunnerd = defaultCapabilityRunnerdBinary();
@@ -233,7 +233,7 @@ const bundledMetadata = JSON.parse(execFileSync(bundledRunnerd, ["--build-metada
   encoding: "utf8", timeout: 15_000, maxBuffer: 1024 * 1024,
   env: { PATH: process.env.PATH, HOME: process.cwd() },
 }));
-if (parsePaperclipRunnerdBuildMetadata(bundledMetadata).binaryContractVersion !== WARDMOTE_RUNNER_BUILD_METADATA.contracts.runnerdArtifact) {
+if (parseWardmoteRunnerdBuildMetadata(bundledMetadata).binaryContractVersion !== WARDMOTE_RUNNER_BUILD_METADATA.contracts.runnerdArtifact) {
   throw new Error("installed default runnerd did not start with the expected contract");
 }
 
@@ -262,7 +262,7 @@ const report = await testing.runControlPlanePortConformance({
 });
 if (report.eventCount !== 3) throw new Error("packed conformance kit returned the wrong event count");
 
-const nativeBundle = await evals.loadPaperclipNativeExecutionFixture();
+const nativeBundle = await evals.loadWardmoteNativeExecutionFixture();
 if (nativeBundle.schema !== "paperclip-runner/native-execution/v1") {
   throw new Error("packed native execution fixture is unavailable");
 }
@@ -270,7 +270,7 @@ if (nativeBundle.semanticTools.results[0]?.outcome !== "denied") {
   throw new Error("native execution fixture lost its rejected tool effect");
 }
 
-runtime.assertPaperclipRunnerCompatibility({
+runtime.assertWardmoteRunnerCompatibility({
   consumer: "paperclip-runner-clean-consumer",
   components: { catalog: 1, protocol: 1, runnerClient: 1, controlPlaneAdapter: 1, testkit: 1 },
   requiredOperationIds: ["finish_task"],
@@ -284,11 +284,11 @@ if (!driverConformance.checks.transcriptCompleteness || driverConformance.semant
   throw new Error("packed harness-driver conformance did not cover transcript/tools");
 }
 
-const runnerd = await evals.resolvePaperclipRunnerdArtifact({
+const runnerd = await evals.resolveWardmoteRunnerdArtifact({
   executablePath: process.env.WARDMOTE_RUNNERD_ARTIFACT,
   expectedSha256: process.env.WARDMOTE_RUNNERD_SHA256,
 });
-const evalCompatibility = evals.assertPaperclipRunnerEvalCompatibility({
+const evalCompatibility = evals.assertWardmoteRunnerEvalCompatibility({
   consumer: "paperclip-runner-clean-consumer",
   packageVersion: evals.WARDMOTE_RUNNER_BUILD_METADATA.package.version,
   runnerd: runnerd.buildMetadata,
@@ -306,7 +306,7 @@ if (evalCompatibility.negotiatedPrpVersion !== 1) {
 }
 let mismatchFailedClosed = false;
 try {
-  evals.assertPaperclipRunnerEvalCompatibility({
+  evals.assertWardmoteRunnerEvalCompatibility({
     consumer: "incompatible-runner-clean-consumer",
     packageVersion: evals.WARDMOTE_RUNNER_BUILD_METADATA.package.version,
     runnerd: { ...runnerd.buildMetadata, binaryContractVersion: 999 },

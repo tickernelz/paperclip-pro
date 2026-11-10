@@ -1,7 +1,7 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it, vi } from "vitest";
-import type { PaperclipPluginManifestV1 } from "@tickernelz/wardmote-shared";
+import type { WardmotePluginManifestV1 } from "@tickernelz/wardmote-shared";
 import {
   createDuplexRouteSlotController,
   createPluginWorkerHandle,
@@ -13,7 +13,7 @@ const DUPLEX_CHANNEL_WORKER_ENTRYPOINT = path.join(
   "plugin-worker-duplex-channel.cjs",
 );
 
-const TEST_MANIFEST: PaperclipPluginManifestV1 = {
+const TEST_MANIFEST: WardmotePluginManifestV1 = {
   id: "test.plugin",
   apiVersion: 1,
   version: "1.0.0",

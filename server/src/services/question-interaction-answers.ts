@@ -1,14 +1,14 @@
-import type { AskUserQuestionsAnswer, AskUserQuestionsPayload, PaperclipQuestionSetPayload } from "@tickernelz/wardmote-shared";
-import { parsePaperclipQuestionResponse, type PaperclipQuestionResponse } from "../vendor/wardmote-runner/index.js";
+import type { AskUserQuestionsAnswer, AskUserQuestionsPayload, WardmoteQuestionSetPayload } from "@tickernelz/wardmote-shared";
+import { parseWardmoteQuestionResponse, type WardmoteQuestionResponse } from "../vendor/wardmote-runner/index.js";
 import { validateQuestionPatterns } from "./question-pattern-validation.js";
 
 function prepareQuestionInteractionAnswers(
-  questionSet: PaperclipQuestionSetPayload,
+  questionSet: WardmoteQuestionSetPayload,
   answers: readonly AskUserQuestionsAnswer[],
   storageQuestions: AskUserQuestionsPayload["questions"],
 ) {
   const answerByQuestionId = new Map(answers.map((answer) => [answer.questionId, answer]));
-  const response: PaperclipQuestionResponse = {
+  const response: WardmoteQuestionResponse = {
     schema: "paperclip.question_response.v1",
     answers: {},
   };
@@ -55,7 +55,7 @@ function prepareQuestionInteractionAnswers(
       return { ...question, textValidation };
     }),
   };
-  const parsed = parsePaperclipQuestionResponse(withoutPatterns, response);
+  const parsed = parseWardmoteQuestionResponse(withoutPatterns, response);
   const checks = answerableQuestionSet.questions.flatMap((question) => {
     const pattern = question.textValidation?.pattern;
     const answer = parsed.answers[question.id];
@@ -67,10 +67,10 @@ function prepareQuestionInteractionAnswers(
 
 /** Validate untrusted answers before persistence, including bounded patterns. */
 export async function parseQuestionInteractionAnswers(
-  questionSet: PaperclipQuestionSetPayload,
+  questionSet: WardmoteQuestionSetPayload,
   answers: readonly AskUserQuestionsAnswer[],
   storageQuestions: AskUserQuestionsPayload["questions"],
-): Promise<PaperclipQuestionResponse> {
+): Promise<WardmoteQuestionResponse> {
   const { parsed, checks } = prepareQuestionInteractionAnswers(questionSet, answers, storageQuestions);
   await validateQuestionPatterns(checks);
   return parsed;
@@ -78,9 +78,9 @@ export async function parseQuestionInteractionAnswers(
 
 /** Saved answers already passed pattern validation; delivery must not depend on worker capacity. */
 export function parseSavedQuestionInteractionAnswers(
-  questionSet: PaperclipQuestionSetPayload,
+  questionSet: WardmoteQuestionSetPayload,
   answers: readonly AskUserQuestionsAnswer[],
   storageQuestions: AskUserQuestionsPayload["questions"],
-): PaperclipQuestionResponse {
+): WardmoteQuestionResponse {
   return prepareQuestionInteractionAnswers(questionSet, answers, storageQuestions).parsed;
 }

@@ -18,7 +18,7 @@ import { promisify } from "node:util";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { AdapterExecutionContext, AdapterRuntimeMcpAccess } from "@tickernelz/wardmote-adapter-utils";
 import {
-  startAdapterExecutionTargetPaperclipBridge,
+  startAdapterExecutionTargetWardmoteBridge,
   startAdapterExecutionTargetProcessSessionBridge,
 } from "@tickernelz/wardmote-adapter-utils/execution-target";
 
@@ -31,7 +31,7 @@ vi.mock("@tickernelz/wardmote-adapter-utils/execution-target", async (importActu
   return {
     ...actual,
     prepareAdapterExecutionTargetRuntime: vi.fn(actual.prepareAdapterExecutionTargetRuntime),
-    startAdapterExecutionTargetPaperclipBridge: vi.fn(actual.startAdapterExecutionTargetPaperclipBridge),
+    startAdapterExecutionTargetWardmoteBridge: vi.fn(actual.startAdapterExecutionTargetWardmoteBridge),
     startAdapterExecutionTargetProcessSessionBridge: vi.fn(actual.startAdapterExecutionTargetProcessSessionBridge),
   };
 });
@@ -220,7 +220,7 @@ async function setupRemoteSandbox() {
 function stubBridges() {
   const paperclipStops: Array<ReturnType<typeof vi.fn>> = [];
   const processStops: Array<ReturnType<typeof vi.fn>> = [];
-  vi.mocked(startAdapterExecutionTargetPaperclipBridge).mockImplementation(async () => {
+  vi.mocked(startAdapterExecutionTargetWardmoteBridge).mockImplementation(async () => {
     const stop = vi.fn(async () => {});
     paperclipStops.push(stop);
     return { env: {}, stop } as never;
@@ -304,7 +304,7 @@ describe("ACP settlement — Layer A: engine teardown orchestration", () => {
       const block = () => { entered(); return gate; };
       const scopes = new Map<symbol, string>();
       if (blockedPhase === "stop_transport") {
-        vi.mocked(startAdapterExecutionTargetPaperclipBridge).mockImplementation(async () => ({ env: {}, stop: block }) as never);
+        vi.mocked(startAdapterExecutionTargetWardmoteBridge).mockImplementation(async () => ({ env: {}, stop: block }) as never);
       }
       const execute = createAcpxEngineExecutor({
         createRuntime: () => ({
@@ -404,7 +404,7 @@ describe("ACP settlement — Layer A: engine teardown orchestration", () => {
     // and the seam teardown, and read the still-held lease during the sync-back.
     const { stateDir, localCwd, executionTarget } = await setupRemoteSandbox();
     const order: string[] = [];
-    vi.mocked(startAdapterExecutionTargetPaperclipBridge).mockImplementation(async () => ({
+    vi.mocked(startAdapterExecutionTargetWardmoteBridge).mockImplementation(async () => ({
       env: {},
       stop: vi.fn(async () => {
         order.push("bridge-stop");

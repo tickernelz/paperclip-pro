@@ -520,7 +520,7 @@ describes that surface. `paperclipAccessMode(config, env)`
 `paperclipMcp` toggle is on (default) and the run carries both
 `WARDMOTE_API_URL` and a run credential, `rest` otherwise.
 `paperclipAgentPromptTemplate(access)` and
-`renderPaperclipWakePrompt(..., { paperclipAccess })` render the heartbeat
+`renderWardmoteWakePrompt(..., { paperclipAccess })` render the heartbeat
 contract from that one value, so prompt text cannot drift from what the runtime
 actually mounted.
 

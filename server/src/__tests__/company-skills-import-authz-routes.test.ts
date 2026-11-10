@@ -40,8 +40,8 @@ describeEmbeddedPostgres("company skill import authorization routes", () => {
   let paperclipHome: string | null = null;
   const cleanupDirs = new Set<string>();
   const previousAgentJwtSecret = process.env.WARDMOTE_AGENT_JWT_SECRET;
-  const previousPaperclipHome = process.env.WARDMOTE_HOME;
-  const previousPaperclipInstanceId = process.env.WARDMOTE_INSTANCE_ID;
+  const previousWardmoteHome = process.env.WARDMOTE_HOME;
+  const previousWardmoteInstanceId = process.env.WARDMOTE_INSTANCE_ID;
 
   beforeAll(async () => {
     process.env.WARDMOTE_AGENT_JWT_SECRET = "company-skills-import-authz-test-secret";
@@ -72,10 +72,10 @@ describeEmbeddedPostgres("company skill import authorization routes", () => {
     }
     if (previousAgentJwtSecret === undefined) delete process.env.WARDMOTE_AGENT_JWT_SECRET;
     else process.env.WARDMOTE_AGENT_JWT_SECRET = previousAgentJwtSecret;
-    if (previousPaperclipHome === undefined) delete process.env.WARDMOTE_HOME;
-    else process.env.WARDMOTE_HOME = previousPaperclipHome;
-    if (previousPaperclipInstanceId === undefined) delete process.env.WARDMOTE_INSTANCE_ID;
-    else process.env.WARDMOTE_INSTANCE_ID = previousPaperclipInstanceId;
+    if (previousWardmoteHome === undefined) delete process.env.WARDMOTE_HOME;
+    else process.env.WARDMOTE_HOME = previousWardmoteHome;
+    if (previousWardmoteInstanceId === undefined) delete process.env.WARDMOTE_INSTANCE_ID;
+    else process.env.WARDMOTE_INSTANCE_ID = previousWardmoteInstanceId;
   });
 
   function authenticatedApp() {

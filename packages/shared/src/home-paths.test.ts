@@ -8,8 +8,8 @@ import {
   resolveDefaultLogsDir,
   resolveDefaultSecretsKeyFilePath,
   resolveDefaultStorageDir,
-  resolvePaperclipConfigPathForInstance,
-  resolvePaperclipInstanceRoot,
+  resolveWardmoteConfigPathForInstance,
+  resolveWardmoteInstanceRoot,
 } from "./home-paths.js";
 
 let userHome: string;
@@ -33,35 +33,35 @@ describe("default home", () => {
   });
 
   it("starts a new install in ~/.wardmote", async () => {
-    const { resolvePaperclipHomeDir } = await homePaths();
-    expect(resolvePaperclipHomeDir()).toBe(path.join(userHome, ".wardmote"));
+    const { resolveWardmoteHomeDir } = await homePaths();
+    expect(resolveWardmoteHomeDir()).toBe(path.join(userHome, ".wardmote"));
   });
 
   it("refuses an unmigrated ~/.paperclip-pro instead of starting an empty home", async () => {
     fs.mkdirSync(path.join(userHome, ".paperclip-pro"));
-    const { resolvePaperclipHomeDir } = await homePaths();
-    expect(() => resolvePaperclipHomeDir()).toThrow("wardmote migrate-home");
+    const { resolveWardmoteHomeDir } = await homePaths();
+    expect(() => resolveWardmoteHomeDir()).toThrow("wardmote migrate-home");
   });
 
   it("uses ~/.wardmote once ~/.paperclip-pro is the migration link to it", async () => {
     fs.mkdirSync(path.join(userHome, ".wardmote"));
     fs.symlinkSync(path.join(userHome, ".wardmote"), path.join(userHome, ".paperclip-pro"));
-    const { resolvePaperclipHomeDir } = await homePaths();
-    expect(resolvePaperclipHomeDir()).toBe(path.join(userHome, ".wardmote"));
+    const { resolveWardmoteHomeDir } = await homePaths();
+    expect(resolveWardmoteHomeDir()).toBe(path.join(userHome, ".wardmote"));
   });
 
   it("refuses a ~/.paperclip-pro link that points somewhere else", async () => {
     const elsewhere = path.join(userHome, "data");
     fs.mkdirSync(elsewhere);
     fs.symlinkSync(elsewhere, path.join(userHome, ".paperclip-pro"));
-    const { resolvePaperclipHomeDir } = await homePaths();
-    expect(() => resolvePaperclipHomeDir()).toThrow("has not been migrated");
+    const { resolveWardmoteHomeDir } = await homePaths();
+    expect(() => resolveWardmoteHomeDir()).toThrow("has not been migrated");
   });
 
   it("lets an explicit home win", async () => {
     vi.stubEnv("WARDMOTE_HOME", "/srv/wardmote");
-    const { resolvePaperclipHomeDir } = await homePaths();
-    expect(resolvePaperclipHomeDir()).toBe("/srv/wardmote");
+    const { resolveWardmoteHomeDir } = await homePaths();
+    expect(resolveWardmoteHomeDir()).toBe("/srv/wardmote");
   });
 
   it("expands a config path without remapping it to another home", async () => {
@@ -85,8 +85,8 @@ describe("home path resolution", () => {
     delete process.env.WARDMOTE_INSTANCE_ID;
 
     const instanceRoot = path.join(home, "instances", "default");
-    expect(resolvePaperclipInstanceRoot()).toBe(instanceRoot);
-    expect(resolvePaperclipConfigPathForInstance()).toBe(path.join(instanceRoot, "config.json"));
+    expect(resolveWardmoteInstanceRoot()).toBe(instanceRoot);
+    expect(resolveWardmoteConfigPathForInstance()).toBe(path.join(instanceRoot, "config.json"));
     expect(resolveDefaultEmbeddedPostgresDir()).toBe(path.join(instanceRoot, "db"));
     expect(resolveDefaultBackupDir()).toBe(path.join(instanceRoot, "data", "backups"));
     expect(resolveDefaultLogsDir()).toBe(path.join(instanceRoot, "logs"));

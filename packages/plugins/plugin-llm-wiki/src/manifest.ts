@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import type { PaperclipPluginManifestV1 } from "@tickernelz/wardmote-plugin-sdk";
+import type { WardmotePluginManifestV1 } from "@tickernelz/wardmote-plugin-sdk";
 import { DEFAULT_AGENT_INSTRUCTION_FILES, DEFAULT_AGENT_INSTRUCTIONS } from "./templates.js";
 
 export const PLUGIN_ID = "paperclipai.plugin-llm-wiki";
@@ -78,7 +78,7 @@ Target space: default (slug: default). Paperclip-derived indexing currently writ
 5. Append a wiki/log.md entry with the index refresh time, page counts by category, and any unresolved indexing problems.
 6. Close the routine issue with the index changes and any follow-up needed.`;
 
-const manifest: PaperclipPluginManifestV1 = {
+const manifest: WardmotePluginManifestV1 = {
   id: PLUGIN_ID,
   apiVersion: 1,
   version: "0.1.0",

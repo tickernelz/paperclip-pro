@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { z } from "zod";
-import { PaperclipApiClient } from "./client.js";
+import { WardmoteApiClient } from "./client.js";
 import { HTTP_STATUS_META_KEY, formatErrorResponse, formatTextResponse } from "./format.js";
 import { createToolDefinitions } from "./tools.js";
 
 function makeClient() {
-  return new PaperclipApiClient({
+  return new WardmoteApiClient({
     apiUrl: "http://localhost:3100/api",
     apiKey: "token-123",
     companyId: "11111111-1111-1111-1111-111111111111",

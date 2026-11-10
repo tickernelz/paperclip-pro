@@ -1,15 +1,15 @@
 import { describe, expect, it } from "vitest";
 
-import type { PaperclipSemanticActionBinding } from "./types.js";
-import { PaperclipSemanticDispatcher } from "./paperclip-dispatcher.js";
+import type { WardmoteSemanticActionBinding } from "./types.js";
+import { WardmoteSemanticDispatcher } from "./paperclip-dispatcher.js";
 import type {
-  PaperclipSemanticIdempotencyClaim,
-  PaperclipSemanticIdempotencyStore,
-  PaperclipSemanticRunContext,
-  PaperclipSemanticStoredOutcome,
-  PaperclipSemanticToolCall,
+  WardmoteSemanticIdempotencyClaim,
+  WardmoteSemanticIdempotencyStore,
+  WardmoteSemanticRunContext,
+  WardmoteSemanticStoredOutcome,
+  WardmoteSemanticToolCall,
 } from "./types.js";
-import { WARDMOTE_SEMANTIC_REDACTED, redactPaperclipSemanticValue } from "./redaction.js";
+import { WARDMOTE_SEMANTIC_REDACTED, redactWardmoteSemanticValue } from "./redaction.js";
 import {
   validatePrpEvent,
   type PrpEvent,
@@ -25,7 +25,7 @@ const correlation = {
 
 describe("run-scoped semantic tool authority", () => {
   it("masks qualified credential fields and standalone opaque bearer values in audit copies", () => {
-    expect(redactPaperclipSemanticValue({ authorizationHeader: "abcdefghijkl", apiKeyProduction: "sensitivevalue", body: "Bearer abcdefghijkl" }))
+    expect(redactWardmoteSemanticValue({ authorizationHeader: "abcdefghijkl", apiKeyProduction: "sensitivevalue", body: "Bearer abcdefghijkl" }))
       .toEqual({ authorizationHeader: WARDMOTE_SEMANTIC_REDACTED, apiKeyProduction: WARDMOTE_SEMANTIC_REDACTED, body: WARDMOTE_SEMANTIC_REDACTED });
   });
   it("preserves credential-related prose and metadata in diagnostic copies", () => {
@@ -33,10 +33,10 @@ describe("run-scoped semantic tool authority", () => {
       body: "Use a secret manager for credential handling and bearer authentication with bearer tokens.",
       tokenBudget: 4000, tokenPolicy: "least privilege", credentialHandling: "harness",
     };
-    expect(redactPaperclipSemanticValue(value)).toEqual(value);
-    expect(redactPaperclipSemanticValue({ credentials: { provider: "opaque-value" }, passwordValue: "opaque-value" }))
+    expect(redactWardmoteSemanticValue(value)).toEqual(value);
+    expect(redactWardmoteSemanticValue({ credentials: { provider: "opaque-value" }, passwordValue: "opaque-value" }))
       .toEqual({ credentials: WARDMOTE_SEMANTIC_REDACTED, passwordValue: WARDMOTE_SEMANTIC_REDACTED });
-    expect(redactPaperclipSemanticValue({ body: "Bearer opaque-credential-value" })).toEqual({ body: WARDMOTE_SEMANTIC_REDACTED });
+    expect(redactWardmoteSemanticValue({ body: "Bearer opaque-credential-value" })).toEqual({ body: WARDMOTE_SEMANTIC_REDACTED });
   });
 
   it("projects only bound and currently authorized actions", async () => {
@@ -44,7 +44,7 @@ describe("run-scoped semantic tool authority", () => {
       actorClaims: ["discovery:tasks:read", "discovery:agents:read"],
       delegatedClaims: ["discovery:tasks:read"],
     });
-    const dispatcher = new PaperclipSemanticDispatcher({
+    const dispatcher = new WardmoteSemanticDispatcher({
       contextProvider: () => context,
       bindings: [
         binding("get_task_context", { task: { id: "task_semantic_test" } }),
@@ -77,7 +77,7 @@ describe("run-scoped semantic tool authority", () => {
   it("rechecks ownership after projection and before invocation", async () => {
     let context = runContext();
     let executions = 0;
-    const dispatcher = new PaperclipSemanticDispatcher({
+    const dispatcher = new WardmoteSemanticDispatcher({
       contextProvider: () => context,
       bindings: [
         {
@@ -106,7 +106,7 @@ describe("run-scoped semantic tool authority", () => {
   it("rejects forged scope while passing credential content unchanged to authorized bindings", async () => {
     let executions = 0;
     const query = "Find Authorization: Bearer intentional-credential";
-    const dispatcher = new PaperclipSemanticDispatcher({
+    const dispatcher = new WardmoteSemanticDispatcher({
       contextProvider: () =>
         runContext({
           actorClaims: ["discovery:tasks:read"],
@@ -139,7 +139,7 @@ describe("run-scoped semantic tool authority", () => {
   });
 
   it("redacts binding output and emits schema-valid digest-only receipts", async () => {
-    const dispatcher = new PaperclipSemanticDispatcher({
+    const dispatcher = new WardmoteSemanticDispatcher({
       contextProvider: () => runContext(),
       bindings: [
         binding("get_task_context", {
@@ -167,7 +167,7 @@ describe("run-scoped semantic tool authority", () => {
 
   it("fails mutations closed when no idempotency store is configured", async () => {
     let executions = 0;
-    const dispatcher = new PaperclipSemanticDispatcher({
+    const dispatcher = new WardmoteSemanticDispatcher({
       contextProvider: () => runContext(),
       bindings: [
         {
@@ -194,7 +194,7 @@ describe("run-scoped semantic tool authority", () => {
     let executions = 0;
     const input = { ...writeDocumentInput(), body: "Credential handling: Authorization: Bearer intentional-document-credential" };
     const store = new MemoryIdempotencyStore();
-    const dispatcher = new PaperclipSemanticDispatcher({
+    const dispatcher = new WardmoteSemanticDispatcher({
       contextProvider: () => runContext(),
       idempotencyStore: store,
       bindings: [
@@ -258,7 +258,7 @@ describe("run-scoped semantic tool authority", () => {
   it("recovers a completed mutation when the primary receipt commit fails", async () => {
     let executions = 0;
     const store = new MemoryIdempotencyStore({ failCompleteOnce: true });
-    const dispatcher = new PaperclipSemanticDispatcher({
+    const dispatcher = new WardmoteSemanticDispatcher({
       contextProvider: () => runContext(),
       idempotencyStore: store,
       bindings: [
@@ -292,7 +292,7 @@ describe("run-scoped semantic tool authority", () => {
       releaseExecution = resolve;
     });
     let executions = 0;
-    const dispatcher = new PaperclipSemanticDispatcher({
+    const dispatcher = new WardmoteSemanticDispatcher({
       contextProvider: () => runContext(),
       idempotencyStore: store,
       bindings: [
@@ -327,7 +327,7 @@ describe("run-scoped semantic tool authority", () => {
     const store = new MemoryIdempotencyStore();
     let lookups = 0;
     let executions = 0;
-    const dispatcher = new PaperclipSemanticDispatcher({
+    const dispatcher = new WardmoteSemanticDispatcher({
       contextProvider: () => {
         lookups += 1;
         return runContext({
@@ -364,7 +364,7 @@ describe("run-scoped semantic tool authority", () => {
 
   it("fails closed when durable storage or binding metadata is invalid", async () => {
     let executions = 0;
-    const unavailableStore = new PaperclipSemanticDispatcher({
+    const unavailableStore = new WardmoteSemanticDispatcher({
       contextProvider: () => runContext(),
       idempotencyStore: {
         claim: () => {
@@ -391,7 +391,7 @@ describe("run-scoped semantic tool authority", () => {
       error: { code: "receipt_store_unavailable" },
     });
 
-    const invalidBinding = new PaperclipSemanticDispatcher({
+    const invalidBinding = new WardmoteSemanticDispatcher({
       contextProvider: () => runContext(),
       bindings: [
         {
@@ -410,7 +410,7 @@ describe("run-scoped semantic tool authority", () => {
   });
 
   it("denies cross-company contexts and malformed protocol identities", async () => {
-    const crossCompany = new PaperclipSemanticDispatcher({
+    const crossCompany = new WardmoteSemanticDispatcher({
       contextProvider: () => runContext({ actorCompanyId: "company_other" }),
       bindings: [binding("get_task_context", {})],
     });
@@ -435,7 +435,7 @@ describe("run-scoped semantic tool authority", () => {
       resultReceipt: null,
     });
 
-    const malformedAuthority = new PaperclipSemanticDispatcher({
+    const malformedAuthority = new WardmoteSemanticDispatcher({
       contextProvider: () =>
         ({ ...runContext(), companyId: "bad company id" }) as never,
       bindings: [binding("get_task_context", {})],
@@ -459,7 +459,7 @@ function runContext(
     actorCompanyId?: string;
     executionRunId?: string;
   } = {},
-): PaperclipSemanticRunContext {
+): WardmoteSemanticRunContext {
   return {
     runId: correlation.runId,
     companyId: "company_semantic_test",
@@ -483,9 +483,9 @@ function runContext(
 }
 
 function binding(
-  operationId: PaperclipSemanticActionBinding["operationId"],
+  operationId: WardmoteSemanticActionBinding["operationId"],
   value: Record<string, unknown>,
-): PaperclipSemanticActionBinding {
+): WardmoteSemanticActionBinding {
   return {
     operationId,
     execute: () => ({ value: value as never }),
@@ -496,7 +496,7 @@ function call(
   operationId: string,
   input: unknown,
   callId = `call_${operationId}`,
-): PaperclipSemanticToolCall {
+): WardmoteSemanticToolCall {
   return { runId: correlation.runId, callId, operationId, correlation, input };
 }
 
@@ -542,13 +542,13 @@ function event(
   } as PrpEvent;
 }
 
-class MemoryIdempotencyStore implements PaperclipSemanticIdempotencyStore {
+class MemoryIdempotencyStore implements WardmoteSemanticIdempotencyStore {
   readonly #entries = new Map<
     string,
     {
       digest: string;
       token: string;
-      outcome?: PaperclipSemanticStoredOutcome;
+      outcome?: WardmoteSemanticStoredOutcome;
     }
   >();
   readonly #tokenToScope = new Map<string, string>();
@@ -567,9 +567,9 @@ class MemoryIdempotencyStore implements PaperclipSemanticIdempotencyStore {
 
   claim(input: {
     scope: string;
-    operationId: PaperclipSemanticStoredOutcome["operationId"];
+    operationId: WardmoteSemanticStoredOutcome["operationId"];
     inputDigest: string;
-  }): PaperclipSemanticIdempotencyClaim {
+  }): WardmoteSemanticIdempotencyClaim {
     const existing = this.#entries.get(input.scope);
     if (existing !== undefined) {
       if (existing.digest !== input.inputDigest) return { kind: "conflict" };
@@ -584,7 +584,7 @@ class MemoryIdempotencyStore implements PaperclipSemanticIdempotencyStore {
     return { kind: "claimed", token };
   }
 
-  complete(token: string, outcome: PaperclipSemanticStoredOutcome): void {
+  complete(token: string, outcome: WardmoteSemanticStoredOutcome): void {
     if (this.#failCompleteOnce) {
       this.#failCompleteOnce = false;
       throw new Error("primary receipt commit failed");
@@ -592,12 +592,12 @@ class MemoryIdempotencyStore implements PaperclipSemanticIdempotencyStore {
     this.#storeOutcome(token, outcome);
   }
 
-  recover(token: string, outcome: PaperclipSemanticStoredOutcome): void {
+  recover(token: string, outcome: WardmoteSemanticStoredOutcome): void {
     this.recoveryCount += 1;
     this.#storeOutcome(token, outcome);
   }
 
-  #storeOutcome(token: string, outcome: PaperclipSemanticStoredOutcome): void {
+  #storeOutcome(token: string, outcome: WardmoteSemanticStoredOutcome): void {
     const scope = this.#tokenToScope.get(token);
     const entry = scope === undefined ? undefined : this.#entries.get(scope);
     if (scope === undefined || entry?.token !== token) {

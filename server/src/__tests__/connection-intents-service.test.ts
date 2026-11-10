@@ -35,7 +35,7 @@ import type { RuntimeToolsTokenClaims } from "../runtime-tools-token.js";
 import { wakeConnectionIntentAfterResolution } from "../routes/connection-intents.js";
 import { connectionIntentDeliveryService } from "../services/connection-intent-delivery.js";
 import { issueThreadInteractionService } from "../services/issue-thread-interactions.js";
-import { PaperclipRunnerToolAuthority } from "../services/native-runtime/paperclip-runner-tool-authority.js";
+import { WardmoteRunnerToolAuthority } from "../services/native-runtime/paperclip-runner-tool-authority.js";
 import { materializeNativeInteractionResponses } from "../services/native-runtime/native-interaction-bridge.js";
 import { toolAccessService } from "../services/tool-access.js";
 import { toolAccessPolicyService } from "../services/tool-access-policy.js";
@@ -713,7 +713,7 @@ describeEmbeddedPostgres("connectionIntentService", () => {
     const issueId = String(run!.contextSnapshot!.issueId);
     await db.update(issues).set({ executionRunId: runId }).where(eq(issues.id, issueId));
     await db.update(heartbeatRuns).set({ runtimeMode: "native", nativeIssueId: issueId }).where(eq(heartbeatRuns.id, runId));
-    const authority = new PaperclipRunnerToolAuthority(db, { companyId: claims.company_id, issueId, agentId: claims.sub, runId });
+    const authority = new WardmoteRunnerToolAuthority(db, { companyId: claims.company_id, issueId, agentId: claims.sub, runId });
     const query = "Please help me find tools to continue this task. ".repeat(8) + "Look at my Git Hub pull requests";
     const result = await authority.execute({ tool: "connections_search", callId: "discover", arguments: { query } });
     expect(result).toMatchObject({ results: expect.arrayContaining([expect.objectContaining({ service: "github", state: "available" })]) });

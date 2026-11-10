@@ -1,4 +1,4 @@
-import type { LiveEvent, NotificationKind, PaperclipNotification } from "@tickernelz/wardmote-shared";
+import type { LiveEvent, NotificationKind, WardmoteNotification } from "@tickernelz/wardmote-shared";
 
 export const NOTIFICATION_BODY_MAX_CHARS = 300;
 
@@ -44,7 +44,7 @@ export interface NotificationContext {
 }
 
 export interface ClassifiedNotification {
-  notification: PaperclipNotification;
+  notification: WardmoteNotification;
   recipientUserIds: string[];
 }
 

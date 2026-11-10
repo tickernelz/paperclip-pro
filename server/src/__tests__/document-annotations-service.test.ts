@@ -20,7 +20,7 @@ import {
 } from "./helpers/embedded-postgres.js";
 import { documentAnnotationService } from "../services/document-annotations.js";
 import { documentService } from "../services/documents.js";
-import { buildPaperclipWakePayload } from "../services/heartbeat.js";
+import { buildWardmoteWakePayload } from "../services/heartbeat.js";
 import { buildDocumentReviewContext, buildPlanReviewContext, PLAN_REVIEW_CONTEXT_LIMITS } from "../services/plan-review-context.js";
 
 const embeddedPostgresSupport = await getEmbeddedPostgresTestSupport();
@@ -505,7 +505,7 @@ describeEmbeddedPostgres("documentAnnotationService", () => {
       })
       .returning();
 
-    const payload = await buildPaperclipWakePayload({
+    const payload = await buildWardmoteWakePayload({
       db,
       companyId,
       contextSnapshot: {
@@ -585,7 +585,7 @@ describeEmbeddedPostgres("documentAnnotationService", () => {
       })
       .returning();
 
-    const payload = await buildPaperclipWakePayload({
+    const payload = await buildWardmoteWakePayload({
       db,
       companyId,
       contextSnapshot: {
@@ -648,7 +648,7 @@ describeEmbeddedPostgres("documentAnnotationService", () => {
       { actorType: "user", actorId: "board-user", userId: "board-user" },
     );
 
-    const payload = await buildPaperclipWakePayload({
+    const payload = await buildWardmoteWakePayload({
       db,
       companyId,
       contextSnapshot: {
@@ -679,7 +679,7 @@ describeEmbeddedPostgres("documentAnnotationService", () => {
       { actorType: "user", actorId: "board-user", userId: "board-user" },
     );
 
-    const payload = await buildPaperclipWakePayload({
+    const payload = await buildWardmoteWakePayload({
       db,
       companyId,
       contextSnapshot: {
@@ -761,7 +761,7 @@ describeEmbeddedPostgres("documentAnnotationService", () => {
       })
       .returning();
 
-    const payload = await buildPaperclipWakePayload({
+    const payload = await buildWardmoteWakePayload({
       db,
       companyId,
       contextSnapshot: {

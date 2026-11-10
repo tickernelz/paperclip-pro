@@ -6,7 +6,7 @@ import { expect, type Page } from "@playwright/test";
 import { pollUntil, type RunnerApi } from "./api.js";
 import type {
   AskUserQuestionsPayload,
-  PaperclipQuestionSetPayload,
+  WardmoteQuestionSetPayload,
 } from "../../packages/shared/src/types/issue.js";
 import type { LiveFixtureValues } from "./live-fixtures.js";
 import type { MatrixExecution } from "./types.js";
@@ -238,7 +238,7 @@ export function createChatIdleFailureDetector(minimumProviderRuns: number) {
 /** Match the shared question form's durable/native presentation, including custom labels. */
 export function chatQuestionPresentation(
   payload: AskUserQuestionsPayload,
-): PaperclipQuestionSetPayload {
+): WardmoteQuestionSetPayload {
   if (payload.questionSet) return payload.questionSet;
   return {
     schema: "paperclip.question_set.v1",

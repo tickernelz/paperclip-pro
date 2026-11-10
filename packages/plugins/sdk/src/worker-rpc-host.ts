@@ -46,13 +46,13 @@ import { fileURLToPath } from "node:url";
 
 import type {
   AskUserQuestionsInteraction,
-  PaperclipPluginManifestV1,
+  WardmotePluginManifestV1,
   RequestCheckboxConfirmationInteraction,
   RequestConfirmationInteraction,
   SuggestTasksInteraction,
 } from "@tickernelz/wardmote-shared";
 
-import type { PaperclipPlugin } from "./define-plugin.js";
+import type { WardmotePlugin } from "./define-plugin.js";
 import type {
   PluginApiRequestInput,
   PluginHealthDiagnostics,
@@ -154,7 +154,7 @@ export interface WorkerRpcHostOptions {
    *
    * The worker entrypoint should import its plugin and pass it here.
    */
-  plugin: PaperclipPlugin;
+  plugin: WardmotePlugin;
 
   /**
    * Input stream to read JSON-RPC messages from.
@@ -283,7 +283,7 @@ export interface RunWorkerOptions {
  * ```
  */
 export function runWorker(
-  plugin: PaperclipPlugin,
+  plugin: WardmotePlugin,
   moduleUrl: string,
   options?: RunWorkerOptions,
 ): WorkerRpcHost | void {
@@ -338,7 +338,7 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
   let initialized = false;
   const idleDrain = createPluginIdleDrain();
   const unsettledHostCalls = new Map<string | number, () => void>();
-  let manifest: PaperclipPluginManifestV1 | null = null;
+  let manifest: WardmotePluginManifestV1 | null = null;
   let currentConfig: Record<string, unknown> = {};
   // The company whose config was last applied via configChanged. Used to fail
   // closed when a single-tenant plugin would be collapsed onto a second,

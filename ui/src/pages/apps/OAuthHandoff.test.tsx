@@ -4,7 +4,7 @@ import { flushSync } from "react-dom";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { savePendingCloudHandoff } from "@/lib/oauthHandoff";
-import { PaperclipCloudOAuthHandoffPage } from "./PaperclipCloudOAuthHandoff";
+import { OAuthHandoffPage } from "./OAuthHandoff";
 
 const navigateTopLevel = vi.hoisted(() => vi.fn());
 const SESSION = "cloud_session_abcdefghijklmnop";
@@ -50,7 +50,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe("PaperclipCloudOAuthHandoffPage", () => {
+describe("OAuthHandoffPage", () => {
   it("keeps a tenant loading state visible until the provider URL is ready", async () => {
     savePendingCloudHandoff(SESSION);
     let complete: ((response: Response) => void) | undefined;
@@ -58,7 +58,7 @@ describe("PaperclipCloudOAuthHandoffPage", () => {
       complete = resolve;
     }));
 
-    await act(async () => root.render(<PaperclipCloudOAuthHandoffPage />));
+    await act(async () => root.render(<OAuthHandoffPage />));
     expect(container.textContent).toContain("Preparing secure sign-in");
     expect(navigateTopLevel).not.toHaveBeenCalled();
 
@@ -77,7 +77,7 @@ describe("PaperclipCloudOAuthHandoffPage", () => {
       error: "SESSION_NOT_AVAILABLE",
     }, { status: 404 }));
 
-    await act(async () => root.render(<PaperclipCloudOAuthHandoffPage />));
+    await act(async () => root.render(<OAuthHandoffPage />));
     await flushReact();
 
     expect(container.textContent).toContain("Sign-in couldn’t continue");
@@ -92,7 +92,7 @@ describe("PaperclipCloudOAuthHandoffPage", () => {
       reauthenticationUrl: `${window.location.origin}/cloud/connections/reauth?session=${SESSION}`,
     }, { status: 401 }));
 
-    await act(async () => root.render(<PaperclipCloudOAuthHandoffPage />));
+    await act(async () => root.render(<OAuthHandoffPage />));
     await flushReact();
 
     expect(container.textContent).toContain("Wardmote couldn’t refresh this sign-in. Try again to continue.");

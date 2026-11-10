@@ -275,7 +275,7 @@ async function prepareClaudeRemoteManagedHome(
     : await prepareClaudeConfigSeed(process.env, onLog, input.companyId);
   // Ship the per-run skill bundle, staged only when the run selected at
   // least one skill. The bundle directory holds a plain copy of each
-  // selected skill's files (`materializePaperclipSkillCopy` never copies a
+  // selected skill's files (`materializeWardmoteSkillCopy` never copies a
   // symbolic link, at the root or at any depth). So the bundle asset stages
   // with `followSymlinks: false`: staging never needs to carry a symbolic
   // link's target content, and refusing to follow one stops a link planted

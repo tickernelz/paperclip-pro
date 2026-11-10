@@ -11,7 +11,7 @@ import {
 } from "@tickernelz/wardmote-db";
 import type {
   Agent,
-  PaperclipPluginManifestV1,
+  WardmotePluginManifestV1,
   PluginManagedAgentDeclaration,
   PluginManagedAgentResolution,
 } from "@tickernelz/wardmote-shared";
@@ -33,7 +33,7 @@ function managedAgentPauseReason(pluginKey: string) {
 interface PluginManagedAgentServiceOptions {
   pluginId: string;
   pluginKey: string;
-  manifest?: PaperclipPluginManifestV1 | null;
+  manifest?: WardmotePluginManifestV1 | null;
   instructionTemplateVariables?: (companyId: string) => Promise<Record<string, string | null | undefined>>;
 }
 

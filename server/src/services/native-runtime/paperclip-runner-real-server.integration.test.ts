@@ -18,7 +18,7 @@ import {
   runnerPrpWebSocketInternals,
   setupRunnerPrpWebSocketServer,
 } from "../../realtime/runner-prp-ws.js";
-import { PaperclipRunnerToolAuthority } from "./paperclip-runner-tool-authority.js";
+import { WardmoteRunnerToolAuthority } from "./paperclip-runner-tool-authority.js";
 
 const fakeCodexAppServer = resolve(
   import.meta.dirname,
@@ -79,7 +79,7 @@ describe("paperclip-runner real server vertical slice", () => {
     });
     await db.update(issues).set({ executionRunId: runId }).where(eq(issues.id, issueId));
 
-    const authority = new PaperclipRunnerToolAuthority(db, { companyId, agentId, issueId, runId });
+    const authority = new WardmoteRunnerToolAuthority(db, { companyId, agentId, issueId, runId });
     const server = createServer();
     await new Promise<void>((resolveListen) => server.listen(0, "127.0.0.1", resolveListen));
     const address = server.address();
@@ -155,7 +155,7 @@ describe("paperclip-runner real server vertical slice", () => {
         contextSnapshot: { issueId },
       });
       await db.update(issues).set({ executionRunId: resumedRunId }).where(eq(issues.id, issueId));
-      const resumedAuthority = new PaperclipRunnerToolAuthority(db, {
+      const resumedAuthority = new WardmoteRunnerToolAuthority(db, {
         companyId,
         agentId,
         issueId,

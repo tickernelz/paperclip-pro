@@ -16,8 +16,8 @@ import {
   type AdapterExecutionTargetShellOptions,
 } from "@tickernelz/wardmote-adapter-utils/execution-target";
 import { WARDMOTE_MCP_SERVER_NAME } from "@tickernelz/wardmote-adapter-utils/wardmote-mcp";
-import type { PaperclipMcpHttpTarget } from "@tickernelz/wardmote-adapter-utils/wardmote-mcp-mount";
-import { resolvePaperclipInstanceRootForAdapter } from "@tickernelz/wardmote-adapter-utils/server-utils";
+import type { WardmoteMcpHttpTarget } from "@tickernelz/wardmote-adapter-utils/wardmote-mcp-mount";
+import { resolveWardmoteInstanceRootForAdapter } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import { shellQuote } from "@tickernelz/wardmote-adapter-utils/ssh";
 import { classifyThrownErrorClass, logSandboxProbeDiagnostic } from "./probe-diagnostics.js";
 
@@ -133,7 +133,7 @@ export function resolveManagedClaudeConfigSeedDir(
   env: NodeJS.ProcessEnv,
   companyId?: string,
 ): string {
-  const instanceRoot = resolvePaperclipInstanceRootForAdapter({
+  const instanceRoot = resolveWardmoteInstanceRootForAdapter({
     homeDir: nonEmpty(env.WARDMOTE_HOME) ?? undefined,
     instanceId: nonEmpty(env.WARDMOTE_INSTANCE_ID) ?? undefined,
     env,
@@ -148,7 +148,7 @@ export function resolveManagedClaudeRuntimeStateDir(
   companyId: string,
   agentId: string,
 ): string {
-  const instanceRoot = resolvePaperclipInstanceRootForAdapter({
+  const instanceRoot = resolveWardmoteInstanceRootForAdapter({
     homeDir: nonEmpty(env.WARDMOTE_HOME) ?? undefined,
     instanceId: nonEmpty(env.WARDMOTE_INSTANCE_ID) ?? undefined,
     env,
@@ -156,11 +156,11 @@ export function resolveManagedClaudeRuntimeStateDir(
   return path.join(instanceRoot, "companies", companyId, "agents", agentId, "claude-runtime");
 }
 
-export async function writePaperclipClaudeMcpConfig(input: {
+export async function writeWardmoteClaudeMcpConfig(input: {
   stateDir: string;
   runId: string;
   servers: AdapterRuntimeMcpServer[];
-  paperclip?: PaperclipMcpHttpTarget | null;
+  paperclip?: WardmoteMcpHttpTarget | null;
 }): Promise<string> {
   const configDir = path.join(input.stateDir, "runs", input.runId, "mcp");
   const configPath = path.join(configDir, "mcp-config.json");

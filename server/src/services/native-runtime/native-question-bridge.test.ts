@@ -50,7 +50,7 @@ import { questionResponseDeliveryService } from "../question-response-delivery.j
 import * as questionPatternValidation from "../question-pattern-validation.js";
 import { heartbeatService } from "../heartbeat.js";
 import { DurablePrpControlPlane } from "../../vendor/wardmote-runner/index.js";
-import { PaperclipControlPlanePort } from "./paperclip-control-plane-port.js";
+import { WardmoteControlPlanePort } from "./paperclip-control-plane-port.js";
 import { readPendingNativeRuntimeRequest } from "./runtime-request-resolution-authority.js";
 import {
   queueRunnerPrpRuntimeRequestResolution,
@@ -244,7 +244,7 @@ describeEmbeddedPostgres("native question bridge", () => {
     const projection = vi.fn(async (committed: PrpEvent) => {
       await projectNativeRuntimeRequest({ db, binding: binding(), event: committed });
     });
-    const port = new PaperclipControlPlanePort(db, {
+    const port = new WardmoteControlPlanePort(db, {
       companyId, issueId, runId, agentId, sessionId,
       completionContractId: binding().completionContractId,
       completionContractSha256: binding().completionContractSha256,

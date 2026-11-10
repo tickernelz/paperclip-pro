@@ -5,7 +5,7 @@ import { afterEach, expect, it } from "vitest";
 import { resolveManagedGrokHomeDir } from "../../server/src/services/ai-providers/grok/grok-home.js";
 import { stageGrokSubscriptionFixture } from "./grok-subscription-fixture.js";
 import { findSecretLeak, normalizedSecrets, sanitizeJson } from "./redaction.js";
-import { buildPaperclipServerEnvironment } from "./harness-env.js";
+import { buildWardmoteServerEnvironment } from "./harness-env.js";
 
 const companyId = "11111111-2222-4333-8444-555555555555";
 const raw = JSON.stringify({ [`https://auth.x.ai::${companyId}`]: {
@@ -45,7 +45,7 @@ it("refuses malformed credentials and nonisolated or redirected homes", async ()
 });
 
 it("strips subscription input from the server environment and masks token fragments", () => {
-  const env = buildPaperclipServerEnvironment({ GROK_AUTH_JSON: raw, XAI_API_KEY: "other-key" });
+  const env = buildWardmoteServerEnvironment({ GROK_AUTH_JSON: raw, XAI_API_KEY: "other-key" });
   expect(env.GROK_AUTH_JSON).toBeUndefined();
   expect(env.XAI_API_KEY).toBeUndefined();
   const secrets = normalizedSecrets([raw]);

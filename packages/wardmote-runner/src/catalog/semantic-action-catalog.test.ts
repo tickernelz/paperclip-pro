@@ -9,7 +9,7 @@ import { createProjectAction } from "../protocol-actions/create-project.js";
 
 import {
   WARDMOTE_SEMANTIC_ACTION_CATALOG,
-  canonicalPaperclipSemanticActionCatalog,
+  canonicalWardmoteSemanticActionCatalog,
   paperclipSemanticAction,
 } from "./semantic-action-catalog.js";
 
@@ -150,7 +150,7 @@ describe("semantic action catalog", () => {
       "utf8",
     );
 
-    expect(generated).toBe(canonicalPaperclipSemanticActionCatalog());
+    expect(generated).toBe(canonicalWardmoteSemanticActionCatalog());
   });
 
   it("does not carry executable authorization or binding hooks", () => {

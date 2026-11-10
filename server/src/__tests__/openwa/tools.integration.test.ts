@@ -47,7 +47,7 @@ import {
   prepareConnectorSkillDelivery,
   resolveConnectorAssignments,
 } from "../../services/connector-runtime.js";
-import { PaperclipRunnerToolAuthority } from "../../services/native-runtime/paperclip-runner-tool-authority.js";
+import { WardmoteRunnerToolAuthority } from "../../services/native-runtime/paperclip-runner-tool-authority.js";
 import { openwaThreadId } from "../../services/openwa/adapter.js";
 import { openwaChatKey } from "../../services/openwa/outbound.js";
 import { openwaAttachmentLocalPaths } from "../../services/openwa/media.js";
@@ -1249,7 +1249,7 @@ describe("OpenWA agent tools (embedded Postgres + fake gateway)", () => {
     const binding = await run(t, c, { triggerClass: "other" });
     const assignments = await resolveConnectorAssignments(db, binding);
     expect(assignments.map((assignment) => assignment.key)).toEqual(["openwa"]);
-    const authority = new PaperclipRunnerToolAuthority(db, { ...binding, connectorAssignments: assignments });
+    const authority = new WardmoteRunnerToolAuthority(db, { ...binding, connectorAssignments: assignments });
     expect(authority.definitions().map((tool) => String(tool.name)).filter((name) => name.startsWith("openwa_"))).toEqual([
       "openwa_send",
       "openwa_read_chat",
@@ -1285,7 +1285,7 @@ describe("OpenWA agent tools (embedded Postgres + fake gateway)", () => {
     const [plain] = await db.insert(issues).values({ companyId: t.companyId, title: "Plain", status: "todo", assigneeAgentId: t.agentId }).returning();
     expect(await resolveConnectorAssignments(db, { ...binding, issueId: plain!.id })).toEqual([]);
     expect(await resolveConnectorAssignments(db, { ...binding, agentId: randomUUID() })).toEqual([]);
-    expect(new PaperclipRunnerToolAuthority(db, { ...binding, issueId: plain!.id }).definitions().some((tool) => String(tool.name).startsWith("openwa_"))).toBe(false);
+    expect(new WardmoteRunnerToolAuthority(db, { ...binding, issueId: plain!.id }).definitions().some((tool) => String(tool.name).startsWith("openwa_"))).toBe(false);
     await db.update(chatEndpoints).set({ status: "paused" }).where(eq(chatEndpoints.id, t.endpointId));
     expect(await resolveConnectorAssignments(db, binding)).toEqual([]);
   });

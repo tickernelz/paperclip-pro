@@ -4,9 +4,9 @@ import path from "node:path";
 import { randomBytes } from "node:crypto";
 import { isDeepStrictEqual } from "node:util";
 import {
-  mergePaperclipConfig,
+  mergeWardmoteConfig,
   paperclipConfigSchema,
-  type PaperclipConfig,
+  type WardmoteConfig,
 } from "@tickernelz/wardmote-shared";
 import { updateEnvFileContents, writeEnvFileAtomicallyIfChanged } from "@tickernelz/wardmote-shared/env-file";
 import {
@@ -14,7 +14,7 @@ import {
   withWorktreePortRegistryLockSync,
   writeWorktreePortRegistry,
 } from "@tickernelz/wardmote-shared/worktree-port-registry";
-import { resolvePaperclipConfigPath, resolvePaperclipEnvPath } from "./paths.js";
+import { resolveWardmoteConfigPath, resolveWardmoteEnvPath } from "./paths.js";
 import { rewriteUrlPort } from "./url-utils.js";
 import { applyEmptyWorktreeSigningSecrets } from "./dev-runner-worktree.js";
 
@@ -112,8 +112,8 @@ function resolveWorktreeRuntimeContext(
 ): WorktreeRuntimeContext | null {
   if (env.WARDMOTE_IN_WORKTREE !== "true") return null;
 
-  const configPath = resolvePaperclipConfigPath(overrideConfigPath);
-  const envPath = resolvePaperclipEnvPath(configPath);
+  const configPath = resolveWardmoteConfigPath(overrideConfigPath);
+  const envPath = resolveWardmoteEnvPath(configPath);
   const persistedEnv = readEnvEntries(envPath);
 
   // WARDMOTE_IN_WORKTREE can leak in from a parent process or a sourced env
@@ -204,14 +204,14 @@ function atomicWriteFile(filePath: string, contents: string): void {
   }
 }
 
-function writeConfigFile(configPath: string, config: PaperclipConfig): boolean {
+function writeConfigFile(configPath: string, config: WardmoteConfig): boolean {
   fs.mkdirSync(path.dirname(configPath), { recursive: true });
   const update = paperclipConfigSchema.parse(config);
   const source = fs.existsSync(configPath)
     ? paperclipConfigSchema.parse(JSON.parse(fs.readFileSync(configPath, "utf8")))
     : null;
   const nextConfig = source
-    ? paperclipConfigSchema.parse(mergePaperclipConfig(source, update))
+    ? paperclipConfigSchema.parse(mergeWardmoteConfig(source, update))
     : update;
 
   if (source && isDeepStrictEqual(source, nextConfig)) return false;
@@ -273,7 +273,7 @@ function collectSiblingWorktreePorts(
 
   for (const siblingConfigPath of siblingConfigPaths) {
     try {
-      const siblingConfig = JSON.parse(fs.readFileSync(siblingConfigPath, "utf8")) as PaperclipConfig;
+      const siblingConfig = JSON.parse(fs.readFileSync(siblingConfigPath, "utf8")) as WardmoteConfig;
       if (Number.isInteger(siblingConfig.server.port) && siblingConfig.server.port > 0) {
         serverPorts.add(siblingConfig.server.port);
       }
@@ -300,19 +300,19 @@ function findNextUnclaimedPort(preferredPort: number, claimedPorts: Set<number>)
 }
 
 function buildIsolatedWorktreeConfig(
-  config: PaperclipConfig,
+  config: WardmoteConfig,
   context: WorktreeRuntimeContext,
   portOverrides?: {
     serverPort?: number;
     databasePort?: number;
   },
-): PaperclipConfig {
+): WardmoteConfig {
   const serverPort = portOverrides?.serverPort ?? config.server.port;
   const databasePort =
     config.database.mode === "embedded-postgres"
       ? portOverrides?.databasePort ?? config.database.embeddedPostgresPort
       : undefined;
-  const nextConfig: PaperclipConfig = {
+  const nextConfig: WardmoteConfig = {
     ...config,
     database: {
       ...config.database,
@@ -363,7 +363,7 @@ function buildIsolatedWorktreeConfig(
 }
 
 function needsWorktreeConfigRepair(
-  config: PaperclipConfig,
+  config: WardmoteConfig,
   context: WorktreeRuntimeContext,
 ): boolean {
   if (config.database.mode === "embedded-postgres") {
@@ -392,14 +392,14 @@ function needsWorktreeConfigRepair(
 }
 
 export function applyRuntimePortSelectionToConfig(
-  config: PaperclipConfig,
+  config: WardmoteConfig,
   input: {
     serverPort: number;
     databasePort?: number | null;
     allowServerPortWrite?: boolean;
     allowDatabasePortWrite?: boolean;
   },
-): { config: PaperclipConfig; changed: boolean } {
+): { config: WardmoteConfig; changed: boolean } {
   let changed = false;
   let nextConfig = config;
 
@@ -468,7 +468,7 @@ export function maybeRepairLegacyWorktreeConfigAndEnvFiles(): {
   if (fs.existsSync(context.configPath)) {
     try {
       const runtimeConfig = withWorktreePortRegistryLockSync(context.homeDir, () => {
-        const parsed = JSON.parse(fs.readFileSync(context.configPath, "utf8")) as PaperclipConfig;
+        const parsed = JSON.parse(fs.readFileSync(context.configPath, "utf8")) as WardmoteConfig;
         let selectedConfig = parsed;
         const registeredConfigPaths = readWorktreePortRegistry(context.homeDir);
         const siblingPorts = collectSiblingWorktreePorts(context, registeredConfigPaths);
@@ -585,9 +585,9 @@ export function maybePersistWorktreeRuntimePorts(input: {
   const context = resolveWorktreeRuntimeContext(process.env);
   if (!context || !fs.existsSync(context.configPath)) return;
 
-  let fileConfig: PaperclipConfig;
+  let fileConfig: WardmoteConfig;
   try {
-    fileConfig = JSON.parse(fs.readFileSync(context.configPath, "utf8")) as PaperclipConfig;
+    fileConfig = JSON.parse(fs.readFileSync(context.configPath, "utf8")) as WardmoteConfig;
   } catch {
     return;
   }

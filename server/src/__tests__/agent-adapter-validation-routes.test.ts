@@ -659,8 +659,8 @@ describe("agent routes adapter validation", () => {
     expect(saved.adapterConfig).toMatchObject(config);
     expect(saved.adapterConfig.model).toBeUndefined();
     expect(saved.adapterConfig.codexPermissionMode).toBeUndefined();
-    const { resolvePaperclipRunnerProviderProfile } = await import("../services/native-runtime/provider-profile.js");
-    expect(() => resolvePaperclipRunnerProviderProfile(saved.adapterConfig)).toThrow(expect.objectContaining({ code: "wardmote_runner_dot_config_invalid" }));
+    const { resolveWardmoteRunnerProviderProfile } = await import("../services/native-runtime/provider-profile.js");
+    expect(() => resolveWardmoteRunnerProviderProfile(saved.adapterConfig)).toThrow(expect.objectContaining({ code: "wardmote_runner_dot_config_invalid" }));
   });
 
   it.each(["create", "hire", "convert"])("rejects a new Dot selection when only the general Runner rollout is enabled for %s", async mode => {

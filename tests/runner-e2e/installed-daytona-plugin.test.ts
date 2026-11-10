@@ -7,7 +7,7 @@ import { tmpdir } from "node:os";
 import { afterEach, expect, it, vi } from "vitest";
 import { runnerMatrix } from "./catalog.js";
 import { installedDaytonaPluginKeys, verifyInstalledDaytonaPlugin, type InstalledDaytonaPluginAuthority } from "./installed-daytona-plugin.js";
-import { buildPaperclipServerEnvironment } from "./harness-env.js";
+import { buildWardmoteServerEnvironment } from "./harness-env.js";
 import { setupLiveFixtures } from "./live-fixtures.js";
 import type { RunnerApi } from "./api.js";
 const cell = runnerMatrix.find(e => e.id === "extended-harnesses.runner-acpx-pi.daytona.hello-complete")!;
@@ -93,4 +93,4 @@ it.each(["NODE_OPTIONS", "NODE_PATH"])("rejects ambient %s before the plugin ins
     expect(post).not.toHaveBeenCalled();
   }
 });
-it("keeps fixture authority out of the production server environment", async()=>{const f=await fixture();const env=buildPaperclipServerEnvironment(f.env);for(const k of installedDaytonaPluginKeys)expect(env[k]).toBeUndefined();});
+it("keeps fixture authority out of the production server environment", async()=>{const f=await fixture();const env=buildWardmoteServerEnvironment(f.env);for(const k of installedDaytonaPluginKeys)expect(env[k]).toBeUndefined();});

@@ -100,7 +100,7 @@ describe("Scenario chat deployment boundary", () => {
 
     for (const [path, source] of closure) {
       expect(source, path).not.toMatch(/\bimport\s*\(/);
-      expect(source, path).not.toMatch(/PaperclipControlPlanePort|WARDMOTE_API_(?:URL|KEY)|@tickernelz\/wardmote-db/);
+      expect(source, path).not.toMatch(/WardmoteControlPlanePort|WARDMOTE_API_(?:URL|KEY)|@tickernelz\/wardmote-db/);
       for (const specifier of importSpecifiers(source)) {
         expect(specifier, `${path} imports outside the standalone boundary`).not.toMatch(
           /^(?:server|ui|cli)(?:\/|$)|^@tickernelz\/wardmote-(?!runner(?:\/|$))/,

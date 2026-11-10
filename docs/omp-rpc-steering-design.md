@@ -93,7 +93,7 @@ agent abandons its running loop to perform the steered instruction.
 
 MCP arming was checked the same way, because a cutover that silently strips the
 Wardmote tools from every agent would be worse than the bug it fixes. With the
-adapter's own `writePaperclipMcpExtension` mount and a working stdio server, the
+adapter's own `writeWardmoteMcpExtension` mount and a working stdio server, the
 agent lists `wardmoteApiRequest` and `wardmotelistissues` under RPC exactly as
 it does under `--mode json -p`. The mount shape the adapter writes is what OMP
 18.x discovers: a plain directory holding `.mcp.json` classifies as

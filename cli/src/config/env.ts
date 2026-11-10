@@ -3,14 +3,14 @@ import path from "node:path";
 import { randomBytes } from "node:crypto";
 import { config as loadDotenv, parse as parseEnvFileContents } from "dotenv";
 import { updateEnvFileContents, writeEnvFileAtomicallyIfChanged } from "@tickernelz/wardmote-shared/env-file";
-import { resolvePaperclipEnvPathForConfig } from "@tickernelz/wardmote-shared/home-paths";
+import { resolveWardmoteEnvPathForConfig } from "@tickernelz/wardmote-shared/home-paths";
 import { resolveConfigPath } from "./store.js";
 
 const JWT_SECRET_ENV_KEY = "WARDMOTE_AGENT_JWT_SECRET";
 const TOOL_ACTION_SIGNING_SECRET_ENV_KEY = "WARDMOTE_TOOL_ACTION_SIGNING_SECRET";
 const WARDMOTE_OWNED_ENV_KEY_PATTERN = /^WARDMOTE_[A-Z0-9_]+$/;
 function resolveEnvFilePath(configPath?: string) {
-  return resolvePaperclipEnvPathForConfig(resolveConfigPath(configPath));
+  return resolveWardmoteEnvPathForConfig(resolveConfigPath(configPath));
 }
 const loadedEnvFiles = new Set<string>();
 
@@ -42,7 +42,7 @@ function paperclipOwnedEntries(entries: Record<string, string>): Record<string, 
   );
 }
 
-export function resolvePaperclipEnvFile(configPath?: string): string {
+export function resolveWardmoteEnvFile(configPath?: string): string {
   return resolveEnvFilePath(configPath);
 }
 
@@ -50,7 +50,7 @@ export function resolveAgentJwtEnvFile(configPath?: string): string {
   return resolveEnvFilePath(configPath);
 }
 
-export function loadPaperclipEnvFile(configPath?: string): void {
+export function loadWardmoteEnvFile(configPath?: string): void {
   loadAgentJwtEnvFile(resolveEnvFilePath(configPath));
 }
 
@@ -103,27 +103,27 @@ export function ensureToolActionSigningSecret(configPath?: string): { secret: st
   }
 
   const envFilePath = resolveEnvFilePath(configPath);
-  const existingFile = readPaperclipEnvEntries(envFilePath)[TOOL_ACTION_SIGNING_SECRET_ENV_KEY];
+  const existingFile = readWardmoteEnvEntries(envFilePath)[TOOL_ACTION_SIGNING_SECRET_ENV_KEY];
   const secret = isNonEmpty(existingFile) ? existingFile.trim() : randomBytes(32).toString("hex");
   const created = !isNonEmpty(existingFile);
 
   if (created) {
-    mergePaperclipEnvEntries({ [TOOL_ACTION_SIGNING_SECRET_ENV_KEY]: secret }, envFilePath);
+    mergeWardmoteEnvEntries({ [TOOL_ACTION_SIGNING_SECRET_ENV_KEY]: secret }, envFilePath);
   }
 
   return { secret, created };
 }
 
 export function writeAgentJwtEnv(secret: string, filePath = resolveEnvFilePath()): void {
-  mergePaperclipEnvEntries({ [JWT_SECRET_ENV_KEY]: secret }, filePath);
+  mergeWardmoteEnvEntries({ [JWT_SECRET_ENV_KEY]: secret }, filePath);
 }
 
-export function readPaperclipEnvEntries(filePath = resolveEnvFilePath()): Record<string, string> {
+export function readWardmoteEnvEntries(filePath = resolveEnvFilePath()): Record<string, string> {
   if (!fs.existsSync(filePath)) return {};
   return parseEnvFile(fs.readFileSync(filePath, "utf-8"));
 }
 
-export function writePaperclipEnvEntries(entries: Record<string, string>, filePath = resolveEnvFilePath()): void {
+export function writeWardmoteEnvEntries(entries: Record<string, string>, filePath = resolveEnvFilePath()): void {
   const previousContents = fs.existsSync(filePath) ? fs.readFileSync(filePath, "utf8") : null;
   const nextContents = updateEnvFileContents(previousContents ?? emptyEnvFileContents(), paperclipOwnedEntries(entries), {
     valueEncoding: "minimal",
@@ -131,16 +131,16 @@ export function writePaperclipEnvEntries(entries: Record<string, string>, filePa
   writeEnvFileAtomicallyIfChanged(filePath, previousContents, nextContents);
 }
 
-export function mergePaperclipEnvEntries(
+export function mergeWardmoteEnvEntries(
   entries: Record<string, string>,
   filePath = resolveEnvFilePath(),
 ): Record<string, string> {
-  const current = readPaperclipEnvEntries(filePath);
+  const current = readWardmoteEnvEntries(filePath);
   const managedEntries = paperclipOwnedEntries(entries);
   const next = {
     ...current,
     ...managedEntries,
   };
-  writePaperclipEnvEntries(managedEntries, filePath);
+  writeWardmoteEnvEntries(managedEntries, filePath);
   return next;
 }

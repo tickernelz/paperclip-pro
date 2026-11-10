@@ -2,22 +2,22 @@ export const WARDMOTE_QUESTION_SET_SCHEMA = "paperclip.question_set.v1" as const
 export const WARDMOTE_QUESTION_RESPONSE_SCHEMA = "paperclip.question_response.v1" as const;
 export const WARDMOTE_RUNTIME_REQUEST_SCHEMA_V2 = "paperclip.runtime_request.v2" as const;
 
-export type PaperclipQuestionAnswerMode = "single_select" | "multi_select" | "text";
+export type WardmoteQuestionAnswerMode = "single_select" | "multi_select" | "text";
 
-export interface PaperclipQuestionOption {
+export interface WardmoteQuestionOption {
   id: string;
   label: string;
   description?: string;
   recommended?: boolean;
 }
 
-export interface PaperclipQuestionCustomAnswer {
+export interface WardmoteQuestionCustomAnswer {
   enabled: true;
   label?: string;
   placeholder?: string;
 }
 
-export interface PaperclipQuestionTextValidation {
+export interface WardmoteQuestionTextValidation {
   minLength?: number;
   maxLength?: number;
   pattern?: string;
@@ -26,65 +26,65 @@ export interface PaperclipQuestionTextValidation {
   maximum?: number;
 }
 
-export interface PaperclipQuestion {
+export interface WardmoteQuestion {
   id: string;
   header?: string;
   prompt: string;
   helpText?: string;
   required: boolean;
-  answerMode: PaperclipQuestionAnswerMode;
+  answerMode: WardmoteQuestionAnswerMode;
   /** Editable starting text, never an implicit or submitted answer. Text mode only. */
   initialText?: string;
-  options?: PaperclipQuestionOption[];
-  customAnswer?: PaperclipQuestionCustomAnswer;
-  textValidation?: PaperclipQuestionTextValidation;
+  options?: WardmoteQuestionOption[];
+  customAnswer?: WardmoteQuestionCustomAnswer;
+  textValidation?: WardmoteQuestionTextValidation;
 }
 
-export interface PaperclipQuestionSet {
+export interface WardmoteQuestionSet {
   schema: typeof WARDMOTE_QUESTION_SET_SCHEMA;
   title?: string;
   description?: string;
   submitLabel?: string;
-  questions: PaperclipQuestion[];
+  questions: WardmoteQuestion[];
 }
 
-export interface PaperclipQuestionAnswer {
+export interface WardmoteQuestionAnswer {
   selectedOptionIds?: string[];
   text?: string;
   customText?: string;
 }
 
-export interface PaperclipQuestionResponse {
+export interface WardmoteQuestionResponse {
   schema: typeof WARDMOTE_QUESTION_RESPONSE_SCHEMA;
-  answers: Record<string, PaperclipQuestionAnswer>;
+  answers: Record<string, WardmoteQuestionAnswer>;
 }
 
-export interface PaperclipRuntimeRequestOrigin {
+export interface WardmoteRuntimeRequestOrigin {
   adapter: string;
   provider?: string;
   method?: string;
 }
 
-export interface PaperclipRuntimeInputRequest {
+export interface WardmoteRuntimeInputRequest {
   schema: typeof WARDMOTE_RUNTIME_REQUEST_SCHEMA_V2;
   requestKind: "runtime";
   requestId: string;
   type: "input";
   status: "pending" | "resolved" | "expired" | "cancelled";
   prompt: string;
-  input: PaperclipQuestionSet;
-  origin?: PaperclipRuntimeRequestOrigin;
+  input: WardmoteQuestionSet;
+  origin?: WardmoteRuntimeRequestOrigin;
   turnId?: string;
   itemId?: string;
 }
 
-export class PaperclipQuestionValidationError extends Error {
+export class WardmoteQuestionValidationError extends Error {
   readonly code = "invalid_question_response" as const;
   readonly path: string;
 
   constructor(path: string, detail: string) {
     super(`${path}: ${detail}`);
-    this.name = "PaperclipQuestionValidationError";
+    this.name = "WardmoteQuestionValidationError";
     this.path = path;
   }
 }
@@ -103,13 +103,13 @@ function rejectUnknownKeys(
   const allowedKeys = new Set(allowed);
   const unknown = Object.keys(value).find((key) => !allowedKeys.has(key));
   if (unknown !== undefined) {
-    throw new PaperclipQuestionValidationError(`${path}/${unknown}`, "is not part of the canonical response contract");
+    throw new WardmoteQuestionValidationError(`${path}/${unknown}`, "is not part of the canonical response contract");
   }
 }
 
 function requiredText(value: unknown, path: string, maxLength = 4_000): string {
   if (typeof value !== "string" || value.length === 0 || value.length > maxLength) {
-    throw new PaperclipQuestionValidationError(path, `must be a non-empty string of at most ${maxLength} characters`);
+    throw new WardmoteQuestionValidationError(path, `must be a non-empty string of at most ${maxLength} characters`);
   }
   return value;
 }
@@ -117,7 +117,7 @@ function requiredText(value: unknown, path: string, maxLength = 4_000): string {
 function optionalText(value: unknown, path: string, maxLength = 4_000): string | undefined {
   if (value === undefined) return undefined;
   if (typeof value !== "string" || value.length > maxLength) {
-    throw new PaperclipQuestionValidationError(path, `must be a string of at most ${maxLength} characters`);
+    throw new WardmoteQuestionValidationError(path, `must be a string of at most ${maxLength} characters`);
   }
   return value;
 }
@@ -125,45 +125,45 @@ function optionalText(value: unknown, path: string, maxLength = 4_000): string |
 function optionalFiniteNumber(value: unknown, path: string): number | undefined {
   if (value === undefined) return undefined;
   if (typeof value !== "number" || !Number.isFinite(value)) {
-    throw new PaperclipQuestionValidationError(path, "must be a finite number");
+    throw new WardmoteQuestionValidationError(path, "must be a finite number");
   }
   return value;
 }
 
 /** Parse and sanitize the provider-neutral presentation contract at an adapter boundary. */
-export function parsePaperclipQuestionSet(value: unknown): PaperclipQuestionSet {
+export function parseWardmoteQuestionSet(value: unknown): WardmoteQuestionSet {
   const candidate = record(value);
   if (candidate === null || candidate.schema !== WARDMOTE_QUESTION_SET_SCHEMA) {
-    throw new PaperclipQuestionValidationError("/input", `must use ${WARDMOTE_QUESTION_SET_SCHEMA}`);
+    throw new WardmoteQuestionValidationError("/input", `must use ${WARDMOTE_QUESTION_SET_SCHEMA}`);
   }
   if (!Array.isArray(candidate.questions) || candidate.questions.length === 0 || candidate.questions.length > 64) {
-    throw new PaperclipQuestionValidationError("/input/questions", "must contain between 1 and 64 questions");
+    throw new WardmoteQuestionValidationError("/input/questions", "must contain between 1 and 64 questions");
   }
   const questionIds = new Set<string>();
-  const questions = candidate.questions.map((rawQuestion, questionIndex): PaperclipQuestion => {
+  const questions = candidate.questions.map((rawQuestion, questionIndex): WardmoteQuestion => {
     const path = `/input/questions/${questionIndex}`;
     const question = record(rawQuestion);
-    if (question === null) throw new PaperclipQuestionValidationError(path, "must be an object");
+    if (question === null) throw new WardmoteQuestionValidationError(path, "must be an object");
     const id = requiredText(question.id, `${path}/id`, 160);
-    if (questionIds.has(id)) throw new PaperclipQuestionValidationError(`${path}/id`, "must be unique");
+    if (questionIds.has(id)) throw new WardmoteQuestionValidationError(`${path}/id`, "must be unique");
     questionIds.add(id);
     const answerMode = question.answerMode;
     if (answerMode !== "single_select" && answerMode !== "multi_select" && answerMode !== "text") {
-      throw new PaperclipQuestionValidationError(`${path}/answerMode`, "must be single_select, multi_select, or text");
+      throw new WardmoteQuestionValidationError(`${path}/answerMode`, "must be single_select, multi_select, or text");
     }
     if (typeof question.required !== "boolean") {
-      throw new PaperclipQuestionValidationError(`${path}/required`, "must be boolean");
+      throw new WardmoteQuestionValidationError(`${path}/required`, "must be boolean");
     }
     if (Array.isArray(question.options) && question.options.length > 128) {
-      throw new PaperclipQuestionValidationError(`${path}/options`, "cannot contain more than 128 options");
+      throw new WardmoteQuestionValidationError(`${path}/options`, "cannot contain more than 128 options");
     }
-    const options: PaperclipQuestionOption[] | undefined = Array.isArray(question.options)
+    const options: WardmoteQuestionOption[] | undefined = Array.isArray(question.options)
       ? question.options.map((rawOption, optionIndex) => {
           const optionPath = `${path}/options/${optionIndex}`;
           const option = record(rawOption);
-          if (option === null) throw new PaperclipQuestionValidationError(optionPath, "must be an object");
+          if (option === null) throw new WardmoteQuestionValidationError(optionPath, "must be an object");
           if (option.recommended !== undefined && typeof option.recommended !== "boolean") {
-            throw new PaperclipQuestionValidationError(`${optionPath}/recommended`, "must be boolean");
+            throw new WardmoteQuestionValidationError(`${optionPath}/recommended`, "must be boolean");
           }
           return {
             id: requiredText(option.id, `${optionPath}/id`, 160),
@@ -176,13 +176,13 @@ export function parsePaperclipQuestionSet(value: unknown): PaperclipQuestionSet 
         })
       : undefined;
     if (options !== undefined && new Set(options.map((option) => option.id)).size !== options.length) {
-      throw new PaperclipQuestionValidationError(`${path}/options`, "option IDs must be unique within a question");
+      throw new WardmoteQuestionValidationError(`${path}/options`, "option IDs must be unique within a question");
     }
     if (answerMode !== "text" && (!options || options.length === 0)) {
-      throw new PaperclipQuestionValidationError(`${path}/options`, "select questions require at least one option");
+      throw new WardmoteQuestionValidationError(`${path}/options`, "select questions require at least one option");
     }
     if (answerMode === "text" && options !== undefined && options.length > 0) {
-      throw new PaperclipQuestionValidationError(`${path}/options`, "text questions cannot define options");
+      throw new WardmoteQuestionValidationError(`${path}/options`, "text questions cannot define options");
     }
     const initialText = question.initialText;
     if (initialText !== undefined && (
@@ -190,10 +190,10 @@ export function parsePaperclipQuestionSet(value: unknown): PaperclipQuestionSet 
       || initialText.length > 200_000
       || Array.from(initialText).length > 100_000
     )) {
-      throw new PaperclipQuestionValidationError(`${path}/initialText`, "must be a string of at most 100000 Unicode code points");
+      throw new WardmoteQuestionValidationError(`${path}/initialText`, "must be a string of at most 100000 Unicode code points");
     }
     if (initialText !== undefined && answerMode !== "text") {
-      throw new PaperclipQuestionValidationError(`${path}/initialText`, "only text questions can define initial text");
+      throw new WardmoteQuestionValidationError(`${path}/initialText`, "only text questions can define initial text");
     }
     const custom = record(question.customAnswer);
     const customAnswer = custom === null
@@ -208,13 +208,13 @@ export function parsePaperclipQuestionSet(value: unknown): PaperclipQuestionSet 
             : {}),
         };
     if (custom !== null && custom.enabled !== true) {
-      throw new PaperclipQuestionValidationError(`${path}/customAnswer/enabled`, "must be true when customAnswer is present");
+      throw new WardmoteQuestionValidationError(`${path}/customAnswer/enabled`, "must be true when customAnswer is present");
     }
     if (answerMode === "text" && customAnswer !== undefined) {
-      throw new PaperclipQuestionValidationError(`${path}/customAnswer`, "text questions do not use a separate custom answer");
+      throw new WardmoteQuestionValidationError(`${path}/customAnswer`, "text questions do not use a separate custom answer");
     }
     const validation = record(question.textValidation);
-    const textValidation: PaperclipQuestionTextValidation | undefined = validation === null
+    const textValidation: WardmoteQuestionTextValidation | undefined = validation === null
       ? undefined
       : {
           ...(typeof validation.minLength === "number" ? { minLength: validation.minLength } : {}),
@@ -236,21 +236,21 @@ export function parsePaperclipQuestionSet(value: unknown): PaperclipQuestionSet 
       for (const key of ["minLength", "maxLength"] as const) {
         const raw = validation[key];
         if (raw !== undefined && (!Number.isSafeInteger(raw) || (raw as number) < 0 || (raw as number) > 100_000)) {
-          throw new PaperclipQuestionValidationError(`${path}/textValidation/${key}`, "must be an integer from 0 through 100000");
+          throw new WardmoteQuestionValidationError(`${path}/textValidation/${key}`, "must be an integer from 0 through 100000");
         }
       }
       if (validation.inputType !== undefined && !["text", "number", "integer"].includes(String(validation.inputType))) {
-        throw new PaperclipQuestionValidationError(`${path}/textValidation/inputType`, "must be text, number, or integer");
+        throw new WardmoteQuestionValidationError(`${path}/textValidation/inputType`, "must be text, number, or integer");
       }
       if (textValidation?.minLength !== undefined && textValidation.maxLength !== undefined && textValidation.minLength > textValidation.maxLength) {
-        throw new PaperclipQuestionValidationError(`${path}/textValidation`, "minLength cannot exceed maxLength");
+        throw new WardmoteQuestionValidationError(`${path}/textValidation`, "minLength cannot exceed maxLength");
       }
       if (textValidation?.minimum !== undefined && textValidation.maximum !== undefined && textValidation.minimum > textValidation.maximum) {
-        throw new PaperclipQuestionValidationError(`${path}/textValidation`, "minimum cannot exceed maximum");
+        throw new WardmoteQuestionValidationError(`${path}/textValidation`, "minimum cannot exceed maximum");
       }
       if (textValidation?.pattern !== undefined) {
         try { new RegExp(textValidation.pattern); } catch {
-          throw new PaperclipQuestionValidationError(`${path}/textValidation/pattern`, "must be a valid regular expression");
+          throw new WardmoteQuestionValidationError(`${path}/textValidation/pattern`, "must be a valid regular expression");
         }
       }
     }
@@ -286,92 +286,92 @@ export function parsePaperclipQuestionSet(value: unknown): PaperclipQuestionSet 
   };
 }
 
-function answerHasValue(answer: PaperclipQuestionAnswer): boolean {
+function answerHasValue(answer: WardmoteQuestionAnswer): boolean {
   return Boolean(answer.text?.trim() || answer.customText?.trim() || answer.selectedOptionIds?.length);
 }
 
 /** Revalidate untrusted UI input against the persisted question set. */
-export function parsePaperclipQuestionResponse(
+export function parseWardmoteQuestionResponse(
   questionSetValue: unknown,
   responseValue: unknown,
-): PaperclipQuestionResponse {
-  const questionSet = parsePaperclipQuestionSet(questionSetValue);
+): WardmoteQuestionResponse {
+  const questionSet = parseWardmoteQuestionSet(questionSetValue);
   const response = record(responseValue);
   if (response === null || response.schema !== WARDMOTE_QUESTION_RESPONSE_SCHEMA) {
-    throw new PaperclipQuestionValidationError("/response", `must use ${WARDMOTE_QUESTION_RESPONSE_SCHEMA}`);
+    throw new WardmoteQuestionValidationError("/response", `must use ${WARDMOTE_QUESTION_RESPONSE_SCHEMA}`);
   }
   rejectUnknownKeys(response, ["schema", "answers"], "/response");
   const rawAnswers = record(response.answers);
-  if (rawAnswers === null) throw new PaperclipQuestionValidationError("/response/answers", "must be an object keyed by question ID");
+  if (rawAnswers === null) throw new WardmoteQuestionValidationError("/response/answers", "must be an object keyed by question ID");
   const questions = new Map(questionSet.questions.map((question) => [question.id, question]));
   for (const questionId of Object.keys(rawAnswers)) {
-    if (!questions.has(questionId)) throw new PaperclipQuestionValidationError(`/response/answers/${questionId}`, "does not match a question in the persisted set");
+    if (!questions.has(questionId)) throw new WardmoteQuestionValidationError(`/response/answers/${questionId}`, "does not match a question in the persisted set");
   }
-  const answers: Record<string, PaperclipQuestionAnswer> = {};
+  const answers: Record<string, WardmoteQuestionAnswer> = {};
   for (const question of questionSet.questions) {
     const path = `/response/answers/${question.id}`;
     const raw = rawAnswers[question.id];
     if (raw === undefined) {
-      if (question.required) throw new PaperclipQuestionValidationError(path, "is required");
+      if (question.required) throw new WardmoteQuestionValidationError(path, "is required");
       continue;
     }
     const answer = record(raw);
-    if (answer === null) throw new PaperclipQuestionValidationError(path, "must be an object");
+    if (answer === null) throw new WardmoteQuestionValidationError(path, "must be an object");
     rejectUnknownKeys(answer, ["selectedOptionIds", "text", "customText"], path);
     const selectedOptionIds = answer.selectedOptionIds === undefined
       ? undefined
       : Array.isArray(answer.selectedOptionIds) && answer.selectedOptionIds.every((entry) => typeof entry === "string")
         ? [...answer.selectedOptionIds]
         : null;
-    if (selectedOptionIds === null) throw new PaperclipQuestionValidationError(`${path}/selectedOptionIds`, "must be an array of strings");
+    if (selectedOptionIds === null) throw new WardmoteQuestionValidationError(`${path}/selectedOptionIds`, "must be an array of strings");
     if (selectedOptionIds !== undefined && new Set(selectedOptionIds).size !== selectedOptionIds.length) {
-      throw new PaperclipQuestionValidationError(`${path}/selectedOptionIds`, "cannot contain duplicates");
+      throw new WardmoteQuestionValidationError(`${path}/selectedOptionIds`, "cannot contain duplicates");
     }
     const textValue = optionalText(answer.text, `${path}/text`, 100_000);
     const customText = optionalText(answer.customText, `${path}/customText`, 100_000);
     if (question.answerMode === "text") {
-      if (selectedOptionIds?.length || customText !== undefined) throw new PaperclipQuestionValidationError(path, "text answers only carry text");
+      if (selectedOptionIds?.length || customText !== undefined) throw new WardmoteQuestionValidationError(path, "text answers only carry text");
     } else {
-      if (textValue !== undefined) throw new PaperclipQuestionValidationError(path, "select answers do not carry text");
+      if (textValue !== undefined) throw new WardmoteQuestionValidationError(path, "select answers do not carry text");
       const allowed = new Set((question.options ?? []).map((option) => option.id));
       for (const optionId of selectedOptionIds ?? []) {
-        if (!allowed.has(optionId)) throw new PaperclipQuestionValidationError(`${path}/selectedOptionIds`, `contains unknown option ${optionId}`);
+        if (!allowed.has(optionId)) throw new WardmoteQuestionValidationError(`${path}/selectedOptionIds`, `contains unknown option ${optionId}`);
       }
       if (question.answerMode === "single_select" && (selectedOptionIds?.length ?? 0) > 1) {
-        throw new PaperclipQuestionValidationError(`${path}/selectedOptionIds`, "single-select answers choose at most one option");
+        throw new WardmoteQuestionValidationError(`${path}/selectedOptionIds`, "single-select answers choose at most one option");
       }
       if (customText !== undefined && question.customAnswer?.enabled !== true) {
-        throw new PaperclipQuestionValidationError(`${path}/customText`, "custom answers are not enabled for this question");
+        throw new WardmoteQuestionValidationError(`${path}/customText`, "custom answers are not enabled for this question");
       }
       if (customText?.trim() && (selectedOptionIds?.length ?? 0) > 0 && question.answerMode === "single_select") {
-        throw new PaperclipQuestionValidationError(path, "single-select answers cannot select an option and a custom answer");
+        throw new WardmoteQuestionValidationError(path, "single-select answers cannot select an option and a custom answer");
       }
     }
-    const parsed: PaperclipQuestionAnswer = {
+    const parsed: WardmoteQuestionAnswer = {
       ...(selectedOptionIds !== undefined ? { selectedOptionIds } : {}),
       ...(textValue !== undefined ? { text: textValue } : {}),
       ...(customText !== undefined ? { customText } : {}),
     };
-    if (question.required && !answerHasValue(parsed)) throw new PaperclipQuestionValidationError(path, "is required");
+    if (question.required && !answerHasValue(parsed)) throw new WardmoteQuestionValidationError(path, "is required");
     const boundedText = question.answerMode === "text" ? parsed.text : parsed.customText;
     if (boundedText !== undefined) {
       const validation = question.textValidation;
       if (validation?.minLength !== undefined && boundedText.length < validation.minLength) {
-        throw new PaperclipQuestionValidationError(path, `must contain at least ${validation.minLength} characters`);
+        throw new WardmoteQuestionValidationError(path, `must contain at least ${validation.minLength} characters`);
       }
       if (validation?.maxLength !== undefined && boundedText.length > validation.maxLength) {
-        throw new PaperclipQuestionValidationError(path, `must contain at most ${validation.maxLength} characters`);
+        throw new WardmoteQuestionValidationError(path, `must contain at most ${validation.maxLength} characters`);
       }
       if (validation?.pattern !== undefined && !new RegExp(validation.pattern).test(boundedText)) {
-        throw new PaperclipQuestionValidationError(path, "does not match the required format");
+        throw new WardmoteQuestionValidationError(path, "does not match the required format");
       }
       if (validation?.inputType === "number" || validation?.inputType === "integer") {
         const numeric = Number(boundedText);
         if (!Number.isFinite(numeric) || (validation.inputType === "integer" && !Number.isInteger(numeric))) {
-          throw new PaperclipQuestionValidationError(path, `must be a valid ${validation.inputType}`);
+          throw new WardmoteQuestionValidationError(path, `must be a valid ${validation.inputType}`);
         }
-        if (validation.minimum !== undefined && numeric < validation.minimum) throw new PaperclipQuestionValidationError(path, `must be at least ${validation.minimum}`);
-        if (validation.maximum !== undefined && numeric > validation.maximum) throw new PaperclipQuestionValidationError(path, `must be at most ${validation.maximum}`);
+        if (validation.minimum !== undefined && numeric < validation.minimum) throw new WardmoteQuestionValidationError(path, `must be at least ${validation.minimum}`);
+        if (validation.maximum !== undefined && numeric > validation.maximum) throw new WardmoteQuestionValidationError(path, `must be at most ${validation.maximum}`);
       }
     }
     if (answerHasValue(parsed)) answers[question.id] = parsed;

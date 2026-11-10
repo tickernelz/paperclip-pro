@@ -3,10 +3,10 @@ import { listProjectsDescription, listProjectsInputSchema } from "../protocol-ac
 import { setTaskTitleAction } from "../protocol-actions/set-task-title.js";
 import { reassignTaskAction } from "../protocol-actions/reassign-task.js";
 import type {
-  PaperclipJsonSchema,
-  PaperclipSemanticActionDescriptor,
-  PaperclipSemanticActionId,
-  PaperclipSemanticActionMode,
+  WardmoteJsonSchema,
+  WardmoteSemanticActionDescriptor,
+  WardmoteSemanticActionId,
+  WardmoteSemanticActionMode,
 } from "./semantic-action-types.js";
 import { createSkillAction } from "../protocol-actions/create-skill.js";
 import { searchApiAction } from "../protocol-actions/search-api.js";
@@ -20,7 +20,7 @@ const STANDARD_MODE = ["standard", "skill_test"] as const;
 const text = (
   description: string,
   maxLength = 20_000,
-): PaperclipJsonSchema => ({
+): WardmoteJsonSchema => ({
   type: "string",
   description,
   minLength: 1,
@@ -30,13 +30,13 @@ const text = (
 const nullableText = (
   description: string,
   maxLength = 20_000,
-): PaperclipJsonSchema => ({
+): WardmoteJsonSchema => ({
   type: ["string", "null"],
   description,
   maxLength,
 });
 
-const stringArray = (description: string): PaperclipJsonSchema => ({
+const stringArray = (description: string): WardmoteJsonSchema => ({
   type: "array",
   description,
   items: { type: "string", minLength: 1 },
@@ -45,16 +45,16 @@ const stringArray = (description: string): PaperclipJsonSchema => ({
 });
 
 const object = (
-  properties: Readonly<Record<string, PaperclipJsonSchema>> = {},
+  properties: Readonly<Record<string, WardmoteJsonSchema>> = {},
   required: readonly string[] = [],
-): PaperclipJsonSchema => ({
+): WardmoteJsonSchema => ({
   type: "object",
   properties,
   required,
   additionalProperties: false,
 });
 
-const openObject: PaperclipJsonSchema = {
+const openObject: WardmoteJsonSchema = {
   type: "object",
   additionalProperties: true,
 };
@@ -81,19 +81,19 @@ const operationReceipt = object(
 );
 
 interface DescriptorInput {
-  readonly operationId: PaperclipSemanticActionId;
+  readonly operationId: WardmoteSemanticActionId;
   readonly title: string;
   readonly description: string;
   readonly placement?: "always" | "optional";
   readonly effect?: "read" | "write" | "governance";
   readonly requiredClaims?: readonly string[];
-  readonly allowedModes?: readonly PaperclipSemanticActionMode[];
+  readonly allowedModes?: readonly WardmoteSemanticActionMode[];
   readonly allowedRoles?: readonly string[];
-  readonly inputSchema?: PaperclipJsonSchema;
-  readonly outputSchema?: PaperclipJsonSchema;
+  readonly inputSchema?: WardmoteJsonSchema;
+  readonly outputSchema?: WardmoteJsonSchema;
 }
 
-function descriptor(input: DescriptorInput): PaperclipSemanticActionDescriptor {
+function descriptor(input: DescriptorInput): WardmoteSemanticActionDescriptor {
   return {
     schema: "paperclip.semantic-action.v1",
     operationId: input.operationId,
@@ -112,7 +112,7 @@ function descriptor(input: DescriptorInput): PaperclipSemanticActionDescriptor {
   };
 }
 
-const descriptors: readonly PaperclipSemanticActionDescriptor[] = [
+const descriptors: readonly WardmoteSemanticActionDescriptor[] = [
   descriptor({ ...createSkillAction.live.descriptor, placement: "optional", effect: "write" }),
   ...[searchApiAction, callApiAction].map(action => descriptor({
     operationId: action.id,
@@ -638,11 +638,11 @@ export const WARDMOTE_SEMANTIC_ACTION_CATALOG = Object.freeze([
 
 export function paperclipSemanticAction(
   operationId: string,
-): PaperclipSemanticActionDescriptor | undefined {
-  return byId.get(operationId as PaperclipSemanticActionId);
+): WardmoteSemanticActionDescriptor | undefined {
+  return byId.get(operationId as WardmoteSemanticActionId);
 }
 
-export function canonicalPaperclipSemanticActionCatalog(): string {
+export function canonicalWardmoteSemanticActionCatalog(): string {
   return `${JSON.stringify(sortKeys(WARDMOTE_SEMANTIC_ACTION_CATALOG), null, 2)}\n`;
 }
 

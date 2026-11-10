@@ -21,7 +21,7 @@ import {
   plugins,
   principalPermissionGrants,
 } from "@tickernelz/wardmote-db";
-import type { PaperclipPluginManifestV1 } from "@tickernelz/wardmote-shared";
+import type { WardmotePluginManifestV1 } from "@tickernelz/wardmote-shared";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -50,7 +50,7 @@ function issuePrefix(id: string) {
   return `T${id.replace(/-/g, "").slice(0, 6).toUpperCase()}`;
 }
 
-function manifest(): PaperclipPluginManifestV1 {
+function manifest(): WardmotePluginManifestV1 {
   return {
     id: "paperclip.managed-agents-test",
     apiVersion: 1,
@@ -78,7 +78,7 @@ function manifest(): PaperclipPluginManifestV1 {
   };
 }
 
-function pausedManifest(): PaperclipPluginManifestV1 {
+function pausedManifest(): WardmotePluginManifestV1 {
   const pluginManifest = manifest();
   pluginManifest.agents![0] = {
     ...pluginManifest.agents![0]!,
@@ -120,7 +120,7 @@ describeEmbeddedPostgres("plugin-managed agents", () => {
     await tempDb?.cleanup();
   });
 
-  async function seedCompanyAndPlugin(options: { requireApproval?: boolean; manifest?: PaperclipPluginManifestV1 } = {}) {
+  async function seedCompanyAndPlugin(options: { requireApproval?: boolean; manifest?: WardmotePluginManifestV1 } = {}) {
     const companyId = randomUUID();
     const pluginId = randomUUID();
     const pluginManifest = options.manifest ?? manifest();

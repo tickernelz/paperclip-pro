@@ -9,7 +9,7 @@ import {
   pluginManagedResources,
   plugins,
 } from "@tickernelz/wardmote-db";
-import type { PaperclipPluginManifestV1 } from "@tickernelz/wardmote-shared";
+import type { WardmotePluginManifestV1 } from "@tickernelz/wardmote-shared";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -34,7 +34,7 @@ function issuePrefix(id: string) {
   return `T${id.replace(/-/g, "").slice(0, 6).toUpperCase()}`;
 }
 
-function manifest(): PaperclipPluginManifestV1 {
+function manifest(): WardmotePluginManifestV1 {
   return {
     id: "paperclip.managed-skills-test",
     apiVersion: 1,

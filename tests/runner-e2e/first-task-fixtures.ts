@@ -1,4 +1,4 @@
-import { normalizePaperclipOperationalSkillPreference } from "../../packages/adapter-utils/src/server-utils.js";
+import { normalizeWardmoteOperationalSkillPreference } from "../../packages/adapter-utils/src/server-utils.js";
 import { AGENT_DEFAULT_MAX_CONCURRENT_RUNS } from "../../packages/shared/src/constants.js";
 import type { RunnerApi } from "./api.js";
 import type { LiveFixtureValues } from "./live-fixtures.js";
@@ -102,7 +102,7 @@ export function firstTaskNativeRuntimePatch(
   else config.model = agent.adapterConfig.model;
   return {
     adapterType: "wardmote_runner",
-    adapterConfig: normalizePaperclipOperationalSkillPreference(
+    adapterConfig: normalizeWardmoteOperationalSkillPreference(
       "wardmote_runner",
       config,
     ),

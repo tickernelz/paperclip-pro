@@ -1,7 +1,7 @@
 import path from "node:path";
 import fs from "node:fs";
 import { isDeepStrictEqual } from "node:util";
-import type { PaperclipPluginManifestV1 } from "@tickernelz/wardmote-shared";
+import type { WardmotePluginManifestV1 } from "@tickernelz/wardmote-shared";
 import { assertDistributionManifestCapabilities, readDistributionPluginCatalog, type DistributionPlugin } from "./distribution-plugin-catalog.js";
 
 /**
@@ -169,7 +169,7 @@ interface RegistryPluginRow {
   pluginKey: string;
   status: string;
   version: string;
-  manifestJson: PaperclipPluginManifestV1;
+  manifestJson: WardmotePluginManifestV1;
   packagePath?: string | null;
   lastError?: string | null;
 }
@@ -179,7 +179,7 @@ export interface BundledPluginProvisionerDeps {
     getByKey(pluginKey: string): Promise<RegistryPluginRow | null>;
     update(
       id: string,
-      data: { version?: string; manifest?: PaperclipPluginManifestV1; packagePath?: string; status?: "upgrade_pending" },
+      data: { version?: string; manifest?: WardmotePluginManifestV1; packagePath?: string; status?: "upgrade_pending" },
     ): Promise<unknown>;
     updateStatus(id: string, input: { status: "ready"; lastError: string | null }): Promise<unknown>;
   };
@@ -187,7 +187,7 @@ export interface BundledPluginProvisionerDeps {
     installPlugin(options: { localPath: string }): Promise<{
       manifest: { id: string } | null;
     }>;
-    loadManifest(packagePath: string): Promise<PaperclipPluginManifestV1 | null>;
+    loadManifest(packagePath: string): Promise<WardmotePluginManifestV1 | null>;
   };
   lifecycle: {
     load(pluginId: string): Promise<unknown>;
@@ -224,7 +224,7 @@ async function reconcileBundledPluginManifest(
   install: ResolvedBundledPlugin,
   deps: BundledPluginProvisionerDeps,
   bundleManifestExists: (localPath: string) => boolean,
-  verifiedManifest?: PaperclipPluginManifestV1,
+  verifiedManifest?: WardmotePluginManifestV1,
 ): Promise<"upgrade_pending" | undefined> {
   try {
     // Managed reinstalls take the install path instead; this branch means the
@@ -345,7 +345,7 @@ export async function ensureBundledPlugins(
   const bundleManifestExists = deps.bundleManifestExists ?? defaultBundleManifestExists;
   for (const install of installs) {
     try {
-      let verifiedManifest: PaperclipPluginManifestV1 | undefined;
+      let verifiedManifest: WardmotePluginManifestV1 | undefined;
       if (install.distribution) {
         const manifest = await deps.loader.loadManifest(install.localPath);
         if (manifest?.id !== install.pluginKey || manifest.version !== install.distribution.version) {

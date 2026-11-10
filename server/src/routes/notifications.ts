@@ -4,7 +4,7 @@ import type { Db } from "@tickernelz/wardmote-db";
 import {
   deleteWebPushSubscriptionSchema,
   upsertWebPushSubscriptionSchema,
-  type PaperclipNotification,
+  type WardmoteNotification,
 } from "@tickernelz/wardmote-shared";
 import { validate } from "../middleware/validate.js";
 import {
@@ -56,7 +56,7 @@ export function notificationRoutes(db: Db, webPush: WebPushRuntime) {
       res.status(503).json({ error: "Web Push is not available on this instance" });
       return;
     }
-    const notification: PaperclipNotification = {
+    const notification: WardmoteNotification = {
       key: `test:${randomUUID()}`,
       kind: "comment",
       companyId: req.actor.companyIds?.[0] ?? "",

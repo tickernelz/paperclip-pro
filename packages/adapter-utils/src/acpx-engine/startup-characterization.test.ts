@@ -6,7 +6,7 @@ import type { AcpRuntimeOptions } from "acpx/runtime";
 import type { AdapterExecutionContext, AdapterRuntimeMcpAccess } from "@tickernelz/wardmote-adapter-utils";
 import {
   prepareAdapterExecutionTargetRuntime,
-  startAdapterExecutionTargetPaperclipBridge,
+  startAdapterExecutionTargetWardmoteBridge,
   startAdapterExecutionTargetProcessSessionBridge,
 } from "@tickernelz/wardmote-adapter-utils/execution-target";
 
@@ -19,7 +19,7 @@ vi.mock("@tickernelz/wardmote-adapter-utils/execution-target", async (importActu
   return {
     ...actual,
     prepareAdapterExecutionTargetRuntime: vi.fn(actual.prepareAdapterExecutionTargetRuntime),
-    startAdapterExecutionTargetPaperclipBridge: vi.fn(actual.startAdapterExecutionTargetPaperclipBridge),
+    startAdapterExecutionTargetWardmoteBridge: vi.fn(actual.startAdapterExecutionTargetWardmoteBridge),
     startAdapterExecutionTargetProcessSessionBridge: vi.fn(actual.startAdapterExecutionTargetProcessSessionBridge),
   };
 });
@@ -534,7 +534,7 @@ describe("ACPX engine startup characterization", () => {
       expect(typeof processArgs.env).toBe("function");
 
       // Both bridges receive the SAME real (non-null) runtimeRootDir from staging.
-      const paperclipArgs = vi.mocked(startAdapterExecutionTargetPaperclipBridge).mock.calls[0]![0];
+      const paperclipArgs = vi.mocked(startAdapterExecutionTargetWardmoteBridge).mock.calls[0]![0];
       expect(paperclipArgs.runtimeRootDir).toBeTruthy();
       expect(String(paperclipArgs.runtimeRootDir)).toContain(".paperclip-runtime");
       expect(processArgs.runtimeRootDir).toBe(paperclipArgs.runtimeRootDir);
@@ -556,7 +556,7 @@ describe("ACPX engine startup characterization", () => {
       const { stateDir, localCwd, executionTarget } = await setupRemoteSandbox();
       const paperclipStop = vi.fn(async () => {});
       const processStop = vi.fn(async () => {});
-      vi.mocked(startAdapterExecutionTargetPaperclipBridge).mockImplementationOnce(
+      vi.mocked(startAdapterExecutionTargetWardmoteBridge).mockImplementationOnce(
         async () => ({ env: {}, stop: paperclipStop }) as never,
       );
       vi.mocked(startAdapterExecutionTargetProcessSessionBridge).mockImplementationOnce(
@@ -597,7 +597,7 @@ describe("ACPX engine startup characterization", () => {
     it("partial-bridge failure: throws and stops the concurrently-started bridge exactly once", async () => {
       const { stateDir, localCwd, executionTarget } = await setupRemoteSandbox();
       const stop = vi.fn(async () => {});
-      vi.mocked(startAdapterExecutionTargetPaperclipBridge).mockImplementationOnce(async () => {
+      vi.mocked(startAdapterExecutionTargetWardmoteBridge).mockImplementationOnce(async () => {
         throw new Error("paperclip bridge boom");
       });
       vi.mocked(startAdapterExecutionTargetProcessSessionBridge).mockImplementationOnce(
@@ -816,7 +816,7 @@ describe("ACPX engine startup characterization", () => {
       });
 
       expect(vi.mocked(prepareAdapterExecutionTargetRuntime)).not.toHaveBeenCalled();
-      expect(vi.mocked(startAdapterExecutionTargetPaperclipBridge)).not.toHaveBeenCalled();
+      expect(vi.mocked(startAdapterExecutionTargetWardmoteBridge)).not.toHaveBeenCalled();
       expect(vi.mocked(startAdapterExecutionTargetProcessSessionBridge)).not.toHaveBeenCalled();
       expect(sessionInputs[0]?.cwd).toBe(localCwd);
       expect(runtimeOptions[0]?.cwd).toBe(localCwd);

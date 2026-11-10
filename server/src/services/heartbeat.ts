@@ -119,13 +119,13 @@ import {
   attestReviewedExternalChatRun,
   resolveAcceptedPlanWakeRoutingDecision,
   clearInteractionContinuationWakeContext,
-  buildPaperclipWakePayload,
+  buildWardmoteWakePayload,
   WARDMOTE_WAKE_PAYLOAD_KEY,
   resolveRunScopedMentionedSkillKeys,
   resolveExecutionRunAdapterConfig,
   applyRunScopedMentionedSkillKeys,
   MANAGED_GITHUB_TOKEN_KEYS,
-  configuredPaperclipApiBaseUrl,
+  configuredWardmoteApiBaseUrl,
   createHeartbeatRunPreparation,
   hasInteractionContinuationWakeContext,
   isInteractionResolutionWakePayload,
@@ -138,11 +138,11 @@ export {
   extractMentionedSkillIdsFromSources,
   applyRunScopedMentionedSkillKeys,
   revokeHeartbeatRunGatewayTokens,
-  buildPaperclipRuntimeMcpServers,
+  buildWardmoteRuntimeMcpServers,
   mergeCoalescedContextSnapshot,
   resolveExternalChatWakeProvider,
   attestReviewedExternalChatRun,
-  buildPaperclipWakePayload,
+  buildWardmoteWakePayload,
 } from "./heartbeat/run-preparation.js";
 import {
   buildExecutionWorkspaceConfigSnapshot,
@@ -151,7 +151,7 @@ import {
   readConfigFingerprintFromSessionParams,
   readConfiguredModelFromAdapterConfig,
   resolveTaskSessionConfigFreshness,
-  stripPaperclipSessionMetadataFromSessionParams,
+  stripWardmoteSessionMetadataFromSessionParams,
   resolveRuntimeSessionParamsForWorkspace,
   buildRunWorkspaceHints,
   buildReferencedProjectRunObservability,
@@ -211,7 +211,7 @@ export {
   isTaskSessionCredentialCompatible,
   shouldResetTaskSessionForModelChange,
   stripConfiguredModelFromSessionParams,
-  stripPaperclipSessionMetadataFromSessionParams,
+  stripWardmoteSessionMetadataFromSessionParams,
   resolveTaskSessionConfigFreshness,
 } from "./heartbeat/workspaces.js";
 import {
@@ -223,8 +223,8 @@ export {
   boundHeartbeatRunEventPayloadForStorage,
   compactRunLogChunk,
 } from "./heartbeat/run-log.js";
-import { buildPaperclipTaskMarkdown } from "./heartbeat/task-markdown.js";
-export { buildPaperclipTaskMarkdown } from "./heartbeat/task-markdown.js";
+import { buildWardmoteTaskMarkdown } from "./heartbeat/task-markdown.js";
+export { buildWardmoteTaskMarkdown } from "./heartbeat/task-markdown.js";
 
 import { decisionModelService } from "./decision-models.js";
 import { TASK_QUESTION_GUIDANCE } from "./issue-question-context.js";
@@ -243,7 +243,7 @@ import {
 } from "./chat-completion-delivery.js";
 import { AgentDirectoryReuseInvalidatedError, isAgentDirectoryCopy } from "./agent-directory-working-copies.js";
 
-import type { PaperclipTurnContext } from "@tickernelz/wardmote-adapter-utils/server-utils";
+import type { WardmoteTurnContext } from "@tickernelz/wardmote-adapter-utils/server-utils";
 
 import {
   NativeWorkspaceFinalizationBusyError,
@@ -303,7 +303,7 @@ import { executionFailureRetryCount } from "./execution-recovery-attempt.js";
 import { buildHeartbeatRunStatusLiveEventPayload } from "./heartbeat-run-status-payload.js";
 export { buildHeartbeatRunStatusLiveEventPayload } from "./heartbeat-run-status-payload.js";
 import { buildExecutionContinuation, StaleExecutionContinuationError } from "./execution-continuation.js";
-import { renderPaperclipWakePrompt } from "@tickernelz/wardmote-adapter-utils/server-utils";
+import { renderWardmoteWakePrompt } from "@tickernelz/wardmote-adapter-utils/server-utils";
 
 import {
   initializeRunIdentity,
@@ -315,7 +315,7 @@ import { prepareHeartbeatGitHubLaunchers } from "./heartbeat-github-launchers.js
 import {
   cleanupGitHubOperationLaunchers,
   prepareGitHubExecutionEnvironment,
-  startAdapterExecutionTargetPaperclipBridge,
+  startAdapterExecutionTargetWardmoteBridge,
 } from "@tickernelz/wardmote-adapter-utils/execution-target";
 import { agentInstructionWorkingCopyService, collectStoppedInstructionCopyWithRetries, instructionWorkingCopyGuidance } from "./agent-instruction-working-copies.js";
 
@@ -602,7 +602,7 @@ import { OPENWA_WAKE_CONTEXT_KEY, buildOpenwaRunGuidance, joinOpenwaGuidance } f
 import { notifyOpenwaRunStarted } from "./openwa/nudges.js";
 
 import {
-  readPaperclipSkillSyncPreference,
+  readWardmoteSkillSyncPreference,
 } from "@tickernelz/wardmote-adapter-utils/server-utils";
 
 import { environmentService } from "./environments.js";
@@ -2989,7 +2989,7 @@ export function heartbeatService(
             })
           : null;
       context.executionContinuation = executionContinuation;
-      const paperclipWakePayload = await buildPaperclipWakePayload({
+      const paperclipWakePayload = await buildWardmoteWakePayload({
         db,
         companyId: agent.companyId,
         agentId: agent.id,
@@ -3137,18 +3137,18 @@ export function heartbeatService(
       // Unlike the frozen initial communication preferences, live-call context
       // must also reach resumed turns. Rebuild it from server records each wake.
       const liveVoiceTaskPrefix = liveVoiceGuidance ? `${liveVoiceGuidance}\n\n` : "";
-      let taskMarkdown = liveVoiceTaskPrefix + buildPaperclipTaskMarkdown({ ...taskMarkdownInput, taskPlan }) + chatCompletionInstruction(context);
-      let taskMarkdownAssignment = liveVoiceTaskPrefix + buildPaperclipTaskMarkdown({
+      let taskMarkdown = liveVoiceTaskPrefix + buildWardmoteTaskMarkdown({ ...taskMarkdownInput, taskPlan }) + chatCompletionInstruction(context);
+      let taskMarkdownAssignment = liveVoiceTaskPrefix + buildWardmoteTaskMarkdown({
         ...taskMarkdownInput,
         taskPlan,
         includeWakeComments: false,
       }) + chatCompletionInstruction(context);
-      const taskMarkdownCompact = liveVoiceTaskPrefix + buildPaperclipTaskMarkdown({
+      const taskMarkdownCompact = liveVoiceTaskPrefix + buildWardmoteTaskMarkdown({
         ...taskMarkdownInput,
         taskPlan,
         includeDescription: false,
       }) + chatCompletionInstruction(context);
-      const taskMarkdownAssignmentCompact = liveVoiceTaskPrefix + buildPaperclipTaskMarkdown({
+      const taskMarkdownAssignmentCompact = liveVoiceTaskPrefix + buildWardmoteTaskMarkdown({
         ...taskMarkdownInput,
         taskPlan,
         includeDescription: false,
@@ -3308,7 +3308,7 @@ export function heartbeatService(
               revision: digest(comment.body),
             })),
           },
-        } satisfies PaperclipTurnContext;
+        } satisfies WardmoteTurnContext;
       } else {
         delete context.paperclipTurnContext;
       }
@@ -3480,7 +3480,7 @@ export function heartbeatService(
         resolvedConfig,
         runScopedSkillKeys,
       );
-      const runtimeSkillPreference = readPaperclipSkillSyncPreference(
+      const runtimeSkillPreference = readWardmoteSkillSyncPreference(
         effectiveResolvedConfig,
       );
       const nativeRunnerPreparationSpans: NativeRunHistoricalSpan[] = [];
@@ -3662,7 +3662,7 @@ export function heartbeatService(
           : null) ??
         normalizeResumeParamsForAdapter(
           agent.adapterType,
-          stripPaperclipSessionMetadataFromSessionParams(
+          stripWardmoteSessionMetadataFromSessionParams(
             sessionCodec.deserialize(
               taskSessionForRun?.sessionParamsJson ?? null,
             ),
@@ -3972,7 +3972,7 @@ export function heartbeatService(
           target: executionTarget,
           cwd: executionWorkspace.cwd,
           env: gitExecutionEnv,
-          brokerUrl: configuredPaperclipApiBaseUrl() ?? "",
+          brokerUrl: configuredWardmoteApiBaseUrl() ?? "",
           createBrokerToken: () => createRuntimeToolsToken({
             agentId: agent.id,
             companyId: agent.companyId,
@@ -4148,7 +4148,7 @@ export function heartbeatService(
         readNonEmptyString(runtimeSessionParams?.sessionId) ??
         runtimeSessionFallback;
       let runtimeSessionParamsForAdapter = normalizeSessionParams(
-        stripPaperclipSessionMetadataFromSessionParams(runtimeSessionParams),
+        stripWardmoteSessionMetadataFromSessionParams(runtimeSessionParams),
       );
 
       const sessionCompaction = await evaluateSessionCompaction({

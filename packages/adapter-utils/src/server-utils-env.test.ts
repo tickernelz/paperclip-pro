@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { sanitizeInheritedPaperclipEnv } from "./server-utils.js";
+import { sanitizeInheritedWardmoteEnv } from "./server-utils.js";
 
-describe("sanitizeInheritedPaperclipEnv", () => {
+describe("sanitizeInheritedWardmoteEnv", () => {
   it("drops the host-only Paperclip CLI command pointer", () => {
-    expect(sanitizeInheritedPaperclipEnv({
+    expect(sanitizeInheritedWardmoteEnv({
       PAPERCLIPAI_CMD: "node /missing/@tickernelz/wardmote/dist/index.js",
       WARDMOTE_RUNTIME_API_URL: "http://127.0.0.1:3100",
       PATH: "/usr/bin",
@@ -14,7 +14,7 @@ describe("sanitizeInheritedPaperclipEnv", () => {
   });
 
   it("keeps agent processes from signalling the Paperclip systemd unit", () => {
-    expect(sanitizeInheritedPaperclipEnv({
+    expect(sanitizeInheritedWardmoteEnv({
       NOTIFY_SOCKET: "/run/user/1000/systemd/notify",
       WATCHDOG_USEC: "30000000",
       WATCHDOG_PID: "1234",

@@ -12,9 +12,9 @@ import {
   startEmbeddedPostgresTestDatabase,
 } from "./helpers/embedded-postgres.js";
 import {
-  PaperclipProductionSemanticConformanceAdapter,
-  seedPaperclipSemanticConformance,
-  type PaperclipSemanticConformanceIds,
+  WardmoteProductionSemanticConformanceAdapter,
+  seedWardmoteSemanticConformance,
+  type WardmoteSemanticConformanceIds,
 } from "./helpers/wardmote-semantic-conformance.js";
 
 vi.hoisted(() => {
@@ -36,7 +36,7 @@ describeEmbedded("Paperclip semantic mock/production conformance", () => {
   let mock: CapabilityMockSemanticConformanceAdapter | null = null;
 
   const base = CAPABILITY_SEMANTIC_CONFORMANCE_IDS;
-  const ids: PaperclipSemanticConformanceIds = {
+  const ids: WardmoteSemanticConformanceIds = {
     companyId: base.companyId,
     actorId: base.actorId,
     foreignCompanyId: "20000000-0000-4000-8000-000000000002",
@@ -62,7 +62,7 @@ describeEmbedded("Paperclip semantic mock/production conformance", () => {
   beforeAll(async () => {
     temporary = await startEmbeddedPostgresTestDatabase("paperclip-semantic-conformance-");
     const db = createDb(temporary.connectionString);
-    await seedPaperclipSemanticConformance(db, ids);
+    await seedWardmoteSemanticConformance(db, ids);
     mock = await CapabilityMockSemanticConformanceAdapter.create();
   }, 30_000);
 
@@ -73,7 +73,7 @@ describeEmbedded("Paperclip semantic mock/production conformance", () => {
 
   it("matches authorization, state, audit, retry, document, continuation, and terminal semantics", async () => {
     if (!temporary || !mock) throw new Error("semantic_conformance_fixture_not_started");
-    const production = await PaperclipProductionSemanticConformanceAdapter.create(
+    const production = await WardmoteProductionSemanticConformanceAdapter.create(
       createDb(temporary.connectionString),
       ids,
     );

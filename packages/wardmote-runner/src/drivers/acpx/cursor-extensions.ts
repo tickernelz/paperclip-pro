@@ -4,9 +4,9 @@ import { isAbsolute, relative, resolve, sep } from "node:path";
 
 import {
   WARDMOTE_QUESTION_SET_SCHEMA,
-  parsePaperclipQuestionResponse,
-  parsePaperclipQuestionSet,
-  type PaperclipQuestionSet,
+  parseWardmoteQuestionResponse,
+  parseWardmoteQuestionSet,
+  type WardmoteQuestionSet,
 } from "../../contracts/question-set.js";
 import type { CanonicalProviderEvent } from "../../provider-events.js";
 import type { HarnessRuntimeRequestResolution } from "../../contracts/harness-driver.js";
@@ -23,7 +23,7 @@ export const CURSOR_CLIENT_CAPABILITIES = { _meta: { subagents: true } } as cons
 
 type CursorExtensionInput = {
   method: string;
-  questionSet: PaperclipQuestionSet;
+  questionSet: WardmoteQuestionSet;
   details: Record<string, unknown>;
   resolve(resolution: HarnessRuntimeRequestResolution): Record<string, unknown>;
   cancel(): Record<string, unknown>;
@@ -133,7 +133,7 @@ type Todo = { id: string; content: string; status: "pending" | "in_progress" | "
 /** Native IDs are mapped through opaque UI IDs, including prototype-like keys. */
 export function normalizeCursorQuestionRequest(value: unknown): {
   toolCallId: string;
-  questionSet: PaperclipQuestionSet;
+  questionSet: WardmoteQuestionSet;
   accept(response: unknown): CursorQuestionResult;
   resolve(response: unknown): CursorQuestionResult;
   cancel(): CursorQuestionResult;
@@ -175,7 +175,7 @@ export function normalizeCursorQuestionRequest(value: unknown): {
     questions: bindings.map(({ question }) => question),
   });
   const accept = (response: unknown): CursorQuestionResult => {
-    const parsed = parsePaperclipQuestionResponse(questionSet, response);
+    const parsed = parseWardmoteQuestionResponse(questionSet, response);
     return { outcome: { outcome: "answered", answers: bindings.map(binding => ({
       questionId: binding.nativeId,
       selectedOptionIds: (parsed.answers[binding.question.id]?.selectedOptionIds ?? []).map(id => {
@@ -196,7 +196,7 @@ export function normalizeCursorQuestionRequest(value: unknown): {
 export function normalizeCursorPlanRequest(value: unknown): {
   toolCallId: string;
   revision: string;
-  questionSet: PaperclipQuestionSet;
+  questionSet: WardmoteQuestionSet;
   resolve(response: unknown): CursorPlanResult;
   cancel(): CursorPlanResult;
 } {
@@ -233,7 +233,7 @@ export function normalizeCursorPlanRequest(value: unknown): {
   return {
     toolCallId, revision, questionSet,
     resolve(response: unknown): CursorPlanResult {
-      const parsed = parsePaperclipQuestionResponse(questionSet, response);
+      const parsed = parseWardmoteQuestionResponse(questionSet, response);
       const decision = parsed.answers[questionId]?.selectedOptionIds?.[0];
       const reason = parsed.answers.reason?.text;
       if (decision === "accept") {
@@ -453,8 +453,8 @@ function notice(id: string, category: string, summary: string, severity: "info" 
     scope: "turn", recoverable: true, userActionable: false, summary,
   } };
 }
-function boundedQuestionSet(value: unknown): PaperclipQuestionSet {
-  const parsed = parsePaperclipQuestionSet(value);
+function boundedQuestionSet(value: unknown): WardmoteQuestionSet {
+  const parsed = parseWardmoteQuestionSet(value);
   // Match the durable Rust question payload bound, including UTF-8 expansion.
   if (Buffer.byteLength(JSON.stringify(parsed)) > 196 * 1024) throw new Error("Cursor question presentation exceeds the durable input byte bound");
   return parsed;

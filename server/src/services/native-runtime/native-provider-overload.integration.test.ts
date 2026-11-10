@@ -10,7 +10,7 @@ const provider = vi.hoisted(() => ({ execute: vi.fn() }));
 vi.mock("../../vendor/wardmote-runner/index.js", async (importOriginal) => ({
   ...(await importOriginal<typeof import("../../vendor/wardmote-runner/index.js")>()), executeNativeSession: provider.execute,
 }));
-import { executePaperclipNativeSession } from "./native-session-executor.js";
+import { executeWardmoteNativeSession } from "./native-session-executor.js";
 import { buildNativeCompletionContract } from "./completion-contracts.js";
 import { prepareNativeHeartbeatRun } from "./prepare-native-run.js";
 import { finalizeNativeRun } from "./native-run-finalizer.js";
@@ -69,7 +69,7 @@ describe("durable native provider capacity retry", () => {
       return { result, terminal, turnId: native.turnId, normalizedSessionId: native.normalizedSessionId, providerSessionId: "fixture-session", driverKind: "codex_app_server", driverVersion: "fixture", nativeEventCount: 1, highestContiguousSourceSeq: 1, usage: null };
     });
     const unexpected = async () => { throw new Error("Unexpected provider call"); };
-    const adapter = await executePaperclipNativeSession({ db, execution, runnerInstanceId: native.runnerInstanceId, backend: { descriptor: unexpected, openSession: unexpected } });
+    const adapter = await executeWardmoteNativeSession({ db, execution, runnerInstanceId: native.runnerInstanceId, backend: { descriptor: unexpected, openSession: unexpected } });
     expect(adapter).toMatchObject({ errorCode: "native_provider_overloaded", errorMessage: NATIVE_PROVIDER_OVERLOADED_MESSAGE });
     const [persisted] = await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, runId));
     expect(persisted.errorCode).toBeNull(); // Restart before adapter metadata is saved.

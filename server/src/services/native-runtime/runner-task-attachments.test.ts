@@ -7,7 +7,7 @@ import { startEmbeddedPostgresTestDatabase } from "../../__tests__/helpers/embed
 import type { StorageService } from "../../storage/types.js";
 import { TaskAttachmentReadCache } from "./runner-task-attachments.js";
 import { runnerApiCatalog } from "./runner-api-catalog.js";
-import { PaperclipRunnerToolAuthority } from "./paperclip-runner-tool-authority.js";
+import { WardmoteRunnerToolAuthority } from "./paperclip-runner-tool-authority.js";
 
 const sha = (body: Buffer) => createHash("sha256").update(body).digest("hex");
 describe("Dot assigned-task attachment reading", () => {
@@ -30,7 +30,7 @@ describe("Dot assigned-task attachment reading", () => {
     const storage = { provider: "local_disk", getObject } as unknown as StorageService;
     const assertBridgeAuthority = vi.fn().mockResolvedValue(undefined);
     const binding = { companyId, agentId, issueId, runId, dotRuntime: true, taskAttachmentRead: enabled, storage, assertBridgeAuthority };
-    const authority = new PaperclipRunnerToolAuthority(db, binding);
+    const authority = new WardmoteRunnerToolAuthority(db, binding);
     const call = (tool: string, args: unknown = {}) => authority.execute({ tool, callId: randomUUID(), arguments: args });
     return { ...binding, authority, call, asset: asset!, attachment: attachment!, body, getObject };
   }

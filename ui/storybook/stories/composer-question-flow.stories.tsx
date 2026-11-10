@@ -1,12 +1,12 @@
 import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, within } from "storybook/test";
-import type { PaperclipQuestionResponse, PaperclipQuestionSet } from "@tickernelz/wardmote-adapter-utils";
+import type { WardmoteQuestionResponse, WardmoteQuestionSet } from "@tickernelz/wardmote-adapter-utils";
 import { QuestionForm, QuestionResponseSummary } from "@/components/task-chat/QuestionForm";
 import { TaskChatComposer } from "@/components/task-chat/TaskChatComposer";
 import { Button } from "@/components/ui/button";
 
-const composerQuestions: PaperclipQuestionSet = {
+const composerQuestions: WardmoteQuestionSet = {
   schema: "paperclip.question_set.v1",
   title: "Express app — scope",
   questions: [
@@ -48,7 +48,7 @@ const composerQuestions: PaperclipQuestionSet = {
 };
 
 function InteractiveComposerQuestions() {
-  const [response, setResponse] = useState<PaperclipQuestionResponse | null>(null);
+  const [response, setResponse] = useState<WardmoteQuestionResponse | null>(null);
   const [open, setOpen] = useState(true);
   const [reset, setReset] = useState(0);
   return (
@@ -123,8 +123,8 @@ export const AnswersSubmitted: Story = {
 
 
 function EditableDraftQuestion() {
-  const [response, setResponse] = useState<PaperclipQuestionResponse | null>(null);
-  const questionSet: PaperclipQuestionSet = { schema: "paperclip.question_set.v1", questions: [{
+  const [response, setResponse] = useState<WardmoteQuestionResponse | null>(null);
+  const questionSet: WardmoteQuestionSet = { schema: "paperclip.question_set.v1", questions: [{
     id: "draft", prompt: "Edit the release note", required: true, answerMode: "text",
     initialText: "Draft release note\n\nDescribe what changed and how it was verified.",
   }] };

@@ -49,7 +49,7 @@ export function runnerE2EServerControlPaths(temporaryRoot: string) {
  * Native cells use the debug binary produced once by build:runner-binaries.
  * Preserve an explicit override for release builds and developer workflows.
  */
-export function resolvePaperclipRunnerBinaryForHarness(
+export function resolveWardmoteRunnerBinaryForHarness(
   executions: readonly MatrixExecution[],
   repositoryRoot: string,
   configuredPath = process.env.WARDMOTE_RUNNER_BINARY,
@@ -77,7 +77,7 @@ export function resolvePaperclipRunnerBinaryForHarness(
  * Remote native cells stage the same controller-owned binary whose digest is
  * authorized by the PRP control plane. Local cells launch it directly.
  */
-export function resolvePaperclipRemoteRunnerBinaryForHarness(
+export function resolveWardmoteRemoteRunnerBinaryForHarness(
   executions: readonly MatrixExecution[],
   runnerBinary: string | undefined,
   configuredPath = process.env.WARDMOTE_RUNNER_REMOTE_BINARY_PATH,
@@ -164,7 +164,7 @@ export function buildRunnerE2EProcessEnvironment(
  * boundary through encrypted company secrets. Explicit subscription fixtures
  * stage their login in the disposable company's private credential home.
  */
-export function buildPaperclipServerEnvironment(
+export function buildWardmoteServerEnvironment(
   source: NodeJS.ProcessEnv,
   overrides: NodeJS.ProcessEnv = {},
 ): NodeJS.ProcessEnv {

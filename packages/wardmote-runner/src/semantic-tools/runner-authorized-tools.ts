@@ -1,32 +1,32 @@
 import { createHash } from "node:crypto";
 
-import type { PaperclipJsonSchema } from "../catalog/semantic-action-types.js";
-import type { PaperclipSemanticToolDefinition } from "./types.js";
+import type { WardmoteJsonSchema } from "../catalog/semantic-action-types.js";
+import type { WardmoteSemanticToolDefinition } from "./types.js";
 
 export const WARDMOTE_RUNNER_AUTHORIZED_TOOLS_SCHEMA =
   "paperclip.runner.authorized-tools.v1" as const;
 
-export interface PaperclipRunnerAuthorizedTool {
+export interface WardmoteRunnerAuthorizedTool {
   readonly operationId: string;
   readonly version: 1;
   readonly description: string;
-  readonly inputSchema: PaperclipJsonSchema;
-  readonly responseSchema: PaperclipJsonSchema;
+  readonly inputSchema: WardmoteJsonSchema;
+  readonly responseSchema: WardmoteJsonSchema;
 }
 
-export interface PaperclipRunnerAuthorizedToolSet {
+export interface WardmoteRunnerAuthorizedToolSet {
   readonly schema: typeof WARDMOTE_RUNNER_AUTHORIZED_TOOLS_SCHEMA;
   readonly schemaVersion: 1;
   readonly catalogDigest: string;
-  readonly operations: readonly PaperclipRunnerAuthorizedTool[];
+  readonly operations: readonly WardmoteRunnerAuthorizedTool[];
 }
 
-export function createPaperclipRunnerAuthorizedToolSet(
-  definitions: readonly PaperclipSemanticToolDefinition[],
-): PaperclipRunnerAuthorizedToolSet {
+export function createWardmoteRunnerAuthorizedToolSet(
+  definitions: readonly WardmoteSemanticToolDefinition[],
+): WardmoteRunnerAuthorizedToolSet {
   const names = new Set<string>();
   const operations = definitions
-    .map((definition): PaperclipRunnerAuthorizedTool => {
+    .map((definition): WardmoteRunnerAuthorizedTool => {
       if (definition.annotations.version !== 1 || names.has(definition.name)) {
         throw new Error("wardmote_runner_authorized_tools_invalid");
       }
@@ -64,7 +64,7 @@ function deepFreeze<T>(value: T): T {
 }
 
 function digestOperations(
-  operations: readonly PaperclipRunnerAuthorizedTool[],
+  operations: readonly WardmoteRunnerAuthorizedTool[],
 ): string {
   return `sha256:${createHash("sha256")
     .update(canonicalJson(operations))

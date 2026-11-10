@@ -6,7 +6,7 @@ import { MODEL_FALLBACK_PRIMARY_KEY } from "../model-fallback.js";
 import { type RunSessionOutcome, resolveNextSessionState, normalizeUsageTotals, resolveCacheAdjustedCostUsd, resolveLedgerBiller, resolveLedgerCostStatus, normalizeLedgerBillingType } from "./run-state.js";
 import { readGitConnectionFailure } from "../git-connection-failure.js";
 import { CONFIGURATION_INCOMPLETE_FAILURE_CODE, ConfigurationIncompleteFailure } from "./run-preparation.js";
-import { isWorkspaceValidationFailedRun, isWorkspaceValidationFailure, attachPaperclipSessionMetadataToSessionParams } from "./workspaces.js";
+import { isWorkspaceValidationFailedRun, isWorkspaceValidationFailure, attachWardmoteSessionMetadataToSessionParams } from "./workspaces.js";
 import { preserveWorkspaceRestoreRecoveryMetadataSql } from "../legacy-workspace-restore-recovery.js";
 import { cancellationResultJson, readRunCancellation } from "../run-cancellation.js";
 import { isLegacyControllerLeaseLoss, LEGACY_CONTROLLER_LEASE_LOST_CODE } from "../legacy-controller-lease.js";
@@ -1062,7 +1062,7 @@ export function createHeartbeatRunCompletion(db: Db, dependencies: HeartbeatRunC
             adapterType: agent.adapterType,
             taskKey,
             sessionParamsJson:
-              attachPaperclipSessionMetadataToSessionParams(
+              attachWardmoteSessionMetadataToSessionParams(
                 nextSessionState.params,
                 configuredModel,
                 sessionConfigMetadata,
@@ -1291,7 +1291,7 @@ export function createHeartbeatRunCompletion(db: Db, dependencies: HeartbeatRunC
           taskKey,
           sessionParamsJson:
             goalCheckpointSession.current?.params ??
-            attachPaperclipSessionMetadataToSessionParams(
+            attachWardmoteSessionMetadataToSessionParams(
               previousSessionParams,
               configuredModel,
               sessionConfigMetadata,

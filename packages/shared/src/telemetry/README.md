@@ -19,7 +19,7 @@ Use these files when reviewing or changing telemetry code:
 
 | Contract item                                 | Public source                                                                            |
 | --------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| First-party event names                       | `PaperclipEventName` in `generated/paperclip-telemetry.ts`                               |
+| First-party event names                       | `WardmoteEventName` in `generated/paperclip-telemetry.ts`                               |
 | Per-event dimensions and optionality          | `EventDimensionsMap` in `generated/paperclip-telemetry.ts`                               |
 | Enum descriptions for telemetry dimensions    | `WARDMOTE_ENUM_DESCRIPTIONS` in `generated/paperclip-telemetry.ts`                      |
 | Schema version and event envelope helpers     | `SCHEMA_VERSION`, `makeEvent()`, and `makeBatch()` in `generated/paperclip-telemetry.ts` |

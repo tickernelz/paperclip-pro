@@ -104,14 +104,14 @@ function writeTestConfig(configPath: string, tempRoot: string, port: number, con
   writeFileSync(configPath, `${JSON.stringify(config, null, 2)}\n`, "utf8");
 }
 
-interface TestPaperclipEnv {
+interface TestWardmoteEnv {
   configPath: string;
   paperclipHome: string;
   instanceId: string;
   shellHome?: string;
 }
 
-function createBasePaperclipEnv(options: TestPaperclipEnv) {
+function createBaseWardmoteEnv(options: TestWardmoteEnv) {
   const env = { ...process.env };
   for (const key of Object.keys(env)) {
     if (key.startsWith("WARDMOTE_")) {
@@ -135,9 +135,9 @@ function createServerEnv(
   configPath: string,
   port: number,
   connectionString: string,
-  options: Omit<TestPaperclipEnv, "configPath">,
+  options: Omit<TestWardmoteEnv, "configPath">,
 ) {
-  const env = createBasePaperclipEnv({
+  const env = createBaseWardmoteEnv({
     configPath,
     ...options,
   });
@@ -161,8 +161,8 @@ function createServerEnv(
   return env;
 }
 
-function createCliEnv(options: TestPaperclipEnv) {
-  const env = createBasePaperclipEnv(options);
+function createCliEnv(options: TestWardmoteEnv) {
+  const env = createBaseWardmoteEnv(options);
   delete env.DATABASE_URL;
   delete env.PORT;
   delete env.HOST;
@@ -216,7 +216,7 @@ function isPortableAgent(agent: { metadata?: Record<string, unknown> | null }) {
 
 async function runCliJson<T>(
   args: string[],
-  opts: TestPaperclipEnv & { apiBase?: string; includeConfigArg?: boolean },
+  opts: TestWardmoteEnv & { apiBase?: string; includeConfigArg?: boolean },
 ) {
   const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
   const cliArgs = ["--silent", "wardmote", ...args];

@@ -23,7 +23,7 @@ import {
   type CompanyImportTransferDeclaration,
 } from "@tickernelz/wardmote-shared/company-import-transfer";
 import { getTelemetryClient, trackCompanyImported } from "../../telemetry.js";
-import { ApiRequestError, type PaperclipApiClient } from "../../client/http.js";
+import { ApiRequestError, type WardmoteApiClient } from "../../client/http.js";
 import { openUrl } from "../../client/board-auth.js";
 import {
   binaryContentTypeByExtension,
@@ -217,9 +217,9 @@ function normalizePortablePath(filePath: string): string {
 function shouldIncludePortableFile(filePath: string): boolean {
   const baseName = path.basename(filePath);
   const isMarkdown = baseName.endsWith(".md");
-  const isPaperclipYaml = baseName === ".paperclip.yaml" || baseName === ".paperclip.yml";
+  const isWardmoteYaml = baseName === ".paperclip.yaml" || baseName === ".paperclip.yml";
   const contentType = binaryContentTypeByExtension[path.extname(baseName).toLowerCase()];
-  return isMarkdown || isPaperclipYaml || Boolean(contentType) || isBlobStorePath(filePath);
+  return isMarkdown || isWardmoteYaml || Boolean(contentType) || isBlobStorePath(filePath);
 }
 
 function findPortableExtensionPath(files: Record<string, CompanyPortabilityFileEntry>): string | null {
@@ -1145,7 +1145,7 @@ export async function resolveChunkedImportZip(
  * with the transfer id once the server holds every part.
  */
 export async function uploadCompanyImportTransfer(
-  api: Pick<PaperclipApiClient, "post" | "putRaw">,
+  api: Pick<WardmoteApiClient, "post" | "putRaw">,
   zipBytes: Uint8Array,
   opts: { onProgress?: (progress: ImportTransferUploadProgress) => void } = {},
 ): Promise<string> {

@@ -17,7 +17,7 @@ import {
   rewriteRetiredNamesInJson,
   type RetiredNameRewriteOptions,
 } from "@tickernelz/wardmote-shared/retired-names";
-import { resolvePaperclipInstanceRoot } from "../home-paths.js";
+import { resolveWardmoteInstanceRoot } from "../home-paths.js";
 import { rewriteStoredAdapterConfig } from "../modules/agent-lifecycle/index.js";
 import { adoptAgentFiles } from "./agent-file-store.js";
 import { materializeInstructionBytes } from "./agent-instruction-files.js";
@@ -120,7 +120,7 @@ export async function migrateRetiredNames(
   options: { dryRun?: boolean; instanceRoot?: string; now?: Date } = {},
 ): Promise<RetiredNameMigrationReport> {
   const dryRun = options.dryRun === true;
-  const instanceRoot = options.instanceRoot ?? resolvePaperclipInstanceRoot();
+  const instanceRoot = options.instanceRoot ?? resolveWardmoteInstanceRoot();
   const backupDir = path.join(instanceRoot, "backups", `wardmote-rename-${stamp(options.now ?? new Date())}`);
   const report: RetiredNameMigrationReport = { dryRun, files: [], rows: [], externalBundles: [], failedBundles: [], backupDir: null };
   const rowBackups: Array<{ table: string; id: string; column: string; before: unknown }> = [];

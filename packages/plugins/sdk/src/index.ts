@@ -98,7 +98,7 @@ export {
 // Plugin definition and lifecycle types
 export type {
   PluginDefinition,
-  PaperclipPlugin,
+  WardmotePlugin,
   PluginHealthDiagnostics,
   PluginConfigChangeContext,
   PluginConfigValidationResult,
@@ -333,7 +333,7 @@ export type {
 // Plugin authors import manifest types from here so they have a single
 // dependency (@tickernelz/wardmote-plugin-sdk) for all plugin authoring needs.
 export type {
-  PaperclipPluginManifestV1,
+  WardmotePluginManifestV1,
   PluginJobDeclaration,
   PluginWebhookDeclaration,
   PluginToolDeclaration,

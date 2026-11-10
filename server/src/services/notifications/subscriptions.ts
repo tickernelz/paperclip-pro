@@ -3,7 +3,7 @@ import type { Db } from "@tickernelz/wardmote-db";
 import { webPushSubscriptions } from "@tickernelz/wardmote-db";
 import type {
   NotificationKind,
-  PaperclipNotification,
+  WardmoteNotification,
   UpsertWebPushSubscription,
   WebPushSubscriptionRecord,
 } from "@tickernelz/wardmote-shared";
@@ -77,7 +77,7 @@ function expiredStatus(error: unknown) {
 export async function deliverWebPush(
   db: Db,
   sender: WebPushSender,
-  input: { userIds: string[]; notification: PaperclipNotification; kind: NotificationKind | null },
+  input: { userIds: string[]; notification: WardmoteNotification; kind: NotificationKind | null },
 ): Promise<WebPushDeliveryResult> {
   if (input.userIds.length === 0) return { sent: 0, failed: 0 };
   const rows = await db

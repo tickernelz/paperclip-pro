@@ -708,7 +708,7 @@ function buildAttachmentContentPath(attachmentId: string): string {
   return `/api/attachments/${attachmentId}/content`;
 }
 
-function requiresPaperclipAttachmentMetadata(
+function requiresWardmoteAttachmentMetadata(
   input: {
     type?: unknown;
     provider?: unknown;
@@ -4676,7 +4676,7 @@ export function issueRoutes(
     };
   }
 
-  async function canonicalizePaperclipArtifactMetadata(input: {
+  async function canonicalizeWardmoteArtifactMetadata(input: {
     issue: { id: string; companyId: string };
     metadata: Record<string, unknown> | null | undefined;
   }) {
@@ -12143,8 +12143,8 @@ export function issueRoutes(
               : null),
         );
       }
-      if (requiresPaperclipAttachmentMetadata(createInput)) {
-        createInput.metadata = await canonicalizePaperclipArtifactMetadata({
+      if (requiresWardmoteAttachmentMetadata(createInput)) {
+        createInput.metadata = await canonicalizeWardmoteArtifactMetadata({
           issue,
           metadata: req.body.metadata ?? null,
         });
@@ -12556,13 +12556,13 @@ export function issueRoutes(
       )
         return;
       if (createdByRunId !== undefined) patch.createdByRunId = createdByRunId;
-      if (requiresPaperclipAttachmentMetadata(patch, existing)) {
+      if (requiresWardmoteAttachmentMetadata(patch, existing)) {
         if (patch.metadata !== undefined) {
-          patch.metadata = await canonicalizePaperclipArtifactMetadata({
+          patch.metadata = await canonicalizeWardmoteArtifactMetadata({
             issue,
             metadata: patch.metadata ?? null,
           });
-        } else if (!requiresPaperclipAttachmentMetadata(existing)) {
+        } else if (!requiresWardmoteAttachmentMetadata(existing)) {
           res
             .status(422)
             .json({ error: "Attachment-backed artifact metadata is required" });

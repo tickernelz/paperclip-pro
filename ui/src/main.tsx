@@ -22,7 +22,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { initPluginBridge } from "./plugins/bridge-init";
 import { PluginLauncherProvider } from "./plugins/launchers";
 import { startPerfMeasureReaper } from "./lib/perf-measure-reaper";
-import { getOrCreatePaperclipReactRoot } from "./lib/react-root";
+import { getOrCreateWardmoteReactRoot } from "./lib/react-root";
 import { startServiceWorkerUpdates } from "./lib/service-worker-updates";
 import { serviceWorkerBuildIdFromFileName } from "./lib/service-worker-build-id";
 import { captureInstallPrompt, recordAppVisit } from "./lib/pwa-install-prompt";
@@ -66,7 +66,7 @@ function CompanyAwareBreadcrumbProvider({ children }: { children: React.ReactNod
 const rootElement = document.getElementById("root");
 if (!rootElement) throw new Error("Wardmote root element is missing");
 
-getOrCreatePaperclipReactRoot(window, rootElement).render(
+getOrCreateWardmoteReactRoot(window, rootElement).render(
   <StrictMode>
     <AppErrorBoundary>
       <QueryClientProvider client={queryClient}>

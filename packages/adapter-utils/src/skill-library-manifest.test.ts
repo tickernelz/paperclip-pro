@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import type { PaperclipSkillEntry } from "./server-utils.js";
+import type { WardmoteSkillEntry } from "./server-utils.js";
 import { buildSkillLibraryManifestMarkdown } from "./skill-library-manifest.js";
 
-function entry(overrides: Partial<PaperclipSkillEntry> & Pick<PaperclipSkillEntry, "key">): PaperclipSkillEntry {
+function entry(overrides: Partial<WardmoteSkillEntry> & Pick<WardmoteSkillEntry, "key">): WardmoteSkillEntry {
   return {
     runtimeName: overrides.key.split("/").pop() ?? overrides.key,
     source: `/tmp/skills/${overrides.key}`,

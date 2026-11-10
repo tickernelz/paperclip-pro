@@ -1,11 +1,11 @@
 import path from "node:path";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
-import type { PaperclipConfig } from "./config/schema.js";
+import type { WardmoteConfig } from "./config/schema.js";
 import { openUrl } from "./client/board-auth.js";
 import { installCommand } from "./commands/install.js";
-import { resolvePaperclipInstanceId } from "./config/home.js";
-import { readRuntimeInfo, type PaperclipRuntimeInfo } from "./runtime-info.js";
+import { resolveWardmoteInstanceId } from "./config/home.js";
+import { readRuntimeInfo, type WardmoteRuntimeInfo } from "./runtime-info.js";
 import {
   readInstallManifest,
   resolveInstallStorePaths,
@@ -27,13 +27,13 @@ export type OnboardServiceOptions = {
 
 type EnsureShimResult = { ok: boolean; installedNow: boolean; reason?: string };
 type OnboardServiceDashboardConfig = {
-  auth: Pick<PaperclipConfig["auth"], "baseUrlMode" | "publicBaseUrl">;
-  server: Pick<PaperclipConfig["server"], "host" | "port">;
+  auth: Pick<WardmoteConfig["auth"], "baseUrlMode" | "publicBaseUrl">;
+  server: Pick<WardmoteConfig["server"], "host" | "port">;
 };
 
 type OnboardServiceDashboardDependencies = {
   isInteractive: () => boolean;
-  waitUntilReady: () => Promise<PaperclipRuntimeInfo | null>;
+  waitUntilReady: () => Promise<WardmoteRuntimeInfo | null>;
   openDashboard: (url: string) => Promise<boolean>;
   info: (message: string) => void;
   success: (message: string) => void;
@@ -45,8 +45,8 @@ function envDisablesBrowser(value = process.env.WARDMOTE_NO_BROWSER): boolean {
   return normalized === "1" || normalized === "true" || normalized === "yes";
 }
 
-async function waitUntilDashboardReady(timeoutMs = 60_000): Promise<PaperclipRuntimeInfo | null> {
-  const instanceId = resolvePaperclipInstanceId();
+async function waitUntilDashboardReady(timeoutMs = 60_000): Promise<WardmoteRuntimeInfo | null> {
+  const instanceId = resolveWardmoteInstanceId();
   const detection = await detectServiceManager({ instanceId });
   if (!detection.supported) return null;
   const deadline = Date.now() + timeoutMs;
@@ -80,7 +80,7 @@ const defaultDashboardDependencies: OnboardServiceDashboardDependencies = {
 
 export function resolveOnboardServiceDashboardUrl(
   config: OnboardServiceDashboardConfig,
-  runtime?: Pick<PaperclipRuntimeInfo, "dashboardUrl"> | null,
+  runtime?: Pick<WardmoteRuntimeInfo, "dashboardUrl"> | null,
 ): string {
   if (runtime?.dashboardUrl.trim()) return runtime.dashboardUrl.trim().replace(/\/+$/, "");
   if (config.auth.baseUrlMode === "explicit" && config.auth.publicBaseUrl?.trim()) {
@@ -225,7 +225,7 @@ export async function handleOnboardService(
     return false;
   }
 
-  const instanceId = resolvePaperclipInstanceId();
+  const instanceId = resolveWardmoteInstanceId();
   const detection = await deps.detect(instanceId);
   if (!detection.supported) {
     if (explicitlyRequested) deps.warn(detection.reason);

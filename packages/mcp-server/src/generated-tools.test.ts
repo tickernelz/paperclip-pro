@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { PaperclipApiClient } from "./client.js";
+import { WardmoteApiClient } from "./client.js";
 import { hasManagementAuthority, resolveToolsets } from "./config.js";
 import { createGeneratedToolDefinitions, generatedToolSpecs } from "./generated-tools.js";
 import { createToolDefinitions } from "./tools.js";
@@ -8,7 +8,7 @@ import { resolveManagementAuthority } from "./index.js";
 import { CURATED_OPERATIONS } from "./tool-overrides.js";
 
 function makeClient() {
-  return new PaperclipApiClient({
+  return new WardmoteApiClient({
     apiUrl: "http://localhost:3100/api",
     apiKey: "token-123",
     companyId: "11111111-1111-1111-1111-111111111111",

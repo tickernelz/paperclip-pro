@@ -10,10 +10,10 @@ import { readTaskQuestionContext } from "../issue-question-context.js";
 import { issueThreadInteractionService } from "../issue-thread-interactions.js";
 import { nativeCompletionFeedback } from "./native-completion-feedback.js";
 import { finalizeNativeRun, pendingNativeGovernance } from "./native-run-finalizer.js";
-import { PaperclipControlPlanePort } from "./paperclip-control-plane-port.js";
+import { WardmoteControlPlanePort } from "./paperclip-control-plane-port.js";
 import { CONTROL_PLANE_CONFORMANCE_RESULT, CONTROL_PLANE_CONFORMANCE_TERMINAL } from "../../vendor/wardmote-runner/testing.js";
-import { PaperclipRunnerToolAuthority } from "./paperclip-runner-tool-authority.js";
-import { PaperclipRunnerSemanticAuthority } from "./runner-semantic-authority.js";
+import { WardmoteRunnerToolAuthority } from "./paperclip-runner-tool-authority.js";
+import { WardmoteRunnerSemanticAuthority } from "./runner-semantic-authority.js";
 import type { PrpStructuredRunResult } from "../../vendor/wardmote-runner/index.js";
 
 const questionTime = new Date("2026-01-01T12:00:00Z");
@@ -76,10 +76,10 @@ describe("historical task questions", () => {
     });
     expect(blockedFeedback).toContain("Explain why work cannot continue");
     expect(blockedFeedback).not.toContain(f.question.id);
-    const authority = new PaperclipRunnerToolAuthority(db, f);
+    const authority = new WardmoteRunnerToolAuthority(db, f);
     expect(await authority.execute({ tool: "get_task_context", callId: "context", arguments: {} }))
       .toMatchObject({ taskQuestionContext: { questions: [{ id: f.question.id, historical: true }], truncated: false } });
-    const semantic = new PaperclipRunnerSemanticAuthority(db, f);
+    const semantic = new WardmoteRunnerSemanticAuthority(db, f);
     expect(await semantic.dispatch({ callId: "context", operationId: "get_task_context", input: {},
       correlation: { runId: f.runId, normalizedSessionId: randomUUID(), turnId: "turn", itemId: "item" } }))
       .toMatchObject({ ok: true, value: { taskQuestionContext: { questions: [{ id: f.question.id, historical: true }] } } });
@@ -116,7 +116,7 @@ describe("historical task questions", () => {
         criteria: [{ criterionId: "objective", status: "satisfied", evidenceRefs: [evidenceRef] }] },
       evidence: [{ kind: "work_product", ref: evidenceRef }],
       verification: [{ commandOrCheck: "Configuration verification", status: "passed", artifactRef: evidenceRef }] };
-    const port = new PaperclipControlPlanePort(db, { ...f, sessionId, completionContractId: contractId,
+    const port = new WardmoteControlPlanePort(db, { ...f, sessionId, completionContractId: contractId,
       completionContractSha256: contractSha256, sourceInstanceId: runnerId, controlPlaneSourceInstanceId: randomUUID() });
     await port.openRun({ identity: { ...f, sessionId }, backendKind: "mock", sourceInstanceId: runnerId });
     await port.completeRun({ result: verifiedResult, terminal: CONTROL_PLANE_CONFORMANCE_TERMINAL,

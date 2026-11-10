@@ -2,11 +2,11 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { canonicalToolName, paperclipToolCatalog } from "./catalog.js";
-import { PaperclipApiClient } from "./client.js";
-import { connectPaperclipMcpServer, createPaperclipMcpServer } from "./index.js";
-import type { PaperclipMcpConfig } from "./config.js";
+import { WardmoteApiClient } from "./client.js";
+import { connectWardmoteMcpServer, createWardmoteMcpServer } from "./index.js";
+import type { WardmoteMcpConfig } from "./config.js";
 
-const config: PaperclipMcpConfig = {
+const config: WardmoteMcpConfig = {
   apiUrl: "http://localhost:3100/api",
   apiKey: "token-123",
   companyId: "11111111-1111-1111-1111-111111111111",
@@ -17,10 +17,10 @@ const config: PaperclipMcpConfig = {
 };
 
 async function connectedClient() {
-  const { server } = createPaperclipMcpServer(config, true);
+  const { server } = createWardmoteMcpServer(config, true);
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
   const client = new Client({ name: "test", version: "1" });
-  await Promise.all([connectPaperclipMcpServer(server, serverTransport), client.connect(clientTransport)]);
+  await Promise.all([connectWardmoteMcpServer(server, serverTransport), client.connect(clientTransport)]);
   return client;
 }
 
@@ -41,7 +41,7 @@ describe("tool name aliases", () => {
   it("keeps tools/list on the wardmote* names only", async () => {
     const client = await connectedClient();
     const listed = (await client.listTools()).tools.map((tool) => tool.name);
-    const catalog = paperclipToolCatalog(new PaperclipApiClient(config), config.toolsets, true).listing.tools.map((tool) => tool.name);
+    const catalog = paperclipToolCatalog(new WardmoteApiClient(config), config.toolsets, true).listing.tools.map((tool) => tool.name);
     expect(listed).toEqual(catalog);
     expect(listed.some((name) => name.startsWith("paperclip"))).toBe(false);
     expect(listed).toContain("wardmoteGetInstanceSettingExperimental");

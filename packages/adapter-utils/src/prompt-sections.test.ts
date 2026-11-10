@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { selectPaperclipPromptSections as selectSections } from "./server-utils.js";
+import { selectWardmotePromptSections as selectSections } from "./server-utils.js";
 import { createPromptContextFixture } from "./test-fixtures/prompt-context.js";
 
 describe("task and event section ownership", () => {

@@ -147,7 +147,7 @@ import type {
 
 import {
   runChildProcess,
-  buildPaperclipEnv,
+  buildWardmoteEnv,
   renderTemplate,
 } from "@tickernelz/wardmote-adapter-utils/server-utils";
 
@@ -162,7 +162,7 @@ export async function execute(
   const timeoutSec = Number(config.timeoutSec ?? 300);
 
   // 2. Build environment with Wardmote vars injected
-  const env = buildPaperclipEnv(agent);
+  const env = buildWardmoteEnv(agent);
 
   // 3. Render prompt template
   const prompt = config.promptTemplate
@@ -202,7 +202,7 @@ export async function execute(
 | Helper | Purpose |
 |--------|---------|
 | `runChildProcess(command, opts)` | Spawn a child process with timeout, grace period, and streaming callbacks |
-| `buildPaperclipEnv(agent)` | Inject `WARDMOTE_*` environment variables |
+| `buildWardmoteEnv(agent)` | Inject `WARDMOTE_*` environment variables |
 | `renderTemplate(template, data)` | `{{variable}}` substitution in prompt templates |
 | `asString(v)`, `asNumber(v)`, `asBoolean(v)` | Safe config value extraction |
 

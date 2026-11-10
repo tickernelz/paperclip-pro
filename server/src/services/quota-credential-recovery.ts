@@ -2,7 +2,7 @@ import { createHash, randomUUID } from "node:crypto";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { z } from "zod";
-import { resolvePaperclipInstanceRoot } from "../home-paths.js";
+import { resolveWardmoteInstanceRoot } from "../home-paths.js";
 import { localEncryptedProvider } from "../secrets/local-encrypted-provider.js";
 import { ensureDurableDirectory, syncDirectory } from "../lib/durable-directory.js";
 
@@ -13,7 +13,7 @@ const recoverySchema = z.object({
 type Recovery = z.infer<typeof recoverySchema>;
 export const quotaCredentialHash = (value: string) => createHash("sha256").update(value).digest("hex");
 export const quotaCredentialRecoveryPath = (companyId: string, grantId: string) =>
-  path.join(resolvePaperclipInstanceRoot(), "quota-credential-recovery", companyId, `${grantId}.json`);
+  path.join(resolveWardmoteInstanceRoot(), "quota-credential-recovery", companyId, `${grantId}.json`);
 
 /** Called only while holding the company credential mutation lock. The local
  * encrypted provider uses the instance secrets master key, including when the

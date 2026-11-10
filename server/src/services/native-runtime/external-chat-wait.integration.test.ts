@@ -46,7 +46,7 @@ import type {
 
 import { startEmbeddedPostgresTestDatabase } from "../../__tests__/helpers/embedded-postgres.js";
 import { finalizeNativeRun } from "./native-run-finalizer.js";
-import { PaperclipControlPlanePort } from "./paperclip-control-plane-port.js";
+import { WardmoteControlPlanePort } from "./paperclip-control-plane-port.js";
 import {
   authorizeNativeChatReviewPresentation,
   hasMaterializedNativeReviewResponse,
@@ -62,7 +62,7 @@ import {
   isExternalChatWaitAuthorizationContention,
   resolveExternalChatResponseWaitAuthorization,
 } from "./chat-attachment-reuse.js";
-import { attestReviewedExternalChatRun, buildPaperclipWakePayload } from "../heartbeat.js";
+import { attestReviewedExternalChatRun, buildWardmoteWakePayload } from "../heartbeat.js";
 import { voiceCredentialFingerprint } from "../voice/voice-session-store.js";
 import { nativeSha256 } from "./canonical.js";
 import { questionResponseDeliveryValues } from "../question-response-delivery.js";
@@ -70,7 +70,7 @@ import { resolveExternalChatQuestionResponse } from "./external-chat-question-re
 import { materializeExternalChatQuestionResponseInput } from "./external-chat-question-response-input.js";
 import * as nativeInteractionBridge from "./native-interaction-bridge.js";
 import { defaultGitHubReviewPolicy, type AskUserQuestionsInteraction } from "@tickernelz/wardmote-shared";
-import { PaperclipRunnerToolAuthority } from "./paperclip-runner-tool-authority.js";
+import { WardmoteRunnerToolAuthority } from "./paperclip-runner-tool-authority.js";
 import { createLocalDiskStorageProvider } from "../../storage/local-disk-provider.js";
 import { createStorageService } from "../../storage/service.js";
 import { subscribeAllCompanyLiveEvents } from "../live-events.js";
@@ -323,7 +323,7 @@ describe("native external-chat response wait", () => {
       })
       .where(eq(heartbeatRuns.id, runId));
 
-    const port = new PaperclipControlPlanePort(db, {
+    const port = new WardmoteControlPlanePort(db, {
       companyId,
       issueId,
       runId,
@@ -1213,7 +1213,7 @@ describe("native external-chat response wait", () => {
       },
     );
     fixture.context.paperclipExternalChatExecutionBound = true;
-    fixture.context.paperclipWake = await buildPaperclipWakePayload({
+    fixture.context.paperclipWake = await buildWardmoteWakePayload({
       db,
       companyId: fixture.companyId,
       agentId: fixture.agentId,
@@ -1251,7 +1251,7 @@ describe("native external-chat response wait", () => {
       const body = Buffer.from("Cobalt\n");
       const filename = "answer.txt";
       await writeFile(path.join(workspaceRoot, filename), body);
-      const runner = new PaperclipRunnerToolAuthority(db, {
+      const runner = new WardmoteRunnerToolAuthority(db, {
         ...fixture,
         workspaceRoot,
         storage,
@@ -2693,7 +2693,7 @@ describe("native external-chat response wait", () => {
       .update(issues)
       .set({ executionRunId: runId })
       .where(eq(issues.id, fixture.issueId));
-    const port = new PaperclipControlPlanePort(db, {
+    const port = new WardmoteControlPlanePort(db, {
       companyId: fixture.companyId,
       issueId: fixture.issueId,
       agentId: fixture.agentId,
@@ -3422,7 +3422,7 @@ describe("native external-chat response wait", () => {
       .update(issues)
       .set({ executionRunId: runId })
       .where(eq(issues.id, fixture.issueId));
-    const port = new PaperclipControlPlanePort(db, {
+    const port = new WardmoteControlPlanePort(db, {
       companyId: fixture.companyId,
       issueId: fixture.issueId,
       agentId: fixture.agentId,

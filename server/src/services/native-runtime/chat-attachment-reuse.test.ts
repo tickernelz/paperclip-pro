@@ -40,7 +40,7 @@ import {
   resolveExternalChatResponseWaitAuthorization,
   type ChatAttachmentReuseSource,
 } from "./chat-attachment-reuse.js";
-import { PaperclipRunnerToolAuthority } from "./paperclip-runner-tool-authority.js";
+import { WardmoteRunnerToolAuthority } from "./paperclip-runner-tool-authority.js";
 import { validateNativeDeliverableEvidence } from "./native-deliverable-feedback.js";
 
 describe("native same-conversation chat attachment reuse", () => {
@@ -297,7 +297,7 @@ describe("native same-conversation chat attachment reuse", () => {
   });
 
   function authority() {
-    return new PaperclipRunnerToolAuthority(db, {
+    return new WardmoteRunnerToolAuthority(db, {
       companyId,
       agentId,
       issueId,

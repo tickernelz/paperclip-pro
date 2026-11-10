@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { resolvePaperclipInstanceRootForAdapter } from "@tickernelz/wardmote-adapter-utils/server-utils";
+import { resolveWardmoteInstanceRootForAdapter } from "@tickernelz/wardmote-adapter-utils/server-utils";
 
 // `GROK_HOME` replaces `~/.grok` and holds `auth.json` plus session history.
 // Unlike Codex, a Grok `auth.json` has no fixed top-level key: it
@@ -118,7 +118,7 @@ export function resolveManagedGrokHomeDir(
   env: NodeJS.ProcessEnv,
   companyId?: string,
 ): string {
-  const instanceRoot = resolvePaperclipInstanceRootForAdapter({
+  const instanceRoot = resolveWardmoteInstanceRootForAdapter({
     homeDir: nonEmpty(env.WARDMOTE_HOME) ?? undefined,
     instanceId: nonEmpty(env.WARDMOTE_INSTANCE_ID) ?? undefined,
     env,

@@ -415,7 +415,7 @@ function isManagedHttpsDefaultCandidate(input: {
   serviceName: string;
   command: string | null;
 }): boolean {
-  return isPaperclipDevRuntimeService(input);
+  return isWardmoteDevRuntimeService(input);
 }
 
 export type ResolvedRuntimeServiceExposure = {
@@ -468,7 +468,7 @@ async function resolveRuntimeServiceExposure(input: {
  *
  * Reads the service name and command straight off the raw config entry rather
  * than resolving the full reuse identity: templates never rewrite a service
- * name, and the substrings `isPaperclipDevRuntimeService` matches survive
+ * name, and the substrings `isWardmoteDevRuntimeService` matches survive
  * rendering, so this agrees with the per-service decision made during spawn.
  */
 async function anyRuntimeServiceUsesHttpsExposure(
@@ -5311,7 +5311,7 @@ async function waitForAllocatedPortBind(input: {
   throw new Error(`Runtime service did not bind allocated port ${input.port} before timeout`);
 }
 
-function isPaperclipDevRuntimeService(input: { serviceName?: string | null; command?: string | null }) {
+function isWardmoteDevRuntimeService(input: { serviceName?: string | null; command?: string | null }) {
   const serviceName = (input.serviceName ?? "").trim().toLowerCase();
   const command = (input.command ?? "").trim().toLowerCase();
   return (
@@ -5388,14 +5388,14 @@ function trustedRuntimeHostnameBoundary(
  * Resolve the low-priority public URL hint injected into a managed Paperclip dev
  * service. Explicit operator origin settings are deliberately left untouched.
  */
-export function resolveManagedPaperclipRuntimePublicOrigin(input: {
+export function resolveManagedWardmoteRuntimePublicOrigin(input: {
   serviceName: string;
   command: string;
   environment: Record<string, string>;
   exposedUrl: string | null;
   exposedUrlTemplate?: string | null;
 }) {
-  if (!isPaperclipDevRuntimeService(input)) return null;
+  if (!isWardmoteDevRuntimeService(input)) return null;
   if (EXPLICIT_RUNTIME_ORIGIN_ENV_KEYS.some((key) => input.environment[key]?.trim())) return null;
   if (!input.exposedUrl) {
     throw managedRuntimeOriginError(input.serviceName, "the managed service does not report an exposed URL");
@@ -5470,7 +5470,7 @@ function resolveRuntimeServiceHealthUrl(
   url: string | null,
   input?: { serviceName?: string | null; command?: string | null },
 ) {
-  if (!url || !isPaperclipDevRuntimeService(input ?? {})) return url;
+  if (!url || !isWardmoteDevRuntimeService(input ?? {})) return url;
   try {
     const parsed = new URL(url);
     if (parsed.pathname === "/" || parsed.pathname === "") {
@@ -5520,7 +5520,7 @@ async function probeManagedWorkspaceRuntimeReadiness(
   healthUrl: string,
   input: RuntimeServiceHealthProbeInput,
 ): Promise<boolean | null> {
-  if (!isPaperclipDevRuntimeService(input)) return null;
+  if (!isWardmoteDevRuntimeService(input)) return null;
   const identity = resolveManagedWorkspaceIdentity({
     workspaceCwd: input.cwd ?? null,
     executionWorkspaceId: input.executionWorkspaceId ?? null,
@@ -5554,7 +5554,7 @@ async function isRuntimeServiceUrlHealthy(
   url: string | null,
   input?: RuntimeServiceHealthProbeInput,
 ) {
-  const localProbeUrl = input?.provider === "local_process" && input.port && isPaperclipDevRuntimeService(input)
+  const localProbeUrl = input?.provider === "local_process" && input.port && isWardmoteDevRuntimeService(input)
     ? `http://127.0.0.1:${input.port}`
     : null;
   const probeUrl = localProbeUrl ?? url;
@@ -5568,7 +5568,7 @@ async function isRuntimeServiceUrlHealthy(
   try {
     const response = await fetch(healthUrl, { signal: AbortSignal.timeout(2_000) });
     if (!response.ok) return false;
-    if (!isPaperclipDevRuntimeService(input ?? {})) return true;
+    if (!isWardmoteDevRuntimeService(input ?? {})) return true;
     const payload = await response.json().catch(() => null) as { status?: unknown } | null;
     return payload?.status === "ok";
   } catch {
@@ -6258,7 +6258,7 @@ async function spawnLocalRuntimeService(input: StartLocalRuntimeServiceInput): P
     !exposureConfig || exposureConfig.includePaperclipViteHmr;
   if (
     uiDevMiddlewareHasTransport
-    && isPaperclipDevRuntimeService({ serviceName, command })
+    && isWardmoteDevRuntimeService({ serviceName, command })
   ) {
     env.WARDMOTE_UI_DEV_MIDDLEWARE ??= "true";
   }
@@ -6271,7 +6271,7 @@ async function spawnLocalRuntimeService(input: StartLocalRuntimeServiceInput): P
   // the Paperclip dev runtime whether or not it is HTTPS-exposed, because the
   // password-independent login handoff and the protected readiness probe are
   // both needed for a plain-HTTP loopback workspace too (PAP-17572).
-  const managedWorkspaceIdentity = isPaperclipDevRuntimeService({ serviceName, command })
+  const managedWorkspaceIdentity = isWardmoteDevRuntimeService({ serviceName, command })
     ? resolveManagedWorkspaceIdentity({
         workspaceCwd: input.workspace.cwd,
         executionWorkspaceId: input.executionWorkspaceId ?? null,
@@ -6310,7 +6310,7 @@ async function spawnLocalRuntimeService(input: StartLocalRuntimeServiceInput): P
   let url = exposureConfig ? null : backendUrl;
   const readinessUrlTemplate = asString(readiness.urlTemplate, "");
   const readinessUrl = readinessUrlTemplate ? renderTemplate(readinessUrlTemplate, templateData) : null;
-  const managedRuntimePublicOrigin = resolveManagedPaperclipRuntimePublicOrigin({
+  const managedRuntimePublicOrigin = resolveManagedWardmoteRuntimePublicOrigin({
     serviceName,
     command,
     // Includes the trusted public origin injected above for managed HTTPS

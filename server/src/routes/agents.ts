@@ -28,7 +28,7 @@ import { applyConnectorSkills, resolveConnectorAssignments, annotateConnectorSki
 import { getExecutionBlocker } from "../services/execution-blocker.js";
 import { canRetryStoppedRun } from "../services/cancelled-native-startup.js";
 import { getNativeReviewAssignment, readNativeReviewAssignmentContext, type NativeReviewAssignmentContext } from "../services/native-runtime/native-review-participant.js";
-import { paperclipRunnerTransitionConfig, normalizeLegacyRunnerProvider, isPaperclipRunnerProvider } from "@tickernelz/wardmote-adapter-utils";
+import { paperclipRunnerTransitionConfig, normalizeLegacyRunnerProvider, isWardmoteRunnerProvider } from "@tickernelz/wardmote-adapter-utils";
 import { executionProjectionForRun, executionProjectionsForRunRows, executionProjectionsForRuns, executionRunColumns } from "../services/execution-projection.js";
 import { applyMcpReasoningEffort } from "../services/public-mcp/agent-config.js";
 import { selectDashboardRunIds } from "../services/dashboard-run-selection.js";
@@ -80,11 +80,11 @@ import {
 } from "@tickernelz/wardmote-shared";
 import {
   isForbiddenConfigEnvKey,
-  normalizePaperclipRunnerAdapterConfig,
+  normalizeWardmoteRunnerAdapterConfig,
   WARDMOTE_OPERATIONAL_SKILL_KEY,
   parseObject,
-  readPaperclipSkillSyncPreference,
-  writePaperclipSkillSyncPreference,
+  readWardmoteSkillSyncPreference,
+  writeWardmoteSkillSyncPreference,
 } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import { trackAgentCreated } from "@tickernelz/wardmote-shared/telemetry";
 import { validate } from "../middleware/validate.js";
@@ -276,9 +276,9 @@ import {
   redactHeartbeatRunListRow,
 } from "../services/heartbeat-run-privacy.js";
 import {
-  PaperclipRunnerProviderProfileError,
-  resolvePaperclipRunnerProviderProfile,
-  validatePaperclipRunnerDotConfig,
+  WardmoteRunnerProviderProfileError,
+  resolveWardmoteRunnerProviderProfile,
+  validateWardmoteRunnerDotConfig,
 } from "../services/native-runtime/provider-profile.js";
 import { managedAgentProfileService } from "../services/managed-agent-profiles.js";
 import { remoteAgentProfileService } from "../services/remote-agent-profiles.js";
@@ -1857,7 +1857,7 @@ export function agentRoutes(
     );
   }
 
-  async function assertFreshPaperclipRunnerProvider(
+  async function assertFreshWardmoteRunnerProvider(
     companyId: string,
     adapterType: string,
     adapterConfig: Record<string, unknown>,
@@ -1866,12 +1866,12 @@ export function agentRoutes(
     let profile;
     try {
       if (adapterConfig.provider === "openai_dot") {
-        validatePaperclipRunnerDotConfig(adapterConfig, false);
+        validateWardmoteRunnerDotConfig(adapterConfig, false);
         return;
       }
-      profile = resolvePaperclipRunnerProviderProfile(adapterConfig);
+      profile = resolveWardmoteRunnerProviderProfile(adapterConfig);
     } catch (error) {
-      if (error instanceof PaperclipRunnerProviderProfileError) {
+      if (error instanceof WardmoteRunnerProviderProfileError) {
         throw unprocessable(error.message, { code: error.code });
       }
       throw error;
@@ -1890,7 +1890,7 @@ export function agentRoutes(
     }
   }
 
-  function resolvePaperclipRunnerAdapterTransition(input: {
+  function resolveWardmoteRunnerAdapterTransition(input: {
     previousAdapterType: string;
     nextAdapterType: string;
     previousAdapterConfig: Record<string, unknown>;
@@ -1905,7 +1905,7 @@ export function agentRoutes(
     if (input.nextAdapterConfig.provider === "openai_dot") return input.nextAdapterConfig;
     const defaults = paperclipRunnerTransitionConfig(input.previousAdapterType, input.previousAdapterConfig.model, input.nextAdapterConfig.provider);
     if (!["claude_local", "codex_local", "opencode_local"].includes(input.previousAdapterType)
-      && !isPaperclipRunnerProvider(input.nextAdapterConfig.provider)) {
+      && !isWardmoteRunnerProvider(input.nextAdapterConfig.provider)) {
       throw unprocessable("Select a Paperclip Runner provider before converting this agent.");
     }
     const next = { ...defaults, ...input.nextAdapterConfig };
@@ -2200,7 +2200,7 @@ export function agentRoutes(
         ? { ...input.constraintAdapterConfig, ...normalizedAdapterConfig }
         : normalizedAdapterConfig,
     );
-    return normalizePaperclipRunnerAdapterConfig(
+    return normalizeWardmoteRunnerAdapterConfig(
       input.adapterType ?? "",
       normalizedAdapterConfig,
     );
@@ -2219,7 +2219,7 @@ export function agentRoutes(
   ): Record<string, unknown> {
     const next = { ...adapterConfig };
     if (adapterType === "wardmote_runner") {
-      return normalizePaperclipRunnerAdapterConfig(adapterType, next);
+      return normalizeWardmoteRunnerAdapterConfig(adapterType, next);
     }
     return next;
   }
@@ -2230,7 +2230,7 @@ export function agentRoutes(
     adapterConfig: Record<string, unknown>,
   ) {
     if (adapterType === "wardmote_runner") {
-      await assertFreshPaperclipRunnerProvider(companyId, adapterType, adapterConfig);
+      await assertFreshWardmoteRunnerProvider(companyId, adapterType, adapterConfig);
     }
   }
 
@@ -2600,7 +2600,7 @@ export function agentRoutes(
       materializeMissing?: boolean;
     } = {},
   ) {
-    const preference = readPaperclipSkillSyncPreference(config);
+    const preference = readWardmoteSkillSyncPreference(config);
     const betaSkillsEnabled = (await instanceSettings.getExperimental()).enableBetaSkills === true;
     const runtimeSkillEntries = await companySkills.listRuntimeSkillEntries(companyId, {
       materializeMissing: options.materializeMissing
@@ -2632,7 +2632,7 @@ export function agentRoutes(
       };
     }
 
-    const currentPreference = readPaperclipSkillSyncPreference(adapterConfig);
+    const currentPreference = readWardmoteSkillSyncPreference(adapterConfig);
     const retainedPins = new Map(
       currentPreference.desiredSkillEntries.map((entry) => [entry.key, entry.versionId] as const),
     );
@@ -2696,7 +2696,7 @@ export function agentRoutes(
     });
 
     return {
-      adapterConfig: writePaperclipSkillSyncPreference(adapterConfig, desiredSkillEntries),
+      adapterConfig: writeWardmoteSkillSyncPreference(adapterConfig, desiredSkillEntries),
       desiredSkills,
       desiredSkillEntries,
       runtimeSkillEntries,
@@ -2946,7 +2946,7 @@ export function agentRoutes(
       return;
     }
     const provider = asNonEmptyString(req.query.provider);
-    if (type === "wardmote_runner" && provider && !isPaperclipRunnerProvider(provider)) {
+    if (type === "wardmote_runner" && provider && !isWardmoteRunnerProvider(provider)) {
       throw unprocessable("Unknown Paperclip Runner provider");
     }
     const modelAdapterType = type === "wardmote_runner"
@@ -3507,7 +3507,7 @@ export function agentRoutes(
 
     const adapter = findActiveServerAdapter(agent.adapterType);
     if (!adapter?.listSkills) {
-      const preference = readPaperclipSkillSyncPreference(
+      const preference = readWardmoteSkillSyncPreference(
         agent.adapterConfig as Record<string, unknown>,
       );
       const desiredSkillEntries = preference.desiredSkillEntries.filter(
@@ -3601,7 +3601,7 @@ export function agentRoutes(
             companyId: updated.companyId,
             adapterType: updated.adapterType,
             config: manualSkillConfig,
-          }, readPaperclipSkillSyncPreference(manualSkillConfig).desiredSkills)
+          }, readWardmoteSkillSyncPreference(manualSkillConfig).desiredSkills)
         : adapter?.listSkills
           ? await adapter.listSkills({
               agentId: updated.id,
@@ -4011,7 +4011,7 @@ export function agentRoutes(
       rollbackAdapterType !== existing.adapterType ||
       rollbackAdapterType === "wardmote_runner"
     ) {
-      await assertFreshPaperclipRunnerProvider(
+      await assertFreshWardmoteRunnerProvider(
         existing.companyId,
         rollbackAdapterType,
         rollbackAdapterConfig,
@@ -4159,7 +4159,7 @@ export function agentRoutes(
     hireInput.adapterType = await assertSelectableAdapterType(hireInput.adapterType, hireInput.adapterConfig);
     const rawHireAdapterConfig = (hireInput.adapterConfig ?? {}) as Record<string, unknown>;
     assertProviderTraceSettingTransition(req, hireInput.runtimeConfig);
-    await assertFreshPaperclipRunnerProvider(
+    await assertFreshWardmoteRunnerProvider(
       companyId,
       hireInput.adapterType,
       rawHireAdapterConfig,
@@ -4459,7 +4459,7 @@ export function agentRoutes(
     createInput.adapterType = await assertSelectableAdapterType(createInput.adapterType, createInput.adapterConfig);
     const rawCreateAdapterConfig = (createInput.adapterConfig ?? {}) as Record<string, unknown>;
     assertProviderTraceSettingTransition(req, createInput.runtimeConfig);
-    await assertFreshPaperclipRunnerProvider(
+    await assertFreshWardmoteRunnerProvider(
       companyId,
       createInput.adapterType,
       rawCreateAdapterConfig,
@@ -5327,7 +5327,7 @@ export function agentRoutes(
           existingAdapterConfig,
           rawEffectiveAdapterConfig,
         );
-        rawEffectiveAdapterConfig = resolvePaperclipRunnerAdapterTransition({
+        rawEffectiveAdapterConfig = resolveWardmoteRunnerAdapterTransition({
           previousAdapterType: existing.adapterType,
           nextAdapterType: requestedAdapterType,
           previousAdapterConfig: existingAdapterConfig,
@@ -5335,7 +5335,7 @@ export function agentRoutes(
         });
       }
       if (requestedAdapterType === "wardmote_runner") {
-        rawEffectiveAdapterConfig = normalizePaperclipRunnerAdapterConfig(requestedAdapterType, rawEffectiveAdapterConfig);
+        rawEffectiveAdapterConfig = normalizeWardmoteRunnerAdapterConfig(requestedAdapterType, rawEffectiveAdapterConfig);
       }
       if (changingAdapterType || requestedAdapterConfig) {
         assertNoAgentLocalAdapterHostCommandMutation(
@@ -5361,7 +5361,7 @@ export function agentRoutes(
           (requestedAdapterConfig !== null ||
             rawEffectiveAdapterConfig.provider !== existingRunnerProvider))
       ) {
-        await assertFreshPaperclipRunnerProvider(
+        await assertFreshWardmoteRunnerProvider(
           existing.companyId,
           requestedAdapterType,
           rawEffectiveAdapterConfig,

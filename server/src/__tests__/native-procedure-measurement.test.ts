@@ -3,7 +3,7 @@ import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import { afterAll, describe, expect, it } from "vitest";
 import type { Db } from "@tickernelz/wardmote-db";
-import { PaperclipRunnerToolAuthority } from "../services/native-runtime/paperclip-runner-tool-authority.js";
+import { WardmoteRunnerToolAuthority } from "../services/native-runtime/paperclip-runner-tool-authority.js";
 import { buildNativeModelEnvelope, parseNativeExecutionInput, type NativeExecutionInput } from "../../../packages/wardmote-runner/src/contracts/native-execution.js";
 import type { PersistedNativeSession } from "../../../packages/wardmote-runner/src/contracts/native-session-backend.js";
 import { NATIVE_RUNTIME_ASSET_SCHEMA, WARDMOTE_EXECUTION_PROMPT, WARDMOTE_EXECUTION_PROMPT_REVISION, canonicalNativeRuntimeContextDigest, nativeRuntimePromptDigest } from "../../../packages/wardmote-runner/src/contracts/runtime-context.js";
@@ -17,7 +17,7 @@ import { startOpenCodeMcpBridge } from "../../../packages/wardmote-runner/src/dr
 const root = new URL("../../../", import.meta.url);
 const sha = (value: string | Buffer) => createHash("sha256").update(value).digest("hex");
 const identity = { companyId: "company", agentId: "agent", issueId: "issue", runId: "run", sessionId: "session" };
-const tools = new PaperclipRunnerToolAuthority({} as Db, {
+const tools = new WardmoteRunnerToolAuthority({} as Db, {
   ...identity, apiToolsEnabled: true, workspaceRoot: WORKSPACE,
 }).definitions();
 const { qualificationModel: _model, reportedModelId: _reportedModel, permissionPolicy: _policy, ...profile } = resolveQualifiedAcpxProfile("claude", "claude-sonnet-5");
@@ -77,7 +77,7 @@ describe("production native procedure instruction measurement", () => {
       "hire_agent", "list_agents", "create_task", "set_dependencies", "connections_search", "connection_request", "register_deliverable",
     ]));
     expect(new Set(tools.map(tool => tool.name)).size).toBe(tools.length);
-    const withoutApi = new PaperclipRunnerToolAuthority({} as Db, { ...identity, apiToolsEnabled: false }).definitions();
+    const withoutApi = new WardmoteRunnerToolAuthority({} as Db, { ...identity, apiToolsEnabled: false }).definitions();
     expect(withoutApi.some(tool => tool.name === "hire_agent")).toBe(false);
   });
 

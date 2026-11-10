@@ -17,7 +17,7 @@ import {
 } from "../commands/test-drive.js";
 import type { RunOptions, StartedServer } from "../commands/run.js";
 import { RETIRED_ENV_PREFIX } from "@tickernelz/wardmote-shared/retired-env-file";
-import type { PaperclipConfig } from "../config/schema.js";
+import type { WardmoteConfig } from "../config/schema.js";
 
 const ORIGINAL_ENV = { ...process.env };
 const cleanupDirectories: string[] = [];
@@ -183,7 +183,7 @@ describe("test-drive data isolation", () => {
   it("rejects an explicitly reused PostgreSQL configuration", () => {
     const externalConfig = {
       database: { mode: "postgres" },
-    } as PaperclipConfig;
+    } as WardmoteConfig;
     expect(() => assertTestDriveDatabaseIsolation(
       "/tmp/reused/config.json",
       {},
@@ -194,7 +194,7 @@ describe("test-drive data isolation", () => {
   it("accepts an embedded configuration", () => {
     const embeddedConfig = {
       database: { mode: "embedded-postgres" },
-    } as PaperclipConfig;
+    } as WardmoteConfig;
     expect(() => assertTestDriveDatabaseIsolation(
       "/tmp/reused/config.json",
       {},

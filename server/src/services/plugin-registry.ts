@@ -10,7 +10,7 @@ import {
   pluginWebhookDeliveries,
 } from "@tickernelz/wardmote-db";
 import type {
-  PaperclipPluginManifestV1,
+  WardmotePluginManifestV1,
   PluginStatus,
   InstallPlugin,
   UpdatePluginStatus,
@@ -136,7 +136,7 @@ export function pluginRegistryService(db: Db) {
      * manifest from the package.  This method persists the plugin row and
      * assigns the next install order.
      */
-    install: async (input: InstallPlugin, manifest: PaperclipPluginManifestV1) => {
+    install: async (input: InstallPlugin, manifest: WardmotePluginManifestV1) => {
       const existing = await getByKey(manifest.id);
       if (existing) {
         if (existing.status !== "uninstalled") {
@@ -202,7 +202,7 @@ export function pluginRegistryService(db: Db) {
         packagePath?: string;
         status?: "upgrade_pending";
         version?: string;
-        manifest?: PaperclipPluginManifestV1;
+        manifest?: WardmotePluginManifestV1;
       },
     ) => {
       const plugin = await getById(id);

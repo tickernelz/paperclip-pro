@@ -6,7 +6,7 @@ import {
 } from "@tickernelz/wardmote-db";
 import type { AskUserQuestionsInteraction } from "@tickernelz/wardmote-shared";
 import {
-  parsePaperclipQuestionResponse, parsePaperclipQuestionSet,
+  parseWardmoteQuestionResponse, parseWardmoteQuestionSet,
   type PrpStructuredRunResult,
 } from "../../vendor/wardmote-runner/index.js";
 import { buildQuestionResponseDeliveryEnvelope } from "../question-response-delivery.js";
@@ -131,8 +131,8 @@ function planWaitFromFacts(facts: PlanWaitFacts, committedSource?: NativePlanWai
         tools.some(e => e.sourceSeq > created.sourceSeq && record(e.payload).executionId !== id)) return null;
       toolBinding = { toolExecutionId: id, toolLifecycleSha256: nativeSha256(lifecycle) };
     }
-    const questionSet = parsePaperclipQuestionSet(request.input);
-    const response = parsePaperclipQuestionResponse(questionSet, resolution.response);
+    const questionSet = parseWardmoteQuestionSet(request.input);
+    const response = parseWardmoteQuestionResponse(questionSet, resolution.response);
     const planRevision = adapter.acceptedRevision(questionSet, response);
     if (planRevision === null) return null;
     const matches = facts.interactions.filter(({ interaction: i }) => record(i.payload).runtimeRequestId === request.requestId);
@@ -142,7 +142,7 @@ function planWaitFromFacts(facts: PlanWaitFacts, committedSource?: NativePlanWai
       i.idempotencyKey !== `paperclip-runner-question:${b.runId}:${request.requestId}` || !same(record(i.payload).questionSet, questionSet) ||
       d.companyId !== b.companyId || d.issueId !== b.issueId || d.interactionId !== i.id || d.sourceRunId !== b.runId || d.targetRunId !== b.runId || d.status !== "delivered" || d.deliveryMode !== "steered" || !d.acknowledgedAt || (d.targetTurnId !== null && d.targetTurnId !== terminal.turnId)) return null;
     const envelope = buildQuestionResponseDeliveryEnvelope(i as unknown as AskUserQuestionsInteraction);
-    if (d.payloadSha256 !== nativeSha256(envelope) || !same(parsePaperclipQuestionResponse(questionSet, envelope.response), response)) return null;
+    if (d.payloadSha256 !== nativeSha256(envelope) || !same(parseWardmoteQuestionResponse(questionSet, envelope.response), response)) return null;
     const source: NativePlanWaitSource = {
       ...b, schema: format.schema, contractId: contract.id, contractSha256: contract.canonicalSha256, interactionId: i.id, requestId: request.requestId, planRevision,
       turnId: terminal.turnId, normalizedSessionId: sessionId, sourceInstanceId: terminal.sourceInstanceId,

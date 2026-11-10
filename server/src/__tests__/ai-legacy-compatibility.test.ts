@@ -11,7 +11,7 @@ import { aiConnectionService } from "../services/ai-connections.js";
 import { prepareManagedAiRuntime, managedAiSessionFingerprintConfig } from "../services/ai-connection-runtime.js";
 import { localAiLoginService } from "../services/local-ai-login.js";
 import { readVerifiedLocalAiCredential } from "../services/local-ai-credentials.js";
-import { resolvePaperclipInstanceRoot } from "../home-paths.js";
+import { resolveWardmoteInstanceRoot } from "../home-paths.js";
 
 const browserLogin = vi.hoisted(() => ({ submitCode: vi.fn(), abort: vi.fn() }));
 vi.mock("../services/local-ai-browser-login.js", () => ({
@@ -80,7 +80,7 @@ it("reconnect detaches an indexed credential without changing unadopted legacy a
 const intent = { provider: "openai", method: "subscription", name: "Isolated Codex", ownership: "personal", agentIds: [], allAgents: true } as const;
 const loginIntent = () => ({ ...intent, agentIds: [] });
 const auth = (mark: string, hour = 10) => JSON.stringify({ tokens: { account_id: "fixture-account", id_token: `id-${mark}`, access_token: `access-${mark}`, refresh_token: `refresh-${mark}` }, last_refresh: `2026-09-10T${hour}:00:00Z` });
-const directoryFor = (id: string) => path.join(resolvePaperclipInstanceRoot(), "ai-local-logins", id);
+const directoryFor = (id: string) => path.join(resolveWardmoteInstanceRoot(), "ai-local-logins", id);
 
 it("accepts a Claude code once, only from its owner, and audits without the code", async () => {
   const login = localAiLoginService(db);

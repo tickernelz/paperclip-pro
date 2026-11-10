@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import type { AdapterExecutionContext, AdapterRuntimeMcpAccess } from "@tickernelz/wardmote-adapter-utils";
 import {
   prepareAdapterExecutionTargetRuntime,
-  startAdapterExecutionTargetPaperclipBridge,
+  startAdapterExecutionTargetWardmoteBridge,
   startAdapterExecutionTargetProcessSessionBridge,
 } from "@tickernelz/wardmote-adapter-utils/execution-target";
 
@@ -17,7 +17,7 @@ vi.mock("@tickernelz/wardmote-adapter-utils/execution-target", async (importActu
   return {
     ...actual,
     prepareAdapterExecutionTargetRuntime: vi.fn(actual.prepareAdapterExecutionTargetRuntime),
-    startAdapterExecutionTargetPaperclipBridge: vi.fn(actual.startAdapterExecutionTargetPaperclipBridge),
+    startAdapterExecutionTargetWardmoteBridge: vi.fn(actual.startAdapterExecutionTargetWardmoteBridge),
     startAdapterExecutionTargetProcessSessionBridge: vi.fn(actual.startAdapterExecutionTargetProcessSessionBridge),
   };
 });

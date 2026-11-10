@@ -8,8 +8,8 @@ import {
   resolveConfigPath,
 } from "../config/store.js";
 import {
-  findPaperclipConfigKeyWarnings,
-  type PaperclipConfig,
+  findWardmoteConfigKeyWarnings,
+  type WardmoteConfig,
 } from "../config/schema.js";
 import { ensureLocalSecretsKeyFile } from "../config/secrets-key.js";
 import { promptDatabase } from "../prompts/database.js";
@@ -22,7 +22,7 @@ import {
   resolveDefaultBackupDir,
   resolveDefaultEmbeddedPostgresDir,
   resolveDefaultLogsDir,
-  resolvePaperclipInstanceId,
+  resolveWardmoteInstanceId,
 } from "../config/home.js";
 import { printWardmoteCliBanner } from "../utils/banner.js";
 
@@ -37,8 +37,8 @@ const SECTION_LABELS: Record<Section, string> = {
   secrets: "Secrets",
 };
 
-function defaultConfig(): PaperclipConfig {
-  const instanceId = resolvePaperclipInstanceId();
+function defaultConfig(): WardmoteConfig {
+  const instanceId = resolveWardmoteInstanceId();
   return {
     $meta: {
       version: 1,
@@ -96,11 +96,11 @@ export async function configure(opts: {
     return;
   }
 
-  let config: PaperclipConfig;
+  let config: WardmoteConfig;
   let invalidBackupPath: string | undefined;
   try {
     config = readConfig(opts.config) ?? defaultConfig();
-    for (const warning of findPaperclipConfigKeyWarnings(config)) {
+    for (const warning of findWardmoteConfigKeyWarnings(config)) {
       p.log.warn(`Unknown config key ${warning.path}; did you mean ${warning.suggestion}? It will be preserved.`);
     }
   } catch (err) {

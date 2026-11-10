@@ -1,6 +1,6 @@
 import { isAcpxCanonicalInputMethod } from "../acpx/profile-extensions.js";
 import { isSemanticToolOutcomeUnknownError } from "../../contracts/native-session-backend.js";
-import type { HarnessRuntimeRequest, PaperclipQuestionSet } from "../../contracts/harness-driver.js";
+import type { HarnessRuntimeRequest, WardmoteQuestionSet } from "../../contracts/harness-driver.js";
 import {
   CODEX_BLOCK_TOOL_NAME,
 } from "../../contracts/codex.js";
@@ -260,7 +260,7 @@ async function handleServerRequestBody(
       );
       return safeRequestResponse(request.method);
     }
-    let input: PaperclipQuestionSet | null = null;
+    let input: WardmoteQuestionSet | null = null;
     const responseContext = createCodexQuestionResponseContext();
     try {
       input = normalizeCodexQuestionSet(

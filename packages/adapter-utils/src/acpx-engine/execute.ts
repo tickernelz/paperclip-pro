@@ -27,10 +27,10 @@ import {
   resolveAdapterExecutionTargetTimeout,
   resolveReferencedSourceIgnore,
   runAdapterExecutionTargetShellCommand,
-  startAdapterExecutionTargetPaperclipBridge,
+  startAdapterExecutionTargetWardmoteBridge,
   startAdapterExecutionTargetProcessSessionBridge,
   type AdapterExecutionTarget,
-  type AdapterExecutionTargetPaperclipBridgeHandle,
+  type AdapterExecutionTargetWardmoteBridgeHandle,
   type AdapterExecutionTargetProcessSessionBridgeHandle,
   type AdapterExecutionTargetTimeoutResolution,
   type AdapterManagedRuntimeAsset,
@@ -48,7 +48,7 @@ import {
   type AcpxTerminalSessionFailure,
   type AcpxTerminalSessionFailureDiagnostic,
 } from "./terminal-session-failure.js";
-import { resolveDefaultPaperclipHomeDir } from "@tickernelz/wardmote-shared/home-paths";
+import { resolveDefaultWardmoteHomeDir } from "@tickernelz/wardmote-shared/home-paths";
 export type { AcpxTerminalSessionFailure } from "./terminal-session-failure.js";
 import type { WorkspaceRestoreFailureCode, WorkspaceRestoreOutcome } from "../workspace-restore-merge.js";
 import type { WorkspaceRestoreDiagnostic } from "../workspace-restore-diagnostics.js";
@@ -59,41 +59,41 @@ import {
 import {
   paperclipAgentPromptTemplate,
   DEFAULT_WARDMOTE_CONVERSATION_PROMPT_TEMPLATE,
-  applyPaperclipWorkspaceEnv,
+  applyWardmoteWorkspaceEnv,
   asNumber,
   asString,
   buildInvocationEnvForLogs,
-  buildPaperclipEnv,
+  buildWardmoteEnv,
   ensureAbsoluteDirectory,
   ensurePathInEnv,
   ensureWardmoteSkillSymlink,
   isForbiddenConfigEnvKey,
-  isPaperclipExternalChatTurn,
-  isPaperclipRuntimeEnvKey,
+  isWardmoteExternalChatTurn,
+  isWardmoteRuntimeEnvKey,
   joinPromptSections,
-  materializePaperclipSkillCopy,
+  materializeWardmoteSkillCopy,
   parseObject,
-  isPaperclipSkillSourceMissing,
-  readPaperclipRuntimeSkillEntries,
-  readPaperclipIssueWorkModeFromContext,
+  isWardmoteSkillSourceMissing,
+  readWardmoteRuntimeSkillEntries,
+  readWardmoteIssueWorkModeFromContext,
   renderTemplate,
-  resolvePaperclipInstanceRootForAdapter,
+  resolveWardmoteInstanceRootForAdapter,
   hydrateFreshSessionHandoff,
   selectInitialCommunicationGuidance,
-  selectPaperclipPromptSections,
-  resolveLegacyPaperclipDesiredSkillNames,
+  selectWardmotePromptSections,
+  resolveLegacyWardmoteDesiredSkillNames,
   removeMaintainerOnlySkillSymlinks,
   removeRetiredBundledSkillLinks,
   rewriteWorkspaceCwdEnvVarsForExecution,
-  shapePaperclipWorkspaceEnvForExecution,
-  type PaperclipSkillEntry,
+  shapeWardmoteWorkspaceEnvForExecution,
+  type WardmoteSkillEntry,
 } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import {
   WARDMOTE_MCP_SERVER_NAME,
   paperclipAccessGuidance,
   paperclipAccessMode,
   paperclipMcpToolsets,
-  type PaperclipAccessMode,
+  type WardmoteAccessMode,
 } from "@tickernelz/wardmote-adapter-utils/wardmote-mcp";
 import { paperclipMcpHttpTarget } from "@tickernelz/wardmote-adapter-utils/wardmote-mcp-mount";
 import { shellQuote } from "@tickernelz/wardmote-adapter-utils/ssh";
@@ -211,7 +211,7 @@ function flushChildStderr(state: ChildStderrState) {
   state.pendingLiveLine = "";
 }
 
-type PaperclipAcpRuntimeOptions = AcpRuntimeOptions & {
+type WardmoteAcpRuntimeOptions = AcpRuntimeOptions & {
   onAgentSpawn?: (meta: AcpxAgentProcessIdentity) => Promise<void>;
   // Return the current-run parent-context token. It is the `task.run` token
   // during startup and after the turn, and the `agent.turn` token during the
@@ -220,7 +220,7 @@ type PaperclipAcpRuntimeOptions = AcpRuntimeOptions & {
   getRuntimeParentContext?: () => StartupSpanContext | undefined;
 };
 
-type AcpxRuntimeFactory = (options: PaperclipAcpRuntimeOptions) => AcpRuntime;
+type AcpxRuntimeFactory = (options: WardmoteAcpRuntimeOptions) => AcpRuntime;
 
 /**
  * A remote runner-backed session's staged runtime, kept warm across runs so a
@@ -477,7 +477,7 @@ interface AcpxPreparedRuntime {
   agentCommand: string | null;
   agentRegistry: AcpAgentRegistry;
   processSessionBridge: AdapterExecutionTargetProcessSessionBridgeHandle | null;
-  paperclipBridge: AdapterExecutionTargetPaperclipBridgeHandle | null;
+  paperclipBridge: AdapterExecutionTargetWardmoteBridgeHandle | null;
   // The workspace/runtime staged into a runner-backed remote sandbox (null for
   // local runs and the runner-less ACP→CLI fallback). PR 1 stages the workspace
   // + cwd only; the `assetDirs`/`runtimeRootDir`/`restoreWorkspace` it carries
@@ -508,11 +508,11 @@ interface AcpxPreparedRuntime {
   sessionStagingLeaseRelease: (() => void) | null;
   remoteExecutionIdentity: Record<string, unknown> | null;
   skillPromptInstructions: string;
-  paperclipAccess: PaperclipAccessMode;
+  paperclipAccess: WardmoteAccessMode;
   paperclipToolsets: string;
   skillsIdentity: Record<string, unknown>;
   childStderrLogPath: string | null;
-  paperclipClaudeSettings: PaperclipClaudeSettingsResult | null;
+  paperclipClaudeSettings: WardmoteClaudeSettingsResult | null;
   mcpServers: NonNullable<AcpRuntimeOptions["mcpServers"]>;
   mcpIdentity: Array<{ name: string; url: string; connectionId: string }>;
   // Per-step round-trip / provider-duration readers sourced from the sandbox
@@ -814,25 +814,25 @@ export async function referencedSourceContentSignature(
   return hash.digest("hex").slice(0, 16);
 }
 
-function defaultPaperclipInstanceDir(): string {
-  const home = process.env.WARDMOTE_HOME?.trim() || resolveDefaultPaperclipHomeDir();
+function defaultWardmoteInstanceDir(): string {
+  const home = process.env.WARDMOTE_HOME?.trim() || resolveDefaultWardmoteHomeDir();
   const instanceId = process.env.WARDMOTE_INSTANCE_ID?.trim() || "default";
-  return resolvePaperclipInstanceRootForAdapter({
+  return resolveWardmoteInstanceRootForAdapter({
     homeDir: home,
     instanceId,
   });
 }
 
 function defaultStateDir(companyId: string, agentId: string): string {
-  return path.join(defaultPaperclipInstanceDir(), "companies", companyId, "acp-engine", "agents", agentId);
+  return path.join(defaultWardmoteInstanceDir(), "companies", companyId, "acp-engine", "agents", agentId);
 }
 
 function resolveManagedCodexHomeDir(companyId: string): string {
-  return path.join(defaultPaperclipInstanceDir(), "companies", companyId, "codex-home");
+  return path.join(defaultWardmoteInstanceDir(), "companies", companyId, "codex-home");
 }
 
 function isCodexCredentialStoreHome(homePath: string): boolean {
-  const companiesRoot = path.resolve(defaultPaperclipInstanceDir(), "companies");
+  const companiesRoot = path.resolve(defaultWardmoteInstanceDir(), "companies");
   const resolved = path.resolve(homePath);
   if (!resolved.startsWith(companiesRoot + path.sep)) return false;
   const segments = resolved.slice(companiesRoot.length + 1).split(path.sep);
@@ -844,7 +844,7 @@ function resolveManagedCodexApiKeyHomeDir(companyId: string, agentId: string): s
 }
 
 function resolveManagedGrokHomeDir(companyId: string): string {
-  return path.join(defaultPaperclipInstanceDir(), "companies", companyId, "grok-home");
+  return path.join(defaultWardmoteInstanceDir(), "companies", companyId, "grok-home");
 }
 
 // Walk up from startDir looking for `node_modules/.bin/<binName>`. This matches
@@ -1109,7 +1109,7 @@ async function hashPathContents(
 }
 
 async function buildSkillSetKey(input: {
-  skills: PaperclipSkillEntry[];
+  skills: WardmoteSkillEntry[];
   label: string;
 }): Promise<string> {
   const hash = createHash("sha256");
@@ -1125,9 +1125,9 @@ async function buildSkillSetKey(input: {
 async function resolveSelectedRuntimeSkills(
   config: Record<string, unknown>,
   moduleDir: string,
-): Promise<{ allSkills: PaperclipSkillEntry[]; selectedSkills: PaperclipSkillEntry[]; desiredSkillNames: string[] }> {
-  const allSkills = await readPaperclipRuntimeSkillEntries(config, moduleDir);
-  const desiredSkillNames = resolveLegacyPaperclipDesiredSkillNames(config, allSkills);
+): Promise<{ allSkills: WardmoteSkillEntry[]; selectedSkills: WardmoteSkillEntry[]; desiredSkillNames: string[] }> {
+  const allSkills = await readWardmoteRuntimeSkillEntries(config, moduleDir);
+  const desiredSkillNames = resolveLegacyWardmoteDesiredSkillNames(config, allSkills);
   const desiredSet = new Set(desiredSkillNames);
   return {
     allSkills,
@@ -1135,7 +1135,7 @@ async function resolveSelectedRuntimeSkills(
     // selected entry's path contents, and a nonexistent source would abort
     // runtime construction over one broken skill.
     selectedSkills: allSkills.filter(
-      (entry) => desiredSet.has(entry.key) && !isPaperclipSkillSourceMissing(entry),
+      (entry) => desiredSet.has(entry.key) && !isWardmoteSkillSourceMissing(entry),
     ),
     desiredSkillNames,
   };
@@ -1177,7 +1177,7 @@ async function prepareClaudeSkillRuntime(input: {
   for (const entry of selectedSkills) {
     const target = path.join(skillsHome, entry.runtimeName);
     try {
-      const result = await materializePaperclipSkillCopy(entry.source, target);
+      const result = await materializeWardmoteSkillCopy(entry.source, target);
       const skillMdStat = await fs.stat(path.join(target, "SKILL.md")).catch(() => null);
       if (!skillMdStat?.isFile()) {
         await fs.rm(target, { recursive: true, force: true });
@@ -1273,8 +1273,8 @@ async function removeSkillTarget(target: string): Promise<boolean> {
 
 async function reconcileManagedCodexSkills(input: {
   skillsHome: string;
-  allSkills: PaperclipSkillEntry[];
-  selectedSkills: PaperclipSkillEntry[];
+  allSkills: WardmoteSkillEntry[];
+  selectedSkills: WardmoteSkillEntry[];
   onLog: AdapterExecutionContext["onLog"];
 }): Promise<void> {
   const desired = new Set(input.selectedSkills.map((entry) => entry.runtimeName));
@@ -1386,7 +1386,7 @@ async function prepareCodexSkillRuntime(input: {
   for (const entry of selectedSkills) {
     const target = path.join(skillsHome, entry.runtimeName);
     try {
-      const result = await materializePaperclipSkillCopy(entry.source, target);
+      const result = await materializeWardmoteSkillCopy(entry.source, target);
       if (result.skippedSymlinks.length > 0) {
         await input.onLog(
           "stdout",
@@ -1457,7 +1457,7 @@ async function prepareGeminiSkillRuntime(input: {
       }
     } catch (err) {
       if (isErrnoException(err, "EPERM")) {
-        const result = await materializePaperclipSkillCopy(entry.source, target);
+        const result = await materializeWardmoteSkillCopy(entry.source, target);
         await input.onLog(
           "stdout",
           `[paperclip] Copied ACPX Gemini skill "${entry.runtimeName}" into ${skillsHome} because symlinks are unavailable.${result.skippedSymlinks.length > 0 ? ` Skipped ${result.skippedSymlinks.length} nested symlink(s).` : ""}\n`,
@@ -1641,7 +1641,7 @@ function buildSessionParams(input: {
   };
 }
 
-interface PaperclipClaudeSettingsResult {
+interface WardmoteClaudeSettingsResult {
   filePath: string;
   allow: string[];
   additionalDirectories: string[];
@@ -1660,14 +1660,14 @@ function uniqueSorted(values: Array<string | null | undefined>): string[] {
 // denies every non-allowlisted tool and never reaches `canUseTool`), and we
 // widen the SDK's Read sandbox to include the Paperclip state dirs the agent
 // needs to talk to its own control plane.
-async function writePaperclipClaudeSettings(input: {
+async function writeWardmoteClaudeSettings(input: {
   cwd: string;
   stateDir: string;
   agentHome: string;
   companyId: string;
-}): Promise<PaperclipClaudeSettingsResult> {
+}): Promise<WardmoteClaudeSettingsResult> {
   const filePath = path.join(input.cwd, ".claude", "settings.local.json");
-  const instanceRoot = defaultPaperclipInstanceDir();
+  const instanceRoot = defaultWardmoteInstanceDir();
   const companyRoot = path.join(instanceRoot, "companies", input.companyId);
   const paperclipAdditionalDirectories = uniqueSorted([
     input.stateDir,
@@ -1981,7 +1981,7 @@ async function buildRuntime(input: {
     batch: STARTUP_BRIDGE_BATCH,
     criticalPath: false,
   };
-  const shapedWorkspaceEnv = shapePaperclipWorkspaceEnvForExecution({
+  const shapedWorkspaceEnv = shapeWardmoteWorkspaceEnvForExecution({
     workspaceCwd: effectiveWorkspaceCwd,
     workspaceWorktreePath,
     executionTargetIsRemote,
@@ -2018,7 +2018,7 @@ async function buildRuntime(input: {
     headers: [{ name: "Authorization", value: `Bearer ${server.token}` }],
   }));
   const paperclipEnvForAccess = {
-    ...buildPaperclipEnv(agent, { sameHost: !executionTargetIsRemote }),
+    ...buildWardmoteEnv(agent, { sameHost: !executionTargetIsRemote }),
     WARDMOTE_RUN_ID: runId,
     ...(authToken ? { WARDMOTE_API_KEY: authToken } : {}),
   };
@@ -2049,7 +2049,7 @@ async function buildRuntime(input: {
 
   const envConfig = parseObject(config.env);
   const env: Record<string, string> = {
-    ...buildPaperclipEnv(agent, { sameHost: !executionTargetIsRemote }, input.ctx.agentIdentity),
+    ...buildWardmoteEnv(agent, { sameHost: !executionTargetIsRemote }, input.ctx.agentIdentity),
     WARDMOTE_RUN_ID: runId,
   };
   const wakeTaskId =
@@ -2066,7 +2066,7 @@ async function buildRuntime(input: {
   const linkedIssueIds = Array.isArray(context.issueIds)
     ? context.issueIds.filter((value): value is string => typeof value === "string" && value.trim().length > 0)
     : [];
-  const issueWorkMode = readPaperclipIssueWorkModeFromContext(context);
+  const issueWorkMode = readWardmoteIssueWorkModeFromContext(context);
   if (wakeTaskId) env.WARDMOTE_TASK_ID = wakeTaskId;
   if (issueWorkMode) env.WARDMOTE_ISSUE_WORK_MODE = issueWorkMode;
   if (wakeReason) env.WARDMOTE_WAKE_REASON = wakeReason;
@@ -2074,7 +2074,7 @@ async function buildRuntime(input: {
   if (approvalId) env.WARDMOTE_APPROVAL_ID = approvalId;
   if (approvalStatus) env.WARDMOTE_APPROVAL_STATUS = approvalStatus;
   if (linkedIssueIds.length > 0) env.WARDMOTE_LINKED_ISSUE_IDS = linkedIssueIds.join(",");
-  applyPaperclipWorkspaceEnv(env, {
+  applyWardmoteWorkspaceEnv(env, {
     workspaceCwd: shapedWorkspaceEnv.workspaceCwd,
     workspaceSource,
     workspaceStrategy,
@@ -2117,7 +2117,7 @@ async function buildRuntime(input: {
     // A WARDMOTE_* key Paperclip did NOT set is stable per-run config, so it
     // applies and feeds the fingerprint hash below.
     if (isForbiddenConfigEnvKey(key)) continue;
-    if (isPaperclipRuntimeEnvKey(key) && key in env) continue;
+    if (isWardmoteRuntimeEnvKey(key) && key in env) continue;
     env[key] = value;
     // The server rotates run-owned scratch paths on every wake. Still forward
     // them, but only hash actual adapter settings. User-supplied temp overrides
@@ -2172,7 +2172,7 @@ async function buildRuntime(input: {
   // below, after `placeWorkspace` returns). This field is `null` for every
   // non-Claude agent, and for a Claude run with no skill selected.
   let claudeSkillsBundleDir: string | null = null;
-  let paperclipClaudeSettings: PaperclipClaudeSettingsResult | null = null;
+  let paperclipClaudeSettings: WardmoteClaudeSettingsResult | null = null;
   if (acpxAgent === "claude") {
     const preparedSkills = await prepareClaudeSkillRuntime({
       stateDir,
@@ -2184,7 +2184,7 @@ async function buildRuntime(input: {
     skillsIdentity = preparedSkills.identity;
     skillCommandNotes.push(...preparedSkills.commandNotes);
     claudeSkillsBundleDir = preparedSkills.bundleDir;
-    paperclipClaudeSettings = await writePaperclipClaudeSettings({
+    paperclipClaudeSettings = await writeWardmoteClaudeSettings({
       cwd,
       stateDir,
       // A run's writable AGENT_HOME moves, but the existing permission root
@@ -2237,9 +2237,9 @@ async function buildRuntime(input: {
     if (acpxAgent === "grok" && !config.managedAiConnection) {
       env.GROK_HOME = resolveManagedGrokHomeDir(agent.companyId);
     }
-    const desired = resolveLegacyPaperclipDesiredSkillNames(
+    const desired = resolveLegacyWardmoteDesiredSkillNames(
       config,
-      await readPaperclipRuntimeSkillEntries(config, input.engine.moduleDir),
+      await readWardmoteRuntimeSkillEntries(config, input.engine.moduleDir),
     );
     skillsIdentity = { mode: "custom_unsupported", desiredSkillNames: desired };
     if (desired.length > 0) {
@@ -2483,7 +2483,7 @@ async function buildRuntime(input: {
         }),
       measureStageStep: (run) => measureStartupStep(input.ctx, nowMs, "stage.sync", run, stepMetrics),
       publishStagedProjectHints: (stagedProjectDirs) => {
-        const shapedHints = shapePaperclipWorkspaceEnvForExecution({
+        const shapedHints = shapeWardmoteWorkspaceEnvForExecution({
           workspaceCwd: effectiveWorkspaceCwd,
           workspaceWorktreePath,
           workspaceHints,
@@ -2500,8 +2500,8 @@ async function buildRuntime(input: {
           "stdout",
           "[paperclip] Reusing the staged in-sandbox runtime for this resumed session (no workspace re-ship / managed-home re-seed).\n",
         ),
-      startPaperclipBridge: (runtimeRootDir) =>
-        startAdapterExecutionTargetPaperclipBridge({
+      startWardmoteBridge: (runtimeRootDir) =>
+        startAdapterExecutionTargetWardmoteBridge({
           runId,
           target: { ...remoteTarget, streamRunLogs: false },
           runtimeRootDir,
@@ -2537,7 +2537,7 @@ async function buildRuntime(input: {
           acpxAgent,
           inheritHostEnvironment: !useRemoteProcessSession,
         }).env,
-      onPaperclipBridgeLog: () =>
+      onWardmoteBridgeLog: () =>
         input.ctx.onLog("stdout", "[paperclip] Sandbox ACP API callback bridge enabled for this run.\n"),
       stopBridges: async ({ controlBridge, agentBridge }) => {
         await Promise.allSettled([agentBridge?.stop(), controlBridge?.stop()]);
@@ -2595,7 +2595,7 @@ async function buildRuntime(input: {
   // staged and the per-session staging lease is already held, so leaving it
   // outside the catch would strand the lease (and the staged temp) on a
   // start failure and deadlock the next run of this session.
-  let paperclipBridge: AdapterExecutionTargetPaperclipBridgeHandle | null = null;
+  let paperclipBridge: AdapterExecutionTargetWardmoteBridgeHandle | null = null;
   let processSessionBridge: AdapterExecutionTargetProcessSessionBridgeHandle | null = null;
   let runtimeEnv: Record<string, string> = {};
   const startTransportStart = nowMs();
@@ -3097,7 +3097,7 @@ function guardEnsureSession(params: {
   });
 }
 
-function renderPaperclipEnvNote(env: Record<string, string>): string {
+function renderWardmoteEnvNote(env: Record<string, string>): string {
   const paperclipKeys = Object.keys(env)
     .filter((key) => key.startsWith("WARDMOTE_"))
     .sort();
@@ -3111,7 +3111,7 @@ function renderPaperclipEnvNote(env: Record<string, string>): string {
 
 function renderApiAccessNote(
   env: Record<string, string>,
-  access: PaperclipAccessMode,
+  access: WardmoteAccessMode,
   toolsets: string,
 ): string {
   if (!env.WARDMOTE_API_URL || !env.WARDMOTE_API_KEY) return "";
@@ -3126,7 +3126,7 @@ async function buildPrompt(
   ctx: AdapterExecutionContext,
   resumedSession: boolean,
   env: Record<string, string>,
-  paperclipAccess: PaperclipAccessMode,
+  paperclipAccess: WardmoteAccessMode,
   paperclipToolsets: string,
 ): Promise<{
   prompt: string;
@@ -3181,12 +3181,12 @@ async function buildPrompt(
       ? renderTemplate(bootstrapPromptTemplate, templateData).trim()
       : "";
   await hydrateFreshSessionHandoff(ctx, { resumedSession });
-  const { taskContextNote, wakePrompt } = selectPaperclipPromptSections(context, {
+  const { taskContextNote, wakePrompt } = selectWardmotePromptSections(context, {
     resumedSession,
     includeCommunicationGuidance: false,
     paperclipAccess,
   });
-  const externalChatTurn = isPaperclipExternalChatTurn(context.paperclipWake);
+  const externalChatTurn = isWardmoteExternalChatTurn(context.paperclipWake);
   const shouldUseResumeDeltaPrompt = resumedSession && wakePrompt.length > 0;
   const promptInstructionsPrefix = shouldUseResumeDeltaPrompt ? "" : instructionsPrefix;
   const renderedPrompt =
@@ -3194,7 +3194,7 @@ async function buildPrompt(
       ? ""
       : renderTemplate(promptTemplate, templateData);
   const sessionHandoffNote = asString(context.paperclipSessionHandoffMarkdown, "").trim();
-  const paperclipEnvNote = externalChatTurn ? "" : renderPaperclipEnvNote(env);
+  const paperclipEnvNote = externalChatTurn ? "" : renderWardmoteEnvNote(env);
   const apiAccessNote = externalChatTurn ? "" : renderApiAccessNote(env, paperclipAccess, paperclipToolsets);
   const prompt = joinPromptSections([
     promptInstructionsPrefix,
@@ -4411,7 +4411,7 @@ export function createAcpxEngineExecutor(deps: AcpxEngineExecutorOptions = {}) {
         // Resume with this run's launch environment; keep it out of the saved
         // conversation record without mutating the live runtime's options.
         const runtimeStore = createEphemeralSessionEnvironmentStore(persistedRuntimeStore, prepared.env);
-        const runtimeOptions: PaperclipAcpRuntimeOptions = {
+        const runtimeOptions: WardmoteAcpRuntimeOptions = {
           cwd: prepared.cwd,
           // Host-only spawn cwd for the relay proxy on the remote process-session
           // lane; `undefined` elsewhere so acpx falls back to `cwd` (byte-identical).

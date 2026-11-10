@@ -23,11 +23,11 @@ import {
   WARDMOTE_RUNNER_IDLE_TIMEOUT_MAX_MS,
   WARDMOTE_RUNNER_PERMISSION_CAPABILITIES,
   WARDMOTE_RUNNER_ACPX_PROFILES,
-  isPaperclipRunnerProvider,
-  resolvePaperclipRunnerIdleTimeoutMs,
-  resolvePaperclipRunnerPermissionMode,
-  type PaperclipRunnerPermissionMode,
-  type PaperclipRunnerProvider,
+  isWardmoteRunnerProvider,
+  resolveWardmoteRunnerIdleTimeoutMs,
+  resolveWardmoteRunnerPermissionMode,
+  type WardmoteRunnerPermissionMode,
+  type WardmoteRunnerProvider,
 } from "@tickernelz/wardmote-adapter-utils";
 
 const inputClass =
@@ -74,7 +74,7 @@ export function CodexLocalConfigFields({
       ? values!.adapterSchemaValues?.provider
       : eff("adapterConfig", "provider", config.provider === "acpx" && config.acpxAgent === "codex" ? "codex" : config.provider ?? "codex")
     : "codex";
-  const runnerProvider: PaperclipRunnerProvider = isPaperclipRunnerProvider(
+  const runnerProvider: WardmoteRunnerProvider = isWardmoteRunnerProvider(
     configuredRunnerProvider,
   )
     ? configuredRunnerProvider
@@ -105,7 +105,7 @@ export function CodexLocalConfigFields({
     );
   const runnerPermissionMode =
     runnerManaged && runnerPermissionCapability.configurable
-      ? resolvePaperclipRunnerPermissionMode(
+      ? resolveWardmoteRunnerPermissionMode(
           runnerProvider,
           configuredRunnerPermissionMode,
         )
@@ -136,7 +136,7 @@ export function CodexLocalConfigFields({
         )
     : "per_turn";
   const runnerIdleTimeoutMs = runnerManaged
-    ? resolvePaperclipRunnerIdleTimeoutMs(
+    ? resolveWardmoteRunnerIdleTimeoutMs(
         isCreate
           ? values!.paperclipRunnerIdleTimeoutMs
           : eff("adapterConfig", "idleTimeoutMs", config.idleTimeoutMs),
@@ -210,7 +210,7 @@ export function CodexLocalConfigFields({
             value={runnerProvider === "acpx" && runnerSchemaValue("acpxAgent", "claude") === "grok" ? "grok" : runnerProvider}
             onValueChange={(value) => {
               const grok = value === "grok";
-              const provider = grok ? "acpx" : isPaperclipRunnerProvider(value)
+              const provider = grok ? "acpx" : isWardmoteRunnerProvider(value)
                 ? value
                 : "codex";
               const model =
@@ -468,10 +468,10 @@ export function CodexLocalConfigFields({
                 : runnerPermissionMode
             }
             onValueChange={(selectedMode) => {
-              const value = resolvePaperclipRunnerPermissionMode(
+              const value = resolveWardmoteRunnerPermissionMode(
                 runnerProvider,
                 selectedMode,
-              ) as PaperclipRunnerPermissionMode;
+              ) as WardmoteRunnerPermissionMode;
               if (isCreate) {
                 set!({
                   adapterSchemaValues: {
@@ -551,7 +551,7 @@ export function CodexLocalConfigFields({
               onChange={(event) =>
                 set!({
                   paperclipRunnerIdleTimeoutMs:
-                    resolvePaperclipRunnerIdleTimeoutMs(
+                    resolveWardmoteRunnerIdleTimeoutMs(
                       Number(event.target.value),
                     ),
                 })
@@ -566,7 +566,7 @@ export function CodexLocalConfigFields({
                 mark(
                   "adapterConfig",
                   "idleTimeoutMs",
-                  resolvePaperclipRunnerIdleTimeoutMs(value),
+                  resolveWardmoteRunnerIdleTimeoutMs(value),
                 )
               }
               immediate

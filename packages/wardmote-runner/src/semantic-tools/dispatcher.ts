@@ -16,7 +16,7 @@ import {
   DEFAULT_CAPABILITY_SCENARIO_POLICY,
 } from "./policy.js";
 import {
-  isPaperclipSemanticValueWithinBounds,
+  isWardmoteSemanticValueWithinBounds,
   redactSemanticValue,
 } from "./redaction.js";
 import { discoverCapabilityDefinitions } from "./discovery.js";
@@ -121,7 +121,7 @@ export class CapabilitySemanticDispatcher {
       return result;
     }
 
-    if (!isPaperclipSemanticValueWithinBounds(call.input)) {
+    if (!isWardmoteSemanticValueWithinBounds(call.input)) {
       const decision = deniedDecision(
         invocation,
         "input_invalid",

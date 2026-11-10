@@ -43,7 +43,7 @@ import {
   userSecretDeclarations,
   userSecretDefinitions,
 } from "@tickernelz/wardmote-db";
-import { buildPaperclipRuntimeMcpServers } from "../services/heartbeat.js";
+import { buildWardmoteRuntimeMcpServers } from "../services/heartbeat.js";
 import { resolveNativeRuntimeMcpSnapshot } from "../services/native-runtime/runtime-context.js";
 import type { PluginToolDispatcher } from "../services/plugin-tool-dispatcher.js";
 import { mcpGatewayProtocolRoutes, toolGatewayRoutes } from "../routes/tool-gateway.js";
@@ -2416,7 +2416,7 @@ rl.on("line", (line) => {
       });
       const snapshot = await resolveNativeRuntimeMcpSnapshot({ db, agent, runId: run.id });
       expect(snapshot.bindingId).toBe(`native-mcp:${run.id}`);
-      const runtime = await buildPaperclipRuntimeMcpServers({ db, agent, runId: run.id, expectedAssignmentDigest: snapshot.digest });
+      const runtime = await buildWardmoteRuntimeMcpServers({ db, agent, runId: run.id, expectedAssignmentDigest: snapshot.digest });
       expect(runtime).toHaveLength(1);
       // Startup and tool discovery never contact the provider or ask Carol to sign in.
       expect(fake.requests).toHaveLength(0);

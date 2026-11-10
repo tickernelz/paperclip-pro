@@ -3,7 +3,7 @@ import path from "node:path";
 import * as p from "@clack/prompts";
 import type { Command } from "commander";
 import { readConfig, resolveConfigPath } from "../config/store.js";
-import { resolvePaperclipInstanceId, resolvePaperclipInstanceRoot } from "../config/home.js";
+import { resolveWardmoteInstanceId, resolveWardmoteInstanceRoot } from "../config/home.js";
 import { detectServiceManager, type ServiceManager, type ServiceStatus } from "../services/service-manager.js";
 import {
   assertAdmissionRestored,
@@ -16,7 +16,7 @@ import {
   type InstanceRunControl,
   type LiveRunsSnapshot,
 } from "../services/instance-drain.js";
-import { readRuntimeInfo, type PaperclipRuntimeInfo } from "../runtime-info.js";
+import { readRuntimeInfo, type WardmoteRuntimeInfo } from "../runtime-info.js";
 import { buildLocalHealthUrl } from "../utils/health-url.js";
 
 type CommonOptions = { instance?: string; json?: boolean };
@@ -70,7 +70,7 @@ export async function withHotRestartLock<T>(
   callback: () => Promise<T>,
   options: { timeoutMs?: number; pollMs?: number; isProcessAlive?: (pid: number) => boolean } = {},
 ): Promise<T> {
-  const instanceRoot = resolvePaperclipInstanceRoot(instanceId);
+  const instanceRoot = resolveWardmoteInstanceRoot(instanceId);
   const lockPath = path.join(instanceRoot, "hot-restart.lock");
   const token = `${process.pid}:${Date.now()}:${Math.random().toString(16).slice(2)}`;
   const deadline = Date.now() + (options.timeoutMs ?? 120_000);
@@ -130,7 +130,7 @@ export async function withHotRestartLock<T>(
 async function writeHotRestartIntent(status: ServiceStatus, instanceId: string, drainRequired: boolean): Promise<{ requestedAt: string }> {
   if (!status.pid) throw new Error(`Cannot restart ${status.serviceName}: supervisor did not report a server pid.`);
   const health = await probeHealth(instanceId, resolveInstanceEndpoint(instanceId).apiBase);
-  const instanceRoot = resolvePaperclipInstanceRoot(instanceId);
+  const instanceRoot = resolveWardmoteInstanceRoot(instanceId);
   const requestedAt = new Date().toISOString();
   await fs.mkdir(instanceRoot, { recursive: true });
   await fs.rm(path.join(instanceRoot, "hot-restart-report.json"), { force: true });
@@ -146,7 +146,7 @@ async function writeHotRestartIntent(status: ServiceStatus, instanceId: string, 
 }
 
 async function waitForRestartReport(instanceId: string, requestedAt: string, timeoutMs = 10_000): Promise<unknown | null> {
-  const reportPath = path.join(resolvePaperclipInstanceRoot(instanceId), "hot-restart-report.json");
+  const reportPath = path.join(resolveWardmoteInstanceRoot(instanceId), "hot-restart-report.json");
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
     try {
@@ -161,7 +161,7 @@ async function waitForRestartReport(instanceId: string, requestedAt: string, tim
 }
 
 export async function restartManagedService(input: { instanceId?: string; expectedVersion?: string | null; waitForDrain?: boolean } = {}): Promise<{ status: ServiceStatus; health: HealthResult; report: unknown | null }> {
-  const instanceId = resolvePaperclipInstanceId(input.instanceId);
+  const instanceId = resolveWardmoteInstanceId(input.instanceId);
   return withHotRestartLock(instanceId, async () => {
     const detection = await detectServiceManager({ instanceId });
     if (!detection.supported) throw new Error(detection.reason);
@@ -174,7 +174,7 @@ export async function restartManagedService(input: { instanceId?: string; expect
 }
 
 export async function startManagedService(input: { instanceId?: string } = {}): Promise<{ status: ServiceStatus; health: HealthResult }> {
-  const instanceId = resolvePaperclipInstanceId(input.instanceId);
+  const instanceId = resolveWardmoteInstanceId(input.instanceId);
   const detection = await detectServiceManager({ instanceId });
   if (!detection.supported) throw new Error(detection.reason);
   await detection.manager.start();
@@ -190,7 +190,7 @@ export interface InstanceLiveness {
 export async function resolveInstanceLiveness(input: {
   instanceId: string;
   status?: () => Promise<ServiceStatus>;
-  readRuntime?: (instanceId: string) => PaperclipRuntimeInfo | null;
+  readRuntime?: (instanceId: string) => WardmoteRuntimeInfo | null;
   isProcessAlive?: (pid: number) => boolean;
 }): Promise<InstanceLiveness> {
   const alive = input.isProcessAlive ?? isProcessAlive;
@@ -236,7 +236,7 @@ export async function safeRestartManagedService(options: SafeRestartOptions = {}
   liveRunsBefore: number;
   admission: "accepting";
 }> {
-  const instanceId = resolvePaperclipInstanceId(options.instanceId);
+  const instanceId = resolveWardmoteInstanceId(options.instanceId);
   const restart = options.restart ?? restartManagedService;
   const start = options.start ?? startManagedService;
   const liveness = options.control
@@ -286,7 +286,7 @@ export async function guardServiceStop(options: {
   control?: InstanceRunControl;
   liveness?: () => Promise<InstanceLiveness>;
 }): Promise<void> {
-  const instanceId = resolvePaperclipInstanceId(options.instanceId);
+  const instanceId = resolveWardmoteInstanceId(options.instanceId);
   if (!options.control) {
     const liveness = await (options.liveness ?? (() => resolveInstanceLiveness({ instanceId })))();
     if (!liveness.running) return;
@@ -375,7 +375,7 @@ export function registerServiceCommands(program: Command): void {
 
   common(service.command("status").description("Show supervisor and health status")).action(async (opts) => {
     const manager = await resolveManager(opts);
-    const instanceId = resolvePaperclipInstanceId(opts.instance);
+    const instanceId = resolveWardmoteInstanceId(opts.instance);
     output({ ...await manager.status(), health: await probeHealth(instanceId) }, opts.json);
   });
 

@@ -28,7 +28,7 @@ import { appendHeartbeatRunEvent } from "../heartbeat-run-events.js";
 import { publishChatPublicationCommitSignal } from "../chat-publication-reconciliation.js";
 import { nativeSha256 } from "./canonical.js";
 
-export interface PaperclipControlPlaneBinding {
+export interface WardmoteControlPlaneBinding {
   companyId: string;
   issueId: string;
   runId: string;
@@ -74,12 +74,12 @@ function assertTerminal(value: unknown): asserts value is PrpTerminalState {
 }
 
 /** Production implementation of the runner package's deliberately narrow persistence port. */
-export class PaperclipControlPlanePort implements ControlPlanePort {
+export class WardmoteControlPlanePort implements ControlPlanePort {
   readonly #db: Db;
   readonly #identityRedactor: ReturnType<typeof createAgentIdentityRedactor>;
   readonly #redactedDeltas = new Map<string, { event: PrpEvent; originalSha: string; bytes: number }>();
   #redactedDeltaBytes = 0;
-  readonly #binding: PaperclipControlPlaneBinding;
+  readonly #binding: WardmoteControlPlaneBinding;
   #sessionId: string | null = null;
   readonly #assertControllerActive?: () => void;
   readonly #onCommittedEvent?: (event: PrpEvent) => Promise<void>;
@@ -87,7 +87,7 @@ export class PaperclipControlPlanePort implements ControlPlanePort {
 
   constructor(
     db: Db,
-    binding: PaperclipControlPlaneBinding,
+    binding: WardmoteControlPlaneBinding,
     options: {
       /** Runtime-only secret; never part of the persisted binding. */
       privateKeyPem?: string;
