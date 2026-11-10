@@ -36,6 +36,11 @@ describe("rewriteRetiredNames", () => {
     expect(result).toEqual({ text, replacements: 0 });
   });
 
+  it("keeps env names pinned inside the Pi distribution closure", () => {
+    const result = rewriteRetiredNames("PAPERCLIP_PI_READ_ONLY=1 PAPERCLIP_ACPX_ISOLATED_CONTEXT=1 PAPERCLIP_PI_PROVIDERS=x");
+    expect(result).toEqual({ text: "PAPERCLIP_PI_READ_ONLY=1 PAPERCLIP_ACPX_ISOLATED_CONTEXT=1 WARDMOTE_PI_PROVIDERS=x", replacements: 1 });
+  });
+
   it("is a no-op on already rewritten text", () => {
     const once = rewriteRetiredNames("PAPERCLIP_API_URL paperclipMe mcp__paperclip__x skill://paperclip").text;
     expect(rewriteRetiredNames(once)).toEqual({ text: once, replacements: 0 });

@@ -118,6 +118,28 @@ describe("retired product name migration", () => {
     expect(await fs.readFile(path.join(root, "notes", "extra.md"), "utf8")).toBe("Use wardmoteMe.\n");
 
     const idle = await migrateRetiredNames(db, { instanceRoot, now: new Date("2026-11-10T00:02:00Z") });
-    expect(idle).toEqual({ dryRun: false, files: [], rows: [], externalBundles: [], backupDir: null });
+    expect(idle).toEqual({ dryRun: false, files: [], rows: [], externalBundles: [], failedBundles: [], backupDir: null });
+  }, 60_000);
+
+  it("reports a bundle it cannot adopt and still rewrites the other agents", async () => {
+    const instanceRoot = path.join(home, "instances", "default");
+    const brokenId = randomUUID();
+    const healthyId = randomUUID();
+    await db.insert(agents).values([
+      { id: brokenId, companyId, name: "Broken", adapterConfig: {} },
+      { id: healthyId, companyId, name: "Healthy", adapterConfig: {} },
+    ]);
+    const brokenRoot = resolveManagedInstructionsRoot({ id: brokenId, companyId, adapterConfig: {} } as never);
+    await fs.mkdir(path.join(path.dirname(brokenRoot), "file-sync"), { recursive: true });
+    await fs.writeFile(path.join(path.dirname(brokenRoot), "file-sync", "adopted.json"), JSON.stringify({ schema: "unknown" }));
+    const healthyRoot = resolveManagedInstructionsRoot({ id: healthyId, companyId, adapterConfig: {} } as never);
+    await fs.mkdir(healthyRoot, { recursive: true });
+    await fs.writeFile(path.join(healthyRoot, "AGENTS.md"), "Use paperclipMe.\n");
+
+    const report = await migrateRetiredNames(db, { instanceRoot, now: new Date("2026-11-10T00:03:00Z") });
+
+    expect(report.failedBundles).toEqual([{ companyId, agentId: brokenId, error: "Unsupported agent file contract" }]);
+    expect(report.files).toEqual([{ companyId, agentId: healthyId, file: "AGENTS.md", replacements: 1 }]);
+    expect(await fs.readFile(path.join(healthyRoot, "AGENTS.md"), "utf8")).toBe("Use wardmoteMe.\n");
   }, 60_000);
 });

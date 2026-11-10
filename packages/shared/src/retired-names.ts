@@ -22,6 +22,20 @@ const IRREGULAR_LOWER = new Map(
   Object.entries(RETIRED_IRREGULAR_TOOL_RENAMES).map(([before, after]) => [before.toLowerCase(), after.toLowerCase()]),
 );
 
+const PINNED_RETIRED_ENV_SUFFIXES: ReadonlySet<string> = new Set([
+  "ACPX_ISOLATED_CONTEXT",
+  "PI_AGENT_HOME",
+  "PI_ENTRYPOINT",
+  "PI_EXTENSION_PATH",
+  "PI_MODULE_GUARD_PATH",
+  "PI_NODE_EXECUTABLE",
+  "PI_PROTECTED_ROOTS",
+  "PI_READ_ONLY",
+  "PI_READ_ROOTS",
+  "PI_RUNTIME_CONFIGURATION",
+  "PI_SYSTEM_INSTRUCTIONS",
+]);
+
 export type RetiredNameRewriteOptions = {
   keepEnvKeys?: ReadonlySet<string>;
 };
@@ -47,8 +61,10 @@ export function rewriteRetiredNames(input: string, options: RetiredNameRewriteOp
     .replace(/mcp__paperclip(-assigned)?(__|_)(paperclip[a-z0-9]*)?/g, (_whole, assigned: string | undefined, separator: string, tool: string | undefined) =>
       count(`mcp__wardmote${assigned ?? ""}${separator}${tool ? renameLowerTool(tool) : ""}`))
     .replace(/\bpaperclip[A-Z][A-Za-z0-9]*\b/g, (name) => count(renameTool(name)))
-    .replace(/\bPAPERCLIP_[A-Z0-9_]+\b/g, (name) =>
-      options.keepEnvKeys?.has(name) ? name : count(`WARDMOTE_${name.slice("PAPERCLIP_".length)}`))
+    .replace(/\bPAPERCLIP_[A-Z0-9_]+\b/g, (name) => {
+      const suffix = name.slice("PAPERCLIP_".length);
+      return options.keepEnvKeys?.has(name) || PINNED_RETIRED_ENV_SUFFIXES.has(suffix) ? name : count(`WARDMOTE_${suffix}`);
+    })
     .replace(/\b(X|x)-(Paperclip|paperclip|PAPERCLIP)-/g, (_whole, x: string, word: string) =>
       count(`${x}-${word === "Paperclip" ? "Wardmote" : word === "paperclip" ? "wardmote" : "WARDMOTE"}-`))
     .replace(/\/(mcp|api\/skills)\/paperclip(?![\w-])/g, (_whole, base: string) => count(`/${base}/wardmote`))

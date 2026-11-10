@@ -661,6 +661,15 @@ async function startServerWithDatabaseTeardown(
       "Rewrote retired product names in agent instructions and stored agent text",
     );
   }
+  if (retiredNames.externalBundles.length > 0) {
+    logger.warn(
+      { agents: retiredNames.externalBundles },
+      "External instruction bundles were not checked for retired product names; run wardmote migrate-names after moving them to managed storage",
+    );
+  }
+  if (retiredNames.failedBundles.length > 0) {
+    logger.warn({ agents: retiredNames.failedBundles }, "Retired product names could not be rewritten in some agent instruction bundles");
+  }
   
 
   if (config.deploymentMode === "local_trusted" && !isLoopbackHost(config.host)) {

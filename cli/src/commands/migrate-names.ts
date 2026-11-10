@@ -28,6 +28,9 @@ export async function migrateNamesCommand(options: MigrateNamesOptions): Promise
     for (const external of report.externalBundles) {
       console.log(pc.yellow(`  external bundle not rewritten: ${external.companyId}/${external.agentId}`));
     }
+    for (const failed of report.failedBundles) {
+      console.log(pc.red(`  bundle not rewritten: ${failed.companyId}/${failed.agentId}: ${failed.error}`));
+    }
     if (report.backupDir) console.log(pc.dim(`Backup: ${report.backupDir}`));
   } finally {
     await db.$client?.end?.({ timeout: 5 }).catch(() => undefined);

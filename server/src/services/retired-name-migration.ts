@@ -18,6 +18,7 @@ import {
   type RetiredNameRewriteOptions,
 } from "@tickernelz/wardmote-shared/retired-names";
 import { resolvePaperclipInstanceRoot } from "../home-paths.js";
+import { rewriteStoredAdapterConfig } from "../modules/agent-lifecycle/index.js";
 import { adoptAgentFiles } from "./agent-file-store.js";
 import { materializeInstructionBytes } from "./agent-instruction-files.js";
 import { agentInstructionsBundleMode, resolveManagedInstructionsRoot } from "./agent-instructions.js";
@@ -30,6 +31,7 @@ export type RetiredNameMigrationReport = {
   files: RetiredNameFileChange[];
   rows: RetiredNameRowChange[];
   externalBundles: Array<{ companyId: string; agentId: string }>;
+  failedBundles: Array<{ companyId: string; agentId: string; error: string }>;
   backupDir: string | null;
 };
 
@@ -81,6 +83,33 @@ async function writeBackup(backupDir: string, relative: string, contents: string
   await fs.writeFile(target, contents, { flag: "wx", mode: 0o600 });
 }
 
+async function rewriteBundle(
+  db: Db,
+  agent: Agent,
+  rewriteOptions: RetiredNameRewriteOptions,
+  dryRun: boolean,
+  backupDir: string,
+  report: RetiredNameMigrationReport,
+): Promise<void> {
+  const root = resolveManagedInstructionsRoot(agent);
+  const texts = dryRun
+    ? await previewBundleTexts(db, agent, root)
+    : await db.transaction(async (tx) => {
+        const [locked] = await tx.select().from(agents).where(eq(agents.id, agent.id)).for("update");
+        if (!locked) return [];
+        await adoptAgentFiles(tx, locked);
+        return listBundleTexts(root);
+      });
+  for (const { file, text } of texts) {
+    const result = rewriteRetiredNames(text, rewriteOptions);
+    if (result.text === text) continue;
+    report.files.push({ companyId: agent.companyId, agentId: agent.id, file, replacements: result.replacements });
+    if (dryRun) continue;
+    await writeBackup(backupDir, path.join("instructions", agent.companyId, agent.id, file), text);
+    await materializeInstructionBytes(root, file, Buffer.from(result.text, "utf8"));
+  }
+}
+
 function stamp(now: Date): string {
   return now.toISOString().replace(/[:.]/g, "-");
 }
@@ -93,7 +122,7 @@ export async function migrateRetiredNames(
   const dryRun = options.dryRun === true;
   const instanceRoot = options.instanceRoot ?? resolvePaperclipInstanceRoot();
   const backupDir = path.join(instanceRoot, "backups", `wardmote-rename-${stamp(options.now ?? new Date())}`);
-  const report: RetiredNameMigrationReport = { dryRun, files: [], rows: [], externalBundles: [], backupDir: null };
+  const report: RetiredNameMigrationReport = { dryRun, files: [], rows: [], externalBundles: [], failedBundles: [], backupDir: null };
   const rowBackups: Array<{ table: string; id: string; column: string; before: unknown }> = [];
   const allAgents = await db.select().from(agents);
   const companyKeep = new Map<string, Set<string>>();
@@ -112,23 +141,14 @@ export async function migrateRetiredNames(
       report.externalBundles.push({ companyId: agent.companyId, agentId: agent.id });
       continue;
     }
-    const root = resolveManagedInstructionsRoot(agent);
-    const rewriteOptions = optionsFor(agentKeep.get(agent.id));
-    const texts = dryRun
-      ? await previewBundleTexts(db, agent, root)
-      : await db.transaction(async (tx) => {
-          const [locked] = await tx.select().from(agents).where(eq(agents.id, agent.id)).for("update");
-          if (!locked) return [];
-          await adoptAgentFiles(tx, locked);
-          return listBundleTexts(root);
-        });
-    for (const { file, text } of texts) {
-      const result = rewriteRetiredNames(text, rewriteOptions);
-      if (result.text === text) continue;
-      report.files.push({ companyId: agent.companyId, agentId: agent.id, file, replacements: result.replacements });
-      if (dryRun) continue;
-      await writeBackup(backupDir, path.join("instructions", agent.companyId, agent.id, file), text);
-      await materializeInstructionBytes(root, file, Buffer.from(result.text, "utf8"));
+    try {
+      await rewriteBundle(db, agent, optionsFor(agentKeep.get(agent.id)), dryRun, backupDir, report);
+    } catch (error) {
+      report.failedBundles.push({
+        companyId: agent.companyId,
+        agentId: agent.id,
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
   }
 
@@ -138,10 +158,19 @@ export async function migrateRetiredNames(
       rowBackups.push({ table, id, column, before });
     };
     for (const agent of allAgents) {
-      const next = rewriteRetiredNamesInJson(agent.adapterConfig, optionsFor(agentKeep.get(agent.id)));
-      if (next.replacements === 0) continue;
-      record("agents", agent.id, "adapter_config", agent.adapterConfig, next.replacements);
-      if (!dryRun) await tx.update(agents).set({ adapterConfig: next.value }).where(eq(agents.id, agent.id));
+      const keep = optionsFor(agentKeep.get(agent.id));
+      if (dryRun) {
+        const next = rewriteRetiredNamesInJson(agent.adapterConfig, keep);
+        if (next.replacements > 0) record("agents", agent.id, "adapter_config", agent.adapterConfig, next.replacements);
+        continue;
+      }
+      let replacements = 0;
+      const changed = await rewriteStoredAdapterConfig(tx, agent.id, (adapterConfig) => {
+        const next = rewriteRetiredNamesInJson(adapterConfig, keep);
+        replacements = next.replacements;
+        return next.value;
+      });
+      if (changed) record("agents", agent.id, "adapter_config", changed.before, replacements);
     }
     for (const revision of await tx.select().from(agentConfigRevisions)) {
       const keep = optionsFor(agentKeep.get(revision.agentId));
