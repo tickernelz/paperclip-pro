@@ -246,7 +246,7 @@ opening it.
 ## Install, Update, And Uninstall
 
 Managed installs keep CLI payloads under `~/.wardmote/cli`, expose a stable
-`~/.local/bin/paperclip-pro` shim, switch versions atomically, and retain two
+`~/.local/bin/wardmote` shim, switch versions atomically, and retain two
 previous payloads for rollback.
 
 ```sh

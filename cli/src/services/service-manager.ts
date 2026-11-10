@@ -81,7 +81,7 @@ function escapeRegExp(value: string): string {
 }
 
 export function resolveServiceShimPath(homeDir = os.homedir()): string {
-  return process.env.WARDMOTE_SHIM_PATH?.trim() || path.join(homeDir, ".local", "bin", "paperclip-pro");
+  return process.env.WARDMOTE_SHIM_PATH?.trim() || path.join(homeDir, ".local", "bin", "wardmote");
 }
 
 // The installed definition, not the current environment, is the truth
@@ -127,12 +127,15 @@ export function resolveServiceEnvironmentFilePath(homeDir: string, instanceId: s
   return path.join(homeDir, "instances", instanceId, "service.env");
 }
 
+export const SYSTEMD_UNIT_PATTERN = /^wardmote(?:-.+)?\.service$/;
+export const LAUNCHD_PLIST_PATTERN = /^com\.tickernelz\.wardmote(?:\..+)?\.plist$/;
+
 export function systemdServiceName(instanceId: string): string {
-  return instanceId === "default" ? "paperclip-pro.service" : `paperclip-pro-${instanceId}.service`;
+  return instanceId === "default" ? "wardmote.service" : `wardmote-${instanceId}.service`;
 }
 
 export function launchdServiceName(instanceId: string): string {
-  return instanceId === "default" ? "ing.paperclip.paperclip-pro" : `ing.paperclip.paperclip-pro.${instanceId}`;
+  return instanceId === "default" ? "com.tickernelz.wardmote" : `com.tickernelz.wardmote.${instanceId}`;
 }
 
 export type SystemdMemoryLimits = { high: string; max: string; swapMax: string; oomScoreAdjust: number };

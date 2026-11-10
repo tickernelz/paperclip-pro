@@ -55,6 +55,7 @@ start_server() {
 }
 
 LEGACY_PACKAGE="@tickernelz/paperclip-pro"
+LEGACY_COMMAND="paperclip-pro"
 OLD_VERSION="$(npm view "$LEGACY_PACKAGE" version)"
 phase "start"
 echo "==> Installing the published release $LEGACY_PACKAGE@$OLD_VERSION the way an existing user has it"
@@ -69,18 +70,20 @@ stop_server
 phase "published release installed and health-checked"
 echo "==> Upgrading to $REPO@$SHA with this commit's @tickernelz/wardmote CLI, as npx @tickernelz/wardmote install does"
 (cd "$REPO_ROOT" && node cli/node_modules/tsx/dist/cli.mjs cli/src/index.ts install --repo "$REPO" --ref "$SHA" --yes)
-paperclip-pro --version
-"$HOME/.paperclip-pro/cli/current/node_modules/.bin/wardmote" --version
-test ! -e "$HOME/.wardmote"
+wardmote --version
+test -d "$HOME/.wardmote/instances/default"
+test -L "$HOME/.paperclip-pro"
+test ! -e "$HOME/.local/bin/$LEGACY_COMMAND"
+grep -q '^# wardmote managed install shim v1$' "$HOME/.local/bin/wardmote"
 
-start_server after paperclip-pro run
+start_server after wardmote run
 curl -fsS "http://127.0.0.1:$PORT/api/companies" | grep -q '"Upgrade path marker"'
-echo "after upgrade: legacy home kept, marker company still listed"
+echo "after upgrade: home moved to ~/.wardmote, marker company still listed"
 stop_server
 
 phase "source install to this commit done and served"
-echo "==> Re-running install with the new CLI writes the wardmote shim"
-paperclip-pro install --repo "$REPO" --ref "$SHA" --yes
+echo "==> Re-running install through the migrated wardmote shim"
+wardmote install --repo "$REPO" --ref "$SHA" --yes
 wardmote --version
-test ! -e "$HOME/.wardmote"
+test -L "$HOME/.paperclip-pro"
 echo "upgrade path ok: $OLD_VERSION -> $SHA"

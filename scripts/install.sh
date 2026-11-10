@@ -394,12 +394,12 @@ if [ "$INSTALL_SERVICE" = "1" ]; then
 fi
 
 if [ "$NO_ONBOARD" = "0" ] && [ -t 0 ] && [ -t 1 ]; then
-  if command -v paperclip-pro >/dev/null 2>&1; then
-    exec paperclip-pro onboard
+  if command -v wardmote >/dev/null 2>&1; then
+    exec wardmote onboard
   elif [ -x "${HOME:-}/.local/bin/paperclip-pro" ]; then
-    exec "${HOME}/.local/bin/paperclip-pro" onboard
+    exec "${HOME}/.local/bin/wardmote" onboard
   else
-    fail "Paperclip was installed, but 'paperclip-pro' is not available on PATH. Open a new shell and run 'paperclip-pro onboard'."
+    fail "Paperclip was installed, but 'wardmote' is not available on PATH. Open a new shell and run 'wardmote onboard'."
   fi
 fi
 

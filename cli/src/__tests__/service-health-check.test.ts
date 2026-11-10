@@ -36,12 +36,12 @@ afterEach(() => {
 
 function managerFixture(active = true) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-service-doctor-"));
-  const definitionPath = path.join(root, "paperclip-pro.service");
+  const definitionPath = path.join(root, "wardmote.service");
   fs.writeFileSync(definitionPath, "unit");
   return {
     platform: "systemd" as const,
     instanceId: "default",
-    serviceName: "paperclip-pro.service",
+    serviceName: "wardmote.service",
     definitionPath,
     renderDefinition: () => "unit",
     install: vi.fn(async () => ({ changed: false })),
@@ -51,7 +51,7 @@ function managerFixture(active = true) {
     restart: vi.fn(async () => undefined),
     status: vi.fn(async () => ({
       platform: "systemd" as const,
-      serviceName: "paperclip-pro.service",
+      serviceName: "wardmote.service",
       installed: true,
       active,
       enabled: true,
@@ -170,7 +170,7 @@ describe("service runtime shim awareness", () => {
     return {
       platform: "launchd" as const,
       instanceId: "default",
-      serviceName: "ing.paperclip.paperclip-pro",
+      serviceName: "com.tickernelz.wardmote",
       definitionPath: "/tmp/nonexistent-definition.plist",
       renderDefinition: () => "plist",
       install: vi.fn(async () => ({ changed: false })),
@@ -180,7 +180,7 @@ describe("service runtime shim awareness", () => {
       restart: vi.fn(async () => undefined),
       status: vi.fn(async () => ({
         platform: "launchd" as const,
-        serviceName: "ing.paperclip.paperclip-pro",
+        serviceName: "com.tickernelz.wardmote",
         installed: true,
         active: false,
         enabled: true,
@@ -206,7 +206,7 @@ describe("service runtime shim awareness", () => {
 
   it("diagnoses against the executable recorded in the definition, not the current env", async () => {
     const manager = inactiveManager();
-    manager.installedExecutablePath = vi.fn(async () => "/custom/bin/paperclip-pro");
+    manager.installedExecutablePath = vi.fn(async () => "/custom/bin/wardmote");
     const shimPresent = vi.fn(async () => false);
     const results = await serviceHealthChecks({} as never, {
       detect: vi.fn(async () => ({ supported: true as const, manager: manager as never })),
@@ -214,9 +214,9 @@ describe("service runtime shim awareness", () => {
       shimPresent,
     });
     const runtime = results.find((r) => r.name === "Service runtime");
-    expect(shimPresent).toHaveBeenCalledWith("/custom/bin/paperclip-pro");
-    expect(runtime?.message).toContain("/custom/bin/paperclip-pro");
-    expect(runtime?.repairHint).toContain("/custom/bin/paperclip-pro");
+    expect(shimPresent).toHaveBeenCalledWith("/custom/bin/wardmote");
+    expect(runtime?.message).toContain("/custom/bin/wardmote");
+    expect(runtime?.repairHint).toContain("/custom/bin/wardmote");
     expect(runtime?.repairHint).toContain("unset WARDMOTE_SHIM_PATH");
     expect(runtime?.repairHint).toContain("`wardmote install` followed by `wardmote service install`");
   });
@@ -229,7 +229,7 @@ describe("service runtime shim awareness", () => {
     });
     const healthResult = results.find((r) => r.name === "Service health");
     expect(healthResult?.status).toBe("warn");
-    expect(healthResult?.message).toContain("but not from ing.paperclip.paperclip-pro");
+    expect(healthResult?.message).toContain("but not from com.tickernelz.wardmote");
     const runtime = results.find((r) => r.name === "Service runtime");
     expect(runtime?.message).toContain("serving another Wardmote process");
   });
@@ -237,10 +237,10 @@ describe("service runtime shim awareness", () => {
 
 describe("definition executable extraction", () => {
   it("round-trips through both renderers", () => {
-    const unit = renderSystemdUnit({ instanceId: "default", shimPath: "/custom/bin/paperclip-pro", homeDir: "/home/x/.paperclip" });
-    expect(extractExecutableFromSystemdUnit(unit)).toBe("/custom/bin/paperclip-pro");
-    const plist = renderLaunchdPlist({ instanceId: "default", shimPath: "/custom/bin/paperclip-pro", homeDir: "/home/x/.paperclip", stdoutPath: "/tmp/o.log", stderrPath: "/tmp/e.log" });
-    expect(extractExecutableFromLaunchdPlist(plist)).toBe("/custom/bin/paperclip-pro");
+    const unit = renderSystemdUnit({ instanceId: "default", shimPath: "/custom/bin/wardmote", homeDir: "/home/x/.paperclip" });
+    expect(extractExecutableFromSystemdUnit(unit)).toBe("/custom/bin/wardmote");
+    const plist = renderLaunchdPlist({ instanceId: "default", shimPath: "/custom/bin/wardmote", homeDir: "/home/x/.paperclip", stdoutPath: "/tmp/o.log", stderrPath: "/tmp/e.log" });
+    expect(extractExecutableFromLaunchdPlist(plist)).toBe("/custom/bin/wardmote");
     expect(extractExecutableFromSystemdUnit("garbage")).toBe(null);
     expect(extractExecutableFromLaunchdPlist("garbage")).toBe(null);
   });

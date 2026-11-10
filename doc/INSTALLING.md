@@ -19,7 +19,7 @@ npx @tickernelz/wardmote@latest install --yes
 `https://registry.npmjs.org`, installs that version and its package set into a
 payload under `~/.wardmote/cli/installs/npm/<version>`, smoke-tests
 `--version` and the payload's embedded-PostgreSQL native assets, and only then
-flips the `current` pointer and writes the `~/.local/bin/paperclip-pro` shim
+flips the `current` pointer and writes the `~/.local/bin/wardmote` shim
 (`cli/src/commands/install.ts`).
 
 Pin an exact published version with `--version`:
@@ -111,7 +111,7 @@ Managed code is separate from instance data:
     ├── npm/<version>/
     └── git/<sha12>/
 
-~/.local/bin/paperclip-pro
+~/.local/bin/wardmote
 ```
 
 The `wardmote` shim remains stable while `current` switches atomically

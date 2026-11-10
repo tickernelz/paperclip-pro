@@ -16,9 +16,19 @@ function deps(overrides: Partial<MigrateHomeDependencies> = {}): Partial<Migrate
     platform: "linux",
     serviceState: async () => "stopped",
     reloadUnits: vi.fn(async () => undefined),
+    unitEnabled: async () => false,
+    setUnitEnabled: vi.fn(async () => undefined),
     log: () => undefined,
     ...overrides,
   };
+}
+
+const legacyShimMarker = ["paperclip", "pro managed install shim v1"].join("-");
+const legacyStoreMarker = `${["paperclip", "pro managed install store v1"].join("-")}\n`;
+const legacyPathStart = `# >>> ${["paperclip", "pro"].join("-")} managed PATH >>>`;
+const legacyPathEnd = `# <<< ${["paperclip", "pro"].join("-")} managed PATH <<<`;
+function legacyShim(entrypoint: string): string {
+  return `#!/bin/sh\n# ${legacyShimMarker}\nset -eu\nexec '/usr/bin/node' '${entrypoint}' "$@"\n`;
 }
 
 describe("migrate-home", () => {
@@ -30,21 +40,63 @@ describe("migrate-home", () => {
     fs.writeFileSync(path.join(legacy, "instances", "default", "config.json"), "{}");
     unitPath = path.join(userHome, ".config", "systemd", "user", "paperclip-pro.service");
     fs.mkdirSync(path.dirname(unitPath), { recursive: true });
-    fs.writeFileSync(unitPath, `Environment="WARDMOTE_HOME=${legacy}"\nEnvironmentFile=-${legacy}/instances/default/service.env\n`);
+    fs.writeFileSync(unitPath, `ExecStart="${userHome}/.local/bin/paperclip-pro" run --instance "default"\nEnvironment="WARDMOTE_HOME=${legacy}"\nEnvironmentFile=-${legacy}/instances/default/service.env\n`);
   });
 
   afterEach(() => {
     fs.rmSync(userHome, { recursive: true, force: true });
   });
 
-  it("moves the home, links the old path to it, and repoints the service unit", async () => {
+  it("moves the home, links the old path to it, and replaces the service unit under the new name", async () => {
     const reloadUnits = vi.fn(async () => undefined);
-    await migrateHomeCommand({}, deps({ reloadUnits }));
+    const setUnitEnabled = vi.fn(async () => undefined);
+    await migrateHomeCommand({}, deps({ reloadUnits, setUnitEnabled, unitEnabled: async (unit) => unit === path.basename(unitPath) }));
     expect(fs.readFileSync(path.join(target, "instances", "default", "config.json"), "utf8")).toBe("{}");
     expect(fs.lstatSync(legacy).isSymbolicLink()).toBe(true);
     expect(fs.realpathSync(legacy)).toBe(fs.realpathSync(target));
-    expect(fs.readFileSync(unitPath, "utf8")).toBe(`Environment="WARDMOTE_HOME=${target}"\nEnvironmentFile=-${target}/instances/default/service.env\n`);
-    expect(reloadUnits).toHaveBeenCalledTimes(1);
+    expect(fs.existsSync(unitPath)).toBe(false);
+    const nextUnit = path.join(path.dirname(unitPath), "wardmote.service");
+    expect(fs.readFileSync(nextUnit, "utf8")).toBe(
+      `ExecStart="${userHome}/.local/bin/wardmote" run --instance "default"\nEnvironment="WARDMOTE_HOME=${target}"\nEnvironmentFile=-${target}/instances/default/service.env\n`,
+    );
+    expect(setUnitEnabled.mock.calls).toEqual([[path.basename(unitPath), false], ["wardmote.service", true]]);
+    expect(reloadUnits).toHaveBeenCalledTimes(2);
+  });
+
+  it("replaces the managed shims, store marker and PATH block, then is a no-op", async () => {
+    const binDir = path.join(userHome, ".local", "bin");
+    fs.mkdirSync(binDir, { recursive: true });
+    const current = path.join(legacy, "cli", "current");
+    fs.mkdirSync(path.join(legacy, "cli"), { recursive: true });
+    fs.writeFileSync(path.join(legacy, "cli", ".managed-install"), legacyStoreMarker);
+    fs.writeFileSync(path.join(binDir, path.basename(unitPath, ".service")), legacyShim(`${current}/node_modules/.bin/x`), { mode: 0o755 });
+    fs.writeFileSync(path.join(binDir, "wardmote"), legacyShim(`${current}/node_modules/.bin/x`), { mode: 0o755 });
+    fs.writeFileSync(path.join(userHome, ".bashrc"), `alias ll=ls\n${legacyPathStart}\nexport PATH="$HOME/.local/bin:$PATH"\n${legacyPathEnd}\n`);
+
+    await migrateHomeCommand({}, deps());
+
+    expect(fs.existsSync(path.join(binDir, path.basename(unitPath, ".service")))).toBe(false);
+    const shim = fs.readFileSync(path.join(binDir, "wardmote"), "utf8");
+    expect(shim).toContain("# wardmote managed install shim v1\n");
+    expect(shim).toContain(`'${path.join(target, "cli", "current", "node_modules", ".bin", "wardmote")}'`);
+    expect(fs.readFileSync(path.join(target, "cli", ".managed-install"), "utf8")).toBe("wardmote managed install store v1\n");
+    expect(fs.readFileSync(path.join(userHome, ".bashrc"), "utf8")).toBe(
+      'alias ll=ls\n# >>> wardmote managed PATH >>>\nexport PATH="$HOME/.local/bin:$PATH"\n# <<< wardmote managed PATH <<<\n',
+    );
+
+    const log = vi.fn();
+    await migrateHomeCommand({}, deps({ log }));
+    expect(log).toHaveBeenCalledWith("Nothing to migrate: this install already uses the Wardmote names.");
+  });
+
+  it("leaves a command it does not manage in place", async () => {
+    const binDir = path.join(userHome, ".local", "bin");
+    fs.mkdirSync(binDir, { recursive: true });
+    const foreign = path.join(binDir, path.basename(unitPath, ".service"));
+    fs.writeFileSync(foreign, "#!/bin/sh\necho mine\n");
+    await migrateHomeCommand({}, deps());
+    expect(fs.readFileSync(foreign, "utf8")).toBe("#!/bin/sh\necho mine\n");
+    expect(fs.existsSync(path.join(binDir, "wardmote"))).toBe(false);
   });
 
   it("changes nothing on a dry run", async () => {
@@ -89,8 +141,18 @@ describe("migrate-home", () => {
     expect(fs.lstatSync(legacy).isDirectory()).toBe(true);
   });
 
-  it("refuses a second run", async () => {
-    await migrateHomeCommand({}, deps());
-    await expect(migrateHomeCommand({}, deps())).rejects.toThrow("already a link");
+  it("refuses when the new unit name is already taken", async () => {
+    fs.writeFileSync(path.join(path.dirname(unitPath), "wardmote.service"), "");
+    await expect(migrateHomeCommand({}, deps())).rejects.toThrow("already exists");
+    expect(fs.lstatSync(legacy).isDirectory()).toBe(true);
+  });
+
+  it("migrates a launchd agent and its label on macOS", async () => {
+    const plist = path.join(userHome, "Library", "LaunchAgents", "ing.paperclip.paperclip-pro.team-a.plist");
+    fs.mkdirSync(path.dirname(plist), { recursive: true });
+    fs.writeFileSync(plist, "<string>ing.paperclip.paperclip-pro.team-a</string>");
+    await migrateHomeCommand({}, deps({ platform: "darwin" }));
+    expect(fs.existsSync(plist)).toBe(false);
+    expect(fs.readFileSync(path.join(path.dirname(plist), "com.tickernelz.wardmote.team-a.plist"), "utf8")).toBe("<string>com.tickernelz.wardmote.team-a</string>");
   });
 });

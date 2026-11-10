@@ -30,7 +30,7 @@ export interface ResolvedClientContext {
 export function addCommonClientOptions(command: Command, opts?: { includeCompany?: boolean }): Command {
   command
     .option("-c, --config <path>", "Path to Wardmote config file")
-    .option("-d, --data-dir <path>", "Wardmote data directory root (isolates state from ~/.paperclip-pro)")
+    .option("-d, --data-dir <path>", "Wardmote data directory root (isolates state from ~/.wardmote)")
     .option("--context <path>", "Path to CLI context file")
     .option("--profile <name>", "CLI context profile name")
     .option("--api-base <url>", "Base URL for the Wardmote API")

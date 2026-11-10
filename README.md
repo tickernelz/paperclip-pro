@@ -148,7 +148,7 @@ wardmote service logs
 wardmote service restart --drain
 ```
 
-`restart` keeps live agent runs by default; `--drain` stops admitting new runs and waits for the live ones first. On Linux the systemd user unit is `paperclip-pro.service` for the `default` instance.
+`restart` keeps live agent runs by default; `--drain` stops admitting new runs and waits for the live ones first. On Linux the systemd user unit is `wardmote.service` for the `default` instance.
 
 ```sh
 wardmote update --check
