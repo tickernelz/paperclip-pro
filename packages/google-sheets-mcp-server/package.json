@@ -13,8 +13,8 @@
   },
   "type": "module",
   "bin": {
-    "paperclip-google-sheets-mcp-server": "./dist/stdio.js",
-    "paperclip-google-sheets-mcp-http-server": "./dist/http-server.js"
+    "wardmote-google-sheets-mcp-server": "./dist/stdio.js",
+    "wardmote-google-sheets-mcp-http-server": "./dist/http-server.js"
   },
   "exports": {
     ".": "./src/index.ts"
@@ -22,8 +22,8 @@
   "publishConfig": {
     "access": "public",
     "bin": {
-      "paperclip-google-sheets-mcp-server": "./dist/stdio.js",
-      "paperclip-google-sheets-mcp-http-server": "./dist/http-server.js"
+      "wardmote-google-sheets-mcp-server": "./dist/stdio.js",
+      "wardmote-google-sheets-mcp-http-server": "./dist/http-server.js"
     },
     "exports": {
       ".": {

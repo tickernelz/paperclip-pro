@@ -3,7 +3,7 @@ import path from "node:path";
 
 export const WARDMOTE_MCP_SERVER_NAME = "wardmote";
 export const WARDMOTE_MCP_PACKAGE = "@tickernelz/wardmote-mcp-server";
-export const WARDMOTE_MCP_BIN = "paperclip-mcp-server";
+export const WARDMOTE_MCP_BIN = "wardmote-mcp-server";
 export const WARDMOTE_MCP_DEFAULT_TOOLSETS = "core";
 export const WARDMOTE_MCP_TOOLSETS_ENV = "WARDMOTE_MCP_TOOLSETS";
 export const WARDMOTE_MCP_HTTP_PATH = "/mcp/wardmote";
