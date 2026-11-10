@@ -55,7 +55,7 @@
     },
     "placement": "optional",
     "requiredClaims": [],
-    "schema": "paperclip.semantic-action.v1",
+    "schema": "wardmote.semantic-action.v1",
     "title": "Create skill",
     "version": 1
   },
@@ -101,7 +101,7 @@
     "requiredClaims": [
       "api:discover"
     ],
-    "schema": "paperclip.semantic-action.v1",
+    "schema": "wardmote.semantic-action.v1",
     "title": "Search the Wardmote API",
     "version": 1
   },
@@ -234,7 +234,7 @@
     "requiredClaims": [
       "api:call"
     ],
-    "schema": "paperclip.semantic-action.v1",
+    "schema": "wardmote.semantic-action.v1",
     "title": "Call the Wardmote API",
     "version": 1
   },
@@ -260,7 +260,7 @@
     },
     "placement": "always",
     "requiredClaims": [],
-    "schema": "paperclip.semantic-action.v1",
+    "schema": "wardmote.semantic-action.v1",
     "title": "Get active task context",
     "version": 1
   },
@@ -293,7 +293,7 @@
     },
     "placement": "always",
     "requiredClaims": [],
-    "schema": "paperclip.semantic-action.v1",
+    "schema": "wardmote.semantic-action.v1",
     "title": "Get active task history",
     "version": 1
   },
@@ -319,7 +319,7 @@
     },
     "placement": "always",
     "requiredClaims": [],
-    "schema": "paperclip.semantic-action.v1",
+    "schema": "wardmote.semantic-action.v1",
     "title": "List task documents",
     "version": 1
   },
@@ -354,7 +354,7 @@
     },
     "placement": "always",
     "requiredClaims": [],
-    "schema": "paperclip.semantic-action.v1",
+    "schema": "wardmote.semantic-action.v1",
     "title": "Read task document",
     "version": 1
   },
@@ -395,7 +395,7 @@
     },
     "placement": "always",
     "requiredClaims": [],
-    "schema": "paperclip.semantic-action.v1",
+    "schema": "wardmote.semantic-action.v1",
     "title": "List document revisions",
     "version": 1
   },
@@ -442,7 +442,7 @@
     },
     "placement": "optional",
     "requiredClaims": [],
-    "schema": "paperclip.semantic-action.v1",
+    "schema": "wardmote.semantic-action.v1",
     "title": "Set task title",
     "version": 1
   },
@@ -529,7 +529,7 @@
     },
     "placement": "always",
     "requiredClaims": [],
-    "schema": "paperclip.semantic-action.v1",
+    "schema": "wardmote.semantic-action.v1",
     "title": "Report durable progress",
     "version": 1
   },
@@ -616,7 +616,7 @@
     },
     "placement": "always",
     "requiredClaims": [],
-    "schema": "paperclip.semantic-action.v1",
+    "schema": "wardmote.semantic-action.v1",
     "title": "Answer status question",
     "version": 1
   },
@@ -733,7 +733,7 @@
     },
     "placement": "always",
     "requiredClaims": [],
-    "schema": "paperclip.semantic-action.v1",
+    "schema": "wardmote.semantic-action.v1",
     "title": "Write revisioned document",
     "version": 1
   },
@@ -857,7 +857,7 @@
     },
     "placement": "always",
     "requiredClaims": [],
-    "schema": "paperclip.semantic-action.v1",
+    "schema": "wardmote.semantic-action.v1",
     "title": "Request structured human input",
     "version": 1
   },
@@ -975,7 +975,7 @@
     },
     "placement": "always",
     "requiredClaims": [],
-    "schema": "paperclip.semantic-action.v1",
+    "schema": "wardmote.semantic-action.v1",
     "title": "Register inspectable deliverable",
     "version": 1
   },
@@ -1060,7 +1060,7 @@
     },
     "placement": "always",
     "requiredClaims": [],
-    "schema": "paperclip.semantic-action.v1",
+    "schema": "wardmote.semantic-action.v1",
     "title": "Finish active task",
     "version": 1
   },
@@ -1155,7 +1155,7 @@
     },
     "placement": "always",
     "requiredClaims": [],
-    "schema": "paperclip.semantic-action.v1",
+    "schema": "wardmote.semantic-action.v1",
     "title": "Block active task",
     "version": 1
   },
@@ -1240,7 +1240,7 @@
     },
     "placement": "always",
     "requiredClaims": [],
-    "schema": "paperclip.semantic-action.v1",
+    "schema": "wardmote.semantic-action.v1",
     "title": "Request task review",
     "version": 1
   },
@@ -1268,7 +1268,7 @@
     "requiredClaims": [
       "discovery:agents:read"
     ],
-    "schema": "paperclip.semantic-action.v1",
+    "schema": "wardmote.semantic-action.v1",
     "title": "List company agents",
     "version": 1
   },
@@ -1344,7 +1344,7 @@
     "requiredClaims": [
       "delegation:agents:create"
     ],
-    "schema": "paperclip.semantic-action.v1",
+    "schema": "wardmote.semantic-action.v1",
     "title": "Hire a native agent",
     "version": 1
   },
@@ -1381,7 +1381,7 @@
     "requiredClaims": [
       "discovery:agents:read"
     ],
-    "schema": "paperclip.semantic-action.v1",
+    "schema": "wardmote.semantic-action.v1",
     "title": "Get company agent",
     "version": 1
   },
@@ -1436,7 +1436,7 @@
     "requiredClaims": [
       "discovery:tasks:read"
     ],
-    "schema": "paperclip.semantic-action.v1",
+    "schema": "wardmote.semantic-action.v1",
     "title": "Search company tasks",
     "version": 1
   },
@@ -1464,7 +1464,7 @@
     "requiredClaims": [
       "governance:approvals:read"
     ],
-    "schema": "paperclip.semantic-action.v1",
+    "schema": "wardmote.semantic-action.v1",
     "title": "List approvals",
     "version": 1
   },
@@ -1501,7 +1501,7 @@
     "requiredClaims": [
       "governance:approvals:read"
     ],
-    "schema": "paperclip.semantic-action.v1",
+    "schema": "wardmote.semantic-action.v1",
     "title": "Get approval",
     "version": 1
   },
@@ -1538,7 +1538,7 @@
     "requiredClaims": [
       "governance:approvals:read"
     ],
-    "schema": "paperclip.semantic-action.v1",
+    "schema": "wardmote.semantic-action.v1",
     "title": "Get approval context",
     "version": 1
   },
@@ -1566,7 +1566,7 @@
     "requiredClaims": [
       "workspace:read"
     ],
-    "schema": "paperclip.semantic-action.v1",
+    "schema": "wardmote.semantic-action.v1",
     "title": "Get workspace runtime",
     "version": 1
   },
@@ -1660,7 +1660,7 @@
     "requiredClaims": [
       "workspace:control"
     ],
-    "schema": "paperclip.semantic-action.v1",
+    "schema": "wardmote.semantic-action.v1",
     "title": "Control workspace service",
     "version": 1
   },
@@ -1788,7 +1788,7 @@
     "requiredClaims": [
       "delegation:tasks:assign"
     ],
-    "schema": "paperclip.semantic-action.v1",
+    "schema": "wardmote.semantic-action.v1",
     "title": "Reassign task",
     "version": 1
   },
@@ -1879,7 +1879,7 @@
     "requiredClaims": [
       "dependencies:write"
     ],
-    "schema": "paperclip.semantic-action.v1",
+    "schema": "wardmote.semantic-action.v1",
     "title": "Set task dependencies",
     "version": 1
   },
@@ -1919,7 +1919,7 @@
     "requiredClaims": [
       "discovery:projects:read"
     ],
-    "schema": "paperclip.semantic-action.v1",
+    "schema": "wardmote.semantic-action.v1",
     "title": "List projects",
     "version": 1
   },
@@ -1945,7 +1945,7 @@
     },
     "placement": "optional",
     "requiredClaims": [],
-    "schema": "paperclip.semantic-action.v1",
+    "schema": "wardmote.semantic-action.v1",
     "title": "List available repositories",
     "version": 1
   },
@@ -2134,7 +2134,7 @@
     },
     "placement": "optional",
     "requiredClaims": [],
-    "schema": "paperclip.semantic-action.v1",
+    "schema": "wardmote.semantic-action.v1",
     "title": "Create project",
     "version": 1
   },
@@ -2286,7 +2286,7 @@
     "requiredClaims": [
       "delegation:tasks:create"
     ],
-    "schema": "paperclip.semantic-action.v1",
+    "schema": "wardmote.semantic-action.v1",
     "title": "Create task",
     "version": 1
   },
@@ -2378,7 +2378,7 @@
     "requiredClaims": [
       "governance:approvals:request"
     ],
-    "schema": "paperclip.semantic-action.v1",
+    "schema": "wardmote.semantic-action.v1",
     "title": "Request approval",
     "version": 1
   },
@@ -2485,7 +2485,7 @@
     "requiredClaims": [
       "governance:approvals:decide"
     ],
-    "schema": "paperclip.semantic-action.v1",
+    "schema": "wardmote.semantic-action.v1",
     "title": "Decide approval",
     "version": 1
   },
@@ -2581,7 +2581,7 @@
     "requiredClaims": [
       "governance:approvals:comment"
     ],
-    "schema": "paperclip.semantic-action.v1",
+    "schema": "wardmote.semantic-action.v1",
     "title": "Comment on approval",
     "version": 1
   },
@@ -2695,7 +2695,7 @@
     },
     "placement": "optional",
     "requiredClaims": [],
-    "schema": "paperclip.semantic-action.v1",
+    "schema": "wardmote.semantic-action.v1",
     "title": "Set task monitor",
     "version": 1
   },
@@ -2797,7 +2797,7 @@
     "requiredClaims": [
       "control_plane:wakes"
     ],
-    "schema": "paperclip.semantic-action.v1",
+    "schema": "wardmote.semantic-action.v1",
     "title": "Schedule bounded wake",
     "version": 1
   }

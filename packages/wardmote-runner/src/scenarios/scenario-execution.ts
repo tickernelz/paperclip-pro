@@ -468,7 +468,7 @@ export function buildExposure(
     (CAPABILITY_CONTROL_PLANE_OWNED_OPERATION_IDS as readonly string[]).includes(capability.operationId),
   );
   return {
-    schema: "paperclip.capability.exposure.v1",
+    schema: "wardmote.capability.exposure.v1",
     always,
     optional,
     controlPlane: [...controlPlane],

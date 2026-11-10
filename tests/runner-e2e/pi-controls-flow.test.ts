@@ -159,7 +159,7 @@ async function exercise(taskId: string, remote: boolean, failure?: "mutation" | 
       expect(browserSteers).toBe(stopCase ? 0 : 1); expect(browserDeclines).toBe(stopCase ? 0 : 1);
       if (!stopCase) {
         const receipt = saved.get("pi-steering-presentation.json");
-        expect(receipt).toMatchObject({ schema: "paperclip.e2e.pi-steering-presentation.v1", phase: "final", companyId: "company", issueId: "issue", runId: "run", commentsApiPath: "/api/issues/issue/comments" });
+        expect(receipt).toMatchObject({ schema: "wardmote.e2e.pi-steering-presentation.v1", phase: "final", companyId: "company", issueId: "issue", runId: "run", commentsApiPath: "/api/issues/issue/comments" });
         expect(receipt.comments).toEqual(publicComments.at(-1));
         expect(receipt.run.resultJson.presentationDecision).toEqual(f.run.resultJson.presentationDecision);
         expect(receipt).not.toHaveProperty("finalMessage");

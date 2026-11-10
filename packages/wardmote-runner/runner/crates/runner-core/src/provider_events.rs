@@ -175,7 +175,7 @@ pub fn project_acpx_state_event(
                 EventPriority::P0,
                 json!({
                     "semantic_tool": {
-                        "schema": "paperclip.prp.semantic_tool.v1",
+                        "schema": "wardmote.prp.semantic_tool.v1",
                         "schemaVersion": 1,
                         "phase": "input",
                         "operationId": operation_id,
@@ -234,7 +234,7 @@ pub fn project_acpx_state_event(
                 "runtime_request.created",
                 EventPriority::P0,
                 json!({"request": {
-                    "schema":"paperclip.runtime_request.v2", "requestKind":"permission_approval",
+                    "schema":"wardmote.runtime_request.v2", "requestKind":"permission_approval",
                     "requestId":request_id, "turnId":context.turn_id, "itemId":context.item_id,
                     "type":"permission", "status":"pending", "prompt":title, "choices":choices,
                     "details":details,
@@ -268,7 +268,7 @@ pub fn project_acpx_state_event(
                 EventPriority::P0,
                 json!({
                     "request": {
-                        "schema": "paperclip.runtime_request.v2",
+                        "schema": "wardmote.runtime_request.v2",
                         "requestKind": "runtime",
                         "requestId": request_id,
                         "turnId": context.turn_id,
@@ -437,7 +437,7 @@ fn project_acpx_tool_result(
         priority: EventPriority::P0,
         payload: json!({
             "semantic_tool": {
-                "schema": "paperclip.prp.semantic_tool.v1",
+                "schema": "wardmote.prp.semantic_tool.v1",
                 "schemaVersion": 1,
                 "phase": "result",
                 "operationId": result.operation_id,
@@ -690,7 +690,7 @@ pub fn normalize_codex_notification(method: &str, params: &Value) -> Vec<Normali
             "context.compacted",
             EventPriority::P1,
             json!({
-                "schema": "paperclip.context.compacted.v1",
+                "schema": "wardmote.context.compacted.v1",
                 "compactionId": stable_id(string(params.get("threadId")), "codex-compaction"),
                 "reason": "provider",
                 "preTokens": Value::Null,
@@ -770,7 +770,7 @@ pub fn normalize_codex_notification(method: &str, params: &Value) -> Vec<Normali
                 "plan.updated",
                 EventPriority::P1,
                 json!({
-                    "schema": "paperclip.plan.updated.v1",
+                    "schema": "wardmote.plan.updated.v1",
                     "planId": plan_id,
                     "revision": params.get("revision").and_then(Value::as_u64).filter(|value| *value > 0).unwrap_or(1),
                     "explanation": params.get("explanation").and_then(Value::as_str).map(|value| bounded_text(value, MAX_TEXT_CHARS)),
@@ -846,7 +846,7 @@ pub fn normalize_codex_notification(method: &str, params: &Value) -> Vec<Normali
             "provider.notice.recorded",
             EventPriority::P0,
             json!({
-                "schema": "paperclip.provider.notice.v1",
+                "schema": "wardmote.provider.notice.v1",
                 "noticeId": stable_id(&format!("codex-{method}"), "codex-notice"),
                 "severity": if method == "error" { "error" } else { "warning" },
                 "category": method.replace('/', "_"),
@@ -886,7 +886,7 @@ pub fn normalize_codex_notification(method: &str, params: &Value) -> Vec<Normali
                 "commandExecution" | "mcpToolCall" | "dynamicToolCall" | "builtinToolCall"
             ) {
                 let mut payload = json!({
-                    "schema": "paperclip.tool.execution.v1",
+                    "schema": "wardmote.tool.execution.v1",
                     "executionId": item_id,
                     "transport": match item_type { "mcpToolCall" => "mcp", "dynamicToolCall" => "dynamic", "builtinToolCall" => "builtin", _ => "process" },
                     "operation": if item_type == "commandExecution" { "execute" } else { "unknown" },
@@ -1095,7 +1095,7 @@ fn normalize_acpx_plan(payload: &Value, plan_id: &str) -> Vec<NormalizedProvider
         event_type: "plan.updated".to_owned(),
         priority: EventPriority::P1,
         payload: json!({
-            "schema": "paperclip.plan.updated.v1",
+            "schema": "wardmote.plan.updated.v1",
             "planId": plan_id,
             "revision": payload
                 .get("revision")
@@ -1113,7 +1113,7 @@ fn normalize_acpx_plan(payload: &Value, plan_id: &str) -> Vec<NormalizedProvider
 
 fn acpx_message_item_id(message_id: &str, turn_id: &str, channel: &str) -> String {
     let mut digest = Sha256::new();
-    digest.update(b"paperclip.acpx.message-item.v1\0");
+    digest.update(b"wardmote.acpx.message-item.v1\0");
     digest.update(channel.as_bytes());
     digest.update(b"\0");
     digest.update(turn_id.as_bytes());
@@ -1129,7 +1129,7 @@ fn acpx_opaque_item_id(value: &str, fallback: &str, kind: &str) -> String {
         return value.to_owned();
     }
     let mut digest = Sha256::new();
-    digest.update(b"paperclip.acpx.opaque-item.v1\0");
+    digest.update(b"wardmote.acpx.opaque-item.v1\0");
     digest.update(kind.as_bytes());
     digest.update(b"\0");
     digest.update(value.as_bytes());
@@ -1233,7 +1233,7 @@ fn normalize_acpx_status(
             event_type: "review.mode.changed".to_owned(),
             priority: EventPriority::P1,
             payload: json!({
-                "schema": "paperclip.review.mode_changed.v1",
+                "schema": "wardmote.review.mode_changed.v1",
                 "reviewId": stable_id(turn_id, item_id),
                 "state": if status.to_ascii_lowercase().contains("review")
                     || status.to_ascii_lowercase().contains("plan")
@@ -1316,7 +1316,7 @@ fn normalize_acpx_tool_call(
         None => String::new(),
     };
     let mut normalized = json!({
-        "schema": "paperclip.tool.execution.v1",
+        "schema": "wardmote.tool.execution.v1",
         "executionId": item_id,
         "transport": if mcp.is_some() { "mcp" } else { "builtin" },
         "operation": operation,
@@ -1379,7 +1379,7 @@ fn acpx_notice(
             EventPriority::P1
         },
         payload: json!({
-            "schema": "paperclip.provider.notice.v1",
+            "schema": "wardmote.provider.notice.v1",
             "noticeId": item_id,
             "severity": match severity {
                 "error" => "error",
@@ -1413,7 +1413,7 @@ fn safe_acpx_location(value: Option<&Value>, allow_create_target: bool) -> Value
     // proof that the sidecar resolved an existing workspace entry as POSIX filename data,
     // or that an edit's not-yet-created target has an in-workspace parent.
     if value.get("pathBoundary").and_then(Value::as_str)
-        != Some("paperclip.workspace_relative_display.v2")
+        != Some("wardmote.workspace_relative_display.v2")
     {
         return Value::Null;
     }
@@ -1433,8 +1433,8 @@ fn safe_acpx_location(value: Option<&Value>, allow_create_target: bool) -> Value
         || has_rfc_uri_scheme_prefix(raw_path);
     if requires_entry_attestation {
         let attestation = value.get("pathAttestation").and_then(Value::as_str);
-        if attestation != Some("paperclip.workspace_entry.v1")
-            && !(allow_create_target && attestation == Some("paperclip.workspace_create_target.v1"))
+        if attestation != Some("wardmote.workspace_entry.v1")
+            && !(allow_create_target && attestation == Some("wardmote.workspace_create_target.v1"))
         {
             return Value::Null;
         }
@@ -1658,7 +1658,7 @@ mod tests {
                 safe_acpx_location(
                     Some(&json!({
                         "path": location,
-                        "pathBoundary": "paperclip.workspace_relative_display.v2"
+                        "pathBoundary": "wardmote.workspace_relative_display.v2"
                     })),
                     false,
                 ),
@@ -1683,8 +1683,8 @@ mod tests {
                 safe_acpx_location(
                     Some(&json!({
                         "path": location,
-                        "pathBoundary": "paperclip.workspace_relative_display.v2",
-                        "pathAttestation": "paperclip.workspace_entry.v1"
+                        "pathBoundary": "wardmote.workspace_relative_display.v2",
+                        "pathAttestation": "wardmote.workspace_entry.v1"
                     })),
                     false,
                 ),

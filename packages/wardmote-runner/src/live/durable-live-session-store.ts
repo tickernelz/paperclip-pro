@@ -8,7 +8,7 @@ import {
   type CapabilityLiveSessionStore,
 } from "./live-session.js";
 
-const DURABLE_STORE_SCHEMA = "paperclip.capability.live-session-checkpoint.v1" as const;
+const DURABLE_STORE_SCHEMA = "wardmote.capability.live-session-checkpoint.v1" as const;
 
 export interface CapabilityLiveSessionStoreBinding {
   sessionId: string;

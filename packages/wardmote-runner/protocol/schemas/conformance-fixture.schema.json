@@ -1,11 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://paperclip.dev/schemas/prp/v1/conformance-fixture.schema.json",
+  "$id": "https://wardmote.dev/schemas/prp/v1/conformance-fixture.schema.json",
   "title": "Paperclip Runner cross-language conformance fixture",
   "type": "object",
   "required": ["schemaVersion", "run", "events", "result"],
   "properties": {
-    "schemaVersion": { "const": "paperclip.runner.conformance.fixture.v1" },
+    "schemaVersion": { "const": "wardmote.runner.conformance.fixture.v1" },
     "run": {
       "type": "object",
       "required": ["runId", "sessionId", "companyId", "issueId", "agentId"],

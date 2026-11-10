@@ -1374,7 +1374,7 @@ export function recoveryService(
     const terminal = parseObject(envelope.terminal);
     const continuation = parseObject(result.continuation);
     if (
-      result.schema !== "paperclip.run_result.v1" ||
+      result.schema !== "wardmote.run_result.v1" ||
       result.reportedWorkDisposition !== "yielded" ||
       continuation.kind !== "response_wake" ||
       !readNonEmptyString(continuation.idempotencyKey) ||
@@ -1615,7 +1615,7 @@ export function recoveryService(
     const terminal = parseObject(envelope.terminal);
     const blocker = parseObject(result.blocker);
     if (
-      result.schema !== "paperclip.run_result.v1" ||
+      result.schema !== "wardmote.run_result.v1" ||
       result.reportedWorkDisposition !== "blocked" ||
       terminal.runTerminalState !== "succeeded" ||
       terminal.reportedWorkDisposition !== "blocked" ||

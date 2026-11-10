@@ -106,7 +106,7 @@ it.each([true, false])("settles a real proxy interrupt with controller feedback 
     await response(1);
     send({ id: 2, method: "thread/start", params: { cwd: root, model: "openrouter/deepseek/deepseek-v4-flash-0731", completionContract: { revision: "proxy-v1", criterionIds: ["objective"] }, conversationMode: "prepared" } });
     await response(2);
-    send({ id: 3, method: "turn/start", params: { input: [{ type: "text", text: JSON.stringify({ schema: "paperclip.native-model-envelope.v3", task: { prompt: "invalid-tool-feedback completion-feedback" }, completionContract: { revision: "proxy-v1", criteria: [{ id: "objective", requirement: "Complete the fixture." }] } }) }] } });
+    send({ id: 3, method: "turn/start", params: { input: [{ type: "text", text: JSON.stringify({ schema: "wardmote.native-model-envelope.v3", task: { prompt: "invalid-tool-feedback completion-feedback" }, completionContract: { revision: "proxy-v1", criteria: [{ id: "objective", requirement: "Complete the fixture." }] } }) }] } });
     await response(3);
     await expect.poll(() => messages.find(message => message.method === "item/tool/call"), { timeout: 5_000 }).toBeDefined();
     const call = messages.find(message => message.method === "item/tool/call")!;

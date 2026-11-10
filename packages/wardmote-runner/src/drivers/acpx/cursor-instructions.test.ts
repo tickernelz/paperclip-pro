@@ -14,7 +14,7 @@ const root = dirname(createRequire(import.meta.url).resolve("acpx/package.json")
 const { k: AcpClient } = await import(pathToFileURL(join(root, "dist/live-checkpoint-BSIrfgVo.js")).href);
 const content = "Wardmote governance\nCustom entry: résumé\nAGENT_HOME=/registered/agent";
 const binding = cursorInstructionBinding(content);
-const ack = { schema: "paperclip.cursor.instructions.v1", digest: binding.digest, byteLength: binding.byteLength };
+const ack = { schema: "wardmote.cursor.instructions.v1", digest: binding.digest, byteLength: binding.byteLength };
 
 it("binds exact UTF-8 content, including explicit empty instructions", () => {
   expect(JSON.parse(binding.payload).content).toBe(content);
@@ -131,7 +131,7 @@ it.each(["valid", "missing", "wrong", "unsupported"])("fresh runtime manager adm
   const create = (instructions: string, phase: string, responseMode: string) => {
     const admission = createCursorInstructionAdmission(instructions);
     const binding = cursorInstructionBinding(instructions);
-    const currentAck = { schema: "paperclip.cursor.instructions.v1", digest: binding.digest, byteLength: binding.byteLength };
+    const currentAck = { schema: "wardmote.cursor.instructions.v1", digest: binding.digest, byteLength: binding.byteLength };
     const runtime = createAcpRuntime({ cwd: dir, agentRegistry: createAgentRegistry({ overrides: { cursor: "fixture" } }),
       sessionStore: createRuntimeStore({ stateDir: join(dir, "state") }), permissionMode: "deny-all",
       protocolGuardFactory: () => admission.createGuard(),

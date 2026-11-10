@@ -22,7 +22,7 @@ it("rejects corrupt Pi bytes at the command boundary before runtime, spawn or br
   await mkdir(source); await mkdir(workspace); await mkdir(join(root, "runtime"));
   for (const name of ["node", "pi.js", "extension.js", "wrapper.js"]) await writeFile(join(source, name), "pinned:" + name);
   await chmod(join(source, "node"), 0o500);
-  const manifest: PiRuntimeManifest = { schema: "paperclip.pi-runtime-files.v1", node: "node", piEntrypoint: "pi.js", extension: "extension.js", wrapperEntrypoint: "wrapper.js", files: await inventoryPiRuntimeFiles(source) };
+  const manifest: PiRuntimeManifest = { schema: "wardmote.pi-runtime-files.v1", node: "node", piEntrypoint: "pi.js", extension: "extension.js", wrapperEntrypoint: "wrapper.js", files: await inventoryPiRuntimeFiles(source) };
   const entries = await Promise.all(manifest.files.map(async entry => ({ path: entry.path, sha256: entry.sha256.slice(7), size: (await lstat(join(source, entry.path))).size, executable: entry.path === "node" })));
   entries.sort((a, b) => a.path < b.path ? -1 : a.path > b.path ? 1 : 0);
   const closure = createHash("sha256").update(JSON.stringify(entries)).digest("hex");

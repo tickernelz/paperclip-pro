@@ -3,7 +3,7 @@ use sha2::{Digest, Sha256};
 pub(crate) const SHORT_STABLE_ID_CHARS: usize = 160;
 pub(crate) const DURABLE_STABLE_ID_CHARS: usize = 240;
 
-const ACPX_RUNTIME_REQUEST_DOMAIN: &[u8] = b"paperclip.acpx.runtime-request.v1\0";
+const ACPX_RUNTIME_REQUEST_DOMAIN: &[u8] = b"wardmote.acpx.runtime-request.v1\0";
 const ACPX_RUNTIME_REQUEST_PREFIX: &str = "acpx-request-";
 
 pub(crate) fn is_stable_id(value: &str, max_chars: usize) -> bool {

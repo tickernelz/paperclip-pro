@@ -19,7 +19,7 @@ import type { WardmoteWorkspaceFileReference } from "../live/workspace-file-refe
 export type { CapabilityJsonValue } from "../mock-core/capability-control-plane-types.js";
 import type { CapabilitySemanticOperationId } from "../semantic-tools/types.js";
 
-export const CAPABILITY_ISSUE_THREAD_VIEW_SCHEMA = "paperclip.capability.issue-thread-view.v1" as const;
+export const CAPABILITY_ISSUE_THREAD_VIEW_SCHEMA = "wardmote.capability.issue-thread-view.v1" as const;
 
 /** Contract §0: a surface never shows an unlabeled mode. */
 export type CapabilityThreadMode = "live" | "fake" | "replay";

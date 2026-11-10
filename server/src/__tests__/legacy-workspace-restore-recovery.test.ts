@@ -78,7 +78,7 @@ const support = externalTestDatabaseUrl ? { supported: true } : await getEmbedde
     expect(await db.select().from(issueRecoveryActions).where(and(eq(issueRecoveryActions.id, action.id), conversationRecoveryActionPredicate()))).toEqual([]);
     // A new controller uses the durable stop-only intent. It cannot turn a
     // successful stop into proof that the workspace files were restored.
-    const receipt = { schema: "paperclip.remote-termination.v1", runId: f.runId, companyId: f.companyId,
+    const receipt = { schema: "wardmote.remote-termination.v1", runId: f.runId, companyId: f.companyId,
       leaseId: lease.id, provider: lease.provider, providerLeaseId: lease.providerLeaseId, state: "stopped", confirmedAt: new Date().toISOString() };
     await settleStopOnlyCleanup(db, lease, { attemptId: String(lease.metadata?.pendingCleanupAttemptId), receipt });
     expect(await readLease(lease.id)).toMatchObject({ status: "released", leasePolicy: "retain_on_failure", metadata: { remoteExecutionTermination: { state: "stopped" } } });
@@ -402,7 +402,7 @@ const support = externalTestDatabaseUrl ? { supported: true } : await getEmbedde
     const f = await seed();
     await recordLegacyWorkspaceRestoreFailure(db, f.run, patch.resultJson);
     const [run] = await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, f.runId));
-    const projection = { workspaceRestoreFailure: "restore_failed", workspaceRestoreRecovery: { schema: "paperclip.workspace-restore-recovery.v1" }, presentationDecision: "updated" };
+    const projection = { workspaceRestoreFailure: "restore_failed", workspaceRestoreRecovery: { schema: "wardmote.workspace-restore-recovery.v1" }, presentationDecision: "updated" };
     const [updated] = await db.update(heartbeatRuns).set({ resultJson: preserveWorkspaceRestoreRecoveryMetadataSql(projection, mergeCurrent) })
       .where(eq(heartbeatRuns.id, f.runId)).returning();
     expect(updated.resultJson).toMatchObject({ presentationDecision: "updated", workspaceRestoreRecovery: run.resultJson!.workspaceRestoreRecovery });

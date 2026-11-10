@@ -1,5 +1,5 @@
 {
-  "schema": "paperclip.runner.live-console.conformance.v1",
+  "schema": "wardmote.runner.live-console.conformance.v1",
   "codexVersion": "0.132.0",
   "runtimeRequests": [
     {

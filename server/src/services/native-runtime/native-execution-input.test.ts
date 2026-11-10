@@ -22,7 +22,7 @@ describe("LCA-05 explicit native work mode", () => {
         provider: "codex",
         codexReasoningEffort: "high",
         planningContext: workMode === "planning" ? { documentId: null, baseRevisionId: null, baseRevisionNumber: 0, markdown: "", sha256: "a".repeat(64), reviewContext: {} } : null,
-        completionContract: { id: "70000000-0000-4000-8000-000000000007", sha256: `sha256:${"a".repeat(64)}`, schemaVersion: "paperclip.run-result.v1", contract: { revision: "1", objective: "Deliver the requested work", criteria: [{ id: "output", requirement: "Deliver the requested work" }] } },
+        completionContract: { id: "70000000-0000-4000-8000-000000000007", sha256: `sha256:${"a".repeat(64)}`, schemaVersion: "wardmote.run-result.v1", contract: { revision: "1", objective: "Deliver the requested work", criteria: [{ id: "output", requirement: "Deliver the requested work" }] } },
         runtimeContext: nativeRuntimeContextFixture(),
       });
       expect(input.task.workMode).toBe(workMode);
@@ -54,7 +54,7 @@ describe("native execution input external-chat framing", () => {
           status: "in_review",
         },
         externalChatQuestionResponse: {
-          schema: "paperclip.external_chat_question_response.v1",
+          schema: "wardmote.external_chat_question_response.v1",
           interactionId,
           sourceRunId,
           responseDeliveryId: "10000000-0000-4000-8000-000000000011",
@@ -102,7 +102,7 @@ describe("native execution input external-chat framing", () => {
         completionContract: {
           id: "70000000-0000-4000-8000-000000000007",
           sha256: `sha256:${"a".repeat(64)}`,
-          schemaVersion: "paperclip.run-result.v1",
+          schemaVersion: "wardmote.run-result.v1",
           contract: {
             revision: "1",
             objective: "Answer the user's selected choice",
@@ -343,7 +343,7 @@ describe("native execution input external-chat framing", () => {
         completionContract: {
           id: "70000000-0000-4000-8000-000000000007",
           sha256: `sha256:${"a".repeat(64)}`,
-          schemaVersion: "paperclip.run-result.v1",
+          schemaVersion: "wardmote.run-result.v1",
           contract: {
             revision: "1",
             objective: "Respond to all pending comments in order",
@@ -416,7 +416,7 @@ describe("native execution input external-chat framing", () => {
         completionContract: {
           id: "70000000-0000-4000-8000-000000000007",
           sha256: `sha256:${"a".repeat(64)}`,
-          schemaVersion: "paperclip.run-result.v1",
+          schemaVersion: "wardmote.run-result.v1",
           contract: {
             revision: "1",
             objective: "Prepare a file",
@@ -525,7 +525,7 @@ describe("native execution input external-chat framing", () => {
       acpxAgent: "claude",
       model: provider === "acpx" ? "claude-sonnet-5" : provider === "opencode" ? "openai/gpt-5.5" : "gpt-5.6-sol",
       completionContract: {
-        id: "70000000-0000-4000-8000-000000000007", sha256: `sha256:${"a".repeat(64)}`, schemaVersion: "paperclip.run-result.v1",
+        id: "70000000-0000-4000-8000-000000000007", sha256: `sha256:${"a".repeat(64)}`, schemaVersion: "wardmote.run-result.v1",
         contract: { revision: "1", objective: "Write a welcome after the user's answer", criteria: [{ id: "objective", requirement: "Use the selected tone" }] },
       },
       runtimeContext: nativeRuntimeContextFixture(),
@@ -590,7 +590,7 @@ describe("native completion references", () => {
     normalizedSessionId: null,
     runtimeContext: nativeRuntimeContextFixture(),
     completionContract: {
-      id: "contract", sha256: "a".repeat(64), schemaVersion: "paperclip.completion-contract.v1",
+      id: "contract", sha256: "a".repeat(64), schemaVersion: "wardmote.completion-contract.v1",
       contract: { revision: "1", objective: "Brief", criteria: [{ id: "objective", requirement: "Repeat. Repeat." }] },
       sources: [{ id: "objective", source }],
     },
@@ -626,7 +626,7 @@ describe("Cursor mode native execution projection", () => {
       workspace: { id: "workspace-1", cwd: "/workspace", repoUrl: null, repoRef: null, branchName: null },
       normalizedSessionId: null, provider: "acpx" as const, acpxAgent: "cursor" as const,
       model: "exact-cursor-model", acpxSessionMode, acpxPermissionMode: "deny-all" as const,
-      completionContract: { id: "contract-1", sha256: `sha256:${"a".repeat(64)}`, schemaVersion: "paperclip.run-result.v1", contract: { revision: "1", objective: "Review", criteria: [{ id: "output", requirement: "Review" }] } },
+      completionContract: { id: "contract-1", sha256: `sha256:${"a".repeat(64)}`, schemaVersion: "wardmote.run-result.v1", contract: { revision: "1", objective: "Review", criteria: [{ id: "output", requirement: "Review" }] } },
       runtimeContext: nativeRuntimeContextFixture(),
     };
   }
@@ -650,7 +650,7 @@ describe("Pi thinking native execution projection", () => {
       workspace: { id: "workspace-1", cwd: "/workspace", repoUrl: null, repoRef: null, branchName: null },
       normalizedSessionId: null, provider: "acpx" as const, acpxAgent: "pi" as const,
       model: "openrouter/deepseek/deepseek-v4-flash-0731", piThinkingLevel, acpxPermissionMode: "deny-all" as const,
-      completionContract: { id: "contract-1", sha256: `sha256:${"a".repeat(64)}`, schemaVersion: "paperclip.run-result.v1", contract: { revision: "1", objective: "Review", criteria: [{ id: "output", requirement: "Review" }] } },
+      completionContract: { id: "contract-1", sha256: `sha256:${"a".repeat(64)}`, schemaVersion: "wardmote.run-result.v1", contract: { revision: "1", objective: "Review", criteria: [{ id: "output", requirement: "Review" }] } },
       runtimeContext: nativeRuntimeContextFixture(),
     };
   }

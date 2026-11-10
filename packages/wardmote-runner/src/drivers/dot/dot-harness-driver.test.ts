@@ -4,7 +4,7 @@ import { HarnessDriverBackend } from "../../backends/harness-driver-backend.js";
 import { validatePrpEvent } from "../../protocol/replay-contract.js";
 import { DotHarnessDriver, type DotCommand, type DotDriverOptions } from "./dot-harness-driver.js";
 
-const result = { schema: "paperclip.run_result.v1", reportedWorkDisposition: "done", summary: "Research saved.",
+const result = { schema: "wardmote.run_result.v1", reportedWorkDisposition: "done", summary: "Research saved.",
   completionClaim: { contractRevision: "dot-demo-v1", objectiveSatisfied: true, criteria: [], remainingWork: [] },
   evidence: [], verification: [], attentionRequests: [], artifacts: [] };
 

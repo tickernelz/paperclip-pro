@@ -41,7 +41,7 @@ export interface StandaloneStandaloneAdapterFactories {
 }
 
 export interface StandaloneStandaloneDemoResult {
-  schema: "paperclip.runner.standalone.standalone-demo.v1";
+  schema: "wardmote.runner.standalone.standalone-demo.v1";
   resolvedMode: "native" | "legacy";
   resolutionReason: "feature_flag_disabled" | "kill_switch_enabled" | "native_demo_enabled";
   adapter: "native_demo_adapter" | "legacy_demo_adapter";
@@ -143,7 +143,7 @@ export async function runStandaloneStandaloneDemo(
     createSessionSnapshotFromMetadata({
       fixtureName: `standalone-${resolution.resolvedMode}-standalone-demo`,
       identity: {
-        schema: "paperclip.prp.identity.v1",
+        schema: "wardmote.prp.identity.v1",
         companyId: CONTROL_PLANE_CONFORMANCE_OPEN.identity.companyId,
         issueId: CONTROL_PLANE_CONFORMANCE_OPEN.identity.issueId,
         runId: CONTROL_PLANE_CONFORMANCE_OPEN.identity.runId,
@@ -154,7 +154,7 @@ export async function runStandaloneStandaloneDemo(
         providerSessionId: `${resolution.resolvedMode}-demo-provider`,
       },
       capabilities: {
-        schema: "paperclip.prp.capabilities.v1",
+        schema: "wardmote.prp.capabilities.v1",
         sessionReusePolicy: "new_per_run",
         driver: { kind: resolution.resolvedMode === "native" ? "native-demo" : "legacy-demo", version: "1" },
         steer: true,
@@ -170,7 +170,7 @@ export async function runStandaloneStandaloneDemo(
   );
 
   return {
-    schema: "paperclip.runner.standalone.standalone-demo.v1",
+    schema: "wardmote.runner.standalone.standalone-demo.v1",
     ...resolution,
     adapter: adapter.kind,
     nativeAdapterInvocationCount: adapter.kind === "native_demo_adapter" ? adapter.invocationCount() : 0,

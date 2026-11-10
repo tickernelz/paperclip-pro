@@ -23,7 +23,7 @@ it("sets up an indexed company gateway without granting the eval agent access", 
     expect(gateway.initialAccess).toEqual({ installed: false, allowedToolIds: [] });
     expect(gateway.invocationCount()).toBe(0);
     const discovery = await fixture.authority.execute({ tool: "connections_search", callId: randomUUID(), arguments: { query: "HubSpot" } });
-    expect(discovery).toMatchObject({ providerQuestion: { id: "connection-provider:hubspot" }, providerQuestionSet: { schema: "paperclip.question_set.v1" } });
+    expect(discovery).toMatchObject({ providerQuestion: { id: "connection-provider:hubspot" }, providerQuestionSet: { schema: "wardmote.question_set.v1" } });
     await expect(fixture.authority.execute({ tool: "connection_request", callId: randomUUID(), arguments: { service: "via:arcade:hubspot" } })).rejects.toThrow();
     expect(gateway.invocationCount()).toBe(0);
   } finally { await gateway?.close(); await context.dispose(); }

@@ -129,7 +129,7 @@ export async function projectNativeRuntimeRequest(input: {
   const request = record(record(input.event.payload)?.request);
   if (
     !request
-    || request.schema !== "paperclip.runtime_request.v2"
+    || request.schema !== "wardmote.runtime_request.v2"
     || request.status !== "pending"
     || typeof request.requestId !== "string"
     || !REQUEST_ID_PATTERN.test(request.requestId)

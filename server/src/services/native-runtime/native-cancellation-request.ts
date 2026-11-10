@@ -32,7 +32,7 @@ export function nativeRetryCancellationEligible(input: {
   const result = record(input.resultJson), native = record(result.nativeCancellation);
   return (!input.requestId || (record(result.startupCancellation).cancellationRequestId === input.requestId
       && native.intentId === cancellationIntentId(input.requestId)))
-    && native.schema === "paperclip.native-cancellation.v1" && typeof native.intentId === "string" && !!native.intentId
+    && native.schema === "wardmote.native-cancellation.v1" && typeof native.intentId === "string" && !!native.intentId
     && native.runId === input.runId && native.companyId === input.companyId && native.issueId === input.issueId
     && native.scope === (input.scope ?? "run") && ["pending", "acknowledged"].includes(String(native.dispatchState))
     && typeof native.dispatched === "boolean" && typeof native.intentAuditId === "string" && !!native.intentAuditId
@@ -101,7 +101,7 @@ export async function claimCancellationRequest(db: Db, runId: string, companyId:
       if (actor.type !== "board" || actor.userId !== userId) throw conflict("Cancellation request belongs to another actor");
       if (!pendingRetry && !["queued", "running", "scheduled_retry"].includes(run.status)) {
         const native = record(result.nativeCancellation);
-        if (run.status !== "cancelled" || native.schema !== "paperclip.native-cancellation.v1"
+        if (run.status !== "cancelled" || native.schema !== "wardmote.native-cancellation.v1"
           || native.intentId !== cancellationIntentId(requestId) || native.runId !== runId || native.companyId !== companyId
           || native.scope !== "run" || native.dispatchState !== "acknowledged" || typeof native.dispatched !== "boolean"
           || typeof native.intentAuditId !== "string" || !native.intentAuditId

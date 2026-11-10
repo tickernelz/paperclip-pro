@@ -300,7 +300,7 @@ export function createCursorNotificationNormalizer(input: { workspacePath: strin
       for (const todo of parseTodos(request.todos)) next.set(todo.id, todo);
       if (next.size > 256) throw new Error("Cursor todo snapshot exceeds 256 items");
       const event: CanonicalProviderEvent = { eventType: "plan.updated", itemId, payload: {
-        schema: "paperclip.plan.updated.v1", planId, revision: revision + 1,
+        schema: "wardmote.plan.updated.v1", planId, revision: revision + 1,
         explanation: null,
         steps: Array.from(next.values(), todo => ({ stepId: stableId(todo.id),
           body: todo.status === "cancelled" ? `${todo.content}\n(Cancelled)` : todo.content,
@@ -320,7 +320,7 @@ export function createCursorNotificationNormalizer(input: { workspacePath: strin
       const durationMs = request.durationMs;
       if (durationMs !== undefined && (!Number.isSafeInteger(durationMs) || Number(durationMs) < 0)) throw new Error("Cursor task duration must be a nonnegative integer");
       return [{ eventType: "delegation.completed", itemId, payload: {
-        schema: "paperclip.delegation.v1", delegationId: itemId, action: "spawn", status: "completed",
+        schema: "wardmote.delegation.v1", delegationId: itemId, action: "spawn", status: "completed",
         children: [{ childId: stableId(optionalText(request.agentId, "agentId", 1_000) ?? toolCallId),
           role: optionalText(subtype, "subagentType", 160) ?? null,
           model: optionalText(request.model, "model", 240) ?? null, status: "completed",
@@ -340,11 +340,11 @@ export function createCursorNotificationNormalizer(input: { workspacePath: strin
         const reference = await cursorWorkspaceArtifactReference(input.workspacePath, source);
         const referenceId = stableId(`${toolCallId}:reference:${index}`);
         viewed.push({ eventType: "artifact.viewed", itemId: referenceId, payload: {
-          schema: "paperclip.artifact.viewed.v1", artifactId: referenceId, reference, mediaType: "image/*", title: "Cursor image reference",
+          schema: "wardmote.artifact.viewed.v1", artifactId: referenceId, reference, mediaType: "image/*", title: "Cursor image reference",
         } });
       }
       return [{ eventType: "artifact.generated", itemId, payload: {
-        schema: "paperclip.artifact.generated.v1", artifactId: itemId,
+        schema: "wardmote.artifact.generated.v1", artifactId: itemId,
         status: "completed", reference, mediaType: "image/*", registered: false, failure: null,
       } }, notice(`${toolCallId}:description`, "cursor_image", description),
       ...viewed,
@@ -381,7 +381,7 @@ export function normalizeCursorSubagentUpdate(value: unknown): CanonicalProvider
   const status = state === "cancelled" ? "interrupted" : state === "disconnected" ? "failed" : state;
   if (!["running", "completed", "failed", "interrupted"].includes(String(status))) throw new Error("Unknown Cursor subagent state");
   return { eventType: status === "running" ? "delegation.started" : "delegation.completed", itemId, payload: {
-    schema: "paperclip.delegation.v1", delegationId: itemId, action: "spawn", status,
+    schema: "wardmote.delegation.v1", delegationId: itemId, action: "spawn", status,
     children: [{ childId: stableId(requiredText(update.subagentSessionId, "subagentSessionId", 1_000)),
       role: optionalText(update.name, "name", 160) ?? null, model: optionalText(metadata.model, "model", 240) ?? null,
       status, summary: update.task === "" ? null : optionalText(update.task, "task", 4_000) ?? null,
@@ -449,7 +449,7 @@ export function createCursorSubagentNormalizer() {
 function notice(id: string, category: string, summary: string, severity: "info" | "warning" = "info"): CanonicalProviderEvent {
   const itemId = stableId(id);
   return { eventType: "provider.notice.recorded", itemId, payload: {
-    schema: "paperclip.provider.notice.v1", noticeId: itemId, severity, category,
+    schema: "wardmote.provider.notice.v1", noticeId: itemId, severity, category,
     scope: "turn", recoverable: true, userActionable: false, summary,
   } };
 }

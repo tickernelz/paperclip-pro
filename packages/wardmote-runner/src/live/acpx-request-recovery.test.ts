@@ -9,14 +9,14 @@ function snapshot() {
     provider: "acpx", runtimeRequestsLive: true,
     driverSessionId: "thread-1", activeProviderTurnId: "turn-1", runtimeRequestTurnId: "durable-turn-1",
     pendingRuntimeRequests: [{
-      schema: "paperclip.runtime_request.v2", requestId: "input-1", type: "input",
+      schema: "wardmote.runtime_request.v2", requestId: "input-1", type: "input",
       requestKind: "runtime", status: "pending", turnId: "durable-turn-1", itemId: "question-1",
       origin: { adapter: "acpx-runtime-sidecar", provider: "pi", method: "elicitation/create" },
-      input: { schema: "paperclip.question_set.v1", questions: [
+      input: { schema: "wardmote.question_set.v1", questions: [
         { id: "answer", prompt: "Give the answer", required: true, answerMode: "text" },
       ] },
     }, {
-      schema: "paperclip.runtime_request.v2", requestId: "permission-1", type: "permission",
+      schema: "wardmote.runtime_request.v2", requestId: "permission-1", type: "permission",
       requestKind: "permission_approval", status: "pending", turnId: "durable-turn-1", itemId: "write-1",
       prompt: "Allow this write?", choices: [{ key: "deny", label: "Decline", outcome: "cancel" }],
       details: { toolCallId: "write-1" },
@@ -50,7 +50,7 @@ describe("live ACP request recovery", () => {
 
   it.each([
     { requestId: "" }, { status: "resolved" }, { turnId: "old-turn" },
-    { schema: "paperclip.runtime_request.v1" }, { type: "permission" },
+    { schema: "wardmote.runtime_request.v1" }, { type: "permission" },
     { origin: { method: "item/tool/call" } }, { input: null },
   ])("rejects malformed or stale callback %j", change => {
     const value = snapshot();
@@ -92,7 +92,7 @@ describe("live ACP request recovery", () => {
     try {
       expect(session.pendingRuntimeRequests?.().map(request => request.requestId)).toEqual(["input-1", "permission-1"]);
       const resolution = requestId === "input-1"
-        ? { action: "submit" as const, content: { schema: "paperclip.question_response.v1", answers: { answer: { text: "undisclosed answer" } } } }
+        ? { action: "submit" as const, content: { schema: "wardmote.question_response.v1", answers: { answer: { text: "undisclosed answer" } } } }
         : { action: "decline" as const };
       await session.resolveRuntimeRequest?.({ requestId, turnId: "turn-1", resolution });
       expect(deliver).toHaveBeenCalledExactlyOnceWith({ requestId, turnId: "turn-1", resolution });

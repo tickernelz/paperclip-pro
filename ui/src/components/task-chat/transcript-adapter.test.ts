@@ -77,7 +77,7 @@ describe("accepted native response-wake answers", () => {
     "**Before release**\n- Test and rehearse rollback.\n\n**During release**\n- Deploy incrementally and watch errors.\n\n**After release**\n- Verify workflows and record follow-ups.";
   function fixture(mode = "accepted") {
     const result = {
-      schema: "paperclip.run_result.v1",
+      schema: "wardmote.run_result.v1",
       reportedWorkDisposition: "yielded",
       summary,
       completionClaim: { objectiveSatisfied: true, remainingWork: [] },
@@ -110,7 +110,7 @@ describe("accepted native response-wake answers", () => {
         createdAt: new Date(TS),
         payload: {
           prpEvent: {
-            schema: "paperclip.prp.event.v1",
+            schema: "wardmote.prp.event.v1",
             schemaVersion: 1,
             runId,
             eventType,

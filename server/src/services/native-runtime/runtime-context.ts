@@ -97,7 +97,7 @@ export async function materializeAsset(files: AssetFile[]): Promise<NativeRuntim
   const totalBytes = manifestFiles.reduce((sum, file) => sum + file.size, 0);
   if (!manifestFiles.length || manifestFiles.length > MAX_ASSET_FILES || totalBytes > MAX_ASSET_BYTES) throw new Error("runtime context bundle is empty or exceeds its bound");
   const assetDigest = sha256(JSON.stringify(manifestFiles));
-  const manifestText = `${JSON.stringify({ schema: "paperclip.runtime-asset-manifest.v1", digest: assetDigest, fileCount: manifestFiles.length, totalBytes, files: manifestFiles })}\n`;
+  const manifestText = `${JSON.stringify({ schema: "wardmote.runtime-asset-manifest.v1", digest: assetDigest, fileCount: manifestFiles.length, totalBytes, files: manifestFiles })}\n`;
   const manifestDigest = sha256(manifestText);
   const assetsRoot = path.join(resolveWardmoteInstanceRoot(), "runtime-context-assets");
   const rootPath = path.join(assetsRoot, "bundles", assetDigest);

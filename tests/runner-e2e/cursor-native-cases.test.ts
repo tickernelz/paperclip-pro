@@ -7,7 +7,7 @@ import { cursorNativeCaseDesigns, cursorNativePrompt, hasDeliveredCursorNativeRe
 
 const proof = (adapter = "acpx-runtime") => {
   const wrap = (eventType: string, sourceSeq: number, payload: unknown) => ({ runId: "run", protocolSchemaVersion: 1, payload: { prpEvent: {
-    schema: "paperclip.prp.event.v1", schemaVersion: 1, runId: "run", turnId: "turn", eventType, sourceSeq, payload,
+    schema: "wardmote.prp.event.v1", schemaVersion: 1, runId: "run", turnId: "turn", eventType, sourceSeq, payload,
   } } });
   return [wrap("runtime_request.created", 1, { request: { requestId: "request", turnId: "turn", type: "input", status: "pending", origin: { adapter, provider: "cursor", method: "cursor/ask_question" } } }),
     wrap("runtime_request.resolved", 2, { requestId: "request", turnId: "turn", action: "submit" })];
@@ -39,7 +39,7 @@ describe("prepared Cursor native qualification", () => {
 it("binds plan decisions to the full revision and rejects stale answers", () => {
   const id = `plan-${"a".repeat(64)}`;
   const questionSet = { questions: [{ id }] };
-  const answer = { schema: "paperclip.question_response.v1", answers: { [id]: { selectedOptionIds: ["accept"] } } };
+  const answer = { schema: "wardmote.question_response.v1", answers: { [id]: { selectedOptionIds: ["accept"] } } };
   expect(hasCursorPlanDecision(questionSet, answer, "accept")).toBe(true);
   expect(hasCursorPlanDecision({ questions: [{ id: `plan-${"b".repeat(64)}` }] }, answer, "accept")).toBe(false);
   expect(hasCursorPlanDecision(questionSet, answer, "reject")).toBe(false);
@@ -61,7 +61,7 @@ it.each(["acpx-runtime", "acpx-runtime-sidecar"])("requires supported denial cho
 });
 
 it("requires exact delivered answer bytes rather than a saved or different answer", () => {
-  const rows = proof(); const response = { schema: "paperclip.question_response.v1", answers: { q: { selectedOptionIds: ["chosen"] } } };
+  const rows = proof(); const response = { schema: "wardmote.question_response.v1", answers: { q: { selectedOptionIds: ["chosen"] } } };
   (rows[1]!.payload.prpEvent.payload as any).response = response;
   const input = { events: rows, runId: "run", turnId: "turn", requestId: "request", method: "cursor/ask_question" as const, action: "submit" as const, response };
   expect(hasExactCursorNativeResponse(input)).toBe(true);

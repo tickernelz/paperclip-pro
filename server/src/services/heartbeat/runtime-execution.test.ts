@@ -68,7 +68,7 @@ describe.skipIf(!support.supported)("heartbeat runtime execution boundary", () =
       companyId: company.id, agentId: agent.id, runId: run.id, issue,
       taskPrompt: issue.title, workspace: { id: run.id, cwd: home, repoUrl: null, repoRef: null, branchName: null },
       normalizedSessionId: null, provider: "codex", runtimeContext: nativeRuntimeContextFixture(),
-      completionContract: { id: randomUUID(), sha256: `sha256:${"a".repeat(64)}`, schemaVersion: "paperclip.run-result.v1", contract: { revision: "1", objective: issue.title, criteria: [{ id: "output", requirement: issue.title }] } },
+      completionContract: { id: randomUUID(), sha256: `sha256:${"a".repeat(64)}`, schemaVersion: "wardmote.run-result.v1", contract: { revision: "1", objective: issue.title, criteria: [{ id: "output", requirement: issue.title }] } },
     }) : null;
     const input: HeartbeatRuntimeExecutionInput = {
       run, agent, options: {},

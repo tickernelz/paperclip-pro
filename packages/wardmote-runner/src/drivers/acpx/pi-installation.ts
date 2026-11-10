@@ -68,7 +68,7 @@ export async function verifyPiInstallation(profile: AcpxReleaseProfile): Promise
   const metadata = await readDistributionMetadata(metadataPath);
   const targetMetadata = record(metadata.target);
   const pins = record(metadata.pins);
-  if (metadata.schema !== "paperclip.pi-distribution.v1" || metadata.runtimeRoot !== "runtime" || metadata.nativeClosureSha256 !== expectedClosure || targetMetadata.platform !== process.platform || targetMetadata.architecture !== process.arch || targetMetadata.nodeVersion !== PI_NODE_VERSION || pins.nodeVersion !== PI_NODE_VERSION || pins.wrapper !== "0.0.33" || pins.runtime !== "1.0.0" || pins.sdk !== "0.26.0" || pins.zod !== "3.25.76") throw new Error("Pi distribution metadata does not match its trusted target pin");
+  if (metadata.schema !== "wardmote.pi-distribution.v1" || metadata.runtimeRoot !== "runtime" || metadata.nativeClosureSha256 !== expectedClosure || targetMetadata.platform !== process.platform || targetMetadata.architecture !== process.arch || targetMetadata.nodeVersion !== PI_NODE_VERSION || pins.nodeVersion !== PI_NODE_VERSION || pins.wrapper !== "0.0.33" || pins.runtime !== "1.0.0" || pins.sdk !== "0.26.0" || pins.zod !== "3.25.76") throw new Error("Pi distribution metadata does not match its trusted target pin");
   const manifest = record(metadata.manifest) as unknown as PiRuntimeManifest;
   for (const [key, value] of Object.entries(FIXED_PATHS)) {
     if (manifest[key as keyof typeof FIXED_PATHS] !== value) throw new Error("Pi distribution changed a fixed launch path");

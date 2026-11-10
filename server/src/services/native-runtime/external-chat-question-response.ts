@@ -39,7 +39,7 @@ type Binding = {
 };
 type LockMode = "blocking" | "nonblocking" | "read";
 type Marker = {
-  schema: "paperclip.external_chat_question_response.v1";
+  schema: "wardmote.external_chat_question_response.v1";
   interactionId: string;
   responseDeliveryId: string;
   sourceRunId: string;
@@ -478,7 +478,7 @@ async function resolveQuestionResponseChain(
         return null;
       }
       const marker: Marker = {
-        schema: "paperclip.external_chat_question_response.v1", interactionId: interaction.id,
+        schema: "wardmote.external_chat_question_response.v1", interactionId: interaction.id,
         responseDeliveryId: delivery.id, sourceRunId: source.id, sourceCommentId: context.sourceCommentId,
         endpointId: endpoint.id, conversationId: conversation.id,
         bindingSha256: nativeSha256({ binding: {companyId: binding.companyId, issueId: binding.issueId, runId: binding.runId, agentId: binding.agentId}, responseDeliveryId: delivery.id, payloadSha256: delivery.payloadSha256,
@@ -520,7 +520,7 @@ async function resolveQuestionResponseChain(
       || receipt.response.resultSha256 !== nativeSha256(interaction.result)
       || (parent && (parent.marker.endpointId !== endpoint.id || parent.marker.conversationId !== conversation.id))) return null;
     const marker: Marker = {
-      schema: "paperclip.external_chat_question_response.v1", interactionId: interaction.id,
+      schema: "wardmote.external_chat_question_response.v1", interactionId: interaction.id,
       responseDeliveryId: delivery.id, sourceRunId: source.id, sourceCommentId: context.sourceCommentId,
       endpointId: endpoint.id, conversationId: conversation.id,
       bindingSha256: nativeSha256({ binding: { companyId: binding.companyId, issueId: binding.issueId, runId: binding.runId, agentId: binding.agentId }, responseDeliveryId: delivery.id, payloadSha256: delivery.payloadSha256,
@@ -844,7 +844,7 @@ async function resolveQuestionResponseChain(
   )
     return null;
   const marker: Marker = {
-    schema: "paperclip.external_chat_question_response.v1",
+    schema: "wardmote.external_chat_question_response.v1",
     interactionId: interaction.id,
     responseDeliveryId: delivery.id,
     sourceRunId: source.id,
@@ -892,7 +892,7 @@ async function resolveQuestionResponseChain(
           }
         : {
             boardResponse: {
-              schema: "paperclip.github_board_question_response.v1",
+              schema: "wardmote.github_board_question_response.v1",
               principalId: inbound.principalId,
               runtimeGeneration: boardGeneration,
               credentialFingerprint: boardRuntime.credentialFingerprint,

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://paperclip.dev/schemas/prp/v1/native-execution.schema.json",
+  "$id": "https://wardmote.dev/schemas/prp/v1/native-execution.schema.json",
   "title": "Paperclip runner native execution bundle",
   "type": "object",
   "required": [
@@ -88,7 +88,7 @@
     "events": {
       "type": "array",
       "minItems": 1,
-      "items": { "$ref": "https://paperclip.dev/schemas/prp/v1/event.schema.json" }
+      "items": { "$ref": "https://wardmote.dev/schemas/prp/v1/event.schema.json" }
     },
     "semanticTools": {
       "type": "object",
@@ -101,7 +101,7 @@
       },
       "additionalProperties": true
     },
-    "terminal": { "$ref": "https://paperclip.dev/schemas/prp/v1/terminal.schema.json" },
+    "terminal": { "$ref": "https://wardmote.dev/schemas/prp/v1/terminal.schema.json" },
     "observations": { "type": "object", "additionalProperties": true },
     "usage": {
       "type": "object",

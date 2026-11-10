@@ -178,7 +178,7 @@ async function main() {
     assertions.capabilityBound = typeof jar.value("paperclip_capability_chat") === "string";
 
     summary = {
-      schema: "paperclip.capability.clean-room-smoke.v1",
+      schema: "wardmote.capability.clean-room-smoke.v1",
       firstSessionId: opened.sessionId,
       firstIssue: opened.view.issue.identifier,
       newChatSessionId: fresh.sessionId,

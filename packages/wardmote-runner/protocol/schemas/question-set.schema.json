@@ -1,11 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://paperclip.dev/schemas/prp/v1/question-set.schema.json",
+  "$id": "https://wardmote.dev/schemas/prp/v1/question-set.schema.json",
   "title": "Paperclip question set",
   "type": "object",
   "required": ["schema", "questions"],
   "properties": {
-    "schema": { "const": "paperclip.question_set.v1" },
+    "schema": { "const": "wardmote.question_set.v1" },
     "title": { "type": "string", "maxLength": 1000 },
     "description": { "type": "string", "maxLength": 100000 },
     "submitLabel": { "type": "string", "maxLength": 200 },

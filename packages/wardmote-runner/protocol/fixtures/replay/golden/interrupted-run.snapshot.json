@@ -1,8 +1,8 @@
 {
-  "schema": "paperclip.prp.session-snapshot.v1",
+  "schema": "wardmote.prp.session-snapshot.v1",
   "fixtureName": "Interrupted run",
   "identity": {
-    "schema": "paperclip.prp.identity.v1",
+    "schema": "wardmote.prp.identity.v1",
     "companyId": "company_replay",
     "issueId": "issue_replay_interrupted",
     "runId": "run_replay_interrupted",
@@ -12,7 +12,7 @@
     "driverSessionId": "driver_replay_interrupted"
   },
   "capabilities": {
-    "schema": "paperclip.prp.capabilities.v1",
+    "schema": "wardmote.prp.capabilities.v1",
     "sessionReusePolicy": "reuse_per_issue",
     "driver": {
       "kind": "fake",
@@ -40,7 +40,7 @@
     }
   ],
   "proposedResult": {
-    "schema": "paperclip.run_result.v1",
+    "schema": "wardmote.run_result.v1",
     "reportedWorkDisposition": "yielded",
     "summary": "The turn was interrupted.",
     "completionClaim": {

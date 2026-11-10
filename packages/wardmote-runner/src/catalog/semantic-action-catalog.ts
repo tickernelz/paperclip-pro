@@ -95,7 +95,7 @@ interface DescriptorInput {
 
 function descriptor(input: DescriptorInput): WardmoteSemanticActionDescriptor {
   return {
-    schema: "paperclip.semantic-action.v1",
+    schema: "wardmote.semantic-action.v1",
     operationId: input.operationId,
     version: 1,
     title: input.title,

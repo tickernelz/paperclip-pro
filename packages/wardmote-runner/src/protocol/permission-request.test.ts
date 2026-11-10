@@ -6,7 +6,7 @@ const ajv = new Ajv2020({ allErrors: true, strict: true, strictRequired: false }
 ajv.addSchema(questionSetSchema);
 const validate = ajv.compile(requestSchema);
 const permission = {
-  schema: "paperclip.runtime_request.v2",
+  schema: "wardmote.runtime_request.v2",
   requestKind: "permission_approval",
   requestId: "permission-1",
   type: "permission",

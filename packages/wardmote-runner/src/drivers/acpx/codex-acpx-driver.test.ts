@@ -1901,11 +1901,11 @@ describe("Codex ACPX harness driver", () => {
       turnId,
       payload: {
         request: {
-          schema: "paperclip.runtime_request.v2",
+          schema: "wardmote.runtime_request.v2",
           requestKind: "runtime",
           type: "input",
           status: "pending",
-          input: { schema: "paperclip.question_set.v1" },
+          input: { schema: "wardmote.question_set.v1" },
           origin: { adapter: "acpx-runtime", provider: "codex" },
         },
       },
@@ -1921,7 +1921,7 @@ describe("Codex ACPX harness driver", () => {
       resolution: {
         action: "submit",
         response: {
-          schema: "paperclip.question_response.v1",
+          schema: "wardmote.question_response.v1",
           answers: {
             [question.id]: {
               selectedOptionIds: [question.options![1]!.id],
@@ -3091,7 +3091,7 @@ function recoveryWorkspaceLease(
 function fakeHost(createTurn: () => AcpxRuntimeTurn, onClose: () => void) {
   return {
     identity: () => ({
-      schema: "paperclip.runner.acpx-identity.v2" as const,
+      schema: "wardmote.runner.acpx-identity.v2" as const,
       normalizedSessionId: "session-1",
       acpxRecordId: "record-1",
       backendSessionId: "backend-1",
@@ -3146,7 +3146,7 @@ async function collectUntil(
 
 function completedResult() {
   return {
-    schema: "paperclip.run_result.v1" as const,
+    schema: "wardmote.run_result.v1" as const,
     reportedWorkDisposition: "done" as const,
     summary: "The task is complete.",
     completionClaim: {

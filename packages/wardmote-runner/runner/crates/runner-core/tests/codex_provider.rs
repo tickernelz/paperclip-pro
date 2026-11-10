@@ -167,7 +167,7 @@ fn durable_config(directory: &Path) -> DurableRunnerConfig {
 
 fn command(id: &str, sequence: u64, command_type: &str, payload: Value) -> Command {
     Command {
-        schema: "paperclip.prp.command.v1".to_owned(),
+        schema: "wardmote.prp.command.v1".to_owned(),
         command_id: id.to_owned(),
         controller_seq: sequence,
         command_type: command_type.to_owned(),
@@ -2953,7 +2953,7 @@ fn codex_rejects_a_runtime_response_after_its_turn_terminates() {
         .resolve_runtime_request(
             &request_id,
             &json!({
-                "schema": "paperclip.question_response.v1",
+                "schema": "wardmote.question_response.v1",
                 "answers": {"environment": {"selectedOptionIds": ["option-1"]}}
             }),
         )
@@ -2980,7 +2980,7 @@ fn reused_provider_question_ids_get_unique_controller_identities() {
         })
         .expect("observe first runtime request");
     let response = json!({
-        "schema": "paperclip.question_response.v1",
+        "schema": "wardmote.question_response.v1",
         "answers": {"environment": {"selectedOptionIds": ["option-1"]}}
     });
     provider
@@ -3026,14 +3026,14 @@ fn codex_facade_bridges_opencode_native_questions_instead_of_rejecting_the_metho
             },
         )
         .expect("the provider-native paperclip/runtimeRequest reaches runnerd");
-    assert_eq!(question_set["schema"], "paperclip.question_set.v1");
+    assert_eq!(question_set["schema"], "wardmote.question_set.v1");
     assert_eq!(question_set["questions"][0]["id"], "environment");
 
     provider
         .resolve_runtime_request(
             &request_id,
             &json!({
-                "schema": "paperclip.question_response.v1",
+                "schema": "wardmote.question_response.v1",
                 "answers": {
                     "environment": {"selectedOptionIds": ["staging"]}
                 }
@@ -5691,7 +5691,7 @@ fn durable_backend_rejects_a_runtime_response_after_terminal_settlement() {
             json!({
                 "requestId": request_id,
                 "response": {
-                    "schema": "paperclip.question_response.v1",
+                    "schema": "wardmote.question_response.v1",
                     "answers": {"environment": {"selectedOptionIds": ["option-1"]}}
                 }
             }),
@@ -5740,7 +5740,7 @@ fn structured_question_round_trips_through_the_normalized_backend() {
             if event.event_type == "runtime_request.created" {
                 assert_eq!(
                     event.payload["request"]["schema"],
-                    "paperclip.runtime_request.v2"
+                    "wardmote.runtime_request.v2"
                 );
                 question_set = event.payload.pointer("/request/input").cloned();
                 request_id = event
@@ -5758,7 +5758,7 @@ fn structured_question_round_trips_through_the_normalized_backend() {
     let question_set = question_set.expect("normalized question set is emitted");
     let request_id = request_id.expect("normalized request id is emitted");
     assert_eq!(provider_started_events, 1);
-    assert_eq!(question_set["schema"], "paperclip.question_set.v1");
+    assert_eq!(question_set["schema"], "wardmote.question_set.v1");
     assert_eq!(
         question_set["questions"][0]["options"][0]["label"],
         "Staging"
@@ -5796,7 +5796,7 @@ fn structured_question_round_trips_through_the_normalized_backend() {
             json!({
                 "requestId": request_id,
                 "response": {
-                    "schema": "paperclip.question_response.v1",
+                    "schema": "wardmote.question_response.v1",
                     "answers": {"environment": {"selectedOptionIds": ["option-1"]}}
                 }
             }),

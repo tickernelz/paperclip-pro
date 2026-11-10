@@ -31,7 +31,7 @@ export interface LocalRunnerProcessExitFact {
 }
 
 export interface LocalRunnerRunMetadata {
-  schema: "paperclip.runner.local-runner.metadata.v1";
+  schema: "wardmote.runner.local-runner.metadata.v1";
   scenario: LocalRunnerScenario;
   fixtureName: string;
   identity: PrpIdentity;
@@ -39,7 +39,7 @@ export interface LocalRunnerRunMetadata {
 }
 
 export interface LocalRunnerRunTrace extends Omit<LocalRunnerRunMetadata, "schema"> {
-  schema: "paperclip.runner.local-runner.trace.v1";
+  schema: "wardmote.runner.local-runner.trace.v1";
   commands: PrpCommand[];
   commandReceipts: LocalRunnerCommandReceipt[];
   events: PrpEvent[];

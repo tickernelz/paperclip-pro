@@ -43,7 +43,7 @@ the same HTTP routes the browser uses. Expected shape:
 
 ```json
 {
-  "schema": "paperclip.capability.clean-room-smoke.v1",
+  "schema": "wardmote.capability.clean-room-smoke.v1",
   "firstIssue": "MCK-2114",
   "newChatIssue": "MCK-9539",
   "turns": 2,

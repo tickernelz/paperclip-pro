@@ -157,7 +157,7 @@ describeEmbeddedPostgres(
           expect(payloadBySourceId.get("question-created")).toMatchObject({
             request: {
               requestId: fixture.expected.questionRequestId,
-              input: { schema: "paperclip.question_set.v1" },
+              input: { schema: "wardmote.question_set.v1" },
             },
           });
         }

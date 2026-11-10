@@ -32,7 +32,7 @@ export async function seedPiFile(workspace: string, nonce: string) {
   await writeFile(join(workspace, c.filename), c.before, { flag: "wx" });
   const bytes = await readFile(join(workspace, c.filename));
   requireEvidence(bytes.equals(Buffer.from(c.before)), "seed bytes changed before provider startup");
-  return { schema: "paperclip.e2e.pi-file-seed.v1", filename: c.filename, beforeSha256: sha(bytes), byteSize: bytes.length };
+  return { schema: "wardmote.e2e.pi-file-seed.v1", filename: c.filename, beforeSha256: sha(bytes), byteSize: bytes.length };
 }
 
 export function gradePiCopyback(run: Row, lease: Row, companyId: string, environmentId: string) {
@@ -72,7 +72,7 @@ export function gradePiFileEvidence(input: {
     : { kind: "independent_local_workspace" };
   requireEvidence(run.id && run.companyId === input.companyId && run.agentId === input.agentId
     && run.runtimeMode === "native" && run.status === "succeeded", "actual native run identity");
-  requireEvidence(seed.schema === "paperclip.e2e.pi-file-seed.v1" && seed.filename === c.filename
+  requireEvidence(seed.schema === "wardmote.e2e.pi-file-seed.v1" && seed.filename === c.filename
     && seed.beforeSha256 === sha(c.before) && seed.byteSize === Buffer.byteLength(c.before), "independent pre-edit seed");
   requireEvidence(input.workspaceBytes.equals(Buffer.from(c.after)), "independent final workspace bytes");
   requireEvidence(input.events.length > 0 && input.events.length <= 20_000, "bounded run events");
@@ -99,7 +99,7 @@ export function gradePiFileEvidence(input: {
     const matches = tools.filter(x => x.p.executionId === end.p.executionId);
     const starts = matches.filter(x => x.e.eventType === "tool.execution.started");
     requireEvidence(typeof end.p.executionId === "string" && end.p.executionId.length > 0
-      && end.p.schema === "paperclip.tool.execution.v1" && end.p.status === "completed"
+      && end.p.schema === "wardmote.tool.execution.v1" && end.p.status === "completed"
       && end.e.sourceKind === "runner" && end.e.sourceInstanceId === run.runnerInstanceId
       && end.e.normalizedSessionId === run.nativeSessionId && typeof end.e.turnId === "string" && end.e.turnId.length > 0
       && typeof end.e.normalizedSessionId === "string" && end.e.normalizedSessionId.length > 0
@@ -167,7 +167,7 @@ export function gradePiFileEvidence(input: {
     && publications[0]!.entityId === input.issueId && rec(publications[0]!.details).source === "wardmote_runner_protocol",
   "publication activity must belong to this run and task");
   return {
-    schema: "paperclip.e2e.pi-file-evidence.v1", passed: true, workspaceProvenance,
+    schema: "wardmote.e2e.pi-file-evidence.v1", passed: true, workspaceProvenance,
     runId: run.id, turnId: edit.e.turnId, nativeEditExecutionId: edit.p.executionId,
     validationExecutionId: validation.p.executionId, attachmentId: a.id,
     verification: { kind: "independent_exact_bytes", beforeSha256: sha(c.before), afterSha256: c.sha256,
@@ -213,7 +213,7 @@ export async function collectPiFileEvidence(input: {
   requireEvidence(downloadedBytes.length <= 4096, "bounded text attachment");
   const workspaceBytes = await readFile(join(input.workspace, c.filename));
   const activity = await input.api.get<Row[]>(`/api/issues/${input.issueId}/activity`);
-  await input.evidence({ schema: "paperclip.e2e.pi-file-observation.v1", attachments, attachmentId, activity,
+  await input.evidence({ schema: "wardmote.e2e.pi-file-observation.v1", attachments, attachmentId, activity,
     workspaceBytes: workspaceBytes.toString("base64"), downloadedBytes: downloadedBytes.toString("base64"),
     encoding: "base64", expectedSha256: c.sha256, copybackReference: rec(run.runnerProfileJson).nativeWorkspaceSync,
     copybackLease: lease && { id: lease.id, companyId: lease.companyId, environmentId: lease.environmentId,

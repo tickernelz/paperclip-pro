@@ -45,7 +45,7 @@ export function createWardmoteSemanticInputReceipt(
   input: SemanticReceiptBase,
 ): PrpSemanticToolEnvelope {
   return {
-    schema: "paperclip.prp.semantic_tool.v1",
+    schema: "wardmote.prp.semantic_tool.v1",
     schemaVersion: 1,
     phase: "input",
     operationId: input.operationId,
@@ -62,7 +62,7 @@ export function createWardmoteSemanticResultReceipt(
   const operationReceiptId =
     input.operationReceiptId ?? derivedOperationReceiptId(input);
   return {
-    schema: "paperclip.prp.semantic_tool.v1",
+    schema: "wardmote.prp.semantic_tool.v1",
     schemaVersion: 1,
     phase: "result",
     operationId: input.operationId,

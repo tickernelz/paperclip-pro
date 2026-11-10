@@ -13,7 +13,7 @@ import {
 } from "./runtime-context.js";
 
 const input: NativeExecutionInputV1 = {
-  schema: "paperclip.native-execution-input.v1",
+  schema: "wardmote.native-execution-input.v1",
   binding: {
     companyId: "company-1",
     runId: "run-1",
@@ -39,7 +39,7 @@ const input: NativeExecutionInputV1 = {
   completionContract: {
     id: "contract-1",
     sha256: "abc123",
-    schemaVersion: "paperclip.completion-contract.v1",
+    schemaVersion: "wardmote.completion-contract.v1",
     contract: {
       revision: "1",
       objective: "Complete the safe task.",
@@ -57,7 +57,7 @@ const input: NativeExecutionInputV1 = {
 };
 
 describe("NativeExecutionInputV1", () => {
-  it.each(["paperclip.native-execution-input.v3", "paperclip.native-execution-input.v4", NATIVE_EXECUTION_INPUT_SCHEMA])(
+  it.each(["wardmote.native-execution-input.v3", "wardmote.native-execution-input.v4", NATIVE_EXECUTION_INPUT_SCHEMA])(
     "preserves a saved %s execution through recovery parsing",
     (schema) => {
       const digest = "0".repeat(64);
@@ -74,7 +74,7 @@ describe("NativeExecutionInputV1", () => {
       const persisted = JSON.parse(JSON.stringify({
         ...input,
         schema,
-        provider: schema === "paperclip.native-execution-input.v3" ? input.provider : { ...input.provider, approvalPolicy: "never" },
+        provider: schema === "wardmote.native-execution-input.v3" ? input.provider : { ...input.provider, approvalPolicy: "never" },
         executionMode: "default",
         planningContext: null,
         runtimeContext: { ...context, aggregateDigest: canonicalNativeRuntimeContextDigest(context) },
@@ -103,12 +103,12 @@ describe("NativeExecutionInputV1", () => {
     } as const;
     const parsed = parseNativeExecutionInput({
       ...input,
-      schema: "paperclip.native-execution-input.v3",
+      schema: "wardmote.native-execution-input.v3",
       executionMode: "default",
       planningContext: null,
       runtimeContext: { ...context, aggregateDigest: canonicalNativeRuntimeContextDigest(context) },
     });
-    expect(parsed.schema).toBe("paperclip.native-execution-input.v3");
+    expect(parsed.schema).toBe("wardmote.native-execution-input.v3");
     const envelope = buildNativeModelEnvelope(parsed);
     expect(envelope.task).toEqual(buildNativeModelEnvelope(input).task);
     expect(envelope.completionContract).toEqual(buildNativeModelEnvelope(input).completionContract);
@@ -139,7 +139,7 @@ describe("NativeExecutionInputV1", () => {
     })).toBe(parsed.runtimeContext.aggregateDigest);
     const current = parseNativeExecutionInput({
       ...parsed,
-      schema: "paperclip.native-execution-input.v4",
+      schema: "wardmote.native-execution-input.v4",
       provider: { kind: "codex", model: null, approvalPolicy: "on-request" },
     });
     const withDelta = parseNativeExecutionInput({ ...current, continuationPrompt: '{"messages":[{"authorType":"user","body":"Just this new comment"}]}' });
@@ -147,7 +147,7 @@ describe("NativeExecutionInputV1", () => {
     expect(buildNativeModelEnvelope(withDelta)).toEqual(buildNativeModelEnvelope(current));
     const delta = buildNativeModelEnvelope(withDelta, { resumedSession: true });
     expect(delta).toEqual({
-      schema: "paperclip.native-continuation.v1",
+      schema: "wardmote.native-continuation.v1",
       events: '{"messages":[{"authorType":"user","body":"Just this new comment"}]}',
       completion: { revision: "1", criterionIds: ["objective"],
         instruction: "Before ending this turn, obtain one accepted wardmote_finish or wardmote_block result. Earlier reports belong to earlier turns; a final message alone does not complete this turn." },
@@ -163,7 +163,7 @@ describe("NativeExecutionInputV1", () => {
     expect(buildNativeModelEnvelope(parseNativeExecutionInput({ ...withGuidance, continuationPrompt: "new message" }), { resumedSession: true })).not.toHaveProperty("task");
     expect(buildNativeModelEnvelope(withGuidance).task.prompt.match(/Saved Slack instructions/g)).toHaveLength(1);
     expect(current).toMatchObject({
-      schema: "paperclip.native-execution-input.v4",
+      schema: "wardmote.native-execution-input.v4",
       provider: { kind: "codex", approvalPolicy: "on-request" },
     });
     const withEffort = parseNativeExecutionInput({
@@ -183,7 +183,7 @@ describe("NativeExecutionInputV1", () => {
     })).toThrow("input.provider");
     expect(() => parseNativeExecutionInput({
       ...parsed,
-      schema: "paperclip.native-execution-input.v4",
+      schema: "wardmote.native-execution-input.v4",
       provider: { kind: "codex", model: null, approvalPolicy: "sometimes" },
     })).toThrow("approvalPolicy");
   });
@@ -200,10 +200,10 @@ describe("NativeExecutionInputV1", () => {
       mcp: { assignmentSetId: "none", digest, bindingId: null },
       aggregateDigest: digest,
     } as const;
-    expect(() => parseNativeExecutionInput({ ...input, schema: "paperclip.native-execution-input.v3", executionMode: "default", planningContext: null, runtimeContext: context })).toThrow("bundle root");
+    expect(() => parseNativeExecutionInput({ ...input, schema: "wardmote.native-execution-input.v3", executionMode: "default", planningContext: null, runtimeContext: context })).toThrow("bundle root");
     expect(() => parseNativeExecutionInput({
       ...input,
-      schema: "paperclip.native-execution-input.v3",
+      schema: "wardmote.native-execution-input.v3",
       executionMode: "default",
       planningContext: null,
       runtimeContext: { ...context, instructions: { ...context.instructions, entryPath: "AGENTS.md" } },
@@ -462,7 +462,7 @@ describe("NativeExecutionInputV1", () => {
 describe("NativeExecutionInputV2 planning", () => {
   const planning = {
     ...input,
-    schema: "paperclip.native-execution-input.v2",
+    schema: "wardmote.native-execution-input.v2",
     executionMode: "plan",
     task: { ...input.task, workMode: "planning" },
     planningContext: {
@@ -477,9 +477,9 @@ describe("NativeExecutionInputV2 planning", () => {
 
   it("round-trips native plan mode and its pinned canonical revision into model context", () => {
     const parsed = parseNativeExecutionInput(planning);
-    expect(parsed).toMatchObject({ schema: "paperclip.native-execution-input.v2", executionMode: "plan" });
+    expect(parsed).toMatchObject({ schema: "wardmote.native-execution-input.v2", executionMode: "plan" });
     expect(buildNativeModelEnvelope(parsed)).toMatchObject({
-      schema: "paperclip.native-model-envelope.v2",
+      schema: "wardmote.native-model-envelope.v2",
       executionMode: "plan",
       planningContext: { baseRevisionId: "revision-3", baseRevisionNumber: 3 },
     });
@@ -507,18 +507,18 @@ describe("NativeExecutionInputV2 ask mode", () => {
   it("round-trips ask mode as a default execution without planning context", () => {
     const parsed = parseNativeExecutionInput({
       ...input,
-      schema: "paperclip.native-execution-input.v2",
+      schema: "wardmote.native-execution-input.v2",
       executionMode: "default",
       task: { ...input.task, workMode: "ask" },
       planningContext: null,
     });
     expect(parsed).toMatchObject({
-      schema: "paperclip.native-execution-input.v2",
+      schema: "wardmote.native-execution-input.v2",
       executionMode: "default",
       task: { workMode: "ask" },
     });
     expect(buildNativeModelEnvelope(parsed)).toMatchObject({
-      schema: "paperclip.native-model-envelope.v2",
+      schema: "wardmote.native-model-envelope.v2",
       task: { workMode: "ask" },
       executionMode: "default",
       planningContext: null,
@@ -528,7 +528,7 @@ describe("NativeExecutionInputV2 ask mode", () => {
   it("rejects plan execution for ask mode", () => {
     expect(() => parseNativeExecutionInput({
       ...input,
-      schema: "paperclip.native-execution-input.v2",
+      schema: "wardmote.native-execution-input.v2",
       executionMode: "plan",
       task: { ...input.task, workMode: "ask" },
       planningContext: {
@@ -585,8 +585,8 @@ describe("native task context ownership", () => {
   });
 
   it.each([
-    ["v4", "paperclip.native-execution-input.v4", "paperclip.native-model-envelope.v2"],
-    ["v5", NATIVE_EXECUTION_INPUT_SCHEMA, "paperclip.native-model-envelope.v3"],
+    ["v4", "wardmote.native-execution-input.v4", "wardmote.native-model-envelope.v2"],
+    ["v5", NATIVE_EXECUTION_INPUT_SCHEMA, "wardmote.native-model-envelope.v3"],
   ] as const)("applies communication guidance once for fresh %s input and never on resume", (_label, schema, envelopeSchema) => {
     const guidance = "Saved Slack instructions";
     const v5 = currentInput();
@@ -634,7 +634,7 @@ describe("native task context ownership", () => {
       parseNativeExecutionInput({ ...parsed, continuationPrompt: "new message" }),
       { resumedSession: true },
     );
-    expect(compactResume).toMatchObject({ schema: "paperclip.native-continuation.v1" });
+    expect(compactResume).toMatchObject({ schema: "wardmote.native-continuation.v1" });
     expect(JSON.stringify(compactResume)).not.toContain(guidance);
   });
 

@@ -69,7 +69,7 @@ const rawCommand = z
   .strict();
 
 export interface DiscordNativeCommandInvocation {
-  schema: "paperclip.discord.native-command.v1";
+  schema: "wardmote.discord.native-command.v1";
   interactionId: string;
   applicationId: string;
   registeredCommandId: string;
@@ -134,7 +134,7 @@ export function parseDiscordNativeCommand(
   )
     return null;
   const invocation = {
-    schema: "paperclip.discord.native-command.v1" as const,
+    schema: "wardmote.discord.native-command.v1" as const,
     interactionId: raw.id,
     applicationId: raw.application_id,
     registeredCommandId: raw.data.id,

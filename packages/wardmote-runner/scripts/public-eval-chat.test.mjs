@@ -26,7 +26,7 @@ function artifact() {
       },
     },
     issueThread: {
-      schema: "paperclip.capability.issue-thread-view.v1",
+      schema: "wardmote.capability.issue-thread-view.v1",
       issue: { status: "blocked" },
       turns: [
         {

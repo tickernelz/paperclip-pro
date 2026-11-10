@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://paperclip.dev/schemas/prp/v1/capabilities.schema.json",
+  "$id": "https://wardmote.dev/schemas/prp/v1/capabilities.schema.json",
   "title": "PRP negotiated capabilities",
   "type": "object",
   "required": [
@@ -15,7 +15,7 @@
     "typedEvents"
   ],
   "properties": {
-    "schema": { "const": "paperclip.prp.capabilities.v1" },
+    "schema": { "const": "wardmote.prp.capabilities.v1" },
     "sessionReusePolicy": {
       "enum": ["new_per_run", "reuse_per_issue", "reuse_per_workspace"]
     },
@@ -53,7 +53,7 @@
       "type": "object",
       "required": ["schema", "schemaVersion", "operations"],
       "properties": {
-        "schema": { "const": "paperclip.prp.semantic_tools.v1" },
+        "schema": { "const": "wardmote.prp.semantic_tools.v1" },
         "schemaVersion": { "const": 1 },
         "operations": {
           "type": "array",

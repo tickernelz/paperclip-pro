@@ -2,7 +2,7 @@
 
 ## Current integration — 2026-10-08
 
-The experimental Runner admits **Pi profile 22** (`sha256:b5cdae1f6aebc754cc68e43c5a4d5a745930b0a06bf2be22067af353ac07b00c`) and
+The experimental Runner admits **Pi profile 25** (`sha256:b4d6cbdaea280fe17acc96b86d43f078645b5e06b301416402565db0b22bccf7`) and
 **Cursor profile 15**. Copilot remains pending at **profile 17**. Legacy
 `pi_local` is unchanged. Pi accepts any explicit caller-selected provider/model
 ID and requires native acknowledgement; qualification models are examples, not
@@ -560,7 +560,7 @@ missing sentinel kills the subprocess before the first model prompt.
 
 `pi-verified-runtime.ts` inventories and checks the complete graph, including
 Node, wrapper helper, extension, package metadata, native libraries, WASM and
-resources. The manifest schema is `paperclip.pi-runtime-files.v1`, with relative
+resources. The manifest schema is `wardmote.pi-runtime-files.v1`, with relative
 `node`, `piEntrypoint`, `extension`, `wrapperEntrypoint` fields and a complete
 `files` array of SHA-256-bound regular files or contained relative symlinks.
 Hardlinked files, escaping links, changed files, and undeclared files fail

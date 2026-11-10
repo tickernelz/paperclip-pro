@@ -1,5 +1,5 @@
 {
-  "schema": "paperclip.native-mcp-capture-provenance.v1",
+  "schema": "wardmote.native-mcp-capture-provenance.v1",
   "nativeVersion": "1.0.88",
   "nativeExecutableSha256": "a9ff8babb10b7e443182ae96a8bc50a9c826ef1c773e1344c396eb5bf7f512c3",
   "platform": "darwin-arm64",

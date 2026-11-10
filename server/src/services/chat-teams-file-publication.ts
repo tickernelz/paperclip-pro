@@ -132,7 +132,7 @@ export async function projectTeamsFilePublication(
       responseActivityId: chatTeamsFileTransfers.responseActivityId,
       attemptId: chatTeamsFileTransfers.attemptId,
       attemptExpiresAt: chatTeamsFileTransfers.attemptExpiresAt,
-      operatorConfirmed: sql<boolean>`coalesce(${chatTeamsFileTransfers.privateState}->'resolution'->>'schema' = 'paperclip.teams.file-resolution.v1'
+      operatorConfirmed: sql<boolean>`coalesce(${chatTeamsFileTransfers.privateState}->'resolution'->>'schema' = 'wardmote.teams.file-resolution.v1'
       and ${chatTeamsFileTransfers.privateState}->'resolution'->>'action' = 'mark_delivered'
       and ${chatTeamsFileTransfers.privateState}->'resolution'->>'fromPhase' = 'file_info_unknown', false)`,
     })
@@ -264,7 +264,7 @@ export async function projectTeamsFilePublication(
     if (!transfer.attemptId || !transfer.attemptExpiresAt) fail();
     const providerActionId = `teams-file-effect:${transfer.attemptId}`;
     const payload = {
-      schema: "paperclip.teams.file-effect-intent.v1",
+      schema: "wardmote.teams.file-effect-intent.v1",
       transferId: s.id,
       publicationId: s.publicationId,
       attemptId: transfer.attemptId,

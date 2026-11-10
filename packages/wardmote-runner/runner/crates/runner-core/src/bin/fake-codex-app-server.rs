@@ -460,14 +460,14 @@ fn send_opencode_proxy_runtime_question(state: &FakeState) -> io::Result<()> {
         "method": "paperclip/runtimeRequest",
         "params": {
             "request": {
-                "schema": "paperclip.runtime_request.v2",
+                "schema": "wardmote.runtime_request.v2",
                 "requestKind": "runtime",
                 "requestId": "opencode-question-1",
                 "type": "input",
                 "status": "pending",
                 "prompt": "OpenCode requests user input.",
                 "input": {
-                    "schema": "paperclip.question_set.v1",
+                    "schema": "wardmote.question_set.v1",
                     "questions": [{
                         "id": "environment",
                         "prompt": "Where should we deploy?",
@@ -902,7 +902,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         {
             if message.pointer("/result/resolution/action") != Some(&json!("submit"))
                 || message.pointer("/result/resolution/response/schema")
-                    != Some(&json!("paperclip.question_response.v1"))
+                    != Some(&json!("wardmote.question_response.v1"))
             {
                 return Err("OpenCode proxy runtime response changed shape".into());
             }

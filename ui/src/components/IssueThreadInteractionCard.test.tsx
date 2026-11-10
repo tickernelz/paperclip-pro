@@ -168,7 +168,7 @@ describe("IssueThreadInteractionCard", () => {
       ...pendingAskUserQuestionsInteraction.payload,
       questions: [{ id: "draft", prompt: "Edit draft", required: true, selectionMode: "single" as const, options: [{ id: "draft_text", label: "Write an answer", freeText: true }], allowOther: false }],
       questionSet: {
-        schema: "paperclip.question_set.v1" as const,
+        schema: "wardmote.question_set.v1" as const,
         questions: [{ id: "draft", prompt: "Edit draft", required: true, answerMode: "text" as const, initialText: "  Provider draft\n漢字\\n  " }],
       },
     },

@@ -127,7 +127,7 @@ describe("public React contracts", () => {
 
   it("renders structured Codex completion as a response-first card with optional protocol details", () => {
     const response = JSON.stringify({
-      schema: "paperclip.run_result.v1",
+      schema: "wardmote.run_result.v1",
       summary: "Created the requested file and verified its contents.",
       completionClaim: { objectiveSatisfied: true, remainingWork: [] },
       verification: [{ commandOrCheck: "cat result.txt", status: "passed" }],

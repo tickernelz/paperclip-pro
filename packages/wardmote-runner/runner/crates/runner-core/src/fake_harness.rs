@@ -11,8 +11,8 @@ use serde_json::{json, Value};
 use crate::local_runner::{HarnessCommand, LocalRunnerError};
 use crate::process_supervisor::{read_bounded_line, BoundedLine};
 
-const HARNESS_COMMAND_SCHEMA: &str = "paperclip.fake_harness.command.v1";
-const HARNESS_MESSAGE_SCHEMA: &str = "paperclip.fake_harness.message.v1";
+const HARNESS_COMMAND_SCHEMA: &str = "wardmote.fake_harness.command.v1";
+const HARNESS_MESSAGE_SCHEMA: &str = "wardmote.fake_harness.message.v1";
 const HARNESS_COMMAND_TIMEOUT: Duration = Duration::from_secs(10);
 const INTERACTIVE_REQUEST_TIMEOUT: Duration = Duration::from_secs(5 * 60);
 const HARNESS_COMMAND_QUEUE_CAPACITY: usize = 256;
@@ -90,7 +90,7 @@ pub fn load_fake_harness_script(path: &Path) -> Result<FakeHarnessScript, LocalR
     let script: FakeHarnessScript = serde_json::from_str(&input).map_err(|error| {
         LocalRunnerError::invalid(format!("fake harness script must be valid JSON: {error}"))
     })?;
-    if script.schema != "paperclip.fake_harness.script.v1" {
+    if script.schema != "wardmote.fake_harness.script.v1" {
         return Err(LocalRunnerError::invalid(
             "fake harness script schema is unsupported",
         ));

@@ -29,7 +29,7 @@ import { appendSemanticToolReceipt } from "../../../packages/wardmote-runner/src
 
 function receiptNotice(version: 1 | 2 = 1): Record<string, any> {
   return {
-    schema: "paperclip.provider.notice.v1", noticeId: `copilot-evidence-${"a".repeat(24)}-1`,
+    schema: "wardmote.provider.notice.v1", noticeId: `copilot-evidence-${"a".repeat(24)}-1`,
     severity: "info", category: `paperclip_semantic_tool_receipt_v${version}`, scope: "turn",
     recoverable: true, userActionable: false, summary: "Wardmote returned a semantic tool result.",
     provenance: { method: "paperclip/semantic_tool_result", eventType: "semantic_result", sessionId: "session", turnId: "turn" },
@@ -65,7 +65,7 @@ describe("redaction", () => {
     expect(events).toHaveLength(1);
     expect(events[0]!.payload.category).toBe("paperclip_semantic_tool_receipt_v2");
     expect(events[0]!.payload.details).toHaveLength(8);
-    const input = { prpEvent: { schema: "paperclip.prp.event.v1", schemaVersion: 1,
+    const input = { prpEvent: { schema: "wardmote.prp.event.v1", schemaVersion: 1,
       eventType: "provider.notice.recorded", payload: events[0]!.payload } };
     expect(redactEventPayload(input)).toEqual(input);
     expect(redactEventPayload(redactEventPayload(input))).toEqual(input);
@@ -163,7 +163,7 @@ describe("redaction", () => {
     )) as { properties: { eventType: { enum: string[] } } };
     for (const eventType of schema.properties.eventType.enum) {
       const event = {
-        schema: "paperclip.prp.event.v2",
+        schema: "wardmote.prp.event.v2",
         schemaVersion: 2,
         eventType,
         payload: { safe: true },
@@ -176,7 +176,7 @@ describe("redaction", () => {
   it("preserves diagnostic PRP discriminators while redacting their credential payloads", () => {
     const unknown = redactEventPayload({
       prpEvent: {
-        schema: "paperclip.prp.event.v2",
+        schema: "wardmote.prp.event.v2",
         schemaVersion: 2,
         eventType: "session.not-a-real.event",
       },
@@ -187,7 +187,7 @@ describe("redaction", () => {
 
     const mismatched = redactEventPayload({
       prpEvent: {
-        schema: "paperclip.prp.event.v1",
+        schema: "wardmote.prp.event.v1",
         schemaVersion: 2,
         eventType: "session.capabilities.updated",
       },
@@ -198,7 +198,7 @@ describe("redaction", () => {
 
     const secretPayload = redactEventPayload({
       prpEvent: {
-        schema: "paperclip.prp.event.v2",
+        schema: "wardmote.prp.event.v2",
         schemaVersion: 2,
         eventType: "session.capabilities.updated",
         payload: { authorization: "Bearer secret-value" },
@@ -283,29 +283,29 @@ describe("redaction", () => {
   it("preserves Wardmote protocol schema identifiers", () => {
     expect(
       sanitizeRecord({
-        schema: "paperclip.question_set.v1",
+        schema: "wardmote.question_set.v1",
         nested: {
-          schema: "paperclip.question_response.v1",
-          runtimeSchema: "paperclip.runtime_request.v2",
-          arbitraryProviderValue: "paperclip.question_set.v1",
+          schema: "wardmote.question_response.v1",
+          runtimeSchema: "wardmote.runtime_request.v2",
+          arbitraryProviderValue: "wardmote.question_set.v1",
         },
       }),
     ).toEqual({
-      schema: "paperclip.question_set.v1",
+      schema: "wardmote.question_set.v1",
       nested: {
-        schema: "paperclip.question_response.v1",
-        runtimeSchema: "paperclip.runtime_request.v2",
-        arbitraryProviderValue: "paperclip.question_set.v1",
+        schema: "wardmote.question_response.v1",
+        runtimeSchema: "wardmote.runtime_request.v2",
+        arbitraryProviderValue: "wardmote.question_set.v1",
       },
     });
   });
 
   it("preserves native execution v5 and model envelope v3 schema identifiers", () => {
     const input = {
-      schema: "paperclip.native-execution-input.v5",
+      schema: "wardmote.native-execution-input.v5",
       nested: {
-        runtimeSchema: "paperclip.native-model-envelope.v3",
-        providerValue: "paperclip.native-execution-input.v5",
+        runtimeSchema: "wardmote.native-model-envelope.v3",
+        providerValue: "wardmote.native-execution-input.v5",
       },
     };
     expect(sanitizeRecord(input)).toEqual({
@@ -315,16 +315,16 @@ describe("redaction", () => {
         providerValue: input.nested.providerValue,
       },
     });
-    expect(sanitizeRecord({ schema: "paperclip.native-execution-input.v4", runtimeSchema: "paperclip.native-model-envelope.v2" })).toEqual({
-      schema: "paperclip.native-execution-input.v4",
-      runtimeSchema: "paperclip.native-model-envelope.v2",
+    expect(sanitizeRecord({ schema: "wardmote.native-execution-input.v4", runtimeSchema: "wardmote.native-model-envelope.v2" })).toEqual({
+      schema: "wardmote.native-execution-input.v4",
+      runtimeSchema: "wardmote.native-model-envelope.v2",
     });
   });
 
   it("preserves only known PRP v1 event discriminators inside validated envelopes", () => {
     const payload = {
       prpEvent: {
-        schema: "paperclip.prp.event.v1",
+        schema: "wardmote.prp.event.v1",
         schemaVersion: 1,
         eventType: "tool.execution.started",
         payload: {
@@ -341,7 +341,7 @@ describe("redaction", () => {
 
     expect(sanitized).toEqual({
       prpEvent: {
-        schema: "paperclip.prp.event.v1",
+        schema: "wardmote.prp.event.v1",
         schemaVersion: 1,
         eventType: "tool.execution.started",
         payload: {
@@ -359,7 +359,7 @@ describe("redaction", () => {
   it("preserves unknown dotted event values instead of treating them as JWTs", () => {
     expect(
       redactEventPayload({
-        schema: "paperclip.prp.event.v1",
+        schema: "wardmote.prp.event.v1",
         schemaVersion: 1,
         eventType: "attacker.supplied.token",
       })?.eventType,
@@ -369,14 +369,14 @@ describe("redaction", () => {
   it("preserves dotted schema identifiers without interpreting their authority", () => {
     expect(
       redactEventPayload({
-        schema: "paperclip.attacker.control.v1",
-        runtimeSchema: "paperclip.attacker.runtime.v1",
+        schema: "wardmote.attacker.control.v1",
+        runtimeSchema: "wardmote.attacker.runtime.v1",
         schemaVersion: 1,
         eventType: "tool.execution.started",
       }),
     ).toEqual({
-      schema: "paperclip.attacker.control.v1",
-      runtimeSchema: "paperclip.attacker.runtime.v1",
+      schema: "wardmote.attacker.control.v1",
+      runtimeSchema: "wardmote.attacker.runtime.v1",
       schemaVersion: 1,
       eventType: "tool.execution.started",
     });
@@ -402,7 +402,7 @@ describe("redaction", () => {
 
     for (const span of spanNames) {
       const input = {
-        schema: "paperclip.run-performance-span.v1",
+        schema: "wardmote.run-performance-span.v1",
         span,
         parentSpan: "native.session.execute",
         providerHostname: "api.openai.com",
@@ -420,13 +420,13 @@ describe("redaction", () => {
 
     expect(
       redactEventPayload({
-        schema: "paperclip.run-performance-span.v1",
+        schema: "wardmote.run-performance-span.v1",
         span: "api.openai.com",
       })?.span,
     ).toBe("api.openai.com");
     expect(
       redactEventPayload({
-        schema: "paperclip.run-performance-span.v1",
+        schema: "wardmote.run-performance-span.v1",
         span: "runner.example.com",
       })?.span,
     ).toBe("runner.example.com");

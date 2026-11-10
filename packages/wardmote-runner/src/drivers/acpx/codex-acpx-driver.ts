@@ -1536,7 +1536,7 @@ class CodexAcpxSession implements HarnessSession {
         this.#emit(
           "provider.notice.recorded",
           {
-            schema: "paperclip.provider.notice.v1",
+            schema: "wardmote.provider.notice.v1",
             noticeId: `${turnId}:failure`,
             severity: "error",
             category: "acpx_turn_failed",
@@ -2002,7 +2002,7 @@ class CodexAcpxSession implements HarnessSession {
     }
     const sourceSeq = this.#sourceSequence + 1;
     const event: PrpEvent = {
-      schema: "paperclip.prp.event.v1",
+      schema: "wardmote.prp.event.v1",
       sourceEventId: `${this.#sourceInstanceId}:${sourceSeq}`,
       sourceSeq,
       sourceInstanceId: this.#sourceInstanceId,
@@ -2390,7 +2390,7 @@ function reportRetainedAcpxCleanupFailure(
   const errorName = input.error instanceof Error ? input.error.name : "Error";
   process.emitWarning(
     JSON.stringify({
-      schema: "paperclip.runner.retained_cleanup_failure.v1",
+      schema: "wardmote.runner.retained_cleanup_failure.v1",
       resource: input.resource,
       attempt: input.attempt,
       errorName,

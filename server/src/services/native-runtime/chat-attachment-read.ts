@@ -29,7 +29,7 @@ export const READ_CHAT_ATTACHMENT_TOOL_DEFINITION = Object.freeze({
     additionalProperties: false,
   },
   annotations: {
-    semanticContract: "paperclip.server-chat-attachment-read.v1",
+    semanticContract: "wardmote.server-chat-attachment-read.v1",
     operationId: READ_CHAT_ATTACHMENT_TOOL_NAME,
     version: 1,
     exposure: "run_scoped",

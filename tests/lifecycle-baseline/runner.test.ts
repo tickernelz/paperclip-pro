@@ -4,7 +4,7 @@ import { normalizePrpResultSignals } from "../../packages/wardmote-runner/src/pr
 import { narratives } from "./narratives.js";
 import { observe } from "./observe.js";
 const result = {
-  schema: "paperclip.run_result.v1",
+  schema: "wardmote.run_result.v1",
   reportedWorkDisposition: "done",
   summary: "Completed work",
   completionClaim: {

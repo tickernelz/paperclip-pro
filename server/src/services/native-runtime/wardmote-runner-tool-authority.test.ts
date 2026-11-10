@@ -546,7 +546,7 @@ describe("WardmoteRunnerToolAuthority", () => {
       : {
           version: 1,
           questionSet: {
-            schema: "paperclip.question_set.v1",
+            schema: "wardmote.question_set.v1",
             questions: [
               { id: "goal", prompt: "What should we accomplish?", answerMode: "text", required: true },
               ...(answerMode === "mixed" ? [{ id: "color", prompt: "Choose one color", answerMode: "single_select", required: true, options: questions[0].options }] : []),

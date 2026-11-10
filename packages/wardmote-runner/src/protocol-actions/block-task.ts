@@ -62,7 +62,7 @@ export const blockTaskAction = {
   "live": {
     "order": 11,
     "descriptor": {
-      "schema": "paperclip.semantic-tool.v1",
+      "schema": "wardmote.semantic-tool.v1",
       "operationId": "block_task",
       "version": 1,
       "title": "Block active task",
@@ -159,7 +159,7 @@ export const blockTaskAction = {
   "scenario": {
     "order": 8,
     "successExample": {
-      "schema": "paperclip.capability.tool-result.v1",
+      "schema": "wardmote.capability.tool-result.v1",
       "ok": true,
       "operationId": "block_task",
       "operationResultId": "example-result",
@@ -204,7 +204,7 @@ export const blockTaskAction = {
           "schema": {
             "type": "string",
             "enum": [
-              "paperclip.capability.tool-result.v1"
+              "wardmote.capability.tool-result.v1"
             ]
           },
           "ok": {

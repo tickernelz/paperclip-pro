@@ -46,7 +46,7 @@ export const updateAgentInstructionsAction = {
   "live": {
     "order": 41,
     "descriptor": {
-      "schema": "paperclip.semantic-tool.v1",
+      "schema": "wardmote.semantic-tool.v1",
       "operationId": "update_agent_instructions",
       "version": 1,
       "title": "Update canonical agent instructions",

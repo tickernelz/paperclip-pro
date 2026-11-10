@@ -1,11 +1,11 @@
 {
-  "schema": "paperclip.fake_harness.script.v1",
+  "schema": "wardmote.fake_harness.script.v1",
   "name": "permission-input",
   "steps": [
     {
       "kind": "request",
       "request": {
-        "schema": "paperclip.runtime_request.v1",
+        "schema": "wardmote.runtime_request.v1",
         "requestKind": "runtime",
         "requestId": "request_local_runner_permission",
         "type": "permission",
@@ -21,7 +21,7 @@
     {
       "kind": "request",
       "request": {
-        "schema": "paperclip.runtime_request.v1",
+        "schema": "wardmote.runtime_request.v1",
         "requestKind": "runtime",
         "requestId": "request_local_runner_input",
         "type": "input",
@@ -50,7 +50,7 @@
     {
       "kind": "result",
       "payload": {
-        "schema": "paperclip.run_result.v1",
+        "schema": "wardmote.run_result.v1",
         "reportedWorkDisposition": "done",
         "summary": "The permission and input flow completed.",
         "completionClaim": {

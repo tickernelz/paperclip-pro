@@ -120,7 +120,7 @@ try {
     const writeId = randomUUID();
     await Promise.all([0, 1].map(() => call("wardmote_dot_tool", { name: "save_report", arguments: { body: "Synthetic competitor report" } }, writeId)));
     await call("wardmote_dot_progress", { text: "The lab report is saved." });
-    await call("wardmote_dot_finish", { result: { schema: "paperclip.run_result.v1", reportedWorkDisposition: "done", summary: "Lab report saved.",
+    await call("wardmote_dot_finish", { result: { schema: "wardmote.run_result.v1", reportedWorkDisposition: "done", summary: "Lab report saved.",
       completionClaim: { contractRevision: "dot-lab-v1", objectiveSatisfied: true, criteria: [], remainingWork: [] }, evidence: [], verification: [], attentionRequests: [], artifacts: [] } });
     resolveWork();
   };

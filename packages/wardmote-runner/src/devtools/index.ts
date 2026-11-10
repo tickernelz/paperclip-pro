@@ -29,7 +29,7 @@ export interface CapabilityDevtoolsProviderTrace {
 }
 
 export interface CapabilityDevtoolsSnapshot {
-  schema: "paperclip.capability.devtools.v1";
+  schema: "wardmote.capability.devtools.v1";
   currentRevision: number;
   revisions: CapabilityDevtoolsRevision[];
   protocol: CapabilityDevtoolsProtocolRecord[];
@@ -160,7 +160,7 @@ export function projectCapabilityDevtools(
           ...retained,
         ];
   return {
-    schema: "paperclip.capability.devtools.v1",
+    schema: "wardmote.capability.devtools.v1",
     currentRevision: parseState(snapshot.mockState).revision,
     revisions: history.map((entry) => ({
       revision: entry.revision,

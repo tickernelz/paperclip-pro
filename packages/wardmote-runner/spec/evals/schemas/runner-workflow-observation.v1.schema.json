@@ -1,11 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://paperclip.dev/schemas/runner-workflow-observation.v1.schema.json",
+  "$id": "https://wardmote.dev/schemas/runner-workflow-observation.v1.schema.json",
   "title": "RunnerWorkflowObservation v1",
   "type": "object",
   "required": ["schema", "caseId", "candidateId", "provider", "classification", "base", "lifecycle", "continuation", "presentation", "traceLineage", "metrics", "observedPrpEventTypes", "artifactDigests"],
   "properties": {
-    "schema": { "const": "paperclip.runner.workflow-observation.v1" },
+    "schema": { "const": "wardmote.runner.workflow-observation.v1" },
     "caseId": { "enum": ["final-response", "rich-activity", "verification-policy", "governed-interaction", "steering-causality", "planning-lifecycle", "review-lifecycle", "delegation-return", "completion-robustness", "restart-recovery", "cancellation-permissions", "trace-lineage"] },
     "candidateId": { "type": "string", "minLength": 1 },
     "provider": { "enum": ["codex", "opencode", "acpx"] },

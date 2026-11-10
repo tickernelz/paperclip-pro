@@ -255,14 +255,14 @@ function rpcSource() {
 }
 
 export interface PiProviderDeathReceipt {
-  schema: "paperclip.e2e.pi-provider-death.v1"; binding: RemoteNativeBinding; runtimeEnvironmentLeaseId: string;
+  schema: "wardmote.e2e.pi-provider-death.v1"; binding: RemoteNativeBinding; runtimeEnvironmentLeaseId: string;
   target: RemoteProcessIdentity; ancestry: RemoteProcessIdentity[]; nodeSha256: string; entrypointSha256: string; closureSha256: string;
   entrypointAttribution: "pinned_wrapper_parent"; originalChildArgvAvailable: false; observedChildTitle: "pi";
   signalled: true; signal: "SIGKILL"; targetKind: "pi_native_child"; workerSignalled: false;
 }
 export function validatePiProviderDeathReceipt(value: unknown, binding: RemoteNativeBinding, root: RemoteProcessIdentity, lease: string): PiProviderDeathReceipt {
   const r = record(value), target = record(r.target), ancestry = Array.isArray(r.ancestry) ? r.ancestry.map(record) : [];
-  fail(r.schema === "paperclip.e2e.pi-provider-death.v1" && JSON.stringify(r.binding) === JSON.stringify(binding)
+  fail(r.schema === "wardmote.e2e.pi-provider-death.v1" && JSON.stringify(r.binding) === JSON.stringify(binding)
     && r.entrypointAttribution === "pinned_wrapper_parent" && r.originalChildArgvAvailable === false && r.observedChildTitle === "pi"
     && r.runtimeEnvironmentLeaseId === lease && r.signalled === true && r.signal === "SIGKILL" && r.targetKind === "pi_native_child" && r.workerSignalled === false
     && sha(r.nodeSha256) && sha(r.entrypointSha256) && r.closureSha256 === PI_DISTRIBUTION_CLOSURE_SHA256["linux-x64"], "pi_fault_receipt");

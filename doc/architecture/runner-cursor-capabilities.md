@@ -329,7 +329,7 @@ isolation, not an operating-system sandbox: explicitly allowed native shell
 commands still have their granted filesystem/network powers.
 
 Typed `ActionRequiredError` instances now produce a failed JSON-RPC response
-with data schema `paperclip.cursor.provider-error.v1`, kind `action_required`,
+with data schema `wardmote.cursor.provider-error.v1`, kind `action_required`,
 and the closed action enum `login`, `upgrade`, `payment`, `config`, or `unknown`.
 Login and native `ConnectError` with the Unauthenticated code use ACP error
 `-32000`; other action requirements use `-32603`. Provider-private error detail

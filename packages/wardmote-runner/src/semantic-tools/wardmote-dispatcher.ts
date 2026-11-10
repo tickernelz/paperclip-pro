@@ -740,7 +740,7 @@ export class WardmoteSemanticDispatcher {
     this.#recordSequence += 1;
     this.#authorizationRecords.push(
       deepFreeze({
-        schema: "paperclip.semantic-authorization-record.v1",
+        schema: "wardmote.semantic-authorization-record.v1",
         id: `semantic_auth:${String(this.#recordSequence).padStart(8, "0")}`,
         runId: context.runId,
         companyId: context.companyId,

@@ -44,7 +44,7 @@ export const readAgentInstructionsAction = {
   "live": {
     "order": 40,
     "descriptor": {
-      "schema": "paperclip.semantic-tool.v1",
+      "schema": "wardmote.semantic-tool.v1",
       "operationId": "read_agent_instructions",
       "version": 1,
       "title": "Read canonical agent instructions",

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://paperclip.dev/schemas/prp/v1/event.schema.json",
+  "$id": "https://wardmote.dev/schemas/prp/v1/event.schema.json",
   "title": "PRP native event",
   "type": "object",
   "required": [
@@ -17,7 +17,7 @@
     "payload"
   ],
   "properties": {
-    "schema": { "const": "paperclip.prp.event.v1" },
+    "schema": { "const": "wardmote.prp.event.v1" },
     "sourceEventId": { "type": "string", "minLength": 1, "maxLength": 160 },
     "sourceSeq": { "type": "integer", "minimum": 1, "maximum": 9007199254740991 },
     "sourceInstanceId": { "type": "string", "minLength": 1, "maxLength": 160 },
@@ -69,27 +69,27 @@
     "debug": { "type": "object", "additionalProperties": true }
   },
   "allOf": [
-    { "if": { "properties": { "eventType": { "const": "plan.updated" } } }, "then": { "properties": { "payload": { "$ref": "https://paperclip.dev/schemas/prp/v1/provider-event.schema.json#/$defs/plan" } } } },
-    { "if": { "properties": { "eventType": { "enum": ["tool.execution.started", "tool.execution.progressed", "tool.execution.completed"] } } }, "then": { "properties": { "payload": { "$ref": "https://paperclip.dev/schemas/prp/v1/provider-event.schema.json#/$defs/toolExecution" } } } },
-    { "if": { "properties": { "eventType": { "enum": ["research.started", "research.progressed", "research.completed"] } } }, "then": { "properties": { "payload": { "$ref": "https://paperclip.dev/schemas/prp/v1/provider-event.schema.json#/$defs/research" } } } },
-    { "if": { "properties": { "eventType": { "enum": ["delegation.started", "delegation.updated", "delegation.completed"] } } }, "then": { "properties": { "payload": { "$ref": "https://paperclip.dev/schemas/prp/v1/provider-event.schema.json#/$defs/delegation" } } } },
-    { "if": { "properties": { "eventType": { "const": "model.route.changed" } } }, "then": { "properties": { "payload": { "$ref": "https://paperclip.dev/schemas/prp/v1/provider-event.schema.json#/$defs/modelRoute" } } } },
-    { "if": { "properties": { "eventType": { "const": "model.verification.updated" } } }, "then": { "properties": { "payload": { "$ref": "https://paperclip.dev/schemas/prp/v1/provider-event.schema.json#/$defs/modelVerification" } } } },
-    { "if": { "properties": { "eventType": { "const": "context.compacted" } } }, "then": { "properties": { "payload": { "$ref": "https://paperclip.dev/schemas/prp/v1/provider-event.schema.json#/$defs/contextCompacted" } } } },
-    { "if": { "properties": { "eventType": { "const": "artifact.viewed" } } }, "then": { "properties": { "payload": { "$ref": "https://paperclip.dev/schemas/prp/v1/provider-event.schema.json#/$defs/artifactViewed" } } } },
-    { "if": { "properties": { "eventType": { "const": "artifact.generated" } } }, "then": { "properties": { "payload": { "$ref": "https://paperclip.dev/schemas/prp/v1/provider-event.schema.json#/$defs/artifactGenerated" } } } },
-    { "if": { "properties": { "eventType": { "const": "review.mode.changed" } } }, "then": { "properties": { "payload": { "$ref": "https://paperclip.dev/schemas/prp/v1/provider-event.schema.json#/$defs/reviewMode" } } } },
-    { "if": { "properties": { "eventType": { "enum": ["hook.started", "hook.completed"] } } }, "then": { "properties": { "payload": { "$ref": "https://paperclip.dev/schemas/prp/v1/provider-event.schema.json#/$defs/hook" } } } },
-    { "if": { "properties": { "eventType": { "const": "memory.citation.referenced" } } }, "then": { "properties": { "payload": { "$ref": "https://paperclip.dev/schemas/prp/v1/provider-event.schema.json#/$defs/memoryCitation" } } } },
-    { "if": { "properties": { "eventType": { "enum": ["safety.review.started", "safety.review.completed"] } } }, "then": { "properties": { "payload": { "$ref": "https://paperclip.dev/schemas/prp/v1/provider-event.schema.json#/$defs/safetyReview" } } } },
-    { "if": { "properties": { "eventType": { "const": "terminal.input.sent" } } }, "then": { "properties": { "payload": { "$ref": "https://paperclip.dev/schemas/prp/v1/provider-event.schema.json#/$defs/terminalInput" } } } },
-    { "if": { "properties": { "eventType": { "enum": ["wait.started", "wait.completed"] } } }, "then": { "properties": { "payload": { "$ref": "https://paperclip.dev/schemas/prp/v1/provider-event.schema.json#/$defs/wait" } } } },
-    { "if": { "properties": { "eventType": { "const": "provider.notice.recorded" } } }, "then": { "properties": { "payload": { "$ref": "https://paperclip.dev/schemas/prp/v1/provider-event.schema.json#/$defs/providerNotice" } } } },
+    { "if": { "properties": { "eventType": { "const": "plan.updated" } } }, "then": { "properties": { "payload": { "$ref": "https://wardmote.dev/schemas/prp/v1/provider-event.schema.json#/$defs/plan" } } } },
+    { "if": { "properties": { "eventType": { "enum": ["tool.execution.started", "tool.execution.progressed", "tool.execution.completed"] } } }, "then": { "properties": { "payload": { "$ref": "https://wardmote.dev/schemas/prp/v1/provider-event.schema.json#/$defs/toolExecution" } } } },
+    { "if": { "properties": { "eventType": { "enum": ["research.started", "research.progressed", "research.completed"] } } }, "then": { "properties": { "payload": { "$ref": "https://wardmote.dev/schemas/prp/v1/provider-event.schema.json#/$defs/research" } } } },
+    { "if": { "properties": { "eventType": { "enum": ["delegation.started", "delegation.updated", "delegation.completed"] } } }, "then": { "properties": { "payload": { "$ref": "https://wardmote.dev/schemas/prp/v1/provider-event.schema.json#/$defs/delegation" } } } },
+    { "if": { "properties": { "eventType": { "const": "model.route.changed" } } }, "then": { "properties": { "payload": { "$ref": "https://wardmote.dev/schemas/prp/v1/provider-event.schema.json#/$defs/modelRoute" } } } },
+    { "if": { "properties": { "eventType": { "const": "model.verification.updated" } } }, "then": { "properties": { "payload": { "$ref": "https://wardmote.dev/schemas/prp/v1/provider-event.schema.json#/$defs/modelVerification" } } } },
+    { "if": { "properties": { "eventType": { "const": "context.compacted" } } }, "then": { "properties": { "payload": { "$ref": "https://wardmote.dev/schemas/prp/v1/provider-event.schema.json#/$defs/contextCompacted" } } } },
+    { "if": { "properties": { "eventType": { "const": "artifact.viewed" } } }, "then": { "properties": { "payload": { "$ref": "https://wardmote.dev/schemas/prp/v1/provider-event.schema.json#/$defs/artifactViewed" } } } },
+    { "if": { "properties": { "eventType": { "const": "artifact.generated" } } }, "then": { "properties": { "payload": { "$ref": "https://wardmote.dev/schemas/prp/v1/provider-event.schema.json#/$defs/artifactGenerated" } } } },
+    { "if": { "properties": { "eventType": { "const": "review.mode.changed" } } }, "then": { "properties": { "payload": { "$ref": "https://wardmote.dev/schemas/prp/v1/provider-event.schema.json#/$defs/reviewMode" } } } },
+    { "if": { "properties": { "eventType": { "enum": ["hook.started", "hook.completed"] } } }, "then": { "properties": { "payload": { "$ref": "https://wardmote.dev/schemas/prp/v1/provider-event.schema.json#/$defs/hook" } } } },
+    { "if": { "properties": { "eventType": { "const": "memory.citation.referenced" } } }, "then": { "properties": { "payload": { "$ref": "https://wardmote.dev/schemas/prp/v1/provider-event.schema.json#/$defs/memoryCitation" } } } },
+    { "if": { "properties": { "eventType": { "enum": ["safety.review.started", "safety.review.completed"] } } }, "then": { "properties": { "payload": { "$ref": "https://wardmote.dev/schemas/prp/v1/provider-event.schema.json#/$defs/safetyReview" } } } },
+    { "if": { "properties": { "eventType": { "const": "terminal.input.sent" } } }, "then": { "properties": { "payload": { "$ref": "https://wardmote.dev/schemas/prp/v1/provider-event.schema.json#/$defs/terminalInput" } } } },
+    { "if": { "properties": { "eventType": { "enum": ["wait.started", "wait.completed"] } } }, "then": { "properties": { "payload": { "$ref": "https://wardmote.dev/schemas/prp/v1/provider-event.schema.json#/$defs/wait" } } } },
+    { "if": { "properties": { "eventType": { "const": "provider.notice.recorded" } } }, "then": { "properties": { "payload": { "$ref": "https://wardmote.dev/schemas/prp/v1/provider-event.schema.json#/$defs/providerNotice" } } } },
     {
       "if": { "properties": { "eventType": { "const": "workspace.file.referenced" } } },
       "then": {
         "properties": {
-          "payload": { "$ref": "https://paperclip.dev/schemas/prp/v1/workspace-file-reference.schema.json" }
+          "payload": { "$ref": "https://wardmote.dev/schemas/prp/v1/workspace-file-reference.schema.json" }
         }
       }
     },
@@ -97,7 +97,7 @@
       "if": { "properties": { "eventType": { "enum": ["workspace.change.updated", "workspace.diff.recorded"] } } },
       "then": {
         "properties": {
-          "payload": { "$ref": "https://paperclip.dev/schemas/prp/v1/workspace-diff.schema.json" }
+          "payload": { "$ref": "https://wardmote.dev/schemas/prp/v1/workspace-diff.schema.json" }
         }
       }
     },
@@ -107,7 +107,7 @@
         "properties": {
           "payload": {
             "allOf": [
-              { "$ref": "https://paperclip.dev/schemas/prp/v1/workspace-diff.schema.json" },
+              { "$ref": "https://wardmote.dev/schemas/prp/v1/workspace-diff.schema.json" },
               { "type": "object", "properties": { "complete": { "const": true } } }
             ]
           }
@@ -123,7 +123,7 @@
             "properties": {
               "semantic_tool": {
                 "allOf": [
-                  { "$ref": "https://paperclip.dev/schemas/prp/v1/semantic-tool.schema.json" },
+                  { "$ref": "https://wardmote.dev/schemas/prp/v1/semantic-tool.schema.json" },
                   { "type": "object", "properties": { "phase": { "const": "input" } } }
                 ]
               }
@@ -142,7 +142,7 @@
             "properties": {
               "semantic_tool": {
                 "allOf": [
-                  { "$ref": "https://paperclip.dev/schemas/prp/v1/semantic-tool.schema.json" },
+                  { "$ref": "https://wardmote.dev/schemas/prp/v1/semantic-tool.schema.json" },
                   { "type": "object", "properties": { "phase": { "const": "result" } } }
                 ]
               }
@@ -161,7 +161,7 @@
             "properties": {
               "semantic_tool": {
                 "allOf": [
-                  { "$ref": "https://paperclip.dev/schemas/prp/v1/semantic-tool.schema.json" },
+                  { "$ref": "https://wardmote.dev/schemas/prp/v1/semantic-tool.schema.json" },
                   { "type": "object", "properties": { "phase": { "const": "reconciled" } } }
                 ]
               }
@@ -175,7 +175,7 @@
       "if": { "properties": { "eventType": { "const": "run.terminal" } } },
       "then": {
         "properties": {
-          "payload": { "$ref": "https://paperclip.dev/schemas/prp/v1/terminal.schema.json" }
+          "payload": { "$ref": "https://wardmote.dev/schemas/prp/v1/terminal.schema.json" }
         }
       }
     },
@@ -183,7 +183,7 @@
       "if": { "properties": { "eventType": { "const": "run.result.proposed" } } },
       "then": {
         "properties": {
-          "payload": { "$ref": "https://paperclip.dev/schemas/prp/v1/result.schema.json" }
+          "payload": { "$ref": "https://wardmote.dev/schemas/prp/v1/result.schema.json" }
         }
       }
     }

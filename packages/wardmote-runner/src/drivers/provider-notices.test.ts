@@ -5,7 +5,7 @@ const owner = { provider: "acpx", agent: "cursor", threadId: "thread", turnId: "
 function notice() {
   return {
     threadId: "thread", turnId: "turn", eventType: "provider.notice.recorded", itemId: "item",
-    payload: { schema: "paperclip.provider.notice.v1", noticeId: "notice", severity: "info",
+    payload: { schema: "wardmote.provider.notice.v1", noticeId: "notice", severity: "info",
       category: "cursor_native_usage_observed", scope: "turn", recoverable: true, userActionable: false,
       summary: "Cursor reported partial native counters. These observations are not authoritative token usage or billing cost.",
       details: [

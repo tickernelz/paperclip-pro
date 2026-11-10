@@ -178,7 +178,7 @@ describe("Capability public issue-thread DTO", () => {
       title: "Run",
       summary: "Tests passed",
       payload: {
-        schema: "paperclip.tool.execution.v1",
+        schema: "wardmote.tool.execution.v1",
         executionId: "exec-1",
         transport: "process",
         operation: "execute",
@@ -404,7 +404,7 @@ describe("Capability evidence redaction", () => {
     const redacted = redactCapabilityToolResult({
       ok: false,
       denial: {
-        schema: "paperclip.semantic-denial.v1",
+        schema: "wardmote.semantic-denial.v1",
         code: "required_claim_missing",
         message: "decide_approval requires the ap:decide claim.",
         retryable: false,

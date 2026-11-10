@@ -30,7 +30,7 @@ function createdEvent(requestKind: string) {
     eventType: "runtime_request.created",
     payload: {
       prpEvent: {
-        schema: "paperclip.prp.event.v1",
+        schema: "wardmote.prp.event.v1",
         eventType: "runtime_request.created",
         sourceKind: "runner",
         runId: binding.runId,

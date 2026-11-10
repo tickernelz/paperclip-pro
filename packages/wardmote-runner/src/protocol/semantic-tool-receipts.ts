@@ -87,7 +87,7 @@ export function createPrpSemanticToolInputEnvelope(
   input: SemanticEnvelopeBaseInput,
 ): PrpSemanticToolEnvelope {
   return {
-    schema: "paperclip.prp.semantic_tool.v1",
+    schema: "wardmote.prp.semantic_tool.v1",
     schemaVersion: 1,
     phase: "input",
     operationId: input.operationId,
@@ -118,7 +118,7 @@ function createPrpSemanticToolTerminalEnvelope(
 ): PrpSemanticToolEnvelope {
   const operationReceiptId = input.operationReceiptId ?? derivedReceiptId(input);
   return {
-    schema: "paperclip.prp.semantic_tool.v1",
+    schema: "wardmote.prp.semantic_tool.v1",
     schemaVersion: 1,
     phase,
     operationId: input.operationId,
@@ -158,7 +158,7 @@ export function createPrpBudgetStopReason(input: {
   relatedReceiptIds?: readonly string[];
 }): PrpStopReason {
   return {
-    schema: "paperclip.prp.stop_reason.v1",
+    schema: "wardmote.prp.stop_reason.v1",
     schemaVersion: 1,
     receiptId: input.receiptId,
     kind: input.kind,
@@ -182,7 +182,7 @@ export function prpSemanticToolResultReceipts(
     const payload = asRecord(event.payload);
     const envelope = asRecord(payload?.semantic_tool);
     if (
-      envelope?.schema !== "paperclip.prp.semantic_tool.v1"
+      envelope?.schema !== "wardmote.prp.semantic_tool.v1"
       || envelope.schemaVersion !== 1
       || envelope.phase !== "result"
     ) return [];

@@ -384,7 +384,7 @@ fn spawn_linger_process() -> (SupervisedProcess, u32, u64) {
         .expect("ready line should exist");
     process
         .send(&HarnessCommand {
-            schema: "paperclip.fake_harness.command.v1".to_owned(),
+            schema: "wardmote.fake_harness.command.v1".to_owned(),
             command_id: "open".to_owned(),
             command_type: "session.open".to_owned(),
             payload: json!({}),
@@ -396,7 +396,7 @@ fn spawn_linger_process() -> (SupervisedProcess, u32, u64) {
         .expect("session line should exist");
     process
         .send(&HarnessCommand {
-            schema: "paperclip.fake_harness.command.v1".to_owned(),
+            schema: "wardmote.fake_harness.command.v1".to_owned(),
             command_id: "turn".to_owned(),
             command_type: "turn.start".to_owned(),
             payload: json!({ "turnId": "turn_cleanup" }),
@@ -438,7 +438,7 @@ fn natural_harness_exit_also_cleans_up_workers() {
     let (mut process, harness_pid, worker_pid) = spawn_linger_process();
     process
         .send(&HarnessCommand {
-            schema: "paperclip.fake_harness.command.v1".to_owned(),
+            schema: "wardmote.fake_harness.command.v1".to_owned(),
             command_id: "interrupt".to_owned(),
             command_type: "turn.interrupt".to_owned(),
             payload: json!({ "reason": "cleanup_test" }),
@@ -476,7 +476,7 @@ fn oversized_harness_stdout_frame_is_rejected() {
         .expect("ready frame should exist");
     process
         .send(&HarnessCommand {
-            schema: "paperclip.fake_harness.command.v1".to_owned(),
+            schema: "wardmote.fake_harness.command.v1".to_owned(),
             command_id: "open".to_owned(),
             command_type: "session.open".to_owned(),
             payload: json!({}),
@@ -488,7 +488,7 @@ fn oversized_harness_stdout_frame_is_rejected() {
         .expect("session frame should exist");
     process
         .send(&HarnessCommand {
-            schema: "paperclip.fake_harness.command.v1".to_owned(),
+            schema: "wardmote.fake_harness.command.v1".to_owned(),
             command_id: "turn".to_owned(),
             command_type: "turn.start".to_owned(),
             payload: json!({ "turnId": "turn_oversized" }),

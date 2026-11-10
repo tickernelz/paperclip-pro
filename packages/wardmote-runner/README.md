@@ -409,7 +409,7 @@ The tracer's final line is stable:
 
 ```json
 {
-  "schemaVersion": "paperclip.runner.conformance.output.v1",
+  "schemaVersion": "wardmote.runner.conformance.output.v1",
   "runIdentity": {
     "runId": "run_conformance_0001",
     "sessionId": "session_conformance_0001"

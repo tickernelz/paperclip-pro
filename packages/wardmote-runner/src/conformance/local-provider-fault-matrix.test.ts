@@ -107,7 +107,7 @@ function executionInput(
   normalizedSessionId: string,
 ): NativeExecutionInput {
   return {
-    schema: "paperclip.native-execution-input.v1",
+    schema: "wardmote.native-execution-input.v1",
     binding: {
       companyId: "company-local-integrity",
       runId,
@@ -157,7 +157,7 @@ function executionInput(
 
 function completionResult(profile: LocalNativeProfile): PrpStructuredRunResult {
   return {
-    schema: "paperclip.run_result.v1",
+    schema: "wardmote.run_result.v1",
     reportedWorkDisposition: "done",
     summary: `${profile.key} completed the deterministic integrity task.`,
     completionClaim: {
@@ -198,7 +198,7 @@ function prpIdentity(
   runnerInstanceId: string,
 ): PrpIdentity {
   return {
-    schema: "paperclip.prp.identity.v1",
+    schema: "wardmote.prp.identity.v1",
     companyId: identity.companyId,
     issueId: identity.issueId,
     runId: identity.runId,
@@ -216,7 +216,7 @@ function prpCapabilities(
   capabilities: NativeSessionCapabilities,
 ): PrpCapabilities {
   return {
-    schema: "paperclip.prp.capabilities.v1",
+    schema: "wardmote.prp.capabilities.v1",
     sessionReusePolicy: "reuse_per_issue",
     driver: { kind: driverKind, version: driverVersion },
     steer: capabilities.steering,

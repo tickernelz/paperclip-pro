@@ -334,12 +334,12 @@ const CODEX_HOME_NON_PERSISTENT_ENTRIES = [
   "config.toml",
 ] as const;
 const RUNNERD_CONTROL_PLANE_STATE_SCHEMA =
-  "paperclip.runner.durable.control-plane-state.v1";
-const RUNNERD_STATE_SCHEMA = "paperclip.runner.durable.state.v1";
-const CODEX_PROVIDER_STATE_SCHEMA = "paperclip.runner.codex-provider-state.v1";
-const ACPX_PROVIDER_STATE_SCHEMA = "paperclip.runner.acpx-provider-state.v3";
+  "wardmote.runner.durable.control-plane-state.v1";
+const RUNNERD_STATE_SCHEMA = "wardmote.runner.durable.state.v1";
+const CODEX_PROVIDER_STATE_SCHEMA = "wardmote.runner.codex-provider-state.v1";
+const ACPX_PROVIDER_STATE_SCHEMA = "wardmote.runner.acpx-provider-state.v3";
 const MANAGED_PROVIDER_STATE_SCHEMA =
-  "paperclip.runner.managed-provider-state.v1";
+  "wardmote.runner.managed-provider-state.v1";
 const RUNNERD_STATE_LIFECYCLES = new Set([
   "connecting",
   "ready",
@@ -847,7 +847,7 @@ export function runtimeQuestionFallbackFromEvent(
   if (
     payload.requestKind !== "runtime" ||
     payload.requestType !== "input" ||
-    request.schema !== "paperclip.runtime_request.v2" ||
+    request.schema !== "wardmote.runtime_request.v2" ||
     request.requestKind !== "runtime" ||
     request.type !== "input" ||
     typeof request.requestId !== "string" ||
@@ -1173,7 +1173,7 @@ export function nativeGovernedWaitResult(input: {
     input.interaction.summary?.trim() ||
     "the requested response";
   return {
-    schema: "paperclip.run_result.v1",
+    schema: "wardmote.run_result.v1",
     reportedWorkDisposition: "yielded",
     summary: `Waiting for ${label}.`,
     completionClaim: {
@@ -1221,7 +1221,7 @@ export function nativeConversationReplyResult(input: {
       reply.normalizedSessionId !== input.terminalEvent.normalizedSessionId) return null;
   const ref = `run-event:${reply.sourceEventId}`;
   return {
-    schema: "paperclip.run_result.v1",
+    schema: "wardmote.run_result.v1",
     reportedWorkDisposition: "yielded",
     summary: text.slice(0, 12_000),
     completionClaim: {
@@ -1323,7 +1323,7 @@ export function nativeToolsRefreshWaitResult(input: {
 }): PrpStructuredRunResult {
   const ref = `wakeup:${input.wakeId}`;
   return {
-    schema: "paperclip.run_result.v1",
+    schema: "wardmote.run_result.v1",
     reportedWorkDisposition: "yielded",
     summary: "Continuing with the newly installed connection tools.",
     completionClaim: {
@@ -1719,7 +1719,7 @@ function nativeProviderSessionScope(execution: NativeExecutionInput) {
 
 function nativeSessionScopeKey(execution: NativeExecutionInput): string {
   return canonicalJson({
-    schema: "paperclip.native-session-scope.v2",
+    schema: "wardmote.native-session-scope.v2",
     companyId: execution.binding.companyId,
     agentId: execution.binding.agentId,
     workspace: nativeSessionWorkspaceScope(execution),
@@ -2279,7 +2279,7 @@ export function retainedNativeCleanupJournalMatches(input: {
     !boundRaw(event) ||
     !result.ok ||
     canonicalJson(result.result) !== canonicalJson(envelope.result) ||
-    semantic.schema !== "paperclip.prp.semantic_tool.v1" ||
+    semantic.schema !== "wardmote.prp.semantic_tool.v1" ||
     semantic.schemaVersion !== 1 ||
     semantic.phase !== "input" ||
     typeof semantic.callId !== "string" ||
@@ -2368,7 +2368,7 @@ export async function appendRetainedNativeCleanupEvent(
   }
   const event = parsed.event;
   const receipt = {
-    schema: "paperclip.native_cleanup_event.v1",
+    schema: "wardmote.native_cleanup_event.v1",
     requestId: input.requestId,
     rawSourceInstanceId: event.sourceInstanceId,
     rawSourceEventId: event.sourceEventId,
@@ -2679,9 +2679,9 @@ export async function verifyStoppedNativeSessionForContinuation(
         !Array.isArray(snapshot.control.committedEvents)) return null;
     // An incomplete provider launch can own a process that never emitted its
     // session identity. It cannot be certified from an earlier owner's receipt.
-    if (snapshot.control.schema !== "paperclip.runner.durable.control-plane-state.v1" ||
+    if (snapshot.control.schema !== "wardmote.runner.durable.control-plane-state.v1" ||
         snapshot.runner.schema !== RUNNERD_STATE_SCHEMA ||
-        snapshot.provider.schema !== (execution.provider.kind === "codex" ? "paperclip.runner.codex-provider-state.v1" : ACPX_PROVIDER_STATE_SCHEMA) ||
+        snapshot.provider.schema !== (execution.provider.kind === "codex" ? "wardmote.runner.codex-provider-state.v1" : ACPX_PROVIDER_STATE_SCHEMA) ||
         !["turn_active", "prepared", "suspended"].includes(String(snapshot.provider.lifecycle)) ||
         snapshot.provider.startupAttempt != null) return null;
     const pending = JSON.stringify([snapshot.runner.outbox, snapshot.provider.pendingEvents, snapshot.provider.queuedEvents]);
@@ -2740,7 +2740,7 @@ export async function verifyStoppedNativeSessionForContinuation(
     const unchanged = () => idle() && cleanupProcessAbsent(stopped.processPid) &&
       [...providerPids].every(cleanupProcessAbsent) && cleanupStateSnapshot(root, providerFile).fingerprint === snapshot.fingerprint;
     return {
-      evidence: { schema: "paperclip.stopped_native_conversation.v1", runId: run.id,
+      evidence: { schema: "wardmote.stopped_native_conversation.v1", runId: run.id,
         nativeSessionId: run.nativeSessionId, runnerInstanceId: run.runnerInstanceId,
         processPid: stopped.processPid, providerPids: [...providerPids], stateFingerprint: snapshot.fingerprint },
       retire: () => {
@@ -2860,7 +2860,7 @@ export async function verifyStoppedNativeSessionForReplacement(
     const rows = bytes.toString("utf8").trimEnd().split("\n").map(line => JSON.parse(line));
     if (!stoppedCodexTurnIsTextOnly({ rows, threadId: provider.providerSessionId, turnId, cwd: execution.workspace.cwd ?? "", completedTaskControlCalls })) return null;
     const rolloutSha256 = nativeSha256(bytes.toString("utf8"));
-    const evidence = { schema: "paperclip.stopped_text_turn.v1", runId: run.id, nativeSessionId: run.nativeSessionId,
+    const evidence = { schema: "wardmote.stopped_text_turn.v1", runId: run.id, nativeSessionId: run.nativeSessionId,
       runnerInstanceId: run.runnerInstanceId, processPid: stopped.processPid, providerPid: provider.processId,
       providerSessionId: provider.providerSessionId, providerTurnId: turnId,
       stateFingerprint: snapshot.fingerprint, rolloutSha256,
@@ -3680,7 +3680,7 @@ export async function reconcileRetainedNativeSessionCleanup(
     writeFileSync(
       resolve(copy, CLEANUP_ACTIVATION_FILE),
       JSON.stringify({
-        schema: "paperclip.native_cleanup_activation.v1",
+        schema: "wardmote.native_cleanup_activation.v1",
         companyId: owned.run.companyId,
         issueId: owned.run.nativeIssueId,
         runId: owned.run.id,
@@ -3918,7 +3918,7 @@ async function assertCleanupActivationCommitted(
     ),
   );
   if (
-    marker.schema !== "paperclip.native_cleanup_activation.v1" ||
+    marker.schema !== "wardmote.native_cleanup_activation.v1" ||
     marker.companyId !== execution.binding.companyId ||
     marker.issueId !== execution.binding.issueId ||
     typeof marker.runId !== "string" ||
@@ -4225,7 +4225,7 @@ export function nativePreProviderRetryAfterCleanupStateIsSafe(input: {
         ),
       );
       if (
-        marker.schema !== "paperclip.native_cleanup_activation.v1" ||
+        marker.schema !== "wardmote.native_cleanup_activation.v1" ||
         marker.companyId !== input.companyId ||
         marker.issueId !== input.issueId ||
         marker.runId !== input.retiredRunId ||
@@ -4342,8 +4342,8 @@ function hasRetainedWarmTransitionEvidence(root: string): boolean {
       if (
         Object.prototype.hasOwnProperty.call(state, "warmTransition") ||
         state.schema ===
-          "paperclip.runner.durable.control-plane-state.warm-transition.v1" ||
-        state.schema === "paperclip.runner.durable.state.warm-transition.v1"
+          "wardmote.runner.durable.control-plane-state.warm-transition.v1" ||
+        state.schema === "wardmote.runner.durable.state.warm-transition.v1"
       )
         return true;
     } catch {
@@ -5475,7 +5475,7 @@ export interface NativeHarnessPersistenceProfile {
 }
 
 export interface NativeHarnessBackupManifest {
-  schema: "paperclip.native-harness-backup.v1";
+  schema: "wardmote.native-harness-backup.v1";
   normalizedSessionId: string;
   runnerInstanceId: string;
   providerKind: NativeProviderKind;
@@ -5897,7 +5897,7 @@ function compatibleNativeHarnessBackupManifests(input: {
       continue;
     }
     if (
-      manifest.schema !== "paperclip.native-harness-backup.v1" ||
+      manifest.schema !== "wardmote.native-harness-backup.v1" ||
       manifest.normalizedSessionId !== nativeSessionKey(input.execution) ||
       manifest.runnerInstanceId !== input.runnerInstanceId ||
       manifest.providerKind !== profile.providerKind ||
@@ -5936,7 +5936,7 @@ export function buildNativeHarnessBackupManifest(input: {
     return { name: directory.name, ...digestBackupDirectory(path) };
   });
   return {
-    schema: "paperclip.native-harness-backup.v1",
+    schema: "wardmote.native-harness-backup.v1",
     normalizedSessionId: nativeSessionKey(input.execution),
     runnerInstanceId: input.runnerInstanceId,
     providerKind: profile.providerKind,
@@ -6042,7 +6042,7 @@ function persistWarmNativeCheckpoint(
   writeFileSync(
     temporary,
     JSON.stringify({
-      schema: "paperclip.native-session-supervisor.v1",
+      schema: "wardmote.native-session-supervisor.v1",
       configDigest,
       updatedAt: new Date().toISOString(),
       snapshot,
@@ -6077,7 +6077,7 @@ function loadWarmNativeCheckpoint(
     snapshot?: PersistedNativeSession;
   };
   if (
-    envelope.schema !== "paperclip.native-session-supervisor.v1" ||
+    envelope.schema !== "wardmote.native-session-supervisor.v1" ||
     !envelope.snapshot
   ) {
     throw new Error("native_session_supervisor_checkpoint_mismatch");
@@ -7000,7 +7000,7 @@ export async function cancelNativeSession(
           : null;
       if (existingIntentId) {
         const matchingIntent =
-          existing.schema === "paperclip.native-cancellation.v1" &&
+          existing.schema === "wardmote.native-cancellation.v1" &&
           existing.companyId === cancellationContext.companyId &&
           existing.runId === runId &&
           existing.issueId === cancellationContext.issueId &&
@@ -7062,7 +7062,7 @@ export async function cancelNativeSession(
           resultJson: {
             ...resultJson,
             nativeCancellation: {
-              schema: "paperclip.native-cancellation.v1",
+              schema: "wardmote.native-cancellation.v1",
               intentId,
               intentAuditId,
               companyId: cancellationContext.companyId,
@@ -7263,7 +7263,7 @@ export async function cancelNativeSession(
         const resultJson = record(lockedRun.resultJson);
         const intent = record(resultJson.nativeCancellation);
         const matchingIntent =
-          intent.schema === "paperclip.native-cancellation.v1" &&
+          intent.schema === "wardmote.native-cancellation.v1" &&
           intent.intentId === cancellationIntentId &&
           intent.intentAuditId === auditId &&
           intent.companyId === cancellationContext.companyId &&
@@ -7912,7 +7912,7 @@ async function executeWardmoteNativeSessionWithinScope(
           ) {
             const intentMatchesBinding =
               cancellationIntent.schema ===
-                "paperclip.native-cancellation.v1" &&
+                "wardmote.native-cancellation.v1" &&
               cancellationIntent.companyId ===
                 input.execution.binding.companyId &&
               cancellationIntent.runId === input.execution.binding.runId &&
@@ -8659,7 +8659,7 @@ async function executeWardmoteNativeSessionWithinScope(
       : null;
   }
   const runnerExecution: NativeExecutionInput =
-    input.execution.schema !== "paperclip.native-execution-input.v6" && input.useRunnerd && input.runnerExecutionTarget?.kind === "remote"
+    input.execution.schema !== "wardmote.native-execution-input.v6" && input.useRunnerd && input.runnerExecutionTarget?.kind === "remote"
       ? {
           ...input.execution,
           workspace: {
@@ -9140,7 +9140,7 @@ async function executeWardmoteNativeSessionWithinScope(
         // recording its acknowledgement. Preserve that audited, exactly bound
         // cancellation instead of racing it with a generic provider failure.
         const pendingStartupStop = stoppedBeforeFirstTurn &&
-          stopIntent.schema === "paperclip.native-cancellation.v1" &&
+          stopIntent.schema === "wardmote.native-cancellation.v1" &&
           stopIntent.companyId === input.execution.binding.companyId &&
           stopIntent.runId === input.execution.binding.runId &&
           stopIntent.issueId === input.execution.binding.issueId &&
@@ -9554,7 +9554,7 @@ async function executeWardmoteNativeSessionWithinScope(
         ...(native.turnId ? { turnId: native.turnId } : {}),
         eventType: "plan.updated",
         payload: {
-          schema: "paperclip.plan.updated.v1",
+          schema: "wardmote.plan.updated.v1",
           planId: `semantic:${native.turnId ?? input.execution.binding.runId}`,
           revision: 1,
           complete: true,
@@ -9594,7 +9594,7 @@ async function executeWardmoteNativeSessionWithinScope(
     .then((rows) => rows[0] ?? null);
   if (!released) throw new Error("native_session_lease_lost");
   const finalization: NativeFinalizationResult = {
-    schema: "paperclip.native-finalization.v1",
+    schema: "wardmote.native-finalization.v1",
     runtimeMode: "native",
     runId: input.execution.binding.runId,
     issueId: input.execution.binding.issueId,
@@ -11323,7 +11323,7 @@ async function prepareRemoteDotRunner({ input, target, runner, root, identity }:
     if (result.exitCode === 3 && !result.timedOut) return null;
     if (result.exitCode !== 0 || result.timedOut) throw new Error("dot_provider_checkpoint_unavailable");
     const state = record(JSON.parse(Buffer.from(result.stdout.replace(/\s+/g, ""), "base64").toString("utf8")));
-    if (state.schema !== "paperclip.runner.dot-provider-state.v1" || state.runId !== identity.runId
+    if (state.schema !== "wardmote.runner.dot-provider-state.v1" || state.runId !== identity.runId
       || state.sessionId !== identity.normalizedSessionId || state.turnId !== identity.turnId) throw new Error("dot_runner_checkpoint_authority_mismatch");
     // Retain inspectable recovery evidence on the controller without changing
     // which execution target is authoritative for replay.
@@ -11525,7 +11525,7 @@ async function createRunnerdBackendWithinSessionClaim(
     input.durableEnvironmentLeaseId ??
     input.execution.binding.executionWorkspaceId;
   mkdirSync(root, { recursive: true, mode: 0o700 });
-  if (input.execution.schema === "paperclip.native-execution-input.v6") {
+  if (input.execution.schema === "wardmote.native-execution-input.v6") {
     if (target.kind === "remote" && input.dotWorkspaceRoot) throw new Error("dot_remote_workspace_access_unavailable");
     const remoteDot = target.kind === "remote"
       ? await prepareRemoteDotRunner({ input, target, runner: remoteCommandRunner!, root,
@@ -13251,8 +13251,8 @@ async function createRunnerdBackendWithinSessionClaim(
               acpxMode: input.execution.provider.mode,
               piThinkingLevel: input.execution.provider.piThinkingLevel,
               acpxPermissionModePinned:
-                input.execution.schema === "paperclip.native-execution-input.v4" ||
-                input.execution.schema === "paperclip.native-execution-input.v5",
+                input.execution.schema === "wardmote.native-execution-input.v4" ||
+                input.execution.schema === "wardmote.native-execution-input.v5",
               acpxRuntimeDirectory: remoteRunnerFilesystemRoot
                 ? posix.join(remoteRunnerFilesystemRoot, "acpx")
                 : resolve(

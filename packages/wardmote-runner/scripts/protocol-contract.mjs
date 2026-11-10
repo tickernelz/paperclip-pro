@@ -6,7 +6,7 @@ import { relative, resolve, sep } from "node:path";
 import Ajv2020 from "ajv/dist/2020.js";
 
 export const JSON_SCHEMA_DIALECT = "https://json-schema.org/draft/2020-12/schema";
-export const PRP_SCHEMA_ID_PREFIX = "https://paperclip.dev/schemas/prp/";
+export const PRP_SCHEMA_ID_PREFIX = "https://wardmote.dev/schemas/prp/";
 export const PRP_V1_SCHEMA_ID_PREFIX = `${PRP_SCHEMA_ID_PREFIX}v1/`;
 export const SUPPORTED_FIXTURE_VERSION = 1;
 export const MIN_SUPPORTED_PROTOCOL_VERSION = 1;
@@ -177,15 +177,15 @@ function requireSupportedProtocolVersion(value) {
 }
 
 export function assertReplayFixtureCompatibility(fixture) {
-  requireSchema(fixture, "paperclip.prp.fixture.v1", "fixture");
+  requireSchema(fixture, "wardmote.prp.fixture.v1", "fixture");
   requireVersion(fixture.fixtureVersion, SUPPORTED_FIXTURE_VERSION, "fixtureVersion");
   requireSupportedProtocolVersion(fixture.protocolVersion);
-  requireSchema(fixture.identity, "paperclip.prp.identity.v1", "identity");
-  if (!/^paperclip\.prp\.capabilities\.v[1-3]$/.test(fixture.capabilities?.schema)) throw contractError("unsupported_required_schema", "capabilities");
+  requireSchema(fixture.identity, "wardmote.prp.identity.v1", "identity");
+  if (!/^wardmote\.prp\.capabilities\.v[1-3]$/.test(fixture.capabilities?.schema)) throw contractError("unsupported_required_schema", "capabilities");
 
   if (!Array.isArray(fixture.commands)) throw contractError("invalid_fixture", "commands must be an array");
   for (const [index, command] of fixture.commands.entries()) {
-    if (command?.schema !== "paperclip.prp.command.v1" && command?.schema !== "paperclip.prp.command.v2" && command?.schema !== "paperclip.prp.command.v3") {
+    if (command?.schema !== "wardmote.prp.command.v1" && command?.schema !== "wardmote.prp.command.v2" && command?.schema !== "wardmote.prp.command.v3") {
       throw contractError("unsupported_required_schema", `commands[${index}] requires ${String(command?.schema)}`);
     }
   }
@@ -195,21 +195,21 @@ export function assertReplayFixtureCompatibility(fixture) {
   }
   for (const [index, event] of fixture.events.entries()) {
     if (![1, 2, 3].includes(event.schemaVersion) || event.schemaVersion > fixture.protocolVersion) throw contractError("unsupported_required_version", `events[${index}].schemaVersion`);
-    requireSchema(event, `paperclip.prp.event.v${event.schemaVersion}`, `events[${index}]`);
+    requireSchema(event, `wardmote.prp.event.v${event.schemaVersion}`, `events[${index}]`);
     const semanticToolVersion = event.payload?.semantic_tool?.schemaVersion;
     if (semanticToolVersion !== undefined) {
       requireVersion(semanticToolVersion, 1, `events[${index}].payload.semantic_tool.schemaVersion`);
     }
   }
 
-  requireSchema(fixture.result, "paperclip.run_result.v1", "result");
+  requireSchema(fixture.result, "wardmote.run_result.v1", "result");
   return fixture;
 }
 
 export function assertQuestionAdapterFixture(fixture) {
-  requireSchema(fixture, "paperclip.question_adapter_fixture.v1", "question fixture");
-  requireSchema(fixture.canonicalQuestionSet, "paperclip.question_set.v1", "canonicalQuestionSet");
-  requireSchema(fixture.canonicalResponse, "paperclip.question_response.v1", "canonicalResponse");
+  requireSchema(fixture, "wardmote.question_adapter_fixture.v1", "question fixture");
+  requireSchema(fixture.canonicalQuestionSet, "wardmote.question_set.v1", "canonicalQuestionSet");
+  requireSchema(fixture.canonicalResponse, "wardmote.question_response.v1", "canonicalResponse");
 
   const questions = fixture.canonicalQuestionSet.questions;
   if (!Array.isArray(questions) || questions.length === 0) {
@@ -439,7 +439,7 @@ function projectAcpxFixture(params, canonicalResponse) {
     optionalFixtureText(schema.description),
   ].filter((value, index, all) => value !== undefined && value !== title && all.indexOf(value) === index);
   const questionSet = {
-    schema: "paperclip.question_set.v1",
+    schema: "wardmote.question_set.v1",
     title,
     ...(descriptions.length > 0 ? { description: descriptions.join("\n\n") } : {}),
     submitLabel: "Submit answers",
@@ -722,10 +722,10 @@ function isPlainRecord(value) {
 }
 
 export function assertConformanceFixturePair(fixture, output) {
-  if (fixture?.schemaVersion !== "paperclip.runner.conformance.fixture.v1") {
+  if (fixture?.schemaVersion !== "wardmote.runner.conformance.fixture.v1") {
     throw contractError("unsupported_required_schema", `conformance fixture requires ${String(fixture?.schemaVersion)}`);
   }
-  if (output?.schemaVersion !== "paperclip.runner.conformance.output.v1") {
+  if (output?.schemaVersion !== "wardmote.runner.conformance.output.v1") {
     throw contractError("unsupported_required_schema", `conformance output requires ${String(output?.schemaVersion)}`);
   }
   if (fixture.run?.runId !== output.runIdentity?.runId || fixture.run?.sessionId !== output.runIdentity?.sessionId) {

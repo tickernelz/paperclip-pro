@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { realpath } from "node:fs/promises";
 import { basename, extname, isAbsolute, relative, resolve, sep } from "node:path";
 
-export const WARDMOTE_WORKSPACE_FILE_REFERENCE_SCHEMA = "paperclip.workspace.file_reference.v1" as const;
+export const WARDMOTE_WORKSPACE_FILE_REFERENCE_SCHEMA = "wardmote.workspace.file_reference.v1" as const;
 
 export interface WardmoteWorkspaceFileReference {
   schema: typeof WARDMOTE_WORKSPACE_FILE_REFERENCE_SCHEMA;

@@ -15,7 +15,7 @@ import type { AuthorizationActor } from "./authorization.js";
 
 type Tx = Parameters<Parameters<Db["transaction"]>[0]>[0];
 type Agent = typeof agents.$inferSelect;
-export const AGENT_FILES_CONTRACT = "paperclip.agent-files.v1";
+export const AGENT_FILES_CONTRACT = "wardmote.agent-files.v1";
 export const MAX_AGENT_FILE_BYTES = 256 * 1024 * 1024;
 export const MAX_AGENT_DIRECTORY_BYTES = 2 * 1024 * 1024 * 1024;
 export const MAX_AGENT_DIRECTORY_ENTRIES = 100_000;

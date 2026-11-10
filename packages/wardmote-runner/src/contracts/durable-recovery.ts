@@ -59,7 +59,7 @@ export interface DurableRecoveryProcessedCommand {
 }
 
 export interface DurableRecoveryRunnerState extends DurableRecoveryIdentity {
-  schema: "paperclip.runner.durable.state.v1";
+  schema: "wardmote.runner.durable.state.v1";
   lifecycle:
     | "connecting"
     | "ready"
@@ -89,7 +89,7 @@ export interface DurableRecoveryRunnerState extends DurableRecoveryIdentity {
 }
 
 export interface DurableRecoveryCoreCommand {
-  schema: "paperclip.prp.command.v1" | "paperclip.prp.command.v2";
+  schema: "wardmote.prp.command.v1" | "wardmote.prp.command.v2";
   commandId: string;
   controllerSeq: number;
   type: string;
@@ -116,7 +116,7 @@ export interface DurableRecoveryCommittedEvent {
 }
 
 export interface DurableRecoveryDiagnostics {
-  schema: "paperclip.runner.durable.diagnostics.v1";
+  schema: "wardmote.runner.durable.diagnostics.v1";
   fault: DurableRecoveryFault;
   connection: {
     state: string;
@@ -166,7 +166,7 @@ export interface DurableRecoveryDiagnostics {
 }
 
 export interface DurableRecoveryRunTrace {
-  schema: "paperclip.runner.durable.trace.v1";
+  schema: "wardmote.runner.durable.trace.v1";
   diagnostics: DurableRecoveryDiagnostics;
   runnerState: DurableRecoveryRunnerState;
   commands: DurableRecoveryCoreCommand[];

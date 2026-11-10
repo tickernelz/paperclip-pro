@@ -259,7 +259,7 @@ class FakeCapabilityCodexTransport implements CodexAppServerTransport {
             interactionKind: "questions",
             title: "Choose the mock path",
             prompt: "Which path should the mock agent take?",
-            payload: { version: 1, questionSet: { schema: "paperclip.question_set.v1", questions: [{ id: "path", prompt: "Which path?", required: true, answerMode: "single_select", options: [{ id: "safe", label: "Safe path" }, { id: "fast", label: "Fast path" }] }] } },
+            payload: { version: 1, questionSet: { schema: "wardmote.question_set.v1", questions: [{ id: "path", prompt: "Which path?", required: true, answerMode: "single_select", options: [{ id: "safe", label: "Safe path" }, { id: "fast", label: "Fast path" }] }] } },
             continuationPolicy: "wake_assignee",
           },
         },
@@ -761,7 +761,7 @@ describe("Capability live runnerd and Codex session", () => {
     const result = await session.sendMessage("reference file");
     expect(result.snapshot.workspaceFileReferences).toHaveLength(1);
     expect(result.snapshot.workspaceFileReferences?.[0]?.reference).toMatchObject({
-      schema: "paperclip.workspace.file_reference.v1",
+      schema: "wardmote.workspace.file_reference.v1",
       source: "runner_verified",
       path: "guide.md",
       preview: null,
@@ -794,7 +794,7 @@ describe("Capability live runnerd and Codex session", () => {
       expect(result.snapshot.workspaceDiffs?.[0]).toMatchObject({
         turnId: "turn-1",
         diff: {
-          schema: "paperclip.workspace.diff.v1",
+          schema: "wardmote.workspace.diff.v1",
           source: "runner_verified",
           complete: true,
           totals: { files: 2 },
@@ -956,7 +956,7 @@ describe("Capability live runnerd and Codex session", () => {
     const session = await service.create();
     const before = session.mockState();
     const result = {
-      schema: "paperclip.run_result.v1", reportedWorkDisposition: "done", summary: "Orientation complete",
+      schema: "wardmote.run_result.v1", reportedWorkDisposition: "done", summary: "Orientation complete",
       completionClaim: { contractRevision: "paperclip-capability-live-v1", objectiveSatisfied: true,
         criteria: [{ criterionId: "objective", status: "satisfied", evidenceRefs: [] }], remainingWork: [] },
       evidence: [], verification: [],

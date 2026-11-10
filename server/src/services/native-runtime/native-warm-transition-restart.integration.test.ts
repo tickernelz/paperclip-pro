@@ -140,7 +140,7 @@ function executionFor(
   const transient =
     fixture.oldIdentity.environmentLeaseId === fixture.oldIdentity.runId;
   return {
-    schema: "paperclip.native-execution-input.v1",
+    schema: "wardmote.native-execution-input.v1",
     provider: { kind: "codex", model: null },
     binding: {
       companyId,
@@ -173,7 +173,7 @@ function executionFor(
     completionContract: {
       id: randomUUID(),
       sha256: "fixture",
-      schemaVersion: "paperclip.completion-contract.v1",
+      schemaVersion: "wardmote.completion-contract.v1",
       contract: {
         revision: "1",
         objective: "Retain exact handoff",
@@ -306,7 +306,7 @@ generated(
         const transient =
           fixture.oldIdentity.environmentLeaseId === fixture.oldIdentity.runId;
         const stateKey = nativeSha256({
-          schema: "paperclip.native-session-scope.v2",
+          schema: "wardmote.native-session-scope.v2",
           companyId,
           agentId,
           workspace: transient
@@ -514,7 +514,7 @@ generated(
           await writeFile(
             join(root, "cleanup-activation.json"),
             JSON.stringify({
-              schema: "paperclip.native_cleanup_activation.v1",
+              schema: "wardmote.native_cleanup_activation.v1",
               companyId,
               issueId,
               runId: fixture.oldIdentity.runId,
@@ -731,7 +731,7 @@ generated(
                 await writeFile(
                   join(root, "cleanup-activation.json"),
                   JSON.stringify({
-                    schema: "paperclip.native_cleanup_activation.v1",
+                    schema: "wardmote.native_cleanup_activation.v1",
                     companyId,
                     issueId,
                     runId: fixture.oldIdentity.runId,

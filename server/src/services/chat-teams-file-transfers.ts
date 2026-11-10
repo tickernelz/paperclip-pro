@@ -76,13 +76,13 @@ export type TeamsFileTransferStage =
   "issue" | "consent" | "upload" | "file_info" | "response" | "status";
 const privateSchema = z
   .object({
-    schema: z.literal("paperclip.teams.transfer-private.v1"),
+    schema: z.literal("wardmote.teams.transfer-private.v1"),
     binding: z.record(z.string(), z.unknown()),
     response: z.record(z.string(), z.unknown()).optional(),
     upload: z.record(z.string(), z.unknown()).optional(),
     resolution: z
       .object({
-        schema: z.literal("paperclip.teams.file-resolution.v1"),
+        schema: z.literal("wardmote.teams.file-resolution.v1"),
         action: z.enum(["mark_delivered", "retry_anyway", "cancel"]),
         fromPhase: z.enum([
           "consent_unknown",
@@ -98,7 +98,7 @@ const privateSchema = z
       .optional(),
     quarantine: z
       .object({
-        schema: z.literal("paperclip.teams.file-quarantine.v1"),
+        schema: z.literal("wardmote.teams.file-quarantine.v1"),
         fromPhase: z.string().min(1).max(64),
         fromVersion: z.number().int().positive(),
         attemptId: z.uuid().nullable(),
@@ -454,7 +454,7 @@ export function teamsFileTransferService(
   async function quarantine(tx: Tx, row: Row, reason: string) {
     const state = privateSchema.parse(row.privateState);
     state.quarantine ??= {
-      schema: "paperclip.teams.file-quarantine.v1",
+      schema: "wardmote.teams.file-quarantine.v1",
       fromPhase: row.phase,
       fromVersion: row.version,
       attemptId: row.attemptId,
@@ -522,7 +522,7 @@ export function teamsFileTransferService(
         expiresAt: expiresAt.toISOString(),
       });
       const privateState: PrivateState = {
-        schema: "paperclip.teams.transfer-private.v1",
+        schema: "wardmote.teams.transfer-private.v1",
         binding: await sealTeamsFileConsentBinding(
           {
             companyId: a.companyId,
@@ -621,7 +621,7 @@ export function teamsFileTransferService(
         providerActionId,
         status: "processed",
         payload: {
-          schema: "paperclip.teams.consent-receipt.v1",
+          schema: "wardmote.teams.consent-receipt.v1",
           transferId: row.id,
           publicationId: row.publicationId,
           receiptDigest,
@@ -1135,7 +1135,7 @@ export function teamsFileTransferService(
         await verify(tx, authority(row), "file_info");
     }
     state.resolution = {
-      schema: "paperclip.teams.file-resolution.v1",
+      schema: "wardmote.teams.file-resolution.v1",
       action: input.action,
       fromPhase: input.expectedPhase,
       fromVersion: row.version,

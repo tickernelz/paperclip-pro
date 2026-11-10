@@ -130,7 +130,7 @@ impl AcpxLaunchProfile {
         let mut artifacts = self.artifacts.iter().collect::<Vec<_>>();
         artifacts.sort_by(|left, right| left.path.cmp(&right.path));
         let mut digest = Sha256::new();
-        update(&mut digest, b"paperclip.runner.acpx-launch-profile.v1");
+        update(&mut digest, b"wardmote.runner.acpx-launch-profile.v1");
         update(&mut digest, self.authority_digest.as_bytes());
         update(
             &mut digest,

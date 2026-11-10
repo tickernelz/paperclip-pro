@@ -172,7 +172,7 @@ describeEmbeddedPostgres("native question bridge", () => {
 
   function runtimeRequestEvent(): PrpEvent {
     return {
-      schema: "paperclip.prp.event.v1",
+      schema: "wardmote.prp.event.v1",
       sourceEventId: "runtime-question-1",
       sourceSeq: 1,
       sourceInstanceId: runnerInstanceId,
@@ -187,14 +187,14 @@ describeEmbeddedPostgres("native question bridge", () => {
       emittedAt: "2026-08-25T18:00:00.000Z",
       payload: {
         request: {
-          schema: "paperclip.runtime_request.v2",
+          schema: "wardmote.runtime_request.v2",
           requestKind: "runtime",
           requestId: "request-1",
           type: "input",
           status: "pending",
           prompt: "Choose a deployment color",
           input: {
-            schema: "paperclip.question_set.v1",
+            schema: "wardmote.question_set.v1",
             title: "Deployment",
             questions: [{
               id: "color",
@@ -229,7 +229,7 @@ describeEmbeddedPostgres("native question bridge", () => {
 
   function permissionRequestEvent(): PrpEvent {
     return { ...runtimeRequestEvent(), payload: { request: {
-      schema: "paperclip.runtime_request.v2", requestKind: "permission_approval",
+      schema: "wardmote.runtime_request.v2", requestKind: "permission_approval",
       requestId: "permission-1", turnId: "turn-1", itemId: "item-1",
       type: "permission", status: "pending", prompt: "Allow editing src/example.ts?",
       choices: [{ key: "accept", label: "Allow once" }, { key: "decline", label: "Deny" }],
@@ -333,7 +333,7 @@ describeEmbeddedPostgres("native question bridge", () => {
       if (answered.kind !== "ask_user_questions") throw new Error("wrong question kind");
       expect(await deliverNativeQuestionResponse(db, answered)).toBe("queued");
       expect(resolve).toHaveBeenCalledWith(expect.objectContaining({ runId, requestId: "request-1", turnId: "turn-1",
-        resolution: { action: "submit", response: { schema: "paperclip.question_response.v1", answers: { color: { selectedOptionIds: ["green"] } } } },
+        resolution: { action: "submit", response: { schema: "wardmote.question_response.v1", answers: { color: { selectedOptionIds: ["green"] } } } },
       }));
       await db.update(heartbeatRuns).set({ status: "cancelled" }).where(eq(heartbeatRuns.id, runId));
       await expect(resolve.mock.calls[0]![0].authorizeBeforeDispatch()).rejects.toThrow("native_question_not_pending");
@@ -356,7 +356,7 @@ describeEmbeddedPostgres("native question bridge", () => {
     try {
       await flushNativeQuestionResponses(db, runId);
       expect(queueCommand).toHaveBeenCalledWith("request.resolve", expect.objectContaining({
-        response: { schema: "paperclip.question_response.v1", answers: { url: { text: "https://example.test" } } },
+        response: { schema: "wardmote.question_response.v1", answers: { url: { text: "https://example.test" } } },
       }), `question_${interaction!.id}`);
       expect(busy).not.toHaveBeenCalled();
       const [delivery] = await db.select().from(issueQuestionResponseDeliveries);
@@ -389,7 +389,7 @@ describeEmbeddedPostgres("native question bridge", () => {
       payload: {
         runtimeRequestId: "request-1",
         supersedeOnUserComment: false,
-        questionSet: { schema: "paperclip.question_set.v1" },
+        questionSet: { schema: "wardmote.question_set.v1" },
         questions: [{
           id: "color",
           selectionMode: "single",
@@ -424,7 +424,7 @@ describeEmbeddedPostgres("native question bridge", () => {
       {
         requestId: "request-1",
         response: {
-          schema: "paperclip.question_response.v1",
+          schema: "wardmote.question_response.v1",
           answers: { color: { selectedOptionIds: ["blue"] } },
         },
       },
@@ -470,7 +470,7 @@ describeEmbeddedPostgres("native question bridge", () => {
     const initialText = "  Editable draft\n漢字\n";
     const event = runtimeRequestEvent();
     const request = event.payload.request as Record<string, unknown>;
-    request.input = { schema: "paperclip.question_set.v1", questions: [{ id: "draft", prompt: "Edit", required: true, answerMode: "text", initialText }] };
+    request.input = { schema: "wardmote.question_set.v1", questions: [{ id: "draft", prompt: "Edit", required: true, answerMode: "text", initialText }] };
     const interaction = await projectNativeRuntimeRequest({ db, binding: binding(), event });
     expect(interaction).toMatchObject({ status: "pending", payload: { questionSet: { questions: [{ initialText }] } } });
     const [stored] = await db.select().from(issueThreadInteractions).where(eq(issueThreadInteractions.id, interaction!.id));
@@ -487,7 +487,7 @@ describeEmbeddedPostgres("native question bridge", () => {
       );
       await flushNativeQuestionResponses(db, runId);
       expect(queueCommand).toHaveBeenCalledExactlyOnceWith("request.resolve", {
-        requestId: "request-1", response: { schema: "paperclip.question_response.v1", answers: { draft: { text: edited } } },
+        requestId: "request-1", response: { schema: "wardmote.question_response.v1", answers: { draft: { text: edited } } },
       }, `question_${interaction!.id}`);
     } finally { release(); }
   });
@@ -770,7 +770,7 @@ describeEmbeddedPostgres("native question bridge", () => {
       {
         requestId: "request-1",
         response: {
-          schema: "paperclip.question_response.v1",
+          schema: "wardmote.question_response.v1",
           answers: { color: { selectedOptionIds: [], customText: "purple" } },
         },
       },

@@ -337,10 +337,10 @@ if (!support.supported) console.warn(`Skipping idle sleep Postgres tests: ${supp
       runId, companyId, agentId, responsibleUserId: "test-user", entryFile: "AGENTS.md",
       baseHash: "test-hash", localRoot: "/tmp/idle-copy", executionRoot: "/tmp/idle-copy",
       location: "local", state: "saved", processStoppedAt: new Date(now),
-      receipt: { schema: "paperclip.agent-files.v1", cleanupPending: true },
+      receipt: { schema: "wardmote.agent-files.v1", cleanupPending: true },
     });
     expect(await read()).toEqual(present);
-    await db.update(agentInstructionWorkingCopies).set({ receipt: { schema: "paperclip.agent-files.v1" } })
+    await db.update(agentInstructionWorkingCopies).set({ receipt: { schema: "wardmote.agent-files.v1" } })
       .where(eq(agentInstructionWorkingCopies.runId, runId));
     expect(await read()).toEqual(none);
   });

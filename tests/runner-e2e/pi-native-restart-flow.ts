@@ -61,9 +61,9 @@ function inspect(state: State, events: readonly Row[], companyId: string, header
   requireProof(created.length === 1, "exactly one native request creation required");
   const opening = created[0]!, request = rec(opening.event.payload?.request), questionSet = rec(request.input);
   const question = Array.isArray(questionSet.questions) && questionSet.questions.length === 1 ? rec(questionSet.questions[0]) : {};
-  requireProof(request.schema === "paperclip.runtime_request.v2" && request.requestKind === "runtime" && request.type === "input" && request.status === "pending"
+  requireProof(request.schema === "wardmote.runtime_request.v2" && request.requestKind === "runtime" && request.type === "input" && request.status === "pending"
     && id(request.requestId) && id(request.itemId) && id(request.turnId) && request.turnId === opening.event.turnId && request.itemId === opening.event.itemId
-    && hasAcpxNativeOrigin(request.origin, "pi", "elicitation/create") && questionSet.schema === "paperclip.question_set.v1"
+    && hasAcpxNativeOrigin(request.origin, "pi", "elicitation/create") && questionSet.schema === "wardmote.question_set.v1"
     && id(question.id) && question.answerMode === "text" && question.header === header
     && card.payload?.runtimeRequestId === request.requestId && digest(card.payload.questionSet) === digest(questionSet)
     && card.idempotencyKey === `paperclip-runner-question:${run.id}:${request.requestId}`, "canonical Pi input request identity missing");
@@ -110,7 +110,7 @@ export function gradePiRestartCompletion(state: State, events: readonly Row[], p
   const delivered = resolved[0]!.event, response = rec(delivered.payload);
   requireProof(response.requestId === pending.requestId && response.turnId === pending.turnId && response.itemId === pending.itemId
     && response.action === "submit" && delivered.itemId === pending.itemId && delivered.sourceSeq > pending.createdSourceSeq
-    && digest(response.response) === digest({ schema: "paperclip.question_response.v1", answers: { [pending.questionId]: { text: answer } } }),
+    && digest(response.response) === digest({ schema: "wardmote.question_response.v1", answers: { [pending.questionId]: { text: answer } } }),
   "hidden browser answer was not delivered to the original native request");
   requireProof(terminal.length === 1 && terminal[0]!.event.eventType === "turn.completed" && terminal[0]!.event.payload?.status === "completed"
     && terminal[0]!.event.payload?.error == null && terminal[0]!.event.sourceSeq > delivered.sourceSeq

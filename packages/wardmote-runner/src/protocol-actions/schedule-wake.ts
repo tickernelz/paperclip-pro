@@ -58,7 +58,7 @@ export const scheduleWakeAction = {
   "live": {
     "order": 26,
     "descriptor": {
-      "schema": "paperclip.semantic-tool.v1",
+      "schema": "wardmote.semantic-tool.v1",
       "operationId": "schedule_wake",
       "version": 1,
       "title": "Schedule bounded wake",

@@ -62,7 +62,7 @@ export const requestReviewAction = {
   "live": {
     "order": 12,
     "descriptor": {
-      "schema": "paperclip.semantic-tool.v1",
+      "schema": "wardmote.semantic-tool.v1",
       "operationId": "request_review",
       "version": 1,
       "title": "Request task review",
@@ -149,7 +149,7 @@ export const requestReviewAction = {
   "scenario": {
     "order": 9,
     "successExample": {
-      "schema": "paperclip.capability.tool-result.v1",
+      "schema": "wardmote.capability.tool-result.v1",
       "ok": true,
       "operationId": "request_review",
       "operationResultId": "example-result",
@@ -187,7 +187,7 @@ export const requestReviewAction = {
           "schema": {
             "type": "string",
             "enum": [
-              "paperclip.capability.tool-result.v1"
+              "wardmote.capability.tool-result.v1"
             ]
           },
           "ok": {

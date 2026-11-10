@@ -5,7 +5,7 @@ import { parseCodexTurnDiff } from "../vendor/wardmote-runner/index.js";
 import { appendHeartbeatRunEvent } from "./heartbeat-run-events.js";
 
 type WorkspaceDiffPayload = {
-  schema: "paperclip.workspace.diff.v1";
+  schema: "wardmote.workspace.diff.v1";
   changeSetId: string;
   revision: number;
   source: "runner_verified";
@@ -86,7 +86,7 @@ export function projectCodexWorkspaceDiffsFromTrace(
     turns.set(turnId, {
       turnId,
       payload: {
-        schema: "paperclip.workspace.diff.v1",
+        schema: "wardmote.workspace.diff.v1",
         changeSetId: `${turnId}:workspace`,
         revision,
         source: "runner_verified",

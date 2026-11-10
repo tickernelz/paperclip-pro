@@ -112,7 +112,7 @@ describe("canonical native event UI boundary corpus", () => {
           requestType: "input",
           status: "pending",
           questionSet: expect.objectContaining({
-            schema: "paperclip.question_set.v1",
+            schema: "wardmote.question_set.v1",
             questions: [expect.objectContaining({ id: "boundary-mode" })],
           }),
         }),

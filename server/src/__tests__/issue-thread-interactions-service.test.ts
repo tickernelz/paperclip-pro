@@ -219,7 +219,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
   it("persists and answers a canonical-only mixed question form", async () => {
     const { companyId, issueId } = await seedSourceQuestionFixture({});
     const questionSet = {
-      schema: "paperclip.question_set.v1" as const,
+      schema: "wardmote.question_set.v1" as const,
       questions: [
         { id: "repo", prompt: "Repository URL?", required: true, answerMode: "text" as const },
         { id: "scope", prompt: "Review scope?", required: true, answerMode: "single_select" as const, options: [{ id: "all", label: "All changes" }, { id: "selected", label: "Selected changes" }] },
@@ -250,7 +250,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
     const { companyId, issueId } = await seedSourceQuestionFixture({});
     const issue = { id: issueId, companyId };
     const questionSet = {
-      schema: "paperclip.question_set.v1" as const,
+      schema: "wardmote.question_set.v1" as const,
       questions: [
         { id: "scope", prompt: "Which **scope**?", required: true, answerMode: "single_select" as const, options: [{ id: "all", label: "All changes" }, { id: "selected", label: "Selected changes" }] },
       ],
@@ -308,7 +308,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
     for (const [index, entry] of cases.entries()) {
       const created = await interactionsSvc.create(issue, {
         kind: "ask_user_questions", payload: { version: 1, questionSet: {
-          schema: "paperclip.question_set.v1", questions: [{ id: "value", prompt: "Value?", required: true, answerMode: "text", textValidation: entry.textValidation }],
+          schema: "wardmote.question_set.v1", questions: [{ id: "value", prompt: "Value?", required: true, answerMode: "text", textValidation: entry.textValidation }],
         } },
       }, { userId: "local-board" });
       for (const otherText of entry.invalid) {
@@ -319,7 +319,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
       expect((await interactionsSvc.answerQuestions(issue, created.id, { answers: [{ questionId: "value", optionIds: [], otherText: entry.valid }] }, { userId: "local-board" })).status).toBe("answered");
     }
     const custom = await interactionsSvc.create(issue, { kind: "ask_user_questions", payload: { version: 1, questionSet: {
-      schema: "paperclip.question_set.v1", questions: [{ id: "scope", prompt: "Scope?", required: true, answerMode: "single_select", options: [{ id: "all", label: "All" }, { id: "selected", label: "Selected" }], customAnswer: { enabled: true }, textValidation: { minLength: 3 } }],
+      schema: "wardmote.question_set.v1", questions: [{ id: "scope", prompt: "Scope?", required: true, answerMode: "single_select", options: [{ id: "all", label: "All" }, { id: "selected", label: "Selected" }], customAnswer: { enabled: true }, textValidation: { minLength: 3 } }],
     } } }, { userId: "local-board" });
     await expect(interactionsSvc.answerQuestions(issue, custom.id, { answers: [{ questionId: "scope", optionIds: [], otherText: "ab" }] }, { userId: "local-board" })).rejects.toThrow("at least 3");
     expect((await interactionsSvc.answerQuestions(issue, custom.id, { answers: [{ questionId: "scope", optionIds: [], otherText: "abc" }] }, { userId: "local-board" })).status).toBe("answered");
@@ -332,7 +332,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
     const created = await interactionsSvc.create(issue, { kind: "ask_user_questions", payload: {
       version: 1,
       questions: [{ id: "scope", prompt: "Scope?", required: true, selectionMode: "single", options: [...options, { id: "existing-custom-id", label: "Other", freeText: true }] }],
-      questionSet: { schema: "paperclip.question_set.v1", questions: [{ id: "scope", prompt: "Scope?", required: true, answerMode: "single_select", options, customAnswer: { enabled: true }, textValidation: { minLength: 3 } }] },
+      questionSet: { schema: "wardmote.question_set.v1", questions: [{ id: "scope", prompt: "Scope?", required: true, answerMode: "single_select", options, customAnswer: { enabled: true }, textValidation: { minLength: 3 } }] },
     } }, { userId: "local-board" });
     const answered = await interactionsSvc.answerQuestions(issue, created.id, { answers: [{ questionId: "scope", optionIds: ["existing-custom-id"], otherText: "Specific files" }] }, { userId: "local-board" });
     expect(answered).toMatchObject({ status: "answered", result: { answers: [{ questionId: "scope", optionIds: ["existing-custom-id"], otherText: "Specific files" }] } });
@@ -342,7 +342,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
     const { companyId, issueId } = await seedSourceQuestionFixture({});
     const issue = { id: issueId, companyId };
     const created = await interactionsSvc.create(issue, { kind: "ask_user_questions", payload: { version: 1, questionSet: {
-      schema: "paperclip.question_set.v1", questions: [{ id: "scope", prompt: "Scope?", required: true, answerMode: "single_select", options: [{ id: "all", label: "All" }, { id: "selected", label: "Selected" }], customAnswer: { enabled: true }, textValidation: { minLength: 3 } }],
+      schema: "wardmote.question_set.v1", questions: [{ id: "scope", prompt: "Scope?", required: true, answerMode: "single_select", options: [{ id: "all", label: "All" }, { id: "selected", label: "Selected" }], customAnswer: { enabled: true }, textValidation: { minLength: 3 } }],
     } } }, { userId: "local-board" });
     if (created.kind !== "ask_user_questions") throw new Error("expected questions");
     const historicalPayload = structuredClone(created.payload);

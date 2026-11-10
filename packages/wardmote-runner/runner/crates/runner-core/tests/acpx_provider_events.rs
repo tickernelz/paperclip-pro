@@ -61,8 +61,8 @@ fn preserves_tool_operation_authority_across_payload_sanitization() {
             "status":"pending",
             "locations":[{
                 "path":"src:new.rs",
-                "pathBoundary":"paperclip.workspace_relative_display.v2",
-                "pathAttestation":"paperclip.workspace_create_target.v1"
+                "pathBoundary":"wardmote.workspace_relative_display.v2",
+                "pathAttestation":"wardmote.workspace_create_target.v1"
             }]
         }),
         json!({
@@ -73,8 +73,8 @@ fn preserves_tool_operation_authority_across_payload_sanitization() {
             "status":"pending",
             "locations":[{
                 "path":"src:new.rs",
-                "pathBoundary":"paperclip.workspace_relative_display.v2",
-                "pathAttestation":"paperclip.workspace_create_target.v1"
+                "pathBoundary":"wardmote.workspace_relative_display.v2",
+                "pathAttestation":"wardmote.workspace_create_target.v1"
             }]
         }),
     ] {
@@ -474,7 +474,7 @@ fn maps_tool_lifecycle_and_preserves_safe_display_paths() {
             "status":"pending",
             "locations":[{
                 "path":"src/main.rs",
-                "pathBoundary":"paperclip.workspace_relative_display.v2"
+                "pathBoundary":"wardmote.workspace_relative_display.v2"
             }],
             "text":"Opening"
         }),
@@ -522,8 +522,8 @@ fn maps_tool_lifecycle_and_preserves_safe_display_paths() {
                 "status":"completed",
                 "locations":[{
                     "path":display_path,
-                    "pathBoundary":"paperclip.workspace_relative_display.v2",
-                    "pathAttestation":"paperclip.workspace_entry.v1"
+                    "pathBoundary":"wardmote.workspace_relative_display.v2",
+                    "pathAttestation":"wardmote.workspace_entry.v1"
                 }]
             }),
         );
@@ -553,7 +553,7 @@ fn maps_tool_lifecycle_and_preserves_safe_display_paths() {
                 "status":"completed",
                 "locations":[{
                     "path":unsafe_path,
-                    "pathBoundary":"paperclip.workspace_relative_display.v2"
+                    "pathBoundary":"wardmote.workspace_relative_display.v2"
                 }]
             }),
         );
@@ -570,8 +570,8 @@ fn maps_tool_lifecycle_and_preserves_safe_display_paths() {
             "status":"pending",
             "locations":[{
                 "path":"src:new.rs",
-                "pathBoundary":"paperclip.workspace_relative_display.v2",
-                "pathAttestation":"paperclip.workspace_create_target.v1"
+                "pathBoundary":"wardmote.workspace_relative_display.v2",
+                "pathAttestation":"wardmote.workspace_create_target.v1"
             }]
         }),
     );
@@ -588,8 +588,8 @@ fn maps_tool_lifecycle_and_preserves_safe_display_paths() {
                 "status":"pending",
                 "locations":[{
                     "path":"src:new.rs",
-                    "pathBoundary":"paperclip.workspace_relative_display.v2",
-                    "pathAttestation":"paperclip.workspace_create_target.v1"
+                    "pathBoundary":"wardmote.workspace_relative_display.v2",
+                    "pathAttestation":"wardmote.workspace_create_target.v1"
                 }]
             }),
         );
@@ -609,8 +609,8 @@ fn maps_tool_lifecycle_and_preserves_safe_display_paths() {
             "status":"pending",
             "locations":[{
                 "path":"src:new.rs",
-                "pathBoundary":"paperclip.workspace_relative_display.v2",
-                "pathAttestation":"paperclip.workspace_create_target.v1"
+                "pathBoundary":"wardmote.workspace_relative_display.v2",
+                "pathAttestation":"wardmote.workspace_create_target.v1"
             }]
         }),
     );
@@ -630,8 +630,8 @@ fn maps_tool_lifecycle_and_preserves_safe_display_paths() {
             "status":"pending",
             "locations":[{
                 "path":"src:new.rs",
-                "pathBoundary":"paperclip.workspace_relative_display.v2",
-                "pathAttestation":"paperclip.workspace_create_target.v1"
+                "pathBoundary":"wardmote.workspace_relative_display.v2",
+                "pathAttestation":"wardmote.workspace_create_target.v1"
             }]
         }),
     );
@@ -654,8 +654,8 @@ fn maps_tool_lifecycle_and_preserves_safe_display_paths() {
             "status":"pending",
             "locations":[{
                 "path":"src:new.rs",
-                "pathBoundary":"paperclip.workspace_relative_display.v2",
-                "pathAttestation":"paperclip.workspace_create_target.v1"
+                "pathBoundary":"wardmote.workspace_relative_display.v2",
+                "pathAttestation":"wardmote.workspace_create_target.v1"
             }]
         }),
     );
@@ -679,8 +679,8 @@ fn maps_tool_lifecycle_and_preserves_safe_display_paths() {
             "status":"pending",
             "locations":[{
                 "path":"src:new.rs",
-                "pathBoundary":"paperclip.workspace_relative_display.v2",
-                "pathAttestation":"paperclip.workspace_create_target.v1"
+                "pathBoundary":"wardmote.workspace_relative_display.v2",
+                "pathAttestation":"wardmote.workspace_create_target.v1"
             }]
         }),
     );

@@ -51,7 +51,7 @@ export function createCopilotToolEvidence(binding: {
     }
     const itemId = `copilot-evidence-${digest(`${binding.sessionId}:${binding.turnId}`).slice(0, 24)}-${++sequence}`;
     binding.emit({ eventType: "provider.notice.recorded", itemId, payload: redactWardmoteSemanticValue({
-      schema: "paperclip.provider.notice.v1", noticeId: itemId, severity: "info",
+      schema: "wardmote.provider.notice.v1", noticeId: itemId, severity: "info",
       category, scope: "turn", recoverable: true, userActionable: false,
       summary: stage === "semantic_result" ? "Paperclip returned a semantic tool result." : stage === "evidence_incomplete" ? "Some Copilot activity details are unavailable."
         : stage === "permission_requested" ? "Copilot requested permission."

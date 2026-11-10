@@ -47,11 +47,11 @@ import {
 const protocol = "paperclip.runner";
 const protocolMinVersion = 1;
 const protocolVersion = 3;
-const secureFrameSchema = "paperclip.runner.secure-frame.v1";
+const secureFrameSchema = "wardmote.runner.secure-frame.v1";
 const websocketGuid = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
-const coreStateSchema = "paperclip.runner.durable.control-plane-state.v1";
+const coreStateSchema = "wardmote.runner.durable.control-plane-state.v1";
 const transitionCoreStateSchema =
-  "paperclip.runner.durable.control-plane-state.warm-transition.v1";
+  "wardmote.runner.durable.control-plane-state.warm-transition.v1";
 const maxFrameBytes = 1024 * 1024;
 // Secure frames hex-encode ciphertext. Reserve envelope/tag space as well.
 const maxCommandBytes = Math.floor((maxFrameBytes - 4 * 1024) / 2);
@@ -482,7 +482,7 @@ function warmTransitionReceipt(
   }
   const { status: _status, result: _result, ...wire } = command;
   const body = {
-    schema: "paperclip.runner.warm-transition.v1" as const,
+    schema: "wardmote.runner.warm-transition.v1" as const,
     oldIdentity: structuredClone(identity),
     newIdentity: structuredClone(boundary.identity),
     commandId: command.commandId,
@@ -702,8 +702,8 @@ function isStoredCoreState(
     !commands.every(
       (command, index) =>
         isRecord(command) &&
-        (command.schema === "paperclip.prp.command.v1" ||
-          command.schema === "paperclip.prp.command.v2" || command.schema === "paperclip.prp.command.v3") &&
+        (command.schema === "wardmote.prp.command.v1" ||
+          command.schema === "wardmote.prp.command.v2" || command.schema === "wardmote.prp.command.v3") &&
         typeof command.commandId === "string" &&
         stableIdPattern.test(command.commandId) &&
         command.commandId.length <= 160 &&
@@ -787,7 +787,7 @@ function warmTransitionRecoveryProof(input: WarmTransitionInspectionInput): {
       !exactIdentity(state.identity) ||
       !isStoredCoreState(state, state.identity) ||
       !isRecord(runner) ||
-      runner.schema !== "paperclip.runner.durable.state.warm-transition.v1"
+      runner.schema !== "wardmote.runner.durable.state.warm-transition.v1"
     )
       return null;
     const pending = runner.warmTransition;
@@ -1973,9 +1973,9 @@ export class DurablePrpControlPlane {
     }
     const controllerSeq = this.#store.state.commands.length + 1;
     const command: DurableRecoveryCoreCommand = {
-      schema: type === "external_provider.operation" ? "paperclip.prp.command.v3" : type.startsWith("session.goal.")
-        ? "paperclip.prp.command.v2"
-        : "paperclip.prp.command.v1",
+      schema: type === "external_provider.operation" ? "wardmote.prp.command.v3" : type.startsWith("session.goal.")
+        ? "wardmote.prp.command.v2"
+        : "wardmote.prp.command.v1",
       commandId:
         commandId ?? `command_prp_${controllerSeq.toString().padStart(8, "0")}`,
       controllerSeq,

@@ -261,7 +261,7 @@ class StubSession implements HarnessSession {
   ): void {
     const sourceSeq = ++this.sourceSequence;
     this.queue.push({
-      schema: "paperclip.prp.event.v1",
+      schema: "wardmote.prp.event.v1",
       sourceEventId: `stub:${this.runId}:${sourceSeq}`,
       sourceSeq,
       sourceInstanceId: "stub",

@@ -43,7 +43,7 @@ describe("interaction notes", () => {
 describe("issue thread interaction schemas", () => {
   it("derives every legacy question from a complete mixed canonical form", () => {
     const questionSet = wardmoteQuestionSetPayloadSchema.parse({
-      schema: "paperclip.question_set.v1",
+      schema: "wardmote.question_set.v1",
       questions: [
         { id: "repo", prompt: "Repository URL?", required: true, answerMode: "text", textValidation: { minLength: 1 } },
         { id: "scope", prompt: "Review scope?", required: true, answerMode: "single_select", options: [{ id: "all", label: "All changes", recommended: true }, { id: "selected", label: "Selected changes" }] },
@@ -63,14 +63,14 @@ describe("issue thread interaction schemas", () => {
 
   it("rejects canonical-only forms with invalid modes or missing questions", () => {
     for (const questionSet of [
-      { schema: "paperclip.question_set.v1", questions: [] },
-      { schema: "paperclip.question_set.v1", questions: [{ id: "repo", prompt: "Repository?", required: true, answerMode: "text", options: [{ id: "a", label: "A" }] }] },
+      { schema: "wardmote.question_set.v1", questions: [] },
+      { schema: "wardmote.question_set.v1", questions: [{ id: "repo", prompt: "Repository?", required: true, answerMode: "text", options: [{ id: "a", label: "A" }] }] },
     ]) expect(createIssueThreadInteractionSchema.safeParse({ kind: "ask_user_questions", payload: { version: 1, questionSet } }).success).toBe(false);
     expect(createIssueThreadInteractionSchema.safeParse({ kind: "ask_user_questions", payload: { version: 1 } }).success).toBe(false);
   });
 
   it("preserves canonical display whitespace while deriving trimmed storage fields", () => {
-    const questionSet = { schema: "paperclip.question_set.v1", questions: [
+    const questionSet = { schema: "wardmote.question_set.v1", questions: [
       { id: "scope", prompt: "  Review scope? \n", required: true, answerMode: "single_select", options: [{ id: "all", label: " All changes " }, { id: "selected", label: " Selected changes " }] },
       { id: "repo", prompt: " Repository URL? ", required: true, answerMode: "text" },
     ] };
@@ -89,7 +89,7 @@ describe("issue thread interaction schemas", () => {
     ]) {
       const parsed = createIssueThreadInteractionSchema.safeParse({ kind: "ask_user_questions", payload: { version: 1,
         questions: [{ id: "scope", prompt: "Scope?", required: true, selectionMode: "single", ...storage }],
-        questionSet: { schema: "paperclip.question_set.v1", questions: [{ id: "scope", prompt: "Scope?", required: true, answerMode: "single_select", options }] },
+        questionSet: { schema: "wardmote.question_set.v1", questions: [{ id: "scope", prompt: "Scope?", required: true, answerMode: "single_select", options }] },
       } });
       expect(parsed.success).toBe(false);
     }
@@ -347,7 +347,7 @@ describe("issue thread interaction schemas", () => {
 
   it("retains canonical runner question sets without narrowing their public bounds", () => {
     const questionSet = {
-      schema: "paperclip.question_set.v1" as const,
+      schema: "wardmote.question_set.v1" as const,
       title: "Runner input",
       questions: [{
         id: "deployment-color",
@@ -390,7 +390,7 @@ describe("issue thread interaction schemas", () => {
         { id: "club_name", prompt: "Club name?", selectionMode: "single", required: true, options: [{ id: "text", label: "Answer", freeText: true }] },
         { id: "audience", prompt: "Audience?", selectionMode: "single", required: true, options: [{ id: "beginners", label: "Beginners" }, { id: "everyone", label: "Everyone" }] },
       ],
-      questionSet: { schema: "paperclip.question_set.v1", questions: [{ id: "club_name", prompt: "Club name?", answerMode: "text", required: true }] },
+      questionSet: { schema: "wardmote.question_set.v1", questions: [{ id: "club_name", prompt: "Club name?", answerMode: "text", required: true }] },
     };
     expect(() => createIssueThreadInteractionSchema.parse({ kind: "ask_user_questions", payload })).toThrow("must present every questions entry");
     expect(askUserQuestionsPayloadSchema.parse(payload).questions).toHaveLength(2);
@@ -408,7 +408,7 @@ describe("issue thread interaction schemas", () => {
     const payload = {
       version: 1,
       questions: [{ id: "color", prompt: "Color?", required: true, selectionMode: "single", options: [{ id: "blue", label: "Blue" }] }],
-      questionSet: { schema: "paperclip.question_set.v1", questions: [{ id: "color", prompt: "Color?", required: true, answerMode: "single_select", options: [{ id: "blue", label: "Blue" }], ...changes }] },
+      questionSet: { schema: "wardmote.question_set.v1", questions: [{ id: "color", prompt: "Color?", required: true, answerMode: "single_select", options: [{ id: "blue", label: "Blue" }], ...changes }] },
     };
     expect(() => createIssueThreadInteractionSchema.parse({ kind: "ask_user_questions", payload })).toThrow("must match");
     expect(askUserQuestionsPayloadSchema.parse(payload).questions).toHaveLength(1);

@@ -117,7 +117,7 @@ describeEmbeddedPostgres("native run finalizer / status decision committer — a
       companyId,
       issueId,
       revision: 1,
-      schemaVersion: "paperclip.completion-contract.v1",
+      schemaVersion: "wardmote.completion-contract.v1",
       policyVersion: "telemetry-v1",
       risk: "standard",
       completionAuthority: "server_arbiter",
@@ -309,7 +309,7 @@ describeEmbeddedPostgres("native run finalizer / status decision committer — a
       runnerProfileJson: { sessionCheckpoint: { retainedEvidence: "keep" } },
       resultJson: {
         recoveredExecutionFailure: {
-          schema: "paperclip.recovered_execution_failure.v1",
+          schema: "wardmote.recovered_execution_failure.v1",
           errorCode: "adapter_failed",
           error: "provider_transport_failed: retained cleanup evidence",
         },

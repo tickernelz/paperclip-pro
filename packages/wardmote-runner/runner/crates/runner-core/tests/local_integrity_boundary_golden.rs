@@ -37,7 +37,7 @@ fn canonical_boundary_fixture_names_all_qualified_local_profiles() {
     let fixture = fixture();
     assert_eq!(
         fixture["schema"],
-        "paperclip.local-provider-boundary-golden.v1"
+        "wardmote.local-provider-boundary-golden.v1"
     );
     let profiles = fixture["profiles"].as_array().expect("qualified profiles");
     assert_eq!(profiles.len(), 4);

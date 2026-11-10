@@ -215,7 +215,7 @@ describe("Codex app-server Codex driver", () => {
     await new Promise((resolve) => setTimeout(resolve, 0));
     const [pending] = session.pendingRuntimeRequests?.() ?? [];
     expect(pending?.input).toMatchObject({
-      schema: "paperclip.question_set.v1",
+      schema: "wardmote.question_set.v1",
       questions: [
         {
           id: "environment",
@@ -237,7 +237,7 @@ describe("Codex app-server Codex driver", () => {
       resolution: {
         action: "submit",
         response: {
-          schema: "paperclip.question_response.v1",
+          schema: "wardmote.question_response.v1",
           answers: {
             environment: { selectedOptionIds: ["option-1"] },
             regions: { selectedOptionIds: ["option-1", "option-2"] },
@@ -256,7 +256,7 @@ describe("Codex app-server Codex driver", () => {
     expect((await resolvedEvent)?.payload).toMatchObject({
       action: "submit",
       response: {
-        schema: "paperclip.question_response.v1",
+        schema: "wardmote.question_response.v1",
         answers: {
           environment: { selectedOptionIds: ["option-1"] },
           regions: { selectedOptionIds: ["option-1", "option-2"] },
@@ -303,7 +303,7 @@ describe("Codex app-server Codex driver", () => {
       resolution: {
         action: "submit",
         response: {
-          schema: "paperclip.question_response.v1",
+          schema: "wardmote.question_response.v1",
           answers: { credential: { selectedOptionIds: ["configured"] } },
         },
       },
@@ -486,12 +486,12 @@ describe("Codex app-server Codex driver", () => {
         replayAllowed: false,
         requestType: "input",
         request: {
-          schema: "paperclip.runtime_request.v2",
+          schema: "wardmote.runtime_request.v2",
           requestKind: "runtime",
           requestId: "lost-input",
           type: "input",
           input: {
-            schema: "paperclip.question_set.v1",
+            schema: "wardmote.question_set.v1",
             questions: [expect.objectContaining({ id: "environment" })],
           },
         },
@@ -574,7 +574,7 @@ describe("Codex app-server Codex driver", () => {
         replayAllowed: false,
         requestType: "input",
         request: {
-          schema: "paperclip.runtime_request.v2",
+          schema: "wardmote.runtime_request.v2",
           requestId: "handoff-input",
           type: "input",
         },
@@ -681,7 +681,7 @@ describe("Codex app-server Codex driver", () => {
       resolution: {
         action: "submit",
         response: {
-          schema: "paperclip.question_response.v1",
+          schema: "wardmote.question_response.v1",
           answers: { environment: { selectedOptionIds: ["option-1"] } },
         },
       },

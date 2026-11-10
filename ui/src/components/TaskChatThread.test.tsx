@@ -1139,7 +1139,7 @@ describe("TaskChatThread runtime transcript selection", () => {
       createdAt: new Date(`2026-08-25T18:00:0${index + 1}.000Z`),
       payload: {
         prpEvent: {
-          schema: "paperclip.prp.event.v1",
+          schema: "wardmote.prp.event.v1",
           schemaVersion: 1,
           runId,
           eventType: `tool.execution.${phase}`,
@@ -1150,7 +1150,7 @@ describe("TaskChatThread runtime transcript selection", () => {
           normalizedSessionId: "session-1",
           emittedAt: `2026-08-25T18:00:0${index + 1}.000Z`,
           payload: {
-            schema: "paperclip.tool.execution.v1",
+            schema: "wardmote.tool.execution.v1",
             executionId: "write-plan",
             transport: anchored ? "mcp" : "builtin",
             namespace: anchored ? "paperclip" : null,
@@ -1998,7 +1998,7 @@ describe("TaskChatThread runtime transcript selection", () => {
             finishedAt: "2026-08-25T18:00:02.000Z",
             resultJson: {
               presentationDecision: {
-                schema: "paperclip.run_presentation_decision.v1",
+                schema: "wardmote.run_presentation_decision.v1",
                 chosenSource: "none",
                 commentId: null,
               },
@@ -2075,7 +2075,7 @@ describe("TaskChatThread runtime transcript selection", () => {
             finishedAt: "2026-08-25T18:00:03.000Z",
             resultJson: {
               presentationDecision: {
-                schema: "paperclip.run_presentation_decision.v1",
+                schema: "wardmote.run_presentation_decision.v1",
                 chosenSource: "final_agent_message",
                 commentId: "native-repeated-final-comment",
               },
@@ -2172,7 +2172,7 @@ describe("TaskChatThread runtime transcript selection", () => {
             finishedAt: "2026-08-25T18:00:05.000Z",
             resultJson: {
               presentationDecision: {
-                schema: "paperclip.run_presentation_decision.v1",
+                schema: "wardmote.run_presentation_decision.v1",
                 chosenSource: "final_agent_message",
                 commentId: "native-steered-repetition-final",
               },
@@ -2320,7 +2320,7 @@ describe("TaskChatThread runtime transcript selection", () => {
     const summary =
       "**Before release**\n- Test and rehearse rollback.\n\n**During release**\n- Deploy incrementally and watch errors.\n\n**After release**\n- Verify workflows and record follow-ups.";
     const result = {
-      schema: "paperclip.run_result.v1",
+      schema: "wardmote.run_result.v1",
       reportedWorkDisposition: "yielded",
       summary,
       completionClaim: { objectiveSatisfied: true, remainingWork: [] },
@@ -2362,7 +2362,7 @@ describe("TaskChatThread runtime transcript selection", () => {
         createdAt: new Date("2026-08-25T18:00:00Z"),
         payload: {
           prpEvent: {
-            schema: "paperclip.prp.event.v1",
+            schema: "wardmote.prp.event.v1",
             schemaVersion: 1,
             runId,
             eventType,
@@ -2496,7 +2496,7 @@ describe("TaskChatThread runtime transcript selection", () => {
                   ...(mode === "persisted_response_comment"
                     ? {
                         presentationDecision: {
-                          schema: "paperclip.run_presentation_decision.v1",
+                          schema: "wardmote.run_presentation_decision.v1",
                           chosenSource: "existing_issue_comment",
                           commentId: "private-board-response",
                         },
@@ -2592,12 +2592,12 @@ describe("TaskChatThread runtime transcript selection", () => {
             finishedAt: "2026-08-25T18:00:03.000Z",
             resultJson: {
               nativeResult: {
-                schema: "paperclip.run_result.v1",
+                schema: "wardmote.run_result.v1",
                 reportedWorkDisposition: "yielded",
                 summary: "Waiting for Choose the verification word.",
               },
               presentationDecision: {
-                schema: "paperclip.run_presentation_decision.v1",
+                schema: "wardmote.run_presentation_decision.v1",
                 chosenSource: "none",
                 commentId: null,
               },
@@ -2615,12 +2615,12 @@ describe("TaskChatThread runtime transcript selection", () => {
             finishedAt: "2026-08-25T18:01:02.000Z",
             resultJson: {
               nativeResult: {
-                schema: "paperclip.run_result.v1",
+                schema: "wardmote.run_result.v1",
                 reportedWorkDisposition: "done",
                 summary: "Cobalt was selected and the task is complete.",
               },
               presentationDecision: {
-                schema: "paperclip.run_presentation_decision.v1",
+                schema: "wardmote.run_presentation_decision.v1",
                 chosenSource: "none",
                 commentId: null,
               },
@@ -4386,7 +4386,7 @@ describe("TaskChatThread live transcript", () => {
         choices: [],
         fields: [],
         questionSet: {
-          schema: "paperclip.question_set.v1",
+          schema: "wardmote.question_set.v1",
           questions: [
             {
               id: "goal",
@@ -4457,7 +4457,7 @@ describe("TaskChatThread live transcript", () => {
       resolution: {
         action: "submit",
         response: {
-          schema: "paperclip.question_response.v1",
+          schema: "wardmote.question_response.v1",
           answers: { goal: { selectedOptionIds: ["api"] } },
         },
       },
@@ -4530,12 +4530,12 @@ describe("TaskChatThread live transcript", () => {
         finishedAt: "2026-08-07T00:00:05Z",
         resultJson: {
           nativeResult: {
-            schema: "paperclip.run_result.v1",
+            schema: "wardmote.run_result.v1",
             reportedWorkDisposition: disposition,
             summary,
           },
           presentationDecision: {
-            schema: "paperclip.run_presentation_decision.v1",
+            schema: "wardmote.run_presentation_decision.v1",
             chosenSource: "existing_issue_comment",
             commentId: "delayed-comment",
           },

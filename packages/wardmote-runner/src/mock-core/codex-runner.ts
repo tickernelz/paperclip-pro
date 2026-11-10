@@ -46,7 +46,7 @@ function prpCapabilities(
   descriptor: Awaited<ReturnType<HarnessDriver["descriptor"]>>,
 ): PrpCapabilities {
   return {
-    schema: "paperclip.prp.capabilities.v1",
+    schema: "wardmote.prp.capabilities.v1",
     sessionReusePolicy: "reuse_per_issue",
     driver: { kind: descriptor.kind, version: descriptor.version },
     steer: descriptor.capabilities.steering,
@@ -337,10 +337,10 @@ export async function runCodexCodexTracer(input: CodexCodexTracerInput): Promise
   const descriptor = await input.driver.descriptor();
   const capabilities = prpCapabilities(descriptor);
   const metadata: CodexRunMetadata = {
-    schema: "paperclip.runner.codex.metadata.v1",
+    schema: "wardmote.runner.codex.metadata.v1",
     fixtureName: "codex-safe-codex-task",
     identity: {
-      schema: "paperclip.prp.identity.v1",
+      schema: "wardmote.prp.identity.v1",
       companyId: input.companyId ?? "mock-company",
       issueId: input.issueId ?? "mock-issue",
       runId,
@@ -438,7 +438,7 @@ export async function runCodexCodexTracer(input: CodexCodexTracerInput): Promise
       payload: Record<string, unknown>,
       refs: { turnId?: string; itemId?: string } = {},
     ): PrpEvent => ({
-      schema: "paperclip.prp.event.v1",
+      schema: "wardmote.prp.event.v1",
       sourceEventId: `${controlPlaneInstanceId}:${runId}:${++controlSequence}`,
       sourceSeq: controlSequence,
       sourceInstanceId: controlPlaneInstanceId,
@@ -529,7 +529,7 @@ export async function runCodexCodexTracer(input: CodexCodexTracerInput): Promise
     const itemEvents = events.filter((event) => event.eventType.startsWith("item."));
     const providerSessionId = ids.providerSessionId ?? null;
     return {
-      schema: "paperclip.runner.codex.trace.v1",
+      schema: "wardmote.runner.codex.trace.v1",
       metadata,
       context,
       events,

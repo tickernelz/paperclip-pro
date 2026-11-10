@@ -513,7 +513,7 @@ function devtoolsPayload() {
     }],
   };
   return {
-    schema: "paperclip.capability.devtools.v1",
+    schema: "wardmote.capability.devtools.v1",
     currentRevision: 4,
     revisions: [{ revision: 4, at: "2026-08-10T12:00:00.000Z", turnId: "turn-1", operationId: "write_document", state }],
     protocol: [], runtime: {}, authority: {},
@@ -531,7 +531,7 @@ function cleanRoomView(identifier: string, withTurn: boolean) {
     threadAnchorId: null,
   };
   return {
-    schema: "paperclip.capability.issue-thread-view.v1",
+    schema: "wardmote.capability.issue-thread-view.v1",
     sessionId: `session-${identifier}`,
     mode: "live",
     identity: {
@@ -633,7 +633,7 @@ function cleanRoomPayload(identifier: string, withTurn = false) {
  */
 function turnStreamBody(payload: unknown, interim: unknown[] = []): string {
   const frames = interim.map((view, index) => ({
-    schema: "paperclip.capability.turn-stream.v1",
+    schema: "wardmote.capability.turn-stream.v1",
     type: "frame",
     seq: index + 1,
     reason: "delta",
@@ -643,7 +643,7 @@ function turnStreamBody(payload: unknown, interim: unknown[] = []): string {
   return [
     ...frames,
     {
-      schema: "paperclip.capability.turn-stream.v1",
+      schema: "wardmote.capability.turn-stream.v1",
       type: "settled",
       seq: frames.length + 1,
       payload,

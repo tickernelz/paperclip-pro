@@ -12,7 +12,7 @@ import {
 } from "../drivers/codex/codex-question-adapter.js";
 
 export const LIVE_CONSOLE_CONFORMANCE_SCHEMA =
-  "paperclip.runner.live-console.conformance.v1" as const;
+  "wardmote.runner.live-console.conformance.v1" as const;
 
 export interface LiveConsoleRuntimeRequestFixture {
   id: string;

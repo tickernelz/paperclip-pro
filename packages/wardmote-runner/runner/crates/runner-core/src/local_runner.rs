@@ -15,10 +15,10 @@ use crate::process_supervisor::{
     SupervisedProcess,
 };
 
-const RUNNER_STREAM_SCHEMA: &str = "paperclip.runner.stream.v1";
-const RUNNER_COMMAND_SCHEMA: &str = "paperclip.prp.command.v1";
-const HARNESS_COMMAND_SCHEMA: &str = "paperclip.fake_harness.command.v1";
-const HARNESS_MESSAGE_SCHEMA: &str = "paperclip.fake_harness.message.v1";
+const RUNNER_STREAM_SCHEMA: &str = "wardmote.runner.stream.v1";
+const RUNNER_COMMAND_SCHEMA: &str = "wardmote.prp.command.v1";
+const HARNESS_COMMAND_SCHEMA: &str = "wardmote.fake_harness.command.v1";
+const HARNESS_MESSAGE_SCHEMA: &str = "wardmote.fake_harness.message.v1";
 const CONTROLLER_COMMAND_QUEUE_CAPACITY: usize = 256;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -296,7 +296,7 @@ impl RunnerState {
         }
         self.source_seq += 1;
         let mut event = json!({
-            "schema": "paperclip.prp.event.v1",
+            "schema": "wardmote.prp.event.v1",
             "sourceEventId": format!("event_{}_{:03}", self.config.run_id, self.source_seq),
             "sourceSeq": self.source_seq,
             "sourceInstanceId": self.config.runner_instance_id,

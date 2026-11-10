@@ -20,7 +20,7 @@ describe("Conformance fixture validation", () => {
   it("rejects a non-contiguous event sequence", () => {
     expect(() =>
       validateConformanceFixture({
-        schemaVersion: "paperclip.runner.conformance.fixture.v1",
+        schemaVersion: "wardmote.runner.conformance.fixture.v1",
         run: {
           runId: "run_conformance_0001",
           sessionId: "session_conformance_0001",

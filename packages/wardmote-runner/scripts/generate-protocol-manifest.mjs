@@ -101,7 +101,7 @@ export async function buildProtocolManifest() {
   );
 
   return {
-    schema: "paperclip.prp.contract_manifest.v1",
+    schema: "wardmote.prp.contract_manifest.v1",
     protocolVersion: SUPPORTED_PROTOCOL_VERSION,
     fixtureVersion: SUPPORTED_FIXTURE_VERSION,
     generatedFrom: ["protocol/schemas", "protocol/fixtures"],

@@ -11,14 +11,14 @@ import {
 
 function bundle(overrides: Partial<EvalBundle> = {}): EvalBundle {
   return {
-    schema: "paperclip.runner.eval-bundle.v1",
+    schema: "wardmote.runner.eval-bundle.v1",
     provider: { runtime: "runnerd", transport: "codex-app-server", protocolVersion: "prp.v1" },
     model: { id: "gpt-5-codex", reasoningEffort: "medium" },
     launchContext: { workingDirectoryClass: "ephemeral-fixture", scenarioId: "capability-eval-st-1", turnTimeoutMs: 60_000 },
     promptPolicy: { id: "exact-single-call", callTemplate: "Call {op} exactly once.", restraintTemplate: "Do not call any tools." },
     grants: ["discovery:tasks:read"],
     runner: { package: "@tickernelz/wardmote-runner", binary: "wardmote-runnerd", version: "0.0.0" },
-    controlPlaneAdapter: { kind: "mock", contract: "paperclip.capability.control-plane.v1" },
+    controlPlaneAdapter: { kind: "mock", contract: "wardmote.capability.control-plane.v1" },
     faultInjection: [],
     ...overrides,
   };
@@ -30,14 +30,14 @@ describe("bundleId", () => {
     const b: EvalBundle = {
       // Same content, different key insertion order.
       faultInjection: [],
-      controlPlaneAdapter: { contract: "paperclip.capability.control-plane.v1", kind: "mock" },
+      controlPlaneAdapter: { contract: "wardmote.capability.control-plane.v1", kind: "mock" },
       runner: { version: "0.0.0", binary: "wardmote-runnerd", package: "@tickernelz/wardmote-runner" },
       grants: ["discovery:tasks:read"],
       promptPolicy: { restraintTemplate: "Do not call any tools.", callTemplate: "Call {op} exactly once.", id: "exact-single-call" },
       model: { reasoningEffort: "medium", id: "gpt-5-codex" },
       launchContext: { turnTimeoutMs: 60_000, scenarioId: "capability-eval-st-1", workingDirectoryClass: "ephemeral-fixture" },
       provider: { protocolVersion: "prp.v1", transport: "codex-app-server", runtime: "runnerd" },
-      schema: "paperclip.runner.eval-bundle.v1",
+      schema: "wardmote.runner.eval-bundle.v1",
     };
     expect(bundleId(a)).toBe(bundleId(b));
     expect(bundleId(a)).toMatch(/^evb-[0-9a-f]{16}$/);

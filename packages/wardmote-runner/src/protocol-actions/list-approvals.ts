@@ -46,7 +46,7 @@ export const listApprovalsAction = {
   "live": {
     "order": 16,
     "descriptor": {
-      "schema": "paperclip.semantic-tool.v1",
+      "schema": "wardmote.semantic-tool.v1",
       "operationId": "list_approvals",
       "version": 1,
       "title": "List approvals",
@@ -92,7 +92,7 @@ export const listApprovalsAction = {
           "schema": {
             "type": "string",
             "enum": [
-              "paperclip.capability.tool-result.v1"
+              "wardmote.capability.tool-result.v1"
             ]
           },
           "ok": {

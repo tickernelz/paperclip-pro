@@ -1,11 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://paperclip.dev/schemas/prp/v1/question-response.schema.json",
+  "$id": "https://wardmote.dev/schemas/prp/v1/question-response.schema.json",
   "title": "Paperclip question response",
   "type": "object",
   "required": ["schema", "answers"],
   "properties": {
-    "schema": { "const": "paperclip.question_response.v1" },
+    "schema": { "const": "wardmote.question_response.v1" },
     "answers": {
       "type": "object",
       "propertyNames": { "minLength": 1, "maxLength": 160 },

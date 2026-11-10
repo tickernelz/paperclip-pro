@@ -143,7 +143,7 @@ async function main() {
       process.stdout.write(
         `${JSON.stringify(
           {
-            schema: "paperclip.capability.issue-thread-smoke.v1",
+            schema: "wardmote.capability.issue-thread-smoke.v1",
             sessionId,
             turns: second.view.turns.length,
             toolCalls: second.view.evidence.calls.length,

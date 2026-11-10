@@ -1,8 +1,8 @@
 {
-  "schema": "paperclip.prp.session-snapshot.v1",
+  "schema": "wardmote.prp.session-snapshot.v1",
   "fixtureName": "Budget cost stop reason",
   "identity": {
-    "schema": "paperclip.prp.identity.v1",
+    "schema": "wardmote.prp.identity.v1",
     "companyId": "company_budget_stop",
     "issueId": "issue_budget_stop",
     "runId": "run_budget_stop",
@@ -12,7 +12,7 @@
     "driverSessionId": "driver_budget_stop"
   },
   "capabilities": {
-    "schema": "paperclip.prp.capabilities.v1",
+    "schema": "wardmote.prp.capabilities.v1",
     "sessionReusePolicy": "new_per_run",
     "driver": {
       "kind": "provider-neutral",
@@ -33,7 +33,7 @@
   "items": [],
   "requests": [],
   "proposedResult": {
-    "schema": "paperclip.run_result.v1",
+    "schema": "wardmote.run_result.v1",
     "reportedWorkDisposition": "blocked",
     "summary": "The actor budget reached its hard limit.",
     "completionClaim": {
@@ -78,7 +78,7 @@
     "workAssessmentId": "assessment_budget_stop",
     "statusDecisionId": "decision_budget_stop",
     "stopReason": {
-      "schema": "paperclip.prp.stop_reason.v1",
+      "schema": "wardmote.prp.stop_reason.v1",
       "schemaVersion": 1,
       "receiptId": "stop_receipt_budget",
       "kind": "budget",

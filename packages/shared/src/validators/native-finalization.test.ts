@@ -34,7 +34,7 @@ describe("native finalization validators", () => {
   it("fails closed for unknown required versions and extra fields", () => {
     expect(nativeFinalizationResultSchema.safeParse({
       ...validResult,
-      schema: "paperclip.native-finalization.v2",
+      schema: "wardmote.native-finalization.v2",
     }).success).toBe(false);
     expect(nativeFinalizationResultSchema.safeParse({
       ...validResult,

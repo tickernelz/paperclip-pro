@@ -210,7 +210,7 @@ it.skipIf(!enabled).each(cases)(
         );
         expect(durable).toMatchObject({
           ...identity,
-          schema: "paperclip.runner.durable.state.v1",
+          schema: "wardmote.runner.durable.state.v1",
           lifecycle: "suspended",
         });
         const control = await json(
@@ -298,7 +298,7 @@ it.skipIf(!enabled).each(cases)(
           at === null ? null : at - turn.providerCompletedAtMs;
         process.stdout.write(
           `FINAL_BURST_BENCHMARK ${JSON.stringify({
-            schema: "paperclip.final_output_burst_benchmark.v1",
+            schema: "wardmote.final_output_burst_benchmark.v1",
             deltaCount,
             repeat,
             binarySha256,

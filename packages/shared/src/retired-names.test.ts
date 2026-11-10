@@ -33,6 +33,14 @@ describe("rewriteRetiredNames", () => {
     expect(rewriteRetiredNames("my-paperclip-upload-artifact.sh paperclip-upload-artifact.shx").replacements).toBe(0);
   });
 
+  it("renames protocol schema ids but keeps the ids bound to pinned runtime artifacts", () => {
+    expect(rewriteRetiredNames('Answer with {"schema":"paperclip.question_set.v1"} or paperclip.prp.command.v3.')).toEqual({
+      text: 'Answer with {"schema":"wardmote.question_set.v1"} or wardmote.prp.command.v3.',
+      replacements: 2,
+    });
+    expect(rewriteRetiredNames("paperclip.prp.terminal.v1 paperclip.pi.permission.v1:x paperclip.dev paperclip.question_set.v1x").replacements).toBe(0);
+  });
+
   it("maps lowercase OMP tool names through the irregular renames", () => {
     expect(rewriteRetiredNames("mcp__paperclip_paperclipstarttoolconnection").text)
       .toBe("mcp__wardmote_wardmotestartauthorizationtoolconnection");

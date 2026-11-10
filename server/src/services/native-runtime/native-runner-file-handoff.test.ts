@@ -190,7 +190,7 @@ describe("native runner file handoff", () => {
 
   function doneReport(refs: string[]): PrpStructuredRunResult {
     return {
-      schema: "paperclip.run_result.v1",
+      schema: "wardmote.run_result.v1",
       reportedWorkDisposition: "done",
       summary: "Created the requested checklist.",
       completionClaim: { contractRevision: "test", objectiveSatisfied: true, criteria: [], remainingWork: [] },

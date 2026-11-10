@@ -25,7 +25,7 @@ describe("bounded fresh-session handoff", () => {
       issue: { id: "task", identifier: "BOT-2", title: "Chat", description: null, workMode: "standard" },
       taskPrompt: "GitHub is connected", freshSessionHandoff: "original goal: build the PR review bot", initialCommunicationGuidance: "Lead with the answer",
       workspace: { id: "workspace", cwd: "/workspace", repoUrl: null, repoRef: null, branchName: null },
-      completionContract: { id: "contract", sha256: "a".repeat(64), schemaVersion: "paperclip.run-result.v1", contract: {
+      completionContract: { id: "contract", sha256: "a".repeat(64), schemaVersion: "wardmote.run-result.v1", contract: {
         revision: "1", objective: "Build bot", criteria: [{ id: "objective", requirement: "Build bot" }],
       } }, runtimeContext: nativeRuntimeContextFixture(),
     });

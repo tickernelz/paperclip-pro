@@ -4,7 +4,7 @@ import type { WardmoteJsonSchema } from "../catalog/semantic-action-types.js";
 import type { WardmoteSemanticToolDefinition } from "./types.js";
 
 export const WARDMOTE_RUNNER_AUTHORIZED_TOOLS_SCHEMA =
-  "paperclip.runner.authorized-tools.v1" as const;
+  "wardmote.runner.authorized-tools.v1" as const;
 
 export interface WardmoteRunnerAuthorizedTool {
   readonly operationId: string;

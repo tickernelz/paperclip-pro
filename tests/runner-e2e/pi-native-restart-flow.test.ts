@@ -9,12 +9,12 @@ vi.mock("@playwright/test", () => ({ expect: (locator: { count(): number }) => (
 }) }));
 
 function fixture(adapter = "acpx-runtime-sidecar") {
-  const questionSet = { schema: "paperclip.question_set.v1", questions: [{ id: "answer", header: "Pi native restart", prompt: "Answer", answerMode: "text", required: true }] };
-  const request = { schema: "paperclip.runtime_request.v2", requestKind: "runtime", type: "input", status: "pending", requestId: "request", turnId: "turn", itemId: "request",
+  const questionSet = { schema: "wardmote.question_set.v1", questions: [{ id: "answer", header: "Pi native restart", prompt: "Answer", answerMode: "text", required: true }] };
+  const request = { schema: "wardmote.runtime_request.v2", requestKind: "runtime", type: "input", status: "pending", requestId: "request", turnId: "turn", itemId: "request",
     input: questionSet, origin: { adapter, provider: "pi", method: "elicitation/create" } };
   const wrap = (eventType: string, sourceSeq: number, payload: Row): Row => ({
     companyId: "company", runId: "run", seq: sourceSeq, protocolSchemaVersion: 1, eventType,
-    payload: { prpEvent: { schema: "paperclip.prp.event.v1", schemaVersion: 1, sourceKind: "runner", eventType, runId: "run", turnId: "turn", itemId: "request",
+    payload: { prpEvent: { schema: "wardmote.prp.event.v1", schemaVersion: 1, sourceKind: "runner", eventType, runId: "run", turnId: "turn", itemId: "request",
       normalizedSessionId: "session", sourceInstanceId: "runner", sourceSeq, sourceEventId: `runner:run:${sourceSeq}`, payload } },
   });
   const state = { issue: { id: "issue", companyId: "company", status: "in_progress" },
@@ -38,7 +38,7 @@ function fixture(adapter = "acpx-runtime-sidecar") {
     if (!validated.ok) throw new Error("Fixture finish result must satisfy the actual production schema");
     const result = validated.result;
     events.push(wrap("runtime_request.resolved", 2, { requestId: "request", turnId: "turn", itemId: "request", action: "submit",
-      response: { schema: "paperclip.question_response.v1", answers: { answer: { text: answer } } } }), wrap("turn.completed", 4, { status: "completed" }),
+      response: { schema: "wardmote.question_response.v1", answers: { answer: { text: answer } } } }), wrap("turn.completed", 4, { status: "completed" }),
       wrap("run.result.proposed", 3, structuredClone(result)), control("run.result.accepted", 1, { result: structuredClone(result) }),
       control("run.terminal", 2, { schema: "paperclip.prp.terminal.v1", turnTerminalState: "completed", runTerminalState: "succeeded", reportedWorkDisposition: "done" }));
     return { status: "answered", value: answer };

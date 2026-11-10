@@ -269,7 +269,7 @@ export class CapabilityChatSession {
       evalSuite: this.options.evalSuite,
     });
     return {
-      schema: "paperclip.capability.run-artifact.v1",
+      schema: "wardmote.capability.run-artifact.v1",
       scenarioId: this.entry.id,
       mode: this.options.mode ?? "fake",
       runId: this.runId,

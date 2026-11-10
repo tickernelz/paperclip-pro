@@ -305,7 +305,7 @@ describe("runner semantic MCP bridge", () => {
         .map(({ text }) => text)
         .join("");
       expect(manifest).toMatchObject({
-        schema: "paperclip.semantic_tool_result_chunks.v1",
+        schema: "wardmote.semantic_tool_result_chunks.v1",
         encoding: "json",
         chunkCount: body.result.content.length - 1,
         byteLength: Buffer.byteLength(serialized),
@@ -344,11 +344,11 @@ describe("runner semantic MCP bridge", () => {
     const second = (await (await rpc(bridge, request)).json()) as typeof first;
     expect(first.result).not.toHaveProperty("isError");
     expect(JSON.parse(first.result.content[0]!.text)).toMatchObject({
-      schema: "paperclip.semantic_tool_result.v1",
+      schema: "wardmote.semantic_tool_result.v1",
       status: "completed",
       tool: "documents.read",
       callIdentitySha256: expect.stringMatching(/^[0-9a-f]{64}$/),
-      encoding: "paperclip.tagged_graph.v1",
+      encoding: "wardmote.tagged_graph.v1",
       result: {
         root: { $ref: 1 },
         nodes: [

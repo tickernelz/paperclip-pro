@@ -160,7 +160,7 @@ try {
   renameSync(stagedGrok, prerequisite);
   isolated(['node', '/packages/probe.mjs', 'present'], { prerequisite });
   phase('grok_probes');
-  console.log(JSON.stringify({ schema: 'paperclip.grok.public-npm-install.v1', sourceRevision, releaseVersion, lifecycleScriptsEnabled: true, lifecycleSentinelVerified: true, lifecycleNetwork: 'none', consumerImage: GROK_PUBLIC_INSTALL_IMAGE, consumerUid, consumerLockPreserved: true, cleanNpmInstall: true, packageCount: needed.size, codexPackedPayloadsOmitted: true, codexPackedPackagesChecked: tarballs.length, ...codex, builtinLauncherPresent: true, separateGrokPackage: false, npmProvisionedBinary: false, missingPrerequisiteRejected: true, provisionedBinaryVerified: true, commandLeaseVerified: true, providerCalls: 0 }));
+  console.log(JSON.stringify({ schema: 'wardmote.grok.public-npm-install.v1', sourceRevision, releaseVersion, lifecycleScriptsEnabled: true, lifecycleSentinelVerified: true, lifecycleNetwork: 'none', consumerImage: GROK_PUBLIC_INSTALL_IMAGE, consumerUid, consumerLockPreserved: true, cleanNpmInstall: true, packageCount: needed.size, codexPackedPayloadsOmitted: true, codexPackedPackagesChecked: tarballs.length, ...codex, builtinLauncherPresent: true, separateGrokPackage: false, npmProvisionedBinary: false, missingPrerequisiteRejected: true, provisionedBinaryVerified: true, commandLeaseVerified: true, providerCalls: 0 }));
   // Exercise Pi's public CLI and installed server, never a private workspace
   // package or binary override. Public dependency downloads are explicit and
   // isolated; the actual admission probe runs without a network or credentials.
@@ -185,7 +185,7 @@ try {
   // last output, and `*_wait_ms` is how long the main flow waited for a
   // prefetch that had not finished yet; zero means the overlap hid it entirely.
   const downloads = Object.fromEntries(prefetches.map(({ name, durationMs }) => [`${name}_prefetch_ms`, durationMs]));
-  console.log(JSON.stringify({ schema: 'paperclip.public-npm-install.timing.v1', ...timing, ...downloads }));
+  console.log(JSON.stringify({ schema: 'wardmote.public-npm-install.timing.v1', ...timing, ...downloads }));
   if (process.env.WARDMOTE_RUNNER_QUALIFICATION_PACKAGES_DIR) {
     const retained = retainRunnerQualificationPackages({ repo, output: process.env.WARDMOTE_RUNNER_QUALIFICATION_PACKAGES_DIR, sourceRevision, releaseVersion, env,
       publicArchives: [...needed].map((name, index) => ({ name, file: tarballs[index] })),

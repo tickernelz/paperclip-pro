@@ -64,7 +64,7 @@ try {
   assert.equal(state.activeTurnId, null);
   assert.equal(state.identity, null);
   assert.equal(state.providerExitUnconfirmed, false);
-  console.log(JSON.stringify({ schema: 'paperclip.pi.public-npm-install.v1', target: `${process.platform}-${process.arch}`, normalPackagedDaemon: true, exactPiProfile: 22, runtime: '1.0.0', credentials: 'none', promptCalls: 0, settledMs, cleanRunnerExit: true }));
+  console.log(JSON.stringify({ schema: 'wardmote.pi.public-npm-install.v1', target: `${process.platform}-${process.arch}`, normalPackagedDaemon: true, exactPiProfile: 22, runtime: '1.0.0', credentials: 'none', promptCalls: 0, settledMs, cleanRunnerExit: true }));
 } finally {
   try { await bundle?.transport.close(); }
   finally { clearTimeout(watchdog); await rm(root, { recursive: true, force: true }); }

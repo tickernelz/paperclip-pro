@@ -213,7 +213,7 @@ function assertSuspendedRunnerState(
   expected: DurableRecoveryIdentity,
 ): void {
   if (
-    state.schema !== "paperclip.runner.durable.state.v1" ||
+    state.schema !== "wardmote.runner.durable.state.v1" ||
     !recoveryIdentityMatches(state, expected) ||
     state.lifecycle !== "suspended"
   ) {
@@ -976,7 +976,7 @@ export function liveAcpxRuntimeRequests(snapshot: Record<string, unknown>, threa
     const request = record(value), origin = record(request.origin);
     const id = request.requestId, method = origin.method;
     if (typeof id !== "string" || !id || id.length > 160 || ids.has(id)
-      || request.schema !== "paperclip.runtime_request.v2" || request.status !== "pending"
+      || request.schema !== "wardmote.runtime_request.v2" || request.status !== "pending"
       || request.turnId !== durableTurnId || typeof method !== "string") {
       throw new Error("ACPX pending request snapshot request is invalid");
     }
@@ -1000,7 +1000,7 @@ export function bridgedCodexQuestionParams(
 ): Record<string, unknown> | null {
   const questionSet = record(request.input);
   if (
-    questionSet.schema !== "paperclip.question_set.v1" ||
+    questionSet.schema !== "wardmote.question_set.v1" ||
     !Array.isArray(questionSet.questions) ||
     questionSet.questions.length === 0
   )
@@ -1703,7 +1703,7 @@ function appendRunnerdRehydrationTrace(
       `${tracePath}.rehydration`,
       `${JSON.stringify({
         kind: "interpretation",
-        schema: "paperclip.provider_trace_interpretation.v1",
+        schema: "wardmote.provider_trace_interpretation.v1",
         debugChannel: "typescript_runnerd_rehydration",
         debugSequence,
         frameId,
@@ -1764,7 +1764,7 @@ function appendCodexDriverInterpretationTrace(
       `${tracePath}.rehydration`,
       `${JSON.stringify({
         kind: "interpretation",
-        schema: "paperclip.provider_trace_interpretation.v1",
+        schema: "wardmote.provider_trace_interpretation.v1",
         debugChannel: "typescript_runnerd_rehydration",
         debugSequence,
         frameId,
@@ -2057,7 +2057,7 @@ export interface RetainedRunnerdCleanupProof {
 /** Content-free evidence for this controller's exact child handle. A launch
  * intent without a matching retirement is deliberately not absence proof. */
 export type RetainedRunnerdMaintenanceEpochReceipt = {
-  schema: "paperclip.native_cleanup_runner_epoch.v1";
+  schema: "wardmote.native_cleanup_runner_epoch.v1";
   requestId: string;
   epoch: number;
   launchId: string;
@@ -2275,8 +2275,8 @@ function assertMaintenanceBinding(
   if (
     !recoveryIdentityMatches(record(state.control.identity), identity) ||
     !recoveryIdentityMatches(state.runner, identity) ||
-    state.runner.schema !== "paperclip.runner.durable.state.v1" ||
-    state.provider.schema !== "paperclip.runner.codex-provider-state.v1" ||
+    state.runner.schema !== "wardmote.runner.durable.state.v1" ||
+    state.provider.schema !== "wardmote.runner.codex-provider-state.v1" ||
     record(state.provider.config).provider !== "codex" ||
     state.provider.threadId !== providerSessionId ||
     !Array.isArray(state.runner.outbox) ||
@@ -2641,7 +2641,7 @@ async function settleRetainedRunnerdSessionOwned(
     let epochCompleted = false;
     let retiredFingerprint: string | null = null;
     const epochIdentity = {
-      schema: "paperclip.native_cleanup_runner_epoch.v1" as const,
+      schema: "wardmote.native_cleanup_runner_epoch.v1" as const,
       requestId: input.requestId,
       epoch,
       launchId: randomUUID(),
@@ -2902,7 +2902,7 @@ async function settleRetainedRunnerdSessionOwned(
         throw maintenanceDenied();
       if (identity.processId === input.originalProviderPid) continue;
       const sourceEventId = `event_executor_${createHash("sha256")
-        .update("paperclip.executor-event.v1\0")
+        .update("wardmote.executor-event.v1\0")
         .update(input.identity.runnerInstanceId)
         .update("\0")
         .update(event.executorEventId)
@@ -3112,7 +3112,7 @@ function acpxRunnerLaunchProfile(
     const sidecarScriptSha256 = localDigest(buildSidecar);
     return {
       authorityDigest: commandDigest({
-        schema: "paperclip.runner.local-acpx-authority.v1",
+        schema: "wardmote.runner.local-acpx-authority.v1",
         commandSha256,
         sidecarScriptSha256,
       }),
@@ -3210,7 +3210,7 @@ function authorizedToolSet(
           : 0,
     );
   return {
-    schema: "paperclip.runner.authorized-tools.v1",
+    schema: "wardmote.runner.authorized-tools.v1",
     schemaVersion: 1,
     catalogDigest: commandDigest(operations),
     operations,
@@ -4516,7 +4516,7 @@ class DurablePrpCodexTransport implements CodexAppServerTransport {
             "ready", "suspended", "closed", "recoverable_failure",
           ].includes(String(state.lifecycle)) ? String(state.lifecycle) : null,
           runnerIdentityMatches: state === null ? null
-            : state.schema === "paperclip.runner.durable.state.v1"
+            : state.schema === "wardmote.runner.durable.state.v1"
               && recoveryIdentityMatches(state, this.#core.store.state.identity),
         };
         this.#diagnostic(
@@ -5141,7 +5141,7 @@ class DurablePrpCodexTransport implements CodexAppServerTransport {
     const hasRunnerWarmBoundary =
       candidateRunnerState?.warmTransition !== undefined ||
       candidateRunnerState?.schema ===
-        "paperclip.runner.durable.state.warm-transition.v1";
+        "wardmote.runner.durable.state.warm-transition.v1";
     let controlPlaneState: Record<string, unknown> | null;
     try {
       controlPlaneState = existsSync(controlPlaneStatePath)
@@ -5161,7 +5161,7 @@ class DurablePrpCodexTransport implements CodexAppServerTransport {
       controlPlaneState &&
       (controlPlaneState.warmTransition !== undefined ||
         controlPlaneState.schema ===
-          "paperclip.runner.durable.control-plane-state.warm-transition.v1" ||
+          "wardmote.runner.durable.control-plane-state.warm-transition.v1" ||
         (Array.isArray(controlPlaneState.commands) &&
           controlPlaneState.commands.some((entry) => {
             const command = record(entry);
@@ -5185,11 +5185,11 @@ class DurablePrpCodexTransport implements CodexAppServerTransport {
     const hasWarmBoundary =
       controlPlaneState?.warmTransition !== undefined ||
       controlPlaneState?.schema ===
-        "paperclip.runner.durable.control-plane-state.warm-transition.v1" ||
+        "wardmote.runner.durable.control-plane-state.warm-transition.v1" ||
       hasRunnerWarmBoundary ||
       candidateRunnerState?.warmTransition !== undefined ||
       candidateRunnerState?.schema ===
-        "paperclip.runner.durable.state.warm-transition.v1";
+        "wardmote.runner.durable.state.warm-transition.v1";
     if (hasWarmBoundary) {
       // This lane must precede ordinary archive/identity-rebinding recovery.
       // No malformed or unsupported transition is reinterpreted as legacy.

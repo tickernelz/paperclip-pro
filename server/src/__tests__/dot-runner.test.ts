@@ -510,7 +510,7 @@ describe("durable Dot Runner integration", () => {
     const [worker] = await db.insert(agents).values({ companyId, name: "Original worker", status: "active", adapterType: "wardmote_runner" }).returning();
     const [issue] = await db.insert(issues).values({ companyId, title: "Review another agent's work", status: "in_review", statusVersion: 3, assigneeAgentId: worker!.id }).returning();
     const issueId = issue!.id;
-    const [contract] = await db.insert(completionContracts).values({ companyId, issueId, revision: 1, schemaVersion: "paperclip.completion-contract.v1", policyVersion: "fixture",
+    const [contract] = await db.insert(completionContracts).values({ companyId, issueId, revision: 1, schemaVersion: "wardmote.completion-contract.v1", policyVersion: "fixture",
       risk: "low", completionAuthority: "agent", incompleteCriteriaPolicy: "block", contractJson: {}, canonicalSha256: randomUUID(), createdByActorType: "user", createdByActorId: f.userId }).returning();
     const [source] = await db.insert(heartbeatRuns).values({ companyId, agentId: worker!.id, nativeIssueId: issueId, runtimeMode: "native", status: "succeeded",
       completionContractId: contract!.id, completionContractSha256: contract!.canonicalSha256 }).returning();
@@ -764,7 +764,7 @@ describe("durable Dot Runner integration", () => {
         await f.broker.operation(f.principal, assignment!.id, completionId, "tool", { name: "wardmote_finish", arguments: result });
         await vi.waitFor(async () => expect(await f.broker.operationStatus(f.principal, assignment!.id, completionId)).toMatchObject({ status: "completed", isError: false }), { timeout: 10000 });
         expect(await f.broker.operationStatus(f.principal, assignment!.id, completionId)).toMatchObject({ result: { completionReport: {
-          schema: "paperclip.run_result.v1", reportedWorkDisposition: "done", artifacts: [], attentionRequests: [],
+          schema: "wardmote.run_result.v1", reportedWorkDisposition: "done", artifacts: [], attentionRequests: [],
           verification: [{ commandOrCheck: "17 + 25", status: "passed" }],
         } } });
         await f.broker.operation(f.principal, assignment!.id, randomUUID(), "finish", { result });

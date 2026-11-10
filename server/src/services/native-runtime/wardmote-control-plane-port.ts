@@ -45,9 +45,9 @@ const IDENTITY_DELTA_RETRY_BYTES = 4 * 1024 * 1024;
 
 function isPrpEvent(value: NativeRunEvent | PrpEvent): value is PrpEvent {
   return "schema" in value && [
-    "paperclip.prp.event.v1",
-    "paperclip.prp.event.v2",
-    "paperclip.prp.event.v3",
+    "wardmote.prp.event.v1",
+    "wardmote.prp.event.v2",
+    "wardmote.prp.event.v3",
   ].includes(value.schema);
 }
 

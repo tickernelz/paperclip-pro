@@ -159,7 +159,7 @@ describe("native external-chat response wait", () => {
       companyId,
       issueId,
       revision: 1,
-      schemaVersion: "paperclip.completion-contract.v1",
+      schemaVersion: "wardmote.completion-contract.v1",
       policyVersion: "phase6-v3",
       risk: "low",
       completionAuthority: "agent_claim_policy",
@@ -340,7 +340,7 @@ describe("native external-chat response wait", () => {
       sourceInstanceId: runnerInstanceId,
     });
     const result: PrpStructuredRunResult = {
-      schema: "paperclip.run_result.v1",
+      schema: "wardmote.run_result.v1",
       reportedWorkDisposition: "yielded",
       summary:
         "The requested photo is prepared. I will wait for your next message.",
@@ -1206,7 +1206,7 @@ describe("native external-chat response wait", () => {
     ).toBe(true);
     expect(fixture.context.wardmoteExternalChatQuestionResponse).toMatchObject(
       {
-        schema: "paperclip.external_chat_question_response.v1",
+        schema: "wardmote.external_chat_question_response.v1",
         interactionId: fixture.interactionId,
         sourceRunId: fixture.sourceRunId,
         responseDeliveryId: fixture.responseDeliveryId,
@@ -1446,7 +1446,7 @@ describe("native external-chat response wait", () => {
       }),
     ).resolves.toBe(true);
     expect(fixture.context.wardmoteExternalChatQuestionResponse).toMatchObject({
-      schema: "paperclip.external_chat_question_response.v1",
+      schema: "wardmote.external_chat_question_response.v1",
       interactionId: fixture.interactionId,
       responseDeliveryId: fixture.responseDeliveryId,
       sourceRunId: fixture.sourceRunId,

@@ -44,7 +44,7 @@ export const listDocumentsAction = {
   "live": {
     "order": 2,
     "descriptor": {
-      "schema": "paperclip.semantic-tool.v1",
+      "schema": "wardmote.semantic-tool.v1",
       "operationId": "list_documents",
       "version": 1,
       "title": "List task documents",
@@ -72,7 +72,7 @@ export const listDocumentsAction = {
   "scenario": {
     "order": 2,
     "successExample": {
-      "schema": "paperclip.capability.tool-result.v1",
+      "schema": "wardmote.capability.tool-result.v1",
       "ok": true,
       "operationId": "list_documents",
       "operationResultId": "example-result",
@@ -97,7 +97,7 @@ export const listDocumentsAction = {
           "schema": {
             "type": "string",
             "enum": [
-              "paperclip.capability.tool-result.v1"
+              "wardmote.capability.tool-result.v1"
             ]
           },
           "ok": {

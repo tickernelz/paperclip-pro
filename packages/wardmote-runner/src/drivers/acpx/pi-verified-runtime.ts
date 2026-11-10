@@ -3,7 +3,7 @@ import { constants } from "node:fs";
 import { lstat, open, readdir, readlink, realpath } from "node:fs/promises";
 import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 
-export const PI_RUNTIME_MANIFEST_SCHEMA = "paperclip.pi-runtime-files.v1" as const;
+export const PI_RUNTIME_MANIFEST_SCHEMA = "wardmote.pi-runtime-files.v1" as const;
 export interface PiRuntimeFile {
   path: string;
   kind: "file" | "symlink";

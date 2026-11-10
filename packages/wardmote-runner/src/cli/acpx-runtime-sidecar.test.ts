@@ -152,7 +152,7 @@ describe("qualified ACPX runtime sidecar", () => {
         expect(stable(raw, kind)).toBe(raw);
       }
       for (const raw of ["native\u0000tool", "native\u007ftool", "x".repeat(241)]) {
-        const expected = `acpx-${kind}-${createHash("sha256").update("paperclip.acpx.provider-identity.v1\0").update(kind).update("\0").update(raw).digest("hex")}`;
+        const expected = `acpx-${kind}-${createHash("sha256").update("wardmote.acpx.provider-identity.v1\0").update(kind).update("\0").update(raw).digest("hex")}`;
         expect(stable(raw, kind)).toBe(expected);
       }
     }
@@ -225,7 +225,7 @@ describe("qualified ACPX runtime sidecar", () => {
       return waitForExtensionInput;
     `)(acpxProfileActivity, (context: any) => context.responseDelivery, (...args: any[]) => emitted.push(args), inputs);
     const abort = new AbortController();
-    const pending = invoke("turn", { method: "cursor/create_plan", details: { toolCallId: "tool with spaces" }, questionSet: { schema: "paperclip.question_set.v1", questions: [] }, cancel: () => ({ cancelled: true }) }, { requestId: 0, signal: abort.signal, responseDelivery: Promise.resolve() });
+    const pending = invoke("turn", { method: "cursor/create_plan", details: { toolCallId: "tool with spaces" }, questionSet: { schema: "wardmote.question_set.v1", questions: [] }, cancel: () => ({ cancelled: true }) }, { requestId: 0, signal: abort.signal, responseDelivery: Promise.resolve() });
     expect(emitted).toEqual([["runtime.input_requested", expect.objectContaining({ toolCallId: "tool with spaces", origin: { adapter: "acpx-runtime-sidecar", provider: "cursor", method: "cursor/create_plan" } }), "turn"]]);
     abort.abort(); await expect(pending).resolves.toEqual({ cancelled: true });
     expect(inputs.size).toBe(0);
@@ -1028,7 +1028,7 @@ describe("qualified ACPX runtime sidecar", () => {
         capabilities: {
           persistentSessions: true,
           exactModelVerification: true,
-          structuredInput: "paperclip.question_set.v1",
+          structuredInput: "wardmote.question_set.v1",
         },
       },
     });

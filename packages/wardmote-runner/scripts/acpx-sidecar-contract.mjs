@@ -1,5 +1,5 @@
 const SCHEMA_ID_PATTERN =
-  /^https:\/\/paperclip\.dev\/schemas\/acpx-sidecar\/v([1-9]\d*)\/message\.schema\.json$/;
+  /^https:\/\/wardmote\.dev\/schemas\/acpx-sidecar\/v([1-9]\d*)\/message\.schema\.json$/;
 const PROTOCOL_VERSION_REF = "#/$defs/protocolVersion";
 
 export function readAcpxSidecarProtocolVersion(schema) {

@@ -51,7 +51,7 @@ immediately before every mock read or command; a tool that was exposed earlier
 can still be denied after a claim or ownership change.
 
 Unauthorized optional tools are absent from `listTools`. Direct calls receive a
-`paperclip.semantic-denial.v1` result. The mock command boundary independently
+`wardmote.semantic-denial.v1` result. The mock command boundary independently
 checks command claims and task ownership, so bypassing catalog exposure does not
 bypass authorization.
 

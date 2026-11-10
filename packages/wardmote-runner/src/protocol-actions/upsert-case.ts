@@ -50,7 +50,7 @@ export const upsertCaseAction = {
       "ok": true,
       "operationId": "upsert_case",
       "result": {
-        "schema": "paperclip.capability.tool-result.v1",
+        "schema": "wardmote.capability.tool-result.v1",
         "ok": true,
         "operationId": "example",
         "operationResultId": "example",
@@ -91,7 +91,7 @@ export const upsertCaseAction = {
           "schema": {
             "type": "string",
             "enum": [
-              "paperclip.capability.tool-result.v1"
+              "wardmote.capability.tool-result.v1"
             ]
           },
           "ok": {

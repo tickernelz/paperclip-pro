@@ -67,7 +67,7 @@ Redaction is two layers:
    unredacted secret is `invokeForModel()`, which returns a frozen capsule whose
    `toJSON()` and default serialization always yield the redacted form; only an
    explicit `readModelResult()` opens the raw value. The capsule uses a distinct
-   schema (`paperclip.capability.model-tool-result.v1`) so it cannot be assigned to
+   schema (`wardmote.capability.model-tool-result.v1`) so it cannot be assigned to
    an observable sink by mistake.
 2. **Path redaction rules.** `read_secret_value` redacts `$.value` to
    `[SECRET_VALUE]` across output, error, and authorization-record channels;

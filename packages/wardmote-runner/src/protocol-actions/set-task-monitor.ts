@@ -45,7 +45,7 @@ export const setTaskMonitorAction = {
   live: {
     order: 51,
     descriptor: {
-      schema: "paperclip.semantic-tool.v1", operationId: "set_task_monitor", version: 1,
+      schema: "wardmote.semantic-tool.v1", operationId: "set_task_monitor", version: 1,
       title: "Set task monitor", description, exposure: "optional", requiredClaims: [],
       allowedModes: ["standard"], inputSchema: setTaskMonitorInputSchema,
       outputSchema: { type: "object", additionalProperties: true },

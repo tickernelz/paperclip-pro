@@ -1,5 +1,5 @@
 {
-  "schema": "paperclip.question_adapter_fixture.v1",
+  "schema": "wardmote.question_adapter_fixture.v1",
   "adapter": "codex",
   "nativeRequest": {
     "method": "item/tool/requestUserInput",
@@ -18,7 +18,7 @@
     }
   },
   "canonicalQuestionSet": {
-    "schema": "paperclip.question_set.v1",
+    "schema": "wardmote.question_set.v1",
     "title": "Deployment input",
     "submitLabel": "Submit answers",
     "questions": [{
@@ -34,7 +34,7 @@
     }]
   },
   "canonicalResponse": {
-    "schema": "paperclip.question_response.v1",
+    "schema": "wardmote.question_response.v1",
     "answers": { "environment": { "selectedOptionIds": ["option-1"] } }
   },
   "nativeResponse": { "answers": { "environment": { "answers": ["Staging"] } } }

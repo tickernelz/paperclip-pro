@@ -107,7 +107,7 @@ describe("WardmoteControlPlanePort conformance", () => {
       companyId: identity.companyId,
       issueId: identity.issueId,
       revision: 1,
-      schemaVersion: "paperclip.completion-contract.v1",
+      schemaVersion: "wardmote.completion-contract.v1",
       policyVersion: "phase6-v1",
       risk: "standard",
       completionAuthority: "server_arbiter",
@@ -147,7 +147,7 @@ describe("WardmoteControlPlanePort conformance", () => {
       companyId: identity.companyId,
       issueId: taskIssueId,
       revision: 1,
-      schemaVersion: "paperclip.completion-contract.v1",
+      schemaVersion: "wardmote.completion-contract.v1",
       policyVersion: "phase6-v1",
       risk: "standard",
       completionAuthority: "server_arbiter",
@@ -200,7 +200,7 @@ describe("WardmoteControlPlanePort conformance", () => {
       companyId: identity.companyId,
       issueId: workspaceFailureIssueId,
       revision: 1,
-      schemaVersion: "paperclip.completion-contract.v1",
+      schemaVersion: "wardmote.completion-contract.v1",
       policyVersion: "phase6-v1",
       risk: "standard",
       completionAuthority: "server_arbiter",
@@ -239,7 +239,7 @@ describe("WardmoteControlPlanePort conformance", () => {
       companyId: identity.companyId,
       issueId: governanceIssueId,
       revision: 1,
-      schemaVersion: "paperclip.completion-contract.v1",
+      schemaVersion: "wardmote.completion-contract.v1",
       policyVersion: "phase6-v1",
       risk: "standard",
       completionAuthority: "server_arbiter",
@@ -322,7 +322,7 @@ describe("WardmoteControlPlanePort conformance", () => {
     });
     await port.openRun({ identity, backendKind: "mock", sourceInstanceId: runnerId });
     const mutate = () => operation === "event" ? port.appendEvent({
-      schema: "paperclip.prp.event.v1", sourceEventId: `${runnerId}:1`, sourceSeq: 1,
+      schema: "wardmote.prp.event.v1", sourceEventId: `${runnerId}:1`, sourceSeq: 1,
       sourceInstanceId: runnerId, sourceKind: "runner", runId: identity.runId,
       normalizedSessionId: identity.sessionId, eventType: "turn.interrupted", schemaVersion: 1,
       priority: 0, emittedAt: new Date().toISOString(), payload: { reason: "governed_wait" },
@@ -380,11 +380,11 @@ describe("WardmoteControlPlanePort conformance", () => {
     }, { privateKeyPem, onCommittedEvent: async event => { observed.push(event); } });
     await port.openRun({ identity, backendKind: "mock", sourceInstanceId: runnerId });
     await port.appendEvent({
-      schema: "paperclip.prp.event.v1", sourceEventId: `${runnerId}:1`, sourceSeq: 1,
+      schema: "wardmote.prp.event.v1", sourceEventId: `${runnerId}:1`, sourceSeq: 1,
       sourceInstanceId: runnerId, sourceKind: "runner", runId: identity.runId,
       normalizedSessionId: identity.sessionId, eventType: "tool.execution.started", schemaVersion: 1,
       priority: 0, emittedAt: new Date().toISOString(), payload: {
-        schema: "paperclip.tool.execution.v1", executionId: "identity-output", transport: "builtin",
+        schema: "wardmote.tool.execution.v1", executionId: "identity-output", transport: "builtin",
         operation: "execute", name: "diagnostic", target: null, namespace: null, readOnly: true,
         status: "running", durationMs: null, exitCode: null, progress: null,
         output: privateKeyPem, outputBytes: Buffer.byteLength(privateKeyPem), outputTruncated: false,
@@ -401,7 +401,7 @@ describe("WardmoteControlPlanePort conformance", () => {
     ] as const) {
       for (const [index, chunk] of chunks.entries()) {
         const event: PrpEvent = {
-          schema: "paperclip.prp.event.v1", sourceEventId: `${runnerId}:${sourceSeq}`, sourceSeq: sourceSeq++,
+          schema: "wardmote.prp.event.v1", sourceEventId: `${runnerId}:${sourceSeq}`, sourceSeq: sourceSeq++,
           sourceInstanceId: runnerId, sourceKind: "runner", runId: identity.runId,
           normalizedSessionId: identity.sessionId, turnId: "identity-turn", itemId,
           eventType: "item.delta", schemaVersion: 1, priority: 1, emittedAt: new Date().toISOString(),
@@ -416,14 +416,14 @@ describe("WardmoteControlPlanePort conformance", () => {
       }
     }
     await port.appendEvent({
-      schema: "paperclip.prp.event.v1", sourceEventId: `${runnerId}:${sourceSeq}`, sourceSeq: sourceSeq++,
+      schema: "wardmote.prp.event.v1", sourceEventId: `${runnerId}:${sourceSeq}`, sourceSeq: sourceSeq++,
       sourceInstanceId: runnerId, sourceKind: "runner", runId: identity.runId,
       normalizedSessionId: identity.sessionId, turnId: "tail-turn", itemId: "reasoning-item",
       eventType: "item.delta", schemaVersion: 1, priority: 1, emittedAt: new Date().toISOString(),
       payload: { kind: "reasoning", text: "Thinking-" },
     });
     const terminal: PrpEvent = {
-      schema: "paperclip.prp.event.v1", sourceEventId: `${runnerId}:${sourceSeq}`, sourceSeq: sourceSeq++,
+      schema: "wardmote.prp.event.v1", sourceEventId: `${runnerId}:${sourceSeq}`, sourceSeq: sourceSeq++,
       sourceInstanceId: runnerId, sourceKind: "runner", runId: identity.runId,
       normalizedSessionId: identity.sessionId, turnId: "tail-turn",
       eventType: "turn.completed", schemaVersion: 1, priority: 0, emittedAt: new Date().toISOString(),
@@ -535,7 +535,7 @@ describe("WardmoteControlPlanePort conformance", () => {
       companyId: identity.companyId,
       issueId,
       revision: 1,
-      schemaVersion: "paperclip.completion-contract.v1",
+      schemaVersion: "wardmote.completion-contract.v1",
       policyVersion: "phase6-v1",
       risk: "standard",
       completionAuthority: "server_arbiter",
@@ -599,7 +599,7 @@ describe("WardmoteControlPlanePort conformance", () => {
       sourceInstanceId: runnerInstanceId,
     });
     const progressEvent: PrpEvent = {
-      schema: "paperclip.prp.event.v1",
+      schema: "wardmote.prp.event.v1",
       sourceEventId: "safe-progress-signal:1",
       sourceSeq: 1,
       sourceInstanceId: runnerInstanceId,
@@ -612,7 +612,7 @@ describe("WardmoteControlPlanePort conformance", () => {
       priority: 0,
       emittedAt: "2026-09-08T10:30:00.000Z",
       payload: {
-        schema: "paperclip.tool.execution.v1",
+        schema: "wardmote.tool.execution.v1",
         executionId: "safe-progress-execution",
         transport: "builtin",
         operation: "execute",
@@ -711,7 +711,7 @@ describe("WardmoteControlPlanePort conformance", () => {
       companyId: identity.companyId,
       issueId,
       revision: 1,
-      schemaVersion: "paperclip.completion-contract.v1",
+      schemaVersion: "wardmote.completion-contract.v1",
       policyVersion: "phase6-v1",
       risk: "standard",
       completionAuthority: "server_arbiter",
@@ -751,7 +751,7 @@ describe("WardmoteControlPlanePort conformance", () => {
       controlPlaneSourceInstanceId: "runtime-question-recovery-control",
     };
     const questionEvent: PrpEvent = {
-      schema: "paperclip.prp.event.v1",
+      schema: "wardmote.prp.event.v1",
       sourceEventId: "runtime-question-recovery:1",
       sourceSeq: 1,
       sourceInstanceId: runnerInstanceId,
@@ -770,7 +770,7 @@ describe("WardmoteControlPlanePort conformance", () => {
         reason: "provider_process_lost",
         replayAllowed: false,
         request: {
-          schema: "paperclip.runtime_request.v2",
+          schema: "wardmote.runtime_request.v2",
           requestKind: "runtime",
           requestId: "runtime-question-recovery-request",
           type: "input",
@@ -779,7 +779,7 @@ describe("WardmoteControlPlanePort conformance", () => {
           turnId: "runtime-question-recovery-turn",
           itemId: "runtime-question-recovery-item",
           input: {
-            schema: "paperclip.question_set.v1",
+            schema: "wardmote.question_set.v1",
             title: "Choose a recovery option",
             questions: [
               {
@@ -849,7 +849,7 @@ describe("WardmoteControlPlanePort conformance", () => {
     taskResult.evidence = [{ kind: "work_product", ref: evidenceRef }];
     taskResult.verification[0]!.artifactRef = evidenceRef;
     const event = (sourceSeq: number, eventType: PrpEvent["eventType"], payload: Record<string, unknown>): PrpEvent => ({
-      schema: "paperclip.prp.event.v1",
+      schema: "wardmote.prp.event.v1",
       sourceEventId: `phase6-task:${sourceSeq}`,
       sourceSeq,
       sourceInstanceId: taskRunnerId,
@@ -899,7 +899,7 @@ describe("WardmoteControlPlanePort conformance", () => {
       },
     };
     const execution = parseNativeExecutionInput({
-      schema: "paperclip.native-execution-input.v4",
+      schema: "wardmote.native-execution-input.v4",
       executionMode: "default",
       planningContext: null,
       binding: {
@@ -932,7 +932,7 @@ describe("WardmoteControlPlanePort conformance", () => {
       completionContract: {
         id: taskContractId,
         sha256: "phase6-task-contract",
-        schemaVersion: "paperclip.completion-contract.v1",
+        schemaVersion: "wardmote.completion-contract.v1",
         contract: { revision: "phase6-v1", objective: "Complete one native task", criteria: [{ id: "objective", requirement: "Complete the task" }] },
       },
       interactionResponses: [],
@@ -1069,7 +1069,7 @@ describe("WardmoteControlPlanePort conformance", () => {
       companyId: identity.companyId,
       issueId,
       revision: 1,
-      schemaVersion: "paperclip.completion-contract.v1",
+      schemaVersion: "wardmote.completion-contract.v1",
       policyVersion: "strict-binding-v1",
       risk: "standard",
       completionAuthority: "server_arbiter",
@@ -1254,7 +1254,7 @@ describe("WardmoteControlPlanePort conformance", () => {
       companyId: identity.companyId,
       issueId,
       revision: 1,
-      schemaVersion: "paperclip.completion-contract.v1",
+      schemaVersion: "wardmote.completion-contract.v1",
       policyVersion: "phase6-v1",
       risk: "standard",
       completionAuthority: "server_arbiter",
@@ -1614,7 +1614,7 @@ describe("WardmoteControlPlanePort conformance", () => {
       companyId: identity.companyId,
       issueId,
       revision: 1,
-      schemaVersion: "paperclip.completion-contract.v1",
+      schemaVersion: "wardmote.completion-contract.v1",
       policyVersion: "phase6-v3",
       risk: "low",
       completionAuthority: "agent_claim_policy",
@@ -1739,7 +1739,7 @@ describe("WardmoteControlPlanePort conformance", () => {
         title: parentId ? "Revised child" : "Deliver revised child result", status: "in_progress",
         assigneeAgentId: agentId, workMode: "standard" });
       await db.insert(completionContracts).values({ id: localContractId, companyId: identity.companyId,
-        issueId, revision: 1, schemaVersion: "paperclip.completion-contract.v1", policyVersion: "phase6-v3",
+        issueId, revision: 1, schemaVersion: "wardmote.completion-contract.v1", policyVersion: "phase6-v3",
         risk: "low", completionAuthority: "agent_claim_policy", incompleteCriteriaPolicy: "preserve_non_terminal",
         contractJson: { revision: "handoff-race-v1", objective: "Deliver the requested result",
           criteria: [{ id: "objective", requirement: "Complete the requested work" }] },
@@ -1866,7 +1866,7 @@ describe("WardmoteControlPlanePort conformance", () => {
       companyId: identity.companyId,
       issueId: childIssueId,
       revision: 1,
-      schemaVersion: "paperclip.completion-contract.v1",
+      schemaVersion: "wardmote.completion-contract.v1",
       policyVersion: "phase6-v3",
       risk: "low",
       completionAuthority: "agent_claim_policy",
@@ -2148,7 +2148,7 @@ describe("WardmoteControlPlanePort conformance", () => {
         companyId: identity.companyId,
         issueId,
         revision: 1,
-        schemaVersion: "paperclip.completion-contract.v1",
+        schemaVersion: "wardmote.completion-contract.v1",
         policyVersion: "phase6-v1",
         risk: "standard",
         completionAuthority: "server_arbiter",

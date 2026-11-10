@@ -70,7 +70,7 @@ type RunnerStreamMessage =
   | RunnerDiagnosticMessage;
 
 interface RunnerStreamEnvelope {
-  schema: "paperclip.runner.stream.v1";
+  schema: "wardmote.runner.stream.v1";
   message: RunnerStreamMessage;
 }
 
@@ -128,11 +128,11 @@ function runnerEnvironment(): NodeJS.ProcessEnv {
 function metadata(scenario: LocalRunnerScenario): LocalRunnerRunMetadata {
   const suffix = scenario.replaceAll("-", "_");
   return {
-    schema: "paperclip.runner.local-runner.metadata.v1",
+    schema: "wardmote.runner.local-runner.metadata.v1",
     scenario,
     fixtureName: `Local runner ${scenario}`,
     identity: {
-      schema: "paperclip.prp.identity.v1",
+      schema: "wardmote.prp.identity.v1",
       companyId: "company_local_runner",
       issueId: `issue_local_runner_${suffix}`,
       runId: `run_local_runner_${suffix}`,
@@ -142,7 +142,7 @@ function metadata(scenario: LocalRunnerScenario): LocalRunnerRunMetadata {
       driverSessionId: "driver_local_runner_fake",
     },
     capabilities: {
-      schema: "paperclip.prp.capabilities.v1",
+      schema: "wardmote.prp.capabilities.v1",
       sessionReusePolicy: "new_per_run",
       driver: { kind: "fake", version: "1.0.0" },
       steer: false,
@@ -316,7 +316,7 @@ class LocalRunnerController implements LocalRunnerRunHandle {
     const controllerSeq = this.#nextControllerSeq;
     this.#nextControllerSeq += 1;
     return {
-      schema: "paperclip.prp.command.v1",
+      schema: "wardmote.prp.command.v1",
       commandId: `command_${this.metadata.scenario.replaceAll("-", "_")}_${controllerSeq}`,
       controllerSeq,
       type,
@@ -376,7 +376,7 @@ class LocalRunnerController implements LocalRunnerRunHandle {
       this.#fail(new Error(`Runner emitted invalid JSONL: ${String(error)}`));
       return;
     }
-    if (envelope.schema !== "paperclip.runner.stream.v1") {
+    if (envelope.schema !== "wardmote.runner.stream.v1") {
       this.#fail(new Error("Runner emitted an unsupported stream envelope"));
       return;
     }
@@ -446,7 +446,7 @@ class LocalRunnerController implements LocalRunnerRunHandle {
     const harnessExitEvent = this.#events.find((event) => event.eventType === "harness.exited");
     const trace: LocalRunnerRunTrace = {
       ...this.metadata,
-      schema: "paperclip.runner.local-runner.trace.v1",
+      schema: "wardmote.runner.local-runner.trace.v1",
       commands: structuredClone(this.#commands),
       commandReceipts: structuredClone(this.#receipts),
       events: structuredClone(this.#events),
@@ -545,7 +545,7 @@ export function localRunnerTraceAsFixture(trace: LocalRunnerRunTrace): PrpFixtur
     throw new Error("A replay fixture requires a structured semantic result");
   }
   const fixture: PrpFixture = {
-    schema: "paperclip.prp.fixture.v1",
+    schema: "wardmote.prp.fixture.v1",
     fixtureVersion: 1,
     protocolVersion: 1,
     name: trace.fixtureName,

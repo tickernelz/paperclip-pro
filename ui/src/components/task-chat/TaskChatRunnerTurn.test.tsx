@@ -80,13 +80,13 @@ describe("TaskChatRunnerTurn", () => {
     choices: [],
     fields: [],
     questionSet: {
-      schema: "paperclip.question_set.v1",
+      schema: "wardmote.question_set.v1",
       questions: [
         { id: `${id}-field`, prompt, required: true, answerMode: "text" },
       ],
     },
     response: {
-      schema: "paperclip.question_response.v1",
+      schema: "wardmote.question_response.v1",
       answers: { [`${id}-field`]: { text: "Answered" } },
     },
   });
@@ -1263,7 +1263,7 @@ describe("TaskChatRunnerTurn", () => {
           choices: [],
           fields: [],
           questionSet: {
-            schema: "paperclip.question_set.v1",
+            schema: "wardmote.question_set.v1",
             questions: [
               {
                 id: "goal",
@@ -1274,7 +1274,7 @@ describe("TaskChatRunnerTurn", () => {
             ],
           },
           response: {
-            schema: "paperclip.question_response.v1",
+            schema: "wardmote.question_response.v1",
             answers: { goal: { text: "Serve a small JSON API." } },
           },
         },

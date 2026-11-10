@@ -47,7 +47,7 @@ export const callApiAction = {
   "live": {
     "order": 41,
     "descriptor": {
-      "schema": "paperclip.semantic-tool.v1",
+      "schema": "wardmote.semantic-tool.v1",
       "operationId": "call_api",
       "version": 1,
       "title": "Call the Wardmote API",

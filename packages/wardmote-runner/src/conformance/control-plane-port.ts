@@ -36,7 +36,7 @@ export const CONTROL_PLANE_CONFORMANCE_OPEN: OpenControlPlaneRunInput = {
 };
 
 export const CONTROL_PLANE_CONFORMANCE_RESULT: PrpStructuredRunResult = {
-  schema: "paperclip.run_result.v1",
+  schema: "wardmote.run_result.v1",
   reportedWorkDisposition: "done",
   summary: "Standalone conformance task completed.",
   completionClaim: {
@@ -60,7 +60,7 @@ export const CONTROL_PLANE_CONFORMANCE_TERMINAL: PrpTerminalState = {
 
 function event(sourceSeq: number, eventType: PrpEvent["eventType"], payload: Record<string, unknown>): PrpEvent {
   return {
-    schema: "paperclip.prp.event.v1",
+    schema: "wardmote.prp.event.v1",
     sourceEventId: `00000000-0000-4000-8000-000000000005:event:${sourceSeq}`,
     sourceSeq,
     sourceInstanceId: "00000000-0000-4000-8000-000000000005",

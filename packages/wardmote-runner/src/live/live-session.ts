@@ -60,7 +60,7 @@ import {
   type WardmoteWorkspaceFileReference,
 } from "./workspace-file-reference.js";
 
-const LIVE_SESSION_SCHEMA = "paperclip.capability.live-session.v1" as const;
+const LIVE_SESSION_SCHEMA = "wardmote.capability.live-session.v1" as const;
 const LIVE_COMPLETION_CONTRACT = Object.freeze({
   revision: "paperclip-capability-live-v1",
   criterionIds: ["objective"],
@@ -2240,7 +2240,7 @@ export class CapabilityLiveSession {
     });
     await this.#persist();
     return this.sendMessage(JSON.stringify({
-      schema: "paperclip.semantic-interaction-result.v1",
+      schema: "wardmote.semantic-interaction-result.v1",
       interactionId: input.interactionId,
       kind: interaction.kind,
       outcome: input.outcome,

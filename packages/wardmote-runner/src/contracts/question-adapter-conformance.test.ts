@@ -17,7 +17,7 @@ import {
 import type { HarnessRuntimeRequest } from "./harness-driver.js";
 
 interface QuestionAdapterFixture {
-  schema: "paperclip.question_adapter_fixture.v1";
+  schema: "wardmote.question_adapter_fixture.v1";
   adapter: "codex" | "acpx";
   nativeRequest: Record<string, unknown>;
   canonicalQuestionSet: unknown;

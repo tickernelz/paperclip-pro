@@ -25,7 +25,7 @@ import {
  * persisted reports carry no free-form bundle content. Per-dimension aggregates
  * show whether a regression came from outcome, restraint, trace, or efficiency.
  */
-export const EVAL_SLICE_REPORT_SCHEMA = "paperclip.runner.eval-slice-report.v1" as const;
+export const EVAL_SLICE_REPORT_SCHEMA = "wardmote.runner.eval-slice-report.v1" as const;
 
 export interface EvalScoredCase {
   scorecard: EvalScorecard;

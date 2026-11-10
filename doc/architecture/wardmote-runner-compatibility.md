@@ -182,7 +182,7 @@ Final replies continue to use the existing issue-comment behavior.
 
 ## Structured input compatibility
 
-New structured questions use `paperclip.question_set.v1` and the matching
+New structured questions use `wardmote.question_set.v1` and the matching
 response contract. Provider-specific question objects remain inside their
 drivers.
 

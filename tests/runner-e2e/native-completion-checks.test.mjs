@@ -65,7 +65,7 @@ test("native completion prerequisite excludes future credentials and auth overri
     OPENAI_API_KEY: "secret", ANTHROPIC_API_KEY: "secret", FUTURE_TOKEN: "secret", NODE_OPTIONS: "secret", GH_TOKEN: "secret" }),
   { PATH: "/bin", HOME: "/fixture", CI: "true" });
 });
-const runnerdProof = () => ({ schema: "paperclip.native-completion-runnerd-provenance.v1", mode: "fresh_local_build", passed: true,
+const runnerdProof = () => ({ schema: "wardmote.native-completion-runnerd-provenance.v1", mode: "fresh_local_build", passed: true,
   selectedPath: "packages/wardmote-runner/runner/target/debug/wardmote-runnerd", binarySha256: "9".repeat(64),
   sourceSha: "a".repeat(40), sourceFingerprint: "b".repeat(64), archiveSha256: null, workflowRunId: null,
   workflowRunAttempt: null, artifactName: null, errors: [] });

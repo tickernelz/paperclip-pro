@@ -1,5 +1,5 @@
 {
-  "schema": "paperclip.runner.sanitized-provider-fixture.v1",
+  "schema": "wardmote.runner.sanitized-provider-fixture.v1",
   "provider": "acpx",
   "events": [
     {

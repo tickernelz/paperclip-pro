@@ -45,40 +45,40 @@ describe("ACPX sidecar locations", () => {
           {
             path: "src/main.ts",
             line: 4,
-            pathBoundary: "paperclip.workspace_relative_display.v2",
+            pathBoundary: "wardmote.workspace_relative_display.v2",
           },
           {
             path: "src:main.ts",
             line: null,
-            pathBoundary: "paperclip.workspace_relative_display.v2",
-            pathAttestation: "paperclip.workspace_entry.v1",
+            pathBoundary: "wardmote.workspace_relative_display.v2",
+            pathAttestation: "wardmote.workspace_entry.v1",
           },
           {
             path: String.raw`folder\literal`,
             line: null,
-            pathBoundary: "paperclip.workspace_relative_display.v2",
+            pathBoundary: "wardmote.workspace_relative_display.v2",
           },
           {
             path: "a:/foo",
             line: null,
-            pathBoundary: "paperclip.workspace_relative_display.v2",
-            pathAttestation: "paperclip.workspace_entry.v1",
+            pathBoundary: "wardmote.workspace_relative_display.v2",
+            pathAttestation: "wardmote.workspace_entry.v1",
           },
           {
             path: "custom:payload",
             line: null,
-            pathBoundary: "paperclip.workspace_relative_display.v2",
-            pathAttestation: "paperclip.workspace_entry.v1",
+            pathBoundary: "wardmote.workspace_relative_display.v2",
+            pathAttestation: "wardmote.workspace_entry.v1",
           },
           {
             path: String.raw`foo\..\bar`,
             line: null,
-            pathBoundary: "paperclip.workspace_relative_display.v2",
+            pathBoundary: "wardmote.workspace_relative_display.v2",
           },
           {
             path: "reports/100%/summary.txt",
             line: null,
-            pathBoundary: "paperclip.workspace_relative_display.v2",
+            pathBoundary: "wardmote.workspace_relative_display.v2",
           },
         ]);
       } finally {
@@ -101,8 +101,8 @@ describe("ACPX sidecar locations", () => {
           {
             path: String.raw`\notes.md`,
             line: null,
-            pathBoundary: "paperclip.workspace_relative_display.v2",
-            pathAttestation: "paperclip.workspace_entry.v1",
+            pathBoundary: "wardmote.workspace_relative_display.v2",
+            pathAttestation: "wardmote.workspace_entry.v1",
           },
         ]);
       } finally {
@@ -150,14 +150,14 @@ describe("ACPX sidecar locations", () => {
           {
             path: "src:main.ts",
             line: null,
-            pathBoundary: "paperclip.workspace_relative_display.v2",
-            pathAttestation: "paperclip.workspace_entry.v1",
+            pathBoundary: "wardmote.workspace_relative_display.v2",
+            pathAttestation: "wardmote.workspace_entry.v1",
           },
           {
             path: "src:main.ts",
             line: null,
-            pathBoundary: "paperclip.workspace_relative_display.v2",
-            pathAttestation: "paperclip.workspace_entry.v1",
+            pathBoundary: "wardmote.workspace_relative_display.v2",
+            pathAttestation: "wardmote.workspace_entry.v1",
           },
         ]);
       } finally {
@@ -195,8 +195,8 @@ describe("ACPX sidecar locations", () => {
           {
             path: "src:new.ts",
             line: 8,
-            pathBoundary: "paperclip.workspace_relative_display.v2",
-            pathAttestation: "paperclip.workspace_create_target.v1",
+            pathBoundary: "wardmote.workspace_relative_display.v2",
+            pathAttestation: "wardmote.workspace_create_target.v1",
           },
         ]);
         expect(
@@ -221,8 +221,8 @@ describe("ACPX sidecar locations", () => {
             {
               path: "src:new.ts",
               line: null,
-              pathBoundary: "paperclip.workspace_relative_display.v2",
-              pathAttestation: "paperclip.workspace_create_target.v1",
+              pathBoundary: "wardmote.workspace_relative_display.v2",
+              pathAttestation: "wardmote.workspace_create_target.v1",
             },
           ]);
         }
@@ -236,8 +236,8 @@ describe("ACPX sidecar locations", () => {
           {
             path: "src:new.ts",
             line: null,
-            pathBoundary: "paperclip.workspace_relative_display.v2",
-            pathAttestation: "paperclip.workspace_create_target.v1",
+            pathBoundary: "wardmote.workspace_relative_display.v2",
+            pathAttestation: "wardmote.workspace_create_target.v1",
           },
         ]);
         // The runtime sidecar sends and classifies this same bounded title. A

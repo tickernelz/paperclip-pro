@@ -10,7 +10,7 @@ import type {
 export type CapabilityToolExposureMode = "eager" | "lazy";
 
 export interface CapabilityDiscoveryResult {
-  readonly schema: "paperclip.capability-discovery.v1";
+  readonly schema: "wardmote.capability-discovery.v1";
   readonly query: string;
   readonly namespace: string | null;
   readonly operations: readonly CapabilitySemanticToolDefinition[];
@@ -66,7 +66,7 @@ export const CAPABILITY_DISCOVERY_GATEWAY_DEFINITIONS = Object.freeze([{
   },
   outputSchema: {
     type: "object", properties: {
-      schema: { const: "paperclip.capability-discovery.v1" },
+      schema: { const: "wardmote.capability-discovery.v1" },
       query: { type: "string" }, namespace: { type: ["string", "null"] },
       operations: { type: "array", items: { type: "object", additionalProperties: true } },
       truncated: { type: "boolean" },
@@ -120,7 +120,7 @@ export function discoverCapabilityDefinitions(
     .filter((candidate) => candidate.score > 0)
     .sort((left, right) => right.score - left.score || left.descriptor.operationId.localeCompare(right.descriptor.operationId));
   return Object.freeze({
-    schema: "paperclip.capability-discovery.v1",
+    schema: "wardmote.capability-discovery.v1",
     query,
     namespace: options.namespace ?? null,
     operations: Object.freeze(permitted.slice(0, limit).map(({ descriptor }) => toDefinition(descriptor))),

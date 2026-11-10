@@ -18,7 +18,7 @@ export function observeCheckoutActivity(input: {
   const uniqueRows = new Set(rows.map(row => row.id)).size === rows.length;
   const complete = boundRuns && validRows && uniqueRows;
   return {
-    schema: "paperclip.checkout-activity.v1",
+    schema: "wardmote.checkout-activity.v1",
     status: complete ? "observed" : "uncomparable",
     companyId: input.companyId, issueId: input.issueId, agentId: input.agentId,
     scope: "successful checkout HTTP calls only; failed attempts require run-log inspection",

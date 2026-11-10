@@ -396,7 +396,7 @@ class DeterministicHarnessSession implements HarnessSession {
   ): PrpEvent {
     const sourceSeq = this.#nextSourceSeq++;
     return {
-      schema: "paperclip.prp.event.v1",
+      schema: "wardmote.prp.event.v1",
       sourceEventId: `event_${this.#input.runId}_${sourceSeq}`,
       sourceSeq,
       sourceInstanceId: `runner_${this.#input.runId}`,
@@ -420,7 +420,7 @@ class DeterministicHarnessSession implements HarnessSession {
 
 function completedResult(): PrpStructuredRunResult {
   return {
-    schema: "paperclip.run_result.v1",
+    schema: "wardmote.run_result.v1",
     reportedWorkDisposition: "done",
     summary: "Deterministic harness-driver conformance completed.",
     completionClaim: {
@@ -449,7 +449,7 @@ function completedTerminal(
 
 function interruptedResult(runId: string, summary: string): PrpStructuredRunResult {
   return {
-    schema: "paperclip.run_result.v1",
+    schema: "wardmote.run_result.v1",
     reportedWorkDisposition: "yielded",
     summary,
     completionClaim: {

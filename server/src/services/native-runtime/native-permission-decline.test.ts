@@ -7,7 +7,7 @@ import { hasCompletedNativePermissionDecline, readCompletedNativePermissionDecli
 const provider = { kind: "acpx", agent: "cursor" };
 const binding = { companyId: "company", runId: "run", agentId: "agent" };
 function row(seq: number, eventType: string, payload: unknown): any {
-  const event = { schema: "paperclip.prp.event.v1", schemaVersion: 1, sourceKind: "runner", runId: "run", turnId: "turn",
+  const event = { schema: "wardmote.prp.event.v1", schemaVersion: 1, sourceKind: "runner", runId: "run", turnId: "turn",
     normalizedSessionId: "session", sourceInstanceId: "runner", sourceEventId: `runner:${seq}`, sourceSeq: seq, eventType, payload };
   return { ...binding, seq, eventType, protocolSchemaVersion: 1, sourceInstanceId: "runner", sourceEventId: event.sourceEventId, sourceSeq: seq, payload: { prpEvent: event } };
 }

@@ -76,7 +76,7 @@ describe("ACP form question adapter", () => {
 
     const [name, region, features, confirmed, replicas] = questionSet.questions;
     const response = normalized!.accept({
-      schema: "paperclip.question_response.v1",
+      schema: "wardmote.question_response.v1",
       answers: {
         [name!.id]: { text: "paperclip" },
         [region!.id]: {
@@ -115,7 +115,7 @@ describe("ACP form question adapter", () => {
     })!;
     expect(() =>
       normalized.accept({
-        schema: "paperclip.question_response.v1",
+        schema: "wardmote.question_response.v1",
         answers: {
           [normalized.questionSet.questions[0]!.id]: { text: "1.5" },
         },
@@ -192,7 +192,7 @@ describe("ACP form question adapter", () => {
     })!;
     const question = normalized.questionSet.questions[0]!;
     const response = normalized.accept({
-      schema: "paperclip.question_response.v1",
+      schema: "wardmote.question_response.v1",
       answers: { [question.id]: { text: "safe" } },
     });
 
@@ -208,9 +208,9 @@ describe("ACP initial text", () => {
     const form = normalizeAcpFormElicitation({ mode: "form", requestedSchema: { type: "object", properties: { answer: { type: "string", default: initialText } }, required: ["answer"] } })!;
     const question = form.questionSet.questions[0]!;
     expect(question.initialText).toBe(initialText);
-    expect(() => form.accept({ schema: "paperclip.question_response.v1", answers: {} })).toThrow(/required/);
+    expect(() => form.accept({ schema: "wardmote.question_response.v1", answers: {} })).toThrow(/required/);
     const edited = `${initialText}Edited`;
-    expect(form.accept({ schema: "paperclip.question_response.v1", answers: { [question.id]: { text: edited } } })).toEqual({ action: "accept", content: { answer: edited } });
+    expect(form.accept({ schema: "wardmote.question_response.v1", answers: { [question.id]: { text: edited } } })).toEqual({ action: "accept", content: { answer: edited } });
   });
   it("bounds defaults, rejects wrong types, and keeps response constraints authoritative", () => {
     const request = (property: unknown) => ({ mode: "form", requestedSchema: { type: "object", properties: { answer: property }, required: ["answer"] } });
@@ -218,7 +218,7 @@ describe("ACP initial text", () => {
     expect(() => normalizeAcpFormElicitation(request({ type: "string", default: 3 }))).toThrow(/incompatible/);
     const number = normalizeAcpFormElicitation(request({ type: "integer", default: 0, minimum: 1 }))!;
     expect(number.questionSet.questions[0]!.initialText).toBe("0");
-    expect(() => number.accept({ schema: "paperclip.question_response.v1", answers: { [number.questionSet.questions[0]!.id]: { text: "0" } } })).toThrow(/at least 1/);
+    expect(() => number.accept({ schema: "wardmote.question_response.v1", answers: { [number.questionSet.questions[0]!.id]: { text: "0" } } })).toThrow(/at least 1/);
     expect(normalizeAcpFormElicitation(request({ type: "string", enum: ["a", "b"], default: "a" }))!.questionSet.questions[0]).not.toHaveProperty("initialText");
   });
 });

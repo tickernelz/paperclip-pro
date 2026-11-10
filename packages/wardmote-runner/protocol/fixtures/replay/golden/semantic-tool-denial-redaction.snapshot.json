@@ -1,8 +1,8 @@
 {
-  "schema": "paperclip.prp.session-snapshot.v1",
+  "schema": "wardmote.prp.session-snapshot.v1",
   "fixtureName": "Semantic tool denial and redaction",
   "identity": {
-    "schema": "paperclip.prp.identity.v1",
+    "schema": "wardmote.prp.identity.v1",
     "companyId": "company_semantic_denied",
     "issueId": "issue_semantic_denied",
     "runId": "run_semantic_denied",
@@ -12,7 +12,7 @@
     "driverSessionId": "driver_semantic_denied"
   },
   "capabilities": {
-    "schema": "paperclip.prp.capabilities.v1",
+    "schema": "wardmote.prp.capabilities.v1",
     "sessionReusePolicy": "new_per_run",
     "driver": {
       "kind": "provider-neutral",
@@ -25,7 +25,7 @@
     "structuredResult": true,
     "typedEvents": true,
     "semanticTools": {
-      "schema": "paperclip.prp.semantic_tools.v1",
+      "schema": "wardmote.prp.semantic_tools.v1",
       "schemaVersion": 1,
       "operations": [
         {
@@ -49,7 +49,7 @@
   "items": [],
   "requests": [],
   "proposedResult": {
-    "schema": "paperclip.run_result.v1",
+    "schema": "wardmote.run_result.v1",
     "reportedWorkDisposition": "needs_review",
     "summary": "The governed action was denied without fallback.",
     "completionClaim": {

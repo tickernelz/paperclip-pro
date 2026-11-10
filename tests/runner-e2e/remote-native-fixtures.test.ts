@@ -817,7 +817,7 @@ describe("actual generated observer state machine", () => {
 
 function piFaultReceipt() {
   const parent = { pid: 22, ppid: 21, startTicks: "101", bootId }, target = { pid: 23, ppid: 22, startTicks: "102", bootId };
-  return { schema: "paperclip.e2e.pi-provider-death.v1", binding, runtimeEnvironmentLeaseId: "workspace-id", target, ancestry: [target, parent, root],
+  return { schema: "wardmote.e2e.pi-provider-death.v1", binding, runtimeEnvironmentLeaseId: "workspace-id", target, ancestry: [target, parent, root],
     nodeSha256: hash("node"), entrypointSha256: hash("entry"), closureSha256: PI_DISTRIBUTION_CLOSURE_SHA256["linux-x64"],
     entrypointAttribution: "pinned_wrapper_parent", originalChildArgvAvailable: false, observedChildTitle: "pi", signalled: true, signal: "SIGKILL", targetKind: "pi_native_child", workerSignalled: false };
 }

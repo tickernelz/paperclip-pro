@@ -774,7 +774,7 @@ type WardmoteWakeQuestionResponse = {
 };
 
 type WardmoteWakeExternalChatQuestionResponse = {
-  schema: "paperclip.external_chat_question_response.v1";
+  schema: "wardmote.external_chat_question_response.v1";
   interactionId: string;
   responseDeliveryId: string;
   sourceRunId: string;
@@ -1715,7 +1715,7 @@ function normalizeWardmoteExternalChatQuestionResponse(
   ] as const;
   const fields = new Set<string>(["schema", ...idFields, "bindingSha256"]);
   if (
-    marker.schema !== "paperclip.external_chat_question_response.v1" ||
+    marker.schema !== "wardmote.external_chat_question_response.v1" ||
     Object.keys(marker).length !== fields.size ||
     Object.keys(marker).some((field) => !fields.has(field)) ||
     idFields.some(
@@ -1730,7 +1730,7 @@ function normalizeWardmoteExternalChatQuestionResponse(
   )
     return null;
   return {
-    schema: "paperclip.external_chat_question_response.v1",
+    schema: "wardmote.external_chat_question_response.v1",
     interactionId: marker.interactionId as string,
     responseDeliveryId: marker.responseDeliveryId as string,
     sourceRunId: marker.sourceRunId as string,

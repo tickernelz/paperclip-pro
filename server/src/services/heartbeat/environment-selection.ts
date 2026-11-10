@@ -252,7 +252,7 @@ export async function selectHeartbeatEnvironment(db: Db, input: HeartbeatEnviron
   if (
     nativeChatWorkspaceScope &&
     persistedNativeExecutionInput &&
-    persistedNativeExecutionInput.schema !== "paperclip.native-execution-input.v6" &&
+    persistedNativeExecutionInput.schema !== "wardmote.native-execution-input.v6" &&
     !nativeChatWorkspaceMatches({
       scope: nativeChatWorkspaceScope,
       expectedCwd: nativeChatExpectedCwd,

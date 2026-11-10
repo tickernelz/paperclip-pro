@@ -149,7 +149,7 @@ fn assert_valid_terminal(payload: &Value) {
     .unwrap();
     let registry = jsonschema::Registry::new()
         .add(
-            "https://paperclip.dev/schemas/prp/v1/stop-reason.schema.json",
+            "https://wardmote.dev/schemas/prp/v1/stop-reason.schema.json",
             stop_reason,
         )
         .unwrap()
@@ -164,7 +164,7 @@ fn assert_valid_terminal(payload: &Value) {
 
 fn command(sequence: u64, command_type: &str, payload: Value) -> Command {
     Command {
-        schema: "paperclip.prp.command.v1".to_owned(),
+        schema: "wardmote.prp.command.v1".to_owned(),
         command_id: format!("command-{sequence}"),
         controller_seq: sequence,
         command_type: command_type.to_owned(),
@@ -188,7 +188,7 @@ fn prepare_payload_with_mode(directory: &Path, agent: &str, mode: &str) -> Value
     };
     json!({
         "authorizedTools": {
-            "schema": "paperclip.runner.authorized-tools.v1",
+            "schema": "wardmote.runner.authorized-tools.v1",
             "schemaVersion": 1,
             "catalogDigest": authorized_tool_catalog_digest(&operations).unwrap(),
             "operations": operations,
@@ -318,7 +318,7 @@ fn pending_acpx_runtime_request(
 fn acpx_runtime_resolution(mode: &str, request_id: &str) -> Value {
     json!({"requestId":request_id, "turnId":"turn-1", "resolution":
         if mode.starts_with("permissions-") { json!({"action":"accept"}) }
-        else { json!({"action":"submit", "response":{"schema":"paperclip.question_response.v1",
+        else { json!({"action":"submit", "response":{"schema":"wardmote.question_response.v1",
             "answers":{"target":{"selectedOptionIds":["first"]}}}}) }
     })
 }
@@ -786,7 +786,7 @@ fn opencode_prepare_payload(directory: &Path) -> Value {
     let operations = Vec::new();
     json!({
         "authorizedTools": {
-            "schema": "paperclip.runner.authorized-tools.v1",
+            "schema": "wardmote.runner.authorized-tools.v1",
             "schemaVersion": 1,
             "catalogDigest": authorized_tool_catalog_digest(&operations).unwrap(),
             "operations": operations,
@@ -855,7 +855,7 @@ fn managed_prepare_payload(kind: &str) -> Value {
     };
     json!({
         "authorizedTools": {
-            "schema": "paperclip.runner.authorized-tools.v1",
+            "schema": "wardmote.runner.authorized-tools.v1",
             "schemaVersion": 1,
             "catalogDigest": authorized_tool_catalog_digest(&operations).unwrap(),
             "operations": operations,
@@ -956,7 +956,7 @@ fn routes_reserved_completion_feedback_with_the_full_controller_catalog() {
         .to_vec();
     let mut prepare = prepare_payload_with_mode(&directory, "codex", mode);
     prepare["authorizedTools"] = json!({
-        "schema":"paperclip.runner.authorized-tools.v1", "schemaVersion":1,
+        "schema":"wardmote.runner.authorized-tools.v1", "schemaVersion":1,
         "catalogDigest":authorized_tool_catalog_digest(&operations).unwrap(),
         "operations":operations,
     });
@@ -1088,7 +1088,7 @@ fn keeps_native_acpx_semantic_events_on_the_durable_controller_turn() {
     }];
     let mut prepare = prepare_payload_with_mode(&directory, "codex", "turns-tool");
     prepare["authorizedTools"] = json!({
-        "schema": "paperclip.runner.authorized-tools.v1",
+        "schema": "wardmote.runner.authorized-tools.v1",
         "schemaVersion": 1,
         "catalogDigest": authorized_tool_catalog_digest(&operations).unwrap(),
         "operations": operations,

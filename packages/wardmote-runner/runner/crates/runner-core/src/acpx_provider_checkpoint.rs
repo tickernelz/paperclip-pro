@@ -19,7 +19,7 @@ use crate::durable::{
 use crate::local_runner::LocalRunnerError;
 use crate::stable_identity::{is_stable_id, SHORT_STABLE_ID_CHARS};
 
-const CHECKPOINT_SCHEMA: &str = "paperclip.runner.acpx-suspension-checkpoint.v2";
+const CHECKPOINT_SCHEMA: &str = "wardmote.runner.acpx-suspension-checkpoint.v2";
 const CHECKPOINT_DIRECTORY: &str = "acpx-provider";
 const CHECKPOINT_FILE: &str = "suspension-checkpoint.json";
 const MAX_CHECKPOINT_BYTES: u64 = 1024 * 1024;

@@ -1734,7 +1734,7 @@ class OpenCodeHarnessSession implements HarnessSession {
       this.#emit(
         "provider.notice.recorded",
         {
-          schema: "paperclip.provider.notice.v1",
+          schema: "wardmote.provider.notice.v1",
           noticeId: `${turnId}:session-error`,
           severity: "error",
           category: "session_error",
@@ -1822,7 +1822,7 @@ class OpenCodeHarnessSession implements HarnessSession {
       if (files.length > 0) {
         const previous = this.#workspaceChangesByTurn.get(turnId);
         const payload = {
-          schema: "paperclip.workspace.diff.v1",
+          schema: "wardmote.workspace.diff.v1",
           changeSetId: `${turnId}:workspace`,
           revision: Number(record(previous).revision ?? 0) + 1,
           source: "harness_reported",
@@ -2050,7 +2050,7 @@ class OpenCodeHarnessSession implements HarnessSession {
     }
     const sourceSeq = ++this.#sourceSequence;
     const event: PrpEvent = {
-      schema: "paperclip.prp.event.v1",
+      schema: "wardmote.prp.event.v1",
       sourceEventId: `${this.#runnerInstanceId}:${this.#runId}:${sourceSeq}`,
       sourceSeq,
       sourceInstanceId: this.#runnerInstanceId,

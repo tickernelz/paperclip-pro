@@ -525,7 +525,7 @@ describe("persistent agent directories", () => {
     copy.mockRestore();
     const active = await run();
     for (const row of [interrupted, active]) {
-      await db.update(agentInstructionWorkingCopies).set({ state: "preparing", baseHash: "preparing", receipt: { schema: "paperclip.agent-files.v1" } }).where(eq(agentInstructionWorkingCopies.runId, row.runId));
+      await db.update(agentInstructionWorkingCopies).set({ state: "preparing", baseHash: "preparing", receipt: { schema: "wardmote.agent-files.v1" } }).where(eq(agentInstructionWorkingCopies.runId, row.runId));
     }
     await db.update(heartbeatRuns).set({ status }).where(eq(heartbeatRuns.id, interrupted.runId));
     copies = agentInstructionWorkingCopyService(db);
@@ -973,7 +973,7 @@ describe("persistent agent directories", () => {
     copies = agentInstructionWorkingCopyService(db);
     await copies.recoverCaptured();
     const row = await copies.get(companyId, copy.runId);
-    expect(row?.receipt?.schema).toBe("paperclip.agent-files.v1");
+    expect(row?.receipt?.schema).toBe("wardmote.agent-files.v1");
     expect(row?.receipt?.baseline).toBeUndefined();
     expect(await fs.readFile(path.join(root, "note.txt"), "utf8")).toBe("one write");
   });

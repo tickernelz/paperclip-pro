@@ -1,5 +1,5 @@
 {
-  "schema": "paperclip.copilot-product-v3-question.v1",
+  "schema": "wardmote.copilot-product-v3-question.v1",
   "centralReservationId": "copilot-v3-local-question-20260929-01",
   "attempt": "copilot-final-question-20260929t151802z",
   "model": "gpt-5.6-luna",

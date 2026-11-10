@@ -306,7 +306,7 @@ function acceptedSemanticResult(
     if (!candidate || typeof candidate !== "object" || Array.isArray(candidate))
       continue;
     const result = candidate as Record<string, unknown>;
-    if (result.schema !== "paperclip.run_result.v1") continue;
+    if (result.schema !== "wardmote.run_result.v1") continue;
     return result;
   }
   return null;
@@ -335,7 +335,7 @@ function presentationDecisionCommentId(
   if (!decision || typeof decision !== "object" || Array.isArray(decision))
     return undefined;
   const record = decision as Record<string, unknown>;
-  if (record.schema !== "paperclip.run_presentation_decision.v1")
+  if (record.schema !== "wardmote.run_presentation_decision.v1")
     return undefined;
   return typeof record.commentId === "string" && record.commentId.trim()
     ? record.commentId
@@ -420,7 +420,7 @@ function resolvedWithoutUserFacingResponse(value: unknown): boolean {
     typeof decision === "object" &&
     !Array.isArray(decision) &&
     (decision as Record<string, unknown>).schema ===
-      "paperclip.run_presentation_decision.v1" &&
+      "wardmote.run_presentation_decision.v1" &&
     (decision as Record<string, unknown>).chosenSource === "none",
   );
 }

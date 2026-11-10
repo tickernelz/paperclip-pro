@@ -677,7 +677,7 @@ describe("issue validators", () => {
 
 describe("persisted canonical question initial text", () => {
   const question = { id: "draft", prompt: "Edit", required: true, answerMode: "text" };
-  const input = (patch: Record<string, unknown>) => ({ schema: "paperclip.question_set.v1", questions: [{ ...question, ...patch }] });
+  const input = (patch: Record<string, unknown>) => ({ schema: "wardmote.question_set.v1", questions: [{ ...question, ...patch }] });
   it("retains exact editable content through the server payload validator", () => {
     for (const initialText of ["", "  Draft\n漢字\n", "x".repeat(100_000)]) {
       expect(wardmoteQuestionSetPayloadSchema.parse(input({ initialText }))).toEqual(input({ initialText }));
