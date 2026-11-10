@@ -105,7 +105,7 @@ function Setup({
   const cache = useQueryClient();
   const { openNewIssue } = useDialogActions();
   const appearanceDraft = useAgentAppearanceDraft(`${companyId}:new-agent`);
-  const isRunner = adapterType === "paperclip_runner";
+  const isRunner = adapterType === "wardmote_runner";
   const isDot = isRunner && runnerProvider === "openai_dot";
   const brandType = isDot ? "openai_dot" : isRunner
     ? runnerProvider === "grok"

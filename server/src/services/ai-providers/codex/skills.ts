@@ -18,7 +18,7 @@ async function buildCodexSkillSnapshot(
   adapterType: string,
 ): Promise<AdapterSkillSnapshot> {
   const availableEntries = await readPaperclipRuntimeSkillEntries(config, __moduleDir);
-  const desiredSkills = adapterType === "paperclip_runner"
+  const desiredSkills = adapterType === "wardmote_runner"
     ? resolvePaperclipDesiredSkillNames(config, availableEntries)
     : resolveLegacyPaperclipDesiredSkillNames(config, availableEntries);
   return buildRuntimeMountedSkillSnapshot({

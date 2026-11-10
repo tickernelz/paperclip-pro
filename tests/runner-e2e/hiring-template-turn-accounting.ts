@@ -237,7 +237,7 @@ function evaluate(evidence: unknown, apiState: unknown): HiringTemplateTurnAccou
       && task.projectId === e.projectId && !task.parentId && task.status === "done" && task.responsibleUserId === user
       && Number.isFinite(date(task.completedAt)) && date(task.completedAt) >= date(run.startedAt)
       && run.invocationSource === "assignment" && run.triggerDetail === "system"
-      && c.source === "paperclip_runner.create_task" && c.wakeSource === "assignment" && c.wakeTriggerDetail === "system"
+      && c.source === "wardmote_runner.create_task" && c.wakeSource === "assignment" && c.wakeTriggerDetail === "system"
       && noList(c.chatCompletionDeliveryIds) && noList(c.chatCompletionUpdates)
       && dispatchIdentity(run, "issue_assigned", user);
   }));

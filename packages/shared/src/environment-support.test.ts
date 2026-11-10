@@ -8,8 +8,8 @@ import {
 
 describe("isSandboxProviderSupportedForAdapter", () => {
   it("treats Paperclip Runner as a remote-managed adapter", () => {
-    expect(adapterSupportsRemoteManagedEnvironments("paperclip_runner")).toBe(true);
-    expect(supportedEnvironmentDriversForAdapter("paperclip_runner")).toEqual([
+    expect(adapterSupportsRemoteManagedEnvironments("wardmote_runner")).toBe(true);
+    expect(supportedEnvironmentDriversForAdapter("wardmote_runner")).toEqual([
       "local",
       "ssh",
       "sandbox",

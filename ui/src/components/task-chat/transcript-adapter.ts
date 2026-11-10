@@ -1083,8 +1083,8 @@ export function transcriptToTaskChatItems(
       }
       case "result": {
         if (
-          entry.subtype !== "paperclip_runner_usage" &&
-          entry.subtype !== "paperclip_runner_session_usage"
+          entry.subtype !== "wardmote_runner_usage" &&
+          entry.subtype !== "wardmote_runner_session_usage"
         )
           break;
         const inputTokens = entry.inputTokens || 0;
@@ -1092,7 +1092,7 @@ export function transcriptToTaskChatItems(
         items.push({
           id: `${runId}:usage:${i}`,
           kind: "usage",
-          ...(entry.subtype === "paperclip_runner_session_usage"
+          ...(entry.subtype === "wardmote_runner_session_usage"
             ? {
                 label: "Provider session total",
                 detail:
@@ -1937,7 +1937,7 @@ export function buildTurnSummary(
       else if (entry.changeType === "remove") removed += 1;
     } else if (
       entry.kind === "result" &&
-      entry.subtype !== "paperclip_runner_session_usage"
+      entry.subtype !== "wardmote_runner_session_usage"
     ) {
       // Session-cumulative measurements remain visible in the expanded
       // transcript, but they can include earlier runs. Only run-scoped usage

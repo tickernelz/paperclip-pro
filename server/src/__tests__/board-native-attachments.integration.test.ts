@@ -98,7 +98,7 @@ describe("Board upload receipt to native wake staging", () => {
         id,
         companyId,
         name: id,
-        adapterType: "paperclip_runner",
+        adapterType: "wardmote_runner",
         adapterConfig: { provider: "codex" },
         runtimeConfig: {},
         status: "active",

@@ -103,7 +103,7 @@ describe("native same-conversation historical attachment reading", () => {
       id: agentId,
       companyId,
       name: "Native chat agent",
-      adapterType: "paperclip_runner",
+      adapterType: "wardmote_runner",
       adapterConfig: { provider: "codex" },
       runtimeConfig: {},
       status: "active",

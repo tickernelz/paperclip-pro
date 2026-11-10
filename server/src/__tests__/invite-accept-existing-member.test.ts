@@ -351,7 +351,7 @@ describe("POST /invites/:token/accept", () => {
       .send({
         requestType: "agent",
         agentName: "Native Agent",
-        adapterType: "paperclip_runner",
+        adapterType: "wardmote_runner",
       });
 
     expect(res.status).toBe(400);

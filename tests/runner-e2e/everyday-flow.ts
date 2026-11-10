@@ -1286,7 +1286,7 @@ export async function runEverydayFlow(input: Input) {
       check(
         "hire-native-connection",
         hires.length === 1 &&
-          hires[0]!.adapterType === "paperclip_runner" &&
+          hires[0]!.adapterType === "wardmote_runner" &&
           hires[0]!.adapterConfig?.model === lead?.adapterConfig?.model &&
           isDeepStrictEqual(
             hires[0]!.runtimeConfig?.aiConnection,

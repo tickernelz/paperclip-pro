@@ -30,8 +30,8 @@ describe("durable native provider capacity retry", () => {
     db = createDb(temporary.connectionString);
     await db.insert(companies).values({ id: companyId, name: "Capacity regression", issuePrefix: "CAP" });
     await db.insert(agents).values([
-      { id: agentId, companyId, name: "Capacity worker", status: "active", adapterType: "paperclip_runner", adapterConfig: { provider: "codex", model: "test-model" } },
-      { id: otherAgentId, companyId, name: "New owner", status: "active", adapterType: "paperclip_runner" },
+      { id: agentId, companyId, name: "Capacity worker", status: "active", adapterType: "wardmote_runner", adapterConfig: { provider: "codex", model: "test-model" } },
+      { id: otherAgentId, companyId, name: "New owner", status: "active", adapterType: "wardmote_runner" },
     ]);
   });
   afterAll(async () => { await temporary?.cleanup(); });

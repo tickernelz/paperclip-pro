@@ -53,7 +53,7 @@ describe("native provider capacity failure persistence", () => {
       companyId,
       name: "Native capacity agent",
       status: "active",
-      adapterType: "paperclip_runner",
+      adapterType: "wardmote_runner",
       adapterConfig: { provider: "codex", model: "gpt-5.6-luna" },
     });
   });

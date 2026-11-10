@@ -320,7 +320,7 @@ try {
     },
   });
 } catch (error) {
-  mismatchFailedClosed = error?.code === "paperclip_runner_eval_incompatible"
+  mismatchFailedClosed = error?.code === "wardmote_runner_eval_incompatible"
     && error.issues?.some((issue) => issue.code === "binary_contract_version_mismatch");
 }
 if (!mismatchFailedClosed) {

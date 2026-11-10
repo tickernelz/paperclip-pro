@@ -41,7 +41,7 @@ async function exercise(taskId: string, remote: boolean, failure?: "mutation" | 
     const target = remote ? "pi-control-fixture.txt" : harness.target;
     f.scope.target = target; f.tool.target = target; f.issue.title = "Provider-generated task name"; f.issue.companyId = "company"; f.issue.assigneeAgentId = "agent";
   };
-  const queue = () => ({ queueId: "queue", targetRunId: "run", revision: "revision", protocol: "paperclip_runner_v1", steeringDisposition: "available", entries: harness.message ? [{ comment: { id: "comment", body: harness.message + (failure === "foreign-queued-body" ? " altered" : "") } }] : [] });
+  const queue = () => ({ queueId: "queue", targetRunId: "run", revision: "revision", protocol: "wardmote_runner_v1", steeringDisposition: "available", entries: harness.message ? [{ comment: { id: "comment", body: harness.message + (failure === "foreign-queued-body" ? " altered" : "") } }] : [] });
   const api = {
     post: async (path: string, body: any) => {
       if (path.endsWith("/projects")) return { name: "Pi controls fixture" };

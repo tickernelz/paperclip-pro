@@ -176,7 +176,7 @@ export async function createAssignedMcpTools(input: {
       }
       const descriptor = tools.get(name);
       if (!descriptor) throw new Error("assigned_mcp_tool_unknown");
-      if (!permits(descriptor) || !permits(descriptor, currentWorkMode)) throw new Error("paperclip_runner_tool_mode_denied");
+      if (!permits(descriptor) || !permits(descriptor, currentWorkMode)) throw new Error("wardmote_runner_tool_mode_denied");
       // Reauthorize through the existing gateway on every call. Discovery is
       // not a grant: revocation, policy, approval, and audit remain server-owned.
       const result = await input.gateway.executeTool({

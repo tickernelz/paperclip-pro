@@ -140,7 +140,7 @@ describe("AgentMail durable email pipeline", () => {
         expect(renderPaperclipWakePrompt({ connectorSkillInstructions: delivery.instructions }, { resumedSession })).toContain(f.endpointId);
       }
     }
-    const nativeDelivery = await prepareConnectorSkillDelivery(configured, "paperclip_runner");
+    const nativeDelivery = await prepareConnectorSkillDelivery(configured, "wardmote_runner");
     expect(nativeDelivery.instructions).toBe("");
     expect(nativeDelivery.config.paperclipRuntimeSkills).toHaveLength(1);
     const authority = new PaperclipRunnerToolAuthority(db, { ...binding, issueId: randomUUID(), runId: randomUUID(), connectorAssignments: assignments });

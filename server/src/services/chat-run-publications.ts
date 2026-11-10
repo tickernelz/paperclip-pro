@@ -617,7 +617,7 @@ async function enqueueSafeNativeChatProgress(
               eq(issueComments.authorType, "agent"),
               eq(issueComments.createdByRunId, row.runId),
               sql`(
-                ${issueComments.metadata} ->> 'authorizationReason' = 'paperclip_runner_protocol'
+                ${issueComments.metadata} ->> 'authorizationReason' = 'wardmote_runner_protocol'
                 or left(coalesce(${issueComments.metadata} ->> 'authorizationReason', ''), 6) = 'allow_'
               )`,
             ),
@@ -670,7 +670,7 @@ export async function enqueueChatRunMilestones(
   const limit = Math.max(1, Math.min(input.limit ?? 200, 1_000));
   const issueIdFromContext = sql<string>`${heartbeatRuns.contextSnapshot} ->> 'issueId'`;
   const explicitlyAuthoredCommentReason = sql<boolean>`(
-    ${issueComments.metadata} ->> 'authorizationReason' = 'paperclip_runner_protocol'
+    ${issueComments.metadata} ->> 'authorizationReason' = 'wardmote_runner_protocol'
     or left(coalesce(${issueComments.metadata} ->> 'authorizationReason', ''), 6) = 'allow_'
   )`;
   const milestoneFromStatus = sql<string>`case

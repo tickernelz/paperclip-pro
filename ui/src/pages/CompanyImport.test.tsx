@@ -1076,10 +1076,10 @@ describe("CompanyImport", () => {
     mockInstanceSettingsApi.getExperimental.mockResolvedValue({ enableNativeRunner: true, enableOpenAiDot: false });
     mockAdaptersApi.list.mockResolvedValue([
       { type: "omp_local", disabled: false },
-      { type: "paperclip_runner", disabled: false },
+      { type: "wardmote_runner", disabled: false },
     ]);
     const preview = buildMixedAdapterPreviewResult();
-    preview.manifest.agents[1]!.adapterType = "paperclip_runner";
+    preview.manifest.agents[1]!.adapterType = "wardmote_runner";
     preview.manifest.agents[1]!.adapterConfig = { provider: "codex" };
     mockCompaniesApi.importPreview.mockResolvedValue(preview);
   }
@@ -1094,7 +1094,7 @@ describe("CompanyImport", () => {
   it("keeps manifest adapters and sends no overrides when the user touches nothing", async () => {
     await previewRunnerResearcherPackage();
 
-    expect(findAdapterSelects().map((select) => select.value)).toEqual(["omp_local", "paperclip_runner"]);
+    expect(findAdapterSelects().map((select) => select.value)).toEqual(["omp_local", "wardmote_runner"]);
 
     await clickButton((text) => text.startsWith("Import 3 file"));
     await settle();
@@ -1109,7 +1109,7 @@ describe("CompanyImport", () => {
     expect(coderSelect?.value).toBe("omp_local");
     await act(async () => {
       const setter = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, "value")!.set!;
-      setter.call(coderSelect!, "paperclip_runner");
+      setter.call(coderSelect!, "wardmote_runner");
       coderSelect!.dispatchEvent(new Event("change", { bubbles: true }));
     });
     await flushReact();
@@ -1119,19 +1119,19 @@ describe("CompanyImport", () => {
 
     const overrides = lastImportMeta().adapterOverrides;
     expect(Object.keys(overrides ?? {})).toEqual(["coder"]);
-    expect(overrides?.coder).toMatchObject({ adapterType: "paperclip_runner" });
+    expect(overrides?.coder).toMatchObject({ adapterType: "wardmote_runner" });
   });
 
   it("hides Wardmote Runner import configuration while its experimental flag is off", async () => {
     mockAdaptersApi.list.mockResolvedValue([
       { type: "omp_local", disabled: false },
-      { type: "paperclip_runner", disabled: true },
+      { type: "wardmote_runner", disabled: true },
     ]);
     await previewMixedAdapterPackage();
 
     for (const select of findAdapterSelects()) {
       expect(Array.from(select.options).map((option) => option.value))
-        .not.toContain("paperclip_runner");
+        .not.toContain("wardmote_runner");
     }
   });
 
@@ -1139,13 +1139,13 @@ describe("CompanyImport", () => {
     mockInstanceSettingsApi.getExperimental.mockResolvedValue({ enableNativeRunner: true, enableOpenAiDot: false });
     mockAdaptersApi.list.mockResolvedValue([
       { type: "omp_local", disabled: false },
-      { type: "paperclip_runner", disabled: false },
+      { type: "wardmote_runner", disabled: false },
     ]);
     await previewMixedAdapterPackage();
 
     for (const select of findAdapterSelects()) {
       expect(Array.from(select.options).map((option) => option.value))
-        .toContain("paperclip_runner");
+        .toContain("wardmote_runner");
     }
   });
 
@@ -1153,12 +1153,12 @@ describe("CompanyImport", () => {
     mockInstanceSettingsApi.getExperimental.mockResolvedValue({ enableNativeRunner: false, enableOpenAiDot: true });
     mockAdaptersApi.list.mockResolvedValue([
       { type: "omp_local", disabled: false },
-      { type: "paperclip_runner", disabled: false },
+      { type: "wardmote_runner", disabled: false },
     ]);
     const preview = buildMixedAdapterPreviewResult();
-    preview.manifest.agents[0]!.adapterType = "paperclip_runner";
+    preview.manifest.agents[0]!.adapterType = "wardmote_runner";
     preview.manifest.agents[0]!.adapterConfig = { provider: "openai_dot", allowUnmeteredProvider: true };
-    preview.manifest.agents[1]!.adapterType = "paperclip_runner";
+    preview.manifest.agents[1]!.adapterType = "wardmote_runner";
     preview.manifest.agents[1]!.adapterConfig = { provider: "codex" };
     mockCompaniesApi.importPreview.mockResolvedValue(preview);
     await renderPage();
@@ -1169,7 +1169,7 @@ describe("CompanyImport", () => {
     for (const select of findAdapterSelects()) {
       const choices = Array.from(select.options).map((option) => option.value);
       expect(choices).toContain("openai_dot");
-      expect(choices).not.toContain("paperclip_runner");
+      expect(choices).not.toContain("wardmote_runner");
     }
     await clickButton((text) => text.startsWith("Import 3 file"));
     await settle();
@@ -1180,7 +1180,7 @@ describe("CompanyImport", () => {
     mockInstanceSettingsApi.getExperimental.mockResolvedValue({ enableNativeRunner: false, enableOpenAiDot: true });
     mockAdaptersApi.list.mockResolvedValue([
       { type: "omp_local", disabled: false },
-      { type: "paperclip_runner", disabled: false },
+      { type: "wardmote_runner", disabled: false },
     ]);
     await previewMixedAdapterPackage();
     const select = findAdapterSelects()[0]!;
@@ -1206,7 +1206,7 @@ describe("CompanyImport", () => {
     await clickButton((text) => text.startsWith("Import 3 file"));
     await settle();
     expect(lastImportMeta().adapterOverrides?.coder).toEqual({
-      adapterType: "paperclip_runner",
+      adapterType: "wardmote_runner",
       adapterConfig: {
         provider: "openai_dot", lifecycleMode: "per_turn", allowUnmeteredProvider: true,
         dotAttachmentAccess: false, dotWorkspaceAccess: false,
@@ -1216,11 +1216,11 @@ describe("CompanyImport", () => {
 
   it("does not expose Dot when only the general Runner option is enabled", async () => {
     mockInstanceSettingsApi.getExperimental.mockResolvedValue({ enableNativeRunner: true, enableOpenAiDot: false });
-    mockAdaptersApi.list.mockResolvedValue([{ type: "paperclip_runner", disabled: false }]);
+    mockAdaptersApi.list.mockResolvedValue([{ type: "wardmote_runner", disabled: false }]);
     await previewMixedAdapterPackage();
     for (const select of findAdapterSelects()) {
       const choices = Array.from(select.options).map((option) => option.value);
-      expect(choices).toContain("paperclip_runner");
+      expect(choices).toContain("wardmote_runner");
       expect(choices).not.toContain("openai_dot");
     }
   });

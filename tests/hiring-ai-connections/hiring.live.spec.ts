@@ -70,7 +70,7 @@ for (const source of ["anthropic", "openai"] as const) {
       environmentId = env.id;
     }
     const binding = { provider: source, method: "api_key", mode: "responsible_user" };
-    const adapterType = (provider: Provider) => native ? "paperclip_runner" : providers[provider].adapterType;
+    const adapterType = (provider: Provider) => native ? "wardmote_runner" : providers[provider].adapterType;
     const config = (provider: Provider) => native
       ? { model: providers[provider].model, lifecycleMode: "per_turn", ...(provider === "anthropic" ? { provider: "acpx", acpxAgent: "claude", acpxPermissionMode: "approve-all" } : { provider: "codex", codexPermissionMode: "never" }) }
       : { model: providers[provider].model, engine: "cli", ...(provider === "anthropic" ? { dangerouslySkipPermissions: true } : { dangerouslyBypassApprovalsAndSandbox: true }) };

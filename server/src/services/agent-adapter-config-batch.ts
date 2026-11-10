@@ -35,9 +35,9 @@ export const AGENT_ADAPTER_CONFIG_BATCH_KEYS: readonly string[] = [
 
 const LIST_KEYS: readonly string[] = [AGENT_FALLBACK_MODELS_KEY];
 
-/** `provider` on a paperclip_runner agent needs the single-agent transition checks. */
+/** `provider` on a wardmote_runner agent needs the single-agent transition checks. */
 const PROVIDER_LOCKED_ADAPTER_TYPES: Record<string, true> = {
-  paperclip_runner: true,
+  wardmote_runner: true,
 };
 
 export type AgentAdapterConfigBatchValue = string | string[] | Record<string, string> | null;

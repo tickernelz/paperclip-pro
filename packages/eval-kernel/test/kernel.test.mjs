@@ -31,12 +31,12 @@ test("fails before execution when compatibility preflight fails", async () => {
       candidates: [{
         id: "candidate-a",
         config: null,
-        preflight: () => { throw new Error("paperclip_runner_incompatible"); },
+        preflight: () => { throw new Error("wardmote_runner_incompatible"); },
       }],
       execute: async () => { executed = true; },
       score: () => null,
     }),
-    /paperclip_runner_incompatible/,
+    /wardmote_runner_incompatible/,
   );
   assert.equal(executed, false);
 });

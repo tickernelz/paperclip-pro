@@ -80,8 +80,8 @@ export function createHiringTemplateTurnFixture(notificationCount = 2) {
     return { id, companyId: company, issueId: chat, authorUserId: user, authorAgentId: null,
       body: `Fixture request ${i + 1}`, createdAt: timestamp([0, 20, 50][i]!) };
   });
-  const workers = [run("worker-first", coder, "first-task", "issue_assigned", 4, 12, "paperclip_runner.create_task"),
-    run("worker-reuse", coder, "second-task", "issue_assigned", 25, 40, "paperclip_runner.create_task")];
+  const workers = [run("worker-first", coder, "first-task", "issue_assigned", 4, 12, "wardmote_runner.create_task"),
+    run("worker-reuse", coder, "second-task", "issue_assigned", 25, 40, "wardmote_runner.create_task")];
   const tasks = workers.map((r, i) => ({ id: r.contextSnapshot.issueId, companyId: company, projectId: "project",
     title: r.contextSnapshot.issueId, parentId: null as string | null, status: "done", identifier: `RUN-${i + 2}`, responsibleUserId: user,
     assigneeAgentId: coder, createdByAgentId: lead, createdByUserId: null as string | null, originRunId: requested[i]!.id,

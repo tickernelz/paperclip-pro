@@ -475,7 +475,7 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
   }
 
   it("acquires and resumes a reusable lease after a task changes from per-turn to warm", async () => {
-    const seeded = await seedReusablePluginSandboxLease("paperclip_runner");
+    const seeded = await seedReusablePluginSandboxLease("wardmote_runner");
     await environmentService(db).releaseLease(seeded.reusableLease.id, "expired");
     const environment = { ...seeded.environment, config: { ...seeded.environment.config, reuseLease: false } };
     await environmentService(db).update(environment.id, { config: environment.config });
@@ -501,12 +501,12 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
     } as unknown as PluginWorkerManager });
     const input = {
       companyId: seeded.companyId, agentId: seeded.agentId, issueId,
-      adapterType: "paperclip_runner", persistedExecutionWorkspace: { id: seeded.executionWorkspaceId, mode: "shared_workspace" as const },
+      adapterType: "wardmote_runner", persistedExecutionWorkspace: { id: seeded.executionWorkspaceId, mode: "shared_workspace" as const },
     };
     const cold = await runtime.acquireRunLease({ ...input, environment, heartbeatRunId: seeded.runId });
     expect(cold.lease.leasePolicy).toBe("ephemeral");
     await runtime.releaseRunLeases(seeded.runId, "released");
-    const warmEnvironment = resolveRunnerEnvironmentForRun(environment, "paperclip_runner", { lifecycleMode: "warm" });
+    const warmEnvironment = resolveRunnerEnvironmentForRun(environment, "wardmote_runner", { lifecycleMode: "warm" });
     const warmRunId = randomUUID();
     await db.insert(heartbeatRuns).values({ id: warmRunId, companyId: seeded.companyId, agentId: seeded.agentId, status: "running" });
     const warm = await runtime.acquireRunLease({ ...input, environment: warmEnvironment, heartbeatRunId: warmRunId });
@@ -553,7 +553,7 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
 
   it.each(["release_only", "stopped", "stop_failed", "unconfirmed", "restart", "competing_owner", "missing_pin", "late_receipt"])(
     "never dispatches destructive release for an untagged stop-and-retain request: %s", async outcome => {
-      const seeded = await seedReusablePluginSandboxLease("paperclip_runner");
+      const seeded = await seedReusablePluginSandboxLease("wardmote_runner");
       const lease = seeded.reusableLease;
       await db.update(environmentLeases).set({ leasePolicy: "ephemeral", metadata: {
         ...lease.metadata, reuseLease: false, ...(outcome === "missing_pin" ? { pluginId: undefined } : {}),
@@ -721,7 +721,7 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
     })));
     const nextAgentId = scenario === "different agent" ? randomUUID() : seeded.agentId;
     if (nextAgentId !== seeded.agentId) await db.insert(agents).values({
-      id: nextAgentId, companyId: seeded.companyId, name: "Other agent", adapterType: "paperclip_runner",
+      id: nextAgentId, companyId: seeded.companyId, name: "Other agent", adapterType: "wardmote_runner",
     });
     let acquisitions = 0;
     const call = vi.fn(async (_pluginId: string, method: string) => {
@@ -1091,7 +1091,7 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
     );
   });
 
-  it("destroys a disposable paperclip_runner sandbox after the turn", async () => {
+  it("destroys a disposable wardmote_runner sandbox after the turn", async () => {
     const { pluginId, runId, reusableLease } = await seedReusablePluginSandboxLease();
     const workerManager = {
       isRunning: vi.fn((id: string) => id === pluginId),
@@ -1137,7 +1137,7 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
           string,
           unknown
         >) ?? {}),
-        adapterType: "paperclip_runner",
+        adapterType: "wardmote_runner",
       },
       sandboxLeaseAcquisition: { outcome: "created" },
     });
@@ -5170,7 +5170,7 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
   });
 
   it("resumes only the exact stopped sandbox lifecycle without acquiring or reseeding", async () => {
-    const seeded = await seedReusablePluginSandboxLease("paperclip_runner");
+    const seeded = await seedReusablePluginSandboxLease("wardmote_runner");
     await environmentService(db).releaseLease(seeded.reusableLease.id, "released", { cleanupStatus: "success" });
     const lease = (await environmentService(db).getLeaseById(seeded.reusableLease.id))!;
     const call = vi.fn(async (_id: string, method: string) => {
@@ -5192,7 +5192,7 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
   });
 
   it.each(["stopped", "unconfirmed", "foreign_marker", "competing_owner", "retained_owner", "no_stop_capability", "live_request", "late_receipt", "duplicate_key", "owner_stopped", "owner_driver_changed", "owner_missing", "legacy_intent", "foreign_plugin_pin", "v2_missing_pin"])("recovers a pending export resume with stop-only cleanup after restart: %s", async outcome => {
-    const seeded = await seedReusablePluginSandboxLease("paperclip_runner");
+    const seeded = await seedReusablePluginSandboxLease("wardmote_runner");
     const lease = seeded.reusableLease;
     const requestId = randomUUID();
     if (["duplicate_key", "owner_stopped", "owner_driver_changed", "owner_missing", "legacy_intent"].includes(outcome)) {
@@ -5243,7 +5243,7 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
   });
 
   it.each(["stopped", "stop_failed", "unconfirmed", "restart", "committed_release", "inflight"])("preserves terminal ephemeral export work through release and restart: %s", async outcome => {
-    const seeded = await seedReusablePluginSandboxLease("paperclip_runner");
+    const seeded = await seedReusablePluginSandboxLease("wardmote_runner");
     const lease = seeded.reusableLease, requestId = randomUUID();
     await db.update(heartbeatRuns).set({ status: outcome === "committed_release" ? "succeeded" : "failed" }).where(eq(heartbeatRuns.id, seeded.runId));
     await db.update(environmentLeases).set({ status: outcome === "committed_release" ? "active" : "pending_cleanup", leasePolicy: "ephemeral", cleanupStatus: "failed", metadata: {
@@ -5277,7 +5277,7 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
   });
 
   it("does not allocate a native-runner replacement without a verified backup", async () => {
-    const seeded = await seedReusablePluginSandboxLease("paperclip_runner");
+    const seeded = await seedReusablePluginSandboxLease("wardmote_runner");
     const workerManager = {
       isRunning: vi.fn((id: string) => id === seeded.pluginId),
       call: vi.fn(async (_pluginId: string, method: string) => {
@@ -5305,7 +5305,7 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
       environment: seeded.environment,
       issueId: null,
       agentId: seeded.agentId,
-      adapterType: "paperclip_runner",
+      adapterType: "wardmote_runner",
       heartbeatRunId: seeded.runId,
       persistedExecutionWorkspace: {
         id: seeded.executionWorkspaceId,
@@ -5328,7 +5328,7 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
   });
 
   it("permits native-runner replacement only after verifying the stamped backup", async () => {
-    const seeded = await seedReusablePluginSandboxLease("paperclip_runner");
+    const seeded = await seedReusablePluginSandboxLease("wardmote_runner");
     const backupBase = await mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-replacement-"));
     const previousStateDirectory = process.env.WARDMOTE_RUNNER_STATE_DIR;
     process.env.WARDMOTE_RUNNER_STATE_DIR = backupBase;
@@ -5423,7 +5423,7 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
         environment: seeded.environment,
         issueId: null,
         agentId: seeded.agentId,
-        adapterType: "paperclip_runner",
+        adapterType: "wardmote_runner",
         heartbeatRunId: seeded.runId,
         persistedExecutionWorkspace: {
           id: seeded.executionWorkspaceId,

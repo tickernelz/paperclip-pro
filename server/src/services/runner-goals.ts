@@ -50,7 +50,7 @@ function asRecord(value: unknown): Record<string, unknown> | null {
 
 function capabilityForAgent(agent: AgentBinding): RunnerGoalCapability {
   const config = asRecord(agent.adapterConfig) ?? {};
-  if (agent.adapterType === "paperclip_runner") {
+  if (agent.adapterType === "wardmote_runner") {
     const provider = typeof config.provider === "string" ? config.provider : "codex";
     const acpxAgent = typeof config.acpxAgent === "string" ? config.acpxAgent : "pi";
     if (provider === "codex" || (provider === "acpx" && acpxAgent === "codex")) {

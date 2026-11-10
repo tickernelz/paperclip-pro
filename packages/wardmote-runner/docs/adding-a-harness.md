@@ -76,7 +76,7 @@ When adding or upgrading a harness:
    diagnostics without including credentials or unredacted provider input.
 7. Keep standalone local adapters unchanged unless their own contract is
    deliberately revised. Paperclip Runner defaults apply only to
-   `paperclip_runner` executions.
+   `wardmote_runner` executions.
 
 ## Compatibility rules
 

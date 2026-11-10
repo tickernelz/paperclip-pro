@@ -766,7 +766,7 @@ Accept the card above and I write it. This task stays in review until then.`;
         "adapterConfig",
         "adapterType",
       ]);
-      expect(patch.adapterType).toBe("paperclip_runner");
+      expect(patch.adapterType).toBe("wardmote_runner");
       expect(patch.adapterConfig).toMatchObject({
         instructionsFilePath: "/managed/AGENTS.md",
         wardmoteSkillSync: original.adapterConfig.wardmoteSkillSync,

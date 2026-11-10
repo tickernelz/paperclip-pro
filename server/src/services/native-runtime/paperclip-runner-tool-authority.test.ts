@@ -61,7 +61,7 @@ describe("PaperclipRunnerToolAuthority", () => {
       id: agentId,
       companyId,
       name: "Runner agent",
-      adapterType: "paperclip_runner",
+      adapterType: "wardmote_runner",
       adapterConfig: { provider: "codex", apiKey: "must-not-leak" },
       runtimeConfig: { token: "must-not-leak" },
       status: "active",
@@ -164,21 +164,21 @@ describe("PaperclipRunnerToolAuthority", () => {
         callId: "hidden",
         arguments: {},
       }),
-    ).rejects.toThrow("paperclip_runner_tool_not_advertised");
+    ).rejects.toThrow("wardmote_runner_tool_not_advertised");
     await expect(
       authority.execute({
         tool: "list_chat_attachments",
         callId: "historical-list-without-chat-binding",
         arguments: {},
       }),
-    ).rejects.toThrow("paperclip_runner_chat_attachment_binding_denied");
+    ).rejects.toThrow("wardmote_runner_chat_attachment_binding_denied");
     await expect(
       authority.execute({
         tool: READ_CURRENT_WAKE_COMMENTS_TOOL_NAME,
         callId: "reader-without-bound-wake",
         arguments: {},
       }),
-    ).rejects.toThrow("paperclip_runner_tool_not_advertised");
+    ).rejects.toThrow("wardmote_runner_tool_not_advertised");
   });
 
   it("returns public task URLs from the configured origin in context and search results", async () => {
@@ -352,7 +352,7 @@ describe("PaperclipRunnerToolAuthority", () => {
         role: "qa",
         title: "Quality lead",
         capabilities: "Test native workflows",
-        adapterType: "paperclip_runner",
+        adapterType: "wardmote_runner",
         inheritRuntimeFrom: "caller",
         reportsTo: agentId,
         sourceIssueId: issueId,
@@ -491,7 +491,7 @@ describe("PaperclipRunnerToolAuthority", () => {
       id: binding.agentId,
       companyId: binding.companyId,
       name: "Question agent",
-      adapterType: "paperclip_runner",
+      adapterType: "wardmote_runner",
       status: "active",
     });
     await db.insert(issues).values({
@@ -700,7 +700,7 @@ describe("PaperclipRunnerToolAuthority", () => {
     listToolsForNamedGateway.mockClear();
     await db.update(heartbeatRuns).set({ status: "succeeded" }).where(eq(heartbeatRuns.id, runId));
     try {
-      await expect(authority.execute(call)).rejects.toThrow("paperclip_runner_tool_binding_not_authorized");
+      await expect(authority.execute(call)).rejects.toThrow("wardmote_runner_tool_binding_not_authorized");
       expect(listToolsForNamedGateway).not.toHaveBeenCalled();
     } finally {
       await db.update(heartbeatRuns).set({ status: "running" }).where(eq(heartbeatRuns.id, runId));
@@ -728,7 +728,7 @@ describe("PaperclipRunnerToolAuthority", () => {
     execute.mockClear();
     await db.update(heartbeatRuns).set({ status: "succeeded" }).where(eq(heartbeatRuns.id, runId));
     try {
-      await expect(authority.execute(call)).rejects.toThrow("paperclip_runner_tool_binding_not_authorized");
+      await expect(authority.execute(call)).rejects.toThrow("wardmote_runner_tool_binding_not_authorized");
       expect(execute).not.toHaveBeenCalled();
     } finally {
       await db.update(heartbeatRuns).set({ status: "running" }).where(eq(heartbeatRuns.id, runId));
@@ -792,7 +792,7 @@ describe("PaperclipRunnerToolAuthority", () => {
         bodySnippet: "Runner progress",
         identifier: "RNT-1",
         issueTitle: "Exercise real runner tools",
-        source: "paperclip_runner_protocol",
+        source: "wardmote_runner_protocol",
       }),
     });
     await expect(
@@ -800,7 +800,7 @@ describe("PaperclipRunnerToolAuthority", () => {
         ...call,
         arguments: { body: "Changed", idempotencyKey: "progress-1" },
       }),
-    ).rejects.toThrow("paperclip_runner_tool_idempotency_conflict");
+    ).rejects.toThrow("wardmote_runner_tool_idempotency_conflict");
   });
 
   it("creates checkbox interactions through the real interaction service", async () => {
@@ -857,7 +857,7 @@ describe("PaperclipRunnerToolAuthority", () => {
           prompt: "Use the same key for a different prompt.",
         },
       }),
-    ).rejects.toThrow("paperclip_runner_tool_idempotency_conflict");
+    ).rejects.toThrow("wardmote_runner_tool_idempotency_conflict");
   });
 
   it("writes a real revisioned document and replays the mutation receipt", async () => {
@@ -919,7 +919,7 @@ describe("PaperclipRunnerToolAuthority", () => {
         entityType: "issue",
         details: expect.objectContaining({
           key: "plan",
-          source: "paperclip_runner_protocol",
+          source: "wardmote_runner_protocol",
         }),
       }),
     ]);
@@ -928,7 +928,7 @@ describe("PaperclipRunnerToolAuthority", () => {
         ...call,
         arguments: { ...call.arguments, body: "Conflicting retry." },
       }),
-    ).rejects.toThrow("paperclip_runner_tool_idempotency_conflict");
+    ).rejects.toThrow("wardmote_runner_tool_idempotency_conflict");
   });
 
   it("returns the exact accepted plan revision in task context", async () => {
@@ -1188,7 +1188,7 @@ describe("PaperclipRunnerToolAuthority", () => {
           title: "Conflicting title for the same caller key",
         },
       }),
-    ).rejects.toThrow("paperclip_runner_tool_idempotency_conflict");
+    ).rejects.toThrow("wardmote_runner_tool_idempotency_conflict");
 
     const creationEvents = (await db.select().from(activityLog).where(eq(activityLog.entityId, prerequisiteId)))
       .filter(event => event.action === "issue.created");
@@ -1207,7 +1207,7 @@ describe("PaperclipRunnerToolAuthority", () => {
       id: foreignAgentId,
       companyId: foreignCompanyId,
       name: "Foreign agent",
-      adapterType: "paperclip_runner",
+      adapterType: "wardmote_runner",
       adapterConfig: { provider: "codex" },
       runtimeConfig: {},
       status: "active",
@@ -1230,7 +1230,7 @@ describe("PaperclipRunnerToolAuthority", () => {
           assigneeActorId: foreignAgentId,
         },
       }),
-    ).rejects.toThrow("paperclip_runner_agent_not_found");
+    ).rejects.toThrow("wardmote_runner_agent_not_found");
     await expect(
       retryAuthority.execute({
         tool: "create_task",
@@ -1308,7 +1308,7 @@ describe("PaperclipRunnerToolAuthority", () => {
       .set({ assigneeAgentId: null })
       .where(eq(issues.id, guardedIssueId));
     await expect(authority.execute(mutation)).rejects.toThrow(
-      "paperclip_runner_tool_binding_not_authorized",
+      "wardmote_runner_tool_binding_not_authorized",
     );
 
     await db
@@ -1320,7 +1320,7 @@ describe("PaperclipRunnerToolAuthority", () => {
       .where(eq(issues.id, guardedIssueId));
     await expect(
       authority.execute({ ...mutation, callId: "replaced-run" }),
-    ).rejects.toThrow("paperclip_runner_tool_binding_not_authorized");
+    ).rejects.toThrow("wardmote_runner_tool_binding_not_authorized");
 
     await db
       .update(issues)
@@ -1332,7 +1332,7 @@ describe("PaperclipRunnerToolAuthority", () => {
       .where(eq(heartbeatRuns.id, guardedRunId));
     await expect(
       authority.execute({ ...mutation, callId: "terminal-run" }),
-    ).rejects.toThrow("paperclip_runner_tool_binding_not_authorized");
+    ).rejects.toThrow("wardmote_runner_tool_binding_not_authorized");
 
     expect(
       await db
@@ -1402,6 +1402,6 @@ describe("PaperclipRunnerToolAuthority", () => {
         callId: "late",
         arguments: {},
       }),
-    ).rejects.toThrow("paperclip_runner_tool_binding_not_authorized");
+    ).rejects.toThrow("wardmote_runner_tool_binding_not_authorized");
   });
 });

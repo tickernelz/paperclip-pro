@@ -120,7 +120,7 @@ describe("canonical native event UI boundary corpus", () => {
       expect(transcript).toContainEqual(
         expect.objectContaining({
           kind: "result",
-          subtype: "paperclip_runner_usage",
+          subtype: "wardmote_runner_usage",
           inputTokens: 20,
           outputTokens: 6,
           cachedTokens: 2,

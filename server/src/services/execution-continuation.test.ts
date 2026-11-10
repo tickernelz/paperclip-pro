@@ -58,7 +58,7 @@ const support = await getEmbeddedPostgresTestSupport();
           companyId,
           name: "Executor",
           role: "engineer",
-          adapterType: "paperclip_runner",
+          adapterType: "wardmote_runner",
         });
       await db
         .insert(issues)
@@ -172,7 +172,7 @@ const support = await getEmbeddedPostgresTestSupport();
     });
     it("carries completed work across an agent handoff using the interrupted run", async () => {
       const nextAgentId = randomUUID();
-      await db.insert(agents).values({ id: nextAgentId, companyId, name: "Replacement", role: "engineer", adapterType: "paperclip_runner" });
+      await db.insert(agents).values({ id: nextAgentId, companyId, name: "Replacement", role: "engineer", adapterType: "wardmote_runner" });
       await db.update(issues).set({ assigneeAgentId: nextAgentId }).where(eq(issues.id, issueId));
       await db.update(heartbeatRuns).set({ status: "cancelled", resultJson: {
         nativeResult: { summary: "Created draft.md with three approved names." },

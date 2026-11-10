@@ -8,7 +8,7 @@ import { resolveForcedKubernetesEnvironment } from "../lib/forced-kubernetes-env
 
 describe("supportsAdapterModelRefresh", () => {
   it("enables the model refresh action only for the Wardmote Runner", () => {
-    expect(supportsAdapterModelRefresh("paperclip_runner")).toBe(true);
+    expect(supportsAdapterModelRefresh("wardmote_runner")).toBe(true);
     expect(supportsAdapterModelRefresh("codex_local")).toBe(false);
     expect(supportsAdapterModelRefresh("process")).toBe(false);
   });

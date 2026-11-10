@@ -1024,7 +1024,7 @@ export async function buildPaperclipRuntimeMcpServers(input: {
         status: "active",
         defaultAction: "deny",
         metadata: {
-          source: "paperclip_runner",
+          source: "wardmote_runner",
           agentId: input.agent.id,
           assignmentDigest,
         },
@@ -1050,7 +1050,7 @@ export async function buildPaperclipRuntimeMcpServers(input: {
     }
   }
 
-  if (profile!.metadata?.source !== "paperclip_runner" || profile!.metadata?.agentId !== input.agent.id ||
+  if (profile!.metadata?.source !== "wardmote_runner" || profile!.metadata?.agentId !== input.agent.id ||
       profile!.metadata?.assignmentDigest !== assignmentDigest) {
     throw new Error("Invalid native runtime profile provenance");
   }
@@ -1802,7 +1802,7 @@ export async function attestReviewedExternalChatRun(input: {
         } catch (error) {
           if (
             error instanceof Error &&
-            error.message === "paperclip_runner_chat_attachment_binding_denied"
+            error.message === "wardmote_runner_chat_attachment_binding_denied"
           ) {
             // Inbound processing commits the message/link before dispatching its
             // wake, but completes subscription and marks delivery processed after
@@ -1848,9 +1848,9 @@ export async function attestReviewedExternalChatRun(input: {
           if (
             error instanceof Error &&
             [
-              "paperclip_runner_chat_attachment_binding_denied",
-              "paperclip_runner_chat_attachment_destination_denied",
-              "paperclip_runner_chat_attachment_principal_denied",
+              "wardmote_runner_chat_attachment_binding_denied",
+              "wardmote_runner_chat_attachment_destination_denied",
+              "wardmote_runner_chat_attachment_principal_denied",
             ].includes(error.message)
           )
             return false;

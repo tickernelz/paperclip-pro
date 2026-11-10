@@ -6781,7 +6781,7 @@ export function createToolGatewayService(
     // The immutable native profile also identifies legacy assignments when an
     // update has cleared the gateway metadata. Missing metadata must fail closed.
     const nativeAssignment = Object.hasOwn(nativeMetadata ?? {}, "nativeRuntimeAssignmentDigest") ||
-      profile?.profileKey.startsWith("native:") || profile?.source === "paperclip_runner";
+      profile?.profileKey.startsWith("native:") || profile?.source === "wardmote_runner";
     const nativeOwner = nativeMetadata?.agentId;
     if (nativeAssignment && (
       typeof nativeOwner !== "string" || !uuidPattern.test(nativeOwner) ||
@@ -6796,7 +6796,7 @@ export function createToolGatewayService(
       });
     }
     if (nativeAssignment) {
-      if (profile?.status !== "active" || profile.source !== "paperclip_runner" ||
+      if (profile?.status !== "active" || profile.source !== "wardmote_runner" ||
           profile.agentId !== nativeOwner ||
           profile.assignmentDigest !== nativeMetadata!.nativeRuntimeAssignmentDigest) {
         return recordNamedGatewayAuthFailure({

@@ -2068,7 +2068,7 @@ function createSandboxEnvironmentDriver(
           }
           if (!providerLease) {
             if (
-              input.adapterType === "paperclip_runner" &&
+              input.adapterType === "wardmote_runner" &&
               !verifyNativeHarnessBackupStamp(
                 reusableLease.metadata?.nativeHarnessBackup,
                 reusableLease.providerLeaseId,
@@ -4144,7 +4144,7 @@ export function environmentRuntimeService(
             providerResourceDisposition === "destroy" &&
             isRecord(leaseSnapshot.metadata?.reusableSandboxLease) &&
             leaseSnapshot.metadata.reusableSandboxLease.adapterType ===
-              "paperclip_runner" &&
+              "wardmote_runner" &&
             leaseSnapshot.metadata?.sandboxLeaseAcquisition &&
             (!leaseSnapshot.providerLeaseId ||
               !verifyNativeHarnessBackupStamp(
@@ -4160,7 +4160,7 @@ export function environmentRuntimeService(
             ? await driver.destroyRunLease({
                 environment,
                 lease: leaseSnapshot,
-                failureReason: "paperclip_runner_destroy_after_turn",
+                failureReason: "wardmote_runner_destroy_after_turn",
               })
             : driver
               ? await driver.releaseRunLease({

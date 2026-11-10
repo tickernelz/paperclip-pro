@@ -80,7 +80,7 @@ describeEmbeddedPostgres("current external-chat wake comment reader", () => {
       name: "Chat agent",
       role: "engineer",
       status: "running",
-      adapterType: "paperclip_runner",
+      adapterType: "wardmote_runner",
       adapterConfig: {},
       runtimeConfig: {},
       permissions: {},

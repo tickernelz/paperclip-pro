@@ -398,7 +398,7 @@ describe("nativeRunEventsToTranscript", () => {
       }),
       expect.objectContaining({
         kind: "result",
-        subtype: "paperclip_runner_usage",
+        subtype: "wardmote_runner_usage",
         inputTokens: 12,
         outputTokens: 3,
         cachedTokens: 2,
@@ -641,7 +641,7 @@ describe("nativeRunEventsToTranscript", () => {
     expect(transcript).toEqual([
       expect.objectContaining({
         kind: "result",
-        subtype: "paperclip_runner_usage",
+        subtype: "wardmote_runner_usage",
         inputTokens: 16,
         outputTokens: 5,
         cachedTokens: 3,
@@ -689,7 +689,7 @@ describe("nativeRunEventsToTranscript", () => {
     expect(transcript).toEqual([
       expect.objectContaining({
         kind: "result",
-        subtype: "paperclip_runner_session_usage",
+        subtype: "wardmote_runner_session_usage",
         inputTokens: 20,
         outputTokens: 5,
         costUsd: 0.02,
@@ -712,7 +712,7 @@ describe("nativeRunEventsToTranscript", () => {
     expect(transcript).toEqual([
       expect.objectContaining({
         kind: "result",
-        subtype: "paperclip_runner_session_usage",
+        subtype: "wardmote_runner_session_usage",
         inputTokens: 112,
         outputTokens: 53,
         costUsd: 1.01,

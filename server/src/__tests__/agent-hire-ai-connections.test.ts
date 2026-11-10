@@ -59,7 +59,7 @@ async function fixture(provider: "anthropic" | "openai", method: "api_key" | "su
   const agentId = randomUUID();
   const userId = `owner-${companyId}`;
   const binding = { provider, method, mode: "responsible_user" } as const;
-  const adapterType = "paperclip_runner";
+  const adapterType = "wardmote_runner";
   const adapterConfig = runnerConfig(provider);
   await instanceSettingsService(db).updateExperimental({ enableNativeRunner: true });
   await db.insert(companies).values({ id: companyId, name: "Hiring connection test", issuePrefix: `H${companyId.slice(0, 7)}`, defaultResponsibleUserId: userId });
@@ -142,7 +142,7 @@ describe("agent-created hires use managed AI connections", () => {
   it.each(["anthropic", "openai"] as const)("%s can hire the other provider before that user connects it", async (provider) => {
     const f = await fixture(provider);
     const otherProvider = provider === "anthropic" ? "openai" : "anthropic";
-    const adapterType = "paperclip_runner";
+    const adapterType = "wardmote_runner";
     const agent = hired(await request(f.app).post(`/api/companies/${f.companyId}/agent-hires`).send({ name: "Other provider", role: "engineer", adapterType, adapterConfig: runnerConfig(otherProvider) }));
     expect(agent.runtimeConfig.aiConnection).toMatchObject({ provider: otherProvider, mode: "responsible_user" });
     await expect(prepareManagedAiRuntime(db, { companyId: f.companyId, agentId: agent.id, responsibleUserId: f.userId, adapterType, binding: agent.runtimeConfig.aiConnection, config: agent.adapterConfig })).rejects.toMatchObject({ details: { code: "ai_connection_default_missing" } });
@@ -151,8 +151,8 @@ describe("agent-created hires use managed AI connections", () => {
 
   for (const endpoint of ["agent-hires", "agents"]) {
     it.each([
-      ["anthropic", "paperclip_runner", { provider: "codex" }, "ANTHROPIC_API_KEY"],
-      ["openai", "paperclip_runner", { provider: "acpx", acpxAgent: "claude" }, "OPENAI_API_KEY"],
+      ["anthropic", "wardmote_runner", { provider: "codex" }, "ANTHROPIC_API_KEY"],
+      ["openai", "wardmote_runner", { provider: "acpx", acpxAgent: "claude" }, "OPENAI_API_KEY"],
     ] as const)(`${endpoint}: ignores the %s auth key for a different provider in %s`, async (provider, adapterType, config, key) => {
       const f = await fixture(provider);
       const response = await request(f.app).post(`/api/companies/${f.companyId}/${endpoint}`).send({
@@ -168,7 +168,7 @@ describe("agent-created hires use managed AI connections", () => {
     const f = await fixture("anthropic");
     await db.update(companies).set({ requireBoardApprovalForNewAgents: true }).where(eq(companies.id, f.companyId));
     const binding: AiConnectionBinding = { provider: "openai", method: "subscription", mode: "responsible_user" };
-    const response = await request(f.app).post(`/api/companies/${f.companyId}/agent-hires`).send({ name: "Future Codex", role: "engineer", adapterType: "paperclip_runner", adapterConfig: runnerConfig("openai"), runtimeConfig: { aiConnection: binding } });
+    const response = await request(f.app).post(`/api/companies/${f.companyId}/agent-hires`).send({ name: "Future Codex", role: "engineer", adapterType: "wardmote_runner", adapterConfig: runnerConfig("openai"), runtimeConfig: { aiConnection: binding } });
     const agent = hired(response);
     expect(agent.runtimeConfig.aiConnection).toEqual(binding);
     expect(agent.status).toBe("pending_approval");
@@ -178,7 +178,7 @@ describe("agent-created hires use managed AI connections", () => {
 
   it.each(["anthropic", "openai"] as const)("inherits %s when the hire uses the native runner", async (provider) => {
     const f = await fixture(provider, "subscription");
-    const agent = hired(await request(f.app).post(`/api/companies/${f.companyId}/agent-hires`).send({ name: "Native teammate", role: "engineer", adapterType: "paperclip_runner", adapterConfig: provider === "anthropic" ? { provider: "acpx", acpxAgent: "claude" } : { provider: "codex" } }));
+    const agent = hired(await request(f.app).post(`/api/companies/${f.companyId}/agent-hires`).send({ name: "Native teammate", role: "engineer", adapterType: "wardmote_runner", adapterConfig: provider === "anthropic" ? { provider: "acpx", acpxAgent: "claude" } : { provider: "codex" } }));
     expect(agent.runtimeConfig.aiConnection).toEqual(f.binding);
     const runtime = await prepareManagedAiRuntime(db, { companyId: f.companyId, agentId: agent.id, responsibleUserId: f.userId, adapterType: agent.adapterType, binding: agent.runtimeConfig.aiConnection, config: agent.adapterConfig });
     try { expect(runtime.attribution.connectionId).toBe(f.account.connectionId); } finally { await runtime.cleanup(); }
@@ -190,7 +190,7 @@ describe("agent-created hires use managed AI connections", () => {
   ] as const)("caller runtime inheritance preserves safe %s settings only", async (_name, parentConfig) => {
     const f = await fixture("anthropic", "subscription");
     await db.update(agents).set({
-      adapterType: "paperclip_runner",
+      adapterType: "wardmote_runner",
       adapterConfig: {
         ...parentConfig,
         cwd: "/private/parent-workspace",
@@ -200,7 +200,7 @@ describe("agent-created hires use managed AI connections", () => {
       },
     }).where(eq(agents.id, f.agentId));
     const agent = hired(await request(f.app).post(`/api/companies/${f.companyId}/agent-hires`).send({
-      name: "Inherited teammate", role: "engineer", adapterType: "paperclip_runner", inheritRuntimeFrom: "caller",
+      name: "Inherited teammate", role: "engineer", adapterType: "wardmote_runner", inheritRuntimeFrom: "caller",
     }));
     expect(agent.adapterConfig).toMatchObject(parentConfig);
     expect(agent.adapterConfig).not.toHaveProperty("cwd");
@@ -215,9 +215,9 @@ describe("agent-created hires use managed AI connections", () => {
 
   it("rejects caller inheritance when the request supplies competing runtime settings", async () => {
     const f = await fixture("anthropic", "subscription");
-    await db.update(agents).set({ adapterType: "paperclip_runner", adapterConfig: { provider: "acpx", acpxAgent: "claude" } }).where(eq(agents.id, f.agentId));
+    await db.update(agents).set({ adapterType: "wardmote_runner", adapterConfig: { provider: "acpx", acpxAgent: "claude" } }).where(eq(agents.id, f.agentId));
     const response = await request(f.app).post(`/api/companies/${f.companyId}/agent-hires`).send({
-      name: "Conflicting teammate", role: "engineer", adapterType: "paperclip_runner", inheritRuntimeFrom: "caller",
+      name: "Conflicting teammate", role: "engineer", adapterType: "wardmote_runner", inheritRuntimeFrom: "caller",
       adapterConfig: { model: "caller.override" },
     });
     expect(response.status).toBe(422);
@@ -226,7 +226,7 @@ describe("agent-created hires use managed AI connections", () => {
 
   it("still rejects an explicitly incompatible provider without creating a hire", async () => {
     const f = await fixture("anthropic");
-    const response = await request(f.app).post(`/api/companies/${f.companyId}/agent-hires`).send({ name: "Wrong provider", role: "engineer", adapterType: "paperclip_runner", adapterConfig: runnerConfig("openai"), runtimeConfig: { aiConnection: f.binding } });
+    const response = await request(f.app).post(`/api/companies/${f.companyId}/agent-hires`).send({ name: "Wrong provider", role: "engineer", adapterType: "wardmote_runner", adapterConfig: runnerConfig("openai"), runtimeConfig: { aiConnection: f.binding } });
     expect(response.status).toBe(422);
     expect(response.body.details.code).toBe("ai_connection_incompatible");
     expect(await db.select().from(agents).where(eq(agents.companyId, f.companyId))).toHaveLength(1);

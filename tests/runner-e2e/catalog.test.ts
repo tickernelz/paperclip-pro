@@ -302,7 +302,7 @@ describe("runner E2E catalog", () => {
     expect(
       openRouterBreadthProfiles.every(
         (profile) =>
-          profile.adapterType === "paperclip_runner" &&
+          profile.adapterType === "wardmote_runner" &&
           profile.provider === "opencode" &&
           profile.model.startsWith("openrouter/") &&
           profile.supportedEnvironments.join(",") === "local" &&

@@ -3,7 +3,7 @@ import { adapterCuratesModelOrder } from "./model-utils";
 
 describe("adapterCuratesModelOrder", () => {
   it("keeps the advertised order for the Wardmote Runner's hand-ordered list", () => {
-    expect(adapterCuratesModelOrder("paperclip_runner")).toBe(true);
+    expect(adapterCuratesModelOrder("wardmote_runner")).toBe(true);
   });
 
   it("leaves retired and third-party lists to the alphabetical fallback", () => {

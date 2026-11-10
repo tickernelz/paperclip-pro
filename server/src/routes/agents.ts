@@ -1830,17 +1830,17 @@ export function agentRoutes(
     if (isRetiredAdapterModule(findActiveServerAdapter(adapterType))) {
       throw unprocessable(retiredAdapterMessage(adapterType), { code: "adapter_retired" });
     }
-    if (adapterType === "paperclip_runner") {
+    if (adapterType === "wardmote_runner") {
       const experimental = await instanceSettings.getExperimental();
       if (asRecord(config)?.provider === "openai_dot") {
         if (experimental.enableOpenAiDot !== true) throw unprocessable(
           "OpenAI Dot is turned off on this instance. Turn it on in Settings > Features.",
-          { code: "paperclip_runner_dot_disabled" },
+          { code: "wardmote_runner_dot_disabled" },
         );
       } else if (experimental.enableNativeRunner !== true) {
         throw unprocessable(
           "The native runner is turned off on this instance. Turn it on in Settings > Advanced.",
-          { code: "paperclip_runner_rollout_disabled" },
+          { code: "wardmote_runner_rollout_disabled" },
         );
       }
     }
@@ -1862,7 +1862,7 @@ export function agentRoutes(
     adapterType: string,
     adapterConfig: Record<string, unknown>,
   ): Promise<void> {
-    if (adapterType !== "paperclip_runner") return;
+    if (adapterType !== "wardmote_runner") return;
     let profile;
     try {
       if (adapterConfig.provider === "openai_dot") {
@@ -1897,7 +1897,7 @@ export function agentRoutes(
     nextAdapterConfig: Record<string, unknown>;
   }): Record<string, unknown> {
     if (
-      input.nextAdapterType !== "paperclip_runner"
+      input.nextAdapterType !== "wardmote_runner"
       || input.previousAdapterType === input.nextAdapterType
     ) {
       return input.nextAdapterConfig;
@@ -2218,7 +2218,7 @@ export function agentRoutes(
     adapterConfig: Record<string, unknown>,
   ): Record<string, unknown> {
     const next = { ...adapterConfig };
-    if (adapterType === "paperclip_runner") {
+    if (adapterType === "wardmote_runner") {
       return normalizePaperclipRunnerAdapterConfig(adapterType, next);
     }
     return next;
@@ -2229,7 +2229,7 @@ export function agentRoutes(
     adapterType: string | null | undefined,
     adapterConfig: Record<string, unknown>,
   ) {
-    if (adapterType === "paperclip_runner") {
+    if (adapterType === "wardmote_runner") {
       await assertFreshPaperclipRunnerProvider(companyId, adapterType, adapterConfig);
     }
   }
@@ -2542,7 +2542,7 @@ export function agentRoutes(
     boardOnboardingFirstAgent = false,
     adapterConfig?: Record<string, unknown>,
   ): AgentDesiredSkillEntry[] | undefined {
-    if (adapterType === "paperclip_runner" && adapterConfig?.provider === "openai_dot") return undefined;
+    if (adapterType === "wardmote_runner" && adapterConfig?.provider === "openai_dot") return undefined;
     if (role !== "ceo" && !boardOnboardingFirstAgent) return undefined;
     const adapter = findActiveServerAdapter(adapterType);
     if (!adapter?.listSkills && !adapter?.syncSkills) return undefined;
@@ -2550,7 +2550,7 @@ export function agentRoutes(
       ? [...WARDMOTE_CORE_SKILL_KEYS, ONBOARDING_FIRST_TASK_SKILL_KEY]
       : WARDMOTE_CORE_SKILL_KEYS;
     return keys
-      .filter((key) => adapterType !== "paperclip_runner" || key !== WARDMOTE_OPERATIONAL_SKILL_KEY)
+      .filter((key) => adapterType !== "wardmote_runner" || key !== WARDMOTE_OPERATIONAL_SKILL_KEY)
       .map((key) => ({ key, versionId: null }));
   }
 
@@ -2676,7 +2676,7 @@ export function agentRoutes(
       requestedSkillEntries,
       mode,
     ).filter(
-      (entry) => !isConnectorSkill(entry.key) && (adapterType !== "paperclip_runner"
+      (entry) => !isConnectorSkill(entry.key) && (adapterType !== "wardmote_runner"
         || entry.key.trim().toLowerCase() !== WARDMOTE_OPERATIONAL_SKILL_KEY),
     );
     const desiredSkills = desiredSkillEntries.map((entry) => entry.key);
@@ -2946,10 +2946,10 @@ export function agentRoutes(
       return;
     }
     const provider = asNonEmptyString(req.query.provider);
-    if (type === "paperclip_runner" && provider && !isPaperclipRunnerProvider(provider)) {
+    if (type === "wardmote_runner" && provider && !isPaperclipRunnerProvider(provider)) {
       throw unprocessable("Unknown Paperclip Runner provider");
     }
-    const modelAdapterType = type === "paperclip_runner"
+    const modelAdapterType = type === "wardmote_runner"
       ? provider === "acpx" || provider === "claude_managed" ? "claude_local"
         : provider === "opencode" ? "opencode_local"
           : provider === "aws_agentcore" ? type : "codex_local"
@@ -3052,7 +3052,7 @@ export function agentRoutes(
       // the probe treats "***REDACTED***" as a value to persist.
       let adapterConfigForTest = inputAdapterConfig;
       if (savedAgent) {
-        const providerAdapter = savedAgent.adapterType === "paperclip_runner"
+        const providerAdapter = savedAgent.adapterType === "wardmote_runner"
           ? inputAdapterConfig.provider === "codex"
             ? "codex_local"
             : inputAdapterConfig.provider === "acpx" && inputAdapterConfig.acpxAgent === "claude"
@@ -3072,7 +3072,7 @@ export function agentRoutes(
           ? restoreRedactedAgentEnv(inputAdapterConfig, savedAgent.adapterConfig)
           : inputAdapterConfig;
       }
-      if (type === "paperclip_runner" && inputAdapterConfig.provider === "openai_dot") {
+      if (type === "wardmote_runner" && inputAdapterConfig.provider === "openai_dot") {
         const dotEnabled = await dotRunnerBroker(db).enabled();
         const binding = savedAgentId ? await dotRunnerBroker(db).bindingForAgent(companyId, savedAgentId) : null;
         let resource: ReturnType<typeof publicMcpConfig> = null;
@@ -3990,7 +3990,7 @@ export function agentRoutes(
     );
     const rollbackAdapterConfig = asRecord(rollbackConfig.adapterConfig) ?? {};
     const existingRollbackProvider = asRecord(existing.adapterConfig)?.provider;
-    if (rollbackAdapterType !== existing.adapterType || (rollbackAdapterType === "paperclip_runner"
+    if (rollbackAdapterType !== existing.adapterType || (rollbackAdapterType === "wardmote_runner"
       && rollbackAdapterConfig.provider !== existingRollbackProvider
       && (rollbackAdapterConfig.provider === "openai_dot" || existingRollbackProvider === "openai_dot"))) {
       await assertSelectableAdapterType(rollbackAdapterType, rollbackAdapterConfig);
@@ -4009,7 +4009,7 @@ export function agentRoutes(
     });
     if (
       rollbackAdapterType !== existing.adapterType ||
-      rollbackAdapterType === "paperclip_runner"
+      rollbackAdapterType === "wardmote_runner"
     ) {
       await assertFreshPaperclipRunnerProvider(
         existing.companyId,
@@ -4138,8 +4138,8 @@ export function agentRoutes(
       if (req.actor.type !== "agent" || !req.actor.agentId) {
         throw forbidden("Only an agent can inherit native runtime settings from the caller");
       }
-      if (hireInput.adapterType !== "paperclip_runner") {
-        throw unprocessable("inheritRuntimeFrom=caller requires adapterType=paperclip_runner");
+      if (hireInput.adapterType !== "wardmote_runner") {
+        throw unprocessable("inheritRuntimeFrom=caller requires adapterType=wardmote_runner");
       }
       const requestedConfig = (hireInput.adapterConfig ?? {}) as Record<string, unknown>;
       const requestedRuntime = (hireInput.runtimeConfig ?? {}) as Record<string, unknown>;
@@ -4150,8 +4150,8 @@ export function agentRoutes(
       if (!caller || caller.companyId !== companyId) {
         throw forbidden("The caller agent is not in this company");
       }
-      if (caller.adapterType !== "paperclip_runner") {
-        throw unprocessable("The caller must use the paperclip_runner adapter");
+      if (caller.adapterType !== "wardmote_runner") {
+        throw unprocessable("The caller must use the wardmote_runner adapter");
       }
       hireInput.adapterConfig = inheritNativeRunnerAdapterConfig(caller.adapterConfig);
       hireInput.defaultEnvironmentId = caller.defaultEnvironmentId ?? null;
@@ -5334,7 +5334,7 @@ export function agentRoutes(
           nextAdapterConfig: rawEffectiveAdapterConfig,
         });
       }
-      if (requestedAdapterType === "paperclip_runner") {
+      if (requestedAdapterType === "wardmote_runner") {
         rawEffectiveAdapterConfig = normalizePaperclipRunnerAdapterConfig(requestedAdapterType, rawEffectiveAdapterConfig);
       }
       if (changingAdapterType || requestedAdapterConfig) {
@@ -5345,19 +5345,19 @@ export function agentRoutes(
         );
       }
       const existingRunnerProvider =
-        existing.adapterType === "paperclip_runner"
+        existing.adapterType === "wardmote_runner"
           ? existingAdapterConfig.provider
           : undefined;
       // Moving between the standalone Dot choice and general Runner is a new
       // selection. Preserve historical edits within the general Runner rollout.
-      if (!changingAdapterType && requestedAdapterType === "paperclip_runner"
+      if (!changingAdapterType && requestedAdapterType === "wardmote_runner"
         && rawEffectiveAdapterConfig.provider !== existingRunnerProvider
         && (rawEffectiveAdapterConfig.provider === "openai_dot" || existingRunnerProvider === "openai_dot")) {
         await assertSelectableAdapterType(requestedAdapterType, rawEffectiveAdapterConfig);
       }
       if (
         changingAdapterType ||
-        (requestedAdapterType === "paperclip_runner" &&
+        (requestedAdapterType === "wardmote_runner" &&
           (requestedAdapterConfig !== null ||
             rawEffectiveAdapterConfig.provider !== existingRunnerProvider))
       ) {

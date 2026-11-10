@@ -194,7 +194,7 @@ describe("OpenWA admission (embedded Postgres + fake gateway)", () => {
       name: "OpenWA Agent",
       role: "engineer",
       status: "idle",
-      adapterType: "paperclip_runner",
+      adapterType: "wardmote_runner",
       adapterConfig: {},
       runtimeConfig: {},
       permissions: {},

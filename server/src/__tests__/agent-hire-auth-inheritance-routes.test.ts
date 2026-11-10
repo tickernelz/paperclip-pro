@@ -138,30 +138,30 @@ describeEmbeddedPostgres("hired agent provider credential inheritance", () => {
 
   it("rejects native runtime inheritance for a board actor", async () => {
     const companyId = await seedCompany();
-    const parent = await seedParentAgent(companyId, "paperclip_runner", {});
+    const parent = await seedParentAgent(companyId, "wardmote_runner", {});
     const res = await hire(userActor(), companyId, {
-      name: "Board Inheritance Attempt", role: "engineer", adapterType: "paperclip_runner", inheritRuntimeFrom: "caller",
+      name: "Board Inheritance Attempt", role: "engineer", adapterType: "wardmote_runner", inheritRuntimeFrom: "caller",
     });
     expect(res.status).toBe(403);
-    expect(parent.adapterType).toBe("paperclip_runner");
+    expect(parent.adapterType).toBe("wardmote_runner");
   });
 
   it("rejects inheritance from a legacy caller", async () => {
     const companyId = await seedCompany();
     const parent = await seedParentAgent(companyId, "codex_local", {});
     const res = await hire(agentActor(companyId, parent.id), companyId, {
-      name: "Legacy Inheritance Attempt", role: "engineer", adapterType: "paperclip_runner", inheritRuntimeFrom: "caller",
+      name: "Legacy Inheritance Attempt", role: "engineer", adapterType: "wardmote_runner", inheritRuntimeFrom: "caller",
     });
     expect(res.status).toBe(422);
-    expect(res.body.error).toContain("paperclip_runner adapter");
+    expect(res.body.error).toContain("wardmote_runner adapter");
   });
 
   it("rejects native runtime inheritance across companies", async () => {
     const parentCompanyId = await seedCompany();
     const targetCompanyId = await seedCompany();
-    const parent = await seedParentAgent(parentCompanyId, "paperclip_runner", { provider: "codex", model: "gpt-5.6-sol" });
+    const parent = await seedParentAgent(parentCompanyId, "wardmote_runner", { provider: "codex", model: "gpt-5.6-sol" });
     const res = await hire(agentActor(targetCompanyId, parent.id), targetCompanyId, {
-      name: "Cross Company Inheritance Attempt", role: "engineer", adapterType: "paperclip_runner", inheritRuntimeFrom: "caller",
+      name: "Cross Company Inheritance Attempt", role: "engineer", adapterType: "wardmote_runner", inheritRuntimeFrom: "caller",
     });
     expect(res.status).toBe(403);
     expect(await db.select().from(agents).where(eq(agents.companyId, targetCompanyId))).toHaveLength(0);
@@ -170,14 +170,14 @@ describeEmbeddedPostgres("hired agent provider credential inheritance", () => {
   it("records only inherited safe settings in an approval snapshot", async () => {
     const companyId = await seedCompany();
     await db.update(companies).set({ requireBoardApprovalForNewAgents: true }).where(eq(companies.id, companyId));
-    const parent = await seedParentAgent(companyId, "paperclip_runner", {});
+    const parent = await seedParentAgent(companyId, "wardmote_runner", {});
     await db.update(agents).set({ adapterConfig: {
       provider: "acpx", acpxAgent: "claude", model: "claude-sonnet-5", acpxPermissionMode: "approve-all",
       env: { ANTHROPIC_API_KEY: secretRef("parent-secret") }, cwd: "/private/parent",
       invocationLimits: { maxIterations: 3, credentials: "never-copy" },
     } }).where(eq(agents.id, parent.id));
     const res = await hire(agentActor(companyId, parent.id), companyId, {
-      name: "Approval Snapshot Child", role: "engineer", adapterType: "paperclip_runner", inheritRuntimeFrom: "caller",
+      name: "Approval Snapshot Child", role: "engineer", adapterType: "wardmote_runner", inheritRuntimeFrom: "caller",
     });
     expect(res.status).toBe(201);
     expect(res.body.agent.status).toBe("pending_approval");
@@ -193,12 +193,12 @@ describeEmbeddedPostgres("hired agent provider credential inheritance", () => {
     ["aws_agentcore", "agentCoreProfileId", "agentCoreRetentionAcknowledged", "Remote Agent"],
   ])("revalidates the inherited %s company profile before creating a hire", async (provider, profileKey, retentionKey, label) => {
     const companyId = await seedCompany();
-    const parent = await seedParentAgent(companyId, "paperclip_runner", {});
+    const parent = await seedParentAgent(companyId, "wardmote_runner", {});
     await db.update(agents).set({ adapterConfig: {
       provider, [profileKey]: randomUUID(), [retentionKey]: true,
     } }).where(eq(agents.id, parent.id));
     const res = await hire(agentActor(companyId, parent.id), companyId, {
-      name: "Missing Profile Child", role: "engineer", adapterType: "paperclip_runner", inheritRuntimeFrom: "caller",
+      name: "Missing Profile Child", role: "engineer", adapterType: "wardmote_runner", inheritRuntimeFrom: "caller",
     });
     expect(res.status, JSON.stringify(res.body)).toBe(404);
     expect(res.body.error).toBe(`${label} profile not found`);
@@ -207,12 +207,12 @@ describeEmbeddedPostgres("hired agent provider credential inheritance", () => {
 
   it("validates and preserves an inherited caller default environment", async () => {
     const companyId = await seedCompany();
-    const parent = await seedParentAgent(companyId, "paperclip_runner", {});
+    const parent = await seedParentAgent(companyId, "wardmote_runner", {});
     const environmentId = randomUUID();
     await db.insert(environments).values({ id: environmentId, name: `Local ${environmentId}`, driver: "local" });
     await db.update(agents).set({ defaultEnvironmentId: environmentId }).where(eq(agents.id, parent.id));
     const res = await hire(agentActor(companyId, parent.id), companyId, {
-      name: "Invalid Environment Child", role: "engineer", adapterType: "paperclip_runner", inheritRuntimeFrom: "caller",
+      name: "Invalid Environment Child", role: "engineer", adapterType: "wardmote_runner", inheritRuntimeFrom: "caller",
     });
     expect(res.status, JSON.stringify(res.body)).toBe(201);
     expect(res.body.agent.defaultEnvironmentId).toBe(environmentId);

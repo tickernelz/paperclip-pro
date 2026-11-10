@@ -341,7 +341,7 @@ describeEmbeddedPostgres("OpenWA setup inspection and configure", () => {
   });
 
   it("rejects an agent whose adapter cannot sign run tokens", async () => {
-    const { app, endpoint } = await setup({ adapterType: "paperclip_runner" });
+    const { app, endpoint } = await setup({ adapterType: "wardmote_runner" });
     const inspected = await inspect(app, endpoint.id, { baseUrl: live().baseUrl, apiKey: OPERATOR_KEY });
     expect(inspected.status).toBe(422);
     expect(inspected.body.details.code).toBe("openwa_agent_adapter_unsupported");
@@ -510,7 +510,7 @@ describeEmbeddedPostgres("OpenWA setup inspection and configure", () => {
     expect((await configure(app, endpoint.id)).status).toBe(200);
     await agentService(db).update(agentId, { adapterType: "omp_local" });
     expect((await service.get(endpoint.id)).status).toBe("verifying");
-    await agentService(db).update(agentId, { adapterType: "paperclip_runner" });
+    await agentService(db).update(agentId, { adapterType: "wardmote_runner" });
     const updated = await service.get(endpoint.id);
     expect(updated.status).toBe("attention");
     expect(updated.healthMessage).toBe(OPENWA_AGENT_ADAPTER_ATTENTION_MESSAGE);

@@ -193,7 +193,7 @@ tool permissions.
 ### Daytona sandbox verification (September 24, 2026)
 
 Browser-created **MEM-6** runs the same three connected providers through a
-native `paperclip_runner` Codex agent in a real Daytona Linux x86_64 sandbox.
+native `wardmote_runner` Codex agent in a real Daytona Linux x86_64 sandbox.
 The acceptance task uses only synthetic data and managed tools: a Mem0 copper
 lantern fact, a dedicated Cognee dataset, and Supermemory searches inside and
 outside the existing read-only consent. This first run predates Zep and Honcho

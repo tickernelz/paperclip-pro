@@ -93,7 +93,7 @@ describe("LCA full heartbeat observation", () => {
       name: "Fixture worker",
       role: "engineer",
       status: "idle",
-      adapterType: mode === "native" ? "paperclip_runner" : "codex_local",
+      adapterType: mode === "native" ? "wardmote_runner" : "codex_local",
       adapterConfig: { cwd: workspace, provider: "codex" },
       runtimeConfig: {
         heartbeat: {
@@ -463,7 +463,7 @@ describe("LCA full heartbeat observation", () => {
         name: "Fixture worker",
         role: "engineer",
         status: gate === "paused" ? "paused" : "idle",
-        adapterType: mode === "native" ? "paperclip_runner" : "codex_local",
+        adapterType: mode === "native" ? "wardmote_runner" : "codex_local",
         adapterConfig: { cwd: workspace, provider: "codex" },
         runtimeConfig: {
           heartbeat: {

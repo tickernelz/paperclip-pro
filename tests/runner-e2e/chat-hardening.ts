@@ -30,7 +30,7 @@ export function assertChatHire(input: {
   const hired = hires[0]!;
   const lead = input.agents.find(agent => agent.id === input.leadId)!;
   expect(input.connectionId).toBeTruthy();
-  expect(hired).toMatchObject({ reportsTo: input.leadId, adapterType: "paperclip_runner" });
+  expect(hired).toMatchObject({ reportsTo: input.leadId, adapterType: "wardmote_runner" });
   if (input.hiredId) expect(hired.id).toBe(input.hiredId);
   expect(hired.adapterConfig?.model).toBe(lead.adapterConfig?.model);
   expect(hired.runtimeConfig?.aiConnection).toEqual(input.binding);

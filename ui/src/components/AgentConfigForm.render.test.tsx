@@ -111,7 +111,7 @@ vi.mock("../adapters", () => ({
     // adapter, so a test can assert the plumbing without rendering a real
     // adapter's fields.
     ConfigFields: (props: AdapterConfigFieldsProps) => {
-      if (type === "paperclip_runner") return <CodexLocalConfigFields {...props} />;
+      if (type === "wardmote_runner") return <CodexLocalConfigFields {...props} />;
       const { adapterType, hideInstructionsFile, managedSandboxOnly } = props;
       return adapterType === "hermes_gateway"
         ? <div data-testid="hermes-gateway-config-fields">Hermes Gateway fields</div>
@@ -785,7 +785,7 @@ describe("AgentConfigForm environment selector", () => {
     });
     try {
       const result = await renderForm([], {
-        adapterType: "paperclip_runner",
+        adapterType: "wardmote_runner",
         adapterConfig: { provider: "opencode", model: "openrouter/anthropic/claude-sonnet-4.6" },
         runtimeConfig: { aiConnection: { mode: "responsible_user", provider: "openrouter", method: "api_key" } },
       });

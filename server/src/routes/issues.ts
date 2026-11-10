@@ -17802,7 +17802,7 @@ export function issueRoutes(
           queueId: input.queueId,
           revision: input.revision,
         });
-        if (locked.queue.protocol !== "paperclip_runner_v1") {
+        if (locked.queue.protocol !== "wardmote_runner_v1") {
           throw conflict("This runner does not support same-turn steering", {
             code: "steering_unsupported",
           });
@@ -17939,7 +17939,7 @@ export function issueRoutes(
       const entry = queue.entries.find(
         (candidate) => candidate.comment.id === input.commentId,
       );
-      if (entry && queue.protocol !== "paperclip_runner_v1") {
+      if (entry && queue.protocol !== "wardmote_runner_v1") {
         return { kind: "unavailable", reason: "legacy_protocol" };
       }
       return entry && queue.queueId && queue.targetRunId
@@ -18411,7 +18411,7 @@ export function issueRoutes(
       queueState: { wake, state: "deferred", queueRun: null },
       steeringDisposition: "temporarily_unavailable",
     });
-    if (queue.protocol !== "paperclip_runner_v1") return { deliveredAs: "queued" as const, reason: "legacy_protocol" };
+    if (queue.protocol !== "wardmote_runner_v1") return { deliveredAs: "queued" as const, reason: "legacy_protocol" };
     try {
       const steered = await steerQueuedCommentWithRetry({
         issue,

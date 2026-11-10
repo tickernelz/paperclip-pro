@@ -35,7 +35,7 @@ provider process starts:
 | Harness driver | Contract and negotiated PRP versions match and every required capability is explicitly true. |
 | Native output | Consumer and runnerd both select `paperclip-runner/native-execution/v1`. |
 
-Failures use `paperclip_runner_eval_incompatible` and include all detected
+Failures use `wardmote_runner_eval_incompatible` and include all detected
 component issues with expected and received values. A catalog, driver, or PRP
 mismatch cannot degrade into an attempted run.
 

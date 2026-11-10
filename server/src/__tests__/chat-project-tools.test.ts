@@ -27,7 +27,7 @@ const support = await getEmbeddedPostgresTestSupport();
       id, companyId: f.companyId, name: `Project ${i}`, status: "in_progress",
       description: "日本語🦀".repeat(5_000), executionWorkspacePolicy: { oversized: "x".repeat(20_000) },
     })));
-    const token = createLocalAgentJwt(f.agentId, f.companyId, "paperclip_runner", f.runId, f.responsibleUserId)!;
+    const token = createLocalAgentJwt(f.agentId, f.companyId, "wardmote_runner", f.runId, f.responsibleUserId)!;
     const toolInput = { name: "list_projects", apiUrl: server.apiUrl, token, companyId: f.companyId, issueId: f.issueId, agentId: f.agentId, conversation: false };
     const first = await callProjectTool({ ...toolInput, arguments: {} });
     expect(first.projects).toHaveLength(50);
@@ -71,7 +71,7 @@ const support = await getEmbeddedPostgresTestSupport();
 
   it("allows a conversation reply to enter review without manufacturing a review interaction", async () => {
     const f = await server.fixture({ conversation: true });
-    const token = createLocalAgentJwt(f.agentId, f.companyId, "paperclip_runner", f.runId, f.responsibleUserId)!;
+    const token = createLocalAgentJwt(f.agentId, f.companyId, "wardmote_runner", f.runId, f.responsibleUserId)!;
     const response = await fetch(`${server.apiUrl}/api/issues/${f.issueId}`, {
       method: "PATCH", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
       body: JSON.stringify({ status: "in_review", comment: "The plan is ready for our next discussion." }),
@@ -117,7 +117,7 @@ const support = await getEmbeddedPostgresTestSupport();
   it("hands off through the same API used by Claude/Codex MCP with the plan present on return", async () => {
     const f = await server.fixture({ conversation: true });
     const result = await callProjectTool({ name: "create_task", arguments: { title: "MCP handoff", projectId: f.projectId, initialPlan: "# Plan\nImplement in the execution task.", idempotencyKey: "mcp" },
-      apiUrl: server.apiUrl, token: createLocalAgentJwt(f.agentId, f.companyId, "paperclip_runner", f.runId, f.responsibleUserId)!,
+      apiUrl: server.apiUrl, token: createLocalAgentJwt(f.agentId, f.companyId, "wardmote_runner", f.runId, f.responsibleUserId)!,
       companyId: f.companyId, issueId: f.issueId, agentId: f.agentId, conversation: true });
     expect(result).toMatchObject({ parentId: null, projectId: f.projectId, assigneeAgentId: f.agentId });
     expect((await documentService(server.db).getIssueDocumentByKey(result.id, "plan"))?.body).toContain("Implement in the execution task");
@@ -127,7 +127,7 @@ const support = await getEmbeddedPostgresTestSupport();
     const f = await server.fixture({ conversation: true, disableWakeOnDemand: true });
     const policy = { trustPreset: "low_trust_review", authorizationPolicy: { trustBoundary: { mode: "low_trust_review", companyId: f.companyId, projectIds: [f.projectId] } } };
     await server.db.update(agents).set({ permissions: policy }).where(eq(agents.id, f.agentId));
-    const token = createLocalAgentJwt(f.agentId, f.companyId, "paperclip_runner", f.runId, f.responsibleUserId)!;
+    const token = createLocalAgentJwt(f.agentId, f.companyId, "wardmote_runner", f.runId, f.responsibleUserId)!;
     const task = await callProjectTool({ name: "create_task", arguments: { title: "Contained MCP handoff", projectId: f.projectId, initialPlan: "Do the requested work", idempotencyKey: "contained-mcp" },
       apiUrl: server.apiUrl, token, companyId: f.companyId, issueId: f.issueId, agentId: f.agentId, conversation: true });
     expect(task).toMatchObject({ parentId: null, projectId: f.projectId, assigneeAgentId: f.agentId, sourceTrust: { disposition: "quarantined" } });
@@ -156,7 +156,7 @@ const support = await getEmbeddedPostgresTestSupport();
     const executionPolicy = { authorizationPolicy: { trustPreset: "low_trust_review", trustBoundary: { mode: "low_trust_review", companyId: f.companyId, projectIds: [f.projectId] } } };
     const [run] = await server.db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, f.runId));
     await server.db.update(heartbeatRuns).set({ contextSnapshot: { ...run.contextSnapshot, executionPolicy } }).where(eq(heartbeatRuns.id, f.runId));
-    const token = createLocalAgentJwt(f.agentId, f.companyId, "paperclip_runner", f.runId, f.responsibleUserId)!;
+    const token = createLocalAgentJwt(f.agentId, f.companyId, "wardmote_runner", f.runId, f.responsibleUserId)!;
     const response = await fetch(`${server.apiUrl}/api/companies/${f.companyId}/issues`, {
       method: "POST", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
       body: JSON.stringify({ title: "Retain containment", projectId: f.projectId, assigneeAgentId: f.agentId, executionPolicy: { authorizationPolicy: { trustPreset: "standard" } }, status: "backlog" }),
@@ -172,7 +172,7 @@ const support = await getEmbeddedPostgresTestSupport();
     await server.db.update(agents).set({ permissions: policy }).where(eq(agents.id, f.agentId));
     const [outside] = await server.db.insert(projects).values({ companyId: f.companyId, name: "Outside boundary" }).returning();
     const [otherAgent] = await server.db.insert(agents).values({ companyId: f.companyId, name: "Unauthorized assignee", status: "active" }).returning();
-    const token = createLocalAgentJwt(f.agentId, f.companyId, "paperclip_runner", f.runId, f.responsibleUserId)!;
+    const token = createLocalAgentJwt(f.agentId, f.companyId, "wardmote_runner", f.runId, f.responsibleUserId)!;
     const create = async (path: string, fields: Record<string, unknown>) => {
       const response = await fetch(`${server.apiUrl}${path}`, {
         method: "POST", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
@@ -213,7 +213,7 @@ const support = await getEmbeddedPostgresTestSupport();
     const f = await server.fixture({ disableWakeOnDemand: true });
     const boundary = { mode: "low_trust_review", companyId: f.companyId, rootIssueId: f.issueId };
     await server.db.update(agents).set({ permissions: { trustPreset: "low_trust_review", authorizationPolicy: { trustBoundary: boundary } } }).where(eq(agents.id, f.agentId));
-    const token = createLocalAgentJwt(f.agentId, f.companyId, "paperclip_runner", f.runId, f.responsibleUserId)!;
+    const token = createLocalAgentJwt(f.agentId, f.companyId, "wardmote_runner", f.runId, f.responsibleUserId)!;
     for (const path of [`/api/companies/${f.companyId}/issues`, `/api/issues/${f.issueId}/children`]) {
       const response = await fetch(`${server.apiUrl}${path}`, {
         method: "POST", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
@@ -257,7 +257,7 @@ const support = await getEmbeddedPostgresTestSupport();
         projectId: f.projectId, projectWorkspaceId: f.projectWorkspaceId, mode: "shared", strategyType: "project_primary", name: "Outside root" }).returning();
       const boundary = { mode: "low_trust_review", companyId: f.companyId, rootIssueId: f.issueId };
       await server.db.update(agents).set({ permissions: { trustPreset: "low_trust_review", authorizationPolicy: { trustBoundary: boundary } } }).where(eq(agents.id, f.agentId));
-      const token = createLocalAgentJwt(f.agentId, f.companyId, "paperclip_runner", f.runId, f.responsibleUserId)!;
+      const token = createLocalAgentJwt(f.agentId, f.companyId, "wardmote_runner", f.runId, f.responsibleUserId)!;
       const before = await server.db.select({ id: issues.id }).from(issues).where(eq(issues.companyId, f.companyId));
       const paths = [`/api/companies/${f.companyId}/issues`, `/api/issues/${f.issueId}/children`];
       const selections = [{ projectWorkspaceId: f.projectWorkspaceId }, { executionWorkspaceId: executionWorkspace.id },
@@ -307,7 +307,7 @@ const support = await getEmbeddedPostgresTestSupport();
   it("does not reuse an out-of-scope task through a title or idempotency collision", async () => {
     const f = await server.fixture({ disableWakeOnDemand: true });
     const [outside] = await server.db.insert(projects).values({ companyId: f.companyId, name: "Private project" }).returning();
-    const token = createLocalAgentJwt(f.agentId, f.companyId, "paperclip_runner", f.runId, f.responsibleUserId)!;
+    const token = createLocalAgentJwt(f.agentId, f.companyId, "wardmote_runner", f.runId, f.responsibleUserId)!;
     for (const parentId of [null, f.issueId]) {
       const key = randomUUID();
       const title = `Existing private work ${randomUUID()}`;

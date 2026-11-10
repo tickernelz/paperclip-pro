@@ -19,8 +19,8 @@ describe("runner task reassignment", () => {
     const companyId = randomUUID(), agentId = randomUUID(), nextId = randomUUID(), issueId = randomUUID(), targetId = randomUUID(), runId = randomUUID();
     await db.insert(companies).values({ id: companyId, name: "Reassignment", issuePrefix: `R${companyId.slice(0, 6)}` });
     await db.insert(agents).values([
-      { id: agentId, companyId, name: "Manager", role: "ceo", status: "active", adapterType: "paperclip_runner" },
-      { id: nextId, companyId, name: "Engineer", role: "engineer", status: "active", adapterType: "paperclip_runner" },
+      { id: agentId, companyId, name: "Manager", role: "ceo", status: "active", adapterType: "wardmote_runner" },
+      { id: nextId, companyId, name: "Engineer", role: "engineer", status: "active", adapterType: "wardmote_runner" },
     ]);
     await db.insert(issues).values([
       { id: issueId, companyId, title: "Coordinate", status: "in_progress", assigneeAgentId: agentId },

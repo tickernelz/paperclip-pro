@@ -124,7 +124,7 @@ describe("campaign interruption", () => {
 
 describe("live connection coverage", () => {
   it("inventories every built-in adapter and keeps remote exclusions explicit", () => {
-    const inventory = new Set<string>(["paperclip_runner", ...connectionHarnesses.map(h => h.adapter), ...connectionScopeGaps.map(h => h.adapter)]);
+    const inventory = new Set<string>(["wardmote_runner", ...connectionHarnesses.map(h => h.adapter), ...connectionScopeGaps.map(h => h.adapter)]);
     expect(AGENT_ADAPTER_TYPES.filter(type => !inventory.has(type))).toEqual([]);
     expect(connectionHarnesses.some(h => h.adapter === "hermes_local")).toBe(true);
     expect(connectionScopeGaps.find(h => h.adapter === "hermes_gateway")?.status).toBe("excluded");

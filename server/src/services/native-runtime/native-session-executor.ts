@@ -7654,7 +7654,7 @@ export async function executePaperclipNativeSession(input: {
         attachmentStage.cleanup(),
       ]);
       if (cleanupResults.some((result) => result.status === "rejected")) {
-        throw new Error("paperclip_runner_attachment_staging_cleanup_failed");
+        throw new Error("wardmote_runner_attachment_staging_cleanup_failed");
       }
     };
     const stagedPrompt = renderNativeRunnerStagedAttachmentPrompt(
@@ -7731,7 +7731,7 @@ async function executePaperclipNativeSessionWithinScope(
     input.execution.provider.kind !== "acpx" &&
     input.execution.provider.kind !== "openai_dot"
   ) {
-    throw new Error("paperclip_runner_provider_unsupported");
+    throw new Error("wardmote_runner_provider_unsupported");
   }
   if (
     input.execution.provider.kind === "acpx" &&
@@ -7739,7 +7739,7 @@ async function executePaperclipNativeSessionWithinScope(
     !resolveAcpxQualification(input.execution.provider, process.env)
   ) {
     throw new Error(
-      "paperclip_runner_provider_unsupported: ACPX candidate requires exact host qualification authorization",
+      "wardmote_runner_provider_unsupported: ACPX candidate requires exact host qualification authorization",
     );
   }
   const preparationSpans = input.preparationSpans ?? [];
@@ -8112,7 +8112,7 @@ async function executePaperclipNativeSessionWithinScope(
         agentId: input.execution.binding.agentId,
         adapterType:
           input.adapterType ??
-          (input.useRunnerd ? "paperclip_runner" : "codex_local"),
+          (input.useRunnerd ? "wardmote_runner" : "codex_local"),
       },
       {
         eventType: event.eventType,

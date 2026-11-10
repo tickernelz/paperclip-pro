@@ -128,6 +128,6 @@ export function startupCancellationFence(requestedAt: string) {
       'beforeNativeSelection', ${heartbeatRuns.runtimeMode} = 'legacy'
         and ${heartbeatRuns.runtimeModeResolvedAt} is null
         and ${heartbeatRuns.executionStage} = 'preparing'
-        and coalesce(${heartbeatRuns.runnerProfileJson}->'adapterDispatch'->>'adapterType' = 'paperclip_runner', false))
+        and coalesce(${heartbeatRuns.runnerProfileJson}->'adapterDispatch'->>'adapterType' = 'wardmote_runner', false))
     END`;
 }

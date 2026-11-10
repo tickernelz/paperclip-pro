@@ -690,7 +690,7 @@ Batch-editable keys are the model-selection keys an adapter publishes: `model`,
 `thinking`, `provider`, `smolModel`, `slowModel`, `planModel`, `modelCycle`, and
 only when the adapter publishes them as `select`, `text` or `combobox`. Anything
 else — credentials, paths, instructions bundles, and `provider` on a
-`paperclip_runner` agent, whose transition checks only the single-agent route
+`wardmote_runner` agent, whose transition checks only the single-agent route
 runs — stays out and must go through `PATCH /api/agents/:id`.
 
 Validation is per agent against that agent's own adapter schema, with the same

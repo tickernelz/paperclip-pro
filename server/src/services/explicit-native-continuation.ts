@@ -145,7 +145,7 @@ export async function admitExplicitNativeContinuation(input: {
   if (!retry && !response && !comment?.body.trim()) return null;
   const authorizedAt = response?.comment.createdAt ?? comment?.createdAt ?? new Date();
   const [agent] = await db.select().from(agents).where(and(eq(agents.companyId, companyId), eq(agents.id, agentId)));
-  if (!agent || (!isConversationAdapter(agent.adapterType) && agent.adapterType !== "paperclip_runner")) return null;
+  if (!agent || (!isConversationAdapter(agent.adapterType) && agent.adapterType !== "wardmote_runner")) return null;
   if (queuedInterrupt && !isConversationAdapter(agent.adapterType) && !response?.source.requiresFreshSession) return null;
   const actions = await db.select().from(issueRecoveryActions).where(and(
     eq(issueRecoveryActions.companyId, companyId), eq(issueRecoveryActions.sourceIssueId, issueId),

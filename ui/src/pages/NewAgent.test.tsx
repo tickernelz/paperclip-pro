@@ -169,7 +169,7 @@ beforeEach(() => {
     "codex_local",
     "opencode_local",
     "pi_local",
-    "paperclip_runner", "cursor_cloud", "cursor", "gemini_local", "kimi_local", "grok_local", "hermes_local", "hermes_gateway",
+    "wardmote_runner", "cursor_cloud", "cursor", "gemini_local", "kimi_local", "grok_local", "hermes_local", "hermes_gateway",
   ].map((type) => ({ type, loaded: true, disabled: false }));
   api.adapterModels.mockResolvedValue([]);
   api.list.mockResolvedValue([{ id: "ceo", role: "ceo", status: "idle" }]);
@@ -202,7 +202,7 @@ afterEach(async () => {
 describe("New agent setup", () => {
   it("creates Dot through its independent choice without CLI or model setup, then routes to pairing", async () => {
     settings.getExperimental.mockResolvedValue({ enableNativeRunner: false, enableOpenAiDot: true, enablePublicMcp: true });
-    await render("paperclip_runner", "openai_dot");
+    await render("wardmote_runner", "openai_dot");
     expect(container.textContent).toContain("OpenAI Dot");
     expect(container.querySelector('[aria-label="Model"]')).toBeNull();
     expect(container.textContent).not.toContain("Connect a model");
@@ -213,7 +213,7 @@ describe("New agent setup", () => {
     expect(container.textContent).toContain("Acknowledge external provider billing");
     await act(async () => container.querySelector<HTMLButtonElement>('[role="switch"]')!.click());
     await click("Finish setup");
-    expect(api.hire).toHaveBeenCalledWith("company-1", expect.objectContaining({ adapterType: "paperclip_runner", adapterConfig: {
+    expect(api.hire).toHaveBeenCalledWith("company-1", expect.objectContaining({ adapterType: "wardmote_runner", adapterConfig: {
       provider: "openai_dot", lifecycleMode: "per_turn", allowUnmeteredProvider: true, dotWorkspaceAccess: false, dotAttachmentAccess: false,
     } }));
     expect(container.textContent).toContain("Your Dot agent has been created");
@@ -232,7 +232,7 @@ describe("New agent setup", () => {
       definition: { id: "grok-key", companyId: "company-1", key: "XAI_API_KEY", name: "Grok key", status: "active" },
       secret: { companyId: "company-1", status: "active" },
     }]);
-    await render("paperclip_runner", "grok");
+    await render("wardmote_runner", "grok");
     expect(container.querySelector('select[aria-label="Environment"]')).toBeNull();
     await click("GrokAPI key");
     await click("Use saved API key");
@@ -248,18 +248,18 @@ describe("New agent setup", () => {
       await click("GrokAPI key");
       await click("Use saved API key");
     }
-    expect(api.testEnvironment).toHaveBeenCalledWith("company-1", "paperclip_runner", expect.objectContaining({ environmentId: "grok-sandbox" }));
+    expect(api.testEnvironment).toHaveBeenCalledWith("company-1", "wardmote_runner", expect.objectContaining({ environmentId: "grok-sandbox" }));
     await click("Finish setup");
     expect(api.hire.mock.calls[0][1].defaultEnvironmentId).toBe("grok-sandbox");
   });
   it("blocks direct runner setup links when the experiment is disabled", async () => {
     settings.getExperimental.mockResolvedValue({ enableNativeRunner: false });
-    await render("paperclip_runner");
+    await render("wardmote_runner");
     expect(container.textContent).toContain("This adapter is unavailable");
     expect(api.hire).not.toHaveBeenCalled();
   });
   it.each([
-    ["paperclip_runner", "subscription"], ["paperclip_runner", "api_key"],
+    ["wardmote_runner", "subscription"], ["wardmote_runner", "api_key"],
   ])("configures %s Grok in a managed sandbox with an xAI %s connection", async (adapterType, method) => {
     envApi.list.mockResolvedValue([
       { id: "sandbox-1", name: "Managed sandbox", driver: "sandbox", config: { provider: "daytona" } },
@@ -285,13 +285,13 @@ describe("New agent setup", () => {
         provider: "xai", method: "api_key", apiKey: "example-test-secret",
       }));
     }
-    const model = adapterType === "paperclip_runner" ? "grok-4.7" : "grok-code-fast-1";
+    const model = adapterType === "wardmote_runner" ? "grok-4.7" : "grok-code-fast-1";
     await fill("Model", model);
     await click("Run test");
     const binding = { provider: "xai", method, mode: "responsible_user" };
     expect(api.testEnvironment).toHaveBeenLastCalledWith("company-1", adapterType, expect.objectContaining({
       environmentId: "sandbox-1",
-      adapterConfig: expect.objectContaining({ model, ...(adapterType === "paperclip_runner" ? { provider: "acpx", acpxAgent: "grok", acpxPermissionMode: "approve-all" } : {}) }),
+      adapterConfig: expect.objectContaining({ model, ...(adapterType === "wardmote_runner" ? { provider: "acpx", acpxAgent: "grok", acpxPermissionMode: "approve-all" } : {}) }),
       aiConnection: binding,
       testCredentials: {},
     }));
@@ -300,7 +300,7 @@ describe("New agent setup", () => {
     expect(api.hire.mock.calls[0][1]).toMatchObject({
       adapterType,
       defaultEnvironmentId: "sandbox-1",
-      adapterConfig: { model, ...(adapterType === "paperclip_runner" ? { provider: "acpx", acpxAgent: "grok", acpxPermissionMode: "approve-all" } : {}) },
+      adapterConfig: { model, ...(adapterType === "wardmote_runner" ? { provider: "acpx", acpxAgent: "grok", acpxPermissionMode: "approve-all" } : {}) },
       runtimeConfig: { aiConnection: binding, heartbeat: { enabled: false } },
     });
     expect(JSON.stringify(api.testEnvironment.mock.calls)).not.toContain("example-test-secret");
@@ -346,8 +346,8 @@ describe("New agent setup", () => {
     });
   });
   it.each([
-    ["paperclip_runner", "claude", "Claude", "ANTHROPIC_API_KEY"],
-    ["paperclip_runner", "codex", "OpenAI", "OPENAI_API_KEY"],
+    ["wardmote_runner", "claude", "Claude", "ANTHROPIC_API_KEY"],
+    ["wardmote_runner", "codex", "OpenAI", "OPENAI_API_KEY"],
   ])("stores %s %s as a reusable connection before hiring", async (adapter, runner, provider, key) => {
     await render(adapter, runner);
     await click(provider + "API key");
@@ -366,8 +366,8 @@ describe("New agent setup", () => {
     expect(JSON.stringify(api.hire.mock.calls)).not.toContain("connection-key");
   });
   it.each([
-    ["paperclip_runner", "claude", "Claude", "ANTHROPIC_API_KEY"],
-    ["paperclip_runner", "codex", "OpenAI", "OPENAI_API_KEY"],
+    ["wardmote_runner", "claude", "Claude", "ANTHROPIC_API_KEY"],
+    ["wardmote_runner", "codex", "OpenAI", "OPENAI_API_KEY"],
   ])("defaults %s %s to a saved key and preserves its reference through hire", async (adapter, runner, provider, key) => {
     secrets.listMyUserSecrets.mockResolvedValue([{
       definition: { id: "existing-key", companyId: "company-1", key, name: "Existing key", status: "active" },
@@ -386,7 +386,7 @@ describe("New agent setup", () => {
     expect(secrets.createMyUserSecret).not.toHaveBeenCalled();
     expect(secrets.rotateMyUserSecret).not.toHaveBeenCalled();
   });
-  it.each(["paperclip_runner"])("keeps a saved connection chosen in Connect when hiring %s", async (adapter) => {
+  it.each(["wardmote_runner"])("keeps a saved connection chosen in Connect when hiring %s", async (adapter) => {
     await render(adapter, "codex");
     managedApi.list.mockResolvedValue({
       currentUserId: "user-1",
@@ -417,7 +417,7 @@ describe("New agent setup", () => {
   it.each(["codex", "claude", "opencode"])(
     "uses the correct native %s runner",
     async (runner) => {
-      await render("paperclip_runner", runner);
+      await render("wardmote_runner", runner);
       if (runner !== "opencode")
         await connect(runner === "claude" ? "Claude" : "OpenAI");
       else await fill("Model", "openrouter/anthropic/claude-sonnet-4.6");
@@ -433,9 +433,9 @@ describe("New agent setup", () => {
   );
   it("blocks a disabled runner even when opened through a URL", async () => {
     state.adapters = [
-      { type: "paperclip_runner", loaded: true, disabled: true },
+      { type: "wardmote_runner", loaded: true, disabled: true },
     ];
-    await render("paperclip_runner");
+    await render("wardmote_runner");
     expect(container.textContent).toContain("This adapter is unavailable");
     expect(api.testEnvironment).not.toHaveBeenCalled();
     expect(api.hire).not.toHaveBeenCalled();

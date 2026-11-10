@@ -132,7 +132,7 @@ describe("OpenWA agent tools (embedded Postgres + fake gateway)", () => {
       name: "OpenWA Agent",
       role: "engineer",
       status: "idle",
-      adapterType: "paperclip_runner",
+      adapterType: "wardmote_runner",
       adapterConfig: {},
       runtimeConfig: {},
       permissions: {},
@@ -1275,7 +1275,7 @@ describe("OpenWA agent tools (embedded Postgres + fake gateway)", () => {
     const configured = await applyConnectorSkills({ wardmoteSkillSync: { desiredSkills: [] } }, [], assignments);
     const bundle = configured.paperclipRuntimeSkills.find((entry) => entry.key === "tickernelz/wardmote/openwa")!;
     expect(JSON.parse(await readFile(path.join(bundle.source, "TOOLS.json"), "utf8")).map((tool: { name: string }) => tool.name)).toContain("openwa_send");
-    const native = await prepareConnectorSkillDelivery(configured, "paperclip_runner");
+    const native = await prepareConnectorSkillDelivery(configured, "wardmote_runner");
     expect(native.instructions).toContain("openwa_send");
     const [child] = await db.insert(issues).values({ companyId: t.companyId, title: "Child", status: "todo", assigneeAgentId: t.agentId, parentId: c.issueId }).returning();
     const childRun = await run(t, c, { triggerClass: "owner", issueId: child!.id });

@@ -237,7 +237,7 @@ same process wait for the first handler before checking the receipt again.
 The filesystem and PostgreSQL are not one atomic store. If a write is visible
 but its receipt transaction rolls back, the attempt record remains durable and
 the result is unknown. An identical call with an attempt but no committed result
-raises `paperclip_runner_instruction_outcome_unknown`; it does not write again
+raises `wardmote_runner_instruction_outcome_unknown`; it does not write again
 or pretend to have succeeded. This also applies to another process reaching a
 reserved call before its effect transaction starts. The controller retains an
 unsettled operation for authoritative reconciliation. If only the commit

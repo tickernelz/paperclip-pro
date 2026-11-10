@@ -42,7 +42,7 @@ try {
   assert.ok(issueResponse.ok(), "Disposable task must be accessible");
   const issue = await issueResponse.json();
   const agent = await (await page.request.get(api(`/api/agents/${issue.assigneeAgentId}`))).json();
-  assert.equal(agent.adapterType, "paperclip_runner");
+  assert.equal(agent.adapterType, "wardmote_runner");
   assert.equal(agent.adapterConfig.provider, "codex");
   const startedAt = Date.now();
   const editor = page.locator('[contenteditable="true"]').last();
@@ -93,7 +93,7 @@ try {
   const run = runs.find((candidate) => new Date(candidate.createdAt).getTime() >= startedAt);
   assert.ok(run, "The submitted job must create a run");
   assert.equal(run.runtimeMode, "native");
-  assert.equal(run.adapterType, "paperclip_runner");
+  assert.equal(run.adapterType, "wardmote_runner");
   assert.equal(run.status, "succeeded");
   await fs.writeFile(path.join(output, "runtime.json"), JSON.stringify({
     runId: run.runId, runtimeMode: run.runtimeMode, adapterType: run.adapterType,

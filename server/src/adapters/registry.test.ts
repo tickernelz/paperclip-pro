@@ -65,7 +65,7 @@ describe("built-in runtime connection tool delivery", () => {
   const expectedStrategies = new Map<string, string>([
     ...RETIRED_ADAPTER_TYPES.map((type) => [type, "environment"] as const),
     ["omp_local", "environment"],
-    ["paperclip_runner", "environment"],
+    ["wardmote_runner", "environment"],
     ["process", "environment"],
     ["http", "invocation_context"],
   ]);
@@ -94,13 +94,13 @@ describe("native ACPX environment checks", () => {
 
   const context = {
     companyId: "company-test",
-    adapterType: "paperclip_runner",
+    adapterType: "wardmote_runner",
     config: { provider: "acpx", acpxAgent: "claude", model: "claude-sonnet-5" },
   };
 
   it("reports unsupported local platforms before a successful CLI login can mask them", async () => {
     probeInstallation.mockRejectedValue(new Error("ACPX Claude requires a supported runtime platform"));
-    const result = await requireServerAdapter("paperclip_runner").testEnvironment!(context);
+    const result = await requireServerAdapter("wardmote_runner").testEnvironment!(context);
     expect(result.status).toBe("fail");
     expect(result.checks).toEqual([expect.objectContaining({
       code: "acpx_runtime_unavailable",
@@ -109,14 +109,14 @@ describe("native ACPX environment checks", () => {
   });
 
   it("requires a successful installed runtime probe", async () => {
-    const result = await requireServerAdapter("paperclip_runner").testEnvironment!(context);
+    const result = await requireServerAdapter("wardmote_runner").testEnvironment!(context);
     expect(result.status).toBe("pass");
     expect(probeInstallation).toHaveBeenCalledWith(context.config.model);
   });
 
   it.each([true, false])("checks Grok's own installation readiness (%s)", async (ready) => {
     if (!ready) probeGrokInstallation.mockRejectedValueOnce(new Error("Grok executable digest mismatch"));
-    const result = await requireServerAdapter("paperclip_runner").testEnvironment!({
+    const result = await requireServerAdapter("wardmote_runner").testEnvironment!({
       ...context,
       config: { provider: "acpx", acpxAgent: "grok", model: "grok-4.7" },
     });
@@ -128,7 +128,7 @@ describe("native ACPX environment checks", () => {
   it.each([true, false])("checks qualified Pi's own installation readiness (%s)", async (ready) => {
     if (!ready) probePiInstallation.mockRejectedValueOnce(new Error("Pi installation integrity mismatch"));
     const model = "openrouter/deepseek/deepseek-v4-flash-0731";
-    const result = await requireServerAdapter("paperclip_runner").testEnvironment!({
+    const result = await requireServerAdapter("wardmote_runner").testEnvironment!({
       ...context,
       config: { provider: "acpx", acpxAgent: "pi", model },
     });
@@ -140,7 +140,7 @@ describe("native ACPX environment checks", () => {
 
   it("does not use the host platform to reject a remote environment", async () => {
     vi.spyOn(process, "platform", "get").mockReturnValue("darwin");
-    const result = await requireServerAdapter("paperclip_runner").testEnvironment!({
+    const result = await requireServerAdapter("wardmote_runner").testEnvironment!({
       ...context,
       executionTarget: {
         kind: "remote", transport: "sandbox", remoteCwd: "/workspace", providerKey: "test",
@@ -172,7 +172,7 @@ describe("native ACPX environment checks", () => {
     const probe = vi.spyOn(executionTarget, "runAdapterExecutionTargetShellCommand").mockResolvedValue({
       exitCode: 0, timedOut: false, stdout, stderr: "", signal: null, pid: null, startedAt: new Date(0).toISOString(),
     });
-    const result = await requireServerAdapter("paperclip_runner").testEnvironment!({ ...context, executionTarget: sshTarget });
+    const result = await requireServerAdapter("wardmote_runner").testEnvironment!({ ...context, executionTarget: sshTarget });
     expect(result.status).toBe(status);
     expect(probe).toHaveBeenCalledWith(expect.any(String), sshTarget, "uname -s && uname -m", {
       cwd: "/workspace", env: {}, timeoutSec: 15,
@@ -186,7 +186,7 @@ describe("native ACPX environment checks", () => {
       exitCode: failure === "exit" ? 1 : 0, timedOut: failure === "timeout",
       stdout: "Linux\nx86_64\n", stderr: "", signal: null, pid: null, startedAt: new Date(0).toISOString(),
     });
-    const result = await requireServerAdapter("paperclip_runner").testEnvironment!({ ...context, executionTarget: sshTarget });
+    const result = await requireServerAdapter("wardmote_runner").testEnvironment!({ ...context, executionTarget: sshTarget });
     expect(result.status).toBe("fail");
     expect(result.checks[0].code).toBe("acpx_runtime_unavailable");
   });

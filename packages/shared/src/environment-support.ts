@@ -65,7 +65,7 @@ export interface EnvironmentCapabilities {
   sandboxProviders: Record<SandboxEnvironmentProvider, EnvironmentProviderCapability>;
 }
 
-const REMOTE_MANAGED_ADAPTERS = new Set<AgentAdapterType>(["paperclip_runner", "omp_local", ...RUNNER_HARNESS_ADAPTER_TYPES]);
+const REMOTE_MANAGED_ADAPTERS = new Set<AgentAdapterType>(["wardmote_runner", "omp_local", ...RUNNER_HARNESS_ADAPTER_TYPES]);
 
 export function adapterSupportsRemoteManagedEnvironments(adapterType: string): boolean {
   return REMOTE_MANAGED_ADAPTERS.has(adapterType as AgentAdapterType);

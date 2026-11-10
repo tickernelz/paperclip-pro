@@ -57,11 +57,11 @@ describeEmbeddedPostgres("agent service clearError", () => {
     await db.insert(heartbeatRuns).values({ id: runId, companyId, agentId, invocationSource: "on_demand", status: "succeeded", resultJson: { summary: "history stays" } });
     await db.insert(agentTaskSessions).values({ companyId, agentId, adapterType: "claude_local", taskKey: "issue:test", sessionDisplayId: "old-session", lastRunId: runId });
     await db.insert(agentRuntimeState).values({ companyId, agentId, adapterType: "claude_local", sessionId: "old-session", stateJson: { old: true }, lastRunId: runId });
-    const updated = await agentService(db).update(agentId, { adapterType: "paperclip_runner", adapterConfig: { ...config, provider: "acpx", acpxAgent: "claude", model: "custom-claude-model" } });
+    const updated = await agentService(db).update(agentId, { adapterType: "wardmote_runner", adapterConfig: { ...config, provider: "acpx", acpxAgent: "claude", model: "custom-claude-model" } });
     expect(updated).toMatchObject({ id: agentId, companyId, name: "Claude QA", role: "engineer", adapterConfig: config });
     expect(await db.select().from(agentTaskSessions).where(eq(agentTaskSessions.agentId, agentId))).toEqual([]);
     const [runtime] = await db.select().from(agentRuntimeState).where(eq(agentRuntimeState.agentId, agentId));
-    expect(runtime).toMatchObject({ adapterType: "paperclip_runner", sessionId: null, stateJson: {}, lastRunId: runId });
+    expect(runtime).toMatchObject({ adapterType: "wardmote_runner", sessionId: null, stateJson: {}, lastRunId: runId });
     const [run] = await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, runId));
     expect(run).toMatchObject({ status: "succeeded", resultJson: { summary: "history stays" } });
   });

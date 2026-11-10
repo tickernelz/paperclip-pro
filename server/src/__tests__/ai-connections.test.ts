@@ -822,7 +822,7 @@ describe("managed AI connections", () => {
       await expect(service.probeUsage(companyId, "bob", account.connectionId)).rejects.toThrow("not found");
       expect(fetchSpy).not.toHaveBeenCalled();
       await tools.replaceConnectionGrantMembers(account.connectionId, account.grantId, ["bob"], { userId: "alice" });
-      for (const config of [{ adapterType: "claude_local" }, { adapterType: "paperclip_runner", runnerProvider: "acpx", acpxAgent: "claude" }]) {
+      for (const config of [{ adapterType: "claude_local" }, { adapterType: "wardmote_runner", runnerProvider: "acpx", acpxAgent: "claude" }]) {
         const row = await service.select({ companyId, userId: "bob", agentId, binding: selected, ...config });
         expect(await service.probeUsage(companyId, "bob", row.connection.id, row.grant.id)).toMatchObject({ status: "ok", overage: { available: false }, limits: [{ limitReached: true }, { allowed: false }] });
       }
@@ -845,7 +845,7 @@ describe("managed AI connections", () => {
     await expect(service.setDefault(companyId, "alice", saved.grantId)).rejects.toThrow("explicit connection");
     await expect(service.select({ ...input, binding: selected, userId: "bob", adapterType: "codex_local", model: "openai/gpt-5.4" })).rejects.toThrow("not shared");
     await expect(service.select({ ...input, companyId: otherCompanyId, binding: selected, userId: "alice", adapterType: "codex_local" })).rejects.toThrow();
-    for (const adapterType of ["codex_local", "paperclip_runner"]) {
+    for (const adapterType of ["codex_local", "wardmote_runner"]) {
       const runtime = await prepareManagedAiRuntime(db, { companyId, agentId, responsibleUserId: "alice", binding: selected, adapterType, config: { provider: "codex", model: "openai/gpt-5.4", env: { OPENAI_API_KEY: "ambient" } } });
       try {
         expect(runtime.config.env.OPENAI_API_KEY).toBe("");
@@ -947,7 +947,7 @@ describe("managed AI connections", () => {
     const id = randomUUID();
     const issueId = randomUUID();
     const runId = randomUUID();
-    await db.insert(agents).values({ id, companyId, name: "Legacy Codex", adapterType: "paperclip_runner", adapterConfig: { provider: "codex" } });
+    await db.insert(agents).values({ id, companyId, name: "Legacy Codex", adapterType: "wardmote_runner", adapterConfig: { provider: "codex" } });
     await db.insert(issues).values({ id: issueId, companyId, title: "Legacy auth", status: "in_progress", assigneeAgentId: id });
     await db.insert(heartbeatRuns).values({ id: runId, companyId, agentId: id, nativeIssueId: issueId, status: "failed", errorCode: "acpx_auth_required", responsibleUserId: "alice", contextSnapshot: {} });
     const intents = connectionIntentService(db);
@@ -1493,9 +1493,9 @@ describe("managed AI connections", () => {
     expect(connectionPurposeTransportSchema.safeParse({ connectionPurpose: "tool", transport: "voice", config: { provider: "speko" } }).success).toBe(false);
     expect(aiConnectionBindingSchema.safeParse({ provider: "anthropic", mode: "responsible_user" }).success).toBe(false);
     expect(aiConnectionBindingSchema.safeParse({ provider: "anthropic", mode: "shared", connectionId: randomUUID(), grantId: randomUUID() }).success).toBe(false);
-    expect(isAiConnectionCompatible({ provider: "anthropic", method: "api_key", mode: "responsible_user" }, "paperclip_runner", "same-model", "acpx", "claude")).toBe(true);
-    expect(isAiConnectionCompatible(binding, "paperclip_runner", "same-model", "acpx", "claude")).toBe(true);
-    expect(isAiConnectionCompatible(binding, "paperclip_runner", "same-model", "acpx", "codex")).toBe(false);
+    expect(isAiConnectionCompatible({ provider: "anthropic", method: "api_key", mode: "responsible_user" }, "wardmote_runner", "same-model", "acpx", "claude")).toBe(true);
+    expect(isAiConnectionCompatible(binding, "wardmote_runner", "same-model", "acpx", "claude")).toBe(true);
+    expect(isAiConnectionCompatible(binding, "wardmote_runner", "same-model", "acpx", "codex")).toBe(false);
     expect(isAiConnectionCompatible({ provider: "openrouter", method: "api_key" }, "opencode_local", "anthropic/model")).toBe(false);
   });
   it("does not let a forged delegation bypass human access or accept an expired subscription attempt", async () => {
@@ -1721,7 +1721,7 @@ describe("managed AI connections", () => {
     const [environment] = await db.insert(environments).values({ name: `Adoption sandbox ${inline}`, driver: "sandbox", config: { provider: "daytona" } }).returning();
     await settings.update({ defaultEnvironmentId: environment.id });
     const id = randomUUID();
-    await db.insert(agents).values({ id, companyId, name: "Runner adoption", adapterType: "paperclip_runner", adapterConfig: { provider: "codex", model: "gpt-5.6-sol" } });
+    await db.insert(agents).values({ id, companyId, name: "Runner adoption", adapterType: "wardmote_runner", adapterConfig: { provider: "codex", model: "gpt-5.6-sol" } });
     const account = await service.save(companyId, "alice", { provider: "openai", method: "api_key", ownership: "personal", name: "Runner adoption account", apiKey: "fixture-adoption-key", agentIds: inline ? [] : [id], allAgents: false }, "fixture-adoption-key");
     await service.setDefault(companyId, "alice", account.grantId);
     const tryDeliver = vi.fn(async (interactionId: string) => {
@@ -1744,7 +1744,7 @@ describe("managed AI connections", () => {
     const release = vi.fn(async () => undefined);
     const acquire = vi.fn(async () => ({ lease: { id: randomUUID(), provider: "daytona", providerLeaseId: "test-sandbox", metadata: {} }, leaseContext: {} }));
     const runtime = vi.spyOn(runtimeModule, "environmentRuntimeService").mockReturnValue({ acquireRunLease: acquire, realizeWorkspace: vi.fn(async () => ({ cwd: "/workspace" })), getDriver: () => ({ releaseRunLease: release }) } as any);
-    const probe = vi.spyOn(requireServerAdapter("paperclip_runner"), "testEnvironment").mockImplementation(async context => ({ adapterType: "paperclip_runner", status: context.executionTarget ? "pass" : "fail", testedAt: new Date().toISOString(), checks: [{ code: context.executionTarget ? "codex_hello_probe_passed" : "host_probe_failed", level: context.executionTarget ? "info" : "error", message: "fixture" }] }));
+    const probe = vi.spyOn(requireServerAdapter("wardmote_runner"), "testEnvironment").mockImplementation(async context => ({ adapterType: "wardmote_runner", status: context.executionTarget ? "pass" : "fail", testedAt: new Date().toISOString(), checks: [{ code: context.executionTarget ? "codex_hello_probe_passed" : "host_probe_failed", level: context.executionTarget ? "info" : "error", message: "fixture" }] }));
     const app = express();
     app.use(express.json());
     app.use((req, _res, next) => { req.actor = { type: "board", source: "local_implicit", userId: "alice", companyIds: [companyId] }; next(); });
@@ -1825,7 +1825,7 @@ describe("managed AI connections", () => {
     app.use("/api", agentRoutes(db));
     app.use((error: { status?: number; message: string }, _req: express.Request, res: express.Response, _next: express.NextFunction) => { res.status(error.status ?? 500).json({ error: error.message }); });
     for (const endpoint of ["agents", "agent-hires"]) {
-      const response = await request(app).post(`/api/companies/${companyId}/${endpoint}`).send({ name: `Shared ${endpoint}`, role: "general", adapterType: "paperclip_runner", adapterConfig: { provider: "acpx", acpxAgent: "claude", model: "claude-sonnet-4-6" }, runtimeConfig: { aiConnection: selected } });
+      const response = await request(app).post(`/api/companies/${companyId}/${endpoint}`).send({ name: `Shared ${endpoint}`, role: "general", adapterType: "wardmote_runner", adapterConfig: { provider: "acpx", acpxAgent: "claude", model: "claude-sonnet-4-6" }, runtimeConfig: { aiConnection: selected } });
       expect(response.status, JSON.stringify(response.body)).toBe(201);
       const agent = endpoint === "agents" ? response.body : response.body.agent;
       expect(agent.adapterConfig.model).toBe("claude-sonnet-4-6");
@@ -1840,7 +1840,7 @@ describe("managed AI connections", () => {
     try {
       for (const endpoint of ["agents", "agent-hires"]) {
         const name = `Rollback ${endpoint}`;
-        const response = await request(app).post(`/api/companies/${companyId}/${endpoint}`).send({ name, role: "general", adapterType: "paperclip_runner", adapterConfig: { provider: "acpx", acpxAgent: "claude", model: "claude-sonnet-4-6" }, runtimeConfig: { aiConnection: selected } });
+        const response = await request(app).post(`/api/companies/${companyId}/${endpoint}`).send({ name, role: "general", adapterType: "wardmote_runner", adapterConfig: { provider: "acpx", acpxAgent: "claude", model: "claude-sonnet-4-6" }, runtimeConfig: { aiConnection: selected } });
         expect(response.status).toBe(500);
         expect(await db.select().from(agents).where(and(eq(agents.companyId, companyId), eq(agents.name, name)))).toEqual([]);
       }

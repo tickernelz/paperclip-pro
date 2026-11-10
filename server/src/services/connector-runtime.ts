@@ -261,13 +261,13 @@ export async function prepareConnectorSkillDelivery(
   config: Record<string, unknown> & Awaited<ReturnType<typeof applyConnectorSkills>>,
   adapterType: string,
 ) {
-  const scopedFiles = adapterType === "paperclip_runner";
+  const scopedFiles = adapterType === "wardmote_runner";
   if (scopedFiles) {
     // Runner models with semantic tools cannot necessarily read staged skill
     // files. Supply Slack and Speko contracts and verified source IDs in their input;
     // keep the staged bundle for CLI-capable engines and compatibility hashing.
     const manifestSkills = new Set(connectors.filter((connector) => connector.toolsManifest).map(skillKey));
-    const promptSkills = adapterType === "paperclip_runner"
+    const promptSkills = adapterType === "wardmote_runner"
       ? config.paperclipRuntimeSkills.filter(entry =>
         manifestSkills.has(entry.key)
         || ["tickernelz/wardmote/slack", "tickernelz/wardmote/speko"].includes(entry.key))

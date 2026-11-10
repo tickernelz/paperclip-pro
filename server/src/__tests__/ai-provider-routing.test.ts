@@ -78,7 +78,7 @@ describe("provider routing", () => {
     expect(
       isAiConnectionCompatible(
         { provider: "openai", method: "api_key", routing },
-        "paperclip_runner",
+        "wardmote_runner",
         "model",
         "aws_agentcore",
       ),

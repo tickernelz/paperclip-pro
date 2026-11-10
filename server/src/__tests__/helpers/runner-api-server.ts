@@ -87,7 +87,7 @@ export async function startRunnerApiTestServer(options: {
         await db.insert(authUsers).values({ id: responsibleUserId, name: "Eval responsible user", email: `${responsibleUserId}@fixture.invalid`, emailVerified: true, createdAt: new Date(), updatedAt: new Date() }).onConflictDoNothing();
         await db.insert(companyMemberships).values({ companyId, principalType: "user", principalId: responsibleUserId, status: "active", membershipRole: "member" });
       }
-      await db.insert(agents).values({ id: agentId, companyId, name: "API eval agent", adapterType: "paperclip_runner", adapterConfig: { provider: "codex", cwd: workspace }, runtimeConfig: { heartbeat: { enabled: false, ...(options.disableWakeOnDemand ? { wakeOnDemand: false } : {}) } }, status: "active" });
+      await db.insert(agents).values({ id: agentId, companyId, name: "API eval agent", adapterType: "wardmote_runner", adapterConfig: { provider: "codex", cwd: workspace }, runtimeConfig: { heartbeat: { enabled: false, ...(options.disableWakeOnDemand ? { wakeOnDemand: false } : {}) } }, status: "active" });
       await db.insert(projects).values([
         { id: projectId, companyId, name: "Aurora", description: "The project verification code is violet-otter.", status: "in_progress" },
         { id: foreignProjectId, companyId: foreignCompanyId, name: "Private project", description: "foreign-data-must-not-leak" },
@@ -143,7 +143,7 @@ export async function startRunnerApiTestServer(options: {
       }
       if (options.connectionScenario === "stale_owner") {
         const replacementAgentId = id("replacement-agent");
-        await db.insert(agents).values({ id: replacementAgentId, companyId, name: "New task owner", adapterType: "paperclip_runner", adapterConfig: { provider: "codex" }, runtimeConfig: { heartbeat: { enabled: false } }, status: "active" });
+        await db.insert(agents).values({ id: replacementAgentId, companyId, name: "New task owner", adapterType: "wardmote_runner", adapterConfig: { provider: "codex" }, runtimeConfig: { heartbeat: { enabled: false } }, status: "active" });
         await db.update(issues).set({ assigneeAgentId: replacementAgentId }).where(eq(issues.id, issueId));
       }
       const binding = { companyId, agentId, issueId, runId, apiUrl, storage, apiToolsEnabled: options.apiToolsEnabled ?? true };

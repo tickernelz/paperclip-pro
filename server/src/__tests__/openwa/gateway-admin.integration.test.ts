@@ -83,7 +83,7 @@ describe("OpenWA gateway administration from the board (embedded Postgres + fake
       name: "OpenWA Agent",
       role: "engineer",
       status: "idle",
-      adapterType: "paperclip_runner",
+      adapterType: "wardmote_runner",
       adapterConfig: {},
       runtimeConfig: {},
       permissions: {},

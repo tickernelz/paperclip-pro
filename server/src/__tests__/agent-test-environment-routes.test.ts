@@ -258,7 +258,7 @@ describe("agent test-environment route", () => {
     mockInstanceSettingsService.get.mockResolvedValue({ defaultEnvironmentId: "11111111-1111-4111-8111-111111111111" });
     const app = await createApp();
     try {
-      const res = await request(app).post("/api/companies/company-1/adapters/paperclip_runner/test-environment")
+      const res = await request(app).post("/api/companies/company-1/adapters/wardmote_runner/test-environment")
         .send({ adapterConfig: { provider: "openai_dot", allowUnmeteredProvider: true } });
       expect(res.status, JSON.stringify(res.body)).toBe(200);
       expect(res.body.checks).toContainEqual(expect.objectContaining({ code: "dot_controller", level: "info" }));

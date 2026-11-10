@@ -52,7 +52,7 @@ describe("paperclip-runner real server vertical slice", () => {
       id: agentId,
       companyId,
       name: "Real runner agent",
-      adapterType: "paperclip_runner",
+      adapterType: "wardmote_runner",
       adapterConfig: { provider: "codex" },
       runtimeConfig: {},
       status: "active",

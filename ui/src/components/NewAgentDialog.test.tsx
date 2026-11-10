@@ -48,7 +48,7 @@ beforeEach(async () => {
   invites.copy.mockResolvedValue(undefined);
   state.adapters = [
     { type: "omp_local", loaded: true },
-    { type: "paperclip_runner", loaded: true },
+    { type: "wardmote_runner", loaded: true },
     { type: "claude_local", loaded: true, disabled: true },
   ];
   container = document.createElement("div");
@@ -106,7 +106,7 @@ it("offers native Codex, Claude ACPX, and OpenCode runners", async () => {
   await act(async () =>
     (
       document.querySelector(
-        'input[value="paperclip_runner"]',
+        'input[value="wardmote_runner"]',
       ) as HTMLInputElement
     ).click(),
   );
@@ -129,7 +129,7 @@ it.each([false, undefined])(
     });
     await name();
     expect(
-      document.querySelector('input[value="paperclip_runner"]'),
+      document.querySelector('input[value="wardmote_runner"]'),
     ).toBeNull();
     expect(document.querySelector('input[value="omp_local"]')).not.toBeNull();
   },

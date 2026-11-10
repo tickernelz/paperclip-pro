@@ -117,7 +117,7 @@ it("dispatch retains raw trust before workspace and broker setup", () => {
         companyId,
         name: "Native chat runner",
         role: "engineer",
-        adapterType: "paperclip_runner",
+        adapterType: "wardmote_runner",
       });
       await db
         .insert(projects)

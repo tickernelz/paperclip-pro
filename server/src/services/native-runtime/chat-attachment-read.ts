@@ -62,7 +62,7 @@ export class NativeChatAttachmentReadScope {
 
   #assertOpen() {
     if (this.#closed)
-      throw new Error("paperclip_runner_chat_attachment_read_scope_closed");
+      throw new Error("wardmote_runner_chat_attachment_read_scope_closed");
   }
 
   read(input: { sourceCommentId: string; attachmentId: string }) {
@@ -75,16 +75,16 @@ export class NativeChatAttachmentReadScope {
       )
     ) {
       throw new Error(
-        "paperclip_runner_chat_attachment_read_arguments_invalid",
+        "wardmote_runner_chat_attachment_read_arguments_invalid",
       );
     }
     if (this.options.executionTargetKind !== "local") {
       throw new Error(
-        "paperclip_runner_chat_attachment_remote_staging_unsupported",
+        "wardmote_runner_chat_attachment_remote_staging_unsupported",
       );
     }
     if (++this.#readCount > 20)
-      throw new Error("paperclip_runner_chat_attachment_read_limit");
+      throw new Error("wardmote_runner_chat_attachment_read_limit");
     const pending = this.#read(input);
     this.#pending.add(pending);
     void pending
@@ -111,7 +111,7 @@ export class NativeChatAttachmentReadScope {
         const remaining = deadline - Date.now();
         if (remaining <= 0) {
           throw new Error(
-            "paperclip_runner_chat_attachment_read_busy: chat authorization is temporarily busy; retry this read shortly",
+            "wardmote_runner_chat_attachment_read_busy: chat authorization is temporarily busy; retry this read shortly",
           );
         }
         await delay(Math.min(50, remaining), undefined, {
@@ -137,7 +137,7 @@ export class NativeChatAttachmentReadScope {
           "nonblocking",
         );
       if (authorization !== "authorized")
-        throw new Error("paperclip_runner_chat_attachment_read_not_authorized");
+        throw new Error("wardmote_runner_chat_attachment_read_not_authorized");
       const [run] = await tx
         .select({ contextSnapshot: heartbeatRuns.contextSnapshot })
         .from(heartbeatRuns)
@@ -164,7 +164,7 @@ export class NativeChatAttachmentReadScope {
       current.byteSize !== source.byteSize ||
       current.contentType !== source.contentType
     ) {
-      throw new Error("paperclip_runner_chat_attachment_read_source_changed");
+      throw new Error("wardmote_runner_chat_attachment_read_source_changed");
     }
     // The committed revalidation admits these exact verified bytes. Never
     // hold issue/endpoint/principal locks over filesystem work (including
@@ -210,7 +210,7 @@ export class NativeChatAttachmentReadScope {
         "abort",
         () => {
           object?.stream.destroy();
-          reject(new Error("paperclip_runner_chat_attachment_read_aborted"));
+          reject(new Error("wardmote_runner_chat_attachment_read_aborted"));
         },
         { once: true },
       );
@@ -220,7 +220,7 @@ export class NativeChatAttachmentReadScope {
       .then((value) => {
         if (signal.aborted) {
           value.stream.destroy();
-          throw new Error("paperclip_runner_chat_attachment_read_aborted");
+          throw new Error("wardmote_runner_chat_attachment_read_aborted");
         }
         object = value;
         return value;
@@ -235,7 +235,7 @@ export class NativeChatAttachmentReadScope {
           length += bytes.length;
           if (length > source.byteSize || length > getMaxAttachmentBytes())
             throw new Error(
-              "paperclip_runner_chat_attachment_read_size_mismatch",
+              "wardmote_runner_chat_attachment_read_size_mismatch",
             );
           chunks.push(bytes);
         }
@@ -249,7 +249,7 @@ export class NativeChatAttachmentReadScope {
           source.sha256.toLowerCase()
       )
         throw new Error(
-          "paperclip_runner_chat_attachment_read_integrity_mismatch",
+          "wardmote_runner_chat_attachment_read_integrity_mismatch",
         );
       return body;
     })();
@@ -266,7 +266,7 @@ export class NativeChatAttachmentReadScope {
         this.#cleanups.map((cleanup) => cleanup()),
       );
       if (results.some((result) => result.status === "rejected"))
-        throw new Error("paperclip_runner_chat_attachment_read_cleanup_failed");
+        throw new Error("wardmote_runner_chat_attachment_read_cleanup_failed");
     })();
     return this.#closing;
   }

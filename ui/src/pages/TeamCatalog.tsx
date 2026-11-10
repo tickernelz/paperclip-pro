@@ -127,7 +127,7 @@ export function listTeamInstallAdapterTypes(
     (type) =>
       !TEAM_INSTALL_FORBIDDEN_ADAPTER_TYPES.has(type) &&
       !disabledTypes.has(type) &&
-      (type !== "paperclip_runner" || adapterRegistryLoaded),
+      (type !== "wardmote_runner" || adapterRegistryLoaded),
   );
 }
 

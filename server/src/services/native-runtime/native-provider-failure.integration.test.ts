@@ -41,8 +41,8 @@ describe("native completed failure diagnostics", () => {
     temporary = await startEmbeddedPostgresTestDatabase("native-model-failure-");
     db = createDb(temporary.connectionString);
     await db.insert(companies).values({ id: companyId, name: "Native failure regression", issuePrefix: "NMF" });
-    await db.insert(agents).values({ id: agentId, companyId, name: "Native failure agent", status: "active", adapterType: "paperclip_runner", adapterConfig: { provider: "codex", model } });
-    await db.insert(agents).values({ id: workerId, companyId, name: "Review source worker", status: "active", adapterType: "paperclip_runner" });
+    await db.insert(agents).values({ id: agentId, companyId, name: "Native failure agent", status: "active", adapterType: "wardmote_runner", adapterConfig: { provider: "codex", model } });
+    await db.insert(agents).values({ id: workerId, companyId, name: "Review source worker", status: "active", adapterType: "wardmote_runner" });
   });
   afterAll(async () => { await temporary?.cleanup(); });
 

@@ -151,7 +151,7 @@ describe("OpenWA owner report routing (embedded Postgres + fake gateway)", () =>
       name: "Wira",
       role: "engineer",
       status: "idle",
-      adapterType: "paperclip_runner",
+      adapterType: "wardmote_runner",
       adapterConfig: {},
       runtimeConfig: {},
       permissions: {},

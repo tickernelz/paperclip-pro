@@ -182,7 +182,7 @@ describeEmbeddedPostgres("native runner restart recovery with real processes", (
       name: "Native restart runner",
       role: "engineer",
       status: "active",
-      adapterType: "paperclip_runner",
+      adapterType: "wardmote_runner",
       adapterConfig: { provider: "codex" },
       runtimeConfig: {},
       permissions: {},

@@ -33,7 +33,7 @@ export async function findNativeChatWorkspaceScope(
   },
 ): Promise<NativeChatWorkspaceScope | null> {
   if (
-    input.adapterType !== "paperclip_runner" ||
+    input.adapterType !== "wardmote_runner" ||
     input.environmentDriver !== "local" ||
     !input.issueId
   )

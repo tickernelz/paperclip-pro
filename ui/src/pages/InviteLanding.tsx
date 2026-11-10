@@ -22,7 +22,7 @@ type AuthFeedback = { tone: "error" | "info"; message: string };
 // belongs in authenticated agent configuration after an administrator enables
 // the experimental flag.
 const joinAdapterOptions: AgentAdapterType[] = AGENT_ADAPTER_TYPES.filter(
-  (type) => type !== "paperclip_runner",
+  (type) => type !== "wardmote_runner",
 );
 const ENABLED_INVITE_ADAPTERS = new Set(["omp_local"]);
 

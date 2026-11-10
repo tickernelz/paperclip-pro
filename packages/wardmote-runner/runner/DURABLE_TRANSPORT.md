@@ -2,7 +2,7 @@
 
 This layer gives `wardmote-runnerd` a provider-neutral PRP v1 transport. The
 Paperclip server invokes durable mode only for a selected, flag-enabled
-`paperclip_runner` agent or recovery of its persisted native run. Codex is the
+`wardmote_runner` agent or recovery of its persisted native run. Codex is the
 only installed provider; other providers remain unavailable.
 
 ## Trust boundary

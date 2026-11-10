@@ -10,7 +10,7 @@ export function resolveRunnerEnvironmentForRun<T extends Pick<Environment, "driv
   adapterConfig: Record<string, unknown> = {},
   admittedLifecycleMode?: "warm" | "per_turn",
 ): T {
-  if (adapterType !== "paperclip_runner" || environment.driver !== "sandbox") return environment;
+  if (adapterType !== "wardmote_runner" || environment.driver !== "sandbox") return environment;
   const config = environment.config ?? {};
   const lifecycleMode = admittedLifecycleMode ?? (config.runnerLifecycleMode === "warm" || config.runnerLifecycleMode === "per_turn"
     ? config.runnerLifecycleMode

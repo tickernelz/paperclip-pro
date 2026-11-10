@@ -16,7 +16,7 @@ export function CredentialTaskPage({ otherPerson = false, runtimeMode = "native"
   const client = useQueryClient();
   const [fixture] = useState(() => {
     const agent = { ...storybookAgents[0]!, name: "Codie", urlKey: "codie", status: "idle" as const,
-      adapterType: runtimeMode === "native" ? "paperclip_runner" : "codex_local" };
+      adapterType: runtimeMode === "native" ? "wardmote_runner" : "codex_local" };
     const task = { ...storybookIssues[0]!, id: "credential-task-demo", identifier: "PAP-389",
       title: "Use task names in Slack notifications", description: null, status: "blocked" as const,
       assigneeAgentId: agent.id, assigneeUserId: null, projectId: null, parentId: null,

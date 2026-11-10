@@ -28,7 +28,7 @@ export type HeartbeatRuntimeResolution =
   | {
       kind: "native";
       resolverVersion: typeof NATIVE_RUNTIME_RESOLVER_VERSION;
-      reason: "explicit_paperclip_runner" | "persisted_native_selection";
+      reason: "explicit_wardmote_runner" | "persisted_native_selection";
       provider: PaperclipRunnerProviderProfile["provider"];
     };
 
@@ -105,7 +105,7 @@ export function resolveNativeRuntimeMode(input: {
   target: { kind?: string } | null | undefined;
   workspaceId: string | null;
 }): NativeRuntimeResolution {
-  const runnerAdapterSelected = input.agent.adapterType === "paperclip_runner";
+  const runnerAdapterSelected = input.agent.adapterType === "wardmote_runner";
   // Fresh direct-adapter runs never enter the native control plane, even if an
   // obsolete runtimeConfig.nativeRunner value is still present. Persisted
   // native runs are handled by resolveHeartbeatNativeRuntimeMode above this
@@ -128,26 +128,26 @@ export function resolveNativeRuntimeMode(input: {
   }
   // Dot has its own rollout; enabling it does not opt in other Runner providers.
   if (runnerProfile.provider === "openai_dot") {
-    if (input.dotEnabled !== true) throw ineligible("paperclip_runner_dot_disabled", "Turn on OpenAI Dot and Assistant connections in Settings > Features before assigning new work.");
+    if (input.dotEnabled !== true) throw ineligible("wardmote_runner_dot_disabled", "Turn on OpenAI Dot and Assistant connections in Settings > Features before assigning new work.");
   } else if (!input.enabled) {
     throw ineligible(
-      "paperclip_runner_rollout_disabled",
+      "wardmote_runner_rollout_disabled",
       "The native runner is turned off on this instance. Turn it on in Settings > Advanced.",
     );
   }
   if (
-    input.agent.adapterType !== "paperclip_runner"
+    input.agent.adapterType !== "wardmote_runner"
     || input.agent.status !== "active" && input.agent.status !== "running"
   ) {
     throw ineligible(
-      "paperclip_runner_agent_ineligible",
+      "wardmote_runner_agent_ineligible",
       "Paperclip Runner requires an active agent.",
     );
   }
   const allowedWorkModes = ["standard", "planning", "ask"];
   if (!input.issue || !allowedWorkModes.includes(input.issue.workMode)) {
     throw ineligible(
-      "paperclip_runner_issue_ineligible",
+      "wardmote_runner_issue_ineligible",
       "Paperclip Runner requires a standard, planning, or ask task.",
     );
   }
@@ -158,7 +158,7 @@ export function resolveNativeRuntimeMode(input: {
   });
   if (!rollout.effects.some((effect) => effect.kind === "record_mode_native")) {
     throw ineligible(
-      "paperclip_runner_rollout_policy_rejected",
+      "wardmote_runner_rollout_policy_rejected",
       "Native rollout policy did not select native mode.",
     );
   }
@@ -242,7 +242,7 @@ export function resolveHeartbeatRuntimeMode(input: {
   return {
     kind: "native",
     resolverVersion: NATIVE_RUNTIME_RESOLVER_VERSION,
-    reason: "explicit_paperclip_runner",
+    reason: "explicit_wardmote_runner",
     provider: resolution.profile.backend === "opencode_server"
       ? "opencode"
       : resolution.profile.backend === "claude_managed_agents_api"
@@ -279,9 +279,9 @@ export function resolveHeartbeatNativeRuntimeMode(input: {
 }): NativeRuntimeResolution {
   if (input.persisted.runtimeModeResolvedAt) {
     if (input.persisted.runtimeMode === "native") {
-      if (input.agent.adapterType !== "paperclip_runner") {
+      if (input.agent.adapterType !== "wardmote_runner") {
         throw ineligible(
-          "paperclip_runner_adapter_binding_mismatch",
+          "wardmote_runner_adapter_binding_mismatch",
           "A persisted native run must remain bound to the Paperclip Runner adapter.",
         );
       }
@@ -290,7 +290,7 @@ export function resolveHeartbeatNativeRuntimeMode(input: {
         input.agent.status !== "running"
       ) {
         throw ineligible(
-          "paperclip_runner_agent_ineligible",
+          "wardmote_runner_agent_ineligible",
           "A persisted Paperclip Runner run cannot recover through a non-invokable agent.",
         );
       }
@@ -312,7 +312,7 @@ export function resolveHeartbeatNativeRuntimeMode(input: {
             : null;
       if (backend === null) {
         throw ineligible(
-          "paperclip_runner_driver_unsupported",
+          "wardmote_runner_driver_unsupported",
           `Persisted Paperclip Runner driver is unsupported: ${driverKind}`,
         );
       }

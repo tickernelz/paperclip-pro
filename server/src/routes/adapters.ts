@@ -277,7 +277,7 @@ export function adapterRoutes(options: {
     const openAiDotEnabled = await options.getOpenAiDotEnabled?.().catch(() => false) ?? false;
     // One shared implementation, with independent provider rollouts. Explicit
     // adapter-admin disabling still applies to both choices.
-    if (!nativeRunnerEnabled && !openAiDotEnabled) disabledSet.add("paperclip_runner");
+    if (!nativeRunnerEnabled && !openAiDotEnabled) disabledSet.add("wardmote_runner");
 
     const result: AdapterInfo[] = registeredAdapters.map((adapter) =>
       buildAdapterInfo(adapter, externalRecords.get(adapter.type), disabledSet),

@@ -573,7 +573,7 @@ describe("P6-31 Section 18.13 executable status-authority corpus", () => {
       agent: {
         id: agentId,
         status: "running",
-        adapterType: fixture.mode === "native" ? "paperclip_runner" : "codex_local",
+        adapterType: fixture.mode === "native" ? "wardmote_runner" : "codex_local",
       },
       issue: { id: seeded.issueId, workMode: "standard" },
       target: { kind: "local" },
@@ -861,7 +861,7 @@ describe("P6-31 Section 18.13 executable status-authority corpus", () => {
           enabled,
           runtimeConfig,
           adapterConfig: { provider: "codex" },
-          agent: { id: agentId, status: "running", adapterType: "paperclip_runner" },
+          agent: { id: agentId, status: "running", adapterType: "wardmote_runner" },
           issue: { id: seeded.issueId, workMode: "standard" },
           target: { kind: "local" },
           workspaceId: "fixture-workspace",
@@ -874,7 +874,7 @@ describe("P6-31 Section 18.13 executable status-authority corpus", () => {
             enabled,
             runtimeConfig,
             adapterConfig: { provider: "codex" },
-            agent: { id: agentId, status: "running", adapterType: "paperclip_runner" },
+            agent: { id: agentId, status: "running", adapterType: "wardmote_runner" },
             issue: { id: seeded.issueId, workMode: "standard" },
             target: { kind: "local" },
             workspaceId: "fixture-workspace",
@@ -890,7 +890,7 @@ describe("P6-31 Section 18.13 executable status-authority corpus", () => {
         if (
           activeResolution.kind !== "native"
           || freshMode !== "rejected"
-          || freshReason !== "paperclip_runner_rollout_disabled"
+          || freshReason !== "wardmote_runner_rollout_disabled"
           || runtimeConfig.nativeRunner.mode !== "native"
         ) {
           throw new Error(`${fixture.id}: global kill-switch transition missing`);
@@ -1757,7 +1757,7 @@ describe("P6-31 Section 18.13 executable status-authority corpus", () => {
         if (
           execution.observed.activeMode !== "native"
           || execution.observed.freshMode !== "rejected"
-          || execution.observed.freshReason !== "paperclip_runner_rollout_disabled"
+          || execution.observed.freshReason !== "wardmote_runner_rollout_disabled"
           || execution.observed.profileMode !== "native"
         ) continue;
       }
