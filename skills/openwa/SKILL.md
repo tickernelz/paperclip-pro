@@ -103,7 +103,7 @@ act beyond the run's facts. Silence never approves anything.
 - Media (`image`, `video`, `audio`, `voice`, `document`, `sticker`) comes from an
   attachment of this task (`attachmentId`); `text` is then the caption. To send
   a file you made or downloaded, first upload it to this conversation issue with
-  the Wardmote skill's `paperclip-upload-artifact.sh FILE --no-work-product
+  the Wardmote skill's `wardmote-upload-artifact.sh FILE --no-work-product
   --output json` and pass the returned attachment id. Received media is already
   an attachment (`media[].attachmentId` in the wake event), so you can forward it
   the same way.

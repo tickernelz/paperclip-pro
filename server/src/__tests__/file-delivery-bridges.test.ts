@@ -15,7 +15,7 @@ import { startFileDeliveryDaytona } from "./helpers/file-delivery-daytona.js";
 import { startRunnerApiTestServer } from "./helpers/runner-api-server.js";
 
 const liveDaytona = process.env.WARDMOTE_FILE_DELIVERY_DAYTONA === "1";
-const helper = path.resolve(import.meta.dirname, "../../../skills/wardmote/scripts/paperclip-upload-artifact.sh");
+const helper = path.resolve(import.meta.dirname, "../../../skills/wardmote/scripts/wardmote-upload-artifact.sh");
 // A real PNG and a PDF with binary bytes in its comment exercise UTF-8 corruption.
 const files = [
   { name: "猫 picture.png", type: "image/png", body: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aK1sAAAAASUVORK5CYII=", "base64") },
@@ -82,7 +82,7 @@ describe(`durable file delivery (${liveDaytona ? "Daytona" : "local processes"})
     await server.db.update(heartbeatRuns).set({ runtimeMode: "legacy" }).where(eq(heartbeatRuns.id, fixture.runId));
     const token = createLocalAgentJwt(fixture.agentId, fixture.companyId, "codex_local", fixture.runId)!;
     const remote = await execution(fixture.workspace);
-    const installedHelper = await remote.write("paperclip-upload-artifact.sh", await readFile(helper));
+    const installedHelper = await remote.write("wardmote-upload-artifact.sh", await readFile(helper));
     const target: AdapterSandboxExecutionTarget = {
       kind: "remote", transport: "sandbox", providerKey: liveDaytona ? "daytona" : "local-test", remoteCwd: remote.workspace,
       runner: remote.runner, timeoutMs: 30_000,

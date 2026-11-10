@@ -789,7 +789,7 @@ describeEmbeddedPostgres("OpenWA guidance at run start", () => {
         expect(telegram).toContain("External chat file delivery:");
         expect(openwa).not.toContain("External chat file delivery:");
         expect(openwa).not.toContain("register_deliverable");
-        expect(openwa).not.toContain("paperclip-upload-artifact.sh");
+        expect(openwa).not.toContain("wardmote-upload-artifact.sh");
       }
     }
   });

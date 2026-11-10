@@ -71,7 +71,8 @@ export function rewriteRetiredNames(input: string, options: RetiredNameRewriteOp
     .replace(/(skill:\/\/|(?<![\w.-])skills\/)paperclip(-board|-converting-plans-to-tasks|-create-agent)?(?![\w-])/g,
       (_whole, prefix: string, suffix: string | undefined) => count(`${prefix}wardmote${suffix ?? ""}`))
     .replace(/(?<![\w/.-])paperclip(-board|-converting-plans-to-tasks|-create-agent)(?![\w-])/g,
-      (_whole, suffix: string) => count(`wardmote${suffix}`));
+      (_whole, suffix: string) => count(`wardmote${suffix}`))
+    .replace(/(?<![\w-])paperclip-(upload-artifact|issue-update)(?=\.sh\b)/g, (_whole, script: string) => count(`wardmote-${script}`));
   return { text, replacements };
 }
 

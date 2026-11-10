@@ -37,7 +37,7 @@ as an uploaded file.
 Use Bash to run the helper bundled with the Paperclip skill from the repo root; installed skill files may not retain executable permissions:
 
 ```sh
-bash skills/wardmote/scripts/paperclip-upload-artifact.sh path/to/output.webm \
+bash skills/wardmote/scripts/wardmote-upload-artifact.sh path/to/output.webm \
   --title "Walkthrough render" \
   --summary "Rendered walkthrough for review"
 ```
@@ -113,7 +113,7 @@ paths, or relative paths that escape the selected workspace.
 When a task produces a user-inspectable deliverable file:
 
 1. Generate and verify the file locally.
-2. Upload it with `skills/wardmote/scripts/paperclip-upload-artifact.sh`.
+2. Upload it with `skills/wardmote/scripts/wardmote-upload-artifact.sh`.
 3. Keep the artifact work product unless the file is incidental; pass
    `--no-work-product` only for supporting files that should not be promoted.
 4. Link the printed attachment URL in the final issue comment.
@@ -136,7 +136,7 @@ available, not the preferred way to deliver files to users.
 Upload an `.mp4` render:
 
 ```sh
-bash skills/wardmote/scripts/paperclip-upload-artifact.sh dist/demo.mp4 \
+bash skills/wardmote/scripts/wardmote-upload-artifact.sh dist/demo.mp4 \
   --title "Demo video render" \
   --summary "MP4 render for board review"
 ```
@@ -144,7 +144,7 @@ bash skills/wardmote/scripts/paperclip-upload-artifact.sh dist/demo.mp4 \
 Upload a `.webm` render:
 
 ```sh
-bash skills/wardmote/scripts/paperclip-upload-artifact.sh out/walkthrough.webm \
+bash skills/wardmote/scripts/wardmote-upload-artifact.sh out/walkthrough.webm \
   --title "Walkthrough video" \
   --summary "WebM walkthrough render"
 ```
@@ -153,7 +153,7 @@ The helper detects `.mp4`, `.webm`, and `.mov` content types. If a renderer uses
 an unusual extension, pass the MIME type explicitly:
 
 ```sh
-bash skills/wardmote/scripts/paperclip-upload-artifact.sh render.bin \
+bash skills/wardmote/scripts/wardmote-upload-artifact.sh render.bin \
   --title "Demo video render" \
   --content-type video/mp4
 ```
