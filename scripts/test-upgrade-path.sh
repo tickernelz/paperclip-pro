@@ -32,7 +32,11 @@ stop_server() {
   wait "$server_pid" 2>/dev/null || true
   server_pid=""
 }
-trap 'stop_server; rm -rf "$ROOT"' EXIT
+cleanup() {
+  stop_server
+  [ "${CI:-}" = true ] || rm -rf "$ROOT"
+}
+trap cleanup EXIT
 
 start_server() {
   local label="$1"

@@ -28,7 +28,7 @@ import { queryKeys } from "@/lib/queryKeys";
 import { sanitizedSetupErrorMessage } from "./chat-setup-error";
 import { OpenwaChatsSettings } from "./OpenwaChatsSettings";
 import { OpenwaHealthCard } from "./OpenwaHealthCard";
-import { OpenwaGatewayManager } from "./OpenwaGatewayManager";
+import { OpenwaAdminKeyField, OpenwaGatewayManager } from "./OpenwaGatewayManager";
 import { OpenwaLinkedNumbers } from "./OpenwaLinkedNumbers";
 import { FieldMessage, NumberField, SettingsSection, ToggleRow, fieldError, openwaSelectClass } from "./openwa-fields";
 import {
@@ -700,27 +700,13 @@ function OwnerPrefixSection({ endpoint }: { endpoint: OpenwaEndpoint }) {
 }
 
 function GatewayAdminSection({ endpoint }: { endpoint: OpenwaEndpoint }) {
-  const queryClient = useQueryClient();
   const [level, setLevel] = useState(endpoint.policy.gatewayAdminTools);
-  const [adminKey, setAdminKey] = useState("");
-  const [keyError, setKeyError] = useState<string | null>(null);
   const state = usePolicySave(endpoint);
   const health = useQuery({
     queryKey: queryKeys.chatEndpoints.openwaHealth(endpoint.id),
     queryFn: () => chatEndpointsApi.getOpenwaHealth(endpoint.id),
     staleTime: 30_000,
   });
-  const replaceKey = useMutation({
-    mutationFn: (key: string) => chatEndpointsApi.setup(endpoint.id, { action: "reconnect", credentials: { adminApiKey: key } }),
-    onSuccess: async (next) => {
-      setAdminKey("");
-      setKeyError(null);
-      queryClient.setQueryData(queryKeys.chatEndpoints.detail(endpoint.id), next);
-      await queryClient.invalidateQueries({ queryKey: queryKeys.chatEndpoints.openwaHealth(endpoint.id) });
-    },
-    onError: (failure, key) => setKeyError(sanitizedSetupErrorMessage(failure, { adminApiKey: key })),
-  });
-  const configured = health.data?.adminKeyConfigured;
   return (
     <SettingsSection
       title="Gateway admin tools"
@@ -741,29 +727,7 @@ function GatewayAdminSection({ endpoint }: { endpoint: OpenwaEndpoint }) {
         </select>
         <FieldMessage id="openwa-admin-level" error={fieldError(state.errors, "gatewayAdminTools")} />
       </div>
-      <div className="grid gap-1">
-        <label htmlFor="openwa-admin-key" className="text-sm font-medium">Admin API key</label>
-        <p className="text-xs text-ink-3">
-          {configured === undefined ? "Checking whether a key is saved…" : configured ? "A key is saved. Enter a new one to replace it." : "No admin key is saved."}{" "}
-          Saving re-verifies the session, so the channel returns to its test step until an owner sends a test message.
-        </p>
-        <div className="flex flex-wrap gap-2">
-          <Input
-            id="openwa-admin-key"
-            type="password"
-            autoComplete="new-password"
-            className="max-w-sm"
-            value={adminKey}
-            aria-invalid={keyError ? true : undefined}
-            aria-describedby={keyError ? "openwa-admin-key-error" : undefined}
-            onChange={(event) => setAdminKey(event.target.value)}
-          />
-          <Button size="sm" variant="secondary" disabled={replaceKey.isPending || !adminKey.trim()} onClick={() => replaceKey.mutate(adminKey.trim())}>
-            {replaceKey.isPending ? "Verifying…" : configured ? "Replace admin key" : "Save admin key"}
-          </Button>
-        </div>
-        <FieldMessage id="openwa-admin-key" error={keyError ?? undefined} />
-      </div>
+      <OpenwaAdminKeyField id="openwa-admin-key" endpointId={endpoint.id} configured={health.data?.adminKeyConfigured} />
     </SettingsSection>
   );
 }

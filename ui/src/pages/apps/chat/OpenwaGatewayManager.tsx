@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Copy } from "lucide-react";
 import type { OpenwaGatewayAdminCallInput, OpenwaGatewayAdminResult } from "@tickernelz/wardmote-shared";
+import { ApiError } from "@/api/client";
 import { chatEndpointsApi } from "@/api/chatEndpoints";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -10,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/context/ToastContext";
 import { copyTextToClipboard } from "@/lib/clipboard";
 import { queryKeys } from "@/lib/queryKeys";
+import { sanitizedSetupErrorMessage } from "./chat-setup-error";
 import { FieldMessage, SettingsSection, openwaSelectClass } from "./openwa-fields";
 
 export const OPENWA_QR_REFRESH_MS = 3_000;
@@ -17,7 +19,12 @@ const SESSION_REFRESH_MS = 10_000;
 const KEY_ROLES = ["viewer", "operator", "admin"] as const;
 const DEFAULT_WEBHOOK_EVENTS = "message.received, session.status";
 
-interface GatewaySession {
+export const OPENWA_ADMIN_KEY_CODES: ReadonlySet<string> = new Set(["openwa_admin_key_required", "openwa_admin_key_invalid"]);
+const SESSION_NAME = /^[A-Za-z0-9._-]{1,64}$/;
+
+export type OpenwaGatewayRun = (input: OpenwaGatewayAdminCallInput) => Promise<OpenwaGatewayAdminResult>;
+
+export interface GatewaySession {
   id: string;
   name: string;
   status: string;
@@ -69,6 +76,29 @@ const ACTION_LABEL: Record<SessionAction, string> = {
 
 function failureMessage(failure: unknown, fallback: string): string {
   return failure instanceof Error && failure.message ? failure.message : fallback;
+}
+
+const ENGINE_RUNNING_STATUSES: ReadonlySet<string> = new Set(["initializing", "qr_ready", "authenticating", "ready"]);
+
+function gatewaySaid(failure: unknown, pattern: RegExp): boolean {
+  return failure instanceof Error && pattern.test(failure.message);
+}
+
+export function openwaFailureCode(failure: unknown): string | null {
+  const code = failure instanceof ApiError ? (failure.body as { code?: unknown } | null)?.code : null;
+  return typeof code === "string" ? code : null;
+}
+
+export function openwaSessionNameError(name: string): string | undefined {
+  return SESSION_NAME.test(name.trim()) ? undefined : "Use 1-64 letters, digits, dots, dashes or underscores";
+}
+
+/** Creates a gateway session and starts it so the gateway issues its first QR code. */
+export async function createOpenwaSession(run: OpenwaGatewayRun, name: string): Promise<GatewaySession> {
+  const created = record(await run({ operationId: "SessionController_create", args: { name: name.trim() } }));
+  const session = { id: String(created.id), name: String(created.name ?? name.trim()), status: String(created.status ?? "created") };
+  await run({ operationId: "SessionController_start", sessionId: session.id });
+  return session;
 }
 
 function rows<T>(result: OpenwaGatewayAdminResult | undefined): T[] {
@@ -132,6 +162,13 @@ function GatewaySessions({ endpointId, ownSessionId }: { endpointId: string; own
     >
       {sessions.isPending ? (
         <p className="text-sm text-ink-3">Loading sessions…</p>
+      ) : sessions.isError && OPENWA_ADMIN_KEY_CODES.has(openwaFailureCode(sessions.error) ?? "") ? (
+        <div className="space-y-2">
+          <p role="alert" className="text-sm text-bad">
+            {failureMessage(sessions.error, "Managing sessions needs the OpenWA admin key.")}
+          </p>
+          <OpenwaAdminKeyField id="openwa-sessions-admin-key" endpointId={endpointId} configured={false} onSaved={() => void refresh()} />
+        </div>
       ) : sessions.isError ? (
         <p role="alert" className="text-sm text-bad">
           {failureMessage(sessions.error, "Couldn't read sessions from the gateway.")}
@@ -209,12 +246,7 @@ function CreateSessionDialog({ endpointId, onClose, onCreated }: { endpointId: s
   const [name, setName] = useState("");
   const [error, setError] = useState<string>();
   const create = useMutation({
-    mutationFn: async () => {
-      const created = record(await run({ operationId: "SessionController_create", args: { name: name.trim() } }));
-      const session = { id: String(created.id), name: String(created.name ?? name.trim()), status: String(created.status ?? "created") };
-      await run({ operationId: "SessionController_start", sessionId: session.id });
-      return session;
-    },
+    mutationFn: () => createOpenwaSession(run, name),
     onSuccess: async (session) => {
       await refresh();
       onCreated(session);
@@ -222,9 +254,9 @@ function CreateSessionDialog({ endpointId, onClose, onCreated }: { endpointId: s
     onError: (failure) => setError(failureMessage(failure, "Couldn't create the session.")),
   });
   const submit = () => {
-    if (!/^[A-Za-z0-9._-]{1,64}$/.test(name.trim())) return setError("Use 1-64 letters, digits, dots, dashes or underscores");
-    setError(undefined);
-    create.mutate();
+    const invalid = openwaSessionNameError(name);
+    setError(invalid);
+    if (!invalid) create.mutate();
   };
   return (
     <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
@@ -253,9 +285,18 @@ function CreateSessionDialog({ endpointId, onClose, onCreated }: { endpointId: s
   );
 }
 
-/** Shows the gateway QR (reloaded until the session is connected) and issues pairing codes. */
-export function ConnectSessionDialog({ endpointId, session, onClose }: { endpointId: string; session: GatewaySession; onClose: () => void }) {
-  const { run, refresh } = useGateway(endpointId);
+/** Links WhatsApp to a gateway session: shows its QR (reloaded until the session is ready) and issues pairing codes. */
+export function OpenwaSessionLinker({
+  endpointId,
+  run,
+  session,
+  onReady,
+}: {
+  endpointId: string;
+  run: OpenwaGatewayRun;
+  session: GatewaySession;
+  onReady?: () => void;
+}) {
   const [phone, setPhone] = useState("");
   const [pairingCode, setPairingCode] = useState<string>();
   const [error, setError] = useState<string>();
@@ -274,11 +315,99 @@ export function ConnectSessionDialog({ endpointId, session, onClose }: { endpoin
     gcTime: 0,
   });
   const image = String(record(qr.data).qrCode ?? "");
+  const start = useMutation({
+    mutationFn: () =>
+      run({ operationId: "SessionController_start", sessionId: session.id }).catch((failure: unknown) => {
+        if (gatewaySaid(failure, /already start(ed|ing)/i)) return null;
+        throw failure;
+      }),
+    onSuccess: () => {
+      setError(undefined);
+      void status.refetch();
+      void qr.refetch();
+    },
+    onError: (failure) => setError(failureMessage(failure, "Couldn't start the session.")),
+  });
+  const startSession = start.mutate;
+  const engineStopped =
+    (typeof current.status === "string" && !ENGINE_RUNNING_STATUSES.has(current.status)) || gatewaySaid(qr.error, /not started/i);
+  const startRequested = useRef(false);
+  useEffect(() => {
+    if (!engineStopped || startRequested.current) return;
+    startRequested.current = true;
+    startSession();
+  }, [engineStopped, startSession]);
   const pairing = useMutation({
     mutationFn: () => run({ operationId: "SessionController_requestPairingCode", sessionId: session.id, args: { phoneNumber: phone.replace(/\D/g, "") } }),
-    onSuccess: (result) => setPairingCode(String(record(result).pairingCode ?? "")),
+    onSuccess: (result) => {
+      setError(undefined);
+      setPairingCode(String(record(result).pairingCode ?? ""));
+    },
     onError: (failure) => setError(failureMessage(failure, "Couldn't get a pairing code.")),
   });
+  const reportedReady = useRef(false);
+  useEffect(() => {
+    if (!connected || reportedReady.current) return;
+    reportedReady.current = true;
+    onReady?.();
+  }, [connected, onReady]);
+  return (
+    <div className="space-y-3">
+      <p role="status" className="text-sm">
+        Status: {String(current.status ?? session.status).replaceAll("_", " ")}
+      </p>
+      {connected ? (
+        <p className="text-sm font-medium">Connected{[current.pushName, current.phone].filter(Boolean).length ? " as " + [current.pushName, current.phone].filter(Boolean).join(" · ") : ""}.</p>
+      ) : image.startsWith("data:image/") ? (
+        <img src={image} alt="WhatsApp login QR code" className="mx-auto aspect-square w-full max-w-64 bg-white p-2" />
+      ) : (
+        <p className="text-sm text-ink-3">
+          {start.isPending ? "Starting the session…" : qr.isError ? "Waiting for the gateway to issue a QR code…" : "Loading QR code…"}
+        </p>
+      )}
+      {(engineStopped || start.isError) && !start.isPending && !connected ? (
+        <Button size="sm" variant="secondary" onClick={() => startSession()}>
+          Start session
+        </Button>
+      ) : null}
+      {status.isError ? (
+        <p role="alert" className="text-sm text-bad">
+          {failureMessage(status.error, "Couldn't read the session status.")}
+        </p>
+      ) : null}
+      {connected ? null : (
+        <div className="grid gap-1">
+          <label htmlFor={"openwa-pairing-phone-" + session.id} className="text-sm font-medium">
+            Phone number for a pairing code
+          </label>
+          <div className="flex gap-2">
+            <Input
+              id={"openwa-pairing-phone-" + session.id}
+              inputMode="tel"
+              value={phone}
+              placeholder="628123456789"
+              onChange={(event) => setPhone(event.target.value)}
+            />
+            <Button variant="secondary" disabled={pairing.isPending || start.isPending || phone.replace(/\D/g, "").length < 8} onClick={() => pairing.mutate()}>
+              Get code
+            </Button>
+          </div>
+          {pairingCode ? (
+            <p aria-label="Pairing code" className="font-mono text-lg tracking-widest">
+              {pairingCode}
+            </p>
+          ) : null}
+          <FieldMessage id={"openwa-pairing-phone-" + session.id} error={error} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Dialog around {@link OpenwaSessionLinker} for sessions on a connected channel. */
+export function ConnectSessionDialog({ endpointId, session, onClose }: { endpointId: string; session: GatewaySession; onClose: () => void }) {
+  const { run, refresh } = useGateway(endpointId);
+  const [connected, setConnected] = useState(false);
   const close = () => {
     void refresh();
     onClose();
@@ -290,40 +419,67 @@ export function ConnectSessionDialog({ endpointId, session, onClose }: { endpoin
           <DialogTitle>Connect {session.name}</DialogTitle>
           <DialogDescription>Open WhatsApp on the phone, go to Linked devices, then scan the QR code or choose "Link with phone number" and enter the pairing code.</DialogDescription>
         </DialogHeader>
-        <p role="status" className="text-sm">
-          Status: {String(current.status ?? session.status)}
-        </p>
-        {connected ? (
-          <p className="text-sm font-medium">Connected{[current.pushName, current.phone].filter(Boolean).length ? " as " + [current.pushName, current.phone].filter(Boolean).join(" · ") : ""}.</p>
-        ) : image.startsWith("data:image/") ? (
-          <img src={image} alt="WhatsApp login QR code" className="mx-auto size-64 bg-white p-2" />
-        ) : (
-          <p className="text-sm text-ink-3">{qr.isError ? "Waiting for the gateway to issue a QR code…" : "Loading QR code…"}</p>
-        )}
-        {connected ? null : (
-          <div className="grid gap-1">
-            <label htmlFor="openwa-pairing-phone" className="text-sm font-medium">
-              Phone number for a pairing code
-            </label>
-            <div className="flex gap-2">
-              <Input id="openwa-pairing-phone" value={phone} placeholder="628123456789" onChange={(event) => setPhone(event.target.value)} />
-              <Button variant="secondary" disabled={pairing.isPending || phone.replace(/\D/g, "").length < 8} onClick={() => pairing.mutate()}>
-                Get code
-              </Button>
-            </div>
-            {pairingCode ? (
-              <p aria-label="Pairing code" className="font-mono text-lg tracking-widest">
-                {pairingCode}
-              </p>
-            ) : null}
-            <FieldMessage id="openwa-pairing-phone" error={error} />
-          </div>
-        )}
+        <OpenwaSessionLinker endpointId={endpointId} run={run} session={session} onReady={() => setConnected(true)} />
         <DialogFooter>
           <Button onClick={close}>{connected ? "Done" : "Close"}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+/** Saves or replaces the channel's OpenWA admin key; the server verifies it against the gateway before storing it. */
+export function OpenwaAdminKeyField({
+  id,
+  endpointId,
+  configured,
+  onSaved,
+}: {
+  id: string;
+  endpointId: string;
+  configured: boolean | undefined;
+  onSaved?: () => void;
+}) {
+  const queryClient = useQueryClient();
+  const [adminKey, setAdminKey] = useState("");
+  const [keyError, setKeyError] = useState<string | null>(null);
+  const save = useMutation({
+    mutationFn: (key: string) => chatEndpointsApi.setup(endpointId, { action: "reconnect", credentials: { adminApiKey: key } }),
+    onSuccess: async (next) => {
+      setAdminKey("");
+      setKeyError(null);
+      queryClient.setQueryData(queryKeys.chatEndpoints.detail(endpointId), next);
+      await queryClient.invalidateQueries({ queryKey: queryKeys.chatEndpoints.openwaHealth(endpointId) });
+      onSaved?.();
+    },
+    onError: (failure, key) => setKeyError(sanitizedSetupErrorMessage(failure, { adminApiKey: key })),
+  });
+  return (
+    <div className="grid gap-1">
+      <label htmlFor={id} className="text-sm font-medium">
+        Admin API key
+      </label>
+      <p className="text-xs text-ink-3">
+        {configured === undefined ? "Checking whether a key is saved…" : configured ? "A key is saved. Enter a new one to replace it." : "No admin key is saved."}{" "}
+        The admin key creates sessions and QR codes; the agent keeps its own key limited to this channel's session.
+      </p>
+      <div className="flex flex-wrap gap-2">
+        <Input
+          id={id}
+          type="password"
+          autoComplete="new-password"
+          className="max-w-sm"
+          value={adminKey}
+          aria-invalid={keyError ? true : undefined}
+          aria-describedby={keyError ? id + "-error" : undefined}
+          onChange={(event) => setAdminKey(event.target.value)}
+        />
+        <Button size="sm" variant="secondary" disabled={save.isPending || !adminKey.trim()} onClick={() => save.mutate(adminKey.trim())}>
+          {save.isPending ? "Verifying…" : configured ? "Replace admin key" : "Save admin key"}
+        </Button>
+      </div>
+      <FieldMessage id={id} error={keyError ?? undefined} />
+    </div>
   );
 }
 

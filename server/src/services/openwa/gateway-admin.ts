@@ -44,6 +44,15 @@ const SNAPSHOTS: Partial<Record<OpenwaBoardGatewayOperation, Snapshot>> = {
   IntegrationInstanceController_remove: INSTANCE_SNAPSHOT,
 };
 
+const SETUP_CONNECTION_OPERATIONS: ReadonlySet<OpenwaBoardGatewayOperation> = new Set<OpenwaBoardGatewayOperation>([
+  "SessionController_findAll",
+  "SessionController_findOne",
+  "SessionController_create",
+  "SessionController_start",
+  "SessionController_getQRCode",
+  "SessionController_requestPairingCode",
+]);
+
 const REMOVING: Partial<Record<OpenwaBoardGatewayOperation, true>> = {
   SessionController_delete: true,
   AuthController_delete: true,
@@ -61,6 +70,7 @@ export interface OpenwaGatewayAdminCall {
   sessionId?: string;
   args: Args;
   confirmOwnSession?: boolean;
+  connection?: { baseUrl: string; adminApiKey: string };
 }
 
 export interface OpenwaGatewayAdminService {
@@ -79,11 +89,11 @@ function payload(result: OpenwaCallResult): unknown {
 function httpError(error: unknown, baseUrl: string): Error {
   if (error instanceof OpenwaGatewayError) {
     if (error.code === "unauthorized" || error.code === "forbidden")
-      return unprocessable("OpenWA rejected the admin key. Replace it with an active admin key in the channel's OpenWA connection.", {
+      return unprocessable("OpenWA rejected the admin key. Enter an active admin API key to continue.", {
         code: "openwa_admin_key_invalid",
       });
     if (error.code === "unavailable_without_admin_key")
-      return unprocessable("This action needs the OpenWA admin key. Add an admin API key to this channel's OpenWA connection.", {
+      return unprocessable("This action needs the OpenWA admin key. Enter the admin API key to continue.", {
         code: "openwa_admin_key_required",
       });
     if (error.code === "bad_request") return badRequest(error.message, { code: "openwa_bad_request" });
@@ -103,12 +113,23 @@ export function openwaGatewayAdminService(db: Db, deps: OpenwaGatewayAdminDeps):
     return endpoint;
   }
 
-  async function clientFor(endpoint: EndpointRow, sessionId: string): Promise<{ client: OpenwaGatewayClient; baseUrl: string }> {
-    const { baseUrl } = openwaEndpointAccount(endpoint);
-    if (!baseUrl) throw unprocessable("Connect the OpenWA gateway first", { code: "openwa_session_required" });
-    const adminApiKey = await deps.adminApiKey(endpoint);
+  async function connectionFor(endpoint: EndpointRow, input: OpenwaGatewayAdminCall): Promise<{ baseUrl: string; adminApiKey: string | null }> {
+    const stored = openwaEndpointAccount(endpoint).baseUrl;
+    if (input.connection) {
+      if (!SETUP_CONNECTION_OPERATIONS.has(input.operationId))
+        throw badRequest("Save the OpenWA connection before using this action", { code: "openwa_setup_connection_operation" });
+      if (stored && stored !== input.connection.baseUrl)
+        throw conflict("A different OpenWA gateway requires a new channel", { code: "chat_bot_identity_changed" });
+      return input.connection;
+    }
+    if (!stored) throw unprocessable("Connect the OpenWA gateway first", { code: "openwa_session_required" });
+    return { baseUrl: stored, adminApiKey: await deps.adminApiKey(endpoint) };
+  }
+
+  async function clientFor(endpoint: EndpointRow, input: OpenwaGatewayAdminCall, sessionId: string): Promise<{ client: OpenwaGatewayClient; baseUrl: string }> {
+    const { baseUrl, adminApiKey } = await connectionFor(endpoint, input);
     if (!adminApiKey)
-      throw unprocessable("Managing OpenWA sessions needs the OpenWA admin key. Add an admin API key to this channel's OpenWA connection.", {
+      throw unprocessable("Managing OpenWA sessions needs the OpenWA admin key. Enter the admin API key to continue.", {
         code: "openwa_admin_key_required",
       });
     const client = createOpenwaGatewayClient({
@@ -184,7 +205,7 @@ export function openwaGatewayAdminService(db: Db, deps: OpenwaGatewayAdminDeps):
       throw conflict("This is the session the agent uses on this channel. Confirm that you want to change it.", {
         code: "openwa_own_session_confirmation_required",
       });
-    const { client, baseUrl } = await clientFor(endpoint, sessionId ?? own);
+    const { client, baseUrl } = await clientFor(endpoint, input, sessionId ?? own);
     if (operation.method === "GET") {
       const data = await client
         .call(operation.id, input.args, { useAdminKey: true })
