@@ -65,6 +65,12 @@ import {
   formatEmbeddedPostgresError,
   loadWithoutEmbeddedPostgresExitHooks,
   prepareEmbeddedPostgresNativeRuntime,
+  EMBEDDED_POSTGRES_USER,
+  EMBEDDED_POSTGRES_PASSWORD,
+  EMBEDDED_POSTGRES_DATABASE,
+  embeddedPostgresUrl,
+  embeddedPostgresAdminUrl,
+  migrateEmbeddedPostgresIdentity,
 } from "@tickernelz/wardmote-db";
 import type { Command } from "commander";
 import { ensureAgentJwtSecret, ensureToolActionSigningSecret, loadPaperclipEnvFile, mergePaperclipEnvEntries, readPaperclipEnvEntries, resolvePaperclipEnvFile } from "../config/env.js";
@@ -1050,7 +1056,7 @@ function resolveSourceConnectionString(config: PaperclipConfig, envEntries: Reco
   }
 
   const port = portOverride ?? config.database.embeddedPostgresPort;
-  return `postgres://paperclip:paperclip@127.0.0.1:${port}/paperclip`;
+  return embeddedPostgresUrl(port);
 }
 
 export function copySeededSecretsKey(input: {
@@ -1128,8 +1134,10 @@ export async function ensureEmbeddedPostgres(
         + "Stop the worktree service that owns this database, then retry the seed.",
       );
     }
+    const runningPort = readPidFilePort(postmasterPidFile) ?? preferredPort;
+    await migrateEmbeddedPostgresIdentity({ port: runningPort, dataDir });
     return {
-      port: readPidFilePort(postmasterPidFile) ?? preferredPort,
+      port: runningPort,
       startedByThisProcess: false,
       stop: async () => {},
     };
@@ -1139,8 +1147,8 @@ export async function ensureEmbeddedPostgres(
   const logBuffer = createEmbeddedPostgresLogBuffer();
   const instance = new EmbeddedPostgres({
     databaseDir: dataDir,
-    user: "paperclip",
-    password: "paperclip",
+    user: EMBEDDED_POSTGRES_USER,
+    password: EMBEDDED_POSTGRES_PASSWORD,
     port,
     persistent: true,
     initdbFlags: ["--encoding=UTF8", "--locale=C", "--lc-messages=C"],
@@ -1168,6 +1176,13 @@ export async function ensureEmbeddedPostgres(
       fallbackMessage: `Failed to start embedded PostgreSQL on port ${port}`,
       recentLogs: logBuffer.getRecentLogs(),
     });
+  }
+
+  try {
+    await migrateEmbeddedPostgresIdentity({ port, dataDir });
+  } catch (error) {
+    await instance.stop();
+    throw error;
   }
 
   return {
@@ -1664,8 +1679,8 @@ async function seedWorktreeDatabase(input: {
         input.sourceConfig.database.embeddedPostgresDataDir,
         input.sourceConfig.database.embeddedPostgresPort,
       );
-      const sourceAdminConnectionString = `postgres://paperclip:paperclip@127.0.0.1:${sourceHandle.port}/postgres`;
-      await ensurePostgresDatabase(sourceAdminConnectionString, "paperclip");
+      const sourceAdminConnectionString = embeddedPostgresAdminUrl(sourceHandle.port);
+      await ensurePostgresDatabase(sourceAdminConnectionString, EMBEDDED_POSTGRES_DATABASE);
     }
     const sourceConnectionString = resolveSourceConnectionString(
       input.sourceConfig,
@@ -1714,9 +1729,9 @@ async function seedWorktreeDatabase(input: {
       { allowExisting: false },
     );
 
-    const adminConnectionString = `postgres://paperclip:paperclip@127.0.0.1:${targetHandle.port}/postgres`;
-    await resetPostgresDatabase(adminConnectionString, "paperclip");
-    const targetConnectionString = `postgres://paperclip:paperclip@127.0.0.1:${targetHandle.port}/paperclip`;
+    const adminConnectionString = embeddedPostgresAdminUrl(targetHandle.port);
+    await resetPostgresDatabase(adminConnectionString, EMBEDDED_POSTGRES_DATABASE);
+    const targetConnectionString = embeddedPostgresUrl(targetHandle.port);
     await runDatabaseRestore({
       connectionString: targetConnectionString,
       backupFile: backup.backupFile,
@@ -4243,10 +4258,10 @@ async function backupWorktreeReseedTarget(input: {
     input.targetConfig.database.embeddedPostgresPort,
   );
   try {
-    const adminConnectionString = `postgres://paperclip:paperclip@127.0.0.1:${targetHandle.port}/postgres`;
-    await ensurePostgresDatabase(adminConnectionString, "paperclip");
+    const adminConnectionString = embeddedPostgresAdminUrl(targetHandle.port);
+    await ensurePostgresDatabase(adminConnectionString, EMBEDDED_POSTGRES_DATABASE);
     const result = await runDatabaseBackup({
-      connectionString: `postgres://paperclip:paperclip@127.0.0.1:${targetHandle.port}/paperclip`,
+      connectionString: embeddedPostgresUrl(targetHandle.port),
       backupDir: path.resolve(input.targetPaths.backupDir, "repair"),
       retention: { dailyDays: 30, weeklyWeeks: 12, monthlyMonths: 12 },
       filenamePrefix: `${input.targetPaths.instanceId}-pre-repair`,

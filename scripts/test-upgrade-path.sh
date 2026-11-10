@@ -28,9 +28,22 @@ server_pid=""
 
 stop_server() {
   [ -n "$server_pid" ] || return 0
-  kill "$server_pid" 2>/dev/null || true
+  kill -TERM -- "-$server_pid" 2>/dev/null || kill "$server_pid" 2>/dev/null || true
   wait "$server_pid" 2>/dev/null || true
   server_pid=""
+  local pid_file postgres_pid
+  for pid_file in "$HOME/.$LEGACY_COMMAND"/instances/*/db/postmaster.pid "$HOME"/.wardmote/instances/*/db/postmaster.pid; do
+    [ -f "$pid_file" ] || continue
+    postgres_pid="$(head -n 1 "$pid_file")"
+    for _ in $(seq 1 60); do
+      kill -0 "$postgres_pid" 2>/dev/null || break
+      sleep 1
+    done
+    if kill -0 "$postgres_pid" 2>/dev/null; then
+      echo "embedded PostgreSQL (pid $postgres_pid) still running 60s after the server stopped" >&2
+      return 1
+    fi
+  done
 }
 cleanup() {
   stop_server
@@ -41,7 +54,7 @@ trap cleanup EXIT
 start_server() {
   local label="$1"
   shift
-  PORT="$PORT" "$@" >"$ROOT/$label.log" 2>&1 &
+  PORT="$PORT" setsid "$@" >"$ROOT/$label.log" 2>&1 &
   server_pid=$!
   for _ in $(seq 1 120); do
     if curl -fsS "http://127.0.0.1:$PORT/api/health" >"$ROOT/$label-health.json" 2>/dev/null; then

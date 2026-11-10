@@ -145,8 +145,8 @@ function craftAgentJwtWithoutResponsibleClaim(input: {
     run_id: input.runId,
     iat: now,
     exp: now + (input.expiresInSeconds ?? 3600),
-    iss: "paperclip",
-    aud: "paperclip-api",
+    iss: "wardmote",
+    aud: "wardmote-api",
   };
   const headerB64 = Buffer.from(JSON.stringify(header), "utf8").toString("base64url");
   const claimsB64 = Buffer.from(JSON.stringify(claims), "utf8").toString("base64url");

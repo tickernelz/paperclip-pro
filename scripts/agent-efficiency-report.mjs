@@ -7,7 +7,7 @@ import readline from "node:readline";
 import { fileURLToPath } from "node:url";
 import { createGunzip } from "node:zlib";
 
-const DEFAULT_DATABASE_URL = "postgres://paperclip:paperclip@127.0.0.1:54329/paperclip";
+const DEFAULT_DATABASE_URL = "postgres://wardmote:wardmote@127.0.0.1:54329/wardmote";
 const REPEAT_STREAK_MIN = 3;
 const UPDATE_CHUNK_MARKER = '"chunk":"{\\"type\\":\\"message_update\\"';
 const WHOLE_LINE_CHUNK_END = /\\n"(?:,"seq":\d+)?}$/;

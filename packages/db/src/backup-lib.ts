@@ -1,4 +1,4 @@
-import { createReadStream, createWriteStream, existsSync, mkdirSync, readdirSync, statSync, unlinkSync } from "node:fs";
+import { createReadStream, createWriteStream, existsSync, mkdirSync, readdirSync, renameSync, statSync, unlinkSync } from "node:fs";
 import { basename, resolve } from "node:path";
 import { createInterface } from "node:readline";
 import { spawn } from "node:child_process";
@@ -117,6 +117,27 @@ function monthlyRetentionCutoff(nowMs: number, monthlyMonths: number): number {
   return Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - months, 1);
 }
 
+export const DATABASE_BACKUP_FILENAME_PREFIX = "wardmote";
+const RETIRED_BACKUP_FILENAME_PREFIX = "paperclip";
+
+function isBackupFilename(name: string): boolean {
+  return name.endsWith(".sql") || name.endsWith(".sql.gz");
+}
+
+/** Renames backups written under the retired filename prefix so retention keeps pruning them; idempotent. */
+export function adoptRetiredBackupFilenames(backupDir: string): number {
+  if (!existsSync(backupDir)) return 0;
+  let renamed = 0;
+  for (const name of readdirSync(backupDir)) {
+    if (!name.startsWith(`${RETIRED_BACKUP_FILENAME_PREFIX}-`) || !isBackupFilename(name)) continue;
+    const next = resolve(backupDir, `${DATABASE_BACKUP_FILENAME_PREFIX}${name.slice(RETIRED_BACKUP_FILENAME_PREFIX.length)}`);
+    if (existsSync(next)) continue;
+    renameSync(resolve(backupDir, name), next);
+    renamed += 1;
+  }
+  return renamed;
+}
+
 /**
  * Tiered backup pruning:
  * - Daily tier: keep ALL backups from the last `dailyDays` days
@@ -137,7 +158,7 @@ function pruneOldBackups(backupDir: string, retention: BackupRetentionPolicy, fi
 
   for (const name of readdirSync(backupDir)) {
     if (!name.startsWith(`${filenamePrefix}-`)) continue;
-    if (!name.endsWith(".sql") && !name.endsWith(".sql.gz")) continue;
+    if (!isBackupFilename(name)) continue;
     const fullPath = resolve(backupDir, name);
     const stat = statSync(fullPath);
     entries.push({ name, fullPath, mtimeMs: stat.mtimeMs });
@@ -529,7 +550,7 @@ export function createBufferedTextFileWriter(filePath: string, maxBufferedBytes 
 }
 
 export async function runDatabaseBackup(opts: RunDatabaseBackupOptions): Promise<RunDatabaseBackupResult> {
-  const filenamePrefix = opts.filenamePrefix ?? "paperclip";
+  const filenamePrefix = opts.filenamePrefix ?? DATABASE_BACKUP_FILENAME_PREFIX;
   const retention = opts.retention;
   const connectTimeout = Math.max(1, Math.trunc(opts.connectTimeoutSeconds ?? 5));
   const backupEngine = opts.backupEngine ?? "auto";
@@ -545,6 +566,7 @@ export async function runDatabaseBackup(opts: RunDatabaseBackupOptions): Promise
     await sql.end();
   };
   mkdirSync(opts.backupDir, { recursive: true });
+  if (filenamePrefix === DATABASE_BACKUP_FILENAME_PREFIX) adoptRetiredBackupFilenames(opts.backupDir);
   // Initial and final sleep checks can run within the same second. A failed
   // second checkpoint must never overwrite the first verified recovery point.
   const checkpointSuffix = opts.verifyBeforePrune ? `-${randomUUID()}` : "";

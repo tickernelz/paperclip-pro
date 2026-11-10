@@ -62,8 +62,8 @@ describe("agent local JWT", () => {
       adapter_type: "claude_local",
       run_id: "run-1",
       responsible_user_id: "user-1",
-      iss: "paperclip",
-      aud: "paperclip-api",
+      iss: "wardmote",
+      aud: "wardmote-api",
     });
   });
 
@@ -117,8 +117,8 @@ describe("agent local JWT", () => {
     vi.setSystemTime(new Date("2026-01-01T00:00:00.000Z"));
     const token = createLocalAgentJwt("agent-1", "company-1", "codex_local", "run-1");
 
-    process.env[issuerEnv] = "paperclip";
-    process.env[audienceEnv] = "paperclip-api";
+    process.env[issuerEnv] = "wardmote";
+    process.env[audienceEnv] = "wardmote-api";
     expect(verifyLocalAgentJwt(token!)).toBeNull();
   });
 
@@ -159,8 +159,8 @@ describe("agent local JWT", () => {
       run_id: "run-legacy",
       iat: now,
       exp: now + 3600,
-      iss: "paperclip",
-      aud: "paperclip-api",
+      iss: "wardmote",
+      aud: "wardmote-api",
     };
     const headerB64 = Buffer.from(JSON.stringify(header), "utf8").toString("base64url");
     const claimsB64 = Buffer.from(JSON.stringify(claims), "utf8").toString("base64url");
@@ -277,8 +277,8 @@ describe("agent local JWT", () => {
       run_id: "run-legacy",
       iat: now,
       exp: now + 3600,
-      iss: "paperclip",
-      aud: "paperclip-api",
+      iss: "wardmote",
+      aud: "wardmote-api",
     };
     const headerB64 = Buffer.from(JSON.stringify(header), "utf8").toString("base64url");
     const claimsB64 = Buffer.from(JSON.stringify(claims), "utf8").toString("base64url");

@@ -9,6 +9,7 @@ This release uses only the Wardmote names. Nothing reads the old names any more;
 - **Environment.** Only `WARDMOTE_*` names are read. On start the instance `.env` file has its `PAPERCLIP_*` keys renamed in place, with a `0600` backup. Env keys an operator set on an agent keep their names.
 - **MCP, headers and skills.** MCP tools are `wardmote*` on the `wardmote` server at `/mcp/wardmote`; old tool names are refused. Headers are `X-Wardmote-*`; `X-Paperclip-*` is refused and redacted in logs. The built-in skills are `wardmote`, `wardmote-board`, `wardmote-converting-plans-to-tasks` and `wardmote-create-agent` under the `tickernelz/wardmote/` key prefix (database migrations 0358 and 0359).
 - **Stored agent text.** On every start the server rewrites the retired env, tool, header, route and skill names in agent instruction files, agent settings and their history, routines and chat endpoints. It backs up each changed file and row under `backups/wardmote-rename-<time>/`; a second start changes nothing. `wardmote migrate-names --dry-run` lists the changes without writing.
+- **Embedded database.** The embedded PostgreSQL role and database are `wardmote`. On the first start the server renames the old role and database in place through a temporary superuser, which it drops afterwards; it refuses while another process is connected to the old database. Backup files are named `wardmote-*.sql.gz`, and older backups with the retired prefix in the same folder are renamed on the next backup so retention keeps pruning them. Agent run tokens use the `wardmote` issuer and `wardmote-api` audience; tokens minted before the upgrade stop working, so upgrade with no run live.
 - **Paperclip Cloud, Labs and EE** are removed: managed-cloud mode, Cloud sign-in, the Cloud connector broker, onboarding seeds and the related routes and UI.
 - **Stored channel values.** Approvals, grants, autonomy windows and owner relays decided in the board record `wardmote` as their channel, and the local board user's address is `local@wardmote.local`; database migration 0360 rewrites existing rows. API responses carry `wardmote` where they carried the old value.
 
@@ -26,7 +27,7 @@ An install on 2026.1109.x or older still runs the old `update` code, which canno
 
 ## Rolling back
 
-`wardmote update --rollback` flips back to the previous payload when it contains the `wardmote` command (2026.1108.0 or newer) and refuses otherwise. An older release does not know the `wardmote.service` name, so restart the service yourself afterwards: `systemctl --user restart wardmote.service`. Database migrations are not reversed; restore the backup from step 1 if needed. Stored agent text can be restored from `backups/wardmote-rename-<time>/`.
+`wardmote update --rollback` flips back to the previous payload when it contains the `wardmote` command (2026.1108.0 or newer) and refuses otherwise. An older release does not know the `wardmote.service` name, so restart the service yourself afterwards: `systemctl --user restart wardmote.service`. Database migrations are not reversed, and an older release cannot log in to the renamed embedded database; restore the backup from step 1. Stored agent text can be restored from `backups/wardmote-rename-<time>/`.
 
 ## Kept on purpose
 

@@ -463,7 +463,7 @@ describe("worktree config repair", () => {
             ...config.database,
             mode: databaseMode,
             ...(databaseMode === "postgres"
-              ? { connectionString: "postgres://paperclip:paperclip@127.0.0.1:55439/paperclip" }
+              ? { connectionString: "postgres://wardmote:wardmote@127.0.0.1:55439/wardmote" }
               : {}),
           },
         }, null, 2)}\n`,
