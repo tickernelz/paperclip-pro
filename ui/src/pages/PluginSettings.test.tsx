@@ -64,7 +64,7 @@ async function flushReact() {
 function basePlugin(overrides: Record<string, unknown> = {}) {
   return {
     id: "plugin-1",
-    pluginKey: "paperclip.e2b-sandbox-provider",
+    pluginKey: "wardmote.e2b-sandbox-provider",
     packageName: "@tickernelz/wardmote-plugin-e2b",
     version: "0.1.0",
     status: "error",
@@ -185,7 +185,7 @@ describe("PluginSettings", () => {
   it("renders unconfigured manifest local folders with required paths", async () => {
     const declaration = wikiFolderDeclaration();
     mockPluginsApi.get.mockResolvedValue(basePlugin({
-      pluginKey: "paperclipai.plugin-llm-wiki",
+      pluginKey: "wardmote.plugin-llm-wiki",
       packageName: "@tickernelz/wardmote-plugin-llm-wiki",
       status: "ready",
       manifestJson: {
@@ -221,7 +221,7 @@ describe("PluginSettings", () => {
   it("hides local folders when the instance runs agents only in the platform-managed environment", async () => {
     const declaration = wikiFolderDeclaration();
     mockPluginsApi.get.mockResolvedValue(basePlugin({
-      pluginKey: "paperclipai.plugin-llm-wiki",
+      pluginKey: "wardmote.plugin-llm-wiki",
       packageName: "@tickernelz/wardmote-plugin-llm-wiki",
       status: "ready",
       manifestJson: {

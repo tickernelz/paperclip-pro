@@ -1,6 +1,6 @@
 import type { WardmotePluginManifestV1 } from "@tickernelz/wardmote-plugin-sdk";
 
-const PLUGIN_ID = "paperclip.novita-sandbox-provider";
+const PLUGIN_ID = "wardmote.novita-sandbox-provider";
 const PLUGIN_VERSION = "0.1.0";
 
 const manifest: WardmotePluginManifestV1 = {

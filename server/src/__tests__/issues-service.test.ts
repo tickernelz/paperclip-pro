@@ -2078,7 +2078,7 @@ describeEmbeddedPostgres("issueService.list participantAgentId", () => {
         status: "todo",
         priority: "medium",
         assigneeAgentId: agentId,
-        originKind: "plugin:paperclipai.content-machine:evaluation",
+        originKind: "plugin:wardmote.content-machine:evaluation",
         originId: "content-machine-operation-1",
       },
     ]);

@@ -69,7 +69,7 @@ async function flushReact() {
 function pageContribution(overrides: Partial<{ slots: unknown[] }> = {}) {
   return {
     pluginId: "plugin-wiki",
-    pluginKey: "paperclipai.plugin-llm-wiki",
+    pluginKey: "wardmote.plugin-llm-wiki",
     displayName: "LLM Wiki",
     version: "0.1.0",
     uiEntryFile: "ui.js",

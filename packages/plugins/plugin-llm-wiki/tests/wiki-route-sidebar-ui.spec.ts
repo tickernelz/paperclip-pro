@@ -7,7 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { WikiPage, WikiRouteSidebar } from "../src/ui/index.js";
 
 const COMPANY_ID = "11111111-1111-4111-8111-111111111111";
-const EXPANDED_STORAGE_KEY = `paperclipai.plugin-llm-wiki:route-sidebar-expanded:v2:${COMPANY_ID}`;
+const EXPANDED_STORAGE_KEY = `wardmote.plugin-llm-wiki:route-sidebar-expanded:v2:${COMPANY_ID}`;
 
 type BridgeGlobal = typeof globalThis & {
   __paperclipPluginBridge__?: {

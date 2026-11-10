@@ -1,7 +1,7 @@
 import type { WardmotePluginManifestV1 } from "@tickernelz/wardmote-plugin-sdk";
 
 const manifest: WardmotePluginManifestV1 = {
-  id: "paperclip.createos-sandbox-provider",
+  id: "wardmote.createos-sandbox-provider",
   apiVersion: 1,
   version: "0.1.0",
   displayName: "CreateOS Sandbox Provider",

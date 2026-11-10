@@ -30,7 +30,7 @@ import { buildPluginWorkerEnv, pluginLoader } from "../services/plugin-loader.js
 const embeddedPostgresSupport = await getEmbeddedPostgresTestSupport();
 const describeEmbeddedPostgres = embeddedPostgresSupport.supported ? describe : describe.skip;
 const multiMigrationPluginKey = "paperclip.dbfixture";
-const llmWikiPluginKey = "paperclipai.plugin-llm-wiki";
+const llmWikiPluginKey = "wardmote.plugin-llm-wiki";
 
 if (!embeddedPostgresSupport.supported) {
   console.warn(

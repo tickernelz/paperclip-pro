@@ -1498,13 +1498,13 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
     });
     await db.insert(plugins).values({
       id: pluginId,
-      pluginKey: "paperclip.fake-plugin-sandbox-provider",
+      pluginKey: "wardmote.fake-plugin-sandbox-provider",
       packageName: "@tickernelz/wardmote-plugin-fake-sandbox",
       version: "1.0.0",
       apiVersion: 1,
       categories: ["automation"],
       manifestJson: {
-        id: "paperclip.fake-plugin-sandbox-provider",
+        id: "wardmote.fake-plugin-sandbox-provider",
         apiVersion: 1,
         version: "1.0.0",
         displayName: "Fake Plugin Sandbox Provider",
@@ -1839,13 +1839,13 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
     });
     await db.insert(plugins).values({
       id: pluginId,
-      pluginKey: "paperclip.fake-plugin-sandbox-provider",
+      pluginKey: "wardmote.fake-plugin-sandbox-provider",
       packageName: "@tickernelz/wardmote-plugin-fake-sandbox",
       version: "1.0.0",
       apiVersion: 1,
       categories: ["automation"],
       manifestJson: {
-        id: "paperclip.fake-plugin-sandbox-provider",
+        id: "wardmote.fake-plugin-sandbox-provider",
         apiVersion: 1,
         version: "1.0.0",
         displayName: "Fake Plugin Sandbox Provider",
@@ -2630,13 +2630,13 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
     });
     await db.insert(plugins).values({
       id: pluginId,
-      pluginKey: "paperclip.fake-plugin-sandbox-provider",
+      pluginKey: "wardmote.fake-plugin-sandbox-provider",
       packageName: "@tickernelz/wardmote-plugin-fake-sandbox",
       version: "1.0.0",
       apiVersion: 1,
       categories: ["automation"],
       manifestJson: {
-        id: "paperclip.fake-plugin-sandbox-provider",
+        id: "wardmote.fake-plugin-sandbox-provider",
         apiVersion: 1,
         version: "1.0.0",
         displayName: "Fake Plugin Sandbox Provider",
@@ -2997,13 +2997,13 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
     });
     await db.insert(plugins).values({
       id: pluginId,
-      pluginKey: "paperclip.fake-plugin-ready-sandbox-provider",
+      pluginKey: "wardmote.fake-plugin-ready-sandbox-provider",
       packageName: "@tickernelz/wardmote-plugin-fake-ready-sandbox",
       version: "1.0.0",
       apiVersion: 1,
       categories: ["automation"],
       manifestJson: {
-        id: "paperclip.fake-plugin-ready-sandbox-provider",
+        id: "wardmote.fake-plugin-ready-sandbox-provider",
         apiVersion: 1,
         version: "1.0.0",
         displayName: "Fake Plugin Ready Sandbox Provider",
@@ -3096,13 +3096,13 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
     });
     await db.insert(plugins).values({
       id: pluginId,
-      pluginKey: "paperclip.fake-plugin-reload-sandbox-provider",
+      pluginKey: "wardmote.fake-plugin-reload-sandbox-provider",
       packageName: "@tickernelz/wardmote-plugin-fake-reload-sandbox",
       version: "1.0.0",
       apiVersion: 1,
       categories: ["automation"],
       manifestJson: {
-        id: "paperclip.fake-plugin-reload-sandbox-provider",
+        id: "wardmote.fake-plugin-reload-sandbox-provider",
         apiVersion: 1,
         version: "1.0.0",
         displayName: "Fake Plugin Reload Sandbox Provider",
@@ -3214,13 +3214,13 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
     // provider and the probe reports ready.
     await db.insert(plugins).values({
       id: pluginId,
-      pluginKey: "paperclip.fake-plugin-missing-sandbox-provider",
+      pluginKey: "wardmote.fake-plugin-missing-sandbox-provider",
       packageName: "@tickernelz/wardmote-plugin-fake-missing-sandbox",
       version: "1.0.0",
       apiVersion: 1,
       categories: ["automation"],
       manifestJson: {
-        id: "paperclip.fake-plugin-missing-sandbox-provider",
+        id: "wardmote.fake-plugin-missing-sandbox-provider",
         apiVersion: 1,
         version: "1.0.0",
         displayName: "Fake Plugin Missing Sandbox Provider",
@@ -3340,7 +3340,7 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
   // orphan teardown must resolve that recorded ref even when the environment
   // binding is gone, so these tests register a provider with a real secret-ref
   // field, unlike the plain `fake-plugin` tests above.
-  const SECRET_REF_PLUGIN_KEY = "paperclip.secret-plugin-sandbox-provider";
+  const SECRET_REF_PLUGIN_KEY = "wardmote.secret-plugin-sandbox-provider";
   const SECRET_REF_PROVIDER = "secret-plugin";
 
   async function registerSecretRefPluginProvider(): Promise<string> {
@@ -3604,13 +3604,13 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
     });
     await db.insert(plugins).values({
       id: pluginId,
-      pluginKey: "paperclip.fake-plugin-sandbox-provider",
+      pluginKey: "wardmote.fake-plugin-sandbox-provider",
       packageName: "@tickernelz/wardmote-plugin-fake-sandbox",
       version: "1.0.0",
       apiVersion: 1,
       categories: ["automation"],
       manifestJson: {
-        id: "paperclip.fake-plugin-sandbox-provider",
+        id: "wardmote.fake-plugin-sandbox-provider",
         apiVersion: 1,
         version: "1.0.0",
         displayName: "Fake Plugin Sandbox Provider",
@@ -3728,13 +3728,13 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
     });
     await db.insert(plugins).values({
       id: pluginId,
-      pluginKey: "paperclip.fake-plugin-sandbox-provider",
+      pluginKey: "wardmote.fake-plugin-sandbox-provider",
       packageName: "@tickernelz/wardmote-plugin-fake-sandbox",
       version: "1.0.0",
       apiVersion: 1,
       categories: ["automation"],
       manifestJson: {
-        id: "paperclip.fake-plugin-sandbox-provider",
+        id: "wardmote.fake-plugin-sandbox-provider",
         apiVersion: 1,
         version: "1.0.0",
         displayName: "Fake Plugin Sandbox Provider",
@@ -3867,13 +3867,13 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
     });
     await db.insert(plugins).values({
       id: pluginId,
-      pluginKey: "paperclip.fake-plugin-sandbox-provider",
+      pluginKey: "wardmote.fake-plugin-sandbox-provider",
       packageName: "@tickernelz/wardmote-plugin-fake-sandbox",
       version: "1.0.0",
       apiVersion: 1,
       categories: ["automation"],
       manifestJson: {
-        id: "paperclip.fake-plugin-sandbox-provider",
+        id: "wardmote.fake-plugin-sandbox-provider",
         apiVersion: 1,
         version: "1.0.0",
         displayName: "Fake Plugin Sandbox Provider",
@@ -4186,13 +4186,13 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
     });
     await db.insert(plugins).values({
       id: pluginId,
-      pluginKey: "paperclip.fake-plugin-sandbox-provider",
+      pluginKey: "wardmote.fake-plugin-sandbox-provider",
       packageName: "@tickernelz/wardmote-plugin-fake-sandbox",
       version: "1.0.0",
       apiVersion: 1,
       categories: ["automation"],
       manifestJson: {
-        id: "paperclip.fake-plugin-sandbox-provider",
+        id: "wardmote.fake-plugin-sandbox-provider",
         apiVersion: 1,
         version: "1.0.0",
         displayName: "Fake Plugin Sandbox Provider",

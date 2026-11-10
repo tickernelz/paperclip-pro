@@ -45,7 +45,7 @@ npx @tickernelz/wardmote plugin install ./packages/plugins/examples/plugin-file-
 To uninstall:
 
 ```bash
-npx @tickernelz/wardmote plugin uninstall paperclip-file-browser-example --force
+npx @tickernelz/wardmote plugin uninstall wardmote-file-browser-example --force
 ```
 
 **Local development notes:**

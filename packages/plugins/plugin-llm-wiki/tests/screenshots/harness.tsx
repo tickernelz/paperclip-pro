@@ -35,21 +35,21 @@ const FOLDER_HEALTHY = {
 const MANAGED_AGENT = {
   status: "active",
   agentId: "agt-c14a-7b2f-4e90",
-  resourceKey: "paperclipai.plugin-llm-wiki:agent:wiki-maintainer",
+  resourceKey: "wardmote.plugin-llm-wiki:agent:wiki-maintainer",
   details: { name: "Wiki Maintainer", status: "active", adapterType: "omp_local", icon: "book-open", urlKey: "wiki-maintainer" },
 };
 
 const MANAGED_PROJECT = {
   status: "active",
   projectId: "prj-llmw-7e1a",
-  resourceKey: "paperclipai.plugin-llm-wiki:project:llm-wiki",
+  resourceKey: "wardmote.plugin-llm-wiki:project:llm-wiki",
   details: { name: "LLM Wiki Operations", status: "in_progress" },
 };
 
 const MANAGED_ROUTINE = {
   status: "active",
   routineId: "rtn-llmw-night",
-  resourceKey: "paperclipai.plugin-llm-wiki:routine:nightly-wiki-lint",
+  resourceKey: "wardmote.plugin-llm-wiki:routine:nightly-wiki-lint",
   routine: {
     id: "rtn-llmw-night",
     title: "Run LLM Wiki lint",
@@ -76,7 +76,7 @@ const MANAGED_ROUTINES = [
   {
     status: "active",
     routineId: "rtn-llmw-cursor",
-    resourceKey: "paperclipai.plugin-llm-wiki:routine:cursor-window-processing",
+    resourceKey: "wardmote.plugin-llm-wiki:routine:cursor-window-processing",
     routine: {
       id: "rtn-llmw-cursor",
       title: "Process LLM Wiki updates",
@@ -98,7 +98,7 @@ const MANAGED_ROUTINES = [
   {
     status: "active",
     routineId: "rtn-llmw-index",
-    resourceKey: "paperclipai.plugin-llm-wiki:routine:index-refresh",
+    resourceKey: "wardmote.plugin-llm-wiki:routine:index-refresh",
     routine: {
       id: "rtn-llmw-index",
       title: "Refresh LLM Wiki index",

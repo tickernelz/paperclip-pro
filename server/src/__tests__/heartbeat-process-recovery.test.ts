@@ -4567,13 +4567,13 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
 
     await db.insert(plugins).values({
       id: pluginId,
-      pluginKey: "paperclip.kubernetes-sandbox-provider",
+      pluginKey: "wardmote.kubernetes-sandbox-provider",
       packageName: "@tickernelz/wardmote-kubernetes-sandbox-provider",
       version: "1.0.0",
       apiVersion: 1,
       categories: ["automation"],
       manifestJson: {
-        id: "paperclip.kubernetes-sandbox-provider",
+        id: "wardmote.kubernetes-sandbox-provider",
         apiVersion: 1,
         version: "1.0.0",
         displayName: "Kubernetes Sandbox Provider",
@@ -4731,16 +4731,16 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
   it("classifies only the installed-but-not-ready sandbox provider plugin message as a configuration gap", () => {
     expect(
       parseSandboxProviderPluginNotReadyFailureMessage(
-        'Sandbox provider "kubernetes" is installed via plugin "paperclip.kubernetes-sandbox-provider", but that plugin is currently error.',
+        'Sandbox provider "kubernetes" is installed via plugin "wardmote.kubernetes-sandbox-provider", but that plugin is currently error.',
       ),
     ).toEqual({
       provider: "kubernetes",
-      pluginKey: "paperclip.kubernetes-sandbox-provider",
+      pluginKey: "wardmote.kubernetes-sandbox-provider",
       pluginStatus: "error",
     });
     expect(
       parseSandboxProviderPluginNotReadyFailureMessage(
-        'Failed to acquire lease: Sandbox provider "daytona" is installed via plugin "paperclip.daytona-sandbox-provider", but that plugin is currently upgrade_pending.',
+        'Failed to acquire lease: Sandbox provider "daytona" is installed via plugin "wardmote.daytona-sandbox-provider", but that plugin is currently upgrade_pending.',
       ),
     ).toMatchObject({ pluginStatus: "upgrade_pending" });
     expect(
@@ -4751,7 +4751,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     // The transient worker-restart message keeps its retryable classification.
     expect(
       parseSandboxProviderPluginNotReadyFailureMessage(
-        'Sandbox provider "kubernetes" is installed via plugin "paperclip.kubernetes-sandbox-provider", but its worker is not running.',
+        'Sandbox provider "kubernetes" is installed via plugin "wardmote.kubernetes-sandbox-provider", but its worker is not running.',
       ),
     ).toBeNull();
     // The permanent "not installed" message is a different condition.
@@ -4780,13 +4780,13 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
 
     await db.insert(plugins).values({
       id: pluginId,
-      pluginKey: "paperclip.kubernetes-sandbox-provider",
+      pluginKey: "wardmote.kubernetes-sandbox-provider",
       packageName: "@tickernelz/wardmote-kubernetes-sandbox-provider",
       version: "1.0.0",
       apiVersion: 1,
       categories: ["automation"],
       manifestJson: {
-        id: "paperclip.kubernetes-sandbox-provider",
+        id: "wardmote.kubernetes-sandbox-provider",
         apiVersion: 1,
         version: "1.0.0",
         displayName: "Kubernetes Sandbox Provider",
@@ -4850,10 +4850,10 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
       configurationIncomplete: {
         reason: "sandbox_provider_plugin_not_ready",
         sandboxProvider: "kubernetes",
-        pluginKey: "paperclip.kubernetes-sandbox-provider",
+        pluginKey: "wardmote.kubernetes-sandbox-provider",
         pluginStatus: "error",
         fingerprint:
-          "sandbox_provider_plugin:paperclip.kubernetes-sandbox-provider:error",
+          "sandbox_provider_plugin:wardmote.kubernetes-sandbox-provider:error",
       },
     });
 
@@ -4903,7 +4903,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
         .where(eq(issueComments.issueId, issueId));
       return (
         rows.find((comment) =>
-          comment.body.includes("paperclip.kubernetes-sandbox-provider"),
+          comment.body.includes("wardmote.kubernetes-sandbox-provider"),
         ) ?? null
       );
     });
