@@ -62,7 +62,7 @@ try {
   const client = await oauth.register({ client_name: "Synthetic Dot test peer", redirect_uris: [origin + "/callback"] });
   const verifier = randomBytes(32).toString("base64url");
   const authorization = await oauth.authorize({ client_id: client.client_id, redirect_uri: origin + "/callback", resource: oauth.config.resource,
-    scope: "paperclip:read paperclip:write", response_type: "code", code_challenge_method: "S256", code_challenge: createHash("sha256").update(verifier).digest("base64url") });
+    scope: "wardmote:read wardmote:write", response_type: "code", code_challenge_method: "S256", code_challenge: createHash("sha256").update(verifier).digest("base64url") });
   const consent = await oauth.consent(authorization.split("/").at(-1)!, actor, { decision: "approve", companyId: company.id, allowWrites: true });
   const tokens = await oauth.token({ grant_type: "authorization_code", client_id: client.client_id, redirect_uri: origin + "/callback",
     resource: oauth.config.resource, code: new URL(consent.redirectUrl).searchParams.get("code"), code_verifier: verifier });
@@ -135,11 +135,11 @@ try {
     res.sendStatus(204);
     if (receivedIds.has(id)) return;
     receivedIds.add(id);
-    assert.equal(body.name, "paperclip.dot.work_available");
+    assert.equal(body.name, "wardmote.dot.work_available");
     assert(!JSON.stringify(body).includes("competitor"));
     void peer().catch(rejectWork);
   });
-  const subscription = { name: "paperclip.dot.work_available", arguments: { companyId: company.id, taskId: task.id },
+  const subscription = { name: "wardmote.dot.work_available", arguments: { companyId: company.id, taskId: task.id },
     delivery: { mode: "webhook", url: "https://dot-demo.invalid/events", secret: webhookSecret } };
   await rpc("events/subscribe", subscription);
   console.log("✓ Real OAuth connection and signed webhook verification");

@@ -293,7 +293,7 @@ describe("Connectors landing page", () => {
     expect(container.textContent).not.toContain("No connectors match");
   });
 
-  const assistantGrant = { id: "grant", companyId: "company-1", companyName: "Wardmote", clientName: "Claude", scopes: ["paperclip:read"], createdAt: "2026-10-06T00:00:00Z", revokedAt: null };
+  const assistantGrant = { id: "grant", companyId: "company-1", companyName: "Wardmote", clientName: "Claude", scopes: ["wardmote:read"], createdAt: "2026-10-06T00:00:00Z", revokedAt: null };
 
   it("shows active assistant grants in Installed and removes them after revocation", async () => {
     assistantConnectionsMock.mockResolvedValue([assistantGrant]);

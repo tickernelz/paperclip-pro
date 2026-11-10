@@ -36,7 +36,7 @@ export async function beginConnection(write = true, redirect = origin + "/eval-c
   const { client_id: clientId } = await registration.json() as { client_id: string };
   const verifier = randomBytes(32).toString("base64url");
   const state = randomBytes(32).toString("base64url");
-  const params = new URLSearchParams({ client_id: clientId, redirect_uri: redirect, response_type: "code", resource, code_challenge: createHash("sha256").update(verifier).digest("base64url"), code_challenge_method: "S256", state, scope: `paperclip:read ${write ? "paperclip:write " : ""}${configure ? "paperclip:configure " : ""}offline_access` });
+  const params = new URLSearchParams({ client_id: clientId, redirect_uri: redirect, response_type: "code", resource, code_challenge: createHash("sha256").update(verifier).digest("base64url"), code_challenge_method: "S256", state, scope: `wardmote:read ${write ? "wardmote:write " : ""}${configure ? "wardmote:configure " : ""}offline_access` });
   const response = await fetch(origin + "/mcp/oauth/authorize?" + params, { redirect: "manual" });
   expect(response.status, "authorization request").toBe(303);
   const consentUrl = response.headers.get("location")!;

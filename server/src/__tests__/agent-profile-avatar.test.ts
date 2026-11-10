@@ -136,7 +136,7 @@ it("lets a paired Dot upload without an assignment, with feature and current gra
   await db.insert(authUsers).values({ id: userId, name: "Owner", email: `${userId}@example.test`, createdAt: new Date(), updatedAt: new Date() });
   await db.insert(companyMemberships).values({ companyId: f.company.id, principalType: "user", principalId: userId, membershipRole: "owner", status: "active" });
   await db.insert(mcpOauthClients).values({ id: clientId, name: "Dot", redirectUris: [] });
-  const [grant] = await db.insert(mcpOauthGrants).values({ companyId: f.company.id, userId, clientId, resource: "https://wardmote.example/mcp/runner", purpose: "agent", agentId: f.agent.id, scopes: ["paperclip:agent"] }).returning();
+  const [grant] = await db.insert(mcpOauthGrants).values({ companyId: f.company.id, userId, clientId, resource: "https://wardmote.example/mcp/runner", purpose: "agent", agentId: f.agent.id, scopes: ["wardmote:agent"] }).returning();
   await db.insert(dotAgentBindings).values({ companyId: f.company.id, agentId: f.agent.id, operatorId: userId, grantId: grant!.id, status: "connected" });
   const principal: McpPrincipal = { grant: grant!, company: f.company, actor: { type: "agent", companyId: f.company.id, agentId: f.agent.id } };
   const tools = createDotRunnerMcpTools(db);

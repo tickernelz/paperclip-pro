@@ -24,7 +24,7 @@ This one-use code expires at ${expiresAt}. If it has expired, ask me for a fresh
 
 If you can obtain your own current avatar image, call wardmote_dot_set_avatar with its raw base64 PNG/JPEG/WebP bytes (at most 512 KiB) to use it as your Wardmote avatar. Do not invent an avatar or block connection setup if the image is unavailable; you can set it later.
 
-Subscribe through MCP Events to paperclip.dot.mailbox_updated using Wardmote company ${companyId} and the binding ID returned by the inbox. Complete callback verification and follow the returned eventInstructions.
+Subscribe through MCP Events to wardmote.dot.mailbox_updated using Wardmote company ${companyId} and the binding ID returned by the inbox. Complete callback verification and follow the returned eventInstructions.
 
 ${DOT_AGENT_TOOL_GUIDANCE}
 

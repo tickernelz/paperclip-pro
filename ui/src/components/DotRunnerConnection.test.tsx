@@ -116,7 +116,7 @@ it("copies the complete Dot setup with its server URL, one-use code and event in
   expect(prompt).toContain("Wardmote company: company. Agent: agent.");
   expect(prompt).toContain("One-use pairing code:\nfresh-one-use-pairing-code");
   expect(prompt).toContain(expiresAt);
-  expect(prompt).toContain("paperclip.dot.mailbox_updated");
+  expect(prompt).toContain("wardmote.dot.mailbox_updated");
   expect(prompt).toContain("wardmote_dot_inbox");
   expect(prompt).toContain("wardmote_dot_confirm_event");
   expect(prompt).toContain("Wardmote will send a test event automatically");

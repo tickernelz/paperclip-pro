@@ -146,7 +146,7 @@ export const publicMcpCapabilities: Capability[] = [
 publicMcpCapabilities.push({
   name: "wardmote_search_api", description: "Search the allowed Wardmote work and configuration API operations and their exact argument schemas. These are the same authorized operations as the named tools; other REST endpoints are not callable.",
   schema: z.object({ ...company, query: z.string().max(200).default("") }).strict(),
-  run: async (_p, a) => ({ operations: publicMcpCapabilities.filter(c => !["wardmote_search_api", "wardmote_call_api"].includes(c.name) && String(a.query).toLowerCase().split(/\s+/).every(word => (c.name + " " + c.description).toLowerCase().includes(word))).slice(0, 40).map(c => ({ operationId: c.name, description: c.description, scope: c.configure ? "paperclip:configure" : c.write ? "paperclip:write" : "paperclip:read", inputSchema: z.toJSONSchema(c.schema) })) }),
+  run: async (_p, a) => ({ operations: publicMcpCapabilities.filter(c => !["wardmote_search_api", "wardmote_call_api"].includes(c.name) && String(a.query).toLowerCase().split(/\s+/).every(word => (c.name + " " + c.description).toLowerCase().includes(word))).slice(0, 40).map(c => ({ operationId: c.name, description: c.description, scope: c.configure ? "wardmote:configure" : c.write ? "wardmote:write" : "wardmote:read", inputSchema: z.toJSONSchema(c.schema) })) }),
 }, {
   name: "wardmote_call_api", write: true, destructive: true, description: "Call an operation returned by wardmote_search_api using its exact arguments, including companyId and requestId for writes. Same permissions, company checks and retry identity as the named tool. No arbitrary URLs, headers or additional REST operations.",
   schema: z.object({ ...company, operationId: z.string().min(1).max(100), arguments: z.record(z.string(), z.unknown()) }).strict(),
@@ -168,9 +168,9 @@ export function createPublicMcpExecutor(db: Db, oauth: PublicMcpOAuth, api: ApiD
     if (!capability) throw new McpCapabilityError("Unknown Wardmote operation.");
     const args = capability.schema.parse(input);
     if (args.companyId !== undefined && args.companyId !== principal.grant.companyId) throw new McpCapabilityError("Company does not match the authorized connection.");
-    if (!principal.grant.scopes.includes("paperclip:read")) throw new McpCapabilityError("Read permission is required.");
+    if (!principal.grant.scopes.includes("wardmote:read")) throw new McpCapabilityError("Read permission is required.");
     if (!capability.write && !capability.configure) return capability.run(principal, args, api, oauth.config.origin, transfers);
-    const scope = capability.configure ? "paperclip:configure" : "paperclip:write";
+    const scope = capability.configure ? "wardmote:configure" : "wardmote:write";
     if (!principal.grant.scopes.includes(scope) || principal.actor.memberships?.[0]?.membershipRole === "viewer") throw new McpCapabilityError(`${scope} permission is required. Reconnect and approve this permission.`);
     if (capability.ephemeral) return capability.run(principal, args, api, oauth.config.origin, transfers);
 
