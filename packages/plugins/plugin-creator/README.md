@@ -25,7 +25,7 @@ Generates:
 - example UI widget using the supported `@tickernelz/wardmote-plugin-sdk/ui` hooks
 - test file using `@tickernelz/wardmote-plugin-sdk/testing`
 - `esbuild` and `rollup` config files using SDK bundler presets
-- dev server script for hot-reload (`paperclip-plugin-dev-server`)
+- dev server script for hot-reload (`wardmote-plugin-dev-server`)
 
 The scaffold starts with plain React elements so the generated plugin stays minimal. For Wardmote-native controls, import shared host components such as `MarkdownEditor`, `FileTree`, `AssigneePicker`, and `ProjectPicker` from `@tickernelz/wardmote-plugin-sdk/ui`.
 

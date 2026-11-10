@@ -444,7 +444,7 @@ const BUILTIN_LOCAL_STDIO_RUNTIME_TEMPLATES: Record<
 > = {
   "paperclip.cognee-cloud": COGNEE_STDIO_TEMPLATE,
   "paperclip.google-sheets": {
-    command: "paperclip-google-sheets-mcp-server",
+    command: "wardmote-google-sheets-mcp-server",
     args: [],
     envKeys: [
       "GOOGLE_SHEETS_SERVICE_ACCOUNT_JSON",
