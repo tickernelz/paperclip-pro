@@ -3,7 +3,7 @@ import { z } from "zod";
 export const AUTONOMY_WINDOW_STATUSES = ["live", "revoked", "expired"] as const;
 export type AutonomyWindowStatus = (typeof AUTONOMY_WINDOW_STATUSES)[number];
 
-export const AUTONOMY_WINDOW_GRANT_CHANNELS = ["whatsapp", "paperclip"] as const;
+export const AUTONOMY_WINDOW_GRANT_CHANNELS = ["whatsapp", "wardmote"] as const;
 export type AutonomyWindowGrantChannel = (typeof AUTONOMY_WINDOW_GRANT_CHANNELS)[number];
 
 export const AUTONOMY_WINDOW_DEFAULT_HOURS = 12;

@@ -901,7 +901,7 @@ describe("OpenWA scheduled wakes (embedded Postgres + fake gateway)", () => {
     expect(callsWith("openwa-approval-expired:")).toHaveLength(1);
     expect(await expiredAudit()).toHaveLength(1);
     await expect(
-      resolveOpenwaApproval(db, { companyId: t.companyId, endpointId: t.endpointId, requestId: request.id, decision: "approve", via: "paperclip", owner: { userId: t.userId } }),
+      resolveOpenwaApproval(db, { companyId: t.companyId, endpointId: t.endpointId, requestId: request.id, decision: "approve", via: "wardmote", owner: { userId: t.userId } }),
     ).rejects.toBeInstanceOf(OpenwaApprovalAlreadyResolvedError);
     expect(await db.select().from(chatOwnerGrants).where(eq(chatOwnerGrants.requestId, request.id))).toEqual([]);
     expect((await requestRow(request.id)).status).toBe("expired");

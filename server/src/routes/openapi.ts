@@ -3367,7 +3367,7 @@ const openwaApprovalResponseSchema = z
     originConversationId: z.string().uuid().nullable(),
     interactionId: z.string().uuid().nullable(),
     reminderCount: z.number().int().min(0),
-    resolvedVia: z.enum(["whatsapp", "paperclip"]).nullable(),
+    resolvedVia: z.enum(["whatsapp", "wardmote"]).nullable(),
     resolvedByUserId: z.string().nullable(),
     ownerText: z.string().nullable(),
     agentConditions: z.string().nullable(),

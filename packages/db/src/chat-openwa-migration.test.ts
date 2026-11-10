@@ -160,7 +160,7 @@ describeDatabase("OpenWA chat migration", () => {
           sql`INSERT INTO chat_owner_grants (company_id,endpoint_id,request_id,origin_chat_key,category,scope,approved_via,expires_at) VALUES (${own.company},${own.endpoint},${request.id},'g1','create_task','forever','whatsapp',${expiresAt})`,
         ).rejects.toMatchObject({ code: "23514" });
         await expect(
-          sql`INSERT INTO chat_owner_grants (company_id,endpoint_id,request_id,origin_chat_key,category,scope,approved_via,expires_at) VALUES (${foreign.company},${foreign.endpoint},${request.id},'g1','create_task','one_action','paperclip',${expiresAt})`,
+          sql`INSERT INTO chat_owner_grants (company_id,endpoint_id,request_id,origin_chat_key,category,scope,approved_via,expires_at) VALUES (${foreign.company},${foreign.endpoint},${request.id},'g1','create_task','one_action','wardmote',${expiresAt})`,
         ).rejects.toMatchObject({ code: "23503" });
 
         await sql`INSERT INTO chat_audit_entries (company_id,endpoint_id,chat_key,kind,actor_kind,content,content_purge_at) VALUES (${own.company},${own.endpoint},'g1','trigger_admitted','chat_principal','{"text":"hi"}',now() + interval '90 days')`;

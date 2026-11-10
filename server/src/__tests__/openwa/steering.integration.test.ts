@@ -708,7 +708,7 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
     }).returning();
     const [grant] = await db.insert(chatOwnerGrants).values({
       companyId: t.companyId, endpointId: t.endpointId, requestId: approval!.id, originChatKey: GROUP, requesterPrincipalId,
-      category: "external_tools", scope: "requester", approvedVia: "paperclip", approvedByUserId: t.userId,
+      category: "external_tools", scope: "requester", approvedVia: "wardmote", approvedByUserId: t.userId,
       expiresAt: new Date(Date.now() + 86_400_000),
     }).returning();
 

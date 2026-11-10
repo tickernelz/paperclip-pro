@@ -967,7 +967,7 @@ export async function resolveOpenwaApproval(
       companyId: input.companyId,
       endpointId: input.endpointId,
       kind: "approval_resolved",
-      actorKind: input.via === "paperclip" ? "user" : "chat_principal",
+      actorKind: input.via === "wardmote" ? "user" : "chat_principal",
       actorRef: "principalId" in input.owner ? input.owner.principalId : ownerUserId,
       chatKey: request.originChatKey,
       conversationId: request.originConversationId,
@@ -980,7 +980,7 @@ export async function resolveOpenwaApproval(
       companyId: input.companyId,
       endpointId: input.endpointId,
       action: "openwa.approval_resolved",
-      actorUserId: input.via === "paperclip" ? ownerUserId : null,
+      actorUserId: input.via === "wardmote" ? ownerUserId : null,
       actorPrincipalId: "principalId" in input.owner ? input.owner.principalId : null,
       agentId: input.agentId ?? null,
       runId: input.runId ?? null,
@@ -991,7 +991,7 @@ export async function resolveOpenwaApproval(
         companyId: input.companyId,
         endpointId: input.endpointId,
         action: "openwa.grant_created",
-        actorUserId: input.via === "paperclip" ? ownerUserId : null,
+        actorUserId: input.via === "wardmote" ? ownerUserId : null,
         actorPrincipalId: "principalId" in input.owner ? input.owner.principalId : null,
         details: { requestId: request.id, grantIds: grants.map((grant) => grant.id), scope: request.scope, categories: request.categories },
       });
@@ -1204,7 +1204,7 @@ export async function resolveOpenwaApprovalInteraction(
     endpointId: request.endpointId,
     requestId: input.requestId,
     decision: input.decision,
-    via: "paperclip",
+    via: "wardmote",
     owner: { userId: input.userId },
     ownerText: input.reason?.trim() || null,
   });
@@ -1280,7 +1280,7 @@ export function openwaApprovalService(db: Db) {
       endpointId: endpoint.id,
       requestId,
       decision: input.decision,
-      via: "paperclip",
+      via: "wardmote",
       owner: { userId: input.userId },
       ownerText: input.reason?.trim() || null,
     });
@@ -1332,7 +1332,7 @@ export async function cancelOpenwaApproval(
     const now = new Date();
     await tx
       .update(chatOwnerApprovalRequests)
-      .set({ status: "cancelled", resolvedVia: "paperclip", resolvedByUserId: input.userId, resolvedAt: now, updatedAt: now })
+      .set({ status: "cancelled", resolvedVia: "wardmote", resolvedByUserId: input.userId, resolvedAt: now, updatedAt: now })
       .where(eq(chatOwnerApprovalRequests.id, request.id));
     if (request.interactionId)
       await tx
@@ -1356,14 +1356,14 @@ export async function cancelOpenwaApproval(
       actorRef: input.userId,
       chatKey: request.originChatKey,
       conversationId: request.originConversationId,
-      metadata: { requestId: request.id, via: "paperclip", interactionId: request.interactionId },
+      metadata: { requestId: request.id, via: "wardmote", interactionId: request.interactionId },
     });
     await logOpenwaActivity(tx, {
       companyId: input.companyId,
       endpointId: input.endpointId,
       action: "openwa.approval_cancelled",
       actorUserId: input.userId,
-      details: { requestId: request.id, via: "paperclip" },
+      details: { requestId: request.id, via: "wardmote" },
     });
     return { requestId: request.id, status: "cancelled" as const, interactionId: request.interactionId };
   });
