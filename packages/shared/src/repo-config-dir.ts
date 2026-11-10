@@ -19,13 +19,24 @@ function isRealDirectory(target: string): boolean {
   }
 }
 
+function isRunningPostmaster(pidFile: string): boolean {
+  try {
+    const pid = Number(fs.readFileSync(pidFile, "utf8").split("\n")[0]?.trim());
+    if (!Number.isInteger(pid) || pid <= 0) return false;
+    process.kill(pid, 0);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function runningPostmasters(root: string): string[] {
   return ["instances", path.join("runtime-services", "instances")].flatMap((parent) => {
     const dir = path.join(root, parent);
     if (!isRealDirectory(dir)) return [];
     return fs.readdirSync(dir)
       .map((name) => path.join(dir, name, "db", "postmaster.pid"))
-      .filter((pidFile) => fs.existsSync(pidFile));
+      .filter(isRunningPostmaster);
   });
 }
 

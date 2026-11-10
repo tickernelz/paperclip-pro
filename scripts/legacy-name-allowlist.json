@@ -967,7 +967,7 @@
     ["packages/shared/src/portability-zip.test.ts",15,"belum-diganti"],
     ["packages/shared/src/public-mcp.ts",4,"belum-diganti"],
     ["packages/shared/src/question-set.ts",2,"belum-diganti"],
-    ["packages/shared/src/repo-config-dir.test.ts",8,"migrasi-otomatis"],
+    ["packages/shared/src/repo-config-dir.test.ts",10,"migrasi-otomatis"],
     ["packages/shared/src/repo-config-dir.ts",2,"migrasi-otomatis"],
     ["packages/shared/src/retired-env-file.ts",1,"migrasi-otomatis"],
     ["packages/shared/src/retired-names.test.ts",40,"migrasi-otomatis"],

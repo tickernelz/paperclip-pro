@@ -71,10 +71,21 @@ describe("adoptRetiredRepoConfigDir", () => {
   it("refuses to move a directory whose embedded database is still running", () => {
     const root = repo();
     write(path.join(root, ".paperclip", "config.json"), "{}");
-    write(path.join(root, ".paperclip", "instances", "dev", "db", "postmaster.pid"), "123");
+    write(path.join(root, ".paperclip", "instances", "dev", "db", "postmaster.pid"), `${process.pid}\n`);
 
     expect(() => adoptRetiredRepoConfigDir(root)).toThrow(/Stop the local Wardmote instance/);
     expect(fs.existsSync(path.join(root, ".paperclip", "config.json"))).toBe(true);
     expect(fs.existsSync(path.join(root, ".wardmote"))).toBe(false);
+  });
+
+  it("moves a directory whose postmaster.pid is left over from a stopped database", () => {
+    const root = repo();
+    write(path.join(root, ".paperclip", "config.json"), "{}");
+    write(path.join(root, ".paperclip", "instances", "dev", "db", "postmaster.pid"), "2147483646\n");
+
+    adoptRetiredRepoConfigDir(root);
+
+    expect(fs.existsSync(path.join(root, ".wardmote", "config.json"))).toBe(true);
+    expect(fs.existsSync(path.join(root, ".wardmote", "instances", "dev", "db", "postmaster.pid"))).toBe(true);
   });
 });
