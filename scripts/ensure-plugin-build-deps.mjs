@@ -18,7 +18,7 @@ const buildTargets = [
   {
     name: "@tickernelz/wardmote-shared",
     output: path.join(rootDir, "packages/shared/dist/index.js"),
-    completion: path.join(rootDir, "packages/shared/dist/.paperclip-build-complete"),
+    completion: path.join(rootDir, "packages/shared/dist/.wardmote-build-complete"),
     sourceDir: path.join(rootDir, "packages/shared/src"),
     tsconfig: path.join(rootDir, "packages/shared/tsconfig.json"),
     dependencies: [],
@@ -26,7 +26,7 @@ const buildTargets = [
   {
     name: "@tickernelz/wardmote-plugin-sdk",
     output: path.join(rootDir, "packages/plugins/sdk/dist/index.js"),
-    completion: path.join(rootDir, "packages/plugins/sdk/dist/.paperclip-build-complete"),
+    completion: path.join(rootDir, "packages/plugins/sdk/dist/.wardmote-build-complete"),
     sourceDir: path.join(rootDir, "packages/plugins/sdk/src"),
     tsconfig: path.join(rootDir, "packages/plugins/sdk/tsconfig.json"),
     dependencies: [0],

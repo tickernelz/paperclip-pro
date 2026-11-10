@@ -167,7 +167,7 @@ async function writeRegisteredSourceConfig(baseCwd: string, instanceId = "source
 }
 
 async function createTempRepo(defaultBranch = "main") {
-  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-worktree-repo-"));
+  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-worktree-repo-"));
   await runGit(repoRoot, ["init"]);
   await runGit(repoRoot, ["config", "user.email", "paperclip@example.com"]);
   await runGit(repoRoot, ["config", "user.name", "Wardmote Test"]);
@@ -253,11 +253,11 @@ async function expectPersistedBranchMismatchRejected(input: {
 
 async function createClonedRepoWithRemote() {
   const sourceRepo = await createTempRepo("master");
-  const remoteDir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-worktree-remote-"));
+  const remoteDir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-worktree-remote-"));
   const remotePath = path.join(remoteDir, "paperclip.git");
   await execFileAsync("git", ["clone", "--bare", sourceRepo, remotePath]);
 
-  const cloneRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-worktree-clone-"));
+  const cloneRoot = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-worktree-clone-"));
   const repoRoot = path.join(cloneRoot, "paperclip");
   await execFileAsync("git", ["clone", remotePath, repoRoot]);
   await runGit(repoRoot, ["config", "user.email", "paperclip@example.com"]);
@@ -889,11 +889,11 @@ describe("realizeExecutionWorkspace", () => {
 
   it("defaults new git worktrees to freshly fetched origin/master", async () => {
     const sourceRepo = await createTempRepo("master");
-    const remoteDir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-worktree-remote-"));
+    const remoteDir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-worktree-remote-"));
     const remotePath = path.join(remoteDir, "paperclip.git");
     await execFileAsync("git", ["clone", "--bare", sourceRepo, remotePath]);
 
-    const cloneRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-worktree-clone-"));
+    const cloneRoot = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-worktree-clone-"));
     const repoRoot = path.join(cloneRoot, "paperclip");
     await execFileAsync("git", ["clone", remotePath, repoRoot]);
     await runGit(repoRoot, ["config", "user.email", "paperclip@example.com"]);
@@ -1985,9 +1985,9 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
     const previousHome = process.env.WARDMOTE_HOME;
     const previousInstanceId = process.env.WARDMOTE_INSTANCE_ID;
     const previousWorktreesDir = process.env.WARDMOTE_WORKTREES_DIR;
-    const wardmoteHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-worktree-home-"));
+    const wardmoteHome = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-worktree-home-"));
     const isolatedWorktreeHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-worktrees-"));
-    const isolatedBin = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-worktree-bin-"));
+    const isolatedBin = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-worktree-bin-"));
     const instanceId = "worktree-base";
     const sharedConfigDir = path.join(wardmoteHome, "instances", instanceId);
     const sharedConfigPath = path.join(sharedConfigDir, "config.json");
@@ -2363,7 +2363,7 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
   }, 30_000);
 
   it("reinstalls worktree-local pnpm dependencies when package metadata changes", async () => {
-    const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-worktree-stale-deps-"));
+    const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-worktree-stale-deps-"));
     const baseRoot = path.join(tempRoot, "base");
     const worktreeRoot = path.join(tempRoot, "worktree");
     const fakeBin = path.join(tempRoot, "bin");
@@ -2457,7 +2457,7 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
   }, 30_000);
 
   it("fails instead of writing an unseeded fallback config when worktree init errors after CLI detection succeeds", async () => {
-    const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-worktree-provision-fail-"));
+    const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-worktree-provision-fail-"));
     const baseRoot = path.join(tempRoot, "base");
     const worktreeRoot = path.join(tempRoot, "worktree");
     const fakeBin = path.join(tempRoot, "bin");
@@ -2514,7 +2514,7 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
   });
 
   it("regenerates stale worktree config that points at another host", async () => {
-    const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-worktree-stale-config-"));
+    const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-worktree-stale-config-"));
     const baseRoot = path.join(tempRoot, "base");
     const worktreeRoot = path.join(tempRoot, "worktree");
     const fakeBin = path.join(tempRoot, "bin");
@@ -2606,7 +2606,7 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
   });
 
   it("retries worktree-local pnpm install without a frozen lockfile when the lockfile is outdated", async () => {
-    const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-worktree-outdated-lockfile-"));
+    const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-worktree-outdated-lockfile-"));
     const baseRoot = path.join(tempRoot, "base");
     const worktreeRoot = path.join(tempRoot, "worktree");
     const fakeBin = path.join(tempRoot, "bin");
@@ -3912,7 +3912,7 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
     // exists locally. Note: refs/remotes/origin/HEAD is NOT set by a manual
     // fetch — that requires git clone or git remote set-head. This test
     // exercises the heuristic fallback path in detectDefaultBranch.
-    const bareRemote = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-worktree-bare-"));
+    const bareRemote = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-worktree-bare-"));
     await runGit(bareRemote, ["init", "--bare"]);
     await runGit(repoRoot, ["remote", "add", "origin", bareRemote]);
     await runGit(repoRoot, ["push", "-u", "origin", "master"]);
@@ -3960,7 +3960,7 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
     const repoRoot = await createTempRepo("main");
     await runGit(repoRoot, ["branch", "-f", "master", "main"]);
 
-    const bareRemote = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-worktree-bare-symref-"));
+    const bareRemote = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-worktree-bare-symref-"));
     await runGit(bareRemote, ["init", "--bare"]);
     await runGit(repoRoot, ["remote", "add", "origin", bareRemote]);
     await runGit(repoRoot, ["branch", "-f", "master"]);

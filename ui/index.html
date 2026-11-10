@@ -54,16 +54,16 @@
     <div id="root"></div>
     <!-- Keep recovery outside #root so it cannot be mistaken for a mounted app.
          It must work even when the app's JavaScript or stylesheet cannot load. -->
-    <section id="paperclip-startup" role="status" aria-live="polite" hidden>
+    <section id="wardmote-startup" role="status" aria-live="polite" hidden>
       <div class="mx-auto flex min-h-screen max-w-2xl flex-col justify-center space-y-4 px-4 py-10">
         <div>
-          <h1 id="paperclip-startup-title" class="text-lg font-semibold">Wardmote couldn’t start</h1>
-          <p id="paperclip-startup-message" class="mt-1 text-sm text-ink-3">
+          <h1 id="wardmote-startup-title" class="text-lg font-semibold">Wardmote couldn’t start</h1>
+          <p id="wardmote-startup-message" class="mt-1 text-sm text-ink-3">
             Part of the app failed to load. Check your connection and reload this page to try again.
           </p>
         </div>
         <div>
-          <button id="paperclip-startup-reload" type="button" class="inline-flex items-center rounded-md border border-line-strong bg-bg px-3 py-1.5 text-sm font-medium shadow-sm hover:bg-bg-3 hover:text-ink">
+          <button id="wardmote-startup-reload" type="button" class="inline-flex items-center rounded-md border border-line-strong bg-bg px-3 py-1.5 text-sm font-medium shadow-sm hover:bg-bg-3 hover:text-ink">
             Reload page
           </button>
         </div>
@@ -74,10 +74,10 @@
       // React's error boundary cannot catch an import that prevents React loading.
       (() => {
         const root = document.getElementById("root");
-        const notice = document.getElementById("paperclip-startup");
-        const title = document.getElementById("paperclip-startup-title");
-        const message = document.getElementById("paperclip-startup-message");
-        const reload = document.getElementById("paperclip-startup-reload");
+        const notice = document.getElementById("wardmote-startup");
+        const title = document.getElementById("wardmote-startup-title");
+        const message = document.getElementById("wardmote-startup-message");
+        const reload = document.getElementById("wardmote-startup-reload");
         const retry = () => window.location.reload();
         const finished = () => root.childElementCount > 0;
         const cleanup = () => {

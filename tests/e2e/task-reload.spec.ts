@@ -63,7 +63,7 @@ test("an interrupted app bundle offers a retry that restores the saved task", as
     await expect(page.getByRole("heading", { name: title, exact: true })).toBeVisible();
     await expect(page.getByText(comment, { exact: true })).toBeVisible();
     await expect(page.getByTestId("task-chat-composer-input")).toBeVisible();
-    await expect(page.locator("#paperclip-startup")).toBeHidden();
+    await expect(page.locator("#wardmote-startup")).toBeHidden();
     expect(new URL(page.url()).pathname).toBe(route);
     expect(await json(await request.get(`/api/issues/${issue.id}/runs`))).toEqual([]);
   } finally {
