@@ -734,7 +734,7 @@
     ["packages/db/src/built-in-agent-unique-marker-migration.test.ts",3,"belum-diganti"],
     ["packages/db/src/chat-github-migration.test.ts",1,"belum-diganti"],
     ["packages/db/src/chat-identity-migration-reconciliation.test.ts",5,"belum-diganti"],
-    ["packages/db/src/chat-openwa-migration.test.ts",2,"belum-diganti"],
+    ["packages/db/src/chat-openwa-migration.test.ts",1,"belum-diganti"],
     ["packages/db/src/chat-telegram-draft-ids-migration.test.ts",1,"belum-diganti"],
     ["packages/db/src/chat-tenant-foreign-keys.test.ts",1,"belum-diganti"],
     ["packages/db/src/check-migration-safety.test.ts",1,"belum-diganti"],
