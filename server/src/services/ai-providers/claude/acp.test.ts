@@ -712,11 +712,6 @@ describe("claude_local ACP lane", () => {
   });
 
   it("stages the skill bundle inside the sandbox but never syncs it back into the host workspace", async () => {
-    // The staged skill bundle lives under `.paperclip-runtime/claude/skills`,
-    // inside the same in-sandbox directory the workspace restore reads. The
-    // restore excludes the whole `.paperclip-runtime` tree
-    // (`sandbox-managed-runtime.ts`'s `restoreExclude` list) for every asset
-    // key alike, so this proves it for the new "skills" asset specifically.
     const root = await makeTempRoot("paperclip-claude-acp-skills-no-syncback-");
     const skill = await createRuntimeSkill(root);
     const localCwd = path.join(root, "worktree");

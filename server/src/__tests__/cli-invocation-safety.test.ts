@@ -319,16 +319,6 @@ function findOffenders(relPath: string, text: string): string[] {
   return offenders;
 }
 
-// ── Repository walk ───────────────────────────────────────────────────────
-//
-// The scan covers guidance the reader follows now: documentation, skills, and
-// the runtime source that emits CLI instructions. It skips historical records
-// and internal automation, because a reader does not copy a command from them:
-// `doc/logs` holds past verification logs, `doc/plans` holds dated design
-// plans, and `scripts` holds trusted automation with fixed arguments. It skips
-// test files, because a test names the unsafe form to assert against it. The
-// root .paperclip-runtime directory contains ignored historical session
-// recordings, not checked-in guidance; never scan those private recordings.
 
 const SKIP_DIRS = new Set([
   "node_modules",

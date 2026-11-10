@@ -11,8 +11,14 @@ describe("gitignore: .wardmote-runtime/", () => {
       "git check-ignore -v .wardmote-runtime/codex/home/auth.json",
       { cwd: REPO_ROOT, encoding: "utf8" },
     ).trim();
-    // Output format: <source>:<line>:<pattern>\t<path>
-    // Asserts that the rule comes from .gitignore and matches .paperclip-runtime/
     expect(output).toMatch(/^\.gitignore:\d+:\.wardmote-runtime\//);
+  });
+
+  it("keeps ignoring a staging directory left by a release before the rename", () => {
+    const output = execSync(
+      "git check-ignore -v .paperclip-runtime/codex/home/auth.json",
+      { cwd: REPO_ROOT, encoding: "utf8" },
+    ).trim();
+    expect(output).toMatch(/^\.gitignore:\d+:\.paperclip-runtime\//);
   });
 });

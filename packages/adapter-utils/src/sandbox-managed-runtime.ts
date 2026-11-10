@@ -199,21 +199,6 @@ export const REFERENCED_SOURCE_IGNORE_FAILURE_REASONS = {
   toplevelNotDescendant: "git-toplevel-not-descendant",
 } as const;
 
-/**
- * A referenced (additional) project to stage into the run sandbox as a plain,
- * read-only tree. `localPath` is the host checkout directory. Upstream code
- * already authorized and realized this directory (`project:read`); this layer
- * adds no authorization logic. `projectId` names the isolated remote
- * subdirectory (`project-<projectId>` under the runtime root) the tree lands in.
- *
- * Additional sources are plain trees only. They never carry the anchor
- * workspace's git-history, overlay, or `.paperclip-runtime` preservation
- * semantics — those stay anchor-only.
- *
- * `ignoreResolution` is required so every construction site must supply it
- * explicitly — a caller cannot default to the unfiltered legacy behavior by
- * omission. Resolve it once per project with `resolveReferencedSourceIgnore`.
- */
 export interface SandboxAdditionalSource {
   localPath: string;
   projectId: string;
@@ -1392,10 +1377,6 @@ export async function prepareSandboxManagedRuntime(input: {
           // defaults to a no-op, so a caller with no injected runner keeps the
           // current behavior and control flow.
           await runStepSpan("pack", async () => {
-            // 1. git-history tar (git-backed workspace only). Both tar targets live under
-            //    `runtimeRootDir` (`.paperclip-runtime/<adapterKey>`). The git extract
-            //    wipes the target tree EXCEPT `.paperclip-runtime`, so the overlay tar,
-            //    which sits under `.paperclip-runtime`, survives to run its own extract.
             if (gitSnapshot) {
               await emitRuntimeStatus(input.onRuntimeProgress, "git_sync", "Syncing git history to environment");
               const gitTarPath = path.join(tempDir, "git-workspace.tar");
@@ -1600,15 +1581,6 @@ export async function prepareSandboxManagedRuntime(input: {
       );
     }
 
-    // Stage each referenced (additional) project as a plain, read-only tree in
-    // its OWN isolated remote directory (`project-<projectId>`). An additional
-    // project rides one confined `syncIn` directory mapping — a native directory
-    // transfer, or the base64-tar fallback — with source and target confined to
-    // their own roots. No workspace, git-history, or `.paperclip-runtime`
-    // semantics apply; those stay anchor-only. Per-project failure isolation: one
-    // project's confinement or sync failure logs a warning and is skipped, and
-    // the run plus the other projects continue. Only a project that stages
-    // successfully appears in `additionalSourceDirs`.
     const additionalSourceList = input.additionalSources ?? [];
     // Record each referenced-project failure in its input-order slot. Slot order
     // keeps the failure list stable no matter the task completion order under

@@ -53,6 +53,7 @@ diagnostics/
 **/.claude/settings.local.json
 .paperclip-local/
 .wardmote-runtime/
+.paperclip-runtime/
 /.idea/
 /.agents/
 

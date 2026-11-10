@@ -2097,7 +2097,6 @@ describe("sandbox managed runtime", () => {
     await git(sourceRepoDir, ["add", "tracked.txt"]);
     await git(sourceRepoDir, ["commit", "-m", "base"]);
     await git(sourceRepoDir, ["worktree", "add", "-b", "work", localWorkspaceDir, "HEAD"]);
-    // Pre-seed the sandbox with a `.paperclip-runtime` dir that MUST survive.
     await mkdir(path.join(remoteWorkspaceDir, ".wardmote-runtime"), { recursive: true });
     await writeFile(path.join(remoteWorkspaceDir, ".wardmote-runtime", "keep.txt"), "keep\n", "utf8");
 
@@ -2152,8 +2151,6 @@ describe("sandbox managed runtime", () => {
     expect(byBase("git-workspace-upload.tar")).toBeDefined();
     expect(byBase("workspace-upload.tar")).toBeDefined();
     expect(op.files.every((mapping) => mapping.kind === "file")).toBe(true);
-    // The first post-upload command extracts the git history and preserves
-    // `.paperclip-runtime` while replacing the rest of the tree (wipe-except-preserved).
     const gitCommand = op.postUploadCommands![0].command;
     expect(gitCommand).toContain(".wardmote-runtime");
     expect(gitCommand).toContain("tar -xf");
@@ -2304,7 +2301,6 @@ describe("sandbox managed runtime", () => {
     await git(sourceRepoDir, ["add", "tracked.txt"]);
     await git(sourceRepoDir, ["commit", "-m", "base"]);
     await git(sourceRepoDir, ["worktree", "add", "-b", "work", localWorkspaceDir, "HEAD"]);
-    // Pre-seed the sandbox with a `.paperclip-runtime` dir that MUST survive.
     await mkdir(path.join(remoteWorkspaceDir, ".wardmote-runtime"), { recursive: true });
     await writeFile(path.join(remoteWorkspaceDir, ".wardmote-runtime", "keep.txt"), "keep\n", "utf8");
 
@@ -2365,9 +2361,6 @@ describe("sandbox managed runtime", () => {
     expect(op.files).toHaveLength(2);
     expect(op.files.every((mapping) => mapping.kind === "file")).toBe(true);
 
-    // Both tar targets live under `.paperclip-runtime`, so the git extract's wipe
-    // (which preserves `.paperclip-runtime`) cannot delete the overlay tar before
-    // the overlay extract runs.
     for (const mapping of op.files) {
       expect(mapping.targetPath).toContain("/.wardmote-runtime/");
     }

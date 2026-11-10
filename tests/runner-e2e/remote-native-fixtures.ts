@@ -17,10 +17,6 @@ const INSTALL_BUDGET_MS = 27_000;
 export const REMOTE_FIXTURE_MIN_SETUP_BUDGET_MS = LEASE_READMISSION_BUDGET_MS
   + RUNTIME_READY_BUDGET_MS + INSTALL_BUDGET_MS + TEARDOWN_RESERVE_MS;
 const CLOSE_GRACE_MS = 10_000;
-// createRunnerdBackend stages its verified executable, pack symlink, mutable
-// sessions, homes and injected context beneath this exact path. Qualification
-// covers user workspace files, not these controller/provider runtime internals.
-// The sentinel and all other .paperclip-runtime entries remain in scope.
 const RUNTIME_RELATIVE = ".wardmote-runtime/paperclip-runner";
 const digest = (value: string) => `sha256:${createHash("sha256").update(value).digest("hex")}`;
 const record = (value: unknown): Record<string, unknown> => value !== null && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : {};

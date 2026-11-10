@@ -189,10 +189,6 @@ async function prepareCodexHelloProbe(input: {
       target: input.target,
       adapterKey: "codex",
       workspaceLocalDir: preparedRuntimeWorkspaceLocalDir,
-      // Pass `input.cwd` as the base (not a pre-built per-run subdir).
-      // `prepareRemoteManagedRuntime` itself appends
-      // `.paperclip-runtime/runs/<runId>/workspace` to whatever it gets, so
-      // pre-building a per-run path here would double-nest the run ID.
       workspaceRemoteDir: input.cwd,
       installCommand: SANDBOX_INSTALL_COMMAND,
       detectCommand: input.command,
