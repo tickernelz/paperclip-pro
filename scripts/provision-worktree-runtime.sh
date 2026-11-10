@@ -158,18 +158,18 @@ run_ensure_seeded() {
     return
   fi
 
-  if command -v pnpm >/dev/null 2>&1 && pnpm paperclip-pro --help >/dev/null 2>&1; then
+  if command -v pnpm >/dev/null 2>&1 && pnpm wardmote --help >/dev/null 2>&1; then
     (
       cd "$worktree_cwd" &&
-        pnpm paperclip-pro worktree ensure-seeded --config "$worktree_config_path" ${source_config_args[@]+"${source_config_args[@]}"}
+        pnpm wardmote worktree ensure-seeded --config "$worktree_config_path" ${source_config_args[@]+"${source_config_args[@]}"}
     )
     return
   fi
 
-  if command -v paperclip-pro >/dev/null 2>&1; then
+  if command -v wardmote >/dev/null 2>&1; then
     (
       cd "$worktree_cwd" &&
-        paperclip-pro worktree ensure-seeded --config "$worktree_config_path" ${source_config_args[@]+"${source_config_args[@]}"}
+        wardmote worktree ensure-seeded --config "$worktree_config_path" ${source_config_args[@]+"${source_config_args[@]}"}
     )
     return
   fi
@@ -182,7 +182,7 @@ if run_ensure_seeded; then
 else
   exit_code=$?
   if [[ "$exit_code" -eq 127 ]]; then
-    echo "No usable paperclip-pro CLI found; cannot seed the worktree database." >&2
+    echo "No usable wardmote CLI found; cannot seed the worktree database." >&2
   fi
   exit "$exit_code"
 fi

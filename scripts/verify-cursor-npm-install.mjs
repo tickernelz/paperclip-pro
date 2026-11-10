@@ -34,14 +34,14 @@ const generatedManifest = join(root, 'cli-manifest.json');
 run(process.execPath, [join(repo, 'scripts/generate-npm-package-json.mjs'), '--output', generatedManifest], repo);
 const publishedCli = JSON.parse(readFileSync(generatedManifest));
 publishedCli.dependencies['@tickernelz/wardmote-server'] = releaseVersion;
-packages.set('paperclip-pro', { dir: 'cli', manifest: publishedCli });
+packages.set('wardmote', { dir: 'cli', manifest: publishedCli });
 const needed = new Set();
 function visit(name) {
  if (needed.has(name)) return;
  const entry = packages.get(name); assert.ok(entry, `Missing public package ${name}`); needed.add(name);
- for (const [dependency, version] of Object.entries({...entry.manifest.dependencies, ...entry.manifest.optionalDependencies})) if (version.startsWith('workspace:') || dependency === '@tickernelz/wardmote-server' && name === 'paperclip-pro') visit(dependency);
+ for (const [dependency, version] of Object.entries({...entry.manifest.dependencies, ...entry.manifest.optionalDependencies})) if (version.startsWith('workspace:') || dependency === '@tickernelz/wardmote-server' && name === 'wardmote') visit(dependency);
 }
-visit('paperclip-pro');
+visit('wardmote');
 // Run after the candidate build, including its required standalone adapters.
 for (const name of needed) assert.ok(existsSync(join(repo, packages.get(name).dir, 'dist')), `Missing built public package ${name}`);
 run('bash', [join(repo, 'scripts/prepare-server-ui-dist.sh')], repo);

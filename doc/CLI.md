@@ -3,7 +3,7 @@
 > **Fork notice.** This is the `wardmote` CLI from
 > [`tickernelz/wardmote`](https://github.com/tickernelz/wardmote), a hard fork of
 > `paperclipai/paperclip` at `7b7c4d417`. Nothing is published to npm, so every
-> `npx @tickernelz/wardmote …` and `npm install -g paperclip-pro` example below is
+> `npx @tickernelz/wardmote …` and `npm install -g @tickernelz/wardmote` example below is
 > inherited from upstream and will fail with a 404. Run the installed
 > `wardmote` shim, or the direct-exec form
 > `node cli/node_modules/tsx/dist/cli.mjs cli/src/index.ts <command> <args>` from a source
@@ -100,20 +100,20 @@ invocation. They do not change.
 
 ### Offline and air-gapped use
 
-`npx @tickernelz/wardmote` runs offline when the `paperclip-pro` package is already in a
+`npx @tickernelz/wardmote` runs offline when the `@tickernelz/wardmote` package is already in a
 local install or in the npm cache. It reaches the network only when the package
 is in neither place.
 
 To force cache-only resolution and block any network attempt, run
-`npx --offline paperclip-pro <command> <args>`. Use `npx --prefer-offline
+`npx --offline @tickernelz/wardmote <command> <args>`. Use `npx --prefer-offline
 wardmote` when you accept a fetch only for a missing package.
 
 To prepare an air-gapped host, install the package one time while the host is
-online. Run `npm install -g paperclip-pro`, or run the documented `install.sh`
-path. After that step, both `npx @tickernelz/wardmote` and the installed `paperclip-pro`
+online. Run `npm install -g @tickernelz/wardmote`, or run the documented `install.sh`
+path. After that step, both `npx @tickernelz/wardmote` and the installed `wardmote`
 binary run offline. Both pass an inert `argv` value.
 
-To move the package without a registry, run `npm pack paperclip-pro` on an online
+To move the package without a registry, run `npm pack @tickernelz/wardmote` on an online
 host. Copy the tarball to the air-gapped host. Run `npm install -g
 ./tickernelz-wardmote-<version>.tgz`.
 

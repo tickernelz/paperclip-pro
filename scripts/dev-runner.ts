@@ -51,7 +51,7 @@ if (worktreeEnvBootstrap.missingEnv) {
 }
 if (isWorktreeSeedPending(repoRoot)) {
   console.error(
-    "[paperclip] this worktree database is seed-pending. Run `pnpm paperclip-pro worktree ensure-seeded` before `pnpm dev`.",
+    "[paperclip] this worktree database is seed-pending. Run `pnpm wardmote worktree ensure-seeded` before `pnpm dev`.",
   );
   process.exit(1);
 }
