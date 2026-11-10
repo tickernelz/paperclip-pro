@@ -1,5 +1,5 @@
 /**
- * esbuild configuration for building the paperclip-pro CLI for npm.
+ * esbuild configuration for building the wardmote CLI for npm.
  *
  * Bundles all workspace packages (@tickernelz/wardmote-*) into a single file.
  * External npm packages remain as regular dependencies.

@@ -29,9 +29,11 @@ export function resolveDefaultPaperclipHomeDir(userHome: string = os.homedir()):
   if (cached) return cached;
   const legacy = path.resolve(userHome, LEGACY_HOME_DIRNAME);
   const wardmote = path.resolve(userHome, WARDMOTE_HOME_DIRNAME);
-  const resolved = fs.existsSync(legacy) && !isLinkTo(legacy, wardmote) ? legacy : wardmote;
-  defaultHomeByUserHome.set(userHome, resolved);
-  return resolved;
+  if (fs.existsSync(legacy) && !isLinkTo(legacy, wardmote)) {
+    throw new Error(`${legacy} has not been migrated. Stop the service and run \`wardmote migrate-home\`.`);
+  }
+  defaultHomeByUserHome.set(userHome, wardmote);
+  return wardmote;
 }
 
 export function resolvePaperclipHomeDir(homeOverride?: string): string {
@@ -111,11 +113,5 @@ export function resolveDefaultBackupDir(input: {
 }
 
 export function resolveHomeAwarePath(value: string): string {
-  const resolved = path.resolve(expandHomePrefix(value));
-  const userHome = os.homedir();
-  const homes = [LEGACY_HOME_DIRNAME, WARDMOTE_HOME_DIRNAME].map((name) => path.resolve(userHome, name));
-  const owner = homes.find((home) => resolved === home || resolved.startsWith(home + path.sep));
-  if (!owner || fs.existsSync(owner)) return resolved;
-  const other = homes.find((home) => home !== owner)!;
-  return fs.existsSync(other) ? other + resolved.slice(owner.length) : resolved;
+  return path.resolve(expandHomePrefix(value));
 }

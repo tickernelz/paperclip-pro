@@ -10,7 +10,13 @@ import {
   withInstallStoreLock,
 } from "../install-store.js";
 import { resolvePaperclipInstanceId } from "../config/home.js";
-import { detectServiceManager, launchdServiceName, systemdServiceName } from "../services/service-manager.js";
+import {
+  detectServiceManager,
+  LAUNCHD_PLIST_PATTERN,
+  launchdServiceName,
+  SYSTEMD_UNIT_PATTERN,
+  systemdServiceName,
+} from "../services/service-manager.js";
 
 type UninstallDependencies = {
   detectServiceManager: typeof detectServiceManager;
@@ -28,9 +34,7 @@ function otherServiceDefinitions(platform: NodeJS.Platform, userHomeDir: string,
   const currentName = platform === "linux"
     ? systemdServiceName(instanceId)
     : `${launchdServiceName(instanceId)}.plist`;
-  const pattern = platform === "linux"
-    ? /^paperclip-pro(?:-.+)?\.service$/
-    : /^ing\.paperclip\.paperclip-pro(?:\..+)?\.plist$/;
+  const pattern = platform === "linux" ? SYSTEMD_UNIT_PATTERN : LAUNCHD_PLIST_PATTERN;
   return fs.readdirSync(directory)
     .filter((name) => name !== currentName && pattern.test(name))
     .map((name) => path.join(directory, name));
@@ -88,7 +92,7 @@ export async function uninstallCommand(
   }, paths, { initialize: !hadStore });
 
   if (!shimRemoved) {
-    console.log(pc.yellow(`Left ${paths.shimPath} or ${paths.wardmoteShimPath} unchanged because it is not a Wardmote-managed shim.`));
+    console.log(pc.yellow(`Left ${paths.shimPath} unchanged because it is not a Wardmote-managed shim.`));
   }
   console.log(pc.green("Removed the managed Wardmote CLI install."));
   console.log(pc.dim(`User data was left untouched under ${paths.paperclipHome}.`));

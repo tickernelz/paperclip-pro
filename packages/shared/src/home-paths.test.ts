@@ -37,10 +37,10 @@ describe("default home", () => {
     expect(resolvePaperclipHomeDir()).toBe(path.join(userHome, ".wardmote"));
   });
 
-  it("keeps an existing ~/.paperclip-pro without any action", async () => {
+  it("refuses an unmigrated ~/.paperclip-pro instead of starting an empty home", async () => {
     fs.mkdirSync(path.join(userHome, ".paperclip-pro"));
     const { resolvePaperclipHomeDir } = await homePaths();
-    expect(resolvePaperclipHomeDir()).toBe(path.join(userHome, ".paperclip-pro"));
+    expect(() => resolvePaperclipHomeDir()).toThrow("wardmote migrate-home");
   });
 
   it("uses ~/.wardmote once ~/.paperclip-pro is the migration link to it", async () => {
@@ -50,12 +50,12 @@ describe("default home", () => {
     expect(resolvePaperclipHomeDir()).toBe(path.join(userHome, ".wardmote"));
   });
 
-  it("keeps a ~/.paperclip-pro link that points somewhere else", async () => {
+  it("refuses a ~/.paperclip-pro link that points somewhere else", async () => {
     const elsewhere = path.join(userHome, "data");
     fs.mkdirSync(elsewhere);
     fs.symlinkSync(elsewhere, path.join(userHome, ".paperclip-pro"));
     const { resolvePaperclipHomeDir } = await homePaths();
-    expect(resolvePaperclipHomeDir()).toBe(path.join(userHome, ".paperclip-pro"));
+    expect(() => resolvePaperclipHomeDir()).toThrow("has not been migrated");
   });
 
   it("lets an explicit home win", async () => {
@@ -64,17 +64,11 @@ describe("default home", () => {
     expect(resolvePaperclipHomeDir()).toBe("/srv/wardmote");
   });
 
-  it("resolves a config path under the absent home against the one that exists", async () => {
+  it("expands a config path without remapping it to another home", async () => {
     fs.mkdirSync(path.join(userHome, ".paperclip-pro"));
     const { resolveHomeAwarePath } = await homePaths();
-    expect(resolveHomeAwarePath("~/.wardmote/instances/default/db")).toBe(path.join(userHome, ".paperclip-pro/instances/default/db"));
-    expect(resolveHomeAwarePath("~/.paperclip-pro/instances/default/db")).toBe(path.join(userHome, ".paperclip-pro/instances/default/db"));
-    expect(resolveHomeAwarePath("/srv/db")).toBe("/srv/db");
-  });
-
-  it("leaves a config path alone when neither home exists", async () => {
-    const { resolveHomeAwarePath } = await homePaths();
     expect(resolveHomeAwarePath("~/.wardmote/instances/default/db")).toBe(path.join(userHome, ".wardmote/instances/default/db"));
+    expect(resolveHomeAwarePath("/srv/db")).toBe("/srv/db");
   });
 });
 

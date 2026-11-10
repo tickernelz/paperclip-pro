@@ -2,7 +2,7 @@ import { spawn } from "node:child_process";
 import http from "node:http";
 import fs from "node:fs/promises";
 import os from "node:os";
-import { ensurePaperclipSkillSymlink } from "@tickernelz/wardmote-adapter-utils/server-utils";
+import { ensureWardmoteSkillSymlink } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import type { AddressInfo } from "node:net";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
@@ -129,7 +129,7 @@ describe("paperclip issue update helper", () => {
       await fs.cp(path.dirname(path.dirname(HELPER_PATH)), source, { recursive: true });
       await fs.mkdir(path.dirname(installed), { recursive: true });
       await fs.mkdir(cwd);
-      await ensurePaperclipSkillSymlink(source, installed);
+      await ensureWardmoteSkillSymlink(source, installed);
       await expect(fs.access(path.join(cwd, "scripts/paperclip-issue-update.sh"))).rejects.toThrow();
       const savedComments: string[] = [];
       const { baseUrl, requests } = await startServer((request, _attempt, res) => {

@@ -32,8 +32,8 @@ function supportedDetection() {
     manager: {
       platform: "systemd" as const,
       instanceId: "default",
-      serviceName: "paperclip-pro.service",
-      definitionPath: "/tmp/paperclip-pro.service",
+      serviceName: "wardmote.service",
+      definitionPath: "/tmp/wardmote.service",
       renderDefinition: () => "unit",
       install: vi.fn(async () => ({ changed: true })),
       uninstall: vi.fn(async () => undefined),
@@ -42,7 +42,7 @@ function supportedDetection() {
       restart: vi.fn(async () => undefined),
       status: vi.fn(async () => ({
         platform: "systemd" as const,
-        serviceName: "paperclip-pro.service",
+        serviceName: "wardmote.service",
         installed: true,
         active: true,
         enabled: true,

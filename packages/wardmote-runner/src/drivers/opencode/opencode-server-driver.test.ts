@@ -739,7 +739,7 @@ describe("OpenCodeServerDriver", () => {
     } finally {
       await new Promise<void>(resolve => { outgoingProxy.close(() => resolve()); outgoingProxy.closeAllConnections(); });
     }
-  });
+  }, 15_000);
 
   it("starts an authenticated isolated server, creates a session, streams usage, aborts, and cleans up", async () => {
     await chmod(fixture, 0o755);

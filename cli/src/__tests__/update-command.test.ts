@@ -18,6 +18,8 @@ function createPayload(payloadPath: string, version: string): string {
   const entrypoint = path.join(payloadPath, "node_modules", "@tickernelz", "wardmote", "dist", "index.js");
   fs.mkdirSync(path.dirname(entrypoint), { recursive: true });
   fs.writeFileSync(entrypoint, version);
+  fs.mkdirSync(path.join(payloadPath, "node_modules", ".bin"), { recursive: true });
+  fs.symlinkSync("../@tickernelz/wardmote/dist/index.js", path.join(payloadPath, "node_modules", ".bin", "wardmote"));
   return entrypoint;
 }
 beforeEach(() => {
@@ -210,7 +212,7 @@ describe("update command", () => {
     expect(fs.realpathSync(paths.currentPath)).toBe(fs.realpathSync(oldPayload));
   });
 
-  it("keeps the shim working after rolling back to a payload published under the legacy package name", () => {
+  it("refuses to roll back to a payload without the wardmote command and keeps the shim working", () => {
     const paths = resolveInstallStorePaths(); initializeInstallStore(paths);
     const install = (version: string, packageName: string, bins: string[]) => {
       const payload = payloadPathFor(paths, "npm", version);
@@ -225,15 +227,21 @@ describe("update command", () => {
     flipCurrentAtomic(legacyPayload, paths);
     const legacyManifest: InstallManifest = { schemaVersion: 1, ...record(legacyPayload, "2026.1105.1"), previous: [] };
     writeInstallManifestAtomic(legacyManifest, paths);
-    const movedPayload = install("2026.1109.0", "wardmote", ["wardmote", "paperclip-pro"]);
+    const movedPayload = install("2026.1109.0", "wardmote", ["wardmote"]);
     const moved = buildNextManifest(record(movedPayload, "2026.1109.0"), legacyManifest);
     flipCurrentAtomic(movedPayload, paths);
     writeInstallManifestAtomic(moved, paths);
     writeManagedShim(paths);
     expect(execFileSync(paths.shimPath, [], { encoding: "utf8" }).trim()).toBe("2026.1109.0");
 
-    expect(rollbackManagedInstall(paths).version).toBe("2026.1105.1");
-    expect(execFileSync(paths.shimPath, [], { encoding: "utf8" }).trim()).toBe("2026.1105.1");
+    expect(() => rollbackManagedInstall(paths)).toThrow("has no wardmote command");
+    expect(readInstallManifest(paths)?.version).toBe("2026.1109.0");
+    expect(execFileSync(paths.shimPath, [], { encoding: "utf8" }).trim()).toBe("2026.1109.0");
+
+    const bridgePayload = install("2026.1108.1", "wardmote", ["wardmote"]);
+    writeInstallManifestAtomic({ ...moved, previous: [record(bridgePayload, "2026.1108.1"), ...moved.previous] }, paths);
+    expect(rollbackManagedInstall(paths).version).toBe("2026.1108.1");
+    expect(execFileSync(paths.shimPath, [], { encoding: "utf8" }).trim()).toBe("2026.1108.1");
   });
 
   it("explains how to recover when the pre-update database is unreachable", async () => {

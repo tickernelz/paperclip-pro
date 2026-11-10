@@ -131,6 +131,9 @@ export function rollbackManagedInstall(paths = resolveInstallStorePaths()): Inst
   const target = manifest.previous[0];
   if (!target) throw new Error("No previous managed payload is available for rollback.");
   if (!fs.existsSync(target.payloadPath)) throw new Error(`Previous payload is missing: ${target.payloadPath}`);
+  if (!fs.existsSync(path.join(target.payloadPath, "node_modules", ".bin", "wardmote"))) {
+    throw new Error(`Previous payload ${target.version} has no wardmote command; install it with \`wardmote update --version ${target.version}\` only if it is 2026.1108.0 or newer.`);
+  }
   const current: InstallRecord = { source: manifest.source, version: manifest.version, channel: manifest.channel, payloadPath: manifest.payloadPath, repo: manifest.repo, ref: manifest.ref, sha: manifest.sha, installedAt: manifest.installedAt };
   const next: InstallManifest = { schemaVersion: manifest.schemaVersion, ...target, previous: [current, ...manifest.previous.slice(1)].slice(0, 2) };
   const oldTarget = fs.readlinkSync(paths.currentPath);
@@ -178,7 +181,7 @@ export async function updateCommand(options: UpdateOptions, overrides: Partial<D
     emit(options, { mode, action: "rollback", version: next.version, restarted }, pc.green(`Rolled back to wardmote ${next.version}${restarted ? " and restarted the active service" : ""}. Database migrations are not reversed; restore the pre-update backup if needed.`));
     return;
   }
-  if (mode === "npx") { emit(options, { mode, action: "install" }, "This is an ephemeral npx install. Run `paperclip-pro install`, then use `paperclip-pro update` from the managed shim."); return; }
+  if (mode === "npx") { emit(options, { mode, action: "install" }, "This is an ephemeral npx install. Run `wardmote install`, then use `wardmote update` from the managed shim."); return; }
   if (mode === "source" || mode === "unknown") { emit(options, { mode, action: "manual" }, "This appears to be a source checkout. Update it with `git pull` followed by `pnpm install`; Wardmote will not mutate the repository."); return; }
   if (!options.check && !options.dryRun) assertSupportedNodeVersion();
   const request = resolveUpdateRequest(mode === "managed" ? manifest : null, options);
