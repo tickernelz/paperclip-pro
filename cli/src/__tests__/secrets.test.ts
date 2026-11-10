@@ -53,7 +53,7 @@ function secret(partial: Partial<CompanySecret>): CompanySecret {
     name: "agent_agent-12_anthropic_api_key",
     provider: "local_encrypted",
     status: "active",
-    managedMode: "paperclip_managed",
+    managedMode: "wardmote_managed",
     externalRef: null,
     providerConfigId: null,
     providerMetadata: null,

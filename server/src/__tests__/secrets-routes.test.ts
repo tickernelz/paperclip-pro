@@ -158,7 +158,7 @@ describe("secret routes", () => {
   it("rejects managed secret creation when externalRef is supplied", async () => {
     const res = await request(createApp()).post("/api/companies/company-1/secrets").send({
       name: "OpenAI API Key",
-      managedMode: "paperclip_managed",
+      managedMode: "wardmote_managed",
       value: "secret-value",
       externalRef: "arn:aws:secretsmanager:us-east-1:123456789012:secret:shared/other",
     });
@@ -194,7 +194,7 @@ describe("secret routes", () => {
       key: "vercel_token",
       provider: "aws_secrets_manager",
       providerConfigId: "11111111-1111-4111-8111-111111111111",
-      managedMode: "paperclip_managed",
+      managedMode: "wardmote_managed",
       value: "vcp_test",
     });
 
@@ -908,7 +908,7 @@ describe("secret routes", () => {
       name: "Other tenant secret",
       key: "other-secret",
       provider: "aws_secrets_manager",
-      managedMode: "paperclip_managed",
+      managedMode: "wardmote_managed",
     });
 
     const crossTenantApp = createApp({
@@ -948,7 +948,7 @@ describe("secret routes", () => {
       name: "Other tenant secret",
       key: "other-secret",
       provider: "aws_secrets_manager",
-      managedMode: "paperclip_managed",
+      managedMode: "wardmote_managed",
     });
 
     const crossTenantApp = createApp({
@@ -988,7 +988,7 @@ describe("secret routes", () => {
       name: "OpenAI",
       key: "openai",
       provider: "aws_secrets_manager",
-      managedMode: "paperclip_managed",
+      managedMode: "wardmote_managed",
     });
     mockSecretService.listBindingReferences.mockResolvedValue([]);
 
@@ -1014,7 +1014,7 @@ describe("secret routes", () => {
       name: "OpenAI API Key__deleted__33333333-3333-4333-8333-333333333333",
       key: "openai-api-key__deleted__33333333-3333-4333-8333-333333333333",
       provider: "aws_secrets_manager",
-      managedMode: "paperclip_managed",
+      managedMode: "wardmote_managed",
       status: "deleted",
     };
     mockSecretService.getById.mockResolvedValue(secret);

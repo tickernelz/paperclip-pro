@@ -345,11 +345,11 @@ function normalizeUserSecretKeyForPreview(input: string) {
 
 
 function modeLabel(managedMode: SecretManagedMode) {
-  return managedMode === "paperclip_managed" ? "Wardmote-managed" : "Linked external";
+  return managedMode === "wardmote_managed" ? "Wardmote-managed" : "Linked external";
 }
 
 function modeDescription(managedMode: SecretManagedMode, canWriteExternalValue = false) {
-  if (managedMode === "paperclip_managed") {
+  if (managedMode === "wardmote_managed") {
     return "Wardmote owns create and rotation writes for this provider secret.";
   }
   return canWriteExternalValue
@@ -1098,7 +1098,7 @@ export function Secrets() {
         name: createForm.name.trim(),
         provider: createForm.provider,
         providerConfigId: createForm.providerConfigId || null,
-        managedMode: createMode === "external" ? "external_reference" : "paperclip_managed",
+        managedMode: createMode === "external" ? "external_reference" : "wardmote_managed",
         description: createForm.description.trim() || null,
       };
       if (createForm.key.trim()) input.key = createForm.key.trim();

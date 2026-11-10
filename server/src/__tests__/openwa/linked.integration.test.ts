@@ -145,7 +145,7 @@ describe("OpenWA linked read-only numbers (embedded Postgres + fake gateway)", (
     for (const [label, value] of keys) {
       const secret = await secretService(db).create(
         companyId,
-        { name: "openwa-" + label + "-" + endpoint.id.slice(0, 8), provider: "local_encrypted", managedMode: "paperclip_managed", value },
+        { name: "openwa-" + label + "-" + endpoint.id.slice(0, 8), provider: "local_encrypted", managedMode: "wardmote_managed", value },
         { userId },
       );
       const ref = { secretId: secret.id, versionSelector: "latest" as const, configPath: "credentials." + label, required: label === "apiKey", label, projectionClass: "unclassified" as const };
@@ -295,7 +295,7 @@ describe("OpenWA linked read-only numbers (embedded Postgres + fake gateway)", (
     const [row] = await db.select().from(chatOpenwaLinkedSessions).where(eq(chatOpenwaLinkedSessions.id, linked.body.id));
     expect(row).toMatchObject({ companyId: t.companyId, endpointId: t.endpointId, sessionId: LINKED_SESSION_ID, gatewayKeyId: keys[0]!.id, createdByUserId: t.userId });
     const [secret] = await db.select().from(companySecrets).where(eq(companySecrets.id, row!.secretId));
-    expect(secret).toMatchObject({ companyId: t.companyId, managedMode: "paperclip_managed", provider: "local_encrypted", status: "active" });
+    expect(secret).toMatchObject({ companyId: t.companyId, managedMode: "wardmote_managed", provider: "local_encrypted", status: "active" });
     expect(await secretService(db).resolveSecretValue(t.companyId, row!.secretId, "latest")).toBe(keys[0]!.apiKey);
 
     const listed = await request(app).get(base + "/linked-sessions");

@@ -117,7 +117,7 @@ const CLAUDE_CODE_OAUTH_DEFINITION = {
   key: CLAUDE_CODE_OAUTH_TOKEN_KEY,
   name: "Claude Code OAuth token",
   provider: "local_encrypted",
-  managedMode: "paperclip_managed",
+  managedMode: "wardmote_managed",
   status: "active",
 } as const;
 // The fixed, non-secret conflict text. The helper returns it when a stored
@@ -2084,7 +2084,7 @@ export function secretService(db: Db | DbTransaction) {
         provider: "local_encrypted",
         providerConfigId: null,
         status: "archived",
-        managedMode: "paperclip_managed",
+        managedMode: "wardmote_managed",
         externalRef: null,
         providerMetadata: null,
         latestVersion: 0,
@@ -2167,7 +2167,7 @@ export function secretService(db: Db | DbTransaction) {
       providerConfigId?: string | null;
       value?: string | null;
       key?: string | null;
-      managedMode?: "paperclip_managed" | "external_reference";
+      managedMode?: "wardmote_managed" | "external_reference";
       description?: string | null;
       externalRef?: string | null;
       providerVersionRef?: string | null;
@@ -2191,7 +2191,7 @@ export function secretService(db: Db | DbTransaction) {
       .then((rows) => rows[0] ?? null);
     if (duplicateKey) throw conflict(`Secret key already exists: ${key}`);
 
-    const managedMode = input.managedMode ?? "paperclip_managed";
+    const managedMode = input.managedMode ?? "wardmote_managed";
     const provider = getSecretProvider(input.provider);
     const providerConfig = await getSelectableRuntimeProviderConfig({
       companyId,
@@ -2201,10 +2201,10 @@ export function secretService(db: Db | DbTransaction) {
     if (managedMode === "external_reference" && !input.externalRef?.trim()) {
       throw unprocessable("External reference secrets require externalRef");
     }
-    if (managedMode === "paperclip_managed" && input.externalRef?.trim()) {
+    if (managedMode === "wardmote_managed" && input.externalRef?.trim()) {
       throw unprocessable("Managed secrets cannot override externalRef");
     }
-    if (managedMode === "paperclip_managed" && !input.value?.trim()) {
+    if (managedMode === "wardmote_managed" && !input.value?.trim()) {
       throw unprocessable("Managed secrets require value");
     }
     const providerWriteContext = {
@@ -2282,7 +2282,7 @@ export function secretService(db: Db | DbTransaction) {
         createdByUserId: actor?.userId ?? null,
       });
     } catch (error) {
-      if (managedMode === "paperclip_managed") {
+      if (managedMode === "wardmote_managed") {
         const cleaned = await cleanupPreparedProviderWrite({
           provider,
           prepared,
@@ -2340,7 +2340,7 @@ export function secretService(db: Db | DbTransaction) {
         return secret;
       });
     } catch (error) {
-      if (managedMode === "paperclip_managed") {
+      if (managedMode === "wardmote_managed") {
         const cleaned = await cleanupPreparedProviderWrite({
           provider,
           prepared,
@@ -2638,7 +2638,7 @@ export function secretService(db: Db | DbTransaction) {
       }
     }
     const deleting = patch.status === "deleted";
-    if (deleting && secret.managedMode === "paperclip_managed") {
+    if (deleting && secret.managedMode === "wardmote_managed") {
       throw unprocessable("Managed secrets must be deleted through DELETE /secrets/:id");
     }
     if (secret.managedMode !== "external_reference" && patch.externalRef !== undefined) {
@@ -2663,7 +2663,7 @@ export function secretService(db: Db | DbTransaction) {
       );
     }
     if (
-      secret.managedMode === "paperclip_managed" &&
+      secret.managedMode === "wardmote_managed" &&
       patch.providerConfigId !== undefined &&
       patch.providerConfigId !== secret.providerConfigId
     ) {
@@ -2989,14 +2989,14 @@ export function secretService(db: Db | DbTransaction) {
     if (existing) throw conflict("User secret value already exists");
 
     const providerId = definition.provider as SecretProvider;
-    const managedMode = definition.managedMode as "paperclip_managed" | "external_reference";
+    const managedMode = definition.managedMode as "wardmote_managed" | "external_reference";
     if (managedMode === "external_reference" && !input.externalRef?.trim()) {
       throw unprocessable("External reference user secrets require externalRef");
     }
-    if (managedMode === "paperclip_managed" && input.externalRef?.trim()) {
+    if (managedMode === "wardmote_managed" && input.externalRef?.trim()) {
       throw unprocessable("Managed user secrets cannot override externalRef");
     }
-    if (managedMode === "paperclip_managed" && !input.value?.trim()) {
+    if (managedMode === "wardmote_managed" && !input.value?.trim()) {
       throw unprocessable("Managed user secrets require value");
     }
 
@@ -3105,7 +3105,7 @@ export function secretService(db: Db | DbTransaction) {
         return secret;
       });
     } catch (error) {
-      if (managedMode === "paperclip_managed") {
+      if (managedMode === "wardmote_managed") {
         const cleaned = await cleanupPreparedProviderWrite({
           provider,
           prepared,
@@ -3784,7 +3784,7 @@ export function secretService(db: Db | DbTransaction) {
         status?: string;
         provider: SecretProvider;
         providerConfigId?: string | null;
-        managedMode?: "paperclip_managed" | "external_reference";
+        managedMode?: "wardmote_managed" | "external_reference";
         providerMetadata?: Record<string, unknown> | null;
         usageGuidance?: string | null;
       },
@@ -3805,7 +3805,7 @@ export function secretService(db: Db | DbTransaction) {
             status: input.status ?? "active",
             provider: input.provider,
             providerConfigId: input.providerConfigId ?? null,
-            managedMode: input.managedMode ?? "paperclip_managed",
+            managedMode: input.managedMode ?? "wardmote_managed",
             providerMetadata: input.providerMetadata ?? null,
             usageGuidance: input.usageGuidance ?? null,
             createdByAgentId: actor?.agentId ?? null,
@@ -4544,7 +4544,7 @@ export function secretService(db: Db | DbTransaction) {
         providerConfigId?: string | null;
         value?: string | null;
         key?: string | null;
-        managedMode?: "paperclip_managed" | "external_reference";
+        managedMode?: "wardmote_managed" | "external_reference";
         description?: string | null;
         externalRef?: string | null;
         providerVersionRef?: string | null;

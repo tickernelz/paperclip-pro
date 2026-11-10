@@ -39,7 +39,7 @@ export function asToolConnection(connection: Connection): ToolConnection {
         : connection.method === "No authentication"
           ? "none"
           : "api_key",
-    credentialSource: "paperclip_vault",
+    credentialSource: "wardmote_vault",
     credentialPolicy: connection.ownership === "shared" ? "shared" : "per_user",
     status: connection.status === "connected" ? "active" : "disabled",
     enabled: connection.status === "connected",

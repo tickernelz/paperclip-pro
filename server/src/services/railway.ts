@@ -31,7 +31,7 @@ export function isRailwayConnection(connection: {
   config: Record<string, unknown>;
 }): boolean {
   return connection.transport === "mcp_remote" && connection.authKind === "oauth"
-    && connection.credentialSource === "paperclip_vault"
+    && connection.credentialSource === "wardmote_vault"
     && connection.config.sourceTemplateKey === "railway"
     && connection.config.connectionMethodKey === "mcp-oauth"
     && isRailwayEndpoint(connection.config.url);

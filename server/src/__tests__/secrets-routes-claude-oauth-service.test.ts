@@ -121,7 +121,7 @@ describeEmbeddedPostgres("secretService Claude Code OAuth helper and compare-and
     expect(definition.key).toBe(CLAUDE_KEY);
     expect(definition.name).toBe(CLAUDE_NAME);
     expect(definition.provider).toBe("local_encrypted");
-    expect(definition.managedMode).toBe("paperclip_managed");
+    expect(definition.managedMode).toBe("wardmote_managed");
     expect(definition.status).toBe("active");
   });
 

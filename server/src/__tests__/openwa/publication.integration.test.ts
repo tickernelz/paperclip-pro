@@ -170,7 +170,7 @@ describe("OpenWA publication (embedded Postgres + fake gateway)", () => {
     endpointIds.push(endpoint.id);
     const secret = await secretService(db).create(
       companyId,
-      { name: "openwa-key-" + endpoint.id.slice(0, 8), provider: "local_encrypted", managedMode: "paperclip_managed", value: FAKE_OPENWA_KEY },
+      { name: "openwa-key-" + endpoint.id.slice(0, 8), provider: "local_encrypted", managedMode: "wardmote_managed", value: FAKE_OPENWA_KEY },
       { userId },
     );
     const [row] = await db.select().from(chatEndpoints).where(eq(chatEndpoints.id, endpoint.id));

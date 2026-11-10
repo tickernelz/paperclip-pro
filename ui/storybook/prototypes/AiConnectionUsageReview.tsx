@@ -101,7 +101,7 @@ function connection(row: AiManagedConnectionSummary): ToolConnection {
   return {
     id: row.id, companyId, applicationId: `app-${row.provider}`, name: row.name, uid: row.id,
     connectionKind: "managed", ownership: "customer", connectionPurpose: "ai", transport: "runtime_auth",
-    authKind: row.method === "subscription" ? "oauth" : "api_key", credentialSource: "paperclip_vault",
+    authKind: row.method === "subscription" ? "oauth" : "api_key", credentialSource: "wardmote_vault",
     credentialPolicy: "per_user", status: "active", enabled: true, transportConfig: {},
     config: { ai: { provider: row.provider, method: row.method }, aiIsolatedSubscription: true }, credentialSecretRefs: [],
     healthStatus: "ok", healthCheckedAt: date, healthMessage: null, lastError: null,

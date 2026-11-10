@@ -74,7 +74,7 @@ export type ToolConnectionAuthKind = "oauth" | "api_key" | "none";
 export type ToolConnectionOwnership =
   "platform_shared" | "platform_provisioned" | "customer" | "dcr";
 export type ToolConnectionCredentialSource =
-  "paperclip_vault" | "vercel_connect";
+  "wardmote_vault" | "vercel_connect";
 export type ToolConnectionStatus = "draft" | "active" | "disabled" | "archived";
 export type ToolConnectionInstallTargetType = "company" | "agent";
 export type ConnectionGrantKind = "organization" | "user" | "agent";

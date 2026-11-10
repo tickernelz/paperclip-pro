@@ -134,7 +134,7 @@ function notionConnection(
     ownership: "dcr",
     transport: "mcp_remote",
     authKind: "oauth",
-    credentialSource: "paperclip_vault",
+    credentialSource: "wardmote_vault",
     credentialPolicy: "per_user",
     status: "active",
     transportConfig: { url: "https://mcp.notion.com/mcp" },

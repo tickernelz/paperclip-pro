@@ -467,7 +467,7 @@ function boardRoutes(combinedInboxTasksEnabled: boolean) {
 }
 
 function AppsConnectEntryRoute({
-  credentialSource = "paperclip_vault",
+  credentialSource = "wardmote_vault",
 }: {
   credentialSource?: ToolConnectionCredentialSource;
 } = {}) {
