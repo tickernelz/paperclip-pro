@@ -547,7 +547,7 @@ By default the entry is `type: http` and points at the server-hosted endpoint
 `Authorization: Bearer ${WARDMOTE_API_KEY}` (an env reference, never a literal)
 and `X-Wardmote-Run-Id`. That costs no process and no extra memory per run.
 `wardmoteMcpTransport: stdio` is the fallback: it spawns the bundled
-`paperclip-mcp-server` with the run's identity in its env. The adapter config
+`wardmote-mcp-server` with the run's identity in its env. The adapter config
 also exposes `wardmoteMcp` (default on) and `wardmoteMcpToolsets`
 (default `core`).
 
@@ -570,7 +570,7 @@ the run log's first line to `agent_start`:
 | --- | --- | --- |
 | run start to `agent_start` | 2123 / 1792 / 1732 ms | 2447 / 2169 ms |
 | extra processes per run | 0 | 1 |
-| `paperclip-mcp-server` RSS | — | 127.4 / 127.4 / 127.3 MB |
+| `wardmote-mcp-server` RSS | — | 127.4 / 127.4 / 127.3 MB |
 
 A separate no-MCP baseline, timed from process spawn, was 1842 / 1862 / 2002 ms,
 so the endpoint costs roughly nothing at startup while the stdio fallback costs

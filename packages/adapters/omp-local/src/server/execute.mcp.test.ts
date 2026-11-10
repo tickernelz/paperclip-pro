@@ -669,7 +669,7 @@ describe("Wardmote MCP server entry", () => {
     const entry = buildWardmoteMcpServerEntry({
       enabled: true,
       transport: "stdio",
-      command: { command: "paperclip-mcp-server", args: [], source: "path" },
+      command: { command: "wardmote-mcp-server", args: [], source: "path" },
       toolsets: "core",
       env: { WARDMOTE_API_URL: "http://localhost:3100", WARDMOTE_API_KEY: "k", WARDMOTE_RUN_ID: "  " },
     });
@@ -684,7 +684,7 @@ describe("Wardmote MCP server entry", () => {
     const entry = buildWardmoteMcpServerEntry({
       enabled: true,
       transport: "stdio",
-      command: { command: "paperclip-mcp-server", args: [], source: "path" },
+      command: { command: "wardmote-mcp-server", args: [], source: "path" },
       toolsets: "core",
       env: { WARDMOTE_API_KEY: "super-secret-token" },
     });

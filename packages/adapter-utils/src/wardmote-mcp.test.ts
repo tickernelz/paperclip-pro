@@ -165,7 +165,7 @@ describe("per-runtime MCP config renderers", () => {
       renderWardmoteMcpConfig({
         enabled: true,
         transport: "http",
-        command: { command: "paperclip-mcp-server", args: [], source: "path" },
+        command: { command: "wardmote-mcp-server", args: [], source: "path" },
         toolsets: "core",
         env: runEnv,
       }),

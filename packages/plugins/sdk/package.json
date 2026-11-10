@@ -52,7 +52,7 @@
     }
   },
   "bin": {
-    "paperclip-plugin-dev-server": "./dist/dev-cli.js"
+    "wardmote-plugin-dev-server": "./dist/dev-cli.js"
   },
   "publishConfig": {
     "access": "public",
