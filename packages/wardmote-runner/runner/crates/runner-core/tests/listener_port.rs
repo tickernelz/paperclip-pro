@@ -34,7 +34,7 @@ fn launches_concurrent_runners_on_separate_ports() {
         fs::create_dir(&directory).unwrap();
         fs::set_permissions(&directory, fs::Permissions::from_mode(0o700)).unwrap();
         let run_id = format!("run_{index}");
-        let process = Command::new(env!("CARGO_BIN_EXE_paperclip-runnerd"))
+        let process = Command::new(env!("CARGO_BIN_EXE_wardmote-runnerd"))
             .env(
                 "WARDMOTE_RUNNER_BOOTSTRAP_TICKET",
                 "fixture-bootstrap-ticket",

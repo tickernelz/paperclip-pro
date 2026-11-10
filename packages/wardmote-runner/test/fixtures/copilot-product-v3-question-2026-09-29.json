@@ -15,7 +15,7 @@
     "providerPackDigest": "sha256:977d464241d8a8f36bc879fd1cdddf1e675f72fd6f1f2d3fe2f8e273fafc160e",
     "nodeBinary": "/private/tmp/paperclip-pi-v5-node-20260928/darwin-arm64/node",
     "nodeSha256": "e4b5a3af0e05c75de2eae013904145f40fe7fc2a6e6f17510128bf45cca4e79b",
-    "runnerBinary": "/private/tmp/paperclip-copilot-frozen-3d0c45920/paperclip-runnerd",
+    "runnerBinary": "/private/tmp/paperclip-copilot-frozen-3d0c45920/wardmote-runnerd",
     "runnerSha256": "2b51c48198c3724255756241cddc1b5efea87dab1c49a6ef7eb897513c7c043b",
     "sidecarSha256": "7cfee6ca612b3d7bcc266fdd36f2e77d7bb027169c56e0c9c36b9676232f33a4",
     "acpxPatchSha256": "a64405199b381688ffd72fdbb88396e423394cb407813d7b6f1db43bae9c3933",

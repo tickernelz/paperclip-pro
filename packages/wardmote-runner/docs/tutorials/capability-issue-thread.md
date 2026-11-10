@@ -27,7 +27,7 @@ on the issue-thread surface and the live loop.
 - Node.js 20 or newer and pnpm 9 or newer. This tutorial was verified with Node
   22.22.2 and pnpm 9.15.4.
 - No Rust toolchain for the fake-mode steps (steps 1–4). The optional live steps
-  (step 5) build the `paperclip-runnerd` binary and need a Rust toolchain and a
+  (step 5) build the `wardmote-runnerd` binary and need a Rust toolchain and a
   locally authenticated Codex.
 - No network access after `pnpm install`.
 
@@ -156,7 +156,7 @@ reproduces the committed images exactly.
 ## 5. Optional: drive a real Codex turn (live mode)
 
 Live mode needs a Rust toolchain and a locally authenticated Codex. It starts a
-real `paperclip-runnerd` process and a real Codex app-server session; the
+real `wardmote-runnerd` process and a real Codex app-server session; the
 package server owns the process, the tool loop, and the provider credential, and
 the browser receives none of them. **Skip this section if you do not have Codex
 installed** — nothing above depends on it.

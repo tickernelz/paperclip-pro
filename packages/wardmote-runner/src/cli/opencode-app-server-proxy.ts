@@ -120,7 +120,7 @@ async function open(
     runtimeDirectory: runtimeDirectory(),
     environment: withoutAmbientOpenCodeCommand(process.env),
     runnerInstanceId:
-      process.env.WARDMOTE_RUNNER_INSTANCE_ID ?? "paperclip-runnerd-opencode",
+      process.env.WARDMOTE_RUNNER_INSTANCE_ID ?? "wardmote-runnerd-opencode",
     taskEnvelope: openCodeProxyTaskEnvelope(params),
     conversationMode:
       params.conversationMode === "prepared" ? "prepared" : "task",

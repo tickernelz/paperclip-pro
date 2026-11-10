@@ -48,7 +48,7 @@ describe("runner E2E Daytona image contract", () => {
     const normalizedDockerfile = dockerfile.replace(/\\\r?\n\s*/g, " ");
     const daytonaImageJob = workflow.match(/^  daytona_image:\n[\s\S]*?(?=^  \w+:)/m)?.[0];
     expect(daytonaImageJob).toBeDefined();
-    expect(dockerfile).toContain("--bin paperclip-runnerd");
+    expect(dockerfile).toContain("--bin wardmote-runnerd");
     expect(dockerfile).toContain("build-provider-pack.mjs /provider-pack");
     expect(normalizedDockerfile).not.toContain(
       "COPY packages/eval-kernel ./packages/eval-kernel",
@@ -72,7 +72,7 @@ describe("runner E2E Daytona image contract", () => {
       expect(dockerfile).toContain(transport);
     }
     expect(dockerfile).toContain(
-      'metadata="$(paperclip-runnerd --build-metadata)"',
+      'metadata="$(wardmote-runnerd --build-metadata)"',
     );
     expect(dockerfile).toContain("provider-pack.json");
     expect(dockerfile).toContain("io.paperclip.runner.content-id");

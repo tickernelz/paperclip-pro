@@ -64,8 +64,8 @@ export async function startDotDaytona(localRoot: string) {
     if (setup.exitCode !== 0) throw new Error("Daytona test workspace creation failed");
     const binary = process.env.WARDMOTE_DOT_DAYTONA_RUNNER_BINARY
       ? await readFile(process.env.WARDMOTE_DOT_DAYTONA_RUNNER_BINARY)
-      : await sandbox.fs.downloadFile("/usr/local/bin/paperclip-runnerd");
-    const runnerBinary = join(localRoot, "daytona-paperclip-runnerd");
+      : await sandbox.fs.downloadFile("/usr/local/bin/wardmote-runnerd");
+    const runnerBinary = join(localRoot, "daytona-wardmote-runnerd");
     await writeFile(runnerBinary, binary, { mode: 0o700 });
     const qualificationBinary = join(workspace, "qualification-runnerd");
     await sandbox.fs.uploadFile(binary, qualificationBinary);

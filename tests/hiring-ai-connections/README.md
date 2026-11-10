@@ -79,7 +79,7 @@ destination directory without starting the container:
 mkdir -p /tmp/hiring-native-artifacts
 hiring_image_container=$(docker create "$HIRING_AI_DAYTONA_IMAGE" /bin/true)
 docker cp "$hiring_image_container:/opt/paperclip-runner/provider-pack" /tmp/hiring-native-artifacts/provider-pack
-docker cp "$hiring_image_container:/usr/local/bin/paperclip-runnerd" /tmp/hiring-native-artifacts/paperclip-runnerd
+docker cp "$hiring_image_container:/usr/local/bin/wardmote-runnerd" /tmp/hiring-native-artifacts/wardmote-runnerd
 docker rm "$hiring_image_container"
 ```
 
@@ -88,7 +88,7 @@ the native API-tools flag, and restart test-drive:
 
 ```dotenv
 WARDMOTE_RUNNER_REMOTE_PROVIDER_PACK_PATH=/tmp/hiring-native-artifacts/provider-pack
-WARDMOTE_RUNNER_REMOTE_BINARY_PATH=/tmp/hiring-native-artifacts/paperclip-runnerd
+WARDMOTE_RUNNER_REMOTE_BINARY_PATH=/tmp/hiring-native-artifacts/wardmote-runnerd
 ```
 
 Run the Daytona command with `HIRING_AI_RUNNER=native` and

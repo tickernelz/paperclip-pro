@@ -17,10 +17,10 @@ async function readVerifiedBuildMetadata(
   bytes: Buffer,
   timeoutMs: number,
 ): Promise<string> {
-  const stagingDirectory = await mkdtemp(join(tmpdir(), "paperclip-runnerd-verified-"));
+  const stagingDirectory = await mkdtemp(join(tmpdir(), "wardmote-runnerd-verified-"));
   const stagedExecutable = join(
     stagingDirectory,
-    process.platform === "win32" ? "paperclip-runnerd.exe" : "paperclip-runnerd",
+    process.platform === "win32" ? "wardmote-runnerd.exe" : "wardmote-runnerd",
   );
 
   try {
@@ -40,7 +40,7 @@ async function readVerifiedBuildMetadata(
 
 export interface PaperclipRunnerdBuildMetadata {
   schema: typeof WARDMOTE_RUNNERD_BUILD_METADATA_SCHEMA;
-  binaryName: "paperclip-runnerd";
+  binaryName: "wardmote-runnerd";
   packageName: "@tickernelz/wardmote-runner";
   packageVersion: string;
   binaryContractVersion: number;
@@ -61,7 +61,7 @@ export interface PaperclipRunnerdArtifact {
 }
 
 export class PaperclipRunnerdArtifactError extends Error {
-  readonly code = "paperclip_runnerd_artifact_invalid" as const;
+  readonly code = "wardmote_runnerd_artifact_invalid" as const;
 
   constructor(
     message: string,
@@ -109,7 +109,7 @@ export function parsePaperclipRunnerdBuildMetadata(
       "metadata_invalid",
     );
   }
-  if (metadata.binaryName !== "paperclip-runnerd") {
+  if (metadata.binaryName !== "wardmote-runnerd") {
     throw new PaperclipRunnerdArtifactError(
       `runnerd metadata names unexpected binary ${String(metadata.binaryName)}`,
       "metadata_invalid",
@@ -138,7 +138,7 @@ export function parsePaperclipRunnerdBuildMetadata(
   }
   return {
     schema: WARDMOTE_RUNNERD_BUILD_METADATA_SCHEMA,
-    binaryName: "paperclip-runnerd",
+    binaryName: "wardmote-runnerd",
     packageName: WARDMOTE_RUNNER_BUILD_METADATA.package.name,
     packageVersion: text(metadata.packageVersion, "runnerd build metadata.packageVersion"),
     binaryContractVersion: version(

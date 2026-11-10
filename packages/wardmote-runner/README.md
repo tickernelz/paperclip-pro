@@ -460,7 +460,7 @@ and JSON content; see the protocol-server tutorial for direct `curl` examples.
 The canonical direct live protocol suite lives in the separate
 `paperclip-evals` repository under `evals/paperclip-runner/`. Its
 `live-mini.json` roster is the complete 35-case Codex qualification lane. Build
-this package's TypeScript output, release `paperclip-runnerd`, package tarball,
+this package's TypeScript output, release `wardmote-runnerd`, package tarball,
 and `dist-issue-thread` viewer, then use the roster runner documented in that
 repository. The package ships the required orchestration entry point as
 `paperclip-runner-eval-session` (`dist/cli/eval-session.js`). Evalbook owns the

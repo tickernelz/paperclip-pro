@@ -98,7 +98,7 @@ const packageRoot = fileURLToPath(new URL("../..", import.meta.url));
 const executableSuffix = process.platform === "win32" ? ".exe" : "";
 const runnerBinary = resolve(
   packageRoot,
-  `runner/target/debug/paperclip-runnerd${executableSuffix}`,
+  `runner/target/debug/wardmote-runnerd${executableSuffix}`,
 );
 const fakeHarnessBinary = resolve(
   packageRoot,
@@ -978,7 +978,7 @@ function createSecureChannel(
   ];
   const binding = domainDigest("paperclip-runner-session-binding-v1", parts);
   return {
-    sendKey: domainHmac(authKey, "paperclip-runner-core-to-client-key-v1", [
+    sendKey: domainHmac(authKey, "wardmote-runner-core-to-client-key-v1", [
       binding,
     ]),
     receiveKey: domainHmac(authKey, "paperclip-runner-client-to-core-key-v1", [

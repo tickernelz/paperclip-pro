@@ -9,11 +9,11 @@ const roots: string[] = [];
 afterEach(() => roots.splice(0).forEach(root => rmSync(root, { recursive: true, force: true })));
 function release() {
   const root = mkdtempSync(join(tmpdir(), "paperclip-remote-release-")); roots.push(root);
-  const output = join(root, "dist/vendor/wardmote-runner"), binary = join(output, "bin/linux-x64/paperclip-runnerd");
+  const output = join(root, "dist/vendor/wardmote-runner"), binary = join(output, "bin/linux-x64/wardmote-runnerd");
   mkdirSync(join(output, "bin/linux-x64"), { recursive: true });
   const bytes = Buffer.alloc(64); Buffer.from([0x7f, 0x45, 0x4c, 0x46, 2, 1]).copy(bytes); bytes.writeUInt16LE(62, 18);
   writeFileSync(binary, bytes);
-  const manifest = { schema: "paperclip.runner.release-binaries.v1", sourceRevision: "a".repeat(40), platforms: { "linux-x64": { path: "linux-x64/paperclip-runnerd", sha256: "sha256:" + createHash("sha256").update(bytes).digest("hex") } } };
+  const manifest = { schema: "paperclip.runner.release-binaries.v1", sourceRevision: "a".repeat(40), platforms: { "linux-x64": { path: "linux-x64/wardmote-runnerd", sha256: "sha256:" + createHash("sha256").update(bytes).digest("hex") } } };
   const save = () => writeFileSync(join(output, "bin/release-manifest.json"), JSON.stringify(manifest)); save();
   return { output, binary, bytes, manifest, save, url: pathToFileURL(join(output, "live/bundled-remote-provider-pack.js")).href };
 }

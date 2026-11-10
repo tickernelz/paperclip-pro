@@ -1,8 +1,8 @@
 use std::path::PathBuf;
 use std::process::ExitCode;
 
-use paperclip_runner_core::fake_harness::{load_fake_harness_script, run_fake_harness};
-use paperclip_runner_core::local_runner::LocalRunnerError;
+use wardmote_runner_core::fake_harness::{load_fake_harness_script, run_fake_harness};
+use wardmote_runner_core::local_runner::LocalRunnerError;
 
 fn value(args: &[String], name: &str) -> Result<String, LocalRunnerError> {
     let index = args

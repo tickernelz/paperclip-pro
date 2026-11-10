@@ -217,7 +217,7 @@ wardmote runtime import-remote /path/to/release/linux-x64 --sha256 MANIFEST_SHA2
 
 Obtain `MANIFEST_SHA256` from the trusted release channel, separately from the
 copied directory. The directory contains `companion.json`,
-`bin/paperclip-runnerd`, and the complete `provider-pack/`. Import verifies the
+`bin/wardmote-runnerd`, and the complete `provider-pack/`. Import verifies the
 installed server's exact build commit, qualified Pi profile, Linux x64 ELF,
 manifest digest, and every file, mode, directory and contained symbolic link.
 External hardlinks, escaping links, extra or modified files, and unsafe modes
@@ -251,7 +251,7 @@ For release maintainers, assemble the Linux daemon and default provider pack
 for the **same final commit** as the public server/CLI packages. A reused daemon
 requires complete native source/config/protocol input equality and retains its
 original compiler/build provenance; the manifest does not claim recompilation. In a fresh
-release directory place those outputs at `bin/paperclip-runnerd` and
+release directory place those outputs at `bin/wardmote-runnerd` and
 `provider-pack/`, preserving the pack's relative links and modes. Then run the
 source-owned manifest generator after building the matching server:
 

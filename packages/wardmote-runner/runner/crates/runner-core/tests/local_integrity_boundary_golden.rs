@@ -1,13 +1,13 @@
 use std::fs;
 use std::path::PathBuf;
 
-use paperclip_runner_core::acpx_event_payload::{AcpxRuntimeEventKind, AcpxTurnStatus};
-use paperclip_runner_core::acpx_provider_state::AcpxProviderStateEvent;
-use paperclip_runner_core::provider_events::{
+use serde_json::{json, Value};
+use wardmote_runner_core::acpx_event_payload::{AcpxRuntimeEventKind, AcpxTurnStatus};
+use wardmote_runner_core::acpx_provider_state::AcpxProviderStateEvent;
+use wardmote_runner_core::provider_events::{
     normalize_acpx_runtime_event, normalize_codex_notification, project_acpx_state_event,
     AcpxEventProjectionContext, NormalizedProviderEvent,
 };
-use serde_json::{json, Value};
 
 fn fixture() -> Value {
     let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))

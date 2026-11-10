@@ -7,7 +7,7 @@ passed. The public CLI installation command is `wardmote runtime setup cursor`;
 it runs explicitly on the execution host and is never an npm installation hook.
 
 This image is the Paperclip Cloud fleet sandbox image plus a source-built
-`paperclip-runnerd` and immutable provider pack. The pack contains Node 24.11,
+`wardmote-runnerd` and immutable provider pack. The pack contains Node 24.11,
 OpenCode 1.18.34, the compiled OpenCode proxy, ACPX 0.13.1 sidecar, qualified ACP
 agents, and the production lockfile. Its manifest digests each executable bridge
 and binds the pack to the runner source revision, avoiding artifact upload and
@@ -67,7 +67,7 @@ docker buildx build \
   .
 
 docker run --rm --platform linux/amd64 \
-  --entrypoint paperclip-runnerd \
+  --entrypoint wardmote-runnerd \
   "paperclip-daytona-runner:e2e-content-${content_id}" \
   --build-metadata
 ```
@@ -92,7 +92,7 @@ published copy and is retained as provenance rather than cache identity.
 Publish the image to a registry Daytona can pull, or use the environment
 editor's **Configure image** flow to produce a Daytona snapshot. Set the
 environment image to that immutable tag or snapshot. Paperclip probes the
-sandbox user's `PATH` for `paperclip-runnerd` and `codex` and checks
+sandbox user's `PATH` for `wardmote-runnerd` and `codex` and checks
 `/opt/paperclip-runner/provider-pack` for OpenCode and ACPX. It uses the pack
 only when its complete manifest matches the controller's build-owned pack;
 otherwise it stages the pack configured by

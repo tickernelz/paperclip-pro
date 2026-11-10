@@ -107,7 +107,7 @@ function buildOutputFingerprint() {
   }
   const daemon = runnerdBinary();
   const bytes = readFileSync(daemon);
-  hash.update(JSON.stringify(["debug/paperclip-runnerd", bytes.length])).update(bytes);
+  hash.update(JSON.stringify(["debug/wardmote-runnerd", bytes.length])).update(bytes);
   return hash.digest("hex");
 }
 function runnerdBinary() {
@@ -262,7 +262,7 @@ export function main(args = process.argv.slice(2)) {
       { id: "NC-node", command: process.execPath, args: ["--test", "--test-reporter=tap", "tests/runner-e2e/native-completion-checks.test.mjs", "tests/runner-e2e/native-completion-source-contract.test.mjs", "tests/runner-e2e/native-completion-git-source.test.mjs"] },
       { id: "NC-typecheck", command: process.execPath, args: ["node_modules/typescript/bin/tsc", "-p", "tests/runner-e2e/tsconfig.json"] },
       ...(!hosted ? [{ id: "NC-rust-carrier", command: "cargo", args: ["test", "--locked", "--offline",
-        "-p", "paperclip-runner-core", "--lib", "provider_events::tests::preserves_closed_compatibility_terminal_tool_identity", "--", "--exact"],
+        "-p", "wardmote-runner-core", "--lib", "provider_events::tests::preserves_closed_compatibility_terminal_tool_identity", "--", "--exact"],
         cwd: join(root, "packages/wardmote-runner/runner") }] : []),
       { id: "NC-discovery", command: process.execPath, args: ["--import", "./server/node_modules/tsx/dist/loader.mjs", "tests/runner-e2e/launch.ts", "--list", "--suite", "native-completion"] },
     ];

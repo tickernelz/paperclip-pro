@@ -24,7 +24,7 @@ export function bundledRemoteRunnerBinary(moduleUrl = import.meta.url): string {
   const release = JSON.parse(readFileSync(join(outputRoot, "bin/release-manifest.json"), "utf8"));
   const artifact = release?.platforms?.["linux-x64"];
   if (release?.schema !== "paperclip.runner.release-binaries.v1" || !/^[a-f0-9]{40}$/.test(release.sourceRevision ?? "") ||
-      artifact?.path !== "linux-x64/paperclip-runnerd" || !/^sha256:[a-f0-9]{64}$/.test(artifact.sha256 ?? "")) {
+      artifact?.path !== "linux-x64/wardmote-runnerd" || !/^sha256:[a-f0-9]{64}$/.test(artifact.sha256 ?? "")) {
     throw new Error("runner_remote_artifact_unavailable: install the complete Paperclip release with its Linux daemon");
   }
   const binary = join(outputRoot, "bin", artifact.path);

@@ -802,7 +802,7 @@ impl SecureChannel {
         );
         let server_to_client = hmac_domain(
             auth_key,
-            "paperclip-runner-core-to-client-key-v1",
+            "wardmote-runner-core-to-client-key-v1",
             &[&session_binding],
         );
         let (send_key, receive_key) = if server_direction {

@@ -279,7 +279,7 @@ describe("server adapter registry", () => {
       installCommand: expectedRunnerOpenCodeInstall,
     });
     expect(findActiveServerAdapter("paperclip_runner")?.getRuntimeCommandSpec?.({ provider: "acpx" })).toEqual({
-      command: "paperclip-runnerd",
+      command: "wardmote-runnerd",
       detectCommand: null,
       installCommand: null,
     });

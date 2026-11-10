@@ -1,6 +1,6 @@
 use num_bigint::BigUint;
-use paperclip_runner_core::question_response::validate_question_response;
 use serde_json::{json, Value};
+use wardmote_runner_core::question_response::validate_question_response;
 
 fn question_set() -> Value {
     json!({

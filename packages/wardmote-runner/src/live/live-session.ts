@@ -2533,7 +2533,7 @@ export class CapabilityLiveSession {
       providerThreadId: this.#providerThreadId,
       providerSessionId: this.#providerSessionId,
       mode: `live_${this.#config.provider ?? "codex"}`,
-      runner: "paperclip-runnerd",
+      runner: "wardmote-runnerd",
       requestedModel: this.#config.requestedModel ?? null,
       controlPlane: "mock",
     });

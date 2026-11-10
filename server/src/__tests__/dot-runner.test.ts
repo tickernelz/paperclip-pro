@@ -40,12 +40,12 @@ describe("durable Dot Runner integration", () => {
   let root: string;
   beforeAll(async () => {
     const runnerRoot = fileURLToPath(new URL("../../../packages/wardmote-runner/", import.meta.url));
-    execFileSync("cargo", ["build", "--release", "--locked", "--manifest-path", join(runnerRoot, "runner/Cargo.toml"), "-p", "paperclip-runner-core", "--bin", "paperclip-runnerd"], { cwd: runnerRoot, stdio: "inherit", timeout: 300000 });
+    execFileSync("cargo", ["build", "--release", "--locked", "--manifest-path", join(runnerRoot, "runner/Cargo.toml"), "-p", "wardmote-runner-core", "--bin", "wardmote-runnerd"], { cwd: runnerRoot, stdio: "inherit", timeout: 300000 });
     temporary = await startEmbeddedPostgresTestDatabase("paperclip-dot-runner-");
     db = createDb(temporary.connectionString);
     root = await mkdtemp(join(tmpdir(), "paperclip-dot-state-"));
     vi.stubEnv("WARDMOTE_IN_WORKTREE", "false");
-    vi.stubEnv("WARDMOTE_RUNNER_BINARY", join(runnerRoot, "runner/target/release", process.platform === "win32" ? "paperclip-runnerd.exe" : "paperclip-runnerd"));
+    vi.stubEnv("WARDMOTE_RUNNER_BINARY", join(runnerRoot, "runner/target/release", process.platform === "win32" ? "wardmote-runnerd.exe" : "wardmote-runnerd"));
     vi.stubEnv("WARDMOTE_RUNNER_STATE_DIR", join(root, "runner-state"));
     vi.stubEnv("WARDMOTE_SECRETS_MASTER_KEY", randomBytes(32).toString("base64"));
     await instanceSettingsService(db).updateExperimental({ enablePublicMcp: true, enableOpenAiDot: true, enableNativeRunner: false });

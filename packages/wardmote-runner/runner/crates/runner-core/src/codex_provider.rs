@@ -1046,7 +1046,7 @@ impl CodexProvider {
                 "initialize",
                 json!({
                     "clientInfo": {
-                        "name": "paperclip-runnerd",
+                        "name": "wardmote-runnerd",
                         "title": "Paperclip Runner",
                         "version": "1",
                     },

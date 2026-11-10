@@ -120,7 +120,7 @@ def inspect(config):
     require(root == expected and os.getpgid(root['pid']) == root['pid'], 'root_changed')
     root_args = argv(root['pid'])
     runtime_root = binding['remoteCwd'] + '/.paperclip-runtime/paperclip-runner'
-    runner = runtime_root + '/bin/paperclip-runnerd'
+    runner = runtime_root + '/bin/wardmote-runnerd'
     require(root_args[0] == runner and flag(root_args, '--run-id') == binding['runId']
             and flag(root_args, '--environment-lease-id') == config['runtimeEnvironmentLeaseId']
             and flag(root_args, '--lifecycle-mode') == 'per_turn', 'root_binding')

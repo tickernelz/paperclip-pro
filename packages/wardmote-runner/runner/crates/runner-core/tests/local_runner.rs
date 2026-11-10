@@ -5,7 +5,7 @@ use std::process::{Command, Stdio};
 use serde_json::{json, Value};
 
 fn run_fixture(script_name: &str, commands: &[Value]) -> (std::process::ExitStatus, Vec<Value>) {
-    let runnerd = PathBuf::from(env!("CARGO_BIN_EXE_paperclip-runnerd"));
+    let runnerd = PathBuf::from(env!("CARGO_BIN_EXE_wardmote-runnerd"));
     let fake_harness = PathBuf::from(env!("CARGO_BIN_EXE_fake-harness"));
     let script = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../../../protocol/fixtures/local-runner/scripts")
@@ -70,7 +70,7 @@ fn event_type(message: &Value) -> Option<&str> {
 
 #[test]
 fn runnerd_startup_reports_build_metadata_without_panicking() {
-    let output = Command::new(env!("CARGO_BIN_EXE_paperclip-runnerd"))
+    let output = Command::new(env!("CARGO_BIN_EXE_wardmote-runnerd"))
         .arg("--build-metadata")
         .output()
         .expect("runner daemon should start");
@@ -78,7 +78,7 @@ fn runnerd_startup_reports_build_metadata_without_panicking() {
     assert!(output.status.success());
     let metadata: Value =
         serde_json::from_slice(&output.stdout).expect("build metadata should be valid JSON");
-    assert_eq!(metadata["binaryName"], "paperclip-runnerd");
+    assert_eq!(metadata["binaryName"], "wardmote-runnerd");
 }
 
 #[test]

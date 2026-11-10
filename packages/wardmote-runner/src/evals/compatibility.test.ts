@@ -18,7 +18,7 @@ function compatible(): PaperclipRunnerEvalCompatibilityRequirement {
     packageVersion: WARDMOTE_RUNNER_BUILD_METADATA.package.version,
     runnerd: {
       schema: WARDMOTE_RUNNERD_BUILD_METADATA_SCHEMA,
-      binaryName: "paperclip-runnerd",
+      binaryName: "wardmote-runnerd",
       packageName: "@tickernelz/wardmote-runner",
       packageVersion: WARDMOTE_RUNNER_BUILD_METADATA.package.version,
       binaryContractVersion: WARDMOTE_RUNNER_BUILD_METADATA.contracts.runnerdArtifact,

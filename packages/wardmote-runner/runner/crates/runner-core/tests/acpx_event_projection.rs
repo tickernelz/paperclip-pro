@@ -1,13 +1,13 @@
-use paperclip_runner_core::acpx_event_payload::AcpxTurnStatus;
-use paperclip_runner_core::acpx_provider_state::{AcpxProviderState, AcpxProviderStateEvent};
-use paperclip_runner_core::acpx_sidecar_transport::AcpxSidecarEvent;
-use paperclip_runner_core::durable::EventPriority;
-use paperclip_runner_core::generated_acpx_sidecar_contract::GeneratedAcpxSidecarEventType;
-use paperclip_runner_core::provider_bridge::ToolResult;
-use paperclip_runner_core::provider_events::{
+use serde_json::{json, Value};
+use wardmote_runner_core::acpx_event_payload::AcpxTurnStatus;
+use wardmote_runner_core::acpx_provider_state::{AcpxProviderState, AcpxProviderStateEvent};
+use wardmote_runner_core::acpx_sidecar_transport::AcpxSidecarEvent;
+use wardmote_runner_core::durable::EventPriority;
+use wardmote_runner_core::generated_acpx_sidecar_contract::GeneratedAcpxSidecarEventType;
+use wardmote_runner_core::provider_bridge::ToolResult;
+use wardmote_runner_core::provider_events::{
     project_acpx_state_event, AcpxEventProjectionContext, NormalizedProviderEvent,
 };
-use serde_json::{json, Value};
 
 fn context() -> AcpxEventProjectionContext {
     AcpxEventProjectionContext {
@@ -646,8 +646,8 @@ fn recovery_preserves_the_preceding_provider_turn_answer() {
 
 #[test]
 fn cursor_plan_request_item_matches_tool_projection_and_survives_terminal_reconstruction() {
-    use paperclip_runner_core::acpx_event_payload::AcpxRuntimeEventKind;
-    use paperclip_runner_core::provider_events::normalize_acpx_runtime_event;
+    use wardmote_runner_core::acpx_event_payload::AcpxRuntimeEventKind;
+    use wardmote_runner_core::provider_events::normalize_acpx_runtime_event;
     for id in [
         "tool-1".to_owned(),
         "tool with spaces".to_owned(),

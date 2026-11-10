@@ -318,8 +318,35 @@ jobs:
           persist-credentials: false
       - uses: ./.github/actions/setup-workspace
 
+      - name: Resolve the Playwright version
+        id: playwright-version
+        run: echo "version=$(pnpm exec playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
+
+      - name: Restore Playwright browsers and system packages
+        id: playwright-cache
+        uses: actions/cache/restore@v5
+        with:
+          path: |
+            ~/.cache/ms-playwright
+            ~/.cache/playwright-apt
+          key: playwright-${{ runner.os }}-${{ env.ImageOS }}-${{ steps.playwright-version.outputs.version }}-webkit-chromium
+
       - name: Install WebKit and Chromium
-        run: pnpm exec playwright install --with-deps webkit chromium
+        timeout-minutes: 15
+        run: |
+          mkdir -p "$HOME/.cache/playwright-apt/partial"
+          printf 'Dir::Cache::Archives "%s";\nAPT::Keep-Downloaded-Packages "true";\n' "$HOME/.cache/playwright-apt" | sudo tee /etc/apt/apt.conf.d/99playwright-archives >/dev/null
+          pnpm exec playwright install --with-deps webkit chromium
+          sudo chown -R "$(id -u):$(id -g)" "$HOME/.cache/playwright-apt"
+
+      - name: Save Playwright browsers and system packages
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v5
+        with:
+          path: |
+            ~/.cache/ms-playwright
+            ~/.cache/playwright-apt
+          key: ${{ steps.playwright-cache.outputs.cache-primary-key }}
 
       - name: Run mobile shell tests
         id: mobile-shell

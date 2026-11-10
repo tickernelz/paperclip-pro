@@ -1,5 +1,5 @@
 [package]
-name = "paperclip-runner-core"
+name = "wardmote-runner-core"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -38,8 +38,8 @@ name = "conformance-tracer"
 path = "src/bin/conformance-tracer.rs"
 
 [[bin]]
-name = "paperclip-runnerd"
-path = "src/bin/paperclip-runnerd.rs"
+name = "wardmote-runnerd"
+path = "src/bin/wardmote-runnerd.rs"
 
 [[bin]]
 name = "fake-harness"

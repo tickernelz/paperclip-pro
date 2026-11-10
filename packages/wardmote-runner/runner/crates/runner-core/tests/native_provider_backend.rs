@@ -5,14 +5,14 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 #[cfg(unix)]
 use std::os::unix::fs::PermissionsExt;
 
-use paperclip_runner_core::durable::{
+use serde_json::{json, Value};
+use sha2::{Digest, Sha256};
+use wardmote_runner_core::durable::{
     AcpxLaunchProfile, Command, CommandExecutor, DurableRunnerConfig, OpenCodeLaunchProfile,
     QualifiedLaunchArtifact,
 };
-use paperclip_runner_core::native_provider_backend::NativeProviderCommandExecutor;
-use paperclip_runner_core::provider_bridge::{authorized_tool_catalog_digest, AuthorizedTool};
-use serde_json::{json, Value};
-use sha2::{Digest, Sha256};
+use wardmote_runner_core::native_provider_backend::NativeProviderCommandExecutor;
+use wardmote_runner_core::provider_bridge::{authorized_tool_catalog_digest, AuthorizedTool};
 
 const CODEX_ACPX_DIGEST: &str =
     "sha256:3e88ae296113d4e1ad6a57260d82c3ba97b85794101ae632bfd14f6890e62869";

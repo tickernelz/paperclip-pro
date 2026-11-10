@@ -138,7 +138,7 @@ async function authenticatedRunner(
   const sealed = Buffer.from(String(welcome.ciphertext), "hex");
   const decipher = createDecipheriv(
     "aes-256-gcm",
-    mac("paperclip-runner-core-to-client-key-v1", [binding]),
+    mac("wardmote-runner-core-to-client-key-v1", [binding]),
     nonce("P3S1", 0),
   );
   decipher.setAAD(aad("core_to_client", 0));

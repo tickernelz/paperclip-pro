@@ -3,10 +3,10 @@ use std::path::PathBuf;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-use paperclip_runner_core::durable::{
+use serde_json::json;
+use wardmote_runner_core::durable::{
     Command, CommandDisposition, DurableRunnerConfig, DurableStateStore,
 };
-use serde_json::json;
 
 static NEXT_TEMPORARY_DIRECTORY: AtomicU64 = AtomicU64::new(0);
 

@@ -69,7 +69,7 @@ const liveBundle = {
   grants: [...suite.CAPABILITY_LIVE_EVAL_GRANTS],
   runner: {
     package: packageManifest.name,
-    binary: "paperclip-runnerd",
+    binary: "wardmote-runnerd",
     version: packageManifest.version,
   },
   controlPlaneAdapter: {

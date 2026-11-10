@@ -1,6 +1,6 @@
 # Durable PRP transport
 
-This layer gives `paperclip-runnerd` a provider-neutral PRP v1 transport. The
+This layer gives `wardmote-runnerd` a provider-neutral PRP v1 transport. The
 Paperclip server invokes durable mode only for a selected, flag-enabled
 `paperclip_runner` agent or recovery of its persisted native run. Codex is the
 only installed provider; other providers remain unavailable.
@@ -65,7 +65,7 @@ P0 reserve is an explicit unrecoverable condition.
 
 ## Current boundary
 
-Durable mode is selected only when `paperclip-runnerd` receives
+Durable mode is selected only when `wardmote-runnerd` receives
 `--connect-url`. Its executor accepts a Codex app-server descriptor and bound
 completion contract through `run.prepare`, owns the provider process group,
 resumes the persisted Codex thread after runner restart, and translates
