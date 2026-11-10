@@ -646,7 +646,7 @@ export class CapabilitySemanticToolRuntime {
         this.#persistState();
       }
       const success: CapabilityToolSuccess = {
-        schema: "paperclip.capability.tool-result.v1",
+        schema: "wardmote.capability.tool-result.v1",
         ok: true,
         operationId: invocation.operationId,
         operationResultId: resultId,
@@ -657,7 +657,7 @@ export class CapabilitySemanticToolRuntime {
       const observableResult = deepFreeze(success);
       if (!includeModelResult) return { observableResult };
       const modelResult: CapabilityModelToolSuccess = deepFreeze({
-        schema: "paperclip.capability.model-tool-result.v1",
+        schema: "wardmote.capability.model-tool-result.v1",
         ok: true,
         operationId: invocation.operationId,
         operationResultId: resultId,
@@ -837,7 +837,7 @@ export class CapabilitySemanticToolRuntime {
       leaseExpiresAtMs = this.#now() + EXTENSION_EXECUTION_LEASE_MS;
       const replacement: CapabilitySemanticToolRuntimeSnapshot = durable === null
         ? {
-            schema: "paperclip.capability.semantic-tool-runtime.v1",
+            schema: "wardmote.capability.semantic-tool-runtime.v1",
             resultSequence: this.#state.resultSequence,
             operationResults: Object.fromEntries(this.#state.operationResults),
             extensions: [],
@@ -1196,7 +1196,7 @@ export class CapabilitySemanticToolRuntime {
 
   #localSnapshot(): CapabilitySemanticToolRuntimeSnapshot {
     return {
-      schema: "paperclip.capability.semantic-tool-runtime.v1",
+      schema: "wardmote.capability.semantic-tool-runtime.v1",
       resultSequence: this.#state.resultSequence,
       operationResults: Object.fromEntries(
         [...this.#state.operationResults].map(([key, value]) => [
@@ -1365,7 +1365,7 @@ export class CapabilitySemanticToolRuntime {
         const snapshot = this.#adapter.snapshot();
         return {
           value: {
-            schema: "paperclip.capability.mock-export.v1",
+            schema: "wardmote.capability.mock-export.v1",
             company: { id: snapshot.company.id, name: snapshot.company.name },
             taskCount: snapshot.tasks.length,
             actorCount: snapshot.actors.length,
@@ -1506,7 +1506,7 @@ export class CapabilitySemanticToolRuntime {
     code: CapabilityPolicyDenial["error"]["code"],
   ): CapabilityPolicyDenial {
     return deepFreeze({
-      schema: "paperclip.capability.tool-result.v1",
+      schema: "wardmote.capability.tool-result.v1",
       ok: false,
       error: {
         code,

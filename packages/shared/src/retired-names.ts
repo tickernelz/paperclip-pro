@@ -36,6 +36,43 @@ const PINNED_RETIRED_ENV_SUFFIXES: ReadonlySet<string> = new Set([
   "PI_SYSTEM_INSTRUCTIONS",
 ]);
 
+const PINNED_RETIRED_SCHEMA_ID_SUFFIXES: ReadonlySet<string> = new Set([
+  "acpx-profiles.v1",
+  "acpx-runtime-contract.v1",
+  "acpx_profile_declaration.v1",
+  "cursor.instructions-proof.v1",
+  "cursor.instructions.v1",
+  "cursor.native-mode-offline-proof.v1",
+  "cursor.native-usage-offline-proof.v1",
+  "cursor.native-usage.v1",
+  "cursor.patch-initialize-proof.v1",
+  "cursor.production-contract.v1",
+  "cursor.provider-error.v1",
+  "cursor.runtime-patch-proof.v1",
+  "cursor_closure.v1",
+  "cursor_distribution.v1",
+  "native_distribution_closure.v1",
+  "pi-linux-native-admission-proof.v1",
+  "pi-model-admission-proof.v1",
+  "pi-native-controls-proof.v1",
+  "pi-native-denial-proof.v1",
+  "pi-product-file-proof.v1",
+  "pi-product-qualification-proof.v1",
+  "pi-product-question-proof.v1",
+  "pi-provider-pack-offline-proof.v1",
+  "pi-security-closure-proof.v1",
+  "pi-session-open-diagnostic.v1",
+  "pi.permission.v1",
+  "prp.terminal.v1",
+  "semantic_tool_receipt.v1",
+  "semantic_tool_receipt.v2",
+]);
+
+export function retiredSchemaId(current: string): string {
+  if (!current.startsWith("wardmote.")) throw new Error(`not a current schema id: ${current}`);
+  return `paperclip.${current.slice("wardmote.".length)}`;
+}
+
 export type RetiredNameRewriteOptions = {
   keepEnvKeys?: ReadonlySet<string>;
 };
@@ -72,7 +109,9 @@ export function rewriteRetiredNames(input: string, options: RetiredNameRewriteOp
       (_whole, prefix: string, suffix: string | undefined) => count(`${prefix}wardmote${suffix ?? ""}`))
     .replace(/(?<![\w/.-])paperclip(-board|-converting-plans-to-tasks|-create-agent)(?![\w-])/g,
       (_whole, suffix: string) => count(`wardmote${suffix}`))
-    .replace(/(?<![\w-])paperclip-(upload-artifact|issue-update)(?=\.sh\b)/g, (_whole, script: string) => count(`wardmote-${script}`));
+    .replace(/(?<![\w-])paperclip-(upload-artifact|issue-update)(?=\.sh\b)/g, (_whole, script: string) => count(`wardmote-${script}`))
+    .replace(/(?<![\w.-])paperclip\.((?:[a-z][a-z0-9_-]*\.)+v[0-9]+)(?![\w-]|\.\w)/g, (whole, suffix: string) =>
+      PINNED_RETIRED_SCHEMA_ID_SUFFIXES.has(suffix) ? whole : count(`wardmote.${suffix}`));
   return { text, replacements };
 }
 

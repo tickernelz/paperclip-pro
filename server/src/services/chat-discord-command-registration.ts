@@ -23,7 +23,7 @@ const fenceSchema = z
   })
   .strict();
 const common = {
-  schema: z.literal("paperclip.discord.command-registration.v1"),
+  schema: z.literal("wardmote.discord.command-registration.v1"),
   scope: scopeSchema,
   ownerId,
 };
@@ -157,7 +157,7 @@ export function createDiscordCommandRegistration(
   if (!parsed.success)
     throw new Error("Invalid Discord command registration scope");
   return freezeState({
-    schema: "paperclip.discord.command-registration.v1",
+    schema: "wardmote.discord.command-registration.v1",
     scope: parsed.data,
     ownerId: randomBytes(16).toString("hex"),
     phase: "prepared",

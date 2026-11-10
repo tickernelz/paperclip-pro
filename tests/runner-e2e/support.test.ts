@@ -663,12 +663,12 @@ describe("runner E2E run observations", () => {
       eventType: "run.result.accepted",
       payload: {
         prpEvent: {
-          schema: "paperclip.prp.event.v1",
+          schema: "wardmote.prp.event.v1",
           eventType: "run.result.accepted",
           sourceKind: "control_plane",
           payload: {
             result: {
-              schema: "paperclip.run_result.v1",
+              schema: "wardmote.run_result.v1",
               reportedWorkDisposition: "yielded",
               evidence: [{ ref: "interaction:pending" }],
               artifacts: [

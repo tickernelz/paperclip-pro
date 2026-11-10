@@ -460,7 +460,7 @@ describe("P6-31 Section 18.13 executable status-authority corpus", () => {
       companyId,
       issueId,
       revision: 1,
-      schemaVersion: "paperclip.completion-contract.v1",
+      schemaVersion: "wardmote.completion-contract.v1",
       policyVersion: "phase6-v1",
       risk: "standard",
       completionAuthority: "server_arbiter",
@@ -1819,7 +1819,7 @@ describe("P6-31 Section 18.13 executable status-authority corpus", () => {
   }
 
   it("executes all 53 fixtures in their production consumers and joins all 70 matrix rows", async () => {
-    expect(corpus.schema).toBe("paperclip.status-authority-conformance.v1");
+    expect(corpus.schema).toBe("wardmote.status-authority-conformance.v1");
     expect(corpus.fixtures).toHaveLength(53);
 
     const observations = new Map<string, FixtureObservation>();

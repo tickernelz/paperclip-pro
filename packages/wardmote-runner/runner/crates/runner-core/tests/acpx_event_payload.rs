@@ -230,7 +230,7 @@ fn validates_question_sets_and_rejects_duplicate_question_ids() {
             GeneratedAcpxSidecarEventType::RuntimeInputRequested,
             json!({
                 "requestId": "input-1",
-                "questionSet": {"schema": "paperclip.question_set.v1", "questions": [question.clone()]},
+                "questionSet": {"schema": "wardmote.question_set.v1", "questions": [question.clone()]},
                 "origin": {"provider": "codex"},
             }),
         ),
@@ -248,7 +248,7 @@ fn validates_question_sets_and_rejects_duplicate_question_ids() {
             json!({
                 "requestId": "input-sensitive",
                 "questionSet": {
-                    "schema": "paperclip.question_set.v1",
+                    "schema": "wardmote.question_set.v1",
                     "title": "token=question-set-secret",
                     "description": "authorization: question-description-secret",
                     "submitLabel": "secret=submit-label-secret",
@@ -301,7 +301,7 @@ fn validates_question_sets_and_rejects_duplicate_question_ids() {
         GeneratedAcpxSidecarEventType::RuntimeInputRequested,
         json!({
             "requestId": "input-2",
-            "questionSet": {"schema": "paperclip.question_set.v1", "questions": [question.clone(), question]},
+            "questionSet": {"schema": "wardmote.question_set.v1", "questions": [question.clone(), question]},
         }),
     );
     assert!(decode_acpx_event(&scope, &duplicate)
@@ -314,7 +314,7 @@ fn validates_question_sets_and_rejects_duplicate_question_ids() {
         json!({
             "requestId": "input-3",
             "questionSet": {
-                "schema": "paperclip.question_set.v1",
+                "schema": "wardmote.question_set.v1",
                 "questions": [{
                     "id": "choice",
                     "prompt": "Choose one",
@@ -405,7 +405,7 @@ fn rejects_payloads_before_decoding_when_scope_or_size_is_invalid() {
 #[test]
 fn input_parent_tool_is_bounded_scope_checked_and_provider_neutral() {
     let input = json!({"requestId":"input-1","toolCallId":"tool with spaces",
-        "questionSet":{"schema":"paperclip.question_set.v1","questions":[{"id":"q","prompt":"Proceed?","required":true,"answerMode":"text"}]},
+        "questionSet":{"schema":"wardmote.question_set.v1","questions":[{"id":"q","prompt":"Proceed?","required":true,"answerMode":"text"}]},
         "origin":{"adapter":"acpx-runtime-sidecar","provider":"cursor","method":"cursor/create_plan"}});
     let decode = |payload| {
         decode_acpx_event(

@@ -342,7 +342,7 @@ export function aggregatorProviderQuestion(
 /** Native question form, preserving the exact saved-answer authorization contract. */
 export function aggregatorProviderQuestionSet(question: AskUserQuestionsQuestion): WardmoteQuestionSetPayload {
   return {
-    schema: "paperclip.question_set.v1",
+    schema: "wardmote.question_set.v1",
     questions: [{
       id: question.id,
       prompt: question.prompt,

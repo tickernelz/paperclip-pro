@@ -180,7 +180,7 @@ retained profile as evidence, but cannot replace this pre-launch check.
 
 The direct eval CLI also materializes a minimal immutable native runtime
 context in each isolated attempt workspace. This keeps the direct layer on the
-same `paperclip.native-execution-input.v3` contract as production, including
+same `wardmote.native-execution-input.v3` contract as production, including
 the AgentCore HarnessSkill upload path, without borrowing any browser E2E
 setup.
 

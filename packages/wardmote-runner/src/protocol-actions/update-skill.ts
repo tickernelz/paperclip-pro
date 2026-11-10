@@ -22,7 +22,7 @@ export const updateSkillAction = {
   live: {
     order: 47,
     descriptor: {
-      schema: "paperclip.semantic-tool.v1", operationId: "update_skill", version: 1,
+      schema: "wardmote.semantic-tool.v1", operationId: "update_skill", version: 1,
       title: "Update skill", description: "Replace an existing company skill's complete SKILL.md using the current version as a guard. Reuse idempotencyKey on lost-response retries; read again after a version conflict.",
       exposure: "optional", requiredClaims: [], allowedModes: ["standard", "skill_test"],
       inputSchema: { type: "object", properties: {
@@ -36,7 +36,7 @@ export const updateSkillAction = {
   },
   scenario: {
     order: 47,
-    successExample: { schema: "paperclip.capability.tool-result.v1", ok: true, operationId: "update_skill", operationResultId: "example-result", value: { commandId: "example", disposition: "applied", stateRevision: 1, entityRefs: ["skill:skill-example"], scheduledWakeIds: [] }, commandResult: null, authorization: {} },
+    successExample: { schema: "wardmote.capability.tool-result.v1", ok: true, operationId: "update_skill", operationResultId: "example-result", value: { commandId: "example", disposition: "applied", stateRevision: 1, entityRefs: ["skill:skill-example"], scheduledWakeIds: [] }, commandResult: null, authorization: {} },
     descriptor: {
       operationId: "update_skill", version: 1, title: "Update skill",
       description: "Replace an existing company skill's complete SKILL.md with an expected version guard and a retry key.",

@@ -73,7 +73,7 @@ export function validateAcpxRichEvent(event: CanonicalProviderEvent): void {
     throw new Error("ACP display activity cannot claim a control-plane mutation");
   }
   const validation = validatePrpEvent({
-    schema: "paperclip.prp.event.v1",
+    schema: "wardmote.prp.event.v1",
     sourceEventId: "validation:1", sourceSeq: 1, sourceInstanceId: "validation",
     sourceKind: "runner", runId: "validation", normalizedSessionId: "validation",
     turnId: "validation", itemId: event.itemId, eventType: event.eventType,

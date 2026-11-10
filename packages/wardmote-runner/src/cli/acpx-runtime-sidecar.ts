@@ -112,7 +112,7 @@ function reportRetainedAcpxCleanupFailure(
   const errorName = input.error instanceof Error ? input.error.name : "Error";
   process.emitWarning(
     JSON.stringify({
-      schema: "paperclip.runner.retained_cleanup_failure.v1",
+      schema: "wardmote.runner.retained_cleanup_failure.v1",
       resource: input.resource,
       attempt: input.attempt,
       errorName,
@@ -264,7 +264,7 @@ async function dispatch(
         exactModelVerification: true,
         permissions: "runner_policy",
         semanticTools: "runner_bridge",
-        structuredInput: "paperclip.question_set.v1",
+        structuredInput: "wardmote.question_set.v1",
       },
     };
   }
@@ -1482,7 +1482,7 @@ function stableProviderIdentity(value: string, kind: string): string {
     return value;
   }
   const digest = createHash("sha256")
-    .update("paperclip.acpx.provider-identity.v1\0")
+    .update("wardmote.acpx.provider-identity.v1\0")
     .update(kind)
     .update("\0")
     .update(value)

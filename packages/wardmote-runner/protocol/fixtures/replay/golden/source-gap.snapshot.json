@@ -1,8 +1,8 @@
 {
-  "schema": "paperclip.prp.session-snapshot.v1",
+  "schema": "wardmote.prp.session-snapshot.v1",
   "fixtureName": "Source sequence gap",
   "identity": {
-    "schema": "paperclip.prp.identity.v1",
+    "schema": "wardmote.prp.identity.v1",
     "companyId": "company_replay",
     "issueId": "issue_replay_gap",
     "runId": "run_replay_gap",
@@ -12,7 +12,7 @@
     "driverSessionId": "driver_replay_gap"
   },
   "capabilities": {
-    "schema": "paperclip.prp.capabilities.v1",
+    "schema": "wardmote.prp.capabilities.v1",
     "sessionReusePolicy": "new_per_run",
     "driver": {
       "kind": "fake",
@@ -32,7 +32,7 @@
   "items": [],
   "requests": [],
   "proposedResult": {
-    "schema": "paperclip.run_result.v1",
+    "schema": "wardmote.run_result.v1",
     "reportedWorkDisposition": "needs_review",
     "summary": "The source gap requires reconciliation.",
     "completionClaim": {

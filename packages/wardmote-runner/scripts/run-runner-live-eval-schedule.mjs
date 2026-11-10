@@ -298,7 +298,7 @@ if (mode === "nightly") {
   );
 } else {
   const payload = {
-    schema: "paperclip.runner.chaos-eval-schedule.v1",
+    schema: "wardmote.runner.chaos-eval-schedule.v1",
     generatedAt: now,
     seed,
     scenarios: evals.RUNNER_CHAOS_SCENARIOS,

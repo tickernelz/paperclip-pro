@@ -68,7 +68,7 @@ export function publicChatView(artifact, evalCase) {
     network.childPaperclipEnvironmentKeys.length === 0;
   const source =
     isolated &&
-    artifact.issueThread?.schema === "paperclip.capability.issue-thread-view.v1"
+    artifact.issueThread?.schema === "wardmote.capability.issue-thread-view.v1"
       ? artifact.issueThread
       : null;
   const evidence = Object.fromEntries(
@@ -171,7 +171,7 @@ export function publicChatView(artifact, evalCase) {
     });
   }
   return {
-    schema: "paperclip.capability.issue-thread-view.v1",
+    schema: "wardmote.capability.issue-thread-view.v1",
     sessionId: "public-report",
     mode: "replay",
     identity: {

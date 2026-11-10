@@ -199,7 +199,7 @@ class LiveConsoleScriptedSession implements HarnessSession {
     this.#emit("turn.submitted", {
       turnId,
       text: input.message.text,
-      envelopeSchema: "paperclip.task_envelope.v1",
+      envelopeSchema: "wardmote.task_envelope.v1",
     }, { turnId });
     this.#turnRunner = this.#runTurn(turnId, beats).catch((error) => {
       this.#emit("harness.diagnostic", { message: `demo turn failed: ${String(error)}` });
@@ -399,7 +399,7 @@ class LiveConsoleScriptedSession implements HarnessSession {
   ): void {
     this.#sequence += 1;
     this.#queue.push({
-      schema: "paperclip.prp.event.v1",
+      schema: "wardmote.prp.event.v1",
       sourceEventId: `${this.#input.runId}:${this.#sequence}`,
       sourceSeq: this.#sequence,
       sourceInstanceId: `${DRIVER_KIND}:${this.#input.normalizedSessionId}`,
@@ -653,7 +653,7 @@ class LiveConsoleScriptedSession implements HarnessSession {
   #emitResult(turnId: string, failed: boolean): void {
     const manifest = this.#input.manifest;
     const result: PrpStructuredRunResult = {
-      schema: "paperclip.run_result.v1",
+      schema: "wardmote.run_result.v1",
       reportedWorkDisposition: failed ? "blocked" : "done",
       summary: failed
         ? `The ${manifest.name} demo ended in a failed turn on purpose.`

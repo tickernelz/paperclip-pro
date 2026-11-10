@@ -131,7 +131,7 @@ describe("native provider capacity failure persistence", () => {
         .where(eq(heartbeatRuns.id, runId));
 
       const execution: NativeExecutionInputV1 = {
-        schema: "paperclip.native-execution-input.v1",
+        schema: "wardmote.native-execution-input.v1",
         binding: {
           companyId,
           runId,
@@ -162,14 +162,14 @@ describe("native provider capacity failure persistence", () => {
         completionContract: {
           id: contract.id,
           sha256: contract.canonicalSha256,
-          schemaVersion: "paperclip.completion-contract.v1",
+          schemaVersion: "wardmote.completion-contract.v1",
           contract: completionInput,
         },
         interactionResponses: [],
         credentialBindings: [],
       };
       const event: PrpEvent = {
-        schema: "paperclip.prp.event.v1",
+        schema: "wardmote.prp.event.v1",
         runId,
         normalizedSessionId: native.normalizedSessionId,
         turnId: native.turnId,

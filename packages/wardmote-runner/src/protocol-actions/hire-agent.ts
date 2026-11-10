@@ -36,7 +36,7 @@ export const hireAgentAction = {
   live: {
     order: 15,
     descriptor: {
-      schema: "paperclip.semantic-tool.v1",
+      schema: "wardmote.semantic-tool.v1",
       operationId: "hire_agent",
       version: 1,
       title: "Hire a native agent",

@@ -32,7 +32,7 @@ fn config(mode: &str) -> AcpxProviderSessionConfig {
         system_instructions: "Complete the supplied task.".to_owned(),
         runtime_context: serde_json::Value::Null,
         tool_set: AuthorizedToolSet {
-            schema: "paperclip.runner.authorized-tools.v1".to_owned(),
+            schema: "wardmote.runner.authorized-tools.v1".to_owned(),
             schema_version: 1,
             catalog_digest: authorized_tool_catalog_digest(&operations).unwrap(),
             operations,

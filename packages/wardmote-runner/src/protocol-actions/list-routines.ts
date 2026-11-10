@@ -39,7 +39,7 @@ export const listRoutinesAction = {
       "ok": true,
       "operationId": "list_routines",
       "result": {
-        "schema": "paperclip.capability.tool-result.v1",
+        "schema": "wardmote.capability.tool-result.v1",
         "ok": true,
         "operationId": "example",
         "operationResultId": "example",
@@ -69,7 +69,7 @@ export const listRoutinesAction = {
           "schema": {
             "type": "string",
             "enum": [
-              "paperclip.capability.tool-result.v1"
+              "wardmote.capability.tool-result.v1"
             ]
           },
           "ok": {

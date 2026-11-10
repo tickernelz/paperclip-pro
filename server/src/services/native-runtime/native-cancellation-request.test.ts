@@ -27,7 +27,7 @@ describe("caller-bound native cancellation", () => {
 describe("failed native retry caller admission", () => {
   const companyId = "company", runId = "run", issueId = "issue";
   const claimed = { cancellationRequestId: id, requestedBy: { type: "board", userId: "board-user" } };
-  const native = { schema: "paperclip.native-cancellation.v1", intentId: cancellationIntentId(id),
+  const native = { schema: "wardmote.native-cancellation.v1", intentId: cancellationIntentId(id),
     companyId, runId, issueId, scope: "run", dispatchState: "pending", dispatched: false, intentAuditId: "intent-audit" };
   function fixture(phase: string | null, resultJson: Record<string, unknown> = {}, status = "failed", failureCode: string | null = null) {
     const run = { id: runId, companyId, nativeIssueId: issueId, runtimeMode: "native", status, resultJson };

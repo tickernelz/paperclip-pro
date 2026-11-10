@@ -4,7 +4,7 @@ use wardmote_runner_core::question_response::validate_question_response;
 
 fn question_set() -> Value {
     json!({
-        "schema":"paperclip.question_set.v1",
+        "schema":"wardmote.question_set.v1",
         "questions":[
             {
                 "id":"target",
@@ -41,7 +41,7 @@ fn question_set() -> Value {
 
 fn valid_response() -> Value {
     json!({
-        "schema":"paperclip.question_response.v1",
+        "schema":"wardmote.question_response.v1",
         "answers":{
             "target":{"selectedOptionIds":["first"]},
             "regions":{"selectedOptionIds":["east","west"]},
@@ -205,7 +205,7 @@ fn rejects_semantically_malformed_unanswered_questions() {
             value
         }),
     ];
-    let response = json!({"schema":"paperclip.question_response.v1","answers":{}});
+    let response = json!({"schema":"wardmote.question_response.v1","answers":{}});
     for (label, mut set) in cases {
         for question in set["questions"].as_array_mut().unwrap() {
             question["required"] = json!(false);
@@ -296,13 +296,13 @@ fn rejects_cross_document_and_answer_mode_mismatches() {
 fn rejects_malformed_or_oversized_response_envelopes() {
     assert!(validate_question_response(
         &question_set(),
-        &json!({"schema":"paperclip.question_response.v2","answers":{}})
+        &json!({"schema":"wardmote.question_response.v2","answers":{}})
     )
     .is_err());
     assert!(validate_question_response(
         &question_set(),
         &json!({
-            "schema":"paperclip.question_response.v1",
+            "schema":"wardmote.question_response.v1",
             "answers":{"notes":{"text":"x".repeat(800_000)}}
         })
     )

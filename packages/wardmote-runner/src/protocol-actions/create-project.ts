@@ -103,7 +103,7 @@ export const createProjectAction = {
   "live": {
     "order": 43,
     "descriptor": {
-      "schema": "paperclip.semantic-tool.v1",
+      "schema": "wardmote.semantic-tool.v1",
       "operationId": "create_project",
       "version": 1,
       "title": "Create project",

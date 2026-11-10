@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 export const NATIVE_COMPLETION_SOURCE_CONTRACT = {
-  "schema": "paperclip.native-completion-source-contract.v1",
+  "schema": "wardmote.native-completion-source-contract.v1",
   "baseSha": "59c07ede72dc08b8aba149a01cc11e0b7a204621",
   "archiveSha": "9138f570c341c251a5727c32d6615ce238bc8e03",
   "shallowParentAnchors": {

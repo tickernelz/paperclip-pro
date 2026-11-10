@@ -34,7 +34,7 @@ use crate::provider_events::{
 };
 use crate::stable_identity::{is_stable_id, DURABLE_STABLE_ID_CHARS, SHORT_STABLE_ID_CHARS};
 
-const PROVIDER_STATE_SCHEMA: &str = "paperclip.runner.codex-provider-state.v1";
+const PROVIDER_STATE_SCHEMA: &str = "wardmote.runner.codex-provider-state.v1";
 pub const CODEX_PROVIDER_STATE_FILE: &str = "codex-provider-state.json";
 const MAX_PROVIDER_STATE_BYTES: u64 = 16 * 1024 * 1024;
 const MAX_EVENTS_PER_POLL: usize = 128;
@@ -149,9 +149,9 @@ impl ProviderStartupAttempt {
             // wire request. Goal commands require v2; reconstructing every
             // summary as v1 rejects a legitimate provider restart on goal/get.
             let schema = if command.command_type.starts_with("session.goal.") {
-                "paperclip.prp.command.v2"
+                "wardmote.prp.command.v2"
             } else {
-                "paperclip.prp.command.v1"
+                "wardmote.prp.command.v1"
             };
             Command {
                 schema: schema.to_owned(),
@@ -187,7 +187,7 @@ impl ProviderStartupAttempt {
                 None => false,
             },
         };
-        if self.schema != "paperclip.provider_startup.v1"
+        if self.schema != "wardmote.provider_startup.v1"
             || uuid::Uuid::parse_str(&self.launch_id).is_err()
             || self.attempted_process_generation == 0
             || self.authenticated_thread_id.is_some()
@@ -253,7 +253,7 @@ impl ProviderEventIdentity {
         use sha2::{Digest, Sha256};
 
         let mut hasher = Sha256::new();
-        hasher.update(b"paperclip.executor-event.v1\0");
+        hasher.update(b"wardmote.executor-event.v1\0");
         hasher.update(self.runner_instance_id.as_bytes());
         hasher.update(b"\0");
         hasher.update(executor_event_id.as_bytes());
@@ -345,7 +345,7 @@ fn semantic_input_event(
         priority: EventPriority::P0,
         payload: json!({
             "semantic_tool": {
-                "schema": "paperclip.prp.semantic_tool.v1",
+                "schema": "wardmote.prp.semantic_tool.v1",
                 "schemaVersion": 1,
                 "phase": "input",
                 "operationId": call.operation_id,
@@ -372,7 +372,7 @@ fn semantic_result_event(
         .get("resultReceipt")
         .filter(|receipt| {
             receipt.get("schema").and_then(Value::as_str)
-                == Some("paperclip.prp.semantic_tool.v1")
+                == Some("wardmote.prp.semantic_tool.v1")
                 && receipt.get("phase").and_then(Value::as_str) == Some("result")
                 && receipt.get("operationId").and_then(Value::as_str)
                     == Some(result.operation_id.as_str())
@@ -382,7 +382,7 @@ fn semantic_result_event(
         .cloned()
         .unwrap_or_else(|| {
             json!({
-                "schema": "paperclip.prp.semantic_tool.v1",
+                "schema": "wardmote.prp.semantic_tool.v1",
                 "schemaVersion": 1,
                 "phase": "result",
                 "operationId": result.operation_id,
@@ -671,7 +671,7 @@ fn terminal_events(
         })
         .collect::<Vec<_>>();
     let result = json!({
-        "schema": "paperclip.run_result.v1",
+        "schema": "wardmote.run_result.v1",
         "reportedWorkDisposition": disposition,
         "summary": summary,
         "completionClaim": {
@@ -924,7 +924,7 @@ fn goal_event_payload(
     revision: u64,
 ) -> Value {
     json!({
-        "schema": "paperclip.session_goal.snapshot.v1",
+        "schema": "wardmote.session_goal.snapshot.v1",
         "goal": goal,
         "sessionGoals": capability,
         "workingNow": goal.is_some_and(|goal| goal.working_now),
@@ -1535,7 +1535,7 @@ impl CodexCommandExecutor {
             ));
         }
         let mut digest = Sha256::new();
-        digest.update(b"paperclip.runner.opencode-launch-profile.v1\0");
+        digest.update(b"wardmote.runner.opencode-launch-profile.v1\0");
         for artifact in [&profile.command, &profile.proxy_script, &profile.executable] {
             digest.update(artifact.path.to_string_lossy().as_bytes());
             digest.update(b"\0");
@@ -1602,7 +1602,7 @@ impl CodexCommandExecutor {
             DurableRunnerError::invalid("provider startup configuration serialization failed")
         })?;
         state.startup_attempt = Some(ProviderStartupAttempt {
-            schema: "paperclip.provider_startup.v1".to_owned(),
+            schema: "wardmote.provider_startup.v1".to_owned(),
             launch_id: uuid::Uuid::new_v4().to_string(),
             phase: ProviderStartupPhase::Intent,
             trigger,
@@ -3405,7 +3405,7 @@ impl CodexCommandExecutor {
         };
         self.save_state()?;
         let event = json!({
-            "schema": "paperclip.session_goal.snapshot.v1",
+            "schema": "wardmote.session_goal.snapshot.v1",
             "goal": Value::Null,
             "sessionGoals": capability,
             "workingNow": working_now,
@@ -4308,7 +4308,7 @@ impl CodexCommandExecutor {
                                     event_type: "provider.notice.recorded".to_owned(),
                                     priority: EventPriority::P0,
                                     payload: json!({
-                                        "schema": "paperclip.provider.notice.v1",
+                                        "schema": "wardmote.provider.notice.v1",
                                         "noticeId": "codex-goal-reconcile-failed",
                                         "severity": "warning",
                                         "category": "goal_reconciliation",
@@ -4382,7 +4382,7 @@ impl CodexCommandExecutor {
                         priority: EventPriority::P0,
                         payload: json!({
                             "request": {
-                                "schema": "paperclip.runtime_request.v2",
+                                "schema": "wardmote.runtime_request.v2",
                                 "requestKind": "runtime",
                                 "requestId": request_id,
                                 "type": "input",
@@ -4727,7 +4727,7 @@ mod tests {
     #[test]
     fn startup_phase_fields_are_closed_and_coherent() {
         let mut attempt = ProviderStartupAttempt {
-            schema: "paperclip.provider_startup.v1".to_owned(),
+            schema: "wardmote.provider_startup.v1".to_owned(),
             launch_id: uuid::Uuid::new_v4().to_string(),
             phase: ProviderStartupPhase::Intent,
             trigger: ProviderStartupTrigger::Ensure,
@@ -5012,7 +5012,7 @@ mod tests {
 
     fn valid_opencode_result() -> Value {
         json!({
-            "schema": "paperclip.run_result.v1",
+            "schema": "wardmote.run_result.v1",
             "reportedWorkDisposition": "done",
             "summary": "Finished the requested work.",
             "completionClaim": {
@@ -5310,7 +5310,7 @@ mod tests {
         assert!(normalize_provider_notification(
             &mut malformed,
             "paperclip/runResult",
-            &params(json!({"schema": "paperclip.run_result.v1"})),
+            &params(json!({"schema": "wardmote.run_result.v1"})),
         )
         .unwrap_err()
         .to_string()

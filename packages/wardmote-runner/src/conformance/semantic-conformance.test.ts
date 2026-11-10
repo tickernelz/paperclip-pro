@@ -36,7 +36,7 @@ describe("semantic conformance kit", () => {
         }),
       ],
     });
-    expect(report.schema).toBe("paperclip.semantic-conformance-report.v1");
+    expect(report.schema).toBe("wardmote.semantic-conformance-report.v1");
     expect(report.rows).toHaveLength(1);
     expect(report.rows[0]?.adapterIds).toEqual(["mock", "real"]);
     expect(report.rows[0]?.observations).toEqual({ mock: allowed, real: allowed });

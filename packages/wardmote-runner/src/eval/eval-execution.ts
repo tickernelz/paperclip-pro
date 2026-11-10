@@ -618,7 +618,7 @@ function evalWireEvents(input: {
   ): void => {
     const sourceSeq = events.length + 1;
     events.push({
-      schema: "paperclip.prp.event.v1",
+      schema: "wardmote.prp.event.v1",
       sourceEventId: `eval-wire:${input.caseId}:${sourceSeq}`,
       sourceSeq,
       sourceInstanceId: "eval-wire",

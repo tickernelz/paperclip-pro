@@ -162,12 +162,12 @@ suite("Teams same-transaction publication projection (real PostgreSQL)", () => {
       "consent_unknown",
     ].includes(phase);
     const privateState = {
-      schema: "paperclip.teams.transfer-private.v1",
+      schema: "wardmote.teams.transfer-private.v1",
       binding: { ciphertext: "PRIVATE-PROJECTION-CANARY" },
       ...(operatorConfirmed
         ? {
             resolution: {
-              schema: "paperclip.teams.file-resolution.v1",
+              schema: "wardmote.teams.file-resolution.v1",
               action: "mark_delivered",
               fromPhase: "file_info_unknown",
               fromVersion: 3,
@@ -489,7 +489,7 @@ suite("Teams same-transaction publication projection (real PostgreSQL)", () => {
         providerActionId: `teams-file-effect:${r.attemptId}`,
         status: "processed",
         payload: {
-          schema: "paperclip.teams.file-effect-intent.v1",
+          schema: "wardmote.teams.file-effect-intent.v1",
           transferId: randomUUID(),
           publicationId: f.publicationId,
           attemptId: r.attemptId,

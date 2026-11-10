@@ -3,11 +3,11 @@ import { bindAcpxExtensionTurn, validateAcpxExtensionInput, validateAcpxRichEven
 import type { CanonicalProviderEvent } from "../../provider-events.js";
 
 const event: CanonicalProviderEvent = { eventType: "plan.updated", itemId: "plan-1", payload: {
-  schema: "paperclip.plan.updated.v1", planId: "plan-1", revision: 1,
+  schema: "wardmote.plan.updated.v1", planId: "plan-1", revision: 1,
   steps: [{ stepId: "one", body: "Validate", status: "pending" }], complete: false, syncStatus: "not_applicable",
 } };
 const input = { method: "cursor/create_plan", questionSet: {
-  schema: "paperclip.question_set.v1" as const, description: "complete plan".repeat(1000),
+  schema: "wardmote.question_set.v1" as const, description: "complete plan".repeat(1000),
   questions: [{ id: "plan-revision", prompt: "Approve?", answerMode: "single_select" as const, required: true,
     options: [{ id: "accept", label: "Accept" }, { id: "cancel", label: "Cancel" }] }],
 }, resolve: () => ({ outcome: "accepted" }), cancel: () => ({ outcome: "cancelled" }) };

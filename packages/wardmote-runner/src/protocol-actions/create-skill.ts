@@ -63,7 +63,7 @@ export const createSkillAction = {
   "live": {
     "order": 46,
     "descriptor": {
-      "schema": "paperclip.semantic-tool.v1",
+      "schema": "wardmote.semantic-tool.v1",
       "operationId": "create_skill",
       "version": 1,
       "title": "Create skill",
@@ -125,7 +125,7 @@ export const createSkillAction = {
   "scenario": {
     "order": 46,
     "successExample": {
-      "schema": "paperclip.capability.tool-result.v1",
+      "schema": "wardmote.capability.tool-result.v1",
       "ok": true,
       "operationId": "create_skill",
       "operationResultId": "example-result",
@@ -190,7 +190,7 @@ export const createSkillAction = {
           "schema": {
             "type": "string",
             "enum": [
-              "paperclip.capability.tool-result.v1"
+              "wardmote.capability.tool-result.v1"
             ]
           },
           "ok": {

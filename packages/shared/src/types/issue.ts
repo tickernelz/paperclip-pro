@@ -1361,12 +1361,6 @@ export interface AskUserQuestionsQuestion {
   options: AskUserQuestionsQuestionOption[];
 }
 
-/**
- * Provider-neutral presentation retained when a live harness question has to
- * fall back to the durable issue interaction lifecycle. This intentionally
- * mirrors `paperclip.question_set.v1` without making the shared package depend
- * on a particular runner implementation.
- */
 export interface WardmoteQuestionSetOption {
   id: string;
   label: string;
@@ -1400,7 +1394,7 @@ export interface WardmoteQuestionSetQuestion {
 }
 
 export interface WardmoteQuestionSetPayload {
-  schema: "paperclip.question_set.v1";
+  schema: "wardmote.question_set.v1";
   title?: string;
   description?: string;
   submitLabel?: string;

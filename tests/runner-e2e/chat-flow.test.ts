@@ -248,7 +248,7 @@ If you only have the club name, audience, and tone, that is enough to begin; I c
     const nativePayload: AskUserQuestionsPayload = {
       ...payload,
       questionSet: {
-        schema: "paperclip.question_set.v1",
+        schema: "wardmote.question_set.v1",
         submitLabel: "Continue",
         questions: [
           {

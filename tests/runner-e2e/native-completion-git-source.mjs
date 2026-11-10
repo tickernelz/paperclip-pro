@@ -116,7 +116,7 @@ export function inspectNativeCompletionRunnerd({ repositoryRoot, sourceSha, sour
       if (archiveDigest(archive) !== archiveSha256) throw new Error("hosted build archive changed during runnerd verification");
     }
   } catch (error) { errors.push(`runnerd provenance ${error.message}`); }
-  return { schema: "paperclip.native-completion-runnerd-provenance.v1", mode: hosted ? "trusted_hosted_archive" : "fresh_local_build",
+  return { schema: "wardmote.native-completion-runnerd-provenance.v1", mode: hosted ? "trusted_hosted_archive" : "fresh_local_build",
     passed: errors.length === 0, selectedPath, binarySha256, binaryBytes, archiveMemberBytes, sourceSha, sourceFingerprint, archiveSha256,
     workflowRunId: hosted ? environment.GITHUB_RUN_ID ?? null : null,
     workflowRunAttempt: hosted ? environment.GITHUB_RUN_ATTEMPT ?? null : null,
@@ -157,7 +157,7 @@ export function inspectNativeCompletionSourceMetadata({ repositoryRoot, sourceFi
   errors.push(...hydration.errors);
   const immutable = tracked.status === 0 && clean.status === 0 && status.status === 0 && unexpected.length === 0 &&
     (!hydration.present || hydration.verified);
-  const metadata = { schema: "paperclip.native-completion-source-metadata.v1",
+  const metadata = { schema: "wardmote.native-completion-source-metadata.v1",
     lineage: { strategy, shallow: isShallow, sha, baseSha, anchor: strategy === "shallow_immediate_parent_anchor" ? anchor : null },
     hydration: { present: hydration.present, verified: hydration.verified, archiveSha256: hydration.archiveSha256, checksumSha256: hydration.checksumSha256 },
     worktreeEntries: entries, errors };

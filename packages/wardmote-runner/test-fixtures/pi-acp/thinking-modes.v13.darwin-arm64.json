@@ -1,5 +1,5 @@
 {
-  "schema": "paperclip.pi-thinking-mode-proof.v1",
+  "schema": "wardmote.pi-thinking-mode-proof.v1",
   "status": "provider-free-compatibility-passed-not-paid-qualification",
   "sourceBase": "b70cf84ea6cb20095aaeebc6af7f025ee6fdce73",
   "profileDigest": "sha256:fe1e6da01b2a9e4c691ca27cf689d2d6de846a93be6b23fc1e103c9addd7b177",

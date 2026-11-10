@@ -1161,7 +1161,7 @@ const chatActivityResponseSchema = z
 
 const safeExternalChatCardResponseSchema = z
   .object({
-    schema: z.literal("paperclip.chat.card.v1"),
+    schema: z.literal("wardmote.chat.card.v1"),
     kind: z.enum(["status", "question", "confirmation"]),
     title: z.string(),
     body: z.string().optional(),

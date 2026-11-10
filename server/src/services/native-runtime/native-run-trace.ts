@@ -295,7 +295,7 @@ export function createNativeRunTrace(input: {
         payload: {
           // Keep the persisted schema identifier stable; traceSchemaVersion
           // describes the OTel hierarchy independently of the run-log shape.
-          schema: "paperclip.run-performance-span.v1",
+          schema: "wardmote.run-performance-span.v1",
           traceSchemaVersion: NATIVE_RUN_TRACE_SCHEMA_VERSION,
           span: span.name,
           parentSpan: span.parentName ?? "task.run",

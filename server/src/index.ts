@@ -672,6 +672,12 @@ async function startServerWithDatabaseTeardown(
       "Rewrote retired product names in agent instructions and stored agent text",
     );
   }
+  if (retiredNames.quarantinedRunnerStates.length > 0) {
+    logger.warn(
+      { stateKeys: retiredNames.quarantinedRunnerStates },
+      "Moved native runner state written under retired product names to quarantine; those sessions start fresh",
+    );
+  }
   if (retiredNames.externalBundles.length > 0) {
     logger.warn(
       { agents: retiredNames.externalBundles },

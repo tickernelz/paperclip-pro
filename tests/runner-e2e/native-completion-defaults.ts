@@ -32,7 +32,7 @@ export function nativeCompletionProfile(profile: RunnerProfileFixture): RunnerPr
 }
 
 export interface NativeDefaultReceipt {
-  schema: "paperclip.native-completion-default.v1";
+  schema: "wardmote.native-completion-default.v1";
   agentId: string;
   companyId: string;
   entryFile: unknown;
@@ -65,6 +65,6 @@ export async function captureNativeDefault(input: {
     const detail = await input.api.get<{ content: string }>(`/api/agents/${input.agentId}/instructions-bundle/file?path=${encodeURIComponent(file.path)}`);
     return { path: file.path, sha256: createHash("sha256").update(detail.content).digest("hex"), bytes: Buffer.byteLength(detail.content) };
   }));
-  return { schema: "paperclip.native-completion-default.v1", agentId: input.agentId, companyId: input.companyId,
+  return { schema: "wardmote.native-completion-default.v1", agentId: input.agentId, companyId: input.companyId,
     entryFile: bundle.entryFile, files, budgets: { company: company.budgetMonthlyCents, agent: agent.budgetMonthlyCents } };
 }

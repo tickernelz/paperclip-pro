@@ -256,7 +256,7 @@ export interface ScenarioChatdempotencyRecord {
 }
 
 export interface CapabilitySemanticToolRuntimeSnapshot {
-  schema: "paperclip.capability.semantic-tool-runtime.v1";
+  schema: "wardmote.capability.semantic-tool-runtime.v1";
   resultSequence: number;
   operationResults: Record<string, CapabilityJsonValue>;
   extensions: Array<
@@ -303,7 +303,7 @@ export interface CapabilitySemanticToolRuntimeSnapshot {
 }
 
 export interface CapabilityFixtureState {
-  schema: "paperclip.capability.mock-state.v1";
+  schema: "wardmote.capability.mock-state.v1";
   revision: number;
   clock: { epochMs: number; tick: number };
   counters: Record<string, number>;
@@ -336,7 +336,7 @@ export interface CapabilityFixtureState {
 }
 
 export interface CapabilityRunContext {
-  schema: "paperclip.capability.run-context.v1";
+  schema: "wardmote.capability.run-context.v1";
   company: Pick<CapabilityFixtureCompany, "id" | "name" | "issuePrefix" | "status">;
   actor: Pick<CapabilityFixtureActor, "id" | "name" | "role" | "status" | "capabilityGrants">;
   activeTask: CapabilityFixtureTask;
@@ -599,7 +599,7 @@ export function createCapabilityFixtureState(seed: CapabilityFixtureSeed = {}): 
     })),
   ];
   return {
-    schema: "paperclip.capability.mock-state.v1",
+    schema: "wardmote.capability.mock-state.v1",
     revision: 0,
     clock: { epochMs: seed.epochMs ?? Date.UTC(2026, 7, 9), tick: 0 },
     counters: {},

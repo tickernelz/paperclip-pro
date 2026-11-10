@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://paperclip.dev/schemas/prp/v1/stop-reason.schema.json",
+  "$id": "https://wardmote.dev/schemas/prp/v1/stop-reason.schema.json",
   "title": "PRP terminal stop reason receipt",
   "type": "object",
   "required": [
@@ -15,7 +15,7 @@
     "aggregate"
   ],
   "properties": {
-    "schema": { "const": "paperclip.prp.stop_reason.v1" },
+    "schema": { "const": "wardmote.prp.stop_reason.v1" },
     "schemaVersion": { "const": 1 },
     "receiptId": { "$ref": "#/$defs/stableId" },
     "kind": { "enum": ["budget", "cost"] },

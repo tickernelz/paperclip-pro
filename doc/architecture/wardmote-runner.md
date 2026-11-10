@@ -204,7 +204,7 @@ the authenticated connection binding.
 
 ## Structured input
 
-Questions use `paperclip.question_set.v1`. Responses use the matching canonical
+Questions use `wardmote.question_set.v1`. Responses use the matching canonical
 response contract. Drivers translate between these provider-neutral records and
 provider-native input APIs.
 

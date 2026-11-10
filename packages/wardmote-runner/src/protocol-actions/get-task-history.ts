@@ -44,7 +44,7 @@ export const getTaskHistoryAction = {
   "live": {
     "order": 1,
     "descriptor": {
-      "schema": "paperclip.semantic-tool.v1",
+      "schema": "wardmote.semantic-tool.v1",
       "operationId": "get_task_history",
       "version": 1,
       "title": "Get active task history",
@@ -79,7 +79,7 @@ export const getTaskHistoryAction = {
   "scenario": {
     "order": 1,
     "successExample": {
-      "schema": "paperclip.capability.tool-result.v1",
+      "schema": "wardmote.capability.tool-result.v1",
       "ok": true,
       "operationId": "get_task_history",
       "operationResultId": "example-result",
@@ -109,7 +109,7 @@ export const getTaskHistoryAction = {
           "schema": {
             "type": "string",
             "enum": [
-              "paperclip.capability.tool-result.v1"
+              "wardmote.capability.tool-result.v1"
             ]
           },
           "ok": {

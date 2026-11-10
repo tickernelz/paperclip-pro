@@ -56,7 +56,7 @@ are the mock side of the [semantic tool catalog](capability-semantic-tools.md).
   value is deep-frozen. Canonical JSON with sorted keys backs every dedupe and
   replay comparison.
 - **Serializable.** `serialize()` / `restore()` round-trip under the schema tag
-  `paperclip.capability.mock-state.v1`.
+  `wardmote.capability.mock-state.v1`.
 - **Scripted faults.** A fault rule injects a bounded number of
   `retryable_error` or `lost_ack` effects; a lost-ack command commits once and
   returns its stored result on retry.

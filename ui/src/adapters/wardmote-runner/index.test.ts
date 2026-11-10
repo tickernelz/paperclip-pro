@@ -9,7 +9,7 @@ const piFailure = (overrides: Record<string, unknown> = {}, eventOverrides: Reco
     runId: "run-1", turnId: "turn-1", normalizedSessionId: "session-1",
     eventType: "provider.notice.recorded",
     payload: {
-      schema: "paperclip.provider.notice.v1", noticeId: "notice-1", category: "pi.runtime_failure",
+      schema: "wardmote.provider.notice.v1", noticeId: "notice-1", category: "pi.runtime_failure",
       severity: "error", summary: "Pi process exited with code 4", scope: "session",
       recoverable: false, userActionable: false,
       details: [{ name: "source.method", value: PI_NOTICE_METHOD },
@@ -207,7 +207,7 @@ describe("paperclip runner transcript projection", () => {
     }), "2026-08-21T12:00:00.000Z");
     event("item.started", { kind: "agentMessage", channel: "final", item: { id: "result-1", type: "agentMessage", phase: "final_answer", text: "" } });
     expect(event("item.delta", { kind: "agentMessage", channel: "final", text: "{\"schema\":" })).toEqual([]);
-    expect(event("item.delta", { kind: "agentMessage", channel: "final", text: "\"paperclip.run_result.v1\"}" })).toEqual([]);
+    expect(event("item.delta", { kind: "agentMessage", channel: "final", text: "\"wardmote.run_result.v1\"}" })).toEqual([]);
     expect(event("run.result.proposed", { summary: "Human-readable completion." }))
       .toEqual([
         expect.objectContaining({ kind: "run_result", summary: "Human-readable completion." }),
@@ -298,12 +298,12 @@ describe("paperclip runner transcript projection", () => {
     }), "2026-09-28T12:00:00.000Z");
     expect(event("runtime_request.created", { request: {
       requestId: "native-plan", requestKind: "runtime", type: "input", input: {
-        schema: "paperclip.question_set.v1", description,
+        schema: "wardmote.question_set.v1", description,
         questions: [{ id: questionId, prompt: "Review", required: true, answerMode: "single_select", options: [{ id: "accept", label: "Accept plan" }, { id: "reject", label: "Reject plan" }, { id: "cancel", label: "Cancel plan request" }] }],
       },
     } })).toEqual([expect.objectContaining({ questionSet: expect.objectContaining({ description, questions: [expect.objectContaining({ id: questionId })] }) })]);
     expect(event("runtime_request.resolved", { requestId: "native-plan", response: {
-      schema: "paperclip.question_response.v1", answers: { [questionId]: { selectedOptionIds: ["accept"] } },
+      schema: "wardmote.question_response.v1", answers: { [questionId]: { selectedOptionIds: ["accept"] } },
     } })).toEqual([expect.objectContaining({ questionSet: expect.objectContaining({ description }), response: expect.objectContaining({ answers: { [questionId]: { selectedOptionIds: ["accept"] } } }) })]);
   });
 
@@ -311,7 +311,7 @@ describe("paperclip runner transcript projection", () => {
     const entries = paperclipRunnerUIAdapter.parseStdoutLine(JSON.stringify({
       type: "paperclip.prp.event", event: { eventType: "runtime_request.created", payload: { request: {
         requestId: "oversized-plan", type: "input", input: {
-          schema: "paperclip.question_set.v1", description: "x".repeat(100_001),
+          schema: "wardmote.question_set.v1", description: "x".repeat(100_001),
           questions: [{ id: "plan-revision", prompt: "Review", answerMode: "single_select", options: [{ id: "accept", label: "Accept" }] }],
         },
       } } },
@@ -340,13 +340,13 @@ describe("paperclip runner transcript projection", () => {
       })]);
     expect(event("runtime_request.resolved", { requestId: "request-1" }))
       .toEqual([expect.objectContaining({ kind: "runtime_request", status: "resolved", prompt: "Allow command?", requestKind: "command_approval", turnId: "turn-1" })]);
-    expect(event("runtime_request.created", { request: { requestId: "request-2", requestKind: "runtime", type: "input", status: "pending", prompt: "Choose", input: { schema: "paperclip.question_set.v1", questions: [{ id: "environment", prompt: "Where?", required: true, answerMode: "single_select", options: [{ id: "staging", label: "Staging" }] }] } } }))
+    expect(event("runtime_request.created", { request: { requestId: "request-2", requestKind: "runtime", type: "input", status: "pending", prompt: "Choose", input: { schema: "wardmote.question_set.v1", questions: [{ id: "environment", prompt: "Where?", required: true, answerMode: "single_select", options: [{ id: "staging", label: "Staging" }] }] } } }))
       .toEqual([expect.objectContaining({ kind: "runtime_request", requestId: "request-2", status: "pending", requestType: "input" })]);
     expect(event("runtime_request.resolved", {
       requestId: "request-2",
       action: "submit",
       response: {
-        schema: "paperclip.question_response.v1",
+        schema: "wardmote.question_response.v1",
         answers: { environment: { selectedOptionIds: ["staging"] } },
       },
     })).toEqual([expect.objectContaining({
@@ -357,15 +357,15 @@ describe("paperclip runner transcript projection", () => {
       requestType: "input",
       resolvedAction: "submit",
       response: {
-        schema: "paperclip.question_response.v1",
+        schema: "wardmote.question_response.v1",
         answers: { environment: { selectedOptionIds: ["staging"] } },
       },
     })]);
     expect(event("runtime_request.created", { request: { requestId: "request-redacted", requestKind: "runtime", type: "input", status: "pending", prompt: "Choose", input: { schema: "***REDACTED***", questions: [{ id: "environment", prompt: "Where?", required: true, answerMode: "single_select", options: [{ id: "staging", label: "Staging" }] }] } } }))
-      .toEqual([expect.objectContaining({ kind: "runtime_request", requestId: "request-redacted", questionSet: expect.objectContaining({ schema: "paperclip.question_set.v1" }) })]);
+      .toEqual([expect.objectContaining({ kind: "runtime_request", requestId: "request-redacted", questionSet: expect.objectContaining({ schema: "wardmote.question_set.v1" }) })]);
     expect(event("runtime_request.expired", { requestId: "request-redacted", reason: "provider_process_lost" }))
       .toEqual([expect.objectContaining({ kind: "runtime_request", requestId: "request-redacted", status: "expired", prompt: "Choose", requestType: "input" })]);
-    expect(event("runtime_request.created", { request: { requestId: "request-cancel", requestKind: "runtime", type: "input", status: "pending", prompt: "Cancel me", input: { schema: "paperclip.question_set.v1", questions: [{ id: "reason", prompt: "Why?", required: false, answerMode: "text" }] } } }))
+    expect(event("runtime_request.created", { request: { requestId: "request-cancel", requestKind: "runtime", type: "input", status: "pending", prompt: "Cancel me", input: { schema: "wardmote.question_set.v1", questions: [{ id: "reason", prompt: "Why?", required: false, answerMode: "text" }] } } }))
       .toEqual([expect.objectContaining({ requestId: "request-cancel", status: "pending" })]);
     expect(event("runtime_request.resolved", { requestId: "request-cancel", action: "cancel" }))
       .toEqual([expect.objectContaining({ requestId: "request-cancel", status: "cancelled", resolvedAction: "cancel" })]);

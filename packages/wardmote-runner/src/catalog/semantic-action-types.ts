@@ -80,7 +80,7 @@ export interface WardmoteJsonSchema {
  * or invocation authority; a run-scoped authorization layer must do that.
  */
 export interface WardmoteSemanticActionDescriptor {
-  readonly schema: "paperclip.semantic-action.v1";
+  readonly schema: "wardmote.semantic-action.v1";
   readonly operationId: WardmoteSemanticActionId;
   readonly version: 1;
   readonly title: string;

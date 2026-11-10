@@ -6,15 +6,15 @@ import { createHash } from "node:crypto";
 import type { PrpStructuredRunResult, PrpTerminalState } from "../protocol/replay-contract.js";
 import { explicitTaskSkillNames, parseNativeRuntimeContext, type NativeRuntimeContextSnapshot } from "./runtime-context.js";
 
-export const NATIVE_EXECUTION_INPUT_SCHEMA_V1 = "paperclip.native-execution-input.v1" as const;
-export const NATIVE_EXECUTION_INPUT_SCHEMA_V2 = "paperclip.native-execution-input.v2" as const;
-export const NATIVE_EXECUTION_INPUT_SCHEMA_V3 = "paperclip.native-execution-input.v3" as const;
-export const NATIVE_EXECUTION_INPUT_SCHEMA_V6 = "paperclip.native-execution-input.v6" as const;
-export const NATIVE_EXECUTION_INPUT_SCHEMA_V4 = "paperclip.native-execution-input.v4" as const;
-export const NATIVE_EXECUTION_INPUT_SCHEMA = "paperclip.native-execution-input.v5" as const;
-export const NATIVE_MODEL_ENVELOPE_SCHEMA_V1 = "paperclip.native-model-envelope.v1" as const;
-export const NATIVE_MODEL_ENVELOPE_SCHEMA_V2 = "paperclip.native-model-envelope.v2" as const;
-export const NATIVE_MODEL_ENVELOPE_SCHEMA = "paperclip.native-model-envelope.v3" as const;
+export const NATIVE_EXECUTION_INPUT_SCHEMA_V1 = "wardmote.native-execution-input.v1" as const;
+export const NATIVE_EXECUTION_INPUT_SCHEMA_V2 = "wardmote.native-execution-input.v2" as const;
+export const NATIVE_EXECUTION_INPUT_SCHEMA_V3 = "wardmote.native-execution-input.v3" as const;
+export const NATIVE_EXECUTION_INPUT_SCHEMA_V6 = "wardmote.native-execution-input.v6" as const;
+export const NATIVE_EXECUTION_INPUT_SCHEMA_V4 = "wardmote.native-execution-input.v4" as const;
+export const NATIVE_EXECUTION_INPUT_SCHEMA = "wardmote.native-execution-input.v5" as const;
+export const NATIVE_MODEL_ENVELOPE_SCHEMA_V1 = "wardmote.native-model-envelope.v1" as const;
+export const NATIVE_MODEL_ENVELOPE_SCHEMA_V2 = "wardmote.native-model-envelope.v2" as const;
+export const NATIVE_MODEL_ENVELOPE_SCHEMA = "wardmote.native-model-envelope.v3" as const;
 export const NATIVE_SESSION_IDLE_TIMEOUT_MAX_MS = 86_400_000;
 
 export type NativeExecutionMode = "default" | "plan";
@@ -871,7 +871,7 @@ function parseCompletionSources(value: unknown): NativeCompletionSources {
 }
 
 export interface NativeContinuationEnvelope {
-  schema: "paperclip.native-continuation.v1";
+  schema: "wardmote.native-continuation.v1";
   events: string;
   completion: { revision: string; criterionIds: string[]; instruction: string };
 }
@@ -881,7 +881,7 @@ export function buildNativeModelEnvelope(input: NativeExecutionInput): NativeMod
 export function buildNativeModelEnvelope(input: NativeExecutionInput, options?: { resumedSession: boolean }): NativeModelEnvelopeV1 | NativeModelEnvelopeV2 | NativeModelEnvelopeV3 | NativeContinuationEnvelope {
   if (options?.resumedSession && "continuationPrompt" in input && input.continuationPrompt) {
     return {
-      schema: "paperclip.native-continuation.v1",
+      schema: "wardmote.native-continuation.v1",
       events: input.continuationPrompt,
       completion: {
         revision: input.completionContract.contract.revision,

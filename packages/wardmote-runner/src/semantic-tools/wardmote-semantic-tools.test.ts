@@ -525,7 +525,7 @@ function event(
   receipt: PrpSemanticToolEnvelope,
 ): PrpEvent {
   return {
-    schema: "paperclip.prp.event.v1",
+    schema: "wardmote.prp.event.v1",
     sourceEventId: `${eventType}:semantic_test`,
     sourceSeq: eventType === "mcp_app.tool_input" ? 1 : 2,
     sourceInstanceId: "runner_semantic_test",

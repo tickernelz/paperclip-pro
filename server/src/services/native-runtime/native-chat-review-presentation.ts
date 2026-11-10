@@ -23,7 +23,7 @@ import {
   resolveExternalChatResponseWaitAuthorizationInTransaction,
 } from "./chat-attachment-reuse.js";
 
-const SCHEMA = "paperclip.chat_review_response_presentation.v1";
+const SCHEMA = "wardmote.chat_review_response_presentation.v1";
 export class NativeChatReviewPresentationContentionError extends Error {
   constructor() {
     super(
@@ -146,7 +146,7 @@ async function reviewPresentationEvidence(
   const continuation = record(semantic.continuation);
   const assessed = record(assessment.assessmentJson);
   if (
-    semantic.schema !== "paperclip.run_result.v1" ||
+    semantic.schema !== "wardmote.run_result.v1" ||
     semantic.reportedWorkDisposition !== "yielded" ||
     record(canonical.terminal).runTerminalState !== "succeeded" ||
     continuation.kind !== "response_wake" ||

@@ -72,7 +72,7 @@ export const requestHumanInputAction = {
   "live": {
     "order": 8,
     "descriptor": {
-      "schema": "paperclip.semantic-tool.v1",
+      "schema": "wardmote.semantic-tool.v1",
       "operationId": "request_human_input",
       "version": 1,
       "title": "Request structured human input",
@@ -196,7 +196,7 @@ export const requestHumanInputAction = {
   "scenario": {
     "order": 11,
     "successExample": {
-      "schema": "paperclip.capability.tool-result.v1",
+      "schema": "wardmote.capability.tool-result.v1",
       "ok": true,
       "operationId": "request_human_input",
       "operationResultId": "example-result",
@@ -272,7 +272,7 @@ export const requestHumanInputAction = {
           "schema": {
             "type": "string",
             "enum": [
-              "paperclip.capability.tool-result.v1"
+              "wardmote.capability.tool-result.v1"
             ]
           },
           "ok": {

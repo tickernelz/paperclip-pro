@@ -162,7 +162,7 @@ describe("Capability semantic catalog and authorization", () => {
     });
     const found = dispatcher.discoverTools(OPEN.identity.runId, "find company agents", { namespace: "discovery" });
     expect(found.operations.map((tool) => tool.name)).toEqual(["list_agents", "get_agent"]);
-    expect(found.operations.every((tool) => tool.annotations.semanticContract === "paperclip.semantic-tool.v1")).toBe(true);
+    expect(found.operations.every((tool) => tool.annotations.semanticContract === "wardmote.semantic-tool.v1")).toBe(true);
     expect(JSON.stringify(found)).not.toContain("list_approvals");
   });
 

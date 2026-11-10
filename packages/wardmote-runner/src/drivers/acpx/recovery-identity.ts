@@ -9,7 +9,7 @@ import type { AcpxExpectedSessionIdentity } from "./sidecar-protocol.js";
 import type { QualifiedAcpxProfile } from "./qualified-profiles.js";
 
 export const ACPX_IDENTITY_RECORD_SCHEMA =
-  "paperclip.runner.acpx-identity.v2" as const;
+  "wardmote.runner.acpx-identity.v2" as const;
 
 export interface AcpxRecoveryBinding {
   normalizedSessionId: string;

@@ -1279,7 +1279,7 @@ function AskUserQuestionsCard({
           draftKey={`issue-question:${interaction.companyId}:${interaction.id}`}
           disabled={!onSubmitInteractionAnswers}
           initialResponse={interaction.result?.answers ? {
-            schema: "paperclip.question_response.v1",
+            schema: "wardmote.question_response.v1",
             answers: Object.fromEntries(interaction.result.answers.map((answer) => [
               answer.questionId,
               interaction.payload.questionSet!.questions.find((question) => question.id === answer.questionId)?.answerMode === "text"

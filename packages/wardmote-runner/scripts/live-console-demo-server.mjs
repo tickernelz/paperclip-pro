@@ -34,7 +34,7 @@ const server = new LiveConsoleDemoServer({
 
 const address = await server.start();
 process.stdout.write(`${JSON.stringify({
-  schema: "paperclip.runner.live-console.server.v1",
+  schema: "wardmote.runner.live-console.server.v1",
   ...address,
   workingDirectory,
   providerAuthentication: "server-side",

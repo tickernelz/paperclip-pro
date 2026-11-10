@@ -11,7 +11,7 @@ import { getSecretProvider } from "../secrets/provider-registry.js";
 // Provider contracts (commercial personal chats, no Graph authorization added):
 // https://learn.microsoft.com/en-us/microsoftteams/platform/bots/how-to/bots-filesv4
 // https://learn.microsoft.com/en-us/graph/api/driveitem-createuploadsession
-const SCHEMA = "paperclip.teams.file-consent.v1";
+const SCHEMA = "wardmote.teams.file-consent.v1";
 const INSTALLED_HOOK = Symbol("paperclip.teams.file-consent.hook");
 const MAX_RESPONSE_BYTES = 64 * 1024;
 const MAX_URL_LENGTH = 8192;
@@ -108,7 +108,7 @@ async function sealPrivate(
   try {
     const prepared = await getSecretProvider("local_encrypted").createSecret({
       value: JSON.stringify({
-        schema: "paperclip.teams.file-private.v1",
+        schema: "wardmote.teams.file-private.v1",
         context: parsed.data,
         purpose,
         value,
@@ -136,7 +136,7 @@ async function openPrivate(
     if (Buffer.byteLength(plaintext) > 64 * 1024) throw new Error();
     const envelope = z
       .object({
-        schema: z.literal("paperclip.teams.file-private.v1"),
+        schema: z.literal("wardmote.teams.file-private.v1"),
         context: privateContextSchema,
         purpose: z.string(),
         value: z.unknown(),

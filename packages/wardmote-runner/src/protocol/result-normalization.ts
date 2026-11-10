@@ -134,7 +134,7 @@ export function normalizeLegacyPrpStructuredRunResult(value: unknown): unknown {
     reportedSchema === null
     || ["wardmote_finish", "wardmote_wardmote_finish", "wardmote_finish.v1"].includes(reportedSchema)
   ) {
-    normalized.schema = "paperclip.run_result.v1";
+    normalized.schema = "wardmote.run_result.v1";
   }
   const signals = normalizePrpResultSignals(source);
   if (["complete", "completed"].includes(String(normalized.reportedWorkDisposition))) {

@@ -197,7 +197,7 @@ class WardmoteRouteSemanticPort {
     const task = this.#state.tasks.find((candidate) => candidate.id === this.binding.taskId);
     if (task === undefined) throw new Error("semantic_conformance_task_missing");
     return {
-      schema: "paperclip.capability.run-context.v1",
+      schema: "wardmote.capability.run-context.v1",
       company: {
         id: this.ids.companyId,
         name: "Semantic Conformance",

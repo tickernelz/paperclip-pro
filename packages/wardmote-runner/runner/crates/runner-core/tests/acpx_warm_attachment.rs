@@ -24,7 +24,7 @@ impl Drop for Fixture {
 
 fn command(sequence: u64, kind: &str, payload: Value) -> Command {
     Command {
-        schema: "paperclip.prp.command.v1".to_owned(),
+        schema: "wardmote.prp.command.v1".to_owned(),
         command_id: format!("command-{sequence}"),
         controller_seq: sequence,
         command_type: kind.to_owned(),

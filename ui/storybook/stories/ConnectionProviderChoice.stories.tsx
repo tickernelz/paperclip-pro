@@ -82,7 +82,7 @@ function ProviderChoice({
       <QuestionForm
         id="provider-choice-review"
         questionSet={{
-          schema: "paperclip.question_set.v1",
+          schema: "wardmote.question_set.v1",
           questions: [
             {
               id: question.id,

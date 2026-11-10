@@ -117,7 +117,7 @@ fn pi_credential_environment_keys(binding: Option<&str>) -> Result<Vec<String>, 
         return Err(invalid());
     }
     let value: Binding = serde_json::from_str(raw).map_err(|_| invalid())?;
-    if value.schema != "paperclip.acpx_credential_binding.v1"
+    if value.schema != "wardmote.acpx_credential_binding.v1"
         || value.agent != "pi"
         || !is_stable_id(&value.session_id, SHORT_STABLE_ID_CHARS)
         || value.names.len() > 128
@@ -942,14 +942,14 @@ mod tests {
             "WARDMOTE_NATIVE_MCP_TOKEN",
             "INVALID-NAME",
         ] {
-            let binding = json!({"schema":"paperclip.acpx_credential_binding.v1", "agent":"pi", "sessionId":"session-1", "names":[name]});
+            let binding = json!({"schema":"wardmote.acpx_credential_binding.v1", "agent":"pi", "sessionId":"session-1", "names":[name]});
             assert!(pi_credential_environment_keys(Some(&binding.to_string())).is_err());
         }
         for binding in [
             json!({"schema":"other", "agent":"pi", "sessionId":"session-1", "names":[]}),
-            json!({"schema":"paperclip.acpx_credential_binding.v1", "agent":"cursor", "sessionId":"session-1", "names":[]}),
-            json!({"schema":"paperclip.acpx_credential_binding.v1", "agent":"pi", "sessionId":"session-1", "names":["MY_PI_KEY", "MY_PI_KEY"]}),
-            json!({"schema":"paperclip.acpx_credential_binding.v1", "agent":"pi", "sessionId":"session-1", "names":[], "extra":true}),
+            json!({"schema":"wardmote.acpx_credential_binding.v1", "agent":"cursor", "sessionId":"session-1", "names":[]}),
+            json!({"schema":"wardmote.acpx_credential_binding.v1", "agent":"pi", "sessionId":"session-1", "names":["MY_PI_KEY", "MY_PI_KEY"]}),
+            json!({"schema":"wardmote.acpx_credential_binding.v1", "agent":"pi", "sessionId":"session-1", "names":[], "extra":true}),
         ] {
             assert!(pi_credential_environment_keys(Some(&binding.to_string())).is_err());
         }
@@ -964,7 +964,7 @@ mod tests {
         )))
         .unwrap();
         for name in names {
-            let binding = json!({"schema":"paperclip.acpx_credential_binding.v1", "agent":"pi", "sessionId":"session-1", "names":[name]});
+            let binding = json!({"schema":"wardmote.acpx_credential_binding.v1", "agent":"pi", "sessionId":"session-1", "names":[name]});
             assert!(pi_credential_environment_keys(Some(&binding.to_string())).is_err());
         }
     }
@@ -972,7 +972,7 @@ mod tests {
     #[test]
     fn pi_custom_credential_names_follow_the_controller_contract() {
         let names = vec!["LD_API_KEY", "DYLD_API_KEY", "MY_PI_SERVICE_KEY"];
-        let binding = json!({"schema":"paperclip.acpx_credential_binding.v1", "agent":"pi", "sessionId":"session-1", "names":names});
+        let binding = json!({"schema":"wardmote.acpx_credential_binding.v1", "agent":"pi", "sessionId":"session-1", "names":names});
         assert_eq!(
             pi_credential_environment_keys(Some(&binding.to_string())).unwrap(),
             names

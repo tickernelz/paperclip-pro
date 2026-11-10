@@ -24,7 +24,7 @@ describe("runner-verified workspace diffs", () => {
     const after = await captureWardmoteWorkspace(root);
     const diff = diffWardmoteWorkspace(before, after, "turn-1:workspace");
 
-    expect(diff?.schema).toBe("paperclip.workspace.diff.v1");
+    expect(diff?.schema).toBe("wardmote.workspace.diff.v1");
     expect(diff?.source).toBe("runner_verified");
     expect(diff?.files.map((file) => [file.path, file.operation])).toEqual([
       ["create.txt", "create"],

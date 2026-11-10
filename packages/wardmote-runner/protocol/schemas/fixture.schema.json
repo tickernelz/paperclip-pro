@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://paperclip.dev/schemas/prp/v1/fixture.schema.json",
+  "$id": "https://wardmote.dev/schemas/prp/v1/fixture.schema.json",
   "title": "PRP scripted replay fixture",
   "type": "object",
   "required": [
@@ -17,7 +17,7 @@
   ],
   "properties": {
     "schema": {
-      "const": "paperclip.prp.fixture.v1"
+      "const": "wardmote.prp.fixture.v1"
     },
     "fixtureVersion": {
       "const": 1
@@ -40,18 +40,18 @@
       "maxLength": 1000
     },
     "identity": {
-      "$ref": "https://paperclip.dev/schemas/prp/v1/identity.schema.json"
+      "$ref": "https://wardmote.dev/schemas/prp/v1/identity.schema.json"
     },
     "capabilities": {
       "oneOf": [
         {
-          "$ref": "https://paperclip.dev/schemas/prp/v1/capabilities.schema.json"
+          "$ref": "https://wardmote.dev/schemas/prp/v1/capabilities.schema.json"
         },
         {
-          "$ref": "https://paperclip.dev/schemas/prp/v2/capabilities.schema.json"
+          "$ref": "https://wardmote.dev/schemas/prp/v2/capabilities.schema.json"
         },
         {
-          "$ref": "https://paperclip.dev/schemas/prp/v3/capabilities.schema.json"
+          "$ref": "https://wardmote.dev/schemas/prp/v3/capabilities.schema.json"
         }
       ]
     },
@@ -60,13 +60,13 @@
       "items": {
         "oneOf": [
           {
-            "$ref": "https://paperclip.dev/schemas/prp/v1/command.schema.json"
+            "$ref": "https://wardmote.dev/schemas/prp/v1/command.schema.json"
           },
           {
-            "$ref": "https://paperclip.dev/schemas/prp/v2/command.schema.json"
+            "$ref": "https://wardmote.dev/schemas/prp/v2/command.schema.json"
           },
           {
-            "$ref": "https://paperclip.dev/schemas/prp/v3/command.schema.json"
+            "$ref": "https://wardmote.dev/schemas/prp/v3/command.schema.json"
           }
         ]
       }
@@ -77,13 +77,13 @@
       "items": {
         "oneOf": [
           {
-            "$ref": "https://paperclip.dev/schemas/prp/v1/event.schema.json"
+            "$ref": "https://wardmote.dev/schemas/prp/v1/event.schema.json"
           },
           {
-            "$ref": "https://paperclip.dev/schemas/prp/v2/event.schema.json"
+            "$ref": "https://wardmote.dev/schemas/prp/v2/event.schema.json"
           },
           {
-            "$ref": "https://paperclip.dev/schemas/prp/v3/event.schema.json"
+            "$ref": "https://wardmote.dev/schemas/prp/v3/event.schema.json"
           }
         ]
       }
@@ -91,11 +91,11 @@
     "requests": {
       "type": "array",
       "items": {
-        "$ref": "https://paperclip.dev/schemas/prp/v1/request.schema.json"
+        "$ref": "https://wardmote.dev/schemas/prp/v1/request.schema.json"
       }
     },
     "result": {
-      "$ref": "https://paperclip.dev/schemas/prp/v1/result.schema.json"
+      "$ref": "https://wardmote.dev/schemas/prp/v1/result.schema.json"
     }
   },
   "additionalProperties": true

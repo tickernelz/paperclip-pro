@@ -38,7 +38,7 @@ export function hasPiNativeMemoryRead(events: readonly Record<string, any>[], no
   const target = remoteRun ? `.wardmote-runtime/agent-files/${remoteRun.agentId}/${remoteRun.runId}/${PI_NATIVE_MEMORY_PATH}` : null;
   const tools = events.filter(row => row.eventType === "tool.execution.completed")
     .map(row => row.payload?.prpEvent?.payload)
-    .filter(payload => payload?.schema === "paperclip.tool.execution.v1" && payload.transport === "builtin");
+    .filter(payload => payload?.schema === "wardmote.tool.execution.v1" && payload.transport === "builtin");
   const memoryReads = tools.filter(payload => {
     if (payload.name !== "read" || payload.operation !== "read" || payload.status !== "completed"
       || payload.target !== target || payload.readOnly !== true || payload.outputTruncated !== false
@@ -113,7 +113,7 @@ export function gradePiNativeAnswers(actual: unknown, name: string, draft: strin
 export function hasFailedPiWrite(events: readonly Record<string, any>[], path: string): boolean {
   return events.some(row => {
     const payload = row.payload?.prpEvent?.payload;
-    return row.eventType === "tool.execution.completed" && payload?.schema === "paperclip.tool.execution.v1"
+    return row.eventType === "tool.execution.completed" && payload?.schema === "wardmote.tool.execution.v1"
       && payload.operation === "edit" && payload.status === "failed"
       && payload.target === path;
   });
@@ -123,7 +123,7 @@ export function hasFailedPiWrite(events: readonly Record<string, any>[], path: s
 export function hasPiCrossRootDenial(events: readonly Record<string, any>[]): boolean {
   const denied = events.filter(row => {
     const payload = row.payload?.prpEvent?.payload;
-    return row.eventType === "tool.execution.completed" && payload?.schema === "paperclip.tool.execution.v1"
+    return row.eventType === "tool.execution.completed" && payload?.schema === "wardmote.tool.execution.v1"
       && payload.transport === "builtin" && payload.operation === "edit" && payload.name === "write"
       && payload.status === "failed" && payload.target === null
       && typeof payload.executionId === "string" && payload.executionId.length > 0

@@ -124,7 +124,7 @@ function questionForm() {
         },
       ],
       questionSet: {
-        schema: "paperclip.question_set.v1",
+        schema: "wardmote.question_set.v1",
         title: "Release details",
         submitLabel: "Continue",
         questions: [

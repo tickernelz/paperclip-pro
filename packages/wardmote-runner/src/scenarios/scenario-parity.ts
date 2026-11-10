@@ -213,7 +213,7 @@ export function capabilityScenarioParity(input: CapabilityParityInput): Capabili
         : "pass";
 
   return {
-    schema: "paperclip.capability.scenario-parity.v1",
+    schema: "wardmote.capability.scenario-parity.v1",
     verdict,
     assertions,
     forbidden,
@@ -329,7 +329,7 @@ export function capabilityTurnParity(input: CapabilityParityInput): CapabilityPa
         : "pass";
 
   return {
-    schema: "paperclip.capability.scenario-parity.v1",
+    schema: "wardmote.capability.scenario-parity.v1",
     verdict,
     assertions,
     forbidden,

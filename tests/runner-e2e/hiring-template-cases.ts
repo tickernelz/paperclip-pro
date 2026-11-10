@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import type { RunnerProfileFixture, RunnerTaskFixture } from "./types.js";
 
-export const HIRING_TEMPLATE_GRADER_VERSION = "paperclip.hiring-templates.v3";
+export const HIRING_TEMPLATE_GRADER_VERSION = "wardmote.hiring-templates.v3";
 export const HIRING_TEMPLATE_SKILL_KEY = "tickernelz/wardmote/wardmote-create-agent";
 export const HIRING_TEMPLATE_READ_FILES = [
   "SKILL.md",

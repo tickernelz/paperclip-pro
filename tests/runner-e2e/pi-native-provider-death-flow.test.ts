@@ -9,11 +9,11 @@ vi.mock("@playwright/test", () => ({ expect: (locator: { count(): number }) => (
   toBeVisible: async () => expect(locator.count()).toBe(1),
 }) }));
 function fixture(fallback = true) {
-  const question = { schema: "paperclip.question_set.v1", questions: [{ id: "answer", header: "Pi native provider death", prompt: "Answer", answerMode: "text", required: true }] };
-  const request = { schema: "paperclip.runtime_request.v2", requestKind: "runtime", type: "input", status: "pending", requestId: "request", turnId: "turn", itemId: "request", input: question,
+  const question = { schema: "wardmote.question_set.v1", questions: [{ id: "answer", header: "Pi native provider death", prompt: "Answer", answerMode: "text", required: true }] };
+  const request = { schema: "wardmote.runtime_request.v2", requestKind: "runtime", type: "input", status: "pending", requestId: "request", turnId: "turn", itemId: "request", input: question,
     origin: { adapter: "acpx-runtime-sidecar", provider: "pi", method: "elicitation/create" } };
   const wrap = (eventType: string, sourceSeq: number, payload: Row): Row => ({ companyId: "company", runId: "run", seq: sourceSeq, protocolSchemaVersion: 1, eventType,
-    payload: { prpEvent: { schema: "paperclip.prp.event.v1", schemaVersion: 1, sourceKind: "runner", eventType, runId: "run", turnId: "turn", itemId: "request",
+    payload: { prpEvent: { schema: "wardmote.prp.event.v1", schemaVersion: 1, sourceKind: "runner", eventType, runId: "run", turnId: "turn", itemId: "request",
       normalizedSessionId: "session", sourceInstanceId: "runner", sourceSeq, sourceEventId: `runner:run:${sourceSeq}`, payload } } });
   const state = { issue: { id: "issue", companyId: "company", status: "in_progress" }, runs: [{ id: "run", companyId: "company", nativeIssueId: "issue", runtimeMode: "native", status: "running", nativeSessionId: "session", runnerInstanceId: "runner" } as Row],
     interactions: [{ id: "original", companyId: "company", issueId: "issue", kind: "ask_user_questions", sourceRunId: "run", status: "pending", result: null,

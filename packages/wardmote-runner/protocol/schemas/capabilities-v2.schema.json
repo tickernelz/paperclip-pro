@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://paperclip.dev/schemas/prp/v2/capabilities.schema.json",
+  "$id": "https://wardmote.dev/schemas/prp/v2/capabilities.schema.json",
   "title": "PRP v2 negotiated capabilities",
   "type": "object",
   "required": [
@@ -16,7 +16,7 @@
     "sessionGoals"
   ],
   "properties": {
-    "schema": { "const": "paperclip.prp.capabilities.v2" },
+    "schema": { "const": "wardmote.prp.capabilities.v2" },
     "sessionReusePolicy": { "enum": ["new_per_run", "reuse_per_issue", "reuse_per_workspace"] },
     "driver": {
       "type": "object",
@@ -33,7 +33,7 @@
     "runtimeRequests": { "type": "boolean" },
     "structuredResult": { "type": "boolean" },
     "typedEvents": { "type": "boolean" },
-    "sessionGoals": { "$ref": "https://paperclip.dev/schemas/prp/v2/session-goal.schema.json#/$defs/capability" },
+    "sessionGoals": { "$ref": "https://wardmote.dev/schemas/prp/v2/session-goal.schema.json#/$defs/capability" },
     "unsupported": {
       "type": "array",
       "items": { "type": "string", "minLength": 1 },

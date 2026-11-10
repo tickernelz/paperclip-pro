@@ -62,7 +62,7 @@ export const finishTaskAction = {
   "live": {
     "order": 10,
     "descriptor": {
-      "schema": "paperclip.semantic-tool.v1",
+      "schema": "wardmote.semantic-tool.v1",
       "operationId": "finish_task",
       "version": 1,
       "title": "Finish active task",
@@ -149,7 +149,7 @@ export const finishTaskAction = {
   "scenario": {
     "order": 7,
     "successExample": {
-      "schema": "paperclip.capability.tool-result.v1",
+      "schema": "wardmote.capability.tool-result.v1",
       "ok": true,
       "operationId": "finish_task",
       "operationResultId": "example-result",
@@ -187,7 +187,7 @@ export const finishTaskAction = {
           "schema": {
             "type": "string",
             "enum": [
-              "paperclip.capability.tool-result.v1"
+              "wardmote.capability.tool-result.v1"
             ]
           },
           "ok": {

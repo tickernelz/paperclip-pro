@@ -50,6 +50,6 @@ for (const artifact of verified) {
     rmSync(staged, { force: true });
   }
 }
-writeFileSync(join(root, "dist", "bin", "release-manifest.json"), JSON.stringify({schema:"paperclip.runner.release-binaries.v1",sourceRevision:manifest.sourceRevision,platforms,
+writeFileSync(join(root, "dist", "bin", "release-manifest.json"), JSON.stringify({schema:"wardmote.runner.release-binaries.v1",sourceRevision:manifest.sourceRevision,platforms,
   remoteProviderPack: { target: "linux-x64", digest: packIdentity.digest, sourceRevision: packIdentity.payload.runnerSourceRevision }},null,2)+"\n");
 console.log("Staged verified release daemons for " + required.join(", "));

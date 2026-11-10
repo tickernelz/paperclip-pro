@@ -149,7 +149,7 @@ describe("Codex app-server Codex driver", () => {
       turn: { id: turn.turnId, status: "inProgress" },
     });
     const first = {
-      schema: "paperclip.workspace.diff.v1",
+      schema: "wardmote.workspace.diff.v1",
       changeSetId: `${turn.turnId}:workspace`,
       revision: 1,
       source: "harness_reported",
@@ -269,7 +269,7 @@ describe("Codex app-server Codex driver", () => {
       threadId: "thread-1",
       turnId: turn.turnId,
       workspaceChange: {
-        schema: "paperclip.workspace.diff.v1",
+        schema: "wardmote.workspace.diff.v1",
         changeSetId: `${turn.turnId}:workspace`,
         revision: 1,
         source: "harness_reported",

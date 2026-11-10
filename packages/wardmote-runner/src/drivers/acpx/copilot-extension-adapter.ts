@@ -29,7 +29,7 @@ export function createCopilotProfileExtensionAdapter(context: AcpxProfileExtensi
         itemId: noticeId,
         eventType: "provider.notice.recorded",
         payload: {
-          schema: "paperclip.provider.notice.v1", noticeId,
+          schema: "wardmote.provider.notice.v1", noticeId,
           severity: event.kind === "capability_gap" ? "warning" : "info",
           category: `copilot.${event.sourceType}`, scope: "session",
           recoverable: true, userActionable: false,

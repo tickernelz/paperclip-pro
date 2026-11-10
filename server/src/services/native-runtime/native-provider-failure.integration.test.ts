@@ -58,13 +58,13 @@ describe("native completed failure diagnostics", () => {
       const completionInput = buildNativeCompletionContract(issue, { revision: contract.revision });
       await db.insert(nativeRunFinalizations).values({ runId, companyId, issueId, phase: "observed" });
       const execution: NativeExecutionInputV1 = {
-        schema: "paperclip.native-execution-input.v1",
+        schema: "wardmote.native-execution-input.v1",
         binding: { companyId, runId, issueId, agentId, executionWorkspaceId: runId },
         provider: { kind: "codex", model },
         task: { identifier: issueId, title: issue.title, description: null, prompt: "Reply to the current message.", workMode: "standard" },
         workspace: { cwd: "/tmp", repoUrl: null, repoRef: null, branchName: null },
         session: { normalizedSessionId: native.normalizedSessionId, driverKind: "codex_app_server", protocolVersion: 1, lifecyclePolicy: { mode: "per_turn", idleTimeoutMs: null } },
-        completionContract: { id: contract.id, sha256: contract.canonicalSha256, schemaVersion: "paperclip.completion-contract.v1", contract: completionInput },
+        completionContract: { id: contract.id, sha256: contract.canonicalSha256, schemaVersion: "wardmote.completion-contract.v1", contract: completionInput },
         interactionResponses: [], credentialBindings: [],
       };
       await db.update(heartbeatRuns).set({ runnerProfileJson: { nativeExecutionInput: execution } }).where(eq(heartbeatRuns.id, runId));
@@ -91,7 +91,7 @@ describe("native completed failure diagnostics", () => {
         else expect(review?.interaction.status).toBe(scenario === "resolved-review" ? "accepted" : "pending");
       }
       const event: PrpEvent = {
-        schema: "paperclip.prp.event.v1", runId, normalizedSessionId: native.normalizedSessionId,
+        schema: "wardmote.prp.event.v1", runId, normalizedSessionId: native.normalizedSessionId,
         turnId: native.turnId, sourceInstanceId: native.runnerInstanceId, sourceEventId: "model-terminal", sourceSeq: 1,
         sourceKind: "runner", eventType: "turn.failed", schemaVersion: 1, priority: 0, emittedAt: new Date().toISOString(),
         payload: { status: "failed", error: { codexErrorInfo: "other", message: JSON.stringify({

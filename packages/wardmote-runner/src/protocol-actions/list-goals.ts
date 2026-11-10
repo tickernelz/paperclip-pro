@@ -39,7 +39,7 @@ export const listGoalsAction = {
       "ok": true,
       "operationId": "list_goals",
       "result": {
-        "schema": "paperclip.capability.tool-result.v1",
+        "schema": "wardmote.capability.tool-result.v1",
         "ok": true,
         "operationId": "list_goals",
         "operationResultId": "example",
@@ -69,7 +69,7 @@ export const listGoalsAction = {
           "schema": {
             "type": "string",
             "enum": [
-              "paperclip.capability.tool-result.v1"
+              "wardmote.capability.tool-result.v1"
             ]
           },
           "ok": {

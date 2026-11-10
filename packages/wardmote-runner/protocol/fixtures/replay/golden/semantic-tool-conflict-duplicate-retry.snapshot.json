@@ -1,8 +1,8 @@
 {
-  "schema": "paperclip.prp.session-snapshot.v1",
+  "schema": "wardmote.prp.session-snapshot.v1",
   "fixtureName": "Semantic tool conflict and duplicate retry",
   "identity": {
-    "schema": "paperclip.prp.identity.v1",
+    "schema": "wardmote.prp.identity.v1",
     "companyId": "company_semantic_retry",
     "issueId": "issue_semantic_retry",
     "runId": "run_semantic_retry",
@@ -12,7 +12,7 @@
     "driverSessionId": "driver_semantic_retry"
   },
   "capabilities": {
-    "schema": "paperclip.prp.capabilities.v1",
+    "schema": "wardmote.prp.capabilities.v1",
     "sessionReusePolicy": "new_per_run",
     "driver": {
       "kind": "provider-neutral",
@@ -25,7 +25,7 @@
     "structuredResult": true,
     "typedEvents": true,
     "semanticTools": {
-      "schema": "paperclip.prp.semantic_tools.v1",
+      "schema": "wardmote.prp.semantic_tools.v1",
       "schemaVersion": 1,
       "operations": [
         {
@@ -46,7 +46,7 @@
   "items": [],
   "requests": [],
   "proposedResult": {
-    "schema": "paperclip.run_result.v1",
+    "schema": "wardmote.run_result.v1",
     "reportedWorkDisposition": "done",
     "summary": "The revision-safe retry committed once.",
     "completionClaim": {

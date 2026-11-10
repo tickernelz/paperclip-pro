@@ -63,7 +63,7 @@ export function recordWorkspaceChanges(
       });
     if (files.length === 0) return;
     const payload = {
-      schema: "paperclip.workspace.diff.v1",
+      schema: "wardmote.workspace.diff.v1",
       changeSetId: `${turnId}:workspace`,
       revision:
         Number(record(state.workspaceChangesByTurn.get(turnId)).revision ?? 0) +
@@ -95,7 +95,7 @@ export function recordTurnDiff(
 export function recordCanonicalWorkspaceChange(
   state: CodexSessionState,turnId: string, value: unknown): void {
     const candidate = record(value);
-    if (candidate.schema !== "paperclip.workspace.diff.v1") return;
+    if (candidate.schema !== "wardmote.workspace.diff.v1") return;
     if (!Array.isArray(candidate.files)) return;
     const files = candidate.files.slice(0, 2_000).flatMap((value) => {
       const file = record(value);
@@ -167,7 +167,7 @@ function recordWorkspaceSnapshot(
         ? requestedRevision
         : 1;
     const payload = {
-      schema: "paperclip.workspace.diff.v1",
+      schema: "wardmote.workspace.diff.v1",
       changeSetId: `${turnId}:workspace`,
       revision: Math.max(priorRevision + 1, incomingRevision),
       source: "harness_reported",

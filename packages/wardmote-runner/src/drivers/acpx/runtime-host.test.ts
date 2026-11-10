@@ -368,7 +368,7 @@ describe("ACPX runtime host", () => {
           dependencies,
         );
         let message = JSON.stringify({
-          schema: "paperclip.native-model-envelope.v2",
+          schema: "wardmote.native-model-envelope.v2",
           task: { description: "Use /assigned", prompt: "A new direct user request" },
           interactionResponses: index ? [{ response: { status: "accepted" } }] : [],
         });
@@ -398,7 +398,7 @@ describe("ACPX runtime host", () => {
           dependencies,
         );
         const message = JSON.stringify({
-          schema: "paperclip.native-model-envelope.v3",
+          schema: "wardmote.native-model-envelope.v3",
           requestedSkills: ["assigned"],
           task: {
             identifier: "PAP-1",
@@ -420,7 +420,7 @@ describe("ACPX runtime host", () => {
         { ...options, runtimeContext: context }, dependencies,
       );
       const ordinaryMessage = JSON.stringify({
-        schema: "paperclip.native-model-envelope.v2",
+        schema: "wardmote.native-model-envelope.v2",
         task: { description: "An ordinary task", prompt: "Mention /assigned in a note" },
       });
       ordinary.startTurn({ text: ordinaryMessage, requestId: "ordinary-task" });
@@ -432,7 +432,7 @@ describe("ACPX runtime host", () => {
         { ...options, runtimeContext: context }, dependencies,
       );
       const ordinaryPreparedMessage = JSON.stringify({
-        schema: "paperclip.native-model-envelope.v3",
+        schema: "wardmote.native-model-envelope.v3",
         requestedSkills: [],
         task: {
           identifier: "PAP-2",
@@ -685,7 +685,7 @@ describe("ACPX runtime host", () => {
       dependencies,
     );
     expect(host.identity()).toMatchObject({
-      schema: "paperclip.runner.acpx-identity.v2",
+      schema: "wardmote.runner.acpx-identity.v2",
       acpxRecordId: "record-1",
       requestedModel: "gpt-5.6-sol",
       permissionMode: "approve-reads",

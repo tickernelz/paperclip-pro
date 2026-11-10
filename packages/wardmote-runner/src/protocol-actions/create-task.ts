@@ -73,7 +73,7 @@ export const createTaskAction = {
   "live": {
     "order": 22,
     "descriptor": {
-      "schema": "paperclip.semantic-tool.v1",
+      "schema": "wardmote.semantic-tool.v1",
       "operationId": "create_task",
       "version": 1,
       "title": "Create task",
@@ -302,7 +302,7 @@ export const createTaskAction = {
           "schema": {
             "type": "string",
             "enum": [
-              "paperclip.capability.tool-result.v1"
+              "wardmote.capability.tool-result.v1"
             ]
           },
           "ok": {

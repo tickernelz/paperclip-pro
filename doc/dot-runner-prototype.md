@@ -127,7 +127,7 @@ The registry has no MCP registration tool and no generic API executor.
 ## What is implemented
 
 - `DotHarnessDriver`: one turn per admitted run, explicit acceptance, bounded
-  lifetime, projected tools, progress and validated `paperclip.run_result.v1`
+  lifetime, projected tools, progress and validated `wardmote.run_result.v1`
   completion. Reports normal PRP events consumed by the existing native backend.
 - `createDotRunnerMcpBridge`: six tools on the existing authenticated endpoint:
   `wardmote_dot_inbox`, `wardmote_dot_read`, `wardmote_dot_accept`,
@@ -292,7 +292,7 @@ Observed server evidence (UTC):
 | 22:17:56 | Dot read the assignment using `wardmote_dot_read`. |
 | 22:18:10 | Dot accepted it; the native Runner emitted `turn.started`. |
 | 22:18:23 | Dot called `save_report` through `wardmote_dot_tool`; the lab saved exactly one report: `Dot received the Paperclip event. 17 + 25 = 42.` |
-| 22:18:38 | Dot submitted a valid `paperclip.run_result.v1`; the Runner emitted `run.result.proposed`, `turn.completed` and `run.terminal` with state `succeeded`. |
+| 22:18:38 | Dot submitted a valid `wardmote.run_result.v1`; the Runner emitted `run.result.proposed`, `turn.completed` and `run.terminal` with state `succeeded`. |
 | 22:18:50 | `events/unsubscribe` succeeded; no subscription remained. |
 
 Dot's final chat message confirmed event receipt and completion. It could not

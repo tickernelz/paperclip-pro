@@ -69,7 +69,7 @@ function interaction(
         },
       ],
       questionSet: {
-        schema: "paperclip.question_set.v1",
+        schema: "wardmote.question_set.v1",
         title: "Deployment details",
         submitLabel: "Continue",
         questions: [

@@ -1,8 +1,8 @@
 {
-  "schema": "paperclip.prp.session-snapshot.v1",
+  "schema": "wardmote.prp.session-snapshot.v1",
   "fixtureName": "Semantic governance target and continuation chain",
   "identity": {
-    "schema": "paperclip.prp.identity.v1",
+    "schema": "wardmote.prp.identity.v1",
     "companyId": "company_semantic_governance",
     "issueId": "issue_semantic_governance",
     "runId": "run_semantic_governance",
@@ -12,7 +12,7 @@
     "driverSessionId": "driver_semantic_governance"
   },
   "capabilities": {
-    "schema": "paperclip.prp.capabilities.v1",
+    "schema": "wardmote.prp.capabilities.v1",
     "sessionReusePolicy": "reuse_per_issue",
     "driver": {
       "kind": "provider-neutral",
@@ -25,7 +25,7 @@
     "structuredResult": true,
     "typedEvents": true,
     "semanticTools": {
-      "schema": "paperclip.prp.semantic_tools.v1",
+      "schema": "wardmote.prp.semantic_tools.v1",
       "schemaVersion": 1,
       "operations": [
         {
@@ -46,7 +46,7 @@
   "items": [],
   "requests": [],
   "proposedResult": {
-    "schema": "paperclip.run_result.v1",
+    "schema": "wardmote.run_result.v1",
     "reportedWorkDisposition": "yielded",
     "summary": "The immutable decision target is waiting on a bounded monitor continuation.",
     "completionClaim": {

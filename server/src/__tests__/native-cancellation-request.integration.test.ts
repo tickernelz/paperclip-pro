@@ -50,7 +50,7 @@ describe("atomic caller cancellation request ownership", () => {
   it("accepts only the original acknowledged identity on a terminal run", async () => {
     const { companyId, runId } = await fixture(), id = randomUUID();
     const run = await claimCancellationRequest(db, runId, companyId, id, "board-user");
-    await db.update(heartbeatRuns).set({ status: "cancelled", resultJson: { ...run.resultJson, nativeCancellation: { schema: "paperclip.native-cancellation.v1", intentId: cancellationIntentId(id), runId, companyId, scope: "run", dispatched: true, dispatchState: "acknowledged", intentAuditId: randomUUID(), acknowledgementAuditId: randomUUID() } } }).where(eq(heartbeatRuns.id, runId));
+    await db.update(heartbeatRuns).set({ status: "cancelled", resultJson: { ...run.resultJson, nativeCancellation: { schema: "wardmote.native-cancellation.v1", intentId: cancellationIntentId(id), runId, companyId, scope: "run", dispatched: true, dispatchState: "acknowledged", intentAuditId: randomUUID(), acknowledgementAuditId: randomUUID() } } }).where(eq(heartbeatRuns.id, runId));
     await expect(claimCancellationRequest(db, runId, companyId, id, "board-user")).resolves.toMatchObject({ status: "cancelled" });
     await expect(claimCancellationRequest(db, runId, companyId, randomUUID(), "board-user")).rejects.toMatchObject({ status: 409 });
     await db.update(heartbeatRuns).set({ resultJson: { ...run.resultJson, nativeCancellation: { intentId: cancellationIntentId(id) } } }).where(eq(heartbeatRuns.id, runId));

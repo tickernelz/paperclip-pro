@@ -8,10 +8,10 @@ use serde_json::Value;
 pub const PRP_PROTOCOL_MIN_VERSION: u64 = 1;
 pub const PRP_PROTOCOL_VERSION: u64 = 3;
 const PRP_FIXTURE_VERSION: u64 = 1;
-const PRP_FIXTURE_SCHEMA: &str = "paperclip.prp.fixture.v1";
-const PRP_SEMANTIC_TOOL_SCHEMA: &str = "paperclip.prp.semantic_tool.v1";
-const PRP_STOP_REASON_SCHEMA: &str = "paperclip.prp.stop_reason.v1";
-const PRP_SEMANTIC_TOOLS_CAPABILITY_SCHEMA: &str = "paperclip.prp.semantic_tools.v1";
+const PRP_FIXTURE_SCHEMA: &str = "wardmote.prp.fixture.v1";
+const PRP_SEMANTIC_TOOL_SCHEMA: &str = "wardmote.prp.semantic_tool.v1";
+const PRP_STOP_REASON_SCHEMA: &str = "wardmote.prp.stop_reason.v1";
+const PRP_SEMANTIC_TOOLS_CAPABILITY_SCHEMA: &str = "wardmote.prp.semantic_tools.v1";
 const MAX_EXACT_JSON_INTEGER: u64 = 9_007_199_254_740_991;
 const MAX_RECORDED_MISSING_SEQUENCES: u64 = 256;
 
@@ -142,7 +142,7 @@ pub fn reduce_replay_fixture(input: &str) -> Result<ReplayParitySummary, ReplayE
                 event.source_seq
             )));
         }
-        let expected_schema = format!("paperclip.prp.event.v{}", event.schema_version);
+        let expected_schema = format!("wardmote.prp.event.v{}", event.schema_version);
         if event.schema != expected_schema {
             return Err(ReplayError::invalid(format!(
                 "unsupported required event schema {}; expected {expected_schema}",

@@ -154,7 +154,7 @@ and terminal settlement at the process boundary. Copilot and Pi remain gated.
 Verified distributions are build-owned; no provider accepts an arbitrary executable.
 See [the rich ACP capability report](../../doc/architecture/runner-rich-acp-capabilities.md).
 
-Install Cursor explicitly with `paperclip-pro runtime setup cursor`; npm installation
+Install Cursor explicitly with `wardmote runtime setup cursor`; npm installation
 does not download it. Run setup as the OS user that runs Wardmote (the service
 account for a managed service). Setup writes to that account's
 `~/.paperclip-pro/runtimes/cursor/<platform>-<arch>/<closure-sha256>`, so a system-wide
@@ -409,7 +409,7 @@ The tracer's final line is stable:
 
 ```json
 {
-  "schemaVersion": "paperclip.runner.conformance.output.v1",
+  "schemaVersion": "wardmote.runner.conformance.output.v1",
   "runIdentity": {
     "runId": "run_conformance_0001",
     "sessionId": "session_conformance_0001"

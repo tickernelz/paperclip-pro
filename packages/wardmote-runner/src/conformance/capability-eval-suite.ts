@@ -88,7 +88,7 @@ export const CAPABILITY_LIVE_EVAL_GRANTS = Object.freeze([
 ]);
 
 export interface CapabilityEvalParityReport {
-  schema: "paperclip.capability.eval-parity-report.v1";
+  schema: "wardmote.capability.eval-parity-report.v1";
   cases: number;
   groups: string[];
   assertionClasses: AssertionClass[];
@@ -107,7 +107,7 @@ export async function runCapabilityEvalSuite(): Promise<CapabilityEvalParityRepo
   const codexSample = selectCodexSample(results);
   const surface = await toolSurfaceParity(codexSample);
   const report: CapabilityEvalParityReport = {
-    schema: "paperclip.capability.eval-parity-report.v1",
+    schema: "wardmote.capability.eval-parity-report.v1",
     cases: results.length,
     groups: [...new Set(results.map((result) => result.group))].sort(),
     assertionClasses: [...new Set(results.flatMap((result) => result.assertionClasses))].sort() as AssertionClass[],

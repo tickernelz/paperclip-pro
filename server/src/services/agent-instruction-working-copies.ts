@@ -314,7 +314,7 @@ export function agentInstructionWorkingCopyService(db: Db, options: { environmen
     // forever. Only discard copies with recorded stop proof and a terminal receipt.
     const cleanup = await db.select().from(copies).where(and(
       inArray(copies.state, [...completed, "unavailable"]), isNotNull(copies.processStoppedAt),
-      sql`${copies.receipt}->>'schema' = 'paperclip.agent-files.v1'`,
+      sql`${copies.receipt}->>'schema' = 'wardmote.agent-files.v1'`,
       or(sql`${copies.receipt} ? 'baseline'`, sql`${copies.receipt}->>'cleanupPending' = 'true'`),
       or(isNull(copies.nextAttemptAt), lte(copies.nextAttemptAt, new Date())),
     )).orderBy(asc(copies.updatedAt)).limit(20);
@@ -329,11 +329,11 @@ export function agentInstructionWorkingCopyService(db: Db, options: { environmen
     const pending = await db.select({ copy: copies, runtimeMode: heartbeatRuns.runtimeMode }).from(copies)
       .innerJoin(heartbeatRuns, and(eq(heartbeatRuns.companyId, copies.companyId), eq(heartbeatRuns.id, copies.runId)))
       .where(and(or(and(or(inArray(copies.state, ["prepared", "pending_collection", "unchanged_turn", "warm_saved"]),
-          and(eq(copies.state, "preparing"), sql`${copies.receipt}->>'schema' = 'paperclip.agent-files.v1'`)),
+          and(eq(copies.state, "preparing"), sql`${copies.receipt}->>'schema' = 'wardmote.agent-files.v1'`)),
           lte(copies.attempts, MAX_COLLECTION_ATTEMPTS - 1)),
         and(eq(copies.state, "unavailable"), isNull(copies.processStoppedAt),
           sql`${copies.location} like 'remote:%'`,
-          sql`${copies.receipt}->>'schema' = 'paperclip.agent-files.v1'`)),
+          sql`${copies.receipt}->>'schema' = 'wardmote.agent-files.v1'`)),
         sql`NOT (coalesce(${copies.receipt}, '{}'::jsonb) ? 'retainedByRunId')`,
         inArray(heartbeatRuns.status, ["succeeded", "failed", "cancelled", "timed_out", "interrupted"]),
         or(isNull(copies.nextAttemptAt), lte(copies.nextAttemptAt, new Date())))).orderBy(asc(copies.updatedAt)).limit(20);

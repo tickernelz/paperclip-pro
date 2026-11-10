@@ -262,8 +262,8 @@ it("admits a correlated native finish without forcing Done versus yielded chat d
     for (const event of [start, finish]) Object.assign(event.payload.prpEvent.payload,
       { executionId: "finish", name: "wardmote_finish", transport: "dynamic" });
     const proposal = { seq: 0, eventType: "run.result.proposed", payload: { prpEvent: {
-      schema: "paperclip.prp.event.v1", schemaVersion: 1, sourceKind: "runner", itemId: "finish",
-      payload: { schema: "paperclip.run_result.v1", reportedWorkDisposition: disposition },
+      schema: "wardmote.prp.event.v1", schemaVersion: 1, sourceKind: "runner", itemId: "finish",
+      payload: { schema: "wardmote.run_result.v1", reportedWorkDisposition: disposition },
     } } };
     ledger.events.splice(4, 0, start, proposal as unknown as typeof start, finish);
     ledger.events.forEach((event, i) => event.seq = i + 1);

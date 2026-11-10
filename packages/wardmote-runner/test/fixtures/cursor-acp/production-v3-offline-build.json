@@ -1,5 +1,5 @@
 {
-  "schema": "paperclip.cursor.production-offline-build.v1",
+  "schema": "wardmote.cursor.production-offline-build.v1",
   "observedAt": "2026-09-29",
   "runtimeSourceRevision": "526081b9d6c905de5e2da680e3a37c620899b380",
   "providerVersion": "2026.09.26-dd393fe",

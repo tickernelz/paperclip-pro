@@ -46,7 +46,7 @@ describe("collaboration Wardmote protocol action contracts", () => {
         const scenarioOutput = action.live === null
           ? action.examples.success.result
           : {
-            schema: "paperclip.capability.tool-result.v1",
+            schema: "wardmote.capability.tool-result.v1",
             ok: true,
             operationId,
             operationResultId: "example-result",

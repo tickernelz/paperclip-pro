@@ -416,7 +416,7 @@ describe("OpenCodeServerDriver", () => {
       resolution: {
         action: "submit",
         response: {
-          schema: "paperclip.question_response.v1",
+          schema: "wardmote.question_response.v1",
           answers: {
             "boundary-mode": { selectedOptionIds: ["lossless"] },
           },
@@ -490,7 +490,7 @@ describe("OpenCodeServerDriver", () => {
               method: profile.originMethod,
             },
             input: expect.objectContaining({
-              schema: "paperclip.question_set.v1",
+              schema: "wardmote.question_set.v1",
               title: "Boundary mode",
               questions: [
                 expect.objectContaining({
@@ -812,19 +812,19 @@ describe("OpenCodeServerDriver", () => {
       events.find((event) => event.eventType === "workspace.change.updated")
         ?.payload,
     ).toMatchObject({
-      schema: "paperclip.workspace.diff.v1",
+      schema: "wardmote.workspace.diff.v1",
       source: "harness_reported",
       totals: { files: 1 },
     });
     expect(
       events.find((event) => event.eventType === "workspace.diff.recorded")
         ?.payload,
-    ).toMatchObject({ schema: "paperclip.workspace.diff.v1", complete: true });
+    ).toMatchObject({ schema: "wardmote.workspace.diff.v1", complete: true });
     expect(
       events.find((event) => event.eventType === "workspace.file.referenced")
         ?.payload,
     ).toMatchObject({
-      schema: "paperclip.workspace.file_reference.v1",
+      schema: "wardmote.workspace.file_reference.v1",
       path: "guide.md",
     });
     expect(JSON.stringify(events)).not.toContain(
@@ -1636,11 +1636,11 @@ describe("OpenCodeServerDriver", () => {
     }
     expect(requestEvent?.payload).toMatchObject({
       request: {
-        schema: "paperclip.runtime_request.v2",
+        schema: "wardmote.runtime_request.v2",
         requestKind: "runtime",
         type: "input",
         input: {
-          schema: "paperclip.question_set.v1",
+          schema: "wardmote.question_set.v1",
           questions: [
             {
               id: "environment",
@@ -1661,7 +1661,7 @@ describe("OpenCodeServerDriver", () => {
       resolution: {
         action: "submit",
         response: {
-          schema: "paperclip.question_response.v1",
+          schema: "wardmote.question_response.v1",
           answers: {
             environment: { customText: "Canary" },
             regions: { selectedOptionIds: ["option-1", "option-2"] },
@@ -1693,7 +1693,7 @@ describe("OpenCodeServerDriver", () => {
     expect(terminalQuestionEvents[0]?.payload).toMatchObject({
       action: "submit",
       response: {
-        schema: "paperclip.question_response.v1",
+        schema: "wardmote.question_response.v1",
         answers: {
           environment: { customText: "Canary" },
           regions: { selectedOptionIds: ["option-1", "option-2"] },
@@ -1778,7 +1778,7 @@ describe("OpenCodeServerDriver", () => {
         replayAllowed: false,
         requestType: "input",
         request: {
-          schema: "paperclip.runtime_request.v2",
+          schema: "wardmote.runtime_request.v2",
           requestId: "question-native-1",
           type: "input",
         },

@@ -47,7 +47,7 @@ export function hasDeliveredCursorNativeRequest(input: {
   if (![input.runId, input.turnId, input.requestId].every(value => typeof value === "string" && value.trim())) return false;
   const rows = input.events.map(record).map(row => ({ row, event: record(record(row.payload).prpEvent) }))
     .filter(({ row, event }) => row.runId === input.runId && event.runId === input.runId
-      && event.turnId === input.turnId && event.schema === "paperclip.prp.event.v1"
+      && event.turnId === input.turnId && event.schema === "wardmote.prp.event.v1"
       && event.schemaVersion === 1 && row.protocolSchemaVersion === 1);
   const created = rows.filter(({ event }) => event.eventType === "runtime_request.created"
     && record(record(event.payload).request).requestId === input.requestId);
@@ -74,7 +74,7 @@ export function hasCursorPlanDecision(questionSet: unknown, response: unknown, d
   const plans = questions.map(record).filter(question => typeof question.id === "string" && /^plan-[a-f0-9]{64}$/.test(question.id));
   if (plans.length !== 1) return false;
   const answers = record(record(response).answers);
-  if (record(response).schema !== "paperclip.question_response.v1" || Object.keys(answers).some(id => id !== plans[0]!.id && id !== "reason")) return false;
+  if (record(response).schema !== "wardmote.question_response.v1" || Object.keys(answers).some(id => id !== plans[0]!.id && id !== "reason")) return false;
   const selected = record(answers[String(plans[0]!.id)]).selectedOptionIds;
   return Array.isArray(selected) && selected.length === 1 && selected[0] === decision;
 }
@@ -115,7 +115,7 @@ export const cursorNativeTasks: readonly (Omit<RunnerTaskFixture, "flow"> & { fl
 
 /** Exact canonical answer bytes must appear in the post-write delivery receipt. */
 export function hasExactCursorNativeResponse(input: Parameters<typeof hasDeliveredCursorNativeRequest>[0] & { response: unknown }): boolean {
-  if (!hasDeliveredCursorNativeRequest(input) || record(input.response).schema !== "paperclip.question_response.v1" || Object.keys(record(record(input.response).answers)).length === 0) return false;
+  if (!hasDeliveredCursorNativeRequest(input) || record(input.response).schema !== "wardmote.question_response.v1" || Object.keys(record(record(input.response).answers)).length === 0) return false;
   const matches = input.events.map(record).map(row => record(record(row.payload).prpEvent))
     .filter(event => event.runId === input.runId && event.turnId === input.turnId && event.eventType === "runtime_request.resolved" && record(event.payload).requestId === input.requestId);
   return matches.length === 1 && stableJson(record(matches[0]!.payload).response) === stableJson(input.response);

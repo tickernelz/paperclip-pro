@@ -711,7 +711,7 @@ function questionSetForInteraction(
 ): WardmoteQuestionSet {
   if (interaction.payload.questionSet) return interaction.payload.questionSet;
   return {
-    schema: "paperclip.question_set.v1",
+    schema: "wardmote.question_set.v1",
     ...(interaction.title ? { title: interaction.title } : {}),
     ...(interaction.payload.submitLabel
       ? { submitLabel: interaction.payload.submitLabel }
@@ -758,7 +758,7 @@ function questionResponseForInteraction(
 ): WardmoteQuestionResponse | null {
   if (!interaction.result?.answers) return null;
   return {
-    schema: "paperclip.question_response.v1",
+    schema: "wardmote.question_response.v1",
     answers: Object.fromEntries(
       interaction.result.answers.map((answer) => {
         const question = questionSet.questions.find(

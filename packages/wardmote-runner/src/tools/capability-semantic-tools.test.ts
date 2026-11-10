@@ -813,7 +813,7 @@ describe("Capability exposure and authorization", () => {
         if (acquiring && !injectedContention) {
           injectedContention = true;
           durableSnapshot = {
-            schema: "paperclip.capability.semantic-tool-runtime.v1",
+            schema: "wardmote.capability.semantic-tool-runtime.v1",
             resultSequence: 1,
             operationResults: {},
             extensions: [],
@@ -1227,7 +1227,7 @@ describe("Capability exposure and authorization", () => {
 
   it("reconstructs a legacy expired built-in receipt after executor loss", async () => {
     let durableSnapshot: CapabilitySemanticToolRuntimeSnapshot = {
-      schema: "paperclip.capability.semantic-tool-runtime.v1",
+      schema: "wardmote.capability.semantic-tool-runtime.v1",
       resultSequence: 0,
       operationResults: {},
       extensions: [{
@@ -1287,13 +1287,13 @@ describe("Capability exposure and authorization", () => {
 
   it("recovers an expired built-in extension from its prepared receipt", async () => {
     const observedExport = {
-      schema: "paperclip.capability.mock-export.v1",
+      schema: "wardmote.capability.mock-export.v1",
       company: { id: "company-1", name: "Previously Exported Company" },
       taskCount: 1,
       actorCount: 1,
     };
     let durableSnapshot: CapabilitySemanticToolRuntimeSnapshot = {
-      schema: "paperclip.capability.semantic-tool-runtime.v1",
+      schema: "wardmote.capability.semantic-tool-runtime.v1",
       resultSequence: 0,
       operationResults: {},
       extensions: [{
@@ -1357,7 +1357,7 @@ describe("Capability exposure and authorization", () => {
 
   it("terminally marks a legacy export without an exact receipt", async () => {
     let durableSnapshot: CapabilitySemanticToolRuntimeSnapshot = {
-      schema: "paperclip.capability.semantic-tool-runtime.v1",
+      schema: "wardmote.capability.semantic-tool-runtime.v1",
       resultSequence: 0,
       operationResults: {},
       extensions: [{
@@ -1440,7 +1440,7 @@ describe("Capability exposure and authorization", () => {
     expect(durableSnapshot.operationResults).toEqual({});
 
     const authoritativeExport = {
-      schema: "paperclip.capability.mock-export.v1",
+      schema: "wardmote.capability.mock-export.v1",
       company: { id: "company-1", name: "Originally Exported Company" },
       taskCount: 1,
       actorCount: 1,
@@ -1478,7 +1478,7 @@ describe("Capability exposure and authorization", () => {
       upserted: true,
     };
     let durableSnapshot: CapabilitySemanticToolRuntimeSnapshot = {
-      schema: "paperclip.capability.semantic-tool-runtime.v1",
+      schema: "wardmote.capability.semantic-tool-runtime.v1",
       resultSequence: 1,
       operationResults: { "tool-result-1": authoritative },
       extensions: [{
@@ -1540,13 +1540,13 @@ describe("Capability exposure and authorization", () => {
 
   it("resolves an expired mutable export receipt during a restored retry", async () => {
     const observedExport = {
-      schema: "paperclip.capability.mock-export.v1",
+      schema: "wardmote.capability.mock-export.v1",
       company: { id: "company-1", name: "Previously Exported Company" },
       taskCount: 1,
       actorCount: 1,
     };
     let durableSnapshot: CapabilitySemanticToolRuntimeSnapshot = {
-      schema: "paperclip.capability.semantic-tool-runtime.v1",
+      schema: "wardmote.capability.semantic-tool-runtime.v1",
       resultSequence: 0,
       operationResults: {},
       extensions: [{
@@ -1606,7 +1606,7 @@ describe("Capability exposure and authorization", () => {
 
   it("allows only one restored runtime to reclaim an expired extension lease", async () => {
     let durableSnapshot: CapabilitySemanticToolRuntimeSnapshot = {
-      schema: "paperclip.capability.semantic-tool-runtime.v1",
+      schema: "wardmote.capability.semantic-tool-runtime.v1",
       resultSequence: 0,
       operationResults: {},
       extensions: [{
@@ -1698,7 +1698,7 @@ describe("Capability exposure and authorization", () => {
     });
     const pendingKey = `${OPEN.identity.runId}:upsert_case:owned-elsewhere`;
     durableSnapshot = {
-      schema: "paperclip.capability.semantic-tool-runtime.v1",
+      schema: "wardmote.capability.semantic-tool-runtime.v1",
       resultSequence: 0,
       operationResults: {},
       extensions: [{
@@ -1871,12 +1871,12 @@ describe("Capability security policy", () => {
       input: { name: "DEPLOY_TOKEN" },
     });
     expect(modelDelivery.readModelResult()).toMatchObject({
-      schema: "paperclip.capability.model-tool-result.v1",
+      schema: "wardmote.capability.model-tool-result.v1",
       ok: true,
       value: { name: "DEPLOY_TOKEN", value: secret },
     });
     expect(modelDelivery.observableResult).toMatchObject({
-      schema: "paperclip.capability.tool-result.v1",
+      schema: "wardmote.capability.tool-result.v1",
       ok: true,
       value: { name: "DEPLOY_TOKEN", value: "[SECRET_VALUE]" },
     });

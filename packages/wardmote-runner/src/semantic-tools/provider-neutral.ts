@@ -7,7 +7,7 @@ import type {
 export type CapabilitySemanticBindingKind = "fake" | "live_codex";
 
 export interface CapabilityProviderNeutralSemanticBinding {
-  readonly schema: "paperclip.semantic-binding.v1";
+  readonly schema: "wardmote.semantic-binding.v1";
   readonly bindingKind: CapabilitySemanticBindingKind;
   readonly contracts: readonly CapabilitySemanticToolDefinition[];
 }
@@ -22,7 +22,7 @@ export function createCapabilityProviderNeutralBinding(
   descriptors: readonly CapabilitySemanticToolDescriptor[] = CAPABILITY_SEMANTIC_TOOL_CATALOG,
 ): CapabilityProviderNeutralSemanticBinding {
   return deepFreeze({
-    schema: "paperclip.semantic-binding.v1",
+    schema: "wardmote.semantic-binding.v1",
     bindingKind,
     contracts: descriptors.map(toDefinition),
   });

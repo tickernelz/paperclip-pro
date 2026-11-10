@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://paperclip.dev/schemas/prp/v3/event.schema.json",
+  "$id": "https://wardmote.dev/schemas/prp/v3/event.schema.json",
   "title": "PRP v3 native event",
   "type": "object",
   "required": [
@@ -18,7 +18,7 @@
   ],
   "properties": {
     "schema": {
-      "const": "paperclip.prp.event.v3"
+      "const": "wardmote.prp.event.v3"
     },
     "sourceEventId": {
       "type": "string",
@@ -225,7 +225,7 @@
               "goal": {
                 "oneOf": [
                   {
-                    "$ref": "https://paperclip.dev/schemas/prp/v2/session-goal.schema.json#/$defs/snapshot"
+                    "$ref": "https://wardmote.dev/schemas/prp/v2/session-goal.schema.json#/$defs/snapshot"
                   },
                   {
                     "type": "null"
@@ -257,10 +257,10 @@
             ],
             "properties": {
               "sessionGoals": {
-                "$ref": "https://paperclip.dev/schemas/prp/v2/session-goal.schema.json#/$defs/capability"
+                "$ref": "https://wardmote.dev/schemas/prp/v2/session-goal.schema.json#/$defs/capability"
               },
               "turnControls": {
-                "$ref": "https://paperclip.dev/schemas/prp/v1/provider-descriptor.schema.json#/$defs/turnControls"
+                "$ref": "https://wardmote.dev/schemas/prp/v1/provider-descriptor.schema.json#/$defs/turnControls"
               }
             },
             "additionalProperties": true

@@ -5,7 +5,7 @@ import {
   type ConformanceFixture,
 } from "../protocol/conformance-fixture.js";
 
-export const CONFORMANCE_OUTPUT_SCHEMA = "paperclip.runner.conformance.output.v1";
+export const CONFORMANCE_OUTPUT_SCHEMA = "wardmote.runner.conformance.output.v1";
 
 export interface ConformanceTracerOutput {
   schemaVersion: typeof CONFORMANCE_OUTPUT_SCHEMA;

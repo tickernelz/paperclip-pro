@@ -2239,7 +2239,7 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
             wardmoteExternalChatExecutionBound: true,
             wardmoteTaskCommunicationGuidance: `## Communication in Slack\nFrozen connection preference.\n\n${FAST_RESPONSE_AGENT_GUIDANCE}`,
             wardmoteExternalChatQuestionResponse: expect.objectContaining({
-              schema: "paperclip.external_chat_question_response.v1",
+              schema: "wardmote.external_chat_question_response.v1",
               interactionId: answered.id,
               sourceRunId,
               sourceCommentId: sourceComment.id,

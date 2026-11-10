@@ -241,7 +241,7 @@ export function chatQuestionPresentation(
 ): WardmoteQuestionSetPayload {
   if (payload.questionSet) return payload.questionSet;
   return {
-    schema: "paperclip.question_set.v1",
+    schema: "wardmote.question_set.v1",
     ...(payload.submitLabel ? { submitLabel: payload.submitLabel } : {}),
     questions: payload.questions.map((question) => {
       const freeText = question.options.find((option) => option.freeText);

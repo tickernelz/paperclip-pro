@@ -10,7 +10,7 @@ const gradeStockHarness = (evidence: StockHarnessEvidence) => gradeSourceHarness
 
 function recording(generation: "legacy" | "native" = "legacy"): StockHarnessEvidence {
   return {
-    schema: "paperclip.stock-harness.v1", generation, agentId: "agent",
+    schema: "wardmote.stock-harness.v1", generation, agentId: "agent",
     budgets: { companyMonthlyCents: 1_000, agentMonthlyCents: 1_000 },
     bundle: { entryFile: "AGENTS.md", files: [{ path: "AGENTS.md", content: STOCK_HIRE_IDENTITY }] },
     runIds: ["fresh", "resumed"],

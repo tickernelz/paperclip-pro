@@ -124,7 +124,7 @@ export async function runPiPendingProviderDeath(input: {
     const original = await input.api.request.post(`/api/issues/${pending.issueId}/interactions/${pending.interactionId}/respond`,
       { data: { answers: [{ questionId: pending.questionId, optionIds: [], otherText: answer }] } });
     const runtime = await input.api.request.post(`/api/heartbeat-runs/${pending.runId}/runtime-requests/${encodeURIComponent(pending.requestId)}/resolve`,
-      { data: { resolution: { action: "submit", response: { schema: "paperclip.question_response.v1", answers: { [pending.questionId]: { text: answer } } } } } });
+      { data: { resolution: { action: "submit", response: { schema: "wardmote.question_response.v1", answers: { [pending.questionId]: { text: answer } } } } } });
     check("death-stale-original-responses-rejected", original.status() === 409 && runtime.status() === 409, "Both original durable-card and native-runtime response APIs reject the stale answer");
     const after = await snapshot("pi-provider-death-after-stale.json");
     check("death-expiry-not-restoration", hash(gradePiProviderDeath(after.state, after.events, pending, question)) === hash(result)

@@ -24,7 +24,7 @@ use super::{
     PROTOCOL_MIN_VERSION, PROTOCOL_VERSION,
 };
 
-const SECURE_FRAME_SCHEMA: &str = "paperclip.runner.secure-frame.v1";
+const SECURE_FRAME_SCHEMA: &str = "wardmote.runner.secure-frame.v1";
 const AUTH_TIMEOUT: Duration = Duration::from_secs(2);
 const WELCOME_TIMEOUT: Duration = Duration::from_secs(2);
 const RUNTIME_READ_TIMEOUT: Duration = Duration::from_millis(250);
@@ -2554,7 +2554,7 @@ mod tests {
         let mut expires =
             current_unix_ms().unwrap() + if renewal_reply_lost { 2_000 } else { 60_000 };
         let open_command = json!({
-            "schema": "paperclip.prp.command.v1",
+            "schema": "wardmote.prp.command.v1",
             "commandId": "command_open",
             "controllerSeq": 1,
             "type": "session.open",
@@ -2562,7 +2562,7 @@ mod tests {
             "payload": {},
         });
         let shutdown_command = json!({
-            "schema": "paperclip.prp.command.v1",
+            "schema": "wardmote.prp.command.v1",
             "commandId": "command_shutdown",
             "controllerSeq": 2,
             "type": "runner.shutdown",

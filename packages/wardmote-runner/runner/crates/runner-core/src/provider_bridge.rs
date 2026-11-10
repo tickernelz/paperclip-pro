@@ -7,8 +7,8 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_json::Value;
 use sha2::{Digest, Sha256};
 
-pub const TOOL_SET_SCHEMA: &str = "paperclip.runner.authorized-tools.v1";
-pub const TOOL_CALL_SCHEMA: &str = "paperclip.prp.semantic_tool.v1";
+pub const TOOL_SET_SCHEMA: &str = "wardmote.runner.authorized-tools.v1";
+pub const TOOL_CALL_SCHEMA: &str = "wardmote.prp.semantic_tool.v1";
 pub const TOOL_RESULT_COMMAND: &str = "semantic_tool.result";
 const MAX_AUTHORIZED_TOOLS: usize = 256;
 const MAX_DESCRIPTION_BYTES: usize = 16 * 1024;

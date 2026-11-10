@@ -54,9 +54,9 @@ it("roundtrips Cursor multi-select and revision-bound plan decisions through the
       : { [questionId]: { selectedOptionIds: ["accept"] } };
     if (method === "cursor/create_plan") {
       expect(request.input.questionSet.description).toBe("1. Read\n2. Verify");
-      expect(() => request.input.resolve({ action: "submit", response: { schema: "paperclip.question_response.v1", answers: { "plan-stale": { selectedOptionIds: ["accept"] } } } })).toThrow();
+      expect(() => request.input.resolve({ action: "submit", response: { schema: "wardmote.question_response.v1", answers: { "plan-stale": { selectedOptionIds: ["accept"] } } } })).toThrow();
     }
-    return request.input.resolve({ action: "submit", response: { schema: "paperclip.question_response.v1", answers } });
+    return request.input.resolve({ action: "submit", response: { schema: "wardmote.question_response.v1", answers } });
   }, async (client, received) => {
     expect((await client.prompt("cursor-session", "question")).stopReason).toBe("end_turn");
     expect((await client.prompt("cursor-session", "plan")).stopReason).toBe("end_turn"); await Promise.all(deliveries);

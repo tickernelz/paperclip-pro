@@ -69,7 +69,7 @@ export const writeDocumentAction = {
   "live": {
     "order": 7,
     "descriptor": {
-      "schema": "paperclip.semantic-tool.v1",
+      "schema": "wardmote.semantic-tool.v1",
       "operationId": "write_document",
       "version": 1,
       "title": "Write revisioned document",
@@ -188,7 +188,7 @@ export const writeDocumentAction = {
   "scenario": {
     "order": 10,
     "successExample": {
-      "schema": "paperclip.capability.tool-result.v1",
+      "schema": "wardmote.capability.tool-result.v1",
       "ok": true,
       "operationId": "write_document",
       "operationResultId": "example-result",
@@ -250,7 +250,7 @@ export const writeDocumentAction = {
           "schema": {
             "type": "string",
             "enum": [
-              "paperclip.capability.tool-result.v1"
+              "wardmote.capability.tool-result.v1"
             ]
           },
           "ok": {

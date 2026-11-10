@@ -66,7 +66,7 @@ export const reportProgressAction = {
   "live": {
     "order": 5,
     "descriptor": {
-      "schema": "paperclip.semantic-tool.v1",
+      "schema": "wardmote.semantic-tool.v1",
       "operationId": "report_progress",
       "version": 1,
       "title": "Report durable progress",
@@ -155,7 +155,7 @@ export const reportProgressAction = {
   "scenario": {
     "order": 5,
     "successExample": {
-      "schema": "paperclip.capability.tool-result.v1",
+      "schema": "wardmote.capability.tool-result.v1",
       "ok": true,
       "operationId": "report_progress",
       "operationResultId": "example-result",
@@ -193,7 +193,7 @@ export const reportProgressAction = {
           "schema": {
             "type": "string",
             "enum": [
-              "paperclip.capability.tool-result.v1"
+              "wardmote.capability.tool-result.v1"
             ]
           },
           "ok": {

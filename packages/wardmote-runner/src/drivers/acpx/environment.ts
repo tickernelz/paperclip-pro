@@ -32,7 +32,7 @@ export function createAcpxCredentialBinding(
 ): string | undefined {
   if (!isCandidate(agent)) return undefined;
   return JSON.stringify({
-    schema: "paperclip.acpx_credential_binding.v1", agent, sessionId,
+    schema: "wardmote.acpx_credential_binding.v1", agent, sessionId,
     names: (agent === "pi" ? piCredentialNames(environment) : ACPX_CREDENTIAL_NAMES[agent]).filter(name => environment !== undefined
       && Object.hasOwn(environment, name) && Boolean(environment[name]?.trim())),
   });
@@ -56,7 +56,7 @@ export function createAcpxSidecarHostEnvironment(
     if (binding === null || typeof binding !== "object" || Array.isArray(binding)) throw invalid();
     const value = binding as Record<string, unknown>;
     if (Object.keys(value).sort().join(",") !== "agent,names,schema,sessionId"
-      || value.schema !== "paperclip.acpx_credential_binding.v1" || value.agent !== agent
+      || value.schema !== "wardmote.acpx_credential_binding.v1" || value.agent !== agent
       || value.sessionId !== sessionId || !Array.isArray(value.names)
       || value.names.length > credentialNames.length
       || value.names.some(name => typeof name !== "string" || !credentialNames.includes(name))

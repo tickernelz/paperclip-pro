@@ -18,9 +18,9 @@ import { getNativeReviewAssignment, readNativeReviewAssignmentContext } from "./
 export const READ_CURRENT_WAKE_COMMENTS_TOOL_NAME =
   "read_current_wake_comments";
 export const CURRENT_WAKE_COMMENTS_BINDING_SCHEMA =
-  "paperclip.current-wake-comments-binding.v1";
+  "wardmote.current-wake-comments-binding.v1";
 export const CURRENT_WAKE_COMMENTS_RECEIPT_SCHEMA =
-  "paperclip.current-wake-comments-receipt.v1";
+  "wardmote.current-wake-comments-receipt.v1";
 
 const CURRENT_WAKE_COMMENTS_RECEIPT_KEY = "currentWakeCommentsReceipt";
 const MAX_PAGE_BODY_CHARS = 12_000;
@@ -70,7 +70,7 @@ export const READ_CURRENT_WAKE_COMMENTS_TOOL_DEFINITION = Object.freeze({
     additionalProperties: false,
   },
   annotations: {
-    semanticContract: "paperclip.server-current-wake-comments.v1",
+    semanticContract: "wardmote.server-current-wake-comments.v1",
     operationId: READ_CURRENT_WAKE_COMMENTS_TOOL_NAME,
     version: 1,
     exposure: "run_scoped",
@@ -114,7 +114,7 @@ type CurrentWakeCommentsSnapshot = {
 };
 
 type CurrentWakeCommentsCursor = {
-  schema: "paperclip.current-wake-comments-cursor.v1";
+  schema: "wardmote.current-wake-comments-cursor.v1";
   bindingDigest: string;
   snapshotDigest: string;
   commentIndex: number;
@@ -128,7 +128,7 @@ type CurrentWakeCommentChunk = Omit<CurrentWakeComment, "body"> & {
 };
 
 export type CurrentWakeCommentsPage = {
-  schema: "paperclip.current-wake-comments-page.v1";
+  schema: "wardmote.current-wake-comments-page.v1";
   bindingDigest: string;
   snapshotDigest: string;
   requestedCount: number;
@@ -360,7 +360,7 @@ function decodeCursor(
       JSON.parse(Buffer.from(value, "base64url").toString("utf8")),
     );
     if (
-      parsed.schema !== "paperclip.current-wake-comments-cursor.v1" ||
+      parsed.schema !== "wardmote.current-wake-comments-cursor.v1" ||
       parsed.bindingDigest !== binding.bindingDigest ||
       parsed.snapshotDigest !== snapshotDigest ||
       !Number.isSafeInteger(parsed.commentIndex) ||
@@ -394,7 +394,7 @@ function parseReceipt(value: unknown): CurrentWakeCommentsReceipt | null {
     ) ||
     !(receipt.nextCursor === null || typeof receipt.nextCursor === "string") ||
     typeof receipt.complete !== "boolean" ||
-    result.schema !== "paperclip.current-wake-comments-page.v1"
+    result.schema !== "wardmote.current-wake-comments-page.v1"
   ) {
     return null;
   }
@@ -587,14 +587,14 @@ function buildPage(
   const nextCursor = complete
     ? null
     : encodeCursor({
-        schema: "paperclip.current-wake-comments-cursor.v1",
+        schema: "wardmote.current-wake-comments-cursor.v1",
         bindingDigest: binding.bindingDigest,
         snapshotDigest: snapshot.snapshotDigest,
         commentIndex,
         bodyOffset,
       });
   return {
-    schema: "paperclip.current-wake-comments-page.v1",
+    schema: "wardmote.current-wake-comments-page.v1",
     bindingDigest: binding.bindingDigest,
     snapshotDigest: snapshot.snapshotDigest,
     requestedCount: binding.commentIds.length,

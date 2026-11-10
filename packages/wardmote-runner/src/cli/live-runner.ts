@@ -88,7 +88,7 @@ async function main(): Promise<void> {
       runnerExited: afterShutdown.process?.runnerExited === true,
     };
     const output = {
-      schema: "paperclip.capability.live-smoke.v1",
+      schema: "wardmote.capability.live-smoke.v1",
       providerThreadId,
       firstTurnId: first.turnId,
       secondTurnId: second.turnId,

@@ -34,7 +34,7 @@ function bundle(): EvalBundle {
     },
     controlPlaneAdapter: {
       kind: "mock",
-      contract: "paperclip.capability.mock-state.v1",
+      contract: "wardmote.capability.mock-state.v1",
     },
     faultInjection: [
       { id: "fault-authz", class: "authorization", description: "deny approval decision exposure" },

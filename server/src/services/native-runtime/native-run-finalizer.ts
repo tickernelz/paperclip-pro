@@ -622,7 +622,7 @@ function recoveredExecutionFailureMetadata() {
   // Read the row being updated so a concurrent cleanup diagnostic is retained.
   return sql`case when ${heartbeatRuns.error} is not null or ${heartbeatRuns.errorCode} is not null
     then jsonb_build_object('recoveredExecutionFailure', jsonb_build_object(
-      'schema', 'paperclip.recovered_execution_failure.v1',
+      'schema', 'wardmote.recovered_execution_failure.v1',
       'errorCode', ${heartbeatRuns.errorCode}, 'error', ${heartbeatRuns.error},
       'observedAt', ${heartbeatRuns.updatedAt}
     )) else '{}'::jsonb end`;
@@ -947,7 +947,7 @@ export async function repairCommittedNativeChatResponse(
       if (
         !accepted ||
         !decision ||
-        result.schema !== "paperclip.run_result.v1" ||
+        result.schema !== "wardmote.run_result.v1" ||
         !(await acceptedResponseDigestMatches(tx, run, accepted))
       )
         return false;
@@ -1063,7 +1063,7 @@ export async function repairCommittedNativeChatResponse(
             {
               presentationDecision,
               nativeCommittedChatResponse: {
-                schema: "paperclip.native_committed_chat_response.v1",
+                schema: "wardmote.native_committed_chat_response.v1",
                 resultId: accepted.id,
                 canonicalSha256: accepted.canonicalSha256,
                 decisionId: decision.id,

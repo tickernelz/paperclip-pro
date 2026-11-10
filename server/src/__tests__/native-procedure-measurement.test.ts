@@ -45,12 +45,12 @@ function execution(provider: NativeExecutionInput["provider"]): NativeExecutionI
     skills: [], mcp: { assignmentSetId: "none", digest: "0".repeat(64), bindingId: null },
   };
   return parseNativeExecutionInput({
-    schema: "paperclip.native-execution-input.v5", binding: { companyId: identity.companyId, agentId: identity.agentId, issueId: identity.issueId, runId: identity.runId, executionWorkspaceId: "workspace" },
+    schema: "wardmote.native-execution-input.v5", binding: { companyId: identity.companyId, agentId: identity.agentId, issueId: identity.issueId, runId: identity.runId, executionWorkspaceId: "workspace" },
     task: { identifier: "TASK-1", title: "Review delegated work", description: "Review delegated work", prompt: "Review delegated work.", workMode: "standard" },
     workspace: { cwd: WORKSPACE, repoUrl: null, repoRef: null, branchName: null },
     session: { normalizedSessionId: "session", driverKind: provider.kind === "acpx" ? "acpx_runtime" : provider.kind === "opencode" ? "opencode_server" : "codex_app_server", protocolVersion: 1 },
     provider, executionMode: "default", planningContext: null,
-    completionContract: { id: "contract", sha256: `sha256:${"a".repeat(64)}`, schemaVersion: "paperclip.completion-contract.v1", contract: { revision: "1", objective: "Review delegated work", criteria: [{ id: "objective", requirement: "Review complete" }] } },
+    completionContract: { id: "contract", sha256: `sha256:${"a".repeat(64)}`, schemaVersion: "wardmote.completion-contract.v1", contract: { revision: "1", objective: "Review delegated work", criteria: [{ id: "objective", requirement: "Review complete" }] } },
     interactionResponses: [], credentialBindings: [],
     runtimeContext: { ...context, aggregateDigest: canonicalNativeRuntimeContextDigest(context) },
   });
@@ -150,7 +150,7 @@ afterAll(() => {
     "server/src/services/native-runtime/native-session-resume.ts",
     "server/src/__tests__/native-procedure-measurement.test.ts",
   ];
-  writeFileSync(output, `${JSON.stringify({ schema: "paperclip.native-procedure-measurement.v2",
+  writeFileSync(output, `${JSON.stringify({ schema: "wardmote.native-procedure-measurement.v2",
     sourceSha: execFileSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8" }).trim(),
     sourceDirty: execFileSync("git", ["status", "--porcelain"], { cwd: root, encoding: "utf8" }).trim().length > 0,
     measuredInputsDirty: execFileSync("git", ["status", "--porcelain", "--", ...paths], { cwd: root, encoding: "utf8" }).trim().length > 0,

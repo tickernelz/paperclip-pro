@@ -260,7 +260,7 @@ rejected at the server/package boundary):
 
 ```ts
 interface NativeExecutionInputV1 {
-  schema: "paperclip.native-execution-input.v1";
+  schema: "wardmote.native-execution-input.v1";
   binding: {
     companyId: string;
     runId: string;

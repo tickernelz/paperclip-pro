@@ -18,7 +18,7 @@ describe("provider runtime descriptor", () => {
       expect(validate({ ...descriptor, turnControls })).toBe(false);
     }
     const event: PrpEvent = {
-      schema: "paperclip.prp.event.v2", schemaVersion: 2, sourceEventId: "controls", sourceSeq: 1,
+      schema: "wardmote.prp.event.v2", schemaVersion: 2, sourceEventId: "controls", sourceSeq: 1,
       sourceInstanceId: "runner", sourceKind: "runner", runId: "run", eventType: "session.capabilities.updated",
       priority: 0, emittedAt: "2026-09-28T12:00:00.000Z", payload: {
         sessionGoals: { availability: "unsupported", reason: "provider has no native goals", actions: [],

@@ -33,7 +33,7 @@ const evidenceMarkdown = (title, description, body) => [
 ].join("\n");
 if (dryRun) {
   process.stdout.write(`${JSON.stringify({
-    schema: "paperclip.capability.live-codex-matrix-dry-run.v1",
+    schema: "wardmote.capability.live-codex-matrix-dry-run.v1",
     provider: "codex",
     runnerPackage: packageManifest.name,
     grantCount: suite.CAPABILITY_LIVE_EVAL_GRANTS.length,
@@ -74,7 +74,7 @@ const liveBundle = {
   },
   controlPlaneAdapter: {
     kind: "mock",
-    contract: "paperclip.capability.mock-state.v1",
+    contract: "wardmote.capability.mock-state.v1",
   },
   faultInjection: [],
 };
@@ -124,7 +124,7 @@ const faultBundle = {
   },
   controlPlaneAdapter: {
     kind: "mock",
-    contract: "paperclip.capability.mock-state.v1",
+    contract: "wardmote.capability.mock-state.v1",
   },
   faultInjection: [
     { id: "fault-authz", class: "authorization", description: "deny approval decision exposure" },
@@ -139,7 +139,7 @@ const faultSliceReport = evals.buildEvalSliceReport(
   behaviorMatrix.map((result) => result.observation),
 );
 const report = {
-  schema: "paperclip.capability.live-codex-matrix.v1",
+  schema: "wardmote.capability.live-codex-matrix.v1",
   groups: matrix.length,
   providerModel: liveModel,
   matrix,

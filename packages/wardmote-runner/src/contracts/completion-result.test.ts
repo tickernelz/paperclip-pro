@@ -12,7 +12,7 @@ import {
 import { codexSemanticToolSpecs } from "../drivers/codex/codex-driver-values.js";
 
 const baseResult = {
-  schema: "paperclip.run_result.v1",
+  schema: "wardmote.run_result.v1",
   reportedWorkDisposition: "done",
   summary: "Completed the requested work.",
   completionClaim: {

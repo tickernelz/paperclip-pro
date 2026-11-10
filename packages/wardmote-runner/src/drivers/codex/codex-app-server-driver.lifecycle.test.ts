@@ -703,13 +703,13 @@ describe("Codex app-server Codex driver", () => {
       (event) => event.eventType === "workspace.change.updated",
     );
     expect(workspaceEvents[0]?.payload).toMatchObject({
-      schema: "paperclip.workspace.diff.v1",
+      schema: "wardmote.workspace.diff.v1",
       changeSetId: `${turn.turnId}:workspace`,
       complete: false,
       totals: { files: 1, additions: 2, deletions: 1 },
     });
     expect(workspaceEvents.at(-1)?.payload).toMatchObject({
-      schema: "paperclip.workspace.diff.v1",
+      schema: "wardmote.workspace.diff.v1",
       complete: true,
       totals: { files: 1 },
     });
@@ -729,12 +729,12 @@ describe("Codex app-server Codex driver", () => {
     expect(
       events.find((event) => event.eventType === "workspace.diff.recorded")
         ?.payload,
-    ).toMatchObject({ schema: "paperclip.workspace.diff.v1", complete: true });
+    ).toMatchObject({ schema: "wardmote.workspace.diff.v1", complete: true });
     expect(
       events.find((event) => event.eventType === "workspace.file.referenced")
         ?.payload,
     ).toMatchObject({
-      schema: "paperclip.workspace.file_reference.v1",
+      schema: "wardmote.workspace.file_reference.v1",
       path: "hello.txt",
     });
     expect(events.map((event) => event.eventType)).toEqual(
@@ -754,7 +754,7 @@ describe("Codex app-server Codex driver", () => {
     );
 
     const capabilities: PrpCapabilities = {
-      schema: "paperclip.prp.capabilities.v1",
+      schema: "wardmote.prp.capabilities.v1",
       sessionReusePolicy: "reuse_per_issue",
       driver: { kind: descriptor.kind, version: descriptor.version },
       steer: true,
@@ -767,7 +767,7 @@ describe("Codex app-server Codex driver", () => {
     const metadata = {
       fixtureName: "codex-conformance",
       identity: {
-        schema: "paperclip.prp.identity.v1" as const,
+        schema: "wardmote.prp.identity.v1" as const,
         companyId: "company-1",
         issueId: "issue-1",
         runId: "run-1",

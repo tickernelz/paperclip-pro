@@ -86,7 +86,7 @@ export class ProviderTraceFileSink {
     this.#capturedBytes += raw.byteLength;
     this.#append({
       kind: "frame",
-      schema: "paperclip.provider_trace_frame.v1",
+      schema: "wardmote.provider_trace_frame.v1",
       frameId,
       timestamp: new Date().toISOString(),
       direction: input.direction,
@@ -113,7 +113,7 @@ export class ProviderTraceFileSink {
     if (this.#closed) return;
     this.#append({
       kind: "interpretation",
-      schema: "paperclip.provider_trace_interpretation.v1",
+      schema: "wardmote.provider_trace_interpretation.v1",
       frameId: input.frameId,
       stage: input.stage,
       ruleId: input.ruleId,

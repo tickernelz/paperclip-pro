@@ -559,7 +559,7 @@ class HarnessNativeSession implements NativeSession {
         if (event.eventType === "runtime_request.created") {
           const request = plainRecord(event.payload.request);
           if (
-            request?.schema === "paperclip.runtime_request.v2" &&
+            request?.schema === "wardmote.runtime_request.v2" &&
             request.type === "input" &&
             typeof request.requestId === "string"
           )
@@ -643,7 +643,7 @@ class HarnessNativeSession implements NativeSession {
         const itemId =
           typeof request.itemId === "string" ? request.itemId : requestId;
         yield {
-          schema: "paperclip.prp.event.v1",
+          schema: "wardmote.prp.event.v1",
           sourceEventId: `${sourceInstanceId}:${this.#input.identity.runId}:${sourceSeq}`,
           sourceSeq,
           sourceInstanceId,
@@ -686,7 +686,7 @@ class HarnessNativeSession implements NativeSession {
           reportedWorkDisposition: "yielded",
         };
         yield {
-          schema: "paperclip.prp.event.v1",
+          schema: "wardmote.prp.event.v1",
           sourceEventId: `${sourceInstanceId}:${this.#input.identity.runId}:${sourceSeq}`,
           sourceSeq,
           sourceInstanceId,

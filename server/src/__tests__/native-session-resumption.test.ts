@@ -93,7 +93,7 @@ describe("P6-25 pre-result native session recovery", () => {
   const observedLivePidRunId = "79000000-0000-4000-8000-000000000011";
   const persistedProfile = {
     mode: "native",
-    nativeExecutionInput: { schema: "paperclip.native-execution-input.v1", binding: { runId } },
+    nativeExecutionInput: { schema: "wardmote.native-execution-input.v1", binding: { runId } },
     sessionCheckpoint: {
       backendKind: "codex_app_server",
       sessionId: "persisted-session",
@@ -654,7 +654,7 @@ describe.each(["unchanged", "newer_active", "stale_idle"] as const)(
       reportedWorkDisposition: result.reportedWorkDisposition,
     };
     const execution: NativeExecutionInputV1 = {
-      schema: "paperclip.native-execution-input.v1",
+      schema: "wardmote.native-execution-input.v1",
       binding: { companyId, runId, issueId, agentId, executionWorkspaceId },
       task: {
         identifier: "NRR-1",
@@ -677,7 +677,7 @@ describe.each(["unchanged", "newer_active", "stale_idle"] as const)(
       completionContract: {
         id: contractId,
         sha256: contractSha,
-        schemaVersion: "paperclip.completion-contract.v1",
+        schemaVersion: "wardmote.completion-contract.v1",
         contract,
       },
       interactionResponses: [],
@@ -694,7 +694,7 @@ describe.each(["unchanged", "newer_active", "stale_idle"] as const)(
       lineage: [],
     };
     const providerTerminalEvent: PrpEvent = {
-      schema: "paperclip.prp.event.v1",
+      schema: "wardmote.prp.event.v1",
       sourceEventId: `${runnerInstanceId}:provider-terminal`,
       sourceSeq: 1,
       sourceInstanceId: runnerInstanceId,
@@ -883,7 +883,7 @@ describe.each(["unchanged", "newer_active", "stale_idle"] as const)(
         companyId,
         issueId,
         revision: 1,
-        schemaVersion: "paperclip.completion-contract.v1",
+        schemaVersion: "wardmote.completion-contract.v1",
         policyVersion: "phase6-v1",
         risk: "standard",
         completionAuthority: "server_arbiter",

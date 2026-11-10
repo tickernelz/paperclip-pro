@@ -24,14 +24,14 @@
     "prpVersion": 1,
     "nativeExecutionVersion": 1,
     "catalogVersion": 1,
-    "catalogSha256": "sha256:14bd5a68824e20b64a556735c3c5d0b4d9c147127e337d1c2422f7146382346f",
+    "catalogSha256": "sha256:f4860f3a3b7a2574f2032f890d503c6a9b9c2fc069fe6707ef461960b14726f7",
     "driverContractVersion": 1,
     "driverKind": "paperclip-deterministic",
     "driverVersion": "1.0.0"
   },
   "events": [
     {
-      "schema": "paperclip.prp.event.v1",
+      "schema": "wardmote.prp.event.v1",
       "sourceEventId": "evals_seeded_01",
       "sourceSeq": 1,
       "sourceInstanceId": "runner_evals_seeded",
@@ -46,7 +46,7 @@
       "emittedAt": "2026-08-11T12:00:00.000Z",
       "payload": {
         "semantic_tool": {
-          "schema": "paperclip.prp.semantic_tool.v1",
+          "schema": "wardmote.prp.semantic_tool.v1",
           "schemaVersion": 1,
           "phase": "input",
           "operationId": "decide_approval",
@@ -67,7 +67,7 @@
       }
     },
     {
-      "schema": "paperclip.prp.event.v1",
+      "schema": "wardmote.prp.event.v1",
       "sourceEventId": "evals_seeded_02",
       "sourceSeq": 2,
       "sourceInstanceId": "runner_evals_seeded",
@@ -82,7 +82,7 @@
       "emittedAt": "2026-08-11T12:00:00.010Z",
       "payload": {
         "semantic_tool": {
-          "schema": "paperclip.prp.semantic_tool.v1",
+          "schema": "wardmote.prp.semantic_tool.v1",
           "schemaVersion": 1,
           "phase": "result",
           "operationId": "decide_approval",
@@ -109,7 +109,7 @@
       }
     },
     {
-      "schema": "paperclip.prp.event.v1",
+      "schema": "wardmote.prp.event.v1",
       "sourceEventId": "evals_seeded_03",
       "sourceSeq": 3,
       "sourceInstanceId": "runner_evals_seeded",
@@ -122,7 +122,7 @@
       "priority": 0,
       "emittedAt": "2026-08-11T12:00:00.020Z",
       "payload": {
-        "schema": "paperclip.run_result.v1",
+        "schema": "wardmote.run_result.v1",
         "reportedWorkDisposition": "needs_review",
         "summary": "The governed tool effect was rejected and preserved as a denial.",
         "completionClaim": {
@@ -152,7 +152,7 @@
       }
     },
     {
-      "schema": "paperclip.prp.event.v1",
+      "schema": "wardmote.prp.event.v1",
       "sourceEventId": "evals_seeded_04",
       "sourceSeq": 4,
       "sourceInstanceId": "runner_evals_seeded",

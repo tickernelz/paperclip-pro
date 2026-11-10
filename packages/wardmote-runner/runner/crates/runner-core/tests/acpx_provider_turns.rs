@@ -20,7 +20,7 @@ fn tool_set() -> AuthorizedToolSet {
         response_schema: json!({"type":"object"}),
     }];
     AuthorizedToolSet {
-        schema: "paperclip.runner.authorized-tools.v1".to_owned(),
+        schema: "wardmote.runner.authorized-tools.v1".to_owned(),
         schema_version: 1,
         catalog_digest: authorized_tool_catalog_digest(&operations).unwrap(),
         operations,
@@ -567,7 +567,7 @@ fn reserved_completion_waits_for_feedback_and_allows_correction_in_same_turn() {
             call_id: "call-finish-2".to_owned(),
             operation_id: "wardmote_finish".to_owned(),
             result: json!({
-                "schema":"paperclip.run_result.v1",
+                "schema":"wardmote.run_result.v1",
                 "reportedWorkDisposition":"done",
                 "summary":"Corrected completion.",
                 "completionClaim":{"contractRevision":"acpx-provider-turns-v1","objectiveSatisfied":true,"criteria":[],"remainingWork":[]},

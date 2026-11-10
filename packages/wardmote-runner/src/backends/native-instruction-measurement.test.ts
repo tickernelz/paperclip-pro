@@ -44,7 +44,7 @@ function execution(provider: NativeExecutionInput["provider"], schema: "v4" | "v
     skills: [], mcp: { assignmentSetId: "none", digest: "0".repeat(64), bindingId: null },
   };
   return parseNativeExecutionInput({
-    schema: `paperclip.native-execution-input.${schema}`,
+    schema: `wardmote.native-execution-input.${schema}`,
     binding: { companyId: identity.companyId, agentId: identity.agentId, issueId: identity.issueId, runId: identity.runId, executionWorkspaceId: "workspace" },
     task: { identifier: "TASK-1", title: "Save the requested document", description: "Save the requested document", prompt: "Save the requested document.", workMode: "standard" },
     workspace: { cwd: rootPath, repoUrl: null, repoRef: null, branchName: null },
@@ -52,7 +52,7 @@ function execution(provider: NativeExecutionInput["provider"], schema: "v4" | "v
     provider,
     executionMode: "default",
     planningContext: null,
-    completionContract: { id: "contract", sha256: `sha256:${"a".repeat(64)}`, schemaVersion: "paperclip.completion-contract.v1", contract: { revision: "1", objective: "Save the requested document", criteria: [{ id: "objective", requirement: "Document saved" }] } },
+    completionContract: { id: "contract", sha256: `sha256:${"a".repeat(64)}`, schemaVersion: "wardmote.completion-contract.v1", contract: { revision: "1", objective: "Save the requested document", criteria: [{ id: "objective", requirement: "Document saved" }] } },
     interactionResponses: [], credentialBindings: [],
     runtimeContext: { ...context, aggregateDigest: canonicalNativeRuntimeContextDigest(context) },
   });
@@ -108,7 +108,7 @@ describe("native instruction payload measurement", () => {
       const continuationRecovery = await continuationBackend.recoverSession!(checkpoint, { signal: new AbortController().signal });
       expect(continuationRecovery.recovered).toBe(true);
       const continuationEnvelope = buildNativeModelEnvelope(continuationInput, { resumedSession: true });
-      expect(continuationEnvelope.schema).toBe("paperclip.native-continuation.v1");
+      expect(continuationEnvelope.schema).toBe("wardmote.native-continuation.v1");
       await continuationRecovery.session!.startTurn({ message: { role: "user", text: JSON.stringify(continuationEnvelope) } });
       await continuationRecovery.session!.close({ reason: "measurement" });
 
@@ -230,7 +230,7 @@ afterAll(() => {
     sourceFiles: sourcePaths,
     baseSha: "2a8a99e4a5f69aa803b3f10b982f583e75a87042", variant: "measurement" });
   writeFileSync(output, `${JSON.stringify({
-    schema: "paperclip.native-instruction-measurement.v2",
+    schema: "wardmote.native-instruction-measurement.v2",
     sourceSha: execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim(),
     sourceDirty: !source.immutable,
     sourceMetadata: source.sourceMetadata,

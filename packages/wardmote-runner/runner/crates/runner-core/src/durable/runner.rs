@@ -573,7 +573,7 @@ pub fn run_durable_runner<E: CommandExecutor>(
                 }
                 let mut activated = state.clone();
                 activated.warm_transition = None;
-                activated.schema = "paperclip.runner.durable.state.v1".to_owned();
+                activated.schema = "wardmote.runner.durable.state.v1".to_owned();
                 store.save(&activated)?;
                 state = activated;
                 executor.rotate_authority(&config);
@@ -1874,7 +1874,7 @@ fn event_envelope_for_protocol(event: &StoredOutboxEvent, protocol_version: u64)
         // Preserve the source sequence on a v1 connection so its cumulative
         // ACK can advance past an event family that only exists in PRP v2.
         // Never copy the v2 payload because it can include a goal objective.
-        envelope["payload"]["schema"] = json!("paperclip.prp.event.v1");
+        envelope["payload"]["schema"] = json!("wardmote.prp.event.v1");
         envelope["payload"]["eventType"] = json!("runner.diagnostic");
         envelope["payload"]["schemaVersion"] = json!(1);
         envelope["payload"]["payload"] = json!({
@@ -2353,7 +2353,7 @@ mod tests {
 
     fn command(command_type: &str) -> Command {
         Command {
-            schema: "paperclip.prp.command.v1".to_owned(),
+            schema: "wardmote.prp.command.v1".to_owned(),
             command_id: "command_1".to_owned(),
             controller_seq: 1,
             command_type: command_type.to_owned(),
@@ -2409,7 +2409,7 @@ mod tests {
         );
         assert_eq!(
             downgraded.pointer("/payload/schema"),
-            Some(&json!("paperclip.prp.event.v1")),
+            Some(&json!("wardmote.prp.event.v1")),
         );
         assert_eq!(
             downgraded.pointer("/payload/eventType"),
@@ -4559,7 +4559,7 @@ mod tests {
                 let mut bridge = ProviderToolBridge::default();
                 bridge
                     .prepare(AuthorizedToolSet {
-                        schema: "paperclip.runner.authorized-tools.v1".into(),
+                        schema: "wardmote.runner.authorized-tools.v1".into(),
                         schema_version: 1,
                         catalog_digest: authorized_tool_catalog_digest(&operations).unwrap(),
                         operations,

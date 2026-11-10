@@ -37,7 +37,7 @@ function seed(runId: string, sessionId: string): SessionSnapshot {
   return createSessionSnapshotFromMetadata({
     fixtureName: "live-console-demo",
     identity: {
-      schema: "paperclip.prp.identity.v1",
+      schema: "wardmote.prp.identity.v1",
       companyId: "package-local-demo",
       issueId: "live-console-demo",
       runId,
@@ -47,7 +47,7 @@ function seed(runId: string, sessionId: string): SessionSnapshot {
       driverSessionId: `thread-${sessionId}`,
     },
     capabilities: {
-      schema: "paperclip.prp.capabilities.v1",
+      schema: "wardmote.prp.capabilities.v1",
       sessionReusePolicy: "reuse_per_issue",
       driver: { kind: "live-console-demo", version: "1" },
       steer: true,

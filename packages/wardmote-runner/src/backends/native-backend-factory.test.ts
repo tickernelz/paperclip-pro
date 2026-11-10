@@ -21,7 +21,7 @@ function preparedExecution(base: NativeExecutionInput): NativeExecutionInput {
     skills: [], mcp: { assignmentSetId: "none", digest, bindingId: null },
   };
   return parseNativeExecutionInput({
-    ...base, schema: "paperclip.native-execution-input.v5", executionMode: "default", planningContext: null,
+    ...base, schema: "wardmote.native-execution-input.v5", executionMode: "default", planningContext: null,
     runtimeContext: { ...context, aggregateDigest: canonicalNativeRuntimeContextDigest(context) },
     completionContract: { ...base.completionContract, contract: { ...base.completionContract.contract, criteria: [{ id: "objective", requirement: "Complete the task." }] } },
   });
@@ -42,7 +42,7 @@ function execution(
   },
 ): NativeExecutionInput {
   return {
-    schema: "paperclip.native-execution-input.v1",
+    schema: "wardmote.native-execution-input.v1",
     binding: {
       companyId: "company",
       runId: "run",
@@ -126,7 +126,7 @@ function opencodeExecution(): NativeExecutionInput {
 function planningExecution(input: NativeExecutionInput): NativeExecutionInput {
   return {
     ...input,
-    schema: "paperclip.native-execution-input.v2",
+    schema: "wardmote.native-execution-input.v2",
     task: { ...input.task, workMode: "planning" },
     executionMode: "plan",
     planningContext: {

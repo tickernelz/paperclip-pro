@@ -22,7 +22,7 @@ function commentaryAction(kind: "complaint" | "suggestion", description: string,
     live: {
       order,
       descriptor: {
-        schema: "paperclip.semantic-tool.v1", operationId: id, version: 1,
+        schema: "wardmote.semantic-tool.v1", operationId: id, version: 1,
         title, description, exposure: "optional", requiredClaims: [],
         allowedModes: ["standard", "ask", "planning"],
         inputSchema: {

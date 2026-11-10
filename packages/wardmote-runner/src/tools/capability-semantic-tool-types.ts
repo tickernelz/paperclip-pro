@@ -109,7 +109,7 @@ export interface CapabilityToolAuthorizationContext {
 export type CapabilityAuthorizationOutcome = "exposed" | "allowed" | "denied" | "absent";
 
 export interface CapabilityAuthorizationRecord {
-  schema: "paperclip.capability.authorization-record.v1";
+  schema: "wardmote.capability.authorization-record.v1";
   sequence: number;
   runId: string;
   actorId: string;
@@ -130,13 +130,13 @@ export interface CapabilityAuthorizationRecord {
 }
 
 export interface CapabilityVisibleToolSet {
-  schema: "paperclip.capability.visible-tools.v1";
+  schema: "wardmote.capability.visible-tools.v1";
   tools: CapabilitySemanticToolDescriptor[];
   authorizationRecords: CapabilityAuthorizationRecord[];
 }
 
 export interface CapabilityPolicyDenial {
-  schema: "paperclip.capability.tool-result.v1";
+  schema: "wardmote.capability.tool-result.v1";
   ok: false;
   error: {
     code: "policy_denied" | "operation_absent" | "input_invalid" | "operation_unsupported";
@@ -148,7 +148,7 @@ export interface CapabilityPolicyDenial {
 }
 
 export interface CapabilityToolSuccess {
-  schema: "paperclip.capability.tool-result.v1";
+  schema: "wardmote.capability.tool-result.v1";
   ok: true;
   operationId: string;
   operationResultId: string;
@@ -168,7 +168,7 @@ export type CapabilityToolInvocationResult = CapabilityToolSuccess | CapabilityP
  * its redacted observable result.
  */
 export interface CapabilityModelToolSuccess {
-  schema: "paperclip.capability.model-tool-result.v1";
+  schema: "wardmote.capability.model-tool-result.v1";
   ok: true;
   operationId: string;
   operationResultId: string;

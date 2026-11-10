@@ -1392,7 +1392,7 @@ fn verify_initialize_response(value: &Value, process_id: u32) -> Result<(), Loca
         || value
             .pointer("/capabilities/structuredInput")
             .and_then(Value::as_str)
-            != Some("paperclip.question_set.v1")
+            != Some("wardmote.question_set.v1")
     {
         return Err(LocalRunnerError::invalid(
             "ACPX sidecar initialization capabilities are invalid",

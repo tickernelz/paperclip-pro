@@ -22,7 +22,7 @@ export function hasCompletedNativePermissionDecline(rows: readonly unknown[], bi
   if (terminal.eventType !== "turn.completed" || !terminal.turnId || !terminal.normalizedSessionId || !terminal.sourceInstanceId) return false;
   const selected = rows.map(record).map(row => ({ row, event: record(record(row.payload).prpEvent) })).filter(({ row, event }) =>
     row.companyId === binding.companyId && row.agentId === binding.agentId && row.runId === binding.runId
-    && row.protocolSchemaVersion === 1 && event.schema === "paperclip.prp.event.v1" && event.schemaVersion === 1
+    && row.protocolSchemaVersion === 1 && event.schema === "wardmote.prp.event.v1" && event.schemaVersion === 1
     && event.sourceKind === "runner" && event.runId === binding.runId && event.turnId === terminal.turnId
     && event.normalizedSessionId === terminal.normalizedSessionId && event.sourceInstanceId === terminal.sourceInstanceId
     && event.sourceEventId === row.sourceEventId && event.sourceInstanceId === row.sourceInstanceId && event.sourceSeq === row.sourceSeq

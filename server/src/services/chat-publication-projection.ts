@@ -367,7 +367,7 @@ function projectCard(
   return {
     interactionId: input.id,
     card: {
-      schema: "paperclip.chat.card.v1",
+      schema: "wardmote.chat.card.v1",
       kind: input.card.kind,
       title,
       ...(body ? { body } : {}),

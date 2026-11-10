@@ -62,7 +62,7 @@ function canonicalPendingRequest(input: {
   const request = record(eventPayload?.request);
   if (
     !event
-    || event.schema !== "paperclip.prp.event.v1"
+    || event.schema !== "wardmote.prp.event.v1"
     || event.eventType !== "runtime_request.created"
     || event.sourceKind !== "runner"
     || event.runId !== input.runId

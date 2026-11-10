@@ -1,6 +1,6 @@
 import { RUNNER_WORKFLOW_IDS, type RunnerWorkflowId } from "./workflow-contracts.js";
 
-export const STRESS_TRACEABILITY_SCHEMA = "paperclip.runner.stress-eval-traceability.v1" as const;
+export const STRESS_TRACEABILITY_SCHEMA = "wardmote.runner.stress-eval-traceability.v1" as const;
 
 export interface StressTraceabilityFinding {
   id: string;

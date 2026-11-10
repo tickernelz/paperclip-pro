@@ -10,7 +10,7 @@ branches are not passes.
 
 ## Provenance and environment
 
-- Catalog: `paperclip.slack_connector_probes.v1`, version 1.
+- Catalog: `wardmote.slack_connector_probes.v1`, version 1.
 - Wardmote revision: `7cfc23a3184c03bd33f45a09ef1dcdc83b618c48`, dirty checkout.
 - Carlos: `codex_local`, `gpt-5.6-sol`, legacy runtime. Native runtime is untested.
 - Workspace: `T0B1YJH3M8X`; bot: `U0C7CRB1ANR`; app: `A0C7CR9PF5K`.

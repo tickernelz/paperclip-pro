@@ -294,7 +294,7 @@ describe("buildHeartbeatRunIssueComment", () => {
       buildHeartbeatRunIssueComment({
         summary: "",
         nativeResult: {
-          schema: "paperclip.run_result.v1",
+          schema: "wardmote.run_result.v1",
           reportedWorkDisposition: "done",
           summary,
         },
@@ -306,7 +306,7 @@ describe("buildHeartbeatRunIssueComment", () => {
 describe("resolveHeartbeatRunResponse", () => {
   const resultJson = {
     nativeResult: {
-      schema: "paperclip.run_result.v1",
+      schema: "wardmote.run_result.v1",
       reportedWorkDisposition: "done",
       summary: "semantic result",
     },
@@ -405,7 +405,7 @@ describe("resolveHeartbeatRunResponse", () => {
       resolveHeartbeatRunResponse({
         resultJson: {
           nativeResult: {
-            schema: "paperclip.run_result.v1",
+            schema: "wardmote.run_result.v1",
             reportedWorkDisposition: "yielded",
             summary: "Waiting for Choose an output format.",
           },
@@ -421,7 +421,7 @@ describe("resolveHeartbeatRunResponse", () => {
         resultJson: {
           summary: "Waiting for Choose an output format.",
           nativeResult: {
-            schema: "paperclip.run_result.v1",
+            schema: "wardmote.run_result.v1",
             reportedWorkDisposition: "yielded",
             summary: "Waiting for Choose an output format.",
           },
@@ -440,7 +440,7 @@ describe("resolveHeartbeatRunResponse", () => {
       resolveHeartbeatRunResponse({
         resultJson: {
           nativeResult: {
-            schema: "paperclip.run_result.v1",
+            schema: "wardmote.run_result.v1",
             reportedWorkDisposition: "yielded",
             summary: "Waiting for Choose an output format.",
           },
@@ -463,7 +463,7 @@ describe("resolveHeartbeatRunResponse", () => {
   it("persists a final assistant reply when the server completed a conversation turn", () => {
     expect(resolveHeartbeatRunResponse({
       conversationTurnFinished: true,
-      resultJson: { nativeResult: { schema: "paperclip.run_result.v1",
+      resultJson: { nativeResult: { schema: "wardmote.run_result.v1",
         reportedWorkDisposition: "yielded", summary: "Waiting for the next message." } },
       finalAgentMessage: { text: "Which project should own this?",
         sourceEventId: "chat-final-1", channel: "final" },
@@ -547,7 +547,7 @@ describe("resolveHeartbeatRunResponse", () => {
       resolveHeartbeatRunResponse({
         resultJson: {
           acceptedResult: {
-            schema: "paperclip.run_result.v1",
+            schema: "wardmote.run_result.v1",
             reportedWorkDisposition: "done",
             summary: "TELEGRAM-ACCEPTED-Onyx",
           },
@@ -619,7 +619,7 @@ describe("resolveHeartbeatRunResponse", () => {
       resolveHeartbeatRunResponse({
         resultJson: {
           nativeResult: {
-            schema: "paperclip.run_result.v1",
+            schema: "wardmote.run_result.v1",
             reportedWorkDisposition: "yielded",
             summary: "Waiting for a provider answer.",
           },
@@ -645,7 +645,7 @@ describe("resolveHeartbeatRunResponse", () => {
       finalizationPhase: "committed",
       finalizationReasonCode: "external_chat_response_waiting",
       nativeResult: {
-        schema: "paperclip.run_result.v1",
+        schema: "wardmote.run_result.v1",
         reportedWorkDisposition: "yielded",
         summary: "SLACK-LUNA-WAITING",
         continuation: {
@@ -731,7 +731,7 @@ describe("resolveHeartbeatRunResponse", () => {
       finalizationReasonCode: "prior_status_terminal_preserved",
       externalChatCommittedResponseWakeSummaryAuthorized: true,
       nativeResult: {
-        schema: "paperclip.run_result.v1",
+        schema: "wardmote.run_result.v1",
         reportedWorkDisposition: "yielded",
         summary: "Exact accepted public response",
         continuation: {
@@ -800,10 +800,10 @@ describe("resolveHeartbeatRunResponse", () => {
       finalizationPhase: "committed",
       finalizationReasonCode: "governed_response_waiting",
       externalChatReviewPresentation: {
-        schema: "paperclip.chat_review_response_presentation.v1",
+        schema: "wardmote.chat_review_response_presentation.v1",
       },
       nativeResult: {
-        schema: "paperclip.run_result.v1",
+        schema: "wardmote.run_result.v1",
         reportedWorkDisposition: "yielded",
         summary:
           "The original image is prepared for delivery; the completion review is still pending.",
@@ -916,7 +916,7 @@ describe("projectHistoricalHeartbeatRunComment", () => {
     expect(
       projectHistoricalHeartbeatRunComment(LEGACY_WITHHELD_RUN_COMMENT, {
         nativeResult: {
-          schema: "paperclip.run_result.v1",
+          schema: "wardmote.run_result.v1",
           summary,
         },
       }),
@@ -927,7 +927,7 @@ describe("projectHistoricalHeartbeatRunComment", () => {
     expect(
       projectHistoricalHeartbeatRunComment("Real response", {
         nativeResult: {
-          schema: "paperclip.run_result.v1",
+          schema: "wardmote.run_result.v1",
           summary: "Different response",
         },
       }),

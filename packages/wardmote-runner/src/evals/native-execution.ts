@@ -518,13 +518,13 @@ function semanticToolEnvelope(
   const payload = record(event.payload, `${path}.payload`);
   const envelope = record(payload.semantic_tool, `${path}.payload.semantic_tool`);
   if (
-    envelope.schema !== "paperclip.prp.semantic_tool.v1"
+    envelope.schema !== "wardmote.prp.semantic_tool.v1"
     || envelope.schemaVersion !== 1
     || envelope.phase !== phase
   ) {
     fail(
       `${path}.payload.semantic_tool`,
-      `must be a paperclip.prp.semantic_tool.v1 ${phase} envelope`,
+      `must be a wardmote.prp.semantic_tool.v1 ${phase} envelope`,
     );
   }
   const correlation = record(envelope.correlation, `${path}.payload.semantic_tool.correlation`);

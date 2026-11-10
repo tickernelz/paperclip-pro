@@ -18,7 +18,7 @@
  * all agree on the wire format without any of them dragging in the others.
  */
 
-export const CAPABILITY_TURN_STREAM_SCHEMA = "paperclip.capability.turn-stream.v1" as const;
+export const CAPABILITY_TURN_STREAM_SCHEMA = "wardmote.capability.turn-stream.v1" as const;
 
 /** `no-transform` is the half that keeps an intermediary from coalescing frames. */
 export const CAPABILITY_TURN_STREAM_HEADERS: Readonly<Record<string, string>> = Object.freeze({

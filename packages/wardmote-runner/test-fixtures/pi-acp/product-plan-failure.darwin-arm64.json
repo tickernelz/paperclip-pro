@@ -1,5 +1,5 @@
 {
-  "schema": "paperclip.pi-product-plan-failure.v1",
+  "schema": "wardmote.pi-product-plan-failure.v1",
   "attemptId": "pi-product-plan-01",
   "sourceRevision": "7710736ca3924c655c5b0efd172cfd3c0173766a",
   "runtimeCodeRevision": "06cf356a8bc94f709fcd15606fe05e17933fe3b2",

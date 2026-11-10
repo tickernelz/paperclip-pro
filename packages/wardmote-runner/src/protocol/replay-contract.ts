@@ -32,7 +32,7 @@ import { normalizeLegacyPrpStructuredRunResult } from "./result-normalization.js
 export const PRP_PROTOCOL_NAME = "paperclip.runner";
 export const PRP_PROTOCOL_MIN_VERSION = 1;
 export const PRP_PROTOCOL_VERSION = 3;
-export const PRP_FIXTURE_SCHEMA = "paperclip.prp.fixture.v1";
+export const PRP_FIXTURE_SCHEMA = "wardmote.prp.fixture.v1";
 
 type TerminalReferences = [typeof stopReasonSchema];
 type EventReferences = [

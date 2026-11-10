@@ -307,7 +307,7 @@ describe("ACPX recovery identity", () => {
     expect(() =>
       verifyExpectedAcpxIdentity(fixture.expected, fixture.binding, {
         ...createAcpxIdentityRecord(fixture.expected, fixture.binding),
-        schema: "paperclip.runner.acpx-identity.v1",
+        schema: "wardmote.runner.acpx-identity.v1",
       }),
     ).toThrow(/Unsupported ACPX identity record schema/);
     const missingPermissionMode = createAcpxIdentityRecord(

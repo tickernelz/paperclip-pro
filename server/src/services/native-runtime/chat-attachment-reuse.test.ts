@@ -528,7 +528,7 @@ describe("native same-conversation chat attachment reuse", () => {
     const verifyReceipt = (semanticToolReceipts: unknown) => validateNativeDeliverableEvidence(db, {
       companyId, issueId, runId, objective: "Send me that file again.", semanticToolReceipts,
     }, {
-      schema: "paperclip.run_result.v1", reportedWorkDisposition: "done", summary: "Prepared the requested existing file.",
+      schema: "wardmote.run_result.v1", reportedWorkDisposition: "done", summary: "Prepared the requested existing file.",
       completionClaim: { contractRevision: "test", objectiveSatisfied: true, criteria: [], remainingWork: [] },
       evidence: [{ ref: `deliverable:${preparedId}` }], verification: [], attentionRequests: [], artifacts: [],
     });
@@ -576,7 +576,7 @@ describe("native same-conversation chat attachment reuse", () => {
       {
         ...(run.resultJson ?? {}),
         nativeResult: {
-          schema: "paperclip.run_result.v1",
+          schema: "wardmote.run_result.v1",
           summary: "Prepared the earlier file again.",
         },
       },
@@ -789,7 +789,7 @@ describe("native same-conversation chat attachment reuse", () => {
     expect(seen).toHaveLength(4);
     const invalidCursor = Buffer.from(
       JSON.stringify({
-        schema: "paperclip.chat-attachment-list-cursor.v1",
+        schema: "wardmote.chat-attachment-list-cursor.v1",
         conversationId,
         sourceCommentId: null,
         createdAt: equalCreatedAt.toISOString(),

@@ -1,5 +1,5 @@
 {
-  "schema": "paperclip.local-provider-boundary-golden.v1",
+  "schema": "wardmote.local-provider-boundary-golden.v1",
   "profiles": [
     {
       "id": "runner-codex",
@@ -85,7 +85,7 @@
       "eventType": "tool.execution.started",
       "priority": 2,
       "payload": {
-        "schema": "paperclip.tool.execution.v1",
+        "schema": "wardmote.tool.execution.v1",
         "executionId": "tool-boundary-1",
         "transport": "process",
         "operation": "execute",
@@ -110,7 +110,7 @@
       "eventType": "tool.execution.completed",
       "priority": 1,
       "payload": {
-        "schema": "paperclip.tool.execution.v1",
+        "schema": "wardmote.tool.execution.v1",
         "executionId": "tool-boundary-1",
         "transport": "process",
         "operation": "execute",
@@ -135,7 +135,7 @@
       "eventType": "plan.updated",
       "priority": 1,
       "payload": {
-        "schema": "paperclip.plan.updated.v1",
+        "schema": "wardmote.plan.updated.v1",
         "planId": "turn-boundary-1",
         "revision": 2,
         "explanation": "Keep every boundary lossless.",
@@ -195,7 +195,7 @@
       "priority": 0,
       "payload": {
         "request": {
-          "schema": "paperclip.runtime_request.v2",
+          "schema": "wardmote.runtime_request.v2",
           "requestKind": "runtime",
           "requestId": "question-boundary-1",
           "turnId": "turn-boundary-1",
@@ -204,7 +204,7 @@
           "status": "pending",
           "prompt": "Choose a boundary mode",
           "input": {
-            "schema": "paperclip.question_set.v1",
+            "schema": "wardmote.question_set.v1",
             "title": "Boundary mode",
             "questions": [
               {

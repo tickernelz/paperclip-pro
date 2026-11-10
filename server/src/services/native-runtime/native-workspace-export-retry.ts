@@ -95,7 +95,7 @@ export async function retryNativeWorkspaceExport(input: {
           const [lease] = await tx.update(environmentLeases).set({ status: "pending_cleanup", cleanupStatus: "failed",
             releasedAt: now, failureReason: "workspace_export_resume_pending", updatedAt: now,
             metadata: { ...current.lease.metadata, remoteExecutionTermination: undefined,
-            [NATIVE_WORKSPACE_EXPORT_RESUME_KEY]: { schema: "paperclip.workspace-export-resume.v2", requestId,
+            [NATIVE_WORKSPACE_EXPORT_RESUME_KEY]: { schema: "wardmote.workspace-export-resume.v2", requestId,
               companyId: input.companyId, runId: input.runId, leaseId: current.lease.id,
               pluginId: current.lease.metadata?.pluginId,
                 provider: current.lease.provider, providerLeaseId: current.lease.providerLeaseId, resultId: current.result.id },

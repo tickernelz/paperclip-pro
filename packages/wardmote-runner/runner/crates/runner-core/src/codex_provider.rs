@@ -270,7 +270,7 @@ impl ProviderTraceSink {
             .to_string();
         self.send_record(json!({
             "kind": "frame",
-            "schema": "paperclip.provider_trace_frame.v1",
+            "schema": "wardmote.provider_trace_frame.v1",
             "frameId": frame_id,
             "timestamp": timestamp,
             "direction": direction,
@@ -294,7 +294,7 @@ impl ProviderTraceSink {
     ) {
         self.send_record(json!({
             "kind": "interpretation",
-            "schema": "paperclip.provider_trace_interpretation.v1",
+            "schema": "wardmote.provider_trace_interpretation.v1",
             "frameId": frame_id,
             "stage": stage,
             "ruleId": rule_id,
@@ -3639,7 +3639,7 @@ fn opencode_question_set(params: &Value) -> Result<QuestionSetMapping, LocalRunn
             "OpenCode runtime request contains an unknown field",
         ));
     }
-    if request.get("schema").and_then(Value::as_str) != Some("paperclip.runtime_request.v2")
+    if request.get("schema").and_then(Value::as_str) != Some("wardmote.runtime_request.v2")
         || request.get("requestKind").and_then(Value::as_str) != Some("runtime")
         || request.get("status").and_then(Value::as_str) != Some("pending")
     {
@@ -3878,7 +3878,7 @@ fn codex_question_set(
     Ok((
         request_id,
         json!({
-            "schema": "paperclip.question_set.v1",
+            "schema": "wardmote.question_set.v1",
             "title": params.get("title").and_then(Value::as_str).unwrap_or("Codex input").chars().take(240).collect::<String>(),
             "submitLabel": "Submit answers",
             "questions": canonical,
@@ -3938,9 +3938,9 @@ fn codex_question_response(
             "runtime response contains an unknown top-level field",
         ));
     }
-    if response.get("schema").and_then(Value::as_str) != Some("paperclip.question_response.v1") {
+    if response.get("schema").and_then(Value::as_str) != Some("wardmote.question_response.v1") {
         return Err(LocalRunnerError::invalid(
-            "runtime response requires paperclip.question_response.v1",
+            "runtime response requires wardmote.question_response.v1",
         ));
     }
     let answers = response
@@ -4711,7 +4711,7 @@ done
             // The canonical response validator also validates the retained
             // question-set schema, just as durable presentation does.
             let native = codex_question_response(&pending, &json!({
-                "schema":"paperclip.question_response.v1",
+                "schema":"wardmote.question_response.v1",
                 "answers":{"environment":{"selectedOptionIds":[format!("option-{}", index + 1)]}}
             })).unwrap();
             assert_eq!(native["answers"]["environment"]["answers"], json!([label]));
@@ -4734,7 +4734,7 @@ done
         )
         .unwrap();
         assert_eq!(request_id, "41");
-        assert_eq!(question_set["schema"], "paperclip.question_set.v1");
+        assert_eq!(question_set["schema"], "wardmote.question_set.v1");
         let pending = PendingRuntimeRequest {
             rpc_id: json!(41),
             turn_id: "turn-1".to_owned(),
@@ -4747,7 +4747,7 @@ done
         let native = codex_question_response(
             &pending,
             &json!({
-                "schema": "paperclip.question_response.v1",
+                "schema": "wardmote.question_response.v1",
                 "answers": {"environment": {"selectedOptionIds": ["option-1"]}},
             }),
         )
@@ -4756,7 +4756,7 @@ done
         assert!(codex_question_response(
             &pending,
             &json!({
-                "schema": "paperclip.question_response.v1",
+                "schema": "wardmote.question_response.v1",
                 "answers": {"environment": {
                     "selectedOptionIds": ["option-1"],
                     "customText": "Production",
@@ -4784,7 +4784,7 @@ done
         assert!(codex_question_response(
             &pending,
             &json!({
-                "schema": "paperclip.question_response.v1",
+                "schema": "wardmote.question_response.v1",
                 "answers": {"environment": {"selectedOptionIds": ["option-1"]}},
                 "providerEnvelope": {},
             }),
@@ -4796,14 +4796,14 @@ done
     fn preserves_canonical_opencode_questions_and_wraps_the_validated_resolution() {
         let params = json!({
             "request": {
-                "schema": "paperclip.runtime_request.v2",
+                "schema": "wardmote.runtime_request.v2",
                 "requestKind": "runtime",
                 "requestId": "opencode-question-1",
                 "type": "input",
                 "status": "pending",
                 "prompt": "OpenCode requests user input.",
                 "input": {
-                    "schema": "paperclip.question_set.v1",
+                    "schema": "wardmote.question_set.v1",
                     "questions": [{
                         "id": "regions",
                         "prompt": "Which regions should receive the deployment?",
@@ -4840,7 +4840,7 @@ done
             retained_bytes: 0,
         };
         let response = json!({
-            "schema": "paperclip.question_response.v1",
+            "schema": "wardmote.question_response.v1",
             "answers": {
                 "regions": {"selectedOptionIds": ["east", "west"]}
             }
@@ -4861,7 +4861,7 @@ done
     fn rejects_non_input_and_malformed_opencode_runtime_requests() {
         let permission = json!({
             "request": {
-                "schema": "paperclip.runtime_request.v2",
+                "schema": "wardmote.runtime_request.v2",
                 "requestKind": "runtime",
                 "requestId": "permission-1",
                 "type": "permission",
@@ -4877,14 +4877,14 @@ done
 
         let duplicate_options = json!({
             "request": {
-                "schema": "paperclip.runtime_request.v2",
+                "schema": "wardmote.runtime_request.v2",
                 "requestKind": "runtime",
                 "requestId": "question-1",
                 "type": "input",
                 "status": "pending",
                 "prompt": "Choose.",
                 "input": {
-                    "schema": "paperclip.question_set.v1",
+                    "schema": "wardmote.question_set.v1",
                     "questions": [{
                         "id": "target",
                         "prompt": "Choose a target.",

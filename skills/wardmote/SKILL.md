@@ -208,7 +208,7 @@ In Agent Chat, Wardmote addresses the question to the conversation owner automat
   "payload": {
     "version": 1,
     "questionSet": {
-      "schema": "paperclip.question_set.v1",
+      "schema": "wardmote.question_set.v1",
       "questions": [{ "id": "detail", "prompt": "What should I know?", "answerMode": "text", "required": true }]
     },
     "questions": [{ "id": "detail", "prompt": "What should I know?", "selectionMode": "single", "required": true, "options": [{ "id": "text", "label": "Your answer", "freeText": true }] }]

@@ -44,7 +44,7 @@ export const syncCompanySkillsAction = {
       "ok": true,
       "operationId": "sync_company_skills",
       "result": {
-        "schema": "paperclip.capability.tool-result.v1",
+        "schema": "wardmote.capability.tool-result.v1",
         "ok": true,
         "operationId": "example",
         "operationResultId": "example",
@@ -74,7 +74,7 @@ export const syncCompanySkillsAction = {
           "schema": {
             "type": "string",
             "enum": [
-              "paperclip.capability.tool-result.v1"
+              "wardmote.capability.tool-result.v1"
             ]
           },
           "ok": {

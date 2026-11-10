@@ -36,7 +36,7 @@ function createWorkProductRow(overrides: Partial<Record<string, unknown>> = {}) 
 describe("workProductService", () => {
   it("extracts runner totals and enriches work-product metadata", () => {
     const summary = workProductDiffSummaryFromEventPayload({
-      schema: "paperclip.workspace.diff.v1",
+      schema: "wardmote.workspace.diff.v1",
       totals: { files: 3, additions: 17, deletions: 5 },
     });
 
@@ -49,7 +49,7 @@ describe("workProductService", () => {
     });
 
     const prpEvent = {
-      schema: "paperclip.prp.event.v1",
+      schema: "wardmote.prp.event.v1",
       payload: { totals: { files: 2, additions: 9, deletions: 4 } },
     };
     expect(workProductDiffSummaryFromEventPayload({ prpEvent })).toEqual({

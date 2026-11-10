@@ -626,17 +626,17 @@ function successfulToolResult(
   const json = strictJson(value);
   if (json !== null) return chunkedToolResult(tool, callId, "json", json);
   const representation = JSON.stringify({
-    schema: "paperclip.semantic_tool_result.v1",
+    schema: "wardmote.semantic_tool_result.v1",
     status: "completed",
     tool,
     callIdentitySha256: createHash("sha256").update(callId).digest("hex"),
-    encoding: "paperclip.tagged_graph.v1",
+    encoding: "wardmote.tagged_graph.v1",
     result: taggedGraph(value),
   });
   return chunkedToolResult(
     tool,
     callId,
-    "paperclip.tagged_graph.v1",
+    "wardmote.tagged_graph.v1",
     representation,
   );
 }
@@ -682,7 +682,7 @@ function strictJson(value: unknown): string | null {
 function chunkedToolResult(
   tool: string,
   callId: string,
-  encoding: "json" | "paperclip.tagged_graph.v1",
+  encoding: "json" | "wardmote.tagged_graph.v1",
   serialized: string,
 ): RunnerToolCallResult {
   if (Buffer.byteLength(serialized) <= MAX_RESULT_CHUNK_BYTES) {
@@ -690,7 +690,7 @@ function chunkedToolResult(
   }
   const chunks = utf8Chunks(serialized, MAX_RESULT_CHUNK_BYTES);
   const manifest = JSON.stringify({
-    schema: "paperclip.semantic_tool_result_chunks.v1",
+    schema: "wardmote.semantic_tool_result_chunks.v1",
     status: "completed",
     tool,
     callIdentitySha256: createHash("sha256").update(callId).digest("hex"),

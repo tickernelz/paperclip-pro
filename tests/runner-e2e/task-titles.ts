@@ -118,7 +118,7 @@ export function gradeTaskTitle(input: TaskTitleEvidenceInput) {
       && record(record(titleWrites[0]?.details).previous).title === provisional, "The same assigned agent and initial run must own the single persisted title mutation.");
   }
   return {
-    schema: "paperclip.task-title-eval.v1", passed: checks.every(entry => entry.passed), checks,
+    schema: "wardmote.task-title-eval.v1", passed: checks.every(entry => entry.passed), checks,
     initialTitle: initial.title, finalTitle: final.title,
     titleCalls: calls.map(([id, call]) => ({ id, position: call.position, completed: completions.has(id), result: results.get(id) ?? null })),
     titleWrites,

@@ -202,7 +202,7 @@ describe("Capability issue-thread fixtures", () => {
     expect(item?.kind).toBe("workspace_file_reference");
     if (item?.kind !== "workspace_file_reference") return;
     expect(item.reference).toMatchObject({
-      schema: "paperclip.workspace.file_reference.v1",
+      schema: "wardmote.workspace.file_reference.v1",
       source: "runner_verified",
       path: "docs/paperclip-runner-protocol.md",
       presentation: "document",
@@ -255,7 +255,7 @@ describe("Capability live projection", () => {
     });
 
     return {
-      schema: "paperclip.capability.live-session.v1",
+      schema: "wardmote.capability.live-session.v1",
       revision: 1,
       sessionId: "session-7g-1",
       providerThreadId: "thr-mock",
@@ -303,7 +303,7 @@ describe("Capability live projection", () => {
           id: "t3",
           role: "user",
           text: JSON.stringify({
-            schema: "paperclip.semantic-interaction-result.v1",
+            schema: "wardmote.semantic-interaction-result.v1",
             interactionId: "ix-1",
           }),
           turnId: "turn-1",
@@ -369,7 +369,7 @@ describe("Capability live projection", () => {
       ],
       authorizationRecords: [
         {
-          schema: "paperclip.semantic-authorization-record.v1",
+          schema: "wardmote.semantic-authorization-record.v1",
           id: "authz-1",
           runId: "run-7g-1",
           scenarioId: "hb-baseline",
@@ -397,7 +397,7 @@ describe("Capability live projection", () => {
       turnId: "turn-1",
       at: "2026-08-09T09:00:35.000Z",
       diff: {
-        schema: "paperclip.workspace.diff.v1",
+        schema: "wardmote.workspace.diff.v1",
         changeSetId: "turn-1:workspace",
         revision: 1,
         source: "runner_verified",
@@ -473,7 +473,7 @@ describe("Capability live projection", () => {
         event: "plan.updated",
         itemId: "plan-1",
         payload: {
-          schema: "paperclip.plan.updated.v1",
+          schema: "wardmote.plan.updated.v1",
           planId: "plan-1",
           revision: 1,
           explanation: "Plan generated",

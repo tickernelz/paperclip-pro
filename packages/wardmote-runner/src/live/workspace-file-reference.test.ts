@@ -22,7 +22,7 @@ describe("workspace file references", () => {
       );
       expect(references).toHaveLength(1);
       expect(references[0]).toMatchObject({
-        schema: "paperclip.workspace.file_reference.v1",
+        schema: "wardmote.workspace.file_reference.v1",
         source: "runner_verified",
         path: "guide.md",
         displayName: "the guide",

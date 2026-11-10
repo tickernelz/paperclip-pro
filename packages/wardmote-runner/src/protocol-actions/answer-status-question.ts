@@ -64,7 +64,7 @@ export const answerStatusQuestionAction = {
   "live": {
     "order": 6,
     "descriptor": {
-      "schema": "paperclip.semantic-tool.v1",
+      "schema": "wardmote.semantic-tool.v1",
       "operationId": "answer_status_question",
       "version": 1,
       "title": "Answer status question",
@@ -153,7 +153,7 @@ export const answerStatusQuestionAction = {
   "scenario": {
     "order": 6,
     "successExample": {
-      "schema": "paperclip.capability.tool-result.v1",
+      "schema": "wardmote.capability.tool-result.v1",
       "ok": true,
       "operationId": "answer_status_question",
       "operationResultId": "example-result",
@@ -191,7 +191,7 @@ export const answerStatusQuestionAction = {
           "schema": {
             "type": "string",
             "enum": [
-              "paperclip.capability.tool-result.v1"
+              "wardmote.capability.tool-result.v1"
             ]
           },
           "ok": {

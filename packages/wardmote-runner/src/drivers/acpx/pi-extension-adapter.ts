@@ -29,7 +29,7 @@ export function createPiProfileExtensionAdapter(context: AcpxProfileExtensionCon
       }
       const noticeId = `pi-notice-${createHash("sha256").update(JSON.stringify([context.sessionId, context.turnId, ++sequence])).digest("hex")}`;
       return [{ eventType: "provider.notice.recorded", itemId: noticeId, payload: {
-        schema: "paperclip.provider.notice.v1", noticeId, severity: params.severity,
+        schema: "wardmote.provider.notice.v1", noticeId, severity: params.severity,
         category: `pi.${params.category}`, scope: "session", recoverable: params.severity !== "error", userActionable: false,
         summary: safeText(params.summary), details,
       } }];

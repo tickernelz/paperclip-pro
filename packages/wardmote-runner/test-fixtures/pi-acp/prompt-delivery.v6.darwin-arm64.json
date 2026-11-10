@@ -54,7 +54,7 @@
     "Earlier saved user messages retain historical root text. The fresh system prompt and latest task constraints identify the current root and explicitly supersede earlier guidance.",
     "Shared composition and host-to-environment binding are separately established by source inspection and existing tests; no end-to-end paid Product claim."
   ],
-  "schema": "paperclip.pi-model-prompt-delivery-proof.v1",
+  "schema": "wardmote.pi-model-prompt-delivery-proof.v1",
   "recordedAt": "2026-09-29",
   "runtimeArtifactSource": "edf14a067ee7fba8d472d3cd9143f724fd51f4b5",
   "runtimeArtifactProviderPackDigest": "sha256:fcf9802008195797fc5e8f69954ff6d238a3b7518bd21af12e625d7549462145",

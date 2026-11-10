@@ -939,7 +939,7 @@ For an open-ended answer, render a text field using `payload.questionSet` with `
       "options": [{ "id": "describe", "label": "I'll describe it", "freeText": true }]
     }],
     "questionSet": {
-      "schema": "paperclip.question_set.v1",
+      "schema": "wardmote.question_set.v1",
       "questions": [{
         "id": "responsibility",
         "prompt": "What should the new agent be responsible for?",

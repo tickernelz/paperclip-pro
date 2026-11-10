@@ -72,7 +72,7 @@ export interface CapabilityScenarioIndexEntry {
 }
 
 export interface CapabilityScenarioIndex {
-  schema: "paperclip.capability.scenario-index.v1";
+  schema: "wardmote.capability.scenario-index.v1";
   generatedFrom: string;
   groups: Array<{ id: string; count: number }>;
   entries: CapabilityScenarioIndexEntry[];
@@ -168,7 +168,7 @@ export interface CapabilityControlPlaneCapability {
 }
 
 export interface CapabilityExposure {
-  schema: "paperclip.capability.exposure.v1";
+  schema: "wardmote.capability.exposure.v1";
   always: CapabilityExposureEntry[];
   optional: CapabilityExposureEntry[];
   controlPlane: CapabilityControlPlaneCapability[];
@@ -211,7 +211,7 @@ export interface CapabilityDiffDomainSection {
 }
 
 export interface CapabilityStateDiff {
-  schema: "paperclip.capability.state-diff.v1";
+  schema: "wardmote.capability.state-diff.v1";
   beforeRevision: number;
   afterRevision: number;
   domains: CapabilityDiffDomainSection[];
@@ -238,7 +238,7 @@ export interface ScenarioChatntentionalGap {
 }
 
 export interface CapabilityParityReport {
-  schema: "paperclip.capability.scenario-parity.v1";
+  schema: "wardmote.capability.scenario-parity.v1";
   verdict: CapabilityParityStatus;
   assertions: CapabilityParityAssertion[];
   forbidden: CapabilityForbiddenCheck[];
@@ -258,7 +258,7 @@ export interface CapabilityParityReport {
 }
 
 export interface CapabilityRunArtifact {
-  schema: "paperclip.capability.run-artifact.v1";
+  schema: "wardmote.capability.run-artifact.v1";
   scenarioId: string;
   mode: CapabilityRunMode;
   runId: string;

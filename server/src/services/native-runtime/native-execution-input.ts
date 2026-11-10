@@ -211,7 +211,7 @@ export function buildNativeExecutionInput(input: BuildNativeExecutionInput): Nat
     ? verifiedCompletionSources(input.turnContext, input.completionContract.sources ?? [])
     : [];
   const prepared = {
-    schema: "paperclip.native-execution-input.v5",
+    schema: "wardmote.native-execution-input.v5",
     ...((input.initialCommunicationGuidance || input.freshSessionHandoff) ? {
       initialCommunicationGuidance: [input.initialCommunicationGuidance, input.freshSessionHandoff].filter(Boolean).join("\n\n"),
     } : {}),
@@ -331,7 +331,7 @@ export function buildNativeExecutionInput(input: BuildNativeExecutionInput): Nat
     runtimeContext: input.runtimeContext,
   };
   return parseNativeExecutionInput(input.provider === "openai_dot" ? { ...prepared,
-    schema: "paperclip.native-execution-input.v6", provider: { kind: "openai_dot", model: null, binding: input.dotBinding },
+    schema: "wardmote.native-execution-input.v6", provider: { kind: "openai_dot", model: null, binding: input.dotBinding },
     workspace: { access: "none", cwd: null, repoUrl: null, repoRef: null, branchName: null },
     session: { ...prepared.session, driverKind: "openai_dot_mcp", lifecyclePolicy: { mode: "per_turn", idleTimeoutMs: null } }
   } : prepared) as NativeExecutionInputV5 | NativeExecutionInputV6;

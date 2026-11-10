@@ -5,7 +5,7 @@ import { RUNNER_WORKFLOW_CATALOG } from "./workflow-catalog.js";
 import type { RunnerWorkflowMatrixEntry } from "./workflow-harness.js";
 import type { StressTraceabilitySummary } from "./workflow-traceability.js";
 
-export const RUNNER_WORKFLOW_REPORT_SCHEMA = "paperclip.runner.workflow-eval-report.v1" as const;
+export const RUNNER_WORKFLOW_REPORT_SCHEMA = "wardmote.runner.workflow-eval-report.v1" as const;
 
 export interface RunnerWorkflowReportBundle {
   id: string;

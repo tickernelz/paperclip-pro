@@ -197,7 +197,7 @@ describe("Codex value and workspace boundaries", () => {
     );
     expect(codexToolAcceptsDisposition("unknown_tool", "done")).toBe(false);
     expect(codexToolAcceptsResult("wardmote_finish", {
-      schema: "paperclip.run_result.v1",
+      schema: "wardmote.run_result.v1",
       reportedWorkDisposition: "yielded",
       summary: "Waiting for the next response.",
       completionClaim: {
@@ -217,7 +217,7 @@ describe("Codex value and workspace boundaries", () => {
       },
     })).toBe(true);
     expect(codexToolAcceptsResult("wardmote_finish", {
-      schema: "paperclip.run_result.v1",
+      schema: "wardmote.run_result.v1",
       reportedWorkDisposition: "yielded",
       summary: "Continue immediately.",
       completionClaim: {

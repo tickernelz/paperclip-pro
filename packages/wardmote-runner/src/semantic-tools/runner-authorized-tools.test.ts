@@ -15,7 +15,7 @@ function definition(
     inputSchema: { type: "object" },
     outputSchema: { type: "object" },
     annotations: {
-      semanticContract: "paperclip.semantic-action.v1",
+      semanticContract: "wardmote.semantic-action.v1",
       version: 1,
       placement: "always",
       effect: "read",
@@ -31,7 +31,7 @@ describe("runner authorized tool projection", () => {
     ]);
 
     expect(set).toMatchObject({
-      schema: "paperclip.runner.authorized-tools.v1",
+      schema: "wardmote.runner.authorized-tools.v1",
       schemaVersion: 1,
       catalogDigest:
         "sha256:4e0332535c9e2ff1f5e43089517ee1b46654bfc9cb2ed51efbea4be50db21009",

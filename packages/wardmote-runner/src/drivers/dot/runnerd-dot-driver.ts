@@ -67,7 +67,7 @@ export class RunnerdDotDriver implements HarnessDriver {
     try { saved = await readProviderCheckpoint(this.options); }
     catch { return { recovered: false, reason: "Dot bridge checkpoint invalid; external work requires reconciliation" }; }
     if (!saved) return { recovered: false, reason: "Dot bridge checkpoint missing; external work requires reconciliation" };
-    if (saved.schema !== "paperclip.runner.dot-provider-state.v1" || saved.runId !== snapshot.runId || saved.sessionId !== snapshot.driverSessionId || saved.turnId !== this.options.identity.turnId) {
+    if (saved.schema !== "wardmote.runner.dot-provider-state.v1" || saved.runId !== snapshot.runId || saved.sessionId !== snapshot.driverSessionId || saved.turnId !== this.options.identity.turnId) {
       return { recovered: false, reason: "Dot bridge checkpoint authority mismatch" };
     }
     return { recovered: true, session: await this.openSession({ runId: snapshot.runId,
@@ -176,7 +176,7 @@ class RunnerdDotSession implements HarnessSession {
     if (!checkpoint && this.#events.some(event => event.eventType === "external_provider.dispatch_requested")) {
       throw new Error("dot_provider_checkpoint_missing_reconciliation_required");
     }
-    if (checkpoint && (checkpoint.schema !== "paperclip.runner.dot-provider-state.v1"
+    if (checkpoint && (checkpoint.schema !== "wardmote.runner.dot-provider-state.v1"
       || checkpoint.runId !== o.identity.runId || checkpoint.sessionId !== o.identity.normalizedSessionId
       || checkpoint.turnId !== o.identity.turnId)) throw new Error("dot_runner_checkpoint_authority_mismatch");
     this.#detachPort = await o.port.attach(async operation => {

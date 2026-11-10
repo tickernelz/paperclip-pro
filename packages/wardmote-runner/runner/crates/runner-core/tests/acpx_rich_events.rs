@@ -21,10 +21,10 @@ fn event(event_type: &str, payload: Value) -> AcpxSidecarEvent {
     }
 }
 fn plan() -> Value {
-    json!({"schema":"paperclip.plan.updated.v1","planId":"plan-1","revision":2,"explanation":"Changed order","steps":[{"stepId":"step-1","body":"Inspect","status":"completed"},{"stepId":"step-2","body":"Build","status":"in_progress"}],"complete":false,"syncStatus":"not_applicable","documentRevision":null})
+    json!({"schema":"wardmote.plan.updated.v1","planId":"plan-1","revision":2,"explanation":"Changed order","steps":[{"stepId":"step-1","body":"Inspect","status":"completed"},{"stepId":"step-2","body":"Build","status":"in_progress"}],"complete":false,"syncStatus":"not_applicable","documentRevision":null})
 }
 fn artifact() -> Value {
-    json!({"schema":"paperclip.artifact.generated.v1","artifactId":"image-1","status":"completed","reference":"outputs/diagram.png","mediaType":"image/png","registered":false,"failure":null})
+    json!({"schema":"wardmote.artifact.generated.v1","artifactId":"image-1","status":"completed","reference":"outputs/diagram.png","mediaType":"image/png","registered":false,"failure":null})
 }
 
 #[test]
@@ -36,7 +36,7 @@ fn rich_activity_preserves_plans_children_and_artifact_metadata_without_mutation
         ("artifact.generated", artifact()),
         (
             "delegation.completed",
-            json!({"schema":"paperclip.delegation.v1","delegationId":"task-1","action":"spawn","status":"completed","children":[{"childId":"child-1","role":"explore","model":"small-model","status":"completed","summary":"Found the implementation","activitySummary":"Searched src; duration 310 ms"}]}),
+            json!({"schema":"wardmote.delegation.v1","delegationId":"task-1","action":"spawn","status":"completed","children":[{"childId":"child-1","role":"explore","model":"small-model","status":"completed","summary":"Found the implementation","activitySummary":"Searched src; duration 310 ms"}]}),
         ),
     ] {
         let projected = state
@@ -125,7 +125,7 @@ fn rich_activity_requires_the_current_run_and_active_turn() {
 #[test]
 fn rich_activity_is_byte_bounded_and_preserves_long_schema_bounded_output() {
     let text = "Unicode 漢字\n".repeat(1_000);
-    let payload = json!({"schema":"paperclip.tool.execution.v1","executionId":"tool-1","transport":"builtin","operation":"read","status":"completed","output":text,"outputBytes":text.len(),"outputTruncated":false,"outputDigest":null});
+    let payload = json!({"schema":"wardmote.tool.execution.v1","executionId":"tool-1","transport":"builtin","operation":"read","status":"completed","output":text,"outputBytes":text.len(),"outputTruncated":false,"outputDigest":null});
     let AcpxEventPayload::RichActivity { payload, .. } =
         decode_acpx_event(&scope(), &event("tool.execution.completed", payload)).unwrap()
     else {
@@ -148,7 +148,7 @@ fn question_event(description: String) -> AcpxSidecarEvent {
         event_type: GeneratedAcpxSidecarEventType::RuntimeInputRequested,
         run_id: Some("run-1".to_owned()),
         turn_id: Some("turn-1".to_owned()),
-        payload: json!({"requestId":"plan-request","questionSet":{"schema":"paperclip.question_set.v1","description":description,"questions":[{"id":"revision-123","prompt":"Approve?","required":true,"answerMode":"single_select","options":[{"id":"accept","label":"Accept"},{"id":"reject","label":"Reject"}]}]}}),
+        payload: json!({"requestId":"plan-request","questionSet":{"schema":"wardmote.question_set.v1","description":description,"questions":[{"id":"revision-123","prompt":"Approve?","required":true,"answerMode":"single_select","options":[{"id":"accept","label":"Accept"},{"id":"reject","label":"Reject"}]}]}}),
     }
 }
 

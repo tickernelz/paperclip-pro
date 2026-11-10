@@ -67,7 +67,7 @@ describe.skipIf(!support.supported)("heartbeat environment selection boundary", 
         issue: { id: issue.id, identifier: "ENV-1", title: issue.title, description: null, workMode: "standard" },
         taskPrompt: "Continue the same task", normalizedSessionId: randomUUID(), provider: "codex",
         workspace: { id: workspaceId, cwd: home, repoUrl: null, repoRef: null, branchName: null },
-        completionContract: { id: randomUUID(), sha256: `sha256:${"a".repeat(64)}`, schemaVersion: "paperclip.run-result.v1", contract: { revision: "1", objective: "Select the environment", criteria: [{ id: "objective", requirement: "Preserve the workspace" }] } },
+        completionContract: { id: randomUUID(), sha256: `sha256:${"a".repeat(64)}`, schemaVersion: "wardmote.run-result.v1", contract: { revision: "1", objective: "Select the environment", criteria: [{ id: "objective", requirement: "Preserve the workspace" }] } },
         runtimeContext: nativeRuntimeContextFixture(),
       }) };
     };

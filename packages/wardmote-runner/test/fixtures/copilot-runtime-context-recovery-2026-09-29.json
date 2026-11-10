@@ -1,5 +1,5 @@
 {
-  "schema": "paperclip.copilot-runtime-context-recovery.v1",
+  "schema": "wardmote.copilot-runtime-context-recovery.v1",
   "recordedAt": "2026-09-29T15:32:50.799156+00:00",
   "sourceRevision": "3d0c45920c326821c2f5ff48dc985ef8158b46e4",
   "providerVersion": "1.0.88",

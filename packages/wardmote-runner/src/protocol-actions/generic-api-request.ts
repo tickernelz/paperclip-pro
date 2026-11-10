@@ -55,7 +55,7 @@ export const genericApiRequestAction = {
   "live": {
     "order": 27,
     "descriptor": {
-      "schema": "paperclip.semantic-tool.v1",
+      "schema": "wardmote.semantic-tool.v1",
       "operationId": "generic_api_request",
       "version": 1,
       "title": "Generic API request",
@@ -138,7 +138,7 @@ export const genericApiRequestAction = {
           "schema": {
             "type": "string",
             "enum": [
-              "paperclip.capability.tool-result.v1"
+              "wardmote.capability.tool-result.v1"
             ]
           },
           "ok": {

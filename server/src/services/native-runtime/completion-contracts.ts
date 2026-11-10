@@ -7,7 +7,7 @@ import type { NativeCompletionSource, StrictCompletionContractInput } from "../.
 
 import { nativeSha256 } from "./canonical.js";
 
-export const NATIVE_COMPLETION_CONTRACT_SCHEMA = "paperclip.completion-contract.v1";
+export const NATIVE_COMPLETION_CONTRACT_SCHEMA = "wardmote.completion-contract.v1";
 export const NATIVE_COMPLETION_POLICY_VERSION = "phase6-v4";
 
 /** Canonical persisted receipt includes the policy that governs the contract. */

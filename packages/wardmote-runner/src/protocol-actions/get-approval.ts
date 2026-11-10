@@ -48,7 +48,7 @@ export const getApprovalAction = {
   "live": {
     "order": 17,
     "descriptor": {
-      "schema": "paperclip.semantic-tool.v1",
+      "schema": "wardmote.semantic-tool.v1",
       "operationId": "get_approval",
       "version": 1,
       "title": "Get approval",

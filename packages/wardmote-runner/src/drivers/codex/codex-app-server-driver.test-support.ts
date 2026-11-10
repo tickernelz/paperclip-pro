@@ -295,7 +295,7 @@ export const liveConsoleFixturePath = fileURLToPath(
 );
 
 export const result: PrpStructuredRunResult = {
-  schema: "paperclip.run_result.v1",
+  schema: "wardmote.run_result.v1",
   reportedWorkDisposition: "done",
   summary: "Created hello.txt.",
   completionClaim: {
