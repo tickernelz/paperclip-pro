@@ -280,7 +280,7 @@ describe("buildWardmoteTaskMarkdown", () => {
         externalChatProvider,
       });
       expect(markdown).toContain("External chat file delivery:");
-      expect(markdown).toContain("paperclip-upload-artifact.sh --chat-comment");
+      expect(markdown).toContain("wardmote-upload-artifact.sh --chat-comment");
       expect(markdown).toContain("installed skill location, not the task workspace");
       expect(markdown).toContain("Do not search for a separate provider tool connection");
       expect(markdown).toContain("do not claim provider delivery merely because binding succeeded");
@@ -420,7 +420,7 @@ describe("buildWardmoteTaskMarkdown", () => {
       expect(markdown).toContain("Keep useful wait, blocker, permission, and failure updates");
       expect(markdown).toContain("do not suppress transport-managed progress");
       expect(markdown).toContain('"id":"native-attachment"');
-      expect(markdown).not.toContain("paperclip-upload-artifact.sh");
+      expect(markdown).not.toContain("wardmote-upload-artifact.sh");
       expect(markdown).not.toContain("WARDMOTE_API_KEY");
       expect(markdown).not.toContain("/api/attachments/");
     },

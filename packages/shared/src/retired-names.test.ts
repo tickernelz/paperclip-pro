@@ -25,6 +25,14 @@ describe("rewriteRetiredNames", () => {
     expect(result.replacements).toBe(16);
   });
 
+  it("renames the bundled helper scripts", () => {
+    expect(rewriteRetiredNames("Use `skills/paperclip/scripts/paperclip-upload-artifact.sh` and scripts/paperclip-issue-update.sh --dry-run.")).toEqual({
+      text: "Use `skills/wardmote/scripts/wardmote-upload-artifact.sh` and scripts/wardmote-issue-update.sh --dry-run.",
+      replacements: 3,
+    });
+    expect(rewriteRetiredNames("my-paperclip-upload-artifact.sh paperclip-upload-artifact.shx").replacements).toBe(0);
+  });
+
   it("maps lowercase OMP tool names through the irregular renames", () => {
     expect(rewriteRetiredNames("mcp__paperclip_paperclipstarttoolconnection").text)
       .toBe("mcp__wardmote_wardmotestartauthorizationtoolconnection");

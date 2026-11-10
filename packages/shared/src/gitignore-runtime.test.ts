@@ -21,4 +21,12 @@ describe("gitignore: .wardmote-runtime/", () => {
     ).trim();
     expect(output).toMatch(/^\.gitignore:\d+:\.paperclip-runtime\//);
   });
+
+  it("ignores the artifact helper state under .wardmote/", () => {
+    const output = execSync(
+      "git check-ignore -v .wardmote/artifact-helper/state.json",
+      { cwd: REPO_ROOT, encoding: "utf8" },
+    ).trim();
+    expect(output).toMatch(/^\.gitignore:\d+:\.wardmote\//);
+  });
 });

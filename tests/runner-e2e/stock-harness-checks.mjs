@@ -29,7 +29,7 @@ export const stockHarnessGates = [
     "packages/adapter-utils/src/prompt-sections.test.ts",
     "packages/adapter-utils/src/acpx-engine/execute.test.ts",
     "packages/adapter-utils/src/acpx-engine/ephemeral-session-environment.test.ts",
-    "server/src/__tests__/paperclip-issue-update-helper.test.ts",
+    "server/src/__tests__/wardmote-issue-update-helper.test.ts",
   ], required: ["keeps task and chat defaults to identity and connection guidance",
     "does not restore generic procedures on resume or with the legacy opt-in",
     "integrates the env-free store", "advertises folded routing metadata", "bounds routing descriptions",
@@ -106,13 +106,13 @@ export function sourceFingerprint() {
   const sourceErrors = [];
   sources.add("skills/wardmote/SKILL.md");
   sources.add("skills/wardmote/references/issue-documents.md");
-  sources.add("scripts/paperclip-issue-update.sh");
-  sources.add("skills/wardmote/scripts/paperclip-issue-update.sh");
+  sources.add("scripts/wardmote-issue-update.sh");
+  sources.add("skills/wardmote/scripts/wardmote-issue-update.sh");
   for (const source of [...sources].sort()) {
     hash.update(source);
     try { hash.update("present\0").update(readFileSync(join(root, source))); }
     catch (error) {
-      if ((source === "skills/wardmote/references/issue-documents.md" || source === "skills/wardmote/scripts/paperclip-issue-update.sh") && error.code === "ENOENT") hash.update("absent\0");
+      if ((source === "skills/wardmote/references/issue-documents.md" || source === "skills/wardmote/scripts/wardmote-issue-update.sh") && error.code === "ENOENT") hash.update("absent\0");
       else sourceErrors.push(source);
     }
   }
