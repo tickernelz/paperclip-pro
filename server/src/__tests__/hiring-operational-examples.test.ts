@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { createAgentHireSchema, createIssueThreadInteractionSchema, updateIssueSchema } from "@tickernelz/wardmote-shared";
 
-const reference = readFileSync(new URL("../../../skills/paperclip/references/api-reference.md", import.meta.url), "utf8");
+const reference = readFileSync(new URL("../../../skills/wardmote/references/api-reference.md", import.meta.url), "utf8");
 const uuid = "11111111-1111-4111-8111-111111111111";
 const substituteIds = (body: unknown) => JSON.parse(JSON.stringify(body).replace(/\{[\w-]+\}/g, uuid));
 
@@ -58,7 +58,7 @@ describe("published hiring and human-input examples", () => {
   });
 
   it("includes a complete valid text-field recipe in the skill itself", () => {
-    const skill = readFileSync(new URL("../../../skills/paperclip/SKILL.md", import.meta.url), "utf8");
+    const skill = readFileSync(new URL("../../../skills/wardmote/SKILL.md", import.meta.url), "utf8");
     const section = skill.split("**Asking a free-text question.**")[1]!;
     const body = JSON.parse(section.match(/```json\n([\s\S]*?)\n```/)![1]) as ToolArguments;
     expect(createIssueThreadInteractionSchema.safeParse(interactionBody(body))).toMatchObject({ success: true });

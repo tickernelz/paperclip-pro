@@ -2,15 +2,15 @@
   "schemaVersion": 1,
   "dispositions": ["control_plane_owned", "always_agent_tool", "optional_agent_tool"],
   "skillSources": [
-    "skills/paperclip/SKILL.md",
-    "skills/paperclip/references/api-reference.md",
-    "skills/paperclip/references/artifacts.md",
-    "skills/paperclip/references/cases.md",
-    "skills/paperclip/references/company-skills.md",
-    "skills/paperclip/references/issue-documents.md",
-    "skills/paperclip/references/issue-workspaces.md",
-    "skills/paperclip/references/routines.md",
-    "skills/paperclip/references/workflows.md"
+    "skills/wardmote/SKILL.md",
+    "skills/wardmote/references/api-reference.md",
+    "skills/wardmote/references/artifacts.md",
+    "skills/wardmote/references/cases.md",
+    "skills/wardmote/references/company-skills.md",
+    "skills/wardmote/references/issue-documents.md",
+    "skills/wardmote/references/issue-workspaces.md",
+    "skills/wardmote/references/routines.md",
+    "skills/wardmote/references/workflows.md"
   ],
   "toolMappings": {
     "wardmoteMe": ["control_plane_owned", "injected_actor_context"],

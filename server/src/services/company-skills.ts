@@ -314,7 +314,7 @@ function assertImportedSkillKeyAllowed(skill: ImportedSkill) {
   if (!legacyBundledKey && !skill.key.startsWith("tickernelz/wardmote/")) return;
   const metadata = isPlainRecord(skill.metadata) ? skill.metadata : null;
   const sourceKind = asString(metadata?.sourceKind);
-  if (!legacyBundledKey && sourceKind === "paperclip_bundled") return;
+  if (!legacyBundledKey && sourceKind === "wardmote_bundled") return;
   throw unprocessable(
     `Reserved Paperclip skill key "${skill.key}" cannot be imported from unbundled sources.`,
     {
@@ -641,10 +641,10 @@ function readCanonicalSkillKey(frontmatter: Record<string, unknown>, metadata: R
  * `ensureSkillInventoryCurrent` imports into every company library.
  */
 export const WARDMOTE_CORE_SKILL_KEYS = [
-  "tickernelz/wardmote/paperclip",
-  "tickernelz/wardmote/paperclip-board",
-  "tickernelz/wardmote/paperclip-converting-plans-to-tasks",
-  "tickernelz/wardmote/paperclip-create-agent",
+  "tickernelz/wardmote/wardmote",
+  "tickernelz/wardmote/wardmote-board",
+  "tickernelz/wardmote/wardmote-converting-plans-to-tasks",
+  "tickernelz/wardmote/wardmote-create-agent",
   "tickernelz/wardmote/para-memory-files",
 ] as const;
 
@@ -660,7 +660,7 @@ function deriveCanonicalSkillKey(
   if (explicitKey) return explicitKey;
 
   const sourceKind = asString(metadata?.sourceKind);
-  if (sourceKind === "paperclip_bundled") {
+  if (sourceKind === "wardmote_bundled") {
     return `tickernelz/wardmote/${slug}`;
   }
 
@@ -1014,7 +1014,7 @@ function deriveImportedSkillSource(
       const sourceKind = owner === "paperclipai"
         && repoName === "paperclip"
         && canonicalKey?.startsWith("tickernelz/wardmote/")
-        ? "paperclip_bundled"
+        ? "wardmote_bundled"
         : "github";
       return {
         sourceType: "github",
@@ -1324,7 +1324,7 @@ function paperclipBundledFolderCategory(key: string, metadata?: unknown) {
     return keyParts[2];
   }
   if (isPaperclipBundledSkillKey(key)) return "paperclip-core";
-  if (isPlainRecord(metadata) && asString(metadata.sourceKind) === "paperclip_bundled") {
+  if (isPlainRecord(metadata) && asString(metadata.sourceKind) === "wardmote_bundled") {
     return "paperclip-core";
   }
   return null;
@@ -1345,14 +1345,14 @@ function stripDerivedPaperclipBundledMetadata(key: string, metadata: unknown): u
 
   const out = { ...comparable };
   if (out.skillKey === key) delete out.skillKey;
-  if (out.sourceKind === "paperclip_bundled") delete out.sourceKind;
+  if (out.sourceKind === "wardmote_bundled") delete out.sourceKind;
   delete out.missingSource;
   return out;
 }
 
 function importedSkillMetadataEqual(existing: CompanySkill, values: ImportedSkillPersistValues) {
   const incomingMetadata = isPlainRecord(values.metadata) ? values.metadata : null;
-  if (isPaperclipBundledSkillKey(values.key) && asString(incomingMetadata?.sourceKind) === "paperclip_bundled") {
+  if (isPaperclipBundledSkillKey(values.key) && asString(incomingMetadata?.sourceKind) === "wardmote_bundled") {
     return JSON.stringify(stripDerivedPaperclipBundledMetadata(existing.key, existing.metadata))
       === JSON.stringify(stripDerivedPaperclipBundledMetadata(values.key, values.metadata));
   }
@@ -2693,7 +2693,7 @@ function deriveSkillSourceInfo(skill: SkillSourceInfoTarget): {
 } {
   const metadata = getSkillMeta(skill);
   const localSkillDir = normalizeSkillDirectory(skill);
-  if (metadata.sourceKind === "paperclip_bundled") {
+  if (metadata.sourceKind === "wardmote_bundled") {
     return {
       editable: false,
       editableReason: "Bundled Paperclip skills are read-only.",
@@ -2988,7 +2988,7 @@ export function companySkillService(db: Db) {
     const firstTaskSkill = await readLocalSkillImportFromDirectory(
       companyId,
       fileURLToPath(new URL("../onboarding-assets/first-task/skills/first-task/", import.meta.url)),
-      { metadata: { sourceKind: "paperclip_bundled" } },
+      { metadata: { sourceKind: "wardmote_bundled" } },
     );
     for (const skillsRoot of resolveBundledSkillsRoot()) {
       const stats = await fs.stat(skillsRoot).catch(() => null);
@@ -3000,12 +3000,12 @@ export function companySkillService(db: Db) {
             ...skill,
             metadata: {
               ...(skill.metadata ?? {}),
-              sourceKind: "paperclip_bundled",
+              sourceKind: "wardmote_bundled",
             },
           }),
           metadata: {
             ...(skill.metadata ?? {}),
-            sourceKind: "paperclip_bundled",
+            sourceKind: "wardmote_bundled",
           },
         })))
         .catch(() => [] as ImportedSkill[]);
@@ -3053,7 +3053,7 @@ export function companySkillService(db: Db) {
   }
 
   async function ensureBundledSkillReleases(companyId: string, bundledSkills: CompanySkill[]) {
-    const paperclipSkill = bundledSkills.find((skill) => skill.key === "tickernelz/wardmote/paperclip");
+    const paperclipSkill = bundledSkills.find((skill) => skill.key === "tickernelz/wardmote/wardmote");
     if (!paperclipSkill) return;
     for (const release of await readBundledSkillReleaseRegistry()) {
       const fileInventory = serializeVersionFileInventory(
@@ -3155,7 +3155,7 @@ export function companySkillService(db: Db) {
 
     for (const skill of skills) {
       if (skill.sourceType !== "local_path") continue;
-      if (isPaperclipBundledSkillKey(skill.key) || asString(skill.metadata?.sourceKind) === "paperclip_bundled") continue;
+      if (isPaperclipBundledSkillKey(skill.key) || asString(skill.metadata?.sourceKind) === "wardmote_bundled") continue;
 
       if (!missingIds.has(skill.id)) {
         const metadata = getMissingSourceMarker(skill.metadata)
@@ -5292,7 +5292,7 @@ export function companySkillService(db: Db) {
 
         const existingBundledBySlug = acceptedSkills.find((skill) => (
           skill.slug === nextSkill.slug
-          && (isPaperclipBundledSkillKey(skill.key) || asString(skill.metadata?.sourceKind) === "paperclip_bundled")
+          && (isPaperclipBundledSkillKey(skill.key) || asString(skill.metadata?.sourceKind) === "wardmote_bundled")
         )) ?? null;
         if (existingBundledBySlug) {
           candidates.push({
@@ -6249,7 +6249,7 @@ export function companySkillService(db: Db) {
       const incomingKind = asString(incomingMeta.sourceKind);
       if (
         existing
-        && existingMeta.sourceKind === "paperclip_bundled"
+        && existingMeta.sourceKind === "wardmote_bundled"
         && incomingKind === "github"
         && incomingOwner === "paperclipai"
         && incomingRepo === "paperclip"
@@ -6600,8 +6600,8 @@ export function companySkillService(db: Db) {
       model: asString(adapterConfig.model) ?? asString(runtimeConfig.model) ?? null,
       adapterConfig,
       runtimeConfig,
-      assignedSkills: isPlainRecord(adapterConfig.paperclipSkillSync)
-        ? adapterConfig.paperclipSkillSync
+      assignedSkills: isPlainRecord(adapterConfig.wardmoteSkillSync)
+        ? adapterConfig.wardmoteSkillSync
         : null,
       instructionsRef:
         asString(adapterConfig.instructionsFilePath) ??

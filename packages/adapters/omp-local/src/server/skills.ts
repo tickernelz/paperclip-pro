@@ -12,6 +12,7 @@ import {
   readInstalledSkillTargets,
   readPaperclipRuntimeSkillEntries,
   relinkPaperclipSkillsFromOtherInstalls,
+  removeRetiredBundledSkillLinks,
   resolvePaperclipDesiredSkillNames,
 } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import { resolveOmpProfile } from "./profile.js";
@@ -99,6 +100,7 @@ export async function syncOmpSkills(
   const desiredSet = new Set(desiredSkills);
   const skillsHome = path.join(resolveOmpAgentDir(ctx.config), "skills");
   await fs.mkdir(skillsHome, { recursive: true });
+  await removeRetiredBundledSkillLinks(skillsHome);
   const installed = await readInstalledSkillTargets(skillsHome);
   const availableByRuntimeName = new Map(availableEntries.map((entry) => [entry.runtimeName, entry]));
 
@@ -126,6 +128,7 @@ export async function ensureOmpSkills(
 ): Promise<void> {
   const availableEntries = await readPaperclipRuntimeSkillEntries(config, __moduleDir);
   const skillsHome = path.join(resolveOmpAgentDir(config, agentDirOverride), "skills");
+  await removeRetiredBundledSkillLinks(skillsHome);
   await relinkPaperclipSkillsFromOtherInstalls(skillsHome, availableEntries);
   const desiredSet = new Set(resolvePaperclipDesiredSkillNames(config, availableEntries));
   if (desiredSet.size === 0) return;

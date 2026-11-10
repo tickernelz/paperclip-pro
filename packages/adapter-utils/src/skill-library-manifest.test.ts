@@ -22,27 +22,27 @@ describe("buildSkillLibraryManifestMarkdown", () => {
   it("renders enabled, not-enabled, and broken states deterministically and key-sorted", () => {
     const entries = [
       entry({ key: "acme/tools/wireframe" }),
-      entry({ key: "tickernelz/wardmote/paperclip" }),
+      entry({ key: "tickernelz/wardmote/wardmote" }),
       entry({
         key: "acme/tools/broken",
         sourceStatus: "missing",
         missingDetail: "Failed to materialize skill files: SKILL.md copy is missing.",
       }),
     ];
-    const desiredSkillKeys = new Set(["tickernelz/wardmote/paperclip", "acme/tools/broken"]);
+    const desiredSkillKeys = new Set(["tickernelz/wardmote/wardmote", "acme/tools/broken"]);
 
     const manifest = buildSkillLibraryManifestMarkdown({ entries, desiredSkillKeys });
 
     expect(manifest).toContain("## Company skill library");
     expect(manifest).toContain("- acme/tools/wireframe — installed, not enabled for you");
-    expect(manifest).toContain("- tickernelz/wardmote/paperclip — enabled");
+    expect(manifest).toContain("- tickernelz/wardmote/wardmote — enabled");
     expect(manifest).toContain(
       "- acme/tools/broken — enabled but unavailable: Failed to materialize skill files: SKILL.md copy is missing.",
     );
     // Key-sorted body, regardless of input order.
     const brokenIndex = manifest!.indexOf("acme/tools/broken");
     const wireframeIndex = manifest!.indexOf("acme/tools/wireframe");
-    const coreIndex = manifest!.indexOf("tickernelz/wardmote/paperclip —");
+    const coreIndex = manifest!.indexOf("tickernelz/wardmote/wardmote —");
     expect(brokenIndex).toBeLessThan(wireframeIndex);
     expect(wireframeIndex).toBeLessThan(coreIndex);
 

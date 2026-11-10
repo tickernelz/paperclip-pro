@@ -12,7 +12,7 @@ import { afterEach, describe, expect, it } from "vitest";
 // classify failures (retry connection-level faults and 5xx, never retry a
 // definitive 4xx), and must stop at two attempts total to honor the shared
 // bounded-write-retry rule.
-const HELPER_PATH = path.resolve("skills/paperclip/scripts/paperclip-issue-update.sh");
+const HELPER_PATH = path.resolve("skills/wardmote/scripts/paperclip-issue-update.sh");
 const REPO_HELPER_PATH = path.resolve("scripts/paperclip-issue-update.sh");
 
 interface HelperResult {

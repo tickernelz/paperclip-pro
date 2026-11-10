@@ -7,7 +7,7 @@ import {
 } from "@tickernelz/wardmote-adapter-utils/server-utils";
 
 const legacyConfig = {
-  paperclipSkillSync: {
+  wardmoteSkillSync: {
     desiredSkills: [WARDMOTE_OPERATIONAL_SKILL_KEY],
   },
 };
@@ -41,13 +41,13 @@ describe("paperclip_runner operational skill normalization", () => {
 
   it("removes the legacy operational skill while preserving optional skills", () => {
     const normalized = normalizePaperclipOperationalSkillPreference("paperclip_runner", {
-      paperclipSkillSync: {
+      wardmoteSkillSync: {
         desiredSkills: [WARDMOTE_OPERATIONAL_SKILL_KEY, "company-1/reviewer"],
       },
     });
 
     expect(normalized).toEqual({
-      paperclipSkillSync: { desiredSkills: ["company-1/reviewer"] },
+      wardmoteSkillSync: { desiredSkills: ["company-1/reviewer"] },
     });
   });
 

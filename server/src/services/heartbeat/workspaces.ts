@@ -1962,7 +1962,7 @@ const RESUME_NEUTRAL_ADAPTER_CONFIG_KEYS = [
   "instructionsFilePath",
   "promptTemplate",
   "bootstrapPromptTemplate",
-  "paperclipSkillSync",
+  "wardmoteSkillSync",
   "paperclipRuntimeSkills",
   "paperclipConnectorSkillDigest",
 ] as const;

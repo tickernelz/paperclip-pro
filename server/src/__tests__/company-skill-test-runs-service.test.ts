@@ -490,7 +490,7 @@ describeEmbeddedPostgres("companySkillService skill test runs", () => {
       adapterType: "codex_local",
       adapterConfig: {
         model: "gpt-5.4",
-        paperclipSkillSync: { desiredSkills: [`company/${companyId}/review`] },
+        wardmoteSkillSync: { desiredSkills: [`company/${companyId}/review`] },
         instructionsFilePath: "/tmp/AGENTS.md",
       },
     });

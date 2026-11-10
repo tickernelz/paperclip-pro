@@ -11,7 +11,7 @@ const EXPECTED_ADAPTER_AGNOSTIC_KEYS = [
   "timeoutSec",
   "graceSec",
   "bootstrapPromptTemplate",
-  "paperclipSkillSync",
+  "wardmoteSkillSync",
 ] as const;
 
 function readRepoFile(pathFromRoot: string) {

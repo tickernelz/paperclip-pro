@@ -239,7 +239,7 @@ describe("internal agent commentary through both transports", () => {
 
   it("runs the legacy stdin helper and handles failure silently without exposing its body", async () => {
     const f = await legacy();
-    const helper = fileURLToPath(new URL("../../../skills/paperclip/scripts/submit-agent-commentary.mjs", import.meta.url));
+    const helper = fileURLToPath(new URL("../../../skills/wardmote/scripts/submit-agent-commentary.mjs", import.meta.url));
     const body = "Quotes, `backticks`, $(printf should-not-run), and emoji 😭 stay text.\n";
     async function run(apiUrl: string) {
       return new Promise<{ code: number | null; out: string; err: string }>((resolve, reject) => {

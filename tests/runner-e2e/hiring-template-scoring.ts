@@ -50,7 +50,7 @@ function payload(event: { payload?: unknown }) {
   return record(outer.prpEvent).payload ? record(record(outer.prpEvent).payload) : outer;
 }
 function matchingReadPath(value: unknown, file: string) {
-  return typeof value === "string" && value.replace(/\\/g, "/").endsWith(`/paperclip-create-agent/${file}`);
+  return typeof value === "string" && value.replace(/\\/g, "/").endsWith(`/wardmote-create-agent/${file}`);
 }
 function commandReads(command: unknown, file: string) {
   if (typeof command !== "string" || /[|;&><`$\\\r\n]/.test(command)) return false;
@@ -141,8 +141,8 @@ export function gradeHiringTemplate(e: HiringTemplateEvidence) {
   check("reused-json-artifact", "outcome", documentMatches(e.second, expectedFixture(e.inputs, `REUSE${e.marker}`, "_"))
     && e.second?.createdByAgentId === hired?.id, "The reused coder applies the changed separator to every input.");
   check("original-preserved", "outcome", Boolean(e.first) && sameJson(e.first, e.firstAfterReuse), "Reuse preserves the original document, revision and task identity.");
-  const requiredSources = [...HIRING_TEMPLATE_READ_FILES.map(file => `skills/paperclip-create-agent/${file}`),
-    "skills/paperclip-create-agent/references/baseline-role-guide.md",
+  const requiredSources = [...HIRING_TEMPLATE_READ_FILES.map(file => `skills/wardmote-create-agent/${file}`),
+    "skills/wardmote-create-agent/references/baseline-role-guide.md",
     ...Object.keys(e.expectedCeoFiles).map(file => `server/src/onboarding-assets/ceo/${file}`)];
   check("source-fingerprints", "coverage", requiredSources.every(file => /^[a-f0-9]{64}$/.test(e.expectedSourceHashes[file] ?? ""))
     && Object.entries(e.expectedSourceHashes).every(([file, hash]) => e.servedSourceHashes[file] === hash), "Served instruction and hiring source bytes match the evaluated revision.");

@@ -201,7 +201,7 @@ function asTextFile(entry: CompanyPortabilityFileEntry | undefined) {
 }
 
 describe("company portability", () => {
-  const paperclipKey = "tickernelz/wardmote/paperclip";
+  const paperclipKey = "tickernelz/wardmote/wardmote";
   const companyPlaybookKey = "company/company-1/company-playbook";
 
   beforeEach(() => {
@@ -262,7 +262,7 @@ describe("company portability", () => {
         adapterType: "claude_local",
         adapterConfig: {
           promptTemplate: "You are ClaudeCoder.",
-          paperclipSkillSync: {
+          wardmoteSkillSync: {
             desiredSkills: [paperclipKey],
           },
           instructionsFilePath: "/tmp/ignored.md",
@@ -403,7 +403,7 @@ describe("company portability", () => {
         description: "Paperclip coordination skill",
         markdown: "---\nname: paperclip\ndescription: Paperclip coordination skill\n---\n\n# Paperclip\n",
         sourceType: "github",
-        sourceLocator: "https://github.com/paperclipai/paperclip/tree/master/skills/paperclip",
+        sourceLocator: "https://github.com/paperclipai/paperclip/tree/master/skills/wardmote",
         sourceRef: "0123456789abcdef0123456789abcdef01234567",
         trustLevel: "markdown_only",
         compatibility: "compatible",
@@ -417,7 +417,7 @@ describe("company portability", () => {
           repo: "paperclip",
           ref: "0123456789abcdef0123456789abcdef01234567",
           trackingRef: "master",
-          repoSkillDir: "skills/paperclip",
+          repoSkillDir: "skills/wardmote",
         },
       },
       {
@@ -577,9 +577,9 @@ describe("company portability", () => {
     expect(asTextFile(exported.files["agents/claudecoder/AGENTS.md"])).toContain("skills:");
     expect(asTextFile(exported.files["agents/claudecoder/AGENTS.md"])).toContain(`- "${paperclipKey}"`);
     expect(asTextFile(exported.files["agents/cmo/AGENTS.md"])).not.toContain("skills:");
-    expect(asTextFile(exported.files["skills/tickernelz/wardmote/paperclip/SKILL.md"])).toContain("metadata:");
-    expect(asTextFile(exported.files["skills/tickernelz/wardmote/paperclip/SKILL.md"])).toContain('kind: "github-dir"');
-    expect(exported.files["skills/tickernelz/wardmote/paperclip/references/api.md"]).toBeUndefined();
+    expect(asTextFile(exported.files["skills/tickernelz/wardmote/wardmote/SKILL.md"])).toContain("metadata:");
+    expect(asTextFile(exported.files["skills/tickernelz/wardmote/wardmote/SKILL.md"])).toContain('kind: "github-dir"');
+    expect(exported.files["skills/tickernelz/wardmote/wardmote/references/api.md"]).toBeUndefined();
     expect(asTextFile(exported.files["skills/company/PAP/company-playbook/SKILL.md"])).toContain("# Company Playbook");
     expect(asTextFile(exported.files["skills/company/PAP/company-playbook/references/checklist.md"])).toContain("# Checklist");
 
@@ -594,7 +594,7 @@ describe("company portability", () => {
     expect(extension).toContain("ANTHROPIC_API_KEY:");
     expect(extension).toContain('requirement: "optional"');
     expect(extension).toContain('default: ""');
-    expect(extension).not.toContain("paperclipSkillSync");
+    expect(extension).not.toContain("wardmoteSkillSync");
     expect(extension).not.toContain("PATH:");
     expect(extension).not.toContain("requireBoardApprovalForNewAgents: true");
     expect(extension).not.toContain("budgetMonthlyCents: 0");
@@ -905,9 +905,9 @@ describe("company portability", () => {
       expandReferencedSkills: true,
     });
 
-    expect(asTextFile(exported.files["skills/tickernelz/wardmote/paperclip/SKILL.md"])).toContain("# Paperclip");
-    expect(asTextFile(exported.files["skills/tickernelz/wardmote/paperclip/SKILL.md"])).toContain("metadata:");
-    expect(asTextFile(exported.files["skills/tickernelz/wardmote/paperclip/references/api.md"])).toContain("# API");
+    expect(asTextFile(exported.files["skills/tickernelz/wardmote/wardmote/SKILL.md"])).toContain("# Paperclip");
+    expect(asTextFile(exported.files["skills/tickernelz/wardmote/wardmote/SKILL.md"])).toContain("metadata:");
+    expect(asTextFile(exported.files["skills/tickernelz/wardmote/wardmote/references/api.md"])).toContain("# API");
   });
 
   it("exports catalog skill provenance in portable Paperclip frontmatter", async () => {
@@ -1025,7 +1025,7 @@ describe("company portability", () => {
 
     expect(exported.files["skills/company/PAP/company-playbook/SKILL.md"]).toBeDefined();
     expect(asTextFile(exported.files["skills/company/PAP/company-playbook/SKILL.md"])).toContain("# Company Playbook");
-    expect(exported.files["skills/tickernelz/wardmote/paperclip/SKILL.md"]).toBeUndefined();
+    expect(exported.files["skills/tickernelz/wardmote/wardmote/SKILL.md"]).toBeUndefined();
   });
 
   it("warns and exports all skills when skills filter matches nothing", async () => {
@@ -1043,7 +1043,7 @@ describe("company portability", () => {
 
     expect(exported.warnings).toContainEqual(expect.stringContaining("nonexistent-skill"));
     expect(exported.files["skills/company/PAP/company-playbook/SKILL.md"]).toBeDefined();
-    expect(exported.files["skills/tickernelz/wardmote/paperclip/SKILL.md"]).toBeDefined();
+    expect(exported.files["skills/tickernelz/wardmote/wardmote/SKILL.md"]).toBeDefined();
   });
 
   it("exports the company logo into images/ and references it from .paperclip.yaml", async () => {
@@ -1150,7 +1150,7 @@ describe("company portability", () => {
         compatibility: "compatible",
         fileInventory: [{ path: "SKILL.md", kind: "skill" }],
         metadata: {
-          sourceKind: "paperclip_bundled",
+          sourceKind: "wardmote_bundled",
           owner: "paperclipai",
           repo: "paperclip",
           ref: "0123456789abcdef0123456789abcdef01234567",
@@ -3396,7 +3396,7 @@ describe("company portability", () => {
     }]);
     expect(agentSvc.create).toHaveBeenCalledWith("company-imported", expect.objectContaining({
       adapterConfig: expect.objectContaining({
-        paperclipSkillSync: {
+        wardmoteSkillSync: {
           desiredSkills: [paperclipKey],
         },
       }),

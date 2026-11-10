@@ -302,7 +302,7 @@ The direct-parent report comment intentionally does not open lateral comment acc
 
 An accepted plan confirmation authorizes execution of one specific accepted plan revision. Acceptance does not choose the issue topology. A `planning` source transitions atomically to `standard`; a source that is already `standard` stays `standard`. The continuation starts a fresh default-execution session on that same issue and carries the accepted document id, revision id/number, and approved Markdown.
 
-The default is to implement on the source issue. The run-scoped `paperclip-converting-plans-to-tasks` guidance decides whether a minimum child graph is justified by an ownership, parallelism, dependency, review, or lifecycle boundary. A child must not be created merely because a plan was accepted, and the source must not be blocked merely because children exist.
+The default is to implement on the source issue. The run-scoped `wardmote-converting-plans-to-tasks` guidance decides whether a minimum child graph is justified by an ownership, parallelism, dependency, review, or lifecycle boundary. A child must not be created merely because a plan was accepted, and the source must not be blocked merely because children exist.
 
 `create_task` and `set_dependencies` are ordinary authorized `standard`-run capabilities. `create_task` creates a standard child under the active issue, with durable idempotency scoped by source issue and caller key; blocker-free children start `todo`, children with unresolved blockers start `blocked`, and only assigned dependency-ready children wake. `set_dependencies` changes the active source issue's first-class blockers and is used only when the source genuinely waits for delegated results.
 

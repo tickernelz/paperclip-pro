@@ -653,30 +653,30 @@ describe("applyRunScopedMentionedSkillKeys", () => {
   it("adds mentioned skills without mutating the original config", () => {
     const originalConfig = {
       command: "codex",
-      paperclipSkillSync: {
-        desiredSkills: ["tickernelz/wardmote/paperclip"],
+      wardmoteSkillSync: {
+        desiredSkills: ["tickernelz/wardmote/wardmote"],
       },
     };
 
     const updatedConfig = applyRunScopedMentionedSkillKeys(originalConfig, [
       "company/company-1/release-changelog",
-      "tickernelz/wardmote/paperclip",
+      "tickernelz/wardmote/wardmote",
       "company/company-1/release-changelog",
     ]);
 
     expect(updatedConfig).toEqual({
       command: "codex",
-      paperclipSkillSync: {
+      wardmoteSkillSync: {
         desiredSkills: [
-          "tickernelz/wardmote/paperclip",
+          "tickernelz/wardmote/wardmote",
           "company/company-1/release-changelog",
         ],
       },
     });
     expect(originalConfig).toEqual({
       command: "codex",
-      paperclipSkillSync: {
-        desiredSkills: ["tickernelz/wardmote/paperclip"],
+      wardmoteSkillSync: {
+        desiredSkills: ["tickernelz/wardmote/wardmote"],
       },
     });
   });
@@ -684,7 +684,7 @@ describe("applyRunScopedMentionedSkillKeys", () => {
   it("preserves existing version pins when adding mentioned skills", () => {
     const originalConfig = {
       command: "codex",
-      paperclipSkillSync: {
+      wardmoteSkillSync: {
         desiredSkills: [
           { key: "company/company-1/release-changelog", versionId: "version-1" },
         ],
@@ -697,7 +697,7 @@ describe("applyRunScopedMentionedSkillKeys", () => {
 
     expect(updatedConfig).toEqual({
       command: "codex",
-      paperclipSkillSync: {
+      wardmoteSkillSync: {
         desiredSkills: [
           { key: "company/company-1/release-changelog", versionId: "version-1" },
           { key: "company/company-1/security-review", versionId: null },

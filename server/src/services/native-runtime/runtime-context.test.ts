@@ -281,7 +281,7 @@ describe("buildNativeRuntimeContext", () => {
         adapterConfig: {},
       },
       runId: "run-1",
-      runtimeConfig: { paperclipSkillSync: { desiredSkills: ["company-1/reviewer"] } },
+      runtimeConfig: { wardmoteSkillSync: { desiredSkills: ["company-1/reviewer"] } },
       runtimeSkillEntries: entries,
     };
 
@@ -335,7 +335,7 @@ describe("buildNativeRuntimeContext", () => {
     };
     await expect(buildNativeRuntimeContext({
       ...base,
-      runtimeConfig: { paperclipSkillSync: { desiredSkills: ["company-1/missing"] } },
+      runtimeConfig: { wardmoteSkillSync: { desiredSkills: ["company-1/missing"] } },
       runtimeSkillEntries: [{
         key: "company-1/missing",
         runtimeName: "missing",
@@ -350,7 +350,7 @@ describe("buildNativeRuntimeContext", () => {
     const context = await buildNativeRuntimeContext({
       ...base,
       runtimeConfig: {
-        paperclipSkillSync: {
+        wardmoteSkillSync: {
           desiredSkills: [WARDMOTE_OPERATIONAL_SKILL_KEY, "company-1/supported"],
         },
       },

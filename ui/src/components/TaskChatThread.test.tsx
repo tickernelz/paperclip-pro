@@ -974,7 +974,7 @@ describe("TaskChatThread runtime transcript selection", () => {
         runId: "restore-run", runtimeMode: "legacy", status: "failed", errorCode: "workspace_restore_failed",
         agentId: "agent-1", agentName: "Runner", adapterType: "grok_local",
         createdAt: "2026-08-25T18:00:00.000Z", startedAt: "2026-08-25T18:00:00.000Z", finishedAt: "2026-08-25T18:00:02.000Z",
-        resultJson: { workspaceRestoreFailure: "restore_unsafe_archive", workspaceRestorePath: ".claude/skills/paperclip", finalResponseRecorded: false,
+        resultJson: { workspaceRestoreFailure: "restore_unsafe_archive", workspaceRestorePath: ".claude/skills/wardmote", finalResponseRecorded: false,
           ...(evidence === "document_only" ? { savedPlanRevisionId: "revision-3" } : {}),
         },
       }]} />);
@@ -983,7 +983,7 @@ describe("TaskChatThread runtime transcript selection", () => {
     flushSync(() => marker!.querySelector<HTMLButtonElement>('button[aria-expanded]')!.click());
     expect(marker?.textContent).toContain("Workspace files need recovery");
     expect(marker?.textContent).toContain("No final response was recorded");
-    expect(marker?.textContent).toContain(".claude/skills/paperclip");
+    expect(marker?.textContent).toContain(".claude/skills/wardmote");
     expect(marker?.querySelector('a[href*="/runs/restore-run"]')).not.toBeNull();
     expect(marker?.textContent.includes("after the plan was saved")).toBe(evidence === "matching" || evidence === "document_only");
     expect(Boolean(marker?.querySelector('a[href*="document-plan"]'))).toBe(evidence === "matching" || evidence === "document_only");

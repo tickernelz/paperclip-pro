@@ -55,20 +55,20 @@ describe("ensurePaperclipSkillSymlink", () => {
     try {
       const oldSource = bundled(root, "2026.928.5", "paperclip");
       const newSource = bundled(root, "2026.928.7", "paperclip");
-      const foreignSource = path.join(root, "my-skills", "paperclip-board");
+      const foreignSource = path.join(root, "my-skills", "wardmote-board");
       for (const dir of [oldSource, newSource, foreignSource]) await fs.mkdir(dir, { recursive: true });
       const skillsHome = path.join(root, "skills");
       await fs.mkdir(skillsHome);
       await fs.symlink(oldSource, path.join(skillsHome, "paperclip"));
-      await fs.symlink(foreignSource, path.join(skillsHome, "paperclip-board"));
+      await fs.symlink(foreignSource, path.join(skillsHome, "wardmote-board"));
 
       expect(await ensurePaperclipSkillSymlink(newSource, path.join(skillsHome, "paperclip"))).toBe("repaired");
       expect(await fs.readlink(path.join(skillsHome, "paperclip"))).toBe(newSource);
       expect(await ensurePaperclipSkillSymlink(newSource, path.join(skillsHome, "paperclip"))).toBe("skipped");
 
-      const boardSource = bundled(root, "2026.928.7", "paperclip-board");
-      expect(await ensurePaperclipSkillSymlink(boardSource, path.join(skillsHome, "paperclip-board"))).toBe("skipped");
-      expect(await fs.readlink(path.join(skillsHome, "paperclip-board"))).toBe(foreignSource);
+      const boardSource = bundled(root, "2026.928.7", "wardmote-board");
+      expect(await ensurePaperclipSkillSymlink(boardSource, path.join(skillsHome, "wardmote-board"))).toBe("skipped");
+      expect(await fs.readlink(path.join(skillsHome, "wardmote-board"))).toBe(foreignSource);
     } finally {
       await fs.rm(root, { recursive: true, force: true });
     }
@@ -187,7 +187,7 @@ describe("legacy adapter skill selection", () => {
   it("keeps the operational skill selected after an explicit empty replacement", () => {
     expect(
       resolveLegacyPaperclipDesiredSkillNames(
-        { paperclipSkillSync: { desiredSkills: [] } },
+        { wardmoteSkillSync: { desiredSkills: [] } },
         [operationalEntry, optionalEntry],
       ),
     ).toEqual([WARDMOTE_OPERATIONAL_SKILL_KEY]);
@@ -195,7 +195,7 @@ describe("legacy adapter skill selection", () => {
 
   it("does not force optional skills or synthesize a missing operational entry", () => {
     const config = {
-      paperclipSkillSync: { desiredSkills: [optionalEntry.key] },
+      wardmoteSkillSync: { desiredSkills: [optionalEntry.key] },
     };
     expect(
       resolveLegacyPaperclipDesiredSkillNames(config, [
@@ -216,7 +216,7 @@ describe("legacy adapter skill selection", () => {
 
   it("makes feedback available to existing legacy agents without opting native agents into API skills", () => {
     const inventory = [operationalEntry, ...WARDMOTE_FEEDBACK_SKILL_KEYS.map((key) => ({ key }))];
-    for (const config of [{}, { paperclipSkillSync: { desiredSkills: [] } }]) {
+    for (const config of [{}, { wardmoteSkillSync: { desiredSkills: [] } }]) {
       expect(resolveLegacyPaperclipDesiredSkillNames(config, inventory)).toEqual([
         WARDMOTE_OPERATIONAL_SKILL_KEY, ...WARDMOTE_FEEDBACK_SKILL_KEYS,
       ]);
@@ -439,7 +439,7 @@ describe("materializePaperclipSkillCopy", () => {
 
 describe("adapter skill snapshots", () => {
   const requiredEntry = {
-    key: "tickernelz/wardmote/paperclip",
+    key: "tickernelz/wardmote/wardmote",
     runtimeName: "paperclip",
     source: "/runtime/paperclip",
   };

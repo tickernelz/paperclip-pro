@@ -15,7 +15,7 @@ import { startFileDeliveryDaytona } from "./helpers/file-delivery-daytona.js";
 import { startRunnerApiTestServer } from "./helpers/runner-api-server.js";
 
 const liveDaytona = process.env.WARDMOTE_FILE_DELIVERY_DAYTONA === "1";
-const helper = path.resolve(import.meta.dirname, "../../../skills/paperclip/scripts/paperclip-upload-artifact.sh");
+const helper = path.resolve(import.meta.dirname, "../../../skills/wardmote/scripts/paperclip-upload-artifact.sh");
 // A real PNG and a PDF with binary bytes in its comment exercise UTF-8 corruption.
 const files = [
   { name: "猫 picture.png", type: "image/png", body: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aK1sAAAAASUVORK5CYII=", "base64") },

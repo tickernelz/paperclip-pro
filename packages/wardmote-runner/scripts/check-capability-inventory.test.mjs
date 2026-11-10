@@ -41,7 +41,7 @@ function validInventories() {
     capabilities: {
       schemaVersion: 2,
       inventoryRole: "normative",
-      generatedFrom: ["skills/paperclip/SKILL.md"],
+      generatedFrom: ["skills/wardmote/SKILL.md"],
       rows: Array.from({ length: 164 }, (_, index) => row(`capability-${index}`)),
     },
     evaluations: {

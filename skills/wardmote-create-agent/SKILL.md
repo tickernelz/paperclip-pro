@@ -1,5 +1,5 @@
 ---
-name: paperclip-create-agent
+name: wardmote-create-agent
 description: >
   Create new agents in Paperclip with governance-aware hiring. Use when you need
   to inspect adapter configuration options, compare existing agent configs,
@@ -112,7 +112,7 @@ Read the icon list with `wardmoteApiRequest` (`method: "GET"`,
 ### 7. Review the draft against the quality checklist
 
 Before submitting, walk the draft-review checklist end-to-end and fix any item that does not pass:
-`skills/paperclip-create-agent/references/draft-review-checklist.md`
+`skills/wardmote-create-agent/references/draft-review-checklist.md`
 
 ### 8. Submit hire request
 
@@ -164,8 +164,8 @@ For each linked issue, either:
 
 ## References
 
-- Optional role examples: `skills/paperclip-create-agent/references/agent-instruction-templates.md`
-- Individual role templates: `skills/paperclip-create-agent/references/agents/`
-- Short role drafting guide: `skills/paperclip-create-agent/references/baseline-role-guide.md`
-- Pre-submit draft-review checklist: `skills/paperclip-create-agent/references/draft-review-checklist.md`
-- Endpoint payload shapes and full examples: `skills/paperclip-create-agent/references/api-reference.md`
+- Optional role examples: `skills/wardmote-create-agent/references/agent-instruction-templates.md`
+- Individual role templates: `skills/wardmote-create-agent/references/agents/`
+- Short role drafting guide: `skills/wardmote-create-agent/references/baseline-role-guide.md`
+- Pre-submit draft-review checklist: `skills/wardmote-create-agent/references/draft-review-checklist.md`
+- Endpoint payload shapes and full examples: `skills/wardmote-create-agent/references/api-reference.md`

@@ -207,7 +207,7 @@ describeEmbeddedPostgres("heartbeat runtime skill version pins", () => {
         status: "idle",
         adapterType: TEST_ADAPTER_TYPE,
         adapterConfig: {
-          paperclipSkillSync: {
+          wardmoteSkillSync: {
             desiredSkills: [{ key: skillKey, versionId: versionOne.id }],
           },
         },
@@ -222,7 +222,7 @@ describeEmbeddedPostgres("heartbeat runtime skill version pins", () => {
         status: "idle",
         adapterType: TEST_ADAPTER_TYPE,
         adapterConfig: {
-          paperclipSkillSync: {
+          wardmoteSkillSync: {
             desiredSkills: [{ key: skillKey, versionId: versionTwo.id }],
           },
         },
@@ -305,7 +305,7 @@ describeEmbeddedPostgres("heartbeat runtime skill version pins", () => {
       .where(eq(agents.id, firstAgentId))
       .then((rows) => rows[0]?.adapterConfig);
     expect(storedPreference).toMatchObject({
-      paperclipSkillSync: {
+      wardmoteSkillSync: {
         desiredSkills: [{ key: skillKey, versionId: versionOne.id }],
       },
     });

@@ -1,5 +1,5 @@
 ---
-name: paperclip-board
+name: wardmote-board
 description: >
   Manage a Paperclip company as a board member via chat. Use when the user wants
   onboarding, company or agent management, approvals, task monitoring, cost

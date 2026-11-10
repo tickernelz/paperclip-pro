@@ -766,7 +766,7 @@ describe("LLM Wiki plugin scaffold", () => {
     expect(DEFAULT_AGENT_INSTRUCTIONS).not.toContain("skills/<name>/SKILL.md");
     expect(DEFAULT_AGENT_INSTRUCTION_FILES["skills/wiki-ingest/SKILL.md"]).toBeUndefined();
     expect(manifest.skills?.map((skill) => skill.skillKey)).toEqual([...WIKI_MANAGED_SKILL_KEYS]);
-    expect(manifest.agents?.[0]?.adapterConfig?.paperclipSkillSync).toEqual({
+    expect(manifest.agents?.[0]?.adapterConfig?.wardmoteSkillSync).toEqual({
       desiredSkills: WIKI_MANAGED_SKILL_CANONICAL_KEYS,
     });
     expect(QUERY_PROMPT).toContain("wiki-query skill");

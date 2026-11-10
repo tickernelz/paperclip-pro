@@ -2500,6 +2500,13 @@
       "when": 1794184732579,
       "tag": "0358_wardmote_bundled_skill_keys",
       "breakpoints": true
+    },
+    {
+      "idx": 359,
+      "version": "7",
+      "when": 1794184792579,
+      "tag": "0359_wardmote_bundled_skill_slugs",
+      "breakpoints": true
     }
   ]
 }

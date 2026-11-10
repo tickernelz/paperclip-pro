@@ -1008,7 +1008,7 @@ function buildInviteOnboardingManifest(
   }
 ) {
   const baseUrl = resolveBaseUrl(req, opts.authPublicBaseUrl);
-  const skillPath = `/api/invites/${token}/skills/paperclip`;
+  const skillPath = `/api/invites/${token}/skills/wardmote`;
   const skillUrl = baseUrl ? `${baseUrl}${skillPath}` : skillPath;
   const registrationEndpointPath = `/api/invites/${token}/accept`;
   const registrationEndpointUrl = baseUrl
@@ -1084,7 +1084,7 @@ function buildInviteOnboardingManifest(
         contentType: "text/plain"
       },
       skill: {
-        name: "paperclip",
+        name: "wardmote",
         path: skillPath,
         url: skillUrl,
         installPath: "runtime-specific Paperclip skill location"
@@ -2502,18 +2502,18 @@ export function accessRoutes(
     assertAuthenticated(req);
     res.json({
       skills: [
-        { name: "paperclip", path: "/api/skills/paperclip" },
+        { name: "wardmote", path: "/api/skills/wardmote" },
         {
           name: "para-memory-files",
           path: "/api/skills/para-memory-files"
         },
         {
-          name: "paperclip-create-agent",
-          path: "/api/skills/paperclip-create-agent"
+          name: "wardmote-create-agent",
+          path: "/api/skills/wardmote-create-agent"
         },
         {
-          name: "paperclip-converting-plans-to-tasks",
-          path: "/api/skills/paperclip-converting-plans-to-tasks"
+          name: "wardmote-converting-plans-to-tasks",
+          path: "/api/skills/wardmote-converting-plans-to-tasks"
         }
       ]
     });
@@ -2727,8 +2727,8 @@ export function accessRoutes(
     res.json({
       skills: [
         {
-          name: "paperclip",
-          path: `/api/invites/${token}/skills/paperclip`,
+          name: "wardmote",
+          path: `/api/invites/${token}/skills/wardmote`,
         },
       ],
     });
@@ -2747,7 +2747,7 @@ export function accessRoutes(
     }
 
     const skillName = (req.params.skillName as string).trim().toLowerCase();
-    if (skillName !== "paperclip") throw notFound("Skill not found");
+    if (skillName !== "wardmote") throw notFound("Skill not found");
     const markdown = readSkillMarkdown(skillName);
     if (!markdown) throw notFound("Skill not found");
     res.type("text/markdown").send(markdown);

@@ -105,7 +105,7 @@ describe("access parity commands", () => {
     await run(["board-claim", "claim", "claim-token", "--payload-json", "{}"]);
     await run(["available-skill", "list"]);
     await run(["available-skill", "index"]);
-    await run(["available-skill", "get", "paperclip"]);
+    await run(["available-skill", "get", "wardmote"]);
     await run(["llm", "agent-configuration"]);
     await run(["llm", "agent-configuration:adapter", "codex_local"]);
 
@@ -126,7 +126,7 @@ describe("access parity commands", () => {
       ["POST", "http://localhost:3100/api/board-claim/claim-token/claim"],
       ["GET", "http://localhost:3100/api/skills/available"],
       ["GET", "http://localhost:3100/api/skills/index"],
-      ["GET", "http://localhost:3100/api/skills/paperclip"],
+      ["GET", "http://localhost:3100/api/skills/wardmote"],
       ["GET", "http://localhost:3100/api/llms/agent-configuration.txt"],
       ["GET", "http://localhost:3100/api/llms/agent-configuration/codex_local.txt"],
     ]);

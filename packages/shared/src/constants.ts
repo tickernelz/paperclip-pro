@@ -93,8 +93,6 @@ export const INSTANCE_LOCAL_MEMORY_GATE_COOLDOWN_SEC_MIN = 1;
 export const INSTANCE_LOCAL_MEMORY_GATE_COOLDOWN_SEC_MAX = 3600;
 export const WORKSPACE_BRANCH_ROUTINE_VARIABLE = "workspaceBranch";
 
-// Config keys owned by Paperclip/company state rather than one concrete adapter.
-// `paperclipSkillSync` is persisted in adapterConfig but must survive adapter swaps.
 export const ADAPTER_AGNOSTIC_KEYS = [
   "env",
   "promptTemplate",
@@ -103,7 +101,7 @@ export const ADAPTER_AGNOSTIC_KEYS = [
   "timeoutSec",
   "graceSec",
   "bootstrapPromptTemplate",
-  "paperclipSkillSync",
+  "wardmoteSkillSync",
 ] as const;
 export type AdapterAgnosticKey = (typeof ADAPTER_AGNOSTIC_KEYS)[number];
 

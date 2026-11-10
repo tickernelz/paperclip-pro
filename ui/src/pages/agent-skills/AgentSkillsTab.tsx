@@ -31,7 +31,7 @@ const MATERIALIZATION_NOTE =
   "Enabled skills are materialized into the stable Wardmote-managed prompt bundle on the agent's next run.";
 
 /** Company skill key of the Paperclip core skill that carries beta releases. */
-const WARDMOTE_CORE_SKILL_KEY = "tickernelz/wardmote/paperclip";
+const WARDMOTE_CORE_SKILL_KEY = "tickernelz/wardmote/wardmote";
 
 /** Build the desired-skill sync payload, carrying any active version pins. */
 export function toDesiredSkillPayload(

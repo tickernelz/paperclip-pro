@@ -633,7 +633,7 @@ import { computeTaskDrain, applyTaskDrain, startTaskDrain, stopTaskDrain, readTa
 const MAX_LIVE_LOG_CHUNK_BYTES = 8 * 1024;
 
 const ACCEPTED_PLAN_CONVERSION_SKILL_KEY =
-  "tickernelz/wardmote/paperclip-converting-plans-to-tasks";
+  "tickernelz/wardmote/wardmote-converting-plans-to-tasks";
 
 const execFile = promisify(execFileCallback);
 const UNSUCCESSFUL_HEARTBEAT_RUN_TERMINAL_STATUSES = [
