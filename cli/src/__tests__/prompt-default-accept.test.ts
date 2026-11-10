@@ -189,10 +189,10 @@ describe("promptServer accepts defaults", () => {
 
     const { auth } = await promptServer({
       currentServer: { host: "0.0.0.0", port: 8443 },
-      currentAuth: { publicBaseUrl: "https://paperclip.example.com" },
+      currentAuth: { publicBaseUrl: "https://wardmote.example.com" },
     });
 
-    expect(auth.publicBaseUrl).toBe("https://paperclip.example.com");
+    expect(auth.publicBaseUrl).toBe("https://wardmote.example.com");
   });
 
   it("still requires a public base URL when no saved default exists", async () => {
@@ -201,8 +201,8 @@ describe("promptServer accepts defaults", () => {
     await expect(promptServer()).rejects.toThrow(/Public base URL is required/);
 
     const url = validatorFor("Public base URL");
-    expect(url("https://paperclip.example.com")).toBeUndefined();
-    expect(url("ftp://paperclip.example.com")).toBeTruthy();
+    expect(url("https://wardmote.example.com")).toBeUndefined();
+    expect(url("ftp://wardmote.example.com")).toBeTruthy();
     expect(url("not a url")).toBeTruthy();
   });
 });

@@ -156,7 +156,7 @@ describe("buildInviteOnboardingTextDocument", () => {
     });
 
     try {
-      const req = buildReq("paperclip.example.test:3103");
+      const req = buildReq("wardmote.example.test:3103");
       const invite = {
         id: "invite-4",
         companyId: "company-1",
@@ -176,7 +176,7 @@ describe("buildInviteOnboardingTextDocument", () => {
         deploymentMode: "authenticated",
         deploymentExposure: "private",
         bindHost: "0.0.0.0",
-        allowedHostnames: ["paperclip.example.test", "203.0.113.42"],
+        allowedHostnames: ["wardmote.example.test", "203.0.113.42"],
       });
 
       expect(text).toContain("http://192.168.6.178:3103");

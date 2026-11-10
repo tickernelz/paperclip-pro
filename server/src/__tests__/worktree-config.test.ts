@@ -921,7 +921,7 @@ describe("worktree config repair", () => {
       configPath,
       JSON.stringify(
         {
-          ...buildLegacyConfig(instanceRoot, "https://paperclip.example"),
+          ...buildLegacyConfig(instanceRoot, "https://wardmote.example"),
           database: {
             mode: "embedded-postgres",
             embeddedPostgresDataDir: path.join(instanceRoot, "db"),
@@ -995,7 +995,7 @@ describe("worktree config repair", () => {
 
     expect(writtenConfig.server.port).toBe(3103);
     expect(writtenConfig.database.embeddedPostgresPort).toBe(54335);
-    expect(writtenConfig.auth.publicBaseUrl).toBe("https://paperclip.example");
+    expect(writtenConfig.auth.publicBaseUrl).toBe("https://wardmote.example");
   });
 
   it("preserves top-level and nested config extensions while persisting runtime ports", async () => {
@@ -1094,7 +1094,7 @@ describe("worktree config repair", () => {
 
   it("does not rewrite the in-memory config when auth URL has no explicit port", () => {
     const { config, changed } = applyRuntimePortSelectionToConfig(
-      buildLegacyConfig("/tmp/shared", "https://paperclip.example"),
+      buildLegacyConfig("/tmp/shared", "https://wardmote.example"),
       {
         serverPort: 3104,
         databasePort: 54340,
@@ -1106,6 +1106,6 @@ describe("worktree config repair", () => {
     expect(changed).toBe(true);
     expect(config.server.port).toBe(3100);
     expect(config.database.embeddedPostgresPort).toBe(54340);
-    expect(config.auth.publicBaseUrl).toBe("https://paperclip.example");
+    expect(config.auth.publicBaseUrl).toBe("https://wardmote.example");
   });
 });

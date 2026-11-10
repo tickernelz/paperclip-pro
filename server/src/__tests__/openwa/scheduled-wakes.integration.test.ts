@@ -263,7 +263,7 @@ describe("OpenWA scheduled wakes (embedded Postgres + fake gateway)", () => {
   function makeService(counted: Db, wakeup: ReturnType<typeof wakeupStub>, clock?: OpenwaScheduledWakeClock) {
     const service = chatChannelService(counted, {
       runtime: new ChatSdkRuntime(),
-      publicBaseUrl: "https://paperclip.example",
+      publicBaseUrl: "https://wardmote.example",
       heartbeat: { wakeup } as never,
       discordGatewayLeaseTtlMs: 120_000,
       discordGatewayLeaseRenewalIntervalMs: 60_000,
@@ -343,7 +343,7 @@ describe("OpenWA scheduled wakes (embedded Postgres + fake gateway)", () => {
       })
       .where(eq(chatEndpoints.id, endpoint.id));
     const added = await service.openwa.addOwner(endpoint.id, { e164: "+" + OWNER_PHONE, expiresInSeconds: 1_800 }, userId);
-    const token = new URL(added.confirmationUrl!, "https://paperclip.example").searchParams.get("token")!;
+    const token = new URL(added.confirmationUrl!, "https://wardmote.example").searchParams.get("token")!;
     await service.confirmIdentityLink(token, userId);
     return { gateway, companyId, agentId, userId, endpointId: endpoint.id, service, counted, wakeup };
   }

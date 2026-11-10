@@ -95,7 +95,7 @@ test("candidate discovery deduplicates mentions, drops closed PRs, and excludes 
   const fixture = discoveryFixture();
   const result = await findCandidates({
     repo: "paperclipai/paperclip",
-    api_url: "http://paperclip.test",
+    api_url: "http://wardmote.test",
     api_key: "test-key",
     company_id: "company-1",
     now: "2026-07-20T00:00:00Z",
@@ -104,7 +104,7 @@ test("candidate discovery deduplicates mentions, drops closed PRs, and excludes 
   });
   assert.deepEqual(result.candidates.map((candidate) => candidate.number), [1]);
   assert.equal(result.candidates[0].author, "cryppadotta");
-  const query = new URL(`http://paperclip.test${fixture.extractPath()}`).searchParams;
+  const query = new URL(`http://wardmote.test${fixture.extractPath()}`).searchParams;
   assert.equal(query.get("matchesPerIssue"), "200");
   assert.equal(query.get("updatedWithin"), "14d");
   assert.deepEqual(result.query.authors, ["cryppadotta"]);
@@ -127,7 +127,7 @@ test("capped match sets are recorded instead of aborting discovery", async () =>
   };
   const result = await findCandidates({
     repo: "paperclipai/paperclip",
-    api_url: "http://paperclip.test",
+    api_url: "http://wardmote.test",
     api_key: "test-key",
     company_id: "company-1",
     now: "2026-07-20T00:00:00Z",
@@ -143,7 +143,7 @@ test("--include-community disables the author filter", async () => {
   const fixture = discoveryFixture();
   const result = await findCandidates({
     repo: "paperclipai/paperclip",
-    api_url: "http://paperclip.test",
+    api_url: "http://wardmote.test",
     api_key: "test-key",
     company_id: "company-1",
     include_community: true,
@@ -160,7 +160,7 @@ test("open PRs with no activity inside the window are dropped as stale", async (
   const fixture = discoveryFixture();
   const result = await findCandidates({
     repo: "paperclipai/paperclip",
-    api_url: "http://paperclip.test",
+    api_url: "http://wardmote.test",
     api_key: "test-key",
     company_id: "company-1",
     now: "2026-09-01T00:00:00Z",

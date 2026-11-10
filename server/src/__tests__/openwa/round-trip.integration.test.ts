@@ -182,7 +182,7 @@ describe("OpenWA round trip (embedded Postgres + fake gateway)", () => {
     const runtime = new ChatSdkRuntime();
     const service = chatChannelService(db, {
       runtime,
-      publicBaseUrl: "https://paperclip.example",
+      publicBaseUrl: "https://wardmote.example",
       heartbeat: { wakeup } as never,
       storage: createStorageService(createLocalDiskStorageProvider(path.join(scratch, "storage"))),
       scheduleDeferredWork: () => {},
@@ -234,7 +234,7 @@ describe("OpenWA round trip (embedded Postgres + fake gateway)", () => {
       })
       .where(eq(chatEndpoints.id, endpoint.id));
     const added = await service.openwa.addOwner(endpoint.id, { e164: "+" + OWNER_PHONE, expiresInSeconds: 1_800 }, userId);
-    const token = new URL(added.confirmationUrl!, "https://paperclip.example").searchParams.get("token")!;
+    const token = new URL(added.confirmationUrl!, "https://wardmote.example").searchParams.get("token")!;
     await service.confirmIdentityLink(token, userId);
     return { gateway, companyId, agentId, userId, endpointId: endpoint.id, service, wakes, lateTranscripts };
   }

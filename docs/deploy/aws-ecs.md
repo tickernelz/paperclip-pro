@@ -17,7 +17,7 @@ Set these shell variables for the rest of the guide:
 ```bash
 export AWS_REGION=us-east-1
 export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-export WARDMOTE_DOMAIN=paperclip.example.com   # your domain
+export WARDMOTE_DOMAIN=wardmote.example.com   # your domain
 export DB_PASSWORD=$(openssl rand -base64 24 | tr -d '/+=' | head -c 32)
 export AUTH_SECRET=$(openssl rand -base64 32)
 ```

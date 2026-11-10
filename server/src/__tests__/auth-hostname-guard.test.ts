@@ -7,8 +7,8 @@ import { describe, expect, it } from "vitest";
 import { privateHostnameGuard } from "../middleware/private-hostname-guard.js";
 import { applyTrustProxy, parseTrustProxyEnv } from "../middleware/trust-proxy.js";
 
-const PUBLIC_BASE_URL = "http://paperclip.example.test";
-const PUBLIC_HOSTNAME = "paperclip.example.test";
+const PUBLIC_BASE_URL = "http://wardmote.example.test";
+const PUBLIC_HOSTNAME = "wardmote.example.test";
 const EMAIL = "intruder@example.com";
 const PASSWORD = "correct-horse-battery-staple";
 

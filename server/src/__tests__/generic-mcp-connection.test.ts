@@ -705,7 +705,7 @@ describeEmbeddedPostgres("generic remote MCP connections", () => {
 
     const response = await request(app)
       .get("/api/tools/oauth/client-metadata")
-      .set("Host", "paperclip.example.test")
+      .set("Host", "wardmote.example.test")
       .expect(422);
 
     expect(response.body).toMatchObject({
@@ -2565,14 +2565,14 @@ describeEmbeddedPostgres("generic remote MCP connections", () => {
   });
 
   it("uses the configured auth origin for self-hosted OAuth callbacks", async () => {
-    vi.stubEnv("WARDMOTE_PUBLIC_URL", "https://public.paperclip.example");
-    vi.stubEnv("WARDMOTE_AUTH_PUBLIC_BASE_URL", "https://auth.paperclip.example");
+    vi.stubEnv("WARDMOTE_PUBLIC_URL", "https://public.wardmote.example");
+    vi.stubEnv("WARDMOTE_AUTH_PUBLIC_BASE_URL", "https://auth.wardmote.example");
     const app = createRouteApp(db);
 
     const response = await request(app).get("/api/tools/oauth/client-metadata").expect(200);
 
     expect(response.body.redirect_uris).toEqual([
-      "https://auth.paperclip.example/api/tools/oauth/callback",
+      "https://auth.wardmote.example/api/tools/oauth/callback",
     ]);
   });
 

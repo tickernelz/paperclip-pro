@@ -1057,14 +1057,14 @@ describe("startServer WARDMOTE_API_URL handling", () => {
     loadConfigMock.mockReturnValueOnce(buildTestConfig({
       port: 3100,
       authBaseUrlMode: "explicit",
-      authPublicBaseUrl: "https://paperclip.example",
+      authPublicBaseUrl: "https://wardmote.example",
     }));
     detectPortMock.mockResolvedValueOnce(3110);
 
     const started = await startServer();
 
     expect(started.listenPort).toBe(3110);
-    expect(started.apiUrl).toBe("https://paperclip.example");
-    expect(process.env.WARDMOTE_RUNTIME_API_URL).toBe("https://paperclip.example");
+    expect(started.apiUrl).toBe("https://wardmote.example");
+    expect(process.env.WARDMOTE_RUNTIME_API_URL).toBe("https://wardmote.example");
   });
 });

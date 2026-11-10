@@ -66,7 +66,7 @@ describeEmbeddedPostgres("conversation recovery with a non-invokable agent", () 
     await db.insert(authUsers).values({
       id: userId,
       name: "Chat User",
-      email: `${userId}@paperclip.test`,
+      email: `${userId}@wardmote.test`,
       createdAt: new Date(),
       updatedAt: new Date(),
     });

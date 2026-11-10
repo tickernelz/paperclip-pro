@@ -142,7 +142,7 @@ describeEmbeddedPostgres("OpenWA audit and retention", () => {
   function app(companyId: string, viewer: BoardUser) {
     const service = chatChannelService(db, {
       runtime: fakeRuntime(),
-      publicBaseUrl: "https://paperclip.example",
+      publicBaseUrl: "https://wardmote.example",
       heartbeat: { wakeup: async () => ({ accepted: true }) } as never,
       scheduleDeferredWork: () => {},
     });
@@ -429,7 +429,7 @@ describeEmbeddedPostgres("OpenWA audit and retention", () => {
     const t = await seed();
     const service = chatChannelService(db, {
       runtime: fakeRuntime(),
-      publicBaseUrl: "https://paperclip.example",
+      publicBaseUrl: "https://wardmote.example",
       heartbeat: { wakeup: async () => ({ accepted: true }) } as never,
       scheduleDeferredWork: () => {},
     });

@@ -2993,7 +2993,7 @@ describe("shared ACPX engine runtime behavior", () => {
     };
     const server = {
       name: "github",
-      url: "https://paperclip.example/api/tool-gateway/gateways/github/mcp",
+      url: "https://wardmote.example/api/tool-gateway/gateways/github/mcp",
       connectionId: "connection-1",
     };
     const first = await runExecutor(baseConfig, {

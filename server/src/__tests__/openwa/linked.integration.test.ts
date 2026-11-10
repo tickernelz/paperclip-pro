@@ -129,7 +129,7 @@ describe("OpenWA linked read-only numbers (embedded Postgres + fake gateway)", (
     await db.insert(companyMemberships).values({ companyId, principalType: "user", principalId: userId, status: "active", membershipRole: "owner" });
     const service = chatChannelService(db, {
       runtime: new ChatSdkRuntime(),
-      publicBaseUrl: "https://paperclip.example",
+      publicBaseUrl: "https://wardmote.example",
       heartbeat: { wakeup: vi.fn(async () => ({ accepted: true })) } as never,
       scheduleDeferredWork: () => {},
       discordGatewayLeaseWaitMs: 200,

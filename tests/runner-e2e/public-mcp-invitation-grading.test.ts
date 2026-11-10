@@ -34,7 +34,7 @@ describe("invitation approval oracle calibration", () => {
   it("accepts a recorded human browser decision between turns without inventing a model call", () => {
     const evidence = good();
     evidence.turns = [{ calls: [] }, { calls: evidence.turns[0]!.calls.slice(1) }];
-    evidence.humanDecisions = [{ afterTurn: 0, decision: "approved", verificationUrl: "https://paperclip.example/mcp-device?user_code=ABCD-EFGH" }];
+    evidence.humanDecisions = [{ afterTurn: 0, decision: "approved", verificationUrl: "https://wardmote.example/mcp-device?user_code=ABCD-EFGH" }];
     expect(gradeInvitation(evidence)).toBe(true);
     expect(gradeInvitation({ ...evidence, humanDecisions: [] })).toBe(false);
     expect(gradeInvitation({ ...evidence, humanDecisions: [{ ...evidence.humanDecisions[0]!, afterTurn: 1 }] })).toBe(false);

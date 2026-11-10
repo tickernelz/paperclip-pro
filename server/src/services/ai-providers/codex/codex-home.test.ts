@@ -998,16 +998,16 @@ describe("evaluateCodexCredentialReadiness", () => {
       const zeroHome = path.join(root, "agent-zero");
       await writeManagedCodexMcpConfig({
         codexHome: alphaHome,
-        apiBaseUrl: "https://paperclip.example",
+        apiBaseUrl: "https://wardmote.example",
         gateways: [{
           name: "alpha",
-          endpointPath: "https://paperclip.example/api/tool-gateway/gateways/alpha/mcp",
+          endpointPath: "https://wardmote.example/api/tool-gateway/gateways/alpha/mcp",
           bearerToken: "alpha-token",
         }],
       });
       await writeManagedCodexMcpConfig({
         codexHome: zeroHome,
-        apiBaseUrl: "https://paperclip.example",
+        apiBaseUrl: "https://wardmote.example",
         gateways: [{
           name: "stale",
           endpointPath: "/api/tool-gateway/gateways/stale/mcp",
@@ -1016,7 +1016,7 @@ describe("evaluateCodexCredentialReadiness", () => {
       });
       await writeManagedCodexMcpConfig({
         codexHome: zeroHome,
-        apiBaseUrl: "https://paperclip.example",
+        apiBaseUrl: "https://wardmote.example",
         gateways: [],
       });
 
@@ -1041,7 +1041,7 @@ describe("evaluateCodexCredentialReadiness", () => {
 
       await writeManagedCodexMcpConfig({
         codexHome: root,
-        apiBaseUrl: "https://paperclip.example",
+        apiBaseUrl: "https://wardmote.example",
         gateways: [],
       });
 

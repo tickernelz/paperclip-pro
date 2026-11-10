@@ -31,7 +31,7 @@ import type {
 import { badRequest, conflict, forbidden, notFound, unprocessable } from "../errors.js";
 import { instanceSettingsService } from "./instance-settings.js";
 
-export const SMOKE_LAB_DEMO_EMAIL = "smoke@paperclip.test";
+export const SMOKE_LAB_DEMO_EMAIL = "smoke@wardmote.test";
 export const SMOKE_LAB_DEMO_PASSWORD = "smoke-password";
 export const SMOKE_LAB_BANNER = "SMOKE TEST - not a real provider";
 export const SMOKE_LAB_OAUTH_SCOPES = ["smoke:openid", "smoke:profile", "smoke:email"] as const;

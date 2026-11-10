@@ -67,7 +67,7 @@ the URL bar, e.g. `PAP`). Replace it in the example paths.
    **Install fixture apps**, **Reset** — an *Integration matrix* (all cells
    "not run" at first), and a *Runs* panel ("no runs yet"). A card shows the
    **Fake OAuth demo credentials**:
-   - email: `smoke@paperclip.test`
+   - email: `smoke@wardmote.test`
    - password: `smoke-password`
 3. Click **Start services**.
    **You should see:** two service cards flip to a green **running** dot:
@@ -153,7 +153,7 @@ This is the richest path — do it by hand once and the rest are variations.
    - Click it. The fake provider's **real consent page** opens: a brown banner
      *"SMOKE TEST - not a real provider"*, headed *"Paperclip Smoke OAuth login +
      consent"*.
-   - The **email is pre-filled** (`smoke@paperclip.test`). Type the password
+   - The **email is pre-filled** (`smoke@wardmote.test`). Type the password
      `smoke-password` and click **Authorize smoke test app**.
    - **You should see:** the provider accepts the credentials and returns you to
      this connection's **Permissions** page with a **Connected** status. Wrong

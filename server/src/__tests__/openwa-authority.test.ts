@@ -893,7 +893,7 @@ describeEmbeddedPostgres("OpenWA run authority", () => {
       expect(before.status).toBe(200);
       const service = chatChannelService(db, {
         runtime: new ChatSdkRuntime(),
-        publicBaseUrl: "https://paperclip.example",
+        publicBaseUrl: "https://wardmote.example",
         heartbeat: { wakeup: async () => ({ accepted: true }) } as never,
         discordGatewayLeaseTtlMs: 120_000,
         discordGatewayLeaseRenewalIntervalMs: 60_000,

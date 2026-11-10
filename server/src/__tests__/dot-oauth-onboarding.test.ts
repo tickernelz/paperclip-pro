@@ -11,7 +11,7 @@ import { instanceSettingsService } from "../services/instance-settings.js";
 import { dotRunnerBroker } from "../services/dot-runner-broker.js";
 import { publicMcpManagementRoutes, publicMcpIngressRoutes } from "../routes/public-mcp.js";
 
-const config = { origin: "https://paperclip.example", resource: "https://paperclip.example/mcp/runner" };
+const config = { origin: "https://wardmote.example", resource: "https://wardmote.example/mcp/runner" };
 const callback = "https://chatgpt.com/connector_platform_oauth_redirect";
 describe("Dot onboarding with an operator-issued pairing capability", () => {
   let temp: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;

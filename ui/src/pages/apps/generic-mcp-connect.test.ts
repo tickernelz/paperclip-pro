@@ -41,8 +41,8 @@ describe("oauthCallbackUrlForBrowser", () => {
   it("prefers the callback URL advertised by the server", () => {
     expect(oauthCallbackUrlForBrowser(
       "http://localhost:3000",
-      "https://paperclip.example.test/api/tools/oauth/callback",
-    )).toBe("https://paperclip.example.test/api/tools/oauth/callback");
+      "https://wardmote.example.test/api/tools/oauth/callback",
+    )).toBe("https://wardmote.example.test/api/tools/oauth/callback");
   });
 
   it("uses localhost for local HTTP callbacks to match the API authorization request", () => {
@@ -55,8 +55,8 @@ describe("oauthCallbackUrlForBrowser", () => {
   });
 
   it("preserves public HTTPS origins", () => {
-    expect(oauthCallbackUrlForBrowser("https://paperclip.example.test")).toBe(
-      "https://paperclip.example.test/api/tools/oauth/callback",
+    expect(oauthCallbackUrlForBrowser("https://wardmote.example.test")).toBe(
+      "https://wardmote.example.test/api/tools/oauth/callback",
     );
   });
 });

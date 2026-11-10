@@ -40,12 +40,12 @@ const runId = Date.now();
 const companyName = `MU-Auth-${runId}`;
 const ownerUser: HumanUser = {
   name: "Owner User",
-  email: `owner-${runId}@paperclip.local`,
+  email: `owner-${runId}@wardmote.local`,
   password: OWNER_PASSWORD,
 };
 const invitedUser: HumanUser = {
   name: "Invited User",
-  email: `invitee-${runId}@paperclip.local`,
+  email: `invitee-${runId}@wardmote.local`,
   password: INVITED_PASSWORD,
 };
 

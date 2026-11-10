@@ -450,7 +450,7 @@ describe("chat setup and identity-link clipboard actions", () => {
   it("resumes event configuration on the saved app and clears the retry token", async () => {
     const endpoint = await render("slack");
     const saved: ChatEndpoint = { ...endpoint, status: "draft", setup: {
-      ...endpoint.setup!, slackSetupMethod: "automatic", slackOAuthCallbackUri: "https://paperclip.example/api/chat-slack/oauth/callback",
+      ...endpoint.setup!, slackSetupMethod: "automatic", slackOAuthCallbackUri: "https://wardmote.example/api/chat-slack/oauth/callback",
       slackRegistration: { status: "install", appId: "ATEST", errorCode: "slack_manifest_update_pending" },
     } };
     mocks.get.mockResolvedValue(saved);

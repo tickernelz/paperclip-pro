@@ -139,7 +139,7 @@ describe("OpenWA ingress (embedded Postgres + fake gateway)", () => {
       const replacement = vi.spyOn(runtime, "replaceEndpoint");
       const service = chatChannelService(counted.db, {
         runtime,
-        publicBaseUrl: "https://paperclip.example",
+        publicBaseUrl: "https://wardmote.example",
         heartbeat: { wakeup: vi.fn(async () => ({ accepted: true })) } as never,
         scheduleDeferredWork: () => {},
         discordGatewayLeaseTtlMs: options.leaseTtlMs ?? 120_000,

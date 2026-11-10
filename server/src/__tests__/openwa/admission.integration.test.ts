@@ -237,7 +237,7 @@ describe("OpenWA admission (embedded Postgres + fake gateway)", () => {
     const runtime = new ChatSdkRuntime();
     const options: ChatChannelServiceOptions = {
       runtime,
-      publicBaseUrl: "https://paperclip.example",
+      publicBaseUrl: "https://wardmote.example",
       heartbeat: { wakeup } as never,
       discordGatewayLeaseTtlMs: 120_000,
       discordGatewayLeaseRenewalIntervalMs: 60_000,
@@ -310,7 +310,7 @@ describe("OpenWA admission (embedded Postgres + fake gateway)", () => {
   async function addOwner(t: Setup, phone: string) {
     const added = await t.service.openwa.addOwner(t.endpointId, { e164: "+" + phone, expiresInSeconds: 1_800 }, t.userId);
     expect(added.created).toBe(true);
-    const token = new URL(added.confirmationUrl!, "https://paperclip.example").searchParams.get("token")!;
+    const token = new URL(added.confirmationUrl!, "https://wardmote.example").searchParams.get("token")!;
     await t.service.confirmIdentityLink(token, t.userId);
     const owners = await t.service.openwa.listOwners(t.endpointId);
     expect(owners.find((owner) => owner.id === added.owner!.id)?.effective).toBe(true);

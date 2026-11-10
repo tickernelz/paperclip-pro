@@ -61,7 +61,7 @@ describe("expanded MCP independent evidence calibration", () => {
 
  it("removes authorized transfer credentials without masking unrelated credential leaks", () => {
    const ticket = "temporary-transfer-ticket";
-   const url = `https://paperclip.example/mcp/files/upload?ticket=${ticket}`;
+   const url = `https://wardmote.example/mcp/files/upload?ticket=${ticket}`;
    const value = { result: { url, content: [{ text: JSON.stringify({ url }) }] }, arguments: { url } };
    const safe = JSON.stringify(redactTransferEvidence(value, [ticket, url]));
    expect(safe).not.toContain(ticket);

@@ -1114,7 +1114,7 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
   it("collects customer-owned OAuth client details for a curated manual OAuth app", async () => {
     listGalleryMock.mockResolvedValue({
       apps: [BOX],
-      oauthCallbackUrl: "https://paperclip.example.test/api/tools/oauth/callback",
+      oauthCallbackUrl: "https://wardmote.example.test/api/tools/oauth/callback",
     });
     mockParams.appKey = "box";
     await render();
@@ -1128,7 +1128,7 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
     );
     expect(container.textContent).toContain("Wardmote callback URL");
     expect(container.textContent).toContain(
-      "https://paperclip.example.test/api/tools/oauth/callback",
+      "https://wardmote.example.test/api/tools/oauth/callback",
     );
     expect(buttonByText("Continue to sign in")?.disabled).toBe(true);
 

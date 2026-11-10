@@ -163,7 +163,7 @@ describe("resolveEnvironmentExecutionTarget", () => {
       },
       leaseId: "lease-1",
       leaseMetadata: {
-        wardmoteApiUrl: "https://paperclip.example.test",
+        wardmoteApiUrl: "https://wardmote.example.test",
       },
       lease: null,
       environmentRuntime: null,

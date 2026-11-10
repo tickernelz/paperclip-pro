@@ -21,7 +21,7 @@ import {
 const TOOL_NAME_RE = /\bpaperclip[A-Z]\w*/;
 
 const runEnv = {
-  WARDMOTE_API_URL: "https://paperclip.test",
+  WARDMOTE_API_URL: "https://wardmote.test",
   WARDMOTE_API_KEY: "run-key",
   WARDMOTE_RUN_ID: "run-7",
 };
@@ -108,11 +108,11 @@ describe("wardmoteAccessGuidance", () => {
 
 describe("paperclip MCP endpoint", () => {
   it("normalizes the API base and encodes the toolsets", () => {
-    expect(wardmoteMcpEndpoint("https://paperclip.test/", "core")).toBe(
-      "https://paperclip.test/api/mcp/wardmote?toolsets=core",
+    expect(wardmoteMcpEndpoint("https://wardmote.test/", "core")).toBe(
+      "https://wardmote.test/api/mcp/wardmote?toolsets=core",
     );
-    expect(wardmoteMcpEndpoint("https://paperclip.test/api", "core,extended")).toBe(
-      "https://paperclip.test/api/mcp/wardmote?toolsets=core%2Cextended",
+    expect(wardmoteMcpEndpoint("https://wardmote.test/api", "core,extended")).toBe(
+      "https://wardmote.test/api/mcp/wardmote?toolsets=core%2Cextended",
     );
   });
 
@@ -134,7 +134,7 @@ describe("per-runtime MCP config renderers", () => {
 
   it("resolves the endpoint and the authenticating headers once", () => {
     expect(target).toEqual({
-      url: "https://paperclip.test/api/mcp/wardmote?toolsets=core",
+      url: "https://wardmote.test/api/mcp/wardmote?toolsets=core",
       headers: {
         Authorization: "Bearer run-key",
         "X-Wardmote-Run-Id": "run-7",

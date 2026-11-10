@@ -37,13 +37,13 @@ function createPluginPackage(source = "export default {};\n") {
 function readyPlugin(packageRoot: string) {
   mockRegistry.getById.mockResolvedValue({
     id: pluginId,
-    pluginKey: "paperclip.example",
+    pluginKey: "wardmote.example",
     packageName: "paperclip-plugin-example",
     packagePath: packageRoot,
     version: "1.0.0",
     status: "ready",
     manifestJson: {
-      id: "paperclip.example",
+      id: "wardmote.example",
       entrypoints: {
         ui: "./dist/ui",
       },
@@ -167,13 +167,13 @@ describe("plugin UI static route", () => {
     mockRegistry.getById.mockResolvedValue(null);
     mockRegistry.getByKey.mockResolvedValue({
       id: pluginId,
-      pluginKey: "paperclip.example",
+      pluginKey: "wardmote.example",
       packageName: "paperclip-plugin-example",
       packagePath: packageRoot,
       version: "1.0.0",
       status: "ready",
       manifestJson: {
-        id: "paperclip.example",
+        id: "wardmote.example",
         entrypoints: {
           ui: "./dist/ui",
         },
@@ -181,11 +181,11 @@ describe("plugin UI static route", () => {
     });
     const app = await createApp({ type: "none", source: "none" });
 
-    const res = await request(app).get("/_plugins/paperclip.example/ui/index.js");
+    const res = await request(app).get("/_plugins/wardmote.example/ui/index.js");
 
     expect(res.status).toBe(200);
     expect(res.text).toContain("keyed-bundle");
     expect(mockRegistry.getById).not.toHaveBeenCalled();
-    expect(mockRegistry.getByKey).toHaveBeenCalledWith("paperclip.example");
+    expect(mockRegistry.getByKey).toHaveBeenCalledWith("wardmote.example");
   });
 });

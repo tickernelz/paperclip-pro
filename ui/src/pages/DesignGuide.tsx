@@ -2385,7 +2385,7 @@ export function DesignGuide() {
       {/* ============================================================ */}
       <Section title="Webhook URL warnings">
         <div className="space-y-3">
-          {["http://localhost:3100", "https://paperclip.internal", "https://paperclip.example-tailnet.ts.net", "http://paperclip.example.com", "not-a-url"].map((url) => <WebhookUrlWarning key={url} url={url} />)}
+          {["http://localhost:3100", "https://wardmote.internal", "https://wardmote.example-tailnet.ts.net", "http://wardmote.example.com", "not-a-url"].map((url) => <WebhookUrlWarning key={url} url={url} />)}
         </div>
       </Section>
 

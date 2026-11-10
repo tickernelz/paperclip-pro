@@ -138,7 +138,7 @@ function agentActor(overrides: Record<string, unknown> = {}) {
 function readyPlugin() {
   mockRegistry.getById.mockResolvedValue({
     id: pluginId,
-    pluginKey: "paperclip.example",
+    pluginKey: "wardmote.example",
     version: "1.0.0",
     status: "ready",
   });
@@ -190,7 +190,7 @@ describe("plugin install and upgrade authz", () => {
 
   it("allows instance admins to install plugins", async () => {
     const pluginId = "11111111-1111-4111-8111-111111111111";
-    const pluginKey = "paperclip.example";
+    const pluginKey = "wardmote.example";
     const discovered = {
       manifest: {
         id: pluginKey,
@@ -385,7 +385,7 @@ describe("plugin install and upgrade authz", () => {
     const pluginId = "11111111-1111-4111-8111-111111111111";
     mockRegistry.getById.mockResolvedValue({
       id: pluginId,
-      pluginKey: "paperclip.example",
+      pluginKey: "wardmote.example",
       version: "1.0.0",
     });
     mockLifecycle.upgrade.mockResolvedValue({
@@ -426,11 +426,11 @@ describe("scoped plugin API routes", () => {
     mockRegistry.getById.mockResolvedValue(null);
     mockRegistry.getByKey.mockResolvedValue({
       id: pluginId,
-      pluginKey: "paperclip.example",
+      pluginKey: "wardmote.example",
       version: "1.0.0",
       status: "ready",
       manifestJson: {
-        id: "paperclip.example",
+        id: "wardmote.example",
         capabilities: ["api.routes.register"],
         apiRoutes: [
           {
@@ -458,7 +458,7 @@ describe("scoped plugin API routes", () => {
     );
 
     const res = await request(app)
-      .get("/api/plugins/paperclip.example/api/smoke")
+      .get("/api/plugins/wardmote.example/api/smoke")
       .query({ companyId: "company-1" });
 
     expect(res.status).toBe(202);
@@ -485,11 +485,11 @@ describe("plugin local folder routes", () => {
   function readyLocalFolderPlugin() {
     mockRegistry.getById.mockResolvedValue({
       id: pluginId,
-      pluginKey: "paperclip.example",
+      pluginKey: "wardmote.example",
       version: "1.0.0",
       status: "ready",
       manifestJson: {
-        id: "paperclip.example",
+        id: "wardmote.example",
         capabilities: ["local.folders"],
         localFolders: [
           {
@@ -552,7 +552,7 @@ describe("plugin tool and bridge authz", () => {
     const res = await request(app)
       .post("/api/plugins/tools/execute")
       .send({
-        tool: "paperclip.example:search",
+        tool: "wardmote.example:search",
         parameters: {},
         runContext: {
           agentId: agentA,
@@ -606,7 +606,7 @@ describe("plugin tool and bridge authz", () => {
         toolDeps: {
           toolDispatcher: {
             listToolsForAgent: vi.fn(),
-            getTool: vi.fn(() => ({ name: "paperclip.example:search" })),
+            getTool: vi.fn(() => ({ name: "wardmote.example:search" })),
             executeTool,
           },
         },
@@ -615,7 +615,7 @@ describe("plugin tool and bridge authz", () => {
       const res = await request(app)
         .post("/api/plugins/tools/execute")
         .send({
-          tool: "paperclip.example:search",
+          tool: "wardmote.example:search",
           parameters: {},
           runContext: {
             agentId: agentA,
@@ -641,7 +641,7 @@ describe("plugin tool and bridge authz", () => {
       toolDeps: {
         toolDispatcher: {
           listToolsForAgent: vi.fn(),
-          getTool: vi.fn(() => ({ name: "paperclip.example:search" })),
+          getTool: vi.fn(() => ({ name: "wardmote.example:search" })),
           executeTool,
         },
       },
@@ -650,7 +650,7 @@ describe("plugin tool and bridge authz", () => {
     const res = await request(app)
       .post("/api/plugins/tools/execute")
       .send({
-        tool: "paperclip.example:search",
+        tool: "wardmote.example:search",
         parameters: { q: "test" },
         runContext: {
           agentId: agentA,
@@ -662,7 +662,7 @@ describe("plugin tool and bridge authz", () => {
 
     expect(res.status).toBe(200);
     expect(executeTool).toHaveBeenCalledWith(
-      "paperclip.example:search",
+      "wardmote.example:search",
       { q: "test" },
       {
         agentId: agentA,
@@ -918,7 +918,7 @@ describe("plugin tool and bridge authz", () => {
       message: "missing source_objects column",
       details: {
         pluginId,
-        pluginKey: "paperclip.example",
+        pluginKey: "wardmote.example",
         bridgeMethod: "getData",
         dataKey: "source-objects",
         bridgeCode: "UNKNOWN",
@@ -1019,7 +1019,7 @@ describe("plugin tool and bridge authz", () => {
         toolDeps: {
           toolDispatcher: {
             listToolsForAgent: vi.fn(),
-            getTool: vi.fn(() => ({ name: "paperclip.example:search", pluginDbId: pluginId })),
+            getTool: vi.fn(() => ({ name: "wardmote.example:search", pluginDbId: pluginId })),
             executeTool,
           },
         },
@@ -1029,14 +1029,14 @@ describe("plugin tool and bridge authz", () => {
     const res = await request(app)
       .post("/api/plugins/tools/execute")
       .send({
-        tool: "paperclip.example:search",
+        tool: "wardmote.example:search",
         parameters: { q: "test" },
         runContext: { agentId: agentA, runId: runA, companyId: companyA, projectId: projectA },
       });
 
     expect(res.status).toBe(200);
     expect(executeTool).toHaveBeenCalledWith(
-      "paperclip.example:search",
+      "wardmote.example:search",
       { q: "test" },
       { agentId: agentA, runId: runA, companyId: companyA, projectId: projectA },
     );
@@ -1052,7 +1052,7 @@ describe("plugin tool and bridge authz", () => {
         toolDeps: {
           toolDispatcher: {
             listToolsForAgent: vi.fn(),
-            getTool: vi.fn(() => ({ name: "paperclip.example:search", pluginDbId: pluginId })),
+            getTool: vi.fn(() => ({ name: "wardmote.example:search", pluginDbId: pluginId })),
             executeTool,
           },
         },
@@ -1062,7 +1062,7 @@ describe("plugin tool and bridge authz", () => {
     const res = await request(app)
       .post("/api/plugins/tools/execute")
       .send({
-        tool: "paperclip.example:search",
+        tool: "wardmote.example:search",
         parameters: {},
         runContext: { agentId: agentA, runId: runA, companyId: companyB, projectId: projectA },
       });
@@ -1084,7 +1084,7 @@ describe("plugin tool and bridge authz", () => {
         toolDeps: {
           toolDispatcher: {
             listToolsForAgent: vi.fn(),
-            getTool: vi.fn(() => ({ name: "paperclip.example:search", pluginDbId: pluginId })),
+            getTool: vi.fn(() => ({ name: "wardmote.example:search", pluginDbId: pluginId })),
             executeTool,
           },
         },
@@ -1094,7 +1094,7 @@ describe("plugin tool and bridge authz", () => {
     const res = await request(app)
       .post("/api/plugins/tools/execute")
       .send({
-        tool: "paperclip.example:search",
+        tool: "wardmote.example:search",
         parameters: {},
         runContext: { agentId: otherAgent, runId: runA, companyId: companyA, projectId: projectA },
       });

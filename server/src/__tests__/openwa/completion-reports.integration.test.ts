@@ -118,7 +118,7 @@ describe("OpenWA delegated task reports (embedded Postgres + fake gateway)", () 
     await db.insert(companyMemberships).values({ companyId, principalType: "user", principalId: userId, status: "active", membershipRole: "operator" });
     const service = chatChannelService(db, {
       runtime: new ChatSdkRuntime(),
-      publicBaseUrl: "https://paperclip.example",
+      publicBaseUrl: "https://wardmote.example",
       heartbeat: { wakeup: vi.fn(async () => ({ accepted: true })) } as never,
       storage,
       scheduleDeferredWork: () => {},

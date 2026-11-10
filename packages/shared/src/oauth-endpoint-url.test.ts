@@ -83,10 +83,10 @@ describe("checkOAuthEndpointUrl", () => {
   });
 
   it("allows plaintext http for Wardmote's own origin only", () => {
-    const options = { allowInsecureOrigins: ["http://paperclip.test"] };
-    expect(checkOAuthEndpointUrl("http://paperclip.test/api/smoke-lab/oauth/authorize", options).ok).toBe(true);
+    const options = { allowInsecureOrigins: ["http://wardmote.test"] };
+    expect(checkOAuthEndpointUrl("http://wardmote.test/api/smoke-lab/oauth/authorize", options).ok).toBe(true);
     // Port and scheme are part of the origin, so a neighbour is not exempt.
-    expect(checkOAuthEndpointUrl("http://paperclip.test:8080/authorize", options)).toEqual({
+    expect(checkOAuthEndpointUrl("http://wardmote.test:8080/authorize", options)).toEqual({
       ok: false,
       reason: "insecure_transport",
     });
@@ -100,7 +100,7 @@ describe("checkOAuthEndpointUrl", () => {
       reason: "unsupported_scheme",
     });
     // A garbage entry in the exemption list cannot open anything up.
-    expect(checkOAuthEndpointUrl("http://paperclip.test/authorize", { allowInsecureOrigins: ["nonsense"] })).toEqual({
+    expect(checkOAuthEndpointUrl("http://wardmote.test/authorize", { allowInsecureOrigins: ["nonsense"] })).toEqual({
       ok: false,
       reason: "insecure_transport",
     });

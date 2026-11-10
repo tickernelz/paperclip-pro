@@ -9,7 +9,7 @@ const base: SlackSearchStatus = {
   configured: false,
   connected: false,
   clientId: null,
-  redirectUri: "https://paperclip.example/api/slack/search/callback",
+  redirectUri: "https://wardmote.example/api/slack/search/callback",
   nativeSearchAvailable: false,
   limitation:
     "This runtime uses bounded channel history search. Native search requires transient result delivery.",

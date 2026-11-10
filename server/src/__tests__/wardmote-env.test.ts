@@ -91,8 +91,8 @@ describe("buildWardmoteEnv", () => {
 
   describe("with a public base URL behind a tunnel", () => {
     function bootLikeServer(listenHost: string) {
-      process.env.WARDMOTE_RUNTIME_API_URL = "https://paperclip.example.com";
-      process.env.WARDMOTE_API_URL = "https://paperclip.example.com";
+      process.env.WARDMOTE_RUNTIME_API_URL = "https://wardmote.example.com";
+      process.env.WARDMOTE_API_URL = "https://wardmote.example.com";
       process.env.WARDMOTE_LISTEN_HOST = listenHost;
       process.env.WARDMOTE_LISTEN_PORT = "3100";
       delete process.env.WARDMOTE_API_URL_OVERRIDE;
@@ -118,11 +118,11 @@ describe("buildWardmoteEnv", () => {
     it("keeps the public origin for agents that run elsewhere", () => {
       bootLikeServer("127.0.0.1");
       expect(buildWardmoteEnv({ id: "agent-1", companyId: "company-1" }).WARDMOTE_API_URL).toBe(
-        "https://paperclip.example.com",
+        "https://wardmote.example.com",
       );
       expect(
         buildWardmoteEnv({ id: "agent-1", companyId: "company-1" }, { sameHost: false }).WARDMOTE_API_URL,
-      ).toBe("https://paperclip.example.com");
+      ).toBe("https://wardmote.example.com");
     });
 
     it("lets an operator-pinned WARDMOTE_API_URL win for same-host agents", () => {

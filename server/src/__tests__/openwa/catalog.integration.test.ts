@@ -180,7 +180,7 @@ describe("OpenWA catalog, describe and call (embedded Postgres + fake gateway)",
     await db.insert(companyMemberships).values({ companyId, principalType: "user", principalId: userId, status: "active", membershipRole: "owner" });
     const service = chatChannelService(db, {
       runtime: new ChatSdkRuntime(),
-      publicBaseUrl: "https://paperclip.example",
+      publicBaseUrl: "https://wardmote.example",
       heartbeat: { wakeup: vi.fn(async () => ({ accepted: true })) } as never,
       storage,
       scheduleDeferredWork: () => {},
@@ -597,7 +597,7 @@ describe("OpenWA catalog, describe and call (embedded Postgres + fake gateway)",
     expect((await rejection(call(owner, { operation: "SessionController_logout", idempotencyKey: key }))).code).toBe("self_session_requires_confirmation");
     expect(forwarded(t, "POST", logoutRoute)).toBe(0);
     const added = await t.service.openwa.addOwner(t.endpointId, { e164: "+628333000666", expiresInSeconds: 1_800 }, t.userId);
-    await t.service.confirmIdentityLink(new URL(added.confirmationUrl!, "https://paperclip.example").searchParams.get("token")!, t.userId);
+    await t.service.confirmIdentityLink(new URL(added.confirmationUrl!, "https://wardmote.example").searchParams.get("token")!, t.userId);
     const accepted = await supertest(boardApp(t.companyId, t.userId)).post(acceptPath).send({});
     expect(accepted.status).toBe(200);
     expect(accepted.body).toMatchObject({ id: interactionId, status: "accepted" });

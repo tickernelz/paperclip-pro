@@ -242,7 +242,7 @@ describe("chat connector UI contract", () => {
     const manifest = buildSlackAppManifest({
       app: { appName: "Maya", botName: "maya", command: "/maya" },
       agentName: "Maya",
-      webhookUrl: "https://paperclip.example/api/chat-webhooks/test/slack",
+      webhookUrl: "https://wardmote.example/api/chat-webhooks/test/slack",
     });
     expect(manifest.settings.event_subscriptions.bot_events).toEqual(expect.arrayContaining([
       "member_joined_channel", "member_left_channel", "channel_left", "group_left",

@@ -117,7 +117,7 @@ describe("openwa_endpoint_config (embedded Postgres + fake gateway)", () => {
     await db.insert(companyMemberships).values({ companyId, principalType: "user", principalId: userId, status: "active", membershipRole: "operator" });
     const service = chatChannelService(db, {
       runtime: new ChatSdkRuntime(),
-      publicBaseUrl: "https://paperclip.example",
+      publicBaseUrl: "https://wardmote.example",
       heartbeat: { wakeup: vi.fn(async () => ({ accepted: true })) } as never,
       scheduleDeferredWork: () => {},
       discordGatewayLeaseWaitMs: 200,
@@ -354,7 +354,7 @@ describe("openwa_endpoint_config (embedded Postgres + fake gateway)", () => {
     expect(await db.select().from(issueAutonomyWindows).where(eq(issueAutonomyWindows.companyId, t.companyId))).toEqual([]);
 
     const added = await t.service.openwa.addOwner(t.endpointId, { e164: "+" + OWNER_DM.split("@")[0], expiresInSeconds: 1_800 }, t.userId);
-    const token = new URL(added.confirmationUrl!, "https://paperclip.example").searchParams.get("token")!;
+    const token = new URL(added.confirmationUrl!, "https://wardmote.example").searchParams.get("token")!;
     await t.service.confirmIdentityLink(token, t.userId);
     const [link] = await db
       .select({ principalId: chatIdentityLinks.principalId })

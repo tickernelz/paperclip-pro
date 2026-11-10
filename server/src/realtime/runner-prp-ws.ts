@@ -86,7 +86,7 @@ export function setupRunnerPrpWebSocketServer(
   server.on(
     "upgrade",
     (request: IncomingMessage, socket: Duplex, head: Buffer) => {
-      const url = new URL(request.url ?? "/", "http://paperclip.invalid");
+      const url = new URL(request.url ?? "/", "http://wardmote.invalid");
       if (!url.pathname.startsWith(CONNECT_PATH_PREFIX)) return;
 
       const ownedRequest = request as RunnerPrpUpgradeRequest;

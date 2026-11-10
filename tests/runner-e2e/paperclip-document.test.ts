@@ -7,7 +7,7 @@ import { gradeContextIntegrity, type ContextIntegrityCheckpoint } from "./contex
 function recording() {
   const scenario = contextIntegrityScenario(WARDMOTE_DOCUMENT_CASE, "probe");
   const initial: ContextIntegrityCheckpoint = {
-    phase: "initial", issue: { id: "issue", identifier: "DOC-1", issuePrefix: "DOC", appOrigin: "https://paperclip.example", status: "in_progress" },
+    phase: "initial", issue: { id: "issue", identifier: "DOC-1", issuePrefix: "DOC", appOrigin: "https://wardmote.example", status: "in_progress" },
     documents: [], comments: [], runs: [{ id: "run", status: "running" }],
     assignedSkill: { key: scenario.skillKey, runtimeName: scenario.skillKey, versionId: "version", markdown: `Write ${scenario.marker}` },
     skillRequestText: `${scenario.prompt}\nUse /${scenario.skillKey}`,
@@ -30,7 +30,7 @@ describe("explicit Wardmote document delivery", () => {
     expect(scenario.prompt).toContain("Wardmote task UI");
     expect(scenario.prompt).not.toContain(scenario.marker);
   });
-  it.each(["https://paperclip.example/DOC/issues/DOC-1#document-report", "<https://paperclip.example/DOC/issues/DOC-1#document-report>"])("accepts the same-app document link %s", target => {
+  it.each(["https://wardmote.example/DOC/issues/DOC-1#document-report", "<https://wardmote.example/DOC/issues/DOC-1#document-report>"])("accepts the same-app document link %s", target => {
     const { scenario, initial, final } = recording();
     final.comments[0]!.body = `Saved [report](${target}).`;
     expect(gradeContextIntegrity({ ...scenario, checkpoints: [initial, final] }).every(row => row.passed)).toBe(true);
@@ -77,7 +77,7 @@ describe("explicit Wardmote document delivery", () => {
     }) as string;
     const target = comment.match(/\]\(([^)]+)\)/)?.[1];
     expect(target).toBeDefined();
-    const url = new URL(target!, "https://paperclip.example");
+    const url = new URL(target!, "https://wardmote.example");
     expect(url.pathname).toBe("/issues/849c6474-ab4e-4428-981a-0b9a0207fa9b");
     expect(url.hash).toBe("#document-report-agent-redirected");
   });

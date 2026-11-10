@@ -12607,7 +12607,7 @@ describe("runnerd provider runtime wiring", () => {
           strictHostKeyChecking: true,
         },
       },
-      runnerPublicUrl: "wss://paperclip.example.test",
+      runnerPublicUrl: "wss://wardmote.example.test",
     });
 
     expect(state.createBackend).toHaveBeenCalledWith(

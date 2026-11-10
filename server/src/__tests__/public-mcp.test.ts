@@ -37,7 +37,7 @@ import { eventFetch, signingKey, type EventFetch } from "../services/public-mcp/
 
 const support = await getEmbeddedPostgresTestSupport();
 if (!support.supported) console.warn(`Public MCP database checks unavailable: ${support.reason}`);
-const config = { origin: "https://paperclip.example", resource: "https://paperclip.example/mcp/wardmote" };
+const config = { origin: "https://wardmote.example", resource: "https://wardmote.example/mcp/wardmote" };
 const redirectUri = "https://client.example/callback";
 const verifier = randomBytes(32).toString("base64url");
 const challenge = createHash("sha256").update(verifier).digest("base64url");
@@ -47,7 +47,7 @@ describe("public MCP configuration", () => {
     expect(publicMcpConfig({})).toBeNull();
     expect(() => publicMcpConfig({ WARDMOTE_PUBLIC_URL: "http://example.com" })).toThrow();
     expect(publicMcpConfig({ WARDMOTE_PUBLIC_URL: "http://localhost:3100" })?.resource).toBe("http://localhost:3100/mcp/wardmote");
-    expect(publicMcpConfig({}, "https://paperclip.example")?.origin).toBe("https://paperclip.example");
+    expect(publicMcpConfig({}, "https://wardmote.example")?.origin).toBe("https://wardmote.example");
     expect(publicMcpConfig({ WARDMOTE_PUBLIC_MCP_ENABLED: "true" })).toBeNull();
     expect(publicMcpCapabilities.map((c) => c.name)).not.toEqual(expect.arrayContaining(["run_tool", "call_api"]));
   });

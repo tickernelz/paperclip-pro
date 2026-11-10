@@ -1862,7 +1862,7 @@ it("passes only the Anthropic credential to Claude Managed runnerd", () => {
         PATH: "/bin",
         ANTHROPIC_API_KEY: "anthropic-canary",
         WARDMOTE_NATIVE_MCP_NAME: "paperclip",
-        WARDMOTE_NATIVE_MCP_URL: "https://paperclip.example/mcp",
+        WARDMOTE_NATIVE_MCP_URL: "https://wardmote.example/mcp",
         WARDMOTE_NATIVE_MCP_TOKEN: "must-not-reach-provider",
         WARDMOTE_API_KEY: "must-not-reach-provider",
         DATABASE_URL: "must-not-reach-provider",
@@ -1912,7 +1912,7 @@ it("uses file-backed AWS workload identity without forwarding access keys or War
         AWS_ACCESS_KEY_ID: "must-not-reach-provider",
         AWS_SECRET_ACCESS_KEY: "must-not-reach-provider",
         AWS_SESSION_TOKEN: "must-not-reach-provider",
-        WARDMOTE_NATIVE_MCP_URL: "https://paperclip.example/mcp",
+        WARDMOTE_NATIVE_MCP_URL: "https://wardmote.example/mcp",
         WARDMOTE_NATIVE_MCP_TOKEN: "must-not-reach-provider",
       },
     },
@@ -5874,7 +5874,7 @@ it.each([
           join(retained, "transition-fixture-metadata.json"),
           JSON.stringify(
             {
-              schema: "paperclip.test.warm-transition-fixture.v1",
+              schema: "wardmote.test.warm-transition-fixture.v1",
               oldIdentity,
               newIdentity: desired,
               lossPoint,

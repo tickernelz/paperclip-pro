@@ -86,7 +86,7 @@ function signedSlackEventRequest(
     .update(`v0:${timestamp}:${body}`)
     .digest("hex")}`;
   return new Request(
-    "https://paperclip.example/api/chat-webhooks/public/slack",
+    "https://wardmote.example/api/chat-webhooks/public/slack",
     {
       method: "POST",
       headers: {
@@ -333,11 +333,11 @@ describe("Chat SDK published adapter integration", () => {
           event: { type: string },
         ): Promise<void>;
       };
-      await slack.sendToResponseUrl("https://paperclip.test/slack", "delete");
-      await slack.forwardSocketEvent("https://paperclip.test/slack", {
+      await slack.sendToResponseUrl("https://wardmote.test/slack", "delete");
+      await slack.forwardSocketEvent("https://wardmote.test/slack", {
         body: { type: "events_api" },
       });
-      await discord.forwardGatewayEvent("https://paperclip.test/discord", {
+      await discord.forwardGatewayEvent("https://wardmote.test/discord", {
         type: "MESSAGE_CREATE",
       });
       expect(providerFetch).toHaveBeenCalledTimes(3);
@@ -476,7 +476,7 @@ describe("Chat SDK published adapter integration", () => {
       await runtime.initialize();
       const response = await runtime.handleWebhook(
         new Request(
-          "https://paperclip.example/api/chat-webhooks/public/slack",
+          "https://wardmote.example/api/chat-webhooks/public/slack",
           {
             method: "POST",
             headers: {
@@ -553,7 +553,7 @@ describe("Chat SDK published adapter integration", () => {
       const response = await Promise.race([
         runtime.handleWebhook(
           new Request(
-            "https://paperclip.example/api/chat-webhooks/public/slack",
+            "https://wardmote.example/api/chat-webhooks/public/slack",
             {
               method: "POST",
               headers: {
@@ -2769,7 +2769,7 @@ describe("Chat SDK published adapter integration", () => {
           signingSecret: "slack-signing-secret",
         },
       },
-      request: new Request("https://paperclip.test/webhook", {
+      request: new Request("https://wardmote.test/webhook", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ type: "event_callback" }),
@@ -2786,7 +2786,7 @@ describe("Chat SDK published adapter integration", () => {
           webhookSecret: "github-webhook-secret",
         },
       },
-      request: new Request("https://paperclip.test/webhook", {
+      request: new Request("https://wardmote.test/webhook", {
         method: "POST",
         headers: {
           "content-type": "application/json",
@@ -2805,7 +2805,7 @@ describe("Chat SDK published adapter integration", () => {
           secretToken: "telegram-webhook-secret",
         },
       },
-      request: new Request("https://paperclip.test/webhook", {
+      request: new Request("https://wardmote.test/webhook", {
         method: "POST",
         headers: {
           "content-type": "application/json",
@@ -2826,7 +2826,7 @@ describe("Chat SDK published adapter integration", () => {
           appType: "SingleTenant" as const,
         },
       },
-      request: new Request("https://paperclip.test/webhook", {
+      request: new Request("https://wardmote.test/webhook", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ type: "message", text: "forged" }),
@@ -2924,7 +2924,7 @@ describe("Chat SDK published adapter integration", () => {
 
     try {
       const response = await runtime.handleWebhook(
-        new Request("https://paperclip.test/webhook", {
+        new Request("https://wardmote.test/webhook", {
           method: "POST",
           headers: {
             "content-type": "application/json",
@@ -2995,7 +2995,7 @@ describe("Chat SDK published adapter integration", () => {
 
     try {
       const response = await runtime.handleWebhook(
-        new Request("https://paperclip.test/webhook", {
+        new Request("https://wardmote.test/webhook", {
           method: "POST",
           headers: {
             authorization: `Bearer ${authorizationMarker}`,
@@ -3310,7 +3310,7 @@ describe("Chat SDK published adapter integration", () => {
       },
     });
     await runtime.handleWebhook(
-      new Request("https://paperclip.test/webhook", {
+      new Request("https://wardmote.test/webhook", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ type: "message", text: "initialize" }),
@@ -3375,7 +3375,7 @@ describe("Chat SDK published adapter integration", () => {
       },
     });
     await runtime.handleWebhook(
-      new Request("https://paperclip.test/webhook", {
+      new Request("https://wardmote.test/webhook", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ type: "message", text: "initialize" }),
@@ -3583,7 +3583,7 @@ describe("Chat SDK published adapter integration", () => {
       },
     });
     await runtime.handleWebhook(
-      new Request("https://paperclip.test/webhook", {
+      new Request("https://wardmote.test/webhook", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ type: "message", text: "initialize" }),

@@ -19,10 +19,10 @@ import {
 } from "./notion-generic-live-lib.mjs";
 
 const COMPLETE_ENV = {
-  WARDMOTE_E2E_BASE_URL: "https://paperclip.example.test",
+  WARDMOTE_E2E_BASE_URL: "https://wardmote.example.test",
   WARDMOTE_E2E_EMAIL: "operator@example.test",
   WARDMOTE_DEV_LOGIN_PASSWORD: "not-a-real-password",
-  WARDMOTE_API_URL: "https://paperclip.example.test/api",
+  WARDMOTE_API_URL: "https://wardmote.example.test/api",
   WARDMOTE_API_KEY: "not-a-real-agent-key",
   WARDMOTE_RUN_ID: "run-123",
   WARDMOTE_TASK_ID: "issue-123",
@@ -51,9 +51,9 @@ test("preflight reports binding names without exposing supplied values", () => {
 test("preflight requires explicit credential-free HTTPS target and control-plane URLs", () => {
   for (const baseUrl of [
     "http://127.0.0.1:3100",
-    "http://paperclip.example.test",
-    "https://user:secret@paperclip.example.test",
-    "https://paperclip.example.test/?code=secret",
+    "http://wardmote.example.test",
+    "https://user:secret@wardmote.example.test",
+    "https://wardmote.example.test/?code=secret",
   ]) {
     assert.throws(
       () => preflightNotionGenericLive({ ...COMPLETE_ENV, WARDMOTE_E2E_BASE_URL: baseUrl }),
@@ -64,7 +64,7 @@ test("preflight requires explicit credential-free HTTPS target and control-plane
     ...COMPLETE_ENV,
     WARDMOTE_API_URL: "https://control-plane.example.test/api",
   });
-  assert.equal(split.baseUrl, "https://paperclip.example.test");
+  assert.equal(split.baseUrl, "https://wardmote.example.test");
   assert.equal(split.apiBaseUrl, "https://control-plane.example.test/api");
 });
 
@@ -88,7 +88,7 @@ test("health and binding metadata pass before browser loading, without fetching 
       return { chromium: {} };
     },
   });
-  assert.equal(prepared.config.callbackUrl, "https://paperclip.example.test/api/tools/oauth/callback");
+  assert.equal(prepared.config.callbackUrl, "https://wardmote.example.test/api/tools/oauth/callback");
   assert.equal(browserLoaded, true);
   assert.deepEqual(requests.map((entry) => entry.method), ["GET", "GET"]);
   assert.equal(requests.some((entry) => entry.url.includes("/value")), false);
@@ -150,7 +150,7 @@ test("authorization proof requires automatic registration, PKCE, callback, resou
     );
   }
 
-  const baseUrl = "https://paperclip.example.test";
+  const baseUrl = "https://wardmote.example.test";
   const callbackUrl = `${baseUrl}/api/tools/oauth/callback`;
   const resource = "https://mcp.notion.com/mcp";
   const url = new URL("https://mcp.notion.com/authorize");
@@ -184,10 +184,10 @@ test("authorization proof requires automatic registration, PKCE, callback, resou
 test("authorization proof rejects a provider login page after OAuth parameters were consumed", () => {
   assert.throws(
     () => inspectAuthorizationUrl("https://id.notion.test/login", {
-      callbackUrl: "https://paperclip.example/api/tools/oauth/callback",
+      callbackUrl: "https://wardmote.example/api/tools/oauth/callback",
       resource: "https://mcp.notion.com/mcp",
       registrationSource: "dcr",
-      baseUrl: "https://paperclip.example",
+      baseUrl: "https://wardmote.example",
     }),
     (error) => error instanceof NotionGenericLivePreflightError
       && error.code === "authorization_parameter_missing",

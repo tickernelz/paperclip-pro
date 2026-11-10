@@ -807,10 +807,10 @@ second-line\" status=401`,
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJwYXBlcmNsaXAtcnVuIn0.s1gnatureS1gnatureS1gnature";
     const envLines = [
       "AGENT_HOME=/home/user/.paperclip-pro/instances/default",
-      "BETTER_AUTH_TRUSTED_ORIGINS=https://paperclip.example.com,http://localhost:3100",
+      "BETTER_AUTH_TRUSTED_ORIGINS=https://wardmote.example.com,http://localhost:3100",
       `WARDMOTE_API_KEY=${secret}`,
       'WARDMOTE_SANDBOX_READ_PATHS=["/etc/resolv.conf","/etc/hosts"]',
-      "WARDMOTE_RUNTIME_API_URL=https://paperclip.example.com",
+      "WARDMOTE_RUNTIME_API_URL=https://wardmote.example.com",
       "PWD=/home/user/.paperclip-pro/instances/default",
     ];
     const line = JSON.stringify({

@@ -32,7 +32,7 @@ import { ciSmokeLabScenarios } from "./smoke-lab.catalog.ts";
 const BASE = (process.env.SMOKE_BASE ?? "http://127.0.0.1:3211").replace(/\/$/, "");
 const SHOT_DIR = process.env.SMOKE_SHOT_DIR ?? "/tmp/pap13350-shots";
 const CHROMIUM_PATH = process.env.SMOKE_CHROMIUM_PATH?.trim() || null;
-const DEMO_EMAIL = "smoke@paperclip.test";
+const DEMO_EMAIL = "smoke@wardmote.test";
 const DEMO_PASSWORD = "smoke-password";
 const ONLY = (process.env.SMOKE_ONLY ?? "")
   .split(",")

@@ -21,10 +21,10 @@ describe("http adapter execute", () => {
       expect(body.wardmoteRuntimeTools).toEqual({
         version: 1,
         guidance: CONNECTION_INTENT_AGENT_GUIDANCE,
-        mcpEndpoint: "https://paperclip.test/mcp/runtime-tools",
+        mcpEndpoint: "https://wardmote.test/mcp/runtime-tools",
         rest: {
-          connectionsSearch: "https://paperclip.test/runtime-tools/connections/search",
-          connectionRequest: "https://paperclip.test/runtime-tools/connections/request",
+          connectionsSearch: "https://wardmote.test/runtime-tools/connections/search",
+          connectionRequest: "https://wardmote.test/runtime-tools/connections/request",
         },
         bearerToken: "run-token",
         expiresAt: "2026-08-26T15:00:00.000Z",
@@ -53,10 +53,10 @@ describe("http adapter execute", () => {
       runtimeTools: {
         version: 1,
         guidance: CONNECTION_INTENT_AGENT_GUIDANCE,
-        mcpEndpoint: "https://paperclip.test/mcp/runtime-tools",
+        mcpEndpoint: "https://wardmote.test/mcp/runtime-tools",
         rest: {
-          connectionsSearch: "https://paperclip.test/runtime-tools/connections/search",
-          connectionRequest: "https://paperclip.test/runtime-tools/connections/request",
+          connectionsSearch: "https://wardmote.test/runtime-tools/connections/search",
+          connectionRequest: "https://wardmote.test/runtime-tools/connections/request",
         },
         bearerToken: "run-token",
         expiresAt: "2026-08-26T15:00:00.000Z",

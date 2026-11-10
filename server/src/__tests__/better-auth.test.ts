@@ -104,14 +104,14 @@ describe("Better Auth cookie scoping", () => {
       deploymentExposure: "private",
       authBaseUrlMode: "auto",
       authPublicBaseUrl: undefined,
-      publicUrl: "https://paperclip.example.test",
+      publicUrl: "https://wardmote.example.test",
     })).toBe(false);
 
     expect(shouldDisableSecureAuthCookies({
       deploymentMode: "authenticated",
       deploymentExposure: "public",
       authBaseUrlMode: "explicit",
-      authPublicBaseUrl: "http://paperclip.local.test:3100",
+      authPublicBaseUrl: "http://wardmote.local.test:3100",
       publicUrl: undefined,
     })).toBe(true);
   });
@@ -137,7 +137,7 @@ describe("Better Auth cookie scoping", () => {
     expect(shouldDisableSecureAuthCookies({
       deploymentMode: "authenticated",
       authBaseUrlMode: "explicit",
-      authPublicBaseUrl: "https://paperclip.example.test",
+      authPublicBaseUrl: "https://wardmote.example.test",
     } as Parameters<typeof shouldDisableSecureAuthCookies>[0])).toBe(false);
   });
 
@@ -147,7 +147,7 @@ describe("Better Auth cookie scoping", () => {
     expect(shouldDisableSecureAuthCookies({
       deploymentMode: "authenticated",
       authBaseUrlMode: "explicit",
-      authPublicBaseUrl: "https://paperclip.example.test",
+      authPublicBaseUrl: "https://wardmote.example.test",
       publicUrl: "http://paperclip-dev:46259",
     } as Parameters<typeof shouldDisableSecureAuthCookies>[0])).toBe(true);
   });

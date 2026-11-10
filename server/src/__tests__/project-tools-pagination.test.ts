@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { callProjectTool, projectToolDefinitions } from "../services/project-tools.js";
 
 const input = {
-  name: "list_projects", arguments: {}, apiUrl: "http://paperclip.test", token: "test-token",
+  name: "list_projects", arguments: {}, apiUrl: "http://wardmote.test", token: "test-token",
   companyId: "company", issueId: "issue", agentId: "agent", conversation: false,
 };
 
@@ -14,9 +14,9 @@ describe("project discovery result bounds", () => {
     const fetch = vi.fn(async (_url: string, _options: RequestInit) => ({ ok: true, json: async () => page }));
     vi.stubGlobal("fetch", fetch);
     expect(await callProjectTool(input)).toEqual(page);
-    expect(fetch.mock.calls[0]?.[0]).toBe("http://paperclip.test/api/companies/company/projects?view=summary&limit=50");
+    expect(fetch.mock.calls[0]?.[0]).toBe("http://wardmote.test/api/companies/company/projects?view=summary&limit=50");
     await callProjectTool({ ...input, arguments: { limit: 3, cursor: page.nextCursor.toUpperCase() } });
-    expect(fetch.mock.calls[1]?.[0]).toBe(`http://paperclip.test/api/companies/company/projects?view=summary&limit=3&cursor=${page.nextCursor}`);
+    expect(fetch.mock.calls[1]?.[0]).toBe(`http://wardmote.test/api/companies/company/projects?view=summary&limit=3&cursor=${page.nextCursor}`);
     expect(projectToolDefinitions("standard").find(t => t.name === "list_projects")?.inputSchema)
       .toMatchObject({ properties: { cursor: expect.any(Object), limit: expect.any(Object) } });
   });

@@ -32,10 +32,10 @@ describe("chat run milestone projection", () => {
         errorCode: "low_trust_isolation_unavailable",
         milestone: "failed",
         issueId: "issue-1",
-        publicBaseUrl: "https://paperclip.example/path",
+        publicBaseUrl: "https://wardmote.example/path",
       }),
     ).toBe(
-      "Maya couldn't safely start this turn because this task was started for an unlinked external guest and isolated guest execution isn't available. Ask a Wardmote admin to create a private identity link for this account or enable isolated guest execution, then start a new task. Open the task in Wardmote: https://paperclip.example/issues/issue-1",
+      "Maya couldn't safely start this turn because this task was started for an unlinked external guest and isolated guest execution isn't available. Ask a Wardmote admin to create a private identity link for this account or enable isolated guest execution, then start a new task. Open the task in Wardmote: https://wardmote.example/issues/issue-1",
     );
     expect(
       safeMilestoneText({
@@ -79,8 +79,8 @@ describe("chat run milestone projection", () => {
   it.each([
     [null, " Open the task in Wardmote for details."],
     [
-      "https://paperclip.example",
-      " Open the task in Wardmote: https://paperclip.example/issues/issue-1",
+      "https://wardmote.example",
+      " Open the task in Wardmote: https://wardmote.example/issues/issue-1",
     ],
   ])(
     "explains retained-session recovery without encouraging duplicate requests (%s)",

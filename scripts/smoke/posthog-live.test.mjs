@@ -11,7 +11,7 @@ import {
 } from "./posthog-live-lib.mjs";
 
 const COMPLETE_ENV = {
-  WARDMOTE_API_URL: "https://paperclip.example.test/api",
+  WARDMOTE_API_URL: "https://wardmote.example.test/api",
   INTEGRATIONS_POSTHOG_WARDMOTE_E2E_EMAIL: "operator@example.test",
   INTEGRATIONS_POSTHOG_WARDMOTE_DEV_LOGIN_PASSWORD: "not-a-real-password",
   INTEGRATIONS_POSTHOG_POSTHOG_PROJECT_ID: "483530",
@@ -20,7 +20,7 @@ const COMPLETE_ENV = {
 test("preflight reports only missing binding names", () => {
   assert.throws(
     () => preflightPosthogLive({
-      WARDMOTE_API_URL: "https://paperclip.example.test/api",
+      WARDMOTE_API_URL: "https://wardmote.example.test/api",
       INTEGRATIONS_POSTHOG_WARDMOTE_DEV_LOGIN_PASSWORD: "present",
     }),
     (error) => {
@@ -54,7 +54,7 @@ test("preflight rejects credential-bearing and non-HTTPS remote URLs", () => {
 });
 
 test("preflight derives the current Wardmote origin and accepts an explicit target", () => {
-  assert.equal(preflightPosthogLive(COMPLETE_ENV).baseUrl, "https://paperclip.example.test");
+  assert.equal(preflightPosthogLive(COMPLETE_ENV).baseUrl, "https://wardmote.example.test");
   assert.equal(
     preflightPosthogLive(COMPLETE_ENV, { baseUrl: "https://other-paperclip.example.test" }).baseUrl,
     "https://other-paperclip.example.test",
@@ -78,12 +78,12 @@ test("preflight fails closed unless the PostHog project is exactly 483530", () =
 test("live smoke arguments accept a target URL without another environment binding", () => {
   assert.deepEqual(parsePosthogLiveArguments([]), {});
   assert.deepEqual(
-    parsePosthogLiveArguments(["https://paperclip.example.test"]),
-    { baseUrl: "https://paperclip.example.test" },
+    parsePosthogLiveArguments(["https://wardmote.example.test"]),
+    { baseUrl: "https://wardmote.example.test" },
   );
   assert.deepEqual(
-    parsePosthogLiveArguments(["--base-url", "https://paperclip.example.test"]),
-    { baseUrl: "https://paperclip.example.test" },
+    parsePosthogLiveArguments(["--base-url", "https://wardmote.example.test"]),
+    { baseUrl: "https://wardmote.example.test" },
   );
   assert.throws(
     () => parsePosthogLiveArguments(["--unknown"]),

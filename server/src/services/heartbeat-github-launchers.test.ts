@@ -16,7 +16,7 @@ describe("heartbeat GitHub launcher lifetime", () => {
     const mint = vi.fn();
     const result = await prepareHeartbeatGitHubLaunchers({
       native: true, githubConfigured: true, agentId: "agent-a", runId: "run-a", target,
-      cwd: "/workspace", env: { GH_TOKEN: "ambient" }, brokerUrl: "https://paperclip.test", createBrokerToken: mint,
+      cwd: "/workspace", env: { GH_TOKEN: "ambient" }, brokerUrl: "https://wardmote.test", createBrokerToken: mint,
     }, prepare);
     expect(prepare).not.toHaveBeenCalled();
     expect(mint).not.toHaveBeenCalled();
@@ -27,7 +27,7 @@ describe("heartbeat GitHub launcher lifetime", () => {
     const createBrokerToken = vi.fn(() => "run-secret");
     const prepareLaunchers = vi.fn(async (input) => input.env);
     const inputs = { native: true, githubConfigured: false, agentId: "agent-a", target,
-      cwd: "/workspace", env: { GH_TOKEN: "ambient-secret" }, brokerUrl: "https://paperclip.test", createBrokerToken };
+      cwd: "/workspace", env: { GH_TOKEN: "ambient-secret" }, brokerUrl: "https://wardmote.test", createBrokerToken };
     const first = await prepareHeartbeatGitHubLaunchers({ ...inputs, runId: "run-one" }, prepareLaunchers);
     const second = await prepareHeartbeatGitHubLaunchers({ ...inputs, runId: "run-two" }, prepareLaunchers);
     expect(createBrokerToken).not.toHaveBeenCalled();
@@ -44,7 +44,7 @@ describe("heartbeat GitHub launcher lifetime", () => {
     });
     await expect(prepareHeartbeatGitHubLaunchers({
       native: false, githubConfigured: true, agentId: "agent-a", target,
-      runId: "failed-run", cwd: "/workspace", env: {}, brokerUrl: "https://paperclip.test",
+      runId: "failed-run", cwd: "/workspace", env: {}, brokerUrl: "https://wardmote.test",
       createBrokerToken: () => "current-run-secret",
     }, prepareLaunchers, cleanupLaunchers)).rejects.toBe(stagingError);
     expect(cleanupLaunchers).toHaveBeenCalledExactlyOnceWith({ runId: "failed-run", target });
@@ -55,7 +55,7 @@ describe("heartbeat GitHub launcher lifetime", () => {
     const cleanupLaunchers = vi.fn(async () => undefined);
     await expect(prepareHeartbeatGitHubLaunchers({
       native: true, githubConfigured: false, agentId: "agent-a", target,
-      runId: "failed-run", cwd: "/workspace", env: {}, brokerUrl: "https://paperclip.test",
+      runId: "failed-run", cwd: "/workspace", env: {}, brokerUrl: "https://wardmote.test",
       createBrokerToken: () => { throw new Error("must not mint a capability"); },
     }, async () => { throw stagingError; }, cleanupLaunchers)).rejects.toBe(stagingError);
     expect(cleanupLaunchers).not.toHaveBeenCalled();
@@ -69,7 +69,7 @@ describe("heartbeat GitHub launcher lifetime", () => {
     const createBrokerToken = vi.fn(() => "current-run-secret");
     const prepareLaunchers = vi.fn(async (input) => input.env);
     const result = await prepareHeartbeatGitHubLaunchers({ ...mode, agentId: "agent-a", runId: "run-one",
-      cwd: "/workspace", env: {}, brokerUrl: "https://paperclip.test", createBrokerToken }, prepareLaunchers);
+      cwd: "/workspace", env: {}, brokerUrl: "https://wardmote.test", createBrokerToken }, prepareLaunchers);
     expect(createBrokerToken).toHaveBeenCalledOnce();
     expect(prepareLaunchers.mock.calls[0]?.[0].runId).toBe("run-one");
     expect(result.cleanupLocation).toEqual({ runId: "run-one", target: mode.target });

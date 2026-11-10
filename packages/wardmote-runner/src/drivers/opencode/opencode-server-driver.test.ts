@@ -1466,7 +1466,7 @@ describe("OpenCodeServerDriver", () => {
         PATH: process.env.PATH,
         OPENROUTER_API_KEY: "fixture-key",
         WARDMOTE_NATIVE_MCP_NAME: "wardmote-assigned",
-        WARDMOTE_NATIVE_MCP_URL: "https://paperclip.example/mcp",
+        WARDMOTE_NATIVE_MCP_URL: "https://wardmote.example/mcp",
         WARDMOTE_NATIVE_MCP_TOKEN: "x".repeat(40),
       },
       fetch: async (input, init) => {
@@ -1528,7 +1528,7 @@ describe("OpenCodeServerDriver", () => {
       mcp: {
         wardmote: { enabled: true },
         "wardmote-assigned": {
-          url: "https://paperclip.example/mcp",
+          url: "https://wardmote.example/mcp",
           enabled: true,
         },
       },
