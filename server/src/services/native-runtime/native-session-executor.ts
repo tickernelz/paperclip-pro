@@ -1822,8 +1822,9 @@ function scrubRunnerdQuarantineLaunchState(root: string): void {
 function quarantineRunnerdStateRoot(
   root: string,
   reason: "identity_indeterminate" | "identity_mismatch",
+  base: string = runnerdStateBase(),
 ): string {
-  const stateBase = resolve(runnerdStateBase());
+  const stateBase = resolve(base);
   const resolvedRoot = resolve(root);
   const stateKey = basename(resolvedRoot);
   // Callers pass only roots derived by this module. Keep that boundary explicit
@@ -1853,8 +1854,8 @@ function quarantineRunnerdStateRoot(
   return destination;
 }
 
-export function quarantineRetiredRunnerdStateRoots(options: { dryRun?: boolean } = {}): string[] {
-  const stateBase = resolve(runnerdStateBase());
+export function quarantineRetiredRunnerdStateRoots(options: { dryRun?: boolean; stateBase?: string } = {}): string[] {
+  const stateBase = resolve(options.stateBase ?? runnerdStateBase());
   if (!isSafeNativeStateDirectory(stateBase)) return [];
   const retiredPrefix = retiredSchemaId("wardmote.runner.durable.");
   const retiredState = (path: string, maxBytes: number) => {
@@ -1874,7 +1875,7 @@ export function quarantineRetiredRunnerdStateRoots(options: { dryRun?: boolean }
       !retiredState(resolve(root, "control-plane", "control-plane-state.json"), NATIVE_CONTROL_PLANE_STATE_MAX_BYTES) &&
       !retiredState(resolve(root, "runner", "runner-state.json"), NATIVE_RUNNER_STATE_MAX_BYTES)
     ) continue;
-    if (!options.dryRun) quarantineRunnerdStateRoot(root, "identity_indeterminate");
+    if (!options.dryRun) quarantineRunnerdStateRoot(root, "identity_indeterminate", stateBase);
     moved.push(entry.name);
   }
   return moved;
