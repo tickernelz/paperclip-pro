@@ -81,11 +81,11 @@ import { prependPythonPath, writeOmpPythonEnvBridge, type OmpPythonEnvBridge } f
 import {
   WARDMOTE_MCP_BIN,
   WARDMOTE_MCP_CREDENTIAL_CODE,
-  WARDMOTE_MCP_CONNECT_FAILURE_RE,
   WARDMOTE_MCP_TRANSIENT_FAILURE_RE,
   WARDMOTE_MCP_SERVER_NAME,
   WARDMOTE_MCP_TOOLSETS_ENV,
   WARDMOTE_MCP_UNAVAILABLE_CODE,
+  createMcpConnectFailureDetector,
   paperclipMcpUnavailableRecovery,
   paperclipMcpGuidance,
   paperclipMcpEndpoint,
@@ -1025,18 +1025,16 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       };
       let mcpConnectFailed = false;
       let mcpConnectTransient = false;
+      const connectFailureDetector = createMcpConnectFailureDetector();
       let stdoutTranscript = "";
       const bufferedOnLog = async (stream: "stdout" | "stderr", chunk: string): Promise<void> => {
-        const connectFailure = mcpArmed && !mcpConnectFailed ? WARDMOTE_MCP_CONNECT_FAILURE_RE.exec(chunk) : null;
-        if (connectFailure) {
+        const connectFailure = mcpArmed && !mcpConnectFailed ? connectFailureDetector.push(stream, chunk) : null;
+        if (connectFailure !== null) {
           mcpConnectFailed = true;
-          const lineEnd = chunk.indexOf("\n", connectFailure.index);
-          mcpConnectTransient = WARDMOTE_MCP_TRANSIENT_FAILURE_RE.test(
-            chunk.slice(connectFailure.index, lineEnd < 0 ? undefined : lineEnd),
-          );
+          mcpConnectTransient = WARDMOTE_MCP_TRANSIENT_FAILURE_RE.test(connectFailure);
           await queueLog(
             "stderr",
-            "[paperclip] The Paperclip MCP server did not connect, so the agent has no Paperclip tools. Stopping the run.\n",
+            "[paperclip] The Wardmote MCP server did not connect, so the agent has no Wardmote tools. Stopping the run.\n",
           );
           triggerProcessAbort();
         }
@@ -1220,7 +1218,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       const provider = attempt.parsed.provider ?? configuredModelProvider(asString(executionConfig.model, "").trim());
       const model = attempt.parsed.model ?? (asString(executionConfig.model, "").trim() || null);
       const mcpFailure = attempt.mcpConnectFailed
-        ? `Paperclip MCP server "${WARDMOTE_MCP_SERVER_NAME}" failed to connect; the agent had no Paperclip tools.`
+        ? `Wardmote MCP server "${WARDMOTE_MCP_SERVER_NAME}" failed to connect; the agent had no Wardmote tools.`
         : "";
       const fallbackError = mcpFailure || rpcPromptError || parsedError || stderrLine || `OMP exited with code ${effectiveExitCode}.`;
       const failed = effectiveExitCode !== 0 || attempt.proc.timedOut || attempt.mcpConnectFailed;

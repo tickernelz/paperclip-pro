@@ -538,7 +538,7 @@ prompts. The `paperclip` skill carries the same fallback under
 
 ### `omp_local` specifics
 
-Every `omp_local` run declares one extra MCP server, `paperclip`, through a
+Every `omp_local` run declares one extra MCP server, `wardmote`, through a
 per-run `--extension <tmpdir>` package holding a single `.mcp.json`
 (`packages/adapters/omp-local/src/server/wardmote-mcp.ts`). The extension is
 appended, so the operator's own `~/.omp/agent/mcp.json` servers keep loading.
@@ -557,8 +557,10 @@ MCP is the agents' only path to Wardmote, so the adapter completes an MCP
 timeout, or the handshake with the binary under the stdio fallback. Downtime
 fails the run with `errorCode: paperclip_mcp_unavailable`, a 401/403 with
 `errorCode: paperclip_mcp_credential_rejected`, and the unavailable code is
-raised again when OMP itself reports `MCP server "paperclip" failed to
-connect`. Turning `paperclipMcp` off logs a warning on the run's stderr: that
+raised again when OMP itself prints `Warning: MCP server "wardmote" failed to
+connect: …` on stderr or as a `notice` frame. The adapter reads whole lines and
+matches only a line that starts with that text, so a prompt, tool result or
+model message that quotes the warning cannot fail a run. Turning `paperclipMcp` off logs a warning on the run's stderr: that
 agent has no Wardmote tools.
 
 Why the endpoint is the default, measured on 2026-09-25 (WSL, Node 24.18.0,

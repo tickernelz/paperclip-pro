@@ -3,6 +3,7 @@ import path from "node:path";
 import type { AdapterExecutionTarget } from "@tickernelz/wardmote-adapter-utils/execution-target";
 import { writePaperclipMcpMount } from "@tickernelz/wardmote-adapter-utils/wardmote-mcp-mount";
 import {
+  WARDMOTE_MCP_SERVER_NAME,
   renderPaperclipMcpConfig,
   type PaperclipMcpCommand,
 } from "@tickernelz/wardmote-adapter-utils/wardmote-mcp";
@@ -25,7 +26,61 @@ export {
 } from "@tickernelz/wardmote-adapter-utils/wardmote-mcp";
 
 export const WARDMOTE_MCP_UNAVAILABLE_CODE = "paperclip_mcp_unavailable";
-export const WARDMOTE_MCP_CONNECT_FAILURE_RE = /MCP server \\?"paperclip\\?" failed to connect/;
+const MCP_CONNECT_FAILURE_LINE_MAX_CHARS = 16_384;
+
+export interface McpConnectFailureDetector {
+  push(stream: "stdout" | "stderr", chunk: string): string | null;
+}
+
+export function createMcpConnectFailureDetector(serverName: string = WARDMOTE_MCP_SERVER_NAME): McpConnectFailureDetector {
+  const prefix = `Warning: MCP server "${serverName}" failed to connect`;
+  const pending = {
+    stdout: { text: "", overflow: false },
+    stderr: { text: "", overflow: false },
+  };
+
+  const matchLine = (stream: "stdout" | "stderr", line: string): string | null => {
+    const trimmed = line.trimEnd();
+    if (stream === "stderr") return trimmed.startsWith(prefix) ? trimmed : null;
+    if (!trimmed.startsWith("{")) return null;
+    let frame: unknown;
+    try {
+      frame = JSON.parse(trimmed);
+    } catch {
+      return null;
+    }
+    if (typeof frame !== "object" || frame === null) return null;
+    const { type, message } = frame as { type?: unknown; message?: unknown };
+    return type === "notice" && typeof message === "string" && message.startsWith(prefix) ? message : null;
+  };
+
+  return {
+    push(stream, chunk) {
+      const state = pending[stream];
+      let rest = chunk;
+      for (;;) {
+        const newline = rest.indexOf("\n");
+        if (newline < 0) {
+          if (!state.overflow) {
+            state.text += rest;
+            if (state.text.length > MCP_CONNECT_FAILURE_LINE_MAX_CHARS) {
+              state.text = "";
+              state.overflow = true;
+            }
+          }
+          return null;
+        }
+        const tooLong = state.overflow || state.text.length + newline > MCP_CONNECT_FAILURE_LINE_MAX_CHARS;
+        const line = tooLong ? null : state.text + rest.slice(0, newline);
+        state.text = "";
+        state.overflow = false;
+        rest = rest.slice(newline + 1);
+        const hit = line === null ? null : matchLine(stream, line);
+        if (hit !== null) return hit;
+      }
+    },
+  };
+}
 export const WARDMOTE_MCP_CREDENTIAL_CODE = "paperclip_mcp_credential_rejected";
 const PROBE_TIMEOUT_MS = 30_000;
 const HTTP_PROBE_TIMEOUT_MS = 5_000;
