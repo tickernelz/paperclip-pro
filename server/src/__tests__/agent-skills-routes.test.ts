@@ -1517,7 +1517,6 @@ describe("agent skill routes", () => {
       adapterConfig: { wardmoteSkillSync: { desiredSkills: string[] } };
     };
     const desired = createInput.adapterConfig.wardmoteSkillSync.desiredSkills;
-    // "wardmote" resolves to its canonical key and dedupes with the default.
     expect(desired).toHaveLength(5);
     expect(desired).toContain("tickernelz/wardmote/wardmote");
   });
