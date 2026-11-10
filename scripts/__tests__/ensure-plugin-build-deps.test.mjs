@@ -180,7 +180,7 @@ test("rejects partial output from an interrupted direct compiler", async (t) => 
   assert.equal((await f.launch().done).code, 0);
   const target = path.join(f.root, "packages/shared");
   fs.unlinkSync(path.join(target, "dist/complete"));
-  const completionTime = fs.statSync(path.join(target, "dist/.paperclip-build-complete")).mtimeMs;
+  const completionTime = fs.statSync(path.join(target, "dist/.wardmote-build-complete")).mtimeMs;
   await sleep(20);
   const compiler = spawn(process.execPath, ["node_modules/typescript/bin/tsc", "-p", path.join(target, "tsconfig.json")], {
     cwd: f.root, env: { ...process.env, BUILD_DELAY: "10000" }, stdio: "ignore",

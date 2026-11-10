@@ -82,7 +82,7 @@ afterEach(async () => {
 
 describe("worktree instance cleanup", () => {
   it("derives different instance IDs for distinct paths with the same normalized name", () => {
-    const parent = path.join(os.tmpdir(), "paperclip-instance-id-collision");
+    const parent = path.join(os.tmpdir(), "wardmote-instance-id-collision");
     const plusPath = path.join(parent, "feature+cleanup");
     const dashPath = path.join(parent, "feature-cleanup");
 

@@ -413,10 +413,10 @@ function setWorktreeMeta(name: string, content: string) {
 }
 
 function WorktreeBannerMatrix() {
-  setWorktreeMeta("paperclip-worktree-enabled", "true");
-  setWorktreeMeta("paperclip-worktree-name", "PAP-1675-projects-goals-workspaces");
-  setWorktreeMeta("paperclip-worktree-color", "#0f766e");
-  setWorktreeMeta("paperclip-worktree-text-color", "#ecfeff");
+  setWorktreeMeta("wardmote-worktree-enabled", "true");
+  setWorktreeMeta("wardmote-worktree-name", "PAP-1675-projects-goals-workspaces");
+  setWorktreeMeta("wardmote-worktree-color", "#0f766e");
+  setWorktreeMeta("wardmote-worktree-text-color", "#ecfeff");
 
   return (
     <div className="space-y-4">

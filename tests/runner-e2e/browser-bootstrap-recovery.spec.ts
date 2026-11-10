@@ -74,7 +74,7 @@ test.describe("browser bootstrap recovery", () => {
       mode = "ready";
       await page.getByRole("button", { name: "Reload page" }).click();
       await expect(page.getByRole("main")).toHaveText("Task ready");
-      await expect(page.locator("#paperclip-startup")).toBeHidden();
+      await expect(page.locator("#wardmote-startup")).toBeHidden();
       await expect(page).toHaveURL(`${baseURL}/tasks/reload`);
     });
   }
@@ -116,7 +116,7 @@ test.describe("browser bootstrap recovery", () => {
     pending[0]!.writeHead(200, { "Content-Type": "text/javascript" });
     pending[0]!.end(readyModule);
     await expect(page.getByRole("main")).toHaveText("Task ready");
-    await expect(page.locator("#paperclip-startup")).toBeHidden();
+    await expect(page.locator("#wardmote-startup")).toBeHidden();
     await expect(page).toHaveURL(`${baseURL}/tasks/reload`);
   });
 
@@ -132,7 +132,7 @@ test.describe("browser bootstrap recovery", () => {
     await expect(page.getByRole("main")).toHaveText("Task ready");
     await page.evaluate(() => window.dispatchEvent(new ErrorEvent("error", { message: "later unrelated error" })));
     await page.clock.runFor(60_000);
-    await expect(page.locator("#paperclip-startup")).toBeHidden();
+    await expect(page.locator("#wardmote-startup")).toBeHidden();
     await expect(page.getByRole("main")).toHaveText("Task ready");
   });
 });

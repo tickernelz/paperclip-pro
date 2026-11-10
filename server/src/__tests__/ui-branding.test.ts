@@ -60,9 +60,9 @@ describe("ui branding", () => {
         WARDMOTE_WORKTREE_COLOR: "#4f86f7",
       }),
     );
-    expect(meta).toContain('name="paperclip-worktree-name"');
+    expect(meta).toContain('name="wardmote-worktree-name"');
     expect(meta).toContain('content="paperclip-pr-432"');
-    expect(meta).toContain('name="paperclip-worktree-color"');
+    expect(meta).toContain('name="wardmote-worktree-color"');
   });
 
   it("surfaces the runtime instance id so the UI can fail closed on copied rows", () => {
@@ -75,7 +75,7 @@ describe("ui branding", () => {
     expect(branding.instanceId).toBe("inst-abc123");
 
     const meta = renderRuntimeBrandingMeta(branding);
-    expect(meta).toContain('name="paperclip-instance-id"');
+    expect(meta).toContain('name="wardmote-instance-id"');
     expect(meta).toContain('content="inst-abc123"');
   });
 
@@ -86,7 +86,7 @@ describe("ui branding", () => {
       WARDMOTE_WORKTREE_COLOR: "#4f86f7",
     });
     expect(branding.instanceId).toBeNull();
-    expect(renderRuntimeBrandingMeta(branding)).not.toContain('name="paperclip-instance-id"');
+    expect(renderRuntimeBrandingMeta(branding)).not.toContain('name="wardmote-instance-id"');
   });
 
   it("rewrites the favicon and runtime branding blocks for worktree instances only", () => {
@@ -96,11 +96,11 @@ describe("ui branding", () => {
       WARDMOTE_WORKTREE_COLOR: "#4f86f7",
     });
     expect(branded).toContain("data:image/svg+xml,");
-    expect(branded).toContain('name="paperclip-worktree-name"');
+    expect(branded).toContain('name="wardmote-worktree-name"');
     expect(branded).not.toContain('href="/favicon.svg"');
 
     const defaultHtml = applyUiBranding(TEMPLATE, {});
     expect(defaultHtml).toContain('href="/favicon.svg"');
-    expect(defaultHtml).not.toContain('name="paperclip-worktree-name"');
+    expect(defaultHtml).not.toContain('name="wardmote-worktree-name"');
   });
 });
