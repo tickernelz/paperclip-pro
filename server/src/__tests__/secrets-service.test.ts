@@ -943,13 +943,13 @@ describeEmbeddedPostgres("secretService", () => {
     vi.spyOn(awsSecretsManagerProvider, "createSecret").mockResolvedValue({
       material: {
         scheme: "aws_secrets_manager_v1",
-        secretId: "arn:aws:secretsmanager:us-east-1:123456789012:secret:paperclip/prod-use1/company/aws-secret",
+        secretId: "arn:aws:secretsmanager:us-east-1:123456789012:secret:wardmote/prod-use1/company/aws-secret",
         versionId: "aws-version-1",
         source: "managed",
       },
       valueSha256: "value-sha-1",
       fingerprintSha256: "fingerprint-sha-1",
-      externalRef: "arn:aws:secretsmanager:us-east-1:123456789012:secret:paperclip/prod-use1/company/aws-secret",
+      externalRef: "arn:aws:secretsmanager:us-east-1:123456789012:secret:wardmote/prod-use1/company/aws-secret",
       providerVersionRef: "aws-version-1",
     });
 
@@ -998,25 +998,25 @@ describeEmbeddedPostgres("secretService", () => {
     vi.spyOn(awsSecretsManagerProvider, "createSecret").mockResolvedValue({
       material: {
         scheme: "aws_secrets_manager_v1",
-        secretId: "arn:aws:secretsmanager:us-east-1:123456789012:secret:paperclip/prod-use1/company/aws-secret-rotate",
+        secretId: "arn:aws:secretsmanager:us-east-1:123456789012:secret:wardmote/prod-use1/company/aws-secret-rotate",
         versionId: "aws-version-1",
         source: "managed",
       },
       valueSha256: "value-sha-1",
       fingerprintSha256: "fingerprint-sha-1",
-      externalRef: "arn:aws:secretsmanager:us-east-1:123456789012:secret:paperclip/prod-use1/company/aws-secret-rotate",
+      externalRef: "arn:aws:secretsmanager:us-east-1:123456789012:secret:wardmote/prod-use1/company/aws-secret-rotate",
       providerVersionRef: "aws-version-1",
     });
     vi.spyOn(awsSecretsManagerProvider, "createVersion").mockResolvedValue({
       material: {
         scheme: "aws_secrets_manager_v1",
-        secretId: "arn:aws:secretsmanager:us-east-1:123456789012:secret:paperclip/prod-use1/company/aws-secret-rotate",
+        secretId: "arn:aws:secretsmanager:us-east-1:123456789012:secret:wardmote/prod-use1/company/aws-secret-rotate",
         versionId: "aws-version-2",
         source: "managed",
       },
       valueSha256: "value-sha-2",
       fingerprintSha256: "fingerprint-sha-2",
-      externalRef: "arn:aws:secretsmanager:us-east-1:123456789012:secret:paperclip/prod-use1/company/aws-secret-rotate",
+      externalRef: "arn:aws:secretsmanager:us-east-1:123456789012:secret:wardmote/prod-use1/company/aws-secret-rotate",
       providerVersionRef: "aws-version-2",
     });
     const existing = await svc.create(companyId, {
@@ -2092,7 +2092,7 @@ describeEmbeddedPostgres("secretService", () => {
       providerConfigId: awsVault.id,
     });
     const externalRef =
-      "arn:aws:secretsmanager:us-east-1:123456789012:secret:paperclip/prod-use1/user/github-token";
+      "arn:aws:secretsmanager:us-east-1:123456789012:secret:wardmote/prod-use1/user/github-token";
     vi.spyOn(awsSecretsManagerProvider, "createSecret").mockResolvedValue({
       material: {
         scheme: "aws_secrets_manager_v1",
@@ -2189,7 +2189,7 @@ describeEmbeddedPostgres("secretService", () => {
     vi.spyOn(awsSecretsManagerProvider, "createSecret").mockImplementation(async (input) => {
       nextVersion += 1;
       const externalRef =
-        `arn:aws:secretsmanager:us-east-1:123456789012:secret:paperclip/prod-use1/${input.context.secretKey}`;
+        `arn:aws:secretsmanager:us-east-1:123456789012:secret:wardmote/prod-use1/${input.context.secretKey}`;
       return {
         material: {
           scheme: "aws_secrets_manager_v1",
@@ -2269,13 +2269,13 @@ describeEmbeddedPostgres("secretService", () => {
     vi.spyOn(awsSecretsManagerProvider, "createSecret").mockResolvedValue({
       material: {
         scheme: "aws_secrets_manager_v1",
-        secretId: "arn:aws:secretsmanager:us-east-1:123456789012:secret:paperclip/prod-use1/user-secret",
+        secretId: "arn:aws:secretsmanager:us-east-1:123456789012:secret:wardmote/prod-use1/user-secret",
         versionId: "aws-version-1",
         source: "managed",
       },
       valueSha256: "value-sha-1",
       fingerprintSha256: "fingerprint-sha-1",
-      externalRef: "arn:aws:secretsmanager:us-east-1:123456789012:secret:paperclip/prod-use1/user-secret",
+      externalRef: "arn:aws:secretsmanager:us-east-1:123456789012:secret:wardmote/prod-use1/user-secret",
       providerVersionRef: "aws-version-1",
     });
     const deleteSpy = vi.spyOn(awsSecretsManagerProvider, "deleteOrArchive").mockResolvedValue();
@@ -2998,32 +2998,32 @@ describeEmbeddedPostgres("secretService", () => {
       config: {
         region: "us-east-1",
         namespace: "prod-use1",
-        secretNamePrefix: "paperclip",
+        secretNamePrefix: "wardmote",
       },
     });
 
     const createSpy = vi.spyOn(awsSecretsManagerProvider, "createSecret").mockResolvedValue({
       material: {
         scheme: "aws_secrets_manager_v1",
-        secretId: "arn:aws:secretsmanager:us-east-1:123456789012:secret:paperclip/prod-use1/company/openai-api-key",
+        secretId: "arn:aws:secretsmanager:us-east-1:123456789012:secret:wardmote/prod-use1/company/openai-api-key",
         versionId: "aws-version-1",
         source: "managed",
       },
       valueSha256: "value-sha-1",
       fingerprintSha256: "fingerprint-sha-1",
-      externalRef: "arn:aws:secretsmanager:us-east-1:123456789012:secret:paperclip/prod-use1/company/openai-api-key",
+      externalRef: "arn:aws:secretsmanager:us-east-1:123456789012:secret:wardmote/prod-use1/company/openai-api-key",
       providerVersionRef: "aws-version-1",
     });
     const createVersionSpy = vi.spyOn(awsSecretsManagerProvider, "createVersion").mockResolvedValue({
       material: {
         scheme: "aws_secrets_manager_v1",
-        secretId: "arn:aws:secretsmanager:us-east-1:123456789012:secret:paperclip/prod-use1/company/openai-api-key",
+        secretId: "arn:aws:secretsmanager:us-east-1:123456789012:secret:wardmote/prod-use1/company/openai-api-key",
         versionId: "aws-version-2",
         source: "managed",
       },
       valueSha256: "value-sha-2",
       fingerprintSha256: "fingerprint-sha-2",
-      externalRef: "arn:aws:secretsmanager:us-east-1:123456789012:secret:paperclip/prod-use1/company/openai-api-key",
+      externalRef: "arn:aws:secretsmanager:us-east-1:123456789012:secret:wardmote/prod-use1/company/openai-api-key",
       providerVersionRef: "aws-version-2",
     });
     const resolveSpy = vi.spyOn(awsSecretsManagerProvider, "resolveVersion").mockResolvedValue("resolved-secret");
@@ -3067,14 +3067,14 @@ describeEmbeddedPostgres("secretService", () => {
       material: {
         scheme: "aws_secrets_manager_v1",
         secretId:
-          "arn:aws:secretsmanager:us-east-1:123456789012:secret:paperclip/prod-use1/company/create-rollback",
+          "arn:aws:secretsmanager:us-east-1:123456789012:secret:wardmote/prod-use1/company/create-rollback",
         versionId: "aws-version-1",
         source: "managed",
       },
       valueSha256: "value-sha-1",
       fingerprintSha256: "fingerprint-sha-1",
       externalRef:
-        "arn:aws:secretsmanager:us-east-1:123456789012:secret:paperclip/prod-use1/company/create-rollback",
+        "arn:aws:secretsmanager:us-east-1:123456789012:secret:wardmote/prod-use1/company/create-rollback",
       providerVersionRef: "aws-version-1",
     };
     vi.spyOn(awsSecretsManagerProvider, "createSecret").mockResolvedValue(prepared);
@@ -3122,14 +3122,14 @@ describeEmbeddedPostgres("secretService", () => {
       material: {
         scheme: "aws_secrets_manager_v1",
         secretId:
-          "arn:aws:secretsmanager:us-east-1:123456789012:secret:paperclip/prod-use1/company/create-cleanup-handle",
+          "arn:aws:secretsmanager:us-east-1:123456789012:secret:wardmote/prod-use1/company/create-cleanup-handle",
         versionId: "aws-version-1",
         source: "managed",
       },
       valueSha256: "value-sha-1",
       fingerprintSha256: "fingerprint-sha-1",
       externalRef:
-        "arn:aws:secretsmanager:us-east-1:123456789012:secret:paperclip/prod-use1/company/create-cleanup-handle",
+        "arn:aws:secretsmanager:us-east-1:123456789012:secret:wardmote/prod-use1/company/create-cleanup-handle",
       providerVersionRef: "aws-version-1",
     };
     vi.spyOn(awsSecretsManagerProvider, "createSecret").mockResolvedValue(prepared);
@@ -3190,14 +3190,14 @@ describeEmbeddedPostgres("secretService", () => {
       material: {
         scheme: "aws_secrets_manager_v1",
         secretId:
-          "arn:aws:secretsmanager:us-east-1:123456789012:secret:paperclip/prod-use1/company/create-local-cleanup",
+          "arn:aws:secretsmanager:us-east-1:123456789012:secret:wardmote/prod-use1/company/create-local-cleanup",
         versionId: "aws-version-1",
         source: "managed",
       },
       valueSha256: "value-sha-1",
       fingerprintSha256: "fingerprint-sha-1",
       externalRef:
-        "arn:aws:secretsmanager:us-east-1:123456789012:secret:paperclip/prod-use1/company/create-local-cleanup",
+        "arn:aws:secretsmanager:us-east-1:123456789012:secret:wardmote/prod-use1/company/create-local-cleanup",
       providerVersionRef: "aws-version-1",
     };
     vi.spyOn(awsSecretsManagerProvider, "createSecret").mockResolvedValue(prepared);
@@ -3246,14 +3246,14 @@ describeEmbeddedPostgres("secretService", () => {
       material: {
         scheme: "aws_secrets_manager_v1",
         secretId:
-          "arn:aws:secretsmanager:us-east-1:123456789012:secret:paperclip/prod-use1/company/rotate-rollback",
+          "arn:aws:secretsmanager:us-east-1:123456789012:secret:wardmote/prod-use1/company/rotate-rollback",
         versionId: "aws-version-1",
         source: "managed",
       },
       valueSha256: "value-sha-1",
       fingerprintSha256: "fingerprint-sha-1",
       externalRef:
-        "arn:aws:secretsmanager:us-east-1:123456789012:secret:paperclip/prod-use1/company/rotate-rollback",
+        "arn:aws:secretsmanager:us-east-1:123456789012:secret:wardmote/prod-use1/company/rotate-rollback",
       providerVersionRef: "aws-version-1",
     });
     const secret = await svc.create(companyId, {
@@ -3267,14 +3267,14 @@ describeEmbeddedPostgres("secretService", () => {
       material: {
         scheme: "aws_secrets_manager_v1",
         secretId:
-          "arn:aws:secretsmanager:us-east-1:123456789012:secret:paperclip/prod-use1/company/rotate-rollback",
+          "arn:aws:secretsmanager:us-east-1:123456789012:secret:wardmote/prod-use1/company/rotate-rollback",
         versionId: "aws-version-2",
         source: "managed",
       },
       valueSha256: "value-sha-2",
       fingerprintSha256: "fingerprint-sha-2",
       externalRef:
-        "arn:aws:secretsmanager:us-east-1:123456789012:secret:paperclip/prod-use1/company/rotate-rollback",
+        "arn:aws:secretsmanager:us-east-1:123456789012:secret:wardmote/prod-use1/company/rotate-rollback",
       providerVersionRef: "aws-version-2",
     };
     vi.spyOn(awsSecretsManagerProvider, "createVersion").mockResolvedValue(prepared);
@@ -3311,14 +3311,14 @@ describeEmbeddedPostgres("secretService", () => {
       material: {
         scheme: "aws_secrets_manager_v1",
         secretId:
-          "arn:aws:secretsmanager:us-east-1:123456789012:secret:paperclip/prod-use1/company/rotate-cleanup-handle",
+          "arn:aws:secretsmanager:us-east-1:123456789012:secret:wardmote/prod-use1/company/rotate-cleanup-handle",
         versionId: "aws-version-1",
         source: "managed",
       },
       valueSha256: "value-sha-1",
       fingerprintSha256: "fingerprint-sha-1",
       externalRef:
-        "arn:aws:secretsmanager:us-east-1:123456789012:secret:paperclip/prod-use1/company/rotate-cleanup-handle",
+        "arn:aws:secretsmanager:us-east-1:123456789012:secret:wardmote/prod-use1/company/rotate-cleanup-handle",
       providerVersionRef: "aws-version-1",
     });
     const secret = await svc.create(companyId, {
@@ -3332,14 +3332,14 @@ describeEmbeddedPostgres("secretService", () => {
       material: {
         scheme: "aws_secrets_manager_v1",
         secretId:
-          "arn:aws:secretsmanager:us-east-1:123456789012:secret:paperclip/prod-use1/company/rotate-cleanup-handle",
+          "arn:aws:secretsmanager:us-east-1:123456789012:secret:wardmote/prod-use1/company/rotate-cleanup-handle",
         versionId: "aws-version-2",
         source: "managed",
       },
       valueSha256: "value-sha-2",
       fingerprintSha256: "fingerprint-sha-2",
       externalRef:
-        "arn:aws:secretsmanager:us-east-1:123456789012:secret:paperclip/prod-use1/company/rotate-cleanup-handle",
+        "arn:aws:secretsmanager:us-east-1:123456789012:secret:wardmote/prod-use1/company/rotate-cleanup-handle",
       providerVersionRef: "aws-version-2",
     };
     vi.spyOn(awsSecretsManagerProvider, "createVersion").mockResolvedValue(prepared);
@@ -3386,14 +3386,14 @@ describeEmbeddedPostgres("secretService", () => {
       material: {
         scheme: "aws_secrets_manager_v1",
         secretId:
-          "arn:aws:secretsmanager:us-east-1:123456789012:secret:paperclip/prod-use1/company/vault-reassign",
+          "arn:aws:secretsmanager:us-east-1:123456789012:secret:wardmote/prod-use1/company/vault-reassign",
         versionId: "aws-version-1",
         source: "managed",
       },
       valueSha256: "value-sha-1",
       fingerprintSha256: "fingerprint-sha-1",
       externalRef:
-        "arn:aws:secretsmanager:us-east-1:123456789012:secret:paperclip/prod-use1/company/vault-reassign",
+        "arn:aws:secretsmanager:us-east-1:123456789012:secret:wardmote/prod-use1/company/vault-reassign",
       providerVersionRef: "aws-version-1",
     });
     const secret = await svc.create(companyId, {
@@ -3558,7 +3558,7 @@ describeEmbeddedPostgres("secretService", () => {
       config: { region: "us-east-1", namespace: "prod-use1" },
     });
     const rawProviderMessage =
-      "AccessDeniedException: User: arn:aws:sts::123456789012:assumed-role/prod/Wardmote is not authorized to perform secretsmanager:CreateSecret on arn:aws:secretsmanager:us-east-1:123456789012:secret:paperclip/prod-use1";
+      "AccessDeniedException: User: arn:aws:sts::123456789012:assumed-role/prod/Wardmote is not authorized to perform secretsmanager:CreateSecret on arn:aws:secretsmanager:us-east-1:123456789012:secret:wardmote/prod-use1";
 
     vi.spyOn(awsSecretsManagerProvider, "createSecret").mockRejectedValueOnce(
       new SecretProviderClientError({
@@ -3681,18 +3681,18 @@ describeEmbeddedPostgres("secretService", () => {
           config: {
             region: "us-east-1",
             namespace: "prod-use1",
-            secretNamePrefix: "paperclip",
+            secretNamePrefix: "wardmote",
             kmsKeyId: null,
             ownerTag: "platform",
             environmentTag: "production",
           },
           sampleCount: 1,
           samples: [
-            { name: "paperclip/prod-use1/company-1/openai", hasKmsKey: false, tagKeys: ["paperclip:environment"] },
+            { name: "wardmote/prod-use1/company-1/openai", hasKmsKey: false, tagKeys: ["wardmote:environment"] },
           ],
           signals: {
             namespace: "prod-use1",
-            secretNamePrefix: "paperclip",
+            secretNamePrefix: "wardmote",
             environmentTag: "production",
             ownerTag: "platform",
             kmsKeyId: null,
@@ -4067,13 +4067,13 @@ describeEmbeddedPostgres("secretService", () => {
       secrets: [
         {
           externalRef:
-            "arn:aws:secretsmanager:us-east-1:123456789012:secret:paperclip/prod-use1/company-b/openai",
-          name: "paperclip/prod-use1/company-b/openai",
+            "arn:aws:secretsmanager:us-east-1:123456789012:secret:wardmote/prod-use1/company-b/openai",
+          name: "wardmote/prod-use1/company-b/openai",
           providerVersionRef: null,
           metadata: {
-            arn: "arn:aws:secretsmanager:us-east-1:123456789012:secret:paperclip/prod-use1/company-b/openai",
+            arn: "arn:aws:secretsmanager:us-east-1:123456789012:secret:wardmote/prod-use1/company-b/openai",
             description: "must not leak",
-            tags: [{ Key: "paperclip:company-id", Value: "company-b" }],
+            tags: [{ Key: "wardmote:company-id", Value: "company-b" }],
           },
         },
       ],
@@ -4090,19 +4090,19 @@ describeEmbeddedPostgres("secretService", () => {
       providerMetadata: null,
     });
     expect(JSON.stringify(preview)).not.toContain("must not leak");
-    expect(JSON.stringify(preview)).not.toContain("paperclip:company-id");
+    expect(JSON.stringify(preview)).not.toContain("wardmote:company-id");
 
     const result = await svc.importRemoteSecrets(companyId, {
       providerConfigId: awsVault.id,
       secrets: [
         {
           externalRef:
-            "arn:aws:secretsmanager:us-east-1:123456789012:secret:paperclip/prod-use1/company-b/openai",
+            "arn:aws:secretsmanager:us-east-1:123456789012:secret:wardmote/prod-use1/company-b/openai",
           name: "Foreign managed secret",
           key: "foreign-managed-secret",
           providerMetadata: {
             description: "client-submitted metadata must not persist",
-            tags: [{ Key: "paperclip:company-id", Value: "company-b" }],
+            tags: [{ Key: "wardmote:company-id", Value: "company-b" }],
           },
         },
       ],
@@ -4195,14 +4195,14 @@ describeEmbeddedPostgres("secretService", () => {
 
     await expect(
       svc.update(secret.id, {
-        externalRef: "arn:aws:secretsmanager:us-east-1:123456789012:secret:paperclip/prod/company-b/openai-api-key",
+        externalRef: "arn:aws:secretsmanager:us-east-1:123456789012:secret:wardmote/prod/company-b/openai-api-key",
       }),
     ).rejects.toThrow(/Managed secrets cannot override externalRef/i);
 
     await expect(
       svc.rotate(secret.id, {
         value: "rotated-runtime-secret",
-        externalRef: "arn:aws:secretsmanager:us-east-1:123456789012:secret:paperclip/prod/company-b/openai-api-key",
+        externalRef: "arn:aws:secretsmanager:us-east-1:123456789012:secret:wardmote/prod/company-b/openai-api-key",
       }),
     ).rejects.toThrow(/Managed secrets cannot override externalRef/i);
   });
@@ -4256,7 +4256,7 @@ describeEmbeddedPostgres("secretService", () => {
     const companyId = await seedCompany();
     const svc = secretService(db);
     const externalRef =
-      "arn:aws:secretsmanager:us-east-1:123456789012:secret:paperclip/prod-use1/company-1/openai-api-key";
+      "arn:aws:secretsmanager:us-east-1:123456789012:secret:wardmote/prod-use1/company-1/openai-api-key";
 
     const secret = await db
       .insert(companySecrets)
@@ -4323,7 +4323,7 @@ describeEmbeddedPostgres("secretService", () => {
     const companyId = await seedCompany();
     const svc = secretService(db);
     const externalRef =
-      "arn:aws:secretsmanager:us-east-1:123456789012:secret:paperclip/prod-use1/company-1/remove-failure";
+      "arn:aws:secretsmanager:us-east-1:123456789012:secret:wardmote/prod-use1/company-1/remove-failure";
     const secret = await db
       .insert(companySecrets)
       .values({
@@ -4382,7 +4382,7 @@ describeEmbeddedPostgres("secretService", () => {
     const companyId = await seedCompany();
     const svc = secretService(db);
     const externalRef =
-      "arn:aws:secretsmanager:us-east-1:123456789012:secret:paperclip/prod-use1/company-1/retry-delete";
+      "arn:aws:secretsmanager:us-east-1:123456789012:secret:wardmote/prod-use1/company-1/retry-delete";
     const secretId = randomUUID();
     await db.insert(companySecrets).values({
       id: secretId,
@@ -4442,7 +4442,7 @@ describeEmbeddedPostgres("secretService", () => {
       },
     });
     const externalRef =
-      "arn:aws:secretsmanager:us-east-1:123456789012:secret:paperclip/prod/company-1/openai-api-key";
+      "arn:aws:secretsmanager:us-east-1:123456789012:secret:wardmote/prod/company-1/openai-api-key";
     const secret = await db
       .insert(companySecrets)
       .values({
