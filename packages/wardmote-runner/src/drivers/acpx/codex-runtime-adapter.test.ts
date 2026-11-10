@@ -129,7 +129,7 @@ describe("Codex ACPX runtime adapter", () => {
       const binding = cursorInstructionBinding(options.systemInstructions);
       guard("outbound", { id: 0, method: "session/load", params: { sessionId: "backend-1" } });
       guard("inbound", { id: 0, result: mode === "missing" ? {} : { modes: { currentModeId: "agent" }, configOptions: [{ id: "mode", currentValue: "agent" }], _meta: { wardmoteCursorInstructions: {
-        schema: "wardmote.cursor.instructions.v1", digest: binding.digest, byteLength: binding.byteLength,
+        schema: "paperclip.cursor.instructions.v1", digest: binding.digest, byteLength: binding.byteLength,
       } } } });
       if (mode === "unsupported") throw new Error("Exact model unsupported");
     });
@@ -156,7 +156,7 @@ describe("Codex ACPX runtime adapter", () => {
       const guard = created.protocolGuardFactory!();
       guard("outbound", { id: 0, method: "session/load", params: { sessionId: "backend-1" } });
       guard("inbound", { id: 0, result: { modes: { currentModeId: "agent" }, configOptions: configs("agent"), _meta: { wardmoteCursorInstructions: {
-        schema: "wardmote.cursor.instructions.v1", digest: binding.digest, byteLength: binding.byteLength,
+        schema: "paperclip.cursor.instructions.v1", digest: binding.digest, byteLength: binding.byteLength,
       } } } });
       guard("outbound", { id: 1, method: "session/set_config_option", params: { sessionId: "backend-1", configId: input.key, value: input.value } });
       guard("inbound", { id: 1, result: { configOptions: configs(input.key === "mode" ? selected : "agent") } });
@@ -187,7 +187,7 @@ describe("Codex ACPX runtime adapter", () => {
         const guard = value.protocolGuardFactory!();
         const binding = cursorInstructionBinding(options.systemInstructions);
         guard("outbound", { id: 0, method: "session/new", params: {} });
-        guard("inbound", { id: 0, result: { sessionId: "backend-1", modes: { currentModeId: "agent" }, configOptions: [{ id: "mode", currentValue: "agent" }], _meta: { wardmoteCursorInstructions: { schema: "wardmote.cursor.instructions.v1", digest: binding.digest, byteLength: binding.byteLength } } } });
+        guard("inbound", { id: 0, result: { sessionId: "backend-1", modes: { currentModeId: "agent" }, configOptions: [{ id: "mode", currentValue: "agent" }], _meta: { wardmoteCursorInstructions: { schema: "paperclip.cursor.instructions.v1", digest: binding.digest, byteLength: binding.byteLength } } } });
         return runtime;
       },
     });

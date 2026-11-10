@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 
-const SCHEMA = "wardmote.cursor.instructions.v1";
+const SCHEMA = "paperclip.cursor.instructions.v1";
 const MAX_BYTES = 32 * 1024;
 
 export function cursorInstructionBinding(content: string): { payload: string; digest: string; byteLength: number } {

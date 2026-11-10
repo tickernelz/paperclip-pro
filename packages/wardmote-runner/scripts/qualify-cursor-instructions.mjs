@@ -18,7 +18,7 @@ const awaiter = (self, args, _promise, fn) => { const it = fn.apply(self, args ?
  * claim that the model obeyed the rules; this proves their RequestContext path. */
 export async function qualifyCursorInstructions(source, platform, vendorRoot) {
   const text = "Wardmote governance\nCustom entry: résumé\nAGENT_HOME=/registered/agent";
-  const payload = content => JSON.stringify({ schema: "wardmote.cursor.instructions.v1", content, digest: `sha256:${sha(content)}` });
+  const payload = content => JSON.stringify({ schema: "paperclip.cursor.instructions.v1", content, digest: `sha256:${sha(content)}` });
   const helper = segment(source, "const wardmoteCursorInstructionCrypto=", "var o=n(");
   const makeState = raw => runInNewContext(`${helper};wardmoteCursorInstructionState`, {
     n: id => id === "node:crypto" ? crypto : { DX: Data, f5: Data, i9: Data }, process: { env: { WARDMOTE_CURSOR_INSTRUCTIONS: raw } }, Buffer,
