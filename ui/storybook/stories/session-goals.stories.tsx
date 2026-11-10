@@ -32,7 +32,7 @@ function projection(input: {
   return {
     issueId: "issue-story-goal",
     agentId: "agent-story-goal",
-    adapterType: "paperclip_runner",
+    adapterType: "wardmote_runner",
     sessionId: "session-story-goal",
     capability: input.capability ?? codexCapability,
     goal: status

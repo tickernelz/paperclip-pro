@@ -261,7 +261,7 @@ describe("resolveEnvironmentExecutionTarget", () => {
   it("resolves sandbox targets for every remote-managed adapter and runner harness", async () => {
     for (const adapterType of [
       "omp_local",
-      "paperclip_runner",
+      "wardmote_runner",
       "claude_local",
       "codex_local",
       "grok_local",

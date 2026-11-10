@@ -59,7 +59,7 @@ export interface PaperclipRunnerEvalCompatibilityReceipt {
 }
 
 export class PaperclipRunnerEvalCompatibilityError extends Error {
-  readonly code = "paperclip_runner_eval_incompatible" as const;
+  readonly code = "wardmote_runner_eval_incompatible" as const;
 
   constructor(
     readonly consumer: string,

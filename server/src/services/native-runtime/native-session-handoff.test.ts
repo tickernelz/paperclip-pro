@@ -46,7 +46,7 @@ const support = await getEmbeddedPostgresTestSupport();
     database = await startEmbeddedPostgresTestDatabase("paperclip-native-handoff-");
     db = createDb(database.connectionString);
     await db.insert(companies).values({ id: companyId, name: "Handoff", issuePrefix: "HAND" });
-    await db.insert(agents).values({ id: agentId, companyId, name: "Dickens", role: "general", adapterType: "paperclip_runner" });
+    await db.insert(agents).values({ id: agentId, companyId, name: "Dickens", role: "general", adapterType: "wardmote_runner" });
     await db.insert(issues).values({ id: issueId, companyId, title: "Chat", status: "in_progress", assigneeAgentId: agentId,
       conversationAgentId: agentId, conversationUserId: "user", conversationState: "active", conversationSessionGeneration: 2 });
     await db.insert(issueComments).values([

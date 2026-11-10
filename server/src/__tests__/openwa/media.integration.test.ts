@@ -150,7 +150,7 @@ describe("OpenWA media ingest and speech-to-text (embedded Postgres + fake gatew
     const agentId = randomUUID();
     await db.insert(companies).values({ id: companyId, name: "OpenWA media", issuePrefix: prefix, requireBoardApprovalForNewAgents: false });
     await db.insert(agents).values({
-      id: agentId, companyId, name: "OpenWA Agent", role: "engineer", status: "idle", adapterType: "paperclip_runner", adapterConfig: {}, runtimeConfig: {}, permissions: {},
+      id: agentId, companyId, name: "OpenWA Agent", role: "engineer", status: "idle", adapterType: "wardmote_runner", adapterConfig: {}, runtimeConfig: {}, permissions: {},
     });
     await db.insert(toolApplications).values({
       id: applicationId, companyId, applicationKey: "chat:openwa:" + endpointId, name: "OpenWA", type: "chat", status: "active",

@@ -61,7 +61,7 @@ if (!support.supported) console.warn(`Planning fixture API calibration skipped: 
   it.each(PLAN_VARIANTS)("admits %s through real creation, readback and selection APIs", async variant => {
     const companyId = randomUUID(), agentId = randomUUID();
     await db.insert(companies).values({ id: companyId, name: "Planning calibration", issuePrefix: `P${companyId.slice(0, 6)}` });
-    await db.insert(agents).values({ id: agentId, companyId, name: "Fixture Lead", role: "general", adapterType: "paperclip_runner", adapterConfig: {} });
+    await db.insert(agents).values({ id: agentId, companyId, name: "Fixture Lead", role: "general", adapterType: "wardmote_runner", adapterConfig: {} });
     const before = await api.get<any[]>(`/api/companies/${companyId}/skills`);
     const bundled = before.find(s => s.key === PLAN_SKILLS[0].key);
     expect(bundled).toBeDefined();

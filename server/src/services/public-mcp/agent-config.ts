@@ -3,7 +3,7 @@ import { claudeLocalReasoningEffortsForModel, DEFAULT_CLAUDE_LOCAL_MODEL } from 
 import { unprocessable } from "../../errors.js";
 
 function effortSettings(adapterType: string, config: Record<string, unknown>) {
-  if (adapterType === "codex_local" || (adapterType === "paperclip_runner" && (config.provider ?? "codex") === "codex")) {
+  if (adapterType === "codex_local" || (adapterType === "wardmote_runner" && (config.provider ?? "codex") === "codex")) {
     return { field: "modelReasoningEffort", supported: codexLocalReasoningEffortsForModel(typeof config.model === "string" ? config.model : DEFAULT_CODEX_LOCAL_MODEL) };
   }
   if (adapterType === "claude_local") {

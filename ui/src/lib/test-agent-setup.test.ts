@@ -5,7 +5,7 @@ vi.mock("../api/agents", () => ({ agentsApi: { testEnvironment } }));
 const input = {
   companyId: "company-1",
   agentId: "agent-1",
-  adapterType: "paperclip_runner",
+  adapterType: "wardmote_runner",
   providerAdapter: "claude_local",
   environmentId: "sandbox-1",
   adapterConfig: {
@@ -21,7 +21,7 @@ const input = {
   },
 };
 const ready = {
-  adapterType: "paperclip_runner",
+  adapterType: "wardmote_runner",
   status: "pass",
   testedAt: "now",
   checks: [{ code: "runtime", level: "info", message: "Ready" }],
@@ -44,7 +44,7 @@ it("does not report a connection when runtime readiness passes but provider auth
     });
   const result = await testAgentSetup(input);
   expect(result.status).toBe("fail");
-  expect(result.adapterType).toBe("paperclip_runner");
+  expect(result.adapterType).toBe("wardmote_runner");
   expect(testEnvironment).toHaveBeenLastCalledWith(
     "company-1",
     "claude_local",

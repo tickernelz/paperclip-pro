@@ -53,7 +53,7 @@ describe("runner compatibility preflight", () => {
       });
     } catch (error) {
       expect(error).toBeInstanceOf(PaperclipRunnerCompatibilityError);
-      expect((error as PaperclipRunnerCompatibilityError).code).toBe("paperclip_runner_incompatible");
+      expect((error as PaperclipRunnerCompatibilityError).code).toBe("wardmote_runner_incompatible");
       expect((error as PaperclipRunnerCompatibilityError).issues.map((issue) => issue.code)).toEqual([
         "component_version_mismatch",
         "eval_corpus_version_unsupported",

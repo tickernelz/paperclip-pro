@@ -125,7 +125,7 @@ export function gradeHiringTemplate(e: HiringTemplateEvidence) {
   const hires = e.agents.filter(a => a.id !== e.leadId), hired = hires[0];
   const lead = e.agents.find(a => a.id === e.leadId);
   check("one-coder-hire", "outcome", hires.length === 1 && hired?.name === e.hireName && hired.role === "engineer"
-    && hired.reportsTo === e.leadId && hired.adapterType === "paperclip_runner", "Exactly one permanent coding teammate reports to the lead.");
+    && hired.reportsTo === e.leadId && hired.adapterType === "wardmote_runner", "Exactly one permanent coding teammate reports to the lead.");
   check("execution-account", "outcome", Boolean(e.connectionId) && Boolean(hired && lead)
     && hired?.adapterConfig?.model === lead?.adapterConfig?.model
     && sameJson(hired?.runtimeConfig?.aiConnection, e.binding), "Hire keeps the lead model and managed account binding.");

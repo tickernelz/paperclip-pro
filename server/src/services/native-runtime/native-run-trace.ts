@@ -214,7 +214,7 @@ export function createNativeRunTrace(input: {
       startTime: traceStartedAtMs,
       attributes: {
         "paperclip.task.run.run_id": runIdHash,
-        "paperclip.task.run.runtime": "paperclip_runner",
+        "paperclip.task.run.runtime": "wardmote_runner",
         "paperclip.task.run.trace_schema_version":
           NATIVE_RUN_TRACE_SCHEMA_VERSION,
       },
@@ -513,7 +513,7 @@ export function createNativeRunTrace(input: {
       startedAtMs: traceStartedAtMs,
       endedAtMs,
       outcome,
-      attributes: { runtime: "paperclip_runner" },
+      attributes: { runtime: "wardmote_runner" },
     });
   };
 

@@ -74,7 +74,7 @@ const excludedAdapters = new Set([
   "claude_managed",
   "aws_agentcore",
   "acpx_local",
-  "paperclip_runner",
+  "wardmote_runner",
   "cursor_cloud",
 ]);
 

@@ -124,7 +124,7 @@ describe.skipIf(!support.supported)("heartbeat environment selection boundary", 
   it("returns the task-owned local chat root before workspace realization", async () => {
     const { input, issue } = await fixture();
     await db.update(issues).set({ originKind: "chat_channel", projectId: null }).where(eq(issues.id, issue.id));
-    input.agent.adapterType = "paperclip_runner";
+    input.agent.adapterType = "wardmote_runner";
     input.task.executionProjectId = null;
     input.task.projectContext = null;
     const result = await selectHeartbeatEnvironment(db, input);
@@ -136,7 +136,7 @@ describe.skipIf(!support.supported)("heartbeat environment selection boundary", 
   it("rejects a project chat without a task-owned isolated workspace", async () => {
     const { input, issue } = await fixture();
     await db.update(issues).set({ originKind: "chat_channel" }).where(eq(issues.id, issue.id));
-    input.agent.adapterType = "paperclip_runner";
+    input.agent.adapterType = "wardmote_runner";
     await expect(selectHeartbeatEnvironment(db, input)).rejects.toThrow("External chat requires a task-owned isolated workspace");
   });
 });

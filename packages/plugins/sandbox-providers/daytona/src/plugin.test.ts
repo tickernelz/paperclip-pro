@@ -1439,7 +1439,7 @@ describe("Daytona sandbox provider plugin", () => {
     const sandbox = createMockSandbox({ id: "ephemeral-owned" });
     mockCreate.mockResolvedValue(sandbox);
     const base = { driverKey: "daytona", companyId: "company-1", environmentId: "env-1", agentId: "agent-1",
-      issueId: "issue-1", adapterType: "paperclip_runner", config: { reuseLease: false } };
+      issueId: "issue-1", adapterType: "wardmote_runner", config: { reuseLease: false } };
     const lease = await plugin.definition.onEnvironmentAcquireLease!({ ...base, runId: "run-1" });
     const sentinel = lease.metadata!.workspaceSentinel as { token: string; result: string };
     expect(sentinel).toMatchObject({ token: expect.stringMatching(/^[a-f0-9]{64}$/), result: "written" });

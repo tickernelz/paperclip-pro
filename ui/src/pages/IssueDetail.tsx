@@ -1407,7 +1407,7 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
   );
   const assigneeUsesPaperclipRunner = Boolean(
     issueAssigneeAgentId &&
-    agentMap.get(issueAssigneeAgentId)?.adapterType === "paperclip_runner",
+    agentMap.get(issueAssigneeAgentId)?.adapterType === "wardmote_runner",
   );
   const liveRuntimeRun =
     resolvedActiveRun ??
@@ -1899,7 +1899,7 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
             delivery?.deliveryMode !== "steered" &&
             interaction.sourceRunId &&
             interruptibleIssueRun?.id === interaction.sourceRunId &&
-            interruptibleIssueRun.adapterType !== "paperclip_runner"
+            interruptibleIssueRun.adapterType !== "wardmote_runner"
               ? interaction.sourceRunId
               : null;
           const body =
@@ -1970,9 +1970,9 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
       return targetRunId ? [{ comment, targetRunId }] : [];
     });
     const fallbackProtocol =
-      liveRuntimeRun?.adapterType === "paperclip_runner" ||
+      liveRuntimeRun?.adapterType === "wardmote_runner" ||
       (!liveRuntimeRun && assigneeUsesPaperclipRunner)
-        ? "paperclip_runner_v1"
+        ? "wardmote_runner_v1"
         : "legacy";
     return mergePendingIssueQueuedComments({
       issueId,

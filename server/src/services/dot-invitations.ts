@@ -17,7 +17,7 @@ export function dotInvitationService(db: Db) {
     const rows = await database.select({ agent: agents, binding: dotAgentBindings })
       .from(agents).leftJoin(dotAgentBindings, and(eq(dotAgentBindings.agentId, agents.id), isNull(dotAgentBindings.revokedAt)))
       .where(and(eq(agents.companyId, companyId), ne(agents.status, "terminated"),
-        eq(agents.adapterType, "paperclip_runner"), sql`${agents.adapterConfig}->>'provider' = 'openai_dot'`,
+        eq(agents.adapterType, "wardmote_runner"), sql`${agents.adapterConfig}->>'provider' = 'openai_dot'`,
         sql`((${recoverIncomplete} and ${agents.metadata}->'dotInvitation'->>'operatorId' = ${operatorId}
           and ${agents.lifecycleOperation}->>'responsibleUserId' = ${operatorId}) or exists (select 1 from ${activityLog} where ${activityLog.companyId} = ${agents.companyId}
           and ${activityLog.entityId} = ${agents.id}::text and ${activityLog.entityType} = 'agent'
@@ -55,7 +55,7 @@ export function dotInvitationService(db: Db) {
         }
         const svc = agentService(database);
         let created = existing ?? await createAgentLifecycle(database).requestHire(companyId, {
-          name: "Dot", role: "general", adapterType: "paperclip_runner",
+          name: "Dot", role: "general", adapterType: "wardmote_runner",
           adapterConfig: { provider: "openai_dot", lifecycleMode: "per_turn", allowUnmeteredProvider: true,
             dotWorkspaceAccess: false, dotAttachmentAccess: false },
           runtimeConfig: { heartbeat: { enabled: false, wakeOnDemand: true } },

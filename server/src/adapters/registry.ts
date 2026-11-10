@@ -113,17 +113,17 @@ const grokLoginCapability: AdapterLoginCapability = {
 };
 
 const paperclipRunnerAdapter: ServerAdapterModule = {
-  type: "paperclip_runner",
+  type: "wardmote_runner",
   runtimeToolDelivery: "environment",
   async execute(ctx) {
-    const message = "paperclip_runner requires the native runner coordinator";
+    const message = "wardmote_runner requires the native runner coordinator";
     await ctx.onLog("stderr", `${message}\n`);
     return {
       exitCode: 1,
       signal: null,
       timedOut: false,
       errorMessage: message,
-      errorCode: "paperclip_runner_coordinator_required",
+      errorCode: "wardmote_runner_coordinator_required",
       provider: ctx.config.provider === "opencode"
         ? "opencode"
         : ctx.config.provider === "claude_managed"
@@ -144,11 +144,11 @@ const paperclipRunnerAdapter: ServerAdapterModule = {
       const profileError = error instanceof PaperclipRunnerProviderProfileError
         ? error
         : new PaperclipRunnerProviderProfileError(
-            "paperclip_runner_provider_unsupported",
+            "wardmote_runner_provider_unsupported",
             "Paperclip Runner provider configuration is invalid.",
           );
       return {
-        adapterType: "paperclip_runner",
+        adapterType: "wardmote_runner",
         status: "fail" as const,
         testedAt: new Date().toISOString(),
         checks: [{
@@ -159,7 +159,7 @@ const paperclipRunnerAdapter: ServerAdapterModule = {
       };
     }
     if (profile.provider === "openai_dot") {
-      return { adapterType: "paperclip_runner", status: "warn" as const, testedAt: new Date().toISOString(),
+      return { adapterType: "wardmote_runner", status: "warn" as const, testedAt: new Date().toISOString(),
         checks: [{ code: "dot_event_test_required", level: "warn" as const, message: "Dot manages its model and billing. Validate the dedicated agent binding and event round trip in Paperclip; this read-only check does not wake the Dot." }] };
     }
     if (profile.provider === "acpx") {
@@ -167,7 +167,7 @@ const paperclipRunnerAdapter: ServerAdapterModule = {
         // The profile resolver already validated the isolated host's exact
         // qualification pair. Do not report a production readiness pass.
         return {
-          adapterType: "paperclip_runner", status: "warn" as const, testedAt: new Date().toISOString(),
+          adapterType: "wardmote_runner", status: "warn" as const, testedAt: new Date().toISOString(),
           checks: [{ code: "acpx_candidate_qualification_only", level: "warn" as const,
             message: "This exact candidate and model are admitted for operator-controlled qualification only. Verified runtime installation, bound credentials, and model access are checked before execution; production support remains pending." }],
         };
@@ -186,7 +186,7 @@ const paperclipRunnerAdapter: ServerAdapterModule = {
             throw new Error(`ACPX ${profile.acpxAgent} requires a qualified Linux x64 or macOS architecture.`);
           }
           return {
-            adapterType: "paperclip_runner", status: "warn" as const, testedAt: new Date().toISOString(),
+            adapterType: "wardmote_runner", status: "warn" as const, testedAt: new Date().toISOString(),
             checks: [{ code: "acpx_remote_runtime_unverified", level: "warn" as const,
               message: "The remote platform is supported. Runtime package integrity and readiness must still be verified by the remote runner before launch." }],
           };
@@ -194,19 +194,19 @@ const paperclipRunnerAdapter: ServerAdapterModule = {
         const { probeAcpxClaudeInstallation, probeAcpxGrokInstallation, probeAcpxCursorInstallation, probeAcpxPiInstallation } = await import("../vendor/wardmote-runner/live/index.js");
         await (profile.acpxAgent === "pi" ? probeAcpxPiInstallation : profile.acpxAgent === "grok" ? probeAcpxGrokInstallation : profile.acpxAgent === "cursor" ? probeAcpxCursorInstallation : probeAcpxClaudeInstallation)(profile.model);
         return {
-          adapterType: "paperclip_runner", status: "pass" as const, testedAt: new Date().toISOString(),
+          adapterType: "wardmote_runner", status: "pass" as const, testedAt: new Date().toISOString(),
           checks: [{ code: "acpx_runtime_ready", level: "info" as const, message: `ACPX ${profile.acpxAgent} runtime is installed and verified. Model access is checked when it runs.` }],
         };
       } catch (error) {
         return {
-          adapterType: "paperclip_runner", status: "fail" as const, testedAt: new Date().toISOString(),
+          adapterType: "wardmote_runner", status: "fail" as const, testedAt: new Date().toISOString(),
           checks: [{ code: "acpx_runtime_unavailable", level: "error" as const, message: error instanceof Error ? error.message : "ACPX Claude runtime could not be verified." }],
         };
       }
     }
     if (profile.provider === "claude_managed") {
       return {
-        adapterType: "paperclip_runner",
+        adapterType: "wardmote_runner",
         status: "warn" as const,
         testedAt: new Date().toISOString(),
         checks: [{
@@ -222,7 +222,7 @@ const paperclipRunnerAdapter: ServerAdapterModule = {
     }
     if (profile.provider === "aws_agentcore") {
       return {
-        adapterType: "paperclip_runner",
+        adapterType: "wardmote_runner",
         status: "warn" as const,
         testedAt: new Date().toISOString(),
         checks: [{
@@ -239,7 +239,7 @@ const paperclipRunnerAdapter: ServerAdapterModule = {
     const result = profile.provider === "opencode"
       ? await openCodeTestEnvironment(context)
       : await codexTestEnvironment(context);
-    return { ...result, adapterType: "paperclip_runner" };
+    return { ...result, adapterType: "wardmote_runner" };
   },
   listSkills: listCodexSkills,
   syncSkills: syncCodexSkills,
@@ -278,7 +278,7 @@ const paperclipRunnerAdapter: ServerAdapterModule = {
         )
       : buildNpmRuntimeCommandSpec(config, "codex", "@openai/codex@0.160.0"),
   agentConfigurationDoc:
-    "# Paperclip Runner\n\nAdapter: paperclip_runner\n\nRuns Codex, OpenCode, Claude Managed, AWS AgentCore, or ACPX Claude/Grok Build/Cursor/Pi through the Rust Paperclip runner and authenticated PRP transport. Pi accepts an explicit provider/model ID and uses the company credentials bound to the agent environment. GitHub Copilot awaits local and Daytona qualification. Managed providers use company-scoped qualified profiles, explicit retention acknowledgement, and spend limits.\n",
+    "# Paperclip Runner\n\nAdapter: wardmote_runner\n\nRuns Codex, OpenCode, Claude Managed, AWS AgentCore, or ACPX Claude/Grok Build/Cursor/Pi through the Rust Paperclip runner and authenticated PRP transport. Pi accepts an explicit provider/model ID and uses the company credentials bound to the agent environment. GitHub Copilot awaits local and Daytona qualification. Managed providers use company-scoped qualified profiles, explicit retention acknowledgement, and spend limits.\n",
   getConfigSchema: () => ({
     fields: [
       {

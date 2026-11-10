@@ -266,7 +266,7 @@ describe("canonical instruction tools through native authority", () => {
     await expect(call("read_agent_instructions", { targetAgentId: foreignAgentId })).rejects.toMatchObject({ status: 404 });
     await expect(call("update_agent_instructions", { targetAgentId: foreignAgentId, entryFile, content: "foreign", baseRevisionId: null })).rejects.toMatchObject({ status: 404 });
     await db.update(heartbeatRuns).set({ status: "cancelled" }).where(eq(heartbeatRuns.id, runId));
-    await expect(call("read_agent_instructions")).rejects.toThrow("paperclip_runner_tool_binding_not_authorized");
+    await expect(call("read_agent_instructions")).rejects.toThrow("wardmote_runner_tool_binding_not_authorized");
     expect(await fs.readFile(path.join(root, entryFile), "utf8")).toBe(original);
   });
 });

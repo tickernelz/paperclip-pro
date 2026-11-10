@@ -819,7 +819,7 @@ export function parsePaperclipRunnerStdoutLine(line: string, ts: string): Transc
 }
 
 export const paperclipRunnerUIAdapter: UIAdapterModule = {
-  type: "paperclip_runner",
+  type: "wardmote_runner",
   label: "Wardmote Runner",
   parseStdoutLine: parsePaperclipRunnerStdoutLine,
   createStdoutParser: () => {

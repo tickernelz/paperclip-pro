@@ -90,7 +90,7 @@ export async function selectHeartbeatEnvironment(db: Db, input: HeartbeatEnviron
         )
       : null;
   const isDotRun = persistedNativeExecutionInput?.provider.kind === "openai_dot"
-    || (!persistedNativeExecutionInput && agent.adapterType === "paperclip_runner" && parseObject(agent.adapterConfig).provider === "openai_dot");
+    || (!persistedNativeExecutionInput && agent.adapterType === "wardmote_runner" && parseObject(agent.adapterConfig).provider === "openai_dot");
   const persistedNativeExecutionWorkspaceId =
     persistedNativeExecutionInput?.binding.executionWorkspaceId ?? null;
   const requestedExecutionWorkspaceId =

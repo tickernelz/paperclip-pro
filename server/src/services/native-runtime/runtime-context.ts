@@ -247,7 +247,7 @@ export async function resolveNativeRuntimeMcpSnapshot(input: { db: Db; agent: Pi
 export async function buildNativeRuntimeContext(input: { db: Db; agent: RuntimeAgent; runId: string; runtimeConfig: Record<string, unknown>; runtimeSkillEntries: PaperclipSkillEntry[]; instructionWorkingCopy?: { rootPath: string; entryPath: string; kind?: "agent_files" } }): Promise<NativeRuntimeContextSnapshot> {
   const [instructions, skills, mcp] = await Promise.all([
     materializeInstructionBundle(input.db, input.agent, input.instructionWorkingCopy?.kind === "agent_files"),
-    materializeSelectedSkills(input.runtimeConfig, input.runtimeSkillEntries, input.agent.adapterType === "paperclip_runner"),
+    materializeSelectedSkills(input.runtimeConfig, input.runtimeSkillEntries, input.agent.adapterType === "wardmote_runner"),
     resolveNativeRuntimeMcpSnapshot({ db: input.db, agent: input.agent, runId: input.runId }),
   ]);
   const snapshot = {

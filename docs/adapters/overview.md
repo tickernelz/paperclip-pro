@@ -19,7 +19,7 @@ When a heartbeat fires, Wardmote:
 | Adapter | Type Key | Description |
 |---------|----------|-------------|
 | OMP | `omp_local` | Runs the OMP coding agent. This is the only agent runtime offered when you create an agent. |
-| Wardmote Runner | `paperclip_runner` | Experimental native runner, enabled per instance. |
+| Wardmote Runner | `wardmote_runner` | Experimental native runner, enabled per instance. |
 | [Process](/adapters/process) | `process` | Executes arbitrary shell commands. Kept on the server for existing agents; not selectable in the UI. |
 | [HTTP](/adapters/http) | `http` | Sends webhooks to external agents. Kept on the server for existing agents; not selectable in the UI. |
 

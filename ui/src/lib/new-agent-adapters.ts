@@ -7,9 +7,9 @@ export function isNewAgentAdapterAllowed(
     runnerProvider,
   }: { nativeRunnerEnabled: boolean; openAiDotEnabled?: boolean; runnerProvider?: string },
 ) {
-  if (type === "openai_dot" || (type === "paperclip_runner" && runnerProvider === "openai_dot")) {
+  if (type === "openai_dot" || (type === "wardmote_runner" && runnerProvider === "openai_dot")) {
     return openAiDotEnabled;
   }
-  if (type === "paperclip_runner") return nativeRunnerEnabled;
+  if (type === "wardmote_runner") return nativeRunnerEnabled;
   return true;
 }

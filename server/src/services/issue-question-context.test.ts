@@ -19,7 +19,7 @@ const support = await getEmbeddedPostgresTestSupport();
     "uses the current run's user when selecting native connection waits (%s)", async audience => {
       const companyId = randomUUID(), agentId = randomUUID(), issueId = randomUUID(), runId = randomUUID();
       await db.insert(companies).values({ id: companyId, name: "Wait audience", issuePrefix: `W${companyId.slice(0, 8)}` });
-      await db.insert(agents).values({ id: agentId, companyId, name: "Worker", adapterType: "paperclip_runner" });
+      await db.insert(agents).values({ id: agentId, companyId, name: "Worker", adapterType: "wardmote_runner" });
       await db.insert(issues).values({ id: issueId, companyId, title: "Fresh user turn", assigneeAgentId: agentId });
       let runCompanyId = companyId;
       if (audience === "foreign_run") {

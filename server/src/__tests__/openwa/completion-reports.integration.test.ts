@@ -93,7 +93,7 @@ describe("OpenWA delegated task reports (embedded Postgres + fake gateway)", () 
 
   async function agent(companyId: string, name: string) {
     const id = randomUUID();
-    await db.insert(agents).values({ id, companyId, name, role: "engineer", status: "idle", adapterType: "paperclip_runner", adapterConfig: {}, runtimeConfig: {}, permissions: {} });
+    await db.insert(agents).values({ id, companyId, name, role: "engineer", status: "idle", adapterType: "wardmote_runner", adapterConfig: {}, runtimeConfig: {}, permissions: {} });
     return id;
   }
 

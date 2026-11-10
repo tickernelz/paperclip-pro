@@ -100,7 +100,7 @@ describeLive("live Daytona export-resume failure recovery", () => {
     plugin = plugin.definition;
     ({ default: manifest } = await import(new URL("../../../../packages/plugins/sandbox-providers/daytona/dist/manifest.js", import.meta.url).href));
     await db.insert(companies).values({ id: ids.company, name: "Disposable export lifecycle", issuePrefix: "LXR" });
-    await db.insert(agents).values({ id: ids.agent, companyId: ids.company, name: "No provider turn", adapterType: "paperclip_runner" });
+    await db.insert(agents).values({ id: ids.agent, companyId: ids.company, name: "No provider turn", adapterType: "wardmote_runner" });
     await db.insert(environments).values({ id: ids.environment, name: `Lifecycle ${nonce}`, driver: "sandbox", config });
     environment = (await db.select().from(environments).where(eq(environments.id, ids.environment)))[0] as unknown as Environment;
     await db.insert(plugins).values({ id: ids.plugin, pluginKey: manifest.id, packageName: "@tickernelz/wardmote-plugin-daytona", version: manifest.version,
@@ -114,7 +114,7 @@ describeLive("live Daytona export-resume failure recovery", () => {
     let setupPhase = "acquire";
     try {
       const acquired = await plugin.onEnvironmentAcquireLease({ driverKey: "daytona", companyId: ids.company, environmentId: ids.environment,
-        issueId: ids.issue, runId: ids.run, agentId: ids.agent, adapterType: "paperclip_runner", config });
+        issueId: ids.issue, runId: ids.run, agentId: ids.agent, adapterType: "wardmote_runner", config });
       setupPhase = "sdk_lookup";
       const require = createRequire(new URL("../../../../packages/plugins/sandbox-providers/daytona/package.json", import.meta.url));
       const { Daytona } = require("@daytonaio/sdk");

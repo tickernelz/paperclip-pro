@@ -50,7 +50,7 @@ export function assertActiveHandoff(e: {
   expect(e.output.body).toContain(e.reference);
   expect(e.output.updatedByAgentId ?? e.output.createdByAgentId).toBe(e.successorId);
   expect(e.audit.filter(a => a.action === "issue.reassigned")).toHaveLength(1);
-  expect(e.audit.find(a => a.action === "issue.reassigned")?.details).toMatchObject({ source: "paperclip_runner_protocol" });
+  expect(e.audit.find(a => a.action === "issue.reassigned")?.details).toMatchObject({ source: "wardmote_runner_protocol" });
 }
 
 export function assertCrashRecovered(e: {

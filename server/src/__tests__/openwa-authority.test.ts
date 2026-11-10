@@ -196,7 +196,7 @@ async function seedCompany(db: ReturnType<typeof createDb>, opts: { openwa?: boo
   });
   await db.insert(agents).values({
     id: agentId, companyId, name: "OpenWA agent", role: "engineer", status: "idle",
-    adapterType: "paperclip_runner", adapterConfig: {}, runtimeConfig: {}, permissions: {},
+    adapterType: "wardmote_runner", adapterConfig: {}, runtimeConfig: {}, permissions: {},
   });
   await db.insert(issues).values({
     id: issueId, companyId, issueNumber: 1, identifier: `${prefix}-1`, title: "WhatsApp chat",
@@ -1009,7 +1009,7 @@ describeEmbeddedPostgres("OpenWA run authority", () => {
       const otherAgentId = randomUUID();
       await db.insert(agents).values({
         id: otherAgentId, companyId: seed.companyId, name: "Other agent", role: "engineer", status: "idle",
-        adapterType: "paperclip_runner", adapterConfig: {}, runtimeConfig: {}, permissions: {},
+        adapterType: "wardmote_runner", adapterConfig: {}, runtimeConfig: {}, permissions: {},
       });
       const targetId = randomUUID();
       const otherRunId = randomUUID();

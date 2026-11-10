@@ -347,7 +347,7 @@ generated(
           name: "Fixture owner",
           role: "engineer",
           status: "active",
-          adapterType: "paperclip_runner",
+          adapterType: "wardmote_runner",
           adapterConfig: {},
           runtimeConfig: {},
           permissions: {},

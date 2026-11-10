@@ -1606,7 +1606,7 @@ skill supplies the control-plane workflow that those adapters need for
 heartbeats. The `complain` and `suggestion-box` runtime skills are also selected
 automatically alongside it; see [Agent commentary](agent-commentary.md).
 Other runtime skills remain controlled by
-`wardmoteSkillSync.desiredSkills`. The native `paperclip_runner` does not use
+`wardmoteSkillSync.desiredSkills`. The native `wardmote_runner` does not use
 this legacy default because its protocol supplies the control-plane contract.
 
 Validate the catalog without writing the manifest:

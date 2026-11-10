@@ -294,7 +294,7 @@ async function openwaRunSteerReadiness(db: Db, input: { companyId: string; issue
     .where(and(eq(issues.companyId, input.companyId), eq(issues.id, input.issueId)))
     .limit(1);
   if (!row || (row.status !== "queued" && row.status !== "running")) return { state: "never" };
-  if (row.adapterType !== "paperclip_runner" && findActiveServerAdapter(row.adapterType)?.supportsLiveSteering !== true)
+  if (row.adapterType !== "wardmote_runner" && findActiveServerAdapter(row.adapterType)?.supportsLiveSteering !== true)
     return { state: "never" };
   if (row.status !== "running") return { state: "starting", runId: row.runId };
   const openwa = readOpenwaRunContext(row.contextSnapshot);

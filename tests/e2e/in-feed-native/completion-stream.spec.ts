@@ -68,7 +68,7 @@ test('a completion tool does not cut off a delayed final answer', async ({ page 
     await page.getByRole('button', { name: 'Codex', exact: true }).click();
     await page.getByRole('button', { name: /Wardmote Runner/ }).click();
     await page.getByRole('button', { name: 'Save changes', exact: true }).click();
-    await expect.poll(async () => (await api(`/agents/${agent.id}`)).adapterType).toBe('paperclip_runner');
+    await expect.poll(async () => (await api(`/agents/${agent.id}`)).adapterType).toBe('wardmote_runner');
     await page.getByRole('link', { name: 'Tasks', exact: true }).click();
     await page.getByRole('button', { name: 'New Task', exact: true }).last().click();
     await page.getByPlaceholder('Task title').fill('Summarize the launch decisions and include the source link');

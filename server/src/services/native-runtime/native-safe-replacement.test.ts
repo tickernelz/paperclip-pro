@@ -86,7 +86,7 @@ const support = externalDatabaseUrl
         companyId,
         name: "Executor",
         role: "engineer",
-        adapterType: "paperclip_runner",
+        adapterType: "wardmote_runner",
       });
       await db.insert(issues).values({
         id: issueId,

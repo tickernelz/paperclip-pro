@@ -4313,7 +4313,7 @@ export function normalizePaperclipOperationalSkillPreference(
   adapterType: string,
   config: Record<string, unknown>,
 ): Record<string, unknown> {
-  if (adapterType !== "paperclip_runner") return config;
+  if (adapterType !== "wardmote_runner") return config;
   const preference = readPaperclipSkillSyncPreference(config);
   const desiredSkillEntries = preference.desiredSkillEntries.filter(
     (entry) =>
@@ -4329,7 +4329,7 @@ export function normalizePaperclipRunnerAdapterConfig(
   adapterType: string,
   config: Record<string, unknown>,
 ): Record<string, unknown> {
-  if (adapterType !== "paperclip_runner") return config;
+  if (adapterType !== "wardmote_runner") return config;
   config = normalizeLegacyRunnerProvider(config);
   if (config.provider === "openai_dot") {
     return normalizePaperclipOperationalSkillPreference(adapterType, { lifecycleMode: "per_turn", ...config });

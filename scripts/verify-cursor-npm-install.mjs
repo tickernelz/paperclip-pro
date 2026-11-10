@@ -103,7 +103,7 @@ assert.equal(installation.agentServerPackageJsonPath,join(userInfo().homedir,'.p
 assert.equal(installation.agentRuntimePackageJsonPath,null);
 assert.equal(installation.commandDigest,profile.commandDigest);
 await (await installation.openCommand()).close();
-const readiness = await requireServerAdapter('paperclip_runner').testEnvironment({ companyId: 'installation-probe', adapterType: 'paperclip_runner', config: { provider: 'acpx', acpxAgent: 'cursor', model: profile.reportedModelId } });
+const readiness = await requireServerAdapter('wardmote_runner').testEnvironment({ companyId: 'installation-probe', adapterType: 'wardmote_runner', config: { provider: 'acpx', acpxAgent: 'cursor', model: profile.reportedModelId } });
 assert.equal(readiness.status, 'pass', JSON.stringify(readiness));
 assert.equal(readiness.checks[0]?.code, 'acpx_runtime_ready');
 const binaryRoot = '/consumer/node_modules/@tickernelz/wardmote-server/dist/vendor/wardmote-runner/bin';

@@ -28,7 +28,7 @@ export function createPaperclipRunnerAuthorizedToolSet(
   const operations = definitions
     .map((definition): PaperclipRunnerAuthorizedTool => {
       if (definition.annotations.version !== 1 || names.has(definition.name)) {
-        throw new Error("paperclip_runner_authorized_tools_invalid");
+        throw new Error("wardmote_runner_authorized_tools_invalid");
       }
       names.add(definition.name);
       return {
@@ -75,7 +75,7 @@ function canonicalJson(value: unknown): string {
   if (value === null || typeof value !== "object") {
     const encoded = JSON.stringify(value);
     if (encoded === undefined) {
-      throw new Error("paperclip_runner_authorized_tools_invalid");
+      throw new Error("wardmote_runner_authorized_tools_invalid");
     }
     return encoded;
   }

@@ -114,7 +114,7 @@ function commonAgent(
           "For ordinary planning tasks, publish or revise the canonical Plan document and its revision-bound request_confirmation, then wait. Only implement after that exact plan is accepted.",
           "Invoke assigned tools only through the runtime's real tool-call channel. Never print XML, DSML, JSON, or other tool-call markup as assistant text.",
           "Legacy adapters must use the public Paperclip API and the injected WARDMOTE_API_URL, WARDMOTE_API_KEY, WARDMOTE_TASK_ID, and WARDMOTE_RUN_ID values for comments, documents, interactions, and status changes.",
-          ...(adapterType === "paperclip_runner"
+          ...(adapterType === "wardmote_runner"
             ? []
             : [
                 "Read the assigned paperclip skill before using the Paperclip API. Use its documented request payloads rather than guessing fields from memory.",
@@ -189,7 +189,7 @@ function nativeProfile(input: {
 }): RunnerProfileFixture {
   return {
     ...input,
-    adapterType: "paperclip_runner",
+    adapterType: "wardmote_runner",
     generation: "native",
     groups: ["native"],
     supportedEnvironments: input.supportedEnvironments ?? ENVIRONMENT_IDS,
@@ -206,7 +206,7 @@ function nativeProfile(input: {
     },
     ...(input.ranking ? { ranking: input.ranking } : {}),
     expectedRuntimeMetadata: {
-      adapterType: "paperclip_runner",
+      adapterType: "wardmote_runner",
       provider: input.provider,
     },
     buildAgent(buildInput) {
@@ -219,7 +219,7 @@ function nativeProfile(input: {
           : input.provider === "opencode"
             ? { opencodePermissionMode: "allow" }
             : { acpxPermissionMode: "approve-all", acpxAgent: input.acpxAgent };
-      return commonAgent(buildInput, input.id, "paperclip_runner", {
+      return commonAgent(buildInput, input.id, "wardmote_runner", {
         provider: input.provider,
         model: input.model,
         ...(input.qualificationCandidate ? { timeoutSec: 120 } : {}),

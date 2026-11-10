@@ -61,7 +61,7 @@ for (const journey of ['connect', 'decline', 'restart'] as const) test(`fresh na
     await page.getByRole('button', { name: 'Codex', exact: true }).click();
     await page.getByRole('button', { name: /Wardmote Runner/ }).click();
     await page.getByRole('button', { name: 'Save', exact: true }).first().click();
-    await expect.poll(async () => (await api(`/agents/${agent.id}`)).adapterType).toBe('paperclip_runner');
+    await expect.poll(async () => (await api(`/agents/${agent.id}`)).adapterType).toBe('wardmote_runner');
     const nativeAgent = await api(`/agents/${agent.id}`);
     expect(nativeAgent.adapterConfig.env).toEqual(agent.adapterConfig.env);
     const holder = await api(`/companies/${company.id}/agents`, 'POST', { name: 'Archive holder', role: 'qa', adapterType: 'process', adapterConfig: { command: process.execPath, args: ['-e', 'process.exit(0)'] } });

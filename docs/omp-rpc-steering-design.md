@@ -39,7 +39,7 @@ the live binary:
    `runtime_mode: "legacy"`; all 36 agents are `adapter_type: "omp_local"`.
 2. **Legacy never enters the native path.** `resolveNativeRuntimeMode` returns
    `{kind: "legacy", reason: "direct_adapter"}` unless
-   `agent.adapterType === "paperclip_runner"`. Only the native path registers
+   `agent.adapterType === "wardmote_runner"`. Only the native path registers
    sessions in `activeNativeSessions`, and `steerNativeSession` required that
    entry.
 3. **The queue protocol gate never promoted an `omp_local` run.** Even with a
@@ -69,7 +69,7 @@ that actually answers whether steering is possible: a live steer target exists.
    session always wins.
 5. **Reachability.** `hasLiveAdapterSteering(runId)` feeds
    `decideQueuedCommentQueueSteering`, which promotes the queue to
-   `paperclip_runner_v1` when an adapter holds a live steer target.
+   `wardmote_runner_v1` when an adapter holds a live steer target.
 6. **Capability.** The adapter reports `omp-rpc-transport` and
    `same-turn-steering` only when the RPC path is active.
 7. **Failure vocabulary.** Reuses `steering_unsupported`,
@@ -81,7 +81,7 @@ that actually answers whether steering is possible: a live steer target exists.
 ## What must not be done
 - Do not remove the conversation-issue steering ban as a shortcut. On this
   configuration it produces a 409-free path that still always queues.
-- Do not migrate agents to `paperclip_runner` as the fix; the owner chose to
+- Do not migrate agents to `wardmote_runner` as the fix; the owner chose to
   keep `omp_local`.
 
 ## Verified end to end

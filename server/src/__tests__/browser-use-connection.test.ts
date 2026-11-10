@@ -392,7 +392,7 @@ const actor = { actorType: "user" as const, actorId: "browser-reviewer" };
       expect(markdown).toContain("browser_start");
       expect(markdown).toContain(f.connection.connectionId);
       expect(markdown).not.toContain("bu_fixture_secret");
-      const delivery = await prepareConnectorSkillDelivery({ ...config, engine: "cli" }, "paperclip_runner");
+      const delivery = await prepareConnectorSkillDelivery({ ...config, engine: "cli" }, "wardmote_runner");
       expect(delivery.config.paperclipRuntimeSkills).toEqual([skill]);
       const sharedHome = await prepareConnectorSkillDelivery(config, "omp_local");
       expect(sharedHome.config.paperclipRuntimeSkills).toEqual([]);

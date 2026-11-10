@@ -120,7 +120,7 @@ vi.mock("../services/instance-settings.js", async (importOriginal) => ({
 
 vi.mock("../adapters/index.js", () => ({
   findServerAdapter: vi.fn(() => mockAdapter),
-  findActiveServerAdapter: vi.fn((adapterType: string) => adapterType === "paperclip_runner" || adapterType === "omp_local"
+  findActiveServerAdapter: vi.fn((adapterType: string) => adapterType === "wardmote_runner" || adapterType === "omp_local"
     ? { ...mockAdapter, supportsInstructionsBundle: true }
     : mockAdapter),
   listAdapterModels: vi.fn(),
@@ -165,7 +165,7 @@ function registerModuleMocks() {
 
   vi.doMock("../adapters/index.js", () => ({
     findServerAdapter: vi.fn(() => mockAdapter),
-    findActiveServerAdapter: vi.fn((adapterType: string) => adapterType === "paperclip_runner" || adapterType === "omp_local"
+    findActiveServerAdapter: vi.fn((adapterType: string) => adapterType === "wardmote_runner" || adapterType === "omp_local"
       ? { ...mockAdapter, supportsInstructionsBundle: true }
       : mockAdapter),
     listAdapterModels: vi.fn(),
@@ -922,8 +922,8 @@ describe("agent skill routes", () => {
     expect(mockAdapter.syncSkills).toHaveBeenCalled();
   });
 
-  it("ignores the reserved legacy Paperclip skill for paperclip_runner", async () => {
-    mockAgentService.getById.mockResolvedValue(makeAgent("paperclip_runner"));
+  it("ignores the reserved legacy Paperclip skill for wardmote_runner", async () => {
+    mockAgentService.getById.mockResolvedValue(makeAgent("wardmote_runner"));
 
     const res = await requestApp(await createApp(), (baseUrl) => request(baseUrl)
       .post("/api/agents/11111111-1111-4111-8111-111111111111/skills/sync?companyId=company-1")
@@ -945,9 +945,9 @@ describe("agent skill routes", () => {
     );
   });
 
-  it("allows paperclip_runner to remove a pre-existing legacy Paperclip skill", async () => {
+  it("allows wardmote_runner to remove a pre-existing legacy Paperclip skill", async () => {
     mockAgentService.getById.mockResolvedValue({
-      ...makeAgent("paperclip_runner"),
+      ...makeAgent("wardmote_runner"),
       adapterConfig: {
         wardmoteSkillSync: {
           desiredSkills: ["company-1/keep", "tickernelz/wardmote/wardmote"],
@@ -1195,7 +1195,7 @@ describe("agent skill routes", () => {
     expect(mockAgentInstructionsService.materializeManagedBundle).not.toHaveBeenCalled();
   });
 
-  it.each(["omp_local", "paperclip_runner"].flatMap((adapterType) =>
+  it.each(["omp_local", "wardmote_runner"].flatMap((adapterType) =>
     ["agents", "agent-hires"].map((route) => ({ adapterType, route })),
   ))("materializes only the CEO entry file for $adapterType via $route", async ({ adapterType, route }) => {
     mockInstanceSettingsService.getExperimental.mockResolvedValue({
@@ -1208,7 +1208,7 @@ describe("agent skill routes", () => {
         name: "CEO",
         role: "ceo",
         adapterType,
-        adapterConfig: adapterType === "paperclip_runner" ? { provider: "codex" } : {},
+        adapterConfig: adapterType === "wardmote_runner" ? { provider: "codex" } : {},
       }));
 
     expect(res.status, JSON.stringify(res.body)).toBe(201);
@@ -1221,7 +1221,7 @@ describe("agent skill routes", () => {
     );
   });
 
-  it.each(["omp_local", "paperclip_runner"].flatMap((adapterType) =>
+  it.each(["omp_local", "wardmote_runner"].flatMap((adapterType) =>
     ["agents", "agent-hires"].map((route) => ({ adapterType, route })),
   ))("preserves an explicit CEO instruction bundle for $adapterType via $route", async ({ adapterType, route }) => {
     mockInstanceSettingsService.getExperimental.mockResolvedValue({
@@ -1238,7 +1238,7 @@ describe("agent skill routes", () => {
         name: "Research Lead",
         role: "ceo",
         adapterType,
-        adapterConfig: adapterType === "paperclip_runner" ? { provider: "codex" } : {},
+        adapterConfig: adapterType === "wardmote_runner" ? { provider: "codex" } : {},
         instructionsBundle: { entryFile: "AGENTS.md", files: customFiles },
       }));
 
@@ -1474,7 +1474,7 @@ describe("agent skill routes", () => {
     );
   });
 
-  it("omits the legacy operational skill from paperclip_runner CEO defaults", async () => {
+  it("omits the legacy operational skill from wardmote_runner CEO defaults", async () => {
     mockInstanceSettingsService.getExperimental.mockResolvedValue({
       enableBetaSkills: false,
       enableNativeRunner: true,
@@ -1485,7 +1485,7 @@ describe("agent skill routes", () => {
       .send({
         name: "Native Lead",
         role: "ceo",
-        adapterType: "paperclip_runner",
+        adapterType: "wardmote_runner",
         adapterConfig: { provider: "codex" },
       });
 

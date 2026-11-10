@@ -341,10 +341,10 @@ function normalizeHostname(value: string | null | undefined): string | null {
 export function assertLegacyAgentInviteAdapterType(
   adapterType: string | null | undefined,
 ) {
-  if (adapterType === "paperclip_runner") {
+  if (adapterType === "wardmote_runner") {
     throw badRequest(
       "Paperclip Runner is not available through agent invite onboarding.",
-      { code: "paperclip_runner_invite_onboarding_disabled" },
+      { code: "wardmote_runner_invite_onboarding_disabled" },
     );
   }
   if (isRetiredAdapterType(adapterType)) {

@@ -149,20 +149,20 @@ describe("server adapter registry", () => {
   });
 
   it("rejects an incomplete managed runner provider before probing Codex", async () => {
-    const adapter = requireServerAdapter("paperclip_runner");
+    const adapter = requireServerAdapter("wardmote_runner");
     expect(adapter.supportsInstructionsBundle).toBe(true);
     expect(adapter.instructionsPathKey).toBe("instructionsFilePath");
     const result = await adapter.testEnvironment({
       companyId: "company-1",
-      adapterType: "paperclip_runner",
+      adapterType: "wardmote_runner",
       config: { provider: "claude_managed" },
     });
 
     expect(result).toMatchObject({
-      adapterType: "paperclip_runner",
+      adapterType: "wardmote_runner",
       status: "fail",
       checks: [{
-        code: "paperclip_runner_claude_managed_profile_required",
+        code: "wardmote_runner_claude_managed_profile_required",
         level: "error",
       }],
     });
@@ -178,14 +178,14 @@ describe("server adapter registry", () => {
       agentCoreRetentionAcknowledged: true,
     }, "aws_agentcore_profile_selected"],
   ] as const)("accepts a complete %s profile selection", async (provider, config, code) => {
-    const result = await requireServerAdapter("paperclip_runner").testEnvironment({
+    const result = await requireServerAdapter("wardmote_runner").testEnvironment({
       companyId: "company-1",
-      adapterType: "paperclip_runner",
+      adapterType: "wardmote_runner",
       config: { provider, ...config },
     });
 
     expect(result).toMatchObject({
-      adapterType: "paperclip_runner",
+      adapterType: "wardmote_runner",
       status: "warn",
       checks: expect.arrayContaining([expect.objectContaining({ code, level: "info" })]),
     });
@@ -194,9 +194,9 @@ describe("server adapter registry", () => {
   it.each([
     ["claude", "claude-sonnet-5"],
   ] as const)("does not claim runtime readiness from the remote ACPX %s platform alone", async (acpxAgent, model) => {
-    const result = await requireServerAdapter("paperclip_runner").testEnvironment({
+    const result = await requireServerAdapter("wardmote_runner").testEnvironment({
       companyId: "company-1",
-      adapterType: "paperclip_runner",
+      adapterType: "wardmote_runner",
       config: { provider: "acpx", acpxAgent, model },
       executionTarget: {
         kind: "remote",
@@ -208,7 +208,7 @@ describe("server adapter registry", () => {
     });
 
     expect(result).toMatchObject({
-      adapterType: "paperclip_runner",
+      adapterType: "wardmote_runner",
       status: "warn",
       checks: [{ code: "acpx_remote_runtime_unverified", level: "warn" }],
     });
@@ -218,8 +218,8 @@ describe("server adapter registry", () => {
     const probe = vi.mocked(probeAcpxClaudeInstallation);
     if (ready) probe.mockResolvedValueOnce(undefined);
     else probe.mockRejectedValueOnce(new Error("Runtime package integrity verification failed"));
-    const result = await requireServerAdapter("paperclip_runner").testEnvironment({
-      companyId: "company-1", adapterType: "paperclip_runner",
+    const result = await requireServerAdapter("wardmote_runner").testEnvironment({
+      companyId: "company-1", adapterType: "wardmote_runner",
       config: { provider: "acpx", acpxAgent: "claude", model: "custom-claude-model" },
     });
     expect(probe).toHaveBeenLastCalledWith("custom-claude-model");
@@ -233,9 +233,9 @@ describe("server adapter registry", () => {
     const probe = vi.mocked(probeAcpxPiInstallation);
     if (ready) probe.mockResolvedValueOnce(undefined);
     else probe.mockRejectedValueOnce(new Error("Pi closure unavailable"));
-    const result = await requireServerAdapter("paperclip_runner").testEnvironment({
+    const result = await requireServerAdapter("wardmote_runner").testEnvironment({
       companyId: "company-1",
-      adapterType: "paperclip_runner",
+      adapterType: "wardmote_runner",
       config: {
         provider: "acpx",
         acpxAgent: "pi",
@@ -254,8 +254,8 @@ describe("server adapter registry", () => {
     const previous = process.env[key];
     process.env[key] = JSON.stringify([{ agent: "copilot", model: "exact-model" }]);
     try {
-      const result = await requireServerAdapter("paperclip_runner").testEnvironment({
-        companyId: "company-1", adapterType: "paperclip_runner",
+      const result = await requireServerAdapter("wardmote_runner").testEnvironment({
+        companyId: "company-1", adapterType: "wardmote_runner",
         config: { provider: "acpx", acpxAgent: "copilot", model: "exact-model" },
       });
       expect(result).toMatchObject({ status: "warn", checks: [{ code: "acpx_candidate_qualification_only" }] });
@@ -268,17 +268,17 @@ describe("server adapter registry", () => {
     const expectedRunnerCodexInstall = `if ! command -v 'codex' >/dev/null 2>&1; then ${buildSandboxNpmInstallCommand("@openai/codex@0.160.0")}; fi`;
     const expectedRunnerOpenCodeInstall = `if ! command -v 'opencode' >/dev/null 2>&1; then ${buildSandboxNpmInstallCommand("opencode-ai@1.18.34")}; fi`;
 
-    expect(findActiveServerAdapter("paperclip_runner")?.getRuntimeCommandSpec?.({ provider: "codex" })).toEqual({
+    expect(findActiveServerAdapter("wardmote_runner")?.getRuntimeCommandSpec?.({ provider: "codex" })).toEqual({
       command: "codex",
       detectCommand: "codex",
       installCommand: expectedRunnerCodexInstall,
     });
-    expect(findActiveServerAdapter("paperclip_runner")?.getRuntimeCommandSpec?.({ provider: "opencode" })).toEqual({
+    expect(findActiveServerAdapter("wardmote_runner")?.getRuntimeCommandSpec?.({ provider: "opencode" })).toEqual({
       command: "opencode",
       detectCommand: "opencode",
       installCommand: expectedRunnerOpenCodeInstall,
     });
-    expect(findActiveServerAdapter("paperclip_runner")?.getRuntimeCommandSpec?.({ provider: "acpx" })).toEqual({
+    expect(findActiveServerAdapter("wardmote_runner")?.getRuntimeCommandSpec?.({ provider: "acpx" })).toEqual({
       command: "wardmote-runnerd",
       detectCommand: null,
       installCommand: null,

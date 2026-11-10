@@ -33,7 +33,7 @@ describe("task titles", () => {
     else process.env.WARDMOTE_AGENT_JWT_SECRET = originalSecret;
   });
   type Fixture = Awaited<ReturnType<typeof server.fixture>>;
-  const token = (f: Fixture) => createLocalAgentJwt(f.agentId, f.companyId, "paperclip_runner", f.runId, f.responsibleUserId)!;
+  const token = (f: Fixture) => createLocalAgentJwt(f.agentId, f.companyId, "wardmote_runner", f.runId, f.responsibleUserId)!;
   const request = (f: Fixture, path: string, method: string, body: unknown) => fetch(`${server.apiUrl}/api${path}`, {
     method, headers: { Authorization: `Bearer ${token(f)}`, "Content-Type": "application/json" }, body: JSON.stringify(body),
   });

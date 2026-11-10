@@ -134,7 +134,7 @@ describeEmbeddedPostgres("native Codex server vertical slice", () => {
       name: "Native Codex",
       role: "engineer",
       status: "active",
-      adapterType: "paperclip_runner",
+      adapterType: "wardmote_runner",
       adapterConfig: { provider: "codex" },
       runtimeConfig: {},
       permissions: {},

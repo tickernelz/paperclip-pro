@@ -90,7 +90,7 @@ describe.skipIf(!postgres.supported)("heartbeat scheduling database boundary", (
 
   async function fixture() {
     const [company] = await db.insert(companies).values({ name: "Scheduling", issuePrefix: "SCH" }).returning();
-    const [agent] = await db.insert(agents).values({ companyId: company.id, name: "Scheduled agent", adapterType: "paperclip_runner", createdAt: dueAt }).returning();
+    const [agent] = await db.insert(agents).values({ companyId: company.id, name: "Scheduled agent", adapterType: "wardmote_runner", createdAt: dueAt }).returning();
     const [issue] = await db.insert(issues).values({
       companyId: company.id, title: "Check deployment", status: "in_progress", assigneeAgentId: agent.id,
       monitorNextCheckAt: dueAt, monitorAttemptCount: 0, createdAt: dueAt,

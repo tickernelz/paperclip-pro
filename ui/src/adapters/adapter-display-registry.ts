@@ -51,13 +51,13 @@ export interface AdapterDisplayInfo {
 }
 
 const adapterDisplayMap: Record<string, AdapterDisplayInfo> = {
-  paperclip_runner: {
+  wardmote_runner: {
     label: "Wardmote Runner",
     description: "Rust runner with a Codex provider",
     icon: Cpu,
     experimental: true,
   },
-  // Display-only choice: persisted as paperclip_runner with provider openai_dot.
+  // Display-only choice: persisted as wardmote_runner with provider openai_dot.
   openai_dot: {
     label: "OpenAI Dot",
     description: "Your Dot in ChatGPT",

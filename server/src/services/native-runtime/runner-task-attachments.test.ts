@@ -19,7 +19,7 @@ describe("Dot assigned-task attachment reading", () => {
   async function fixture(body = Buffer.from("only in the file 🌍"), enabled = true) {
     const companyId = randomUUID(), agentId = randomUUID(), issueId = randomUUID(), runId = randomUUID();
     await db.insert(companies).values({ id: companyId, name: "Files", issuePrefix: `F${companyId.slice(0, 6)}` });
-    await db.insert(agents).values({ id: agentId, companyId, name: "Dot", status: "active", adapterType: "paperclip_runner",
+    await db.insert(agents).values({ id: agentId, companyId, name: "Dot", status: "active", adapterType: "wardmote_runner",
       adapterConfig: { provider: "openai_dot", dotAttachmentAccess: enabled, dotWorkspaceAccess: false } });
     await db.insert(issues).values({ id: issueId, companyId, title: "Inspect file", status: "in_progress", assigneeAgentId: agentId });
     await db.insert(heartbeatRuns).values({ id: runId, companyId, agentId, status: "running", runtimeMode: "native", nativeIssueId: issueId, invocationSource: "assignment", triggerDetail: "system", contextSnapshot: { issueId } });

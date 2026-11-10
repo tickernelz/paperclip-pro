@@ -75,7 +75,7 @@ export function supportsManagedAgentIdentity(
   config?: { provider?: unknown },
   persistedDriver?: string | null,
 ): boolean {
-  if (adapterType === "paperclip_runner") {
+  if (adapterType === "wardmote_runner") {
     // API-hosted providers have no process environment under our control.
     return persistedDriver
       ? ["codex", "codex_app_server", "opencode_server", "acpx_runtime"].includes(persistedDriver)

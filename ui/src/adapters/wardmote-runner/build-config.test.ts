@@ -40,7 +40,7 @@ describe("buildCodexLocalConfig", () => {
     "defaults Grok to full auto while preserving an explicit %s permission mode",
     (acpxPermissionMode) => {
       const config = buildPaperclipRunnerConfig(makeValues({
-        adapterType: "paperclip_runner",
+        adapterType: "wardmote_runner",
         model: "",
         adapterSchemaValues: { provider: "acpx", acpxAgent: "grok", acpxPermissionMode },
       }));
@@ -119,7 +119,7 @@ describe("buildCodexLocalConfig", () => {
 
 describe("buildPaperclipRunnerConfig", () => {
   it.each([undefined, false, true])("preserves Dot attachment consent in create/import forms: %s", value => {
-    const config = buildPaperclipRunnerConfig(makeValues({ adapterType: "paperclip_runner", adapterSchemaValues: { provider: "openai_dot", dotAttachmentAccess: value } }));
+    const config = buildPaperclipRunnerConfig(makeValues({ adapterType: "wardmote_runner", adapterSchemaValues: { provider: "openai_dot", dotAttachmentAccess: value } }));
     expect(config.dotAttachmentAccess).toBe(value === true);
     expect(config.dotWorkspaceAccess).toBe(false);
   });
@@ -162,7 +162,7 @@ describe("buildPaperclipRunnerConfig", () => {
 
   it("persists bounded Codex permission and warm lifecycle values", () => {
     const config = buildPaperclipRunnerConfig(makeValues({
-      adapterType: "paperclip_runner",
+      adapterType: "wardmote_runner",
       codexPermissionMode: "never",
       paperclipRunnerLifecycleMode: "warm",
       paperclipRunnerIdleTimeoutMs: 45_000,
@@ -189,7 +189,7 @@ describe("buildPaperclipRunnerConfig", () => {
 
   it("builds a qualified OpenCode profile from schema-backed values", () => {
     expect(buildPaperclipRunnerConfig(makeValues({
-      adapterType: "paperclip_runner",
+      adapterType: "wardmote_runner",
       model: "",
       adapterSchemaValues: {
         provider: "opencode",
@@ -206,7 +206,7 @@ describe("buildPaperclipRunnerConfig", () => {
 
   it("does not let a stale schema model override the active Codex model", () => {
     expect(buildPaperclipRunnerConfig(makeValues({
-      adapterType: "paperclip_runner",
+      adapterType: "wardmote_runner",
       model: "gpt-5.6-sol",
       adapterSchemaValues: {
         provider: "codex",
@@ -233,7 +233,7 @@ describe("buildPaperclipRunnerConfig", () => {
 
   it.each(["copilot"])("rejects unavailable ACPX %s without selecting another provider", (acpxAgent) => {
     expect(() => buildPaperclipRunnerConfig(makeValues({
-      adapterType: "paperclip_runner",
+      adapterType: "wardmote_runner",
       model: "explicit-provider-model",
       adapterSchemaValues: {
         provider: "acpx",
@@ -260,7 +260,7 @@ describe("buildPaperclipRunnerConfig", () => {
 
   it("builds a Claude Managed profile reference with explicit retention and spend controls", () => {
     const config = buildPaperclipRunnerConfig(makeValues({
-      adapterType: "paperclip_runner",
+      adapterType: "wardmote_runner",
       model: "claude-sonnet-5",
       adapterSchemaValues: {
         provider: "claude_managed",
@@ -282,7 +282,7 @@ describe("buildPaperclipRunnerConfig", () => {
 
   it("builds an AgentCore profile reference with bounded invocation controls", () => {
     expect(buildPaperclipRunnerConfig(makeValues({
-      adapterType: "paperclip_runner",
+      adapterType: "wardmote_runner",
       model: "",
       adapterSchemaValues: {
         provider: "aws_agentcore",
@@ -313,7 +313,7 @@ describe("buildPaperclipRunnerConfig", () => {
     ["timeoutSeconds", 301],
   ])("rejects an unsafe AgentCore %s value", (field, value) => {
     expect(() => buildPaperclipRunnerConfig(makeValues({
-      adapterType: "paperclip_runner",
+      adapterType: "wardmote_runner",
       adapterSchemaValues: {
         provider: "aws_agentcore",
         agentCoreProfileId: "agentcore-primary",
@@ -351,9 +351,9 @@ describe("buildPaperclipRunnerConfig", () => {
 });
 
 it.each([undefined, "off", "low", "high", "max"] as const)("builds exact Pi thinking configuration %s", piThinkingLevel => {
-  const config = buildPaperclipRunnerConfig(makeValues({ adapterType: "paperclip_runner", model: "openrouter/deepseek/deepseek-v4-flash-0731", adapterSchemaValues: { provider: "acpx", acpxAgent: "pi", piThinkingLevel } }));
+  const config = buildPaperclipRunnerConfig(makeValues({ adapterType: "wardmote_runner", model: "openrouter/deepseek/deepseek-v4-flash-0731", adapterSchemaValues: { provider: "acpx", acpxAgent: "pi", piThinkingLevel } }));
   expect(config.piThinkingLevel).toBe(piThinkingLevel ?? "low");
 });
 it("rejects silently clamped Pi aliases during configuration", () => {
-  expect(() => buildPaperclipRunnerConfig(makeValues({ adapterType: "paperclip_runner", adapterSchemaValues: { provider: "acpx", acpxAgent: "pi", piThinkingLevel: "medium" } }))).toThrow();
+  expect(() => buildPaperclipRunnerConfig(makeValues({ adapterType: "wardmote_runner", adapterSchemaValues: { provider: "acpx", acpxAgent: "pi", piThinkingLevel: "medium" } }))).toThrow();
 });

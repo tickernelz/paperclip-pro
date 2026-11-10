@@ -27,7 +27,7 @@ export type AgentStatus = (typeof AGENT_STATUSES)[number];
 export const AGENT_ADAPTER_TYPES = [
   "process",
   "http",
-  "paperclip_runner",
+  "wardmote_runner",
   "omp_local",
 ] as const;
 export type AgentAdapterType = (typeof AGENT_ADAPTER_TYPES)[number] | (string & {});

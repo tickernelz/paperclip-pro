@@ -93,7 +93,7 @@ export function assertChatBacklogCreation(input: {
   const created = input.activity.filter(row => row.action === "issue.created");
   expect(created).toHaveLength(1);
   // Correcting todo after creation still permits an unauthorized start race.
-  expect(created[0]!.details).toMatchObject({ status: "backlog", source: "paperclip_runner_protocol" });
+  expect(created[0]!.details).toMatchObject({ status: "backlog", source: "wardmote_runner_protocol" });
 }
 
 /** Clarification may request information imperatively rather than end in a question mark. */
@@ -348,7 +348,7 @@ export function assertChatReassignment(input: {
   expect(successor).toHaveLength(1);
   expect(successor[0]).toMatchObject({ agentId: input.teammateId, status: "succeeded", runtimeMode: "native" });
   expect(input.runs.filter(run => run.contextSnapshot?.issueId === input.queuedId)).toHaveLength(0);
-  expect(input.audit.filter(row => row.action === "issue.reassigned" && row.details?.source === "paperclip_runner_protocol")).toHaveLength(1);
+  expect(input.audit.filter(row => row.action === "issue.reassigned" && row.details?.source === "wardmote_runner_protocol")).toHaveLength(1);
   expect(input.outputBody).toContain(input.marker);
 }
 

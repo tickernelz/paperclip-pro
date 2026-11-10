@@ -3093,7 +3093,7 @@ export function heartbeatService(
         slackCommand: issueContext?.chatAssignedAgentId === agent.id
           ? issueContext.chatSlackCommand
           : null,
-        nativeRunner: agent.adapterType === "paperclip_runner",
+        nativeRunner: agent.adapterType === "wardmote_runner",
         interaction: {
           kind: readNonEmptyString(context.interactionKind),
           status: readNonEmptyString(context.interactionStatus),
@@ -3498,7 +3498,7 @@ export function heartbeatService(
             ),
           });
         } catch (error) {
-          if (agent.adapterType === "paperclip_runner") {
+          if (agent.adapterType === "wardmote_runner") {
             await recordFailedSkillPreparation({
               runId: run.id,
               startedAtMs: skillsPrepareStartedAtMs,
@@ -3525,7 +3525,7 @@ export function heartbeatService(
       context.paperclipWake = { ...parseObject(context.paperclipWake), connectorSkillInstructions: connectorDelivery.instructions };
       let runtimeConfig = await prepareConnectionInstructionDelivery({
         resolve: () => resolveAssignedConnectionInstructionsForRun(db, { companyId: agent.companyId, agentId: agent.id, runId: run.id }),
-        context, config: connectorDelivery.config, native: agent.adapterType === "paperclip_runner",
+        context, config: connectorDelivery.config, native: agent.adapterType === "wardmote_runner",
       });
       const agentIdentity = supportsManagedAgentIdentity(agent.adapterType, agent.adapterConfig, run.runtimeMode === "native" ? run.driverKind : undefined)
         ? await agentIdentityService(db).ensureAgentIdentity(agent.companyId, agent.id)
@@ -3624,7 +3624,7 @@ export function heartbeatService(
       }
       const configuredModel =
         readConfiguredModelFromAdapterConfig(runtimeConfig);
-      if (context.refreshTools === true && agent.adapterType !== "paperclip_runner") {
+      if (context.refreshTools === true && agent.adapterType !== "wardmote_runner") {
         const capability = getServerAdapter(agent.adapterType).supportsToolRefreshOnResume;
         const canRefresh = typeof capability === "function" ? capability(runtimeConfig) : capability === true;
         if (!canRefresh) context.forceFreshSession = true;
@@ -3670,7 +3670,7 @@ export function heartbeatService(
         );
       // Legacy plugins can consume the existing context field on a known-fresh
       // dispatch. Built-ins also load lazily if their resume attempt fails.
-      if (agent.adapterType !== "paperclip_runner" && !previousSessionParams && getFreshSessionHandoff) {
+      if (agent.adapterType !== "wardmote_runner" && !previousSessionParams && getFreshSessionHandoff) {
         const handoff = await getFreshSessionHandoff();
         if (handoff) context.paperclipFreshSessionHandoffMarkdown = handoff;
       }
@@ -3965,7 +3965,7 @@ export function heartbeatService(
       context.githubAuthenticationMode = useHostGitHub ? "host" : "managed";
       if (!useHostGitHub) {
         const githubLaunchers = await prepareHeartbeatGitHubLaunchers({
-          native: agent.adapterType === "paperclip_runner",
+          native: agent.adapterType === "wardmote_runner",
           githubConfigured: githubSelection.configured,
           agentId: agent.id,
           runId: run.id,
@@ -4593,7 +4593,7 @@ export function heartbeatService(
           context.resumeSessionGoalHeartbeat === true;
         // Goals must use the selected durable runner, never silently convert a
         // direct adapter or let an old goal-control wake become a normal prompt.
-        if (durableGoalControlRun && agent.adapterType !== "paperclip_runner") {
+        if (durableGoalControlRun && agent.adapterType !== "wardmote_runner") {
           const requestId = readNonEmptyString(context.goalControlRequestId);
           if (issueRef && requestId) {
             await failRunnerGoalAction(

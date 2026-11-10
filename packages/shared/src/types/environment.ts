@@ -30,7 +30,7 @@ export interface FakeSandboxEnvironmentConfig {
   reuseLease: boolean;
   /** Stream agent CLI stdout/stderr during sandbox runs (bridge log-tail loop). */
   streamRunLogs?: boolean;
-  /** Override the paperclip_runner lifecycle for this environment. */
+  /** Override the wardmote_runner lifecycle for this environment. */
   runnerLifecycleMode?: "inherit" | "per_turn" | "warm";
   /** Warm runner idle timeout in milliseconds when runnerLifecycleMode is warm. */
   runnerIdleTimeoutMs?: number;
@@ -48,7 +48,7 @@ export interface PluginSandboxEnvironmentConfig {
   timeoutMs?: number;
   /** Stream agent CLI stdout/stderr during sandbox runs (bridge log-tail loop). */
   streamRunLogs?: boolean;
-  /** Override the paperclip_runner lifecycle for this environment. */
+  /** Override the wardmote_runner lifecycle for this environment. */
   runnerLifecycleMode?: "inherit" | "per_turn" | "warm";
   /** Warm runner idle timeout in milliseconds when runnerLifecycleMode is warm. */
   runnerIdleTimeoutMs?: number;

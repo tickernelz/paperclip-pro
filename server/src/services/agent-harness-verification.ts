@@ -28,7 +28,7 @@ export function agentHarnessVerificationService(db: Db, manager: PluginWorkerMan
   async function verify(snapshot: LifecycleAgent): Promise<"complete" | "pending"> {
     const [agent] = await db.select().from(agents).where(and(eq(agents.id, snapshot.id), eq(agents.lifecycleVersion, snapshot.lifecycleVersion)));
     if (!agent) return "pending";
-    if (agent.adapterType === "paperclip_runner" && agent.adapterConfig.provider === "openai_dot") {
+    if (agent.adapterType === "wardmote_runner" && agent.adapterConfig.provider === "openai_dot") {
       const binding = await dotRunnerBroker(db).bindingForAgent(agent.companyId, agent.id);
       return binding?.status === "ready" && binding.subscriptionVerified && binding.id === agent.adapterConfig.dotBindingId ? "complete" : "pending";
     }

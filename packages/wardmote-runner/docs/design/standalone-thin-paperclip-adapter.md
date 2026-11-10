@@ -908,8 +908,8 @@ named finalization recovery.
 MIG-08 now represents the actual instance-global transition. The production
 heartbeat selector reads the persisted mode first: an already-selected native
 run remains native and can finish or reconcile from its coordinator after
-`experimental.enableNativeRunner` turns off. A fresh `paperclip_runner` start
-is rejected with `paperclip_runner_rollout_disabled`; direct adapters remain on
+`experimental.enableNativeRunner` turns off. A fresh `wardmote_runner` start
+is rejected with `wardmote_runner_rollout_disabled`; direct adapters remain on
 their existing legacy paths and are never selected into native execution by an
 old runtime profile. The agent configuration is not rewritten, and no second
 rollback control is persisted. Re-enabling the instance flag therefore restores

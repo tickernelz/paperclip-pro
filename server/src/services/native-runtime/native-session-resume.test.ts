@@ -541,7 +541,7 @@ const recoveryFakeCodex = resolve(
           companyId,
           name: "Fixture",
           status: "active",
-          adapterType: "paperclip_runner",
+          adapterType: "wardmote_runner",
         });
       await db
         .insert(issues)
@@ -822,7 +822,7 @@ const recoveryFakeCodex = resolve(
         companyId,
         name: "Recovery runner",
         status: "active",
-        adapterType: "paperclip_runner",
+        adapterType: "wardmote_runner",
       });
       await db.insert(issues).values({
         id: issueId,

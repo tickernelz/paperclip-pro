@@ -427,7 +427,7 @@ are not blocked and the run relies on the agent following its instructions.
 | `process` | instruction only | Arbitrary command | `server/src/adapters/process/index.ts:12` |
 
 Adapters without signed run tokens cannot be bound to OpenWA:
-`paperclip_runner` and every retired adapter (`supportsLocalAgentJwt: false`). Switching the endpoint's agent
+`wardmote_runner` and every retired adapter (`supportsLocalAgentJwt: false`). Switching the endpoint's agent
 to such an adapter puts the endpoint in Attention and stops admission.
 
 ## Approvals and grants

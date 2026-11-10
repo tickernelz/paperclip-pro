@@ -51,7 +51,7 @@ function fixture() {
     attachments: [{ id: attachmentId, companyId: "company", issueId: "issue", originatingRunId: "run", createdByAgentId: "agent",
       originalFilename: c.filename, contentType: "text/plain", byteSize: c.byteSize, sha256: c.sha256 }],
     activity: [{ action: "issue.attachment_added", companyId: "company", runId: "run", actorId: "agent", entityId: "issue",
-      details: { attachmentId, source: "paperclip_runner_protocol" } }],
+      details: { attachmentId, source: "wardmote_runner_protocol" } }],
   };
 }
 function changeOutput(f: ReturnType<typeof fixture>, change: (output: any) => void) {

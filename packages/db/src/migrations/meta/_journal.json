@@ -2521,6 +2521,13 @@
       "when": 1794292226959,
       "tag": "0361_wardmote_stored_modes",
       "breakpoints": true
+    },
+    {
+      "idx": 362,
+      "version": "7",
+      "when": 1794296492924,
+      "tag": "0362_wardmote_runner_adapter_type",
+      "breakpoints": true
     }
   ]
 }

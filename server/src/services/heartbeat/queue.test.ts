@@ -121,7 +121,7 @@ describe("heartbeat queue module boundary", () => {
   it("uses the same policy limits for dispatch and execution", () => {
     const database = guardedDatabase();
     const queue = createHeartbeatQueue(database.db, callbacks(database.db));
-    const agent = { adapterType: "paperclip_runner", adapterConfig: { provider: "openai_dot" }, runtimeConfig: { heartbeat: { maxConcurrentRuns: 20, maxDailyRuns: 3.8 } } } as unknown as typeof agents.$inferSelect;
+    const agent = { adapterType: "wardmote_runner", adapterConfig: { provider: "openai_dot" }, runtimeConfig: { heartbeat: { maxConcurrentRuns: 20, maxDailyRuns: 3.8 } } } as unknown as typeof agents.$inferSelect;
     expect(queue.parseHeartbeatPolicy(agent)).toMatchObject({ maxConcurrentRuns: 1, maxDailyRuns: 3 });
     expect(queue.parseHeartbeatPolicy({ ...agent, adapterConfig: { provider: "codex" } })).toMatchObject({ maxConcurrentRuns: 20, maxDailyRuns: 3 });
     expect(database.access).not.toHaveBeenCalled();

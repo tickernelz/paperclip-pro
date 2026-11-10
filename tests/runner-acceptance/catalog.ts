@@ -13,7 +13,7 @@ import type {
   RunnerAcceptanceProfile,
 } from "./types.js";
 
-const excludedBuiltInAdapterTypes = new Set(["paperclip_runner", "pi_local"]);
+const excludedBuiltInAdapterTypes = new Set(["wardmote_runner", "pi_local"]);
 
 const directBuiltInAdapterTypes = [
   "acpx_local",
@@ -64,7 +64,7 @@ function nativeProfile(input: {
     ...input,
     generation: "native",
     adapterScope: "built_in",
-    adapterType: "paperclip_runner",
+    adapterType: "wardmote_runner",
     expectedRuntimeMode: "native",
     invariants: [
       "runtime.mode=native",

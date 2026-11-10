@@ -86,7 +86,7 @@ Adapters are the bridge between Wardmote and agent runtimes. Each adapter is a p
 - **UI module** — stdout parser for the run viewer, config form fields for agent creation
 - **CLI module** — terminal formatter for `wardmote run --watch`
 
-Built-in adapters: `omp_local`, `paperclip_runner`, `process`, `http`. You can create custom adapters for any runtime.
+Built-in adapters: `omp_local`, `wardmote_runner`, `process`, `http`. You can create custom adapters for any runtime.
 
 ## Key Design Decisions
 

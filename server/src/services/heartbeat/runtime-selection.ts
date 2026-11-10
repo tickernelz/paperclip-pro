@@ -201,7 +201,7 @@ export function resolveNativeSandboxLifecycle(input: {
   } | null;
 }): NativeSandboxLifecycle | null {
   if (
-    input.adapterType !== "paperclip_runner" ||
+    input.adapterType !== "wardmote_runner" ||
     input.target?.kind !== "remote" ||
     input.target.transport !== "sandbox"
   )
@@ -501,7 +501,7 @@ export async function selectHeartbeatRuntime(db: Db, input: HeartbeatRuntimeSele
     // Native Codex owns a durable, session-scoped home. It flushes refreshed
     // auth into each invocation's private home before that home is removed.
     // Other managed harnesses still require per-turn credential cleanup.
-    const supportsManagedWarmSession = agent.adapterType === "paperclip_runner" &&
+    const supportsManagedWarmSession = agent.adapterType === "wardmote_runner" &&
       nativeRuntimeResolution.profile.backend === "codex_app_server";
     const effectiveLifecyclePolicy = persistedNativeExecutionInput?.session.lifecyclePolicy ??
       (nativeRuntimeResolution.profile.backend === "openai_dot_mcp" || managedAiRuntime && !supportsManagedWarmSession
@@ -708,7 +708,7 @@ export async function selectHeartbeatRuntime(db: Db, input: HeartbeatRuntimeSele
         backend: nativeRuntimeResolution.profile.backend,
         adapterConfig: nativeProviderConfig, managedProfile, agentCoreProfile, dotBinding,
       });
-      const codexCliVersion = agent.adapterType === "paperclip_runner" && requestedNativeProvider.provider === "codex"
+      const codexCliVersion = agent.adapterType === "wardmote_runner" && requestedNativeProvider.provider === "codex"
         ? await readRemoteCodexModelCliVersion({
             model: requestedNativeProvider.model,
             target: executionTarget,
@@ -772,7 +772,7 @@ export async function selectHeartbeatRuntime(db: Db, input: HeartbeatRuntimeSele
               conversationMode: context.conversationMode === true,
               agentId: agent.id,
               workspace: {
-                // Projectless paperclip_runner tasks still have a resolved local cwd. Bind that
+                // Projectless wardmote_runner tasks still have a resolved local cwd. Bind that
                 // transient workspace to the run id so the native input remains durable and replayable
                 // without fabricating a project-scoped execution_workspaces row.
                 id: nativeExecutionWorkspaceId,

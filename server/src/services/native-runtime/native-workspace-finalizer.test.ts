@@ -130,7 +130,7 @@ describe("native workspace finalization recovery", () => {
       id: agentId,
       companyId,
       name: "Native workspace agent",
-      adapterType: "paperclip_runner",
+      adapterType: "wardmote_runner",
       status: "running",
     });
     await db.insert(projects).values([

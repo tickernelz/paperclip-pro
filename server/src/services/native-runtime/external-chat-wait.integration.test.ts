@@ -139,7 +139,7 @@ describe("native external-chat response wait", () => {
       id: agentId,
       companyId,
       name: "Waiting chat agent",
-      adapterType: "paperclip_runner",
+      adapterType: "wardmote_runner",
       adapterConfig: { provider: "codex" },
       runtimeConfig: {},
       status: "active",
@@ -1158,7 +1158,7 @@ describe("native external-chat response wait", () => {
     await attestAnswer(f);
     expect(await authorizeChatConversationForBoundRun(db, f, f.context, "read")).toMatchObject({ conversationId: f.conversationId });
     await db.update(companyMemberships).set({ status: "removed" }).where(eq(companyMemberships.principalId, f.userId));
-    await expect(authorizeChatConversationForBoundRun(db, f, f.context, "read")).rejects.toThrow(answerRoute === "board" ? "paperclip_runner_chat_attachment_binding_denied" : "paperclip_runner_chat_attachment_principal_denied");
+    await expect(authorizeChatConversationForBoundRun(db, f, f.context, "read")).rejects.toThrow(answerRoute === "board" ? "wardmote_runner_chat_attachment_binding_denied" : "wardmote_runner_chat_attachment_principal_denied");
     await db.update(companyMemberships).set({ status: "active" }).where(eq(companyMemberships.principalId, f.userId));
     if (receipt) await db.update(chatVoiceToolCalls).set({ response: { ...receipt.response, resultSha256: "different-answer" } }).where(eq(chatVoiceToolCalls.id, receipt.id));
     else await db.update(issueComments).set({authorUserId: randomUUID()}).where(eq(issueComments.id, f.commentId));
@@ -1630,7 +1630,7 @@ describe("native external-chat response wait", () => {
               .where(eq(chatEndpoints.id, fixture.endpointId));
           }
           await expect(invoke()).rejects.toThrow(
-            "paperclip_runner_chat_attachment_destination_denied",
+            "wardmote_runner_chat_attachment_destination_denied",
           );
           expect(
             await db
@@ -1666,7 +1666,7 @@ describe("native external-chat response wait", () => {
             .set({ contextSnapshot: context })
             .where(eq(heartbeatRuns.id, fixture.runId));
           await expect(invoke()).rejects.toThrow(
-            "paperclip_runner_chat_attachment_binding_denied",
+            "wardmote_runner_chat_attachment_binding_denied",
           );
           await expect(
             db
@@ -1731,8 +1731,8 @@ describe("native external-chat response wait", () => {
           }
           await expect(invoke()).rejects.toThrow(
             mutation === "membership_revoked"
-              ? "paperclip_runner_chat_attachment_principal_denied"
-              : "paperclip_runner_chat_attachment_binding_denied",
+              ? "wardmote_runner_chat_attachment_principal_denied"
+              : "wardmote_runner_chat_attachment_binding_denied",
           );
           expect(
             await db
@@ -1971,7 +1971,7 @@ describe("native external-chat response wait", () => {
         }),
       ).rejects.toThrow(
         kind === "membership_revoked"
-          ? "paperclip_runner_chat_attachment_principal_denied"
+          ? "wardmote_runner_chat_attachment_principal_denied"
           : "reviewed_chat_execution_binding_not_authorized",
       );
     },
@@ -2657,7 +2657,7 @@ describe("native external-chat response wait", () => {
       await Promise.allSettled([holder, reader]);
     }
     expect(await reader).toBe(
-      "paperclip_runner_chat_attachment_binding_denied",
+      "wardmote_runner_chat_attachment_binding_denied",
     );
   });
 
@@ -2782,7 +2782,7 @@ describe("native external-chat response wait", () => {
         fixture.issueId,
         "Prepared exactly these files for this chat response.",
         { agentId: fixture.agentId, runId: fixture.runId },
-        { authorizationReason: "paperclip_runner_protocol" },
+        { authorizationReason: "wardmote_runner_protocol" },
       );
       const selected = [];
       for (const [originalFilename, contentType] of [
@@ -3554,7 +3554,7 @@ describe("native external-chat response wait", () => {
         fixture.issueId,
         "Prepared the original file",
         { agentId: fixture.agentId, runId: fixture.runId },
-        { authorizationReason: "paperclip_runner_protocol" },
+        { authorizationReason: "wardmote_runner_protocol" },
       );
       const attachment = await issueService(db).createAttachment({
         issueId: fixture.issueId,

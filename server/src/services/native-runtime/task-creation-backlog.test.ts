@@ -22,7 +22,7 @@ describe("runner backlog task creation", () => {
   async function fixture(conversation: boolean) {
     const companyId = randomUUID(), agentId = randomUUID(), issueId = randomUUID(), runId = randomUUID();
     await db.insert(companies).values({ id: companyId, name: "Backlog", issuePrefix: `B${companyId.slice(0, 6)}` });
-    await db.insert(agents).values({ id: agentId, companyId, name: "Planner", role: "ceo", status: "active", adapterType: "paperclip_runner" });
+    await db.insert(agents).values({ id: agentId, companyId, name: "Planner", role: "ceo", status: "active", adapterType: "wardmote_runner" });
     await db.insert(issues).values({ id: issueId, companyId, title: "Coordinate", status: "in_progress", assigneeAgentId: agentId, conversationAgentId: conversation ? agentId : null, conversationUserId: conversation ? "operator" : null, conversationState: conversation ? "active" : null });
     await db.insert(heartbeatRuns).values({ id: runId, companyId, agentId, status: "running", runtimeMode: "native", nativeIssueId: issueId, invocationSource: "assignment", triggerDetail: "system", contextSnapshot: { issueId } });
     await db.update(issues).set({ executionRunId: runId }).where(eq(issues.id, issueId));

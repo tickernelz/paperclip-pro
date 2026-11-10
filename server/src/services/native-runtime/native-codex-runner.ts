@@ -202,7 +202,7 @@ export function resolvePaperclipRunnerBinary(
     }
   }
   throw new Error(
-    "paperclip_runner_binary_missing: build @tickernelz/wardmote-runner or set WARDMOTE_RUNNER_BINARY",
+    "wardmote_runner_binary_missing: build @tickernelz/wardmote-runner or set WARDMOTE_RUNNER_BINARY",
   );
 }
 
@@ -420,7 +420,7 @@ export async function executeNativeCodexRunner(input: {
   });
 
   try {
-    if (!child.pid) throw new Error("paperclip_runner_process_not_started");
+    if (!child.pid) throw new Error("wardmote_runner_process_not_started");
     await input.onSpawn({
       pid: child.pid,
       processGroupId: process.platform === "win32" ? null : child.pid,
@@ -454,7 +454,7 @@ export async function executeNativeCodexRunner(input: {
         if (recovered) return recovered;
         if (recovered === null && goalControl && !shouldWaitForGoalCompletion) return null;
         throw new Error(
-          `paperclip_runner_process_exited: code=${code ?? "null"} signal=${signal ?? "null"}`,
+          `wardmote_runner_process_exited: code=${code ?? "null"} signal=${signal ?? "null"}`,
         );
       }),
     ]);
@@ -478,7 +478,7 @@ export async function executeNativeCodexRunner(input: {
       signal: null,
       timedOut: false,
       ...(succeeded ? {} : {
-        errorCode: "paperclip_runner_provider_failed",
+        errorCode: "wardmote_runner_provider_failed",
         errorMessage: completed?.result.summary,
       }),
       provider: "codex",
@@ -515,7 +515,7 @@ export async function executeNativeCodexRunner(input: {
           companyId: input.companyId,
           issueId: input.issueId,
           agentId: input.agentId,
-          adapterType: "paperclip_runner",
+          adapterType: "wardmote_runner",
         },
         goalControl.requestId,
         error instanceof Error ? error.message : "native_goal_control_failed",

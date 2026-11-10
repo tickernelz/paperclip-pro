@@ -87,7 +87,7 @@ export async function setupFirstTaskFixtures(input: {
     `/api/agents/${agents[0].id}`,
     runtimePatch,
   );
-  expect(migrated.adapterType).toBe("paperclip_runner");
+  expect(migrated.adapterType).toBe("wardmote_runner");
   expect(migrated.adapterConfig?.provider).toBe(execution.profile.provider);
   expect(migrated.adapterConfig?.instructionsFilePath).toBe(
     agents[0].adapterConfig?.instructionsFilePath,

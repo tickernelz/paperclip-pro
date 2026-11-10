@@ -592,7 +592,7 @@ export async function prepareHeartbeatWorkspace(db: Db, input: HeartbeatWorkspac
   // Native provider checkpoints bind to the workspace row, including ordinary
   // local shared workspaces. Persist that binding independently of the opt-in
   // isolated-workspace UI, just as warm sandbox continuity already does.
-  const nativeSharedWorkspace = agent.adapterType === "paperclip_runner" &&
+  const nativeSharedWorkspace = agent.adapterType === "wardmote_runner" &&
     requestedExecutionWorkspaceMode === "shared_workspace";
   const bindIssueToPersistedExecutionWorkspace = async (
     workspace: ExecutionWorkspace | null,

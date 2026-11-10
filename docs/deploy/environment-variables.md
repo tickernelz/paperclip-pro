@@ -20,7 +20,7 @@ All environment variables that Wardmote uses for server configuration.
 | `WARDMOTE_DEPLOYMENT_EXPOSURE` | `private` | Exposure policy when deployment mode is `authenticated` |
 | `WARDMOTE_API_URL` | (auto-derived) | Wardmote API base URL. When set externally (e.g., via Kubernetes ConfigMap, load balancer, or reverse proxy), the server preserves the value instead of deriving it from the listen host and port. Useful for deployments where the public-facing URL differs from the local bind address. |
 | `WARDMOTE_CHAT_WEBHOOK_PUBLIC_URL` | (board public origin) | Optional HTTPS origin for native chat provider webhooks when ingress and the board use different hosts. Must have no credentials, path, query, or fragment; invalid configuration refuses startup. Used only for provider callback URLs, not board links, authentication, trusted hosts, or identity confirmation. |
-| `WARDMOTE_RUNNER_PUBLIC_URL` | (unset) | Explicit `wss://` base URL used only when a remote `paperclip_runner` target dials Wardmote directly. Wardmote appends `/api/runner/v1/connect/<runId>`; the reverse proxy must forward WebSocket upgrades for that route. This value is never inferred from request headers. Daytona ignores it and uses provider ingress. |
+| `WARDMOTE_RUNNER_PUBLIC_URL` | (unset) | Explicit `wss://` base URL used only when a remote `wardmote_runner` target dials Wardmote directly. Wardmote appends `/api/runner/v1/connect/<runId>`; the reverse proxy must forward WebSocket upgrades for that route. This value is never inferred from request headers. Daytona ignores it and uses provider ingress. |
 | `WARDMOTE_RUNNER_CA_BUNDLE_PATH` | (unset) | Optional PEM CA bundle for direct runner WSS. Platform roots remain enabled. There is no insecure TLS bypass. |
 | `WARDMOTE_RUNNER_REMOTE_BINARY_PATH` | (host build) | Host-local path to a `wardmote-runnerd` artifact built for the remote target OS and architecture. Required when Wardmote and the remote sandbox do not share a compatible platform; build metadata and the required transport mode are verified before launch. |
 | `WARDMOTE_RUNNER_REMOTE_CODEX_PATH` | (unset) | Optional host-local path to a Codex executable built for the remote target OS and architecture. For remote Codex-backed runners, Wardmote stages and verifies this executable beside `wardmote-runnerd`. |
@@ -30,7 +30,7 @@ All environment variables that Wardmote uses for server configuration.
 | `WARDMOTE_HIDDEN_SETTINGS` | (unset) | Comma-separated settings surfaces to hide from the UI and floor at the API, for operators hosting Wardmote for others (managed cloud, internal shared server). See [Hiding settings surfaces](#hiding-settings-surfaces). |
 | `WARDMOTE_SETTING_DEFAULTS` | (unset) | JSON object replacing the schema default of selected instance settings, for hosting operators. See [Operator setting defaults](#operator-setting-defaults). |
 
-Daytona connectivity for `paperclip_runner` uses authenticated provider
+Daytona connectivity for `wardmote_runner` uses authenticated provider
 WebSocket ingress and follows the instance experimental setting
 `enableNativeRunner` (default `false`). There is no separate ingress opt-in.
 Disabling Wardmote Runner blocks fresh native starts while persisted native

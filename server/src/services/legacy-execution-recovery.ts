@@ -287,7 +287,7 @@ export async function settleInterruptedNativeBootstrap(
     if (!task || !run || run.runtimeMode !== "legacy" || run.runtimeModeResolvedAt ||
         run.contextSnapshot?.issueId !== task.id ||
         run.status !== "interrupted" || run.errorCode !== "server_shutdown_interrupted" ||
-        claimedAdapterType(run) !== "paperclip_runner" || run.processPid || run.processGroupId ||
+        claimedAdapterType(run) !== "wardmote_runner" || run.processPid || run.processGroupId ||
         hasWorkspaceRestoreFailure(run.resultJson) || executionFailureRetryCount(run) >= 2) return null;
     const [native] = await tx.select({ id: nativeRunFinalizations.runId }).from(nativeRunFinalizations).where(eq(nativeRunFinalizations.runId, run.id)).limit(1);
     const [lease] = await tx.select({ id: environmentLeases.id }).from(environmentLeases).where(and(

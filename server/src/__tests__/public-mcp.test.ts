@@ -712,7 +712,7 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
   it.each([
     ["codex_local", "gpt-5.4", "modelReasoningEffort"],
     ["claude_local", "claude-sonnet-4-6", "effort"],
-    ["paperclip_runner", "gpt-5.4", "modelReasoningEffort"],
+    ["wardmote_runner", "gpt-5.4", "modelReasoningEffort"],
   ])("updates the effective %s reasoning setting and validates its model", async (adapterType, model, field) => {
     const f = await expandedFixture(true);
     try {

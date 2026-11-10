@@ -148,17 +148,17 @@ describe("adapter routes", () => {
     }
   });
 
-  it("keeps paperclip_runner hidden from selection unless the rollout flag is enabled", async () => {
+  it("keeps wardmote_runner hidden from selection unless the rollout flag is enabled", async () => {
     const disabledResponse = await request(createApp()).get("/api/adapters");
     expect(disabledResponse.status).toBe(200);
-    expect(disabledResponse.body.find((adapter: any) => adapter.type === "paperclip_runner"))
+    expect(disabledResponse.body.find((adapter: any) => adapter.type === "wardmote_runner"))
       .toMatchObject({ disabled: true });
 
     const enabledResponse = await request(createApp({}, {
       getNativeRunnerEnabled: async () => true,
     })).get("/api/adapters");
     expect(enabledResponse.status).toBe(200);
-    expect(enabledResponse.body.find((adapter: any) => adapter.type === "paperclip_runner"))
+    expect(enabledResponse.body.find((adapter: any) => adapter.type === "wardmote_runner"))
       .toMatchObject({
         disabled: false,
         capabilities: {
@@ -170,10 +170,10 @@ describe("adapter routes", () => {
   it("keeps the shared implementation available for Dot independently, while honoring adapter-admin disabling", async () => {
     const options = { getNativeRunnerEnabled: async () => false, getOpenAiDotEnabled: async () => true };
     const enabled = await request(createApp({}, options)).get("/api/adapters");
-    expect(enabled.body.find((adapter: any) => adapter.type === "paperclip_runner")).toMatchObject({ disabled: false });
-    mockAdapterPluginStore.getDisabledAdapterTypes.mockReturnValue(["paperclip_runner"]);
+    expect(enabled.body.find((adapter: any) => adapter.type === "wardmote_runner")).toMatchObject({ disabled: false });
+    mockAdapterPluginStore.getDisabledAdapterTypes.mockReturnValue(["wardmote_runner"]);
     const disabled = await request(createApp({}, options)).get("/api/adapters");
-    expect(disabled.body.find((adapter: any) => adapter.type === "paperclip_runner")).toMatchObject({ disabled: true });
+    expect(disabled.body.find((adapter: any) => adapter.type === "wardmote_runner")).toMatchObject({ disabled: true });
   });
 
   it("GET /api/adapters returns correct capabilities for built-in adapters", async () => {
@@ -251,7 +251,7 @@ describe("adapter routes", () => {
   it("serves provider-scoped Paperclip Runner configuration fields", async () => {
     const app = createApp();
 
-    const res = await request(app).get("/api/adapters/paperclip_runner/config-schema");
+    const res = await request(app).get("/api/adapters/wardmote_runner/config-schema");
 
     expect(res.status, JSON.stringify(res.body)).toBe(200);
     expect(res.body.fields).toEqual(expect.arrayContaining([

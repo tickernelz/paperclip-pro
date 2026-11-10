@@ -49,7 +49,7 @@ describe("hot-restart path compatibility", () => {
               runId: "run-1",
               companyId: "company-1",
               agentId: "agent-1",
-              adapterType: "paperclip_runner",
+              adapterType: "wardmote_runner",
               status: "running",
               processPid: 456,
               processGroupId: 456,

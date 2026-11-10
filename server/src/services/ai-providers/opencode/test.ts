@@ -147,7 +147,7 @@ export async function testEnvironment(
     let runtimeCwd = cwd;
     // Native workspaces are assigned at execution time. A configuration probe
     // without an explicit workspace must not run in the server's checkout.
-    if (!targetIsRemote && ctx.adapterType === "paperclip_runner" && !asString(config.cwd, "").trim()) {
+    if (!targetIsRemote && ctx.adapterType === "wardmote_runner" && !asString(config.cwd, "").trim()) {
       nativeProbeWorkspaceLocalDir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-opencode-native-probe-"));
       runtimeCwd = nativeProbeWorkspaceLocalDir;
     }
@@ -233,7 +233,7 @@ export async function testEnvironment(
     // The native runner already selects a concrete model. Its real hello probe
     // verifies model access and credentials; a full catalog scan adds another
     // cold CLI launch (and discovery retries) without verifying that request.
-    const nativeModelProbe = ctx.adapterType === "paperclip_runner" && Boolean(configuredModel);
+    const nativeModelProbe = ctx.adapterType === "wardmote_runner" && Boolean(configuredModel);
 
     // Model discovery and validation use local child processes against
     // OpenCode's `models` subcommand and JSON config; these are not yet

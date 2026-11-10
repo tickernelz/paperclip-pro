@@ -494,7 +494,7 @@ export function githubChatManagementService(db: Db, fetchImpl = fetch) {
         label: "Agent runtime supports bot tools",
         ok:
           !!agent &&
-          ["paperclip_runner", "codex_local"].includes(agent.adapterType),
+          ["wardmote_runner", "codex_local"].includes(agent.adapterType),
         detail:
           "Use Paperclip Runner or Codex with managed MCP tools. Low-trust execution also requires a valid scoped boundary and isolated sandbox; the test task proves runtime execution.",
       });

@@ -62,19 +62,19 @@ describePostgres("task-scoped runtime session reset", () => {
         id: agentId,
         companyId,
         name: "Selected agent",
-        adapterType: "paperclip_runner",
+        adapterType: "wardmote_runner",
       },
       {
         id: otherAgentId,
         companyId,
         name: "Other agent",
-        adapterType: "paperclip_runner",
+        adapterType: "wardmote_runner",
       },
       {
         id: foreignAgentId,
         companyId: otherCompanyId,
         name: "Foreign agent",
-        adapterType: "paperclip_runner",
+        adapterType: "wardmote_runner",
       },
     ]);
     await db.insert(issues).values([
@@ -116,7 +116,7 @@ describePostgres("task-scoped runtime session reset", () => {
       id: randomUUID(),
       companyId,
       agentId,
-      adapterType: "paperclip_runner",
+      adapterType: "wardmote_runner",
       sessionDisplayId: randomUUID(),
       sessionParamsJson: { preserved: true },
       ...row,
@@ -126,14 +126,14 @@ describePostgres("task-scoped runtime session reset", () => {
       {
         agentId,
         companyId,
-        adapterType: "paperclip_runner",
+        adapterType: "wardmote_runner",
         sessionId: "selected-legacy",
         stateJson: { preserved: true },
       },
       {
         agentId: otherAgentId,
         companyId,
-        adapterType: "paperclip_runner",
+        adapterType: "wardmote_runner",
         sessionId: "other-legacy",
         stateJson: { untouched: true },
       },
@@ -175,7 +175,7 @@ describePostgres("task-scoped runtime session reset", () => {
           !(
             row.companyId === seeded.companyId &&
             row.agentId === seeded.agentId &&
-            row.adapterType === "paperclip_runner" &&
+            row.adapterType === "wardmote_runner" &&
             [seeded.issueId, seeded.identifier].includes(row.taskKey)
           ),
       );

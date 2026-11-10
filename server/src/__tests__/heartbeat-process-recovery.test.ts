@@ -2175,7 +2175,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
   });
 
   async function seedPendingNativeFinalization(accept = true) {
-    const fixture = await seedRunFixture({ runtimeMode: "native", adapterType: "paperclip_runner", processPid: 2_000_000_000 });
+    const fixture = await seedRunFixture({ runtimeMode: "native", adapterType: "wardmote_runner", processPid: 2_000_000_000 });
     const { companyId, agentId, issueId, runId } = fixture;
     const contractId = randomUUID(), runnerInstanceId = randomUUID();
     const contractSha = `finalization-contract-${runId}`;
@@ -2685,7 +2685,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     expect(child.pid).toBeTypeOf("number");
 
     const { agentId, runId, wakeupRequestId } = await seedRunFixture({
-      adapterType: "paperclip_runner",
+      adapterType: "wardmote_runner",
       runtimeMode: "native",
       processPid: child.pid ?? null,
       includeIssue: false,
@@ -2727,7 +2727,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     async (coordinatorPhase) => {
       const { companyId, agentId, runId, issueId, wakeupRequestId } =
         await seedRunFixture({
-          adapterType: "paperclip_runner",
+          adapterType: "wardmote_runner",
           runtimeMode: "native",
           runErrorCode: "native_execution_ownership_unverified",
         });
@@ -2881,7 +2881,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     expect(child.pid).toBeTypeOf("number");
 
     const { companyId, runId, issueId } = await seedRunFixture({
-      adapterType: "paperclip_runner",
+      adapterType: "wardmote_runner",
       runtimeMode: "native",
       processPid: child.pid ?? null,
     });
@@ -2920,7 +2920,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
   it("does not reap a retryable native run while its same-run recovery path owns it", async () => {
     const { companyId, agentId, runId, issueId, wakeupRequestId } =
       await seedRunFixture({
-        adapterType: "paperclip_runner",
+        adapterType: "wardmote_runner",
         runtimeMode: "native",
       });
     const nextAttemptAt = new Date(Date.now() + 60_000);
@@ -2966,7 +2966,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
 
   it("does not grant a dead native run legacy retry authority after adapter reassignment", async () => {
     const { agentId, runId } = await seedRunFixture({
-      adapterType: "paperclip_runner",
+      adapterType: "wardmote_runner",
       runtimeMode: "native",
       processPid: 999_999_999,
       includeIssue: false,
@@ -3150,7 +3150,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
   it("fences native selection when cancellation wins during preparation", async () => {
     await withTempPaperclipHome(async () => {
       const { agentId, issueId, runId } = await seedQueuedIssueRunFixture();
-      await db.update(agents).set({ adapterType: "paperclip_runner",
+      await db.update(agents).set({ adapterType: "wardmote_runner",
         adapterConfig: { provider: "codex", model: "gpt-5.6-luna" },
       }).where(eq(agents.id, agentId));
       const factory = vi.fn(() => { throw new Error("provider must not start"); });
@@ -3181,7 +3181,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
   it("does not dispatch when cancellation wins after native selection", async () => {
     await withTempPaperclipHome(async () => {
       const { agentId, issueId, runId } = await seedQueuedIssueRunFixture();
-      await db.update(agents).set({ adapterType: "paperclip_runner",
+      await db.update(agents).set({ adapterType: "wardmote_runner",
         adapterConfig: { provider: "codex", model: "gpt-5.6-luna" },
       }).where(eq(agents.id, agentId));
       await db.update(heartbeatRuns).set({ invocationSource: "automation" }).where(eq(heartbeatRuns.id, runId));
@@ -3218,7 +3218,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
       await db
         .update(agents)
         .set({
-          adapterType: "paperclip_runner",
+          adapterType: "wardmote_runner",
           adapterConfig: { provider: "codex", model: "gpt-5.6-luna" },
         })
         .where(eq(agents.id, agentId));
@@ -3271,7 +3271,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     await withTempPaperclipHome(async () => {
       const { agentId, issueId, runId } = await seedQueuedIssueRunFixture();
       await db.update(agents).set({
-        adapterType: "paperclip_runner",
+        adapterType: "wardmote_runner",
         adapterConfig: { provider: "codex", model: "gpt-5.6-luna" },
       }).where(eq(agents.id, agentId));
       const nativeSessionBackendFactory = vi.fn(
@@ -3359,7 +3359,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
       await db
         .update(agents)
         .set({
-          adapterType: "paperclip_runner",
+          adapterType: "wardmote_runner",
           adapterConfig: { provider: "codex", model: "gpt-5.6-luna" },
         })
         .where(eq(agents.id, agentId));
@@ -3846,7 +3846,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
 
   it("suspends native Paperclip Runner ownership on graceful restart without cancelling or creating a retry run", async () => {
     const { agentId, runId, issueId, wakeupRequestId } = await seedRunFixture({
-      adapterType: "paperclip_runner",
+      adapterType: "wardmote_runner",
       agentStatus: "running",
       runtimeMode: "native",
     });
@@ -4002,7 +4002,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     expect(drain.retryRunIds).toEqual([retries[0]!.id]);
 
     const lost = await seedRunFixture({
-      adapterType: "paperclip_runner",
+      adapterType: "wardmote_runner",
       runtimeMode: "native",
       agentStatus: "running",
       processPid: 999_999_999,
@@ -11748,7 +11748,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     await db.insert(agentTaskSessions).values({
       companyId,
       agentId,
-      adapterType: "paperclip_runner",
+      adapterType: "wardmote_runner",
       taskKey: issueId,
       lastRunId: runId,
       goalJson: {
@@ -13080,7 +13080,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
       }
       if (mode === "native") {
         await db.update(agents).set({
-          adapterType: "paperclip_runner",
+          adapterType: "wardmote_runner",
           adapterConfig: { provider: "codex", model: "gpt-5.6-luna" },
         }).where(eq(agents.id, source.agentId));
       }
@@ -13333,7 +13333,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     await db
       .update(agents)
       .set({
-        adapterType: "paperclip_runner",
+        adapterType: "wardmote_runner",
         adapterConfig: { provider: "codex", model: "gpt-5.6-luna" },
       })
       .where(eq(agents.id, source.agentId));
@@ -16611,7 +16611,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     // Production binds policy/schema as well as the body; a body-only hash is not a valid contract receipt.
     expect(contractSha).not.toBe(nativeSha256(contract));
     const model = "gpt-5.6-luna[context=272k,reasoning=medium,fast=false]";
-    await db.update(agents).set({ adapterType: "paperclip_runner", adapterConfig: { provider: "acpx", acpxAgent: "cursor", model, acpxSessionMode: "plan", acpxPermissionMode: "approve-all" } }).where(eq(agents.id, f.agentId));
+    await db.update(agents).set({ adapterType: "wardmote_runner", adapterConfig: { provider: "acpx", acpxAgent: "cursor", model, acpxSessionMode: "plan", acpxPermissionMode: "approve-all" } }).where(eq(agents.id, f.agentId));
     await db.update(agentWakeupRequests).set({ status: "completed" }).where(eq(agentWakeupRequests.id, f.wakeupRequestId));
     await db.update(heartbeatRuns).set({ runtimeMode: "native", nativeIssueId: f.issueId, nativeSessionId: f.runId,
       completionContractId: contractId, completionContractSha256: contractSha, runnerInstanceId: instance,

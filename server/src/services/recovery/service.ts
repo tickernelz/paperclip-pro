@@ -1482,9 +1482,9 @@ export function recoveryService(
       if (
         error instanceof Error &&
         [
-          "paperclip_runner_chat_attachment_binding_denied",
-          "paperclip_runner_chat_attachment_destination_denied",
-          "paperclip_runner_chat_attachment_principal_denied",
+          "wardmote_runner_chat_attachment_binding_denied",
+          "wardmote_runner_chat_attachment_destination_denied",
+          "wardmote_runner_chat_attachment_principal_denied",
         ].includes(error.message)
       )
         return false;

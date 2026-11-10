@@ -136,7 +136,7 @@ describeEmbeddedPostgres("native question bridge", () => {
       id: agentId,
       companyId,
       name: "Native Codex",
-      adapterType: "paperclip_runner",
+      adapterType: "wardmote_runner",
       status: "running",
       adapterConfig: { provider: "codex" },
       runtimeConfig: {},

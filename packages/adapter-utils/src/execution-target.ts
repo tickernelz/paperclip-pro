@@ -197,7 +197,7 @@ export interface AdapterSandboxExecutionTarget extends AdapterExecutionTargetWor
    * environment. Absent means no grant.
    */
   readonly enableSandboxDuplexBridge?: boolean;
-  /** Host-owned lifecycle override for paperclip_runner in this environment. */
+  /** Host-owned lifecycle override for wardmote_runner in this environment. */
   readonly runnerLifecyclePolicy?:
     | { mode: "per_turn"; idleTimeoutMs: null }
     | { mode: "warm"; idleTimeoutMs: number }
