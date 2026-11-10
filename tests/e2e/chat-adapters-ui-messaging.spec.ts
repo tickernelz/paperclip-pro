@@ -234,7 +234,7 @@ test.describe("Board send delivery refresh", () => {
       await expect
         .poll(() =>
           page.evaluate(() =>
-            localStorage.getItem("paperclip.selectedCompanyId"),
+            localStorage.getItem("wardmote.selectedCompanyId"),
           ),
         )
         .toBe(selected.companyId);
@@ -319,7 +319,7 @@ test.describe("Board send delivery refresh", () => {
       await expect
         .poll(() =>
           page.evaluate(() =>
-            localStorage.getItem("paperclip.selectedCompanyId"),
+            localStorage.getItem("wardmote.selectedCompanyId"),
           ),
         )
         .toBe(target.companyId);
@@ -728,7 +728,7 @@ test.describe("Board send delivery refresh", () => {
       const statusReads: string[] = [];
       let terminal = false;
       const publicationsPath = `/api/chat-endpoints/${endpointId}/conversations/${conversationId}/publications`;
-      const storageKey = `paperclip:board-send:v1:${JSON.stringify([seed.companyId, issue.id, endpointId, conversationId])}`;
+      const storageKey = `wardmote:board-send:v1:${JSON.stringify([seed.companyId, issue.id, endpointId, conversationId])}`;
       await page.route("**/api/instance/settings/experimental", (route) =>
         fulfill(route, { enableChatConnectors: true }),
       );

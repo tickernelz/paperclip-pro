@@ -14,7 +14,7 @@ import { test, expect, request as pwRequest, type APIRequestContext } from "@pla
 const PORT = Number(process.env.WARDMOTE_E2E_PORT ?? 3199);
 const BASE_URL = `http://127.0.0.1:${PORT}`;
 const COMPANY_NAME_PREFIX = "E2E-SidebarTakeover";
-const COLLAPSED_STORAGE_KEY = "paperclip.sidebar.collapsed";
+const COLLAPSED_STORAGE_KEY = "wardmote.sidebar.collapsed";
 const APP_SIDEBAR_EXPANDED_MARKER = "Collapse sidebar";
 
 async function createCompany(board: APIRequestContext): Promise<{ id: string; prefix: string }> {

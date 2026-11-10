@@ -41,15 +41,15 @@ export function RemoteMcpProductionSetup({ providerId, connection, host = "page"
   const [searchParams] = useSearchParams();
   let targetToolkit = searchParams.get("targetToolkit");
   if (!targetToolkit && connection && host === "page") {
-    try { targetToolkit = sessionStorage.getItem(`paperclip:mcp-upstream-app:${selectedCompanyId}:${connection.id}`); } catch { /* Storage may be disabled. */ }
+    try { targetToolkit = sessionStorage.getItem(`wardmote:mcp-upstream-app:${selectedCompanyId}:${connection.id}`); } catch { /* Storage may be disabled. */ }
   }
   const targetApp = findAggregatorApp(providerId, targetToolkit);
   const targetRoute = targetApp?.routes.find((route) => route.provider === providerId);
   upstreamServiceName ??= targetApp?.name;
   const oauthOutcome = connection ? searchParams.get("oauth") : null;
   const queries = useQueryClient();
-  const accessDraftKey = `paperclip:mcp-access-draft:${selectedCompanyId}:${interactionId || providerId}`;
-  const intentDraftKey = `paperclip:mcp-intent-draft:${selectedCompanyId}:${interactionId}`;
+  const accessDraftKey = `wardmote:mcp-access-draft:${selectedCompanyId}:${interactionId || providerId}`;
+  const intentDraftKey = `wardmote:mcp-intent-draft:${selectedCompanyId}:${interactionId}`;
   const popup = useRef<Window | null>(null);
   useEffect(() => () => {
     popup.current?.close();
@@ -116,11 +116,11 @@ export function RemoteMcpProductionSetup({ providerId, connection, host = "page"
     }
     if (onComplete) onComplete({ connectionId: id });
     else if (providerId === "composio") {
-      try { sessionStorage.removeItem(`paperclip:mcp-upstream-app:${selectedCompanyId}:${id}`); } catch { /* Storage may be disabled. */ }
+      try { sessionStorage.removeItem(`wardmote:mcp-upstream-app:${selectedCompanyId}:${id}`); } catch { /* Storage may be disabled. */ }
       navigate(`/apps/${id}/permissions`);
     }
     else if (host === "page" && targetApp && targetRoute) {
-      try { sessionStorage.removeItem(`paperclip:mcp-upstream-app:${selectedCompanyId}:${id}`); } catch { /* Storage may be disabled. */ }
+      try { sessionStorage.removeItem(`wardmote:mcp-upstream-app:${selectedCompanyId}:${id}`); } catch { /* Storage may be disabled. */ }
       navigate("/apps");
     } else if (isAppAggregator(providerId)) navigate("/apps");
     else navigate(`/apps/${id}/permissions`);
@@ -167,7 +167,7 @@ export function RemoteMcpProductionSetup({ providerId, connection, host = "page"
       }
       savedConnection.current = result.connection;
       if (host === "page" && targetRoute) {
-        try { sessionStorage.setItem(`paperclip:mcp-upstream-app:${selectedCompanyId}:${result.connectionId}`, targetRoute.toolkit); } catch { /* Storage may be disabled. */ }
+        try { sessionStorage.setItem(`wardmote:mcp-upstream-app:${selectedCompanyId}:${result.connectionId}`, targetRoute.toolkit); } catch { /* Storage may be disabled. */ }
       }
       if (interactionId) {
         try { sessionStorage.setItem(intentDraftKey, result.connectionId); } catch { /* Storage may be disabled. */ }

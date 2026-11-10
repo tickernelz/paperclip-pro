@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useState, type ReactNode } from
 import type { SidePanelContentMode } from "@/components/side-panel";
 import { TABLET_MEDIA_QUERY } from "./SidebarContext";
 
-const STORAGE_KEY = "paperclip:panel-visible";
+const STORAGE_KEY = "wardmote:panel-visible";
 
 interface PanelContextValue {
   panelContent: ReactNode | null;

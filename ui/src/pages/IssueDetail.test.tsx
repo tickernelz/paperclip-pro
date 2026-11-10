@@ -5515,7 +5515,7 @@ describe("IssueDetail", () => {
       },
     ]);
     localStorage.setItem(
-      "paperclip:issue-comment-draft:issue-1",
+      "wardmote:issue-comment-draft:issue-1",
       "Draft follow-up message",
     );
     mockIssuesApi.update.mockResolvedValue(
@@ -5545,10 +5545,10 @@ describe("IssueDetail", () => {
     expect(mockIssuesApi.update).toHaveBeenCalledWith(issue.identifier, {
       workMode: "ask",
     });
-    expect(localStorage.getItem("paperclip:issue-comment-draft:issue-1")).toBe(
+    expect(localStorage.getItem("wardmote:issue-comment-draft:issue-1")).toBe(
       "Draft follow-up message",
     );
-    localStorage.removeItem("paperclip:issue-comment-draft:issue-1");
+    localStorage.removeItem("wardmote:issue-comment-draft:issue-1");
   });
 
   describe.each([false, true])("composer tree control (mobile=%s)", (isMobile) => {

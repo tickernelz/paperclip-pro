@@ -64,9 +64,9 @@ beforeEach(() => {
   state.navigate.mockReset();
   for (const id of ["alice", "bob", "removed", "retired-id"])
     recordAgentChatVisit("company-a", "user-a", id, null);
-  localStorage.setItem("paperclip.recentAgentChats:company-a:user-a", "[]");
-  localStorage.setItem("paperclip.recentAgentChats:company-b:user-a", "[]");
-  localStorage.setItem("paperclip.recentAgentChats:company-a:user-b", "[]");
+  localStorage.setItem("wardmote.recentAgentChats:company-a:user-a", "[]");
+  localStorage.setItem("wardmote.recentAgentChats:company-b:user-a", "[]");
+  localStorage.setItem("wardmote.recentAgentChats:company-a:user-b", "[]");
   container = document.createElement("div");
   document.body.append(container);
   root = createRoot(container);

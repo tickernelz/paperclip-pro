@@ -3,7 +3,7 @@ import { agentAppearanceSchema, randomAgentAppearance } from "@tickernelz/wardmo
 
 /** Non-secret visual identity, retained across navigation and company changes. */
 export function useAgentAppearanceDraft(draftKey: string) {
-  const key = `paperclip.agent-appearance.${draftKey}`;
+  const key = `wardmote.agent-appearance.${draftKey}`;
   function readDraft() {
     try {
       const stored = agentAppearanceSchema.safeParse(JSON.parse(sessionStorage.getItem(key) ?? "null"));

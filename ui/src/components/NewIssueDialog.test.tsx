@@ -541,7 +541,7 @@ describe("NewIssueDialog", () => {
     primaryState.primaryAgentId = primary;
     if (recent) trackRecentAssignee(recent, "company-1");
     if (explicit) dialogState.newIssueDefaults = { assigneeAgentId: explicit };
-    if (draft) localStorage.setItem("paperclip:issue-draft", JSON.stringify({ title: "Saved request", description: "", assigneeValue: `agent:${draft}`, projectId: "" }));
+    if (draft) localStorage.setItem("wardmote:issue-draft", JSON.stringify({ title: "Saved request", description: "", assigneeValue: `agent:${draft}`, projectId: "" }));
     const { root } = renderDialog(container);
     await waitForAssertion(() => expect(container.querySelector('[data-testid="task-chat-composer-assignee-label"]')?.textContent).toBe(expected));
     act(() => root.unmount());
@@ -576,7 +576,7 @@ describe("NewIssueDialog", () => {
     act(() => container.querySelector<HTMLButtonElement>('[aria-label="Choose assignee"]')!.click());
     const me = [...container.querySelectorAll<HTMLButtonElement>('[role="option"]')].find((button) => button.textContent?.includes("Me"))!;
     act(() => me.click());
-    expect(localStorage.getItem("paperclip:recent-assignees:company-1")).toContain("user:user-1");
+    expect(localStorage.getItem("wardmote:recent-assignees:company-1")).toContain("user:user-1");
     expect(container.querySelector('[data-testid="composer-run-settings-model-row"]')).toBeNull();
     expect(container.querySelector<HTMLTextAreaElement>('textarea[aria-label="Describe a task…"]')?.value).toBe("");
     act(() => root.unmount());
@@ -738,7 +738,7 @@ describe("NewIssueDialog", () => {
   });
 
   it("restores private visibility from a saved draft without a project", async () => {
-    localStorage.setItem("paperclip:issue-draft", JSON.stringify({ title: "Private draft", description: "", status: "todo", priority: "", projectId: "", isPrivate: true }));
+    localStorage.setItem("wardmote:issue-draft", JSON.stringify({ title: "Private draft", description: "", status: "todo", priority: "", projectId: "", isPrivate: true }));
     const { root } = renderDialog(container);
     await flush();
     const toggle = container.querySelector<HTMLButtonElement>('button[data-testid="composer-private-chip"]')!;
@@ -798,7 +798,7 @@ describe("NewIssueDialog", () => {
     // Saving this form must retain only the explicit toggle choice. A later
     // standalone draft must not acquire a sticky private flag from its parent.
     await act(async () => { await new Promise(resolve => setTimeout(resolve, 850)); });
-    expect(JSON.parse(localStorage.getItem("paperclip:issue-draft")!).isPrivate).toBe(false);
+    expect(JSON.parse(localStorage.getItem("wardmote:issue-draft")!).isPrivate).toBe(false);
     const submit = Array.from(container.querySelectorAll("button")).find(button => button.getAttribute("aria-label") === "Create sub-task")!;
     await act(async () => submit.click());
     await flush();
@@ -1057,7 +1057,7 @@ describe("NewIssueDialog", () => {
       id: "project-1", name: "Alpha", workspaces: [],
       executionWorkspacePolicy: { enabled: true, defaultMode: "isolated_workspace" },
     }]);
-    localStorage.setItem("paperclip:issue-draft", JSON.stringify({
+    localStorage.setItem("wardmote:issue-draft", JSON.stringify({
       title: "Draft task", description: "", status: "todo", priority: "medium", assigneeValue: "",
       reviewerValue: "", approverValue: "", projectId: "project-1",
       selectedExecutionWorkspaceId: "stale-workspace", executionWorkspaceMode: "reuse_existing",
@@ -1306,7 +1306,7 @@ describe("NewIssueDialog", () => {
 
 
   it("restores a description-only draft", async () => {
-    localStorage.setItem("paperclip:issue-draft", JSON.stringify({
+    localStorage.setItem("wardmote:issue-draft", JSON.stringify({
       title: "", description: "Keep the request without a title", status: "todo", priority: "medium",
       assigneeValue: "", reviewerValue: "", approverValue: "", projectId: "",
       
@@ -2014,7 +2014,7 @@ describe("NewIssueDialog", () => {
       enableIsolatedWorkspaces: false,
     });
     localStorage.setItem(
-      "paperclip:issue-draft",
+      "wardmote:issue-draft",
       JSON.stringify({
         title: "Watched task",
         description: "",
@@ -2075,7 +2075,7 @@ describe("NewIssueDialog", () => {
 
   it("restores the drafted model and thinking into the created task", async () => {
     mockAgentsApi.list.mockResolvedValue([{ id: "agent-1", name: "Coder", status: "active", adapterType: "omp_local", adapterConfig: {}, runtimeConfig: {}, permissions: {} }]);
-    localStorage.setItem("paperclip:issue-draft", JSON.stringify({
+    localStorage.setItem("wardmote:issue-draft", JSON.stringify({
       title: "", description: "Use the saved run settings", status: "todo", priority: "medium",
       assigneeValue: "agent:agent-1", projectId: "", workMode: "planning",
       runSettings: { model: "vendor/deep", thinking: "high" },

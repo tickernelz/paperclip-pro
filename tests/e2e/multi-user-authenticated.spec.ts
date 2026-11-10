@@ -370,8 +370,8 @@ test("agent chats keep personal identity and ordinary company visibility", async
         await page.getByRole("button", { name: "Star Personal chat identity", exact: true }).click();
         await expect(page.getByRole("button", { name: "Unstar Personal chat identity", exact: true })).toBeAttached();
         await expect(invited.page.getByRole("button", { name: "Star Personal chat identity", exact: true })).toBeAttached();
-        const ownerRecent = await page.evaluate(() => Object.keys(localStorage).filter(key => key.startsWith("paperclip.recentAgentChats:")));
-        const memberRecent = await invited.page.evaluate(() => Object.keys(localStorage).filter(key => key.startsWith("paperclip.recentAgentChats:")));
+        const ownerRecent = await page.evaluate(() => Object.keys(localStorage).filter(key => key.startsWith("wardmote.recentAgentChats:")));
+        const memberRecent = await invited.page.evaluate(() => Object.keys(localStorage).filter(key => key.startsWith("wardmote.recentAgentChats:")));
         expect(ownerRecent.some(key => key.endsWith(ownerChat.json!.conversationUserId))).toBe(true);
         expect(memberRecent.some(key => key.endsWith(memberChat.json!.conversationUserId))).toBe(true);
         const another = await createCompanyForSession(page, `Private company ${runId}`);

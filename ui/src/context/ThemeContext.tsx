@@ -16,7 +16,7 @@ interface ThemeContextValue {
   toggleTheme: () => void;
 }
 
-const THEME_STORAGE_KEY = "paperclip.theme";
+const THEME_STORAGE_KEY = "wardmote.theme";
 const DARK_THEME_COLOR = "#0d0e11";
 const LIGHT_THEME_COLOR = "#f6f7f9";
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);

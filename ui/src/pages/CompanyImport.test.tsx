@@ -1022,7 +1022,7 @@ describe("CompanyImport", () => {
     // A previous page load persisted a running job; reloading must resume
     // watching it rather than showing the stale form.
     sessionStorage.setItem(
-      "paperclip:company-import-job:company-1:acme/starter",
+      "wardmote:company-import-job:company-1:acme/starter",
       JSON.stringify({ jobId: "job-resume", pauseAutomations: false }),
     );
 
@@ -1050,7 +1050,7 @@ describe("CompanyImport", () => {
     expect(container.textContent).not.toContain("Resume watching import");
     expect(container.textContent).toContain("Import complete");
     // The stored entry is cleared once the job settles.
-    expect(sessionStorage.getItem("paperclip:company-import-job:company-1:acme/starter")).toBeNull();
+    expect(sessionStorage.getItem("wardmote:company-import-job:company-1:acme/starter")).toBeNull();
   });
 
   /** Adapter selects in the picker list, in manifest order (excludes the target/collision selects). */

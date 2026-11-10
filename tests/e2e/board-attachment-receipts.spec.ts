@@ -137,7 +137,7 @@ test(`uploaded file and image receipts survive reload and bind exactly once`, as
   );
   const receipts = [];
   for (const file of files) receipts.push(await upload(page, fixture, file));
-  const draftKey = `paperclip:issue-comment-draft:${fixture.issue.id}`;
+  const draftKey = `wardmote:issue-comment-draft:${fixture.issue.id}`;
   await expect
     .poll(() =>
       page.evaluate(

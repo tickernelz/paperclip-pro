@@ -11,7 +11,7 @@ function loadDismissedQuestions(storageKey: string | null): Set<string> {
 
 /** Presentation preference only: the original question remains answerable. */
 export function useDismissedTaskQuestions(issueId?: string | null, userId?: string | null) {
-  const storageKey = issueId ? `paperclip:task-question-dismissals:${userId ?? "board"}:${issueId}` : null;
+  const storageKey = issueId ? `wardmote:task-question-dismissals:${userId ?? "board"}:${issueId}` : null;
   const [state, setState] = useState(() => ({ storageKey, ids: loadDismissedQuestions(storageKey) }));
   const dismissedQuestionIds = useMemo(() => state.storageKey === storageKey
     ? state.ids : loadDismissedQuestions(storageKey), [state, storageKey]);
