@@ -789,6 +789,7 @@
     ["packages/db/src/migrations/0359_wardmote_bundled_skill_slugs.sql",10,"migrasi-otomatis"],
     ["packages/db/src/migrations/0360_wardmote_channel_values.sql",5,"migrasi-otomatis"],
     ["packages/db/src/migrations/0361_wardmote_stored_modes.sql",3,"migrasi-otomatis"],
+    ["packages/db/src/migrations/0362_wardmote_runner_adapter_type.sql",12,"migrasi-otomatis"],
     ["packages/db/src/native-runner-recovery-migration.test.ts",1,"belum-diganti"],
     ["packages/db/src/nested-skill-folders-migration.test.ts",3,"belum-diganti"],
     ["packages/db/src/orphaned-claimed-wakeups-migration.test.ts",1,"belum-diganti"],
