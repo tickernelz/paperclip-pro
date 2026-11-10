@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 import { WebhookReview } from "../fixtures/routineWebhooks";
 
 // Deliberately Storybook-only: no production components or webhook APIs are changed.
-const endpoint = "https://acme.paperclip.example/api/routine-triggers/public/0123456789abcdef01234567/fire";
+const endpoint = "https://acme.wardmote.example/api/routine-triggers/public/0123456789abcdef01234567/fire";
 const secret = "demo_webhook_key_for_storybook_only";
 const root = "/routines/routine-webhook-story";
 type Stage = "setup" | "credentials" | "waiting" | "received" | "failure";

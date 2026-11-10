@@ -108,12 +108,12 @@ describe("runtime context materialization", () => {
     expect(nativeMcpLaunchBinding({})).toBeNull();
     expect(() => nativeMcpLaunchBinding({
       WARDMOTE_NATIVE_MCP_NAME: "paperclip",
-      WARDMOTE_NATIVE_MCP_URL: "http://paperclip.example/mcp",
+      WARDMOTE_NATIVE_MCP_URL: "http://wardmote.example/mcp",
       WARDMOTE_NATIVE_MCP_TOKEN: "x".repeat(40),
     })).toThrow("requires HTTPS or loopback HTTP");
     expect(() => nativeMcpLaunchBinding({
       WARDMOTE_NATIVE_MCP_NAME: "paperclip",
-      WARDMOTE_NATIVE_MCP_URL: "https://user:pass@paperclip.example/mcp#secret",
+      WARDMOTE_NATIVE_MCP_URL: "https://user:pass@wardmote.example/mcp#secret",
       WARDMOTE_NATIVE_MCP_TOKEN: "x".repeat(40),
     })).toThrow("contains forbidden URL data");
   });
@@ -144,7 +144,7 @@ describe("runtime context materialization", () => {
       sourceCodexHome: join(root, "host-home"),
       nativeMcp: nativeMcpLaunchBinding({
         WARDMOTE_NATIVE_MCP_NAME: "wardmote-assigned",
-        WARDMOTE_NATIVE_MCP_URL: "https://paperclip.example/mcp",
+        WARDMOTE_NATIVE_MCP_URL: "https://wardmote.example/mcp",
         WARDMOTE_NATIVE_MCP_TOKEN: "x".repeat(40),
       }),
     });

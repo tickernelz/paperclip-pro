@@ -70,7 +70,7 @@ describeEmbeddedPostgres("heartbeat runtime MCP servers", () => {
   });
 
   async function seedAssignedAgents(count: number) {
-    process.env.WARDMOTE_API_URL = "https://paperclip.example.test";
+    process.env.WARDMOTE_API_URL = "https://wardmote.example.test";
     const [company] = await db.insert(companies).values({
       name: `Runtime MCP ${randomUUID()}`,
       issuePrefix: `RM${randomUUID().slice(0, 5).toUpperCase()}`,
@@ -235,7 +235,7 @@ describeEmbeddedPostgres("heartbeat runtime MCP servers", () => {
   });
 
   it("preserves exact permissions when an aggregate assignment exceeds the public 250-entry edit limit", async () => {
-    process.env.WARDMOTE_API_URL = "https://paperclip.example.test";
+    process.env.WARDMOTE_API_URL = "https://wardmote.example.test";
     const [company] = await db.insert(companies).values({
       name: "Large MCP assignment",
       issuePrefix: `LM${randomUUID().slice(0, 5).toUpperCase()}`,
@@ -313,7 +313,7 @@ describeEmbeddedPostgres("heartbeat runtime MCP servers", () => {
   });
 
   it("exposes only the dedicated GitHub connection when a personal connection is also installed", async () => {
-    process.env.WARDMOTE_API_URL = "https://paperclip.example.test";
+    process.env.WARDMOTE_API_URL = "https://wardmote.example.test";
     const [company] = await db.insert(companies).values({
       name: `Runtime GitHub identity ${randomUUID()}`,
       issuePrefix: `RG${randomUUID().slice(0, 5).toUpperCase()}`,

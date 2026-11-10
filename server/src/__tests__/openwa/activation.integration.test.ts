@@ -152,7 +152,7 @@ describe("OpenWA activation through the owner test DM (embedded Postgres + fake 
     });
     const service = chatChannelService(db, {
       runtime: new ChatSdkRuntime(),
-      publicBaseUrl: "https://paperclip.example",
+      publicBaseUrl: "https://wardmote.example",
       heartbeat: { wakeup } as never,
       storage: createStorageService(createLocalDiskStorageProvider(path.join(scratch, "storage"))),
       scheduleDeferredWork: () => {},
@@ -225,7 +225,7 @@ describe("OpenWA activation through the owner test DM (embedded Postgres + fake 
     expect(configured.body).toMatchObject({ status: "verifying", setup: { step: "test" } });
 
     const added = await t.service.openwa.addOwner(t.endpointId, { e164: "+" + OWNER_PHONE, expiresInSeconds: 1_800 }, t.userId);
-    const token = new URL(added.confirmationUrl!, "https://paperclip.example").searchParams.get("token")!;
+    const token = new URL(added.confirmationUrl!, "https://wardmote.example").searchParams.get("token")!;
     await t.service.confirmIdentityLink(token, t.userId);
     await t.service.openwa.addSenderRule(t.endpointId, { list: "allow", e164: "+" + MEMBER_PHONE }, t.userId);
 
@@ -306,7 +306,7 @@ describe("OpenWA activation through the owner test DM (embedded Postgres + fake 
       })
       .expect(200);
     const added = await t.service.openwa.addOwner(t.endpointId, { e164: "+" + OWNER_PHONE, expiresInSeconds: 1_800 }, t.userId);
-    await t.service.confirmIdentityLink(new URL(added.confirmationUrl!, "https://paperclip.example").searchParams.get("token")!, t.userId);
+    await t.service.confirmIdentityLink(new URL(added.confirmationUrl!, "https://wardmote.example").searchParams.get("token")!, t.userId);
     await t.service.reconcileProviderRuntimes();
     await t.gateway.waitForFirstCatchUp();
 
@@ -430,7 +430,7 @@ describe("OpenWA activation through the owner test DM (embedded Postgres + fake 
     const t = await setup();
     await activeEndpoint(t);
     const added = await t.service.openwa.addOwner(t.endpointId, { e164: "+" + OWNER_PHONE, expiresInSeconds: 1_800 }, t.userId);
-    await t.service.confirmIdentityLink(new URL(added.confirmationUrl!, "https://paperclip.example").searchParams.get("token")!, t.userId);
+    await t.service.confirmIdentityLink(new URL(added.confirmationUrl!, "https://wardmote.example").searchParams.get("token")!, t.userId);
     await t.service.openwa.addSenderRule(t.endpointId, { list: "allow", e164: "+" + MEMBER_PHONE }, t.userId);
     const group = "120363000000000051@g.us";
     t.gateway.groups.set(group, { id: group, name: "Wira desk", participants: [{ id: jid(OWN_PHONE) }, { id: jid(OWNER_PHONE) }] });

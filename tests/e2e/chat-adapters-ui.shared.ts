@@ -284,7 +284,7 @@ export function endpointFixture(provider: ProviderCase, seed: Seed) {
       slackSetupMethod: undefined as "automatic" | "manual" | "existing" | undefined,
       slackRegistration: undefined as SlackRegistrationState | undefined,
       slackApp: undefined as SlackAppConfiguration | undefined,
-      slackOAuthCallbackUri: "https://paperclip.example.test/api/chat-slack/oauth/callback",
+      slackOAuthCallbackUri: "https://wardmote.example.test/api/chat-slack/oauth/callback",
       step: "provider_setup",
       authorizationUrl:
         provider.provider === "telegram"
@@ -297,8 +297,8 @@ export function endpointFixture(provider: ProviderCase, seed: Seed) {
                 ? "https://discord.com/developers/applications"
                 : "https://api.slack.com/apps",
       providerUrl: provider.externalUrl,
-      webhookUrl: `https://paperclip.example.test/api/chat-webhooks/public-${provider.provider}/${provider.provider}`,
-      messagingEndpoint: `https://paperclip.example.test/api/chat-webhooks/public-${provider.provider}/microsoft-teams`,
+      webhookUrl: `https://wardmote.example.test/api/chat-webhooks/public-${provider.provider}/${provider.provider}`,
+      messagingEndpoint: `https://wardmote.example.test/api/chat-webhooks/public-${provider.provider}/microsoft-teams`,
       command: provider.provider === "slack" ? "/maya-public" : undefined,
       testStartedAt: null as string | null,
       webhookVerifiedAt: null,
@@ -706,7 +706,7 @@ export async function installChatControlPlaneMock(
       return;
     }
     if (pathname === `/api/chat-endpoints/${endpoint.id}/principals/principal-slack-self/link-intent` && method === "POST") {
-      await fulfill(route, { confirmationUrl: `https://paperclip.example.test/${seed.prefix}/chat-identity/confirm?token=e2e-self` });
+      await fulfill(route, { confirmationUrl: `https://wardmote.example.test/${seed.prefix}/chat-identity/confirm?token=e2e-self` });
       return;
     }
     if (pathname === "/api/chat-identity-links/confirm" && method === "POST") {
@@ -795,7 +795,7 @@ export async function installChatControlPlaneMock(
     ) {
       state.linkIntentPrincipalId = `principal-${provider.provider}`;
       await fulfill(route, {
-        confirmationUrl: `https://paperclip.example.test/${seed.prefix}/chat-identity/confirm?token=e2e-redacted`,
+        confirmationUrl: `https://wardmote.example.test/${seed.prefix}/chat-identity/confirm?token=e2e-redacted`,
       });
       return;
     }
@@ -1039,7 +1039,7 @@ export function expectedSlackManifest(webhookUrl: string) {
 }
 
 export async function expectMinimumProviderSetup(page: Page, provider: ProviderCase) {
-  const webhookUrl = `https://paperclip.example.test/api/chat-webhooks/public-${provider.provider}/${provider.provider}`;
+  const webhookUrl = `https://wardmote.example.test/api/chat-webhooks/public-${provider.provider}/${provider.provider}`;
   if (provider.provider === "slack") {
     const steps = page.getByRole("navigation", { name: "Connection setup progress" });
     await steps.getByRole("button", { name: /Choose agent/ }).click();
@@ -1080,7 +1080,7 @@ export async function expectMinimumProviderSetup(page: Page, provider: ProviderC
 
   if (provider.provider === "microsoft-teams") {
     const messagingEndpoint =
-      "https://paperclip.example.test/api/chat-webhooks/public-microsoft-teams/microsoft-teams";
+      "https://wardmote.example.test/api/chat-webhooks/public-microsoft-teams/microsoft-teams";
     await expect(
       page.getByText(messagingEndpoint, { exact: true }),
     ).toBeVisible();

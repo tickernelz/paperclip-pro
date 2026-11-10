@@ -175,8 +175,8 @@ describe("onboarded service dashboard handoff", () => {
   it("uses the configured public URL when auth requires one", () => {
     expect(resolveOnboardServiceDashboardUrl(dashboardConfig({
       baseUrlMode: "explicit",
-      publicBaseUrl: "https://paperclip.example.com/",
-    }))).toBe("https://paperclip.example.com");
+      publicBaseUrl: "https://wardmote.example.com/",
+    }))).toBe("https://wardmote.example.com");
   });
 
   it("prints the dashboard URL without opening a browser in non-interactive runs", async () => {

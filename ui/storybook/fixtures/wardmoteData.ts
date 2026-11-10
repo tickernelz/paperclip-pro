@@ -110,7 +110,7 @@ export const storybookAuthSession: AuthSession = {
   user: {
     id: "user-board",
     name: "Riley Board",
-    email: "riley@paperclip.local",
+    email: "riley@wardmote.local",
     image: null,
   },
   sentryDsn: null,

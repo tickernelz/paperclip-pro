@@ -190,7 +190,7 @@ exit 2
     ...process.env,
     PATH: `${binDir}:${process.env.PATH ?? ""}`,
     WARDMOTE_API_KEY: "test-run-key",
-    WARDMOTE_API_URL: options.apiUrl ?? "http://paperclip.invalid",
+    WARDMOTE_API_URL: options.apiUrl ?? "http://wardmote.invalid",
     WARDMOTE_COMPANY_ID: "company-1",
     WARDMOTE_HELPER_STATE_DIR: lockDir,
     WARDMOTE_RUN_ID: "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
@@ -460,7 +460,7 @@ describe("paperclip skill utils", () => {
       uploadDelaySeconds: "0.2",
     });
     const operationIdentity = [
-      "http://paperclip.invalid/api",
+      "http://wardmote.invalid/api",
       "company-1",
       "issue-1",
       "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
@@ -489,7 +489,7 @@ describe("paperclip skill utils", () => {
 
   it("accepts WARDMOTE_API_URL with an existing trailing API path", async () => {
     const harness = await makeArtifactHelperHarness(cleanupDirs, {
-      apiUrl: "http://paperclip.invalid/api/",
+      apiUrl: "http://wardmote.invalid/api/",
     });
 
     await harness.run();
@@ -499,7 +499,7 @@ describe("paperclip skill utils", () => {
       "utf8",
     );
     expect(requestLog).toContain(
-      "GET http://paperclip.invalid/api/issues/issue-1/attachments",
+      "GET http://wardmote.invalid/api/issues/issue-1/attachments",
     );
     expect(requestLog).not.toContain("/api/api/");
   });

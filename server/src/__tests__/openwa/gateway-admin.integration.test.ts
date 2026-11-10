@@ -96,7 +96,7 @@ describe("OpenWA gateway administration from the board (embedded Postgres + fake
     ]);
     const service = chatChannelService(db, {
       runtime: new ChatSdkRuntime(),
-      publicBaseUrl: "https://paperclip.example",
+      publicBaseUrl: "https://wardmote.example",
       heartbeat: { wakeup: vi.fn(async () => ({ accepted: true })) } as never,
       scheduleDeferredWork: () => {},
       discordGatewayLeaseWaitMs: 200,

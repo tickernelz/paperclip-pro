@@ -103,7 +103,7 @@ describe("durable Dot Runner integration", () => {
     const [company] = await db.insert(companies).values({ name: "Dot test", issuePrefix: "DT" + randomBytes(3).toString("hex") }).returning();
     await db.insert(companyMemberships).values({ companyId: company!.id, principalType: "user", principalId: userId, membershipRole: "owner", status: "active" });
     const [agent] = await db.insert(agents).values({ companyId: company!.id, name: "Dot", adapterType: "wardmote_runner", status: "active", adapterConfig: { provider: "openai_dot", allowUnmeteredProvider: true } }).returning();
-    const config = { origin: "https://paperclip.example", resource: "https://paperclip.example/mcp/runner" };
+    const config = { origin: "https://wardmote.example", resource: "https://wardmote.example/mcp/runner" };
     const oauth = createPublicMcpOAuth(db, config);
     const client = await oauth.register({ client_name: "Dedicated Dot", redirect_uris: ["https://chatgpt.com/connector_platform/oauth/callback"] }, randomUUID());
     const verifier = randomBytes(32).toString("base64url");

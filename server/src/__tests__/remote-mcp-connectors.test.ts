@@ -61,10 +61,10 @@ describe("remote connector lifecycle", () => {
     const otherPublicUrlEnv = Object.fromEntries(otherPublicUrlNames.map((name) => [name, process.env[name]]));
     try {
       for (const name of otherPublicUrlNames) process.env[name] = "";
-      process.env.WARDMOTE_AUTH_PUBLIC_BASE_URL = "https://paperclip.example.test";
+      process.env.WARDMOTE_AUTH_PUBLIC_BASE_URL = "https://wardmote.example.test";
       const configured = await request(app).get(`/api/companies/${org.id}/tools/gallery`);
       expect(configured.status).toBe(200);
-      expect(configured.body.oauthCallbackUrl).toBe("https://paperclip.example.test/api/tools/oauth/callback");
+      expect(configured.body.oauthCallbackUrl).toBe("https://wardmote.example.test/api/tools/oauth/callback");
 
       process.env.WARDMOTE_AUTH_PUBLIC_BASE_URL = "http://127.0.0.1:3105";
       const configuredLoopback = await request(app).get(`/api/companies/${org.id}/tools/gallery`);
@@ -80,7 +80,7 @@ describe("remote connector lifecycle", () => {
 
       const unsupported = await request(app)
         .get(`/api/companies/${org.id}/tools/gallery`)
-        .set("host", "paperclip.internal.test");
+        .set("host", "wardmote.internal.test");
       expect(unsupported.status).toBe(200);
       expect(unsupported.body).not.toHaveProperty("oauthCallbackUrl");
     } finally {

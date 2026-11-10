@@ -53,7 +53,7 @@ export function installConnectionGuidanceFixtures(client: QueryClient, provider:
   const gallery = { apps: [app], capabilities };
   const settings = { ...instanceExperimentalSettingsSchema.parse({}), enableMemoryConnectors: true };
   const directory = { users: [{ principalId: "user-storybook", status: "active", user: {
-    id: "user-storybook", email: "board@paperclip.local", name: "Riley Board", image: null,
+    id: "user-storybook", email: "board@wardmote.local", name: "Riley Board", image: null,
   } }] };
   client.setQueryData(queryKeys.instance.experimentalSettings, settings);
   const responses = new Map<string, () => unknown>([

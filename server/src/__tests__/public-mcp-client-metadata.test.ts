@@ -69,7 +69,7 @@ describe("public MCP client metadata", () => {
 });
 describe("assistant invitation content", () => {
   it("contains no credential and tells a cold client to verify actual access", () => {
-    const resource = "https://paperclip.example/mcp/wardmote";
+    const resource = "https://wardmote.example/mcp/wardmote";
     const company = { id: "44444444-4444-4444-8444-444444444444", name: "Butter" };
     expect(mcpInvitation(resource, company)).toContain("company=" + company.id);
     const markdown = mcpSetupMarkdown(resource, company.id);

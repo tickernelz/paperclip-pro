@@ -26513,7 +26513,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         record.endpoint.publicId,
         "github",
         new Request(
-          `https://paperclip.internal/api/chat-webhooks/${record.endpoint.publicId}/github`,
+          `https://wardmote.internal/api/chat-webhooks/${record.endpoint.publicId}/github`,
           {
             method: "POST",
             headers: {

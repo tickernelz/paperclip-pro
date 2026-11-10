@@ -157,7 +157,7 @@ describe("OpenWA publication (embedded Postgres + fake gateway)", () => {
     const runtime = new ChatSdkRuntime();
     const service = chatChannelService(db, {
       runtime,
-      publicBaseUrl: "https://paperclip.example",
+      publicBaseUrl: "https://wardmote.example",
       heartbeat: { wakeup: vi.fn(async () => ({ accepted: true })) } as never,
       storage,
       scheduleDeferredWork: () => {},
@@ -461,7 +461,7 @@ describe("OpenWA publication (embedded Postgres + fake gateway)", () => {
     const owner = await trigger(t, c, { triggerClass: "owner", role: "owner" });
     const other = await trigger(t, c, { triggerClass: "other", role: "allowed" });
     const body =
-      "Done. Klaim di https://paperclip.example/board-claim/0b6f1d2e-1111-4222-8333-944455556666?code=AbC_12-xyz#step, " +
+      "Done. Klaim di https://wardmote.example/board-claim/0b6f1d2e-1111-4222-8333-944455556666?code=AbC_12-xyz#step, " +
       "token https://hooks.example/cb?token=abc, lokal http://localhost:3100/x?code=1 dan http://192.168.1.8/y. The deploy key was " +
       CREDENTIAL +
       " and password: hunter2";

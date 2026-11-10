@@ -121,7 +121,7 @@ describeEmbeddedPostgres("OpenWA run authority through the real admission path",
     const heartbeat = heartbeatService(db);
     const service = chatChannelService(db, {
       runtime: new ChatSdkRuntime(),
-      publicBaseUrl: "https://paperclip.example",
+      publicBaseUrl: "https://wardmote.example",
       heartbeat: heartbeat as never,
       discordGatewayLeaseTtlMs: 120_000,
       discordGatewayLeaseRenewalIntervalMs: 60_000,
@@ -156,7 +156,7 @@ describeEmbeddedPostgres("OpenWA run authority through the real admission path",
 
   async function addOwner(t: Setup, phone: string) {
     const added = await t.service.openwa.addOwner(t.endpointId, { e164: "+" + phone, expiresInSeconds: 1_800 }, t.userId);
-    const token = new URL(added.confirmationUrl!, "https://paperclip.example").searchParams.get("token")!;
+    const token = new URL(added.confirmationUrl!, "https://wardmote.example").searchParams.get("token")!;
     await t.service.confirmIdentityLink(token, t.userId);
     return added.owner!;
   }

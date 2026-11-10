@@ -248,7 +248,7 @@ describeEmbeddedPostgres("OpenWA setup inspection and configure", () => {
     });
     const service = chatChannelService(db, {
       runtime: fakeRuntime(),
-      publicBaseUrl: options.publicBaseUrl === undefined ? "https://paperclip.example" : options.publicBaseUrl,
+      publicBaseUrl: options.publicBaseUrl === undefined ? "https://wardmote.example" : options.publicBaseUrl,
       heartbeat: { wakeup: async () => ({ accepted: true }) } as never,
       scheduleDeferredWork: () => {},
       nativeBotIdentityClaimBarrier: options.nativeBotIdentityClaimBarrier,

@@ -106,7 +106,7 @@ it("keeps invite routes company-scoped and denies viewers and agent actors", asy
         memberships: [{ companyId: f.companyId, membershipRole: mode === "viewer" ? "viewer" : "owner", status: "active" }] };
     next();
   });
-  app.use(dotRunnerRoutes(db, "https://paperclip.example/mcp/runner"));
+  app.use(dotRunnerRoutes(db, "https://wardmote.example/mcp/runner"));
   app.use((error: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
     res.status(error instanceof HttpError ? error.status : 500).json({ error: error.message });
   });
@@ -138,7 +138,7 @@ it("reports connection setup authority separately from compatibility status", as
       memberships: [{ companyId: f.companyId, membershipRole: "owner", status: "active" }] };
     next();
   });
-  app.use(dotRunnerRoutes(db, "https://paperclip.example/mcp/runner"));
+  app.use(dotRunnerRoutes(db, "https://wardmote.example/mcp/runner"));
   const path = `/companies/${f.companyId}/agents/${invite.agent.id}/dot-binding`;
   const cases = [
     { lifecycleState: "preparing", status: "paused", allowed: true },

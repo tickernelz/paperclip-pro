@@ -108,7 +108,7 @@ describe("chat publication projection", () => {
             {
               type: "link",
               label: "Open Wardmote",
-              url: "https://paperclip.example/tasks/123?handoff=secret#private",
+              url: "https://wardmote.example/tasks/123?handoff=secret#private",
             },
             { type: "link", label: "Unsafe", url: "javascript:alert(1)" },
           ],
@@ -131,7 +131,7 @@ describe("chat publication projection", () => {
           {
             type: "link",
             label: "Open Wardmote",
-            url: "https://paperclip.example/tasks/123",
+            url: "https://wardmote.example/tasks/123",
           },
         ],
       },

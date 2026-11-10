@@ -142,7 +142,7 @@ describe("OpenWA agent tools (embedded Postgres + fake gateway)", () => {
     const runtime = new ChatSdkRuntime();
     const service = chatChannelService(db, {
       runtime,
-      publicBaseUrl: "https://paperclip.example",
+      publicBaseUrl: "https://wardmote.example",
       heartbeat: { wakeup: vi.fn(async () => ({ accepted: true })) } as never,
       storage,
       scheduleDeferredWork: () => {},
@@ -891,7 +891,7 @@ describe("OpenWA agent tools (embedded Postgres + fake gateway)", () => {
     const c = await conversation(t, MEMBER);
     await trigger(t, c, { triggerClass: "other", role: "allowed" });
     const binding = await run(t, c, { triggerClass: "other" });
-    const link = "https://paperclip.example/board-claim/" + randomUUID() + "?code=AbC_12-xyz&next=%2Fhome#frag";
+    const link = "https://wardmote.example/board-claim/" + randomUUID() + "?code=AbC_12-xyz&next=%2Fhome#frag";
     const key = "owa_k1_" + randomUUID().replace(/-/g, "");
     const text = "Klaim di " + link + " lalu pakai " + key + " (password: hunter2)";
     await expect(executeOpenwaTool(db, binding, "openwa_send", { text, idempotencyKey: randomUUID() })).resolves.toMatchObject({ state: "delivered" });

@@ -2121,7 +2121,7 @@ a new implementation.
 ### Connection Flow (mandatory)
 
 The UI examples use `ACME` as a sample company prefix. Replace it and any
-`paperclip.example.com` origin with your own company prefix and instance origin.
+`wardmote.example.com` origin with your own company prefix and instance origin.
 These are example addresses, not a shared test deployment.
 
 Paperclip ID / Paperclip Connect involvement: **none — DCR is instance-local**.
@@ -2348,7 +2348,7 @@ the TLS guidance error above — the operator never reaches Notion.
 Collect end-to-end evidence using the production validation matrix above:
 
 - Zero-setup OAuth connect succeeds on
-  `https://paperclip.example.com/ACME/apps/connect?source=notion`
+  `https://wardmote.example.com/ACME/apps/connect?source=notion`
   with no pre-provisioned OAuth env vars (proves DCR).
 - Catalog discovery lists the expected `notion-*` tools and applies the
   connection's declared changed-tool behavior.

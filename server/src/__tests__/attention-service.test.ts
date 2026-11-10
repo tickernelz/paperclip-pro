@@ -446,7 +446,7 @@ describeEmbeddedPostgres("attention service", () => {
       requestType: "human",
       status: "pending_approval",
       requestIp: "127.0.0.1",
-      requestEmailSnapshot: "new@paperclip.test",
+      requestEmailSnapshot: "new@wardmote.test",
       createdAt: new Date("2026-07-09T12:04:00.000Z"),
       updatedAt: new Date("2026-07-09T12:04:00.000Z"),
     });

@@ -732,7 +732,7 @@ describe("native external-chat response wait", () => {
     const interactionSvc = issueThreadInteractionService(db);
     const previousPublicUrl = process.env.WARDMOTE_PUBLIC_URL;
     process.env.WARDMOTE_PUBLIC_URL = withLink
-      ? "https://board.paperclip.example"
+      ? "https://board.wardmote.example"
       : "http://127.0.0.1:3103";
     let interaction: Awaited<ReturnType<typeof interactionSvc.create>>;
     try {

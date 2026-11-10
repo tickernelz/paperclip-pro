@@ -80,7 +80,7 @@ describe("app connect policy", () => {
     expect(connectableApps.length).toBeGreaterThan(0);
     for (const app of connectableApps) {
       const href = appSourceConnectHref(app.slug);
-      const searchParams = new URL(href, "http://paperclip.test").searchParams;
+      const searchParams = new URL(href, "http://wardmote.test").searchParams;
 
       expect(canEnterAppsConnect(searchParams, { chatConnectorsEnabled: true, githubReviewBotsEnabled: true }), app.slug).toBe(true);
       expect(resolveAppsConnectRouteKey({ sourceSlug: searchParams.get("source") }), app.slug).toBe(app.slug);

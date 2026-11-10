@@ -156,14 +156,14 @@ describe("skills CLI commands", () => {
       "--company-id",
       "company-1",
       "--api-base",
-      "http://paperclip.test",
+      "http://wardmote.test",
       "--api-key",
       "token",
       "--json",
     ]);
 
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://paperclip.test/api/companies/company-1/skills",
+      "http://wardmote.test/api/companies/company-1/skills",
       expect.objectContaining({
         method: "GET",
         headers: expect.objectContaining({ authorization: "Bearer token" }),
@@ -184,7 +184,7 @@ describe("skills CLI commands", () => {
       "--company-id",
       "company-1",
       "--api-base",
-      "http://paperclip.test",
+      "http://wardmote.test",
       "--api-key",
       "token",
       "--json",
@@ -192,7 +192,7 @@ describe("skills CLI commands", () => {
 
     expect(fetchMock).toHaveBeenNthCalledWith(
       2,
-      "http://paperclip.test/api/companies/company-1/skills/11111111-1111-1111-1111-111111111111",
+      "http://wardmote.test/api/companies/company-1/skills/11111111-1111-1111-1111-111111111111",
       expect.objectContaining({ method: "GET" }),
     );
   });
@@ -217,7 +217,7 @@ describe("skills CLI commands", () => {
       "--company-id",
       "company-1",
       "--api-base",
-      "http://paperclip.test",
+      "http://wardmote.test",
       "--api-key",
       "token",
     ]);
@@ -239,13 +239,13 @@ describe("skills CLI commands", () => {
       "--query",
       "github",
       "--api-base",
-      "http://paperclip.test",
+      "http://wardmote.test",
       "--api-key",
       "token",
     ]);
 
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://paperclip.test/api/skills/catalog?kind=bundled&category=software-development&q=github",
+      "http://wardmote.test/api/skills/catalog?kind=bundled&category=software-development&q=github",
       expect.objectContaining({ method: "GET" }),
     );
     const rendered = logSpy.mock.calls.map((call: unknown[]) => String(call[0])).join("\n");
@@ -265,14 +265,14 @@ describe("skills CLI commands", () => {
       "--kind",
       "bundled",
       "--api-base",
-      "http://paperclip.test",
+      "http://wardmote.test",
       "--api-key",
       "token",
       "--json",
     ]);
 
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://paperclip.test/api/skills/catalog?kind=bundled&q=pull+requests",
+      "http://wardmote.test/api/skills/catalog?kind=bundled&q=pull+requests",
       expect.objectContaining({ method: "GET" }),
     );
     expect(JSON.parse(String(logSpy.mock.calls[0]?.[0]))).toEqual(rows);
@@ -287,14 +287,14 @@ describe("skills CLI commands", () => {
       "inspect",
       "paperclipai/bundled/software-development/github-pr-workflow",
       "--api-base",
-      "http://paperclip.test",
+      "http://wardmote.test",
       "--api-key",
       "token",
       "--json",
     ]);
 
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://paperclip.test/api/skills/catalog/ref?ref=paperclipai%2Fbundled%2Fsoftware-development%2Fgithub-pr-workflow",
+      "http://wardmote.test/api/skills/catalog/ref?ref=paperclipai%2Fbundled%2Fsoftware-development%2Fgithub-pr-workflow",
       expect.objectContaining({ method: "GET" }),
     );
     expect(JSON.parse(String(logSpy.mock.calls[0]?.[0]))).toEqual(detail);
@@ -323,14 +323,14 @@ describe("skills CLI commands", () => {
       "--company-id",
       "company-1",
       "--api-base",
-      "http://paperclip.test",
+      "http://wardmote.test",
       "--api-key",
       "token",
       "--json",
     ]);
 
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://paperclip.test/api/companies/company-1/skills/install-catalog",
+      "http://wardmote.test/api/companies/company-1/skills/install-catalog",
       expect.objectContaining({
         method: "POST",
         body: JSON.stringify({
@@ -356,7 +356,7 @@ describe("skills CLI commands", () => {
       "--company-id",
       "company-1",
       "--api-base",
-      "http://paperclip.test",
+      "http://wardmote.test",
       "--api-key",
       "token",
       "--json",
@@ -364,7 +364,7 @@ describe("skills CLI commands", () => {
 
     expect(fetchMock).toHaveBeenNthCalledWith(
       2,
-      "http://paperclip.test/api/companies/company-1/skills/11111111-1111-1111-1111-111111111111/install-update",
+      "http://wardmote.test/api/companies/company-1/skills/11111111-1111-1111-1111-111111111111/install-update",
       expect.objectContaining({
         method: "POST",
         body: JSON.stringify({ force: true }),
@@ -399,7 +399,7 @@ describe("skills CLI commands", () => {
       "--company-id",
       "company-1",
       "--api-base",
-      "http://paperclip.test",
+      "http://wardmote.test",
       "--api-key",
       "token",
       "--json",
@@ -407,7 +407,7 @@ describe("skills CLI commands", () => {
 
     expect(fetchMock).toHaveBeenNthCalledWith(
       2,
-      "http://paperclip.test/api/companies/company-1/skills/11111111-1111-1111-1111-111111111111/audit",
+      "http://wardmote.test/api/companies/company-1/skills/11111111-1111-1111-1111-111111111111/audit",
       expect.objectContaining({
         method: "POST",
         body: JSON.stringify({}),
@@ -430,7 +430,7 @@ describe("skills CLI commands", () => {
       "--company-id",
       "company-1",
       "--api-base",
-      "http://paperclip.test",
+      "http://wardmote.test",
       "--api-key",
       "token",
       "--json",
@@ -438,7 +438,7 @@ describe("skills CLI commands", () => {
 
     expect(fetchMock).toHaveBeenNthCalledWith(
       2,
-      "http://paperclip.test/api/companies/company-1/skills/11111111-1111-1111-1111-111111111111/reset",
+      "http://wardmote.test/api/companies/company-1/skills/11111111-1111-1111-1111-111111111111/reset",
       expect.objectContaining({
         method: "POST",
         body: JSON.stringify({ force: true }),
@@ -484,7 +484,7 @@ describe("skills CLI commands", () => {
       "--company-id",
       "company-1",
       "--api-base",
-      "http://paperclip.test",
+      "http://wardmote.test",
       "--api-key",
       "token",
       "--json",
@@ -492,12 +492,12 @@ describe("skills CLI commands", () => {
 
     expect(fetchMock).toHaveBeenNthCalledWith(
       1,
-      "http://paperclip.test/api/agents/coder?companyId=company-1",
+      "http://wardmote.test/api/agents/coder?companyId=company-1",
       expect.objectContaining({ method: "GET" }),
     );
     expect(fetchMock).toHaveBeenNthCalledWith(
       2,
-      "http://paperclip.test/api/agents/agent-1/skills/sync",
+      "http://wardmote.test/api/agents/agent-1/skills/sync",
       expect.objectContaining({
         method: "POST",
         body: JSON.stringify({ desiredSkills: ["review-prs", "paperclip/qa"], mode: "add" }),

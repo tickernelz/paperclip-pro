@@ -10,7 +10,7 @@ describe("rewriteUrlPort", () => {
   });
 
   it("leaves URLs without an explicit port stable", () => {
-    expect(rewriteUrlPort("https://paperclip.example", 3101)).toBe("https://paperclip.example");
+    expect(rewriteUrlPort("https://wardmote.example", 3101)).toBe("https://wardmote.example");
     expect(rewriteUrlPort("http://localhost", 3101)).toBe("http://localhost");
   });
 
@@ -36,8 +36,8 @@ describe("rewriteLoopbackUrlPort", () => {
   });
 
   it("leaves URLs without an explicit port stable", () => {
-    expect(rewriteLoopbackUrlPort("https://paperclip.example.com", 3101)).toBe(
-      "https://paperclip.example.com",
+    expect(rewriteLoopbackUrlPort("https://wardmote.example.com", 3101)).toBe(
+      "https://wardmote.example.com",
     );
     expect(rewriteLoopbackUrlPort("http://localhost", 3101)).toBe("http://localhost");
   });
@@ -60,6 +60,6 @@ describe("isLoopbackHost", () => {
 
   it("rejects external hosts", () => {
     expect(isLoopbackHost("erics-mac-studio-1.tailc54c7.ts.net")).toBe(false);
-    expect(isLoopbackHost("paperclip.example.com")).toBe(false);
+    expect(isLoopbackHost("wardmote.example.com")).toBe(false);
   });
 });

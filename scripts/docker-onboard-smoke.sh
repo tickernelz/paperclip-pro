@@ -29,7 +29,7 @@ SMOKE_AUTO_BOOTSTRAP="${SMOKE_AUTO_BOOTSTRAP:-true}"
 # the local default.
 SMOKE_READY_TIMEOUT_SECONDS="${SMOKE_READY_TIMEOUT_SECONDS:-90}"
 SMOKE_ADMIN_NAME="${SMOKE_ADMIN_NAME:-Smoke Admin}"
-SMOKE_ADMIN_EMAIL="${SMOKE_ADMIN_EMAIL:-smoke-admin@paperclip.local}"
+SMOKE_ADMIN_EMAIL="${SMOKE_ADMIN_EMAIL:-smoke-admin@wardmote.local}"
 SMOKE_ADMIN_PASSWORD="${SMOKE_ADMIN_PASSWORD:-paperclip-smoke-password}"
 # Overridable so a caller can fix the name before this script runs. CI needs
 # that: a name it only learns from this script's output is a name it does not

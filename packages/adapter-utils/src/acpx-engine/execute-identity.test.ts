@@ -193,7 +193,7 @@ describe("acpx identity split and launch environment", () => {
       {
         OPENAI_API_KEY: "explicit-provider-secret",
         EXPLICIT_ADAPTER_SECRET: "adapter-secret",
-        WARDMOTE_RUNTIME_API_URL: "http://paperclip.internal/api",
+        WARDMOTE_RUNTIME_API_URL: "http://wardmote.internal/api",
       },
       [
         {
@@ -216,7 +216,7 @@ describe("acpx identity split and launch environment", () => {
     expect(launchEnvironment.env).toMatchObject({
       OPENAI_API_KEY: "explicit-provider-secret",
       EXPLICIT_ADAPTER_SECRET: "adapter-secret",
-      WARDMOTE_RUNTIME_API_URL: "http://paperclip.internal/api",
+      WARDMOTE_RUNTIME_API_URL: "http://wardmote.internal/api",
       WARDMOTE_NATIVE_MCP_TOKEN: "explicit-run-contribution",
     });
     expect(launchEnvironment.env).not.toHaveProperty("PATH");

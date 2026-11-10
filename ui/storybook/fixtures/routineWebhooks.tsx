@@ -14,7 +14,7 @@ import { storybookAgents, storybookIssues } from "./wardmoteData";
 const now = new Date("2026-09-18T15:00:00Z");
 const routineId = "routine-webhook-story";
 const companyId = "company-storybook";
-const defaultWebhookUrl = "https://acme.paperclip.example/api/routine-triggers/public/0123456789abcdef01234567/fire";
+const defaultWebhookUrl = "https://acme.wardmote.example/api/routine-triggers/public/0123456789abcdef01234567/fire";
 const demoSecret = "storybook-demo-secret-not-a-real-credential";
 const actorFields = {
   createdByAgentId: null, createdByUserId: null,

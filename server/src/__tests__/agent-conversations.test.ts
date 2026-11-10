@@ -78,7 +78,7 @@ const support = await getEmbeddedPostgresTestSupport();
         .values({
           id: "local-board",
           name: "Local Board",
-          email: "local@paperclip.test",
+          email: "local@wardmote.test",
           createdAt: new Date(),
           updatedAt: new Date(),
         })

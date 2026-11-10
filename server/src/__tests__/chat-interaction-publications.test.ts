@@ -42,7 +42,7 @@ describeEmbeddedPostgres(
     const previousPublicUrl = process.env.WARDMOTE_PUBLIC_URL;
 
     beforeAll(async () => {
-      process.env.WARDMOTE_PUBLIC_URL = "https://paperclip.example";
+      process.env.WARDMOTE_PUBLIC_URL = "https://wardmote.example";
       tempDb = await startEmbeddedPostgresTestDatabase(
         "paperclip-terminal-chat-interaction-",
       );

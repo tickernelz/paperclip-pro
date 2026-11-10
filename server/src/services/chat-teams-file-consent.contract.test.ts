@@ -128,7 +128,7 @@ describe("pinned Teams file-consent invoke boundary", () => {
       authorization = "Bearer synthetic-service-token",
     ) =>
       adapter.handleWebhook(
-        new Request("https://paperclip.test/chat-webhook", {
+        new Request("https://wardmote.test/chat-webhook", {
           method: "POST",
           headers: { "content-type": "application/json", authorization },
           body: JSON.stringify(activity),

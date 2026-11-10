@@ -2388,7 +2388,7 @@ describeEmbeddedPostgres("tool access service", () => {
     const { agentInstructions: _settings, ...retained } = input;
     const resumed = await service.connectGalleryApp(company.id, { ...retained, resumeConnectionId: initial.connectionId }, actor);
     expect(resumed.connection.agentInstructions).toEqual(settings);
-    const started = await service.startOAuth(company.id, resumed.connectionId, { redirectUri: "https://paperclip.example.test/api/tools/oauth/callback", actor });
+    const started = await service.startOAuth(company.id, resumed.connectionId, { redirectUri: "https://wardmote.example.test/api/tools/oauth/callback", actor });
     expect(started.authorizationUrl).toBeTruthy();
     expect((await service.getConnection(initial.connectionId)).agentInstructions).toEqual(settings);
     await db.update(toolConnections).set({ status: "active", enabled: true }).where(eq(toolConnections.id, initial.connectionId));
@@ -2417,7 +2417,7 @@ describeEmbeddedPostgres("tool access service", () => {
       ...connection.config,
       oauth: { ...(connection.config.oauth as Record<string, unknown>), scopes: [...scopes, ...removed] },
     } }).where(eq(toolConnections.id, connection.id));
-    const input = { redirectUri: "https://paperclip.example.test/api/tools/oauth/callback", actor };
+    const input = { redirectUri: "https://wardmote.example.test/api/tools/oauth/callback", actor };
     const started = await service.startOAuth(company.id, connection.id, input);
     expect(new URL(started.authorizationUrl).searchParams.get("scope")?.split(" ")).toEqual(scopes);
     for (const removedScope of removed) {
@@ -2443,13 +2443,13 @@ describeEmbeddedPostgres("tool access service", () => {
         },
       });
       const connected = await service.connectGalleryApp(company.id, { galleryKey: slug, connectionMethodKey: "mcp-oauth", grantKind: "user", ...(slug === "supabase" ? { configValues: { projectRef: "abcdefghijklmnopqrst" } } : {}) }, actor);
-      const started = await service.startOAuth(company.id, connected.connectionId, { redirectUri: "https://paperclip.example.test/api/tools/oauth/callback", actor });
+      const started = await service.startOAuth(company.id, connected.connectionId, { redirectUri: "https://wardmote.example.test/api/tools/oauth/callback", actor });
       const review = JSON.parse(await fs.readFile(new URL("../../../doc/connections/tool-method-permission-reviews.json", import.meta.url), "utf8"))
         .methods.find((entry: { app: string; method: string }) => entry.app === slug && entry.method === "mcp-oauth");
       expect(new URL(started.authorizationUrl).searchParams.get("scope")?.split(" ")).toEqual(review.requestedScopes);
       expect(new URL(started.authorizationUrl).searchParams.get("scope")).not.toContain("unrelated:admin");
       await expect(service.startOAuth(company.id, connected.connectionId, {
-        redirectUri: "https://paperclip.example.test/api/tools/oauth/callback", actor, scopes: ["unrelated:admin"],
+        redirectUri: "https://wardmote.example.test/api/tools/oauth/callback", actor, scopes: ["unrelated:admin"],
       })).rejects.toMatchObject({ details: { code: "oauth_scope_widening_rejected" } });
     },
   );
@@ -7336,7 +7336,7 @@ describeEmbeddedPostgres("tool access service", () => {
       company.id,
       connected.connectionId,
       {
-        redirectUri: "https://paperclip.example/api/tools/oauth/callback",
+        redirectUri: "https://wardmote.example/api/tools/oauth/callback",
         actor: { actorType: "user", actorId: userId },
       },
     );
@@ -7405,7 +7405,7 @@ describeEmbeddedPostgres("tool access service", () => {
     await service.completeOAuthCallback({
       state: new URL(started.authorizationUrl).searchParams.get("state")!,
       code: "shared-authorization-code",
-      redirectUri: "https://paperclip.example/api/tools/oauth/callback",
+      redirectUri: "https://wardmote.example/api/tools/oauth/callback",
       actor: { actorType: "user", actorId: userId },
     });
 
@@ -7488,7 +7488,7 @@ describeEmbeddedPostgres("tool access service", () => {
         company.id,
         connected.connectionId,
         {
-          redirectUri: "https://paperclip.example/api/tools/oauth/callback",
+          redirectUri: "https://wardmote.example/api/tools/oauth/callback",
           actor: { actorType: "user", actorId: userId },
           ...(requestedScopes ? { scopes: requestedScopes } : {}),
         },
@@ -7521,7 +7521,7 @@ describeEmbeddedPostgres("tool access service", () => {
       await service.completeOAuthCallback({
         state: new URL(started.authorizationUrl).searchParams.get("state")!,
         code: "shared-authorization-code",
-        redirectUri: "https://paperclip.example/api/tools/oauth/callback",
+        redirectUri: "https://wardmote.example/api/tools/oauth/callback",
         actor: { actorType: "user", actorId: userId },
       });
       const [connection] = await db
@@ -7622,7 +7622,7 @@ describeEmbeddedPostgres("tool access service", () => {
       company.id,
       connected.connectionId,
       {
-        redirectUri: "https://paperclip.example/api/tools/oauth/callback",
+        redirectUri: "https://wardmote.example/api/tools/oauth/callback",
         actor: { actorType: "user", actorId: "workspace-owner" },
       },
     );
@@ -7661,7 +7661,7 @@ describeEmbeddedPostgres("tool access service", () => {
     await service.completeOAuthCallback({
       state: workspaceState,
       code: "workspace-authorization-code",
-      redirectUri: "https://paperclip.example/api/tools/oauth/callback",
+      redirectUri: "https://wardmote.example/api/tools/oauth/callback",
       actor: { actorType: "user", actorId: "workspace-owner" },
     });
     const [workspaceConnection] = await db
@@ -7679,7 +7679,7 @@ describeEmbeddedPostgres("tool access service", () => {
       runId: run.id,
       subjectUserId: "user-for-run",
       scopes: ["channels:read"],
-      redirectUri: "https://paperclip.example/api/tools/oauth/callback",
+      redirectUri: "https://wardmote.example/api/tools/oauth/callback",
     });
     const authorizationUrl = new URL(started.authorizationUrl);
     expect(authorizationUrl.searchParams.get("scope")).toBe("channels:read");
@@ -7704,7 +7704,7 @@ describeEmbeddedPostgres("tool access service", () => {
     await service.completeOAuthCallback({
       state: state.state,
       code: "user-authorization-code",
-      redirectUri: "https://paperclip.example/api/tools/oauth/callback",
+      redirectUri: "https://wardmote.example/api/tools/oauth/callback",
       actor: { actorType: "user", actorId: "user-for-run" },
     });
 
@@ -7795,7 +7795,7 @@ describeEmbeddedPostgres("tool access service", () => {
         runId: run.id,
         subjectUserId: "user-for-run",
         scopes: ["channels:read"],
-        redirectUri: "https://paperclip.example/api/tools/oauth/callback",
+        redirectUri: "https://wardmote.example/api/tools/oauth/callback",
       }),
     ).rejects.toMatchObject({ status: 403 });
     await db
@@ -7814,7 +7814,7 @@ describeEmbeddedPostgres("tool access service", () => {
       runId: run.id,
       subjectUserId: "user-for-run",
       scopes: ["channels:read"],
-      redirectUri: "https://paperclip.example/api/tools/oauth/callback",
+      redirectUri: "https://wardmote.example/api/tools/oauth/callback",
     });
     await db
       .update(companyMemberships)
@@ -7829,7 +7829,7 @@ describeEmbeddedPostgres("tool access service", () => {
       service.completeOAuthCallback({
         state: new URL(retry.authorizationUrl).searchParams.get("state")!,
         code: "user-authorization-code",
-        redirectUri: "https://paperclip.example/api/tools/oauth/callback",
+        redirectUri: "https://wardmote.example/api/tools/oauth/callback",
         actor: { actorType: "user", actorId: "user-for-run" },
       }),
     ).rejects.toMatchObject({ status: 403 });
@@ -7863,7 +7863,7 @@ describeEmbeddedPostgres("tool access service", () => {
       runId: run.id,
       subjectUserId: "user-for-run",
       scopes: ["channels:read"],
-      redirectUri: "https://paperclip.example/api/tools/oauth/callback",
+      redirectUri: "https://wardmote.example/api/tools/oauth/callback",
     });
     await db
       .update(companyMemberships)
@@ -7880,7 +7880,7 @@ describeEmbeddedPostgres("tool access service", () => {
           "state",
         )!,
         code: "user-authorization-code",
-        redirectUri: "https://paperclip.example/api/tools/oauth/callback",
+        redirectUri: "https://wardmote.example/api/tools/oauth/callback",
         actor: { actorType: "user", actorId: "user-for-run" },
       }),
     ).rejects.toMatchObject({ status: 403 });
@@ -7952,7 +7952,7 @@ describeEmbeddedPostgres("tool access service", () => {
         company.id,
         connected.connectionId,
         {
-          redirectUri: "https://paperclip.example/api/tools/oauth/callback",
+          redirectUri: "https://wardmote.example/api/tools/oauth/callback",
           actor: { actorType: "user", actorId: userId },
           subjectUserId: userId,
           interactionId: interaction?.id,
@@ -8004,7 +8004,7 @@ describeEmbeddedPostgres("tool access service", () => {
       const completed = await service.completeOAuthCallback({
         state: new URL(started.authorizationUrl).searchParams.get("state")!,
         code: "personal-code",
-        redirectUri: "https://paperclip.example/api/tools/oauth/callback",
+        redirectUri: "https://wardmote.example/api/tools/oauth/callback",
         actor: { actorType: "user", actorId: userId },
       });
 
@@ -8194,7 +8194,7 @@ describeEmbeddedPostgres("tool access service", () => {
       }
       await expect(
         service.startOAuth(company.id, connected.connectionId, {
-          redirectUri: "https://paperclip.example/api/tools/oauth/callback",
+          redirectUri: "https://wardmote.example/api/tools/oauth/callback",
           actor: {
             actorType: "user",
             actorId: `different-user-${randomUUID()}`,
@@ -8227,7 +8227,7 @@ describeEmbeddedPostgres("tool access service", () => {
         company.id,
         connected.connectionId,
         {
-          redirectUri: "https://paperclip.example/api/tools/oauth/callback",
+          redirectUri: "https://wardmote.example/api/tools/oauth/callback",
           actor: { actorType: "user", actorId: userId },
           interactionId: interaction?.id,
         },
@@ -8242,7 +8242,7 @@ describeEmbeddedPostgres("tool access service", () => {
         service.completeOAuthCallback({
           state: new URL(reconnect.authorizationUrl).searchParams.get("state")!,
           code: "personal-reconnect-code",
-          redirectUri: "https://paperclip.example/api/tools/oauth/callback",
+          redirectUri: "https://wardmote.example/api/tools/oauth/callback",
           actor: { actorType: "user", actorId: userId },
         }),
       ).resolves.toMatchObject({
@@ -8307,7 +8307,7 @@ describeEmbeddedPostgres("tool access service", () => {
       company.id,
       connected.connectionId,
       {
-        redirectUri: "https://paperclip.example/api/tools/oauth/callback",
+        redirectUri: "https://wardmote.example/api/tools/oauth/callback",
         actor: { actorType: "user", actorId: userId },
         subjectUserId: userId,
       },
@@ -8339,7 +8339,7 @@ describeEmbeddedPostgres("tool access service", () => {
     await service.completeOAuthCallback({
       state: new URL(started.authorizationUrl).searchParams.get("state")!,
       code: "share-code",
-      redirectUri: "https://paperclip.example/api/tools/oauth/callback",
+      redirectUri: "https://wardmote.example/api/tools/oauth/callback",
       actor: { actorType: "user", actorId: userId },
     });
     const [beforeGrant] = await db
@@ -8456,7 +8456,7 @@ describeEmbeddedPostgres("tool access service", () => {
       company.id,
       connected.connectionId,
       {
-        redirectUri: "https://paperclip.example/api/tools/oauth/callback",
+        redirectUri: "https://wardmote.example/api/tools/oauth/callback",
         actor: { actorType: "user", actorId: userId },
         subjectUserId: userId,
       },
@@ -8504,7 +8504,7 @@ describeEmbeddedPostgres("tool access service", () => {
     await service.completeOAuthCallback({
       state: new URL(started.authorizationUrl).searchParams.get("state")!,
       code: "personal-code",
-      redirectUri: "https://paperclip.example/api/tools/oauth/callback",
+      redirectUri: "https://wardmote.example/api/tools/oauth/callback",
       actor: { actorType: "user", actorId: userId },
     });
     const [grant] = await db
@@ -8596,7 +8596,7 @@ describeEmbeddedPostgres("tool access service", () => {
       company.id,
       connected.connectionId,
       {
-        redirectUri: "https://paperclip.example/api/tools/oauth/callback",
+        redirectUri: "https://wardmote.example/api/tools/oauth/callback",
         actor: { actorType: "user", actorId: userId },
         subjectUserId: userId,
         scopes: ["channels:read"],
@@ -8637,7 +8637,7 @@ describeEmbeddedPostgres("tool access service", () => {
     await service.completeOAuthCallback({
       state: new URL(started.authorizationUrl).searchParams.get("state")!,
       code: "personal-code",
-      redirectUri: "https://paperclip.example/api/tools/oauth/callback",
+      redirectUri: "https://wardmote.example/api/tools/oauth/callback",
       actor: { actorType: "user", actorId: userId },
     });
     const [grant] = await db
@@ -8766,7 +8766,7 @@ describeEmbeddedPostgres("tool access service", () => {
       status: "active",
     });
     const started = await service.startOAuth(company.id, connection.id, {
-      redirectUri: "https://paperclip.example/api/tools/oauth/callback",
+      redirectUri: "https://wardmote.example/api/tools/oauth/callback",
       actor: { actorType: "user", actorId: userId },
       scopes: ["tools.read"],
     });
@@ -8776,7 +8776,7 @@ describeEmbeddedPostgres("tool access service", () => {
     await service.completeOAuthCallback({
       state: new URL(started.authorizationUrl).searchParams.get("state")!,
       code: "narrow-code",
-      redirectUri: "https://paperclip.example/api/tools/oauth/callback",
+      redirectUri: "https://wardmote.example/api/tools/oauth/callback",
       actor: { actorType: "user", actorId: userId },
     });
 
@@ -8861,7 +8861,7 @@ describeEmbeddedPostgres("tool access service", () => {
         company.id,
         connected.connectionId,
         {
-          redirectUri: "https://paperclip.example/api/tools/oauth/callback",
+          redirectUri: "https://wardmote.example/api/tools/oauth/callback",
           actor: { actorType: "user", actorId: userId },
           subjectUserId: userId,
           scopes,
@@ -8871,7 +8871,7 @@ describeEmbeddedPostgres("tool access service", () => {
       await service.completeOAuthCallback({
         state: new URL(started.authorizationUrl).searchParams.get("state")!,
         code: `code-${randomUUID()}`,
-        redirectUri: "https://paperclip.example/api/tools/oauth/callback",
+        redirectUri: "https://wardmote.example/api/tools/oauth/callback",
         actor: { actorType: "user", actorId: userId },
       });
       const [grant] = await db
@@ -8959,7 +8959,7 @@ describeEmbeddedPostgres("tool access service", () => {
         company.id,
         connected.connectionId,
         {
-          redirectUri: "https://paperclip.example/api/tools/oauth/callback",
+          redirectUri: "https://wardmote.example/api/tools/oauth/callback",
           actor: { actorType: "user", actorId: userId },
           scopes: ["channels:read"],
         },
@@ -8994,7 +8994,7 @@ describeEmbeddedPostgres("tool access service", () => {
       await service.completeOAuthCallback({
         state: new URL(started.authorizationUrl).searchParams.get("state")!,
         code: "shared-authorization-code",
-        redirectUri: "https://paperclip.example/api/tools/oauth/callback",
+        redirectUri: "https://wardmote.example/api/tools/oauth/callback",
         actor: { actorType: "user", actorId: userId },
       });
       const readGrant = async () => {
@@ -9104,7 +9104,7 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("uses Airtable DCR when both DCR and CIMD are advertised", async () => {
-    vi.stubEnv("WARDMOTE_PUBLIC_URL", "https://paperclip.example");
+    vi.stubEnv("WARDMOTE_PUBLIC_URL", "https://wardmote.example");
     vi.stubEnv("WARDMOTE_TOOL_OAUTH_AIRTABLE_CLIENT_ID", "");
     vi.stubEnv("WARDMOTE_TOOL_OAUTH_AIRTABLE_CLIENT_SECRET", "");
     vi.stubEnv("WARDMOTE_TOOL_OAUTH_CLIENT_ID", "");
@@ -9123,7 +9123,7 @@ describeEmbeddedPostgres("tool access service", () => {
       const connected = await service.connectGalleryApp(company.id, {
         galleryKey: "airtable", connectionMethodKey: "mcp-oauth", name: "Airtable DCR",
       });
-      const redirectUri = "https://paperclip.example/api/tools/oauth/callback";
+      const redirectUri = "https://wardmote.example/api/tools/oauth/callback";
       vi.spyOn(globalThis, "fetch").mockImplementation(async (url, init) => {
         const href = String(url);
         if (href === "https://mcp.airtable.com/.well-known/oauth-protected-resource/mcp") {
@@ -9178,7 +9178,7 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("rebinds an Airtable CIMD client through DCR when the curated method opts in", async () => {
-    vi.stubEnv("WARDMOTE_PUBLIC_URL", "https://paperclip.example");
+    vi.stubEnv("WARDMOTE_PUBLIC_URL", "https://wardmote.example");
     vi.stubEnv("WARDMOTE_TOOL_OAUTH_AIRTABLE_CLIENT_ID", "");
     vi.stubEnv("WARDMOTE_TOOL_OAUTH_AIRTABLE_CLIENT_SECRET", "");
     vi.stubEnv("WARDMOTE_TOOL_OAUTH_CLIENT_ID", "");
@@ -9190,7 +9190,7 @@ describeEmbeddedPostgres("tool access service", () => {
     const connected = await service.connectGalleryApp(company.id, {
       galleryKey: "airtable", connectionMethodKey: "mcp-oauth", name: "Airtable migration",
     });
-    const redirectUri = "https://paperclip.example/api/tools/oauth/callback";
+    const redirectUri = "https://wardmote.example/api/tools/oauth/callback";
     let registrations = 0;
     vi.spyOn(globalThis, "fetch").mockImplementation(async (url) => {
       const href = String(url);
@@ -9250,7 +9250,7 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("does not fall back to Airtable CIMD when DCR is required but unavailable", async () => {
-    vi.stubEnv("WARDMOTE_PUBLIC_URL", "https://paperclip.example");
+    vi.stubEnv("WARDMOTE_PUBLIC_URL", "https://wardmote.example");
     vi.stubEnv("WARDMOTE_TOOL_OAUTH_AIRTABLE_CLIENT_ID", "");
     vi.stubEnv("WARDMOTE_TOOL_OAUTH_AIRTABLE_CLIENT_SECRET", "");
     vi.stubEnv("WARDMOTE_TOOL_OAUTH_CLIENT_ID", "");
@@ -9290,7 +9290,7 @@ describeEmbeddedPostgres("tool access service", () => {
       });
 
       await expect(service.startOAuth(company.id, connected.connectionId, {
-        redirectUri: "https://paperclip.example/api/tools/oauth/callback",
+        redirectUri: "https://wardmote.example/api/tools/oauth/callback",
         actor: { actorType: "user", actorId: "board" },
       })).rejects.toMatchObject({ details: { code: "oauth_dcr_not_supported" } });
       expect(metadataLookups).toBe(0);
@@ -9302,7 +9302,7 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("registers Linear against its MCP authorization server instead of the pinned console endpoints", async () => {
-    vi.stubEnv("WARDMOTE_PUBLIC_URL", "https://paperclip.example");
+    vi.stubEnv("WARDMOTE_PUBLIC_URL", "https://wardmote.example");
     vi.stubEnv("WARDMOTE_TOOL_OAUTH_LINEAR_CLIENT_ID", "");
     vi.stubEnv("WARDMOTE_TOOL_OAUTH_LINEAR_CLIENT_SECRET", "");
     vi.stubEnv("WARDMOTE_TOOL_OAUTH_CLIENT_ID", "");
@@ -9338,7 +9338,7 @@ describeEmbeddedPostgres("tool access service", () => {
       if (href === "https://mcp.linear.app/register") {
         return mcpHttpResponse({
           client_id: "linear-registered-client",
-          redirect_uris: ["https://paperclip.example/api/tools/oauth/callback"],
+          redirect_uris: ["https://wardmote.example/api/tools/oauth/callback"],
           grant_types: ["authorization_code", "refresh_token"],
           response_types: ["code"],
           token_endpoint_auth_method: "none",
@@ -9406,7 +9406,7 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("returns a pre-scoped personal Notion callback directly to Permissions", async () => {
-    vi.stubEnv("WARDMOTE_PUBLIC_URL", "https://paperclip.example");
+    vi.stubEnv("WARDMOTE_PUBLIC_URL", "https://wardmote.example");
     vi.stubEnv("WARDMOTE_TOOL_OAUTH_NOTION_CLIENT_ID", "");
     vi.stubEnv("WARDMOTE_TOOL_OAUTH_NOTION_CLIENT_SECRET", "");
     vi.stubEnv("WARDMOTE_TOOL_OAUTH_CLIENT_ID", "");
@@ -9445,7 +9445,7 @@ describeEmbeddedPostgres("tool access service", () => {
         return mcpHttpResponse({
           client_id: "notion-choice-client",
           client_secret: "notion-choice-secret",
-          redirect_uris: ["https://paperclip.example/api/tools/oauth/callback"],
+          redirect_uris: ["https://wardmote.example/api/tools/oauth/callback"],
           grant_types: ["authorization_code", "refresh_token"],
           response_types: ["code"],
           token_endpoint_auth_method: "none",
@@ -9544,7 +9544,7 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("returns a declined curated OAuth draft to its exact resumable setup route", async () => {
-    vi.stubEnv("WARDMOTE_PUBLIC_URL", "https://paperclip.example");
+    vi.stubEnv("WARDMOTE_PUBLIC_URL", "https://wardmote.example");
     const company = await createCompany(db);
     const userId = `notion-resume-${randomUUID()}`;
     await grantBoardUser(db, company.id, userId, [], "owner");
@@ -9577,7 +9577,7 @@ describeEmbeddedPostgres("tool access service", () => {
       if (href === "https://mcp.notion.com/register") {
         return mcpHttpResponse({
           client_id: "notion-resume-client",
-          redirect_uris: ["https://paperclip.example/api/tools/oauth/callback"],
+          redirect_uris: ["https://wardmote.example/api/tools/oauth/callback"],
           grant_types: ["authorization_code", "refresh_token"],
           response_types: ["code"],
           token_endpoint_auth_method: "none",
@@ -9607,7 +9607,7 @@ describeEmbeddedPostgres("tool access service", () => {
     expect(callbackRes.status).toBe(303);
     const location = new URL(
       callbackRes.headers.location,
-      "https://paperclip.example",
+      "https://wardmote.example",
     );
     expect(location.pathname).toBe(`/${company.issuePrefix}/apps/connect`);
     expect(location.searchParams.get("source")).toBe("notion");
@@ -9836,7 +9836,7 @@ describeEmbeddedPostgres("tool access service", () => {
 
     const connectRes = await request(app)
       .post(`/api/companies/${company.id}/tools/apps/connect`)
-      .set("Host", "paperclip.example.test")
+      .set("Host", "wardmote.example.test")
       .set("X-Forwarded-Host", "127.0.0.1:3200")
       .send({
         galleryKey: "slack",
@@ -9913,7 +9913,7 @@ describeEmbeddedPostgres("tool access service", () => {
 
   it("requires non-viewer board access to start OAuth for active app connections", async () => {
     vi.stubEnv("WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
-    vi.stubEnv("WARDMOTE_PUBLIC_URL", "http://paperclip.test");
+    vi.stubEnv("WARDMOTE_PUBLIC_URL", "http://wardmote.test");
     const company = await createCompany(db);
     const service = createTestToolAccessService(db);
     const connect = await service.connectGalleryApp(
@@ -9968,7 +9968,7 @@ describeEmbeddedPostgres("tool access service", () => {
 
   it("lets the retained personal identity owner reconnect without manager configuration access", async () => {
     vi.stubEnv("WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
-    vi.stubEnv("WARDMOTE_PUBLIC_URL", "http://paperclip.test");
+    vi.stubEnv("WARDMOTE_PUBLIC_URL", "http://wardmote.test");
     const company = await createCompany(db);
     const userId = `personal-oauth-member-${randomUUID()}`;
     const service = createTestToolAccessService(db);
@@ -10091,7 +10091,7 @@ describeEmbeddedPostgres("tool access service", () => {
       "WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_SECRET",
       "slack-client-secret",
     );
-    vi.stubEnv("WARDMOTE_PUBLIC_URL", "http://paperclip.test");
+    vi.stubEnv("WARDMOTE_PUBLIC_URL", "http://wardmote.test");
     const company = await createCompany(db);
     await grantBoardUser(db, company.id, "oauth-operator", [
       "tools:manage_connections",
@@ -10431,7 +10431,7 @@ describeEmbeddedPostgres("tool access service", () => {
         features: "database",
       },
     });
-    const redirectUri = "https://paperclip.example/api/tools/oauth/callback";
+    const redirectUri = "https://wardmote.example/api/tools/oauth/callback";
     const fetchMock = vi
       .spyOn(globalThis, "fetch")
       .mockImplementation(async (url, init) => {
@@ -10593,7 +10593,7 @@ describeEmbeddedPostgres("tool access service", () => {
       if (reach !== "default") {
         await service.putConnectionInstalls(connected.connectionId, { installs });
       }
-      const redirectUri = "https://paperclip.example/api/tools/oauth/callback";
+      const redirectUri = "https://wardmote.example/api/tools/oauth/callback";
       vi.spyOn(globalThis, "fetch").mockImplementation(async (url, init) => {
         const href = String(url);
         if (
@@ -10724,7 +10724,7 @@ describeEmbeddedPostgres("tool access service", () => {
       connectionMethodKey: "mcp-oauth",
       name: "Hugging Face DCR",
     });
-    const redirectUri = "https://paperclip.example/api/tools/oauth/callback";
+    const redirectUri = "https://wardmote.example/api/tools/oauth/callback";
     vi.spyOn(globalThis, "fetch").mockImplementation(async (url, init) => {
       const href = String(url);
       if (
@@ -10822,7 +10822,7 @@ describeEmbeddedPostgres("tool access service", () => {
       connectionMethodKey: "mcp-oauth",
       name: "Coda DCR",
     });
-    const redirectUri = "https://paperclip.example/api/tools/oauth/callback";
+    const redirectUri = "https://wardmote.example/api/tools/oauth/callback";
     vi.spyOn(globalThis, "fetch").mockImplementation(async (url, init) => {
       const href = String(url);
       if (
@@ -10887,7 +10887,7 @@ describeEmbeddedPostgres("tool access service", () => {
       connectionMethodKey: "mcp-oauth",
       name: "Mixpanel public DCR",
     });
-    const redirectUri = "https://paperclip.example/api/tools/oauth/callback";
+    const redirectUri = "https://wardmote.example/api/tools/oauth/callback";
     vi.spyOn(globalThis, "fetch").mockImplementation(async (url) => {
       const href = String(url);
       if (
@@ -11565,7 +11565,7 @@ describeEmbeddedPostgres("tool access service", () => {
       name: "Slack refresh",
     });
     const start = await service.startOAuth(company.id, connect.connectionId, {
-      redirectUri: "http://paperclip.test/api/tools/oauth/callback",
+      redirectUri: "http://wardmote.test/api/tools/oauth/callback",
       actor: { actorType: "user", actorId: "board" },
     });
     const state = new URL(start.authorizationUrl).searchParams.get("state")!;
@@ -11618,7 +11618,7 @@ describeEmbeddedPostgres("tool access service", () => {
     await service.completeOAuthCallback({
       state,
       code: "oauth-code",
-      redirectUri: "http://paperclip.test/api/tools/oauth/callback",
+      redirectUri: "http://wardmote.test/api/tools/oauth/callback",
       actor: { actorType: "user", actorId: "board" },
     });
     const [connected] = await db
@@ -11711,7 +11711,7 @@ describeEmbeddedPostgres("tool access service", () => {
       name: "Slack invalid grant",
     });
     const start = await service.startOAuth(company.id, connect.connectionId, {
-      redirectUri: "http://paperclip.test/api/tools/oauth/callback",
+      redirectUri: "http://wardmote.test/api/tools/oauth/callback",
       actor: { actorType: "user", actorId: "board" },
     });
     const state = new URL(start.authorizationUrl).searchParams.get("state")!;
@@ -11740,7 +11740,7 @@ describeEmbeddedPostgres("tool access service", () => {
     await service.completeOAuthCallback({
       state,
       code: "oauth-code",
-      redirectUri: "http://paperclip.test/api/tools/oauth/callback",
+      redirectUri: "http://wardmote.test/api/tools/oauth/callback",
       actor: { actorType: "user", actorId: "board" },
     });
     const [connected] = await db
@@ -11834,7 +11834,7 @@ describeEmbeddedPostgres("tool access service", () => {
       name: "Slack stale invalid grant",
     });
     const start = await service.startOAuth(company.id, connect.connectionId, {
-      redirectUri: "http://paperclip.test/api/tools/oauth/callback",
+      redirectUri: "http://wardmote.test/api/tools/oauth/callback",
       actor: { actorType: "user", actorId: "board" },
     });
     const state = new URL(start.authorizationUrl).searchParams.get("state")!;
@@ -11863,7 +11863,7 @@ describeEmbeddedPostgres("tool access service", () => {
     await service.completeOAuthCallback({
       state,
       code: "oauth-code",
-      redirectUri: "http://paperclip.test/api/tools/oauth/callback",
+      redirectUri: "http://wardmote.test/api/tools/oauth/callback",
       actor: { actorType: "user", actorId: "board" },
     });
     const [connected] = await db
@@ -12082,7 +12082,7 @@ describeEmbeddedPostgres("tool access service", () => {
       name: "Slack no refresh",
     });
     const start = await service.startOAuth(company.id, connect.connectionId, {
-      redirectUri: "http://paperclip.test/api/tools/oauth/callback",
+      redirectUri: "http://wardmote.test/api/tools/oauth/callback",
       actor: { actorType: "user", actorId: "board" },
     });
     const state = new URL(start.authorizationUrl).searchParams.get("state")!;
@@ -12121,7 +12121,7 @@ describeEmbeddedPostgres("tool access service", () => {
     await service.completeOAuthCallback({
       state,
       code: "oauth-code",
-      redirectUri: "http://paperclip.test/api/tools/oauth/callback",
+      redirectUri: "http://wardmote.test/api/tools/oauth/callback",
       actor: { actorType: "user", actorId: "board" },
     });
     const [connected] = await db
@@ -13966,7 +13966,7 @@ describeEmbeddedPostgres("tool access service", () => {
       "WARDMOTE_TOOL_OAUTH_GENERIC_EXAMPLE_TEST_CLIENT_SECRET",
       "generic-client-secret",
     );
-    vi.stubEnv("WARDMOTE_PUBLIC_URL", "http://paperclip.test");
+    vi.stubEnv("WARDMOTE_PUBLIC_URL", "http://wardmote.test");
     const company = await createCompany(db);
     await grantBoardUser(db, company.id, "board-user", [
       "tools:manage_connections",
@@ -14171,7 +14171,7 @@ describeEmbeddedPostgres("tool access service", () => {
 
     await expect(
       service.startOAuth(company.id, connection!.id, {
-        redirectUri: "http://paperclip.test/api/tools/oauth/callback",
+        redirectUri: "http://wardmote.test/api/tools/oauth/callback",
         actor: { actorType: "user", actorId: "board" },
       }),
     ).rejects.toMatchObject({
@@ -14200,7 +14200,7 @@ describeEmbeddedPostgres("tool access service", () => {
       service.completeOAuthCallback({
         state: "legacy-smoke-state",
         code: "smoke-code",
-        redirectUri: "http://paperclip.test/api/tools/oauth/callback",
+        redirectUri: "http://wardmote.test/api/tools/oauth/callback",
         actor: { actorType: "user", actorId: "board" },
       }),
     ).rejects.toMatchObject({
@@ -14261,13 +14261,13 @@ describeEmbeddedPostgres("tool access service", () => {
       .returning();
 
     const result = await service.startOAuth(company.id, connection!.id, {
-      redirectUri: "http://paperclip.test/api/tools/oauth/callback",
+      redirectUri: "http://wardmote.test/api/tools/oauth/callback",
       actor: { actorType: "user", actorId: "board" },
     });
 
     const authorizationUrl = new URL(result.authorizationUrl);
     expect(`${authorizationUrl.origin}${authorizationUrl.pathname}`).toBe(
-      `http://paperclip.test/api/companies/${company.id}/smoke-lab/oauth/authorize`,
+      `http://wardmote.test/api/companies/${company.id}/smoke-lab/oauth/authorize`,
     );
     expect(authorizationUrl.searchParams.get("client_id")).toBe(
       "paperclip-smoke-lab",
@@ -14310,12 +14310,12 @@ describeEmbeddedPostgres("tool access service", () => {
     await service.completeOAuthCallback({
       state: state!,
       code: "smoke-code",
-      redirectUri: "http://paperclip.test/api/tools/oauth/callback",
+      redirectUri: "http://wardmote.test/api/tools/oauth/callback",
       actor: { actorType: "user", actorId: "board" },
     });
 
     expect(fetchMock.mock.calls.map(([url]) => String(url))).toContain(
-      `http://paperclip.test/api/companies/${company.id}/smoke-lab/oauth/token`,
+      `http://wardmote.test/api/companies/${company.id}/smoke-lab/oauth/token`,
     );
     expect(fetchMock.mock.calls.map(([url]) => String(url))).toContain(
       "http://smoke-fixture.test/mcp",

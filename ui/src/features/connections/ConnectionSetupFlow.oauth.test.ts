@@ -13,7 +13,7 @@ import {
   requestedConnectionEntry,
 } from "./ConnectionSetupFlow";
 
-const origin = "https://paperclip.test";
+const origin = "https://wardmote.test";
 const interactionId = "interaction-123";
 
 function event(data: unknown, eventOrigin = origin) {

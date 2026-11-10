@@ -319,7 +319,7 @@ describe("AgentMail durable email pipeline", () => {
     const service = emailChannelService(db, {
       heartbeat: { wakeup },
       fetch: fetcher,
-      publicBaseUrl: "https://paperclip.example.test",
+      publicBaseUrl: "https://wardmote.example.test",
       createSocket,
       storage,
     });

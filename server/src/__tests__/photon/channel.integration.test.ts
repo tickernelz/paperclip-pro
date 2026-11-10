@@ -242,7 +242,7 @@ describe("iMessage Photon channel control plane", () => {
     const makeService = () => {
       const service = chatChannelService(db, {
         runtime,
-        publicBaseUrl: "https://paperclip.example",
+        publicBaseUrl: "https://wardmote.example",
         heartbeat: { wakeup },
         storage,
         scheduleDeferredWork: () => {},

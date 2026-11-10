@@ -134,7 +134,7 @@ describe("gateway client snippets", () => {
       },
       {
         endpointPath: "/mcp/gateways/public-id",
-        endpoint: "https://paperclip.example/mcp/gateways/public-id",
+        endpoint: "https://wardmote.example/mcp/gateways/public-id",
         token: "pcgw_full_secret",
       },
     )).toContain('"Authorization": "Bearer pcgw_full_secret"');

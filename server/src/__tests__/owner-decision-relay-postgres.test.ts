@@ -438,7 +438,7 @@ describeEmbeddedPostgres("owner-relayed decisions (routes + postgres)", () => {
     const inviteId = randomUUID();
     await db.insert(invites).values({ id: inviteId, companyId: seed.companyId, tokenHash: "hash-" + inviteId, allowedJoinTypes: "both", expiresAt: new Date(Date.now() + 86_400_000) });
     await db.insert(joinRequests).values({
-      inviteId, companyId: seed.companyId, requestType: "human", status: "pending_approval", requestIp: "127.0.0.1", requestEmailSnapshot: "new@paperclip.test",
+      inviteId, companyId: seed.companyId, requestType: "human", status: "pending_approval", requestIp: "127.0.0.1", requestEmailSnapshot: "new@wardmote.test",
     });
     const recoveryIssueId = randomUUID();
     const reviewIssueId = randomUUID();

@@ -58,7 +58,7 @@ describe("paperclip runner transport routing", () => {
       target,
       runId: "00000000-0000-4000-8000-000000000001",
       localConnectUrl: "ws://127.0.0.1/unused",
-      runnerPublicUrl: "wss://paperclip.example.test",
+      runnerPublicUrl: "wss://wardmote.example.test",
       runnerIngressAuthorized: true,
     });
     expect(result.mode).toBe("provider_ingress");
@@ -102,7 +102,7 @@ describe("paperclip runner transport routing", () => {
         target,
         runId: "00000000-0000-4000-8000-000000000001",
         localConnectUrl: "ws://127.0.0.1/unused",
-        runnerPublicUrl: "wss://paperclip.example.test",
+        runnerPublicUrl: "wss://wardmote.example.test",
         runnerIngressAuthorized: false,
         enableRunnerPreviewIngress: true,
       }),
@@ -138,14 +138,14 @@ describe("paperclip runner transport routing", () => {
       target,
       runId: "00000000-0000-4000-8000-000000000001",
       localConnectUrl: "ws://127.0.0.1/unused",
-      runnerPublicUrl: "wss://paperclip.example.test/runner-base/",
+      runnerPublicUrl: "wss://wardmote.example.test/runner-base/",
       runnerCaBundlePath: "/etc/paperclip/runner-ca.pem",
       runnerIngressAuthorized: false,
     });
     expect(result).toEqual({
       mode: "direct_outbound",
       connectUrl:
-        "wss://paperclip.example.test/runner-base/api/runner/v1/connect/00000000-0000-4000-8000-000000000001",
+        "wss://wardmote.example.test/runner-base/api/runner/v1/connect/00000000-0000-4000-8000-000000000001",
       caBundlePath: "/etc/paperclip/runner-ca.pem",
     });
   });
@@ -167,7 +167,7 @@ describe("paperclip runner transport routing", () => {
         target,
         runId: "00000000-0000-4000-8000-000000000001",
         localConnectUrl: "ws://127.0.0.1/unused",
-        runnerPublicUrl: "wss://paperclip.example.test",
+        runnerPublicUrl: "wss://wardmote.example.test",
         runnerIngressAuthorized: true,
       }),
     ).rejects.toThrow("preview unavailable");
@@ -190,17 +190,17 @@ describe("paperclip runner transport routing", () => {
         target,
         runId: "00000000-0000-4000-8000-000000000001",
         localConnectUrl: "ws://127.0.0.1/unused",
-        runnerPublicUrl: "wss://paperclip.example.test",
+        runnerPublicUrl: "wss://wardmote.example.test",
         runnerIngressAuthorized: true,
       }),
     ).rejects.toMatchObject({ code: "runner_ingress_unavailable" });
   });
 
   it.each([
-    "ws://paperclip.example.test",
-    "wss://user@paperclip.example.test",
-    "wss://paperclip.example.test?token=secret",
-    "wss://paperclip.example.test#fragment",
+    "ws://wardmote.example.test",
+    "wss://user@wardmote.example.test",
+    "wss://wardmote.example.test?token=secret",
+    "wss://wardmote.example.test#fragment",
   ])("rejects unsafe direct runner URL %s", (runnerPublicUrl) => {
     expect(() =>
       buildDirectRunnerConnectUrl({

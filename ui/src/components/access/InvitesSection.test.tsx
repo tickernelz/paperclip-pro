@@ -74,7 +74,7 @@ describe("InvitesSection", () => {
       invitedByUser: {
         id: "user-1",
         name: `Board User ${inviteNumber}`,
-        email: `board${inviteNumber}@paperclip.local`,
+        email: `board${inviteNumber}@wardmote.local`,
         image: null,
       },
       relatedJoinRequestId: isActive ? "join-1" : null,
@@ -96,7 +96,7 @@ describe("InvitesSection", () => {
     createCompanyInviteMock.mockImplementation(() => {
       return Promise.resolve({
         token: "new-token",
-        inviteUrl: "https://paperclip.local/invite/new-token",
+        inviteUrl: "https://wardmote.local/invite/new-token",
         onboardingTextUrl: null,
         onboardingTextPath: null,
         humanRole: "viewer",
@@ -199,12 +199,12 @@ describe("InvitesSection", () => {
       humanRole: "viewer",
       agentMessage: null,
     });
-    expect(clipboardWriteTextMock).toHaveBeenCalledWith("https://paperclip.local/invite/new-token");
+    expect(clipboardWriteTextMock).toHaveBeenCalledWith("https://wardmote.local/invite/new-token");
     expect(container.textContent).toContain("Latest invite link");
     expect(container.textContent).toContain("This URL includes the current Wardmote domain returned by the server.");
     expect(container.querySelector('input[aria-label="Latest invite URL"]')).toHaveProperty(
       "value",
-      "https://paperclip.local/invite/new-token",
+      "https://wardmote.local/invite/new-token",
     );
     expect(container.textContent).toContain("Copy link");
     // The inviter opening their own single-use link is never what they
@@ -282,7 +282,7 @@ describe("InvitesSection", () => {
     await flushReact();
 
     const inviteInput = container.querySelector('input[aria-label="Latest invite URL"]') as HTMLInputElement | null;
-    expect(inviteInput?.value).toBe("https://paperclip.local/invite/new-token");
+    expect(inviteInput?.value).toBe("https://wardmote.local/invite/new-token");
     expect(document.execCommand).toHaveBeenCalledWith("copy");
     expect(pushToastMock).toHaveBeenCalledWith({
       title: "Invite created",

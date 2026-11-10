@@ -55,7 +55,7 @@ function signedGitHubRequest(
   const resolvedDeliveryId =
     deliveryId ??
     `delivery-${String((payload.comment as { id?: unknown } | undefined)?.id ?? "event")}`;
-  return new Request("https://paperclip.example/github", {
+  return new Request("https://wardmote.example/github", {
     method: "POST",
     headers: {
       "content-type": "application/json",

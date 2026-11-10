@@ -1902,7 +1902,7 @@ fresh-run proof issue.
 INTEGRATIONS_POSTHOG_WARDMOTE_E2E_EMAIL=operator@example.test \
 INTEGRATIONS_POSTHOG_WARDMOTE_DEV_LOGIN_PASSWORD='<environment-delivered>' \
 INTEGRATIONS_POSTHOG_POSTHOG_PROJECT_ID=483530 \
-pnpm smoke:posthog-live https://paperclip.example.test
+pnpm smoke:posthog-live https://wardmote.example.test
 ```
 
 The command fails before browser launch unless all three integration bindings

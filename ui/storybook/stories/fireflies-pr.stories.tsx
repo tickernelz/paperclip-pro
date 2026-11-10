@@ -17,7 +17,7 @@ import { WebhookReview, webhook, baseRoutine } from "../fixtures/routineWebhooks
 
 const fireflies = CONNECTABLE_APP_DEFINITIONS.find((app) => app.slug === "fireflies")!;
 const demoSecret = "storybook-only-signing-secret";
-const demoUrl = "https://acme.paperclip.example/api/routine-triggers/public/0123456789abcdef01234567/fire";
+const demoUrl = "https://acme.wardmote.example/api/routine-triggers/public/0123456789abcdef01234567/fire";
 const noop = () => {};
 function Frame({ children }: { children: ReactNode }) {
   return <div className="mx-auto max-w-5xl space-y-6 p-6 text-ink"><p className="text-xs text-ink-3">PR #13890 · Production components with simulated data. No provider requests or real credentials.</p>{children}</div>;
@@ -89,7 +89,7 @@ export const CheckWaiting = { ...wizard(2), name: "11 · Check connection — wa
 export const CheckReceived = { ...wizard(2, { checkResult: "received" }), name: "12 · Check connection — authenticated test receipt" };
 export const CheckRejected = { ...wizard(2, { checkResult: "rejected" }), name: "13 · Check connection — invalid signature" };
 export const CheckNoEvent = { ...wizard(2, { checkResult: "no_event" }), name: "14 · Check connection — nothing received" };
-export const PrivateUrl = { ...wizard(1, { webhookUrl: demoUrl.replace("https://acme.paperclip.example", "http://localhost:3104") }), name: "15 · Public HTTPS setup warning" };
+export const PrivateUrl = { ...wizard(1, { webhookUrl: demoUrl.replace("https://acme.wardmote.example", "http://localhost:3104") }), name: "15 · Public HTTPS setup warning" };
 export const ResumeHiddenSecret = { ...wizard(1, { webhookSecret: "" }), name: "16 · Resume draft — hidden secret and rotation" };
 export const LegacyBearer = { ...wizard(1, { initialDraft: { ...defaultTriggerDraft, kind: "webhook", signingMode: "bearer", step: 1, availableStep: 1, created: true } }), name: "17 · Resume existing bearer webhook" };
 export const LegacySigned = { ...wizard(1, { initialDraft: { ...defaultTriggerDraft, kind: "webhook", signingMode: "fireflies_hmac", step: 1, availableStep: 1, created: true } }), name: "18 · Resume existing signed webhook" };

@@ -79,7 +79,7 @@ company asset and putting its served URL in the step's `screenshotArtifactRef`.
 
 ## 2. Fixed fixture facts
 
-- **Demo OAuth creds:** `smoke@paperclip.test` / `smoke-password` (`SMOKE_LAB_DEMO_*`). Email is pre-filled on the consent page; you type the password.
+- **Demo OAuth creds:** `smoke@wardmote.test` / `smoke-password` (`SMOKE_LAB_DEMO_*`). Email is pre-filled on the consent page; you type the password.
 - **Fake OAuth scopes:** only `smoke:openid smoke:profile smoke:email` are accepted — any other `scope` → `400`.
 - **Consent page:** `GET /api/companies/:cid/smoke-lab/oauth/authorize?client_id=…&redirect_uri=…&scope=…&state=…&response_type=code` renders the "SMOKE TEST — not a real provider" login+consent form. Submitting valid creds → `302` to `redirect_uri?code=…` (wrong creds → `403`). The redirect target is a dead loopback callback — don't wait for it to load; assert on the **302 + `code=` in the Location header**, then let the failed navigation commit before driving the Paperclip UI.
 - **Two connections per install:** `remote_http` (HTTP MCP fixture, used for P1/P2/P5/P6/P7) and `local_stdio` (used for P3/P4). `install-fixtures` is idempotent.

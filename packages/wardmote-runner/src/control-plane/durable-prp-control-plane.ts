@@ -2025,7 +2025,7 @@ export class DurablePrpControlPlane {
     expectedPath = "/api/runner/v1/connect",
     head: Buffer<ArrayBufferLike> = Buffer.alloc(0),
   ): void {
-    const requestPath = new URL(request.url ?? "/", "http://paperclip.invalid")
+    const requestPath = new URL(request.url ?? "/", "http://wardmote.invalid")
       .pathname;
     if (requestPath !== expectedPath) {
       socket.write("HTTP/1.1 404 Not Found\r\nConnection: close\r\n\r\n");

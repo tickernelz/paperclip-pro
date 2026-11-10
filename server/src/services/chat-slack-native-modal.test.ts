@@ -155,7 +155,7 @@ function signedRequest(payload: unknown, secret = signingSecret) {
   }).toString();
   const timestamp = String(Math.floor(Date.now() / 1_000));
   const signature = `v0=${createHmac("sha256", secret).update(`v0:${timestamp}:${body}`).digest("hex")}`;
-  return new Request("https://paperclip.test/webhooks/slack", {
+  return new Request("https://wardmote.test/webhooks/slack", {
     method: "POST",
     headers: {
       "content-type": "application/x-www-form-urlencoded",

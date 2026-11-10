@@ -1360,7 +1360,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     const service = chatChannelService(db, {
       fetch: providerFetch,
       heartbeat: { cancelRun, wakeup: receiptBackedWakeup(wakeup) },
-      publicBaseUrl: "https://paperclip.example",
+      publicBaseUrl: "https://wardmote.example",
       runtime: runtime as unknown as ChatSdkRuntime,
       ...serviceOverrides,
     });
@@ -1435,7 +1435,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       publicId,
       "slack",
       signedSlackWebhookRequest({
-        url: `https://paperclip.example/api/chat-webhooks/${publicId}/slack`,
+        url: `https://wardmote.example/api/chat-webhooks/${publicId}/slack`,
         contentType: "application/json",
         body: JSON.stringify({ type: "url_verification", challenge: "verified-challenge" }),
         signingSecret,
@@ -1484,7 +1484,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       publicId,
       "github",
       new Request(
-        `https://paperclip.example/api/chat-webhooks/${publicId}/github`,
+        `https://wardmote.example/api/chat-webhooks/${publicId}/github`,
         {
           method: "POST",
           headers: {
@@ -1550,7 +1550,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     const signature = createHmac("sha256", input.webhookSecret)
       .update(body)
       .digest("hex");
-    return new Request(input.url ?? "https://paperclip.example/github", {
+    return new Request(input.url ?? "https://wardmote.example/github", {
       method: "POST",
       headers: {
         "content-type": "application/json",
@@ -5147,7 +5147,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     });
     const guid = randomUUID();
     const deliveryId = "9007199254740993";
-    const webhookUrl = `https://paperclip.example/api/chat-webhooks/${endpoint.publicId}/github`;
+    const webhookUrl = `https://wardmote.example/api/chat-webhooks/${endpoint.publicId}/github`;
     const createdAt = new Date(Date.now() - 30_000).toISOString();
     const body = `@${current.botUsername} recover the original request ${randomUUID()}`;
     const comment = {
@@ -5467,7 +5467,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       const installerId = `UINSTALLER${id}`;
       const appId = `A${id}`;
       const token = `xoxb-bot-token-canary-${id}`;
-      const scopes = buildSlackAppManifest({ app: appDetails, agentName: "Maya", webhookUrl: "https://paperclip.example/hook" }).oauth_config.scopes.bot;
+      const scopes = buildSlackAppManifest({ app: appDetails, agentName: "Maya", webhookUrl: "https://wardmote.example/hook" }).oauth_config.scopes.bot;
       const state = {
         failCreate: false, failValidate: false, failInventory: false, failAuth: false, failExchange: false,
         failManifestUpdate: false, timeoutManifestUpdate: false,
@@ -5571,7 +5571,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         await db.update(chatEndpoints).set({ status: "paused" }).where(eq(chatEndpoints.id, f.endpoint.id));
       };
       await f.service.handleWebhook(f.endpoint.publicId, "slack", setupEvent(f, patch,
-        invalid === "old-origin" ? f.endpoint.setup.webhookUrl!.replace("paperclip.example", "old.example") : undefined,
+        invalid === "old-origin" ? f.endpoint.setup.webhookUrl!.replace("wardmote.example", "old.example") : undefined,
         invalid === "wrong-secret" ? "wrong-secret" : undefined,
         invalid === "stale-signature" ? "1" : undefined));
       const saved = await f.service.get(f.endpoint.id);
@@ -6450,7 +6450,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     const worker = chatChannelService(smallDb, {
       fetch: fakeSlackFetch() as typeof fetch,
       heartbeat: { wakeup: smallWake },
-      publicBaseUrl: "https://paperclip.example",
+      publicBaseUrl: "https://wardmote.example",
       runtime: runtime as unknown as ChatSdkRuntime,
     });
     fixtureServices.add(worker);
@@ -6636,7 +6636,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       req.actor = { type: "agent", source: "agent_key", companyId: binding.companyId, agentId: binding.agentId, runId: binding.runId };
       next();
     });
-    cliApp.use("/api", slackToolRoutes(db, "https://paperclip.example"));
+    cliApp.use("/api", slackToolRoutes(db, "https://wardmote.example"));
     cliApp.use(errorHandler);
     await request(cliApp).post(`/api/companies/${binding.companyId}/slack/tasks/${binding.issueId}/tools`).send({ tool: "slack_channel_info", arguments: { channel: "COTHER" } }).expect(200);
     await request(cliApp).post(`/api/companies/${randomUUID()}/slack/tasks/${binding.issueId}/tools`).send({ tool: "slack_history", arguments: { channel: "COTHER" } }).expect(403);
@@ -6708,7 +6708,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     expect(await service.listResources(endpoint.id)).toEqual(expect.arrayContaining([
       expect.objectContaining({ providerResourceId: "CNEWCHANNEL", enabled: false }),
     ]));
-    await service.handleWebhook(endpoint.publicId, "slack", new Request("https://paperclip.example/slack", {
+    await service.handleWebhook(endpoint.publicId, "slack", new Request("https://wardmote.example/slack", {
       method: "POST", headers: { "content-type": "application/json" },
       body: JSON.stringify({ event_id: "Ev-created-channel", event: {
         type: "member_joined_channel", user: (await service.get(endpoint.id)).botExternalId,
@@ -6774,7 +6774,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       }
       throw new Error("Unexpected OAuth request");
     });
-    const oauth = slackSearchOAuthService(db, "https://paperclip.example", oauthFetch as typeof fetch);
+    const oauth = slackSearchOAuthService(db, "https://wardmote.example", oauthFetch as typeof fetch);
     await oauth.configure(fixture.companyId, endpoint.id, "owner-user", { clientId: "123.456", clientSecret: "fixture-client-secret" });
     const started = await oauth.start(fixture.companyId, endpoint.id, "owner-user");
     const state = new URL(started.url).searchParams.get("state")!;
@@ -10675,7 +10675,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     const staleCallback = service.handleWebhook(
       endpoint.publicId,
       "github",
-      new Request("https://paperclip.example/github", {
+      new Request("https://wardmote.example/github", {
         method: "POST",
         headers: {
           "content-type": "application/json",
@@ -10829,7 +10829,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     const response = await service.handleWebhook(
       endpoint.publicId,
       "github",
-      new Request("https://paperclip.example/github", {
+      new Request("https://wardmote.example/github", {
         method: "POST",
         headers: {
           "content-type": "application/json",
@@ -10883,7 +10883,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     const response = await service.handleWebhook(
       endpoint.publicId,
       "github",
-      new Request("https://paperclip.example/github", {
+      new Request("https://wardmote.example/github", {
         method: "POST",
         headers: {
           "content-type": "application/json",
@@ -11030,7 +11030,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       service.handleWebhook(
         endpoint.publicId,
         "github",
-        new Request("https://paperclip.example/github", {
+        new Request("https://wardmote.example/github", {
           method: "POST",
           headers: {
             "content-type": "application/json",
@@ -11190,7 +11190,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       service.handleWebhook(
         endpoint.publicId,
         "github",
-        new Request("https://paperclip.example/github", {
+        new Request("https://wardmote.example/github", {
           method: "POST",
           headers: {
             "content-type": "application/json",
@@ -15278,7 +15278,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       if (providerConfig?.provider !== "telegram")
         throw new Error("Telegram runtime configuration was not created");
       expect(observedWebhook).toEqual({
-        url: `${webhookPublicBaseUrl ?? "https://paperclip.example"}/api/chat-webhooks/${endpoint.publicId}/telegram`,
+        url: `${webhookPublicBaseUrl ?? "https://wardmote.example"}/api/chat-webhooks/${endpoint.publicId}/telegram`,
         secret_token: providerConfig.credentials.secretToken,
         allowed_updates: [
           "message",
@@ -15343,7 +15343,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         `https://api.telegram.org/bot${encodeURIComponent(botToken)}/setMyCommands`,
       ]);
       expect(observedWebhook).toMatchObject({
-        url: `${webhookPublicBaseUrl ?? "https://paperclip.example"}/api/chat-webhooks/${endpoint.publicId}/telegram`,
+        url: `${webhookPublicBaseUrl ?? "https://wardmote.example"}/api/chat-webhooks/${endpoint.publicId}/telegram`,
         // Repointing an existing bot must retain updates Telegram queued while
         // the old callback URL was unavailable.
         drop_pending_updates: false,
@@ -15950,7 +15950,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         service.handleWebhook(
           endpoint.publicId,
           "slack",
-          new Request("https://paperclip.example/slack", {
+          new Request("https://wardmote.example/slack", {
             method: "POST",
             headers: { "content-type": "application/json" },
             body: JSON.stringify({
@@ -16010,7 +16010,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         service.handleWebhook(
           endpoint.publicId,
           "slack",
-          new Request("https://paperclip.example/slack", {
+          new Request("https://wardmote.example/slack", {
             method: "POST",
             headers: { "content-type": "application/json" },
             body: JSON.stringify({
@@ -16067,7 +16067,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       service.handleWebhook(
         endpoint.publicId,
         "slack",
-        new Request("https://paperclip.example/slack", {
+        new Request("https://wardmote.example/slack", {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify(payload),
@@ -16257,7 +16257,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
   it("orders Slack private-channel archive, unarchive, and rename lifecycle", async () => {
     const fixture = await seedCompany();
     const { endpoint, service } = await configuredSlackEndpoint(fixture);
-    const webhookUrl = `https://paperclip.example/api/chat-webhooks/${endpoint.publicId}/slack`;
+    const webhookUrl = `https://wardmote.example/api/chat-webhooks/${endpoint.publicId}/slack`;
     const send = async (
       eventId: string,
       type: string,
@@ -16377,7 +16377,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       teams.service.handleWebhook(
         teamsEndpoint.publicId,
         "microsoft-teams",
-        new Request("https://paperclip.example/teams", {
+        new Request("https://wardmote.example/teams", {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify(payload),
@@ -16645,7 +16645,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       telegram.service.handleWebhook(
         telegramEndpoint.publicId,
         "telegram",
-        new Request("https://paperclip.example/telegram", {
+        new Request("https://wardmote.example/telegram", {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({
@@ -16738,7 +16738,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       service.handleWebhook(
         endpoint.publicId,
         "slack",
-        new Request("https://paperclip.example/slack", {
+        new Request("https://wardmote.example/slack", {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({
@@ -16778,7 +16778,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       service.handleWebhook(
         endpoint.publicId,
         "slack",
-        new Request("https://paperclip.example/slack", {
+        new Request("https://wardmote.example/slack", {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({
@@ -17126,13 +17126,13 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     const { endpoint, service } = await configuredSlackEndpoint(fixture);
     const path = `/api/chat-webhooks/${endpoint.publicId}/slack`;
     const body = JSON.stringify({ type: "url_verification", challenge: "proxy-check" });
-    const request = signedSlackWebhookRequest({ url: `http://paperclip.example${path}`, contentType: "application/json", body });
+    const request = signedSlackWebhookRequest({ url: `http://wardmote.example${path}`, contentType: "application/json", body });
     request.headers.set("x-forwarded-host", "untrusted.example");
     request.headers.set("x-forwarded-proto", "https");
     await service.handleWebhook(endpoint.publicId, "slack", request);
     await expect(service.get(endpoint.id)).resolves.toMatchObject({ setup: { callbacksNeedUpdate: false, callbackSurfaces: { events: { status: "current" } } } });
     // A different public host or port is still drift, even with TLS termination.
-    for (const publicBaseUrl of ["https://moved.example", "https://paperclip.example:8443"]) {
+    for (const publicBaseUrl of ["https://moved.example", "https://wardmote.example:8443"]) {
       const moved = createService(new FakeChatSdkRuntime(), fakeSlackFetch(), { publicBaseUrl });
       await expect(moved.service.get(endpoint.id)).resolves.toMatchObject({ setup: { callbacksNeedUpdate: true, callbackSurfaces: { events: { status: "stale" } } } });
       await moved.service.shutdown();
@@ -17143,7 +17143,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     const fixture = await seedCompany();
     const { endpoint, runtime, service } =
       await configuredSlackEndpoint(fixture);
-    const webhookUrl = `https://paperclip.example/api/chat-webhooks/${endpoint.publicId}/slack`;
+    const webhookUrl = `https://wardmote.example/api/chat-webhooks/${endpoint.publicId}/slack`;
 
     await expect(service.get(endpoint.id)).resolves.toMatchObject({
       setup: {
@@ -17224,7 +17224,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       fakeSlackFetch(),
       {
         publicBaseUrl: "https://board-moved.example",
-        webhookPublicBaseUrl: "https://paperclip.example",
+        webhookPublicBaseUrl: "https://wardmote.example",
       },
     );
     await expect(boardOnlyMove.service.get(endpoint.id)).resolves.toMatchObject(
@@ -17607,7 +17607,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         user: externalUserId,
       },
     });
-    const webhookUrl = `https://paperclip.example/api/chat-webhooks/${endpoint.publicId}/slack`;
+    const webhookUrl = `https://wardmote.example/api/chat-webhooks/${endpoint.publicId}/slack`;
     workWake.mockClear();
     const first = await service.handleWebhook(
       endpoint.publicId,
@@ -17796,7 +17796,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     if (!conversation || !principal) {
       throw new Error("Expected Slack governance conversation and principal");
     }
-    const webhookUrl = `https://paperclip.example/api/chat-webhooks/${endpoint.publicId}/slack`;
+    const webhookUrl = `https://wardmote.example/api/chat-webhooks/${endpoint.publicId}/slack`;
     const workspaceId = (await service.get(endpoint.id)).providerAccountId;
     const sendStop = (input: { eventId: string; eventSecond: number }) => {
       const body = JSON.stringify({
@@ -18213,7 +18213,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       deferWebhookProcessing: true,
       fetch: fakeSlackFetch() as typeof globalThis.fetch,
       heartbeat: { wakeup: receiptBackedWakeup(wakeup) },
-      publicBaseUrl: "https://paperclip.example",
+      publicBaseUrl: "https://wardmote.example",
       runtime: runtime as unknown as ChatSdkRuntime,
       scheduleDeferredWork: (task) => deferred.push(task),
       reachAuthorizationBarrier: async () => {
@@ -18337,7 +18337,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     const competingService = chatChannelService(db, {
       fetch: fakeSlackFetch() as typeof globalThis.fetch,
       heartbeat: { wakeup: receiptBackedWakeup(wakeup) },
-      publicBaseUrl: "https://paperclip.example",
+      publicBaseUrl: "https://wardmote.example",
       runtime: new FakeChatSdkRuntime() as unknown as ChatSdkRuntime,
     });
     let drainSettled = false;
@@ -19473,7 +19473,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       deferWebhookProcessing: true,
       fetch: fakeTelegramFetch() as typeof globalThis.fetch,
       heartbeat: { wakeup: receiptBackedWakeup(wakeup) },
-      publicBaseUrl: "https://paperclip.example",
+      publicBaseUrl: "https://wardmote.example",
       runtime: runtime as unknown as ChatSdkRuntime,
       scheduleDeferredWork: (task) => deferred.push(task),
     });
@@ -19606,7 +19606,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       deferWebhookProcessing: true,
       fetch: fakeTelegramFetch() as typeof globalThis.fetch,
       heartbeat: { wakeup: receiptBackedWakeup(wakeup) },
-      publicBaseUrl: "https://paperclip.example",
+      publicBaseUrl: "https://wardmote.example",
       runtime: runtime as unknown as ChatSdkRuntime,
       scheduleDeferredWork: (task) => deferred.push(task),
     });
@@ -24258,7 +24258,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       const timestamp = String(Math.floor(Date.now() / 1000));
       const signature = `v0=${createHmac("sha256", signingSecret).update(`v0:${timestamp}:${body}`).digest("hex")}`;
       return new Request(
-        `https://paperclip.example/api/chat-webhooks/${endpoint.publicId}/slack`,
+        `https://wardmote.example/api/chat-webhooks/${endpoint.publicId}/slack`,
         {
           method: "POST",
           headers: {
@@ -24382,7 +24382,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       heartbeat: {
         wakeup: receiptBackedWakeup(vi.fn(async () => ({ accepted: true }))),
       },
-      publicBaseUrl: "https://paperclip.example",
+      publicBaseUrl: "https://wardmote.example",
     });
     const endpoint = await service.create(
       fixture.companyId,
@@ -24423,7 +24423,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     const signature = `v0=${createHmac("sha256", signingSecret).update(`v0:${timestamp}:${body}`).digest("hex")}`;
     const providerRequest = (retry = false) =>
       new Request(
-        `https://paperclip.example/api/chat-webhooks/${endpoint.publicId}/slack`,
+        `https://wardmote.example/api/chat-webhooks/${endpoint.publicId}/slack`,
         {
           method: "POST",
           headers: {
@@ -24880,7 +24880,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     const initializingWebhook = service.handleWebhook(
       endpoint.publicId,
       "slack",
-      new Request("https://paperclip.example/slack", {
+      new Request("https://wardmote.example/slack", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ type: "event_callback", event: {} }),
@@ -24908,7 +24908,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       deferWebhookProcessing: true,
       fetch: fakeSlackFetch("U-BOT-PAUSE") as typeof globalThis.fetch,
       heartbeat: { wakeup: receiptBackedWakeup(wakeup) },
-      publicBaseUrl: "https://paperclip.example",
+      publicBaseUrl: "https://wardmote.example",
       scheduleDeferredWork: (task) => deferred.push(task),
     });
     const endpoint = await service.create(
@@ -24957,7 +24957,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       const timestamp = String(Math.floor(Date.now() / 1000));
       const signature = `v0=${createHmac("sha256", signingSecret).update(`v0:${timestamp}:${body}`).digest("hex")}`;
       return new Request(
-        `https://paperclip.example/api/chat-webhooks/${endpoint.publicId}/slack`,
+        `https://wardmote.example/api/chat-webhooks/${endpoint.publicId}/slack`,
         {
           method: "POST",
           headers: {
@@ -28563,7 +28563,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         return context.service.handleWebhook(
           endpoint.publicId,
           "telegram",
-          new Request("https://paperclip.example/synthetic-telegram-webhook", {
+          new Request("https://wardmote.example/synthetic-telegram-webhook", {
             method: "POST",
             headers: {
               "content-type": "application/json",
@@ -35423,7 +35423,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       });
       await expect(
         enqueueChatRunMilestones(db, {
-          publicBaseUrl: "https://paperclip.example",
+          publicBaseUrl: "https://wardmote.example",
         }),
       ).resolves.toBe(1);
       await service.processPendingPublications(1_000);
@@ -37295,7 +37295,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     expect(definiteFailureNotices).toHaveLength(1);
     const rejectedAttachmentNotice =
       "Wardmote could not send the response attachment. The complete response remains on its Wardmote task for an operator to retry." +
-      ` Open task: https://paperclip.example/issues/${conversation.issueId}`;
+      ` Open task: https://wardmote.example/issues/${conversation.issueId}`;
     expect(definiteFailureNotices[0]).toMatchObject({
       commentId: null,
       state: "published",
@@ -38397,7 +38397,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     recoveryPromise = service.handleWebhook(
       endpoint.publicId,
       "telegram",
-      new Request("https://paperclip.example/telegram", {
+      new Request("https://wardmote.example/telegram", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
@@ -39625,7 +39625,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         const signature = createHmac("sha256", credentials.signingSecret!)
           .update(`v0:${timestamp}:${body}`)
           .digest("hex");
-        return new Request("https://paperclip.test/webhooks/slack", {
+        return new Request("https://wardmote.test/webhooks/slack", {
           method: "POST",
           headers: {
             "content-type": "application/x-www-form-urlencoded",
@@ -41495,7 +41495,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       heartbeat: {
         wakeup: receiptBackedWakeup(vi.fn(async () => ({ accepted: true }))),
       },
-      publicBaseUrl: "https://paperclip.example",
+      publicBaseUrl: "https://wardmote.example",
     });
     try {
       const endpoint = await service.create(
@@ -41522,7 +41522,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         data = callbackData,
       ) =>
         new Request(
-          `https://paperclip.example/api/chat-webhooks/${endpoint.publicId}/telegram`,
+          `https://wardmote.example/api/chat-webhooks/${endpoint.publicId}/telegram`,
           {
             method: "POST",
             headers: {
@@ -43065,7 +43065,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
   it("publishes GitHub questions as link-only cards with no executable callback", async () => {
     const fixture = await seedCompany();
     const previousPublicUrl = process.env.WARDMOTE_PUBLIC_URL;
-    process.env.WARDMOTE_PUBLIC_URL = "https://paperclip.example";
+    process.env.WARDMOTE_PUBLIC_URL = "https://wardmote.example";
     try {
       const { callbacks, endpoint, runtime, service } =
         await configuredGitHubEndpoint(fixture);
@@ -43136,7 +43136,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
               {
                 type: "link",
                 label: "Open in Wardmote",
-                url: `https://paperclip.example/issues/${conversation!.issueId}`,
+                url: `https://wardmote.example/issues/${conversation!.issueId}`,
               },
             ],
           },
@@ -43156,7 +43156,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       ).toHaveLength(0);
       expect(
         JSON.stringify(runtime.endpoints.get(endpoint.id)?.posts),
-      ).toContain(`https://paperclip.example/issues/${conversation!.issueId}`);
+      ).toContain(`https://wardmote.example/issues/${conversation!.issueId}`);
     } finally {
       if (previousPublicUrl === undefined)
         delete process.env.WARDMOTE_PUBLIC_URL;
@@ -43167,7 +43167,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
   it("keeps a successful GitHub link-question continuation final internal", async () => {
     const fixture = await seedCompany();
     const previousPublicUrl = process.env.WARDMOTE_PUBLIC_URL;
-    process.env.WARDMOTE_PUBLIC_URL = "https://paperclip.example";
+    process.env.WARDMOTE_PUBLIC_URL = "https://wardmote.example";
     try {
       const continuationRunId = randomUUID();
       const wakeup = vi.fn(async (agentId, options) => {
@@ -43480,7 +43480,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     });
     await expect(
       enqueueChatRunMilestones(db, {
-        publicBaseUrl: "https://paperclip.example",
+        publicBaseUrl: "https://wardmote.example",
       }),
     ).resolves.toBe(1);
     await service.processPendingPublications();
@@ -43515,9 +43515,9 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
   it("publishes explicit Board GitHub attachment fallbacks without provider file bytes", async () => {
     for (const testCase of [
       {
-        publicBaseUrl: "https://board.paperclip.example",
+        publicBaseUrl: "https://board.wardmote.example",
         expectedFallback: (issueId: string) =>
-          `File saved on the Wardmote task: report.txt. This GitHub App connection cannot upload file bytes into comments. Download it: https://board.paperclip.example/issues/${issueId}`,
+          `File saved on the Wardmote task: report.txt. This GitHub App connection cannot upload file bytes into comments. Download it: https://board.wardmote.example/issues/${issueId}`,
       },
       {
         publicBaseUrl: "http://127.0.0.1:3103",
@@ -43687,7 +43687,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     expect(failed).toMatchObject({ state: "failed" });
     const selectedAttachmentNotice =
       "Wardmote could not send an attachment. The file remains on its Wardmote task for an operator to retry." +
-      ` Open task: https://paperclip.example/issues/${conversation.issueId}`;
+      ` Open task: https://wardmote.example/issues/${conversation.issueId}`;
     const publications = await db
       .select()
       .from(chatPublications)
@@ -54307,7 +54307,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     const service = chatChannelService(db, {
       fetch: telegramFetch,
       heartbeat: { wakeup: receiptBackedWakeup(wakeup) },
-      publicBaseUrl: "https://paperclip.example",
+      publicBaseUrl: "https://wardmote.example",
     });
     try {
       const endpoint = await service.create(
@@ -54332,7 +54332,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         updateId: number;
       }) =>
         new Request(
-          `https://paperclip.example/api/chat-webhooks/${endpoint.publicId}/telegram`,
+          `https://wardmote.example/api/chat-webhooks/${endpoint.publicId}/telegram`,
           {
             method: "POST",
             headers: {
@@ -56739,7 +56739,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       service.handleWebhook(
         endpoint.publicId,
         "telegram",
-        new Request("https://paperclip.example/telegram", {
+        new Request("https://wardmote.example/telegram", {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({
@@ -56867,7 +56867,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       service.handleWebhook(
         endpoint.publicId,
         "telegram",
-        new Request("https://paperclip.example/telegram", {
+        new Request("https://wardmote.example/telegram", {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({
@@ -56995,7 +56995,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       service.handleWebhook(
         endpoint.publicId,
         "telegram",
-        new Request("https://paperclip.example/telegram", {
+        new Request("https://wardmote.example/telegram", {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({
@@ -57145,7 +57145,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       service.handleWebhook(
         endpoint.publicId,
         "microsoft-teams",
-        new Request("https://paperclip.example/microsoft-teams", {
+        new Request("https://wardmote.example/microsoft-teams", {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify(payload),
@@ -57596,7 +57596,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       service.handleWebhook(
         endpoint.publicId,
         "telegram",
-        new Request("https://paperclip.example/telegram", {
+        new Request("https://wardmote.example/telegram", {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify(editPayload),
@@ -57606,7 +57606,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     await service.handleWebhook(
       endpoint.publicId,
       "telegram",
-      new Request("https://paperclip.example/telegram", {
+      new Request("https://wardmote.example/telegram", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
@@ -57774,7 +57774,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       service.handleWebhook(
         endpoint.publicId,
         "telegram",
-        new Request("https://paperclip.example/telegram", {
+        new Request("https://wardmote.example/telegram", {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({
@@ -64178,7 +64178,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
                   ? "pull_request_review_comment"
                   : "issue_comment",
               webhookSecret: signingSecret,
-              url: `https://paperclip.example/api/chat-webhooks/${endpoint.publicId}/github`,
+              url: `https://wardmote.example/api/chat-webhooks/${endpoint.publicId}/github`,
               payload: {
                 action: "edited",
                 comment: {
@@ -64378,7 +64378,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
             sender: { id: 7001, login: "alex-e2e" },
           },
           webhookSecret,
-          url: `https://paperclip.example/api/chat-webhooks/${endpoint.publicId}/github`,
+          url: `https://wardmote.example/api/chat-webhooks/${endpoint.publicId}/github`,
         }),
       );
 
@@ -64597,7 +64597,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
             sender: { id: 7001, login: "alex-e2e" },
           },
           webhookSecret,
-          url: `https://paperclip.example/api/chat-webhooks/${endpoint.publicId}/github`,
+          url: `https://wardmote.example/api/chat-webhooks/${endpoint.publicId}/github`,
         }),
       );
       expect(response.status).toBeLessThan(300);
@@ -64928,7 +64928,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     const response = await service.handleWebhook(
       endpoint.publicId,
       "telegram",
-      new Request("https://paperclip.example/telegram", {
+      new Request("https://wardmote.example/telegram", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
@@ -69356,7 +69356,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
               });
             } else {
               const response = await pinned.handleWebhook(
-                new Request("https://paperclip.example/timestamp-fixture", {
+                new Request("https://wardmote.example/timestamp-fixture", {
                   method: "POST",
                   headers: {
                     "content-type": "application/json",
@@ -69827,7 +69827,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       runtime: runtime as unknown as ChatSdkRuntime,
       heartbeat: { wakeup: receiptBackedWakeup(wakeup), cancelRun },
       storage: storage.storage,
-      publicBaseUrl: "https://paperclip.example",
+      publicBaseUrl: "https://wardmote.example",
       teamsFileUploadRequest: uploadRequest,
       scheduleDeferredWork: () => undefined,
     });
@@ -70277,7 +70277,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         const configuration = context.runtime.configurations.get(endpoint.id)!;
         if (configuration.providerConfig.provider !== "telegram")
           throw new Error("Expected Telegram");
-        const request = new Request("https://paperclip.example/fixture", {
+        const request = new Request("https://wardmote.example/fixture", {
           method: "POST",
           headers: {
             "content-type": "application/json",
@@ -70409,7 +70409,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
           await context.service.handleWebhook(
             endpoint.publicId,
             "telegram",
-            new Request("https://paperclip.example/fixture", {
+            new Request("https://wardmote.example/fixture", {
               method: "POST",
               headers: {
                 "content-type": "application/json",
@@ -70692,7 +70692,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
             );
             const webhookUrlSha256 = createHash("sha256")
               .update(
-                `https://paperclip.example/api/chat-webhooks/${publicId}/telegram`,
+                `https://wardmote.example/api/chat-webhooks/${publicId}/telegram`,
               )
               .digest("hex");
             await db.transaction(async (tx) => {
@@ -71919,7 +71919,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
             cancelRun: vi.fn(async () => ({ status: "cancelled" })),
           },
           storage: context.storage.storage,
-          publicBaseUrl: "https://paperclip.example",
+          publicBaseUrl: "https://wardmote.example",
           teamsFileUploadRequest: context.uploadRequest,
           scheduleDeferredWork: () => undefined,
         });

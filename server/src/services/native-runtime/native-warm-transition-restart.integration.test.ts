@@ -259,7 +259,7 @@ generated(
           "utf8",
         ),
       ) as Fixture;
-      expect(fixture.schema).toBe("paperclip.test.warm-transition-fixture.v1");
+      expect(fixture.schema).toBe("wardmote.test.warm-transition-fixture.v1");
       // A later rebuild at the same path must fail here, never rewrite the receipt.
       expect(readRunnerdArtifactBinding(fixture.artifact.path)).toEqual({
         version: fixture.artifact.version,

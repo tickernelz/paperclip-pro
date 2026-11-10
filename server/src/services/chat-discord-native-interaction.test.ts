@@ -406,7 +406,7 @@ describe("Discord native question adapter-to-runtime boundary", () => {
         return new Response(null, { status: 200 });
       });
     const webhook = runtime.handleWebhook(
-      new Request("https://paperclip.test/webhook", { method: "POST" }),
+      new Request("https://wardmote.test/webhook", { method: "POST" }),
     );
     try {
       await observed;
@@ -433,7 +433,7 @@ describe("Discord native question adapter-to-runtime boundary", () => {
     expect(
       (
         await runtime.handleWebhook(
-          new Request("https://paperclip.test/webhook", {
+          new Request("https://wardmote.test/webhook", {
             method: "POST",
             body: JSON.stringify({ type: 3, transport: "discord_gateway" }),
           }),

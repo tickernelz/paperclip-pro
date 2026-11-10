@@ -472,7 +472,7 @@ export async function runOpenwaIngestBenchmark(input: { argv: string[]; root: st
     runtime,
     fetch: benchFetch,
     storage,
-    publicBaseUrl: "https://paperclip.example",
+    publicBaseUrl: "https://wardmote.example",
     heartbeat: { wakeup },
     discordGatewayLeaseTtlMs: 120_000,
     discordGatewayLeaseRenewalIntervalMs: 60_000,
@@ -663,7 +663,7 @@ export async function runOpenwaIngestBenchmark(input: { argv: string[]; root: st
         const response = await service.handleWebhook(
           fixture.telegramPublicId,
           "telegram",
-          new Request("https://paperclip.example/api/chat-webhooks/" + fixture.telegramPublicId + "/telegram", {
+          new Request("https://wardmote.example/api/chat-webhooks/" + fixture.telegramPublicId + "/telegram", {
             method: "POST",
             headers: { "content-type": "application/json", "x-telegram-bot-api-secret-token": telegram.secret },
             body: JSON.stringify({
@@ -1053,7 +1053,7 @@ async function seed(db: Db, service: ChatChannelService, gateway: FakeOpenwaGate
     })
     .where(eq(chatEndpoints.id, endpoint.id));
   const added = await service.openwa.addOwner(endpoint.id, { e164: "+" + OWNER_PHONE, expiresInSeconds: 1_800 }, userId);
-  const token = new URL(added.confirmationUrl!, "https://paperclip.example").searchParams.get("token")!;
+  const token = new URL(added.confirmationUrl!, "https://wardmote.example").searchParams.get("token")!;
   await service.confirmIdentityLink(token, userId);
   for (const phone of ALLOWED_PHONES) await service.openwa.addSenderRule(endpoint.id, { list: "allow", e164: "+" + phone }, userId);
 

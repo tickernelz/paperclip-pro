@@ -278,7 +278,7 @@ describe("Teams native task module adapter-to-runtime boundary", () => {
     ) => {
       const response = await runtime.handleWebhook(
         new Request(
-          "https://paperclip.test/api/chat-webhooks/synthetic/microsoft-teams",
+          "https://wardmote.test/api/chat-webhooks/synthetic/microsoft-teams",
           {
             method: "POST",
             headers: {

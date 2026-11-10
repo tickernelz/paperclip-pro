@@ -135,12 +135,12 @@ describe("runtime connection tool delivery", () => {
   const access = {
     version: 1 as const,
     guidance: CONNECTION_INTENT_AGENT_GUIDANCE,
-    mcpEndpoint: "https://paperclip.test/mcp/runtime-tools",
+    mcpEndpoint: "https://wardmote.test/mcp/runtime-tools",
     rest: {
       connectionsSearch:
-        "https://paperclip.test/runtime-tools/connections/search",
+        "https://wardmote.test/runtime-tools/connections/search",
       connectionRequest:
-        "https://paperclip.test/runtime-tools/connections/request",
+        "https://wardmote.test/runtime-tools/connections/request",
     },
     bearerToken: "run-scoped-secret",
     expiresAt: "2026-08-26T15:00:00.000Z",

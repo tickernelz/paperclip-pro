@@ -37,7 +37,7 @@ import {
 // Public, non-secret fixture credentials for the fake OAuth provider. Kept in
 // sync with SMOKE_LAB_DEMO_EMAIL / SMOKE_LAB_DEMO_PASSWORD in
 // server/src/services/smoke-lab.ts — deterministic demo values, never real.
-const DEMO_EMAIL = "smoke@paperclip.test";
+const DEMO_EMAIL = "smoke@wardmote.test";
 const DEMO_PASSWORD = "smoke-password";
 
 function formatTime(value: string | Date | null | undefined): string {

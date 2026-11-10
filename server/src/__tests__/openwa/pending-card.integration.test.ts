@@ -140,7 +140,7 @@ describe("OpenWA pending_card wakes (embedded Postgres + fake gateway)", () => {
     });
     const service = chatChannelService(db, {
       runtime: new ChatSdkRuntime(),
-      publicBaseUrl: "https://paperclip.example",
+      publicBaseUrl: "https://wardmote.example",
       heartbeat: { wakeup } as never,
       scheduleDeferredWork: () => {},
       discordGatewayLeaseTtlMs: 120_000,
@@ -188,7 +188,7 @@ describe("OpenWA pending_card wakes (embedded Postgres + fake gateway)", () => {
       })
       .where(eq(chatEndpoints.id, endpoint.id));
     const added = await service.openwa.addOwner(endpoint.id, { e164: "+" + OWNER_PHONE, expiresInSeconds: 1_800 }, userId);
-    const token = new URL(added.confirmationUrl!, "https://paperclip.example").searchParams.get("token")!;
+    const token = new URL(added.confirmationUrl!, "https://wardmote.example").searchParams.get("token")!;
     await service.confirmIdentityLink(token, userId);
     expect((await service.reconcileProviderRuntimes()).local).toBe(1);
     await gateway.waitForFirstCatchUp();
@@ -241,7 +241,7 @@ describe("OpenWA pending_card wakes (embedded Postgres + fake gateway)", () => {
     await db.insert(authUsers).values({ id: userId, name: "Second owner", email: userId + "@example.com", emailVerified: true, createdAt: new Date(), updatedAt: new Date() });
     await db.insert(companyMemberships).values({ companyId: t.companyId, principalType: "user", principalId: userId, status: "active", membershipRole: "operator" });
     const added = await t.service.openwa.addOwner(t.endpointId, { e164: "+" + SECOND_PHONE, expiresInSeconds: 1_800 }, t.userId);
-    const token = new URL(added.confirmationUrl!, "https://paperclip.example").searchParams.get("token")!;
+    const token = new URL(added.confirmationUrl!, "https://wardmote.example").searchParams.get("token")!;
     await t.service.confirmIdentityLink(token, userId);
     return userId;
   }

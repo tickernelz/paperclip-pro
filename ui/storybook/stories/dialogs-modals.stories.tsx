@@ -361,7 +361,7 @@ function hydrateDialogQueries(queryClient: ReturnType<typeof useQueryClient>) {
         status: "active",
         user: {
           id: "user-board",
-          email: "riley@paperclip.local",
+          email: "riley@wardmote.local",
           name: "Riley Board",
           image: null,
         },

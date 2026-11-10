@@ -30,9 +30,9 @@ describe("Vercel Connect credential adapter", () => {
       "one-time-state",
     )).toBe("http://localhost:3200/api/tools/vercel-connect/callback?state=one-time-state");
     expect(vercelConnectCallbackUrl(
-      "https://paperclip.example/api/tools/oauth/callback",
+      "https://wardmote.example/api/tools/oauth/callback",
       "one-time-state",
-    )).toBe("https://paperclip.example/api/tools/vercel-connect/callback?state=one-time-state");
+    )).toBe("https://wardmote.example/api/tools/vercel-connect/callback?state=one-time-state");
   });
 
   it("gates new setup separately from runtime credential availability", () => {

@@ -210,7 +210,7 @@ function hydrateStorybookQueries(queryClient: ReturnType<typeof useQueryClient>)
         status: "active",
         user: {
           id: "user-board",
-          email: "riley@paperclip.local",
+          email: "riley@wardmote.local",
           name: "Riley Board",
           image: null,
         },
@@ -220,7 +220,7 @@ function hydrateStorybookQueries(queryClient: ReturnType<typeof useQueryClient>)
         status: "active",
         user: {
           id: "user-product",
-          email: "morgan@paperclip.local",
+          email: "morgan@wardmote.local",
           name: "Morgan Product",
           image: null,
         },

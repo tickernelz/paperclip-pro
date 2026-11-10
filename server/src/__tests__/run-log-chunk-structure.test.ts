@@ -19,7 +19,7 @@ describe("run-log chunk structure-aware redaction", () => {
       "WARDMOTE_AGENT_ID=abcdef01-2345-6789-abcd-ef0123456789",
       `WARDMOTE_API_KEY=${SECRET}`,
       'WARDMOTE_ALLOWED_PATHS=["/etc/resolv.conf","/etc/hosts","/etc/ssl/certs"]',
-      "WARDMOTE_BASE_URL=https://paperclip.example/",
+      "WARDMOTE_BASE_URL=https://wardmote.example/",
     ].join("\n");
     const chunk = `${JSON.stringify({
       type: "tool_execution_end",
@@ -33,7 +33,7 @@ describe("run-log chunk structure-aware redaction", () => {
     expectEveryLineParses(compacted);
     expect(compacted).not.toContain(SECRET);
     expect(compacted).toContain("/etc/resolv.conf");
-    expect(compacted).toContain("WARDMOTE_BASE_URL=https://paperclip.example/");
+    expect(compacted).toContain("WARDMOTE_BASE_URL=https://wardmote.example/");
     expect(JSON.parse(compacted.split("\n")[0]!).toolName).toBe("fabric_exec");
   });
 

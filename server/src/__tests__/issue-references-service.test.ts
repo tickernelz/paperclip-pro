@@ -136,7 +136,7 @@ describeEmbeddedPostgres("issueReferenceService", () => {
       id: commentId,
       companyId,
       issueId: sourceIssueId,
-      body: "Follow up in https://paperclip.test/issues/pap-2 after the document lands.",
+      body: "Follow up in https://wardmote.test/issues/pap-2 after the document lands.",
     });
     await refs.syncComment(commentId);
 

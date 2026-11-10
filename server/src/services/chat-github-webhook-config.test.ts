@@ -11,7 +11,7 @@ import {
 } from "./chat-github-webhook-config.js";
 
 const webhookUrl =
-  "https://paperclip.example:8443/api/chat-webhooks/public-id/github";
+  "https://wardmote.example:8443/api/chat-webhooks/public-id/github";
 const appToken = "test-app-jwt-private";
 const webhookSecret = "test-webhook-secret-private";
 const config = { url: webhookUrl, content_type: "json", insecure_ssl: "0" };
@@ -105,10 +105,10 @@ describe("GitHub App webhook reconnect", () => {
   );
 
   it.each([
-    "http://paperclip.example/hook",
-    "https://user:password@paperclip.example/hook",
-    "https://paperclip.example/hook?private=secret",
-    "https://paperclip.example/hook#secret",
+    "http://wardmote.example/hook",
+    "https://user:password@wardmote.example/hook",
+    "https://wardmote.example/hook?private=secret",
+    "https://wardmote.example/hook#secret",
   ])(
     "rejects unsafe callback inputs before sending credentials",
     async (url) => {

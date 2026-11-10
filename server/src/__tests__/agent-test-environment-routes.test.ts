@@ -254,7 +254,7 @@ describe("agent test-environment route", () => {
   });
 
   it("accepts a managed Dot environment without allocating an idle sandbox", async () => {
-    vi.stubEnv("WARDMOTE_PUBLIC_URL", "https://paperclip.example");
+    vi.stubEnv("WARDMOTE_PUBLIC_URL", "https://wardmote.example");
     mockInstanceSettingsService.get.mockResolvedValue({ defaultEnvironmentId: "11111111-1111-4111-8111-111111111111" });
     const app = await createApp();
     try {

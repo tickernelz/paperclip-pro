@@ -430,14 +430,14 @@ describe("company import command over the chunked transfer path", () => {
       "--yes",
       "--json",
       "--api-base",
-      "http://paperclip.test",
+      "http://wardmote.test",
       "--api-key",
       "board-token",
     ]);
 
     expect(fetchMock).toHaveBeenNthCalledWith(
       1,
-      "http://paperclip.test/api/companies/import/transfers",
+      "http://wardmote.test/api/companies/import/transfers",
       expect.objectContaining({ method: "POST" }),
     );
     const declared = JSON.parse(String(fetchMock.mock.calls[0]![1].body));
@@ -446,7 +446,7 @@ describe("company import command over the chunked transfer path", () => {
 
     expect(fetchMock).toHaveBeenNthCalledWith(
       2,
-      "http://paperclip.test/api/companies/import/transfers/transfer-1/parts/0",
+      "http://wardmote.test/api/companies/import/transfers/transfer-1/parts/0",
       expect.objectContaining({
         method: "PUT",
         headers: expect.objectContaining({ "content-type": "application/octet-stream" }),
@@ -454,12 +454,12 @@ describe("company import command over the chunked transfer path", () => {
     );
     expect(fetchMock).toHaveBeenNthCalledWith(
       3,
-      "http://paperclip.test/api/companies/import/transfers/transfer-1/parts/1",
+      "http://wardmote.test/api/companies/import/transfers/transfer-1/parts/1",
       expect.objectContaining({ method: "PUT" }),
     );
     expect(fetchMock).toHaveBeenNthCalledWith(
       4,
-      "http://paperclip.test/api/companies/import/transfers/transfer-1/preview",
+      "http://wardmote.test/api/companies/import/transfers/transfer-1/preview",
       expect.objectContaining({ method: "POST" }),
     );
     // Preview and apply carry the meta fields, never an inline source.
@@ -468,7 +468,7 @@ describe("company import command over the chunked transfer path", () => {
     expect(previewBody).not.toHaveProperty("source");
     expect(fetchMock).toHaveBeenNthCalledWith(
       5,
-      "http://paperclip.test/api/companies/import/transfers/transfer-1/apply",
+      "http://wardmote.test/api/companies/import/transfers/transfer-1/apply",
       expect.objectContaining({ method: "POST" }),
     );
     const applyBody = JSON.parse(String(fetchMock.mock.calls[4]![1].body));
@@ -495,14 +495,14 @@ describe("company import command over the chunked transfer path", () => {
       "--dry-run",
       "--json",
       "--api-base",
-      "http://paperclip.test",
+      "http://wardmote.test",
       "--api-key",
       "board-token",
     ]);
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://paperclip.test/api/companies/import/preview",
+      "http://wardmote.test/api/companies/import/preview",
       expect.objectContaining({ method: "POST" }),
     );
     const body = JSON.parse(String(fetchMock.mock.calls[0]![1].body));
