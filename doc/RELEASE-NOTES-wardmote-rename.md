@@ -15,6 +15,7 @@ This release uses only the Wardmote names. Nothing reads the old names any more;
 - **Runner adapter type.** The native runner adapter is `wardmote_runner`, its queued-comment protocol is `wardmote_runner_v1`, comments it authorises record `wardmote_runner_protocol`, and its error codes start with `wardmote_runner_`. Database migration 0362 rewrites agents, their runtime state, task sessions, config history, hire approvals, auth sessions, join requests, cost events and comment metadata. API clients that send or compare the old values must use the new ones.
 - **Type and function names.** Exported TypeScript types, classes and functions drop the old name for `Wardmote` (for example `WardmotePluginManifestV1` in the plugin SDK and `useWardmoteIssueRuntime` in the UI). Plugins and integrations that import the old names must rename their imports. The ACPX profiles whose pinned sources changed move to Pi profile 24 and Copilot profile 20; the earlier ones become historical.
 - **Stored setting and context keys.** Settings, agent configuration, task sessions, open wake requests and run context use `wardmote*` keys (for example `enableWardmoteDeveloperMode`, `wardmoteMcpToolsets`, `wardmoteWake`). Database migration 0363 renames them in instance settings, agents, their config history, task sessions, open wake requests, plugin settings, and the context of runs from the last 14 days, still queued or running, or carrying secret redactions; older run context keeps its old keys as history. On a copy of production data it took 52 s and touched 7,864 runs, so the first start after the upgrade takes about a minute longer before the server answers. Plugin manifests that still declare the retired minimum-version alias are refused; declare `minimumHostVersion`. The announcement feed keeps its upstream field name.
+- **Podman Quadlet units.** The files in `docker/quadlet/` are `wardmote.pod`, `wardmote.container` and `wardmote-db.container`, so systemd names the units `wardmote-pod`, `wardmote` and `wardmote-db`. The volume, data directory, env file and image tag keep their names in this release. See "Podman Quadlet installs" below.
 - **Stored channel values.** Approvals, grants, autonomy windows and owner relays decided in the board record `wardmote` as their channel, and the local board user's address is `local@wardmote.local`; database migration 0360 rewrites existing rows. API responses carry `wardmote` where they carried the old value.
 
 ## Upgrading an existing install
@@ -28,6 +29,17 @@ An install on 2026.1109.x or older still runs the old `update` code, which canno
 5. Start it: `wardmote service start`. The server applies the database migrations and rewrites stored agent text.
 
 `npx @tickernelz/wardmote install` and `wardmote update` run step 4 on their own when they find the old layout and the service is stopped.
+
+### Podman Quadlet installs
+
+Quadlet units are copied by hand, so replace them once:
+
+1. Stop the old pod: `systemctl --user stop paperclip-pod`.
+2. Remove the old unit files: `rm ~/.config/containers/systemd/paperclip.pod ~/.config/containers/systemd/paperclip.container ~/.config/containers/systemd/paperclip-db.container` (under `/etc/containers/systemd/` for a rootful install).
+3. Copy the new ones: `cp docker/quadlet/*.pod docker/quadlet/*.container ~/.config/containers/systemd/`.
+4. Reload and start: `systemctl --user daemon-reload && systemctl --user start wardmote-pod`.
+
+The new units use the same volume, data directory and env file, so the data carries over.
 
 ## Rolling back
 

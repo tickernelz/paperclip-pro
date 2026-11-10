@@ -299,6 +299,20 @@ systemctl --user stop wardmote-pod      # Stop all
 - Paperclip data persists at `~/.local/share/paperclip`.
 - For rootful quadlet deployment, remove `%h` prefixes and use absolute paths.
 
+### Upgrading from the old unit names
+
+Installs set up before the Wardmote rename use `paperclip.pod`, `paperclip.container` and `paperclip-db.container`. Replace them once; the volume, data directory and env file stay the same, so the data carries over:
+
+```sh
+systemctl --user stop paperclip-pod
+rm ~/.config/containers/systemd/paperclip.pod \
+  ~/.config/containers/systemd/paperclip.container \
+  ~/.config/containers/systemd/paperclip-db.container
+cp docker/quadlet/*.pod docker/quadlet/*.container ~/.config/containers/systemd/
+systemctl --user daemon-reload
+systemctl --user start wardmote-pod
+```
+
 ## Onboard Smoke Test (Ubuntu + npm only)
 
 Use this when you want to mimic a fresh machine that only has Ubuntu + npm and verify:
