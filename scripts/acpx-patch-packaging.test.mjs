@@ -319,7 +319,7 @@ test("bundled esbuild cannot follow a platform payload or package namespace outs
   assert.throws(() => stageBundledEsbuildOptionalDependencies(directory, publish), /escapes its producer graph/);
 });
 
-test("Paperclip Runner pins the qualified ACPX host callbacks", () => {
+test("Wardmote Runner pins the qualified ACPX host callbacks", () => {
   assert.equal(rootPackage.pnpm.patchedDependencies["acpx@0.13.1"], "patches/acpx@0.13.1.patch");
   assert.equal(
     rootPackage.pnpm.patchedDependencies["@agentclientprotocol/claude-agent-acp@0.73.0"],

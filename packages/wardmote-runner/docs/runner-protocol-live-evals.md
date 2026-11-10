@@ -2,7 +2,7 @@
 
 For choosing between Runner Evals and full-stack Product E2E Evals, and for
 shared guidance on provenance, history, cost, and failure classification, see
-the [Paperclip evaluation guide](../../../doc/evals.md). This document remains
+the [Wardmote evaluation guide](../../../doc/evals.md). This document remains
 the authoritative Runner Evals live protocol runbook.
 
 ## One Evalbook presentation
@@ -109,7 +109,7 @@ must not replace that runtime identity in a report.
 Use the `Runner Direct Live Protocol Evals` workflow. Dispatch the workflow
 from the default branch and provide:
 
-- `target_branch`: the Paperclip branch to build and test;
+- `target_branch`: the Wardmote branch to build and test;
 - `evals_sha`: an exact 40-character commit from
   `paperclipai/paperclip-evals`;
 - `rosters`: `all` for every enabled lane in the canonical
@@ -148,7 +148,7 @@ supports Grok subscription admission and records this summary field. Keep API
 and subscription campaigns separate when interpreting results. Remove temporary
 subscription test secrets after the authorized qualification completes.
 
-The authorization job resolves the Paperclip branch to a commit and verifies
+The authorization job resolves the Wardmote branch to a commit and verifies
 the supplied eval commit before any checkout. A short-lived bot token generated
 from `COMMITPERCLIP_KEY` authorizes each checkout of the private eval repository;
 the token is masked and is never forwarded to a provider process. The workflow
@@ -316,7 +316,7 @@ The history index includes:
   New campaigns include all retained attempts (including retries). Backfilled old
   campaigns with only final-cell usage are labeled **historical final attempts only**.
   Missing usage is unknown, not zero; partial totals use `≥` and display coverage.
-- Exact Paperclip and eval-suite commit links (full SHA on hover), the source ref,
+- Exact Wardmote and eval-suite commit links (full SHA on hover), the source ref,
   and the GitHub Actions run. These identify the code **evaluated**, not merely
   the commit used to render an old report.
 - A separate report-refresh list, excluded from trend points and model-spend totals.

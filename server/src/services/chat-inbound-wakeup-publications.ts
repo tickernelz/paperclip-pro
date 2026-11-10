@@ -41,7 +41,7 @@ export function inboundWakePublicationText(
   if (state === "removed") return "This queued message was removed.";
   return state === "queued"
     ? "Your follow-up is queued."
-    : "This follow-up was not started. Open the task in Paperclip for details.";
+    : "This follow-up was not started. Open the task in Wardmote for details.";
 }
 
 function hasComment(

@@ -122,7 +122,7 @@ async function main() {
       opened.view.mode === "live" &&
       opened.view.identity.agentLabel === "Real Codex" &&
       opened.view.identity.runnerLabel === "Real runnerd" &&
-      opened.view.identity.controlPlaneLabel === "Mock Paperclip";
+      opened.view.identity.controlPlaneLabel === "Mock Wardmote";
     assertions.freshMockTenant =
       typeof opened.identity?.token === "string" &&
       opened.view.issue.identifier === opened.identity.identifier &&

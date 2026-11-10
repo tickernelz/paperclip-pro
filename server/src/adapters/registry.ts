@@ -145,7 +145,7 @@ const wardmoteRunnerAdapter: ServerAdapterModule = {
         ? error
         : new WardmoteRunnerProviderProfileError(
             "wardmote_runner_provider_unsupported",
-            "Paperclip Runner provider configuration is invalid.",
+            "Wardmote Runner provider configuration is invalid.",
           );
       return {
         adapterType: "wardmote_runner",
@@ -160,7 +160,7 @@ const wardmoteRunnerAdapter: ServerAdapterModule = {
     }
     if (profile.provider === "openai_dot") {
       return { adapterType: "wardmote_runner", status: "warn" as const, testedAt: new Date().toISOString(),
-        checks: [{ code: "dot_event_test_required", level: "warn" as const, message: "Dot manages its model and billing. Validate the dedicated agent binding and event round trip in Paperclip; this read-only check does not wake the Dot." }] };
+        checks: [{ code: "dot_event_test_required", level: "warn" as const, message: "Dot manages its model and billing. Validate the dedicated agent binding and event round trip in Wardmote; this read-only check does not wake the Dot." }] };
     }
     if (profile.provider === "acpx") {
       if (["copilot"].includes(profile.acpxAgent)) {
@@ -278,7 +278,7 @@ const wardmoteRunnerAdapter: ServerAdapterModule = {
         )
       : buildNpmRuntimeCommandSpec(config, "codex", "@openai/codex@0.160.0"),
   agentConfigurationDoc:
-    "# Paperclip Runner\n\nAdapter: wardmote_runner\n\nRuns Codex, OpenCode, Claude Managed, AWS AgentCore, or ACPX Claude/Grok Build/Cursor/Pi through the Rust Paperclip runner and authenticated PRP transport. Pi accepts an explicit provider/model ID and uses the company credentials bound to the agent environment. GitHub Copilot awaits local and Daytona qualification. Managed providers use company-scoped qualified profiles, explicit retention acknowledgement, and spend limits.\n",
+    "# Wardmote Runner\n\nAdapter: wardmote_runner\n\nRuns Codex, OpenCode, Claude Managed, AWS AgentCore, or ACPX Claude/Grok Build/Cursor/Pi through the Rust Wardmote runner and authenticated PRP transport. Pi accepts an explicit provider/model ID and uses the company credentials bound to the agent environment. GitHub Copilot awaits local and Daytona qualification. Managed providers use company-scoped qualified profiles, explicit retention acknowledgement, and spend limits.\n",
   getConfigSchema: () => ({
     fields: [
       {
@@ -392,7 +392,7 @@ const wardmoteRunnerAdapter: ServerAdapterModule = {
         label: "Estimated session ceiling (USD)",
         type: "number" as const,
         default: 1,
-        hint: "Paperclip estimate; AWS does not provide a per-session currency hard stop.",
+        hint: "Wardmote estimate; AWS does not provide a per-session currency hard stop.",
         meta: { visibleWhen: { key: "provider", value: "aws_agentcore" } },
       },
       {

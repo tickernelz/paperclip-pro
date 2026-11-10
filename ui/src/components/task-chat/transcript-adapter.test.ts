@@ -1217,7 +1217,7 @@ describe("buildTurnTimelineRows (DOT-217)", () => {
     ]);
   });
 
-  it("keeps runtime requests in the Paperclip Runner timeline input", () => {
+  it("keeps runtime requests in the Wardmote Runner timeline input", () => {
     const pending = request("pending", "pending");
     expect(
       wardmoteRunnerTimelineItems([

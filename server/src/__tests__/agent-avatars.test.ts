@@ -124,7 +124,7 @@ describe("on-demand agent avatars", () => {
     }
     expect(data[(256 * info.width + 256) * info.channels + 3]).toBe(255);
   }, 20_000);
-  it("serves Slack exports on the Paperclip dark-mode color in a separate cache", async () => {
+  it("serves Slack exports on the Wardmote dark-mode color in a separate cache", async () => {
     const css = await readFile(new URL("../../../ui/src/index.css", import.meta.url), "utf8");
     const [lightness, chroma, hue] = (css.match(/\n\.dark\s*\{[^}]*?--bg:\s*oklch\(([\d.]+) ([\d.]+) ([\d.]+)\)/)?.slice(1) ?? []).map(Number);
     const a = chroma * Math.cos((hue * Math.PI) / 180);

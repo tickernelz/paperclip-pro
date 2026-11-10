@@ -1,7 +1,7 @@
 {
   "name": "@tickernelz/wardmote-plugin-sdk",
   "version": "1.0.0",
-  "description": "Stable public API for Paperclip plugins — worker-side context and UI bridge hooks",
+  "description": "Stable public API for Wardmote plugins — worker-side context and UI bridge hooks",
   "license": "MIT",
   "homepage": "https://github.com/tickernelz/wardmote",
   "bugs": {

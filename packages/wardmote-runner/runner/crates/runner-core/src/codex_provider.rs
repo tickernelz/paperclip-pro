@@ -1047,7 +1047,7 @@ impl CodexProvider {
                 json!({
                     "clientInfo": {
                         "name": "wardmote-runnerd",
-                        "title": "Paperclip Runner",
+                        "title": "Wardmote Runner",
                         "version": "1",
                     },
                     "capabilities": {
@@ -2049,7 +2049,7 @@ impl CodexProvider {
         // A recognized helper is part of the provider conversation, but has no
         // Paperclip task binding. Reject its RPC without borrowing root authority
         // or quarantining the root run. Unknown foreign threads still fail closed.
-        let message = "Paperclip tools are authorized only for the parent task. Return your findings to the parent agent; it must perform Paperclip coordination and ask the user questions.";
+        let message = "Wardmote tools are authorized only for the parent task. Return your findings to the parent agent; it must perform Wardmote coordination and ask the user questions.";
         let response = if method == "item/tool/call" {
             json!({"id": rpc_id, "result": codex_tool_failure(message)})
         } else {
@@ -2404,7 +2404,7 @@ impl CodexProvider {
                 if !self.authorized_tool_ids.contains(&operation_id) {
                     self.send_frame(&json!({
                         "id": rpc_id,
-                        "result": codex_tool_failure("Paperclip did not authorize this tool for the run"),
+                        "result": codex_tool_failure("Wardmote did not authorize this tool for the run"),
                     }))?;
                     return Err(LocalRunnerError::invalid(format!(
                         "Codex requested unauthorized tool {}",
@@ -2570,7 +2570,7 @@ impl CodexProvider {
                         "id": rpc_id,
                         "error": {
                             "code": -32000,
-                            "message": "Paperclip rejected this runtime request because the pending input capacity was reached",
+                            "message": "Wardmote rejected this runtime request because the pending input capacity was reached",
                         },
                     }))?;
                     return Ok(Some(CodexProviderEvent::Notification {
@@ -2927,7 +2927,7 @@ impl CodexProvider {
         for request in pending.into_values() {
             if let Err(error) = self.send_frame(&json!({
                 "id": request.rpc_id,
-                "result": codex_tool_failure("Paperclip stopped the active provider turn"),
+                "result": codex_tool_failure("Wardmote stopped the active provider turn"),
             })) {
                 first_error.get_or_insert(error);
             }
@@ -3709,7 +3709,7 @@ fn validate_opencode_question_set(question_set: &Value) -> Result<(), LocalRunne
         .map_err(|_| LocalRunnerError::invalid("embedded question-set schema cannot compile"))?;
     if !validator.is_valid(question_set) {
         return Err(LocalRunnerError::invalid(
-            "OpenCode runtime request input failed the Paperclip question-set schema",
+            "OpenCode runtime request input failed the Wardmote question-set schema",
         ));
     }
     let questions = question_set

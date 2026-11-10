@@ -135,7 +135,7 @@ describe("OpenCode MCP bridge", () => {
       method: "tools/call",
       params: { name: "documents.read", arguments: {} },
     });
-    expect(await response.json()).toMatchObject({ result: { isError: true, content: [{ text: "Paperclip tool call timed out" }] } });
+    expect(await response.json()).toMatchObject({ result: { isError: true, content: [{ text: "Wardmote tool call timed out" }] } });
     expect(observed).toHaveBeenCalledOnce();
   });
 
@@ -182,7 +182,7 @@ describe("OpenCode MCP bridge", () => {
       params: { requestId: "cancel-me", reason: "turn stopped" },
     })).status).toBe(202);
     expect(await (await pending).json()).toMatchObject({
-      result: { isError: true, content: [{ text: "Paperclip tool call cancelled" }] },
+      result: { isError: true, content: [{ text: "Wardmote tool call cancelled" }] },
     });
   });
 });

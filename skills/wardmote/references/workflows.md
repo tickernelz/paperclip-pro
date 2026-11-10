@@ -1,4 +1,4 @@
-# Paperclip Workflow Playbooks
+# Wardmote Workflow Playbooks
 
 Reference material for niche workflows that are pointed to from `SKILL.md`. Load only when the task matches.
 
@@ -84,7 +84,7 @@ Whole-company package moves have no dedicated tool by design. Use `wardmoteApiRe
   - `replace` is rejected
   - collisions resolve with `rename` or `skip`
   - issues are always created as new issues
-- CEO agents may use the safe paths with `target.mode = "new_company"` to create a new company directly. Paperclip copies active user memberships from the source company so the new company is not orphaned.
+- CEO agents may use the safe paths with `target.mode = "new_company"` to create a new company directly. Wardmote copies active user memberships from the source company so the new company is not orphaned.
 
 For export, preview first and keep tasks explicit:
 
@@ -99,7 +99,7 @@ Send the request body as `jsonBody`, a JSON string.
 
 ## Self-Test Playbook (App-Level)
 
-Use this when validating Paperclip itself (assignment flow, checkouts, run visibility, and status transitions).
+Use this when validating Wardmote itself (assignment flow, checkouts, run visibility, and status transitions).
 
 1. Create a throwaway issue assigned to a known local agent (`claudecoder` or `codexcoder`) with `wardmoteCreateIssue` (core):
 

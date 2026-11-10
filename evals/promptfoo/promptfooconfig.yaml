@@ -14,7 +14,7 @@
 #
 # Requires OPENROUTER_API_KEY or individual provider keys.
 
-description: "Paperclip heartbeat behavior evals"
+description: "Wardmote heartbeat behavior evals"
 
 prompts:
   - file://prompts/heartbeat-system.txt

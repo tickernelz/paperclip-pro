@@ -35,7 +35,7 @@ function httpStatus(result: RpcResult): number {
     : 200;
 }
 
-describeEmbeddedPostgres("hosted Paperclip MCP required-body tools", () => {
+describeEmbeddedPostgres("hosted Wardmote MCP required-body tools", () => {
   const ctx = useEmbeddedPostgres("wardmote-mcp-required-body-");
   let server: Server;
   let origin = "";

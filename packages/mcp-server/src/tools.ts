@@ -93,7 +93,7 @@ async function callRuntimeConnectionTool(
   const endpoint = process.env[endpointEnv]?.trim();
   const token = process.env.WARDMOTE_RUNTIME_TOOLS_TOKEN?.trim();
   if (!endpoint || !token) {
-    throw new Error("Connection intent tools are available only inside an active Paperclip heartbeat run");
+    throw new Error("Connection intent tools are available only inside an active Wardmote heartbeat run");
   }
   const response = await fetch(endpoint, {
     method: "POST",
@@ -428,7 +428,7 @@ export function createToolDefinitions(
     ),
     makeTool(
       "wardmoteMe",
-      "Get the current authenticated Paperclip actor details",
+      "Get the current authenticated Wardmote actor details",
       z.object({}),
       async () => client.requestJson("GET", "/agents/me"),
     ),
@@ -830,7 +830,7 @@ export function createToolDefinitions(
     ),
     makeTool(
       "wardmoteApiRequest",
-      "Make a JSON request to an existing Paperclip /api endpoint for unsupported operations. Send the request body as jsonBody, a JSON object such as {body: 'Done'} for POST /issues/PAP-1/comments, or the same object as a JSON string; body is accepted as an alias of jsonBody.",
+      "Make a JSON request to an existing Wardmote /api endpoint for unsupported operations. Send the request body as jsonBody, a JSON object such as {body: 'Done'} for POST /issues/PAP-1/comments, or the same object as a JSON string; body is accepted as an alias of jsonBody.",
       apiRequestSchema,
       async ({ method, path, jsonBody, body }) => {
         if (!path.startsWith("/") || path.includes("..")) {

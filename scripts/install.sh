@@ -32,7 +32,7 @@ fi
 
 usage() {
   cat <<'EOF'
-Install Paperclip on macOS, Linux, or WSL2.
+Install Wardmote on macOS, Linux, or WSL2.
 
 Usage:
   curl -fsSLO https://paperclip.ing/install.sh
@@ -44,7 +44,7 @@ Options:
   --version <version>      Install an exact published version
   --no-onboard             Do not start onboarding after installation
   --no-prompt              Run non-interactively
-  --install-service        Install the per-user Paperclip service
+  --install-service        Install the per-user Wardmote service
   --dry-run                Print the install plan without changing files
   --verbose                Enable verbose installer output
   -h, --help               Show this help
@@ -52,7 +52,7 @@ Options:
 Every option also has a WARDMOTE_INSTALL_* environment equivalent, for example
 WARDMOTE_INSTALL_VERSION=2026.722.0 and WARDMOTE_INSTALL_NO_PROMPT=1.
 
-To install from a git branch, tag, or commit, use the Paperclip CLI directly:
+To install from a git branch, tag, or commit, use the Wardmote CLI directly:
 npx @tickernelz/wardmote install --ref <ref>
 EOF
 }
@@ -378,7 +378,7 @@ chmod 600 "$NPM_USERCONFIG"
 NPM_ENV=(env "NPM_CONFIG_REGISTRY=$PUBLIC_NPM_REGISTRY" "npm_config_registry=$PUBLIC_NPM_REGISTRY" "NPM_CONFIG_USERCONFIG=$NPM_USERCONFIG" "npm_config_userconfig=$NPM_USERCONFIG")
 INSTALL_COMMAND=("${NPM_ENV[@]}" npx --yes "--registry=$PUBLIC_NPM_REGISTRY" "$PACKAGE_SPEC" "${INSTALL_ARGS[@]}")
 
-log "Delegating to the Paperclip CLI"
+log "Delegating to the Wardmote CLI"
 if [ "$DRY_RUN" = "1" ]; then
   print_command "${INSTALL_COMMAND[@]}"
   exit 0
@@ -388,7 +388,7 @@ print_command "${INSTALL_COMMAND[@]}"
 "${INSTALL_COMMAND[@]}"
 
 if [ "$INSTALL_SERVICE" = "1" ]; then
-  log "Installing the Paperclip service"
+  log "Installing the Wardmote service"
   print_command "${NPM_ENV[@]}" npx --yes "--registry=$PUBLIC_NPM_REGISTRY" "$PACKAGE_SPEC" service install
   "${NPM_ENV[@]}" npx --yes "--registry=$PUBLIC_NPM_REGISTRY" "$PACKAGE_SPEC" service install
 fi
@@ -399,7 +399,7 @@ if [ "$NO_ONBOARD" = "0" ] && [ -t 0 ] && [ -t 1 ]; then
   elif [ -x "${HOME:-}/.local/bin/paperclip-pro" ]; then
     exec "${HOME}/.local/bin/wardmote" onboard
   else
-    fail "Paperclip was installed, but 'wardmote' is not available on PATH. Open a new shell and run 'wardmote onboard'."
+    fail "Wardmote was installed, but 'wardmote' is not available on PATH. Open a new shell and run 'wardmote onboard'."
   fi
 fi
 

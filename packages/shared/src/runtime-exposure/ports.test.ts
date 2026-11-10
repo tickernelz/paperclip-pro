@@ -50,7 +50,7 @@ describe("runtime exposure port policy", () => {
     expect(() => deriveViteHmrPort(52000)).toThrow(RangeError);
   });
 
-  it("shares the generic Paperclip HMR derivation with high-port overflow fallback", () => {
+  it("shares the generic Wardmote HMR derivation with high-port overflow fallback", () => {
     expect(deriveWardmoteViteHmrPort(3_100)).toBe(13_100);
     expect(deriveWardmoteViteHmrPort(55_535)).toBe(65_535);
     expect(deriveWardmoteViteHmrPort(55_536)).toBe(45_536);

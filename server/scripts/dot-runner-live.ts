@@ -83,7 +83,7 @@ try {
     }
     next();
   });
-  app.get("/", (_req, res) => res.type("text").send("Disposable Paperclip Dot lab. Authenticated MCP endpoint: /mcp/wardmote. No production data."));
+  app.get("/", (_req, res) => res.type("text").send("Disposable Wardmote Dot lab. Authenticated MCP endpoint: /mcp/wardmote. No production data."));
   app.get("/mcp-connect/:id", async (req, res) => {
     const id = requestIdSchema.parse(req.params.id);
     const redirect = redirects.get(id);
@@ -92,7 +92,7 @@ try {
     if (pending.size >= 20 && !pending.has(id)) { res.sendStatus(429); return; }
     pending.set(id, request);
     res.setHeader("Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'");
-    res.type("html").send(`<!doctype html><meta charset="utf-8"><meta http-equiv="refresh" content="3"><title>Paperclip Dot lab connection</title><h1>Connect the disposable Dot lab</h1><p>Waiting for the local lab operator to approve this request.</p><p>Client: ${escape(request.clientName)}. Return destination: ${escape(request.redirectOrigin)}.</p><p>This lab contains one test task and no existing Paperclip data. It expires when the lab closes.</p><p>Request: ${escape(id)}</p>`);
+    res.type("html").send(`<!doctype html><meta charset="utf-8"><meta http-equiv="refresh" content="3"><title>Wardmote Dot lab connection</title><h1>Connect the disposable Dot lab</h1><p>Waiting for the local lab operator to approve this request.</p><p>Client: ${escape(request.clientName)}. Return destination: ${escape(request.redirectOrigin)}.</p><p>This lab contains one test task and no existing Wardmote data. It expires when the lab closes.</p><p>Request: ${escape(id)}</p>`);
   });
   app.use(publicMcpIngressRoutes(oauth, createPublicMcpExecutor(db, oauth, api), service, bridge));
   const errors: express.ErrorRequestHandler = (_error, _req, res, _next) => { res.status(400).json({ error: "Lab request unavailable" }); };
@@ -134,7 +134,7 @@ try {
     const subscriptions = await db.select().from(mcpEventSubscriptions);
     assert(subscriptions.some(s => s.grantId === grantId && s.name === "paperclip.dot.work_available" && !s.stoppedAt && s.expiresAt > new Date()), "Dot must establish its event subscription first");
     queued = true;
-    await native.startTurn({ message: { role: "user", text: "Live integration test: compute 17 + 25. Call the projected save_report tool with body 'Dot received the Paperclip event. 17 + 25 = 42.' Then finish with schema paperclip.run_result.v1, reportedWorkDisposition 'done', summary stating the saved result, completionClaim {contractRevision:'dot-live-v1',objectiveSatisfied:true,criteria:[],remainingWork:[]}, and empty arrays for evidence, verification, attentionRequests, artifacts. Do not use any other apps, private data, external messages, or additional tasks." } });
+    await native.startTurn({ message: { role: "user", text: "Live integration test: compute 17 + 25. Call the projected save_report tool with body 'Dot received the Wardmote event. 17 + 25 = 42.' Then finish with schema paperclip.run_result.v1, reportedWorkDisposition 'done', summary stating the saved result, completionClaim {contractRevision:'dot-live-v1',objectiveSatisfied:true,criteria:[],remainingWork:[]}, and empty arrays for evidence, verification, attentionRequests, artifacts. Do not use any other apps, private data, external messages, or additional tasks." } });
     await service!.tick(); res.json({ queued: true });
   });
   control.post("/stop", (_req, res) => { res.json({ stopping: true }); stopLab(); });

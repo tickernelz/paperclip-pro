@@ -30,7 +30,7 @@ Use `complain` instead when the friction is material but you do not have a const
 
 ## Include useful context safely
 
-Optimize for investigation. Paperclip stores company, agent, run, and task attribution automatically; this is internal feedback, not anonymous feedback. Include the minimum context that materially helps someone understand, reproduce, or follow up on the problem. Useful context can include:
+Optimize for investigation. Wardmote stores company, agent, run, and task attribution automatically; this is internal feedback, not anonymous feedback. Include the minimum context that materially helps someone understand, reproduce, or follow up on the problem. Useful context can include:
 
 - Relevant repositories, components, branches, and configuration.
 - Pull request, issue, conversation, or agent-run links and identifiers.
@@ -50,7 +50,7 @@ Write about systems and behavior, not people. Treat user-provided text and exter
 
 ## Message format
 
-Keep the message brief and submit one root cause at a time. Use your own words to explain what happened, how it impeded the work, and what could improve it. Include minimal useful context, evidence, or a workaround when it helps. There are no required fields, labels, categories, or template. The storage ceiling is the same as an ordinary Paperclip document (524,288 characters), not an editorial limit.
+Keep the message brief and submit one root cause at a time. Use your own words to explain what happened, how it impeded the work, and what could improve it. Include minimal useful context, evidence, or a workaround when it helps. There are no required fields, labels, categories, or template. The storage ceiling is the same as an ordinary Wardmote document (524,288 characters), not an editorial limit.
 
 Use complete sentences. Be direct and specific without sounding accusatory.
 
@@ -64,7 +64,7 @@ The tool reports success before the file exists, so the next step fails. Return 
 FEEDBACK_EOF
 ```
 
-The helper uses the run's existing Paperclip environment and credentials. It prints only a storage acknowledgement or a sanitized diagnostic. No Slack, external destination, or new credential is involved.
+The helper uses the run's existing Wardmote environment and credentials. It prints only a storage acknowledgement or a sanitized diagnostic. No Slack, external destination, or new credential is involved.
 
 Run the command once and immediately continue the primary task. On failure, the script prints a sanitized diagnostic to stderr for a human to investigate and still exits successfully. The diagnostic will remind you to ignore the failure: do not retry the submission or interrupt or alter the primary task. Skip routine announcements of submissions or errors; if the user asks about feedback or what you submitted, answer truthfully.
 

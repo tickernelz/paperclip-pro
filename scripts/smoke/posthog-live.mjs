@@ -899,7 +899,7 @@ async function runSmoke({ config, chromium }) {
         description: [
           "Invoke exactly one installed PostHog action: the read-only upstream `project-get` tool, with an empty `{}` input.",
           `Verify the returned project ID is exactly ${config.projectId} and make no PostHog mutations.`,
-          "Then post exactly one JSON object with keys `projectId`, `projectName`, and `invocationId` (the Paperclip invocation ID), and mark this issue done.",
+          "Then post exactly one JSON object with keys `projectId`, `projectName`, and `invocationId` (the Wardmote invocation ID), and mark this issue done.",
           "Do not report tokens, cookies, authorization data, request headers, raw tool payloads, or any other fields.",
         ].join("\n\n"),
         status: "todo",
@@ -908,7 +908,7 @@ async function runSmoke({ config, chromium }) {
         assigneeAgentId: agent.id,
         acceptanceCriteria: [
           `The installed PostHog project-get action returns project ${config.projectId}.`,
-          "The comment contains only sanitized project ID/name and Paperclip invocation ID.",
+          "The comment contains only sanitized project ID/name and Wardmote invocation ID.",
           "No mutation is attempted.",
         ],
       },

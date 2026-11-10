@@ -240,7 +240,7 @@ function assertPermissionMode(
     if (provider === "codex") {
       throw new WardmoteRunnerProviderProfileError(
         "wardmote_runner_codex_permission_mode_unqualified",
-        "Paperclip Runner currently supports Codex only with codexPermissionMode set to never. Update the agent configuration before starting a new native run.",
+        "Wardmote Runner currently supports Codex only with codexPermissionMode set to never. Update the agent configuration before starting a new native run.",
       );
     }
     throw new WardmoteRunnerProviderProfileError(
@@ -366,7 +366,7 @@ export function resolveWardmoteRunnerProviderProfile(
   if (!isWardmoteRunnerProvider(candidate)) {
     throw new WardmoteRunnerProviderProfileError(
       "wardmote_runner_provider_unsupported",
-      "Paperclip Runner provider must be Codex, OpenCode, Claude Managed, AWS AgentCore, or ACPX.",
+      "Wardmote Runner provider must be Codex, OpenCode, Claude Managed, AWS AgentCore, or ACPX.",
     );
   }
 
@@ -399,7 +399,7 @@ export function resolveWardmoteRunnerProviderProfile(
     if (!model || !model.includes("/") || model.endsWith("/")) {
       throw new WardmoteRunnerProviderProfileError(
         "wardmote_runner_opencode_model_invalid",
-        "Paperclip Runner OpenCode requires model in provider/model form.",
+        "Wardmote Runner OpenCode requires model in provider/model form.",
       );
     }
     return {
@@ -414,13 +414,13 @@ export function resolveWardmoteRunnerProviderProfile(
     if (!managedProfileId) {
       throw new WardmoteRunnerProviderProfileError(
         "wardmote_runner_claude_managed_profile_required",
-        "Paperclip Runner Claude Managed requires a company managed-agent profile.",
+        "Wardmote Runner Claude Managed requires a company managed-agent profile.",
       );
     }
     if (config.managedAgentsRetentionAcknowledged !== true) {
       throw new WardmoteRunnerProviderProfileError(
         "wardmote_runner_claude_managed_retention_required",
-        "Paperclip Runner Claude Managed requires acknowledgement of stateful beta retention.",
+        "Wardmote Runner Claude Managed requires acknowledgement of stateful beta retention.",
       );
     }
     if (model !== null && model !== CLAUDE_MANAGED_QUALIFIED_MODEL) {
@@ -437,7 +437,7 @@ export function resolveWardmoteRunnerProviderProfile(
       maxSessionListCostUsd: positiveNumberOrNull(
         config.maxSessionListCostUsd,
         "wardmote_runner_claude_managed_spend_cap_invalid",
-        "Paperclip Runner Claude Managed requires a positive session spend ceiling when overridden.",
+        "Wardmote Runner Claude Managed requires a positive session spend ceiling when overridden.",
       ),
     };
   }
@@ -447,13 +447,13 @@ export function resolveWardmoteRunnerProviderProfile(
     if (!agentCoreProfileId) {
       throw new WardmoteRunnerProviderProfileError(
         "wardmote_runner_aws_agentcore_profile_required",
-        "Paperclip Runner AWS AgentCore requires a company remote-agent profile.",
+        "Wardmote Runner AWS AgentCore requires a company remote-agent profile.",
       );
     }
     if (config.agentCoreRetentionAcknowledged !== true) {
       throw new WardmoteRunnerProviderProfileError(
         "wardmote_runner_aws_agentcore_retention_required",
-        "Paperclip Runner AWS AgentCore requires acknowledgement of 90-day Memory retention.",
+        "Wardmote Runner AWS AgentCore requires acknowledgement of 90-day Memory retention.",
       );
     }
     if (model !== null && model !== AGENTCORE_QUALIFIED_MODEL) {
@@ -470,7 +470,7 @@ export function resolveWardmoteRunnerProviderProfile(
       maxEstimatedSessionCostUsd: positiveNumberOrNull(
         config.maxEstimatedSessionCostUsd,
         "wardmote_runner_aws_agentcore_spend_cap_invalid",
-        "Paperclip Runner AWS AgentCore requires a positive estimated session spend ceiling when overridden.",
+        "Wardmote Runner AWS AgentCore requires a positive estimated session spend ceiling when overridden.",
       ),
     };
   }
@@ -498,7 +498,7 @@ export function resolveWardmoteRunnerProviderProfile(
   if (acpxAgent !== "claude" && acpxAgent !== "codex" && acpxAgent !== "grok" && acpxAgent !== "cursor" && acpxAgent !== "pi") {
     throw new WardmoteRunnerProviderProfileError(
       "wardmote_runner_acpx_agent_unavailable",
-      "Paperclip Runner ACPX requires a qualified agent profile.",
+      "Wardmote Runner ACPX requires a qualified agent profile.",
     );
   }
   const selectedModel = model || DEFAULT_ACPX_RUNNER_MODELS[acpxAgent] || "";
@@ -507,7 +507,7 @@ export function resolveWardmoteRunnerProviderProfile(
   } catch (error) {
     throw new WardmoteRunnerProviderProfileError(
       "wardmote_runner_acpx_model_unqualified",
-      error instanceof Error ? error.message : "Paperclip Runner ACPX requires an admitted model.",
+      error instanceof Error ? error.message : "Wardmote Runner ACPX requires an admitted model.",
     );
   }
   return {
@@ -551,7 +551,7 @@ export function resolveWardmoteRunnerNativeProviderInput(input: {
   if (profile.backend !== input.backend) {
     throw new WardmoteRunnerProviderProfileError(
       "wardmote_runner_provider_changed",
-      "Paperclip Runner provider changed after this run selected its native backend.",
+      "Wardmote Runner provider changed after this run selected its native backend.",
     );
   }
   if (profile.provider === "openai_dot") {
@@ -743,7 +743,7 @@ export function resolveWardmoteRunnerNativeProviderInput(input: {
   )) {
     throw new WardmoteRunnerProviderProfileError(
       "wardmote_runner_codex_effort_invalid",
-      "Paperclip Runner Codex reasoning effort is not supported for this model.",
+      "Wardmote Runner Codex reasoning effort is not supported for this model.",
     );
   }
   return {

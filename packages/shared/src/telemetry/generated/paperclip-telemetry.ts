@@ -272,7 +272,7 @@ export const WARDMOTE_ENUM_DESCRIPTIONS = {
       "local_path": "Import source came from a filesystem path on the operator's machine.",
       "github": "Import source came from a GitHub repository or GitHub-backed reference.",
       "url": "Import source came from a direct URL.",
-      "catalog": "Import source came from a Paperclip catalog entry.",
+      "catalog": "Import source came from a Wardmote catalog entry.",
       "skills_sh": "Import source came from a Skills.sh-compatible source.",
       "unknown": "Source type could not be classified."
     }
@@ -348,7 +348,7 @@ export const WARDMOTE_ENUM_DESCRIPTIONS = {
     "resolved_by_kind": {
       "user": "A board or human user resolved the interaction.",
       "agent": "An agent resolved the interaction.",
-      "system": "Paperclip resolved the interaction automatically.",
+      "system": "Wardmote resolved the interaction automatically.",
       "other": "Fallback when the resolver kind is unknown or not represented by the tracked enum."
     },
     "created_by_kind": {
@@ -407,7 +407,7 @@ export const WARDMOTE_ENUM_DESCRIPTIONS = {
       "local_path": "Import source came from a filesystem path on the operator's machine.",
       "github": "Import source came from a GitHub repository or GitHub-backed reference.",
       "url": "Import source came from a direct URL.",
-      "catalog": "Import source came from a Paperclip catalog entry.",
+      "catalog": "Import source came from a Wardmote catalog entry.",
       "skills_sh": "Import source came from a Skills.sh-compatible source.",
       "unknown": "Source type could not be classified."
     }

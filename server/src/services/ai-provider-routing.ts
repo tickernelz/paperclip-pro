@@ -23,7 +23,7 @@ export function managedProviderRouting(
     env.AWS_BEARER_TOKEN_BEDROCK = credential;
   } else if (harness === "codex_local") {
     env.WARDMOTE_AI_PROVIDER_KEY = credential;
-    codexConfig = `model_provider = "paperclip"\n[model_providers.paperclip]\nname = "Paperclip connection"\nbase_url = ${JSON.stringify(baseUrl)}\nwire_api = "responses"\nrequires_openai_auth = false\n${route.auth === "none" ? "" : 'env_key = "WARDMOTE_AI_PROVIDER_KEY"\n'}`;
+    codexConfig = `model_provider = "paperclip"\n[model_providers.paperclip]\nname = "Wardmote connection"\nbase_url = ${JSON.stringify(baseUrl)}\nwire_api = "responses"\nrequires_openai_auth = false\n${route.auth === "none" ? "" : 'env_key = "WARDMOTE_AI_PROVIDER_KEY"\n'}`;
   } else if (harness === "claude_local") {
     env.ANTHROPIC_BASE_URL = baseUrl;
     env[
@@ -51,7 +51,7 @@ export function managedProviderRouting(
       provider: {
         [provider]: {
           ...(provider === "paperclip"
-            ? { npm: "@ai-sdk/openai-compatible", name: "Paperclip connection" }
+            ? { npm: "@ai-sdk/openai-compatible", name: "Wardmote connection" }
             : {}),
           options: { baseURL: baseUrl, apiKey: credential },
           models: id ? { [id]: { name: id } } : {},

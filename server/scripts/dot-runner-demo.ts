@@ -154,7 +154,7 @@ try {
   console.log("✓ MCP Event → Dot test peer → native runner acceptance, tool write, progress, structured completion");
   console.log("✓ Concurrent duplicate write produced one report; usage remains unknown");
   assert.equal((await tool("wardmote_connection", {})).companyId, company.id);
-  console.log("✓ Personal Paperclip tools remain available when no agent assignment is active");
+  console.log("✓ Personal Wardmote tools remain available when no agent assignment is active");
   await rpc("events/unsubscribe", { ...subscription, delivery: { mode: "webhook", url: subscription.delivery.url } });
   await oauth.revokeConnection(principal.grant.id, userId);
   await assert.rejects(() => rpc("tools/list"));

@@ -74,7 +74,7 @@ describe("Capability issue-thread fixtures", () => {
       const snapshot = capabilityIssueThreadFixture(slug);
       expect(snapshot.schema).toBe(CAPABILITY_ISSUE_THREAD_VIEW_SCHEMA);
       expect(snapshot.turns.length).toBeGreaterThan(0);
-      expect(snapshot.identity.controlPlaneLabel).toBe("Mock Paperclip");
+      expect(snapshot.identity.controlPlaneLabel).toBe("Mock Wardmote");
       expect(snapshot.issue.identifier.startsWith("MCK-")).toBe(true);
       for (const section of CAPABILITY_EVIDENCE_SECTIONS) {
         expect(Array.isArray(snapshot.evidence[section.id])).toBe(true);
@@ -207,7 +207,7 @@ describe("Capability issue-thread fixtures", () => {
       path: "docs/paperclip-runner-protocol.md",
       presentation: "document",
     });
-    expect(item.reference.preview).toContain("# Paperclip Runner Protocol");
+    expect(item.reference.preview).toContain("# Wardmote Runner Protocol");
     expect(allItems(capabilityIssueThreadFixture("thread-baseline", "fr-file-reference")))
       .toEqual(allItems(snapshot));
   });

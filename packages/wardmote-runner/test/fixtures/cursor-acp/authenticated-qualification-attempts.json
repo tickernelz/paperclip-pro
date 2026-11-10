@@ -410,7 +410,7 @@
         }
       ],
       "questionEvidence": {
-        "origin": "Paperclip request_human_input semantic tool",
+        "origin": "Wardmote request_human_input semantic tool",
         "kind": "ask_user_questions",
         "selectionMode": "single",
         "pendingBeforeAnswer": true,
@@ -523,7 +523,7 @@
       },
       "scope": "Real local browser Plan display, exact-revision approval, wake-assignee continuation and completion. Does not qualify cursor/create_plan native RPC, restrictive permissions, restart recovery, or Daytona.",
       "planEvidence": {
-        "origin": "Paperclip write_document and request_human_input semantic tools",
+        "origin": "Wardmote write_document and request_human_input semantic tools",
         "kind": "request_confirmation",
         "revisionNumber": 1,
         "pendingBeforeApproval": true,
@@ -610,7 +610,7 @@
         }
       ],
       "questionEvidence": {
-        "origin": "Paperclip request_human_input semantic tool",
+        "origin": "Wardmote request_human_input semantic tool",
         "pendingQuestionVisible": true,
         "options": [
           "Cobalt",
@@ -773,7 +773,7 @@
         }
       ],
       "questionEvidence": {
-        "origin": "Paperclip request_human_input semantic tool",
+        "origin": "Wardmote request_human_input semantic tool",
         "kind": "ask_user_questions",
         "selectionMode": "single",
         "pendingBeforeAnswer": true,

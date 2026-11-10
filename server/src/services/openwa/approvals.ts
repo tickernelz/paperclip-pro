@@ -832,7 +832,7 @@ function resolvedCommentBody(
   return [
     (input.approved ? "An endpoint owner approved" : "An endpoint owner rejected") +
       " the approval request via " +
-      (input.via === "whatsapp" ? "WhatsApp" : "Paperclip") +
+      (input.via === "whatsapp" ? "WhatsApp" : "Wardmote") +
       ": " +
       request.summary,
     ...(input.ownerText ? ["Owner note: " + input.ownerText] : []),
@@ -1339,7 +1339,7 @@ export async function cancelOpenwaApproval(
         .update(issueThreadInteractions)
         .set({
           status: "cancelled",
-          result: { version: 1, outcome: "withdrawn", reason: "Cancelled by an endpoint owner in Paperclip" },
+          result: { version: 1, outcome: "withdrawn", reason: "Cancelled by an endpoint owner in Wardmote" },
           resolvedByUserId: input.userId,
           resolvedByAgentId: null,
           resolvedByRunId: null,

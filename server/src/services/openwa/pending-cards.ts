@@ -162,7 +162,7 @@ export async function stageOpenwaPendingCardWakes(tx: DbTransaction, card: CardR
     if (!action) continue;
     const comment = await issueService(tx as unknown as Db).addComment(
       target.issueId,
-      "Paperclip card " + card.id.slice(0, 8) + " on " + (issue?.identifier ?? card.issueId) + " waits for an owner decision.",
+      "Wardmote card " + card.id.slice(0, 8) + " on " + (issue?.identifier ?? card.issueId) + " waits for an owner decision.",
       {},
       { authorType: "system" },
       tx,
@@ -255,7 +255,7 @@ export async function dispatchOpenwaPendingCardWake(db: Db, actionId: string): P
     await runtime.wakeup(agentId, {
       source: "assignment",
       triggerDetail: "system",
-      reason: "Paperclip card waits for an owner",
+      reason: "Wardmote card waits for an owner",
       payload: { ...context, mutation: "openwa_pending_card" },
       contextSnapshot: { ...context, source: "chat:openwa" },
       allowRunCoalescing: false,

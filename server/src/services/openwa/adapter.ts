@@ -252,11 +252,11 @@ export class OpenwaChatAdapter implements Adapter<OpenwaThread, OpenwaMessage> {
   }
 
   async postMessage(_id: string, _message: AdapterPostableMessage): Promise<never> {
-    throw new Error("OpenWA sends require the outbound registry and an immutable Paperclip publication identity");
+    throw new Error("OpenWA sends require the outbound registry and an immutable Wardmote publication identity");
   }
 
   async editMessage(_id: string, _messageId: string, _message: AdapterPostableMessage): Promise<never> {
-    throw new Error("OpenWA edits require the outbound registry and an immutable Paperclip publication identity");
+    throw new Error("OpenWA edits require the outbound registry and an immutable Wardmote publication identity");
   }
 
   async deleteMessage(): Promise<never> {

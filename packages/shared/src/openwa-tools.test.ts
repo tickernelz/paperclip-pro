@@ -113,7 +113,7 @@ describe("OpenWA tool catalog", () => {
     for (const tool of [list, read, media]) expect(tool.description).toMatch(/Owner-triggered runs only/);
   });
 
-  it("validates endpoint config shapes and leaves Paperclip-only settings out of the schema", () => {
+  it("validates endpoint config shapes and leaves Wardmote-only settings out of the schema", () => {
     const config = openwaTool("openwa_endpoint_config")!;
     expect(config.schema.safeParse({}).success).toBe(true);
     expect(config.schema.safeParse({ senders: { add: [{ list: "deny", number: "+628111222333" }] } }).success).toBe(true);

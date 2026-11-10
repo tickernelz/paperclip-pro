@@ -483,10 +483,10 @@ describe("Codex app-server Codex driver", () => {
     });
   });
 
-  it("adds Paperclip developer instructions without replacing the Codex base and enables selected skills", async () => {
+  it("adds Wardmote developer instructions without replacing the Codex base and enables selected skills", async () => {
     const transport = new FakeCodexTransport();
     const baseInstructions = [
-      "You are running as a Paperclip agent.",
+      "You are running as a Wardmote agent.",
       "Follow the attached AGENTS.md instructions.",
       "Read-only instruction sibling root: /paperclip/context/instructions",
     ].join("\n\n");
@@ -520,7 +520,7 @@ describe("Codex app-server Codex driver", () => {
   it.each(["task", "prepared", "direct"] as const)("preserves stock Codex instructions on %s recovery", async (conversationMode) => {
     const originalTransport = new FakeCodexTransport();
     const recoveryTransport = new FakeCodexTransport();
-    const baseInstructions = "Paperclip coordination and assigned instruction paths.";
+    const baseInstructions = "Wardmote coordination and assigned instruction paths.";
     const driver = makeDriver([originalTransport, recoveryTransport], {
       conversationMode,
       baseInstructions,

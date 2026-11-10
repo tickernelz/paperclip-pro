@@ -524,11 +524,11 @@ export function smokeLabService(db: Db, options: {
     }).map(([key, value]) => `<input type="hidden" name="${escapeHtml(key)}" value="${escapeHtml(value)}" />`).join("\n");
     return `<!doctype html>
 <html>
-<head><meta charset="utf-8" /><title>Paperclip Smoke OAuth</title></head>
+<head><meta charset="utf-8" /><title>Wardmote Smoke OAuth</title></head>
 <body>
   <div role="banner" style="padding:12px;background:#7a3b00;color:white;font-weight:bold">${SMOKE_LAB_BANNER}</div>
   <main>
-    <h1>Paperclip Smoke OAuth login + consent</h1>
+    <h1>Wardmote Smoke OAuth login + consent</h1>
     <p>This deterministic provider accepts <code>${SMOKE_LAB_DEMO_EMAIL}</code> / <code>${SMOKE_LAB_DEMO_PASSWORD}</code>.</p>
     <form method="post" action="/api/companies/${escapeHtml(input.companyId)}/smoke-lab/oauth/authorize">
       ${hidden}
@@ -1098,14 +1098,14 @@ export function smokeLabService(db: Db, options: {
         companyId,
         applicationKey: HTTP_APP_KEY,
         name: "Smoke Lab HTTP MCP fixture",
-        description: "Deterministic loopback HTTP MCP fixture for Paperclip smoke scenarios.",
+        description: "Deterministic loopback HTTP MCP fixture for Wardmote smoke scenarios.",
         type: "mcp_http",
       });
       const stdioApp = await ensureApplication({
         companyId,
         applicationKey: STDIO_APP_KEY,
         name: "Smoke Lab stdio MCP fixture",
-        description: "Deterministic stdio MCP fixture for Paperclip smoke scenarios.",
+        description: "Deterministic stdio MCP fixture for Wardmote smoke scenarios.",
         type: "mcp_stdio",
       });
       const httpConnection = await ensureConnection({

@@ -147,8 +147,8 @@ const CODEX_COLLABORATION_RUNTIME_INSTRUCTIONS = `## Codex-style collaboration
 
 - Before the first tool call in a turn, send a brief commentary update describing the immediate work you are starting.
 - During tool-driven work, send concise commentary updates at meaningful transitions so the user can follow progress without opening raw logs.
-- Reserve \`report_progress\` for meaningful durable milestones on longer work. Do not call it merely to create a completion comment on a short run; Paperclip materializes the final assistant response as the durable completion comment.
-- Invoke the semantic completion tool exactly once before the final assistant response. After it succeeds, send one self-contained final response with the outcome and verification, then do not call another tool. The completion tool records task disposition; Paperclip keeps receiving your answer until the provider turn ends.`;
+- Reserve \`report_progress\` for meaningful durable milestones on longer work. Do not call it merely to create a completion comment on a short run; Wardmote materializes the final assistant response as the durable completion comment.
+- Invoke the semantic completion tool exactly once before the final assistant response. After it succeeds, send one self-contained final response with the outcome and verification, then do not call another tool. The completion tool records task disposition; Wardmote keeps receiving your answer until the provider turn ends.`;
 
 export function withCodexCollaborationRuntimeInstructions(
   instructions: string,
@@ -3515,7 +3515,7 @@ class DurablePrpCodexTransport implements CodexAppServerTransport {
     contentItems: [
       {
         type: "inputText",
-        text: "No Paperclip control-plane tool handler is installed.",
+        text: "No Wardmote control-plane tool handler is installed.",
       },
     ],
   });
@@ -4820,7 +4820,7 @@ class DurablePrpCodexTransport implements CodexAppServerTransport {
       provider === "codex" &&
       record(params.config).include_collaboration_mode_instructions !== false;
     const unboundBaseInstructions = String(
-      params.developerInstructions ?? params.baseInstructions ?? "You are a Paperclip agent.",
+      params.developerInstructions ?? params.baseInstructions ?? "You are a Wardmote agent.",
     );
     const baseInstructions =
       sourceRuntimeContext && runtimeContext

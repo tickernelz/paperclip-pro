@@ -484,7 +484,7 @@ describeEmbeddedPostgres("OpenWA setup inspection and configure", () => {
     expect((await request(app).get(`/api/chat-endpoints/${endpoint.id}/openwa/health`)).status).toBe(403);
   });
 
-  it("configures without a public Paperclip URL because ingress is an outbound socket", async () => {
+  it("configures without a public Wardmote URL because ingress is an outbound socket", async () => {
     const { app, endpoint } = await setup({ publicBaseUrl: null });
     const response = await configure(app, endpoint.id);
     expect(response.status).toBe(200);

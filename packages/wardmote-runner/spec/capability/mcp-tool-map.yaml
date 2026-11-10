@@ -11,10 +11,10 @@
     {
       "id": "mcp:wardmoteMe",
       "name": "wardmoteMe",
-      "description": "Get the current authenticated Paperclip actor details",
+      "description": "Get the current authenticated Wardmote actor details",
       "sourceKind": "legacy_mcp_alias",
       "sourceAnchor": "packages/mcp-server/src/tools.ts:429",
-      "expectedSemantics": "Get the current authenticated Paperclip actor details",
+      "expectedSemantics": "Get the current authenticated Wardmote actor details",
       "foldedInto": "eval:hb-inbox-lite-01",
       "evidenceId": "mcp:wardmoteMe"
     },
@@ -421,10 +421,10 @@
     {
       "id": "mcp:wardmoteApiRequest",
       "name": "wardmoteApiRequest",
-      "description": "Make a JSON request to an existing Paperclip /api endpoint for unsupported operations. Send the request body as jsonBody, a JSON object such as {body: 'Done'} for POST /issues/PAP-1/comments, or the same object as a JSON string; body is accepted as an alias of jsonBody.",
+      "description": "Make a JSON request to an existing Wardmote /api endpoint for unsupported operations. Send the request body as jsonBody, a JSON object such as {body: 'Done'} for POST /issues/PAP-1/comments, or the same object as a JSON string; body is accepted as an alias of jsonBody.",
       "sourceKind": "legacy_mcp_alias",
       "sourceAnchor": "packages/mcp-server/src/tools.ts:831",
-      "expectedSemantics": "Make a JSON request to an existing Paperclip /api endpoint for unsupported operations. Send the request body as jsonBody, a JSON object such as {body: 'Done'} for POST /issues/PAP-1/comments, or the same object as a JSON string; body is accepted as an alias of jsonBody.",
+      "expectedSemantics": "Make a JSON request to an existing Wardmote /api endpoint for unsupported operations. Send the request body as jsonBody, a JSON object such as {body: 'Done'} for POST /issues/PAP-1/comments, or the same object as a JSON string; body is accepted as an alias of jsonBody.",
       "foldedInto": "eval:rf-api-404-report-01",
       "evidenceId": "mcp:wardmoteApiRequest"
     }

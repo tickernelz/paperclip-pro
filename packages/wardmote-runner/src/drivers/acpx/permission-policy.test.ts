@@ -27,7 +27,7 @@ describe("ACPX permission policy", () => {
     expect(claudeWardmotePermissionRules([], "approve-reads")).toEqual([]);
   });
 
-  it("allows assigned Paperclip mutations without admitting unknown or external tools", () => {
+  it("allows assigned Wardmote mutations without admitting unknown or external tools", () => {
     const tools = ["wardmote__write_document", "create_task", "reassign_task", "request_approval",
       "write_document", "mcp__other__create_task", "Bash", "unknown_write", "mcp__wardmote__create_task",
       "decide_approval", "control_workspace_service", "call_api", "create_skill", "schedule_wake"]

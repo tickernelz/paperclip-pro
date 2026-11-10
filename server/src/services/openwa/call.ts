@@ -398,7 +398,7 @@ async function selfSessionConfirmation(ctx: ToolContext, operation: OpenwaOperat
           .limit(1)
       )[0]!.id;
   }
-  throw refusal(403, "self_session_requires_confirmation", "An endpoint owner must allow this in Paperclip first; call again with the same idempotencyKey after it is accepted", {
+  throw refusal(403, "self_session_requires_confirmation", "An endpoint owner must allow this in Wardmote first; call again with the same idempotencyKey after it is accepted", {
     category: "gateway_admin",
     interactionId: pendingId,
   });

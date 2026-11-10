@@ -122,7 +122,7 @@ describeEmbeddedPostgres("process-loss continuation session resume", () => {
     const issuePrefix = `S${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`;
     await db.insert(companies).values({
       id: companyId,
-      name: "Paperclip",
+      name: "Wardmote",
       issuePrefix,
       defaultResponsibleUserId: "responsible-user",
       requireBoardApprovalForNewAgents: false,

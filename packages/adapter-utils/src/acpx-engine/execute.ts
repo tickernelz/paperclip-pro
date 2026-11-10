@@ -1063,7 +1063,7 @@ async function prepareManagedCodexHome(input: {
 
   await onLog(
     "stdout",
-    `[paperclip] Using Paperclip-managed ACPX Codex home "${targetHome}" (seeded from "${sourceHome}").\n`,
+    `[paperclip] Using Wardmote-managed ACPX Codex home "${targetHome}" (seeded from "${sourceHome}").\n`,
   );
   return targetHome;
 }
@@ -1217,7 +1217,7 @@ async function prepareClaudeSkillRuntime(input: {
   }));
   const promptInstructions = selectedNames.length > 0
     ? [
-        "Paperclip has materialized selected runtime skills for this ACPX Claude session.",
+        "Wardmote has materialized selected runtime skills for this ACPX Claude session.",
         `Skill root: ${skillsHome}`,
         `Selected skills: ${selectedNames.join(", ")}`,
         ...skillDescriptions,
@@ -1235,7 +1235,7 @@ async function prepareClaudeSkillRuntime(input: {
     },
     promptInstructions,
     commandNotes: selectedNames.length > 0
-      ? [`Materialized ${selectedNames.length} Paperclip skill(s) for ACPX Claude at ${skillsHome}.`]
+      ? [`Materialized ${selectedNames.length} Wardmote skill(s) for ACPX Claude at ${skillsHome}.`]
       : [],
     bundleDir: selectedNames.length > 0 ? skillsHome : null,
   };
@@ -2195,7 +2195,7 @@ async function buildRuntime(input: {
       companyId: agent.companyId,
     });
     skillCommandNotes.push(
-      `Wrote Paperclip-managed Claude settings to ${wardmoteClaudeSettings.filePath} (defaultMode=${wardmoteClaudeSettings.defaultMode}${
+      `Wrote Wardmote-managed Claude settings to ${wardmoteClaudeSettings.filePath} (defaultMode=${wardmoteClaudeSettings.defaultMode}${
         wardmoteClaudeSettings.overrodeDontAsk ? "; overrode user dontAsk" : ""
       }, +${wardmoteClaudeSettings.additionalDirectories.length} read root(s), +${wardmoteClaudeSettings.allow.length} allow rule(s)).`,
     );
@@ -2243,7 +2243,7 @@ async function buildRuntime(input: {
     );
     skillsIdentity = { mode: "custom_unsupported", desiredSkillNames: desired };
     if (desired.length > 0) {
-      skillCommandNotes.push("Selected Paperclip skills are tracked only; ACPX custom commands do not expose a runtime skill contract yet.");
+      skillCommandNotes.push("Selected Wardmote skills are tracked only; ACPX custom commands do not expose a runtime skill contract yet.");
     }
   }
 
@@ -2666,13 +2666,13 @@ async function buildRuntime(input: {
     // remember a previous home's skill paths; supply the current root on every
     // turn, after the remote launch environment has rebased CODEX_HOME.
     skillPromptInstructions = [
-      `Paperclip has materialized selected runtime skills for this ACPX ${acpxAgent === "codex" ? "Codex" : "Gemini"} run.`,
+      `Wardmote has materialized selected runtime skills for this ACPX ${acpxAgent === "codex" ? "Codex" : "Gemini"} run.`,
       `Skill root for this run: ${currentSkillRoot}`,
       `Selected skills: ${skillsIdentity.selectedSkills.join(", ")}`,
       "When a task calls for one of these skills, read its SKILL.md from this root and follow it. Resolve referenced scripts and files relative to that skill. Use this run's root even when an earlier turn used a different path.",
       ...(acpxAgent === "gemini" && skillsIdentity.selectedSkills.includes("wardmote")
         ? [
-          "Before calling Paperclip APIs or delivering task artifacts, read the selected paperclip skill's SKILL.md and its referenced artifact workflow. A completion comment does not upload an artifact or change task status.",
+          "Before calling Wardmote APIs or delivering task artifacts, read the selected paperclip skill's SKILL.md and its referenced artifact workflow. A completion comment does not upload an artifact or change task status.",
           "Gemini's shell tool rejects command substitution. Write JSON request bodies to a workspace file and use curl --data-binary @file, or use the selected skill's helpers, instead of constructing a body with command substitution.",
         ]
         : []),
@@ -3103,7 +3103,7 @@ function renderWardmoteEnvNote(env: Record<string, string>): string {
     .sort();
   if (wardmoteKeys.length === 0) return "";
   return [
-    "Paperclip runtime note:",
+    "Wardmote runtime note:",
     `The following WARDMOTE_* environment variables are available in this run: ${wardmoteKeys.join(", ")}`,
     "Do not assume these variables are missing without checking your shell environment.",
   ].join("\n");
@@ -3115,7 +3115,7 @@ function renderApiAccessNote(
   toolsets: string,
 ): string {
   if (!env.WARDMOTE_API_URL || !env.WARDMOTE_API_KEY) return "";
-  const lines = ["Paperclip API access note:", wardmoteAccessGuidance(access, { toolsets })];
+  const lines = ["Wardmote API access note:", wardmoteAccessGuidance(access, { toolsets })];
   if (!env.WARDMOTE_TASK_ID) {
     lines.push("Use a real issue id from the current context before making issue write requests.");
   }
@@ -4919,7 +4919,7 @@ export function createAcpxEngineExecutor(deps: AcpxEngineExecutorOptions = {}) {
             command: prepared.agentCommand ?? prepared.acpxAgent,
             cwd: prepared.cwd,
             commandNotes: [
-              `ACPX runtime embedded in Paperclip with ${prepared.mode} session mode.`,
+              `ACPX runtime embedded in Wardmote with ${prepared.mode} session mode.`,
               `Effective ACPX permission mode: ${prepared.permissionMode}.`,
               ...(prepared.requestedModel
                 ? [

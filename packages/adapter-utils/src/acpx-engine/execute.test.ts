@@ -731,7 +731,7 @@ describe("shared ACPX engine runtime behavior", () => {
     expect(resetPrompt).toContain("Execution contract:");
   });
 
-  it("includes Paperclip env and API access notes in the ACPX prompt without leaking the token", async () => {
+  it("includes Wardmote env and API access notes in the ACPX prompt without leaking the token", async () => {
     const { meta } = await runExecutor(
       { agent: "custom", agentCommand: "node ./fake-acp.js" },
       {
@@ -749,13 +749,13 @@ describe("shared ACPX engine runtime behavior", () => {
 
     const prompt = String(meta[0]?.prompt ?? "");
     const promptMetrics = meta[0]?.promptMetrics as Record<string, number> | undefined;
-    expect(prompt).toContain("Paperclip runtime note:");
+    expect(prompt).toContain("Wardmote runtime note:");
     expect(prompt).toContain("WARDMOTE_AGENT_ID");
     expect(prompt).toContain("WARDMOTE_API_KEY");
     expect(prompt).not.toContain("WARDMOTE_WAKE_PAYLOAD_JSON");
-    expect(prompt).toContain("## Paperclip Wake Payload");
+    expect(prompt).toContain("## Wardmote Wake Payload");
     expect(prompt).toContain("TEST-1");
-    expect(prompt).toContain("Paperclip API access note:");
+    expect(prompt).toContain("Wardmote API access note:");
     expect(prompt).toContain("wardmoteAddComment");
     expect(prompt).toContain("wardmoteApiRequest");
     expect(prompt).not.toContain("curl ");
@@ -913,9 +913,9 @@ describe("shared ACPX engine runtime behavior", () => {
     const promptMetrics = meta[0]?.promptMetrics as Record<string, number> | undefined;
     expect(prompt).toContain("## External chat response contract");
     expect(prompt).toContain("# CHAT-1 — Answer the provider message");
-    expect(prompt).toContain("Make zero Paperclip API calls");
-    expect(prompt).not.toContain("Paperclip API access note:");
-    expect(prompt).not.toContain("Paperclip runtime note:");
+    expect(prompt).toContain("Make zero Wardmote API calls");
+    expect(prompt).not.toContain("Wardmote API access note:");
+    expect(prompt).not.toContain("Wardmote runtime note:");
     expect(prompt).not.toContain(
       "Leave durable progress in comments, documents, or work products",
     );
@@ -965,7 +965,7 @@ describe("shared ACPX engine runtime behavior", () => {
     const prompt = String(meta[0]?.prompt ?? "");
     expect(prompt).not.toContain("read_current_wake_comments");
     expect(prompt).not.toContain("## External chat response contract");
-    expect(prompt).toContain("Paperclip API access note:");
+    expect(prompt).toContain("Wardmote API access note:");
     expect(prompt).toContain("Only fetch the API thread");
   });
 
@@ -1017,7 +1017,7 @@ describe("shared ACPX engine runtime behavior", () => {
     );
 
     const prompt = String(meta[0]?.prompt ?? "");
-    expect(prompt).toContain("Paperclip API access note:");
+    expect(prompt).toContain("Wardmote API access note:");
     expect(prompt).toContain("Use a real issue id from the current context before making issue write requests.");
     expect(prompt).not.toContain("$WARDMOTE_API_BASE/api/issues/$WARDMOTE_TASK_ID");
   });
@@ -2722,7 +2722,7 @@ describe("shared ACPX engine runtime behavior", () => {
     await expect(fs.readFile(path.join(stateDir, "run-stderr", "run-warm-2.log"), "utf8")).resolves.toContain("current-run-stderr");
   });
 
-  it("passes Paperclip env through ACPX session options instead of process.env", async () => {
+  it("passes Wardmote env through ACPX session options instead of process.env", async () => {
     let observedSessionEnv: Record<string, string> | undefined;
     const execute = createAcpxEngineExecutor({
       createRuntime: () => ({
@@ -2760,7 +2760,7 @@ describe("shared ACPX engine runtime behavior", () => {
     }
   });
 
-  it("writes a Paperclip-managed .claude/settings.local.json for the claude agent so it can reach the Paperclip API", async () => {
+  it("writes a Wardmote-managed .claude/settings.local.json for the claude agent so it can reach the Wardmote API", async () => {
     const root = await makeTempRoot();
     const stateDir = path.join(root, "state");
     const cwd = path.join(root, "worktree");
@@ -2790,12 +2790,12 @@ describe("shared ACPX engine runtime behavior", () => {
     expect(additionalDirectories).toContain(path.join(root, "agent-home"));
 
     const note = (meta[0]?.commandNotes as string[] | undefined)?.find((entry) =>
-      entry.includes("Paperclip-managed Claude settings"),
+      entry.includes("Wardmote-managed Claude settings"),
     );
     expect(note).toBeTruthy();
   });
 
-  it("merges Paperclip allowlist into an existing .claude/settings.local.json without losing user entries", async () => {
+  it("merges Wardmote allowlist into an existing .claude/settings.local.json without losing user entries", async () => {
     const root = await makeTempRoot();
     const stateDir = path.join(root, "state");
     const cwd = path.join(root, "worktree");
@@ -4122,7 +4122,7 @@ describe("ACPX engine Claude skill bundle staging (remote ACP lane)", () => {
     const stateDir = path.join(root, "state");
     await fs.mkdir(cwd, { recursive: true });
     const skill = await createSkill(path.join(root, "sources"), "paperclip--versioned", [
-      "---", "description: >-", "  Use for Paperclip-managed tasks", "  and durable task documents.",
+      "---", "description: >-", "  Use for Wardmote-managed tasks", "  and durable task documents.",
       "---", "PRIVATE_SKILL_BODY_RECIPE", "",
     ].join("\n"));
     const { meta, result } = await runExecutor({
@@ -4132,7 +4132,7 @@ describe("ACPX engine Claude skill bundle staging (remote ACP lane)", () => {
     const bundle = await onlyChildDir(path.join(stateDir, "runtime-skills", "claude"));
     const stagedFile = path.join(bundle, ".claude", "skills", skill.runtimeName, "SKILL.md");
     const prompt = String(meta[0]?.prompt ?? "");
-    expect(prompt).toContain(`- ${skill.runtimeName}: Use for Paperclip-managed tasks and durable task documents. (file: ${stagedFile})`);
+    expect(prompt).toContain(`- ${skill.runtimeName}: Use for Wardmote-managed tasks and durable task documents. (file: ${stagedFile})`);
     expect(prompt).not.toContain("PRIVATE_SKILL_BODY_RECIPE");
     expect(prompt).not.toContain(skill.source);
     expect(result.sessionParams?.skills).toMatchObject({ selectedSkills: [skill.runtimeName] });

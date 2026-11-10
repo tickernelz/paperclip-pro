@@ -33,7 +33,7 @@ const storybookWorktreeRoot = `${storybookRepoRoot}/.paperclip/worktrees`;
 export const storybookCompanies: Company[] = [
   {
     id: "company-storybook",
-    name: "Paperclip Storybook",
+    name: "Wardmote Storybook",
     description: "Fixture company for isolated UI review.",
     status: "active",
     pauseReason: null,
@@ -127,7 +127,7 @@ export const storybookAgents: Agent[] = [
     icon: "code",
     status: "running",
     reportsTo: "agent-cto",
-    capabilities: "Ships full-stack Paperclip product tasks, Storybook coverage, and verification.",
+    capabilities: "Ships full-stack Wardmote product tasks, Storybook coverage, and verification.",
     adapterType: "codex_local",
     adapterConfig: {},
     runtimeConfig: {},
@@ -271,8 +271,8 @@ export const storybookGoals: Goal[] = [
   {
     id: "goal-company",
     companyId: "company-storybook",
-    title: "Build Paperclip",
-    description: "Make Paperclip the control plane operators trust for autonomous AI companies.",
+    title: "Build Wardmote",
+    description: "Make Wardmote the control plane operators trust for autonomous AI companies.",
     level: "company",
     status: "active",
     parentId: null,
@@ -1113,7 +1113,7 @@ export const storybookApprovals: Approval[] = [
     requestedByUserId: null,
     status: "revision_requested",
     payload: {
-      scopeName: "Paperclip App",
+      scopeName: "Wardmote App",
       scopeType: "project",
       windowKind: "calendar_month_utc",
       metric: "billed_cents",
@@ -1160,7 +1160,7 @@ export const storybookBudgetSummaries: BudgetPolicySummary[] = [
     companyId: "company-storybook",
     scopeType: "company",
     scopeId: "company-storybook",
-    scopeName: "Paperclip Storybook",
+    scopeName: "Wardmote Storybook",
     metric: "billed_cents",
     windowKind: "calendar_month_utc",
     amount: 250_000,
@@ -1184,7 +1184,7 @@ export const storybookBudgetSummaries: BudgetPolicySummary[] = [
     companyId: "company-storybook",
     scopeType: "project",
     scopeId: "project-board-ui",
-    scopeName: "Paperclip App",
+    scopeName: "Wardmote App",
     metric: "billed_cents",
     windowKind: "calendar_month_utc",
     amount: 120_000,
@@ -1459,7 +1459,7 @@ export const storybookSecretProviderDiscoveryPreview: SecretProviderConfigDiscov
   nextToken: null,
   sampledSecretCount: 6,
   skippedForeignWardmoteSampleCount: 1,
-  warnings: ["Skipped 1 Paperclip-managed AWS secret from a different deployment namespace."],
+  warnings: ["Skipped 1 Wardmote-managed AWS secret from a different deployment namespace."],
   candidates: [
     {
       provider: "aws_secrets_manager",
@@ -1620,7 +1620,7 @@ export const storybookSecretBindings: CompanySecretBinding[] = [
     configPath: "env.OPENAI_API_KEY",
     versionSelector: "latest",
     required: true,
-    label: "Paperclip App project env",
+    label: "Wardmote App project env",
     projectionClass: "unclassified",
     projectionAllowlistKey: null,
     createdAt: new Date("2026-03-02T09:00:00.000Z"),

@@ -54,7 +54,7 @@ const MAX_QUEUED_PROVIDER_EVENTS: usize =
 const MAX_RECEIPT_LIMIT_INTERRUPT_ATTEMPTS: u8 = 3;
 const RECEIPT_LIMIT_INTERRUPT_TERMINAL_DEADLINE_MS: u64 = 2_000;
 const RECEIPT_LIMIT_ACCEPTED_TERMINAL_DEADLINE_MS: u64 = 30_000;
-const GENERIC_INVALID_TOOL_CALL_MESSAGE: &str = "Paperclip rejected this semantic tool call";
+const GENERIC_INVALID_TOOL_CALL_MESSAGE: &str = "Wardmote rejected this semantic tool call";
 
 fn invalid_tool_call_result(
     call_id: String,
@@ -443,13 +443,13 @@ fn validate_run_result(
     let schema: Value = serde_json::from_str(include_str!(
         "../../../../protocol/schemas/result.schema.json"
     ))
-    .map_err(|_| DurableRunnerError::invalid("embedded Paperclip result schema is invalid"))?;
+    .map_err(|_| DurableRunnerError::invalid("embedded Wardmote result schema is invalid"))?;
     let validator = jsonschema::validator_for(&schema).map_err(|_| {
-        DurableRunnerError::invalid("embedded Paperclip result schema cannot compile")
+        DurableRunnerError::invalid("embedded Wardmote result schema cannot compile")
     })?;
     if !validator.is_valid(result) {
         return Err(DurableRunnerError::invalid(
-            "provider semantic result failed the Paperclip result schema",
+            "provider semantic result failed the Wardmote result schema",
         ));
     }
     let contract = state.completion_contract.as_ref().ok_or_else(|| {
@@ -1891,7 +1891,7 @@ impl CodexCommandExecutor {
                 payload: json!({
                     "provider": provider_label,
                     "code": "legacy_provider_turn_epoch_ambiguous",
-                    "message": format!("{provider_name} recovery could not safely identify and settle active work from a saturated legacy replay epoch; Paperclip terminated the provider and closed the durable run"),
+                    "message": format!("{provider_name} recovery could not safely identify and settle active work from a saturated legacy replay epoch; Wardmote terminated the provider and closed the durable run"),
                     "wardmoteAccepted": false,
                     "providerReportedActive": provider_reported_active,
                     "ambiguousStartPending": ambiguous_turn_start_pending,
@@ -1949,7 +1949,7 @@ impl CodexCommandExecutor {
                     "provider": provider_label,
                     "code": "provider_turn_identity_reused",
                     "providerTurnId": reused_provider_turn_id,
-                    "message": format!("{provider_name} recovery reported a previously settled turn identity as active; Paperclip terminated the provider and closed the durable run"),
+                    "message": format!("{provider_name} recovery reported a previously settled turn identity as active; Wardmote terminated the provider and closed the durable run"),
                     "wardmoteAccepted": false,
                     "providerReportedActive": true,
                     "providerShutdownFailed": provider_shutdown_failed,
@@ -2774,8 +2774,8 @@ impl CodexCommandExecutor {
                     RejectedAcceptedTurn::InvalidIdentity => Value::Null,
                 },
                 "message": match rejected_accepted_turn {
-                    RejectedAcceptedTurn::ReusedIdentity(_) => format!("{provider_name} accepted work with a previously settled turn identity; Paperclip terminated the provider and closed the durable run"),
-                    RejectedAcceptedTurn::InvalidIdentity => format!("{provider_name} accepted work without a valid bounded turn identity; Paperclip terminated the provider and closed the durable run"),
+                    RejectedAcceptedTurn::ReusedIdentity(_) => format!("{provider_name} accepted work with a previously settled turn identity; Wardmote terminated the provider and closed the durable run"),
+                    RejectedAcceptedTurn::InvalidIdentity => format!("{provider_name} accepted work without a valid bounded turn identity; Wardmote terminated the provider and closed the durable run"),
                 },
                 "wardmoteAccepted": false,
                 "providerAccepted": true,
@@ -3544,7 +3544,7 @@ impl CodexCommandExecutor {
             result: json!({
                 "error": {
                     "code": "semantic_tool_turn_receipt_limit",
-                    "message": "Paperclip stopped this turn at its durable semantic-tool receipt limit",
+                    "message": "Wardmote stopped this turn at its durable semantic-tool receipt limit",
                     "retryable": false,
                 },
             }),
@@ -4315,7 +4315,7 @@ impl CodexCommandExecutor {
                                         "scope": "session",
                                         "recoverable": true,
                                         "userActionable": false,
-                                        "summary": "Codex goal state could not be reconciled after the turn; Paperclip retained the last durable snapshot.",
+                                        "summary": "Codex goal state could not be reconciled after the turn; Wardmote retained the last durable snapshot.",
                                     }),
                                 })?;
                             }
@@ -5314,7 +5314,7 @@ mod tests {
         )
         .unwrap_err()
         .to_string()
-        .contains("failed the Paperclip result schema"));
+        .contains("failed the Wardmote result schema"));
 
         let mut wrong_criteria = opencode_result_state();
         let mut result = valid_opencode_result();

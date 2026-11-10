@@ -7,7 +7,7 @@ import {
 } from "./environment-support.js";
 
 describe("isSandboxProviderSupportedForAdapter", () => {
-  it("treats Paperclip Runner as a remote-managed adapter", () => {
+  it("treats Wardmote Runner as a remote-managed adapter", () => {
     expect(adapterSupportsRemoteManagedEnvironments("wardmote_runner")).toBe(true);
     expect(supportedEnvironmentDriversForAdapter("wardmote_runner")).toEqual([
       "local",

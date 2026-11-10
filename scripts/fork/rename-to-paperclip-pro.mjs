@@ -107,7 +107,7 @@ const ISOLATION_REGRESSION_TESTS = {
         `    }`,
         `  });`,
         ``,
-        `  it("roots default plugin data in the configured Paperclip home, not the real user home", () => {`,
+        `  it("roots default plugin data in the configured Wardmote home, not the real user home", () => {`,
         `    const previous = process.env.WARDMOTE_HOME;`,
         `    process.env.WARDMOTE_HOME = path.join(os.tmpdir(), "paperclip-plugin-home-probe");`,
         `    try {`,
@@ -125,9 +125,9 @@ const ISOLATION_REGRESSION_TESTS = {
   "cli/src/__tests__/worktree.test.ts": [
     guarded(
       `  it("preserves the source config path across worktree:make cwd changes", () => {`,
-      `resolves --from-instance against the configured Paperclip home`,
+      `resolves --from-instance against the configured Wardmote home`,
       [
-        `  it("resolves --from-instance against the configured Paperclip home, not the real user home", () => {`,
+        `  it("resolves --from-instance against the configured Wardmote home, not the real user home", () => {`,
         `    const isolatedHome = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-worktree-home-"));`,
         `    const previous = process.env.WARDMOTE_HOME;`,
         `    process.env.WARDMOTE_HOME = isolatedHome;`,

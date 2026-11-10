@@ -148,9 +148,9 @@ export function renderWardmoteMcpConfig(input: WardmoteMcpServerEntryInput): str
 
 export function wardmoteMcpGuidance(toolsets: string, toolCount: number | null = null): string {
   const lines = [
-    `Paperclip's API is mounted as MCP tools on the "${WARDMOTE_MCP_SERVER_NAME}" server (toolsets: ${toolsets}${toolCount === null ? "" : `, ${toolCount} tools`}).`,
+    `Wardmote's API is mounted as MCP tools on the "${WARDMOTE_MCP_SERVER_NAME}" server (toolsets: ${toolsets}${toolCount === null ? "" : `, ${toolCount} tools`}).`,
     'Every tool name starts with "wardmote", for example wardmoteListIssues or wardmoteAddComment.',
-    "These tools are the only way to reach Paperclip; they already carry this run's identity, API key and run id.",
+    "These tools are the only way to reach Wardmote; they already carry this run's identity, API key and run id.",
     `When no dedicated tool covers an endpoint, use the ${WARDMOTE_MCP_SERVER_NAME} escape-hatch tool wardmoteApiRequest instead of a shell HTTP client.`,
   ];
   if (/\b(full|extended|all)\b/i.test(toolsets)) {
@@ -165,7 +165,7 @@ export function wardmoteMcpGuidance(toolsets: string, toolCount: number | null =
 export function wardmoteRestGuidance(options: { shellHint?: string } = {}): string {
   const shell = options.shellHint?.trim();
   return [
-    "This runtime has no paperclip* tools. Reach Paperclip over its REST API instead.",
+    "This runtime has no paperclip* tools. Reach Wardmote over its REST API instead.",
     shell
       ? `Use ${shell} with curl; normalize the base URL first: WARDMOTE_API_BASE="\${WARDMOTE_API_URL%/}"; WARDMOTE_API_BASE="\${WARDMOTE_API_BASE%/api}".`
       : 'Use a terminal with curl; normalize the base URL first: WARDMOTE_API_BASE="${WARDMOTE_API_URL%/}"; WARDMOTE_API_BASE="${WARDMOTE_API_BASE%/api}".',

@@ -76,7 +76,7 @@ export function slackChatRegistrationService(db: Db, options: {
     return row;
   }
   function assertOrigins(row: Registration, publicId: string) {
-    if (row.callbackUri !== callbackUri()) throw conflict("The Paperclip URL changed. Restore its configured address or update the Slack app and use manual setup.");
+    if (row.callbackUri !== callbackUri()) throw conflict("The Wardmote URL changed. Restore its configured address or update the Slack app and use manual setup.");
     const expected = `${origin(options.webhookOrigin())}/api/chat-webhooks/${publicId}/slack`;
     if (object(object(row.manifest.settings).event_subscriptions).request_url !== expected)
       throw conflict("The Slack webhook address changed. Restore its configured address or update the Slack app and use manual setup.");
@@ -374,8 +374,8 @@ export function slackChatRegistrationService(db: Db, options: {
       await lease.assertOwned();
       if (!await options.canWelcome(row.endpointId, account)) throw forbidden("Slack account access changed");
       const sent = await api("chat.postMessage", { channel: account.dmChannelId ?? account.externalUserId,
-        text: kind === "verification" ? "Your Slack connection is working! Now ask me a question about your Paperclip instance."
-          : `Hi, I’m ${current.agentName}. Your Slack account is connected to Paperclip.`,
+        text: kind === "verification" ? "Your Slack connection is working! Now ask me a question about your Wardmote instance."
+          : `Hi, I’m ${current.agentName}. Your Slack account is connected to Wardmote.`,
         unfurl_links: "false", unfurl_media: "false" }, await options.runtimeBotToken(row.endpointId));
       if (typeof sent.channel !== "string" || !/^D[A-Z0-9]+$/.test(sent.channel)) throw new Error("Incomplete message response");
       result = { ...account, [field]: "sent", dmChannelId: sent.channel };

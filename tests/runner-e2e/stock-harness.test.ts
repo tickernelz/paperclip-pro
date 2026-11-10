@@ -16,7 +16,7 @@ function recording(generation: "legacy" | "native" = "legacy"): StockHarnessEvid
     runIds: ["fresh", "resumed"],
     invocations: generation === "native" ? [] : [
       { runId: "fresh", conversationMode: false, prompt: "You are agent agent (QA).\nConnection tools:\nUse connections_search.\nCurrent assignment.", promptMetrics: { heartbeatPromptChars: 113 } },
-      { runId: "resumed", conversationMode: false, prompt: "## Paperclip Resume Delta\nCurrent ordered comments.", promptMetrics: { heartbeatPromptChars: 0 } },
+      { runId: "resumed", conversationMode: false, prompt: "## Wardmote Resume Delta\nCurrent ordered comments.", promptMetrics: { heartbeatPromptChars: 0 } },
     ],
   };
 }
@@ -102,7 +102,7 @@ describe("stock harness Product E2E", () => {
     const evidence = recording();
     evidence.bundle.files[0]!.content = historical.content;
     for (const row of evidence.invocations) row.conversationMode = true;
-    evidence.invocations[0]!.prompt += "\nContinue your Paperclip conversation using the supplied chat mode directive.\nAfter 2 consecutive failures of the same control-plane write";
+    evidence.invocations[0]!.prompt += "\nContinue your Wardmote conversation using the supplied chat mode directive.\nAfter 2 consecutive failures of the same control-plane write";
     expect(gradeSourceHarness(evidence, historical).every(check => check.passed)).toBe(true);
     evidence.invocations[1]!.prompt += "\nExecution contract:";
     expect(gradeSourceHarness(evidence, historical)).toContainEqual(expect.objectContaining({ id: "historical-continuation-contract", passed: false }));

@@ -162,7 +162,7 @@ async function createWorkingDirectory(root, prefix = "capability-issue-thread-")
 function issueThreadSeed(runner, scenario) {
   return runner.createCapabilityFixtureState({
     epochMs: Date.UTC(2026, 7, 9, 9, 0, 0),
-    company: { id: "company-1", name: "Mock Paperclip Company", issuePrefix: "MCK" },
+    company: { id: "company-1", name: "Mock Wardmote Company", issuePrefix: "MCK" },
     actors: [
       {
         id: "actor-1",

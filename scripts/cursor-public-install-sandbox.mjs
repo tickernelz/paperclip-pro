@@ -13,7 +13,7 @@ export function prepareCursorInstallAccount(root, uid, gid) {
   const home = join(root, 'account-home');
   const passwd = join(root, 'account-passwd');
   mkdirSync(home, { mode: 0o700 });
-  writeFileSync(passwd, `root:x:0:0:root:/root:/usr/sbin/nologin\npaperclip:x:${uid}:${gid}:Paperclip verification:${CURSOR_INSTALL_ACCOUNT_HOME}:/usr/sbin/nologin\n`, { mode: 0o444, flag: 'wx' });
+  writeFileSync(passwd, `root:x:0:0:root:/root:/usr/sbin/nologin\npaperclip:x:${uid}:${gid}:Wardmote verification:${CURSOR_INSTALL_ACCOUNT_HOME}:/usr/sbin/nologin\n`, { mode: 0o444, flag: 'wx' });
   return { home, passwd };
 }
 

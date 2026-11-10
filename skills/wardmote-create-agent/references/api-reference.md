@@ -1,4 +1,4 @@
-# Paperclip Create Agent API Reference
+# Wardmote Create Agent API Reference
 
 ## Tools
 

@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { WARDMOTE_CORE_PROTOCOL_ACTIONS } from "./core.js";
 
-describe("core Paperclip protocol action contracts", () => {
+describe("core Wardmote protocol action contracts", () => {
   const ajv = new Ajv2020({ allErrors: true, allowUnionTypes: true, strict: false });
 
   it("advertises a complete typed form for mixed text and choice questions", () => {

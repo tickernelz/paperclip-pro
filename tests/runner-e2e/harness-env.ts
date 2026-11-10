@@ -197,7 +197,7 @@ export function assertIsolatedServerEnvironment(
   const config = env.WARDMOTE_CONFIG;
   if (home !== expected.wardmoteHome || config !== expected.configPath) {
     throw new Error(
-      "Paperclip server environment does not use the allocated home/config paths",
+      "Wardmote server environment does not use the allocated home/config paths",
     );
   }
   if (
@@ -205,12 +205,12 @@ export function assertIsolatedServerEnvironment(
     !config.startsWith(`${expected.temporaryRoot}/`)
   ) {
     throw new Error(
-      "Paperclip server paths escape the isolated temporary root",
+      "Wardmote server paths escape the isolated temporary root",
     );
   }
   if (env.XDG_CACHE_HOME !== path.join(expected.temporaryRoot, "xdg-cache")) {
     throw new Error(
-      "Paperclip server cache does not use the allocated temporary root",
+      "Wardmote server cache does not use the allocated temporary root",
     );
   }
   for (const key of [
@@ -221,11 +221,11 @@ export function assertIsolatedServerEnvironment(
   ]) {
     if (env[key])
       throw new Error(
-        `Paperclip server environment unexpectedly contains ${key}`,
+        `Wardmote server environment unexpectedly contains ${key}`,
       );
   }
   for (const key of GENERATED_SERVER_SECRET_KEYS) {
     if (!env[key])
-      throw new Error(`Paperclip server environment is missing ${key}`);
+      throw new Error(`Wardmote server environment is missing ${key}`);
   }
 }

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "type": "module",
   "private": true,
-  "description": "A Paperclip plugin",
+  "description": "A Wardmote plugin",
   "scripts": {
     "prebuild": "pnpm --filter @tickernelz/wardmote-plugin-sdk ensure-build-deps",
     "build": "node ./esbuild.config.mjs",

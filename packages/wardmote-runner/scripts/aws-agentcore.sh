@@ -3,7 +3,7 @@ set -euo pipefail
 
 PACKAGE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TEMPLATE="$PACKAGE_DIR/infra/aws-agentcore-paperclip.yaml"
-STACK_DESCRIPTION="Paperclip proof-of-concept Amazon Bedrock AgentCore Harness and least-privilege invocation roles."
+STACK_DESCRIPTION="Wardmote proof-of-concept Amazon Bedrock AgentCore Harness and least-privilege invocation roles."
 LOCAL_DIR="$PACKAGE_DIR/.paperclip-local"
 ENV_FILE="$LOCAL_DIR/aws-agentcore.env"
 ACTIVE_FILE="$LOCAL_DIR/aws-agentcore-lab.pid"
@@ -336,26 +336,26 @@ provision() {
     existing_environment="$(printf '%s' "$existing_stack" | stack_tag_value paperclip:environment)"
     existing_cost_center="$(printf '%s' "$existing_stack" | stack_tag_value paperclip:cost-center)"
     if [[ -z "$existing_status" || "$existing_description" != "$STACK_DESCRIPTION" || "$existing_owned" != "true" || "$existing_environment" != "development" || "$existing_cost_center" != "runner-lab" ]]; then
-      printf 'Refusing to modify stack %s: Paperclip ownership tags or template provenance do not match. Inspect or remove it manually, or choose another --stack-name.\n' "$STACK_NAME" >&2
+      printf 'Refusing to modify stack %s: Wardmote ownership tags or template provenance do not match. Inspect or remove it manually, or choose another --stack-name.\n' "$STACK_NAME" >&2
       exit 1
     fi
   elif [[ "$existing_stack" == *"(ValidationError)"* && "$existing_stack" == *"does not exist"* ]]; then
     existing_stack=""
   else
-    printf 'Unable to verify whether stack %s exists and is owned by Paperclip; refusing to provision.\n' "$STACK_NAME" >&2
+    printf 'Unable to verify whether stack %s exists and is owned by Wardmote; refusing to provision.\n' "$STACK_NAME" >&2
     exit 1
   fi
   if [[ "$existing_status" == "ROLLBACK_COMPLETE" ]]; then
     if ! $REPLACE_FAILED_STACK; then
-      printf 'Stack %s is ROLLBACK_COMPLETE. Re-run with --replace-failed-stack to explicitly authorize deleting this verified Paperclip stack.\n' "$STACK_NAME" >&2
+      printf 'Stack %s is ROLLBACK_COMPLETE. Re-run with --replace-failed-stack to explicitly authorize deleting this verified Wardmote stack.\n' "$STACK_NAME" >&2
       exit 1
     fi
     if ! $YES; then
-      printf 'Delete verified Paperclip stack %s before retrying provisioning? [y/N] ' "$STACK_NAME"
+      printf 'Delete verified Wardmote stack %s before retrying provisioning? [y/N] ' "$STACK_NAME"
       read -r answer || true
       [[ "$answer" == y || "$answer" == Y ]] || { printf 'Cancelled.\n'; return; }
     fi
-    printf 'Removing verified failed Paperclip stack %s before retrying provisioning.\n' "$STACK_NAME"
+    printf 'Removing verified failed Wardmote stack %s before retrying provisioning.\n' "$STACK_NAME"
     aws_cli cloudformation delete-stack --stack-name "$STACK_NAME"
     aws_cli cloudformation wait stack-delete-complete --stack-name "$STACK_NAME"
   fi
@@ -397,11 +397,11 @@ provision() {
   wait_for_memory_status "$memory_id"
   if aws_cli bedrock-agentcore-control get-harness-endpoint --harness-id "$harness_id" --endpoint-name "$ENDPOINT_NAME" >/dev/null 2>&1; then
     aws_cli bedrock-agentcore-control update-harness-endpoint --harness-id "$harness_id" --endpoint-name "$ENDPOINT_NAME" \
-      --target-version "$harness_version" --description "Paperclip pinned Harness endpoint" \
+      --target-version "$harness_version" --description "Wardmote pinned Harness endpoint" \
       --client-token "paperclip-update-$harness_id-$harness_version" >/dev/null
   else
     aws_cli bedrock-agentcore-control create-harness-endpoint --harness-id "$harness_id" --endpoint-name "$ENDPOINT_NAME" \
-      --target-version "$harness_version" --description "Paperclip pinned Harness endpoint" \
+      --target-version "$harness_version" --description "Wardmote pinned Harness endpoint" \
       --client-token "paperclip-create-$harness_id-$harness_version" \
       --tags paperclip:owned=true,paperclip:environment=development >/dev/null
   fi

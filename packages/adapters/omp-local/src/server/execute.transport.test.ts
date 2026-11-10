@@ -91,7 +91,7 @@ describe("OMP local transport selection", () => {
     const invocation = await run({ rpcSteering: false });
     expect(invocation.args[invocation.args.indexOf("--mode") + 1]).toBe("json");
     expect(invocation.args).toContain("-p");
-    expect(invocation.args.at(-1)).toContain("Paperclip");
+    expect(invocation.args.at(-1)).toContain("Wardmote");
   });
 
   it("keeps a verbose tool call from pushing resultJson past the safe-result budget", async () => {

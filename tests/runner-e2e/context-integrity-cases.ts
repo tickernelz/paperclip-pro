@@ -28,7 +28,7 @@ export function contextIntegrityScenario(id: string, nonce: string) {
       id === "ordered-comment-continuation"
         ? `Maintain a packing list report document. Start with the initial scope: passport and charger. Save the initial report and leave this task waiting for follow-up comments. When follow-up comments arrive, copy each user's exact wording verbatim into one ordered ledger, including identical wording repeated more than once. After the follow-up batch, save one report containing both initial items and every verbatim request in arrival order. Add a separate section headed "## Final scope" outside the quoted ledger. Put only the final requested scope name as plain text in that section. Then finish. Do not invent extra comments, child tasks, or deliverables.`
         : id === WARDMOTE_DOCUMENT_CASE
-          ? "Use the assigned Context integrity output skill. Save its requested document as a Paperclip document on this task, check the saved revision and content, and post a completion comment with a clickable Markdown link to the saved document in the Paperclip task UI, including the company prefix. A workspace file alone does not deliver this requested Paperclip document. Finish after delivery. Do not create child tasks or unrelated deliverables."
+          ? "Use the assigned Context integrity output skill. Save its requested document as a Wardmote document on this task, check the saved revision and content, and post a completion comment with a clickable Markdown link to the saved document in the Wardmote task UI, including the company prefix. A workspace file alone does not deliver this requested Wardmote document. Finish after delivery. Do not create child tasks or unrelated deliverables."
           : "Use the assigned Context integrity output skill for this task, then follow its instructions and finish the task. Do not create child tasks or unrelated deliverables.",
     comments: [repeated, repeated, changed] as const,
   };
@@ -37,7 +37,7 @@ export function contextIntegrityScenario(id: string, nonce: string) {
 function contextIntegrityTask(id: ContextIntegrityCase): RunnerTaskFixture {
   return {
     id,
-    label: id === "ordered-comment-continuation" ? "Ordered comment continuation" : id === WARDMOTE_DOCUMENT_CASE ? "Explicit Paperclip document delivery" : "Assigned skill invocation",
+    label: id === "ordered-comment-continuation" ? "Ordered comment continuation" : id === WARDMOTE_DOCUMENT_CASE ? "Explicit Wardmote document delivery" : "Assigned skill invocation",
     groups: ["context-integrity"],
     workMode: "standard",
     flow: "context_integrity",

@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { applyDevRunnerOptions } from "../../../scripts/dev-runner-options.ts";
 
 describe("applyDevRunnerOptions", () => {
-  it("turns --data-dir into isolated Paperclip paths and consumes the option", () => {
+  it("turns --data-dir into isolated Wardmote paths and consumes the option", () => {
     const env: NodeJS.ProcessEnv = {};
     const cwd = path.join(os.tmpdir(), "paperclip-dev-runner-options");
     const previousInstanceId = process.env.WARDMOTE_INSTANCE_ID;

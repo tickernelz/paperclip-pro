@@ -80,7 +80,7 @@ describeEmbeddedPostgres("autonomy windows", () => {
     companyId = randomUUID();
     agentId = randomUUID();
     ids = { root: randomUUID(), child: randomUUID(), grandchild: randomUUID(), outside: randomUUID(), review: randomUUID() };
-    await db.insert(companies).values({ id: companyId, name: "Paperclip", issuePrefix: "AUT", requireBoardApprovalForNewAgents: false });
+    await db.insert(companies).values({ id: companyId, name: "Wardmote", issuePrefix: "AUT", requireBoardApprovalForNewAgents: false });
     await db.insert(agents).values({
       id: agentId,
       companyId,

@@ -2909,7 +2909,7 @@ describe("stripConfiguredModelFromSessionParams", () => {
 });
 
 describe("stripWardmoteSessionMetadataFromSessionParams", () => {
-  it("removes all internal Paperclip session metadata before adapter invocation", () => {
+  it("removes all internal Wardmote session metadata before adapter invocation", () => {
     expect(
       stripWardmoteSessionMetadataFromSessionParams({
         sessionId: "thread-1",
@@ -3186,7 +3186,7 @@ describe("prioritizeProjectWorkspaceCandidatesForRun", () => {
 });
 
 describe("parseSessionCompactionPolicy", () => {
-  it("leaves Paperclip-managed rotation off for adapters without declared session management", () => {
+  it("leaves Wardmote-managed rotation off for adapters without declared session management", () => {
     expect(parseSessionCompactionPolicy(buildAgent("acme_local"))).toMatchObject({ enabled: false });
   });
 

@@ -166,7 +166,7 @@ export const OPENWA_TOOLS = [
   tool(
     "endpoint_config",
     "write",
-    "Owner-triggered runs only: change sender lists, one chat's settings (default origin chat; null clears), approvals, reminders, pending TTL, burst window, custom instructions. Empty call reads them. Credentials, number mode, owners, gateway admin stay in Paperclip.",
+    "Owner-triggered runs only: change sender lists, one chat's settings (default origin chat; null clears), approvals, reminders, pending TTL, burst window, custom instructions. Empty call reads them. Credentials, number mode, owners, gateway admin stay in Wardmote.",
     {
       senders: z
         .object({

@@ -1,6 +1,6 @@
-# Paperclip Native Runner
+# Wardmote Native Runner
 
-This package is the standalone development boundary for Paperclip's native
+This package is the standalone development boundary for Wardmote's native
 runner protocol, process supervision, durable transport, provider drivers, and
 normalized session backends. Rust owns the production runner under `runner/`;
 TypeScript provides the control-plane reference, browser SDK, scenario tools,
@@ -12,7 +12,7 @@ WebSocket delivery and recovery, qualified Codex, OpenCode, ACPX, Claude
 Managed, and AWS AgentCore drivers, live
 session and issue-thread surfaces, a public browser/React SDK, a standalone
 adapter demo, and a deterministic mock control plane. None of these surfaces
-imports or starts Paperclip's server, UI, CLI, or production database.
+imports or starts Wardmote's server, UI, CLI, or production database.
 
 Connection continuations inspect the harness descriptor's optional
 `toolRefreshOnResume` capability. Native Codex, Claude Managed Agents, AgentCore,
@@ -85,7 +85,7 @@ without granting access to enclosing npm directories or credential homes.
 This packaging does not change agent defaults or
 the selected runner of an existing agent.
 
-Every ACPX harness accepts an explicit caller-selected model without a Paperclip
+Every ACPX harness accepts an explicit caller-selected model without a Wardmote
 model allowlist. The adapter sends that ID unchanged and verifies the provider's
 effective model before prompting. An incomplete discovery catalog does not block
 selection; a provider rejection or mismatch fails without choosing a fallback.
@@ -132,7 +132,7 @@ existing `runControlPlanePortConformance` suite checks narrow PRP run/event
 persistence. `CAPABILITY_HIGH_RISK_SEMANTIC_VECTORS` and
 `runSemanticConformanceKit` compare normalized tool authorization, state,
 effects, audit, retries, conflicts, redaction, continuation, and terminal
-decisions. The production adapter stays App-owned and invokes Paperclip's real
+decisions. The production adapter stays App-owned and invokes Wardmote's real
 route/service authorities; it does not copy those rules into this package.
 
 ## Quick start
@@ -155,14 +155,14 @@ Verified distributions are build-owned; no provider accepts an arbitrary executa
 See [the rich ACP capability report](../../doc/architecture/runner-rich-acp-capabilities.md).
 
 Install Cursor explicitly with `paperclip-pro runtime setup cursor`; npm installation
-does not download it. Run setup as the OS user that runs Paperclip (the service
+does not download it. Run setup as the OS user that runs Wardmote (the service
 account for a managed service). Setup writes to that account's
 `~/.paperclip-pro/runtimes/cursor/<platform>-<arch>/<closure-sha256>`, so a system-wide
 npm installation can remain read-only. Isolated provider HOME/XDG settings do not
 redirect this cache. Container images continue to use their packaged assets.
 Configure a company secret binding for `CURSOR_API_KEY` or
 `CURSOR_AUTH_TOKEN`, select Cursor in the Runner configuration, and select an exact
-model ID. Agent is the default; Plan and Ask are explicit modes. Paperclip semantic
+model ID. Agent is the default; Plan and Ask are explicit modes. Wardmote semantic
 questions are supported. Native AskQuestion and authoritative per-run dollar usage
 are unavailable. Accepting a native plan ends the planning run successfully while
 the task waits for the next instruction. See the
@@ -198,7 +198,7 @@ remain unchanged.
 
 Cursor candidate configuration accepts `acpxSessionMode: "agent" | "plan" | "ask"`
 (default `agent`). This selects the native Cursor mode independently of
-`acpxPermissionMode` and Paperclip task planning or company approvals. The mode
+`acpxPermissionMode` and Wardmote task planning or company approvals. The mode
 is validated at the API boundary and is bound to provider admission and recovery;
 changing it cannot reuse an incompatible warm session. Other providers reject
 this setting. Cursor configuration requires an explicit model. Pending providers retain
@@ -281,21 +281,21 @@ requests and the existing task interaction controls. Requests are persisted
 before presentation; answers are checked against the offered decisions and
 acknowledged by the sidecar before settlement. Unknown, stale and duplicate
 responses fail. Missing provider decision support remains a blocked disposition,
-not implicit approval. Company access checks still run for each Paperclip tool.
+not implicit approval. Company access checks still run for each Wardmote tool.
 Provider death expires pending promises; approvals are never replayed into a
 replacement process.
 
-Automatic Paperclip/read allowances currently require the Claude SDK dispatch
+Automatic Wardmote/read allowances currently require the Claude SDK dispatch
 boundary. Grok preserves these restricted settings, but its ACP requests lack
 independently bound tool authority. Those operations require a supported operator
 permission decision; a missing interactive responder stops with
 `approval_required`. An explicitly selected `approve-all` policy permits unattended
-Grok work in an assigned sandbox. Paperclip authorization and governed approvals
+Grok work in an assigned sandbox. Wardmote authorization and governed approvals
 still apply.
 
 Runnerd selects only qualified provider profiles. Claude Managed and AWS
 AgentCore receive immutable company-profile snapshots with explicit retention,
-spend, and invocation limits. No provider process receives a Paperclip API
+spend, and invocation limits. No provider process receives a Wardmote API
 credential or unrestricted server environment.
 
 Claude Managed resolves its API key from the company secret bound to the
@@ -547,7 +547,7 @@ execution role.
 
 Provisioning can incur Bedrock, AgentCore Runtime/Memory, storage, and private
 networking charges. Provisioning refuses to modify a colliding stack unless its
-Paperclip ownership tags and template description match. A verified
+Wardmote ownership tags and template description match. A verified
 `ROLLBACK_COMPLETE` stack still requires `--replace-failed-stack` plus an
 interactive confirmation (or `--yes`) before it can be deleted and recreated.
 Destruction requires `--yes` and refuses to remove a stack with an active
@@ -560,7 +560,7 @@ recorded lab unless `--force` is also supplied.
 | `build`                                                 | Compile the TypeScript public surface, Rust workspace, and browser devtool.                                                                 |
 | `typecheck`                                             | Check TypeScript, Rust, generated schema sources, and browser types.                                                                        |
 | `test`                                                  | Run Rust/TypeScript fixture, supervisor, fake-driver, live/replay, and boundary tests.                                                      |
-| `check:forbidden-imports`                               | Reject TypeScript imports and Cargo path dependencies that cross into Paperclip core.                                                       |
+| `check:forbidden-imports`                               | Reject TypeScript imports and Cargo path dependencies that cross into Wardmote core.                                                       |
 | `check:tracked-imports`                                 | Reject tracked imports and `package.json` entry points that only resolve against untracked files, so a clean checkout of any commit builds. |
 | `check:numbered-milestones`                             | Reject numbered construction-milestone names in tracked package paths and source.                                                           |
 | `check:package-boundaries`                              | Enforce the acyclic runtime/testing/eval dependency and manifest boundary.                                                                  |
@@ -593,7 +593,7 @@ recorded lab unless `--force` is also supplied.
 | `check:semantic-contracts`                              | Verify the provider-neutral semantic tool contract is current.                                                                              |
 | `trace:live-runner`                                     | Run the real runnerd/Codex semantic loop against the mock control plane.                                                                    |
 | `demo:scenarios`                                        | Start the Capability scenario explorer over the mock control plane on `127.0.0.1:4183`.                                                     |
-| `console:issue-thread`                                  | Start the Paperclip-style issue thread on `127.0.0.1:4184`.                                                                                 |
+| `console:issue-thread`                                  | Start the Wardmote-style issue thread on `127.0.0.1:4184`.                                                                                 |
 | `test:scenarios`                                        | Run the scenario index, run-artifact, parity, explorer component, and route tests.                                                          |
 | `test:browser:scenarios`                                | Exercise both the scenario explorer and issue-thread browser contracts.                                                                     |
 | `browser:dev`                                           | Start the standalone live/replay browser devtool.                                                                                           |
@@ -630,7 +630,7 @@ recorded lab unless `--force` is also supplied.
 
 Codex adds the package-local real-model reference driver, Live console adds the
 package-local browser console, and SDK extracts a reusable public SDK plus
-two standalone consumers. Runtime production Paperclip integration remains
+two standalone consumers. Runtime production Wardmote integration remains
 deferred; the App-owned production conformance adapter is test-only.
 
 The SDK reference console opens in direct chat mode. Enter a normal prompt,

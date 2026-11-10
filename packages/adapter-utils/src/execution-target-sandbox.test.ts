@@ -2529,7 +2529,7 @@ describe("sandbox adapter execution targets", () => {
     }));
   });
 
-  it("starts a localhost Paperclip bridge for sandbox targets in bridge mode", async () => {
+  it("starts a localhost Wardmote bridge for sandbox targets in bridge mode", async () => {
     const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-execution-target-bridge-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
@@ -2841,7 +2841,7 @@ describe("sandbox adapter execution targets", () => {
     );
   });
 
-  it("exposes the Paperclip bridge to the sandbox shell surface", async () => {
+  it("exposes the Wardmote bridge to the sandbox shell surface", async () => {
     const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-execution-target-bridge-shell-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");

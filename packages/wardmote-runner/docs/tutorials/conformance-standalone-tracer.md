@@ -2,7 +2,7 @@
 
 ## What this phase is
 
-Conformance is the smallest standalone runner path. It uses a mock control plane and does not start Paperclip.
+Conformance is the smallest standalone runner path. It uses a mock control plane and does not start Wardmote.
 
 ## What this phase proves
 

@@ -1,7 +1,7 @@
 {
   "name": "@tickernelz/wardmote-plugin-novita-sandbox",
   "version": "0.1.0",
-  "description": "Novita Agent Sandbox provider plugin for Paperclip environments",
+  "description": "Novita Agent Sandbox provider plugin for Wardmote environments",
   "license": "MIT",
   "homepage": "https://github.com/tickernelz/wardmote",
   "bugs": {

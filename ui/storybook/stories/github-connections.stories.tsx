@@ -45,7 +45,7 @@ function GitHubConnections({ saved = false, chatEnabled = true }) {
       authKind: "oauth", config: { sourceTemplateKey: "github" }, transportConfig: {},
     }] : [] });
     result.setQueryData(queryKeys.chatEndpoints.list(companyId), saved ? [
-      { id: "github-review", companyId, provider: "github", status: "active", assignedAgentId: "reviewer", assignedAgentName: "Reviewer", botLabel: "Paperclip Review", allowUnlinkedPeople: false },
+      { id: "github-review", companyId, provider: "github", status: "active", assignedAgentId: "reviewer", assignedAgentName: "Reviewer", botLabel: "Wardmote Review", allowUnlinkedPeople: false },
       { id: "github-draft", companyId, provider: "github", status: "draft", assignedAgentId: "backup", assignedAgentName: "Backup reviewer", allowUnlinkedPeople: false },
     ] : []);
     result.setQueryData(queryKeys.access.companyUserDirectory(companyId), { users: [] });

@@ -23,7 +23,7 @@ export function projectToolRoutes(db: Db) {
       if (!definitions.some((tool: { name?: string }) => tool.name === params?.name)) throw forbidden("Tool is unavailable in this mode");
       if (params.name === "create_project" || params.name === "create_task") await assertOpenwaRunMay(db, context.run, "create_task", { consume: false });
       const apiUrl = process.env.WARDMOTE_API_URL;
-      if (!apiUrl) throw new Error("Paperclip API origin is unavailable");
+      if (!apiUrl) throw new Error("Wardmote API origin is unavailable");
       const result = await callProjectTool({
         name: params.name, arguments: params.arguments ?? {}, apiUrl,
         token: req.header("authorization")!.replace(/^Bearer\s+/i, ""),

@@ -219,7 +219,7 @@ export function TrustPresetSection({
                   target="_blank"
                   rel="noreferrer"
                 >
-                  Get Paperclip EE.
+                  Get Wardmote EE.
                 </a>
               </p>
               <CollapsibleSection

@@ -76,7 +76,7 @@ export function createRunnerE2EServerStopper(options: {
       if (exited(child) && !state.owner.liveGroups().length) { state.owner.stopObserving(); return; }
       await wait(25);
     } while (Date.now() < state.forcedDeadline);
-    throw new Error("Paperclip server or observed descendants did not exit after SIGKILL");
+    throw new Error("Wardmote server or observed descendants did not exit after SIGKILL");
   }
   const stop = (child: ChildProcess, signal: NodeJS.Signals = "SIGTERM"): Promise<void> => {
     options.markExpectedStop(child);

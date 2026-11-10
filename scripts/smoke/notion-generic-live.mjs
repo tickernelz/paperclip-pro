@@ -984,7 +984,7 @@ async function runSmoke({ config, chromium }) {
         "Invoke exactly one installed action: the read-only `notion-get-self` tool with an empty `{}` input.",
         "Make no Notion mutation and do not invoke any other Notion action.",
         `Require workspace ID ${boardIdentity.workspaceId} and workspace name ${boardIdentity.workspaceName}.`,
-        "Post exactly one JSON object with keys `workspaceId`, `workspaceName`, and `invocationId` (the Paperclip invocation ID), then mark this issue done.",
+        "Post exactly one JSON object with keys `workspaceId`, `workspaceName`, and `invocationId` (the Wardmote invocation ID), then mark this issue done.",
         "Do not report tokens, cookies, headers, authorization data, raw payloads, or any other fields.",
       ].join("\n\n"),
       status: "todo",
@@ -993,7 +993,7 @@ async function runSmoke({ config, chromium }) {
       assigneeAgentId: agent.id,
       acceptanceCriteria: [
         "The installed notion-get-self action succeeds with empty input.",
-        "Only sanitized workspace ID/name and Paperclip invocation ID are reported.",
+        "Only sanitized workspace ID/name and Wardmote invocation ID are reported.",
         "No Notion mutation is attempted.",
       ],
     }, "E.fresh-agent");

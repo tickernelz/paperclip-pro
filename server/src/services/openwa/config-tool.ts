@@ -29,7 +29,7 @@ function e164(number: string): string {
 export function refuseOpenwaUiOnlyConfig(value: unknown): void {
   const keys = Object.keys(record(value)).filter((key) => (OPENWA_CONFIG_UI_ONLY_FIELDS as readonly string[]).includes(key));
   if (keys.length)
-    throw new OpenwaToolError(403, "ui_only_setting", "Credentials, number mode, owners and the gateway admin level are changed by a person in Paperclip", {
+    throw new OpenwaToolError(403, "ui_only_setting", "Credentials, number mode, owners and the gateway admin level are changed by a person in Wardmote", {
       fields: keys,
     });
 }

@@ -1,6 +1,6 @@
 # @tickernelz/wardmote-create-paperclip-plugin
 
-Scaffolding tool for creating new Paperclip plugins.
+Scaffolding tool for creating new Wardmote plugins.
 
 ```bash
 npx @tickernelz/wardmote-create-paperclip-plugin my-plugin
@@ -13,7 +13,7 @@ npx @tickernelz/wardmote-create-paperclip-plugin @acme/my-plugin \
   --template connector \
   --category connector \
   --display-name "Acme Connector" \
-  --description "Syncs Acme data into Paperclip" \
+  --description "Syncs Acme data into Wardmote" \
   --author "Acme Inc"
 ```
 
@@ -27,11 +27,11 @@ Generates:
 - `esbuild` and `rollup` config files using SDK bundler presets
 - dev server script for hot-reload (`paperclip-plugin-dev-server`)
 
-The scaffold starts with plain React elements so the generated plugin stays minimal. For Paperclip-native controls, import shared host components such as `MarkdownEditor`, `FileTree`, `AssigneePicker`, and `ProjectPicker` from `@tickernelz/wardmote-plugin-sdk/ui`.
+The scaffold starts with plain React elements so the generated plugin stays minimal. For Wardmote-native controls, import shared host components such as `MarkdownEditor`, `FileTree`, `AssigneePicker`, and `ProjectPicker` from `@tickernelz/wardmote-plugin-sdk/ui`.
 
 Inside this repo, the generated package uses `@tickernelz/wardmote-plugin-sdk` via `workspace:*`.
 
-Outside this repo, the scaffold snapshots `@tickernelz/wardmote-plugin-sdk` from your local Paperclip checkout into a `.paperclip-sdk/` tarball and points the generated package at that local file by default. You can override the SDK source explicitly:
+Outside this repo, the scaffold snapshots `@tickernelz/wardmote-plugin-sdk` from your local Wardmote checkout into a `.paperclip-sdk/` tarball and points the generated package at that local file by default. You can override the SDK source explicitly:
 
 ```bash
 node packages/plugins/plugin-creator/dist/bin.js @acme/my-plugin \

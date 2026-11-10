@@ -141,7 +141,7 @@ export async function resolveWardmoteRunnerTransport(input: {
     if (!ingressAuthorized) {
       throw new WardmoteRunnerTransportError(
         "runner_ingress_unavailable",
-        "Runner ingress is not authorized for this Paperclip Runner run.",
+        "Runner ingress is not authorized for this Wardmote Runner run.",
       );
     }
     const getRunnerIngressEndpoint =

@@ -93,7 +93,7 @@ describeEmbeddedPostgres("companySkillService.installFromCatalog", () => {
     const companyId = randomUUID();
     await db.insert(companies).values({
       id: companyId,
-      name: "Paperclip",
+      name: "Wardmote",
       issuePrefix: `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
       requireBoardApprovalForNewAgents: false,
     });
@@ -196,7 +196,7 @@ describeEmbeddedPostgres("companySkillService.installFromCatalog", () => {
     });
   });
 
-  it("repairs an existing unfiled Paperclip catalog skill during inventory refresh", async () => {
+  it("repairs an existing unfiled Wardmote catalog skill during inventory refresh", async () => {
     const companyId = await createCompany();
     const installed = await svc.installFromCatalog(companyId, { catalogSkillId: sampleCatalogSkill.id });
     await db

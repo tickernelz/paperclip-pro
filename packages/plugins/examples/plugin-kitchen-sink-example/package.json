@@ -1,7 +1,7 @@
 {
   "name": "@tickernelz/wardmote-plugin-kitchen-sink-example",
   "version": "0.1.0",
-  "description": "Reference plugin that demonstrates the full Paperclip plugin surface area in one package",
+  "description": "Reference plugin that demonstrates the full Wardmote plugin surface area in one package",
   "type": "module",
   "private": true,
   "exports": {

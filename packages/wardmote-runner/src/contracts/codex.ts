@@ -41,7 +41,7 @@ export interface CodexModelContextSnapshot {
   codexVersion: string;
   clientInfo: {
     name: "paperclip-runner";
-    title: "Paperclip Runner";
+    title: "Wardmote Runner";
     version: string;
   };
   model: string;

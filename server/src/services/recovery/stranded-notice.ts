@@ -25,7 +25,7 @@ export type StrandedRecoveryEscalationNotice = {
 };
 
 export const DEFAULT_STRANDED_RECOVERY_NOTICE_BODY =
-  "Paperclip could not restore a live execution path for this issue automatically. " +
+  "Wardmote could not restore a live execution path for this issue automatically. " +
   "Moving it to `blocked` so it is visible for intervention.";
 
 const DEFAULT_STRANDED_RECOVERY_NOTICE_TITLE = "Automatic recovery blocked";
@@ -59,8 +59,8 @@ export function buildImmediateExecutionPathRecoveryNoticeSeed(input: {
   status: "todo" | "in_progress";
 }): StrandedRecoveryNoticeSeed {
   const retryDescription = input.status === "todo"
-    ? "Paperclip automatically retried dispatch for this assigned `todo` issue during terminal run recovery"
-    : "Paperclip automatically retried continuation for this assigned `in_progress` issue during terminal run recovery";
+    ? "Wardmote automatically retried dispatch for this assigned `todo` issue during terminal run recovery"
+    : "Wardmote automatically retried continuation for this assigned `in_progress` issue during terminal run recovery";
   return {
     body:
       `${retryDescription}, but it still has no live execution path. ` +
@@ -73,7 +73,7 @@ export function buildImmediateExecutionPathRecoveryNoticeSeed(input: {
 export function buildServerInterruptionCrashLoopNoticeSeed(): StrandedRecoveryNoticeSeed {
   return {
     body:
-      "The Paperclip server restarted or crashed repeatedly while this issue's run was active, and the automatic retry limit " +
+      "The Wardmote server restarted or crashed repeatedly while this issue's run was active, and the automatic retry limit " +
       "for server interruptions is spent. The run did not fail on its own. " +
       "Moving it to `blocked` so it is visible for intervention.",
     title: "Server restarted repeatedly",
@@ -85,7 +85,7 @@ export function buildServerInterruptionCrashLoopNoticeSeed(): StrandedRecoveryNo
 export function buildWorkspaceValidationRecoveryNoticeSeed(): StrandedRecoveryNoticeSeed {
   return {
     body:
-      "Paperclip stopped before launching the local adapter because the issue workspace failed validation. " +
+      "Wardmote stopped before launching the local adapter because the issue workspace failed validation. " +
       "Moving it to `blocked` so the workspace link, cwd, or git checkout can be repaired before resuming.",
     title: "Workspace validation failed",
     tone: "danger",
@@ -128,7 +128,7 @@ export function buildConfigurationIncompleteRecoveryNoticeSeed(
   if (readNonEmptyStringField(configurationIncomplete, "reason") === "workspace_base_ref_unresolved") {
     return {
       title: "Workspace base ref unavailable",
-      body: "Paperclip stopped before the agent started because the configured workspace base ref could not be resolved to a Git commit. The task is blocked until its workspace configuration or repository access is repaired.",
+      body: "Wardmote stopped before the agent started because the configured workspace base ref could not be resolved to a Git commit. The task is blocked until its workspace configuration or repository access is repaired.",
       nextAction: "Check that the configured base ref exists and the repository is accessible. Correct the task or project workspace settings, then retry the task.",
       tone: "danger",
     };
@@ -146,7 +146,7 @@ export function buildConfigurationIncompleteRecoveryNoticeSeed(
     const pluginStatus = readNonEmptyStringField(configurationIncomplete, "pluginStatus") ?? "not ready";
     return {
       body:
-        `Paperclip stopped before dispatching the adapter because the sandbox provider plugin \`${pluginKey}\` ` +
+        `Wardmote stopped before dispatching the adapter because the sandbox provider plugin \`${pluginKey}\` ` +
         `is in status \`${pluginStatus}\` and cannot lease a sandbox. Runs will keep failing the same way until the ` +
         `plugin is \`ready\` again. Moving it to \`blocked\` so an operator can ${sandboxProviderPluginRemedy(pluginStatus)} ` +
         "before resuming.",
@@ -156,7 +156,7 @@ export function buildConfigurationIncompleteRecoveryNoticeSeed(
   }
   return {
     body:
-      "Paperclip stopped before dispatching the adapter because required secret/env bindings are missing. " +
+      "Wardmote stopped before dispatching the adapter because required secret/env bindings are missing. " +
       "Moving it to `blocked` so an operator can bind the missing secret(s) before resuming.",
     title: "Configuration incomplete",
     tone: "danger",
@@ -166,7 +166,7 @@ export function buildConfigurationIncompleteRecoveryNoticeSeed(
 export function buildExecutionReviewParticipantRecoveryNoticeSeed(): StrandedRecoveryNoticeSeed {
   return {
     body:
-      "Paperclip retried the pending execution-review participant once, but the review stage still has no " +
+      "Wardmote retried the pending execution-review participant once, but the review stage still has no " +
       "completed decision or live reviewer run. Moving it to `blocked` so the board can inspect the evidence, repair the " +
       "reviewer runtime, restore the review stage, or record an intentional manual resolution.",
     title: "Review recovery stalled",
@@ -177,7 +177,7 @@ export function buildExecutionReviewParticipantRecoveryNoticeSeed(): StrandedRec
 export function buildExecutionReviewParticipantUnavailableNoticeSeed(): StrandedRecoveryNoticeSeed {
   return {
     body:
-      "Paperclip cannot continue the pending execution-review participant because the participant is not " +
+      "Wardmote cannot continue the pending execution-review participant because the participant is not " +
       "invokable and the review stage has no completed decision or live reviewer run. Moving it to `blocked` " +
       "so the board can inspect the evidence, repair the reviewer runtime, restore the review stage, or record an " +
       "intentional manual resolution.",
@@ -206,7 +206,7 @@ export function buildStrandedRecoveryEscalationNotice(input: {
   const workspaceScan = WORKSPACE_SCAN_NOTICES[input.sourceRun?.errorCode ?? ""];
   const seed = workspaceScan ? {
     ...workspaceScan,
-    body: `Paperclip could not prepare the workspace before the agent started. Automatic recovery could not continue. ${workspaceScan.nextAction}`,
+    body: `Wardmote could not prepare the workspace before the agent started. Automatic recovery could not continue. ${workspaceScan.nextAction}`,
     tone: "danger" as const,
   } : input.seed;
   const fallbackBody = input.fallbackBody?.trim();

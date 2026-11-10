@@ -1,7 +1,7 @@
 {
   "name": "@tickernelz/wardmote-plugin-exe-dev",
   "version": "0.1.2",
-  "description": "exe.dev sandbox provider plugin for Paperclip environments",
+  "description": "exe.dev sandbox provider plugin for Wardmote environments",
   "license": "MIT",
   "homepage": "https://github.com/tickernelz/wardmote",
   "bugs": {

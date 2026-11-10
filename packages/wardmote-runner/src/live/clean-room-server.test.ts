@@ -686,7 +686,7 @@ describe("Capability clean-room chat server", () => {
     expect(opened.view.mode).toBe("live");
     expect(opened.view.identity.agentLabel).toBe("Real Codex");
     expect(opened.view.identity.runnerLabel).toBe("Real runnerd");
-    expect(opened.view.identity.controlPlaneLabel).toBe("Mock Paperclip");
+    expect(opened.view.identity.controlPlaneLabel).toBe("Mock Wardmote");
     expect(opened.view.identity.replaySource).toBeNull();
     expect(opened.view.replay).toBeNull();
     expect(opened.view.composer.state).toBe("ready");
@@ -736,7 +736,7 @@ describe("Capability clean-room chat server", () => {
     );
 
     expect(guard?.outcome).toBe("no_real_paperclip_request");
-    expect(guard?.reason).toContain("Real Paperclip API requests: 0");
+    expect(guard?.reason).toContain("Real Wardmote API requests: 0");
     expect(guard?.reason).toContain("Child WARDMOTE_* environment keys: none");
     // Every request this test made went to its own loopback server.
     expect(requestedUrls.every((url) => url.startsWith(origin))).toBe(true);

@@ -79,7 +79,7 @@ export function capabilityScenarioFixture(entry: CapabilityScenarioIndexEntry): 
     epochMs: FIXTURE_EPOCH_MS,
     company: {
       id: COMPANY_ID,
-      name: "Mock Paperclip Company",
+      name: "Mock Wardmote Company",
       issuePrefix: "MCK",
       status: "active",
       budgetId: "budget-company-1",

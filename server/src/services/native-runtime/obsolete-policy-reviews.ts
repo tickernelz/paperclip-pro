@@ -71,7 +71,7 @@ export async function dismissObsoleteNativePolicyReviews(db: Db, runIds?: string
         const now = new Date();
         const [cancelled] = await tx.update(issueThreadInteractions).set({
           status: "cancelled",
-          result: { version: 1, outcome: "withdrawn", reason: "A Paperclip upgrade does not require completion review." },
+          result: { version: 1, outcome: "withdrawn", reason: "A Wardmote upgrade does not require completion review." },
           resolvedAt: now,
           updatedAt: now,
         }).where(and(

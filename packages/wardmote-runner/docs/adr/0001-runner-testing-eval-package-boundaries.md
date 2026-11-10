@@ -2,7 +2,7 @@
 
 - Status: Accepted
 - Date: 2026-08-11
-- Decision owners: Paperclip App
+- Decision owners: Wardmote App
 
 ## Context
 
@@ -22,7 +22,7 @@ Ownership is:
 
 | Owner | Stable responsibility |
 |---|---|
-| Paperclip App | PRP schemas and fixtures, canonical semantic catalog and dispatcher, runnerd/client interfaces, `ControlPlanePort`, the production binding, deterministic mock, and mock/real parity fixtures |
+| Wardmote App | PRP schemas and fixtures, canonical semantic catalog and dispatcher, runnerd/client interfaces, `ControlPlanePort`, the production binding, deterministic mock, and mock/real parity fixtures |
 | Eval consumers | Scenario corpus, provider configuration, experiment reports, and provider-backed orchestration |
 
 The production binding remains App code at
@@ -60,7 +60,7 @@ campaigns remain external.
 The dependency graph is acyclic:
 
 ```text
-Paperclip App production binding
+Wardmote App production binding
             |
             v
 @tickernelz/wardmote-runner (runtime contracts)

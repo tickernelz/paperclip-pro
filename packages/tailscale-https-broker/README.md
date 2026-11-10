@@ -1,9 +1,9 @@
-# Paperclip Tailscale HTTPS broker
+# Wardmote Tailscale HTTPS broker
 
-Least-privilege host broker that manages **only** Paperclip-owned, tailnet-only,
+Least-privilege host broker that manages **only** Wardmote-owned, tailnet-only,
 same-number HTTPS-to-loopback listeners for managed branch runtimes.
 
-It exists so the Paperclip app/agent account never gains Tailscale operator
+It exists so the Wardmote app/agent account never gains Tailscale operator
 authority (see [PAP-16989](../../)) while still getting automatic trusted HTTPS
 previews per branch runtime. Design: [PAP-17049](../../) plan; security contract:
 [PAP-17050](../../) threat-model verdict.
@@ -46,7 +46,7 @@ mutation** and is never modified.
 
 The socket transport reads Linux `SO_PEERCRED` before admission, admits at most
 8 concurrent sockets per resolved UID, and reserves 4 of its 32 global slots
-for the configured Paperclip service UID. Connection deadlines destroy the
+for the configured Wardmote service UID. Connection deadlines destroy the
 socket so timed-out peers cannot retain kernel-level connection slots. Missing
 or invalid native credentials fail closed; socket permissions are not used as
 a substitute identity.
@@ -54,8 +54,8 @@ a substitute identity.
 ## One-time host installation (`paperclip-dev`)
 
 These steps require **root** and must be run by CloudOps/host owner, not the
-Paperclip agent account. They install the broker as a dedicated
-Tailscale-operator service account distinct from the Paperclip app account.
+Wardmote agent account. They install the broker as a dedicated
+Tailscale-operator service account distinct from the Wardmote app account.
 
 1. **Preconditions.** Tailscale is installed and up on the node, the node has an
    HTTPS-capable trusted cert (MagicDNS + HTTPS enabled), and the existing
@@ -67,7 +67,7 @@ Tailscale-operator service account distinct from the Paperclip app account.
    sudo useradd --system --home /var/lib/paperclip-tailscale-broker \
      --shell /usr/sbin/nologin paperclip-tsbroker
    sudo groupadd --system paperclip-tsbroker-sock
-   # The Paperclip *app* service account must have this as its PRIMARY group so
+   # The Wardmote *app* service account must have this as its PRIMARY group so
    # its SO_PEERCRED gid matches the socket group (supplemental membership is
    # intentionally NOT accepted).
    sudo usermod -g paperclip-tsbroker-sock <paperclip-app-account>
@@ -79,10 +79,10 @@ Tailscale-operator service account distinct from the Paperclip app account.
    sudo tailscale set --operator=paperclip-tsbroker
    ```
 
-   Do **not** grant `--operator` to the Paperclip app/agent account (that grant
+   Do **not** grant `--operator` to the Wardmote app/agent account (that grant
    was explicitly rejected in PAP-16989).
 
-4. **Create state directories (not writable by the Paperclip app).** The
+4. **Create state directories (not writable by the Wardmote app).** The
    packaged unit creates these automatically; for a manual install use:
 
    ```sh
@@ -119,7 +119,7 @@ Tailscale-operator service account distinct from the Paperclip app account.
 
    ```ini
    [Unit]
-   Description=Paperclip Tailscale HTTPS broker
+   Description=Wardmote Tailscale HTTPS broker
    After=tailscaled.service
    Requires=tailscaled.service
 
@@ -142,16 +142,16 @@ Tailscale-operator service account distinct from the Paperclip app account.
 
    Put the `BROKER_*` values from the table below in the environment file. Set
    `WARDMOTE_TAILSCALE_BROKER_SOCKET=/run/paperclip-tailscale-broker/broker.sock`
-   on the Paperclip service only if overriding its default.
+   on the Wardmote service only if overriding its default.
 
    Environment variables (defaults in `src/config.ts`):
 
    | Var | Required | Default | Meaning |
    |-----|----------|---------|---------|
    | `BROKER_NODE_IDENTITY` | yes | — | hostname + boot id; a change forces quarantine + operator reconciliation |
-   | `BROKER_SERVICE_UID` | yes | — | UID of the Paperclip **app** account allowed to connect |
+   | `BROKER_SERVICE_UID` | yes | — | UID of the Wardmote **app** account allowed to connect |
    | `BROKER_SERVICE_GID` | yes | — | GID of the dedicated socket group (caller's primary GID) |
-   | `BROKER_RUNTIME_UID` | yes | — | UID that owns Paperclip-managed runtime processes (normally the Paperclip app service account); only its loopback listeners are eligible |
+   | `BROKER_RUNTIME_UID` | yes | — | UID that owns Wardmote-managed runtime processes (normally the Wardmote app service account); only its loopback listeners are eligible |
    | `BROKER_TAILSCALE_BIN` | no | `/usr/bin/tailscale` | absolute path to the Tailscale CLI |
    | `BROKER_SOCKET_PATH` | no | `/run/paperclip-tailscale-broker/broker.sock` | Unix socket path |
    | `BROKER_REGISTRY_PATH` | no | `/var/lib/paperclip-tailscale-broker/registry.json` | root-owned `0600` ownership registry |
@@ -220,9 +220,9 @@ quarantine and operator reconciliation rather than silently re-adopting.
 Rollback disables new exposure and removes only broker-owned listeners; it never
 resets Serve or changes the primary route.
 
-1. Disable the exposure flag on the project runtime (Paperclip stops requesting
+1. Disable the exposure flag on the project runtime (Wardmote stops requesting
    `expose`). Existing previews drain on runtime stop.
-2. Drain owned listeners: stop each managed runtime so Paperclip issues `remove`
+2. Drain owned listeners: stop each managed runtime so Wardmote issues `remove`
    for its own leases (proven by handle).
 3. `sudo systemctl disable --now paperclip-tailscale-https-broker`.
 4. Optional cleanup: remove the state dirs and `sudo tailscale set --operator=`

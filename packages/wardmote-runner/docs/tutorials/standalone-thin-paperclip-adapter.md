@@ -1,9 +1,9 @@
 # Standalone Standalone Adapter Demo
 
 This tutorial exercises the Standalone tracer entirely inside
-`packages/wardmote-runner/`. It does not install the runner into Paperclip,
-call a Paperclip API, change an instance flag, edit an agent profile, create a
-Paperclip task, or use the repository server/database integration.
+`packages/wardmote-runner/`. It does not install the runner into Wardmote,
+call a Wardmote API, change an instance flag, edit an agent profile, create a
+Wardmote task, or use the repository server/database integration.
 
 ## 1. Run the default legacy path
 
@@ -62,7 +62,7 @@ pnpm --filter @tickernelz/wardmote-runner exec vitest run \
 pnpm --filter @tickernelz/wardmote-runner run build:standalone
 ```
 
-These checks require no running Paperclip service or credentials.
+These checks require no running Wardmote service or credentials.
 
 ## Human checkpoint
 
@@ -70,5 +70,5 @@ These checks require no running Paperclip service or credentials.
 2. Enable the native demo flag and compare the contract and reducer panels.
 3. Inspect the replay and finalization fields in the JSON trace.
 4. Enable the kill switch and confirm native invocations return to zero.
-5. Confirm no Paperclip instance or repository path outside
+5. Confirm no Wardmote instance or repository path outside
    `packages/wardmote-runner/` was needed.

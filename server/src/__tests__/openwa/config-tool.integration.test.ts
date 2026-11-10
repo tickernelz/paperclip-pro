@@ -414,7 +414,7 @@ describe("openwa_endpoint_config (embedded Postgres + fake gateway)", () => {
     expect(called.map((entry) => (entry.metadata as { errorCode: string }).errorCode)).toEqual(Array(8).fill("owner_only"));
   }, 90_000);
 
-  it("refuses Paperclip-UI-only settings with a typed error even for owner runs", async () => {
+  it("refuses Wardmote-UI-only settings with a typed error even for owner runs", async () => {
     const t = await setup();
     const c = await conversation(t, OWNER_DM);
     const binding = await run(t, c, "owner");

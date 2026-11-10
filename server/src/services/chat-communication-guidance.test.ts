@@ -27,17 +27,17 @@ describe("initial medium communication guidance", () => {
     expect(guidance).toContain("Communication by voice");
     expect(guidance).toContain("Keep your existing identity, runtime, tools, and task assignment");
     expect(guidance).toContain("one focused clarification");
-    expect(guidance).toContain("durable Paperclip continuation");
+    expect(guidance).toContain("durable Wardmote continuation");
     expect(guidance).toContain("Delivery to Speko does not prove an answer was spoken");
     expect(guidance).toContain("does not cancel work");
-    expect(guidance).toContain("Protected approvals must be completed in Paperclip");
+    expect(guidance).toContain("Protected approvals must be completed in Wardmote");
   });
 
   it.each([false, true])("requires public links for created Slack tasks (DM: %s)", (isDirectMessage) => {
     const guidance = buildChatCommunicationGuidance({ provider: "slack", isDirectMessage });
     expect(guidance).toContain("include a clickable link to each created task");
     expect(guidance).toContain("task identifier or title as the link text");
-    expect(guidance).toContain("public task URL returned by Paperclip tools or supplied in task context");
+    expect(guidance).toContain("public task URL returned by Wardmote tools or supplied in task context");
     expect(guidance).toContain("never guess a URL");
     expect(guidance).toContain("If no public task URL is available, say that the link is unavailable");
   });

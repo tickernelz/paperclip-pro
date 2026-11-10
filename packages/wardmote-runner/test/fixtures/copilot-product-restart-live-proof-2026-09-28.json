@@ -44,7 +44,7 @@
     }
   ],
   "question": {
-    "surface": "Paperclip semantic structured question",
+    "surface": "Wardmote semantic structured question",
     "nativeCopilotAskUserCallback": false,
     "optionIds": [
       "cobalt",

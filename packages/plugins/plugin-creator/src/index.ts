@@ -140,7 +140,7 @@ export function scaffoldPluginProject(options: ScaffoldPluginOptions): string {
   }
 
   const displayName = options.displayName ?? makeDisplayName(options.pluginName);
-  const description = options.description ?? "A Paperclip plugin";
+  const description = options.description ?? "A Wardmote plugin";
   const author = options.author ?? "Plugin Author";
   const category = options.category ?? (template === "workspace" ? "workspace" : template === "environment" ? "environment" : "connector");
   const manifestId = packageToManifestId(options.pluginName);
@@ -673,15 +673,15 @@ pnpm test
 \`\`\`
 
 \`pnpm dev\` rebuilds the worker, manifest, and UI bundles into \`dist/\`.
-When this package is installed from a local path, Paperclip watches that rebuilt
+When this package is installed from a local path, Wardmote watches that rebuilt
 output and reloads the plugin worker. Local installs run trusted code from this
 folder on your machine.
 
 ${sdkDependency.startsWith("file:")
-  ? `This scaffold snapshots \`@tickernelz/wardmote-plugin-sdk\` and \`@tickernelz/wardmote-shared\` from a local Paperclip checkout at:\n\n\`${toPosixPath(localSdkPath)}\`\n\nThe packed tarballs live in \`.paperclip-sdk/\` for local development. Before publishing this plugin, switch those dependencies to published package versions once they are available on npm.\n\n`
+  ? `This scaffold snapshots \`@tickernelz/wardmote-plugin-sdk\` and \`@tickernelz/wardmote-shared\` from a local Wardmote checkout at:\n\n\`${toPosixPath(localSdkPath)}\`\n\nThe packed tarballs live in \`.paperclip-sdk/\` for local development. Before publishing this plugin, switch those dependencies to published package versions once they are available on npm.\n\n`
   : ""}
 
-## Install Into Paperclip
+## Install Into Wardmote
 
 \`\`\`bash
 wardmote plugin install ${shellQuote(toPosixPath(outputDir))}

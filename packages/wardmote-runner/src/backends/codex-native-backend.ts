@@ -136,8 +136,8 @@ function createTransportBackedNativeSessionBackend(
     input.executionMode === "plan"
       ? [
           "Use native plan collaboration mode and do not modify workspace files.",
-          "Treat the supplied Paperclip planning context as the canonical pinned base revision.",
-          "Complete one structured provider plan item; Paperclip will synchronize it after completion.",
+          "Treat the supplied Wardmote planning context as the canonical pinned base revision.",
+          "Complete one structured provider plan item; Wardmote will synchronize it after completion.",
           "Keep the final response to a short synchronization summary instead of repeating the full plan.",
         ]
       : []),

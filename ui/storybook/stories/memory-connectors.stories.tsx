@@ -81,7 +81,7 @@ function MemoryReview({ provider = "mem0", scenario = "catalog" }: { provider?: 
           : selection && ready ? <>
             <div hidden={Boolean(signIn)}><ConnectionSetupFlow key={selection} serviceSlug={selection} onComplete={() => setCompleted(true)} onCancel={() => setSelection(null)} /></div>
             {signIn && app ? <div className="space-y-4">
-              <p role="note" className="text-sm text-ink-3">Storybook sign-in simulation. Continue to simulate provider approval and return to Paperclip.</p>
+              <p role="note" className="text-sm text-ink-3">Storybook sign-in simulation. Continue to simulate provider approval and return to Wardmote.</p>
               <OAuthConnectStateScreen entry={app} phase="entry" onRetry={() => { signIn.complete(); setSignIn(null); }} onBack={() => { setSignIn(null); setSelection(null); }} onCancel={() => { setSignIn(null); setSelection(null); }} />
             </div> : null}
           </>

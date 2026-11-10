@@ -7,7 +7,7 @@ usage() {
 Usage:
   paperclip-upload-artifact.sh FILE [options]
 
-Uploads a generated file from the current workspace to the current Paperclip
+Uploads a generated file from the current workspace to the current Wardmote
 issue, then creates an attachment-backed artifact work product by default.
 
 Required environment for live uploads:
@@ -469,7 +469,7 @@ for ((lookup_attempt = 1; lookup_attempt <= lookup_attempts; lookup_attempt++));
 done
 
 if [[ -z "$attachment" && -f "$unknown_upload_marker" && "$retry_unknown_upload" != "1" ]]; then
-  printf '%s\n' 'A previous matching upload ended without a definitive response, and Paperclip has not exposed its durable attachment yet.' >&2
+  printf '%s\n' 'A previous matching upload ended without a definitive response, and Wardmote has not exposed its durable attachment yet.' >&2
   printf '%s\n' 'Retry this command later. If the upload definitely did not commit, pass --retry-unknown-upload to accept the duplicate-file risk.' >&2
   exit 1
 fi
@@ -597,7 +597,7 @@ if [[ -n "$work_product_id" ]]; then
   printf -- '- Work product ID: `%s`\n' "$work_product_id"
 fi
 if [[ -n "$chat_comment" ]]; then
-  printf -- '- Paperclip comment binding: saved. External publication requires an authorized active chat origin; this helper does not confirm provider delivery.\n'
+  printf -- '- Wardmote comment binding: saved. External publication requires an authorized active chat origin; this helper does not confirm provider delivery.\n'
 fi
 printf '\nFinal comment snippet:\n\n'
 printf -- '- Artifact: [%s](%s)\n' "$title" "$content_path"

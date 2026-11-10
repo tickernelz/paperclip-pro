@@ -116,7 +116,7 @@ export async function setupFirstTaskFixtures(input: {
     status: "in_progress",
   });
   await api.post(`/api/companies/${company.id}/issues`, {
-    title: "Paperclip onboarding",
+    title: "Wardmote onboarding",
     assigneeAgentId: agents[0].id,
     projectId: project.id,
     status: "todo",

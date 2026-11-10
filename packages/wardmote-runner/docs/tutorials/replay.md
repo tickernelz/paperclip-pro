@@ -2,7 +2,7 @@
 
 ## What this phase is
 
-Replay is a static replay path for a Paperclip Runner Protocol fixture. It uses the same reducer in the CLI and browser.
+Replay is a static replay path for a Wardmote Runner Protocol fixture. It uses the same reducer in the CLI and browser.
 
 ## What this phase proves
 
@@ -108,7 +108,7 @@ suite does not rewrite committed evidence images.
 - The CLI and browser call the same validator and reducer.
 - Duplicate delivery is idempotent and sequence gaps remain visible.
 - Unknown optional fields do not change the v1 projection.
-- No Paperclip server, UI, CLI, adapter, or production database module starts or
+- No Wardmote server, UI, CLI, adapter, or production database module starts or
   imports into the standalone path.
 
 Local runner is outside this tutorial and must not start before the Replay human

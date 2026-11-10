@@ -1,6 +1,6 @@
 # Adding a Harness
 
-Every Paperclip Runner harness must declare its permission behavior as part of
+Every Wardmote Runner harness must declare its permission behavior as part of
 the provider contract. A driver is not complete until its permission modes,
 maximum non-interactive default, durable request translation, recovery
 identity, isolation behavior, and conformance coverage are defined.
@@ -11,7 +11,7 @@ First-party harness glue belongs in the runner, not in a new npm package for
 each provider. Keep built-in launchers and metadata under
 `src/providers/<provider>/`; include them in the compiled runner and the public
 server's vendored runtime. Grok is the reference implementation. This keeps a
-public Paperclip npm install self-contained as more harnesses are added.
+public Wardmote npm install self-contained as more harnesses are added.
 
 Native provider binaries remain execution-environment prerequisites. Provision
 them explicitly in sandbox images or on local execution hosts, independently
@@ -23,7 +23,7 @@ download or an unverified fallback to PATH.
 Use a distinct built-in launcher identity and native runtime identity in the
 qualified profile, recovery binding, provider-pack manifest, and eval config.
 Existing upstream npm-backed ACP bridges retain their package pins; this does
-not require replacing those bridges or republishing them under Paperclip names.
+not require replacing those bridges or republishing them under Wardmote names.
 
 Verify public release tarballs in a clean consumer outside the checkout with
 npm lifecycle scripts enabled. Prove that the launcher ships, npm does not
@@ -46,7 +46,7 @@ provider value again; they must not silently accept an unknown mode.
 
 “Full auto” means the harness does not pause for a duplicate approval inside
 the environment assigned to the run. It does not grant host-wide filesystem
-access, unrestricted network access, Paperclip credentials, or write access in
+access, unrestricted network access, Wardmote credentials, or write access in
 read-only planning mode. Workspace containment, protected-path and symlink
 checks, network policy, credential bindings, and authenticated PRP
 authorization remain authoritative and run before any harness auto-approval.
@@ -57,7 +57,7 @@ When adding or upgrading a harness:
 
 1. Declare the exact native modes supported by the provider. Choose the
    provider's highest non-interactive mode as the default for a fresh
-   Paperclip Runner execution.
+   Wardmote Runner execution.
 2. Add its labels, configuration key, options, and default to the shared
    provider-discriminated capability catalog. The agent form must show only
    the selected provider's setting and retain stored choices when the provider
@@ -69,13 +69,13 @@ When adding or upgrading a harness:
    lifecycle: emit one durable request, recover it after reconnect, accept
    allow-once, allow-for-session, deny, and cancellation where the provider
    supports them, and send exactly one provider-native resolution.
-5. Authorize Paperclip semantic and question tools through authenticated PRP.
+5. Authorize Wardmote semantic and question tools through authenticated PRP.
    These tools may bypass duplicate harness approval, but never their
    control-plane authorization.
 6. Emit the provider and effective permission mode in session-start
    diagnostics without including credentials or unredacted provider input.
 7. Keep standalone local adapters unchanged unless their own contract is
-   deliberately revised. Paperclip Runner defaults apply only to
+   deliberately revised. Wardmote Runner defaults apply only to
    `wardmote_runner` executions.
 
 ## Compatibility rules

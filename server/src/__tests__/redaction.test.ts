@@ -31,7 +31,7 @@ function receiptNotice(version: 1 | 2 = 1): Record<string, any> {
   return {
     schema: "paperclip.provider.notice.v1", noticeId: `copilot-evidence-${"a".repeat(24)}-1`,
     severity: "info", category: `paperclip_semantic_tool_receipt_v${version}`, scope: "turn",
-    recoverable: true, userActionable: false, summary: "Paperclip returned a semantic tool result.",
+    recoverable: true, userActionable: false, summary: "Wardmote returned a semantic tool result.",
     provenance: { method: "paperclip/semantic_tool_result", eventType: "semantic_result", sessionId: "session", turnId: "turn" },
     details: Object.entries({ stage: "semantic_result", schema: `paperclip.semantic_tool_receipt.v${version}`,
       operationId: "finish_task", callIdentitySha256: "a".repeat(64), inputSha256: "b".repeat(64),
@@ -280,7 +280,7 @@ describe("redaction", () => {
     expect(result.normal).toBe("plain");
   });
 
-  it("preserves Paperclip protocol schema identifiers", () => {
+  it("preserves Wardmote protocol schema identifiers", () => {
     expect(
       sanitizeRecord({
         schema: "paperclip.question_set.v1",

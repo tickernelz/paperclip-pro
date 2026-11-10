@@ -156,7 +156,7 @@ export function ConnectorCatalogNavigation({
 
     {(available.length > 0 || connected.length === 0) ? <section ref={availableRef} aria-label="Available apps" className="flex flex-col gap-3">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-xs font-medium text-ink-3">{term ? "Search results" : source === "paperclip" ? "Built into Paperclip" : provider ? `${SOURCE_NAMES[source]} apps` : source === "installed" ? "Installed" : "Available apps"}</h2>
+        <h2 className="text-xs font-medium text-ink-3">{term ? "Search results" : source === "paperclip" ? "Built into Wardmote" : provider ? `${SOURCE_NAMES[source]} apps` : source === "installed" ? "Installed" : "Available apps"}</h2>
         <span className="text-xs text-ink-3" role="status">{available.length.toLocaleString("en-US")} {term ? available.length === 1 ? "result" : "results" : "apps"}</span>
       </div>
       {pageRows.length ? <div role="list" aria-label="Available connectors" className="flex flex-col gap-3">{pageRows.map(renderRow)}</div>

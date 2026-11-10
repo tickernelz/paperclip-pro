@@ -76,7 +76,7 @@ export async function openConnectionBrowser(config: ConnectionConfig, repository
   const marker = path.join(profile, ".paperclip-provider-qa");
   const entries = await readdir(profile);
   if (entries.length && !entries.includes(path.basename(marker))) throw new ConnectionBlock("blocked_target", "use_a_dedicated_empty_qa_browser_profile");
-  if (!entries.length) await writeFile(marker, "Dedicated Paperclip provider QA browser. Contains private authentication state.\n", { mode: 0o600, flag: "wx" });
+  if (!entries.length) await writeFile(marker, "Dedicated Wardmote provider QA browser. Contains private authentication state.\n", { mode: 0o600, flag: "wx" });
   const lock = path.join(profile, ".paperclip-qa.lock");
   try { await (await open(lock, "wx", 0o600)).close(); }
   catch { throw new ConnectionBlock("blocked_target", "qa_browser_profile_in_use"); }
@@ -220,7 +220,7 @@ async function connectionAttempt(execution: MatrixExecution, config: ConnectionC
       evidence.assisted = true;
       evidence.waits.push({ kind: "board_login", startedAt: new Date().toISOString() });
       await checkpoint("awaiting_board_login");
-      console.log(`[provider-connections] Sign in to Paperclip at ${origin} in the QA browser; this test resumes automatically.`);
+      console.log(`[provider-connections] Sign in to Wardmote at ${origin} in the QA browser; this test resumes automatically.`);
       const deadline = Date.now() + config.browser.loginTimeoutMs;
       let ready = false;
       while (Date.now() < deadline) { assertActive(); try { await api.get("/api/companies"); ready = true; break; } catch { await connectionDelay(1000); } }

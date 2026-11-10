@@ -107,7 +107,7 @@ describe("decideQueuedCommentQueueSteering", () => {
     expect(decision).toEqual({ protocol: "wardmote_runner_v1", kind: "temporarily_unavailable" });
   });
 
-  it("keeps a preparing Paperclip Runner on the steering protocol until runtime selection finishes", () => {
+  it("keeps a preparing Wardmote Runner on the steering protocol until runtime selection finishes", () => {
     expect(decideQueuedCommentQueueSteering({ state: "deferred", queueRunRuntimeMode: null,
       activeRun: { id: "preparing-run", runtimeMode: "legacy", runtimeModeResolvedAt: null,
         runnerProfileJson: { adapterDispatch: { adapterType: "wardmote_runner" } } },

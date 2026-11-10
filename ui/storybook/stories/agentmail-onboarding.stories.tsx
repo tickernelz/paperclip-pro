@@ -95,7 +95,7 @@ const meta = {
         if (method === "GET") return Response.json([]);
         if (body.username === "taken") return Response.json({ error: ADDRESS_TAKEN, code: "agentmail_address_taken",
           details: { field: "username", providerStatus: 403, operation: "create_inbox" } }, { status: 409 });
-        if (scenario.denySetup) return Response.json({ error: "AgentMail did not allow Paperclip to create the email address. Check your API key permissions and AgentMail account limits, then try again." }, { status: 422 });
+        if (scenario.denySetup) return Response.json({ error: "AgentMail did not allow Wardmote to create the email address. Check your API key permissions and AgentMail account limits, then try again." }, { status: 422 });
         return Response.json({ id: body.idempotencyKey, connectionId: "storybook-inbox-connection", companyId: COMPANY,
           assignedAgentId: body.assignedAgentId, address: body.inboxId ?? `${body.username}@${body.domain}`, status: "active", receiveMode: body.receiveMode }, { status: 201 });
       }

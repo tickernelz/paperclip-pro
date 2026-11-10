@@ -16,11 +16,11 @@ export function assertNoBundledCodexPayloads(entries) {
     assert.equal(typeof entry, 'string');
     assert.ok(!entry.startsWith('/') && !entry.split('/').includes('..'), 'Tar member must remain inside the package');
     assert.doesNotMatch(entry, /(?:^|\/)node_modules\/@openai\/codex-(?:linux|darwin|win32)-(?:x64|arm64)(?:\/|$)/,
-      'Paperclip tarballs must not bundle Codex platform packages');
+      'Wardmote tarballs must not bundle Codex platform packages');
     assert.doesNotMatch(entry, /(?:^|\/)node_modules\/@openai\/codex\/vendor(?:\/|$)/,
-      'Paperclip tarballs must not bundle the Codex wrapper vendor payload');
+      'Wardmote tarballs must not bundle the Codex wrapper vendor payload');
     if (!entry.endsWith('/')) assert.doesNotMatch(entry, /(?:^|\/)codex(?:\.exe)?$/,
-      'Paperclip tarballs must not bundle native Codex executables');
+      'Wardmote tarballs must not bundle native Codex executables');
   }
 }
 

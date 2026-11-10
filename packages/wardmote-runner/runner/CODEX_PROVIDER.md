@@ -1,7 +1,7 @@
 # Codex provider boundary
 
 `wardmote-runnerd` supports one provider in this layer: Codex app-server as a
-local supervised process. The Paperclip server selects this path only for the
+local supervised process. The Wardmote server selects this path only for the
 default-off `wardmote_runner` adapter. Every direct adapter keeps its existing
 execution and finalization path.
 

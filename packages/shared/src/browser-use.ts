@@ -83,7 +83,7 @@ export interface TaskBrowser {
 const session = {
   type: "string",
   format: "uuid",
-  description: "Paperclip browser conversation ID, never a provider ID.",
+  description: "Wardmote browser conversation ID, never a provider ID.",
 };
 const task = {
   type: "string",
@@ -120,7 +120,7 @@ function tool(
 export const BROWSER_USE_TOOLS = [
   tool(
     "browser_start",
-    "Delegate a hosted browser task. The human can watch and interact in the task's Browser tab. Poll browser_status until finished; do not end your Paperclip run while the task is active.",
+    "Delegate a hosted browser task. The human can watch and interact in the task's Browser tab. Poll browser_status until finished; do not end your Wardmote run while the task is active.",
     {
       task,
       profileId: { type: "string", format: "uuid" },

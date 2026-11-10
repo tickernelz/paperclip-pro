@@ -285,7 +285,7 @@ export function evaluateIssueThreadInteractionResolverAudience(
       message: "This issue-thread interaction is human-only",
       details: {
         remediation:
-          "A person answers this card. When that person's own message started your run and explicitly decides this card, submit it with wardmoteAnswerDecisionForOwner and its message id; otherwise ask them to answer here or in Paperclip.",
+          "A person answers this card. When that person's own message started your run and explicitly decides this card, submit it with wardmoteAnswerDecisionForOwner and its message id; otherwise ask them to answer here or in Wardmote.",
       },
     };
   }

@@ -103,12 +103,12 @@ export function discordWardmoteCommandDefinition(publicOwnerId: string) {
   return {
     type: 1,
     name: "paperclip",
-    description: `Paperclip session controls [pc:${publicOwnerId}]`,
+    description: `Wardmote session controls [pc:${publicOwnerId}]`,
     options: [
       {
         type: 1,
         name: "status",
-        description: "Show the current Paperclip task",
+        description: "Show the current Wardmote task",
       },
       {
         type: 1,
@@ -132,7 +132,7 @@ export function discordWardmoteCommandDefinition(publicOwnerId: string) {
 // it never enables command handling before a current definition is confirmed.
 function priorCloseCopyDefinition(id: string) {
   const definition = discordWardmoteCommandDefinition(id);
-  definition.options[2]!.description = "Close the current Paperclip task";
+  definition.options[2]!.description = "Close the current Wardmote task";
   return definition;
 }
 

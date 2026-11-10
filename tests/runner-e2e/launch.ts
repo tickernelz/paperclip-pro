@@ -143,7 +143,7 @@ async function terminateProcessGroup(pid: number) {
     await new Promise((resolve) => setTimeout(resolve, 50));
   }
   return processGroupIsAlive(pid)
-    ? `Paperclip/Playwright process group ${pid} survived SIGKILL`
+    ? `Wardmote/Playwright process group ${pid} survived SIGKILL`
     : null;
 }
 
@@ -672,7 +672,7 @@ async function runAttempt(input: {
       try {
         const expectedEphemeralCredentials = new Set<string>();
         for (const [label, directory] of [
-          ["Paperclip home", wardmoteHome],
+          ["Wardmote home", wardmoteHome],
           ["workspace", workspace],
         ] as const) {
           while (true) {
@@ -682,12 +682,12 @@ async function runAttempt(input: {
               includeShapes: false,
               ignoreFile: (file) => expectedEphemeralCredentials.has(file),
               allowDisappearedFile: (file) =>
-                label === "Paperclip home" &&
+                label === "Wardmote home" &&
                 isEphemeralPostgresScanFile(wardmoteHome, file),
             });
             if (!leak) break;
             const isManagedCodexRuntimeAuth =
-              label === "Paperclip home" &&
+              label === "Wardmote home" &&
               isEphemeralCodexRuntimeAuthFile(wardmoteHome, leak.file);
             if (isManagedCodexRuntimeAuth) {
               const metadata = await lstat(leak.file);

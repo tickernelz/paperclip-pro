@@ -131,7 +131,7 @@ async function runGit(directory: string, args: string[], token: string, options:
       }
     });
     child.on('error', error => stop(unprocessable((error as NodeJS.ErrnoException).code === 'ENOENT'
-      ? 'Git is required to import repositories. Install Git on the Paperclip server and try again.' : 'Could not start the repository download. Try again.')));
+      ? 'Git is required to import repositories. Install Git on the Wardmote server and try again.' : 'Could not start the repository download. Try again.')));
     child.on('close', async code => {
       closed = true;
       clearInterval(monitor); clearTimeout(killTimer);

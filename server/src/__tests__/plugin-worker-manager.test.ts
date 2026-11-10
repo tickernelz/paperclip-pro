@@ -50,7 +50,7 @@ const TEST_MANIFEST: WardmotePluginManifestV1 = {
   version: "1.0.0",
   displayName: "Test plugin",
   description: "Test plugin",
-  author: "Paperclip",
+  author: "Wardmote",
   categories: ["automation"],
   capabilities: [],
   entrypoints: { worker: "dist/worker.js" },

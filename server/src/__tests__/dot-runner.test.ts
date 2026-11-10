@@ -680,7 +680,7 @@ describe("durable Dot Runner integration", () => {
       const [boundRun] = await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, run!.id));
       const [contract] = await db.select().from(completionContracts).where(eq(completionContracts.id, boundRun!.completionContractId!));
       const runtimeContext = nativeRuntimeContextFixture();
-      await writeFile(join(root, "AGENTS.md"), "Use Paperclip tools to save the report.");
+      await writeFile(join(root, "AGENTS.md"), "Use Wardmote tools to save the report.");
       runtimeContext.instructions.bundle.rootPath = root;
       runtimeContext.aggregateDigest = canonicalNativeRuntimeContextDigest(runtimeContext);
       const execution = buildNativeExecutionInput({ companyId: f.company.id, agentId: f.agent.id, runId: run!.id, issue: issue!,

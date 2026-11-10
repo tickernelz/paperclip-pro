@@ -745,7 +745,7 @@ export class CodexAppServerDriver implements HarnessDriver {
     const initialized = await transport.request("initialize", {
       clientInfo: {
         name: "paperclip-runner",
-        title: "Paperclip Runner",
+        title: "Wardmote Runner",
         version: DRIVER_VERSION,
       },
       capabilities: { experimentalApi: true, requestAttestation: false },
@@ -851,7 +851,7 @@ export class CodexAppServerDriver implements HarnessDriver {
         codexVersion: boundedText(initialize.userAgent),
         clientInfo: {
           name: "paperclip-runner",
-          title: "Paperclip Runner",
+          title: "Wardmote Runner",
           version: DRIVER_VERSION,
         },
         model: boundedText(response.model),

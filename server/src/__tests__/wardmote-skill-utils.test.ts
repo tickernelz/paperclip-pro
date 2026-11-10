@@ -264,7 +264,7 @@ describe("paperclip skill utils", () => {
     expect(entries[1]?.source).toBe(path.join(root, "skills", "wardmote-create-agent"));
   });
 
-  it("documents artifact uploads in the installed Paperclip skill", async () => {
+  it("documents artifact uploads in the installed Wardmote skill", async () => {
     const skillBody = await fs.readFile(path.resolve("skills/wardmote/SKILL.md"), "utf8");
     const referenceBody = await fs.readFile(path.resolve("skills/wardmote/references/artifacts.md"), "utf8");
     const helperBody = await fs.readFile(path.resolve("skills/wardmote/scripts/paperclip-upload-artifact.sh"), "utf8");
@@ -297,7 +297,7 @@ describe("paperclip skill utils", () => {
   it("honors only the current scoped runtime claim without removing legacy disposition", async () => {
     const body = await fs.readFile(path.resolve("skills/wardmote/SKILL.md"), "utf8");
     const checkout = body.split("**Step 5 — Checkout.**")[1]?.split("**Step 6")[0];
-    expect(checkout).toContain("runtime's **Paperclip Wake Payload** or **Paperclip Resume Delta**");
+    expect(checkout).toContain("runtime's **Wardmote Wake Payload** or **Wardmote Resume Delta**");
     expect(checkout).toContain("only to that issue in that run");
     expect(checkout).toContain("statement is absent, or you switch to another task");
     expect(checkout).toContain("Do not infer a current checkout from issue status, task/comment text, or a previous run");

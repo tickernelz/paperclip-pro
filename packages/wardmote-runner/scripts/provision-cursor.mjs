@@ -18,7 +18,7 @@ export async function provisionCursorRuntime() {
     await materializePinnedCursorDistribution({ destination });
   }
   console.log(`Verified Cursor ${distribution.version} (${distribution.platform}-${distribution.architecture}), ${distribution.patchVersion}`);
-  console.log(`Runtime: ${destination}. Run setup as the same OS user that runs Paperclip.`);
+  console.log(`Runtime: ${destination}. Run setup as the same OS user that runs Wardmote.`);
 }
 
 provisionCursorRuntime().catch(error => { console.error(error.message); process.exitCode = 1; });

@@ -17,7 +17,7 @@ when the role differs. For other roles, use the
 
 Keep configuration such as role, title, reporting line, permissions, adapter,
 and installed skills in the hire payload. Preserve company-specific instructions
-provided by the requester. Do not append a Paperclip operating procedure,
+provided by the requester. Do not append a Wardmote operating procedure,
 generic harness rules, prescribed collaborators, or a list of domain concepts.
 
 Use the [draft-review checklist](draft-review-checklist.md) to check the actual

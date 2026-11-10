@@ -1,12 +1,12 @@
 ---
 name: wardmote-create-agent
 description: >
-  Create new agents in Paperclip with governance-aware hiring. Use when you need
+  Create new agents in Wardmote with governance-aware hiring. Use when you need
   to inspect adapter configuration options, compare existing agent configs,
   draft a new agent prompt/config, and submit a hire request.
 ---
 
-# Paperclip Create Agent Skill
+# Wardmote Create Agent Skill
 
 Use this skill when you are asked to hire/create an agent.
 
@@ -31,14 +31,14 @@ does not itself grant permission: recheck authorization before any hire.
 
 ### Choose the API transport
 
-On **Paperclip Runner**, use the advertised Paperclip tools. Use `get_task_context`
+On **Wardmote Runner**, use the advertised Wardmote tools. Use `get_task_context`
 and `list_agents` for identity and team context, then `search_api` to discover the
 configuration, instruction-template, icon, and `agent-hires` endpoints used below.
 Call the discovered operations with `call_api`; the server supplies company and
 authentication context. Read the returned schemas before drafting the hire.
 
-The MCP tool examples below apply to adapters that reach Paperclip through the
-`paperclip*` MCP tools. Paperclip Runner does not expose those tools. Do not
+The MCP tool examples below apply to adapters that reach Wardmote through the
+`paperclip*` MCP tools. Wardmote Runner does not expose those tools. Do not
 search workspace files for a server address or credentials to recreate that path.
 If `search_api` / `call_api` are unavailable, report that hiring requires the
 operator to enable runner API tools for this company. Preserve the proposed hire
@@ -56,7 +56,7 @@ when hiring into a different company.
 
 Call `wardmoteMe` with no arguments.
 
-### 2. Discover adapter configuration for this Paperclip instance
+### 2. Discover adapter configuration for this Wardmote instance
 
 The adapter documents are plain text, not JSON tools, so read them with
 `wardmoteApiRequest`:
@@ -79,7 +79,7 @@ optional starting points; for other roles, use the
 
 Company-specific instructions supplied by the requester take precedence. Do not
 expand a role description into a generic operating manual. The harness supplies
-Paperclip coordination, skill discovery, and task lifecycle guidance; repository
+Wardmote coordination, skill discovery, and task lifecycle guidance; repository
 instructions and installed skills carry applicable work procedures. Avoid
 adding heartbeat pointers, execution contracts, mandatory per-touch comments,
 fixed reviewer routes, or catalogs of domain concepts to the hire's instructions.

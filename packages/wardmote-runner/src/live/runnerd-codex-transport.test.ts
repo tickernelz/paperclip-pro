@@ -1539,7 +1539,7 @@ it.each(["codex", "opencode", "claude_managed", "aws_agentcore", "acpx"] as cons
   ).toContain("not in the top-level user-facing summary");
 });
 
-it("defaults runnerd ACPX permissions to authorized Paperclip actions", () => {
+it("defaults runnerd ACPX permissions to authorized Wardmote actions", () => {
   expect(resolveRunnerdAcpxPermissionMode(undefined)).toBe("approve-all");
   expect(resolveRunnerdAcpxPermissionMode("deny-all")).toBe("deny-all");
 });
@@ -1722,7 +1722,7 @@ it("requires a provider-pack authority for remote ACPX artifact hashes", () => {
 });
 
 it("adds Codex-style turn updates only when collaboration instructions are enabled", () => {
-  const base = "Base Paperclip instructions.";
+  const base = "Base Wardmote instructions.";
   const enabled = withCodexCollaborationRuntimeInstructions(base, true);
   expect(enabled).toContain(base);
   expect(enabled).toContain("Before the first tool call in a turn");
@@ -1894,7 +1894,7 @@ it("passes only the Anthropic credential to Claude Managed runnerd", () => {
   expect(environment.DATABASE_URL).toBeUndefined();
 });
 
-it("uses file-backed AWS workload identity without forwarding access keys or Paperclip tokens", () => {
+it("uses file-backed AWS workload identity without forwarding access keys or Wardmote tokens", () => {
   const environment = createCapabilityRunnerdProviderEnvironment({
     provider: "aws_agentcore",
     options: {

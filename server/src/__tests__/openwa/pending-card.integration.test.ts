@@ -434,7 +434,7 @@ describe("OpenWA pending_card wakes (embedded Postgres + fake gateway)", () => {
     expect(await t.service.processPendingOpenwaPendingCards()).toBe(1);
     const run = await runContext(t, await wakeFor(t, actions[0]!.id));
     expect((run.guidance.wakeEvent.pendingCards ?? []).map((card) => card.interactionId)).toEqual(ids);
-    expect(t.wakeup.mock.calls.filter(([, opts]) => opts.reason === "Paperclip card waits for an owner")).toHaveLength(1);
+    expect(t.wakeup.mock.calls.filter(([, opts]) => opts.reason === "Wardmote card waits for an owner")).toHaveLength(1);
   }, 180_000);
 
   it("skips a confirmation an open autonomy window accepts at once, and does not look up windows for other cards", async () => {

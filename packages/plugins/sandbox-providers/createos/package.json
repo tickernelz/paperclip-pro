@@ -1,7 +1,7 @@
 {
   "name": "@tickernelz/wardmote-plugin-createos",
   "version": "0.1.0",
-  "description": "CreateOS sandbox provider plugin for Paperclip environments",
+  "description": "CreateOS sandbox provider plugin for Wardmote environments",
   "license": "MIT",
   "homepage": "https://github.com/tickernelz/wardmote",
   "bugs": {

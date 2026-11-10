@@ -39,20 +39,20 @@ describe("buildInviteOnboardingTextDocument", () => {
       allowedHostnames: [],
     });
 
-    expect(text).toContain("Paperclip Agent Onboarding");
+    expect(text).toContain("Wardmote Agent Onboarding");
     expect(text).toContain("use your existing Slack connection");
     expect(text).toContain("Setup or test restrictions apply only to their stated scope");
-    expect(text).toContain("Never use another Paperclip connection or identity to bypass a denial");
+    expect(text).toContain("Never use another Wardmote connection or identity to bypass a denial");
     expect(text).toContain("/api/invites/token-123/accept");
     expect(text).toContain("/api/join-requests/{requestId}/claim-api-key");
     expect(text).toContain("/api/invites/token-123/onboarding.txt");
     expect(text).toContain("/api/invites/token-123/skills/wardmote");
-    expect(text).toContain("Suggested Paperclip base URLs to try");
+    expect(text).toContain("Suggested Wardmote base URLs to try");
     expect(text).toContain("http://localhost:3100");
     expect(text).toContain("host.docker.internal");
     expect(text).toContain("wardmoteApiUrl");
     expect(text).toContain("agentDefaultsPayload.wardmoteApiUrl");
-    expect(text).toContain("Do not rotate or invent a Paperclip key manually");
+    expect(text).toContain("Do not rotate or invent a Wardmote key manually");
     expect(text).toContain("set the first reachable candidate as agentDefaultsPayload.wardmoteApiUrl");
     expect(text).toContain("WARDMOTE_API_KEY");
     expect(text).toContain("Store the parsed token field from the raw HTTP JSON response");
@@ -60,7 +60,7 @@ describe("buildInviteOnboardingTextDocument", () => {
     expect(text).toContain("The response body includes the full token exactly once");
     expect(text).toContain("Do not persist displayed previews containing literal ... or [redacted]");
     expect(text).toContain("Use your runtime's normal skill or instruction installation path.");
-    expect(text).toContain("Decide which Paperclip adapter type matches your runtime.");
+    expect(text).toContain("Decide which Wardmote adapter type matches your runtime.");
   });
 
   it("includes loopback diagnostics for authenticated/private onboarding", () => {

@@ -2,9 +2,9 @@
 
 # Capability Capability Contract
 
-This generated contract is a self-contained derivative of the Paperclip skill, its seven references, the Paperclip Evals corpus, and the legacy MCP tool surface. It does not import or contact the Paperclip control plane.
+This generated contract is a self-contained derivative of the Wardmote skill, its seven references, the Wardmote Evals corpus, and the legacy MCP tool surface. It does not import or contact the Wardmote control plane.
 
-The skill/reference inventory and eval cases are the only normative behavior sources. Paperclip does not use the legacy MCP calls as a production capability surface; all MCP names below are traceability aliases folded into normative eval rows. Their disposition, grants, assertions, and evidence contract are inherited from the target row rather than classified independently.
+The skill/reference inventory and eval cases are the only normative behavior sources. Wardmote does not use the legacy MCP calls as a production capability surface; all MCP names below are traceability aliases folded into normative eval rows. Their disposition, grants, assertions, and evidence contract are inherited from the target row rather than classified independently.
 
 ## Baseline Counts
 
@@ -41,10 +41,10 @@ The skill/reference inventory and eval cases are the only normative behavior sou
 
 | Capability | Primary disposition | Source anchor |
 | --- | --- | --- |
-| skill:skills/wardmote/SKILL.md:paperclip-skill:10 | optional_agent_tool | skills/wardmote/SKILL.md:10 |
+| skill:skills/wardmote/SKILL.md:wardmote-skill:10 | optional_agent_tool | skills/wardmote/SKILL.md:10 |
 | skill:skills/wardmote/SKILL.md:terminology:14 | optional_agent_tool | skills/wardmote/SKILL.md:14 |
 | skill:skills/wardmote/SKILL.md:authentication:20 | control_plane_owned | skills/wardmote/SKILL.md:20 |
-| skill:skills/wardmote/SKILL.md:paperclip-mcp-tools:32 | optional_agent_tool | skills/wardmote/SKILL.md:32 |
+| skill:skills/wardmote/SKILL.md:wardmote-mcp-tools:32 | optional_agent_tool | skills/wardmote/SKILL.md:32 |
 | skill:skills/wardmote/SKILL.md:no-paperclip-tools-in-this-runtime:41 | optional_agent_tool | skills/wardmote/SKILL.md:41 |
 | skill:skills/wardmote/SKILL.md:conversation-tasks:62 | optional_agent_tool | skills/wardmote/SKILL.md:62 |
 | skill:skills/wardmote/SKILL.md:server-verified-external-chat-turns:79 | control_plane_owned | skills/wardmote/SKILL.md:79 |
@@ -76,7 +76,7 @@ The skill/reference inventory and eval cases are the only normative behavior sou
 | skill:skills/wardmote/SKILL.md:full-reference:758 | optional_agent_tool | skills/wardmote/SKILL.md:758 |
 | skill:skills/wardmote/SKILL.md:conversational-confirmation-answers:762 | always_agent_tool | skills/wardmote/SKILL.md:762 |
 | skill:skills/wardmote/SKILL.md:incidental-feedback:779 | optional_agent_tool | skills/wardmote/SKILL.md:779 |
-| skill:skills/wardmote/references/api-reference.md:paperclip-api-reference:1 | optional_agent_tool | skills/wardmote/references/api-reference.md:1 |
+| skill:skills/wardmote/references/api-reference.md:wardmote-api-reference:1 | optional_agent_tool | skills/wardmote/references/api-reference.md:1 |
 | skill:skills/wardmote/references/api-reference.md:response-schemas:9 | optional_agent_tool | skills/wardmote/references/api-reference.md:9 |
 | skill:skills/wardmote/references/api-reference.md:agent-record-wardmoteme-wardmotegetagent:11 | optional_agent_tool | skills/wardmote/references/api-reference.md:11 |
 | skill:skills/wardmote/references/api-reference.md:company-portability:44 | optional_agent_tool | skills/wardmote/references/api-reference.md:44 |
@@ -110,7 +110,7 @@ The skill/reference inventory and eval cases are the only normative behavior sou
 | skill:skills/wardmote/references/api-reference.md:4-unblock-reassign-and-comment:588 | control_plane_owned | skills/wardmote/references/api-reference.md:588 |
 | skill:skills/wardmote/references/api-reference.md:5-check-own-assignments:591 | optional_agent_tool | skills/wardmote/references/api-reference.md:591 |
 | skill:skills/wardmote/references/api-reference.md:6-create-subtasks-and-delegate:597 | optional_agent_tool | skills/wardmote/references/api-reference.md:597 |
-| skill:skills/wardmote/references/api-reference.md:load-tests-depend-on-caching-layer-being-done-first-paperclip-will-auto-wake-agent-55-when-the-blocker-resolves:601 | control_plane_owned | skills/wardmote/references/api-reference.md:601 |
+| skill:skills/wardmote/references/api-reference.md:load-tests-depend-on-caching-layer-being-done-first-wardmote-will-auto-wake-agent-55-when-the-blocker-resolves:601 | control_plane_owned | skills/wardmote/references/api-reference.md:601 |
 | skill:skills/wardmote/references/api-reference.md:7-dashboard-for-health-check:605 | optional_agent_tool | skills/wardmote/references/api-reference.md:605 |
 | skill:skills/wardmote/references/api-reference.md:comments-and-mentions:613 | always_agent_tool | skills/wardmote/references/api-reference.md:613 |
 | skill:skills/wardmote/references/api-reference.md:update:620 | optional_agent_tool | skills/wardmote/references/api-reference.md:620 |
@@ -184,7 +184,7 @@ The skill/reference inventory and eval cases are the only normative behavior sou
 | skill:skills/wardmote/references/issue-workspaces.md:control-services:24 | optional_agent_tool | skills/wardmote/references/issue-workspaces.md:24 |
 | skill:skills/wardmote/references/issue-workspaces.md:read-the-url:46 | optional_agent_tool | skills/wardmote/references/issue-workspaces.md:46 |
 | skill:skills/wardmote/references/issue-workspaces.md:workspace-scoped-read:63 | control_plane_owned | skills/wardmote/references/issue-workspaces.md:63 |
-| skill:skills/wardmote/references/routines.md:paperclip-routines:1 | optional_agent_tool | skills/wardmote/references/routines.md:1 |
+| skill:skills/wardmote/references/routines.md:wardmote-routines:1 | optional_agent_tool | skills/wardmote/references/routines.md:1 |
 | skill:skills/wardmote/references/routines.md:lifecycle:18 | optional_agent_tool | skills/wardmote/references/routines.md:18 |
 | skill:skills/wardmote/references/routines.md:creating-a-routine:29 | optional_agent_tool | skills/wardmote/references/routines.md:29 |
 | skill:skills/wardmote/references/routines.md:concurrency-policies:69 | optional_agent_tool | skills/wardmote/references/routines.md:69 |
@@ -199,7 +199,7 @@ The skill/reference inventory and eval cases are the only normative behavior sou
 | skill:skills/wardmote/references/routines.md:manual-run:205 | optional_agent_tool | skills/wardmote/references/routines.md:205 |
 | skill:skills/wardmote/references/routines.md:updating-a-routine:223 | optional_agent_tool | skills/wardmote/references/routines.md:223 |
 | skill:skills/wardmote/references/routines.md:reading-routines-and-runs:233 | optional_agent_tool | skills/wardmote/references/routines.md:233 |
-| skill:skills/wardmote/references/workflows.md:paperclip-workflow-playbooks:1 | optional_agent_tool | skills/wardmote/references/workflows.md:1 |
+| skill:skills/wardmote/references/workflows.md:wardmote-workflow-playbooks:1 | optional_agent_tool | skills/wardmote/references/workflows.md:1 |
 | skill:skills/wardmote/references/workflows.md:project-setup-ceo-manager:9 | optional_agent_tool | skills/wardmote/references/workflows.md:9 |
 | skill:skills/wardmote/references/workflows.md:openclaw-invite-ceo:24 | optional_agent_tool | skills/wardmote/references/workflows.md:24 |
 | skill:skills/wardmote/references/workflows.md:setting-agent-instructions-path:47 | optional_agent_tool | skills/wardmote/references/workflows.md:47 |

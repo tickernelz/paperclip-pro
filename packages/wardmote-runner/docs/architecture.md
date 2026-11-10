@@ -13,12 +13,12 @@
                                       v
                          byte-identical Conformance result
 
-Paperclip App production binding --> implements ControlPlanePort
+Wardmote App production binding --> implements ControlPlanePort
 Eval/conformance consumers --> use packed runtime + ./evals + ./testing exports
 ```
 
 The dependency arrow always points from an implementation toward a contract.
-The standalone package does not reach backward into a Paperclip implementation.
+The standalone package does not reach backward into a Wardmote implementation.
 The production implementation lives in
 `server/src/services/native-runtime/paperclip-control-plane-port.ts`; it depends
 on the public port, never the reverse. The accepted package/export ownership is
@@ -102,7 +102,7 @@ The following imports and package dependencies are rejected:
 
 - `server/`, `ui/`, and `cli/` implementation paths;
 - `@tickernelz/wardmote-db` and production database schema or client modules;
-- `@tickernelz/wardmote-shared`, adapter utilities, and other Paperclip workspace
+- `@tickernelz/wardmote-shared`, adapter utilities, and other Wardmote workspace
   internals unless a boundary review explicitly allows a public contract;
 - relative or absolute imports that escape `packages/wardmote-runner/`.
 
@@ -138,7 +138,7 @@ deliberate proof does not make the package fail.
 
 ## Conformance process boundary
 
-The mock core is an in-memory adapter, not a Paperclip server. Starting it only
+The mock core is an in-memory adapter, not a Wardmote server. Starting it only
 changes local object state. The tracer performs this sequence:
 
 1. load and validate `protocol/fixtures/conformance-minimal-run.json`;
@@ -148,7 +148,7 @@ changes local object state. The tracer performs this sequence:
 5. submit the matching terminal result;
 6. print a stable JSON identity/result and stop the adapter.
 
-No socket, database, browser, Paperclip process, or model process is started.
+No socket, database, browser, Wardmote process, or model process is started.
 The default command executes this sequence in Rust. The TypeScript reference
 executes the same sequence, and the parity check compares their complete stdout.
 
@@ -224,13 +224,13 @@ command result before network delivery, then removes outbox events only after a
 valid cumulative ACK.
 
 The TypeScript peer is a package-local control-plane implementation, not
-production Paperclip. Its focused tests cover lost ACKs, socket loss, malformed
+production Wardmote. Its focused tests cover lost ACKs, socket loss, malformed
 input, process restarts, lease expiry, storage pressure, drain, and revoke.
 
 ## Capability-model boundary
 
 ```text
-Paperclip skill + 7 references        Paperclip Evals corpus (106 cases)
+Wardmote skill + 7 references        Wardmote Evals corpus (106 cases)
             |                                      |
             +-------------------+------------------+
                                 v
@@ -247,13 +247,13 @@ Paperclip skill + 7 references        Paperclip Evals corpus (106 cases)
                    read-only browser scenario explorer
 ```
 
-Capability is a package-local model of a native Paperclip run. It classifies every
+Capability is a package-local model of a native Wardmote run. It classifies every
 capability as control-plane-owned, always-agent-tool, or optional-agent-tool,
 exposes the always/optional set as a transport-neutral semantic tool catalog,
 gates optional tools behind grants, and proves 106 eval-derived cases against an
 in-process mock `ControlPlanePort`. The mock adapter is the only coupling point,
 so a real adapter can replace it later without touching the catalog,
-authorization rules, or conformance suite. Capability contacts no Paperclip
+authorization rules, or conformance suite. Capability contacts no Wardmote
 service, database, ACPX session, or provider credential; the
 [forbidden-imports checker](#forbidden-dependencies) keeps it that way. Real
 integration is future upload integration (ACPX) and requires separate approval; see
@@ -285,7 +285,7 @@ none.
 ```
 
 Three actors stay separate at all times: **Real Codex** (the app-server
-session), **Real runnerd** (the package-local binary), and **Mock Paperclip**
+session), **Real runnerd** (the package-local binary), and **Mock Wardmote**
 (the in-process `ControlPlanePort`). The same
 `CapabilityIssueThreadSnapshot` is produced by deterministic `fake` fixtures for the
 screenshot matrix and by the server-side projection for a live session; the
@@ -295,21 +295,21 @@ suite and replay offline; the Codex (live) mode requires a locally authenticated
 Codex. See [execution modes and identity](capability-execution-modes.md) for the
 mode and eligibility rules, and [the live runnerd/Codex loop](capability-live-runnerd-codex.md)
 for the session API. The package server blocks every request to a real
-Paperclip API, and the evidence suite proves no such request occurred. The same
+Wardmote API, and the evidence suite proves no such request occurred. The same
 topology serves the [clean-room chat](capability-clean-room-chat.md): the only
 difference is a mock tenant seeded with a company, an agent, and one blank issue
 instead of a recorded eval case.
 
 ## Integration rule
 
-Paperclip core may implement these contracts behind a separately reviewed
+Wardmote core may implement these contracts behind a separately reviewed
 adapter, but this package must remain independently buildable, testable, and
 runnable against the mock adapter.
 
 The proposed Standalone seam is recorded in
-[Standalone Thin Paperclip Adapter Boundary](design/standalone-thin-paperclip-adapter.md).
-It keeps one dependency direction, branches only after Paperclip workspace and
+[Standalone Thin Wardmote Adapter Boundary](design/standalone-thin-paperclip-adapter.md).
+It keeps one dependency direction, branches only after Wardmote workspace and
 environment realization, composes a package-owned `NativeSessionBackend` with
-a server-bound `ControlPlanePort`, and returns to the existing Paperclip
+a server-bound `ControlPlanePort`, and returns to the existing Wardmote
 finalization path. The core seam contains no runner behavior. The proposal is
 design-only until the CTO gate accepts it.

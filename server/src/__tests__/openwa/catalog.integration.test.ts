@@ -568,7 +568,7 @@ describe("OpenWA catalog, describe and call (embedded Postgres + fake gateway)",
     expect((await rejection(call(binding, { ...pin, idempotencyKey: randomUUID() }))).details).toMatchObject({ category: "wa_admin" });
   });
 
-  it("requires an owner run plus a Paperclip confirmation before touching the endpoint's own session", async () => {
+  it("requires an owner run plus a Wardmote confirmation before touching the endpoint's own session", async () => {
     const t = await setup({ policy: { gatewayAdminTools: "full" } });
     const c = await conversation(t, MEMBER);
     const logoutRoute = "/api/sessions/" + SESSION_ID + "/logout";

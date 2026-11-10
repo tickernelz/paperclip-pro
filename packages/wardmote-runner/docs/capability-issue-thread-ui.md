@@ -1,6 +1,6 @@
-# Capability Paperclip-style issue-thread UI
+# Capability Wardmote-style issue-thread UI
 
-Capability renders the mock Paperclip issue as a native issue thread. A board user
+Capability renders the mock Wardmote issue as a native issue thread. A board user
 reads the thread, answers typed interactions inline, and inspects the evidence
 behind every mock mutation. The implementation follows the binding
 [Capability issue-thread UX contract](design/capability-issue-thread-ux-contract.md).
@@ -38,7 +38,7 @@ thread, so the card only leaves `submitting` on server acknowledgement.
 
 No provider, runner, or control-plane credential reaches the page. Redacted
 fields render as `••• redacted` with the redaction rule name, mock issues use
-the reserved `MCK-` prefix, and no real Paperclip URL is ever rendered.
+the reserved `MCK-` prefix, and no real Wardmote URL is ever rendered.
 
 ## What the browser is allowed to see
 
@@ -98,7 +98,7 @@ what the smoke scripts use for that.
 ## Surfaces
 
 - **Header** — three identity chips (`Real Codex` / `Fake agent` / `Replay`,
-  `Real runnerd` / `In-process runner`, and `Mock Paperclip` in every mode),
+  `Real runnerd` / `In-process runner`, and `Mock Wardmote` in every mode),
   status, priority, run state, and the Scenario/Replay/Reset/Stop controls.
   `data-session-mode` carries the mode as data, never as styling.
 - **Thread** — turn groups binding the contract's T1–T11 item types: user

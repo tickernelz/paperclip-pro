@@ -807,7 +807,7 @@ describe("already-approved publication streaming", () => {
                   message_id: 901,
                   date: 1788910000,
                   chat: { id: chatId, type: chatType },
-                  from: { id: 123, is_bot: true, first_name: "Paperclip" },
+                  from: { id: 123, is_bot: true, first_name: "Wardmote" },
                   text: source,
                 },
           });

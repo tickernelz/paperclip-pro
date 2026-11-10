@@ -1,8 +1,8 @@
-# Paperclip Evals Integration Contract
+# Wardmote Evals Integration Contract
 
 ## Stable consumer inputs
 
-Paperclip Evals consumes two explicit App artifacts:
+Wardmote Evals consumes two explicit App artifacts:
 
 1. a packed/released `@tickernelz/wardmote-runner` package; and
 2. an explicit `wardmote-runnerd` executable path plus its

@@ -72,7 +72,7 @@ export const LOCAL_BROWSER_BRIDGE_MAX_PAYLOAD_BYTES =
   Math.ceil((LOCAL_BROWSER_LIMITS.transferMaxBytes.ceiling * 4) / 3) + 1024 * 1024;
 
 const PERMISSION_HINT =
-  "Call local_browser_permissions with op request and these permissions, then ask the user to press Allow in the Paperclip Local Browser extension.";
+  "Call local_browser_permissions with op request and these permissions, then ask the user to press Allow in the Wardmote Local Browser extension.";
 
 function base64Chars(bytes: number): number {
   return Math.ceil((bytes * 4) / 3) + 256;

@@ -110,7 +110,7 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
   async function seedAgentsWithWork(companyId: string, count: number) {
     await db.insert(companies).values({
       id: companyId,
-      name: "Paperclip",
+      name: "Wardmote",
       issuePrefix: `L${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
       requireBoardApprovalForNewAgents: false,
     });

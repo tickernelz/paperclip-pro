@@ -537,7 +537,7 @@ async function createBrokerConnection(
     .values({
       companyId,
       applicationKey: "paperclip-pages",
-      name: `Paperclip Pages ${randomUUID()}`,
+      name: `Wardmote Pages ${randomUUID()}`,
       type: "mcp_http",
       status: "active",
     })
@@ -5872,7 +5872,7 @@ describeEmbeddedPostgres("tool access service", () => {
       getConnectorMetadata: vi.fn(async () => ({
         id: "scl_posthog",
         uid: "posthog-paperclip",
-        name: "Paperclip PostHog",
+        name: "Wardmote PostHog",
         type: "api-key",
         service: "mcp.posthog.com/mcp",
         createdAt: Date.now(),
@@ -6063,7 +6063,7 @@ describeEmbeddedPostgres("tool access service", () => {
         getConnectorMetadata: vi.fn(async () => ({
           id: "scl_notion",
           uid: "notion-paperclip",
-          name: "Paperclip Notion",
+          name: "Wardmote Notion",
           type: "oauth",
           service: "notion",
           createdAt: Date.now(),
@@ -6577,7 +6577,7 @@ describeEmbeddedPostgres("tool access service", () => {
     expect(reconnected.connection.config.headerPolicy).toEqual({ metadata: { forward: [] } });
   });
 
-  it("forwards Paperclip context headers by default for a Telem.AI connection", async () => {
+  it("forwards Wardmote context headers by default for a Telem.AI connection", async () => {
     const company = await createCompany(db);
     const service = createTestToolAccessService(db);
     mockToolsList([{ name: "telem_search" }]);
@@ -9394,7 +9394,7 @@ describeEmbeddedPostgres("tool access service", () => {
     });
 
     expect(registrationBody).toMatchObject({
-      client_name: "Paperclip localhost-3105",
+      client_name: "Wardmote localhost-3105",
       redirect_uris: [redirectUri],
       grant_types: ["authorization_code", "refresh_token"],
       response_types: ["code"],
@@ -9847,7 +9847,7 @@ describeEmbeddedPostgres("tool access service", () => {
     expect(connectRes.body).toMatchObject({
       code: "oauth_redirect_origin_unsupported",
       error:
-        "This Paperclip needs a browser-reachable HTTPS address (or loopback HTTP) before browser sign-in can start.",
+        "This Wardmote needs a browser-reachable HTTPS address (or loopback HTTP) before browser sign-in can start.",
     });
   });
 
@@ -10312,7 +10312,7 @@ describeEmbeddedPostgres("tool access service", () => {
     ).toBe("notion-dcr-client");
     expect(registrationBodies).toEqual([
       {
-        client_name: "Paperclip paperclip-dev-tail29c1aa-ts-net",
+        client_name: "Wardmote paperclip-dev-tail29c1aa-ts-net",
         redirect_uris: [redirectUri],
         grant_types: ["authorization_code", "refresh_token"],
         response_types: ["code"],
@@ -17300,7 +17300,7 @@ describeEmbeddedPostgres("tool access service", () => {
           transport: "mcp_remote",
           status: "draft",
           config: { url: "https://mcp.example/github" },
-          warnings: [expect.stringContaining("Paperclip secret")],
+          warnings: [expect.stringContaining("Wardmote secret")],
         }),
         expect.objectContaining({
           name: "local",
@@ -17310,7 +17310,7 @@ describeEmbeddedPostgres("tool access service", () => {
             importedCommand: "npx",
             importedArgs: ["-y", "@example/local-mcp"],
           },
-          warnings: [expect.stringContaining("approved Paperclip template")],
+          warnings: [expect.stringContaining("approved Wardmote template")],
         }),
       ]),
     );

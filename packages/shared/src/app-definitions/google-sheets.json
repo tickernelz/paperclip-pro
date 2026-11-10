@@ -115,22 +115,22 @@
     },
     {
       "key": "local",
-      "label": "Use the Paperclip robot account",
+      "label": "Use the Wardmote robot account",
       "transport": "local_stdio",
       "auth": "none",
       "capabilityProfile": {
         "key": "robot",
         "label": "Share selected sheets",
-        "description": "Share only named spreadsheets with the Paperclip robot account."
+        "description": "Share only named spreadsheets with the Wardmote robot account."
       },
       "ownershipModes": [
         "customer"
       ],
-      "whenToUse": "Share selected spreadsheets with the Paperclip robot account instead of connecting a Google identity.",
+      "whenToUse": "Share selected spreadsheets with the Wardmote robot account instead of connecting a Google identity.",
       "defaults": {
         "templateKey": "paperclip.google-sheets"
       },
-      "guidanceMd": "Share each spreadsheet with the Paperclip robot email, then paste the sheet links.",
+      "guidanceMd": "Share each spreadsheet with the Wardmote robot email, then paste the sheet links.",
       "riskTier": "S3",
       "requiredResourceFilters": [
         "spreadsheet"

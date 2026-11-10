@@ -579,7 +579,7 @@ describe("OpenWA admission (embedded Postgres + fake gateway)", () => {
     await discovered(t, active);
     await send(t, { chatId: active, author: memberLid, body: "@110000000000777 bukan untuk bot", extra: { isLidSender: true, mentionedIds: [wid("110000000000777@lid")] } });
     expect(await deliveries(t)).toHaveLength(0);
-    await send(t, { chatId: active, author: memberLid, body: "@191000000001668 apa itu Paperclip?", extra: { isLidSender: true, mentionedIds: [wid(ownLid)] } });
+    await send(t, { chatId: active, author: memberLid, body: "@191000000001668 apa itu Wardmote?", extra: { isLidSender: true, mentionedIds: [wid(ownLid)] } });
     await send(t, {
       chatId: active,
       author: jid(MEMBER_PHONE),

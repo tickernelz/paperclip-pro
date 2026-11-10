@@ -543,7 +543,7 @@ fn prepare_agentcore_runtime_context_assets(
         .map(|(path, bytes)| (PathBuf::from("instructions").join(path), bytes))
         .collect();
     let instruction_companion = format!(
-        "---\nname: paperclip-instructions-{}\ndescription: Paperclip agent instruction sibling bundle\n---\nRead `instructions/{entry_path}` and its sibling files as read-only context.\n",
+        "---\nname: paperclip-instructions-{}\ndescription: Wardmote agent instruction sibling bundle\n---\nRead `instructions/{entry_path}` and its sibling files as read-only context.\n",
         &instruction_digest[..12]
     );
     let instruction_asset_digest = sha_hex(
@@ -610,7 +610,7 @@ fn agentcore_system_instructions(config: &AwsAgentCoreProviderConfig) -> Result<
         .instructions
         .strip_suffix(&local_directive)
         .map(|prefix| format!(
-            "{prefix}Read-only instruction siblings are in the attached Paperclip HarnessSkill under `instructions/`."
+            "{prefix}Read-only instruction siblings are in the attached Wardmote HarnessSkill under `instructions/`."
         ))
         .ok_or_else(|| "AgentCore instruction-root directive is missing or inconsistent".to_owned())
 }
@@ -1758,7 +1758,7 @@ impl Provider for AwsAgentCoreHarnessProvider {
                 if !validator_for(schema)
                     .map_err(|_| {
                         LocalRunnerError::invalid(
-                            "authorized Paperclip tool has invalid JSON Schema",
+                            "authorized Wardmote tool has invalid JSON Schema",
                         )
                     })?
                     .is_valid(&input)
@@ -2049,7 +2049,7 @@ fn encode_tools(
     let mut schemas = BTreeMap::new();
     for tool in tools {
         validator_for(&tool.input_schema).map_err(|_| {
-            LocalRunnerError::invalid("authorized Paperclip tool has invalid JSON Schema")
+            LocalRunnerError::invalid("authorized Wardmote tool has invalid JSON Schema")
         })?;
         let remote_name = remote_tool_name(&tool.operation_id);
         if reverse
@@ -2304,7 +2304,7 @@ mod tests {
             max_iterations: 8,
             max_output_tokens: 4096,
             timeout_seconds: 300,
-            instructions: "Paperclip test instructions".to_owned(),
+            instructions: "Wardmote test instructions".to_owned(),
             runtime_context: None,
         }
     }
@@ -3160,7 +3160,7 @@ mod tests {
 
         let instructions = agentcore_system_instructions(&config).unwrap();
         assert!(instructions.starts_with("paperclip prompt\n\nAGENTS entry\n\n"));
-        assert!(instructions.ends_with("attached Paperclip HarnessSkill under `instructions/`."));
+        assert!(instructions.ends_with("attached Wardmote HarnessSkill under `instructions/`."));
         assert!(!instructions.contains(local_root));
     }
 

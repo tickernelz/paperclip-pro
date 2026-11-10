@@ -113,7 +113,7 @@ export function AccessEditor({
         </p>
       </div>
       <div className="space-y-2">
-        <Label htmlFor="allowed-members">Paperclip members</Label>
+        <Label htmlFor="allowed-members">Wardmote members</Label>
         <select
           id="allowed-members"
           className={selectClass}
@@ -142,7 +142,7 @@ export function AccessEditor({
             setMessage("");
           }}
         >
-          Add Paperclip member
+          Add Wardmote member
         </Button>
         <Button
           variant="secondary"
@@ -175,8 +175,8 @@ export function AccessEditor({
                 </p>
                 <p className="mt-1 text-xs text-ink-3">
                   {person.kind === "member"
-                    ? "Paperclip member · uses their current permissions"
-                    : "Restricted guest · no Paperclip membership or personal credentials"}
+                    ? "Wardmote member · uses their current permissions"
+                    : "Restricted guest · no Wardmote membership or personal credentials"}
                 </p>
               </div>
               <Button
@@ -261,13 +261,13 @@ export function AccessEditor({
           <DialogHeader>
             <DialogTitle>
               {adding === "member"
-                ? "Add Paperclip member"
+                ? "Add Wardmote member"
                 : "Allow GitHub user"}
             </DialogTitle>
             <DialogDescription>
               {adding === "member"
-                ? "Choose an existing company member. They use their own Paperclip permissions and linked GitHub account."
-                : "Allow a specific GitHub account to mention this bot, without inviting them to Paperclip."}
+                ? "Choose an existing company member. They use their own Wardmote permissions and linked GitHub account."
+                : "Allow a specific GitHub account to mention this bot, without inviting them to Wardmote."}
             </DialogDescription>
           </DialogHeader>
           {adding === "member" ? (

@@ -590,7 +590,7 @@ export async function getQuotaWindows(): Promise<ProviderQuotaResult> {
       error:
         errors.length > 0
           ? `${authDescription}, but quota polling failed (${errors.join("; ")})`
-          : `${authDescription}, but Paperclip could not load subscription quota data`,
+          : `${authDescription}, but Wardmote could not load subscription quota data`,
       windows: [],
     };
   }

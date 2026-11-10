@@ -52,7 +52,7 @@ export function installPublicMcpFixture(fixture: PublicMcpFixture = {}) {
       if (path === "/api/instance/settings/experimental") return Response.json(settings);
       if (path === "/api/mcp/setup") return Response.json({ enabled: settings.enablePublicMcp, serverUrl: "https://paperclip.example/mcp/wardmote" });
       if (path === "/api/mcp/connections") return fixture.connectionsUnavailable ? error("Connection status is unavailable.") : Response.json(rows);
-      if (path === "/api/mcp/device") return fixture.deviceExpired ? error("This code is expired. Start a new connection from your assistant.", 404) : Response.json({ ...request, clientName: "Paperclip CLI (device)", redirectOrigin: "", ...fixture.request });
+      if (path === "/api/mcp/device") return fixture.deviceExpired ? error("This code is expired. Start a new connection from your assistant.", 404) : Response.json({ ...request, clientName: "Wardmote CLI (device)", redirectOrigin: "", ...fixture.request });
       if (path === `/api/mcp/requests/${request.id}`) return Response.json({ ...request, ...fixture.request });
     } else {
       if (fixture.pending) return new Promise<Response>(() => {});

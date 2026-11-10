@@ -54,7 +54,7 @@ async function checkWardmoteHealth(rawUrl, required) {
     return { ok: true, baseUrl };
   } catch (error) {
     if (required) {
-      throw new Error(`Paperclip health check failed at ${baseUrl}/api/health: ${error.message}`);
+      throw new Error(`Wardmote health check failed at ${baseUrl}/api/health: ${error.message}`);
     }
     return { ok: false, baseUrl, skippedReason: error.message };
   }
@@ -411,7 +411,7 @@ async function main() {
       console.log(JSON.stringify(summary, null, 2));
     } else {
       console.log(`MCP fixture smoke: ${summary.ok ? "PASS" : "FAIL"}`);
-      console.log(`Paperclip health: ${paperclip.ok ? "ok" : `skipped (${paperclip.skippedReason})`}`);
+      console.log(`Wardmote health: ${paperclip.ok ? "ok" : `skipped (${paperclip.skippedReason})`}`);
       for (const result of results) {
         console.log(`${result.ok ? "PASS" : "FAIL"} ${result.name}${result.error ? ` - ${result.error}` : ""}`);
       }

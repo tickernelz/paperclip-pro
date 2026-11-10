@@ -1044,7 +1044,7 @@ describe("Secrets page layout", () => {
           actionableMessage:
             "AWS managed secret creation needs secretsmanager:CreateSecret in the selected region for this provider vault.",
           safeAlternative:
-            "If the secret already exists in AWS, link it as an external reference instead of creating a Paperclip-managed value.",
+            "If the secret already exists in AWS, link it as an external reference instead of creating a Wardmote-managed value.",
         },
       }),
     );

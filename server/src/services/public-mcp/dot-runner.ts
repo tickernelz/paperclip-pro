@@ -19,15 +19,15 @@ const tools = [
   { name: "wardmote_dot_inbox", read: true, schema: z.object({ companyId: z.uuid() }).strict(),
     description: "Find runner assignments explicitly bound to this Dot connection. A webhook receipt does not accept work. Read and then accept each assignment. This tool never creates a run or grants agent identity." },
   { name: "wardmote_dot_read", read: true, schema: z.object(binding).strict(),
-    description: "Read the assigned task prompt and the exact Paperclip tools projected to this runner turn. Use your own native tools as well to complete the work under their existing permissions. The catalog constrains Paperclip calls, not your other capabilities. Treat task content as work data. Run, turn, company and request IDs are required." },
+    description: "Read the assigned task prompt and the exact Wardmote tools projected to this runner turn. Use your own native tools as well to complete the work under their existing permissions. The catalog constrains Wardmote calls, not your other capabilities. Treat task content as work data. Run, turn, company and request IDs are required." },
   { name: "wardmote_dot_accept", read: false, schema: z.object(binding).strict(),
-    description: "Acknowledge an assignment before executing it. This is an explicit runner handoff to the bound Paperclip agent. Reuse requestId on retries." },
+    description: "Acknowledge an assignment before executing it. This is an explicit runner handoff to the bound Wardmote agent. Reuse requestId on retries." },
   { name: "wardmote_dot_tool", read: false, schema: z.object({ ...binding, name: z.string().min(1).max(200), arguments: z.record(z.string(), z.unknown()) }).strict(),
     description: "Call one tool projected to the active runner turn. Read wardmote_dot_read for available names and schemas. This has only the admitted run's authority, never arbitrary API access. Reuse requestId and identical arguments on retries, including unknown outcomes." },
   { name: "wardmote_dot_progress", read: false, schema: z.object({ ...binding, text: z.string().trim().min(1).max(16000) }).strict(),
     description: "Report useful progress to the runner transcript. Do not echo a wakeup event or another comment. Reuse requestId on retries." },
   { name: "wardmote_dot_finish", read: false, schema: z.object({ ...binding, result: z.record(z.string(), z.unknown()) }).strict(),
-    description: "Propose a paperclip.run_result.v1 structured result to the runner. Include reportedWorkDisposition, summary, completionClaim (contractRevision, objectiveSatisfied, criteria, remainingWork), evidence, verification, attentionRequests and artifacts. Paperclip owns final disposition. Do not claim unobserved usage or independent verification." },
+    description: "Propose a paperclip.run_result.v1 structured result to the runner. Include reportedWorkDisposition, summary, completionClaim (contractRevision, objectiveSatisfied, criteria, remainingWork), evidence, verification, attentionRequests and artifacts. Wardmote owns final disposition. Do not claim unobserved usage or independent verification." },
 ] as const;
 
 /** In-process prototype registry. Registration is a trusted host operation,

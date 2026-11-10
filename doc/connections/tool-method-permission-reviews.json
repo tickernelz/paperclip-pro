@@ -40,7 +40,7 @@
       ],
       "reviewedAt": "2026-09-30",
       "liveProof": "not-run",
-      "keyPermissions": "Actions depend on the operator-supplied API and key; grant read/write on the required resources at the provider. Create a key with read and write permissions for these actions; Paperclip cannot increase an existing key\u2019s permissions.",
+      "keyPermissions": "Actions depend on the operator-supplied API and key; grant read/write on the required resources at the provider. Create a key with read and write permissions for these actions; Wardmote cannot increase an existing key\u2019s permissions.",
       "evidenceLimit": "Provider documentation was unavailable or not readable during this review; metadata/registered source only. Account-bound proof remains outstanding."
     },
     {
@@ -110,7 +110,7 @@
         "https://api-ssl.bitly.com/.well-known/oauth-authorization-server"
       ],
       "reviewedAt": "2026-10-09",
-      "liveProof": "HTTPS DCR/OAuth with approved mcp.all completed after JSON token response negotiation. Discovered 56 actions (30 read, 26 write). bitly_get_user passed through the Paperclip Test dialog in 2.0s; account values omitted. Reload/catalog refresh retained actions, zero selected agents, and all 26 writes Off. Older recovery connection left all 56 actions Off.",
+      "liveProof": "HTTPS DCR/OAuth with approved mcp.all completed after JSON token response negotiation. Discovered 56 actions (30 read, 26 write). bitly_get_user passed through the Wardmote Test dialog in 2.0s; account values omitted. Reload/catalog refresh retained actions, zero selected agents, and all 26 writes Off. Older recovery connection left all 56 actions Off.",
       "evidenceLimit": "Direct UI Test using the Connector Tester actor, not an agent adapter run. No links created, provider writes, paid actions, token refresh or API-key method tested."
     },
     {
@@ -128,7 +128,7 @@
       ],
       "reviewedAt": "2026-10-09",
       "liveProof": "not-run",
-      "keyPermissions": "A Bitly API token from Settings \u2192 API is documented for MCP bearer auth, but no restriction scope is documented; treat it as capable of the full MCP catalog under that account. Paperclip cannot narrow the token."
+      "keyPermissions": "A Bitly API token from Settings \u2192 API is documented for MCP bearer auth, but no restriction scope is documented; treat it as capable of the full MCP catalog under that account. Wardmote cannot narrow the token."
     },
     {
       "app": "box",
@@ -196,7 +196,7 @@
       ],
       "reviewedAt": "2026-09-30",
       "liveProof": "not-run",
-      "keyPermissions": "Create/stop browser sessions and run browser tasks under the API key. Create a key with read and write permissions for these actions; Paperclip cannot increase an existing key\u2019s permissions."
+      "keyPermissions": "Create/stop browser sessions and run browser tasks under the API key. Create a key with read and write permissions for these actions; Wardmote cannot increase an existing key\u2019s permissions."
     },
     {
       "app": "candid",
@@ -270,7 +270,7 @@
       ],
       "reviewedAt": "2026-09-30",
       "liveProof": "not-run",
-      "keyPermissions": "Cloudflare API actions selected at provider consent or on the API token. Identity scopes alone do not grant account writes. Create a key with read and write permissions for these actions; Paperclip cannot increase an existing key\u2019s permissions."
+      "keyPermissions": "Cloudflare API actions selected at provider consent or on the API token. Identity scopes alone do not grant account writes. Create a key with read and write permissions for these actions; Wardmote cannot increase an existing key\u2019s permissions."
     },
     {
       "app": "cloudinary",
@@ -326,7 +326,7 @@
       ],
       "reviewedAt": "2026-09-30",
       "liveProof": "not-run",
-      "keyPermissions": "Modify documents/tables permitted by the account. Create a key with read and write permissions for these actions; Paperclip cannot increase an existing key\u2019s permissions."
+      "keyPermissions": "Modify documents/tables permitted by the account. Create a key with read and write permissions for these actions; Wardmote cannot increase an existing key\u2019s permissions."
     },
     {
       "app": "cognee",
@@ -341,7 +341,7 @@
       ],
       "reviewedAt": "2026-09-30",
       "liveProof": "not-run",
-      "keyPermissions": "Add/process knowledge and manage authorized datasets. Create a key with read and write permissions for these actions; Paperclip cannot increase an existing key\u2019s permissions."
+      "keyPermissions": "Add/process knowledge and manage authorized datasets. Create a key with read and write permissions for these actions; Wardmote cannot increase an existing key\u2019s permissions."
     },
     {
       "app": "composio",
@@ -372,8 +372,8 @@
         "https://github.com/upstash/context7/blob/master/packages/mcp/src/index.ts"
       ],
       "reviewedAt": "2026-10-09",
-      "liveProof": "Anonymous Paperclip connection succeeded. Discovery returned 2 read actions (resolve-library-id and query-docs), 0 write actions. Resolve React returned official React docs ID /reactjs/react.dev (source reputation High) in 2.9s; query-docs returned useEffect cleanup guidance from React documentation in 3.0s. After page reload, agent restriction remained Just agents I pick with 0 selected and the same bounded query succeeded again in 3.1s. No API key, OAuth grant, account data, private repository, provider writes, or agent run.",
-      "evidenceLimit": "Live proof covers anonymous MCP initialize/discovery and one narrow public React documentation lookup through Paperclip's actual Apps connection and Test dialog, including a successful repeat after reload. It does not prove elevated API-key rate limits, private-repository access, or any non-public provider content."
+      "liveProof": "Anonymous Wardmote connection succeeded. Discovery returned 2 read actions (resolve-library-id and query-docs), 0 write actions. Resolve React returned official React docs ID /reactjs/react.dev (source reputation High) in 2.9s; query-docs returned useEffect cleanup guidance from React documentation in 3.0s. After page reload, agent restriction remained Just agents I pick with 0 selected and the same bounded query succeeded again in 3.1s. No API key, OAuth grant, account data, private repository, provider writes, or agent run.",
+      "evidenceLimit": "Live proof covers anonymous MCP initialize/discovery and one narrow public React documentation lookup through Wardmote's actual Apps connection and Test dialog, including a successful repeat after reload. It does not prove elevated API-key rate limits, private-repository access, or any non-public provider content."
     },
     {
       "app": "egnyte",
@@ -496,7 +496,7 @@
       ],
       "reviewedAt": "2026-09-30",
       "liveProof": "not-run",
-      "keyPermissions": "Use an API key for an account with write access to the meetings your agents need to share, rename, move or turn into soundbites. Paperclip cannot increase the key\u2019s permissions."
+      "keyPermissions": "Use an API key for an account with write access to the meetings your agents need to share, rename, move or turn into soundbites. Wardmote cannot increase the key\u2019s permissions."
     },
     {
       "app": "gauge",
@@ -530,7 +530,7 @@
       ],
       "reviewedAt": "2026-10-08",
       "liveProof": "not-run",
-      "keyPermissions": "Gauge API keys are not scoped: a key reaches every MCP tool in the organization that created it, including publishing to a connected CMS, and requests are attributed to the organization rather than a user. Generate a separate key for Paperclip so it can be deleted independently, and set publish actions to Ask first before agents run unattended. Paperclip cannot narrow an existing key."
+      "keyPermissions": "Gauge API keys are not scoped: a key reaches every MCP tool in the organization that created it, including publishing to a connected CMS, and requests are attributed to the organization rather than a user. Generate a separate key for Wardmote so it can be deleted independently, and set publish actions to Ask first before agents run unattended. Wardmote cannot narrow an existing key."
     },
     {
       "app": "github",
@@ -545,7 +545,7 @@
       ],
       "reviewedAt": "2026-09-30",
       "liveProof": "not-run",
-      "keyPermissions": "Repository contents, issues, pull requests and other granted toolsets; selected repos and installation/PAT permissions apply. Create a key with read and write permissions for these actions; Paperclip cannot increase an existing key\u2019s permissions.",
+      "keyPermissions": "Repository contents, issues, pull requests and other granted toolsets; selected repos and installation/PAT permissions apply. Create a key with read and write permissions for these actions; Wardmote cannot increase an existing key\u2019s permissions.",
       "evidenceLimit": "Provider documentation was unavailable or not readable during this review; metadata/registered source only. Account-bound proof remains outstanding."
     },
     {
@@ -788,7 +788,7 @@
       "policy": "endpoint",
       "requestedScopes": [],
       "capability": "provider-controlled",
-      "supportedActions": "Share only named spreadsheets with the Paperclip robot account.",
+      "supportedActions": "Share only named spreadsheets with the Wardmote robot account.",
       "evidence": [
         "https://developers.google.com/workspace/sheets/api/reference/mcp",
         "https://sheetsmcp.googleapis.com/.well-known/oauth-protected-resource/mcp/v1"
@@ -954,7 +954,7 @@
       ],
       "reviewedAt": "2026-09-30",
       "liveProof": "not-run",
-      "keyPermissions": "Launch/manage browsers, profiles, apps and browser automation. Create a key with read and write permissions for these actions; Paperclip cannot increase an existing key\u2019s permissions."
+      "keyPermissions": "Launch/manage browsers, profiles, apps and browser automation. Create a key with read and write permissions for these actions; Wardmote cannot increase an existing key\u2019s permissions."
     },
     {
       "app": "linear",
@@ -1021,7 +1021,7 @@
         "https://www.make.com/.well-known/oauth-authorization-server/mcp"
       ],
       "reviewedAt": "2026-09-30",
-      "liveProof": "2026-10-08: real Paperclip browser Test dialog environment_get returned authenticated organization/team context. Refresh/reload retained 133 actions; all 59 writes set Off and retained after reload. Company-wide installation in isolated test company, no provider write or actual adapter run. Account values excluded.",
+      "liveProof": "2026-10-08: real Wardmote browser Test dialog environment_get returned authenticated organization/team context. Refresh/reload retained 133 actions; all 59 writes set Off and retained after reload. Company-wide installation in isolated test company, no provider write or actual adapter run. Account values excluded.",
       "providerDefaultReason": "Make documents selecting scopes and scenarios during its hosted connection flow. Management tools require a paid plan. Do not replace that resource selection with invented MCP client scopes."
     },
     {
@@ -1058,7 +1058,7 @@
       ],
       "reviewedAt": "2026-09-30",
       "liveProof": "not-run",
-      "keyPermissions": "Add/update/delete memories under the API key account. Create a key with read and write permissions for these actions; Paperclip cannot increase an existing key\u2019s permissions."
+      "keyPermissions": "Add/update/delete memories under the API key account. Create a key with read and write permissions for these actions; Wardmote cannot increase an existing key\u2019s permissions."
     },
     {
       "app": "miro",
@@ -1131,7 +1131,7 @@
         "write"
       ],
       "capability": "write",
-      "supportedActions": "Deploy/manage sites via the account; no Claude-specific scope is required for Paperclip.",
+      "supportedActions": "Deploy/manage sites via the account; no Claude-specific scope is required for Wardmote.",
       "evidence": [
         "https://docs.netlify.com/build/build-with-ai/agent-setup-guides/agent-setup-overview/",
         "https://netlify-mcp.netlify.app/.well-known/oauth-protected-resource"
@@ -1173,7 +1173,7 @@
       ],
       "reviewedAt": "2026-10-02",
       "liveProof": "not-run",
-      "keyPermissions": "Project, branch, compute, snapshot, SQL and schema changes within the key\u2019s reach. A project-scoped key limits access to one project with Editor rights; personal and organization keys reach every project they can access. Paperclip cannot increase an existing key\u2019s permissions."
+      "keyPermissions": "Project, branch, compute, snapshot, SQL and schema changes within the key\u2019s reach. A project-scoped key limits access to one project with Editor rights; personal and organization keys reach every project they can access. Wardmote cannot increase an existing key\u2019s permissions."
     },
     {
       "app": "notion",
@@ -1255,7 +1255,7 @@
       ],
       "reviewedAt": "2026-09-30",
       "liveProof": "not-run",
-      "keyPermissions": "Incident and on-call changes require a full-access API key and role access. Create a key with read and write permissions for these actions; Paperclip cannot increase an existing key\u2019s permissions."
+      "keyPermissions": "Incident and on-call changes require a full-access API key and role access. Create a key with read and write permissions for these actions; Wardmote cannot increase an existing key\u2019s permissions."
     },
     {
       "app": "pagerduty",
@@ -1270,7 +1270,7 @@
       ],
       "reviewedAt": "2026-09-30",
       "liveProof": "not-run",
-      "keyPermissions": "Incident and on-call changes require a full-access API key and role access. Create a key with read and write permissions for these actions; Paperclip cannot increase an existing key\u2019s permissions."
+      "keyPermissions": "Incident and on-call changes require a full-access API key and role access. Create a key with read and write permissions for these actions; Wardmote cannot increase an existing key\u2019s permissions."
     },
     {
       "app": "planetscale",
@@ -1323,7 +1323,7 @@
         "https://mcp.posthog.com/.well-known/oauth-protected-resource"
       ],
       "reviewedAt": "2026-10-08",
-      "liveProof": "Provider read-only preset; active Paperclip project only. Authenticated profile returned in 0.7s; identity values omitted. Catalog refresh and reload retained 380 actions; all 7 write actions Off. No provider writes or actual agent runs.",
+      "liveProof": "Provider read-only preset; active Wardmote project only. Authenticated profile returned in 0.7s; identity values omitted. Catalog refresh and reload retained 380 actions; all 7 write actions Off. No provider writes or actual agent runs.",
       "providerDefaultReason": "PostHog documents the no-scope MCP setup as read/write, with optional readonly and feature filters. The authorization server advertises account administration unrelated to many tools; retain its MCP consent defaults and the existing explicit filters.",
       "evidenceLimit": "Browser tester account read only; provider writes, refresh-token expiry, and actual agent-adapter execution remain unqualified. Any agent company installation; UI did not allow narrowing. No actual agent ran."
     },
@@ -1341,7 +1341,7 @@
       ],
       "reviewedAt": "2026-09-30",
       "liveProof": "not-run",
-      "keyPermissions": "Analytics objects, feature flags, experiments, error triage and other enabled product actions. readonly/feature/tool filters remain enforced. Create a key with read and write permissions for these actions; Paperclip cannot increase an existing key\u2019s permissions."
+      "keyPermissions": "Analytics objects, feature flags, experiments, error triage and other enabled product actions. readonly/feature/tool filters remain enforced. Create a key with read and write permissions for these actions; Wardmote cannot increase an existing key\u2019s permissions."
     },
     {
       "app": "postman",
@@ -1409,7 +1409,7 @@
       ],
       "reviewedAt": "2026-09-30",
       "liveProof": "not-run",
-      "keyPermissions": "Collection/workspace/API actions supported by the selected minimal/code/full endpoint and account role. Create a key with read and write permissions for these actions; Paperclip cannot increase an existing key\u2019s permissions."
+      "keyPermissions": "Collection/workspace/API actions supported by the selected minimal/code/full endpoint and account role. Create a key with read and write permissions for these actions; Wardmote cannot increase an existing key\u2019s permissions."
     },
     {
       "app": "postman",
@@ -1426,7 +1426,7 @@
       ],
       "reviewedAt": "2026-09-30",
       "liveProof": "not-run",
-      "keyPermissions": "Collection/workspace/API actions supported by the selected minimal/code/full endpoint and account role. Create a key with read and write permissions for these actions; Paperclip cannot increase an existing key\u2019s permissions."
+      "keyPermissions": "Collection/workspace/API actions supported by the selected minimal/code/full endpoint and account role. Create a key with read and write permissions for these actions; Wardmote cannot increase an existing key\u2019s permissions."
     },
     {
       "app": "postman",
@@ -1443,7 +1443,7 @@
       ],
       "reviewedAt": "2026-09-30",
       "liveProof": "not-run",
-      "keyPermissions": "Collection/workspace/API actions supported by the selected minimal/code/full endpoint and account role. Create a key with read and write permissions for these actions; Paperclip cannot increase an existing key\u2019s permissions."
+      "keyPermissions": "Collection/workspace/API actions supported by the selected minimal/code/full endpoint and account role. Create a key with read and write permissions for these actions; Wardmote cannot increase an existing key\u2019s permissions."
     },
     {
       "app": "railway",
@@ -1497,7 +1497,7 @@
       ],
       "reviewedAt": "2026-09-30",
       "liveProof": "not-run",
-      "keyPermissions": "Provider-authorized payment/account tools; financial policy gates remain. Live verification outstanding. Create a key with read and write permissions for these actions; Paperclip cannot increase an existing key\u2019s permissions.",
+      "keyPermissions": "Provider-authorized payment/account tools; financial policy gates remain. Live verification outstanding. Create a key with read and write permissions for these actions; Wardmote cannot increase an existing key\u2019s permissions.",
       "evidenceLimit": "Provider documentation was unavailable or not readable during this review; metadata/registered source only. Account-bound proof remains outstanding."
     },
     {
@@ -1509,7 +1509,7 @@
         "full_access"
       ],
       "capability": "write",
-      "supportedActions": "The Resend hosted MCP exposes account/resource reads and mutations, including email sending and domain/template/account management. Provider documentation describes full_access as broad read/create/update/delete access; the separate emails:send grant does not provide a bounded account-metadata read. During qualification all 77 Write actions and all 55 Read actions were explicitly Off in Paperclip after reload.",
+      "supportedActions": "The Resend hosted MCP exposes account/resource reads and mutations, including email sending and domain/template/account management. Provider documentation describes full_access as broad read/create/update/delete access; the separate emails:send grant does not provide a bounded account-metadata read. During qualification all 77 Write actions and all 55 Read actions were explicitly Off in Wardmote after reload.",
       "evidence": [
         "https://resend.com/changelog/remote-mcp-server",
         "https://resend.com/changelog/oauth-support",
@@ -1518,8 +1518,8 @@
         "https://api.resend.com/.well-known/oauth-authorization-server"
       ],
       "reviewedAt": "2026-10-09",
-      "liveProof": "Fresh OAuth connection succeeded under the previously approved paperclip/full_access grant. Paperclip catalog exposed 132 actions (55 Read, 77 Write). List Domains succeeded twice via UI Test as Connector Tester and returned one entry each. After the test, all action permissions were Off and stayed Off after reload; human audience Just me and agent audience Just agents I pick with zero selected also persisted. Final fresh setup after the access-marker refinement again preserved Just me and zero agents; one List Domains UI Test passed in 1.4s and final reload confirmed all 132 actions Off.",
-      "evidenceLimit": "Test execution was through Paperclip's UI Test dialog as Connector Tester, not a real agent adapter/task. The bounded read returned one entry; names and identifiers are omitted. No provider writes, deletes, sends, or agent runs occurred. Paperclip Off policies do not narrow the provider-side full_access OAuth grant."
+      "liveProof": "Fresh OAuth connection succeeded under the previously approved paperclip/full_access grant. Wardmote catalog exposed 132 actions (55 Read, 77 Write). List Domains succeeded twice via UI Test as Connector Tester and returned one entry each. After the test, all action permissions were Off and stayed Off after reload; human audience Just me and agent audience Just agents I pick with zero selected also persisted. Final fresh setup after the access-marker refinement again preserved Just me and zero agents; one List Domains UI Test passed in 1.4s and final reload confirmed all 132 actions Off.",
+      "evidenceLimit": "Test execution was through Wardmote's UI Test dialog as Connector Tester, not a real agent adapter/task. The bounded read returned one entry; names and identifiers are omitted. No provider writes, deletes, sends, or agent runs occurred. Wardmote Off policies do not narrow the provider-side full_access OAuth grant."
     },
     {
       "app": "sanity",
@@ -1552,7 +1552,7 @@
       ],
       "reviewedAt": "2026-09-30",
       "liveProof": "not-run",
-      "keyPermissions": "Edit content permitted by project role; global is MCP authorization, not a bypass of project ACLs. Create a key with read and write permissions for these actions; Paperclip cannot increase an existing key\u2019s permissions."
+      "keyPermissions": "Edit content permitted by project role; global is MCP authorization, not a bypass of project ACLs. Create a key with read and write permissions for these actions; Wardmote cannot increase an existing key\u2019s permissions."
     },
     {
       "app": "sentry",
@@ -1699,7 +1699,7 @@
       ],
       "reviewedAt": "2026-09-30",
       "liveProof": "not-run",
-      "keyPermissions": "Account- and sandbox-specific writes selected during Stripe consent; financial approvals and restricted-key permissions remain. Create a key with read and write permissions for these actions; Paperclip cannot increase an existing key\u2019s permissions."
+      "keyPermissions": "Account- and sandbox-specific writes selected during Stripe consent; financial approvals and restricted-key permissions remain. Create a key with read and write permissions for these actions; Wardmote cannot increase an existing key\u2019s permissions."
     },
     {
       "app": "supabase",
@@ -1744,7 +1744,7 @@
       ],
       "reviewedAt": "2026-09-30",
       "liveProof": "not-run",
-      "keyPermissions": "Project/database/environment/storage changes and Edge Function deployment. Project selection and optional read-only configuration remain authoritative. Create a key with read and write permissions for these actions; Paperclip cannot increase an existing key\u2019s permissions."
+      "keyPermissions": "Project/database/environment/storage changes and Edge Function deployment. Project selection and optional read-only configuration remain authoritative. Create a key with read and write permissions for these actions; Wardmote cannot increase an existing key\u2019s permissions."
     },
     {
       "app": "superagent",
@@ -1761,7 +1761,7 @@
       ],
       "reviewedAt": "2026-10-06",
       "liveProof": "not-run",
-      "keyPermissions": "Superagent organization keys are not scoped: a key reaches everything in its organization, including permanently deleting findings and starting billable report and triage work. Create a separate key for Paperclip so it can be revoked independently, and set billable and destructive actions to Ask first before agents run unattended."
+      "keyPermissions": "Superagent organization keys are not scoped: a key reaches everything in its organization, including permanently deleting findings and starting billable report and triage work. Create a separate key for Wardmote so it can be revoked independently, and set billable and destructive actions to Ask first before agents run unattended."
     },
     {
       "app": "supermemory",
@@ -2059,7 +2059,7 @@
         "https://mcp.exa.ai/mcp"
       ],
       "reviewedAt": "2026-10-08",
-      "liveProof": "2026-10-08: Paperclip browser Test dialog web_search_exa returned a public repository matching the query in 2.0s; connection persisted after reload and action refresh passed. Public read only; no writes or agent-adapter run."
+      "liveProof": "2026-10-08: Wardmote browser Test dialog web_search_exa returned a public repository matching the query in 2.0s; connection persisted after reload and action refresh passed. Public read only; no writes or agent-adapter run."
     },
     {
       "app": "firecrawl",
@@ -2093,7 +2093,7 @@
       ],
       "reviewedAt": "2026-10-08",
       "liveProof": "not-run",
-      "keyPermissions": "Create an API key for the intended Firecrawl team with access to the search, scrape, parse, and any job tools you intend to use. Jobs can consume credits; Paperclip cannot increase an existing key\u2019s permissions."
+      "keyPermissions": "Create an API key for the intended Firecrawl team with access to the search, scrape, parse, and any job tools you intend to use. Jobs can consume credits; Wardmote cannot increase an existing key\u2019s permissions."
     },
     {
       "app": "firecrawl",
@@ -2108,7 +2108,7 @@
         "https://mcp.firecrawl.dev/v2/mcp"
       ],
       "reviewedAt": "2026-10-08",
-      "liveProof": "2026-10-08: Paperclip browser Test dialog firecrawl_scrape returned public page metadata and HTTP 200 (0.6s); connection persisted after reload; action refresh passed. Public read only, no writes or agent-adapter run."
+      "liveProof": "2026-10-08: Wardmote browser Test dialog firecrawl_scrape returned public page metadata and HTTP 200 (0.6s); connection persisted after reload; action refresh passed. Public read only, no writes or agent-adapter run."
     },
     {
       "app": "parallel-search",
@@ -2124,7 +2124,7 @@
         "https://search.parallel.ai/mcp"
       ],
       "reviewedAt": "2026-10-08",
-      "liveProof": "2026-10-08: Paperclip browser Test dialog web_search returned 10 public results in 0.8s; connection persisted after reload and action refresh passed. Public read only; no writes or agent-adapter run."
+      "liveProof": "2026-10-08: Wardmote browser Test dialog web_search returned 10 public results in 0.8s; connection persisted after reload and action refresh passed. Public read only; no writes or agent-adapter run."
     },
     {
       "app": "windsor-ai",
@@ -2160,7 +2160,7 @@
       ],
       "reviewedAt": "2026-10-08",
       "liveProof": "not-run",
-      "keyPermissions": "Use an account key for the intended Windsor.ai organization and connect only source accounts needed for the task. Review write tools and source-specific effects; Paperclip cannot increase key permissions."
+      "keyPermissions": "Use an account key for the intended Windsor.ai organization and connect only source accounts needed for the task. Review write tools and source-specific effects; Wardmote cannot increase key permissions."
     },
     {
       "app": "gsc-wizard",
@@ -2196,7 +2196,7 @@
       ],
       "reviewedAt": "2026-10-08",
       "liveProof": "not-run",
-      "keyPermissions": "At key creation, choose read-only or read/write according to the approved task. Read/write keys can reach URL-submission and related provider actions; Paperclip cannot increase an existing key\u2019s permissions."
+      "keyPermissions": "At key creation, choose read-only or read/write according to the approved task. Read/write keys can reach URL-submission and related provider actions; Wardmote cannot increase an existing key\u2019s permissions."
     },
     {
       "app": "airtable",
@@ -2278,7 +2278,7 @@
       "policy": "provider-default",
       "requestedScopes": [],
       "capability": "write",
-      "supportedActions": "Within the URL toolset filter, read campaign, metric, and segment context and use supported campaign write tools. The provider's campaigns:write toolset may include sending, scheduling, deletion, or other mutation tools; the authenticated catalog must be reviewed individually and Paperclip writes remain Off during qualification.",
+      "supportedActions": "Within the URL toolset filter, read campaign, metric, and segment context and use supported campaign write tools. The provider's campaigns:write toolset may include sending, scheduling, deletion, or other mutation tools; the authenticated catalog must be reviewed individually and Wardmote writes remain Off during qualification.",
       "evidence": [
         "https://developers.klaviyo.com/en/docs/connect_to_the_klaviyo_mcp_server",
         "https://developers.klaviyo.com/en/docs/klaviyo_mcp_server_available_tools",
@@ -2308,7 +2308,7 @@
       ],
       "reviewedAt": "2026-10-09",
       "liveProof": "blocked-before-consent: provider DCR HTTP 400 says redirect_uris are not allowed and asks to contact monday for callback allowlisting.",
-      "providerDefaultReason": "The official hosted-MCP DCR documentation describes OAuth authorization and account-admin approval for additional connectors; the hosted MCP runs as the authorizing user, inheriting that user's monday.com permissions and account MCP limits. The DCR guide does not document client-selected OAuth scope names for this route, so Paperclip sends no guessed scopes. Tool-level authority is bounded by the provider account and user's permissions; verify the live catalog before enabling actions.",
+      "providerDefaultReason": "The official hosted-MCP DCR documentation describes OAuth authorization and account-admin approval for additional connectors; the hosted MCP runs as the authorizing user, inheriting that user's monday.com permissions and account MCP limits. The DCR guide does not document client-selected OAuth scope names for this route, so Wardmote sends no guessed scopes. Tool-level authority is bounded by the provider account and user's permissions; verify the live catalog before enabling actions.",
       "evidenceLimit": "Public metadata and registration failure only. No client registered, consent accepted, authenticated catalog, or account read."
     },
     {
@@ -2325,8 +2325,8 @@
         "https://github.com/huggingface/hf-mcp-server"
       ],
       "reviewedAt": "2026-10-09",
-      "liveProof": "Paperclip Apps qualification passed: connected the public-mcp method from the natural Connectors catalog; initialization/discovery showed exactly 4 Read actions and 0 Write actions. Restricted agent access to Just agents I pick with 0 selected; the public method requires no identity. A bounded hf_fs search of hf://docs for MCP with limit 3 succeeded (3 public doc entries; UI preview reported one successful result row) in 0.7s. After reload, the page still showed Connected, 4 actions, Read 4, Write 0, and no agents can use this connection; the same query succeeded again in 0.8s. The Test dialog reported the direct call ran as Connector Tester; no heartbeat/agent execution or other provider tool call occurred.",
-      "evidenceLimit": "Qualification used only public documentation and did not use a Hugging Face account, OAuth, API key, private repo, write, inference, Space execution, or job. Anonymous endpoint was directly probed separately and returned 4 read tools, matching Paperclip discovery. The setup flow says no identity required; a one-member human audience was saved before reload, but human identity controls were not shown after reload. A root browser inspection confirmed four read actions and zero agents selected; a privacy-safe permissions screenshot was saved. Rate limits and later provider catalog changes remain outside this proof."
+      "liveProof": "Wardmote Apps qualification passed: connected the public-mcp method from the natural Connectors catalog; initialization/discovery showed exactly 4 Read actions and 0 Write actions. Restricted agent access to Just agents I pick with 0 selected; the public method requires no identity. A bounded hf_fs search of hf://docs for MCP with limit 3 succeeded (3 public doc entries; UI preview reported one successful result row) in 0.7s. After reload, the page still showed Connected, 4 actions, Read 4, Write 0, and no agents can use this connection; the same query succeeded again in 0.8s. The Test dialog reported the direct call ran as Connector Tester; no heartbeat/agent execution or other provider tool call occurred.",
+      "evidenceLimit": "Qualification used only public documentation and did not use a Hugging Face account, OAuth, API key, private repo, write, inference, Space execution, or job. Anonymous endpoint was directly probed separately and returned 4 read tools, matching Wardmote discovery. The setup flow says no identity required; a one-member human audience was saved before reload, but human identity controls were not shown after reload. A root browser inspection confirmed four read actions and zero agents selected; a privacy-safe permissions screenshot was saved. Rate limits and later provider catalog changes remain outside this proof."
     }
   ]
 }

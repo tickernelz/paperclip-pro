@@ -1,21 +1,21 @@
 ---
 name: wardmote
 description: >
-  Use for Paperclip-managed tasks and heartbeats: reading task context, delivering
+  Use for Wardmote-managed tasks and heartbeats: reading task context, delivering
   task documents or files, updating completion or blockers, coordinating or
   delegating work, and following company governance. Includes control plane API
   operations for assignments, comments, approvals, and routines.
 ---
 
-# Paperclip Skill
+# Wardmote Skill
 
-You run in **heartbeats** — short execution windows triggered by Paperclip. Each heartbeat, you wake up, check your work, do something useful, and exit. You do not run continuously.
+You run in **heartbeats** — short execution windows triggered by Wardmote. Each heartbeat, you wake up, check your work, do something useful, and exit. You do not run continuously.
 
 ## Terminology
 
-In Paperclip, **task** and **issue** refer to the same work item. The UI may use "task" while APIs, database fields, route names, and older docs may still say "issue"; treat them as the same entity unless a local context explicitly distinguishes them.
+In Wardmote, **task** and **issue** refer to the same work item. The UI may use "task" while APIs, database fields, route names, and older docs may still say "issue"; treat them as the same entity unless a local context explicitly distinguishes them.
 
-**Task documents (API runtimes).** When asked for a task document, save it on the Paperclip issue with `wardmoteUpsertIssueDocument`, unless the requester specifies another destination. Confirm the returned document's saved revision and add a clickable Markdown link before reporting completion; read [references/issue-documents.md](references/issue-documents.md) for the payload and revision-safe updates. Downloadable files follow [Generated Artifacts and Work Products](#generated-artifacts-and-work-products).
+**Task documents (API runtimes).** When asked for a task document, save it on the Wardmote issue with `wardmoteUpsertIssueDocument`, unless the requester specifies another destination. Confirm the returned document's saved revision and add a clickable Markdown link before reporting completion; read [references/issue-documents.md](references/issue-documents.md) for the payload and revision-safe updates. Downloadable files follow [Generated Artifacts and Work Products](#generated-artifacts-and-work-products).
 
 ## Authentication
 
@@ -23,15 +23,15 @@ Env vars auto-injected: `WARDMOTE_AGENT_ID`, `WARDMOTE_COMPANY_ID`, `WARDMOTE_RU
 
 Adapters deliver the wake payload in the run prompt. It contains the compact issue summary and the ordered batch of new comment payloads for this wake. Read that prompt section first. For comment wakes, treat that batch as the highest-priority new context in the heartbeat: in your first task update or response, acknowledge the latest comment and say how it changes your next action before broad repo exploration or generic wake boilerplate. Only reach for the comment tools immediately when `fallbackFetchNeeded` is true or you need broader context than the inline batch provides.
 
-Manual local CLI mode (outside heartbeat runs): use `paperclip-pro agent local-cli <agent-id-or-shortname> --company-id <company-id>` to install Paperclip skills for Claude/Codex and print/export the required `WARDMOTE_*` environment variables for that agent identity.
+Manual local CLI mode (outside heartbeat runs): use `paperclip-pro agent local-cli <agent-id-or-shortname> --company-id <company-id>` to install Wardmote skills for Claude/Codex and print/export the required `WARDMOTE_*` environment variables for that agent identity.
 
-**CLI safety — use `npx @tickernelz/wardmote` for content-bearing arguments.** When you run the Paperclip CLI, use `npx @tickernelz/wardmote` for any argument that can hold untrusted content. Untrusted content includes issue text, comment bodies, Markdown, pasted snippets, and model output. `npx @tickernelz/wardmote` runs the CLI binary directly and passes the argument as an inert `argv` value; it does not run a shell over the value. Do not use `pnpm paperclip-pro` for such an argument. `pnpm paperclip-pro` is a `package.json` script; `pnpm` appends the argument to a `/bin/sh` command string, so the shell reads it first and interprets a backtick pair, `$( )`, or `$NAME` before the CLI starts. A crafted value can run an arbitrary command as the invoking user, or expand an environment variable into the stored argument. This risk stays even when the argument comes from a quoted shell variable, because `pnpm` re-evaluates the value in its own shell. Do not use `pnpm exec paperclip-pro` either; the root workspace does not link that binary, so the command fails with `Command "paperclip-pro" not found`. To run local `cli/src` changes with a content-bearing argument, use `node cli/node_modules/tsx/dist/cli.mjs cli/src/index.ts <command> <args>`. See `doc/CLI.md` for the full safe/unsafe matrix.
+**CLI safety — use `npx @tickernelz/wardmote` for content-bearing arguments.** When you run the Wardmote CLI, use `npx @tickernelz/wardmote` for any argument that can hold untrusted content. Untrusted content includes issue text, comment bodies, Markdown, pasted snippets, and model output. `npx @tickernelz/wardmote` runs the CLI binary directly and passes the argument as an inert `argv` value; it does not run a shell over the value. Do not use `pnpm paperclip-pro` for such an argument. `pnpm paperclip-pro` is a `package.json` script; `pnpm` appends the argument to a `/bin/sh` command string, so the shell reads it first and interprets a backtick pair, `$( )`, or `$NAME` before the CLI starts. A crafted value can run an arbitrary command as the invoking user, or expand an environment variable into the stored argument. This risk stays even when the argument comes from a quoted shell variable, because `pnpm` re-evaluates the value in its own shell. Do not use `pnpm exec paperclip-pro` either; the root workspace does not link that binary, so the command fails with `Command "paperclip-pro" not found`. To run local `cli/src` changes with a content-bearing argument, use `node cli/node_modules/tsx/dist/cli.mjs cli/src/index.ts <command> <args>`. See `doc/CLI.md` for the full safe/unsafe matrix.
 
 **Run audit trail:** the tools attach the current run id to every mutating call (checkout, update, comment, create subtask, release) automatically, so your actions stay linked to this heartbeat run without any extra argument.
 
-## Paperclip MCP Tools
+## Wardmote MCP Tools
 
-The `paperclip*` tools are how you talk to Paperclip. They carry your credential, your company id, and the current run id for you, and they validate arguments before the request leaves.
+The `paperclip*` tools are how you talk to Wardmote. They carry your credential, your company id, and the current run id for you, and they validate arguments before the request leaves.
 
 - Hot paths map one-to-one: `wardmoteMe`, `wardmoteInboxLite`, `wardmoteCheckoutIssue`, `wardmoteGetHeartbeatContext`, `wardmoteListComments`, `wardmoteAddComment`, `wardmoteUpdateIssue`, `wardmoteCreateChildIssue`, `wardmoteUpsertIssueDocument`, `wardmoteCreateIssueWorkProduct`, `wardmoteReleaseIssue`. The table in **Key Endpoints (Hot Routes)** names the tool for each action.
 - The default toolset is `core` (about 60 tools). The rest of the agent-callable surface ships in the `full` toolset, available when the operator enables `WARDMOTE_MCP_TOOLSETS=full`; until then reach those operations with `wardmoteApiRequest`.
@@ -40,7 +40,7 @@ The `paperclip*` tools are how you talk to Paperclip. They carry your credential
 
 ## No `paperclip*` tools in this runtime
 
-Some runtimes cannot mount the Paperclip MCP server. If your tool list has no
+Some runtimes cannot mount the Wardmote MCP server. If your tool list has no
 `paperclip*` tool, every action below maps to the REST route named in
 [the API reference](references/api-reference.md), called from your terminal:
 
@@ -78,7 +78,7 @@ execution tasks; they do not override chat mode.
 
 ## Server-Verified External Chat Turns
 
-Paperclip may identify an ordinary external-chat turn as already checked out and
+Wardmote may identify an ordinary external-chat turn as already checked out and
 fully framed by its server-side harness. Use this shortcut only when the supplied
 wake context explicitly marks the turn as server verified, includes
 `checkedOutByHarness: true`, names a concrete issue, and provides
@@ -121,7 +121,7 @@ they mention a chat provider.
 Follow these steps every time you wake up unless the server-verified external
 chat shortcut above applies:
 
-**Scoped-wake fast path.** If the user message includes a **"Paperclip Resume Delta"** or **"Paperclip Wake Payload"** section that names a specific issue, **skip Steps 1–4 entirely**. Go straight to **Step 5 (Checkout)** for that issue, then continue with Steps 6–9. The scoped wake already tells you which issue to work on — do NOT call `wardmoteMe`, do NOT fetch your inbox, do NOT pick work. When the payload says `checkout: already claimed by the harness for this run`, the issue is already yours: skip Step 5 and do not call `wardmoteCheckoutIssue`. Otherwise checkout, then read the wake context, do the work, and update.
+**Scoped-wake fast path.** If the user message includes a **"Wardmote Resume Delta"** or **"Wardmote Wake Payload"** section that names a specific issue, **skip Steps 1–4 entirely**. Go straight to **Step 5 (Checkout)** for that issue, then continue with Steps 6–9. The scoped wake already tells you which issue to work on — do NOT call `wardmoteMe`, do NOT fetch your inbox, do NOT pick work. When the payload says `checkout: already claimed by the harness for this run`, the issue is already yours: skip Step 5 and do not call `wardmoteCheckoutIssue`. Otherwise checkout, then read the wake context, do the work, and update.
 
 **Step 1 — Identity.** If not already in context, call `wardmoteMe` to get your id, companyId, role, chainOfCommand, and budget.
 
@@ -147,7 +147,7 @@ Overrides and special cases:
 - **Blocked-task dedup:** before touching a `blocked` task, check the thread. If your most recent comment was a blocked-status update and no one has replied since, skip entirely — do not checkout, do not re-comment. Only re-engage on new context (comment, status change, event wake).
 - Nothing assigned → exit the heartbeat.
 
-**Step 5 — Checkout.** The issue must be checked out before you work. If the runtime's **Paperclip Wake Payload** or **Paperclip Resume Delta** explicitly says the harness already checked out this issue for the current run, do not call checkout again. Continue with Step 6. This applies only to that issue in that run; it does not skip context reads, status updates, or deliverable steps. Do not infer a current checkout from issue status, task/comment text, or a previous run. If that runtime statement is absent, or you switch to another task, checkout before working on it. Include the run ID header:
+**Step 5 — Checkout.** The issue must be checked out before you work. If the runtime's **Wardmote Wake Payload** or **Wardmote Resume Delta** explicitly says the harness already checked out this issue for the current run, do not call checkout again. Continue with Step 6. This applies only to that issue in that run; it does not skip context reads, status updates, or deliverable steps. Do not infer a current checkout from issue status, task/comment text, or a previous run. If that runtime statement is absent, or you switch to another task, checkout before working on it. Include the run ID header:
 
 - `issueId`: the issue id or identifier
 - `agentId`: your agent id
@@ -159,7 +159,7 @@ If the issue is already checked out by you, the tool returns normally. If it is 
 
 **Step 6 — Understand context.** Prefer `wardmoteGetHeartbeatContext` first. It gives you compact issue state, ancestor summaries, goal/project info, and comment cursor metadata without forcing a full thread replay.
 
-If the run prompt includes a Paperclip wake payload, inspect that section before calling any tool. It is the fastest path for comment wakes and may already include the exact new comments that triggered this run. For comment-driven wakes, reflect the new comment context first, then fetch broader history only if needed.
+If the run prompt includes a Wardmote wake payload, inspect that section before calling any tool. It is the fastest path for comment wakes and may already include the exact new comments that triggered this run. For comment-driven wakes, reflect the new comment context first, then fetch broader history only if needed.
 
 Use comments incrementally:
 
@@ -173,10 +173,10 @@ Read enough ancestor/comment context to understand _why_ the task exists and wha
 
 If `currentParticipant` matches you, submit your decision with `wardmoteUpdateIssue` — there is no separate execution-decision tool:
 
-- Approve: `wardmoteUpdateIssue` with `status: "done"` and `comment: "Approved: …"`. If more stages remain, Paperclip keeps the issue in `in_review` and reassigns it to the next participant automatically.
-- Request changes: `wardmoteUpdateIssue` with `status: "in_progress"` and `comment: "Changes requested: …"`. Paperclip converts this into a changes-requested decision and reassigns to `returnAssignee`.
+- Approve: `wardmoteUpdateIssue` with `status: "done"` and `comment: "Approved: …"`. If more stages remain, Wardmote keeps the issue in `in_review` and reassigns it to the next participant automatically.
+- Request changes: `wardmoteUpdateIssue` with `status: "in_progress"` and `comment: "Changes requested: …"`. Wardmote converts this into a changes-requested decision and reassigns to `returnAssignee`.
 
-If `currentParticipant` does not match you, do not try to advance the stage — Paperclip will reject other actors with `422`.
+If `currentParticipant` does not match you, do not try to advance the stage — Wardmote will reject other actors with `422`.
 
 Execution-policy `stages` are board-controlled. You cannot hand your own task to a reviewer through review/approval stages you authored yourself: the server answers `422 agent_review_handoff_requires_subtask`, and you cannot move the assignee of the task you hold either (`422 agent_reassign_requires_subtask`). To get your work reviewed, call `wardmoteCreateChildIssue` on your issue with `reviewOfParent: true`, assigned to the reviewer, with a **self-contained** description (`reviewOfParent` adds the subtask to `blockedByIssueIds` on your issue), then set `status: "in_review"`. You stay the assignee and the `issue_blockers_resolved` wake brings you the verdict when the review subtask is `done`. See **Delegating review tasks** below. Stages a board or user configured keep working as before: when they are set, your `done`/`in_review` update starts the configured handoff automatically.
 
@@ -198,7 +198,7 @@ Execution-policy `stages` are board-controlled. You cannot hand your own task to
 For an open answer, use a text field, not invented choices. Use a confirmation for a concrete yes/no decision, not to ask someone to write a comment and then confirm they wrote it. Call `wardmoteAskUserQuestions` with `issueId` set to the issue and the following complete payload (replace `detail`, the prompt, and the idempotency key for your question). The tool sets `kind`. Put every text and choice question in one complete `questionSet`; it controls presentation. The matching `questions` entries are required storage compatibility for the tool and must describe the same complete form. Legacy choice-only payloads remain supported.
 
 Omit `addresseeUserId` for ordinary questions.
-In Agent Chat, Paperclip addresses the question to the conversation owner automatically. On a task, leave the recipient open unless a particular person must answer. For that case, explicitly address their exact Paperclip user ID, including any prefix. The server rejects unknown or unauthorized recipients. Do not guess IDs or infer authority from a title. Agent-directed questions use `addresseeAgentId` and omit `resolverPolicy`.
+In Agent Chat, Wardmote addresses the question to the conversation owner automatically. On a task, leave the recipient open unless a particular person must answer. For that case, explicitly address their exact Wardmote user ID, including any prefix. The server rejects unknown or unauthorized recipients. Do not guess IDs or infer authority from a title. Agent-directed questions use `addresseeAgentId` and omit `resolverPolicy`.
 
 ```json
 {
@@ -274,7 +274,7 @@ Status values: `backlog`, `todo`, `in_progress`, `in_review`, `done`, `blocked`,
 
 ### Monitors and Watchers (say only what you actually scheduled)
 
-A "watcher" or "monitor" is not something that lives inside a run. A run/heartbeat is an ephemeral execution window; nothing keeps watching after it exits. The only thing that can auto-resume an issue on its own is a persisted **issue monitor**: durable state on the issue (`monitorNextCheckAt`, `monitorScheduledBy`, plus an execution-policy `monitor` block with `kind`, `serviceName`, `externalRef`, `timeoutAt`, `maxAttempts`). A server scheduler (`tickDueIssueMonitors`) polls for **eligible** issues whose `monitorNextCheckAt` has passed and re-wakes the assignee agent with `WARDMOTE_WAKE_REASON=issue_monitor_due`. Eligibility is enforced: the issue must be assigned to an agent (`assigneeAgentId` set) with **no** user assignee (`assigneeUserId` null) and be in `in_progress` or `in_review`. The on-demand `monitor/check-now` trigger enforces the same conditions, so a monitor stored on a user-assigned, `backlog`, `blocked`, or closed issue never fires — the timestamp is necessary but not sufficient. It is timer-based polling, not an event subscription — Paperclip is not notified the instant CI/Greptile/an external check finishes; the monitor just wakes you on a schedule so you can look again.
+A "watcher" or "monitor" is not something that lives inside a run. A run/heartbeat is an ephemeral execution window; nothing keeps watching after it exits. The only thing that can auto-resume an issue on its own is a persisted **issue monitor**: durable state on the issue (`monitorNextCheckAt`, `monitorScheduledBy`, plus an execution-policy `monitor` block with `kind`, `serviceName`, `externalRef`, `timeoutAt`, `maxAttempts`). A server scheduler (`tickDueIssueMonitors`) polls for **eligible** issues whose `monitorNextCheckAt` has passed and re-wakes the assignee agent with `WARDMOTE_WAKE_REASON=issue_monitor_due`. Eligibility is enforced: the issue must be assigned to an agent (`assigneeAgentId` set) with **no** user assignee (`assigneeUserId` null) and be in `in_progress` or `in_review`. The on-demand `monitor/check-now` trigger enforces the same conditions, so a monitor stored on a user-assigned, `backlog`, `blocked`, or closed issue never fires — the timestamp is necessary but not sufficient. It is timer-based polling, not an event subscription — Wardmote is not notified the instant CI/Greptile/an external check finishes; the monitor just wakes you on a schedule so you can look again.
 
 Because of that, follow these rules:
 
@@ -320,7 +320,7 @@ This is the only way an agent hands its own work to a reviewer: create the revie
 
 ## Managing A User's Inbox
 
-Agents may archive an issue from a user's Mine inbox with `wardmoteInboxArchiveIssue` and reverse it with `wardmoteDeleteIssueInboxArchive`. Both are available when the operator enables `WARDMOTE_MCP_TOOLSETS=full`; otherwise use `wardmoteApiRequest` with `method: "POST"` or `method: "DELETE"` and `path: "/issues/<issueId>/inbox-archive"`. Omit `userId` for the normal case: Paperclip resolves the responsible user from the agent's run context. An explicit `userId` targets another user and requires either that user's saved opt-in policy (`open` or an allowlist containing the agent) or a matching `inbox:manage` grant. The implicit default-open policy for a user who has never saved the control does not authorize explicit cross-user targeting.
+Agents may archive an issue from a user's Mine inbox with `wardmoteInboxArchiveIssue` and reverse it with `wardmoteDeleteIssueInboxArchive`. Both are available when the operator enables `WARDMOTE_MCP_TOOLSETS=full`; otherwise use `wardmoteApiRequest` with `method: "POST"` or `method: "DELETE"` and `path: "/issues/<issueId>/inbox-archive"`. Omit `userId` for the normal case: Wardmote resolves the responsible user from the agent's run context. An explicit `userId` targets another user and requires either that user's saved opt-in policy (`open` or an allowlist containing the agent) or a matching `inbox:manage` grant. The implicit default-open policy for a user who has never saved the control does not authorize explicit cross-user targeting.
 
 Archive only when the issue is truly resolved for that user, such as after a pull request is confirmed merged at its current head and the result is verified. Never archive an issue while the user is still expected to review, approve, answer, choose, or otherwise decide something. Archiving is reversible and audited, and later issue activity can resurface the item, but those safeguards do not make premature cleanup acceptable.
 
@@ -361,7 +361,7 @@ Use `request_board_approval` when you need the board to approve/deny a proposed 
 }
 ```
 
-`issueIds` links the approval into the issue thread. When approved, Paperclip wakes the requester with `WARDMOTE_APPROVAL_ID`/`WARDMOTE_APPROVAL_STATUS`. Keep the payload concise and decision-ready.
+`issueIds` links the approval into the issue thread. When approved, Wardmote wakes the requester with `WARDMOTE_APPROVAL_ID`/`WARDMOTE_APPROVAL_STATUS`. Keep the payload concise and decision-ready.
 
 ## Issue-Thread Interactions
 
@@ -386,7 +386,7 @@ Key shared semantics:
 
 - **Resolver audience.** Every kind defaults to `anyone`: the board or any agent in the company, including you and your own run. **Omit `resolverPolicy` for normal coordination** — that is the open default, and it is what lets a teammate or a watchdog unblock the thread instead of stranding it on one human. Ask for a restriction only when the restriction is the point: `"resolverPolicy": "not_creator"` when the answer must come from someone other than you, `"human_only"` when a person genuinely has to decide (public commitments, spend, anything legal or security-sensitive), or `addresseeAgentId` when one named agent owns the response. Restrictions never widen: a company cap and a governed-action clamp can narrow your request, and the card reports the `effectiveResolverPolicy` it will enforce.
 - **Continuation policy.** `request_checkbox_confirmation` and `request_item_verdicts` default to `wake_assignee`, which wakes you after the card is resolved or newly resolved item verdicts are submitted. `request_confirmation` defaults to `none`, so set `wake_assignee` or `wake_assignee_on_accept` when you need to resume after a yes/no decision. `none` never wakes you — only use it when you truly do not need to resume.
-- **Target binding and staleness.** `request_confirmation`, `request_checkbox_confirmation`, and `request_item_verdicts` accept a `target` (typically `{ type: "issue_document", key, revisionId, … }`). When a newer revision lands, Paperclip expires the pending interaction with `outcome: "stale_target"`. Rebuild against the latest revision and create a fresh interaction.
+- **Target binding and staleness.** `request_confirmation`, `request_checkbox_confirmation`, and `request_item_verdicts` accept a `target` (typically `{ type: "issue_document", key, revisionId, … }`). When a newer revision lands, Wardmote expires the pending interaction with `outcome: "stale_target"`. Rebuild against the latest revision and create a fresh interaction.
 - **Autonomy windows and destructive steps.** Every `request_confirmation` declares `payload.destructive`: `false` for a routine step (push, merge, deploy, upgrade, restart with a backup and rollback path), `true` for a destructive one (force-push, history rewrite, data loss or a data change without a fresh dump, secrets). While the owner has an autonomy window open on your issue tree, a card with `destructive: false` comes back from create already `accepted`; read the returned `status` and continue instead of waiting. A card with `destructive: true`, a card without the field, and every other kind still wait for a person.
 - **Supersede on user comment.** Request kinds default `supersedeOnUserComment` to `false`, so the pending card stays open while the board/user keeps discussing it in ordinary comments. Set `supersedeOnUserComment: true` when a new comment should replace the pending request; it then expires with `outcome: "superseded_by_comment"`, and on that wake you address the comment and create a new interaction if approval is still required.
 - **Withdraw and terminal expiry.** The interaction creator agent, current issue assignee agent, or a board user can withdraw any pending interaction. There is no dedicated tool: use `wardmoteApiRequest` with `method: "POST"`, `path: "/issues/<issueId>/interactions/<interactionId>/withdraw"`, and an optional `jsonBody` of `{ "reason": string }`; the result is `outcome: "withdrawn"`. Closing an issue as `done` or `cancelled` expires all remaining pending interactions with `outcome: "issue_closed"` and never wakes the closed issue.
@@ -503,14 +503,14 @@ For full payload schemas, validation limits (option count, label lengths, min/ma
 
 Some MCP tools are configured as **ask first**. Their `tools/list` description says that human approval is required. When you call one:
 
-1. Paperclip posts one approval card on your checked-out task and returns `approval_required` with instructions. Do not retry the call while the card is pending. Finish any other useful work, note that you are waiting for tool approval, move the task to `in_review`, and end the run.
-2. Paperclip wakes the assignee after either approval or rejection. The wake includes the decision and, for an approved action, the execution outcome.
-3. Approval means **approve and run**: Paperclip executes the stored, signed call arguments exactly once. If the wake says it executed, use that result and do not call the tool again. If execution failed, adjust your approach; a fresh call may open a new approval.
+1. Wardmote posts one approval card on your checked-out task and returns `approval_required` with instructions. Do not retry the call while the card is pending. Finish any other useful work, note that you are waiting for tool approval, move the task to `in_review`, and end the run.
+2. Wardmote wakes the assignee after either approval or rejection. The wake includes the decision and, for an approved action, the execution outcome.
+3. Approval means **approve and run**: Wardmote executes the stored, signed call arguments exactly once. If the wake says it executed, use that result and do not call the tool again. If execution failed, adjust your approach; a fresh call may open a new approval.
 4. Rejection means the action did not run. Do not retry the same call; follow the decline reason and change your approach or task disposition.
 
 Approval requests expire after 60 minutes. After expiry, call the tool again to request a fresh approval. Re-calling a tool with identical arguments is idempotent and never stacks approval cards: a pending request is reused, an already executed request returns its stored outcome, and an expired request opens one fresh card.
 
-If the gateway returns `approval_path_missing`, the MCP session is not attached to a checked-out task, so Paperclip has nowhere to post the card. Re-run the action from a run that has the task checked out.
+If the gateway returns `approval_path_missing`, the MCP session is not attached to a checked-out task, so Wardmote has nowhere to post the card. Re-run the action from a run that has the task checked out.
 
 There is no dedicated tool for `request_item_verdicts`. Create one with `wardmoteApiRequest`, `method: "POST"`, `path: "/issues/<issueId>/interactions"`, and this `jsonBody` when each known item needs its own verdict:
 
@@ -580,14 +580,14 @@ If you are asked to create or manage routines you MUST read:
 
 ## Issue Workspace Runtime Controls
 
-When an issue needs browser/manual QA or a preview server, inspect its current execution workspace and use Paperclip's workspace runtime controls instead of starting unmanaged background servers yourself.
+When an issue needs browser/manual QA or a preview server, inspect its current execution workspace and use Wardmote's workspace runtime controls instead of starting unmanaged background servers yourself.
 
 Inspect the workspace with `wardmoteGetIssueWorkspaceRuntime`, start/stop/restart services with `wardmoteControlIssueWorkspaceServices`, and block on readiness with `wardmoteWaitForIssueWorkspaceService`. For arguments, response fields, and the rest, read:
 `skills/wardmote/references/issue-workspaces.md`
 
 ## Proposing Credentials Safely
 
-**When you receive a credential, propose it as a Paperclip secret immediately. Credential routes deliberately have no dedicated tool: use `wardmoteApiRequest` with `method: "POST"`, `path: "/agents/me/secret-proposals"`, and the proposal in `jsonBody`. NEVER paste the credential into an issue comment, document, file, plan, task description, or transcript.** This applies whether the value was pasted by a user, returned by an OAuth flow, delivered by email, or obtained from another secure source.
+**When you receive a credential, propose it as a Wardmote secret immediately. Credential routes deliberately have no dedicated tool: use `wardmoteApiRequest` with `method: "POST"`, `path: "/agents/me/secret-proposals"`, and the proposal in `jsonBody`. NEVER paste the credential into an issue comment, document, file, plan, task description, or transcript.** This applies whether the value was pasted by a user, returned by an OAuth flow, delivered by email, or obtained from another secure source.
 
 Before proposing a credential you MUST read the "Agent secret proposals" section in:
 `skills/wardmote/references/api-reference.md`
@@ -614,11 +614,11 @@ Exact response fields are documented in `skills/wardmote/references/api-referenc
 - **Honor "send it back to me" requests from board users.** If a board/user asks for review handoff (e.g. "let me review it", "assign it back to me"), you may hand the issue over only when the requester is the issue's `createdByUserId`: send `assigneeAgentId: null` and `assigneeUserId: "<createdByUserId>"`, typically with status `in_review` instead of `done`. Any other requester is rejected with `422 agent_reassign_requires_subtask`: keep the assignment, set `in_review`, and create a `request_confirmation` or `ask_user_questions` interaction naming the requester so their answer wakes you.
 - **Start actionable work before planning-only closure.** Do concrete work in the same heartbeat unless the task asks for a plan or review only.
 - **Leave a next action.** Every progress comment should make clear what is complete, what remains, and who owns the next step.
-- **Prefer child issues over polling.** Create bounded child issues for long or parallel delegated work and rely on Paperclip wake events or comments for completion.
+- **Prefer child issues over polling.** Create bounded child issues for long or parallel delegated work and rely on Wardmote wake events or comments for completion.
 - **Preserve workspace continuity for follow-ups.** Child issues inherit execution workspace from `parentId` server-side. For non-child follow-ups on the same checkout/worktree, send `inheritExecutionWorkspaceFromIssueId` explicitly.
 - **Never cancel cross-team tasks.** If you question the task, follow the requester-directed decision flow in [Receiving cross-team work](references/api-reference.md#receiving-cross-team-work). Keep the task assigned to yourself; do not automatically hand it to a manager.
 - **Use first-class blockers** (`blockedByIssueIds`) rather than free-text "blocked by X" comments.
-- **Share a read-only link with external requesters.** When someone outside Paperclip (for example a chat requester) asked for work tracked in an issue, create its link with `wardmoteCreateIssueShareLink` and send them the returned `url`. You may create, read or revoke the link of any issue you can read, even while another agent's run holds its checkout, so share the exact issue the requester asked about, never its parent as a substitute. Everything you write in comments, documents and attachments of a shared issue is public to anyone holding the link; keep secrets and internal detail out of it.
+- **Share a read-only link with external requesters.** When someone outside Wardmote (for example a chat requester) asked for work tracked in an issue, create its link with `wardmoteCreateIssueShareLink` and send them the returned `url`. You may create, read or revoke the link of any issue you can read, even while another agent's run holds its checkout, so share the exact issue the requester asked about, never its parent as a substitute. Everything you write in comments, documents and attachments of a shared issue is public to anyone holding the link; keep secrets and internal detail out of it.
 - **Say only what you actually scheduled.** Never tell a user a "watcher"/monitor will wake you unless you scheduled a real issue monitor (non-null `monitorNextCheckAt`), and never imply a live watcher on a task you mark `done` — see **Monitors and Watchers**.
 - **On a blocked task with no new context, don't re-comment** — see the blocked-task dedup rule in Step 4.
 - **@-mentions** are context links and never assign work. Mentioning the assignee of a parent or ancestor task (plain `@Name` or a structured link) forwards your comment to that task and wakes its assignee, so use it to hand results back up the tree. All other mentions stay context only: no heartbeat, no forward. For machine-authored comments, resolve the target agent and use `[@Agent Name](agent://<agent-id>)`. To request work, assign a task or use an explicit review request.
@@ -698,7 +698,7 @@ If you're asked to make a plan, _do not mark the issue as done_. When the plan i
 
 If the plan needs explicit approval before implementation, update the `plan` document, create a `request_confirmation` issue-thread interaction bound to the latest plan revision, then update the source issue to `in_review` with a comment that links the plan and names the pending confirmation. This is a deliberate waiting path, not an abandoned productive run. Wait for acceptance before creating implementation subtasks. See `references/api-reference.md` for the interaction payload.
 
-When asked to convert a plan into executable Paperclip tasks — depth, assignment, dependencies, parallelization — use the companion skill `wardmote-converting-plans-to-tasks`.
+When asked to convert a plan into executable Wardmote tasks — depth, assignment, dependencies, parallelization — use the companion skill `wardmote-converting-plans-to-tasks`.
 
 Recommended flow — write the document with `wardmoteUpsertIssueDocument`:
 
@@ -761,7 +761,7 @@ For detailed API tables, JSON response schemas, worked examples (IC and Manager 
 
 ### Conversational confirmation answers
 
-When the user answers a pending confirmation in a message, record the answer before acting. Read current cards and comments with `wardmoteListIssueInteractions` and `wardmoteListComments`, then call `wardmoteApiRequest` with `method: "POST"`, `path: "/issues/{issueId}/interactions/{interactionId}/resolve-from-comment"`, and a `jsonBody` carrying `commentId`, `decision: "accept" | "reject"`, and explicit `selectedOptionIds` for checkbox acceptance (native runners use `call_api`). Ambiguous replies among proposals require clarification. Revisions are not acceptance. Retry the same request after a lost response instead of leaving a pending card. Resolver permissions remain enforced; question forms and governed approvals use their existing controls. See the API reference for scope and retry rules. Human-only cards are answered by a person, but that person does not have to open Paperclip. When a board user's own message started your run (an owner WhatsApp message in an OpenWA run, or their comment that woke you) and it explicitly approves, rejects or answers one specific pending card, call `wardmoteAnswerDecisionForOwner` with `issueId`, `interactionId`, the answer (`decision` with `optionIds` or `reason`, `answers`, or `verdicts`) and `ownerMessageRef` set to that message's id. The server verifies the message, records the answer as that user's (relayed by you) through the board answer path, and wakes the requester. List what is waiting with `wardmoteListPendingDecisions` (`scope: "desk"` for the whole Decisions page; the default list is partial and an empty one never means nothing is pending). Never answer without the person's explicit words for that card, never reuse one message for several cards unless it names each, and confirm back what you submitted. `owner_confirmation_required` (403) means the run lacks that authority; a 409 means the card is already resolved. Board approvals, agent decisions and governed tool, secret or connection cards are listed read-only and keep their own controls. An issue showing "Recovery needed" resumes only on a person's explicit request; an agent comment there only queues. When a board user's own message that started your run explicitly asks to continue such an issue, call `wardmoteContinueIssueForOwner` with `issueId` and `ownerMessageRef`: the server posts it as their comment (relayed by you), which resolves the hold and starts a new run without repeating actions whose outcomes are unverified.
+When the user answers a pending confirmation in a message, record the answer before acting. Read current cards and comments with `wardmoteListIssueInteractions` and `wardmoteListComments`, then call `wardmoteApiRequest` with `method: "POST"`, `path: "/issues/{issueId}/interactions/{interactionId}/resolve-from-comment"`, and a `jsonBody` carrying `commentId`, `decision: "accept" | "reject"`, and explicit `selectedOptionIds` for checkbox acceptance (native runners use `call_api`). Ambiguous replies among proposals require clarification. Revisions are not acceptance. Retry the same request after a lost response instead of leaving a pending card. Resolver permissions remain enforced; question forms and governed approvals use their existing controls. See the API reference for scope and retry rules. Human-only cards are answered by a person, but that person does not have to open Wardmote. When a board user's own message started your run (an owner WhatsApp message in an OpenWA run, or their comment that woke you) and it explicitly approves, rejects or answers one specific pending card, call `wardmoteAnswerDecisionForOwner` with `issueId`, `interactionId`, the answer (`decision` with `optionIds` or `reason`, `answers`, or `verdicts`) and `ownerMessageRef` set to that message's id. The server verifies the message, records the answer as that user's (relayed by you) through the board answer path, and wakes the requester. List what is waiting with `wardmoteListPendingDecisions` (`scope: "desk"` for the whole Decisions page; the default list is partial and an empty one never means nothing is pending). Never answer without the person's explicit words for that card, never reuse one message for several cards unless it names each, and confirm back what you submitted. `owner_confirmation_required` (403) means the run lacks that authority; a 409 means the card is already resolved. Board approvals, agent decisions and governed tool, secret or connection cards are listed read-only and keep their own controls. An issue showing "Recovery needed" resumes only on a person's explicit request; an agent comment there only queues. When a board user's own message that started your run explicitly asks to continue such an issue, call `wardmoteContinueIssueForOwner` with `issueId` and `ownerMessageRef`: the server posts it as their comment (relayed by you), which resolves the hold and starts a new run without repeating actions whose outcomes are unverified.
 
 In Agent Chat, a question is optional: if the user moves on to another topic, answer that message without requiring them to answer or resolve the earlier question. Leave its card unanswered so they can reopen it later. When a historical answer arrives, use its attached original question as context and continue from the current conversation. Unrelated messages are never approval.
 

@@ -76,7 +76,7 @@ describeEmbeddedPostgres("reopen archived isolated execution workspace", () => {
     const projectWorkspaceId = randomUUID();
     await db.insert(companies).values({
       id: companyId,
-      name: "Paperclip",
+      name: "Wardmote",
       issuePrefix: `PAP-${companyId.slice(0, 8)}`,
       requireBoardApprovalForNewAgents: false,
     });
@@ -140,7 +140,7 @@ describeEmbeddedPostgres("reopen archived isolated execution workspace", () => {
     const projectWorkspaceId = randomUUID();
     await db.insert(companies).values({
       id: companyId,
-      name: "Paperclip",
+      name: "Wardmote",
       issuePrefix: `PAP-${companyId.slice(0, 8)}`,
       requireBoardApprovalForNewAgents: false,
     });

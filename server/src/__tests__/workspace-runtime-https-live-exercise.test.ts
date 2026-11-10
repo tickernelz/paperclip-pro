@@ -140,7 +140,7 @@ if (optedIn && !live) {
 
     await db.insert(companies).values({
       id: companyId,
-      name: "Paperclip",
+      name: "Wardmote",
       issuePrefix: `L${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
       requireBoardApprovalForNewAgents: false,
     });
@@ -169,7 +169,7 @@ if (optedIn && !live) {
       process.env.WARDMOTE_MANAGED_RUNTIME_HTTPS = "off";
       const before = await startRuntimeServicesForWorkspaceControl({
         db,
-        actor: { id: null, name: "Paperclip", companyId },
+        actor: { id: null, name: "Wardmote", companyId },
         issue: null,
         workspace: {
           baseCwd: workspaceRoot,

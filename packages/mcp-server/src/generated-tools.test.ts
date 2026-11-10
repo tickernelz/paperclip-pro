@@ -34,7 +34,7 @@ function mockJsonResponse(body: unknown, status = 200) {
   });
 }
 
-describe("generated Paperclip API tools", () => {
+describe("generated Wardmote API tools", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
   });

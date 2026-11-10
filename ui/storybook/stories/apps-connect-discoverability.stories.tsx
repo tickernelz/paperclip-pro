@@ -180,7 +180,7 @@ const MIXED_PREVIEW: McpJsonImportPreview = {
         { name: "GITHUB_TOKEN", secretId: "draft-2", placement: "env", key: "GITHUB_TOKEN" },
       ],
       credentialFields: [],
-      warnings: ["Imported stdio commands stay draft-only unless mapped to an approved Paperclip template."],
+      warnings: ["Imported stdio commands stay draft-only unless mapped to an approved Wardmote template."],
     },
   ],
 };
@@ -196,7 +196,7 @@ const STDIO_PREVIEW: McpJsonImportPreview = {
         { name: "GITHUB_TOKEN", secretId: "draft-3", placement: "env", key: "GITHUB_TOKEN" },
       ],
       credentialFields: [],
-      warnings: ["Imported stdio commands stay draft-only unless mapped to an approved Paperclip template."],
+      warnings: ["Imported stdio commands stay draft-only unless mapped to an approved Wardmote template."],
     },
   ],
 };

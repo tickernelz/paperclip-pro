@@ -22,7 +22,7 @@ export const REF = "nova";
 export const library = [
   [
     "paperclip",
-    "Paperclip",
+    "Wardmote",
     "Coordinate tasks, report progress, and work with your team.",
   ],
   [
@@ -163,7 +163,7 @@ export function createSettingsFixtures(
       managed: true,
       state: "configured",
       origin: "company_managed",
-      originLabel: "Managed by Paperclip",
+      originLabel: "Managed by Wardmote",
       readOnly: false,
       sourcePath: `skills/${key}`,
       targetPath: null,
@@ -325,7 +325,7 @@ export function createSettingsFixtures(
               url.pathname.split("/").at(-2) ?? agent.adapterType,
               outcome,
               data.adapterConfig?.model ?? "",
-              "Paperclip Computer",
+              "Wardmote Computer",
             ),
           );
         }

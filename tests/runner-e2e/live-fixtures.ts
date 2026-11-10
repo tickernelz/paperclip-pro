@@ -221,7 +221,7 @@ export async function setupLiveFixtures(input: {
         );
         if (!local)
           throw new Error(
-            "Isolated Paperclip instance did not create its managed local environment",
+            "Isolated Wardmote instance did not create its managed local environment",
           );
         return local;
       }

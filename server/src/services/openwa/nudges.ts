@@ -102,7 +102,7 @@ interface Entry {
 
 function nudgeText(quietSeconds: number, sent: number): string {
   return [
-    "Internal progress reminder from Paperclip (not sent to WhatsApp).",
+    "Internal progress reminder from Wardmote (not sent to WhatsApp).",
     "A trigger in the origin chat has waited at least " + quietSeconds + " seconds without any reply to the chat.",
     "Send one short progress update with openwa_send only if your final reply is still minutes away; skip it if you are about to reply.",
     "Never restate what was already sent to the chat.",

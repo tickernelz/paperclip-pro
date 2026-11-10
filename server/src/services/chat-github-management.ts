@@ -295,7 +295,7 @@ export function githubChatManagementService(db: Db, fetchImpl = fetch) {
         .for("update");
       if (prior?.status === "linked" && prior.wardmoteUserId !== userId)
         throw conflict(
-          "This GitHub account is already linked to another Paperclip member",
+          "This GitHub account is already linked to another Wardmote member",
         );
       if (verified.grantId) {
       const [grant] = await tx
@@ -496,7 +496,7 @@ export function githubChatManagementService(db: Db, fetchImpl = fetch) {
           !!agent &&
           ["wardmote_runner", "codex_local"].includes(agent.adapterType),
         detail:
-          "Use Paperclip Runner or Codex with managed MCP tools. Low-trust execution also requires a valid scoped boundary and isolated sandbox; the test task proves runtime execution.",
+          "Use Wardmote Runner or Codex with managed MCP tools. Low-trust execution also requires a valid scoped boundary and isolated sandbox; the test task proves runtime execution.",
       });
       const [savedConfig] = await db
         .select()

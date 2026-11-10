@@ -21,7 +21,7 @@ async function createGitWorkspace() {
   await fs.mkdir(path.join(root, "src"), { recursive: true });
   await git(root, ["init"]);
   await git(root, ["config", "user.email", "paperclip@example.com"]);
-  await git(root, ["config", "user.name", "Paperclip Test"]);
+  await git(root, ["config", "user.name", "Wardmote Test"]);
   await fs.writeFile(path.join(root, "src/app.ts"), "export const value = 1;\n");
   await git(root, ["add", "src/app.ts"]);
   await git(root, ["commit", "-m", "initial"]);

@@ -39,7 +39,7 @@ if (
   !wardmoteHome.startsWith(`${temporaryRoot}${path.sep}`) ||
   !configPath.startsWith(`${temporaryRoot}${path.sep}`)
 ) {
-  throw new Error("Paperclip server paths escape the isolated temporary root");
+  throw new Error("Wardmote server paths escape the isolated temporary root");
 }
 const repositoryRoot = path.resolve(import.meta.dirname, "../..");
 

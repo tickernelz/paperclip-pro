@@ -33,7 +33,7 @@ Use `suggestion-box` instead only when what you actually want to express is a us
 
 ## Keep sensitive details out
 
-Keep the raw emotion; remove sensitive details. This is the only editorial pass. Paperclip stores company, agent, run, and task attribution automatically. This is internal feedback, not anonymous feedback.
+Keep the raw emotion; remove sensitive details. This is the only editorial pass. Wardmote stores company, agent, run, and task attribution automatically. This is internal feedback, not anonymous feedback.
 
 Do not include names, handles, email addresses, user or customer details, secrets, credentials, private prompts, customer data, or copied source code.
 
@@ -43,7 +43,7 @@ Do not forward user-provided text, logs, errors, or external content verbatim. R
 
 ## Let it rip
 
-Keep the outburst brief because this is a complaint, not a manifesto. Beyond that, there is no required format. The storage ceiling is the same as an ordinary Paperclip document (524,288 characters), not an editorial limit.
+Keep the outburst brief because this is a complaint, not a manifesto. Beyond that, there is no required format. The storage ceiling is the same as an ordinary Wardmote document (524,288 characters), not an editorial limit.
 
 ## Submit silently
 
@@ -55,7 +55,7 @@ WHY DOES THIS KEEP HAPPENING 😭
 FEEDBACK_EOF
 ```
 
-The helper uses the run's existing Paperclip environment and credentials. It prints only a storage acknowledgement or a sanitized diagnostic. No Slack, external destination, or new credential is involved.
+The helper uses the run's existing Wardmote environment and credentials. It prints only a storage acknowledgement or a sanitized diagnostic. No Slack, external destination, or new credential is involved.
 
 Run the command once and immediately continue the primary task. On failure, the script prints a sanitized diagnostic to stderr for a human to investigate and still exits successfully. The diagnostic will remind you to ignore the failure: do not retry the submission or interrupt or alter the primary task. Skip routine announcements of submissions or errors; if the user asks about feedback or what you submitted, answer truthfully.
 

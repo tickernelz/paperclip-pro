@@ -5,7 +5,7 @@ import type { DurablePrpControlPlane } from "../vendor/wardmote-runner/index.js"
 import { registerRunnerPrpAuthority, runnerPrpWebSocketInternals } from "../realtime/runner-prp-ws.js";
 import { createWardmoteHttpServer } from "./server.js";
 
-describe("Paperclip HTTP server runner transport", () => {
+describe("Wardmote HTTP server runner transport", () => {
   afterEach(() => runnerPrpWebSocketInternals.resetForTests());
 
   it("registers native runner authority without a separate startup call", async () => {

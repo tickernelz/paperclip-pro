@@ -232,7 +232,7 @@ describe("native external-chat response wait", () => {
         provider === "github" ? "paperclip/test-repository" : "telegram-user",
       label:
         provider === "github"
-          ? "Paperclip test repository"
+          ? "Wardmote test repository"
           : "Telegram direct message",
       availability: "available",
       enabled: true,

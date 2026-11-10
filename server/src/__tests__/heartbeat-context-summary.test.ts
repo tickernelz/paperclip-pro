@@ -334,9 +334,9 @@ describe("buildWardmoteTaskMarkdown", () => {
       expect(markdown).toContain("Access → Invite people");
       expect(markdown).toContain("expires after 15 minutes");
       expect(markdown).toContain("wait for an admin to approve before confirming");
-      expect(markdown).toContain("their own current Paperclip permissions");
+      expect(markdown).toContain("their own current Wardmote permissions");
       expect(markdown).toContain("does not send an invitation or grant access");
-      expect(markdown).toContain("does not authorize that person in Paperclip");
+      expect(markdown).toContain("does not authorize that person in Wardmote");
     }
   });
 
@@ -464,7 +464,7 @@ describe("buildWardmoteTaskMarkdown", () => {
       "do not ask for another chat connection",
     );
     expect(markdown).toContain(
-      "attach the file directly to this Paperclip task or paste the needed text",
+      "attach the file directly to this Wardmote task or paste the needed text",
     );
     expect(markdown).toContain(
       "Never borrow browser cookies or forward credentials to an attachment URL",

@@ -1,7 +1,7 @@
-# Paperclip assistant plugins
+# Wardmote assistant plugins
 
 One shared set of workflows, with packages for OpenAI (ChatGPT/Codex) and Claude.
-The packages use only individually exposed first-party Paperclip tools. Agent
+The packages use only individually exposed first-party Wardmote tools. Agent
 impersonation and generic connected-tool execution are not included.
 
 ## Build
@@ -33,7 +33,7 @@ flow; do not put agent keys or browser cookies into plugin manifests.
 ## Distribution
 
 Package `openai/paperclip/` and `claude/paperclip/` separately. Before publishing,
-build against the stable Paperclip-owned public endpoint and complete the
+build against the stable Wardmote-owned public endpoint and complete the
 provider's review metadata, branding, privacy/support links and live tests.
 Submit the Claude remote connector and workflow plugin separately, paired by
 server URL. OpenAI currently supports one connected MCP server per public

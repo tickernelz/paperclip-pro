@@ -72,7 +72,7 @@ describe("teamsCatalogService", () => {
     mockCompanyPortabilityService.previewImport.mockResolvedValue({
       include: { company: false, agents: true, projects: true, issues: true, skills: true },
       targetCompanyId: "company-1",
-      targetCompanyName: "Paperclip",
+      targetCompanyName: "Wardmote",
       collisionStrategy: "rename",
       selectedAgentSlugs: ["ceo", "cto"],
       plan: { companyAction: "none", agentPlans: [], projectPlans: [], issuePlans: [] },
@@ -83,7 +83,7 @@ describe("teamsCatalogService", () => {
       errors: [],
     });
     mockCompanyPortabilityService.importBundle.mockResolvedValue({
-      company: { id: "company-1", name: "Paperclip", action: "unchanged" },
+      company: { id: "company-1", name: "Wardmote", action: "unchanged" },
       agents: [],
       projects: [],
       envInputs: [],
@@ -164,7 +164,7 @@ describe("teamsCatalogService", () => {
     expect(prepared.source.files[".paperclip.yaml"]).toEqual(expect.stringContaining("reportsToExistingAgentSlug: \"ceo\""));
   });
 
-  it("preserves package-declared Paperclip sidecar permissions while adding generated catalog provenance", async () => {
+  it("preserves package-declared Wardmote sidecar permissions while adding generated catalog provenance", async () => {
     const svc = teamsCatalogService({} as any);
 
     const prepared = await svc.prepareCatalogTeamSource("company-1", "product-engineering");
@@ -244,7 +244,7 @@ describe("teamsCatalogService", () => {
     mockCompanyPortabilityService.previewImport.mockResolvedValueOnce({
       include: { company: false, agents: true, projects: true, issues: true, skills: true },
       targetCompanyId: "company-1",
-      targetCompanyName: "Paperclip",
+      targetCompanyName: "Wardmote",
       collisionStrategy: "rename",
       selectedAgentSlugs: ["ceo"],
       plan: { companyAction: "none", agentPlans: [], projectPlans: [], issuePlans: [] },

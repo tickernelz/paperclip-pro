@@ -909,7 +909,7 @@ describe("runner E2E server isolation", () => {
     });
   });
 
-  it("strips database and paid-provider credentials from the Paperclip process", () => {
+  it("strips database and paid-provider credentials from the Wardmote process", () => {
     const env = buildWardmoteServerEnvironment(
       {
         PATH: "/bin",

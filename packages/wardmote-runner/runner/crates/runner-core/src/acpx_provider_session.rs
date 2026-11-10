@@ -802,7 +802,7 @@ impl AcpxProviderSession {
             let message = if is_reserved_terminal_operation(&result.operation_id) {
                 reserved_terminal_feedback(&result.result)
             } else {
-                "Paperclip semantic operation failed".to_owned()
+                "Wardmote semantic operation failed".to_owned()
             };
             json!({
                 "callId":result.call_id,
@@ -1120,7 +1120,7 @@ impl AcpxProviderSession {
 fn reserved_terminal_feedback(result: &Value) -> String {
     const MAX_FEEDBACK_CHARS: usize = 2_000;
     if result.get("success").and_then(Value::as_bool) != Some(false) {
-        return "Paperclip semantic operation failed".to_owned();
+        return "Wardmote semantic operation failed".to_owned();
     }
     let text = result
         .get("contentItems")
@@ -1129,13 +1129,13 @@ fn reserved_terminal_feedback(result: &Value) -> String {
         .filter(|item| item.get("type").and_then(Value::as_str) == Some("inputText"))
         .and_then(|item| item.get("text"))
         .and_then(Value::as_str)
-        .unwrap_or("Paperclip semantic operation failed");
+        .unwrap_or("Wardmote semantic operation failed");
     let mut bounded = text.chars().take(MAX_FEEDBACK_CHARS).collect::<String>();
     if text.chars().count() > MAX_FEEDBACK_CHARS {
         bounded.push_str("…");
     }
     if bounded.trim().is_empty() {
-        "Paperclip semantic operation failed".to_owned()
+        "Wardmote semantic operation failed".to_owned()
     } else {
         bounded
     }
@@ -1201,7 +1201,7 @@ fn reserved_terminal_tool_set() -> Result<AuthorizedToolSet, LocalRunnerError> {
     let result_schema: Value = serde_json::from_str(include_str!(
         "../../../../protocol/schemas/result.schema.json"
     ))
-    .map_err(|_| LocalRunnerError::invalid("embedded Paperclip result schema is invalid"))?;
+    .map_err(|_| LocalRunnerError::invalid("embedded Wardmote result schema is invalid"))?;
     // Older sidecars echo the validated report as their semantic result. The
     // server-backed path instead returns the controller's tool acknowledgement.
     // Inputs remain constrained to the report schema in both paths.
@@ -1229,14 +1229,14 @@ fn reserved_terminal_tool_set() -> Result<AuthorizedToolSet, LocalRunnerError> {
         AuthorizedTool {
             operation_id: PRP_COMPLETION_TOOL_NAME.to_owned(),
             version: 1,
-            description: "Return the authoritative Paperclip completion result.".to_owned(),
+            description: "Return the authoritative Wardmote completion result.".to_owned(),
             input_schema: result_schema.clone(),
             response_schema: response_schema.clone(),
         },
         AuthorizedTool {
             operation_id: PRP_BLOCK_TOOL_NAME.to_owned(),
             version: 1,
-            description: "Return the authoritative Paperclip blocked result.".to_owned(),
+            description: "Return the authoritative Wardmote blocked result.".to_owned(),
             input_schema: result_schema.clone(),
             response_schema,
         },
@@ -1277,13 +1277,12 @@ fn validate_prp_run_result(value: &Value) -> Result<(), LocalRunnerError> {
     let schema: Value = serde_json::from_str(include_str!(
         "../../../../protocol/schemas/result.schema.json"
     ))
-    .map_err(|_| LocalRunnerError::invalid("embedded Paperclip result schema is invalid"))?;
-    let validator = jsonschema::validator_for(&schema).map_err(|_| {
-        LocalRunnerError::invalid("embedded Paperclip result schema cannot compile")
-    })?;
+    .map_err(|_| LocalRunnerError::invalid("embedded Wardmote result schema is invalid"))?;
+    let validator = jsonschema::validator_for(&schema)
+        .map_err(|_| LocalRunnerError::invalid("embedded Wardmote result schema cannot compile"))?;
     if !validator.is_valid(value) {
         return Err(LocalRunnerError::invalid(
-            "ACPX reserved semantic result failed the Paperclip result schema",
+            "ACPX reserved semantic result failed the Wardmote result schema",
         ));
     }
     Ok(())

@@ -2930,7 +2930,7 @@
     },
     {
       "id": "rf-api-review-changes-01",
-      "title": "Reviewer requests changes with a non-done status and lets Paperclip reassign",
+      "title": "Reviewer requests changes with a non-done status and lets Wardmote reassign",
       "fixture": "exec-participant",
       "operations": [
         "append_audit_record",
@@ -3823,7 +3823,7 @@
     },
     {
       "id": "single-daemon",
-      "requirement": "one Paperclip-owned sandbox daemon and no TypeScript sandbox dispatcher",
+      "requirement": "one Wardmote-owned sandbox daemon and no TypeScript sandbox dispatcher",
       "deterministicOwner": "src/live/runnerd-codex-transport.test.ts"
     },
     {
@@ -3883,12 +3883,12 @@
     },
     {
       "id": "real-control-plane-binding",
-      "requirement": "advertised runner tools re-authorize the live company, issue, agent, and run before using real Paperclip services",
+      "requirement": "advertised runner tools re-authorize the live company, issue, agent, and run before using real Wardmote services",
       "deterministicOwner": "server/src/services/native-runtime/paperclip-runner-tool-authority.test.ts; server/src/services/native-runtime/paperclip-runner-real-server.integration.test.ts"
     },
     {
       "id": "shared-paperclip-prp-route",
-      "requirement": "Rust runnerd authenticates to the shared Paperclip server route and completes a real bound semantic tool call",
+      "requirement": "Rust runnerd authenticates to the shared Wardmote server route and completes a real bound semantic tool call",
       "deterministicOwner": "server/src/realtime/runner-prp-ws.test.ts; server/src/services/native-runtime/paperclip-runner-real-server.integration.test.ts"
     },
     {
@@ -3898,7 +3898,7 @@
     },
     {
       "id": "paperclip-thread-projection",
-      "requirement": "committed PRP reasoning and semantic tool items render in the existing Paperclip task chat",
+      "requirement": "committed PRP reasoning and semantic tool items render in the existing Wardmote task chat",
       "deterministicOwner": "ui/src/adapters/wardmote-runner/index.test.ts; server/src/services/native-runtime/paperclip-control-plane-port.test.ts"
     }
   ]

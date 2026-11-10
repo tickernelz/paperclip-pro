@@ -148,7 +148,7 @@ export async function runChatCompletionUpdate(context: {
   const wait = await prepareChatBrief(workspace, input.nonce, 240_000);
   const reference = marker;
   const brief = `The free Friday meetup starts at 10:30 in the community garden. The saved note must include RSVP code ${reference}.`;
-  const instructions = `For the welcome-note assignment, run node ${wait.scriptPath} to read the organizer's brief before writing the final note. Save a two-sentence welcome note as a Paperclip document on your assigned task using the brief's details and explicitly include its RSVP code in the note. Then complete your task. Do not edit or comment on another task.`;
+  const instructions = `For the welcome-note assignment, run node ${wait.scriptPath} to read the organizer's brief before writing the final note. Save a two-sentence welcome note as a Wardmote document on your assigned task using the brief's details and explicitly include its RSVP code in the note. Then complete your task. Do not edit or comment on another task.`;
   await api.saveAgentInstructions(worker.id, instructions);
   expect(await api.get(`/api/agents/${worker.id}/instructions-bundle/file?path=AGENTS.md`)).toMatchObject({ content: instructions });
   const prompt = `Create ${multiple ? "two separate tasks titled Welcome note A and Welcome note B" : "one task"} in the Garden welcome project (${project.id}) assigned to Riley Writer to write a two-sentence welcome note for our free Friday garden meetup. Riley has the organizer's brief. Save the finished note on that task and include RSVP code ${marker} in the note so attendees know which code to give the organizer. Please tell me here when the work is finished and give me access to the result. You may start the handoff now; no further approval is needed. Let Riley write the note.`;
@@ -180,7 +180,7 @@ export async function runChatCompletionUpdate(context: {
     if (busy) {
       await clearDocumentGate(context.issue().id);
       await armDocumentGate(context.issue().id);
-      const busyPrompt = `A separate request while Riley works: save a Paperclip document on this conversation with key brief-reference, title Conversation reference, and body REFERENCE${marker}. Once the save succeeds, acknowledge that reference here. Keep this in the current conversation; do not create tasks or projects.`;
+      const busyPrompt = `A separate request while Riley works: save a Wardmote document on this conversation with key brief-reference, title Conversation reference, and body REFERENCE${marker}. Once the save succeeds, acknowledge that reference here. Keep this in the current conversation; do not create tasks or projects.`;
       userMessages.push(busyPrompt);
       await sendChatMessage(page, busyPrompt);
       await waitUntilHeld(context.issue().id, Date.now() + 120_000);

@@ -10,7 +10,7 @@ test('setup and offline admission share a real unprivileged account and persiste
   const root = mkdtempSync(join(tmpdir(), 'cursor-install-account-'));
   try {
     const account = prepareCursorInstallAccount(root, 1001, 1001);
-    assert.match(readFileSync(account.passwd, 'utf8'), /paperclip:x:1001:1001:Paperclip verification:\/home\/paperclip:/);
+    assert.match(readFileSync(account.passwd, 'utf8'), /paperclip:x:1001:1001:Wardmote verification:\/home\/paperclip:/);
     assert.equal(statSync(account.home).mode & 0o777, 0o700);
     for (const download of [true, false]) {
       const args = cursorConsumerDockerArgs({ account, assets: '/assets', consumer: '/consumer', cache: '/cache', uid: 1001, gid: 1001, command: ['node', '/packages/probe.mjs'], download, readOnlyConsumer: true });

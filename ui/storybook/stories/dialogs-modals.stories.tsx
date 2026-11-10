@@ -40,7 +40,7 @@ const storybookGoals: Goal[] = [
   {
     id: "goal-company",
     companyId: COMPANY_ID,
-    title: "Build Paperclip",
+    title: "Build Wardmote",
     description: "Make autonomous companies easier to run and govern.",
     level: "company",
     status: "active",
@@ -679,7 +679,7 @@ const meta = {
     docs: {
       description: {
         component:
-          "Open-state stories for Paperclip creation dialogs, workspace confirmations, document diffing, image attachments, and path helper modals.",
+          "Open-state stories for Wardmote creation dialogs, workspace confirmations, document diffing, image attachments, and path helper modals.",
       },
     },
   },

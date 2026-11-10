@@ -199,7 +199,7 @@ Roles:
 - `work`: an issue/run that changed the case
 - `reference`: related issue context
 
-Agent run writes auto-link the run's issue when Paperclip can resolve it from
+Agent run writes auto-link the run's issue when Wardmote can resolve it from
 the run context the tools carry. Creation/upsert writes use `origin`; later
 document, patch, and attachment writes use `work` when no link already exists.
 You do not need to manually link the current issue before writing the case.
@@ -254,7 +254,7 @@ Create or upsert the parent blog post with `wardmoteCreateCase`:
 {
   "caseType": "blog_post",
   "key": "paperclip-cases-launch",
-  "title": "Introducing Paperclip Cases",
+  "title": "Introducing Wardmote Cases",
   "summary": "Blog post explaining the cases surface for agent outputs.",
   "status": "in_progress",
   "fields": {
@@ -271,9 +271,9 @@ Write the body with `wardmoteSetCaseDocument`:
 {
   "caseId": "PAP-C42",
   "documentKey": "body",
-  "title": "Introducing Paperclip Cases",
+  "title": "Introducing Wardmote Cases",
   "format": "markdown",
-  "body": "# Introducing Paperclip Cases\n\n..."
+  "body": "# Introducing Wardmote Cases\n\n..."
 }
 ```
 
@@ -283,7 +283,7 @@ Create the child image-assets case with `wardmoteCreateCase`:
 {
   "caseType": "image_assets",
   "key": "paperclip-cases-launch:image-assets",
-  "title": "Image assets for Introducing Paperclip Cases",
+  "title": "Image assets for Introducing Wardmote Cases",
   "parentCaseId": "parent-case-uuid",
   "status": "in_progress",
   "fields": {

@@ -2,7 +2,7 @@
 
 Capability adds a second primary path beside the preset scenario explorer. A board
 user opens a blank chat, sends a free-form message, and watches real Codex work
-a mock Paperclip issue through real runnerd. There is no scenario to pick, no
+a mock Wardmote issue through real runnerd. There is no scenario to pick, no
 recorded transcript, and no scripted tool tour.
 
 Both paths ship in the same app and share one view contract. What separates them
@@ -96,11 +96,11 @@ scenario session can never be handed to the chat route or the reverse.
 
 ## Real-API block
 
-`CapabilityLiveSession` routes every Paperclip operation through the in-process mock
-`ControlPlanePort`; no code path reaches a Paperclip URL. The projection turns
+`CapabilityLiveSession` routes every Wardmote operation through the in-process mock
+`ControlPlanePort`; no code path reaches a Wardmote URL. The projection turns
 that into a record rather than a claim: the Control plane section of the
 Evidence drawer carries a `network-guard-<sessionId>` row reading
-`Real Paperclip API requests: 0. Child WARDMOTE_* environment keys: none.`
+`Real Wardmote API requests: 0. Child WARDMOTE_* environment keys: none.`
 
 The child environment is allowlisted by `createSanitizedCodexEnvironment`, so no
 `WARDMOTE_*` value reaches runnerd or Codex, and the browser receives no
@@ -133,7 +133,7 @@ browser projection.
 
 While a turn runs, a live status rail appears immediately after send and tracks
 the newest safe Codex activity. Reasoning, planning, shell-command, file-change,
-MCP/dynamic-tool, assistant-stream, and Paperclip semantic-tool lifecycle events
+MCP/dynamic-tool, assistant-stream, and Wardmote semantic-tool lifecycle events
 each trigger an interim frame. Discrete tools remain separate rows; only noisy
 text deltas are grouped. Structured shell items show a bounded,
 credential-redacted command preview; raw command output, other provider

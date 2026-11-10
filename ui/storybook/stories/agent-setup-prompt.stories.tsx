@@ -14,9 +14,9 @@ import { webhookAgentInstructions } from "../fixtures/routineTriggerWizard";
 import { storybookContinuationHandoff } from "../fixtures/wardmoteData";
 
 const slackPrompt = buildSlackSetupPrompt(import.meta.env.VITE_WARDMOTE_INSTANCE_URL ?? "");
-const apiPrompt = `Help me connect my agent to the Paperclip API.
+const apiPrompt = `Help me connect my agent to the Wardmote API.
 
-First, ask me for my Paperclip instance URL if it is not already available. Read its API documentation and identify the company and agent I want to use.
+First, ask me for my Wardmote instance URL if it is not already available. Read its API documentation and identify the company and agent I want to use.
 
 Guide me through creating a dedicated agent API key. Store it securely in my agent's environment; do not paste it into code, logs, or chat.
 
@@ -64,7 +64,7 @@ export const Playground: Story = {
           </div>
           <div className="flex flex-col gap-1">
             <h2 className="text-base font-medium">Connect Slack</h2>
-            <p className="text-sm leading-relaxed text-ink-3">Bring your Paperclip agent into your workspace.</p>
+            <p className="text-sm leading-relaxed text-ink-3">Bring your Wardmote agent into your workspace.</p>
           </div>
         </div>
         <div><AgentSetupPrompt {...args} /></div>

@@ -1018,7 +1018,7 @@ async function consumeTurn(
     };
     if (initialGovernedWait) {
       return settleDurableResult(initialGovernedWait.sourceEvent, initialGovernedWait.result,
-        "Paperclip resumed settlement of this durable governed interaction.");
+        "Wardmote resumed settlement of this durable governed interaction.");
     }
     while (true) {
       const next = await eventIterator.next().catch((error) => {
@@ -1193,7 +1193,7 @@ async function consumeTurn(
         return settleDurableResult(
           event,
           governedResult,
-          "Paperclip parked this turn on a durable governed interaction.",
+          "Wardmote parked this turn on a durable governed interaction.",
         );
       }
       if (sessionGoalObserved) {
@@ -2284,7 +2284,7 @@ export async function executeNativeSession(
       message: { role: "user" as const, text: JSON.stringify({
         schema: "paperclip.native-continuation.v1",
         events: [
-          "Paperclip restarted and restored this same conversation. The previous turn was interrupted.",
+          "Wardmote restarted and restored this same conversation. The previous turn was interrupted.",
           "Continue the current user request from the recorded progress and preserved workspace.",
           "Reconcile any unfinished tool or command before proceeding: inspect its current state and recorded outcomes.",
           "Do not repeat completed work or blindly rerun an action whose outcome is unknown. If an external action cannot be reconciled, report the specific blocker.",
@@ -2549,7 +2549,7 @@ export async function executeNativeSession(
             modelEnvelope.completionContract = structuredClone(input.completionContract.contract);
             if ("requestedSkills" in modelEnvelope) modelEnvelope.requestedSkills = [];
             modelEnvelope.task.prompt = [
-              "Paperclip semantic-result recovery for a prior completed provider turn.",
+              "Wardmote semantic-result recovery for a prior completed provider turn.",
               "The prior turn already performed the work and its user-facing final answer is recorded.",
               "Do not repeat implementation, tests, research, or the final answer.",
               "Use the existing session context to invoke exactly one wardmote_finish or wardmote_block with the accurate current disposition, then stop without additional user-facing prose.",

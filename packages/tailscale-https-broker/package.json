@@ -4,7 +4,7 @@
   "private": true,
   "license": "MIT",
   "type": "module",
-  "description": "Least-privilege host broker that manages only Paperclip-owned, same-number Tailscale HTTPS-to-loopback listeners for managed branch runtimes.",
+  "description": "Least-privilege host broker that manages only Wardmote-owned, same-number Tailscale HTTPS-to-loopback listeners for managed branch runtimes.",
   "exports": {
     ".": "./src/index.ts",
     "./*": "./src/*.ts"

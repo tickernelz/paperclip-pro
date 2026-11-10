@@ -175,7 +175,7 @@
     },
     {
       "path": "fixtures/evals/native-execution-seeded.json",
-      "sha256": "e82ff9ffb40823c2226d52e9defe310cd8a2b3409c627f55eb9b5e1851b53f64",
+      "sha256": "3822e703f3418b9e705d8dae91390726aa22c60dc054786aa8d630c434d58821",
       "expectation": "accept",
       "compatibilityCase": "canonical"
     },
@@ -247,7 +247,7 @@
     },
     {
       "path": "fixtures/replay/budget-cost-stop-reason.json",
-      "sha256": "94569a73860fc0e1dfde003bc3db1126f4000325b82ed0e397a805c8cea0ca85",
+      "sha256": "6f07cc435db8d15ea9c6715c875acfb4fb4578c0c531362630d360eb1e0cb499",
       "expectation": "accept",
       "compatibilityCase": "canonical"
     },
@@ -265,7 +265,7 @@
     },
     {
       "path": "fixtures/replay/golden/budget-cost-stop-reason.snapshot.json",
-      "sha256": "20de46a47b3cffdaefca0d8fab9bf67eaf94953e1ed85e5d9635f31bc9487927",
+      "sha256": "a2743ee918305382e755aca8f891ebfab47b23268ea236851d2b8a2e3de61109",
       "expectation": "accept",
       "compatibilityCase": "deterministic-replay-oracle"
     },

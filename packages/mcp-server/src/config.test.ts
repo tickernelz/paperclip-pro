@@ -22,7 +22,7 @@ function listingNames(toolsets: ToolsetName[], management = false) {
   );
 }
 
-describe("Paperclip MCP toolsets", () => {
+describe("Wardmote MCP toolsets", () => {
   it("treats extended and all as supersets of core", () => {
     expect(parseToolsets("core")).toEqual(["core"]);
     expect(parseToolsets("extended")).toEqual(["core", "extended"]);
@@ -126,7 +126,7 @@ describe("Paperclip MCP toolsets", () => {
   });
 });
 
-describe("Paperclip MCP listing annotations", () => {
+describe("Wardmote MCP listing annotations", () => {
   const client = makeClient();
   const toolsets = parseToolsets(FULL_TOOLSET);
 

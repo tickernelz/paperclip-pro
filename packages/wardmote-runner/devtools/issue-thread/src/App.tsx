@@ -260,8 +260,8 @@ function currentTurnActivity(snapshot: CapabilityIssueThreadSnapshot): string {
   );
   if (activity?.kind === "tool_activity") {
     return activity.status === "running"
-      ? `Paperclip tool · ${activity.operationId}`
-      : `Paperclip tool completed · ${activity.operationId}`;
+      ? `Wardmote tool · ${activity.operationId}`
+      : `Wardmote tool completed · ${activity.operationId}`;
   }
   if (activity?.kind === "progress_activity") return activity.summary;
   if (activity?.kind === "agent_message") return `Receiving ${harness} response`;
@@ -307,8 +307,8 @@ export function App() {
       return;
     }
     document.title = chat
-      ? "🫧 Mock Paperclip · Issue thread"
-      : "🧯 Mock Paperclip · Issue thread";
+      ? "🫧 Mock Wardmote · Issue thread"
+      : "🧯 Mock Wardmote · Issue thread";
   }, [chat, embeddedEval]);
 
   const [snapshot, setSnapshot] = useState<CapabilityIssueThreadSnapshot | null>(null);
@@ -1369,13 +1369,13 @@ export function App() {
                     <p>
                       This is a blank thread on a brand-new mock tenant:{" "}
                       <strong>{snapshot.issue.identifier}</strong> in{" "}
-                      <strong>Mock Paperclip (clean room)</strong>. Nothing has been said, called, or
+                      <strong>Mock Wardmote (clean room)</strong>. Nothing has been said, called, or
                       recorded yet.
                     </p>
                     <p className="pit-muted">
                       Your first message starts a real {snapshot.identity.agentLabel.replace(/^Real /, "")} turn through real runnerd. The agent may
                       call the semantic tools this session exposes, and every record it creates lands
-                      in the mock control plane only — never a real Paperclip API. Detailed tool,
+                      in the mock control plane only — never a real Wardmote API. Detailed tool,
                       policy, event, and state evidence stays in the Evidence drawer until you open
                       it.
                     </p>

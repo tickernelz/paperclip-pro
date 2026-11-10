@@ -9,8 +9,8 @@ const manifest: WardmotePluginManifestV1 = {
   version: PLUGIN_VERSION,
   displayName: "Kubernetes Sandbox (alpha)",
   description:
-    "Built on kubernetes-sigs/agent-sandbox (v1alpha1). ALPHA — expect breaking changes as the upstream CRD evolves. Falls back to stable batch/v1 Job mode for clusters without agent-sandbox installed. First-party Paperclip sandbox-provider plugin for Kubernetes.",
-  author: "Paperclip",
+    "Built on kubernetes-sigs/agent-sandbox (v1alpha1). ALPHA — expect breaking changes as the upstream CRD evolves. Falls back to stable batch/v1 Job mode for clusters without agent-sandbox installed. First-party Wardmote sandbox-provider plugin for Kubernetes.",
+  author: "Wardmote",
   categories: ["automation"],
   capabilities: ["environment.drivers.register"],
   entrypoints: {
@@ -35,7 +35,7 @@ const manifest: WardmotePluginManifestV1 = {
             type: "string",
             format: "secret-ref",
             description:
-              "Inline kubeconfig YAML. Paste a kubeconfig or an existing Paperclip secret reference; pasted values are stored as company secrets.",
+              "Inline kubeconfig YAML. Paste a kubeconfig or an existing Wardmote secret reference; pasted values are stored as company secrets.",
           },
           namespacePrefix: {
             type: "string",

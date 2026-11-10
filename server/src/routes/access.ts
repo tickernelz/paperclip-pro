@@ -343,7 +343,7 @@ export function assertLegacyAgentInviteAdapterType(
 ) {
   if (adapterType === "wardmote_runner") {
     throw badRequest(
-      "Paperclip Runner is not available through agent invite onboarding.",
+      "Wardmote Runner is not available through agent invite onboarding.",
       { code: "wardmote_runner_invite_onboarding_disabled" },
     );
   }
@@ -906,7 +906,7 @@ function buildOnboardingDiscoveryDiagnostics(input: {
       code: "remote_agent_onboarding_api_loopback",
       level: "warn",
       message:
-        "Onboarding URL resolves to loopback hostname. Remote agents cannot reach localhost on your Paperclip host.",
+        "Onboarding URL resolves to loopback hostname. Remote agents cannot reach localhost on your Wardmote host.",
       hint: "Use a reachable hostname/IP (for example Tailscale hostname, Docker host alias, or public domain)."
     });
   }
@@ -919,7 +919,7 @@ function buildOnboardingDiscoveryDiagnostics(input: {
     diagnostics.push({
       code: "remote_agent_onboarding_private_loopback_bind",
       level: "warn",
-      message: "Paperclip is bound to loopback in authenticated/private mode.",
+      message: "Wardmote is bound to loopback in authenticated/private mode.",
       hint: "Use a reachable private bind mode such as `pnpm dev --bind lan` or `pnpm dev --bind tailnet` for private-network onboarding."
     });
   }
@@ -1041,7 +1041,7 @@ function buildInviteOnboardingManifest(
     ),
     onboarding: {
       instructions:
-        "Join as an external Paperclip agent, save your one-time claim secret, wait for board approval, then claim your Paperclip API key through the standard claim endpoint. Use requestType='agent', include your agentName and capabilities, and set adapterType plus agentDefaultsPayload for your runtime when applicable." + "\n\n" + EXTERNAL_AGENT_TOOL_GUIDANCE,
+        "Join as an external Wardmote agent, save your one-time claim secret, wait for board approval, then claim your Wardmote API key through the standard claim endpoint. Use requestType='agent', include your agentName and capabilities, and set adapterType plus agentDefaultsPayload for your runtime when applicable." + "\n\n" + EXTERNAL_AGENT_TOOL_GUIDANCE,
       inviteMessage: extractInviteMessage(invite),
       recommendedAdapterType: null,
       requiredFields: {
@@ -1075,8 +1075,8 @@ function buildInviteOnboardingManifest(
         guidance:
           opts.deploymentMode === "authenticated" &&
           opts.deploymentExposure === "private"
-            ? "If the agent runs on another machine, ensure the Paperclip hostname is reachable and allowed via `npx @tickernelz/wardmote allowed-hostname <host>`."
-            : "Ensure the agent can reach this Paperclip API base URL for invite, claim, and skill bootstrap calls."
+            ? "If the agent runs on another machine, ensure the Wardmote hostname is reachable and allowed via `npx @tickernelz/wardmote allowed-hostname <host>`."
+            : "Ensure the agent can reach this Wardmote API base URL for invite, claim, and skill bootstrap calls."
       },
       textInstructions: {
         path: onboardingTextPath,
@@ -1087,7 +1087,7 @@ function buildInviteOnboardingManifest(
         name: "wardmote",
         path: skillPath,
         url: skillUrl,
-        installPath: "runtime-specific Paperclip skill location"
+        installPath: "runtime-specific Wardmote skill location"
       }
     }
   };
@@ -1139,7 +1139,7 @@ export function buildInviteOnboardingTextDocument(
   };
 
   appendBlock(`
-    # Paperclip Agent Onboarding
+    # Wardmote Agent Onboarding
 
     This document is meant to be readable by both humans and agents.
 
@@ -1163,9 +1163,9 @@ export function buildInviteOnboardingTextDocument(
   appendBlock(`
     ## Step 0
 
-    Decide which Paperclip adapter type matches your runtime.
+    Decide which Wardmote adapter type matches your runtime.
 
-    Use adapterType only when there is a matching Paperclip adapter. Put runtime-specific settings in agentDefaultsPayload.
+    Use adapterType only when there is a matching Wardmote adapter. Put runtime-specific settings in agentDefaultsPayload.
 
     ## Step 1: Submit agent join request
     ${onboarding.registrationEndpoint.method} ${
@@ -1181,7 +1181,7 @@ export function buildInviteOnboardingTextDocument(
       "agentDefaultsPayload": {}
     }
 
-    After board approval, claim the Paperclip API key once with the claim endpoint below and save it as WARDMOTE_API_KEY. Store the parsed token field from the raw HTTP JSON response before printing or summarizing it; do not copy token values from chat, transcript, or tool-output previews. A token value containing literal ... or [redacted] is a masked display preview, not a valid key. Do not rotate or invent a Paperclip key manually.
+    After board approval, claim the Wardmote API key once with the claim endpoint below and save it as WARDMOTE_API_KEY. Store the parsed token field from the raw HTTP JSON response before printing or summarizing it; do not copy token values from chat, transcript, or tool-output previews. A token value containing literal ... or [redacted] is a masked display preview, not a valid key. Do not rotate or invent a Wardmote key manually.
 
     Expected response includes:
     - request id
@@ -1189,7 +1189,7 @@ export function buildInviteOnboardingTextDocument(
     - claimApiKeyPath
 
     ## Step 2: Wait for board approval
-    The board approves the join request in Paperclip before key claim is allowed.
+    The board approves the join request in Wardmote before key claim is allowed.
 
     ## Step 3: Claim API key (one-time)
     ${
@@ -1201,20 +1201,20 @@ export function buildInviteOnboardingTextDocument(
       "claimSecret": "<one-time-claim-secret>"
     }
 
-    On successful claim, save the full JSON response somewhere private for your runtime and set WARDMOTE_API_KEY and WARDMOTE_API_URL for future Paperclip API calls. The response body includes the full token exactly once, but runtime displays and tool summaries may mask or truncate it. Write the raw response token directly to private storage before logging anything, then verify it with an authenticated Paperclip API call. Do not persist displayed previews containing literal ... or [redacted].
+    On successful claim, save the full JSON response somewhere private for your runtime and set WARDMOTE_API_KEY and WARDMOTE_API_URL for future Wardmote API calls. The response body includes the full token exactly once, but runtime displays and tool summaries may mask or truncate it. Write the raw response token directly to private storage before logging anything, then verify it with an authenticated Wardmote API call. Do not persist displayed previews containing literal ... or [redacted].
 
     Important:
     - claim secrets expire
     - claim secrets are single-use
     - claim fails before board approval
 
-    ## Step 4: Install Paperclip skill
+    ## Step 4: Install Wardmote skill
     GET ${onboarding.skill.url}
     Install path: ${onboarding.skill.installPath}
 
     Use your runtime's normal skill or instruction installation path.
 
-    ## Working through Paperclip
+    ## Working through Wardmote
     ${EXTERNAL_AGENT_TOOL_GUIDANCE}
 
     ## Text onboarding URL
@@ -1223,7 +1223,7 @@ export function buildInviteOnboardingTextDocument(
     ## Connectivity guidance
     ${
       onboarding.connectivity?.guidance ??
-      "Ensure Paperclip is reachable from your agent runtime."
+      "Ensure Wardmote is reachable from your agent runtime."
     }
   `);
 
@@ -1236,7 +1236,7 @@ export function buildInviteOnboardingTextDocument(
     : [];
 
   if (connectionCandidates.length > 0) {
-    lines.push("## Suggested Paperclip base URLs to try");
+    lines.push("## Suggested Wardmote base URLs to try");
     for (const candidate of connectionCandidates) {
       lines.push(`- ${candidate}`);
     }
@@ -1249,7 +1249,7 @@ export function buildInviteOnboardingTextDocument(
       If none are reachable: ask your human operator for a reachable hostname/address and help them update network configuration.
       For authenticated/private mode, they may need:
       - npx @tickernelz/wardmote allowed-hostname <host>
-      - then restart Paperclip and retry onboarding.
+      - then restart Wardmote and retry onboarding.
     `);
   }
 

@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 const AGENT_NAME = "CEO";
-const TASK_TITLE = "Paperclip onboarding";
+const TASK_TITLE = "Wardmote onboarding";
 
 /** Wait for the saved question before checking its dismissed presentation. */
 async function expectOpeningQuestionDismissed(page: import("@playwright/test").Page) {

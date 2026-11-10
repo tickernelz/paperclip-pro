@@ -12,7 +12,7 @@ import { resolveQualifiedAcpxProfile } from "./qualified-profiles.js";
 
 const root = dirname(createRequire(import.meta.url).resolve("acpx/package.json"));
 const { k: AcpClient } = await import(pathToFileURL(join(root, "dist/live-checkpoint-BSIrfgVo.js")).href);
-const content = "Paperclip governance\nCustom entry: résumé\nAGENT_HOME=/registered/agent";
+const content = "Wardmote governance\nCustom entry: résumé\nAGENT_HOME=/registered/agent";
 const binding = cursorInstructionBinding(content);
 const ack = { schema: "paperclip.cursor.instructions.v1", digest: binding.digest, byteLength: binding.byteLength };
 

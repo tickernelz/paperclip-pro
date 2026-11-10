@@ -1,6 +1,6 @@
 ---
 name: delegate-work
-description: Delegate user-requested work to an existing Paperclip agent, with a durable task reference and clear execution expectations.
+description: Delegate user-requested work to an existing Wardmote agent, with a durable task reference and clear execution expectations.
 ---
 
 Identify the connected person and company with `wardmote_connection`. List agents and, if relevant, projects. Select the agent suited to the requested outcome. Resolve ambiguity about team, scope or assignee with the user before creating work. Report paused or unavailable agents; do not promise they will run.
@@ -9,4 +9,4 @@ Prepare a task with the objective, relevant user-provided context, constraints a
 
 Create one UUID requestId for the intended task, then call `wardmote_create_task`. Reuse that UUID and identical arguments if the same call must be retried. After an unknown outcome or disconnected call, inspect tasks before doing anything else. Never switch to a new requestId to force the action through.
 
-Return the durable task ID and link. Distinguish submitted, running, blocked and completed states based on returned evidence. The task can continue after this conversation closes. Retrieve progress with `wardmote_read_task`; do not poll continuously. Direct setup and approval decisions to Paperclip's UI. Installing the plugin does not create teams or supply model credentials.
+Return the durable task ID and link. Distinguish submitted, running, blocked and completed states based on returned evidence. The task can continue after this conversation closes. Retrieve progress with `wardmote_read_task`; do not poll continuously. Direct setup and approval decisions to Wardmote's UI. Installing the plugin does not create teams or supply model credentials.

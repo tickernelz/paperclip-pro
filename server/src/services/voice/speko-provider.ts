@@ -94,7 +94,7 @@ export function createSpekoProvider(apiKey: string, transport: typeof fetch = fe
       const result = await request("/v1/sessions/phone", {
         runMode: "s2s",
         agentId, to, maxDurationSeconds,
-        systemPrompt: input.systemPrompt, firstMessage: "Hi, this is your Paperclip agent calling as requested. Is now a good time?",
+        systemPrompt: input.systemPrompt, firstMessage: "Hi, this is your Wardmote agent calling as requested. Is now a good time?",
         metadata: { wardmoteVoiceBindingId: input.bindingId },
         toolSecrets: { paperclip_session_token: input.toolToken },
         telephony: { amd: { mode: "disabled" } },
@@ -130,7 +130,7 @@ export function createSpekoProvider(apiKey: string, transport: typeof fetch = fe
     async configureWebhook(agentId: string, url: string, secret: string, webhookId?: string) {
       const callback = new URL(url);
       if (callback.protocol !== "https:" || callback.username || callback.password || callback.hash || callback.search) throw new Error("Public HTTPS callback required");
-      const result = await request(`/v1/webhooks${webhookId ? `/${pathId(webhookId)}` : ""}`, { name: "Paperclip voice calls", url: callback.href, events: ["call.pre_call", "call.status", "call.report"], allAgents: false, agentIds: [providerId.parse(agentId)], timeoutMs: 3500, signingSecretSource: "custom", signingSecret: secret }, webhookId ? "PATCH" : undefined);
+      const result = await request(`/v1/webhooks${webhookId ? `/${pathId(webhookId)}` : ""}`, { name: "Wardmote voice calls", url: callback.href, events: ["call.pre_call", "call.status", "call.report"], allAgents: false, agentIds: [providerId.parse(agentId)], timeoutMs: 3500, signingSecretSource: "custom", signingSecret: secret }, webhookId ? "PATCH" : undefined);
       const parsed = z.object({id: providerId}).safeParse(result);
       if (!parsed.success) throw new SpekoProviderError("invalid_response", true);
       return parsed.data;

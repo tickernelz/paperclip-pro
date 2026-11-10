@@ -89,7 +89,7 @@ export const ImageFailure: Story = {
   },
 };
 export const CacheMissLoading: Story = {
-  render: () => <div className="flex items-center gap-4"><AgentAvatar agent={agent} size={64} /><span className="text-sm">The image slot keeps its dimensions while Paperclip renders a cold cache entry.</span></div>,
+  render: () => <div className="flex items-center gap-4"><AgentAvatar agent={agent} size={64} /><span className="text-sm">The image slot keeps its dimensions while Wardmote renders a cold cache entry.</span></div>,
 };
 function WebGLFailure() {
   const region = useRef<HTMLDivElement>(null);
