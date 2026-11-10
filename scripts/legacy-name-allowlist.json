@@ -96,7 +96,6 @@
     [".github/cloud-migrator-deploy/cloudfront-read-statement.json",1,"belum-diganti"],
     [".github/cloud-migrator-deploy/trust-policy.json",2,"belum-diganti"],
     [".github/cloud-migrator-deploy/upload-policy.json",2,"belum-diganti"],
-    [".github/workflows/ci.yml",2,"belum-diganti"],
     [".gitignore",4,"belum-diganti"],
     ["AGENTS.md",12,"belum-diganti"],
     ["CONTRIBUTING.md",16,"belum-diganti"],

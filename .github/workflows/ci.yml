@@ -266,8 +266,8 @@ jobs:
 
       - name: Generate Wardmote config
         run: |
-          mkdir -p ~/.paperclip-pro/instances/default
-          cat > ~/.paperclip-pro/instances/default/config.json << 'CONF'
+          mkdir -p ~/.wardmote/instances/default
+          cat > ~/.wardmote/instances/default/config.json << 'CONF'
           {
             "$meta": { "version": 1, "updatedAt": "2026-01-01T00:00:00.000Z", "source": "onboard" },
             "database": { "mode": "embedded-postgres" },
