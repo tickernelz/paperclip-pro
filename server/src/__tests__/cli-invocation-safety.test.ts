@@ -910,7 +910,7 @@ describe("wardmote CLI invocation safety", () => {
     const subsection = extractOfflineSubsection(cli);
     // The offline subsection must exist and must name the cache-only safe form.
     expect(subsection).toContain("### Offline and air-gapped use");
-    expect(subsection).toContain("npx --offline paperclip-pro");
+    expect(subsection).toContain("npx --offline @tickernelz/wardmote");
     // The offline subsection must not present `pnpm paperclip-pro` or
     // `pnpm exec paperclip-pro` as a safe or offline form. Only a warning line
     // may name `pnpm paperclip-pro`, and it must tell the reader not to use it.
