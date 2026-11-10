@@ -95,9 +95,6 @@ function instrumentInserts(db: Record<string, unknown>): InsertCounts {
   return counts;
 }
 
-// The `.paperclip.yaml` extension is consumed by the importer's own hand-rolled
-// block-YAML parser (not a general YAML/JSON reader), so render it with the same
-// block algorithm the exporter uses to guarantee a round-trip-compatible bundle.
 function renderYamlScalar(value: unknown): string {
   if (value === null) return "null";
   if (typeof value === "boolean" || typeof value === "number") return String(value);
@@ -193,7 +190,7 @@ function buildSyntheticBundle(options: SyntheticBundleOptions): {
     };
   }
 
-  files[".paperclip.yaml"] = renderWardmoteYaml({ schemaVersion: 7, tasks });
+  files[".wardmote.yaml"] = renderWardmoteYaml({ schemaVersion: 7, tasks });
 
   return { rootPath: "batching-bench", files };
 }
@@ -223,7 +220,7 @@ function buildTouchedIssuesBundle(issueCount: number): {
     };
   }
 
-  files[".paperclip.yaml"] = renderWardmoteYaml({ schemaVersion: 7, tasks });
+  files[".wardmote.yaml"] = renderWardmoteYaml({ schemaVersion: 7, tasks });
   return { rootPath: "inbox-flood", files };
 }
 
@@ -430,7 +427,7 @@ describeEmbeddedPostgres("company import batches inserts", () => {
     files["tasks/a-child/TASK.md"] = taskFile("Child");
     files["tasks/m-grandchild/TASK.md"] = taskFile("Grandchild");
     files["tasks/z-parent/TASK.md"] = taskFile("Parent");
-    files[".paperclip.yaml"] = renderWardmoteYaml({
+    files[".wardmote.yaml"] = renderWardmoteYaml({
       schemaVersion: 7,
       tasks: {
         // The child slug sorts before its parent so the importer's
@@ -522,7 +519,7 @@ describeEmbeddedPostgres("company import batches inserts", () => {
     const files: Record<string, CompanyPortabilityFileEntry> = {};
     files["COMPANY.md"] = ['---', 'schema: "agentcompanies/v1"', 'name: "Legacy Shape Co"', '---', '', 'Synthetic import bundle.', ''].join("\n");
     files["tasks/legacy-task/TASK.md"] = ['---', 'name: "Legacy task"', "kind: task", '---', '', 'Legacy body.', ''].join("\n");
-    files[".paperclip.yaml"] = renderWardmoteYaml({
+    files[".wardmote.yaml"] = renderWardmoteYaml({
       schemaVersion: 6,
       tasks: {
         "legacy-task": {

@@ -131,7 +131,7 @@ function exportPreviewResult() {
     ...exportResult(),
     fileInventory: [],
     counts: { files: 0, agents: 0, skills: 0, projects: 0, issues: 0 },
-    wardmoteExtensionPath: ".paperclip.yaml",
+    wardmoteExtensionPath: ".wardmote.yaml",
   };
 }
 

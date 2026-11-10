@@ -675,7 +675,7 @@ describe("import selection catalog", () => {
       files: {
         "COMPANY.md": "# Source Co",
         "README.md": "# Readme",
-        ".paperclip.yaml": "schema: paperclip/v1\n",
+        ".wardmote.yaml": "schema: wardmote/v1\n",
         "images/company-logo.png": {
           encoding: "base64",
           data: "",
@@ -711,7 +711,7 @@ describe("import selection catalog", () => {
 
     const selectedFiles = buildSelectedFilesFromImportSelection(catalog, state);
 
-    expect(selectedFiles).toContain(".paperclip.yaml");
+    expect(selectedFiles).toContain(".wardmote.yaml");
     expect(selectedFiles).toContain("projects/alpha/PROJECT.md");
     expect(selectedFiles).toContain("projects/alpha/notes.md");
     expect(selectedFiles).not.toContain("projects/alpha/issues/kickoff/TASK.md");
@@ -773,7 +773,7 @@ describe("import selection catalog", () => {
         envInputs: [],
       },
       files: {
-        ".paperclip.yaml": "schema: paperclip/v1\n",
+        ".wardmote.yaml": "schema: wardmote/v1\n",
       },
       envInputs: [],
       warnings: [],
@@ -791,7 +791,7 @@ describe("import selection catalog", () => {
 
     const selectedFiles = buildSelectedFilesFromImportSelection(catalog, state);
 
-    expect(selectedFiles).toContain(".paperclip.yaml");
+    expect(selectedFiles).toContain(".wardmote.yaml");
     expect(selectedFiles).toHaveLength(1);
   });
 });

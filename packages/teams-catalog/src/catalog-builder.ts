@@ -833,7 +833,7 @@ function classifyCatalogFile(relativePath: string): CatalogTeamFileKind {
   if (relativePath.endsWith("/PROJECT.md") || relativePath === "PROJECT.md") return "project";
   if (relativePath.endsWith("/TASK.md") || relativePath === "TASK.md") return "task";
   if (relativePath.endsWith("/SKILL.md") || relativePath === "SKILL.md") return "skill";
-  if (relativePath === ".paperclip.yaml") return "extension";
+  if (relativePath === ".wardmote.yaml") return "extension";
   if (relativePath === "README.md") return "readme";
   if (relativePath.startsWith("references/")) return "reference";
   if (relativePath.startsWith("scripts/")) return "script";

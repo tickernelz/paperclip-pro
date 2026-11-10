@@ -1,4 +1,4 @@
-schema: paperclip/v1
+schema: wardmote/v1
 agents:
   cto:
     permissions:
