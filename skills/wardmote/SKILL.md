@@ -105,7 +105,7 @@ because a request arrived through chat.
 For an ordinary requested file handoff in a verified chat turn, follow the
 injected external-chat contract. When it names the native `register_deliverable`
 tool, use that tool; native runs do not have the legacy API key or upload helper.
-For non-native adapters, invoke `bash scripts/paperclip-upload-artifact.sh`.
+For non-native adapters, invoke `bash scripts/wardmote-upload-artifact.sh`.
 Read `references/artifacts.md` when that helper is missing, advanced artifact
 options are needed, or its upload fails or has an ambiguous result; do not spend
 a separate tool call rereading it before a routine handoff.

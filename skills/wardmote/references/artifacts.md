@@ -4,10 +4,10 @@ When work produces a user-inspectable file, upload true deliverables to the curr
 
 Attachment upload is a multipart upload and has no MCP tool, so it keeps its own helper. Everything else on this page — listing and deleting attachments, and recording work products — is done with the `core` toolset tools named below.
 
-Use Bash to run the helper bundled with this skill; installed skill files may not retain executable permissions. From an installed `paperclip` skill directory, the helper lives at `scripts/paperclip-upload-artifact.sh`:
+Use Bash to run the helper bundled with this skill; installed skill files may not retain executable permissions. From an installed `paperclip` skill directory, the helper lives at `scripts/wardmote-upload-artifact.sh`:
 
 ```bash
-bash scripts/paperclip-upload-artifact.sh path/to/output.webm \
+bash scripts/wardmote-upload-artifact.sh path/to/output.webm \
   --title "Walkthrough render" \
   --summary "Rendered walkthrough for review"
 ```
@@ -99,7 +99,7 @@ part of the response intended for that external conversation, have the upload
 helper bind that specific file to an explicit response comment:
 
 ```bash
-bash scripts/paperclip-upload-artifact.sh path/to/result.png \
+bash scripts/wardmote-upload-artifact.sh path/to/result.png \
   --title "Requested image" \
   --chat-comment "Here is the requested image."
 ```
@@ -155,6 +155,6 @@ resolve the failure or explain the limitation; do not describe a workspace path
 as an uploaded file.
 
 The shell helper keeps temporary responses and retry receipts in the assigned
-workspace's private `.paperclip/artifact-helper` directory, so CLI sandboxes can
+workspace's private `.wardmote/artifact-helper` directory, so CLI sandboxes can
 write them even when the controller's `TMPDIR` is inaccessible.
 `WARDMOTE_HELPER_STATE_DIR` overrides that directory when explicitly configured.

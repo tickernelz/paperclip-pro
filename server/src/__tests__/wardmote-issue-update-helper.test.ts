@@ -12,8 +12,8 @@ import { afterEach, describe, expect, it } from "vitest";
 // classify failures (retry connection-level faults and 5xx, never retry a
 // definitive 4xx), and must stop at two attempts total to honor the shared
 // bounded-write-retry rule.
-const HELPER_PATH = path.resolve("skills/wardmote/scripts/paperclip-issue-update.sh");
-const REPO_HELPER_PATH = path.resolve("scripts/paperclip-issue-update.sh");
+const HELPER_PATH = path.resolve("skills/wardmote/scripts/wardmote-issue-update.sh");
+const REPO_HELPER_PATH = path.resolve("scripts/wardmote-issue-update.sh");
 
 interface HelperResult {
   code: number | null;
@@ -130,7 +130,7 @@ describe("paperclip issue update helper", () => {
       await fs.mkdir(path.dirname(installed), { recursive: true });
       await fs.mkdir(cwd);
       await ensureWardmoteSkillSymlink(source, installed);
-      await expect(fs.access(path.join(cwd, "scripts/paperclip-issue-update.sh"))).rejects.toThrow();
+      await expect(fs.access(path.join(cwd, "scripts/wardmote-issue-update.sh"))).rejects.toThrow();
       const savedComments: string[] = [];
       const { baseUrl, requests } = await startServer((request, _attempt, res) => {
         const payload = JSON.parse(request.body);
@@ -140,7 +140,7 @@ describe("paperclip issue update helper", () => {
       });
       const comment = "Done\n\n- Saved [report](/TST/issues/TST-1#document-report)\n- Literal `code`, $HOME and $(not-a-command)";
       const result = await runHelper(baseUrl, ["--issue-id", "issue-1", "--status", "done"], {
-        helper: path.join(installed, "scripts/paperclip-issue-update.sh"), cwd, input: comment,
+        helper: path.join(installed, "scripts/wardmote-issue-update.sh"), cwd, input: comment,
       });
       expect(result.code).toBe(0);
       expect(JSON.parse(result.stdout)).toMatchObject({ status: "done", comment: { body: comment } });

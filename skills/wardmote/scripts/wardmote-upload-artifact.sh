@@ -5,7 +5,7 @@ set -euo pipefail
 usage() {
   cat <<'EOF'
 Usage:
-  paperclip-upload-artifact.sh FILE [options]
+  wardmote-upload-artifact.sh FILE [options]
 
 Uploads a generated file from the current workspace to the current Wardmote
 issue, then creates an attachment-backed artifact work product by default.
@@ -29,15 +29,15 @@ Options:
   --help, -h             Show this help
 
 Examples:
-  bash scripts/paperclip-upload-artifact.sh dist/demo.mp4 \
+  bash scripts/wardmote-upload-artifact.sh dist/demo.mp4 \
     --title "Demo video render" \
     --summary "MP4 render for board review"
 
-  bash scripts/paperclip-upload-artifact.sh out/walkthrough.webm \
+  bash scripts/wardmote-upload-artifact.sh out/walkthrough.webm \
     --title "Walkthrough video" \
     --content-type video/webm
 
-  bash scripts/paperclip-upload-artifact.sh out/result.png \
+  bash scripts/wardmote-upload-artifact.sh out/result.png \
     --title "Generated image" \
     --chat-comment "Here is the requested image."
 EOF
@@ -114,7 +114,7 @@ sha256_text() {
 }
 
 helper_state_directory() {
-  printf '%s' "${WARDMOTE_HELPER_STATE_DIR:-${WARDMOTE_WORKSPACE_CWD:-$PWD}/.paperclip/artifact-helper}"
+  printf '%s' "${WARDMOTE_HELPER_STATE_DIR:-${WARDMOTE_WORKSPACE_CWD:-$PWD}/.wardmote/artifact-helper}"
 }
 
 helper_response_file() {

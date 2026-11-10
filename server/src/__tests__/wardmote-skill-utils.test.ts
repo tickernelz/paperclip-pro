@@ -16,7 +16,7 @@ async function makeTempDir(prefix: string): Promise<string> {
 
 const execFileAsync = promisify(execFile);
 const artifactHelperPath = path.resolve(
-  "skills/wardmote/scripts/paperclip-upload-artifact.sh",
+  "skills/wardmote/scripts/wardmote-upload-artifact.sh",
 );
 
 async function makeArtifactHelperHarness(
@@ -32,7 +32,7 @@ async function makeArtifactHelperHarness(
     uploadDelaySeconds?: string;
   } = {},
 ) {
-  const root = await makeTempDir("paperclip-artifact-helper-");
+  const root = await makeTempDir("wardmote-artifact-helper-");
   cleanupDirs.add(root);
   const binDir = path.join(root, "bin");
   const stateDir = path.join(root, "fake-api");
@@ -267,14 +267,14 @@ describe("paperclip skill utils", () => {
   it("documents artifact uploads in the installed Wardmote skill", async () => {
     const skillBody = await fs.readFile(path.resolve("skills/wardmote/SKILL.md"), "utf8");
     const referenceBody = await fs.readFile(path.resolve("skills/wardmote/references/artifacts.md"), "utf8");
-    const helperBody = await fs.readFile(path.resolve("skills/wardmote/scripts/paperclip-upload-artifact.sh"), "utf8");
+    const helperBody = await fs.readFile(path.resolve("skills/wardmote/scripts/wardmote-upload-artifact.sh"), "utf8");
     const normalizedReferenceBody = referenceBody.replace(/\s+/g, " ");
 
     expect(skillBody).toContain("Generated Artifacts and Work Products");
     expect(skillBody).toContain("references/artifacts.md");
     expect(skillBody).not.toContain("/api/companies/$WARDMOTE_COMPANY_ID/issues/$WARDMOTE_TASK_ID/attachments");
     expect(referenceBody).toContain("Generated Artifacts and Work Products");
-    expect(referenceBody).toContain("scripts/paperclip-upload-artifact.sh");
+    expect(referenceBody).toContain("scripts/wardmote-upload-artifact.sh");
     expect(referenceBody).toContain("wardmoteCreateIssueWorkProduct");
     expect(referenceBody).toContain("Attachment upload is a multipart upload and has no MCP tool");
     expect(referenceBody).toContain("wardmoteDeleteAttachment");
@@ -289,9 +289,9 @@ describe("paperclip skill utils", () => {
     expect(helperBody).toContain('"$api_base/issues/$issue_id/comments"');
     expect(helperBody).toContain("attachmentIds: [$attachmentId]");
     await expect(
-      fs.access(path.resolve("skills/wardmote/scripts/paperclip-upload-artifact.sh")),
+      fs.access(path.resolve("skills/wardmote/scripts/wardmote-upload-artifact.sh")),
     ).resolves.toBeUndefined();
-    await expect(fs.access(path.resolve("scripts/paperclip-upload-artifact.sh"))).rejects.toThrow();
+    await expect(fs.access(path.resolve("scripts/wardmote-upload-artifact.sh"))).rejects.toThrow();
   });
 
   it("honors only the current scoped runtime claim without removing legacy disposition", async () => {
@@ -323,7 +323,7 @@ describe("paperclip skill utils", () => {
     expect(normalizedShortcut).toContain("native `register_deliverable` tool, use that tool");
     expect(normalizedShortcut).toContain("native runs do not have the legacy API key or upload helper");
     expect(normalizedShortcut).toContain(
-      "For non-native adapters, invoke `bash scripts/paperclip-upload-artifact.sh`",
+      "For non-native adapters, invoke `bash scripts/wardmote-upload-artifact.sh`",
     );
     expect(normalizedShortcut).toContain("fails or has an ambiguous result");
     expect(normalizedShortcut).toContain("use the full heartbeat procedure below");
@@ -548,7 +548,7 @@ describe("paperclip skill utils", () => {
     expect(skillBody).toContain('must say the write FAILED — not that it "was sent"');
     // The helper's verification behavior (HTTP status parsing, retry
     // classification, attempt bound, exit codes) is exercised end-to-end in
-    // paperclip-issue-update-helper.test.ts against a live local server.
+    // wardmote-issue-update-helper.test.ts against a live local server.
   });
 
   it("keeps the create-issue-interaction-ui guide as a maintainer-only skill", async () => {
