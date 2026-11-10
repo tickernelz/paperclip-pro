@@ -68,6 +68,11 @@ const PINNED_RETIRED_SCHEMA_ID_SUFFIXES: ReadonlySet<string> = new Set([
   "semantic_tool_receipt.v2",
 ]);
 
+export function retiredSchemaId(current: string): string {
+  if (!current.startsWith("wardmote.")) throw new Error(`not a current schema id: ${current}`);
+  return `paperclip.${current.slice("wardmote.".length)}`;
+}
+
 export type RetiredNameRewriteOptions = {
   keepEnvKeys?: ReadonlySet<string>;
 };

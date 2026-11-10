@@ -69,6 +69,19 @@ describeEmbeddedPostgres("wardmote schema id migration", () => {
         (${otherInteractionId}, ${companyId}, ${issueId}, 'request_confirmation', ${sql.json({ prompt: "Ship?" })})
     `;
 
+    const leaseId = randomUUID();
+    const leaseMetadata = (prefix: string) => ({
+      pluginId: "plugin",
+      remoteExecutionTermination: { schema: `${prefix}.remote-termination.v1`, state: "stopped" },
+      sandboxStopAndRetainReceipt: { schema: `${prefix}.sandbox-stop-and-retain-receipt.v1`, requestId: "r" },
+      nativeWorkspaceExportResume: { schema: `${prefix}.workspace-export-resume.v1`, requestId: "r" },
+    });
+    const [environment] = await sql<{ id: string }[]>`SELECT "id" FROM "environments" LIMIT 1`;
+    await sql`
+      INSERT INTO "environment_leases" ("id", "company_id", "environment_id", "metadata")
+      VALUES (${leaseId}, ${companyId}, ${environment!.id}, ${sql.json(leaseMetadata(OLD))})
+    `;
+
     const hash = await migrationHash();
     await sql`DELETE FROM "drizzle"."__drizzle_migrations" WHERE "hash" = ${hash}`;
     await applyPendingMigrations(database.connectionString);
@@ -95,11 +108,15 @@ describeEmbeddedPostgres("wardmote schema id migration", () => {
       [otherInteractionId, { prompt: "Ship?" }],
     ]));
 
+    const [lease] = await sql<{ metadata: Record<string, unknown> }[]>`SELECT "metadata" FROM "environment_leases" WHERE "id" = ${leaseId}`;
+    expect(lease!.metadata).toEqual(leaseMetadata("wardmote"));
+
     const snapshot = async () => ({
       runs: await sql`SELECT "id", "result_json" FROM "heartbeat_runs" ORDER BY "id"`,
       events: await sql`SELECT "id", "payload" FROM "heartbeat_run_events" ORDER BY "id"`,
       copies: await sql`SELECT "run_id", "receipt" FROM "agent_instruction_working_copies" ORDER BY "run_id"`,
       interactions: await sql`SELECT "id", "payload" FROM "issue_thread_interactions" ORDER BY "id"`,
+      leases: await sql`SELECT "id", "metadata" FROM "environment_leases" ORDER BY "id"`,
     });
     const before = await snapshot();
     await sql`DELETE FROM "drizzle"."__drizzle_migrations" WHERE "hash" = ${hash}`;

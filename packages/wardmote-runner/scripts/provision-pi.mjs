@@ -124,7 +124,7 @@ export async function provisionPi(entrypoint, checkCancelled = () => {}) {
 }
 if (process.argv[1] && pathToFileURL(resolve(process.argv[1])).href === import.meta.url) {
   const args = process.argv.slice(2);
-  if (args.length) throw new Error("Usage: paperclip-pro runtime setup pi (explicit host-platform installation; no model calls)");
+  if (args.length) throw new Error("Usage: wardmote runtime setup pi (explicit host-platform installation; no model calls)");
   // Preserve the same closed network allowlist as the explicit CLI command.
   // Never forward provider keys, HOME config, NODE_OPTIONS or npm configuration.
   const environment = provisionEnvironment();

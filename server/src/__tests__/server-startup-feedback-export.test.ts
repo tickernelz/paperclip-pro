@@ -353,7 +353,7 @@ vi.mock("../services/index.js", () => ({
 }));
 
 vi.mock("../services/retired-name-migration.js", () => ({
-  migrateRetiredNames: vi.fn(async () => ({ dryRun: false, files: [], rows: [], externalBundles: [], failedBundles: [], backupDir: null })),
+  migrateRetiredNames: vi.fn(async () => ({ dryRun: false, files: [], rows: [], externalBundles: [], failedBundles: [], quarantinedRunnerStates: [], backupDir: null })),
 }));
 vi.mock("../services/chat-completion-delivery.js", () => ({ chatCompletionDeliveryService: () => ({ hasPending: vi.fn(async () => false), sweepPending: completionSweepMock }) }));
 

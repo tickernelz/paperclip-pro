@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-// Run in a credential-free public npm consumer after `paperclip-pro runtime setup pi`.
 // Use the server's normal packaged daemon resolver; never submit a prompt.
 import assert from 'node:assert/strict';
 import { mkdir, mkdtemp, readFile, realpath, rm } from 'node:fs/promises';

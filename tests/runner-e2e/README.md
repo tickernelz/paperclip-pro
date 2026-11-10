@@ -1998,7 +1998,7 @@ matching public package versions. Build/install provenance and the complete
 installed dependency/assets inventory remain separate required evidence; the
 entrypoint checks alone do not prove that closure.
 
-Run the explicit `paperclip-pro runtime setup pi` for that installation first.
+Run the explicit `wardmote runtime setup pi` for that installation first.
 This lane rejects candidate flags, local/remote daemon overrides, provider asset
 or pack overrides, and Node injection. It launches the installed JavaScript CLI
 without a TypeScript loader, rechecks its pins on controller restart, and records

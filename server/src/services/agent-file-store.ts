@@ -12,6 +12,7 @@ import { authorizeInstructionCommit, authorizeInstructionRead } from "./agent-in
 import { assertInstructionPathSafe, instructionPath, instructionBytes, materializeInstructionBytes, readInstructionBytes, MAX_INSTRUCTION_BYTES } from "./agent-instruction-files.js";
 import { agentInstructionsBundleMode, deriveBundleState, resolveManagedInstructionsRoot } from "./agent-instructions.js";
 import type { AuthorizationActor } from "./authorization.js";
+import { retiredSchemaId } from "@tickernelz/wardmote-shared/retired-names";
 
 type Tx = Parameters<Parameters<Db["transaction"]>[0]>[0];
 type Agent = typeof agents.$inferSelect;
@@ -75,7 +76,12 @@ export async function adoptAgentFiles(tx: Tx, agent: Agent): Promise<string> {
     throw error;
   });
   if (adopted !== null) {
-    if (JSON.parse(adopted).schema !== AGENT_FILES_CONTRACT) throw new Error("Unsupported agent file contract");
+    const schema = JSON.parse(adopted).schema;
+    if (schema === retiredSchemaId(AGENT_FILES_CONTRACT)) {
+      await materializeInstructionBytes(markerRoot, marker, Buffer.from(JSON.stringify({ schema: AGENT_FILES_CONTRACT })));
+    } else if (schema !== AGENT_FILES_CONTRACT) {
+      throw new Error("Unsupported agent file contract");
+    }
     return root;
   }
   const legacy = await tx.select({ entryFile: agentInstructionHeads.entryFile, contentBase64: agentInstructionRevisions.contentBase64 })

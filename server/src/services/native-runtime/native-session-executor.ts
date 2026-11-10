@@ -77,6 +77,7 @@ import type {
   AdapterRuntimeEvent,
 } from "../../adapters/index.js";
 import { usdToUnits, type NativeFinalizationResult } from "@tickernelz/wardmote-shared";
+import { retiredSchemaId } from "@tickernelz/wardmote-shared/retired-names";
 import type {
   HarnessRuntimeRequestResolution,
   NativeExecutionInput,
@@ -1850,6 +1851,33 @@ function quarantineRunnerdStateRoot(
   );
   renameSync(resolvedRoot, destination);
   return destination;
+}
+
+export function quarantineRetiredRunnerdStateRoots(options: { dryRun?: boolean } = {}): string[] {
+  const stateBase = resolve(runnerdStateBase());
+  if (!isSafeNativeStateDirectory(stateBase)) return [];
+  const retiredPrefix = retiredSchemaId("wardmote.runner.durable.");
+  const retiredState = (path: string, maxBytes: number) => {
+    if (!existsSync(path)) return false;
+    try {
+      const schema = record(JSON.parse(readBoundedNativeFile(path, maxBytes, "runner_state_too_large").toString("utf8"))).schema;
+      return typeof schema === "string" && schema.startsWith(retiredPrefix);
+    } catch {
+      return false;
+    }
+  };
+  const moved: string[] = [];
+  for (const entry of readdirSync(stateBase, { withFileTypes: true })) {
+    if (!entry.isDirectory() || !/^[a-f0-9]{64}$/.test(entry.name)) continue;
+    const root = resolve(stateBase, entry.name);
+    if (
+      !retiredState(resolve(root, "control-plane", "control-plane-state.json"), NATIVE_CONTROL_PLANE_STATE_MAX_BYTES) &&
+      !retiredState(resolve(root, "runner", "runner-state.json"), NATIVE_RUNNER_STATE_MAX_BYTES)
+    ) continue;
+    if (!options.dryRun) quarantineRunnerdStateRoot(root, "identity_indeterminate");
+    moved.push(entry.name);
+  }
+  return moved;
 }
 
 function legacyCompanyRunnerdStateRoot(

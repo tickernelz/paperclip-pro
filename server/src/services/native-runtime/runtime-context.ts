@@ -23,6 +23,7 @@ import {
   type NativeRuntimeContextSnapshot,
 } from "../../vendor/wardmote-runner/index.js";
 import { resolveWardmoteInstanceRoot } from "../../home-paths.js";
+import { retiredSchemaId } from "@tickernelz/wardmote-shared/retired-names";
 import { agentInstructionsService, agentInstructionsBundleMode } from "../agent-instructions.js";
 import { agentInstructionRevisionService } from "../agent-instruction-revisions.js";
 import { toolAccessService } from "../tool-access.js";
@@ -91,21 +92,33 @@ async function verifyMaterializedAsset(
   }
 }
 
+const RUNTIME_ASSET_MANIFEST_SCHEMA = "wardmote.runtime-asset-manifest.v1";
+
 export async function materializeAsset(files: AssetFile[]): Promise<NativeRuntimeAssetReference> {
   const sorted = [...files].sort((a, b) => a.path.localeCompare(b.path));
   const manifestFiles = sorted.map((file) => ({ path: safeRelativePath(file.path, "runtime context path"), sha256: sha256(file.content), mode: file.mode & 0o555, size: file.content.byteLength }));
   const totalBytes = manifestFiles.reduce((sum, file) => sum + file.size, 0);
   if (!manifestFiles.length || manifestFiles.length > MAX_ASSET_FILES || totalBytes > MAX_ASSET_BYTES) throw new Error("runtime context bundle is empty or exceeds its bound");
   const assetDigest = sha256(JSON.stringify(manifestFiles));
-  const manifestText = `${JSON.stringify({ schema: "wardmote.runtime-asset-manifest.v1", digest: assetDigest, fileCount: manifestFiles.length, totalBytes, files: manifestFiles })}\n`;
+  const manifestFor = (schema: string) => `${JSON.stringify({ schema, digest: assetDigest, fileCount: manifestFiles.length, totalBytes, files: manifestFiles })}\n`;
+  const manifestText = manifestFor(RUNTIME_ASSET_MANIFEST_SCHEMA);
   const manifestDigest = sha256(manifestText);
   const assetsRoot = path.join(resolveWardmoteInstanceRoot(), "runtime-context-assets");
   const rootPath = path.join(assetsRoot, "bundles", assetDigest);
   const manifestPath = path.join(assetsRoot, "manifests", `${assetDigest}.json`);
   const existing = await fs.readFile(manifestPath, "utf8").catch(() => null);
   if (existing !== null) {
-    if (sha256(existing) !== manifestDigest || !(await fs.stat(rootPath).catch(() => null))?.isDirectory()) throw new Error(`runtime context asset verification failed: ${assetDigest}`);
+    const retired = existing === manifestFor(retiredSchemaId(RUNTIME_ASSET_MANIFEST_SCHEMA));
+    if ((!retired && sha256(existing) !== manifestDigest) || !(await fs.stat(rootPath).catch(() => null))?.isDirectory()) throw new Error(`runtime context asset verification failed: ${assetDigest}`);
     await verifyMaterializedAsset(rootPath, manifestFiles);
+    if (retired) {
+      const replacement = path.join(path.dirname(manifestPath), `.${assetDigest}.${randomUUID()}.tmp`);
+      await fs.writeFile(replacement, manifestText, { flag: "wx", mode: 0o400 });
+      await fs.rename(replacement, manifestPath).catch(async (error: unknown) => {
+        await fs.rm(replacement, { force: true });
+        throw error;
+      });
+    }
     return { schema: NATIVE_RUNTIME_ASSET_SCHEMA, digest: assetDigest, manifestDigest, rootPath, fileCount: manifestFiles.length, totalBytes };
   }
   const stagingRoot = path.join(assetsRoot, ".staging", randomUUID());
