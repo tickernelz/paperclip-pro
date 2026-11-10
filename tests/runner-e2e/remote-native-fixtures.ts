@@ -17,11 +17,7 @@ const INSTALL_BUDGET_MS = 27_000;
 export const REMOTE_FIXTURE_MIN_SETUP_BUDGET_MS = LEASE_READMISSION_BUDGET_MS
   + RUNTIME_READY_BUDGET_MS + INSTALL_BUDGET_MS + TEARDOWN_RESERVE_MS;
 const CLOSE_GRACE_MS = 10_000;
-// createRunnerdBackend stages its verified executable, pack symlink, mutable
-// sessions, homes and injected context beneath this exact path. Qualification
-// covers user workspace files, not these controller/provider runtime internals.
-// The sentinel and all other .paperclip-runtime entries remain in scope.
-const RUNTIME_RELATIVE = ".paperclip-runtime/paperclip-runner";
+const RUNTIME_RELATIVE = ".wardmote-runtime/paperclip-runner";
 const digest = (value: string) => `sha256:${createHash("sha256").update(value).digest("hex")}`;
 const record = (value: unknown): Record<string, unknown> => value !== null && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : {};
 const fail = (condition: unknown, code: string): void => { if (!condition) throw new Error(`remote_native_fixture:${code}`); };
@@ -388,7 +384,7 @@ export async function bindRemoteNativeFixture(options: RemoteNativeFixtureOption
         && row.status === "active" && row.releasedAt == null, "lease_scope");
       fail(metadata.sandboxId === authority.sandboxId && metadata.image === authority.image && metadata.reuseLease === false, "lease_metadata");
       fail(typeof cwd === "string" && cwd.startsWith("/") && cwd.length < 512 && posix.normalize(cwd) === cwd && cwd !== "/" && !cwd.includes("\0"), "remote_cwd");
-      fail(sent.path === `${cwd}/.paperclip-runtime/reusable-sandbox-lease.json` && sent.result === "written" && typeof sent.token === "string"
+      fail(sent.path === `${cwd}/.wardmote-runtime/reusable-sandbox-lease.json` && sent.result === "written" && typeof sent.token === "string"
         && sent.token.length >= 16 && sent.token.length <= 256 && sent.runId === authority.runId && sent.providerLeaseId === authority.sandboxId, "sentinel_binding");
       return { binding: { ...authority, remoteCwd: cwd as string }, sentinel: { path: sent.path as string, token: sent.token as string } };
     }

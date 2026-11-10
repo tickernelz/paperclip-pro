@@ -2123,13 +2123,13 @@ it("denies the isolated Codex home without denying a remote execution workspace"
       PATH: "/usr/local/bin:/usr/bin:/bin",
     },
     codexHome:
-      "/workspaces/task/.paperclip-runtime/paperclip-runner/sessions/session/filesystem/codex-home",
+      "/workspaces/task/.wardmote-runtime/paperclip-runner/sessions/session/filesystem/codex-home",
     readOnlyRoots: ["/usr/local"],
   });
   const serialized = args.join("\n");
 
   expect(serialized).toContain(
-    '"/workspaces/task/.paperclip-runtime/paperclip-runner/sessions/session/filesystem/codex-home"="none"',
+    '"/workspaces/task/.wardmote-runtime/paperclip-runner/sessions/session/filesystem/codex-home"="none"',
   );
   expect(serialized).not.toContain('"/workspaces/task"="none"');
   expect(serialized).not.toContain('"/workspaces/task/.codex"="none"');
@@ -2179,7 +2179,7 @@ it("rejects remote Codex without a guest executable before resolving controller 
   });
   const { transport } = createCapabilityRunnerdCodexTransport({
     provider: "codex", runnerBinary, stateDirectory: root, sourceCodexHome: "",
-    runnerFilesystemRoot: "/workspaces/task/.paperclip-runtime/session",
+    runnerFilesystemRoot: "/workspaces/task/.wardmote-runtime/session",
   });
   try {
     await expect(transport.request("thread/start", { cwd: "/workspaces/task", model: "gpt-6.1-sol", dynamicTools: [] }))
@@ -2243,7 +2243,7 @@ it("rejects remote OpenCode before spawn when provider-pack paths are absent", a
   const { transport } = createCapabilityRunnerdCodexTransport({
     provider: "opencode",
     stateDirectory: root,
-    runnerFilesystemRoot: "/workspaces/task/.paperclip-runtime/session",
+    runnerFilesystemRoot: "/workspaces/task/.wardmote-runtime/session",
   });
   try {
     await expect(

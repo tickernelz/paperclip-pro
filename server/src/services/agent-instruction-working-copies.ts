@@ -106,7 +106,7 @@ export function agentInstructionWorkingCopyService(db: Db, options: { environmen
     if (isAgentDirectoryCopy(existing) || (!existing && !input.legacy)) return directories.prepare(input);
     let refreshStoppedCopy = false;
     const workspace = await fs.realpath(input.cwd);
-    const expectedLocalRoot = path.join(workspace, ".paperclip-runtime", `instruction-edits-${input.runId}`, "instructions");
+    const expectedLocalRoot = path.join(workspace, ".wardmote-runtime", `instruction-edits-${input.runId}`, "instructions");
     if (existing && existing.localRoot !== expectedLocalRoot) throw conflict("The registered instruction copy belongs to a different run workspace");
     const location = input.target?.kind === "remote" ? `remote:${input.target.environmentId ?? ""}` : "local";
     if (existing && (existing.agentId !== input.agentId || existing.location !== location)) {
@@ -161,7 +161,7 @@ export function agentInstructionWorkingCopyService(db: Db, options: { environmen
     const localRoot = existing?.localRoot ?? expectedLocalRoot;
     const target = input.target?.kind === "remote" ? input.target : null;
     const executionRoot = target
-      ? path.posix.join(target.remoteCwd, ".paperclip-runtime", `instruction-edits-${input.runId}`, "instructions")
+      ? path.posix.join(target.remoteCwd, ".wardmote-runtime", `instruction-edits-${input.runId}`, "instructions")
       : localRoot;
     if (!existing) {
       await db.insert(copies).values({
@@ -211,7 +211,7 @@ export function agentInstructionWorkingCopyService(db: Db, options: { environmen
     if (row.location === "local") return readInstructionBytes(row.localRoot, row.entryFile);
     if (target?.kind !== "remote") throw new Error("The original execution environment is needed to retrieve this instruction copy");
     if (row.location !== `remote:${target.environmentId ?? ""}`) throw new Error("Instruction copy execution environment changed");
-    const expected = path.posix.join(target.remoteCwd, ".paperclip-runtime", `instruction-edits-${row.runId}`, "instructions");
+    const expected = path.posix.join(target.remoteCwd, ".wardmote-runtime", `instruction-edits-${row.runId}`, "instructions");
     if (expected !== row.executionRoot) throw new Error("Instruction copy execution environment changed");
     const result = await runAdapterExecutionTargetShellCommand(row.runId, target, instructionCollectionScript(row.executionRoot, row.entryFile), { cwd: target.remoteCwd, env: {}, timeoutSec: 30 });
     if (result.exitCode !== 0 || result.timedOut) throw new Error("Could not safely retrieve the stopped run's instruction file");

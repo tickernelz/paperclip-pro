@@ -50,7 +50,7 @@ describe("remote managed runtime", () => {
     await prepared.restoreWorkspace();
     expect(restoreWorkspaceFromSshExecution).toHaveBeenCalledWith(expect.objectContaining({
       restoreGitHistory: false, baselineSnapshot: expect.objectContaining({
-        exclude: [".paperclip-runtime", "explicitly-excluded"],
+        exclude: [".wardmote-runtime", "explicitly-excluded"],
         entries: expect.any(Map),
       }),
     }));
@@ -108,7 +108,7 @@ describe("remote managed runtime", () => {
     expect(prepareWorkspaceForSshExecution).not.toHaveBeenCalled();
     expect(syncDirectoryToSsh).toHaveBeenCalledWith(expect.objectContaining({
       localDir: homeDir,
-      remoteDir: "/app/.paperclip-runtime/codex/home",
+      remoteDir: "/app/.wardmote-runtime/codex/home",
     }));
 
     await prepared.restoreWorkspace();
@@ -116,7 +116,7 @@ describe("remote managed runtime", () => {
     expect(restoreWorkspaceFromSshExecution).not.toHaveBeenCalled();
     expect(runSshCommand).toHaveBeenCalledWith(
       expect.anything(),
-      "base64 < '/app/.paperclip-runtime/codex/home/auth.json'",
+      "base64 < '/app/.wardmote-runtime/codex/home/auth.json'",
       { maxBuffer: 1024 * 1024 },
     );
     expect(restoredAuth).toBe('{"token":"remote"}\n');
@@ -163,16 +163,16 @@ describe("remote managed runtime", () => {
     // Each healthy project staged into its OWN isolated dir under the runtime
     // root; the broken one is skipped, not fatal.
     expect(Object.keys(prepared.additionalSourceDirs).sort()).toEqual(["first", "second"]);
-    expect(prepared.additionalSourceDirs.first).toBe("/app/.paperclip-runtime/codex/project-first");
-    expect(prepared.additionalSourceDirs.second).toBe("/app/.paperclip-runtime/codex/project-second");
+    expect(prepared.additionalSourceDirs.first).toBe("/app/.wardmote-runtime/codex/project-first");
+    expect(prepared.additionalSourceDirs.second).toBe("/app/.wardmote-runtime/codex/project-second");
     expect(prepared.additionalSourceDirs.broken).toBeUndefined();
     expect(syncDirectoryToSsh).toHaveBeenCalledWith(expect.objectContaining({
       localDir: firstDir,
-      remoteDir: "/app/.paperclip-runtime/codex/project-first",
+      remoteDir: "/app/.wardmote-runtime/codex/project-first",
     }));
     expect(syncDirectoryToSsh).toHaveBeenCalledWith(expect.objectContaining({
       localDir: secondDir,
-      remoteDir: "/app/.paperclip-runtime/codex/project-second",
+      remoteDir: "/app/.wardmote-runtime/codex/project-second",
     }));
   });
 

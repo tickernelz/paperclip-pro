@@ -292,7 +292,7 @@ async function prepareClaudeRemoteManagedHome(
 
   const remoteClaudeRuntimeRoot =
     stagedRuntime.runtimeRootDir ??
-    path.posix.join(stagedRuntime.workspaceRemoteDir ?? input.workspaceLocalDir, ".paperclip-runtime", "claude");
+    path.posix.join(stagedRuntime.workspaceRemoteDir ?? input.workspaceLocalDir, ".wardmote-runtime", "claude");
   const remoteClaudeConfigSeedDir =
     stagedRuntime.assetDirs["config-seed"] ?? path.posix.join(remoteClaudeRuntimeRoot, "config-seed");
   const remoteClaudeConfigDir = path.posix.join(remoteClaudeRuntimeRoot, "config");

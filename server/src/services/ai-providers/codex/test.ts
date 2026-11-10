@@ -189,10 +189,6 @@ async function prepareCodexHelloProbe(input: {
       target: input.target,
       adapterKey: "codex",
       workspaceLocalDir: preparedRuntimeWorkspaceLocalDir,
-      // Pass `input.cwd` as the base (not a pre-built per-run subdir).
-      // `prepareRemoteManagedRuntime` itself appends
-      // `.paperclip-runtime/runs/<runId>/workspace` to whatever it gets, so
-      // pre-building a per-run path here would double-nest the run ID.
       workspaceRemoteDir: input.cwd,
       installCommand: SANDBOX_INSTALL_COMMAND,
       detectCommand: input.command,
@@ -217,7 +213,7 @@ async function prepareCodexHelloProbe(input: {
 
   if (input.probeApiKey) {
     const probeHome = input.targetIsRemote
-      ? path.posix.join(input.cwd, ".paperclip-runtime", "codex", `probe-home-${input.runId}`)
+      ? path.posix.join(input.cwd, ".wardmote-runtime", "codex", `probe-home-${input.runId}`)
       : path.join(os.tmpdir(), `paperclip-codex-probe-${input.runId}`);
     // The local finally path retries cleanup independently of the model result.
     if (!input.targetIsRemote) probeHomeLocalDir = probeHome;

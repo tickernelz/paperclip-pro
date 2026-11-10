@@ -119,7 +119,7 @@ def inspect(config):
     root = proc(expected['pid'], boot)
     require(root == expected and os.getpgid(root['pid']) == root['pid'], 'root_changed')
     root_args = argv(root['pid'])
-    runtime_root = binding['remoteCwd'] + '/.paperclip-runtime/paperclip-runner'
+    runtime_root = binding['remoteCwd'] + '/.wardmote-runtime/paperclip-runner'
     runner = runtime_root + '/bin/wardmote-runnerd'
     require(root_args[0] == runner and flag(root_args, '--run-id') == binding['runId']
             and flag(root_args, '--environment-lease-id') == config['runtimeEnvironmentLeaseId']

@@ -251,7 +251,7 @@ describe("persistent agent directories", () => {
     });
   });
 
-  it.each([".paperclip-runtime/state", "notes/.paperclip-runtime/state", "promptTemplate.legacy.md"])("rejects reserved board path %s before mutation", async (reserved) => {
+  it.each([".wardmote-runtime/state", "notes/.wardmote-runtime/state", "promptTemplate.legacy.md"])("rejects reserved board path %s before mutation", async (reserved) => {
     await expect(agentFileStore(db).write({ ...target(), path: reserved, bytes: Buffer.from("reserved"), baseHash: null }, board())).rejects.toMatchObject({ status: 422 });
     await expect(fs.stat(path.join(root, reserved))).rejects.toMatchObject({ code: "ENOENT" });
     expect(await run()).toBeTruthy();
@@ -259,7 +259,7 @@ describe("persistent agent directories", () => {
 
   it("round trips nested text, empty directories and binary bytes independently of task files", async () => {
     const first = await run();
-    expect(first.localRoot.startsWith(path.join(home, ".paperclip-runtime"))).toBe(false);
+    expect(first.localRoot.startsWith(path.join(home, ".wardmote-runtime"))).toBe(false);
     await fs.mkdir(path.join(first.localRoot, "notes", "empty"), { recursive: true });
     await fs.writeFile(path.join(first.localRoot, "notes", "fact.txt"), "remember me");
     const bytes = Buffer.from([0, 255, 17, 128, 9]);
@@ -538,7 +538,7 @@ describe("persistent agent directories", () => {
   it("retains remote cleanup across restart and failed retries until the original lease is cleaned", async () => {
     const copy = await run();
     const environmentId = randomUUID(), leaseId = randomUUID(), remoteCwd = "/fixture/task";
-    const executionRoot = path.posix.join(remoteCwd, ".paperclip-runtime", "agent-files", agentId, copy.runId);
+    const executionRoot = path.posix.join(remoteCwd, ".wardmote-runtime", "agent-files", agentId, copy.runId);
     await db.insert(environments).values({ id: environmentId, name: environmentId, driver: "sandbox" });
     await db.insert(environmentLeases).values({ id: leaseId, companyId, environmentId, heartbeatRunId: copy.runId, provider: "daytona", providerLeaseId: "original-sandbox" });
     await db.update(agentInstructionWorkingCopies).set({ state: "saved", processStoppedAt: new Date(), location: `remote:${environmentId}`, executionRoot,
@@ -559,7 +559,7 @@ describe("persistent agent directories", () => {
     expect(execute).toHaveBeenCalledTimes(2);
     expect(execute).toHaveBeenLastCalledWith(expect.objectContaining({ lease: expect.objectContaining({ id: leaseId, providerLeaseId: "original-sandbox" }),
       command: "rm", args: ["-rf", "--", executionRoot,
-        path.posix.join(remoteCwd, ".paperclip-runtime", "paperclip-runner", "agent-file-transfers", agentId, copy.runId)], bypassSession: true }));
+        path.posix.join(remoteCwd, ".wardmote-runtime", "paperclip-runner", "agent-file-transfers", agentId, copy.runId)], bypassSession: true }));
     await copies.recoverCaptured();
     expect(execute).toHaveBeenCalledTimes(2);
     await copies.release(companyId, copy.runId);
@@ -576,7 +576,7 @@ describe("persistent agent directories", () => {
       metadata: stopped !== "missing" ? { remoteExecutionTermination: remoteTerminationReceipt(lease, { providerLeaseId: lease.providerLeaseId, state: stopped }) } : {} });
     await db.update(heartbeatRuns).set({ status: "succeeded", runtimeMode: "native" }).where(eq(heartbeatRuns.id, copy.runId));
     await db.update(agentInstructionWorkingCopies).set({ state: "unchanged_turn", location: `remote:${environmentId}`,
-      executionRoot: path.posix.join(remoteCwd, ".paperclip-runtime", "agent-files", agentId, copy.runId),
+      executionRoot: path.posix.join(remoteCwd, ".wardmote-runtime", "agent-files", agentId, copy.runId),
       receipt: { ...copy.receipt, cleanup: { leaseId, remoteCwd } } }).where(eq(agentInstructionWorkingCopies.runId, copy.runId));
     const execute = vi.fn();
     copies = agentInstructionWorkingCopyService(db, { environmentRuntime: { execute } as unknown as EnvironmentRuntimeService });
@@ -609,7 +609,7 @@ describe("persistent agent directories", () => {
     for (let index = 0; index < count; index++) await db.insert(environmentLeases).values({
       companyId, environmentId, heartbeatRunId: copy.runId, provider: "daytona", providerLeaseId: `allocation-${index}` });
     await db.update(agentInstructionWorkingCopies).set({ location: `remote:${environmentId}`,
-      executionRoot: path.posix.join(remoteCwd, ".paperclip-runtime", "agent-files", agentId, copy.runId),
+      executionRoot: path.posix.join(remoteCwd, ".wardmote-runtime", "agent-files", agentId, copy.runId),
       receipt: { ...copy.receipt, cleanup: { remoteCwd } } }).where(eq(agentInstructionWorkingCopies.runId, copy.runId));
     const execute = vi.fn();
     copies = agentInstructionWorkingCopyService(db, { environmentRuntime: { execute } as unknown as EnvironmentRuntimeService });
@@ -629,7 +629,7 @@ describe("persistent agent directories", () => {
     await db.insert(environmentLeases).values({ ...lease, status: "released", releasedAt: new Date(), cleanupStatus: "success",
       metadata: { remoteExecutionTermination: remoteTerminationReceipt(lease, { providerLeaseId: lease.providerLeaseId, state: "destroyed" }) } });
     await db.update(agentInstructionWorkingCopies).set({ state: "saved", processStoppedAt: new Date(), location: `remote:${environmentId}`,
-      executionRoot: path.posix.join(remoteCwd, ".paperclip-runtime", "agent-files", agentId, copy.runId),
+      executionRoot: path.posix.join(remoteCwd, ".wardmote-runtime", "agent-files", agentId, copy.runId),
       receipt: { ...copy.receipt, cleanupPending: true, cleanup: { leaseId, remoteCwd } } }).where(eq(agentInstructionWorkingCopies.runId, copy.runId));
     await db.delete(environments).where(eq(environments.id, environmentId));
     copies = agentInstructionWorkingCopyService(db);
@@ -814,7 +814,7 @@ describe("persistent agent directories", () => {
     await db.update(heartbeatRuns).set({ status: "succeeded", runtimeMode: "native" }).where(eq(heartbeatRuns.id, copy.runId));
     const saved = (await copies.get(companyId, copy.runId))!;
     await db.update(agentInstructionWorkingCopies).set({ location: `remote:${environmentId}`,
-      executionRoot: path.posix.join(remoteCwd, ".paperclip-runtime", "agent-files", agentId, copy.runId),
+      executionRoot: path.posix.join(remoteCwd, ".wardmote-runtime", "agent-files", agentId, copy.runId),
       receipt: { ...saved.receipt, cleanup: { leaseId, remoteCwd } } }).where(eq(agentInstructionWorkingCopies.runId, copy.runId));
     copies = agentInstructionWorkingCopyService(db);
     await copies.recoverStopped();
@@ -859,9 +859,9 @@ describe("persistent agent directories", () => {
     await fs.mkdir(path.join(root, "build"));
     await fs.writeFile(path.join(root, "build", "personal.txt"), "cache-like names are still agent files");
     const first = await prepare();
-    const firstScratch = path.join(remoteCwd, ".paperclip-runtime", "paperclip-runner", "agent-file-transfers", agentId, first.runId);
+    const firstScratch = path.join(remoteCwd, ".wardmote-runtime", "paperclip-runner", "agent-file-transfers", agentId, first.runId);
     expect(await fs.readdir(firstScratch)).toEqual([]);
-    await expect(fs.stat(path.join(first.executionRoot, ".paperclip-runtime"))).rejects.toMatchObject({ code: "ENOENT" });
+    await expect(fs.stat(path.join(first.executionRoot, ".wardmote-runtime"))).rejects.toMatchObject({ code: "ENOENT" });
     expect(await fs.readFile(path.join(first.executionRoot, "build", "personal.txt"), "utf8")).toBe("cache-like names are still agent files");
     await fs.mkdir(path.join(first.executionRoot, "notes"));
     await fs.writeFile(path.join(first.executionRoot, "notes", "bytes.bin"), Buffer.from([0, 128, 255]));
@@ -926,7 +926,7 @@ describe("persistent agent directories", () => {
       if (turn > 1) expect(saved.receipt?.checkpointStats).toMatchObject({ copiedFiles: 1, copiedBytes: turn * 7, hashedBytes: turn * 7 });
       expect(await fs.readFile(path.join(root, "memory.txt"), "utf8")).toBe(Array.from({ length: turn }, (_, i) => `turn ${i + 1}\n`).join(""));
       expect((await fs.readdir(path.dirname(copy.localRoot))).filter(name => name.startsWith("checkpoint-"))).toEqual([]);
-      expect((await fs.readdir(path.join(copy.executionRoot, ".paperclip-runtime"))).filter(name => name.startsWith("checkpoint-"))).toEqual([]);
+      expect((await fs.readdir(path.join(copy.executionRoot, ".wardmote-runtime"))).filter(name => name.startsWith("checkpoint-"))).toEqual([]);
       if (turn < 3) { copy = await prepare(copy.runId); expect(copy.executionRoot).toBe(original.executionRoot); }
     }
     await copies.collectStopped({ companyId, runId: original.runId, target: executionTarget });
@@ -1008,7 +1008,7 @@ describe("persistent agent directories", () => {
     await db.update(heartbeatRuns).set({ status: "succeeded" }).where(eq(heartbeatRuns.id, copy.runId));
     await db.update(agentInstructionWorkingCopies).set({ state: "unavailable", errorCode: "INSTRUCTION_COLLECTION_UNAVAILABLE",
       errorMessage: "Fixture could not collect files", candidateHash: "preserved-candidate", candidateBase64: Buffer.from("preserved bytes").toString("base64"), attempts: 3,
-      location: `remote:${environmentId}`, executionRoot: path.posix.join(remoteCwd, ".paperclip-runtime", "agent-files", agentId, copy.runId),
+      location: `remote:${environmentId}`, executionRoot: path.posix.join(remoteCwd, ".wardmote-runtime", "agent-files", agentId, copy.runId),
       receipt: { ...copy.receipt, cleanup: { leaseId, remoteCwd } } }).where(eq(agentInstructionWorkingCopies.runId, copy.runId));
     return { copy: (await copies.get(companyId, copy.runId))!, lease, environmentId };
   }
@@ -1196,7 +1196,7 @@ describe("persistent agent directories", () => {
     const executionTarget = { kind: "remote" as const, transport: "sandbox" as const, environmentId, leaseId, remoteCwd, runner: { execute } };
     const shell = vi.spyOn(executionTargetTools, "runAdapterExecutionTargetShellCommand").mockResolvedValue({ exitCode: 0, signal: null, timedOut: false, stdout: "", stderr: "" });
     const stage = vi.spyOn(executionTargetTools, "prepareAdapterExecutionTargetRuntime").mockImplementation(async options => ({ target: executionTarget,
-      workspaceRemoteDir: path.posix.join(remoteCwd, ".paperclip-runtime", "agent-files", agentId, runId), runtimeRootDir: options.runtimeRootDir ?? null,
+      workspaceRemoteDir: path.posix.join(remoteCwd, ".wardmote-runtime", "agent-files", agentId, runId), runtimeRootDir: options.runtimeRootDir ?? null,
       assetDirs: {}, additionalSourceDirs: {}, additionalSourceFailures: [], workspaceSyncSnapshot: null, restoreWorkspace, cleanupWorkspaceSnapshot }));
     try {
       const copy = (await copies.prepare({ ...target(), runId, cwd: home, target: executionTarget }))!;

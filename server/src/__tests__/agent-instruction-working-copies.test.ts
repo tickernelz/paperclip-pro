@@ -329,7 +329,7 @@ describe("registered run instruction copies", () => {
     const runId = randomUUID();
     await db.insert(heartbeatRuns).values({ id: runId, companyId, agentId, invocationSource: "on_demand", responsibleUserId: userId });
     const copy = (await copies.prepare({ legacy: true, ...target(), runId, cwd: workspace }))!;
-    expect(copy.localRoot).toBe(path.join(workspace, ".paperclip-runtime", `instruction-edits-${runId}`, "instructions"));
+    expect(copy.localRoot).toBe(path.join(workspace, ".wardmote-runtime", `instruction-edits-${runId}`, "instructions"));
     await fs.writeFile(path.join(workspace, "deliverable.txt"), "public work");
     await execFile("git", ["-C", workspace, "add", "."]);
     const staged = await execFile("git", ["-C", workspace, "diff", "--cached", "--name-only"]);
@@ -355,7 +355,7 @@ describe("registered run instruction copies", () => {
         await gitWorkspaceSync.disposeGitWorkspaceSnapshot(snapshot);
       }
     }
-    const files = await captureDirectorySnapshot(workspace, { exclude: [".git", ".paperclip-runtime"] });
+    const files = await captureDirectorySnapshot(workspace, { exclude: [".git", ".wardmote-runtime"] });
     expect([...files.entries].map(([relative]) => relative)).toEqual(["deliverable.txt"]);
     await expect(copies.prepare({ legacy: true, ...target(), runId, cwd: home })).rejects.toThrow("different run workspace");
   });

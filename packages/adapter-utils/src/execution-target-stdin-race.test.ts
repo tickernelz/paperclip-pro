@@ -344,7 +344,7 @@ describe("stdin file race (parent PAP-4037)", () => {
     const bridge = await startAdapterExecutionTargetProcessSessionBridge({
       runId: "run-stdin-host-order",
       target,
-      runtimeRootDir: path.posix.join(rootDir, ".paperclip-runtime", "acpx"),
+      runtimeRootDir: path.posix.join(rootDir, ".wardmote-runtime", "acpx"),
       adapterKey: "acpx",
       command: process.execPath,
       args: [childPath],
@@ -443,7 +443,7 @@ describe("stdin file race (parent PAP-4037)", () => {
     const bridge = await startAdapterExecutionTargetProcessSessionBridge({
       runId: "run-stdin-stop-order",
       target,
-      runtimeRootDir: path.posix.join(rootDir, ".paperclip-runtime", "acpx"),
+      runtimeRootDir: path.posix.join(rootDir, ".wardmote-runtime", "acpx"),
       adapterKey: "acpx",
       command: process.execPath,
       args: [childPath],
@@ -1301,7 +1301,7 @@ describe("deterministic remote process-session wrapper shutdown (PAP-5316)", () 
     const bridge = await startAdapterExecutionTargetProcessSessionBridge({
       runId: input.runId,
       target,
-      runtimeRootDir: path.posix.join(input.rootDir, ".paperclip-runtime", "acpx"),
+      runtimeRootDir: path.posix.join(input.rootDir, ".wardmote-runtime", "acpx"),
       adapterKey: "acpx",
       command: process.execPath,
       args: [childPath],
@@ -1342,7 +1342,7 @@ describe("deterministic remote process-session wrapper shutdown (PAP-5316)", () 
     // The emitted wrapper script's own path is unique to this test (it lives
     // under this test's fresh temp root), so a `ps` grep on it identifies
     // only this test's wrapper process, not a sibling test's.
-    const wrapperScriptSubstring = path.posix.join(rootDir, ".paperclip-runtime", "acpx", "process-sessions");
+    const wrapperScriptSubstring = path.posix.join(rootDir, ".wardmote-runtime", "acpx", "process-sessions");
     try {
       expect(isPidAlive(session.pid)).toBe(true);
       await waitFor(async () => (await findLivePidsByArgvSubstring(wrapperScriptSubstring)).length > 0, 4_000);
@@ -1427,7 +1427,7 @@ describe("deterministic remote process-session wrapper shutdown (PAP-5316)", () 
     const bridge = await startAdapterExecutionTargetProcessSessionBridge({
       runId: "run-forged-exit",
       target,
-      runtimeRootDir: path.posix.join(rootDir, ".paperclip-runtime", "acpx"),
+      runtimeRootDir: path.posix.join(rootDir, ".wardmote-runtime", "acpx"),
       adapterKey: "acpx",
       command: process.execPath,
       args: [childPath],
@@ -1527,7 +1527,7 @@ describe("deterministic remote process-session wrapper shutdown (PAP-5316)", () 
     const bridge = await startAdapterExecutionTargetProcessSessionBridge({
       runId: "run-forged-only",
       target,
-      runtimeRootDir: path.posix.join(rootDir, ".paperclip-runtime", "acpx"),
+      runtimeRootDir: path.posix.join(rootDir, ".wardmote-runtime", "acpx"),
       adapterKey: "acpx",
       command: process.execPath,
       args: [childPath],
@@ -1591,7 +1591,7 @@ describe("deterministic remote process-session wrapper shutdown (PAP-5316)", () 
     const bridge = await startAdapterExecutionTargetProcessSessionBridge({
       runId: "run-no-signal",
       target,
-      runtimeRootDir: path.posix.join(rootDir, ".paperclip-runtime", "acpx"),
+      runtimeRootDir: path.posix.join(rootDir, ".wardmote-runtime", "acpx"),
       adapterKey: "acpx",
       command: process.execPath,
       args: [childPath],
@@ -1762,7 +1762,7 @@ describe("deterministic remote process-session wrapper shutdown (PAP-5316)", () 
     const bridge = await startAdapterExecutionTargetProcessSessionBridge({
       runId: "run-normal-exit",
       target,
-      runtimeRootDir: path.posix.join(rootDir, ".paperclip-runtime", "acpx"),
+      runtimeRootDir: path.posix.join(rootDir, ".wardmote-runtime", "acpx"),
       adapterKey: "acpx",
       command: process.execPath,
       args: [childPath],
@@ -1844,7 +1844,7 @@ describe("deterministic remote process-session wrapper shutdown (PAP-5316)", () 
     const bridge = await startAdapterExecutionTargetProcessSessionBridge({
       runId: "run-never-acks",
       target,
-      runtimeRootDir: path.posix.join(rootDir, ".paperclip-runtime", "acpx"),
+      runtimeRootDir: path.posix.join(rootDir, ".wardmote-runtime", "acpx"),
       adapterKey: "acpx",
       command: process.execPath,
       args: [childPath],
@@ -1996,7 +1996,7 @@ describe("deterministic remote process-session wrapper shutdown (PAP-5316)", () 
     const bridge = await startAdapterExecutionTargetProcessSessionBridge({
       runId: "run-lost-identity",
       target,
-      runtimeRootDir: path.posix.join(rootDir, ".paperclip-runtime", "acpx"),
+      runtimeRootDir: path.posix.join(rootDir, ".wardmote-runtime", "acpx"),
       adapterKey: "acpx",
       command: process.execPath,
       args: [childPath],
@@ -2017,7 +2017,7 @@ describe("deterministic remote process-session wrapper shutdown (PAP-5316)", () 
     await waitFor(async () => (await readFile(pidFile, "utf8").catch(() => "")).trim().length > 0, 8_000);
     const pid = Number.parseInt((await readFile(pidFile, "utf8")).trim(), 10);
     expect(isPidAlive(pid)).toBe(true);
-    const wrapperScriptSubstring = path.posix.join(rootDir, ".paperclip-runtime", "acpx", "process-sessions");
+    const wrapperScriptSubstring = path.posix.join(rootDir, ".wardmote-runtime", "acpx", "process-sessions");
     await waitFor(async () => (await findLivePidsByArgvSubstring(wrapperScriptSubstring)).length > 0, 4_000);
 
     await bridge!.stop();

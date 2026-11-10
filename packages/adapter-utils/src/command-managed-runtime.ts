@@ -142,7 +142,7 @@ function shellQuote(value: string) {
 }
 
 function mergeRuntimeExcludes(entries: string[] | undefined): string[] {
-  return [...new Set([".paperclip-runtime", ...(entries ?? [])])];
+  return [...new Set([".wardmote-runtime", ...(entries ?? [])])];
 }
 
 // Largest base64 body we hand to the runner as a single stdin string. Normal

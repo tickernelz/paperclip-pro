@@ -712,11 +712,6 @@ describe("claude_local ACP lane", () => {
   });
 
   it("stages the skill bundle inside the sandbox but never syncs it back into the host workspace", async () => {
-    // The staged skill bundle lives under `.paperclip-runtime/claude/skills`,
-    // inside the same in-sandbox directory the workspace restore reads. The
-    // restore excludes the whole `.paperclip-runtime` tree
-    // (`sandbox-managed-runtime.ts`'s `restoreExclude` list) for every asset
-    // key alike, so this proves it for the new "skills" asset specifically.
     const root = await makeTempRoot("paperclip-claude-acp-skills-no-syncback-");
     const skill = await createRuntimeSkill(root);
     const localCwd = path.join(root, "worktree");
@@ -765,7 +760,7 @@ describe("claude_local ACP lane", () => {
     // during the run, under the in-sandbox skill root the prompt names.
     const prompt = String(runtimes[0]?.startInputs[0]?.text ?? "");
     const inSandboxSkillRoot = prompt.match(/Skill root: (\S+)/)![1]!;
-    expect(inSandboxSkillRoot).toContain(path.join(remoteCwd, ".paperclip-runtime"));
+    expect(inSandboxSkillRoot).toContain(path.join(remoteCwd, ".wardmote-runtime"));
     await expect(
       fs.readFile(path.join(inSandboxSkillRoot, "review", "SKILL.md"), "utf8"),
     ).resolves.toContain("review skill");
@@ -773,7 +768,7 @@ describe("claude_local ACP lane", () => {
     // run wrote inside the workspace proper...
     await expect(fs.readFile(path.join(localCwd, "hello.txt"), "utf8")).resolves.toBe("hi");
     // ...but not the staged runtime directory the skill bundle staged into.
-    await expect(fs.access(path.join(localCwd, ".paperclip-runtime"))).rejects.toThrow();
+    await expect(fs.access(path.join(localCwd, ".wardmote-runtime"))).rejects.toThrow();
   });
 
   it("passes the exact configured Fable 5.1 ID through ANTHROPIC_MODEL on the ACP lane", async () => {
@@ -905,7 +900,7 @@ describe("claude_local ACP lane", () => {
     // C2 — CLAUDE_CONFIG_DIR repointed onto an in-sandbox path, distinct from the
     // host shared config dir.
     expect(remappedConfigDir).not.toBe(sharedClaudeConfig);
-    expect(remappedConfigDir).toContain(".paperclip-runtime");
+    expect(remappedConfigDir).toContain(".wardmote-runtime");
     expect(remappedConfigDir.endsWith("/config")).toBe(true);
     // Seeded: settings.json was materialized into the in-sandbox config dir (the
     // local runner uses the host FS, so this is a real host path).
@@ -1140,7 +1135,7 @@ describe("claude_local ACP lane", () => {
     expect(meta[0]?.env?.CLAUDE_CONFIG_DIR).toBe(path.posix.join(remoteCwd, ".claude-config"));
     expect(meta[0]?.env?.CLAUDE_CONFIG_DIR).not.toBe(operatorConfigDir);
     // No managed config seed is materialized — the operator dir is authoritative.
-    expect(String(meta[0]?.env?.CLAUDE_CONFIG_DIR ?? "")).not.toContain(".paperclip-runtime");
+    expect(String(meta[0]?.env?.CLAUDE_CONFIG_DIR ?? "")).not.toContain(".wardmote-runtime");
     expect(logs.join("")).toContain(
       `Remapped operator CLAUDE_CONFIG_DIR from host path ${operatorConfigDir}`,
     );
@@ -1210,7 +1205,7 @@ describe("claude_local ACP lane", () => {
     const remappedConfigDir = String(meta[0]?.env?.CLAUDE_CONFIG_DIR ?? "");
     // The un-portable host path is dropped; managed config is seeded in-sandbox.
     expect(remappedConfigDir).not.toBe(operatorConfigDir);
-    expect(remappedConfigDir).toContain(".paperclip-runtime");
+    expect(remappedConfigDir).toContain(".wardmote-runtime");
     expect(remappedConfigDir.endsWith("/config")).toBe(true);
     await expect(fs.readFile(path.join(remappedConfigDir, "settings.json"), "utf8")).resolves.toContain(
       "permissions",

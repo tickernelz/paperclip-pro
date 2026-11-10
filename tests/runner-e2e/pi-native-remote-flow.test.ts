@@ -49,7 +49,7 @@ it.each([
       const runId = runIds.find(id => path.includes(`${id}/`))!;
       const nativeRead = { eventType: "tool.execution.completed", seq: 3, payload: { prpEvent: { payload: {
         schema: "paperclip.tool.execution.v1", transport: "builtin", name: "read", operation: "read", status: "completed",
-        target: `.paperclip-runtime/agent-files/${agentId}/${runId}/memory/pi-native.txt`, readOnly: true, outputTruncated: false, executionId: path.includes(`${runIds[0]}/`) ? "read-1" : "read-2",
+        target: `.wardmote-runtime/agent-files/${agentId}/${runId}/memory/pi-native.txt`, readOnly: true, outputTruncated: false, executionId: path.includes(`${runIds[0]}/`) ? "read-1" : "read-2",
         // Missing-LF controls still model the intended complete native read;
         // their independent persisted bytes fail the existing byte assertion.
         output: JSON.stringify({ content: [{ type: "text", text: personal.endsWith("\n") ? personal : `${personal}\n` }] }),

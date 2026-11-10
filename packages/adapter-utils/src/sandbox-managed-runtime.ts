@@ -199,21 +199,6 @@ export const REFERENCED_SOURCE_IGNORE_FAILURE_REASONS = {
   toplevelNotDescendant: "git-toplevel-not-descendant",
 } as const;
 
-/**
- * A referenced (additional) project to stage into the run sandbox as a plain,
- * read-only tree. `localPath` is the host checkout directory. Upstream code
- * already authorized and realized this directory (`project:read`); this layer
- * adds no authorization logic. `projectId` names the isolated remote
- * subdirectory (`project-<projectId>` under the runtime root) the tree lands in.
- *
- * Additional sources are plain trees only. They never carry the anchor
- * workspace's git-history, overlay, or `.paperclip-runtime` preservation
- * semantics — those stay anchor-only.
- *
- * `ignoreResolution` is required so every construction site must supply it
- * explicitly — a caller cannot default to the unfiltered legacy behavior by
- * omission. Resolve it once per project with `resolveReferencedSourceIgnore`.
- */
 export interface SandboxAdditionalSource {
   localPath: string;
   projectId: string;
@@ -1130,9 +1115,9 @@ export async function prepareSandboxManagedRuntime(input: {
   runtimeSpan?: RuntimeSpanRunner;
 }): Promise<PreparedSandboxManagedRuntime> {
   const workspaceRemoteDir = input.workspaceRemoteDir ?? input.spec.remoteCwd;
-  const runtimeRootDir = input.runtimeRootDir ?? path.posix.join(workspaceRemoteDir, ".paperclip-runtime", input.adapterKey);
+  const runtimeRootDir = input.runtimeRootDir ?? path.posix.join(workspaceRemoteDir, ".wardmote-runtime", input.adapterKey);
   if (input.runtimeRootDir !== undefined) {
-    const reservedRoot = path.posix.join(input.spec.remoteCwd, ".paperclip-runtime");
+    const reservedRoot = path.posix.join(input.spec.remoteCwd, ".wardmote-runtime");
     if (!path.posix.isAbsolute(runtimeRootDir) || path.posix.normalize(runtimeRootDir) !== runtimeRootDir
       || runtimeRootDir.includes("\0") || runtimeRootDir.endsWith("/") || !runtimeRootDir.startsWith(`${reservedRoot}/`)) {
       throw new Error("Transfer scratch must remain within the lease runtime tree");
@@ -1226,7 +1211,7 @@ export async function prepareSandboxManagedRuntime(input: {
   const restoreExclude = mergeExcludes(
     input.workspaceFileMode === "all" ? [] : SANDBOX_WORKSPACE_HEAVY_DIR_EXCLUDES,
     input.workspaceFileMode === "all" ? [] : [...GIT_ARCHIVE_EXCLUDES],
-    [".paperclip-runtime"],
+    [".wardmote-runtime"],
     input.preserveAbsentOnRestore,
     input.workspaceExclude,
     gitIgnoredExcludes,
@@ -1302,7 +1287,7 @@ export async function prepareSandboxManagedRuntime(input: {
 
   await withTempDir("paperclip-sandbox-sync-", async (tempDir) => {
     const preservedNames = new Set([
-      ".paperclip-runtime",
+      ".wardmote-runtime",
       ...(gitSnapshot ? [".git"] : []),
       ...(input.preserveAbsentOnRestore ?? []),
     ]);
@@ -1392,10 +1377,6 @@ export async function prepareSandboxManagedRuntime(input: {
           // defaults to a no-op, so a caller with no injected runner keeps the
           // current behavior and control flow.
           await runStepSpan("pack", async () => {
-            // 1. git-history tar (git-backed workspace only). Both tar targets live under
-            //    `runtimeRootDir` (`.paperclip-runtime/<adapterKey>`). The git extract
-            //    wipes the target tree EXCEPT `.paperclip-runtime`, so the overlay tar,
-            //    which sits under `.paperclip-runtime`, survives to run its own extract.
             if (gitSnapshot) {
               await emitRuntimeStatus(input.onRuntimeProgress, "git_sync", "Syncing git history to environment");
               const gitTarPath = path.join(tempDir, "git-workspace.tar");
@@ -1424,7 +1405,7 @@ export async function prepareSandboxManagedRuntime(input: {
                     await createTarballFromDirectory({
                       localDir: cloneDir,
                       archivePath: gitTarPath,
-                      exclude: [".paperclip-runtime"],
+                      exclude: [".wardmote-runtime"],
                     });
                   },
                 );
@@ -1446,7 +1427,7 @@ export async function prepareSandboxManagedRuntime(input: {
                 command: buildWorkspaceTarExtractCommand({
                   workspaceRemoteDir,
                   remoteTar: remoteGitTar,
-                  wipeExceptNames: [".paperclip-runtime"],
+                  wipeExceptNames: [".wardmote-runtime"],
                 }),
               });
               workspaceUploadBytes += (await fs.stat(gitTarPath)).size;
@@ -1600,15 +1581,6 @@ export async function prepareSandboxManagedRuntime(input: {
       );
     }
 
-    // Stage each referenced (additional) project as a plain, read-only tree in
-    // its OWN isolated remote directory (`project-<projectId>`). An additional
-    // project rides one confined `syncIn` directory mapping — a native directory
-    // transfer, or the base64-tar fallback — with source and target confined to
-    // their own roots. No workspace, git-history, or `.paperclip-runtime`
-    // semantics apply; those stay anchor-only. Per-project failure isolation: one
-    // project's confinement or sync failure logs a warning and is skipped, and
-    // the run plus the other projects continue. Only a project that stages
-    // successfully appears in `additionalSourceDirs`.
     const additionalSourceList = input.additionalSources ?? [];
     // Record each referenced-project failure in its input-order slot. Slot order
     // keeps the failure list stable no matter the task completion order under
@@ -1768,7 +1740,7 @@ export async function prepareSandboxManagedRuntime(input: {
                 workspaceExclude: nestedExclude,
                 workspaceBaseline: await selectDirectorySnapshot(baselineSnapshot!, {
                   prefix,
-                  exclude: mergeExcludes(SANDBOX_WORKSPACE_HEAVY_DIR_EXCLUDES, [...GIT_ARCHIVE_EXCLUDES], [".paperclip-runtime"], nestedExclude),
+                  exclude: mergeExcludes(SANDBOX_WORKSPACE_HEAVY_DIR_EXCLUDES, [...GIT_ARCHIVE_EXCLUDES], [".wardmote-runtime"], nestedExclude),
                   ignoredPaths: repository.snapshot.ignoredPaths,
                 }),
                 onRuntimeProgress: input.onRuntimeProgress,

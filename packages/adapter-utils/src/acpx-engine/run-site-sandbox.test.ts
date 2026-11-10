@@ -28,7 +28,7 @@ import type { PreparedAdapterExecutionTargetRuntime } from "@tickernelz/wardmote
 
 function makeStagedRuntime(id: string): PreparedAdapterExecutionTargetRuntime {
   return {
-    runtimeRootDir: `/remote/${id}/.paperclip-runtime/acpx`,
+    runtimeRootDir: `/remote/${id}/.wardmote-runtime/acpx`,
     additionalSourceDirs: {},
     additionalSourceFailures: [],
   } as unknown as PreparedAdapterExecutionTargetRuntime;
@@ -148,7 +148,7 @@ describe("sandbox run site", () => {
     // A referenced project that fails to stage carries its failure reason back on
     // the placed-workspace result, so a reader of the run learns why it dropped.
     const failedStaged = {
-      runtimeRootDir: "/remote/fail/.paperclip-runtime/acpx",
+      runtimeRootDir: "/remote/fail/.wardmote-runtime/acpx",
       additionalSourceDirs: {},
       additionalSourceFailures: [{ projectId: "proj-x", error: "extract failed: boom" }],
     } as unknown as PreparedAdapterExecutionTargetRuntime;

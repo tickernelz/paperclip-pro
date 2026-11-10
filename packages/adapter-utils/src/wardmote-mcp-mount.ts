@@ -113,7 +113,7 @@ export async function writeWardmoteMcpMount(input: {
     };
   }
 
-  const dir = input.remoteDir ?? path.posix.join(input.cwd, ".paperclip-runtime", "mcp");
+  const dir = input.remoteDir ?? path.posix.join(input.cwd, ".wardmote-runtime", "mcp");
   const filePath = path.posix.join(dir, input.fileName);
   const quotedDir = shellQuoteSingle(dir);
   const quotedFile = shellQuoteSingle(filePath);
