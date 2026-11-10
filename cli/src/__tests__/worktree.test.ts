@@ -289,7 +289,7 @@ describe("worktree helpers", () => {
   it("uses the repo-local config for the current worktree", () => {
     const targetRoot = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-current-worktree-"));
     try {
-      const localConfig = path.join(targetRoot, ".paperclip", "config.json");
+      const localConfig = path.join(targetRoot, ".wardmote", "config.json");
       fs.mkdirSync(path.dirname(localConfig), { recursive: true });
       fs.writeFileSync(localConfig, "{}\n");
       process.env.WARDMOTE_CONFIG = "/tmp/ambient-paperclip/config.json";
@@ -311,7 +311,7 @@ describe("worktree helpers", () => {
     try {
       execFileSync("git", ["init", "-q"], { cwd: targetRoot });
       const nestedDirectory = path.join(targetRoot, "packages", "example", "src");
-      const localConfig = path.join(targetRoot, ".paperclip", "config.json");
+      const localConfig = path.join(targetRoot, ".wardmote", "config.json");
       fs.mkdirSync(nestedDirectory, { recursive: true });
       fs.mkdirSync(path.dirname(localConfig), { recursive: true });
       fs.writeFileSync(localConfig, "{}\n");
@@ -648,7 +648,7 @@ describe("worktree helpers", () => {
     try {
       const sourceConfigPath = path.join(tempRoot, "source", "config.json");
       const targetRoot = path.join(tempRoot, "worktree");
-      const targetConfigPath = path.join(targetRoot, ".paperclip", "config.json");
+      const targetConfigPath = path.join(targetRoot, ".wardmote", "config.json");
       const targetPaths = resolveWorktreeLocalPaths({
         cwd: targetRoot,
         homeDir: path.join(tempRoot, "worktree-home"),
@@ -667,7 +667,7 @@ describe("worktree helpers", () => {
       fs.writeFileSync(path.join(path.dirname(sourceConfigPath), ".env"), "WARDMOTE_INSTANCE_ID=source\n");
       fs.writeFileSync(targetConfigPath, `${JSON.stringify(targetConfig)}\n`);
       fs.writeFileSync(
-        path.join(targetRoot, ".paperclip", ".env"),
+        path.join(targetRoot, ".wardmote", ".env"),
         `WARDMOTE_HOME=${targetPaths.homeDir}\nWARDMOTE_INSTANCE_ID=${targetPaths.instanceId}\n`,
       );
       markWorktreeSeedPending({ configPath: targetConfigPath, sourceConfigPath });
@@ -700,8 +700,8 @@ describe("worktree helpers", () => {
         seedMode: "minimal",
         instanceId: "ensure-seeded-test",
       }));
-      expect(fs.existsSync(path.join(targetRoot, ".paperclip", "seed-pending"))).toBe(false);
-      expect(fs.existsSync(path.join(targetRoot, ".paperclip", "seed-complete"))).toBe(false);
+      expect(fs.existsSync(path.join(targetRoot, ".wardmote", "seed-pending"))).toBe(false);
+      expect(fs.existsSync(path.join(targetRoot, ".wardmote", "seed-complete"))).toBe(false);
       expect(readWorktreeSeedManifest(targetConfigPath)).toMatchObject({
         version: 2,
         state: "verified",
@@ -767,7 +767,7 @@ describe("worktree helpers", () => {
     try {
       const sourceConfigPath = path.join(tempRoot, "source", "config.json");
       const targetRoot = path.join(tempRoot, "worktree");
-      const targetConfigPath = path.join(targetRoot, ".paperclip", "config.json");
+      const targetConfigPath = path.join(targetRoot, ".wardmote", "config.json");
       const targetPaths = resolveWorktreeLocalPaths({
         cwd: targetRoot,
         homeDir: path.join(tempRoot, "worktree-home"),
@@ -786,7 +786,7 @@ describe("worktree helpers", () => {
       fs.writeFileSync(path.join(path.dirname(sourceConfigPath), ".env"), "WARDMOTE_INSTANCE_ID=source\n");
       fs.writeFileSync(targetConfigPath, `${JSON.stringify(targetConfig)}\n`);
       fs.writeFileSync(
-        path.join(targetRoot, ".paperclip", ".env"),
+        path.join(targetRoot, ".wardmote", ".env"),
         `WARDMOTE_HOME=${targetPaths.homeDir}\nWARDMOTE_INSTANCE_ID=${targetPaths.instanceId}\n`,
       );
       const inspectLegacyDatabase = vi.fn().mockResolvedValue(null);
@@ -814,7 +814,7 @@ describe("worktree helpers", () => {
     try {
       const sourceConfigPath = path.join(tempRoot, "source", "config.json");
       const targetRoot = path.join(tempRoot, "worktree");
-      const targetConfigPath = path.join(targetRoot, ".paperclip", "config.json");
+      const targetConfigPath = path.join(targetRoot, ".wardmote", "config.json");
       const targetPaths = resolveWorktreeLocalPaths({
         cwd: targetRoot,
         homeDir: path.join(tempRoot, "worktree-home"),
@@ -833,7 +833,7 @@ describe("worktree helpers", () => {
       fs.writeFileSync(path.join(path.dirname(sourceConfigPath), ".env"), "WARDMOTE_INSTANCE_ID=source\n");
       fs.writeFileSync(targetConfigPath, `${JSON.stringify(targetConfig)}\n`);
       fs.writeFileSync(
-        path.join(targetRoot, ".paperclip", ".env"),
+        path.join(targetRoot, ".wardmote", ".env"),
         `WARDMOTE_HOME=${targetPaths.homeDir}\nWARDMOTE_INSTANCE_ID=${targetPaths.instanceId}\n`,
       );
       const seedDatabase = vi.fn();
@@ -861,9 +861,9 @@ describe("worktree helpers", () => {
     const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-worktree-managed-seed-"));
     try {
       const baseRoot = path.join(tempRoot, "base");
-      const sourceConfigPath = path.join(baseRoot, ".paperclip", "config.json");
+      const sourceConfigPath = path.join(baseRoot, ".wardmote", "config.json");
       const targetRoot = path.join(tempRoot, "worktree");
-      const targetConfigPath = path.join(targetRoot, ".paperclip", "config.json");
+      const targetConfigPath = path.join(targetRoot, ".wardmote", "config.json");
       const targetPaths = resolveWorktreeLocalPaths({
         cwd: targetRoot,
         homeDir: path.join(tempRoot, "worktree-home"),
@@ -910,9 +910,9 @@ describe("worktree helpers", () => {
       const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), `paperclip-worktree-managed-${variant}-`));
       try {
         const baseRoot = path.join(tempRoot, "base");
-        const canonicalSource = path.join(baseRoot, ".paperclip", "config.json");
+        const canonicalSource = path.join(baseRoot, ".wardmote", "config.json");
         const targetRoot = path.join(tempRoot, "worktree");
-        const targetConfigPath = path.join(targetRoot, ".paperclip", "config.json");
+        const targetConfigPath = path.join(targetRoot, ".wardmote", "config.json");
         const attackerRoot = path.join(tempRoot, variant);
         const attackerConfig = path.join(attackerRoot, "config.json");
         fs.mkdirSync(path.dirname(canonicalSource), { recursive: true });
@@ -973,7 +973,7 @@ describe("worktree helpers", () => {
             }),
           ]),
         });
-        expect(fs.existsSync(path.join(targetRoot, ".paperclip", "seed.lock"))).toBe(false);
+        expect(fs.existsSync(path.join(targetRoot, ".wardmote", "seed.lock"))).toBe(false);
       } finally {
         fs.rmSync(tempRoot, { recursive: true, force: true });
       }
@@ -985,7 +985,7 @@ describe("worktree helpers", () => {
     try {
       const sourceConfigPath = path.join(tempRoot, "source", "config.json");
       const targetRoot = path.join(tempRoot, "worktree");
-      const targetConfigPath = path.join(targetRoot, ".paperclip", "config.json");
+      const targetConfigPath = path.join(targetRoot, ".wardmote", "config.json");
       const targetPaths = resolveWorktreeLocalPaths({
         cwd: targetRoot,
         homeDir: path.join(tempRoot, "worktree-home"),
@@ -1004,7 +1004,7 @@ describe("worktree helpers", () => {
       fs.writeFileSync(path.join(path.dirname(sourceConfigPath), ".env"), "WARDMOTE_INSTANCE_ID=source\n");
       fs.writeFileSync(targetConfigPath, `${JSON.stringify(targetConfig)}\n`);
       fs.writeFileSync(
-        path.join(targetRoot, ".paperclip", ".env"),
+        path.join(targetRoot, ".wardmote", ".env"),
         `WARDMOTE_HOME=${targetPaths.homeDir}\nWARDMOTE_INSTANCE_ID=${targetPaths.instanceId}\n`,
       );
       markWorktreeSeedPending({ configPath: targetConfigPath, sourceConfigPath });
@@ -1035,9 +1035,9 @@ describe("worktree helpers", () => {
           }),
         ]),
       });
-      expect(fs.existsSync(path.join(targetRoot, ".paperclip", "seed-pending"))).toBe(false);
-      expect(fs.existsSync(path.join(targetRoot, ".paperclip", "seed-complete"))).toBe(false);
-      expect(fs.existsSync(path.join(targetRoot, ".paperclip", "seed.lock"))).toBe(false);
+      expect(fs.existsSync(path.join(targetRoot, ".wardmote", "seed-pending"))).toBe(false);
+      expect(fs.existsSync(path.join(targetRoot, ".wardmote", "seed-complete"))).toBe(false);
+      expect(fs.existsSync(path.join(targetRoot, ".wardmote", "seed.lock"))).toBe(false);
     } finally {
       fs.rmSync(tempRoot, { recursive: true, force: true });
     }
@@ -1048,7 +1048,7 @@ describe("worktree helpers", () => {
     try {
       const sourceConfigPath = path.join(tempRoot, "source", "config.json");
       const targetRoot = path.join(tempRoot, "worktree");
-      const targetConfigPath = path.join(targetRoot, ".paperclip", "config.json");
+      const targetConfigPath = path.join(targetRoot, ".wardmote", "config.json");
       const targetPaths = resolveWorktreeLocalPaths({
         cwd: targetRoot,
         homeDir: path.join(tempRoot, "worktree-home"),
@@ -1067,7 +1067,7 @@ describe("worktree helpers", () => {
       fs.writeFileSync(path.join(path.dirname(sourceConfigPath), ".env"), "WARDMOTE_INSTANCE_ID=source\n");
       fs.writeFileSync(targetConfigPath, `${JSON.stringify(targetConfig)}\n`);
       fs.writeFileSync(
-        path.join(targetRoot, ".paperclip", ".env"),
+        path.join(targetRoot, ".wardmote", ".env"),
         `WARDMOTE_HOME=${targetPaths.homeDir}\nWARDMOTE_INSTANCE_ID=${targetPaths.instanceId}\n`,
       );
       markWorktreeSeedPending({ configPath: targetConfigPath, sourceConfigPath });
@@ -1087,7 +1087,7 @@ describe("worktree helpers", () => {
         { seeded: false, reason: "verified_manifest" },
       ]));
       expect(seedDatabase).toHaveBeenCalledTimes(1);
-      expect(fs.existsSync(path.join(targetRoot, ".paperclip", "seed.lock"))).toBe(false);
+      expect(fs.existsSync(path.join(targetRoot, ".wardmote", "seed.lock"))).toBe(false);
     } finally {
       fs.rmSync(tempRoot, { recursive: true, force: true });
     }
@@ -1098,7 +1098,7 @@ describe("worktree helpers", () => {
     try {
       const sourceConfigPath = path.join(tempRoot, "source", "config.json");
       const targetRoot = path.join(tempRoot, "worktree");
-      const targetConfigPath = path.join(targetRoot, ".paperclip", "config.json");
+      const targetConfigPath = path.join(targetRoot, ".wardmote", "config.json");
       const targetPaths = resolveWorktreeLocalPaths({
         cwd: targetRoot,
         homeDir: path.join(tempRoot, "worktree-home"),
@@ -1117,13 +1117,13 @@ describe("worktree helpers", () => {
       fs.writeFileSync(path.join(path.dirname(sourceConfigPath), ".env"), "WARDMOTE_INSTANCE_ID=source\n");
       fs.writeFileSync(targetConfigPath, `${JSON.stringify(targetConfig)}\n`);
       fs.writeFileSync(
-        path.join(targetRoot, ".paperclip", ".env"),
+        path.join(targetRoot, ".wardmote", ".env"),
         `WARDMOTE_HOME=${targetPaths.homeDir}\nWARDMOTE_INSTANCE_ID=${targetPaths.instanceId}\n`,
       );
       markWorktreeSeedPending({ configPath: targetConfigPath, sourceConfigPath });
       const interrupted = readWorktreeSeedManifest(targetConfigPath)!;
       fs.writeFileSync(
-        path.join(targetRoot, ".paperclip", "seed-manifest.json"),
+        path.join(targetRoot, ".wardmote", "seed-manifest.json"),
         `${JSON.stringify({ ...interrupted, state: "running", phase: "restore" }, null, 2)}\n`,
       );
 
@@ -1149,8 +1149,8 @@ describe("worktree helpers", () => {
   it("fails closed instead of racing to reclaim a stale seed lock", async () => {
     const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-worktree-ensure-seeded-stale-lock-"));
     try {
-      const targetConfigPath = path.join(tempRoot, ".paperclip", "config.json");
-      const lockPath = path.join(tempRoot, ".paperclip", "seed.lock");
+      const targetConfigPath = path.join(tempRoot, ".wardmote", "config.json");
+      const lockPath = path.join(tempRoot, ".wardmote", "seed.lock");
       fs.mkdirSync(path.dirname(targetConfigPath), { recursive: true });
       fs.writeFileSync(
         lockPath,
@@ -1484,16 +1484,16 @@ describe("worktree helpers", () => {
       process.env.WARDMOTE_AGENT_JWT_SECRET = "source-jwt-secret";
       process.env.WARDMOTE_TOOL_ACTION_SIGNING_SECRET = "source-signing-secret";
       await worktreeInitCommand({ empty: true, fromConfig: path.join(tempRoot, "missing.json"), home: path.join(tempRoot, "instances") });
-      const env = fs.readFileSync(path.join(repoRoot, ".paperclip/.env"), "utf8");
+      const env = fs.readFileSync(path.join(repoRoot, ".wardmote/.env"), "utf8");
       expect(env).not.toContain("source-jwt-secret");
       expect(env).not.toContain("source-signing-secret");
       expect(env).toContain("WARDMOTE_AGENT_JWT_SECRET=");
-      expect(fs.existsSync(path.join(repoRoot, ".paperclip/seed-manifest.json"))).toBe(false);
-      expect(fs.existsSync(path.join(repoRoot, ".paperclip/seed-pending"))).toBe(false);
-      expect(fs.existsSync(path.join(repoRoot, ".paperclip/seed-empty"))).toBe(true);
+      expect(fs.existsSync(path.join(repoRoot, ".wardmote/seed-manifest.json"))).toBe(false);
+      expect(fs.existsSync(path.join(repoRoot, ".wardmote/seed-pending"))).toBe(false);
+      expect(fs.existsSync(path.join(repoRoot, ".wardmote/seed-empty"))).toBe(true);
       await worktreeInitCommand({ seed: false, force: true, fromConfig: path.join(tempRoot, "missing.json"), home: path.join(tempRoot, "instances") });
-      expect(fs.existsSync(path.join(repoRoot, ".paperclip/seed-empty"))).toBe(false);
-      expect(readWorktreeSeedManifest(path.join(repoRoot, ".paperclip/config.json"))?.state).toBe("pending");
+      expect(fs.existsSync(path.join(repoRoot, ".wardmote/seed-empty"))).toBe(false);
+      expect(readWorktreeSeedManifest(path.join(repoRoot, ".wardmote/config.json"))?.state).toBe("pending");
     } finally {
       process.chdir(originalCwd);
       if (originalJwt === undefined) delete process.env.WARDMOTE_AGENT_JWT_SECRET; else process.env.WARDMOTE_AGENT_JWT_SECRET = originalJwt;
@@ -1518,10 +1518,10 @@ describe("worktree helpers", () => {
       await worktreeInitCommand({
         seed: false,
         fromConfig: path.join(tempRoot, "missing", "config.json"),
-        home: path.join(tempRoot, ".paperclip-worktrees"),
+        home: path.join(tempRoot, ".wardmote-worktrees"),
       });
 
-      const envPath = path.join(repoRoot, ".paperclip", ".env");
+      const envPath = path.join(repoRoot, ".wardmote", ".env");
       const envContents = fs.readFileSync(envPath, "utf8");
       expect(envContents).toContain("WARDMOTE_AGENT_JWT_SECRET=worktree-shared-secret");
       expect(envContents).toContain("WARDMOTE_TOOL_ACTION_SIGNING_SECRET=worktree-tool-action-secret");
@@ -1550,7 +1550,7 @@ describe("worktree helpers", () => {
 
     try {
       fs.mkdirSync(repoRoot, { recursive: true });
-      const repoConfigDir = path.join(repoRoot, ".paperclip");
+      const repoConfigDir = path.join(repoRoot, ".wardmote");
       fs.mkdirSync(repoConfigDir, { recursive: true });
       fs.writeFileSync(path.join(repoConfigDir, "config.json"), "stale", "utf8");
       fs.writeFileSync(path.join(repoConfigDir, ".env"), "STALE=1", "utf8");
@@ -1569,7 +1569,7 @@ describe("worktree helpers", () => {
         seed: false,
         force: true,
         fromConfig: path.join(tempRoot, "missing", "config.json"),
-        home: path.join(tempRoot, ".paperclip-worktrees"),
+        home: path.join(tempRoot, ".wardmote-worktrees"),
       });
 
       expect(fs.existsSync(sentinelPath)).toBe(true);
@@ -1595,7 +1595,7 @@ describe("worktree helpers", () => {
       const sourceConfigDir = path.join(tempRoot, "source");
       const sourceConfigPath = path.join(sourceConfigDir, "config.json");
       const sourceKeyPath = path.join(sourceConfigDir, "secrets", "master.key");
-      const worktreeHome = path.join(tempRoot, ".paperclip-worktrees");
+      const worktreeHome = path.join(tempRoot, ".wardmote-worktrees");
       const sourceDb = await startEmbeddedPostgresTestDatabase("paperclip-worktree-local-board-source-");
       onTestFinished(() => sourceDb.cleanup());
 
@@ -1629,7 +1629,7 @@ describe("worktree helpers", () => {
         force: true,
       });
 
-      const targetConfigPath = path.join(worktreeRoot, ".paperclip", "config.json");
+      const targetConfigPath = path.join(worktreeRoot, ".wardmote", "config.json");
       const targetConfig = JSON.parse(fs.readFileSync(targetConfigPath, "utf8")) as WardmoteConfig;
       expect(readWorktreeSeedManifest(targetConfigPath)).toMatchObject({
         state: "verified",
@@ -1699,7 +1699,7 @@ describe("worktree helpers", () => {
       const sourceConfigPath = path.join(sourceConfigDir, "config.json");
       const sourceEnvPath = path.join(sourceConfigDir, ".env");
       const sourceKeyPath = path.join(sourceConfigDir, "secrets", "master.key");
-      const worktreeHome = path.join(tempRoot, ".paperclip-worktrees");
+      const worktreeHome = path.join(tempRoot, ".wardmote-worktrees");
       const sourceCluster = await startEmbeddedPostgresTestDatabase("paperclip-worktree-auth-source-");
       const sourceUrl = new URL(sourceCluster.connectionString);
       sourceUrl.pathname = "/lagging_source";
@@ -1818,10 +1818,10 @@ describe("worktree helpers", () => {
       });
 
       const targetConfig = JSON.parse(
-        fs.readFileSync(path.join(worktreeRoot, ".paperclip", "config.json"), "utf8"),
+        fs.readFileSync(path.join(worktreeRoot, ".wardmote", "config.json"), "utf8"),
       ) as WardmoteConfig;
       const manifestText = fs.readFileSync(
-        path.join(worktreeRoot, ".paperclip", "seed-manifest.json"),
+        path.join(worktreeRoot, ".wardmote", "seed-manifest.json"),
         "utf8",
       );
       expect(JSON.parse(manifestText)).toMatchObject({
@@ -1868,7 +1868,7 @@ describe("worktree helpers", () => {
   it("avoids ports already claimed by sibling worktree instance configs", async () => {
     const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-worktree-claimed-ports-"));
     const repoRoot = path.join(tempRoot, "repo");
-    const homeDir = path.join(tempRoot, ".paperclip-worktrees");
+    const homeDir = path.join(tempRoot, ".wardmote-worktrees");
     const siblingInstanceRoot = path.join(homeDir, "instances", "existing-worktree");
     const originalCwd = process.cwd();
 
@@ -1935,7 +1935,7 @@ describe("worktree helpers", () => {
         home: homeDir,
       });
 
-      const config = JSON.parse(fs.readFileSync(path.join(repoRoot, ".paperclip", "config.json"), "utf8"));
+      const config = JSON.parse(fs.readFileSync(path.join(repoRoot, ".wardmote", "config.json"), "utf8"));
       expect(config.server.port).toBeGreaterThan(3101);
       expect(config.database.embeddedPostgresPort).not.toBe(54330);
       expect(config.database.embeddedPostgresPort).not.toBe(config.server.port);
@@ -1948,13 +1948,13 @@ describe("worktree helpers", () => {
 
   it("reserves distinct ports for postgres-mode siblings under a custom worktree parent", async () => {
     const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-worktree-custom-parent-"));
-    const homeDir = path.join(tempRoot, ".paperclip-worktrees");
+    const homeDir = path.join(tempRoot, ".wardmote-worktrees");
     const customParentDir = path.join(tempRoot, "custom", "workspace-lanes");
     const firstWorktreeRoot = path.join(customParentDir, "lane-one");
     const secondWorktreeRoot = path.join(customParentDir, "lane-two");
     const missingSourceConfig = path.join(tempRoot, "missing", "config.json");
-    const firstConfigPath = path.join(firstWorktreeRoot, ".paperclip", "config.json");
-    const secondConfigPath = path.join(secondWorktreeRoot, ".paperclip", "config.json");
+    const firstConfigPath = path.join(firstWorktreeRoot, ".wardmote", "config.json");
+    const secondConfigPath = path.join(secondWorktreeRoot, ".wardmote", "config.json");
     const originalCwd = process.cwd();
 
     try {
@@ -2004,7 +2004,7 @@ describe("worktree helpers", () => {
   it("defaults the seed source config to the current repo-local Wardmote config", () => {
     const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-worktree-source-config-"));
     const repoRoot = path.join(tempRoot, "repo");
-    const localConfigPath = path.join(repoRoot, ".paperclip", "config.json");
+    const localConfigPath = path.join(repoRoot, ".wardmote", "config.json");
     const originalCwd = process.cwd();
     const originalWardmoteConfig = process.env.WARDMOTE_CONFIG;
 
@@ -2088,8 +2088,8 @@ describe("worktree helpers", () => {
   it("derives worktree reseed target paths from the adjacent env file", () => {
     const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-worktree-reseed-target-"));
     const worktreeRoot = path.join(tempRoot, "repo");
-    const configPath = path.join(worktreeRoot, ".paperclip", "config.json");
-    const envPath = path.join(worktreeRoot, ".paperclip", ".env");
+    const configPath = path.join(worktreeRoot, ".wardmote", "config.json");
+    const envPath = path.join(worktreeRoot, ".wardmote", ".env");
 
     try {
       fs.mkdirSync(path.dirname(configPath), { recursive: true });
@@ -2120,12 +2120,12 @@ describe("worktree helpers", () => {
   it("rejects reseed targets without worktree env metadata", () => {
     const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-worktree-reseed-target-missing-"));
     const worktreeRoot = path.join(tempRoot, "repo");
-    const configPath = path.join(worktreeRoot, ".paperclip", "config.json");
+    const configPath = path.join(worktreeRoot, ".wardmote", "config.json");
 
     try {
       fs.mkdirSync(path.dirname(configPath), { recursive: true });
       fs.writeFileSync(configPath, JSON.stringify(buildSourceConfig()), "utf8");
-      fs.writeFileSync(path.join(worktreeRoot, ".paperclip", ".env"), "", "utf8");
+      fs.writeFileSync(path.join(worktreeRoot, ".wardmote", ".env"), "", "utf8");
 
       expect(() =>
         resolveWorktreeReseedTargetPaths({
@@ -2146,7 +2146,7 @@ describe("worktree helpers", () => {
     const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-worktree-reseed-"));
     const repoRoot = path.join(tempRoot, "repo");
     const sourceRoot = path.join(tempRoot, "source");
-    const homeDir = path.join(tempRoot, ".paperclip-worktrees");
+    const homeDir = path.join(tempRoot, ".wardmote-worktrees");
     const currentInstanceId = "existing-worktree";
     const currentPaths = resolveWorktreeLocalPaths({
       cwd: repoRoot,
@@ -2251,7 +2251,7 @@ describe("worktree helpers", () => {
     const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-worktree-reseed-rollback-"));
     const repoRoot = path.join(tempRoot, "repo");
     const sourceRoot = path.join(tempRoot, "source");
-    const homeDir = path.join(tempRoot, ".paperclip-worktrees");
+    const homeDir = path.join(tempRoot, ".wardmote-worktrees");
     const currentInstanceId = "rollback-worktree";
     const currentPaths = resolveWorktreeLocalPaths({
       cwd: repoRoot,
@@ -2426,12 +2426,12 @@ describe("worktree helpers", () => {
 
       await worktreeMakeCommand("paperclip-make-test", {
         seed: false,
-        home: path.join(tempRoot, ".paperclip-worktrees"),
+        home: path.join(tempRoot, ".wardmote-worktrees"),
       });
 
       expect(fs.existsSync(path.join(worktreePath, ".git"))).toBe(true);
-      expect(fs.existsSync(path.join(worktreePath, ".paperclip", "config.json"))).toBe(true);
-      expect(fs.existsSync(path.join(worktreePath, ".paperclip", ".env"))).toBe(true);
+      expect(fs.existsSync(path.join(worktreePath, ".wardmote", "config.json"))).toBe(true);
+      expect(fs.existsSync(path.join(worktreePath, ".wardmote", ".env"))).toBe(true);
     } finally {
       process.chdir(originalCwd);
       homedirSpy.mockRestore();
@@ -2456,8 +2456,8 @@ describe("worktree helpers", () => {
       process.chdir(repoRoot);
       await worktreeRepairCommand({});
 
-      expect(fs.existsSync(path.join(repoRoot, ".paperclip", "config.json"))).toBe(false);
-      expect(fs.existsSync(path.join(repoRoot, ".paperclip", "worktrees"))).toBe(false);
+      expect(fs.existsSync(path.join(repoRoot, ".wardmote", "config.json"))).toBe(false);
+      expect(fs.existsSync(path.join(repoRoot, ".wardmote", "worktrees"))).toBe(false);
     } finally {
       process.chdir(originalCwd);
       fs.rmSync(tempRoot, { recursive: true, force: true });
@@ -2467,9 +2467,9 @@ describe("worktree helpers", () => {
   it("repairs the current linked worktree when Wardmote metadata is missing", async () => {
     const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-worktree-repair-current-"));
     const repoRoot = path.join(tempRoot, "repo");
-    const worktreePath = path.join(repoRoot, ".paperclip", "worktrees", "repair-me");
+    const worktreePath = path.join(repoRoot, ".wardmote", "worktrees", "repair-me");
     const sourceConfigPath = path.join(tempRoot, "source-config.json");
-    const worktreeHome = path.join(tempRoot, ".paperclip-worktrees");
+    const worktreeHome = path.join(tempRoot, ".wardmote-worktrees");
     const worktreePaths = resolveWorktreeLocalPaths({
       cwd: worktreePath,
       homeDir: worktreeHome,
@@ -2502,8 +2502,8 @@ describe("worktree helpers", () => {
         noSeed: true,
       });
 
-      expect(fs.existsSync(path.join(worktreePath, ".paperclip", "config.json"))).toBe(true);
-      expect(fs.existsSync(path.join(worktreePath, ".paperclip", ".env"))).toBe(true);
+      expect(fs.existsSync(path.join(worktreePath, ".wardmote", "config.json"))).toBe(true);
+      expect(fs.existsSync(path.join(worktreePath, ".wardmote", ".env"))).toBe(true);
       expect(fs.existsSync(path.join(worktreePaths.instanceRoot, "marker.txt"))).toBe(false);
     } finally {
       process.chdir(originalCwd);
@@ -2515,9 +2515,9 @@ describe("worktree helpers", () => {
     const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-worktree-repair-branch-"));
     const repoRoot = path.join(tempRoot, "repo");
     const sourceConfigPath = path.join(tempRoot, "source-config.json");
-    const worktreeHome = path.join(tempRoot, ".paperclip-worktrees");
+    const worktreeHome = path.join(tempRoot, ".wardmote-worktrees");
     const originalCwd = process.cwd();
-    const expectedWorktreePath = path.join(repoRoot, ".paperclip", "worktrees", "feature-repair-me");
+    const expectedWorktreePath = path.join(repoRoot, ".wardmote", "worktrees", "feature-repair-me");
 
     try {
       fs.mkdirSync(repoRoot, { recursive: true });
@@ -2538,8 +2538,8 @@ describe("worktree helpers", () => {
       });
 
       expect(fs.existsSync(path.join(expectedWorktreePath, ".git"))).toBe(true);
-      expect(fs.existsSync(path.join(expectedWorktreePath, ".paperclip", "config.json"))).toBe(true);
-      expect(fs.existsSync(path.join(expectedWorktreePath, ".paperclip", ".env"))).toBe(true);
+      expect(fs.existsSync(path.join(expectedWorktreePath, ".wardmote", "config.json"))).toBe(true);
+      expect(fs.existsSync(path.join(expectedWorktreePath, ".wardmote", ".env"))).toBe(true);
     } finally {
       process.chdir(originalCwd);
       fs.rmSync(tempRoot, { recursive: true, force: true });

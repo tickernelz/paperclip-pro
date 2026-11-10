@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
+import { adoptRetiredRepoConfigDir } from "@tickernelz/wardmote-shared/repo-config-dir";
 import {
   expandHomePrefix,
   resolveDefaultEmbeddedPostgresDir,
@@ -45,7 +46,8 @@ function findConfigFileFromAncestors(startDir: string): string | null {
   let currentDir = path.resolve(startDir);
 
   while (true) {
-    const candidate = path.resolve(currentDir, ".paperclip", CONFIG_BASENAME);
+    adoptRetiredRepoConfigDir(currentDir);
+    const candidate = path.resolve(currentDir, ".wardmote", CONFIG_BASENAME);
     if (existsSync(candidate)) return candidate;
 
     const nextDir = path.resolve(currentDir, "..");

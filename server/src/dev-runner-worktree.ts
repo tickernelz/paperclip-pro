@@ -54,12 +54,12 @@ export function isLinkedGitWorktreeCheckout(rootDir: string): boolean {
 }
 
 export function resolveWorktreeEnvFilePath(rootDir: string): string {
-  return path.resolve(rootDir, ".paperclip", ".env");
+  return path.resolve(rootDir, ".wardmote", ".env");
 }
 
 /** An explicitly empty instance owns its saved keys, even in an agent shell. */
 export function applyEmptyWorktreeSigningSecrets(rootDir: string, env: NodeJS.ProcessEnv = process.env): boolean {
-  if (!existsSync(path.resolve(rootDir, ".paperclip", "seed-empty"))) return false;
+  if (!existsSync(path.resolve(rootDir, ".wardmote", "seed-empty"))) return false;
   const entries = parseEnvFile(readFileSync(resolveWorktreeEnvFilePath(rootDir), "utf8"));
   for (const key of ["WARDMOTE_AGENT_JWT_SECRET", "WARDMOTE_TOOL_ACTION_SIGNING_SECRET"] as const) {
     if (!entries[key]?.trim()) throw new Error(`Empty worktree is missing its saved ${key}. Reinitialize its configuration before starting.`);
@@ -71,7 +71,7 @@ export function applyEmptyWorktreeSigningSecrets(rootDir: string, env: NodeJS.Pr
 }
 
 export function isWorktreeSeedPending(rootDir: string): boolean {
-  const markerDir = path.resolve(rootDir, ".paperclip");
+  const markerDir = path.resolve(rootDir, ".wardmote");
   const manifestPath = path.resolve(markerDir, "seed-manifest.json");
   if (existsSync(manifestPath)) {
     return !hasVerifiedWorktreeSeedManifest(manifestPath);
@@ -91,7 +91,7 @@ function resolveHomeAwarePath(value: string): string {
 }
 
 function resolveDefaultWorktreeHome(env: NodeJS.ProcessEnv): string {
-  return path.resolve(expandHomePrefix(env.WARDMOTE_WORKTREES_DIR?.trim() || "~/.paperclip-worktrees"));
+  return path.resolve(expandHomePrefix(env.WARDMOTE_WORKTREES_DIR?.trim() || "~/.wardmote-worktrees"));
 }
 
 function repairStaleMigratedWorktreeEnvEntries(
@@ -99,7 +99,7 @@ function repairStaleMigratedWorktreeEnvEntries(
   entries: Record<string, string>,
   env: NodeJS.ProcessEnv,
 ): Record<string, string> {
-  const localConfigPath = path.resolve(rootDir, ".paperclip", "config.json");
+  const localConfigPath = path.resolve(rootDir, ".wardmote", "config.json");
   const configuredPath = entries.WARDMOTE_CONFIG?.trim();
   if (!configuredPath) return entries;
 

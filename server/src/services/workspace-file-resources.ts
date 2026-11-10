@@ -19,6 +19,7 @@ import type {
   WorkspaceFileWorkspaceKind,
 } from "@tickernelz/wardmote-shared";
 import { HttpError, notFound, unprocessable } from "../errors.js";
+import { REPO_CONFIG_DIR_NAMES } from "@tickernelz/wardmote-shared/repo-config-dir";
 import {
   isWorkspaceGitScanError,
   WORKSPACE_GIT_SCAN_ERROR_CODES,
@@ -44,7 +45,7 @@ export interface WorkspaceFileScanContext {
 
 const DENIED_SEGMENTS = new Set([
   ".git",
-  ".paperclip",
+  ...REPO_CONFIG_DIR_NAMES,
   "node_modules",
   ".pnpm-store",
   ".yarn",

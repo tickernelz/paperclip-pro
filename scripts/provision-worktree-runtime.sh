@@ -9,7 +9,7 @@ if [ -z "$paperclip_home" ]; then
   if [ -d "$HOME/.paperclip-pro" ]; then paperclip_home="$HOME/.paperclip-pro"; else paperclip_home="$HOME/.wardmote"; fi
 fi
 paperclip_instance_id="${WARDMOTE_INSTANCE_ID:-default}"
-paperclip_dir="$worktree_cwd/.paperclip"
+paperclip_dir="$worktree_cwd/.wardmote"
 worktree_config_path="$paperclip_dir/config.json"
 seed_manifest_path="$paperclip_dir/seed-manifest.json"
 seed_empty_path="$paperclip_dir/seed-empty"
@@ -83,12 +83,12 @@ fi
 # a plain checkout carries no instance config of its own, so name the control plane's
 # own registered instance config explicitly. The seed manifest stays diagnostic
 # evidence only and must never choose the clone source.
-if [[ -L "$base_cwd/.paperclip" && ! -d "$base_cwd/.paperclip" ]]; then
-  echo "Registered base project workspace .paperclip is a broken symlink: $base_cwd/.paperclip" >&2
+if [[ -L "$base_cwd/.wardmote" && ! -d "$base_cwd/.wardmote" ]]; then
+  echo "Registered base project workspace .wardmote is a broken symlink: $base_cwd/.wardmote" >&2
   exit 1
 fi
 source_config_args=()
-if [[ ! -e "$base_cwd/.paperclip/config.json" && ! -L "$base_cwd/.paperclip/config.json" ]]; then
+if [[ ! -e "$base_cwd/.wardmote/config.json" && ! -L "$base_cwd/.wardmote/config.json" ]]; then
   source_config_path="${WARDMOTE_CONFIG:-$paperclip_home/instances/$paperclip_instance_id/config.json}"
   # A human may invoke this after sourcing `worktree env`, which points
   # WARDMOTE_CONFIG at the target. Naming the target as its own source is never

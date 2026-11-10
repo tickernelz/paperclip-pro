@@ -664,7 +664,7 @@ describe("WardmoteRunnerToolAuthority", () => {
     const authority = new WardmoteRunnerToolAuthority(db, { companyId, agentId, issueId, runId,
       dotRuntime: true, workspaceBridge: true, workspaceRoot: "/tmp/fixture-workspace" });
     try {
-      for (const contentRef of [".paperclip/.env", "nested/.PaPeRcLiP/config.json"]) {
+      for (const contentRef of [".wardmote/.env", "nested/.PaPeRcLiP/config.json"]) {
         await expect(authority.execute({ tool: "register_deliverable", callId: contentRef, arguments: {
           idempotencyKey: contentRef, filename: "config.txt", title: "Config", contentType: "text/plain",
           byteSize: 10, sha256: "0".repeat(64), contentRef,

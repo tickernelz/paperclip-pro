@@ -352,7 +352,7 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
             folderKey: "wiki-root",
             displayName: "Wiki root",
             access: "readWrite",
-            requiredDirectories: ["raw", "wiki", "wiki/concepts", ".paperclip"],
+            requiredDirectories: ["raw", "wiki", "wiki/concepts", ".wardmote"],
             requiredFiles: ["WIKI.md", "AGENTS.md"],
           },
         ],
@@ -382,7 +382,7 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
               folderKey: "wiki-root",
               displayName: "Wiki root",
               access: "readWrite",
-              requiredDirectories: ["raw", "wiki", "wiki/concepts", ".paperclip"],
+              requiredDirectories: ["raw", "wiki", "wiki/concepts", ".wardmote"],
               requiredFiles: ["WIKI.md", "AGENTS.md"],
             },
           ],
@@ -395,7 +395,7 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
       folderKey: "wiki-root",
       path: root,
       access: "readWrite",
-      requiredDirectories: ["raw", "wiki", "wiki/concepts", ".paperclip"],
+      requiredDirectories: ["raw", "wiki", "wiki/concepts", ".wardmote"],
       requiredFiles: ["WIKI.md", "AGENTS.md"],
     });
     expect(configured.healthy).toBe(false);

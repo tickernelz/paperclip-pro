@@ -327,7 +327,7 @@ const SKIP_DIRS = new Set([
   "build",
   ".next",
   "coverage",
-  ".paperclip",
+  ".wardmote",
   "tmp",
 ]);
 
