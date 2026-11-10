@@ -180,6 +180,11 @@ export async function migrateHomeCommand(
     if (state === "unknown") live.push(`service ${unit} (state could not be read)`);
     if (fs.existsSync(definition.to)) throw new Error(`Refusing to migrate ${unit}: ${definition.to} already exists.`);
     if (fs.existsSync(`${definition.to}.d`)) throw new Error(`Refusing to migrate ${unit}: ${definition.to}.d already exists.`);
+    const dropIns = `${definition.from}.d`;
+    if (fs.existsSync(dropIns)) {
+      const foreign = fs.readdirSync(dropIns, { withFileTypes: true }).find((entry) => !entry.isFile());
+      if (foreign) throw new Error(`Refusing to migrate ${unit}: ${path.join(dropIns, foreign.name)} is not a regular file.`);
+    }
   }
   if (live.length > 0) {
     throw new Error(`Stop Wardmote before migrating the home; still running: ${live.join(", ")}.`);
@@ -243,9 +248,8 @@ export async function migrateHomeCommand(
     const dropIns = `${definition.from}.d`;
     if (fs.existsSync(dropIns)) {
       fs.mkdirSync(`${definition.to}.d`, { mode: fs.statSync(dropIns).mode & 0o777 });
-      for (const entry of fs.readdirSync(dropIns, { withFileTypes: true })) {
-        if (!entry.isFile()) throw new Error(`Refusing to move ${path.join(dropIns, entry.name)}: it is not a regular file.`);
-        rewrite(path.join(dropIns, entry.name), path.join(`${definition.to}.d`, entry.name));
+      for (const entry of fs.readdirSync(dropIns)) {
+        rewrite(path.join(dropIns, entry), path.join(`${definition.to}.d`, entry));
       }
       fs.rmdirSync(dropIns);
     }

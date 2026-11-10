@@ -113,6 +113,21 @@ describe("migrate-home", () => {
       .toBe(`[Service]\nMemoryMax=4G\nEnvironmentFile=-${target}/x.env\n`);
   });
 
+  it("refuses a drop-in that is not a regular file before changing anything", async () => {
+    const dropIns = `${unitPath}.d`;
+    fs.mkdirSync(dropIns);
+    fs.writeFileSync(path.join(dropIns, "memory.conf"), "[Service]\nMemoryMax=4G\n");
+    fs.symlinkSync(path.join(userHome, "elsewhere.conf"), path.join(dropIns, "linked.conf"));
+    const setUnitEnabled = vi.fn(async () => undefined);
+    await expect(migrateHomeCommand({}, deps({ setUnitEnabled, unitEnabled: async () => true }))).rejects.toThrow("linked.conf is not a regular file");
+    expect(setUnitEnabled).not.toHaveBeenCalled();
+    expect(fs.lstatSync(legacy).isDirectory()).toBe(true);
+    expect(fs.existsSync(unitPath)).toBe(true);
+    expect(fs.readdirSync(dropIns).sort()).toEqual(["linked.conf", "memory.conf"]);
+    expect(fs.existsSync(path.join(path.dirname(unitPath), "wardmote.service"))).toBe(false);
+    expect(fs.existsSync(path.join(path.dirname(unitPath), "wardmote.service.d"))).toBe(false);
+  });
+
   it("leaves a command it does not manage in place", async () => {
     const binDir = path.join(userHome, ".local", "bin");
     fs.mkdirSync(binDir, { recursive: true });
