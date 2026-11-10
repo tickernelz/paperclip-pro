@@ -1,4 +1,4 @@
 {
   "total": { "default": 600 },
-  "jobs": { "default": 510, "scope": 60, "verify": 60 }
+  "jobs": { "default": 510, "verify": 60 }
 }

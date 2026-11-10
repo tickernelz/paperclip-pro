@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useCallback, useState, type ReactNode } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { AlertTriangle, CircleHelp } from "lucide-react";
 import type { OpenwaNumberMode } from "@tickernelz/wardmote-shared";
@@ -12,6 +12,13 @@ import {
   type ChatEndpointSetupAction,
 } from "@/api/chatEndpoints";
 import { sanitizedSetupErrorMessage } from "./chat-setup-error";
+import {
+  createOpenwaSession,
+  openwaSessionNameError,
+  OpenwaSessionLinker,
+  type GatewaySession,
+  type OpenwaGatewayRun,
+} from "./OpenwaGatewayManager";
 
 export const OPENWA_REPOSITORY_URL = "https://github.com/rmyndharis/OpenWA";
 
@@ -67,6 +74,11 @@ export function OpenwaConnectStep({
   const [apiKey, setApiKey] = useState("");
   const [adminApiKey, setAdminApiKey] = useState("");
   const [sessionId, setSessionId] = useState("");
+  const [preferredSessionId, setPreferredSessionId] = useState("");
+  const [linking, setLinking] = useState<GatewaySession | null>(null);
+  const [creating, setCreating] = useState(false);
+  const [sessionName, setSessionName] = useState("");
+  const [sessionNameError, setSessionNameError] = useState<string>();
   const [numberMode, setNumberMode] = useState<OpenwaNumberMode>(endpoint.policy?.numberMode ?? "agent_number");
   const [pacing, setPacing] = useState(endpoint.policy?.attestations.pacing ?? false);
   const [soleClient, setSoleClient] = useState(endpoint.policy?.attestations.soleClient ?? false);
@@ -74,20 +86,45 @@ export function OpenwaConnectStep({
     mutationFn: () =>
       chatEndpointsApi.inspectOpenwa(endpoint.id, {
         baseUrl: baseUrl.trim(),
-        apiKey: apiKey.trim(),
+        ...(apiKey.trim() ? { apiKey: apiKey.trim() } : {}),
         ...(adminApiKey.trim() ? { adminApiKey: adminApiKey.trim() } : {}),
       }),
     onSuccess: (result) => {
       const eligible = result.sessions.filter((session) => session.eligible);
-      const preferred = eligible.find((session) => session.sessionId === existingSessionId);
+      const preferred = eligible.find((session) => session.sessionId === (existingSessionId || preferredSessionId));
       setSessionId(preferred?.sessionId ?? (eligible.length === 1 ? eligible[0].sessionId : ""));
     },
   });
   const resetInspection = () => {
     inspection.reset();
     setSessionId("");
+    setLinking(null);
+    setCreating(false);
   };
   const result = inspection.data;
+  const managementKey = adminApiKey.trim() || apiKey.trim();
+  const run: OpenwaGatewayRun = (input) =>
+    chatEndpointsApi.runOpenwaGatewayAdmin(endpoint.id, { ...input, connection: { baseUrl: result!.baseUrl, adminApiKey: managementKey } });
+  const createSession = useMutation({
+    mutationFn: () => createOpenwaSession(run, sessionName),
+    onSuccess: (session) => {
+      setCreating(false);
+      setSessionName("");
+      setLinking(session);
+    },
+  });
+  const onLinked = useCallback(() => {
+    if (!linking) return;
+    setPreferredSessionId(linking.id);
+    setLinking(null);
+    inspection.mutate();
+  }, [linking, inspection]);
+  const submitSessionName = () => {
+    const invalid = openwaSessionNameError(sessionName);
+    setSessionNameError(invalid);
+    if (!invalid) createSession.mutate();
+  };
+  const secrets = { apiKey, adminApiKey };
   const reuseSaved = repairing && !apiKey.trim();
   const ready = pacing && soleClient && (reuseSaved || (Boolean(result?.eligible) && Boolean(sessionId)));
   const connect = () =>
@@ -97,13 +134,14 @@ export function OpenwaConnectStep({
         ? {
             baseUrl: storedBaseUrl(endpoint),
             sessionId: existingSessionId,
+            ...(adminApiKey.trim() ? { adminApiKey: adminApiKey.trim() } : {}),
             numberMode,
             pacing: String(pacing),
             soleClient: String(soleClient),
           }
         : {
             baseUrl: result!.baseUrl,
-            apiKey: apiKey.trim(),
+            ...(apiKey.trim() ? { apiKey: apiKey.trim() } : {}),
             ...(adminApiKey.trim() ? { adminApiKey: adminApiKey.trim() } : {}),
             sessionId,
             numberMode,
@@ -116,8 +154,8 @@ export function OpenwaConnectStep({
       <div className="space-y-2">
         <h1 className="text-xl font-bold">Connect OpenWA</h1>
         <p className="text-sm text-ink-3">
-          Connect {agentName} to one WhatsApp session on your self-hosted OpenWA gateway. Wardmote only reads the
-          gateway during inspection; nothing is sent until an owner messages the number.
+          Connect {agentName} to one WhatsApp session on your self-hosted OpenWA gateway. You can create the session and
+          scan its QR code here; nothing is sent until an owner messages the number.
         </p>
         <p className="text-sm">
           <a className="underline" href={OPENWA_REPOSITORY_URL} target="_blank" rel="noreferrer">
@@ -127,7 +165,8 @@ export function OpenwaConnectStep({
       </div>
       {repairing && (
         <p className="text-sm text-ink-3">
-          Reconnect keeps this gateway session. Leave the API key blank to reuse the saved keys.
+          Reconnect keeps this gateway session. Leave the keys blank to reuse the saved ones, or enter only the admin
+          key to add or replace it.
         </p>
       )}
       <div className="grid gap-2 text-sm font-medium">
@@ -141,6 +180,7 @@ export function OpenwaConnectStep({
           value={baseUrl}
           placeholder="http://localhost:2785"
           autoComplete="off"
+          inputMode="url"
           disabled={pending || inspection.isPending || Boolean(endpoint.providerAccountId)}
           onChange={(event) => {
             setBaseUrl(event.target.value);
@@ -150,38 +190,42 @@ export function OpenwaConnectStep({
       </div>
       <div className="grid gap-2 text-sm font-medium">
         <FieldLabel
-          htmlFor="openwa-api-key"
-          label="Operator API key"
-          help="In the OpenWA dashboard, open API Keys and create an operator key whose allowed sessions contain only this agent's session. Leave allowed chats empty: a chat-restricted key cannot receive live events."
+          htmlFor="openwa-admin-api-key"
+          label="Admin API key"
+          help="OpenWA prints this key in its log the first time the gateway starts. It is stored encrypted and only used from this page and Settings."
         />
         <Input
-          id="openwa-api-key"
+          id="openwa-admin-api-key"
           type="password"
-          value={apiKey}
+          value={adminApiKey}
           autoComplete="new-password"
           disabled={pending || inspection.isPending}
           onChange={(event) => {
-            setApiKey(event.target.value);
+            setAdminApiKey(event.target.value);
             resetInspection();
           }}
         />
+        <p className="text-xs font-normal text-ink-3">
+          The admin key lets Wardmote create the session and show its QR here, then give {agentName} its own operator key
+          limited to that one session, while an operator key you paste below can only connect a session that is already linked.
+        </p>
       </div>
       <details className="text-sm">
-        <summary className="cursor-pointer font-medium">Advanced</summary>
+        <summary className="cursor-pointer font-medium">I only have an operator key</summary>
         <div className="mt-3 grid gap-2 font-medium">
           <FieldLabel
-            htmlFor="openwa-admin-api-key"
-            label="Admin API key (optional)"
-            help="An unscoped admin key. Only needed if you later enable gateway admin tools in Settings; leave it empty otherwise."
+            htmlFor="openwa-api-key"
+            label="Operator API key"
+            help="An operator key whose allowed sessions contain only this agent's session. Leave allowed chats empty: a chat-restricted key cannot receive live events."
           />
           <Input
-            id="openwa-admin-api-key"
+            id="openwa-api-key"
             type="password"
-            value={adminApiKey}
+            value={apiKey}
             autoComplete="new-password"
             disabled={pending || inspection.isPending}
             onChange={(event) => {
-              setAdminApiKey(event.target.value);
+              setApiKey(event.target.value);
               resetInspection();
             }}
           />
@@ -189,14 +233,14 @@ export function OpenwaConnectStep({
       </details>
       <Button
         variant="secondary"
-        disabled={pending || inspection.isPending || !baseUrl.trim() || !apiKey.trim()}
+        disabled={pending || inspection.isPending || !baseUrl.trim() || (!apiKey.trim() && !adminApiKey.trim())}
         onClick={() => inspection.mutate()}
       >
         {inspection.isPending ? "Inspecting gateway…" : "Inspect gateway"}
       </Button>
       {inspection.isError && (
         <p role="alert" className="text-sm text-bad">
-          {sanitizedSetupErrorMessage(inspection.error, { apiKey, adminApiKey })}
+          {sanitizedSetupErrorMessage(inspection.error, secrets)}
         </p>
       )}
       {result && (
@@ -206,14 +250,8 @@ export function OpenwaConnectStep({
             <dd>{result.gatewayVersion ?? `Unknown (assuming ${result.pinnedVersion})`}</dd>
             <dt className="text-ink-3">Engine</dt>
             <dd>{result.engine ?? "Unknown"}</dd>
-            <dt className="text-ink-3">Key role</dt>
-            <dd>{result.keyRole}</dd>
-            {result.adminKey && (
-              <>
-                <dt className="text-ink-3">Admin key</dt>
-                <dd>{result.adminKey.role}</dd>
-              </>
-            )}
+            <dt className="text-ink-3">Agent key</dt>
+            <dd>{result.agentKeyMinted ? "New operator key for the chosen session" : result.keyRole}</dd>
           </dl>
           {result.warnings.length > 0 && (
             <div role="status" className="space-y-1 rounded-lg border border-line bg-bg-3/30 p-4 text-sm">
@@ -227,30 +265,100 @@ export function OpenwaConnectStep({
           )}
           <fieldset className="space-y-2">
             <legend className="text-sm font-medium">WhatsApp session</legend>
-            {!result.eligible && (
+            {result.sessions.length === 0 ? (
+              <p className="text-sm text-ink-3">This gateway has no WhatsApp session yet. Create one below.</p>
+            ) : result.eligible || linking ? null : result.canManageSessions ? (
+              <p className="text-sm text-ink-3">No session is ready yet. Link WhatsApp to a session, or create a new one.</p>
+            ) : (
               <p role="alert" className="text-sm text-bad">
                 No session can be connected. Connect WhatsApp in the OpenWA dashboard or free the session from its other channel.
               </p>
             )}
             {result.sessions.map((session) => (
-              <label key={session.sessionId} className="flex items-center gap-2 text-sm">
-                <input
-                  type="radio"
-                  name="openwa-session"
-                  value={session.sessionId}
-                  checked={sessionId === session.sessionId}
-                  disabled={!session.eligible || pending || (Boolean(existingSessionId) && existingSessionId !== session.sessionId)}
-                  onChange={() => setSessionId(session.sessionId)}
-                />
-                <span>
-                  {session.name}
-                  {session.maskedNumber ? ` · ${session.maskedNumber}` : ""}
-                  {session.pushName ? ` · ${session.pushName}` : ""}
-                  {session.unavailableReason ? ` — ${session.unavailableReason}` : ""}
-                </span>
-              </label>
+              <div key={session.sessionId} className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                <label className="flex min-w-0 flex-1 items-center gap-2 text-sm">
+                  <input
+                    type="radio"
+                    name="openwa-session"
+                    value={session.sessionId}
+                    checked={sessionId === session.sessionId}
+                    disabled={!session.eligible || pending || (Boolean(existingSessionId) && existingSessionId !== session.sessionId)}
+                    onChange={() => setSessionId(session.sessionId)}
+                  />
+                  <span className="min-w-0 break-words">
+                    {session.name}
+                    {session.maskedNumber ? ` · ${session.maskedNumber}` : ""}
+                    {session.pushName ? ` · ${session.pushName}` : ""}
+                    {session.unavailableReason ? ` — ${session.unavailableReason}` : ""}
+                  </span>
+                </label>
+                {result.canManageSessions && session.status !== "ready" && linking?.id !== session.sessionId && !existingSessionId ? (
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    disabled={pending}
+                    onClick={() => {
+                      setCreating(false);
+                      setLinking({ id: session.sessionId, name: session.name, status: session.status });
+                    }}
+                  >
+                    Link WhatsApp
+                  </Button>
+                ) : null}
+              </div>
             ))}
           </fieldset>
+          {result.canManageSessions && !existingSessionId && !linking && (
+            creating ? (
+              <div className="space-y-2 rounded-lg border border-line p-4">
+                <label htmlFor="openwa-new-session-name" className="block text-sm font-medium">
+                  New session name
+                </label>
+                <Input
+                  id="openwa-new-session-name"
+                  value={sessionName}
+                  placeholder="pmo"
+                  autoComplete="off"
+                  disabled={createSession.isPending}
+                  aria-invalid={sessionNameError ? true : undefined}
+                  onChange={(event) => setSessionName(event.target.value)}
+                />
+                <p className="text-xs text-ink-3">Letters, digits, dots, dashes or underscores. OpenWA cannot rename a session later.</p>
+                {(sessionNameError || createSession.isError) && (
+                  <p role="alert" className="text-sm text-bad">
+                    {sessionNameError ?? sanitizedSetupErrorMessage(createSession.error, secrets)}
+                  </p>
+                )}
+                <div className="flex flex-wrap gap-2">
+                  <Button size="sm" disabled={createSession.isPending} onClick={submitSessionName}>
+                    {createSession.isPending ? "Creating session…" : "Create and show QR"}
+                  </Button>
+                  <Button size="sm" variant="ghost" disabled={createSession.isPending} onClick={() => setCreating(false)}>
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <Button variant="secondary" disabled={pending} onClick={() => setCreating(true)}>
+                Create new WhatsApp session
+              </Button>
+            )
+          )}
+          {linking && (
+            <section aria-label={"Link " + linking.name} className="space-y-3 rounded-lg border border-line p-4">
+              <div className="space-y-1">
+                <h2 className="text-base font-semibold">Link WhatsApp to {linking.name}</h2>
+                <p className="text-sm text-ink-3">
+                  On the phone, open WhatsApp, go to Linked devices, then scan the QR code, or choose "Link with phone
+                  number" and enter the pairing code. The session is selected as soon as it is ready.
+                </p>
+              </div>
+              <OpenwaSessionLinker endpointId={endpoint.id} run={run} session={linking} onReady={onLinked} />
+              <Button size="sm" variant="ghost" onClick={() => setLinking(null)}>
+                Cancel
+              </Button>
+            </section>
+          )}
         </div>
       )}
       {(result?.eligible || reuseSaved) && (

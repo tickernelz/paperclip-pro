@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   chatInflightModeSchema,
+  inspectOpenwaGatewaySchema,
   OPENWA_DEFAULT_BURST_WINDOW_SECONDS,
+  openwaBaseUrlSchema,
   openwaChatSettingsSchema,
   openwaEndpointPolicySchema,
 } from "./chat-channels.js";
@@ -204,5 +206,31 @@ describe("chat in-flight mode", () => {
   it("accepts only steer and queue", () => {
     expect(chatInflightModeSchema.options).toEqual(["steer", "queue"]);
     expect(chatInflightModeSchema.safeParse("drop").success).toBe(false);
+  });
+});
+
+describe("OpenWA pasted connection values", () => {
+  it.each(["\u2060", "\u200b", "\ufeff", "\u00a0", " \u200d"])("removes invisible character %j copied after the gateway URL", (noise) => {
+    expect(openwaBaseUrlSchema.parse("http://127.0.0.1:2785" + noise)).toBe("http://127.0.0.1:2785");
+    expect(openwaBaseUrlSchema.parse(noise + "http://127.0.0.1:27" + noise + "85")).toBe("http://127.0.0.1:2785");
+  });
+
+  it("still rejects a URL that is invalid once the invisible characters are gone, with a message that says what to enter", () => {
+    const notUrl = openwaBaseUrlSchema.safeParse("127.0.0.1:2785\u2060/");
+    expect(notUrl.success).toBe(false);
+    const withPath = openwaBaseUrlSchema.safeParse("http://127.0.0.1:2785/api\u2060");
+    expect(withPath.success).toBe(false);
+    expect(withPath.error?.issues[0]?.message).toBe("Use only the gateway origin: http(s)://host:port, without a path, query, or credentials");
+    expect(openwaBaseUrlSchema.safeParse("\u2060").error?.issues[0]?.message).toBe("Enter the OpenWA gateway URL, for example http://localhost:2785");
+  });
+
+  it("removes invisible characters from keys and accepts either key alone, but not neither", () => {
+    expect(inspectOpenwaGatewaySchema.parse({ baseUrl: "http://localhost:2785", adminApiKey: "\u200bowa_admin\u2060" })).toEqual({
+      baseUrl: "http://localhost:2785",
+      adminApiKey: "owa_admin",
+    });
+    expect(inspectOpenwaGatewaySchema.parse({ baseUrl: "http://localhost:2785", apiKey: "owa_op\u200b" }).apiKey).toBe("owa_op");
+    expect(inspectOpenwaGatewaySchema.safeParse({ baseUrl: "http://localhost:2785", apiKey: "\u2060\u200b" }).success).toBe(false);
+    expect(inspectOpenwaGatewaySchema.safeParse({ baseUrl: "http://localhost:2785" }).success).toBe(false);
   });
 });

@@ -376,7 +376,7 @@ export const chatEndpointsApi = {
     api.post<ChatEndpoint>(`/chat-endpoints/${endpointId}/slack/resume`, {}),
   inspectPhoton: (endpointId: string, input: { projectId: string; projectSecret: string }) =>
     api.post<PhotonProjectInspection>(`/chat-endpoints/${endpointId}/photon/inspect`, input),
-  inspectOpenwa: (endpointId: string, input: { baseUrl: string; apiKey: string; adminApiKey?: string }) =>
+  inspectOpenwa: (endpointId: string, input: { baseUrl: string; apiKey?: string; adminApiKey?: string }) =>
     api.post<OpenwaGatewayInspection>(`/chat-endpoints/${endpointId}/openwa/inspect`, input),
   getOpenwaHealth: (endpointId: string) =>
     api.get<OpenwaEndpointHealth>(`/chat-endpoints/${endpointId}/openwa/health`, { cache: "no-store" }),

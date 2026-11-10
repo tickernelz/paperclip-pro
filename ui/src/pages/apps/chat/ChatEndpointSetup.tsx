@@ -72,8 +72,13 @@ export function openwaSetupInput(
   if (!values) return { action };
   return {
     action,
-    ...(values.apiKey
-      ? { credentials: { apiKey: values.apiKey, ...(values.adminApiKey ? { adminApiKey: values.adminApiKey } : {}) } }
+    ...(values.apiKey || values.adminApiKey
+      ? {
+          credentials: {
+            ...(values.apiKey ? { apiKey: values.apiKey } : {}),
+            ...(values.adminApiKey ? { adminApiKey: values.adminApiKey } : {}),
+          },
+        }
       : {}),
     openwa: {
       baseUrl: values.baseUrl,

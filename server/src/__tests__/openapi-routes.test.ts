@@ -691,7 +691,7 @@ describe("openapi routes", () => {
     expect(photon.responses["503"]).toBeDefined();
 
     const openwa = spec.paths["/api/chat-endpoints/{endpointId}/openwa/inspect"].post;
-    expect(openwa.requestBody.content["application/json"].schema.required).toEqual(["baseUrl", "apiKey"]);
+    expect(openwa.requestBody.content["application/json"].schema.required).toEqual(["baseUrl"]);
     const openwaResponse = openwa.responses["200"].content["application/json"].schema;
     expect(openwaResponse.properties.sessions.items.additionalProperties).toBe(false);
     expect(JSON.stringify(openwaResponse)).not.toMatch(/apiKey|adminApiKey|phone"/);

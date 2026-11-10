@@ -28,7 +28,7 @@ import { chatChannelRoutes } from "../../routes/chat-channels.js";
 import { errorHandler } from "../../middleware/index.js";
 import { createLocalDiskStorageProvider } from "../../storage/local-disk-provider.js";
 import { createStorageService } from "../../storage/service.js";
-import { FAKE_OPENWA_ADMIN_KEY, FAKE_OPENWA_KEY, FakeOpenwaGateway } from "./fake-gateway.js";
+import { FAKE_OPENWA_ADMIN_KEY, FAKE_OPENWA_KEY, FAKE_OPENWA_NOT_STARTED, FakeOpenwaGateway } from "./fake-gateway.js";
 
 const SESSION_ID = "77777777-8888-4999-8aaa-bbbbbbbbbbbb";
 const NEW_SESSION_ID = "88888888-9999-4aaa-8bbb-cccccccccccc";
@@ -170,38 +170,56 @@ describe("OpenWA gateway administration from the board (embedded Postgres + fake
     return db.select().from(activityLog).where(and(eq(activityLog.entityId, t.endpointId), eq(activityLog.action, "openwa.gateway_admin_called")));
   }
 
-  it("creates a session, shows its QR and pairing code once, and audits the change without the secrets", async () => {
+  it("creates and starts a session, shows its QR and pairing code once, and audits the change without the secrets", async () => {
     const t = await setup();
-    const qr = "data:image/png;base64,QR-" + randomUUID();
-    const pairing = "PAIR-" + randomUUID().slice(0, 4);
-    t.gateway.overrides.push(
-      { method: "POST", path: "/api/sessions", status: 201, body: { id: NEW_SESSION_ID, name: "sales", status: "created" } },
-      { method: "GET", path: "/api/sessions/" + NEW_SESSION_ID + "/qr", status: 200, body: { qrCode: qr, status: "qr_ready" } },
-      { method: "POST", path: "/api/sessions/" + NEW_SESSION_ID + "/pairing-code", status: 201, body: { pairingCode: pairing } },
-    );
     const call = admin(t);
 
     const created = await call({ operationId: "SessionController_create", args: { name: "sales" } });
     expect(created.status).toBe(200);
     expect(created.headers["cache-control"]).toBe("no-store");
-    expect(created.body).toEqual({ operationId: "SessionController_create", sessionId: null, data: { id: NEW_SESSION_ID, name: "sales", status: "created" }, revealed: false });
+    const sessionId = String(created.body.data.id);
+    expect(created.body).toMatchObject({ operationId: "SessionController_create", sessionId: null, data: { id: sessionId, name: "sales", status: "created" }, revealed: false });
+    const { qrCode: qr, pairingCode: pairing } = t.gateway.linkedSessions.get(sessionId)!;
+    expect((await call({ operationId: "SessionController_start", sessionId })).status).toBe(200);
 
-    const shown = await call({ operationId: "SessionController_getQRCode", sessionId: NEW_SESSION_ID });
-    expect(shown.body).toMatchObject({ revealed: true, sessionId: NEW_SESSION_ID, data: { qrCode: qr } });
-    const code = await call({ operationId: "SessionController_requestPairingCode", sessionId: NEW_SESSION_ID, args: { phoneNumber: "628123456789" } });
+    const shown = await call({ operationId: "SessionController_getQRCode", sessionId });
+    expect(shown.body).toMatchObject({ revealed: true, sessionId, data: { qrCode: qr } });
+    const code = await call({ operationId: "SessionController_requestPairingCode", sessionId, args: { phoneNumber: "628123456789" } });
     expect(code.body).toMatchObject({ revealed: true, data: { pairingCode: pairing } });
-    expect(t.gateway.requests.filter((entry) => entry.path.startsWith("/api/sessions/" + NEW_SESSION_ID)).every((entry) => entry.key === "admin")).toBe(true);
+    expect(t.gateway.requests.filter((entry) => entry.path.startsWith("/api/sessions")).every((entry) => entry.key === "admin")).toBe(true);
 
     const audits = await auditRows(t);
-    expect(audits.map((row) => row.metadata.operation).sort()).toEqual(["SessionController_create", "SessionController_requestPairingCode"]);
+    expect(audits.map((row) => row.metadata.operation).sort()).toEqual(["SessionController_create", "SessionController_requestPairingCode", "SessionController_start"]);
     const create = audits.find((row) => row.metadata.operation === "SessionController_create")!;
     expect(create).toMatchObject({ actorKind: "user", actorRef: t.userId, metadata: { outcome: "ok", source: "board_gateway_admin" } });
-    expect(create.content).toMatchObject({ args: { name: "sales" }, before: null, after: { id: NEW_SESSION_ID, name: "sales" } });
+    expect(create.content).toMatchObject({ args: { name: "sales" }, before: null, after: { id: sessionId, name: "sales" } });
     expect(audits.find((row) => row.metadata.operation === "SessionController_requestPairingCode")!.content).toMatchObject({ after: { revealedOnce: true } });
     expect(JSON.stringify(audits)).not.toContain(qr);
     expect(JSON.stringify(audits)).not.toContain(pairing);
     expect(JSON.stringify(await activityRows(t))).not.toContain(pairing);
-    expect((await activityRows(t)).map((row) => row.actorId).sort()).toEqual([t.userId, t.userId]);
+    expect((await activityRows(t)).map((row) => row.actorId)).toEqual([t.userId, t.userId, t.userId]);
+  });
+
+  it("passes the gateway's not-started refusal through for a session without a running engine until it is started", async () => {
+    const t = await setup();
+    const session = t.gateway.addLinkedSession({ id: NEW_SESSION_ID, phone: "628123456789", name: "sales", status: "disconnected" });
+    const call = admin(t);
+
+    for (const refused of [
+      await call({ operationId: "SessionController_getQRCode", sessionId: NEW_SESSION_ID }),
+      await call({ operationId: "SessionController_requestPairingCode", sessionId: NEW_SESSION_ID, args: { phoneNumber: "628123456789" } }),
+    ]) {
+      expect(refused.status).toBe(400);
+      expect(refused.body).toMatchObject({ details: { code: "openwa_bad_request" } });
+      expect(refused.body.error).toContain(FAKE_OPENWA_NOT_STARTED);
+    }
+
+    expect((await call({ operationId: "SessionController_start", sessionId: NEW_SESSION_ID })).status).toBe(200);
+    expect(session.status).toBe("qr_ready");
+    expect((await call({ operationId: "SessionController_getQRCode", sessionId: NEW_SESSION_ID })).body).toMatchObject({ data: { qrCode: session.qrCode } });
+    const again = await call({ operationId: "SessionController_start", sessionId: NEW_SESSION_ID });
+    expect(again.status).toBe(400);
+    expect(again.body.error).toContain("Session is already started");
   });
 
   it("needs an explicit confirmation before stopping the agent's own session and records before and after", async () => {
@@ -279,5 +297,50 @@ describe("OpenWA gateway administration from the board (embedded Postgres + fake
     expect(response.status).toBe(422);
     expect(response.body).toMatchObject({ details: { code: "openwa_admin_key_required" } });
     expect(t.gateway.requests).toEqual([]);
+  });
+  it("lets the setup wizard create and link a first session with the admin key it was given, before the channel is saved", async () => {
+    const t = await setup({ adminKey: false });
+    await db.update(chatEndpoints).set({ status: "draft", providerAccountId: null, botExternalId: null }).where(eq(chatEndpoints.id, t.endpointId));
+    const qr = "data:image/png;base64,QR-" + randomUUID();
+    t.gateway.overrides.push(
+      { method: "POST", path: "/api/sessions", status: 201, body: { id: NEW_SESSION_ID, name: "pmo", status: "created" } },
+      { method: "POST", path: "/api/sessions/" + NEW_SESSION_ID + "/start", status: 200, body: { id: NEW_SESSION_ID, status: "initializing" } },
+      { method: "GET", path: "/api/sessions/" + NEW_SESSION_ID + "/qr", status: 200, body: { qrCode: qr, status: "qr_ready" } },
+    );
+    const call = admin(t);
+    const connection = { baseUrl: t.gateway.baseUrl + "\u2060", adminApiKey: FAKE_OPENWA_ADMIN_KEY + "\u200b" };
+
+    expect((await call({ operationId: "SessionController_findAll" })).body).toMatchObject({ details: { code: "openwa_session_required" } });
+    const listed = await call({ operationId: "SessionController_findAll", connection });
+    expect(listed.status).toBe(200);
+    const created = await call({ operationId: "SessionController_create", args: { name: "pmo" }, connection });
+    expect(created.status).toBe(200);
+    expect((await call({ operationId: "SessionController_start", sessionId: NEW_SESSION_ID, connection })).status).toBe(200);
+    const shown = await call({ operationId: "SessionController_getQRCode", sessionId: NEW_SESSION_ID, connection });
+    expect(shown.body).toMatchObject({ revealed: true, data: { qrCode: qr } });
+    expect(t.gateway.requests.slice(-4).every((entry) => entry.key === "admin")).toBe(true);
+
+    const before = t.gateway.requests.length;
+    const removed = await call({ operationId: "SessionController_delete", sessionId: NEW_SESSION_ID, connection });
+    expect(removed.status).toBe(400);
+    expect(removed.body).toMatchObject({ details: { code: "openwa_setup_connection_operation" } });
+    const keys = await call({ operationId: "AuthController_create", args: { name: "x", role: "admin" }, connection });
+    expect(keys.status).toBe(400);
+    expect(t.gateway.requests.length).toBe(before);
+    const audits = JSON.stringify(await auditRows(t));
+    expect(audits).not.toContain(FAKE_OPENWA_ADMIN_KEY);
+    expect(audits).not.toContain(qr);
+  });
+
+  it("refuses a setup connection that points a saved channel at another gateway, and keeps agents out", async () => {
+    const t = await setup();
+    const connection = { baseUrl: "http://127.0.0.1:1", adminApiKey: FAKE_OPENWA_ADMIN_KEY };
+    const before = t.gateway.requests.length;
+    const moved = await admin(t)({ operationId: "SessionController_findAll", connection });
+    expect(moved.status).toBe(409);
+    const agent = app(t, { type: "agent", agentId: t.agentId, companyId: t.companyId, source: "agent_key" });
+    const fromAgent = await admin(t, agent)({ operationId: "SessionController_findAll", connection: { baseUrl: t.gateway.baseUrl, adminApiKey: FAKE_OPENWA_ADMIN_KEY } });
+    expect(fromAgent.status).toBe(403);
+    expect(t.gateway.requests.length).toBe(before);
   });
 });

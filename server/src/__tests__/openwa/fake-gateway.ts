@@ -7,6 +7,8 @@ import type { OpenwaStoredMessage } from "../../services/openwa/gateway.js";
 export const FAKE_OPENWA_KEY = "owa_k1_fake_operator_key_for_tests_only";
 export const FAKE_OPENWA_ADMIN_KEY = "owa_k1_fake_admin_key_for_tests_only";
 const UNAUTHENTICATED_PATH = /^\/api\/(health|ingress\/|infra\/health$|metrics$)/;
+const ENGINE_RUNNING_STATUSES = new Set(["initializing", "qr_ready", "authenticating", "ready"]);
+export const FAKE_OPENWA_NOT_STARTED = "Session is not started. Call POST /sessions/:sessionId/start first.";
 
 export interface FakeOverride {
   method: string;
@@ -63,6 +65,8 @@ export interface FakeLinkedSession {
   phone: string;
   pushName: string | null;
   status: string;
+  qrCode: string;
+  pairingCode: string;
   chats: Array<{ id: string; name?: string; timestamp?: number }>;
   messages: FakeLinkedMessage[];
   media: Map<string, FakeMedia>;
@@ -269,13 +273,15 @@ export class FakeOpenwaGateway {
     await new Promise<void>((resolve) => (this.http?.listening ? this.http.close(() => resolve()) : resolve()));
   }
 
-  addLinkedSession(input: { id: string; phone: string; name?: string; pushName?: string | null }): FakeLinkedSession {
+  addLinkedSession(input: { id: string; phone: string; name?: string; pushName?: string | null; status?: string }): FakeLinkedSession {
     const session: FakeLinkedSession = {
       id: input.id,
       name: input.name ?? "linked-" + input.id.slice(0, 8),
       phone: input.phone,
       pushName: input.pushName ?? null,
-      status: "ready",
+      status: input.status ?? "ready",
+      qrCode: "data:image/png;base64,QR-" + randomUUID(),
+      pairingCode: "PAIR-" + randomUUID().slice(0, 4).toUpperCase(),
       chats: [],
       messages: [],
       media: new Map(),
@@ -319,15 +325,26 @@ export class FakeOpenwaGateway {
 
   private linkedSessionView(session: FakeLinkedSession) {
     const now = new Date().toISOString();
-    return { id: session.id, name: session.name, status: session.status, phone: session.phone, pushName: session.pushName, createdAt: now, updatedAt: now, engineLoaded: true };
+    return {
+      id: session.id,
+      name: session.name,
+      status: session.status,
+      phone: session.phone,
+      pushName: session.pushName,
+      createdAt: now,
+      updatedAt: now,
+      engineLoaded: ENGINE_RUNNING_STATUSES.has(session.status),
+    };
   }
 
   private async handle(req: IncomingMessage, res: ServerResponse): Promise<void> {
     const url = new URL(req.url ?? "/", this.baseUrl);
     const query = Object.fromEntries(url.searchParams);
     const apiKey = req.headers["x-api-key"];
-    const scoped = typeof apiKey === "string" ? [...this.apiKeys.values()].find((entry) => entry.apiKey === apiKey) : undefined;
-    const key = apiKey === FAKE_OPENWA_KEY ? "operator" : apiKey === FAKE_OPENWA_ADMIN_KEY ? "admin" : null;
+    const issued = typeof apiKey === "string" ? [...this.apiKeys.values()].find((entry) => entry.apiKey === apiKey) : undefined;
+    const ownScoped = issued?.active === true && issued.role === "operator" && issued.allowedSessions.includes(this.sessionId);
+    const scoped = ownScoped ? undefined : issued;
+    const key = apiKey === FAKE_OPENWA_KEY || ownScoped ? "operator" : apiKey === FAKE_OPENWA_ADMIN_KEY ? "admin" : null;
     this.requests.push({ method: req.method ?? "GET", path: url.pathname, query, key: scoped ? "scoped" : key });
     const chunks: Buffer[] = [];
     for await (const chunk of req) chunks.push(chunk as Buffer);
@@ -378,6 +395,28 @@ export class FakeOpenwaGateway {
       if (linked) return reply(200, this.linkedSessionView(linked));
       if (id === this.sessionId) return reply(200, this.ownSessionView());
       return reply(404, { message: "Session not found" });
+    }
+    if (key === "admin" && req.method === "POST" && url.pathname === "/api/sessions" && !this.generic) {
+      const created = this.addLinkedSession({ id: randomUUID(), phone: "", name: String(body().name), status: "created" });
+      return reply(201, this.linkedSessionView(created));
+    }
+    const lifecycle = /^\/api\/sessions\/([^/]+)\/(start|stop|qr|pairing-code)$/.exec(url.pathname);
+    const managed = lifecycle ? this.linkedSessions.get(decodeURIComponent(lifecycle[1]!)) : undefined;
+    if (key === "admin" && lifecycle && managed && !this.generic) {
+      const action = lifecycle[2];
+      const engineLoaded = ENGINE_RUNNING_STATUSES.has(managed.status);
+      if (req.method === "POST" && action === "start") {
+        if (engineLoaded) return reply(400, { message: "Session is already started" });
+        managed.status = "qr_ready";
+        return reply(200, this.linkedSessionView(managed));
+      }
+      if (req.method === "POST" && action === "stop") {
+        managed.status = "disconnected";
+        return reply(200, this.linkedSessionView(managed));
+      }
+      if (!engineLoaded) return reply(400, { message: FAKE_OPENWA_NOT_STARTED });
+      if (req.method === "GET" && action === "qr") return reply(200, { qrCode: managed.qrCode, status: managed.status });
+      if (req.method === "POST" && action === "pairing-code") return reply(201, { pairingCode: managed.pairingCode });
     }
     if (scoped) {
       if (!scoped.active) return reply(401, { message: "Unauthorized" });
