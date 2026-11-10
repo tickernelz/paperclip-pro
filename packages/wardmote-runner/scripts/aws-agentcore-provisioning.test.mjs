@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 
-const templateUrl = new URL("../infra/aws-agentcore-paperclip.yaml", import.meta.url);
+const templateUrl = new URL("../infra/aws-agentcore-wardmote.yaml", import.meta.url);
 const wrapperUrl = new URL("./aws-agentcore.sh", import.meta.url);
 const labServerUrl = new URL("./capability-issue-thread-server.mjs", import.meta.url);
 const liveSessionUrl = new URL("../src/live/live-session.ts", import.meta.url);

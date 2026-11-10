@@ -3,7 +3,7 @@ import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import { afterAll, describe, expect, it } from "vitest";
 import type { Db } from "@tickernelz/wardmote-db";
-import { WardmoteRunnerToolAuthority } from "../services/native-runtime/paperclip-runner-tool-authority.js";
+import { WardmoteRunnerToolAuthority } from "../services/native-runtime/wardmote-runner-tool-authority.js";
 import { buildNativeModelEnvelope, parseNativeExecutionInput, type NativeExecutionInput } from "../../../packages/wardmote-runner/src/contracts/native-execution.js";
 import type { PersistedNativeSession } from "../../../packages/wardmote-runner/src/contracts/native-session-backend.js";
 import { NATIVE_RUNTIME_ASSET_SCHEMA, WARDMOTE_EXECUTION_PROMPT, WARDMOTE_EXECUTION_PROMPT_REVISION, canonicalNativeRuntimeContextDigest, nativeRuntimePromptDigest } from "../../../packages/wardmote-runner/src/contracts/runtime-context.js";
@@ -143,7 +143,7 @@ afterAll(() => {
     "packages/wardmote-runner/protocol/manifest.json",
     "packages/wardmote-runner/src/backends/codex-native-backend.ts",
     "packages/wardmote-runner/src/drivers/opencode/mcp-bridge.ts",
-    "server/src/services/native-runtime/paperclip-runner-tool-authority.ts",
+    "server/src/services/native-runtime/wardmote-runner-tool-authority.ts",
     "server/src/services/connection-tool-definitions.ts",
     "packages/shared/src/connection-intent-guidance.ts",
     "packages/shared/src/validators/connection-intent.ts",

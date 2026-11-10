@@ -40,7 +40,7 @@ import {
   resolveExternalChatResponseWaitAuthorization,
   type ChatAttachmentReuseSource,
 } from "./chat-attachment-reuse.js";
-import { WardmoteRunnerToolAuthority } from "./paperclip-runner-tool-authority.js";
+import { WardmoteRunnerToolAuthority } from "./wardmote-runner-tool-authority.js";
 import { validateNativeDeliverableEvidence } from "./native-deliverable-feedback.js";
 
 describe("native same-conversation chat attachment reuse", () => {

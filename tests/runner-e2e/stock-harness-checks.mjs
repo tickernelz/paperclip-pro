@@ -37,7 +37,7 @@ export const stockHarnessGates = [
     "fails an empty 2xx body instead of treating it as success"] },
   { id: "SH-eval", name: "Independent oracle and qualification admission", cwd: ".",
     config: "tests/runner-e2e/vitest.config.ts",
-    files: ["tests/runner-e2e/stock-harness-manifest.test.ts", "tests/runner-e2e/paperclip-document.test.ts", "tests/runner-e2e/stock-harness.test.ts", "tests/runner-e2e/stock-harness-checks.test.mjs",
+    files: ["tests/runner-e2e/stock-harness-manifest.test.ts", "tests/runner-e2e/wardmote-document.test.ts", "tests/runner-e2e/stock-harness.test.ts", "tests/runner-e2e/stock-harness-checks.test.mjs",
       "tests/runner-e2e/stock-harness-admission.test.ts", "tests/runner-e2e/stock-harness-digest.test.ts", "tests/runner-e2e/checkout-activity.test.ts",
       "tests/runner-e2e/select-rerun-artifacts.test.ts", "tests/runner-e2e/stock-harness-instruction-variant.test.mjs", "tests/runner-e2e/automatic-retry.test.ts"],
     required: ["distinguishes a runtime claim from repeated successful HTTP checkout calls", "refuses missing, mismatched and duplicate run/receipt identities", "requires generated capability manifests for the current skill sources", "the shipped recipe delivers the current", "the shipped recipe supports an unnumbered issue", "rejects old SHA before providers", "allows toolchain paths and excludes every present or future credential",

@@ -147,10 +147,10 @@ import {
   nativeRunFinalizations,
   nativeRunResults,
 } from "@tickernelz/wardmote-db";
-import { WardmoteControlPlanePort } from "./paperclip-control-plane-port.js";
+import { WardmoteControlPlanePort } from "./wardmote-control-plane-port.js";
 import { appendHeartbeatRunEvent } from "../heartbeat-run-events.js";
 import { nativeSha256 } from "./canonical.js";
-import { WardmoteRunnerToolAuthority } from "./paperclip-runner-tool-authority.js";
+import { WardmoteRunnerToolAuthority } from "./wardmote-runner-tool-authority.js";
 import { createAssignedMcpTools, getAssignedMcpGateway } from "./assigned-mcp-tools.js";
 import { getNativeReviewAssignment, readNativeReviewAssignmentContext } from "./native-review-participant.js";
 import { NativeChatAttachmentReadScope } from "./chat-attachment-read.js";

@@ -11,7 +11,7 @@ import { activityLog, agentApiKeys, agentCommentary, agents, authUsers, companyM
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createLocalAgentJwt } from "../agent-auth-jwt.js";
 import { submitAgentCommentary } from "../services/agent-commentary.js";
-import { WardmoteRunnerToolAuthority } from "../services/native-runtime/paperclip-runner-tool-authority.js";
+import { WardmoteRunnerToolAuthority } from "../services/native-runtime/wardmote-runner-tool-authority.js";
 import { isSecretSensitiveHttpRequest } from "../middleware/http-log-policy.js";
 import { startRunnerApiTestServer } from "./helpers/runner-api-server.js";
 import { ensureNativeCompletionContract } from "../services/native-runtime/completion-contracts.js";

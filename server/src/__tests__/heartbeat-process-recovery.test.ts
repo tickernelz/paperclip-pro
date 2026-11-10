@@ -245,7 +245,7 @@ import {
   currentNativeControllerIdentity,
 } from "../services/native-runtime/native-restart-recovery.ts";
 import { claimNativeSessionResumptions } from "../services/native-runtime/native-finalization-reconciler.ts";
-import { WardmoteControlPlanePort } from "../services/native-runtime/paperclip-control-plane-port.js";
+import { WardmoteControlPlanePort } from "../services/native-runtime/wardmote-control-plane-port.js";
 import { finalizeNativeRun } from "../services/native-runtime/native-run-finalizer.js";
 import { recordNativeAttentionAssessment } from "../services/native-runtime/work-assessments.js";
 import { routeNativeAttention } from "../services/native-runtime/native-interaction-bridge.js";

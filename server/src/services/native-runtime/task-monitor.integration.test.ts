@@ -4,7 +4,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { activityLog, agents, authUsers, companyMemberships, companies, createDb, EMBEDDED_POSTGRES_TEST_TIMEOUT_MS, heartbeatRuns, issues } from "@tickernelz/wardmote-db";
 import { PROVIDER_QUOTA_MONITOR_SERVICE_NAME } from "@tickernelz/wardmote-shared";
 import { getEmbeddedPostgresTestSupport, startEmbeddedPostgresTestDatabase } from "../../__tests__/helpers/embedded-postgres.js";
-import { WardmoteRunnerToolAuthority } from "./paperclip-runner-tool-authority.js";
+import { WardmoteRunnerToolAuthority } from "./wardmote-runner-tool-authority.js";
 import { buildIssueMonitorTriggeredPatch, normalizeIssueExecutionPolicy } from "../issue-execution-policy.js";
 import { nativeCompletionFeedback } from "./native-completion-feedback.js";
 import type { PrpStructuredRunResult } from "../../vendor/wardmote-runner/index.js";

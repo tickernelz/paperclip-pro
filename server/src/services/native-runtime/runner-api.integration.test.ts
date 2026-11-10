@@ -11,7 +11,7 @@ import { runnerApiCatalog } from "./runner-api-catalog.js";
 import { registerRunnerPrpAuthority } from "../../realtime/runner-prp-ws.js";
 import { createLocalAgentJwt } from "../../agent-auth-jwt.js";
 import { RUNNER_API_RESPONSE_MAX_BYTES, RUNNER_API_RESPONSE_RUN_MAX_BYTES } from "./runner-api-response-limits.js";
-import { WardmoteRunnerToolAuthority } from "./paperclip-runner-tool-authority.js";
+import { WardmoteRunnerToolAuthority } from "./wardmote-runner-tool-authority.js";
 
 describe("runner API against real HTTP routes", () => {
   let server: Awaited<ReturnType<typeof startRunnerApiTestServer>>;

@@ -4108,7 +4108,7 @@ export function toolAccessService(
     const broker = tokenBrokerConfig(connection);
     const applicationKey = application?.applicationKey ?? "";
     return Boolean(
-      applicationKey === "paperclip-pages" ||
+      applicationKey === "wardmote-pages" ||
       applicationKey === "paperclip.pages" ||
       applicationKey === "pages.paperclip" ||
       readConfigString(config, "connectionType") === "pages" ||

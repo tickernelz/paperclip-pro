@@ -45,7 +45,7 @@ import {
   stageNativeRunnerAttachmentBytes,
   stageNativeRunnerWakeAttachments,
 } from "./native-runner-file-handoff.js";
-import { WardmoteRunnerToolAuthority } from "./paperclip-runner-tool-authority.js";
+import { WardmoteRunnerToolAuthority } from "./wardmote-runner-tool-authority.js";
 
 describe("native runner file handoff", () => {
   let temporary: Awaited<

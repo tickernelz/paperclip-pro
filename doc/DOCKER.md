@@ -234,13 +234,13 @@ Notes:
 
 ## Podman Quadlet (systemd)
 
-The `docker/quadlet/` directory contains unit files to run Paperclip + PostgreSQL as systemd services via Podman Quadlet.
+The `docker/quadlet/` directory contains unit files to run Wardmote + PostgreSQL as systemd services via Podman Quadlet.
 
 | File | Purpose |
 |------|---------|
-| `docker/quadlet/paperclip.pod` | Pod definition — groups containers into a shared network namespace |
-| `docker/quadlet/paperclip.container` | Paperclip server — joins the pod, connects to Postgres at `127.0.0.1` |
-| `docker/quadlet/paperclip-db.container` | PostgreSQL 17 — joins the pod, health-checked |
+| `docker/quadlet/wardmote.pod` | Pod definition — groups containers into a shared network namespace |
+| `docker/quadlet/wardmote.container` | Wardmote server — joins the pod, connects to Postgres at `127.0.0.1` |
+| `docker/quadlet/wardmote-db.container` | PostgreSQL 17 — joins the pod, health-checked |
 
 ### Setup
 
@@ -278,26 +278,40 @@ The `docker/quadlet/` directory contains unit files to run Paperclip + PostgreSQ
    ```sh
    mkdir -p ~/.local/share/paperclip
    systemctl --user daemon-reload
-   systemctl --user start paperclip-pod
+   systemctl --user start wardmote-pod
    ```
 
 ### Quadlet management
 
 ```sh
-journalctl --user -u paperclip -f        # App logs
-journalctl --user -u paperclip-db -f     # DB logs
-systemctl --user status paperclip-pod    # Pod status
-systemctl --user restart paperclip-pod   # Restart all
-systemctl --user stop paperclip-pod      # Stop all
+journalctl --user -u wardmote -f        # App logs
+journalctl --user -u wardmote-db -f     # DB logs
+systemctl --user status wardmote-pod    # Pod status
+systemctl --user restart wardmote-pod   # Restart all
+systemctl --user stop wardmote-pod      # Stop all
 ```
 
 ### Quadlet notes
 
-- **First boot**: Unlike Docker Compose's `condition: service_healthy`, Quadlet's `After=` only waits for the DB unit to *start*, not for PostgreSQL to be ready. On a cold first boot you may see one or two restart attempts in `journalctl --user -u paperclip` while PostgreSQL initialises — this is expected and resolves automatically via `Restart=on-failure`.
+- **First boot**: Unlike Docker Compose's `condition: service_healthy`, Quadlet's `After=` only waits for the DB unit to *start*, not for PostgreSQL to be ready. On a cold first boot you may see one or two restart attempts in `journalctl --user -u wardmote` while PostgreSQL initialises — this is expected and resolves automatically via `Restart=on-failure`.
 - Containers in a pod share `localhost`, so Paperclip reaches Postgres at `127.0.0.1:5432`.
 - PostgreSQL data persists in the `paperclip-pgdata` named volume.
 - Paperclip data persists at `~/.local/share/paperclip`.
 - For rootful quadlet deployment, remove `%h` prefixes and use absolute paths.
+
+### Upgrading from the old unit names
+
+Installs set up before the Wardmote rename use `paperclip.pod`, `paperclip.container` and `paperclip-db.container`. Replace them once; the volume, data directory and env file stay the same, so the data carries over:
+
+```sh
+systemctl --user stop paperclip-pod
+rm ~/.config/containers/systemd/paperclip.pod \
+  ~/.config/containers/systemd/paperclip.container \
+  ~/.config/containers/systemd/paperclip-db.container
+cp docker/quadlet/*.pod docker/quadlet/*.container ~/.config/containers/systemd/
+systemctl --user daemon-reload
+systemctl --user start wardmote-pod
+```
 
 ## Onboard Smoke Test (Ubuntu + npm only)
 

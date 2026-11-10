@@ -21,7 +21,7 @@ import { startEmbeddedPostgresTestDatabase } from "../../__tests__/helpers/embed
 import { initializeRunIdentity, reserveSteeredIdentity, reconcileSteeredIdentity } from "../run-identity.js";
 import { documentService } from "../documents.js";
 import { issueService } from "../issues.js";
-import { WardmoteRunnerToolAuthority } from "./paperclip-runner-tool-authority.js";
+import { WardmoteRunnerToolAuthority } from "./wardmote-runner-tool-authority.js";
 import { createAssignedMcpTools } from "./assigned-mcp-tools.js";
 import type { ToolGatewayService } from "../tool-gateway.js";
 import { READ_CURRENT_WAKE_COMMENTS_TOOL_NAME } from "./current-wake-comments.js";

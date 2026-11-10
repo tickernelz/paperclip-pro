@@ -115,7 +115,7 @@ vi.mock("../../vendor/wardmote-runner/index.js", async (original) => ({
 vi.mock("../../realtime/runner-prp-ws.js", () => ({
   registerRunnerPrpAuthority: seam.register,
 }));
-vi.mock("./paperclip-runner-tool-authority.js", () => ({
+vi.mock("./wardmote-runner-tool-authority.js", () => ({
   WardmoteRunnerToolAuthority: class {
     definitions() {
       return Promise.resolve([]);

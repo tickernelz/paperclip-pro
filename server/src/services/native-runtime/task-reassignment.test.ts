@@ -4,7 +4,7 @@ import { eq, and } from "drizzle-orm";
 import { activityLog, agents, companies, createDb, heartbeatRuns, issues, issueComments } from "@tickernelz/wardmote-db";
 import { startEmbeddedPostgresTestDatabase } from "../../__tests__/helpers/embedded-postgres.js";
 import { issueService } from "../issues.js";
-import { WardmoteRunnerToolAuthority } from "./paperclip-runner-tool-authority.js";
+import { WardmoteRunnerToolAuthority } from "./wardmote-runner-tool-authority.js";
 
 describe("runner task reassignment", () => {
   let temporary: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;

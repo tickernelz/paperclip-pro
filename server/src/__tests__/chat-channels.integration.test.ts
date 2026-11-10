@@ -150,7 +150,7 @@ import * as discordQuestionForms from "../services/chat-discord-question-forms.j
 import { issueService } from "../services/issues.js";
 import { instanceSettingsService } from "../services/instance-settings.js";
 import { getExternalChannelBindingSummary } from "../services/chat-channel-binding.js";
-import { WardmoteRunnerToolAuthority } from "../services/native-runtime/paperclip-runner-tool-authority.js";
+import { WardmoteRunnerToolAuthority } from "../services/native-runtime/wardmote-runner-tool-authority.js";
 import { NativeChatAttachmentReadScope } from "../services/native-runtime/chat-attachment-read.js";
 import { logActivity } from "../services/activity-log.js";
 import * as activityLogService from "../services/activity-log.js";
@@ -207,7 +207,7 @@ import {
 } from "../services/native-runtime/native-run-finalizer.js";
 import { NativeRunCoordinatorStore } from "../services/native-runtime/native-run-coordinator-store.js";
 import { reconcileNativeFinalizations } from "../services/native-runtime/native-finalization-reconciler.js";
-import { WardmoteControlPlanePort } from "../services/native-runtime/paperclip-control-plane-port.js";
+import { WardmoteControlPlanePort } from "../services/native-runtime/wardmote-control-plane-port.js";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

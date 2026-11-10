@@ -9,7 +9,7 @@ import {
 
 const outputPath = resolve(
   operationGroupsPackageRoot(),
-  "spec/paperclip-agent-operation-groups.md",
+  "spec/wardmote-agent-operation-groups.md",
 );
 const generated = renderOperationGroupsDocument(loadOperationGroupsInput());
 const check = process.argv.includes("--check");
@@ -18,7 +18,7 @@ if (check) {
   const current = readFileSync(outputPath, "utf8");
   if (current !== generated) {
     throw new Error(
-      "paperclip-agent-operation-groups.md is stale; run the generator without --check.",
+      "wardmote-agent-operation-groups.md is stale; run the generator without --check.",
     );
   }
   process.stdout.write("operation-groups spec is current\n");

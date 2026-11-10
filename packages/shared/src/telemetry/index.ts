@@ -38,6 +38,6 @@ export type {
   AnyWardmoteTelemetryEvent,
   EventDimensionsMap,
   WardmoteEventName,
-} from "./generated/paperclip-telemetry.js";
+} from "./generated/wardmote-telemetry.js";
 export { EVENT_RETENTION_CLASS, RETENTION_DAYS } from "./retention.js";
 export type { RetentionClass } from "./retention.js";

@@ -1,6 +1,6 @@
 # Paperclip Page Skill
 
-`paperclip-page` publishes static page directories to a Paperclip-controlled S3
+`wardmote-page` publishes static page directories to a Paperclip-controlled S3
 bucket served through CloudFront. It is the durable Paperclip-owned replacement
 for quick `here.now`-style page sharing.
 
@@ -27,19 +27,19 @@ site/
 Validate without AWS writes:
 
 ```bash
-.agents/skills/paperclip-page/scripts/publish.sh ./site --slug demo --dry-run
+.agents/skills/wardmote-page/scripts/publish.sh ./site --slug demo --dry-run
 ```
 
 Publish:
 
 ```bash
-.agents/skills/paperclip-page/scripts/publish.sh ./site --slug demo
+.agents/skills/wardmote-page/scripts/publish.sh ./site --slug demo
 ```
 
 Update an existing page from the same source directory:
 
 ```bash
-.agents/skills/paperclip-page/scripts/publish.sh ./site --slug demo --update
+.agents/skills/wardmote-page/scripts/publish.sh ./site --slug demo --update
 ```
 
 The helper prints:
@@ -54,7 +54,7 @@ The helper prints:
 - Source directory itself must not be a symlink.
 - No symlinks anywhere in the tree.
 - No hidden files or dot paths in published content.
-- `.paperclip-page/state.json` is allowed and excluded from uploads.
+- `.wardmote-page/state.json` is allowed and excluded from uploads.
 - Do not publish secrets, credentials, internal logs, private company material,
   customer data, or regulated data.
 
@@ -62,7 +62,7 @@ Add this to the publishing repo or generated site `.gitignore` when the source
 directory lives in a git checkout:
 
 ```gitignore
-.paperclip-page/
+.wardmote-page/
 ```
 
 ## Environment Variables
@@ -71,7 +71,7 @@ Required for live publishes:
 
 ```bash
 export AWS_REGION=us-east-1
-export WARDMOTE_PAGE_BUCKET=paperclip-pages-prod
+export WARDMOTE_PAGE_BUCKET=wardmote-pages-prod
 export WARDMOTE_PAGE_BASE_URL=https://pages.paperclip.ing
 export WARDMOTE_PAGE_AWS_ACCESS_KEY_ID=...
 export WARDMOTE_PAGE_AWS_SECRET_ACCESS_KEY=...
@@ -81,7 +81,7 @@ Optional:
 
 ```bash
 export WARDMOTE_PAGE_DEFAULT_PREFIX=""
-export WARDMOTE_PAGE_AWS_PROFILE=paperclip-page-uploader
+export WARDMOTE_PAGE_AWS_PROFILE=wardmote-page-uploader
 export WARDMOTE_PAGE_AWS_SESSION_TOKEN=...  # only with the namespaced key pair
 ```
 
@@ -101,8 +101,8 @@ error.
 
 Recommended Paperclip secret names:
 
-- `paperclip-page-aws-access-key-id`
-- `paperclip-page-aws-secret-access-key`
+- `wardmote-page-aws-access-key-id`
+- `wardmote-page-aws-secret-access-key`
 
 Bind those secrets into publisher agents as `WARDMOTE_PAGE_AWS_ACCESS_KEY_ID`
 and `WARDMOTE_PAGE_AWS_SECRET_ACCESS_KEY`. Never bind them as the global
@@ -121,9 +121,9 @@ create buckets, mutate IAM, change DNS, or manage CloudFront.
 ```bash
 export AWS_PROFILE=paperclip-admin
 export AWS_REGION=us-east-1
-export BUCKET=paperclip-pages-prod
+export BUCKET=wardmote-pages-prod
 export DOMAIN=pages.paperclip.ing
-export UPLOADER_USER=paperclip-page-uploader
+export UPLOADER_USER=wardmote-page-uploader
 export CLOUDFRONT_COMMENT="Paperclip pages"
 
 aws sts get-caller-identity --profile "$AWS_PROFILE"
@@ -185,11 +185,11 @@ aws s3api put-bucket-encryption \
 Upload an operator-managed root `404.html` before creating the distribution:
 
 ```bash
-mkdir -p /tmp/paperclip-pages-bootstrap
+mkdir -p /tmp/wardmote-pages-bootstrap
 printf '<!doctype html><title>Not found</title><h1>Not found</h1>\n' \
-  > /tmp/paperclip-pages-bootstrap/404.html
+  > /tmp/wardmote-pages-bootstrap/404.html
 
-aws s3 cp /tmp/paperclip-pages-bootstrap/404.html "s3://$BUCKET/404.html" \
+aws s3 cp /tmp/wardmote-pages-bootstrap/404.html "s3://$BUCKET/404.html" \
   --profile "$AWS_PROFILE" \
   --content-type text/html \
   --cache-control 'public,max-age=60'
@@ -206,9 +206,9 @@ aws acm request-certificate \
   --domain-name "$DOMAIN" \
   --validation-method DNS \
   --idempotency-token paperclippages \
-  > /tmp/paperclip-pages-acm.json
+  > /tmp/wardmote-pages-acm.json
 
-export CERT_ARN="$(jq -r '.CertificateArn' /tmp/paperclip-pages-acm.json)"
+export CERT_ARN="$(jq -r '.CertificateArn' /tmp/wardmote-pages-acm.json)"
 
 aws acm describe-certificate \
   --profile "$AWS_PROFILE" \
@@ -232,22 +232,22 @@ Create a CloudFront Origin Access Control:
 aws cloudfront create-origin-access-control \
   --profile "$AWS_PROFILE" \
   --origin-access-control-config "{
-    \"Name\":\"paperclip-pages-oac\",
+    \"Name\":\"wardmote-pages-oac\",
     \"Description\":\"OAC for $BUCKET\",
     \"SigningProtocol\":\"sigv4\",
     \"SigningBehavior\":\"always\",
     \"OriginAccessControlOriginType\":\"s3\"
   }" \
-  > /tmp/paperclip-pages-oac.json
+  > /tmp/wardmote-pages-oac.json
 
-export OAC_ID="$(jq -r '.OriginAccessControl.Id' /tmp/paperclip-pages-oac.json)"
+export OAC_ID="$(jq -r '.OriginAccessControl.Id' /tmp/wardmote-pages-oac.json)"
 ```
 
 Create and publish a CloudFront Function so clean page URLs such as `/demo/`
 load `/demo/index.html` from the S3 REST origin:
 
 ```bash
-cat > paperclip-pages-index-router.js <<'EOF'
+cat > wardmote-pages-index-router.js <<'EOF'
 function handler(event) {
   var request = event.request;
   var uri = request.uri;
@@ -268,26 +268,26 @@ EOF
 
 aws cloudfront create-function \
   --profile "$AWS_PROFILE" \
-  --name paperclip-pages-index-router \
+  --name wardmote-pages-index-router \
   --function-config 'Comment=Rewrite clean page URLs to index.html,Runtime=cloudfront-js-2.0' \
-  --function-code fileb://paperclip-pages-index-router.js \
-  > /tmp/paperclip-pages-function.json
+  --function-code fileb://wardmote-pages-index-router.js \
+  > /tmp/wardmote-pages-function.json
 
-export FUNCTION_ETAG="$(jq -r '.ETag' /tmp/paperclip-pages-function.json)"
+export FUNCTION_ETAG="$(jq -r '.ETag' /tmp/wardmote-pages-function.json)"
 
 aws cloudfront publish-function \
   --profile "$AWS_PROFILE" \
-  --name paperclip-pages-index-router \
+  --name wardmote-pages-index-router \
   --if-match "$FUNCTION_ETAG" \
-  > /tmp/paperclip-pages-function-live.json
+  > /tmp/wardmote-pages-function-live.json
 
-export FUNCTION_ARN="$(jq -r '.FunctionSummary.FunctionMetadata.FunctionARN' /tmp/paperclip-pages-function-live.json)"
+export FUNCTION_ARN="$(jq -r '.FunctionSummary.FunctionMetadata.FunctionARN' /tmp/wardmote-pages-function-live.json)"
 ```
 
 Create `cloudfront-config.json`:
 
 ```bash
-export CALLER_REFERENCE="paperclip-pages-$(date +%s)"
+export CALLER_REFERENCE="wardmote-pages-$(date +%s)"
 
 jq -n \
   --arg caller "$CALLER_REFERENCE" \
@@ -344,10 +344,10 @@ Create the distribution:
 aws cloudfront create-distribution \
   --profile "$AWS_PROFILE" \
   --distribution-config file://cloudfront-config.json \
-  > /tmp/paperclip-pages-cloudfront.json
+  > /tmp/wardmote-pages-cloudfront.json
 
-export DISTRIBUTION_ID="$(jq -r '.Distribution.Id' /tmp/paperclip-pages-cloudfront.json)"
-export DISTRIBUTION_DOMAIN="$(jq -r '.Distribution.DomainName' /tmp/paperclip-pages-cloudfront.json)"
+export DISTRIBUTION_ID="$(jq -r '.Distribution.Id' /tmp/wardmote-pages-cloudfront.json)"
+export DISTRIBUTION_DOMAIN="$(jq -r '.Distribution.DomainName' /tmp/wardmote-pages-cloudfront.json)"
 ```
 
 Grant CloudFront read access to the private bucket:
@@ -389,7 +389,7 @@ aws iam create-user \
   --user-name "$UPLOADER_USER"
 ```
 
-Create `paperclip-page-uploader-policy.json`. This policy supports collision
+Create `wardmote-page-uploader-policy.json`. This policy supports collision
 checks and additive uploads under slug prefixes while protecting root bootstrap
 objects such as `404.html`.
 
@@ -427,7 +427,7 @@ jq -n \
         ]
       }
     ]
-  }' > paperclip-page-uploader-policy.json
+  }' > wardmote-page-uploader-policy.json
 ```
 
 Attach it:
@@ -437,7 +437,7 @@ aws iam put-user-policy \
   --profile "$AWS_PROFILE" \
   --user-name "$UPLOADER_USER" \
   --policy-name WardmotePagePublisher \
-  --policy-document file://paperclip-page-uploader-policy.json
+  --policy-document file://wardmote-page-uploader-policy.json
 ```
 
 Create access keys and treat the output as secret material:
@@ -446,8 +446,8 @@ Create access keys and treat the output as secret material:
 aws iam create-access-key \
   --profile "$AWS_PROFILE" \
   --user-name "$UPLOADER_USER" \
-  > /tmp/paperclip-page-uploader-key.json
-chmod 600 /tmp/paperclip-page-uploader-key.json
+  > /tmp/wardmote-page-uploader-key.json
+chmod 600 /tmp/wardmote-page-uploader-key.json
 ```
 
 ## Cloudflare DNS
@@ -490,17 +490,17 @@ curl -I "https://$DOMAIN/404.html"
 Create secrets from environment variables so values do not land in shell history:
 
 ```bash
-export WARDMOTE_PAGE_AWS_ACCESS_KEY_ID="$(jq -r '.AccessKey.AccessKeyId' /tmp/paperclip-page-uploader-key.json)"
-export WARDMOTE_PAGE_AWS_SECRET_ACCESS_KEY="$(jq -r '.AccessKey.SecretAccessKey' /tmp/paperclip-page-uploader-key.json)"
+export WARDMOTE_PAGE_AWS_ACCESS_KEY_ID="$(jq -r '.AccessKey.AccessKeyId' /tmp/wardmote-page-uploader-key.json)"
+export WARDMOTE_PAGE_AWS_SECRET_ACCESS_KEY="$(jq -r '.AccessKey.SecretAccessKey' /tmp/wardmote-page-uploader-key.json)"
 
 npx @tickernelz/wardmote secrets create \
   --company-id <company-id> \
-  --name paperclip-page-aws-access-key-id \
+  --name wardmote-page-aws-access-key-id \
   --value-env WARDMOTE_PAGE_AWS_ACCESS_KEY_ID
 
 npx @tickernelz/wardmote secrets create \
   --company-id <company-id> \
-  --name paperclip-page-aws-secret-access-key \
+  --name wardmote-page-aws-secret-access-key \
   --value-env WARDMOTE_PAGE_AWS_SECRET_ACCESS_KEY
 ```
 
@@ -521,7 +521,7 @@ host `AWS_PROFILE` identity for the entire agent run:
     "version": "latest"
   },
   "AWS_REGION": { "type": "plain", "value": "us-east-1" },
-  "WARDMOTE_PAGE_BUCKET": { "type": "plain", "value": "paperclip-pages-prod" },
+  "WARDMOTE_PAGE_BUCKET": { "type": "plain", "value": "wardmote-pages-prod" },
   "WARDMOTE_PAGE_BASE_URL": { "type": "plain", "value": "https://pages.paperclip.ing" },
   "WARDMOTE_PAGE_DEFAULT_PREFIX": { "type": "plain", "value": "" }
 }
@@ -535,9 +535,9 @@ Create or update the company skill from this package:
 npx @tickernelz/wardmote skills create \
   --company-id <company-id> \
   --name "Paperclip Page" \
-  --slug paperclip-page \
+  --slug wardmote-page \
   --description "Publish static pages to the Paperclip pages host" \
-  --body-file .agents/skills/paperclip-page/SKILL.md
+  --body-file .agents/skills/wardmote-page/SKILL.md
 ```
 
 Attach it to an agent:
@@ -545,7 +545,7 @@ Attach it to an agent:
 ```bash
 npx @tickernelz/wardmote skills agent sync <agent-id-or-shortname> \
   --company-id <company-id> \
-  --skill paperclip-page
+  --skill wardmote-page
 ```
 
 Ensure the agent can read this directory or copy the package into the installed
@@ -559,8 +559,8 @@ company skill location with `scripts/publish.sh` preserved as executable.
 aws iam create-access-key \
   --profile "$AWS_PROFILE" \
   --user-name "$UPLOADER_USER" \
-  > /tmp/paperclip-page-uploader-key-rotation.json
-chmod 600 /tmp/paperclip-page-uploader-key-rotation.json
+  > /tmp/wardmote-page-uploader-key-rotation.json
+chmod 600 /tmp/wardmote-page-uploader-key-rotation.json
 ```
 
 2. Store new secret versions in Paperclip Secrets.
@@ -599,7 +599,7 @@ aws iam delete-access-key \
 
 - Use a different slug.
 - Or run `--update` from the original source directory that has
-  `.paperclip-page/state.json`.
+  `.wardmote-page/state.json`.
 
 Generated slug collides:
 

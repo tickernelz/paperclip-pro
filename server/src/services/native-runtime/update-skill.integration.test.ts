@@ -6,7 +6,7 @@ import { eq } from "drizzle-orm";
 import { activityLog, companyMemberships, heartbeatRuns, issues } from "@tickernelz/wardmote-db";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { startRunnerApiTestServer } from "../../__tests__/helpers/runner-api-server.js";
-import { WardmoteRunnerToolAuthority } from "./paperclip-runner-tool-authority.js";
+import { WardmoteRunnerToolAuthority } from "./wardmote-runner-tool-authority.js";
 import { companySkillPolicyService } from "../company-skill-policy.js";
 import { companySkillService } from "../company-skills.js";
 

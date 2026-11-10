@@ -9,7 +9,7 @@ import { startAdapterExecutionTargetWardmoteBridge, type AdapterSandboxExecution
 import type { CommandManagedRuntimeRunner } from "@tickernelz/wardmote-adapter-utils/command-managed-runtime";
 import { runChildProcess } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import { createLocalAgentJwt } from "../agent-auth-jwt.js";
-import { WardmoteRunnerToolAuthority } from "../services/native-runtime/paperclip-runner-tool-authority.js";
+import { WardmoteRunnerToolAuthority } from "../services/native-runtime/wardmote-runner-tool-authority.js";
 import { readVerifiedRemoteWorkspaceFile } from "../services/native-runtime/remote-deliverable-file.js";
 import { startFileDeliveryDaytona } from "./helpers/file-delivery-daytona.js";
 import { startRunnerApiTestServer } from "./helpers/runner-api-server.js";

@@ -1,5 +1,5 @@
 ---
-name: paperclip-evals
+name: wardmote-evals
 description: Choose, inspect, validate, and report Paperclip Runner or Product E2E evaluations while preserving evidence, provenance, cost, and failure classification.
 ---
 

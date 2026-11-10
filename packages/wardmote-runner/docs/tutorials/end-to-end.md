@@ -48,7 +48,7 @@ flag while preserving server-owned workspace, governance, and status authority.
 16. Run the fake lifecycle in both consumers, then confirm the mini consumer
     reaches `Replay parity: match` after reconnect and replay.
 17. Run the safe real-Codex browser smoke.
-18. Follow [Standalone: Run the Thin Wardmote Adapter](standalone-thin-paperclip-adapter.md).
+18. Follow [Standalone: Run the Thin Wardmote Adapter](standalone-thin-wardmote-adapter.md).
 19. Run the unchanged port conformance suite against mock and database-backed
     Wardmote ports, then inspect one local feature-flagged task.
 20. Disable the flag and confirm a fresh task selects legacy while persisted

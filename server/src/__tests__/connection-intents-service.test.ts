@@ -35,7 +35,7 @@ import type { RuntimeToolsTokenClaims } from "../runtime-tools-token.js";
 import { wakeConnectionIntentAfterResolution } from "../routes/connection-intents.js";
 import { connectionIntentDeliveryService } from "../services/connection-intent-delivery.js";
 import { issueThreadInteractionService } from "../services/issue-thread-interactions.js";
-import { WardmoteRunnerToolAuthority } from "../services/native-runtime/paperclip-runner-tool-authority.js";
+import { WardmoteRunnerToolAuthority } from "../services/native-runtime/wardmote-runner-tool-authority.js";
 import { materializeNativeInteractionResponses } from "../services/native-runtime/native-interaction-bridge.js";
 import { toolAccessService } from "../services/tool-access.js";
 import { toolAccessPolicyService } from "../services/tool-access-policy.js";

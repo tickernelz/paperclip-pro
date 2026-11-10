@@ -9,7 +9,7 @@ import type {
   TelemetryState,
 } from "./types.js";
 import { type ResolvedTelemetryCaps, resolveCaps } from "./config.js";
-import { WARDMOTE_EVENTS } from "./generated/paperclip-telemetry.js";
+import { WARDMOTE_EVENTS } from "./generated/wardmote-telemetry.js";
 
 const DEFAULT_ENDPOINTS = [
   "https://telemetry.paperclip.ing/ingest",

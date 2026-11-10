@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import * as generatedTelemetry from "./generated/paperclip-telemetry.js";
+import * as generatedTelemetry from "./generated/wardmote-telemetry.js";
 
 const readmePath = fileURLToPath(new URL("./README.md", import.meta.url));
 

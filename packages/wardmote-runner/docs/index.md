@@ -11,7 +11,7 @@ Wardmote's runtime selection.
 - [Live console protocol server](tutorials/live-console-protocol-server.md)
 - [Live console](tutorials/live-console.md)
 - [SDK console](tutorials/sdk-console.md)
-- [Standalone adapter](tutorials/standalone-thin-paperclip-adapter.md)
+- [Standalone adapter](tutorials/standalone-thin-wardmote-adapter.md)
 - [Scenario explorer](tutorials/capability-scenario-explorer.md)
 - [Scenario chat](tutorials/scenario-chat.md)
 - [Issue-thread lab](tutorials/capability-issue-thread.md)
@@ -27,7 +27,7 @@ Wardmote's runtime selection.
 - [Live console protocol server](live-console-protocol-server.md)
 - [Live console](live-console.md)
 - [Browser and React SDK](sdk.md)
-- [Standalone adapter](standalone-thin-paperclip-adapter.md)
+- [Standalone adapter](standalone-thin-wardmote-adapter.md)
 - [Scenario explorer](capability-scenario-explorer.md)
 - [Scenario chat](scenario-chat.md)
 - [Mock control plane](capability-mock-control-plane-port.md)
@@ -40,7 +40,7 @@ Wardmote's runtime selection.
 - [Live-console interaction map](design/live-console-interaction-map.md)
 - [Live-console component decisions](design/live-console-component-decisions.md)
 - [SDK component decisions](design/sdk-component-decisions.md)
-- [Standalone adapter boundary](design/standalone-thin-paperclip-adapter.md)
+- [Standalone adapter boundary](design/standalone-thin-wardmote-adapter.md)
 - [UI library compatibility note](research/2026-08-07-ui-library-compatibility.md)
 
 The SDK and labs are additive. Existing direct adapters continue to use their

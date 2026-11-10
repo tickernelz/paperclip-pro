@@ -7,7 +7,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vites
 import { activityLog, agents, authUsers, companies, companyMemberships, principalPermissionGrants, heartbeatRuns, issues, agentInstructionRevisions, createDb } from "@tickernelz/wardmote-db";
 import { startEmbeddedPostgresTestDatabase } from "../../__tests__/helpers/embedded-postgres.js";
 import { resolveManagedInstructionsRoot } from "../agent-instructions.js";
-import { WardmoteRunnerToolAuthority } from "./paperclip-runner-tool-authority.js";
+import { WardmoteRunnerToolAuthority } from "./wardmote-runner-tool-authority.js";
 
 describe("canonical instruction tools through native authority", () => {
   let database: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;

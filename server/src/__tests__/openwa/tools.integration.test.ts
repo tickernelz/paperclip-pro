@@ -47,7 +47,7 @@ import {
   prepareConnectorSkillDelivery,
   resolveConnectorAssignments,
 } from "../../services/connector-runtime.js";
-import { WardmoteRunnerToolAuthority } from "../../services/native-runtime/paperclip-runner-tool-authority.js";
+import { WardmoteRunnerToolAuthority } from "../../services/native-runtime/wardmote-runner-tool-authority.js";
 import { openwaThreadId } from "../../services/openwa/adapter.js";
 import { openwaChatKey } from "../../services/openwa/outbound.js";
 import { openwaAttachmentLocalPaths } from "../../services/openwa/media.js";

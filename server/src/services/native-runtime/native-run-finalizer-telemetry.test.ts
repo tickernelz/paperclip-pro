@@ -52,7 +52,7 @@ function captureRunFailureCallsFrom(fromIndex: number) {
   return mockCaptureRunFailure.mock.calls.slice(fromIndex);
 }
 
-import { WardmoteControlPlanePort } from "./paperclip-control-plane-port.js";
+import { WardmoteControlPlanePort } from "./wardmote-control-plane-port.js";
 import { restoreNativeWorkspaceBestEffort } from "./native-workspace-best-effort.js";
 import { reconcileNativeFinalizations } from "./native-finalization-reconciler.js";
 import { recoverLegacyUnsafeWorkspaceExports } from "./native-workspace-export-recovery.js";

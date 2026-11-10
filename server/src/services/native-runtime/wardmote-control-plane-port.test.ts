@@ -41,7 +41,7 @@ import {
   runControlPlanePortConformance,
 } from "../../vendor/wardmote-runner/testing.js";
 import { startEmbeddedPostgresTestDatabase } from "../../__tests__/helpers/embedded-postgres.js";
-import { WardmoteControlPlanePort } from "./paperclip-control-plane-port.js";
+import { WardmoteControlPlanePort } from "./wardmote-control-plane-port.js";
 import { NativeRunCoordinatorStore } from "./native-run-coordinator-store.js";
 import { finalizeNativeRun, repairCommittedNativeChatResponse } from "./native-run-finalizer.js";
 import { nativeRuntimeContextFixture } from "./runtime-context.test-fixture.js";
@@ -49,7 +49,7 @@ import { issueThreadInteractionService } from "../issue-thread-interactions.js";
 import { claimNativeReviewExecutionLock, getNativeReviewAssignment } from "./native-review-participant.js";
 import { claimQueuedNativeReviewRun } from "./native-review-dispatch.js";
 import { stageNativeRunnerWakeAttachments } from "./native-runner-file-handoff.js";
-import { WardmoteRunnerToolAuthority } from "./paperclip-runner-tool-authority.js";
+import { WardmoteRunnerToolAuthority } from "./wardmote-runner-tool-authority.js";
 import { nativeCompletionFeedback } from "./native-completion-feedback.js";
 import { assertCurrentWakeCommentsRead } from "./current-wake-comments.js";
 import { buildExecutionContinuation } from "../execution-continuation.js";

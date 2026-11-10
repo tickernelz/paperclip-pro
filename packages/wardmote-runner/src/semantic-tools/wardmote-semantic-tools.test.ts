@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { WardmoteSemanticActionBinding } from "./types.js";
-import { WardmoteSemanticDispatcher } from "./paperclip-dispatcher.js";
+import { WardmoteSemanticDispatcher } from "./wardmote-dispatcher.js";
 import type {
   WardmoteSemanticIdempotencyClaim,
   WardmoteSemanticIdempotencyStore,

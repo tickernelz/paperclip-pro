@@ -34,7 +34,7 @@ import { createStorageService } from "../../storage/service.js";
 import type { StorageService } from "../../storage/types.js";
 import { issueService } from "../issues.js";
 import { NativeChatAttachmentReadScope } from "./chat-attachment-read.js";
-import { WardmoteRunnerToolAuthority } from "./paperclip-runner-tool-authority.js";
+import { WardmoteRunnerToolAuthority } from "./wardmote-runner-tool-authority.js";
 
 const stagingControl = vi.hoisted(() => ({
   beforeStage: undefined as (() => Promise<void>) | undefined,

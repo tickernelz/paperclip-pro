@@ -536,7 +536,7 @@ async function createBrokerConnection(
     .insert(toolApplications)
     .values({
       companyId,
-      applicationKey: "paperclip-pages",
+      applicationKey: "wardmote-pages",
       name: `Wardmote Pages ${randomUUID()}`,
       type: "mcp_http",
       status: "active",

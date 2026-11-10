@@ -14,7 +14,7 @@ import { decideWardmoteSemanticAuthorization } from "./authorization.js";
 import {
   discoverWardmoteSemanticTools,
   projectWardmoteSemanticTools,
-} from "./paperclip-discovery.js";
+} from "./wardmote-discovery.js";
 import {
   createWardmoteSemanticInputReceipt,
   createWardmoteSemanticResultReceipt,

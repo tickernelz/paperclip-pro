@@ -1,5 +1,5 @@
 ---
-name: create-paperclip-bundled-skill
+name: create-wardmote-bundled-skill
 description: >
   Turn an idea, tweet, or task into a skill in the Paperclip skills catalog
   (packages/skills-catalog). Use when asked to FIND or MAKE a skill and publish
@@ -236,7 +236,7 @@ every catalog skill.
 
 ## Step 5 — Open the PR
 
-Follow the `prepare-paperclip-pr` skill (`.agents/skills/prepare-paperclip-pr/`)
+Follow the `prepare-wardmote-pr` skill (`.agents/skills/prepare-wardmote-pr/`)
 against `paperclipai/paperclip` master. The diff should contain exactly:
 
 1. the new skill directory (SKILL.md + examples/ + supporting files, **or**

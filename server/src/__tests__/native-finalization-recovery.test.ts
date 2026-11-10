@@ -25,7 +25,7 @@ import {
   reconcileNativeFinalizations,
   reconcileRetainedNativeSessionCleanups,
 } from "../services/native-runtime/native-finalization-reconciler.js";
-import { WardmoteControlPlanePort } from "../services/native-runtime/paperclip-control-plane-port.js";
+import { WardmoteControlPlanePort } from "../services/native-runtime/wardmote-control-plane-port.js";
 import { assertRetainedNativeSourceArchiveSettled } from "../services/native-runtime/native-session-executor.js";
 
 describe("P6-16/P6-25/P6-28 native finalization recovery", () => {

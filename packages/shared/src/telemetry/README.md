@@ -7,7 +7,7 @@ shape is not sufficient.
 
 The canonical source for first-party event names, dimensions, optionality,
 allowed primitive value types, and enum descriptions is
-`packages/shared/src/telemetry/generated/paperclip-telemetry.ts`.
+`packages/shared/src/telemetry/generated/wardmote-telemetry.ts`.
 
 Shared enum constants live in `packages/shared/src/constants.ts`. Use those
 constants when code needs a reusable domain, but treat the generated telemetry
@@ -19,10 +19,10 @@ Use these files when reviewing or changing telemetry code:
 
 | Contract item                                 | Public source                                                                            |
 | --------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| First-party event names                       | `WardmoteEventName` in `generated/paperclip-telemetry.ts`                               |
-| Per-event dimensions and optionality          | `EventDimensionsMap` in `generated/paperclip-telemetry.ts`                               |
-| Enum descriptions for telemetry dimensions    | `WARDMOTE_ENUM_DESCRIPTIONS` in `generated/paperclip-telemetry.ts`                      |
-| Schema version and event envelope helpers     | `SCHEMA_VERSION`, `makeEvent()`, and `makeBatch()` in `generated/paperclip-telemetry.ts` |
+| First-party event names                       | `WardmoteEventName` in `generated/wardmote-telemetry.ts`                               |
+| Per-event dimensions and optionality          | `EventDimensionsMap` in `generated/wardmote-telemetry.ts`                               |
+| Enum descriptions for telemetry dimensions    | `WARDMOTE_ENUM_DESCRIPTIONS` in `generated/wardmote-telemetry.ts`                      |
+| Schema version and event envelope helpers     | `SCHEMA_VERSION`, `makeEvent()`, and `makeBatch()` in `generated/wardmote-telemetry.ts` |
 | Runtime-safe event names and dimensions       | `TelemetryEventName` and `TelemetryEventDimensions` in `types.ts`                        |
 | Allowed primitive dimension values            | `TelemetryDimensionValue` in `types.ts`                                                  |
 | Shared reusable enum domains                  | Named exports in `constants.ts`                                                          |
@@ -157,7 +157,7 @@ generated schema registers the event name.
 
 For stable event work:
 
-1. Start from `generated/paperclip-telemetry.ts`. The generated types are what
+1. Start from `generated/wardmote-telemetry.ts`. The generated types are what
    reviewers use to verify event names, dimensions, optionality, value types,
    enum descriptions, and schema version.
 2. Choose stable event and dimension names. Do not include user content, local

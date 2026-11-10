@@ -260,7 +260,7 @@ and [Runner Product E2E history](https://d1p6rlowie26tp.cloudfront.net/runner-e2
 The consolidated eval hub is at
 [pages.paperclip.ing/evals](https://pages.paperclip.ing/evals/).
 
-For a repeatable workflow, use the matching skill: [paperclip-evals](../.agents/skills/paperclip-evals/SKILL.md),
+For a repeatable workflow, use the matching skill: [paperclip-evals](../.agents/skills/wardmote-evals/SKILL.md),
 [add-runner-eval](../.agents/skills/add-runner-eval/SKILL.md), or
 [add-product-e2e-eval](../.agents/skills/add-product-e2e-eval/SKILL.md).
 
@@ -375,7 +375,7 @@ For offline checks, pass `--history-dir <directory>` containing
 For a pre-merge preview, pass `--docs-ref <branch-or-sha>` to link the guide
 at that revision. The default guide link uses `master`.
 
-Publish with the [Paperclip page helper](../.agents/skills/paperclip-page/SKILL.md)
+Publish with the [Paperclip page helper](../.agents/skills/wardmote-page/SKILL.md)
 and the configured page-uploader credentials. Use Bash 4 or newer; macOS's
 system Bash 3 cannot run this helper. On macOS with Homebrew Bash installed,
 put `$(brew --prefix bash)/bin` first in `PATH` before these commands:
@@ -384,12 +384,12 @@ put `$(brew --prefix bash)/bin` first in `PATH` before these commands:
 export WARDMOTE_PAGE_BUCKET=pages.paperclip.ing
 export WARDMOTE_PAGE_BASE_URL=https://pages.paperclip.ing
 export AWS_REGION=us-east-1
-bash .agents/skills/paperclip-page/scripts/publish.sh .paperclip/evals-hub --slug evals --dry-run
-bash .agents/skills/paperclip-page/scripts/publish.sh .paperclip/evals-hub --slug evals
+bash .agents/skills/wardmote-page/scripts/publish.sh .paperclip/evals-hub --slug evals --dry-run
+bash .agents/skills/wardmote-page/scripts/publish.sh .paperclip/evals-hub --slug evals
 ```
 
 For later refreshes, rebuild in the same output directory and publish with
-`--update`. Keep its ignored `.paperclip-page/state.json` ownership record;
+`--update`. Keep its ignored `.wardmote-page/state.json` ownership record;
 without that record, the helper will refuse to overwrite an existing prefix.
 Verify the public page and its links after publication. This manual refresh
 does not add a scheduled workflow. Preserve the measurement date when choosing

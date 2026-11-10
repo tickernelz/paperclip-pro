@@ -4,10 +4,6 @@
  * CLI, /proc listener-ownership check, file registry, file audit sink, and the
  * unix-socket transport. Runs as a dedicated, Tailscale-operator service
  * account — NOT as the Paperclip app/agent account.
- *
- * Usage:
- *   paperclip-tailscale-https-broker            # run the broker
- *   paperclip-tailscale-https-broker --doctor   # read-only preflight, no mutation
  */
 import { FileAuditSink } from "./audit.js";
 import { BrokerCore } from "./broker-core.js";

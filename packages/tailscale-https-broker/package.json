@@ -10,7 +10,7 @@
     "./*": "./src/*.ts"
   },
   "bin": {
-    "paperclip-tailscale-https-broker": "./dist/main.js"
+    "wardmote-tailscale-https-broker": "./dist/main.js"
   },
   "scripts": {
     "build": "tsc && node scripts/build-native.mjs",

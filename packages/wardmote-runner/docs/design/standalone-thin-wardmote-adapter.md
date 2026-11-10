@@ -620,10 +620,10 @@ packages/wardmote-runner/src/backends/harness-driver-backend.ts              (ne
 packages/wardmote-runner/src/backends/harness-driver-backend.test.ts         (new)
 packages/wardmote-runner/src/conformance/control-plane-port.ts               (new)
 packages/wardmote-runner/src/conformance/control-plane-port.test.ts          (new)
-packages/wardmote-runner/src/cli/paperclip-adapter.ts                            (new)
+packages/wardmote-runner/src/cli/wardmote-adapter.ts                            (new)
 packages/wardmote-runner/protocol/fixtures/standalone/*                         (new)
-packages/wardmote-runner/docs/standalone-thin-paperclip-adapter.md              (new)
-packages/wardmote-runner/docs/tutorials/standalone-thin-paperclip-adapter.md
+packages/wardmote-runner/docs/standalone-thin-wardmote-adapter.md              (new)
+packages/wardmote-runner/docs/tutorials/standalone-thin-wardmote-adapter.md
 packages/wardmote-runner/docs/tutorials/end-to-end.md
 packages/wardmote-runner/docs/index.md
 packages/wardmote-runner/docs/architecture.md
@@ -657,7 +657,7 @@ server/src/services/instance-settings.ts
 server/src/services/heartbeat-run-events.ts                              (new)
 server/src/services/native-runtime/runtime-mode.ts                       (new)
 server/src/services/native-runtime/native-execution-input.ts             (new)
-server/src/services/native-runtime/paperclip-control-plane-port.ts        (new)
+server/src/services/native-runtime/wardmote-control-plane-port.ts        (new)
 server/src/services/native-runtime/native-session-runtime.ts              (new)
 server/src/services/native-runtime/completion-contracts.ts                (new)
 server/src/services/native-runtime/native-result-ingestion.ts             (new)
@@ -716,10 +716,10 @@ packages/shared/src/validators/index.ts
 server/src/services/native-runtime/native-session-executor.ts
 server/src/services/native-runtime/native-session-executor.test.ts
 server/src/services/native-runtime/evidence-classifier.test.ts
-server/src/services/native-runtime/paperclip-control-plane-port.test.ts
+server/src/services/native-runtime/wardmote-control-plane-port.test.ts
 server/src/services/native-runtime/status-arbiter.test.ts
 server/src/services/recovery/service.ts
-packages/wardmote-runner/docs/design/standalone-thin-paperclip-adapter.md
+packages/wardmote-runner/docs/design/standalone-thin-wardmote-adapter.md
 ```
 
 The package runtime, closed native-input contract, and Codex backend files own
@@ -956,10 +956,10 @@ packages/db/src/schema/status_decision_effects.ts
 packages/db/src/schema/status_decisions.ts
 packages/db/src/schema/work_assessments.ts
 packages/wardmote-runner/README.md
-packages/wardmote-runner/docs/design/standalone-thin-paperclip-adapter.md
+packages/wardmote-runner/docs/design/standalone-thin-wardmote-adapter.md
 packages/wardmote-runner/docs/index.md
-packages/wardmote-runner/docs/standalone-thin-paperclip-adapter.md
-packages/wardmote-runner/docs/tutorials/standalone-thin-paperclip-adapter.md
+packages/wardmote-runner/docs/standalone-thin-wardmote-adapter.md
+packages/wardmote-runner/docs/tutorials/standalone-thin-wardmote-adapter.md
 packages/wardmote-runner/.paperclip-local/log.md
 packages/wardmote-runner/package.json
 packages/wardmote-runner/spec/fixtures/status-authority-sdk.json
@@ -1016,8 +1016,8 @@ server/src/services/native-runtime/native-run-finalizer.ts
 server/src/services/native-runtime/native-session-executor.test.ts
 server/src/services/native-runtime/native-session-executor.ts
 server/src/services/native-runtime/native-workspace-finalizer.ts
-server/src/services/native-runtime/paperclip-control-plane-port.test.ts
-server/src/services/native-runtime/paperclip-control-plane-port.ts
+server/src/services/native-runtime/wardmote-control-plane-port.test.ts
+server/src/services/native-runtime/wardmote-control-plane-port.ts
 server/src/services/native-runtime/runtime-mode.test.ts
 server/src/services/native-runtime/runtime-mode.ts
 server/src/services/native-runtime/status-arbiter.test.ts
@@ -1108,7 +1108,7 @@ host path.
 ## Tutorial outline
 
 The implementation fills in the package-local
-[Standalone tutorial](../tutorials/standalone-thin-paperclip-adapter.md) with:
+[Standalone tutorial](../tutorials/standalone-thin-wardmote-adapter.md) with:
 
 1. prerequisites and an isolated local instance;
 2. mock conformance first;

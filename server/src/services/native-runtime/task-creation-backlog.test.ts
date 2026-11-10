@@ -8,7 +8,7 @@ import { authUsers, companyMemberships, activityLog, agents, companies, createDb
 import { startEmbeddedPostgresTestDatabase } from "../../__tests__/helpers/embedded-postgres.js";
 import { documentService } from "../documents.js";
 import { issueService } from "../issues.js";
-import { WardmoteRunnerToolAuthority } from "./paperclip-runner-tool-authority.js";
+import { WardmoteRunnerToolAuthority } from "./wardmote-runner-tool-authority.js";
 
 describe("runner backlog task creation", () => {
   let temporary: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;

@@ -2,7 +2,7 @@
 
 Paperclip first-party telemetry is schema-led for stable events and proposal-led for new product instrumentation.
 
-Stable events must be present in `packages/shared/src/telemetry/generated/paperclip-telemetry.ts` before normal client code emits them. Proposed events may be added ahead of schema registration only with an `@ts-expect-error` proposal marker on the `client.track()` event-name argument.
+Stable events must be present in `packages/shared/src/telemetry/generated/wardmote-telemetry.ts` before normal client code emits them. Proposed events may be added ahead of schema registration only with an `@ts-expect-error` proposal marker on the `client.track()` event-name argument.
 
 ## Proposed Events
 

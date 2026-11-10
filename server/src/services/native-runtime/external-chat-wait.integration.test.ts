@@ -46,7 +46,7 @@ import type {
 
 import { startEmbeddedPostgresTestDatabase } from "../../__tests__/helpers/embedded-postgres.js";
 import { finalizeNativeRun } from "./native-run-finalizer.js";
-import { WardmoteControlPlanePort } from "./paperclip-control-plane-port.js";
+import { WardmoteControlPlanePort } from "./wardmote-control-plane-port.js";
 import {
   authorizeNativeChatReviewPresentation,
   hasMaterializedNativeReviewResponse,
@@ -70,7 +70,7 @@ import { resolveExternalChatQuestionResponse } from "./external-chat-question-re
 import { materializeExternalChatQuestionResponseInput } from "./external-chat-question-response-input.js";
 import * as nativeInteractionBridge from "./native-interaction-bridge.js";
 import { defaultGitHubReviewPolicy, type AskUserQuestionsInteraction } from "@tickernelz/wardmote-shared";
-import { WardmoteRunnerToolAuthority } from "./paperclip-runner-tool-authority.js";
+import { WardmoteRunnerToolAuthority } from "./wardmote-runner-tool-authority.js";
 import { createLocalDiskStorageProvider } from "../../storage/local-disk-provider.js";
 import { createStorageService } from "../../storage/service.js";
 import { subscribeAllCompanyLiveEvents } from "../live-events.js";

@@ -109,8 +109,8 @@ Tailscale-operator service account distinct from the Wardmote app account.
    sudo cp -r packages/tailscale-https-broker/dist \
      /opt/paperclip/packages/tailscale-https-broker/
    sudo install -D -m 0644 \
-     packages/tailscale-https-broker/deploy/paperclip-tailscale-https-broker.service \
-     /etc/systemd/system/paperclip-tailscale-https-broker.service
+     packages/tailscale-https-broker/deploy/wardmote-tailscale-https-broker.service \
+     /etc/systemd/system/wardmote-tailscale-https-broker.service
    sudo install -d -m 0750 /etc/paperclip
    sudoedit /etc/paperclip/tailscale-https-broker.env
    ```
@@ -203,14 +203,14 @@ Tailscale-operator service account distinct from the Wardmote app account.
    node identity. Exit 0 = ready. It never mutates Serve state.
 
 7. **Enable.** `sudo systemctl daemon-reload && sudo systemctl enable --now
-   paperclip-tailscale-https-broker`. Confirm the socket is `0660
+   wardmote-tailscale-https-broker`. Confirm the socket is `0660
    paperclip-tsbroker:paperclip-tsbroker-sock`.
 
 ## Upgrade
 
 Deploy new package output to
 `/opt/paperclip/packages/tailscale-https-broker/dist`, then
-`sudo systemctl restart paperclip-tailscale-https-broker`. On
+`sudo systemctl restart wardmote-tailscale-https-broker`. On
 restart the broker re-reads its root-owned registry and adopts only exact-lease
 matches; a changed `BROKER_NODE_IDENTITY` (host reimage / boot-id change) forces
 quarantine and operator reconciliation rather than silently re-adopting.
@@ -224,7 +224,7 @@ resets Serve or changes the primary route.
    `expose`). Existing previews drain on runtime stop.
 2. Drain owned listeners: stop each managed runtime so Wardmote issues `remove`
    for its own leases (proven by handle).
-3. `sudo systemctl disable --now paperclip-tailscale-https-broker`.
+3. `sudo systemctl disable --now wardmote-tailscale-https-broker`.
 4. Optional cleanup: remove the state dirs and `sudo tailscale set --operator=`
    to drop the operator grant. Do **not** run `tailscale serve reset` — remove
    only the specific per-port Serve entries if any remain.
