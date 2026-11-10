@@ -106,7 +106,7 @@ without a store listing. For Codex CLI:
 
 ```sh
 codex mcp add paperclip --url https://YOUR-PAPERCLIP-HOST/mcp/wardmote
-codex mcp login paperclip --scopes paperclip:read,paperclip:write,paperclip:configure,offline_access
+codex mcp login wardmote --scopes wardmote:read,wardmote:write,wardmote:configure,offline_access
 ```
 
 For Claude Code:
@@ -212,8 +212,8 @@ revoked or their agent/operator loses access. Migration `0334_heavy_captain_midl
 removes the old expiry from valid, unused Dot refresh tokens on unrevoked grants.
 Expired credentials remain expired.
 Replaying a consumed refresh token still revokes its entire grant. Tokens and codes
-are hashed at rest. `paperclip:read` is required; `paperclip:write` adds only task
-work and attachment mutations on direct connections. The `paperclip:configure`
+are hashed at rest. `wardmote:read` is required; `wardmote:write` adds only task
+work and attachment mutations on direct connections. The `wardmote:configure`
 scope covers allowed configuration operations. One **Write all of your Paperclip
 data** consent checkbox approves both requested mutation scopes. Scope expansion
 requires a new consent flow; the directory broker retains its original operations.
@@ -327,9 +327,9 @@ directory broker keeps its original ten-tool connection.
 
 | Event | Required filters | Payload |
 | --- | --- | --- |
-| `paperclip.task.status_changed` | `companyId`, `taskId`; optional `statuses` | Task ID, status, company ID and task link |
-| `paperclip.task.comment_created` | `companyId`, `taskId` | Task/company IDs, comment ID and task link |
-| `paperclip.task.document_updated` | `companyId`, `taskId` | Task/company IDs, document key, revision and task link |
+| `wardmote.task.status_changed` | `companyId`, `taskId`; optional `statuses` | Task ID, status, company ID and task link |
+| `wardmote.task.comment_created` | `companyId`, `taskId` | Task/company IDs, comment ID and task link |
+| `wardmote.task.document_updated` | `companyId`, `taskId` | Task/company IDs, document key, revision and task link |
 
 In an Events-capable ChatGPT Work Cloud chat or dot, ask, for example:
 “Watch this task. When it finishes, read its report and tell me the result.”
@@ -457,19 +457,19 @@ The existing experimental setting gates both surfaces; sharing a setup link stil
 conveys no authority. Consent has one **Write all of your Paperclip data** checkbox,
 checked by default for eligible roles. It approves the requested work and
 configuration scopes together; unchecking it grants read-only access. Clients must
-request `paperclip:configure` to configure agents, projects and skills. Existing
+request `wardmote:configure` to configure agents, projects and skills. Existing
 write connections do not acquire this scope, including after refresh; reconnect
 with the expanded scopes to approve it.
 Normal Paperclip permissions are required in addition to the connection scope.
 
-- Work (`paperclip:write`): update, finish or block tasks; write Markdown documents;
+- Work (`wardmote:write`): update, finish or block tasks; write Markdown documents;
   register or update deliverables; upload attachments. Assignment and status changes
   can schedule agents. Pending execution reviews must be decided in Paperclip.
-- Configuration (`paperclip:configure`): edit existing agents, model/budget and
+- Configuration (`wardmote:configure`): edit existing agents, model/budget and
   existing connection bindings; edit instructions; create/update projects and choose
   accessible repositories; create/update organization skills and their files.
   Credentials, execution commands, policies and agent creation are excluded.
-- Reads (`paperclip:read`): task/document history, agent instructions, skill files,
+- Reads (`wardmote:read`): task/document history, agent instructions, skill files,
   accessible repository choices and attachment downloads. Native domain read
   permissions still apply. Revision IDs from reads are required for content edits.
 

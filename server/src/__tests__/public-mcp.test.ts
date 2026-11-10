@@ -74,7 +74,7 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
     const [membership] = await db.insert(companyMemberships).values({ companyId: company!.id, principalType: "user", principalId: userId, membershipRole: role, status: "active" }).returning();
     const actor: Request["actor"] = { type: "board", source: "session", userId };
     const client = await oauth.register({ client_name: "Test client", redirect_uris: [redirectUri] }, randomUUID());
-    const url = await oauth.authorize({ client_id: client.client_id, redirect_uri: redirectUri, resource: config.resource, scope: "paperclip:read paperclip:write paperclip:configure offline_access", state: "state", response_type: "code", code_challenge: challenge, code_challenge_method: "S256" });
+    const url = await oauth.authorize({ client_id: client.client_id, redirect_uri: redirectUri, resource: config.resource, scope: "wardmote:read wardmote:write wardmote:configure offline_access", state: "state", response_type: "code", code_challenge: challenge, code_challenge_method: "S256" });
     const id = url.split("/").at(-1)!;
     const consent = await oauth.consent(id, actor, { decision: "approve", companyId: company!.id, allowWrites: write, allowConfiguration: configure });
     const code = new URL(consent.redirectUrl).searchParams.get("code")!;
@@ -99,7 +99,7 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
   async function deviceFixture() {
     const f = await fixture();
     const client = await oauth.register({ client_name: "Device client", redirect_uris: [], grant_types: [DEVICE_GRANT, "refresh_token"], response_types: [] }, randomUUID());
-    const codes = await oauth.deviceAuthorize({ client_id: client.client_id, resource: config.resource, scope: "paperclip:read paperclip:write offline_access", company_id: f.company.id }, randomUUID());
+    const codes = await oauth.deviceAuthorize({ client_id: client.client_id, resource: config.resource, scope: "wardmote:read wardmote:write offline_access", company_id: f.company.id }, randomUUID());
     const exchange = { grant_type: DEVICE_GRANT, client_id: client.client_id, resource: config.resource, device_code: codes.device_code };
     return { ...f, deviceClient: client, codes, deviceExchange: exchange };
   }
@@ -189,7 +189,7 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
     it("rejects wrong resources, scopes and disabled connections before fetching", async () => {
       const fetcher = vi.fn(async (url: URL) => metadata(url));
       const client = createPublicMcpOAuth(db, config, { metadataFetch: fetcher });
-      for (const override of [{ resource: "https://wrong.example/mcp" }, { scope: "paperclip:read invalid" }]) {
+      for (const override of [{ resource: "https://wrong.example/mcp" }, { scope: "wardmote:read invalid" }]) {
         await expect(client.authorize({ ...input(0), ...override })).rejects.toThrow();
         await expect(client.deviceAuthorize({ ...input(0), ...override })).rejects.toThrow();
       }
@@ -329,7 +329,7 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
     const [other] = await db.insert(companies).values({ name: "Other organization", issuePrefix: "M" + randomBytes(4).toString("hex") }).returning();
     await db.insert(companyMemberships).values({ companyId: other!.id, principalType: "user", principalId: f.actor.userId!, membershipRole: "member", status: "active" });
     const input = { client_id: f.client.client_id, redirect_uri: redirectUri, resource: config.resource, response_type: "code",
-      code_challenge: challenge, code_challenge_method: "S256", scope: "paperclip:read paperclip:write", company_id: f.company.id };
+      code_challenge: challenge, code_challenge_method: "S256", scope: "wardmote:read wardmote:write", company_id: f.company.id };
     const id = (await oauth.authorize(input)).split("/").at(-1)!;
     // The binding survives a new service instance, and the description reveals only this membership.
     const resumed = createPublicMcpOAuth(db, config);
@@ -504,7 +504,7 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
     const first = await execute(f.tokens.access_token, "wardmote_create_task", args);
     expect(await execute(f.tokens.access_token, "wardmote_create_task", args)).toEqual(first);
     const reconnectedClient = await oauth.register({ client_name: "Reconnected assistant", redirect_uris: [redirectUri] });
-    const reconnectId = (await oauth.authorize({ client_id: reconnectedClient.client_id, redirect_uri: redirectUri, resource: config.resource, scope: "paperclip:read paperclip:write", response_type: "code", code_challenge: challenge, code_challenge_method: "S256" })).split("/").at(-1)!;
+    const reconnectId = (await oauth.authorize({ client_id: reconnectedClient.client_id, redirect_uri: redirectUri, resource: config.resource, scope: "wardmote:read wardmote:write", response_type: "code", code_challenge: challenge, code_challenge_method: "S256" })).split("/").at(-1)!;
     const reconnectConsent = await oauth.consent(reconnectId, f.actor, { decision: "approve", companyId: f.company.id, allowWrites: true });
     const reconnected = await oauth.token({ grant_type: "authorization_code", client_id: reconnectedClient.client_id, resource: config.resource, redirect_uri: redirectUri, code: new URL(reconnectConsent.redirectUrl).searchParams.get("code"), code_verifier: verifier });
     expect(await execute(reconnected.access_token, "wardmote_create_task", args)).toEqual(first);
@@ -583,11 +583,11 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
     const dispatch = vi.fn().mockResolvedValue({ id: randomUUID(), name: "Updated" });
     const execute = createPublicMcpExecutor(db, oauth, dispatch);
     const args = { companyId: old.company.id, agentId: randomUUID(), requestId: randomUUID(), changes: { title: "Writer" } };
-    await expect(execute(old.tokens.access_token, "wardmote_update_agent", args)).rejects.toThrow("paperclip:configure");
+    await expect(execute(old.tokens.access_token, "wardmote_update_agent", args)).rejects.toThrow("wardmote:configure");
     expect(dispatch).not.toHaveBeenCalled();
     await execute(f.tokens.access_token, "wardmote_update_agent", { ...args, companyId: f.company.id });
     expect(dispatch).toHaveBeenCalledTimes(1);
-    expect((await oauth.authenticate(f.tokens.access_token)).grant.scopes).toContain("paperclip:configure");
+    expect((await oauth.authenticate(f.tokens.access_token)).grant.scopes).toContain("wardmote:configure");
     await db.update(companyMemberships).set({ membershipRole: "viewer" }).where(eq(companyMemberships.id, f.membership.id));
     await expect(execute(f.tokens.access_token, "wardmote_update_agent", { ...args, companyId: f.company.id, requestId: randomUUID() })).rejects.toThrow("permission");
     const refreshed = await oauth.token({ grant_type: "refresh_token", client_id: old.client.client_id, resource: config.resource, refresh_token: old.tokens.refresh_token });
@@ -1068,7 +1068,7 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
     };
     const options = { fetch: fetcher, now: () => clock, ...(cloudOrigin ? { cloudOrigin } : {}) };
     const service = createPublicMcpEvents(db, oauth, dispatch, options);
-    const input = { name: "paperclip.task.status_changed", arguments: { companyId: f.company.id, taskId: task!.id, statuses: ["done"] }, delivery: { mode: "webhook", url: "https://receiver.example/events/" + randomUUID(), secret } };
+    const input = { name: "wardmote.task.status_changed", arguments: { companyId: f.company.id, taskId: task!.id, statuses: ["done"] }, delivery: { mode: "webhook", url: "https://receiver.example/events/" + randomUUID(), secret } };
     const activity = async (action = "issue.updated", details: Record<string, unknown> = { status: "done" }) => {
       clock += 100;
       const [row] = await db.insert(activityLog).values({ companyId: f.company.id, actorType: "user", actorId: f.actor.userId!, action, entityType: "issue", entityId: task!.id, details, createdAt: new Date(clock) }).returning();
@@ -1106,8 +1106,8 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
     const tool = async (name: string, args: Record<string, unknown>) => (await rpc("tools/call", { name, arguments: args })).body.result;
     try {
       expect((await rpc("server/discover")).body.result.capabilities).toHaveProperty("events");
-      expect((await rpc("events/list")).body.result.events.map((e: { name: string }) => e.name)).toContain("paperclip.dot.work_available");
-      const subscription = { ...f.input, name: "paperclip.dot.work_available", arguments: { companyId: f.company.id, taskId: f.task.id } };
+      expect((await rpc("events/list")).body.result.events.map((e: { name: string }) => e.name)).toContain("wardmote.dot.work_available");
+      const subscription = { ...f.input, name: "wardmote.dot.work_available", arguments: { companyId: f.company.id, taskId: f.task.id } };
       expect((await rpc("events/subscribe", subscription)).body.result.id).toBeTruthy();
       const { turnId } = await session.startTurn({ message: { role: "user", text: "Save a competitor research report." } });
       await events.tick();
@@ -1431,8 +1431,8 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
     await f.service.unsubscribe(f.principal, f.input);
     const g = await eventFixture();
     for (const [name, action, details] of [
-      ["paperclip.task.comment_created", "issue.comment_added", { commentId: randomUUID(), body: "private comment" }],
-      ["paperclip.task.document_updated", "issue.document_updated", { key: "report", revisionNumber: 2, body: "private report" }],
+      ["wardmote.task.comment_created", "issue.comment_added", { commentId: randomUUID(), body: "private comment" }],
+      ["wardmote.task.document_updated", "issue.document_updated", { key: "report", revisionNumber: 2, body: "private report" }],
     ] as const) {
       const input = { ...g.input, name, arguments: { companyId: g.company.id, taskId: g.task.id } };
       await g.service.subscribe(g.principal, input); await g.activity(action, details); await g.service.tick();

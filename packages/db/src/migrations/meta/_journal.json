@@ -2563,6 +2563,13 @@
       "when": 1794344997710,
       "tag": "0367_wardmote_schema_ids",
       "breakpoints": true
+    },
+    {
+      "idx": 368,
+      "version": "7",
+      "when": 1794345057710,
+      "tag": "0368_wardmote_mcp_scopes",
+      "breakpoints": true
     }
   ]
 }

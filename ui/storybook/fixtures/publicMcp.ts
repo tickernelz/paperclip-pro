@@ -14,8 +14,8 @@ export const request: McpConnectionRequest = {
   ], setupUrl: null,
 };
 const connections: McpConnection[] = [
-  { id: "codex", companyId: request.companies[0].id, companyName: "Acme Research", clientName: "Codex", user: connectedUser, scopes: ["paperclip:read", "paperclip:write"], createdAt: "2020-01-01T00:00:00Z", revokedAt: null },
-  { id: "claude", companyId: request.companies[1].id, companyName: "Design Partners", clientName: "Claude", user: connectedUser, scopes: ["paperclip:read"], createdAt: "2020-01-01T00:00:00Z", revokedAt: null },
+  { id: "codex", companyId: request.companies[0].id, companyName: "Acme Research", clientName: "Codex", user: connectedUser, scopes: ["wardmote:read", "wardmote:write"], createdAt: "2020-01-01T00:00:00Z", revokedAt: null },
+  { id: "claude", companyId: request.companies[1].id, companyName: "Design Partners", clientName: "Claude", user: connectedUser, scopes: ["wardmote:read"], createdAt: "2020-01-01T00:00:00Z", revokedAt: null },
 ];
 export interface PublicMcpFixture {
   request?: Partial<McpConnectionRequest>;

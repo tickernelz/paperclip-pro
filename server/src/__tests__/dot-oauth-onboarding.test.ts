@@ -32,7 +32,7 @@ describe("Dot onboarding with an operator-issued pairing capability", () => {
     const client = await oauth.register({ client_name: "Dot", redirect_uris: [callback], grant_types: ["authorization_code", "refresh_token", DEVICE_GRANT] }, randomUUID());
     const verifier = randomBytes(32).toString("base64url");
     const input = { client_id: client.client_id, redirect_uri: callback, response_type: "code", resource: config.resource,
-      scope: "paperclip:agent offline_access", code_challenge: createHash("sha256").update(verifier).digest("base64url"), code_challenge_method: "S256" };
+      scope: "wardmote:agent offline_access", code_challenge: createHash("sha256").update(verifier).digest("base64url"), code_challenge_method: "S256" };
     const begin = async (extra = {}) => (await oauth.authorize({ ...input, ...extra })).split("/").at(-1)!;
     const pairing = await dotRunnerBroker(db).createPairing({ companyId: company!.id, agentId: agent!.id, operatorId: userId });
     const id = await begin();
@@ -70,7 +70,7 @@ describe("Dot onboarding with an operator-issued pairing capability", () => {
     const principal = await f.oauth.authenticate(tokens.access_token);
     const broker = dotRunnerBroker(db);
     await db.insert(mcpEventSubscriptions).values({ id: randomUUID(), companyId: f.company.id,
-      grantId: principal.grant.id, name: "paperclip.dot.mailbox_updated", bindingId: f.pairing.bindingId,
+      grantId: principal.grant.id, name: "wardmote.dot.mailbox_updated", bindingId: f.pairing.bindingId,
       arguments: {}, deliveryMaterial: {}, verifiedAt: new Date(), expiresAt: new Date(Date.now() + 60_000) });
     await db.insert(dotMailboxItems).values({ companyId: f.company.id, bindingId: f.pairing.bindingId,
       bindingGeneration: 1, kind: "assignment", sourceEventId: randomUUID(), references: { task: "hidden" } });
@@ -167,7 +167,7 @@ describe("Dot onboarding with an operator-issued pairing capability", () => {
     const approval = await request(app).post(path).set("Origin", browserOrigin).send({ pairingCode: f.pairing.pairingCode });
     expect(approval.status).toBe(200);
     expect(new URL(approval.body.redirectUrl).searchParams.get("iss")).toBe(config.origin + "/mcp/runner/oauth");
-    const device = await f.oauth.deviceAuthorize({ client_id: f.client.client_id, resource: config.resource, scope: "paperclip:agent" }, randomUUID());
+    const device = await f.oauth.deviceAuthorize({ client_id: f.client.client_id, resource: config.resource, scope: "wardmote:agent" }, randomUUID());
     expect(device.verification_uri).toBe(browserOrigin + "/mcp-device");
   });
   it("validates a separately configured browser origin", () => {
@@ -201,7 +201,7 @@ describe("Dot onboarding with an operator-issued pairing capability", () => {
     const tokens = await f.oauth.token(exchange);
     const principal = await f.oauth.authenticate(tokens.access_token);
     expect(principal.actor).toMatchObject({ type: "agent", agentId: f.agent.id, companyId: f.company.id });
-    expect(principal.grant.scopes).toEqual(["paperclip:agent", "offline_access"]);
+    expect(principal.grant.scopes).toEqual(["wardmote:agent", "offline_access"]);
     await expect(personal.authenticate(tokens.access_token)).rejects.toThrow();
     expect(await dotRunnerBroker(db).mailbox(principal)).toMatchObject({ bindingId: f.pairing.bindingId });
     const [binding] = await db.select().from(dotAgentBindings).where(eq(dotAgentBindings.id, f.pairing.bindingId));
@@ -214,7 +214,7 @@ describe("Dot onboarding with an operator-issued pairing capability", () => {
     const f = await fixture();
     const personal = createPublicMcpOAuth(db, { ...config, resource: config.origin + "/mcp/wardmote" });
     const client = await personal.register({ client_name: "Personal", redirect_uris: [callback], grant_types: ["authorization_code"] }, randomUUID());
-    const id = (await personal.authorize({ ...f.input, client_id: client.client_id, resource: config.origin + "/mcp/wardmote", scope: "paperclip:read" })).split("/").at(-1)!;
+    const id = (await personal.authorize({ ...f.input, client_id: client.client_id, resource: config.origin + "/mcp/wardmote", scope: "wardmote:read" })).split("/").at(-1)!;
     const app = express(); app.use(express.json());
     app.use((req, _res, next) => { req.actor = { type: "none" }; next(); });
     app.use("/api", publicMcpManagementRoutes(personal, f.oauth));

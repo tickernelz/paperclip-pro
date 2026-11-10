@@ -64,7 +64,7 @@ export async function runPublicMcpInvitationFlow(input: Parameters<typeof runPub
       if (verificationUrl) return { verificationUrl, userCode };
       const registration = await oauthPost("register", { client_name: "Invitation evaluation host", redirect_uris: [], response_types: [], grant_types: ["urn:ietf:params:oauth:grant-type:device_code", "refresh_token"] });
       expect(registration.status).toBe(201); clientId = (await registration.json()).client_id;
-      const response = await oauthPost("device_authorization", { client_id: clientId, resource, company_id: team.id, scope: "paperclip:read paperclip:write offline_access" });
+      const response = await oauthPost("device_authorization", { client_id: clientId, resource, company_id: team.id, scope: "wardmote:read wardmote:write offline_access" });
       expect(response.status).toBe(200);
       const body = await response.json(); deviceCode = body.device_code; input.secrets.push(deviceCode);
       userCode = body.user_code; verificationUrl = body.verification_uri_complete;
