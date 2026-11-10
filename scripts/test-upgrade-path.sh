@@ -25,6 +25,7 @@ mkdir -p "$HOME/.paperclip-pro" "$HOME/.local/bin"
 printf '#!/bin/sh\necho "omp/%s"\n' "$OMP_STUB_VERSION" > "$HOME/.local/bin/omp"
 chmod +x "$HOME/.local/bin/omp"
 server_pid=""
+prebuild_pid=""
 
 stop_server() {
   [ -n "$server_pid" ] || return 0
@@ -45,7 +46,14 @@ stop_server() {
     fi
   done
 }
+stop_prebuild() {
+  [ -n "$prebuild_pid" ] || return 0
+  kill -TERM -- "-$prebuild_pid" 2>/dev/null || true
+  wait "$prebuild_pid" 2>/dev/null || true
+  prebuild_pid=""
+}
 cleanup() {
+  stop_prebuild
   stop_server
   [ "${CI:-}" = true ] || rm -rf "$ROOT"
 }
@@ -71,6 +79,12 @@ LEGACY_PACKAGE="@tickernelz/paperclip-pro"
 LEGACY_COMMAND="paperclip-pro"
 OLD_VERSION="$(npm view "$LEGACY_PACKAGE" version)"
 phase "start"
+PREBUILD_HOME="$ROOT/prebuild-home"
+mkdir -p "$PREBUILD_HOME"
+echo "==> Building $REPO@$SHA with this commit's CLI in a separate home while the published release installs"
+HOME="$PREBUILD_HOME" npm_config_userconfig="$PREBUILD_HOME/.npmrc" setsid bash -c 'cd "$1" && shift && exec "$@"' prebuild "$REPO_ROOT" \
+  node cli/node_modules/tsx/dist/cli.mjs cli/src/index.ts install --repo "$REPO" --ref "$SHA" --yes >"$ROOT/prebuild.log" 2>&1 &
+prebuild_pid=$!
 echo "==> Installing the published release $LEGACY_PACKAGE@$OLD_VERSION the way an existing user has it"
 npm install --prefix "$ROOT/bootstrap" "$LEGACY_PACKAGE@$OLD_VERSION" --no-audit --no-fund >/dev/null
 "$ROOT/bootstrap/node_modules/.bin/paperclip-pro" install --version "$OLD_VERSION" --yes
@@ -81,8 +95,20 @@ curl -fsS -X POST -H 'Content-Type: application/json' -d '{"name":"Upgrade path 
 stop_server
 
 phase "published release installed and health-checked"
+if ! wait "$prebuild_pid"; then
+  prebuild_pid=""
+  tail -n 80 "$ROOT/prebuild.log"
+  exit 1
+fi
+prebuild_pid=""
+payload="$(find "$PREBUILD_HOME" -type d -path "*/cli/installs/git/${SHA:0:12}" -print -quit)"
+[ -n "$payload" ] || { tail -n 80 "$ROOT/prebuild.log"; exit 1; }
+mkdir -p "$HOME/.$LEGACY_COMMAND/cli/installs/git"
+mv "$payload" "$HOME/.$LEGACY_COMMAND/cli/installs/git/"
+phase "source build of this commit waited for and staged into the existing install"
 echo "==> Upgrading to $REPO@$SHA with this commit's @tickernelz/wardmote CLI, as npx @tickernelz/wardmote install does"
-(cd "$REPO_ROOT" && node cli/node_modules/tsx/dist/cli.mjs cli/src/index.ts install --repo "$REPO" --ref "$SHA" --yes)
+(cd "$REPO_ROOT" && node cli/node_modules/tsx/dist/cli.mjs cli/src/index.ts install --repo "$REPO" --ref "$SHA" --yes) | tee "$ROOT/upgrade.log"
+grep -q "Activated cached wardmote git payload ${SHA:0:12}" "$ROOT/upgrade.log"
 wardmote --version
 test -d "$HOME/.wardmote/instances/default"
 test -L "$HOME/.paperclip-pro"
