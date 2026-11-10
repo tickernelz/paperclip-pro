@@ -10,7 +10,7 @@ fi
 : "${WARDMOTE_API_KEY:?Set WARDMOTE_API_KEY for the target dev instance.}"
 : "${WARDMOTE_COMPANY_ID:?Set WARDMOTE_COMPANY_ID for the target dev company.}"
 
-read -r -a PC_CMD <<< "${PAPERCLIPAI_CMD:-pnpm --silent paperclip-pro}"
+read -r -a PC_CMD <<< "${WARDMOTE_CMD:-pnpm --silent wardmote}"
 RUN_KEY="${PIPELINE_SMOKE_KEY:-$(date +%Y%m%d%H%M%S)}"
 RELEASE_PIPELINE="release-coverage-${RUN_KEY}"
 FEATURE_PIPELINE="feature-content-${RUN_KEY}"

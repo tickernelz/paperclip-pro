@@ -85,7 +85,7 @@ For safer parallel local experiments, initialize a dedicated worktree instance i
 
 ```sh
 npx @tickernelz/wardmote worktree:make local-lab --seed-mode minimal
-cd ~/paperclip-local-lab
+cd ~/wardmote-local-lab
 pnpm wardmote worktree env                       # inspect generated env exports
 eval "$(npx @tickernelz/wardmote worktree env)"             # bash/zsh
 pnpm wardmote run
@@ -96,8 +96,8 @@ If the experiment gets noisy, repair or reseed the worktree without touching the
 
 ```sh
 # worktree repair rebuilds the local checkout metadata, so run the checked-out CLI through the direct-exec form.
-node cli/node_modules/tsx/dist/cli.mjs cli/src/index.ts worktree repair --branch paperclip-local-lab
-npx @tickernelz/wardmote worktree reseed --from . --to paperclip-local-lab
+node cli/node_modules/tsx/dist/cli.mjs cli/src/index.ts worktree repair --branch wardmote-local-lab
+npx @tickernelz/wardmote worktree reseed --from . --to wardmote-local-lab
 ```
 
 When done, shut it down and remove the isolated state explicitly:

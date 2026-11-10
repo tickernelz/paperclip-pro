@@ -30,7 +30,7 @@ import type {
   AdapterSkillSnapshot,
 } from "./types.js";
 import type { BoundLiveStdinChannel } from "./live-stdin-channel.js";
-import { RETIRED_BUNDLED_SKILL_RUNTIME_NAMES } from "./retired-skill-names.js";
+import { RETIRED_BUNDLED_SKILL_RUNTIME_NAMES, RETIRED_CLI_COMMAND_ENV_KEY } from "./retired-skill-names.js";
 
 export function buildRuntimeToolsEnv(
   access: AdapterRuntimeToolAccess | null | undefined,
@@ -3572,7 +3572,8 @@ export function sanitizeInheritedWardmoteEnv(
   baseEnv: NodeJS.ProcessEnv,
 ): NodeJS.ProcessEnv {
   const env: NodeJS.ProcessEnv = { ...baseEnv };
-  delete env.PAPERCLIPAI_CMD;
+  delete env.WARDMOTE_CMD;
+  delete env[RETIRED_CLI_COMMAND_ENV_KEY];
   delete env.NOTIFY_SOCKET;
   delete env.WATCHDOG_USEC;
   delete env.WATCHDOG_PID;

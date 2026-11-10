@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
   agents,
   companies,
@@ -32,6 +32,24 @@ import {
 } from "../services/native-runtime/chat-attachment-reuse.js";
 import { decideIssueReviewPathRecovery } from "../services/recovery/review-path-recovery.js";
 import { resolveCurrentWakeCommentsBinding } from "../services/native-runtime/current-wake-comments.js";
+
+const authorizeHook = vi.hoisted(() => ({ afterDenied: null as null | (() => Promise<void>) }));
+vi.mock("../services/native-runtime/chat-attachment-reuse.js", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../services/native-runtime/chat-attachment-reuse.js")>();
+  return {
+    ...actual,
+    authorizeChatConversationForBoundRun: async (...args: Parameters<typeof actual.authorizeChatConversationForBoundRun>) => {
+      try {
+        return await actual.authorizeChatConversationForBoundRun(...args);
+      } catch (error) {
+        const afterDenied = authorizeHook.afterDenied;
+        authorizeHook.afterDenied = null;
+        await afterDenied?.();
+        throw error;
+      }
+    },
+  };
+});
 
 describe.each(["slack", "discord"] as const)("reviewed %s execution binding", (provider) => {
   let temporary: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;
@@ -516,6 +534,28 @@ describe.each(["slack", "discord"] as const)("reviewed %s execution binding", (p
           .set({ status: "active" })
           .where(eq(companyMemberships.principalId, userId));
       }
+    }
+  });
+
+  it("rechecks when the inbound batch finishes processing between the denial and the delivery read", async () => {
+    await db
+      .update(chatDeliveries)
+      .set({ state: "processing", processedAt: null })
+      .where(eq(chatDeliveries.id, deliveryId));
+    authorizeHook.afterDenied = async () => {
+      await db
+        .update(chatDeliveries)
+        .set({ state: "processed", processedAt: new Date() })
+        .where(eq(chatDeliveries.id, deliveryId));
+    };
+    try {
+      expect(await attest()).toBe(true);
+    } finally {
+      authorizeHook.afterDenied = null;
+      await db
+        .update(chatDeliveries)
+        .set({ state: "processed", processedAt: new Date() })
+        .where(eq(chatDeliveries.id, deliveryId));
     }
   });
 

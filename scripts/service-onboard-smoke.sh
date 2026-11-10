@@ -13,8 +13,8 @@ set -euo pipefail
 # `loginctl enable-linger` plus XDG_RUNTIME_DIR / DBUS_SESSION_BUS_ADDRESS
 # pointing at /run/user/<uid>; see the smoke_service job in
 
-PAPERCLIPAI_VERSION="${PAPERCLIPAI_VERSION:-latest}"
-DATA_DIR="${DATA_DIR:-$(mktemp -d "${TMPDIR:-/tmp}/paperclip-service-smoke.XXXXXX")}"
+WARDMOTE_VERSION="${WARDMOTE_VERSION:-latest}"
+DATA_DIR="${DATA_DIR:-$(mktemp -d "${TMPDIR:-/tmp}/wardmote-service-smoke.XXXXXX")}"
 ONBOARD_TIMEOUT_SECONDS="${ONBOARD_TIMEOUT_SECONDS:-600}"
 SMOKE_READY_TIMEOUT_SECONDS="${SMOKE_READY_TIMEOUT_SECONDS:-420}"
 HEALTH_URL="${HEALTH_URL:-http://127.0.0.1:3100/api/health}"
@@ -63,10 +63,10 @@ if [[ "$SMOKE_FORCE" != "true" ]]; then
   fi
 fi
 
-echo "==> Onboarding @tickernelz/wardmote@$PAPERCLIPAI_VERSION with --install-service"
+echo "==> Onboarding @tickernelz/wardmote@$WARDMOTE_VERSION with --install-service"
 echo "    Data dir: $DATA_DIR"
 if ! timeout "$ONBOARD_TIMEOUT_SECONDS" \
-  npx --yes "@tickernelz/wardmote@${PAPERCLIPAI_VERSION}" onboard --yes --install-service --data-dir "$DATA_DIR"; then
+  npx --yes "@tickernelz/wardmote@${WARDMOTE_VERSION}" onboard --yes --install-service --data-dir "$DATA_DIR"; then
   diagnostics
   fail "onboard exited non-zero"
 fi

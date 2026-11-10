@@ -234,7 +234,7 @@ export async function startPublishedCanary({
     signal.throwIfAborted();
     // Start the installed CLI exactly once. Its own failures must never trigger
     // another onboarding run or another dependency-install attempt.
-    const result = await run(path.join(prefix, "node_modules", ".bin", process.platform === "win32" ? "paperclip-pro.cmd" : "paperclip-pro"),
+    const result = await run(path.join(prefix, "node_modules", ".bin", process.platform === "win32" ? "wardmote.cmd" : "wardmote"),
       ["onboard", "--yes", "--data-dir", dataDir], { env, signal });
     if (result.code !== 0) throw new Error(`Canary onboarding failed (exit ${result.code ?? result.signal})`);
   } finally {
