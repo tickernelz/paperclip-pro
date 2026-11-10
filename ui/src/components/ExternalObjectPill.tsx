@@ -97,10 +97,6 @@ interface ExternalObjectPillProps {
   showProviderIcon?: boolean;
 }
 
-/**
- * External-object equivalent of `IssueReferencePill`. Same `paperclip-mention-chip`
- * base so external references feel native to readers (Jakob's Law).
- */
 export function ExternalObjectPill({
   object,
   sourceCount,
