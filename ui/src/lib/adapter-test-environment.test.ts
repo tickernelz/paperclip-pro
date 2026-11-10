@@ -205,12 +205,12 @@ describe("resolveManagedSandboxEnvironmentId", () => {
       makeEnvironment({
         id: "local-1",
         driver: "local",
-        metadata: { managedByPaperclip: true, defaultForInstance: true },
+        metadata: { managedByWardmote: true, defaultForInstance: true },
       }),
       makeEnvironment({
         id: "sandbox-1",
         driver: "sandbox",
-        metadata: { managedByPaperclip: true },
+        metadata: { managedByWardmote: true },
       }),
     ];
     // The local-default row also carries the managed stamp, so the resolver must
@@ -224,7 +224,7 @@ describe("resolveManagedSandboxEnvironmentId", () => {
       makeEnvironment({
         id: "local-1",
         driver: "local",
-        metadata: { managedByPaperclip: true, defaultForInstance: true },
+        metadata: { managedByWardmote: true, defaultForInstance: true },
       }),
     ];
     expect(resolveManagedSandboxEnvironmentId(environments)).toBeNull();
@@ -243,12 +243,12 @@ describe("resolveManagedSandboxEnvironmentId", () => {
         id: "sandbox-archived",
         driver: "sandbox",
         status: "archived",
-        metadata: { managedByPaperclip: true },
+        metadata: { managedByWardmote: true },
       }),
       makeEnvironment({
         id: "local-1",
         driver: "local",
-        metadata: { managedByPaperclip: true, defaultForInstance: true },
+        metadata: { managedByWardmote: true, defaultForInstance: true },
       }),
     ];
     expect(resolveManagedSandboxEnvironmentId(environments)).toBeNull();
@@ -262,13 +262,13 @@ describe("resolveManagedSandboxEnvironmentId", () => {
         id: "sandbox-archived",
         driver: "sandbox",
         status: "archived",
-        metadata: { managedByPaperclip: true },
+        metadata: { managedByWardmote: true },
       }),
       makeEnvironment({
         id: "sandbox-active",
         driver: "sandbox",
         status: "active",
-        metadata: { managedByPaperclip: true },
+        metadata: { managedByWardmote: true },
       }),
     ];
     expect(resolveManagedSandboxEnvironmentId(environments)).toBe("sandbox-active");
@@ -282,7 +282,7 @@ describe("resolveLocalDefaultEnvironmentId", () => {
       makeEnvironment({
         id: "local-1",
         driver: "local",
-        metadata: { managedByPaperclip: true, defaultForInstance: true },
+        metadata: { managedByWardmote: true, defaultForInstance: true },
       }),
     ];
     expect(resolveLocalDefaultEnvironmentId(environments)).toBe("local-1");

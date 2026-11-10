@@ -3,7 +3,7 @@ import type { Environment } from "@tickernelz/wardmote-shared";
 export function isPlatformManagedEnvironment(
   environment: Pick<Environment, "metadata"> | null | undefined,
 ): boolean {
-  return environment?.metadata?.managedByPaperclip === true;
+  return environment?.metadata?.managedByWardmote === true;
 }
 
 /**

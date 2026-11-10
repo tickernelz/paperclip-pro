@@ -77,12 +77,6 @@ export function resetOnboardingFixtureState(): void {
   onboardingFixtureState.testFailuresRemaining = 0;
 }
 
-/**
- * `managedByPaperclip` and a non-local driver are what `resolveManagedSandbox
- * EnvironmentId` looks for; `config.provider` is what the capability lookup keys
- * on. All three have to line up or the environment resolves and the panel still
- * does not appear.
- */
 export function storybookEnvironments(): unknown[] {
   if (onboardingFixtureState.environments === "none") return [];
   if (onboardingFixtureState.environments === "local") return [{
@@ -97,7 +91,7 @@ export function storybookEnvironments(): unknown[] {
       driver: "sandbox",
       status: "active",
       config: { provider: STORYBOOK_SANDBOX_PROVIDER },
-      metadata: { managedByPaperclip: true },
+      metadata: { managedByWardmote: true },
     },
   ];
 }
