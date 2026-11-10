@@ -577,7 +577,7 @@
     ["packages/adapter-utils/src/provider-models/claude.ts",1,"belum-diganti"],
     ["packages/adapter-utils/src/remote-managed-runtime.test.ts",7,"belum-diganti"],
     ["packages/adapter-utils/src/remote-managed-runtime.ts",1,"belum-diganti"],
-    ["packages/adapter-utils/src/retired-skill-names.ts",4,"nama-lama-ditolak"],
+    ["packages/adapter-utils/src/retired-skill-names.ts",5,"nama-lama-ditolak"],
     ["packages/adapter-utils/src/runner-connectivity.test.ts",3,"belum-diganti"],
     ["packages/adapter-utils/src/runtime-progress.test.ts",13,"belum-diganti"],
     ["packages/adapter-utils/src/runtime-progress.ts",2,"belum-diganti"],

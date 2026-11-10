@@ -165,6 +165,24 @@ describe("docker-entrypoint.sh", () => {
     expect(calls).toContain(`ln -s ${stubDir} /${"paper" + "clip"}`);
   });
 
+  it("refuses to start an empty home while instance data is still in the retired location", async () => {
+    installStubs({ uid: 0, gid: 0 });
+    const legacyHome = mkdtempSync(join(tmpdir(), "entrypoint-legacy-home-"));
+    const home = join(stubDir, "home");
+    mkdirSync(home);
+    mkdirSync(join(legacyHome, "instances", "default"), { recursive: true });
+    writeFileSync(join(legacyHome, "instances", "default", "config.json"), "{}");
+    try {
+      await expect(runEntrypoint({ WARDMOTE_HOME: home, WARDMOTE_LEGACY_HOME: legacyHome })).rejects.toMatchObject({
+        code: 1,
+        stderr: expect.stringContaining("Upgrading from the old names"),
+      });
+      expect(existsSync(logFile) ? readFileSync(logFile, "utf8") : "").not.toContain("gosu");
+    } finally {
+      rmSync(legacyHome, { recursive: true, force: true });
+    }
+  });
+
   it("leaves a home whose config uses the current data path unlinked", async () => {
     installStubs({ uid: 0, gid: 0 });
     mkdirSync(join(stubDir, "instances", "default"), { recursive: true });

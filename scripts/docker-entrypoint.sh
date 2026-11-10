@@ -45,7 +45,13 @@ if [ -d "$home_dir" ] && [ -n "$(find "$home_dir" \( ! -user node -o ! -group no
     chown -R node:node "$home_dir"
 fi
 
-legacy_home=/paperclip
+legacy_home=${WARDMOTE_LEGACY_HOME:-/paperclip}
+if [ "$home_dir" != "$legacy_home" ] && [ ! -d "$home_dir/instances" ] \
+    && ls "$legacy_home"/instances/*/config.json >/dev/null 2>&1; then
+    echo "docker-entrypoint.sh: instance data is still in $legacy_home but the home is $home_dir." >&2
+    echo "Move it once before starting this image; see \"Upgrading from the old names\" in doc/DOCKER.md." >&2
+    exit 1
+fi
 if [ "$home_dir" != "$legacy_home" ] && [ ! -e "$legacy_home" ] \
     && grep -qs "\"$legacy_home/" "$home_dir/instances/${WARDMOTE_INSTANCE_ID:-default}/config.json"; then
     ln -s "$home_dir" "$legacy_home"
