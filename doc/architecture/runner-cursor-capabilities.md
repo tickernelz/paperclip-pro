@@ -406,7 +406,7 @@ agent-home context, without discovering another workspace instruction file.
 Explicit empty content has an empty rules list and the SHA-256 of empty bytes.
 
 Native session creation and load both use this process-owned snapshot and return
-`_meta.paperclipCursorInstructions` with schema, exact digest, and byte length.
+`_meta.wardmoteCursorInstructions` with schema, exact digest, and byte length.
 The additional rule uses the native global-rule representation and retains
 native ordering: additional rules precede the ordinarily discovered project
 rules in `RequestContext.rules`. It is not prepended to the user's message and

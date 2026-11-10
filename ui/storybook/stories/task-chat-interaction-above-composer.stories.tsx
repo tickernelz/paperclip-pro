@@ -20,7 +20,7 @@ import {
   issueThreadInteractionFixtureMeta,
 } from "@/fixtures/issueThreadInteractionFixtures";
 import { composerAgentAppearance, composerAgents } from "../prototypes/composer-model-picker/fixtures";
-import { storybookAgentMap } from "../fixtures/paperclipData";
+import { storybookAgentMap } from "../fixtures/wardmoteData";
 
 const agentMap = new Map(composerAgents.map((agent) => [agent.id, {
   id: agent.id,

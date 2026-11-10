@@ -75,7 +75,7 @@ describe("private task production review", () => {
     const publication = { companyId: f.company.id, issueId: task.id, endpointId: endpoint.id, conversationId: conversation.id };
     expect(await canPublishIssueToChatAudience(db, publication)).toBe(false);
     await db.insert(chatDeliveries).values({ companyId: f.company.id, endpointId: endpoint.id, conversationId: conversation.id, principalId: principal.id, providerEventId: randomUUID(), deduplicationKey: randomUUID(), eventKind: "message", normalizedEvent: {} as any });
-    const [link] = await db.insert(chatIdentityLinks).values({ companyId: f.company.id, endpointId: endpoint.id, principalId: principal.id, paperclipUserId: f.outsider, status: "linked" }).returning();
+    const [link] = await db.insert(chatIdentityLinks).values({ companyId: f.company.id, endpointId: endpoint.id, principalId: principal.id, wardmoteUserId: f.outsider, status: "linked" }).returning();
     expect(await canPublishIssueToChatAudience(db, publication)).toBe(false);
     const [grant] = await db.insert(issueAccessGrants).values({ issueId: task.id, subjectType: "user", subjectId: f.outsider, source: "explicit" }).returning();
     expect(await canPublishIssueToChatAudience(db, publication)).toBe(true);
@@ -84,7 +84,7 @@ describe("private task production review", () => {
     await db.update(chatConversations).set({ isDirectMessage: true }).where(eq(chatConversations.id, conversation.id));
     await db.update(issueAccessGrants).set({ revokedAt: new Date() }).where(eq(issueAccessGrants.id, grant.id));
     expect(await canPublishIssueToChatAudience(db, publication)).toBe(false);
-    await db.update(chatIdentityLinks).set({ paperclipUserId: f.owner }).where(eq(chatIdentityLinks.id, link.id));
+    await db.update(chatIdentityLinks).set({ wardmoteUserId: f.owner }).where(eq(chatIdentityLinks.id, link.id));
     expect(await canPublishIssueToChatAudience(db, publication)).toBe(true);
     await db.update(chatIdentityLinks).set({ revokedAt: new Date() }).where(eq(chatIdentityLinks.id, link.id));
     expect(await canPublishIssueToChatAudience(db, publication)).toBe(false);

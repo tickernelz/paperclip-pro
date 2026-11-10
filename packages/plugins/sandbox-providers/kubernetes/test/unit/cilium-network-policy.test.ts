@@ -4,7 +4,7 @@ import { buildCiliumNetworkPolicyManifest } from "../../src/cilium-network-polic
 describe("buildCiliumNetworkPolicyManifest", () => {
   const baseInput = {
     namespace: "paperclip-acme",
-    paperclipServerNamespace: "paperclip",
+    wardmoteServerNamespace: "paperclip",
     egressAllowFqdns: ["api.anthropic.com"],
     egressAllowCidrs: [] as string[],
   };

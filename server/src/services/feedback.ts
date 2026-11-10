@@ -1018,7 +1018,7 @@ async function buildFeedbackTraceBundleFromRow(
   const files: FeedbackTraceBundleFile[] = [];
   const sourceRunId = resolveSourceRunId(payloadSnapshot);
 
-  let paperclipRun: Record<string, unknown> | null = null;
+  let wardmoteRun: Record<string, unknown> | null = null;
   const rawAdapterTrace: Record<string, unknown> | null = null;
   const normalizedAdapterTrace: Record<string, unknown> | null = null;
   let adapterType: string | null = null;
@@ -1070,7 +1070,7 @@ async function buildFeedbackTraceBundleFromRow(
         .orderBy(asc(heartbeatRunEvents.seq));
       const logText = await readFullRunLog(run);
 
-      paperclipRun = sanitizeFeedbackValue(
+      wardmoteRun = sanitizeFeedbackValue(
         {
           id: run.id,
           companyId: run.companyId,
@@ -1100,7 +1100,7 @@ async function buildFeedbackTraceBundleFromRow(
           eventCount: events.length,
         },
         state,
-        "bundle.paperclipRun",
+        "bundle.wardmoteRun",
         MAX_TRACE_FILE_CHARS,
       ) as Record<string, unknown>;
 
@@ -1108,13 +1108,13 @@ async function buildFeedbackTraceBundleFromRow(
         path: "paperclip/run.json",
         contentType: "application/json",
         source: "paperclip_run",
-        contents: `${JSON.stringify(paperclipRun, null, 2)}\n`,
+        contents: `${JSON.stringify(wardmoteRun, null, 2)}\n`,
       }));
 
       const sanitizedEvents = sanitizeFeedbackValue(
         events,
         state,
-        "bundle.paperclipRun.events",
+        "bundle.wardmoteRun.events",
         MAX_TRACE_FILE_CHARS,
       );
       files.push(makeBundleFile({
@@ -1129,7 +1129,7 @@ async function buildFeedbackTraceBundleFromRow(
           path: "paperclip/run-log.ndjson",
           contentType: "application/x-ndjson",
           source: "paperclip_run_log",
-          contents: `${sanitizeFeedbackText(logText, state, "bundle.paperclipRun.log", MAX_TRACE_FILE_CHARS)}\n`,
+          contents: `${sanitizeFeedbackText(logText, state, "bundle.wardmoteRun.log", MAX_TRACE_FILE_CHARS)}\n`,
         }));
       } else {
         appendNote(notes, "run_log_missing");
@@ -1198,7 +1198,7 @@ async function buildFeedbackTraceBundleFromRow(
     notes,
     envelope,
     surface,
-    paperclipRun,
+    wardmoteRun,
     rawAdapterTrace,
     normalizedAdapterTrace,
     privacy,

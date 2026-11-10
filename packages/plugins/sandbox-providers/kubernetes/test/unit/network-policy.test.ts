@@ -4,7 +4,7 @@ import { buildNetworkPolicyManifests } from "../../src/network-policy.js";
 describe("buildNetworkPolicyManifests", () => {
   const baseInput = {
     namespace: "paperclip-acme",
-    paperclipServerNamespace: "paperclip",
+    wardmoteServerNamespace: "paperclip",
     egressAllowCidrs: [] as string[],
   };
 
@@ -30,10 +30,10 @@ describe("buildNetworkPolicyManifests", () => {
       r.ports?.some((p) => p.port === 53),
     );
     expect(dnsRule).toBeDefined();
-    const paperclipRule = rules.find((r: { to: { namespaceSelector?: { matchLabels?: Record<string, string> } }[] }) =>
+    const wardmoteRule = rules.find((r: { to: { namespaceSelector?: { matchLabels?: Record<string, string> } }[] }) =>
       r.to.some((t) => t.namespaceSelector?.matchLabels?.["kubernetes.io/metadata.name"] === "paperclip"),
     );
-    expect(paperclipRule).toBeDefined();
+    expect(wardmoteRule).toBeDefined();
   });
 
   it("includes user-supplied CIDRs in egress allow", () => {

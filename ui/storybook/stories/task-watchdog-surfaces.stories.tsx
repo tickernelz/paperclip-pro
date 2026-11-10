@@ -5,7 +5,7 @@ import {
   storybookExecutionWorkspaces,
   storybookIssueDocuments,
   storybookIssues,
-} from "../fixtures/paperclipData";
+} from "../fixtures/wardmoteData";
 
 const issueDocumentSummaries = storybookIssueDocuments.map(({ body: _body, ...summary }) => summary);
 

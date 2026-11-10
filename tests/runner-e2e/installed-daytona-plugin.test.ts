@@ -23,7 +23,7 @@ async function fixture() {
     await writeFile(join(dir, "package.json"), content); await writeFile(join(dir, entry), "// compiled");
     return { root: dir, packageSha256: hash(content), entry, entrySha256: hash("// compiled") };
   }
-  const plugin = await pkg("@tickernelz/wardmote-plugin-daytona", "0.1.1", { "@tickernelz/wardmote-plugin-sdk": sdkVersion, "@daytonaio/sdk": "0.203.0" }, { paperclipPlugin: { manifest: "./dist/manifest.js", worker: "./dist/worker.js" } });
+  const plugin = await pkg("@tickernelz/wardmote-plugin-daytona", "0.1.1", { "@tickernelz/wardmote-plugin-sdk": sdkVersion, "@daytonaio/sdk": "0.203.0" }, { wardmotePlugin: { manifest: "./dist/manifest.js", worker: "./dist/worker.js" } });
   await writeFile(join(plugin.root, "dist/manifest.js"), "// manifest"); await writeFile(join(plugin.root, "dist/worker.js"), "// worker");
   const authority: InstalledDaytonaPluginAuthority = { schema: "paperclip.e2e.installed-daytona-plugin/v1", graphRoot: root, plugin: { ...plugin, manifestSha256: hash("// manifest"), workerSha256: hash("// worker") }, sdk: await pkg("@tickernelz/wardmote-plugin-sdk", sdkVersion, { "@tickernelz/wardmote-shared": "0.3.1" }), shared: await pkg("@tickernelz/wardmote-shared", "0.3.1"), daytona: await pkg("@daytonaio/sdk", "0.203.0") };
   const authorityPath = join(root, "authority.json");
@@ -53,7 +53,7 @@ it("rejects stale authority, worker, manifest and dependency entry bytes", async
 });
 it("rejects source exports and workspace dependency versions even with refreshed pins", async () => {
   const f = await fixture(); const p = join(f.authority.plugin.root,"package.json");
-  const original = { name:"@tickernelz/wardmote-plugin-daytona",version:"0.1.1",exports:{".":{import:"./dist/index.js"}},paperclipPlugin:{manifest:"./dist/manifest.js",worker:"./dist/worker.js"},dependencies:{"@tickernelz/wardmote-plugin-sdk":sdkVersion,"@daytonaio/sdk":"0.203.0"} };
+  const original = { name:"@tickernelz/wardmote-plugin-daytona",version:"0.1.1",exports:{".":{import:"./dist/index.js"}},wardmotePlugin:{manifest:"./dist/manifest.js",worker:"./dist/worker.js"},dependencies:{"@tickernelz/wardmote-plugin-sdk":sdkVersion,"@daytonaio/sdk":"0.203.0"} };
   for (const manifest of [{ ...original, exports:{".":{import:"./src/index.ts"}} }, { ...original, dependencies:{ ...original.dependencies,"@tickernelz/wardmote-plugin-sdk":"workspace:*" } }]) {
     const bytes=JSON.stringify(manifest);await writeFile(p,bytes);f.authority.plugin.packageSha256=hash(bytes);await f.seal();await expect(verifyInstalledDaytonaPlugin(f.env,[cell])).rejects.toThrow(/compiled package exports|dependency identity/);
   }

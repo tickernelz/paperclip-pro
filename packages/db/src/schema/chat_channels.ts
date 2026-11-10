@@ -365,7 +365,7 @@ export const chatIdentityLinks = pgTable(
       .references(() => companies.id, { onDelete: "cascade" }),
     endpointId: uuid("endpoint_id").notNull(),
     principalId: uuid("principal_id").notNull(),
-    paperclipUserId: text("paperclip_user_id"),
+    wardmoteUserId: text("paperclip_user_id"),
     status: text("status")
       .$type<ChatIdentityLinkStatus>()
       .notNull()
@@ -388,7 +388,7 @@ export const chatIdentityLinks = pgTable(
     ),
     index("chat_identity_links_user_idx").on(
       table.companyId,
-      table.paperclipUserId,
+      table.wardmoteUserId,
     ),
     uniqueIndex("chat_identity_links_endpoint_principal_uq").on(
       table.endpointId,

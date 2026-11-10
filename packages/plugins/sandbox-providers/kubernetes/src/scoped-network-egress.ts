@@ -46,7 +46,7 @@ export async function createScopedNetworkEgressPolicy(input: {
   if (input.mode === "cilium") {
     const manifest = buildCiliumNetworkPolicyManifest({
       namespace: input.namespace,
-      paperclipServerNamespace: "",
+      wardmoteServerNamespace: "",
       egressAllowFqdns: input.grant.allowFqdns,
       egressAllowCidrs: input.grant.allowCidrs,
       name,
@@ -64,7 +64,7 @@ export async function createScopedNetworkEgressPolicy(input: {
   } else {
     const [, manifest] = buildNetworkPolicyManifests({
       namespace: input.namespace,
-      paperclipServerNamespace: "",
+      wardmoteServerNamespace: "",
       egressAllowFqdns: input.grant.allowFqdns,
       egressAllowCidrs: input.grant.allowCidrs,
       name,

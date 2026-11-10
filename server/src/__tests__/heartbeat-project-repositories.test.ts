@@ -113,8 +113,8 @@ suite("task project repository provisioning", () => {
       expect(workspace.cwd).toContain(`/isolated-workspaces/${companyId}/${issueId}`);
       expect(execute.mock.calls.filter(([input]) => input.runId === run!.id)).toHaveLength(1);
       const call = execute.mock.calls.find(([input]) => input.runId === run!.id)![0];
-      expect(call.context.paperclipEnvironment.driver).toBe("sandbox");
-      expect(call.context.paperclipWorkspaces.map((workspace: { projectId: string }) => workspace.projectId)).toEqual([referencedProjectId]);
+      expect(call.context.wardmoteEnvironment.driver).toBe("sandbox");
+      expect(call.context.wardmoteWorkspaces.map((workspace: { projectId: string }) => workspace.projectId)).toEqual([referencedProjectId]);
       directories.push(workspace.cwd!);
       await writeFile(path.join(workspace.cwd!, "email.txt"), `private email ${index}`);
     }
@@ -131,7 +131,7 @@ suite("task project repository provisioning", () => {
     }, { timeout: 15_000 });
     await drainHeartbeatRunsToQuiescence(db, sandboxHeartbeat);
     const reassignedCall = execute.mock.calls.find(([input]) => input.runId === reassignedRun!.id)![0];
-    expect(reassignedCall.context.paperclipWorkspace.cwd).toBe(directories[0]);
+    expect(reassignedCall.context.wardmoteWorkspace.cwd).toBe(directories[0]);
     expect(await readFile(path.join(directories[0], "email.txt"), "utf8")).toBe("private email 0");
   }, 40_000);
 
@@ -180,7 +180,7 @@ suite("task project repository provisioning", () => {
     const calls = execute.mock.calls.filter(([input]) => input.runId === run!.id);
     expect(calls).toHaveLength(explicitIsolation ? 0 : 1);
     if (!explicitIsolation) {
-      const workspace = calls[0]![0].context.paperclipWorkspace;
+      const workspace = calls[0]![0].context.wardmoteWorkspace;
       expect(workspace.mode).toBe(configuredWorkspace ? "isolated_workspace" : "shared_workspace");
       if (configuredWorkspace) {
         expect(workspace.strategy).toBe("git_worktree");
@@ -289,7 +289,7 @@ suite("task project repository provisioning", () => {
     expect(execute.mock.calls.filter(([input]) => input.runId === retry!.id)).toHaveLength(1);
     const [task] = await db.select().from(issues).where(and(eq(issues.companyId, companyId), eq(issues.id, issueId)));
     expect(task).toMatchObject({ status: "done", assigneeAgentId: agentId });
-    const copies = (execute.mock.calls.find(([input]) => input.runId === retry!.id)![0].context.paperclipWorkspaces as Array<{ cwd: string }>).filter((hint) => hint.cwd.includes(".paperclip-repositories"));
+    const copies = (execute.mock.calls.find(([input]) => input.runId === retry!.id)![0].context.wardmoteWorkspaces as Array<{ cwd: string }>).filter((hint) => hint.cwd.includes(".paperclip-repositories"));
     expect(copies.length).toBeGreaterThan(0);
     expect(await readFile(path.join(copies[0]!.cwd, "README.md"), "utf8")).toBe("preserved dirty work");
     await expect(readFile(path.join(copies[0]!.cwd, "private.secret"))).rejects.toMatchObject({ code: "ENOENT" });
@@ -324,7 +324,7 @@ suite("task project repository provisioning", () => {
       expect({ status: latest?.status, error: latest?.error }).toEqual({ status: "succeeded", error: null });
     }, { timeout: 15_000 });
     const input = execute.mock.calls.find(([ctx]) => ctx.runId === run!.id)![0];
-    const hints = input.context.paperclipWorkspaces as Array<{ workspaceId: string; cwd: string }>;
+    const hints = input.context.wardmoteWorkspaces as Array<{ workspaceId: string; cwd: string }>;
     for (let index = 0; index < count; index++) {
       const hint = hints.find((entry) => entry.workspaceId === repositoryRows[index]!.id);
       expect(hint?.cwd).toBeTruthy();

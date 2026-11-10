@@ -323,7 +323,7 @@ async function proposeResult(
   return await transport.invoke({
     id: sourceEventId,
     method: "item/tool/call",
-    paperclipTrace: {
+    wardmoteTrace: {
       sourceEventId,
       sourceEventType: "semantic_tool.input",
     },

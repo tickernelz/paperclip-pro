@@ -7,7 +7,7 @@ import {
   readConfig,
   writeConfig,
 } from "../config/store.js";
-import { paperclipConfigSchema, type WardmoteConfig } from "../config/schema.js";
+import { wardmoteConfigSchema, type WardmoteConfig } from "../config/schema.js";
 
 const roots: string[] = [];
 
@@ -25,7 +25,7 @@ function createConfigPath(): string {
 }
 
 function defaultConfig(): WardmoteConfig {
-  return paperclipConfigSchema.parse({
+  return wardmoteConfigSchema.parse({
     $meta: {
       version: 1,
       updatedAt: "2026-08-06T00:00:00.000Z",

@@ -10,7 +10,7 @@ import {
   askUserQuestionsResultSchema,
   askUserQuestionsPayloadSchema,
   createIssueThreadInteractionSchema,
-  paperclipQuestionSetPayloadSchema,
+  wardmoteQuestionSetPayloadSchema,
   requestConfirmationPayloadSchema,
   requestConfirmationResultSchema,
   requestItemVerdictsResultSchema,
@@ -42,7 +42,7 @@ describe("interaction notes", () => {
 
 describe("issue thread interaction schemas", () => {
   it("derives every legacy question from a complete mixed canonical form", () => {
-    const questionSet = paperclipQuestionSetPayloadSchema.parse({
+    const questionSet = wardmoteQuestionSetPayloadSchema.parse({
       schema: "paperclip.question_set.v1",
       questions: [
         { id: "repo", prompt: "Repository URL?", required: true, answerMode: "text", textValidation: { minLength: 1 } },
@@ -377,7 +377,7 @@ describe("issue thread interaction schemas", () => {
     if (parsed.kind !== "ask_user_questions") return;
     expect(parsed.payload.questionSet).toEqual(questionSet);
 
-    expect(() => paperclipQuestionSetPayloadSchema.parse({
+    expect(() => wardmoteQuestionSetPayloadSchema.parse({
       ...questionSet,
       questions: [{ ...questionSet.questions[0], answerMode: "text", options: questionSet.questions[0].options }],
     })).toThrow("text questions cannot define options");

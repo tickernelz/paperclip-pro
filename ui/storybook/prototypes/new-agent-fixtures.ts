@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import type { AdapterEnvironmentTestResult, Agent } from "@tickernelz/wardmote-shared";
-import { storybookAgents, storybookIssues } from "../fixtures/paperclipData";
+import { storybookAgents, storybookIssues } from "../fixtures/wardmoteData";
 
 export type TestOutcome = "pass" | "fail";
 export type TestState = "idle" | "running" | TestOutcome;

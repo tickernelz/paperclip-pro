@@ -21,12 +21,12 @@ vi.mock("./presentation-mode", async (importOriginal) => {
 
 const derived = vi.hoisted(() => ({
   buildTurnTimelineRows: 0,
-  paperclipRunnerTimelineItems: 0,
+  wardmoteRunnerTimelineItems: 0,
 }));
 
 vi.mock("./transcript-adapter", async (importOriginal) => {
   const actual = await importOriginal<typeof import("./transcript-adapter")>();
-  const count = (key: "buildTurnTimelineRows" | "paperclipRunnerTimelineItems") => {
+  const count = (key: "buildTurnTimelineRows" | "wardmoteRunnerTimelineItems") => {
     return (...args: unknown[]) => {
       derived[key] += 1;
       return (actual[key] as (...a: unknown[]) => unknown)(...args);
@@ -35,7 +35,7 @@ vi.mock("./transcript-adapter", async (importOriginal) => {
   return {
     ...actual,
     buildTurnTimelineRows: count("buildTurnTimelineRows"),
-    paperclipRunnerTimelineItems: count("paperclipRunnerTimelineItems"),
+    wardmoteRunnerTimelineItems: count("wardmoteRunnerTimelineItems"),
   };
 });
 
@@ -43,7 +43,7 @@ let host: HTMLDivElement;
 let root: Root;
 beforeEach(() => {
   derived.buildTurnTimelineRows = 0;
-  derived.paperclipRunnerTimelineItems = 0;
+  derived.wardmoteRunnerTimelineItems = 0;
   host = document.body.appendChild(document.createElement("div"));
   root = createRoot(host);
 });
@@ -107,12 +107,12 @@ it("rebuilds the runner timeline only when the transcript actually changes", () 
   const items = longRun(4);
   renderTurn(items, "running");
   expect(derived.buildTurnTimelineRows).toBe(1);
-  expect(derived.paperclipRunnerTimelineItems).toBe(1);
+  expect(derived.wardmoteRunnerTimelineItems).toBe(1);
 
   for (let tick = 0; tick < 30; tick += 1) {
     renderTurn(items, tick % 2 === 0 ? "running" : "in_progress");
   }
-  expect(derived.paperclipRunnerTimelineItems).toBe(1);
+  expect(derived.wardmoteRunnerTimelineItems).toBe(1);
   expect(derived.buildTurnTimelineRows).toBe(1);
 });
 
@@ -122,7 +122,7 @@ it("still rebuilds the runner timeline once per streaming tick", () => {
   for (let tick = 1; tick <= STREAM_TICKS; tick += 1) {
     renderTurn(longRun(tick), "running");
   }
-  expect(derived.paperclipRunnerTimelineItems).toBe(STREAM_TICKS + 1);
+  expect(derived.wardmoteRunnerTimelineItems).toBe(STREAM_TICKS + 1);
   expect(derived.buildTurnTimelineRows).toBe(STREAM_TICKS + 1);
 });
 

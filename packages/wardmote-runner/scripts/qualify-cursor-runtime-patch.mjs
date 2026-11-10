@@ -68,9 +68,9 @@ export async function qualifyCursorRuntimePatch(vendorRoot) {
     class ActionRequired extends Error { constructor(action) { super("private provider detail"); this.action = action; } }
     class ConnectError extends Error { constructor() { super("private auth detail"); this.code = 16; } }
     class ResponseError extends Error { constructor(code, message, data) { super(message); this.code = code; this.data = data; } }
-    const binding = segment(source, "const paperclipCursorResponseError=", ";var s=");
-    assert.equal(runInNewContext(`${binding};paperclipCursorResponseError`, { n: () => ({ GI: ResponseError }) }), ResponseError);
-    const evaluate = error => runInNewContext(`(function(){${errors}})()`, { e: error, r: { ao: ActionRequired }, g: { T: ConnectError }, m: { C: { Unauthenticated: 16 } }, f: { C: { Unauthenticated: 16 } }, n: 123, paperclipCursorResponseError: ResponseError });
+    const binding = segment(source, "const wardmoteCursorResponseError=", ";var s=");
+    assert.equal(runInNewContext(`${binding};wardmoteCursorResponseError`, { n: () => ({ GI: ResponseError }) }), ResponseError);
+    const evaluate = error => runInNewContext(`(function(){${errors}})()`, { e: error, r: { ao: ActionRequired }, g: { T: ConnectError }, m: { C: { Unauthenticated: 16 } }, f: { C: { Unauthenticated: 16 } }, n: 123, wardmoteCursorResponseError: ResponseError });
     for (const action of ["login", "upgrade", "payment", "config", "other"]) {
       assert.throws(() => evaluate(new ActionRequired(action)), error => error instanceof ResponseError
         && error.code === (action === "login" ? -32000 : -32603)

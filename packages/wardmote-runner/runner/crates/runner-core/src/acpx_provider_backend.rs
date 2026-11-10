@@ -1137,7 +1137,7 @@ impl AcpxCommandExecutor {
             DurableRunnerError::invalid(format!("run.attach ACPX provider is invalid: {error}"))
         })?;
         let mut attachment_context = self.context.clone();
-        if let Some(boundary) = payload.get("paperclipNextAuthority") {
+        if let Some(boundary) = payload.get("wardmoteNextAuthority") {
             // The durable runner validates this authority's immutable bindings
             // and PRP v2 handoff capability before dispatching run.attach. Its
             // activation follows our command result, so self.context must keep
@@ -3671,7 +3671,7 @@ mod tests {
             .is_err());
         let warm_payload = json!({
             "provider": descriptor_value,
-            "paperclipNextAuthority": {
+            "wardmoteNextAuthority": {
                 "identity": {
                     "runnerInstanceId": original_config.runner_instance_id,
                     "environmentLeaseId": original_config.environment_lease_id,
@@ -3684,10 +3684,10 @@ mod tests {
             },
         });
         let mut wrong_run = warm_payload.clone();
-        wrong_run["paperclipNextAuthority"]["identity"]["runId"] = json!("run-3");
+        wrong_run["wardmoteNextAuthority"]["identity"]["runId"] = json!("run-3");
         assert!(original.attach_run(&wrong_run).is_err());
         let mut wrong_session = warm_payload.clone();
-        wrong_session["paperclipNextAuthority"]["identity"]["normalizedSessionId"] =
+        wrong_session["wardmoteNextAuthority"]["identity"]["normalizedSessionId"] =
             json!("other-session");
         assert!(original.attach_run(&wrong_session).is_err());
         let mut changed_profile = warm_payload.clone();
@@ -4002,7 +4002,7 @@ mod tests {
             .is_err());
         let warm_payload = json!({
             "provider": descriptor_value,
-            "paperclipNextAuthority": {
+            "wardmoteNextAuthority": {
                 "identity": {
                     "runnerInstanceId": original_config.runner_instance_id,
                     "environmentLeaseId": original_config.environment_lease_id,
@@ -4015,10 +4015,10 @@ mod tests {
             },
         });
         let mut wrong_run = warm_payload.clone();
-        wrong_run["paperclipNextAuthority"]["identity"]["runId"] = json!("run-3");
+        wrong_run["wardmoteNextAuthority"]["identity"]["runId"] = json!("run-3");
         assert!(original.attach_run(&wrong_run).is_err());
         let mut wrong_session = warm_payload.clone();
-        wrong_session["paperclipNextAuthority"]["identity"]["normalizedSessionId"] =
+        wrong_session["wardmoteNextAuthority"]["identity"]["normalizedSessionId"] =
             json!("other-session");
         assert!(original.attach_run(&wrong_session).is_err());
         let mut changed_profile = warm_payload.clone();

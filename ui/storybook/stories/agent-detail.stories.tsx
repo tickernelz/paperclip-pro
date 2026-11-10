@@ -11,7 +11,7 @@ import type {
 import { AgentDetail } from "@/pages/AgentDetail";
 import { useCompany } from "@/context/CompanyContext";
 import { queryKeys } from "@/lib/queryKeys";
-import { storybookAgentMap, storybookAgents, storybookIssues } from "../fixtures/paperclipData";
+import { storybookAgentMap, storybookAgents, storybookIssues } from "../fixtures/wardmoteData";
 
 const COMPANY_ID = "company-storybook";
 const AGENT_ID = "agent-codex";

@@ -35,7 +35,7 @@ import { agentAvatarRoutes } from "./routes/agent-avatars.js";
 import { decisionModelRoutes } from "./routes/decision-models.js";
 import { aiConnectionRoutes } from "./routes/ai-connections.js";
 import { projectToolRoutes } from "./routes/project-tools.js";
-import { paperclipMcpRoutes } from "./routes/wardmote-mcp.js";
+import { wardmoteMcpRoutes } from "./routes/wardmote-mcp.js";
 import { emailChannelService } from "./services/email-channels.js";
 import { emailRoutes, emailWebhookRoutes } from "./routes/email.js";
 import { toolActionDeliveryService } from "./services/tool-action-delivery.js";
@@ -449,7 +449,7 @@ export async function createApp(
   const app = express();
   app.use(idleAdmissionMiddleware);
   const staticUi = express.Router();
-  app.locals.paperclipDb = db;
+  app.locals.wardmoteDb = db;
   const health = healthRoutes(db, {
     deploymentMode: opts.deploymentMode,
     deploymentExposure: opts.deploymentExposure,
@@ -714,7 +714,7 @@ export async function createApp(
   api.use(assetRoutes(db, opts.storageService));
   api.use(agentProfileAvatarRoutes(db, opts.storageService));
   api.use(projectToolRoutes(db));
-  api.use(paperclipMcpRoutes(db));
+  api.use(wardmoteMcpRoutes(db));
   api.use(projectRoutes(db));
   api.use(caseRoutes(db, opts.storageService));
   api.use(issueTreeControlRoutes(db, { pluginWorkerManager: workerManager }));
@@ -1322,7 +1322,7 @@ export async function createApp(
     })();
     return appServicesShutdown;
   };
-  app.locals.paperclipShutdown = shutdownAppServices;
+  app.locals.wardmoteShutdown = shutdownAppServices;
 
   // The `exit` event is synchronous. It cannot await the teardown, so it runs
   // the best-effort cleanup and drops the returned promise. The orderly signal

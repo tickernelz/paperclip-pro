@@ -215,9 +215,9 @@ describe("OpenWA company isolation and invite-link joins (embedded Postgres + fa
       contextSnapshot: {
         source: "chat:openwa",
         issueId,
-        paperclipToolProfile: profile,
+        wardmoteToolProfile: profile,
         openwa: { event: "message", triggerClass: input.triggerClass, deliveryIds: [] },
-        paperclipOpenwa: {
+        wardmoteOpenwa: {
           endpointId: input.endpointId ?? t.endpointId,
           chatKey: input.chatKey ?? openwaChatKey(t.chatId),
           triggerClass: input.triggerClass,

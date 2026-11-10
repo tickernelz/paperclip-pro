@@ -77,8 +77,8 @@ export interface ChatIdentityLink {
   lastConnectAt?: string | null;
   externalLabel: string;
   externalDetail?: string | null;
-  paperclipUserId?: string | null;
-  paperclipUserLabel?: string | null;
+  wardmoteUserId?: string | null;
+  wardmoteUserLabel?: string | null;
   status: "linked" | "pending" | "revoked";
 }
 
@@ -188,7 +188,7 @@ export interface OpenwaOwner {
   numberMasked: string;
   displayName: string | null;
   linkStatus: string;
-  paperclipUserId: string | null;
+  wardmoteUserId: string | null;
   effective: boolean;
   createdAt: string;
 }

@@ -10,7 +10,7 @@ import { queryKeys } from "@/lib/queryKeys";
 import { Browse } from "@/pages/apps/Browse";
 import { AppsConnect } from "@/pages/apps/AppsConnect";
 import { ChatEndpointSetup } from "@/pages/apps/chat/ChatEndpointSetup";
-import { storybookAgents } from "../fixtures/paperclipData";
+import { storybookAgents } from "../fixtures/wardmoteData";
 
 const companyId = "company-storybook";
 // Hosted Storybooks live below a branch path; reuse their bundled GitHub marks.

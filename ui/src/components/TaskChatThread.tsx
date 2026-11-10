@@ -52,9 +52,9 @@ import {
   isTerminalRunStatus,
   embedPlanDocumentAtWriteBoundary,
   omitProgressRepeatedByResponseAcrossSegments,
-  paperclipRunnerFinalResponse,
-  paperclipRunnerAcceptedResponseWake,
-  paperclipRunnerTimelineItems,
+  wardmoteRunnerFinalResponse,
+  wardmoteRunnerAcceptedResponseWake,
+  wardmoteRunnerTimelineItems,
   prependIssueBrief,
   settledRunChildren,
   splitTranscriptAtAnchors,
@@ -1591,7 +1591,7 @@ export function TaskChatThread(props: TaskChatThreadProps) {
       const sourceAcceptedResponseWake =
         source.status === "succeeded" &&
         !sourceHasPendingAttention &&
-        paperclipRunnerAcceptedResponseWake(parsedSource, source.id);
+        wardmoteRunnerAcceptedResponseWake(parsedSource, source.id);
       const sourceYielded =
         (acceptedSemanticResultDisposition(meta?.resultJson) === "yielded" ||
           entries.some(
@@ -1823,7 +1823,7 @@ export function TaskChatThread(props: TaskChatThreadProps) {
               standaloneHeader: true,
               animateFold: liveSeenRef.current.has(source.id),
               items: [],
-              finalResponse: paperclipRunnerFinalResponse([], {
+              finalResponse: wardmoteRunnerFinalResponse([], {
                 runId: source.id,
                 agentName: meta?.agentName,
                 fallbackSummary: acceptedSummary,
@@ -1914,14 +1914,14 @@ export function TaskChatThread(props: TaskChatThreadProps) {
           segment,
           parsed,
           timelineItems: sourceIsWardmoteRunner
-            ? paperclipRunnerTimelineItems(visibleActivity)
+            ? wardmoteRunnerTimelineItems(visibleActivity)
             : visibleActivity,
         };
       });
       const sourceResponseText =
         sourceIsWardmoteRunner && !sourceYielded
           ? (sourcePresentationText ??
-            paperclipRunnerFinalResponse(parsedSource, {
+            wardmoteRunnerFinalResponse(parsedSource, {
               runId: source.id,
               agentName: meta?.agentName,
               fallbackSummary: acceptedSummary,
@@ -1951,12 +1951,12 @@ export function TaskChatThread(props: TaskChatThreadProps) {
               ? // A steering anchor may split acceptance from its terminal.
                 // Keep the whole-run proof and render its answer exactly once.
                 segmentIndex === lastPopulatedSegmentIndex
-                ? paperclipRunnerFinalResponse(parsedSource, {
+                ? wardmoteRunnerFinalResponse(parsedSource, {
                     runId: source.id,
                     agentName: meta?.agentName,
                   })
                 : undefined
-              : paperclipRunnerFinalResponse(parsed, {
+              : wardmoteRunnerFinalResponse(parsed, {
                   runId: source.id,
                   agentName: meta?.agentName,
                   fallbackSummary:
@@ -2065,7 +2065,7 @@ export function TaskChatThread(props: TaskChatThreadProps) {
           const turnId = `${liveRun.id}:turn:${segmentIndex}`;
           const children = settledRunChildren(
             isNativeWardmoteRunnerRun(liveRun)
-              ? paperclipRunnerTimelineItems(parsed)
+              ? wardmoteRunnerTimelineItems(parsed)
               : parsed,
             turnId,
           );
@@ -2251,9 +2251,9 @@ export function TaskChatThread(props: TaskChatThreadProps) {
   const tailRunSource = tailRunId
     ? runs.find((run) => run.id === tailRunId)
     : undefined;
-  const paperclipRunnerTail = isNativeWardmoteRunnerRun(tailRunSource);
+  const wardmoteRunnerTail = isNativeWardmoteRunnerRun(tailRunSource);
   const suppressWardmoteRunnerTailFinal = Boolean(
-    paperclipRunnerTail &&
+    wardmoteRunnerTail &&
     (acceptedSemanticResultDisposition(
       tailRunId ? linkedRunMetaById.get(tailRunId)?.resultJson : null,
     ) === "yielded" ||
@@ -2273,7 +2273,7 @@ export function TaskChatThread(props: TaskChatThreadProps) {
     !logsAreInitiallyHydrating,
   );
   const tailTimelineAnchors = tailRunId
-    ? paperclipRunnerTail
+    ? wardmoteRunnerTail
       ? (steeringAnchorsByRun.get(tailRunId) ?? [])
       : (legacyTimelineAnchorsByRun.get(tailRunId) ?? [])
     : [];
@@ -3136,7 +3136,7 @@ export function TaskChatThread(props: TaskChatThreadProps) {
                         <>
                           {tailRunId || optimisticRunnerStartup ? (
                             <div data-testid="task-chat-live-transcript">
-                              {paperclipRunnerTail ||
+                              {wardmoteRunnerTail ||
                               optimisticRunnerStartup ? (
                                 <TaskChatRunnerTurn
                                   runId={tailRunId}
@@ -3162,7 +3162,7 @@ export function TaskChatThread(props: TaskChatThreadProps) {
                                     suppressWardmoteRunnerTailFinal
                                   }
                                   continuedAfterSteering={
-                                    paperclipRunnerTail &&
+                                    wardmoteRunnerTail &&
                                     tailTimelineAnchors.length > 0
                                   }
                                   onRuntimeRequestDecision={

@@ -42,7 +42,7 @@ export async function handleServerRequest(
       rejected = true;
       throw error;
     } finally {
-      const correlation = request.paperclipTrace;
+      const correlation = request.wardmoteTrace;
       if (correlation !== undefined) {
         const emittedEventIds: string[] = [];
         for (

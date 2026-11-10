@@ -908,7 +908,7 @@ export function CompanyExport() {
     const filtered = { ...exportData.files };
 
     // Filter .paperclip.yaml
-    const yamlPath = exportData.paperclipExtensionPath;
+    const yamlPath = exportData.wardmoteExtensionPath;
     if (yamlPath && typeof exportData.files[yamlPath] === "string") {
       filtered[yamlPath] = filterWardmoteYaml(exportData.files[yamlPath], checkedFiles);
     }

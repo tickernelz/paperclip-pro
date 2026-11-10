@@ -843,7 +843,7 @@ export const toolPolicyConditionsSchema = z.object({
     applicationKey: z.string().trim().min(1).max(160).optional(),
     applicationKeys: z.array(z.string().trim().min(1).max(160)).max(100).optional(),
     remoteHttpOnly: z.boolean().optional(),
-    paperclipSelfOnly: z.boolean().optional(),
+    wardmoteSelfOnly: z.boolean().optional(),
   }).strict().optional(),
   timeWindow: timeWindowConditionSchema.optional(),
 }).strict().refine(

@@ -158,7 +158,7 @@ describe("Codex app-server Codex driver", () => {
     const request = {
       id: 1,
       method: "item/tool/call",
-      paperclipTrace: {
+      wardmoteTrace: {
         sourceEventId: "event_runner_000101",
         sourceEventType: "semantic_tool.input",
       },

@@ -32,7 +32,7 @@ import { runningProcesses, registerServerAdapter, unregisterServerAdapter } from
 import {
   hydrateFreshSessionHandoff,
   joinPromptSections,
-  paperclipWakeCommentsArePromptOwned,
+  wardmoteWakeCommentsArePromptOwned,
   selectInitialCommunicationGuidance,
   selectWardmotePromptSections,
   stringifyWardmoteWakePayload,
@@ -100,11 +100,11 @@ async function createControlledGatewayServer(beforeComplete?: (turn: number) => 
         resumedSession,
         includeExecutionContract: true,
         includeCommunicationGuidance: false,
-        paperclipAccess: "rest",
+        wardmoteAccess: "rest",
       });
-      const wakeJson = paperclipWakeCommentsArePromptOwned(ctx.context)
+      const wakeJson = wardmoteWakeCommentsArePromptOwned(ctx.context)
         ? null
-        : stringifyWardmoteWakePayload(ctx.context.paperclipWake, {
+        : stringifyWardmoteWakePayload(ctx.context.wardmoteWake, {
             omitIssueDescription: Boolean(taskContextNote),
           });
       const message = joinPromptSections([
@@ -180,7 +180,7 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
       .then((rows) => rows[0] ?? null);
     const context = run?.contextSnapshot;
     const wake = context && typeof context === "object" && !Array.isArray(context)
-      ? (context as Record<string, unknown>).paperclipWake
+      ? (context as Record<string, unknown>).wardmoteWake
       : null;
     if (!wake || typeof wake !== "object" || Array.isArray(wake)) {
       throw new Error("Gateway payload omitted JSON without a structured wake context");
@@ -642,7 +642,7 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
         .then((rows) => rows[0]);
       const promotedTaskMarkdown = String(
         (promotedRun.contextSnapshot as Record<string, unknown> | null)
-          ?.paperclipTaskMarkdown ?? "",
+          ?.wardmoteTaskMarkdown ?? "",
       );
       expect(promotedTaskMarkdown).toContain(
         "Pending wake comments (oldest to newest):",
@@ -1958,7 +1958,7 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
           companyId,
           endpointId,
           principalId,
-          paperclipUserId: userId,
+          wardmoteUserId: userId,
           status: "linked",
         });
         await db.insert(companyMemberships).values({
@@ -2006,12 +2006,12 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
             issueId,
             taskId: issueId,
             source: "chat:slack",
-            paperclipTaskCommunicationGuidance: "FORGED caller preference",
+            wardmoteTaskCommunicationGuidance: "FORGED caller preference",
             commentId: sourceComment.id,
             wakeCommentId: sourceComment.id,
             wakeCommentIds: [sourceComment.id],
-            paperclipHarnessCheckedOut: true,
-            paperclipWake: {
+            wardmoteHarnessCheckedOut: true,
+            wardmoteWake: {
               externalChatProvider: "slack",
               checkedOutByHarness: true,
               issue: { id: issueId, workMode: "standard" },
@@ -2216,7 +2216,7 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
             }),
           });
           expect(deniedRun?.contextSnapshot).not.toHaveProperty(
-            "paperclipExternalChatQuestionResponse",
+            "wardmoteExternalChatQuestionResponse",
           );
           expect(gateway.getAgentPayloads()).toHaveLength(0);
           return;
@@ -2236,9 +2236,9 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
             externalChatContinuation: true,
             wakeCommentId: sourceComment.id,
             wakeCommentIds: [sourceComment.id],
-            paperclipExternalChatExecutionBound: true,
-            paperclipTaskCommunicationGuidance: `## Communication in Slack\nFrozen connection preference.\n\n${FAST_RESPONSE_AGENT_GUIDANCE}`,
-            paperclipExternalChatQuestionResponse: expect.objectContaining({
+            wardmoteExternalChatExecutionBound: true,
+            wardmoteTaskCommunicationGuidance: `## Communication in Slack\nFrozen connection preference.\n\n${FAST_RESPONSE_AGENT_GUIDANCE}`,
+            wardmoteExternalChatQuestionResponse: expect.objectContaining({
               schema: "paperclip.external_chat_question_response.v1",
               interactionId: answered.id,
               sourceRunId,

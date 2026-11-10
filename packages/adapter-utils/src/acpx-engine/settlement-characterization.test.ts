@@ -218,11 +218,11 @@ async function setupRemoteSandbox() {
 // Stub both sandbox bridges with stop spies collected per start, so a test can
 // assert the bridges stopped without running the real bridge transport.
 function stubBridges() {
-  const paperclipStops: Array<ReturnType<typeof vi.fn>> = [];
+  const wardmoteStops: Array<ReturnType<typeof vi.fn>> = [];
   const processStops: Array<ReturnType<typeof vi.fn>> = [];
   vi.mocked(startAdapterExecutionTargetWardmoteBridge).mockImplementation(async () => {
     const stop = vi.fn(async () => {});
-    paperclipStops.push(stop);
+    wardmoteStops.push(stop);
     return { env: {}, stop } as never;
   });
   vi.mocked(startAdapterExecutionTargetProcessSessionBridge).mockImplementation(async () => {
@@ -232,12 +232,12 @@ function stubBridges() {
   });
   const anyStopped = (stops: Array<ReturnType<typeof vi.fn>>) =>
     stops.some((stop) => stop.mock.calls.length > 0);
-  return { paperclipStops, processStops, anyStopped };
+  return { wardmoteStops, processStops, anyStopped };
 }
 
 function throwingHandoffContext(): Record<string, unknown> {
   const context: Record<string, unknown> = {};
-  Object.defineProperty(context, "paperclipSessionHandoffMarkdown", {
+  Object.defineProperty(context, "wardmoteSessionHandoffMarkdown", {
     enumerable: false,
     get() {
       throw new Error("prompt build boom");
@@ -777,7 +777,7 @@ describe("ACP settlement — Layer A: engine teardown orchestration", () => {
     // Corrected F3 policy (execute.ts:3374-3393): a failing teardown step is
     // recorded and swallowed; later steps still run and the lease still releases.
     const { stateDir, localCwd, executionTarget } = await setupRemoteSandbox();
-    const { paperclipStops, processStops, anyStopped } = stubBridges();
+    const { wardmoteStops, processStops, anyStopped } = stubBridges();
     const stagingLocks = new Map<string, Promise<unknown>>();
     const logs: Array<{ stream: string; text: string }> = [];
     const execute = createAcpxEngineExecutor({
@@ -804,7 +804,7 @@ describe("ACP settlement — Layer A: engine teardown orchestration", () => {
     } as never);
 
     expect(result.exitCode).toBe(1);
-    expect(anyStopped(paperclipStops)).toBe(true);
+    expect(anyStopped(wardmoteStops)).toBe(true);
     expect(anyStopped(processStops)).toBe(true);
     expect(stagingLocks.size).toBe(0);
     expect(

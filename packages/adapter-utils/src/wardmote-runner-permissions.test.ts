@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import {
   WARDMOTE_RUNNER_DEFAULT_MODELS,
   WARDMOTE_RUNNER_ACPX_PROFILES,
-  paperclipRunnerTransitionConfig,
+  wardmoteRunnerTransitionConfig,
   isWardmoteRunnerProvider,
   resolveWardmoteRunnerModel,
   resolveWardmoteRunnerPermissionMode,
@@ -45,7 +45,7 @@ describe("Paperclip Runner permission defaults", () => {
     ["codex_local", "codexPermissionMode", "never"],
     ["opencode_local", "opencodePermissionMode", "allow"],
   ])("uses full auto when converting %s to the new runner", (adapter, key, value) => {
-    expect(paperclipRunnerTransitionConfig(adapter, undefined)).toMatchObject({ [key]: value });
+    expect(wardmoteRunnerTransitionConfig(adapter, undefined)).toMatchObject({ [key]: value });
   });
 
   it("recognizes only exact provider identifiers", () => {

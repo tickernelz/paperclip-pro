@@ -9,7 +9,7 @@ import { ConnectionSetupFlow, ConnectionSetupCompletionScreen, AccessStep, OAuth
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { TaskChatComposer } from "@/components/task-chat/TaskChatComposer";
 import { TaskChatInteractionCard } from "@/components/task-chat/TaskChatInteractionCard";
-import { storybookAgentMap, storybookAgents } from "../fixtures/paperclipData";
+import { storybookAgentMap, storybookAgents } from "../fixtures/wardmoteData";
 import { useNavigate } from "@/lib/router";
 import {
   pendingConnectionIntentInteraction as pending,

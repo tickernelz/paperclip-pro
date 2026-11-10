@@ -251,8 +251,8 @@ export async function applyConnectorSkills(
     : null;
   return {
     ...writeWardmoteSkillSyncPreference(config, desired),
-    paperclipRuntimeSkills: skills,
-    paperclipConnectorSkillDigest: connectorSkillDigest,
+    wardmoteRuntimeSkills: skills,
+    wardmoteConnectorSkillDigest: connectorSkillDigest,
   };
 }
 
@@ -268,7 +268,7 @@ export async function prepareConnectorSkillDelivery(
     // keep the staged bundle for CLI-capable engines and compatibility hashing.
     const manifestSkills = new Set(connectors.filter((connector) => connector.toolsManifest).map(skillKey));
     const promptSkills = adapterType === "wardmote_runner"
-      ? config.paperclipRuntimeSkills.filter(entry =>
+      ? config.wardmoteRuntimeSkills.filter(entry =>
         manifestSkills.has(entry.key)
         || ["tickernelz/wardmote/slack", "tickernelz/wardmote/speko"].includes(entry.key))
       : [];
@@ -276,7 +276,7 @@ export async function prepareConnectorSkillDelivery(
       fs.readFile(path.join(entry.source, "SKILL.md"), "utf8")))).join("\n\n");
     return { config, instructions };
   }
-  const assigned = config.paperclipRuntimeSkills.filter((entry) =>
+  const assigned = config.wardmoteRuntimeSkills.filter((entry) =>
     isConnectorSkill(entry.key),
   );
   const instructions = (
@@ -289,13 +289,13 @@ export async function prepareConnectorSkillDelivery(
   ).join("\n\n");
   const stripped = await applyConnectorSkills(
     config,
-    config.paperclipRuntimeSkills,
+    config.wardmoteRuntimeSkills,
     [],
   );
   return {
     config: {
       ...stripped,
-      paperclipConnectorSkillDigest: config.paperclipConnectorSkillDigest,
+      wardmoteConnectorSkillDigest: config.wardmoteConnectorSkillDigest,
     },
     instructions,
   };

@@ -495,7 +495,7 @@ function wikiMaintainerAgent(): Agent {
     permissions: { canCreateAgents: false },
     lastHeartbeatAt: null,
     metadata: {
-      paperclipManagedResource: {
+      wardmoteManagedResource: {
         pluginKey: manifest.id,
         resourceKind: "agent",
         resourceKey: "wiki-maintainer",
@@ -557,7 +557,7 @@ function existingProject(): Project {
   };
 }
 
-function paperclipIssue(overrides: Partial<Issue> = {}): Issue {
+function wardmoteIssue(overrides: Partial<Issue> = {}): Issue {
   const now = new Date();
   return {
     id: "66666666-6666-4666-8666-666666666666",
@@ -1645,7 +1645,7 @@ Duplicate headings receive stable suffixes.
 
   it("does not ingest Paperclip events until operator controls enable them", async () => {
     const harness = createTestHarness({ manifest });
-    const issue = paperclipIssue();
+    const issue = wardmoteIssue();
     harness.seed({ issues: [issue] });
     const writes: Array<{ path: string; contents: string }> = [];
     harness.ctx.localFolders.writeTextAtomic = async (_companyId, _folderKey, relativePath, contents) => {
@@ -1668,7 +1668,7 @@ Duplicate headings receive stable suffixes.
 
   it("records enabled Paperclip issue events as cursor observations without creating ingest operations", async () => {
     const harness = createTestHarness({ manifest });
-    const issue = paperclipIssue();
+    const issue = wardmoteIssue();
     harness.seed({ issues: [issue] });
     const writes: Array<{ path: string; contents: string }> = [];
     harness.ctx.localFolders.writeTextAtomic = async (_companyId, _folderKey, relativePath, contents) => {
@@ -1749,14 +1749,14 @@ Duplicate headings receive stable suffixes.
 
   it("keeps Paperclip event cursor observations company scoped and ignores plugin-operation issues", async () => {
     const harness = createTestHarness({ manifest });
-    const visibleIssue = paperclipIssue({ projectId: "77777777-7777-4777-8777-777777777777" });
-    const otherCompanyIssue = paperclipIssue({
+    const visibleIssue = wardmoteIssue({ projectId: "77777777-7777-4777-8777-777777777777" });
+    const otherCompanyIssue = wardmoteIssue({
       id: "77777777-7777-4777-8777-777777777778",
       companyId: OTHER_COMPANY_ID,
       projectId: "77777777-7777-4777-8777-777777777779",
       identifier: "PAP-9999",
     });
-    const operationIssue = paperclipIssue({
+    const operationIssue = wardmoteIssue({
       id: "77777777-7777-4777-8777-777777777780",
       originKind: `${OPERATION_ORIGIN_KIND}:ingest`,
     });
@@ -1800,7 +1800,7 @@ Duplicate headings receive stable suffixes.
 
   it("routes Paperclip issue, comment, and document event cursors only to the default space", async () => {
     const harness = createTestHarness({ manifest });
-    const issue = paperclipIssue({ projectId: "77777777-7777-4777-8777-777777777777" });
+    const issue = wardmoteIssue({ projectId: "77777777-7777-4777-8777-777777777777" });
     harness.seed({ issues: [issue] });
 
     await plugin.definition.setup(harness.ctx);
@@ -1847,7 +1847,7 @@ Duplicate headings receive stable suffixes.
   it("routes Paperclip events into an explicitly enabled shared non-default space", async () => {
     const harness = createTestHarness({ manifest });
     const project = existingProject();
-    const issue = paperclipIssue({ projectId: project.id });
+    const issue = wardmoteIssue({ projectId: project.id });
     harness.seed({ projects: [project], issues: [issue] });
 
     await plugin.definition.setup(harness.ctx);
@@ -1872,7 +1872,7 @@ Duplicate headings receive stable suffixes.
       spaceSlug: created.space.slug,
       profile: enabledProfile,
     });
-    mockPersistedWikiSpace(harness, { ...(created.space as unknown as Record<string, unknown>), settings: { paperclipIngestion: enabledProfile } });
+    mockPersistedWikiSpace(harness, { ...(created.space as unknown as Record<string, unknown>), settings: { wardmoteIngestion: enabledProfile } });
 
     await harness.emit("issue.created", {}, {
       companyId: COMPANY_ID,
@@ -1888,7 +1888,7 @@ Duplicate headings receive stable suffixes.
   it("stops new non-default observations after the per-space profile is disabled", async () => {
     const harness = createTestHarness({ manifest });
     const project = existingProject();
-    const issue = paperclipIssue({ projectId: project.id });
+    const issue = wardmoteIssue({ projectId: project.id });
     harness.seed({ projects: [project], issues: [issue] });
 
     await plugin.definition.setup(harness.ctx);
@@ -1913,7 +1913,7 @@ Duplicate headings receive stable suffixes.
       spaceSlug: created.space.slug,
       profile: enabledProfile,
     });
-    mockPersistedWikiSpace(harness, { ...(created.space as unknown as Record<string, unknown>), settings: { paperclipIngestion: enabledProfile } });
+    mockPersistedWikiSpace(harness, { ...(created.space as unknown as Record<string, unknown>), settings: { wardmoteIngestion: enabledProfile } });
     await harness.emit("issue.created", {}, {
       companyId: COMPANY_ID,
       entityId: issue.id,
@@ -1925,7 +1925,7 @@ Duplicate headings receive stable suffixes.
       spaceSlug: created.space.slug,
       profile: { ...enabledProfile, enabled: false },
     });
-    mockPersistedWikiSpace(harness, { ...(created.space as unknown as Record<string, unknown>), settings: { paperclipIngestion: { ...enabledProfile, enabled: false } } });
+    mockPersistedWikiSpace(harness, { ...(created.space as unknown as Record<string, unknown>), settings: { wardmoteIngestion: { ...enabledProfile, enabled: false } } });
     await harness.emit("issue.updated", {}, {
       companyId: COMPANY_ID,
       entityId: issue.id,
@@ -1940,14 +1940,14 @@ Duplicate headings receive stable suffixes.
 
   it("assembles deterministic Paperclip source bundles with issue, document, and comment provenance", async () => {
     const harness = createTestHarness({ manifest });
-    const root = paperclipIssue({
+    const root = wardmoteIssue({
       id: "77777777-7777-4777-8777-777777777781",
       identifier: "PAP-4000",
       title: "Root distillation issue",
       projectId: "77777777-7777-4777-8777-777777777777",
       updatedAt: new Date("2026-05-01T10:00:00Z"),
     });
-    const child = paperclipIssue({
+    const child = wardmoteIssue({
       id: "77777777-7777-4777-8777-777777777782",
       identifier: "PAP-4001",
       title: "Child source issue",
@@ -2014,7 +2014,7 @@ Duplicate headings receive stable suffixes.
 
   it("suppresses secret-like comment and document bodies before storing distillation snapshots", async () => {
     const harness = createTestHarness({ manifest });
-    const issue = paperclipIssue({
+    const issue = wardmoteIssue({
       id: "77777777-7777-4777-8777-777777777784",
       identifier: "PAP-4002",
       title: "Sensitive source issue",
@@ -2084,7 +2084,7 @@ Duplicate headings receive stable suffixes.
 
   it("creates source snapshots and only advances cursors after successful distillation outcomes", async () => {
     const harness = createTestHarness({ manifest });
-    const issue = paperclipIssue({
+    const issue = wardmoteIssue({
       projectId: "77777777-7777-4777-8777-777777777777",
       updatedAt: new Date("2026-05-02T10:00:00Z"),
     });
@@ -2141,7 +2141,7 @@ Duplicate headings receive stable suffixes.
   it("uses the existing distillation cursor id after an upsert conflict", async () => {
     const harness = createTestHarness({ manifest });
     const project = existingProject();
-    const issue = paperclipIssue({
+    const issue = wardmoteIssue({
       id: "77777777-7777-4777-8777-777777777800",
       identifier: "PAP-4099",
       title: "Existing cursor target",
@@ -2214,14 +2214,14 @@ Duplicate headings receive stable suffixes.
     const harness = createTestHarness({
       manifest,
       config: {
-        maxPaperclipRoutineRunCostCents: 1,
-        maxPaperclipDistillationTaskCostCents: 1,
-        maxPaperclipDistillationProjectCostCents: 1,
-        paperclipCostCentsPerThousandSourceCharacters: 100,
+        maxWardmoteRoutineRunCostCents: 1,
+        maxWardmoteDistillationTaskCostCents: 1,
+        maxWardmoteDistillationProjectCostCents: 1,
+        wardmoteCostCentsPerThousandSourceCharacters: 100,
       },
     });
     const project = existingProject();
-    const issue = paperclipIssue({
+    const issue = wardmoteIssue({
       id: "77777777-7777-4777-8777-777777777795",
       identifier: "PAP-4104",
       title: "Large source bundle",
@@ -2262,7 +2262,7 @@ Duplicate headings receive stable suffixes.
   it("queues visible manual distill operation issues for a company-wide stale cursor scan", async () => {
     const harness = createTestHarness({ manifest });
     const project = existingProject();
-    const issue = paperclipIssue({
+    const issue = wardmoteIssue({
       id: "77777777-7777-4777-8777-777777777796",
       identifier: "PAP-4105",
       title: "Manual distillation target",
@@ -2382,7 +2382,7 @@ Duplicate headings receive stable suffixes.
   it("backfills only the selected Paperclip project and date window", async () => {
     const harness = createTestHarness({ manifest });
     const project = existingProject();
-    const inWindow = paperclipIssue({
+    const inWindow = wardmoteIssue({
       id: "77777777-7777-4777-8777-777777777797",
       identifier: "PAP-4106",
       title: "Backfill in-window decision",
@@ -2391,7 +2391,7 @@ Duplicate headings receive stable suffixes.
       projectId: project.id,
       updatedAt: new Date("2026-04-15T12:00:00Z"),
     });
-    const outOfWindow = paperclipIssue({
+    const outOfWindow = wardmoteIssue({
       id: "77777777-7777-4777-8777-777777777798",
       identifier: "PAP-4107",
       title: "Backfill out-of-window decision",
@@ -2400,7 +2400,7 @@ Duplicate headings receive stable suffixes.
       projectId: project.id,
       updatedAt: new Date("2026-03-01T12:00:00Z"),
     });
-    const otherProject = paperclipIssue({
+    const otherProject = wardmoteIssue({
       id: "77777777-7777-4777-8777-777777777799",
       identifier: "PAP-4108",
       title: "Other project decision",
@@ -2441,7 +2441,7 @@ Duplicate headings receive stable suffixes.
   it("generates review-required Paperclip project page patches with provenance, index, and log updates", async () => {
     const harness = createTestHarness({ manifest });
     const project = existingProject();
-    const issue = paperclipIssue({
+    const issue = wardmoteIssue({
       id: "77777777-7777-4777-8777-777777777791",
       identifier: "PAP-4100",
       title: "Approved project page distillation plan",
@@ -2507,7 +2507,7 @@ Duplicate headings receive stable suffixes.
   it("keeps suppressed secret-like source content out of generated wiki patches", async () => {
     const harness = createTestHarness({ manifest });
     const project = existingProject();
-    const issue = paperclipIssue({
+    const issue = wardmoteIssue({
       id: "77777777-7777-4777-8777-777777777796",
       identifier: "PAP-4104",
       title: "Distill sanitized provenance",
@@ -2578,7 +2578,7 @@ Duplicate headings receive stable suffixes.
   it("auto-applies Paperclip project page patches by default when policy allows and records page bindings", async () => {
     const harness = createTestHarness({ manifest });
     const project = existingProject();
-    const issue = paperclipIssue({
+    const issue = wardmoteIssue({
       id: "77777777-7777-4777-8777-777777777792",
       identifier: "PAP-4101",
       title: "Implement project page writer",
@@ -2644,7 +2644,7 @@ Duplicate headings receive stable suffixes.
     process.env.WARDMOTE_DEPLOYMENT_EXPOSURE = "public";
     const harness = createTestHarness({ manifest, config: { autoApplyIngestPatches: true } });
     const project = existingProject();
-    const issue = paperclipIssue({
+    const issue = wardmoteIssue({
       id: "77777777-7777-4777-8777-77777777779a",
       identifier: "PAP-4101",
       title: "Implement project page writer",
@@ -2694,7 +2694,7 @@ Duplicate headings receive stable suffixes.
   it("refuses stale project page hashes before writing generated Paperclip pages", async () => {
     const harness = createTestHarness({ manifest, config: { autoApplyIngestPatches: true } });
     const project = existingProject();
-    const issue = paperclipIssue({
+    const issue = wardmoteIssue({
       id: "77777777-7777-4777-8777-777777777793",
       identifier: "PAP-4102",
       title: "Publish project page",
@@ -2734,7 +2734,7 @@ Duplicate headings receive stable suffixes.
   it("skips low-signal Paperclip source windows without proposing wiki writes", async () => {
     const harness = createTestHarness({ manifest });
     const project = existingProject();
-    const issue = paperclipIssue({
+    const issue = wardmoteIssue({
       id: "77777777-7777-4777-8777-777777777794",
       identifier: "PAP-4103",
       title: "Routine heartbeat",
@@ -3150,7 +3150,7 @@ Duplicate headings receive stable suffixes.
   it("re-checks Paperclip ingestion policy at execution time for queued work", async () => {
     const harness = createTestHarness({ manifest });
     const project = existingProject();
-    const issue = paperclipIssue({
+    const issue = wardmoteIssue({
       id: "77777777-7777-4777-8777-7777777777b0",
       identifier: "PAP-4111",
       title: "Queued distillation source",

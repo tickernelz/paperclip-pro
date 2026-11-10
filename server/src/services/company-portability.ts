@@ -334,7 +334,7 @@ function readSkillKey(frontmatter: Record<string, unknown>) {
     ?? asString(frontmatter.skillKey)
     ?? asString(metadata?.skillKey)
     ?? asString(metadata?.canonicalKey)
-    ?? asString(metadata?.paperclipSkillKey)
+    ?? asString(metadata?.wardmoteSkillKey)
     ?? asString(paperclip?.skillKey)
     ?? asString(paperclip?.key),
   );
@@ -2148,7 +2148,7 @@ function filterPortableExtensionYaml(
 function filterExportFiles(
   files: Record<string, CompanyPortabilityFileEntry>,
   selectedFilesInput: string[] | undefined,
-  paperclipExtensionPath: string,
+  wardmoteExtensionPath: string,
 ) {
   if (!selectedFilesInput || selectedFilesInput.length === 0) {
     return files;
@@ -2165,13 +2165,13 @@ function filterExportFiles(
     filtered[filePath] = content;
   }
 
-  const extensionEntry = filtered[paperclipExtensionPath];
-  if (selectedFiles.has(paperclipExtensionPath) && typeof extensionEntry === "string") {
-    filtered[paperclipExtensionPath] = filterPortableExtensionYaml(
+  const extensionEntry = filtered[wardmoteExtensionPath];
+  if (selectedFiles.has(wardmoteExtensionPath) && typeof extensionEntry === "string") {
+    filtered[wardmoteExtensionPath] = filterPortableExtensionYaml(
       extensionEntry,
       selectedFiles,
       filtered,
-      paperclipExtensionPath,
+      wardmoteExtensionPath,
     );
   }
 
@@ -2656,7 +2656,7 @@ async function withSkillSourceMetadata(skill: CompanySkill, markdown: string) {
   }
   const catalogProvenance = buildPortableCatalogProvenance(skill);
   metadata.skillKey = skill.key;
-  metadata.paperclipSkillKey = skill.key;
+  metadata.wardmoteSkillKey = skill.key;
   metadata.paperclip = {
     ...(isPlainRecord(metadata.paperclip) ? metadata.paperclip : {}),
     skillKey: skill.key,
@@ -3053,26 +3053,26 @@ function buildManifestFromPackageFiles(
   }
   const companyDoc = parseFrontmatterMarkdown(companyMarkdown);
   const companyFrontmatter = companyDoc.frontmatter;
-  const paperclipExtensionPath = findWardmoteExtensionPath(normalizedFiles);
-  const paperclipExtension = paperclipExtensionPath
-    ? parseYamlFile(readPortableTextFile(normalizedFiles, paperclipExtensionPath) ?? "")
+  const wardmoteExtensionPath = findWardmoteExtensionPath(normalizedFiles);
+  const wardmoteExtension = wardmoteExtensionPath
+    ? parseYamlFile(readPortableTextFile(normalizedFiles, wardmoteExtensionPath) ?? "")
     : {};
-  const declaredSchemaVersion = asInteger(paperclipExtension.schemaVersion);
+  const declaredSchemaVersion = asInteger(wardmoteExtension.schemaVersion);
   const bundleSchemaVersion = declaredSchemaVersion !== null && declaredSchemaVersion > 0
     ? declaredSchemaVersion
     : UNSTAMPED_BUNDLE_SCHEMA_VERSION;
   if (bundleSchemaVersion > BUNDLE_SCHEMA_VERSION) {
     throw unprocessable(`Company package declares schemaVersion ${bundleSchemaVersion}, which was produced by a newer Paperclip; this board reads up to schemaVersion ${BUNDLE_SCHEMA_VERSION}.`);
   }
-  const paperclipCompany = isPlainRecord(paperclipExtension.company) ? paperclipExtension.company : {};
-  const paperclipSidebar = normalizePortableSidebarOrder(paperclipExtension.sidebar);
-  const paperclipLabels = normalizePortableLabelDefinitions(paperclipExtension.labels);
-  const paperclipBlobs = normalizePortableBlobIndex(paperclipExtension.blobs);
-  const paperclipEmbeddedAssets = normalizePortableEmbeddedAssets(paperclipExtension.embeddedAssets);
-  const paperclipAgents = isPlainRecord(paperclipExtension.agents) ? paperclipExtension.agents : {};
-  const paperclipProjects = isPlainRecord(paperclipExtension.projects) ? paperclipExtension.projects : {};
-  const paperclipTasks = isPlainRecord(paperclipExtension.tasks) ? paperclipExtension.tasks : {};
-  const paperclipRoutines = isPlainRecord(paperclipExtension.routines) ? paperclipExtension.routines : {};
+  const wardmoteCompany = isPlainRecord(wardmoteExtension.company) ? wardmoteExtension.company : {};
+  const wardmoteSidebar = normalizePortableSidebarOrder(wardmoteExtension.sidebar);
+  const wardmoteLabels = normalizePortableLabelDefinitions(wardmoteExtension.labels);
+  const wardmoteBlobs = normalizePortableBlobIndex(wardmoteExtension.blobs);
+  const wardmoteEmbeddedAssets = normalizePortableEmbeddedAssets(wardmoteExtension.embeddedAssets);
+  const wardmoteAgents = isPlainRecord(wardmoteExtension.agents) ? wardmoteExtension.agents : {};
+  const wardmoteProjects = isPlainRecord(wardmoteExtension.projects) ? wardmoteExtension.projects : {};
+  const wardmoteTasks = isPlainRecord(wardmoteExtension.tasks) ? wardmoteExtension.tasks : {};
+  const wardmoteRoutines = isPlainRecord(wardmoteExtension.routines) ? wardmoteExtension.routines : {};
   const companyName =
     asString(companyFrontmatter.name)
     ?? opts?.sourceLabel?.companyName
@@ -3127,28 +3127,28 @@ function buildManifestFromPackageFiles(
       path: resolvedCompanyPath,
       name: companyName,
       description: asString(companyFrontmatter.description),
-      logoPath: asString(paperclipCompany.logoPath) ?? asString(paperclipCompany.logo),
+      logoPath: asString(wardmoteCompany.logoPath) ?? asString(wardmoteCompany.logo),
       requireBoardApprovalForNewAgents:
-        typeof paperclipCompany.requireBoardApprovalForNewAgents === "boolean"
-          ? paperclipCompany.requireBoardApprovalForNewAgents
+        typeof wardmoteCompany.requireBoardApprovalForNewAgents === "boolean"
+          ? wardmoteCompany.requireBoardApprovalForNewAgents
           : readCompanyApprovalDefault(companyFrontmatter),
       feedbackDataSharingEnabled:
-        typeof paperclipCompany.feedbackDataSharingEnabled === "boolean"
-          ? paperclipCompany.feedbackDataSharingEnabled
+        typeof wardmoteCompany.feedbackDataSharingEnabled === "boolean"
+          ? wardmoteCompany.feedbackDataSharingEnabled
           : false,
       feedbackDataSharingConsentAt:
-        typeof paperclipCompany.feedbackDataSharingConsentAt === "string"
-          ? paperclipCompany.feedbackDataSharingConsentAt
+        typeof wardmoteCompany.feedbackDataSharingConsentAt === "string"
+          ? wardmoteCompany.feedbackDataSharingConsentAt
           : null,
       feedbackDataSharingConsentByUserId:
-        asString(paperclipCompany.feedbackDataSharingConsentByUserId),
+        asString(wardmoteCompany.feedbackDataSharingConsentByUserId),
       feedbackDataSharingTermsVersion:
-        asString(paperclipCompany.feedbackDataSharingTermsVersion),
+        asString(wardmoteCompany.feedbackDataSharingTermsVersion),
     },
-    sidebar: paperclipSidebar,
-    labels: paperclipLabels,
-    blobs: paperclipBlobs,
-    embeddedAssets: paperclipEmbeddedAssets,
+    sidebar: wardmoteSidebar,
+    labels: wardmoteLabels,
+    blobs: wardmoteBlobs,
+    embeddedAssets: wardmoteEmbeddedAssets,
     agents: [],
     skills: [],
     projects: [],
@@ -3170,7 +3170,7 @@ function buildManifestFromPackageFiles(
     const frontmatter = agentDoc.frontmatter;
     const fallbackSlug = normalizeAgentUrlKey(path.posix.basename(path.posix.dirname(agentPath))) ?? "agent";
     const slug = asString(frontmatter.slug) ?? fallbackSlug;
-    const extension = isPlainRecord(paperclipAgents[slug]) ? paperclipAgents[slug] : {};
+    const extension = isPlainRecord(wardmoteAgents[slug]) ? wardmoteAgents[slug] : {};
     const extensionAdapter = isPlainRecord(extension.adapter) ? extension.adapter : null;
     const extensionRuntime = isPlainRecord(extension.runtime) ? extension.runtime : null;
     const extensionPermissions = isPlainRecord(extension.permissions) ? extension.permissions : null;
@@ -3327,7 +3327,7 @@ function buildManifestFromPackageFiles(
       projectPath,
     );
     const slug = asString(frontmatter.slug) ?? fallbackSlug;
-    const extension = isPlainRecord(paperclipProjects[slug]) ? paperclipProjects[slug] : {};
+    const extension = isPlainRecord(wardmoteProjects[slug]) ? wardmoteProjects[slug] : {};
     const workspaceExtensions = isPlainRecord(extension.workspaces) ? extension.workspaces : {};
     const workspaces = Object.entries(workspaceExtensions)
       .map(([workspaceKey, entry]) => normalizePortableProjectWorkspaceExtension(workspaceKey, entry))
@@ -3366,9 +3366,9 @@ function buildManifestFromPackageFiles(
     const frontmatter = taskDoc.frontmatter;
     const fallbackSlug = normalizeAgentUrlKey(path.posix.basename(path.posix.dirname(taskPath))) ?? "task";
     const slug = asString(frontmatter.slug) ?? fallbackSlug;
-    const extension = isPlainRecord(paperclipTasks[slug]) ? paperclipTasks[slug] : {};
-    const routineExtension = normalizeRoutineExtension(paperclipRoutines[slug]);
-    const routineExtensionRaw = isPlainRecord(paperclipRoutines[slug]) ? paperclipRoutines[slug] : {};
+    const extension = isPlainRecord(wardmoteTasks[slug]) ? wardmoteTasks[slug] : {};
+    const routineExtension = normalizeRoutineExtension(wardmoteRoutines[slug]);
+    const routineExtensionRaw = isPlainRecord(wardmoteRoutines[slug]) ? wardmoteRoutines[slug] : {};
     const schedule = isPlainRecord(frontmatter.schedule) ? frontmatter.schedule : null;
     const legacyRecurrence = schedule && isPlainRecord(schedule.recurrence)
       ? schedule.recurrence
@@ -4060,11 +4060,11 @@ export function companyPortabilityService(db: Db, storage?: StorageService) {
       }
     }
 
-    const paperclipAgentsOut: Record<string, Record<string, unknown>> = {};
-    const paperclipProjectsOut: Record<string, Record<string, unknown>> = {};
-    const paperclipTasksOut: Record<string, Record<string, unknown>> = {};
+    const wardmoteAgentsOut: Record<string, Record<string, unknown>> = {};
+    const wardmoteProjectsOut: Record<string, Record<string, unknown>> = {};
+    const wardmoteTasksOut: Record<string, Record<string, unknown>> = {};
     const unportableTaskWorkspaceRefs = new Map<string, { workspaceId: string; taskSlugs: string[] }>();
-    const paperclipRoutinesOut: Record<string, Record<string, unknown>> = {};
+    const wardmoteRoutinesOut: Record<string, Record<string, unknown>> = {};
 
     const skillByReference = new Map<string, typeof companySkillRows[number]>();
     for (const skill of companySkillRows) {
@@ -4222,7 +4222,7 @@ export function companyPortabilityService(db: Db, storage?: StorageService) {
             env: buildEnvInputMap(agentEnvInputs),
           };
         }
-        paperclipAgentsOut[slug] = isPlainRecord(extension) ? extension : {};
+        wardmoteAgentsOut[slug] = isPlainRecord(extension) ? extension : {};
       }
     }
 
@@ -4266,7 +4266,7 @@ export function companyPortabilityService(db: Db, storage?: StorageService) {
           env: buildEnvInputMap(projectEnvInputs),
         };
       }
-      paperclipProjectsOut[slug] = isPlainRecord(extension) ? extension : {};
+      wardmoteProjectsOut[slug] = isPlainRecord(extension) ? extension : {};
     }
 
     const referencedLabelIds = new Set<string>();
@@ -4488,7 +4488,7 @@ export function companyPortabilityService(db: Db, storage?: StorageService) {
           hadSchedule: issue.monitorNextCheckAt != null ? true : undefined,
         },
       });
-      paperclipTasksOut[taskSlug] = isPlainRecord(extension) ? extension : {};
+      wardmoteTasksOut[taskSlug] = isPlainRecord(extension) ? extension : {};
     }
 
     if (unexportedBlockerEdgeCount > 0) {
@@ -4539,7 +4539,7 @@ export function companyPortabilityService(db: Db, storage?: StorageService) {
             : undefined,
         })),
       });
-      paperclipRoutinesOut[taskSlug] = isPlainRecord(extension) ? extension : {};
+      wardmoteRoutinesOut[taskSlug] = isPlainRecord(extension) ? extension : {};
     }
 
     // Exported markdown can embed company asset images as
@@ -4572,7 +4572,7 @@ export function companyPortabilityService(db: Db, storage?: StorageService) {
     }
     // Comment bodies travel in the extension yaml rather than TASK.md, so
     // scan the assembled task extension entries for their references too.
-    for (const extension of Object.values(paperclipTasksOut)) {
+    for (const extension of Object.values(wardmoteTasksOut)) {
       for (const assetId of collectEmbeddedAssetIds(JSON.stringify(extension.comments ?? []))) {
         noteEmbeddedAssetReference(assetId, "tasks");
       }
@@ -4625,22 +4625,22 @@ export function companyPortabilityService(db: Db, storage?: StorageService) {
         : `${unownedEmbeddedAssetRefCount} embedded image references point at assets that do not belong to this company or no longer exist; their images were not exported.`);
     }
 
-    const paperclipExtensionPath = ".paperclip.yaml";
+    const wardmoteExtensionPath = ".paperclip.yaml";
     const exportedBlobIndex = Array.from(exportedBlobs.values())
       .sort((left, right) => left.sha256.localeCompare(right.sha256));
-    const paperclipAgents = Object.fromEntries(
-      Object.entries(paperclipAgentsOut).filter(([, value]) => isPlainRecord(value) && Object.keys(value).length > 0),
+    const wardmoteAgents = Object.fromEntries(
+      Object.entries(wardmoteAgentsOut).filter(([, value]) => isPlainRecord(value) && Object.keys(value).length > 0),
     );
-    const paperclipProjects = Object.fromEntries(
-      Object.entries(paperclipProjectsOut).filter(([, value]) => isPlainRecord(value) && Object.keys(value).length > 0),
+    const wardmoteProjects = Object.fromEntries(
+      Object.entries(wardmoteProjectsOut).filter(([, value]) => isPlainRecord(value) && Object.keys(value).length > 0),
     );
-    const paperclipTasks = Object.fromEntries(
-      Object.entries(paperclipTasksOut).filter(([, value]) => isPlainRecord(value) && Object.keys(value).length > 0),
+    const wardmoteTasks = Object.fromEntries(
+      Object.entries(wardmoteTasksOut).filter(([, value]) => isPlainRecord(value) && Object.keys(value).length > 0),
     );
-    const paperclipRoutines = Object.fromEntries(
-      Object.entries(paperclipRoutinesOut).filter(([, value]) => isPlainRecord(value) && Object.keys(value).length > 0),
+    const wardmoteRoutines = Object.fromEntries(
+      Object.entries(wardmoteRoutinesOut).filter(([, value]) => isPlainRecord(value) && Object.keys(value).length > 0),
     );
-    files[paperclipExtensionPath] = buildYamlFile(
+    files[wardmoteExtensionPath] = buildYamlFile(
       {
         schema: "paperclip/v1",
         schemaVersion: BUNDLE_SCHEMA_VERSION,
@@ -4656,15 +4656,15 @@ export function companyPortabilityService(db: Db, storage?: StorageService) {
         labels: exportedLabels.length > 0 ? exportedLabels : undefined,
         blobs: exportedBlobIndex.length > 0 ? exportedBlobIndex : undefined,
         embeddedAssets: embeddedAssetIndex.length > 0 ? embeddedAssetIndex : undefined,
-        agents: Object.keys(paperclipAgents).length > 0 ? paperclipAgents : undefined,
-        projects: Object.keys(paperclipProjects).length > 0 ? paperclipProjects : undefined,
-        tasks: Object.keys(paperclipTasks).length > 0 ? paperclipTasks : undefined,
-        routines: Object.keys(paperclipRoutines).length > 0 ? paperclipRoutines : undefined,
+        agents: Object.keys(wardmoteAgents).length > 0 ? wardmoteAgents : undefined,
+        projects: Object.keys(wardmoteProjects).length > 0 ? wardmoteProjects : undefined,
+        tasks: Object.keys(wardmoteTasks).length > 0 ? wardmoteTasks : undefined,
+        routines: Object.keys(wardmoteRoutines).length > 0 ? wardmoteRoutines : undefined,
       },
       { preserveEmptyStrings: true },
     );
 
-    let finalFiles = filterExportFiles(files, input.selectedFiles, paperclipExtensionPath);
+    let finalFiles = filterExportFiles(files, input.selectedFiles, wardmoteExtensionPath);
     let resolved = buildManifestFromPackageFiles(finalFiles, {
       sourceLabel: {
         companyId: company.id,
@@ -4720,7 +4720,7 @@ export function companyPortabilityService(db: Db, storage?: StorageService) {
       manifest: resolved.manifest,
       files: finalFiles,
       warnings: resolved.warnings,
-      paperclipExtensionPath,
+      wardmoteExtensionPath,
     };
   }
 

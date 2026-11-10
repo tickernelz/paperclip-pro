@@ -6,7 +6,7 @@ import type { AgentInstructionsFileDetail } from "@tickernelz/wardmote-shared";
 import { AgentFileRunNotice, PromptsTab } from "@/pages/AgentDetail";
 import { Button } from "@/components/ui/button";
 import { queryKeys } from "@/lib/queryKeys";
-import { storybookAgents } from "../fixtures/paperclipData";
+import { storybookAgents } from "../fixtures/wardmoteData";
 
 const agent = { ...storybookAgents[0]!, id: "agent-files-story", adapterType: "codex_local" as const };
 const root = "/instance/agents/agent-files-story/instructions";

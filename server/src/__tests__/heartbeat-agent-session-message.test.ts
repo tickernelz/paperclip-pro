@@ -51,7 +51,7 @@ describe("agent session wake messages", () => {
       companyId: "company-1",
       contextSnapshot: {
         wakeReason: "gateway_chat_message",
-        paperclipAgentMessage: {
+        wardmoteAgentMessage: {
           text: "hello",
           source: "plugin_session",
           pluginKey: "paperclip.gateway",
@@ -92,7 +92,7 @@ describe("agent session wake messages", () => {
       companyId: "company-1",
       contextSnapshot: {
         wakeReason: "gateway_chat_message",
-        paperclipAgentMessage: {
+        wardmoteAgentMessage: {
           text: `OPENAI_API_KEY=${secret}\n${"x".repeat(13_000)}`,
           source: "plugin_session",
           pluginKey: "paperclip.gateway",
@@ -110,7 +110,7 @@ describe("agent session wake messages", () => {
       db: {} as never,
       companyId: "company-1",
       contextSnapshot: {
-        paperclipAgentMessage: {
+        wardmoteAgentMessage: {
           source: "tool_action_review",
           text: "The approved action already ran. Do not call it again.",
           untrustedToolResults: [{

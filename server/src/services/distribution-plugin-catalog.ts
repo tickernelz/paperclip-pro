@@ -149,17 +149,17 @@ export function readDistributionPluginCatalog(
     if (!info.isDirectory() || info.isSymbolicLink()) throw new Error("Invalid distribution bundle directory");
     if (distributionBundleDigest(localPath) !== entry.digest) throw new Error(`Distribution bundle digest mismatch: ${entry.key}`);
     const pkg = JSON.parse(fs.readFileSync(path.join(localPath, "package.json"), "utf8"));
-    if (pkg.version !== entry.version || !pkg.paperclipPlugin) throw new Error("Distribution package version or entrypoints missing");
+    if (pkg.version !== entry.version || !pkg.wardmotePlugin) throw new Error("Distribution package version or entrypoints missing");
     for (const name of ["manifest", "worker", "ui"] as const) {
-      const declared = pkg.paperclipPlugin[name];
+      const declared = pkg.wardmotePlugin[name];
       if (name === "ui" && declared === undefined) continue;
       const relative = bundleEntrypoint(declared);
       const target = fs.statSync(path.join(localPath, relative));
       if (name === "ui" ? !target.isDirectory() : !target.isFile()) throw new Error("Distribution entrypoint is not prebuilt");
     }
     return { ...entry, localPath, entrypoints: {
-      worker: bundleEntrypoint(pkg.paperclipPlugin.worker),
-      ...(pkg.paperclipPlugin.ui === undefined ? {} : { ui: bundleEntrypoint(pkg.paperclipPlugin.ui) }),
+      worker: bundleEntrypoint(pkg.wardmotePlugin.worker),
+      ...(pkg.wardmotePlugin.ui === undefined ? {} : { ui: bundleEntrypoint(pkg.wardmotePlugin.ui) }),
     } };
   });
 }

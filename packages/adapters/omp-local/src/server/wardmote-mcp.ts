@@ -16,10 +16,10 @@ export {
   WARDMOTE_MCP_SERVER_NAME,
   WARDMOTE_MCP_TOOLSETS_ENV,
   buildWardmoteMcpServerEntry,
-  paperclipMcpEndpoint,
-  paperclipMcpGuidance,
-  paperclipMcpToolsets,
-  paperclipMcpTransport,
+  wardmoteMcpEndpoint,
+  wardmoteMcpGuidance,
+  wardmoteMcpToolsets,
+  wardmoteMcpTransport,
   renderWardmoteMcpConfig,
   resolveWardmoteMcpServerCommand,
   type WardmoteMcpCommand,
@@ -86,7 +86,7 @@ const PROBE_TIMEOUT_MS = 30_000;
 const HTTP_PROBE_TIMEOUT_MS = 5_000;
 export const WARDMOTE_MCP_UNAVAILABLE_RETRY_DELAY_MS = 45_000;
 
-export function paperclipMcpUnavailableRecovery(now: number = Date.now()): {
+export function wardmoteMcpUnavailableRecovery(now: number = Date.now()): {
   errorFamily: "transient_upstream";
   retryNotBefore: string;
 } {

@@ -204,7 +204,7 @@ describeEmbeddedPostgres("heartbeat list", () => {
         wakeReason: "issue_assigned",
         wakeSource: "assignment",
         wakeTriggerDetail: 42,
-        paperclipSecretRedactions: [],
+        wardmoteSecretRedactions: [],
         prompt: "p".repeat(64_000),
       },
     });

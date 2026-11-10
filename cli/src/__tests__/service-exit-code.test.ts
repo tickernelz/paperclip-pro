@@ -5,7 +5,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 import { describe, expect, it } from "vitest";
-import { paperclipConfigSchema } from "../config/schema.js";
+import { wardmoteConfigSchema } from "../config/schema.js";
 
 const execFileAsync = promisify(execFile);
 const repoRoot = fileURLToPath(new URL("../../..", import.meta.url));
@@ -16,7 +16,7 @@ function createIsolatedHome(instanceId: string): string {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-exit-code-"));
   const instanceDir = path.join(home, "instances", instanceId);
   fs.mkdirSync(instanceDir, { recursive: true });
-  const config = paperclipConfigSchema.parse({
+  const config = wardmoteConfigSchema.parse({
     $meta: { version: 1, updatedAt: new Date().toISOString(), source: "onboard" },
     llm: { provider: "claude" },
     database: {},

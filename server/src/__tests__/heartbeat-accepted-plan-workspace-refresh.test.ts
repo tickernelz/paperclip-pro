@@ -422,11 +422,11 @@ describeEmbeddedPostgres("accepted plan workspace refresh", () => {
     };
     expect(adapterInput.runtime.sessionId).toBeNull();
     expect(adapterInput.runtime.sessionParams).toBeNull();
-    expect(adapterInput.context.paperclipWorkspace).toEqual(expect.objectContaining({
+    expect(adapterInput.context.wardmoteWorkspace).toEqual(expect.objectContaining({
       mode: "isolated_workspace",
       strategy: "git_worktree",
     }));
-    expect((adapterInput.context.paperclipWorkspace as { cwd: string }).cwd).not.toBe(repoRoot);
+    expect((adapterInput.context.wardmoteWorkspace as { cwd: string }).cwd).not.toBe(repoRoot);
 
     const refreshedIssue = await db
       .select({
@@ -639,7 +639,7 @@ describeEmbeddedPostgres("accepted plan workspace refresh", () => {
       | null = null;
     adapterExecute.mockImplementationOnce(async (input) => {
       const context = (input as { context?: Record<string, unknown> }).context ?? {};
-      const workspace = context.paperclipWorkspace as Record<string, unknown> | undefined;
+      const workspace = context.wardmoteWorkspace as Record<string, unknown> | undefined;
       const cwd = typeof workspace?.cwd === "string" ? workspace.cwd : null;
       const branchName = typeof workspace?.branchName === "string" ? workspace.branchName : null;
       const executionWorkspaceId =
@@ -845,8 +845,8 @@ describeEmbeddedPostgres("accepted plan workspace refresh", () => {
       otherActiveClaimIssueId: otherPlanningIssueId,
       otherActiveClaimIdentifier: "PAP-9302",
     }));
-    expect(adapterInput.context.paperclipTaskMarkdown).toContain("Make the plan only.");
-    expect(adapterInput.context.paperclipTaskMarkdown).not.toContain("Create child issues from the approved plan only");
+    expect(adapterInput.context.wardmoteTaskMarkdown).toContain("Make the plan only.");
+    expect(adapterInput.context.wardmoteTaskMarkdown).not.toContain("Create child issues from the approved plan only");
   }, 20_000);
 
   it("guards cross-issue accepted-plan retries even when the waking issue is standard work mode", async () => {
@@ -1006,7 +1006,7 @@ describeEmbeddedPostgres("accepted plan workspace refresh", () => {
       otherActiveClaimIssueId: otherPlanningIssueId,
       otherActiveClaimIdentifier: "PAP-9402",
     }));
-    expect(adapterInput.context.paperclipTaskMarkdown).toContain("Issue: \"PAP-9401\"");
-    expect(adapterInput.context.paperclipTaskMarkdown).not.toContain("Create child issues from the approved plan only");
+    expect(adapterInput.context.wardmoteTaskMarkdown).toContain("Issue: \"PAP-9401\"");
+    expect(adapterInput.context.wardmoteTaskMarkdown).not.toContain("Create child issues from the approved plan only");
   }, 20_000);
 });

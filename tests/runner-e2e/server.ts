@@ -24,11 +24,11 @@ function required(name: string) {
 
 const logPath = required("WARDMOTE_RUNNER_E2E_SERVER_LOG");
 const temporaryRoot = required("WARDMOTE_RUNNER_E2E_TEMP_ROOT");
-const paperclipHome = required("WARDMOTE_HOME");
+const wardmoteHome = required("WARDMOTE_HOME");
 const configPath = required("WARDMOTE_CONFIG");
 const port = required("WARDMOTE_RUNNER_E2E_PORT");
 const repositoryRoot = path.resolve(import.meta.dirname, "../..");
-const paperclipCli = path.join(repositoryRoot, "tests/runner-e2e/server-entry.ts");
+const wardmoteCli = path.join(repositoryRoot, "tests/runner-e2e/server-entry.ts");
 const executionIds: string[] = JSON.parse(process.env.WARDMOTE_RUNNER_E2E_EXECUTION_IDS ?? "[]");
 const selectedExecutions = usesInstalledCli(process.env) ? executionIds.map(id => {
   const execution = runnerMatrix.find(row => row.id === id);
@@ -52,7 +52,7 @@ const serverEnvironment = buildWardmoteServerEnvironment(installedRelease
   // Keep provider caches attempt-private without changing Playwright's browser
   // cache lookup in the parent process.
   XDG_CACHE_HOME: path.join(temporaryRoot, "xdg-cache"),
-  WARDMOTE_HOME: paperclipHome,
+  WARDMOTE_HOME: wardmoteHome,
   WARDMOTE_CONFIG: configPath,
   WARDMOTE_INSTANCE_ID: required("WARDMOTE_INSTANCE_ID"),
   WARDMOTE_AGENT_JWT_SECRET: required("WARDMOTE_AGENT_JWT_SECRET"),
@@ -89,7 +89,7 @@ const serverEnvironment = buildWardmoteServerEnvironment(installedRelease
 });
 assertIsolatedServerEnvironment(serverEnvironment, {
   temporaryRoot,
-  paperclipHome,
+  wardmoteHome,
   configPath,
 });
 const definedServerEnvironment = Object.fromEntries(
@@ -141,7 +141,7 @@ async function startServer() {
   const installed = await verifyInstalledCli(process.env, selectedExecutions);
   const candidate = spawn(
     process.execPath,
-    installed ? [installed.entry, "onboard", "--yes", "--run"] : runnerE2ETypeScriptProcessArgs(repositoryRoot, paperclipCli, ["onboard", "--yes", "--run"]),
+    installed ? [installed.entry, "onboard", "--yes", "--run"] : runnerE2ETypeScriptProcessArgs(repositoryRoot, wardmoteCli, ["onboard", "--yes", "--run"]),
     {
       cwd: installedRelease?.cwd ?? repositoryRoot,
       env: definedServerEnvironment,

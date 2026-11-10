@@ -49,7 +49,7 @@ import {
   deriveCompanySlug,
   deriveNamespaceName,
   newRunUlidDns,
-  paperclipLabels,
+  wardmoteLabels,
 } from "./utils.js";
 
 // The namespace paperclip-server itself runs in. Used when building
@@ -339,7 +339,7 @@ const plugin = definePlugin({
     await ensureTenant(clients, {
       namespace,
       companyId: params.companyId,
-      paperclipServerNamespace: WARDMOTE_SERVER_NAMESPACE,
+      wardmoteServerNamespace: WARDMOTE_SERVER_NAMESPACE,
       serviceAccountAnnotations: config.serviceAccountAnnotations,
       egressMode: config.egressMode,
       egressAllowFqdns: [...adapterDefaults.allowFqdns, ...config.egressAllowFqdns],
@@ -352,7 +352,7 @@ const plugin = definePlugin({
 
     // TODO: use params.runId as stand-in for agentId in labels; future
     // versions will have a dedicated agentId on AcquireLeaseParams.
-    const labels = paperclipLabels({
+    const labels = wardmoteLabels({
       runId: params.runId,
       agentId: params.runId,
       companyId: params.companyId,

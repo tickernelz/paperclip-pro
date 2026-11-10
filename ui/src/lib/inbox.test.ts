@@ -1465,8 +1465,8 @@ describe("inbox helpers", () => {
   });
 
   it("groups project sections by latest issue activity while preserving non-issue sections", () => {
-    const paperclipIssue = makeIssue("paperclip", true);
-    paperclipIssue.projectId = "project-1";
+    const wardmoteIssue = makeIssue("paperclip", true);
+    wardmoteIssue.projectId = "project-1";
 
     const onboardingIssue = makeIssue("onboarding", false);
     onboardingIssue.projectId = "project-2";
@@ -1474,7 +1474,7 @@ describe("inbox helpers", () => {
     const noProjectIssue = makeIssue("no-project", false);
 
     const items: InboxWorkItem[] = [
-      { kind: "issue", timestamp: 9, issue: paperclipIssue },
+      { kind: "issue", timestamp: 9, issue: wardmoteIssue },
       { kind: "issue", timestamp: 4, issue: onboardingIssue },
       { kind: "join_request", timestamp: 6, joinRequest: makeJoinRequest("join-1") },
       { kind: "issue", timestamp: 2, issue: noProjectIssue },

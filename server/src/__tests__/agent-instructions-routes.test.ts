@@ -201,7 +201,7 @@ function makeReflectionCoachAgent(overrides: Record<string, unknown> = {}) {
     id: "22222222-2222-4222-8222-222222222222",
     name: "Reflection Coach",
     metadata: {
-      paperclipBuiltInAgent: {
+      wardmoteBuiltInAgent: {
         key: "reflection-coach",
         featureKeys: ["reflection-coach"],
       },

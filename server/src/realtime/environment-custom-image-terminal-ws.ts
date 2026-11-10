@@ -100,8 +100,8 @@ interface AuthenticatedTerminalContext {
 }
 
 interface IncomingMessageWithTerminalContext extends IncomingMessage {
-  paperclipWebSocketHandled?: boolean;
-  paperclipTerminalUpgradeContext?: TerminalUpgradeContext;
+  wardmoteWebSocketHandled?: boolean;
+  wardmoteTerminalUpgradeContext?: TerminalUpgradeContext;
 }
 
 const require = createRequire(import.meta.url);
@@ -501,7 +501,7 @@ export function setupEnvironmentCustomImageTerminalWebSocketServer(
   const sshConnector = opts.sshConnector ?? createSsh2EnvironmentCustomImageSshConnector();
 
   wss.on("connection", (socket: TerminalWsSocket, req: IncomingMessage) => {
-    const upgradeContext = (req as IncomingMessageWithTerminalContext).paperclipTerminalUpgradeContext;
+    const upgradeContext = (req as IncomingMessageWithTerminalContext).wardmoteTerminalUpgradeContext;
     if (!upgradeContext) {
       socket.close(1008, "missing context");
       return;
@@ -727,7 +727,7 @@ export function setupEnvironmentCustomImageTerminalWebSocketServer(
     const path = parseTerminalPath(url.pathname);
     if (!path) return;
 
-    reqWithContext.paperclipWebSocketHandled = true;
+    reqWithContext.wardmoteWebSocketHandled = true;
     const logPath = safeUpgradePath(req.url);
 
     const onRawSocketError = (err: Error) => {
@@ -749,7 +749,7 @@ export function setupEnvironmentCustomImageTerminalWebSocketServer(
       return;
     }
 
-    reqWithContext.paperclipTerminalUpgradeContext = {
+    reqWithContext.wardmoteTerminalUpgradeContext = {
       setupSessionId: path.setupSessionId,
       terminalSessionId,
       initialCols,

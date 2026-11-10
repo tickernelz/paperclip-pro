@@ -222,7 +222,7 @@ describe("OpenWA delegated task reports (embedded Postgres + fake gateway)", () 
       contextSnapshot: {
         source: "chat:openwa",
         issueId: conversationId,
-        ...(options.creatorTriggerClass ? { paperclipOpenwa: { triggerClass: options.creatorTriggerClass } } : {}),
+        ...(options.creatorTriggerClass ? { wardmoteOpenwa: { triggerClass: options.creatorTriggerClass } } : {}),
       },
     });
 

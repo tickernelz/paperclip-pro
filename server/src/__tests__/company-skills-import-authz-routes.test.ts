@@ -37,7 +37,7 @@ if (!embeddedPostgresSupport.supported) {
 describeEmbeddedPostgres("company skill import authorization routes", () => {
   let db!: ReturnType<typeof createDb>;
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
-  let paperclipHome: string | null = null;
+  let wardmoteHome: string | null = null;
   const cleanupDirs = new Set<string>();
   const previousAgentJwtSecret = process.env.WARDMOTE_AGENT_JWT_SECRET;
   const previousWardmoteHome = process.env.WARDMOTE_HOME;
@@ -45,8 +45,8 @@ describeEmbeddedPostgres("company skill import authorization routes", () => {
 
   beforeAll(async () => {
     process.env.WARDMOTE_AGENT_JWT_SECRET = "company-skills-import-authz-test-secret";
-    paperclipHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-company-skills-import-authz-home-"));
-    process.env.WARDMOTE_HOME = paperclipHome;
+    wardmoteHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-company-skills-import-authz-home-"));
+    process.env.WARDMOTE_HOME = wardmoteHome;
     process.env.WARDMOTE_INSTANCE_ID = "default";
     tempDb = await startEmbeddedPostgresTestDatabase("paperclip-company-skills-import-authz-");
     db = createDb(tempDb.connectionString);
@@ -67,8 +67,8 @@ describeEmbeddedPostgres("company skill import authorization routes", () => {
 
   afterAll(async () => {
     await tempDb?.cleanup();
-    if (paperclipHome) {
-      await fs.rm(paperclipHome, { recursive: true, force: true });
+    if (wardmoteHome) {
+      await fs.rm(wardmoteHome, { recursive: true, force: true });
     }
     if (previousAgentJwtSecret === undefined) delete process.env.WARDMOTE_AGENT_JWT_SECRET;
     else process.env.WARDMOTE_AGENT_JWT_SECRET = previousAgentJwtSecret;
@@ -88,11 +88,11 @@ describeEmbeddedPostgres("company skill import authorization routes", () => {
   }
 
   async function writeSkillFixture(companyId: string) {
-    if (!paperclipHome) throw new Error("Expected Paperclip test home");
+    if (!wardmoteHome) throw new Error("Expected Paperclip test home");
     // Local imports must originate from an approved root (managed-skill
     // directory or a configured workspace); a bare tmpdir is rejected with
     // skill_workspace_boundary_denied.
-    const managedRoot = path.join(paperclipHome, "instances", "default", "skills", companyId);
+    const managedRoot = path.join(wardmoteHome, "instances", "default", "skills", companyId);
     await fs.mkdir(managedRoot, { recursive: true });
     const skillDir = await fs.mkdtemp(path.join(managedRoot, "paperclip-import-authz-skill-"));
     cleanupDirs.add(skillDir);

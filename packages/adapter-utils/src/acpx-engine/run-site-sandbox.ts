@@ -333,7 +333,7 @@ export function createSandboxRunSite(options: SandboxRunSiteOptions): SandboxRun
       // process-session launch — is sequenced by `launchEnv`, a memoized thunk the
       // process-session bridge awaits right before its launch.
       const stagedRootDir = staged?.stagedRuntime.runtimeRootDir ?? null;
-      const paperclipStart = options.measureBridgeStep("bridge.paperclip", () =>
+      const wardmoteStart = options.measureBridgeStep("bridge.paperclip", () =>
         options.startWardmoteBridge(stagedRootDir),
       );
       // The single sequencing point (paperclip env → process-session launch),
@@ -343,7 +343,7 @@ export function createSandboxRunSite(options: SandboxRunSiteOptions): SandboxRun
       let launchEnv: Record<string, string> = {};
       const finalizeLaunchEnv = (): Promise<Record<string, string>> =>
         (launchEnvPromise ??= (async () => {
-          const paperclip = await paperclipStart;
+          const paperclip = await wardmoteStart;
           // The paperclip bridge token is run-scoped: it lives for this run only and
           // never enters a reuse payload (Amendment B). The site hands it to the
           // engine's `finalizeLaunchEnv`, the sole consumer of a contribution, and
@@ -360,7 +360,7 @@ export function createSandboxRunSite(options: SandboxRunSiteOptions): SandboxRun
         options.startProcessSessionBridge({ runtimeRootDir: stagedRootDir, launchEnv: finalizeLaunchEnv }),
       );
       // Settle BOTH starts, so a partial failure can stop whichever bridge started.
-      const [paperclip, processSession] = await Promise.allSettled([paperclipStart, processSessionStart]);
+      const [paperclip, processSession] = await Promise.allSettled([wardmoteStart, processSessionStart]);
       controlBridge = paperclip.status === "fulfilled" ? paperclip.value : null;
       agentBridge = processSession.status === "fulfilled" ? processSession.value : null;
       const failure =

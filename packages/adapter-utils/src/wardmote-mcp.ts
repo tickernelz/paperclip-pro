@@ -38,37 +38,37 @@ function readToggle(value: unknown, fallback: boolean): boolean {
   return fallback;
 }
 
-export function paperclipMcpToolsets(config: Record<string, unknown>): string {
-  const parts = (typeof config.paperclipMcpToolsets === "string" ? config.paperclipMcpToolsets : "")
+export function wardmoteMcpToolsets(config: Record<string, unknown>): string {
+  const parts = (typeof config.wardmoteMcpToolsets === "string" ? config.wardmoteMcpToolsets : "")
     .split(",")
     .map((part) => part.trim())
     .filter(Boolean);
   return parts.length > 0 ? parts.join(",") : WARDMOTE_MCP_DEFAULT_TOOLSETS;
 }
 
-export function paperclipMcpTransport(config: Record<string, unknown>): WardmoteMcpTransportKind {
-  return config.paperclipMcpTransport === "stdio" ? "stdio" : "http";
+export function wardmoteMcpTransport(config: Record<string, unknown>): WardmoteMcpTransportKind {
+  return config.wardmoteMcpTransport === "stdio" ? "stdio" : "http";
 }
 
 /** Server-hosted MCP endpoint for this run, mirroring the API base the REST path uses. */
-export function paperclipMcpEndpoint(apiUrl: string, toolsets: string): string {
+export function wardmoteMcpEndpoint(apiUrl: string, toolsets: string): string {
   const trimmed = apiUrl.trim().replace(/\/+$/, "");
   const base = trimmed.endsWith("/api") ? trimmed : `${trimmed}/api`;
   return `${base}${WARDMOTE_MCP_HTTP_PATH}?toolsets=${encodeURIComponent(toolsets)}`;
 }
 
-/** MCP needs the `paperclipMcp` toggle on plus an API base and a run credential; everything else is REST. */
-export function paperclipAccessMode(
+/** MCP needs the `wardmoteMcp` toggle on plus an API base and a run credential; everything else is REST. */
+export function wardmoteAccessMode(
   config: Record<string, unknown>,
   env: Record<string, string | undefined>,
 ): WardmoteAccessMode {
-  if (!readToggle(config.paperclipMcp, true)) return "rest";
+  if (!readToggle(config.wardmoteMcp, true)) return "rest";
   if (!(env.WARDMOTE_API_URL ?? "").trim()) return "rest";
   if (!(env.WARDMOTE_API_KEY ?? "").trim()) return "rest";
   return "mcp";
 }
 
-export function paperclipMcpHttpHeaders(input: {
+export function wardmoteMcpHttpHeaders(input: {
   apiKey: string;
   runId?: string;
 }): Record<string, string> {
@@ -118,8 +118,8 @@ export function buildWardmoteMcpServerEntry(
     return {
       type: "http",
       enabled: input.enabled,
-      url: paperclipMcpEndpoint(input.env.WARDMOTE_API_URL ?? "", input.toolsets),
-      headers: paperclipMcpHttpHeaders({
+      url: wardmoteMcpEndpoint(input.env.WARDMOTE_API_URL ?? "", input.toolsets),
+      headers: wardmoteMcpHttpHeaders({
         apiKey: literal ? apiKey : "${WARDMOTE_API_KEY}",
         runId: input.env.WARDMOTE_RUN_ID ?? "",
       }),
@@ -146,7 +146,7 @@ export function renderWardmoteMcpConfig(input: WardmoteMcpServerEntryInput): str
   return `${JSON.stringify({ mcpServers: servers }, null, 2)}\n`;
 }
 
-export function paperclipMcpGuidance(toolsets: string, toolCount: number | null = null): string {
+export function wardmoteMcpGuidance(toolsets: string, toolCount: number | null = null): string {
   const lines = [
     `Paperclip's API is mounted as MCP tools on the "${WARDMOTE_MCP_SERVER_NAME}" server (toolsets: ${toolsets}${toolCount === null ? "" : `, ${toolCount} tools`}).`,
     'Every tool name starts with "wardmote", for example wardmoteListIssues or wardmoteAddComment.',
@@ -162,7 +162,7 @@ export function paperclipMcpGuidance(toolsets: string, toolCount: number | null 
 }
 
 /** Guidance for runtimes without the Paperclip MCP: reach the board over REST with the run credentials in env. */
-export function paperclipRestGuidance(options: { shellHint?: string } = {}): string {
+export function wardmoteRestGuidance(options: { shellHint?: string } = {}): string {
   const shell = options.shellHint?.trim();
   return [
     "This runtime has no paperclip* tools. Reach Paperclip over its REST API instead.",
@@ -179,11 +179,11 @@ export function paperclipRestGuidance(options: { shellHint?: string } = {}): str
   ].join("\n");
 }
 
-export function paperclipAccessGuidance(
+export function wardmoteAccessGuidance(
   access: WardmoteAccessMode,
   options: { toolsets?: string; toolCount?: number | null; shellHint?: string } = {},
 ): string {
   return access === "mcp"
-    ? paperclipMcpGuidance(options.toolsets ?? WARDMOTE_MCP_DEFAULT_TOOLSETS, options.toolCount ?? null)
-    : paperclipRestGuidance({ shellHint: options.shellHint });
+    ? wardmoteMcpGuidance(options.toolsets ?? WARDMOTE_MCP_DEFAULT_TOOLSETS, options.toolCount ?? null)
+    : wardmoteRestGuidance({ shellHint: options.shellHint });
 }

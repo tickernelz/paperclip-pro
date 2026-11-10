@@ -6,7 +6,7 @@ import { mergeConfig } from "vite";
 import { storybookAgentAvatarAssets } from "../../../scripts/storybook-agent-avatar-assets.mjs";
 
 const storybookConfigDir = path.dirname(fileURLToPath(import.meta.url));
-const paperclipInstanceOrigin = (() => {
+const wardmoteInstanceOrigin = (() => {
   try {
     const url = new URL(process.env.WARDMOTE_STORYBOOK_API_URL ?? "");
     return url.protocol === "http:" || url.protocol === "https:" ? url.origin : "";
@@ -29,7 +29,7 @@ const config: StorybookConfig = {
   viteFinal: async (baseConfig) =>
     mergeConfig(baseConfig, {
       define: {
-        "import.meta.env.VITE_WARDMOTE_INSTANCE_URL": JSON.stringify(paperclipInstanceOrigin),
+        "import.meta.env.VITE_WARDMOTE_INSTANCE_URL": JSON.stringify(wardmoteInstanceOrigin),
       },
       plugins: [tailwindcss(), storybookAgentAvatarAssets()],
       server: { proxy: { "/api/agent-avatars": { target: process.env.WARDMOTE_STORYBOOK_API_URL ?? "http://localhost:3100", changeOrigin: true } } },

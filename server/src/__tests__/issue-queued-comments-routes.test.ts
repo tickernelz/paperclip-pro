@@ -222,7 +222,7 @@ describeEmbeddedPostgres("issue queued-comment routes", () => {
       .where(eq(agents.id, seeded.agentId));
     await db.update(heartbeatRuns).set({ runtimeMode: "legacy", status: "cancelled", errorCode: "operator_interrupted",
       finishedAt: new Date("2026-08-22T15:03:00.000Z"),
-      contextSnapshot: { issueId: seeded.issueId, paperclipWorkspace: { remoteExecution: { transport: "sandbox" } } },
+      contextSnapshot: { issueId: seeded.issueId, wardmoteWorkspace: { remoteExecution: { transport: "sandbox" } } },
     }).where(eq(heartbeatRuns.id, seeded.runId));
     await db.update(issues).set({ status: "blocked", executionRunId: null }).where(eq(issues.id, seeded.issueId));
     await db.insert(issueRecoveryActions).values({ companyId: seeded.companyId, sourceIssueId: seeded.issueId,

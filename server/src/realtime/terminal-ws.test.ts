@@ -348,7 +348,7 @@ describe("terminal websocket", () => {
   it("leaves upgrades for other paths to later handlers", async () => {
     let seenByNext = false;
     server.on("upgrade", (req, socket) => {
-      if ((req as { paperclipWebSocketHandled?: boolean }).paperclipWebSocketHandled) return;
+      if ((req as { wardmoteWebSocketHandled?: boolean }).wardmoteWebSocketHandled) return;
       seenByNext = true;
       socket.destroy();
     });

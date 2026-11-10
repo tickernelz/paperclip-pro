@@ -79,7 +79,7 @@ import type {
   RequestItemVerdictValue,
   SuggestTasksInteraction,
 } from "@/lib/issue-thread-interactions";
-import { storybookAgentMap } from "../fixtures/paperclipData";
+import { storybookAgentMap } from "../fixtures/wardmoteData";
 
 const boardUserLabels = new Map<string, string>([
   [issueThreadInteractionFixtureMeta.currentUserId, "Riley Board"],

@@ -193,7 +193,7 @@ async function captureTerminalRunFailure(
     // Resolve registered values before truncation. A failed resolution must
     // not send an incompletely redacted report.
     let redacted = snapshot;
-    if (Array.isArray(run.contextSnapshot?.paperclipSecretRedactions)) {
+    if (Array.isArray(run.contextSnapshot?.wardmoteSecretRedactions)) {
       const { createRunSecretRedactionRegistry } = await import("./run-secret-redaction.js");
       redacted = await createRunSecretRedactionRegistry(db).redactForRun(run.companyId, run.id, snapshot);
     }

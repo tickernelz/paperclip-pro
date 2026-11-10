@@ -68,7 +68,7 @@ import type {
   PrpStructuredRunResult,
 } from "../../protocol/replay-contract.js";
 import { validatePrpStructuredRunResult } from "../../protocol/replay-contract.js";
-import { paperclipWorkspaceFileReferencesFromText } from "../../live/workspace-file-reference.js";
+import { wardmoteWorkspaceFileReferencesFromText } from "../../live/workspace-file-reference.js";
 import {
   canonicalOpenCodeDisplayToolName,
   canonicalProviderEventsFromOpenCodePart,
@@ -1842,7 +1842,7 @@ class OpenCodeHarnessSession implements HarnessSession {
     const previous = this.#partText.get(partId) ?? "";
     this.#partText.set(partId, content);
     if (partType === "text" && content.length > 0) {
-      for (const reference of paperclipWorkspaceFileReferencesFromText(
+      for (const reference of wardmoteWorkspaceFileReferencesFromText(
         this.#workingDirectory,
         content,
         turnId,

@@ -197,7 +197,7 @@ export function isExternalChatPresentationContext(
   verifiedToolReviewChatOrigin = false,
 ): boolean {
   const context = record(contextSnapshot);
-  const wake = record(context.paperclipWake);
+  const wake = record(context.wardmoteWake);
   const source =
     typeof context.source === "string" ? context.source.trim() : "";
   // Approvals and Board comments also resume ordinary internal tasks. Only

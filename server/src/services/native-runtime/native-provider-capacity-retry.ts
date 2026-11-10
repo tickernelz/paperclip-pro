@@ -34,8 +34,8 @@ export async function materializeNativeProviderCapacityRetry(input: {
   for (const key of [
     "explicitUserContinuation", "wakeCommentId", "wakeCommentIds", "commentId",
     "commentIds", "latestCommentId", "resumeIntent", "followUpRequested",
-    "paperclipWake", "paperclipWakeComment", "paperclipTaskMarkdown", "paperclipTaskMarkdownCompact",
-    "paperclipTaskMarkdownAssignment", "paperclipTaskMarkdownAssignmentCompact", "paperclipTurnContext",
+    "wardmoteWake", "wardmoteWakeComment", "wardmoteTaskMarkdown", "wardmoteTaskMarkdownCompact",
+    "wardmoteTaskMarkdownAssignment", "wardmoteTaskMarkdownAssignmentCompact", "wardmoteTurnContext",
   ]) delete predecessorContext[key];
   const contextSnapshot = {
     ...predecessorContext,

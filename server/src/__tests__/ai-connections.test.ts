@@ -742,7 +742,7 @@ describe("managed AI connections", () => {
       scope, entries: [{ name: "history.json", bytes: Buffer.from("previous-task-private-transcript").toString("base64") }],
     }) });
     await db.insert(agentTaskSessions).values({ companyId, agentId, adapterType: "grok_local", taskKey,
-      sessionParamsJson: { sessionId: "history", paperclipGrokHistory: { scope, material: retained.material } } });
+      sessionParamsJson: { sessionId: "history", wardmoteGrokHistory: { scope, material: retained.material } } });
     const resumed = await prepareManagedAiRuntime(db, runInput);
     const peer = await prepareManagedAiRuntime(db, { ...runInput, agentId: randomUUID() });
     try {

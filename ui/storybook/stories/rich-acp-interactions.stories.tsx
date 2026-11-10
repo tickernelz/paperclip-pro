@@ -19,7 +19,7 @@ import type {
   AskUserQuestionsInteraction,
   RequestConfirmationInteraction,
 } from "@/lib/issue-thread-interactions";
-import { storybookAgentMap } from "../fixtures/paperclipData";
+import { storybookAgentMap } from "../fixtures/wardmoteData";
 
 // Production components and production projection, with callbacks kept in memory.
 // No provider, runner, or control-plane mutation is made by these stories.

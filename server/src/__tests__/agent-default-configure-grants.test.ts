@@ -65,7 +65,7 @@ describeDatabase("new agent configuration defaults", () => {
     const peer = await create("Peer");
     const lowTrust = await create("Low trust", { trustPreset: LOW_TRUST_REVIEW_PRESET });
     const bundled = await create("Bundled", {}, {
-      paperclipBuiltInAgent: { key: "reflection-coach", featureKeys: [] },
+      wardmoteBuiltInAgent: { key: "reflection-coach", featureKeys: [] },
     });
 
     const grants = await db.select().from(principalPermissionGrants)
@@ -154,7 +154,7 @@ describeDatabase("new agent configuration defaults", () => {
       { companyId, name: "Existing", role: "engineer", permissions: {}, adapterType: "process", adapterConfig: {}, runtimeConfig: {} },
       { companyId, name: "Scoped", role: "engineer", permissions: {}, adapterType: "process", adapterConfig: {}, runtimeConfig: {} },
       { companyId, name: "Restricted", role: "engineer", permissions: { trustPreset: LOW_TRUST_REVIEW_PRESET }, adapterType: "process", adapterConfig: {}, runtimeConfig: {} },
-      { companyId, name: "Built in", role: "engineer", metadata: { paperclipBuiltInAgent: { key: "reflection-coach", featureKeys: [] } }, permissions: {}, adapterType: "process", adapterConfig: {}, runtimeConfig: {} },
+      { companyId, name: "Built in", role: "engineer", metadata: { wardmoteBuiltInAgent: { key: "reflection-coach", featureKeys: [] } }, permissions: {}, adapterType: "process", adapterConfig: {}, runtimeConfig: {} },
       { companyId, name: "Pending", role: "engineer", status: "pending_approval", permissions: {}, adapterType: "process", adapterConfig: {}, runtimeConfig: {} },
     ]).returning();
     await db.insert(principalPermissionGrants).values({

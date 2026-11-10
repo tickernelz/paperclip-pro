@@ -57,7 +57,7 @@ import {
   describeWorkspaceRestoreFailure,
 } from "../workspace-restore-merge.js";
 import {
-  paperclipAgentPromptTemplate,
+  wardmoteAgentPromptTemplate,
   DEFAULT_WARDMOTE_CONVERSATION_PROMPT_TEMPLATE,
   applyWardmoteWorkspaceEnv,
   asNumber,
@@ -90,12 +90,12 @@ import {
 } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import {
   WARDMOTE_MCP_SERVER_NAME,
-  paperclipAccessGuidance,
-  paperclipAccessMode,
-  paperclipMcpToolsets,
+  wardmoteAccessGuidance,
+  wardmoteAccessMode,
+  wardmoteMcpToolsets,
   type WardmoteAccessMode,
 } from "@tickernelz/wardmote-adapter-utils/wardmote-mcp";
-import { paperclipMcpHttpTarget } from "@tickernelz/wardmote-adapter-utils/wardmote-mcp-mount";
+import { wardmoteMcpHttpTarget } from "@tickernelz/wardmote-adapter-utils/wardmote-mcp-mount";
 import { shellQuote } from "@tickernelz/wardmote-adapter-utils/ssh";
 import { runToolProfile, type RunToolProfile } from "@tickernelz/wardmote-adapter-utils/tool-profile";
 import { createEphemeralSessionEnvironmentStore } from "./ephemeral-session-environment.js";
@@ -477,7 +477,7 @@ interface AcpxPreparedRuntime {
   agentCommand: string | null;
   agentRegistry: AcpAgentRegistry;
   processSessionBridge: AdapterExecutionTargetProcessSessionBridgeHandle | null;
-  paperclipBridge: AdapterExecutionTargetWardmoteBridgeHandle | null;
+  wardmoteBridge: AdapterExecutionTargetWardmoteBridgeHandle | null;
   // The workspace/runtime staged into a runner-backed remote sandbox (null for
   // local runs and the runner-less ACP→CLI fallback). PR 1 stages the workspace
   // + cwd only; the `assetDirs`/`runtimeRootDir`/`restoreWorkspace` it carries
@@ -508,11 +508,11 @@ interface AcpxPreparedRuntime {
   sessionStagingLeaseRelease: (() => void) | null;
   remoteExecutionIdentity: Record<string, unknown> | null;
   skillPromptInstructions: string;
-  paperclipAccess: WardmoteAccessMode;
-  paperclipToolsets: string;
+  wardmoteAccess: WardmoteAccessMode;
+  wardmoteToolsets: string;
   skillsIdentity: Record<string, unknown>;
   childStderrLogPath: string | null;
-  paperclipClaudeSettings: WardmoteClaudeSettingsResult | null;
+  wardmoteClaudeSettings: WardmoteClaudeSettingsResult | null;
   mcpServers: NonNullable<AcpRuntimeOptions["mcpServers"]>;
   mcpIdentity: Array<{ name: string; url: string; connectionId: string }>;
   // Per-step round-trip / provider-duration readers sourced from the sandbox
@@ -1669,12 +1669,12 @@ async function writeWardmoteClaudeSettings(input: {
   const filePath = path.join(input.cwd, ".claude", "settings.local.json");
   const instanceRoot = defaultWardmoteInstanceDir();
   const companyRoot = path.join(instanceRoot, "companies", input.companyId);
-  const paperclipAdditionalDirectories = uniqueSorted([
+  const wardmoteAdditionalDirectories = uniqueSorted([
     input.stateDir,
     input.agentHome,
     companyRoot,
   ]);
-  const paperclipAllow = uniqueSorted([
+  const wardmoteAllow = uniqueSorted([
     "Bash(curl:*)",
     "Bash(env:*)",
     "Bash(env)",
@@ -1702,10 +1702,10 @@ async function writeWardmoteClaudeSettings(input: {
   const existingAdditionalDirectories = Array.isArray(existingPerms.additionalDirectories)
     ? (existingPerms.additionalDirectories as unknown[]).filter((value): value is string => typeof value === "string")
     : [];
-  const mergedAllow = uniqueSorted([...existingAllow, ...paperclipAllow]);
+  const mergedAllow = uniqueSorted([...existingAllow, ...wardmoteAllow]);
   const mergedAdditionalDirectories = uniqueSorted([
     ...existingAdditionalDirectories,
-    ...paperclipAdditionalDirectories,
+    ...wardmoteAdditionalDirectories,
   ]);
   const existingDefaultMode =
     typeof existingPerms.defaultMode === "string" ? (existingPerms.defaultMode as string) : "";
@@ -1871,8 +1871,8 @@ async function buildRuntime(input: {
   // first instrumented boundary (step 1 `workspace.resolve`, below) so every
   // `measureStartupStep` call in this function shares one deterministic clock.
   const nowMs = input.deps.now ?? (() => Date.now());
-  const workspaceContext = parseObject(context.paperclipWorkspace);
-  const secretsContext = parseObject(context.paperclipSecrets);
+  const workspaceContext = parseObject(context.wardmoteWorkspace);
+  const secretsContext = parseObject(context.wardmoteSecrets);
   const secretManifest = Array.isArray(secretsContext.manifest) ? secretsContext.manifest : [];
   const workspaceCwd = asString(workspaceContext.cwd, "");
   const workspaceSource = asString(workspaceContext.source, "");
@@ -1952,8 +1952,8 @@ async function buildRuntime(input: {
   // list joins the anchor project's alternative workspaces with the referenced (mentioned) projects.
   // On the confined sandbox lane the run repoints each referenced hint at its staged directory after
   // staging below. Empty unless run prep resolved referenced projects or alternative workspaces.
-  const workspaceHints = Array.isArray(context.paperclipWorkspaces)
-    ? context.paperclipWorkspaces.filter(
+  const workspaceHints = Array.isArray(context.wardmoteWorkspaces)
+    ? context.wardmoteWorkspaces.filter(
         (value): value is Record<string, unknown> => typeof value === "object" && value !== null,
       )
     : [];
@@ -2017,17 +2017,17 @@ async function buildRuntime(input: {
     url: server.url,
     headers: [{ name: "Authorization", value: `Bearer ${server.token}` }],
   }));
-  const paperclipEnvForAccess = {
+  const wardmoteEnvForAccess = {
     ...buildWardmoteEnv(agent, { sameHost: !executionTargetIsRemote }),
     WARDMOTE_RUN_ID: runId,
     ...(authToken ? { WARDMOTE_API_KEY: authToken } : {}),
   };
-  const paperclipAccess = paperclipAccessMode(config, paperclipEnvForAccess);
-  const paperclipToolsets = paperclipMcpToolsets(config);
-  if (paperclipAccess === "mcp") {
-    const target = paperclipMcpHttpTarget({
-      env: paperclipEnvForAccess,
-      toolsets: paperclipToolsets,
+  const wardmoteAccess = wardmoteAccessMode(config, wardmoteEnvForAccess);
+  const wardmoteToolsets = wardmoteMcpToolsets(config);
+  if (wardmoteAccess === "mcp") {
+    const target = wardmoteMcpHttpTarget({
+      env: wardmoteEnvForAccess,
+      toolsets: wardmoteToolsets,
     });
     mcpServers.unshift({
       type: "http",
@@ -2100,7 +2100,7 @@ async function buildRuntime(input: {
   // `env` above and are never present in shapedEnvConfig, so they inherently
   // stay out of the hash and don't reset the session every heartbeat.
   const resolvedAdapterEnv: Record<string, string> = {};
-  const scratch = parseObject(context.paperclipScratch);
+  const scratch = parseObject(context.wardmoteScratch);
   const scratchKeys = scratch.type === "heartbeat_run" && typeof scratch.dir === "string"
     ? new Set(["WARDMOTE_RUN_SCRATCH_DIR", "WARDMOTE_TASK_SCRATCH_DIR", "WARDMOTE_SCRATCH_DIR", "WARDMOTE_TMPDIR",
       ...(Array.isArray(scratch.tempKeysApplied) ? scratch.tempKeysApplied.filter((key): key is string =>
@@ -2172,7 +2172,7 @@ async function buildRuntime(input: {
   // below, after `placeWorkspace` returns). This field is `null` for every
   // non-Claude agent, and for a Claude run with no skill selected.
   let claudeSkillsBundleDir: string | null = null;
-  let paperclipClaudeSettings: WardmoteClaudeSettingsResult | null = null;
+  let wardmoteClaudeSettings: WardmoteClaudeSettingsResult | null = null;
   if (acpxAgent === "claude") {
     const preparedSkills = await prepareClaudeSkillRuntime({
       stateDir,
@@ -2184,7 +2184,7 @@ async function buildRuntime(input: {
     skillsIdentity = preparedSkills.identity;
     skillCommandNotes.push(...preparedSkills.commandNotes);
     claudeSkillsBundleDir = preparedSkills.bundleDir;
-    paperclipClaudeSettings = await writeWardmoteClaudeSettings({
+    wardmoteClaudeSettings = await writeWardmoteClaudeSettings({
       cwd,
       stateDir,
       // A run's writable AGENT_HOME moves, but the existing permission root
@@ -2195,9 +2195,9 @@ async function buildRuntime(input: {
       companyId: agent.companyId,
     });
     skillCommandNotes.push(
-      `Wrote Paperclip-managed Claude settings to ${paperclipClaudeSettings.filePath} (defaultMode=${paperclipClaudeSettings.defaultMode}${
-        paperclipClaudeSettings.overrodeDontAsk ? "; overrode user dontAsk" : ""
-      }, +${paperclipClaudeSettings.additionalDirectories.length} read root(s), +${paperclipClaudeSettings.allow.length} allow rule(s)).`,
+      `Wrote Paperclip-managed Claude settings to ${wardmoteClaudeSettings.filePath} (defaultMode=${wardmoteClaudeSettings.defaultMode}${
+        wardmoteClaudeSettings.overrodeDontAsk ? "; overrode user dontAsk" : ""
+      }, +${wardmoteClaudeSettings.additionalDirectories.length} read root(s), +${wardmoteClaudeSettings.allow.length} allow rule(s)).`,
     );
   } else if (acpxAgent === "codex") {
     // Step 2 — codex-home.seed: the codex managed-home + skills preparation.
@@ -2333,11 +2333,11 @@ async function buildRuntime(input: {
     additionalSourcesIdentity: additionalSourcesIdentity as unknown as Record<string, unknown>,
     skillsIdentity,
     skillPromptInstructions,
-    paperclipClaudeSettings: paperclipClaudeSettings
+    wardmoteClaudeSettings: wardmoteClaudeSettings
       ? {
-          allow: paperclipClaudeSettings.allow,
-          additionalDirectories: paperclipClaudeSettings.additionalDirectories,
-          defaultMode: paperclipClaudeSettings.defaultMode,
+          allow: wardmoteClaudeSettings.allow,
+          additionalDirectories: wardmoteClaudeSettings.additionalDirectories,
+          defaultMode: wardmoteClaudeSettings.defaultMode,
         }
       : null,
     // Qualified built-in ACP harnesses reconnect to the supplied MCP servers
@@ -2595,7 +2595,7 @@ async function buildRuntime(input: {
   // staged and the per-session staging lease is already held, so leaving it
   // outside the catch would strand the lease (and the staged temp) on a
   // start failure and deadlock the next run of this session.
-  let paperclipBridge: AdapterExecutionTargetWardmoteBridgeHandle | null = null;
+  let wardmoteBridge: AdapterExecutionTargetWardmoteBridgeHandle | null = null;
   let processSessionBridge: AdapterExecutionTargetProcessSessionBridgeHandle | null = null;
   let runtimeEnv: Record<string, string> = {};
   const startTransportStart = nowMs();
@@ -2607,7 +2607,7 @@ async function buildRuntime(input: {
       // plus the finalized launch env. On a partial failure it stops nothing and
       // rethrows; the catch below stops whichever bridge the site started.
       const transport = await sandboxSite.startTransport({ sessionKey } as unknown as AcpRunContext);
-      paperclipBridge = transport.controlBridge;
+      wardmoteBridge = transport.controlBridge;
       processSessionBridge = transport.agentBridge;
       runtimeEnv = transport.launchEnv;
       await emitRunPhaseTiming(input.ctx, "start_transport", nowMs() - startTransportStart, "ok");
@@ -2626,7 +2626,7 @@ async function buildRuntime(input: {
     // bridge leaks (mirrors the settlement `stopTransport` step). The site sets its
     // started bridges before it rethrows, so read them from the site here (the
     // local handles stay null when `startTransport` throws before it returns).
-    const startedControl = sandboxSite?.controlBridge ?? paperclipBridge;
+    const startedControl = sandboxSite?.controlBridge ?? wardmoteBridge;
     const startedAgent = sandboxSite?.agentBridge ?? processSessionBridge;
     await Promise.allSettled([startedControl?.stop(), startedAgent?.stop()]);
     // The staged home / copy-back teardown must run even if a bridge fails to
@@ -2724,7 +2724,7 @@ async function buildRuntime(input: {
     agentCommand,
     agentRegistry,
     processSessionBridge,
-    paperclipBridge,
+    wardmoteBridge,
     stagedRuntime,
     remoteManagedHomeTeardown,
     remoteStagingDispose,
@@ -2732,14 +2732,14 @@ async function buildRuntime(input: {
     sessionStagingLeaseRelease,
     remoteExecutionIdentity,
     skillPromptInstructions,
-    paperclipAccess,
-    paperclipToolsets,
+    wardmoteAccess,
+    wardmoteToolsets,
     skillsIdentity: {
       ...skillsIdentity,
       commandNotes: skillCommandNotes,
     },
     childStderrLogPath,
-    paperclipClaudeSettings,
+    wardmoteClaudeSettings,
     mcpServers,
     mcpIdentity,
     stepMetrics,
@@ -2888,7 +2888,7 @@ function mergeRuntimeEnvironment(
 async function stopRunTransport(prepared: AcpxPreparedRuntime): Promise<void> {
   await Promise.allSettled([
     prepared.processSessionBridge?.stop(),
-    prepared.paperclipBridge?.stop(),
+    prepared.wardmoteBridge?.stop(),
   ]);
 }
 
@@ -3098,13 +3098,13 @@ function guardEnsureSession(params: {
 }
 
 function renderWardmoteEnvNote(env: Record<string, string>): string {
-  const paperclipKeys = Object.keys(env)
+  const wardmoteKeys = Object.keys(env)
     .filter((key) => key.startsWith("WARDMOTE_"))
     .sort();
-  if (paperclipKeys.length === 0) return "";
+  if (wardmoteKeys.length === 0) return "";
   return [
     "Paperclip runtime note:",
-    `The following WARDMOTE_* environment variables are available in this run: ${paperclipKeys.join(", ")}`,
+    `The following WARDMOTE_* environment variables are available in this run: ${wardmoteKeys.join(", ")}`,
     "Do not assume these variables are missing without checking your shell environment.",
   ].join("\n");
 }
@@ -3115,7 +3115,7 @@ function renderApiAccessNote(
   toolsets: string,
 ): string {
   if (!env.WARDMOTE_API_URL || !env.WARDMOTE_API_KEY) return "";
-  const lines = ["Paperclip API access note:", paperclipAccessGuidance(access, { toolsets })];
+  const lines = ["Paperclip API access note:", wardmoteAccessGuidance(access, { toolsets })];
   if (!env.WARDMOTE_TASK_ID) {
     lines.push("Use a real issue id from the current context before making issue write requests.");
   }
@@ -3126,8 +3126,8 @@ async function buildPrompt(
   ctx: AdapterExecutionContext,
   resumedSession: boolean,
   env: Record<string, string>,
-  paperclipAccess: WardmoteAccessMode,
-  paperclipToolsets: string,
+  wardmoteAccess: WardmoteAccessMode,
+  wardmoteToolsets: string,
 ): Promise<{
   prompt: string;
   promptMetrics: Record<string, number>;
@@ -3140,7 +3140,7 @@ async function buildPrompt(
     ? configuredPromptTemplate
     : context.conversationMode === true
       ? DEFAULT_WARDMOTE_CONVERSATION_PROMPT_TEMPLATE
-      : paperclipAgentPromptTemplate(paperclipAccess);
+      : wardmoteAgentPromptTemplate(wardmoteAccess);
   const instructionsFilePath = asString(config.instructionsFilePath, "").trim();
   const instructionsDir = instructionsFilePath ? `${path.dirname(instructionsFilePath)}/` : "";
   let instructionsPrefix = "";
@@ -3184,18 +3184,18 @@ async function buildPrompt(
   const { taskContextNote, wakePrompt } = selectWardmotePromptSections(context, {
     resumedSession,
     includeCommunicationGuidance: false,
-    paperclipAccess,
+    wardmoteAccess,
   });
-  const externalChatTurn = isWardmoteExternalChatTurn(context.paperclipWake);
+  const externalChatTurn = isWardmoteExternalChatTurn(context.wardmoteWake);
   const shouldUseResumeDeltaPrompt = resumedSession && wakePrompt.length > 0;
   const promptInstructionsPrefix = shouldUseResumeDeltaPrompt ? "" : instructionsPrefix;
   const renderedPrompt =
     shouldUseResumeDeltaPrompt || (externalChatTurn && !hasCustomPromptTemplate)
       ? ""
       : renderTemplate(promptTemplate, templateData);
-  const sessionHandoffNote = asString(context.paperclipSessionHandoffMarkdown, "").trim();
-  const paperclipEnvNote = externalChatTurn ? "" : renderWardmoteEnvNote(env);
-  const apiAccessNote = externalChatTurn ? "" : renderApiAccessNote(env, paperclipAccess, paperclipToolsets);
+  const sessionHandoffNote = asString(context.wardmoteSessionHandoffMarkdown, "").trim();
+  const wardmoteEnvNote = externalChatTurn ? "" : renderWardmoteEnvNote(env);
+  const apiAccessNote = externalChatTurn ? "" : renderApiAccessNote(env, wardmoteAccess, wardmoteToolsets);
   const prompt = joinPromptSections([
     promptInstructionsPrefix,
     renderedBootstrapPrompt,
@@ -3203,7 +3203,7 @@ async function buildPrompt(
     wakePrompt,
     sessionHandoffNote,
     taskContextNote,
-    paperclipEnvNote,
+    wardmoteEnvNote,
     apiAccessNote,
     renderedPrompt,
   ]);
@@ -3218,7 +3218,7 @@ async function buildPrompt(
       wakePromptChars: wakePrompt.length,
       sessionHandoffChars: sessionHandoffNote.length,
       taskContextChars: taskContextNote.length,
-      runtimeNoteChars: paperclipEnvNote.length + apiAccessNote.length,
+      runtimeNoteChars: wardmoteEnvNote.length + apiAccessNote.length,
       heartbeatPromptChars: renderedPrompt.length,
     },
   };
@@ -4505,7 +4505,7 @@ export function createAcpxEngineExecutor(deps: AcpxEngineExecutorOptions = {}) {
         const ensureSessionPhaseStart = now();
         resumedSession = Boolean(handle ?? resumeSessionId);
         const isHandshakeTransportLost = (): boolean =>
-          prepared.paperclipBridge?.readRunDisposition?.().failed ?? false;
+          prepared.wardmoteBridge?.readRunDisposition?.().failed ?? false;
         // The fence's own close, for a real handle that resolves after
         // `endSession` already sealed. `endSession` closed the synthetic
         // placeholder by then (or skipped closing because the channel was
@@ -4896,8 +4896,8 @@ export function createAcpxEngineExecutor(deps: AcpxEngineExecutorOptions = {}) {
           ctx,
           resumedSession,
           prepared.env,
-          prepared.paperclipAccess,
-          prepared.paperclipToolsets,
+          prepared.wardmoteAccess,
+          prepared.wardmoteToolsets,
         );
         runPrompt = joinPromptSections([prepared.skillPromptInstructions, prompt]);
         await emitAcpxLog(ctx, {
@@ -4990,7 +4990,7 @@ export function createAcpxEngineExecutor(deps: AcpxEngineExecutorOptions = {}) {
         // before this turn started — so the turn returns a terminal result
         // right away. `turnFinalize` reads the same latch and builds the
         // failure from the typed loss reason alone.
-        const bridge = prepared.paperclipBridge;
+        const bridge = prepared.wardmoteBridge;
         if (bridge?.onLoss) {
           const cancelForLoss = (reason: DuplexLossReason) => {
             void turn.cancel({ reason: `paperclip sandbox duplex channel lost (${reason})` }).catch(() => {});
@@ -5142,7 +5142,7 @@ export function createAcpxEngineExecutor(deps: AcpxEngineExecutorOptions = {}) {
         // nominally completed terminal. The file bridge path never sets this
         // method, so the optional call no-ops there.
         let duplexLossReason: DuplexLossReason | null = null;
-        const disposition = prepared.paperclipBridge?.settleRunDisposition?.() ?? null;
+        const disposition = prepared.wardmoteBridge?.settleRunDisposition?.() ?? null;
         if (disposition?.failed) {
           duplexLossReason = disposition.lossReason ?? "other";
         }
@@ -5508,7 +5508,7 @@ export function createAcpxEngineExecutor(deps: AcpxEngineExecutorOptions = {}) {
           // channel that is dead by now. The read is non-mutating and only
           // adds a later-observed loss; it never clears the snapshot's `true`.
           const remoteChannelLost =
-            settlement.skipRemoteClose || (prepared.paperclipBridge?.readRunDisposition?.().failed ?? false);
+            settlement.skipRemoteClose || (prepared.wardmoteBridge?.readRunDisposition?.().failed ?? false);
           // The control channel is already known lost, so no remote call can
           // reach the backend. Release the local bookkeeping only and place no
           // `runtime.close(...)` call — that call has no deadline of its own

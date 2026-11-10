@@ -59,7 +59,7 @@ export function deliveredContinuationCommentIds(context: unknown): {
   ids: Set<string>;
 } {
   const c = object(context);
-  const wake = object(c.paperclipWake);
+  const wake = object(c.wardmoteWake);
   const continuation = object(c.executionContinuation);
   const ids = new Set<string>();
   let known = false;

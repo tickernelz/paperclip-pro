@@ -28,7 +28,7 @@ export type InstallManifest = InstallRecord & {
 };
 
 export type InstallStorePaths = {
-  paperclipHome: string;
+  wardmoteHome: string;
   cliRoot: string;
   installsRoot: string;
   manifestPath: string;
@@ -68,15 +68,15 @@ export function writeFileAtomic(filePath: string, contents: string, mode: number
 }
 
 export function resolveInstallStorePaths(options: {
-  paperclipHome?: string;
+  wardmoteHome?: string;
   homeDir?: string;
 } = {}): InstallStorePaths {
-  const paperclipHome = path.resolve(options.paperclipHome ?? resolveWardmoteHomeDir());
-  const homeDir = path.resolve(options.homeDir ?? process.env.HOME ?? path.dirname(paperclipHome));
-  const cliRoot = path.join(paperclipHome, "cli");
+  const wardmoteHome = path.resolve(options.wardmoteHome ?? resolveWardmoteHomeDir());
+  const homeDir = path.resolve(options.homeDir ?? process.env.HOME ?? path.dirname(wardmoteHome));
+  const cliRoot = path.join(wardmoteHome, "cli");
   const shimPath = process.env.WARDMOTE_SHIM_PATH?.trim() || path.join(homeDir, ".local", "bin", "wardmote");
   return {
-    paperclipHome,
+    wardmoteHome,
     cliRoot,
     installsRoot: path.join(cliRoot, "installs"),
     manifestPath: path.join(cliRoot, "install.json"),

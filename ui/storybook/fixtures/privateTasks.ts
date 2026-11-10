@@ -14,7 +14,7 @@ import {
   storybookProjects,
   storybookSidebarBadges,
   storybookDashboardSummary,
-} from "./paperclipData";
+} from "./wardmoteData";
 
 export const privacyCompanyId = "company-storybook";
 export const privacyOwnerId = "user-board";

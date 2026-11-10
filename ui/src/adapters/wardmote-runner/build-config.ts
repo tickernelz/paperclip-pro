@@ -168,10 +168,10 @@ export function buildWardmoteRunnerConfig(v: CreateConfigValues): Record<string,
     300,
     "AWS AgentCore timeoutSeconds",
   );
-  const lifecycleCandidate = v.paperclipRunnerLifecycleMode ?? schemaValues.lifecycleMode;
+  const lifecycleCandidate = v.wardmoteRunnerLifecycleMode ?? schemaValues.lifecycleMode;
   const lifecycleMode = lifecycleCandidate === "warm" ? "warm" : "per_turn";
   const configuredIdleTimeoutMs =
-    v.paperclipRunnerIdleTimeoutMs ?? schemaValues.idleTimeoutMs;
+    v.wardmoteRunnerIdleTimeoutMs ?? schemaValues.idleTimeoutMs;
   const idleTimeoutMs = resolveWardmoteRunnerIdleTimeoutMs(
     configuredIdleTimeoutMs,
   );

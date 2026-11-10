@@ -629,14 +629,14 @@ export function GitHubAccessEditor({
       .filter(
         (link) =>
           link.githubUserId &&
-          link.paperclipUserId &&
+          link.wardmoteUserId &&
           !configuration.people.some(
             (person) => person.githubUserId === link.githubUserId,
           ),
       )
       .map((link): GitHubAllowedPerson => ({
         kind: "member",
-        userId: link.paperclipUserId!,
+        userId: link.wardmoteUserId!,
         githubUserId: link.githubUserId!,
         login: link.githubLogin ?? link.externalLabel,
       })),
@@ -698,7 +698,7 @@ export function GitHubAccessEditor({
               <p className="text-xs text-ink-3">
                 {person.kind === "guest"
                   ? `Sponsored by ${memberName(person.sponsorUserId)}`
-                  : (identity?.paperclipUserLabel ?? "Company member")}
+                  : (identity?.wardmoteUserLabel ?? "Company member")}
               </p>
               {!linked && (
                 <p className="mt-1 text-xs text-bad">

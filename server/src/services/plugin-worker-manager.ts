@@ -1003,7 +1003,7 @@ export function createPluginWorkerHandle(
   // A proactive plugin (e.g. the chat gateway) does company-scoped work from
   // its own timers/loops — not inside a host-issued top-level invocation
   // (onEvent/performAction/executeTool/configChanged). Those worker→host calls
-  // carry no `paperclipInvocationId`, so the governed-access gate
+  // carry no `wardmoteInvocationId`, so the governed-access gate
   // (host-client-factory.ts) rejects any company-scoped request with
   // "company context is required" (regression class from #9557). The host
   // authorizes a bounded set of companies — the plugin's configured companies,
@@ -1265,7 +1265,7 @@ export function createPluginWorkerHandle(
   // Complete mediation: the host and the worker share one stdio pipe, and the
   // worker process sees every active invocation id. So the host cannot prove
   // which concurrent invocation produced a notification, and it must NOT treat
-  // the worker-supplied `paperclipInvocationId` alone as proof of origin. The
+  // the worker-supplied `wardmoteInvocationId` alone as proof of origin. The
   // host validates the exact company scope instead: it delivers only while every
   // active execute route on this worker belongs to ONE company. When a second
   // company's execute overlaps, the host fails closed — it latches the active
@@ -1275,7 +1275,7 @@ export function createPluginWorkerHandle(
   // stream pauses while two companies overlap.
   function routeExecuteLogNotification(notification: JsonRpcNotification): void {
     const invocationId = readNonEmptyString(
-      (notification as { paperclipInvocationId?: unknown }).paperclipInvocationId,
+      (notification as { wardmoteInvocationId?: unknown }).wardmoteInvocationId,
     );
     const params = isRecord(notification.params) ? notification.params : {};
     const stream = params.stream;
@@ -2700,7 +2700,7 @@ export function createPluginWorkerHandle(
 
   function contextForWorkerMessage(message: JsonRpcRequest | JsonRpcNotification): WorkerHostCallContext {
     const invocationId = readNonEmptyString(
-      (message as { paperclipInvocationId?: unknown }).paperclipInvocationId,
+      (message as { wardmoteInvocationId?: unknown }).wardmoteInvocationId,
     );
     if (!invocationId) {
       // No host-issued invocation is being echoed. This is a genuinely
@@ -3426,7 +3426,7 @@ export function createPluginWorkerHandle(
       try {
         const request = {
           ...createRequest(method, params, id),
-          ...(invocation ? { paperclipInvocation: invocation } : {}),
+          ...(invocation ? { wardmoteInvocation: invocation } : {}),
         };
         sendMessage(request);
       } catch (err) {
@@ -3568,7 +3568,7 @@ export function createPluginWorkerHandle(
           jsonrpc: JSONRPC_VERSION,
           method,
           params,
-          ...(invocation ? { paperclipInvocation: invocation } : {}),
+          ...(invocation ? { wardmoteInvocation: invocation } : {}),
         });
       } catch {
         clearInvocation(invocation);

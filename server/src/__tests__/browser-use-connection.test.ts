@@ -366,8 +366,8 @@ const actor = { actorType: "user" as const, actorId: "browser-reviewer" };
         { key: "tickernelz/wardmote/browser-use-cloud", runtimeName: "browser-use-cloud", source: "/unassigned-cloud-skill" },
         { key: "custom/browser-use", runtimeName: "browser-use", source: "/another-browser-skill" },
       ], []);
-      expect(unassigned.paperclipRuntimeSkills).toEqual([{ key: "custom/browser-use", runtimeName: "browser-use", source: "/another-browser-skill" }]);
-      expect(unassigned.paperclipConnectorSkillDigest).toBeNull();
+      expect(unassigned.wardmoteRuntimeSkills).toEqual([{ key: "custom/browser-use", runtimeName: "browser-use", source: "/another-browser-skill" }]);
+      expect(unassigned.wardmoteConnectorSkillDigest).toBeNull();
       expect(base.wardmoteSkillSync.desiredSkills).toHaveLength(2);
     });
     it("delivers the Cloud skill only with authorized connection tools in a task run", async () => {
@@ -385,7 +385,7 @@ const actor = { actorType: "user" as const, actorId: "browser-reviewer" };
       const assignments = await resolveConnectorAssignments(db, f.binding);
       expect(assignments).toMatchObject([{ key: "browser-use-cloud", skillKey: "tickernelz/wardmote/browser-use-cloud", resources: [{ connectionId: f.connection.connectionId }] }]);
       const config = await applyConnectorSkills({}, [], assignments);
-      const skill = config.paperclipRuntimeSkills[0];
+      const skill = config.wardmoteRuntimeSkills[0];
       expect(skill.runtimeName).toBe("browser-use-cloud");
       const markdown = await readFile(path.join(skill.source, "SKILL.md"), "utf8");
       expect(markdown).toContain("name: browser-use-cloud");
@@ -393,16 +393,16 @@ const actor = { actorType: "user" as const, actorId: "browser-reviewer" };
       expect(markdown).toContain(f.connection.connectionId);
       expect(markdown).not.toContain("bu_fixture_secret");
       const delivery = await prepareConnectorSkillDelivery({ ...config, engine: "cli" }, "wardmote_runner");
-      expect(delivery.config.paperclipRuntimeSkills).toEqual([skill]);
+      expect(delivery.config.wardmoteRuntimeSkills).toEqual([skill]);
       const sharedHome = await prepareConnectorSkillDelivery(config, "omp_local");
-      expect(sharedHome.config.paperclipRuntimeSkills).toEqual([]);
+      expect(sharedHome.config.wardmoteRuntimeSkills).toEqual([]);
       expect(sharedHome.instructions).toContain("name: browser-use-cloud");
-      expect(sharedHome.config.paperclipConnectorSkillDigest).toBe(config.paperclipConnectorSkillDigest);
+      expect(sharedHome.config.wardmoteConnectorSkillDigest).toBe(config.wardmoteConnectorSkillDigest);
       await db.update(connectionGrants).set({ status: "revoked" }).where(eq(connectionGrants.id, f.grant.id));
       expect(await resolveConnectorAssignments(db, f.binding)).toEqual([]);
-      const revoked = await applyConnectorSkills(config, config.paperclipRuntimeSkills, []);
-      expect(revoked.paperclipRuntimeSkills).toEqual([]);
-      expect(revoked.paperclipConnectorSkillDigest).toBeNull();
+      const revoked = await applyConnectorSkills(config, config.wardmoteRuntimeSkills, []);
+      expect(revoked.wardmoteRuntimeSkills).toEqual([]);
+      expect(revoked.wardmoteConnectorSkillDigest).toBeNull();
       expect((await prepareConnectorSkillDelivery(revoked, "omp_local")).instructions).toBe("");
     });
     it("withholds Cloud instructions when connection tools are disabled", async () => {

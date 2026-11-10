@@ -153,11 +153,11 @@ describe("native workspace sync durable metadata", () => {
   });
 
   it.each(["corrupt", "symlink", "foreign"] as const)("persists compact v2 manifests and rejects %s recovery storage", async (tamper) => {
-    const paperclipHome = await mkdtemp(path.join(os.tmpdir(), "paperclip-native-manifest-"));
-    cleanupDirs.push(paperclipHome);
-    process.env.WARDMOTE_HOME = paperclipHome;
+    const wardmoteHome = await mkdtemp(path.join(os.tmpdir(), "paperclip-native-manifest-"));
+    cleanupDirs.push(wardmoteHome);
+    process.env.WARDMOTE_HOME = wardmoteHome;
     process.env.WARDMOTE_INSTANCE_ID = "manifest-test";
-    const workspace = path.join(paperclipHome, "workspace");
+    const workspace = path.join(wardmoteHome, "workspace");
     await mkdir(workspace);
     await writeFile(path.join(workspace, "private-filename-雪"), "baseline");
     const baseline = await captureDirectorySnapshot(workspace, { diskBacked: true });
@@ -188,12 +188,12 @@ describe("native workspace sync durable metadata", () => {
     if (tamper === "corrupt") {
       await appendFile(serialized.entries.filePath, "corrupt");
     } else if (tamper === "symlink") {
-      const copy = path.join(paperclipHome, "copied.sqlite");
+      const copy = path.join(wardmoteHome, "copied.sqlite");
       await writeFile(copy, await readFile(serialized.entries.filePath));
       await rm(serialized.entries.filePath);
       await symlink(copy, serialized.entries.filePath);
     } else {
-      descriptor.baseline.entries.filePath = path.join(paperclipHome, "foreign.sqlite");
+      descriptor.baseline.entries.filePath = path.join(wardmoteHome, "foreign.sqlite");
       reference = await nativeWorkspaceSyncInternals.writeDescriptor(descriptor);
     }
     await expect(nativeWorkspaceSyncInternals.readDescriptor({ runId, reference })).rejects.toThrow();
@@ -202,11 +202,11 @@ describe("native workspace sync durable metadata", () => {
   });
 
   it.each([false, true])("writes one immutable descriptor when the same state is replayed (multiple repositories: %s)", async (multipleRepositories) => {
-    const paperclipHome = await mkdtemp(
+    const wardmoteHome = await mkdtemp(
       path.join(os.tmpdir(), "paperclip-native-workspace-sync-"),
     );
-    cleanupDirs.push(paperclipHome);
-    process.env.WARDMOTE_HOME = paperclipHome;
+    cleanupDirs.push(wardmoteHome);
+    process.env.WARDMOTE_HOME = wardmoteHome;
     process.env.WARDMOTE_INSTANCE_ID = "descriptor-test";
     const baseline = {
       exclude: [".paperclip-runtime"],
@@ -225,7 +225,7 @@ describe("native workspace sync durable metadata", () => {
         workspaceId: "workspace-1",
         leaseId: "lease-1",
         providerLeaseId: "sandbox-1",
-        localCwd: path.join(paperclipHome, "workspace"),
+        localCwd: path.join(wardmoteHome, "workspace"),
         remoteCwd: "/workspace",
       },
       state: "prepared" as const,
@@ -270,11 +270,11 @@ describe("native workspace sync durable metadata", () => {
   });
 
   it("repairs finalized remote and lease stamps after an interrupted commit", async () => {
-    const paperclipHome = await mkdtemp(
+    const wardmoteHome = await mkdtemp(
       path.join(os.tmpdir(), "paperclip-native-workspace-sync-repair-"),
     );
-    cleanupDirs.push(paperclipHome);
-    process.env.WARDMOTE_HOME = paperclipHome;
+    cleanupDirs.push(wardmoteHome);
+    process.env.WARDMOTE_HOME = wardmoteHome;
     process.env.WARDMOTE_INSTANCE_ID = "descriptor-repair-test";
     const baseline = {
       exclude: [".paperclip-runtime"],
@@ -294,7 +294,7 @@ describe("native workspace sync durable metadata", () => {
         workspaceId: "workspace-1",
         leaseId: "lease-1",
         providerLeaseId: "sandbox-1",
-        localCwd: path.join(paperclipHome, "workspace"),
+        localCwd: path.join(wardmoteHome, "workspace"),
         remoteCwd: "/workspace",
       },
       state: "finalized" as const,

@@ -45,7 +45,7 @@ import {
   storybookSecretProviders,
   storybookSecrets,
   storybookSidebarBadges,
-} from "../fixtures/paperclipData";
+} from "../fixtures/wardmoteData";
 import timelineSample from "../fixtures/workTimeline.human.sample.json";
 import "@mdxeditor/editor/style.css";
 import "./tailwind-entry.css";

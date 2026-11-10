@@ -2754,7 +2754,7 @@ async function queueResolvedInteractionContinuationWakeup(input: {
         ...(secretProposal ? { secretProposal } : {}),
         ...(itemVerdicts ? { itemVerdicts, newlyResolvedItemIds } : {}),
         ...(rejectionAgentMessage
-          ? { paperclipAgentMessage: rejectionAgentMessage }
+          ? { wardmoteAgentMessage: rejectionAgentMessage }
           : {}),
         ...(reviewPathContext ?? {}),
         mutation: "interaction",
@@ -2780,7 +2780,7 @@ async function queueResolvedInteractionContinuationWakeup(input: {
         ...(secretProposal ? { secretProposal } : {}),
         ...(itemVerdicts ? { itemVerdicts, newlyResolvedItemIds } : {}),
         ...(rejectionAgentMessage
-          ? { paperclipAgentMessage: rejectionAgentMessage }
+          ? { wardmoteAgentMessage: rejectionAgentMessage }
           : {}),
         ...(reviewPathContext ?? {}),
         wakeReason: "issue_commented",
@@ -3894,13 +3894,13 @@ export function issueRoutes(
         : null;
     if (!context || !readNonEmptyString(context.executionWorkspaceId))
       return null;
-    const paperclipIssue =
-      context.paperclipIssue && typeof context.paperclipIssue === "object"
-        ? (context.paperclipIssue as Record<string, unknown>)
+    const wardmoteIssue =
+      context.wardmoteIssue && typeof context.wardmoteIssue === "object"
+        ? (context.wardmoteIssue as Record<string, unknown>)
         : null;
     return (
       readNonEmptyString(context.issueId) ??
-      readNonEmptyString(paperclipIssue?.id)
+      readNonEmptyString(wardmoteIssue?.id)
     );
   }
 
@@ -3934,14 +3934,14 @@ export function issueRoutes(
       run.contextSnapshot && typeof run.contextSnapshot === "object"
         ? (run.contextSnapshot as Record<string, unknown>)
         : null;
-    const paperclipIssue =
-      context?.paperclipIssue && typeof context.paperclipIssue === "object"
-        ? (context.paperclipIssue as Record<string, unknown>)
+    const wardmoteIssue =
+      context?.wardmoteIssue && typeof context.wardmoteIssue === "object"
+        ? (context.wardmoteIssue as Record<string, unknown>)
         : null;
     const workingIssueId =
       readNonEmptyString(context?.issueId) ??
       readNonEmptyString(context?.taskId) ??
-      readNonEmptyString(paperclipIssue?.id);
+      readNonEmptyString(wardmoteIssue?.id);
     if (
       !workingIssueId ||
       !isUuidLike(workingIssueId) ||
@@ -7113,13 +7113,13 @@ export function issueRoutes(
     if (!run) return null;
 
     const context = readObject(run.contextSnapshot);
-    const paperclipWake = readObject(context.paperclipWake);
-    const recovery = readObject(paperclipWake.recovery);
+    const wardmoteWake = readObject(context.wardmoteWake);
+    const recovery = readObject(wardmoteWake.recovery);
     const wakeReason =
       typeof context.wakeReason === "string"
         ? context.wakeReason
-        : typeof paperclipWake.reason === "string"
-          ? paperclipWake.reason
+        : typeof wardmoteWake.reason === "string"
+          ? wardmoteWake.reason
           : null;
     if (wakeReason !== "source_scoped_recovery_action") return null;
 

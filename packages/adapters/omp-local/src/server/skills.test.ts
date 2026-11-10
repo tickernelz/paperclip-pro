@@ -39,7 +39,7 @@ describe("ensureOmpSkills", () => {
 
     await ensureOmpSkills(
       {
-        paperclipRuntimeSkills: [...SKILLS, "notes"].map((skill) => ({
+        wardmoteRuntimeSkills: [...SKILLS, "notes"].map((skill) => ({
           key: `tickernelz/wardmote/${skill}`,
           runtimeName: skill,
           source: skill === "notes" ? path.join(root, "bundled-notes") : bundled(root, "new", skill),
@@ -67,7 +67,7 @@ describe("ensureOmpSkills", () => {
 
     await ensureOmpSkills(
       {
-        paperclipRuntimeSkills: SKILLS.map((skill) => ({
+        wardmoteRuntimeSkills: SKILLS.map((skill) => ({
           key: `tickernelz/wardmote/${skill}`,
           runtimeName: skill,
           source: bundled(root, "new", skill),
@@ -91,7 +91,7 @@ describe("ensureOmpSkills", () => {
 
     await ensureOmpSkills(
       {
-        paperclipRuntimeSkills: SKILLS.map((skill) => ({
+        wardmoteRuntimeSkills: SKILLS.map((skill) => ({
           key: `tickernelz/wardmote/${skill}`,
           runtimeName: skill,
           source: bundled(root, "new", skill),

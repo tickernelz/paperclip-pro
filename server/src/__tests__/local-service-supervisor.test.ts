@@ -25,10 +25,10 @@ describe("local service supervision", () => {
 
   it("keeps request-logging runtime stdio usable after the supervisor side closes", async () => {
     const workspaceRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-service-stdio-"));
-    const paperclipHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-service-home-"));
+    const wardmoteHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-service-home-"));
     const previousWardmoteHome = process.env.WARDMOTE_HOME;
     const previousInstanceId = process.env.WARDMOTE_INSTANCE_ID;
-    process.env.WARDMOTE_HOME = paperclipHome;
+    process.env.WARDMOTE_HOME = wardmoteHome;
     process.env.WARDMOTE_INSTANCE_ID = `service-stdio-${randomUUID()}`;
 
     // The managed service uses a login shell, whose PATH can select a different
@@ -101,7 +101,7 @@ describe("local service supervision", () => {
       else process.env.WARDMOTE_HOME = previousWardmoteHome;
       if (previousInstanceId === undefined) delete process.env.WARDMOTE_INSTANCE_ID;
       else process.env.WARDMOTE_INSTANCE_ID = previousInstanceId;
-      await fs.rm(paperclipHome, { recursive: true, force: true });
+      await fs.rm(wardmoteHome, { recursive: true, force: true });
       await fs.rm(workspaceRoot, { recursive: true, force: true });
     }
   }, 15_000);

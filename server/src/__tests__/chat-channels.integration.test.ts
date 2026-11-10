@@ -1751,7 +1751,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     );
     if (overrides.linkedBoardUser) {
       const [principal] = await db.insert(chatExternalPrincipals).values({ companyId: fixture.companyId, provider: "slack", providerAccountId: "T-PAPERCLIP", externalId: "UBOARD" }).returning();
-      await db.insert(chatIdentityLinks).values({ companyId: fixture.companyId, endpointId: endpoint.id, principalId: principal.id, paperclipUserId: "owner-user", status: "linked", confirmedAt: new Date() });
+      await db.insert(chatIdentityLinks).values({ companyId: fixture.companyId, endpointId: endpoint.id, principalId: principal.id, wardmoteUserId: "owner-user", status: "linked", confirmedAt: new Date() });
     }
     await recordSlackUrlVerification(context.service, endpoint.publicId);
     await context.service.configure(
@@ -2315,7 +2315,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         companyId: fixture.companyId,
         endpointId: endpoint.id,
         principalId: principal.id,
-        paperclipUserId: "owner-user",
+        wardmoteUserId: "owner-user",
         status: "linked",
         confirmedAt: new Date(),
       });
@@ -5719,8 +5719,8 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       expect(saved.setup.step).toBe("provider_setup");
       expect(saved.setup.webhookVerifiedAt).toBeNull();
       expect(saved.providerAccountId).toBe("TAUTO");
-      expect(saved.setup.slackAccount).toEqual({ externalUserId: f.installerId, paperclipUserId: actor.userId, status: "linked", welcomeStatus: "sent", dmChannelId: "DWELCOME" });
-      expect(await f.service.listPrincipals(f.endpoint.id)).toEqual([expect.objectContaining({ status: "linked", paperclipUserId: actor.userId })]);
+      expect(saved.setup.slackAccount).toEqual({ externalUserId: f.installerId, wardmoteUserId: actor.userId, status: "linked", welcomeStatus: "sent", dmChannelId: "DWELCOME" });
+      expect(await f.service.listPrincipals(f.endpoint.id)).toEqual([expect.objectContaining({ status: "linked", wardmoteUserId: actor.userId })]);
       const [, welcome] = f.provider.mock.calls.find(([url]) => String(url).endsWith("chat.postMessage"))!;
       expect(new URLSearchParams(String(welcome!.body)).get("channel")).toBe(f.installerId);
       expect(new URLSearchParams(String(welcome!.body)).get("text")).toMatch(/^Hi, I’m .+\. Your Slack account is connected to Paperclip\.$/);
@@ -5955,10 +5955,10 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     it.each(["other-user", "revoked"])("preserves an existing %s account link without a welcome DM", async existing => {
       const f = await fixture(); await f.create();
       const [principal] = await db.insert(chatExternalPrincipals).values({ companyId: f.companyId, provider: "slack", providerAccountId: "TAUTO", externalId: f.installerId, kind: "user" }).returning();
-      const [link] = await db.insert(chatIdentityLinks).values({ companyId: f.companyId, endpointId: f.endpoint.id, principalId: principal.id, paperclipUserId: existing === "revoked" ? actor.userId : "another-user", status: existing === "revoked" ? "revoked" : "linked" }).returning();
+      const [link] = await db.insert(chatIdentityLinks).values({ companyId: f.companyId, endpointId: f.endpoint.id, principalId: principal.id, wardmoteUserId: existing === "revoked" ? actor.userId : "another-user", status: existing === "revoked" ? "revoked" : "linked" }).returning();
       await f.service.slackRegistration.complete(await f.install(), "code", null, actor);
       expect((await f.service.get(f.endpoint.id)).setup.slackRegistration?.errorCode).toBe("slack_install_account_conflict");
-      expect((await db.select().from(chatIdentityLinks).where(eq(chatIdentityLinks.id, link.id)))[0]).toMatchObject({ status: link.status, paperclipUserId: link.paperclipUserId });
+      expect((await db.select().from(chatIdentityLinks).where(eq(chatIdentityLinks.id, link.id)))[0]).toMatchObject({ status: link.status, wardmoteUserId: link.wardmoteUserId });
       expect(f.provider.mock.calls.filter(([url]) => String(url).endsWith("chat.postMessage"))).toHaveLength(0);
     });
     it("does not link or welcome an installer after company membership is revoked during lookup", async () => {
@@ -6207,7 +6207,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     if (channelProvider === "github") {
       const current = await service.get(endpoint.id);
       const [principal] = await db.insert(chatExternalPrincipals).values({ companyId: fixture.companyId, provider: "github", providerAccountId: current.providerAccountId!, externalId: "42", kind: "user", displayName: "Octocat", handle: "octocat", isBot: false }).returning();
-      await db.insert(chatIdentityLinks).values({ companyId: fixture.companyId, endpointId: endpoint.id, principalId: principal.id, paperclipUserId: "owner-user", status: "linked", confirmedAt: new Date() });
+      await db.insert(chatIdentityLinks).values({ companyId: fixture.companyId, endpointId: endpoint.id, principalId: principal.id, wardmoteUserId: "owner-user", status: "linked", confirmedAt: new Date() });
     }
     const binding = await aiConnectionService(db).save(fixture.companyId, "owner-user", { provider: "openrouter", method: "api_key", name: "Fast test", ownership: "shared", apiKey: "fixture-key", agentIds: [], allAgents: true }, "fixture-key");
     const provider = vi.fn(async () => ({ text: "I’ll check the border styling.", receipt: fastResponseReceipt({ usage: { inputTokens: 80, outputTokens: 8 }, response: { body: { usage: { cost: 0.00001 } } } }) }));
@@ -6249,7 +6249,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     runtime.endpoints.get(endpoint.id)!.posts.length = 0;
     wakeup.mockClear();
     const [boardPrincipal] = await db.insert(chatExternalPrincipals).values({ companyId: fixture.companyId, provider: "slack", providerAccountId: "T-PAPERCLIP", externalId: "UBOARD" }).returning();
-    await db.insert(chatIdentityLinks).values({ companyId: fixture.companyId, endpointId: endpoint.id, principalId: boardPrincipal.id, paperclipUserId: "owner-user", status: "linked", confirmedAt: new Date() });
+    await db.insert(chatIdentityLinks).values({ companyId: fixture.companyId, endpointId: endpoint.id, principalId: boardPrincipal.id, wardmoteUserId: "owner-user", status: "linked", confirmedAt: new Date() });
     const clientRequestId = randomUUID();
     const comment = await issueService(db).addComment(conversation.issueId, "Please make the plan", { userId: "owner-user" },
       { authorType: "user", mirrorToSlack: true, clientRequestId });
@@ -6321,7 +6321,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     await expect(issueService(db).addComment(conversation.issueId, "Unlinked Board message", { userId: "owner-user" },
       { authorType: "user", mirrorToSlack: true })).rejects.toMatchObject({ status: 403 });
     const [principal] = await db.insert(chatExternalPrincipals).values({ companyId: fixture.companyId, provider: "slack", providerAccountId: "T-PAPERCLIP", externalId: "UBOARD" }).returning();
-    const [link] = await db.insert(chatIdentityLinks).values({ companyId: fixture.companyId, endpointId: endpoint.id, principalId: principal.id, paperclipUserId: "owner-user", status: "linked", confirmedAt: new Date() }).returning();
+    const [link] = await db.insert(chatIdentityLinks).values({ companyId: fixture.companyId, endpointId: endpoint.id, principalId: principal.id, wardmoteUserId: "owner-user", status: "linked", confirmedAt: new Date() }).returning();
     const comment = await issueService(db).addComment(conversation.issueId, "Queued before access changed", { userId: "owner-user" }, { authorType: "user", mirrorToSlack: true });
     const runId = randomUUID();
     await db.insert(heartbeatRuns).values({ id: runId, companyId: fixture.companyId, agentId: fixture.assignedAgentId, status: "running", responsibleUserId: "owner-user", contextSnapshot: { issueId: conversation.issueId, source: "issue.comment", wakeCommentId: comment.id } });
@@ -6337,7 +6337,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       await db.update(chatIdentityLinks).set({ status: "revoked", revokedAt: new Date() }).where(eq(chatIdentityLinks.id, link.id));
       if (change === "relinked") {
         const [other] = await db.insert(chatExternalPrincipals).values({ companyId: fixture.companyId, provider: "slack", providerAccountId: "T-PAPERCLIP", externalId: "UOTHER" }).returning();
-        await db.insert(chatIdentityLinks).values({ companyId: fixture.companyId, endpointId: endpoint.id, principalId: other.id, paperclipUserId: "owner-user", status: "linked", confirmedAt: new Date() });
+        await db.insert(chatIdentityLinks).values({ companyId: fixture.companyId, endpointId: endpoint.id, principalId: other.id, wardmoteUserId: "owner-user", status: "linked", confirmedAt: new Date() });
       }
       const { slackBoardReplyBindings } = await import("../services/slack-board-messages.js");
       expect(await slackBoardReplyBindings(db, { companyId: fixture.companyId, issueId: conversation.issueId, agentId: fixture.assignedAgentId, userId: "owner-user", commentIds: [comment.id] })).toEqual([]);
@@ -6363,7 +6363,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     await db.update(chatEndpoints).set({ status: "active" }).where(eq(chatEndpoints.id, endpoint.id));
     const [conversation] = await service.listConversations(endpoint.id);
     const [principal] = await db.insert(chatExternalPrincipals).values({ companyId: fixture.companyId, provider: "slack", providerAccountId: "T-PAPERCLIP", externalId: "UBOARD" }).returning();
-    await db.insert(chatIdentityLinks).values({ companyId: fixture.companyId, endpointId: endpoint.id, principalId: principal.id, paperclipUserId: "owner-user", status: "linked", confirmedAt: new Date() });
+    await db.insert(chatIdentityLinks).values({ companyId: fixture.companyId, endpointId: endpoint.id, principalId: principal.id, wardmoteUserId: "owner-user", status: "linked", confirmedAt: new Date() });
     runtime.endpoints.get(endpoint.id)!.posts.length = 0;
     wakeup.mockClear();
     wakeup.mockRejectedValueOnce(new Error("scheduler unavailable"));
@@ -6488,7 +6488,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     const { endpoint, service } = await configuredSlackEndpoint(fixture, { allowUnlinkedPeople: false });
     await db.update(chatEndpoints).set({ status: "active" }).where(eq(chatEndpoints.id, endpoint.id));
     const [principal] = await db.insert(chatExternalPrincipals).values({ companyId: fixture.companyId, provider: "slack", providerAccountId: "T-PAPERCLIP", externalId: "UROUTINE" }).returning();
-    await db.insert(chatIdentityLinks).values({ companyId: fixture.companyId, endpointId: endpoint.id, principalId: principal.id, paperclipUserId: "owner-user", status: "linked", confirmedAt: new Date() });
+    await db.insert(chatIdentityLinks).values({ companyId: fixture.companyId, endpointId: endpoint.id, principalId: principal.id, wardmoteUserId: "owner-user", status: "linked", confirmedAt: new Date() });
     const [issue] = await db.insert(issues).values({ companyId: fixture.companyId, title: "10am daily briefing", status: "todo", assigneeAgentId: fixture.assignedAgentId, responsibleUserId: "owner-user" }).returning();
     const runId = randomUUID();
     await db.insert(heartbeatRuns).values({ id: runId, companyId: fixture.companyId, agentId: fixture.assignedAgentId, status: "running", responsibleUserId: "owner-user", contextSnapshot: { issueId: issue.id, source: "routine" } });
@@ -6547,7 +6547,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     const fixture = await seedCompany();
     const { callbacks, endpoint, service } = await configuredSlackEndpoint(fixture, { allowUnlinkedPeople: false });
     const [principal] = await db.insert(chatExternalPrincipals).values({ companyId: fixture.companyId, provider: "slack", providerAccountId: "T-PAPERCLIP", externalId: "UTOOLS" }).returning();
-    await db.insert(chatIdentityLinks).values({ companyId: fixture.companyId, endpointId: endpoint.id, principalId: principal.id, paperclipUserId: "owner-user", status: "linked", confirmedAt: new Date() });
+    await db.insert(chatIdentityLinks).values({ companyId: fixture.companyId, endpointId: endpoint.id, principalId: principal.id, wardmoteUserId: "owner-user", status: "linked", confirmedAt: new Date() });
     const thread = makeThread({ channelId: "slack:CTOOLS", id: "slack:CTOOLS:7100.1", name: "tools" });
     await deliverMessage({ callbacks, endpointId: endpoint.id, thread: thread.thread, message: makeMessage({ id: "7100.1", text: "@maya read this channel", mentioned: true, userId: "UTOOLS" }), trigger: "mention" });
     const [conversation] = await db.select().from(chatConversations).where(eq(chatConversations.endpointId, endpoint.id));
@@ -20254,7 +20254,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
           contextSnapshot: {
             ...context,
             endpointId: f.endpoint.id,
-            paperclipHarnessCheckedOut: true,
+            wardmoteHarnessCheckedOut: true,
           },
         });
       await db
@@ -20929,7 +20929,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         companyId: fixture.companyId,
         endpointId: endpoint.id,
         principalId: principal.id,
-        paperclipUserId: "owner-user",
+        wardmoteUserId: "owner-user",
         status: "linked",
         confirmedAt: new Date(),
       });
@@ -20958,7 +20958,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         await db
           .update(chatIdentityLinks)
           .set({
-            paperclipUserId: null,
+            wardmoteUserId: null,
             status: "revoked",
             revokedAt: new Date(),
             updatedAt: new Date(),
@@ -25827,7 +25827,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         companyId: fixture.companyId,
         endpointId: endpoint.id,
         principalId: principal.id,
-        paperclipUserId: "owner-user",
+        wardmoteUserId: "owner-user",
         status: "linked",
         confirmedAt: new Date(),
       });
@@ -27766,7 +27766,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
           providerMessageId,
         })),
         externalChatContinuation: true,
-        paperclipWake: { externalInteractionContinuation: true },
+        wardmoteWake: { externalInteractionContinuation: true },
       },
     });
 
@@ -28032,7 +28032,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         companyId: fixture.companyId,
         endpointId: endpoint.id,
         principalId: principal!.id,
-        paperclipUserId: "owner-user",
+        wardmoteUserId: "owner-user",
         status: "linked",
         confirmedAt: new Date(),
       });
@@ -28078,9 +28078,9 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         .then((rows) => rows.find((row) => row.status === "succeeded"));
       expect(firstRun).toBeDefined();
       const firstAdapterInput = execute.mock.calls[0]?.[0] as
-        { context?: { paperclipWake?: unknown } } | undefined;
+        { context?: { wardmoteWake?: unknown } } | undefined;
       expect(
-        isWardmoteExternalChatTurn(firstAdapterInput?.context?.paperclipWake),
+        isWardmoteExternalChatTurn(firstAdapterInput?.context?.wardmoteWake),
       ).toBe(true);
       const [firstInboundLink] = await db
         .select({ commentId: chatMessageLinks.commentId })
@@ -28095,7 +28095,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       const trustedWakeContext = {
         source: "chat:slack",
         wakeCommentIds: [firstInboundLink!.commentId!],
-        paperclipHarnessCheckedOut: true,
+        wardmoteHarnessCheckedOut: true,
       };
       await expect(
         resolveExternalChatWakeProvider({
@@ -28177,7 +28177,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
           issueId: conversation!.issueId,
           contextSnapshot: {
             ...trustedWakeContext,
-            paperclipHarnessCheckedOut: false,
+            wardmoteHarnessCheckedOut: false,
           },
         }),
       ).resolves.toBeNull();
@@ -28283,9 +28283,9 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       const secondRun = succeededRuns.find((row) => row.id !== firstRun!.id);
       expect(secondRun).toBeDefined();
       const secondAdapterInput = execute.mock.calls[1]?.[0] as
-        { context?: { paperclipWake?: unknown } } | undefined;
+        { context?: { wardmoteWake?: unknown } } | undefined;
       expect(
-        isWardmoteExternalChatTurn(secondAdapterInput?.context?.paperclipWake),
+        isWardmoteExternalChatTurn(secondAdapterInput?.context?.wardmoteWake),
       ).toBe(true);
       const secondFinal = await db
         .select()
@@ -28454,7 +28454,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
           endpointId: endpoint.id,
           principalId: principal.id,
           status: "linked",
-          paperclipUserId: "owner-user",
+          wardmoteUserId: "owner-user",
           confirmedAt: new Date(),
         });
       }
@@ -40779,7 +40779,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       });
       await db
         .update(chatIdentityLinks)
-        .set({ paperclipUserId: relinkedUserId })
+        .set({ wardmoteUserId: relinkedUserId })
         .where(
           and(
             eq(chatIdentityLinks.endpointId, endpoint.id),
@@ -40796,7 +40796,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       ).resolves.toEqual(deniedSubmitResponse);
       await db
         .update(chatIdentityLinks)
-        .set({ paperclipUserId: linkedUserId })
+        .set({ wardmoteUserId: linkedUserId })
         .where(
           and(
             eq(chatIdentityLinks.endpointId, endpoint.id),
@@ -50073,7 +50073,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
             contextSnapshot: {
               ...context,
               endpointId: f.endpoint.id,
-              paperclipHarnessCheckedOut: true,
+              wardmoteHarnessCheckedOut: true,
             },
           });
           if (admitted) {
@@ -50398,7 +50398,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
               contextSnapshot: {
                 ...parent.context,
                 endpointId: f.endpoint.id,
-                paperclipHarnessCheckedOut: true,
+                wardmoteHarnessCheckedOut: true,
               },
             });
             await db
@@ -50444,7 +50444,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
               contextSnapshot: {
                 ...f.fresh.context,
                 endpointId: f.endpoint.id,
-                paperclipHarnessCheckedOut: true,
+                wardmoteHarnessCheckedOut: true,
                 wakeCommentIds: [
                   f.old.context.wakeCommentId,
                   f.fresh.context.wakeCommentId,
@@ -50509,7 +50509,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
               contextSnapshot: {
                 ...f.fresh.context,
                 endpointId: f.endpoint.id,
-                paperclipHarnessCheckedOut: true,
+                wardmoteHarnessCheckedOut: true,
                 wakeCommentIds: [
                   f.fresh.context.wakeCommentId,
                   second.wakeCommentId,
@@ -50870,7 +50870,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     await callbacks.onSlashCommand!(event);
     await vi.waitFor(() => expect(postEphemeral).toHaveBeenCalledTimes(1));
     const [identity] = await service.listPrincipals(endpoint.id);
-    expect(identity).toMatchObject({ externalLabel: "Connect Person", status: "pending", paperclipUserId: null, lastConnectAt: expect.any(String) });
+    expect(identity).toMatchObject({ externalLabel: "Connect Person", status: "pending", wardmoteUserId: null, lastConnectAt: expect.any(String) });
     expect(await service.listConversations(endpoint.id)).toHaveLength(0);
     expect(wakeup).not.toHaveBeenCalled();
     expect(post).not.toHaveBeenCalled();
@@ -50907,7 +50907,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     providerRuntime.thread = (id: string) => ({ ...originalThread(id), postEphemeral: confirmationNotice });
     await service.confirmIdentityLink(token, "owner-user");
     await vi.waitFor(() => expect(confirmationNotice).toHaveBeenCalledWith("U-CONNECT", expect.stringContaining("account is connected"), { fallbackToDM: false }));
-    expect((await service.listPrincipals(endpoint.id))[0]).toMatchObject({ status: "linked", paperclipUserId: "owner-user" });
+    expect((await service.listPrincipals(endpoint.id))[0]).toMatchObject({ status: "linked", wardmoteUserId: "owner-user" });
     await expect(service.test(endpoint.id)).rejects.toMatchObject({ details: { code: "chat_test_follow_up_missing" } });
     await expect(service.confirmIdentityLink(token, "owner-user")).rejects.toMatchObject({ status: 422 });
     await request(outsideApp).post("/api/chat-identity-links/request-access").send({ token }).expect(422);
@@ -51812,7 +51812,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         companyId: fixture.companyId,
         endpointId: endpoint.id,
         principalId: principal!.id,
-        paperclipUserId: "owner-user",
+        wardmoteUserId: "owner-user",
         status: "linked",
         confirmedAt: new Date(),
       });
@@ -51846,7 +51846,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         await db
           .update(chatIdentityLinks)
           .set({
-            paperclipUserId: null,
+            wardmoteUserId: null,
             status: "revoked",
             revokedAt: new Date(),
             updatedAt: new Date(),
@@ -54958,8 +54958,8 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
           nativeIssueId: conversation.issueId,
           contextSnapshot: {
             ...contextSnapshot,
-            paperclipHarnessCheckedOut: true,
-            paperclipWake: {
+            wardmoteHarnessCheckedOut: true,
+            wardmoteWake: {
               checkedOutByHarness: true,
               externalChatProvider: "discord",
               issue: { id: conversation.issueId, workMode: "standard" },
@@ -55468,7 +55468,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       companyId: input.companyId,
       endpointId: input.endpointId,
       principalId: principal.id,
-      paperclipUserId: "owner-user",
+      wardmoteUserId: "owner-user",
       status: "linked",
       confirmedAt: new Date(),
     });
@@ -55588,8 +55588,8 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
             provider: "slack",
             providerMessageId: original.id,
           })),
-          paperclipHarnessCheckedOut: true,
-          paperclipWake: {
+          wardmoteHarnessCheckedOut: true,
+          wardmoteWake: {
             reason: "External chat message received",
             externalChatProvider: "slack",
             checkedOutByHarness: true,
@@ -55650,7 +55650,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
             .update(chatIdentityLinks)
             .set({
               status: "revoked",
-              paperclipUserId: null,
+              wardmoteUserId: null,
               revokedAt: new Date(),
               updatedAt: new Date(),
             })
@@ -55739,7 +55739,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
             .update(chatIdentityLinks)
             .set({
               status: "linked",
-              paperclipUserId: "owner-user",
+              wardmoteUserId: "owner-user",
               revokedAt: null,
               confirmedAt: new Date(),
               updatedAt: new Date(),
@@ -55891,7 +55891,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
             .update(chatIdentityLinks)
             .set({
               status: "revoked",
-              paperclipUserId: null,
+              wardmoteUserId: null,
               revokedAt: new Date(),
               updatedAt: new Date(),
             })
@@ -55940,7 +55940,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
             .update(chatIdentityLinks)
             .set({
               status: "linked",
-              paperclipUserId: "owner-user",
+              wardmoteUserId: "owner-user",
               revokedAt: null,
               confirmedAt: new Date(),
               updatedAt: new Date(),
@@ -57745,7 +57745,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       companyId: fixture.companyId,
       endpointId: endpoint.id,
       principalId: principal.id,
-      paperclipUserId: linkedUserId,
+      wardmoteUserId: linkedUserId,
       status: "linked",
       confirmedAt: now,
     });
@@ -57757,7 +57757,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     await db
       .update(chatIdentityLinks)
       .set({
-        paperclipUserId: null,
+        wardmoteUserId: null,
         status: "revoked",
         revokedAt: new Date(),
         updatedAt: new Date(),
@@ -59560,14 +59560,14 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
               endpointId: context.endpoint.id,
               principalId: context.action.principalId!,
               status: "linked",
-              paperclipUserId: "owner-user",
+              wardmoteUserId: "owner-user",
             })
             .onConflictDoUpdate({
               target: [
                 chatIdentityLinks.endpointId,
                 chatIdentityLinks.principalId,
               ],
-              set: { status: "linked", paperclipUserId: "owner-user" },
+              set: { status: "linked", wardmoteUserId: "owner-user" },
             });
         if (change === "reassigned")
           await db
@@ -67759,14 +67759,14 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         companyId: fixture.companyId,
         endpointId: endpoint.id,
         principalId: inbound.principalId,
-        paperclipUserId: "owner-user",
+        wardmoteUserId: "owner-user",
         status: "linked",
         confirmedAt: new Date(),
       })
       .onConflictDoUpdate({
         target: [chatIdentityLinks.endpointId, chatIdentityLinks.principalId],
         set: {
-          paperclipUserId: "owner-user",
+          wardmoteUserId: "owner-user",
           status: "linked",
           confirmedAt: new Date(),
           revokedAt: null,
@@ -67785,8 +67785,8 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       source: "chat:slack",
       wakeCommentId: inbound.commentId,
       wakeCommentIds: [inbound.commentId],
-      paperclipHarnessCheckedOut: true,
-      paperclipWake: {
+      wardmoteHarnessCheckedOut: true,
+      wardmoteWake: {
         reason: "External chat message received",
         externalChatProvider: "slack",
         checkedOutByHarness: true,
@@ -69085,7 +69085,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         status: "running",
         wakeupRequestId: action!.id,
         startedAt: new Date(),
-        contextSnapshot: { ...snapshot, paperclipHarnessCheckedOut: true },
+        contextSnapshot: { ...snapshot, wardmoteHarnessCheckedOut: true },
       });
       await db
         .update(agentWakeupRequests)
@@ -69901,7 +69901,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         companyId: fixture.companyId,
         endpointId: endpoint.id,
         principalId: principal!.id,
-        paperclipUserId: recipientUserId,
+        wardmoteUserId: recipientUserId,
         status: "linked",
         confirmedAt: new Date(),
       });
@@ -72514,7 +72514,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       try {
         if (provider === "slack") {
           const [principal] = await db.insert(chatExternalPrincipals).values({ companyId: fixture.companyId, provider: "slack", providerAccountId: "T-PAPERCLIP", externalId: "UBOARD" }).returning();
-          await db.insert(chatIdentityLinks).values({ companyId: fixture.companyId, endpointId: context.endpoint.id, principalId: principal.id, paperclipUserId: "owner-user", status: "linked", confirmedAt: new Date() });
+          await db.insert(chatIdentityLinks).values({ companyId: fixture.companyId, endpointId: context.endpoint.id, principalId: principal.id, wardmoteUserId: "owner-user", status: "linked", confirmedAt: new Date() });
         }
         const teamsChannel = `teams:${Buffer.from("19:long-publication@thread.tacv2").toString("base64url")}:${Buffer.from("https://smba.trafficmanager.net/amer/").toString("base64url")}`;
         if (provider === "microsoft-teams") {

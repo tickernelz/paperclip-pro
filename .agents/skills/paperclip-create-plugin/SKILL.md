@@ -97,7 +97,7 @@ Open and confirm:
 - `src/worker.ts` — worker entry
 - `src/ui/index.tsx` — UI entry (if applicable)
 - `tests/plugin.spec.ts` — placeholder test
-- `package.json` — `paperclipPlugin` block points at `dist/manifest.js`, `dist/worker.js`, `dist/ui/`
+- `package.json` — `wardmotePlugin` block points at `dist/manifest.js`, `dist/worker.js`, `dist/ui/`
 
 Make sure the plugin:
 

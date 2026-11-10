@@ -113,7 +113,7 @@ export function githubChatManagementService(db: Db, fetchImpl = fetch) {
           and(
             eq(chatIdentityLinks.companyId, bot.companyId),
             eq(chatIdentityLinks.endpointId, endpointId),
-            eq(chatIdentityLinks.paperclipUserId, person.userId),
+            eq(chatIdentityLinks.wardmoteUserId, person.userId),
             eq(chatIdentityLinks.status, "linked"),
             eq(chatExternalPrincipals.externalId, person.githubUserId),
           ),
@@ -293,7 +293,7 @@ export function githubChatManagementService(db: Db, fetchImpl = fetch) {
           ),
         )
         .for("update");
-      if (prior?.status === "linked" && prior.paperclipUserId !== userId)
+      if (prior?.status === "linked" && prior.wardmoteUserId !== userId)
         throw conflict(
           "This GitHub account is already linked to another Paperclip member",
         );
@@ -317,7 +317,7 @@ export function githubChatManagementService(db: Db, fetchImpl = fetch) {
         companyId: bot.companyId,
         endpointId,
         principalId: principal!.id,
-        paperclipUserId: userId,
+        wardmoteUserId: userId,
         status: "linked" as const,
         confirmedAt: new Date(),
         revokedAt: null,

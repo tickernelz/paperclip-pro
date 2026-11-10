@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { paperclipToolCatalog } from "./catalog.js";
+import { wardmoteToolCatalog } from "./catalog.js";
 import { WardmoteApiClient } from "./client.js";
 import { parseToolsets, resolveToolsets, FULL_TOOLSET, OPENWA_TOOLSET, TOOLSET_NAMES } from "./config.js";
 import type { ToolsetName } from "./tool-overrides.js";
@@ -17,7 +17,7 @@ function makeClient() {
 }
 
 function listingNames(toolsets: ToolsetName[], management = false) {
-  return paperclipToolCatalog(makeClient(), toolsets, management).listing.tools.map(
+  return wardmoteToolCatalog(makeClient(), toolsets, management).listing.tools.map(
     (tool) => tool.name,
   );
 }
@@ -46,7 +46,7 @@ describe("Paperclip MCP toolsets", () => {
     const calls: unknown[] = [];
     const openwaTools = { call: async (input: unknown) => { calls.push(input); return { ok: true }; } };
     const names = (toolsets: ToolsetName[], options = {}) =>
-      paperclipToolCatalog(makeClient(), toolsets, false, options).listing.tools.map((tool) => tool.name);
+      wardmoteToolCatalog(makeClient(), toolsets, false, options).listing.tools.map((tool) => tool.name);
     const openwaNames = ["openwa_send", "openwa_read_chat", "openwa_get_media", "openwa_find", "openwa_stay_silent", "openwa_handoff", "openwa_catalog", "openwa_endpoint_config", "openwa_linked_list", "openwa_linked_read", "openwa_linked_get_media", "openwa_describe", "openwa_call"];
     expect(names(["core", "openwa"], { openwaTools })).toEqual(expect.arrayContaining(openwaNames));
     expect(names(["core", "openwa"]).some((name) => name.startsWith("openwa_"))).toBe(false);
@@ -131,13 +131,13 @@ describe("Paperclip MCP listing annotations", () => {
   const toolsets = parseToolsets(FULL_TOOLSET);
 
   function annotatedEntries(annotations: boolean) {
-    return paperclipToolCatalog(client, toolsets, false, { annotations }).listing.tools.filter(
+    return wardmoteToolCatalog(client, toolsets, false, { annotations }).listing.tools.filter(
       (tool) => "annotations" in tool,
     );
   }
 
   it("omits annotations from the default listing", () => {
-    const listing = paperclipToolCatalog(client, toolsets, false).listing;
+    const listing = wardmoteToolCatalog(client, toolsets, false).listing;
     expect(listing.tools.length).toBeGreaterThan(0);
     expect(listing.tools.filter((tool) => "annotations" in tool)).toEqual([]);
   });
@@ -149,8 +149,8 @@ describe("Paperclip MCP listing annotations", () => {
   });
 
   it("does not let one caller's choice poison the memoized listing for another", () => {
-    const lean = paperclipToolCatalog(client, toolsets, false, { annotations: false }).listing;
-    const annotated = paperclipToolCatalog(client, toolsets, false, { annotations: true }).listing;
+    const lean = wardmoteToolCatalog(client, toolsets, false, { annotations: false }).listing;
+    const annotated = wardmoteToolCatalog(client, toolsets, false, { annotations: true }).listing;
 
     expect(lean.tools.filter((tool) => "annotations" in tool)).toEqual([]);
     expect(annotated.tools.filter((tool) => "annotations" in tool).length).toBeGreaterThan(0);

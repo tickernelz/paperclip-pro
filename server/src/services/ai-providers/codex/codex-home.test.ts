@@ -41,9 +41,9 @@ describe("codex managed home", () => {
   it("treats a concurrently-created expected auth symlink as success", async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-codex-home-"));
     const sharedCodexHome = path.join(root, "shared-codex-home");
-    const paperclipHome = path.join(root, "paperclip-home");
+    const wardmoteHome = path.join(root, "paperclip-home");
     const managedCodexHome = path.join(
-      paperclipHome,
+      wardmoteHome,
       "instances",
       "default",
       "companies",
@@ -69,7 +69,7 @@ describe("codex managed home", () => {
         prepareManagedCodexHome(
           {
             CODEX_HOME: sharedCodexHome,
-            WARDMOTE_HOME: paperclipHome,
+            WARDMOTE_HOME: wardmoteHome,
             WARDMOTE_INSTANCE_ID: "default",
           },
           async () => {},
@@ -87,9 +87,9 @@ describe("codex managed home", () => {
   it("still throws on EEXIST when a raced-in auth symlink points elsewhere", async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-codex-home-"));
     const sharedCodexHome = path.join(root, "shared-codex-home");
-    const paperclipHome = path.join(root, "paperclip-home");
+    const wardmoteHome = path.join(root, "paperclip-home");
     const managedCodexHome = path.join(
-      paperclipHome,
+      wardmoteHome,
       "instances",
       "default",
       "companies",
@@ -117,7 +117,7 @@ describe("codex managed home", () => {
         prepareManagedCodexHome(
           {
             CODEX_HOME: sharedCodexHome,
-            WARDMOTE_HOME: paperclipHome,
+            WARDMOTE_HOME: wardmoteHome,
             WARDMOTE_INSTANCE_ID: "default",
           },
           async () => {},
@@ -142,9 +142,9 @@ describe("codex managed home", () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-codex-home-"));
     try {
       const sharedCodexHome = path.join(root, "shared-codex-home");
-      const paperclipHome = path.join(root, "paperclip-home");
+      const wardmoteHome = path.join(root, "paperclip-home");
       const managedCodexHome = path.join(
-        paperclipHome,
+        wardmoteHome,
         "instances",
         "default",
         "companies",
@@ -165,7 +165,7 @@ describe("codex managed home", () => {
       await prepareManagedCodexHome(
         {
           CODEX_HOME: sharedCodexHome,
-          WARDMOTE_HOME: paperclipHome,
+          WARDMOTE_HOME: wardmoteHome,
           WARDMOTE_INSTANCE_ID: "default",
         },
         async () => {},
@@ -689,9 +689,9 @@ describe("reconcileManagedCodexHome", () => {
   async function makeFixture() {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-codex-reconcile-"));
     const sharedCodexHome = path.join(root, "shared-codex-home");
-    const paperclipHome = path.join(root, "paperclip-home");
+    const wardmoteHome = path.join(root, "paperclip-home");
     const agentHome = path.join(
-      paperclipHome,
+      wardmoteHome,
       "instances",
       "default",
       "companies",
@@ -706,7 +706,7 @@ describe("reconcileManagedCodexHome", () => {
     await fs.writeFile(sharedAuth, '{"OPENAI_API_KEY":"shared"}', "utf8");
     const env = {
       CODEX_HOME: sharedCodexHome,
-      WARDMOTE_HOME: paperclipHome,
+      WARDMOTE_HOME: wardmoteHome,
       WARDMOTE_INSTANCE_ID: "default",
     } satisfies NodeJS.ProcessEnv;
     return { root, sharedCodexHome, sharedAuth, agentHome, agentAuth, env };
@@ -871,9 +871,9 @@ describe("evaluateCodexCredentialReadiness", () => {
   async function makeFixture() {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-codex-readiness-"));
     const sharedCodexHome = path.join(root, "shared-codex-home");
-    const paperclipHome = path.join(root, "paperclip-home");
+    const wardmoteHome = path.join(root, "paperclip-home");
     const companyRoot = path.join(
-      paperclipHome,
+      wardmoteHome,
       "instances",
       "default",
       "companies",
@@ -883,7 +883,7 @@ describe("evaluateCodexCredentialReadiness", () => {
     const managedAgentHome = path.join(companyRoot, "agents", "agent-1", "codex-home");
     const env: NodeJS.ProcessEnv = {
       CODEX_HOME: sharedCodexHome,
-      WARDMOTE_HOME: paperclipHome,
+      WARDMOTE_HOME: wardmoteHome,
       WARDMOTE_INSTANCE_ID: "default",
     };
     await fs.mkdir(sharedCodexHome, { recursive: true });

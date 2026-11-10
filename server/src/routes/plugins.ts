@@ -244,16 +244,16 @@ async function findPackageJsonFiles(root: string, maxDepth = 4): Promise<string[
 }
 
 function manifestSourcePath(packageRoot: string, pkgJson: Record<string, unknown>): string | null {
-  const paperclipPlugin = pkgJson.paperclipPlugin;
+  const wardmotePlugin = pkgJson.wardmotePlugin;
   if (
-    !paperclipPlugin
-    || typeof paperclipPlugin !== "object"
-    || Array.isArray(paperclipPlugin)
+    !wardmotePlugin
+    || typeof wardmotePlugin !== "object"
+    || Array.isArray(wardmotePlugin)
   ) {
     return null;
   }
 
-  const manifestPath = (paperclipPlugin as Record<string, unknown>).manifest;
+  const manifestPath = (wardmotePlugin as Record<string, unknown>).manifest;
   if (typeof manifestPath !== "string") return null;
 
   const sourcePath = manifestPath
@@ -308,12 +308,12 @@ async function discoverBundledPlugins(): Promise<DiscoveredBundledPlugin[]> {
   for (const packageJsonPath of await findPackageJsonFiles(pluginRoot)) {
     const packageRoot = path.dirname(packageJsonPath);
     const pkgJson = await readJsonFile(packageJsonPath);
-    const paperclipPlugin = pkgJson?.paperclipPlugin;
+    const wardmotePlugin = pkgJson?.wardmotePlugin;
     if (
       !pkgJson
-      || !paperclipPlugin
-      || typeof paperclipPlugin !== "object"
-      || Array.isArray(paperclipPlugin)
+      || !wardmotePlugin
+      || typeof wardmotePlugin !== "object"
+      || Array.isArray(wardmotePlugin)
     ) {
       continue;
     }

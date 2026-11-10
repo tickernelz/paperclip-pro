@@ -191,7 +191,7 @@ pnpm --filter @tickernelz/wardmote-runner trace:live-runner -- --json
 
 This checks a real semantic-tool mutation, a typed result, a same-thread second
 turn, process ownership and cleanup (`runnerExited`, `authorityCleared`), and —
-critically — `noRealPaperclipRequest` and `noPaperclipAuthorityInChild`.
+critically — `noRealWardmoteRequest` and `noWardmoteAuthorityInChild`.
 
 ## Reset, stop, replay, and cleanup
 

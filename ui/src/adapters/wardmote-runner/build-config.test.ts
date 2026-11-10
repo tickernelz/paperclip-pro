@@ -164,8 +164,8 @@ describe("buildWardmoteRunnerConfig", () => {
     const config = buildWardmoteRunnerConfig(makeValues({
       adapterType: "wardmote_runner",
       codexPermissionMode: "never",
-      paperclipRunnerLifecycleMode: "warm",
-      paperclipRunnerIdleTimeoutMs: 45_000,
+      wardmoteRunnerLifecycleMode: "warm",
+      wardmoteRunnerIdleTimeoutMs: 45_000,
     }));
 
     expect(config).toMatchObject({
@@ -332,8 +332,8 @@ describe("buildWardmoteRunnerConfig", () => {
 
   it("bounds warm lifecycle values to the shared safe default", () => {
     expect(buildWardmoteRunnerConfig(makeValues({
-      paperclipRunnerLifecycleMode: "warm",
-      paperclipRunnerIdleTimeoutMs: 86_400_001,
+      wardmoteRunnerLifecycleMode: "warm",
+      wardmoteRunnerIdleTimeoutMs: 86_400_001,
     }))).toMatchObject({
       lifecycleMode: "warm",
       idleTimeoutMs: 300_000,
@@ -342,8 +342,8 @@ describe("buildWardmoteRunnerConfig", () => {
 
   it("omits an idle timeout for turn-by-turn sessions", () => {
     const config = buildWardmoteRunnerConfig(makeValues({
-      paperclipRunnerLifecycleMode: "per_turn",
-      paperclipRunnerIdleTimeoutMs: 45_000,
+      wardmoteRunnerLifecycleMode: "per_turn",
+      wardmoteRunnerIdleTimeoutMs: 45_000,
     }));
 
     expect(config).not.toHaveProperty("idleTimeoutMs");

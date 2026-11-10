@@ -38,7 +38,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { storybookAgents, storybookIssues } from "../fixtures/paperclipData";
+import { storybookAgents, storybookIssues } from "../fixtures/wardmoteData";
 
 const COMPANY_ID = "company-storybook";
 const now = new Date("2026-04-20T12:00:00.000Z");

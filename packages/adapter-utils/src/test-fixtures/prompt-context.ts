@@ -35,16 +35,16 @@ export function createPromptContextFixture() {
     coverage: { kind: "full_task_history", throughCommentId: "comment-scope", summaryThroughCommentId: null },
   };
   return {
-    paperclipTaskMarkdownAssignment: `## Owned assignment\n\n${description}\n\nPlan revision: approved-revision-2`,
-    paperclipTaskMarkdownAssignmentCompact: "## Compact assignment\n\nPlan revision: approved-revision-2",
-    paperclipTaskCommunicationGuidance: "Explain the next step before starting work.",
-    paperclipTurnContext: {
+    wardmoteTaskMarkdownAssignment: `## Owned assignment\n\n${description}\n\nPlan revision: approved-revision-2`,
+    wardmoteTaskMarkdownAssignmentCompact: "## Compact assignment\n\nPlan revision: approved-revision-2",
+    wardmoteTaskCommunicationGuidance: "Explain the next step before starting work.",
+    wardmoteTurnContext: {
       version: 1,
       assignment: { owner: "task_markdown", description: { id: "issue-1", revision } },
       events: { owner: "wake_prompt", comments: messages.map(({ id, updatedAt }) => ({ id, revision: updatedAt })) },
     },
     executionContinuation,
-    paperclipWake: {
+    wardmoteWake: {
       reason: "issue_commented",
       issue: { id: "issue-1", identifier: "PAP-1", title: "Release ledger", description, status: "in_progress", workMode: "standard" },
       comments: messages,

@@ -11,7 +11,7 @@ import { TaskChatBubble } from "@/components/task-chat/TaskChatBubble";
 import { Button } from "@/components/ui/button";
 import type { ChatEndpoint, ChatIdentityLink } from "@/api/chatEndpoints";
 import type { TaskChatMessageItem } from "@/components/task-chat/task-chat-model";
-import { storybookAgents } from "../fixtures/paperclipData";
+import { storybookAgents } from "../fixtures/wardmoteData";
 
 type Screen = "catalog" | "agent" | "credentials" | "access" | "task" | "reconnect";
 type Scenario = { screen?: Screen; dedicated?: boolean; outage?: boolean; noLine?: boolean; loading?: boolean; connecting?: boolean };
@@ -38,7 +38,7 @@ function resetFixture(scenario: Scenario) {
   received = false;
   messages = [];
   if (scenario.screen === "task") {
-    principal = { ...sender, status: "linked", paperclipUserLabel: "Alex" };
+    principal = { ...sender, status: "linked", wardmoteUserLabel: "Alex" };
     simulateIncoming();
   }
   if (scenario.screen === "reconnect") endpoint.status = "attention";
@@ -68,7 +68,7 @@ function Journey({ screen = "catalog" }: { screen?: Screen }) {
       <p><strong>Simulated Photon demo.</strong> Production catalog, setup, access, management, and message components use local fixtures. No credentials are saved and no real messages are sent.</p>
       <div className="flex flex-wrap gap-2">
         <Button size="sm" variant="secondary" onClick={() => { simulateIncoming(); refresh(); }}>Simulate incoming iMessage</Button>
-        <Button size="sm" variant="secondary" onClick={() => { principal = { ...sender, status: "linked", paperclipUserLabel: "Alex" }; refresh(); }}>Simulate identity confirmation</Button>
+        <Button size="sm" variant="secondary" onClick={() => { principal = { ...sender, status: "linked", wardmoteUserLabel: "Alex" }; refresh(); }}>Simulate identity confirmation</Button>
         <Button size="sm" variant="secondary" onClick={() => navigate(`${setupUrl}&resume=${endpointId}`)}>Return to setup</Button>
         <Button size="sm" variant="secondary" onClick={() => navigate("/issues/DEMO-1")}>View simulated task</Button>
       </div>

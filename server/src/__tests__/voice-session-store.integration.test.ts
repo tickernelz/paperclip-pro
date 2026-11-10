@@ -1235,13 +1235,13 @@ const support = await getEmbeddedPostgresTestSupport();
     const assignments = await assigned();
     expect(assignments).toMatchObject([{ skillKey: "tickernelz/wardmote/speko", resources: [{ id: f.endpointId, connectionId: f.connectionId }], tools: [] }]);
     const config = await applyConnectorSkills({}, [], assignments);
-    const skill = config.paperclipRuntimeSkills[0];
+    const skill = config.wardmoteRuntimeSkills[0];
     const markdown = await readFile(join(skill.source, "SKILL.md"), "utf8");
     expect(markdown).toContain("one focused clarification");
     expect(markdown).toContain("durable Paperclip continuation");
     expect(markdown).toContain("never blindly redial");
     expect(markdown).not.toContain("+12015551234");
-    expect((await prepareConnectorSkillDelivery({ ...config, engine: "cli" }, "wardmote_runner")).config.paperclipRuntimeSkills).toEqual([skill]);
+    expect((await prepareConnectorSkillDelivery({ ...config, engine: "cli" }, "wardmote_runner")).config.wardmoteRuntimeSkills).toEqual([skill]);
     expect((await prepareConnectorSkillDelivery(config, "omp_local")).instructions).toContain("name: speko");
     expect((await prepareConnectorSkillDelivery(config, "wardmote_runner")).instructions).toContain("name: speko");
     expect((await resolveConnectorAssignments(db, { ...binding, agentId: randomUUID() })).filter(item => item.key === "speko")).toEqual([]);
@@ -1263,8 +1263,8 @@ const support = await getEmbeddedPostgresTestSupport();
     expect(await assigned()).toHaveLength(1);
     await db.delete(toolProfileBindings).where(eq(toolProfileBindings.targetId, f.agentId));
     expect(await assigned()).toEqual([]);
-    const removed = await applyConnectorSkills(config, config.paperclipRuntimeSkills, []);
-    expect(removed.paperclipRuntimeSkills).toEqual([]);
+    const removed = await applyConnectorSkills(config, config.wardmoteRuntimeSkills, []);
+    expect(removed.wardmoteRuntimeSkills).toEqual([]);
   });
 
   it("makes call_my_phone discoverable through the governed gateway and reuses a durable attempt", async () => {

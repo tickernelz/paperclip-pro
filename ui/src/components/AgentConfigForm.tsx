@@ -106,7 +106,7 @@ import { resolveForcedKubernetesEnvironment } from "../lib/forced-kubernetes-env
 export type { CreateConfigValues } from "@tickernelz/wardmote-adapter-utils";
 import {
   WARDMOTE_RUNNER_PERMISSION_CAPABILITIES,
-  paperclipRunnerTransitionConfig,
+  wardmoteRunnerTransitionConfig,
   type CreateConfigValues,
 } from "@tickernelz/wardmote-adapter-utils";
 import { Badge } from "@/components/ui/badge";
@@ -184,7 +184,7 @@ export function resolveWardmoteRunnerTransitionModel(
   previousAdapterType: string,
   previousModel: unknown,
 ): string {
-  return paperclipRunnerTransitionConfig(previousAdapterType, previousModel).model as string;
+  return wardmoteRunnerTransitionConfig(previousAdapterType, previousModel).model as string;
 }
 
 function isOverlayDirty(o: AgentConfigOverlay): boolean {
@@ -1608,7 +1608,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                             ? { provider: "openai_dot", lifecycleMode: "per_turn", allowUnmeteredProvider: false, dotAttachmentAccess: false, dotWorkspaceAccess: false }
                           : t === "wardmote_runner"
                             ? {
-                                ...paperclipRunnerTransitionConfig(adapterType, eff("adapterConfig", "model", config.model)),
+                                ...wardmoteRunnerTransitionConfig(adapterType, eff("adapterConfig", "model", config.model)),
                               }
                           : {}),
                       },

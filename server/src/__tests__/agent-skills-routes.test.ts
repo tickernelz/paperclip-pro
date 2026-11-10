@@ -406,7 +406,7 @@ describe("agent skill routes", () => {
       expect.objectContaining({
         adapterType: "claude_local",
         config: expect.objectContaining({
-          paperclipRuntimeSkills: expect.any(Array),
+          wardmoteRuntimeSkills: expect.any(Array),
         }),
       }),
     );
@@ -463,7 +463,7 @@ describe("agent skill routes", () => {
         adapterType: "claude_local",
         config: expect.objectContaining({
           env: { HOME: "/home/agent" },
-          paperclipRuntimeSkills: expect.any(Array),
+          wardmoteRuntimeSkills: expect.any(Array),
         }),
       }),
     );
@@ -571,7 +571,7 @@ describe("agent skill routes", () => {
         adapterType: "acpx_local",
         config: expect.objectContaining({
           agent: "claude",
-          paperclipRuntimeSkills: expect.any(Array),
+          wardmoteRuntimeSkills: expect.any(Array),
         }),
       }),
     );
@@ -625,7 +625,7 @@ describe("agent skill routes", () => {
         adapterType: "acpx_local",
         config: expect.objectContaining({
           agent: "codex",
-          paperclipRuntimeSkills: expect.any(Array),
+          wardmoteRuntimeSkills: expect.any(Array),
         }),
       }),
       ["tickernelz/wardmote/wardmote"],
@@ -1028,7 +1028,7 @@ describe("agent skill routes", () => {
         adapterType: "claude_local",
         config: expect.objectContaining({
           env: { HOME: "/home/agent" },
-          paperclipRuntimeSkills: expect.any(Array),
+          wardmoteRuntimeSkills: expect.any(Array),
         }),
       }),
       ["tickernelz/wardmote/wardmote"],

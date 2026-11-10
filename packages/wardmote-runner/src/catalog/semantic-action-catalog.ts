@@ -636,7 +636,7 @@ export const WARDMOTE_SEMANTIC_ACTION_CATALOG = Object.freeze([
   ...byId.values(),
 ]);
 
-export function paperclipSemanticAction(
+export function wardmoteSemanticAction(
   operationId: string,
 ): WardmoteSemanticActionDescriptor | undefined {
   return byId.get(operationId as WardmoteSemanticActionId);

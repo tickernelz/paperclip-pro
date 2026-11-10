@@ -1275,9 +1275,9 @@ describeEmbeddedPostgres("heartbeat stale queued-run invalidation", () => {
     const [context] = mockAdapterExecute.mock.calls.find(([context]) => context?.runId === run!.id)!;
     expect(context.runtime.sessionId).toBe(rotate ? null : sessionId);
     if (rotate) {
-      expect(context.context.paperclipSessionRotationReason).toContain((inputTokens + (rawInputIncludesCached === false ? cachedInputTokens : 0)).toLocaleString("en-US"));
-      expect(context.context.paperclipSessionHandoffMarkdown).toContain("Continue from this completed turn");
-    } else expect(context.context.paperclipSessionRotationReason).toBeUndefined();
+      expect(context.context.wardmoteSessionRotationReason).toContain((inputTokens + (rawInputIncludesCached === false ? cachedInputTokens : 0)).toLocaleString("en-US"));
+      expect(context.context.wardmoteSessionHandoffMarkdown).toContain("Continue from this completed turn");
+    } else expect(context.context.wardmoteSessionRotationReason).toBeUndefined();
     await heartbeat.drainActiveRunExecutions();
     const [finished] = await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, run!.id));
     expect(finished.usageJson).toMatchObject({ rawInputTokens: 1, rawCachedInputTokens: 2, rawInputIncludesCached: false });

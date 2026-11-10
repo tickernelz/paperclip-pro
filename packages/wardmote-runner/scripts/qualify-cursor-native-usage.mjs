@@ -37,9 +37,9 @@ export async function qualifyCursorNativeUsage(vendorRoot) {
     assert.throws(() => patchCursorRuntimeSource(original + "\n", platform), /digest mismatch/);
     const exported = {}; runInNewContext(source, { exports: exported });
     assert.ok(exported.modules["./src/acp/agent-session.ts"]);
-    const collector = runInNewContext(segment(source, "const paperclipCreateCursorUsage=", ";const paperclipCursorResponseError=") + ";paperclipCreateCursorUsage");
+    const collector = runInNewContext(segment(source, "const wardmoteCreateCursorUsage=", ";const wardmoteCursorResponseError=") + ";wardmoteCreateCursorUsage");
     let ids = 0;
-    const scope = { V: awaiter, G: 10, paperclipCreateCursorUsage: collector,
+    const scope = { V: awaiter, G: 10, wardmoteCreateCursorUsage: collector,
       crypto: { randomUUID: () => `00000000-0000-0000-0000-${String(++ids).padStart(12, "0")}` } };
     const handlePrompt = runInNewContext(`({${segment(source, "handlePrompt(e){", "claimTaskToolCall(e,t){")}}).handlePrompt`, scope);
     const invocationSource = segment(source, "D=async e=>", ",yield D(y)");
@@ -47,8 +47,8 @@ export async function qualifyCursorNativeUsage(vendorRoot) {
     // Execute the vendor's object construction and reuse transition, rather
     // than assuming a hand-built child's fields match the pinned implementation.
     const childLifecycle = runInNewContext(`(class {${segment(source, "beginOrUpdateRun(e,t){", "announce(e,t){")}}).prototype`);
-    assert.ok(source.includes("yield this.processPrompt(e,s,l,paperclipUsage)"));
-    assert.ok(source.includes("processPrompt(e,t,n,paperclipUsage){"));
+    assert.ok(source.includes("yield this.processPrompt(e,s,l,wardmoteUsage)"));
+    assert.ok(source.includes("processPrompt(e,t,n,wardmoteUsage){"));
     const checks = [];
     const createHost = backend => {
       const publisher = { turn: 0, children: new Map(), enabled: true,
@@ -63,7 +63,7 @@ export async function qualifyCursorNativeUsage(vendorRoot) {
         sharedServices: { agentClient: { run: backend } },
         async processPrompt(request, context, turn, usage) {
           const invoke = runInNewContext(`(function(){let D;${invocationSource};return D;})`, {
-            paperclipUsage: usage, t: context, b: { modelDetails: {} }, $: { sendUpdate: async () => {} }, u: {}, x: [], A: [], M: {}, k: {},
+            wardmoteUsage: usage, t: context, b: { modelDetails: {} }, $: { sendUpdate: async () => {} }, u: {}, x: [], A: [], M: {}, k: {},
           }).call(this);
           await request.execute({ invoke, usage, context, turn, publisher });
         },
@@ -78,7 +78,7 @@ export async function qualifyCursorNativeUsage(vendorRoot) {
     assert.equal(first.stopReason, "end_turn"); assert.equal(first.usage, undefined);
     assert.equal(envelope.completeness, "partial");
     assert.deepEqual(plain(envelope.observations.map(row => row.counters)), [{ inputTokens: 12 }, { outputTokens: 3 }]);
-    assert.equal(successful.publisher.paperclipUsageCollectors.size, 0);
+    assert.equal(successful.publisher.wardmoteUsageCollectors.size, 0);
     checks.push("exact_parent_invocation_capture", "separate_followups", "no_standard_usage");
 
     const second = await successful.run({ execute: async ({ invoke }) => { await invoke({ outputTokens: 1 }); } });
@@ -124,12 +124,12 @@ export async function qualifyCursorNativeUsage(vendorRoot) {
     assert.deepEqual(plain(next._meta.paperclipCursorUsage.observations.map(row => row.counters.inputTokens)), [20]);
     await oldCallback.sendUpdate({}, event({ inputTokens: 999 }));
     assert.equal(cancelled._meta.paperclipCursorUsage.observations.length, 1);
-    assert.equal(overlapping.publisher.paperclipUsageCollectors.size, 0);
+    assert.equal(overlapping.publisher.wardmoteUsageCollectors.size, 0);
     checks.push("overlapping_cancellation", "late_parent_callback_isolation");
 
     const failure = createHost(async () => { throw new Error("fixture transport failure"); });
     await assert.rejects(failure.run({ execute: async ({ invoke }) => invoke({}) }), /fixture transport failure/);
-    assert.equal(failure.publisher.paperclipUsageCollectors.size, 0);
+    assert.equal(failure.publisher.wardmoteUsageCollectors.size, 0);
     checks.push("exception_cleanup");
     platforms.push({ platform, vendorSha256: hash(original), candidateSha256: hash(source), checks });
   }

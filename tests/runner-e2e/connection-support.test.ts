@@ -218,7 +218,7 @@ describe("independent qualification", () => {
   });
   it("waits for disposition repair and requires the successful artifact-producing run", () => {
     const expected = { agentId: "a", connectionId: "c", method: "api_key", runtimeMode: "legacy", environmentId: "env" };
-    const first = { id: "first", agentId: "a", status: "succeeded", runtimeMode: "legacy", contextSnapshot: { paperclipEnvironment: { id: "env" }, aiConnection: { connectionId: "c", method: "api_key" } } };
+    const first = { id: "first", agentId: "a", status: "succeeded", runtimeMode: "legacy", contextSnapshot: { wardmoteEnvironment: { id: "env" }, aiConnection: { connectionId: "c", method: "api_key" } } };
     const repair = { ...first, id: "repair" };
     const file = { originalFilename: "proof.json", createdByAgentId: "a", originatingRunId: "repair" };
     expect(completedConnectionArtifactRun([first, { ...repair, status: "running" }], [file], "proof.json", expected)).toBeUndefined();
@@ -243,7 +243,7 @@ describe("independent qualification", () => {
     expect(verifyConnectionArtifact(Buffer.from("Provider routing works"), proof.expected)).toBe(false);
     expect(verifyConnectionArtifact(Buffer.from(JSON.stringify({ ...proof.expected, total: proof.expected.total + 1 })), proof.expected)).toBe(false);
     const expected = { agentId: "a", connectionId: "c", method: "subscription", runtimeMode: "native", environmentId: "env", model: "m" };
-    const run = { agentId: "a", status: "succeeded", runtimeMode: "native", contextSnapshot: { paperclipEnvironment: { id: "env" }, aiConnection: { connectionId: "c", method: "subscription" } } };
+    const run = { agentId: "a", status: "succeeded", runtimeMode: "native", contextSnapshot: { wardmoteEnvironment: { id: "env" }, aiConnection: { connectionId: "c", method: "subscription" } } };
     expect(verifyConnectionRun(run, expected)).toBe(true);
     expect(verifyConnectionRun(run, { ...expected, connectionId: "ambient" })).toBe(false);
     expect(verifyConnectionRun(run, { ...expected, method: "api_key" })).toBe(false);

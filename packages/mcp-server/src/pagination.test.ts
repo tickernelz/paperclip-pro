@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { paperclipToolCatalog } from "./catalog.js";
+import { wardmoteToolCatalog } from "./catalog.js";
 import { WardmoteApiClient } from "./client.js";
 import { parseToolsets, FULL_TOOLSET } from "./config.js";
 
@@ -24,7 +24,7 @@ describe("tools/list completeness", () => {
     [FULL_TOOLSET, false],
     [FULL_TOOLSET, true],
   ])("returns every tool in a single response for %s (management=%s)", (selection, management) => {
-    const listing = paperclipToolCatalog(client, parseToolsets(selection), management).listing;
+    const listing = wardmoteToolCatalog(client, parseToolsets(selection), management).listing;
 
     expect(listing.tools.length).toBeGreaterThan(0);
     expect(listing).not.toHaveProperty("nextCursor");
@@ -32,8 +32,8 @@ describe("tools/list completeness", () => {
   });
 
   it("never hides a tool behind a cursor the surface does not justify", () => {
-    const agent = paperclipToolCatalog(client, parseToolsets(FULL_TOOLSET), false).listing;
-    const board = paperclipToolCatalog(client, parseToolsets(FULL_TOOLSET), true).listing;
+    const agent = wardmoteToolCatalog(client, parseToolsets(FULL_TOOLSET), false).listing;
+    const board = wardmoteToolCatalog(client, parseToolsets(FULL_TOOLSET), true).listing;
 
     const agentNames = new Set(agent.tools.map((tool) => tool.name));
     expect(board.tools.filter((tool) => !agentNames.has(tool.name)).length).toBeGreaterThan(0);

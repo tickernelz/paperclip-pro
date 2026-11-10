@@ -1023,7 +1023,7 @@ impl ManagedProviderCommandExecutor {
                 ));
             }
             let next_run_id =
-                if let Some(identity) = payload.pointer("/paperclipNextAuthority/identity") {
+                if let Some(identity) = payload.pointer("/wardmoteNextAuthority/identity") {
                     if identity.get("normalizedSessionId").and_then(Value::as_str)
                         != Some(self.config.normalized_session_id.as_str())
                     {
@@ -2744,7 +2744,7 @@ mod tests {
         invalid["provider"]["instructions"] = json!("different instructions");
         assert!(executor.attach(&invalid).is_err());
         let mut invalid_identity = payload.clone();
-        invalid_identity["paperclipNextAuthority"] = json!({"identity": {
+        invalid_identity["wardmoteNextAuthority"] = json!({"identity": {
             "normalizedSessionId": "another-session", "runId": "next-run"
         }});
         assert!(executor.attach(&invalid_identity).is_err());
@@ -2762,7 +2762,7 @@ mod tests {
         };
         executor.project_event(usage(21, "25")).unwrap();
         executor.state.as_mut().unwrap().pending_events.clear();
-        payload["paperclipNextAuthority"] = json!({"identity": {
+        payload["wardmoteNextAuthority"] = json!({"identity": {
             "normalizedSessionId": config.normalized_session_id, "runId": "next-run"
         }});
         executor.attach(&payload).unwrap();
@@ -2830,7 +2830,7 @@ mod tests {
             })
             .unwrap();
         executor.state.as_mut().unwrap().pending_events.clear();
-        payload["paperclipNextAuthority"]["identity"]["runId"] = json!("third-run");
+        payload["wardmoteNextAuthority"]["identity"]["runId"] = json!("third-run");
         executor.attach(&payload).unwrap();
         assert!(executor
             .state

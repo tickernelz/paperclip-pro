@@ -50,7 +50,7 @@ async function handoffSource(tx: Connection, companyId: string, runId: string, a
 }
 
 function ownerTriggeredRun(run: Run): boolean {
-  const openwa = run.contextSnapshot?.paperclipOpenwa;
+  const openwa = run.contextSnapshot?.wardmoteOpenwa;
   return Boolean(openwa && typeof openwa === "object" && (openwa as Record<string, unknown>).triggerClass === "owner");
 }
 

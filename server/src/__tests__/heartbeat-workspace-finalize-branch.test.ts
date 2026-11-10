@@ -136,7 +136,7 @@ async function deleteHeartbeatRowsAfterActivityLogDrains(db: Db) {
 
 function readAdapterWorkspace(input: unknown) {
   const context = (input as { context?: Record<string, unknown> }).context ?? {};
-  const workspace = context.paperclipWorkspace as Record<string, unknown> | undefined;
+  const workspace = context.wardmoteWorkspace as Record<string, unknown> | undefined;
   const cwd = typeof workspace?.cwd === "string" ? workspace.cwd : null;
   const branchName = typeof workspace?.branchName === "string" ? workspace.branchName : null;
   const executionWorkspaceId =

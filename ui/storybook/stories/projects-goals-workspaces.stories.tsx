@@ -27,7 +27,7 @@ import {
   storybookIssues,
   storybookProjectWorkspaces,
   storybookProjects,
-} from "../fixtures/paperclipData";
+} from "../fixtures/wardmoteData";
 
 const COMPANY_ID = "company-storybook";
 const boardProject = storybookProjects.find((project) => project.id === "project-board-ui") ?? storybookProjects[0]!;

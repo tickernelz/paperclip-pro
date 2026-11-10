@@ -5,7 +5,7 @@ import { buildCiliumNetworkPolicyManifest } from "./cilium-network-policy.js";
 export interface EnsureTenantInput {
   namespace: string;
   companyId: string;
-  paperclipServerNamespace: string;
+  wardmoteServerNamespace: string;
   serviceAccountAnnotations: Record<string, string>;
   egressMode: "standard" | "cilium";
   egressAllowFqdns: string[];
@@ -209,7 +209,7 @@ async function ensureLimitRange(clients: KubeClients, input: EnsureTenantInput):
 async function ensureNetworkPolicies(clients: KubeClients, input: EnsureTenantInput): Promise<void> {
   const [denyAll, egressStd] = buildNetworkPolicyManifests({
     namespace: input.namespace,
-    paperclipServerNamespace: input.paperclipServerNamespace,
+    wardmoteServerNamespace: input.wardmoteServerNamespace,
     egressAllowCidrs: input.egressAllowCidrs,
     egressAllowFqdns: input.egressAllowFqdns,
   });
@@ -219,7 +219,7 @@ async function ensureNetworkPolicies(clients: KubeClients, input: EnsureTenantIn
   if (input.egressMode === "cilium") {
     const cnp = buildCiliumNetworkPolicyManifest({
       namespace: input.namespace,
-      paperclipServerNamespace: input.paperclipServerNamespace,
+      wardmoteServerNamespace: input.wardmoteServerNamespace,
       egressAllowFqdns: input.egressAllowFqdns,
       egressAllowCidrs: input.egressAllowCidrs,
     });

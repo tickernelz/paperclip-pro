@@ -159,7 +159,7 @@ export function isBoundCodexNotification(
 ): boolean {
   if (!isSupportedCodexNotificationMethod(notification.method)) return false;
   const params = record(notification.params);
-  const claimedRunId = text(params.runId, text(params.paperclipRunId));
+  const claimedRunId = text(params.runId, text(params.wardmoteRunId));
   if (claimedRunId.length > 0 && claimedRunId !== binding.runId) return false;
 
   const allowedThreads = new Set(binding.threadIds);

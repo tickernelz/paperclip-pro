@@ -3,7 +3,7 @@ import path from "node:path";
 import { isDeepStrictEqual } from "node:util";
 import {
   mergeWardmoteConfig,
-  paperclipConfigSchema,
+  wardmoteConfigSchema,
   type WardmoteConfig,
 } from "./schema.js";
 import {
@@ -93,7 +93,7 @@ export function readConfig(configPath?: string): WardmoteConfig | null {
   if (!fs.existsSync(filePath)) return null;
   const raw = parseJson(filePath);
   const migrated = migrateLegacyConfig(raw);
-  const parsed = paperclipConfigSchema.safeParse(migrated);
+  const parsed = wardmoteConfigSchema.safeParse(migrated);
   if (!parsed.success) {
     throw new Error(`Invalid config at ${filePath}: ${formatValidationError(parsed.error)}`);
   }
@@ -192,11 +192,11 @@ export function writeConfig(
   const dir = path.dirname(filePath);
   fs.mkdirSync(dir, { recursive: true });
 
-  let nextConfig = paperclipConfigSchema.parse(config);
+  let nextConfig = wardmoteConfigSchema.parse(config);
   if (fs.existsSync(filePath)) {
     try {
-      const source = paperclipConfigSchema.parse(migrateLegacyConfig(parseJson(filePath)));
-      nextConfig = paperclipConfigSchema.parse(mergeWardmoteConfig(source, nextConfig));
+      const source = wardmoteConfigSchema.parse(migrateLegacyConfig(parseJson(filePath)));
+      nextConfig = wardmoteConfigSchema.parse(mergeWardmoteConfig(source, nextConfig));
       if (isDeepStrictEqual(effectiveConfig(source), effectiveConfig(nextConfig))) {
         return false;
       }

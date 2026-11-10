@@ -70,9 +70,9 @@ describe("review-path recovery", () => {
           wakeCommentIds: ["comment-1", "comment-2", "comment-1"],
           wakeCommentId: "stale-comment",
           commentId: "stale-comment",
-          paperclipHarnessCheckedOut: true,
-          paperclipExternalChatExecutionBound: true,
-          paperclipWake: { checkedOutByHarness: true },
+          wardmoteHarnessCheckedOut: true,
+          wardmoteExternalChatExecutionBound: true,
+          wardmoteWake: { checkedOutByHarness: true },
           sessionId: "old-session",
           instruction: "old instruction",
         },
@@ -90,9 +90,9 @@ describe("review-path recovery", () => {
         commentId: "comment-2",
       });
       for (const key of [
-        "paperclipHarnessCheckedOut",
-        "paperclipExternalChatExecutionBound",
-        "paperclipWake",
+        "wardmoteHarnessCheckedOut",
+        "wardmoteExternalChatExecutionBound",
+        "wardmoteWake",
         "sessionId",
       ]) expect(decision.contextSnapshot).not.toHaveProperty(key);
       expect(decision.contextSnapshot.instruction).not.toBe("old instruction");

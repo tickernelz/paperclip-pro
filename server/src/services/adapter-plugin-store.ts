@@ -44,11 +44,11 @@ interface AdapterSettings {
 // ---------------------------------------------------------------------------
 
 function adapterPluginPaths() {
-  const paperclipDir = resolveWardmoteHomeDir();
+  const wardmoteDir = resolveWardmoteHomeDir();
   return {
-    adapterPluginsDir: path.join(paperclipDir, "adapter-plugins"),
-    adapterPluginsStorePath: path.join(paperclipDir, "adapter-plugins.json"),
-    adapterSettingsPath: path.join(paperclipDir, "adapter-settings.json"),
+    adapterPluginsDir: path.join(wardmoteDir, "adapter-plugins"),
+    adapterPluginsStorePath: path.join(wardmoteDir, "adapter-plugins.json"),
+    adapterSettingsPath: path.join(wardmoteDir, "adapter-settings.json"),
   };
 }
 

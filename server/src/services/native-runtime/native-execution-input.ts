@@ -175,8 +175,8 @@ export function buildNativeExecutionInput(input: BuildNativeExecutionInput): Nat
   // Build the full bootstrap through the same owner as legacy adapters.
   // Verified native resume selection stays at the existing session boundary.
   const { taskContextNote, wakePrompt } = selectWardmotePromptSections({
-    paperclipTaskMarkdownAssignment: input.taskPrompt,
-    paperclipWake: wakePayload,
+    wardmoteTaskMarkdownAssignment: input.taskPrompt,
+    wardmoteWake: wakePayload,
     conversationMode: input.conversationMode,
   }, {
     resumedSession: false,

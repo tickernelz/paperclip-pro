@@ -494,7 +494,7 @@ describeEmbeddedPostgres("plugin-managed agents", () => {
       runtimeConfig: {},
       permissions: {},
       metadata: {
-        paperclipManagedResource: {
+        wardmoteManagedResource: {
           pluginId,
           pluginKey: pluginManifest.id,
           resourceKind: "agent",
@@ -543,7 +543,7 @@ describeEmbeddedPostgres("plugin-managed agents", () => {
       expect(relinked.agentId).toBe(created.agentId);
       const reset = await reinstalledServices.agents.managedReset({ companyId, agentKey: "wiki-maintainer" });
       expect(reset.agentId).toBe(created.agentId);
-      expect(reset.agent!.metadata).toMatchObject({ paperclipManagedResource: { pluginId: installed!.id }, pluginManagedAgent: { pluginId: installed!.id } });
+      expect(reset.agent!.metadata).toMatchObject({ wardmoteManagedResource: { pluginId: installed!.id }, pluginManagedAgent: { pluginId: installed!.id } });
       expect(await fs.readFile(reset.agent!.adapterConfig.instructionsFilePath as string, "utf8")).toBe("# Reinstalled stock\n");
       const history = await db.select().from(agentInstructionRevisions).where(eq(agentInstructionRevisions.agentId, created.agentId!));
       expect(history).toHaveLength(0);
@@ -570,7 +570,7 @@ describeEmbeddedPostgres("plugin-managed agents", () => {
         await db.insert(plugins).values({ id: otherId, pluginKey: "paperclip.other-owner", packageName: "other",
           version: "0.1.0", apiVersion: 1, categories: [], manifestJson: { ...pluginManifest, id: "paperclip.other-owner" }, status: "ready", installOrder: 2 });
         await db.update(agents).set({ metadata: { ...created.agent!.metadata,
-          paperclipManagedResource: { pluginId: otherId, pluginKey: pluginManifest.id, resourceKind: "agent", resourceKey: "wiki-maintainer" },
+          wardmoteManagedResource: { pluginId: otherId, pluginKey: pluginManifest.id, resourceKind: "agent", resourceKey: "wiki-maintainer" },
         } }).where(eq(agents.id, created.agentId!));
       }
       const [before] = await db.select().from(agents).where(eq(agents.id, created.agentId!));

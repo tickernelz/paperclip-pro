@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import type { Issue } from "@tickernelz/wardmote-shared";
 import type { LiveRunForIssue } from "@/api/heartbeats";
 import { TasksLiveNowSection, liveNowCollapsedStorageKey } from "@/components/TasksLiveNowSection";
-import { storybookIssues } from "../fixtures/paperclipData";
+import { storybookIssues } from "../fixtures/wardmoteData";
 
 const EXPANDED_COMPANY_ID = "company-live-now-expanded";
 const COLLAPSED_COMPANY_ID = "company-live-now-collapsed";

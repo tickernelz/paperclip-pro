@@ -262,7 +262,7 @@ const DECLARED_EXPOSE = {
   type: "tailscale_https",
   hostname: "auto",
   publicPort: "same",
-  includePaperclipViteHmr: true,
+  includeWardmoteViteHmr: true,
   failurePolicy: "fail_closed",
 } as const;
 
@@ -297,7 +297,7 @@ const GUEST_COMMAND =
      * blow the test timeout and has nothing to do with what is under test.
      */
     let workspaceRoot: string;
-    let paperclipHome: string;
+    let wardmoteHome: string;
 
     beforeAll(async () => {
       tempDb = await startEmbeddedPostgresTestDatabase("pap17419-reservation-");
@@ -317,13 +317,13 @@ const GUEST_COMMAND =
       NEXT_HMR_PORT = deriveViteHmrPort(NEXT_APP_PORT);
 
       workspaceRoot = await fs.mkdtemp(path.join(os.tmpdir(), "pap17419-workspace-"));
-      paperclipHome = await fs.mkdtemp(path.join(os.tmpdir(), "pap17419-home-"));
+      wardmoteHome = await fs.mkdtemp(path.join(os.tmpdir(), "pap17419-home-"));
       // Redirect the local-service registry into a throwaway instance. Without
       // this the suite would write runtime-service records into the real
       // Paperclip instance on this host and could confuse a live server.
       previousWardmoteHome = process.env.WARDMOTE_HOME;
       previousInstanceId = process.env.WARDMOTE_INSTANCE_ID;
-      process.env.WARDMOTE_HOME = paperclipHome;
+      process.env.WARDMOTE_HOME = wardmoteHome;
       process.env.WARDMOTE_INSTANCE_ID = `pap17419-${randomUUID()}`;
     });
 
@@ -341,7 +341,7 @@ const GUEST_COMMAND =
       if (previousInstanceId === undefined) delete process.env.WARDMOTE_INSTANCE_ID;
       else process.env.WARDMOTE_INSTANCE_ID = previousInstanceId;
       await fs.rm(workspaceRoot, { recursive: true, force: true });
-      await fs.rm(paperclipHome, { recursive: true, force: true });
+      await fs.rm(wardmoteHome, { recursive: true, force: true });
       await db.delete(workspaceRuntimeServices);
       await db.delete(executionWorkspaces);
       await db.delete(projectWorkspaces);

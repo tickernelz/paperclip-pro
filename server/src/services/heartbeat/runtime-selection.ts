@@ -99,7 +99,7 @@ export interface HeartbeatRuntimeSelectionInput {
     executionContinuation: Awaited<ReturnType<typeof buildExecutionContinuation>> | null;
     safeWakeComments: Parameters<typeof nativeCompletionRequestsWithSources>[0];
     safeWakeCommentContext: { id: string; body: string } | null;
-    paperclipWakePayload: Awaited<ReturnType<typeof buildWardmoteWakePayload>>;
+    wardmoteWakePayload: Awaited<ReturnType<typeof buildWardmoteWakePayload>>;
     acceptedPlanContinuationWake: boolean;
   };
   session: {
@@ -251,7 +251,7 @@ export async function selectHeartbeatRuntime(db: Db, input: HeartbeatRuntimeSele
   const { run, agent, nativeRuntimeResolution, issuesSvc, runtimeEnv, beforeNativeRuntimeSelection, onAdapterEvent,
     onNativeLifecycleSelected, onProviderResourceDisposition, onNativeOwnershipHeld, stopControllerLease } = input;
   const { issueRef, issueContext, context, executionContinuation, safeWakeComments, safeWakeCommentContext,
-    paperclipWakePayload, acceptedPlanContinuationWake } = input.task;
+    wardmoteWakePayload, acceptedPlanContinuationWake } = input.task;
   const { persistedNativeExecutionInput, persistedRunnerProfile, taskSessionCredentialCompatible, taskSessionDecodedParams,
     taskSessionForRun, isFailedChatRunRetry, getFreshSessionHandoff } = input.session;
   const { persistedExecutionWorkspace, executionWorkspace, executionTarget, activeEnvironmentLease, isDotRun, projectRepositoryPaths } = input.workspace;
@@ -313,14 +313,14 @@ export async function selectHeartbeatRuntime(db: Db, input: HeartbeatRuntimeSele
             : [],
         {
           requiredFullWakeCommentCount:
-            paperclipWakePayload?.fallbackFetchNeeded === true &&
+            wardmoteWakePayload?.fallbackFetchNeeded === true &&
             CHAT_PROVIDERS.some(
               (provider) =>
                 provider ===
-                paperclipWakePayload.externalChatProvider,
+                wardmoteWakePayload.externalChatProvider,
             ) &&
-            Array.isArray(paperclipWakePayload.commentIds)
-              ? paperclipWakePayload.commentIds.length
+            Array.isArray(wardmoteWakePayload.commentIds)
+              ? wardmoteWakePayload.commentIds.length
               : undefined,
         },
       );
@@ -745,20 +745,20 @@ export async function selectHeartbeatRuntime(db: Db, input: HeartbeatRuntimeSele
                   ? `## Project repositories\nThe task workspace also contains these editable Git repositories:\n${projectRepositoryPaths.map((repo) => `- ${repo}`).join("\n")}`
                   : null,
               ].filter(Boolean).join("\n\n"),
-              initialCommunicationGuidance: nativeReviewRequest ? null : readNonEmptyString(context.paperclipTaskCommunicationGuidance),
-              wakePayload: context.paperclipWake,
-              turnContext: context.paperclipTurnContext,
+              initialCommunicationGuidance: nativeReviewRequest ? null : readNonEmptyString(context.wardmoteTaskCommunicationGuidance),
+              wakePayload: context.wardmoteWake,
+              turnContext: context.wardmoteTurnContext,
               githubInstructionSkillKeys: runScopedMentionedSkillKeys,
               resumedSession,
               previousTurn: (() => {
                 if (!previousNativeRun || nativeReviewRequest) return null;
                 try {
                   const previousTask = parseNativeExecutionInput(parseObject(previousNativeRun.runnerProfileJson).nativeExecutionInput).task;
-                  if (paperclipWakePayload?.externalChatProvider) {
+                  if (wardmoteWakePayload?.externalChatProvider) {
                     // External native inputs use a neutral task title. Compare
                     // the saved canonical brief so old provider text is not
                     // repeated as a change, while genuine edits still arrive.
-                    const savedIssue = parseObject(parseObject(previousNativeRun.contextSnapshot).paperclipIssue);
+                    const savedIssue = parseObject(parseObject(previousNativeRun.contextSnapshot).wardmoteIssue);
                     if (savedIssue.id !== issueRef.id || typeof savedIssue.title !== "string" ||
                       (savedIssue.description !== null && typeof savedIssue.description !== "string")) return null;
                     return { runId: previousNativeRun.id, task: { title: savedIssue.title, description: savedIssue.description } };

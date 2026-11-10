@@ -1072,8 +1072,8 @@ describe("iMessage Photon channel control plane", () => {
         issueId: conversation.issueId,
         wakeCommentId: sourceCommentId,
         wakeCommentIds: [sourceCommentId],
-        paperclipExternalChatExecutionBound: true,
-        paperclipWake: {
+        wardmoteExternalChatExecutionBound: true,
+        wardmoteWake: {
           externalChatProvider: "imessage-photon",
           externalChatExecutionBound: true,
         },
@@ -1205,7 +1205,7 @@ describe("iMessage Photon channel control plane", () => {
       .where(
         and(
           eq(chatIdentityLinks.endpointId, t.endpoint.id),
-          eq(chatIdentityLinks.paperclipUserId, second),
+          eq(chatIdentityLinks.wardmoteUserId, second),
         ),
       );
     expect(

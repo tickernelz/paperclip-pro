@@ -105,13 +105,13 @@ const support = externalDatabaseUrl
         contextSnapshot: {
           issueId,
           preservedRecoveryContext: true,
-          paperclipWake: { comments: [{ id: "stale-comment" }] },
-          paperclipWakeComment: { id: "stale-comment" },
-          paperclipTaskMarkdown: "stale historical task",
-          paperclipTaskMarkdownCompact: "stale historical compact task",
-          paperclipTaskMarkdownAssignment: "stale assignment task",
-          paperclipTaskMarkdownAssignmentCompact: "stale assignment compact task",
-          paperclipTurnContext: {
+          wardmoteWake: { comments: [{ id: "stale-comment" }] },
+          wardmoteWakeComment: { id: "stale-comment" },
+          wardmoteTaskMarkdown: "stale historical task",
+          wardmoteTaskMarkdownCompact: "stale historical compact task",
+          wardmoteTaskMarkdownAssignment: "stale assignment task",
+          wardmoteTaskMarkdownAssignmentCompact: "stale assignment compact task",
+          wardmoteTurnContext: {
             version: 1,
             assignment: { owner: "task_markdown" },
             events: { owner: "wake_prompt", comments: [{ id: "stale-comment" }] },
@@ -189,13 +189,13 @@ const support = externalDatabaseUrl
               preservedRecoveryContext: true,
             });
             for (const key of [
-              "paperclipWake",
-              "paperclipWakeComment",
-              "paperclipTaskMarkdown",
-              "paperclipTaskMarkdownCompact",
-              "paperclipTaskMarkdownAssignment",
-              "paperclipTaskMarkdownAssignmentCompact",
-              "paperclipTurnContext",
+              "wardmoteWake",
+              "wardmoteWakeComment",
+              "wardmoteTaskMarkdown",
+              "wardmoteTaskMarkdownCompact",
+              "wardmoteTaskMarkdownAssignment",
+              "wardmoteTaskMarkdownAssignmentCompact",
+              "wardmoteTurnContext",
             ]) {
               expect(successors[0]!.contextSnapshot).not.toHaveProperty(key);
             }

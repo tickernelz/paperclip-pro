@@ -497,7 +497,7 @@ export interface PluginLoader {
    * Load and parse the plugin manifest from a package directory.
    *
    * Reads the package.json, finds the manifest entrypoint declared under
-   * the "paperclipPlugin.manifest" key, loads the manifest module, and
+   * the "wardmotePlugin.manifest" key, loads the manifest module, and
    * validates it against the plugin manifest schema.
    *
    * Returns null if the package is not a Paperclip plugin.
@@ -721,22 +721,29 @@ export function isStandaloneBundledPluginPath(
   return isPathWithin(path.join(repoRoot, "packages", "plugins", "sandbox-providers"), packageRoot);
 }
 
+export function readWardmotePluginPackageField(pkgJson: Record<string, unknown>): unknown {
+  if (pkgJson["wardmotePlugin"] === undefined && pkgJson["paperclipPlugin"] !== undefined) {
+    throw new Error('package.json declares the retired "paperclipPlugin" field; rename it to "wardmotePlugin"');
+  }
+  return pkgJson["wardmotePlugin"];
+}
+
 export function resolveDeclaredPluginEntrypoints(
   packageRoot: string,
   pkgJson: Record<string, unknown>,
 ): PluginEntrypointPath[] {
-  const paperclipPlugin = pkgJson["paperclipPlugin"];
+  const wardmotePlugin = readWardmotePluginPackageField(pkgJson);
   if (
-    paperclipPlugin === null
-    || typeof paperclipPlugin !== "object"
-    || Array.isArray(paperclipPlugin)
+    wardmotePlugin === null
+    || typeof wardmotePlugin !== "object"
+    || Array.isArray(wardmotePlugin)
   ) {
     return [];
   }
 
   const entrypoints: PluginEntrypointPath[] = [];
   for (const key of ["manifest", "worker", "ui"] as const) {
-    const relativePath = (paperclipPlugin as Record<string, unknown>)[key];
+    const relativePath = (wardmotePlugin as Record<string, unknown>)[key];
     if (typeof relativePath === "string" && relativePath.length > 0) {
       entrypoints.push({
         key,
@@ -943,7 +950,7 @@ export async function ensureLocalPluginBuilt(
 /**
  * Resolve the manifest entrypoint from a package.json and package root.
  *
- * The spec defines a "paperclipPlugin" key in package.json with a "manifest"
+ * The spec defines a "wardmotePlugin" key in package.json with a "manifest"
  * subkey pointing to the manifest module.  This helper resolves the path.
  *
  * @see PLUGIN_SPEC.md §10 — Package Contract
@@ -952,13 +959,13 @@ function resolveManifestPath(
   packageRoot: string,
   pkgJson: Record<string, unknown>,
 ): string | null {
-  const paperclipPlugin = pkgJson["paperclipPlugin"];
+  const wardmotePlugin = readWardmotePluginPackageField(pkgJson);
   if (
-    paperclipPlugin !== null &&
-    typeof paperclipPlugin === "object" &&
-    !Array.isArray(paperclipPlugin)
+    wardmotePlugin !== null &&
+    typeof wardmotePlugin === "object" &&
+    !Array.isArray(wardmotePlugin)
   ) {
-    const manifestRelPath = (paperclipPlugin as Record<string, unknown>)[
+    const manifestRelPath = (wardmotePlugin as Record<string, unknown>)[
       "manifest"
     ];
     if (typeof manifestRelPath === "string") {
@@ -1047,7 +1054,7 @@ function compareSemver(left: string, right: string): number {
 }
 
 function getMinimumHostVersion(manifest: WardmotePluginManifestV1): string | undefined {
-  return manifest.minimumHostVersion ?? manifest.minimumPaperclipVersion;
+  return manifest.minimumHostVersion;
 }
 
 /**
@@ -1422,7 +1429,7 @@ export function pluginLoader(
     const version = typeof pkgJson["version"] === "string" ? pkgJson["version"] : "0.0.0";
 
     // Determine if this is a plugin package at all
-    const hasWardmotePlugin = "paperclipPlugin" in pkgJson;
+    const hasWardmotePlugin = readWardmotePluginPackageField(pkgJson) !== undefined;
     const nameMatchesConvention = isPluginPackageName(packageName);
 
     if (!hasWardmotePlugin && !nameMatchesConvention) {
@@ -1701,7 +1708,7 @@ export function pluginLoader(
       const pkgJson = await readPackageJson(packagePath);
       if (!pkgJson) return null;
 
-      const hasWardmotePlugin = "paperclipPlugin" in pkgJson;
+      const hasWardmotePlugin = readWardmotePluginPackageField(pkgJson) !== undefined;
       const packageName = typeof pkgJson["name"] === "string" ? pkgJson["name"] : "";
       const nameMatchesConvention = isPluginPackageName(packageName);
 

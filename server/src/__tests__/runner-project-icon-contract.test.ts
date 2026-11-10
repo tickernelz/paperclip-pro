@@ -2,7 +2,7 @@ import Ajv2020 from "ajv/dist/2020.js";
 import { describe, expect, it } from "vitest";
 import {
   capabilitySemanticToolDescriptor,
-  paperclipSemanticAction,
+  wardmoteSemanticAction,
 } from "@tickernelz/wardmote-runner";
 import { PROJECT_ICON_NAMES } from "@tickernelz/wardmote-shared";
 
@@ -13,7 +13,7 @@ describe("runner project icon contract", () => {
     const ajv = new Ajv2020({ allErrors: true, allowUnionTypes: true, strict: true });
     for (const schema of [
       capabilitySemanticToolDescriptor("create_project")!.inputSchema,
-      paperclipSemanticAction("create_project")!.inputSchema,
+      wardmoteSemanticAction("create_project")!.inputSchema,
     ]) {
       const validate = ajv.compile(schema);
       const input = { name: "Onboarding", idempotencyKey: "onboarding" };

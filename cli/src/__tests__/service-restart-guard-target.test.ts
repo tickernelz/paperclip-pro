@@ -8,7 +8,7 @@ import {
   resolveInstanceEndpoint,
 } from "../services/instance-drain.js";
 import { resolveInstanceLiveness, safeRestartManagedService } from "../commands/service.js";
-import { paperclipConfigSchema } from "../config/schema.js";
+import { wardmoteConfigSchema } from "../config/schema.js";
 import { writeRuntimeInfo } from "../runtime-info.js";
 
 const INSTANCE = "guardfix";
@@ -19,7 +19,7 @@ let previousInstance: string | undefined;
 function writeConfig(port: number): void {
   const instanceDir = path.join(home, "instances", INSTANCE);
   fs.mkdirSync(instanceDir, { recursive: true });
-  const config = paperclipConfigSchema.parse({
+  const config = wardmoteConfigSchema.parse({
     $meta: { version: 1, updatedAt: new Date().toISOString(), source: "onboard" },
     llm: { provider: "claude" },
     database: {},

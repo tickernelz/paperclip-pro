@@ -40,12 +40,12 @@ describeEmbeddedPostgres("companySkillService.list", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
   let oldWardmoteHome: string | undefined;
   let oldWardmoteInstanceId: string | undefined;
-  let paperclipHome: string | null = null;
+  let wardmoteHome: string | null = null;
   const cleanupDirs = new Set<string>();
 
   async function createManagedSkillDir(companyId: string, prefix: string) {
-    if (!paperclipHome) throw new Error("Expected Paperclip test home");
-    const managedRoot = path.join(paperclipHome, "instances", "default", "skills", companyId);
+    if (!wardmoteHome) throw new Error("Expected Paperclip test home");
+    const managedRoot = path.join(wardmoteHome, "instances", "default", "skills", companyId);
     await fs.mkdir(managedRoot, { recursive: true });
     const skillDir = await fs.mkdtemp(path.join(managedRoot, prefix));
     cleanupDirs.add(skillDir);
@@ -56,8 +56,8 @@ describeEmbeddedPostgres("companySkillService.list", () => {
     tempDb = await startEmbeddedPostgresTestDatabase("paperclip-company-skills-service-");
     oldWardmoteHome = process.env.WARDMOTE_HOME;
     oldWardmoteInstanceId = process.env.WARDMOTE_INSTANCE_ID;
-    paperclipHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-company-skills-home-"));
-    process.env.WARDMOTE_HOME = paperclipHome;
+    wardmoteHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-company-skills-home-"));
+    process.env.WARDMOTE_HOME = wardmoteHome;
     process.env.WARDMOTE_INSTANCE_ID = "default";
     db = createDb(tempDb.connectionString);
     svc = companySkillService(db);
@@ -65,7 +65,7 @@ describeEmbeddedPostgres("companySkillService.list", () => {
 
   afterEach(async () => {
     for (const skill of await db.select().from(companySkills)) {
-      await removeRuntimeSkillCache(path.join(paperclipHome!, "instances", "default", "skills", skill.companyId), skill.id);
+      await removeRuntimeSkillCache(path.join(wardmoteHome!, "instances", "default", "skills", skill.companyId), skill.id);
     }
     await db.delete(agents);
     await db.delete(companySkills);
@@ -83,8 +83,8 @@ describeEmbeddedPostgres("companySkillService.list", () => {
     else process.env.WARDMOTE_HOME = oldWardmoteHome;
     if (oldWardmoteInstanceId === undefined) delete process.env.WARDMOTE_INSTANCE_ID;
     else process.env.WARDMOTE_INSTANCE_ID = oldWardmoteInstanceId;
-    if (paperclipHome) {
-      await fs.rm(paperclipHome, { recursive: true, force: true });
+    if (wardmoteHome) {
+      await fs.rm(wardmoteHome, { recursive: true, force: true });
     }
     await tempDb?.cleanup();
   });
@@ -391,7 +391,7 @@ describeEmbeddedPostgres("companySkillService.list", () => {
       slug: original.slug,
       markdown: "# changed bytes\n",
     })).rejects.toMatchObject({ status: 409 });
-    const managedRoot = path.join(paperclipHome!, "instances", "default", "skills", companyId);
+    const managedRoot = path.join(wardmoteHome!, "instances", "default", "skills", companyId);
     expect(await fs.readFile(path.join(managedRoot, original.slug, "SKILL.md"), "utf8")).toBe(original.markdown);
     expect(await db.select().from(companySkills).where(eq(companySkills.companyId, companyId))).toHaveLength(0);
   });
@@ -399,7 +399,7 @@ describeEmbeddedPostgres("companySkillService.list", () => {
   it("does not adopt an unrelated preexisting managed directory", async () => {
     const companyId = randomUUID();
     await db.insert(companies).values({ id: companyId, name: "Existing directory", issuePrefix: `T${companyId.slice(0, 6)}` });
-    const managedRoot = path.join(paperclipHome!, "instances", "default", "skills", companyId);
+    const managedRoot = path.join(wardmoteHome!, "instances", "default", "skills", companyId);
     const skillDir = path.join(managedRoot, "occupied");
     await fs.mkdir(skillDir, { recursive: true });
     await fs.writeFile(path.join(skillDir, "SKILL.md"), "# unrelated\n", "utf8");
@@ -734,17 +734,17 @@ describeEmbeddedPostgres("companySkillService.list", () => {
 
     const initialList = await svc.list(companyId);
     await svc.list(companyId);
-    const paperclipSkill = initialList.find((skill) => skill.key === "tickernelz/wardmote/wardmote");
-    expect(paperclipSkill).toBeDefined();
-    if (!paperclipSkill) throw new Error("Expected bundled Paperclip skill");
+    const wardmoteSkill = initialList.find((skill) => skill.key === "tickernelz/wardmote/wardmote");
+    expect(wardmoteSkill).toBeDefined();
+    if (!wardmoteSkill) throw new Error("Expected bundled Paperclip skill");
 
-    const versions = await svc.listVersions(companyId, paperclipSkill.id);
+    const versions = await svc.listVersions(companyId, wardmoteSkill.id);
     expect(versions.map((version) => version.releaseId).sort()).toEqual(["v0", "v7-roster"]);
     expect(versions).toHaveLength(2);
     const storedSkill = await db
       .select({ currentVersionId: companySkills.currentVersionId })
       .from(companySkills)
-      .where(eq(companySkills.id, paperclipSkill.id))
+      .where(eq(companySkills.id, wardmoteSkill.id))
       .then((rows) => rows[0]);
     expect(storedSkill?.currentVersionId).toBeNull();
 
@@ -766,9 +766,9 @@ describeEmbeddedPostgres("companySkillService.list", () => {
     expect(championHashes).not.toHaveProperty("EDITS.md");
 
     const runtimeEntries = await svc.listRuntimeSkillEntries(companyId, {
-      versionSelections: new Map([[paperclipSkill.key, champion.id]]),
+      versionSelections: new Map([[wardmoteSkill.key, champion.id]]),
     });
-    const materialized = runtimeEntries.find((entry) => entry.key === paperclipSkill.key);
+    const materialized = runtimeEntries.find((entry) => entry.key === wardmoteSkill.key);
     expect(materialized).toMatchObject({ versionId: champion.id, sourceStatus: "available" });
     if (!materialized) throw new Error("Expected materialized release entry");
     const materializedHashes: Record<string, string> = {};

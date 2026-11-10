@@ -41,7 +41,7 @@ import { cn } from "@/lib/utils";
 import { RuntimeTestCard } from "../RuntimeTestCard";
 import { type TestOutcome } from "../new-agent-fixtures";
 import { COMPANY, ID, REF, createSettingsFixtures, library } from "./fixtures";
-import { storybookIssues } from "../../fixtures/paperclipData";
+import { storybookIssues } from "../../fixtures/wardmoteData";
 import "./settings.css";
 
 const descriptions: Record<AgentLocalDetailView, string> = {

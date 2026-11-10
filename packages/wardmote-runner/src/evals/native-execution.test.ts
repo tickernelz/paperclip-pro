@@ -10,8 +10,8 @@ import { describe, expect, it } from "vitest";
 import { prpSchemaBundle } from "../protocol/generated/schema-bundle.js";
 import {
   loadWardmoteNativeExecutionFixture,
-  paperclipNativeExecutionFixtureUrl,
-  paperclipNativeExecutionSchemaUrl,
+  wardmoteNativeExecutionFixtureUrl,
+  wardmoteNativeExecutionSchemaUrl,
   parseWardmoteNativeExecution,
 } from "./native-execution.js";
 import { WARDMOTE_RUNNER_BUILD_METADATA } from "./build-metadata.js";
@@ -60,11 +60,11 @@ describe("paperclip-runner/native-execution/v1", () => {
     const ajv = new Ajv2020({ allErrors: true, strict: false });
     for (const schema of Object.values(prpSchemaBundle)) ajv.addSchema(schema);
     const schema = JSON.parse(
-      await readFile(paperclipNativeExecutionSchemaUrl, "utf8"),
+      await readFile(wardmoteNativeExecutionSchemaUrl, "utf8"),
     ) as Record<string, unknown>;
     const validate = ajv.compile(schema);
     const fixture = JSON.parse(
-      await readFile(paperclipNativeExecutionFixtureUrl, "utf8"),
+      await readFile(wardmoteNativeExecutionFixtureUrl, "utf8"),
     ) as unknown;
 
     expect(validate(fixture), JSON.stringify(validate.errors)).toBe(true);

@@ -49,7 +49,7 @@ function managedMetadata(
 ) {
   return {
     ...(existing ?? {}),
-    paperclipManagedResource: {
+    wardmoteManagedResource: {
       pluginId,
       pluginKey,
       resourceKind: "agent",
@@ -169,7 +169,7 @@ function rowIsManagedAgent(
 ) {
   const metadata = row.metadata;
   if (!metadata || typeof metadata !== "object" || Array.isArray(metadata)) return false;
-  const marker = (metadata as Record<string, unknown>).paperclipManagedResource;
+  const marker = (metadata as Record<string, unknown>).wardmoteManagedResource;
   if (!marker || typeof marker !== "object" || Array.isArray(marker)) return false;
   const record = marker as Record<string, unknown>;
   return (
@@ -328,7 +328,7 @@ export function pluginManagedAgentService(
         || !plugin.manifestJson.agents?.some((entry) => entry.agentKey === declaration.agentKey)) {
         throw forbidden("Plugin relink is limited to its registered managed agent declaration");
       }
-      const marker = agent.metadata!.paperclipManagedResource as Record<string, unknown>;
+      const marker = agent.metadata!.wardmoteManagedResource as Record<string, unknown>;
       const previousPluginId = marker.pluginId;
       if (typeof previousPluginId !== "string" || !isUuidLike(previousPluginId)) throw forbidden("Managed agent has no plugin owner");
       if (previousPluginId !== options.pluginId) {

@@ -65,7 +65,7 @@ describe("OMP local workspace cwd precedence", () => {
         noSession: true,
         ...(cwdConfig ? { cwd: cwdConfig } : {}),
       },
-      context: { paperclipWorkspace: workspace },
+      context: { wardmoteWorkspace: workspace },
       onLog: async () => {},
     });
     expect(runProcessMock).toHaveBeenCalled();

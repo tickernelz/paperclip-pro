@@ -122,7 +122,7 @@ export {
   isWardmoteRunnerProvider,
   resolveWardmoteRunnerIdleTimeoutMs,
   resolveWardmoteRunnerModel,
-  paperclipRunnerTransitionConfig,
+  wardmoteRunnerTransitionConfig,
   normalizeLegacyRunnerProvider,
   resolveWardmoteRunnerPermissionMode,
   resolveWardmoteRunnerCursorMode,

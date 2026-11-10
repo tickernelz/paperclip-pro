@@ -4,7 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import type { AcceptedPlanDecompositionSummary } from "@tickernelz/wardmote-shared";
 import { IssuePlanDecompositionsSection } from "@/components/IssuePlanDecompositionsSection";
 import { queryKeys } from "@/lib/queryKeys";
-import { storybookAgentMap } from "../fixtures/paperclipData";
+import { storybookAgentMap } from "../fixtures/wardmoteData";
 
 const issueId = "issue-plan-decomposition-story";
 const issueIdentifier = "PAP-6831";

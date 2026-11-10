@@ -38,7 +38,7 @@ function newestMtimeMs(target) {
   return newest;
 }
 
-export function paperclipRunnerBinaryNeedsBuild({
+export function wardmoteRunnerBinaryNeedsBuild({
   repoRoot,
   nativeRunnerRequired,
   configuredBinary,

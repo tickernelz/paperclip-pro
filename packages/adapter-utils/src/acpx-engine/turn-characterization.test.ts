@@ -645,7 +645,7 @@ describe("ACPX engine turn characterization", () => {
     // A throwing accessor on a field only buildPrompt reads makes the prompt build
     // fail after the session handshake succeeds but before startTurn runs.
     const context: Record<string, unknown> = {};
-    Object.defineProperty(context, "paperclipSessionHandoffMarkdown", {
+    Object.defineProperty(context, "wardmoteSessionHandoffMarkdown", {
       enumerable: false,
       get() {
         throw new Error("prompt build boom");

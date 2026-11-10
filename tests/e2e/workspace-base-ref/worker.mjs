@@ -10,8 +10,8 @@ const api = async (route, method = "GET", body) => {
   return response.json();
 };
 const run = await api(`/heartbeat-runs/${process.env.WARDMOTE_RUN_ID}`);
-assert.equal(run.contextSnapshot.paperclipWorkspace.mode, "isolated_workspace");
-process.chdir(run.contextSnapshot.paperclipWorkspace.cwd);
+assert.equal(run.contextSnapshot.wardmoteWorkspace.mode, "isolated_workspace");
+process.chdir(run.contextSnapshot.wardmoteWorkspace.cwd);
 assert.equal(await readFile("README.md", "utf8"), "Branch repair acceptance fixture\n");
 if (process.argv.includes("--expect-setup")) {
   assert.equal(await readFile("setup-proof.txt", "utf8"), "ready");

@@ -7,7 +7,7 @@ import { Layout } from "@/components/Layout";
 import { TaskChatThread } from "@/components/TaskChatThread";
 import { PluginLauncherProvider } from "@/plugins/launchers";
 import { queryKeys } from "@/lib/queryKeys";
-import { storybookAuthSession } from "../../fixtures/paperclipData";
+import { storybookAuthSession } from "../../fixtures/wardmoteData";
 import { mixedComments as initialComments, profiles, alexId, samId, issueId, agentMap } from "./fixtures";
 
 function Conversation({ viewer = alexId, fullHistory = false }: { viewer?: string; fullHistory?: boolean }) {

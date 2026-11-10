@@ -8,7 +8,7 @@ export interface WardmoteChatFilePreparationDelivery {
 }
 
 /** Describe the transport contract, never a delivery receipt or new authority. */
-export function paperclipChatFilePreparationDelivery(
+export function wardmoteChatFilePreparationDelivery(
   authenticatedProvider: unknown,
 ): WardmoteChatFilePreparationDelivery {
   const common = {

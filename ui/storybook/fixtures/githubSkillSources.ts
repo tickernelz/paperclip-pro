@@ -3,7 +3,7 @@ import type { AgentDesiredSkillEntry, CompanySkillDetail, CompanySkillListItem, 
 import { companySkillsApi } from "@/api/companySkills";
 import { agentsApi } from "@/api/agents";
 import { foldersApi } from "@/api/folders";
-import { storybookAgents } from "./paperclipData";
+import { storybookAgents } from "./wardmoteData";
 import { skillSourcesApi } from "@/api/skillSources";
 
 export const COMPANY_ID = "company-storybook";

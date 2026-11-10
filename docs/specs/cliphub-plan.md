@@ -113,7 +113,7 @@ interface Listing {
   // Compatibility
   compatibleAdapters: string[];    // ['omp_local', ...]
   requiredModels: string[];        // ['claude-opus-4-6', 'claude-sonnet-4-6']
-  paperclipVersionMin: string;     // Minimum Wardmote version
+  wardmoteVersionMin: string;     // Minimum Wardmote version
 
   // Social proof
   installCount: number;

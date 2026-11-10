@@ -164,14 +164,14 @@ describe("sandbox run site", () => {
   it("test_sandbox_site_preserves_bridge_overlap_and_callback_sequencing", async () => {
     const events: string[] = [];
     let releasePaperclip!: () => void;
-    const paperclipGate = new Promise<void>((resolve) => {
+    const wardmoteGate = new Promise<void>((resolve) => {
       releasePaperclip = resolve;
     });
     let processLaunchEnv: Record<string, string> | null = null;
     const { site } = makeSite({
       startWardmoteBridge: async () => {
         events.push("paperclip:start");
-        await paperclipGate;
+        await wardmoteGate;
         events.push("paperclip:env-ready");
         return { env: { WARDMOTE_API_KEY: "run-token" }, stop: async () => {} } as never;
       },

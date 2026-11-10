@@ -645,14 +645,14 @@ async function resolveWardmoteDistillationLimits(
   const config = await ctx.config.get(input.companyId) as Record<string, unknown>;
   const maxCharactersPerSource = Math.min(
     normalizeBundleLimit(input.maxCharactersPerSource, DEFAULT_MAX_WARDMOTE_ISSUE_SOURCE_CHARS),
-    normalizeBundleLimit(config.maxPaperclipIssueSourceCharacters, DEFAULT_MAX_WARDMOTE_ISSUE_SOURCE_CHARS),
+    normalizeBundleLimit(config.maxWardmoteIssueSourceCharacters, DEFAULT_MAX_WARDMOTE_ISSUE_SOURCE_CHARS),
   );
   const cursorWindowCap = normalizeBundleLimit(
-    config.maxPaperclipCursorWindowCharacters,
+    config.maxWardmoteCursorWindowCharacters,
     DEFAULT_MAX_WARDMOTE_CURSOR_WINDOW_CHARS,
   );
   const routineRunCap = normalizeBundleLimit(
-    config.maxPaperclipRoutineRunCharacters,
+    config.maxWardmoteRoutineRunCharacters,
     DEFAULT_MAX_WARDMOTE_ROUTINE_RUN_CHARS,
   );
   const requestedMaxCharacters = normalizeBundleLimit(input.maxCharacters, cursorWindowCap);
@@ -661,7 +661,7 @@ async function resolveWardmoteDistillationLimits(
     maxCharacters: Math.min(requestedMaxCharacters, hardCharacterCap),
     maxCharactersPerSource,
     maxRoutineRunCharacters: routineRunCap,
-    costCentsPerThousandSourceCharacters: normalizeCostRate(config.paperclipCostCentsPerThousandSourceCharacters),
+    costCentsPerThousandSourceCharacters: normalizeCostRate(config.wardmoteCostCentsPerThousandSourceCharacters),
   };
 }
 
@@ -826,7 +826,7 @@ function normalizeWardmoteIngestionProfile(
 
 async function profileForSpace(ctx: PluginContext, companyId: string, space: WikiSpace): Promise<WardmoteIngestionProfileV1> {
   const legacySettings = space.slug === DEFAULT_SPACE_SLUG ? await getEventIngestionSettings(ctx, companyId) : null;
-  return normalizeWardmoteIngestionProfile(space.settings.paperclipIngestion, { space, legacySettings });
+  return normalizeWardmoteIngestionProfile(space.settings.wardmoteIngestion, { space, legacySettings });
 }
 
 function eventIngestionStateKey(companyId: string) {
@@ -1033,7 +1033,7 @@ export async function updateWardmoteIngestionProfile(ctx: PluginContext, input: 
     companyId: input.companyId,
     wikiId,
     spaceSlug: space.slug,
-    settings: { paperclipIngestion: profile },
+    settings: { wardmoteIngestion: profile },
   });
   if (space.slug === DEFAULT_SPACE_SLUG) {
     await ctx.state.set(eventIngestionStateKey(input.companyId), {
@@ -1148,7 +1148,7 @@ export async function listWardmoteIngestionCandidates(ctx: PluginContext, input:
     companyId: input.companyId,
     wikiId: next.wikiId,
     spaceSlug: DEFAULT_SPACE_SLUG,
-    settings: { paperclipIngestion: profile },
+    settings: { wardmoteIngestion: profile },
   });
   return next;
 }
@@ -2295,7 +2295,7 @@ function operationTitleWithSpace(title: string, space: WikiSpace): string {
 }
 
 function operationPromptWithSpaceContext(input: OperationSpaceContext): string {
-  const paperclipDerived = input.operationType === "distill" || input.operationType === "backfill";
+  const wardmoteDerived = input.operationType === "distill" || input.operationType === "backfill";
   return [
     `Plugin operation: ${input.operationType}`,
     `Wiki ID: ${input.wikiId}`,
@@ -2306,7 +2306,7 @@ function operationPromptWithSpaceContext(input: OperationSpaceContext): string {
     "Space isolation requirement:",
     `- Pass wikiId \`${input.wikiId}\` and spaceSlug \`${input.space.slug}\` on every LLM Wiki tool call.`,
     "- Treat all paths in the prompt as relative to this space root.",
-    paperclipDerived
+    wardmoteDerived
       ? "- Paperclip-derived distill/backfill operations are default-space-only in Phase 1. Stop and comment if asked to write Paperclip-derived pages into a non-default space."
       : "- Manual ingest, query, lint, index, and file-as-page operations follow the named destination space. Do not cross into another space unless the operation explicitly asks for a multi-space sweep.",
     "",
@@ -2387,14 +2387,14 @@ function isLlmWikiOperationIssue(issue: Issue): boolean {
   return typeof issue.originKind === "string" && issue.originKind.startsWith(OPERATION_ORIGIN_KIND);
 }
 
-function paperclipDistillationScope(input: { projectId?: string | null; rootIssueId?: string | null }): WardmoteDistillationScope {
+function wardmoteDistillationScope(input: { projectId?: string | null; rootIssueId?: string | null }): WardmoteDistillationScope {
   if (input.rootIssueId) return "root_issue";
   if (input.projectId) return "project";
   return "company";
 }
 
-function paperclipCursorScopeMetadata(input: { projectId?: string | null; rootIssueId?: string | null }) {
-  const sourceScope = paperclipDistillationScope(input);
+function wardmoteCursorScopeMetadata(input: { projectId?: string | null; rootIssueId?: string | null }) {
+  const sourceScope = wardmoteDistillationScope(input);
   const projectId = sourceScope === "project" ? input.projectId ?? null : null;
   const rootIssueId = sourceScope === "root_issue" ? input.rootIssueId ?? null : null;
   return {
@@ -2415,7 +2415,7 @@ async function upsertWardmoteDistillationCursor(ctx: PluginContext, input: {
   metadata?: Record<string, unknown>;
 }): Promise<string> {
   const cursorId = randomUUID();
-  const scope = paperclipCursorScopeMetadata(input);
+  const scope = wardmoteCursorScopeMetadata(input);
   await ctx.db.execute(
     `INSERT INTO ${distillationCursorTable(ctx)} AS paperclip_distillation_cursors
        (id, company_id, wiki_id, space_id, source_scope, scope_key, project_id, root_issue_id, source_kind, last_observed_at, pending_event_count, metadata)
@@ -2616,7 +2616,7 @@ export async function assembleWardmoteSourceBundle(ctx: PluginContext, input: Wa
   const includeComments = input.includeComments !== false;
   const includeDocuments = input.includeDocuments !== false;
   const issues = await listWardmoteBundleIssues(ctx, input);
-  const scope = paperclipCursorScopeMetadata(input);
+  const scope = wardmoteCursorScopeMetadata(input);
   const sourceRefs: WardmoteSourceRef[] = [];
   const warnings: string[] = [];
   const lines = [
@@ -2767,7 +2767,7 @@ export async function createWardmoteDistillationRun(ctx: PluginContext, input: W
   const wikiId = normalizeWikiId(input.wikiId);
   assertWardmoteSourceScopePayload(input);
   const space = await requireWardmoteIngestionPolicy(ctx, { companyId: input.companyId, wikiId, spaceSlug: input.spaceSlug }, "execute", { requireEnabledProfile: true });
-  const scope = paperclipCursorScopeMetadata(input);
+  const scope = wardmoteCursorScopeMetadata(input);
   const limits = await resolveWardmoteDistillationLimitsForSpace(ctx, { ...input, space });
   const cursorId = await upsertWardmoteDistillationCursor(ctx, {
     companyId: input.companyId,
@@ -2897,7 +2897,7 @@ export async function createWardmoteDistillationWorkItem(ctx: PluginContext, inp
   assertWardmoteSourceScopePayload(input);
   const space = await requireWardmoteIngestionPolicy(ctx, { companyId: input.companyId, wikiId, spaceSlug: input.spaceSlug }, "queue", { requireEnabledProfile: true });
   const itemId = randomUUID();
-  const scope = paperclipCursorScopeMetadata(input);
+  const scope = wardmoteCursorScopeMetadata(input);
   if (input.kind === "backfill" && !scope.projectId && !scope.rootIssueId) {
     throw new Error("Backfill work items must target a projectId or rootIssueId; whole-company backfill is not allowed.");
   }
@@ -3338,7 +3338,7 @@ export async function distillWardmoteProjectPage(ctx: PluginContext, input: Ward
   const wikiId = normalizeWikiId(input.wikiId);
   assertWardmoteSourceScopePayload(input);
   const space = await requireWardmoteIngestionPolicy(ctx, { companyId: input.companyId, wikiId, spaceSlug: input.spaceSlug }, "execute", { requireEnabledProfile: true });
-  const scope = paperclipCursorScopeMetadata(input);
+  const scope = wardmoteCursorScopeMetadata(input);
   const issues = await listWardmoteBundleIssues(ctx, input);
   const project = scope.projectId ? await ctx.projects.get(scope.projectId, input.companyId) : null;
   const rootIssue = scope.rootIssueId ? await ctx.issues.get(scope.rootIssueId, input.companyId) : null;
@@ -3669,7 +3669,7 @@ async function recordWardmoteCursorObservation(ctx: PluginContext, input: {
   };
 }
 
-async function paperclipProfileIncludesIssue(ctx: PluginContext, input: {
+async function wardmoteProfileIncludesIssue(ctx: PluginContext, input: {
   companyId: string;
   issue: Issue;
   profile: WardmoteIngestionProfileV1;
@@ -3713,7 +3713,7 @@ async function routeWardmoteCursorObservation(ctx: PluginContext, input: {
     const policy = evaluateWardmoteProfilePolicy({ space, profile, purpose: "event_routing", requireEnabledProfile: true });
     if (!policy.allowed) continue;
     if (!profile.sourceKinds[input.sourceKind]) continue;
-    if (!(await paperclipProfileIncludesIssue(ctx, { companyId: input.companyId, issue: input.issue, profile }))) continue;
+    if (!(await wardmoteProfileIncludesIssue(ctx, { companyId: input.companyId, issue: input.issue, profile }))) continue;
     eligibleProfileCount += 1;
     if (eligibleProfileCount > MAX_WARDMOTE_DISTILLATION_FAN_OUT) {
       throw new Error(`Paperclip ingestion fan-out exceeds the hard cap of ${MAX_WARDMOTE_DISTILLATION_FAN_OUT} enabled profiles.`);

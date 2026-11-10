@@ -209,7 +209,7 @@ async function openPosthogSetupFromGallery(page, config, companyId) {
   fail("A.setup-route", "oauth_method_missing");
 }
 
-async function safePageState(page, resourceFailures, paperclipOrigin) {
+async function safePageState(page, resourceFailures, wardmoteOrigin) {
   let current;
   try {
     current = new URL(page.url());
@@ -218,7 +218,7 @@ async function safePageState(page, resourceFailures, paperclipOrigin) {
   }
   const bodyText = await page.locator("body").innerText().catch(() => "");
   return {
-    location: current.origin === paperclipOrigin
+    location: current.origin === wardmoteOrigin
       ? `${current.hostname}${current.pathname}`
       : current.hostname,
     headingCount: await page.getByRole("heading").count().catch(() => 0),
@@ -275,7 +275,7 @@ async function selectPosthogCloudRegion(page) {
 }
 
 async function completePosthogAuthorization(page, config) {
-  const paperclipOrigin = new URL(config.baseUrl).origin;
+  const wardmoteOrigin = new URL(config.baseUrl).origin;
   const providerTimeoutMs = Number(process.env.POSTHOG_PROVIDER_TIMEOUT_MS || 4 * 60_000);
   const deadline = Date.now() + (Number.isFinite(providerTimeoutMs) && providerTimeoutMs > 0
     ? providerTimeoutMs
@@ -289,7 +289,7 @@ async function completePosthogAuthorization(page, config) {
     } catch {
       fail("B.oauth-callback", "invalid_navigation_url");
     }
-    if (current.origin === paperclipOrigin && current.pathname.includes("/apps/")) return;
+    if (current.origin === wardmoteOrigin && current.pathname.includes("/apps/")) return;
 
     const emailInput = page.locator('input[type="email"], input[name="email"], input[autocomplete="username"]').filter({ visible: true }).first();
     const passwordInput = page.locator('input[type="password"], input[name="password"], input[autocomplete="current-password"]').filter({ visible: true }).first();

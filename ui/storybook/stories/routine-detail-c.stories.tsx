@@ -33,7 +33,7 @@ import {
   ActivitySection,
 } from "@/components/routine-sections/operate-sections";
 import { queryKeys } from "@/lib/queryKeys";
-import { storybookAgents, storybookProjects } from "../fixtures/paperclipData";
+import { storybookAgents, storybookProjects } from "../fixtures/wardmoteData";
 
 const COMPANY_ID = "company-storybook";
 const ROUTINE_ID = "routine-storybook";

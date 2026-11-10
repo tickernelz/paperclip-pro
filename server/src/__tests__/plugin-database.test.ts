@@ -405,7 +405,7 @@ describeEmbeddedPostgres("plugin database namespaces", () => {
         name: pluginManifest.id,
         version: pluginManifest.version,
         type: "module",
-        paperclipPlugin: { manifest: "./manifest.js" },
+        wardmotePlugin: { manifest: "./manifest.js" },
       }),
       "utf8",
     );
@@ -499,6 +499,7 @@ describeEmbeddedPostgres("plugin database namespaces", () => {
       "001_llm_wiki.sql",
       "002_paperclip_distillation.sql",
       "003_spaces.sql",
+      "004_wardmote_settings_keys.sql",
     ]);
 
     const constraintRows = Array.from(

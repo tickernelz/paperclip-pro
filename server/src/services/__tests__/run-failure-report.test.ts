@@ -555,7 +555,7 @@ describeEmbeddedPostgres("reportRunFailure", () => {
     const secret = "opaque-registered-value";
     const run = buildRun({
       error: `connection failed: ${secret}`,
-      contextSnapshot: { paperclipSecretRedactions: [{ fingerprintSha256: "fixture", material: { encrypted: "fixture" } }] },
+      contextSnapshot: { wardmoteSecretRedactions: [{ fingerprintSha256: "fixture", material: { encrypted: "fixture" } }] },
       resultJson: { terminalSessionFailure: { category: "service", details: `upstream rejected ${secret}` } },
     });
     await db.insert(heartbeatRuns).values(run);

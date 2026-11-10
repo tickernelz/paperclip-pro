@@ -104,7 +104,7 @@ export function slackSearchOAuthService(
         and(
           eq(chatIdentityLinks.companyId, companyId),
           eq(chatIdentityLinks.endpointId, endpointId),
-          eq(chatIdentityLinks.paperclipUserId, userId),
+          eq(chatIdentityLinks.wardmoteUserId, userId),
           eq(chatIdentityLinks.status, "linked"),
           eq(
             chatExternalPrincipals.providerAccountId,

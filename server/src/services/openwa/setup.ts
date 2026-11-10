@@ -324,7 +324,7 @@ export async function openwaSetupReplyDelivered(
         eq(heartbeatRuns.status, "succeeded"),
         or(
           sql`exists (select 1 from ${chatActions} where ${chatActions.id} = ${heartbeatRuns.wakeupRequestId} and ${chatActions.companyId} = ${input.companyId} and ${chatActions.deliveryId} = ${input.deliveryId})`,
-          sql`coalesce(${heartbeatRuns.contextSnapshot} -> 'paperclipOpenwa' -> 'deliveryIds', '[]'::jsonb) ? ${input.deliveryId}`,
+          sql`coalesce(${heartbeatRuns.contextSnapshot} -> 'wardmoteOpenwa' -> 'deliveryIds', '[]'::jsonb) ? ${input.deliveryId}`,
         ),
       ),
     )

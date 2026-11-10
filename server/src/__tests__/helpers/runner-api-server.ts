@@ -179,7 +179,7 @@ export async function startRunnerApiTestServer(options: {
     },
     async close() {
       runnerPrpWebSocketInternals.resetForTests();
-      await app.locals.paperclipShutdown();
+      await app.locals.wardmoteShutdown();
       for (const socket of sockets) socket.destroy();
       http.closeAllConnections();
       await new Promise<void>((resolve) => http.close(() => resolve()));

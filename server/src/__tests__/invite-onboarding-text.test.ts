@@ -50,10 +50,10 @@ describe("buildInviteOnboardingTextDocument", () => {
     expect(text).toContain("Suggested Paperclip base URLs to try");
     expect(text).toContain("http://localhost:3100");
     expect(text).toContain("host.docker.internal");
-    expect(text).toContain("paperclipApiUrl");
-    expect(text).toContain("agentDefaultsPayload.paperclipApiUrl");
+    expect(text).toContain("wardmoteApiUrl");
+    expect(text).toContain("agentDefaultsPayload.wardmoteApiUrl");
     expect(text).toContain("Do not rotate or invent a Paperclip key manually");
-    expect(text).toContain("set the first reachable candidate as agentDefaultsPayload.paperclipApiUrl");
+    expect(text).toContain("set the first reachable candidate as agentDefaultsPayload.wardmoteApiUrl");
     expect(text).toContain("WARDMOTE_API_KEY");
     expect(text).toContain("Store the parsed token field from the raw HTTP JSON response");
     expect(text).toContain("A token value containing literal ... or [redacted]");

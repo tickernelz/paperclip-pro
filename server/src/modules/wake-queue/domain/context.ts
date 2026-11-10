@@ -7,10 +7,10 @@
 import { extractWakeCommentIds, WAKE_COMMENT_IDS_KEY } from "../../run-dispatch/index.js";
 import { readNonEmptyString } from "./values.js";
 
-const WARDMOTE_WAKE_PAYLOAD_KEY = "paperclipWake";
-const WARDMOTE_WAKE_COMMENT_KEY = "paperclipWakeComment";
-const WARDMOTE_TASK_MARKDOWN_KEY = "paperclipTaskMarkdown";
-const WARDMOTE_TASK_MARKDOWN_COMPACT_KEY = "paperclipTaskMarkdownCompact";
+const WARDMOTE_WAKE_PAYLOAD_KEY = "wardmoteWake";
+const WARDMOTE_WAKE_COMMENT_KEY = "wardmoteWakeComment";
+const WARDMOTE_TASK_MARKDOWN_KEY = "wardmoteTaskMarkdown";
+const WARDMOTE_TASK_MARKDOWN_COMPACT_KEY = "wardmoteTaskMarkdownCompact";
 
 const INTERACTION_CONTINUATION_CONTEXT_KEYS = [
   "interactionId",

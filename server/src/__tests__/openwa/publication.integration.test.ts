@@ -327,7 +327,7 @@ describe("OpenWA publication (embedded Postgres + fake gateway)", () => {
           deliveryIds: input.deliveryIds ?? [],
           ...(input.approvalRequestId ? { approvalRequestId: input.approvalRequestId } : {}),
         },
-        paperclipOpenwa: {
+        wardmoteOpenwa: {
           endpointId: t.endpointId,
           chatKey: openwaChatKey(c.chatId),
           triggerClass: input.triggerClass,
@@ -976,7 +976,7 @@ describe("OpenWA publication (embedded Postgres + fake gateway)", () => {
     const snapshot = row!.contextSnapshot as Record<string, Record<string, unknown>>;
     await db
       .update(heartbeatRuns)
-      .set({ contextSnapshot: { ...snapshot, paperclipOpenwa: { ...snapshot.paperclipOpenwa, deliveryIds: [first.id, steered.id] } } })
+      .set({ contextSnapshot: { ...snapshot, wardmoteOpenwa: { ...snapshot.wardmoteOpenwa, deliveryIds: [first.id, steered.id] } } })
       .where(eq(heartbeatRuns.id, run.runId));
     const [refreshed] = await db.select({ contextSnapshot: heartbeatRuns.contextSnapshot }).from(heartbeatRuns).where(eq(heartbeatRuns.id, run.runId));
     const answered = await markTriggersAnswered(db, {

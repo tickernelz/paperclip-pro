@@ -235,9 +235,9 @@ describe("OpenWA linked read-only numbers (embedded Postgres + fake gateway)", (
       contextSnapshot: {
         source: "chat:openwa",
         issueId: c.issueId,
-        paperclipToolProfile: profile,
+        wardmoteToolProfile: profile,
         openwa: { event: "message", triggerClass, deliveryIds: [] },
-        paperclipOpenwa: {
+        wardmoteOpenwa: {
           endpointId: t.endpointId,
           chatKey: openwaChatKey(c.chatId),
           triggerClass,

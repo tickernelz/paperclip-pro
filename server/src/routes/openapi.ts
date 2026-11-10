@@ -1054,8 +1054,8 @@ const chatPrincipalLinkResponseSchema = z
     principalId: z.string().uuid(),
     externalLabel: z.string(),
     externalDetail: z.string(),
-    paperclipUserId: z.string().nullable(),
-    paperclipUserLabel: z.string().nullable(),
+    wardmoteUserId: z.string().nullable(),
+    wardmoteUserLabel: z.string().nullable(),
     status: chatIdentityLinkStatusSchema,
   })
   .strict();
@@ -2999,7 +2999,7 @@ const openwaOwnerResponseSchema = z
     numberMasked: z.string(),
     displayName: z.string().nullable(),
     linkStatus: chatIdentityLinkStatusSchema,
-    paperclipUserId: z.string().nullable(),
+    wardmoteUserId: z.string().nullable(),
     effective: z.boolean(),
     createdAt: z.string(),
   })

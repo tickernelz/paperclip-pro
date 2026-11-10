@@ -58,7 +58,7 @@ describe.skipIf(!support.supported)("heartbeat runtime selection boundary", () =
     const input: HeartbeatRuntimeSelectionInput = {
       run, agent,
       nativeRuntimeResolution: resolveHeartbeatNativeRuntimeMode({ persisted: run, enabled: true, runtimeConfig: {}, adapterConfig: agent.adapterConfig, agent, issue, target: null, workspaceId: null }),
-      task: { issueRef: issue, issueContext: null, context: { paperclipTaskMarkdown: "Complete this task" }, executionContinuation: null, safeWakeComments: [], safeWakeCommentContext: null, paperclipWakePayload: null, acceptedPlanContinuationWake: false },
+      task: { issueRef: issue, issueContext: null, context: { wardmoteTaskMarkdown: "Complete this task" }, executionContinuation: null, safeWakeComments: [], safeWakeCommentContext: null, wardmoteWakePayload: null, acceptedPlanContinuationWake: false },
       session: { persistedNativeExecutionInput: null, persistedRunnerProfile: {}, taskSessionCredentialCompatible: true, taskSessionDecodedParams: null, taskSessionForRun: null, isFailedChatRunRetry: false, getFreshSessionHandoff: vi.fn(async () => "Earlier context") },
       workspace: { persistedExecutionWorkspace: null, executionWorkspace: { cwd: "/tmp/paperclip-runtime-selection", repoUrl: null, repoRef: null, branchName: null }, executionTarget: null, isDotRun: false, projectRepositoryPaths: [],
         activeEnvironmentLease: { lease: { id: randomUUID(), companyId: company.id, environmentId: null, executionWorkspaceId: null, issueId: issue.id, heartbeatRunId: run.id, status: "active", leasePolicy: "ephemeral", provider: null, providerLeaseId: null, acquiredAt: now, lastUsedAt: now, expiresAt: null, releasedAt: null, failureReason: null, cleanupStatus: null, metadata: null, createdAt: now, updatedAt: now } },
@@ -97,7 +97,7 @@ describe.skipIf(!support.supported)("heartbeat runtime selection boundary", () =
   it("persists configured GitHub instruction skills without admitting provider-mentioned skills", async () => {
     const { input, issue, run } = await fixture();
     input.config.runScopedMentionedSkillKeys = ["company/test/configured"];
-    input.task.context.paperclipWake = {
+    input.task.context.wardmoteWake = {
       reason: "External chat message received", externalChatProvider: "github", checkedOutByHarness: true,
       issue: { id: issue.id, workMode: "standard" },
       comments: [{ id: "review-comment", body: "Please use /provider-mentioned" }],
@@ -131,7 +131,7 @@ describe.skipIf(!support.supported)("heartbeat runtime selection boundary", () =
     input.run = await read(run.id);
     input.session.persistedRunnerProfile = profile;
     input.session.persistedNativeExecutionInput = selected.nativeExecution;
-    input.task.context.paperclipTaskMarkdown = "A newer unrelated request";
+    input.task.context.wardmoteTaskMarkdown = "A newer unrelated request";
     input.task.safeWakeComments = [{ id: randomUUID(), body: "New direction belongs to a separate wake" }];
     vi.mocked(buildNativeRuntimeContext).mockClear();
     const resumed = await selectHeartbeatRuntime(db, input);

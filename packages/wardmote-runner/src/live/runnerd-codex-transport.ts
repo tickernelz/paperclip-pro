@@ -1717,14 +1717,14 @@ function appendRunnerdRehydrationTrace(
         fieldMappings: [
           {
             inputPath: "sourceEventId",
-            outputPath: "paperclipTrace.sourceEventId",
+            outputPath: "wardmoteTrace.sourceEventId",
             action: "copied",
             reason:
               "Preserved the durable event identity while rehydrating the provider notification",
           },
           {
             inputPath: "eventType",
-            outputPath: "paperclipTrace.sourceEventType",
+            outputPath: "wardmoteTrace.sourceEventType",
             action: "renamed",
             reason:
               "Attached the canonical PRP type to the rehydrated notification",
@@ -4092,7 +4092,7 @@ class DurablePrpCodexTransport implements CodexAppServerTransport {
       this.#runAttachTemplate = structuredClone(runAttachTemplate);
       const payload = {
         ...runAttachTemplate,
-        paperclipNextAuthority: { identity: desired, connection },
+        wardmoteNextAuthority: { identity: desired, connection },
       };
       core.queueCommand("run.attach", payload, commandId, true);
       // ACPX run attachment checkpoints the old sidecar and starts a fresh
@@ -5168,7 +5168,7 @@ class DurablePrpCodexTransport implements CodexAppServerTransport {
             return (
               command.type === "run.attach" &&
               command.status === "pending" &&
-              record(command.payload).paperclipNextAuthority !== undefined
+              record(command.payload).wardmoteNextAuthority !== undefined
             );
           })))
     ) {
@@ -5849,7 +5849,7 @@ class DurablePrpCodexTransport implements CodexAppServerTransport {
         },
         ...(call.sourceEventId && call.sourceEventType
           ? {
-              paperclipTrace: {
+              wardmoteTrace: {
                 sourceEventId: call.sourceEventId,
                 sourceEventType: call.sourceEventType,
               },
@@ -6336,7 +6336,7 @@ class DurablePrpCodexTransport implements CodexAppServerTransport {
             id: requestId,
             method,
             params,
-            paperclipTrace: {
+            wardmoteTrace: {
               sourceEventId: event.sourceEventId,
               sourceEventType: event.eventType,
             },
@@ -6504,7 +6504,7 @@ class DurablePrpCodexTransport implements CodexAppServerTransport {
           params,
           ...(this.options.environment?.WARDMOTE_PROVIDER_TRACE_PATH
             ? {
-                paperclipTrace: {
+                wardmoteTrace: {
                   sourceEventId: event.sourceEventId,
                   sourceEventType: event.eventType,
                 },

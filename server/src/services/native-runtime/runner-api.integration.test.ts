@@ -516,7 +516,7 @@ else if(m.id!==undefined) send({id:m.id,result:{}});
     try {
       const fixture = await localTrustedServer.fixture({
         disableWakeOnDemand: true,
-        contextSnapshot: { paperclipWake: { comments: [] } },
+        contextSnapshot: { wardmoteWake: { comments: [] } },
       });
       const sourceToken = createLocalAgentJwt(
         fixture.agentId,
@@ -579,7 +579,7 @@ else if(m.id!==undefined) send({id:m.id,result:{}});
         nativeIssueId: fixture.issueId,
         invocationSource: "continuation",
         triggerDetail: "comment",
-        contextSnapshot: { issueId: fixture.issueId, paperclipWake: { comments: [{ id: humanComment.id }] } },
+        contextSnapshot: { issueId: fixture.issueId, wardmoteWake: { comments: [{ id: humanComment.id }] } },
       });
       await localTrustedServer.db.update(issues).set({ executionRunId: successorRunId, checkoutRunId: successorRunId }).where(eq(issues.id, fixture.issueId));
       const successorToken = createLocalAgentJwt(

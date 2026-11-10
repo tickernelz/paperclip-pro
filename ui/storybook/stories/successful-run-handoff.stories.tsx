@@ -13,7 +13,7 @@ import {
   SUCCESSFUL_RUN_HANDOFF_RESOLVED_ACTION,
   successfulRunHandoffActivityTone,
 } from "@/lib/successful-run-handoff";
-import { createIssue, storybookAgents } from "../fixtures/paperclipData";
+import { createIssue, storybookAgents } from "../fixtures/wardmoteData";
 
 function ActivityExample({ action }: { action: string }) {
   const tone = successfulRunHandoffActivityTone(action);

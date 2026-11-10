@@ -3047,7 +3047,7 @@ export function buildHostServices(
           payload: { prompt: params.prompt },
           contextSnapshot: {
             wakeReason: params.reason ?? null,
-            paperclipAgentMessage: {
+            wardmoteAgentMessage: {
               text: params.prompt,
               source: "plugin_invoke",
               pluginKey,
@@ -3534,7 +3534,7 @@ export function buildHostServices(
             wakeReason: params.reason ?? null,
             wakeSource: "automation",
             wakeTriggerDetail: "system",
-            paperclipAgentMessage: {
+            wardmoteAgentMessage: {
               text: params.prompt,
               source: "plugin_session",
               pluginKey,

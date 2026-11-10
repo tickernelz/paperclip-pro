@@ -215,7 +215,7 @@ describe.each(["slack", "discord"] as const)("reviewed %s execution binding", (p
         companyId,
         endpointId,
         principalId,
-        paperclipUserId: userId,
+        wardmoteUserId: userId,
         status: "linked",
       });
     await db
@@ -301,7 +301,7 @@ describe.each(["slack", "discord"] as const)("reviewed %s execution binding", (p
       agentId,
       contextSnapshot: {
         ...context,
-        paperclipExternalChatExecutionBound: true,
+        wardmoteExternalChatExecutionBound: true,
       },
     });
     expect(wake).toMatchObject({
@@ -324,8 +324,8 @@ describe.each(["slack", "discord"] as const)("reviewed %s execution binding", (p
       assigneeAgentId: agentId,
       contextSnapshot: {
         ...context,
-        paperclipHarnessCheckedOut: true,
-        paperclipExternalChatExecutionBound: true,
+        wardmoteHarnessCheckedOut: true,
+        wardmoteExternalChatExecutionBound: true,
       },
       reviewAttention: { state: "stalled", paths: [], reason: "Review path consumed" },
       existingWake: false,
@@ -347,8 +347,8 @@ describe.each(["slack", "discord"] as const)("reviewed %s execution binding", (p
   it("reauthorizes a review recovery from its retained message batch without approving the task", async () => {
     const [before] = await db.select().from(issues).where(eq(issues.id, issueId));
     await withReviewRecovery(async (recovery) => {
-      expect(recovery).not.toHaveProperty("paperclipHarnessCheckedOut");
-      expect(recovery).not.toHaveProperty("paperclipExternalChatExecutionBound");
+      expect(recovery).not.toHaveProperty("wardmoteHarnessCheckedOut");
+      expect(recovery).not.toHaveProperty("wardmoteExternalChatExecutionBound");
       await expect(attest(recovery)).resolves.toBe(true);
       expect((await db.select().from(issues).where(eq(issues.id, issueId)))[0]).toEqual(before);
       expect((await db.select().from(issueThreadInteractions)
@@ -400,7 +400,7 @@ describe.each(["slack", "discord"] as const)("reviewed %s execution binding", (p
       .where(eq(issues.id, issueId));
     try {
       await expect(
-        attest({ ...context, paperclipExternalChatExecutionBound: true }),
+        attest({ ...context, wardmoteExternalChatExecutionBound: true }),
       ).resolves.toBe(false);
     } finally {
       await db
@@ -415,7 +415,7 @@ describe.each(["slack", "discord"] as const)("reviewed %s execution binding", (p
       attest({
         ...context,
         source: "chat:telegram",
-        paperclipExternalChatExecutionBound: true,
+        wardmoteExternalChatExecutionBound: true,
       }),
     ).resolves.toBe(false);
     await db
@@ -559,7 +559,7 @@ describe.each(["slack", "discord"] as const)("reviewed %s execution binding", (p
       agentId,
       contextSnapshot: {
         ...context,
-        paperclipExternalChatExecutionBound: true,
+        wardmoteExternalChatExecutionBound: true,
       },
     });
     await db
@@ -567,8 +567,8 @@ describe.each(["slack", "discord"] as const)("reviewed %s execution binding", (p
       .set({
         contextSnapshot: {
           ...context,
-          paperclipExternalChatExecutionBound: true,
-          paperclipWake: { ...wake, fallbackFetchNeeded: true },
+          wardmoteExternalChatExecutionBound: true,
+          wardmoteWake: { ...wake, fallbackFetchNeeded: true },
         },
       })
       .where(eq(heartbeatRuns.id, runId));

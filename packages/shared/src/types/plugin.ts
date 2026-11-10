@@ -675,11 +675,6 @@ export interface WardmotePluginManifestV1 {
    * Preferred generic field for new manifests.
    */
   minimumHostVersion?: PluginMinimumHostVersion;
-  /**
-   * Legacy alias for `minimumHostVersion`.
-   * Kept for backwards compatibility with existing manifests and docs.
-   */
-  minimumPaperclipVersion?: PluginMinimumHostVersion;
   /** Capabilities this plugin requires from the host. Enforced at runtime. */
   capabilities: PluginCapability[];
   /** Required participant in agent preparation, stop, resume, and cleanup. */

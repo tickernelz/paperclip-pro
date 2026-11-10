@@ -4,7 +4,7 @@ import { createChatEndpointSchema, slackAppConfigurationSchema } from "./validat
 
 describe("Slack app manifest", () => {
   it("preserves older account setup state and validates optional verification delivery state", () => {
-    const account = { externalUserId: "UINSTALLER", paperclipUserId: "board-user", status: "linked", welcomeStatus: "sent" };
+    const account = { externalUserId: "UINSTALLER", wardmoteUserId: "board-user", status: "linked", welcomeStatus: "sent" };
     expect(slackAccountStateSchema.safeParse(account).success).toBe(true);
     for (const verificationStatus of ["pending", "sending", "sent", "failed", "uncertain"]) {
       expect(slackAccountStateSchema.safeParse({ ...account, verificationStatus }).success).toBe(true);

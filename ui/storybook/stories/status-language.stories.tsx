@@ -17,7 +17,7 @@ import { QuotaBar } from "@/components/QuotaBar";
 import { StatusBadge } from "@/components/StatusBadge";
 import { StatusIcon } from "@/components/StatusIcon";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { createIssue } from "../fixtures/paperclipData";
+import { createIssue } from "../fixtures/wardmoteData";
 
 function Section({
   eyebrow,

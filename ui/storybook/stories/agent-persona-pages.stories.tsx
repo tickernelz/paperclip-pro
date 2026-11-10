@@ -14,7 +14,7 @@ import { NewAgent } from "@/pages/NewAgent";
 import { AgentBasicsDialog } from "@/components/new-agent/AgentBasicsDialog";
 import { queryKeys } from "@/lib/queryKeys";
 import { resolveAgentAppearance } from "@tickernelz/wardmote-shared";
-import { storybookAgents, storybookIssues, storybookActivityEvents, storybookLiveRuns, storybookDashboardSummary } from "../fixtures/paperclipData";
+import { storybookAgents, storybookIssues, storybookActivityEvents, storybookLiveRuns, storybookDashboardSummary } from "../fixtures/wardmoteData";
 
 const companyId = "company-storybook";
 const agents = storybookAgents.map(agent => {

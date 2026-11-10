@@ -7,10 +7,10 @@ import { getSecretProvider } from "../secrets/provider-registry.js";
 import type { StoredSecretVersionMaterial } from "../secrets/types.js";
 import { credentialAccessConnectionNameSql } from "./credential-access-visibility.js";
 
-const REGISTRY_KEY = "paperclipSecretRedactions";
+const REGISTRY_KEY = "wardmoteSecretRedactions";
 // Project only the registry: run contexts can contain megabytes of prompt data.
-const registrySnapshot = sql`jsonb_build_object('paperclipSecretRedactions', ${heartbeatRuns.contextSnapshot} -> 'paperclipSecretRedactions')`;
-const hasRegistry = sql`${heartbeatRuns.contextSnapshot} ? 'paperclipSecretRedactions'`;
+const registrySnapshot = sql`jsonb_build_object('wardmoteSecretRedactions', ${heartbeatRuns.contextSnapshot} -> 'wardmoteSecretRedactions')`;
+const hasRegistry = sql`${heartbeatRuns.contextSnapshot} ? 'wardmoteSecretRedactions'`;
 
 type RegistryEntry = {
   fingerprintSha256: string;

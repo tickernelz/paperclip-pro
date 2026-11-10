@@ -300,7 +300,7 @@ Suggested `package.json` keys:
 {
   "name": "@paperclip/plugin-linear",
   "version": "0.1.0",
-  "paperclipPlugin": {
+  "wardmotePlugin": {
     "manifest": "./dist/manifest.js",
     "worker": "./dist/worker.js",
     "ui": "./dist/ui/"
@@ -322,8 +322,6 @@ export interface WardmotePluginManifestV1 {
   author: string;
   categories: Array<"connector" | "workspace" | "automation" | "ui">;
   minimumHostVersion?: string;
-  /** @deprecated Use `minimumHostVersion` instead. Retained for backwards compatibility. */
-  minimumPaperclipVersion?: string;
   capabilities: string[];
   entrypoints: {
     worker: string;
@@ -385,8 +383,7 @@ Rules:
 - `id` must be globally unique
 - `id` should normally equal the npm package name
 - `apiVersion` must match the host-supported plugin API version
-- `minimumHostVersion` is preferred, with `minimumPaperclipVersion` retained for
-  backwards compatibility
+- `minimumHostVersion` declares the lowest host version the plugin supports
 - `capabilities` must be static and install-time visible
 - config schema must be JSON Schema compatible
 - `entrypoints.ui` points to the directory containing the built UI bundle
@@ -1692,7 +1689,7 @@ For developing a plugin against a running Paperclip instance:
 
 The host should publish a starter template (`plugin-creator`) that scaffolds:
 
-- `package.json` with correct `paperclipPlugin` keys
+- `package.json` with correct `wardmotePlugin` keys
 - manifest with placeholder values
 - worker entry with SDK type imports and example event handler
 - UI entry with example `DashboardWidget` using bridge hooks

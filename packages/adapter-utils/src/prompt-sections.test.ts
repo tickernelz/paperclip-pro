@@ -7,7 +7,7 @@ describe("task and event section ownership", () => {
     const context = createPromptContextFixture();
     for (const includeExecutionContract of [undefined, false, true]) {
       const sections = selectSections(context, { resumedSession: true, includeExecutionContract });
-      expect(sections.taskContextNote).toBe(context.paperclipTaskMarkdownAssignmentCompact);
+      expect(sections.taskContextNote).toBe(context.wardmoteTaskMarkdownAssignmentCompact);
       expect(sections.wakePrompt).toContain('"id":"comment-second"');
       expect(sections.wakePrompt).not.toContain("Execution contract:");
     }
@@ -16,10 +16,10 @@ describe("task and event section ownership", () => {
   it("preserves user repetition and distinct same-body comments under their source owners", () => {
     const context = createPromptContextFixture();
     const { taskContextNote, wakePrompt } = selectSections(context);
-    expect(taskContextNote).toContain(context.paperclipTaskMarkdownAssignment);
-    expect(taskContextNote).toContain(context.paperclipWake.issue.description);
+    expect(taskContextNote).toContain(context.wardmoteTaskMarkdownAssignment);
+    expect(taskContextNote).toContain(context.wardmoteWake.issue.description);
     expect(taskContextNote).not.toContain("comment-first");
-    expect(wakePrompt).not.toContain(context.paperclipWake.issue.description);
+    expect(wakePrompt).not.toContain(context.wardmoteWake.issue.description);
     expect(wakePrompt).not.toContain('"objective":');
     expect(wakePrompt).toContain('"objectiveSource":{"kind":"description","id":"issue-1"');
     for (const message of context.executionContinuation.messages) {
@@ -37,20 +37,20 @@ describe("task and event section ownership", () => {
   it("reselects full bootstrap and history when the attempt becomes fresh", () => {
     const context = createPromptContextFixture();
     const resumed = selectSections(context, { resumedSession: true });
-    expect(resumed.taskContextNote).toBe(context.paperclipTaskMarkdownAssignmentCompact);
+    expect(resumed.taskContextNote).toBe(context.wardmoteTaskMarkdownAssignmentCompact);
     expect(resumed.wakePrompt).not.toContain('"id":"comment-first"');
     const fresh = selectSections(context, { resumedSession: false });
-    expect(fresh.taskContextNote).toContain(context.paperclipTaskCommunicationGuidance);
-    expect(fresh.taskContextNote).toContain(context.paperclipTaskMarkdownAssignment);
+    expect(fresh.taskContextNote).toContain(context.wardmoteTaskCommunicationGuidance);
+    expect(fresh.taskContextNote).toContain(context.wardmoteTaskMarkdownAssignment);
     expect(fresh.wakePrompt).toContain('"id":"comment-first"');
     expect(context.executionContinuation.messages).toHaveLength(3);
   });
 
   it("retains old input fields and the wake description when no assignment was provided", () => {
     const context = createPromptContextFixture();
-    expect(selectSections({ paperclipTaskMarkdown: "Legacy assignment" }).taskContextNote).toBe("Legacy assignment");
-    const sections = selectSections({ paperclipWake: context.paperclipWake });
+    expect(selectSections({ wardmoteTaskMarkdown: "Legacy assignment" }).taskContextNote).toBe("Legacy assignment");
+    const sections = selectSections({ wardmoteWake: context.wardmoteWake });
     expect(sections.taskContextNote).toBe("");
-    expect(sections.wakePrompt).toContain(context.paperclipWake.issue.description);
+    expect(sections.wakePrompt).toContain(context.wardmoteWake.issue.description);
   });
 });

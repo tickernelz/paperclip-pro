@@ -886,13 +886,13 @@ describe("resolveHeartbeatRunResponse", () => {
     ).toBe(true);
     expect(
       isExternalChatPresentationContext({
-        paperclipWake: { externalInteractionContinuation: true },
+        wardmoteWake: { externalInteractionContinuation: true },
       }),
     ).toBe(true);
     expect(
       isExternalChatPresentationContext({
         externalChatContinuation: false,
-        paperclipWake: { externalInteractionContinuation: false },
+        wardmoteWake: { externalInteractionContinuation: false },
       }),
     ).toBe(false);
     expect(isExternalChatPresentationContext({ source: "chatty:github" })).toBe(

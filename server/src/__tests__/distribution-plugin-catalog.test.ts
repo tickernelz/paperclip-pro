@@ -12,7 +12,7 @@ function fixture() {
   const root = realpathSync(mkdtempSync(path.join(os.tmpdir(), "distribution-plugin-"))); roots.push(root);
   const localPath = path.join(root, "distribution", "acme.widget");
   mkdirSync(path.join(localPath, "dist", "ui"), { recursive: true });
-  writeFileSync(path.join(localPath, "package.json"), JSON.stringify({ name: "@acme/plugin-widget", version: "1.0.0", paperclipPlugin: { manifest: "./dist/manifest.js", worker: "./dist/worker.js", ui: "./dist/ui/" } }));
+  writeFileSync(path.join(localPath, "package.json"), JSON.stringify({ name: "@acme/plugin-widget", version: "1.0.0", wardmotePlugin: { manifest: "./dist/manifest.js", worker: "./dist/worker.js", ui: "./dist/ui/" } }));
   writeFileSync(path.join(localPath, "dist", "manifest.js"), "export default {};");
   writeFileSync(path.join(localPath, "dist", "worker.js"), "export default {};");
   const entry = { key: "acme.widget", pluginKey: "acme.widget", version: "1.0.0", directory: "acme.widget", digest: distributionBundleDigest(localPath) };
@@ -94,7 +94,7 @@ describe("image-owned plugin catalogs", () => {
 
   it("accepts worker-only bundles but rejects a UI path absent from verified metadata", () => {
     const { root, localPath, entry, save } = fixture();
-    writeFileSync(path.join(localPath, "package.json"), JSON.stringify({ version: "1.0.0", paperclipPlugin: { manifest: "./dist/manifest.js", worker: "./dist/worker.js" } }));
+    writeFileSync(path.join(localPath, "package.json"), JSON.stringify({ version: "1.0.0", wardmotePlugin: { manifest: "./dist/manifest.js", worker: "./dist/worker.js" } }));
     save([{ ...entry, digest: distributionBundleDigest(localPath) }]);
     const guard = distributionPluginActivationGuard(root, readDistributionPluginCatalog(root, BUNDLED_PLUGIN_CATALOG), null);
     const manifest = { id: "acme.widget", version: "1.0.0", capabilities: [], entrypoints: { worker: "./dist/worker.js" } } as unknown as WardmotePluginManifestV1;

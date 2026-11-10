@@ -252,7 +252,7 @@ export async function githubAutomaticAdmission(
     );
   const [link] = await db
     .select({
-      userId: chatIdentityLinks.paperclipUserId,
+      userId: chatIdentityLinks.wardmoteUserId,
       status: chatIdentityLinks.status,
     })
     .from(chatExternalPrincipals)

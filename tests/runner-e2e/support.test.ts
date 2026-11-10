@@ -964,7 +964,7 @@ describe("runner E2E server isolation", () => {
     expect(() =>
       assertIsolatedServerEnvironment(env, {
         temporaryRoot: "/tmp/cell",
-        paperclipHome: "/tmp/cell/paperclip-home",
+        wardmoteHome: "/tmp/cell/paperclip-home",
         configPath: "/tmp/cell/paperclip-home/instances/e2e/config.json",
       }),
     ).not.toThrow();

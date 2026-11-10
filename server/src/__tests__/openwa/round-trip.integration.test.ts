@@ -282,7 +282,7 @@ describe("OpenWA round trip (embedded Postgres + fake gateway)", () => {
     const issueId = String(wake.wake.contextSnapshot!.issueId);
     const contextSnapshot: Record<string, unknown> = {
       ...wake.wake.contextSnapshot,
-      paperclipOpenwa: { triggerClass: (wake.request.payload as { openwa: { triggerClass: string } }).openwa.triggerClass },
+      wardmoteOpenwa: { triggerClass: (wake.request.payload as { openwa: { triggerClass: string } }).openwa.triggerClass },
     };
     await db.insert(heartbeatRuns).values({
       id: runId,
@@ -455,7 +455,7 @@ describe("OpenWA round trip (embedded Postgres + fake gateway)", () => {
       issueId: second.issueId,
       runId: randomUUID(),
       wakeupRequestId: next.request.id,
-      openwa: (await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, second.runId)))[0]!.contextSnapshot!.paperclipOpenwa as never,
+      openwa: (await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, second.runId)))[0]!.contextSnapshot!.wardmoteOpenwa as never,
       contextSnapshot: {},
     });
     expect(third!.wakeEvent.lateTranscripts).toBeUndefined();

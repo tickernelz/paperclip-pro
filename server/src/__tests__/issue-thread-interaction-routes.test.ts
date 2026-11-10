@@ -2131,14 +2131,14 @@ describe("issue thread interaction routes", () => {
       ASSIGNEE_AGENT_ID,
       expect.objectContaining({
         payload: expect.objectContaining({
-          paperclipAgentMessage: {
+          wardmoteAgentMessage: {
             text: "Read T1, append T2, and verify both lines.",
             source: "interaction_rejection",
             sessionId: "interaction-warm-turn",
           },
         }),
         contextSnapshot: expect.objectContaining({
-          paperclipAgentMessage: expect.objectContaining({
+          wardmoteAgentMessage: expect.objectContaining({
             text: "Read T1, append T2, and verify both lines.",
           }),
         }),

@@ -86,11 +86,11 @@ if (optedIn && !live) {
 
   it("upgrades a pre-existing HTTP workspace in place to a browser-trusted HTTPS URL", async () => {
     const workspaceRoot = await fs.mkdtemp(path.join(os.tmpdir(), "pap17158-live-"));
-    const paperclipHome = await fs.mkdtemp(path.join(os.tmpdir(), "pap17158-live-home-"));
+    const wardmoteHome = await fs.mkdtemp(path.join(os.tmpdir(), "pap17158-live-home-"));
     const previousHome = process.env.WARDMOTE_HOME;
     const previousInstance = process.env.WARDMOTE_INSTANCE_ID;
     const previousMode = process.env.WARDMOTE_MANAGED_RUNTIME_HTTPS;
-    process.env.WARDMOTE_HOME = paperclipHome;
+    process.env.WARDMOTE_HOME = wardmoteHome;
     process.env.WARDMOTE_INSTANCE_ID = `pap17158-live-${randomUUID()}`;
 
     // An ephemeral legacy port rather than the real template's 45439, so this
@@ -246,7 +246,7 @@ if (optedIn && !live) {
         workspaceCwd: workspaceRoot,
       }).catch((error) => console.error("[PAP-17158] teardown failed", error));
       await resetRuntimeServicesForTests();
-      await fs.rm(paperclipHome, { recursive: true, force: true });
+      await fs.rm(wardmoteHome, { recursive: true, force: true });
       await fs.rm(workspaceRoot, { recursive: true, force: true });
       if (previousHome === undefined) delete process.env.WARDMOTE_HOME;
       else process.env.WARDMOTE_HOME = previousHome;

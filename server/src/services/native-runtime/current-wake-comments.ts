@@ -294,7 +294,7 @@ export async function resolveCurrentWakeCommentsBinding(
     return null;
   }
 
-  const wake = record(record(bound.run.contextSnapshot).paperclipWake);
+  const wake = record(record(bound.run.contextSnapshot).wardmoteWake);
   const provider = nonEmptyString(wake.externalChatProvider);
   const commentIds = commentIdsFromWakePayload(wake);
   const attachmentOmissions = attachmentOmissionsFromWakePayload(
@@ -309,7 +309,7 @@ export async function resolveCurrentWakeCommentsBinding(
       !(
         wake.externalChatExecutionBound === true &&
         record(bound.run.contextSnapshot)
-          .paperclipExternalChatExecutionBound === true
+          .wardmoteExternalChatExecutionBound === true
       )) ||
     wake.fallbackFetchNeeded !== true ||
     commentIds.length === 0 ||

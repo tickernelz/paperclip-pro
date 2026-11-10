@@ -593,9 +593,9 @@ export function createPostgresRunDispatchAdapter(
     let continuationSummaryBody: string | null = null;
     let continuationParksExecutor = false;
     if (continuationParkApplies) {
-      const queuedWake = parseObject(context.paperclipWake);
+      const queuedWake = parseObject(context.wardmoteWake);
       const queuedContinuationSummary =
-        readNonEmptyString(parseObject(context.paperclipContinuationSummary).body) ??
+        readNonEmptyString(parseObject(context.wardmoteContinuationSummary).body) ??
         readNonEmptyString(parseObject(queuedWake.continuationSummary).body);
       const currentContinuationSummary = queuedContinuationSummary
         ? null

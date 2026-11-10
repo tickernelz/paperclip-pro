@@ -46,7 +46,7 @@ const NAMESPACE: Readonly<Record<WardmoteSemanticActionId, string>> =
     schedule_wake: "continuation",
   });
 
-export function paperclipSemanticActionNamespace(
+export function wardmoteSemanticActionNamespace(
   operationId: WardmoteSemanticActionId,
 ): string {
   return NAMESPACE[operationId];
@@ -88,7 +88,7 @@ export function discoverWardmoteSemanticTools(input: {
     .filter(
       (descriptor) =>
         namespace === undefined ||
-        paperclipSemanticActionNamespace(descriptor.operationId) === namespace,
+        wardmoteSemanticActionNamespace(descriptor.operationId) === namespace,
     )
     .map((descriptor) => ({
       descriptor,
@@ -144,7 +144,7 @@ function scoreDescriptor(
   tokens: readonly string[],
 ): number {
   const operationId = descriptor.operationId.toLowerCase();
-  const namespace = paperclipSemanticActionNamespace(descriptor.operationId);
+  const namespace = wardmoteSemanticActionNamespace(descriptor.operationId);
   const haystack =
     `${operationId} ${descriptor.title} ${descriptor.description} ${namespace}`.toLowerCase();
   let score = operationId === query ? 100 : namespace === query ? 50 : 0;

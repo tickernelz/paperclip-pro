@@ -43,7 +43,7 @@ const briefsAgent: Agent = {
   pausedAt: null,
   permissions: { canCreateAgents: false },
   lastHeartbeatAt: null,
-  metadata: { paperclipBuiltInAgent: { key: "briefs", featureKeys: ["briefs"] } },
+  metadata: { wardmoteBuiltInAgent: { key: "briefs", featureKeys: ["briefs"] } },
   createdAt: new Date("2026-06-01T09:00:00.000Z"),
   updatedAt: new Date("2026-07-01T09:00:00.000Z"),
 };

@@ -360,7 +360,7 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
     const t = await setup();
     const ownerFirst = await admit(t, mention(OWNER_PHONE, "please fix the invoice export"));
     const ownerRun = await runningRun(t, ownerFirst.action.id);
-    expect((await runContext(ownerRun.id)).paperclipOpenwa).toMatchObject({ triggerClass: "owner", profile: "full" });
+    expect((await runContext(ownerRun.id)).wardmoteOpenwa).toMatchObject({ triggerClass: "owner", profile: "full" });
 
     const member = await admit(t, mention(MEMBER_PHONE, "why does error X happen?"));
     expect(member.delivery.triggerClass).toBe("other");
@@ -394,7 +394,7 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
 
     release(ownerRun.id);
     const memberRun = await runningRun(t, member.action.id);
-    expect((await runContext(memberRun.id)).paperclipOpenwa).toMatchObject({ triggerClass: "other", profile: "read_only" });
+    expect((await runContext(memberRun.id)).wardmoteOpenwa).toMatchObject({ triggerClass: "other", profile: "read_only" });
 
     const ownerLate = await admit(t, mention(OWNER_PHONE, "also deploy the fix to staging"));
     expect(ownerLate.delivery.triggerClass).toBe("owner");
@@ -408,8 +408,8 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
     expect(memberAfter).toEqual({ responsibleUserId: memberRun.responsibleUserId, activeIdentityContextId: memberRun.activeIdentityContextId });
     expect(await db.select({ id: runIdentityContexts.id }).from(runIdentityContexts).where(and(eq(runIdentityContexts.runId, memberRun.id), eq(runIdentityContexts.cause, "steering")))).toEqual([]);
     const memberContext = await runContext(memberRun.id);
-    expect(memberContext.paperclipOpenwa).toMatchObject({ triggerClass: "other", profile: "read_only" });
-    expect(memberContext.paperclipToolProfile).toBe("read_only");
+    expect(memberContext.wardmoteOpenwa).toMatchObject({ triggerClass: "other", profile: "read_only" });
+    expect(memberContext.wardmoteToolProfile).toBe("read_only");
     expect((memberContext.openwa as { deliveryIds: string[] }).deliveryIds).toContain(ownerLate.delivery.id);
     const [recorded] = await db.select().from(chatActions).where(and(eq(chatActions.endpointId, t.endpointId), eq(chatActions.kind, OPENWA_STEERED_OWNER_ACTION_KIND)));
     expect(recorded!.payload).toMatchObject({ runId: memberRun.id, triggerIds: [ownerLate.delivery.id] });
@@ -422,7 +422,7 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
     });
     expect(followup.payload).toMatchObject({ sourceRunId: memberRun.id, openwa: { triggerClass: "owner", deliveryIds: [ownerLate.delivery.id] } });
     const followupRun = await finishedRun(t, followup.id);
-    expect(captured.get(followupRun.id)!.paperclipOpenwa).toMatchObject({ triggerClass: "owner", profile: "full" });
+    expect(captured.get(followupRun.id)!.wardmoteOpenwa).toMatchObject({ triggerClass: "owner", profile: "full" });
     const followups = await db.select().from(chatActions).where(and(eq(chatActions.endpointId, t.endpointId), eq(chatActions.kind, OPENWA_FOLLOWUP_WAKE_ACTION_KIND)));
     expect(followups).toHaveLength(1);
   }, 180_000);
@@ -464,7 +464,7 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
 
     release(firstRun.id);
     const memberRun = await runningRun(t, memberWake);
-    expect((await runContext(memberRun.id)).paperclipOpenwa).toMatchObject({ triggerClass: "other", profile: "read_only" });
+    expect((await runContext(memberRun.id)).wardmoteOpenwa).toMatchObject({ triggerClass: "other", profile: "read_only" });
 
     const ownerF = await admit(t, mention(OWNER_PHONE, "owner request six"));
     const memberG = await admit(t, mention(MEMBER_PHONE, "member question seven"));
@@ -476,7 +476,7 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
 
     release(memberRun.id);
     const ownerRun = await runningRun(t, ownerWake);
-    expect((await runContext(ownerRun.id)).paperclipOpenwa).toMatchObject({ triggerClass: "owner", profile: "full" });
+    expect((await runContext(ownerRun.id)).wardmoteOpenwa).toMatchObject({ triggerClass: "owner", profile: "full" });
     const issueId = String(ownerB.wake.payload!.issueId);
     const authorizationReason = await resolveChatRunPresentationAuthorizationReason(db, { companyId: t.companyId, issueId, runId: ownerRun.id });
     await issueService(db).addComment(issueId, "Owner work is done.", { agentId: t.agentId, runId: ownerRun.id }, { authorizationReason });
@@ -497,10 +497,10 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
     expect(await answerStates(memberIds)).toEqual(["pending", "pending", "pending", "pending"]);
 
     const memberLaterRun = await finishedRun(t, memberLaterWake);
-    expect(captured.get(memberLaterRun.id)!.paperclipOpenwa).toMatchObject({ triggerClass: "other", profile: "read_only" });
+    expect(captured.get(memberLaterRun.id)!.wardmoteOpenwa).toMatchObject({ triggerClass: "other", profile: "read_only" });
     const runs = await db.select({ wakeupRequestId: heartbeatRuns.wakeupRequestId, contextSnapshot: heartbeatRuns.contextSnapshot })
       .from(heartbeatRuns).where(eq(heartbeatRuns.companyId, t.companyId)).orderBy(asc(heartbeatRuns.createdAt));
-    expect(runs.map((run) => [run.wakeupRequestId, (run.contextSnapshot as { paperclipOpenwa?: { triggerClass?: string } }).paperclipOpenwa?.triggerClass])).toEqual([
+    expect(runs.map((run) => [run.wakeupRequestId, (run.contextSnapshot as { wardmoteOpenwa?: { triggerClass?: string } }).wardmoteOpenwa?.triggerClass])).toEqual([
       [first.action.id, "owner"],
       [memberWake, "other"],
       [ownerWake, "owner"],
@@ -539,7 +539,7 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
     adapterMode.hold = false;
     release(queuedRun.id);
     const nextRun = await finishedRun(t, third.action.id);
-    expect(captured.get(nextRun.id)!.paperclipOpenwa).toMatchObject({ triggerClass: "owner", profile: "full" });
+    expect(captured.get(nextRun.id)!.wardmoteOpenwa).toMatchObject({ triggerClass: "owner", profile: "full" });
   }, 180_000);
 
   it("steers an owner burst message into the starting run once its adapter registers a steer target, exactly once", async () => {
@@ -561,7 +561,7 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
       .where(and(eq(activityLog.companyId, t.companyId), eq(activityLog.action, "issue.queued_comment_steered")));
     expect(steeredActivity).toHaveLength(1);
     expect(steeredActivity[0]).toMatchObject({ actorType: "system", actorId: "openwa:steer", details: expect.objectContaining({ targetRunId: ownerRun.id }) });
-    expect(((await runContext(ownerRun.id)).paperclipOpenwa as { deliveryIds: string[] }).deliveryIds).toContain(second.delivery.id);
+    expect(((await runContext(ownerRun.id)).wardmoteOpenwa as { deliveryIds: string[] }).deliveryIds).toContain(second.delivery.id);
   }, 180_000);
 
   async function steerOwnerBurst(count: number, runSteerable: "late" | "already") {
@@ -587,7 +587,7 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
       for (const other of admitted.filter((candidate) => candidate !== entry)) expect(entries[index]).not.toContain(other.row.waMessageId);
     });
     await until(async () => {
-      const deliveryIds = ((await runContext(ownerRun.id)).paperclipOpenwa as { deliveryIds: string[] }).deliveryIds;
+      const deliveryIds = ((await runContext(ownerRun.id)).wardmoteOpenwa as { deliveryIds: string[] }).deliveryIds;
       return admitted.every((entry) => deliveryIds.includes(entry.delivery.id)) ? deliveryIds : null;
     });
 
@@ -638,7 +638,7 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
     const ownerRun = await runningRun(t, actions[0]!.id);
     const deliveries = await db.select().from(chatDeliveries).where(eq(chatDeliveries.endpointId, t.endpointId)).orderBy(asc(chatDeliveries.createdAt));
     expect(deliveries.map((row) => (row.normalizedEvent as { openwa: { waMessageId: string } }).openwa.waMessageId)).toEqual(sent.map((row) => row.waMessageId));
-    expect((captured.get(ownerRun.id)!.paperclipOpenwa as { deliveryIds: string[] }).deliveryIds).toEqual(deliveries.map((row) => row.id));
+    expect((captured.get(ownerRun.id)!.wardmoteOpenwa as { deliveryIds: string[] }).deliveryIds).toEqual(deliveries.map((row) => row.id));
 
     const late = await admit(t, { chatId: jid(OWNER_PHONE), body: "one more thing" });
     const text = await until(async () => steered.get(ownerRun.id)?.find((entry) => entry.includes("one more thing")) ?? null);
@@ -664,7 +664,7 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
     release(ownerRun.id);
     const nextRun = await finishedRun(t, second.action.id);
     expect(nextRun.id).not.toBe(ownerRun.id);
-    expect((captured.get(nextRun.id)!.paperclipOpenwa as { deliveryIds: string[] }).deliveryIds).toContain(second.delivery.id);
+    expect((captured.get(nextRun.id)!.wardmoteOpenwa as { deliveryIds: string[] }).deliveryIds).toContain(second.delivery.id);
     expect(steered.get(ownerRun.id)).toBeUndefined();
     const steeredActivity = await db.select().from(activityLog)
       .where(and(eq(activityLog.companyId, t.companyId), eq(activityLog.action, "issue.queued_comment_steered")));
@@ -676,7 +676,7 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
     const t = await setup({ nudgeClock });
     const first = await admit(t, { chatId: jid(OWNER_PHONE), body: "fix the invoice export" });
     const ownerRun = await runningRun(t, first.action.id);
-    const chatKey = ((await runContext(ownerRun.id)).paperclipOpenwa as { chatKey: string }).chatKey;
+    const chatKey = ((await runContext(ownerRun.id)).wardmoteOpenwa as { chatKey: string }).chatKey;
     const waiting = openwaNudgeWaiting(db);
     expect(await waiting(ownerRun.id, chatKey)).toBe(true);
     await db.insert(chatOutboundMessages).values({
@@ -714,7 +714,7 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
 
     const first = await admit(t, mention(MEMBER_PHONE, "email the vendor"));
     const grantRun = await runningRun(t, first.action.id);
-    expect((await runContext(grantRun.id)).paperclipOpenwa).toMatchObject({
+    expect((await runContext(grantRun.id)).wardmoteOpenwa).toMatchObject({
       triggerClass: "other", profile: "read_only", toolProfile: "full", grantIds: [grant!.id], requesterPrincipalId,
     });
 
@@ -737,16 +737,16 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
     await until(async () => ((await wakeRow(owner.action.id)).status === "cancelled" ? true : null));
     expect(steered.get(grantRun.id)!.some((entry) => entry.includes("use your tools for me too"))).toBe(false);
     expect((await wakeRow(outsider.action.id)).status).toBe("deferred_issue_execution");
-    expect((await runContext(grantRun.id)).paperclipOpenwa).toMatchObject({ grantIds: [grant!.id], requesterPrincipalId });
+    expect((await runContext(grantRun.id)).wardmoteOpenwa).toMatchObject({ grantIds: [grant!.id], requesterPrincipalId });
 
     adapterMode.hold = false;
     release(grantRun.id);
     const outsiderRun = await finishedRun(t, outsider.action.id);
     expect(outsiderRun.id).not.toBe(grantRun.id);
     const outsiderContext = captured.get(outsiderRun.id)!;
-    expect(outsiderContext.paperclipOpenwa).toMatchObject({ triggerClass: "other", profile: "read_only", toolProfile: "read_only", grantIds: [], requesterPrincipalId: outsider.delivery.principalId });
-    expect(outsiderContext.paperclipToolProfile).toBe("read_only");
-    expect((outsiderContext.paperclipOpenwa as { deliveryIds: string[] }).deliveryIds).toEqual([outsider.delivery.id]);
+    expect(outsiderContext.wardmoteOpenwa).toMatchObject({ triggerClass: "other", profile: "read_only", toolProfile: "read_only", grantIds: [], requesterPrincipalId: outsider.delivery.principalId });
+    expect(outsiderContext.wardmoteToolProfile).toBe("read_only");
+    expect((outsiderContext.wardmoteOpenwa as { deliveryIds: string[] }).deliveryIds).toEqual([outsider.delivery.id]);
   }, 180_000);
 
   it("steers every attachment type into the running member run as wake-format items, stored as issue attachments or with the get_media hint", async () => {
@@ -755,7 +755,7 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
     await t.service.openwa.addSenderRule(t.endpointId, { list: "allow", e164: "+" + OTHER_MEMBER_PHONE }, t.userId);
     const first = await admit(t, mention(MEMBER_PHONE, "cek laporan ini"));
     const memberRun = await runningRun(t, first.action.id);
-    expect((await runContext(memberRun.id)).paperclipOpenwa).toMatchObject({ triggerClass: "other", profile: "read_only" });
+    expect((await runContext(memberRun.id)).wardmoteOpenwa).toMatchObject({ triggerClass: "other", profile: "read_only" });
 
     const attached = async (text: string, extra: Record<string, unknown>, file?: { body: Buffer; contentType: string; filename?: string }, sender = MEMBER_PHONE) => {
       const waMessageId = t.gateway.nextWaMessageId(false, GROUP);
@@ -913,27 +913,27 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
   it("gives a deferred wake that another member merged into no requester grant approved before it started (D36)", async () => {
     const { t, promoted, promotedContext, grant, requesterPrincipalId, outsiderDeliveryId, approvalWakeId } = await grantAfterMerge("deferred");
     expect((promotedContext.openwa as { deliveryIds: string[] }).deliveryIds).toContain(outsiderDeliveryId);
-    expect(promotedContext.paperclipOpenwa).toMatchObject({ triggerClass: "other", profile: "read_only", toolProfile: "read_only", grantIds: [], requesterPrincipalId: null });
-    expect((promotedContext.paperclipOpenwa as { grantIds: string[] }).grantIds).not.toContain(grant.id);
-    expect(promotedContext.paperclipToolProfile).toBe("read_only");
+    expect(promotedContext.wardmoteOpenwa).toMatchObject({ triggerClass: "other", profile: "read_only", toolProfile: "read_only", grantIds: [], requesterPrincipalId: null });
+    expect((promotedContext.wardmoteOpenwa as { grantIds: string[] }).grantIds).not.toContain(grant.id);
+    expect(promotedContext.wardmoteToolProfile).toBe("read_only");
     adapterMode.hold = false;
     release(promoted.id);
     const grantRun = await finishedRun(t, approvalWakeId);
-    expect(captured.get(grantRun.id)!.paperclipOpenwa).toMatchObject({ triggerClass: "grant", event: "approval_resolved", grantIds: [grant.id], requesterPrincipalId, toolProfile: "full" });
+    expect(captured.get(grantRun.id)!.wardmoteOpenwa).toMatchObject({ triggerClass: "grant", event: "approval_resolved", grantIds: [grant.id], requesterPrincipalId, toolProfile: "full" });
   }, 180_000);
 
   it("gives a queued run that another member coalesced into no requester grant approved before it started (D36)", async () => {
     const { promotedContext, grant, outsiderDeliveryId } = await grantAfterMerge("queued");
     expect((promotedContext.openwa as { deliveryIds: string[] }).deliveryIds).toContain(outsiderDeliveryId);
-    expect(promotedContext.paperclipOpenwa).toMatchObject({ triggerClass: "other", profile: "read_only", toolProfile: "read_only", grantIds: [], requesterPrincipalId: null });
-    expect((promotedContext.paperclipOpenwa as { grantIds: string[] }).grantIds).not.toContain(grant.id);
-    expect(promotedContext.paperclipToolProfile).toBe("read_only");
+    expect(promotedContext.wardmoteOpenwa).toMatchObject({ triggerClass: "other", profile: "read_only", toolProfile: "read_only", grantIds: [], requesterPrincipalId: null });
+    expect((promotedContext.wardmoteOpenwa as { grantIds: string[] }).grantIds).not.toContain(grant.id);
+    expect(promotedContext.wardmoteToolProfile).toBe("read_only");
   }, 180_000);
 
   it("gives the requester's own deferred wake its requester grant approved before it started", async () => {
     const { promotedContext, grant, requesterPrincipalId } = await grantAfterMerge("solo");
-    expect(promotedContext.paperclipOpenwa).toMatchObject({ triggerClass: "other", profile: "read_only", toolProfile: "full", grantIds: [grant.id], requesterPrincipalId });
-    expect(promotedContext.paperclipToolProfile).toBe("full");
+    expect(promotedContext.wardmoteOpenwa).toMatchObject({ triggerClass: "other", profile: "read_only", toolProfile: "full", grantIds: [grant.id], requesterPrincipalId });
+    expect(promotedContext.wardmoteToolProfile).toBe("full");
   }, 180_000);
 
   it("steers late owner activity into the running owner_absent run marked owner_now_active", async () => {
@@ -959,7 +959,7 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
       return rows.find((row) => (row.payload.openwa as { event?: string } | undefined)?.event === "owner_absent") ?? null;
     });
     const absentRun = await runningRun(t, absentAction.id);
-    expect((await runContext(absentRun.id)).paperclipOpenwa).toMatchObject({ event: "owner_absent", triggerClass: "other" });
+    expect((await runContext(absentRun.id)).wardmoteOpenwa).toMatchObject({ event: "owner_absent", triggerClass: "other" });
 
     t.gateway.inbound({ chatId: GROUP, author: jid(OWNER_PHONE), body: "I'm here, I will handle it", timestamp: ts + 125 });
     const text = await until(async () => {
@@ -973,7 +973,7 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
       sql`${chatDeliveries.normalizedEvent} -> 'openwa' ->> 'ownerNowActive' = 'true'`,
     ));
     expect(late).toMatchObject({ triggerClass: "owner", principalRole: "owner" });
-    expect((await runContext(absentRun.id)).paperclipOpenwa).toMatchObject({ profile: "read_only" });
+    expect((await runContext(absentRun.id)).wardmoteOpenwa).toMatchObject({ profile: "read_only" });
   }, 180_000);
 
   it("steers a late transcript into the active run and falls back to the next wake without steering", async () => {
@@ -1044,7 +1044,7 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
     t.service = restarted;
     await restarted.processPendingDeliveries();
     const followupRun = await finishedRun(t, staged[0]!);
-    expect(captured.get(followupRun.id)!.paperclipOpenwa).toMatchObject({ triggerClass: "owner", profile: "full" });
+    expect(captured.get(followupRun.id)!.wardmoteOpenwa).toMatchObject({ triggerClass: "owner", profile: "full" });
     const [comment] = await db.execute<{ body: string }>(sql`select body from issue_comments where id = ${(queued!.payload as { commentId: string }).commentId}::uuid`);
     expect(comment!.body).toContain("needs the production key vault");
 
@@ -1079,7 +1079,7 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
     expect(await processPendingOpenwaRunRetries(db, 25, new Date(notBefore + 1_000))).toBe(1);
     const retried = await finishedRun(t, retry!.id);
     expect(retried.status).toBe("failed");
-    expect(captured.get(retried.id)!.paperclipOpenwa).toMatchObject({ triggerClass: "owner", deliveryIds: [owner.delivery.id] });
+    expect(captured.get(retried.id)!.wardmoteOpenwa).toMatchObject({ triggerClass: "owner", deliveryIds: [owner.delivery.id] });
     const audit = await until(async () => {
       const rows = await db.select().from(chatAuditEntries).where(and(eq(chatAuditEntries.endpointId, t.endpointId), eq(chatAuditEntries.kind, "run_failed")));
       return rows.length ? rows : null;
@@ -1176,7 +1176,7 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
     const owner = await admit(t, { chatId: jid(OWNER_PHONE), body: "yes approve it" });
     const running = await runningRun(t, owner.action.id);
     await db.update(heartbeatRuns).set({
-      contextSnapshot: sql`jsonb_set(${heartbeatRuns.contextSnapshot}, '{paperclipOpenwa,event}', '"approval_reply"'::jsonb)`,
+      contextSnapshot: sql`jsonb_set(${heartbeatRuns.contextSnapshot}, '{wardmoteOpenwa,event}', '"approval_reply"'::jsonb)`,
     }).where(eq(heartbeatRuns.id, running.id));
     release(running.id);
     const failed = await finishedRun(t, owner.action.id);
@@ -1214,9 +1214,9 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
     const context = await runContext(memberRun.id);
     expect(context.issueId).toBe(woken.action.payload.issueId);
     expect(context.issueId).not.toBe(ownerA.action.payload.issueId);
-    expect((context.paperclipOpenwa as { triggerClass: string; deliveryIds: string[] })).toMatchObject({ triggerClass: "other", deliveryIds: [delivery.id] });
+    expect((context.wardmoteOpenwa as { triggerClass: string; deliveryIds: string[] })).toMatchObject({ triggerClass: "other", deliveryIds: [delivery.id] });
     expect(steered.get(ownerRun.id)).toBeUndefined();
-    expect((await runContext(ownerRun.id)).paperclipOpenwa).toMatchObject({ deliveryIds: [ownerA.delivery.id] });
+    expect((await runContext(ownerRun.id)).wardmoteOpenwa).toMatchObject({ deliveryIds: [ownerA.delivery.id] });
     const answered = await markTriggersAnswered(db, {
       companyId: t.companyId,
       endpointId: t.endpointId,

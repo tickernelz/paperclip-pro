@@ -2,12 +2,12 @@ import { describe, expect, it } from "vitest";
 import {
   findWardmoteConfigKeyWarnings,
   mergeWardmoteConfig,
-  paperclipConfigSchema,
+  wardmoteConfigSchema,
 } from "./config-schema.js";
 
 describe("paperclip config schema", () => {
   it("defaults omitted runtime paths to legacy instance-root locations", () => {
-    const parsed = paperclipConfigSchema.parse({
+    const parsed = wardmoteConfigSchema.parse({
       $meta: {
         version: 1,
         updatedAt: "2026-05-10T00:00:00.000Z",
@@ -30,7 +30,7 @@ describe("paperclip config schema", () => {
   });
 
   it("retains extension keys at the top level and every nested config boundary", () => {
-    const parsed = paperclipConfigSchema.parse({
+    const parsed = wardmoteConfigSchema.parse({
       $meta: {
         version: 1,
         updatedAt: "2026-05-10T00:00:00.000Z",
@@ -81,7 +81,7 @@ describe("paperclip config schema", () => {
   });
 
   it("merges retained extensions without resurrecting removed known fields", () => {
-    const source = paperclipConfigSchema.parse({
+    const source = wardmoteConfigSchema.parse({
       $meta: {
         version: 1,
         updatedAt: "2026-05-10T00:00:00.000Z",
@@ -97,7 +97,7 @@ describe("paperclip config schema", () => {
       server: { port: 3100, serverExtension: "keep" },
       topLevelExtension: "keep",
     });
-    const update = paperclipConfigSchema.parse({
+    const update = wardmoteConfigSchema.parse({
       ...source,
       llm: {
         provider: "openai",

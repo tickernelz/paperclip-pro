@@ -16,7 +16,7 @@ import {
   type Agent,
   type AgentAdapterConfigBatchPreview,
 } from "@tickernelz/wardmote-shared";
-import { storybookAgents, storybookDashboardSummary } from "../fixtures/paperclipData";
+import { storybookAgents, storybookDashboardSummary } from "../fixtures/wardmoteData";
 
 const companyId = "company-storybook";
 

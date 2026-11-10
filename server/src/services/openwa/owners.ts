@@ -52,7 +52,7 @@ export interface OpenwaOwnerView {
   numberMasked: string;
   displayName: string | null;
   linkStatus: string;
-  paperclipUserId: string | null;
+  wardmoteUserId: string | null;
   effective: boolean;
   createdAt: string;
 }
@@ -104,7 +104,7 @@ export async function openwaCurrentOwnerUserId(
     .select({
       ownerId: chatEndpointOwners.id,
       status: chatIdentityLinks.status,
-      userId: chatIdentityLinks.paperclipUserId,
+      userId: chatIdentityLinks.wardmoteUserId,
     })
     .from(chatEndpointOwners)
     .innerJoin(
@@ -157,7 +157,7 @@ export async function openwaPrincipalAuthorization(
     .select({
       ownerId: chatEndpointOwners.id,
       linkStatus: chatIdentityLinks.status,
-      userId: chatIdentityLinks.paperclipUserId,
+      userId: chatIdentityLinks.wardmoteUserId,
       membershipStatus: companyMemberships.status,
       membershipRole: companyMemberships.membershipRole,
     })
@@ -175,7 +175,7 @@ export async function openwaPrincipalAuthorization(
       and(
         eq(companyMemberships.companyId, chatIdentityLinks.companyId),
         eq(companyMemberships.principalType, "user"),
-        eq(companyMemberships.principalId, chatIdentityLinks.paperclipUserId),
+        eq(companyMemberships.principalId, chatIdentityLinks.wardmoteUserId),
       ),
     )
     .where(
@@ -223,7 +223,7 @@ export async function openwaCurrentOwners(
     .select({
       ownerId: chatEndpointOwners.id,
       principalId: chatIdentityLinks.principalId,
-      userId: chatIdentityLinks.paperclipUserId,
+      userId: chatIdentityLinks.wardmoteUserId,
       externalId: chatExternalPrincipals.externalId,
       alternateExternalIds: chatExternalPrincipals.alternateExternalIds,
     })
@@ -241,7 +241,7 @@ export async function openwaCurrentOwners(
       and(
         eq(companyMemberships.companyId, chatIdentityLinks.companyId),
         eq(companyMemberships.principalType, "user"),
-        eq(companyMemberships.principalId, chatIdentityLinks.paperclipUserId),
+        eq(companyMemberships.principalId, chatIdentityLinks.wardmoteUserId),
       ),
     )
     .where(
@@ -467,7 +467,7 @@ export function openwaOwnerService(db: Db, deps: OpenwaOwnerServiceDeps) {
         externalId: chatExternalPrincipals.externalId,
         displayName: chatExternalPrincipals.displayName,
         linkStatus: chatIdentityLinks.status,
-        paperclipUserId: chatIdentityLinks.paperclipUserId,
+        wardmoteUserId: chatIdentityLinks.wardmoteUserId,
         membershipStatus: companyMemberships.status,
         membershipRole: companyMemberships.membershipRole,
         createdAt: chatEndpointOwners.createdAt,
@@ -486,7 +486,7 @@ export function openwaOwnerService(db: Db, deps: OpenwaOwnerServiceDeps) {
         and(
           eq(companyMemberships.companyId, chatEndpointOwners.companyId),
           eq(companyMemberships.principalType, "user"),
-          eq(companyMemberships.principalId, chatIdentityLinks.paperclipUserId),
+          eq(companyMemberships.principalId, chatIdentityLinks.wardmoteUserId),
         ),
       )
       .where(and(eq(chatEndpointOwners.companyId, endpoint.companyId), eq(chatEndpointOwners.endpointId, endpoint.id)))
@@ -498,7 +498,7 @@ export function openwaOwnerService(db: Db, deps: OpenwaOwnerServiceDeps) {
       numberMasked: maskOpenwaPhoneNumber(openwaDigits(row.externalId) ?? ""),
       displayName: row.displayName,
       linkStatus: row.linkStatus,
-      paperclipUserId: row.paperclipUserId,
+      wardmoteUserId: row.wardmoteUserId,
       effective: row.linkStatus === "linked" && row.membershipStatus === "active" && row.membershipRole !== "viewer",
       createdAt: row.createdAt.toISOString(),
     }));

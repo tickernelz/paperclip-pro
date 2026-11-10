@@ -579,7 +579,7 @@ passing `actorUserId`:
 
 ```ts
 await ctx.issues.createComment(issueId, replyText, companyId, {
-  actorUserId: verifiedSlackUser.paperclipUserId,
+  actorUserId: verifiedSlackUser.wardmoteUserId,
 });
 ```
 

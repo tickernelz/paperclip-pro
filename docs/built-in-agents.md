@@ -1,6 +1,6 @@
 # Built-in Agents
 
-Built-in agents are first-party, company-scoped agents that Wardmote can resolve by a stable registry key. They are normal rows in `agents`, but they carry immutable metadata under `metadata.paperclipBuiltInAgent` so services can find them without hardcoding a database id.
+Built-in agents are first-party, company-scoped agents that Wardmote can resolve by a stable registry key. They are normal rows in `agents`, but they carry immutable metadata under `metadata.wardmoteBuiltInAgent` so services can find them without hardcoding a database id.
 
 The first built-ins are `briefs` and `learning`. Operators can provision them from the API without going through board hire approval, but the route still requires the same `agents:create` permission as normal agent creation.
 
@@ -9,7 +9,7 @@ The first built-ins are `briefs` and `learning`. Operators can provision them fr
 The subsystem has four layers:
 
 - Registry: `server/src/services/built-in-agents.ts` defines the static `BuiltInAgentDefinition` list.
-- Marker: `server/src/lib/built-in-agent-metadata.ts` reads and writes `metadata.paperclipBuiltInAgent`.
+- Marker: `server/src/lib/built-in-agent-metadata.ts` reads and writes `metadata.wardmoteBuiltInAgent`.
 - Provisioning service: `builtInAgentService(db)` finds, creates, updates, resets, and requires built-ins per company.
 - Routes: `server/src/routes/built-in-agents.ts` exposes list, provision, and reset APIs.
 

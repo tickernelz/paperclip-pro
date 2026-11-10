@@ -41,9 +41,9 @@ function oneOutput(checkpoint: ContextIntegrityCheckpoint, marker: string, requi
 
 function wakeCommentIds(run: Record<string, unknown>): string[] {
   const context = (run.contextSnapshot ?? {}) as Record<string, unknown>;
-  const paperclipWake = (context.paperclipWake ?? {}) as Record<string, unknown>;
+  const wardmoteWake = (context.wardmoteWake ?? {}) as Record<string, unknown>;
   const continuation = (context.executionContinuation ?? {}) as Record<string, unknown>;
-  for (const candidate of [paperclipWake.commentIds, paperclipWake.wakeCommentIds, continuation.commentIds, continuation.wakeCommentIds]) {
+  for (const candidate of [wardmoteWake.commentIds, wardmoteWake.wakeCommentIds, continuation.commentIds, continuation.wakeCommentIds]) {
     if (Array.isArray(candidate)) return candidate.map(String);
   }
   return [];

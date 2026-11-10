@@ -394,7 +394,7 @@ export function createHeartbeatRunCompletion(db: Db, dependencies: HeartbeatRunC
     let processLossErrorCode: string | null = null;
     const latestRun = await getRun(run.id);
     const latestResult = parseObject(latestRun?.resultJson);
-    const paperclipCancellationRecorded =
+    const wardmoteCancellationRecorded =
       Boolean(processCancellation) ||
       Boolean(latestResult.executionCancellation) ||
       Boolean(latestResult.startupCancellation);
@@ -415,20 +415,20 @@ export function createHeartbeatRunCompletion(db: Db, dependencies: HeartbeatRunC
       outcome = "timed_out";
     } else if (adapterResult.resultJson?.status === "cancelled") {
       outcome = "cancelled";
-    } else if (wasShutdownTerminatedRun(run.id) && !paperclipCancellationRecorded) {
+    } else if (wasShutdownTerminatedRun(run.id) && !wardmoteCancellationRecorded) {
       outcome = "interrupted";
       processLossErrorCode = "server_shutdown_interrupted";
     } else if (
       (adapterResult.exitCode ?? 0) === 0 &&
       !adapterResult.errorMessage &&
       !adapterResult.signal &&
-      !paperclipCancellationRecorded
+      !wardmoteCancellationRecorded
     ) {
       outcome = "succeeded";
     } else {
       outcome = "failed";
       if (
-        !paperclipCancellationRecorded &&
+        !wardmoteCancellationRecorded &&
         (adapterResult.signal === "SIGTERM" ||
           adapterResult.signal === "SIGINT" ||
           adapterResult.exitCode === 143 ||
@@ -463,7 +463,7 @@ export function createHeartbeatRunCompletion(db: Db, dependencies: HeartbeatRunC
       usageBasis: adapterResult.usageBasis ?? null,
     });
     const normalizedUsage = sessionUsageResolution.normalizedUsage;
-    const controllerLeaseLost = outcome === "cancelled" && !paperclipCancellationRecorded &&
+    const controllerLeaseLost = outcome === "cancelled" && !wardmoteCancellationRecorded &&
       !isHeartbeatRunTerminalStatus(latestRun?.status) && isLegacyControllerLeaseLoss(signal.reason);
     const runErrorMessage = controllerLeaseLost
       ? CONTROLLER_LEASE_LOST_MESSAGE

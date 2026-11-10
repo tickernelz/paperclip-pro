@@ -82,7 +82,7 @@ function toListingEntries(definitions: ReadonlyArray<ToolDefinition>, annotation
 }
 
 /** Tool definitions bound to one caller, sharing schema and listing work per variant. */
-export function paperclipToolCatalog(
+export function wardmoteToolCatalog(
   client: WardmoteApiClient,
   toolsets: ReadonlyArray<ToolsetName>,
   management: boolean,

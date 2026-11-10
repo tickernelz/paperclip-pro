@@ -74,7 +74,7 @@ async function createBuiltPluginFixture(parentDir: string, nameSuffix: string): 
       version: "0.1.0",
       private: true,
       type: "module",
-      paperclipPlugin: {
+      wardmotePlugin: {
         manifest: "./dist/manifest.js",
         worker: "./dist/worker.js",
       },

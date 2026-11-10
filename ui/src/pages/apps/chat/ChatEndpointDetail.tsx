@@ -793,8 +793,8 @@ function Access({
                 className="flex flex-wrap items-center gap-3 py-3"
               >
                 <div className="min-w-0 flex-1">
-                  <Identity name={link.paperclipUserLabel ?? link.externalLabel} size="default" className="gap-2" />
-                  {(link.status !== "linked" || link.externalLabel !== link.paperclipUserLabel) && <p className="pl-10 text-xs text-ink-3">
+                  <Identity name={link.wardmoteUserLabel ?? link.externalLabel} size="default" className="gap-2" />
+                  {(link.status !== "linked" || link.externalLabel !== link.wardmoteUserLabel) && <p className="pl-10 text-xs text-ink-3">
                     {link.status === "revoked" ? "Disconnected" : link.status === "linked"
                       ? link.externalLabel
                       : "Waiting for account confirmation"}

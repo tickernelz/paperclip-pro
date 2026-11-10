@@ -171,7 +171,7 @@ describeEmbeddedPostgres("agent secret routes", () => {
     });
     await db.update(heartbeatRuns).set({
       contextSnapshot: {
-        paperclipSecrets: {
+        wardmoteSecrets: {
           manifest: [{
             bindingId: projectBinding.id,
             secretId: projectSecret.id,
@@ -201,7 +201,7 @@ describeEmbeddedPostgres("agent secret routes", () => {
     const [registeredRun] = await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, fixture.heartbeatRunId));
     expect(JSON.stringify(registeredRun.contextSnapshot)).not.toContain("env-secret-value");
     expect(registeredRun.contextSnapshot).toMatchObject({
-      paperclipSecretRedactions: [expect.objectContaining({ fingerprintSha256: expect.any(String), material: expect.any(Object) })],
+      wardmoteSecretRedactions: [expect.objectContaining({ fingerprintSha256: expect.any(String), material: expect.any(Object) })],
     });
     expect(await db.select().from(secretAccessEvents)).toEqual([
       expect.objectContaining({ secretId: envSecret.id, outcome: "success", consumerType: "agent_api" }),
@@ -244,9 +244,9 @@ describeEmbeddedPostgres("agent secret routes", () => {
 
     const [run] = await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, fixture.heartbeatRunId));
     expect(run.contextSnapshot).toMatchObject({
-      paperclipSecretRedactions: [expect.objectContaining({ fingerprintSha256: expect.any(String) })],
+      wardmoteSecretRedactions: [expect.objectContaining({ fingerprintSha256: expect.any(String) })],
     });
-    expect((run.contextSnapshot as { paperclipSecretRedactions: unknown[] }).paperclipSecretRedactions).toHaveLength(1);
+    expect((run.contextSnapshot as { wardmoteSecretRedactions: unknown[] }).wardmoteSecretRedactions).toHaveLength(1);
   });
 
   it("redacts batched runs from projected registries and enforces company scope", async () => {

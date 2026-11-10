@@ -9,7 +9,7 @@ import { RoutineDetail } from "@/pages/RoutineDetail";
 import { Routines } from "@/pages/Routines";
 import { Route, Routes, useNavigate } from "@/lib/router";
 import { useCompany } from "@/context/CompanyContext";
-import { storybookAgents, storybookIssues } from "./paperclipData";
+import { storybookAgents, storybookIssues } from "./wardmoteData";
 
 const now = new Date("2026-09-18T15:00:00Z");
 const routineId = "routine-webhook-story";

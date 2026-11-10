@@ -1294,7 +1294,7 @@ impl CodexProviderState {
                 "operationId": operation_id,
                 "callId": call_id,
                 "message": "The active provider turn reached its durable semantic-tool receipt limit and was interrupted",
-                "paperclipExecuted": false,
+                "wardmoteExecuted": false,
             }),
         })?;
         self.receipt_limit_diagnostic_emitted = true;
@@ -1892,7 +1892,7 @@ impl CodexCommandExecutor {
                     "provider": provider_label,
                     "code": "legacy_provider_turn_epoch_ambiguous",
                     "message": format!("{provider_name} recovery could not safely identify and settle active work from a saturated legacy replay epoch; Paperclip terminated the provider and closed the durable run"),
-                    "paperclipAccepted": false,
+                    "wardmoteAccepted": false,
                     "providerReportedActive": provider_reported_active,
                     "ambiguousStartPending": ambiguous_turn_start_pending,
                     "providerShutdownFailed": provider_shutdown_failed,
@@ -1950,7 +1950,7 @@ impl CodexCommandExecutor {
                     "code": "provider_turn_identity_reused",
                     "providerTurnId": reused_provider_turn_id,
                     "message": format!("{provider_name} recovery reported a previously settled turn identity as active; Paperclip terminated the provider and closed the durable run"),
-                    "paperclipAccepted": false,
+                    "wardmoteAccepted": false,
                     "providerReportedActive": true,
                     "providerShutdownFailed": provider_shutdown_failed,
                 }),
@@ -2345,7 +2345,7 @@ impl CodexCommandExecutor {
                         priority: EventPriority::P0,
                         payload: json!({
                             "code": "prepared_provider_checkpoint_has_active_work",
-                            "paperclipAccepted": false,
+                            "wardmoteAccepted": false,
                             "providerReportedActive": true,
                             "providerShutdownFailed": provider_shutdown_failed,
                         }),
@@ -2777,7 +2777,7 @@ impl CodexCommandExecutor {
                     RejectedAcceptedTurn::ReusedIdentity(_) => format!("{provider_name} accepted work with a previously settled turn identity; Paperclip terminated the provider and closed the durable run"),
                     RejectedAcceptedTurn::InvalidIdentity => format!("{provider_name} accepted work without a valid bounded turn identity; Paperclip terminated the provider and closed the durable run"),
                 },
-                "paperclipAccepted": false,
+                "wardmoteAccepted": false,
                 "providerAccepted": true,
             }),
         });
@@ -3491,7 +3491,7 @@ impl CodexCommandExecutor {
                 "operationId": operation_id,
                 "callId": call_id,
                 "message": reason,
-                "paperclipExecuted": false,
+                "wardmoteExecuted": false,
             }),
         };
         if state.receipt_limit_interrupt_pending {

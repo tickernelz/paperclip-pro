@@ -444,7 +444,7 @@ export function githubChatWizardService(
         .where(
           and(
             eq(chatIdentityLinks.companyId, bot.companyId),
-            eq(chatIdentityLinks.paperclipUserId, userId),
+            eq(chatIdentityLinks.wardmoteUserId, userId),
             eq(chatIdentityLinks.status, "linked"),
             eq(chatExternalPrincipals.provider, "github"),
           ),
@@ -501,7 +501,7 @@ export function githubChatWizardService(
         and(
           eq(chatIdentityLinks.companyId, bot.companyId),
           eq(chatIdentityLinks.endpointId, bot.id),
-          eq(chatIdentityLinks.paperclipUserId, userId),
+          eq(chatIdentityLinks.wardmoteUserId, userId),
           eq(chatIdentityLinks.status, "linked"),
         ),
       )

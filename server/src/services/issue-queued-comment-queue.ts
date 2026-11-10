@@ -91,13 +91,13 @@ export function withQueuedCommentIdsInRunContext(
 
   // These projections are generated immediately before dispatch. Any queue
   // mutation must force them to be rebuilt from the canonical comment ids.
-  delete context.paperclipWake;
-  delete context.paperclipWakeComment;
-  delete context.paperclipTaskMarkdown;
-  delete context.paperclipTaskMarkdownCompact;
-  delete context.paperclipTaskMarkdownAssignment;
-  delete context.paperclipTaskMarkdownAssignmentCompact;
-  delete context.paperclipTurnContext;
+  delete context.wardmoteWake;
+  delete context.wardmoteWakeComment;
+  delete context.wardmoteTaskMarkdown;
+  delete context.wardmoteTaskMarkdownCompact;
+  delete context.wardmoteTaskMarkdownAssignment;
+  delete context.wardmoteTaskMarkdownAssignmentCompact;
+  delete context.wardmoteTurnContext;
   return context;
 }
 

@@ -10,7 +10,7 @@ import { createProjectAction } from "../protocol-actions/create-project.js";
 import {
   WARDMOTE_SEMANTIC_ACTION_CATALOG,
   canonicalWardmoteSemanticActionCatalog,
-  paperclipSemanticAction,
+  wardmoteSemanticAction,
 } from "./semantic-action-catalog.js";
 
 const packageRoot = resolve(
@@ -22,7 +22,7 @@ const packageRoot = resolve(
 describe("semantic action catalog", () => {
   it("limits project repository URLs to HTTPS GitHub repository paths on both tool surfaces", () => {
     const ajv = new Ajv2020({ allErrors: true, allowUnionTypes: true, strict: true });
-    for (const schema of [createProjectAction.live.descriptor.inputSchema, paperclipSemanticAction("create_project")!.inputSchema]) {
+    for (const schema of [createProjectAction.live.descriptor.inputSchema, wardmoteSemanticAction("create_project")!.inputSchema]) {
       const validate = ajv.compile(schema);
       const input = { name: "Project", idempotencyKey: "create-project-1" };
       expect(validate({ ...input, repositoryUrls: ["https://github.com/org/repo", "https://github.com/org/other.git/"] })).toBe(true);
@@ -39,7 +39,7 @@ describe("semantic action catalog", () => {
 
   it("advertises human assignment in both task creation contracts", () => {
     const ajv = new Ajv2020({ allErrors: true, allowUnionTypes: true, strict: true });
-    for (const schema of [createTaskAction.live.descriptor.inputSchema, paperclipSemanticAction("create_task")!.inputSchema]) {
+    for (const schema of [createTaskAction.live.descriptor.inputSchema, wardmoteSemanticAction("create_task")!.inputSchema]) {
       const validate = ajv.compile(schema);
       const input = { title: "Hello", idempotencyKey: "hello", assigneeUserId: "company-owner" };
       expect(validate(input), JSON.stringify(validate.errors)).toBe(true);
@@ -75,12 +75,12 @@ describe("semantic action catalog", () => {
     expect(operationIds).not.toContain("generic_api_request");
     expect(Object.isFrozen(WARDMOTE_SEMANTIC_ACTION_CATALOG)).toBe(true);
     expect(
-      Object.isFrozen(paperclipSemanticAction("write_document")?.inputSchema),
+      Object.isFrozen(wardmoteSemanticAction("write_document")?.inputSchema),
     ).toBe(true);
   });
 
   it("declares hire_agent as a native identity-only mutation", () => {
-    const hire = paperclipSemanticAction("hire_agent");
+    const hire = wardmoteSemanticAction("hire_agent");
     expect(hire).toMatchObject({
       effect: "write",
       requiredClaims: ["delegation:agents:create"],
@@ -115,8 +115,8 @@ describe("semantic action catalog", () => {
       allowUnionTypes: true,
       strict: true,
     });
-    const writeDocument = paperclipSemanticAction("write_document");
-    const taskContext = paperclipSemanticAction("get_task_context");
+    const writeDocument = wardmoteSemanticAction("write_document");
+    const taskContext = wardmoteSemanticAction("get_task_context");
     expect(writeDocument).toBeDefined();
     expect(taskContext).toBeDefined();
 

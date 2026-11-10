@@ -133,9 +133,9 @@ export interface JsonRpcRequest<
    * executing. The worker treats this as opaque and echoes only the id on
    * worker→host calls made from the same async execution context.
    */
-  readonly paperclipInvocation?: PluginInvocationContext;
+  readonly wardmoteInvocation?: PluginInvocationContext;
   /** Opaque top-level invocation id echoed by worker→host requests. */
-  readonly paperclipInvocationId?: string;
+  readonly wardmoteInvocationId?: string;
 }
 
 /**
@@ -198,11 +198,11 @@ export interface JsonRpcNotification<
   readonly params: TParams;
   /**
    * Host-issued metadata for host→worker push notifications such as events.
-   * Worker→host notifications echo only `paperclipInvocationId`.
+   * Worker→host notifications echo only `wardmoteInvocationId`.
    */
-  readonly paperclipInvocation?: PluginInvocationContext;
+  readonly wardmoteInvocation?: PluginInvocationContext;
   /** Opaque top-level invocation id echoed by worker→host notifications. */
-  readonly paperclipInvocationId?: string;
+  readonly wardmoteInvocationId?: string;
 }
 
 /**
@@ -2344,7 +2344,7 @@ export interface WorkerToHostNotifications {
    *
    * The worker emits this notification for each new `stdout` or `stderr` chunk
    * while one execute call runs. The host reads the active invocation id from
-   * the envelope field `paperclipInvocationId`, which the worker RPC host stamps
+   * the envelope field `wardmoteInvocationId`, which the worker RPC host stamps
    * from the active invocation context. The host correlates the chunk to the
    * host-owned execute route for that id and delivers it to that route's
    * `onLog` callback.

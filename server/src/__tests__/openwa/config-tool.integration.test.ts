@@ -219,9 +219,9 @@ describe("openwa_endpoint_config (embedded Postgres + fake gateway)", () => {
       contextSnapshot: {
         source: "chat:openwa",
         issueId: c.issueId,
-        paperclipToolProfile: profile,
+        wardmoteToolProfile: profile,
         openwa: { event: "message", triggerClass, deliveryIds: [] },
-        paperclipOpenwa: {
+        wardmoteOpenwa: {
           endpointId: t.endpointId,
           chatKey: openwaChatKey(c.chatId),
           triggerClass,
@@ -359,7 +359,7 @@ describe("openwa_endpoint_config (embedded Postgres + fake gateway)", () => {
     const [link] = await db
       .select({ principalId: chatIdentityLinks.principalId })
       .from(chatIdentityLinks)
-      .where(and(eq(chatIdentityLinks.endpointId, t.endpointId), eq(chatIdentityLinks.paperclipUserId, t.userId)));
+      .where(and(eq(chatIdentityLinks.endpointId, t.endpointId), eq(chatIdentityLinks.wardmoteUserId, t.userId)));
     const binding = await run(t, c, "owner", [], link!.principalId);
 
     const opened = await executeOpenwaTool(db, binding, "openwa_autonomy_window", open);

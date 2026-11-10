@@ -14,14 +14,14 @@ import {
 } from "@tickernelz/wardmote-shared";
 
 export const MODEL_FALLBACK_DEFAULT_COOLDOWN_MS = 5 * 60_000;
-export const MODEL_FALLBACK_STATE_KEY = "paperclipModelFallback";
-export const MODEL_FALLBACK_PRIMARY_KEY = "paperclipPrimaryModel";
+export const MODEL_FALLBACK_STATE_KEY = "wardmoteModelFallback";
+export const MODEL_FALLBACK_PRIMARY_KEY = "wardmotePrimaryModel";
 /** Per-model attempt counts carried by a retry lineage, so a fresh wake always starts over. */
-export const MODEL_FALLBACK_ATTEMPTS_KEY = "paperclipModelAttempts";
+export const MODEL_FALLBACK_ATTEMPTS_KEY = "wardmoteModelAttempts";
 /** The model a retry must start on, decided by the lineage that produced it. */
-export const MODEL_FALLBACK_FORCED_MODEL_KEY = "paperclipForcedModel";
+export const MODEL_FALLBACK_FORCED_MODEL_KEY = "wardmoteForcedModel";
 /** Why the lineage left the primary, carried so a fallback run reports it. */
-export const MODEL_FALLBACK_REASON_KEY = "paperclipFallbackReason";
+export const MODEL_FALLBACK_REASON_KEY = "wardmoteFallbackReason";
 /** The primary model is tried twice before the chain moves on. */
 export const MODEL_FALLBACK_PRIMARY_ATTEMPTS = 2;
 /** The primary retry follows its failure closely so a blip does not look like an outage. */
@@ -29,7 +29,7 @@ export const MODEL_FALLBACK_PRIMARY_RETRY_DELAY_MS = 5_000;
 /** Every later step of the chain waits one bounded interval. */
 export const MODEL_FALLBACK_STEP_DELAY_MS = 30_000;
 /** Attempts the lineage may consume, carried so recovery stops escalating once it is spent. */
-export const MODEL_FALLBACK_BUDGET_KEY = "paperclipModelAttemptBudget";
+export const MODEL_FALLBACK_BUDGET_KEY = "wardmoteModelAttemptBudget";
 export const MODEL_FALLBACK_EVENT = "model.fallback";
 export const MODEL_FALLBACK_RESTORED_EVENT = "model.fallback_restored";
 export const MODEL_FALLBACK_EXHAUSTED_EVENT = "model.fallback_exhausted";

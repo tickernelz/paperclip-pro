@@ -5073,7 +5073,7 @@ async function recoverQuiescentRunnerdState(input: {
           nativeSessionScopeKey(input.execution) ||
         nativeSessionConfigDigest(previous) !==
           nativeSessionConfigDigest(input.execution) ||
-        record(record(prior.contextSnapshot).paperclipEnvironment).driver !==
+        record(record(prior.contextSnapshot).wardmoteEnvironment).driver !==
           "local" ||
         checkpointIdentity.runId !== identity.runId ||
         checkpointIdentity.sessionId !== identity.normalizedSessionId ||

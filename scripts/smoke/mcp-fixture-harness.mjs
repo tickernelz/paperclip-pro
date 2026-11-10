@@ -18,14 +18,14 @@ const httpServerPath = resolve(repoRoot, "scripts/mcp-fixtures/servers/http-fixt
 
 function parseArgs(argv) {
   const args = {
-    paperclipUrl: process.env.WARDMOTE_API_URL ?? "http://127.0.0.1:3100/api",
+    wardmoteUrl: process.env.WARDMOTE_API_URL ?? "http://127.0.0.1:3100/api",
     requirePaperclip: false,
     json: false,
   };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
     if (arg === "--") continue;
-    if (arg === "--paperclip-url") args.paperclipUrl = argv[++i];
+    if (arg === "--paperclip-url") args.wardmoteUrl = argv[++i];
     else if (arg === "--require-paperclip") args.requirePaperclip = true;
     else if (arg === "--json") args.json = true;
     else if (arg === "--help") {
@@ -298,7 +298,7 @@ function assert(condition, message) {
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
-  const paperclip = await checkWardmoteHealth(args.paperclipUrl, args.requirePaperclip);
+  const paperclip = await checkWardmoteHealth(args.wardmoteUrl, args.requirePaperclip);
   const stdioClient = new StdioFixtureClient();
   const httpClient = new HttpFixtureClient();
   const results = [];

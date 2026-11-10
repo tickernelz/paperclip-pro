@@ -1172,7 +1172,7 @@ async function toolOverhead(db: Db, root: string, fixture: Fixture, options: Ben
       contextSnapshot: {
         issueId,
         taskId: issueId,
-        paperclipOpenwa: {
+        wardmoteOpenwa: {
           endpointId: fixture.endpointId,
           chatKey: jid(OWNER_PHONE),
           triggerClass: "owner",
@@ -1452,12 +1452,12 @@ async function runBurst(
   for (const run of runs) {
     const context = (run.contextSnapshot ?? {}) as {
       issueId?: unknown;
-      paperclipOpenwa?: { triggerClass?: unknown };
+      wardmoteOpenwa?: { triggerClass?: unknown };
       openwa?: { triggerClass?: unknown };
     };
-    if (!context.paperclipOpenwa && !context.openwa) continue;
+    if (!context.wardmoteOpenwa && !context.openwa) continue;
     openwaRuns++;
-    const triggerClass = context.paperclipOpenwa?.triggerClass ?? context.openwa?.triggerClass ?? "other";
+    const triggerClass = context.wardmoteOpenwa?.triggerClass ?? context.openwa?.triggerClass ?? "other";
     const pair = String(context.issueId) + "|" + String(triggerClass);
     pairRuns.set(pair, (pairRuns.get(pair) ?? 0) + 1);
     const slot = pair + "|" + Math.floor(((run.startedAt ?? run.createdAt).getTime() - start) / windowMs);

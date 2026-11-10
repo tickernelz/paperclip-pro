@@ -50,7 +50,7 @@ export interface LabelsInput {
   adapterType: string;
 }
 
-export function paperclipLabels(input: LabelsInput): Record<string, string> {
+export function wardmoteLabels(input: LabelsInput): Record<string, string> {
   return {
     "paperclip.io/run-id": input.runId,
     "paperclip.io/agent-id": input.agentId,

@@ -14,7 +14,7 @@ function required(name: string) {
 const port = Number(required("WARDMOTE_RUNNER_E2E_PORT"));
 const temporaryRoot = required("WARDMOTE_RUNNER_E2E_TEMP_ROOT");
 const privateDir = required("WARDMOTE_RUNNER_E2E_PRIVATE_DIR");
-const paperclipHome = required("WARDMOTE_HOME");
+const wardmoteHome = required("WARDMOTE_HOME");
 const configPath = required("WARDMOTE_CONFIG");
 const baseURL = `http://127.0.0.1:${port}`;
 const playwrightChannel = process.env.WARDMOTE_PLAYWRIGHT_CHANNEL?.trim();
@@ -36,7 +36,7 @@ required("WARDMOTE_DECISION_SIGNING_SECRET");
 required("WARDMOTE_TOOL_ACTION_SIGNING_SECRET");
 required("BETTER_AUTH_SECRET");
 if (
-  !paperclipHome.startsWith(`${temporaryRoot}${path.sep}`) ||
+  !wardmoteHome.startsWith(`${temporaryRoot}${path.sep}`) ||
   !configPath.startsWith(`${temporaryRoot}${path.sep}`)
 ) {
   throw new Error("Paperclip server paths escape the isolated temporary root");

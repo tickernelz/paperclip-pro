@@ -245,7 +245,7 @@ function copyback() {
   const reference = { schema: "paperclip.native-workspace-sync/v2", state: "finalized", baselineSha256: "a".repeat(64),
     descriptorSha256: "b".repeat(64), finalHostSha256: "c".repeat(64), workspaceId: "workspace", leaseId: "lease",
     providerLeaseId: "sandbox", remoteCwd: "/workspace" };
-  const run = { ...f.run, contextSnapshot: { executionWorkspaceId: "workspace", paperclipEnvironment: { id: "environment", driver: "sandbox", leaseId: "lease" } },
+  const run = { ...f.run, contextSnapshot: { executionWorkspaceId: "workspace", wardmoteEnvironment: { id: "environment", driver: "sandbox", leaseId: "lease" } },
     runnerProfileJson: { nativeWorkspaceSync: reference, nativeExecutionInput: { binding: { executionWorkspaceId: "workspace" } } } };
   const lease = { id: "lease", companyId: "company", environmentId: "environment", heartbeatRunId: "run", provider: "daytona", providerLeaseId: "sandbox", metadata: { remoteCwd: "/workspace" } };
   return { ...f, run, lease, environment: "daytona" as const };

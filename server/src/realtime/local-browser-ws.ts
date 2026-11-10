@@ -60,7 +60,7 @@ interface WsServer {
 }
 
 interface IncomingMessageWithBridge extends IncomingMessage {
-  paperclipWebSocketHandled?: boolean;
+  wardmoteWebSocketHandled?: boolean;
 }
 
 export const LOCAL_BROWSER_BRIDGE_PATH = "/api/local-browser/bridge";
@@ -512,10 +512,10 @@ export function setupLocalBrowserWebSocketServer(
 
   server.on("upgrade", (req: IncomingMessage, socket: Duplex, head: Buffer) => {
     const request = req as IncomingMessageWithBridge;
-    if (request.paperclipWebSocketHandled || !request.url) return;
+    if (request.wardmoteWebSocketHandled || !request.url) return;
     const url = new URL(request.url, "http://localhost");
     if (url.pathname !== LOCAL_BROWSER_BRIDGE_PATH) return;
-    request.paperclipWebSocketHandled = true;
+    request.wardmoteWebSocketHandled = true;
 
     const code = url.searchParams.get("code");
     const token = url.searchParams.get("session");

@@ -74,7 +74,7 @@ The surface is bounded by the OpenAPI registry - 441 tools for an agent, 716 for
 
 ### Annotations
 
-`readOnlyHint`, `destructiveHint` and `idempotentHint` are **not** in the `tools/list` payload by default: they cost 30 KB of a 190 KB listing and the only host of this server (OMP) cannot consume them, because its tool type carries no annotations field and its `tools/list` decoder keeps only `name`, `description` and `inputSchema`. The tool definitions still hold the annotations internally. A caller that needs them can pass `annotations: true` to `paperclipToolCatalog` or set `WARDMOTE_MCP_LIST_ANNOTATIONS=1`; the two listing shapes are memoized separately, so one caller's choice never changes another's.
+`readOnlyHint`, `destructiveHint` and `idempotentHint` are **not** in the `tools/list` payload by default: they cost 30 KB of a 190 KB listing and the only host of this server (OMP) cannot consume them, because its tool type carries no annotations field and its `tools/list` decoder keeps only `name`, `description` and `inputSchema`. The tool definitions still hold the annotations internally. A caller that needs them can pass `annotations: true` to `wardmoteToolCatalog` or set `WARDMOTE_MCP_LIST_ANNOTATIONS=1`; the two listing shapes are memoized separately, so one caller's choice never changes another's.
 
 ## Error contract
 

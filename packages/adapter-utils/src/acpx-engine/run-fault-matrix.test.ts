@@ -138,7 +138,7 @@ function completedRuntime() {
 // fails after the session handshake and before the turn starts.
 function throwingHandoffContext(): Record<string, unknown> {
   const context: Record<string, unknown> = {};
-  Object.defineProperty(context, "paperclipSessionHandoffMarkdown", {
+  Object.defineProperty(context, "wardmoteSessionHandoffMarkdown", {
     enumerable: false,
     get() {
       throw new Error("prompt build boom");

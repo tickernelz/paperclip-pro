@@ -511,7 +511,7 @@ export async function loadOpenwaPolicySnapshot(db: Reader, companyId: string, en
       and(
         eq(companyMemberships.companyId, chatIdentityLinks.companyId),
         eq(companyMemberships.principalType, "user"),
-        eq(companyMemberships.principalId, chatIdentityLinks.paperclipUserId),
+        eq(companyMemberships.principalId, chatIdentityLinks.wardmoteUserId),
       ),
     )
     .where(

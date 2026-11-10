@@ -43,7 +43,7 @@ describe("runner PRP websocket route", () => {
     const socket = new PassThrough();
     const request = { url: `/api/runner/v1/connect/${runId}`, headers: {} };
     server.emit("upgrade", request, socket, Buffer.alloc(0));
-    expect(request).toMatchObject({ paperclipWebSocketHandled: true });
+    expect(request).toMatchObject({ wardmoteWebSocketHandled: true });
     expect(handleUpgrade).toHaveBeenCalledWith(
       expect.objectContaining({ url: `/api/runner/v1/connect/${runId}` }),
       socket,

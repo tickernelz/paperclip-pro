@@ -36,7 +36,7 @@ export async function seedPiFile(workspace: string, nonce: string) {
 }
 
 export function gradePiCopyback(run: Row, lease: Row, companyId: string, environmentId: string) {
-  const context = rec(run.contextSnapshot), environment = rec(context.paperclipEnvironment);
+  const context = rec(run.contextSnapshot), environment = rec(context.wardmoteEnvironment);
   const reference = rec(rec(run.runnerProfileJson).nativeWorkspaceSync);
   const binding = rec(rec(rec(run.runnerProfileJson).nativeExecutionInput).binding);
   requireEvidence(run.companyId === companyId && reference.schema === "paperclip.native-workspace-sync/v2"

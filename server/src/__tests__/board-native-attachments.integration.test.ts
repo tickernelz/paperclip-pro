@@ -199,14 +199,14 @@ describe("Board upload receipt to native wake staging", () => {
         {},
         emitted![1].contextSnapshot!,
       );
-      const paperclipWake = await buildWardmoteWakePayload({
+      const wardmoteWake = await buildWardmoteWakePayload({
         db,
         companyId,
         agentId: issue!.assigneeAgentId,
         runId,
         contextSnapshot,
       });
-      expect(paperclipWake?.comments[0]?.attachments).toEqual([
+      expect(wardmoteWake?.comments[0]?.attachments).toEqual([
         expect.objectContaining({ id: attachment.id, byteSize: bytes.length }),
       ]);
       await db.insert(heartbeatRuns).values({
@@ -218,7 +218,7 @@ describe("Board upload receipt to native wake staging", () => {
         nativeIssueId: issueId,
         invocationSource: "assignment",
         triggerDetail: "system",
-        contextSnapshot: { ...contextSnapshot, paperclipWake },
+        contextSnapshot: { ...contextSnapshot, wardmoteWake },
       });
       await db
         .update(issues)

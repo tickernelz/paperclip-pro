@@ -4,7 +4,7 @@ import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 
 import {
-  paperclipRunnerBinaryNeedsBuild,
+  wardmoteRunnerBinaryNeedsBuild,
   resolveNativeRunnerRequirement,
 } from "../../../scripts/dev-runner-native-binary.mjs";
 
@@ -78,7 +78,7 @@ describe("paperclip runner native dev prerequisite", () => {
     fs.utimesSync(checkout.source, old, old);
     fs.utimesSync(checkout.binary, current, current);
     expect(
-      paperclipRunnerBinaryNeedsBuild({
+      wardmoteRunnerBinaryNeedsBuild({
         repoRoot: checkout.root,
         nativeRunnerRequired: true,
       }),
@@ -86,7 +86,7 @@ describe("paperclip runner native dev prerequisite", () => {
 
     fs.utimesSync(checkout.source, next, next);
     expect(
-      paperclipRunnerBinaryNeedsBuild({
+      wardmoteRunnerBinaryNeedsBuild({
         repoRoot: checkout.root,
         nativeRunnerRequired: true,
       }),
@@ -94,7 +94,7 @@ describe("paperclip runner native dev prerequisite", () => {
 
     fs.rmSync(checkout.binary);
     expect(
-      paperclipRunnerBinaryNeedsBuild({
+      wardmoteRunnerBinaryNeedsBuild({
         repoRoot: checkout.root,
         nativeRunnerRequired: true,
       }),
@@ -103,7 +103,7 @@ describe("paperclip runner native dev prerequisite", () => {
 
   it("keeps default-off legacy development Node-only", () => {
     expect(
-      paperclipRunnerBinaryNeedsBuild({
+      wardmoteRunnerBinaryNeedsBuild({
         repoRoot: "/checkout/without/a/staged/binary",
         nativeRunnerRequired: false,
       }),
@@ -112,7 +112,7 @@ describe("paperclip runner native dev prerequisite", () => {
 
   it("does not build a workspace binary when an explicit binary is configured", () => {
     expect(
-      paperclipRunnerBinaryNeedsBuild({
+      wardmoteRunnerBinaryNeedsBuild({
         repoRoot: "/checkout/without/a/staged/binary",
         nativeRunnerRequired: true,
         configuredBinary: "/opt/paperclip/wardmote-runnerd",

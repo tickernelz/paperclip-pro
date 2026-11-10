@@ -5,7 +5,7 @@ import { Eye, ExternalLink, OctagonAlert, RefreshCw, TriangleAlert } from "lucid
 import { IssueRecoveryActionCard } from "@/components/IssueRecoveryActionCard";
 import { IssueRow } from "@/components/IssueRow";
 import { IssueBlockedNotice } from "@/components/IssueBlockedNotice";
-import { storybookAgentMap, storybookAgents, createIssue } from "../fixtures/paperclipData";
+import { storybookAgentMap, storybookAgents, createIssue } from "../fixtures/wardmoteData";
 
 const claudeAgent = storybookAgents.find((agent) => agent.name.toLowerCase().startsWith("claude")) ?? storybookAgents[0]!;
 const codexAgent = storybookAgents.find((agent) => agent.name.toLowerCase().startsWith("codex")) ?? storybookAgents[0]!;

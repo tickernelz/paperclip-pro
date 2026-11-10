@@ -15,7 +15,7 @@ import {
 import { buildSshSpawnTarget, type SshRemoteExecutionSpec } from "./ssh.js";
 import { redactCommandText } from "./command-redaction.js";
 import { applyRunOomScoreAdj } from "./run-oom-score.js";
-import { paperclipChatFilePreparationDelivery } from "./chat-file-delivery.js";
+import { wardmoteChatFilePreparationDelivery } from "./chat-file-delivery.js";
 import type { WardmoteAccessMode } from "./wardmote-mcp.js";
 import {
   WARDMOTE_RUNNER_PERMISSION_CAPABILITIES,
@@ -215,7 +215,7 @@ export function resolveWardmoteInstanceRootForAdapter(
 }
 
 /** The heartbeat contract, rendered against the Paperclip surface the adapter actually armed. */
-export function paperclipAgentPromptTemplate(access: WardmoteAccessMode): string {
+export function wardmoteAgentPromptTemplate(access: WardmoteAccessMode): string {
   const mcp = access === "mcp";
   return [
     "You are agent {{agent.id}} ({{agent.name}}). Continue your Paperclip work.",
@@ -1973,9 +1973,9 @@ export interface WardmoteTurnContext {
 }
 
 /** True when the structured prompt owns current wake comments. */
-export function paperclipWakeCommentsArePromptOwned(value: unknown): boolean {
+export function wardmoteWakeCommentsArePromptOwned(value: unknown): boolean {
   const context = parseObject(value);
-  const turn = parseObject(context.paperclipTurnContext);
+  const turn = parseObject(context.wardmoteTurnContext);
   const events = parseObject(turn.events);
   return turn.version === 1 && events.owner === "wake_prompt";
 }
@@ -2168,10 +2168,10 @@ export function readWardmoteIssueWorkModeFromContext(
   value: unknown,
 ): string | null {
   const context = parseObject(value);
-  const issue = parseObject(context.paperclipIssue);
+  const issue = parseObject(context.wardmoteIssue);
   const direct = asString(issue.workMode, "").trim();
   if (direct) return direct;
-  const wake = normalizeWardmoteWakePayload(context.paperclipWake);
+  const wake = normalizeWardmoteWakePayload(context.wardmoteWake);
   return wake?.issue?.workMode ?? null;
 }
 
@@ -2201,8 +2201,8 @@ export async function hydrateFreshSessionHandoff(
 ): Promise<void> {
   if (options.resumedSession === true || !ctx.getFreshSessionHandoff) return;
   const handoff = await ctx.getFreshSessionHandoff();
-  if (handoff) ctx.context.paperclipFreshSessionHandoffMarkdown = handoff;
-  else delete ctx.context.paperclipFreshSessionHandoffMarkdown;
+  if (handoff) ctx.context.wardmoteFreshSessionHandoffMarkdown = handoff;
+  else delete ctx.context.wardmoteFreshSessionHandoffMarkdown;
 }
 
 export function selectInitialCommunicationGuidance(
@@ -2211,8 +2211,8 @@ export function selectInitialCommunicationGuidance(
 ): string {
   return options.resumedSession === true
     ? "" : joinPromptSections([
-        asString(context?.paperclipTaskCommunicationGuidance, "").trim(),
-        asString(context?.paperclipFreshSessionHandoffMarkdown, "").trim(),
+        asString(context?.wardmoteTaskCommunicationGuidance, "").trim(),
+        asString(context?.wardmoteFreshSessionHandoffMarkdown, "").trim(),
       ]);
 }
 
@@ -2226,7 +2226,7 @@ export function selectWardmoteTaskMarkdown(
   options: { resumedSession?: boolean; includeCommunicationGuidance?: boolean } = {},
 ): string {
   const full = asString(
-    context?.paperclipTaskMarkdownAssignment ?? context?.paperclipTaskMarkdown,
+    context?.wardmoteTaskMarkdownAssignment ?? context?.wardmoteTaskMarkdown,
     "",
   ).trim();
   if (!full) return "";
@@ -2235,16 +2235,16 @@ export function selectWardmoteTaskMarkdown(
       ? "" : selectInitialCommunicationGuidance(context, options);
     return joinPromptSections([guidance, full]);
   }
-  const wake = normalizeWardmoteWakePayload(context?.paperclipWake);
+  const wake = normalizeWardmoteWakePayload(context?.wardmoteWake);
   if (!wake) return full;
   if (
     isAssignmentShapedWardmoteWakeReason(wake.reason) ||
-    isWardmoteRecoveryWakePayload(context?.paperclipWake)
+    isWardmoteRecoveryWakePayload(context?.wardmoteWake)
   ) {
     return full;
   }
   const compact = asString(
-    context?.paperclipTaskMarkdownAssignmentCompact ?? context?.paperclipTaskMarkdownCompact,
+    context?.wardmoteTaskMarkdownAssignmentCompact ?? context?.wardmoteTaskMarkdownCompact,
     "",
   ).trim();
   return compact || full;
@@ -2264,19 +2264,19 @@ export function selectWardmotePromptSections(
     /** @deprecated Generic execution instructions are no longer injected. */
     includeExecutionContract?: boolean;
     nativeWakeReaderAvailable?: boolean;
-    paperclipAccess?: WardmoteAccessMode;
+    wardmoteAccess?: WardmoteAccessMode;
   } = {},
 ): { taskContextNote: string; wakePrompt: string } {
   const taskContextNote = selectWardmoteTaskMarkdown(context, options);
   return {
     taskContextNote,
-    wakePrompt: renderWardmoteWakePrompt(context?.paperclipWake, {
+    wakePrompt: renderWardmoteWakePrompt(context?.wardmoteWake, {
       resumedSession: options.resumedSession,
       includeExecutionContract: options.includeExecutionContract,
       nativeWakeReaderAvailable: options.nativeWakeReaderAvailable,
       conversationMode: context?.conversationMode === true,
       suppressIssueDescription: taskContextNote.length > 0,
-      paperclipAccess: options.paperclipAccess,
+      wardmoteAccess: options.wardmoteAccess,
     }),
   };
 }
@@ -2310,7 +2310,7 @@ function renderWardmoteWakePromptBody(
     // (the authoritative, uncapped brief) so the description is not delivered
     // twice in one prompt.
     suppressIssueDescription?: boolean;
-    paperclipAccess?: WardmoteAccessMode;
+    wardmoteAccess?: WardmoteAccessMode;
   } = {},
 ): string {
   const normalized = normalizeWardmoteWakePayload(value);
@@ -2450,7 +2450,7 @@ function renderWardmoteWakePromptBody(
             ]
           : []),
         "If the user explicitly asks to keep this current chat task open and wait for their next provider message without scheduling more work, report `yielded` with continuation kind `response_wake`; do not report `done`. Use that wait only after completing this turn's requested response, and never use it to defer unfinished work or for an ordinary completed request. Paperclip independently verifies the current chat binding before preserving the task.",
-        `File-delivery contract: ${paperclipChatFilePreparationDelivery(normalized.externalChatProvider).guidance}`,
+        `File-delivery contract: ${wardmoteChatFilePreparationDelivery(normalized.externalChatProvider).guidance}`,
         "When the request genuinely requires files, investigation, external access, or mutations, use the appropriate tools and complete every required permission, approval, execution-policy, containment, budget, pause/cancel, and company-boundary check. This response shortcut grants no new authority.",
         "Keep the final response concise and provider-facing. Do not narrate Paperclip workflow, checkout, status, or completion bookkeeping. Keep wait and review dispositions in the semantic control fields rather than appending status boilerplate to the answer. Mention task state only when the user asks about it or must act on a real blocker.",
         "",
@@ -3122,7 +3122,7 @@ function renderWardmoteWakePromptBody(
     lines.push(
       "",
       "The harness already checked out this issue for the current run.",
-      options.paperclipAccess === "rest"
+      options.wardmoteAccess === "rest"
         ? "Do not call `POST /api/issues/$WARDMOTE_TASK_ID/checkout` again unless you intentionally switch to a different task."
         : "Do not call `wardmoteCheckoutIssue` for it again unless you intentionally switch to a different task.",
       "",
@@ -4172,10 +4172,10 @@ export async function readWardmoteRuntimeSkillEntries(
   additionalCandidates: string[] = [],
 ): Promise<WardmoteSkillEntry[]> {
   const configuredEntries = normalizeConfiguredWardmoteRuntimeSkills(
-    config.paperclipRuntimeSkills,
+    config.wardmoteRuntimeSkills,
   );
   // An explicit empty assignment must not fall back to every bundled skill.
-  if (Array.isArray(config.paperclipRuntimeSkills)) return configuredEntries;
+  if (Array.isArray(config.wardmoteRuntimeSkills)) return configuredEntries;
   return listWardmoteSkillEntries(moduleDir, additionalCandidates);
 }
 

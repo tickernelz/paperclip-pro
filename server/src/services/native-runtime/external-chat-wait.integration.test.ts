@@ -262,7 +262,7 @@ describe("native external-chat response wait", () => {
       companyId,
       endpointId,
       principalId,
-      paperclipUserId: userId,
+      wardmoteUserId: userId,
       status: "linked",
     });
     await db.insert(companyMemberships).values({
@@ -308,11 +308,11 @@ describe("native external-chat response wait", () => {
       .set({
         contextSnapshot: {
           source: `chat:${provider}`,
-          paperclipHarnessCheckedOut: true,
+          wardmoteHarnessCheckedOut: true,
           issueId,
           wakeCommentId: commentId,
           wakeCommentIds: [commentId],
-          paperclipWake: {
+          wardmoteWake: {
             reason: "External chat message received",
             externalChatProvider: provider,
             checkedOutByHarness: true,
@@ -870,7 +870,7 @@ describe("native external-chat response wait", () => {
         ),
       ).not.toBeNull();
       await attestAnswer(fixture);
-      expect(fixture.context.paperclipWake).toMatchObject({
+      expect(fixture.context.wardmoteWake).toMatchObject({
         externalChatProvider: "github",
       });
       await db
@@ -1061,7 +1061,7 @@ describe("native external-chat response wait", () => {
         }),
       ).toBe(false);
       expect(
-        fixture.context.paperclipExternalChatQuestionResponse,
+        fixture.context.wardmoteExternalChatQuestionResponse,
       ).toBeUndefined();
       await expect(
         db
@@ -1172,8 +1172,8 @@ describe("native external-chat response wait", () => {
       const context = source!.contextSnapshot as Record<string, unknown>;
       await db.update(heartbeatRuns).set({
         runtimeMode: "legacy", nativeIssueId: null,
-        contextSnapshot: { ...context, paperclipWake: {
-          ...(context.paperclipWake as Record<string, unknown>),
+        contextSnapshot: { ...context, wardmoteWake: {
+          ...(context.wardmoteWake as Record<string, unknown>),
           issue: { id: condition === "wrong_task" ? randomUUID() : fixture.issueId },
         } },
       }).where(eq(heartbeatRuns.id, fixture.sourceRunId));
@@ -1185,9 +1185,9 @@ describe("native external-chat response wait", () => {
       }
       expect(await attestReviewedExternalChatRun({ db, ...fixture, contextSnapshot: fixture.context })).toBe(condition === "valid");
       if (condition === "valid") {
-        expect(fixture.context.paperclipExternalChatQuestionResponse).toMatchObject({ interactionId: fixture.interactionId });
+        expect(fixture.context.wardmoteExternalChatQuestionResponse).toMatchObject({ interactionId: fixture.interactionId });
       } else {
-        expect(fixture.context.paperclipExternalChatQuestionResponse).toBeUndefined();
+        expect(fixture.context.wardmoteExternalChatQuestionResponse).toBeUndefined();
       }
     },
   );
@@ -1204,7 +1204,7 @@ describe("native external-chat response wait", () => {
         contextSnapshot: fixture.context,
       }),
     ).toBe(true);
-    expect(fixture.context.paperclipExternalChatQuestionResponse).toMatchObject(
+    expect(fixture.context.wardmoteExternalChatQuestionResponse).toMatchObject(
       {
         schema: "paperclip.external_chat_question_response.v1",
         interactionId: fixture.interactionId,
@@ -1212,8 +1212,8 @@ describe("native external-chat response wait", () => {
         responseDeliveryId: fixture.responseDeliveryId,
       },
     );
-    fixture.context.paperclipExternalChatExecutionBound = true;
-    fixture.context.paperclipWake = await buildWardmoteWakePayload({
+    fixture.context.wardmoteExternalChatExecutionBound = true;
+    fixture.context.wardmoteWake = await buildWardmoteWakePayload({
       db,
       companyId: fixture.companyId,
       agentId: fixture.agentId,
@@ -1445,7 +1445,7 @@ describe("native external-chat response wait", () => {
         contextSnapshot: fixture.context,
       }),
     ).resolves.toBe(true);
-    expect(fixture.context.paperclipExternalChatQuestionResponse).toMatchObject({
+    expect(fixture.context.wardmoteExternalChatQuestionResponse).toMatchObject({
       schema: "paperclip.external_chat_question_response.v1",
       interactionId: fixture.interactionId,
       responseDeliveryId: fixture.responseDeliveryId,
@@ -1559,7 +1559,7 @@ describe("native external-chat response wait", () => {
         }),
       ).resolves.toBe(false);
       expect(fixture.context).not.toHaveProperty(
-        "paperclipExternalChatQuestionResponse",
+        "wardmoteExternalChatQuestionResponse",
       );
     },
   );
@@ -1580,7 +1580,7 @@ describe("native external-chat response wait", () => {
         async ({ fixture, invoke }) => {
           // Answer text is intentionally ephemeral. A prompt-shape predicate on
           // the durable wake is not the authority for this file delivery mode.
-          expect(fixture.context.paperclipWake).not.toHaveProperty(
+          expect(fixture.context.wardmoteWake).not.toHaveProperty(
             "questionResponse",
           );
           const first = await invoke();
@@ -1656,7 +1656,7 @@ describe("native external-chat response wait", () => {
             .where(eq(issueAttachments.issueId, fixture.issueId));
           const context = structuredClone(fixture.context);
           (
-            context.paperclipExternalChatQuestionResponse as Record<
+            context.wardmoteExternalChatQuestionResponse as Record<
               string,
               unknown
             >
@@ -1704,7 +1704,7 @@ describe("native external-chat response wait", () => {
           if (mutation === "forged_marker") {
             const context = structuredClone(fixture.context);
             const marker =
-              context.paperclipExternalChatQuestionResponse as Record<
+              context.wardmoteExternalChatQuestionResponse as Record<
                 string,
                 unknown
               >;
@@ -1814,7 +1814,7 @@ describe("native external-chat response wait", () => {
         );
       // Neither a caller timestamp nor an untrusted marker field is the source.
       fixture.context.answeredAtMs = 1;
-      fixture.context.paperclipExternalChatQuestionResponse = {
+      fixture.context.wardmoteExternalChatQuestionResponse = {
         answeredAtMs: 2,
       };
       const onQuestionResponseAttested = vi.fn();
@@ -1832,7 +1832,7 @@ describe("native external-chat response wait", () => {
       expect(fixture.context.sourceCommentId).toBe(fixture.commentId);
       expect(fixture.context.wakeCommentIds).toEqual([fixture.commentId]);
       expect(
-        fixture.context.paperclipExternalChatQuestionResponse,
+        fixture.context.wardmoteExternalChatQuestionResponse,
       ).not.toHaveProperty("answeredAtMs");
       const [comment] = await db
         .select()
@@ -2091,7 +2091,7 @@ describe("native external-chat response wait", () => {
       const parent = parents[0]!;
       if (kind === "missing_parent_marker") {
         const context = { ...parent.context };
-        delete context.paperclipExternalChatQuestionResponse;
+        delete context.wardmoteExternalChatQuestionResponse;
         await db
           .update(heartbeatRuns)
           .set({ contextSnapshot: context })
@@ -2207,7 +2207,7 @@ describe("native external-chat response wait", () => {
         }),
       ).toBe(false);
       expect(
-        fixture.context.paperclipExternalChatQuestionResponse,
+        fixture.context.wardmoteExternalChatQuestionResponse,
       ).toBeUndefined();
     },
   );
@@ -2321,7 +2321,7 @@ describe("native external-chat response wait", () => {
             companyId: fixture.companyId,
             endpointId: fixture.endpointId,
             principalId,
-            paperclipUserId: "second-user",
+            wardmoteUserId: "second-user",
             status: "linked",
           });
         await db
@@ -2433,7 +2433,7 @@ describe("native external-chat response wait", () => {
         }),
       ).toBe(false);
       expect(
-        fixture.context.paperclipExternalChatQuestionResponse,
+        fixture.context.wardmoteExternalChatQuestionResponse,
       ).toBeUndefined();
       expect(
         await db
@@ -3813,10 +3813,10 @@ describe("native external-chat response wait", () => {
       .where(eq(heartbeatRuns.id, fixture.runId));
     const context = {
       ...run!.contextSnapshot,
-      paperclipRuntimeServices: [
+      wardmoteRuntimeServices: [
         { name: "preview", url: "http://127.0.0.1:9000" },
       ],
-      paperclipRuntimePrimaryUrl: "http://127.0.0.1:9000",
+      wardmoteRuntimePrimaryUrl: "http://127.0.0.1:9000",
     };
     await db
       .update(heartbeatRuns)

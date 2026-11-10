@@ -112,7 +112,7 @@ const grokLoginCapability: AdapterLoginCapability = {
   },
 };
 
-const paperclipRunnerAdapter: ServerAdapterModule = {
+const wardmoteRunnerAdapter: ServerAdapterModule = {
   type: "wardmote_runner",
   runtimeToolDelivery: "environment",
   async execute(ctx) {
@@ -467,7 +467,7 @@ const pausedOverrides = new Set<string>();
 function registerBuiltInAdapters() {
   for (const adapter of [
     ...RETIRED_ADAPTER_TYPES.map(createRetiredAdapter),
-    paperclipRunnerAdapter,
+    wardmoteRunnerAdapter,
     ompLocalAdapter,
     processAdapter,
     httpAdapter,

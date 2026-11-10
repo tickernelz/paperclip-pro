@@ -1,4 +1,4 @@
-export const SELECTION_DEBUG_STORAGE_KEY = "paperclipDebugSelection";
+export const SELECTION_DEBUG_STORAGE_KEY = "wardmoteDebugSelection";
 
 type SelectionDebugEvent = {
   at: number;

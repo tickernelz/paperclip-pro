@@ -35,7 +35,7 @@ import {
   storybookIssueLabels,
   storybookIssues,
   storybookProjects,
-} from "../fixtures/paperclipData";
+} from "../fixtures/wardmoteData";
 
 function makeObject(args: {
   id: string;

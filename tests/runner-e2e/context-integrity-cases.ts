@@ -52,4 +52,4 @@ function contextIntegrityTask(id: ContextIntegrityCase): RunnerTaskFixture {
 }
 
 export const contextIntegrityTasks: readonly RunnerTaskFixture[] = CONTEXT_INTEGRITY_CASES.map(contextIntegrityTask);
-export const paperclipDocumentTask = contextIntegrityTask(WARDMOTE_DOCUMENT_CASE);
+export const wardmoteDocumentTask = contextIntegrityTask(WARDMOTE_DOCUMENT_CASE);

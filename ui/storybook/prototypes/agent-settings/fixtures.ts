@@ -9,7 +9,7 @@ import {
   storybookAgents,
   storybookIssues,
   storybookSecrets,
-} from "../../fixtures/paperclipData";
+} from "../../fixtures/wardmoteData";
 import { models as claudeModels } from "@tickernelz/wardmote-adapter-utils/provider-models/claude";
 import { models as openCodeModels } from "@tickernelz/wardmote-adapter-utils/provider-models/opencode";
 import { storybookEnvironments } from "../../fixtures/onboardingEnvironment";

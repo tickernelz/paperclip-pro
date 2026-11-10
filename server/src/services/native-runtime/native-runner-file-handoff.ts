@@ -430,7 +430,7 @@ function wakeAttachmentSelections(value: unknown): Array<{
   readonly id: string;
   readonly commentId: string;
 }> {
-  const wake = record(record(value).paperclipWake);
+  const wake = record(record(value).wardmoteWake);
   const comments = Array.isArray(wake.comments) ? wake.comments : [];
   const selected: Array<{ id: string; commentId: string }> = [];
   const seen = new Set<string>();

@@ -45,7 +45,7 @@ import { openwaPendingCardsForWake, type OpenwaPendingCard } from "./pending-car
 import { openwaOwnerReportRoute } from "./owner-report.js";
 
 export const OPENWA_GUIDANCE_VERSION = 2;
-export const OPENWA_WAKE_CONTEXT_KEY = "paperclipOpenwaWake";
+export const OPENWA_WAKE_CONTEXT_KEY = "wardmoteOpenwaWake";
 export const OPENWA_WAKE_MAX_MESSAGES = 20;
 export const OPENWA_WAKE_MAX_TEXT = 2000;
 const QUOTE_MAX_TEXT = 500;
@@ -503,13 +503,13 @@ async function listOwners(db: Db, companyId: string, endpointId: string): Promis
       and(
         eq(companyMemberships.companyId, chatEndpointOwners.companyId),
         eq(companyMemberships.principalType, "user"),
-        eq(companyMemberships.principalId, chatIdentityLinks.paperclipUserId),
+        eq(companyMemberships.principalId, chatIdentityLinks.wardmoteUserId),
         eq(companyMemberships.status, "active"),
         or(isNull(companyMemberships.membershipRole), ne(companyMemberships.membershipRole, "viewer")),
       ),
     )
     .leftJoin(chatExternalPrincipals, eq(chatExternalPrincipals.id, chatIdentityLinks.principalId))
-    .leftJoin(authUsers, eq(authUsers.id, chatIdentityLinks.paperclipUserId))
+    .leftJoin(authUsers, eq(authUsers.id, chatIdentityLinks.wardmoteUserId))
     .where(and(eq(chatEndpointOwners.companyId, companyId), eq(chatEndpointOwners.endpointId, endpointId)))
     .orderBy(asc(chatEndpointOwners.createdAt))
     .limit(MAX_OWNERS);

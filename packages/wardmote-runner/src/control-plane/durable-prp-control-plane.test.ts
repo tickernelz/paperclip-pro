@@ -2726,7 +2726,7 @@ describe("DurablePrpControlPlane", () => {
       const command = controlPlane.queueCommand(
         "run.attach",
         {
-          paperclipNextAuthority: {
+          wardmoteNextAuthority: {
             identity: nextIdentity,
             connection: {
               mode: "connect",
@@ -2836,7 +2836,7 @@ describe("DurablePrpControlPlane", () => {
       const command = core.queueCommand(
         "run.attach",
         {
-          paperclipNextAuthority: {
+          wardmoteNextAuthority: {
             identity: nextIdentity,
             connection: { mode: "connect", connectUrl: core.connectUrl },
           },
@@ -3320,7 +3320,7 @@ describe("DurablePrpControlPlane", () => {
       const command = core.queueCommand(
         "run.attach",
         {
-          paperclipNextAuthority: {
+          wardmoteNextAuthority: {
             identity: {
               ...identity,
               runId: "fsync-next",
@@ -3446,7 +3446,7 @@ describe("DurablePrpControlPlane", () => {
         const command = core.queueCommand(
           "run.attach",
           {
-            paperclipNextAuthority: {
+            wardmoteNextAuthority: {
               identity: {
                 ...identity,
                 runId: "held-next-run",

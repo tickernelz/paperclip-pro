@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { IssueAttachment } from "@tickernelz/wardmote-shared";
 import { TaskSidePanel } from "@/components/task-side-panel/TaskSidePanel";
 import { queryKeys } from "@/lib/queryKeys";
-import { createIssue } from "../fixtures/paperclipData";
+import { createIssue } from "../fixtures/wardmoteData";
 
 const markdown = "# Account review charter\n\nInvestigate whether new and active accounts succeeded.\n\n## Rules\n\n- Read customer data only.\n- Keep private information out of reports.\n- Report failures with evidence.\n\n```text\nReview → Evidence → Report\n```";
 const plain = "Daily review summary\n\nAccounts reviewed: 20\nCompleted successfully: 18\nNeeds investigation: 2\n\n<This is plain text, not HTML.>";

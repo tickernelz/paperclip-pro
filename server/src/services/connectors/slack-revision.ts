@@ -40,7 +40,7 @@ export async function slackAuthorizationRevision(
       .select({
         id: chatIdentityLinks.id,
         status: chatIdentityLinks.status,
-        user: chatIdentityLinks.paperclipUserId,
+        user: chatIdentityLinks.wardmoteUserId,
         updatedAt: chatIdentityLinks.updatedAt,
       })
       .from(chatIdentityLinks)
@@ -48,7 +48,7 @@ export async function slackAuthorizationRevision(
         and(
           eq(chatIdentityLinks.companyId, companyId),
           eq(chatIdentityLinks.endpointId, endpointId),
-          eq(chatIdentityLinks.paperclipUserId, userId),
+          eq(chatIdentityLinks.wardmoteUserId, userId),
         ),
       )
       .orderBy(chatIdentityLinks.id),

@@ -3438,8 +3438,8 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
     queryKey: queryKeys.instance.experimentalSettings,
     queryFn: () => instanceSettingsApi.getExperimental(),
   });
-  const paperclipDeveloperMode =
-    experimentalSettings?.enablePaperclipDeveloperMode === true;
+  const wardmoteDeveloperMode =
+    experimentalSettings?.enableWardmoteDeveloperMode === true;
   const { data: providerTraceRows } = useQuery({
     queryKey: queryKeys.providerTraceMetadata(run.companyId, [run.id]),
     queryFn: () => heartbeatsApi.providerTraceMetadata(run.companyId, [run.id]),
@@ -3671,7 +3671,7 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
               </Button>
               <HoneycombRunLink
                 runId={run.id}
-                enabled={paperclipDeveloperMode && canUseProviderTrace}
+                enabled={wardmoteDeveloperMode && canUseProviderTrace}
               />
               {canUseProviderTrace && !["queued", "running"].includes(run.status) ? (
                 <Button

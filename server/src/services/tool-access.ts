@@ -4256,7 +4256,7 @@ export function toolAccessService(
       throw forbidden("Agent run is not active");
     }
     const snapshot = asRecord(run.contextSnapshot);
-    const paperclipIssue = asRecord(snapshot.paperclipIssue);
+    const wardmoteIssue = asRecord(snapshot.wardmoteIssue);
     const responsibleUserId = run.activeIdentityContextId
       ? run.responsibleUserId
       : (runSnapshotString(
@@ -4265,7 +4265,7 @@ export function toolAccessService(
           "responsible_user_id",
         ) ??
         runSnapshotString(
-          paperclipIssue,
+          wardmoteIssue,
           "responsibleUserId",
           "responsible_user_id",
         ) ??
@@ -4303,10 +4303,10 @@ export function toolAccessService(
       run,
       issueId:
         runSnapshotString(snapshot, "issueId") ??
-        runSnapshotString(paperclipIssue, "id"),
+        runSnapshotString(wardmoteIssue, "id"),
       projectId:
         runSnapshotString(snapshot, "projectId") ??
-        runSnapshotString(paperclipIssue, "projectId"),
+        runSnapshotString(wardmoteIssue, "projectId"),
       routineId: runSnapshotString(snapshot, "routineId"),
       responsibleUserId,
     };

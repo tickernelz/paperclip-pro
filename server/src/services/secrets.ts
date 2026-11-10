@@ -1650,7 +1650,7 @@ export function secretService(db: Db | DbTransaction) {
       if (!binding) throw forbidden("Secret access is not granted for this agent");
 
       const runContext = asRecord(run.contextSnapshot) ?? {};
-      const manifest = (asRecord(runContext.paperclipSecrets) ?? {}).manifest;
+      const manifest = (asRecord(runContext.wardmoteSecrets) ?? {}).manifest;
       const manifestBindingIds = new Set(
         Array.isArray(manifest)
           ? manifest.flatMap((entry) => {
@@ -1674,8 +1674,8 @@ export function secretService(db: Db | DbTransaction) {
     const effectiveIssueId = context.issueId ?? (
       typeof runContext.issueId === "string"
         ? runContext.issueId
-        : typeof (asRecord(runContext.paperclipIssue) ?? {}).id === "string"
-          ? String((asRecord(runContext.paperclipIssue) ?? {}).id)
+        : typeof (asRecord(runContext.wardmoteIssue) ?? {}).id === "string"
+          ? String((asRecord(runContext.wardmoteIssue) ?? {}).id)
           : null
     );
     bindingContext.issueId = effectiveIssueId;
@@ -1778,7 +1778,7 @@ export function secretService(db: Db | DbTransaction) {
     if (!decision.allowed) throw forbidden(decision.explanation, authorizationDeniedDetails(decision));
 
     const runContext = asRecord(run.contextSnapshot) ?? {};
-    const manifest = (asRecord(runContext.paperclipSecrets) ?? {}).manifest;
+    const manifest = (asRecord(runContext.wardmoteSecrets) ?? {}).manifest;
     const manifestBindingIds = Array.isArray(manifest)
       ? manifest.flatMap((entry) => {
           const bindingId = (asRecord(entry) ?? {}).bindingId;

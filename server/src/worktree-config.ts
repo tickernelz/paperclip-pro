@@ -5,7 +5,7 @@ import { randomBytes } from "node:crypto";
 import { isDeepStrictEqual } from "node:util";
 import {
   mergeWardmoteConfig,
-  paperclipConfigSchema,
+  wardmoteConfigSchema,
   type WardmoteConfig,
 } from "@tickernelz/wardmote-shared";
 import { updateEnvFileContents, writeEnvFileAtomicallyIfChanged } from "@tickernelz/wardmote-shared/env-file";
@@ -206,12 +206,12 @@ function atomicWriteFile(filePath: string, contents: string): void {
 
 function writeConfigFile(configPath: string, config: WardmoteConfig): boolean {
   fs.mkdirSync(path.dirname(configPath), { recursive: true });
-  const update = paperclipConfigSchema.parse(config);
+  const update = wardmoteConfigSchema.parse(config);
   const source = fs.existsSync(configPath)
-    ? paperclipConfigSchema.parse(JSON.parse(fs.readFileSync(configPath, "utf8")))
+    ? wardmoteConfigSchema.parse(JSON.parse(fs.readFileSync(configPath, "utf8")))
     : null;
   const nextConfig = source
-    ? paperclipConfigSchema.parse(mergeWardmoteConfig(source, update))
+    ? wardmoteConfigSchema.parse(mergeWardmoteConfig(source, update))
     : update;
 
   if (source && isDeepStrictEqual(source, nextConfig)) return false;

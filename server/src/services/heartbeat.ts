@@ -2883,7 +2883,7 @@ export function heartbeatService(
         delete context.resumeSessionParams;
         delete context.resumeSessionDisplayId;
         delete context.executionContinuation;
-        delete context.paperclipContinuationSummary;
+        delete context.wardmoteContinuationSummary;
       }
       const taskSessionDecodedParams = normalizeSessionParams(
         sessionCodec.deserialize(taskSession?.sessionParamsJson ?? null),
@@ -2951,7 +2951,7 @@ export function heartbeatService(
         ? await issuesSvc.getAncestors(issueRef.id)
         : [];
       if (continuationSummary) {
-        context.paperclipContinuationSummary = {
+        context.wardmoteContinuationSummary = {
           key: safeContinuationSummary!.key,
           title: safeContinuationSummary!.title,
           body: safeContinuationSummary!.body,
@@ -2959,20 +2959,20 @@ export function heartbeatService(
           updatedAt: safeContinuationSummary!.updatedAt.toISOString(),
         };
       } else {
-        delete context.paperclipContinuationSummary;
+        delete context.wardmoteContinuationSummary;
       }
       const pinnedSkillTestContext =
         issueRef?.workMode === "skill_test"
           ? await getPinnedSkillTestContext(agent.companyId, issueRef.id)
           : null;
       if (pinnedSkillTestContext) {
-        context.paperclipSkillTest = {
+        context.wardmoteSkillTest = {
           ...pinnedSkillTestContext,
           directive:
             "Use this pinned file inventory as the exact skill revision under test, regardless of synced runtime skills.",
         };
       } else {
-        delete context.paperclipSkillTest;
+        delete context.wardmoteSkillTest;
       }
       const executionContinuation =
         issueRef && !isConversation(issueContext) && issueContext?.assigneeAgentId === agent.id
@@ -2989,7 +2989,7 @@ export function heartbeatService(
             })
           : null;
       context.executionContinuation = executionContinuation;
-      const paperclipWakePayload = await buildWardmoteWakePayload({
+      const wardmoteWakePayload = await buildWardmoteWakePayload({
         db,
         companyId: agent.companyId,
         agentId: agent.id,
@@ -3014,12 +3014,12 @@ export function heartbeatService(
           experimentalInstanceSettings.enableSimplifiedEnglishInteractions ===
           true,
       });
-      if (paperclipWakePayload) {
-        context[WARDMOTE_WAKE_PAYLOAD_KEY] = paperclipWakePayload;
+      if (wardmoteWakePayload) {
+        context[WARDMOTE_WAKE_PAYLOAD_KEY] = wardmoteWakePayload;
       } else {
         delete context[WARDMOTE_WAKE_PAYLOAD_KEY];
       }
-      const safeWakeComments = (paperclipWakePayload?.comments ?? []).flatMap(
+      const safeWakeComments = (wardmoteWakePayload?.comments ?? []).flatMap(
         (comment) =>
           typeof comment.id === "string" && typeof comment.body === "string"
             ? [
@@ -3066,7 +3066,7 @@ export function heartbeatService(
       const liveVoiceGuidance = issueContext?.chatAssignedAgentId === agent.id && issueContext.chatProvider === "speko"
         ? await liveVoiceExecutionGuidance(db, { companyId: agent.companyId, issueId: issueContext.id, agentId: agent.id })
         : null;
-      context.paperclipTaskCommunicationGuidance =
+      context.wardmoteTaskCommunicationGuidance =
         issueContext?.chatAssignedAgentId === agent.id
           ? issueContext.chatCommunicationGuidance
           : null;
@@ -3088,8 +3088,8 @@ export function heartbeatService(
         ancestors: issueAncestors,
         wakeComment: safeWakeCommentContext,
         wakeComments: safeWakeComments,
-        attachmentOmissions: paperclipWakePayload?.attachmentOmissions,
-        externalChatProvider: paperclipWakePayload?.externalChatProvider,
+        attachmentOmissions: wardmoteWakePayload?.attachmentOmissions,
+        externalChatProvider: wardmoteWakePayload?.externalChatProvider,
         slackCommand: issueContext?.chatAssignedAgentId === agent.id
           ? issueContext.chatSlackCommand
           : null,
@@ -3098,10 +3098,10 @@ export function heartbeatService(
           kind: readNonEmptyString(context.interactionKind),
           status: readNonEmptyString(context.interactionStatus),
         },
-        planReview: paperclipWakePayload?.planReviewContext?.interaction
+        planReview: wardmoteWakePayload?.planReviewContext?.interaction
           ? {
-              status: paperclipWakePayload.planReviewContext.interaction.status,
-              reason: paperclipWakePayload.planReviewContext.interaction.result?.reason,
+              status: wardmoteWakePayload.planReviewContext.interaction.status,
+              reason: wardmoteWakePayload.planReviewContext.interaction.result?.reason,
             }
           : null,
         acceptedPlanContinuation:
@@ -3155,7 +3155,7 @@ export function heartbeatService(
         includeWakeComments: false,
       }) + chatCompletionInstruction(context);
       if (issueRef) {
-        context.paperclipIssue = {
+        context.wardmoteIssue = {
           id: issueRef.id,
           identifier: issueRef.identifier,
           title: issueRef.title,
@@ -3163,34 +3163,34 @@ export function heartbeatService(
           workMode: issueRef.workMode,
         };
       } else {
-        delete context.paperclipIssue;
+        delete context.wardmoteIssue;
       }
       if (wakeCommentContext) {
-        context.paperclipWakeComment = safeWakeCommentContext;
+        context.wardmoteWakeComment = safeWakeCommentContext;
       } else {
-        delete context.paperclipWakeComment;
+        delete context.wardmoteWakeComment;
       }
       if (taskMarkdown) {
-        context.paperclipTaskMarkdown = taskMarkdown;
+        context.wardmoteTaskMarkdown = taskMarkdown;
       } else {
-        delete context.paperclipTaskMarkdown;
+        delete context.wardmoteTaskMarkdown;
       }
       if (taskMarkdownAssignment) {
-        context.paperclipTaskMarkdownAssignment = taskMarkdownAssignment;
+        context.wardmoteTaskMarkdownAssignment = taskMarkdownAssignment;
       } else {
-        delete context.paperclipTaskMarkdownAssignment;
+        delete context.wardmoteTaskMarkdownAssignment;
       }
       if (taskMarkdownCompact && taskMarkdownCompact !== taskMarkdown) {
-        context.paperclipTaskMarkdownCompact = taskMarkdownCompact;
+        context.wardmoteTaskMarkdownCompact = taskMarkdownCompact;
       } else {
-        delete context.paperclipTaskMarkdownCompact;
+        delete context.wardmoteTaskMarkdownCompact;
       }
       if (taskMarkdownAssignmentCompact && taskMarkdownAssignmentCompact !== taskMarkdownAssignment) {
-        context.paperclipTaskMarkdownAssignmentCompact = taskMarkdownAssignmentCompact;
+        context.wardmoteTaskMarkdownAssignmentCompact = taskMarkdownAssignmentCompact;
       } else {
-        delete context.paperclipTaskMarkdownAssignmentCompact;
+        delete context.wardmoteTaskMarkdownAssignmentCompact;
       }
-      context.paperclipTaskCommunicationGuidance = [context.paperclipTaskCommunicationGuidance, FAST_RESPONSE_AGENT_GUIDANCE].filter(Boolean).join("\n\n");
+      context.wardmoteTaskCommunicationGuidance = [context.wardmoteTaskCommunicationGuidance, FAST_RESPONSE_AGENT_GUIDANCE].filter(Boolean).join("\n\n");
       delete context[OPENWA_WAKE_CONTEXT_KEY];
       let openwaRunContext: OpenwaRunContext | null = null;
       if (issueRef) {
@@ -3212,25 +3212,25 @@ export function heartbeatService(
             })
           : null;
         if (openwaGuidance) {
-          context.paperclipTaskMarkdown = joinOpenwaGuidance(
-            readNonEmptyString(context.paperclipTaskMarkdown) ?? undefined,
+          context.wardmoteTaskMarkdown = joinOpenwaGuidance(
+            readNonEmptyString(context.wardmoteTaskMarkdown) ?? undefined,
             openwaGuidance.markdown,
           );
-          if (typeof context.paperclipTaskMarkdownCompact === "string") {
-            context.paperclipTaskMarkdownCompact = joinOpenwaGuidance(
-              context.paperclipTaskMarkdownCompact,
+          if (typeof context.wardmoteTaskMarkdownCompact === "string") {
+            context.wardmoteTaskMarkdownCompact = joinOpenwaGuidance(
+              context.wardmoteTaskMarkdownCompact,
               openwaGuidance.markdown,
             );
           }
-          if (typeof context.paperclipTaskMarkdownAssignment === "string") {
-            context.paperclipTaskMarkdownAssignment = joinOpenwaGuidance(
-              context.paperclipTaskMarkdownAssignment,
+          if (typeof context.wardmoteTaskMarkdownAssignment === "string") {
+            context.wardmoteTaskMarkdownAssignment = joinOpenwaGuidance(
+              context.wardmoteTaskMarkdownAssignment,
               openwaGuidance.markdown,
             );
           }
-          if (typeof context.paperclipTaskMarkdownAssignmentCompact === "string") {
-            context.paperclipTaskMarkdownAssignmentCompact = joinOpenwaGuidance(
-              context.paperclipTaskMarkdownAssignmentCompact,
+          if (typeof context.wardmoteTaskMarkdownAssignmentCompact === "string") {
+            context.wardmoteTaskMarkdownAssignmentCompact = joinOpenwaGuidance(
+              context.wardmoteTaskMarkdownAssignmentCompact,
               openwaGuidance.markdown,
             );
           }
@@ -3239,39 +3239,39 @@ export function heartbeatService(
         const redactedWakeContext = await createRunSecretRedactionRegistry(
           db,
         ).redactForIssue(agent.companyId, issueRef.id, {
-          paperclipIssue: context.paperclipIssue,
-          paperclipWakeComment: context.paperclipWakeComment,
-          paperclipTaskCommunicationGuidance: context.paperclipTaskCommunicationGuidance,
-          paperclipTaskMarkdown: context.paperclipTaskMarkdown,
-          paperclipTaskMarkdownCompact: context.paperclipTaskMarkdownCompact,
+          wardmoteIssue: context.wardmoteIssue,
+          wardmoteWakeComment: context.wardmoteWakeComment,
+          wardmoteTaskCommunicationGuidance: context.wardmoteTaskCommunicationGuidance,
+          wardmoteTaskMarkdown: context.wardmoteTaskMarkdown,
+          wardmoteTaskMarkdownCompact: context.wardmoteTaskMarkdownCompact,
           [OPENWA_WAKE_CONTEXT_KEY]: context[OPENWA_WAKE_CONTEXT_KEY],
-          paperclipTaskMarkdownAssignment: context.paperclipTaskMarkdownAssignment,
-          paperclipTaskMarkdownAssignmentCompact: context.paperclipTaskMarkdownAssignmentCompact,
+          wardmoteTaskMarkdownAssignment: context.wardmoteTaskMarkdownAssignment,
+          wardmoteTaskMarkdownAssignmentCompact: context.wardmoteTaskMarkdownAssignmentCompact,
         });
-        context.paperclipIssue = redactedWakeContext.paperclipIssue;
-        context.paperclipTaskCommunicationGuidance = redactedWakeContext.paperclipTaskCommunicationGuidance;
-        if (redactedWakeContext.paperclipWakeComment) {
-          context.paperclipWakeComment =
-            redactedWakeContext.paperclipWakeComment;
+        context.wardmoteIssue = redactedWakeContext.wardmoteIssue;
+        context.wardmoteTaskCommunicationGuidance = redactedWakeContext.wardmoteTaskCommunicationGuidance;
+        if (redactedWakeContext.wardmoteWakeComment) {
+          context.wardmoteWakeComment =
+            redactedWakeContext.wardmoteWakeComment;
         }
-        if (redactedWakeContext.paperclipTaskMarkdown) {
-          context.paperclipTaskMarkdown =
-            redactedWakeContext.paperclipTaskMarkdown;
+        if (redactedWakeContext.wardmoteTaskMarkdown) {
+          context.wardmoteTaskMarkdown =
+            redactedWakeContext.wardmoteTaskMarkdown;
         }
-        if (redactedWakeContext.paperclipTaskMarkdownCompact) {
-          context.paperclipTaskMarkdownCompact =
-            redactedWakeContext.paperclipTaskMarkdownCompact;
+        if (redactedWakeContext.wardmoteTaskMarkdownCompact) {
+          context.wardmoteTaskMarkdownCompact =
+            redactedWakeContext.wardmoteTaskMarkdownCompact;
         }
         if (redactedWakeContext[OPENWA_WAKE_CONTEXT_KEY]) {
           context[OPENWA_WAKE_CONTEXT_KEY] = redactedWakeContext[OPENWA_WAKE_CONTEXT_KEY];
         }
-        if (redactedWakeContext.paperclipTaskMarkdownAssignment) {
-          context.paperclipTaskMarkdownAssignment =
-            redactedWakeContext.paperclipTaskMarkdownAssignment;
+        if (redactedWakeContext.wardmoteTaskMarkdownAssignment) {
+          context.wardmoteTaskMarkdownAssignment =
+            redactedWakeContext.wardmoteTaskMarkdownAssignment;
         }
-        if (redactedWakeContext.paperclipTaskMarkdownAssignmentCompact) {
-          context.paperclipTaskMarkdownAssignmentCompact =
-            redactedWakeContext.paperclipTaskMarkdownAssignmentCompact;
+        if (redactedWakeContext.wardmoteTaskMarkdownAssignmentCompact) {
+          context.wardmoteTaskMarkdownAssignmentCompact =
+            redactedWakeContext.wardmoteTaskMarkdownAssignmentCompact;
         }
         applyOpenwaRunContext(context, openwaRunContext);
         if (openwaRunContext)
@@ -3291,8 +3291,8 @@ export function heartbeatService(
                 .update(value.trim().replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, ""))
                 .digest("hex")
             : null;
-        const redactedIssue = parseObject(context.paperclipIssue);
-        context.paperclipTurnContext = {
+        const redactedIssue = parseObject(context.wardmoteIssue);
+        context.wardmoteTurnContext = {
           version: 1,
           assignment: {
             owner: "task_markdown",
@@ -3310,7 +3310,7 @@ export function heartbeatService(
           },
         } satisfies WardmoteTurnContext;
       } else {
-        delete context.paperclipTurnContext;
+        delete context.wardmoteTurnContext;
       }
       const {
         persistedRunnerProfile,
@@ -3355,9 +3355,9 @@ export function heartbeatService(
           adapterConfig: { ...(issueAssigneeOverrides?.adapterConfig ?? {}) },
         });
       if (runModelOverride.model || runModelOverride.thinking) {
-        context.paperclipRunModelOverride = runModelOverride;
+        context.wardmoteRunModelOverride = runModelOverride;
       } else {
-        delete context.paperclipRunModelOverride;
+        delete context.wardmoteRunModelOverride;
       }
       const mergedConfig = {
         ...issueRunConfig,
@@ -3470,11 +3470,11 @@ export function heartbeatService(
         await db.update(heartbeatRuns).set({ contextSnapshot: sql`coalesce(${heartbeatRuns.contextSnapshot}, '{}'::jsonb) || ${JSON.stringify({ aiConnection: context.aiConnection })}::jsonb` }).where(eq(heartbeatRuns.id, run.id));
       }
       if (secretManifest.length > 0) {
-        context.paperclipSecrets = {
+        context.wardmoteSecrets = {
           manifest: secretManifest,
         };
       } else {
-        delete context.paperclipSecrets;
+        delete context.wardmoteSecrets;
       }
       const effectiveResolvedConfig = applyRunScopedMentionedSkillKeys(
         resolvedConfig,
@@ -3519,10 +3519,10 @@ export function heartbeatService(
       const connectorAssignments = await resolveConnectorAssignments(db, { companyId: agent.companyId, agentId: agent.id, runId: run.id, issueId: typeof context.issueId === "string" ? context.issueId : undefined });
       const connectorSkillConfig = await applyConnectorSkills(effectiveResolvedConfig, runtimeSkillEntries, connectorAssignments);
       // Both CLI adapters and native context materialization use the same resolved set.
-      runtimeSkillEntries.splice(0, runtimeSkillEntries.length, ...connectorSkillConfig.paperclipRuntimeSkills);
+      runtimeSkillEntries.splice(0, runtimeSkillEntries.length, ...connectorSkillConfig.wardmoteRuntimeSkills);
       const connectorDelivery = await prepareConnectorSkillDelivery(connectorSkillConfig, agent.adapterType);
       // Always replace this runtime-only field; caller wake data cannot supply skills.
-      context.paperclipWake = { ...parseObject(context.paperclipWake), connectorSkillInstructions: connectorDelivery.instructions };
+      context.wardmoteWake = { ...parseObject(context.wardmoteWake), connectorSkillInstructions: connectorDelivery.instructions };
       let runtimeConfig = await prepareConnectionInstructionDelivery({
         resolve: () => resolveAssignedConnectionInstructionsForRun(db, { companyId: agent.companyId, agentId: agent.id, runId: run.id }),
         context, config: connectorDelivery.config, native: agent.adapterType === "wardmote_runner",
@@ -3617,7 +3617,7 @@ export function heartbeatService(
           effectiveAdapterConfig: runtimeConfig, agentRuntimeConfig: agent.runtimeConfig,
           agentConfigRevision: sessionConfigMetadataInput.agentConfigRevision,
           issueOverrides: issueAssigneeOverrides,
-          storedIdentity: taskSession.sessionParamsJson?.paperclipAiCredentialIdentity,
+          storedIdentity: taskSession.sessionParamsJson?.wardmoteAiCredentialIdentity,
           sessionIdentity: managedAiRuntime.sessionIdentity, credentialIdentity: managedAiRuntime.identity,
         });
         compatibleConfigMetadata = await Promise.all(candidates.map(candidate => buildEffectiveRunSessionConfigMetadata({ ...sessionConfigMetadataInput, ...candidate })));
@@ -3672,7 +3672,7 @@ export function heartbeatService(
       // dispatch. Built-ins also load lazily if their resume attempt fails.
       if (agent.adapterType !== "wardmote_runner" && !previousSessionParams && getFreshSessionHandoff) {
         const handoff = await getFreshSessionHandoff();
-        if (handoff) context.paperclipFreshSessionHandoffMarkdown = handoff;
+        if (handoff) context.wardmoteFreshSessionHandoffMarkdown = handoff;
       }
       const {
         resolvedWorkspace,
@@ -3921,7 +3921,7 @@ export function heartbeatService(
               ...scratchEnv.env,
             },
           };
-          context.paperclipScratch = {
+          context.wardmoteScratch = {
             type: "heartbeat_run",
             dir: runScratch.dir,
             tempDir: runScratch.tempDir,
@@ -3931,7 +3931,7 @@ export function heartbeatService(
           };
         } catch (scratchPrepareError) {
           runScratch = null;
-          delete context.paperclipScratch;
+          delete context.wardmoteScratch;
           logger.warn(
             {
               err: scratchPrepareError,
@@ -3943,7 +3943,7 @@ export function heartbeatService(
           );
         }
       } else {
-        delete context.paperclipScratch;
+        delete context.wardmoteScratch;
       }
       const gitExecutionEnv = await prepareGitHubExecutionEnvironment({
         target: executionTarget,
@@ -3985,7 +3985,7 @@ export function heartbeatService(
         runtimeConfig = { ...runtimeConfig, env: githubLaunchers.env };
         secretKeys.add("WARDMOTE_GITHUB_BROKER_TOKEN");
       }
-      context.paperclipEnvironment = {
+      context.wardmoteEnvironment = {
         id: selectedEnvironment.id,
         name: selectedEnvironment.name,
         driver: selectedEnvironment.driver,
@@ -4049,7 +4049,7 @@ export function heartbeatService(
             ]
           : []),
       ];
-      context.paperclipWorkspace = {
+      context.wardmoteWorkspace = {
         cwd: executionWorkspace.cwd,
         source: executionWorkspace.source,
         mode: effectiveExecutionWorkspaceMode,
@@ -4067,7 +4067,7 @@ export function heartbeatService(
           return home;
         })(),
       };
-      context.paperclipWorkspaces = buildRunWorkspaceHints(resolvedWorkspace);
+      context.wardmoteWorkspaces = buildRunWorkspaceHints(resolvedWorkspace);
       // Emit exactly one requested-vs-synced observability line for the referenced-project set. A run
       // with no referenced project stays silent, so this adds no noise to the anchor-only default. The
       // per-drop human warning already rides `runtimeWorkspaceWarnings`; this line carries the counts
@@ -4118,9 +4118,9 @@ export function heartbeatService(
         runtimeServiceCount: runtimeServiceIntents.length,
       });
       if (runtimeServiceIntents.length > 0) {
-        context.paperclipRuntimeServiceIntents = runtimeServiceIntents;
+        context.wardmoteRuntimeServiceIntents = runtimeServiceIntents;
       } else {
-        delete context.paperclipRuntimeServiceIntents;
+        delete context.wardmoteRuntimeServiceIntents;
       }
       if (
         executionWorkspace.projectId &&
@@ -4158,10 +4158,10 @@ export function heartbeatService(
         continuationSummaryBody: continuationSummary?.body ?? null,
       });
       if (sessionCompaction.rotate) {
-        context.paperclipSessionHandoffMarkdown =
+        context.wardmoteSessionHandoffMarkdown =
           sessionCompaction.handoffMarkdown;
-        context.paperclipSessionRotationReason = sessionCompaction.reason;
-        context.paperclipPreviousSessionId =
+        context.wardmoteSessionRotationReason = sessionCompaction.reason;
+        context.wardmotePreviousSessionId =
           previousSessionDisplayId ?? runtimeSessionIdForAdapter;
         runtimeSessionIdForAdapter = null;
         runtimeSessionParamsForAdapter = null;
@@ -4172,9 +4172,9 @@ export function heartbeatService(
           );
         }
       } else {
-        delete context.paperclipSessionHandoffMarkdown;
-        delete context.paperclipSessionRotationReason;
-        delete context.paperclipPreviousSessionId;
+        delete context.wardmoteSessionHandoffMarkdown;
+        delete context.wardmoteSessionRotationReason;
+        delete context.wardmotePreviousSessionId;
         const resumedSessionId =
           previousSessionDisplayId ?? runtimeSessionIdForAdapter;
         if (taskKey && resumedSessionId && taskSessionForRun) {
@@ -4189,7 +4189,7 @@ export function heartbeatService(
       }
 
       const taskSessionCredentialCompatible = !managedAiRuntime || managedAiSessionIdentityCompatible(
-        taskSession?.sessionParamsJson?.paperclipAiCredentialIdentity,
+        taskSession?.sessionParamsJson?.wardmoteAiCredentialIdentity,
         managedAiRuntime.sessionIdentity,
         managedAiRuntime.identity,
       );
@@ -4507,8 +4507,8 @@ export function heartbeatService(
           recorder: workspaceOperationRecorder,
         });
         if (runtimeServices.length > 0) {
-          context.paperclipRuntimeServices = runtimeServices;
-          context.paperclipRuntimePrimaryUrl =
+          context.wardmoteRuntimeServices = runtimeServices;
+          context.wardmoteRuntimePrimaryUrl =
             runtimeServices.find((service) => readNonEmptyString(service.url))
               ?.url ?? null;
           await db
@@ -4697,7 +4697,7 @@ export function heartbeatService(
               message: "Persistent instruction editing is unavailable. Use an authenticated user with instruction edit access and a managed instruction bundle.",
               payload: { state: "unavailable", code: "INSTRUCTION_COPY_UNAVAILABLE" } });
             const guidance = "No editable agent instruction working copy is registered for this turn. Use authenticated agent file tools for persistent edits; do not edit a private copy named in an earlier turn or claim its changes will persist.";
-            for (const key of ["paperclipTaskMarkdown", "paperclipTaskMarkdownCompact"]) {
+            for (const key of ["wardmoteTaskMarkdown", "wardmoteTaskMarkdownCompact"]) {
               context[key] = [readNonEmptyString(context[key]), guidance].filter(Boolean).join("\n\n");
             }
           }
@@ -4713,15 +4713,15 @@ export function heartbeatService(
             }
             runtimeConfig = { ...runtimeConfig, instructionsFilePath: path.join(instructionCopy.localRoot, instructionCopy.entryFile) };
             if (isAgentDirectoryCopy(instructionCopy)) {
-              const workspace = parseObject(context.paperclipWorkspace);
-              context.paperclipWorkspace = { ...workspace, agentHome: instructionCopy.executionRoot,
+              const workspace = parseObject(context.wardmoteWorkspace);
+              context.wardmoteWorkspace = { ...workspace, agentHome: instructionCopy.executionRoot,
                 // Keep the pre-existing permission root stable for ACP session
                 // identity. The per-run copy is already under the company root.
                 agentHomeForPermissions: workspace.agentHome,
               };
             }
             const guidance = instructionWorkingCopyGuidance(instructionCopy);
-            for (const key of ["paperclipTaskMarkdown", "paperclipTaskMarkdownCompact"]) {
+            for (const key of ["wardmoteTaskMarkdown", "wardmoteTaskMarkdownCompact"]) {
               context[key] = [readNonEmptyString(context[key]), guidance].filter(Boolean).join("\n\n");
             }
           }
@@ -4737,7 +4737,7 @@ export function heartbeatService(
             executionContinuation,
             safeWakeComments,
             safeWakeCommentContext,
-            paperclipWakePayload,
+            wardmoteWakePayload,
             acceptedPlanContinuationWake,
           },
           session: {
@@ -4943,8 +4943,8 @@ export function heartbeatService(
             ...runtimeServices,
             ...adapterManagedRuntimeServices,
           ];
-          context.paperclipRuntimeServices = combinedRuntimeServices;
-          context.paperclipRuntimePrimaryUrl =
+          context.wardmoteRuntimeServices = combinedRuntimeServices;
+          context.wardmoteRuntimePrimaryUrl =
             combinedRuntimeServices.find((service) =>
               readNonEmptyString(service.url),
             )?.url ?? null;

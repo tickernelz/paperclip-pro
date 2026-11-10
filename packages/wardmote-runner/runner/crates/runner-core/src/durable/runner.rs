@@ -127,7 +127,7 @@ pub(crate) fn next_authority_config(
     if command.command_type != "run.attach" {
         return Ok(None);
     }
-    let Some(boundary) = command.payload.get("paperclipNextAuthority") else {
+    let Some(boundary) = command.payload.get("wardmoteNextAuthority") else {
         return Ok(None);
     };
     let identity = boundary
@@ -2836,7 +2836,7 @@ mod tests {
         current.runner_digest = format!("sha256:{}", "a".repeat(64));
         let mut attach = command("run.attach");
         attach.payload = json!({
-            "paperclipNextAuthority": {
+            "wardmoteNextAuthority": {
                 "identity": {
                     "runnerInstanceId": current.runner_instance_id,
                     "environmentLeaseId": current.environment_lease_id,

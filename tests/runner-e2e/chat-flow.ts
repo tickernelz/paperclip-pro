@@ -578,7 +578,7 @@ export async function runChatFlow(input: ChatFlowInput) {
         expect(fresh.contextSnapshot?.conversationSessionGeneration).toBe(1);
         expect(fresh.sessionIdBefore).toBeFalsy();
         expect(
-          String(fresh.contextSnapshot?.paperclipTaskMarkdown ?? ""),
+          String(fresh.contextSnapshot?.wardmoteTaskMarkdown ?? ""),
         ).not.toContain(secret);
         if (before.sessionIdAfter && fresh.sessionIdAfter)
           expect(fresh.sessionIdAfter).not.toBe(before.sessionIdAfter);

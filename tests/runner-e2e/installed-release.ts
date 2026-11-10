@@ -21,8 +21,8 @@ export function installedReleaseDaytonaPlugin(cliPath: string, installedPluginPa
   const plugin = realpathSync(installedPluginPath ?? path.join(path.dirname(cli.cwd), "@tickernelz/wardmote-plugin-daytona"));
   const manifest = JSON.parse(readFileSync(path.join(plugin, "package.json"), "utf8"));
   if (manifest.name !== "@tickernelz/wardmote-plugin-daytona" ||
-      manifest.paperclipPlugin?.manifest !== "./dist/manifest.js" ||
-      manifest.paperclipPlugin?.worker !== "./dist/worker.js" ||
+      manifest.wardmotePlugin?.manifest !== "./dist/manifest.js" ||
+      manifest.wardmotePlugin?.worker !== "./dist/worker.js" ||
       manifest.exports?.["."]?.import !== "./dist/index.js") {
     throw new Error("Installed release requires the public compiled Daytona plugin package");
   }

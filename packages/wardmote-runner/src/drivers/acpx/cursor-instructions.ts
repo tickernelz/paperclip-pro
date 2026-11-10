@@ -54,7 +54,7 @@ export function createCursorInstructionAdmission(content: string) {
           pending.delete(message.id);
           if (message.error !== undefined) return; // Preserve the provider's typed session error.
           const result = record(message.result);
-          const ack = record(record(result._meta).paperclipCursorInstructions);
+          const ack = record(record(result._meta).wardmoteCursorInstructions);
           if (ack.schema !== SCHEMA || ack.digest !== expected.digest || ack.byteLength !== expected.byteLength) {
             throw failure("provider acknowledgement is missing or does not match the composed instructions");
           }

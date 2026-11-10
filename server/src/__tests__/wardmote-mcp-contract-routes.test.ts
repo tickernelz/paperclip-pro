@@ -5,7 +5,7 @@ import { afterAll, beforeAll, expect, it } from "vitest";
 import { agents, issues } from "@tickernelz/wardmote-db";
 import { errorHandler } from "../middleware/index.js";
 import { issueRoutes } from "../routes/issues.js";
-import { paperclipMcpRoutes } from "../routes/wardmote-mcp.js";
+import { wardmoteMcpRoutes } from "../routes/wardmote-mcp.js";
 import {
   describeEmbeddedPostgres,
   seedCompanyWithBoardAccess,
@@ -55,7 +55,7 @@ describeEmbeddedPostgres("hosted Paperclip MCP error and paging contract", () =>
       req.actor = actor;
       next();
     });
-    api.use(paperclipMcpRoutes(ctx.db));
+    api.use(wardmoteMcpRoutes(ctx.db));
     api.use(issueRoutes(ctx.db, {} as never));
     app.use("/api", api);
     app.use(errorHandler);

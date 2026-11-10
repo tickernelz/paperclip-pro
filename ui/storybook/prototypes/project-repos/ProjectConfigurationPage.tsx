@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs } from "@/components/ui/tabs";
 import { queryKeys } from "@/lib/queryKeys";
 import { cn } from "@/lib/utils";
-import { storybookProjects } from "../../fixtures/paperclipData";
+import { storybookProjects } from "../../fixtures/wardmoteData";
 import { RepositoryConfigurationSection, type PrototypeProps } from "./ProjectReposPrototype";
 
 const navigation = [

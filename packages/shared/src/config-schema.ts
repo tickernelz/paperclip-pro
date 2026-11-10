@@ -107,7 +107,7 @@ export const updatesConfigSchema = z.object({
   checkEnabled: z.boolean().default(true),
 }).passthrough().prefault({});
 
-export const paperclipConfigSchema = z
+export const wardmoteConfigSchema = z
   .object({
     $meta: configMetaSchema,
     llm: llmConfigSchema.optional(),
@@ -189,7 +189,7 @@ export const paperclipConfigSchema = z
     }
   });
 
-export type WardmoteConfig = z.infer<typeof paperclipConfigSchema>;
+export type WardmoteConfig = z.infer<typeof wardmoteConfigSchema>;
 export type LlmConfig = z.infer<typeof llmConfigSchema>;
 export type DatabaseConfig = z.infer<typeof databaseConfigSchema>;
 export type LoggingConfig = z.infer<typeof loggingConfigSchema>;
@@ -263,7 +263,7 @@ export function mergeWardmoteConfig(
   return mergeUnknownConfigKeys(
     source as Record<string, unknown>,
     update as Record<string, unknown>,
-    paperclipConfigSchema,
+    wardmoteConfigSchema,
   ) as WardmoteConfig;
 }
 
@@ -344,6 +344,6 @@ function collectConfigKeyWarnings(
 export function findWardmoteConfigKeyWarnings(config: unknown): ConfigKeyWarning[] {
   if (!isRecord(config)) return [];
   const warnings: ConfigKeyWarning[] = [];
-  collectConfigKeyWarnings(config, paperclipConfigSchema, "", warnings);
+  collectConfigKeyWarnings(config, wardmoteConfigSchema, "", warnings);
   return warnings;
 }

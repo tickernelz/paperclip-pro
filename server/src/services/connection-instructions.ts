@@ -38,11 +38,11 @@ export async function prepareConnectionInstructionDelivery(input: {
   native: boolean;
 }): Promise<Record<string, unknown>> {
   const snapshot = await input.resolve();
-  const wake = input.context.paperclipWake;
+  const wake = input.context.wardmoteWake;
   input.context.connectionInstructions = snapshot;
-  input.context.paperclipWake = {
+  input.context.wardmoteWake = {
     ...(wake && typeof wake === "object" && !Array.isArray(wake) ? wake : {}),
     connectionInstructions: input.native ? null : snapshot,
   };
-  return { ...input.config, paperclipConnectionInstructions: snapshot };
+  return { ...input.config, wardmoteConnectionInstructions: snapshot };
 }

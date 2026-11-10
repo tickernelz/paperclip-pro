@@ -276,15 +276,15 @@ describe("workspace restore merge", () => {
       async () => {
         const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-restore-merge-"));
         cleanupDirs.push(rootDir);
-        const paperclipHome = path.join(rootDir, "paperclip-home");
-        useTempWardmoteHome(paperclipHome, "test-instance");
+        const wardmoteHome = path.join(rootDir, "paperclip-home");
+        useTempWardmoteHome(wardmoteHome, "test-instance");
 
         const targetDir = path.join(rootDir, "target");
         const aliasDir = path.join(rootDir, "target-alias");
         await mkdir(targetDir, { recursive: true });
         await symlink(targetDir, aliasDir);
 
-        const lockRootDir = path.join(paperclipHome, "instances", "test-instance", "locks", "directory-merge");
+        const lockRootDir = path.join(wardmoteHome, "instances", "test-instance", "locks", "directory-merge");
 
         let lockNameViaTarget = "";
         await withDirectoryMergeLock(targetDir, async () => {
@@ -306,10 +306,10 @@ describe("workspace restore merge", () => {
     it("rejects a lock root that already exists as a symlink", async () => {
       const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-restore-merge-"));
       cleanupDirs.push(rootDir);
-      const paperclipHome = path.join(rootDir, "paperclip-home");
-      useTempWardmoteHome(paperclipHome, "test-instance");
+      const wardmoteHome = path.join(rootDir, "paperclip-home");
+      useTempWardmoteHome(wardmoteHome, "test-instance");
 
-      const locksDir = path.join(paperclipHome, "instances", "test-instance", "locks");
+      const locksDir = path.join(wardmoteHome, "instances", "test-instance", "locks");
       const decoyDir = path.join(rootDir, "decoy");
       await mkdir(locksDir, { recursive: true });
       await mkdir(decoyDir, { recursive: true });
@@ -326,10 +326,10 @@ describe("workspace restore merge", () => {
     it("rejects a lock root that already exists as a non-directory", async () => {
       const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-restore-merge-"));
       cleanupDirs.push(rootDir);
-      const paperclipHome = path.join(rootDir, "paperclip-home");
-      useTempWardmoteHome(paperclipHome, "test-instance");
+      const wardmoteHome = path.join(rootDir, "paperclip-home");
+      useTempWardmoteHome(wardmoteHome, "test-instance");
 
-      const locksDir = path.join(paperclipHome, "instances", "test-instance", "locks");
+      const locksDir = path.join(wardmoteHome, "instances", "test-instance", "locks");
       await mkdir(locksDir, { recursive: true });
       await writeFile(path.join(locksDir, "directory-merge"), "not a directory\n", "utf8");
 
@@ -344,8 +344,8 @@ describe("workspace restore merge", () => {
     it("closes the create/validate TOCTOU window: rejects a lock root a racing writer swapped for a symlink during creation", async () => {
       const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-restore-merge-"));
       cleanupDirs.push(rootDir);
-      const paperclipHome = path.join(rootDir, "paperclip-home");
-      useTempWardmoteHome(paperclipHome, "test-instance");
+      const wardmoteHome = path.join(rootDir, "paperclip-home");
+      useTempWardmoteHome(wardmoteHome, "test-instance");
 
       const targetDir = path.join(rootDir, "target");
       await mkdir(targetDir, { recursive: true });
@@ -353,7 +353,7 @@ describe("workspace restore merge", () => {
       await mkdir(decoyDir, { recursive: true });
       // Pre-create the lock root's parent, so the mock below only has to
       // reproduce what `fs.mkdir({ recursive: true })` does to the leaf path.
-      await mkdir(path.join(paperclipHome, "instances", "test-instance", "locks"), { recursive: true });
+      await mkdir(path.join(wardmoteHome, "instances", "test-instance", "locks"), { recursive: true });
 
       // Real `fs.mkdir({ recursive: true })` does not fail on a leaf that
       // already exists as a symlink to a real directory. This stub reproduces
@@ -379,13 +379,13 @@ describe("workspace restore merge", () => {
     it("keeps the private lock database and removes diagnostic ownership after release", async () => {
       const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-restore-merge-"));
       cleanupDirs.push(rootDir);
-      const paperclipHome = path.join(rootDir, "paperclip-home");
-      useTempWardmoteHome(paperclipHome, "test-instance");
+      const wardmoteHome = path.join(rootDir, "paperclip-home");
+      useTempWardmoteHome(wardmoteHome, "test-instance");
 
       const targetDir = path.join(rootDir, "target");
       await mkdir(targetDir, { recursive: true });
 
-      const lockRootDir = path.join(paperclipHome, "instances", "test-instance", "locks", "directory-merge");
+      const lockRootDir = path.join(wardmoteHome, "instances", "test-instance", "locks", "directory-merge");
       let entriesDuringLock: string[] = [];
       await withDirectoryMergeLock(targetDir, async () => {
         entriesDuringLock = await readdir(lockRootDir);
@@ -402,8 +402,8 @@ describe("workspace restore merge", () => {
     it("classifies the real lock-timeout error by its stable code, never by the message text", async () => {
       const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-restore-merge-"));
       cleanupDirs.push(rootDir);
-      const paperclipHome = path.join(rootDir, "paperclip-home");
-      useTempWardmoteHome(paperclipHome, "test-instance");
+      const wardmoteHome = path.join(rootDir, "paperclip-home");
+      useTempWardmoteHome(wardmoteHome, "test-instance");
 
       const targetDir = path.join(rootDir, "target");
       await mkdir(targetDir, { recursive: true });
@@ -413,7 +413,7 @@ describe("workspace restore merge", () => {
       // deadline check. The owner pid is this test process, which stays alive.
       const canonicalTargetDir = await realpath(targetDir);
       const lockKey = createHash("sha256").update(canonicalTargetDir).digest("hex");
-      const lockRootDir = path.join(paperclipHome, "instances", "test-instance", "locks", "directory-merge");
+      const lockRootDir = path.join(wardmoteHome, "instances", "test-instance", "locks", "directory-merge");
       const heldLockDir = path.join(lockRootDir, `${lockKey}.lock`);
       await mkdir(heldLockDir, { recursive: true });
       await writeFile(

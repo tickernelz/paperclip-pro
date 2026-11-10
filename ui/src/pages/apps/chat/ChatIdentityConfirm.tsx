@@ -70,7 +70,7 @@ export function ChatIdentityConfirm() {
     );
   }
   const identity = preview.data;
-  const paperclipAccount = local ? "Local Board" :
+  const wardmoteAccount = local ? "Local Board" :
     session.data?.user.name?.trim() ||
     session.data?.user.email?.trim() ||
     session.data?.user.id ||
@@ -112,7 +112,7 @@ export function ChatIdentityConfirm() {
         </div>
         <div className="flex items-center justify-between gap-4 py-3">
           <dt className="text-sm text-ink-3">Wardmote account</dt>
-          <dd className="text-right text-sm font-medium">{paperclipAccount}</dd>
+          <dd className="text-right text-sm font-medium">{wardmoteAccount}</dd>
         </div>
         <div className="flex items-center justify-between gap-4 py-3">
           <dt className="text-sm text-ink-3">Agent</dt>
