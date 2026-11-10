@@ -31,6 +31,19 @@ stop_server() {
   kill "$server_pid" 2>/dev/null || true
   wait "$server_pid" 2>/dev/null || true
   server_pid=""
+  local pid_file postgres_pid
+  for pid_file in "$HOME/.$LEGACY_COMMAND"/instances/*/db/postmaster.pid "$HOME"/.wardmote/instances/*/db/postmaster.pid; do
+    [ -f "$pid_file" ] || continue
+    postgres_pid="$(head -n 1 "$pid_file")"
+    for _ in $(seq 1 60); do
+      kill -0 "$postgres_pid" 2>/dev/null || break
+      sleep 1
+    done
+    if kill -0 "$postgres_pid" 2>/dev/null; then
+      echo "embedded PostgreSQL (pid $postgres_pid) still running 60s after the server stopped" >&2
+      return 1
+    fi
+  done
 }
 cleanup() {
   stop_server
