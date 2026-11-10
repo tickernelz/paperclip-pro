@@ -102,7 +102,7 @@ if ! wait "$prebuild_pid"; then
 fi
 prebuild_pid=""
 payload="$(find "$PREBUILD_HOME" -type d -path "*/cli/installs/git/${SHA:0:12}" -print -quit)"
-test -n "$payload"
+[ -n "$payload" ] || { tail -n 80 "$ROOT/prebuild.log"; exit 1; }
 mkdir -p "$HOME/.$LEGACY_COMMAND/cli/installs/git"
 mv "$payload" "$HOME/.$LEGACY_COMMAND/cli/installs/git/"
 phase "source build of this commit waited for and staged into the existing install"
