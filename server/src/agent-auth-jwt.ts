@@ -49,8 +49,8 @@ function jwtConfig() {
     // closed fire during ~2s dark wakes, and the spawned session can then sit
     // frozen for over an hour before it first executes.
     ttlSeconds: parseNumber(process.env.WARDMOTE_AGENT_JWT_TTL_SECONDS, 60 * 60 * 48),
-    issuer: process.env.WARDMOTE_AGENT_JWT_ISSUER ?? "paperclip",
-    audience: process.env.WARDMOTE_AGENT_JWT_AUDIENCE ?? "paperclip-api",
+    issuer: process.env.WARDMOTE_AGENT_JWT_ISSUER ?? "wardmote",
+    audience: process.env.WARDMOTE_AGENT_JWT_AUDIENCE ?? "wardmote-api",
     // The control-plane instance this process belongs to. The live plane runs as
     // "default"; every worktree/fork instance gets a distinct id (its worktree
     // name) even though it deliberately shares WARDMOTE_AGENT_JWT_SECRET with

@@ -8,6 +8,7 @@ import {
   formatEmbeddedPostgresError,
 } from "./embedded-postgres-error.js";
 import { prepareEmbeddedPostgresNativeRuntime } from "./embedded-postgres-native.js";
+import { EMBEDDED_POSTGRES_USER, EMBEDDED_POSTGRES_PASSWORD, EMBEDDED_POSTGRES_DATABASE, embeddedPostgresUrl, embeddedPostgresAdminUrl } from "./embedded-identity.js";
 
 // Time budget (ms) for a vitest test in the embedded-Postgres cost class: a
 // test that starts an embedded Postgres cluster and runs migrations. Measured
@@ -132,8 +133,8 @@ async function createEmbeddedPostgresTestInstance(tempDirPrefix: string, templat
   const logBuffer = createEmbeddedPostgresLogBuffer();
   const instance = new EmbeddedPostgres({
     databaseDir: dataDir,
-    user: "paperclip",
-    password: "paperclip",
+    user: EMBEDDED_POSTGRES_USER,
+    password: EMBEDDED_POSTGRES_PASSWORD,
     port,
     persistent: true,
     initdbFlags: ["--encoding=UTF8", "--locale=C", "--lc-messages=C"],
@@ -288,9 +289,9 @@ export async function startEmbeddedPostgresTestDatabase(
   const { port, dataDir, instance } = await startEmbeddedPostgresWithRetry(tempDirPrefix, embeddedPostgresTemplateDir());
 
   try {
-    const adminConnectionString = `postgres://paperclip:paperclip@127.0.0.1:${port}/postgres`;
-    await ensurePostgresDatabase(adminConnectionString, "paperclip");
-    const connectionString = `postgres://paperclip:paperclip@127.0.0.1:${port}/paperclip`;
+    const adminConnectionString = embeddedPostgresAdminUrl(port);
+    await ensurePostgresDatabase(adminConnectionString, EMBEDDED_POSTGRES_DATABASE);
+    const connectionString = embeddedPostgresUrl(port);
     await applyPendingMigrations(connectionString);
 
     return {
@@ -320,9 +321,9 @@ export async function startEmbeddedPostgresTestDatabase(
 export async function prepareEmbeddedPostgresTestTemplate(): Promise<{ dataDir: string; cleanup: () => void }> {
   const { port, dataDir, instance } = await startEmbeddedPostgresWithRetry("wardmote-embedded-postgres-template-");
   try {
-    const adminConnectionString = `postgres://paperclip:paperclip@127.0.0.1:${port}/postgres`;
-    await ensurePostgresDatabase(adminConnectionString, "paperclip");
-    const connectionString = `postgres://paperclip:paperclip@127.0.0.1:${port}/paperclip`;
+    const adminConnectionString = embeddedPostgresAdminUrl(port);
+    await ensurePostgresDatabase(adminConnectionString, EMBEDDED_POSTGRES_DATABASE);
+    const connectionString = embeddedPostgresUrl(port);
     await applyPendingMigrations(connectionString);
     await closeRegisteredClients(connectionString);
     await instance.stop();

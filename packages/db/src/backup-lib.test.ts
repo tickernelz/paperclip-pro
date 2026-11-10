@@ -4,7 +4,7 @@ import path from "node:path";
 import { gunzipSync, gzipSync } from "node:zlib";
 import { afterEach, describe, expect, it } from "vitest";
 import postgres from "postgres";
-import { createBufferedTextFileWriter, runDatabaseBackup, runDatabaseRestore } from "./backup-lib.js";
+import { adoptRetiredBackupFilenames, createBufferedTextFileWriter, runDatabaseBackup, runDatabaseRestore } from "./backup-lib.js";
 import { ensurePostgresDatabase } from "./client.js";
 import {
   EMBEDDED_POSTGRES_TEST_TIMEOUT_MS,
@@ -75,13 +75,29 @@ describe("createBufferedTextFileWriter", () => {
   });
 });
 
+describe("adoptRetiredBackupFilenames", () => {
+  it("renames retired-prefix backups once and leaves everything else", () => {
+    const dir = createTempDir("wardmote-backup-adopt-");
+    const retired = ["paperclip", ""].join("-");
+    fs.writeFileSync(path.join(dir, `${retired}20261101-010000.sql.gz`), "old");
+    fs.writeFileSync(path.join(dir, `${retired}20261102-010000.sql.gz`), "taken");
+    fs.writeFileSync(path.join(dir, "wardmote-20261102-010000.sql.gz"), "new");
+    fs.writeFileSync(path.join(dir, `${retired}notes.txt`), "keep");
+    expect(adoptRetiredBackupFilenames(dir)).toBe(1);
+    expect(fs.readFileSync(path.join(dir, "wardmote-20261101-010000.sql.gz"), "utf8")).toBe("old");
+    expect(fs.readFileSync(path.join(dir, "wardmote-20261102-010000.sql.gz"), "utf8")).toBe("new");
+    expect(fs.readdirSync(dir).filter((name) => name.startsWith(retired)).sort()).toEqual([`${retired}20261102-010000.sql.gz`, `${retired}notes.txt`]);
+    expect(adoptRetiredBackupFilenames(dir)).toBe(0);
+  });
+});
+
 describeEmbeddedPostgres("runDatabaseBackup", () => {
   it("preserves a post-pg_dump verification error without falling back or pruning", async () => {
     const connectionString = await createTempDatabase();
     const backupDir = createTempDir("checkpoint-pg-dump-");
     const executable = path.join(backupDir, "pg-dump-fixture");
     fs.writeFileSync(executable, "#!/bin/sh\nprintf 'SELECT 1;\\n'\n", { mode: 0o700 });
-    const history = path.join(backupDir, "paperclip-history.sql.gz");
+    const history = path.join(backupDir, "wardmote-history.sql.gz");
     const historyBytes = gzipSync("SELECT 'history';");
     fs.writeFileSync(history, historyBytes);
     fs.utimesSync(history, new Date(0), new Date(0));
@@ -101,7 +117,7 @@ describeEmbeddedPostgres("runDatabaseBackup", () => {
       })).rejects.toBe(failure);
       expect(verified).toBe(1);
       expect(fs.readFileSync(history)).toEqual(historyBytes);
-      expect(fs.readdirSync(backupDir).filter(name => name.endsWith(".sql.gz"))).toEqual(["paperclip-history.sql.gz"]);
+      expect(fs.readdirSync(backupDir).filter(name => name.endsWith(".sql.gz"))).toEqual(["wardmote-history.sql.gz"]);
     } finally {
       if (previous === undefined) delete process.env.WARDMOTE_PG_DUMP_PATH;
       else process.env.WARDMOTE_PG_DUMP_PATH = previous;

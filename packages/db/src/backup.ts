@@ -6,6 +6,7 @@ import {
   resolveDefaultBackupDir,
   resolvePaperclipConfigPathForInstance,
 } from "@tickernelz/wardmote-shared/home-paths";
+import { embeddedPostgresUrl } from "./embedded-identity.js";
 
 type PartialConfig = {
   database?: {
@@ -49,7 +50,7 @@ function resolveConnectionString(config: PartialConfig | null): string {
   }
 
   const port = resolveEmbeddedPort(config);
-  return `postgres://paperclip:paperclip@127.0.0.1:${port}/paperclip`;
+  return embeddedPostgresUrl(port);
 }
 
 function resolveBackupDir(config: PartialConfig | null): string {
@@ -80,7 +81,6 @@ async function main() {
       connectionString,
       backupDir,
       retention: { dailyDays: retentionDays, weeklyWeeks: 4, monthlyMonths: 1 },
-      filenamePrefix: "paperclip",
     });
 
     console.log(`Backup saved: ${formatDatabaseBackupResult(result)}`);

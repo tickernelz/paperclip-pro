@@ -24,12 +24,23 @@ export {
 export {
   runDatabaseBackup,
   runDatabaseRestore,
+  adoptRetiredBackupFilenames,
+  DATABASE_BACKUP_FILENAME_PREFIX,
   formatDatabaseBackupResult,
   type BackupRetentionPolicy,
   type RunDatabaseBackupOptions,
   type RunDatabaseBackupResult,
   type RunDatabaseRestoreOptions,
 } from "./backup-lib.js";
+export {
+  EMBEDDED_POSTGRES_USER,
+  EMBEDDED_POSTGRES_PASSWORD,
+  EMBEDDED_POSTGRES_DATABASE,
+  embeddedPostgresUrl,
+  embeddedPostgresAdminUrl,
+  migrateEmbeddedPostgresIdentity,
+  type EmbeddedIdentityMigration,
+} from "./embedded-identity.js";
 export {
   createEmbeddedPostgresLogBuffer,
   formatEmbeddedPostgresError,

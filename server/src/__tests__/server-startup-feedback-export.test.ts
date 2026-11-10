@@ -196,7 +196,7 @@ function buildTestConfig(overrides: Record<string, unknown> = {}) {
     authPublicBaseUrl: undefined,
     authDisableSignUp: false,
     databaseMode: "postgres",
-    databaseUrl: "postgres://paperclip:paperclip@127.0.0.1:5432/paperclip",
+    databaseUrl: "postgres://wardmote:wardmote@127.0.0.1:5432/wardmote",
     embeddedPostgresDataDir: "/tmp/paperclip-test-db",
     embeddedPostgresPort: 54329,
     databaseBackupEnabled: false,
