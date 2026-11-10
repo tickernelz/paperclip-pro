@@ -130,13 +130,31 @@ exit 128
       const additional = await prepareProjectRepositoryWorkspaces(input);
       expect(additional).toHaveLength(1);
       expect(additional[0]!.workspaceId).toBe("second");
-      expect(path.relative(anchor.cwd, additional[0]!.cwd)).toMatch(/^\.paperclip-repositories\//);
+      expect(path.relative(anchor.cwd, additional[0]!.cwd)).toMatch(/^\.wardmote-repositories\//);
       expect((await execFile("git", ["branch", "--show-current"], { cwd: additional[0]!.cwd })).stdout.trim()).toBe("project-branch");
       expect(resolveGitAuth).toHaveBeenCalledWith(second);
       await fs.writeFile(path.join(additional[0]!.cwd, "README.md"), "work in progress");
       expect(await prepareProjectRepositoryWorkspaces(input)).toEqual(additional);
       expect(await fs.readFile(path.join(additional[0]!.cwd, "README.md"), "utf8")).toBe("work in progress");
       expect((await execFile("git", ["status", "--porcelain"], { cwd: anchor.cwd })).stdout).toBe("");
+    } finally {
+      await Promise.all([first, second].map((cwd) => fs.rm(cwd, { recursive: true, force: true })));
+    }
+  });
+
+  it("moves checkouts left under the retired repositories directory with their local edits", async () => {
+    const first = await createLocalSourceRepo();
+    const second = await createLocalSourceRepo();
+    try {
+      const anchor = await ensureManagedProjectWorkspace({ companyId: "retired-dir", projectId: "two", repoUrl: first });
+      const input = { cwd: anchor.cwd, anchorRepoUrl: first, workspaces: [{ id: "second", repoUrl: second, repoRef: null }] };
+      const [repo] = await prepareProjectRepositoryWorkspaces(input);
+      await fs.writeFile(path.join(repo!.cwd, "README.md"), "work in progress");
+      const retiredRoot = path.join(anchor.cwd, ".paperclip-repositories");
+      await fs.rename(path.dirname(repo!.cwd), retiredRoot);
+      expect(await prepareProjectRepositoryWorkspaces(input)).toEqual([repo]);
+      expect(await fs.readFile(path.join(repo!.cwd, "README.md"), "utf8")).toBe("work in progress");
+      await expect(fs.lstat(retiredRoot)).rejects.toMatchObject({ code: "ENOENT" });
     } finally {
       await Promise.all([first, second].map((cwd) => fs.rm(cwd, { recursive: true, force: true })));
     }

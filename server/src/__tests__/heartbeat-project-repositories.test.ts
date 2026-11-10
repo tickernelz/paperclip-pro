@@ -289,7 +289,7 @@ suite("task project repository provisioning", () => {
     expect(execute.mock.calls.filter(([input]) => input.runId === retry!.id)).toHaveLength(1);
     const [task] = await db.select().from(issues).where(and(eq(issues.companyId, companyId), eq(issues.id, issueId)));
     expect(task).toMatchObject({ status: "done", assigneeAgentId: agentId });
-    const copies = (execute.mock.calls.find(([input]) => input.runId === retry!.id)![0].context.wardmoteWorkspaces as Array<{ cwd: string }>).filter((hint) => hint.cwd.includes(".paperclip-repositories"));
+    const copies = (execute.mock.calls.find(([input]) => input.runId === retry!.id)![0].context.wardmoteWorkspaces as Array<{ cwd: string }>).filter((hint) => hint.cwd.includes(".wardmote-repositories"));
     expect(copies.length).toBeGreaterThan(0);
     expect(await readFile(path.join(copies[0]!.cwd, "README.md"), "utf8")).toBe("preserved dirty work");
     await expect(readFile(path.join(copies[0]!.cwd, "private.secret"))).rejects.toMatchObject({ code: "ENOENT" });

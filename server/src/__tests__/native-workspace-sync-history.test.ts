@@ -62,7 +62,7 @@ describe("native warm workspace Git history", () => {
         await git(dir, "commit", "-m", "base");
       }
       await initRepo(host);
-      const nestedPath = path.join(".paperclip-repositories", "nested");
+      const nestedPath = path.join(".wardmote-repositories", "nested");
       if (change === "nested_commit") await initRepo(path.join(host, nestedPath));
       const lease = { id: "lease", providerLeaseId: "sandbox", metadata: {} } as EnvironmentLease;
       let runnerProfileJson: Record<string, unknown> = {};

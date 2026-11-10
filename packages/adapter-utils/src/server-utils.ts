@@ -3415,7 +3415,7 @@ export function shapeWardmoteWorkspaceEnvForExecution(input: {
       return nextHint;
     }
     const relative = localWorkspaceCwd ? path.relative(localWorkspaceCwd, hintCwd).split(path.sep).join("/") : "";
-    if (realizedWorkspaceCwd && /^\.paperclip-repositories\/[a-zA-Z0-9_-]+$/.test(relative)) {
+    if (realizedWorkspaceCwd && /^\.wardmote-repositories\/[a-zA-Z0-9_-]+$/.test(relative)) {
       nextHint.cwd = path.posix.join(realizedWorkspaceCwd, relative);
       return nextHint;
     }
