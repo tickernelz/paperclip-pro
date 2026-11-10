@@ -53,7 +53,7 @@ npx @tickernelz/wardmote plugin uninstall wardmote-file-browser-example --force
 - **Build first.** The host resolves the worker from the manifest `entrypoints.worker` (e.g. `./dist/worker.js`). Run `pnpm build` in the plugin directory before installing so the worker file exists.
 - **Dev-only install path.** This local-path install flow assumes this monorepo checkout is present on disk. For deployed installs, publish an npm package instead of depending on `packages/plugins/examples/...` existing on the host.
 - **Reinstall after pulling.** If you installed a plugin by local path before the server stored `package_path`, the plugin may show status **error** (worker not found). Uninstall and install again so the server persists the path and can activate the plugin.
-- Optional: use `paperclip-plugin-dev-server` for UI hot-reload with `devUiUrl` in plugin config.
+- Optional: use `wardmote-plugin-dev-server` for UI hot-reload with `devUiUrl` in plugin config.
 
 ## Structure
 

@@ -22,7 +22,7 @@ Required:
 Equivalent CLI flags are available for local stdio templates:
 
 ```sh
-paperclip-google-sheets-mcp-server \
+wardmote-google-sheets-mcp-server \
   --service-account-json-path /path/to/service-account.json \
   --allowed-spreadsheet-ids sheet_id_1,sheet_id_2
 ```
@@ -63,7 +63,7 @@ GOOGLE_SHEETS_ALLOWED_SPREADSHEET_IDS=sheet_id_1,sheet_id_2 \
 GOOGLE_SHEETS_MCP_HOST=127.0.0.1 \
 GOOGLE_SHEETS_MCP_PORT=8849 \
 GOOGLE_SHEETS_MCP_TOKEN=local-test-token \
-paperclip-google-sheets-mcp-http-server
+wardmote-google-sheets-mcp-http-server
 ```
 
 The HTTP server prints the MCP endpoint on startup. With the values above, use:
