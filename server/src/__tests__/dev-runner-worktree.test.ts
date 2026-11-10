@@ -28,9 +28,9 @@ function createTempRoot(prefix: string): string {
 describe("dev-runner worktree env bootstrap", () => {
   it("uses saved empty-instance signing keys instead of inherited source keys", () => {
     const root = createTempRoot("paperclip-empty-signing-keys-");
-    fs.mkdirSync(path.join(root, ".paperclip"));
+    fs.mkdirSync(path.join(root, ".wardmote"));
     fs.writeFileSync(path.join(root, ".git"), "gitdir: /tmp/paperclip/.git/worktrees/empty\n");
-    fs.writeFileSync(path.join(root, ".paperclip", "seed-empty"), "explicitly empty\n");
+    fs.writeFileSync(path.join(root, ".wardmote", "seed-empty"), "explicitly empty\n");
     fs.writeFileSync(resolveWorktreeEnvFilePath(root), 'WARDMOTE_AGENT_JWT_SECRET="fresh-jwt"\nWARDMOTE_TOOL_ACTION_SIGNING_SECRET="fresh-actions"\n');
     const env = { WARDMOTE_AGENT_JWT_SECRET: "source-jwt", WARDMOTE_TOOL_ACTION_SIGNING_SECRET: "source-actions", BETTER_AUTH_SECRET: "source-auth" };
     bootstrapDevRunnerWorktreeEnv(root, env);
@@ -40,18 +40,18 @@ describe("dev-runner worktree env bootstrap", () => {
   });
   it("guards seed-pending worktrees until a seed-complete marker exists", () => {
     const root = createTempRoot("paperclip-dev-runner-seed-pending-");
-    fs.mkdirSync(path.join(root, ".paperclip"), { recursive: true });
-    fs.writeFileSync(path.join(root, ".paperclip", "seed-pending"), "{}\n", "utf8");
+    fs.mkdirSync(path.join(root, ".wardmote"), { recursive: true });
+    fs.writeFileSync(path.join(root, ".wardmote", "seed-pending"), "{}\n", "utf8");
 
     expect(isWorktreeSeedPending(root)).toBe(true);
 
-    fs.writeFileSync(path.join(root, ".paperclip", "seed-complete"), "{}\n", "utf8");
+    fs.writeFileSync(path.join(root, ".wardmote", "seed-complete"), "{}\n", "utf8");
     expect(isWorktreeSeedPending(root)).toBe(false);
   });
 
   it("guards every manifest state except a complete verified manifest", () => {
     const root = createTempRoot("paperclip-dev-runner-seed-manifest-");
-    const manifestPath = path.join(root, ".paperclip", "seed-manifest.json");
+    const manifestPath = path.join(root, ".wardmote", "seed-manifest.json");
     fs.mkdirSync(path.dirname(manifestPath), { recursive: true });
     fs.writeFileSync(manifestPath, JSON.stringify({ version: 2, state: "failed" }), "utf8");
     expect(isWorktreeSeedPending(root)).toBe(true);
@@ -88,7 +88,7 @@ describe("dev-runner worktree env bootstrap", () => {
 
   it("loads repo-local Wardmote env for initialized worktrees without overriding explicit env", () => {
     const root = createTempRoot("paperclip-dev-runner-worktree-env-");
-    fs.mkdirSync(path.join(root, ".paperclip"), { recursive: true });
+    fs.mkdirSync(path.join(root, ".wardmote"), { recursive: true });
     fs.writeFileSync(path.join(root, ".git"), "gitdir: /tmp/paperclip/.git/worktrees/feature\n", "utf8");
     fs.writeFileSync(
       resolveWorktreeEnvFilePath(root),
@@ -120,18 +120,18 @@ describe("dev-runner worktree env bootstrap", () => {
 
   it("repairs stale migrated config paths before loading worktree env", () => {
     const root = createTempRoot("paperclip-dev-runner-worktree-migrated-env-");
-    const localConfigPath = path.join(root, ".paperclip", "config.json");
-    const worktreesDir = path.join(root, ".paperclip-worktrees");
+    const localConfigPath = path.join(root, ".wardmote", "config.json");
+    const worktreesDir = path.join(root, ".wardmote-worktrees");
     fs.mkdirSync(path.dirname(localConfigPath), { recursive: true });
     fs.writeFileSync(path.join(root, ".git"), "gitdir: /tmp/paperclip/.git/worktrees/feature\n", "utf8");
     fs.writeFileSync(localConfigPath, "{}\n", "utf8");
     fs.writeFileSync(
       resolveWorktreeEnvFilePath(root),
       [
-        "WARDMOTE_HOME=/old/home/.paperclip-worktrees",
+        "WARDMOTE_HOME=/old/home/.wardmote-worktrees",
         "WARDMOTE_INSTANCE_ID=feature-worktree",
-        "WARDMOTE_CONFIG=/old/home/paperclip/.paperclip/worktrees/feature/.paperclip/config.json",
-        "WARDMOTE_CONTEXT=/old/home/.paperclip-worktrees/context.json",
+        "WARDMOTE_CONFIG=/old/home/paperclip/.wardmote/worktrees/feature/.wardmote/config.json",
+        "WARDMOTE_CONTEXT=/old/home/.wardmote-worktrees/context.json",
         "WARDMOTE_IN_WORKTREE=true",
         "WARDMOTE_WORKTREE_NAME=feature-worktree",
         "",

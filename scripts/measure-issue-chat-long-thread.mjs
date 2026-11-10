@@ -13,7 +13,7 @@ const url = companyPrefix
 const origin = new URL(url).origin;
 
 function loadBoardToken() {
-  const authPath = path.resolve(os.homedir(), ".paperclip/auth.json");
+  const authPath = path.resolve(os.homedir(), ".wardmote/auth.json");
   try {
     const auth = JSON.parse(fs.readFileSync(authPath, "utf-8"));
     const credentials = auth.credentials || {};

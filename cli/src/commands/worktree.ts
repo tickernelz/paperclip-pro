@@ -16,6 +16,7 @@ import {
 import os from "node:os";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
+import { REPO_CONFIG_DIR_NAMES } from "@tickernelz/wardmote-shared/repo-config-dir";
 import { randomBytes, randomUUID } from "node:crypto";
 import { createServer } from "node:net";
 import { Readable } from "node:stream";
@@ -596,11 +597,11 @@ async function findAvailablePort(preferredPort: number, reserved = new Set<numbe
 
 function resolveRepoManagedWorktreesRoot(cwd: string): string | null {
   const normalized = path.resolve(cwd);
-  const marker = `${path.sep}.paperclip${path.sep}worktrees${path.sep}`;
-  const index = normalized.indexOf(marker);
-  if (index === -1) return null;
-  const repoRoot = normalized.slice(0, index);
-  return path.resolve(repoRoot, ".paperclip", "worktrees");
+  for (const name of REPO_CONFIG_DIR_NAMES) {
+    const index = normalized.indexOf(`${path.sep}${name}${path.sep}worktrees${path.sep}`);
+    if (index !== -1) return path.resolve(normalized.slice(0, index), name, "worktrees");
+  }
+  return null;
 }
 
 function collectClaimedWorktreePorts(
@@ -617,7 +618,7 @@ function collectClaimedWorktreePorts(
   const configPaths = new Set<string>();
   for (const configPath of registeredConfigPaths) {
     const resolvedConfigPath = path.resolve(configPath);
-    if (resolvedConfigPath !== path.resolve(cwd, ".paperclip", "config.json") && existsSync(resolvedConfigPath)) {
+    if (resolvedConfigPath !== path.resolve(cwd, ".wardmote", "config.json") && existsSync(resolvedConfigPath)) {
       configPaths.add(resolvedConfigPath);
     }
   }
@@ -637,9 +638,9 @@ function collectClaimedWorktreePorts(
   if (repoManagedWorktreesRoot && existsSync(repoManagedWorktreesRoot)) {
     for (const entry of readdirSync(repoManagedWorktreesRoot, { withFileTypes: true })) {
       if (!entry.isDirectory()) continue;
-      const configPath = path.resolve(repoManagedWorktreesRoot, entry.name, ".paperclip", "config.json");
-      if (existsSync(configPath)) {
-        configPaths.add(configPath);
+      for (const name of REPO_CONFIG_DIR_NAMES) {
+        const configPath = path.resolve(repoManagedWorktreesRoot, entry.name, name, "config.json");
+        if (existsSync(configPath)) configPaths.add(configPath);
       }
     }
   }
@@ -955,7 +956,7 @@ function resolveExistingGitWorktree(selector: string, cwd: string): MergeSourceC
       worktree: directPath,
       branch: null,
       branchLabel: path.basename(directPath),
-      hasWardmoteConfig: existsSync(path.resolve(directPath, ".paperclip", "config.json")),
+      hasWardmoteConfig: existsSync(path.resolve(directPath, ".wardmote", "config.json")),
       isCurrent: directPath === path.resolve(cwd),
     };
   }
@@ -975,7 +976,7 @@ async function ensureRepairTargetWorktree(input: {
 }): Promise<ResolvedWorktreeRepairTarget | null> {
   const cwd = process.cwd();
   const currentRoot = path.resolve(cwd);
-  const currentConfigPath = path.resolve(currentRoot, ".paperclip", "config.json");
+  const currentConfigPath = path.resolve(currentRoot, ".wardmote", "config.json");
 
   if (!input.selector) {
     if (isPrimaryGitWorktree(cwd)) {
@@ -994,7 +995,7 @@ async function ensureRepairTargetWorktree(input: {
   if (existing) {
     return {
       rootPath: existing.worktree,
-      configPath: path.resolve(existing.worktree, ".paperclip", "config.json"),
+      configPath: path.resolve(existing.worktree, ".wardmote", "config.json"),
       label: existing.branchLabel,
       branchName: existing.branchLabel === "(detached)" ? null : existing.branchLabel,
       created: false,
@@ -1005,7 +1006,7 @@ async function ensureRepairTargetWorktree(input: {
   const branchName = validateGitBranchName(repoRoot, input.selector);
   const targetPath = path.resolve(
     repoRoot,
-    ".paperclip",
+    ".wardmote",
     "worktrees",
     resolveRepairWorktreeDirName(branchName),
   );
@@ -1037,7 +1038,7 @@ async function ensureRepairTargetWorktree(input: {
 
   return {
     rootPath: targetPath,
-    configPath: path.resolve(targetPath, ".paperclip", "config.json"),
+    configPath: path.resolve(targetPath, ".wardmote", "config.json"),
     label: branchName,
     branchName,
     created: true,
@@ -2451,10 +2452,6 @@ async function runWorktreeInit(opts: WorktreeInitOptions): Promise<void> {
   }
 
   if (opts.force) {
-    // Only remove the specific files we're about to rewrite, not the whole
-    // repoConfigDir — that directory can contain sibling state such as
-    // <repo>/.paperclip/worktrees/ holding every repo-managed worktree
-    // checkout, and a recursive rmSync here would nuke them all.
     rmSync(paths.configPath, { force: true });
     rmSync(paths.envPath, { force: true });
     const seedMarkers = resolveWorktreeSeedMarkerPaths(paths.configPath);
@@ -2849,7 +2846,7 @@ function toMergeSourceChoices(cwd: string): MergeSourceChoice[] {
       worktree: worktreePath,
       branch: entry.branch,
       branchLabel,
-      hasWardmoteConfig: existsSync(path.resolve(worktreePath, ".paperclip", "config.json")),
+      hasWardmoteConfig: existsSync(path.resolve(worktreePath, ".wardmote", "config.json")),
       isCurrent: worktreePath === currentCwd,
     };
   });
@@ -3072,7 +3069,7 @@ async function closeDb(db: ClosableDb): Promise<void> {
 export function resolveCurrentWorktreeEndpoint(): ResolvedWorktreeEndpoint {
   const cwd = path.resolve(process.cwd());
   const rootPath = detectGitWorkspaceInfo(cwd)?.root ?? cwd;
-  const localConfigPath = path.join(rootPath, ".paperclip", "config.json");
+  const localConfigPath = path.join(rootPath, ".wardmote", "config.json");
   return {
     rootPath,
     configPath: existsSync(localConfigPath) ? localConfigPath : resolveConfigPath(),
@@ -3091,7 +3088,7 @@ function resolveAttachmentLookupStorages(input: {
     input.targetEndpoint.configPath,
     ...toMergeSourceChoices(process.cwd())
       .filter((choice) => choice.hasWardmoteConfig)
-      .map((choice) => path.resolve(choice.worktree, ".paperclip", "config.json")),
+      .map((choice) => path.resolve(choice.worktree, ".wardmote", "config.json")),
   ];
   const seen = new Set<string>();
   const storages: ConfiguredStorage[] = [];
@@ -3662,7 +3659,7 @@ function resolveEndpointFromChoice(choice: MergeSourceChoice): ResolvedWorktreeE
   }
   return {
     rootPath: choice.worktree,
-    configPath: path.resolve(choice.worktree, ".paperclip", "config.json"),
+    configPath: path.resolve(choice.worktree, ".wardmote", "config.json"),
     label: choice.branchLabel,
     isCurrent: false,
   };
@@ -3689,9 +3686,9 @@ function resolveWorktreeEndpointFromSelector(
     if (allowCurrent && directPath === currentEndpoint.rootPath) {
       return currentEndpoint;
     }
-    const configPath = path.resolve(directPath, ".paperclip", "config.json");
+    const configPath = path.resolve(directPath, ".wardmote", "config.json");
     if (!existsSync(configPath)) {
-      throw new Error(`Resolved worktree path ${directPath} does not contain .paperclip/config.json.`);
+      throw new Error(`Resolved worktree path ${directPath} does not contain .wardmote/config.json.`);
     }
     return {
       rootPath: directPath,
@@ -4570,7 +4567,7 @@ export function registerWorktreeCommands(program: Command): void {
   worktree
     .command("repair")
     .description("Create or repair a linked worktree-local Wardmote instance without touching the primary checkout")
-    .option("--branch <name>", "Existing branch/worktree selector to repair, or a branch name to create under .paperclip/worktrees")
+    .option("--branch <name>", "Existing branch/worktree selector to repair, or a branch name to create under .wardmote/worktrees")
     .option("--home <path>", `Home root for worktree instances (env: WARDMOTE_WORKTREES_DIR, default: ${DEFAULT_WORKTREE_HOME})`)
     .option("--from-config <path>", "Source config.json to seed from")
     .option("--from-data-dir <path>", "Source WARDMOTE_HOME used when deriving the source config")

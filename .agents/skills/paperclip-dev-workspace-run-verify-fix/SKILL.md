@@ -38,9 +38,9 @@ passed.
 - The master checkout `/srv/paperclip/home/paperclipai/paperclip` (the primary
   repo with the real instance `.env`) is never a workspace repair target. Never
   point a worktree runtime service at it, never `git worktree add` into it or
-  under `<master>/.paperclip/worktrees/`, and never edit its `.env` while
+  under `<master>/.wardmote/worktrees/`, and never edit its `.env` while
   repairing a workspace. Managed workspaces run in their own folders, for
-  example `~/.paperclip-worktrees/instances/<slug>/…`.
+  example `~/.wardmote-worktrees/instances/<slug>/…`.
 - Never trust a `running` / `healthy` runtime row or a passing `/api/health`
   alone. The `service:paperclip-dev` port is pinned in service config, so a
   sibling workspace's process can own the port and still answer health checks.
@@ -447,7 +447,7 @@ exact guard or missing row if it blocks the normal path.
 Each of these has burned a previous repair; check them before deep debugging.
 
 - Worktree instance logs live at
-  `~/.paperclip-worktrees/instances/<slug>/logs`. Read them before guessing at
+  `~/.wardmote-worktrees/instances/<slug>/logs`. Read them before guessing at
   login or startup failures.
 - Probing the service through a LAN or tailscale IP can return `403` while
   `127.0.0.1` (or the `paperclip-dev` hostname) works. Probe loopback first

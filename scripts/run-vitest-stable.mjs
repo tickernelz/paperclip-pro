@@ -336,8 +336,6 @@ function runVitest(args, label, testShard = null) {
     ...process.env,
     NODE_ENV: "test",
     WARDMOTE_HOME: path.join(testRoot, "h"),
-    // Config discovery otherwise prefers the checkout's .paperclip/config.json
-    // over WARDMOTE_HOME, importing preview scheduling policy into unit tests.
     WARDMOTE_CONFIG: path.join(testRoot, "h", "config.json"),
     WARDMOTE_INSTANCE_ID: `vt-${process.pid}-${invocationIndex}`,
     TMPDIR: path.join(testRoot, "t"),

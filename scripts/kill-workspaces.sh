@@ -73,9 +73,9 @@ if [[ "${WARDMOTE_KILL_WORKSPACES_ONLY_CURRENT:-}" != "1" ]]; then
   for dir in \
     "$HOME"/.paperclip-pro/instances/*/runtime-services \
     "$HOME"/.wardmote/instances/*/runtime-services \
-    "$HOME"/.paperclip-worktrees/instances/*/runtime-services \
-    "$REPO_ROOT"/.paperclip/instances/*/runtime-services \
-    "$REPO_ROOT"/.paperclip/runtime-services/instances/*/runtime-services
+    "$HOME"/.wardmote-worktrees/instances/*/runtime-services \
+    "$REPO_ROOT"/.wardmote/instances/*/runtime-services \
+    "$REPO_ROOT"/.wardmote/runtime-services/instances/*/runtime-services
   do
     append_runtime_dir "$dir"
   done
@@ -83,8 +83,8 @@ if [[ "${WARDMOTE_KILL_WORKSPACES_ONLY_CURRENT:-}" != "1" ]]; then
   for sibling_root in "$REPO_PARENT"/paperclip*; do
     [[ -d "$sibling_root" ]] || continue
     for dir in \
-      "$sibling_root"/.paperclip/instances/*/runtime-services \
-      "$sibling_root"/.paperclip/runtime-services/instances/*/runtime-services
+      "$sibling_root"/.wardmote/instances/*/runtime-services \
+      "$sibling_root"/.wardmote/runtime-services/instances/*/runtime-services
     do
       append_runtime_dir "$dir"
     done

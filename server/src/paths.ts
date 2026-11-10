@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { adoptRetiredRepoConfigDir } from "@tickernelz/wardmote-shared/repo-config-dir";
 import { resolveWardmoteEnvPathForConfig } from "@tickernelz/wardmote-shared/home-paths";
 import { resolveDefaultConfigPath } from "./home-paths.js";
 
@@ -10,7 +11,8 @@ function findConfigFileFromAncestors(startDir: string): string | null {
   let currentDir = absoluteStartDir;
 
   while (true) {
-    const candidate = path.resolve(currentDir, ".paperclip", WARDMOTE_CONFIG_BASENAME);
+    adoptRetiredRepoConfigDir(currentDir);
+    const candidate = path.resolve(currentDir, ".wardmote", WARDMOTE_CONFIG_BASENAME);
     if (fs.existsSync(candidate)) {
       return candidate;
     }

@@ -1,6 +1,7 @@
 import { existsSync, lstatSync, readFileSync, realpathSync, statSync, type Stats } from "node:fs";
 import path from "node:path";
 import { resolveWardmoteInstanceId } from "./home-paths.js";
+import { adoptRetiredRepoConfigDir } from "./repo-config-dir.js";
 
 export type WorktreeSeedSourceDiagnostic = {
   configPath?: unknown;
@@ -65,29 +66,19 @@ function inspectDeclaredEntry(entryPath: string, configPath: string, detail?: st
   }
 }
 
-/**
- * Whether a base project workspace declares an instance config of its own.
- *
- * This tests directory entries and does not follow them. A dangling or aliased symlink,
- * at the config itself or at the `.paperclip` directory holding it, still counts as a
- * declared config, so the resolver rejects the malformed source instead of falling back
- * to another one.
- */
 export function baseWorkspaceDeclaresInstanceConfig(baseWorkspaceCwd: string): boolean {
-  const configDir = path.join(baseWorkspaceCwd, ".paperclip");
+  adoptRetiredRepoConfigDir(baseWorkspaceCwd);
+  const configDir = path.join(baseWorkspaceCwd, ".wardmote");
   const configPath = path.join(configDir, "config.json");
   if (inspectDeclaredEntry(configPath, configPath)) return true;
 
-  // The probe above resolves `.paperclip` before it reaches the config, so a broken link
-  // there also reports ENOENT. Only an absent or traversable `.paperclip` lets the caller
-  // name another source; a link that hides whatever it points at is malformed, not empty.
-  const configDirEntry = inspectDeclaredEntry(configDir, configPath, " on its .paperclip entry");
+  const configDirEntry = inspectDeclaredEntry(configDir, configPath, " on its .wardmote entry");
   if (configDirEntry?.isSymbolicLink()) {
     try {
       statSync(configDir);
     } catch (error) {
       throw new Error(
-        `Registered base project workspace Wardmote config at ${configPath} cannot be inspected (${errorCode(error)} on its .paperclip symlink target).`,
+        `Registered base project workspace Wardmote config at ${configPath} cannot be inspected (${errorCode(error)} on its .wardmote symlink target).`,
       );
     }
   }
@@ -141,7 +132,7 @@ export function resolveRegisteredWorktreeSeedSource(
     // A base workspace that is a plain checkout carries no instance config of its own.
     // The caller's explicit source supplies it, and stays subject to every check below.
     registeredConfigPath = baseWorkspaceDeclaresInstanceConfig(canonicalBaseCwd)
-      ? path.join(canonicalBaseCwd, ".paperclip", "config.json")
+      ? path.join(canonicalBaseCwd, ".wardmote", "config.json")
       : null;
   }
 
@@ -189,16 +180,6 @@ export function resolveRegisteredWorktreeSeedSource(
   };
 }
 
-/**
- * Resolve a worktree seed source without granting authority to the seed manifest.
- *
- * A managed caller supplies the project-workspace cwd from its server-owned row.
- * An operator may instead supply an explicit source config. A base workspace that
- * carries its own `.paperclip/config.json` stays authoritative, so an explicit path
- * must equal it; a base workspace that is a plain checkout has none, and the explicit
- * path supplies the source. Manifest source fields are diagnostic assertions only and
- * never select the returned source.
- */
 export function resolveCanonicalWorktreeSeedSource(input: RegisteredWorktreeSeedSourceInput & {
   manifestSource: WorktreeSeedSourceDiagnostic | null | undefined;
   manifestTargetInstanceId?: unknown;

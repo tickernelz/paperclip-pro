@@ -326,7 +326,7 @@ async function seedBranchContainmentRun(
   const otherSiblingIdentifier = `${issuePrefix}-3`;
   const expectedBranch = `${sourceIdentifier}-recorded`;
   const actualBranch = `${sourceIdentifier}-actual`;
-  const worktreePath = path.join(repoRoot, ".paperclip", "worktrees", expectedBranch);
+  const worktreePath = path.join(repoRoot, ".wardmote", "worktrees", expectedBranch);
   const now = new Date("2026-07-07T00:00:00.000Z");
 
   await instanceSettingsService(db).updateExperimental({
@@ -434,12 +434,12 @@ async function seedBranchContainmentRun(
       strategyType: "git_worktree",
       name: "other-workspace",
       status: "active",
-      cwd: path.join(repoRoot, ".paperclip", "worktrees", "other-workspace"),
+      cwd: path.join(repoRoot, ".wardmote", "worktrees", "other-workspace"),
       repoUrl: null,
       baseRef: "HEAD",
       branchName: "other-workspace",
       providerType: "git_worktree",
-      providerRef: path.join(repoRoot, ".paperclip", "worktrees", "other-workspace"),
+      providerRef: path.join(repoRoot, ".wardmote", "worktrees", "other-workspace"),
       lastUsedAt: now,
       openedAt: now,
       createdAt: now,
@@ -955,7 +955,7 @@ describeEmbeddedPostgres("heartbeat workspace branch containment", () => {
       await runGit(original, ["clone", repoUrl, owner]);
     }
     const branch = "retained-task";
-    const worktree = path.join(owner, ".paperclip", "worktrees", branch);
+    const worktree = path.join(owner, ".wardmote", "worktrees", branch);
     await runGit(owner, ["worktree", "add", "-b", branch, worktree]);
     await writeFile(path.join(worktree, "retained.txt"), "unexported original task edits\n");
     await writeFile(path.join(replacement, "replacement.txt"), "replacement source must stay untouched\n");
