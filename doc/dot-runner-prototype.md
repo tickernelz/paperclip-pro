@@ -71,7 +71,7 @@ node server/scripts/dot-runner-live-control.mjs /path/to/control.json approve RE
 
 The consent page then returns to ChatGPT. Give Dot the standing instruction
 printed by the lab, including the exact company and inbox task IDs. Wait for a
-verified `paperclip.dot.work_available` subscription in `status`, then publish
+verified `wardmote.dot.work_available` subscription in `status`, then publish
 the assignment from Paperclip's side:
 
 ```sh
@@ -133,7 +133,7 @@ The registry has no MCP registration tool and no generic API executor.
   `wardmote_dot_inbox`, `wardmote_dot_read`, `wardmote_dot_accept`,
   `wardmote_dot_tool`, `wardmote_dot_progress`, `wardmote_dot_finish`.
   Bound tools are visible only to the selected grant with write consent.
-- Optional `paperclip.dot.work_available` event on the existing durable outbox.
+- Optional `wardmote.dot.work_available` event on the existing durable outbox.
   Its `companyId` and `taskId` identify a designated standing inbox task. Each
   assignment can concern a different task; the event carries only IDs, and Dot
   retrieves the current assignment through authenticated tools. Existing
@@ -189,7 +189,7 @@ Unregister completed runs to release the bounded in-process registry.
    the team and requested writes.
 2. Explicitly bind that connection to the chosen Dot agent after the production
    admission work above. Show the identity and the standing inbox task.
-3. Give Dot one standing instruction to subscribe to `paperclip.dot.work_available`
+3. Give Dot one standing instruction to subscribe to `wardmote.dot.work_available`
    for that inbox, inspect current assignments, accept intended work, use the
    projected tools, and finish with a structured result. Treat duplicate events
    as wakeups, never as another task. Avoid comment-acknowledgement loops.
@@ -254,7 +254,7 @@ Observed live results:
   using MCP 2026-07-28; all returned HTTP 200.
 - The plugin UI showed its connected account, 10 read tools, 6 write tools, and
   all four event definitions, including the six Dot runner actions.
-- Dot found `paperclip.dot.work_available` and recognized its argument schema.
+- Dot found `wardmote.dot.work_available` and recognized its argument schema.
   Initially it reported no Paperclip action tools in its runtime, including the
   read-only `wardmote_connection`. An explicit @ mention did not make them
   available immediately.
@@ -286,7 +286,7 @@ Observed server evidence (UTC):
 | Time | Observation |
 | --- | --- |
 | 22:16:30 | Dot called `wardmote_connection` successfully. |
-| 22:17:00 | `events/subscribe` succeeded; the verified `paperclip.dot.work_available` subscription was present. |
+| 22:17:00 | `events/subscribe` succeeded; the verified `wardmote.dot.work_available` subscription was present. |
 | 22:17:24 | The operator queued the single assignment. Its webhook was observed as `delivered` after one attempt. |
 | 22:17:48 | Dot called `wardmote_dot_inbox` after the event, without another chat prompt. |
 | 22:17:56 | Dot read the assignment using `wardmote_dot_read`. |

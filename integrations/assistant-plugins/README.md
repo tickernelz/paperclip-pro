@@ -25,8 +25,8 @@ output has `.claude-plugin/plugin.json` and `.mcp.json`. The MCP endpoint is the
 same for both. No lifecycle hook, embedded UI or client-side executor is needed.
 
 See [server setup and release gates](../../doc/public-mcp.md). Configure the
-client to request `paperclip:read paperclip:write offline_access` for delegation
-and refresh, or just `paperclip:read` for a read-only connection. The person may
+client to request `wardmote:read wardmote:write offline_access` for delegation
+and refresh, or just `wardmote:read` for a read-only connection. The person may
 decline write access during consent. Use each client's normal OAuth connection
 flow; do not put agent keys or browser cookies into plugin manifests.
 

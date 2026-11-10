@@ -228,7 +228,7 @@ describe("native runner performance trace", () => {
         durationMs: 50,
         startOffsetMs: attemptStartedAtMs - 900,
       });
-      expect(recordedSpans[0]?.attributes["paperclip.task.run.wall_ms"]).toBe(
+      expect(recordedSpans[0]?.attributes["wardmote.task.run.wall_ms"]).toBe(
         attemptStartedAtMs + 100 - 900,
       );
     },

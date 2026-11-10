@@ -114,9 +114,9 @@ export async function runPublicMcpFlow(input: {
       receiver = await eventReceiver(input.secrets);
       const discovered = await mcpEventRpc(connection.tokens, "server/discover");
       const eventCatalog = await mcpEventRpc(connection.tokens, "events/list");
-      check("events-discovered", Boolean((discovered.capabilities as { events?: unknown })?.events) && Array.isArray(eventCatalog.events) && eventCatalog.events.some((e: { name: string }) => e.name === "paperclip.task.status_changed"), "The real MCP 2.0 endpoint advertises the completion event.");
+      check("events-discovered", Boolean((discovered.capabilities as { events?: unknown })?.events) && Array.isArray(eventCatalog.events) && eventCatalog.events.some((e: { name: string }) => e.name === "wardmote.task.status_changed"), "The real MCP 2.0 endpoint advertises the completion event.");
       monitorTask = async taskId => {
-        subscription = { name: "paperclip.task.status_changed", arguments: { companyId: team.id, taskId, statuses: ["done"] }, delivery: { mode: "webhook", url: receiver!.url, secret: receiver!.secret }, ttlMs: 600_000 };
+        subscription = { name: "wardmote.task.status_changed", arguments: { companyId: team.id, taskId, statuses: ["done"] }, delivery: { mode: "webhook", url: receiver!.url, secret: receiver!.secret }, ttlMs: 600_000 };
         const monitor = await mcpEventRpc(connection.tokens, "events/subscribe", subscription);
         check("callback-verified", receiver!.verified === 1 && typeof monitor.id === "string", "The public HTTPS callback independently verified Standard Webhooks HMAC and echoed a fresh challenge.");
         await evidence("public-mcp-events.json", { startupAttempts: receiver!.startupAttempts, startupFailures: receiver!.startupFailures, subscriptionId: monitor.id, callbackVerified: receiver!.verified === 1, events: receiver!.events });
@@ -154,7 +154,7 @@ export async function runPublicMcpFlow(input: {
       check("event-report-retrieved", gradeReportRetrieval({ companyId: team.id, taskId: issue.id, marker, ...answer }), "A fresh model conversation used the delivered event to retrieve and quote the durable report.");
       check("event-no-feedback-loop", answer.calls.every(isReadOnlyMcpCall) && (await api.get<Comment[]>(`/api/issues/${issue.id}/comments`)).every(comment => comment.authorUserId !== input.userId), "Event handling produced no human comment or task mutation.");
       check("event-independent-oracle", gradeEventFollowUp({ companyId: team.id, taskId: issue.id, marker, ...answer, callbackVerified: receiver!.verified === 1, signatureVerified: true, event, humanCommentCount: (await api.get<Comment[]>(`/api/issues/${issue.id}/comments`)).filter(comment => comment.authorUserId === input.userId).length }), "Calibrated event evidence, durable read-back and no-mutation oracle.");
-      check("event-company-task-bound", event.data.companyId === team.id && event.data.taskId === issue.id && event.name === "paperclip.task.status_changed" && event.cursor === null, "The signed event names the independently observed completed task in the authorized company.");
+      check("event-company-task-bound", event.data.companyId === team.id && event.data.taskId === issue.id && event.name === "wardmote.task.status_changed" && event.cursor === null, "The signed event names the independently observed completed task in the authorized company.");
       await mcpEventRpc(connection.tokens, "events/unsubscribe", { ...subscription, ttlMs: undefined, delivery: { mode: "webhook", url: receiver!.url } });
       subscription = undefined;
     } else if (execution.task.id === "human-feedback") {
@@ -171,7 +171,7 @@ export async function runPublicMcpFlow(input: {
       check("read-only-scope-inspected", answer.calls.some(call => {
         const result = call.result as { isError?: boolean; structuredContent?: { companyId?: string; scopes?: string[] } };
         return call.name === "wardmote_connection" && !result.isError && result.structuredContent?.companyId === team.id
-          && result.structuredContent.scopes?.includes("paperclip:read") === true && !result.structuredContent.scopes.includes("paperclip:write");
+          && result.structuredContent.scopes?.includes("wardmote:read") === true && !result.structuredContent.scopes.includes("wardmote:write");
       }), "The assistant inspected the actual connection permissions before explaining them.");
       check("honest-read-only-answer", /read.only|permission|cannot|can't|not.*(?:allow|permit)|write access/i.test(answer.final), "The assistant explains the permission limitation.");
     } else if (execution.task.id === "review-team") {
