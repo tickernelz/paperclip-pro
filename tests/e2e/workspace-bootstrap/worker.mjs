@@ -14,8 +14,8 @@ const api = async (route, method = "GET", body) => {
 const run = await api(`/heartbeat-runs/${env.WARDMOTE_RUN_ID}`);
 assert.equal(run.contextSnapshot.wardmoteEnvironment.driver, "local");
 const issueId = run.contextSnapshot.issueId;
-const repositories = await readdir(path.join(process.cwd(), ".paperclip-repositories"));
-const repo = path.join(process.cwd(), ".paperclip-repositories", repositories.find((name) => !name.includes(".clone-")));
+const repositories = await readdir(path.join(process.cwd(), ".wardmote-repositories"));
+const repo = path.join(process.cwd(), ".wardmote-repositories", repositories.find((name) => !name.includes(".clone-")));
 assert.equal(await readFile(path.join(repo, "README.md"), "utf8"), "Existing uncommitted work\n");
 await assert.rejects(access(path.join(repo, "private.secret")));
 await writeFile(path.join(repo, "recovery-proof.txt"), "Workspace recovered; existing work preserved; private files excluded.\n", { flag: "wx" });

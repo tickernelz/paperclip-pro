@@ -348,7 +348,7 @@ describe("sandbox managed runtime", () => {
     cleanupDirs.push(root);
     const local = path.join(root, "local");
     const remote = path.join(root, "remote");
-    const secondPath = ".paperclip-repositories/backend";
+    const secondPath = ".wardmote-repositories/backend";
     for (const [relative, contents] of [["", "frontend"], [secondPath, "backend"]]) {
       const cwd = path.join(local, relative!);
       await mkdir(cwd, { recursive: true });
@@ -365,7 +365,7 @@ describe("sandbox managed runtime", () => {
       await git(cwd, ["commit", "-m", contents!]);
       await writeFile(path.join(cwd, "secret.txt"), "must stay local");
     }
-    await writeFile(path.join(local, ".git/info/exclude"), ".paperclip-repositories/\n");
+    await writeFile(path.join(local, ".git/info/exclude"), ".wardmote-repositories/\n");
     await writeFile(path.join(local, secondPath, "dirty.txt"), "local edit");
     await writeFile(path.join(local, secondPath, "host-config.txt"), "excluded by operator");
     const seed = { workspaceArchivePath: path.join(root, "workspace.tar"), gitArchivePath: path.join(root, "git.tar") };

@@ -860,11 +860,11 @@ describe("ssh env-lab fixture", () => {
     await expect(readFile(path.join(localRepo, "run-b.txt"), "utf8")).resolves.toBe("from run b\n");
   }, SSH_FIXTURE_TEST_TIMEOUT_MS);
 
-  it("round-trips project repositories nested in .paperclip-repositories across consecutive SSH runs", async () => {
+  it("round-trips project repositories nested in .wardmote-repositories across consecutive SSH runs", async () => {
     const rootDir = await createFixtureRootDir();
     const statePath = path.join(rootDir, "state.json");
     const localRepo = path.join(rootDir, "local-workspace");
-    const nestedRelative = ".paperclip-repositories/frontend-0123456789ab";
+    const nestedRelative = ".wardmote-repositories/frontend-0123456789ab";
     const nestedRepo = path.join(localRepo, nestedRelative);
 
     await mkdir(localRepo, { recursive: true });
@@ -875,7 +875,7 @@ describe("ssh env-lab fixture", () => {
     await writeFile(path.join(localRepo, "backend.txt"), "backend base\n", "utf8");
     await git(localRepo, ["add", "backend.txt"]);
     await git(localRepo, ["commit", "-m", "backend initial"]);
-    await writeFile(path.join(localRepo, ".git", "info", "exclude"), "\n/.paperclip-repositories/\n", { flag: "a" });
+    await writeFile(path.join(localRepo, ".git", "info", "exclude"), "\n/.wardmote-repositories/\n", { flag: "a" });
 
     await mkdir(nestedRepo, { recursive: true });
     await git(nestedRepo, ["init"]);
@@ -916,7 +916,7 @@ describe("ssh env-lab fixture", () => {
       config,
       `cd ${JSON.stringify(first.workspaceRemoteDir)} && git status --short --untracked-files=all`,
     );
-    expect(remoteAnchorStatus.stdout).not.toContain(".paperclip-repositories");
+    expect(remoteAnchorStatus.stdout).not.toContain(".wardmote-repositories");
 
     await runSshCommand(
       config,
@@ -943,7 +943,7 @@ describe("ssh env-lab fixture", () => {
     expect(await git(nestedRepo, ["log", "-1", "--pretty=%s"])).toBe("remote frontend update");
     await expect(readFile(path.join(nestedRepo, "frontend.txt"), "utf8")).resolves.toBe("frontend remote dirty\n");
     expect(await git(localRepo, ["log", "-1", "--pretty=%s"])).toBe("remote backend update");
-    expect(await git(localRepo, ["status", "--short", "--untracked-files=all"])).not.toContain(".paperclip-repositories");
+    expect(await git(localRepo, ["status", "--short", "--untracked-files=all"])).not.toContain(".wardmote-repositories");
 
     const second = await prepareRemoteManagedRuntime({
       spec,
@@ -965,7 +965,7 @@ describe("ssh env-lab fixture", () => {
     const rootDir = await createFixtureRootDir();
     const statePath = path.join(rootDir, "state.json");
     const localRepo = path.join(rootDir, "local-workspace");
-    const nestedRelative = ".paperclip-repositories/frontend-0123456789ab";
+    const nestedRelative = ".wardmote-repositories/frontend-0123456789ab";
     const nestedRepo = path.join(localRepo, nestedRelative);
 
     for (const repo of [localRepo, nestedRepo]) {
@@ -978,7 +978,7 @@ describe("ssh env-lab fixture", () => {
       await git(repo, ["add", "tracked.txt"]);
       await git(repo, ["commit", "-m", "initial"]);
     }
-    await writeFile(path.join(localRepo, ".git", "info", "exclude"), "\n/.paperclip-repositories/\n", { flag: "a" });
+    await writeFile(path.join(localRepo, ".git", "info", "exclude"), "\n/.wardmote-repositories/\n", { flag: "a" });
 
     const started = await startSshEnvLabFixtureOrSkip(statePath, "SSH direct restore with project repositories test");
     if (!started) return;
@@ -1020,10 +1020,10 @@ describe("ssh env-lab fixture", () => {
     expect(await git(localRepo, ["status", "--short", "--untracked-files=all"])).toBe("");
   }, SSH_FIXTURE_TEST_TIMEOUT_MS * 2);
 
-  it("fails closed when .paperclip-repositories holds something other than a git checkout", async () => {
+  it("fails closed when .wardmote-repositories holds something other than a git checkout", async () => {
     const rootDir = await createFixtureRootDir();
     const localRepo = path.join(rootDir, "local-workspace");
-    await mkdir(path.join(localRepo, ".paperclip-repositories", "not-a-repo"), { recursive: true });
+    await mkdir(path.join(localRepo, ".wardmote-repositories", "not-a-repo"), { recursive: true });
     await git(localRepo, ["init"]);
     await git(localRepo, ["checkout", "-b", "main"]);
     await git(localRepo, ["config", "user.name", "Wardmote Test"]);
@@ -1033,7 +1033,7 @@ describe("ssh env-lab fixture", () => {
     await git(localRepo, ["commit", "-m", "initial"]);
 
     await expect(prepareWorkspaceForSshExecution({ spec: UNREACHABLE_SSH_SPEC, localDir: localRepo, remoteDir: "/nonexistent" }))
-      .rejects.toThrow("Project repository is not a Git checkout: .paperclip-repositories/not-a-repo");
+      .rejects.toThrow("Project repository is not a Git checkout: .wardmote-repositories/not-a-repo");
   }, SSH_FIXTURE_TEST_TIMEOUT_MS);
 
   it("rejects inconsistent project repository restores before any SSH connection", async () => {
@@ -1044,19 +1044,19 @@ describe("ssh env-lab fixture", () => {
         spec: UNREACHABLE_SSH_SPEC,
         localDir,
         remoteDir: "/nonexistent",
-        baselineSnapshot: { exclude: [".git", ".git/*", ".wardmote-runtime", ".paperclip-repositories"], entries: new Map() },
+        baselineSnapshot: { exclude: [".git", ".git/*", ".wardmote-runtime", ".wardmote-repositories"], entries: new Map() },
         restoreGitHistory: true,
         ...input,
       });
 
     await expect(restore({ repositories: [{ path: "../outside", baselineSnapshot: repositoryBaseline }] }))
       .rejects.toThrow("Invalid project repository path: ../outside");
-    await expect(restore({ repositories: [{ path: ".paperclip-repositories/frontend-0123456789ab" }] }))
-      .rejects.toThrow("Project repository has no workspace baseline: .paperclip-repositories/frontend-0123456789ab");
+    await expect(restore({ repositories: [{ path: ".wardmote-repositories/frontend-0123456789ab" }] }))
+      .rejects.toThrow("Project repository has no workspace baseline: .wardmote-repositories/frontend-0123456789ab");
     await expect(restore({
       baselineSnapshot: { exclude: [".git", ".git/*", ".wardmote-runtime"], entries: new Map() },
-      repositories: [{ path: ".paperclip-repositories/frontend-0123456789ab", baselineSnapshot: repositoryBaseline }],
-    })).rejects.toThrow("Workspace baseline must exclude .paperclip-repositories");
+      repositories: [{ path: ".wardmote-repositories/frontend-0123456789ab", baselineSnapshot: repositoryBaseline }],
+    })).rejects.toThrow("Workspace baseline must exclude .wardmote-repositories");
   }, SSH_FIXTURE_TEST_TIMEOUT_MS);
 
   it("preserves nested per-run files across sequential SSH restores with stale baselines", async () => {
