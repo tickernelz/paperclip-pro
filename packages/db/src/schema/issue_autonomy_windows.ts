@@ -14,7 +14,7 @@ export const issueAutonomyWindows = pgTable(
       .notNull()
       .references(() => issues.id, { onDelete: "cascade" }),
     grantedByUserId: text("granted_by_user_id").notNull(),
-    grantedVia: text("granted_via").$type<"whatsapp" | "paperclip">().notNull(),
+    grantedVia: text("granted_via").$type<"whatsapp" | "wardmote">().notNull(),
     status: text("status").$type<"live" | "revoked" | "expired">().notNull().default("live"),
     expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
     maxAccepts: integer("max_accepts"),
@@ -26,7 +26,7 @@ export const issueAutonomyWindows = pgTable(
     closedByUserId: text("closed_by_user_id"),
   },
   (table) => [
-    check("issue_autonomy_windows_granted_via_check", sql`${table.grantedVia} in ('whatsapp', 'paperclip')`),
+    check("issue_autonomy_windows_granted_via_check", sql`${table.grantedVia} in ('whatsapp', 'wardmote')`),
     check("issue_autonomy_windows_status_check", sql`${table.status} in ('live', 'revoked', 'expired')`),
     index("issue_autonomy_windows_company_status_expires_idx").on(table.companyId, table.status, table.expiresAt),
     index("issue_autonomy_windows_company_root_status_idx").on(table.companyId, table.rootIssueId, table.status),

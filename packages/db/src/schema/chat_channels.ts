@@ -1111,7 +1111,7 @@ export const chatOwnerApprovalRequests = pgTable(
     ),
     check(
       "chat_owner_approval_requests_resolved_via_check",
-      sql`${table.resolvedVia} is null or ${table.resolvedVia} in ('whatsapp', 'paperclip')`,
+      sql`${table.resolvedVia} is null or ${table.resolvedVia} in ('whatsapp', 'wardmote')`,
     ),
     check(
       "chat_owner_approval_requests_reminder_count_check",
@@ -1298,7 +1298,7 @@ export const chatOwnerGrants = pgTable(
     ),
     check(
       "chat_owner_grants_approved_via_check",
-      sql`${table.approvedVia} in ('whatsapp', 'paperclip')`,
+      sql`${table.approvedVia} in ('whatsapp', 'wardmote')`,
     ),
     index("chat_owner_grants_lookup_idx").on(
       table.endpointId,

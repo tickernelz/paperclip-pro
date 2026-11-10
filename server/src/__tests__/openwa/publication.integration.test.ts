@@ -448,7 +448,7 @@ describe("OpenWA publication (embedded Postgres + fake gateway)", () => {
         category: input.category,
         scope: input.scope ?? "requester",
         status: "live",
-        approvedVia: "paperclip",
+        approvedVia: "wardmote",
         expiresAt: new Date(Date.now() + 60 * 60_000),
       })
       .returning();
@@ -858,14 +858,14 @@ describe("OpenWA publication (embedded Postgres + fake gateway)", () => {
       event: "approval_reply",
       approvalRequestId: request!.id,
     });
-    await db.update(chatOwnerApprovalRequests).set({ status: "approved", resolvedVia: "paperclip", resolvedAt: new Date() }).where(eq(chatOwnerApprovalRequests.id, request!.id));
+    await db.update(chatOwnerApprovalRequests).set({ status: "approved", resolvedVia: "wardmote", resolvedAt: new Date() }).where(eq(chatOwnerApprovalRequests.id, request!.id));
     await db.insert(chatAuditEntries).values({
       companyId: t.companyId,
       endpointId: t.endpointId,
       kind: "approval_resolved",
       actorKind: "user",
       runId: null,
-      metadata: { requestId: request!.id, decision: "approved", via: "paperclip" },
+      metadata: { requestId: request!.id, decision: "approved", via: "wardmote" },
     });
     await drain(t);
     expect(t.gateway.sends.map((send) => send.text)).toEqual(["PDF-nya sudah saya baca, isinya daftar task after sales."]);

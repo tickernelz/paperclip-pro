@@ -26,7 +26,7 @@ export function autonomyWindowRoutes(db: Db) {
       const actor = getActorInfo(req);
       const windows = await svc.open(companyId, req.body, {
         userId: actor.actorId,
-        grantedVia: "paperclip",
+        grantedVia: "wardmote",
       });
       res.status(201).json({ windows });
     },
@@ -37,7 +37,7 @@ export function autonomyWindowRoutes(db: Db) {
     const existing = await getAccessibleResource(req, res, svc.getById(req.params.id as string), "Autonomy window not found");
     if (!existing) return;
     const actor = getActorInfo(req);
-    const window = await svc.close(existing.id, { userId: actor.actorId, grantedVia: "paperclip" }, existing.companyId);
+    const window = await svc.close(existing.id, { userId: actor.actorId, grantedVia: "wardmote" }, existing.companyId);
     res.json(window);
   });
 

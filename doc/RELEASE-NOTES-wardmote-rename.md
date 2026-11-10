@@ -10,6 +10,7 @@ This release uses only the Wardmote names. Nothing reads the old names any more;
 - **MCP, headers and skills.** MCP tools are `wardmote*` on the `wardmote` server at `/mcp/wardmote`; old tool names are refused. Headers are `X-Wardmote-*`; `X-Paperclip-*` is refused and redacted in logs. The built-in skills are `wardmote`, `wardmote-board`, `wardmote-converting-plans-to-tasks` and `wardmote-create-agent` under the `tickernelz/wardmote/` key prefix (database migrations 0358 and 0359).
 - **Stored agent text.** On every start the server rewrites the retired env, tool, header, route and skill names in agent instruction files, agent settings and their history, routines and chat endpoints. It backs up each changed file and row under `backups/wardmote-rename-<time>/`; a second start changes nothing. `wardmote migrate-names --dry-run` lists the changes without writing.
 - **Paperclip Cloud, Labs and EE** are removed: managed-cloud mode, Cloud sign-in, the Cloud connector broker, onboarding seeds and the related routes and UI.
+- **Stored channel values.** Approvals, grants, autonomy windows and owner relays decided in the board record `wardmote` as their channel, and the local board user's address is `local@wardmote.local`; database migration 0360 rewrites existing rows. API responses carry `wardmote` where they carried the old value.
 
 ## Upgrading an existing install
 

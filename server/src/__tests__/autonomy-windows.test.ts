@@ -122,7 +122,7 @@ describeEmbeddedPostgres("autonomy windows", () => {
     await tempDb?.cleanup();
   });
 
-  const owner = { userId: "owner-user", grantedVia: "paperclip" as const };
+  const owner = { userId: "owner-user", grantedVia: "wardmote" as const };
   const interactions = () => issueThreadInteractionService(db, { wakeup });
   const confirm = (issueId: string, payload: Record<string, unknown> = {}, continuationPolicy = "wake_assignee") =>
     interactions().create(
@@ -252,7 +252,7 @@ describeEmbeddedPostgres("autonomy windows", () => {
     const opened = await request(board).post(`/api/companies/${companyId}/autonomy-windows`).send({ issueIds: ["AUT-1"], hours: 2 });
     expect(opened.status).toBe(201);
     const windowId = opened.body.windows[0].id as string;
-    expect(opened.body.windows[0]).toMatchObject({ rootIssueId: ids.root, rootIssueIdentifier: "AUT-1", grantedByUserId: "board-user", grantedVia: "paperclip", status: "live" });
+    expect(opened.body.windows[0]).toMatchObject({ rootIssueId: ids.root, rootIssueIdentifier: "AUT-1", grantedByUserId: "board-user", grantedVia: "wardmote", status: "live" });
     expect(new Date(opened.body.windows[0].expiresAt).getTime() - Date.now()).toBeGreaterThan(110 * 60_000);
 
     const listed = await request(board).get(`/api/companies/${companyId}/autonomy-windows`);
