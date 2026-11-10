@@ -46,12 +46,12 @@ export function createDotRunnerMcpBridge(): PublicMcpToolExtension & {
       return () => { driver.revoke(); runs.delete(driver.identity.runId); };
     },
     async listTools(p) {
-      if (!p.grant.scopes.includes("paperclip:write") || !owned(p).length) return [];
+      if (!p.grant.scopes.includes("wardmote:write") || !owned(p).length) return [];
       return tools.map(t => ({ name: t.name, description: t.description, inputSchema: z.toJSONSchema(t.schema),
         annotations: { readOnlyHint: t.read, destructiveHint: false, idempotentHint: true, openWorldHint: !t.read } }));
     },
     async callTool(p, name, args) {
-      if (!p.grant.scopes.includes("paperclip:write")) throw new Error("Dot participation requires write consent and an explicit agent binding.");
+      if (!p.grant.scopes.includes("wardmote:write")) throw new Error("Dot participation requires write consent and an explicit agent binding.");
       const tool = tools.find(t => t.name === name);
       if (!tool) throw new Error("Unknown Dot tool.");
       const a = tool.schema.parse(args);

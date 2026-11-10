@@ -67,7 +67,7 @@ const authorizeSchema = z.object({
   redirect_uri: z.string().max(2048),
   response_type: z.literal("code"),
   resource: z.string().max(2048),
-  scope: z.string().max(200).default("paperclip:read"),
+  scope: z.string().max(200).default("wardmote:read"),
   state: z.string().max(2048).optional(),
   code_challenge: z.string().regex(/^[A-Za-z0-9_-]{43}$/),
   code_challenge_method: z.literal("S256"),
@@ -77,7 +77,7 @@ const authorizeSchema = z.object({
 export function createPublicMcpOAuth(db: Db, config: PublicMcpConfig, options: { metadataFetch?: MetadataFetch } = {}) {
   const agentConnection = new URL(config.resource).pathname === DOT_RUNNER_MCP_PATH;
   const scopesSupported = agentConnection ? DOT_RUNNER_MCP_SCOPES : PUBLIC_MCP_SCOPES;
-  const requiredScope = agentConnection ? "paperclip:agent" : "paperclip:read";
+  const requiredScope = agentConnection ? "wardmote:agent" : "wardmote:read";
   const issuer = agentConnection ? config.origin + DOT_RUNNER_MCP_PATH + "/oauth" : config.origin;
   const authorizationOrigin = config.authorizationOrigin ?? config.origin;
   const resolveMetadata = createClientMetadataResolver(options.metadataFetch);
@@ -104,7 +104,7 @@ export function createPublicMcpOAuth(db: Db, config: PublicMcpConfig, options: {
     const [company] = await queryDb.select({ status: companies.status }).from(companies).where(eq(companies.id, grant.companyId));
     if (!access.user || !membership || !company || company.status === "archived") throw invalidGrant();
     if (agentConnection) {
-      if (grant.purpose !== "agent" || !grant.scopes.includes("paperclip:agent")) throw invalidGrant();
+      if (grant.purpose !== "agent" || !grant.scopes.includes("wardmote:agent")) throw invalidGrant();
       if (membership.membershipRole === "viewer") throw invalidGrant();
       if (!grant.agentId) return { type: "none", source: "mcp_oauth", companyId: grant.companyId };
       const [agent] = await queryDb.select().from(agents).where(and(eq(agents.id, grant.agentId), eq(agents.companyId, grant.companyId)));
@@ -229,8 +229,8 @@ export function createPublicMcpOAuth(db: Db, config: PublicMcpConfig, options: {
     if (request.resource !== config.resource) throw invalidGrant();
     if (agentConnection && membership.membershipRole === "viewer") throw new McpOAuthError("access_denied", "Dot agent connections require an operator role.", 403);
     if ((input.allowWrites || input.allowConfiguration) && membership.membershipRole === "viewer") throw new McpOAuthError("access_denied", "Viewer access is read-only.", 403);
-    const scopes = request.scopes.filter(s => (s !== "paperclip:write" || input.allowWrites)
-      && (s !== "paperclip:configure" || input.allowConfiguration === true));
+    const scopes = request.scopes.filter(s => (s !== "wardmote:write" || input.allowWrites)
+      && (s !== "wardmote:configure" || input.allowConfiguration === true));
     const [grant] = await tx.insert(mcpOauthGrants).values({ companyId: input.companyId!, userId: actor.userId, clientId: request.clientId, resource: request.resource, scopes, purpose: agentConnection ? "agent" : "personal" }).returning();
     await tx.insert(activityLog).values({ companyId: grant!.companyId, actorType: "user", actorId: actor.userId,
       action: "mcp.connection_authorized", entityType: "mcp_connection", entityId: grant!.id, details: { clientId: grant!.clientId, scopes } });
@@ -322,7 +322,7 @@ export function createPublicMcpOAuth(db: Db, config: PublicMcpConfig, options: {
         .where(and(eq(mcpOauthDeviceRequests.userCodeHash, deviceHash(userCode)), eq(mcpOauthDeviceRequests.status, "pending"), gt(mcpOauthDeviceRequests.expiresAt, new Date())));
       if (!row || row.request.resource !== config.resource) throw new McpOAuthError("invalid_request", "This code is expired, already decided, or invalid. Start a new connection from your assistant.", 404);
       return { agentConnection, id: row.request.id, clientName: row.client.name, redirectOrigin: "", clientOrigin: row.client.id.startsWith("https://") ? new URL(row.client.id).origin : null,
-        requestedConfigure: row.request.scopes.includes("paperclip:configure"), requestedWrite: row.request.scopes.includes("paperclip:write"), offlineAccess: row.request.scopes.includes("offline_access"), requestedCompanyId: row.request.requestedCompanyId,
+        requestedConfigure: row.request.scopes.includes("wardmote:configure"), requestedWrite: row.request.scopes.includes("wardmote:write"), offlineAccess: row.request.scopes.includes("offline_access"), requestedCompanyId: row.request.requestedCompanyId,
         setupUrl: null, ...await consentContext(actor, row.request.requestedCompanyId) };
     },
     async consentDevice(userCode: string, actor: Request["actor"], input: { decision: "approve" | "deny"; companyId?: string; allowWrites: boolean; allowConfiguration?: boolean }) {
@@ -394,7 +394,7 @@ export function createPublicMcpOAuth(db: Db, config: PublicMcpConfig, options: {
       return {
         agentConnection, id, clientName: row.client.name, redirectOrigin: new URL(row.request.redirectUri).origin,
         clientOrigin: row.client.id.startsWith("https://") ? new URL(row.client.id).origin : null,
-        requestedConfigure: row.request.scopes.includes("paperclip:configure"), requestedWrite: row.request.scopes.includes("paperclip:write"), offlineAccess: row.request.scopes.includes("offline_access"),
+        requestedConfigure: row.request.scopes.includes("wardmote:configure"), requestedWrite: row.request.scopes.includes("wardmote:write"), offlineAccess: row.request.scopes.includes("offline_access"),
         requestedCompanyId: row.request.requestedCompanyId,
         ...await consentContext(actor, row.request.requestedCompanyId), setupUrl,
       };

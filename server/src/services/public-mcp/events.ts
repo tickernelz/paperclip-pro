@@ -11,7 +11,7 @@ import { type ApiDispatch } from "./capabilities.js";
 import { PublicMcpDisabledError, type McpPrincipal, type PublicMcpOAuth } from "./oauth.js";
 import { boundedJson, callbackUrl, eventFetch, McpEventError, postEvent, signingKey, verifyCallback, type EventFetch } from "./event-webhooks.js";
 
-const names = ["paperclip.task.status_changed", "paperclip.task.comment_created", "paperclip.task.document_updated", "paperclip.dot.work_available", "paperclip.dot.mailbox_updated"] as const;
+const names = ["wardmote.task.status_changed", "wardmote.task.comment_created", "wardmote.task.document_updated", "wardmote.dot.work_available", "wardmote.dot.mailbox_updated"] as const;
 const filters = z.object({ companyId: z.uuid(), taskId: z.uuid(), statuses: z.array(z.enum(ISSUE_STATUSES)).min(1).max(ISSUE_STATUSES.length).optional() }).strict();
 const resourceFilters = z.object({ companyId: z.uuid(), taskId: z.uuid().optional(), bindingId: z.uuid().optional(), statuses: z.array(z.enum(ISSUE_STATUSES)).min(1).max(ISSUE_STATUSES.length).optional() }).strict().refine(v => !!v.taskId !== !!v.bindingId);
 const common = { name: z.enum(names), arguments: resourceFilters, delivery: z.object({ mode: z.literal("webhook"), url: z.string().max(2048), secret: z.string().max(100).optional() }).strict(), _meta: z.record(z.string(), z.unknown()).optional() };
@@ -61,7 +61,7 @@ export function createPublicMcpEvents(db: Db, oauth: PublicMcpOAuth, api: ApiDis
       if (!options.enableDotRunner) throw new McpEventError(-32602, "Dot requires the dedicated agent endpoint.");
       await dotRunnerBroker(db).authorizeBinding(principal, args.companyId, args.bindingId); return;
     }
-    if (args.companyId !== principal.grant.companyId || !principal.grant.scopes.includes("paperclip:read")) throw new McpEventError(-32602, "This task is outside the authorized company.");
+    if (args.companyId !== principal.grant.companyId || !principal.grant.scopes.includes("wardmote:read")) throw new McpEventError(-32602, "This task is outside the authorized company.");
     await api(principal, "GET", `/issues/${args.taskId}`);
   }
   async function authorizeCloud(principal: McpPrincipal, authority?: CloudEventAuthority) {

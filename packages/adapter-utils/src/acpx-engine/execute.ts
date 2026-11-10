@@ -3890,7 +3890,7 @@ const TURN_SPAN_NAME = "agent.turn";
 /** The attribute prefix for the run root span. It groups the run-level span
  * attributes under one namespace, the same shape as the sandbox startup
  * prefix. */
-const RUN_ROOT_SPAN_ATTR_PREFIX = "paperclip.task.run.";
+const RUN_ROOT_SPAN_ATTR_PREFIX = "wardmote.task.run.";
 
 /** The attribute prefix for the agent turn span. It groups the turn-level span
  * attributes under one namespace, the same shape as the run root prefix. */

@@ -39,8 +39,8 @@ export const OpenCodeSetup: Story = { parameters: { initialEntries: ["/PAP/apps/
 export const CodexSetup: Story = { ...OpenCodeSetup, args: { assistant: "codex" } };
 export const ClaudeSetup: Story = { ...OpenCodeSetup, args: { assistant: "claude" } };
 export const Connected: Story = { parameters: { initialEntries: ["/PAP/apps/assistant-connection"], fixture: { enabled: true, empty: false, connections: [
-  { id: "opencode", companyId: "company-storybook", companyName: "Wardmote", clientName: "OpenCode", user: connectedUser, scopes: ["paperclip:read", "paperclip:write", "offline_access"], createdAt: "2026-10-05T12:00:00Z", revokedAt: null },
-  { id: "other-org", companyId: "another-company", companyName: "Other organization", clientName: "Private other client", scopes: ["paperclip:read"], createdAt: "2026-10-05T12:00:00Z", revokedAt: null },
+  { id: "opencode", companyId: "company-storybook", companyName: "Wardmote", clientName: "OpenCode", user: connectedUser, scopes: ["wardmote:read", "wardmote:write", "offline_access"], createdAt: "2026-10-05T12:00:00Z", revokedAt: null },
+  { id: "other-org", companyId: "another-company", companyName: "Other organization", clientName: "Private other client", scopes: ["wardmote:read"], createdAt: "2026-10-05T12:00:00Z", revokedAt: null },
 ] } } };
 export const Unavailable: Story = { parameters: { initialEntries: ["/PAP/apps/assistant-connection"], fixture: { unavailable: true } } };
 export const Loading: Story = { parameters: { initialEntries: ["/PAP/apps/assistant-connection"], fixture: { loading: true } } };

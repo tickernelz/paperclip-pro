@@ -108,7 +108,7 @@ describe("durable Dot Runner integration", () => {
     const client = await oauth.register({ client_name: "Dedicated Dot", redirect_uris: ["https://chatgpt.com/connector_platform/oauth/callback"] }, randomUUID());
     const verifier = randomBytes(32).toString("base64url");
     const input = { client_id: client.client_id, redirect_uri: "https://chatgpt.com/connector_platform/oauth/callback", response_type: "code", resource: config.resource,
-      scope: "paperclip:agent offline_access", code_challenge: createHash("sha256").update(verifier).digest("base64url"), code_challenge_method: "S256" };
+      scope: "wardmote:agent offline_access", code_challenge: createHash("sha256").update(verifier).digest("base64url"), code_challenge_method: "S256" };
     const requestId = (await oauth.authorize(input)).split("/").at(-1)!;
     const consent = await oauth.consent(requestId, { type: "board", source: "session", userId }, { decision: "approve", companyId: company!.id, allowWrites: false });
     const tokens = await oauth.token({ grant_type: "authorization_code", client_id: client.client_id, redirect_uri: input.redirect_uri,
@@ -136,7 +136,7 @@ describe("durable Dot Runner integration", () => {
       received.push(body); return new Response(null, { status: 204 });
     };
     const events = createPublicMcpEvents(db, oauth, async () => { throw new Error("personal API dispatch forbidden"); }, { enableDotRunner: true, fetch: fetcher, ...options });
-    const subscription = { name: "paperclip.dot.mailbox_updated", arguments: { companyId: company!.id, bindingId: pairing.bindingId }, delivery: { mode: "webhook", url: "https://example.com/dot-hook", secret } };
+    const subscription = { name: "wardmote.dot.mailbox_updated", arguments: { companyId: company!.id, bindingId: pairing.bindingId }, delivery: { mode: "webhook", url: "https://example.com/dot-hook", secret } };
     await events.subscribe(principal, subscription);
     await events.tick();
     if (!received.length) throw new Error("Dot readiness delivery missing: " + JSON.stringify(await db.select({ outcome: mcpEventDeliveries.outcome, event: mcpEventDeliveries.event }).from(mcpEventDeliveries)));
@@ -605,7 +605,7 @@ describe("durable Dot Runner integration", () => {
     expect(metadata.body.authorization_servers).toEqual([oauth.config.origin + "/mcp/runner/oauth"]);
     const issuer = await request(app).get("/.well-known/oauth-authorization-server/mcp/runner/oauth");
     expect(issuer.body).toMatchObject({ issuer: oauth.config.origin + "/mcp/runner/oauth", client_id_metadata_document_supported: true,
-      scopes_supported: ["paperclip:agent", "offline_access"], device_authorization_endpoint: oauth.config.origin + "/mcp/runner/oauth/device_authorization" });
+      scopes_supported: ["wardmote:agent", "offline_access"], device_authorization_endpoint: oauth.config.origin + "/mcp/runner/oauth/device_authorization" });
     expect((await request(app).get("/.well-known/oauth-authorization-server")).body.issuer).toBe(oauth.config.origin);
     const verifier = randomBytes(32).toString("base64url");
     const input = { client_id: clientId, redirect_uri: redirectUri, response_type: "code", resource: oauth.config.resource,
@@ -624,9 +624,9 @@ describe("durable Dot Runner integration", () => {
     expect(redirect.searchParams.get("iss")).toBe(issuer.body.issuer);
     const tokens = await oauth.token({ grant_type: "authorization_code", client_id: clientId, redirect_uri: redirectUri,
       resource: oauth.config.resource, code: redirect.searchParams.get("code"), code_verifier: verifier });
-    expect((await oauth.authenticate(tokens.access_token)).grant).toMatchObject({ purpose: "agent", agentId: null, scopes: ["paperclip:agent"] });
+    expect((await oauth.authenticate(tokens.access_token)).grant).toMatchObject({ purpose: "agent", agentId: null, scopes: ["wardmote:agent"] });
     await expect(personal.authenticate(tokens.access_token)).rejects.toThrow();
-    await expect(oauth.authorize({ ...input, scope: "paperclip:read" })).rejects.toMatchObject({ code: "invalid_scope" });
+    await expect(oauth.authorize({ ...input, scope: "wardmote:read" })).rejects.toMatchObject({ code: "invalid_scope" });
     await f.events.unsubscribe(f.principal, f.subscription);
   }, 30000);
 
@@ -635,7 +635,7 @@ describe("durable Dot Runner integration", () => {
     const { app, personal } = gateway(f.oauth, { type: "board", source: "session", userId: f.userId });
     const client = await f.oauth.register({ client_name: "Dot device", redirect_uris: [], response_types: [], grant_types: [DEVICE_GRANT, "refresh_token"] }, randomUUID());
     const started = await request(app).post("/mcp/runner/oauth/device_authorization")
-      .send({ client_id: client.client_id, resource: f.oauth.config.resource, scope: "paperclip:agent offline_access", company_id: f.company.id });
+      .send({ client_id: client.client_id, resource: f.oauth.config.resource, scope: "wardmote:agent offline_access", company_id: f.company.id });
     expect(started.status).toBe(200);
     const codes = started.body;
     expect(await f.oauth.ownsDevice(codes.user_code)).toBe(true);
