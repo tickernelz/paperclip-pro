@@ -658,7 +658,7 @@ function mockPersistedWikiSpace(harness: ReturnType<typeof createTestHarness>, s
 
 describe("LLM Wiki plugin scaffold", () => {
   it("declares standalone plugin surfaces without core wiki coupling", () => {
-    expect(manifest.id).toBe("paperclipai.plugin-llm-wiki");
+    expect(manifest.id).toBe("wardmote.plugin-llm-wiki");
     expect(manifest.entrypoints.worker).toBe("./dist/worker.js");
     expect(manifest.entrypoints.ui).toBe("./dist/ui");
     expect(manifest.database?.namespaceSlug).toBe("llm_wiki");
@@ -814,7 +814,7 @@ describe("LLM Wiki plugin scaffold", () => {
       context: { companyId: COMPANY_ID, companyPrefix: "PAP" },
     } as never));
 
-    expect(markup).toContain("Issues table · project-1 · plugin:paperclipai.plugin-llm-wiki:operation");
+    expect(markup).toContain("Issues table · project-1 · plugin:wardmote.plugin-llm-wiki:operation");
     expect(markup).not.toContain("Recent runs");
     expect(markup).not.toContain(">Operations</h2>");
   });

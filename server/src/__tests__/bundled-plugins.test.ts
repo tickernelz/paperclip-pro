@@ -37,7 +37,7 @@ describe("resolveBundledPluginInstalls", () => {
       env: {},
     })).toEqual([{
       key: "createos",
-      pluginKey: "paperclip.createos-sandbox-provider",
+      pluginKey: "wardmote.createos-sandbox-provider",
       localPath: path.join(CATALOG_ROOT, "sandbox-providers/createos"),
     }]);
     expect(SELF_HOSTED_AUTO_INSTALL_KEYS).not.toContain("createos");
@@ -50,12 +50,12 @@ describe("resolveBundledPluginInstalls", () => {
     expect(resolved).toEqual([
       {
         key: "kubernetes",
-        pluginKey: "paperclip.kubernetes-sandbox-provider",
+        pluginKey: "wardmote.kubernetes-sandbox-provider",
         localPath: path.join(CATALOG_ROOT, "sandbox-providers/kubernetes"),
       },
       {
         key: "daytona",
-        pluginKey: "paperclip.daytona-sandbox-provider",
+        pluginKey: "wardmote.daytona-sandbox-provider",
         localPath: path.join(CATALOG_ROOT, "sandbox-providers/daytona"),
       },
     ]);
@@ -105,7 +105,7 @@ describe("resolveBundledPluginInstalls", () => {
     // Exactly the pre-refactor default path.
     expect(entry).toEqual({
       key: "kubernetes",
-      pluginKey: "paperclip.kubernetes-sandbox-provider",
+      pluginKey: "wardmote.kubernetes-sandbox-provider",
       localPath: "/app/packages/plugins/sandbox-providers/kubernetes",
     });
   });
@@ -210,12 +210,12 @@ function makeDeps(overrides?: {
 
 const K8S: ResolvedBundledPlugin = {
   key: "kubernetes",
-  pluginKey: "paperclip.kubernetes-sandbox-provider",
+  pluginKey: "wardmote.kubernetes-sandbox-provider",
   localPath: path.join(CATALOG_ROOT, "sandbox-providers/kubernetes"),
 };
 const DAYTONA: ResolvedBundledPlugin = {
   key: "daytona",
-  pluginKey: "paperclip.daytona-sandbox-provider",
+  pluginKey: "wardmote.daytona-sandbox-provider",
   localPath: path.join(CATALOG_ROOT, "sandbox-providers/daytona"),
 };
 
@@ -225,7 +225,7 @@ describe("ensureBundledPlugins", () => {
     await ensureBundledPlugins([K8S], deps);
     expect(installPlugin).toHaveBeenCalledWith({ localPath: K8S.localPath });
     expect(deps.lifecycle.load).toHaveBeenCalledWith(
-      "id-paperclip.kubernetes-sandbox-provider",
+      "id-wardmote.kubernetes-sandbox-provider",
     );
   });
 
@@ -485,7 +485,7 @@ describe("ensureBundledPlugins", () => {
     );
     // Daytona still installed after the kubernetes failure.
     expect(installPlugin).toHaveBeenCalledTimes(2);
-    expect(deps.lifecycle.load).toHaveBeenCalledWith("id-paperclip.daytona-sandbox-provider");
+    expect(deps.lifecycle.load).toHaveBeenCalledWith("id-wardmote.daytona-sandbox-provider");
   });
 
   it("never uninstalls anything: plugins absent from the list are untouched", async () => {

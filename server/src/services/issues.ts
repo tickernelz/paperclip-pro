@@ -3112,9 +3112,9 @@ function inboxVisibleForUserCondition(companyId: string, userId: string) {
 }
 
 const LEGACY_PLUGIN_OPERATION_ORIGIN_KINDS = [
-  "plugin:paperclipai.content-machine:case",
-  "plugin:paperclipai.content-machine:evaluation",
-  "plugin:paperclipai.content-machine:source-sync",
+  "plugin:wardmote.content-machine:case",
+  "plugin:wardmote.content-machine:evaluation",
+  "plugin:wardmote.content-machine:source-sync",
 ] as const;
 
 function nonPluginOperationIssueCondition() {

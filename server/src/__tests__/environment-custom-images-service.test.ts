@@ -38,7 +38,7 @@ if (!embeddedPostgresSupport.supported) {
 
 function pluginManifest() {
   return {
-    id: "paperclip.fake-sandbox-provider",
+    id: "wardmote.fake-sandbox-provider",
     apiVersion: 1,
     version: "0.1.0",
     displayName: "Fake Sandbox Provider",
@@ -188,7 +188,7 @@ describeEmbeddedPostgres("environmentCustomImageService", () => {
       envVars: {},
     });
     await db.insert(plugins).values({
-      pluginKey: "paperclip.fake-sandbox-provider",
+      pluginKey: "wardmote.fake-sandbox-provider",
       packageName: "plugin-fake-sandbox",
       version: "0.1.0",
       apiVersion: 1,
@@ -847,7 +847,7 @@ describeEmbeddedPostgres("environmentCustomImageService reconciliation", () => {
       envVars: {},
     });
     await db.insert(plugins).values({
-      pluginKey: "paperclip.fake-sandbox-provider",
+      pluginKey: "wardmote.fake-sandbox-provider",
       packageName: "plugin-fake-sandbox",
       version: "0.1.0",
       apiVersion: 1,
@@ -1019,7 +1019,7 @@ describeEmbeddedPostgres("environmentCustomImageService reconciliation", () => {
 
 function secretPluginManifest() {
   return {
-    id: "paperclip.fake-secret-sandbox-provider",
+    id: "wardmote.fake-secret-sandbox-provider",
     apiVersion: 1,
     version: "0.1.0",
     displayName: "Fake Secret Sandbox Provider",
@@ -1058,7 +1058,7 @@ function secretPluginManifest() {
 
 function invalidIdentityPluginManifest() {
   return {
-    id: "paperclip.fake-invalid-sandbox-provider",
+    id: "wardmote.fake-invalid-sandbox-provider",
     apiVersion: 1,
     version: "0.1.0",
     displayName: "Fake Invalid Identity Sandbox Provider",
@@ -1086,7 +1086,7 @@ function invalidIdentityPluginManifest() {
 
 function prototypeKeyIdentityPluginManifest() {
   return {
-    id: "paperclip.fake-prototype-key-sandbox-provider",
+    id: "wardmote.fake-prototype-key-sandbox-provider",
     apiVersion: 1,
     version: "0.1.0",
     displayName: "Fake Prototype Key Sandbox Provider",

@@ -15,7 +15,7 @@ vi.mock("../services/plugin-registry.js", () => ({
 }));
 
 const PLUGIN_ID = "plugin-capability";
-const PLUGIN_KEY = "paperclip.capability-sandbox-provider";
+const PLUGIN_KEY = "wardmote.capability-sandbox-provider";
 
 const manifest: WardmotePluginManifestV1 = {
   id: PLUGIN_KEY,

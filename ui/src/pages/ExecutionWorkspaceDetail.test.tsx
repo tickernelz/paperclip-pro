@@ -201,7 +201,7 @@ function pluginSlot(overrides: Record<string, unknown> = {}) {
     exportName: "ExecutionWorkspaceChangesTab",
     entityTypes: ["execution_workspace"],
     pluginId: "plugin-1",
-    pluginKey: "paperclip.workspace-diff",
+    pluginKey: "wardmote.workspace-diff",
     pluginDisplayName: "Workspace Changes",
     pluginVersion: "0.1.0",
     ...overrides,

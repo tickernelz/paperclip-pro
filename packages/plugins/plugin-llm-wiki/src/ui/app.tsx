@@ -70,7 +70,7 @@ const toneStyles: Record<Tone, CSSProperties> = {
 
 const fontStack = `ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif`;
 const mobileMediaQuery = "(max-width: 767px)";
-const PLUGIN_ID = "paperclipai.plugin-llm-wiki";
+const PLUGIN_ID = "wardmote.plugin-llm-wiki";
 const WIKI_SIDEBAR_NAV_STATE_KEY = "wardmoteWikiSidebarTreePath";
 const ROUTE_SIDEBAR_EXPANDED_STORAGE_PREFIX = `${PLUGIN_ID}:route-sidebar-expanded:v2`;
 const WIKI_TOC_STICKY_TOP = 88;

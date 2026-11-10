@@ -1,6 +1,6 @@
 import type { WardmotePluginManifestV1 } from "@tickernelz/wardmote-plugin-sdk";
 
-const PLUGIN_ID = "paperclip.exe-dev-sandbox-provider";
+const PLUGIN_ID = "wardmote.exe-dev-sandbox-provider";
 const PLUGIN_VERSION = "0.1.2";
 
 const manifest: WardmotePluginManifestV1 = {

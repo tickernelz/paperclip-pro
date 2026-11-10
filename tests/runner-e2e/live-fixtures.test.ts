@@ -177,7 +177,7 @@ describe("live runner fixtures", () => {
           );
           return {
             id: "plugin-daytona",
-            pluginKey: "paperclip.daytona-sandbox-provider",
+            pluginKey: "wardmote.daytona-sandbox-provider",
             status: "ready",
           };
         }
@@ -238,7 +238,7 @@ describe("live runner fixtures", () => {
         if (path === "/api/plugins/install") {
           return {
             id: "plugin-daytona",
-            pluginKey: "paperclip.daytona-sandbox-provider",
+            pluginKey: "wardmote.daytona-sandbox-provider",
             status: "ready",
           };
         }

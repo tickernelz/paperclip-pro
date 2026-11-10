@@ -1,6 +1,6 @@
 import type { WardmotePluginManifestV1 } from "@tickernelz/wardmote-plugin-sdk";
 
-const PLUGIN_ID = "paperclip.workspace-diff";
+const PLUGIN_ID = "wardmote.workspace-diff";
 const CHANGES_TAB_SLOT_ID = "workspace-changes-tab";
 
 const manifest: WardmotePluginManifestV1 = {

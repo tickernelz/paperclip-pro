@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import type { WardmotePluginManifestV1 } from "@tickernelz/wardmote-plugin-sdk";
 import { DEFAULT_AGENT_INSTRUCTION_FILES, DEFAULT_AGENT_INSTRUCTIONS } from "./templates.js";
 
-export const PLUGIN_ID = "paperclipai.plugin-llm-wiki";
+export const PLUGIN_ID = "wardmote.plugin-llm-wiki";
 export const WIKI_ROOT_FOLDER_KEY = "wiki-root";
 export const WIKI_MAINTAINER_AGENT_KEY = "wiki-maintainer";
 export const WIKI_MAINTAINER_SKILL_KEY = "wiki-maintainer";

@@ -334,11 +334,11 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
     const pluginId = randomUUID();
     await db.insert(plugins).values({
       id: pluginId,
-      pluginKey: "paperclipai.plugin-llm-wiki",
+      pluginKey: "wardmote.plugin-llm-wiki",
       packageName: "@tickernelz/wardmote-plugin-llm-wiki",
       version: "0.1.0",
       manifestJson: {
-        id: "paperclipai.plugin-llm-wiki",
+        id: "wardmote.plugin-llm-wiki",
         apiVersion: 1,
         version: "0.1.0",
         displayName: "LLM Wiki",
@@ -363,12 +363,12 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
     const services = buildHostServices(
       db,
       pluginId,
-      "paperclipai.plugin-llm-wiki",
+      "wardmote.plugin-llm-wiki",
       createEventBusStub(),
       undefined,
       {
         manifest: {
-          id: "paperclipai.plugin-llm-wiki",
+          id: "wardmote.plugin-llm-wiki",
           apiVersion: 1,
           version: "0.1.0",
           displayName: "LLM Wiki",

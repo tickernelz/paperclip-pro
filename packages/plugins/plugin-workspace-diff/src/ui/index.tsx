@@ -37,7 +37,7 @@ const DEFAULT_FILE_SIDEBAR_WIDTH = 280;
 const MIN_FILE_SIDEBAR_WIDTH = 220;
 const MAX_FILE_SIDEBAR_WIDTH = 520;
 const FILE_SIDEBAR_WIDTH_STEP = 16;
-const FILE_SIDEBAR_WIDTH_STORAGE_KEY = "paperclip.workspace-diff.files-sidebar-width";
+const FILE_SIDEBAR_WIDTH_STORAGE_KEY = "wardmote.workspace-diff.files-sidebar-width";
 
 function makeLucideIcon(paths: ReactNode) {
   return function LucideIcon({ size = 16 }: LucideIconProps) {

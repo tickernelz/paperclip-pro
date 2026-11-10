@@ -36,7 +36,7 @@ describe("image-owned plugin catalogs", () => {
   });
   it("rejects duplicate keys, plugin identities and built-in replacement", () => {
     const { root, entry, save } = fixture();
-    for (const plugins of [[entry, entry], [{ ...entry, key: "daytona" }], [{ ...entry, pluginKey: "paperclip.daytona-sandbox-provider" }]]) {
+    for (const plugins of [[entry, entry], [{ ...entry, key: "daytona" }], [{ ...entry, pluginKey: "wardmote.daytona-sandbox-provider" }]]) {
       save(plugins);
       expect(() => readDistributionPluginCatalog(root, BUNDLED_PLUGIN_CATALOG)).toThrow(/Duplicate or built-in/);
     }

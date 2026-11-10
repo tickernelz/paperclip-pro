@@ -59,43 +59,43 @@ export interface BundledPluginCatalogEntry {
 export const BUNDLED_PLUGIN_CATALOG: readonly BundledPluginCatalogEntry[] = [
   {
     key: "createos",
-    pluginKey: "paperclip.createos-sandbox-provider",
+    pluginKey: "wardmote.createos-sandbox-provider",
     relativePath: "sandbox-providers/createos",
   },
   {
     key: "cloudflare",
-    pluginKey: "paperclip.cloudflare-sandbox-provider",
+    pluginKey: "wardmote.cloudflare-sandbox-provider",
     relativePath: "sandbox-providers/cloudflare",
   },
   {
     key: "daytona",
-    pluginKey: "paperclip.daytona-sandbox-provider",
+    pluginKey: "wardmote.daytona-sandbox-provider",
     relativePath: "sandbox-providers/daytona",
   },
   {
     key: "e2b",
-    pluginKey: "paperclip.e2b-sandbox-provider",
+    pluginKey: "wardmote.e2b-sandbox-provider",
     relativePath: "sandbox-providers/e2b",
   },
   {
     key: "exe-dev",
-    pluginKey: "paperclip.exe-dev-sandbox-provider",
+    pluginKey: "wardmote.exe-dev-sandbox-provider",
     relativePath: "sandbox-providers/exe-dev",
   },
   {
     key: "kubernetes",
-    pluginKey: "paperclip.kubernetes-sandbox-provider",
+    pluginKey: "wardmote.kubernetes-sandbox-provider",
     relativePath: "sandbox-providers/kubernetes",
     pathOverrideEnvVar: "WARDMOTE_KUBERNETES_PLUGIN_PATH",
   },
   {
     key: "modal",
-    pluginKey: "paperclip.modal-sandbox-provider",
+    pluginKey: "wardmote.modal-sandbox-provider",
     relativePath: "sandbox-providers/modal",
   },
   {
     key: "novita",
-    pluginKey: "paperclip.novita-sandbox-provider",
+    pluginKey: "wardmote.novita-sandbox-provider",
     relativePath: "sandbox-providers/novita",
   },
 ];

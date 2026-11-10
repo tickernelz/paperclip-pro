@@ -1,6 +1,6 @@
 import type { WardmotePluginManifestV1 } from "@tickernelz/wardmote-plugin-sdk";
 
-const PLUGIN_ID = "paperclip.daytona-sandbox-provider";
+const PLUGIN_ID = "wardmote.daytona-sandbox-provider";
 export const DEFAULT_DAYTONA_OPERATION_TIMEOUT_MS = 300_000;
 // The bundled-plugin boot reconcile refreshes the persisted manifest for an
 // existing install only when PLUGIN_VERSION changes. A manifest change without a
