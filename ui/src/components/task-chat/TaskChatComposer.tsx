@@ -1390,8 +1390,8 @@ export function TaskChatComposer({
       <div
         className={cn(
         streamlined
-          ? "paperclip-task-chat-composer rounded-(--radius-task-composer) border border-line bg-bg-2 p-(--sz-18px) shadow-(--shadow-task-composer) dark:border-0 dark:bg-bg-3 dark:shadow-none"
-          : "paperclip-task-chat-composer rounded-xl bg-bg-2 p-(--sz-18px)",
+          ? "wardmote-task-chat-composer rounded-(--radius-task-composer) border border-line bg-bg-2 p-(--sz-18px) shadow-(--shadow-task-composer) dark:border-0 dark:bg-bg-3 dark:shadow-none"
+          : "wardmote-task-chat-composer rounded-xl bg-bg-2 p-(--sz-18px)",
         mobile && "p-(--tc-mobile-card-padding)",
       )}
       onKeyDownCapture={(e) => {

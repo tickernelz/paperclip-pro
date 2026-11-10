@@ -155,7 +155,7 @@ describe("MarkdownBody", () => {
 
     expect(html).toContain('class="language-mermaid"');
     expect(html).toContain("https://provider.invalid/diagram.png");
-    expect(html).not.toContain('class="paperclip-mermaid"');
+    expect(html).not.toContain('class="wardmote-mermaid"');
     expect(html).not.toContain("Rendering Mermaid diagram");
   });
 
@@ -174,11 +174,11 @@ describe("MarkdownBody", () => {
     expect(html).toContain('data-mention-kind="user"');
     expect(html).toContain('href="/agents/agent-123"');
     expect(html).toContain('data-mention-kind="agent"');
-    expect(html).toContain("--paperclip-mention-avatar-image");
-    expect(html).not.toContain("--paperclip-mention-icon-mask");
+    expect(html).toContain("--wardmote-mention-avatar-image");
+    expect(html).not.toContain("--wardmote-mention-icon-mask");
     expect(html).toContain('href="/projects/project-456"');
     expect(html).toContain('data-mention-kind="project"');
-    expect(html).toContain("--paperclip-mention-project-color:#336699");
+    expect(html).toContain("--wardmote-mention-project-color:#336699");
     expect(html).toContain('href="/skills/skill-789"');
     expect(html).toContain('data-mention-kind="skill"');
     expect(html).toContain('href="/routines/routine-123"');
@@ -303,8 +303,8 @@ describe("MarkdownBody", () => {
     expect(html).toContain("var(--status-task-icon-done)");
     expect(html).toContain(">PAP-1271<");
     expect(html).toContain('data-mention-kind="issue"');
-    expect(html).toContain("paperclip-markdown-issue-ref");
-    expect(html).not.toContain("paperclip-mention-chip--issue");
+    expect(html).toContain("wardmote-markdown-issue-ref");
+    expect(html).not.toContain("wardmote-mention-chip--issue");
   });
 
   it("holds the quicklook preview until an issue mention is confirmed readable (PAP-16070)", () => {
@@ -318,7 +318,7 @@ describe("MarkdownBody", () => {
 
     expect(html).toContain('data-mention-pending="true"');
     expect(html).toContain('data-mention-kind="issue"');
-    expect(html).toContain("paperclip-markdown-issue-ref");
+    expect(html).toContain("wardmote-markdown-issue-ref");
     // Clickability is preserved through the loading state.
     expect(html).toContain('href="/issues/PAP-1271"');
     expect(html).toContain(">PAP-1271<");
@@ -354,7 +354,7 @@ describe("MarkdownBody", () => {
     expect(html).toContain('target="_blank"');
     expect(html).toContain("lucide-external-link");
     expect(html).not.toContain('href="/issues/PAPA-115"');
-    expect(html).not.toContain("paperclip-markdown-issue-ref");
+    expect(html).not.toContain("wardmote-markdown-issue-ref");
   });
 
   it("linkifies plain internal issue paths in markdown text", () => {
@@ -402,7 +402,7 @@ describe("MarkdownBody", () => {
     expect(html).toContain('href="/issues/PAP-1271"');
     expect(html).toContain('<code style="overflow-wrap:anywhere;word-break:break-word">PAP-1271</code>');
     expect(html).toContain("var(--status-task-icon-done)");
-    expect(html).toContain("paperclip-markdown-issue-ref");
+    expect(html).toContain("wardmote-markdown-issue-ref");
   });
 
   it("renders linked inline-code workspace paths as file viewer links before issue links", () => {
@@ -416,7 +416,7 @@ describe("MarkdownBody", () => {
     expect(html).toContain('data-workspace-file-path="videos/90-days-paperclip/out/90-days-paperclip-1x1.mp4"');
     expect(html).toContain("videos/90-days-paperclip/out/90-days-paperclip-1x1.mp4");
     expect(html).not.toContain("max-w-(--sz-38ch)");
-    expect(html).not.toContain("paperclip-markdown-issue-ref");
+    expect(html).not.toContain("wardmote-markdown-issue-ref");
     expect(html).not.toContain('href="/issues/PAP-10306"');
   });
 
@@ -424,7 +424,7 @@ describe("MarkdownBody", () => {
     const html = renderMarkdown("Check `ui/src/pages/IssueDetail.tsx:42` please.");
 
     expect(html).not.toContain("data-workspace-file-link");
-    expect(html).not.toContain("paperclip-workspace-file-link");
+    expect(html).not.toContain("wardmote-workspace-file-link");
     expect(html).toContain("ui/src/pages/IssueDetail.tsx:42");
   });
 
@@ -437,7 +437,7 @@ describe("MarkdownBody", () => {
 
     expect(html).not.toContain("data-workspace-file-link");
     expect(html).not.toContain('role="button"');
-    expect(html).not.toContain("paperclip-workspace-file-link");
+    expect(html).not.toContain("wardmote-workspace-file-link");
     expect(html).toContain("<code");
   });
 
@@ -555,7 +555,7 @@ describe("MarkdownBody", () => {
   it("applies wrap-friendly styles to long inline content", () => {
     const html = renderMarkdown("averyveryveryveryveryveryveryveryveryverylongtoken");
 
-    expect(html).toContain('class="paperclip-markdown prose prose-sm min-w-0 max-w-full break-words overflow-hidden');
+    expect(html).toContain('class="wardmote-markdown prose prose-sm min-w-0 max-w-full break-words overflow-hidden');
     expect(html).toContain('style="overflow-wrap:anywhere;word-break:break-word"');
     expect(html).toContain("<p");
   });
@@ -574,7 +574,7 @@ describe("MarkdownBody", () => {
       "| 2026-04-30T14:31:35Z | PAP-2505 | in_review_without_action_path | PAP-2779 | PAP-2910 |",
     ].join("\n"));
 
-    expect(html).toContain('class="paperclip-markdown-table-scroll"');
+    expect(html).toContain('class="wardmote-markdown-table-scroll"');
     expect(html).toContain('aria-label="Scrollable table"');
     expect(html).toContain('tabindex="0"');
     expect(html).toContain("<table>");
@@ -656,13 +656,13 @@ describe("MarkdownBody", () => {
   it("renders a copy button alongside fenced code blocks", () => {
     const html = renderMarkdown("```ts\nconst a = 1;\n```");
 
-    expect(html).toContain("paperclip-markdown-codeblock");
-    expect(html).toContain("paperclip-markdown-codeblock-actions");
+    expect(html).toContain("wardmote-markdown-codeblock");
+    expect(html).toContain("wardmote-markdown-codeblock-actions");
     expect(html).toContain("position:absolute;top:0.4rem;right:0.4rem;display:inline-flex");
-    expect(html).toContain("paperclip-markdown-codeblock-wrap");
+    expect(html).toContain("wardmote-markdown-codeblock-wrap");
     expect(html).toContain('aria-label="Wrap lines"');
     expect(html).toContain("position:static;opacity:1;display:inline-flex");
-    expect(html).toContain("paperclip-markdown-codeblock-copy");
+    expect(html).toContain("wardmote-markdown-codeblock-copy");
     expect(html).toContain('aria-label="Copy code"');
     expect(html).toContain("lucide-copy");
   });
@@ -670,16 +670,16 @@ describe("MarkdownBody", () => {
   it("renders code block actions for indented preformatted markdown blocks", () => {
     const html = renderMarkdown("Plan:\n\n    source fetch/sync -> signal inbox");
 
-    expect(html).toContain("paperclip-markdown-codeblock");
-    expect(html).toContain("paperclip-markdown-codeblock-wrap");
+    expect(html).toContain("wardmote-markdown-codeblock");
+    expect(html).toContain("wardmote-markdown-codeblock-wrap");
     expect(html).toContain('aria-label="Wrap lines"');
-    expect(html).toContain("paperclip-markdown-codeblock-copy");
+    expect(html).toContain("wardmote-markdown-codeblock-copy");
   });
 
   it("does not render a copy button on inline code", () => {
     const html = renderMarkdown("Reference `inline-code` here.");
 
-    expect(html).not.toContain("paperclip-markdown-codeblock-copy");
+    expect(html).not.toContain("wardmote-markdown-codeblock-copy");
   });
 
   it("renders internal issue links and bare identifiers as inline issue refs", () => {
@@ -691,8 +691,8 @@ describe("MarkdownBody", () => {
     expect(html).toContain('href="/issues/PAP-42"');
     expect(html).toContain('href="/issues/PAP-77"');
     expect(html).toContain('data-mention-kind="issue"');
-    expect(html).toContain("paperclip-markdown-issue-ref");
-    expect(html).not.toContain("paperclip-mention-chip--issue");
+    expect(html).toContain("wardmote-markdown-issue-ref");
+    expect(html).not.toContain("wardmote-mention-chip--issue");
   });
 
   it("gates bare-identifier auto-linking to known company prefixes", () => {
@@ -781,7 +781,7 @@ describe("MarkdownBody plain agent name mentions", () => {
     const structured = renderWithAgents(`[@Yoga (Apollo Runtime Dev)](${buildAgentMentionHref(YOGA_DEV)}) bila Arif sudah siap`);
     expect(plain).toContain(`href="/agents/${YOGA_DEV}"`);
     expect(plain).toContain('data-mention-kind="agent"');
-    expect(plain).toContain("paperclip-mention-chip--agent");
+    expect(plain).toContain("wardmote-mention-chip--agent");
     expect(plain).toContain(">@Yoga (Apollo Runtime Dev)</a> bila Arif");
     expect(plain).toBe(structured);
   });

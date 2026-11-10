@@ -54,9 +54,9 @@ function Section({
   children: ReactNode;
 }) {
   return (
-    <section className="paperclip-story__frame overflow-hidden">
+    <section className="wardmote-story__frame overflow-hidden">
       <div className="border-b border-line px-5 py-4">
-        <div className="paperclip-story__label">{eyebrow}</div>
+        <div className="wardmote-story__label">{eyebrow}</div>
         <h2 className="mt-1 text-xl font-semibold">{title}</h2>
       </div>
       <div className="p-5">{children}</div>
@@ -256,7 +256,7 @@ function GoalPropertiesMatrix() {
         <div className="rounded-lg border border-line bg-bg p-5">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <div className="paperclip-story__label">Goal detail composition</div>
+              <div className="wardmote-story__label">Goal detail composition</div>
               <h3 className="mt-2 text-xl font-semibold">{selectedGoal.title}</h3>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-ink-3">{selectedGoal.description}</p>
             </div>
@@ -299,7 +299,7 @@ function GoalTreeMatrix() {
         />
       </div>
       <div className="rounded-lg border border-line bg-bg p-4">
-        <div className="paperclip-story__label">Selected goal</div>
+        <div className="wardmote-story__label">Selected goal</div>
         {selectedGoal ? (
           <div className="mt-3 space-y-3">
             <div>
@@ -446,12 +446,12 @@ function WorktreeBannerMatrix() {
 function ProjectsGoalsWorkspacesStories() {
   return (
     <StorybookData>
-      <div className="paperclip-story">
-        <main className="paperclip-story__inner space-y-6">
-          <section className="paperclip-story__frame p-6">
+      <div className="wardmote-story">
+        <main className="wardmote-story__inner space-y-6">
+          <section className="wardmote-story__frame p-6">
             <div className="flex flex-wrap items-start justify-between gap-5">
               <div>
-                <div className="paperclip-story__label">Projects, goals, and workspaces</div>
+                <div className="wardmote-story__label">Projects, goals, and workspaces</div>
                 <h1 className="mt-2 text-3xl font-semibold tracking-tight">Hierarchical planning and runtime surfaces</h1>
                 <p className="mt-3 max-w-3xl text-sm leading-6 text-ink-3">
                   Fixture-backed project and goal stories cover editable project properties, local and remote workspace

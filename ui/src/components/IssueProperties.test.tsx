@@ -3285,7 +3285,7 @@ describe("IssueProperties", () => {
     expect(pullRequestLink?.textContent).not.toContain("acme/web#241");
     expect(pullRequestLink?.textContent).not.toContain("Github PR");
     expect(pullRequestLink?.querySelectorAll("svg")).toHaveLength(1);
-    expect(pullRequestLink?.className).not.toContain("paperclip-mention-chip");
+    expect(pullRequestLink?.className).not.toContain("wardmote-mention-chip");
     expect(pullRequestLink?.className).not.toContain("rounded-full");
     expect(pullRequestLink?.className).not.toContain("border");
     const unrefreshedPullRequestLink = Array.from(container.querySelectorAll("a"))

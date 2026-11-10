@@ -1089,7 +1089,7 @@ const IssueChatTextPart = memo(function IssueChatTextPart({
     <WorkspaceFileMarkdownBody
       className={cn(
         "text-sm leading-6",
-        onAccent && "paperclip-markdown-on-accent",
+        onAccent && "wardmote-markdown-on-accent",
       )}
       style={recessed ? { opacity: 0.55 } : undefined}
       softBreaks

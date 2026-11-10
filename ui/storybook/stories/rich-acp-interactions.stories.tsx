@@ -24,7 +24,7 @@ import { storybookAgentMap } from "../fixtures/wardmoteData";
 // Production components and production projection, with callbacks kept in memory.
 // No provider, runner, or control-plane mutation is made by these stories.
 function Frame({ children }: { children: ReactNode }) {
-  return <div className="paperclip-story"><main className="paperclip-story__inner space-y-6">{children}</main></div>;
+  return <div className="wardmote-story"><main className="wardmote-story__inner space-y-6">{children}</main></div>;
 }
 
 const questionSet: WardmoteQuestionSet = {

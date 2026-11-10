@@ -54,9 +54,9 @@ function Section({
   children: ReactNode;
 }) {
   return (
-    <section className="paperclip-story__frame overflow-hidden">
+    <section className="wardmote-story__frame overflow-hidden">
       <div className="border-b border-line px-5 py-4">
-        <div className="paperclip-story__label">{eyebrow}</div>
+        <div className="wardmote-story__label">{eyebrow}</div>
         <h2 className="mt-1 text-xl font-semibold">{title}</h2>
       </div>
       <div className="p-5">{children}</div>
@@ -206,7 +206,7 @@ const agentManagementAgents: Agent[] = [
     pausedAt: null,
     adapterConfig: {
       webhookUrl: "https://ops.internal.example/heartbeat",
-      payloadTemplateJson: JSON.stringify({ channel: "paperclip-storybook", priority: "normal" }, null, 2),
+      payloadTemplateJson: JSON.stringify({ channel: "wardmote-storybook", priority: "normal" }, null, 2),
       env: {
         OPS_WEBHOOK_TOKEN: { type: "secret_ref", secretId: "secret-ops-webhook", version: 3 },
       } satisfies Record<string, EnvBinding>,
@@ -714,12 +714,12 @@ function ConfigPrimitivesStory() {
 function AgentManagementStories() {
   return (
     <StorybookQueryFixtures>
-      <div className="paperclip-story">
-        <main className="paperclip-story__inner space-y-6">
-          <section className="paperclip-story__frame p-6">
+      <div className="wardmote-story">
+        <main className="wardmote-story__inner space-y-6">
+          <section className="wardmote-story__frame p-6">
             <div className="flex flex-wrap items-start justify-between gap-5">
               <div>
-                <div className="paperclip-story__label">Agent management</div>
+                <div className="wardmote-story__label">Agent management</div>
                 <h1 className="mt-2 text-3xl font-semibold tracking-tight">Agent details, controls, and config surfaces</h1>
                 <p className="mt-3 max-w-3xl text-sm leading-6 text-ink-3">
                   Management stories exercise the dense pieces of the agent lifecycle: status detail panels,

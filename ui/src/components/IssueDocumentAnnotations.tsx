@@ -278,7 +278,7 @@ export function IssueDocumentAnnotations({
   const content = (
     <div
       className={cn(
-        "paperclip-doc-annotation-host relative",
+        "wardmote-doc-annotation-host relative",
         // Docked desktop gutter: lay the doc and the comment column side by side
         // so the panel is part of the document's scroll flow (Google-Docs style).
         showDesktopGutter && "lg:flex lg:items-stretch lg:gap-6",

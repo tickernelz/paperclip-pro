@@ -51,10 +51,10 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="paperclip-story__frame overflow-hidden">
+    <section className="wardmote-story__frame overflow-hidden">
       <div className="flex flex-wrap items-start justify-between gap-3 border-b border-line px-5 py-4">
         <div>
-          <div className="paperclip-story__label">{eyebrow}</div>
+          <div className="wardmote-story__label">{eyebrow}</div>
           <h2 className="mt-1 text-xl font-semibold">{title}</h2>
         </div>
       </div>
@@ -851,8 +851,8 @@ function IssueChatMatrix() {
 
 function IssueThreadNoticeReview() {
   return (
-    <div className="paperclip-story">
-      <main className="paperclip-story__inner max-w-4xl">
+    <div className="wardmote-story">
+      <main className="wardmote-story__inner max-w-4xl">
         <Section eyebrow="IssueChatThread" title="Workspace changes and stale disposition notices">
           <div className="rounded-lg border border-line bg-bg/70 p-4">
             <IssueChatThread
@@ -945,8 +945,8 @@ function compactRecoveryComments(expanded: boolean): IssueChatComment[] {
 
 function CompactRecoveryNoticeReview() {
   return (
-    <div className="paperclip-story">
-      <main className="paperclip-story__inner max-w-4xl space-y-6">
+    <div className="wardmote-story">
+      <main className="wardmote-story__inner max-w-4xl space-y-6">
         <Section eyebrow="IssueChatThread" title="Compact recovery notices — collapsed">
           <div className="rounded-lg border border-line bg-bg/70 p-4">
             <IssueChatThread
@@ -992,10 +992,10 @@ function CompactRecoveryNoticeReview() {
 
 function ChatCommentsStories() {
   return (
-    <div className="paperclip-story">
-      <main className="paperclip-story__inner space-y-6">
-        <section className="paperclip-story__frame p-6">
-          <div className="paperclip-story__label">Chat & Comments</div>
+    <div className="wardmote-story">
+      <main className="wardmote-story__inner space-y-6">
+        <section className="wardmote-story__frame p-6">
+          <div className="wardmote-story__label">Chat & Comments</div>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight">Threaded work conversations</h1>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-ink-3">
             Fixture-backed coverage for classic issue comments, embedded run chat, and the assistant-style issue chat
@@ -1033,8 +1033,8 @@ export const FullSurfaceMatrix: Story = {};
 
 export const CommentThreads: Story = {
   render: () => (
-    <div className="paperclip-story">
-      <main className="paperclip-story__inner">
+    <div className="wardmote-story">
+      <main className="wardmote-story__inner">
         <CommentThreadMatrix />
       </main>
     </div>
@@ -1043,8 +1043,8 @@ export const CommentThreads: Story = {
 
 export const LiveRunChat: Story = {
   render: () => (
-    <div className="paperclip-story">
-      <main className="paperclip-story__inner">
+    <div className="wardmote-story">
+      <main className="wardmote-story__inner">
         <RunChatMatrix />
       </main>
     </div>
@@ -1053,8 +1053,8 @@ export const LiveRunChat: Story = {
 
 export const IssueChatWithTimeline: Story = {
   render: () => (
-    <div className="paperclip-story">
-      <main className="paperclip-story__inner">
+    <div className="wardmote-story">
+      <main className="wardmote-story__inner">
         <IssueChatMatrix />
       </main>
     </div>

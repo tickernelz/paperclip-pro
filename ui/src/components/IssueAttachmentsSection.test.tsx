@@ -147,7 +147,7 @@ describe("IssueAttachmentsSection", () => {
       expect(container.querySelector('[data-testid="fold-curtain"]')).toBeTruthy();
       const markdownBody = container.querySelector('[data-testid="markdown-body"]');
       expect(markdownBody?.textContent).toContain("Imported plan");
-      expect(markdownBody?.className).toContain("paperclip-edit-in-place-content");
+      expect(markdownBody?.className).toContain("wardmote-edit-in-place-content");
     });
   });
 

@@ -2044,7 +2044,7 @@ function StreamlinedIssuesList({
   const IssuesToolbar = toolbarPresentation === "collection" ? CollectionToolbar : LegacyIssuesToolbar;
 
   return (
-    <div ref={rootRef} className="paperclip-issue-list space-y-4">
+    <div ref={rootRef} className="wardmote-issue-list space-y-4">
       {progressSummary ? (
         <SubIssueProgressSummaryStrip
           summary={progressSummary}
@@ -2055,7 +2055,7 @@ function StreamlinedIssuesList({
 
       {/* Toolbar */}
       <IssuesToolbar
-        className="paperclip-task-list-toolbar"
+        className="wardmote-task-list-toolbar"
         ariaLabel={toolbarPresentation === "collection" ? "Task controls" : undefined}
         context={toolbarContext ? (
           <div className="flex min-w-0 items-center gap-2">
@@ -2516,7 +2516,7 @@ function StreamlinedIssuesList({
                       // Canonical rows use the same tree-guide slots at every width.
                       className={cn(
                         rowPresentation === "legacy" && depth > 0 && MOBILE_TREE_INDENT[Math.min(depth, MOBILE_TREE_INDENT.length - 1)],
-                        useDeferredRowRendering && "paperclip-issue-list-row-deferred",
+                        useDeferredRowRendering && "wardmote-issue-list-row-deferred",
                       ) || undefined}
                     >
                       <IssueRow

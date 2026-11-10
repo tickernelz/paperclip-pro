@@ -59,7 +59,7 @@ async function setup(page: Page, request: APIRequestContext) {
       exact: true,
     }),
   ).toBeVisible();
-  const composer = page.locator(".paperclip-task-chat-composer");
+  const composer = page.locator(".wardmote-task-chat-composer");
   const editor = composer.getByRole("textbox", {
     name: "editable markdown",
     exact: true,

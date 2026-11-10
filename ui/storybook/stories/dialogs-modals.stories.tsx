@@ -265,9 +265,9 @@ function Section({
   children: ReactNode;
 }) {
   return (
-    <section className="paperclip-story__frame overflow-hidden">
+    <section className="wardmote-story__frame overflow-hidden">
       <div className="border-b border-line px-5 py-4">
-        <div className="paperclip-story__label">{eyebrow}</div>
+        <div className="wardmote-story__label">{eyebrow}</div>
         <div className="mt-1 flex flex-wrap items-end justify-between gap-3">
           <div>
             <h2 className="text-xl font-semibold">{title}</h2>
@@ -284,8 +284,8 @@ function Section({
 
 function StoryShell({ children }: { children: ReactNode }) {
   return (
-    <div className="paperclip-story">
-      <main className="paperclip-story__inner space-y-6">{children}</main>
+    <div className="wardmote-story">
+      <main className="wardmote-story__inner space-y-6">{children}</main>
     </div>
   );
 }

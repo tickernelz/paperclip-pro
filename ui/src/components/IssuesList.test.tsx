@@ -2086,8 +2086,8 @@ describe("IssuesList", () => {
       const childRow = rows.find((row) => row.textContent?.includes("Child issue"));
       expect(parentRow).not.toBeUndefined();
       expect(childRow).not.toBeUndefined();
-      expect(parentRow?.parentElement?.classList.contains("paperclip-issue-list-row-deferred")).toBe(false);
-      expect(childRow?.parentElement?.classList.contains("paperclip-issue-list-row-deferred")).toBe(true);
+      expect(parentRow?.parentElement?.classList.contains("wardmote-issue-list-row-deferred")).toBe(false);
+      expect(childRow?.parentElement?.classList.contains("wardmote-issue-list-row-deferred")).toBe(true);
     });
 
     act(() => {

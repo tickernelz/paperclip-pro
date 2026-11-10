@@ -67,8 +67,8 @@ function HydratedSection({
   if (!ready) return null;
 
   return (
-    <div className="paperclip-story">
-      <main className="paperclip-story__inner">
+    <div className="wardmote-story">
+      <main className="wardmote-story__inner">
         <div className="mx-auto max-w-3xl rounded-2xl border border-line bg-bg/95 p-6 shadow-sm">
           <IssuePlanDecompositionsSection
             issueId={issueId}

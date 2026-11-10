@@ -49,8 +49,8 @@ const companyId = "company-storybook";
 
 function StoryShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="paperclip-story">
-      <main className="paperclip-story__inner space-y-6">{children}</main>
+    <div className="wardmote-story">
+      <main className="wardmote-story__inner space-y-6">{children}</main>
     </div>
   );
 }
@@ -65,9 +65,9 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="paperclip-story__frame overflow-hidden">
+    <section className="wardmote-story__frame overflow-hidden">
       <div className="border-b border-line px-5 py-4">
-        <div className="paperclip-story__label">{eyebrow}</div>
+        <div className="wardmote-story__label">{eyebrow}</div>
         <h2 className="mt-1 text-xl font-semibold">{title}</h2>
       </div>
       <div className="p-5">{children}</div>

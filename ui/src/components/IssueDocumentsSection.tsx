@@ -862,7 +862,7 @@ export function IssueDocumentsSection({
 
   const documentBodyShellClassName = "mt-3";
   const documentBodyPaddingClassName = "";
-  const documentBodyContentClassName = "paperclip-edit-in-place-content min-h-(--sz-220px) text-sm leading-7";
+  const documentBodyContentClassName = "wardmote-edit-in-place-content min-h-(--sz-220px) text-sm leading-7";
   const toggleFoldedDocument = (key: string) => {
     setFoldedDocumentKeys((current) =>
       current.includes(key)
