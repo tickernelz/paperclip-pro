@@ -35,8 +35,8 @@
       "runnerDiagnostic": "capability_live_usage_missing",
       "interpretation": "Native entitlement denial text was followed by normal ACP completion; missing usage then masked the semantic failure. This attempt is not a pass.",
       "networkEvidence": {
-        "childWardmoteEnvironmentKeys": [],
-        "realWardmoteRequests": 0
+        "childPaperclipEnvironmentKeys": [],
+        "realPaperclipRequests": 0
       },
       "cleanup": {
         "runnerExited": true,
@@ -126,8 +126,8 @@
       ],
       "scoreDigest": "sha256:0e39e3067a928b9ff4da7a70426f2e643bf9e869bbee514de8dd6a3661bc0942",
       "networkEvidence": {
-        "childWardmoteEnvironmentKeys": [],
-        "realWardmoteRequests": 0
+        "childPaperclipEnvironmentKeys": [],
+        "realPaperclipRequests": 0
       },
       "cleanup": {
         "runnerExited": true,

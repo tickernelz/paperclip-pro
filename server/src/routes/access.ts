@@ -224,7 +224,7 @@ function parseSkillFrontmatter(markdown: string): { description: string } {
 interface AvailableSkill {
   name: string;
   description: string;
-  isWardmoteManaged: boolean;
+  isPaperclipManaged: boolean;
 }
 
 /** Discover all available Claude Code skills from CLAUDE_HOME or ~/.claude. */
@@ -266,7 +266,7 @@ function listAvailableSkills(): AvailableSkill[] {
       skills.push({
         name: entry.name,
         description,
-        isWardmoteManaged: paperclipSkillNames.has(entry.name),
+        isPaperclipManaged: paperclipSkillNames.has(entry.name),
       });
     }
   } catch { /* Claude skills directory doesn't exist */ }
@@ -285,7 +285,7 @@ function listAvailableSkills(): AvailableSkill[] {
         skills.push({
           name: entry.name,
           description,
-          isWardmoteManaged: true,
+          isPaperclipManaged: true,
         });
       }
     } catch { /* skip Paperclip skills directory */ }

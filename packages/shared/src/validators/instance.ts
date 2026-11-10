@@ -216,7 +216,7 @@ export const instanceExperimentalSettingsSchema = z.object({
   enableFastResponses: z.boolean().default(false),
   enableGoalsSidebarLink: z.boolean().default(false),
   enableServerInfoDebugView: z.boolean().default(false),
-  enableWardmoteDeveloperMode: z.boolean().default(false),
+  enablePaperclipDeveloperMode: z.boolean().default(false),
   enableSimplifiedEnglishInteractions: z.boolean().default(false),
   enableFirstTaskPlanProposal: z.boolean().default(false),
   enablePixelsOffice: z.boolean().default(false),

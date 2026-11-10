@@ -18,7 +18,7 @@ route are unchanged:
     "type": "tailscale_https",
     "hostname": "auto",
     "publicPort": "same",
-    "includeWardmoteViteHmr": true,
+    "includePaperclipViteHmr": true,
     "failurePolicy": "fail_closed"
   }
 }

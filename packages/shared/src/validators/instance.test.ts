@@ -34,10 +34,10 @@ describe("instance experimental settings validators", () => {
   });
 
   it("defaults Paperclip developer mode off and accepts explicit patches", () => {
-    expect(instanceExperimentalSettingsSchema.parse({}).enableWardmoteDeveloperMode).toBe(false);
+    expect(instanceExperimentalSettingsSchema.parse({}).enablePaperclipDeveloperMode).toBe(false);
     expect(
-      patchInstanceExperimentalSettingsSchema.parse({ enableWardmoteDeveloperMode: true }),
-    ).toEqual({ enableWardmoteDeveloperMode: true });
+      patchInstanceExperimentalSettingsSchema.parse({ enablePaperclipDeveloperMode: true }),
+    ).toEqual({ enablePaperclipDeveloperMode: true });
   });
 
   it("strips retired watchdog and liveness auto-recovery settings", () => {

@@ -104,8 +104,8 @@ describe("resolveDeclaredRuntimeExposureConfig", () => {
 
   it("honors an explicit sub-field override", () => {
     expect(
-      resolveDeclaredRuntimeExposureConfig({ type: "tailscale_https", includeWardmoteViteHmr: false }),
-    ).toEqual({ ...DEFAULT_TAILSCALE_HTTPS_EXPOSURE, includeWardmoteViteHmr: false });
+      resolveDeclaredRuntimeExposureConfig({ type: "tailscale_https", includePaperclipViteHmr: false }),
+    ).toEqual({ ...DEFAULT_TAILSCALE_HTTPS_EXPOSURE, includePaperclipViteHmr: false });
   });
 
   it("still rejects smuggled fields and invalid sub-field values", () => {

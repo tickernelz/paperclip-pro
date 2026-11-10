@@ -690,7 +690,7 @@ function discoverAwsProviderConfigCandidates(input: {
   };
 
   const skippedWarnings: string[] = [];
-  let skippedForeignWardmoteSampleCount = 0;
+  let skippedForeignPaperclipSampleCount = 0;
   const samples: DiscoverySample[] = [];
 
   for (const entry of input.entries) {
@@ -700,7 +700,7 @@ function discoverAwsProviderConfigCandidates(input: {
     const paperclipManaged = tagValue(tags, ["paperclip:managed-by"])?.toLowerCase() === "paperclip";
     const paperclipCompanyId = tagValue(tags, ["paperclip:company-id"]);
     if (paperclipManaged && paperclipCompanyId !== input.companyId) {
-      skippedForeignWardmoteSampleCount += 1;
+      skippedForeignPaperclipSampleCount += 1;
       continue;
     }
     const path = inferPathSignals(entry, tags);
@@ -718,9 +718,9 @@ function discoverAwsProviderConfigCandidates(input: {
     });
   }
 
-  if (skippedForeignWardmoteSampleCount > 0) {
+  if (skippedForeignPaperclipSampleCount > 0) {
     skippedWarnings.push(
-      `Skipped ${skippedForeignWardmoteSampleCount} Paperclip-managed AWS secret sample(s) that were not tagged for this company.`,
+      `Skipped ${skippedForeignPaperclipSampleCount} Paperclip-managed AWS secret sample(s) that were not tagged for this company.`,
     );
   }
 
@@ -799,7 +799,7 @@ function discoverAwsProviderConfigCandidates(input: {
           hasKmsKey: kmsKeys.length > 0,
           sampleCount: group.length,
           paperclipManagedSampleCount: group.filter((sample) => sample.paperclipManaged).length,
-          skippedForeignWardmoteSampleCount,
+          skippedForeignPaperclipSampleCount,
         },
         warnings: candidateWarnings,
       };
@@ -817,7 +817,7 @@ function discoverAwsProviderConfigCandidates(input: {
     provider: "aws_secrets_manager",
     nextToken: input.nextToken,
     sampledSecretCount: samples.length,
-    skippedForeignWardmoteSampleCount,
+    skippedForeignPaperclipSampleCount,
     candidates,
     warnings,
   };

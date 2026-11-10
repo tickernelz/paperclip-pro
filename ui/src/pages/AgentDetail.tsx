@@ -3439,7 +3439,7 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
     queryFn: () => instanceSettingsApi.getExperimental(),
   });
   const paperclipDeveloperMode =
-    experimentalSettings?.enableWardmoteDeveloperMode === true;
+    experimentalSettings?.enablePaperclipDeveloperMode === true;
   const { data: providerTraceRows } = useQuery({
     queryKey: queryKeys.providerTraceMetadata(run.companyId, [run.id]),
     queryFn: () => heartbeatsApi.providerTraceMetadata(run.companyId, [run.id]),

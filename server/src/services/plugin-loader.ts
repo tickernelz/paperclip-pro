@@ -1047,7 +1047,7 @@ function compareSemver(left: string, right: string): number {
 }
 
 function getMinimumHostVersion(manifest: WardmotePluginManifestV1): string | undefined {
-  return manifest.minimumHostVersion ?? manifest.minimumWardmoteVersion;
+  return manifest.minimumHostVersion ?? manifest.minimumPaperclipVersion;
 }
 
 /**

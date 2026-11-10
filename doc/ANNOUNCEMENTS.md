@@ -36,7 +36,7 @@ The shared `announcementManifestSchema` defines the format:
 Content is plain text. Every manifest object rejects unknown fields, including
 misspellings in actions and media. Optional fields: `image: { path, alt }`,
 `animation: { path, alt }`, `expiresAt` (ISO
-timestamp), and `minimumWardmoteVersion` (stable `major.minor.patch`). Internal
+timestamp), and `minimumPaperclipVersion` (stable `major.minor.patch`). Internal
 actions accept stable pages in `ANNOUNCEMENT_APP_ROUTES` and use the selected
 company. External HTTPS links open a new tab. Actions only navigate.
 

@@ -323,7 +323,7 @@ export interface WardmotePluginManifestV1 {
   categories: Array<"connector" | "workspace" | "automation" | "ui">;
   minimumHostVersion?: string;
   /** @deprecated Use `minimumHostVersion` instead. Retained for backwards compatibility. */
-  minimumWardmoteVersion?: string;
+  minimumPaperclipVersion?: string;
   capabilities: string[];
   entrypoints: {
     worker: string;
@@ -385,7 +385,7 @@ Rules:
 - `id` must be globally unique
 - `id` should normally equal the npm package name
 - `apiVersion` must match the host-supported plugin API version
-- `minimumHostVersion` is preferred, with `minimumWardmoteVersion` retained for
+- `minimumHostVersion` is preferred, with `minimumPaperclipVersion` retained for
   backwards compatibility
 - `capabilities` must be static and install-time visible
 - config schema must be JSON Schema compatible

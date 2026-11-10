@@ -214,7 +214,7 @@ export const INSTANCE_FEATURE_CATALOG: Record<InstanceFeatureKey, FeatureCatalog
       "Show a Server section in the account drawer with the current server restart time and running commit.",
     selfHostedDefault: false,
   },
-  enableWardmoteDeveloperMode: {
+  enablePaperclipDeveloperMode: {
     title: "Wardmote Developer Mode",
     description:
       "Show internal Wardmote maintainer tools and observability links, including Honeycomb trace queries on run pages.",
@@ -550,7 +550,7 @@ export const INSTANCE_FEATURE_PLACEMENT: Record<InstanceFeatureKey, FeaturePlace
     requires: [],
     finished: false,
   },
-  enableWardmoteDeveloperMode: {
+  enablePaperclipDeveloperMode: {
     destination: "advanced",
     group: "developer",
     name: "Developer mode",

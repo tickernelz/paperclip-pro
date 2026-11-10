@@ -2214,9 +2214,9 @@ Duplicate headings receive stable suffixes.
     const harness = createTestHarness({
       manifest,
       config: {
-        maxWardmoteRoutineRunCostCents: 1,
-        maxWardmoteDistillationTaskCostCents: 1,
-        maxWardmoteDistillationProjectCostCents: 1,
+        maxPaperclipRoutineRunCostCents: 1,
+        maxPaperclipDistillationTaskCostCents: 1,
+        maxPaperclipDistillationProjectCostCents: 1,
         paperclipCostCentsPerThousandSourceCharacters: 100,
       },
     });

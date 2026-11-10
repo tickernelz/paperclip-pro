@@ -3673,7 +3673,7 @@ describeEmbeddedPostgres("secretService", () => {
       provider: "aws_secrets_manager",
       nextToken: null,
       sampledSecretCount: 1,
-      skippedForeignWardmoteSampleCount: 0,
+      skippedForeignPaperclipSampleCount: 0,
       candidates: [
         {
           provider: "aws_secrets_manager",
@@ -3699,7 +3699,7 @@ describeEmbeddedPostgres("secretService", () => {
             hasKmsKey: false,
             sampleCount: 1,
             paperclipManagedSampleCount: 0,
-            skippedForeignWardmoteSampleCount: 0,
+            skippedForeignPaperclipSampleCount: 0,
           },
           warnings: [],
         },

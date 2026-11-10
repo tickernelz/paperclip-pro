@@ -7197,7 +7197,7 @@ describeEmbeddedPostgres("workspace runtime service control persistence", () => 
             type: "tailscale_https",
             hostname: "auto",
             publicPort: "same",
-            includeWardmoteViteHmr: true,
+            includePaperclipViteHmr: true,
             failurePolicy: "fail_closed",
           },
           lifecycle: "shared",

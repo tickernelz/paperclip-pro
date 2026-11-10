@@ -1173,8 +1173,8 @@ describe("Capability live runnerd and Codex session", () => {
     expect(first.snapshot.evidence.some((entry) => entry.kind === "tool_call")).toBe(true);
     expect(first.snapshot.evidence.some((entry) => entry.kind === "tool_result")).toBe(true);
     expect(first.snapshot.networkEvidence).toEqual({
-      realWardmoteRequests: 0,
-      childWardmoteEnvironmentKeys: [],
+      realPaperclipRequests: 0,
+      childPaperclipEnvironmentKeys: [],
     });
     expect(fetchSpy).not.toHaveBeenCalled();
     fetchSpy.mockRestore();

@@ -28,7 +28,7 @@ const CONFIG = {
   type: "tailscale_https" as const,
   hostname: "auto" as const,
   publicPort: "same" as const,
-  includeWardmoteViteHmr: true,
+  includePaperclipViteHmr: true,
   failurePolicy: "fail_closed" as const,
 };
 
@@ -226,7 +226,7 @@ describe("provisionExposure", () => {
     });
     const { status } = await provisionExposure(deps(broker, async () => true), {
       runtimeId: RUNTIME_ID,
-      config: { ...CONFIG, includeWardmoteViteHmr: false },
+      config: { ...CONFIG, includePaperclipViteHmr: false },
       handle: HANDLE,
       hostname: HOSTNAME,
       appPort: APP_PORT,

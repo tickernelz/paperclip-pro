@@ -740,7 +740,7 @@ export type PluginObjectReferenceProviderDeclarationInput = z.infer<
  * | `author`                 | string     | 1–200 chars                                  |
  * | `categories`             | enum[]     | at least one; values from PLUGIN_CATEGORIES  |
  * | `minimumHostVersion`     | string?    | semver lower bound if present, no leading `v`|
- * | `minimumWardmoteVersion`| string?    | legacy alias of `minimumHostVersion`         |
+ * | `minimumPaperclipVersion`| string?    | legacy alias of `minimumHostVersion`         |
  * | `capabilities`           | enum[]     | at least one; values from PLUGIN_CAPABILITIES|
  * | `entrypoints.worker`     | string     | min 1 char                                   |
  * | `entrypoints.ui`         | string?    | required when `ui.slots` is declared         |
@@ -780,9 +780,9 @@ export const pluginManifestV1Schema = z.object({
     /^\d+\.\d+\.\d+(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$/,
     "minimumHostVersion must follow semver (e.g. 1.0.0)",
   ).optional(),
-  minimumWardmoteVersion: z.string().regex(
+  minimumPaperclipVersion: z.string().regex(
     /^\d+\.\d+\.\d+(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$/,
-    "minimumWardmoteVersion must follow semver (e.g. 1.0.0)",
+    "minimumPaperclipVersion must follow semver (e.g. 1.0.0)",
   ).optional(),
   capabilities: z.array(z.union([z.enum(PLUGIN_CAPABILITIES), z.literal(REMOVED_AI_CONNECTION_ROUTE_CAPABILITY)])).min(1)
     .transform((capabilities) => capabilities.filter((capability): capability is PluginCapability => capability !== REMOVED_AI_CONNECTION_ROUTE_CAPABILITY)),
@@ -829,12 +829,12 @@ export const pluginManifestV1Schema = z.object({
 
   if (
     manifest.minimumHostVersion
-    && manifest.minimumWardmoteVersion
-    && manifest.minimumHostVersion !== manifest.minimumWardmoteVersion
+    && manifest.minimumPaperclipVersion
+    && manifest.minimumHostVersion !== manifest.minimumPaperclipVersion
   ) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: "minimumHostVersion and minimumWardmoteVersion must match when both are declared",
+      message: "minimumHostVersion and minimumPaperclipVersion must match when both are declared",
       path: ["minimumHostVersion"],
     });
   }

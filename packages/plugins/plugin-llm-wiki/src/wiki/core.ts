@@ -645,14 +645,14 @@ async function resolveWardmoteDistillationLimits(
   const config = await ctx.config.get(input.companyId) as Record<string, unknown>;
   const maxCharactersPerSource = Math.min(
     normalizeBundleLimit(input.maxCharactersPerSource, DEFAULT_MAX_WARDMOTE_ISSUE_SOURCE_CHARS),
-    normalizeBundleLimit(config.maxWardmoteIssueSourceCharacters, DEFAULT_MAX_WARDMOTE_ISSUE_SOURCE_CHARS),
+    normalizeBundleLimit(config.maxPaperclipIssueSourceCharacters, DEFAULT_MAX_WARDMOTE_ISSUE_SOURCE_CHARS),
   );
   const cursorWindowCap = normalizeBundleLimit(
-    config.maxWardmoteCursorWindowCharacters,
+    config.maxPaperclipCursorWindowCharacters,
     DEFAULT_MAX_WARDMOTE_CURSOR_WINDOW_CHARS,
   );
   const routineRunCap = normalizeBundleLimit(
-    config.maxWardmoteRoutineRunCharacters,
+    config.maxPaperclipRoutineRunCharacters,
     DEFAULT_MAX_WARDMOTE_ROUTINE_RUN_CHARS,
   );
   const requestedMaxCharacters = normalizeBundleLimit(input.maxCharacters, cursorWindowCap);

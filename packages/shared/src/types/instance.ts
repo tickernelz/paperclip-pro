@@ -240,7 +240,7 @@ export interface InstanceExperimentalSettings {
   enableGoalsSidebarLink: boolean;
   enableServerInfoDebugView: boolean;
   /** Shows internal Paperclip maintainer tools and observability links. */
-  enableWardmoteDeveloperMode: boolean;
+  enablePaperclipDeveloperMode: boolean;
   /**
    * Instructs agents to write user-interaction content (confirmations,
    * questions, suggested tasks, checkbox prompts) in ASD-STE100 Simplified

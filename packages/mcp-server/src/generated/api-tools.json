@@ -48251,6 +48251,9 @@
           "enableOwnerInstanceAdmin": {
             "type": "boolean"
           },
+          "enablePaperclipDeveloperMode": {
+            "type": "boolean"
+          },
           "enablePipelines": {
             "type": "boolean"
           },
@@ -48285,9 +48288,6 @@
             "type": "boolean"
           },
           "enableSummaries": {
-            "type": "boolean"
-          },
-          "enableWardmoteDeveloperMode": {
             "type": "boolean"
           },
           "enableWorkspaceBranchReconcileForward": {
