@@ -51,6 +51,7 @@ import { cliVersion } from "./version.js";
 import { installCommand } from "./commands/install.js";
 import { uninstallCommand } from "./commands/uninstall.js";
 import { migrateHomeCommand } from "./commands/migrate-home.js";
+import { migrateNamesCommand } from "./commands/migrate-names.js";
 import { updateCommand } from "./commands/update.js";
 import { registerServiceCommands } from "./commands/service.js";
 import { registerConnectionIntentCommands } from "./commands/client/connections.js";
@@ -92,6 +93,14 @@ program
   .description("Move an existing ~/.paperclip-pro home to ~/.wardmote; stop the service first")
   .option("--dry-run", "Print what would move without changing anything")
   .action((options: { dryRun?: boolean }) => migrateHomeCommand(options));
+
+program
+  .command("migrate-names")
+  .description("Rewrite retired product names in agent instructions and stored agent text")
+  .option("-c, --config <path>", "Path to config file")
+  .option("--dry-run", "List what would change without writing")
+  .option("--json", "Print the report as JSON")
+  .action((options: { config?: string; dryRun?: boolean; json?: boolean }) => migrateNamesCommand(options));
 
 program
   .command("update")

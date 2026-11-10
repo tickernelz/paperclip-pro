@@ -128,6 +128,8 @@ import {
 } from "./shutdown.js";
 import { systemdNotify } from "./services/systemd-notify.js";
 import { flushInFlightRunLogMirrors } from "./services/run-log-store.js";
+import { migrateRetiredNames } from "./services/retired-name-migration.js";
+export { migrateRetiredNames } from "./services/retired-name-migration.js";
 import { getMaxAttachmentBytes } from "./attachment-types.js";
 import { setPaperclipBridgeAttachmentMaxBytesSource } from "@tickernelz/wardmote-adapter-utils/execution-target";
 import {
@@ -651,6 +653,14 @@ async function startServerWithDatabaseTeardown(
     await Promise.all(clients.map((client) => endDatabaseClient(client, 5)));
   };
   startupDatabase.close = closeDatabaseClients;
+
+  const retiredNames = await migrateRetiredNames(db);
+  if (retiredNames.files.length > 0 || retiredNames.rows.length > 0) {
+    logger.info(
+      { files: retiredNames.files.length, rows: retiredNames.rows.length, backupDir: retiredNames.backupDir },
+      "Rewrote retired product names in agent instructions and stored agent text",
+    );
+  }
   
 
   if (config.deploymentMode === "local_trusted" && !isLoopbackHost(config.host)) {
