@@ -220,7 +220,7 @@ describe("durable Dot Runner integration", () => {
       const intake = await db.select().from(issues).where(eq(issues.id, requests[0]!.issueId));
       expect(intake).toHaveLength(1);
       expect(intake[0]).toMatchObject({ assigneeAgentId: f.agent.id, createdByAgentId: f.agent.id, responsibleUserId: f.userId });
-      expect(await f.broker.capabilities(f.principal)).toMatchObject({ agentId: f.agent.id, responsibleUser: { id: f.userId }, idle: { start: "paperclip_dot_request_turn" } });
+      expect(await f.broker.capabilities(f.principal)).toMatchObject({ agentId: f.agent.id, responsibleUser: { id: f.userId }, idle: { start: "wardmote_dot_request_turn" } });
       await expect(f.broker.requestTurn(f.principal, "Different request", requestId)).rejects.toThrow("reused");
       await db.update(companies).set({ budgetMonthlyCents: 1, spentMonthlyCents: 1 }).where(eq(companies.id, f.company.id));
       await expect(f.broker.requestTurn(f.principal, "Spend more", randomUUID())).rejects.toThrow("budget");
@@ -474,7 +474,7 @@ describe("durable Dot Runner integration", () => {
       const fences = inbox.items.filter(item => item.assignmentId === assignment.id && item.kind === "authority_revoked");
       expect(fences).toHaveLength(1);
       expect(fences[0]?.references).toMatchObject({ assignmentId: assignment.id, runId: run.id, externalStopConfirmed: false });
-      await expect(createDotRunnerMcpTools(db).callTool(f.principal, "paperclip_dot_accept", { assignmentId: assignment.id, requestId: randomUUID() })).rejects.toThrow("revoked");
+      await expect(createDotRunnerMcpTools(db).callTool(f.principal, "wardmote_dot_accept", { assignmentId: assignment.id, requestId: randomUUID() })).rejects.toThrow("revoked");
     } finally { await f.events.unsubscribe(f.principal, f.subscription); await f.events.stop(); }
   }, 30000);
 
@@ -494,13 +494,13 @@ describe("durable Dot Runner integration", () => {
     const tools = createDotRunnerMcpTools(db);
     await f.events.tick();
     expect(f.received.at(-1)?.data.kind).toBe("authority_revoked");
-    const inbox = await tools.callTool(principal, "paperclip_dot_inbox", { after: 0 });
+    const inbox = await tools.callTool(principal, "wardmote_dot_inbox", { after: 0 });
     expect(inbox).toMatchObject({ result: { nextCursor: 0, items: [{ kind: "authority_revoked", assignmentId: assignment.id, references: { assignmentId: assignment.id } }] } });
     const fencedAssignmentId = (inbox!.result as { items: Array<{ references: { assignmentId: string } }> }).items[0]!.references.assignmentId;
-    await expect(tools.callTool(principal, "paperclip_dot_tasks", {})).rejects.toThrow("authority");
-    await expect(tools.callTool(principal, "paperclip_dot_read", { assignmentId: assignment.id })).rejects.toThrow("authority");
-    await expect(tools.callTool(principal, "paperclip_dot_accept", { assignmentId: assignment.id, requestId: randomUUID() })).rejects.toThrow("authority");
-    expect(await tools.callTool(principal, "paperclip_dot_control_ack", { assignmentId: fencedAssignmentId, requestId: randomUUID() })).toMatchObject({ result: { status: "acknowledged", externalStopConfirmed: false } });
+    await expect(tools.callTool(principal, "wardmote_dot_tasks", {})).rejects.toThrow("authority");
+    await expect(tools.callTool(principal, "wardmote_dot_read", { assignmentId: assignment.id })).rejects.toThrow("authority");
+    await expect(tools.callTool(principal, "wardmote_dot_accept", { assignmentId: assignment.id, requestId: randomUUID() })).rejects.toThrow("authority");
+    expect(await tools.callTool(principal, "wardmote_dot_control_ack", { assignmentId: fencedAssignmentId, requestId: randomUUID() })).toMatchObject({ result: { status: "acknowledged", externalStopConfirmed: false } });
     await f.events.unsubscribe(principal, f.subscription); await f.events.stop();
   }, 30000);
 
@@ -761,7 +761,7 @@ describe("durable Dot Runner integration", () => {
             criteria: execution.completionContract.contract.criteria.map(c => ({ criterionId: c.id, status: "passed", evidenceRefs: [] })), remainingWork: [] },
           evidence: [], verification: [{ commandOrCheck: "17 + 25", status: "pass" }] };
         const completionId = randomUUID();
-        await f.broker.operation(f.principal, assignment!.id, completionId, "tool", { name: "paperclip_finish", arguments: result });
+        await f.broker.operation(f.principal, assignment!.id, completionId, "tool", { name: "wardmote_finish", arguments: result });
         await vi.waitFor(async () => expect(await f.broker.operationStatus(f.principal, assignment!.id, completionId)).toMatchObject({ status: "completed", isError: false }), { timeout: 10000 });
         expect(await f.broker.operationStatus(f.principal, assignment!.id, completionId)).toMatchObject({ result: { completionReport: {
           schema: "paperclip.run_result.v1", reportedWorkDisposition: "done", artifacts: [], attentionRequests: [],

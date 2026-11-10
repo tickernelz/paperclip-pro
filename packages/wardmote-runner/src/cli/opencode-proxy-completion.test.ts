@@ -3,10 +3,10 @@ import { openCodeProxyCompletionFeedback } from "./opencode-proxy-input.js";
 import type { PrpStructuredRunResult } from "../protocol/replay-contract.js";
 
 const result = { reportedWorkDisposition: "done" } as PrpStructuredRunResult;
-const call = { tool: "paperclip_finish", callId: "call-finish", threadId: "thread", turnId: "turn" };
+const call = { tool: "wardmote_finish", callId: "call-finish", threadId: "thread", turnId: "turn" };
 
 describe("OpenCode controller completion feedback", () => {
-  it.each(["paperclip_finish", "paperclip_block"])("preserves %s identity and exact accepted response text", async tool => {
+  it.each(["wardmote_finish", "wardmote_block"])("preserves %s identity and exact accepted response text", async tool => {
     const feedback = "Include [Saved document](/PAP/issues/PAP-1#document-plan) in your final response.";
     const request = vi.fn().mockResolvedValue({ success: true, contentItems: [{ type: "inputText", text: feedback }] });
     await expect(openCodeProxyCompletionFeedback(request)(result, { ...call, tool })).resolves.toBe(feedback);

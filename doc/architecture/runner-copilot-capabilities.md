@@ -1,7 +1,7 @@
 # Copilot 1.0.88 rich ACP capability audit
 
-Current integration (2026-10-08): **Copilot profile v17 remains pending** with
-digest `sha256:92e2ada138c9d339e2a2e959c68b44f6278929e860f564e6a18c229c3f9d3e90`.
+Current integration (2026-10-08): **Copilot profile v19 remains pending** with
+digest `sha256:27df964408f96a8d4977c1bb2235e26afdc4e215993fea7a925291f11b3a74cc`.
 It binds master's shared protocol-validation sources without changing the
 executable or supplying new paid qualification. Historical checkpoints below
 retain their original identities and outcomes.
@@ -260,7 +260,7 @@ the failed empty-session attempt, stays in the private
 The prior Product question failure remains a model-behavior failure: the retained
 snapshot contains the exact requested marker in the task instructions, the
 answered Cobalt choice, and warm-session continuation. Copilot instead supplied
-`[terminal marker]` to `paperclip_finish`. Neither the grader nor the terminal
+`[terminal marker]` to `wardmote_finish`. Neither the grader nor the terminal
 marker requirement changed. A final-runtime rerun remains required.
 
 ### Final v3 Product question attempt

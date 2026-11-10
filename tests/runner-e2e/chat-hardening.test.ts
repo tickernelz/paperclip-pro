@@ -109,7 +109,7 @@ describe("agent chat hardening oracles", () => {
       const config = cell.profile.buildAgent({ executionId: "fixture", workspacePath: "/workspace", environmentId: "local",
         environmentFixtureId: "local", secretRefs: { [cell.profile.credential]: { type: "secret_ref", secretId: "secret", version: "latest" } } });
       expect(config.role).toBe("ceo");
-      expect(JSON.stringify(config.instructionsBundle)).not.toMatch(/mark the task done|paperclip_finish|POST \/api|PUT \/api/);
+      expect(JSON.stringify(config.instructionsBundle)).not.toMatch(/mark the task done|wardmote_finish|POST \/api|PUT \/api/);
       expect(config.adapterConfig).not.toHaveProperty("codexPermissionMode");
       expect(config.adapterConfig).not.toHaveProperty("acpxPermissionMode");
     }

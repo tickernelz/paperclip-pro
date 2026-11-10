@@ -1284,7 +1284,7 @@ export function paperclipRunnerActivityItems(
           (normalizedName === "file_change" || normalizedName === "filechange")
         )
           return false;
-        return normalizedName !== "paperclip_finish";
+        return normalizedName !== "wardmote_finish";
       }
       case "marker":
         return item.variant === "interrupted";
@@ -1294,7 +1294,7 @@ export function paperclipRunnerActivityItems(
         if (
           item.surface === "provider_activity" &&
           item.family === "tool_execution" &&
-          providerItemDetail(item, "Name") === "paperclip_finish"
+          providerItemDetail(item, "Name") === "wardmote_finish"
         ) return false;
         if (
           hasAggregateWorkspaceChange &&

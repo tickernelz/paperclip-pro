@@ -1502,15 +1502,15 @@ it("includes ACPX terminal tools in the authenticated bridge catalog", () => {
   expect(authorizedToolSetForProvider("acpx", tools)).toMatchObject({
     operations: [
       { operationId: "get_task_context" },
-      { operationId: "paperclip_block" },
-      { operationId: "paperclip_finish" },
+      { operationId: "wardmote_block" },
+      { operationId: "wardmote_finish" },
     ],
   });
   expect(authorizedToolSetForProvider("codex", tools)).toMatchObject({
     operations: [
       { operationId: "get_task_context" },
-      { operationId: "paperclip_block" },
-      { operationId: "paperclip_finish" },
+      { operationId: "wardmote_block" },
+      { operationId: "wardmote_finish" },
     ],
   });
 });
@@ -1521,10 +1521,10 @@ it.each(["codex", "opencode", "claude_managed", "aws_agentcore", "acpx"] as cons
   );
   const finish = catalog.operations.find(
     (operation: { operationId: string }) =>
-      operation.operationId === "paperclip_finish",
+      operation.operationId === "wardmote_finish",
   );
   const block = catalog.operations.find(
-    (operation: { operationId: string }) => operation.operationId === "paperclip_block",
+    (operation: { operationId: string }) => operation.operationId === "wardmote_block",
   );
   expect(finish.description).toBe(PRP_COMPLETION_TOOL_DESCRIPTION);
   expect(block.description).toBe(PRP_BLOCK_TOOL_DESCRIPTION);
@@ -7362,8 +7362,8 @@ it("cold-restores a suspended provider session under its durable run binding", a
     ) as { toolBridge?: { authorized?: Record<string, unknown> } };
     expect(Object.keys(providerState.toolBridge?.authorized ?? {})).toEqual([
       "get_task_context",
-      "paperclip_block",
-      "paperclip_finish",
+      "wardmote_block",
+      "wardmote_finish",
     ]);
     await restored.transport.request("turn/start", {
       input: [{ type: "text", text: "restored process" }],

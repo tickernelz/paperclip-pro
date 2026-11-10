@@ -767,11 +767,11 @@ describe("provider-neutral events", () => {
     const event = canonicalProviderEventsFromOpenCodePart({
       id: "finish-1",
       type: "tool",
-      tool: "paperclip_paperclip_finish",
+      tool: "wardmote_wardmote_finish",
       state: { status: "running", input: {} },
     })[0]!;
     expect(event.payload).toMatchObject({
-      name: "paperclip_finish",
+      name: "wardmote_finish",
       transport: "builtin",
     });
     expect(validatePrpEvent(envelope(event))).toEqual({

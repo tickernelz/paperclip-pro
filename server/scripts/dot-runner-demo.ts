@@ -111,16 +111,16 @@ try {
   // Avoid an unhandled rejection if a callback fails before the main await.
   void completed.catch(() => {});
   const peer = async () => {
-    const { assignments } = await tool("paperclip_dot_inbox", { companyId: company.id });
+    const { assignments } = await tool("wardmote_dot_inbox", { companyId: company.id });
     assert.equal(assignments.length, 1);
     const base = { companyId: company.id, runId: assignments[0].runId, turnId: assignments[0].turnId };
     const call = (name: string, args = {}, requestId = randomUUID()) => tool(name, { ...base, requestId, ...args });
-    const context = await call("paperclip_dot_read"); assert.match(context.result.message.text, /competitor/);
-    await call("paperclip_dot_accept");
+    const context = await call("wardmote_dot_read"); assert.match(context.result.message.text, /competitor/);
+    await call("wardmote_dot_accept");
     const writeId = randomUUID();
-    await Promise.all([0, 1].map(() => call("paperclip_dot_tool", { name: "save_report", arguments: { body: "Synthetic competitor report" } }, writeId)));
-    await call("paperclip_dot_progress", { text: "The lab report is saved." });
-    await call("paperclip_dot_finish", { result: { schema: "paperclip.run_result.v1", reportedWorkDisposition: "done", summary: "Lab report saved.",
+    await Promise.all([0, 1].map(() => call("wardmote_dot_tool", { name: "save_report", arguments: { body: "Synthetic competitor report" } }, writeId)));
+    await call("wardmote_dot_progress", { text: "The lab report is saved." });
+    await call("wardmote_dot_finish", { result: { schema: "paperclip.run_result.v1", reportedWorkDisposition: "done", summary: "Lab report saved.",
       completionClaim: { contractRevision: "dot-lab-v1", objectiveSatisfied: true, criteria: [], remainingWork: [] }, evidence: [], verification: [], attentionRequests: [], artifacts: [] } });
     resolveWork();
   };
@@ -153,7 +153,7 @@ try {
   assert.equal(await native.usage?.(), null);
   console.log("✓ MCP Event → Dot test peer → native runner acceptance, tool write, progress, structured completion");
   console.log("✓ Concurrent duplicate write produced one report; usage remains unknown");
-  assert.equal((await tool("paperclip_connection", {})).companyId, company.id);
+  assert.equal((await tool("wardmote_connection", {})).companyId, company.id);
   console.log("✓ Personal Paperclip tools remain available when no agent assignment is active");
   await rpc("events/unsubscribe", { ...subscription, delivery: { mode: "webhook", url: subscription.delivery.url } });
   await oauth.revokeConnection(principal.grant.id, userId);

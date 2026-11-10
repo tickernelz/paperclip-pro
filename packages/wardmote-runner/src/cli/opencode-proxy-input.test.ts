@@ -110,7 +110,7 @@ it.each([true, false])("settles a real proxy interrupt with controller feedback 
     await response(3);
     await expect.poll(() => messages.find(message => message.method === "item/tool/call"), { timeout: 5_000 }).toBeDefined();
     const call = messages.find(message => message.method === "item/tool/call")!;
-    expect(call.params!.tool).toBe("paperclip_finish");
+    expect(call.params!.tool).toBe("wardmote_finish");
     const toolFrames = messages.filter(message => (message.params?.item as { id?: string } | undefined)?.id === "part-invalid");
     expect(toolFrames.map(message => message.method)).toEqual(["item/started", "item/updated", "item/completed"]);
     expect(toolFrames.at(-1)?.params).toMatchObject({

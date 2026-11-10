@@ -5857,7 +5857,7 @@ class DurablePrpCodexTransport implements CodexAppServerTransport {
           : {}),
       }),
       this.options.provider === "acpx" &&
-        (call.operationId === "paperclip_finish" || call.operationId === "paperclip_block"),
+        (call.operationId === "wardmote_finish" || call.operationId === "wardmote_block"),
     );
     if (call.operationId === "call_api") {
       const result = record(outcome.result);

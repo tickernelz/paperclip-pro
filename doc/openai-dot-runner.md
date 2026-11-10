@@ -35,12 +35,12 @@ Runner setting in addition to Dot and Assistant connections (MCP).
    cannot execute as Dot.
 4. The OAuth code approval pairs Dot atomically. Attach the connected plugin
    to the Dot conversation if ChatGPT has not exposed its action tools. Dot calls
-   `paperclip_dot_inbox` to verify access, then subscribes to
+   `wardmote_dot_inbox` to verify access, then subscribes to
    `paperclip.dot.mailbox_updated` with the setup company and inbox binding IDs.
    Its callback must pass the signed webhook verification. The prompt stays
    only in page memory and disappears when its code expires; if you leave the
    page or the code expires, revoke the pending connection and pair again.
-5. Choose **Test event delivery**. Dot drains `paperclip_dot_inbox` and confirms
+5. Choose **Test event delivery**. Dot drains `wardmote_dot_inbox` and confirms
    the readiness challenge. Readiness requires this round trip, not just an
    HTTP acknowledgement from the callback.
 6. Assign a task to the agent. Normal scheduling, checkout, company access,
@@ -122,20 +122,20 @@ reads the assignment, and explicitly accepts it before executing tools. A
 webhook `2xx` does not mean Dot accepted or started the task. Duplicate or
 out-of-order events must not create another assignment.
 
-Dot invokes catalogued tools through `paperclip_dot_tool`. Every operation uses
+Dot invokes catalogued tools through `wardmote_dot_tool`. Every operation uses
 a UUID request ID. A pending response is reconciled with
-`paperclip_dot_operation_status` or retried with **the same ID and arguments**.
+`wardmote_dot_operation_status` or retried with **the same ID and arguments**.
 Changing arguments under the same ID is rejected. An unknown write must never
 be retried under a new ID. Idle intake returns its assignment when available.
-If admission is still pending, retry `paperclip_dot_request_turn` with the same
+If admission is still pending, retry `wardmote_dot_request_turn` with the same
 ID and exact prompt to inspect the same intake; no second task or human nudge
 is required. Events also notify work queued behind another active assignment.
 
-Dot calls `paperclip_finish` or `paperclip_block` through the tool bridge, then
-ends the external turn with `paperclip_dot_finish` using exactly the accepted
+Dot calls `wardmote_finish` or `wardmote_block` through the tool bridge, then
+ends the external turn with `wardmote_dot_finish` using exactly the accepted
 structured report. Paperclip's ordinary result and status finalizers decide
 the task disposition. Dot can also discover its assigned tasks and request
-normal admission with `paperclip_dot_tasks` and `paperclip_dot_request_work`.
+normal admission with `wardmote_dot_tasks` and `wardmote_dot_request_work`.
 
 The completion tool returns its canonical accepted report. The final turn can
 repeat either that canonical report or the exact original accepted arguments;
@@ -154,7 +154,7 @@ tools; those narrow inbox reads leave its task cursor unchanged.
 ## Limits and recovery
 
 - One active assignment per binding. Acceptance expires after 10 minutes;
-  execution authority starts with a two-hour lease. Accepted, still-authorized assignments can renew with `paperclip_dot_renew` for up to two hours ahead, within a 24-hour total bound. Fifteen minutes without useful
+  execution authority starts with a two-hour lease. Accepted, still-authorized assignments can renew with `wardmote_dot_renew` for up to two hours ahead, within a 24-hour total bound. Fifteen minutes without useful
   activity is shown in the connection panel as requiring attention.
 - No mounted workspace, selectable model, native Dot thread identifier,
   provider usage or provider cost. Text deliverables use Paperclip documents.
@@ -232,7 +232,7 @@ missing fixture exposed a read exception that left the operation pending and
 prevented turn closure. The test operator cancelled that run; Dot acknowledged
 its fence without repeating its work.
 
-After the fix, Dot initiated a new intake with `paperclip_dot_request_turn`,
+After the fix, Dot initiated a new intake with `wardmote_dot_request_turn`,
 created **hello from idle** for the human owner, observed a terminal
 `runner_bridge_file_not_found` error, and continued successfully. It wrote,
 read, executed, and registered the 20-byte `idle-runner-verified` proof. Its
@@ -329,9 +329,9 @@ responses. These screenshots show preview data, not a qualified Dot account:
 
 ## Starting work from a Dot conversation
 
-Call `paperclip_dot_capabilities` to discover the bound agent, responsible person, permissions, prerequisites and active assignment. An idle Dot can call `paperclip_dot_request_turn` with a prompt and stable UUID. Paperclip creates one visible, agent-authored intake task and admits it through the ordinary heartbeat/Runner path. Retries reuse the task and wake receipt; the same UUID with a different prompt is rejected. Company and agent pause, grants, budgets, task assignment permissions and single-assignment ownership apply. The intake is work attributed to the Dot, not a fabricated operator message or an OAuth permission expansion.
+Call `wardmote_dot_capabilities` to discover the bound agent, responsible person, permissions, prerequisites and active assignment. An idle Dot can call `wardmote_dot_request_turn` with a prompt and stable UUID. Paperclip creates one visible, agent-authored intake task and admits it through the ordinary heartbeat/Runner path. Retries reuse the task and wake receipt; the same UUID with a different prompt is rejected. Company and agent pause, grants, budgets, task assignment permissions and single-assignment ownership apply. The intake is work attributed to the Dot, not a fabricated operator message or an OAuth permission expansion.
 
-Read and accept the resulting assignment, then call its catalog through `paperclip_dot_tool`. Use `get_identity` and paginated `list_people` to identify the owner. `create_task` accepts either `assigneeActorId` for an agent or `assigneeUserId` for an active company person. `reassign_task` also accepts a person and checks the previous agent/person and status version before the ownership change. Human tasks do not wake agents.
+Read and accept the resulting assignment, then call its catalog through `wardmote_dot_tool`. Use `get_identity` and paginated `list_people` to identify the owner. `create_task` accepts either `assigneeActorId` for an agent or `assigneeUserId` for an active company person. `reassign_task` also accepts a person and checks the previous agent/person and status version before the ownership change. Human tasks do not wake agents.
 
 The shared catalog adds `get_task`, `comment_on_task`, `list_task_documents`, `read_task_document`, and `write_task_document` through the existing authenticated REST authority. Company boundaries, task visibility, mode restrictions, document revisions, locks and mutation receipts still apply. `call_api` remains the discovery-based route for other authorized control-plane actions.
 
@@ -339,20 +339,20 @@ The shared catalog adds `get_task`, `comment_on_task`, `list_task_documents`, `r
 
 Enable **Workspace files and commands** on the agent to expose `workspace_list`, `workspace_read`, `workspace_write`, and `workspace_run`. The server binds these to the admitted execution workspace. File paths reject absolute paths, traversal and symlinks. Paperclip instance state under `.paperclip` is excluded from file tools, uploads, and sandbox commands. Linux commands mask existing instance directories and the workspace root instance directory with read-only empty mounts. The command protection scan fails closed above 4,096 directories. macOS supports file tools and publishing; `workspace_run` is neither advertised nor executable there because its file sandbox cannot contain detached descendants. New writes require an absent file; overwrites require its observed SHA-256. Commands have bounded output/time and an OS sandbox, use a workspace-local home, and do not inherit credentials. Linux commands run in a private PID namespace. Command completion, timeout, or live authority loss terminates its supervisor and all descendants, including children that start a new session. Register requested files with `register_deliverable` before finishing. Workspace mutation attempts are reserved durably before effects; an interrupted attempt returns an unknown outcome instead of replaying a possible effect. Inspect state before deciding another mutation.
 
-Mailbox `follow_up` entries reference new comments on an accepted assignment. Read `get_task_history` and incorporate them at a safe boundary. This supplies new input without claiming OpenAI steering support. `paperclip_dot_tasks` pages by the last task ID. Each assignment allows up to 4,000 broker operations; lower domain-specific limits still apply. A fenced assignment's control acknowledgement remains available at that limit. `hire_agent` creates a distinct unpaired Paperclip Dot teammate; the operator still pairs a separate OpenAI Dot. No existing binding or workspace permission is inherited.
+Mailbox `follow_up` entries reference new comments on an accepted assignment. Read `get_task_history` and incorporate them at a safe boundary. This supplies new input without claiming OpenAI steering support. `wardmote_dot_tasks` pages by the last task ID. Each assignment allows up to 4,000 broker operations; lower domain-specific limits still apply. A fenced assignment's control acknowledgement remains available at that limit. `hire_agent` creates a distinct unpaired Paperclip Dot teammate; the operator still pairs a separate OpenAI Dot. No existing binding or workspace permission is inherited.
 
 
 ## Tool inventory
 
 The top-level MCP catalog contains these 16 transport, lifecycle, and profile tools:
-`paperclip_dot_capabilities`, `paperclip_dot_request_turn`, `paperclip_dot_tasks`,
-`paperclip_dot_request_work`, `paperclip_dot_pair`, `paperclip_dot_inbox`,
-`paperclip_dot_read`, `paperclip_dot_accept`, `paperclip_dot_tool`,
-`paperclip_dot_progress`, `paperclip_dot_finish`, `paperclip_dot_operation_status`,
-`paperclip_dot_confirm_event`, `paperclip_dot_renew`, `paperclip_dot_control_ack`,
-`paperclip_dot_set_avatar`.
+`wardmote_dot_capabilities`, `wardmote_dot_request_turn`, `wardmote_dot_tasks`,
+`wardmote_dot_request_work`, `wardmote_dot_pair`, `wardmote_dot_inbox`,
+`wardmote_dot_read`, `wardmote_dot_accept`, `wardmote_dot_tool`,
+`wardmote_dot_progress`, `wardmote_dot_finish`, `wardmote_dot_operation_status`,
+`wardmote_dot_confirm_event`, `wardmote_dot_renew`, `wardmote_dot_control_ack`,
+`wardmote_dot_set_avatar`.
 
-After accepting work, use `paperclip_dot_tool` with a name from the assignment's
+After accepting work, use `wardmote_dot_tool` with a name from the assignment's
 actual catalog. Availability depends on work mode, permissions, assigned apps,
 and workspace/attachment bindings. Advertising a tool does not bypass its
 server-side authorization.
@@ -371,7 +371,7 @@ server-side authorization.
 | Task attachments | `list_task_attachments`, `read_task_attachment` when **Read task attachments** is enabled |
 | Bound chat inputs | `list_chat_attachments`, `reuse_chat_attachment`; `read_chat_attachment` and `read_current_wake_comments` require verified server bindings |
 | Feedback | `submit_complaint`, `submit_suggestion` |
-| Completion | `paperclip_finish`, `paperclip_block`; a separate review run offers its limited read catalog and `resolve_review` |
+| Completion | `wardmote_finish`, `wardmote_block`; a separate review run offers its limited read catalog and `resolve_review` |
 
 Enable **Read task attachments** on the Dot agent to expose `list_task_attachments`
 and `read_task_attachment` on new assignments. This setting is off by default,
@@ -397,7 +397,7 @@ workspace grant and the same confined root as workspace tools.
 
 ### Dot's own tools and task scope
 
-Dot should use its own available tools, apps, plugins, skills, and capabilities to complete each Paperclip assignment or message, then return the result to Paperclip. For example, Dot can use a Slack connection already available in ChatGPT even when Slack is absent from the Paperclip agent's assigned app catalog. The assignment catalog governs Paperclip calls through `paperclip_dot_tool`; it does not enumerate or disable Dot's native tools. Each tool retains its own permissions and approval requirements. Paperclip company, agent, task, and denial boundaries remain in force. Native tools cannot substitute another Paperclip identity or bypass a denied Paperclip operation.
+Dot should use its own available tools, apps, plugins, skills, and capabilities to complete each Paperclip assignment or message, then return the result to Paperclip. For example, Dot can use a Slack connection already available in ChatGPT even when Slack is absent from the Paperclip agent's assigned app catalog. The assignment catalog governs Paperclip calls through `wardmote_dot_tool`; it does not enumerate or disable Dot's native tools. Each tool retains its own permissions and approval requirements. Paperclip company, agent, task, and denial boundaries remain in force. Native tools cannot substitute another Paperclip identity or bypass a denied Paperclip operation.
 
 Setup and qualification restrictions are local to their stated scope. Test prompts should say, for example, "For this qualification task only, send Paperclip operations through this test connection. After this test, use your normal available tools and connections for later requests." Avoid "use only this plugin" without naming the task and duration. Do not carry a completed test's restriction into later comments or messages. The copy prompts, external-agent onboarding document, Dot event and capability instructions, and Runner assignment instructions all make this distinction.
 
@@ -414,7 +414,7 @@ The entry is **New Agent → Invite an external agent → Dot / Hermes / Other**
 
 ## Agent avatar
 
-After pairing, Dot can call `paperclip_dot_set_avatar` without an active assignment or completed event test. It changes only the Paperclip agent bound to that live connection. It requires the Dot and Assistant connections experimental flags, an active operator membership, and a non-revoked grant and binding.
+After pairing, Dot can call `wardmote_dot_set_avatar` without an active assignment or completed event test. It changes only the Paperclip agent bound to that live connection. It requires the Dot and Assistant connections experimental flags, an active operator membership, and a non-revoked grant and binding.
 
 Input is `{ "imageBase64": "<raw base64 image bytes>" }`. PNG, JPEG and WebP are supported, up to 512 KiB and 16 megapixels; animations and SVG are rejected. Paperclip re-encodes the image as a metadata-free PNG at most 512 pixels on either side. Sending the same image again is safe and does not create another asset. Send `{ "imageBase64": null }` to restore the existing Paperclip character and palette.
 

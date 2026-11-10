@@ -44,8 +44,8 @@ describe("OpenCode MCP bridge", () => {
     expect(await listed.json()).toMatchObject({
       result: { tools: [
         { name: "documents.read" },
-        { name: "paperclip_finish", description: PRP_COMPLETION_TOOL_DESCRIPTION, inputSchema: PRP_COMPLETION_RESULT_PROVIDER_INPUT_SCHEMA },
-        { name: "paperclip_block", description: PRP_BLOCK_TOOL_DESCRIPTION, inputSchema: PRP_BLOCK_RESULT_PROVIDER_INPUT_SCHEMA },
+        { name: "wardmote_finish", description: PRP_COMPLETION_TOOL_DESCRIPTION, inputSchema: PRP_COMPLETION_RESULT_PROVIDER_INPUT_SCHEMA },
+        { name: "wardmote_block", description: PRP_BLOCK_TOOL_DESCRIPTION, inputSchema: PRP_BLOCK_RESULT_PROVIDER_INPUT_SCHEMA },
       ] },
     });
   });
@@ -75,7 +75,7 @@ describe("OpenCode MCP bridge", () => {
       handler,
     });
     bridges.push(bridge);
-    const request = { id: "call-1", method: "tools/call", params: { name: "paperclip_documents.read", arguments: { id: "doc" } } };
+    const request = { id: "call-1", method: "tools/call", params: { name: "wardmote_documents.read", arguments: { id: "doc" } } };
     expect(await (await rpc(bridge, request)).json()).toMatchObject({ result: { content: [{ text: "{\"value\":7}" }] } });
     expect(await (await rpc(bridge, request)).json()).toMatchObject({ result: { content: [{ text: "{\"value\":7}" }] } });
     expect(handler).toHaveBeenCalledTimes(1);
@@ -95,10 +95,10 @@ describe("OpenCode MCP bridge", () => {
   });
 
   it("normalizes all supported OpenCode MCP prefixes", () => {
-    expect(canonicalOpenCodeMcpToolName("paperclip_documents.read")).toBe("documents.read");
-    expect(canonicalOpenCodeMcpToolName("paperclip__documents.read")).toBe("documents.read");
-    expect(canonicalOpenCodeMcpToolName("paperclip.documents.read")).toBe("documents.read");
-    expect(canonicalOpenCodeMcpToolName("paperclip_paperclip_finish")).toBe("paperclip_finish");
+    expect(canonicalOpenCodeMcpToolName("wardmote_documents.read")).toBe("documents.read");
+    expect(canonicalOpenCodeMcpToolName("wardmote__documents.read")).toBe("documents.read");
+    expect(canonicalOpenCodeMcpToolName("wardmote.documents.read")).toBe("documents.read");
+    expect(canonicalOpenCodeMcpToolName("wardmote_wardmote_finish")).toBe("wardmote_finish");
   });
 
   it("validates inputs before dispatch", async () => {

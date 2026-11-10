@@ -980,7 +980,7 @@ passed and the measured key billing delta remained zero. It produced no terminal
 usage receipt or matcher success.
 
 The canonical live-eval completion contract had a separate defect: fresh sessions
-omitted native `paperclip_finish`/`paperclip_block` schemas, their callback rejected
+omitted native `wardmote_finish`/`wardmote_block` schemas, their callback rejected
 otherwise valid native reports, and ACP model instructions lacked the literal
 contract revision. Shared commits `dc58afb28` and `aa4b88b16` expose and validate
 those advisory reports and send the exact contract on fresh/resumed sessions.
@@ -1063,7 +1063,7 @@ spend receipt checks pass.
 ## Version 3: retain failed tool validation and Bash results
 
 The version 2 file-edit Product attempt exposed an owned bridge defect: five
-`paperclip_finish` calls returned failed MCP results, but the extension replaced
+`wardmote_finish` calls returned failed MCP results, but the extension replaced
 all authenticated validation text with a generic rejection. Version 3 keeps
 valid text and structured error details within an 8 KiB UTF-8 bound, redacts
 bound credentials and labelled secrets, and still raises a failed tool result.

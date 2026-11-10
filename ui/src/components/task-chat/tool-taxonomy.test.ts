@@ -101,7 +101,7 @@ describe("tool activity vocabulary", () => {
     const paperclip = [
       "get_task_context", "get_task_history", "list_documents", "read_document", "list_document_revisions",
       "report_progress", "answer_status_question", "write_document", "request_human_input",
-      "register_deliverable", "finish_task", "paperclip_finish", "block_task", "paperclip_block",
+      "register_deliverable", "finish_task", "wardmote_finish", "block_task", "wardmote_block",
       "request_review", "list_agents", "get_agent", "search_tasks", "list_approvals", "get_approval",
       "get_approval_context", "get_workspace_runtime", "control_workspace_service", "set_dependencies",
       "create_task", "request_approval", "decide_approval", "comment_on_approval", "schedule_wake",
@@ -114,7 +114,7 @@ describe("tool activity vocabulary", () => {
       expect(presentation.completedLabel, name).not.toMatch(/ran a tool|tool call/i);
     }
     expect(toolActivityPresentation({ name: "report_progress", namespace: "paperclip" }).runningLabel).toBe("Reporting progress");
-    expect(toolActivityPresentation({ name: "paperclip_block", namespace: "paperclip" }).completedLabel).toBe("Reported a blocker");
+    expect(toolActivityPresentation({ name: "wardmote_block", namespace: "paperclip" }).completedLabel).toBe("Reported a blocker");
     expect(toolActivityPresentation({ name: "schedule_wake", namespace: "paperclip" }).runningLabel).toBe("Scheduling a wake-up");
   });
 

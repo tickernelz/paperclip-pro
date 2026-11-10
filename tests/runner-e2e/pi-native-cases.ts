@@ -21,7 +21,7 @@ export const piNativeTasks: readonly RunnerTaskFixture[] = [
 }));
 
 export function piNativeFinish(marker: string): string {
-  return `After verifying the requested outcome, call paperclip_finish once with reportedWorkDisposition done, summary ${marker}, the current completion contract revision, satisfied objective criterion with evidenceRefs [], no remaining work, evidence [], and verification []. Wait for acceptance, then reply exactly ${marker}. Do not create unrelated work.`;
+  return `After verifying the requested outcome, call wardmote_finish once with reportedWorkDisposition done, summary ${marker}, the current completion contract revision, satisfied objective criterion with evidenceRefs [], no remaining work, evidence [], and verification []. Wait for acceptance, then reply exactly ${marker}. Do not create unrelated work.`;
 }
 
 /** Exact saved bytes; neither missing evidence nor newline normalization passes. */

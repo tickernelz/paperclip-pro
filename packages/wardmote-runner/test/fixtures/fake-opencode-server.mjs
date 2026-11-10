@@ -20,7 +20,7 @@ const runtimeConfig = JSON.parse(
     "utf8",
   ),
 );
-const mcp = runtimeConfig.mcp?.paperclip;
+const mcp = runtimeConfig.mcp?.wardmote;
 let mcpRequestId = 1;
 const mcpEvidence = { tools: [], calls: [] };
 
@@ -172,7 +172,7 @@ async function callFirstPaperclipTool() {
   mcpEvidence.tools = (listed.result?.tools ?? []).map((entry) => entry.name);
   const tool = listed.result?.tools?.find(
     (entry) =>
-      !["paperclip_finish", "paperclip_block"].includes(entry.name) &&
+      !["wardmote_finish", "wardmote_block"].includes(entry.name) &&
       (entry.inputSchema?.required?.length ?? 0) === 0,
   );
   if (tool)
@@ -239,11 +239,11 @@ async function callTerminalTool(promptBody) {
     bad.completionClaim.criteria = String(prompt.message).includes("repair-criteria-missing") ? []
       : String(prompt.message).includes("repair-criteria-duplicate") ? [...result.completionClaim.criteria, ...result.completionClaim.criteria]
       : [{ criterionId: "invented", status: "satisfied", evidenceRefs: [] }];
-    const rejected = await mcpRequest("tools/call", { name: "paperclip_finish", arguments: bad });
+    const rejected = await mcpRequest("tools/call", { name: "wardmote_finish", arguments: bad });
     await writeFile(join(process.env.XDG_DATA_HOME, "fake-criteria-repair.json"), JSON.stringify(rejected));
   }
   const call = () => mcpRequest("tools/call", {
-    name: blocked ? "paperclip_block" : "paperclip_finish",
+    name: blocked ? "wardmote_block" : "wardmote_finish",
     arguments: result,
   });
   const first = await call();
@@ -746,7 +746,7 @@ const server = createServer(async (request, response) => {
                 id: "part-tool",
                 messageID: "message-assistant",
                 type: "tool",
-                tool: "paperclip_paperclip_finish",
+                tool: "wardmote_wardmote_finish",
                 state: { status: "completed", output: "accepted" },
               },
             },
@@ -814,7 +814,7 @@ const server = createServer(async (request, response) => {
                 id: "part-finish",
                 messageID: "message-final",
                 type: "tool",
-                tool: "paperclip_paperclip_finish",
+                tool: "wardmote_wardmote_finish",
                 state: { status: "completed", output: "accepted" },
               },
             },
@@ -843,7 +843,7 @@ const server = createServer(async (request, response) => {
                 messageID: "message-final",
                 type: "tool",
                 tool: "unknown",
-                callID: "functions.paperclip_paperclip_finish:24",
+                callID: "functions.wardmote_wardmote_finish:24",
                 state: {
                   status: "error",
                   error: "Tool execution aborted",

@@ -99,7 +99,7 @@ export function gradeTaskTitle(input: TaskTitleEvidenceInput) {
       && /(rotat|replac|renew|expir)/i.test(title) && /\b(api|keys?|credentials?)\b/i.test(title), "A concise title describes the key-rotation request instead of copying the prompt prefix or answer receipt.");
     const terminalIndex = input.events.findIndex(event => event.eventType === "run.terminal");
     const finishIndex = Math.min(
-      [...starts.values()].find(call => ["paperclip_finish", "finish_task"].includes(call.name))?.index ?? input.events.length,
+      [...starts.values()].find(call => ["wardmote_finish", "finish_task"].includes(call.name))?.index ?? input.events.length,
       terminalIndex < 0 ? input.events.length : terminalIndex,
     );
     const proven = calls.filter(([id, call]) => {

@@ -340,7 +340,7 @@
       "retainedMachineDisposition": null,
       "retainedStatus": "passed",
       "cleanup": "passed",
-      "diagnosis": "All six canonical hello matchers pass. Authenticated Pi executes paperclip_finish over semantic MCP; the provider turn completes, task becomes done, and native run succeeds. Sleep assertion and dual-clock supervision avoid the prior environmental interruption. USD remains unpriced; independent measured billing delta is separate.",
+      "diagnosis": "All six canonical hello matchers pass. Authenticated Pi executes wardmote_finish over semantic MCP; the provider turn completes, task becomes done, and native run succeeds. Sleep assertion and dual-clock supervision avoid the prior environmental interruption. USD remains unpriced; independent measured billing delta is separate.",
       "submittedProviderTurns": 1,
       "providerRequestCount": null,
       "billingDeltaUsd": 0.000654767,

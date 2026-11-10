@@ -129,7 +129,7 @@ createInterface({ input: process.stdin }).on("line", (line) => {
         threadId: state.threadId,
         turnId,
         callId: requestId,
-        tool: "paperclip_finish",
+        tool: "wardmote_finish",
         arguments: {
           reportedWorkDisposition: "done",
           summary: "Fixture complete.",

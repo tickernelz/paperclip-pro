@@ -71,7 +71,7 @@ export async function nativeCompletionFeedback(
       contextSnapshot: reviewContext, allowResolvedByRunId: run.id,
     });
     if (review?.interaction.status === "pending" && result.reportedWorkDisposition !== "blocked") {
-      throw new Error("Resolve your assigned review with resolve_review before finishing. If you cannot review the work, report the concrete blocker with paperclip_block.");
+      throw new Error("Resolve your assigned review with resolve_review before finishing. If you cannot review the work, report the concrete blocker with wardmote_block.");
     }
     return review?.interaction.status === "pending"
       ? "Review blocker recorded. Paperclip will preserve the task and record the reviewer recovery action."

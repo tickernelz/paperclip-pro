@@ -158,7 +158,7 @@ The pure arbiter performs no database or network writes.
 
 A response to a Board comment does not by itself justify parking unfinished
 work. When a `yielded` / `response_wake` result contains
-`remainingWork[].blocksCompletion: true`, `paperclip_finish` rejects the report
+`remainingWork[].blocksCompletion: true`, `wardmote_finish` rejects the report
 unless a real wait owns the next action. The agent can correct it in the same
 turn. Finalization also checks accepted reports and uses the existing
 `native-completion-incomplete` one-follow-up budget. Model-selected retry keys
@@ -316,7 +316,7 @@ reviewer's responsibility and the decision. The card displays that request.
 Waiting for CI remains agent work, not a human completion approval.
 
 The native runner returns current approval/dependency constraints to the agent
-when it calls `paperclip_finish`. An empty `needs_review` report without an
+when it calls `wardmote_finish`. An empty `needs_review` report without an
 existing gate is rejected with instructions to correct it. The final reply must
 explain any required user action and link to the relevant task or approval.
 The tool acknowledges receipt, not a premature status commit: final status is
@@ -367,8 +367,8 @@ reassigned review does not grant access to newer work.
 The final required acceptance completes the child through the existing review
 resolution path and makes its blocked dependents eligible to run. Rejection
 returns the requested changes to the worker. A reviewer must record that decision
-before calling `paperclip_finish`. Finishing the review run cannot turn rejected
-work into Done. If the reviewer cannot act, `paperclip_block` preserves the task
+before calling `wardmote_finish`. Finishing the review run cannot turn rejected
+work into Done. If the reviewer cannot act, `wardmote_block` preserves the task
 and records a recovery action for the reviewer without an automatic retry loop.
 
 Both Codex and ACPX providers wait for server completion feedback before their

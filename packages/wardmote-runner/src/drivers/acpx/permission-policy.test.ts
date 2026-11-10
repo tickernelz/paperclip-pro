@@ -18,7 +18,7 @@ describe("ACPX permission policy", () => {
   });
   it("uses only catalogued reads assigned to this run, regardless of tool hints", () => {
     const tools = [
-      "paperclip__get_task_context", "read_document", "write_document",
+      "wardmote__get_task_context", "read_document", "write_document",
       "call_api", "request_approval", "unknown_read", "mcp__other__get_task_context",
     ].map((name) => ({ name, annotations: { readOnlyHint: true, effect: "read" } }));
     expect(claudePaperclipPermissionRules(tools, "approve-reads")).toEqual([
@@ -28,7 +28,7 @@ describe("ACPX permission policy", () => {
   });
 
   it("allows assigned Paperclip mutations without admitting unknown or external tools", () => {
-    const tools = ["paperclip__write_document", "create_task", "reassign_task", "request_approval",
+    const tools = ["wardmote__write_document", "create_task", "reassign_task", "request_approval",
       "write_document", "mcp__other__create_task", "Bash", "unknown_write", "mcp__wardmote__create_task",
       "decide_approval", "control_workspace_service", "call_api", "create_skill", "schedule_wake"]
       .map(name => ({ name, annotations: { readOnlyHint: true } }));

@@ -99,7 +99,7 @@ Runner Eval roster; arbitrary process-crash recovery and exhausted-repair races
 are not new paid model cases.
 
 The earlier native `same_agent` probes inject an internal compatibility result.
-The current public `paperclip_finish` schema exposes `response_wake`, which waits
+The current public `wardmote_finish` schema exposes `response_wake`, which waits
 for a real response. Therefore those two failures do not demonstrate a reachable
 current model-facing autonomous-continuation defect. This live suite uses supported
 question/approval/dependency responses and restart boundaries; it does not instruct

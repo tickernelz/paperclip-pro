@@ -384,10 +384,10 @@ describe("TaskChatRunnerTurn", () => {
   });
 
   it("keeps a visible fallback when completion tools are filtered before the final reply", () => {
-    render([{ id: "finish", kind: "tool", name: "paperclip_finish", status: "in_progress" }]);
+    render([{ id: "finish", kind: "tool", name: "wardmote_finish", status: "in_progress" }]);
     expect(container.querySelector('[data-testid="task-chat-current-activity"]')?.textContent).toContain("Thinking");
     expect(container.querySelector('[data-testid="task-chat-activity-phase"]')).toBeNull();
-    render([{ id: "finish-provider", kind: "protocol", surface: "provider_activity", family: "tool_execution", eventType: "tool.execution.started", status: "running", title: "Finish", details: [{ label: "Name", value: "paperclip_finish" }], steps: [], links: [], children: [] }]);
+    render([{ id: "finish-provider", kind: "protocol", surface: "provider_activity", family: "tool_execution", eventType: "tool.execution.started", status: "running", title: "Finish", details: [{ label: "Name", value: "wardmote_finish" }], steps: [], links: [], children: [] }]);
     expect(container.querySelector('[data-testid="task-chat-current-activity"]')?.textContent).toContain("Thinking");
     expect(container.querySelector('[data-testid="task-chat-activity-phase"]')).toBeNull();
   });
@@ -1173,7 +1173,7 @@ describe("TaskChatRunnerTurn", () => {
         id: "tool",
         kind: "tool",
         name: "Paperclip_finish",
-        rawName: "paperclip_finish",
+        rawName: "wardmote_finish",
         target: "reportedWorkDisposition: done",
         status: "completed",
       },

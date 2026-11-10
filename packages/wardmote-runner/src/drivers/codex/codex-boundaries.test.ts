@@ -184,19 +184,19 @@ describe("Codex value and workspace boundaries", () => {
   });
 
   it("keeps completion and block dispositions distinct", () => {
-    expect(isCodexSemanticTool("paperclip_finish")).toBe(true);
-    expect(isCodexSemanticTool("paperclip_block")).toBe(true);
+    expect(isCodexSemanticTool("wardmote_finish")).toBe(true);
+    expect(isCodexSemanticTool("wardmote_block")).toBe(true);
     expect(isCodexSemanticTool("shell")).toBe(false);
-    expect(codexToolAcceptsDisposition("paperclip_finish", "done")).toBe(true);
-    expect(codexToolAcceptsDisposition("paperclip_finish", "yielded")).toBe(true);
-    expect(codexToolAcceptsDisposition("paperclip_finish", "blocked")).toBe(
+    expect(codexToolAcceptsDisposition("wardmote_finish", "done")).toBe(true);
+    expect(codexToolAcceptsDisposition("wardmote_finish", "yielded")).toBe(true);
+    expect(codexToolAcceptsDisposition("wardmote_finish", "blocked")).toBe(
       false,
     );
-    expect(codexToolAcceptsDisposition("paperclip_block", "blocked")).toBe(
+    expect(codexToolAcceptsDisposition("wardmote_block", "blocked")).toBe(
       true,
     );
     expect(codexToolAcceptsDisposition("unknown_tool", "done")).toBe(false);
-    expect(codexToolAcceptsResult("paperclip_finish", {
+    expect(codexToolAcceptsResult("wardmote_finish", {
       schema: "paperclip.run_result.v1",
       reportedWorkDisposition: "yielded",
       summary: "Waiting for the next response.",
@@ -216,7 +216,7 @@ describe("Codex value and workspace boundaries", () => {
         idempotencyKey: "response-wake-1",
       },
     })).toBe(true);
-    expect(codexToolAcceptsResult("paperclip_finish", {
+    expect(codexToolAcceptsResult("wardmote_finish", {
       schema: "paperclip.run_result.v1",
       reportedWorkDisposition: "yielded",
       summary: "Continue immediately.",

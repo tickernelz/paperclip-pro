@@ -512,7 +512,7 @@ fn admit_terminal_tool_authority(
     input: &Value,
     result_is_error: bool,
 ) -> Result<(), DurableRunnerError> {
-    if result_is_error || !matches!(operation_id, "paperclip_finish" | "paperclip_block") {
+    if result_is_error || !matches!(operation_id, "wardmote_finish" | "wardmote_block") {
         return Ok(());
     }
     // The correlated TypeScript semantic-tool handler validates the provider
@@ -535,7 +535,7 @@ fn admit_terminal_tool_authority(
     .to_owned();
     let fingerprint = semantic_value_digest(input);
     let disposition_matches_operation = match operation_id {
-        "paperclip_finish" => {
+        "wardmote_finish" => {
             matches!(disposition.as_str(), "done" | "needs_review")
                 || (disposition == "yielded"
                     && matches!(
@@ -546,7 +546,7 @@ fn admit_terminal_tool_authority(
                         Some("response_wake" | "monitor")
                     ))
         }
-        "paperclip_block" => disposition == "blocked",
+        "wardmote_block" => disposition == "blocked",
         _ => false,
     };
     if !disposition_matches_operation {
@@ -3845,10 +3845,7 @@ impl CodexCommandExecutor {
                 .as_ref()
                 .is_some_and(|(operation_id, _)| {
                     !result.is_error
-                        && matches!(
-                            operation_id.as_str(),
-                            "paperclip_finish" | "paperclip_block"
-                        )
+                        && matches!(operation_id.as_str(), "wardmote_finish" | "wardmote_block")
                 });
         if let Some((operation_id, input)) = terminal_tool_input {
             admit_terminal_tool_authority(&mut next_state, &operation_id, &input, result.is_error)?;
@@ -4922,7 +4919,7 @@ mod tests {
     #[test]
     fn invalid_tool_results_expose_only_reserved_schema_guidance() {
         let finish_result = schema_rejection(
-            "paperclip_finish",
+            "wardmote_finish",
             json!({"secretSubmittedValue": "must-not-appear"}),
         );
         assert_eq!(finish_result.result["error"]["code"], "invalid_tool_call");
@@ -4938,7 +4935,7 @@ mod tests {
         assert!(!finish_message.chars().any(char::is_control));
         assert!(!finish_result.result.to_string().contains("must-not-appear"));
 
-        let block_result = schema_rejection("paperclip_block", json!({}));
+        let block_result = schema_rejection("wardmote_block", json!({}));
         let block_message = block_result.result["error"]["message"].as_str().unwrap();
         assert!(block_message
             .contains("blocker must include reasonCode, owner, unblockAction, and scope"));
@@ -4966,13 +4963,13 @@ mod tests {
         let unauthorized_error = ProviderToolBridge::default()
             .begin_call(
                 "unauthorized-call".to_owned(),
-                "paperclip_finish".to_owned(),
+                "wardmote_finish".to_owned(),
                 json!({}),
             )
             .unwrap_err();
         let unauthorized_result = invalid_tool_call_result(
             "unauthorized-call".to_owned(),
-            "paperclip_finish".to_owned(),
+            "wardmote_finish".to_owned(),
             &unauthorized_error,
         );
         assert_eq!(
@@ -5166,7 +5163,7 @@ mod tests {
         result.as_object_mut().unwrap().remove("attentionRequests");
         result.as_object_mut().unwrap().remove("artifacts");
 
-        admit_terminal_tool_authority(&mut state, "paperclip_finish", &result, false).unwrap();
+        admit_terminal_tool_authority(&mut state, "wardmote_finish", &result, false).unwrap();
         let terminal = terminal_events(&state, "turn.completed", None);
 
         assert_eq!(terminal.len(), 1);
@@ -5189,7 +5186,7 @@ mod tests {
             "idempotencyKey": "response-wake-1"
         });
 
-        admit_terminal_tool_authority(&mut state, "paperclip_finish", &result, false).unwrap();
+        admit_terminal_tool_authority(&mut state, "wardmote_finish", &result, false).unwrap();
         let terminal = terminal_events(&state, "turn.completed", None);
 
         assert_eq!(terminal.len(), 1);
@@ -5208,7 +5205,7 @@ mod tests {
             "idempotencyKey": "monitor-1"
         });
 
-        admit_terminal_tool_authority(&mut state, "paperclip_finish", &result, false).unwrap();
+        admit_terminal_tool_authority(&mut state, "wardmote_finish", &result, false).unwrap();
         let terminal = terminal_events(&state, "turn.completed", None);
 
         assert_eq!(terminal.len(), 1);
@@ -5228,7 +5225,7 @@ mod tests {
         });
 
         assert!(
-            admit_terminal_tool_authority(&mut state, "paperclip_finish", &result, false,).is_err()
+            admit_terminal_tool_authority(&mut state, "wardmote_finish", &result, false,).is_err()
         );
     }
 
@@ -5237,7 +5234,7 @@ mod tests {
         let mut state = opencode_result_state();
         let result = valid_opencode_result();
 
-        admit_terminal_tool_authority(&mut state, "paperclip_finish", &result, false).unwrap();
+        admit_terminal_tool_authority(&mut state, "wardmote_finish", &result, false).unwrap();
         let terminal = terminal_events(&state, "turn.interrupted", None);
 
         assert_eq!(terminal.len(), 1);
@@ -5257,7 +5254,7 @@ mod tests {
 
         admit_terminal_tool_authority(
             &mut state,
-            "paperclip_finish",
+            "wardmote_finish",
             &valid_opencode_result(),
             false,
         )
@@ -5276,7 +5273,7 @@ mod tests {
 
         assert!(admit_terminal_tool_authority(
             &mut state,
-            "paperclip_block",
+            "wardmote_block",
             &valid_opencode_result(),
             false,
         )
@@ -5621,7 +5618,7 @@ mod tests {
         assert!(summary.len() > 4_096);
         let call = PendingToolCall {
             call_id: "call-1".to_owned(),
-            operation_id: "paperclip_finish".to_owned(),
+            operation_id: "wardmote_finish".to_owned(),
             input: json!({"summary": summary}),
         };
 

@@ -3181,7 +3181,7 @@ describe("retained native cleanup activation", () => {
     const semantic = {
       ...createPrpSemanticToolInputEnvelope({
         callId: "finish-call",
-        operationId: "paperclip_finish",
+        operationId: "wardmote_finish",
         correlation,
         content: semanticInput,
       }),
@@ -3204,7 +3204,7 @@ describe("retained native cleanup activation", () => {
       payload: {
         semantic_tool: createPrpSemanticToolResultEnvelope({
           callId: "finish-call",
-          operationId: "paperclip_finish",
+          operationId: "wardmote_finish",
           correlation,
           content: semanticInput,
           outcome: "succeeded",

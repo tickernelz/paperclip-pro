@@ -1261,12 +1261,8 @@ export function canonicalOpenCodeDisplayToolName(
     );
     if (qualified?.[1]) name = qualified[1];
   }
-  // OpenCode exposes MCP tools as `<server>_<tool>`. Paperclip's semantic
-  // tools already carry the paperclip prefix, producing names such as
-  // `paperclip_paperclip_finish` in native events. Keep the transport-native
-  // name in the raw trace, while presenting the stable protocol operation.
-  while (name.startsWith("paperclip_paperclip_")) {
-    name = name.slice("paperclip_".length);
+  while (name.startsWith("wardmote_wardmote_")) {
+    name = name.slice("wardmote_".length);
   }
   return name;
 }

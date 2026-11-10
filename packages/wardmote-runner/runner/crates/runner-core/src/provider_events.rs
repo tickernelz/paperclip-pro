@@ -943,7 +943,7 @@ pub fn normalize_codex_notification(method: &str, params: &Value) -> Vec<Normali
                 // Preserve only actual terminal invocation identity in the compatibility
                 // projection. Arguments, arbitrary tool names and result bodies stay omitted.
                 if item_type == "tool_call" {
-                    if let Some(name @ ("paperclip_finish" | "paperclip_block")) =
+                    if let Some(name @ ("wardmote_finish" | "wardmote_block")) =
                         provider_item.get("name").and_then(Value::as_str)
                     {
                         payload
@@ -1572,13 +1572,13 @@ mod tests {
             let events = normalize_codex_notification(
                 method,
                 &json!({"item": {
-                    "id": "finish-1", "type": "dynamicToolCall", "tool": "paperclip_finish",
+                    "id": "finish-1", "type": "dynamicToolCall", "tool": "wardmote_finish",
                     "status": if method == "item/started" { "inProgress" } else { "completed" },
                     "arguments": {"secret": "not-for-the-log"}
                 }}),
             );
             assert_eq!(events.len(), 1);
-            assert_eq!(events[0].payload["name"], "paperclip_finish");
+            assert_eq!(events[0].payload["name"], "wardmote_finish");
             assert_eq!(events[0].payload["transport"], "dynamic");
             assert_eq!(events[0].payload["executionId"], "finish-1");
             assert!(events[0].event_type.starts_with("tool.execution."));
@@ -1602,10 +1602,10 @@ mod tests {
         }
         for (item_type, name) in [
             ("tool_call", Some("write_document")),
-            ("tool_call", Some("mcp.paperclip_finish")),
+            ("tool_call", Some("mcp.wardmote_finish")),
             ("tool_call", None),
-            ("agentMessage", Some("paperclip_finish")),
-            ("tool_result", Some("paperclip_block")),
+            ("agentMessage", Some("wardmote_finish")),
+            ("tool_result", Some("wardmote_block")),
         ] {
             let events = normalize_codex_notification(
                 "item/completed",

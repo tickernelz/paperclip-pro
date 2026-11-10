@@ -547,8 +547,8 @@ describe("Codex app-server Codex driver", () => {
     expect(resumed.developerInstructions).toBe(conversationMode === "direct" ? "" : baseInstructions);
     expect(resumed.dynamicTools).toEqual(started.dynamicTools);
     expect(started.dynamicTools).toEqual(conversationMode === "direct" ? [] : [
-      { name: "paperclip_finish", description: PRP_COMPLETION_TOOL_DESCRIPTION, inputSchema: PRP_COMPLETION_RESULT_PROVIDER_INPUT_SCHEMA },
-      { name: "paperclip_block", description: PRP_BLOCK_TOOL_DESCRIPTION, inputSchema: PRP_BLOCK_RESULT_PROVIDER_INPUT_SCHEMA },
+      { name: "wardmote_finish", description: PRP_COMPLETION_TOOL_DESCRIPTION, inputSchema: PRP_COMPLETION_RESULT_PROVIDER_INPUT_SCHEMA },
+      { name: "wardmote_block", description: PRP_BLOCK_TOOL_DESCRIPTION, inputSchema: PRP_BLOCK_RESULT_PROVIDER_INPUT_SCHEMA },
     ]);
     expect(resumed.config).toEqual(started.config);
     await recovered.session?.close({ reason: "verified additive recovery" });

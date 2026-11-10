@@ -107,8 +107,8 @@ the constant schema field includes both `type: "string"` and `const`.
 
 Two dynamic semantic tools are registered when supported:
 
-- `paperclip_finish` accepts `done` or `needs_review`;
-- `paperclip_block` accepts `blocked` and requires a blocker owner, action,
+- `wardmote_finish` accepts `done` or `needs_review`;
+- `wardmote_block` accepts `blocked` and requires a blocker owner, action,
   reason, and scope.
 
 Both normalize through the canonical `paperclip.run_result.v1` validator. The

@@ -34,7 +34,7 @@ function gradeObservation(input: NativeCompletionObservation, finalAnswer: boole
   const blocked = input.caseId === "native-blocked-report";
   const run = input.runs[0] ?? {};
   const expectedDisposition = blocked ? "blocked" : "done";
-  const expectedTool = blocked ? "paperclip_block" : "paperclip_finish";
+  const expectedTool = blocked ? "wardmote_block" : "wardmote_finish";
   const nativeResult = row(row(run.resultJson).nativeResult);
   check("one-native-attempt", input.runs.length === 1 && run.status === "succeeded" && run.runtimeMode === "native"
     && typeof run.id === "string" && run.id.length > 0 && typeof input.issue.id === "string" && input.issue.id.length > 0

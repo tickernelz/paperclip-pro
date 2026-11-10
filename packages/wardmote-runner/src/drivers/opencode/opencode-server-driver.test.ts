@@ -909,7 +909,7 @@ describe("OpenCodeServerDriver", () => {
     expect(environment.modelsFetchDisabled).toBe("true");
     expect(environment.defaultPluginsDisabled).toBe("true");
     expect(mcpEvidence.tools).toEqual(
-      expect.arrayContaining(["paperclip_finish", "paperclip_block"]),
+      expect.arrayContaining(["wardmote_finish", "wardmote_block"]),
     );
     expect(config).toContain("openrouter/deepseek/deepseek-v4-flash-0731");
     expect(config).toContain('"*": "allow"');
@@ -1526,7 +1526,7 @@ describe("OpenCodeServerDriver", () => {
         external_directory: { "*": "deny", [`${instructionRoot}/**`]: "allow" },
       },
       mcp: {
-        paperclip: { enabled: true },
+        wardmote: { enabled: true },
         "wardmote-assigned": {
           url: "https://paperclip.example/mcp",
           enabled: true,
@@ -1989,8 +1989,8 @@ describe("OpenCodeServerDriver", () => {
         "deepseek/deepseek-v4-flash-0731",
       );
       expect(config.provider.openrouter.models["deepseek/deepseek-v4-flash-0731"].options).toBeUndefined();
-      expect(config.permission.paperclip_finish).toBeUndefined();
-      expect(config.permission["paperclip_*"]).toBe("allow");
+      expect(config.permission.wardmote_finish).toBeUndefined();
+      expect(config.permission["wardmote_*"]).toBe("allow");
       await session.close({ reason: "permission mode test complete" });
     },
   );

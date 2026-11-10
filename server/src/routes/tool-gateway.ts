@@ -129,23 +129,23 @@ async function handleMcpGatewayProtocol(
             inputSchema: tool.parametersSchema ?? { type: "object", properties: {} },
             })),
             {
-              name: "paperclip_list_resources",
+              name: "wardmote_list_resources",
               description: "List resources from fully assigned MCP connections.",
               inputSchema: { type: "object", properties: {}, additionalProperties: false },
             },
             {
-              name: "paperclip_read_resource",
-              description: "Read a resource URI returned by paperclip_list_resources.",
+              name: "wardmote_read_resource",
+              description: "Read a resource URI returned by wardmote_list_resources.",
               inputSchema: { type: "object", required: ["uri"], properties: { uri: { type: "string" } }, additionalProperties: false },
             },
             {
-              name: "paperclip_list_prompts",
+              name: "wardmote_list_prompts",
               description: "List prompts from fully assigned MCP connections.",
               inputSchema: { type: "object", properties: {}, additionalProperties: false },
             },
             {
-              name: "paperclip_get_prompt",
-              description: "Get a prompt returned by paperclip_list_prompts.",
+              name: "wardmote_get_prompt",
+              description: "Get a prompt returned by wardmote_list_prompts.",
               inputSchema: { type: "object", required: ["name"], properties: { name: { type: "string" }, arguments: { type: "object" } }, additionalProperties: false },
             },
           ],
@@ -161,10 +161,10 @@ async function handleMcpGatewayProtocol(
         return;
       }
       const contextMethods = {
-        paperclip_list_resources: "resources/list",
-        paperclip_read_resource: "resources/read",
-        paperclip_list_prompts: "prompts/list",
-        paperclip_get_prompt: "prompts/get",
+        wardmote_list_resources: "resources/list",
+        wardmote_read_resource: "resources/read",
+        wardmote_list_prompts: "prompts/list",
+        wardmote_get_prompt: "prompts/get",
       } as const;
       const contextMethod = contextMethods[name as keyof typeof contextMethods];
       if (contextMethod) {

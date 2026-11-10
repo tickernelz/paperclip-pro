@@ -119,10 +119,10 @@ describe("native instruction payload measurement", () => {
         expect(instructions).toContain(WARDMOTE_EXECUTION_PROMPT);
         expect(instructions).toContain("You are an agent in a Paperclip company.");
         const deliveredTools = setup.dynamicTools as Array<{ name: string; description: string }>;
-        expect(deliveredTools.filter(tool => tool.name === "paperclip_finish")).toEqual([
+        expect(deliveredTools.filter(tool => tool.name === "wardmote_finish")).toEqual([
           expect.objectContaining({ description: PRP_COMPLETION_TOOL_DESCRIPTION }),
         ]);
-        expect(deliveredTools.filter(tool => tool.name === "paperclip_block")).toEqual([
+        expect(deliveredTools.filter(tool => tool.name === "wardmote_block")).toEqual([
           expect.objectContaining({ description: PRP_BLOCK_TOOL_DESCRIPTION }),
         ]);
         expect(deliveredTools).toHaveLength(tools.length + 2);
@@ -139,7 +139,7 @@ describe("native instruction payload measurement", () => {
             expect(JSON.stringify(turn.input)).toContain("Document saved");
           }
           expect(JSON.stringify(turn.input)).toContain("objective");
-          expect(JSON.stringify(turn.input)).toContain("Before ending this turn, obtain one accepted paperclip_finish or paperclip_block result.");
+          expect(JSON.stringify(turn.input)).toContain("Before ending this turn, obtain one accepted wardmote_finish or wardmote_block result.");
           expect(JSON.stringify(turn.input)).toContain("Earlier reports belong to earlier turns");
         } else {
           expect(JSON.stringify(turn.input)).toContain("Obtain one accepted result");

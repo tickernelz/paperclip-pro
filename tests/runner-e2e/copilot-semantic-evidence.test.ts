@@ -11,7 +11,7 @@ const rawInput = { summary: "EXACT-MARKER", reportedWorkDisposition: "done", com
 const validation = validatePrpStructuredRunResult(rawInput);
 if (!validation.ok) throw new Error("Semantic fixture input must pass the production validator");
 const result = validation.result;
-const receipt = { schema: "paperclip.semantic_tool_receipt.v2", operationId: "paperclip_finish", callIdentitySha256: hash("3"), inputSha256: hash(canonical(rawInput)), normalizedInputSha256: hash(canonical(result)), resultSha256: hash("opaque original returned encoding"), outcome: "returned" };
+const receipt = { schema: "paperclip.semantic_tool_receipt.v2", operationId: "wardmote_finish", callIdentitySha256: hash("3"), inputSha256: hash(canonical(rawInput)), normalizedInputSha256: hash(canonical(result)), resultSha256: hash("opaque original returned encoding"), outcome: "returned" };
 function row(seq: number, eventType: string, payload: any, overrides: any = {}) {
   const e = { schema: "paperclip.prp.event.v1", eventType, runId: "run", turnId: "turn", normalizedSessionId: "normalized", sourceInstanceId: "source", sourceKind: "runner", sourceSeq: seq, emittedAt: "2026-09-30T12:00:00Z", payload, ...overrides };
   return { companyId: "company", runId: "run", seq, eventType, sourceInstanceId: e.sourceInstanceId, sourceSeq: e.sourceSeq, payload: { prpEvent: e } };
@@ -94,9 +94,9 @@ describe("Copilot semantic completion public-event oracle", () => {
   it.each([null, undefined])("rejects missing envelope turn %s even with native provenance intact", turn => { const f = fixture(); frame(f.rows[4]!).turnId = turn; expect(() => readCopilotSemanticCompletion(f.rows, f.expected)).toThrow(); });
   it.each(["sessionId", "turnId", "method", "eventType"])("rejects authoritative provenance %s mismatch", key => { const f = fixture(); frame(f.rows[3]!).payload.provenance[key] = "foreign"; expect(() => readCopilotSemanticCompletion(f.rows, f.expected)).toThrow(); });
   it.each(["callIdentitySha256", "inputSha256", "normalizedInputSha256", "resultSha256", "operationId", "outcome"])("rejects native %s disagreement", key => { const f = fixture(); setField(f.rows[4], `semantic${key[0]!.toUpperCase()}${key.slice(1)}`, key.endsWith("Sha256") ? "a".repeat(64) : "wrong"); expect(() => readCopilotSemanticCompletion(f.rows, f.expected)).toThrow(); });
-  it("does not infer acceptance from returned receipt or a tool named paperclip_finish", () => {
+  it("does not infer acceptance from returned receipt or a tool named wardmote_finish", () => {
     const f = fixture(); frame(f.rows[6]!).payload.result = { accepted: false, summary: "EXACT-MARKER" }; expect(() => readCopilotSemanticCompletion(f.rows, f.expected)).toThrow();
-    const g = fixture(); frame(g.rows[4]!).payload.title = "paperclip_finish"; frame(g.rows[4]!).payload.details = frame(g.rows[4]!).payload.details.filter((d: any) => !d.name.startsWith("semantic")); expect(() => readCopilotSemanticCompletion(g.rows, g.expected)).toThrow();
+    const g = fixture(); frame(g.rows[4]!).payload.title = "wardmote_finish"; frame(g.rows[4]!).payload.details = frame(g.rows[4]!).payload.details.filter((d: any) => !d.name.startsWith("semantic")); expect(() => readCopilotSemanticCompletion(g.rows, g.expected)).toThrow();
   });
   it.each(["failed", "cancelled", "interrupted"])("rejects %s terminal", status => { const f = fixture(); f.rows[5]!.eventType = `turn.${status}`; frame(f.rows[5]!).eventType = `turn.${status}`; expect(() => readCopilotSemanticCompletion(f.rows, f.expected)).toThrow(); });
   it("rejects changed accepted body, forged call ID, wrong summary and rejected result", () => {

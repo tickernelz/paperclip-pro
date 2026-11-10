@@ -394,7 +394,7 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
       expect((await request(app).post("/mcp/wardmote").set("Authorization", `Bearer ${f.tokens.access_token}`).send({})).status).toBe(503);
       await expect(oauth.register({ client_name: "disabled", redirect_uris: [redirectUri] })).rejects.toMatchObject({ status: 503 });
       await expect(oauth.token({ grant_type: "refresh_token", client_id: f.client.client_id, resource: config.resource, refresh_token: f.tokens.refresh_token })).rejects.toMatchObject({ status: 503 });
-      await expect(execute(f.tokens.access_token, "paperclip_list_agents", { companyId: f.company.id })).rejects.toMatchObject({ status: 503 });
+      await expect(execute(f.tokens.access_token, "wardmote_list_agents", { companyId: f.company.id })).rejects.toMatchObject({ status: 503 });
       expect(dispatch).not.toHaveBeenCalled();
       const setup = await request(app).get("/api/mcp/setup").set("X-Forwarded-Host", "attacker.example");
       expect(setup.status).toBe(200);
@@ -462,12 +462,12 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
     const f = await fixture("member", false);
     const dispatch = vi.fn();
     const execute = createPublicMcpExecutor(db, oauth, dispatch);
-    await expect(execute(f.tokens.access_token, "paperclip_list_agents", { companyId: randomUUID() })).rejects.toThrow();
+    await expect(execute(f.tokens.access_token, "wardmote_list_agents", { companyId: randomUUID() })).rejects.toThrow();
     const args = { companyId: f.company.id, requestId: randomUUID(), taskId: randomUUID(), body: "feedback" };
-    await expect(execute(f.tokens.access_token, "paperclip_add_comment", args)).rejects.toThrow();
+    await expect(execute(f.tokens.access_token, "wardmote_add_comment", args)).rejects.toThrow();
     const g = await fixture();
     await db.update(companyMemberships).set({ membershipRole: "viewer" }).where(eq(companyMemberships.id, g.membership.id));
-    await expect(execute(g.tokens.access_token, "paperclip_add_comment", { ...args, companyId: g.company.id })).rejects.toThrow();
+    await expect(execute(g.tokens.access_token, "wardmote_add_comment", { ...args, companyId: g.company.id })).rejects.toThrow();
     expect(dispatch).not.toHaveBeenCalled();
   });
 
@@ -501,23 +501,23 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
     const dispatch = vi.fn().mockResolvedValue({ id: randomUUID(), title: "durable" });
     const execute = createPublicMcpExecutor(db, oauth, dispatch);
     const args = { companyId: f.company.id, requestId: randomUUID(), title: "durable", description: "A report", assigneeAgentId: randomUUID() };
-    const first = await execute(f.tokens.access_token, "paperclip_create_task", args);
-    expect(await execute(f.tokens.access_token, "paperclip_create_task", args)).toEqual(first);
+    const first = await execute(f.tokens.access_token, "wardmote_create_task", args);
+    expect(await execute(f.tokens.access_token, "wardmote_create_task", args)).toEqual(first);
     const reconnectedClient = await oauth.register({ client_name: "Reconnected assistant", redirect_uris: [redirectUri] });
     const reconnectId = (await oauth.authorize({ client_id: reconnectedClient.client_id, redirect_uri: redirectUri, resource: config.resource, scope: "paperclip:read paperclip:write", response_type: "code", code_challenge: challenge, code_challenge_method: "S256" })).split("/").at(-1)!;
     const reconnectConsent = await oauth.consent(reconnectId, f.actor, { decision: "approve", companyId: f.company.id, allowWrites: true });
     const reconnected = await oauth.token({ grant_type: "authorization_code", client_id: reconnectedClient.client_id, resource: config.resource, redirect_uri: redirectUri, code: new URL(reconnectConsent.redirectUrl).searchParams.get("code"), code_verifier: verifier });
-    expect(await execute(reconnected.access_token, "paperclip_create_task", args)).toEqual(first);
+    expect(await execute(reconnected.access_token, "wardmote_create_task", args)).toEqual(first);
     expect(dispatch).toHaveBeenCalledTimes(1);
     expect(dispatch.mock.calls[0]?.[3]).toMatchObject({ status: "todo", title: "durable" });
-    await expect(execute(f.tokens.access_token, "paperclip_create_task", { ...args, title: "changed" })).rejects.toThrow("different arguments");
+    await expect(execute(f.tokens.access_token, "wardmote_create_task", { ...args, title: "changed" })).rejects.toThrow("different arguments");
     dispatch.mockRejectedValueOnce(new Error("lost response"));
     const uncertain = { ...args, requestId: randomUUID() };
-    expect(await execute(f.tokens.access_token, "paperclip_create_task", uncertain)).toHaveProperty("outcome", "unknown");
-    expect(await execute(f.tokens.access_token, "paperclip_create_task", uncertain)).toHaveProperty("outcome", "unknown");
+    expect(await execute(f.tokens.access_token, "wardmote_create_task", uncertain)).toHaveProperty("outcome", "unknown");
+    expect(await execute(f.tokens.access_token, "wardmote_create_task", uncertain)).toHaveProperty("outcome", "unknown");
     expect(dispatch).toHaveBeenCalledTimes(2);
     const concurrent = { ...args, requestId: randomUUID() };
-    await Promise.all([execute(f.tokens.access_token, "paperclip_create_task", concurrent), execute(f.tokens.access_token, "paperclip_create_task", concurrent)]);
+    await Promise.all([execute(f.tokens.access_token, "wardmote_create_task", concurrent), execute(f.tokens.access_token, "wardmote_create_task", concurrent)]);
     expect(dispatch).toHaveBeenCalledTimes(3);
     expect(await db.select().from(mcpMutationReceipts).where(eq(mcpMutationReceipts.requestId, concurrent.requestId))).toHaveLength(1);
   });
@@ -541,36 +541,36 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
       api.use(activityRoutes(db));
       const execute = createPublicMcpExecutor(db, oauth, createMcpApiDispatch(api));
       const args = { companyId: f.company.id, requestId: randomUUID(), title: "Write a durable report", description: "Research the supplied material", assigneeAgentId: agent!.id };
-      const result = await execute(f.tokens.access_token, "paperclip_create_task", args);
+      const result = await execute(f.tokens.access_token, "wardmote_create_task", args);
       expect(result).toHaveProperty("task");
       const task = result.task as { id: string; status: string };
       expect(task.status).toBe("todo");
-      expect(await execute(f.tokens.access_token, "paperclip_create_task", args)).toEqual(result);
+      expect(await execute(f.tokens.access_token, "wardmote_create_task", args)).toEqual(result);
       expect(await db.select().from(issues).where(eq(issues.companyId, f.company.id))).toHaveLength(1);
       expect(wake).toHaveBeenCalledTimes(1);
       expect(wake.mock.calls[0]?.[0]).toMatchObject({ requestedByActorType: "user", requestedByActorId: f.actor.userId });
       // Avoid starting execution when adding feedback; the existing route accepts a completed task without reopening it.
       await db.update(issues).set({ status: "done", assigneeAgentId: null }).where(eq(issues.id, task.id));
       const commentArgs = { companyId: f.company.id, taskId: task.id, requestId: randomUUID(), body: "Please include the source citations." };
-      const feedback = await execute(f.tokens.access_token, "paperclip_add_comment", commentArgs);
+      const feedback = await execute(f.tokens.access_token, "wardmote_add_comment", commentArgs);
       expect(feedback).toHaveProperty("comment.authorUserId", f.actor.userId);
-      expect(await execute(f.tokens.access_token, "paperclip_add_comment", commentArgs)).toEqual(feedback);
+      expect(await execute(f.tokens.access_token, "wardmote_add_comment", commentArgs)).toEqual(feedback);
       expect(await db.select().from(issueComments).where(eq(issueComments.issueId, task.id))).toHaveLength(1);
       await documentService(db).upsertIssueDocument({ issueId: task.id, key: "report", title: "Research report", format: "markdown", body: "A concrete durable result.", createdByUserId: f.actor.userId });
       // A fresh executor represents another assistant conversation; no mutable company/session state is shared.
       const later = createPublicMcpExecutor(db, oauth, createMcpApiDispatch(api));
-      expect(await later(f.tokens.access_token, "paperclip_read_document", { companyId: f.company.id, taskId: task.id, key: "report" })).toHaveProperty("document.body", "A concrete durable result.");
+      expect(await later(f.tokens.access_token, "wardmote_read_document", { companyId: f.company.id, taskId: task.id, key: "report" })).toHaveProperty("document.body", "A concrete durable result.");
       const g = await fixture();
-      await expect(later(g.tokens.access_token, "paperclip_read_document", { companyId: g.company.id, taskId: task.id, key: "report" })).rejects.toThrow();
+      await expect(later(g.tokens.access_token, "wardmote_read_document", { companyId: g.company.id, taskId: task.id, key: "report" })).rejects.toThrow();
       const unavailable = { ...args, requestId: randomUUID(), assigneeAgentId: randomUUID() };
-      const rejected = await execute(f.tokens.access_token, "paperclip_create_task", unavailable);
+      const rejected = await execute(f.tokens.access_token, "wardmote_create_task", unavailable);
       expect(rejected).toHaveProperty("outcome", "rejected");
-      expect(await execute(f.tokens.access_token, "paperclip_create_task", unavailable)).toEqual(rejected);
+      expect(await execute(f.tokens.access_token, "wardmote_create_task", unavailable)).toEqual(rejected);
       expect(wake).toHaveBeenCalledTimes(1);
       // Human assignment to a paused agent is deliberate and allowed by existing routes.
       // Creating its queued task must neither unpause the agent nor claim execution started.
       await db.update(agents).set({ status: "paused" }).where(eq(agents.id, agent!.id));
-      const paused = await execute(f.tokens.access_token, "paperclip_create_task", { ...args, requestId: randomUUID(), title: "Wait for the paused researcher" });
+      const paused = await execute(f.tokens.access_token, "wardmote_create_task", { ...args, requestId: randomUUID(), title: "Wait for the paused researcher" });
       expect(paused).toHaveProperty("task.status", "todo");
       expect(paused.scheduling).toContain("does not guarantee execution has started");
       expect((await db.select().from(agents).where(eq(agents.id, agent!.id)))[0]?.status).toBe("paused");
@@ -583,13 +583,13 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
     const dispatch = vi.fn().mockResolvedValue({ id: randomUUID(), name: "Updated" });
     const execute = createPublicMcpExecutor(db, oauth, dispatch);
     const args = { companyId: old.company.id, agentId: randomUUID(), requestId: randomUUID(), changes: { title: "Writer" } };
-    await expect(execute(old.tokens.access_token, "paperclip_update_agent", args)).rejects.toThrow("paperclip:configure");
+    await expect(execute(old.tokens.access_token, "wardmote_update_agent", args)).rejects.toThrow("paperclip:configure");
     expect(dispatch).not.toHaveBeenCalled();
-    await execute(f.tokens.access_token, "paperclip_update_agent", { ...args, companyId: f.company.id });
+    await execute(f.tokens.access_token, "wardmote_update_agent", { ...args, companyId: f.company.id });
     expect(dispatch).toHaveBeenCalledTimes(1);
     expect((await oauth.authenticate(f.tokens.access_token)).grant.scopes).toContain("paperclip:configure");
     await db.update(companyMemberships).set({ membershipRole: "viewer" }).where(eq(companyMemberships.id, f.membership.id));
-    await expect(execute(f.tokens.access_token, "paperclip_update_agent", { ...args, companyId: f.company.id, requestId: randomUUID() })).rejects.toThrow("permission");
+    await expect(execute(f.tokens.access_token, "wardmote_update_agent", { ...args, companyId: f.company.id, requestId: randomUUID() })).rejects.toThrow("permission");
     const refreshed = await oauth.token({ grant_type: "refresh_token", client_id: old.client.client_id, resource: config.resource, refresh_token: old.tokens.refresh_token });
     expect(refreshed.scope).not.toContain("configure");
   });
@@ -599,16 +599,16 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
     const dispatch = vi.fn().mockResolvedValue({ id: randomUUID(), title: "New title" });
     const execute = createPublicMcpExecutor(db, oauth, dispatch);
     const args = { companyId: f.company.id, taskId: randomUUID(), requestId: randomUUID(), changes: { title: "New title" } };
-    const first = await execute(f.tokens.access_token, "paperclip_update_task", args);
-    expect(await execute(f.tokens.access_token, "paperclip_call_api", { companyId: f.company.id, operationId: "paperclip_update_task", arguments: args })).toEqual(first);
+    const first = await execute(f.tokens.access_token, "wardmote_update_task", args);
+    expect(await execute(f.tokens.access_token, "wardmote_call_api", { companyId: f.company.id, operationId: "wardmote_update_task", arguments: args })).toEqual(first);
     expect(dispatch).toHaveBeenCalledTimes(1);
     for (const field of ["onBehalfOfUserId", "reviewPolicy", "executionPolicy", "interrupt", "reviewInteractionId", "permissions"]) {
-      await expect(execute(f.tokens.access_token, "paperclip_update_task", { ...args, changes: { [field]: "unauthorized" } })).rejects.toThrow();
+      await expect(execute(f.tokens.access_token, "wardmote_update_task", { ...args, changes: { [field]: "unauthorized" } })).rejects.toThrow();
     }
-    for (const operationId of ["DELETE /companies/:id", "paperclip_call_api", "approve_approval", "https://evil.example"]) {
-      await expect(execute(f.tokens.access_token, "paperclip_call_api", { companyId: f.company.id, operationId, arguments: args })).rejects.toThrow();
+    for (const operationId of ["DELETE /companies/:id", "wardmote_call_api", "approve_approval", "https://evil.example"]) {
+      await expect(execute(f.tokens.access_token, "wardmote_call_api", { companyId: f.company.id, operationId, arguments: args })).rejects.toThrow();
     }
-    await expect(execute(f.tokens.access_token, "paperclip_call_api", { companyId: f.company.id, operationId: "paperclip_update_task", arguments: { ...args, companyId: randomUUID() } })).rejects.toThrow("Company");
+    await expect(execute(f.tokens.access_token, "wardmote_call_api", { companyId: f.company.id, operationId: "wardmote_update_task", arguments: { ...args, companyId: randomUUID() } })).rejects.toThrow("Company");
     expect(dispatch).toHaveBeenCalledTimes(1);
   });
 
@@ -639,12 +639,12 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
     const f = await expandedFixture();
     try {
       await makePrivate(f);
-      expect(await f.call("paperclip_search_tasks")).toMatchObject({ tasks: [] });
-      for (const name of ["paperclip_read_task", "paperclip_list_deliverables", "paperclip_list_document_revisions"]) {
-        await expect(f.call(name, { taskId: f.issue.id, ...(name === "paperclip_list_document_revisions" ? { key: "plan" } : {}) })).rejects.toMatchObject({ status: 404 });
+      expect(await f.call("wardmote_search_tasks")).toMatchObject({ tasks: [] });
+      for (const name of ["wardmote_read_task", "wardmote_list_deliverables", "wardmote_list_document_revisions"]) {
+        await expect(f.call(name, { taskId: f.issue.id, ...(name === "wardmote_list_document_revisions" ? { key: "plan" } : {}) })).rejects.toMatchObject({ status: 404 });
       }
-      expect(await f.call("paperclip_update_task", { taskId: f.issue.id, requestId: randomUUID(), changes: { title: "Unauthorized edit" } })).toMatchObject({ outcome: "rejected", status: 404 });
-      await expect(f.call("paperclip_get_upload_url", { taskId: f.issue.id, requestId: randomUUID(), filename: "data.txt", contentType: "text/plain", byteSize: 2, sha256: createHash("sha256").update("hi").digest("hex") })).rejects.toThrow();
+      expect(await f.call("wardmote_update_task", { taskId: f.issue.id, requestId: randomUUID(), changes: { title: "Unauthorized edit" } })).toMatchObject({ outcome: "rejected", status: 404 });
+      await expect(f.call("wardmote_get_upload_url", { taskId: f.issue.id, requestId: randomUUID(), filename: "data.txt", contentType: "text/plain", byteSize: 2, sha256: createHash("sha256").update("hi").digest("hex") })).rejects.toThrow();
       expect((await db.select().from(issues).where(eq(issues.id, f.issue.id)))[0]?.title).toBe("Work");
       expect(await db.select().from(mcpAttachmentUploads).where(eq(mcpAttachmentUploads.taskId, f.issue.id))).toHaveLength(0);
     } finally { await f.cleanup(); }
@@ -658,29 +658,29 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
       const bytes = Buffer.from("Private attachment");
       const args = { taskId: f.issue.id, filename: "private.txt", contentType: "text/plain", byteSize: bytes.length, sha256: createHash("sha256").update(bytes).digest("hex") };
       const app = express(); app.use(f.transfers.router);
-      const uploadedUrl = new URL((await f.call("paperclip_get_upload_url", { ...args, requestId: randomUUID() })).url as string);
+      const uploadedUrl = new URL((await f.call("wardmote_get_upload_url", { ...args, requestId: randomUUID() })).url as string);
       const uploaded = await request(app).put(uploadedUrl.pathname + uploadedUrl.search).set("Content-Type", args.contentType).send(bytes);
       expect(uploaded.status).toBe(200);
-      const download = new URL((await f.call("paperclip_get_download_url", { attachmentId: uploaded.body.attachment.id })).url as string);
-      const pending = await f.call("paperclip_get_upload_url", { ...args, requestId: randomUUID() });
+      const download = new URL((await f.call("wardmote_get_download_url", { attachmentId: uploaded.body.attachment.id })).url as string);
+      const pending = await f.call("wardmote_get_upload_url", { ...args, requestId: randomUUID() });
       const pendingUrl = new URL(pending.url as string);
       expect((await request(app).get(download.pathname + download.search)).status).toBe(200);
       await db.update(issueAccessGrants).set({ revokedAt: new Date() }).where(eq(issueAccessGrants.id, grant!.id));
       expect((await request(app).get(download.pathname + download.search)).status).not.toBe(200);
       expect((await request(app).put(pendingUrl.pathname + pendingUrl.search).set("Content-Type", args.contentType).send(bytes)).status).toBe(403);
       expect((await db.select().from(mcpAttachmentUploads).where(eq(mcpAttachmentUploads.id, pending.uploadId as string)))[0]?.attachmentId).toBeNull();
-      await expect(f.call("paperclip_get_download_url", { attachmentId: uploaded.body.attachment.id })).rejects.toThrow();
+      await expect(f.call("wardmote_get_download_url", { attachmentId: uploaded.body.attachment.id })).rejects.toThrow();
     } finally { await f.cleanup(); }
   });
 
   it("edits, blocks and completes tasks through real routes and rejects review overrides", async () => {
     const f = await expandedFixture();
     try {
-      expect(await f.call("paperclip_update_task", { taskId: f.issue.id, requestId: randomUUID(), changes: { title: "Edited", description: "Durable detail" } })).toHaveProperty("task.title", "Edited");
-      expect(await f.call("paperclip_block_task", { taskId: f.issue.id, requestId: randomUUID(), unblockDescriptor: { owner: "board", action: "Supply the source file" } })).toHaveProperty("task.status", "blocked");
-      expect(await f.call("paperclip_finish_task", { taskId: f.issue.id, requestId: randomUUID() })).toHaveProperty("task.status", "done");
+      expect(await f.call("wardmote_update_task", { taskId: f.issue.id, requestId: randomUUID(), changes: { title: "Edited", description: "Durable detail" } })).toHaveProperty("task.title", "Edited");
+      expect(await f.call("wardmote_block_task", { taskId: f.issue.id, requestId: randomUUID(), unblockDescriptor: { owner: "board", action: "Supply the source file" } })).toHaveProperty("task.status", "blocked");
+      expect(await f.call("wardmote_finish_task", { taskId: f.issue.id, requestId: randomUUID() })).toHaveProperty("task.status", "done");
       await db.update(issues).set({ status: "in_review" }).where(eq(issues.id, f.issue.id));
-      const denied = await f.call("paperclip_finish_task", { taskId: f.issue.id, requestId: randomUUID() });
+      const denied = await f.call("wardmote_finish_task", { taskId: f.issue.id, requestId: randomUUID() });
       expect(denied).toMatchObject({ outcome: "rejected", status: 403, code: "MCP_REVIEW_REQUIRED" });
       expect((await db.select().from(issues).where(eq(issues.id, f.issue.id)))[0]?.status).toBe("in_review");
       const logs = await db.select().from(activityLog).where(eq(activityLog.entityId, f.issue.id));
@@ -695,15 +695,15 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
       const [run] = await db.insert(heartbeatRuns).values({ companyId: f.company.id, agentId: agent!.id, status, runtimeMode: "native", nativeIssueId: f.issue.id }).returning();
       await db.update(issues).set({ assigneeAgentId: agent!.id, executionRunId: run!.id, status: "in_progress" }).where(eq(issues.id, f.issue.id));
       for (const changes of [{ status: "done" }, { status: "blocked", unblockDescriptor: { owner: "board", action: "Supply data" } }, { assigneeAgentId: null }, { status: "cancelled" }]) {
-        expect(await f.call("paperclip_update_task", { taskId: f.issue.id, requestId: randomUUID(), changes })).toMatchObject({ outcome: "rejected", status: 409, code: "MCP_ACTIVE_EXECUTION" });
+        expect(await f.call("wardmote_update_task", { taskId: f.issue.id, requestId: randomUUID(), changes })).toMatchObject({ outcome: "rejected", status: 409, code: "MCP_ACTIVE_EXECUTION" });
       }
       expect((await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, run!.id)))[0]?.status).toBe(status);
-      expect(await f.call("paperclip_update_task", { taskId: f.issue.id, requestId: randomUUID(), changes: { title: "Clarified title" } })).toHaveProperty("task.title", "Clarified title");
+      expect(await f.call("wardmote_update_task", { taskId: f.issue.id, requestId: randomUUID(), changes: { title: "Clarified title" } })).toHaveProperty("task.title", "Clarified title");
       await db.update(heartbeatRuns).set({ status: "succeeded" }).where(eq(heartbeatRuns.id, run!.id));
       await db.update(issues).set({ assigneeAgentId: null, executionRunId: null, status: "backlog" }).where(eq(issues.id, f.issue.id));
       const [second] = await db.insert(issues).values({ companyId: f.company.id, title: "Dependent", status: "backlog" }).returning();
-      expect(await f.call("paperclip_update_task", { taskId: second!.id, requestId: randomUUID(), changes: { blockedByIssueIds: [f.issue.id] } })).toHaveProperty("task.id", second!.id);
-      const cycle = await f.call("paperclip_update_task", { taskId: f.issue.id, requestId: randomUUID(), changes: { blockedByIssueIds: [second!.id] } });
+      expect(await f.call("wardmote_update_task", { taskId: second!.id, requestId: randomUUID(), changes: { blockedByIssueIds: [f.issue.id] } })).toHaveProperty("task.id", second!.id);
+      const cycle = await f.call("wardmote_update_task", { taskId: f.issue.id, requestId: randomUUID(), changes: { blockedByIssueIds: [second!.id] } });
       expect(cycle).toMatchObject({ outcome: "rejected" });
       expect([400, 409, 422]).toContain(cycle.status);
     } finally { await f.cleanup(); }
@@ -718,17 +718,17 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
     try {
       const [agent] = await db.insert(agents).values({ companyId: f.company.id, name: "Reasoning", adapterType,
         adapterConfig: { model, [field]: "high", instructionsBundleMode: "managed" }, runtimeConfig: { heartbeat: { enabled: false } } }).returning();
-      const edited = await f.call("paperclip_update_agent", { agentId: agent!.id, requestId: randomUUID(), changes: { adapterConfig: { reasoningEffort: "low" } } });
+      const edited = await f.call("wardmote_update_agent", { agentId: agent!.id, requestId: randomUUID(), changes: { adapterConfig: { reasoningEffort: "low" } } });
       expect(edited, JSON.stringify(edited)).toHaveProperty("agent.adapterConfig.reasoningEffort", "low");
       const stored = (await db.select().from(agents).where(eq(agents.id, agent!.id)))[0]!;
       expect(stored.adapterConfig[field]).toBe("low");
       expect(stored.adapterConfig.reasoningEffort).toBeUndefined();
-      expect(await f.call("paperclip_get_agent", { agentId: agent!.id })).toHaveProperty("agent.adapterConfig.reasoningEffort", "low");
+      expect(await f.call("wardmote_get_agent", { agentId: agent!.id })).toHaveProperty("agent.adapterConfig.reasoningEffort", "low");
       for (const reasoningEffort of ["ultra"]) {
-        expect(await f.call("paperclip_update_agent", { agentId: agent!.id, requestId: randomUUID(), changes: { adapterConfig: { reasoningEffort } } })).toMatchObject({ outcome: "rejected" });
+        expect(await f.call("wardmote_update_agent", { agentId: agent!.id, requestId: randomUUID(), changes: { adapterConfig: { reasoningEffort } } })).toMatchObject({ outcome: "rejected" });
       }
       if (adapterType === "claude_local") {
-        expect(await f.call("paperclip_update_agent", { agentId: agent!.id, requestId: randomUUID(), changes: { adapterConfig: { model: "claude-haiku-4-5" } } })).toMatchObject({ outcome: "rejected", status: 422 });
+        expect(await f.call("wardmote_update_agent", { agentId: agent!.id, requestId: randomUUID(), changes: { adapterConfig: { model: "claude-haiku-4-5" } } })).toMatchObject({ outcome: "rejected", status: 422 });
       }
     } finally { await f.cleanup(); }
   });
@@ -737,35 +737,35 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
     const f = await expandedFixture();
     try {
       const a = { taskId: f.issue.id, requestId: randomUUID(), key: "report", document: { format: "markdown", body: "First revision", baseRevisionId: null } };
-      const first = await f.call("paperclip_write_document", a);
+      const first = await f.call("wardmote_write_document", a);
       expect(first).toHaveProperty("document.body", "First revision");
       const revision = (first.document as { latestRevisionId: string }).latestRevisionId;
       expect(revision).toBeTruthy();
-      const second = await f.call("paperclip_write_document", { ...a, requestId: randomUUID(), document: { ...a.document, body: "Second revision", baseRevisionId: revision } });
+      const second = await f.call("wardmote_write_document", { ...a, requestId: randomUUID(), document: { ...a.document, body: "Second revision", baseRevisionId: revision } });
       expect(second).toHaveProperty("document.body", "Second revision");
-      expect(await f.call("paperclip_write_document", { ...a, requestId: randomUUID() })).toMatchObject({ outcome: "rejected", status: 409 });
-      expect(await f.call("paperclip_read_document", { taskId: f.issue.id, key: "report" })).toHaveProperty("document.body", "Second revision");
-      expect(await f.call("paperclip_list_document_revisions", { taskId: f.issue.id, key: "report" })).toHaveProperty("revisions");
+      expect(await f.call("wardmote_write_document", { ...a, requestId: randomUUID() })).toMatchObject({ outcome: "rejected", status: 409 });
+      expect(await f.call("wardmote_read_document", { taskId: f.issue.id, key: "report" })).toHaveProperty("document.body", "Second revision");
+      expect(await f.call("wardmote_list_document_revisions", { taskId: f.issue.id, key: "report" })).toHaveProperty("revisions");
     } finally { await f.cleanup(); }
   });
 
   it("creates and edits projects and agents while rejecting privileged configuration fields", async () => {
     const f = await expandedFixture(true);
     try {
-      const created = await f.call("paperclip_create_project", { requestId: randomUUID(), project: { name: "Research", description: "Project context" } });
+      const created = await f.call("wardmote_create_project", { requestId: randomUUID(), project: { name: "Research", description: "Project context" } });
       expect(created).toHaveProperty("project.name", "Research");
       const id = (created.project as { id: string }).id;
-      expect(await f.call("paperclip_update_project", { projectId: id, requestId: randomUUID(), changes: { name: "Updated project" } })).toHaveProperty("project.name", "Updated project");
+      expect(await f.call("wardmote_update_project", { projectId: id, requestId: randomUUID(), changes: { name: "Updated project" } })).toHaveProperty("project.name", "Updated project");
       const [agent] = await db.insert(agents).values({ companyId: f.company.id, name: "Writer", adapterType: "codex_local", adapterConfig: { instructionsBundleMode: "managed", model: "gpt-5.4-mini", env: { SAFE_EXISTING: "retain" } }, runtimeConfig: { heartbeat: { enabled: false } } }).returning();
-      const edited = await f.call("paperclip_update_agent", { agentId: agent!.id, requestId: randomUUID(), changes: { title: "Editor", budgetMonthlyCents: 1200, adapterConfig: { model: "gpt-5.4" } } });
+      const edited = await f.call("wardmote_update_agent", { agentId: agent!.id, requestId: randomUUID(), changes: { title: "Editor", budgetMonthlyCents: 1200, adapterConfig: { model: "gpt-5.4" } } });
       expect(edited, JSON.stringify(edited)).toHaveProperty("agent.title", "Editor");
       const stored = (await db.select().from(agents).where(eq(agents.id, agent!.id)))[0]!;
       expect(stored.adapterConfig.env).toEqual({ SAFE_EXISTING: { type: "plain", value: "retain" } });
       expect(stored.budgetMonthlyCents).toBe(1200);
-      const read = await f.call("paperclip_get_agent", { agentId: agent!.id });
+      const read = await f.call("wardmote_get_agent", { agentId: agent!.id });
       expect(JSON.stringify(read)).not.toContain("SAFE_EXISTING");
       for (const changes of [{ permissions: {} }, { adapterConfig: { command: "evil" } }, { runtimeConfig: { debug: { providerTrace: "raw" } } }]) {
-        await expect(f.call("paperclip_update_agent", { agentId: agent!.id, requestId: randomUUID(), changes })).rejects.toThrow();
+        await expect(f.call("wardmote_update_agent", { agentId: agent!.id, requestId: randomUUID(), changes })).rejects.toThrow();
       }
     } finally { await f.cleanup(); }
   });
@@ -776,8 +776,8 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
       const [agent] = await db.insert(agents).values({ companyId: f.company.id, name: "Legacy writer", adapterType: "codex_local", adapterConfig: { instructionsBundleMode: "managed", promptTemplate: "Newer human instructions" } }).returning();
       for (const base of [{ baseHash: null }, { baseHash: "0".repeat(64) }, { baseRevisionId: randomUUID() }]) {
         const args = { companyId: f.company.id, agentId: agent!.id, requestId: randomUUID(), file: { path: "promptTemplate.legacy.md", content: "Stale assistant overwrite", ...base } };
-        expect(await f.call("paperclip_update_agent_instructions", args)).toMatchObject({ outcome: "rejected", status: 422, code: "MCP_LEGACY_INSTRUCTIONS_UNVERSIONED" });
-        expect(await f.call("paperclip_call_api", { operationId: "paperclip_update_agent_instructions", arguments: { ...args, requestId: randomUUID() } })).toMatchObject({ outcome: "rejected", status: 422, code: "MCP_LEGACY_INSTRUCTIONS_UNVERSIONED" });
+        expect(await f.call("wardmote_update_agent_instructions", args)).toMatchObject({ outcome: "rejected", status: 422, code: "MCP_LEGACY_INSTRUCTIONS_UNVERSIONED" });
+        expect(await f.call("wardmote_call_api", { operationId: "wardmote_update_agent_instructions", arguments: { ...args, requestId: randomUUID() } })).toMatchObject({ outcome: "rejected", status: 422, code: "MCP_LEGACY_INSTRUCTIONS_UNVERSIONED" });
       }
       const stored = (await db.select().from(agents).where(eq(agents.id, agent!.id)))[0]!;
       expect(stored.adapterConfig.promptTemplate).toBe("Newer human instructions");
@@ -789,23 +789,23 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
     try {
       const [agent] = await db.insert(agents).values({ companyId: f.company.id, name: "Writer", adapterType: "codex_local", adapterConfig: { instructionsBundleMode: "managed" } }).returning();
       const input = { agentId: agent!.id, requestId: randomUUID(), file: { path: "AGENTS.md", content: "First instructions", baseRevisionId: null } };
-      expect(await f.call("paperclip_update_agent_instructions", input)).toHaveProperty("instructions.content", "First instructions");
-      const current = await f.call("paperclip_read_agent_instructions", { agentId: agent!.id });
+      expect(await f.call("wardmote_update_agent_instructions", input)).toHaveProperty("instructions.content", "First instructions");
+      const current = await f.call("wardmote_read_agent_instructions", { agentId: agent!.id });
       const instructions = current.instructions as { revision: { id: string } };
       expect(instructions.revision.id).toBeTruthy();
-      expect(await f.call("paperclip_update_agent_instructions", { ...input, requestId: randomUUID(), file: { ...input.file, content: "New instructions", baseRevisionId: instructions.revision.id } })).toHaveProperty("instructions.content", "New instructions");
-      expect(await f.call("paperclip_update_agent_instructions", { ...input, requestId: randomUUID() })).toMatchObject({ outcome: "rejected", status: 409 });
-      expect(await f.call("paperclip_list_agent_instruction_revisions", { agentId: agent!.id })).toHaveProperty("revisions");
-      const created = await f.call("paperclip_create_skill", { requestId: randomUUID(), skill: { name: "Source review", markdown: "# Source review\nReview citations carefully." } });
+      expect(await f.call("wardmote_update_agent_instructions", { ...input, requestId: randomUUID(), file: { ...input.file, content: "New instructions", baseRevisionId: instructions.revision.id } })).toHaveProperty("instructions.content", "New instructions");
+      expect(await f.call("wardmote_update_agent_instructions", { ...input, requestId: randomUUID() })).toMatchObject({ outcome: "rejected", status: 409 });
+      expect(await f.call("wardmote_list_agent_instruction_revisions", { agentId: agent!.id })).toHaveProperty("revisions");
+      const created = await f.call("wardmote_create_skill", { requestId: randomUUID(), skill: { name: "Source review", markdown: "# Source review\nReview citations carefully." } });
       expect(created).toHaveProperty("skill.id");
       const skill = created.skill as { id: string; currentVersionId: string };
       expect(skill.currentVersionId).toBeTruthy();
-      const read = await f.call("paperclip_read_skill_file", { skillId: skill.id });
+      const read = await f.call("wardmote_read_skill_file", { skillId: skill.id });
       const file = read.file as { content: string };
       const write = { skillId: skill.id, requestId: randomUUID(), file: { path: "SKILL.md", content: file.content + "\nPreserve source links.", expectedVersionId: skill.currentVersionId } };
-      expect(await f.call("paperclip_write_skill_file", write)).toHaveProperty("file.versionId");
-      expect(await f.call("paperclip_write_skill_file", { ...write, requestId: randomUUID() })).toMatchObject({ outcome: "rejected", status: 409 });
-      expect(await f.call("paperclip_update_skill", { skillId: skill.id, requestId: randomUUID(), changes: { tagline: "Check sources" } })).toHaveProperty("skill.tagline", "Check sources");
+      expect(await f.call("wardmote_write_skill_file", write)).toHaveProperty("file.versionId");
+      expect(await f.call("wardmote_write_skill_file", { ...write, requestId: randomUUID() })).toMatchObject({ outcome: "rejected", status: 409 });
+      expect(await f.call("wardmote_update_skill", { skillId: skill.id, requestId: randomUUID(), changes: { tagline: "Check sources" } })).toHaveProperty("skill.tagline", "Check sources");
     } finally { await f.cleanup(); }
   });
 
@@ -826,13 +826,13 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
       const args = { taskId: f.issue.id, filename: "single.txt", contentType: "text/plain", byteSize: bytes.length,
         sha256: createHash("sha256").update(bytes).digest("hex") };
       const links = [];
-      for (let i = 0; i < 3; i++) links.push(new URL((await f.call("paperclip_get_upload_url", { ...args, requestId: randomUUID() })).url as string));
+      for (let i = 0; i < 3; i++) links.push(new URL((await f.call("wardmote_get_upload_url", { ...args, requestId: randomUUID() })).url as string));
       const app = express(); app.use(f.transfers.router);
       const results = await Promise.all(links.flatMap(url => Array.from({ length: 2 }, () =>
         request(app).put(url.pathname + url.search).set("Content-Type", args.contentType).send(bytes).timeout(5000))));
       expect(results.map(result => result.status)).toEqual(Array(6).fill(200));
       expect(new Set(results.map(result => result.body.attachment.id)).size).toBe(3);
-      expect((await f.call("paperclip_list_deliverables", { taskId: f.issue.id })).attachments).toHaveLength(3);
+      expect((await f.call("wardmote_list_deliverables", { taskId: f.issue.id })).attachments).toHaveLength(3);
     } finally { db = originalDb; oauth = originalOauth; await cleanup?.(); }
   }, 15000);
 
@@ -842,7 +842,7 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
       const bytes = Buffer.from([0, 255, 18, 7, 64, 89, 33, 0]);
       const sha256 = createHash("sha256").update(bytes).digest("hex");
       const args = { taskId: f.issue.id, requestId: randomUUID(), filename: "demo.mp4", contentType: "video/mp4", byteSize: bytes.length, sha256 };
-      const prepared = await f.call("paperclip_get_upload_url", args);
+      const prepared = await f.call("wardmote_get_upload_url", args);
       const url = new URL(prepared.url as string);
       const app = express(); app.use(f.transfers.router);
       const put = (body = bytes) => request(app).put(url.pathname + url.search).set("Content-Type", args.contentType).send(body);
@@ -850,11 +850,11 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
       expect(responses.map(v => v.status)).toEqual([200, 200]);
       const attachment = responses[0]!.body.attachment;
       expect(responses[1]!.body.attachment.id).toBe(attachment.id);
-      expect(await f.call("paperclip_get_upload_url", args)).toMatchObject({ status: "completed", attachment: { id: attachment.id, sha256 } });
-      const outputs = await f.call("paperclip_list_deliverables", { taskId: f.issue.id });
+      expect(await f.call("wardmote_get_upload_url", args)).toMatchObject({ status: "completed", attachment: { id: attachment.id, sha256 } });
+      const outputs = await f.call("wardmote_list_deliverables", { taskId: f.issue.id });
       expect(outputs.attachments).toHaveLength(1);
       expect((await put(Buffer.from("conflicting bytes"))).status).toBe(403);
-      const download = await f.call("paperclip_get_download_url", { attachmentId: attachment.id });
+      const download = await f.call("wardmote_get_download_url", { attachmentId: attachment.id });
       const downloadUrl = new URL(download.url as string);
       const content = await request(app).get(downloadUrl.pathname + downloadUrl.search).buffer(true);
       expect(content.status).toBe(200);
@@ -864,7 +864,7 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
       const receipts = await db.select().from(mcpMutationReceipts).where(eq(mcpMutationReceipts.companyId, f.company.id));
       expect(JSON.stringify(receipts)).not.toContain("ticket=");
       const other = await fixture();
-      await expect(createPublicMcpExecutor(db, oauth, f.dispatch, f.transfers)(other.tokens.access_token, "paperclip_get_download_url", { companyId: other.company.id, attachmentId: attachment.id })).rejects.toThrow();
+      await expect(createPublicMcpExecutor(db, oauth, f.dispatch, f.transfers)(other.tokens.access_token, "wardmote_get_download_url", { companyId: other.company.id, attachmentId: attachment.id })).rejects.toThrow();
       await oauth.revokeConnection((await oauth.authenticate(f.tokens.access_token)).grant.id, f.actor.userId!);
       expect((await request(app).get(downloadUrl.pathname + downloadUrl.search)).status).not.toBe(200);
       expect((await put()).status).not.toBe(200);
@@ -875,9 +875,9 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
     const f = await expandedFixture();
     try {
       const args = { taskId: f.issue.id, requestId: randomUUID(), filename: "data.json", contentType: "application/json", byteSize: 2, sha256: createHash("sha256").update("{}").digest("hex") };
-      await expect(f.call("paperclip_get_upload_url", { ...args, byteSize: getMaxAttachmentBytes() + 1 })).rejects.toThrow();
-      await expect(f.call("paperclip_get_upload_url", { ...args, filename: "../escape" })).rejects.toThrow();
-      const prepared = await f.call("paperclip_get_upload_url", args);
+      await expect(f.call("wardmote_get_upload_url", { ...args, byteSize: getMaxAttachmentBytes() + 1 })).rejects.toThrow();
+      await expect(f.call("wardmote_get_upload_url", { ...args, filename: "../escape" })).rejects.toThrow();
+      const prepared = await f.call("wardmote_get_upload_url", args);
       const url = new URL(prepared.url as string);
       const app = express(); app.use(f.transfers.router);
       const put = () => request(app).put(url.pathname + url.search).set("Content-Type", "application/json").send("{}");
@@ -894,7 +894,7 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
     try {
       const bytes = Buffer.from("exact original content");
       const args = { taskId: f.issue.id, requestId: randomUUID(), filename: "data.txt", contentType: "text/plain", byteSize: bytes.length, sha256: createHash("sha256").update(bytes).digest("hex") };
-      const url = new URL((await f.call("paperclip_get_upload_url", args)).url as string);
+      const url = new URL((await f.call("wardmote_get_upload_url", args)).url as string);
       const app = express(); app.use(f.transfers.router);
       const put = (body: Buffer, type = "text/plain") => request(app).put(url.pathname + url.search).set("Content-Type", type).send(body);
       expect((await put(bytes.subarray(0, 4))).status).toBe(403);
@@ -902,9 +902,9 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
       expect((await put(Buffer.alloc(getMaxAttachmentBytes() + 1))).status).toBe(413);
       setAttachmentLimitSetting(null);
       expect((await put(bytes, "video/mp4")).status).toBe(403);
-      expect((await f.call("paperclip_list_deliverables", { taskId: f.issue.id })).attachments).toHaveLength(0);
+      expect((await f.call("wardmote_list_deliverables", { taskId: f.issue.id })).attachments).toHaveLength(0);
       expect((await put(bytes)).status).toBe(200);
-      expect((await f.call("paperclip_list_deliverables", { taskId: f.issue.id })).attachments).toHaveLength(1);
+      expect((await f.call("wardmote_list_deliverables", { taskId: f.issue.id })).attachments).toHaveLength(1);
     } finally { setAttachmentLimitSetting(null); await f.cleanup(); }
   });
 
@@ -913,7 +913,7 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
     try {
       const bytes = Buffer.from("orphan test");
       const args = { taskId: f.issue.id, requestId: randomUUID(), filename: "data.txt", contentType: "text/plain", byteSize: bytes.length, sha256: createHash("sha256").update(bytes).digest("hex") };
-      const prepared = await f.call("paperclip_get_upload_url", args);
+      const prepared = await f.call("wardmote_get_upload_url", args);
       const principal = await oauth.authenticate(f.tokens.access_token);
       const originalPut = f.storage.putFile.bind(f.storage);
       const putSpy = vi.spyOn(f.storage, "putFile").mockImplementationOnce(async input => {
@@ -953,17 +953,17 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
     expect((await rpc("initialize", { protocolVersion: "2025-03-26", capabilities: {}, clientInfo: { name: "test", version: "1" } })).body.result.serverInfo.name).toBe("wardmote");
     const catalog = await rpc("tools/list");
     expect(catalog.body.result.tools).toHaveLength(publicMcpCapabilities.length);
-    expect(catalog.body.result.tools.find((t: { name: string }) => t.name === "paperclip_create_task").annotations.readOnlyHint).toBe(false);
-    const result = await rpc("tools/call", { name: "paperclip_list_agents", arguments: { companyId: f.company.id } });
+    expect(catalog.body.result.tools.find((t: { name: string }) => t.name === "wardmote_create_task").annotations.readOnlyHint).toBe(false);
+    const result = await rpc("tools/call", { name: "wardmote_list_agents", arguments: { companyId: f.company.id } });
     expect(JSON.stringify(result.body)).not.toContain("hidden");
     expect(result.body.result.structuredContent.agents[0].name).toBe("Engineer");
     dispatch.mockRejectedValueOnce(new Error("Internal database details: tenant-secret"));
-    const failed = await rpc("tools/call", { name: "paperclip_list_agents", arguments: { companyId: f.company.id } });
+    const failed = await rpc("tools/call", { name: "wardmote_list_agents", arguments: { companyId: f.company.id } });
     expect(failed.body.result.isError).toBe(true);
     expect(JSON.stringify(failed.body)).not.toContain("tenant-secret");
     expect(failed.body.result.content[0].text).toContain("could not confirm");
     dispatch.mockClear();
-    const invalid = await rpc("tools/call", { name: "paperclip_finish_task", arguments: { companyId: f.company.id, taskId: randomUUID(), requestId: "b2c3d4e5-f6a7-48b9-c0d1-e2f3a4b5c6d7" } });
+    const invalid = await rpc("tools/call", { name: "wardmote_finish_task", arguments: { companyId: f.company.id, taskId: randomUUID(), requestId: "b2c3d4e5-f6a7-48b9-c0d1-e2f3a4b5c6d7" } });
     expect(invalid.body.result.structuredContent).toMatchObject({ outcome: "rejected", phase: "validation", issues: [{ path: "requestId", code: "invalid_format" }] });
     expect(invalid.body.result.structuredContent.issues[0].message).toContain("UUID");
     expect(dispatch).not.toHaveBeenCalled();
@@ -1117,29 +1117,29 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
       expect(JSON.stringify(deliveries)).not.toContain("MUST NOT LEAVE");
       const base = { companyId: identity.companyId, runId: identity.runId, turnId };
       const call = (name: string, args = {}, requestId = randomUUID()) => tool(name, { ...base, requestId, ...args });
-      expect((await tool("paperclip_dot_inbox", { companyId: identity.companyId })).structuredContent.assignments).toHaveLength(1);
-      expect((await call("paperclip_dot_read")).structuredContent.result.message.text).toContain("competitor");
-      expect((await call("paperclip_dot_accept")).isError).toBe(false);
+      expect((await tool("wardmote_dot_inbox", { companyId: identity.companyId })).structuredContent.assignments).toHaveLength(1);
+      expect((await call("wardmote_dot_read")).structuredContent.result.message.text).toContain("competitor");
+      expect((await call("wardmote_dot_accept")).isError).toBe(false);
       const writeId = randomUUID();
-      for (let retry = 0; retry < 2; retry++) expect((await call("paperclip_dot_tool", { name: "write_document", arguments: { body: "Competitor report" } }, writeId)).isError).toBe(false);
+      for (let retry = 0; retry < 2; retry++) expect((await call("wardmote_dot_tool", { name: "write_document", arguments: { body: "Competitor report" } }, writeId)).isError).toBe(false);
       expect(documents).toEqual(["Competitor report"]);
-      const unknown = await call("paperclip_dot_tool", { name: "write_document", arguments: { uncertain: true } });
+      const unknown = await call("wardmote_dot_tool", { name: "write_document", arguments: { uncertain: true } });
       expect(unknown.isError).toBe(true);
       expect(unknown.structuredContent.outcome).toBe("unknown");
-      expect((await call("paperclip_dot_progress", { text: "Saved the report." })).isError).toBe(false);
+      expect((await call("wardmote_dot_progress", { text: "Saved the report." })).isError).toBe(false);
       const other = await fixture();
-      expect((await rpc("tools/call", { name: "paperclip_dot_read", arguments: { ...base, requestId: randomUUID() } }, other.tokens.access_token)).body.result.isError).toBe(true);
+      expect((await rpc("tools/call", { name: "wardmote_dot_read", arguments: { ...base, requestId: randomUUID() } }, other.tokens.access_token)).body.result.isError).toBe(true);
       const result = { schema: "paperclip.run_result.v1", reportedWorkDisposition: "done", summary: "Report saved.",
         completionClaim: { contractRevision: "dot-prototype-v1", objectiveSatisfied: true, criteria: [], remainingWork: [] },
         evidence: [], verification: [], attentionRequests: [], artifacts: [] };
-      expect((await call("paperclip_dot_finish", { result })).isError).toBe(false);
+      expect((await call("wardmote_dot_finish", { result })).isError).toBe(false);
       const transcript = [];
       for await (const event of session.events()) transcript.push(event);
       expect(transcript.filter(e => e.eventType === "run.result.proposed")).toHaveLength(1);
       expect(await session.result()).toMatchObject({ result });
       expect(await session.usage?.()).toBeNull();
       // The person's normal tools remain usable while Dot has no active assignment.
-      expect((await tool("paperclip_connection", {})).structuredContent.companyId).toBe(identity.companyId);
+      expect((await tool("wardmote_connection", {})).structuredContent.companyId).toBe(identity.companyId);
       await oauth.revokeConnection(f.principal.grant.id, f.actor.userId!);
       expect((await rpc("tools/list")).status).toBe(401);
     } finally { unregister(); await session.close({ reason: "prototype finished" }).catch(() => {}); await events.stop(); }
@@ -1156,7 +1156,7 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
     expect((await rpc("server/discover")).body.result).toMatchObject({ resultType: "complete", supportedVersions: ["2026-07-28"], capabilities: { tools: {}, events: {} } });
     expect((await rpc("events/list")).body.result.events.map((e: { name: string }) => e.name)).toEqual(publicMcpEventDefinitions.map(e => e.name));
     expect((await rpc("tools/list")).body.result.tools).toHaveLength(publicMcpCapabilities.length);
-    expect((await rpc("tools/call", { name: "paperclip_connection", arguments: {} }, { "Mcp-Name": "=?base64?cGFwZXJjbGlwX2Nvbm5lY3Rpb24=?=" })).body.result.structuredContent.companyId).toBe(f.company.id);
+    expect((await rpc("tools/call", { name: "wardmote_connection", arguments: {} }, { "Mcp-Name": "=?base64?d2FyZG1vdGVfY29ubmVjdGlvbg==?=" })).body.result.structuredContent.companyId).toBe(f.company.id);
     expect((await rpc("events/list", {}, { "Mcp-Method": "tools/list" })).body.error.code).toBe(-32020);
     expect((await rpc("events/list", { _meta: {} })).body.error.code).toBe(-32602);
     expect((await rpc("events/list", { cursor: "unknown" })).body.error.code).toBe(-32602);

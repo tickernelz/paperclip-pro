@@ -260,7 +260,7 @@ it("admits a correlated native finish without forcing Done versus yielded chat d
     const f = fixture(), ledger = f.evidence.readRuns[0]!;
     const start = structuredClone(ledger.events[0]!), finish = structuredClone(ledger.events[3]!);
     for (const event of [start, finish]) Object.assign(event.payload.prpEvent.payload,
-      { executionId: "finish", name: "paperclip_finish", transport: "dynamic" });
+      { executionId: "finish", name: "wardmote_finish", transport: "dynamic" });
     const proposal = { seq: 0, eventType: "run.result.proposed", payload: { prpEvent: {
       schema: "paperclip.prp.event.v1", schemaVersion: 1, sourceKind: "runner", itemId: "finish",
       payload: { schema: "paperclip.run_result.v1", reportedWorkDisposition: disposition },

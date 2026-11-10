@@ -42,7 +42,7 @@ async function createTask(page: Page, prefix: string, agentName: string, title: 
 }
 
 const coordination = native
-  ? `Use the native Paperclip tools. First get_task_context to verify the current task and your identity. For hiring use call_api with operationId POST /api/companies/{companyId}/agent-hires and the requested JSON body. Use create_task for subtasks. Do not use shell commands or raw HTTP. Never read or print credentials. For completion call paperclip_finish exactly once with reportedWorkDisposition done, summary describing the completed work, completionClaim {contractRevision:"1",objectiveSatisfied:true,criteria:[{criterionId:"objective",status:"satisfied",evidenceRefs:[]}],remainingWork:[]}, evidence [], and verification []. Wait for that tool to succeed before your final response.`
+  ? `Use the native Paperclip tools. First get_task_context to verify the current task and your identity. For hiring use call_api with operationId POST /api/companies/{companyId}/agent-hires and the requested JSON body. Use create_task for subtasks. Do not use shell commands or raw HTTP. Never read or print credentials. For completion call wardmote_finish exactly once with reportedWorkDisposition done, summary describing the completed work, completionClaim {contractRevision:"1",objectiveSatisfied:true,criteria:[{criterionId:"objective",status:"satisfied",evidenceRefs:[]}],remainingWork:[]}, evidence [], and verification []. Wait for that tool to succeed before your final response.`
   : `Use the injected WARDMOTE_API_URL and WARDMOTE_API_KEY for every API request. Include Authorization: Bearer $WARDMOTE_API_KEY and X-Wardmote-Run-Id: $WARDMOTE_RUN_ID. Never print credentials or the environment. Verify GET /api/agents/me identifies you before writes; stop if it does not. You must act as the agent, not the local board. Use standard Paperclip APIs or the managed API tool, and do not install a CLI. Do not read or modify unrelated files. For completion use PATCH /api/issues/$WARDMOTE_TASK_ID with status done and a comment.`;
 
 for (const source of ["anthropic", "openai"] as const) {
@@ -79,7 +79,7 @@ for (const source of ["anthropic", "openai"] as const) {
     const crossName = `${providers[target].label} Teammate ${nonce}`;
     const selfTitle = `Self subtask ${nonce}`;
     const proof = (kind: string) => `HIRING-${kind}-${nonce}: 1147`;
-    const simplePrompt = (kind: string) => `${coordination}\nCalculate 31*37 and use exactly ${proof(kind)} as your ${native ? "paperclip_finish summary and final response" : "completion comment"}. Mark this task done. No subtasks or files.`;
+    const simplePrompt = (kind: string) => `${coordination}\nCalculate 31*37 and use exactly ${proof(kind)} as your ${native ? "wardmote_finish summary and final response" : "completion comment"}. Mark this task done. No subtasks or files.`;
     const hire = (provider: Provider, name: string) => ({ name, role: "engineer", reportsTo: manager.id, adapterType: adapterType(provider), adapterConfig: config(provider), ...(environmentId ? { defaultEnvironmentId: environmentId } : {}), instructionsBundle: { entryFile: "AGENTS.md", files: { "AGENTS.md": `# Acceptance worker\n${coordination}` } } });
     const title = `Hire both providers ${nonce}`;
     const child = native

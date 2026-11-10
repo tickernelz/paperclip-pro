@@ -886,7 +886,7 @@ export function buildNativeModelEnvelope(input: NativeExecutionInput, options?: 
       completion: {
         revision: input.completionContract.contract.revision,
         criterionIds: input.completionContract.contract.criteria.map((criterion) => criterion.id),
-        instruction: "Before ending this turn, obtain one accepted paperclip_finish or paperclip_block result. Earlier reports belong to earlier turns; a final message alone does not complete this turn.",
+        instruction: "Before ending this turn, obtain one accepted wardmote_finish or wardmote_block result. Earlier reports belong to earlier turns; a final message alone does not complete this turn.",
       },
     };
   }
