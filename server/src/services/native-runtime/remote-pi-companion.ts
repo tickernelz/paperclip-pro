@@ -83,7 +83,7 @@ async function installedIdentity(serverRoot: string, check: Checkpoint) {
 async function validate(root: string, manifest: RemotePiCompanionManifest, identity: Awaited<ReturnType<typeof installedIdentity>>, check: Checkpoint) {
   require(manifest.schema === "paperclip.remote-pi-companion/v1" && manifest.target === "linux-x64" && manifest.sourceRevision === identity.source && manifest.profileDigest === identity.profileDigest, "source/profile/target mismatch");
   require(JSON.stringify(await inventoryRemoteCompanion(root, check)) === JSON.stringify(manifest.entries), "complete inventory mismatch");
-  const daemon = manifest.entries.find(e => e.path === "bin/paperclip-runnerd");
+  const daemon = manifest.entries.find(e => e.path === "bin/wardmote-runnerd");
   require(daemon?.kind === "file" && daemon.size > 64 && (daemon.mode & 0o111) !== 0 && daemon.sha256 === manifest.daemonSha256, "daemon identity");
   const elf = (await readStable(join(root, daemon.path), MAX_FILE, false, check)).header; require(elf.subarray(0, 4).equals(Buffer.from([127, 69, 76, 70])) && elf[4] === 2 && elf[5] === 1 && elf.readUInt16LE(18) === 62, "Linux x64 ELF required");
   const pack = JSON.parse((await readOwned(join(root, "provider-pack/provider-pack.json"), 16 * 1024 ** 2, check)).toString());
@@ -96,7 +96,7 @@ async function validate(root: string, manifest: RemotePiCompanionManifest, ident
 export async function createRemotePiCompanionManifest(root: string, sourceRevision: string): Promise<RemotePiCompanionManifest> {
   const check = checkpoints();
   const profile = QUALIFIED_ACPX_PROFILES.pi; const pack = JSON.parse((await readOwned(join(root, "provider-pack/provider-pack.json"), 16 * 1024 ** 2, check)).toString()); const entries = await inventoryRemoteCompanion(root, check);
-  const daemon = entries.find(e => e.path === "bin/paperclip-runnerd"); require(daemon?.kind === "file", "daemon missing");
+  const daemon = entries.find(e => e.path === "bin/wardmote-runnerd"); require(daemon?.kind === "file", "daemon missing");
   const manifest: RemotePiCompanionManifest = { schema: "paperclip.remote-pi-companion/v1", sourceRevision, target: "linux-x64", profileDigest: profile.commandDigest, providerPackDigest: pack.digest, daemonSha256: daemon.sha256, entries };
   require(/^[a-f0-9]{40}$/u.test(sourceRevision), "release source"); await validate(root, manifest, { source: sourceRevision, profileDigest: profile.commandDigest }, check); return manifest;
 }
@@ -152,7 +152,7 @@ export async function resolveRemotePiCompanion(input: { serverRoot?: string; wor
   if (input.workspaceRoot) { const workspace = await fs.realpath(input.workspaceRoot); require(!inside(workspace, root) && !inside(root, workspace), "companion cache cannot overlap a workspace"); }
   const authority = JSON.parse((await readOwned(join(root, AUTHORITY), 65536, check, true)).toString()); const bytes = await readOwned(join(root, MANIFEST), 32 * 1024 ** 2, check, true); require(digest(bytes) === authority.sha256, "installed authority changed");
   const manifest = JSON.parse(bytes.toString()) as RemotePiCompanionManifest; await validate(root, manifest, await installedIdentity(serverRoot, check), check);
-  return { root, runnerBinary: join(root, "bin/paperclip-runnerd"), providerPack: join(root, "provider-pack"), manifestSha256: authority.sha256 as string, sourceRevision: manifest.sourceRevision, target: manifest.target };
+  return { root, runnerBinary: join(root, "bin/wardmote-runnerd"), providerPack: join(root, "provider-pack"), manifestSha256: authority.sha256 as string, sourceRevision: manifest.sourceRevision, target: manifest.target };
 }
 
 /** Explicit legacy overrides remain authoritative; C/C never gain this Pi path. */

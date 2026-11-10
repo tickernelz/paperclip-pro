@@ -5,7 +5,7 @@
 Paperclip Evals consumes two explicit App artifacts:
 
 1. a packed/released `@tickernelz/wardmote-runner` package; and
-2. an explicit `paperclip-runnerd` executable path plus its
+2. an explicit `wardmote-runnerd` executable path plus its
    `sha256:<lowercase hex>` digest.
 
 The consumer must not import App source paths, search a workspace for a binary,

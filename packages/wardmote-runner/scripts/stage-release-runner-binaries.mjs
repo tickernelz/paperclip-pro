@@ -28,7 +28,7 @@ if (packBytes.length > 512 * 1024 || "sha256:" + createHash("sha256").update(pac
 const packIdentity = verifyReleaseProviderPack(JSON.parse(packBytes), manifest.sourceRevision);
 const platforms = {};
 for (const artifact of verified) {
-  const relative = `${artifact.target}/paperclip-runnerd`, destination = join(root, "dist", "bin", relative);
+  const relative = `${artifact.target}/wardmote-runnerd`, destination = join(root, "dist", "bin", relative);
   mkdirSync(dirname(destination), { recursive: true }); copyFileSync(artifact.source, destination); chmodSync(destination, 0o755);
   // Copied Mach-O inodes need a fresh ad-hoc signature on macOS. Record the
   // resulting packaged bytes, as well as the verified build artifact identity.

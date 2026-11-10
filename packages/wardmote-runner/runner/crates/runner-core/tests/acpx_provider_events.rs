@@ -1,19 +1,19 @@
-use paperclip_runner_core::acpx_event_payload::{
+use serde_json::json;
+use wardmote_runner_core::acpx_event_payload::{
     decode_acpx_event, AcpxEventPayload, AcpxRuntimeEventKind,
 };
-use paperclip_runner_core::acpx_event_scope::AcpxEventScope;
-use paperclip_runner_core::acpx_sidecar_transport::AcpxSidecarEvent;
-use paperclip_runner_core::durable::EventPriority;
-use paperclip_runner_core::generated_acpx_sidecar_contract::{
+use wardmote_runner_core::acpx_event_scope::AcpxEventScope;
+use wardmote_runner_core::acpx_sidecar_transport::AcpxSidecarEvent;
+use wardmote_runner_core::durable::EventPriority;
+use wardmote_runner_core::generated_acpx_sidecar_contract::{
     classify_generated_acpx_tool_operation, GeneratedAcpxSidecarEventType,
 };
-use paperclip_runner_core::provider_events::normalize_acpx_runtime_event;
-use serde_json::json;
+use wardmote_runner_core::provider_events::normalize_acpx_runtime_event;
 
 fn normalize(
     kind: AcpxRuntimeEventKind,
     payload: serde_json::Value,
-) -> Vec<paperclip_runner_core::provider_events::NormalizedProviderEvent> {
+) -> Vec<wardmote_runner_core::provider_events::NormalizedProviderEvent> {
     let operation = (kind == AcpxRuntimeEventKind::ToolCall).then(|| {
         classify_generated_acpx_tool_operation(
             payload

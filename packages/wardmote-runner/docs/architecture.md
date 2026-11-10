@@ -66,7 +66,7 @@ TypeScript schema constants/types -> validator -> deterministic reducer
 
 The Rust `runner-core` crate establishes the production language/package
 boundary and checks the same fixture summaries. Local runner adds the package-local
-`paperclip-runnerd` and `fake-harness` binaries without changing that dependency
+`wardmote-runnerd` and `fake-harness` binaries without changing that dependency
 direction.
 
 The clean-consumer gate packs the declared root, `./evals`, and `./testing`
@@ -76,7 +76,7 @@ artifact.
 ## Language ownership
 
 - Rust is the production direction for deterministic runner behavior,
-  supervision, durable delivery, and the eventual `paperclip-runnerd` binary.
+  supervision, durable delivery, and the eventual `wardmote-runnerd` binary.
 - TypeScript owns the control-plane/browser side and remains a useful reference
   client/test oracle.
 - JSON Schema and shared fixtures are the language-neutral authority. Conformance
@@ -171,13 +171,13 @@ replay module as the CLI and does not create a browser-only protocol model.
 TypeScript mock core
   | PRP commands over stdin JSONL
   v
-paperclip-runnerd (Rust supervisor)
+wardmote-runnerd (Rust supervisor)
   | fake-harness commands over stdin JSONL
   v
 fake-harness (Rust scripted driver)
   | typed messages over stdout JSONL
   v
-paperclip-runnerd -> canonical PRP events -> mock core
+wardmote-runnerd -> canonical PRP events -> mock core
                                       |
                                       v
                               browser NDJSON stream
@@ -209,7 +209,7 @@ TypeScript mock core
   | one-time ticket -> short-lived connection lease
   | PRP v1 hello/welcome, commands, events, cumulative ACKs
   v
-paperclip-runnerd (Rust WebSocket client)
+wardmote-runnerd (Rust WebSocket client)
   | atomic private JSON state
   +-- durable outbox and processed-command cache
   +-- stable runner/session/turn/item identities
@@ -273,7 +273,7 @@ none.
         |                                          (one contract, two producers)
         |  owns session, tool loop, provider auth
         v
- paperclip-runnerd (real binary, owns the Codex process group)
+ wardmote-runnerd (real binary, owns the Codex process group)
         |  newline-delimited JSON-RPC over stdio
         v
  codex app-server (real session)

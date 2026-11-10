@@ -53,7 +53,7 @@ export function parseRemoteExecutableCandidate(stdout: string): string | null {
 export async function discoverRemoteExecutable(
   runner: CommandManagedRuntimeRunner,
   cwd: string,
-  name: "paperclip-runnerd" | "codex",
+  name: "wardmote-runnerd" | "codex",
 ): Promise<string | null> {
   const result = await runner.execute({
     command: "sh",

@@ -107,7 +107,7 @@ it.each([
     execution: input, stateDirectory: join(root, "state"),
     identity: { runnerInstanceId: randomUUID(), environmentLeaseId: randomUUID(), runId: input.binding.runId,
       normalizedSessionId: input.session.normalizedSessionId!, turnId: "turn-" + input.binding.runId, itemId: "item-" + input.binding.runId },
-    runnerBinary: resolve("runner/target/debug/paperclip-runnerd"),
+    runnerBinary: resolve("runner/target/debug/wardmote-runnerd"),
     port: { dispatch: async () => {}, settle: async () => {}, attach: async () => async () => {} },
   });
   let session: Awaited<ReturnType<typeof driver.openSession>> | undefined;
@@ -145,7 +145,7 @@ it.each(["local", "custom local directory", "external launcher"])("reattaches th
     execution: input, stateDirectory: join(root, "state"),
     identity: { runnerInstanceId: randomUUID(), environmentLeaseId: randomUUID(), runId: input.binding.runId,
       normalizedSessionId: input.session.normalizedSessionId!, turnId: "turn-" + input.binding.runId, itemId: "item-" + input.binding.runId },
-    runnerBinary: resolve("runner/target/debug/paperclip-runnerd"),
+    runnerBinary: resolve("runner/target/debug/wardmote-runnerd"),
     onSpawn: process => { spawned = process; },
     controlPlaneRegistration: async authority => {
       await authority.start(controllerPort);

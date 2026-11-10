@@ -2,14 +2,14 @@
 
 ## Intended topology
 
-Paperclip creates the run and a short-lived, one-use runner bootstrap ticket. The Daytona sandbox starts only `paperclip-runnerd`; runnerd then starts the configured provider (Codex initially). Runnerd listens on a fixed sandbox-local port and Paperclip connects through Daytona's authenticated preview WebSocket ingress. The provider never receives a Paperclip API credential or Daytona preview credential.
+Paperclip creates the run and a short-lived, one-use runner bootstrap ticket. The Daytona sandbox starts only `wardmote-runnerd`; runnerd then starts the configured provider (Codex initially). Runnerd listens on a fixed sandbox-local port and Paperclip connects through Daytona's authenticated preview WebSocket ingress. The provider never receives a Paperclip API credential or Daytona preview credential.
 
 ```text
 Paperclip control plane
        |
        | outbound WSS + X-Daytona-Preview-Token
        v
-Daytona preview proxy -> paperclip-runnerd:43127 -> Codex app-server
+Daytona preview proxy -> wardmote-runnerd:43127 -> Codex app-server
 ```
 
 The PRP identity binds company, issue, agent, run, environment lease, runner instance, normalized session, artifact version, artifact digest, and catalog digest. After the one-use ticket challenge succeeds, runnerd receives a renewable connection lease. Revocation, expiry, replay cursors, and the durable outbox continue to work across transient network loss and sandbox/provider restarts.

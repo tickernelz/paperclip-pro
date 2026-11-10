@@ -25,15 +25,15 @@ async function fixture() {
   mkdirSync(join(serverRoot, "dist"), { recursive: true }); writeFileSync(join(serverRoot, "package.json"), '{"name":"@tickernelz/wardmote-server"}'); writeFileSync(join(serverRoot, "dist/build-info.json"), JSON.stringify({ commit: source }));
   mkdirSync(join(directory, "bin"), { recursive: true }); mkdirSync(join(directory, "provider-pack"));
   // Synthetic ELF header; these tests never launch it or claim native qualification.
-  const elf = Buffer.alloc(128); Buffer.from([127, 69, 76, 70, 2, 1]).copy(elf); elf.writeUInt16LE(62, 18); writeFileSync(join(directory, "bin/paperclip-runnerd"), elf, { mode: 0o755 });
+  const elf = Buffer.alloc(128); Buffer.from([127, 69, 76, 70, 2, 1]).copy(elf); elf.writeUInt16LE(62, 18); writeFileSync(join(directory, "bin/wardmote-runnerd"), elf, { mode: 0o755 });
   const payload = { runnerSourceRevision: source, target: { platform: "linux", architecture: "x64" }, candidateProviders: { pi: { qualification: "qualified", profileDigest: QUALIFIED_ACPX_PROFILES.pi.commandDigest, path: "provider-assets/pi/linux-x64" } } };
   writeFileSync(join(directory, "provider-pack/provider-pack.json"), JSON.stringify({ schema: "paperclip-runner/remote-provider-pack/v1", digest: `sha256:${hash(canonical(payload))}`, payload }));
   const manifest = await createRemotePiCompanionManifest(directory, source); const bytes = JSON.stringify(manifest); writeFileSync(join(directory, "companion.json"), bytes); return { root, directory, serverRoot, sha256: hash(bytes), manifest, source };
 }
 it("imports the release-generated closure and resolves target bytes without environment overrides", async () => {
   const f = await fixture(); const result = await importRemotePiCompanion(f); expect(result.status).toBe("imported_verified");
-  expect(result.runnerBinary).toBe(join(f.serverRoot, "remote-companions/linux-x64/bin/paperclip-runnerd"));
-  expect(readFileSync(result.runnerBinary!)).toEqual(readFileSync(join(f.directory, "bin/paperclip-runnerd")));
+  expect(result.runnerBinary).toBe(join(f.serverRoot, "remote-companions/linux-x64/bin/wardmote-runnerd"));
+  expect(readFileSync(result.runnerBinary!)).toEqual(readFileSync(join(f.directory, "bin/wardmote-runnerd")));
   expect((await importRemotePiCompanion(f)).status).toBe("verified_existing"); expect((await resolveRemotePiCompanion({ serverRoot: f.serverRoot }))?.manifestSha256).toBe(f.sha256);
   expect(readdirSync(join(f.serverRoot, "remote-companions"))).toEqual(["linux-x64"]);
 });
@@ -42,16 +42,16 @@ it.each(["sha", "source", "profile", "target", "daemon", "extra", "mode", "outsi
   if (kind === "sha") f.sha256 = "b".repeat(64);
   if (kind === "source") writeFileSync(join(f.serverRoot, "dist/build-info.json"), JSON.stringify({ commit: "b".repeat(40) }));
   if (kind === "profile" || kind === "target") { Object.assign(f.manifest, kind === "profile" ? { profileDigest: "sha256:" + "b".repeat(64) } : { target: "darwin-arm64" }); const bytes = JSON.stringify(f.manifest); writeFileSync(join(f.directory, "companion.json"), bytes); f.sha256 = hash(bytes); }
-  if (kind === "daemon") writeFileSync(join(f.directory, "bin/paperclip-runnerd"), "changed");
+  if (kind === "daemon") writeFileSync(join(f.directory, "bin/wardmote-runnerd"), "changed");
   if (kind === "extra") writeFileSync(join(f.directory, "extra"), "unlisted");
-  if (kind === "mode") chmodSync(join(f.directory, "bin/paperclip-runnerd"), 0o777);
+  if (kind === "mode") chmodSync(join(f.directory, "bin/wardmote-runnerd"), 0o777);
   if (kind === "outside-link") symlinkSync("../../server/package.json", join(f.directory, "provider-pack/escape"));
-  if (kind === "outside-hardlink") linkSync(join(f.directory, "bin/paperclip-runnerd"), join(f.root, "alias"));
+  if (kind === "outside-hardlink") linkSync(join(f.directory, "bin/wardmote-runnerd"), join(f.root, "alias"));
   if (kind === "pack") writeFileSync(join(f.directory, "provider-pack/provider-pack.json"), "{}");
   await expect(importRemotePiCompanion(f)).rejects.toThrow(); expect(() => readdirSync(join(f.serverRoot, "remote-companions/linux-x64"))).toThrow();
 });
 it("copies contained symlinks and breaks only fully owned internal hardlinks", async () => {
-  const f = await fixture(); linkSync(join(f.directory, "bin/paperclip-runnerd"), join(f.directory, "bin/alias")); symlinkSync("paperclip-runnerd", join(f.directory, "bin/link"));
+  const f = await fixture(); linkSync(join(f.directory, "bin/wardmote-runnerd"), join(f.directory, "bin/alias")); symlinkSync("wardmote-runnerd", join(f.directory, "bin/link"));
   f.manifest = await createRemotePiCompanionManifest(f.directory, f.source); const bytes = JSON.stringify(f.manifest); writeFileSync(join(f.directory, "companion.json"), bytes); f.sha256 = hash(bytes);
   expect((await importRemotePiCompanion(f)).status).toBe("imported_verified");
 });

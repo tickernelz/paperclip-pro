@@ -132,7 +132,7 @@ const runnerd = resolve(
   "runner",
   "target",
   "debug",
-  process.platform === "win32" ? "paperclip-runnerd.exe" : "paperclip-runnerd",
+  process.platform === "win32" ? "wardmote-runnerd.exe" : "wardmote-runnerd",
 );
 const requiredArtifacts = [
   runnerd,

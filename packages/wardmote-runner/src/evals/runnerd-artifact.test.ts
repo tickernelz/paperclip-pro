@@ -14,7 +14,7 @@ import {
 
 const valid = {
   schema: WARDMOTE_RUNNERD_BUILD_METADATA_SCHEMA,
-  binaryName: "paperclip-runnerd",
+  binaryName: "wardmote-runnerd",
   packageName: "@tickernelz/wardmote-runner",
   packageVersion: "0.0.0",
   binaryContractVersion: 2,
@@ -41,8 +41,8 @@ describe("runnerd artifact metadata", () => {
       expectedSha256: "not-a-digest",
     })).rejects.toMatchObject({ issue: "digest_invalid" });
 
-    const root = await mkdtemp(join(tmpdir(), "paperclip-runnerd-artifact-"));
-    const executablePath = join(root, "paperclip-runnerd");
+    const root = await mkdtemp(join(tmpdir(), "wardmote-runnerd-artifact-"));
+    const executablePath = join(root, "wardmote-runnerd");
     try {
       await writeFile(executablePath, "not the expected binary");
       await expect(resolvePaperclipRunnerdArtifact({
@@ -60,8 +60,8 @@ describe("runnerd artifact metadata", () => {
   it.skipIf(process.platform === "win32")(
     "executes a private copy of the verified bytes when the source path is swapped",
     async () => {
-      const root = await mkdtemp(join(tmpdir(), "paperclip-runnerd-artifact-"));
-      const executablePath = join(root, "paperclip-runnerd");
+      const root = await mkdtemp(join(tmpdir(), "wardmote-runnerd-artifact-"));
+      const executablePath = join(root, "wardmote-runnerd");
       const verifiedScript = `#!/bin/sh\nprintf '%s\\n' '${JSON.stringify(valid)}'\n`;
       const replacementScript = "#!/bin/sh\nprintf '%s\\n' 'unverified replacement'\n";
       const expectedSha256 = `sha256:${createHash("sha256").update(verifiedScript).digest("hex")}`;

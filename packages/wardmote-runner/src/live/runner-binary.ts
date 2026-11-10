@@ -23,7 +23,7 @@ export function runnerBinaryTarget(bytes: Buffer): string | null {
 }
 
 export function resolvePackagedRunnerBinary(outputRoot: string, platform = process.platform, architecture = process.arch): string | null {
-  const target = `${platform}-${architecture}`, executable = platform === "win32" ? "paperclip-runnerd.exe" : "paperclip-runnerd";
+  const target = `${platform}-${architecture}`, executable = platform === "win32" ? "wardmote-runnerd.exe" : "wardmote-runnerd";
   for (const binary of [resolve(outputRoot, "bin", target, executable), resolve(outputRoot, "bin", executable)]) {
     if (!existsSync(binary)) continue;
     if (runnerBinaryTarget(readFileSync(binary)) !== target) {

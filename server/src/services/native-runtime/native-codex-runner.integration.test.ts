@@ -48,7 +48,7 @@ const runnerBinary = resolve(
   runnerWorkspace,
   "target",
   "release",
-  `paperclip-runnerd${executableSuffix}`,
+  `wardmote-runnerd${executableSuffix}`,
 );
 const fakeCodexBinary = resolve(
   runnerWorkspace,
@@ -65,9 +65,9 @@ function ensureRunnerTestBinaries(): void {
     "--release",
     "--locked",
     "-p",
-    "paperclip-runner-core",
+    "wardmote-runner-core",
     "--bin",
-    "paperclip-runnerd",
+    "wardmote-runnerd",
     "--bin",
     "fake-codex-app-server",
   ], {

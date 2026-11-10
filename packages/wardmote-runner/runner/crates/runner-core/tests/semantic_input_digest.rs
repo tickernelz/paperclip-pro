@@ -1,5 +1,5 @@
-use paperclip_runner_core::provider_bridge::semantic_value_digest;
 use serde_json::Value;
+use wardmote_runner_core::provider_bridge::semantic_value_digest;
 
 #[test]
 fn semantic_input_digests_match_the_authenticated_controller_fixtures() {

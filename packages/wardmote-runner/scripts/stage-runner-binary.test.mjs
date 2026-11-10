@@ -42,7 +42,7 @@ test("atomically publishes while the previous executable is running", { skip: pr
   const root = await mkdtemp(path.join(tmpdir(), "runnerd-stage-test-"));
   const fixtures = await mkdtemp(path.join(tmpdir(), "runnerd-stage-fixture-"));
   const nap = await napExecutable(fixtures);
-  const destination = path.join(root, "paperclip-runnerd");
+  const destination = path.join(root, "wardmote-runnerd");
   try {
   await withOwnedChildren(root, async start => {
     await stageRunnerBinary(nap, destination);
@@ -55,7 +55,7 @@ test("atomically publishes while the previous executable is running", { skip: pr
     assert.equal(published.mode & 0o777, 0o755);
     assert.equal(old.child.exitCode, null);
     assert.equal(old.child.signalCode, null);
-    assert.deepEqual(await readdir(root), ["paperclip-runnerd"]);
+    assert.deepEqual(await readdir(root), ["wardmote-runnerd"]);
     const next = start(destination, ["0"]);
     await next.spawned; await next.closed;
     assert.equal(next.child.exitCode, 0);
@@ -77,7 +77,7 @@ test("a second spawn error still retires the live old child and removes its fixt
 
 test("failed preparation preserves the published bytes and mode", async () => {
   const root = await mkdtemp(path.join(tmpdir(), "runnerd-stage-failure-"));
-  const destination = path.join(root, "paperclip-runnerd");
+  const destination = path.join(root, "wardmote-runnerd");
   try {
     await writeFile(destination, "previous build", { mode: 0o755 });
     const before = await stat(destination);
@@ -86,7 +86,7 @@ test("failed preparation preserves the published bytes and mode", async () => {
     const after = await stat(destination);
     assert.equal(after.ino, before.ino);
     assert.equal(after.mode, before.mode);
-    assert.deepEqual(await readdir(root), ["paperclip-runnerd"]);
+    assert.deepEqual(await readdir(root), ["wardmote-runnerd"]);
   } finally {
     await rm(root, { recursive: true, force: true });
   }

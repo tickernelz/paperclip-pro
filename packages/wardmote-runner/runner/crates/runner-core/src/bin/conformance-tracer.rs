@@ -1,4 +1,4 @@
-use paperclip_runner_core::{run_conformance_tracer, CONFORMANCE_FIXTURE};
+use wardmote_runner_core::{run_conformance_tracer, CONFORMANCE_FIXTURE};
 
 fn main() {
     match run_conformance_tracer(CONFORMANCE_FIXTURE) {

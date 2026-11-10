@@ -14,7 +14,7 @@ function header(target: string) {
 function fixture() { const root = mkdtempSync(join(tmpdir(), "runner-platform-")); roots.push(root); return root; }
 function binary(root: string, target: string | null, bytes: Buffer) {
   const folder = join(root, "dist", "bin", ...(target ? [target] : [])); mkdirSync(folder, { recursive: true });
-  const file = join(folder, "paperclip-runnerd"); writeFileSync(file, bytes); return file;
+  const file = join(folder, "wardmote-runnerd"); writeFileSync(file, bytes); return file;
 }
 describe("packaged native daemon target", () => {
   it.each(["darwin-arm64", "darwin-x64", "linux-x64"])("selects %s from a universal package rather than the build-host legacy binary", target => {
@@ -22,7 +22,7 @@ describe("packaged native daemon target", () => {
     for (const t of ["darwin-arm64", "darwin-x64", "linux-x64"]) binary(root, t, header(t));
     const [platform, architecture] = target.split("-");
     expect(runnerBinaryTarget(header(target))).toBe(target);
-    expect(resolvePackagedRunnerBinary(join(root, "dist"), platform as NodeJS.Platform, architecture as typeof process.arch)).toBe(join(root, "dist", "bin", target, "paperclip-runnerd"));
+    expect(resolvePackagedRunnerBinary(join(root, "dist"), platform as NodeJS.Platform, architecture as typeof process.arch)).toBe(join(root, "dist", "bin", target, "wardmote-runnerd"));
   });
   it("fails an installed Linux product with a Darwin daemon instead of silently selecting it", () => {
     const root = fixture(); binary(root, null, header("darwin-arm64"));

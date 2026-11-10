@@ -15,7 +15,7 @@ non-live mode.
 ## Authority boundary
 
 ```text
-browser  ->  package server  ->  CapabilityLiveSession  ->  paperclip-runnerd -> codex
+browser  ->  package server  ->  CapabilityLiveSession  ->  wardmote-runnerd -> codex
              (projection)        CapabilitySemanticDispatcher -> ControlPlanePort mock
 ```
 

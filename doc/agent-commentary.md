@@ -109,7 +109,7 @@ and specify a Linux amd64 runner built from this checkout:
 pnpm --dir packages/plugins/sandbox-providers/daytona install --frozen-lockfile
 WARDMOTE_LIVE_ENVIRONMENT=daytona \
 WARDMOTE_LIVE_DAYTONA_ENV_FILE=/path/to/private.env \
-WARDMOTE_LIVE_LINUX_RUNNER=/path/to/linux-amd64/paperclip-runnerd \
+WARDMOTE_LIVE_LINUX_RUNNER=/path/to/linux-amd64/wardmote-runnerd \
 WARDMOTE_LIVE_EVIDENCE_PATH=/tmp/commentary-evidence.json \
 node cli/node_modules/tsx/dist/cli.mjs server/scripts/verify-agent-commentary-live.ts
 ```
@@ -123,7 +123,7 @@ Dockerfile and build it with `--platform linux/amd64 --target commentary-runner-
 
 ```dockerfile
 FROM scratch AS commentary-runner-export
-COPY --from=runner-build /app/packages/wardmote-runner/runner/target/release/paperclip-runnerd /paperclip-runnerd
+COPY --from=runner-build /app/packages/wardmote-runner/runner/target/release/wardmote-runnerd /wardmote-runnerd
 ```
 
 The smoke calls the production Daytona provider hooks for creation, execution,

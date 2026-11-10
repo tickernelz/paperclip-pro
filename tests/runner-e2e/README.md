@@ -671,7 +671,7 @@ content tags are never rebuilt or overwritten by the workflow.
 
 When the controller runs on macOS or another platform different from the sandbox,
 set `WARDMOTE_RUNNER_REMOTE_BINARY_PATH` to a verified Linux amd64
-`paperclip-runnerd`, such as the binary copied from `/usr/local/bin/paperclip-runnerd`
+`wardmote-runnerd`, such as the binary copied from `/usr/local/bin/wardmote-runnerd`
 in the pinned image. The controller must have these exact bytes for its artifact
 identity check. A local macOS runner cannot substitute for the Linux binary,
 even when the sandbox image contains a compatible runner. This also applies to

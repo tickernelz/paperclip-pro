@@ -1451,7 +1451,7 @@ concurrent listings do not skip healthy logs because another listing is busy.
 
 ### Preinstalled remote runner runtime
 
-For fast sandbox startup, bake `paperclip-runnerd` and the latest stable agent
+For fast sandbox startup, bake `wardmote-runnerd` and the latest stable agent
 CLIs into the sandbox image. Keep one version of each CLI shared by native and
 local adapters; never retain an older global CLI beside a newer private copy.
 Pin the resolved releases at image build time for reproducibility and refresh

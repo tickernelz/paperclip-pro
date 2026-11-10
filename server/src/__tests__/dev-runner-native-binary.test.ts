@@ -29,7 +29,7 @@ function createRunnerCheckout(): { root: string; source: string; binary: string 
     "wardmote-runner",
     "dist",
     "bin",
-    process.platform === "win32" ? "paperclip-runnerd.exe" : "paperclip-runnerd",
+    process.platform === "win32" ? "wardmote-runnerd.exe" : "wardmote-runnerd",
   );
   fs.mkdirSync(path.dirname(source), { recursive: true });
   fs.mkdirSync(path.dirname(binary), { recursive: true });
@@ -115,7 +115,7 @@ describe("paperclip runner native dev prerequisite", () => {
       paperclipRunnerBinaryNeedsBuild({
         repoRoot: "/checkout/without/a/staged/binary",
         nativeRunnerRequired: true,
-        configuredBinary: "/opt/paperclip/paperclip-runnerd",
+        configuredBinary: "/opt/paperclip/wardmote-runnerd",
       }),
     ).toBe(false);
   });

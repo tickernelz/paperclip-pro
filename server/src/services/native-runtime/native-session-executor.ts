@@ -10216,7 +10216,7 @@ export function assertRemoteRunnerBuildMetadata(
   const metadata = value as Record<string, unknown>;
   if (
     metadata.schema !== RUNNERD_BUILD_METADATA_SCHEMA ||
-    metadata.binaryName !== "paperclip-runnerd" ||
+    metadata.binaryName !== "wardmote-runnerd" ||
     metadata.packageName !== "@tickernelz/wardmote-runner" ||
     metadata.binaryContractVersion !== RUNNERD_BINARY_CONTRACT_VERSION
   ) {
@@ -11292,7 +11292,7 @@ async function prepareRemoteDotRunner({ input, target, runner, root, identity }:
 }) {
   const runnerBinary = input.runnerRemoteBinaryPath?.trim() || resolvePaperclipRunnerBinary();
   const remoteRoot = posix.join(target.remoteCwd, ".paperclip-runtime", "paperclip-runner");
-  const remoteBinary = posix.join(remoteRoot, "bin", "paperclip-runnerd");
+  const remoteBinary = posix.join(remoteRoot, "bin", "wardmote-runnerd");
   const runnerStateDirectory = posix.join(remoteRoot, "sessions",
     createHash("sha256").update(identity.normalizedSessionId).digest("hex"), "runner");
   const requiredMode = resolveRemoteRunnerTransportMode({ target, runnerIngressAuthorized: input.runnerIngressAuthorized === true });
@@ -11607,7 +11607,7 @@ async function createRunnerdBackendWithinSessionClaim(
     : null;
   let activeRemoteProviderPackRoot: string | null = null;
   const remoteBinary = remoteRuntimeRoot
-    ? posix.join(remoteRuntimeRoot, "bin", "paperclip-runnerd")
+    ? posix.join(remoteRuntimeRoot, "bin", "wardmote-runnerd")
     : null;
   // The transport hashes runnerBinary on the controller before an external
   // launcher starts runnerd. Keep that artifact identity in the controller's
@@ -11863,7 +11863,7 @@ async function createRunnerdBackendWithinSessionClaim(
   // local adapters. Preferred bin entries must point to that same installation;
   // never bake an older global CLI alongside a private runner-only version.
   const discoverPreinstalledExecutable = async (
-    name: "paperclip-runnerd" | "codex",
+    name: "wardmote-runnerd" | "codex",
   ) => {
     if (!remoteTarget || !remoteCommandRunner) return null;
     return discoverRemoteExecutable(remoteCommandRunner, remoteTarget.remoteCwd, name);
@@ -11958,7 +11958,7 @@ async function createRunnerdBackendWithinSessionClaim(
       const preinstalledRunner = await measureNativeRunnerSpan(
         input.trace,
         "runner.artifact.discover",
-        () => discoverPreinstalledExecutable("paperclip-runnerd"),
+        () => discoverPreinstalledExecutable("wardmote-runnerd"),
       );
       if (preinstalledRunner) {
         try {

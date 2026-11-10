@@ -5,12 +5,12 @@ use std::os::unix::fs::PermissionsExt;
 use std::path::PathBuf;
 use std::time::Duration;
 
-use paperclip_runner_core::acpx_provider_backend::AcpxCommandExecutor;
-use paperclip_runner_core::durable::{
-    AcpxLaunchProfile, Command, CommandExecutor, DurableRunnerConfig, QualifiedLaunchArtifact,
-};
 use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
+use wardmote_runner_core::acpx_provider_backend::AcpxCommandExecutor;
+use wardmote_runner_core::durable::{
+    AcpxLaunchProfile, Command, CommandExecutor, DurableRunnerConfig, QualifiedLaunchArtifact,
+};
 
 const PROFILE_DIGEST: &str =
     "sha256:3e88ae296113d4e1ad6a57260d82c3ba97b85794101ae632bfd14f6890e62869";

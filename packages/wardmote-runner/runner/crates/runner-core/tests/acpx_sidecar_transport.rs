@@ -1,13 +1,13 @@
 use std::path::PathBuf;
 use std::time::{Duration, Instant};
 
-use paperclip_runner_core::acpx_sidecar_transport::{
+use serde_json::json;
+use wardmote_runner_core::acpx_sidecar_transport::{
     AcpxSidecarTransport, AcpxSidecarTransportConfig,
 };
-use paperclip_runner_core::generated_acpx_sidecar_contract::{
+use wardmote_runner_core::generated_acpx_sidecar_contract::{
     GeneratedAcpxSidecarCommand, GeneratedAcpxSidecarEventType,
 };
-use serde_json::json;
 
 fn transport(mode: &str, timeout: Duration) -> AcpxSidecarTransport {
     AcpxSidecarTransport::start(&AcpxSidecarTransportConfig {

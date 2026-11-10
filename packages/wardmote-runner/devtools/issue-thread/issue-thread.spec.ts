@@ -762,7 +762,7 @@ test.describe("Capability clean-room chat", () => {
           detail: "session · started",
           details: [
             { label: "Action", value: "started" },
-            { label: "Runner", value: "paperclip-runnerd" },
+            { label: "Runner", value: "wardmote-runnerd" },
           ],
         },
         ...[2, 3].map((ordinal) => ({
@@ -788,7 +788,7 @@ test.describe("Capability clean-room chat", () => {
 
     const session = page.locator('[data-record-id="session-1"]');
     await session.locator("summary").click();
-    await expect(session).toContainText("paperclip-runnerd");
+    await expect(session).toContainText("wardmote-runnerd");
 
     const group = page.locator('[data-runner-delta-group="assistant_delta"]');
     await expect(group).toContainText("2 streamed updates");
@@ -850,7 +850,7 @@ test.describe("Capability clean-room chat", () => {
         contentType: "application/json",
         body: JSON.stringify({
           error: "capability_issue_thread_unavailable",
-          message: "paperclip-runnerd exited before the Codex app-server was ready",
+          message: "wardmote-runnerd exited before the Codex app-server was ready",
         }),
       });
     });

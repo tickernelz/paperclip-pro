@@ -39,9 +39,9 @@ try {
     "runner/Cargo.toml",
     "--locked",
     "-p",
-    "paperclip-runner-core",
+    "wardmote-runner-core",
     "--bin",
-    "paperclip-runnerd",
+    "wardmote-runnerd",
   ], runnerRoot);
   run(process.execPath, ["scripts/stage-runner-binary.mjs"], runnerRoot);
   const runnerTarball = await pack(runnerRoot, artifactsRoot, { runner: true });
@@ -167,8 +167,8 @@ async function resolveInstalledDependencyRoot(packageRoot, dependencyName) {
 
 async function stageRunnerdArtifact(destination) {
   const suffix = process.platform === "win32" ? ".exe" : "";
-  const source = resolve(runnerRoot, `dist/bin/paperclip-runnerd${suffix}`);
-  const executablePath = resolve(destination, `paperclip-runnerd-${process.platform}-${process.arch}${suffix}`);
+  const source = resolve(runnerRoot, `dist/bin/wardmote-runnerd${suffix}`);
+  const executablePath = resolve(destination, `wardmote-runnerd-${process.platform}-${process.arch}${suffix}`);
   await copyFile(source, executablePath);
   if (process.platform !== "win32") await chmod(executablePath, 0o755);
   const bytes = await readFile(executablePath);
@@ -219,7 +219,7 @@ import { parsePaperclipRunnerdBuildMetadata, WARDMOTE_RUNNER_BUILD_METADATA } fr
 const bundledRunnerd = defaultCapabilityRunnerdBinary();
 const installedEntry = fileURLToPath(import.meta.resolve("@tickernelz/wardmote-runner"));
 const expectedBundledRunnerd = resolve(dirname(installedEntry), "bin",
-  "paperclip-runnerd" + (process.platform === "win32" ? ".exe" : ""));
+  "wardmote-runnerd" + (process.platform === "win32" ? ".exe" : ""));
 if (await realpath(bundledRunnerd) !== await realpath(expectedBundledRunnerd)) {
   throw new Error("default runnerd escaped the installed package");
 }

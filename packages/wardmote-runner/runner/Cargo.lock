@@ -1744,7 +1744,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "paperclip-runner-core"
+name = "wardmote-runner-core"
 version = "0.0.0"
 dependencies = [
  "aes-gcm",

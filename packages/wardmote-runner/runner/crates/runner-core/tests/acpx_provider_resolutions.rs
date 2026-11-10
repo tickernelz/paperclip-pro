@@ -3,18 +3,16 @@ use std::path::PathBuf;
 use std::process::{Command, Stdio};
 use std::time::Duration;
 
-use paperclip_runner_core::acpx_provider_session::{
+use serde_json::json;
+use wardmote_runner_core::acpx_provider_session::{
     AcpxPermissionMode, AcpxProviderSession, AcpxProviderSessionConfig,
 };
-use paperclip_runner_core::acpx_provider_state::AcpxProviderStateEvent;
-use paperclip_runner_core::acpx_sidecar_transport::AcpxSidecarTransportConfig;
-use paperclip_runner_core::provider_bridge::{
+use wardmote_runner_core::acpx_provider_state::AcpxProviderStateEvent;
+use wardmote_runner_core::acpx_sidecar_transport::AcpxSidecarTransportConfig;
+use wardmote_runner_core::provider_bridge::{
     authorized_tool_catalog_digest, AuthorizedTool, AuthorizedToolSet, ToolResult,
 };
-use paperclip_runner_core::provider_events::{
-    project_acpx_state_event, AcpxEventProjectionContext,
-};
-use serde_json::json;
+use wardmote_runner_core::provider_events::{project_acpx_state_event, AcpxEventProjectionContext};
 
 fn tool_set() -> AuthorizedToolSet {
     let operations = vec![AuthorizedTool {
@@ -345,13 +343,13 @@ fn permission_origin_is_bound_to_the_admitted_connection_and_survives_projection
         .to_owned();
         if agent == "pi" {
             cfg.pi_thinking_level =
-                Some(paperclip_runner_core::acpx_provider_session::PiThinkingLevel::Low);
+                Some(wardmote_runner_core::acpx_provider_session::PiThinkingLevel::Low);
         }
         if agent == "cursor" {
             cfg.mode = Some("agent".to_owned());
         }
         cfg.provider_policy = Some(
-            paperclip_runner_core::acpx_provider_session::AcpxProviderRuntimePolicy {
+            wardmote_runner_core::acpx_provider_session::AcpxProviderRuntimePolicy {
                 read_only: false,
             },
         );

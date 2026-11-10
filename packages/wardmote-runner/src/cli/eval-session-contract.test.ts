@@ -30,7 +30,7 @@ function request(overrides: Record<string, unknown> = {}): unknown {
     prompt: "Inspect the governed task.",
     model: "gpt-5.6-sol",
     provider: "codex",
-    runnerd: { path: "/tmp/paperclip-runnerd", sha256: "a".repeat(64) },
+    runnerd: { path: "/tmp/wardmote-runnerd", sha256: "a".repeat(64) },
     limits: {
       turnTimeoutMs: 120_000,
       maxAgentTurns: 1,

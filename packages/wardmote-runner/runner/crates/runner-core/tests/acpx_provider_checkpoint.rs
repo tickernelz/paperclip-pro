@@ -5,17 +5,17 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 #[cfg(unix)]
 use std::os::unix::fs::PermissionsExt;
 
-use paperclip_runner_core::acpx_provider_checkpoint::{
+use serde_json::json;
+use wardmote_runner_core::acpx_provider_checkpoint::{
     AcpxSuspensionCheckpoint, AcpxSuspensionCheckpointStore,
 };
-use paperclip_runner_core::acpx_provider_session::{
+use wardmote_runner_core::acpx_provider_session::{
     AcpxPermissionMode, AcpxProviderSessionConfig, AcpxProviderSessionIdentity,
 };
-use paperclip_runner_core::acpx_sidecar_transport::AcpxSidecarTransportConfig;
-use paperclip_runner_core::provider_bridge::{
+use wardmote_runner_core::acpx_sidecar_transport::AcpxSidecarTransportConfig;
+use wardmote_runner_core::provider_bridge::{
     authorized_tool_catalog_digest, AuthorizedTool, AuthorizedToolSet,
 };
-use serde_json::json;
 
 fn temporary_directory(label: &str) -> PathBuf {
     let nonce = SystemTime::now()
@@ -264,7 +264,7 @@ fn rejects_an_existing_runner_state_directory_that_is_not_private() {
 
 #[test]
 fn mode_round_trips_checkpoint_and_rejects_changed_or_missing_recovery_mode() {
-    use paperclip_runner_core::acpx_provider_session::AcpxProviderRuntimePolicy;
+    use wardmote_runner_core::acpx_provider_session::AcpxProviderRuntimePolicy;
     let directory = temporary_directory("cursor-mode");
     let mut config = config(&directory);
     config.agent = "cursor".to_owned();
@@ -295,9 +295,7 @@ fn mode_round_trips_checkpoint_and_rejects_changed_or_missing_recovery_mode() {
 
 #[test]
 fn pi_thinking_level_round_trips_and_rejects_legacy_or_changed_recovery() {
-    use paperclip_runner_core::acpx_provider_session::{
-        AcpxProviderRuntimePolicy, PiThinkingLevel,
-    };
+    use wardmote_runner_core::acpx_provider_session::{AcpxProviderRuntimePolicy, PiThinkingLevel};
     let directory = temporary_directory("pi-thinking");
     let mut config = config(&directory);
     config.agent = "pi".to_owned();

@@ -88,14 +88,14 @@ class ClosureMetadataTests(unittest.TestCase):
 class IdentityTests(unittest.TestCase):
     def setUp(self):
         self.files = {DIST + '/' + n: (n.encode(), (1, 100 + i)) for i, n in enumerate(NAMES)}
-        self.files[RUNTIME + '/bin/paperclip-runnerd'] = (b'runner', (1, 90))
+        self.files[RUNTIME + '/bin/wardmote-runnerd'] = (b'runner', (1, 90))
         entries = [{'path': n, 'sha256': fault.digest(n.encode()), 'size': len(n), 'executable': n == fault.NODE} for n in sorted(NAMES)]
         closure = json.dumps({'entries': entries}, indent=2).encode()
         self.files[fault.PACK + '/provider-assets/pi/linux-x64/native-closure.json'] = (closure, (1, 80))
         self.config = {'root': ROOT, 'binding': {'remoteCwd': '/workspace', 'runId': 'run'}, 'runtimeEnvironmentLeaseId': 'workspace-id',
                        'runnerdSha256': 'sha256:' + fault.digest(b'runner'), 'closureSha256': fault.digest(json.dumps(entries, separators=(',', ':'), ensure_ascii=False).encode())}
         self.table = {21: ROOT, 22: PARENT, 23: TARGET}
-        self.args = {21: [RUNTIME + '/bin/paperclip-runnerd', '--run-id', 'run', '--environment-lease-id', 'workspace-id', '--lifecycle-mode', 'per_turn', '--state-dir', RUNTIME + '/sessions/' + 'a' * 64 + '/runner'],
+        self.args = {21: [RUNTIME + '/bin/wardmote-runnerd', '--run-id', 'run', '--environment-lease-id', 'workspace-id', '--lifecycle-mode', 'per_turn', '--state-dir', RUNTIME + '/sessions/' + 'a' * 64 + '/runner'],
                      22: [DIST + '/' + fault.NODE, '--require', DIST + '/' + fault.GUARD, DIST + '/pi-entry.cjs'], 23: ['pi']}
         self.patches = [patch.object(fault, 'proc', side_effect=lambda pid, boot: self.table[pid]), patch.object(fault, 'argv', side_effect=lambda pid: self.args[pid]),
                         patch.object(fault, 'checked_runner_executable', side_effect=lambda p: self.files[p]),
@@ -241,7 +241,7 @@ class PidfdTests(unittest.TestCase):
             for name in NAMES + [fault.GUARD]:
                 p = distribution / name; p.parent.mkdir(parents=True, exist_ok=True); p.write_text('// fixture\n')
             shutil.copyfile(node, distribution / fault.NODE); (distribution / fault.NODE).chmod(0o500)
-            runner = runtime / 'bin/paperclip-runnerd'
+            runner = runtime / 'bin/wardmote-runnerd'
             if runner_link:
                 installed = base / 'preinstalled-runner'
                 shutil.copyfile(node, installed); installed.chmod(0o500)
@@ -270,7 +270,7 @@ class PidfdTests(unittest.TestCase):
                 release = 'require("node:fs").closeSync(fd);'
             script = base / 'root.cjs'; script.write_text(setup + 'const p=require("node:child_process").spawn(' + launch + ',["--require",' + json.dumps(str(distribution / fault.GUARD)) + ',' + json.dumps(str(distribution / 'pi-entry.cjs')) + '],{stdio:' + stdio + '});' + release + 'process.on("SIGTERM",()=>{if(p.exitCode!==null||p.signalCode!==null)process.exit(0);p.once("exit",()=>process.exit(0));p.kill("SIGTERM")});setInterval(()=>{},1000);')
             check_cancelled()
-            root_child = subprocess.Popen([str(runtime / 'bin/paperclip-runnerd'), str(script), '--run-id', 'fixture', '--environment-lease-id', 'workspace-id', '--lifecycle-mode', 'per_turn', '--state-dir', str(runtime / 'sessions' / ('a' * 64) / 'runner')], cwd=workspace, env={'PATH': '/usr/bin:/bin'}, start_new_session=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            root_child = subprocess.Popen([str(runtime / 'bin/wardmote-runnerd'), str(script), '--run-id', 'fixture', '--environment-lease-id', 'workspace-id', '--lifecycle-mode', 'per_turn', '--state-dir', str(runtime / 'sessions' / ('a' * 64) / 'runner')], cwd=workspace, env={'PATH': '/usr/bin:/bin'}, start_new_session=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             try: owned_fds.append(os.pidfd_open(root_child.pid))
             except Exception:
                 # Direct Popen child has not been polled/reaped, so its numeric
@@ -284,7 +284,7 @@ class PidfdTests(unittest.TestCase):
             self.assertTrue(ready.exists()); target = json.loads(ready.read_text())['pid']
             self.assertEqual(fault.argv(target), ['pi'], 'real Node process.title must overwrite argv')
             boot = Path('/proc/sys/kernel/random/boot_id').read_text().strip()
-            config = {'root': fault.proc(root_child.pid, boot), 'binding': {'remoteCwd': str(workspace), 'runId': 'fixture'}, 'runtimeEnvironmentLeaseId': 'workspace-id', 'runnerdSha256': 'sha256:' + fault.digest((runtime / 'bin/paperclip-runnerd').read_bytes()), 'closureSha256': fault.digest(json.dumps(entries, separators=(',', ':'), ensure_ascii=False).encode())}
+            config = {'root': fault.proc(root_child.pid, boot), 'binding': {'remoteCwd': str(workspace), 'runId': 'fixture'}, 'runtimeEnvironmentLeaseId': 'workspace-id', 'runnerdSha256': 'sha256:' + fault.digest((runtime / 'bin/wardmote-runnerd').read_bytes()), 'closureSha256': fault.digest(json.dumps(entries, separators=(',', ':'), ensure_ascii=False).encode())}
             with patch.object(fault, 'PACK', str(pack)):
                 admitted = fault.inspect(config)
                 self.assertEqual(admitted['target']['pid'], target)

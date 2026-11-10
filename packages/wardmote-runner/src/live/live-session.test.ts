@@ -329,7 +329,7 @@ function fakeTransportFactory(state: FakeProviderState): CapabilityLiveTransport
       runnerExitCode: null,
       runnerSignal: null,
       childEnvironmentKeys: ["CODEX_HOME", "HOME", "PATH"],
-      diagnostics: ["paperclip-runnerd: capability codex proxy started"],
+      diagnostics: ["wardmote-runnerd: capability codex proxy started"],
     };
     const transport = new FakeCapabilityCodexTransport(state, () => {
       evidence.runnerExited = true;

@@ -57,7 +57,7 @@ export interface EvalBundlePromptPolicy {
 export interface EvalBundleRunner {
   /** Runner package, e.g. `@tickernelz/wardmote-runner`. */
   package: string;
-  /** Runner binary that hosts the provider session, e.g. `paperclip-runnerd`. */
+  /** Runner binary that hosts the provider session, e.g. `wardmote-runnerd`. */
   binary: string;
   version: string;
 }

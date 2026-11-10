@@ -62,7 +62,7 @@ it.skipIf(!enabled).each(cases)(
       const staged = process.env.WARDMOTE_FINAL_BURST_BINARY
         ? resolve(process.env.WARDMOTE_FINAL_BURST_BINARY)
         : defaultCapabilityRunnerdBinary();
-      const runnerBinary = join(root, "paperclip-runnerd");
+      const runnerBinary = join(root, "wardmote-runnerd");
       const binarySha256 = digest(await readFile(staged));
       await copyFile(staged, runnerBinary);
       await chmod(runnerBinary, 0o700);
