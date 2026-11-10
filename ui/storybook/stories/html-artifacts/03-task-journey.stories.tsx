@@ -37,7 +37,7 @@ function TaskJourney({ openInitially = false }: { openInitially?: boolean }) {
     cache.setQueryData(queryKeys.issues.runs(issue.id), []);
     cache.setQueryData(queryKeys.agents.list(issue.companyId), storybookAgents);
     cache.setQueryData(["task-text-attachment", issue.id, attachment.id], reportHtml);
-    window.localStorage.removeItem(`paperclip:task-side-panel:v1:storybook-html:${issue.companyId}`);
+    window.localStorage.removeItem(`wardmote:task-side-panel:v1:storybook-html:${issue.companyId}`);
     return cache;
   });
   return <QueryClientProvider client={client}>

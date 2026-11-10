@@ -220,7 +220,7 @@ describe("recent task persistence", () => {
   });
 
   it("migrates legacy tasks once and isolates subsequent old-tab writes", () => {
-    const legacyKey = "paperclip.recentTasks:company-1:user-1";
+    const legacyKey = "wardmote.recentTasks:company-1:user-1";
     const storageKey = getRecentTasksStorageKey("company-1", "user-1");
     const legacy = [{ ...issue("1"), recordedAt: 100 }];
     window.localStorage.setItem(legacyKey, JSON.stringify(legacy));
@@ -244,7 +244,7 @@ describe("recent task persistence", () => {
   it("does not import legacy tasks that appear after an empty migration", () => {
     const storageKey = getRecentTasksStorageKey("company-1", "user-1");
     migrateRecentTasks(storageKey, "company-1");
-    window.localStorage.setItem("paperclip.recentTasks:company-1:user-1", JSON.stringify([{ ...issue("1"), recordedAt: 1 }]));
+    window.localStorage.setItem("wardmote.recentTasks:company-1:user-1", JSON.stringify([{ ...issue("1"), recordedAt: 1 }]));
     migrateRecentTasks(storageKey, "company-1");
     expect(readRecentTasks(storageKey, "company-1")).toEqual([]);
   });

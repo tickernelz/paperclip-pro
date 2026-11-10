@@ -12,8 +12,8 @@ function SourcesStory({ view = "sources", empty = false, needsConnection = false
   const navigate = useNavigate();
   useEffect(() => {
     const cleanup = installFixtures(empty, needsConnection, { repositories, scan });
-    for (const id of ["new", SOURCE_ID]) sessionStorage.removeItem(`paperclip.skill-source-draft:${COMPANY_ID}:${id}`);
-    if (repositoryUrl) sessionStorage.setItem(`paperclip.skill-source-draft:${COMPANY_ID}:new`, JSON.stringify({ repositoryUrl }));
+    for (const id of ["new", SOURCE_ID]) sessionStorage.removeItem(`wardmote.skill-source-draft:${COMPANY_ID}:${id}`);
+    if (repositoryUrl) sessionStorage.setItem(`wardmote.skill-source-draft:${COMPANY_ID}:new`, JSON.stringify({ repositoryUrl }));
     navigate(`/skills/sources${view === "import" ? "/new" : view === "manage" ? `/${SOURCE_ID}` : ""}`, { replace: true });
     setReady(true);
     return cleanup;

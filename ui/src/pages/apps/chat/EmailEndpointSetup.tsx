@@ -95,7 +95,7 @@ function EmailEndpointSetupForm({ companyId }: { companyId: string }) {
   const cache = useQueryClient();
   const resumeId = params.get("resume");
   const setupId = params.get("setupId");
-  const draftKey = `paperclip.agentmail-setup:${companyId}:${resumeId ?? setupId ?? params.get("connectionId") ?? "new"}:${params.get("agentId") ?? "choose"}`;
+  const draftKey = `wardmote.agentmail-setup:${companyId}:${resumeId ?? setupId ?? params.get("connectionId") ?? "new"}:${params.get("agentId") ?? "choose"}`;
   const [draft] = useState(() => {
     const saved = readEmailSetupDraft(draftKey);
     // A Finish setup link always names its original inbox, including when an
@@ -307,7 +307,7 @@ function EmailEndpointSetupForm({ companyId }: { companyId: string }) {
   const cancel = () => { try { sessionStorage.removeItem(draftKey); } catch {} navigate("/apps"); };
   function openDraft(nextDraft: EmailSetupDraft & { requestId: string; connectionId: string }) {
     try {
-      sessionStorage.setItem(`paperclip.agentmail-setup:${companyId}:${nextDraft.requestId}:${agentId}`, JSON.stringify(nextDraft));
+      sessionStorage.setItem(`wardmote.agentmail-setup:${companyId}:${nextDraft.requestId}:${agentId}`, JSON.stringify(nextDraft));
     } catch { /* The new link still restores the agent and saved account. */ }
     navigate(`/apps/chat/connect?${new URLSearchParams({ provider: "agentmail", purpose: "chat", setupId: nextDraft.requestId, agentId, connectionId: nextDraft.connectionId })}`);
   }

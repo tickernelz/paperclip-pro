@@ -166,7 +166,7 @@ function Sandbox({ options, children }: { options: PrimaryScenario; children: Re
   const { selectedCompanyId, setSelectedCompanyId } = useCompany();
   const { pushToast, dismissToast } = useToastActions();
   useLayoutEffect(() => {
-    const storageKeys = ["paperclip:issue-draft", "paperclip:recent-assignees", `paperclip:recent-assignees:${companyId}`, `paperclip.recentAgentChats:${companyId}:user-board`, ...state.agents.map(a => `paperclip.recentAgentChatIssue:${companyId}:user-board:${a.id}`)];
+    const storageKeys = ["wardmote:issue-draft", "wardmote:recent-assignees", `wardmote:recent-assignees:${companyId}`, `wardmote.recentAgentChats:${companyId}:user-board`, ...state.agents.map(a => `wardmote.recentAgentChatIssue:${companyId}:user-board:${a.id}`)];
     const previous = storageKeys.map(key => [key, localStorage.getItem(key)] as const);
     storageKeys.forEach(key => localStorage.removeItem(key));
     const changed = () => {
@@ -193,7 +193,7 @@ function Sandbox({ options, children }: { options: PrimaryScenario; children: Re
   useEffect(() => {
     if (!ready) return;
     const id = options.recentAssignee ? specialist.id : primaryId;
-    localStorage.setItem(`paperclip:recent-assignees:${companyId}`, JSON.stringify(id ? [`agent:${id}`] : []));
+    localStorage.setItem(`wardmote:recent-assignees:${companyId}`, JSON.stringify(id ? [`agent:${id}`] : []));
   }, [ready, primaryId, options.recentAssignee]);
   const changePrimary = (id: string) => {
     const before = state.primaryId;
@@ -246,7 +246,7 @@ export function PrimaryPage({ task, drawer }: { task?: "primary" | "recent" | "e
     if (task && !launched.current) {
       launched.current = true;
       if (task === "draft") {
-        localStorage.setItem("paperclip:issue-draft", JSON.stringify({ title: "Review the launch mockups", description: "Keep the mobile navigation compact.", companyId, status: "todo", priority: "medium", assigneeValue: `agent:${designer.id}`, projectId: "", reviewerValue: "", approverValue: "" }));
+        localStorage.setItem("wardmote:issue-draft", JSON.stringify({ title: "Review the launch mockups", description: "Keep the mobile navigation compact.", companyId, status: "todo", priority: "medium", assigneeValue: `agent:${designer.id}`, projectId: "", reviewerValue: "", approverValue: "" }));
         openNewIssue();
       } else {
         openNewIssue({ title: "Plan next week's launch", ...(task === "explicit" ? { assigneeAgentId: designer.id } : task === "primary" ? { assigneeAgentId: state.primaryId ?? undefined } : {}) });

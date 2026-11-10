@@ -25,7 +25,7 @@ function TextFilesStory({ initial = "list", width = 640 }: { initial?: "list" | 
     client.setQueryData(queryKeys.issues.runs(issue.id), []);
     client.setQueryData(queryKeys.agents.list(issue.companyId), []);
     for (const [id, text] of [["charter", markdown], ["summary", plain], ["empty", ""]]) client.setQueryData(["task-text-attachment", issue.id, id], text);
-    window.localStorage.removeItem(`paperclip:task-side-panel:v1:storybook-text-files:${issue.companyId}`);
+    window.localStorage.removeItem(`wardmote:task-side-panel:v1:storybook-text-files:${issue.companyId}`);
     return { client, issue };
   });
   const id = initial === "markdown" ? "charter" : initial === "text" ? "summary" : initial;

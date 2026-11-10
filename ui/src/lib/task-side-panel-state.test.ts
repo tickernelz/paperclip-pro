@@ -46,7 +46,7 @@ describe("task side-panel persistence", () => {
   });
 
   it("drops a stored tab whose payload kind is unknown", () => {
-    window.localStorage.setItem("paperclip:task-side-panel:v1:user-1:company-1", JSON.stringify({
+    window.localStorage.setItem("wardmote:task-side-panel:v1:user-1:company-1", JSON.stringify({
       version: 1,
       tasks: {
         "task-1": {

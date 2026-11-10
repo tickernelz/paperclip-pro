@@ -1,6 +1,6 @@
-export const NOTIFICATION_SEEN_STORAGE_KEY = "paperclip.notifications.seen.v1";
+export const NOTIFICATION_SEEN_STORAGE_KEY = "wardmote.notifications.seen.v1";
 
-const LOCK_NAME = "paperclip.notifications.claim";
+const LOCK_NAME = "wardmote.notifications.claim";
 const SEEN_TTL_MS = 10 * 60_000;
 const SEEN_MAX = 200;
 

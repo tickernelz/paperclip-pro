@@ -268,7 +268,7 @@ describe("Cases list", () => {
 
   it("shows and copies keys only when the key column is enabled", async () => {
     window.localStorage.setItem(
-      "paperclip:cases:company-1:view",
+      "wardmote:cases:company-1:view",
       JSON.stringify({
         columns: ["id", "key", "title", "status", "updated"],
       }),
@@ -304,7 +304,7 @@ describe("Cases list", () => {
 
   it("tree mode forces an ungrouped parent-child order and adds the type column", async () => {
     window.localStorage.setItem(
-      "paperclip:cases:company-1:view",
+      "wardmote:cases:company-1:view",
       JSON.stringify({
         treeView: true,
         groupBy: "type",
@@ -377,7 +377,7 @@ describe("Cases list", () => {
 
   it("keeps filtered-out ancestors visible in tree mode when descendants match", async () => {
     window.localStorage.setItem(
-      "paperclip:cases:company-1:view",
+      "wardmote:cases:company-1:view",
       JSON.stringify({
         treeView: true,
         columns: ["id", "title", "type", "status", "updated"],
@@ -473,7 +473,7 @@ describe("Cases list", () => {
 
   it("supports keyboard tree folding and opening parent case rows", async () => {
     window.localStorage.setItem(
-      "paperclip:cases:company-1:view",
+      "wardmote:cases:company-1:view",
       JSON.stringify({
         treeView: true,
         columns: ["id", "title", "type", "status", "updated"],
@@ -527,7 +527,7 @@ describe("Cases list", () => {
 
   it("restores persisted search, filters, group, sort, and columns", async () => {
     window.localStorage.setItem(
-      "paperclip:cases:company-1:view",
+      "wardmote:cases:company-1:view",
       JSON.stringify({
         search: "launch",
         statusFilters: ["done"],
@@ -574,7 +574,7 @@ describe("Cases list", () => {
 
   it("applies multi-select type and status filters from persisted state", async () => {
     window.localStorage.setItem(
-      "paperclip:cases:company-1:view",
+      "wardmote:cases:company-1:view",
       JSON.stringify({
         statusFilters: ["in_progress", "done"],
         typeFilters: ["blog_post", "docs_page"],
