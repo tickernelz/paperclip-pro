@@ -228,7 +228,7 @@ describe("ACPX runtime host", () => {
 
   it.each([
     { WARDMOTE_NATIVE_MCP_NAME: "wardmote-assigned" },
-    { WARDMOTE_NATIVE_MCP_NAME: "paperclip", WARDMOTE_NATIVE_MCP_URL: "http://127.0.0.1:3211/mcp", WARDMOTE_NATIVE_MCP_TOKEN: "x".repeat(40) },
+    { WARDMOTE_NATIVE_MCP_NAME: "wardmote", WARDMOTE_NATIVE_MCP_URL: "http://127.0.0.1:3211/mcp", WARDMOTE_NATIVE_MCP_TOKEN: "x".repeat(40) },
     { WARDMOTE_NATIVE_MCP_NAME: "wardmote-assigned", WARDMOTE_NATIVE_MCP_URL: "http://external.example/mcp", WARDMOTE_NATIVE_MCP_TOKEN: "x".repeat(40) },
   ])("rejects invalid assigned connection bindings before runtime launch", async (environment) => {
     const fixture = await hostFixture();
@@ -254,7 +254,7 @@ describe("ACPX runtime host", () => {
       return runtimePort({ getStatus: async () => ({ models: { currentModelId: "claude-sonnet-5" } }) });
     } }));
     try {
-      expect(servers.map(server => server.name)).toEqual(["paperclip", "wardmote-assigned"]);
+      expect(servers.map(server => server.name)).toEqual(["wardmote", "wardmote-assigned"]);
       expect(servers[1]).toEqual({ name: "wardmote-assigned", url: "http://127.0.0.1:3211/mcp/gateway",
         bearerToken: "fixture-gateway-token-".repeat(3), runnerOwned: true });
     } finally { await host.close({ reason: "gateway test complete" }); }
@@ -274,7 +274,7 @@ describe("ACPX runtime host", () => {
         ));
         expect(settings.permissions).toEqual(allow ? { allow } : undefined);
         expect(options.mcpServers).toMatchObject([
-          { name: "paperclip", runnerOwned: true },
+          { name: "wardmote", runnerOwned: true },
         ]);
         return runtimePort({
           getStatus: async () => ({ models: { currentModelId: "claude-sonnet-5" } }),
@@ -804,7 +804,7 @@ describe("ACPX runtime host", () => {
     );
 
     expect(bridge).toMatchObject({
-      name: "paperclip",
+      name: "wardmote",
       runnerOwned: true,
     });
     expect(new URL(bridge!.url).hostname).toBe("127.0.0.1");
