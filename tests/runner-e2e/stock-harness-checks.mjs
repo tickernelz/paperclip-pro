@@ -155,7 +155,7 @@ export function main(args = process.argv.slice(2)) {
     const report = assertPreflightReceipt(JSON.parse(readFileSync(verify, "utf8")), {
       sha: git.stdout.trim(), fingerprint: source.fingerprint,
       runnerdSha256: createHash("sha256").update(readFileSync(join(root,
-        "packages/wardmote-runner/runner/target/debug", `paperclip-runnerd${process.platform === "win32" ? ".exe" : ""}`))).digest("hex"),
+        "packages/wardmote-runner/runner/target/debug", `wardmote-runnerd${process.platform === "win32" ? ".exe" : ""}`))).digest("hex"),
       fakeCodexSha256: createHash("sha256").update(readFileSync(join(root,
         "packages/wardmote-runner/runner/target/debug/fake-codex-app-server"))).digest("hex"),
     });
@@ -204,7 +204,7 @@ export function main(args = process.argv.slice(2)) {
     return;
   }
   const runnerdBinary = join(root, "packages/wardmote-runner/runner/target/debug",
-    `paperclip-runnerd${process.platform === "win32" ? ".exe" : ""}`);
+    `wardmote-runnerd${process.platform === "win32" ? ".exe" : ""}`);
   setup.runnerdSha256 = createHash("sha256").update(readFileSync(runnerdBinary)).digest("hex");
   setup.fakeCodexSha256 = createHash("sha256").update(readFileSync(join(root,
     "packages/wardmote-runner/runner/target/debug/fake-codex-app-server"))).digest("hex");
@@ -223,7 +223,7 @@ export function main(args = process.argv.slice(2)) {
     try { report = JSON.parse(readFileSync(file, "utf8")); } catch { /* missing evidence fails closed below */ }
     results.push(gradeGate(gate, report, run.status));
   }
-  const rust = spawnSync("cargo", ["test", ...(args.includes("--allow-rust-network") ? [] : ["--offline"]), "-p", "paperclip-runner-core", "--test", "codex_provider",
+  const rust = spawnSync("cargo", ["test", ...(args.includes("--allow-rust-network") ? [] : ["--offline"]), "-p", "wardmote-runner-core", "--test", "codex_provider",
     "runtime_instructions_are_additive_for_codex_on_start_and_resume", "--", "--exact"],
   { cwd: join(root, "packages/wardmote-runner/runner"), env, encoding: "utf8", timeout: 10 * 60_000 });
   const rustOutput = `${rust.stdout ?? ""}\n${rust.stderr ?? ""}`;

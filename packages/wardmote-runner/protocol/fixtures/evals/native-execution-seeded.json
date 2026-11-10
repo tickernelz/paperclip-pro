@@ -18,7 +18,7 @@
       "version": "0.0.0"
     },
     "binary": {
-      "name": "paperclip-runnerd",
+      "name": "wardmote-runnerd",
       "sha256": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
     },
     "prpVersion": 1,

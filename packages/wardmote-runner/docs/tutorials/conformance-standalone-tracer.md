@@ -38,7 +38,7 @@ pnpm --filter @tickernelz/wardmote-runner build
 ```
 
 Expected result: TypeScript writes package-local `dist/` files and Cargo builds
-the `paperclip-runner-core` crate under `runner/target/`.
+the `wardmote-runner-core` crate under `runner/target/`.
 
 ## 3. Run the behavior and boundary tests
 

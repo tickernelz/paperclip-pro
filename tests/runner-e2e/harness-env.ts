@@ -69,7 +69,7 @@ export function resolvePaperclipRunnerBinaryForHarness(
     "runner",
     "target",
     "debug",
-    platform === "win32" ? "paperclip-runnerd.exe" : "paperclip-runnerd",
+    platform === "win32" ? "wardmote-runnerd.exe" : "wardmote-runnerd",
   );
 }
 

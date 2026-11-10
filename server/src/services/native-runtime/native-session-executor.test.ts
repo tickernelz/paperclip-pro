@@ -206,7 +206,7 @@ const state = vi.hoisted(() => ({
   assertCurrentWakeCommentsRead: vi.fn(async () => undefined),
   bundledPackManifestPath: null as string | null,
   bundledRunnerBinary: null as string | null,
-  resolveRunnerBinary: vi.fn(() => "/tmp/paperclip-runnerd"),
+  resolveRunnerBinary: vi.fn(() => "/tmp/wardmote-runnerd"),
   release: null as null | (() => void),
 }));
 
@@ -375,7 +375,7 @@ beforeEach(() => {
   state.bundledPackManifestPath = null;
   state.bundledRunnerBinary = null;
   state.createAssignedMcpTools.mockReset();
-  state.resolveRunnerBinary.mockReset().mockReturnValue("/tmp/paperclip-runnerd");
+  state.resolveRunnerBinary.mockReset().mockReturnValue("/tmp/wardmote-runnerd");
   state.resolveCurrentWakeCommentsBinding.mockReset().mockResolvedValue(null);
   state.assertCurrentWakeCommentsRead.mockReset().mockResolvedValue(undefined);
 });
@@ -730,7 +730,7 @@ describe("remote runner process supervision", () => {
             exitCode: 0,
             signal: null,
             timedOut: false,
-            stdout: "paperclip-runnerd: provider transport closed",
+            stdout: "wardmote-runnerd: provider transport closed",
             stderr: "",
           };
         }
@@ -774,7 +774,7 @@ describe("remote runner process supervision", () => {
         remoteCwd: "/workspace",
       },
       runner: { execute } as never,
-      remoteBinary: "/runtime/paperclip-runnerd",
+      remoteBinary: "/runtime/wardmote-runnerd",
       processIdentityPath: "/runtime/runner-process.identity",
       stateDirectory: "/runtime",
       diagnosticsDirectory: "/runtime/diagnostics",
@@ -784,14 +784,14 @@ describe("remote runner process supervision", () => {
     });
 
     const handle = launcher({
-      command: "/controller/paperclip-runnerd",
+      command: "/controller/wardmote-runnerd",
       args: ["--runner-id", "runner-remote"],
       cwd: "/controller",
       environment: {},
     });
     await expect(handle.completion).resolves.toMatchObject({
       code: null,
-      stderr: "paperclip-runnerd: provider transport closed",
+      stderr: "wardmote-runnerd: provider transport closed",
     });
 
     const launch = execute.mock.calls.find(
@@ -885,7 +885,7 @@ describe("remote runner process supervision", () => {
           remoteCwd: "/workspace",
         },
         runner: { execute } as never,
-        remoteBinary: "/runtime/paperclip-runnerd",
+        remoteBinary: "/runtime/wardmote-runnerd",
         processIdentityPath: "/runtime/runner-process.identity",
         stateDirectory: "/runtime",
         diagnosticsDirectory: "/runtime/diagnostics",
@@ -894,7 +894,7 @@ describe("remote runner process supervision", () => {
       });
 
       const handle = launcher({
-        command: "/controller/paperclip-runnerd",
+        command: "/controller/wardmote-runnerd",
         args: ["--runner-id", "runner-remote"],
         cwd: "/controller",
         environment: {},
@@ -957,7 +957,7 @@ describe("remote runner process supervision", () => {
           remoteCwd: "/workspace",
         },
         runner: { execute } as never,
-        remoteBinary: "/runtime/paperclip-runnerd",
+        remoteBinary: "/runtime/wardmote-runnerd",
         processIdentityPath: "/runtime/runner-process.identity",
         stateDirectory: "/runtime",
         diagnosticsDirectory: "/runtime/diagnostics",
@@ -965,7 +965,7 @@ describe("remote runner process supervision", () => {
       });
 
       const handle = launcher({
-        command: "/controller/paperclip-runnerd",
+        command: "/controller/wardmote-runnerd",
         args: ["--runner-id", "runner-remote"],
         cwd: "/controller",
         environment: {},
@@ -1178,7 +1178,7 @@ describe("remote provider pack manifest", () => {
       expect(transport.runnerBinary).toBe(state.bundledRunnerBinary);
       await expect(transport.controlPlaneRegistration({})).rejects.toThrow("reached-staged-Linux-daemon-verification");
       expect(syncIn).toHaveBeenCalledWith([expect.objectContaining({ files: [expect.objectContaining({
-        sourcePath: state.bundledRunnerBinary, targetPath: "/workspace/.paperclip-runtime/paperclip-runner/bin/paperclip-runnerd",
+        sourcePath: state.bundledRunnerBinary, targetPath: "/workspace/.paperclip-runtime/paperclip-runner/bin/wardmote-runnerd",
       })] })]);
       expect(execute.mock.calls.some(([call]) => call.args?.[1] === "uname -s; uname -m")).toBe(false);
     } finally {
@@ -2515,13 +2515,13 @@ describe("remote preinstalled executable discovery", () => {
   it("accepts one normalized absolute executable path", () => {
     expect(
       parseRemoteExecutableCandidate(
-        "/home/daytona/.local/bin/paperclip-runnerd\n",
+        "/home/daytona/.local/bin/wardmote-runnerd\n",
       ),
-    ).toBe("/home/daytona/.local/bin/paperclip-runnerd");
+    ).toBe("/home/daytona/.local/bin/wardmote-runnerd");
   });
 
   it.each([
-    "paperclip-runnerd\n",
+    "wardmote-runnerd\n",
     "/safe/path\n/unexpected/second-line\n",
     "/safe/path with spaces\n",
     "/safe/path;touch-bad\n",
@@ -2531,7 +2531,7 @@ describe("remote preinstalled executable discovery", () => {
 
   it("does not accept a merely contract-compatible runnerd when a build-owned artifact is configured", () => {
     expect(
-      mayUsePreinstalledRunnerArtifact("/artifacts/paperclip-runnerd"),
+      mayUsePreinstalledRunnerArtifact("/artifacts/wardmote-runnerd"),
     ).toBe(false);
     expect(mayUsePreinstalledRunnerArtifact("  ")).toBe(true);
     expect(mayUsePreinstalledRunnerArtifact(undefined)).toBe(true);
@@ -2575,7 +2575,7 @@ describe("remote runner build metadata", () => {
 
   const current = {
     schema: "paperclip-runner/runnerd-build-metadata/v1",
-    binaryName: "paperclip-runnerd",
+    binaryName: "wardmote-runnerd",
     packageName: "@tickernelz/wardmote-runner",
     binaryContractVersion: 2,
     durableSessionCapabilities: ["unlimited_runtime", "connection_lease_renewal"],
@@ -8350,7 +8350,7 @@ describe("native warm session supervision", () => {
         firstMode !== secondMode ||
         firstNetwork !== secondNetwork;
       const stateBase = await mkdtemp(
-        join(tmpdir(), "paperclip-runnerd-warm-authority-"),
+        join(tmpdir(), "wardmote-runnerd-warm-authority-"),
       );
       const previousStateDirectory = process.env.WARDMOTE_RUNNER_STATE_DIR;
       const previousPaperclipHome = process.env.WARDMOTE_HOME;
@@ -9683,7 +9683,7 @@ describe("runnerd provider runtime wiring", () => {
   beforeEach(async () => {
     previousStateDirectory = process.env.WARDMOTE_RUNNER_STATE_DIR;
     isolatedStateDirectory = await mkdtemp(
-      join(tmpdir(), "paperclip-runnerd-wiring-"),
+      join(tmpdir(), "wardmote-runnerd-wiring-"),
     );
     process.env.WARDMOTE_RUNNER_STATE_DIR = isolatedStateDirectory;
   });
@@ -10371,7 +10371,7 @@ describe("runnerd provider runtime wiring", () => {
         }),
       );
       expect(state.createTransport.mock.calls[0]![0].runnerBinary).toBe(
-        "/tmp/paperclip-runnerd",
+        "/tmp/wardmote-runnerd",
       );
       expect(state.resolveRunnerBinary).toHaveBeenCalled();
 
@@ -12630,7 +12630,7 @@ describe("runnerd provider runtime wiring", () => {
     backendOptions.codexTransportFactory!();
     expect(state.createTransport).toHaveBeenCalledWith(
       expect.objectContaining({
-        runnerBinary: "/tmp/paperclip-runnerd",
+        runnerBinary: "/tmp/wardmote-runnerd",
         environment: expect.objectContaining({
           WARDMOTE_WORKSPACE_CWD: remoteCwd,
         }),
@@ -12643,7 +12643,7 @@ describe("runnerd provider runtime wiring", () => {
       sshTransportOptions.environment.WARDMOTE_RUNNER_EXTERNAL_SANDBOX,
     ).toBeUndefined();
     expect(state.createTransport.mock.calls[0]![0].runnerBinary).not.toBe(
-      `${remoteCwd}/.paperclip-runtime/paperclip-runner/bin/paperclip-runnerd`,
+      `${remoteCwd}/.paperclip-runtime/paperclip-runner/bin/wardmote-runnerd`,
     );
   });
 
@@ -12652,7 +12652,7 @@ describe("runnerd provider runtime wiring", () => {
     const remoteExecute = vi.fn(async (command: { command: string; args?: string[] }) => {
       if (command.args?.[0] === "--build-metadata") return {
         exitCode: 0, timedOut: false, stdout: JSON.stringify({
-          schema: "paperclip-runner/runnerd-build-metadata/v1", binaryName: "paperclip-runnerd",
+          schema: "paperclip-runner/runnerd-build-metadata/v1", binaryName: "wardmote-runnerd",
           packageName: "@tickernelz/wardmote-runner", binaryContractVersion: 2,
           durableSessionCapabilities: ["unlimited_runtime", "connection_lease_renewal"],
           prpTransportModes: ["listen_ws"],
@@ -12729,7 +12729,7 @@ describe("runnerd provider runtime wiring", () => {
       }
       if (command.args?.[0] === "--build-metadata") return {
         exitCode: 0, timedOut: false, stdout: JSON.stringify({
-          schema: "paperclip-runner/runnerd-build-metadata/v1", binaryName: "paperclip-runnerd",
+          schema: "paperclip-runner/runnerd-build-metadata/v1", binaryName: "wardmote-runnerd",
           packageName: "@tickernelz/wardmote-runner", binaryContractVersion: 2,
           durableSessionCapabilities: ["unlimited_runtime", "connection_lease_renewal"],
           prpTransportModes: ["listen_ws"],
@@ -12796,7 +12796,7 @@ describe("runnerd provider runtime wiring", () => {
       await expect(options.prepareExternalRunnerState()).resolves.toBeUndefined();
       expect(syncIn).not.toHaveBeenCalled();
       const launched = options.runnerProcessLauncher({
-        command: "/controller/paperclip-runnerd", args: [], cwd: "/controller", environment: {},
+        command: "/controller/wardmote-runnerd", args: [], cwd: "/controller", environment: {},
       });
       await expect(launched.completion).rejects.toThrow("fixture_stop_after_launch_staging");
       for (const name of ["auth.json", "config.toml"]) {
@@ -12829,7 +12829,7 @@ describe("runnerd provider runtime wiring", () => {
     const needsReplacement = image !== "current" && image !== "preinstalled-exact" && !exactRetained;
     // The mocked remote executes metadata probes; artifact staging only needs bytes.
     // Keep this regression independent of a locally compiled Rust runner binary.
-    const controllerArtifact = join(isolatedStateDirectory, "paperclip-runnerd");
+    const controllerArtifact = join(isolatedStateDirectory, "wardmote-runnerd");
     if (needsReplacement || retained || image === "preinstalled-exact") {
       await writeFile(controllerArtifact, "fixture runner artifact");
       state.resolveRunnerBinary.mockReturnValueOnce(controllerArtifact);
@@ -12849,10 +12849,10 @@ describe("runnerd provider runtime wiring", () => {
         } else if (command.args?.[0] === "--build-metadata") {
           stdout = JSON.stringify({
             schema: "paperclip-runner/runnerd-build-metadata/v1",
-            binaryName: "paperclip-runnerd",
+            binaryName: "wardmote-runnerd",
             packageName: "@tickernelz/wardmote-runner",
             binaryContractVersion: 2,
-            durableSessionCapabilities: (image === "stale" || retained) && command.command === "/usr/local/bin/paperclip-runnerd"
+            durableSessionCapabilities: (image === "stale" || retained) && command.command === "/usr/local/bin/wardmote-runnerd"
               ? undefined
               : ["unlimited_runtime", "connection_lease_renewal"],
             prpTransportModes: ["listen_ws"],
@@ -12868,8 +12868,8 @@ describe("runnerd provider runtime wiring", () => {
           stdout = `codex-cli ${version}`;
         } else if (script === "uname -s; uname -m") {
           stdout = `${process.platform === "darwin" ? "Darwin" : "Linux"}\n${process.arch === "arm64" ? "arm64" : "x86_64"}\n`;
-        } else if (script.includes("command -v paperclip-runnerd")) {
-          stdout = image === "missing" ? "" : "/usr/local/bin/paperclip-runnerd\n";
+        } else if (script.includes("command -v wardmote-runnerd")) {
+          stdout = image === "missing" ? "" : "/usr/local/bin/wardmote-runnerd\n";
         } else if (script.includes("command -v codex")) {
           stdout = script.includes("/opt/paperclip-runner/bin/codex")
             ? "/opt/paperclip-runner/bin/codex\n"
@@ -12932,16 +12932,16 @@ describe("runnerd provider runtime wiring", () => {
       expect(syncIn).toHaveBeenCalledWith([expect.objectContaining({
         files: [expect.objectContaining({
           sourcePath: controllerArtifact,
-          targetPath: "/workspace/.paperclip-runtime/paperclip-runner/bin/paperclip-runnerd",
+          targetPath: "/workspace/.paperclip-runtime/paperclip-runner/bin/wardmote-runnerd",
         })],
       })]);
     } else {
       expect(syncIn).not.toHaveBeenCalled();
     }
     if (exactRetained) {
-      expect(remoteExecute.mock.calls.some(([call]) => call.args?.[1]?.includes("command -v paperclip-runnerd"))).toBe(false);
+      expect(remoteExecute.mock.calls.some(([call]) => call.args?.[1]?.includes("command -v wardmote-runnerd"))).toBe(false);
       expect(remoteExecute).toHaveBeenCalledWith(expect.objectContaining({
-        command: "/workspace/.paperclip-runtime/paperclip-runner/bin/paperclip-runnerd",
+        command: "/workspace/.paperclip-runtime/paperclip-runner/bin/wardmote-runnerd",
         args: ["--build-metadata"],
       }));
     }
@@ -12993,7 +12993,7 @@ describe("runnerd provider runtime wiring", () => {
         if (command.args?.[0] === "--build-metadata") {
           stdout = JSON.stringify({
             schema: "paperclip-runner/runnerd-build-metadata/v1",
-            binaryName: "paperclip-runnerd",
+            binaryName: "wardmote-runnerd",
             packageName: "@tickernelz/wardmote-runner",
             binaryContractVersion: 2,
             durableSessionCapabilities: ["unlimited_runtime", "connection_lease_renewal"],
@@ -13006,8 +13006,8 @@ describe("runnerd provider runtime wiring", () => {
           stdout = `codex-cli ${version}`;
         } else if (script === "uname -s; uname -m") {
           stdout = `${process.platform === "darwin" ? "Darwin" : "Linux"}\n${process.arch === "arm64" ? "arm64" : "x86_64"}\n`;
-        } else if (script.includes("command -v paperclip-runnerd")) {
-          stdout = "/usr/local/bin/paperclip-runnerd\n";
+        } else if (script.includes("command -v wardmote-runnerd")) {
+          stdout = "/usr/local/bin/wardmote-runnerd\n";
         } else if (script.includes("command -v codex")) {
           stdout = "/opt/paperclip-runner/bin/codex\n";
         } else if (!script.includes("ln -sfn") && !script.includes("paperclip_codex_launcher_tmp")) {
@@ -13059,7 +13059,7 @@ describe("runnerd provider runtime wiring", () => {
 
   it("binds a remote launch to the configured controller-owned runner artifact", async () => {
     const remoteCwd = "/home/daytona/paperclip-workspace";
-    const controllerArtifact = "/controller/artifacts/paperclip-runnerd";
+    const controllerArtifact = "/controller/artifacts/wardmote-runnerd";
     const remoteExecution = {
       ...execution,
       binding: { ...execution.binding, runId: "run-remote-runner-artifact" },

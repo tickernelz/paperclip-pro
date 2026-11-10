@@ -412,10 +412,10 @@ describe("independent filesystem and process observations", () => {
   it("parses Linux start ticks around unusual comm names and excludes shared/wrong-run daemons", () => {
     const fields = ["S", "1", "21", ...Array(16).fill("0"), "123456"];
     const p = parseRemoteProcStat(21, `21 (name with ) parens) ${fields.join(" ")}`, bootId);
-    expect(p.startTicks).toBe("123456"); expect(isRemoteRunRoot(["/opt/paperclip-runnerd", "--run-id", "run", "--lifecycle-mode", "per_turn"], "run", p)).toBe(true);
-    expect(isRemoteRunRoot(["/opt/paperclip-runnerd", "--run-id", "foreign", "--lifecycle-mode", "per_turn"], "run", p)).toBe(false);
-    expect(isRemoteRunRoot(["/opt/paperclip-runnerd", "--run-id", "run", "--lifecycle-mode", "persistent"], "run", p)).toBe(false);
-    expect(isRemoteRunRoot(["/opt/paperclip-runnerd", "--run-id", "run", "--lifecycle-mode", "per_turn"], "run", { ...p, group: 1 })).toBe(false);
+    expect(p.startTicks).toBe("123456"); expect(isRemoteRunRoot(["/opt/wardmote-runnerd", "--run-id", "run", "--lifecycle-mode", "per_turn"], "run", p)).toBe(true);
+    expect(isRemoteRunRoot(["/opt/wardmote-runnerd", "--run-id", "foreign", "--lifecycle-mode", "per_turn"], "run", p)).toBe(false);
+    expect(isRemoteRunRoot(["/opt/wardmote-runnerd", "--run-id", "run", "--lifecycle-mode", "persistent"], "run", p)).toBe(false);
+    expect(isRemoteRunRoot(["/opt/wardmote-runnerd", "--run-id", "run", "--lifecycle-mode", "per_turn"], "run", { ...p, group: 1 })).toBe(false);
     expect(parseRemoteProcStat(21, `21 (reused) ${fields.slice(0, -1).join(" ")} 999999`, bootId).startTicks).not.toBe(p.startTicks);
   });
 });
@@ -430,7 +430,7 @@ describe("actual generated observer state machine", () => {
     }
     const { source, config } = install.request;
     const intervals: Array<() => void> = [], timers: Array<{ fn: () => void; ms: number }> = [];
-    const proc = new Map<number, { ppid: number; group: number; ticks: string; argv: string[] }>([[21, { ppid: 1, group: 21, ticks: "100", argv: ["/workspace/.paperclip-runtime/paperclip-runner/bin/paperclip-runnerd", "--run-id", "run", "--environment-lease-id", "workspace-id", "--lifecycle-mode", "per_turn", "--state-dir", "/workspace/.paperclip-runtime/paperclip-runner/sessions/" + "a".repeat(64) + "/runner"] }]]);
+    const proc = new Map<number, { ppid: number; group: number; ticks: string; argv: string[] }>([[21, { ppid: 1, group: 21, ticks: "100", argv: ["/workspace/.paperclip-runtime/paperclip-runner/bin/wardmote-runnerd", "--run-id", "run", "--environment-lease-id", "workspace-id", "--lifecycle-mode", "per_turn", "--state-dir", "/workspace/.paperclip-runtime/paperclip-runner/sessions/" + "a".repeat(64) + "/runner"] }]]);
     const files = new Map<string, Buffer>([[`${config.root}/observer.cjs`, Buffer.from(source)], [config.sentinel.path, Buffer.from(JSON.stringify({ version: 1, provider: "daytona", token: config.sentinel.token, companyId: "company", environmentId: "environment" }))]]);
     const watches: Array<{ path: string; callback: (_kind: string, name: string | null) => void; closed: boolean }> = [];
     const handlers: Array<(socket: any) => void> = [], children: any[] = [];
@@ -774,7 +774,7 @@ describe("actual generated observer state machine", () => {
   it("scopes actual runtime symlinks/state churn out while retaining sentinel and sibling coverage", async () => {
     const o = await observerHarness();
     o.symbolicLinks.add("/workspace/.paperclip-runtime/paperclip-runner/provider-pack");
-    o.files.set("/workspace/.paperclip-runtime/paperclip-runner/bin/paperclip-runnerd", Buffer.alloc(100000));
+    o.files.set("/workspace/.paperclip-runtime/paperclip-runner/bin/wardmote-runnerd", Buffer.alloc(100000));
     o.fs.writeFileSync("/workspace/.paperclip-runtime/paperclip-runner/sessions/state.json", "runtime churn", { flag: "wx" });
     const before = o.request("snapshot")[0].result;
     expect(before.complete).toBe(true); expect(before.watcher.workspaceMutationCount).toBe(0);

@@ -10,12 +10,12 @@ use std::process::Command;
 use std::process::Stdio;
 use std::time::Duration;
 
-use paperclip_runner_core::local_runner::HarnessCommand;
-use paperclip_runner_core::process_supervisor::{
-    SupervisedProcess, VerifiedProcessArgument, VerifiedProcessArtifact, VerifiedProcessLaunch,
-};
 use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
+use wardmote_runner_core::local_runner::HarnessCommand;
+use wardmote_runner_core::process_supervisor::{
+    SupervisedProcess, VerifiedProcessArgument, VerifiedProcessArtifact, VerifiedProcessLaunch,
+};
 
 fn process_exists(pid: u64) -> bool {
     Command::new("kill")

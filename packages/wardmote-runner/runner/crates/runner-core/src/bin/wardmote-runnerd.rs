@@ -7,13 +7,13 @@ use std::time::Duration;
 #[cfg(unix)]
 use std::os::unix::fs::{OpenOptionsExt, PermissionsExt};
 
-use paperclip_runner_core::durable::{
+use serde_json::json;
+use wardmote_runner_core::durable::{
     capture_bootstrap_ticket, redact_diagnostic_text, run_durable_runner, AcpxLaunchProfile,
     DurableRunnerConfig, OpenCodeLaunchProfile, QualifiedLaunchArtifact,
 };
-use paperclip_runner_core::local_runner::{run_local_runner, LocalRunnerError, RunnerConfig};
-use paperclip_runner_core::native_provider_backend::NativeProviderCommandExecutor;
-use serde_json::json;
+use wardmote_runner_core::local_runner::{run_local_runner, LocalRunnerError, RunnerConfig};
+use wardmote_runner_core::native_provider_backend::NativeProviderCommandExecutor;
 
 const RUNNERD_BUILD_METADATA_SCHEMA: &str = "paperclip-runner/runnerd-build-metadata/v1";
 const RUNNER_DIAGNOSTIC_MAX_BYTES: usize = 64 * 1024;
@@ -100,7 +100,7 @@ fn install_diagnostic_panic_hook(directory: Option<PathBuf>) {
         return;
     };
     std::panic::set_hook(Box::new(move |panic| {
-        let _ = persist_runner_diagnostic(&directory, &format!("paperclip-runnerd panic: {panic}"));
+        let _ = persist_runner_diagnostic(&directory, &format!("wardmote-runnerd panic: {panic}"));
     }));
 }
 
@@ -115,7 +115,7 @@ fn install_crypto_provider() {
 fn build_metadata() -> serde_json::Value {
     json!({
         "schema": RUNNERD_BUILD_METADATA_SCHEMA,
-        "binaryName": "paperclip-runnerd",
+        "binaryName": "wardmote-runnerd",
         "packageName": "@tickernelz/wardmote-runner",
         "packageVersion": env!("CARGO_PKG_VERSION"),
         "binaryContractVersion": 2,
@@ -385,11 +385,11 @@ fn run_main(args: Vec<String>) -> ExitCode {
     match run(&args) {
         Ok(()) => ExitCode::SUCCESS,
         Err(error) => {
-            let message = format!("paperclip-runnerd: {error}");
+            let message = format!("wardmote-runnerd: {error}");
             if let Some(directory) = diagnostics_directory {
                 if let Err(persist_error) = persist_runner_diagnostic(&directory, &message) {
                     eprintln!(
-                        "paperclip-runnerd: failed to persist bounded diagnostic: {persist_error}"
+                        "wardmote-runnerd: failed to persist bounded diagnostic: {persist_error}"
                     );
                 }
             } else {
@@ -474,7 +474,7 @@ mod tests {
     #[test]
     fn persistent_diagnostic_is_private_bounded_and_redacted() {
         let unique = format!(
-            "paperclip-runnerd-diagnostic-test-{}-{}",
+            "wardmote-runnerd-diagnostic-test-{}-{}",
             std::process::id(),
             std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)

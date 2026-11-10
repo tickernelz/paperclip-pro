@@ -12,7 +12,7 @@
     "rustTree": "e2c76e35ae8bb19b968a64a2b2eb75c6df216c82",
     "sha256": "955d0714472a0a8727aaac55c357425b4157cba54f37483ded58217e8859a26d",
     "mode": "0555",
-    "build": "cargo build --release --locked -p paperclip-runner-core --bin paperclip-runnerd -j2",
+    "build": "cargo build --release --locked -p wardmote-runner-core --bin wardmote-runnerd -j2",
     "profileDigest": "sha256:72cb225288376f733b9ed3afa5e13565eb4152f0de509bc1181382fa44bee472"
   },
   "executionTrees": {

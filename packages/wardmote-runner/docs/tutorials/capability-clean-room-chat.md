@@ -2,7 +2,7 @@
 
 **Time to first success: about 3 minutes**, once the package is installed. You
 open a blank chat, type whatever you like, and watch a real Codex session work a
-brand-new mock Paperclip issue through a real `paperclip-runnerd` process. No
+brand-new mock Paperclip issue through a real `wardmote-runnerd` process. No
 scenario to pick, no recorded transcript, and no real Paperclip service anywhere
 in the picture.
 
@@ -16,7 +16,7 @@ the seed, exposure profile, bounds, and route contract behind what you see here.
 
 - Node.js 20 or newer and pnpm 9 or newer (verified with Node 22.22.2 and pnpm
   9.15.4).
-- A Rust toolchain, because this path builds the real `paperclip-runnerd`
+- A Rust toolchain, because this path builds the real `wardmote-runnerd`
   binary. There is no offline fallback: the clean room is live-only by design.
 - A locally authenticated Codex CLI. The package server owns that
   authentication; the browser never receives it.
@@ -37,7 +37,7 @@ build tooling lives there.
 pnpm --filter @tickernelz/wardmote-runner smoke:capability:cleanroom -- --json
 ```
 
-This builds the TypeScript output and `paperclip-runnerd`, starts the package
+This builds the TypeScript output and `wardmote-runnerd`, starts the package
 server on loopback, opens a clean room, and drives two real Codex turns through
 the same HTTP routes the browser uses. Expected shape:
 

@@ -16,7 +16,7 @@ afterEach(() => vi.restoreAllMocks());
 describe("installed runner selection", () => {
   it("uses the runner's platform-aware packaged selection", async () => {
     const root = await mkdtemp(join(tmpdir(), "paperclip-runner-selection-"));
-    const binary = join(root, "paperclip-runnerd");
+    const binary = join(root, "wardmote-runnerd");
     try {
       await writeFile(binary, "test executable", { mode: 0o700 });
       const select = vi.spyOn(runner, "defaultCapabilityRunnerdBinary").mockReturnValue(binary);

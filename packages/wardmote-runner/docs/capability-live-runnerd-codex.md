@@ -3,10 +3,10 @@
 > **Reference lab, not the production sandbox topology.** This API remains the
 > runner-lab/session implementation used by UI and recovery tests. Production
 > sandbox execution and live protocol evals use the Rust-owned bridge described
-> in [the runner architecture](architecture.md): external control plane → PRP → one Rust `paperclip-runnerd` → provider. The TypeScript dispatcher below does not run in the sandbox.
+> in [the runner architecture](architecture.md): external control plane → PRP → one Rust `wardmote-runnerd` → provider. The TypeScript dispatcher below does not run in the sandbox.
 
 Capability binds the provider-neutral semantic catalog to a real package-local
-`paperclip-runnerd` process and a real Codex app-server session. Paperclip data
+`wardmote-runnerd` process and a real Codex app-server session. Paperclip data
 remains deterministic mock state behind `ControlPlanePort`; no request reaches
 the Paperclip API.
 
@@ -15,11 +15,11 @@ the Paperclip API.
 The process chain is:
 
 ```text
-CapabilityLiveSession -> paperclip-runnerd -> codex app-server
+CapabilityLiveSession -> wardmote-runnerd -> codex app-server
                   -> CapabilitySemanticDispatcher -> ControlPlanePort mock
 ```
 
-`paperclip-runnerd` owns the Codex child and proxies newline-delimited JSON-RPC
+`wardmote-runnerd` owns the Codex child and proxies newline-delimited JSON-RPC
 over stdio. The transport starts a dedicated Unix process group. Normal close,
 stop/reset cleanup, and fatal protocol errors terminate that group with a
 bounded TERM/KILL sequence so a Codex child is not abandoned.

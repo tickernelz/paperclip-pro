@@ -1165,7 +1165,7 @@ async function receiveSecure(
   const binding = Buffer.from(client.sessionId.slice("sha256:".length), "hex");
   const key = domainHmac(
     client.authKey,
-    "paperclip-runner-core-to-client-key-v1",
+    "wardmote-runner-core-to-client-key-v1",
     [binding],
   );
   const sealed = Buffer.from(String(frame.ciphertext), "hex");

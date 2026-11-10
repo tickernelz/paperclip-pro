@@ -7024,7 +7024,7 @@ export function defaultCapabilityRunnerdBinary(): string {
   if (staged) return staged;
   return resolve(
     packageRoot,
-    `runner/target/debug/paperclip-runnerd${executableSuffix}`,
+    `runner/target/debug/wardmote-runnerd${executableSuffix}`,
   );
 }
 

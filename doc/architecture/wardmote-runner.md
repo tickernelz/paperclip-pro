@@ -64,7 +64,7 @@ The initial local topology is:
 Paperclip server
   |  authenticated PRP v1 WebSocket
   v
-paperclip-runnerd
+wardmote-runnerd
   |  qualified native provider protocol
   v
 Codex / OpenCode / ACPX / Claude Managed / AWS AgentCore

@@ -1,16 +1,16 @@
 use std::path::PathBuf;
 use std::time::Duration;
 
-use paperclip_runner_core::acpx_provider_session::{
+use serde_json::json;
+use wardmote_runner_core::acpx_provider_session::{
     AcpxPermissionMode, AcpxProviderRuntimePolicy, AcpxProviderSession, AcpxProviderSessionConfig,
     AcpxProviderSessionIdentity,
 };
-use paperclip_runner_core::acpx_sidecar_transport::AcpxSidecarTransportConfig;
-use paperclip_runner_core::generated_acpx_sidecar_contract::GeneratedAcpxSidecarCommand as GoalCommand;
-use paperclip_runner_core::provider_bridge::{
+use wardmote_runner_core::acpx_sidecar_transport::AcpxSidecarTransportConfig;
+use wardmote_runner_core::generated_acpx_sidecar_contract::GeneratedAcpxSidecarCommand as GoalCommand;
+use wardmote_runner_core::provider_bridge::{
     authorized_tool_catalog_digest, AuthorizedTool, AuthorizedToolSet,
 };
-use serde_json::json;
 
 fn tool_set() -> AuthorizedToolSet {
     let operations = vec![AuthorizedTool {
@@ -165,7 +165,7 @@ fn bootstraps_unlisted_models_confirmed_by_the_sidecar_for_every_agent() {
         selected.agent = agent.to_owned();
         selected.model = "custom/model[context=272k,reasoning=medium]".to_owned();
         selected.pi_thinking_level = if agent == "pi" {
-            Some(paperclip_runner_core::acpx_provider_session::PiThinkingLevel::Low)
+            Some(wardmote_runner_core::acpx_provider_session::PiThinkingLevel::Low)
         } else {
             None
         };
@@ -246,7 +246,7 @@ fn check_tool_receiver_admission(oversized: bool) {
     session
         .start_turn("turn-admission", "Read the issue", &std::env::temp_dir())
         .unwrap();
-    let result = paperclip_runner_core::provider_bridge::ToolResult {
+    let result = wardmote_runner_core::provider_bridge::ToolResult {
         call_id: "call-admission".to_owned(),
         operation_id: "issues.read".to_owned(),
         result: json!({"id":"issue-1"}),
@@ -345,9 +345,7 @@ fn receiver_admits_normal_tool_event_and_resolves_only_correlated_call_once() {
 
 #[test]
 fn pi_thinking_effective_identity_is_admitted_before_any_turn() {
-    use paperclip_runner_core::acpx_provider_session::{
-        AcpxProviderRuntimePolicy, PiThinkingLevel,
-    };
+    use wardmote_runner_core::acpx_provider_session::{AcpxProviderRuntimePolicy, PiThinkingLevel};
     let mut cfg = config("bootstrap");
     cfg.agent = "pi".to_owned();
     cfg.model = "openrouter/deepseek/deepseek-v4-flash-0731".to_owned();

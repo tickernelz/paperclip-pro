@@ -25,7 +25,7 @@ export PROBE_DIR="$probe_dir"
 cp Dockerfile "$probe_dir/cache-probe.Dockerfile"
 cat >> "$probe_dir/cache-probe.Dockerfile" <<'DOCKER'
 FROM runner-build AS cache-proof
-RUN ./runner/target/release/paperclip-runnerd --build-metadata > /metadata.json
+RUN ./runner/target/release/wardmote-runnerd --build-metadata > /metadata.json
 FROM scratch AS cache-proof-export
 COPY --from=cache-proof /metadata.json /metadata.json
 COPY --from=runner-plan /tmp/runner-recipe.json /recipe.json
@@ -65,7 +65,7 @@ docker buildx rm "$baseline_builder"
 docker buildx create --name "$rebuild_builder" --driver docker-container
 python3 - <<'CHECK'
 from pathlib import Path
-p=Path('packages/wardmote-runner/runner/crates/runner-core/src/bin/paperclip-runnerd.rs')
+p=Path('packages/wardmote-runner/runner/crates/runner-core/src/bin/wardmote-runnerd.rs')
 s=p.read_text(); needle='paperclip-runner/runnerd-build-metadata/v1'
 assert s.count(needle)==1
 p.write_text(s.replace(needle,needle+'-cache-probe'))
@@ -83,7 +83,7 @@ assert (root/'baseline/recipe.json').read_bytes()==(root/'source-change/recipe.j
 log=(root/'source-change.log').read_text()
 step=re.search(r'#(\d+) \[runner-deps[^\n]+ RUN cargo chef cook',log)[1]
 assert f'#{step} CACHED' in log
-assert 'Compiling paperclip-runner-core' in log
+assert 'Compiling wardmote-runner-core' in log
 print('PASS: fresh builder imported compiled dependencies; real binary changed.')
 p=Path('packages/wardmote-runner/runner/Cargo.toml')
 s=p.read_text(); assert 'serde_json = "1.0"' in s

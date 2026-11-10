@@ -97,7 +97,7 @@ COPY packages/wardmote-runner/rust-toolchain.toml ../
 # The recipe changes only when dependency manifests, the lockfile, or target
 # metadata change. Source edits can reuse this compiled dependency layer.
 COPY --from=runner-plan /tmp/runner-recipe.json /tmp/runner-recipe.json
-RUN cargo chef cook --release --locked --package paperclip-runner-core --bin paperclip-runnerd --recipe-path /tmp/runner-recipe.json \
+RUN cargo chef cook --release --locked --package wardmote-runner-core --bin wardmote-runnerd --recipe-path /tmp/runner-recipe.json \
   && find . -mindepth 1 -maxdepth 1 ! -name target -exec rm -rf {} +
 
 FROM runner-deps AS runner-build
@@ -112,7 +112,7 @@ COPY packages/wardmote-runner/protocol ./protocol
 # source copy below so a fresh checkout cannot invalidate unchanged inputs.
 RUN find runner protocol -type f -exec touch -d @0 {} + \
   && touch -d @0 rust-toolchain.toml \
-  && cargo build --release --manifest-path runner/Cargo.toml --locked -p paperclip-runner-core --bin paperclip-runnerd
+  && cargo build --release --manifest-path runner/Cargo.toml --locked -p wardmote-runner-core --bin wardmote-runnerd
 
 FROM runner-build AS build
 WORKDIR /app

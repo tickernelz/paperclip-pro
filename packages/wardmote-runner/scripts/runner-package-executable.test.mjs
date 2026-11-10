@@ -34,14 +34,14 @@ for (const declared of [true, false]) {
         { cwd, env, encoding: "utf8", timeout: 60_000, maxBuffer: 1024 * 1024 });
       assert.equal(run(pnpm[0], [...pnpm.slice(1), "--version"], source).trim(), "9.15.4");
       assert.deepEqual(manifest.publishConfig.executableFiles,
-        ["./dist/bin/paperclip-runnerd", "./dist/bin/paperclip-runnerd.exe"]);
+        ["./dist/bin/wardmote-runnerd", "./dist/bin/wardmote-runnerd.exe"]);
       await writeFile(join(source, "package.json"), JSON.stringify({
         name: "runner-executable-fixture", version: "1.0.0", files: ["dist"],
         ...(declared ? { publishConfig: manifest.publishConfig } : {}),
       }));
       // Deliberately omit the Windows binary. Packing a platform-specific
       // package must tolerate the other executableFiles entry being absent.
-      const executable = join(source, "dist/bin/paperclip-runnerd");
+      const executable = join(source, "dist/bin/wardmote-runnerd");
       await writeFile(executable, "#!/bin/sh\nprintf 'packaged-native-fixture\\n'\n");
       await chmod(executable, 0o755);
       run(pnpm[0], [...pnpm.slice(1), "pack", "--pack-destination", output], source);
@@ -49,7 +49,7 @@ for (const declared of [true, false]) {
       assert.equal(archives.length, 1);
       await writeFile(join(consumer, "package.json"), JSON.stringify({ name: "runner-consumer", private: true }));
       run("npm", ["install", "--offline", "--ignore-scripts", "--package-lock=false", join(output, archives[0])], consumer);
-      const installed = join(consumer, "node_modules/runner-executable-fixture/dist/bin/paperclip-runnerd");
+      const installed = join(consumer, "node_modules/runner-executable-fixture/dist/bin/wardmote-runnerd");
       assert.deepEqual(await readFile(installed), await readFile(executable));
       if (declared) {
         await access(installed, constants.X_OK);

@@ -25,7 +25,7 @@ assert.equal(QUALIFIED_ACPX_PROFILES.pi.commandDigest, 'sha256:d5d628c3cb45b9b99
 assert.equal(Object.hasOwn(QUALIFIED_ACPX_PROFILES.pi, 'qualificationModel'), false);
 assert.equal(Object.hasOwn(QUALIFIED_ACPX_PROFILES.pi, 'reportedModelId'), false);
 const daemon = resolvePaperclipRunnerBinary();
-assert.equal(await realpath(daemon), join(server, 'dist/vendor/wardmote-runner/bin/paperclip-runnerd'));
+assert.equal(await realpath(daemon), join(server, 'dist/vendor/wardmote-runner/bin/wardmote-runnerd'));
 const root = await mkdtemp(join(tmpdir(), 'pi-public-install-probe-'));
 const evidence = [];
 const started = performance.now();

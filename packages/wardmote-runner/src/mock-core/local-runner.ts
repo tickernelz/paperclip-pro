@@ -37,7 +37,7 @@ const packageRoot = fileURLToPath(new URL("../..", import.meta.url));
 const executableSuffix = process.platform === "win32" ? ".exe" : "";
 const runnerBinary = resolve(
   packageRoot,
-  `runner/target/debug/paperclip-runnerd${executableSuffix}`,
+  `runner/target/debug/wardmote-runnerd${executableSuffix}`,
 );
 const fakeHarnessBinary = resolve(
   packageRoot,
@@ -549,7 +549,7 @@ export function localRunnerTraceAsFixture(trace: LocalRunnerRunTrace): PrpFixtur
     fixtureVersion: 1,
     protocolVersion: 1,
     name: trace.fixtureName,
-    description: `Live Local runner ${trace.scenario} trace captured from paperclip-runnerd.`,
+    description: `Live Local runner ${trace.scenario} trace captured from wardmote-runnerd.`,
     identity: structuredClone(trace.identity),
     capabilities: structuredClone(trace.capabilities),
     commands: structuredClone(trace.commands),

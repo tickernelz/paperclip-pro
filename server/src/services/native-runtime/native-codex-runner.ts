@@ -166,7 +166,7 @@ export function buildNativeRunnerPreparePayload(
 }
 
 function executableName(): string {
-  return process.platform === "win32" ? "paperclip-runnerd.exe" : "paperclip-runnerd";
+  return process.platform === "win32" ? "wardmote-runnerd.exe" : "wardmote-runnerd";
 }
 
 export function resolvePaperclipRunnerBinary(

@@ -53,7 +53,7 @@ export const WARDMOTE_RUNNER_BUILD_METADATA = Object.freeze({
     sha256: WARDMOTE_RUNNER_SEMANTIC_CATALOG_SHA256,
   }),
   runnerd: Object.freeze({
-    binaryName: "paperclip-runnerd" as const,
+    binaryName: "wardmote-runnerd" as const,
     metadataSchema: WARDMOTE_RUNNERD_BUILD_METADATA_SCHEMA,
     digestAlgorithm: "sha256" as const,
   }),

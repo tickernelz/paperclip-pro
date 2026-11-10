@@ -9,8 +9,8 @@ WORKDIR /workspace/packages/wardmote-runner/runner
 COPY packages/wardmote-runner/runner/Cargo.toml packages/wardmote-runner/runner/Cargo.lock ./
 COPY packages/wardmote-runner/runner/crates ./crates
 COPY packages/wardmote-runner/protocol ../protocol
-RUN cargo build --locked --release -j 2 -p paperclip-runner-core --bin paperclip-runnerd \
-    && strip /workspace/packages/wardmote-runner/runner/target/release/paperclip-runnerd
+RUN cargo build --locked --release -j 2 -p wardmote-runner-core --bin wardmote-runnerd \
+    && strip /workspace/packages/wardmote-runner/runner/target/release/wardmote-runnerd
 
 FROM node:24.21.0-bookworm@sha256:5a750d3be5e5c80275f8c9a5367c3aed99c2875656590c8d0701c7ee687f5f0a AS provider-pack-build
 RUN corepack enable && corepack prepare pnpm@9.15.4 --activate
@@ -53,7 +53,7 @@ RUN export PNPM_WORKERS="$(node -p 'require("node:os").availableParallelism()')"
 
 # Fleet sandbox base image. Keep this section aligned with
 # paperclipai/paperclip-cloud/fleet-sandbox-image/Dockerfile. The only Paperclip
-# runner-specific addition is /usr/local/bin/paperclip-runnerd below.
+# runner-specific addition is /usr/local/bin/wardmote-runnerd below.
 FROM daytonaio/sandbox:0.8.0@sha256:eadf88e4391072b7ad4bed27d9cadfc9fe9d8ed375d9219d34c2ccb518f213e3
 
 USER root
@@ -109,7 +109,7 @@ COPY packages/wardmote-runner/scripts/provision-grok.mjs /tmp/grok-provision/scr
 COPY packages/wardmote-runner/src/providers/grok/platforms.json /tmp/grok-provision/src/providers/grok/platforms.json
 RUN node /tmp/grok-provision/scripts/provision-grok.mjs /opt/paperclip/providers/grok/1.0.13/grok && rm -rf /tmp/grok-provision
 
-COPY --from=runnerd-build /workspace/packages/wardmote-runner/runner/target/release/paperclip-runnerd /usr/local/bin/paperclip-runnerd
+COPY --from=runnerd-build /workspace/packages/wardmote-runner/runner/target/release/wardmote-runnerd /usr/local/bin/wardmote-runnerd
 COPY --from=provider-pack-build /provider-pack /opt/paperclip-runner/provider-pack
 RUN set -eu; for cli in codex claude opencode; do \
       printf '#!/bin/sh\nexec /opt/paperclip-runner/provider-pack/node_modules/.bin/%s "$@"\n' "$cli" > "/usr/local/bin/$cli"; \
@@ -128,10 +128,10 @@ RUN set -eu; \
     printf '%s\n' 'export PATH=/opt/paperclip-runner/provider-pack/node_modules/.bin:$PATH' \
       > /etc/profile.d/01-paperclip-runner-provider-pack.sh; \
     chmod 0644 /etc/profile.d/01-paperclip-runner-provider-pack.sh; \
-    for command_name in acpx claude-agent-acp codex-acp claude codex grok gemini kimi opencode cursor-agent agent hermes gh paperclip-runnerd; do \
+    for command_name in acpx claude-agent-acp codex-acp claude codex grok gemini kimi opencode cursor-agent agent hermes gh wardmote-runnerd; do \
       command -v "$command_name" >/dev/null || { echo "FATAL: $command_name not on PATH after build" >&2; exit 1; }; \
     done; \
-    metadata="$(paperclip-runnerd --build-metadata)"; \
+    metadata="$(wardmote-runnerd --build-metadata)"; \
     /opt/paperclip-runner/provider-pack/node_modules/node/bin/node -e "const [major,minor,patch]=process.versions.node.split('.').map(Number); if (major<24 || (major===24 && (minor<11 || (minor===11 && patch<0)))) process.exit(1)"; \
     test -f /opt/paperclip-runner/provider-pack/provider-pack.json; \
     printf '%s' "$metadata" | grep -q '"dial_ws_loopback"'; \

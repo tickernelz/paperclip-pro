@@ -1,11 +1,9 @@
-use paperclip_runner_core::acpx_event_payload::AcpxTurnStatus;
-use paperclip_runner_core::acpx_provider_state::{AcpxProviderState, AcpxProviderStateEvent};
-use paperclip_runner_core::acpx_sidecar_transport::AcpxSidecarEvent;
-use paperclip_runner_core::generated_acpx_sidecar_contract::GeneratedAcpxSidecarEventType;
-use paperclip_runner_core::provider_events::{
-    project_acpx_state_event, AcpxEventProjectionContext,
-};
 use serde_json::{json, Value};
+use wardmote_runner_core::acpx_event_payload::AcpxTurnStatus;
+use wardmote_runner_core::acpx_provider_state::{AcpxProviderState, AcpxProviderStateEvent};
+use wardmote_runner_core::acpx_sidecar_transport::AcpxSidecarEvent;
+use wardmote_runner_core::generated_acpx_sidecar_contract::GeneratedAcpxSidecarEventType;
+use wardmote_runner_core::provider_events::{project_acpx_state_event, AcpxEventProjectionContext};
 
 fn event(
     sequence: u64,
@@ -626,7 +624,7 @@ fn mutation_prose_survives_sidecar_decode_pending_state_and_semantic_projection(
     assert_eq!(projected[0].payload["semantic_tool"]["input"], expected);
     assert_eq!(
         projected[0].payload["semantic_tool"]["content"]["digest"],
-        json!(paperclip_runner_core::provider_bridge::semantic_value_digest(&expected))
+        json!(wardmote_runner_core::provider_bridge::semantic_value_digest(&expected))
     );
 
     for (operation, field, prose) in [
@@ -748,8 +746,8 @@ fn terminal_requests_expire_with_their_projected_identity_before_terminal_and_ne
 
 #[test]
 fn cursor_plan_parent_identity_survives_decode_pending_and_terminal_projection() {
-    use paperclip_runner_core::acpx_event_payload::AcpxRuntimeEventKind;
-    use paperclip_runner_core::provider_events::normalize_acpx_runtime_event;
+    use wardmote_runner_core::acpx_event_payload::AcpxRuntimeEventKind;
+    use wardmote_runner_core::provider_events::normalize_acpx_runtime_event;
     for id in [
         "x".repeat(160),
         "x".repeat(161),

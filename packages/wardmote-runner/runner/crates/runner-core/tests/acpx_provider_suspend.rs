@@ -1,11 +1,11 @@
 use std::path::PathBuf;
 use std::time::Duration;
 
-use paperclip_runner_core::acpx_provider_session::{
+use wardmote_runner_core::acpx_provider_session::{
     AcpxPermissionMode, AcpxProviderSession, AcpxProviderSessionConfig,
 };
-use paperclip_runner_core::acpx_sidecar_transport::AcpxSidecarTransportConfig;
-use paperclip_runner_core::provider_bridge::{authorized_tool_catalog_digest, AuthorizedToolSet};
+use wardmote_runner_core::acpx_sidecar_transport::AcpxSidecarTransportConfig;
+use wardmote_runner_core::provider_bridge::{authorized_tool_catalog_digest, AuthorizedToolSet};
 
 fn config(mode: &str) -> AcpxProviderSessionConfig {
     let operations = Vec::new();

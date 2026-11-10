@@ -140,7 +140,7 @@ describe("runner E2E local binary resolution", () => {
     ).toBe(
       path.join(
         "/repository",
-        "packages/wardmote-runner/runner/target/debug/paperclip-runnerd",
+        "packages/wardmote-runner/runner/target/debug/wardmote-runnerd",
       ),
     );
   });
@@ -150,10 +150,10 @@ describe("runner E2E local binary resolution", () => {
       resolvePaperclipRunnerBinaryForHarness(
         [localNativeExecution],
         "/repository",
-        "/custom/paperclip-runnerd",
+        "/custom/wardmote-runnerd",
         "linux",
       ),
-    ).toBe("/custom/paperclip-runnerd");
+    ).toBe("/custom/wardmote-runnerd");
   });
 
   it("uses and stages the same build-once binary for remote native cells", () => {
@@ -166,7 +166,7 @@ describe("runner E2E local binary resolution", () => {
     expect(runnerBinary).toBe(
       path.join(
         "/repository",
-        "packages/wardmote-runner/runner/target/debug/paperclip-runnerd",
+        "packages/wardmote-runner/runner/target/debug/wardmote-runnerd",
       ),
     );
     expect(
@@ -197,10 +197,10 @@ describe("runner E2E local binary resolution", () => {
       resolvePaperclipRemoteRunnerBinaryForHarness(
         [remoteNativeExecution],
         runnerBinary,
-        "/cross-compiled/paperclip-runnerd",
+        "/cross-compiled/wardmote-runnerd",
         "darwin",
       ),
-    ).toBe("/cross-compiled/paperclip-runnerd");
+    ).toBe("/cross-compiled/wardmote-runnerd");
   });
 });
 
@@ -874,7 +874,7 @@ describe("runner E2E failure policy", () => {
     expect(
       classifyFailure(
         new Error(
-          "runner_ingress_unavailable: paperclip-runnerd: cumulative ACK cannot move beyond the produced source cursor",
+          "runner_ingress_unavailable: wardmote-runnerd: cumulative ACK cannot move beyond the produced source cursor",
         ),
       ),
     ).toBe("transient_infrastructure");

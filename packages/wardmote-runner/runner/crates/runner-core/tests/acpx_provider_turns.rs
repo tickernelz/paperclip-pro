@@ -1,15 +1,15 @@
 use std::path::PathBuf;
 use std::time::Duration;
 
-use paperclip_runner_core::acpx_provider_session::{
+use serde_json::json;
+use wardmote_runner_core::acpx_provider_session::{
     AcpxPermissionMode, AcpxProviderSession, AcpxProviderSessionConfig,
 };
-use paperclip_runner_core::acpx_provider_state::AcpxProviderStateEvent;
-use paperclip_runner_core::acpx_sidecar_transport::AcpxSidecarTransportConfig;
-use paperclip_runner_core::provider_bridge::{
+use wardmote_runner_core::acpx_provider_state::AcpxProviderStateEvent;
+use wardmote_runner_core::acpx_sidecar_transport::AcpxSidecarTransportConfig;
+use wardmote_runner_core::provider_bridge::{
     authorized_tool_catalog_digest, AuthorizedTool, AuthorizedToolSet, ToolResult,
 };
-use serde_json::json;
 
 fn tool_set() -> AuthorizedToolSet {
     let operations = vec![AuthorizedTool {
@@ -51,14 +51,14 @@ fn config(mode: &str) -> AcpxProviderSessionConfig {
         permission_mode: AcpxPermissionMode::ApproveReads,
         mode: None,
         pi_thinking_level: if mode.starts_with("controls") {
-            Some(paperclip_runner_core::acpx_provider_session::PiThinkingLevel::Low)
+            Some(wardmote_runner_core::acpx_provider_session::PiThinkingLevel::Low)
         } else {
             None
         },
         permission_mode_pinned: true,
         provider_policy: if mode.starts_with("controls") {
             Some(
-                paperclip_runner_core::acpx_provider_session::AcpxProviderRuntimePolicy {
+                wardmote_runner_core::acpx_provider_session::AcpxProviderRuntimePolicy {
                     read_only: false,
                 },
             )
@@ -546,7 +546,7 @@ fn reserved_completion_waits_for_feedback_and_allows_correction_in_same_turn() {
                 && input["reportedWorkDisposition"] == "needs_review"
     ));
     session
-        .deliver_tool_result(&paperclip_runner_core::provider_bridge::ToolResult {
+        .deliver_tool_result(&wardmote_runner_core::provider_bridge::ToolResult {
             call_id: "call-finish".to_owned(),
             operation_id: "paperclip_finish".to_owned(),
             result: json!({
@@ -567,7 +567,7 @@ fn reserved_completion_waits_for_feedback_and_allows_correction_in_same_turn() {
                 && input["reportedWorkDisposition"] == "done"
     ));
     session
-        .deliver_tool_result(&paperclip_runner_core::provider_bridge::ToolResult {
+        .deliver_tool_result(&wardmote_runner_core::provider_bridge::ToolResult {
             call_id: "call-finish-2".to_owned(),
             operation_id: "paperclip_finish".to_owned(),
             result: json!({

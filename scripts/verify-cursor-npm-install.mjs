@@ -111,13 +111,13 @@ const manifest = JSON.parse(readFileSync(binaryRoot + '/release-manifest.json', 
 assert.equal(manifest.schema, 'paperclip.runner.release-binaries.v1');
 assert.deepEqual(Object.keys(manifest.platforms).sort(), ['darwin-arm64', 'darwin-x64', 'linux-x64']);
 for (const [target, artifact] of Object.entries(manifest.platforms)) {
-  assert.equal(artifact.path, target + '/paperclip-runnerd');
+  assert.equal(artifact.path, target + '/wardmote-runnerd');
   const bytes = readFileSync(binaryRoot + '/' + artifact.path);
   assert.equal(runnerBinaryTarget(bytes), target);
   assert.equal('sha256:' + createHash('sha256').update(bytes).digest('hex'), artifact.sha256);
 }
 const binary = defaultCapabilityRunnerdBinary();
-assert.equal(binary, binaryRoot + '/linux-x64/paperclip-runnerd');
+assert.equal(binary, binaryRoot + '/linux-x64/wardmote-runnerd');
 assert.equal(resolvePaperclipRunnerBinary(), binary, 'The installed server must use the same verified platform daemon');
 assert.equal(bundledRemoteRunnerBinary(), binary);
 const remotePack = JSON.parse(readFileSync(bundledRemoteProviderPackManifestPath(), 'utf8'));

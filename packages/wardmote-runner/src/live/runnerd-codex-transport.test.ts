@@ -5850,7 +5850,7 @@ it.each([
       const fixtureOutput =
         process.env.WARDMOTE_ATTACH_TRANSITION_FIXTURE_DIRECTORY;
       if (fixtureOutput && recoveryFault === "none") {
-        const retainedArtifact = join(fixtureOutput, "paperclip-runnerd");
+        const retainedArtifact = join(fixtureOutput, "wardmote-runnerd");
         await cp(options.runnerBinary, retainedArtifact, { force: false });
         expect(
           createHash("sha256")

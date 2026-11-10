@@ -20,7 +20,7 @@ it.skipIf(process.platform === "win32")("keeps the real admitted daemon and chil
     // groups, observation and signal delivery all use the real kernel table.
     createOwner: child => createProcessTreeOwner(child, { readTable: async () => {
       const table = await readProcessTable();
-      return table?.map(row => fixtureDaemons.has(row.pid) && row.kind === "sh" ? { ...row, kind: "paperclip-runnerd" } : row) ?? null;
+      return table?.map(row => fixtureDaemons.has(row.pid) && row.kind === "sh" ? { ...row, kind: "wardmote-runnerd" } : row) ?? null;
     } }),
   });
   const closed: Promise<void>[] = [];
