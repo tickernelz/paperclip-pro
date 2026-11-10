@@ -556,7 +556,7 @@ describe("provider-neutral events", () => {
       eventType: "tool.execution.completed",
       payload: {
         transport: "mcp",
-        namespace: "paperclip",
+        namespace: "wardmote",
         name: "search_tasks",
         operation: "search",
         target: "doc/plan.md",

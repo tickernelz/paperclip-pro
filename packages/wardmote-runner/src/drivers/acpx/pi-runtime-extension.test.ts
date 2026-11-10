@@ -333,7 +333,7 @@ describe("owned Pi runtime extension", () => {
 
   it("registers exact authenticated MCP tools with stable idempotency and abort signal", async () => {
     const { config } = await workspace(); const h = harness();
-    config.servers = [{ type: "http", name: "paperclip", url: "http://127.0.0.1:1234", headers: [] }];
+    config.servers = [{ type: "http", name: "wardmote", url: "http://127.0.0.1:1234", headers: [] }];
     const request = vi.fn(async (_server, method) => method === "tools/list"
       ? { tools: [{ name: "report_progress", description: "Report progress", inputSchema: { type: "object", properties: {} } }] }
       : method === "tools/call" ? { content: [{ type: "text", text: "recorded" }] } : {});
