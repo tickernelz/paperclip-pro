@@ -23,6 +23,11 @@ import type {
 } from "@tickernelz/wardmote-shared";
 import { normalizeAgentUrlKey } from "@tickernelz/wardmote-shared";
 import { parseFrontmatterMarkdown } from "@tickernelz/wardmote-shared/frontmatter";
+import {
+  COMPANY_PACKAGE_EXTENSION_FILE,
+  COMPANY_PACKAGE_EXTENSION_SCHEMA,
+  adoptRetiredCompanyPackageExtension,
+} from "@tickernelz/wardmote-shared/company-package-extension";
 import { conflict, forbidden, HttpError, notFound, unprocessable } from "../errors.js";
 import { agentService } from "./agents.js";
 import { companyPortabilityService } from "./company-portability.js";
@@ -510,7 +515,7 @@ async function renderCatalogProvenanceYaml(team: CatalogTeam, targetManager: Cat
   });
 
   const extension: Record<string, unknown> = {
-    schema: "paperclip/v1",
+    schema: COMPANY_PACKAGE_EXTENSION_SCHEMA,
     agents: Object.fromEntries(agentSlugs.map((slug) => [
       slug,
       renderEntity(slug, {
@@ -819,13 +824,13 @@ export function teamsCatalogService(db: Db) {
     errors.push(...skillPrep.errors);
 
     const targetManager = await resolveTargetManagerReference(companyId, options);
-    const files = await readCatalogTeamSourceFiles(team);
+    const files = adoptRetiredCompanyPackageExtension(await readCatalogTeamSourceFiles(team));
     const existingExtension =
-      typeof files[".paperclip.yaml"] === "string"
-        ? parseYamlDocument(files[".paperclip.yaml"])
+      typeof files[COMPANY_PACKAGE_EXTENSION_FILE] === "string"
+        ? parseYamlDocument(files[COMPANY_PACKAGE_EXTENSION_FILE])
         : {};
     const generatedExtension = parseYamlDocument(await renderCatalogProvenanceYaml(team, targetManager));
-    files[".paperclip.yaml"] = renderYamlFile(mergePlainRecords(existingExtension, generatedExtension));
+    files[COMPANY_PACKAGE_EXTENSION_FILE] = renderYamlFile(mergePlainRecords(existingExtension, generatedExtension));
     rewriteAgentCatalogSkillRefs(team, files);
 
     return {

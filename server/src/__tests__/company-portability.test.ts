@@ -583,8 +583,8 @@ describe("company portability", () => {
     expect(asTextFile(exported.files["skills/company/PAP/company-playbook/SKILL.md"])).toContain("# Company Playbook");
     expect(asTextFile(exported.files["skills/company/PAP/company-playbook/references/checklist.md"])).toContain("# Checklist");
 
-    const extension = asTextFile(exported.files[".paperclip.yaml"]);
-    expect(extension).toContain('schema: "paperclip/v1"');
+    const extension = asTextFile(exported.files[".wardmote.yaml"]);
+    expect(extension).toContain('schema: "wardmote/v1"');
     expect(extension).not.toContain("promptTemplate");
     expect(extension).not.toContain("instructionsFilePath");
     expect(extension).not.toContain("command:");
@@ -699,7 +699,7 @@ describe("company portability", () => {
       },
     });
 
-    const extension = asTextFile(exported.files[".paperclip.yaml"]);
+    const extension = asTextFile(exported.files[".wardmote.yaml"]);
     expect(extension).toContain("permissionGrants:");
     expect(extension).toContain('permissionKey: "agents:suggest-changes"');
     expect(extension).toContain('permissionKey: "skills:create"');
@@ -737,7 +737,7 @@ describe("company portability", () => {
       },
     });
 
-    expect(asTextFile(exported.files[".paperclip.yaml"])).toContain("requireBoardApprovalForNewAgents: true");
+    expect(asTextFile(exported.files[".wardmote.yaml"])).toContain("requireBoardApprovalForNewAgents: true");
   });
 
   it("exports legacy inline sensitive env values as declarations without values", async () => {
@@ -876,7 +876,7 @@ describe("company portability", () => {
       },
     });
 
-    expect(asTextFile(exported.files[".paperclip.yaml"])).toContain([
+    expect(asTextFile(exported.files[".wardmote.yaml"])).toContain([
       "sidebar:",
       "  agents:",
       '    - "claudecoder"',
@@ -1046,7 +1046,7 @@ describe("company portability", () => {
     expect(exported.files["skills/tickernelz/wardmote/wardmote/SKILL.md"]).toBeDefined();
   });
 
-  it("exports the company logo into images/ and references it from .paperclip.yaml", async () => {
+  it("exports the company logo into images/ and references it from .wardmote.yaml", async () => {
     const storage = {
       getObject: vi.fn().mockResolvedValue({
         stream: Readable.from([Buffer.from("png-bytes")]),
@@ -1086,7 +1086,7 @@ describe("company portability", () => {
       data: Buffer.from("png-bytes").toString("base64"),
       contentType: "image/png",
     });
-    expect(exported.files[".paperclip.yaml"]).toContain('logoPath: "images/company-logo.png"');
+    expect(exported.files[".wardmote.yaml"]).toContain('logoPath: "images/company-logo.png"');
   });
 
   it("exports duplicate skill slugs into readable namespaced paths", async () => {
@@ -1394,7 +1394,7 @@ describe("company portability", () => {
       },
     });
 
-    const extension = asTextFile(exported.files[".paperclip.yaml"]);
+    const extension = asTextFile(exported.files[".wardmote.yaml"]);
     expect(extension).toContain('icon: "rocket"');
     expect(extension).toContain("workspaces:");
     expect(extension).toContain("main-repo:");
@@ -1525,8 +1525,8 @@ describe("company portability", () => {
         "---",
         "",
       ].join("\n"),
-      ".paperclip.yaml": [
-        'schema: "paperclip/v1"',
+      ".wardmote.yaml": [
+        'schema: "wardmote/v1"',
         "projects:",
         "  launch:",
         '    icon: "not-a-project-icon"',
@@ -1624,7 +1624,7 @@ describe("company portability", () => {
       },
     });
 
-    const extension = asTextFile(exported.files[".paperclip.yaml"]);
+    const extension = asTextFile(exported.files[".wardmote.yaml"]);
     expect(extension).toContain('repoUrl: "https://github.com/paperclipai/paperclip.git"');
     expect(extension).toContain('projectWorkspaceKey: "paperclip"');
     expect(exported.warnings).not.toContainEqual(expect.stringContaining("does not have a portable repoUrl"));
@@ -1741,15 +1741,15 @@ describe("company portability", () => {
     const portability = companyPortabilityService({} as any);
     const include = { company: true, agents: true, projects: false, issues: false, skills: false };
     const exported = await portability.exportBundle("company-1", { include });
-    expect(asTextFile(exported.files[".paperclip.yaml"])).toContain("arctic-blue");
-    const extensionText = asTextFile(exported.files[".paperclip.yaml"]);
+    expect(asTextFile(exported.files[".wardmote.yaml"])).toContain("arctic-blue");
+    const extensionText = asTextFile(exported.files[".wardmote.yaml"]);
     expect(extensionText).not.toContain("customAvatarAssetId");
     if (customAvatarAssetId) {
       expect(exported.warnings.some(warning => warning.includes("uploaded avatar was omitted"))).toBe(true);
       // Even a hand-edited package must not carry another agent's private asset into import.
-      exported.files[".paperclip.yaml"] = extensionText.replace(/^(\s*)paletteId:.*$/gm,
+      exported.files[".wardmote.yaml"] = extensionText.replace(/^(\s*)paletteId:.*$/gm,
         match => `${match}\n${match.match(/^\s*/)?.[0]}customAvatarAssetId: ${customAvatarAssetId}`);
-      expect(asTextFile(exported.files[".paperclip.yaml"])).toContain(customAvatarAssetId);
+      expect(asTextFile(exported.files[".wardmote.yaml"])).toContain(customAvatarAssetId);
     }
 
     agentSvc.list.mockResolvedValue([]);
@@ -1760,7 +1760,7 @@ describe("company portability", () => {
     for (const [, input] of agentSvc.create.mock.calls) expect(input.appearance).toEqual(appearance);
   });
 
-  it("reads env inputs back from .paperclip.yaml during preview import", async () => {
+  it("reads env inputs back from .wardmote.yaml during preview import", async () => {
     const portability = companyPortabilityService({} as any);
 
     const exported = await portability.exportBundle("company-1", {
@@ -1850,8 +1850,8 @@ describe("company portability", () => {
             "# Coder",
             "",
           ].join("\n"),
-          ".paperclip.yaml": [
-            "schema: paperclip/v1",
+          ".wardmote.yaml": [
+            "schema: wardmote/v1",
             "agents:",
             "  coder:",
             "    adapter:",
@@ -1958,8 +1958,8 @@ describe("company portability", () => {
             "# Coder",
             "",
           ].join("\n"),
-          ".paperclip.yaml": [
-            "schema: paperclip/v1",
+          ".wardmote.yaml": [
+            "schema: wardmote/v1",
             "agents:",
             "  coder:",
             "    adapter:",
@@ -2036,8 +2036,8 @@ describe("company portability", () => {
             "# Coder",
             "",
           ].join("\n"),
-          ".paperclip.yaml": [
-            "schema: paperclip/v1",
+          ".wardmote.yaml": [
+            "schema: wardmote/v1",
             "agents:",
             "  coder:",
             "    adapter:",
@@ -2101,8 +2101,8 @@ describe("company portability", () => {
             "# Coder",
             "",
           ].join("\n"),
-          ".paperclip.yaml": [
-            "schema: paperclip/v1",
+          ".wardmote.yaml": [
+            "schema: wardmote/v1",
             "agents:",
             "  coder:",
             "    adapter:",
@@ -2154,8 +2154,8 @@ describe("company portability", () => {
         "# Coder",
         "",
       ].join("\n"),
-      ".paperclip.yaml": [
-        "schema: paperclip/v1",
+      ".wardmote.yaml": [
+        "schema: wardmote/v1",
         "agents:",
         "  coder:",
         "    adapter:",
@@ -2237,8 +2237,8 @@ describe("company portability", () => {
             "Verify engineering work.",
             "",
           ].join("\n"),
-          ".paperclip.yaml": [
-            'schema: "paperclip/v1"',
+          ".wardmote.yaml": [
+            'schema: "wardmote/v1"',
             "agents:",
             "  cto:",
             '    reportsToExistingAgentId: "existing-ceo"',
@@ -2304,7 +2304,7 @@ describe("company portability", () => {
       },
     });
 
-    const extension = asTextFile(exported.files[".paperclip.yaml"]);
+    const extension = asTextFile(exported.files[".wardmote.yaml"]);
     expect(extension).toContain("OPENAI_API_KEY:");
     expect(extension).toContain("DOCS_MODE:");
     expect(extension).toContain("GITHUB_TOKEN:");
@@ -2316,7 +2316,7 @@ describe("company portability", () => {
     expect(extension).toContain('kind: "plain"');
   });
 
-  it("reads project env inputs back from .paperclip.yaml during preview import", async () => {
+  it("reads project env inputs back from .wardmote.yaml during preview import", async () => {
     const portability = companyPortabilityService({} as any);
 
     projectSvc.list.mockResolvedValue([
@@ -2488,7 +2488,7 @@ describe("company portability", () => {
     });
 
     expect(asTextFile(exported.files["tasks/monday-review/TASK.md"])).toContain('recurring: true');
-    const extension = asTextFile(exported.files[".paperclip.yaml"]);
+    const extension = asTextFile(exported.files[".wardmote.yaml"]);
     expect(extension).toContain("routines:");
     expect(extension).toContain("monday-review:");
     expect(extension).toContain('cronExpression: "0 9 * * 1"');
@@ -2683,8 +2683,8 @@ describe("company portability", () => {
         "Review pipeline health.",
         "",
       ].join("\n"),
-      ".paperclip.yaml": [
-        'schema: "paperclip/v1"',
+      ".wardmote.yaml": [
+        'schema: "wardmote/v1"',
         "routines:",
         "  monday-review:",
         '    status: "paused"',
@@ -2880,8 +2880,8 @@ describe("company portability", () => {
         "Review pipeline health.",
         "",
       ].join("\n"),
-      ".paperclip.yaml": [
-        'schema: "paperclip/v1"',
+      ".wardmote.yaml": [
+        'schema: "wardmote/v1"',
         "routines:",
         "  monday-review:",
         "    triggers:",
@@ -2951,8 +2951,8 @@ describe("company portability", () => {
         "Review pipeline health.",
         "",
       ].join("\n"),
-      ".paperclip.yaml": [
-        'schema: "paperclip/v1"',
+      ".wardmote.yaml": [
+        'schema: "wardmote/v1"',
         "routines:",
         "  monday-review:",
         "    triggers:",
@@ -3106,7 +3106,7 @@ describe("company portability", () => {
     );
   });
 
-  it("imports a vendor-neutral package without .paperclip.yaml", async () => {
+  it("imports a vendor-neutral package without .wardmote.yaml", async () => {
     const portability = companyPortabilityService({} as any);
 
     companySvc.create.mockResolvedValue({
@@ -3315,7 +3315,7 @@ describe("company portability", () => {
       },
     });
 
-    const extension = asTextFile(exported.files[".paperclip.yaml"]);
+    const extension = asTextFile(exported.files[".wardmote.yaml"]);
     expect(extension).toContain("APIKEY:");
     expect(extension).toContain("GITHUBAUTH:");
     expect(extension).toContain("PRIVATEKEY:");
@@ -3447,9 +3447,9 @@ describe("company portability", () => {
     // Declare the packaged logo in the bundle's company block. The exported
     // company map is empty for this fixture, so the block is appended rather
     // than patched into an existing one.
-    const wardmoteYaml = `${exported.files[".paperclip.yaml"]}`;
+    const wardmoteYaml = `${exported.files[".wardmote.yaml"]}`;
     expect(wardmoteYaml).not.toContain("company:");
-    exported.files[".paperclip.yaml"] =
+    exported.files[".wardmote.yaml"] =
       `${wardmoteYaml}company:\n  logoPath: "images/company-logo.png"\n`;
 
     agentSvc.list.mockResolvedValue([]);
@@ -3921,7 +3921,7 @@ describe("company portability", () => {
       include: { company: true, agents: false, projects: true, issues: true },
     });
 
-    const extension = asTextFile(exported.files[".paperclip.yaml"]);
+    const extension = asTextFile(exported.files[".wardmote.yaml"]);
     expect(extension).toContain("labels:");
     expect(extension).toContain('"bug"');
     expect(extension).toContain('"urgent"');
@@ -4057,8 +4057,8 @@ describe("company portability", () => {
             "Legacy labelled task.",
             "",
           ].join("\n"),
-          ".paperclip.yaml": [
-            'schema: "paperclip/v1"',
+          ".wardmote.yaml": [
+            'schema: "wardmote/v1"',
             "tasks:",
             "  kickoff:",
             '    status: "todo"',
@@ -4226,7 +4226,7 @@ describe("company portability", () => {
     });
 
     expect(asTextFile(exported.files["tasks/pap-1/documents/spec.md"])).toBe("# Spec\n\nDetails.");
-    const extension = asTextFile(exported.files[".paperclip.yaml"]);
+    const extension = asTextFile(exported.files[".wardmote.yaml"]);
     expect(extension).toContain("blockedBy:");
     expect(extension).toContain('"pap-1"');
     expect(extension).toContain("workProducts:");
@@ -4363,7 +4363,7 @@ describe("company portability", () => {
       target: { mode: "new_company", newCompanyName: "Imported" },
       agents: "all",
       collisionStrategy: "rename",
-      selectedFiles: ["COMPANY.md", ".paperclip.yaml", "tasks/pap-2/TASK.md"],
+      selectedFiles: ["COMPANY.md", ".wardmote.yaml", "tasks/pap-2/TASK.md"],
     }, "user-1");
 
     expect(issueSvc.importIssues.mock.calls[0]![1]).toHaveLength(1);
@@ -4448,7 +4448,7 @@ describe("company portability", () => {
       include: { company: true, agents: false, projects: false, issues: true },
     });
 
-    const extension = asTextFile(exported.files[".paperclip.yaml"]);
+    const extension = asTextFile(exported.files[".wardmote.yaml"]);
     expect(extension).toContain("schemaVersion: 7");
     expect(extension).toContain('parent: "pap-1"');
     expect(extension).toContain('createdAt: "2026-01-01T00:00:00.000Z"');
@@ -4530,8 +4530,8 @@ describe("company portability", () => {
       "tasks/task-a/TASK.md": taskFile("Task A"),
       "tasks/task-b/TASK.md": taskFile("Task B"),
       "tasks/task-c/TASK.md": taskFile("Task C"),
-      ".paperclip.yaml": [
-        'schema: "paperclip/v1"',
+      ".wardmote.yaml": [
+        'schema: "wardmote/v1"',
         "schemaVersion: 7",
         "tasks:",
         "  task-a:",
@@ -4791,7 +4791,7 @@ describe("company portability", () => {
       "Skipped 2 attachments on task pap-1 because storage is unavailable.",
     );
     expect(Object.keys(exported.files).some((filePath) => filePath.startsWith("blobs/"))).toBe(false);
-    expect(asTextFile(exported.files[".paperclip.yaml"])).not.toContain("attachments:");
+    expect(asTextFile(exported.files[".wardmote.yaml"])).not.toContain("attachments:");
   });
 
   it("skips all attachment imports with one warning when the target has no storage", async () => {
@@ -5096,7 +5096,7 @@ describe("company portability", () => {
 
     expect(Object.keys(exported.files).some((filePath) => filePath.startsWith("blobs/"))).toBe(false);
     expect(storage.getObject).not.toHaveBeenCalled();
-    expect(asTextFile(exported.files[".paperclip.yaml"])).not.toContain("embeddedAssets:");
+    expect(asTextFile(exported.files[".wardmote.yaml"])).not.toContain("embeddedAssets:");
     expect(exported.manifest.embeddedAssets).toEqual([]);
     expect(exported.warnings).toContain(
       "2 embedded image references point at assets that do not belong to this company or no longer exist; their images were not exported.",
@@ -5145,17 +5145,17 @@ describe("company portability", () => {
 
     const kept = await portability.exportBundle("company-1", {
       include: { company: true, agents: false, projects: false, issues: true },
-      selectedFiles: ["COMPANY.md", ".paperclip.yaml", "tasks/pap-1/TASK.md", "tasks/pap-1/documents/spec.md", `blobs/${sha}`],
+      selectedFiles: ["COMPANY.md", ".wardmote.yaml", "tasks/pap-1/TASK.md", "tasks/pap-1/documents/spec.md", `blobs/${sha}`],
     });
-    expect(asTextFile(kept.files[".paperclip.yaml"])).toContain("embeddedAssets:");
+    expect(asTextFile(kept.files[".wardmote.yaml"])).toContain("embeddedAssets:");
     expect(kept.files[`blobs/${sha}`]).toBeDefined();
 
     const pruned = await portability.exportBundle("company-1", {
       include: { company: true, agents: false, projects: false, issues: true },
-      selectedFiles: ["COMPANY.md", ".paperclip.yaml"],
+      selectedFiles: ["COMPANY.md", ".wardmote.yaml"],
     });
     expect(Object.keys(pruned.files).some((filePath) => filePath.startsWith("blobs/"))).toBe(false);
-    const prunedYaml = asTextFile(pruned.files[".paperclip.yaml"]);
+    const prunedYaml = asTextFile(pruned.files[".wardmote.yaml"]);
     expect(prunedYaml).not.toContain("embeddedAssets:");
     expect(prunedYaml).not.toContain("blobs:");
     expect(pruned.manifest.embeddedAssets).toEqual([]);
@@ -5178,8 +5178,8 @@ describe("company portability", () => {
         "Legacy task.",
         "",
       ].join("\n"),
-      ".paperclip.yaml": [
-        'schema: "paperclip/v1"',
+      ".wardmote.yaml": [
+        'schema: "wardmote/v1"',
         ...extensionLines,
         "tasks:",
         "  kickoff:",
@@ -5289,6 +5289,20 @@ describe("company portability", () => {
     expect(issueSvc.importIssues).not.toHaveBeenCalled();
   });
 
+  it("reads the extension of packages exported under the retired file name", async () => {
+    const portability = companyPortabilityService({} as any);
+    const { [".wardmote.yaml"]: extension, ...rest } = legacyPackageFiles(["schemaVersion: 8"]);
+
+    await expect(portability.importBundle({
+      source: { type: "inline", rootPath: "retired-package", files: { ...rest, [".paperclip.yaml"]: extension } },
+      include: { company: true, agents: false, projects: false, issues: true },
+      target: { mode: "new_company", newCompanyName: "Retired Import" },
+      agents: "all",
+      collisionStrategy: "rename",
+    }, "user-1")).rejects.toThrow(/newer Wardmote/);
+    expect(issueSvc.importIssues).not.toHaveBeenCalled();
+  });
+
   it("preserves issue comment presentation fields through export and import", async () => {
     const portability = companyPortabilityService({} as any);
     const presentation = { kind: "system_notice", tone: "warning", detailsDefaultOpen: false };
@@ -5336,7 +5350,7 @@ describe("company portability", () => {
       include: { company: true, agents: false, projects: false, issues: true },
     });
 
-    const extension = asTextFile(exported.files[".paperclip.yaml"]);
+    const extension = asTextFile(exported.files[".wardmote.yaml"]);
     expect(extension).toContain("comments:");
     expect(extension).toContain("system_notice");
     expect(extension).toContain("successful_run_missing_state");
@@ -5410,7 +5424,7 @@ describe("company portability", () => {
       include: { company: true, agents: false, projects: false, issues: true },
     });
 
-    const extension = asTextFile(exported.files[".paperclip.yaml"]);
+    const extension = asTextFile(exported.files[".wardmote.yaml"]);
     expect(extension).toContain('authorType: "user"');
     expect(extension).not.toContain("authorUserId: local-board");
   });
@@ -5614,8 +5628,8 @@ describe("company portability", () => {
         files: {
           "COMPANY.md": "---\nname: Import\nincludes:\n  - projects/app/PROJECT.md\n---\n",
           "projects/app/PROJECT.md": "---\nname: App\nslug: app\n---\n\n# App\n",
-          ".paperclip.yaml": [
-            "schema: paperclip/v1",
+          ".wardmote.yaml": [
+            "schema: wardmote/v1",
             "projects:",
             "  app:",
             "    workspaces:",
@@ -5656,8 +5670,8 @@ describe("company portability", () => {
         files: {
           "COMPANY.md": "---\nname: Import\nincludes:\n  - projects/app/PROJECT.md\n---\n",
           "projects/app/PROJECT.md": "---\nname: App\nslug: app\n---\n\n# App\n",
-          ".paperclip.yaml": [
-            "schema: paperclip/v1",
+          ".wardmote.yaml": [
+            "schema: wardmote/v1",
             "projects:",
             "  app:",
             "    inputs:",
@@ -5704,8 +5718,8 @@ describe("company portability", () => {
           "agents/ceo/AGENTS.md": "---\nname: CEO\nslug: ceo\nrole: ceo\n---\n\nLead.",
           "projects/app/PROJECT.md": "---\nname: App\nslug: app\n---\n\n# App\n",
           "tasks/review/TASK.md": "---\nname: Review\nslug: review\nproject: app\nassignee: ceo\nrecurring: true\n---\n\nReview.",
-          ".paperclip.yaml": [
-            "schema: paperclip/v1",
+          ".wardmote.yaml": [
+            "schema: wardmote/v1",
             "tasks:",
             "  review:",
             "    executionWorkspaceSettings:",

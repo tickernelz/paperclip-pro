@@ -333,7 +333,7 @@ describe("company portability routes", () => {
       fileInventory: [],
       counts: { files: 0, agents: 0, skills: 0, projects: 0, issues: 0 },
       warnings: [],
-      wardmoteExtensionPath: ".paperclip.yaml",
+      wardmoteExtensionPath: ".wardmote.yaml",
     });
     mockCompanyPortabilityService.previewImport.mockResolvedValue({ ok: true });
     mockCompanyPortabilityService.importBundle.mockResolvedValue({
@@ -405,7 +405,7 @@ describe("company portability routes", () => {
       fileInventory: [],
       counts: { files: 0, agents: 0, skills: 0, projects: 0, issues: 0 },
       warnings: [],
-      wardmoteExtensionPath: ".paperclip.yaml",
+      wardmoteExtensionPath: ".wardmote.yaml",
     });
     const app = await createApp({
       type: "agent",

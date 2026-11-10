@@ -152,7 +152,7 @@ async function settle(times = 6) {
 }
 
 const previewFiles = {
-  ".paperclip.yaml": 'schema: "paperclip/v1"\n',
+  ".wardmote.yaml": 'schema: "wardmote/v1"\n',
   "agents/coder/AGENTS.md": "---\nname: Coder\n---\n\nYou write code.\n",
   "tasks/weekly-report/TASK.md": "---\nname: Weekly Report\nrecurring: true\n---\n\nSend the report.\n",
 };
@@ -211,7 +211,7 @@ function buildMixedAdapterPreviewResult(): CompanyPortabilityPreviewResult {
       company: null,
     },
     files: {
-      ".paperclip.yaml": 'schema: "paperclip/v1"\n',
+      ".wardmote.yaml": 'schema: "wardmote/v1"\n',
       "agents/coder/AGENTS.md": "---\nname: Coder\n---\n\nYou write code.\n",
       "agents/researcher/AGENTS.md": "---\nname: Researcher\n---\n\nYou research.\n",
     },
@@ -427,7 +427,7 @@ describe("CompanyImport", () => {
       rootPath: "big-package",
       files: {
         "COMPANY.md": "---\nname: Big\n---\n",
-        ".paperclip.yaml": 'schema: "paperclip/v1"\n',
+        ".wardmote.yaml": 'schema: "wardmote/v1"\n',
         "blobs/4f2d1c9a": {
           encoding: "base64",
           data: "A".repeat(57 * 1024 * 1024),

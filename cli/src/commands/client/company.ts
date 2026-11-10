@@ -22,6 +22,11 @@ import {
   type CompanyImportTransferCreated,
   type CompanyImportTransferDeclaration,
 } from "@tickernelz/wardmote-shared/company-import-transfer";
+import {
+  findCompanyPackageExtensionPath,
+  isCompanyPackageExtensionFile,
+  isRetiredCompanyPackageExtensionFile,
+} from "@tickernelz/wardmote-shared/company-package-extension";
 import { getTelemetryClient, trackCompanyImported } from "../../telemetry.js";
 import { ApiRequestError, type WardmoteApiClient } from "../../client/http.js";
 import { openUrl } from "../../client/board-auth.js";
@@ -217,15 +222,13 @@ function normalizePortablePath(filePath: string): string {
 function shouldIncludePortableFile(filePath: string): boolean {
   const baseName = path.basename(filePath);
   const isMarkdown = baseName.endsWith(".md");
-  const isWardmoteYaml = baseName === ".paperclip.yaml" || baseName === ".paperclip.yml";
+  const isWardmoteYaml = isCompanyPackageExtensionFile(baseName) || isRetiredCompanyPackageExtensionFile(baseName);
   const contentType = binaryContentTypeByExtension[path.extname(baseName).toLowerCase()];
   return isMarkdown || isWardmoteYaml || Boolean(contentType) || isBlobStorePath(filePath);
 }
 
 function findPortableExtensionPath(files: Record<string, CompanyPortabilityFileEntry>): string | null {
-  if (files[".paperclip.yaml"] !== undefined) return ".paperclip.yaml";
-  if (files[".paperclip.yml"] !== undefined) return ".paperclip.yml";
-  return Object.keys(files).find((entry) => entry.endsWith("/.paperclip.yaml") || entry.endsWith("/.paperclip.yml")) ?? null;
+  return findCompanyPackageExtensionPath(Object.keys(files));
 }
 
 function collectFilesUnderDirectory(

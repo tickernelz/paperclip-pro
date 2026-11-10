@@ -21,13 +21,13 @@ my-company/
 │   └── review/SKILL.md
 ├── tasks/
 │   └── onboarding/TASK.md
-└── .paperclip.yaml     # Adapter config, env inputs, routines
+└── .wardmote.yaml     # Adapter config, env inputs, routines
 ```
 
 - **COMPANY.md** defines company name, description, and metadata.
 - **AGENT.md** files contain agent identity, role, and instructions.
 - **SKILL.md** files are compatible with the Agent Skills ecosystem.
-- **.paperclip.yaml** holds Paperclip-specific config (adapter types, env inputs, budgets) as an optional sidecar.
+- **.wardmote.yaml** holds Paperclip-specific config (adapter types, env inputs, budgets) as an optional sidecar.
 
 ## Export & Import in the App
 
@@ -79,7 +79,7 @@ wardmote company export abc123 --out ./skills-only --include skills --skills rev
 - Project definitions and workspace config
 - Task/issue descriptions (when included)
 - Skill packages (as references or vendored content)
-- Adapter type and env input declarations in `.paperclip.yaml`
+- Adapter type and env input declarations in `.wardmote.yaml`
 
 Secret values, machine-local paths, and database IDs are **never** exported.
 

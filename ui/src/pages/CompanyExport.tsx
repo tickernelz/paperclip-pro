@@ -86,12 +86,6 @@ function checkedSlugs(checkedFiles: Set<string>): {
   return { agents, projects, tasks, routines: new Set(tasks) };
 }
 
-/**
- * Filter .paperclip.yaml content so it only includes entries whose
- * corresponding files are checked. Works by line-level YAML parsing
- * since the file has a known, simple structure produced by our own
- * renderYamlBlock.
- */
 function filterWardmoteYaml(yaml: string, checkedFiles: Set<string>): string {
   const slugs = checkedSlugs(checkedFiles);
   const lines = yaml.split("\n");
@@ -317,13 +311,6 @@ function paginateTaskNodes(
   return { nodes: result, totalTaskChildren, visibleTaskChildren };
 }
 
-/**
- * Build the file map the zip download will contain: the exported files
- * restricted to the selected set, preferring the client-side effective
- * content (regenerated README.md, filtered .paperclip.yaml) when present.
- * The download size estimate runs this same filter so the number shown
- * matches what actually gets zipped.
- */
 function filterExportForDownload(
   files: Record<string, CompanyPortabilityFileEntry>,
   selectedFiles: Set<string>,
@@ -901,13 +888,10 @@ export function CompanyExport() {
     return tones;
   }, [tree, checkedFiles]);
 
-  // Recompute .paperclip.yaml and README.md content whenever checked files
-  // change so the preview & download always reflect the current selection.
   const effectiveFiles = useMemo(() => {
     if (!exportData) return {} as Record<string, CompanyPortabilityFileEntry>;
     const filtered = { ...exportData.files };
 
-    // Filter .paperclip.yaml
     const yamlPath = exportData.wardmoteExtensionPath;
     if (yamlPath && typeof exportData.files[yamlPath] === "string") {
       filtered[yamlPath] = filterWardmoteYaml(exportData.files[yamlPath], checkedFiles);

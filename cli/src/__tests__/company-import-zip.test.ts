@@ -23,7 +23,7 @@ describe("resolveInlineSourceFromPath", () => {
     const archive = createStoredZipArchive(
       {
         "COMPANY.md": "# Company\n",
-        ".paperclip.yaml": "schema: paperclip/v1\n",
+        ".wardmote.yaml": "schema: wardmote/v1\n",
         "agents/ceo/AGENT.md": "# CEO\n",
         "blobs/4f2d1c9a": blobBytes,
         "notes/todo.txt": "ignore me\n",
@@ -38,7 +38,7 @@ describe("resolveInlineSourceFromPath", () => {
       rootPath: "paperclip-demo",
       files: {
         "COMPANY.md": "# Company\n",
-        ".paperclip.yaml": "schema: paperclip/v1\n",
+        ".wardmote.yaml": "schema: wardmote/v1\n",
         "agents/ceo/AGENT.md": "# CEO\n",
         "blobs/4f2d1c9a": {
           encoding: "base64",

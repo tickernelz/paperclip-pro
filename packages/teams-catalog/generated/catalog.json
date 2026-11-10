@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "packageName": "@tickernelz/wardmote-teams-catalog",
   "packageVersion": "0.1.0",
-  "generatedAt": "2026-10-02T21:51:05.380Z",
+  "generatedAt": "2026-11-10T13:22:24.937Z",
   "teams": [
     {
       "id": "paperclipai:bundled:company-defaults:core-exec-team",
@@ -96,14 +96,14 @@
         {
           "path": "TEAM.md",
           "kind": "team",
-          "sizeBytes": 2014,
-          "sha256": "e0c38e9af1a5dd1888fb81a72feba75a9ab1be4c78d8ceb658e2e5cd621c5096"
+          "sizeBytes": 2012,
+          "sha256": "da56f91f0965c7b60ac582789b4bddc63a706b70f4e1e981256226ce6ec910e6"
         },
         {
           "path": "agents/ceo/AGENTS.md",
           "kind": "agent",
-          "sizeBytes": 263,
-          "sha256": "75848c6f794646a93e23bc73b80d31ef0eb8b83c105423eb98ea29e7685d2fd0"
+          "sizeBytes": 262,
+          "sha256": "b61d23e220c226fa8c279f8a1c69543f1faf28d2f48062c65d4d0355a342a932"
         },
         {
           "path": "agents/cto/AGENTS.md",
@@ -132,7 +132,7 @@
       ],
       "trustLevel": "markdown_only",
       "compatibility": "compatible",
-      "contentHash": "sha256:9d0416ebc0a81585dc51b73efb25decba9e1e3f3741940fc9fca74f3238f344d"
+      "contentHash": "sha256:c69d25cd8941be4918cdfa96d4c7eb2d34d2c36927311eff9eef0f84d8b2609b"
     },
     {
       "id": "paperclipai:bundled:product:product-design",
@@ -212,8 +212,8 @@
         {
           "path": "TEAM.md",
           "kind": "team",
-          "sizeBytes": 2025,
-          "sha256": "f950f4f77a26afa458ca0696994b51353a6bcfac81471fdc00c05f63950fcac5"
+          "sizeBytes": 2024,
+          "sha256": "ba295e6fce0f7e021fc45deda770cdd03041448d12a3cbb8546f26e377bf189a"
         },
         {
           "path": "agents/ux-designer/AGENTS.md",
@@ -236,7 +236,7 @@
       ],
       "trustLevel": "markdown_only",
       "compatibility": "compatible",
-      "contentHash": "sha256:67b041c3adc20583f844fd2415e1c67859a8342b59e46ec32b038b70b7af0108"
+      "contentHash": "sha256:90fc976aa0bf31798c9f48f3edd27cfe3ff06b0961f8a40eea2832a82dea54f2"
     },
     {
       "id": "paperclipai:bundled:software-development:product-engineering",
@@ -331,14 +331,14 @@
         {
           "path": "TEAM.md",
           "kind": "team",
-          "sizeBytes": 2583,
-          "sha256": "7204eeef78a48714dd3f82b82e171a4039adc6325e91a6bdf51a442105ee33b0"
+          "sizeBytes": 2582,
+          "sha256": "ad587bc0f635cf7564570c01a2cd011ac2b15d78c014d4c6b51358c5ffa0bcf4"
         },
         {
-          "path": ".paperclip.yaml",
+          "path": ".wardmote.yaml",
           "kind": "extension",
-          "sizeBytes": 81,
-          "sha256": "54babf05ba130ec54a143abf01581d99c0ac2936fd0d929bf0e0edd00e29d861"
+          "sizeBytes": 80,
+          "sha256": "9715da32a5d99c853f22b16d29372e466a2b9ed5dc66a5aea158548321820441"
         },
         {
           "path": "agents/cto/AGENTS.md",
@@ -373,7 +373,7 @@
       ],
       "trustLevel": "assets",
       "compatibility": "compatible",
-      "contentHash": "sha256:b9076b17a551b704a97df2e0204cefb83edfda4d36e909889071bb02d251e5ea"
+      "contentHash": "sha256:de541ecdf2c660ac5f4e5ca7f27bedcb7e833d0173b003d57ef879add52ad738"
     },
     {
       "id": "paperclipai:optional:content:content-machine",

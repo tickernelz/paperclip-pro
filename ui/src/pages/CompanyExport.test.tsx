@@ -98,7 +98,7 @@ function buildExportPreviewResult() {
     fileInventory: [],
     counts: { files: 1, agents: 0, skills: 0, projects: 0, issues: 0 },
     warnings: [],
-    wardmoteExtensionPath: ".paperclip.yaml",
+    wardmoteExtensionPath: ".wardmote.yaml",
   };
 }
 
@@ -118,7 +118,7 @@ function buildRichExportPreviewResult() {
     ...base,
     files: {
       "README.md": "# Wardmote\n",
-      ".paperclip.yaml": "schema: paperclip/v1\n",
+      ".wardmote.yaml": "schema: wardmote/v1\n",
       "agents/ceo/AGENT.md": "# CEO\n",
       "tasks/one-off/TASK.md": "# One-off\n",
       "tasks/weekly-report/TASK.md": "# Weekly report\n",
@@ -326,7 +326,7 @@ describe("CompanyExport", () => {
     expect(mockCompaniesApi.exportBundle).toHaveBeenCalledTimes(1);
     const request = mockCompaniesApi.exportBundle.mock.calls[0]![1];
     expect(request.selectedFiles).toEqual([
-      ".paperclip.yaml",
+      ".wardmote.yaml",
       "README.md",
       "agents/ceo/AGENT.md",
       "blobs/aaa111",
@@ -434,7 +434,7 @@ describe("CompanyExport", () => {
     expect(mockCompaniesApi.exportBundle).toHaveBeenCalledTimes(1);
     const request = mockCompaniesApi.exportBundle.mock.calls[0]![1];
     expect(request.selectedFiles).toEqual([
-      ".paperclip.yaml",
+      ".wardmote.yaml",
       "README.md",
       "agents/ceo/AGENT.md",
       "tasks/weekly-report/TASK.md",
