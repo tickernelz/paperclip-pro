@@ -82,19 +82,6 @@ export function resolveAdapterTestEnvironmentId(input: {
   return input.managedSandboxEnvironmentId;
 }
 
-/**
- * Find the active managed sandbox environment id in an environment list. The
- * platform provisioner stamps the managed environment with
- * `metadata.managedByPaperclip` (see `isPlatformManagedEnvironment`). The
- * local-default environment also carries that stamp, so this function excludes
- * the `local` driver and returns the non-local managed environment. The function
- * selects only an `active` environment, never an `archived` one, so the Test
- * resolution matches the server run-time resolver that requires an active
- * managed sandbox (see `findManagedSandboxEnvironment`). The Test resolution
- * uses this id as the redirect target under the managed-sandbox-only policy. The
- * function returns `null` when the list holds no active managed sandbox
- * environment.
- */
 export function resolveManagedSandboxEnvironmentId(
   environments: readonly Environment[] | null | undefined,
 ): string | null {
@@ -103,7 +90,7 @@ export function resolveManagedSandboxEnvironmentId(
     (environment) =>
       environment.driver !== "local" &&
       environment.status === "active" &&
-      environment.metadata?.managedByPaperclip === true,
+      environment.metadata?.managedByWardmote === true,
   );
   return managed?.id ?? null;
 }

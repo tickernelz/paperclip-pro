@@ -853,7 +853,7 @@ const managedKubernetesEnvironment: Environment = {
     egressMode: "cilium",
   },
   envVars: {},
-  metadata: { managedByPaperclip: true, managedKubernetesSandbox: true },
+  metadata: { managedByWardmote: true, managedKubernetesSandbox: true },
   createdAt: recent(2_000),
   updatedAt: recent(60),
 };

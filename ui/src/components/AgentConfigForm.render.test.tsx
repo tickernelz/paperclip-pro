@@ -898,7 +898,7 @@ describe("AgentConfigForm environment selector", () => {
         name: "Wardmote Computer",
         driver: "sandbox",
         config: { provider: "daytona" },
-        metadata: { managedByPaperclip: true },
+        metadata: { managedByWardmote: true },
       }),
     ], { adapterType: "omp_local" });
     roots.push(result.root);
@@ -1404,7 +1404,7 @@ describe("AgentConfigForm environment selector", () => {
           name: "Managed",
           driver: "sandbox",
           config: { provider: "daytona" },
-          metadata: { managedByPaperclip: true },
+          metadata: { managedByWardmote: true },
         }),
       ],
       { adapterType: "claude_local", defaultEnvironmentId: null },

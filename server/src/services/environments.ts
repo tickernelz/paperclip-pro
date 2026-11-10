@@ -261,7 +261,7 @@ function managedMetadataKeys(
   bindings: Array<{ defaultsJson: Record<string, unknown> }>,
 ): string[] {
   const keys = new Set([
-    "managedByPaperclip",
+    "managedByWardmote",
     "managedSandboxProvider",
     KUBERNETES_MANAGED_MARKER,
     ...Object.keys(desiredMetadata),
@@ -329,7 +329,7 @@ export function environmentService(db: Db) {
       provider: input.provider,
     };
     const desiredMetadata: Record<string, unknown> = {
-      managedByPaperclip: true,
+      managedByWardmote: true,
       managedSandboxProvider: input.provider,
       ...(input.extraMetadata ?? {}),
     };
@@ -366,7 +366,7 @@ export function environmentService(db: Db) {
         const keys = managedMetadataKeys(desiredMetadata, bindings);
 
         let row = sandboxRows.find(
-          (candidate) => (candidate.metadata as Record<string, unknown> | null)?.managedByPaperclip === true,
+          (candidate) => (candidate.metadata as Record<string, unknown> | null)?.managedByWardmote === true,
         ) ?? sandboxRows.find((candidate) => candidate.name === input.name) ?? null;
 
         const writeBindings = async (
@@ -483,7 +483,7 @@ export function environmentService(db: Db) {
             .for("update")
             .then(
               (rows) => rows.find(
-                (candidate) => (candidate.metadata as Record<string, unknown> | null)?.managedByPaperclip === true,
+                (candidate) => (candidate.metadata as Record<string, unknown> | null)?.managedByWardmote === true,
               ) ?? null,
             );
           if (!row) throw new Error("Failed to ensure managed sandbox environment");
@@ -721,7 +721,7 @@ export function environmentService(db: Db) {
         .for("update")
         .then(
           (rows) => rows.find(
-            (row) => (row.metadata as Record<string, unknown> | null)?.managedByPaperclip === true,
+            (row) => (row.metadata as Record<string, unknown> | null)?.managedByWardmote === true,
           ) ?? null,
         );
       if (!existing || existing.status !== "active") return null;
@@ -870,7 +870,7 @@ export function environmentService(db: Db) {
             config: {},
             envVars: {},
             metadata: {
-              managedByPaperclip: true,
+              managedByWardmote: true,
               defaultForInstance: true,
             },
             createdAt: now,
@@ -951,17 +951,6 @@ export function environmentService(db: Db) {
       return match ? toEnvironment(match) : null;
     },
 
-    /**
-     * Find the platform-managed sandbox environment (the single
-     * `managedByPaperclip`-marked slot row), if one exists. Read-only
-     * counterpart to `ensureManagedSandboxEnvironment`. The default
-     * (active-only) form serves the managed-sandbox-only run guard — which
-     * must fail closed rather than create a config-less environment when
-     * the slot is empty or archived (the provisioner archives it while its
-     * provider plugin is down). `includeArchived` serves reconciliation
-     * cleanup, which must find the row even after the provisioner archived
-     * it.
-     */
     findManagedSandboxEnvironment: async (
       _companyId?: string,
       options?: { includeArchived?: boolean },
@@ -979,7 +968,7 @@ export function environmentService(db: Db) {
         )
         .orderBy(desc(environments.updatedAt));
       const match = rows.find(
-        (row) => (row.metadata as Record<string, unknown> | null)?.managedByPaperclip === true,
+        (row) => (row.metadata as Record<string, unknown> | null)?.managedByWardmote === true,
       );
       return match ? toEnvironment(match) : null;
     },
