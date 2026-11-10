@@ -18,8 +18,8 @@ DATA_DIR="${DATA_DIR:-$(mktemp -d "${TMPDIR:-/tmp}/paperclip-service-smoke.XXXXX
 ONBOARD_TIMEOUT_SECONDS="${ONBOARD_TIMEOUT_SECONDS:-600}"
 SMOKE_READY_TIMEOUT_SECONDS="${SMOKE_READY_TIMEOUT_SECONDS:-420}"
 HEALTH_URL="${HEALTH_URL:-http://127.0.0.1:3100/api/health}"
-SERVICE_NAME="paperclip-pro.service"
-SHIM_PATH="${WARDMOTE_SHIM_PATH:-$HOME/.local/bin/paperclip-pro}"
+SERVICE_NAME="wardmote.service"
+SHIM_PATH="${WARDMOTE_SHIM_PATH:-$HOME/.local/bin/wardmote}"
 # Cleanup defaults to on so a local run does not leave a service behind; CI
 # disables it so the diagnostics step can still inspect the unit.
 SMOKE_CLEANUP="${SMOKE_CLEANUP:-true}"

@@ -102,7 +102,7 @@ describe("restart when the service is not running", () => {
     writeConfig(3100);
     const liveness = await resolveInstanceLiveness({
       instanceId: INSTANCE,
-      status: async () => ({ platform: "systemd", serviceName: "paperclip-pro.service", installed: true, active: false, enabled: true, pid: null }),
+      status: async () => ({ platform: "systemd", serviceName: "wardmote.service", installed: true, active: false, enabled: true, pid: null }),
     });
     expect(liveness.running).toBe(false);
   });
@@ -113,7 +113,7 @@ describe("restart when the service is not running", () => {
     const start = vi.fn(async () => ({ started: true }));
     const result = await safeRestartManagedService({
       instanceId: INSTANCE,
-      liveness: async () => ({ running: false, detail: "paperclip-pro.service is not running" }),
+      liveness: async () => ({ running: false, detail: "wardmote.service is not running" }),
       restart,
       start,
     });

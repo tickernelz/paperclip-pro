@@ -381,7 +381,7 @@ function printManagedInstallHint(): void {
   if (manifest && isManagedExecutable(process.argv[1], manifest)) return;
   if (!isEphemeralNpxExecution()) return;
   p.log.info(
-    `This npx run is temporary. Use ${pc.cyan("paperclip-pro install")} for atomic updates, rollback, and service support.`,
+    `This npx run is temporary. Use ${pc.cyan("wardmote install")} for atomic updates, rollback, and service support.`,
   );
 }
 

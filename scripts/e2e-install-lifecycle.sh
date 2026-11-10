@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# End-to-end proof of the paperclip-pro managed install lifecycle on a CLEAN machine.
+# End-to-end proof of the wardmote managed install lifecycle on a CLEAN machine.
 #
 # Exercises the real user journey against real GitHub + real npm:
 #   bootstrap build -> install (npm latest) -> install --ref (build-from-source)
@@ -28,8 +28,8 @@ unset NODE_ENV npm_config_prefix 2>/dev/null || true
 export COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 export CI="${CI:-1}"
 
-SHIM="$HOME/.local/bin/paperclip-pro"
-STORE="$HOME/.paperclip-pro/cli"
+SHIM="$HOME/.local/bin/wardmote"
+STORE="$HOME/.wardmote/cli"
 RESULTS=()
 FAILED=0
 
@@ -94,14 +94,14 @@ if [ "${E2E_SKIP_NPM:-0}" != "1" ]; then
   else
     fail_ "2a install (latest) exits 0"
   fi
-  [ -x "$SHIM" ] && pass "2b shim created at ~/.local/bin/paperclip-pro" || fail_ "2b shim created"
+  [ -x "$SHIM" ] && pass "2b shim created at ~/.local/bin/wardmote" || fail_ "2b shim created"
   case "$(current_target)" in
     *"installs/npm/"*) pass "2c current -> installs/npm/<version> ($(basename "$(current_target)"))" ;;
     *) fail_ "2c current -> installs/npm/<version> (got: $(current_target))" ;;
   esac
   [ -f "$STORE/install.json" ] && pass "2d install.json manifest present" || fail_ "2d install.json manifest present"
   NPM_VERSION="$("$SHIM" --version 2>/dev/null || true)"
-  [ -n "$NPM_VERSION" ] && pass "2e shim runs: paperclip-pro --version = $NPM_VERSION" || fail_ "2e shim runs paperclip-pro --version"
+  [ -n "$NPM_VERSION" ] && pass "2e shim runs: wardmote --version = $NPM_VERSION" || fail_ "2e shim runs wardmote --version"
 else
   skip_ "2 install (npm latest)" "E2E_SKIP_NPM=1"
 fi
@@ -215,7 +215,7 @@ else
 fi
 
 note "10. uninstall preserves user data"
-mkdir -p "$HOME/.paperclip-pro" && touch "$HOME/.paperclip-pro/e2e-user-data-marker"
+mkdir -p "$HOME/.wardmote" && touch "$HOME/.wardmote/e2e-user-data-marker"
 if shim uninstall; then
   pass "10a uninstall exits 0"
 else
@@ -223,7 +223,7 @@ else
 fi
 [ ! -e "$SHIM" ] && pass "10b shim removed" || fail_ "10b shim removed"
 [ ! -d "$STORE" ] && pass "10c managed store removed" || fail_ "10c managed store removed"
-[ -f "$HOME/.paperclip-pro/e2e-user-data-marker" ] && pass "10d user data under ~/.paperclip-pro preserved" || fail_ "10d user data preserved"
+[ -f "$HOME/.wardmote/e2e-user-data-marker" ] && pass "10d user data under ~/.wardmote preserved" || fail_ "10d user data preserved"
 
 note "RESULTS ($E2E_REPO@$E2E_REF on $(uname -sm))"
 printf '%s\n' "${RESULTS[@]}"

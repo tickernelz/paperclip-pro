@@ -66,7 +66,7 @@ import {
   buildPaperclipEnv,
   ensureAbsoluteDirectory,
   ensurePathInEnv,
-  ensurePaperclipSkillSymlink,
+  ensureWardmoteSkillSymlink,
   isForbiddenConfigEnvKey,
   isPaperclipExternalChatTurn,
   isPaperclipRuntimeEnvKey,
@@ -1448,7 +1448,7 @@ async function prepareGeminiSkillRuntime(input: {
   for (const entry of selectedSkills) {
     const target = path.join(skillsHome, entry.runtimeName);
     try {
-      const result = await ensurePaperclipSkillSymlink(entry.source, target);
+      const result = await ensureWardmoteSkillSymlink(entry.source, target);
       if (result === "created" || result === "repaired") {
         await input.onLog(
           "stdout",

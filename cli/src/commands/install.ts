@@ -197,7 +197,7 @@ async function runGitHubCurl(
   // The token travels via a curl --config file so it never appears in process args.
   const token = process.env.GH_TOKEN ?? process.env.GITHUB_TOKEN;
   if (!token) return runCommand("curl", args, options);
-  const configDir = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-pro-gh-"));
+  const configDir = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-gh-"));
   const configFile = path.join(configDir, "headers");
   try {
     fs.writeFileSync(configFile, `header = "Authorization: Bearer ${token}"\n`, { mode: 0o600 });
@@ -208,7 +208,7 @@ async function runGitHubCurl(
 }
 
 export async function resolveGitHubRef(repo: string, ref: string, runCommand: CommandRunner): Promise<string> {
-  const result = await runGitHubCurl(["--fail", "--silent", "--show-error", "--location", "--header", "Accept: application/vnd.github+json", "--header", "User-Agent: paperclip-pro-install", `https://api.github.com/repos/${repo}/commits/${encodeURIComponent(ref)}`], runCommand, { maxBuffer: 4 * 1024 * 1024 });
+  const result = await runGitHubCurl(["--fail", "--silent", "--show-error", "--location", "--header", "Accept: application/vnd.github+json", "--header", "User-Agent: wardmote-install", `https://api.github.com/repos/${repo}/commits/${encodeURIComponent(ref)}`], runCommand, { maxBuffer: 4 * 1024 * 1024 });
   let sha: unknown;
   try { sha = (JSON.parse(result.stdout) as { sha?: unknown }).sha; } catch { throw new Error(`GitHub returned an invalid response while resolving ${repo}@${ref}.`); }
   if (typeof sha !== "string" || !/^[0-9a-f]{40}$/i.test(sha)) throw new Error(`GitHub did not return a full commit SHA for ${repo}@${ref}.`);
@@ -234,7 +234,7 @@ export function assertPayloadNativeAssets(payloadPath: string): void {
     const missing = links.filter(({ target }) => !fs.existsSync(path.join(embeddedRoot, platform, target)));
     if (missing.length > 0) {
       throw new Error(
-        `Embedded PostgreSQL in @embedded-postgres/${platform} is missing ${missing.length} shared-library link(s) such as ${missing[0]!.target}; the package install script did not run. Allow it with 'npm install-scripts approve @embedded-postgres/${platform}' or reinstall with a npm that honours the paperclip-pro allow-scripts list.`,
+        `Embedded PostgreSQL in @embedded-postgres/${platform} is missing ${missing.length} shared-library link(s) such as ${missing[0]!.target}; the package install script did not run. Allow it with 'npm install-scripts approve @embedded-postgres/${platform}' or reinstall with a npm that honours the wardmote allow-scripts list.`,
       );
     }
   }

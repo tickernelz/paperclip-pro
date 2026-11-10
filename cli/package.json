@@ -4,8 +4,7 @@
   "description": "Paperclip CLI — orchestrate AI agent teams to run a business",
   "type": "module",
   "bin": {
-    "wardmote": "./dist/index.js",
-    "paperclip-pro": "./dist/index.js"
+    "wardmote": "./dist/index.js"
   },
   "keywords": [
     "paperclip",

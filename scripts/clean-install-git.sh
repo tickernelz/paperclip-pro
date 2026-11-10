@@ -22,25 +22,25 @@ echo "PC_HOME: $PC_HOME"
 
 env \
   HOME="$PC_HOME" \
-  WARDMOTE_HOME="$PC_HOME/.paperclip-pro" \
+  WARDMOTE_HOME="$PC_HOME/.wardmote" \
   npm_config_cache="$PC_CACHE" \
   npm_config_userconfig="$PC_HOME/.npmrc" \
   PATH="$PC_HOME/.local/bin:$PATH" \
-  pnpm --dir "$REPO_ROOT" paperclip-pro install --yes
+  pnpm --dir "$REPO_ROOT" wardmote install --yes
 
-test -x "$PC_HOME/.local/bin/paperclip-pro"
-test -L "$PC_HOME/.paperclip-pro/cli/current"
-test -f "$PC_HOME/.paperclip-pro/cli/install.json"
+test -x "$PC_HOME/.local/bin/wardmote"
+test -L "$PC_HOME/.wardmote/cli/current"
+test -f "$PC_HOME/.wardmote/cli/install.json"
 
-env HOME="$PC_HOME" WARDMOTE_HOME="$PC_HOME/.paperclip-pro" PATH="$PC_HOME/.local/bin:$PATH" paperclip-pro --version
-env HOME="$PC_HOME" WARDMOTE_HOME="$PC_HOME/.paperclip-pro" PATH="$PC_HOME/.local/bin:$PATH" paperclip-pro doctor \
+env HOME="$PC_HOME" WARDMOTE_HOME="$PC_HOME/.wardmote" PATH="$PC_HOME/.local/bin:$PATH" wardmote --version
+env HOME="$PC_HOME" WARDMOTE_HOME="$PC_HOME/.wardmote" PATH="$PC_HOME/.local/bin:$PATH" wardmote doctor \
   --config "$PC_TEST_ROOT/missing-config.json" >/dev/null || true
 
 env \
   HOME="$PC_HOME" \
-  WARDMOTE_HOME="$PC_HOME/.paperclip-pro" \
+  WARDMOTE_HOME="$PC_HOME/.wardmote" \
   PATH="$PC_HOME/.local/bin:$PATH" \
-  pnpm --dir "$REPO_ROOT" paperclip-pro uninstall
+  pnpm --dir "$REPO_ROOT" wardmote uninstall
 
-test ! -e "$PC_HOME/.paperclip-pro/cli"
-test ! -e "$PC_HOME/.local/bin/paperclip-pro"
+test ! -e "$PC_HOME/.wardmote/cli"
+test ! -e "$PC_HOME/.local/bin/wardmote"

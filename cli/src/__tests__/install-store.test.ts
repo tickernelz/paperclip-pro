@@ -119,7 +119,7 @@ describe("managed install store", () => {
     expect(addManagedPathBlock(rcPath)).toBe(false);
     fs.chmodSync(rcPath, 0o640);
     expect(removeManagedPathBlock(rcPath)).toBe(true);
-    expect(fs.readFileSync(rcPath, "utf8")).not.toContain("paperclip-pro managed PATH");
+    expect(fs.readFileSync(rcPath, "utf8")).not.toContain("wardmote managed PATH");
     expect(fs.statSync(rcPath).mode & 0o777).toBe(0o640);
   });
 
@@ -128,7 +128,7 @@ describe("managed install store", () => {
     fs.mkdirSync(path.dirname(entrypoint), { recursive: true });
     fs.writeFileSync(entrypoint, `console.log(require("node:child_process").execFileSync("node", ["-p", "process.execPath"], {encoding: "utf8"}).trim())`);
     fs.mkdirSync(path.join(paths.currentPath, "node_modules", ".bin"), { recursive: true });
-    fs.symlinkSync("../@tickernelz/wardmote/dist/index.js", path.join(paths.currentPath, "node_modules", ".bin", "paperclip-pro"));
+    fs.symlinkSync("../@tickernelz/wardmote/dist/index.js", path.join(paths.currentPath, "node_modules", ".bin", "wardmote"));
     const oldBin = path.join(root, "old-bin");
     fs.mkdirSync(oldBin);
     fs.writeFileSync(path.join(oldBin, "node"), "#!/bin/sh\nexit 42\n", { mode: 0o755 });
@@ -244,7 +244,7 @@ describe("managed install store", () => {
     }
 
     expect(resolveInstallStorePaths({ homeDir: path.join(root, "home") }).shimPath).toBe(
-      path.join(root, "home", ".local", "bin", "paperclip-pro"),
+      path.join(root, "home", ".local", "bin", "wardmote"),
     );
   });
 });

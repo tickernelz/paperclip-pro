@@ -3,10 +3,10 @@ import path from "node:path";
 import { resolvePaperclipHomeDir } from "./config/home.js";
 
 export const INSTALL_MANIFEST_VERSION = 1;
-export const MANAGED_SHIM_MARKER = "paperclip-pro managed install shim v1";
-export const MANAGED_STORE_MARKER = "paperclip-pro managed install store v1\n";
-export const PATH_BLOCK_START = "# >>> paperclip-pro managed PATH >>>";
-export const PATH_BLOCK_END = "# <<< paperclip-pro managed PATH <<<";
+export const MANAGED_SHIM_MARKER = "wardmote managed install shim v1";
+export const MANAGED_STORE_MARKER = "wardmote managed install store v1\n";
+export const PATH_BLOCK_START = "# >>> wardmote managed PATH >>>";
+export const PATH_BLOCK_END = "# <<< wardmote managed PATH <<<";
 
 export type InstallSource = "npm" | "git";
 export type InstallChannel = "latest" | "canary" | "pinned";
@@ -36,7 +36,6 @@ export type InstallStorePaths = {
   lockPath: string;
   currentPath: string;
   shimPath: string;
-  wardmoteShimPath: string;
 };
 
 function ensurePrivateDirectory(directoryPath: string): void {
@@ -55,7 +54,7 @@ function assertOwnedByCurrentUser(stat: fs.Stats, targetPath: string): void {
   }
 }
 
-function writeFileAtomic(filePath: string, contents: string, mode: number): void {
+export function writeFileAtomic(filePath: string, contents: string, mode: number): void {
   const temporaryPath = path.join(
     path.dirname(filePath),
     `.${path.basename(filePath)}.tmp-${process.pid}-${Date.now()}-${Math.random().toString(16).slice(2)}`,
@@ -75,7 +74,7 @@ export function resolveInstallStorePaths(options: {
   const paperclipHome = path.resolve(options.paperclipHome ?? resolvePaperclipHomeDir());
   const homeDir = path.resolve(options.homeDir ?? process.env.HOME ?? path.dirname(paperclipHome));
   const cliRoot = path.join(paperclipHome, "cli");
-  const shimPath = process.env.WARDMOTE_SHIM_PATH?.trim() || path.join(homeDir, ".local", "bin", "paperclip-pro");
+  const shimPath = process.env.WARDMOTE_SHIM_PATH?.trim() || path.join(homeDir, ".local", "bin", "wardmote");
   return {
     paperclipHome,
     cliRoot,
@@ -85,7 +84,6 @@ export function resolveInstallStorePaths(options: {
     lockPath: path.join(cliRoot, ".install.lock"),
     currentPath: path.join(cliRoot, "current"),
     shimPath,
-    wardmoteShimPath: path.join(path.dirname(shimPath), "wardmote"),
   };
 }
 
@@ -381,7 +379,7 @@ function shellQuote(value: string): string {
   return `'${value.replace(/'/g, `'"'"'`)}'`;
 }
 
-function isManagedShimContents(contents: string): boolean {
+export function isManagedShimContents(contents: string, marker = MANAGED_SHIM_MARKER): boolean {
   const lines = contents.split("\n");
   // Accept the original pinned-runtime shim so upgrades can replace it.
   const withRuntimePath = lines.length === 6;
@@ -389,7 +387,7 @@ function isManagedShimContents(contents: string): boolean {
   return (
     (lines.length === 5 || withRuntimePath) &&
     lines[0] === "#!/bin/sh" &&
-    lines[1] === `# ${MANAGED_SHIM_MARKER}` &&
+    lines[1] === `# ${marker}` &&
     lines[2] === "set -eu" &&
     (!withRuntimePath || /^export PATH='(?:[^']|'"'"')+':"\$\{PATH:-\/usr\/local\/bin:\/usr\/bin:\/bin\}"$/.test(lines[3])) &&
     /^exec '(?:[^']|'"'"')+' '(?:[^']|'"'"')+' "\$@"$/.test(lines[execIndex]) &&
@@ -405,27 +403,17 @@ export function writeManagedShim(paths = resolveInstallStorePaths()): void {
   fs.mkdirSync(localDir, { recursive: true, mode: 0o755 });
   fs.mkdirSync(path.dirname(paths.shimPath), { recursive: true, mode: 0o755 });
   assertManagedShimWritable(paths);
-  const entrypoint = path.join(paths.currentPath, "node_modules", ".bin", "paperclip-pro");
+  const entrypoint = path.join(paths.currentPath, "node_modules", ".bin", "wardmote");
   // ACP servers and package-manager shims use /usr/bin/env node. Pin their
   // runtime too, even when systemd/launchd supplies a different PATH.
   const contents = `#!/bin/sh\n# ${MANAGED_SHIM_MARKER}\nset -eu\nexport PATH=${shellQuote(path.dirname(process.execPath))}:"\${PATH:-/usr/local/bin:/usr/bin:/bin}"\nexec ${shellQuote(process.execPath)} ${shellQuote(entrypoint)} "\$@"\n`;
   writeFileAtomic(paths.shimPath, contents, 0o755);
-  if (isReplaceableWardmoteShim(paths)) writeFileAtomic(paths.wardmoteShimPath, contents, 0o755);
 }
 
-function isReplaceableWardmoteShim(paths: InstallStorePaths): boolean {
-  try {
-    assertManagedShimWritable({ ...paths, shimPath: paths.wardmoteShimPath });
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-function removeShimFile(shimPath: string): boolean {
+export function removeShimFile(shimPath: string, marker = MANAGED_SHIM_MARKER): boolean {
   try {
     const contents = fs.readFileSync(shimPath, "utf8");
-    if (!isManagedShimContents(contents)) return false;
+    if (!isManagedShimContents(contents, marker)) return false;
     fs.rmSync(shimPath, { force: true });
     return true;
   } catch (error) {
@@ -435,8 +423,7 @@ function removeShimFile(shimPath: string): boolean {
 }
 
 export function removeManagedShim(paths = resolveInstallStorePaths()): boolean {
-  const removedWardmote = removeShimFile(paths.wardmoteShimPath);
-  return removeShimFile(paths.shimPath) && removedWardmote;
+  return removeShimFile(paths.shimPath);
 }
 
 export function managedPathBlock(): string {

@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { and, eq } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { activityLog, agents, authUsers, companyMemberships, companies, createDb, heartbeatRuns, issues } from "@tickernelz/wardmote-db";
+import { activityLog, agents, authUsers, companyMemberships, companies, createDb, EMBEDDED_POSTGRES_TEST_TIMEOUT_MS, heartbeatRuns, issues } from "@tickernelz/wardmote-db";
 import { PROVIDER_QUOTA_MONITOR_SERVICE_NAME } from "@tickernelz/wardmote-shared";
 import { getEmbeddedPostgresTestSupport, startEmbeddedPostgresTestDatabase } from "../../__tests__/helpers/embedded-postgres.js";
 import { PaperclipRunnerToolAuthority } from "./paperclip-runner-tool-authority.js";
@@ -21,7 +21,7 @@ describeEmbeddedPostgres("native task monitors", () => {
   beforeAll(async () => {
     temporary = await startEmbeddedPostgresTestDatabase("native-task-monitor-");
     db = createDb(temporary.connectionString);
-  });
+  }, EMBEDDED_POSTGRES_TEST_TIMEOUT_MS);
   afterAll(async () => { await temporary?.cleanup(); });
 
   async function fixture() {

@@ -54,23 +54,23 @@ function serviceDirective(content: string, key: string): string[] {
 
 describe("service definition generation", () => {
   it("generates a stable systemd notify unit without secrets", () => {
-    const unit = renderSystemdUnit({ instanceId: "team-a", shimPath: "/home/alice/.local/bin/paperclip-pro", homeDir: "/home/alice/.paperclip" });
+    const unit = renderSystemdUnit({ instanceId: "team-a", shimPath: "/home/alice/.local/bin/wardmote", homeDir: "/home/alice/.paperclip" });
     expect(unit).toContain("Type=notify");
     expect(unit).toContain("NotifyAccess=all");
-    expect(unit).toContain('ExecStart="/home/alice/.local/bin/paperclip-pro" run --instance "team-a"');
+    expect(unit).toContain('ExecStart="/home/alice/.local/bin/wardmote" run --instance "team-a"');
     expect(unit).toContain("Restart=always");
     expect(unit).toContain("TimeoutStopSec=300");
     expect(unit).not.toContain("API_KEY");
   });
 
   it("signals only the main process on stop so the server can drain its agent children first", () => {
-    const unit = renderSystemdUnit({ instanceId: "team-a", shimPath: "/home/alice/.local/bin/paperclip-pro", homeDir: "/home/alice/.paperclip" });
+    const unit = renderSystemdUnit({ instanceId: "team-a", shimPath: "/home/alice/.local/bin/wardmote", homeDir: "/home/alice/.paperclip" });
     expect(serviceDirective(unit, "KillMode")).toEqual(["mixed"]);
     expect(serviceDirective(unit, "TimeoutStopSec")).toEqual(["300"]);
   });
 
   it("sources an optional per-instance environment file so operator environment survives unit rewrites", () => {
-    const unit = renderSystemdUnit({ instanceId: "team-a", shimPath: "/home/alice/.local/bin/paperclip-pro", homeDir: "/home/alice/.paperclip" });
+    const unit = renderSystemdUnit({ instanceId: "team-a", shimPath: "/home/alice/.local/bin/wardmote", homeDir: "/home/alice/.paperclip" });
     expect(unit).toContain("EnvironmentFile=-/home/alice/.paperclip/instances/team-a/service.env");
     expect(unit.indexOf("EnvironmentFile=-")).toBeLessThan(unit.indexOf('Environment="WARDMOTE_HOME='));
   });
@@ -78,26 +78,26 @@ describe("service definition generation", () => {
   it("escapes systemd variable and specifier expansion in configured values", () => {
     const unit = renderSystemdUnit({
       instanceId: "team-$USER-%i",
-      shimPath: "/home/$USER/%i/paperclip-pro",
+      shimPath: "/home/$USER/%i/wardmote",
       homeDir: "/home/$USER/%i/.paperclip",
     });
 
-    expect(unit).toContain('ExecStart="/home/$$USER/%%i/paperclip-pro" run --instance "team-$$USER-%%i"');
+    expect(unit).toContain('ExecStart="/home/$$USER/%%i/wardmote" run --instance "team-$$USER-%%i"');
     expect(unit).toContain('Environment="WARDMOTE_HOME=/home/$$USER/%%i/.paperclip"');
     expect(unit).toContain("EnvironmentFile=-/home/$USER/%%i/.paperclip/instances/team-$USER-%%i/service.env");
   });
 
   it.each([
-    ["instanceId", { instanceId: "team-a\nExecStartPre=/tmp/attack", shimPath: "/home/alice/.local/bin/paperclip-pro", homeDir: "/home/alice/.paperclip" }],
-    ["shimPath", { instanceId: "team-a", shimPath: "/home/alice/bin/paperclip-pro\r\nExecStartPre=/tmp/attack", homeDir: "/home/alice/.paperclip" }],
-    ["homeDir", { instanceId: "team-a", shimPath: "/home/alice/.local/bin/paperclip-pro", homeDir: "/home/alice/.paperclip\nEnvironment=ATTACK=1" }],
+    ["instanceId", { instanceId: "team-a\nExecStartPre=/tmp/attack", shimPath: "/home/alice/.local/bin/wardmote", homeDir: "/home/alice/.paperclip" }],
+    ["shimPath", { instanceId: "team-a", shimPath: "/home/alice/bin/wardmote\r\nExecStartPre=/tmp/attack", homeDir: "/home/alice/.paperclip" }],
+    ["homeDir", { instanceId: "team-a", shimPath: "/home/alice/.local/bin/wardmote", homeDir: "/home/alice/.paperclip\nEnvironment=ATTACK=1" }],
   ])("rejects line breaks in the systemd %s", (_field, input) => {
     expect(() => renderSystemdUnit(input)).toThrow("Systemd service values must not contain line breaks");
   });
 
   it("generates a launchd agent with keepalive and instance logs", () => {
-    const plist = renderLaunchdPlist({ instanceId: "team-a", shimPath: "/Users/alice/.local/bin/paperclip-pro", homeDir: "/Users/alice/.paperclip", stdoutPath: "/Users/alice/.paperclip/instances/team-a/logs/service.log", stderrPath: "/Users/alice/.paperclip/instances/team-a/logs/service.err.log" });
-    expect(plist).toContain("ing.paperclip.paperclip-pro.team-a");
+    const plist = renderLaunchdPlist({ instanceId: "team-a", shimPath: "/Users/alice/.local/bin/wardmote", homeDir: "/Users/alice/.paperclip", stdoutPath: "/Users/alice/.paperclip/instances/team-a/logs/service.log", stderrPath: "/Users/alice/.paperclip/instances/team-a/logs/service.err.log" });
+    expect(plist).toContain("com.tickernelz.wardmote.team-a");
     expect(plist).toContain("<key>RunAtLoad</key><true/>");
     expect(plist).toContain("<key>KeepAlive</key><true/>");
     expect(plist).toContain("service.err.log");
@@ -121,7 +121,7 @@ describe("service process PATH", () => {
 });
 
 describe("systemd memory protection", () => {
-  const base = { instanceId: "team-a", shimPath: "/home/alice/.local/bin/paperclip-pro", homeDir: "/home/alice/.paperclip" };
+  const base = { instanceId: "team-a", shimPath: "/home/alice/.local/bin/wardmote", homeDir: "/home/alice/.paperclip" };
 
   it("keeps the server alive when the kernel kills a run and caps cgroup memory by host percentage", () => {
     const unit = renderSystemdUnit(base);
@@ -190,15 +190,15 @@ describe("systemd memory protection", () => {
     const manager = new SystemdServiceManager("default", async (command, args) => {
       calls.push([command, ...args].join(" "));
       return { stdout: "", stderr: "" };
-    }, homeDir, path.join(userHome, ".local/bin/paperclip-pro"), userHome);
+    }, homeDir, path.join(userHome, ".local/bin/wardmote"), userHome);
     await fs.mkdir(path.join(homeDir, "instances", "default"), { recursive: true });
     await fs.writeFile(path.join(homeDir, "instances", "default", "service.env"), "WARDMOTE_SERVICE_MEMORY_MAX=everything\n", "utf8");
 
     await manager.stop();
-    expect(calls).toEqual(["systemctl --user stop paperclip-pro.service"]);
+    expect(calls).toEqual(["systemctl --user stop wardmote.service"]);
     await expect(manager.restart()).rejects.toThrow("Invalid WARDMOTE_SERVICE_MEMORY_MAX");
     await expect(manager.start()).rejects.toThrow("Invalid WARDMOTE_SERVICE_MEMORY_MAX");
-    expect(calls).toEqual(["systemctl --user stop paperclip-pro.service"]);
+    expect(calls).toEqual(["systemctl --user stop wardmote.service"]);
   });
 
   it("renders the instance service.env override and rewrites a unit that still carries the old limit", async () => {
@@ -208,7 +208,7 @@ describe("systemd memory protection", () => {
     const manager = new SystemdServiceManager("default", async (command, args) => {
       calls.push([command, ...args].join(" "));
       return { stdout: "", stderr: "" };
-    }, homeDir, path.join(userHome, ".local/bin/paperclip-pro"), userHome);
+    }, homeDir, path.join(userHome, ".local/bin/wardmote"), userHome);
     await fs.mkdir(path.dirname(manager.definitionPath), { recursive: true });
     await fs.writeFile(manager.definitionPath, manager.renderDefinition(), "utf8");
     await fs.mkdir(path.join(homeDir, "instances", "default"), { recursive: true });
@@ -217,7 +217,7 @@ describe("systemd memory protection", () => {
     await manager.restart();
 
     expect(serviceDirective(await fs.readFile(manager.definitionPath, "utf8"), "MemoryMax")).toEqual(["18G"]);
-    expect(calls).toEqual(["systemctl --user daemon-reload", "systemctl --user restart paperclip-pro.service"]);
+    expect(calls).toEqual(["systemctl --user daemon-reload", "systemctl --user restart wardmote.service"]);
   });
 });
 
@@ -229,7 +229,7 @@ describe("systemd drift regeneration", () => {
       calls.push([command, ...args].join(" "));
       return { stdout: "", stderr: "" };
     };
-    const manager = new SystemdServiceManager("default", runner, path.join(userHome, ".paperclip"), path.join(userHome, ".local/bin/paperclip-pro"), userHome);
+    const manager = new SystemdServiceManager("default", runner, path.join(userHome, ".paperclip"), path.join(userHome, ".local/bin/wardmote"), userHome);
     await fs.mkdir(path.dirname(manager.definitionPath), { recursive: true });
     await fs.writeFile(manager.definitionPath, "stale\n", "utf8");
 
@@ -248,14 +248,14 @@ describe("systemd drift regeneration", () => {
       calls.push([command, ...args].join(" "));
       if (args.includes("daemon-reload")) killModeSeenBySystemd = serviceDirective(await fs.readFile(manager.definitionPath, "utf8"), "KillMode");
       return { stdout: "", stderr: "" };
-    }, path.join(userHome, ".paperclip"), path.join(userHome, ".local/bin/paperclip-pro"), userHome);
+    }, path.join(userHome, ".paperclip"), path.join(userHome, ".local/bin/wardmote"), userHome);
     await fs.mkdir(path.dirname(manager.definitionPath), { recursive: true });
     await fs.writeFile(manager.definitionPath, manager.renderDefinition().replace("KillMode=mixed\n", ""), "utf8");
 
     await manager[operation]();
 
     expect(killModeSeenBySystemd).toEqual(["mixed"]);
-    expect(calls).toEqual(["systemctl --user daemon-reload", `systemctl --user ${operation} paperclip-pro.service`]);
+    expect(calls).toEqual(["systemctl --user daemon-reload", `systemctl --user ${operation} wardmote.service`]);
   });
 
   it("does not reload an unchanged unit before restarting", async () => {
@@ -264,13 +264,13 @@ describe("systemd drift regeneration", () => {
     const manager = new SystemdServiceManager("default", async (command, args) => {
       calls.push([command, ...args].join(" "));
       return { stdout: "", stderr: "" };
-    }, path.join(userHome, ".paperclip"), path.join(userHome, ".local/bin/paperclip-pro"), userHome);
+    }, path.join(userHome, ".paperclip"), path.join(userHome, ".local/bin/wardmote"), userHome);
     await fs.mkdir(path.dirname(manager.definitionPath), { recursive: true });
     await fs.writeFile(manager.definitionPath, manager.renderDefinition(), "utf8");
 
     await manager.restart();
 
-    expect(calls).toEqual(["systemctl --user restart paperclip-pro.service"]);
+    expect(calls).toEqual(["systemctl --user restart wardmote.service"]);
   });
 
   it("keeps the unit installed when stopping an active service fails", async () => {
@@ -280,7 +280,7 @@ describe("systemd drift regeneration", () => {
       if (command === "systemctl" && args.includes("stop")) throw new Error("stop failed");
       return { stdout: "", stderr: "" };
     };
-    const manager = new SystemdServiceManager("default", runner, path.join(userHome, ".paperclip"), path.join(userHome, ".local/bin/paperclip-pro"), userHome);
+    const manager = new SystemdServiceManager("default", runner, path.join(userHome, ".paperclip"), path.join(userHome, ".local/bin/wardmote"), userHome);
     await fs.mkdir(path.dirname(manager.definitionPath), { recursive: true });
     await fs.writeFile(manager.definitionPath, manager.renderDefinition(), "utf8");
 
@@ -316,27 +316,27 @@ describe("launchd lifecycle", () => {
     const calls: string[] = [];
     const runner: CommandRunner = async (command, args) => {
       calls.push([command, ...args].join(" "));
-      if (args[0] === "print-disabled") return { stdout: `\"ing.paperclip.paperclip-pro.team-a\" => true`, stderr: "" };
+      if (args[0] === "print-disabled") return { stdout: `\"com.tickernelz.wardmote.team-a\" => true`, stderr: "" };
       return { stdout: "", stderr: "" };
     };
-    const manager = new LaunchdServiceManager("team-a", runner, path.join(userHome, ".paperclip"), path.join(userHome, ".local/bin/paperclip-pro"), userHome);
+    const manager = new LaunchdServiceManager("team-a", runner, path.join(userHome, ".paperclip"), path.join(userHome, ".local/bin/wardmote"), userHome);
 
     await manager.start();
 
-    expect(calls).toContain(`launchctl disable gui/${process.getuid?.() ?? 0}/ing.paperclip.paperclip-pro.team-a`);
-    expect(calls).not.toContain(`launchctl enable gui/${process.getuid?.() ?? 0}/ing.paperclip.paperclip-pro.team-a`);
+    expect(calls).toContain(`launchctl disable gui/${process.getuid?.() ?? 0}/com.tickernelz.wardmote.team-a`);
+    expect(calls).not.toContain(`launchctl enable gui/${process.getuid?.() ?? 0}/com.tickernelz.wardmote.team-a`);
   });
 
   it("preserves disabled state when the service name contains regex metacharacters", async () => {
     const userHome = await temporaryDirectory();
     const calls: string[] = [];
-    const serviceName = "ing.paperclip.paperclip-pro.team[qa]+";
+    const serviceName = "com.tickernelz.wardmote.team[qa]+";
     const runner: CommandRunner = async (command, args) => {
       calls.push([command, ...args].join(" "));
       if (args[0] === "print-disabled") return { stdout: `"${serviceName}" => true`, stderr: "" };
       return { stdout: "", stderr: "" };
     };
-    const manager = new LaunchdServiceManager("team[qa]+", runner, path.join(userHome, ".paperclip"), path.join(userHome, ".local/bin/paperclip-pro"), userHome);
+    const manager = new LaunchdServiceManager("team[qa]+", runner, path.join(userHome, ".paperclip"), path.join(userHome, ".local/bin/wardmote"), userHome);
 
     await manager.start();
 
@@ -351,13 +351,13 @@ describe("launchd lifecycle", () => {
       calls.push([command, ...args].join(" "));
       return { stdout: "", stderr: "" };
     };
-    const manager = new LaunchdServiceManager("team-a", runner, path.join(userHome, ".paperclip"), path.join(userHome, ".local/bin/paperclip-pro"), userHome);
+    const manager = new LaunchdServiceManager("team-a", runner, path.join(userHome, ".paperclip"), path.join(userHome, ".local/bin/wardmote"), userHome);
 
     await manager.install({ startNow: false, startOnLogin: false });
     await manager.stop();
 
-    expect(calls).toContain(`launchctl disable gui/${process.getuid?.() ?? 0}/ing.paperclip.paperclip-pro.team-a`);
-    expect(calls).toContain(`launchctl bootout gui/${process.getuid?.() ?? 0}/ing.paperclip.paperclip-pro.team-a`);
+    expect(calls).toContain(`launchctl disable gui/${process.getuid?.() ?? 0}/com.tickernelz.wardmote.team-a`);
+    expect(calls).toContain(`launchctl bootout gui/${process.getuid?.() ?? 0}/com.tickernelz.wardmote.team-a`);
     expect(calls.some((call) => call.includes("launchctl kill"))).toBe(false);
   });
 
@@ -368,16 +368,16 @@ describe("launchd lifecycle", () => {
       calls.push([command, ...args].join(" "));
       return { stdout: "", stderr: "" };
     };
-    const manager = new LaunchdServiceManager("team-a", runner, path.join(userHome, ".paperclip"), path.join(userHome, ".local/bin/paperclip-pro"), userHome);
+    const manager = new LaunchdServiceManager("team-a", runner, path.join(userHome, ".paperclip"), path.join(userHome, ".local/bin/wardmote"), userHome);
 
     await manager.uninstall();
 
-    expect(calls).toContain(`launchctl disable gui/${process.getuid?.() ?? 0}/ing.paperclip.paperclip-pro.team-a`);
+    expect(calls).toContain(`launchctl disable gui/${process.getuid?.() ?? 0}/com.tickernelz.wardmote.team-a`);
   });
 });
 
 describe("single-writer guard", () => {
-  const activeManager = { status: async () => ({ active: true, serviceName: "paperclip-pro.service" }) } as unknown as ServiceManager;
+  const activeManager = { status: async () => ({ active: true, serviceName: "wardmote.service" }) } as unknown as ServiceManager;
   const detector = async () => ({ supported: true as const, manager: activeManager });
 
   it("refuses a second foreground writer", async () => {
@@ -395,7 +395,7 @@ describe("single-writer guard", () => {
 
   it("refuses to replace a symlinked service definition", async () => {
     const userHome = await temporaryDirectory();
-    const manager = new SystemdServiceManager("default", async () => ({ stdout: "", stderr: "" }), path.join(userHome, ".paperclip"), path.join(userHome, ".local/bin/paperclip-pro"), userHome);
+    const manager = new SystemdServiceManager("default", async () => ({ stdout: "", stderr: "" }), path.join(userHome, ".paperclip"), path.join(userHome, ".local/bin/wardmote"), userHome);
     await fs.mkdir(path.dirname(manager.definitionPath), { recursive: true });
     const target = path.join(userHome, "target.service"); await fs.writeFile(target, "preserve\n"); await fs.symlink(target, manager.definitionPath);
     await expect(manager.install({ startNow: false, startOnLogin: false })).rejects.toThrow("unsafe service definition");

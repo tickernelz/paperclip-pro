@@ -50,7 +50,7 @@ import { registerSkillCommands } from "./commands/client/skill.js";
 import { cliVersion } from "./version.js";
 import { installCommand } from "./commands/install.js";
 import { uninstallCommand } from "./commands/uninstall.js";
-import { migrateHomeCommand } from "./commands/migrate-home.js";
+import { hasLegacyInstall, migrateHomeCommand } from "./commands/migrate-home.js";
 import { migrateNamesCommand } from "./commands/migrate-names.js";
 import { updateCommand } from "./commands/update.js";
 import { registerServiceCommands } from "./commands/service.js";
@@ -64,7 +64,7 @@ import {
 
 const program = new Command();
 const DATA_DIR_OPTION_HELP =
-  "Wardmote data directory root (isolates state from ~/.paperclip-pro)";
+  "Wardmote data directory root (isolates state from ~/.wardmote)";
 
 program.enablePositionalOptions();
 
@@ -90,7 +90,7 @@ program
 
 program
   .command("migrate-home")
-  .description("Move an existing ~/.paperclip-pro home to ~/.wardmote; stop the service first")
+  .description("Move a retired home, service definition and shim to the Wardmote names; stop the service first")
   .option("--dry-run", "Print what would move without changing anything")
   .action((options: { dryRun?: boolean }) => migrateHomeCommand(options));
 
@@ -120,6 +120,9 @@ program
 program.hook("preAction", async (_thisCommand, actionCommand) => {
   if (actionCommand.parent?.name() === "runtime") return; // Public runtime setup never reads instance config or credentials.
   if (actionCommand.name() === "migrate-home") return;
+  if (["install", "update"].includes(actionCommand.name()) && !process.env.WARDMOTE_HOME?.trim() && hasLegacyInstall()) {
+    await migrateHomeCommand({});
+  }
   const options = actionCommand.optsWithGlobals() as DataDirOptionLike & TestDriveOptions;
   let dataDirOptions: DataDirOptionLike = options;
   if (actionCommand.name() === "test-drive") {

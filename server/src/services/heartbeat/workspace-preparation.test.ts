@@ -41,7 +41,7 @@ describe.skipIf(!support.supported)("heartbeat workspace preparation boundary", 
     vi.restoreAllMocks();
     await db.execute(sql`truncate table companies restart identity cascade`);
     await instanceSettingsService(db).updateExperimental({ enableIsolatedWorkspaces: true });
-  });
+  }, EMBEDDED_POSTGRES_TEST_TIMEOUT_MS);
 
   async function fixture(isolated = false) {
     const [company] = await db.insert(companies).values({ name: "Workspace preparation", issuePrefix: "WSP" }).returning();

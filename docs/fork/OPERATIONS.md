@@ -5,8 +5,7 @@ below is taken from this repository's source; the citations say where.
 
 Wardmote is published on npm as `@tickernelz/wardmote`. Commands assume the
 managed shim installed by `wardmote install` is on `PATH`
-(`~/.local/bin/wardmote`, with the `~/.local/bin/paperclip-pro` alias,
-`cli/src/install-store.ts:78-88`).
+(`~/.local/bin/wardmote`, `cli/src/install-store.ts:77`).
 
 ## 1. Where state lives
 
@@ -33,10 +32,10 @@ wardmote doctor
 
 ## 2. The service unit
 
-On Linux the unit is `paperclip-pro.service` for the `default` instance and
-`paperclip-pro-<id>.service` otherwise (`cli/src/services/service-manager.ts:130`).
-On macOS the launchd label is `ing.paperclip.paperclip-pro`
-(`cli/src/services/service-manager.ts:134`).
+On Linux the unit is `wardmote.service` for the `default` instance and
+`wardmote-<id>.service` otherwise (`cli/src/services/service-manager.ts:133`).
+On macOS the launchd label is `com.tickernelz.wardmote`
+(`cli/src/services/service-manager.ts:137`).
 
 **The CLI owns the unit file.** `ensureCurrent()` re-renders and rewrites it on
 every `service start`, `service restart`, and `service install`
@@ -50,7 +49,7 @@ an optional per-instance environment file
 (`cli/src/services/service-manager.ts:149`):
 
 ```
-EnvironmentFile=-/home/<user>/.paperclip-pro/instances/default/service.env
+EnvironmentFile=-/home/<user>/.wardmote/instances/default/service.env
 ```
 
 The leading `-` makes a missing file non-fatal. **Any custom environment an
@@ -173,7 +172,7 @@ host, that is ~45 s end to end, against 11 m 38 s for the git path.
 Switching an existing instance between a git payload and an npm payload is
 non-destructive. An install writes only `~/.wardmote/cli/installs/<source>/<id>`,
 the `~/.wardmote/cli/current` symlink, `~/.wardmote/cli/install.json`
-and the `~/.local/bin/wardmote` and `~/.local/bin/paperclip-pro` shims. Everything under
+and the `~/.local/bin/wardmote` shim. Everything under
 `~/.wardmote/instances/<id>` — database, `config.json`, `service.env`,
 secrets, logs, storage, backups, workspaces — is untouched, and the two previous
 payloads stay available for `wardmote update --rollback`.
@@ -323,7 +322,7 @@ Afterwards, confirm the live instance was untouched and clean up:
 
 ```bash
 cat "$SANDBOX/shim.log" 2>/dev/null || echo 'no supervisor calls'
-systemctl --user is-active paperclip-pro.service
+systemctl --user is-active wardmote.service
 rm -rf "$SANDBOX"
 ```
 
@@ -492,7 +491,7 @@ host numbers at the moment of the start decision. No start is delayed in this
 mode. Read it from the server journal:
 
 ```bash
-journalctl --user -u paperclip-pro.service | grep 'local-run-memory-gate shadow'
+journalctl --user -u wardmote.service | grep 'local-run-memory-gate shadow'
 ```
 
 ```

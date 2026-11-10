@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# End-to-end proof that `paperclip-pro update` works ACROSS VERSIONS, including
+# End-to-end proof that `wardmote update` works ACROSS VERSIONS, including
 # database migrations, against a real managed install with a live service.
 #
 # Journey (real GitHub, real embedded Postgres, real systemd/launchd service):
@@ -38,7 +38,7 @@ export COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 export CI="${CI:-1}"
 export WARDMOTE_HOME="$HOME/.paperclip-e2e-update"
 
-SHIM="$HOME/.local/bin/paperclip-pro"
+SHIM="$HOME/.local/bin/wardmote"
 STORE="$WARDMOTE_HOME/cli"
 BACKUP_DIR="$WARDMOTE_HOME/instances/default/data/backups"
 RESULTS=()

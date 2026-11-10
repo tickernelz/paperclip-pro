@@ -8,7 +8,7 @@ import type {
 } from "@tickernelz/wardmote-adapter-utils";
 import {
   buildPersistentSkillSnapshot,
-  ensurePaperclipSkillSymlink,
+  ensureWardmoteSkillSymlink,
   readInstalledSkillTargets,
   readPaperclipRuntimeSkillEntries,
   relinkPaperclipSkillsFromOtherInstalls,
@@ -106,7 +106,7 @@ export async function syncOmpSkills(
 
   for (const available of availableEntries) {
     if (!desiredSet.has(available.key)) continue;
-    await ensurePaperclipSkillSymlink(
+    await ensureWardmoteSkillSymlink(
       available.source,
       path.join(skillsHome, available.runtimeName),
     );
@@ -136,7 +136,7 @@ export async function ensureOmpSkills(
   await fs.mkdir(skillsHome, { recursive: true });
   for (const available of availableEntries) {
     if (!desiredSet.has(available.key)) continue;
-    await ensurePaperclipSkillSymlink(
+    await ensureWardmoteSkillSymlink(
       available.source,
       path.join(skillsHome, available.runtimeName),
     );

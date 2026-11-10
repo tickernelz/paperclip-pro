@@ -39,14 +39,14 @@ import {
   shapePaperclipWorkspaceEnvForExecution,
   rewriteWorkspaceCwdEnvVarsForExecution,
   stringifyPaperclipWakePayload,
-  ensurePaperclipSkillSymlink,
+  ensureWardmoteSkillSymlink,
   relinkPaperclipSkillsFromOtherInstalls,
   UNMANAGED_BACKGROUND_TASK_LIVENESS_REASON,
   UNMANAGED_BACKGROUND_TASK_STOP_REASON,
   WATCHDOG_DEFAULT_MANDATE,
 } from "./server-utils.js";
 
-describe("ensurePaperclipSkillSymlink", () => {
+describe("ensureWardmoteSkillSymlink", () => {
   const bundled = (root: string, version: string, skill: string) =>
     path.join(root, "installs", version, "node_modules", "@tickernelz", "wardmote-server", "skills", skill);
 
@@ -62,12 +62,12 @@ describe("ensurePaperclipSkillSymlink", () => {
       await fs.symlink(oldSource, path.join(skillsHome, "paperclip"));
       await fs.symlink(foreignSource, path.join(skillsHome, "wardmote-board"));
 
-      expect(await ensurePaperclipSkillSymlink(newSource, path.join(skillsHome, "paperclip"))).toBe("repaired");
+      expect(await ensureWardmoteSkillSymlink(newSource, path.join(skillsHome, "paperclip"))).toBe("repaired");
       expect(await fs.readlink(path.join(skillsHome, "paperclip"))).toBe(newSource);
-      expect(await ensurePaperclipSkillSymlink(newSource, path.join(skillsHome, "paperclip"))).toBe("skipped");
+      expect(await ensureWardmoteSkillSymlink(newSource, path.join(skillsHome, "paperclip"))).toBe("skipped");
 
       const boardSource = bundled(root, "2026.928.7", "wardmote-board");
-      expect(await ensurePaperclipSkillSymlink(boardSource, path.join(skillsHome, "wardmote-board"))).toBe("skipped");
+      expect(await ensureWardmoteSkillSymlink(boardSource, path.join(skillsHome, "wardmote-board"))).toBe("skipped");
       expect(await fs.readlink(path.join(skillsHome, "wardmote-board"))).toBe(foreignSource);
     } finally {
       await fs.rm(root, { recursive: true, force: true });
@@ -91,12 +91,33 @@ describe("ensurePaperclipSkillSymlink", () => {
 
       await fs.unlink(target);
       await fs.symlink(oldSource, target);
-      await Promise.all(Array.from({ length: 4 }, () => ensurePaperclipSkillSymlink(newSource, target)));
+      await Promise.all(Array.from({ length: 4 }, () => ensureWardmoteSkillSymlink(newSource, target)));
       expect(await fs.readlink(target)).toBe(newSource);
 
       await fs.unlink(target);
-      await Promise.all(Array.from({ length: 4 }, () => ensurePaperclipSkillSymlink(newSource, target)));
+      await Promise.all(Array.from({ length: 4 }, () => ensureWardmoteSkillSymlink(newSource, target)));
       expect(await fs.readlink(target)).toBe(newSource);
+    } finally {
+      await fs.rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it("links again when another run removed the link it collided with", async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-skill-link-"));
+    try {
+      const source = bundled(root, "2026.1002.1", "wardmote");
+      await fs.mkdir(source, { recursive: true });
+      const target = path.join(root, "skills", "wardmote");
+      await fs.mkdir(path.dirname(target));
+      let calls = 0;
+      const linkSkill = async (linkSource: string, linkTarget: string) => {
+        calls += 1;
+        if (calls === 1) throw Object.assign(new Error("EEXIST: file already exists"), { code: "EEXIST" });
+        await fs.symlink(linkSource, linkTarget);
+      };
+      await ensureWardmoteSkillSymlink(source, target, linkSkill);
+      expect(await fs.readlink(target)).toBe(source);
+      expect(calls).toBe(2);
     } finally {
       await fs.rm(root, { recursive: true, force: true });
     }
