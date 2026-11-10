@@ -20,7 +20,7 @@ function connection(slug: string, name: string): ToolConnection {
   return {
     id: `preview-${slug}`, companyId: "company-storybook", applicationId: `preview-app-${slug}`,
     uid: `preview-${slug}`, name, connectionKind: "managed", connectionPurpose: "tool", ownership: "customer",
-    transport: "mcp_remote", authKind: "oauth", credentialSource: "paperclip_vault", credentialPolicy: "shared",
+    transport: "mcp_remote", authKind: "oauth", credentialSource: "wardmote_vault", credentialPolicy: "shared",
     status: "active", enabled: true, config: { sourceTemplateKey: slug }, transportConfig: {}, credentialSecretRefs: [],
     healthStatus: "ok", healthCheckedAt: new Date(), lastError: null, createdByAgentId: null,
     createdByUserId: "user-board", createdAt: new Date(), updatedAt: new Date(),

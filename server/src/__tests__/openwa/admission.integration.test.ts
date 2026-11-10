@@ -267,7 +267,7 @@ describe("OpenWA admission (embedded Postgres + fake gateway)", () => {
     const endpoint = await service.create(companyId, { provider: "openwa", assignedAgentId: agentId } as never, userId);
     const secret = await secretService(db).create(
       companyId,
-      { name: "openwa-key-" + endpoint.id.slice(0, 8), provider: "local_encrypted", managedMode: "paperclip_managed", value: FAKE_OPENWA_KEY },
+      { name: "openwa-key-" + endpoint.id.slice(0, 8), provider: "local_encrypted", managedMode: "wardmote_managed", value: FAKE_OPENWA_KEY },
       { userId },
     );
     endpointIds.push(endpoint.id);

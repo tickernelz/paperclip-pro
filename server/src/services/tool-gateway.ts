@@ -3890,7 +3890,7 @@ export function createToolGatewayService(
     }
     if (
       connection.authKind === "oauth" &&
-      connection.credentialSource === "paperclip_vault" &&
+      connection.credentialSource === "wardmote_vault" &&
       options.oauthGrantRefresher
     ) {
       try {
@@ -5851,7 +5851,7 @@ export function createToolGatewayService(
       if (
         response.status === 401 &&
         connection.authKind === "oauth" &&
-        connection.credentialSource === "paperclip_vault" &&
+        connection.credentialSource === "wardmote_vault" &&
         options.oauthGrantRefresher
       ) {
         credentialHeaders = {

@@ -88,7 +88,7 @@ export async function writeConnectionCredential(
     if (input.definitionKey) {
       [definition] = await db.insert(userSecretDefinitions).values({
         ...metadata, key: input.definitionKey, companyId: input.companyId,
-        managedMode: "paperclip_managed", createdByUserId: input.actor?.userId, createdByAgentId: input.actor?.agentId,
+        managedMode: "wardmote_managed", createdByUserId: input.actor?.userId, createdByAgentId: input.actor?.agentId,
       }).onConflictDoNothing().returning();
       if (definition) createdDefinitionId = definition.id;
       else [definition] = await db.select().from(userSecretDefinitions).where(and(

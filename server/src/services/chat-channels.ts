@@ -6807,7 +6807,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
             name: `chat.${endpoint.provider}.${endpoint.id.slice(0, 8)}.${key}.${suffix.slice(0, 8)}`,
             key: `CHAT_${endpoint.provider.replaceAll("-", "_")}_${endpoint.id.replaceAll("-", "_")}_${key}_${suffix}`.toUpperCase(),
             provider: "local_encrypted",
-            managedMode: "paperclip_managed",
+            managedMode: "wardmote_managed",
             value,
             description: `${PROVIDER_LABELS[endpoint.provider]} channel credential for endpoint ${endpoint.id}`,
           },

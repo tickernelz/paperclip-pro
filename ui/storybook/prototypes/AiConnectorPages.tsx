@@ -32,7 +32,7 @@ function asConnection(account: AiConnectionSummary): ToolConnection {
   return {
     id: account.id, companyId, applicationId: `app-${account.provider}`, name: account.name, uid: account.id,
     connectionKind: "managed", ownership: "customer", connectionPurpose: "ai", transport: "runtime_auth", authKind: account.method === "subscription" ? "oauth" : "api_key",
-    credentialSource: "paperclip_vault", credentialPolicy: account.ownership === "shared" ? "shared" : "per_user",
+    credentialSource: "wardmote_vault", credentialPolicy: account.ownership === "shared" ? "shared" : "per_user",
     status: account.status === "revoked" ? "disabled" : "active", enabled: account.status !== "revoked",
     transportConfig: {}, config: { sourceTemplateKey: account.provider, ai: { provider: account.provider, method: account.method }, aiIsolatedSubscription: true }, credentialSecretRefs: [],
     healthStatus: account.status === "connected" ? "ok" : "error", healthCheckedAt: date,

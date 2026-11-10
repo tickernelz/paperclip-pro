@@ -1949,7 +1949,7 @@ rl.on("line", (line) => {
       key: definitionKey,
       name: `Personal Test token ${randomUUID()}`,
       provider: "local_encrypted",
-      managedMode: "paperclip_managed",
+      managedMode: "wardmote_managed",
     }).returning();
     const personalSecret = await secretService(db).createCurrentUserSecretValue(company.id, userId, {
       definitionId: definition.id,

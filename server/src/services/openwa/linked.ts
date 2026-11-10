@@ -287,7 +287,7 @@ export function openwaLinkedService(db: Db, deps: OpenwaLinkedServiceDeps) {
           name: "chat.openwa." + endpoint.id.slice(0, 8) + ".linked." + id.slice(0, 8),
           key: ("CHAT_OPENWA_LINKED_" + endpoint.id.replaceAll("-", "_") + "_" + suffix).toUpperCase(),
           provider: "local_encrypted",
-          managedMode: "paperclip_managed",
+          managedMode: "wardmote_managed",
           value: created.apiKey,
           description: "OpenWA read-only viewer key for a linked number on endpoint " + endpoint.id,
         },

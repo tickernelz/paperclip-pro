@@ -103,7 +103,7 @@ describe("secret validators", () => {
     expect(() =>
       createSecretSchema.parse({
         name: "OpenAI API Key",
-        managedMode: "paperclip_managed",
+        managedMode: "wardmote_managed",
         value: "secret-value",
         externalRef: "arn:aws:secretsmanager:us-east-1:123456789012:secret:shared/other",
       }),

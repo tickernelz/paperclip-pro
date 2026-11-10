@@ -47,7 +47,7 @@ export const toolConnectionTransportSchema = z.enum(["mcp_remote", "rest_api", "
 export const toolConnectionPurposeSchema = z.enum(["tool", "channel"]);
 export const toolConnectionAuthKindSchema = z.enum(["oauth", "api_key", "none"]);
 export const toolConnectionOwnershipSchema = z.enum(["platform_shared", "platform_provisioned", "customer", "dcr"]);
-export const toolConnectionCredentialSourceSchema = z.enum(["paperclip_vault", "vercel_connect"]);
+export const toolConnectionCredentialSourceSchema = z.enum(["wardmote_vault", "vercel_connect"]);
 export const vercelConnectCredentialSummarySchema = z.object({
   provider: z.literal("vercel_connect"),
   connectorId: z.string().trim().min(1).max(255),
@@ -429,7 +429,7 @@ export const connectToolAppSchema = z.object({
   saveDraft: z.boolean().optional(),
   authMode: genericMcpAuthModeSchema.optional(),
   oauthClient: genericMcpOAuthClientSchema.optional(),
-  credentialSource: z.enum(["paperclip_vault", "vercel_connect"]).optional(),
+  credentialSource: z.enum(["wardmote_vault", "vercel_connect"]).optional(),
   vercelConnect: z.object({ connector: z.string().trim().min(1).max(255) }).strict().optional(),
   /**
    * Which identity this credential becomes (PAP-17835). `user` means "Just me":
@@ -466,7 +466,7 @@ export const connectToolAppSchema = z.object({
       message: "Only gallery app setup can resume a draft connection",
     });
   }
-  const source = value.credentialSource ?? "paperclip_vault";
+  const source = value.credentialSource ?? "wardmote_vault";
   if (source === "vercel_connect") {
     if (!value.vercelConnect) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["vercelConnect"], message: "A Vercel connector UID is required" });

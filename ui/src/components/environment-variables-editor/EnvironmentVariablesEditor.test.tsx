@@ -44,7 +44,7 @@ function makeSecret(id: string, overrides: Partial<CompanySecret> = {}): Company
     name: id.toUpperCase(),
     provider: "local_encrypted",
     status: "active",
-    managedMode: "paperclip_managed",
+    managedMode: "wardmote_managed",
     externalRef: null,
     providerConfigId: null,
     providerMetadata: null,

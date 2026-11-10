@@ -202,7 +202,7 @@ async function upsertTokenSecret(
       provider: "local_encrypted",
       providerConfigId: null,
       status: "active",
-      managedMode: "paperclip_managed",
+      managedMode: "wardmote_managed",
       externalRef: null,
       providerMetadata: { source: "tool_oauth_legacy_backfill", namespace: secretNamespace(connection.id) },
       latestVersion: 1,
