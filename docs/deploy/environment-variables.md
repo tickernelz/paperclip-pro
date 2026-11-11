@@ -48,13 +48,6 @@ only `POST /api/chat-webhooks/*` from that host. Provider signatures still gate
 ingress; this variable does not expose routes or grant provider access.
 Never forward the private `local_trusted` board through a public tunnel.
 
-In Paperclip Cloud, chat callback URLs and account-linking URLs follow the
-instance's signed canonical origin after a warm instance is claimed, without
-requiring a restart. An explicit `WARDMOTE_CHAT_WEBHOOK_PUBLIC_URL` still takes
-precedence for provider callbacks only; board links follow the claimed origin.
-Existing provider-side callback settings must be updated if they were created
-with an old URL.
-
 Task links in external messages require an externally safe HTTPS board URL.
 Local/private board URLs are omitted with instructions to open the task in
 Wardmote; the public webhook host is never substituted for the board. Identity
@@ -114,9 +107,7 @@ Daytona snapshot for future leases.
   settings root and stays visible). These are UI-visibility keys: the
   membership, invite, secret, and export APIs stay live for agents and
   integrations. `company.import` is the exception — hiding it also floors
-  every company-import route with `403 settings_operator_managed`. On
-  cloud-managed instances import is floored unconditionally with
-  `403 cloud_managed`, independent of this variable.
+  every company-import route with `403 settings_operator_managed`.
 - A single tab of the Secrets page: `company.secrets.vaults` (Provider
   vaults) and `company.secrets.proposals` (Proposals) — the tab disappears
   while the rest of the page stays up. UI-visibility only; the secret

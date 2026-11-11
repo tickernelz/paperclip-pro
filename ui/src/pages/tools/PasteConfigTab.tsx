@@ -15,7 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
 import { toolsApi } from "@/api/tools";
 import { navigateTopLevel } from "@/lib/browserNavigation";
-import { prepareOAuthNavigation, savePendingCloudHandoff } from "@/lib/oauthHandoff";
+import { prepareOAuthNavigation } from "@/lib/oauthNavigation";
 import { useNavigate } from "@/lib/router";
 import {
   OAuthConnectStateScreen,
@@ -123,17 +123,11 @@ export function PasteConfigTab({ companyId }: { companyId: string }) {
     },
   });
 
-  const openAuthorizationPage = async (
-    authorizationUrl: string,
-    handoff?: ToolOAuthStartResult["handoff"],
-  ) => {
+  const openAuthorizationPage = (authorizationUrl: string) => {
     try {
-      const target = await prepareOAuthNavigation({ authorizationUrl, handoff });
-      if (target.kind === "reauthentication" && handoff) {
-        savePendingCloudHandoff(handoff.session);
-      }
+      const target = prepareOAuthNavigation({ authorizationUrl });
       setAuthorizationHost(target.host);
-      setOAuthPhase(target.kind === "authorization" ? "redirecting" : "starting");
+      setOAuthPhase("redirecting");
       navigateTopLevel(target.url);
     } catch (error) {
       setOAuthPhase("error");
@@ -143,7 +137,7 @@ export function PasteConfigTab({ companyId }: { companyId: string }) {
 
   const oauthStartMutation = useMutation({
     mutationFn: (connectionId: string) => toolsApi.startOAuth(connectionId),
-    onSuccess: (start) => void openAuthorizationPage(start.authorizationUrl, start.handoff),
+    onSuccess: (start) => openAuthorizationPage(start.authorizationUrl),
     onError: (error) => {
       setOAuthPhase("error");
       setOAuthError(
@@ -179,7 +173,7 @@ export function PasteConfigTab({ companyId }: { companyId: string }) {
         }
         const startUrl = result.auth.startUrl?.trim();
         if (startUrl) {
-          void openAuthorizationPage(startUrl, result.auth.handoff);
+          openAuthorizationPage(startUrl);
         } else {
           setOAuthPhase("starting");
           oauthStartMutation.mutate(result.connectionId);

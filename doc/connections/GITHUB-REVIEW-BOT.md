@@ -64,13 +64,9 @@ existing **reconnect this App** flow to refresh its verified identity using its
 stored credentials. Legacy manual connections without recorded ownership link
 to the App settings list instead of assuming an owner.
 
-Local instances receive public callbacks and signed events through an enrolled
-Paperclip Cloud connector, using outbound requests instead of a public tunnel.
-Your localhost instance does not need HTTPS or a tunnel for this flow. Setup
-asks you to connect Cloud only if the instance is not already enrolled.
-The Cloud gateway capability must be deployed before localhost onboarding.
-Direct public-HTTPS webhook connections and manual existing-App credential
-recovery remain supported. An expired, unconsumed Cloud handoff can be renewed in the same draft after the configuring manager confirms that no App was created on GitHub. Claimed, consumed, and uncertain exchanges still require existing-App recovery. Setup tasks and copied prompts are not part of this
+GitHub must reach the instance over public HTTPS for callbacks and signed
+events. Manual existing-App credential recovery remains supported. Claimed,
+consumed, and uncertain manifest exchanges require existing-App recovery. Setup tasks and copied prompts are not part of this
 wizard. Normal agent API keys cannot call its board-only management APIs.
 
 GitHub review bots use the existing agent runtime; this connector does not add

@@ -31,8 +31,8 @@ connected generically from **Connect your own MCP server** by pasting
 Neon hosts both the MCP resource and its OAuth authorization service on the
 same origin. Wardmote discovers the OAuth endpoints, dynamically registers the
 client, stores returned credentials as secret references, and handles the
-callback at `/api/tools/oauth/callback`. No Paperclip-operated vendor relay is
-involved; cloud and self-hosted instances use the same path.
+callback at `/api/tools/oauth/callback`. No vendor relay is
+involved.
 
 ```mermaid
 sequenceDiagram

@@ -6,7 +6,7 @@ the [production readiness gates](../../doc/plans/2026-10-03-cursor-production-re
 passed. The public CLI installation command is `wardmote runtime setup cursor`;
 it runs explicitly on the execution host and is never an npm installation hook.
 
-This image is the Paperclip Cloud fleet sandbox image plus a source-built
+This image is the Daytona sandbox base image plus a source-built
 `wardmote-runnerd` and immutable provider pack. The pack contains Node 24.11,
 OpenCode 1.18.34, the compiled OpenCode proxy, ACPX 0.13.1 sidecar, qualified ACP
 agents, and the production lockfile. Its manifest digests each executable bridge

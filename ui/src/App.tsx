@@ -98,7 +98,6 @@ const ChatIdentityConfirm = lazyPage(() => import("./pages/apps/chat/ChatIdentit
 const AppsReview = lazyPage(() => import("./pages/apps/AppsReview").then((module) => module.AppsReview));
 const AppDetail = lazyPage(() => import("./pages/apps/AppDetail").then((module) => module.AppDetail));
 const AppNotConnected = lazyPage(() => import("./pages/apps/AppNotConnected").then((module) => module.AppNotConnected));
-const OAuthHandoffPage = lazyPage(() => import("./pages/apps/OAuthHandoff").then((module) => module.OAuthHandoffPage));
 const GatewaysList = lazyPage(() => import("./pages/apps/gateways/GatewaysList").then((module) => module.GatewaysList));
 const GatewayDetail = lazyPage(() => import("./pages/apps/gateways/GatewayDetail").then((module) => module.GatewayDetail));
 const CompanySkills = lazyPage(() => import("./pages/CompanySkills").then((module) => module.CompanySkills));
@@ -755,7 +754,6 @@ export function App() {
     <>
       <Suspense fallback={<MootLoading />}>
       <Routes>
-        <Route path="oauth-handoff" element={<OAuthHandoffPage />} />
         <Route path="auth" element={<AuthPage />} />
         <Route path="board-claim/:token" element={<BoardClaimPage />} />
         <Route path="mcp-connect/:id" element={<McpConnectPage />} />

@@ -31,8 +31,7 @@ reach Superagent's server. It can also be connected generically from
 
 Superagent hosts the MCP resource. Wardmote stores the key as a secret
 reference, discovers tools with `tools/list`, and sends the key on every
-governed call. No Paperclip-operated vendor relay is involved; cloud and
-self-hosted instances use the same path.
+governed call. No vendor relay is involved.
 
 ## Administrator setup
 

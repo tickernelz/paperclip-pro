@@ -35,7 +35,7 @@ import { accessApi } from "@/api/access";
 import { buildCompanyUserProfileMap } from "@/lib/company-members";
 import { installStateFrom, type InstallState } from "@/lib/tool-installs";
 import { navigateTopLevel } from "@/lib/browserNavigation";
-import { prepareOAuthNavigation, savePendingCloudHandoff } from "@/lib/oauthHandoff";
+import { prepareOAuthNavigation } from "@/lib/oauthNavigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -341,13 +341,9 @@ function StandardAppDetail({ renderActions, renderAgentSettings, renderConnectio
 
   const startOAuth = useMutation({
     mutationFn: (input?: { asAgentId?: string }) => toolsApi.startOAuth(connectionId, input),
-    onSuccess: async (start) => {
+    onSuccess: (start) => {
       try {
-        const target = await prepareOAuthNavigation(start);
-        if (target.kind === "reauthentication" && start.handoff) {
-          savePendingCloudHandoff(start.handoff.session);
-        }
-        navigateTopLevel(target.url);
+        navigateTopLevel(prepareOAuthNavigation(start).url);
       } catch (error) {
         pushToast({
           title: "Couldn't start sign-in",
@@ -383,13 +379,9 @@ function StandardAppDetail({ renderActions, renderAgentSettings, renderConnectio
         returnTo: appTabHref(connectionId, "permissions"),
       });
     },
-    onSuccess: async ({ url, handoff }) => {
+    onSuccess: ({ url }) => {
       try {
-        const target = await prepareOAuthNavigation({ authorizationUrl: url, handoff });
-        if (target.kind === "reauthentication" && handoff) {
-          savePendingCloudHandoff(handoff.session);
-        }
-        navigateTopLevel(target.url);
+        navigateTopLevel(prepareOAuthNavigation({ authorizationUrl: url }).url);
       } catch (error) {
         pushToast({
           title: "Couldn't start sign-in",

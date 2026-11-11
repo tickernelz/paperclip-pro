@@ -30,8 +30,8 @@ Zep and Supermemory use user grants, the existing PKCE OAuth broker, and automat
 client registration/discovery. Zep advertises its authorization server at
 `https://api.getzep.com/v1/oauth`, with `graph:read graph:write` scopes.
 Supermemory advertises `https://api.supermemory.ai/api/auth`, with
-`openid profile email offline_access`. Neither requires Paperclip ID or a new
-Wardmote-hosted credential service.
+`openid profile email offline_access`. Neither requires a hosted credential
+service.
 
 Cognee does not advertise a hosted MCP endpoint. Wardmote bundles a narrow
 Cloud API bridge for `remember`, `recall`, and `forget`, matching the reviewed
