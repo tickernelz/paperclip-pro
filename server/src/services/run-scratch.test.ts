@@ -9,6 +9,7 @@ import {
   prepareHeartbeatRunScratch,
   type HeartbeatRunScratch,
 } from "./run-scratch.js";
+import { RETIRED_HEARTBEAT_RUN_SCRATCH_MARKER } from "./retired-marker-names.js";
 
 const cleanupDirs = new Set<string>();
 
@@ -98,7 +99,7 @@ describe("heartbeat run scratch cleanup", () => {
     const scratch: HeartbeatRunScratch = {
       dir,
       tempDir: path.join(dir, "runtime-temp"),
-      markerPath: path.join(dir, HEARTBEAT_RUN_SCRATCH_MARKER),
+      markerPath: path.join(dir, RETIRED_HEARTBEAT_RUN_SCRATCH_MARKER),
       metadata: {
         version: 1,
         companyId: "company-1",
