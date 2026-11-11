@@ -327,6 +327,85 @@ describe("useLiveRunTranscripts", () => {
     container.remove();
   });
 
+  it("reads each settled terminal run once while a running sibling keeps growing", async () => {
+    logMock.mockImplementation(async () => ({ runId: "run", store: "memory", logRef: "log", content: "" }));
+    const settled = Array.from({ length: 87 }, (_, index) => ({
+      id: `run-done-${index}`,
+      status: "succeeded",
+      adapterType: "codex_local",
+      logBytes: 1_000,
+    }));
+    let liveBytes = 100;
+    function Harness() {
+      useLiveRunTranscripts({
+        companyId: "company-1",
+        runs: [...settled, { id: "run-live", status: "running", adapterType: "codex_local", logBytes: liveBytes }],
+        enableRealtimeUpdates: false,
+      });
+      return null;
+    }
+    const container = document.createElement("div");
+    const root = createRoot(container);
+    try {
+      await act(async () => root.render(<Harness />));
+      await flushAppendFrame();
+      for (let round = 0; round < 5; round += 1) {
+        liveBytes += 100;
+        await act(async () => root.render(<Harness />));
+        await flushAppendFrame();
+      }
+      const callsByRun = new Map<string, number>();
+      for (const [runId] of logMock.mock.calls as unknown as Array<[string]>) {
+        callsByRun.set(runId, (callsByRun.get(runId) ?? 0) + 1);
+      }
+      for (const run of settled) expect(callsByRun.get(run.id)).toBe(1);
+      expect(callsByRun.get("run-live")).toBe(6);
+    } finally {
+      act(() => root.unmount());
+    }
+  });
+
+  it("keeps at most four persisted-log reads in flight while hydrating many runs", async () => {
+    let inFlight = 0;
+    let peak = 0;
+    const releases: Array<() => void> = [];
+    logMock.mockImplementation(() => {
+      inFlight += 1;
+      peak = Math.max(peak, inFlight);
+      return new Promise((resolve) => {
+        releases.push(() => {
+          inFlight -= 1;
+          resolve({ runId: "run", store: "memory", logRef: "log", content: "" });
+        });
+      });
+    });
+    const runs = Array.from({ length: 20 }, (_, index) => ({
+      id: `run-${index}`,
+      status: "succeeded",
+      adapterType: "codex_local",
+    }));
+    function Harness() {
+      useLiveRunTranscripts({ companyId: "company-1", runs, enableRealtimeUpdates: false });
+      return null;
+    }
+    const container = document.createElement("div");
+    const root = createRoot(container);
+    try {
+      await act(async () => root.render(<Harness />));
+      while (releases.length > 0) {
+        await act(async () => {
+          releases.shift()!();
+          await Promise.resolve();
+          await Promise.resolve();
+        });
+      }
+      expect(logMock).toHaveBeenCalledTimes(20);
+      expect(peak).toBe(4);
+    } finally {
+      act(() => root.unmount());
+    }
+  });
+
   it("does not request persisted logs until a queued run starts", async () => {
     function Harness({ status }: { status: "queued" | "running" }) {
       useLiveRunTranscripts({
