@@ -1,10 +1,6 @@
 /**
  * JSON-file-backed store for external adapter registrations.
  *
- * Stores metadata about externally installed adapter packages at
- * ~/.paperclip-pro/adapter-plugins.json. This is the source of truth for which
- * external adapters should be loaded at startup.
- *
  * Both the plugin store and the settings store are cached in memory after
  * the first read. Writes invalidate the cache so the next read picks up
  * the new state without a redundant disk round-trip.
