@@ -17,7 +17,8 @@
     "./server": "./src/server/index.ts",
     "./ui": "./src/ui/index.ts",
     "./cli": "./src/cli/index.ts",
-    "./readiness": "./src/server/readiness.ts"
+    "./readiness": "./src/server/readiness.ts",
+    "./providers": "./src/server/providers.ts"
   },
   "publishConfig": {
     "access": "public",
@@ -41,6 +42,10 @@
       "./readiness": {
         "types": "./dist/server/readiness.d.ts",
         "import": "./dist/server/readiness.js"
+      },
+      "./providers": {
+        "types": "./dist/server/providers.d.ts",
+        "import": "./dist/server/providers.js"
       }
     },
     "main": "./dist/index.js",

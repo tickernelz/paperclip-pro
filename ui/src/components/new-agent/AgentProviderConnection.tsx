@@ -1,6 +1,4 @@
-import { healthApi } from "@/api/health";
 import { aiConnectionsApi } from "@/api/ai-connections";
-import { useLocalAiLogin } from "../ai-connections/useLocalAiLogin";
 import type { AiConnectionBinding, AiConnectionLoginIntent } from "@tickernelz/wardmote-shared";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Cable } from "lucide-react";
@@ -15,7 +13,6 @@ import { queryKeys } from "@/lib/queryKeys";
 import { AdapterLoginPanel } from "../AgentConfigForm";
 import { AdapterMark } from "./AgentBasicsDialog";
 import {
-  LocalProviderLoginInstructions,
   OnboardingCardField,
   OnboardingLoginCard,
 } from "../AdapterLoginChrome";
@@ -39,7 +36,6 @@ export function AgentProviderConnection({
   adapterType,
   environmentId,
   canLogin,
-  localEnvironment = false,
   onConnected,
   onDraftChanged,
   onBack,
@@ -52,7 +48,6 @@ export function AgentProviderConnection({
   adapterType: "claude_local" | "codex_local" | "grok_local";
   environmentId: string | null;
   canLogin: boolean;
-  localEnvironment?: boolean;
   onConnected: (connection: ProviderConnection) => void;
   onDraftChanged?: () => void;
   onBack: () => void;
@@ -69,8 +64,6 @@ export function AgentProviderConnection({
     onComplete: (result: { connectionId: string; grantId: string; method: "subscription" | "api_key" }) => void;
   };
 }) {
-  const health = useQuery({ queryKey: queryKeys.health, queryFn: healthApi.get, enabled: localEnvironment });
-  const canUseLocalLogin = localEnvironment && (health.data?.localAiLoginSupported ?? health.data?.deploymentMode === "local_trusted");
   const epoch = useRef(0);
   useEffect(
     () => () => {
@@ -140,11 +133,6 @@ export function AgentProviderConnection({
       ? managedAccount.intent.name
       : managedAccount.nameForMethod?.(authMethod) ?? managedAccount.intent.name,
   } : undefined;
-  const localLogin = useLocalAiLogin(companyId, managedIntent ?? {
-    provider: aiProvider, method: "subscription", name: `My ${provider} subscription`,
-    ownership: "personal", agentIds: [], allAgents: true,
-  }, !advanced && canUseLocalLogin && method === "subscription" && !savedSubscription && !storedLogin.data,
-  );
   const auth = useQuery({
     queryKey: queryKeys.agents.authSignal(
       companyId,
@@ -167,10 +155,8 @@ export function AgentProviderConnection({
     setError(null);
     try {
       if (managedAccount && managedIntent) {
-        if (method === "subscription" && !canUseLocalLogin) return;
-        const result = savedManagedAccount.current ?? await (method === "api"
-          ? aiConnectionsApi.create(companyId, { ...managedIntent, method: "api_key", apiKey: apiKey.trim() })
-          : localLogin.connect(managedIntent));
+        if (method === "subscription") return;
+        const result = savedManagedAccount.current ?? await aiConnectionsApi.create(companyId, { ...managedIntent, method: "api_key", apiKey: apiKey.trim() });
         savedManagedAccount.current = result;
         setApiKey("");
         if (run === epoch.current) managedAccount.onComplete({ ...result, method: method === "api" ? "api_key" : "subscription" });
@@ -196,10 +182,6 @@ export function AgentProviderConnection({
                   }
                 : {}),
             };
-      if (method === "subscription" && canUseLocalLogin && !savedSubscription && !storedLogin.data) {
-        savedManagedAccount.current ??= await localLogin.connect();
-        connection = { env: {}, aiConnection: { provider: aiProvider, method: "subscription", mode: "responsible_user" } };
-      }
       if (connection.credentials) {
         await aiConnectionsApi.create(companyId, { provider: aiProvider, method: "api_key", name: `My ${provider} API`, ownership: "personal", apiKey: connection.credentials[envKey], agentIds: [], allAgents: true });
         connection = { env: {}, aiConnection: { provider: aiProvider, method: "api_key", mode: "responsible_user" } };
@@ -397,9 +379,7 @@ export function AgentProviderConnection({
                   onConnected(connection);
                 }}
               />
-            ) : savedSubscription ? null : canUseLocalLogin && !storedLogin.data ? (
-              <LocalProviderLoginInstructions adapterType={adapterType} login={{ ...localLogin, retry: () => { setError(null); localLogin.retry(); } }} />
-            ) : (
+            ) : savedSubscription ? null : (
               <p className="text-sm text-ink-3">
                 {storedLogin.data
                   ? "Use your saved Claude subscription for this agent."
@@ -420,9 +400,6 @@ export function AgentProviderConnection({
         <p role="alert" className="mt-4 text-sm text-bad">
           {testError ?? error}
         </p>
-      )}
-      {localEnvironment && health.isError && (
-        <p role="alert" className="mt-4 text-sm text-bad">Could not prepare sign-in. Reload this page to try again.</p>
       )}
       <FooterNav
         onBack={() => {
@@ -445,9 +422,7 @@ export function AgentProviderConnection({
         }
         primaryDisabled={
           managedAccount?.disabled ||
-          (Boolean(managedAccount) && method === "subscription" && !canLogin && !canUseLocalLogin) ||
-          (localEnvironment && health.isPending) || localLogin.preparing || Boolean(localLogin.error) ||
-          (method === "subscription" && canUseLocalLogin && !savedSubscription && !storedLogin.data && localLogin.status !== "ready") ||
+          (Boolean(managedAccount) && method === "subscription" && !canLogin) ||
           (!managedAccount && auth.isPending) ||
           savedKeys.loading ||
           (adapterType === "claude_local" && storedLogin.isPending) ||

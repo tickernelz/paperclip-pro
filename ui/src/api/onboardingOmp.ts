@@ -1,7 +1,11 @@
 import type {
+  OmpCustomProviderInput,
+  OmpCustomProviderList,
+  OmpCustomProviderProbeInput,
+  OmpCustomProviderProbeResult,
   OnboardingOmpBrowseResult,
-  OnboardingOmpLoginProvider,
-  OnboardingOmpLoginResult,
+  OnboardingOmpLoginProviders,
+  OnboardingOmpLoginView,
   OnboardingOmpStatus,
   OnboardingRemoteOmpStatus,
 } from "@tickernelz/wardmote-shared";
@@ -17,7 +21,19 @@ export const onboardingOmpApi = {
   },
   browse: (path?: string | null) =>
     api.get<OnboardingOmpBrowseResult>(`/onboarding/omp/browse${path ? `?path=${encodeURIComponent(path)}` : ""}`),
-  login: (provider: OnboardingOmpLoginProvider) =>
-    api.post<OnboardingOmpLoginResult>("/onboarding/omp/login", { provider }),
+  loginProviders: (refresh = false) =>
+    api.get<OnboardingOmpLoginProviders>(`/onboarding/omp/login/providers${refresh ? "?refresh=1" : ""}`),
+  startLogin: (provider: string) => api.post<OnboardingOmpLoginView>("/onboarding/omp/login", { provider }),
+  login: (id: string) => api.get<OnboardingOmpLoginView>(`/onboarding/omp/login/${encodeURIComponent(id)}`),
+  answerLogin: (id: string, value: string) =>
+    api.post<OnboardingOmpLoginView>(`/onboarding/omp/login/${encodeURIComponent(id)}/input`, { value }),
+  cancelLogin: (id: string) => api.delete<OnboardingOmpLoginView>(`/onboarding/omp/login/${encodeURIComponent(id)}`),
+  customProviders: () => api.get<OmpCustomProviderList>("/onboarding/omp/custom-providers"),
+  saveCustomProvider: (name: string, input: OmpCustomProviderInput) =>
+    api.put<OmpCustomProviderList>(`/onboarding/omp/custom-providers/${encodeURIComponent(name)}`, input),
+  removeCustomProvider: (name: string) =>
+    api.delete<OmpCustomProviderList>(`/onboarding/omp/custom-providers/${encodeURIComponent(name)}`),
+  probeCustomProvider: (input: OmpCustomProviderProbeInput) =>
+    api.post<OmpCustomProviderProbeResult>("/onboarding/omp/custom-providers/probe", input),
   remote: (address: string) => api.post<OnboardingRemoteOmpStatus>("/onboarding/omp/remote", { address }),
 };

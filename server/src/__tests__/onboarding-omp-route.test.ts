@@ -38,6 +38,7 @@ async function appWith(overrides: Partial<OnboardingOmpDeps>, actor: object = AD
     listModels: async () => [],
     refreshModels: async () => [],
     checkNetwork: async () => true,
+    ompEnv: () => ({}),
     ...overrides,
   }));
   app.use(errorHandler);
@@ -141,24 +142,230 @@ describe("GET /api/onboarding/omp/browse", () => {
   });
 });
 
-describe("POST /api/onboarding/omp/login", () => {
-  it("returns the sign-in link omp login prints and refreshes models when it succeeds", async () => {
-    const child = fakeLoginChild(["", "Open this URL in your browser:", "https://claude.ai/oauth/authorize?x=1", "Waiting..."]);
-    const refreshModels = vi.fn(async () => []);
-    const spawnLogin = vi.fn(() => child as never);
-    const { app } = await appWith({ probe: async () => probeOf("ready", "18.18.0"), spawnLogin, refreshModels });
-    const res = await request(app).post("/api/onboarding/omp/login").send({ provider: "anthropic" });
+describe("OMP sign-in", () => {
+  const PICKER = "Select a provider:\n\n  1. ChatGPT Plus/Pro (Codex Subscription)\n  2. Anthropic (Claude Pro/Max)\n\nEnter number (1-2): ";
+
+  function scriptedOmp(onLine: (child: ReturnType<typeof fakeLoginChild>, line: string, index: number) => void) {
+    const child = fakeLoginChild([]);
+    let buffer = "";
+    let index = 0;
+    child.stdin.on("data", (chunk: Buffer) => {
+      buffer += chunk.toString("utf8");
+      let newline = buffer.indexOf("\n");
+      while (newline !== -1) {
+        const line = buffer.slice(0, newline);
+        buffer = buffer.slice(newline + 1);
+        onLine(child, line, index);
+        index += 1;
+        newline = buffer.indexOf("\n");
+      }
+    });
+    setImmediate(() => child.stdout.write(PICKER));
+    return child;
+  }
+
+  it("lists the providers omp login offers", async () => {
+    const child = fakeLoginChild([]);
+    setImmediate(() => child.stdout.write(PICKER));
+    const spawnOmp = vi.fn(() => child as never);
+    const { app } = await appWith({ probe: async () => probeOf("ready", "18.18.8"), spawnOmp, ompEnv: () => ({ OMP_PROFILE: "test" }) });
+    const res = await request(app).get("/api/onboarding/omp/login/providers");
     expect(res.status).toBe(200);
-    expect(res.body).toEqual({ provider: "anthropic", url: "https://claude.ai/oauth/authorize?x=1" });
-    expect(spawnLogin).toHaveBeenCalledWith("/home/u/.local/bin/omp", "anthropic");
-    child.emit("close", 0);
-    await vi.waitFor(() => expect(refreshModels).toHaveBeenCalled());
+    expect(res.body.providers).toEqual(["ChatGPT Plus/Pro (Codex Subscription)", "Anthropic (Claude Pro/Max)"]);
+    expect(spawnOmp).toHaveBeenCalledWith("/home/u/.local/bin/omp", ["login"], { OMP_PROFILE: "test" });
+    expect(child.kill).toHaveBeenCalled();
   });
 
-  it("rejects an unknown provider and an outdated OMP", async () => {
-    const { app } = await appWith({ probe: async () => probeOf("too_old", "18.0.2") });
-    expect((await request(app).post("/api/onboarding/omp/login").send({ provider: "evil --flag" })).status).toBe(400);
-    expect((await request(app).post("/api/onboarding/omp/login").send({ provider: "openrouter" })).status).toBe(422);
+  it("picks the provider, takes a pasted redirect URL for a remote browser, and never returns it", async () => {
+    const pasted = "http://localhost:54545/callback?code=SECRET-CODE-123&state=s";
+    const child = scriptedOmp((fake, line, index) => {
+      if (index === 0) {
+        expect(line).toBe("2");
+        fake.stdout.write("Open this link:\nhttps://claude.ai/oauth/authorize?state=s\nIf the browser cannot reach this machine, paste the final redirect URL or authorization code when prompted.\nPaste the authorization code (or full redirect URL): ");
+      } else {
+        fake.stdout.write(`Received ${line}\nLogged in to Anthropic (Claude Pro/Max)\nCredentials saved to /tmp/agent.db\n`);
+        setImmediate(() => fake.emit("close", 0));
+      }
+    });
+    const refreshModels = vi.fn(async () => []);
+    const { app } = await appWith({ probe: async () => probeOf("ready", "18.18.8"), spawnOmp: () => child as never, refreshModels });
+    const started = await request(app).post("/api/onboarding/omp/login").send({ provider: "Anthropic (Claude Pro/Max)" });
+    expect(started.status).toBe(200);
+    expect(started.body).toMatchObject({
+      state: "waiting",
+      url: "https://claude.ai/oauth/authorize?state=s",
+      prompt: { label: "Paste the authorization code (or full redirect URL):", secret: false },
+    });
+    const finished = await request(app).post(`/api/onboarding/omp/login/${started.body.id}/input`).send({ value: pasted });
+    expect(finished.status).toBe(200);
+    expect(finished.body).toMatchObject({ state: "succeeded", prompt: null, message: "Logged in to Anthropic (Claude Pro/Max)" });
+    expect(JSON.stringify(finished.body)).not.toContain("SECRET-CODE-123");
+    expect(refreshModels).toHaveBeenCalled();
+    const later = await request(app).get(`/api/onboarding/omp/login/${started.body.id}`);
+    expect(later.body.state).toBe("succeeded");
+  });
+
+  it("explains a pasted value OMP asks for again instead of repeating the prompt", async () => {
+    const prompt = "Paste the authorization code (or full redirect URL): ";
+    const child = scriptedOmp((fake, _line, index) => {
+      fake.stdout.write(index === 0 ? `https://claude.ai/oauth/authorize?state=s\n${prompt}` : prompt);
+    });
+    const { app } = await appWith({ probe: async () => probeOf("ready", "18.18.8"), spawnOmp: () => child as never });
+    const started = await request(app).post("/api/onboarding/omp/login").send({ provider: "Anthropic (Claude Pro/Max)" });
+    const again = await request(app).post(`/api/onboarding/omp/login/${started.body.id}/input`).send({ value: "http://localhost:54545/callback?code=wrong-state" });
+    expect(again.body).toMatchObject({ state: "waiting", prompt: { label: prompt.trim(), secret: false } });
+    expect(again.body.message).toContain("did not accept that value");
+  });
+
+  it("marks an API key prompt as secret and reports OMP's own failure text", async () => {
+    const child = scriptedOmp((fake, _line, index) => {
+      if (index === 0) fake.stdout.write("Get a key at https://console.x.ai\nPaste your xAI API key (xai-...): ");
+      else {
+        fake.stdout.write("Login failed: Invalid API key\n");
+        setImmediate(() => fake.emit("close", 0));
+      }
+    });
+    const { app } = await appWith({ probe: async () => probeOf("ready", "18.18.8"), spawnOmp: () => child as never });
+    const started = await request(app).post("/api/onboarding/omp/login").send({ provider: "ChatGPT Plus/Pro (Codex Subscription)" });
+    expect(started.body.prompt).toEqual({ label: "Paste your xAI API key (xai-...):", secret: true });
+    const failed = await request(app).post(`/api/onboarding/omp/login/${started.body.id}/input`).send({ value: "xai-123" });
+    expect(failed.body).toMatchObject({ state: "failed", message: "Invalid API key" });
+  });
+
+  it("fails with a fix when the provider is not in OMP's list, and rejects an outdated OMP", async () => {
+    const child = scriptedOmp(() => undefined);
+    const { app } = await appWith({ probe: async () => probeOf("ready", "18.18.8"), spawnOmp: () => child as never });
+    const res = await request(app).post("/api/onboarding/omp/login").send({ provider: "Nope" });
+    expect(res.body).toMatchObject({ state: "failed", message: 'OMP does not offer "Nope". Reload the provider list and pick one from it.' });
+    const old = await appWith({ probe: async () => probeOf("too_old", "18.0.0") });
+    expect((await request(old.app).post("/api/onboarding/omp/login").send({ provider: "Anthropic" })).status).toBe(422);
+  });
+
+  it("is limited to instance admins", async () => {
+    const { app } = await appWith({ probe: async () => probeOf("ready", "18.18.8") }, MEMBER);
+    expect((await request(app).get("/api/onboarding/omp/login/providers")).status).toBe(403);
+    expect((await request(app).post("/api/onboarding/omp/login").send({ provider: "Anthropic" })).status).toBe(403);
+    expect((await request(app).get("/api/onboarding/omp/custom-providers")).status).toBe(403);
+    expect((await request(app).delete("/api/onboarding/omp/custom-providers/x")).status).toBe(403);
+  });
+});
+
+describe("OMP custom providers", () => {
+  const EXISTING = [
+    "# my gateways",
+    "providers:",
+    "  keep-me:",
+    "    baseUrl: http://localhost:1/v1 # local",
+    "    api: openai-completions",
+    "    apiKey: sk-live-keep-me-secret",
+    "    models:",
+    "      - id: m1",
+    "",
+  ].join("\n");
+  const INPUT = {
+    baseUrl: "https://gw.example.com/v1",
+    api: "openai-responses",
+    apiKey: { kind: "literal", value: "sk-new-literal-secret" },
+    authHeader: false,
+    disableStrictTools: true,
+    headers: [{ name: "X-Team", value: "header-secret-value" }],
+    discovery: null,
+    models: [{ id: "gpt-x", name: "GPT X", contextWindow: 200000, maxTokens: 32000 }],
+  };
+
+  async function setup(validateModelsYaml: OnboardingOmpDeps["validateModelsYaml"] = async () => []) {
+    const agentDir = await fs.mkdtemp(path.join(os.tmpdir(), "onboarding-omp-agent-"));
+    homes.push(agentDir);
+    await fs.writeFile(path.join(agentDir, "models.yml"), EXISTING);
+    const { app } = await appWith({ probe: async () => probeOf("ready", "18.18.8"), agentDir: async () => agentDir, validateModelsYaml });
+    return { app, file: path.join(agentDir, "models.yml") };
+  }
+
+  it("adds a provider without touching comments or other providers, keeps a backup, and never returns keys", async () => {
+    const { app, file } = await setup();
+    const saved = await request(app).put("/api/onboarding/omp/custom-providers/gw").send(INPUT);
+    expect(saved.status).toBe(200);
+    const text = await fs.readFile(file, "utf8");
+    expect(text).toContain("# my gateways");
+    expect(text).toContain("baseUrl: http://localhost:1/v1 # local");
+    expect(text).toContain("apiKey: sk-new-literal-secret");
+    expect(text).toContain("X-Team: header-secret-value");
+    expect(await fs.readFile(`${file}.bak`, "utf8")).toBe(EXISTING);
+    const listed = await request(app).get("/api/onboarding/omp/custom-providers");
+    for (const body of [saved.body, listed.body]) {
+      const json = JSON.stringify(body);
+      expect(json).not.toContain("sk-new-literal-secret");
+      expect(json).not.toContain("sk-live-keep-me-secret");
+      expect(json).not.toContain("header-secret-value");
+    }
+    expect(listed.body.providers.map((provider: { name: string }) => provider.name)).toEqual(["keep-me", "gw"]);
+    expect(listed.body.providers[1]).toMatchObject({
+      apiKey: { kind: "literal" },
+      headers: [{ name: "X-Team" }],
+      disableStrictTools: true,
+      models: [{ id: "gpt-x", name: "GPT X", contextWindow: 200000, maxTokens: 32000 }],
+    });
+  });
+
+  it("keeps the stored key and header values when an edit leaves them out", async () => {
+    const { app, file } = await setup();
+    await request(app).put("/api/onboarding/omp/custom-providers/gw").send(INPUT);
+    const edited = await request(app).put("/api/onboarding/omp/custom-providers/gw").send({
+      ...INPUT,
+      apiKey: { kind: "keep" },
+      headers: [{ name: "X-Team" }],
+      models: [{ id: "gpt-y" }],
+    });
+    expect(edited.status).toBe(200);
+    const text = await fs.readFile(file, "utf8");
+    expect(text).toContain("apiKey: sk-new-literal-secret");
+    expect(text).toContain("X-Team: header-secret-value");
+    expect(text).toContain("id: gpt-y");
+    expect(text).not.toContain("gpt-x");
+  });
+
+  it("does not write a file OMP rejects and says why", async () => {
+    const { app, file } = await setup(async () => ["Schema error: providers.gw.api: must be equal to one of the allowed values"]);
+    const res = await request(app).put("/api/onboarding/omp/custom-providers/gw").send(INPUT);
+    expect(res.status).toBe(422);
+    expect(res.body.error).toContain("providers.gw.api");
+    expect(await fs.readFile(file, "utf8")).toBe(EXISTING);
+  });
+
+  it("rejects a provider without models or discovery, and a new provider that keeps a key it never had", async () => {
+    const { app } = await setup();
+    expect((await request(app).put("/api/onboarding/omp/custom-providers/gw").send({ ...INPUT, models: [] })).status).toBe(400);
+    expect((await request(app).put("/api/onboarding/omp/custom-providers/gw").send({ ...INPUT, api: null })).status).toBe(400);
+    expect((await request(app).put("/api/onboarding/omp/custom-providers/fresh").send({ ...INPUT, apiKey: { kind: "keep" } })).status).toBe(422);
+    expect((await request(app).put("/api/onboarding/omp/custom-providers/bad%20name").send(INPUT)).status).toBe(400);
+  });
+
+  it("removes a provider and reports a missing one", async () => {
+    const { app, file } = await setup();
+    const removed = await request(app).delete("/api/onboarding/omp/custom-providers/keep-me");
+    expect(removed.status).toBe(200);
+    expect(removed.body.providers).toEqual([]);
+    expect(await fs.readFile(file, "utf8")).toContain("# my gateways");
+    expect((await request(app).delete("/api/onboarding/omp/custom-providers/keep-me")).status).toBe(404);
+  });
+
+  it("tests a saved provider with its stored key without sending the key back", async () => {
+    const probeProvider = vi.fn(async () => ({ suggestedApi: "openai-completions" as const, models: ["m1"], attempts: [], usedModel: "m1" }));
+    const agentDir = await fs.mkdtemp(path.join(os.tmpdir(), "onboarding-omp-agent-"));
+    homes.push(agentDir);
+    await fs.writeFile(path.join(agentDir, "models.yml"), EXISTING);
+    const { app } = await appWith({ probe: async () => probeOf("ready", "18.18.8"), agentDir: async () => agentDir, probeProvider });
+    const res = await request(app).post("/api/onboarding/omp/custom-providers/probe").send({
+      name: "keep-me",
+      baseUrl: "http://localhost:1/v1",
+      apiKey: { kind: "keep" },
+      authHeader: false,
+      headers: [],
+    });
+    expect(res.status).toBe(200);
+    expect(res.body.suggestedApi).toBe("openai-completions");
+    expect(probeProvider).toHaveBeenCalledWith(expect.objectContaining({ key: "sk-live-keep-me-secret", baseUrl: "http://localhost:1/v1" }));
+    expect(JSON.stringify(res.body)).not.toContain("sk-live-keep-me-secret");
   });
 });
 

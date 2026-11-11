@@ -239,23 +239,6 @@ export type AiConnectionLoginIntent = z.infer<
   typeof aiConnectionLoginIntentSchema
 >;
 
-export const localAiConnectionSchema = aiConnectionLoginIntentSchema.extend({
-  localSessionId: z.string().uuid().optional(),
-});
-export const localAiLoginStartSchema = aiConnectionLoginIntentSchema.extend({ restart: z.boolean().optional() });
-export interface LocalAiLoginStatus {
-  status: "ready" | "sign_in_required" | "expired";
-  authorizationUrl?: string;
-  code?: string;
-  error?: string;
-}
-export interface LocalAiLoginAttempt {
-  sessionId: string;
-  /** Grok still uses terminal sign-in until it has an in-app login runner. */
-  command?: string;
-  expiresAt: string;
-}
-
 /** Preview-era copies of rotating local credentials must be reconnected. */
 export function aiSubscriptionNeedsIsolatedLogin(config: Record<string, unknown> | undefined): boolean {
   const metadata = aiConnectionMetadataSchema.safeParse(config?.ai);

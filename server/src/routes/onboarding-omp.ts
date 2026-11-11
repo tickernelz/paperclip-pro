@@ -1,8 +1,7 @@
-import { spawn, type ChildProcessByStdio } from "node:child_process";
+import { spawn } from "node:child_process";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import type { Readable, Writable } from "node:stream";
 import { Router } from "express";
 import {
   bundledOmpVersion,
@@ -18,30 +17,54 @@ import {
   type OmpInstallProbe,
 } from "@tickernelz/wardmote-adapter-omp-local/readiness";
 import {
+  defaultSpawnOmp,
+  existingProvider,
+  listCustomProviders,
+  listOmpLoginProviders,
+  modelsYamlPath,
+  ompProviderEnv,
+  probeCustomProvider,
+  readModelsYaml,
+  removeCustomProviderYaml,
+  resolveOmpAgentDir,
+  resolveProviderKey,
+  startOmpLogin,
+  upsertCustomProviderYaml,
+  validateModelsYamlWithOmp,
+  writeModelsYaml,
+  type OmpLoginSession,
+  type SpawnOmp,
+} from "@tickernelz/wardmote-adapter-omp-local/providers";
+import {
+  OMP_PROVIDER_NAME_PATTERN,
+  ompCustomProviderInputSchema,
+  ompCustomProviderProbeSchema,
+  onboardingOmpLoginInputSchema,
   onboardingOmpLoginRequestSchema,
   onboardingRemoteOmpRequestSchema,
   parseSshAddress,
+  type OmpCustomProviderInput,
+  type OmpCustomProviderProbeInput,
   type OnboardingOmpBrowseEntry,
   type OnboardingOmpBrowseResult,
-  type OnboardingOmpLoginProvider,
-  type OnboardingOmpLoginResult,
+  type OnboardingOmpLoginProviders,
   type OnboardingOmpStatus,
   type OnboardingRemoteOmpStatus,
 } from "@tickernelz/wardmote-shared";
 import { listAdapterModels, refreshAdapterModels } from "../adapters/registry.js";
-import { badRequest, conflict, unprocessable } from "../errors.js";
+import { badRequest, conflict, notFound, unprocessable } from "../errors.js";
 import { logger } from "../middleware/logger.js";
 import { validate } from "../middleware/validate.js";
 import { assertInstanceAdmin } from "./authz.js";
 
-const LOGIN_URL_TIMEOUT_MS = 20_000;
-const LOGIN_LIFETIME_MS = 10 * 60_000;
+const LOGIN_FIRST_STEP_TIMEOUT_MS = 20_000;
+const LOGIN_INPUT_WAIT_MS = 8_000;
+const FINISHED_LOGIN_KEEP_MS = 5 * 60_000;
+const PROVIDER_LIST_TTL_MS = 10 * 60_000;
 const NETWORK_TRIES = 3;
 const NETWORK_TIMEOUT_MS = 4_000;
 const SSH_TIMEOUT_MS = 25_000;
 const BROWSE_LIMIT = 500;
-
-type LoginChild = ChildProcessByStdio<Writable, Readable, Readable>;
 
 export interface OnboardingOmpDeps {
   env: NodeJS.ProcessEnv;
@@ -51,7 +74,11 @@ export interface OnboardingOmpDeps {
   listModels: () => Promise<Array<{ id: string; label: string; provider?: string }>>;
   refreshModels: () => Promise<Array<{ id: string; label: string; provider?: string }>>;
   checkNetwork: () => Promise<boolean>;
-  spawnLogin: (command: string, provider: OnboardingOmpLoginProvider) => LoginChild;
+  ompEnv: () => NodeJS.ProcessEnv;
+  spawnOmp: SpawnOmp;
+  agentDir: (command: string, env: NodeJS.ProcessEnv) => Promise<string>;
+  validateModelsYaml: (command: string, env: NodeJS.ProcessEnv, text: string) => Promise<string[]>;
+  probeProvider: typeof probeCustomProvider;
   runSsh: (args: string[], timeoutMs: number) => Promise<{ code: number | null; stdout: string; stderr: string }>;
 }
 
@@ -97,8 +124,11 @@ function defaultDeps(): OnboardingOmpDeps {
     listModels: () => listAdapterModels("omp_local"),
     refreshModels: () => refreshAdapterModels("omp_local"),
     checkNetwork: defaultCheckNetwork,
-    spawnLogin: (command, provider) =>
-      spawn(command, ["login", provider], { stdio: ["pipe", "pipe", "pipe"], windowsHide: true }),
+    ompEnv: ompProviderEnv,
+    spawnOmp: defaultSpawnOmp,
+    agentDir: resolveOmpAgentDir,
+    validateModelsYaml: validateModelsYamlWithOmp,
+    probeProvider: probeCustomProvider,
     runSsh: defaultRunSsh,
   };
 }
@@ -129,13 +159,53 @@ function countModels(raw: string | null): number {
 export function onboardingOmpRoutes(overrides: Partial<OnboardingOmpDeps> = {}) {
   const deps = { ...defaultDeps(), ...overrides };
   const router = Router();
-  let activeLogin: { child: LoginChild; timer: NodeJS.Timeout } | null = null;
+  let activeLogin: OmpLoginSession | null = null;
+  let finishedLogins: Array<{ session: OmpLoginSession; at: number }> = [];
+  let providerList: { command: string; at: number; providers: string[] } | null = null;
 
-  function stopActiveLogin() {
-    if (!activeLogin) return;
-    clearTimeout(activeLogin.timer);
-    activeLogin.child.kill("SIGTERM");
+  function findLogin(id: string): OmpLoginSession {
+    const now = Date.now();
+    finishedLogins = finishedLogins.filter((entry) => now - entry.at < FINISHED_LOGIN_KEEP_MS);
+    if (activeLogin?.id === id) return activeLogin;
+    const finished = finishedLogins.find((entry) => entry.session.id === id);
+    if (!finished) throw notFound("This sign-in is no longer running. Start it again.");
+    return finished.session;
+  }
+
+  function retire(session: OmpLoginSession) {
+    if (activeLogin !== session) return;
     activeLogin = null;
+    finishedLogins.push({ session, at: Date.now() });
+  }
+
+  async function readyCommand(): Promise<string> {
+    const bundled = bundledOmpVersion(deps.env);
+    const probe = await deps.probe(null);
+    if (probe.state !== "ready" || !probe.path) {
+      if (bundled && probe.path) return probe.path;
+      throw unprocessable("OMP must be installed and up to date first. Open onboarding and finish the Check OMP step.");
+    }
+    return probe.path;
+  }
+
+  async function modelsFile(command: string, env: NodeJS.ProcessEnv): Promise<string> {
+    try {
+      return modelsYamlPath(await deps.agentDir(command, env));
+    } catch (error) {
+      throw unprocessable(`Could not find OMP's settings folder: ${(error as Error).message}`);
+    }
+  }
+
+  function refreshModelsQuietly(reason: string) {
+    void Promise.resolve(deps.refreshModels()).catch((error: unknown) => {
+      logger.warn({ err: error }, reason);
+    });
+  }
+
+  function providerName(raw: unknown): string {
+    const name = typeof raw === "string" ? raw : "";
+    if (!OMP_PROVIDER_NAME_PATTERN.test(name)) throw badRequest("Provider names use letters, digits, dot, dash and underscore (up to 63 characters)");
+    return name;
   }
 
   router.get("/onboarding/omp", async (req, res) => {
@@ -192,50 +262,147 @@ export function onboardingOmpRoutes(overrides: Partial<OnboardingOmpDeps> = {}) 
     res.json(body);
   });
 
+  router.get("/onboarding/omp/login/providers", async (req, res) => {
+    assertInstanceAdmin(req);
+    const command = await readyCommand();
+    const now = Date.now();
+    if (!providerList || providerList.command !== command || now - providerList.at > PROVIDER_LIST_TTL_MS || req.query.refresh === "1") {
+      const providers = await listOmpLoginProviders(command, deps.ompEnv(), deps.spawnOmp).catch((error: Error) => {
+        throw unprocessable(`OMP did not list its sign-in providers: ${error.message}`);
+      });
+      providerList = { command, at: now, providers };
+    }
+    const body: OnboardingOmpLoginProviders = { providers: providerList.providers };
+    res.json(body);
+  });
+
   router.post("/onboarding/omp/login", validate(onboardingOmpLoginRequestSchema), async (req, res) => {
     assertInstanceAdmin(req);
-    if (bundledOmpVersion(deps.env)) throw conflict("Sign in to OMP inside the container with: omp login");
-    const probe = await deps.probe(null);
-    if (probe.state !== "ready" || !probe.path) throw unprocessable("OMP must be installed and up to date before signing in");
-    const provider = req.body.provider as OnboardingOmpLoginProvider;
-    stopActiveLogin();
-    const child = deps.spawnLogin(probe.path, provider);
-    const timer = setTimeout(() => child.kill("SIGTERM"), LOGIN_LIFETIME_MS);
-    activeLogin = { child, timer };
-    child.on("close", (code) => {
-      clearTimeout(timer);
-      if (activeLogin?.child === child) activeLogin = null;
-      if (code === 0) {
-        void Promise.resolve(deps.refreshModels()).catch((error: unknown) => {
-          logger.warn({ err: error }, "OMP model refresh after onboarding login failed");
-        });
-      }
-    });
-    const url = await new Promise<string | null>((resolve) => {
-      let output = "";
-      const done = (value: string | null) => {
-        clearTimeout(wait);
-        child.stdout.off("data", onData);
-        child.stderr.off("data", onData);
-        resolve(value);
-      };
-      const onData = (chunk: Buffer) => {
-        output += chunk.toString("utf8");
-        const found = /https:\/\/\S+/.exec(output);
-        if (found) done(found[0]);
-      };
-      const wait = setTimeout(() => done(null), LOGIN_URL_TIMEOUT_MS);
-      child.stdout.on("data", onData);
-      child.stderr.on("data", onData);
-      child.once("close", () => done(null));
-      child.once("error", () => done(null));
-    });
-    if (!url) {
-      if (activeLogin?.child === child) stopActiveLogin();
-      throw unprocessable(`omp login ${provider} did not print a sign-in link`);
+    const command = await readyCommand();
+    if (activeLogin) {
+      activeLogin.cancel();
+      retire(activeLogin);
     }
-    const body: OnboardingOmpLoginResult = { provider, url };
-    res.json(body);
+    const session = startOmpLogin({
+      command,
+      env: deps.ompEnv(),
+      provider: req.body.provider as string,
+      spawnOmp: deps.spawnOmp,
+      onSuccess: () => refreshModelsQuietly("OMP model refresh after sign-in failed"),
+    });
+    activeLogin = session;
+    const deadline = Date.now() + LOGIN_FIRST_STEP_TIMEOUT_MS;
+    while (Date.now() < deadline) {
+      const view = session.view();
+      if (view.state !== "waiting" || view.url || view.prompt) break;
+      await session.changed(session.version(), deadline - Date.now());
+    }
+    if (session.settled()) retire(session);
+    res.json(session.view());
+  });
+
+  router.get("/onboarding/omp/login/:loginId", async (req, res) => {
+    assertInstanceAdmin(req);
+    const session = findLogin(req.params.loginId as string);
+    if (session.settled()) retire(session);
+    res.json(session.view());
+  });
+
+  router.post("/onboarding/omp/login/:loginId/input", validate(onboardingOmpLoginInputSchema), async (req, res) => {
+    assertInstanceAdmin(req);
+    const session = findLogin(req.params.loginId as string);
+    if (session.settled()) throw conflict("This sign-in has already finished. Start it again.");
+    session.submit(req.body.value as string);
+    const deadline = Date.now() + LOGIN_INPUT_WAIT_MS;
+    while (Date.now() < deadline && !session.settled() && !session.view().prompt) {
+      await session.changed(session.version(), deadline - Date.now());
+    }
+    if (session.settled()) retire(session);
+    res.json(session.view());
+  });
+
+  router.delete("/onboarding/omp/login/:loginId", async (req, res) => {
+    assertInstanceAdmin(req);
+    const session = findLogin(req.params.loginId as string);
+    session.cancel();
+    retire(session);
+    res.json(session.view());
+  });
+
+  router.get("/onboarding/omp/custom-providers", async (req, res) => {
+    assertInstanceAdmin(req);
+    const command = await readyCommand();
+    const env = deps.ompEnv();
+    const file = await modelsFile(command, env);
+    res.json(listCustomProviders(await readModelsYaml(file), file, env));
+  });
+
+  router.post("/onboarding/omp/custom-providers/probe", validate(ompCustomProviderProbeSchema), async (req, res) => {
+    assertInstanceAdmin(req);
+    const input = req.body as OmpCustomProviderProbeInput;
+    const command = await readyCommand();
+    const env = deps.ompEnv();
+    let existing: Record<string, unknown> | null = null;
+    if (input.apiKey.kind === "keep" || input.headers.some((header) => header.value === undefined)) {
+      const text = await readModelsYaml(await modelsFile(command, env));
+      try {
+        existing = existingProvider(text, input.name);
+      } catch (error) {
+        throw unprocessable((error as Error).message);
+      }
+    }
+    const key = resolveProviderKey(input.apiKey, existing, env);
+    if (key.error) throw unprocessable(key.error);
+    const storedHeaders = (existing?.headers && typeof existing.headers === "object" ? existing.headers : {}) as Record<string, unknown>;
+    const headers: Record<string, string> = {};
+    for (const header of input.headers) {
+      const value = header.value ?? storedHeaders[header.name];
+      if (typeof value === "string") headers[header.name] = value;
+    }
+    res.json(await deps.probeProvider({
+      baseUrl: input.baseUrl,
+      key: key.key,
+      authHeader: input.authHeader,
+      headers,
+      modelId: input.modelId,
+    }));
+  });
+
+  router.put("/onboarding/omp/custom-providers/:name", validate(ompCustomProviderInputSchema), async (req, res) => {
+    assertInstanceAdmin(req);
+    const name = providerName(req.params.name);
+    const command = await readyCommand();
+    const env = deps.ompEnv();
+    const file = await modelsFile(command, env);
+    const before = await readModelsYaml(file);
+    let next: string;
+    try {
+      next = upsertCustomProviderYaml(before, name, req.body as OmpCustomProviderInput);
+    } catch (error) {
+      throw unprocessable((error as Error).message);
+    }
+    const problems = await deps.validateModelsYaml(command, env, next);
+    if (problems.length) throw unprocessable(`OMP rejected this provider: ${problems.join("; ")}`, { problems });
+    await writeModelsYaml(file, next);
+    refreshModelsQuietly("OMP model refresh after saving a custom provider failed");
+    res.json(listCustomProviders(next, file, env));
+  });
+
+  router.delete("/onboarding/omp/custom-providers/:name", async (req, res) => {
+    assertInstanceAdmin(req);
+    const name = providerName(req.params.name);
+    const command = await readyCommand();
+    const env = deps.ompEnv();
+    const file = await modelsFile(command, env);
+    let next: string;
+    try {
+      next = removeCustomProviderYaml(await readModelsYaml(file), name);
+    } catch (error) {
+      throw notFound((error as Error).message);
+    }
+    await writeModelsYaml(file, next);
+    refreshModelsQuietly("OMP model refresh after removing a custom provider failed");
+    res.json(listCustomProviders(next, file, env));
   });
 
   router.post("/onboarding/omp/remote", validate(onboardingRemoteOmpRequestSchema), async (req, res) => {
