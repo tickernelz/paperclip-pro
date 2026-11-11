@@ -1027,7 +1027,7 @@ export async function startSandboxCallbackBridgeWorker(input: {
         } catch (error) {
           lastWriteError = error instanceof Error ? error.message : String(error);
           console.warn(
-            `[paperclip] sandbox callback bridge failed to write response for ${response.id} (attempt ${attempt}/${MAX_BACKSTOP_WRITE_ATTEMPTS}): ${lastWriteError}`,
+            `[wardmote] sandbox callback bridge failed to write response for ${response.id} (attempt ${attempt}/${MAX_BACKSTOP_WRITE_ATTEMPTS}): ${lastWriteError}`,
           );
           if (attempt < MAX_BACKSTOP_WRITE_ATTEMPTS) {
             await new Promise((resolve) => setTimeout(resolve, BACKSTOP_WRITE_RETRY_MS));
@@ -1158,7 +1158,7 @@ export async function startSandboxCallbackBridgeWorker(input: {
         };
       } catch (error) {
         console.warn(
-          `[paperclip] sandbox callback bridge handler failed for ${request.id}: ${error instanceof Error ? error.message : String(error)}`,
+          `[wardmote] sandbox callback bridge handler failed for ${request.id}: ${error instanceof Error ? error.message : String(error)}`,
         );
         // Tell a worker abort apart from a normal handler failure. The recovery
         // path aborts `guard.controller` when the per-iteration timeout or the
@@ -1256,7 +1256,7 @@ export async function startSandboxCallbackBridgeWorker(input: {
         return;
       } catch (error) {
         console.warn(
-          `[paperclip] sandbox callback bridge failed to write 504 backstop for ${requestId} (attempt ${attempt}/${MAX_BACKSTOP_WRITE_ATTEMPTS}): ${error instanceof Error ? error.message : String(error)}`,
+          `[wardmote] sandbox callback bridge failed to write 504 backstop for ${requestId} (attempt ${attempt}/${MAX_BACKSTOP_WRITE_ATTEMPTS}): ${error instanceof Error ? error.message : String(error)}`,
         );
         if (attempt < MAX_BACKSTOP_WRITE_ATTEMPTS) {
           await new Promise((resolve) => setTimeout(resolve, BACKSTOP_WRITE_RETRY_MS));
@@ -1384,7 +1384,7 @@ export async function startSandboxCallbackBridgeWorker(input: {
         // can still read it and deliver a terminal 503. A remove here drops the
         // request and strands the caller until its own deadline.
         console.warn(
-          `[paperclip] sandbox callback bridge could not read pending request ${requestId}: ${error instanceof Error ? error.message : String(error)}`,
+          `[wardmote] sandbox callback bridge could not read pending request ${requestId}: ${error instanceof Error ? error.message : String(error)}`,
         );
         continue;
       }
@@ -1418,7 +1418,7 @@ export async function startSandboxCallbackBridgeWorker(input: {
         } catch (error) {
           lastWriteError = error instanceof Error ? error.message : String(error);
           console.warn(
-            `[paperclip] sandbox callback bridge failed to write recovery 503 for ${requestId} (attempt ${attempt}/${MAX_BACKSTOP_WRITE_ATTEMPTS}): ${lastWriteError}`,
+            `[wardmote] sandbox callback bridge failed to write recovery 503 for ${requestId} (attempt ${attempt}/${MAX_BACKSTOP_WRITE_ATTEMPTS}): ${lastWriteError}`,
           );
           if (attempt < MAX_BACKSTOP_WRITE_ATTEMPTS) {
             await new Promise((resolve) => setTimeout(resolve, BACKSTOP_WRITE_RETRY_MS));
@@ -1432,7 +1432,7 @@ export async function startSandboxCallbackBridgeWorker(input: {
       } else {
         // Every 503 write failed. Keep the request file for a later recovery pass.
         console.warn(
-          `[paperclip] sandbox callback bridge kept queued request ${requestId} after every recovery 503 write failed: ${lastWriteError}`,
+          `[wardmote] sandbox callback bridge kept queued request ${requestId} after every recovery 503 write failed: ${lastWriteError}`,
         );
       }
     }
@@ -1454,7 +1454,7 @@ export async function startSandboxCallbackBridgeWorker(input: {
         // now on the trace; swallow it here so the worker recovery continues.
       }
     }
-    console.warn(`[paperclip] ${error.message}`);
+    console.warn(`[wardmote] ${error.message}`);
   };
 
   // The timestamp of the last successful loop iteration. The watchdog compares
@@ -1474,7 +1474,7 @@ export async function startSandboxCallbackBridgeWorker(input: {
       await failPendingRequests(message, { abandonInFlight: true });
     } catch (error) {
       console.warn(
-        `[paperclip] sandbox callback bridge watchdog failed to abort queued requests: ${error instanceof Error ? error.message : String(error)}`,
+        `[wardmote] sandbox callback bridge watchdog failed to abort queued requests: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   };
@@ -1533,7 +1533,7 @@ export async function startSandboxCallbackBridgeWorker(input: {
             // only warn, so a flapping channel does not spam failed spans.
             await surfaceRunError(new Error(message));
           } else {
-            console.warn(`[paperclip] ${message}`);
+            console.warn(`[wardmote] ${message}`);
           }
           const backoffMs = Math.min(
             pollIntervalMs * 2 ** consecutivePollFailures,
@@ -1597,7 +1597,7 @@ export async function startSandboxCallbackBridgeWorker(input: {
               await failPendingRequests(message, { abandonInFlight: true });
             } catch (failPendingError) {
               console.warn(
-                `[paperclip] sandbox callback bridge failed to abort queued requests after a request failure: ${failPendingError instanceof Error ? failPendingError.message : String(failPendingError)}`,
+                `[wardmote] sandbox callback bridge failed to abort queued requests after a request failure: ${failPendingError instanceof Error ? failPendingError.message : String(failPendingError)}`,
               );
             }
           } finally {
@@ -1616,7 +1616,7 @@ export async function startSandboxCallbackBridgeWorker(input: {
         await failPendingRequests(message, { abandonInFlight: true });
       } catch (failPendingError) {
         console.warn(
-          `[paperclip] sandbox callback bridge failed to abort queued requests after worker failure: ${failPendingError instanceof Error ? failPendingError.message : String(failPendingError)}`,
+          `[wardmote] sandbox callback bridge failed to abort queued requests after worker failure: ${failPendingError instanceof Error ? failPendingError.message : String(failPendingError)}`,
         );
       }
     } finally {
@@ -2255,7 +2255,7 @@ if (bridgeMode !== "${SANDBOX_CALLBACK_BRIDGE_HTTP2_MODE}" && !queueDir) {
 let gatewayReady = false;
 process.on("uncaughtException", (error) => {
   process.stderr.write(
-    "[paperclip-bridge] uncaught exception: " + (error && error.stack ? error.stack : String(error)) + "\\n",
+    "[wardmote-bridge] uncaught exception: " + (error && error.stack ? error.stack : String(error)) + "\\n",
   );
   if (!gatewayReady) {
     process.exit(1);
@@ -2263,7 +2263,7 @@ process.on("uncaughtException", (error) => {
 });
 process.on("unhandledRejection", (reason) => {
   const detail = reason && typeof reason === "object" && "stack" in reason ? reason.stack : String(reason);
-  process.stderr.write("[paperclip-bridge] unhandled rejection: " + detail + "\\n");
+  process.stderr.write("[wardmote-bridge] unhandled rejection: " + detail + "\\n");
   if (!gatewayReady) {
     process.exit(1);
   }
@@ -2567,7 +2567,7 @@ async function runFileGateway() {
   server.once("error", (error) => {
     clearInterval(bindKeepalive);
     process.stderr.write(
-      "[paperclip-bridge] server error: " + (error && error.stack ? error.stack : String(error)) + "\\n",
+      "[wardmote-bridge] server error: " + (error && error.stack ? error.stack : String(error)) + "\\n",
     );
     if (!gatewayReady) {
       process.exit(1);
@@ -2637,7 +2637,7 @@ function createStdioDuplex() {
 function runHttp2Gateway() {
   function diag(message) {
     // Diagnostics go to stderr only, the same as every other mode.
-    process.stderr.write("[paperclip-bridge] " + message + "\\n");
+    process.stderr.write("[wardmote-bridge] " + message + "\\n");
   }
   function writeFrame(frame) {
     process.stdout.write(encodeDuplexFrame(frame));

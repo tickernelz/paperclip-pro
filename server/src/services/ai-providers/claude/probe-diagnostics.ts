@@ -100,7 +100,7 @@ export function logSandboxProbeDiagnostic(
   }
   const errorClass = sanitizeErrorClassName(fields?.errorClass);
   if (errorClass) detail.errorClass = errorClass;
-  console.warn(`[paperclip] ${context}`, detail);
+  console.warn(`[wardmote] ${context}`, detail);
 }
 
 /**

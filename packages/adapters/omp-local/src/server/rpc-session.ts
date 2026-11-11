@@ -416,7 +416,7 @@ export async function runOmpRpcSession(
       void input
         .onLog(
           "stderr",
-          `[paperclip] OMP paused for pending background work and did no turn work for ${Math.round(continuationIdleMs / 1000)}s; ending the run so leftover jobs are reaped, as print mode does.\n`,
+          `[wardmote] OMP paused for pending background work and did no turn work for ${Math.round(continuationIdleMs / 1000)}s; ending the run so leftover jobs are reaped, as print mode does.\n`,
         )
         .catch(() => undefined);
     }, remaining);
@@ -565,7 +565,7 @@ export async function runOmpRpcSession(
           closeStdinOnce();
           await input.onLog(
             "stderr",
-            `[paperclip] OMP still reported ${queued} queued message(s) after the turn ended; ending the run so the queue is delivered on the next turn.\n`,
+            `[wardmote] OMP still reported ${queued} queued message(s) after the turn ended; ending the run so the queue is delivered on the next turn.\n`,
           );
           return;
         }
@@ -617,7 +617,7 @@ export async function runOmpRpcSession(
     } catch (error) {
       await input.onLog(
         "stderr",
-        `[paperclip] ${error instanceof Error ? error.message : String(error)}\n`,
+        `[wardmote] ${error instanceof Error ? error.message : String(error)}\n`,
       );
       return;
     }
@@ -627,14 +627,14 @@ export async function runOmpRpcSession(
     if (type === "rpc_frame_error") {
       await input.onLog(
         "stderr",
-        `[paperclip] OMP RPC frame dropped by the transport: ${String(frame.error ?? "unknown")}\n`,
+        `[wardmote] OMP RPC frame dropped by the transport: ${String(frame.error ?? "unknown")}\n`,
       );
       return;
     }
     if (type === "extension_error") {
       await input.onLog(
         "stderr",
-        `[paperclip] OMP extension error: ${String(frame.error ?? "unknown")}\n`,
+        `[wardmote] OMP extension error: ${String(frame.error ?? "unknown")}\n`,
       );
     }
     if (!PROTOCOL_FRAME_TYPES.has(type)) {

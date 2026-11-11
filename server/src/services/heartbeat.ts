@@ -821,7 +821,7 @@ function parseIssueAssigneeAdapterOverrides(
 export function formatRuntimeWorkspaceWarningLog(warning: string) {
   return {
     stream: "stdout" as const,
-    chunk: `[paperclip] ${warning}\n`,
+    chunk: `[wardmote] ${warning}\n`,
   };
 }
 
@@ -4474,7 +4474,7 @@ export function heartbeatService(
         if (runScopedMentionedSkillKeys.length > 0) {
           await onLog(
             "stdout",
-            `[paperclip] Enabled run-scoped skills from issue mentions: ${runScopedMentionedSkillKeys.join(", ")}\n`,
+            `[wardmote] Enabled run-scoped skills from issue mentions: ${runScopedMentionedSkillKeys.join(", ")}\n`,
           );
         }
         for (const warning of runtimeWorkspaceWarnings) {
@@ -4536,7 +4536,7 @@ export function heartbeatService(
           } catch (err) {
             await onLog(
               "stderr",
-              `[paperclip] Failed to post workspace-ready comment: ${err instanceof Error ? err.message : String(err)}\n`,
+              `[wardmote] Failed to post workspace-ready comment: ${err instanceof Error ? err.message : String(err)}\n`,
             );
           }
         }
@@ -4968,7 +4968,7 @@ export function heartbeatService(
             } catch (err) {
               await onLog(
                 "stderr",
-                `[paperclip] Failed to post adapter-managed runtime comment: ${err instanceof Error ? err.message : String(err)}\n`,
+                `[wardmote] Failed to post adapter-managed runtime comment: ${err instanceof Error ? err.message : String(err)}\n`,
               );
             }
           }

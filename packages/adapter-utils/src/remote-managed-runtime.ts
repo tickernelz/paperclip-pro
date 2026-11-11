@@ -238,7 +238,7 @@ export async function prepareRemoteManagedRuntime(input: {
       additionalSourceDirs[projectId] = remoteDir;
     } catch (error) {
       console.warn(
-        `[paperclip] Failed to stage referenced project ${projectId}; skipping it. ${String(error)}`,
+        `[wardmote] Failed to stage referenced project ${projectId}; skipping it. ${String(error)}`,
       );
     }
   }

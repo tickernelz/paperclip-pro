@@ -479,7 +479,7 @@ async function buildPrompts(input: {
       notes.push(`Loaded agent instructions from ${resolvedPath}`);
     } catch (error) {
       const reason = error instanceof Error ? error.message : String(error);
-      await input.onLog("stderr", `[paperclip] Warning: could not read agent instructions file "${resolvedPath}": ${reason}\n`);
+      await input.onLog("stderr", `[wardmote] Warning: could not read agent instructions file "${resolvedPath}": ${reason}\n`);
       notes.push(`Configured instructionsFilePath ${resolvedPath}, but it could not be read.`);
     }
   }
@@ -691,7 +691,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     if (remote) {
       await onLog(
         "stdout",
-        `[paperclip] Syncing workspace and OMP runtime assets to ${describeAdapterExecutionTarget(executionTarget)}.\n`,
+        `[wardmote] Syncing workspace and OMP runtime assets to ${describeAdapterExecutionTarget(executionTarget)}.\n`,
       );
       const preparedTarget = await prepareAdapterExecutionTargetRuntime({
         runId,
@@ -777,7 +777,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     if (savedSessionId && !canResume) {
       await onLog(
         "stdout",
-        `[paperclip] OMP session "${savedSessionId}" does not match the current workspace or execution target; starting fresh.\n`,
+        `[wardmote] OMP session "${savedSessionId}" does not match the current workspace or execution target; starting fresh.\n`,
       );
     }
 
@@ -842,7 +842,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
         const message = mcpProbe.credentialRejected
           ? `Wardmote MCP endpoint (${source}) rejected this run's credentials: ${mcpProbe.detail}`
           : `Wardmote MCP ${mcpTransport === "http" ? "endpoint" : "server"} (${source}) is unavailable: ${mcpProbe.detail}`;
-        await onLog("stderr", `[paperclip] ${message}\n`);
+        await onLog("stderr", `[wardmote] ${message}\n`);
         return {
           exitCode: 1,
           signal: null,
@@ -877,13 +877,13 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     if (mcpEnabled && !mcpApiKey) {
       await onLog(
         "stderr",
-        "[paperclip] Warning: this run carries no Wardmote API key, so the Wardmote MCP tools are not armed.\n",
+        "[wardmote] Warning: this run carries no Wardmote API key, so the Wardmote MCP tools are not armed.\n",
       );
     }
     if (!mcpEnabled) {
       await onLog(
         "stderr",
-        "[paperclip] Warning: wardmoteMcp is off for this agent. The agent has no Wardmote tools this run and cannot read issues, comment, or update status.\n",
+        "[wardmote] Warning: wardmoteMcp is off for this agent. The agent has no Wardmote tools this run and cannot read issues, comment, or update status.\n",
       );
     }
     if (mcpApiKey) {
@@ -1034,7 +1034,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
           mcpConnectTransient = WARDMOTE_MCP_TRANSIENT_FAILURE_RE.test(connectFailure);
           await queueLog(
             "stderr",
-            "[paperclip] The Wardmote MCP server did not connect, so the agent has no Wardmote tools. Stopping the run.\n",
+            "[wardmote] The Wardmote MCP server did not connect, so the agent has no Wardmote tools. Stopping the run.\n",
           );
           triggerProcessAbort();
         }
@@ -1324,7 +1324,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     ) {
       await onLog(
         "stdout",
-        `[paperclip] OMP session "${savedSessionId}" is unavailable; retrying once with a fresh session.\n`,
+        `[wardmote] OMP session "${savedSessionId}" is unavailable; retrying once with a fresh session.\n`,
       );
       const retry = await runAttempt(null);
       return attachSessionBytes(toResult(retry, true, initial));

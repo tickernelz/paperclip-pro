@@ -1084,6 +1084,6 @@ export async function resetLocalGitIndexToHead(input: {
     throw new Error("Workspace restore left staged git index changes after reset");
   }
   if (input.checkWorkingTreeClean && await hasDiff(["diff", "--quiet", "HEAD", "--"])) {
-    console.warn("[paperclip] Workspace restore preserved local working tree changes after clean sandbox restore.");
+    console.warn("[wardmote] Workspace restore preserved local working tree changes after clean sandbox restore.");
   }
 }

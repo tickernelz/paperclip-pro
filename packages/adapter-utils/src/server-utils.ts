@@ -3370,7 +3370,7 @@ export function shapeWardmoteWorkspaceEnvForExecution(input: {
   if (executionCwd === null) {
     // eslint-disable-next-line no-console
     console.warn(
-      "[paperclip] shapeWardmoteWorkspaceEnvForExecution called with executionCwd=null on a remote target; " +
+      "[wardmote] shapeWardmoteWorkspaceEnvForExecution called with executionCwd=null on a remote target; " +
         "stripping workspaceCwd to avoid leaking local paths into the remote environment.",
     );
   }

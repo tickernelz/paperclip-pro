@@ -1066,7 +1066,7 @@ describe("claude_local ACP lane", () => {
       const allLogs = loggedLines.join("");
       expect(allLogs).not.toContain("SENTINEL-HOST-PATH-marker");
       expect(allLogs).not.toContain(localCwd);
-      const diagnostic = '[paperclip] Workspace restore diagnostic: {"phase":"workspace","step":"directory_merge","errorCode":"EACCES"}\n';
+      const diagnostic = '[wardmote] Workspace restore diagnostic: {"phase":"workspace","step":"directory_merge","errorCode":"EACCES"}\n';
       expect(loggedLines.filter((line) => line.includes("Workspace restore diagnostic:"))).toEqual([diagnostic]);
       expect(loggedLines.filter((line) => line !== diagnostic).join("")).not.toContain("EACCES");
       expect(allLogs).toContain("permission denied");

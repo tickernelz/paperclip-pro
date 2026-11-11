@@ -1019,7 +1019,7 @@ async function prepareManagedCodexHome(input: {
   if (apiKey && isCodexCredentialStoreHome(targetHome)) {
     await onLog(
       "stdout",
-      `[paperclip] Refusing to write an API-key auth.json into credential-store entry "${targetHome}"; the bound account's stored login stays authoritative.\n`,
+      `[wardmote] Refusing to write an API-key auth.json into credential-store entry "${targetHome}"; the bound account's stored login stays authoritative.\n`,
     );
   } else if (apiKey) {
     await writeFileAtomically({
@@ -1039,7 +1039,7 @@ async function prepareManagedCodexHome(input: {
 
   await onLog(
     "stdout",
-    `[paperclip] Using Wardmote-managed ACPX Codex home "${targetHome}" (seeded from "${sourceHome}").\n`,
+    `[wardmote] Using Wardmote-managed ACPX Codex home "${targetHome}" (seeded from "${sourceHome}").\n`,
   );
   return targetHome;
 }
@@ -1159,7 +1159,7 @@ async function prepareClaudeSkillRuntime(input: {
         await fs.rm(target, { recursive: true, force: true });
         await input.onLog(
           "stderr",
-          `[paperclip] Skipped ACPX Claude skill "${entry.key}": the staged copy at ${target} has no usable SKILL.md.\n`,
+          `[wardmote] Skipped ACPX Claude skill "${entry.key}": the staged copy at ${target} has no usable SKILL.md.\n`,
         );
         continue;
       }
@@ -1167,13 +1167,13 @@ async function prepareClaudeSkillRuntime(input: {
       if (result.skippedSymlinks.length > 0) {
         await input.onLog(
           "stdout",
-          `[paperclip] Materialized ACPX Claude skill "${entry.runtimeName}" into ${skillsHome} and skipped ${result.skippedSymlinks.length} symlink(s).\n`,
+          `[wardmote] Materialized ACPX Claude skill "${entry.runtimeName}" into ${skillsHome} and skipped ${result.skippedSymlinks.length} symlink(s).\n`,
         );
       }
     } catch (err) {
       await input.onLog(
         "stderr",
-        `[paperclip] Failed to materialize ACPX Claude skill "${entry.key}" into ${skillsHome}: ${err instanceof Error ? err.message : String(err)}\n`,
+        `[wardmote] Failed to materialize ACPX Claude skill "${entry.key}" into ${skillsHome}: ${err instanceof Error ? err.message : String(err)}\n`,
       );
     }
   }
@@ -1237,7 +1237,7 @@ async function reconcileManagedCodexSkills(input: {
   for (const name of managed) {
     if (desired.has(name)) continue;
     if (await removeSkillTarget(path.join(input.skillsHome, name))) {
-      await input.onLog("stdout", `[paperclip] Revoked ACPX Codex skill "${name}" from ${input.skillsHome}\n`);
+      await input.onLog("stdout", `[wardmote] Revoked ACPX Codex skill "${name}" from ${input.skillsHome}\n`);
     }
   }
 
@@ -1251,14 +1251,14 @@ async function reconcileManagedCodexSkills(input: {
     const resolvedLinkedPath = path.resolve(path.dirname(target), linkedPath);
     if (resolvedLinkedPath !== path.resolve(entry.source)) continue;
     if (await removeSkillTarget(target)) {
-      await input.onLog("stdout", `[paperclip] Revoked legacy ACPX Codex skill "${entry.runtimeName}" from ${input.skillsHome}\n`);
+      await input.onLog("stdout", `[wardmote] Revoked legacy ACPX Codex skill "${entry.runtimeName}" from ${input.skillsHome}\n`);
     }
   }
 
   for (const name of managed) {
     if (desired.has(name) || availableByRuntimeName.has(name)) continue;
     if (await removeSkillTarget(path.join(input.skillsHome, name))) {
-      await input.onLog("stdout", `[paperclip] Revoked unavailable ACPX Codex skill "${name}" from ${input.skillsHome}\n`);
+      await input.onLog("stdout", `[wardmote] Revoked unavailable ACPX Codex skill "${name}" from ${input.skillsHome}\n`);
     }
   }
 }
@@ -1343,13 +1343,13 @@ async function prepareCodexSkillRuntime(input: {
       if (result.skippedSymlinks.length > 0) {
         await input.onLog(
           "stdout",
-          `[paperclip] Materialized ACPX Codex skill "${entry.runtimeName}" into ${skillsHome} and skipped ${result.skippedSymlinks.length} symlink(s).\n`,
+          `[wardmote] Materialized ACPX Codex skill "${entry.runtimeName}" into ${skillsHome} and skipped ${result.skippedSymlinks.length} symlink(s).\n`,
         );
       }
     } catch (err) {
       await input.onLog(
         "stderr",
-        `[paperclip] Failed to inject ACPX Codex skill "${entry.key}" into ${skillsHome}: ${err instanceof Error ? err.message : String(err)}\n`,
+        `[wardmote] Failed to inject ACPX Codex skill "${entry.key}" into ${skillsHome}: ${err instanceof Error ? err.message : String(err)}\n`,
       );
     }
   }
@@ -1395,7 +1395,7 @@ async function prepareGeminiSkillRuntime(input: {
   }
   const removedSkills = await removeMaintainerOnlySkillSymlinks(skillsHome, allowedSkillNames);
   for (const skillName of removedSkills) {
-    await input.onLog("stdout", `[paperclip] Removed maintainer-only ACPX Gemini skill "${skillName}" from ${skillsHome}\n`);
+    await input.onLog("stdout", `[wardmote] Removed maintainer-only ACPX Gemini skill "${skillName}" from ${skillsHome}\n`);
   }
 
   for (const entry of selectedSkills) {
@@ -1405,7 +1405,7 @@ async function prepareGeminiSkillRuntime(input: {
       if (result === "created" || result === "repaired") {
         await input.onLog(
           "stdout",
-          `[paperclip] ${result === "repaired" ? "Repaired" : "Linked"} ACPX Gemini skill "${entry.runtimeName}" into ${skillsHome}\n`,
+          `[wardmote] ${result === "repaired" ? "Repaired" : "Linked"} ACPX Gemini skill "${entry.runtimeName}" into ${skillsHome}\n`,
         );
       }
     } catch (err) {
@@ -1413,13 +1413,13 @@ async function prepareGeminiSkillRuntime(input: {
         const result = await materializeWardmoteSkillCopy(entry.source, target);
         await input.onLog(
           "stdout",
-          `[paperclip] Copied ACPX Gemini skill "${entry.runtimeName}" into ${skillsHome} because symlinks are unavailable.${result.skippedSymlinks.length > 0 ? ` Skipped ${result.skippedSymlinks.length} nested symlink(s).` : ""}\n`,
+          `[wardmote] Copied ACPX Gemini skill "${entry.runtimeName}" into ${skillsHome} because symlinks are unavailable.${result.skippedSymlinks.length > 0 ? ` Skipped ${result.skippedSymlinks.length} nested symlink(s).` : ""}\n`,
         );
         continue;
       }
       await input.onLog(
         "stderr",
-        `[paperclip] Failed to link ACPX Gemini skill "${entry.key}" into ${skillsHome}: ${err instanceof Error ? err.message : String(err)}\n`,
+        `[wardmote] Failed to link ACPX Gemini skill "${entry.key}" into ${skillsHome}: ${err instanceof Error ? err.message : String(err)}\n`,
       );
     }
   }
@@ -1480,11 +1480,11 @@ async function applyReadOnlySessionMode(input: {
   if (!mode) return;
   if (!input.runtime.setMode) {
     const message = "ACPX runtime does not expose session mode controls, so the read_only tool profile cannot be applied.";
-    await input.onLog("stderr", `[paperclip] ${message}\n`);
+    await input.onLog("stderr", `[wardmote] ${message}\n`);
     throw new Error(message);
   }
   await input.runtime.setMode({ handle: input.handle, mode });
-  await input.onLog("stdout", `[paperclip] Applied read_only tool profile: ACPX ${input.prepared.acpxAgent} session mode ${mode}\n`);
+  await input.onLog("stdout", `[wardmote] Applied read_only tool profile: ACPX ${input.prepared.acpxAgent} session mode ${mode}\n`);
 }
 
 function normalizeNonInteractivePermissions(config: Record<string, unknown>): "deny" | "fail" {
@@ -1716,7 +1716,7 @@ async function stageAcpRemoteRuntime(input: {
 }): Promise<PreparedAdapterExecutionTargetRuntime> {
   await input.onLog(
     "stdout",
-    `[paperclip] Syncing workspace to ${describeAdapterExecutionTarget(input.target)}.\n`,
+    `[wardmote] Syncing workspace to ${describeAdapterExecutionTarget(input.target)}.\n`,
   );
   return await prepareAdapterExecutionTargetRuntime({
     runId: input.runId,
@@ -1768,7 +1768,7 @@ async function disposeFreshStagedRuntime(input: {
   } catch (err) {
     await input.onLog(
       "stderr",
-      `[paperclip] Failed to dispose the fresh staged runtime after a managed-home seam error: ${
+      `[wardmote] Failed to dispose the fresh staged runtime after a managed-home seam error: ${
         err instanceof Error ? err.message : String(err)
       }\n`,
     );
@@ -2096,7 +2096,7 @@ async function buildRuntime(input: {
     if (codexStartupConfig.invalidExistingConfig) {
       await input.ctx.onLog(
         "stderr",
-        "[paperclip] Ignoring invalid user CODEX_CONFIG while applying runtime Codex settings; expected a JSON object.\n",
+        "[wardmote] Ignoring invalid user CODEX_CONFIG while applying runtime Codex settings; expected a JSON object.\n",
       );
     }
     if (codexStartupConfig.value) env.CODEX_CONFIG = codexStartupConfig.value;
@@ -2437,7 +2437,7 @@ async function buildRuntime(input: {
       onReuseLog: () =>
         input.ctx.onLog(
           "stdout",
-          "[paperclip] Reusing the staged in-sandbox runtime for this resumed session (no workspace re-ship / managed-home re-seed).\n",
+          "[wardmote] Reusing the staged in-sandbox runtime for this resumed session (no workspace re-ship / managed-home re-seed).\n",
         ),
       startWardmoteBridge: (runtimeRootDir) =>
         startAdapterExecutionTargetWardmoteBridge({
@@ -2477,7 +2477,7 @@ async function buildRuntime(input: {
           inheritHostEnvironment: !useRemoteProcessSession,
         }).env,
       onWardmoteBridgeLog: () =>
-        input.ctx.onLog("stdout", "[paperclip] Sandbox ACP API callback bridge enabled for this run.\n"),
+        input.ctx.onLog("stdout", "[wardmote] Sandbox ACP API callback bridge enabled for this run.\n"),
       stopBridges: async ({ controlBridge, agentBridge }) => {
         await Promise.allSettled([agentBridge?.stop(), controlBridge?.stop()]);
         if (remoteManagedHomeTeardown) {
@@ -2713,7 +2713,7 @@ async function applySessionConfigOptions(input: {
   if (!input.runtime.setConfigOption) {
     const message =
       "ACPX runtime does not expose session config controls; upgrade ACPX or remove configured model, effort, and fast mode overrides.";
-    await input.onLog("stderr", `[paperclip] ${message}\n`);
+    await input.onLog("stderr", `[wardmote] ${message}\n`);
     throw new Error(message);
   }
   for (const option of options) {
@@ -2724,7 +2724,7 @@ async function applySessionConfigOptions(input: {
     });
     await input.onLog(
       "stdout",
-      `[paperclip] Applied ACPX ${input.prepared.acpxAgent} config ${option.key}=${option.value}\n`,
+      `[wardmote] Applied ACPX ${input.prepared.acpxAgent} config ${option.key}=${option.value}\n`,
     );
   }
 }
@@ -3088,7 +3088,7 @@ async function buildPrompt(
       const reason = err instanceof Error ? err.message : String(err);
       await onLog(
         "stderr",
-        `[paperclip] Warning: could not read agent instructions file "${instructionsFilePath}": ${reason}\n`,
+        `[wardmote] Warning: could not read agent instructions file "${instructionsFilePath}": ${reason}\n`,
       );
       commandNotes.push(`Configured instructionsFilePath ${instructionsFilePath}, but file could not be read.`);
     }
@@ -3542,7 +3542,7 @@ async function emitAcpxFailure(input: {
   if (childStderrTail) {
     await ctx.onLog(
       "stderr",
-      `[paperclip] ACPX child stderr tail (${phase}):\n${childStderrTail}\n`,
+      `[wardmote] ACPX child stderr tail (${phase}):\n${childStderrTail}\n`,
     );
   }
   await emitAcpxLog(ctx, {
@@ -4159,7 +4159,7 @@ export function createAcpxEngineExecutor(deps: AcpxEngineExecutorOptions = {}) {
               ? teardownErr.message
               : String(teardownErr);
         await withAdapterExecutionPhase(ctx, "phase_reporting", () => ctx
-          .onLog("stderr", `[paperclip] ACPX teardown step "${step}" failed: ${reason}\n`)
+          .onLog("stderr", `[wardmote] ACPX teardown step "${step}" failed: ${reason}\n`)
           .catch(() => {}));
       };
       // Emit one per-phase timing run-log event. It is not an OpenTelemetry
@@ -4288,7 +4288,7 @@ export function createAcpxEngineExecutor(deps: AcpxEngineExecutorOptions = {}) {
         for (const failure of referencedProjectStagingFailures) {
           await ctx.onLog(
             "stderr",
-            `[paperclip] Referenced project ${failure.projectId} failed to stage; the run continues without it: ${failure.error}\n`,
+            `[wardmote] Referenced project ${failure.projectId} failed to stage; the run continues without it: ${failure.error}\n`,
           );
         }
         // State the effective wall-clock timeout and its source up front so a
@@ -4297,7 +4297,7 @@ export function createAcpxEngineExecutor(deps: AcpxEngineExecutorOptions = {}) {
         // stay machine-parseable line by line.
         await ctx.onLog(
           "stderr",
-          `[paperclip] ${formatAdapterExecutionTimeoutStartLogLine(prepared.timeoutResolution)}\n`,
+          `[wardmote] ${formatAdapterExecutionTimeoutStartLogLine(prepared.timeoutResolution)}\n`,
         );
         await hostStore.evictIdle(now());
 
@@ -4412,7 +4412,7 @@ export function createAcpxEngineExecutor(deps: AcpxEngineExecutorOptions = {}) {
         if (!canResume && asString(previousParams.runtimeSessionName, "")) {
           await ctx.onLog(
             "stdout",
-            `[paperclip] ACPX session "${asString(previousParams.runtimeSessionName, "")}" does not match the current agent/cwd/mode/runtime identity; starting fresh in "${prepared.cwd}".\n`,
+            `[wardmote] ACPX session "${asString(previousParams.runtimeSessionName, "")}" does not match the current agent/cwd/mode/runtime identity; starting fresh in "${prepared.cwd}".\n`,
           );
         }
 
@@ -4446,7 +4446,7 @@ export function createAcpxEngineExecutor(deps: AcpxEngineExecutorOptions = {}) {
               ctx
                 .onLog(
                   "stderr",
-                  "[paperclip] ACPX handshake late close failed: acpx_handshake_late_close_failed\n",
+                  "[wardmote] ACPX handshake late close failed: acpx_handshake_late_close_failed\n",
                 )
                 .catch(() => {}),
             );
@@ -4456,7 +4456,7 @@ export function createAcpxEngineExecutor(deps: AcpxEngineExecutorOptions = {}) {
         // the result, or a classification: log the fixed closed code only.
         const recordLateHandshakeRejection = (): void => {
           void ctx
-            .onLog("stderr", "[paperclip] ACPX handshake late rejection: acpx_handshake_late_rejection\n")
+            .onLog("stderr", "[wardmote] ACPX handshake late rejection: acpx_handshake_late_rejection\n")
             .catch(() => {});
         };
 
@@ -4501,7 +4501,7 @@ export function createAcpxEngineExecutor(deps: AcpxEngineExecutorOptions = {}) {
               resumedSession = false;
               await ctx.onLog(
                 "stdout",
-                `[paperclip] ACPX resume session "${resumeSessionId}" is unavailable; retrying with a fresh session.\n`,
+                `[wardmote] ACPX resume session "${resumeSessionId}" is unavailable; retrying with a fresh session.\n`,
               );
               // Fresh-session retry: the runtime was already constructed on the
               // first attempt (never re-created), so this event reports only its

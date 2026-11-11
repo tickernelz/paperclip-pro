@@ -667,14 +667,14 @@ export async function seedManagedCodexHome(
           // the same-identity symlink heal this call could not decide.
           await onLog(
             "stdout",
-            `[paperclip] Keeping the existing subscription auth.json in Codex home "${targetHome}" (shared source read failed: ${sourceReadErrorCode}); the next seed with a readable source reconciles it.\n`,
+            `[wardmote] Keeping the existing subscription auth.json in Codex home "${targetHome}" (shared source read failed: ${sourceReadErrorCode}); the next seed with a readable source reconciles it.\n`,
           );
         }
       }
       if (keepPromotedAuth) {
         await onLog(
           "stdout",
-          `[paperclip] Keeping the promoted subscription auth.json in Codex home "${targetHome}".\n`,
+          `[wardmote] Keeping the promoted subscription auth.json in Codex home "${targetHome}".\n`,
         );
       } else {
         await fs.rm(authPath, { force: true });
@@ -701,7 +701,7 @@ export async function seedManagedCodexHome(
 
     await onLog(
       "stdout",
-      `[paperclip] Using ${isWorktreeMode(env) ? "worktree-isolated" : "Wardmote-managed"} Codex home "${targetHome}" (seeded from "${sourceHome}").\n`,
+      `[wardmote] Using ${isWorktreeMode(env) ? "worktree-isolated" : "Wardmote-managed"} Codex home "${targetHome}" (seeded from "${sourceHome}").\n`,
     );
   }
 
@@ -713,13 +713,13 @@ export async function seedManagedCodexHome(
       // configured OPENAI_API_KEY; the binding wins for this home.
       await onLog(
         "stdout",
-        `[paperclip] Refusing to write an API-key auth.json into credential-store entry "${targetHome}"; the bound account's stored login stays authoritative.\n`,
+        `[wardmote] Refusing to write an API-key auth.json into credential-store entry "${targetHome}"; the bound account's stored login stays authoritative.\n`,
       );
     } else {
       await writeApiKeyAuthJson(targetHome, apiKey);
       await onLog(
         "stdout",
-        `[paperclip] Wrote API-key auth.json into Codex home "${targetHome}" from configured OPENAI_API_KEY.\n`,
+        `[wardmote] Wrote API-key auth.json into Codex home "${targetHome}" from configured OPENAI_API_KEY.\n`,
       );
     }
   }

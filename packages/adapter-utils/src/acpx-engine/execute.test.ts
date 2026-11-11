@@ -660,7 +660,7 @@ describe("shared ACPX engine runtime behavior", () => {
     });
     expect(logs).toContainEqual({
       stream: "stderr",
-      text: "[paperclip] Ignoring invalid user CODEX_CONFIG while applying runtime Codex settings; expected a JSON object.\n",
+      text: "[wardmote] Ignoring invalid user CODEX_CONFIG while applying runtime Codex settings; expected a JSON object.\n",
     });
   });
 
@@ -3163,7 +3163,7 @@ describe("gemini ACP flag selection", () => {
     );
     expect(startLine).toBeTruthy();
     expect(startLine!.text).toContain(
-      `[paperclip] Adapter execution timeout: timeoutSec=${DEFAULT_REMOTE_SANDBOX_ADAPTER_TIMEOUT_SEC} ` +
+      `[wardmote] Adapter execution timeout: timeoutSec=${DEFAULT_REMOTE_SANDBOX_ADAPTER_TIMEOUT_SEC} ` +
         "(sandbox default; set adapterConfig.timeoutSec to override).",
     );
   });
@@ -4056,7 +4056,7 @@ describe("ACPX engine remote managed-home seam (PR 2: per-adapter home seed)", (
       (entry) => entry.stream === "stderr" && entry.text.includes("proj-x"),
     );
     expect(failureLine?.text).toBe(
-      "[paperclip] Referenced project proj-x failed to stage; the run continues without it: extract failed: boom\n",
+      "[wardmote] Referenced project proj-x failed to stage; the run continues without it: extract failed: boom\n",
     );
   });
 });

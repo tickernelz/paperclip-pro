@@ -99,9 +99,9 @@ if (tailscaleAuth) {
   env.WARDMOTE_DEPLOYMENT_EXPOSURE = "private";
   env.WARDMOTE_AUTH_BASE_URL_MODE = "auto";
   env.HOST = "0.0.0.0";
-  console.log("[paperclip] dev mode: authenticated/private (tailscale-friendly) on 0.0.0.0");
+  console.log("[wardmote] dev mode: authenticated/private (tailscale-friendly) on 0.0.0.0");
 } else {
-  console.log("[paperclip] dev mode: local_trusted (default)");
+  console.log("[wardmote] dev mode: local_trusted (default)");
 }
 
 const pnpmBin = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
@@ -298,7 +298,7 @@ async function getMigrationStatusPayload() {
     process.stderr.write(
       status.stderr ||
         status.stdout ||
-        `[paperclip] Command failed with code ${status.code}: pnpm --filter @tickernelz/wardmote-db exec tsx src/migration-status.ts --json\n`,
+        `[wardmote] Command failed with code ${status.code}: pnpm --filter @tickernelz/wardmote-db exec tsx src/migration-status.ts --json\n`,
     );
     process.exit(status.code);
   }
@@ -309,7 +309,7 @@ async function getMigrationStatusPayload() {
     process.stderr.write(
       status.stderr ||
         status.stdout ||
-        "[paperclip] migration-status returned invalid JSON payload\n",
+        "[wardmote] migration-status returned invalid JSON payload\n",
     );
     throw toError(error, "Unable to parse migration-status JSON output");
   }
@@ -360,7 +360,7 @@ async function maybePreflightMigrations(options = {}) {
   if (!shouldApply) {
     if (exitOnDecline) {
       process.stderr.write(
-        `[paperclip] Pending migrations detected (${formatPendingMigrationSummary(pendingMigrations)}). ` +
+        `[wardmote] Pending migrations detected (${formatPendingMigrationSummary(pendingMigrations)}). ` +
           "Refusing to start watch mode against a stale schema.\n",
       );
       process.exit(1);
@@ -388,7 +388,7 @@ async function maybePreflightMigrations(options = {}) {
 }
 
 async function buildPluginSdk() {
-  console.log("[paperclip] building plugin sdk...");
+  console.log("[wardmote] building plugin sdk...");
   const result = await runPnpm(
     ["--filter", "@tickernelz/wardmote-plugin-sdk", "build"],
     { stdio: "inherit" },
@@ -398,7 +398,7 @@ async function buildPluginSdk() {
     return;
   }
   if (result.code !== 0) {
-    console.error("[paperclip] plugin sdk build failed");
+    console.error("[wardmote] plugin sdk build failed");
     process.exit(result.code);
   }
 }
