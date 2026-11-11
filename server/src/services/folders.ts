@@ -77,7 +77,7 @@ export function folderService(db: Db, mutationLockHeld = false) {
   async function withCompanyFolderLock<T>(companyId: string, operation: (lockedDb: Db) => Promise<T>) {
     if (mutationLockHeld) return operation(db);
     return db.transaction(async (tx) => {
-      await tx.execute(sql`select pg_advisory_xact_lock(hashtextextended(${`paperclip:folders:${companyId}`}, 0))`);
+      await tx.execute(sql`select pg_advisory_xact_lock(hashtextextended(${`wardmote:folders:${companyId}`}, 0))`);
       return operation(tx as unknown as Db);
     });
   }

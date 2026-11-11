@@ -987,7 +987,7 @@ type VerifiedProviderIdentity = {
   botLabel?: string | null;
 };
 
-const GITHUB_RECOVERY_STATE_KEY = "paperclip:github-webhook-recovery:v1";
+const GITHUB_RECOVERY_STATE_KEY = "wardmote:github-webhook-recovery:v1";
 const GITHUB_RECOVERY_INTERVAL_MS = 60_000;
 const GITHUB_RECOVERY_WINDOW_MS = 60 * 60_000;
 const GITHUB_RECOVERY_SCAN_LEASE_MS = 5 * 60_000;

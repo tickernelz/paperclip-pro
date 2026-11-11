@@ -89,7 +89,7 @@ describe("auth routes", () => {
     expect(res.status).toBe(200);
     expect(res.body).toEqual({
       session: {
-        id: "paperclip:session:user-1",
+        id: "wardmote:session:user-1",
         userId: "user-1",
       },
       user: baseUser,
