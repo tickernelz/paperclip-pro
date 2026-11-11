@@ -15,7 +15,6 @@ import { queryKeys } from "@/lib/queryKeys";
 import { useCanInviteCompanyMembers } from "@/hooks/useCompanyInviteAccess";
 import { useHiddenSettings } from "@/hooks/useHiddenSettings";
 import { useSignOut } from "@/hooks/useSignOut";
-import { useStagingCommit } from "@/hooks/useStagingCommit";
 import { userProfilePath } from "@/lib/userProfileLinks";
 import { useSidebar } from "../context/SidebarContext";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -27,8 +26,8 @@ import { InstallAppMenuAction } from "./InstallAppMenuAction";
 import { SidebarServerInfo } from "./SidebarServerInfo";
 
 const INVITES_PATH = "/company/settings/members?tab=invites";
-const DOCS_URL = "https://docs.paperclip.ing/";
-const FEEDBACK_URL = "https://paperclip.ing/feedback";
+const DOCS_URL = "https://github.com/tickernelz/wardmote/tree/main/docs";
+const FEEDBACK_URL = "https://github.com/tickernelz/wardmote/issues";
 
 interface SidebarAccountMenuProps {
   deploymentMode?: DeploymentMode;
@@ -121,7 +120,6 @@ export function SidebarAccountMenu({
   const { isMobile, setSidebarOpen, collapsed, peeking } = useSidebar();
   const rail = collapsed && !peeking && !forceExpanded;
   const open = controlledOpen ?? internalOpen;
-  const stagingCommit = useStagingCommit(open);
   const setOpen = onOpenChange ?? setInternalOpen;
   const { data: session } = useQuery({
     queryKey: queryKeys.auth.session,
@@ -191,18 +189,6 @@ export function SidebarAccountMenu({
                 <p className="truncate text-(length:--text-micro) leading-(--profile-popover-meta-line-height) text-ink-3">
                   {secondaryLabel}
                 </p>
-                {stagingCommit ? (
-                  <a
-                    className="pointer-events-auto block truncate font-mono text-(length:--text-micro) leading-(--profile-popover-meta-line-height) text-ink-3 hover:underline focus-visible:underline"
-                    href={`https://github.com/paperclipai/paperclip/commit/${stagingCommit}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    aria-label={`View commit ${stagingCommit} on GitHub`}
-                    title={stagingCommit}
-                  >
-                    SHA {stagingCommit.slice(0, 7)}
-                  </a>
-                ) : null}
               </div>
             </div>
 

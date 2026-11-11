@@ -812,6 +812,21 @@ describeEmbeddedPostgres("tool access service", () => {
     return false;
   }
 
+  async function waitForLockWaiters(count: number) {
+    for (let attempt = 0; attempt < 400; attempt += 1) {
+      const [row] = await db.execute<{ waiting: number }>(sql`
+        SELECT count(*)::int AS waiting
+        FROM pg_stat_activity
+        WHERE datname = current_database()
+          AND state = 'active'
+          AND wait_event_type = 'Lock'
+      `);
+      if ((row?.waiting ?? 0) >= count) return;
+      await new Promise((resolve) => setTimeout(resolve, 10));
+    }
+    throw new Error(`expected ${count} transaction(s) waiting on a lock`);
+  }
+
   it("mints generic exchange connection tokens through the agent route and stores only hashes", async () => {
     const company = await createCompany(db);
     const agent = await createAgent(db, company.id);
@@ -1899,10 +1914,7 @@ describeEmbeddedPostgres("tool access service", () => {
         }
       });
 
-      // The first replacement still owns the departing member lock, so this
-      // gives cleanup time to queue for that lock before the empty replacement
-      // queues for the grant lock.
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await waitForLockWaiters(1);
       let replacementSettled = false;
       const replacement = replacementService
         .replaceConnectionGrantMembers(connection.id, grant.id, [])
@@ -1913,7 +1925,7 @@ describeEmbeddedPostgres("tool access service", () => {
         .finally(() => {
           replacementSettled = true;
         });
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await waitForLockWaiters(2);
       expect(replacementSettled).toBe(false);
 
       releaseFirstReplacement();

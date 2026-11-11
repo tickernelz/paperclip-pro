@@ -16,7 +16,7 @@ the GitHub Code Review Bot connector. This default-off setting is independent of
 **Chat connectors**. Hiding either feature does not pause existing provider delivery.
 
 1. Choose the bot agent. Prefer a
-   [low-trust review agent](https://docs.paperclip.ing/administration/trust-and-low-trust-review/)
+   [low-trust review agent](https://github.com/tickernelz/wardmote/blob/main/doc/LOW-TRUST-PRESETS.md)
    with an isolated sandbox and a scoped task boundary. Standard-trust agents
    show a warning with **Change <agent> to a low trust agent**. This explicitly
    saves the low-trust preset; it does not configure a sandbox or task boundary.

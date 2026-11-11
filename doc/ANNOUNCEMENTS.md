@@ -1,13 +1,14 @@
 # In-app announcements
 
-Paperclip displays one optional announcement card in the board UI. Its feed is
-`https://pages.paperclip.ing/announcements/v1/current.json`. The instance fetches
-JSON on demand and renders it with native components.
+Wardmote displays one optional announcement card in the board UI. There is no
+built-in feed: the instance fetches nothing until the operator sets
+`WARDMOTE_ANNOUNCEMENTS_FEED_URL`. It then fetches the JSON on demand and
+renders it with native components.
 
 ## Operator configuration
 
+- `WARDMOTE_ANNOUNCEMENTS_FEED_URL` sets the public HTTPS manifest URL. Unset means no feed.
 - `WARDMOTE_ANNOUNCEMENTS_ENABLED=false` disables fetching and display.
-- `WARDMOTE_ANNOUNCEMENTS_FEED_URL` overrides the public HTTPS manifest URL.
   Credentials, query strings, private destinations and redirects are rejected.
 
 Announcements are independent of telemetry. Feed/media requests originate from
@@ -27,7 +28,7 @@ The shared `announcementManifestSchema` defines the format:
     "eyebrow": "New in Paperclip",
     "title": "Your next idea starts here",
     "description": "Bring your agents and work together in a project.",
-    "secondaryLink": { "kind": "external", "label": "Learn more", "url": "https://paperclip.ing" },
+    "secondaryLink": { "kind": "external", "label": "Learn more", "url": "https://github.com/tickernelz/wardmote" },
     "primaryAction": { "kind": "route", "label": "Open projects", "path": "/projects" }
   }
 }

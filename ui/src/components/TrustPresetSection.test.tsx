@@ -68,8 +68,8 @@ describe("TrustPresetSection", () => {
     expect(view.text()).toContain("Containment active");
     expect(view.text()).toContain("Boundary type");
     expect(view.text()).toContain("Wardmote App");
-    expect(view.text()).toContain("Get Wardmote EE.");
-    expect(view.text()).not.toContain("Managed by EE/API");
+    expect(view.text()).not.toContain("EE");
+    expect(view.text()).not.toContain("Managed by API");
   });
 
   it("renders multi-boundary policies as read-only", () => {
@@ -86,7 +86,7 @@ describe("TrustPresetSection", () => {
       },
     });
 
-    expect(view.text()).toContain("Managed by EE/API");
+    expect(view.text()).toContain("Managed by API");
     expect(view.text()).toContain("2 boundaries");
     expect(view.text()).not.toContain("Clear boundary");
   });

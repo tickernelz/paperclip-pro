@@ -81,6 +81,9 @@ export function resolveTelemetryConfig(
     return { enabled: false, ...caps };
   }
 
-  const endpoint = process.env.WARDMOTE_TELEMETRY_ENDPOINT || undefined;
+  const endpoint = process.env.WARDMOTE_TELEMETRY_ENDPOINT?.trim();
+  if (!endpoint) {
+    return { enabled: false, ...caps };
+  }
   return { enabled: true, endpoint, ...caps };
 }

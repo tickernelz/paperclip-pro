@@ -35,9 +35,9 @@ usage() {
 Install Wardmote on macOS, Linux, or WSL2.
 
 Usage:
-  curl -fsSLO https://paperclip.ing/install.sh
+  curl -fsSLO https://raw.githubusercontent.com/tickernelz/wardmote/main/scripts/install.sh
   bash install.sh [options]
-  curl -fsSL https://paperclip.ing/install.sh | bash -s -- --no-prompt [options]
+  curl -fsSL https://raw.githubusercontent.com/tickernelz/wardmote/main/scripts/install.sh | bash -s -- --no-prompt [options]
 
 Options:
   --canary                 Install the canary channel

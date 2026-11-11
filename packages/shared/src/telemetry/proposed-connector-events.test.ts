@@ -110,15 +110,30 @@ describe("proposed connector events against the real TelemetryClient", () => {
   });
 
   it("environment suppression resolves telemetry off under CI and opt-out flags", () => {
+    for (const key of ["CI", "CONTINUOUS_INTEGRATION", "BUILD_NUMBER", "GITHUB_ACTIONS", "GITLAB_CI"]) vi.stubEnv(key, "");
+    vi.stubEnv("WARDMOTE_TELEMETRY_ENDPOINT", "https://telemetry.example/ingest");
+    expect(resolveTelemetryConfig().enabled).toBe(true);
+
     vi.stubEnv("WARDMOTE_TELEMETRY_DISABLED", "1");
     expect(resolveTelemetryConfig().enabled).toBe(false);
-    vi.unstubAllEnvs();
+    vi.stubEnv("WARDMOTE_TELEMETRY_DISABLED", "");
 
     vi.stubEnv("DO_NOT_TRACK", "1");
     expect(resolveTelemetryConfig().enabled).toBe(false);
-    vi.unstubAllEnvs();
+    vi.stubEnv("DO_NOT_TRACK", "");
 
     vi.stubEnv("GITHUB_ACTIONS", "true");
     expect(resolveTelemetryConfig().enabled).toBe(false);
+  });
+
+  it("resolves telemetry off when no endpoint is configured", () => {
+    for (const key of ["CI", "CONTINUOUS_INTEGRATION", "BUILD_NUMBER", "GITHUB_ACTIONS", "GITLAB_CI"]) vi.stubEnv(key, "");
+    vi.stubEnv("WARDMOTE_TELEMETRY_ENDPOINT", "");
+    expect(resolveTelemetryConfig()).toMatchObject({ enabled: false });
+    expect(resolveTelemetryConfig().endpoint).toBeUndefined();
+    vi.stubEnv("WARDMOTE_TELEMETRY_ENDPOINT", "  ");
+    expect(resolveTelemetryConfig().enabled).toBe(false);
+    vi.stubEnv("WARDMOTE_TELEMETRY_ENDPOINT", "https://telemetry.example/ingest");
+    expect(resolveTelemetryConfig()).toMatchObject({ enabled: true, endpoint: "https://telemetry.example/ingest" });
   });
 });
