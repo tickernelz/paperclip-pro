@@ -43,7 +43,7 @@ execution-blocker read after recovery revalidation. Concurrent phases overlap;
 do not sum them to obtain request duration.
 
 With the existing operator-configured OTLP endpoint, the same reads produce
-`issue.read.<phase>` child spans through the `paperclip.issue-read` tracer.
+`issue.read.<phase>` child spans through the `wardmote.issue-read` tracer.
 There are no custom attributes, identifiers, content, or exception messages.
 The closed phase names in `server/src/services/issue-read-timing.ts` are:
 `lookup`, `authorization`, `project_goal`, `ancestors`, `mentions`, `documents`,
@@ -250,7 +250,7 @@ retain their documented fallback behavior.
 
 The root carries only a hashed run id, runtime label, schema version, wall time,
 and outcome. Native child attributes use the bounded
-`paperclip.native.span.` prefix and a closed key allowlist; values are limited
+`wardmote.native.span.` prefix and a closed key allowlist; values are limited
 to finite numbers, booleans, or short strings. Commands, arguments, environment
 values, paths, output, credentials, and raw identifiers are discarded by the
 trace helper. `task.run.measured` remains in the local run log for compatibility
@@ -960,7 +960,7 @@ configured. With no endpoint the whole span path is a no-op. Paperclip opens the
 spans only for a run that targets a remote sandbox. A local run and an SSH run
 stay out of these spans.
 
-Every span attribute uses the closed `paperclip.sandbox.startup.` prefix and
+Every span attribute uses the closed `wardmote.sandbox.startup.` prefix and
 rides a fixed allowlist. A command line, an argument, an environment value, a
 file path, program output, or a raw identifier never rides a span. It rides
 neither as an attribute nor as an event. The producer bounds each free-form
@@ -1039,7 +1039,7 @@ status when the exit code is non-zero or the execution throws.
 
 ### Outcome values
 
-The `paperclip.sandbox.startup.outcome` attribute uses a closed value set:
+The `wardmote.sandbox.startup.outcome` attribute uses a closed value set:
 
 - `ok` — the step or the execution settled with a success result.
 - `skipped` — a warm cache skipped the step; the step ran no work.
@@ -1051,15 +1051,15 @@ The `sandbox.startup` root span uses this closed attribute allowlist.
 
 | Attribute                                | Type    | Optional | Meaning                                                    |
 | ---------------------------------------- | ------- | -------- | ---------------------------------------------------------- |
-| `paperclip.sandbox.startup.root.wall_ms` | number  | no       | The root-span wall time of the whole bring-up.             |
-| `paperclip.sandbox.startup.root.work_ms` | number  | no       | The sum of the step wall times.                            |
-| `paperclip.sandbox.startup.root.diff_ms` | number  | no       | `work_ms − wall_ms`; the overlap the parallel steps saved. |
-| `paperclip.sandbox.startup.provider`     | string  | yes      | The normalized provider family.                            |
-| `paperclip.sandbox.startup.cold_start`   | boolean | yes      | Whether the bring-up is a cold start.                      |
-| `paperclip.sandbox.startup.region`       | string  | yes      | The clamped region label.                                  |
-| `paperclip.sandbox.startup.image_id`     | string  | yes      | The hashed image id.                                       |
-| `paperclip.sandbox.startup.sandbox_id`   | string  | yes      | The hashed sandbox id.                                     |
-| `paperclip.sandbox.startup.lease_id`     | string  | yes      | The hashed lease id.                                       |
+| `wardmote.sandbox.startup.root.wall_ms` | number  | no       | The root-span wall time of the whole bring-up.             |
+| `wardmote.sandbox.startup.root.work_ms` | number  | no       | The sum of the step wall times.                            |
+| `wardmote.sandbox.startup.root.diff_ms` | number  | no       | `work_ms − wall_ms`; the overlap the parallel steps saved. |
+| `wardmote.sandbox.startup.provider`     | string  | yes      | The normalized provider family.                            |
+| `wardmote.sandbox.startup.cold_start`   | boolean | yes      | Whether the bring-up is a cold start.                      |
+| `wardmote.sandbox.startup.region`       | string  | yes      | The clamped region label.                                  |
+| `wardmote.sandbox.startup.image_id`     | string  | yes      | The hashed image id.                                       |
+| `wardmote.sandbox.startup.sandbox_id`   | string  | yes      | The hashed sandbox id.                                     |
+| `wardmote.sandbox.startup.lease_id`     | string  | yes      | The hashed lease id.                                       |
 
 ### Step span attributes
 
@@ -1068,12 +1068,12 @@ rides the span name, so no `step` attribute repeats it.
 
 | Attribute                                                    | Type   | Optional | Meaning                                                  |
 | ------------------------------------------------------------ | ------ | -------- | -------------------------------------------------------- |
-| `paperclip.sandbox.startup.step.wall_ms`                     | number | no       | The wall time of the step.                               |
-| `paperclip.sandbox.startup.outcome`                          | string | no       | The step outcome (`ok`, `skipped`, or `failed`).         |
-| `paperclip.sandbox.startup.provider`                         | string | yes      | The normalized provider family.                          |
-| `paperclip.sandbox.startup.batch`                            | string | yes      | A shared tag that marks two parallel steps as one batch. |
-| `paperclip.sandbox.startup.handshake.create_runtime.wall_ms` | number | yes      | The create-runtime sub-time of the `acp.handshake` step. |
-| `paperclip.sandbox.startup.handshake.ensure_session.wall_ms` | number | yes      | The ensure-session sub-time of the `acp.handshake` step. |
+| `wardmote.sandbox.startup.step.wall_ms`                     | number | no       | The wall time of the step.                               |
+| `wardmote.sandbox.startup.outcome`                          | string | no       | The step outcome (`ok`, `skipped`, or `failed`).         |
+| `wardmote.sandbox.startup.provider`                         | string | yes      | The normalized provider family.                          |
+| `wardmote.sandbox.startup.batch`                            | string | yes      | A shared tag that marks two parallel steps as one batch. |
+| `wardmote.sandbox.startup.handshake.create_runtime.wall_ms` | number | yes      | The create-runtime sub-time of the `acp.handshake` step. |
+| `wardmote.sandbox.startup.handshake.ensure_session.wall_ms` | number | yes      | The ensure-session sub-time of the `acp.handshake` step. |
 
 The round-trip count and the provider durations no longer ride a step span. The
 per-execution `sandbox.exec` child spans carry that detail.
@@ -1085,16 +1085,16 @@ numeric attribute when the provider does not report the value.
 
 | Attribute                                       | Type    | Optional | Meaning                                                                    |
 | ----------------------------------------------- | ------- | -------- | -------------------------------------------------------------------------- |
-| `paperclip.sandbox.startup.provider`            | string  | no       | The normalized provider family.                                            |
-| `paperclip.sandbox.startup.exec.command`        | string  | no       | The clamped `argv[0]` command label.                                       |
-| `paperclip.sandbox.startup.exec.exit_code`      | number  | yes      | The numeric process exit code.                                             |
-| `paperclip.sandbox.startup.exec.wall_ms`        | number  | no       | The host-measured wall time of the execution.                              |
-| `paperclip.sandbox.startup.exec.wait_before_ms` | number  | yes      | The provider handle-fetch wait before the execution ran.                   |
-| `paperclip.sandbox.startup.exec.sandbox_ms`     | number  | yes      | The in-sandbox run time of the execution.                                  |
-| `paperclip.sandbox.startup.exec.network_ms`     | number  | yes      | The transport time the host adds; `wall_ms − wait_before_ms − sandbox_ms`. |
-| `paperclip.sandbox.startup.exec.critical_path`  | boolean | no       | Whether the execution sits on the startup critical path.                   |
-| `paperclip.sandbox.startup.exec.cache_hit`      | boolean | yes      | Whether the provider served the sandbox handle from its warm cache.        |
-| `paperclip.sandbox.startup.outcome`             | string  | no       | The execution outcome (`ok` or `failed`).                                  |
+| `wardmote.sandbox.startup.provider`            | string  | no       | The normalized provider family.                                            |
+| `wardmote.sandbox.startup.exec.command`        | string  | no       | The clamped `argv[0]` command label.                                       |
+| `wardmote.sandbox.startup.exec.exit_code`      | number  | yes      | The numeric process exit code.                                             |
+| `wardmote.sandbox.startup.exec.wall_ms`        | number  | no       | The host-measured wall time of the execution.                              |
+| `wardmote.sandbox.startup.exec.wait_before_ms` | number  | yes      | The provider handle-fetch wait before the execution ran.                   |
+| `wardmote.sandbox.startup.exec.sandbox_ms`     | number  | yes      | The in-sandbox run time of the execution.                                  |
+| `wardmote.sandbox.startup.exec.network_ms`     | number  | yes      | The transport time the host adds; `wall_ms − wait_before_ms − sandbox_ms`. |
+| `wardmote.sandbox.startup.exec.critical_path`  | boolean | no       | Whether the execution sits on the startup critical path.                   |
+| `wardmote.sandbox.startup.exec.cache_hit`      | boolean | yes      | Whether the provider served the sandbox handle from its warm cache.        |
+| `wardmote.sandbox.startup.outcome`             | string  | no       | The execution outcome (`ok` or `failed`).                                  |
 
 The plugin decides the cache hit at the sandbox-handle lookup. The span no
 longer infers a cache hit from `wait_before_ms == 0`. Paperclip omits the
@@ -1107,7 +1107,7 @@ the code first. Keep the attribute low-cardinality and free of user content.
 
 A sandbox provider plugin also opens spans for its own sync steps. These spans
 use the `sandbox.daytona.` name prefix. They share the
-`paperclip.sandbox.startup.` attribute prefix and obey the same opt-in and
+`wardmote.sandbox.startup.` attribute prefix and obey the same opt-in and
 no-user-content rules as the startup spans above.
 
 The plugin worker runs in a separate process from the host. So the host treats
@@ -1118,7 +1118,7 @@ before it records the span.
 | Span                                 | Scope                                                                                                                                                                                | Parent                                                                                       |
 | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------- |
 | `sandbox.daytona.pack`               | The host-local pack step that builds the upload tarball. It makes no sandbox round trip.                                                                                             | the active startup step span                                                                 |
-| `sandbox.daytona.transfer`           | The transfer step: an upload to the sandbox (inbound) or a download from the sandbox (outbound). The `paperclip.sandbox.startup.transfer.direction` attribute records the direction. | the active sync task span (`stage.*` inbound, `restore.*` under `sandbox.syncBack` outbound) |
+| `sandbox.daytona.transfer`           | The transfer step: an upload to the sandbox (inbound) or a download from the sandbox (outbound). The `wardmote.sandbox.startup.transfer.direction` attribute records the direction. | the active sync task span (`stage.*` inbound, `restore.*` under `sandbox.syncBack` outbound) |
 | `sandbox.daytona.ensureDirectory`    | The `mkdir -p` step that ensures a directory exists before a write.                                                                                                                  | the active startup step span                                                                 |
 | `sandbox.daytona.checkSymlinkEscape` | The re-check step that a path resolves inside the workspace root before use.                                                                                                         | the active startup step span                                                                 |
 | `sandbox.daytona.promote`            | The atomic move of a staged temp onto its target via a pinned dir handle.                                                                                                            | the active startup step span                                                                 |
@@ -1143,12 +1143,12 @@ the attributes that the producer sends for one span.
 
 | Attribute                                        | Type   | Optional | Meaning                                                                                                   |
 | ------------------------------------------------ | ------ | -------- | --------------------------------------------------------------------------------------------------------- |
-| `paperclip.sandbox.startup.provider`             | string | no       | The normalized provider family.                                                                           |
-| `paperclip.sandbox.startup.outcome`              | string | yes      | The step outcome (`ok`, `skipped`, or `failed`).                                                          |
-| `paperclip.sandbox.startup.pack.wall_ms`         | number | yes      | The host-local wall time of the pack step. It rides the `sandbox.daytona.pack` span.                      |
-| `paperclip.sandbox.startup.transfer.wall_ms`     | number | yes      | The wall time of the transfer step. It rides the `sandbox.daytona.transfer` span.                         |
-| `paperclip.sandbox.startup.transfer.guard.count` | number | yes      | The number of serial guard round trips before one transfer. It rides the `sandbox.daytona.transfer` span. |
-| `paperclip.sandbox.startup.transfer.direction`   | string | yes      | The transfer direction (`inbound` or `outbound`). It rides the `sandbox.daytona.transfer` span.           |
+| `wardmote.sandbox.startup.provider`             | string | no       | The normalized provider family.                                                                           |
+| `wardmote.sandbox.startup.outcome`              | string | yes      | The step outcome (`ok`, `skipped`, or `failed`).                                                          |
+| `wardmote.sandbox.startup.pack.wall_ms`         | number | yes      | The host-local wall time of the pack step. It rides the `sandbox.daytona.pack` span.                      |
+| `wardmote.sandbox.startup.transfer.wall_ms`     | number | yes      | The wall time of the transfer step. It rides the `sandbox.daytona.transfer` span.                         |
+| `wardmote.sandbox.startup.transfer.guard.count` | number | yes      | The number of serial guard round trips before one transfer. It rides the `sandbox.daytona.transfer` span. |
+| `wardmote.sandbox.startup.transfer.direction`   | string | yes      | The transfer direction (`inbound` or `outbound`). It rides the `sandbox.daytona.transfer` span.           |
 
 The `span.record` host handler enforces the allowlist. It re-maps `provider`
 through the provider-family normalizer. It keeps `outcome` only when the value

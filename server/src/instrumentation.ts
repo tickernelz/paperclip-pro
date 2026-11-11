@@ -95,7 +95,7 @@ let tracerApiLoadFailed = false;
  * accessor never throws: a load or lookup failure logs once and returns the
  * local no-op tracer (fail open).
  */
-export function getStartupTracer(name = "paperclip.startup"): StartupTracerHandle {
+export function getStartupTracer(name = "wardmote.startup"): StartupTracerHandle {
   try {
     const require = createRequire(import.meta.url);
     const api = require("@opentelemetry/api") as {
@@ -150,7 +150,7 @@ let traceContextApiLoadFailed = false;
  * accessor never throws: a load or lookup failure logs once and returns the
  * local no-op trace context (fail open).
  */
-export function getStartupTraceContext(name = "paperclip.startup"): StartupTraceContextHandle {
+export function getStartupTraceContext(name = "wardmote.startup"): StartupTraceContextHandle {
   try {
     const require = createRequire(import.meta.url);
     const api = require("@opentelemetry/api") as {
@@ -262,7 +262,7 @@ export function recordProviderPluginSpan(input: {
       isRemote: true,
     };
     const parentContext = trace.setSpanContext(context.active(), remoteSpanContext);
-    const tracer = trace.getTracer("paperclip.startup");
+    const tracer = trace.getTracer("wardmote.startup");
     // Pass the true start time as the OpenTelemetry `startTime` option, so the
     // span opens at its real wall-clock start. An epoch-millisecond number is a
     // valid OpenTelemetry `TimeInput`.
