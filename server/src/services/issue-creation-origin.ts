@@ -10,6 +10,7 @@ export function createdFromIssueCondition(companyId: string, sourceIssueId: stri
     throw unprocessable("createdFromIssueId must be a UUID");
   }
   const source = alias(issues, "creation_source_issue");
+  const sourceKeys = sql`(${source.id}::text, ${source.identifier})`;
   // Resolve source runs independently of the candidate tasks so the database
   // can reuse this set, rather than scan all company runs for each task.
   const originatingRuns = sql`
@@ -17,6 +18,12 @@ export function createdFromIssueCondition(companyId: string, sourceIssueId: stri
     INNER JOIN ${issues} AS ${source} ON ${source.id} = ${sourceIssueId}
       AND ${source.companyId} = ${companyId}
     WHERE ${heartbeatRuns.companyId} = ${companyId}
+      AND (
+        ${heartbeatRuns.nativeIssueId} = ${source.id}
+        OR ${heartbeatRuns.contextSnapshot}->>'issueId' IN ${sourceKeys}
+        OR ${heartbeatRuns.contextSnapshot}->>'taskId' IN ${sourceKeys}
+        OR ${heartbeatRuns.contextSnapshot}->>'taskKey' IN ${sourceKeys}
+      )
       AND coalesce(
         ${heartbeatRuns.nativeIssueId}::text,
         nullif(${heartbeatRuns.contextSnapshot}->>'issueId', ''),
