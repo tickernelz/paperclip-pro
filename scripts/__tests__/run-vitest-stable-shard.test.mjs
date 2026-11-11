@@ -49,8 +49,8 @@ function dryRunJson(args, envOverrides = {}) {
   return JSON.parse(result.stdout);
 }
 
-const SHARD_COUNT = 6;
-const SERIALIZED_SHARD_COUNT = 3;
+const SHARD_COUNT = 4;
+const SERIALIZED_SHARD_COUNT = 2;
 
 
 test("the serialized shards form a complete, non-overlapping partition", () => {
