@@ -81,11 +81,6 @@ const SESSION_HOME_PATTERN = new RegExp(
   `^${LOGIN_SESSION_HOME_ROOT.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`,
 );
 
-/**
- * Derives the session home from a session UUID. It builds the exact
- * `/tmp/wardmote-adapter-login/<uuid>` path. It throws the fixed non-secret
- * error when the id is not a UUID, so a malformed id never becomes a home.
- */
 export function deriveLoginSessionHome(sessionUuid: string): string {
   if (!UUID_PATTERN.test(sessionUuid)) {
     throw new Error(LOGIN_SESSION_HOME_INVALID);

@@ -573,10 +573,6 @@ export interface LoginPtyOpenInput {
   providerLeaseId: string;
   /** The host-resolved fixed command identity. The worker maps it to a compile-time command. */
   loginCommandKey: LoginCommandKey;
-  /**
-   * The server-controlled, validated session home. The shape is exact:
-   * `/tmp/wardmote-adapter-login/<uuid>`.
-   */
   sessionHome: string;
 }
 

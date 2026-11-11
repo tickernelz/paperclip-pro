@@ -62,10 +62,6 @@ export type LoginCommandKey = "claude" | "codex" | "grok";
 export interface LoginPtyLaunchDescriptor {
   /** The host-resolved fixed command identity. */
   loginCommandKey: LoginCommandKey;
-  /**
-   * The server-controlled session home. The shape is exact:
-   * `/tmp/wardmote-adapter-login/<uuid>`.
-   */
   sessionHome: string;
 }
 

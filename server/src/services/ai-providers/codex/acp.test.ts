@@ -111,10 +111,6 @@ function subscriptionAuthJson(accountId: string, lastRefresh: string, marker: st
   );
 }
 
-// Enumerate the host staged-home temp dirs `stageCodexHomeForSync` created for a
-// given runId (`wardmote-codex-home-sync-<runId>-<random>` under os.tmpdir()).
-// A unique per-test runId scopes the match to this run's staging dirs only, so
-// the assertion is not disturbed by other tests/processes sharing the tmp dir.
 async function listCodexHomeSyncDirs(runId: string): Promise<string[]> {
   const prefix = `wardmote-codex-home-sync-${runId}-`;
   const entries = await fs.readdir(os.tmpdir());
