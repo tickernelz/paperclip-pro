@@ -27208,8 +27208,8 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
               or(
                 sql`${agentWakeupRequests.payload}->>'issueId' = ${issue.id}`,
                 sql`${agentWakeupRequests.payload}->>'taskId' = ${issue.id}`,
-                sql`${agentWakeupRequests.payload}->'_paperclipWakeContext'->>'issueId' = ${issue.id}`,
-                sql`${agentWakeupRequests.payload}->'_paperclipWakeContext'->>'taskId' = ${issue.id}`,
+                sql`${agentWakeupRequests.payload}->'_wardmoteWakeContext'->>'issueId' = ${issue.id}`,
+                sql`${agentWakeupRequests.payload}->'_wardmoteWakeContext'->>'taskId' = ${issue.id}`,
               ),
             ),
           )
@@ -27523,8 +27523,8 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
               or(
                 sql`${agentWakeupRequests.payload}->>'issueId' = ${issue.id}`,
                 sql`${agentWakeupRequests.payload}->>'taskId' = ${issue.id}`,
-                sql`${agentWakeupRequests.payload}->'_paperclipWakeContext'->>'issueId' = ${issue.id}`,
-                sql`${agentWakeupRequests.payload}->'_paperclipWakeContext'->>'taskId' = ${issue.id}`,
+                sql`${agentWakeupRequests.payload}->'_wardmoteWakeContext'->>'issueId' = ${issue.id}`,
+                sql`${agentWakeupRequests.payload}->'_wardmoteWakeContext'->>'taskId' = ${issue.id}`,
               ),
             ),
           )

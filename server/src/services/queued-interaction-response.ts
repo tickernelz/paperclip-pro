@@ -43,7 +43,7 @@ export async function readQueuedInteractionResponse(db: Db, companyId: string, i
   };
   const source: NonNullable<IssueQueuedCommentEntry["source"]> = {
     kind: "interaction", interactionId: interaction.id, interactionKind: interaction.kind,
-    requiresFreshSession: record(record(payload)._paperclipWakeContext).forceFreshSession === true,
+    requiresFreshSession: record(record(payload)._wardmoteWakeContext).forceFreshSession === true,
   };
   return { comment, source };
 }

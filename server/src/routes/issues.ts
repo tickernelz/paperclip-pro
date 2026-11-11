@@ -18391,7 +18391,7 @@ export function issueRoutes(
           eq(agentWakeupRequests.companyId, issue.companyId),
           eq(agentWakeupRequests.status, "deferred_issue_execution"),
           sql`${agentWakeupRequests.payload}->>'issueId' = ${issue.id}`,
-          sql`${agentWakeupRequests.payload} #> '{_paperclipWakeContext,wakeCommentIds}' @> ${JSON.stringify([request.commentId])}::jsonb`,
+          sql`${agentWakeupRequests.payload} #> '{_wardmoteWakeContext,wakeCommentIds}' @> ${JSON.stringify([request.commentId])}::jsonb`,
         ),
       )
       .orderBy(asc(agentWakeupRequests.requestedAt))

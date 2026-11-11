@@ -129,7 +129,7 @@ describeEmbeddedPostgres("queued-comment postgres adapter", () => {
       requestedByActorType: "user",
       payload: {
         issueId: input.issueId,
-        _paperclipWakeContext: { wakeCommentIds: input.commentIds },
+        _wardmoteWakeContext: { wakeCommentIds: input.commentIds },
       },
     });
     return id;

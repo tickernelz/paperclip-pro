@@ -910,7 +910,7 @@ describe("admitWakeBehindIssueExecution", () => {
           durableReceipt,
           payload: {
             issueId: "issue-1",
-            _paperclipWakeContext: contextSnapshot,
+            _wardmoteWakeContext: contextSnapshot,
           },
         }),
       );
@@ -1079,7 +1079,7 @@ describe("admitWakeBehindIssueExecution", () => {
         mergedPayload: {
           issueId: "issue-1",
           preserved: true,
-          _paperclipWakeContext: {
+          _wardmoteWakeContext: {
             preservedContext: true,
             wakeReason: "issue_commented",
           },

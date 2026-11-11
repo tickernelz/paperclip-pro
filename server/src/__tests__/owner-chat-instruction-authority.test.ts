@@ -69,7 +69,7 @@ describe("owner-chat instruction authority", () => {
     const [wake] = await db.insert(agentWakeupRequests).values({ companyId, agentId, source: "on_demand", triggerDetail: "manual",
       idempotencyKey: `conversation-comment:${message.id}`,
       reason: "issue_commented", status: "claimed", requestedByActorType: "user", requestedByActorId: userId,
-      payload: { issueId: chat.id, commentId: message.id, _paperclipWakeContext: context } }).returning();
+      payload: { issueId: chat.id, commentId: message.id, _wardmoteWakeContext: context } }).returning();
     const [run] = await db.insert(heartbeatRuns).values({ companyId, agentId, status: "running", responsibleUserId: userId,
       wakeupRequestId: wake.id, invocationSource: "automation", contextSnapshot: context }).returning();
     await db.update(agentWakeupRequests).set({ runId: run.id }).where(eq(agentWakeupRequests.id, wake.id));
@@ -158,7 +158,7 @@ describe("owner-chat instruction authority", () => {
   it.each(["plugin", "connector", "slack board", "unknown channel", "wrong comment receipt", "missing client request", "agent", "missing receipt"])("rejects %s work attributed to the same owner", async (source) => {
     const f = await seed();
     if (source === "plugin") await db.update(agentWakeupRequests).set({ payload: { ...f.wake.payload,
-      _paperclipWakeContext: { ...f.run.contextSnapshot, source: "plugin:inbox" } } }).where(eq(agentWakeupRequests.id, f.wake.id));
+      _wardmoteWakeContext: { ...f.run.contextSnapshot, source: "plugin:inbox" } } }).where(eq(agentWakeupRequests.id, f.wake.id));
     if (source === "connector") await db.update(agentWakeupRequests).set({ idempotencyKey: `chat-inbound:${randomUUID()}` }).where(eq(agentWakeupRequests.id, f.wake.id));
     if (source === "slack board") await db.update(agentWakeupRequests).set({ source: "automation", triggerDetail: "system",
       idempotencyKey: `slack-board-comment:${randomUUID()}` }).where(eq(agentWakeupRequests.id, f.wake.id));
@@ -183,7 +183,7 @@ describe("owner-chat instruction authority", () => {
   it("accepts a coalesced owner message only when it is the active instruction", async () => {
     const f = await seed();
     await db.update(agentWakeupRequests).set({ status: "coalesced", payload: { issueId: f.chat.id,
-      _paperclipWakeContext: { source: "issue.comment", wakeCommentIds: [f.message.id] } } }).where(eq(agentWakeupRequests.id, f.wake.id));
+      _wardmoteWakeContext: { source: "issue.comment", wakeCommentIds: [f.message.id] } } }).where(eq(agentWakeupRequests.id, f.wake.id));
     await expect(authorize(f)).resolves.toMatchObject({ agentId: f.agentId });
   });
 

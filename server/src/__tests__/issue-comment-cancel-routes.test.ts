@@ -451,7 +451,7 @@ describe("issue comment cancel routes", () => {
       status: "succeeded",
       payload: {
         issueId: "11111111-1111-4111-8111-111111111111",
-        _paperclipWakeContext: {
+        _wardmoteWakeContext: {
           wakeCommentIds: ["comment-1"],
         },
       },

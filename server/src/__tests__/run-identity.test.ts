@@ -48,7 +48,7 @@ const support = await getEmbeddedPostgresTestSupport();
     await db.insert(agentWakeupRequests).values([
       { id: queueId, companyId: input.companyId, agentId: input.agentId, source: "automation",
         status: "coalesced", runId: input.runId, requestedByActorType: "system",
-        payload: { issueId: input.issueId, _paperclipWakeContext: { wakeCommentIds: input.messageIds },
+        payload: { issueId: input.issueId, _wardmoteWakeContext: { wakeCommentIds: input.messageIds },
           queuedCommentInterrupt: { actorId: "operator", requestedAt: new Date().toISOString() } } },
       { id: wakeupRequestId, companyId: input.companyId, agentId: input.agentId, source: "on_demand",
         status: "queued", runId: input.runId, requestedByActorType: "user", requestedByActorId: "operator",
@@ -98,7 +98,7 @@ const support = await getEmbeddedPostgresTestSupport();
           fault === "unconsumed" ? { status: "deferred_issue_execution" } :
           fault === "other-run" ? { runId: null } :
           { payload: { ...receipt.payload, ...(fault === "other-task" ? { issueId: randomUUID() } :
-            { _paperclipWakeContext: { wakeCommentIds: [randomUUID()] } }) } },
+            { _wardmoteWakeContext: { wakeCommentIds: [randomUUID()] } }) } },
         ).where(eq(agentWakeupRequests.id, input.queueId));
       }
       await expect(initializeRunIdentity(db, { ...input, responsibleUserId: "A", cause: "dispatch" })).rejects.toThrow("interrupt authority");

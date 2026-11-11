@@ -45,7 +45,7 @@ const support = await getEmbeddedPostgresTestSupport();
     const [wake] = await db.insert(agentWakeupRequests).values({ companyId: f.companyId, agentId: f.agent.id,
       source: options.human ? "assignment" : "automation", status: "claimed",
       requestedByActorType: options.human ? "user" : "system", requestedByActorId: options.human ? "owner" : null,
-      payload: { issueId: issue.id, _paperclipWakeContext: { source: "issue.update" } } }).returning();
+      payload: { issueId: issue.id, _wardmoteWakeContext: { source: "issue.update" } } }).returning();
     const [run] = await db.insert(heartbeatRuns).values({ companyId: f.companyId, agentId: f.agent.id,
       status: options.status ?? "running", responsibleUserId: "owner", wakeupRequestId: wake.id,
       retryOfRunId: options.retryOfRunId, contextSnapshot: { issueId: issue.id, ...options.context } }).returning();
@@ -128,7 +128,7 @@ const support = await getEmbeddedPostgresTestSupport();
       { source: "automation", reason: "issue_commented" },
       { requestedByActorType: "system" },
       { idempotencyKey: "chat-inbound:legacy" },
-      { payload: { issueId: issue.id, _paperclipWakeContext: { source: "plugin:example" } } },
+      { payload: { issueId: issue.id, _wardmoteWakeContext: { source: "plugin:example" } } },
     ]) {
       await db.update(agentWakeupRequests).set(patch).where(eq(agentWakeupRequests.id, legacy.wake.id));
       expect(await resolve(f, issue, legacy.run.id)).not.toHaveProperty("humanDirectedIssueId");
@@ -143,13 +143,13 @@ const support = await getEmbeddedPostgresTestSupport();
     expect(await resolve(f, issue, current.run.id)).not.toHaveProperty("humanDirectedIssueId");
     const [coalesced] = await db.insert(agentWakeupRequests).values({ companyId: f.companyId, agentId: f.agent.id,
       runId: current.run.id, source: "assignment", status: "coalesced", requestedByActorType: "user",
-      requestedByActorId: "owner", payload: { issueId: issue.id, _paperclipWakeContext: { source: "issue.update" } } }).returning();
+      requestedByActorId: "owner", payload: { issueId: issue.id, _wardmoteWakeContext: { source: "issue.update" } } }).returning();
     expect(await resolve(f, issue, current.run.id)).toHaveProperty("humanDirectedIssueId", issue.id);
     for (const patch of [
       { status: "cancelled" }, { status: "skipped" }, { requestedByActorId: " " },
       { requestedByActorType: "agent" }, { idempotencyKey: "chat-inbound:external-sender" },
       { payload: { issueId: randomUUID() } },
-      { payload: { issueId: issue.id, _paperclipWakeContext: { source: "plugin:untrusted" } } },
+      { payload: { issueId: issue.id, _wardmoteWakeContext: { source: "plugin:untrusted" } } },
       { payload: { issueId: issue.id } }, { companyId: randomUUID() }, { agentId: f.other.id },
     ]) {
       // Existing foreign keys require a real company for the cross-company case.
@@ -158,7 +158,7 @@ const support = await getEmbeddedPostgresTestSupport();
       await db.update(agentWakeupRequests).set(patch).where(eq(agentWakeupRequests.id, coalesced.id));
       expect(await resolve(f, issue, current.run.id)).not.toHaveProperty("humanDirectedIssueId");
       await db.update(agentWakeupRequests).set({ status: "coalesced", requestedByActorType: "user",
-        requestedByActorId: "owner", idempotencyKey: null, payload: { issueId: issue.id, _paperclipWakeContext: { source: "issue.update" } },
+        requestedByActorId: "owner", idempotencyKey: null, payload: { issueId: issue.id, _wardmoteWakeContext: { source: "issue.update" } },
         companyId: f.companyId, agentId: f.agent.id }).where(eq(agentWakeupRequests.id, coalesced.id));
     }
   });
