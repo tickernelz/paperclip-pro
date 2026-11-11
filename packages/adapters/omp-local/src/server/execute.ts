@@ -238,7 +238,7 @@ function safePathSegment(value: string): string {
 function executionCwdsMatch(saved: string, current: string, remote: boolean): boolean {
   return remote
     ? path.posix.normalize(saved) === path.posix.normalize(current)
-    : rehomeLegacyPath(saved) === path.resolve(current);
+    : rehomeLegacyPath(saved) === rehomeLegacyPath(current);
 }
 
 function stringsOnly(env: NodeJS.ProcessEnv | Record<string, unknown>): Record<string, string> {

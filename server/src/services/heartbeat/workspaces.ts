@@ -1852,7 +1852,7 @@ export function resolveRuntimeSessionParamsForWorkspace(input: {
       warning: null as string | null,
     };
   }
-  if (path.resolve(projectCwd) === resolveHomeAwarePath(previousCwd)) {
+  if (resolveHomeAwarePath(projectCwd) === resolveHomeAwarePath(previousCwd)) {
     return {
       sessionParams: previousSessionParams,
       warning: null as string | null,
