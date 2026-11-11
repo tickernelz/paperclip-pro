@@ -27,7 +27,7 @@ describe("connection intent OAuth window messages", () => {
       expect(
         readConnectionIntentOAuthOutcome(
           event({
-            type: "paperclip.connection-intent.oauth",
+            type: "wardmote.connection-intent.oauth",
             interactionId,
             outcome,
           }),
@@ -43,7 +43,7 @@ describe("connection intent OAuth window messages", () => {
       "foreign origin",
       event(
         {
-          type: "paperclip.connection-intent.oauth",
+          type: "wardmote.connection-intent.oauth",
           interactionId,
           outcome: "connected",
         },
@@ -53,7 +53,7 @@ describe("connection intent OAuth window messages", () => {
     [
       "wrong interaction",
       event({
-        type: "paperclip.connection-intent.oauth",
+        type: "wardmote.connection-intent.oauth",
         interactionId: "other",
         outcome: "connected",
       }),
@@ -65,7 +65,7 @@ describe("connection intent OAuth window messages", () => {
     [
       "unknown outcome",
       event({
-        type: "paperclip.connection-intent.oauth",
+        type: "wardmote.connection-intent.oauth",
         interactionId,
         outcome: "authorized",
       }),

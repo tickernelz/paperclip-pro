@@ -465,7 +465,7 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
     expect(navigateTopLevelMock).not.toHaveBeenCalled();
     expect(putConnectionInstallsMock).not.toHaveBeenCalled();
     expect(finishAppMock).not.toHaveBeenCalled();
-    const message = (origin: string, interactionId: string, outcome: string) => window.dispatchEvent(new MessageEvent("message", { origin, data: { type: "paperclip.connection-intent.oauth", interactionId, outcome } }));
+    const message = (origin: string, interactionId: string, outcome: string) => window.dispatchEvent(new MessageEvent("message", { origin, data: { type: "wardmote.connection-intent.oauth", interactionId, outcome } }));
     await act(async () => { message("https://untrusted.example", "intent-inline", "connected"); message(window.location.origin, "other-intent", "connected"); });
     expect(onComplete).not.toHaveBeenCalled();
     await act(async () => message(window.location.origin, "intent-inline", "failed"));

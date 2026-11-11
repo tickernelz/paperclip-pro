@@ -152,7 +152,7 @@ export async function ensureNativeCompletionContract(input: {
 }) {
   return input.db.transaction(async (tx) => {
     await tx.execute(sql`select pg_advisory_xact_lock(hashtextextended(${[
-      "paperclip:native-completion-contract",
+      "wardmote:native-completion-contract",
       input.companyId,
       input.issue.id,
     ].join(":")}, 0))`);
