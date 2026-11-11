@@ -153,7 +153,7 @@ export const wardmoteConfigSchema = z
         keyFilePath: "~/.wardmote/instances/default/secrets/master.key",
       },
     }),
-    runLogs: runLogsConfigSchema,
+    runLogs: runLogsConfigSchema.optional(),
   })
   .passthrough()
   .superRefine((value, ctx) => {

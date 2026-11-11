@@ -5,11 +5,13 @@ import { and, inArray, isNotNull } from "drizzle-orm";
 import { heartbeatRuns, type Db } from "@tickernelz/wardmote-db";
 import type { RunLogRetentionConfig } from "@tickernelz/wardmote-shared";
 import { logger } from "../middleware/logger.js";
-import { RUN_LOG_RETAINED_SUFFIX, type RunLogRetainedMarker } from "./run-log-store.js";
+import { readRunLogRetainedMarker, RUN_LOG_RETAINED_SUFFIX, type RunLogRetainedMarker } from "./run-log-store.js";
 
 const HOUR_MS = 60 * 60 * 1000;
 const COPY_CHUNK_BYTES = 1024 * 1024;
 const LIVE_RUN_STATUSES = ["queued", "running"];
+const TRIM_TMP_SUFFIX = ".retention.tmp";
+const MARKER_TMP_SUFFIX = `${RUN_LOG_RETAINED_SUFFIX}.tmp`;
 
 export interface RunLogRetentionReport {
   dryRun: boolean;
@@ -37,7 +39,7 @@ async function findRetainedStart(handle: fs.FileHandle, size: number, keepBytes:
 export async function trimRunLogFile(absPath: string, keepBytes: number, now: Date): Promise<TrimOutcome> {
   const before = await fs.stat(absPath);
   const source = await fs.open(absPath, "r");
-  const tmpPath = path.join(path.dirname(absPath), `.${path.basename(absPath)}.${randomUUID()}.retention.tmp`);
+  const tmpPath = path.join(path.dirname(absPath), `.${path.basename(absPath)}.${randomUUID()}${TRIM_TMP_SUFFIX}`);
   let retainedFromByte: number | null;
   try {
     retainedFromByte = await findRetainedStart(source, before.size, keepBytes);
@@ -79,18 +81,38 @@ export async function trimRunLogFile(absPath: string, keepBytes: number, now: Da
     reason: "run_log_retention",
   };
   const markerPath = `${absPath}${RUN_LOG_RETAINED_SUFFIX}`;
-  await fs.writeFile(`${markerPath}.tmp`, JSON.stringify(marker), { mode: before.mode & 0o777 });
-  await fs.rename(`${markerPath}.tmp`, markerPath);
+  await fs.writeFile(`${absPath}${MARKER_TMP_SUFFIX}`, JSON.stringify(marker), { mode: before.mode & 0o777 });
+  await fs.rename(`${absPath}${MARKER_TMP_SUFFIX}`, markerPath);
   await fs.rename(tmpPath, absPath);
   return "trimmed";
 }
 
-async function exists(filePath: string) {
+async function startsWithHole(absPath: string) {
+  const handle = await fs.open(absPath, "r");
   try {
-    await fs.access(filePath);
-    return true;
-  } catch {
-    return false;
+    const byte = Buffer.alloc(1);
+    const { bytesRead } = await handle.read(byte, 0, 1, 0);
+    return bytesRead === 1 && byte[0] === 0;
+  } finally {
+    await handle.close();
+  }
+}
+
+async function tailAlreadyWithin(absPath: string, size: number, keepBytes: number) {
+  const marker = await readRunLogRetainedMarker(absPath);
+  if (!marker || size - marker.retainedFromByte > keepBytes) return false;
+  return startsWithHole(absPath);
+}
+
+async function removeAbandonedTemps(basePath: string, entries: string[], olderThanMs: number) {
+  for (const entry of entries) {
+    if (!entry.endsWith(TRIM_TMP_SUFFIX) && !entry.endsWith(MARKER_TMP_SUFFIX)) continue;
+    const absPath = path.join(basePath, entry);
+    try {
+      if ((await fs.stat(absPath)).ctimeMs < olderThanMs) await fs.rm(absPath, { force: true });
+    } catch (err) {
+      logger.warn({ err, entry }, "run log retention could not remove an abandoned temp file");
+    }
   }
 }
 
@@ -120,6 +142,9 @@ export async function sweepRunLogs(input: {
     if ((err as NodeJS.ErrnoException | null)?.code === "ENOENT") return report;
     throw err;
   }
+  if (!settings.dryRun) {
+    await removeAbandonedTemps(basePath, entries, now.getTime() - settings.minIdleMinutes * 60 * 1000);
+  }
   for (const logRef of entries.filter((entry) => entry.endsWith(".ndjson")).sort()) {
     const absPath = path.join(basePath, logRef);
     report.scanned += 1;
@@ -136,7 +161,7 @@ export async function sweepRunLogs(input: {
       }
       const keepBytes = ageMs >= settings.keepFullHours * HOUR_MS ? settings.oldTailBytes : settings.recentTailBytes;
       if (keepBytes <= 0 || stat.size <= keepBytes) continue;
-      if (await exists(`${absPath}${RUN_LOG_RETAINED_SUFFIX}`)) continue;
+      if (await tailAlreadyWithin(absPath, stat.size, keepBytes)) continue;
       const freed = Math.max(0, stat.blocks * 512 - keepBytes);
       if (!settings.dryRun) {
         const outcome = await trimRunLogFile(absPath, keepBytes, now);

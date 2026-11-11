@@ -87,6 +87,50 @@ describe("run log retention", () => {
     expect(content.length - marker.retainedFromByte).toBeLessThanOrEqual(settings.recentTailBytes);
   });
 
+  it("trims a reopened log again once its new output outgrows the kept tail", async () => {
+    const absPath = await writeLog("c/a/reopened.ndjson", ndjson(400), 48 * HOUR_MS);
+    await sweepRunLogs({ basePath, settings, liveLogRefs: new Set(), now: NOW });
+    const first = JSON.parse(await fs.readFile(`${absPath}${RUN_LOG_RETAINED_SUFFIX}`, "utf8"));
+
+    await fs.appendFile(absPath, ndjson(200));
+    const mtime = new Date(NOW.getTime() - 48 * HOUR_MS);
+    await fs.utimes(absPath, mtime, mtime);
+    const report = await sweepRunLogs({ basePath, settings, liveLogRefs: new Set(), now: NOW });
+
+    const second = JSON.parse(await fs.readFile(`${absPath}${RUN_LOG_RETAINED_SUFFIX}`, "utf8"));
+    const size = (await fs.stat(absPath)).size;
+    expect(report.trimmed).toBe(1);
+    expect(second.retainedFromByte).toBeGreaterThan(first.retainedFromByte);
+    expect(size - second.retainedFromByte).toBeLessThanOrEqual(settings.oldTailBytes);
+    expect((await sweepRunLogs({ basePath, settings, liveLogRefs: new Set(), now: NOW })).trimmed).toBe(0);
+  });
+
+  it("recovers a trim interrupted after its marker landed but before the log was replaced", async () => {
+    const content = ndjson(400);
+    const absPath = await writeLog("c/a/interrupted.ndjson", content, 48 * HOUR_MS);
+    const abandoned = path.join(basePath, "c", "a", ".interrupted.ndjson.0000.retention.tmp");
+    await fs.writeFile(abandoned, content);
+    await fs.writeFile(
+      `${absPath}${RUN_LOG_RETAINED_SUFFIX}`,
+      JSON.stringify({ version: 1, retainedFromByte: content.length - 500, originalBytes: content.length, truncatedAt: NOW.toISOString(), reason: "run_log_retention" }),
+    );
+
+    const report = await sweepRunLogs({
+      basePath,
+      settings,
+      liveLogRefs: new Set(),
+      now: new Date(Date.now() + settings.minIdleMinutes * 60 * 1000 + 1000),
+    });
+
+    expect(report.trimmed).toBe(1);
+    await expect(fs.access(abandoned)).rejects.toThrow();
+    const head = Buffer.alloc(1);
+    const handle = await fs.open(absPath, "r");
+    await handle.read(head, 0, 1, 0);
+    await handle.close();
+    expect(head[0]).toBe(0);
+  });
+
   it("leaves live, recently written, small, and dry-run logs untouched", async () => {
     const content = ndjson(400);
     await writeLog("c/a/live.ndjson", content, 48 * HOUR_MS);
