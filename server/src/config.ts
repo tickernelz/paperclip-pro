@@ -14,6 +14,8 @@ import {
   DEPLOYMENT_EXPOSURES,
   SECRET_PROVIDERS,
   STORAGE_PROVIDERS,
+  runLogRetentionConfigSchema,
+  type RunLogRetentionConfig,
   type BindMode,
   type AuthBaseUrlMode,
   type DeploymentExposure,
@@ -80,6 +82,7 @@ export interface Config {
   databaseBackupRetentionDays: number;
   databaseBackupDir: string;
   workspaceReaperCooldownDays: number;
+  runLogRetention: RunLogRetentionConfig;
   serveUi: boolean;
   uiDevMiddleware: boolean;
   secretsProvider: SecretProvider;
@@ -131,6 +134,18 @@ export function loadConfig(): Config {
       ? fileConfig?.database.connectionString
       : undefined;
   const fileDatabaseBackup = fileConfig?.database.backup;
+  const fileRunLogRetention = runLogRetentionConfigSchema.parse(fileConfig?.runLogs?.retention ?? {});
+  const runLogRetention: RunLogRetentionConfig = {
+    ...fileRunLogRetention,
+    enabled:
+      process.env.WARDMOTE_RUN_LOG_RETENTION_ENABLED !== undefined
+        ? process.env.WARDMOTE_RUN_LOG_RETENTION_ENABLED === "true"
+        : fileRunLogRetention.enabled,
+    dryRun:
+      process.env.WARDMOTE_RUN_LOG_RETENTION_DRY_RUN !== undefined
+        ? process.env.WARDMOTE_RUN_LOG_RETENTION_DRY_RUN === "true"
+        : fileRunLogRetention.dryRun,
+  };
   const fileSecrets = fileConfig?.secrets;
   const fileStorage = fileConfig?.storage;
 
@@ -338,6 +353,7 @@ export function loadConfig(): Config {
     databaseBackupRetentionDays,
     databaseBackupDir,
     workspaceReaperCooldownDays,
+    runLogRetention,
     serveUi:
       process.env.SERVE_UI !== undefined
         ? process.env.SERVE_UI === "true"

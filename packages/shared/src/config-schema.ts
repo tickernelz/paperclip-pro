@@ -107,6 +107,20 @@ export const updatesConfigSchema = z.object({
   checkEnabled: z.boolean().default(true),
 }).passthrough().prefault({});
 
+export const runLogRetentionConfigSchema = z.object({
+  enabled: z.boolean().default(true),
+  dryRun: z.boolean().default(false),
+  intervalMinutes: z.number().int().min(5).max(7 * 24 * 60).default(60),
+  minIdleMinutes: z.number().int().min(30).max(30 * 24 * 60).default(120),
+  keepFullHours: z.number().int().min(1).max(3650 * 24).default(24),
+  recentTailBytes: z.number().int().min(0).default(5 * 1024 * 1024),
+  oldTailBytes: z.number().int().min(0).default(256 * 1024),
+}).passthrough().prefault({});
+
+export const runLogsConfigSchema = z.object({
+  retention: runLogRetentionConfigSchema,
+}).passthrough().prefault({});
+
 export const wardmoteConfigSchema = z
   .object({
     $meta: configMetaSchema,
@@ -139,6 +153,7 @@ export const wardmoteConfigSchema = z
         keyFilePath: "~/.wardmote/instances/default/secrets/master.key",
       },
     }),
+    runLogs: runLogsConfigSchema,
   })
   .passthrough()
   .superRefine((value, ctx) => {
@@ -204,6 +219,7 @@ export type TelemetryConfig = z.infer<typeof telemetryConfigSchema>;
 export type UpdatesConfig = z.infer<typeof updatesConfigSchema>;
 export type ConfigMeta = z.infer<typeof configMetaSchema>;
 export type DatabaseBackupConfig = z.infer<typeof databaseBackupConfigSchema>;
+export type RunLogRetentionConfig = z.infer<typeof runLogRetentionConfigSchema>;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
