@@ -3453,28 +3453,34 @@ describe("executeNativeSession recovery", () => {
       async completeRun() {},
     };
 
-    const execution = executeNativeSession({
-      input,
-      backend,
-      controlPlane: port,
-      runnerInstanceId: "runner-recovery",
-      controlPlaneInstanceId: "control-recovery",
-      timeoutMs: 1,
-      keepSessionOpen: true,
-    });
-    const rejection = expect(execution).rejects.toThrow(
-      "native session timed out",
-    );
-    await appendStarted;
-    await vi.waitFor(() => expect(iteratorTeardown).toHaveBeenCalledOnce());
-    await rejection;
-    expect(cancel).toHaveBeenCalledOnce();
-    expect(close).toHaveBeenCalled();
-    expect(appendEvent).toHaveBeenCalledOnce();
-    expect(appendCommitted).toBe(false);
-    releaseAppend();
-    await new Promise<void>((resolve) => setImmediate(resolve));
-    expect(appendCommitted).toBe(false);
+    vi.useFakeTimers({ toFake: ["Date"] });
+    try {
+      const execution = executeNativeSession({
+        input,
+        backend,
+        controlPlane: port,
+        runnerInstanceId: "runner-recovery",
+        controlPlaneInstanceId: "control-recovery",
+        timeoutMs: 1,
+        keepSessionOpen: true,
+      });
+      const rejection = expect(execution).rejects.toThrow(
+        "native session timed out",
+      );
+      await appendStarted;
+      vi.setSystemTime(Date.now() + 1);
+      await vi.waitFor(() => expect(iteratorTeardown).toHaveBeenCalledOnce());
+      await rejection;
+      expect(cancel).toHaveBeenCalledOnce();
+      expect(close).toHaveBeenCalled();
+      expect(appendEvent).toHaveBeenCalledOnce();
+      expect(appendCommitted).toBe(false);
+      releaseAppend();
+      await new Promise<void>((resolve) => setImmediate(resolve));
+      expect(appendCommitted).toBe(false);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("closes a failed session while retaining an uncancellable event read", async () => {
@@ -8353,22 +8359,28 @@ describe("executeNativeSession recovery", () => {
       async completeRun() {},
     };
 
-    const execution = executeNativeSession({
-      input,
-      backend,
-      controlPlane: port,
-      runnerInstanceId: "runner-recovery",
-      controlPlaneInstanceId: "control-recovery",
-      runtimeInputLiveWindowMs: 1,
-      timeoutMs: 25,
-      keepSessionOpen: true,
-    });
-    await handoffStarted;
-    await vi.waitFor(() => expect(close).toHaveBeenCalledOnce());
-    expect(handoffSignal?.aborted).toBe(true);
-    await expect(execution).rejects.toThrow("native session timed out");
-    releaseHandoff();
-    expect(close).toHaveBeenCalledOnce();
+    vi.useFakeTimers({ toFake: ["Date"] });
+    try {
+      const execution = executeNativeSession({
+        input,
+        backend,
+        controlPlane: port,
+        runnerInstanceId: "runner-recovery",
+        controlPlaneInstanceId: "control-recovery",
+        runtimeInputLiveWindowMs: 1,
+        timeoutMs: 25,
+        keepSessionOpen: true,
+      });
+      await handoffStarted;
+      vi.setSystemTime(Date.now() + 25);
+      await vi.waitFor(() => expect(close).toHaveBeenCalledOnce());
+      expect(handoffSignal?.aborted).toBe(true);
+      await expect(execution).rejects.toThrow("native session timed out");
+      releaseHandoff();
+      expect(close).toHaveBeenCalledOnce();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("preserves terminal success while iterator teardown remains pending", async () => {
