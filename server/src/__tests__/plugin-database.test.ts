@@ -500,6 +500,7 @@ describeEmbeddedPostgres("plugin database namespaces", () => {
       "002_paperclip_distillation.sql",
       "003_spaces.sql",
       "004_wardmote_settings_keys.sql",
+      "005_wardmote_distillation_tables.sql",
     ]);
 
     const constraintRows = Array.from(
@@ -533,9 +534,10 @@ describeEmbeddedPostgres("plugin database namespaces", () => {
     expect(constraints).not.toContain("paperclip_distillation_work_i_company_id_wiki_id_idempotenc_key");
     expect(constraints).not.toContain("paperclip_page_bindings_company_id_wiki_id_page_path_key");
     expect(uniqueColumnSets).not.toContain("wiki_pages:company_id,wiki_id,path");
-    expect(uniqueColumnSets).not.toContain("paperclip_distillation_cursors:company_id,wiki_id,source_scope,scope_key,source_kind");
-    expect(uniqueColumnSets).not.toContain("paperclip_distillation_work_items:company_id,wiki_id,idempotency_key");
-    expect(uniqueColumnSets).not.toContain("paperclip_page_bindings:company_id,wiki_id,page_path");
+    expect(uniqueColumnSets).not.toContain("wardmote_distillation_cursors:company_id,wiki_id,source_scope,scope_key,source_kind");
+    expect(uniqueColumnSets).toContain("wardmote_distillation_cursors:company_id,wiki_id,space_id,source_scope,scope_key,source_kind");
+    expect(uniqueColumnSets).not.toContain("wardmote_distillation_work_items:company_id,wiki_id,idempotency_key");
+    expect(uniqueColumnSets).not.toContain("wardmote_page_bindings:company_id,wiki_id,page_path");
   });
 
   it("applies migrations once and allows whitelisted core joins at runtime", async () => {
