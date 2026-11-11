@@ -4786,7 +4786,7 @@ describe("daytona native file-sync hooks", () => {
     // String sources stream from the local path; destinations are reserved temps.
     expect(uploads[0].source).toBe(secretSource);
     for (const upload of uploads) {
-      expect(path.posix.basename(upload.destination)).toMatch(/^\.paperclip-upload-/);
+      expect(path.posix.basename(upload.destination)).toMatch(/^\.wardmote-upload-/);
       expect(upload.destination).not.toBe(`${REMOTE_DIR}/.secret/auth.json`);
       // TOCTOU-hardened: the privileged upload destination is a DIRECT child of the
       // workspace root, never a sibling under the target's (sandbox-swappable)
@@ -4798,7 +4798,7 @@ describe("daytona native file-sync hooks", () => {
     // never appears at a widened window; applied via setFilePermissions as "600".
     expect(sandbox.fs.setFilePermissions).toHaveBeenCalledTimes(1);
     const [permPath, perms] = sandbox.fs.setFilePermissions.mock.calls[0] as [string, { mode: string }];
-    expect(path.posix.basename(permPath)).toMatch(/^\.paperclip-upload-/);
+    expect(path.posix.basename(permPath)).toMatch(/^\.wardmote-upload-/);
     expect(perms).toEqual({ mode: "600" });
 
     // The setFilePermissions on the temp precedes the mv that promotes it.
@@ -5195,7 +5195,7 @@ describe("daytona native file-sync hooks", () => {
     const [uploads] = sandbox.fs.uploadFiles.mock.calls[0] as [Array<{ source: string; destination: string }>];
     expect(uploads).toHaveLength(1);
     expect(uploads[0].source).toMatch(/\.tar\.gz$/);
-    expect(path.posix.basename(uploads[0].destination)).toMatch(/^\.paperclip-upload-.*\.tar\.gz$/);
+    expect(path.posix.basename(uploads[0].destination)).toMatch(/^\.wardmote-upload-.*\.tar\.gz$/);
     expect(uploads[0].destination.startsWith(`${REMOTE_DIR}/`)).toBe(true);
 
     // Inspect the real host tar: excluded file gone; symlink preserved AS a link.
@@ -5219,7 +5219,7 @@ describe("daytona native file-sync hooks", () => {
     // followed by removing the scratch tar.
     expect(extractCommand).toContain(".wardmote-runtime/assets");
     expect(extractCommand).toContain("tar -xf");
-    expect(extractCommand).toMatch(/rm -f .*\.paperclip-upload-.*\.tar\.gz/);
+    expect(extractCommand).toMatch(/rm -f .*\.wardmote-upload-.*\.tar\.gz/);
   });
 
   it("syncIn dereferences symlinks to bytes when followSymlinks is true (tar -h)", async () => {
@@ -5294,11 +5294,11 @@ describe("daytona native file-sync hooks", () => {
     const [requests] = sandbox.fs.downloadFiles.mock.calls[0] as [Array<{ source: string; destination: string }>];
     expect(requests).toHaveLength(2);
     for (const req of requests) {
-      expect(path.basename(req.destination)).toMatch(/^\.paperclip-upload-/);
+      expect(path.basename(req.destination)).toMatch(/^\.wardmote-upload-/);
       // TOCTOU-closed: the download reads a reserved snapshot inside the remote
       // dir, never the mutable original source path.
       expect(req.source.startsWith(`${REMOTE_DIR}/`)).toBe(true);
-      expect(path.posix.basename(req.source)).toMatch(/^\.paperclip-upload-/);
+      expect(path.posix.basename(req.source)).toMatch(/^\.wardmote-upload-/);
     }
     expect(requests.map((req) => req.source)).not.toContain(`${REMOTE_DIR}/out/result.txt`);
     expect(requests.map((req) => req.source)).not.toContain(`${REMOTE_DIR}/out/secret.key`);
@@ -5502,8 +5502,6 @@ describe("daytona native file-sync hooks", () => {
     await fs.writeFile(source, "plain");
 
     const sandbox = createMockSandbox();
-    // mkdir + realpath guard succeed; the promoting `mv -f` fails, leaving staged
-    // `.paperclip-upload-*` temps that the error path must sweep with `rm -f`.
     sandbox.process.executeCommand.mockImplementation(async (command: string) => {
       if (command.includes("mv -f")) {
         return { exitCode: 1, result: "mv: permission denied", artifacts: { stdout: "mv: permission denied" } };
@@ -5531,7 +5529,7 @@ describe("daytona native file-sync hooks", () => {
     // The upload happened, so a temp was staged; the error path cleans it up.
     expect(sandbox.fs.uploadFiles).toHaveBeenCalledTimes(1);
     const cleanupCall = sandbox.process.executeCommand.mock.calls.find(
-      ([cmd]) => String(cmd).includes("rm -f") && String(cmd).includes(".paperclip-upload-"),
+      ([cmd]) => String(cmd).includes("rm -f") && String(cmd).includes(".wardmote-upload-"),
     );
     expect(cleanupCall).toBeDefined();
   });
@@ -6028,7 +6026,7 @@ describe("daytona native file-sync hooks", () => {
     );
     expect(destinations).toHaveLength(2);
     for (const destination of destinations) {
-      expect(path.posix.basename(destination)).toMatch(/^\.paperclip-upload-/);
+      expect(path.posix.basename(destination)).toMatch(/^\.wardmote-upload-/);
       expect(path.posix.dirname(destination)).toBe(REMOTE_DIR);
     }
     expect(new Set(destinations).size).toBe(destinations.length);
@@ -6069,7 +6067,7 @@ describe("daytona native file-sync hooks", () => {
     expect(sources).toHaveLength(2);
     for (const source of sources) {
       expect(source.startsWith(`${REMOTE_DIR}/`)).toBe(true);
-      expect(path.posix.basename(source)).toMatch(/^\.paperclip-upload-/);
+      expect(path.posix.basename(source)).toMatch(/^\.wardmote-upload-/);
     }
     expect(new Set(sources).size).toBe(sources.length);
     expect(await fs.readFile(targetA, "utf8")).toBe("bytes");

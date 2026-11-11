@@ -19,7 +19,7 @@ export interface BuildJobManifestInput {
 export function buildJobManifest(input: BuildJobManifestInput): Record<string, unknown> {
   const podLabels = {
     ...input.labels,
-    "paperclip.io/role": "agent",
+    "wardmote.dev/role": "agent",
   };
   return {
     apiVersion: "batch/v1",

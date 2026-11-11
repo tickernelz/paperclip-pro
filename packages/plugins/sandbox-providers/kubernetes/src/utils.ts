@@ -2,8 +2,6 @@ import { createHash, randomInt } from "node:crypto";
 
 const ULID_ALPHABET = "0123456789abcdefghjkmnpqrstvwxyz";
 
-// Namespace names are capped at 63 chars (RFC 1123). The default "paperclip-"
-// prefix leaves 53 for the slug, which fits a full 36-char UUID untruncated.
 const MAX_SLUG_LENGTH = 53;
 
 export function deriveCompanySlug(input: string): string {
@@ -52,10 +50,10 @@ export interface LabelsInput {
 
 export function wardmoteLabels(input: LabelsInput): Record<string, string> {
   return {
-    "paperclip.io/run-id": input.runId,
-    "paperclip.io/agent-id": input.agentId,
-    "paperclip.io/company-id": input.companyId,
-    "paperclip.io/adapter": input.adapterType,
-    "paperclip.io/managed-by": "paperclip-k8s-plugin",
+    "wardmote.dev/run-id": input.runId,
+    "wardmote.dev/agent-id": input.agentId,
+    "wardmote.dev/company-id": input.companyId,
+    "wardmote.dev/adapter": input.adapterType,
+    "wardmote.dev/managed-by": "wardmote-k8s-plugin",
   };
 }

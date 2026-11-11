@@ -89,11 +89,7 @@ function toTimeoutSeconds(timeoutMs: number): number {
   return Math.max(1, Math.ceil(timeoutMs / 1000));
 }
 
-// Reserved scratch-name stem for staged uploads/downloads and remote tarballs.
-// The runtime's base64 fallback stages to `<path>.paperclip-upload`; the native
-// transport reuses the same reserved prefix so a provider temp never collides
-// with a real target or with the fallback's scratch name.
-const SCRATCH_PREFIX = ".paperclip-upload";
+const SCRATCH_PREFIX = ".wardmote-upload";
 
 function scratchName(suffix = ""): string {
   return `${SCRATCH_PREFIX}-${randomUUID()}${suffix}`;
@@ -629,12 +625,6 @@ async function snapshotOutboundFileSources(input: {
   return snapshots;
 }
 
-/**
- * Best-effort removal of reserved sandbox-side scratch files (upload/download
- * snapshots or partially promoted temps) on both the happy path and error paths,
- * so a failed transfer never accumulates `.paperclip-upload-*` scratch in the
- * sandbox. Swallows its own failure — cleanup must never mask the original error.
- */
 async function removeSandboxScratch(
   sandbox: Sandbox,
   paths: string[],
@@ -837,11 +827,6 @@ async function syncInFileMappings(input: {
   // promote script's own rename already consumes them.
   const compressedZstdScratchNames = compressedPlans.map((plan) => plan.compressed.zstdScratch);
 
-  // A failed upload or a mid-batch `mv -f`/decompress failure leaves reserved
-  // scratch (some targets promoted, others not) — sweep every reserved name on
-  // any error so a retry never accumulates stale `.paperclip-upload-*` scratch.
-  // The private host temp directory is removed in `finally` regardless of
-  // outcome — no temp remains after success or failure.
   try {
     // One batched bulk upload (single /files/bulk-upload) for all file mappings.
     // `transfer` span: the real byte upload — `sandbox.fs.uploadFiles`.
@@ -982,13 +967,6 @@ async function syncInDirectoryMapping(input: {
         ),
     });
     guardRoundTrips += 1;
-    // The uploaded scratch tar lands at the workspace root as a reserved
-    // `.paperclip-upload-*` entry. The extract script below removes it only on
-    // success. On an upload or extract failure the scratch tar can remain, and the
-    // runtime workspace wipe preserves every `.paperclip-upload-*` entry, so a
-    // stale tar would surface in the agent workspace. Sweep the scratch on any
-    // failure — symmetric with the file-mapping path — so a failed sync (for
-    // example a referenced-project extraction) leaves no residue.
     try {
       // `transfer` span: the real byte upload — `sandbox.fs.uploadFiles`.
       await withProviderSpan({
