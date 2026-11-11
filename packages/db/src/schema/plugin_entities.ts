@@ -11,20 +11,6 @@ import { companies } from "./companies.js";
 import { plugins } from "./plugins.js";
 import type { PluginStateScopeKind } from "@tickernelz/wardmote-shared";
 
-/**
- * `plugin_entities` table — persistent high-level mapping between Paperclip
- * objects and external plugin-defined entities.
- *
- * This table is used by plugins (e.g. `linear`, `github`) to store pointers
- * to their respective external IDs for projects, issues, etc. and to store
- * their custom data.
- *
- * Unlike `plugin_state`, which is for raw K-V persistence, `plugin_entities`
- * is intended for structured object mappings that the host can understand
- * and query for cross-plugin UI integration.
- *
- * @see PLUGIN_SPEC.md §21.3
- */
 export const pluginEntities = pgTable(
   "plugin_entities",
   {

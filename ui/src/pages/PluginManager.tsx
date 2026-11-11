@@ -68,23 +68,6 @@ function ExperimentalBadge() {
   );
 }
 
-/**
- * PluginManager page component.
- *
- * Provides a management UI for the Paperclip plugin system:
- * - Lists all installed plugins with their status, version, and category badges.
- * - Allows installing new plugins by npm package name.
- * - Provides per-plugin actions: enable, disable, navigate to settings.
- * - Uninstall with a two-step confirmation dialog to prevent accidental removal.
- *
- * Data flow:
- * - Reads from `GET /api/plugins` via `pluginsApi.list()`.
- * - Mutations (install / uninstall / enable / disable) invalidate
- *   `queryKeys.plugins.all` so the list refreshes automatically.
- *
- * @see PluginSettings — linked from the Settings icon on each plugin row.
- * @see doc/plugins/PLUGIN_SPEC.md §3 — Plugin Lifecycle for status semantics.
- */
 export function PluginManager() {
   const { selectedCompany } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();

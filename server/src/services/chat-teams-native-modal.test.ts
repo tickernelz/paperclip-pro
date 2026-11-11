@@ -199,9 +199,6 @@ function invoke(
   };
 }
 
-// This crosses the real pinned HTTP bridge, Teams event dispatch, adapter and
-// Chat SDK into Paperclip's callbacks. Only the instance JWT check is replaced;
-// this is not Microsoft tenant authentication, DB authorization or live proof.
 describe("Teams native task module adapter-to-runtime boundary", () => {
   const runtimes: ChatSdkEndpointRuntime[] = [];
   let fetch: ReturnType<typeof vi.fn>;

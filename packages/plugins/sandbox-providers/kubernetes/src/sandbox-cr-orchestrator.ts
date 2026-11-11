@@ -1,25 +1,3 @@
-/**
- * SandboxOrchestrator implementation backed by the kubernetes-sigs/agent-sandbox
- * Sandbox CRD (agents.x-k8s.io/v1alpha1).
- *
- * The Sandbox CR creates a long-lived pod that paperclip-server can exec into
- * for multi-command adapter-install workflows — the key architectural win over
- * the batch/v1 Job backend.
- *
- * Key semantic differences from jobOrchestrator:
- * - claim() creates a Sandbox CR via CustomObjectsApi instead of a batch Job
- * - getStatus() maps Sandbox phase (Pending|Ready|Terminating|Failed) to SandboxStatus
- * - findPod() reads status.podName from the Sandbox CR (falls back to label query)
- * - waitForCompletion() means "wait until pod is Ready to exec" NOT "wait until
- *   workload finishes". The Sandbox pod runs sleep infinity; execution completion
- *   is tracked by the individual execInPod() calls.
- * - release() deletes the Sandbox CR with Foreground propagation (controller
- *   tears down the underlying pod).
- *
- * NOTE: streamLogs() is provided for interface conformance but is limited —
- * the sleep-infinity pod has no meaningful stdout. Callers in execute mode
- * should use execInPod() and capture its stdout/stderr directly.
- */
 
 import type { KubeClients } from "./kube-client.js";
 import type { SandboxOrchestrator, SandboxStatus } from "./sandbox-orchestrator.js";

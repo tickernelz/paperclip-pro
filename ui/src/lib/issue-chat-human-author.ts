@@ -1,6 +1,5 @@
 import type { CompanyUserProfile } from "./company-members";
 
-/** Task messages load uploaded Paperclip avatars automatically, never remote URLs. */
 export function wardmoteHumanAvatarUrl(value: string | null | undefined): string | null {
   return value && /^\/api\/assets\/[^/?#]+\/content$/.test(value) ? value : null;
 }

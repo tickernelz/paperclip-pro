@@ -447,10 +447,6 @@ async function startServerWithDatabaseTeardown(
     const moduleName = "embedded-postgres";
     let EmbeddedPostgres: EmbeddedPostgresCtor;
     try {
-      // embedded-postgres registers async-exit-hook handlers as an import side
-      // effect. Those handlers stop PostgreSQL immediately on SIGINT/SIGTERM,
-      // racing Paperclip's later heartbeat snapshot query. Paperclip explicitly
-      // stops the managed cluster in its own ordered shutdown path instead.
       const mod = await loadWithoutCoordinatedShutdownSignalHooks(
         () => import(moduleName),
       );

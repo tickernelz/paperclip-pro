@@ -65,12 +65,6 @@ import { copyTextToClipboard } from "@/lib/clipboard";
 // Global bridge registry
 // ---------------------------------------------------------------------------
 
-/**
- * The global bridge registry shape.
- *
- * This is placed on `globalThis.__paperclipPluginBridge__` and consumed by
- * the plugin module loader to provide implementations for external imports.
- */
 export interface PluginBridgeRegistry {
   react: unknown;
   /**
@@ -666,16 +660,6 @@ class PluginSdkErrorBoundary extends Component<{ children: ReactNode; fallback?:
   }
 }
 
-/**
- * Initialize the plugin bridge global registry.
- *
- * Registers the host's React, ReactDOM, and SDK UI bridge implementations
- * on `globalThis.__paperclipPluginBridge__` so the plugin module loader
- * can provide them to plugin bundles.
- *
- * @param react - The host's React module
- * @param reactDom - The host's ReactDOM module
- */
 export function initPluginBridge(
   react: typeof import("react"),
   reactDom: typeof import("react-dom"),

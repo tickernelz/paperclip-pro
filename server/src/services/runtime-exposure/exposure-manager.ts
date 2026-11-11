@@ -1,24 +1,3 @@
-/**
- * Runtime exposure lifecycle orchestrator for the `tailscale_https` mode.
- *
- * Owns the exposure state machine independently of the backend process
- * lifecycle (PAP-17049 plan, PAP-17050 verdict). A backend can be running and
- * healthy while its HTTPS exposure is still `pending`, `failed`, or
- * `cleanup_pending`. This module never touches Tailscale directly — it drives
- * the least-privilege broker through an injected {@link BrokerClient} and an
- * injected external HTTPS health probe, so every branch is unit-testable
- * against a fake broker with no sockets, no CLI, and no certificates.
- *
- * Invariants enforced here (in addition to the broker's own controls):
- *  - fail-closed: a configured HTTPS preview is never reported `ready` unless an
- *    external, normally-validating HTTPS probe succeeds.
- *  - same-number: only the app port and its derived HMR companion are exposed.
- *  - idempotent stop/cleanup: a missing/already-removed lease is success, not an
- *    error; genuine cleanup failures quarantine the ports and never reuse them.
- *  - reconcile touches only Paperclip-owned mappings the broker reports; it can
- *    never mutate an unknown/manual mapping or the primary `:443` route (the
- *    broker's `list` never returns those, and remove requires an owned handle).
- */
 import type { RuntimeExposureConfigInput, RuntimeExposureStatus } from "@tickernelz/wardmote-shared";
 import {
   buildRuntimeExposureHealthUrl,
@@ -313,13 +292,6 @@ export interface ReconcileResult {
   errors: Array<{ runtimeId: string; code: string }>;
 }
 
-/**
- * Startup / periodic reconciliation. Adopts owned mappings that are still
- * desired and removes owned mappings that are not. The broker's `list` only
- * ever returns Paperclip-owned listeners, so unknown/manual mappings and the
- * primary `:443` route are structurally out of scope here — they can never be
- * enumerated, adopted, or removed by this routine.
- */
 export async function reconcileExposures(
   deps: ExposureManagerDeps,
   input: ReconcileInput,

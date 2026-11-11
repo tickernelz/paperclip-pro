@@ -17,7 +17,6 @@ import { resolveWardmoteHomeDir } from "../home-paths.js";
 // ---------------------------------------------------------------------------
 
 export interface AdapterPluginRecord {
-  /** npm package name (e.g., "droid-paperclip-adapter") */
   packageName: string;
   /** Absolute local filesystem path (for locally linked adapters) */
   localPath?: string;

@@ -159,17 +159,6 @@ export type PluginBridgeContextValue = {
   hostContext: PluginHostContext;
 };
 
-/**
- * React context that carries the active plugin identity and host scope.
- *
- * The slot/launcher mount wraps plugin components in a Provider so that
- * bridge hooks (`usePluginData`, `usePluginAction`, `useHostContext`) can
- * resolve the current plugin without ambient mutable globals.
- *
- * Because plugin bundles share the host's React instance (via the bridge
- * registry on `globalThis.__paperclipPluginBridge__`), context propagation
- * works correctly across the host/plugin boundary.
- */
 export const PluginBridgeContext =
   createContext<PluginBridgeContextValue | null>(null);
 
@@ -292,12 +281,6 @@ function isLegacyInstanceSettingsPath(pathname: string): boolean {
   );
 }
 
-/**
- * Resolve a plugin-provided Paperclip path to the active company scope.
- *
- * This intentionally handles plugin page roots such as `/wiki`, which cannot
- * be listed in the host router's static board-route table ahead of time.
- */
 export function resolveHostNavigationHref(
   to: string,
   companyPrefix: string | null | undefined,

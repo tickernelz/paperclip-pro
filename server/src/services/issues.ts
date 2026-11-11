@@ -10218,12 +10218,6 @@ export function issueService(db: Db) {
           if (issueData.projectId == null && workspaceSource.projectId) {
             issueData.projectId = workspaceSource.projectId;
           }
-          // Workspace linkage is only inheritable inside the source project. A
-          // cross-project child (for example, a Paperclip ID issue created from
-          // a Paperclip App parent) must fall through to its own project's
-          // default workspaces, otherwise the inherited ids fail the
-          // project-match assertions below and the create is impossible without
-          // the caller naming the target workspaces explicitly.
           const inheritsSourceProject =
             issueData.projectId == null ||
             issueData.projectId === workspaceSource.projectId;
@@ -12647,7 +12641,6 @@ export function issueService(db: Db) {
         sourceTrust?: typeof issueComments.$inferInsert.sourceTrust;
         createdAt?: Date | string | null;
         clientRequestId?: string;
-        /** Server-only: authenticated Paperclip messages also belong in the Slack thread. */
         mirrorToSlack?: boolean;
       },
       dbOrTx: any = db,
@@ -13159,16 +13152,7 @@ export function issueService(db: Db) {
         .set({ updatedAt: new Date() })
         .where(eq(issues.id, issueId));
 
-      // Only an explicitly authored comment from the run causally woken by an
-      // inbound chat message is automatically publishable. Presentation,
-      // recovery, automation, and ordinary internal agent comments stay in
-      // Paperclip even while a bound conversation is active.
       if (authorType === "agent" && isExplicitExternalAgentComment(metadata)) {
-        // An external-chat run may perform ordinary Paperclip lifecycle or
-        // bookkeeping writes before its adapter result is finalized. Those
-        // writes remain internal: only heartbeat's selected final presentation
-        // may consume this provider response slot. Explicit board "Send to
-        // channel" publications use the separate publication path.
         const chatFinalOwnsProviderReply =
           createdByRun !== null &&
           isExternalChatPresentationContext(

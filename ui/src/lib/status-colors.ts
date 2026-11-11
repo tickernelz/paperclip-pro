@@ -42,14 +42,6 @@ export const issueStatusText: Record<string, string> = {
 
 export const issueStatusTextDefault = "text-ink-3";
 
-// ---------------------------------------------------------------------------
-// Brand `.task-chip` status palette (PAP-75 / status-reference.html)
-//
-// Colour-named, 1px border, light + dark — values straight from paperclip.ing
-// `brand.css`. Shared by the agents section (PAP-80) and the All Projects page
-// (PAP-91); PAP-99 brings it to issue/task status chips, adding `violet` for
-// `in_review`.
-// ---------------------------------------------------------------------------
 
 export type BrandChipColor = "gray" | "blue" | "amber" | "green" | "violet" | "red";
 

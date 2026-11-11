@@ -282,11 +282,6 @@ export async function handleBridgeRequest(request: Request, env: BridgeEnv): Pro
       normalizeId,
     });
     const sandbox = await resolveSandbox(env, providerLeaseId, { keepAlive, sleepAfter, normalizeId });
-    // Guard against orphaning a keepAlive sandbox if workspace setup throws
-    // after creation: Paperclip never sees the lease ID in that case, so it
-    // can't clean up. Destroy here unless this is a reuseLease handshake
-    // (where the sandbox may have been created by a prior acquire and we
-    // shouldn't destroy it on a transient setup failure during reattachment).
     try {
       await applySandboxKeepAlive(sandbox, keepAlive);
       await ensureWorkspace(sandbox, { remoteCwd, sessionStrategy, sessionId, timeoutMs });

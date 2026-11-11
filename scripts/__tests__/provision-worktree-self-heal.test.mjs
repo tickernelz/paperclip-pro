@@ -8,9 +8,6 @@ import path from "node:path";
 const script = new URL("../provision-worktree.sh", import.meta.url).pathname;
 const runtimeScript = new URL("../provision-worktree-runtime.sh", import.meta.url).pathname;
 
-// Keep the PATH minimal so the fallback ladder is deterministic: node must be
-// reachable, but a globally installed `paperclip-pro` must not shadow the paths
-// under test.
 const testPath = [path.dirname(process.execPath), "/usr/bin", "/bin"].join(":");
 
 const cleanupDirs = [];

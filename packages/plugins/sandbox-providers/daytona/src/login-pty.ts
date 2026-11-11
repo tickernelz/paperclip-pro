@@ -1,48 +1,3 @@
-// The Daytona pseudo-terminal (PTY) session for the shared login flow. The login
-// command needs a real pseudo-terminal: pipe stdio emits no login prompt. The
-// Daytona SDK opens a PTY through `process.createPty`. This module binds that PTY
-// to a small session that the login PTY transport consumes, so the login runner
-// runs the command on a real terminal, streams the terminal output, and delivers
-// the delayed browser code plus the Enter byte.
-//
-// Command contract: the host resolves a closed login command key and a validated
-// session home, and it carries them in a launch descriptor. The descriptor holds
-// no command string. This module maps the key to a compile-time command, so a
-// caller cannot select or override the command. For the Codex key the module
-// composes `exec env CODEX_HOME=<encoded-home> <fixed-codex-command>`. For the
-// Grok key it composes `exec env GROK_HOME=<encoded-home> <fixed-grok-command>`.
-// For the Claude key it composes `exec <fixed-claude-command>` with no home
-// variable. The module encodes the dynamic home with a POSIX shell-argument
-// encoder, so the home cannot add a second shell token or a second command.
-//
-// Session home: the module revalidates the descriptor and the home shape, then
-// creates the session home directory with one `mkdir -p` command. The command
-// runs inside the sandbox, so it holds no authority over a host file and no
-// authority to call the Paperclip API. The sandbox contract in
-// `SANDBOX-REQUIREMENTS.md` treats a check that only inspects state inside the
-// sandbox as a non-boundary control, so this module keeps no owner check, no
-// mode check, and no link-type check for the session home.
-//
-// Dependency boundary: this provider plugin ships standalone (the workspace
-// excludes `packages/plugins/sandbox-providers/**`). So the module imports no
-// workspace package. It declares the small session shape locally through
-// {@link LoginPtySession}. The shape matches the `LoginPtySession` interface in
-// `@tickernelz/wardmote-adapter-utils`, so the transport factory `createLoginPtyTransport`
-// accepts the session opener from this module with no adapter. The runner drives
-// the transport; the transport drives this session.
-//
-// SDK boundary: the module holds no Daytona SDK type import. It declares the small
-// subset of the SDK PTY and filesystem surfaces that it uses through
-// {@link DaytonaPtyProcess}, {@link DaytonaPtyHandle}, and {@link DaytonaSandboxExec}.
-// The SDK `Process` and `PtyHandle` satisfy those subsets, so a caller passes
-// `sandbox.process` with no adapter. The narrow surface keeps the module
-// unit-testable with a fake PTY and a fake filesystem.
-//
-// Security (secret handling): the login runner delivers the browser code and the
-// Enter byte through {@link DaytonaPtyHandle.sendInput}. The SDK sends the input
-// over the PTY socket, so the code never rides a command line and never reaches a
-// process argument list. The session forwards the raw terminal bytes with no ANSI
-// or OSC 8 handling; the login parser owns that handling.
 
 import { randomUUID } from "node:crypto";
 
@@ -373,13 +328,6 @@ function composeLoginProfileCommand(command: string): string {
   return `${LOGIN_PROFILE_PREAMBLE} && ${command}`;
 }
 
-/**
- * Creates a {@link DaytonaLoginHomeFs} bound to a Daytona `process`. It runs one
- * `mkdir -p` command on the sandbox to create the session home. The command runs
- * inside the sandbox, so it holds no authority over a host file and no authority
- * to call the Paperclip API. The real command lands against a live sandbox; a
- * unit test injects a fake surface instead.
- */
 export function createDaytonaLoginHomeFs(exec: DaytonaSandboxExec): DaytonaLoginHomeFs {
   return {
     async createDirectory(path: string): Promise<void> {

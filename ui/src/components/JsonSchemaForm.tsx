@@ -77,7 +77,6 @@ export interface JsonSchemaNode {
   readOnly?: boolean;
   writeOnly?: boolean;
 
-  // Paperclip extensions
   /**
    * When true, the field is hidden behind an "Advanced options" disclosure
    * in the top-level `JsonSchemaForm`. Defaults to false (essential).

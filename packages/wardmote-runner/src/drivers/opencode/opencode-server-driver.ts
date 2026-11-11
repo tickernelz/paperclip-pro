@@ -685,12 +685,6 @@ class OpenCodeHarnessSession implements HarnessSession {
       {
         method: "POST",
         body: JSON.stringify({
-          // OpenCode 1.18's PromptPayload carries the provider and model at the
-          // top level.  Older examples used a nested `model` object; 1.18
-          // silently ignores that shape and falls back to the configured model,
-          // which can turn `openrouter/deepseek/...` into a duplicated provider
-          // lookup. Keep Paperclip's persisted provider/model form, but adapt it
-          // at this HTTP boundary.
           providerID,
           modelID,
           // Always select the empty default variant on an ordinary turn so a
@@ -1708,16 +1702,6 @@ class OpenCodeHarnessSession implements HarnessSession {
         text(providerErrorData.message, text(providerError.message)) ===
           "Aborted"
       ) {
-        // OpenCode reports its normal /abort control path as session.error. That
-        // endpoint is also how Paperclip parks a provider turn after a durable
-        // governed interaction is created, so presenting it as a provider
-        // failure produces a false red error immediately above a healthy wait
-        // card. Preserve the provider fact as a cancelled terminal event; the
-        // native session loop independently commits the authoritative yielded
-        // result when this abort followed a governed wait.
-        // Settle any request this turn never answered before the terminal
-        // event, so a consumer that stops reading at that terminal event
-        // still observes the settlement.
         this.#settlePendingRuntimeRequestsForTurn(turnId);
         this.#emit(
           "turn.cancelled",

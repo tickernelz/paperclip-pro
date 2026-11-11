@@ -18,13 +18,6 @@ export function cursorPrivateEnvironment(paths: { agentHomeDirectory: string; da
   };
 }
 
-/**
- * The vendor's disable-project-configs flag covers cli.json only. Keep this
- * admission refusal as defense in depth without mutating the user's project.
- * The separately verified paperclip-cursor-usage-v4 distribution removes
- * ambient MCP and hook discovery at its source for the entire session. This
- * check alone is not continuous filesystem protection or an OS sandbox.
- */
 export async function assertCursorWorkspacePolicy(workspacePath: string, platform: NodeJS.Platform = process.platform): Promise<void> {
   const paths: Array<{ path: string; inspectClaude?: boolean }> = [];
   const workspace = await realpath(workspacePath);

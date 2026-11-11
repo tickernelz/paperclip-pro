@@ -312,12 +312,6 @@ class RuntimeServicePortBindCollision extends Error {
 export type WorkspaceRuntimeExposureDeps = ExposureManagerDeps & {
   resolveHostname: () => Promise<string>;
   isPortAvailable: (port: number) => Promise<boolean>;
-  /**
-   * Whether this host can actually broker HTTPS exposures right now. Gating the
-   * automatic default on broker availability is what keeps a Paperclip install
-   * without the host broker from failing every managed runtime start closed.
-   * An explicit opt-in still bypasses this and fails loudly.
-   */
   isBrokerAvailable: () => Promise<boolean>;
 };
 
@@ -377,17 +371,6 @@ export function setWorkspaceRuntimeExposureDepsForTests(deps: WorkspaceRuntimeEx
   workspaceRuntimeExposureDeps = deps;
 }
 
-/**
- * Deployment-level switch for the automatic default (PAP-17158).
- *
- *  - `auto` (default): eligible Paperclip-managed worktree runtimes get
- *    `tailscale_https` without any project template or UI caller supplying an
- *    exposure block, provided the host broker is available.
- *  - `off`: no automatic default. Explicit opt-ins still work.
- *  - `force`: default even when the broker socket is missing, so a
- *    misconfigured host fails closed and loudly instead of silently serving
- *    plain HTTP. Intended for deployments that require HTTPS previews.
- */
 export type ManagedRuntimeHttpsMode = "auto" | "off" | "force";
 
 export function resolveManagedRuntimeHttpsMode(): ManagedRuntimeHttpsMode {
@@ -397,21 +380,6 @@ export function resolveManagedRuntimeHttpsMode(): ManagedRuntimeHttpsMode {
   return "auto";
 }
 
-/**
- * Whether a service would be defaulted to HTTPS if it declared nothing.
- *
- * Intentionally narrow: only the Paperclip-managed dev runtime. Unmanaged and
- * custom external services are left exactly as they are, because the broker
- * only publishes allowlisted loopback ports it can prove Paperclip owns and we
- * do not want to relocate a service somebody else addresses by port.
- *
- * A *pinned* port is still a candidate. The pre-feature Paperclip App template
- * hard-codes `port: 45439`, which the broker's dedicated allowlist can never
- * publish, so defaulting it to HTTPS necessarily relocates it into the
- * dedicated range. "Keep existing runtime ports when safe" is honored one layer
- * down, by preferring the current port when it already *is* an allowlisted app
- * port with a free HMR companion.
- */
 function isManagedHttpsDefaultCandidate(input: {
   serviceName: string;
   command: string | null;
@@ -497,19 +465,6 @@ type ProcessOutputAccumulator = {
   finish(): ProcessOutputCapture;
 };
 
-/**
- * Drops in-memory runtime state between tests.
- *
- * By default the spawned backend processes are deliberately left running: the
- * startup-reconciliation suites use this to simulate a Paperclip restart, where
- * the point is that a live backend survives and has to be adopted.
- *
- * Suites that spawn real backends and do *not* need that must pass
- * `terminateProcesses` — otherwise every test leaks a listener that keeps
- * squatting a port in the dedicated exposure range for the life of the host.
- * Termination runs before the exposure deps are restored so the suite's own
- * broker fake handles the removal rather than the real host broker.
- */
 export async function resetRuntimeServicesForTests(
   opts: { terminateProcesses?: boolean; simulateSupervisorExit?: boolean } = {},
 ) {
@@ -521,9 +476,6 @@ export async function resetRuntimeServicesForTests(
   for (const record of runtimeServicesById.values()) {
     clearIdleTimer(record);
     if (opts.simulateSupervisorExit) {
-      // A real supervisor exit closes its side of every inherited pipe. Tests
-      // use this to prove surviving request-logging services do not depend on
-      // Paperclip keeping an anonymous stdio peer alive.
       record.child?.stdout?.destroy();
       record.child?.stderr?.destroy();
     }
@@ -690,9 +642,6 @@ export function sanitizeRuntimeServiceBaseEnv(baseEnv: NodeJS.ProcessEnv): NodeJ
       delete env[key];
     }
   }
-  // These origin settings belong to the parent instance. Letting them leak into a
-  // managed worktree runtime can send auth cookies and OAuth callbacks to the wrong
-  // Paperclip instance. Runtime/service overrides are merged back after sanitizing.
   delete env.BETTER_AUTH_URL;
   delete env.BETTER_AUTH_BASE_URL;
   delete env.DATABASE_URL;
@@ -4494,16 +4443,6 @@ async function buildCompanyExposureReservationLedger(input: {
   });
 }
 
-/**
- * Rows Paperclip reports stopped/removed whose reserved pair is still live on
- * the host or still mapped to someone else (PAP-17419 regression #3).
- *
- * The point is visibility. A false `stopped`/`removed` row used to be
- * indistinguishable from a genuinely released one, so the pair silently
- * returned to the free list and the next managed start collided with — or
- * adopted — an unrelated workspace's service. Surfacing it does not stop or
- * mutate the occupying service; that stays the owning issue's call.
- */
 async function detectPersistedExposureReservationDrift(input: {
   rows: ReadonlyArray<{
     id: string;
@@ -4554,7 +4493,6 @@ async function detectPersistedExposureReservationDrift(input: {
   });
 }
 
-/** Paperclip-owned Serve mappings, or null when the broker cannot be read. */
 async function readBrokerExposureMappings(): Promise<BrokerMappingSnapshot[] | null> {
   try {
     const owned = await workspaceRuntimeExposureDeps.broker.list();
@@ -5385,10 +5323,6 @@ function trustedRuntimeHostnameBoundary(
   return { hostnameSuffix };
 }
 
-/**
- * Resolve the low-priority public URL hint injected into a managed Paperclip dev
- * service. Explicit operator origin settings are deliberately left untouched.
- */
 export function resolveManagedWardmoteRuntimePublicOrigin(input: {
   serviceName: string;
   command: string;
@@ -6129,15 +6063,6 @@ async function spawnLocalRuntimeService(input: StartLocalRuntimeServiceInput): P
     }));
   }
   const runtimeId = input.runtimeServiceId ?? stoppedReuseCandidate?.id ?? randomUUID();
-  // An exposed runtime always takes its port from the dedicated broker range, so
-  // a configured or previously used port is a *preference*, not a constraint. It
-  // is honored when it is already an allowlisted app port whose HMR companion is
-  // free — that keeps a restart on the same port and keeps a backfilled service
-  // stable across deploys — and quietly relocated when it is not, which is the
-  // only way a legacy pinned port (the Paperclip App template's 45439) can be
-  // published at all. If the backend then fails to listen where we allocated,
-  // the broker's /proc ownership proof refuses the mapping and the start fails
-  // closed; it never falls back to HTTP.
   const reservedExposure = exposureConfig
     ? await allocateAndReserveExposure({
         db: input.db,
@@ -6250,11 +6175,6 @@ async function spawnLocalRuntimeService(input: StartLocalRuntimeServiceInput): P
     ...sanitizeRuntimeServiceBaseEnv(process.env),
     ...runtimeEnvOverrides,
   } as Record<string, string>;
-  // Managed Paperclip worktrees are development environments, so their UI
-  // should track source edits without each project repeating this setting.
-  // An HTTPS profile must publish the companion HMR listener before it can use
-  // this default. Otherwise, leave the value unset so dev-runner keeps its
-  // built-UI safeguard. Keep every explicit service/adapter value.
   const uiDevMiddlewareHasTransport =
     !exposureConfig || exposureConfig.includeWardmoteViteHmr;
   if (
@@ -6268,10 +6188,6 @@ async function spawnLocalRuntimeService(input: StartLocalRuntimeServiceInput): P
     env[portEnvKey] = String(port);
   }
 
-  // Per-workspace handoff key, readiness token, and workspace id. Injected for
-  // the Paperclip dev runtime whether or not it is HTTPS-exposed, because the
-  // password-independent login handoff and the protected readiness probe are
-  // both needed for a plain-HTTP loopback workspace too (PAP-17572).
   const managedWorkspaceIdentity = isWardmoteDevRuntimeService({ serviceName, command })
     ? resolveManagedWorkspaceIdentity({
         workspaceCwd: input.workspace.cwd,
@@ -6284,13 +6200,6 @@ async function spawnLocalRuntimeService(input: StartLocalRuntimeServiceInput): P
   }
 
   if (exposureConfig) {
-    // Paperclip dev-runtime-specific hardening. Other managed processes are
-    // still rejected by the broker unless /proc proves loopback-only listeners.
-    //
-    // Three independent layers force the loopback bind, because a guest checkout
-    // can be arbitrarily old (PAP-17256): the `--bind loopback` argv
-    // added above, these env vars for a runner that reads them, and HOST for one
-    // old enough to ignore both and infer its bind mode from HOST alone.
     env.WARDMOTE_BIND = RUNTIME_EXPOSURE_BIND_MODE;
     env.WARDMOTE_BIND_HOST = RUNTIME_EXPOSURE_BIND_HOST;
     env.HOST = RUNTIME_EXPOSURE_BIND_HOST;
@@ -6522,9 +6431,6 @@ async function spawnLocalRuntimeService(input: StartLocalRuntimeServiceInput): P
       cwd: serviceCwd,
       env,
       detached: process.platform !== "win32",
-      // The service receives duplicate append-only file descriptors. Closing
-      // Paperclip (or this parent handle below) cannot strand a request logger
-      // on an orphaned socketpair during startup reconciliation.
       stdio: ["ignore", serviceLog.handle.fd, serviceLog.handle.fd],
     });
   } finally {
@@ -8498,11 +8404,6 @@ export async function reconcilePersistedRuntimeServicesOnStartup(db: Db) {
         new URL("/api/health", row.exposure.publicUrl!).toString(),
       )
     );
-    // Pre-feature rows carry no exposure state at all. An eligible one that is
-    // still serving plain HTTP must not be adopted as-is, or the deploy would
-    // leave `http://paperclip-dev:<port>` as the canonical URL forever. Stopping
-    // it here hands it to the desired-state restart below, which brings it back
-    // through the normal fail-closed exposure lifecycle.
     const backfillDecision = decideManagedRuntimeExposureBackfill({
       mode: httpsMode,
       brokerAvailable,

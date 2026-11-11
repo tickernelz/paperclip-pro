@@ -131,10 +131,6 @@ function assertSmokeOAuthRedirectUri(redirectUri: string, requestOrigin?: string
   if (hostname === "localhost" || hostname === "[::1]" || isIpv4Loopback) {
     return redirect;
   }
-  // The smoke lab runs on any private (non-public) instance (see assertEnabled),
-  // so a callback on the instance's own origin — e.g. a Tailscale hostname like
-  // paperclip-dev — never leaves the gated deployment. Anything else could leak
-  // fixture authorization codes to an arbitrary external host.
   if (requestOrigin) {
     try {
       const allowed = new URL(requestOrigin);

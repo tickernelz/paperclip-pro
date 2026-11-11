@@ -793,14 +793,7 @@ const CAPABILITIES: Record<ChatProvider, ChatAdapterCapabilities> = {
   "microsoft-teams": {
     threads: true,
     directMessages: true,
-    // Production webhook processing is deferred into Paperclip's durable
-    // ingress queue. The Teams adapter's request-scoped DM streamer is gone by
-    // the time agent output is published, so advertise the durable behavior we
-    // can actually provide. editMessage still lets one run coalesce its
-    // queued, working, and final states in place.
     nativeStreaming: false,
-    // Paperclip supplements the pinned adapter's missing inbound Bot Framework
-    // messageUpdate/messageDelete dispatch after provider authentication.
     messageEdits: true,
     messageDeletes: true,
     reactions: true,
@@ -902,10 +895,6 @@ const REACTION_LINK_RETRY_DELAY_MS = 250;
 const REACTION_LINK_MAX_DELAY_MS = 5_000;
 const REACTION_LINK_MAX_ATTEMPTS = 20;
 const REACTION_LINK_MAX_AGE_MS = 2 * 60_000;
-// A Discord root mention is durably staged before the adapter creates its
-// provider thread. Give the bounded provider retry loop ample time to finish;
-// if the process disappears, the delivery worker verifies that thread over
-// Discord's read-only API before it permits any Paperclip task mutation.
 const DISCORD_ROOT_THREAD_CONFIRMATION_DELAY_MS = 5 * 60_000;
 const DELIVERY_LEASE_TTL_MS = 90_000;
 const DELIVERY_DRAIN_LIMIT = 100;
@@ -1721,11 +1710,6 @@ function providerResourceLabelFromThread(
   return { label: candidate, fallback: false };
 }
 
-/**
- * Native channel threads keep one issue forever. Linear surfaces instead
- * advance through Paperclip task generations because their provider id is
- * reused after a task completes or the user explicitly starts a new task.
- */
 function chatSurfaceKind(
   provider: ChatProvider,
   thread: Thread,
@@ -7481,9 +7465,6 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       await credentialLease.assertOwned(tx);
       const resource = await upsertProviderResourceRow(tx, endpoint, item);
       if (!resource) return;
-      // A correctly signed repository callback is current provider proof. Keep
-      // Paperclip's enabled choice, and reopen only conversations previously
-      // quarantined for provider availability loss.
       await tx
         .update(chatConversations)
         .set({ state: "active", updatedAt: new Date() })
@@ -7516,8 +7497,6 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       for (const item of inventory.resources) {
         const resource = await upsertProviderResourceRow(tx, endpoint, item);
         if (resource) {
-          // Resource recovery reopens only bindings that Paperclip marked
-          // unavailable. Completed historical tasks stay completed.
           await tx
             .update(chatConversations)
             .set({ state: "active", updatedAt: new Date() })
@@ -8131,16 +8110,6 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
                 record.endpoint.capabilities.reactions === true
                   ? (event) => handleReaction(event, context)
                   : undefined,
-              // Dynamic options remain unregistered. Native question buttons and
-              // forms resolve only through issued durable rows. Reactions are an
-              // auditable social signal, never an approval or task instruction.
-              // Telegram exposes bot commands through Chat SDK's slash-command
-              // callback even though it does not support arbitrary registered slash
-              // commands. Paperclip still needs that callback for /new, /close, and
-              // /status session controls.
-              // Discord must always install the guarded private-response path:
-              // an unavailable registration still needs a terminal denial for a
-              // cached provider command, not the SDK's unhandled deferred reply.
               onSlashCommand:
                 record.endpoint.provider === "discord" ||
                 record.endpoint.capabilities.slashCommands ||
@@ -9725,9 +9694,6 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
               },
             );
           }
-          // Fail closed for any legacy or racing delivery that remained open
-          // while this endpoint was paused. Resume must never execute traffic
-          // that Paperclip acknowledged during the inactive interval.
           await notifyChatDeliveryWork(tx);
           await tx
             .update(chatDeliveries)
@@ -10446,11 +10412,6 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
                 "message_reaction",
                 "my_chat_member",
               ],
-              // A first-time connection may inherit stale updates from a bot
-              // that was used before Paperclip owned it. Reconnect is
-              // different: Telegram may be holding legitimate updates while
-              // the old callback URL is unavailable. Preserve that backlog
-              // even when an operator is rotating the public origin.
               drop_pending_updates: input.action === "configure",
             }),
           },
@@ -11852,10 +11813,6 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
           })(),
       );
     const effect = await db.transaction(async (tx) => {
-      // Replace the optimistic attachment placeholder with an explicit safe
-      // Paperclip-visible failure. The message link stays authoritative for
-      // exact provider redelivery, while no agent wakeup is enqueued for an
-      // empty turn that contains no usable bytes.
       await tx
         .update(issueComments)
         .set({ body: visibleFailure, updatedAt: new Date() })
@@ -12179,10 +12136,6 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
             messageId: event.messageId,
           });
         } catch (error) {
-          // The durable provisional receipt owns recovery. Do not let a
-          // transient REST failure escape the Gateway event handler or ask the
-          // adapter to create the same thread outside Paperclip's lifecycle
-          // fence.
           logger.warn(
             {
               endpointId: configuredEndpoint.id,
@@ -12226,9 +12179,6 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         });
         if (promoted)
           scheduleConversationDrain(configuredEndpoint.id, threadId);
-        // Paperclip created the provider thread inside its credential/reach
-        // lease. Returning false prevents the adapter from creating it again;
-        // the durable drain owns the remaining task mutation.
         return false;
       },
     );
@@ -15261,11 +15211,6 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
           (message.raw as { message_id?: unknown }).message_id === 0))
     )
       return;
-    // The Telegram adapter currently emits edited_message through the normal
-    // message callback with the original message id. Paperclip records that
-    // verified payload through its supplemental message_updated lifecycle
-    // ledger instead; letting it reach normal dedupe would falsely report the
-    // edit as a duplicate provider delivery.
     if (
       endpoint.provider === "telegram" &&
       (isTelegramEditedMessageRaw(message.raw) ||
@@ -15523,12 +15468,6 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         })),
       },
     };
-    // Teams RSC can deliver messages from every installed channel, and a
-    // Telegram bot can receive addressed traffic from a provider-available
-    // group that the operator has not enabled in Paperclip. Until the reach
-    // gate admits that destination, retain only identifiers required for
-    // deduplication and operator-visible filtering—not user text, attachment
-    // metadata, or an external principal profile.
     const redactedDestinationNormalized = {
       providerEventId,
       kind: eventKind,
@@ -16479,10 +16418,6 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         existingConversation = null;
         existingIssue = null;
       }
-      // Telegram exposes its small command vocabulary in forum topics too.
-      // A forum topic is a native provider thread and therefore stays bound to
-      // one immutable Paperclip task, but the command must still be consumed
-      // as control-plane input instead of becoming a task comment/wakeup.
       const controlCommand = openwaDecoration
         ? null
         : isLinear || endpoint.provider === "telegram"
@@ -16564,12 +16499,6 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         principalAllowed &&
         (destinationAllowed || setupDestinationCanBeEnabledByEarlierMention)
       ) {
-        // GitHub, Slack, and Teams can deliver a thread reply before the older
-        // root callback that creates its Paperclip task. Keep this exact
-        // delivery for a bounded minute, without admitting or waking it, so
-        // the durable thread drain can sort again if a delayed root arrives.
-        // A standalone unaddressed message is filtered after the bounded
-        // retention window.
         await db.transaction(async (tx) => {
           await notifyChatDeliveryWork(tx);
           return tx
@@ -17621,10 +17550,6 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
               thread,
             })
           : Promise.resolve(),
-        // Slack implements this through assistant.threads.setStatus, which
-        // requires assistant:write. The least-privilege Paperclip manifest
-        // deliberately does not request that scope; the coalesced lifecycle
-        // reply below is the visible working state instead.
         endpoint.provider === "slack"
           ? Promise.resolve()
           : thread.startTyping("Working…"),
@@ -18050,10 +17975,6 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       .then((rows) => rows[0] ?? null);
     if (!candidate) return null;
 
-    // A lifecycle callback can reach Paperclip before its create callback. If
-    // the root becomes durable while the lifecycle row is waiting, always
-    // return that exact dependency first even when a coarse or malformed
-    // provider timestamp would otherwise put the edit/delete at the head.
     const targetProviderEventId = normalizedLifecycleTargetEventId(candidate);
     if (!targetProviderEventId) return candidate;
     return db
@@ -18348,12 +18269,6 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     };
   }
 
-  /**
-   * Drain one external conversation in durable receipt order. The database
-   * lease is endpoint + thread scoped, so separate server processes can work
-   * on different conversations concurrently but can never mutate the same
-   * Paperclip task from two inbound turns at once.
-   */
   async function drainConversationDeliveries(
     endpointId: string,
     threadId: string,
@@ -18736,10 +18651,6 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       .then((rows) => rows[0] ?? null);
     if (exact || !threadId.startsWith("teams:")) return exact;
 
-    // Before Paperclip made Teams route state independent, the adapter
-    // embedded the mutable Bot Connector serviceUrl in every thread id. Read
-    // those rows by the immutable conversation id so a regional route change
-    // continues the same task. New rows use the canonical route-free id.
     if (!teamsConversationId(threadId)) return null;
     return db
       .select()
@@ -19371,9 +19282,6 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
           )
             return false;
           const invalidatedAt = new Date();
-          // Provider authentication proves the exact source changed. The
-          // editor's current Paperclip rights govern admitting new content,
-          // not whether a later regrant can resurrect the stale old source.
           await notifyChatDeliveryWork(tx);
           await tx
             .update(chatDeliveries)
@@ -20907,10 +20815,6 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
           })
           .onConflictDoNothing();
       }
-      // A provider callback can lose the pending -> terminal interaction race
-      // to the Paperclip UI. In that case this transaction only retires the
-      // now-redundant provider action and must not fabricate a second external
-      // resolution event attributed to the board winner.
       if (resolvedByThisProviderAction) {
         await logActivity(tx as unknown as Db, {
           companyId: issue.companyId,
@@ -21400,9 +21304,6 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       event.event.user,
       event.event.raw,
     );
-    // Executable external actions are deliberately stricter than ordinary
-    // sponsored-guest messages. They require a current endpoint-scoped link to
-    // an active non-viewer Paperclip member, and never run as a guest sponsor.
     if (
       principal.linkedDenied ||
       !principal.userId ||
@@ -21479,10 +21380,6 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     ) {
       return deny({ principalId: principal.principal.id });
     }
-    // The opaque provider action is the immutable link to the original
-    // publication. Resolve the conversation from that token, then verify the
-    // provider's thread independently; never trust a callback message id to
-    // select a Paperclip task.
     const conversation = await db
       .select()
       .from(chatConversations)
@@ -22086,10 +21983,6 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
           event.event.raw,
         );
 
-        // A provider modal open can take seconds and can outlive Slack's
-        // trigger. The final Paperclip authorization snapshot above commits
-        // before transport starts so provider latency never holds endpoint,
-        // destination, identity-link, or membership row locks.
         const modal = correction
           ? discordQuestionFormCorrectionModal(
               preflight.resolved.modal,
@@ -23396,9 +23289,6 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
           "Slack endpoint was archived before task admission completed",
         );
       } else {
-        // The provider-visible send is already confirmed. Wait for an
-        // operator to repair/resume the endpoint, then continue Paperclip-only
-        // admission without sending another Slack message.
         await db.transaction(async (tx) => {
           await notifyChatActionWork(tx, "slash_task_start");
           return tx
@@ -23483,9 +23373,6 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       });
       return true;
     } catch (error) {
-      // The provider post is already confirmed, so this retry is strictly a
-      // Paperclip admission retry. Preserve the root tuple and let the durable
-      // reconciler resume without ever posting to Slack again.
       await db.transaction(async (tx) => {
         await notifyChatActionWork(tx, "slash_task_start");
         return tx
@@ -23992,11 +23879,6 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
               "Slack task-start ownership changed after provider acceptance",
             );
           }
-          // Provider transport and its durable confirmation remain fenced by
-          // the credential lease. Paperclip-only task admission happens after
-          // this callback returns and releases that lease: normal admission
-          // stages a receipt reaction, whose independently fenced worker must
-          // acquire the same lease and would otherwise self-deadlock here.
           confirmedActionId = providerConfirmed.id;
           return true;
         },
@@ -24655,11 +24537,6 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       ?.toLowerCase() as "status" | "new" | "close" | undefined;
     if (slackControl) {
       if (!slashIsDirectMessage) {
-        // Slack slash-command payloads are channel-scoped and do not carry a
-        // thread timestamp, so they cannot safely identify one of several
-        // Paperclip tasks in the channel. Native @mention threads remain the
-        // task-management surface there; the control vocabulary is exact only
-        // in a DM, whose provider channel identity is stable.
         await queueSlackNotice(
           "Use status, new, and close in a direct message with this agent. In a channel, open the Wardmote task from its Slack thread.",
           principal.principal.id,
@@ -24668,10 +24545,6 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       }
       const endpointRuntime =
         runtime.get(event.endpointId) ?? (await runtimeFor(record.endpoint));
-      // A slash-command task starts a real Slack root and binds Paperclip to
-      // that returned thread id. Later slash controls carry only the DM channel
-      // id, so target the most recently active task instead of synthesizing an
-      // unrelated base-DM thread that cannot find the binding.
       const activeThreadId = await latestSlackDmControlThreadId(
         event.endpointId,
         rawSlackChannelId,
@@ -24787,11 +24660,6 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         )
         .then((rows) => rows[0] ?? null));
     if (!action) throw new Error("Slack command admission was not persisted");
-    // Slack has a tight acknowledgement budget. The unique action row is the
-    // durable receipt; provider publication and Paperclip admission run behind
-    // the acknowledgement under an atomic `received -> resolving` claim.
-    // Duplicate callbacks schedule the same id and converge without waiting
-    // on Slack's Web API or creating a second root.
     scheduleMessageProcessing(async () => {
       await processSlackTaskStart(
         action.id,
@@ -28078,9 +27946,6 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       throw notFound("Chat endpoint not found");
     }
     recordChatWebhookStage("endpoint_resolved", endpoint.id);
-    // A pause is a durable ingress fence. Providers generally retry non-2xx
-    // webhooks, so acknowledge late callbacks without recreating a runtime or
-    // admitting any Paperclip mutation.
     if (endpoint.status === "paused") {
       if (replayingDurableGitHubIngress) return ignoreSupersededIngress();
       return new Response("ignored", { status: 200 });
@@ -28161,12 +28026,6 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       const eventType = inspection.headers.get("x-github-event");
       if (!replayingDurableGitHubIngress)
         await options.githubWebhookAuthenticationBarrier?.();
-      // GitHub sends this signed connectivity check as soon as an App webhook
-      // is saved, before the operator can generate a private key and submit
-      // the App identity to Paperclip. Authenticating the ping needs only the
-      // Paperclip-generated webhook secret; initializing the full provider
-      // runtime here would incorrectly reject the valid setup check because
-      // App API credentials are not available yet.
       if (eventType === "ping") {
         let verifiedAttempt:
           | { completed: true; value: boolean }
@@ -28262,11 +28121,6 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         async (
           credentialLease,
         ): Promise<"accepted" | "ignored" | "invalid_signature"> => {
-          // The repository upsert below is a Paperclip mutation derived from
-          // the webhook credential. Re-read and authenticate while holding the
-          // same lease as rotation/reconnect/removal so a callback signed with
-          // an obsolete secret cannot reopen a quarantined repository in the
-          // resolve-secret -> persist-resource race window.
           const current = await endpointRecord(endpoint.id);
           if (
             !current ||
@@ -28310,15 +28164,6 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
               String(incomingInstallationId) !== credentials.installationId &&
               eventType !== "installation"
             ) {
-              // A dedicated endpoint represents exactly one GitHub App
-              // installation. GitHub sends every installation's events to the
-              // App webhook, so acknowledge foreign signed traffic without
-              // admitting it to Paperclip or prompting endless redelivery.
-              // Installation lifecycle events are the one exception: even when
-              // their id differs, canonical App inventory under the lifecycle
-              // lease must decide whether this is a valid sole-installation
-              // replacement or a second active installation that quarantines
-              // the endpoint.
               return "ignored";
             }
             await reconcileGitHubWebhookRepository(
@@ -31804,9 +31649,6 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
           return tx
             .update(chatActions)
             .set({
-              // The provider send is now confirmed, but task admission is a
-              // separate durable phase. Persist this fence before constructing the
-              // Paperclip delivery so a crash cannot turn into another Slack post.
               status: "provider_confirmed",
               result: {
                 attemptCount: retryAttempt,
@@ -38860,10 +38702,6 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
           });
           return;
         }
-        // Status is sampled when it reaches the head of the provider lane,
-        // not when the command was admitted. If an already-streaming final
-        // publication won the race, this reply reflects Paperclip's latest
-        // authoritative task state after that earlier send commits.
         let payload = await currentTaskControlPayload(publication);
         await withCredentialMutationLease(
           recordForLease.endpoint,
@@ -39510,10 +39348,6 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     }
     const now = new Date();
     const staleBefore = new Date(now.getTime() - 60_000);
-    // A process that disappears after the provider accepted a post but before
-    // Paperclip persisted its message id leaves an ambiguous delivery. Never
-    // resend it automatically; an operator can explicitly replay after
-    // checking the provider conversation.
     const quarantinedPublications = await db.transaction(async tx => {
       const condition = and(
         sql`not exists (select 1 from chat_endpoints e where e.id = ${chatPublications.endpointId} and e.publication_mode = 'explicit')`,

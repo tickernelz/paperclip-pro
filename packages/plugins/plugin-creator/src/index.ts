@@ -114,12 +114,6 @@ function packLocalPackage(packagePath: string, outputDir: string): string {
   return tarballPath;
 }
 
-/**
- * Generate a complete Paperclip plugin starter project.
- *
- * Output includes manifest/worker/UI entries, SDK harness tests, bundler presets,
- * and a local dev server script for hot-reload workflow.
- */
 export function scaffoldPluginProject(options: ScaffoldPluginOptions): string {
   const template = options.template ?? "default";
   if (!VALID_TEMPLATES.includes(template)) {

@@ -8,11 +8,6 @@ import {
 import type { ExternalChannelBindingSummary } from "@tickernelz/wardmote-shared";
 import { chatProviderConversationUrl } from "./chat-provider-links.js";
 
-/**
- * Derive the task-facing chat binding from durable Paperclip records. The
- * company predicate is intentionally part of the lookup so callers cannot use
- * a globally unique task id as a cross-company discovery oracle.
- */
 export async function getExternalChannelBindingSummary(
   db: Db,
   companyId: string,

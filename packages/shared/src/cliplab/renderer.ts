@@ -1,6 +1,3 @@
-// ClipLab renderer adapted for Paperclip (optional graphics backend for Node SVG snapshots,
-// supersampled live textures, character framing). Geometry and face code remain upstream v0.2.0.
-// Vendored from ClipLab 987b6db0 (v0.2.0); see PROVENANCE.md and LICENSE.
 import * as THREE from 'three'
 import { particleLayout, type ParticleSettings } from './particles.js'
 import { BASE_POSE, detailAt, faceLayers, type Character, type Detail, type FaceLayer, type Pose, type Sample, type Shape } from './model.js'

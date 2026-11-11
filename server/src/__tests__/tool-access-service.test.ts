@@ -7589,12 +7589,6 @@ describeEmbeddedPostgres("tool access service", () => {
       });
     });
 
-    // The limit of this fix, asserted so nobody reads `unrequestedScopes: []` as "no extra
-    // scopes were granted". This is exactly the Enterpret shape from PAP-18538: the token
-    // response omitted `scope` while the token really carried `mcp:write`, and only RFC 7662
-    // introspection revealed it. Paperclip does not introspect, so the extra scope is
-    // *unknown*, not absent. `requested_fallback` is the marker that says so; an operator who
-    // needs certainty has to check at the provider.
     it("cannot see an over-grant that the provider hides by omitting scope", async () => {
       const { recordedOAuth } = await connectSlackWithTokenScope(null, [
         "channels:read",
@@ -7602,8 +7596,6 @@ describeEmbeddedPostgres("tool access service", () => {
 
       expect(recordedOAuth).toMatchObject({
         scope: null,
-        // Not "provider": the scope list below is Paperclip's own request, so it carries no
-        // assurance about what the token can actually do.
         scopeSource: "requested_fallback",
         // Empty because nothing was asserted to compare against — NOT because the provider
         // is known to have granted only what was asked.
@@ -8747,7 +8739,6 @@ describeEmbeddedPostgres("tool access service", () => {
           json: async () => ({
             authorization_endpoint: "https://narrow.example.test/oauth/authorize",
             token_endpoint: "https://narrow.example.test/oauth/token",
-            // Discovery advertises both; Paperclip will ask for only one.
             scopes_supported: ["tools.read", "tools.write"],
           }),
         } as Response;
@@ -9502,9 +9493,6 @@ describeEmbeddedPostgres("tool access service", () => {
     );
     expect(state).toBeTruthy();
 
-    // The provider's redirect is a cross-site navigation: Paperclip commits a
-    // page at once (Railway's consent page otherwise replaces itself after ~2s)
-    // and leaves the state unconsumed for the same-origin repeat.
     const interstitialRes = await request(app)
       .get("/api/tools/oauth/callback")
       .set("Accept", "text/html")
@@ -10329,9 +10317,6 @@ describeEmbeddedPostgres("tool access service", () => {
         grant_types: ["authorization_code", "refresh_token"],
         response_types: ["code"],
         token_endpoint_auth_method: "none",
-        // PAP-17087: Paperclip's callback is a server-side HTTPS endpoint, so
-        // registration must declare a `web` client rather than let the
-        // authorization server apply native-client redirect rules.
         application_type: "web",
       },
     ]);

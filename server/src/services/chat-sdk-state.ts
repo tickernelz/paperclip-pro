@@ -15,7 +15,6 @@ export interface ChatSdkStateScope {
   endpointId: string;
 }
 
-/** A versioned row returned by the Paperclip persistence implementation. */
 export interface ChatSdkStateRecord {
   expiresAt: Date | null;
   value: unknown;
@@ -110,11 +109,6 @@ function decodeEnvelope(
   return envelope.value;
 }
 
-/**
- * Chat SDK StateAdapter backed by Paperclip's injected, company-scoped CAS
- * persistence. Instances are endpoint-scoped and never own or close the shared
- * database connection.
- */
 export class WardmoteChatSdkStateAdapter implements StateAdapter {
   private readonly scope: ChatSdkStateScope;
   private readonly persistence: ChatSdkStatePersistence;

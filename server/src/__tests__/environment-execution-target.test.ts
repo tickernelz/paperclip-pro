@@ -1311,11 +1311,6 @@ describe("resolveEnvironmentExecutionTarget", () => {
     expect(serialized).not.toContain("chunk");
   });
 
-  // Fire one run-time exec from a bridge continuation that runs after the step
-  // span ended. Each bridge step (`bridge.paperclip`, `bridge.process-session`)
-  // starts long-lived work with `criticalPath: false`. The bridge boundary wraps
-  // that long-lived work in `runWithoutActiveStep`, exactly as modeled here, so
-  // the continuation reads an empty active step. Return the recorded exec span.
   async function runContinuationExec(step: string, options: { wrap: boolean }) {
     const { tracer, contextWithSpan, spans } = createRecordingTrace();
     const runner = await runnerFor({

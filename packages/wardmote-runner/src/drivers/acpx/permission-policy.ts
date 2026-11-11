@@ -27,7 +27,6 @@ const AUTOMATIC_WARDMOTE_WORKFLOW_ACTIONS = new Set([
   "create_project", "request_approval",
 ]);
 
-/** Exact SDK rules for the run's runner-owned Paperclip MCP connection. */
 export function claudeWardmotePermissionRules(
   tools: readonly Readonly<Record<string, unknown>>[],
   mode: NativeAcpxPermissionMode,
@@ -36,9 +35,6 @@ export function claudeWardmotePermissionRules(
   const names = tools.flatMap((tool) => {
     if (typeof tool.name !== "string") return [];
     const name = canonicalRunnerToolName(tool.name);
-    // Effects come from Paperclip's implementation catalog, never tool hints
-    // or the provider's permission-request metadata. Unknown operations stay
-    // subject to approval even when their names or annotations claim a read.
     const action = wardmoteSemanticAction(name);
     // The semantic catalog groups approval reads under "governance". The
     // canonical side-effect class distinguishes those reads from decisions.
@@ -84,10 +80,6 @@ export function acpxRuntimePermissionPolicy(
 ): AcpxRuntimePermissionPolicy {
   if (mode === "approve-all") return { defaultAction: "approve" };
   if (mode === "deny-all") return { defaultAction: "deny" };
-  // ACPX derives permission kinds from provider-originated requests. Until the
-  // host can bind a request to independent authority, no kind is safe to
-  // auto-approve here. Assigned Paperclip actions are allowed earlier at the
-  // Claude SDK dispatch boundary. Other requests require an approval handler.
   return { defaultAction: "escalate" };
 }
 
@@ -103,9 +95,5 @@ export function decideAcpxPermission(
 ): AcpxPermissionDisposition {
   if (mode === "deny-all") return "reject_once";
   if (mode === "approve-all") return "allow_once";
-  // inferredKind and raw semantic/MCP metadata both originate outside the
-  // runner trust boundary. Neither can grant local semantic authority.
-  // Assigned Paperclip actions use exact SDK rules on the runner-owned MCP
-  // connection. Anything reaching this fallback still requires approval.
   return "delegate";
 }

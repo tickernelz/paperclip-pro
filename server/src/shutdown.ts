@@ -200,13 +200,6 @@ type ShutdownSignalTarget = {
   removeListener(eventName: string, listener: (...args: any[]) => void): unknown;
 };
 
-/**
- * Some dependencies eagerly install process signal handlers as an import side
- * effect. Paperclip must remain the sole owner of SIGINT/SIGTERM ordering: its
- * handler first snapshots live heartbeat runs and only then stops embedded
- * infrastructure. Remove only listeners added by the supplied import, while
- * preserving every listener that was already registered.
- */
 export async function loadWithoutCoordinatedShutdownSignalHooks<T>(
   load: () => Promise<T>,
   signalTarget: ShutdownSignalTarget = process,

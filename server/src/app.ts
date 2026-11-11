@@ -560,9 +560,6 @@ export async function createApp(
   }
   app.use(llmRoutes(db));
 
-  // Provider-authenticated ingress is intentionally outside the board
-  // mutation guard. The Chat SDK adapter verifies the provider signature
-  // before Paperclip persists or acts on any event.
   const emailChannels = emailChannelService(db, {
     isReconciliationEnabled: () => true,
     isBackgroundWorkEnabled: () => !isIdleTaskDrainActive(),

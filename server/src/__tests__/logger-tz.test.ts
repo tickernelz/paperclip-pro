@@ -1,19 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
-/**
- * Regression test for https://github.com/paperclipai/paperclip/issues/2879
- *
- * pino-pretty's `translateTime: "HH:MM:ss"` formats all timestamps in UTC
- * regardless of the process's TZ env var. The `SYS:` prefix instructs
- * pino-pretty to use the local system timezone, so operators in non-UTC
- * zones see correct wall-clock times in their logs.
- *
- * We verify that:
- * 1. The logger module initialises pino-pretty with "SYS:HH:MM:ss".
- * 2. The pino-pretty SYS: prefix resolves to a timezone-sensitive format
- *    string — confirmed via pino-pretty's own asynchronous formatter, which
- *    applies translateTime to a known epoch under different TZ values.
- */
 
 const mockTransport = vi.hoisted(() => vi.fn(() => ({ write: vi.fn() })));
 const mockPino = vi.hoisted(() => {

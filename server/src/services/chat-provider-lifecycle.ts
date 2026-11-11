@@ -141,11 +141,6 @@ function parseSlackLifecycle(
     ];
   }
 
-  // Slack emits these bot-self events when the installed app leaves a public
-  // or private channel. They are distinct from member_left_channel and do not
-  // include a user field because the authenticated bot is the member that
-  // left. Without them, `/remove @bot` can leave Paperclip's reach inventory
-  // incorrectly available until a later manual reconciliation.
   if (type === "channel_left" || type === "group_left") {
     const channel = identifier(event.channel);
     if (!channel) return [];
@@ -484,11 +479,6 @@ function parseTelegramLifecycle(
   ];
 }
 
-/**
- * Parse provider installation and membership events only after the native
- * adapter has verified the webhook. The returned effects contain no provider
- * credentials and are safe to persist in Paperclip's lifecycle ledger.
- */
 export function parseChatProviderLifecycle(
   input: ParseChatProviderLifecycleInput,
 ): ChatProviderLifecycleEffect[] {

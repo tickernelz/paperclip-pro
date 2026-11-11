@@ -1,13 +1,3 @@
-/**
- * Core types for the Paperclip plugin worker-side SDK.
- *
- * These types define the stable public API surface that plugin workers import
- * from `@tickernelz/wardmote-plugin-sdk`.  The host provides a concrete implementation
- * of `PluginContext` to the plugin at initialisation time.
- *
- * @see PLUGIN_SPEC.md §14 — SDK Surface
- * @see PLUGIN_SPEC.md §29.2 — SDK Versioning
- */
 
 import type {
   WardmotePluginManifestV1,
@@ -174,7 +164,6 @@ export type {
  * @see PLUGIN_SPEC.md §21.3 `plugin_state`
  */
 export interface ScopeKey {
-  /** What kind of Paperclip object this state is scoped to. */
   scopeKind: PluginStateScopeKind;
   /** UUID or text identifier for the scoped object. Omit for `instance` scope. */
   scopeId?: string;
@@ -306,7 +295,6 @@ export interface PluginEntityUpsert {
   scopeId?: string;
   /** External identifier in the remote system (e.g. Linear issue ID). */
   externalId?: string;
-  /** Human-readable title for display in the Paperclip UI. */
   title?: string;
   /** Optional status string. */
   status?: string;
@@ -537,14 +525,6 @@ export interface PluginLocalFoldersClient {
   deleteFile(companyId: string, folderKey: string, relativePath: string): Promise<PluginLocalFolderStatus>;
 }
 
-/**
- * `ctx.events` — subscribe to and emit Paperclip domain events.
- *
- * Requires `events.subscribe` capability for `on()`.
- * Requires `events.emit` capability for `emit()`.
- *
- * @see PLUGIN_SPEC.md §16 — Event System
- */
 export interface PluginEventsClient {
   /** Read durable resource hooks. Requires events.subscribe and a company scope.
    * Creation is delivered first, then the remaining events in id order.
@@ -554,12 +534,6 @@ export interface PluginEventsClient {
   listLifecycle(companyId: string, limit?: number, afterId?: string): Promise<ResourceLifecycleEvent[]>;
   /** Acknowledge only after the provider operation succeeds. */
   acknowledgeLifecycle(companyId: string, eventId: string): Promise<void>;
-  /**
-   * Subscribe to a core Paperclip domain event or a plugin-namespaced event.
-   *
-   * @param name - Event type, e.g. `"issue.created"` or `"plugin.@acme/linear.sync-done"`
-   * @param fn - Async event handler
-   */
   on(name: PluginEventType | `plugin.${string}`, fn: (event: PluginEvent) => Promise<void>): () => void;
 
   /**
@@ -673,17 +647,6 @@ export interface PluginHttpClient {
   fetch(url: string, init?: RequestInit): Promise<Response>;
 }
 
-/**
- * `ctx.secrets` — resolve secret references.
- *
- * Requires `secrets.read-ref` capability.
- *
- * Plugins store shared `{ type: "secret_ref", secretId, version? }` bindings in
- * company-scoped config. This client resolves a bound ref through the
- * Paperclip secret provider system at execution time.
- *
- * @see PLUGIN_SPEC.md §22 — Secrets
- */
 export interface PluginSecretsClient {
   /**
    * Resolve a secret reference to its current value.
@@ -928,11 +891,6 @@ export interface PluginExecutionWorkspacesClient {
   get(workspaceId: string, companyId: string): Promise<PluginExecutionWorkspaceMetadata | null>;
 }
 
-/**
- * `ctx.routines` — resolve and reconcile plugin-managed Paperclip routines.
- *
- * Requires `routines.managed` capability.
- */
 export interface PluginRoutinesClient {
   managed: {
     get(routineKey: string, companyId: string): Promise<PluginManagedRoutineResolution>;

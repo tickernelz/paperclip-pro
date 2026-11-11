@@ -1,20 +1,4 @@
 import type { AgentLifecycleRequest, AgentLifecycleResult } from "@tickernelz/wardmote-shared";
-/**
- * JSON-RPC 2.0 message types and protocol helpers for the host ↔ worker IPC
- * channel.
- *
- * The Paperclip plugin runtime uses JSON-RPC 2.0 over stdio to communicate
- * between the host process and each plugin worker process. This module defines:
- *
- * - Core JSON-RPC 2.0 envelope types (request, response, notification, error)
- * - Standard and plugin-specific error codes
- * - Typed method maps for host→worker and worker→host calls
- * - Helper functions for creating well-formed messages
- *
- * @see PLUGIN_SPEC.md §12.1 — Process Model
- * @see PLUGIN_SPEC.md §13 — Host-Worker Protocol
- * @see https://www.jsonrpc.org/specification
- */
 
 import type {
   WardmotePluginManifestV1,
@@ -92,10 +76,6 @@ import type {
 /** The JSON-RPC protocol version. Always `"2.0"`. */
 export const JSONRPC_VERSION = "2.0" as const;
 
-/**
- * A unique request identifier. JSON-RPC 2.0 allows strings or numbers;
- * we use strings (UUIDs or monotonic counters) for all Paperclip messages.
- */
 export type JsonRpcId = string | number;
 
 /**
@@ -238,14 +218,6 @@ export const JSONRPC_ERROR_CODES = {
 export type JsonRpcErrorCode =
   (typeof JSONRPC_ERROR_CODES)[keyof typeof JSONRPC_ERROR_CODES];
 
-/**
- * Paperclip plugin-specific error codes.
- *
- * These live in the JSON-RPC "server error" reserved range (-32000 to -32099)
- * as specified by JSON-RPC 2.0 for implementation-defined server errors.
- *
- * @see PLUGIN_SPEC.md §19.7 — Error Propagation Through The Bridge
- */
 export const PLUGIN_RPC_ERROR_CODES = {
   /** The worker process is not running or not reachable. */
   WORKER_UNAVAILABLE: -32000,
@@ -334,9 +306,7 @@ export interface InitializeParams {
   config: Record<string, unknown>;
   /** Instance-level metadata. */
   instanceInfo: {
-    /** UUID of this Paperclip instance. */
     instanceId: string;
-    /** Semver version of the running Paperclip host. */
     hostVersion: string;
   };
   /** Host API version. */
@@ -421,7 +391,6 @@ export interface GetDataParams {
 export type PluginPerformActionActorType = "user" | "agent" | "system";
 
 export interface PluginPerformActionActorContext {
-  /** Authenticated principal type resolved by the Paperclip host. */
   type: PluginPerformActionActorType;
   /** Authenticated board user id when `type === "user"`, otherwise null. */
   userId: string | null;
@@ -801,22 +770,6 @@ export interface PluginSyncFileMapping {
   writablePath?: string;
 }
 
-/**
- * A single control command run against the sandbox after a sync operation's
- * files have landed. Ordered within {@link PluginSyncOperation.postUploadCommands}
- * and executed in array order, fail-fast (the first non-zero exit or timeout
- * aborts the operation).
- *
- * SECURITY — command origin (Stage-1 design review, condition C1). `command` is
- * a **Paperclip/adapter-authored control operation**: it may be supplied ONLY by
- * core/adapter code. No server route, issue/comment content, project/workspace
- * file content, provider-plugin callback, or arbitrary adapter config may supply
- * a raw `command` string, and any path embedded in it MUST be built by
- * adapter/core helpers from already-confined paths and shell-quoted (C3). A
- * provider MUST treat the command as **opaque**: it may execute or reject it, but
- * MUST NOT rewrite, concatenate, or append provider-decided shell fragments to
- * it.
- */
 export interface PluginPostUploadCommand {
   /**
    * The opaque, adapter-authored shell command to run after upload. Executed

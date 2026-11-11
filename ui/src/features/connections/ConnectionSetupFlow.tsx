@@ -618,8 +618,6 @@ function StandardConnectionSetupFlow({
   const [linkName, setLinkName] = useState(prefill.name || (zapierSource ? "Zapier" : ""));
   const [linkNeedsKey, setLinkNeedsKey] = useState(false);
   const [linkKey, setLinkKey] = useState("");
-  // Generic ("connect your own MCP server") flow state. `authMode: auto` is the
-  // simple path: Paperclip probes the endpoint and branches on what it finds.
   const [linkAuthMode, setLinkAuthMode] = useState<GenericMcpAuthMode>("auto");
   const [linkHeaders, setLinkHeaders] = useState<CustomHeaderRow[]>(() => [newCustomHeaderRow()]);
   const [linkOAuthClientId, setLinkOAuthClientId] = useState("");
@@ -1222,10 +1220,6 @@ function StandardConnectionSetupFlow({
           ...(effectiveGrantKind === "agent" ? { subjectAgentId: [...installAgentIds][0] } : {}),
         });
       }
-      // A resumable draft already owns its identity and install reach. Replacing
-      // those choices with this page's defaults would turn "finish setup" into a
-      // silent access change. Fresh connections still persist the Access step
-      // before the browser leaves Paperclip.
       if (result.auth?.kind === "oauth" && !resumeConnectionId && !reconnectConnectionId) {
         await applyAccessInstalls(result.connectionId);
       }
@@ -2826,19 +2820,6 @@ function normalizeAppLink(value: string): string | null {
   }
 }
 
-/**
- * The guided universal flow for an unknown remote MCP server (PAP-17087, plan 2).
- *
- * The simple path stays exactly as short as it was — URL, name, "does it need a
- * key?" — because that is all most servers need. Everything protocol-shaped lives
- * behind "Advanced authentication", and no OAuth/DCR/CIMD jargon appears on the
- * consumer path: the operator picks how the server authenticates, not which RFC
- * Paperclip will use to satisfy it.
- *
- * The endpoint host and the "Unverified server" label stay visible the whole way
- * through, so the operator can always see whose server they are about to let
- * agents call.
- */
 function LinkConnectStep({
   link,
   name,
@@ -3080,12 +3061,6 @@ function LinkConnectStep({
   );
 }
 
-/**
- * What the operator is choosing is how the *server* authenticates, in its own
- * terms. Paperclip decides internally whether that means a preconfigured client,
- * a client ID metadata document, dynamic registration, or the credentials pasted
- * below — none of which belongs on this screen.
- */
 const GENERIC_AUTH_MODE_OPTIONS: Array<{ mode: GenericMcpAuthMode; label: string; hint: string }> = [
   {
     mode: "auto",

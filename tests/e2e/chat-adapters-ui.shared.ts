@@ -10,15 +10,6 @@ import {
   type Route,
 } from "@playwright/test";
 
-/**
- * Deterministic browser coverage for the native chat-connector UI.
- *
- * Provider APIs are deliberately not contacted here. The shared Paperclip
- * server supplies the company, agent, and connector catalog, while a small
- * stateful route fixture emulates the chat-control-plane responses. Live
- * provider webhook and credential qualification belongs in the manual runbook
- * because those checks require real accounts and publicly reachable ingress.
- */
 
 export type Provider = "slack" | "github" | "discord" | "microsoft-teams" | "telegram" | "imessage-photon";
 

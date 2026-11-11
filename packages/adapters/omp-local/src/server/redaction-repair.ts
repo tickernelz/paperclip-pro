@@ -35,7 +35,6 @@ function repairCandidates(line: string, at: number): string[] {
   return candidates;
 }
 
-/** Rebuild a JSON line whose escapes Paperclip's log redaction swallowed, or null when unrecoverable. */
 export function repairRedactedJsonLine(line: string): string | null {
   if (!line.includes(REDACTED_LOG_MARKER)) return null;
   let current = line;

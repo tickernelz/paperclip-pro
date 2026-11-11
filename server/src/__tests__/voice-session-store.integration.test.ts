@@ -1147,8 +1147,6 @@ const support = await getEmbeddedPostgresTestSupport();
     expect(tools.every(t => t.source.url === "https://new-tunnel.example.test/tools")).toBe(true);
     expect(f.transport.configureWebhook.mock.calls.at(-1)?.[3]).toBe("hook_test");
     expect(f.transport.configureWebhook.mock.calls.at(-1)?.[2]).toBe("whsec_rotated");
-    // Even the same provider ID is no longer ours if its URL was changed outside
-    // Paperclip. A historical ID alone cannot authorize overwriting it.
     tools[0]!.source.url = "https://another-app.example.test/tools";
     f.transport.configureTool.mockClear();
     await expect(configureSpekoSessionTools(db, {...input, callbackUrl: "https://third-tunnel.example.test/tools"})).rejects.toMatchObject({status: 409});

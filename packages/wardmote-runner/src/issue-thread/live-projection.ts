@@ -611,15 +611,6 @@ function composerModel(
   return { state: "ready", helper: null, reason: null, pendingInteractionId: null };
 }
 
-/**
- * The real-API block, rendered as a record rather than a claim in prose.
- *
- * Both the clean-room chat and the scenario path route every Paperclip
- * operation through the in-process mock port, so "no request reached a real
- * Paperclip API" is a fact the session already carries. Projecting it into the
- * Control plane section is what makes it inspectable in the drawer instead of
- * something a reader has to take on trust.
- */
 function networkGuardRecord(
   snapshot: CapabilityLiveSessionSnapshot,
   state: CapabilityFixtureState | null,

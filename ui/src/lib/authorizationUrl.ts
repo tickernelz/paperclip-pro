@@ -20,9 +20,6 @@ export function resolveAuthorizationTarget(value: string | null | undefined): Au
     // loopback authorization server is exactly what someone is testing against.
     // A board served over HTTPS requires HTTPS.
     allowInsecureLoopback: servedOverHttp,
-    // Paperclip's own origin: a first-party authorization endpoint (the smoke-lab
-    // fixture) is served however the board is, and going to the page you are
-    // already on adds no exposure.
     allowInsecureOrigins: typeof window !== "undefined" ? [window.location.origin] : [],
   });
   if (check.ok) return { ok: true, url: check.url, host: check.host };

@@ -211,14 +211,6 @@ export interface GenericConnectPayload {
   oauthClient?: { clientId: string; clientSecret?: string };
 }
 
-/**
- * Build the connect request from wizard state.
- *
- * `authMode` is only sent when the operator made an explicit choice under Advanced
- * authentication; the simple path leaves it off so the server probes and decides.
- * Header values become `headers.<Name>` credential paths, which the server turns
- * into Paperclip secrets — nothing here ever puts a value in the config.
- */
 export function genericConnectPayload(draft: GenericConnectDraft): GenericConnectPayload {
   const credentialValues: Record<string, string> = {};
   const bearerKey = draft.keyValue.trim();

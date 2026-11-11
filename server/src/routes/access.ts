@@ -184,7 +184,6 @@ function isSafeSkillName(skillName: string): boolean {
   return /^[a-z0-9][a-z0-9._-]*$/.test(skillName);
 }
 
-/** Resolve the Paperclip repo skills directory (built-in / managed skills). */
 function resolveWardmoteSkillsDir(): string | null {
   const moduleDir = path.dirname(fileURLToPath(import.meta.url));
   const candidates = [
@@ -240,7 +239,6 @@ function listAvailableSkills(): AvailableSkill[] {
   const claudeSkillsDir = resolveClaudeSkillsDir();
   const wardmoteSkillsDir = resolveWardmoteSkillsDir();
 
-  // Build set of Paperclip-managed skill names
   const wardmoteSkillNames = new Set<string>();
   if (wardmoteSkillsDir) {
     try {
@@ -288,7 +286,7 @@ function listAvailableSkills(): AvailableSkill[] {
           isWardmoteManaged: true,
         });
       }
-    } catch { /* skip Paperclip skills directory */ }
+    } catch {}
   }
 
   skills.sort((a, b) => a.name.localeCompare(b.name));

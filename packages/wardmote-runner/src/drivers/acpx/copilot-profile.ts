@@ -6,8 +6,6 @@ export const COPILOT_SYSTEM_INSTRUCTIONS_FILE = "copilot-instructions.md" as con
 export const COPILOT_SYSTEM_INSTRUCTION_DELIVERY = "COPILOT_HOME/copilot-instructions.md:replace-under-lifetime-lease-before-launch:v1" as const;
 export const COPILOT_CREDENTIAL_ENVIRONMENT_NAME = "COPILOT_GITHUB_TOKEN" as const;
 
-// Keep permission callbacks enabled even when Paperclip's policy is approve-all.
-// In particular COPILOT_ALLOW_ALL=true also trusts workspace hooks/plugins/MCP.
 export const COPILOT_LAUNCH_ARGUMENTS = Object.freeze([
   "--acp", "--stdio", "--no-auto-update", "--disable-builtin-mcps",
   "--no-remote", "--no-remote-export", "--no-bash-env",

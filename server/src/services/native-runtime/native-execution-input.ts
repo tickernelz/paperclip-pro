@@ -47,12 +47,6 @@ export interface BuildNativeExecutionInput {
   initialCommunicationGuidance?: string | null;
   /** Bounded, redacted background restored only after a fresh provider bootstrap. */
   freshSessionHandoff?: string | null;
-  /**
-   * The already-sanitized Paperclip wake envelope for this run. Native drivers
-   * receive a closed execution input rather than the legacy adapter context,
-   * so the constructor must deliberately project the same bounded wake delta
-   * that legacy adapters place in their provider prompt.
-   */
   wakePayload?: unknown;
   /** Additive source ownership emitted by the server task/wake builders. */
   turnContext?: unknown;

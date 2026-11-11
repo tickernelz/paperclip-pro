@@ -297,27 +297,6 @@ const OAUTH_REFRESH_LEASE_MS = 120_000;
 const OAUTH_REFRESH_LEASE_WAIT_MS = 30_000;
 const OAUTH_REFRESH_LEASE_POLL_MS = 25;
 
-/**
- * Upstream OAuth error redaction (PAP-17108).
- *
- * A generic remote MCP connection points at an arbitrary authorization server,
- * so everything that server says about a failure is attacker-chosen: `error`,
- * `error_description`, `error_uri`, and the response body. Paperclip surfaces
- * connection failures to the operator through API responses, board UI copy,
- * audit rows and logs, so reflecting any of that text would let a hostile
- * provider plant secrets, ANSI escapes, or instructions ("paste your recovery
- * key here") into Paperclip's own voice.
- *
- * The rule is therefore: the operator only ever reads text Paperclip authored.
- * The provider's `error` code survives — as a *label* in structured `details`,
- * never in a message — and only when it is one of the codes the RFCs define,
- * because a label is still untrusted input. Everything else is dropped, and an
- * unrecognized code collapses to `unrecognized` rather than being echoed.
- *
- * `error_description` and the response body are never read at all: no call site
- * below parses them, which is what keeps a future edit from quietly
- * reintroducing the reflection.
- */
 const OAUTH_PROVIDER_ERROR_CODES = new Set([
   // RFC 6749 §4.1.2.1 — authorization endpoint (the callback-denial path).
   "access_denied",
@@ -348,13 +327,6 @@ const UNRECOGNIZED_OAUTH_PROVIDER_ERROR = "unrecognized";
 const MAX_OAUTH_PROVIDER_ERROR_LENGTH = 64;
 const OAUTH_PROVIDER_ERROR_PATTERN = /^[a-z0-9_-]+$/;
 
-/**
- * Stable, Paperclip-authored operator copy for each allowlisted provider error.
- * Deliberately keyed on the code alone: the calling context is already carried
- * by the Paperclip `code` in `details`, so one table serves the callback,
- * token-exchange and registration paths without any of them composing a message
- * out of provider text.
- */
 const OAUTH_PROVIDER_ERROR_MESSAGES: Record<string, string> = {
   access_denied: "The authorization server denied the request.",
   account_selection_required:
@@ -391,12 +363,6 @@ const OAUTH_PROVIDER_ERROR_MESSAGES: Record<string, string> = {
     "The authorization server does not support the sign-in flow Wardmote uses.",
 };
 
-/**
- * Reduce a provider-supplied `error` to a bounded, allowlisted label safe to
- * keep in structured `details`. Returns `null` only when the provider sent no
- * `error` at all, so the caller can tell "silent failure" from "said something
- * Paperclip does not recognize".
- */
 function normalizeOAuthProviderError(value: unknown): string | null {
   if (typeof value !== "string" || value.length === 0) return null;
   // Bound length and character class before the allowlist even though
@@ -411,7 +377,6 @@ function normalizeOAuthProviderError(value: unknown): string | null {
     : UNRECOGNIZED_OAUTH_PROVIDER_ERROR;
 }
 
-/** Paperclip's own message for a provider failure, never the provider's. */
 function oauthProviderErrorMessage(
   providerError: string | null,
   fallback: string,
@@ -420,25 +385,9 @@ function oauthProviderErrorMessage(
   return OAUTH_PROVIDER_ERROR_MESSAGES[providerError] ?? fallback;
 }
 
-/**
- * Where this deployment publishes its Client ID Metadata Document. The document's
- * own URL is the `client_id` Paperclip presents, so this path is a stable part of
- * the deployment's public contract with every authorization server that has seen
- * it — changing it invalidates existing CIMD registrations.
- */
 export const OAUTH_CLIENT_ID_METADATA_DOCUMENT_PATH =
   "/api/tools/oauth/client-metadata";
 
-/**
- * Resolve the URL Paperclip would use as a CIMD client id, but only when its
- * hostname is not known to resolve into a private network.
- *
- * An authorization server fetches this URL from outside Paperclip's network and
- * will normally apply an SSRF guard. Tailscale/MagicDNS names are HTTPS but
- * resolve into 100.64.0.0/10, so presenting one as a client id can only produce
- * an `invalid_client` response. A local DNS failure remains inconclusive because
- * split-horizon public DNS may still let the authorization server resolve it.
- */
 export async function resolveOAuthClientIdMetadataDocumentUrl(
   redirectUri: string,
   lookup?: RemoteHttpEndpointLookup,
@@ -478,11 +427,6 @@ export async function resolveOAuthClientIdMetadataDocumentUrl(
   }
 }
 
-/**
- * Paperclip's client metadata for CIMD (RFC 7591 metadata, served rather than
- * registered). Only the callback for this deployment appears in it, so an
- * authorization server that fetches it can see exactly one legal redirect target.
- */
 export function oauthClientIdMetadataDocument(input: {
   clientId: string;
   redirectUri: string;
@@ -518,12 +462,6 @@ type OAuthProviderEndpoints = {
    * it, and reconnect/refresh reuse it instead of re-deriving a provider key.
    */
   issuer?: string | null;
-  /**
-   * RFC 8707 resource indicator: the MCP endpoint the token is for. Sent on both
-   * authorization and token requests so the authorization server can audience-
-   * restrict the access token to this server rather than to everything Paperclip
-   * has ever connected.
-   */
   resource?: string | null;
   /** The authorization server advertised support for Client ID Metadata Documents. */
   clientIdMetadataDocumentSupported?: boolean;
@@ -2841,11 +2779,6 @@ function descriptorHash(
   });
 }
 
-/**
- * Did this error come from the OAuth endpoint gate (PAP-17099)? Such a refusal
- * is Paperclip's own decision about an unsafe address, so it must keep its code
- * and its 422 instead of being folded into a generic upstream failure.
- */
 function originOf(value: string | null | undefined): string | null {
   if (!value) return null;
   try {
@@ -3450,20 +3383,6 @@ export function toolAccessService(
     return endpoint;
   }
 
-  /**
-   * OAuth endpoint scheme/transport gate (PAP-17099).
-   *
-   * Every OAuth endpoint Paperclip acts on is attacker-influenced: discovered
-   * metadata, a `WWW-Authenticate` hint, a pasted config, or a gallery default.
-   * The authorization endpoint is the sharpest one because it is handed to the
-   * operator's browser as a top-level navigation, so `javascript:`/`data:` there
-   * would run in the board's origin. `checkOAuthEndpointUrl` is the single place
-   * that decides; loopback `http:` is accepted only under the same
-   * local-development policy that governs private remote endpoints, and
-   * Paperclip's own origin is exempt from the transport rule because a
-   * first-party endpoint (the smoke-lab fixture) is served exactly as the board
-   * itself is.
-   */
   function oauthEndpointRejected(
     kind: OAuthEndpointKind,
     reason: OAuthEndpointUrlRejection,
@@ -3474,11 +3393,6 @@ export function toolAccessService(
     });
   }
 
-  /**
-   * Origins that are Paperclip itself: this deployment's configured public URL,
-   * plus the callback origin of the request in hand when there is one. Only the
-   * plaintext-transport rule is relaxed for these.
-   */
   function firstPartyOrigins(candidate?: string | null): string[] {
     const configured =
       process.env.WARDMOTE_PUBLIC_URL?.trim() ||
@@ -3510,7 +3424,6 @@ export function toolAccessService(
     return origins;
   }
 
-  /** Throws unless `value` is an endpoint Paperclip may use (and navigate to). */
   function assertOAuthEndpointUrl(
     kind: OAuthEndpointKind,
     value: unknown,
@@ -9526,9 +9439,6 @@ export function toolAccessService(
         "OAuth provider endpoints are not configured for this app",
       );
     }
-    // A gallery default is Paperclip's own data, but it is still a URL that ends
-    // up as a browser navigation, and the metadata branch above reads the same
-    // untrusted document a generic connection does. Both go through the gate.
     return {
       provider: app.slug,
       scopes: method.defaults?.scopesHint ?? [],
@@ -9922,10 +9832,6 @@ export function toolAccessService(
       ],
       response_types: ["code"],
       token_endpoint_auth_method: tokenEndpointAuthMethod,
-      // RFC 7591: Paperclip's callback is a server-side HTTPS endpoint, so this
-      // is a `web` client, not a `native` one. Some authorization servers reject
-      // an https redirect URI when the default (`web`) is left implicit, and
-      // others apply native-client redirect rules without it.
       application_type: "web",
     };
     const response = await fetchRemoteHttpUrl(
@@ -9962,23 +9868,12 @@ export function toolAccessService(
       required: tokenEndpointAuthMethod !== "none",
       maxLength: MAX_OAUTH_DCR_CLIENT_SECRET_LENGTH,
     });
-    // Some authorization servers add provider-owned metadata to the registered
-    // client. Paperclip still uses only the exact redirect, grant and response
-    // types it requested, so accept bounded supersets while requiring every
-    // requested value to remain present. Hugging Face, for example, adds the
-    // device-code grant to an otherwise valid authorization-code registration.
     assertOAuthDcrArray(
       record,
       "redirect_uris",
       requestedMetadata.redirect_uris,
       { allowAdditional: true },
     );
-    // RFC 7591 registration responses do not consistently echo every accepted
-    // request field. Supabase, for example, returns only the client material and
-    // redirect URIs. Redirect binding remains mandatory; omitted grant/response
-    // metadata inherits the values Paperclip requested. Additional provider-owned
-    // values do not widen Paperclip's behavior because they are never persisted as
-    // a flow choice or sent in authorization/token requests.
     assertOAuthDcrArray(record, "grant_types", requestedMetadata.grant_types, {
       allowAdditional: true,
       allowOmitted: true,
@@ -10107,13 +10002,6 @@ export function toolAccessService(
     return updated;
   }
 
-  /**
-   * Adopt a Client ID Metadata Document as this connection's client: the
-   * `client_id` *is* the https URL of Paperclip's published client metadata, so
-   * there is nothing to register with the authorization server. Still recorded on
-   * the connection so the issuer/resource/callback binding is enforced on reuse
-   * exactly like a dynamically registered client.
-   */
   async function adoptClientIdMetadataDocument(input: {
     connection: typeof toolConnections.$inferSelect;
     endpoints: OAuthProviderEndpoints;
@@ -10177,12 +10065,6 @@ export function toolAccessService(
     return updated;
   }
 
-  /**
-   * How the client already stored on this connection was obtained. Anything
-   * unrecognised (including connections written before this field existed) reads
-   * as `manual`, which is the conservative answer: Paperclip will not silently
-   * re-register over client material it cannot prove it minted.
-   */
   function storedOAuthClientRegistrationSource(
     connection: typeof toolConnections.$inferSelect,
   ): OAuthClientRegistrationSource {
@@ -10233,18 +10115,12 @@ export function toolAccessService(
       typeof oauth.clientRegistrationSource === "string"
         ? oauth.clientRegistrationSource
         : null;
-    // Older interrupted setup flows could accidentally round-trip a DCR client
-    // through the customer-client form and relabel it `manual`. Ownership is the
-    // durable proof that Paperclip minted that client. Force a fresh registration
-    // instead of preserving the damaged binding forever.
     if (source === "manual" && connection.ownership === "dcr") return false;
     // A URL client id that now resolves only to a private network is unusable by
     // an external authorization server. Treat the stored binding as stale so a
     // retry can replace it with a dynamically registered client.
     if (source === "cimd" && oauth.clientId !== clientIdMetadataDocumentUrl)
       return false;
-    // A manually preregistered client was registered by the operator against
-    // Paperclip's callback, so it has no recorded callback until first use.
     const redirectMatches =
       source === "manual"
         ? oauth.clientRedirectUri === undefined ||
@@ -10333,22 +10209,6 @@ export function toolAccessService(
     return updated ?? connection;
   }
 
-  /**
-   * May Paperclip mint client material for this connection without an operator
-   * pasting client credentials?
-   *
-   * A curated app opts in through its `ownershipModes`. A generic remote MCP
-   * connection may register once — and only once — protected-resource and
-   * authorization-server discovery actually produced a metadata document; an
-   * endpoint that merely returned a 401 does not earn a registration.
-   *
-   * A curated method pinned to customer-owned clients still earns a registration
-   * when the provider's own metadata advertises one. `ownershipModes` is a
-   * point-in-time research snapshot, and providers add dynamic registration
-   * without telling us; live discovery is the better evidence of the two, so a
-   * stale catalog entry costs the operator a console detour rather than silently
-   * outranking what the server just said about itself.
-   */
   function canRegisterOAuthClientDynamically(
     connection: typeof toolConnections.$inferSelect,
     endpoints: OAuthProviderEndpoints,
@@ -10428,8 +10288,6 @@ export function toolAccessService(
       typeof oauth.clientId === "string" &&
       oauth.clientId.trim()
     ) {
-      // Paperclip cannot re-register on the operator's behalf: the credentials
-      // came from a console this deployment does not control.
       throw unprocessable(
         "This connection's sign-in details no longer match the server it points at. Re-enter the client ID and secret to continue.",
         { code: "oauth_manual_client_rebinding_required" },
@@ -10590,12 +10448,7 @@ export function toolAccessService(
     // exchange) to this MCP server.
     if (input.resource) body.set("resource", input.resource);
 
-    // The token URL can come from a connection row written before the endpoint
-    // gate existed, so a client secret / authorization code never leaves
-    // Paperclip without re-checking the transport it would leave over.
     const tokenUrl = assertOAuthEndpointUrl("token", input.tokenUrl, {
-      // Paperclip's own callback origin, so a first-party token endpoint keeps
-      // working on a deployment that is itself served over plaintext HTTP.
       firstPartyOrigin: originOf(input.redirectUri),
     });
     const headers: Record<string, string> = {
@@ -11581,14 +11434,6 @@ export function toolAccessService(
         const expiresAt = token.expiresIn
           ? new Date(Date.now() + token.expiresIn * 1000).toISOString()
           : null;
-        // A refresh carries no fresh authorization request, so the baseline stays what
-        // Paperclip asked for when *this* grant was authorized. Judging the response against
-        // the grant's own scopes instead would let an over-grant that the provider re-asserts
-        // on every refresh read back as clean, because the widened grant would have become
-        // its own baseline. The connection-level list is only a fallback for grants created
-        // before the per-grant baseline existed — it is whichever callback ran last, so on a
-        // connection two users authorized with different scopes it is the wrong baseline for
-        // at least one of them.
         const refreshed = resolveGrantedOauthScopes({
           tokenScope: token.scope,
           requestedScopes:
@@ -12537,10 +12382,6 @@ export function toolAccessService(
             mcpPreserveAccess: Boolean(retainedConnection && (retainedConnection.status === "active" || asRecord(retainedConnection.config).mcpPreserveAccess === true)),
           } : {}),
           ...(galleryEntry.slug === "posthog" ? { safeDefault: true } : {}),
-          // Telem.AI attributes each search to the Paperclip company, agent,
-          // run and issue, so its catalog connection forwards those context
-          // headers by default (the gateway still drops empty values). A
-          // reconnect keeps the policy the operator saved on the connection.
           ...(galleryEntry.slug === "telem"
             ? {
                 headerPolicy: asRecord(retainedConnection?.config).headerPolicy ?? {
@@ -12559,9 +12400,6 @@ export function toolAccessService(
         `${galleryEntry.name} does not accept customer-owned OAuth client credentials`,
       );
     }
-    // A pasted URL or an explicitly customer-owned curated method may arrive
-    // with a client the operator preregistered in the provider's console. Record
-    // the client id now; the secret becomes an encrypted Paperclip secret below.
     if (input.oauthClient) {
       config.oauth = {
         clientId: input.oauthClient.clientId.trim(),
@@ -13187,9 +13025,6 @@ export function toolAccessService(
             .where(eq(toolConnections.id, connectionRow.id));
           const endpoints = await discoverOAuthEndpoints(oauthConnection).catch(
             (discoveryError: unknown) => {
-              // "This server advertised an address Paperclip refuses to open" is a
-              // refusal, not a failed discovery: keep it instead of collapsing it
-              // into the generic sign-in-required error.
               if (isOAuthEndpointRejection(discoveryError))
                 throw discoveryError;
               return null;
@@ -14545,8 +14380,6 @@ export function toolAccessService(
     // unvetted target.
     const authorizationUrl = new URL(
       assertOAuthEndpointUrl("authorization", endpoints.authorizationUrl, {
-        // Paperclip's own callback origin: a first-party authorization endpoint is
-        // served however this deployment is served, plaintext LAN host included.
         firstPartyOrigin: originOf(input.redirectUri),
       }),
     );
@@ -14563,11 +14396,6 @@ export function toolAccessService(
     // authorization server that serves several resources can audience-restrict it.
     if (endpoints.resource)
       authorizationUrl.searchParams.set("resource", endpoints.resource);
-    // Curated definitions are an allowlist, not a suggestion. Never copy every
-    // scope advertised by discovery into a provider consent screen: a curated
-    // method either sends its reviewed hint or omits scope entirely. Generic
-    // MCP URLs retain discovery-first behavior because Paperclip has no manifest
-    // against which it could safely judge the caller's requested scope.
     if (authorizationScopes.length > 0)
       authorizationUrl.searchParams.set("scope", authorizationScopes.join(" "));
     const reviewedAuthorizationParams =
@@ -14710,9 +14538,6 @@ export function toolAccessService(
         tokenUrl: endpoints.tokenUrl,
         registrationUrl: endpoints.registrationUrl ?? null,
         metadataUrl: endpoints.metadataUrl ?? null,
-        // Curated apps persist only the reviewed scopes attached to this OAuth
-        // state. Discovery metadata can advertise a provider's entire scope
-        // universe and must never silently become Paperclip's requested set.
         scopes: authorizationScopes,
         offlineAccessSupported: endpoints.offlineAccessSupported,
         grantTypesSupported: endpoints.grantTypesSupported ?? [],
@@ -14880,8 +14705,6 @@ export function toolAccessService(
         result: {
           version: 1,
           outcome: "rejected",
-          // Paperclip's own words: the provider's explanation is untrusted and
-          // this reason is rendered in the thread (PAP-17108).
           reason:
             "Authorization was declined or cancelled in the provider's window",
         },
@@ -15271,11 +15094,6 @@ export function toolAccessService(
     iss?: string | null;
     actor?: ActorInfo;
   }): Promise<ConnectToolAppResult> {
-    // Binding first, outcome second: the provider's report of a failure is only
-    // acted on once the callback is bound to a state Paperclip issued and to the
-    // actor that started the flow, so an unsolicited callback cannot drive any
-    // path here. Consuming the state up front is what makes a denial terminal —
-    // a refused request must not stay completable by a later code (PAP-17109).
     const stateRow = await consumeOAuthState(input.state, input.actor);
     if (input.error) {
       await rejectPendingOAuthInteraction(stateRow, input.actor);

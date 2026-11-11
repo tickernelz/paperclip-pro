@@ -1,10 +1,4 @@
 #!/usr/bin/env node
-/**
- * Broker host entrypoint. Wires the tested BrokerCore to the live Tailscale
- * CLI, /proc listener-ownership check, file registry, file audit sink, and the
- * unix-socket transport. Runs as a dedicated, Tailscale-operator service
- * account — NOT as the Paperclip app/agent account.
- */
 import { FileAuditSink } from "./audit.js";
 import { BrokerCore } from "./broker-core.js";
 import { loadHostConfig } from "./config.js";

@@ -1,43 +1,3 @@
-/**
- * PAP-17419 end-to-end regression: a leased HTTPS app/HMR pair is never handed
- * to another execution workspace.
- *
- * The pure mediation rules are covered in
- * `services/runtime-exposure/port-reservation.test.ts`. This file drives the
- * *wired* path against a real database, so the persisted-lease query, the
- * allocator, the ownership gate, and the startup reconciliation sweep are all
- * exercised as they actually run — the layer where PAP-17251 failed.
- *
- * Reproduces the finding: workspace `b7ce28b4` held `42001/52001` under an open
- * lease. Its backend was stopped and its exposure torn down, so the row read
- * `stopped` with `exposure.state = "removed"` and an emptied `listeners` array,
- * and nothing on the allocation path could still see the reservation. The
- * unrelated workspace `PAP-16986-add-posthog-mcp` was then handed the pair.
- *
- * ## Host safety
- *
- * The broker is a fake, so no Tailscale Serve state is ever read or mutated.
- * Allocation is driven by an injected `isPortAvailable` that models a synthetic
- * host, and the only ports it will ever return are two app/HMR pairs the suite
- * selects at run time: `beforeEach` scans upward from
- * `RUNTIME_EXPOSURE_SUITE_APP_PORT_START` and keeps the two lowest pairs that
- * read free on the real loopback host at that moment. The suite never pins a
- * fixed host port as a constant, so a short-lived socket that another process
- * holds on the runner cannot make this suite fail. The scan never takes the
- * low lane at the bottom of the dedicated range: a real instance can hold a
- * pair there under an open lease with no listener bound, which is the exact
- * incident this file reproduces, so a scan that starts there could seize a
- * pair a live instance still owns. The scan also rejects a port that any
- * local Paperclip instance's on-disk service registry still names, even with
- * no listener bound — the same open-lease shape, for a real instance instead
- * of this suite's own fixture, which a listener-only probe cannot see. Guests
- * do bind the two selected pairs on loopback, so the readiness and exposure
- * lifecycle is exercised for real; they are reaped in `afterEach`. A pair
- * that reads free at discovery can still be taken by another process before
- * the guest binds it; this suite does not close that window. `WARDMOTE_HOME`
- * is redirected to a temp dir so the local-service registry never touches the
- * real instance on this host.
- */
 import { randomUUID } from "node:crypto";
 import fs from "node:fs/promises";
 import net from "node:net";
@@ -95,25 +55,10 @@ let LEASED_HMR_PORT: number;
 let NEXT_APP_PORT: number;
 let NEXT_HMR_PORT: number;
 
-/**
- * The real, unredirected Paperclip home directory. `beforeEach` later points
- * `WARDMOTE_HOME` at a throwaway temp dir for the suite under test, so this
- * must be read before that happens. Mirrors the default in
- * `resolveWardmoteHomeDir`.
- */
 const REAL_WARDMOTE_HOME = process.env.WARDMOTE_TEST_HOST_HOME?.trim()
   || process.env.WARDMOTE_HOME?.trim()
   || path.join(os.homedir(), ".paperclip-pro");
 
-/**
- * Every port a local Paperclip instance's on-disk service registry currently
- * records, read once per case from the real, unredirected Paperclip home. A
- * registry record survives a stopped process with no listener, so it can
- * still name the port even after the exact "listener-free lease" condition
- * this suite reproduces. A listener-only scan cannot see that: it would treat
- * the port as free and let the suite's own guest bind it, which can then
- * block the owning instance when it resumes.
- */
 async function readLocallyLeasedPorts(): Promise<Set<number>> {
   const leased = new Set<number>();
   const instancesDir = path.join(REAL_WARDMOTE_HOME, "instances");
@@ -318,9 +263,6 @@ const GUEST_COMMAND =
 
       workspaceRoot = await fs.mkdtemp(path.join(os.tmpdir(), "pap17419-workspace-"));
       wardmoteHome = await fs.mkdtemp(path.join(os.tmpdir(), "pap17419-home-"));
-      // Redirect the local-service registry into a throwaway instance. Without
-      // this the suite would write runtime-service records into the real
-      // Paperclip instance on this host and could confuse a live server.
       previousWardmoteHome = process.env.WARDMOTE_HOME;
       previousInstanceId = process.env.WARDMOTE_INSTANCE_ID;
       process.env.WARDMOTE_HOME = wardmoteHome;

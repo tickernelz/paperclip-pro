@@ -1473,13 +1473,6 @@ export function resolveWorktreeSeedMigrationRevision(
   return migrationRevision;
 }
 
-/**
- * Markerless worktrees predate the versioned seed manifest. Adopt one only
- * after proving that its configured database already has a compatible
- * migration journal and the core Paperclip tables. The physical PG_VERSION
- * check prevents this read-only probe from initializing a missing embedded
- * database and then mistaking that empty cluster for legacy evidence.
- */
 export async function inspectLegacyWorktreeDatabase(
   configPath: string,
 ): Promise<LegacyWorktreeDatabaseEvidence | null> {

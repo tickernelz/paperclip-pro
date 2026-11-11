@@ -233,8 +233,6 @@ process.once("SIGTERM", () => exitAfterCleanup(143));
 
 let failed = false;
 try {
-  // Import only after the disposable homes are authoritative so no provider
-  // module can snapshot the developer's normal Paperclip or provider state.
   const {
     RUNNER_LIVE_CANDIDATE_SLOTS,
     executeLiveRunnerWorkflow,

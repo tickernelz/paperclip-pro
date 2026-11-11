@@ -116,14 +116,6 @@ async function startUiWatcher(uiDir: string, onReload: (filePath: string) => voi
   }
 }
 
-/**
- * Start a local static server for plugin UI assets with SSE reload events.
- *
- * Endpoint summary:
- * - `GET /__paperclip__/health` for diagnostics
- * - `GET /__paperclip__/events` for hot-reload stream
- * - Any other path serves files from the configured UI build directory
- */
 export async function startPluginDevServer(options: PluginDevServerOptions = {}): Promise<PluginDevServer> {
   const rootDir = path.resolve(options.rootDir ?? process.cwd());
   const uiDir = path.resolve(rootDir, options.uiDir ?? "dist/ui");

@@ -2066,7 +2066,6 @@ export class DurablePrpControlPlane {
     wire.acceptInitialData(head);
   }
 
-  /** Attach either an accepted inbound WebSocket or a Paperclip-opened peer. */
   attachWireConnection(wire: PrpWireConnection): PrpWireAttachment {
     let connection!: AuthorityConnection;
     let processing = Promise.resolve();

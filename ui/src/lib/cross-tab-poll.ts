@@ -1,32 +1,3 @@
-/**
- * Cross-tab shared polling coordination (PAP-12557 / Phase 2 of PAP-12542).
- *
- * Goal: when a user restores many Paperclip tabs at once, we do not want every
- * tab independently polling the same company-scoped hot endpoints (live-runs,
- * dashboard, inbox list, activity). Instead we elect ONE visible leader tab per
- * company to poll, and the leader broadcasts fresh results to the other tabs.
- *
- * Two independent primitives make this robust:
- *
- *   1. `LeaderElection` — a localStorage-lease election that is the source of
- *      truth for "who polls". It works with nothing but a Storage-like object
- *      and a clock, so it survives even when `BroadcastChannel` is unavailable,
- *      and it is fully unit-testable with injected fakes (no DOM required).
- *
- *   2. `SharedChannel` — a best-effort message bus for sharing poll results.
- *      Prefers `BroadcastChannel`; falls back to a `localStorage` + `storage`
- *      event relay when it is not available.
- *
- * The lease is authoritative; the channel is an optimisation. If the channel is
- * missing, followers still stop polling (lease) and rely on their react-query
- * cache / a slow safety poll, so we never regress to worse than a single tab.
- *
- * Design rules (from the approved plan, Phase 2 acceptance):
- *   - At most one active leader per company under normal browser conditions.
- *   - Hidden tabs do NOT become leader while a visible tab exists.
- *   - Leader failover happens within ~one poll interval + lease grace when the
- *     leader closes or crashes (its lease expires and a follower reclaims it).
- */
 
 // ---------------------------------------------------------------------------
 // Leader election (pure, injectable — the tested core)

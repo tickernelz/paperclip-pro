@@ -2,15 +2,6 @@ import { Group, Panel, Separator } from "react-resizable-panels";
 import type { GroupProps, PanelProps, SeparatorProps } from "react-resizable-panels";
 import { cn } from "@/lib/utils";
 
-/**
- * Thin design-system wrapper over `react-resizable-panels` (PAP-12962 D2 — the
- * only net-new shared primitive Skill Studio adds). Re-exports the library's
- * Group / Panel / Separator with Paperclip token styling and a comfortable
- * (≥8px) resize hit-slop so a split view can be dropped in anywhere.
- *
- * Sizes accept the library's units: bare numbers/`"37.5%"` are percentages,
- * `"280px"` is a pixel floor (used here for the min-width contract).
- */
 
 export function ResizablePanelGroup({ className, ...props }: GroupProps) {
   return (

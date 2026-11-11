@@ -50,25 +50,6 @@ export function turnSummaryText(summary: TaskChatTurnItem["summary"]): string {
   return metrics ? `${label} · ${metrics}` : label;
 }
 
-/**
- * One agent turn's activity behind a single expandable header row. Paperclip
- * Runner turns opt into the chronological-timeline branch below instead.
- *
- * While the turn is live and carries `liveStatus`, that status line (whimsy or
- * taxonomy gerund + elapsed + tokens) IS the turn: one parent row, collapsed
- * by default, owning all activity (PAP-354). Expanding nests the chronological
- * tool/thinking history underneath — each row keeping its own expand — and new
- * rows append live while open. On settle the header morphs in place into the
- * "✓ Worked · …" summary, preserving the expand state, so the running line
- * reads as being replaced by the summary in the same slot.
- *
- * Both directions of the fold reuse the .tc-turn-fold grid-rows motion
- * (--motion-turn-fold, zeroed under prefers-reduced-motion). The fold class
- * only transitions on state CHANGE, so first paint in the folded state (e.g. a
- * turn that loads already settled) never animates. A live turn without
- * `liveStatus` (harness fixtures) renders its children expanded with no header
- * and folds when it settles.
- */
 export function TaskChatTurn({
   item,
   renderChild,
@@ -77,11 +58,6 @@ export function TaskChatTurn({
 }: TaskChatTurnProps) {
   const streamlined = useStreamlinedTaskChatPresentation();
   const parentRow = !item.settled && item.liveStatus != null;
-  // The new Paperclip Runner task surface owns one durable chronological
-  // timeline. The Worked/Stopped row is its stable header, so it stays directly
-  // below the preceding human bubble and above commentary, activity phases,
-  // request receipts, and plan artifacts. The classic task interface continues
-  // to use the run-wide fold below.
   if (item.standaloneHeader) {
     return (
       <div

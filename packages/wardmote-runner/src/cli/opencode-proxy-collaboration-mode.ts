@@ -4,13 +4,6 @@ function record(value: unknown): Record<string, unknown> {
     : {};
 }
 
-/**
- * OpenCode does not expose Codex app-server collaboration presets itself, but
- * the Paperclip proxy implements planning semantics through its task envelope,
- * read-only permission profile, and Paperclip runtime tools. Advertise that
- * proxy-owned capability so runnerd can negotiate planning mode without
- * pretending OpenCode supplied a native Codex preset.
- */
 export function openCodeProxyCollaborationModes(model: string) {
   const resolvedModel = model.trim();
   if (!resolvedModel) {

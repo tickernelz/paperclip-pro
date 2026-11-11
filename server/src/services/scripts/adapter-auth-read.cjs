@@ -1,26 +1,3 @@
-// The descriptor-bound credential read helper. The server runs it in the sandbox
-// as `node -e <this file> <sessionHome> <maxBytes> [<expectedUid>]`. The sandbox
-// already runs node for the Paperclip bridge, so the helper needs no extra
-// runtime.
-//
-// The helper closes the time-of-check-to-time-of-use (TOCTOU) window. It opens
-// the filesystem root, then opens each session-home path component in turn with a
-// no-follow, directory-only open, relative to the previous directory descriptor. A
-// symlink at any component fails the walk. Node has no `openat`, so the helper
-// opens each next component through `/proc/self/fd/<dfd>/<component>`: the kernel
-// resolves the magic descriptor link, then applies `O_NOFOLLOW` to the final
-// component. This binds each open to the descriptor inode, not to a re-resolved
-// pathname, so it matches an `openat` walk.
-//
-// The helper opens `auth.json` relative to the final directory descriptor with
-// `O_NOFOLLOW`, runs `fstat` on that one descriptor, and reads only from it. The
-// `fstat` check requires a regular file, the expected owner, exact mode `0600`,
-// and a size at or below the bound. The helper never re-opens the pathname after
-// the check.
-//
-// Security: the helper prints only the base64 of the credential bytes on the
-// fully validated success path. It prints one fixed error token on stderr on every
-// failed path. It never prints the pathname, the raw bytes, or any other detail.
 
 "use strict";
 

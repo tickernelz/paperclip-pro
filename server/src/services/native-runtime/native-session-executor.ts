@@ -7537,7 +7537,6 @@ export async function executeWardmoteNativeSession(input: {
   /** Test seam at the provider boundary; production uses a qualified package backend. */
   backend?: NativeSessionBackend;
   useRunnerd?: boolean;
-  /** Paperclip adapter identity used to scope the durable goal projection. */
   adapterType?: string;
   /** Internal, run-owned file inspection lifetime; never supplied by tool arguments. */
   chatAttachmentReadScope?: NativeChatAttachmentReadScope;
@@ -11022,12 +11021,6 @@ export function createRemoteRunnerProcessLauncher(input: {
       } else {
         remoteArgs.push("--diagnostics-directory", input.diagnosticsDirectory);
       }
-      // Do not keep runnerd as the foreground command of a provider RPC. Some
-      // sandbox command/session transports impose a provider-side lifetime on
-      // that RPC even when Paperclip requests a longer timeout. Detach runnerd
-      // into its own session instead; its own bounded diagnostics directory and
-      // durable PRP state remain the authorities, and the controller monitors
-      // the exact persisted process identity below.
       const launchResult = await runner.execute({
         command: "sh",
         args: [

@@ -1,6 +1,5 @@
 import type { AiAuthMethod, AiProvider } from "./ai-connections.js";
 
-/** A provider observation, never an estimate from Paperclip's run costs. */
 export interface AiConnectionUsageLimit {
   id: string;
   label: string;

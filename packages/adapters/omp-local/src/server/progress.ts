@@ -77,7 +77,6 @@ export interface OmpStreamReporter {
   sawProviderWork(): boolean;
 }
 
-/** Feed OMP stdout lines to Paperclip's live status, durable run events, and recovery evidence. */
 export function createOmpProgressReporter(
   sink: ProgressSink | undefined,
   events: EventSink | undefined,

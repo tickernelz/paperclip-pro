@@ -1,17 +1,3 @@
-/**
- * @fileoverview Adapter management REST API routes
- *
- * This module provides Express routes for managing external adapter plugins:
- * - Listing all registered adapters (built-in + external)
- * - Installing external adapters from npm packages or local paths
- * - Unregistering external adapters
- *
- * Read-only routes require board org access. Mutating adapter management
- * routes require instance-admin access because they can install, reload, or
- * toggle server-side adapter code for the whole Paperclip instance.
- *
- * @module server/routes/adapters
- */
 
 import { execFile } from "node:child_process";
 import fs from "node:fs";
@@ -78,7 +64,6 @@ function assertAdapterManagementVisible() {
 // ---------------------------------------------------------------------------
 
 interface AdapterInstallRequest {
-  /** npm package name (e.g., "droid-paperclip-adapter") or local path */
   packageName: string;
   /** True if packageName is a local filesystem path */
   isLocalPath?: boolean;
@@ -730,13 +715,6 @@ export function adapterRoutes(options: {
     }
   });
 
-  // ── GET /api/adapters/:type/ui-parser.js ─────────────────────────────────
-  // Serve the self-contained UI parser JS for an adapter type.
-  // This allows external adapters to provide custom run-log parsing
-  // without modifying Paperclip's source code.
-  //
-  // The adapter package must export a "./ui-parser" entry in package.json
-  // pointing to a self-contained ESM module with zero runtime dependencies.
   router.get("/adapters/:type/ui-parser.js", (req, res) => {
     // UI parsers are read-only assets for displaying existing run output.
     // Runtime-changing adapter management routes above require instance admin.

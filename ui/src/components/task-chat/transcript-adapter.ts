@@ -92,16 +92,6 @@ export function splitTranscriptAtAnchors(
   });
 }
 
-/**
- * The live parent row's nesting rule (PAP-354, narrowed by PAP-361): only tool
- * calls, provider-supplied reasoning summaries, and usage readouts nest inside
- * the expandable live turn. The classic parent-row surface may flatten a live
- * interstitial into its status line; the Paperclip Runner task surface instead
- * projects commentary as durable chronological phase boundaries. The run's
- * final reply is resolved separately into the turn's durable response slot or
- * its posted comment bubble. Markers, statuses and interaction cards stay in
- * the thread outside.
- */
 export function isNestableLiveChild(
   item: TaskChatItem,
 ): item is TaskChatTurnChildItem {
@@ -1232,12 +1222,6 @@ export function omitProgressRepeatedByResponseAcrossSegments(
   );
 }
 
-/**
- * Keep the paperclip runner's expanded activity history focused on work the
- * user can act on. The normalized transcript remains lossless; this is only a
- * presentation filter for the new-runner turn surface. Legacy adapters keep
- * their existing lifecycle and usage rows.
- */
 export function wardmoteRunnerHistoryItems(
   parsed: readonly TaskChatItem[],
 ): TaskChatItem[] {
@@ -1252,15 +1236,6 @@ export function wardmoteRunnerHistoryItems(
   });
 }
 
-/**
- * Semantic rows for the Paperclip runner's Codex-style activity disclosure.
- *
- * This is intentionally narrower than the stored transcript and the runner
- * inspector: it keeps work a person can understand or act on while excluding
- * transport/lifecycle bookkeeping, terminal authority, and the final
- * response. Logical provider/tool lifecycles have already been coalesced by
- * `transcriptToTaskChatItems`, so each returned item is one visible "thing".
- */
 export function wardmoteRunnerActivityItems(
   parsed: readonly TaskChatItem[],
 ): TaskChatItem[] {
@@ -1331,12 +1306,6 @@ export function wardmoteRunnerActivityItems(
   });
 }
 
-/**
- * Ordered input for the Paperclip Runner task-turn timeline. This keeps the
- * semantic activity filter above, but retains runtime-request lifecycles so
- * the shared projector can use each request as a phase boundary and place its
- * terminal receipt at the request's first-seen position.
- */
 export function wardmoteRunnerTimelineItems(
   parsed: readonly TaskChatItem[],
 ): TaskChatItem[] {

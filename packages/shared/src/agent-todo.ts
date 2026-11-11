@@ -82,7 +82,6 @@ export function summarizeAgentTodo(
   return { counts, current };
 }
 
-/** Maps an OMP todo status onto the Paperclip agent todo vocabulary. */
 export function normalizeAgentTodoStatus(value: unknown): AgentTodoStatus | null {
   switch (value) {
     case "pending":

@@ -105,9 +105,6 @@ export type TeamsPersonalRecipientBinding = Readonly<
   }
 >;
 
-// A route-free ID is Paperclip's durable identity. The pinned SDK's routed
-// form may omit its personal suffix. Neither that omission nor any prefix
-// (including a:) establishes personal scope; only the admitted proof does.
 function conversationFromThread(threadId: string): string | null {
   const parts = threadId.split(":");
   if (parts[0] !== "teams" || parts.length < 2 || parts.length > 4) return null;

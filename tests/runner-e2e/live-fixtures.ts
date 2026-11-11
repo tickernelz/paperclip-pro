@@ -210,9 +210,6 @@ export async function setupLiveFixtures(input: {
       const company = value<CompanyRecord>(resolved, "company");
       const secretRefs = value<SecretReferenceMap>(resolved, "secrets");
       if (execution.environment.id === "local") {
-        // Paperclip has one instance-managed local environment. The company
-        // creation API ensures it exists; creating a second local environment
-        // is intentionally rejected by the public API.
         const environments = await api.get<EnvironmentRecord[]>(
           `/api/companies/${company.id}/environments?driver=local`,
         );

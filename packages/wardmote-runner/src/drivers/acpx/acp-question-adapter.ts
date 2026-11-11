@@ -38,14 +38,9 @@ interface AcpFieldBinding {
 
 export interface NormalizedAcpForm {
   questionSet: WardmoteQuestionSet;
-  /** Convert a validated Paperclip response back into typed ACP content. */
   accept(response: unknown): AcpAcceptElicitationResponse;
 }
 
-/**
- * ACP remains private to this adapter. Only the normalized question set is
- * allowed to cross the Paperclip runtime-request boundary.
- */
 export function normalizeAcpFormElicitation(
   request: AcpFormElicitationRequest,
 ): NormalizedAcpForm | null {

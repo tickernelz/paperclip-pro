@@ -151,9 +151,6 @@ function scratchRoot() {
 }
 
 async function createWorkingDirectory(root, prefix = "capability-issue-thread-") {
-  // Managed previews can outlive the heartbeat that launched them. Paperclip
-  // removes that heartbeat's scratch directory when the run ends, so ensure
-  // the inherited parent still exists before every later session is minted.
   await mkdir(root, { recursive: true });
   return mkdtemp(resolve(root, prefix));
 }

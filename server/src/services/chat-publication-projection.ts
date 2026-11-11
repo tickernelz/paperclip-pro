@@ -235,11 +235,6 @@ function truncateByCodePoint(input: string, limit: number): string {
   return Array.from(input).slice(0, limit).join("");
 }
 
-/**
- * The only text projection allowed to cross from Paperclip into a provider.
- * It strips internal reasoning/tool/log content, redacts credentials, removes
- * dangerous or token-bearing links, and neutralizes provider-wide mentions.
- */
 export function projectSafeChatPublicationText(input: string): string {
   return projectSafeChatPublicationTextOrNull(input) ?? "Update available in Wardmote.";
 }

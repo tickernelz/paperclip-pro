@@ -490,19 +490,6 @@ const _logFlushInterval = setInterval(() => {
 // Allow the interval to be unref'd so it doesn't keep the process alive in tests.
 if (_logFlushInterval.unref) _logFlushInterval.unref();
 
-/**
- * buildHostServices — creates a concrete implementation of the `HostServices`
- * interface for a specific plugin.
- *
- * This implementation delegates to the core Paperclip domain services,
- * providing the bridge between the plugin worker's SDK and the host platform.
- *
- * @param db - Database connection instance.
- * @param pluginId - The UUID of the plugin installation record.
- * @param pluginKey - The unique identifier from the plugin manifest (e.g., "acme.linear").
- * @param eventBus - The system-wide event bus for publishing plugin events.
- * @returns An object implementing the HostServices interface for the plugin SDK.
- */
 /** Maximum time (ms) to keep a session event subscription alive before forcing cleanup. */
 const SESSION_EVENT_SUBSCRIPTION_TIMEOUT_MS = 30 * 60 * 1_000; // 30 minutes
 
