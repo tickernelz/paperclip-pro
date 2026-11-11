@@ -95,7 +95,7 @@ describe("exe.dev sandbox provider plugin", () => {
       normalizedConfig: {
         apiKey: null,
         apiUrl: "https://exe.dev/exec",
-        namePrefix: "wardmote-sandbox",
+        namePrefix: "paperclip-sandbox",
         image: "ubuntu:22.04",
         command: null,
         cpu: 4,
@@ -281,9 +281,9 @@ describe("exe.dev sandbox provider plugin", () => {
   it("acquires a lease by creating a VM and preparing the SSH workspace", async () => {
     fetchMock.mockResolvedValueOnce(
       new Response(JSON.stringify({
-        vm_name: "wardmote-env-run",
-        ssh_dest: "wardmote-env-run.exe.xyz",
-        https_url: "https://wardmote-env-run.exe.xyz",
+        vm_name: "paperclip-env-run",
+        ssh_dest: "paperclip-env-run.exe.xyz",
+        https_url: "https://paperclip-env-run.exe.xyz",
         status: "running",
       }), { status: 200 }),
     );
@@ -308,11 +308,11 @@ describe("exe.dev sandbox provider plugin", () => {
     expect(String(fetchMock.mock.calls[0]?.[1]?.body ?? "")).toContain("new --json --no-email");
     expect(spawnMock).toHaveBeenCalledTimes(2);
     expect(lease).toMatchObject({
-      providerLeaseId: "wardmote-env-run",
+      providerLeaseId: "paperclip-env-run",
       metadata: {
         provider: "exe-dev",
-        vmName: "wardmote-env-run",
-        sshDest: "wardmote-env-run.exe.xyz",
+        vmName: "paperclip-env-run",
+        sshDest: "paperclip-env-run.exe.xyz",
         remoteCwd: "/workspace/custom",
         shellCommand: "bash",
         reuseLease: false,
@@ -323,8 +323,8 @@ describe("exe.dev sandbox provider plugin", () => {
   it("copies the source VM with exe.dev cp instead of creating a new VM", async () => {
     fetchMock.mockResolvedValueOnce(
       new Response(JSON.stringify({
-        vm_name: "wardmote-env1-run1",
-        ssh_dest: "wardmote-env1-run1.exe.xyz",
+        vm_name: "paperclip-env1-run1",
+        ssh_dest: "paperclip-env1-run1.exe.xyz",
         status: "running",
       }), { status: 200 }),
     );
@@ -348,9 +348,9 @@ describe("exe.dev sandbox provider plugin", () => {
     });
 
     expect(String(fetchMock.mock.calls[0]?.[1]?.body ?? "")).toBe(
-      "cp 'golden-vm' 'wardmote-env1-run1' --json --cpu='4' --memory='8GB' --disk='40GB'",
+      "cp 'golden-vm' 'paperclip-env1-run1' --json --cpu='4' --memory='8GB' --disk='40GB'",
     );
-    expect(lease).toMatchObject({ providerLeaseId: "wardmote-env1-run1" });
+    expect(lease).toMatchObject({ providerLeaseId: "paperclip-env1-run1" });
   });
 
   it("rejects VM creation settings that exe.dev cp cannot apply when sourceVm is set", async () => {
@@ -374,9 +374,9 @@ describe("exe.dev sandbox provider plugin", () => {
   it("uses a pasted sshPrivateKey when connecting to the VM", async () => {
     fetchMock.mockResolvedValueOnce(
       new Response(JSON.stringify({
-        vm_name: "wardmote-env-run",
-        ssh_dest: "wardmote-env-run.exe.xyz",
-        https_url: "https://wardmote-env-run.exe.xyz",
+        vm_name: "paperclip-env-run",
+        ssh_dest: "paperclip-env-run.exe.xyz",
+        https_url: "https://paperclip-env-run.exe.xyz",
         status: "running",
       }), { status: 200 }),
     );
@@ -403,9 +403,9 @@ describe("exe.dev sandbox provider plugin", () => {
   it("supplies a default Node-install setup script when none is provided", async () => {
     fetchMock.mockResolvedValueOnce(
       new Response(JSON.stringify({
-        vm_name: "wardmote-env-run",
-        ssh_dest: "wardmote-env-run.exe.xyz",
-        https_url: "https://wardmote-env-run.exe.xyz",
+        vm_name: "paperclip-env-run",
+        ssh_dest: "paperclip-env-run.exe.xyz",
+        https_url: "https://paperclip-env-run.exe.xyz",
         status: "running",
       }), { status: 200 }),
     );
@@ -433,9 +433,9 @@ describe("exe.dev sandbox provider plugin", () => {
   it("preserves an operator-supplied setup script and does not append the default", async () => {
     fetchMock.mockResolvedValueOnce(
       new Response(JSON.stringify({
-        vm_name: "wardmote-env-run",
-        ssh_dest: "wardmote-env-run.exe.xyz",
-        https_url: "https://wardmote-env-run.exe.xyz",
+        vm_name: "paperclip-env-run",
+        ssh_dest: "paperclip-env-run.exe.xyz",
+        https_url: "https://paperclip-env-run.exe.xyz",
         status: "running",
       }), { status: 200 }),
     );
@@ -487,9 +487,9 @@ describe("exe.dev sandbox provider plugin", () => {
   it("surfaces exe.dev SSH onboarding guidance during lease acquisition", async () => {
     fetchMock.mockResolvedValueOnce(
       new Response(JSON.stringify({
-        vm_name: "wardmote-env-run",
-        ssh_dest: "wardmote-env-run.exe.xyz",
-        https_url: "https://wardmote-env-run.exe.xyz",
+        vm_name: "paperclip-env-run",
+        ssh_dest: "paperclip-env-run.exe.xyz",
+        https_url: "https://paperclip-env-run.exe.xyz",
         status: "running",
       }), { status: 200 }),
     );
@@ -509,15 +509,15 @@ describe("exe.dev sandbox provider plugin", () => {
       "the Wardmote host SSH key is not registered with exe.dev",
     );
 
-    expect(String(fetchMock.mock.calls[1]?.[1]?.body ?? "")).toBe("rm --json 'wardmote-env-run'");
+    expect(String(fetchMock.mock.calls[1]?.[1]?.body ?? "")).toBe("rm --json 'paperclip-env-run'");
   });
 
   it("surfaces invalid SSH key-format guidance during lease acquisition", async () => {
     fetchMock.mockResolvedValueOnce(
       new Response(JSON.stringify({
-        vm_name: "wardmote-env-run",
-        ssh_dest: "wardmote-env-run.exe.xyz",
-        https_url: "https://wardmote-env-run.exe.xyz",
+        vm_name: "paperclip-env-run",
+        ssh_dest: "paperclip-env-run.exe.xyz",
+        https_url: "https://paperclip-env-run.exe.xyz",
         status: "running",
       }), { status: 200 }),
     );
@@ -541,7 +541,7 @@ describe("exe.dev sandbox provider plugin", () => {
       "the configured SSH private key isn't an OpenSSH-format private key",
     );
 
-    expect(String(fetchMock.mock.calls[1]?.[1]?.body ?? "")).toBe("rm --json 'wardmote-env-run'");
+    expect(String(fetchMock.mock.calls[1]?.[1]?.body ?? "")).toBe("rm --json 'paperclip-env-run'");
   });
 
   it("redacts sensitive lifecycle flags in API errors", async () => {
@@ -824,11 +824,11 @@ describe("exe.dev sandbox provider plugin", () => {
         providerLeaseId: "vm-1",
         metadata: {
           sshDest: "vm-1.exe.xyz",
-          remoteCwd: "/srv/wardmote/run-1",
+          remoteCwd: "/srv/paperclip/run-1",
         },
       },
       workspace: {
-        localPath: "/local/wardmote",
+        localPath: "/local/paperclip",
         remotePath: undefined,
       },
     });
@@ -837,12 +837,12 @@ describe("exe.dev sandbox provider plugin", () => {
     expect(spawnMock.mock.calls[0]?.[0]).toBe("ssh");
     const sshCommand = String(spawnMock.mock.calls[0]?.[1]?.at(-1) ?? "");
     expect(sshCommand).toContain("mkdir -p");
-    expect(sshCommand).toContain("/srv/wardmote/run-1");
+    expect(sshCommand).toContain("/srv/paperclip/run-1");
     expect(result).toMatchObject({
-      cwd: "/srv/wardmote/run-1",
+      cwd: "/srv/paperclip/run-1",
       metadata: {
         provider: "exe-dev",
-        remoteCwd: "/srv/wardmote/run-1",
+        remoteCwd: "/srv/paperclip/run-1",
       },
     });
   });
@@ -865,12 +865,12 @@ describe("exe.dev sandbox provider plugin", () => {
         },
       },
       workspace: {
-        localPath: "/local/wardmote",
-        remotePath: "/srv/wardmote/remote-fallback",
+        localPath: "/local/paperclip",
+        remotePath: "/srv/paperclip/remote-fallback",
       },
     });
 
-    expect(result?.cwd).toBe("/srv/wardmote/remote-fallback");
+    expect(result?.cwd).toBe("/srv/paperclip/remote-fallback");
   });
 
   it("skips ensureRemoteWorkspace and returns the resolved cwd when no VM metadata is available", async () => {
@@ -885,16 +885,16 @@ describe("exe.dev sandbox provider plugin", () => {
       lease: {
         providerLeaseId: null,
         metadata: {
-          remoteCwd: "/srv/wardmote/no-vm",
+          remoteCwd: "/srv/paperclip/no-vm",
         },
       },
       workspace: {
-        localPath: "/local/wardmote",
+        localPath: "/local/paperclip",
       },
     });
 
     expect(spawnMock).not.toHaveBeenCalled();
-    expect(result?.cwd).toBe("/srv/wardmote/no-vm");
+    expect(result?.cwd).toBe("/srv/paperclip/no-vm");
   });
 });
 

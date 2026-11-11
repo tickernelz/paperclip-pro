@@ -30,7 +30,7 @@ import { appendSemanticToolReceipt } from "../../../packages/wardmote-runner/src
 function receiptNotice(version: 1 | 2 = 1): Record<string, any> {
   return {
     schema: "wardmote.provider.notice.v1", noticeId: `copilot-evidence-${"a".repeat(24)}-1`,
-    severity: "info", category: `wardmote_semantic_tool_receipt_v${version}`, scope: "turn",
+    severity: "info", category: `paperclip_semantic_tool_receipt_v${version}`, scope: "turn",
     recoverable: true, userActionable: false, summary: "Wardmote returned a semantic tool result.",
     provenance: { method: "paperclip/semantic_tool_result", eventType: "semantic_result", sessionId: "session", turnId: "turn" },
     details: Object.entries({ stage: "semantic_result", schema: `paperclip.semantic_tool_receipt.v${version}`,
@@ -549,9 +549,9 @@ describe("redaction", () => {
     const input = [
       "Authorization: Bearer live-bearer-token-value",
       `payload {"apiKey":"json-secret-value"}`,
-      `paperclip {"WARDMOTE_API_KEY":"wardmote-json-secret"}`,
+      `paperclip {"WARDMOTE_API_KEY":"paperclip-json-secret"}`,
       `escaped {\\"apiKey\\":\\"escaped-json-secret\\"}`,
-      `export WARDMOTE_API_KEY='wardmote-shell-secret'`,
+      `export WARDMOTE_API_KEY='paperclip-shell-secret'`,
       `GITHUB_TOKEN=${githubToken}`,
       `session=${jwt}`,
     ].join("\n");
@@ -561,9 +561,9 @@ describe("redaction", () => {
     expect(result).toContain(REDACTED_EVENT_VALUE);
     expect(result).not.toContain("live-bearer-token-value");
     expect(result).not.toContain("json-secret-value");
-    expect(result).not.toContain("wardmote-json-secret");
+    expect(result).not.toContain("paperclip-json-secret");
     expect(result).not.toContain("escaped-json-secret");
-    expect(result).not.toContain("wardmote-shell-secret");
+    expect(result).not.toContain("paperclip-shell-secret");
     expect(result).not.toContain(githubToken);
     expect(result).not.toContain(jwt);
   });
