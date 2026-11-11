@@ -86,7 +86,7 @@ it("allows explicit earlier remote bootstrap reads while rejecting unknown kinds
   const read: CursorToolNotice = { ...rows[0]!, seq: 1, toolCallId: "bootstrap-read", stage: "tool", status: "completed", operation: "read", commandSha256: undefined };
   const input = { notices: [read, ...rows], runId: "run", turnId: "turn", requestId: "request", toolCallId: "tool", commandSha256: cursorDeniedCommand("/fixture/denied.txt").commandSha256 };
   expect(hasCursorDeniedCommand(input)).toBe(false);
-  const actionFile = `.paperclip-eval-action-${"a".repeat(36)}.txt`;
+  const actionFile = `.wardmote-eval-action-${"a".repeat(36)}.txt`;
   const event = { runId: "run", seq: 2, protocolSchemaVersion: 1, eventType: "tool.execution.completed", payload: { prpEvent: {
     schema: "wardmote.prp.event.v1", schemaVersion: 1, sourceKind: "runner", runId: "run", turnId: "turn", eventType: "tool.execution.completed", emittedAt: new Date(2).toISOString(),
     payload: { schema: "wardmote.tool.execution.v1", executionId: "bootstrap-read", transport: "builtin", operation: "read", target: actionFile, status: "completed" },

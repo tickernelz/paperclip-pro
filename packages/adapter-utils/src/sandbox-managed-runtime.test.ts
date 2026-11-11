@@ -588,7 +588,7 @@ describe("sandbox managed runtime", () => {
     await expect(readFile(targetPath, "utf8")).resolves.toBe("#!/bin/sh\necho hello\n");
     expect(chmodMock).toHaveBeenCalledTimes(1);
     expect(renameMock).toHaveBeenCalledTimes(1);
-    expect(chmodMock.mock.calls[0]?.[0]).toContain(".paperclip-copy.");
+    expect(chmodMock.mock.calls[0]?.[0]).toContain(".wardmote-copy.");
     expect(chmodMock.mock.calls[0]?.[0]).not.toBe(targetPath);
     expect(chmodMock.mock.invocationCallOrder[0]).toBeLessThan(renameMock.mock.invocationCallOrder[0]);
   });
@@ -618,7 +618,7 @@ describe("sandbox managed runtime", () => {
     expect(chmodMock).toHaveBeenCalledTimes(1);
     expect(renameMock).not.toHaveBeenCalled();
     const stagedPath = chmodMock.mock.calls[0]?.[0];
-    expect(stagedPath).toContain(".paperclip-copy.");
+    expect(stagedPath).toContain(".wardmote-copy.");
     await expect(readFile(stagedPath, "utf8")).rejects.toMatchObject({ code: "ENOENT" });
     await expect(readFile(targetPath, "utf8")).rejects.toMatchObject({ code: "ENOENT" });
   });

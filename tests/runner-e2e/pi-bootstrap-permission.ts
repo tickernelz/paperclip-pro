@@ -18,7 +18,7 @@ export interface PiBootstrapApproval {
 export interface PiBootstrapState { run: Row; issue: Row; events: readonly unknown[] }
 
 function readLifecycle(events: readonly unknown[], input: Pick<PiBootstrapApproval, "companyId" | "runId" | "actionFile" | "requestId">) {
-  requireProof(events.length > 0 && events.length <= 20_000 && /^\.paperclip-eval-action-[a-f0-9]{36}\.txt$/u.test(input.actionFile));
+  requireProof(events.length > 0 && events.length <= 20_000 && /^\.wardmote-eval-action-[a-f0-9]{36}\.txt$/u.test(input.actionFile));
   const seqs = new Set<number>(), sourceIds = new Set<string>(), lastSource = new Map<string, number>();
   for (const row of events as readonly Row[]) {
     const e = row.payload?.prpEvent; if (e === undefined) continue;
@@ -94,7 +94,7 @@ export async function approvePiBootstrapRead(input: {
   deadlineAt: number; load(): Promise<PiBootstrapState>; evidence(name: string, value: unknown): Promise<void>;
 }): Promise<PiBootstrapApproval | undefined> {
   const actionFile = input.fixture.actionFile;
-  requireProof(/^\.paperclip-eval-action-[a-f0-9]{36}\.txt$/u.test(actionFile)
+  requireProof(/^\.wardmote-eval-action-[a-f0-9]{36}\.txt$/u.test(actionFile)
     && input.fixture.binding.companyId === input.companyId && input.fixture.binding.runId === input.runId);
   const pending = await pollUntil({ label: "Pi published bootstrap read", deadlineAt: input.deadlineAt, intervalMs: 100,
     load: input.load, reject: state => ["failed", "timed_out", "cancelled", "succeeded"].includes(state.run.status) ? "Pi bootstrap run settled" : undefined,

@@ -149,7 +149,7 @@ export async function materializePiDistribution({ outputRoot, nodeExecutable, np
   if (!supportedTargets.has(`${process.platform}-${process.arch}`)) throw new Error("Pi distribution target is unsupported");
   try { await lstat(output); throw new Error("Pi distribution output already exists"); } catch (error) { if (error.code !== "ENOENT") throw error; }
   await mkdir(dirname(output), { recursive: true });
-  const staging = await mkdtemp(join(await realpath(dirname(output)), ".paperclip-pi-distribution-"));
+  const staging = await mkdtemp(join(await realpath(dirname(output)), ".wardmote-pi-distribution-"));
   const runtimeRoot = join(staging, "runtime");
   try {
     const target = `${process.platform}-${process.arch}`;

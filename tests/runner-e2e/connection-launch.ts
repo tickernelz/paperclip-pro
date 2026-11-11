@@ -77,7 +77,7 @@ export async function openConnectionBrowser(config: ConnectionConfig, repository
   const entries = await readdir(profile);
   if (entries.length && !entries.includes(path.basename(marker))) throw new ConnectionBlock("blocked_target", "use_a_dedicated_empty_qa_browser_profile");
   if (!entries.length) await writeFile(marker, "Dedicated Wardmote provider QA browser. Contains private authentication state.\n", { mode: 0o600, flag: "wx" });
-  const lock = path.join(profile, ".paperclip-qa.lock");
+  const lock = path.join(profile, ".wardmote-qa.lock");
   try { await (await open(lock, "wx", 0o600)).close(); }
   catch { throw new ConnectionBlock("blocked_target", "qa_browser_profile_in_use"); }
   let context: BrowserContext;

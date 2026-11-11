@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { expect, it } from "vitest";
 import { bootstrapReadExecutionId, withoutProvenBootstrapReads, type BootstrapReadNotice } from "./native-bootstrap-read-proof.js";
-const actionFile = `.paperclip-eval-action-${"a".repeat(36)}.txt`;
+const actionFile = `.wardmote-eval-action-${"a".repeat(36)}.txt`;
 const origin: BootstrapReadNotice = { runId: "run", sessionId: "session", turnId: "turn", toolCallId: "tested", stage: "tool", operation: "execute", status: "pending", seq: 20 };
 function read(status = "completed", seq = 1): BootstrapReadNotice { return { ...origin, toolCallId: "bootstrap", operation: "read", readTargetSha256: `sha256:${createHash("sha256").update(actionFile).digest("hex")}`, status, seq }; }
 function receipt(type = "completed", status = "completed", seq = 2) {
@@ -64,9 +64,9 @@ it("preserves later reads and unknown native kinds for the caller's extra-operat
 it("mirrors stable ASCII bounds and rejects invalid native identities", () => {
   expect(bootstrapReadExecutionId("read:alpha-1")).toBe("read:alpha-1");
   expect(bootstrapReadExecutionId("a".repeat(160))).toBe("a".repeat(160));
-  expect(bootstrapReadExecutionId("a".repeat(161))).toBe("acpx-tool-c4b0cf58ad5787f270b446a5eb28905e09d8e0aa06e7f577e27aed951d573406");
-  expect(bootstrapReadExecutionId("tool / é")).toBe("acpx-tool-c870bde596691facb0dc508859665ab3ee9de278e7d49adecaab0fa600feaff0");
-  expect(bootstrapReadExecutionId("é".repeat(121))).toBe("acpx-tool-9e1e0f61749be86786959ac0384b636ca4b9e00c78e9d77161f0432871edf151");
+  expect(bootstrapReadExecutionId("a".repeat(161))).toBe("acpx-tool-1dc042a42954fa0ff5aa36500062abe14d66a41371182580e8e489475e3e3d0f");
+  expect(bootstrapReadExecutionId("tool / é")).toBe("acpx-tool-83c8b7ffb4a67b08a38e0abb8c8337f64895bfaed8dc7b48223466ff4c54a5cc");
+  expect(bootstrapReadExecutionId("é".repeat(121))).toBe("acpx-tool-681d0096323a8df5df1191e988ec78b01a05059b3474e3891bd6cca629c5d4ab");
   for (const id of ["", "a".repeat(241), "read\nnext", "[REDACTED]"]) expect(() => bootstrapReadExecutionId(id)).toThrow();
 });
 

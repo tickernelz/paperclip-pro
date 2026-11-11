@@ -724,7 +724,7 @@ describe("command managed runtime", () => {
     // Ordering: upload → untar → command 1 → command 2. The tarball upload is the
     // single stdin-backed call; the untar and the two commands follow it in order.
     const scripts = calls.map((call) => (call.args ?? []).join("\n"));
-    const uploadIdx = scripts.findIndex((s) => s.includes(".paperclip-syncin.tar") && s.includes("base64 -d"));
+    const uploadIdx = scripts.findIndex((s) => s.includes(".wardmote-syncin.tar") && s.includes("base64 -d"));
     const untarIdx = scripts.findIndex((s) => s.includes("tar -xf") && s.includes(targetDir));
     const cmd1Idx = scripts.findIndex((s) => s.includes("1-first"));
     const cmd2Idx = scripts.findIndex((s) => s.includes("2-second"));
@@ -788,8 +788,8 @@ describe("command managed runtime", () => {
     // The write goes straight to the target path. No staging name and no
     // rename step exist between the write and the chmod.
     const scripts = calls.map((call) => (call.args ?? []).join(" "));
-    expect(scripts.some((script) => script.includes(".paperclip-syncin."))).toBe(false);
-    expect(scripts.some((script) => script.includes("mv -f") && script.includes(".paperclip-syncin."))).toBe(
+    expect(scripts.some((script) => script.includes(".wardmote-syncin."))).toBe(false);
+    expect(scripts.some((script) => script.includes("mv -f") && script.includes(".wardmote-syncin."))).toBe(
       false,
     );
     const chmodScript = scripts.find((script) => script.includes("chmod 640"));

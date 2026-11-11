@@ -115,7 +115,7 @@ export async function prepareEvalRuntimeContext(
   workingDirectory: string,
 ): Promise<NativeRuntimeContextSnapshot> {
   const contextRoot = await mkdtemp(
-    resolve(workingDirectory, ".paperclip-eval-runtime-context-"),
+    resolve(workingDirectory, ".wardmote-eval-runtime-context-"),
   );
   const instructionRoot = resolve(contextRoot, "instructions");
   const entryPath = "AGENTS.md";

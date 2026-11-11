@@ -538,7 +538,7 @@ async function copySnapshotEntry(sourceDir: string, targetDir: string, relative:
   }
   // An interrupted restore must not leave a truncated current file. Keep the
   // incoming tree until its owner records success; exact retries deduplicate.
-  const temporary = path.join(path.dirname(targetPath), `.paperclip-merge-${randomUUID()}`);
+  const temporary = path.join(path.dirname(targetPath), `.wardmote-merge-${randomUUID()}`);
   try {
     await fs.copyFile(sourcePath, temporary, fsConstants.COPYFILE_FICLONE).catch(async () => {
       await fs.copyFile(sourcePath, temporary);

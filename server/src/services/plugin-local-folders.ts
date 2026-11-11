@@ -204,7 +204,7 @@ export async function inspectPluginLocalFolder(input: {
       if (access === "readWrite") {
         try {
           await fs.access(realPath, fsConstants.W_OK);
-          const probePath = path.join(realPath, `.paperclip-local-folder-probe-${process.pid}-${Date.now()}`);
+          const probePath = path.join(realPath, `.wardmote-local-folder-probe-${process.pid}-${Date.now()}`);
           await fs.writeFile(probePath, "");
           await fs.rm(probePath, { force: true });
           writable = true;

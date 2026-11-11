@@ -4,7 +4,7 @@ import { canonicalJson } from "../../packages/shared/src/portability-hash.js";
 import { approvePiBootstrapRead, withoutApprovedPiBootstrapRequests, type PiBootstrapApproval } from "./pi-bootstrap-permission.js";
 import { observePiControlPending, readPiStopSettlement, readPiSteeringSettlement } from "./pi-controls-evidence.js";
 import { piCancellationId, piControlCaller, piControlFixture } from "./pi-controls-test-fixture.js";
-const actionFile = `.paperclip-eval-action-${"a".repeat(36)}.txt`;
+const actionFile = `.wardmote-eval-action-${"a".repeat(36)}.txt`;
 const digest = (value: unknown) => `sha256:${createHash("sha256").update(canonicalJson(value)).digest("hex")}`;
 function fixture() {
   const f = piControlFixture(), write = structuredClone(f.events);

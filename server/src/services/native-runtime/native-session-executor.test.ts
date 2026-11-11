@@ -2310,14 +2310,14 @@ describe("remote provider checkpoint snapshots", () => {
     const batch = syncOut.mock.calls[0]?.[0]?.[0];
     expect(batch?.files[0]).toMatchObject({
       sourcePath: expect.stringMatching(
-        /^\/remote\/session\/filesystem\/\.paperclip-checkpoint-/,
+        /^\/remote\/session\/filesystem\/\.wardmote-checkpoint-/,
       ),
       targetPath: "/tmp/wardmote-checkpoint-test-codex-home",
       kind: "directory",
       mode: 0o700,
     });
     expect(String(execute.mock.calls[2]?.[0]?.args?.[1])).toMatch(
-      /^rm -rf -- '\/remote\/session\/filesystem\/\.paperclip-checkpoint-/,
+      /^rm -rf -- '\/remote\/session\/filesystem\/\.wardmote-checkpoint-/,
     );
   });
 
