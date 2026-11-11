@@ -60,13 +60,13 @@ export function buildCiliumNetworkPolicyManifest(input: BuildCiliumNetworkPolicy
     apiVersion: "cilium.io/v2",
     kind: "CiliumNetworkPolicy",
     metadata: {
-      name: input.name ?? "paperclip-egress-fqdn",
+      name: input.name ?? "wardmote-egress-fqdn",
       namespace: input.namespace,
-      labels: { "paperclip.io/managed-by": "paperclip-k8s-plugin" },
+      labels: { "wardmote.dev/managed-by": "wardmote-k8s-plugin" },
       ...(input.ownerReferences ? { ownerReferences: input.ownerReferences } : {}),
     },
     spec: {
-      endpointSelector: { matchLabels: input.endpointSelector ?? { "paperclip.io/role": "agent" } },
+      endpointSelector: { matchLabels: input.endpointSelector ?? { "wardmote.dev/role": "agent" } },
       egress,
     },
   };

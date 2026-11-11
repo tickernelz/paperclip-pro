@@ -1274,7 +1274,7 @@ describe("sandbox callback bridge", () => {
       readdir(remoteAssetDir).then((entries) =>
         entries.filter(
           (entry) =>
-            entry.endsWith(".paperclip-upload.b64") ||
+            entry.endsWith(".wardmote-upload.b64") ||
             entry.endsWith(".partial") ||
             entry === ".paperclip-bridge-upload.lock",
         ),
@@ -1328,7 +1328,7 @@ describe("sandbox callback bridge", () => {
       readdir(remoteAssetDir).then((entries) =>
         entries.filter(
           (entry) =>
-            entry.endsWith(".paperclip-upload.b64") ||
+            entry.endsWith(".wardmote-upload.b64") ||
             entry.endsWith(".partial") ||
             entry === ".paperclip-bridge-upload.lock",
         ),
@@ -1389,7 +1389,7 @@ describe("sandbox callback bridge", () => {
       readdir(remoteDir).then((entries) =>
         entries.filter(
           (entry) =>
-            entry.endsWith(".paperclip-upload.b64") ||
+            entry.endsWith(".wardmote-upload.b64") ||
             entry.endsWith(".partial") ||
             entry === ".paperclip-process-session-script.lock",
         ),
@@ -1682,7 +1682,7 @@ describe("sandbox callback bridge", () => {
       const scripts = runner.execute.mock.calls.map(([input]) => input.args?.[1] ?? "");
       expect(scripts.filter((script) => script.startsWith("printf"))).toHaveLength(1);
       expect(scripts.some((script) => script.startsWith("base64 -d"))).toBe(false);
-      expect(scripts.at(-1)).toMatch(/^rm -f .*paperclip-upload/);
+      expect(scripts.at(-1)).toMatch(/^rm -f .*wardmote-upload/);
       expect(vi.getTimerCount()).toBe(0);
     } finally {
       vi.useRealTimers();

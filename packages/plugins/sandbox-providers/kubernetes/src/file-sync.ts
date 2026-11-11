@@ -79,11 +79,7 @@ export type PodStreamExec = (
   },
 ) => Promise<{ exitCode: number; stderr: string }>;
 
-// Reserved scratch-name stem for staged transfers and remote tarballs. The
-// runtime's base64 fallback stages to `<path>.paperclip-upload`; the native
-// transport reuses the same reserved prefix so a provider temp never collides
-// with a real target or with the fallback's scratch name.
-const SCRATCH_PREFIX = ".paperclip-upload";
+const SCRATCH_PREFIX = ".wardmote-upload";
 
 // Fail-closed guard on the number of bytes an outbound (`syncOut`) transfer will
 // stream to host disk. The archive is authored by the untrusted pod, which

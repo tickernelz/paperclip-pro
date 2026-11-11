@@ -2163,7 +2163,7 @@ describe("sandbox managed runtime", () => {
     expect(prepared.workspaceRemoteDir).toBe(remoteWorkspaceDir);
   });
 
-  it("the workspace wipe command preserves in-flight sync scratch tarballs (.paperclip-upload-*)", async () => {
+  it("the workspace wipe command preserves in-flight sync scratch tarballs (.wardmote-upload-*)", async () => {
     const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-sandbox-scratch-shape-"));
     cleanupDirs.push(rootDir);
     const sourceRepoDir = path.join(rootDir, "source-repo");
@@ -2217,7 +2217,7 @@ describe("sandbox managed runtime", () => {
     // scratch prefix so a concurrent referenced-project upload survives the wipe.
     const wipeCommand = captured[0].postUploadCommands![0].command;
     expect(wipeCommand).toContain("find ");
-    expect(wipeCommand).toContain("! -name '.paperclip-upload-*'");
+    expect(wipeCommand).toContain("! -name '.wardmote-upload-*'");
   });
 
   it("the workspace wipe keeps an in-flight scratch tarball at the root but removes a stale sibling", async () => {
@@ -2235,11 +2235,8 @@ describe("sandbox managed runtime", () => {
     await git(sourceRepoDir, ["add", "tracked.txt"]);
     await git(sourceRepoDir, ["commit", "-m", "base"]);
     await git(sourceRepoDir, ["worktree", "add", "-b", "work", localWorkspaceDir, "HEAD"]);
-    // Pre-seed the sandbox root. `.paperclip-upload-test.tar` simulates a
-    // concurrent referenced-project scratch tarball in flight; `stale-junk.txt`
-    // is an unrelated child that the wipe must remove.
     await mkdir(remoteWorkspaceDir, { recursive: true });
-    await writeFile(path.join(remoteWorkspaceDir, ".paperclip-upload-test.tar"), "scratch\n", "utf8");
+    await writeFile(path.join(remoteWorkspaceDir, ".wardmote-upload-test.tar"), "scratch\n", "utf8");
     await writeFile(path.join(remoteWorkspaceDir, "stale-junk.txt"), "junk\n", "utf8");
 
     const client: SandboxManagedRuntimeClient = {
@@ -2279,7 +2276,7 @@ describe("sandbox managed runtime", () => {
     // The real `find` wipe ran through `sh -c`. The scratch tarball survived and
     // the unrelated sibling did not.
     await expect(
-      readFile(path.join(remoteWorkspaceDir, ".paperclip-upload-test.tar"), "utf8"),
+      readFile(path.join(remoteWorkspaceDir, ".wardmote-upload-test.tar"), "utf8"),
     ).resolves.toBe("scratch\n");
     await expect(
       readFile(path.join(remoteWorkspaceDir, "stale-junk.txt"), "utf8"),

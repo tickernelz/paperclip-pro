@@ -634,7 +634,7 @@ describe("sandbox adapter execution targets", () => {
       target: {
         kind: "remote", transport: "sandbox", providerKey: "local-test", remoteCwd: rootDir,
         runner: { execute: async (input) => {
-          if (/command\.b64\.[^/]+\.paperclip-upload\.b64/.test(input.args?.[1] ?? "") && input.args![1].includes(">>")) {
+          if (/command\.b64\.[^/]+\.wardmote-upload\.b64/.test(input.args?.[1] ?? "") && input.args![1].includes(">>")) {
             throw new Error("Upload interrupted");
           }
           return delegate.execute(input);
@@ -841,11 +841,8 @@ describe("sandbox adapter execution targets", () => {
     const delegate = createLocalSandboxRunner();
     const runner = {
       execute: async (input: Parameters<typeof delegate.execute>[0]) => {
-        // Record the active step for the first exec that writes the stdin file.
-        // The `.paperclip-upload` temp path under the `stdin` directory is unique
-        // to the stdin-write path; the poll loop reads the `events` directory.
         const script = (input.args ?? []).join("\n");
-        if (stdinWriteStep === "unset" && /\/stdin\/[^\s']*paperclip-upload/.test(script)) {
+        if (stdinWriteStep === "unset" && /\/stdin\/[^\s']*wardmote-upload/.test(script)) {
           stdinWriteStep = getActiveStepContext();
           resolveStdinWrite();
         }

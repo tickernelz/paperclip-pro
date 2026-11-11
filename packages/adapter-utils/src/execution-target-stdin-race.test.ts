@@ -569,7 +569,7 @@ describe("stdin file race (parent PAP-4037)", () => {
         }
         await waitFor(async () => {
           const files = await readdir(path.join(rootDir, "runtime", "process-sessions"), { recursive: true });
-          return files.every((file) => !file.endsWith(".paperclip-upload.b64") && !file.endsWith(".paperclip-upload.decoded"));
+          return files.every((file) => !file.endsWith(".wardmote-upload.b64") && !file.endsWith(".wardmote-upload.decoded"));
         });
       } finally {
         peer?.destroy();
@@ -814,7 +814,7 @@ describe("stdin file race (parent PAP-4037)", () => {
     expect(finalizeScript).toBeDefined();
     expect(finalizeScript).toContain(`mv `);
     expect(finalizeScript).not.toContain(`> '${jsonPath}'`);
-    expect(finalizeScript).toMatch(/> '[^']+\.paperclip-upload\.decoded'/);
+    expect(finalizeScript).toMatch(/> '[^']+\.wardmote-upload\.decoded'/);
   });
 
   it("never exposes a partial .json file under a concurrent reader (command-managed host write)", async () => {
@@ -1461,7 +1461,7 @@ describe("deterministic remote process-session wrapper shutdown (PAP-5316)", () 
     await bridge!.stop();
     const elapsedMs = Date.now() - start;
 
-    const finalizeWrites = scripts.filter((script) => script.includes("base64 -d") && script.includes(".paperclip-upload.decoded"));
+    const finalizeWrites = scripts.filter((script) => script.includes("base64 -d") && script.includes(".wardmote-upload.decoded"));
     // stdinEnd, then shutdown: both control messages still land.
     expect(finalizeWrites.length).toBeGreaterThanOrEqual(2);
     const removeScript = scripts.find((script) => script.trim().startsWith("rm -rf"));
