@@ -42,7 +42,7 @@ describe("P6-19 native interaction bridge", () => {
   const itemVerdictsId = "78000000-0000-4000-8000-000000000014";
 
   beforeAll(async () => {
-    temporary = await startEmbeddedPostgresTestDatabase("paperclip-native-interaction-");
+    temporary = await startEmbeddedPostgresTestDatabase("wardmote-native-interaction-");
     db = createDb(temporary.connectionString);
     await db.insert(companies).values({ id: companyId, name: "Native interaction", issuePrefix: "NIB" });
     await db.insert(agents).values({

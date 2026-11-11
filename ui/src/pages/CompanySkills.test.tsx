@@ -826,7 +826,7 @@ describe("SkillDetailPage settings", () => {
 
   it("renders long source paths in full so they can wrap inside the sidebar", async () => {
     const v1 = makeVersion(1, "# Demo Skill");
-    const longSourcePath = "/srv/paperclip/home/paperclipai/paperclip/.agents/skills/prepare-pr/SKILL.md";
+    const longSourcePath = "/srv/wardmote/home/tickernelz/wardmote/.agents/skills/prepare-pr/SKILL.md";
     const node = await renderSkillDetail([v1], {
       activeTab: "agents",
       detail: makeDetail(v1, {

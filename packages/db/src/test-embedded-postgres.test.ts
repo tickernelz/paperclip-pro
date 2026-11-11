@@ -59,7 +59,7 @@ describe("startEmbeddedPostgresWithRetry", () => {
     const { ctor, constructed } = makeFakeCtor(2);
     __setEmbeddedPostgresCtorProviderForTests(async () => ctor);
 
-    const started = await startWithRetry("paperclip-retry-recover-");
+    const started = await startWithRetry("wardmote-retry-recover-");
 
     // The first two attempts fail, the third succeeds.
     expect(constructed).toHaveLength(3);
@@ -88,7 +88,7 @@ describe("startEmbeddedPostgresWithRetry", () => {
     const { ctor, constructed } = makeFakeCtor(Number.POSITIVE_INFINITY);
     __setEmbeddedPostgresCtorProviderForTests(async () => ctor);
 
-    await expect(startWithRetry("paperclip-retry-fail-")).rejects.toThrow(/after \d+ attempts/);
+    await expect(startWithRetry("wardmote-retry-fail-")).rejects.toThrow(/after \d+ attempts/);
 
     // The retry stops at the bound and does not loop forever.
     expect(constructed).toHaveLength(MAX_ATTEMPTS);
@@ -103,7 +103,7 @@ describe("startEmbeddedPostgresWithRetry", () => {
     const { ctor } = makeFakeCtor(Number.POSITIVE_INFINITY);
     __setEmbeddedPostgresCtorProviderForTests(async () => ctor);
 
-    const error = await startWithRetry("paperclip-retry-reason-").catch((caught: unknown) => caught);
+    const error = await startWithRetry("wardmote-retry-reason-").catch((caught: unknown) => caught);
 
     expect(error).toBeInstanceOf(Error);
     // The thrown message carries the captured Postgres output, not only the

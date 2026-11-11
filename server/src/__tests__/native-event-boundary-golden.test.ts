@@ -37,7 +37,7 @@ describeEmbeddedPostgres(
   () => {
     it("preserves each profile-tagged canonical discriminator and identity through storage and sanitization", async () => {
       const temporary = await startEmbeddedPostgresTestDatabase(
-        "paperclip-native-boundary-",
+        "wardmote-native-boundary-",
       );
       const db = createDb(temporary.connectionString);
       const companyId = "73000000-0000-4000-8000-000000000001";

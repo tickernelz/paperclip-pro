@@ -71,7 +71,7 @@ async function deleteAgentsAfterStragglingWakes(db: Parameters<typeof resetCompa
 }
 
 describeEmbeddedPostgres("per-task model override inheritance", () => {
-  const ctx = useEmbeddedPostgres("paperclip-run-model-inheritance-", {
+  const ctx = useEmbeddedPostgres("wardmote-run-model-inheritance-", {
     resetEach: async (db) => {
       await db.delete(activityLog);
       await db.delete(issues);

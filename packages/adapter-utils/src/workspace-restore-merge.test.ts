@@ -204,7 +204,7 @@ describe("workspace restore merge", () => {
       const sentinelPath = "/srv/telemetry-backend";
       const sentinelPid = String(process.pid);
       const error: NodeJS.ErrnoException = new Error(
-        `EACCES: permission denied, mkdir '${sentinelPath}.paperclip-restore.lock' (pid ${sentinelPid})`,
+        `EACCES: permission denied, mkdir '${sentinelPath}.wardmote-restore.lock' (pid ${sentinelPid})`,
       );
       error.code = "EACCES";
 

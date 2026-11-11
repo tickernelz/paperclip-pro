@@ -41,7 +41,7 @@ describeEmbeddedPostgres("heartbeat runtime MCP servers", () => {
   const originalApiUrl = process.env.WARDMOTE_API_URL;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-heartbeat-runtime-mcp-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-heartbeat-runtime-mcp-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

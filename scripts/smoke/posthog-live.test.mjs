@@ -56,8 +56,8 @@ test("preflight rejects credential-bearing and non-HTTPS remote URLs", () => {
 test("preflight derives the current Wardmote origin and accepts an explicit target", () => {
   assert.equal(preflightPosthogLive(COMPLETE_ENV).baseUrl, "https://wardmote.example.test");
   assert.equal(
-    preflightPosthogLive(COMPLETE_ENV, { baseUrl: "https://other-paperclip.example.test" }).baseUrl,
-    "https://other-paperclip.example.test",
+    preflightPosthogLive(COMPLETE_ENV, { baseUrl: "https://other-wardmote.example.test" }).baseUrl,
+    "https://other-wardmote.example.test",
   );
   assert.throws(
     () => preflightPosthogLive({ ...COMPLETE_ENV, WARDMOTE_API_URL: "" }),

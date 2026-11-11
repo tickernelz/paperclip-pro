@@ -39,7 +39,7 @@ describeEmbeddedPostgres("queued-comment postgres adapter", () => {
   };
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-queued-comment-postgres-adapter-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-queued-comment-postgres-adapter-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

@@ -33,8 +33,8 @@ vi.mock("../context/CompanyContext", () => ({
 vi.mock("./environment-variables-editor", () => ({ EnvironmentVariablesEditor: () => null }));
 vi.mock("./InlineEditor", () => ({ InlineEditor: ({ value }: { value?: ReactNode }) => <div>{value}</div> }));
 
-const LOCAL_FOLDER = "/Users/paperclip/projects/test-project";
-const MANAGED_FOLDER = "/var/paperclip/checkouts/test-project";
+const LOCAL_FOLDER = "/Users/wardmote/projects/test-project";
+const MANAGED_FOLDER = "/var/wardmote/checkouts/test-project";
 
 function makeCodebase(overrides: Partial<ProjectCodebase> = {}): ProjectCodebase {
   return {

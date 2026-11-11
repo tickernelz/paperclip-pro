@@ -21,7 +21,7 @@ if (!support.supported) console.warn(`Primary agent database tests unavailable: 
   let db: ReturnType<typeof createDb>;
   let temp: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;
   beforeAll(async () => {
-    temp = await startEmbeddedPostgresTestDatabase("paperclip-primary-agent-");
+    temp = await startEmbeddedPostgresTestDatabase("wardmote-primary-agent-");
     db = createDb(temp.connectionString);
   }, 30_000);
   afterAll(async () => { await temp?.cleanup(); });

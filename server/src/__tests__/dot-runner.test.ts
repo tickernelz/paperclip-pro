@@ -41,7 +41,7 @@ describe("durable Dot Runner integration", () => {
   beforeAll(async () => {
     const runnerRoot = fileURLToPath(new URL("../../../packages/wardmote-runner/", import.meta.url));
     execFileSync("cargo", ["build", "--release", "--locked", "--manifest-path", join(runnerRoot, "runner/Cargo.toml"), "-p", "wardmote-runner-core", "--bin", "wardmote-runnerd"], { cwd: runnerRoot, stdio: "inherit", timeout: 300000 });
-    temporary = await startEmbeddedPostgresTestDatabase("paperclip-dot-runner-");
+    temporary = await startEmbeddedPostgresTestDatabase("wardmote-dot-runner-");
     db = createDb(temporary.connectionString);
     root = await mkdtemp(join(tmpdir(), "wardmote-dot-state-"));
     vi.stubEnv("WARDMOTE_IN_WORKTREE", "false");

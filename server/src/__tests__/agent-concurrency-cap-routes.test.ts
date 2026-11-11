@@ -23,7 +23,7 @@ beforeAll(async () => {
   vi.stubEnv("WARDMOTE_IN_WORKTREE", "false");
   if (externalTestDatabaseUrl) db = createDb(externalTestDatabaseUrl);
   else {
-    database = await startEmbeddedPostgresTestDatabase("paperclip-concurrency-cap-db-");
+    database = await startEmbeddedPostgresTestDatabase("wardmote-concurrency-cap-db-");
     db = createDb(database.connectionString);
   }
 }, 90_000);

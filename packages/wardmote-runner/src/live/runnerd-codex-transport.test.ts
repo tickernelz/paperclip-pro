@@ -2123,13 +2123,13 @@ it("denies the isolated Codex home without denying a remote execution workspace"
       PATH: "/usr/local/bin:/usr/bin:/bin",
     },
     codexHome:
-      "/workspaces/task/.wardmote-runtime/paperclip-runner/sessions/session/filesystem/codex-home",
+      "/workspaces/task/.wardmote-runtime/wardmote-runner/sessions/session/filesystem/codex-home",
     readOnlyRoots: ["/usr/local"],
   });
   const serialized = args.join("\n");
 
   expect(serialized).toContain(
-    '"/workspaces/task/.wardmote-runtime/paperclip-runner/sessions/session/filesystem/codex-home"="none"',
+    '"/workspaces/task/.wardmote-runtime/wardmote-runner/sessions/session/filesystem/codex-home"="none"',
   );
   expect(serialized).not.toContain('"/workspaces/task"="none"');
   expect(serialized).not.toContain('"/workspaces/task/.codex"="none"');

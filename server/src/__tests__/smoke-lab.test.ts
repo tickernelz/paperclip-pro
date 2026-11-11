@@ -121,7 +121,7 @@ describeEmbeddedPostgres("smoke lab service pack and results API", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-smoke-lab-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-smoke-lab-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

@@ -1016,7 +1016,7 @@ describe("ACP settlement — Layer B: restoreWorkspace order + native-sync selec
     await git(sourceRepoDir, ["init"]);
     await git(sourceRepoDir, ["checkout", "-b", "main"]);
     await git(sourceRepoDir, ["config", "user.name", "Wardmote Test"]);
-    await git(sourceRepoDir, ["config", "user.email", "test@paperclip.dev"]);
+    await git(sourceRepoDir, ["config", "user.email", "test@wardmote.dev"]);
     await fs.writeFile(path.join(sourceRepoDir, "tracked.txt"), "base\n", "utf8");
     await git(sourceRepoDir, ["add", "tracked.txt"]);
     await git(sourceRepoDir, ["commit", "-m", "base"]);
@@ -1045,7 +1045,7 @@ describe("ACP settlement — Layer B: restoreWorkspace order + native-sync selec
     // The sandbox holds a real git worktree seeded from the host history.
     expect((await git(remoteWorkspaceDir, ["rev-list", "--count", "HEAD"]))).toBe("1");
     await git(remoteWorkspaceDir, ["config", "user.name", "Wardmote Sandbox"]);
-    await git(remoteWorkspaceDir, ["config", "user.email", "sandbox@paperclip.dev"]);
+    await git(remoteWorkspaceDir, ["config", "user.email", "sandbox@wardmote.dev"]);
     await git(remoteWorkspaceDir, ["add", "-A"]);
     await git(remoteWorkspaceDir, ["commit", "-m", "sandbox update"]);
     await fs.writeFile(path.join(remoteWorkspaceDir, "remote-only.txt"), "from sandbox\n", "utf8");

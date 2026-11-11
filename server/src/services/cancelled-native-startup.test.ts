@@ -25,7 +25,7 @@ const support = await getEmbeddedPostgresTestSupport();
   let liveProcess: ChildProcess;
 
   beforeAll(async () => {
-    database = await startEmbeddedPostgresTestDatabase("paperclip-agent-execution-stop-");
+    database = await startEmbeddedPostgresTestDatabase("wardmote-agent-execution-stop-");
     db = createDb(database.connectionString);
     companyId = randomUUID();
     await db.insert(companies).values({ id: companyId, name: "Stop proof", issuePrefix: `S${companyId.slice(0, 7)}` });

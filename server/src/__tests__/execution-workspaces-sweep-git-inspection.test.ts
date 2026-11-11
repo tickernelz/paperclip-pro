@@ -13,7 +13,7 @@ import {
 } from "./helpers/route-test-harness.js";
 
 describeEmbeddedPostgres("terminal workspace reaper git inspection", () => {
-  const ctx = useEmbeddedPostgres("paperclip-sweep-git-inspection-", {
+  const ctx = useEmbeddedPostgres("wardmote-sweep-git-inspection-", {
     resetEach: async (db) => {
       await db.delete(executionWorkspaces);
       await db.delete(issues);
@@ -100,17 +100,17 @@ describeEmbeddedPostgres("terminal workspace reaper git inspection", () => {
   }
 
   it("inspects one shared workspace path once per sweep", async () => {
-    await seedCandidates(Array.from({ length: 5 }, () => "/srv/paperclip/checkout"));
+    await seedCandidates(Array.from({ length: 5 }, () => "/srv/wardmote/checkout"));
 
     const sweep = await reaper().sweepTerminalWorkspaces();
 
-    expect(inspectedPaths).toEqual(["/srv/paperclip/checkout"]);
+    expect(inspectedPaths).toEqual(["/srv/wardmote/checkout"]);
     expect(sweep).toMatchObject({ checked: 5, skippedCooldown: 5, archived: 0, skippedUndelivered: 0 });
   }, 30_000);
 
   it("inspects each distinct workspace path once per sweep", async () => {
     const paths = Array.from({ length: 82 }, (_unused, index) =>
-      index % 2 === 0 ? "/srv/paperclip/alpha" : "/srv/paperclip/beta");
+      index % 2 === 0 ? "/srv/wardmote/alpha" : "/srv/wardmote/beta");
     await seedCandidates(paths);
     const service = reaper();
 
@@ -124,12 +124,12 @@ describeEmbeddedPostgres("terminal workspace reaper git inspection", () => {
     expect(firstSweep.checked + secondSweep.checked).toBeGreaterThanOrEqual(82);
     expect(inspectedPaths).toHaveLength(4);
     expect(firstPageInspections).toBe(2);
-    expect(new Set(inspectedPaths)).toEqual(new Set(["/srv/paperclip/alpha", "/srv/paperclip/beta"]));
+    expect(new Set(inspectedPaths)).toEqual(new Set(["/srv/wardmote/alpha", "/srv/wardmote/beta"]));
   }, 60_000);
 
   it("inspects a shared path separately for each base ref", async () => {
     await seedCandidates(
-      Array.from({ length: 4 }, () => "/srv/paperclip/checkout"),
+      Array.from({ length: 4 }, () => "/srv/wardmote/checkout"),
       [{ baseRef: "main" }, { baseRef: "main" }, { baseRef: "release" }, { baseRef: "release" }],
     );
 

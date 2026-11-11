@@ -38,7 +38,7 @@ describeEmbeddedPostgres("issueService.remove referential integrity", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-issue-remove-cascade-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-issue-remove-cascade-");
     db = createDb(tempDb.connectionString);
     svc = issueService(db);
   }, 20_000);

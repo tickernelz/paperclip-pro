@@ -51,7 +51,7 @@ describe("expanded MCP independent evidence calibration", () => {
   });
 
   it("rejects all mutation categories in read-only grading, including generic calls", () => {
-    for (const name of ["wardmote_update_task", "wardmote_finish_task", "wardmote_block_task", "wardmote_update_agent", "wardmote_write_document", "wardmote_get_upload_url", "wardmote_write_skill_file", "paperclip_future_tool"]) {
+    for (const name of ["wardmote_update_task", "wardmote_finish_task", "wardmote_block_task", "wardmote_update_agent", "wardmote_write_document", "wardmote_get_upload_url", "wardmote_write_skill_file", "wardmote_future_tool"]) {
       expect(isReadOnlyMcpCall({ name, arguments: {} })).toBe(false);
       expect(isReadOnlyMcpCall({ name: "wardmote_call_api", arguments: { operationId: name } })).toBe(false);
     }

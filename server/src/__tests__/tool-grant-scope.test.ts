@@ -14,7 +14,7 @@ suite("tool grant restrictions", () => {
   let db!: ReturnType<typeof createDb>;
   let temp!: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;
   beforeAll(async () => {
-    temp = await startEmbeddedPostgresTestDatabase("paperclip-grant-scope-");
+    temp = await startEmbeddedPostgresTestDatabase("wardmote-grant-scope-");
     db = createDb(temp.connectionString);
   });
   afterAll(async () => { await temp?.cleanup(); });

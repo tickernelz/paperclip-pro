@@ -50,7 +50,7 @@ describeEmbeddedPostgres("issue list includeConversations union", () => {
   const rivalUserConversationId = randomUUID();
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-include-conversations-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-include-conversations-");
     db = createDb(tempDb.connectionString);
     await db.insert(companies).values({
       id: companyId,

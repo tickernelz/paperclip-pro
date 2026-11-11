@@ -53,7 +53,7 @@ const resolvedResource: ResolvedWorkspaceResource = {
   kind: "file",
   provider: "git_worktree",
   title: "tweet.md",
-  displayPath: "videos/90-days-paperclip/tweet.md",
+  displayPath: "videos/90-days-wardmote/tweet.md",
   workspaceLabel: "Isolated workspace",
   workspaceKind: "execution_workspace",
   workspaceId: "ws-1",
@@ -94,7 +94,7 @@ describe("FileViewerSheet copy actions", () => {
       configurable: true,
       value: true,
     });
-    window.history.pushState({}, "", "/PAP/issues/PAP-10629?file=videos%2F90-days-paperclip%2Ftweet.md");
+    window.history.pushState({}, "", "/PAP/issues/PAP-10629?file=videos%2F90-days-wardmote%2Ftweet.md");
   });
 
   afterEach(() => {
@@ -110,7 +110,7 @@ describe("FileViewerSheet copy actions", () => {
         <FileViewerSheet
           issueId="issue-1"
           state={{
-            path: "videos/90-days-paperclip/tweet.md",
+            path: "videos/90-days-wardmote/tweet.md",
             workspace: "auto",
             line: null,
             column: null,

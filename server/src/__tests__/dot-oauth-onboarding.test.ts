@@ -17,7 +17,7 @@ describe("Dot onboarding with an operator-issued pairing capability", () => {
   let temp: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;
   let db: ReturnType<typeof createDb>;
   beforeAll(async () => {
-    temp = await startEmbeddedPostgresTestDatabase("paperclip-dot-onboarding-");
+    temp = await startEmbeddedPostgresTestDatabase("wardmote-dot-onboarding-");
     db = createDb(temp.connectionString);
   }, 120000);
   beforeEach(async () => { await instanceSettingsService(db).updateExperimental({ enablePublicMcp: true, enableOpenAiDot: true, enableNativeRunner: false }); });
@@ -148,7 +148,7 @@ describe("Dot onboarding with an operator-issued pairing capability", () => {
     await expect(f.oauth.token({ grant_type: "refresh_token", client_id: f.client.client_id, resource: config.resource, refresh_token: next.refresh_token })).rejects.toThrow();
   });
   it("pins browser ingress without changing the issuer, resource or token endpoint", async () => {
-    const browserOrigin = "https://paperclip-browser.example:10000";
+    const browserOrigin = "https://wardmote-browser.example:10000";
     const f = await fixture(browserOrigin);
     const personal = createPublicMcpOAuth(db, { ...config, authorizationOrigin: browserOrigin, resource: config.origin + "/mcp/wardmote" });
     const app = express(); app.use(express.json());

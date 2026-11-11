@@ -355,7 +355,7 @@ describeEmbeddedPostgres("externalObjectService", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-external-objects-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-external-objects-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 
@@ -830,7 +830,7 @@ describeEmbeddedPostgres("externalObjectService", () => {
     };
     const [plugin] = await db.insert(plugins).values({
       pluginKey: manifest.id,
-      packageName: "@paperclip/mock-object-provider",
+      packageName: "@wardmote/mock-object-provider",
       version: manifest.version,
       apiVersion: 1,
       categories: manifest.categories,

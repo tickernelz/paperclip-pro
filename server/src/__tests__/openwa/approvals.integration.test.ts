@@ -94,7 +94,7 @@ describe("OpenWA owner approvals and grants (embedded Postgres + fake gateway)",
   const endpointIds: string[] = [];
 
   beforeAll(async () => {
-    database = await startEmbeddedPostgresTestDatabase("paperclip-openwa-approvals-");
+    database = await startEmbeddedPostgresTestDatabase("wardmote-openwa-approvals-");
     db = createDb(database.connectionString);
     scratch = await mkdtemp(path.join(tmpdir(), "openwa-approvals-"));
     process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE = path.join(scratch, "master.key");

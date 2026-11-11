@@ -1267,7 +1267,7 @@ const recoveryFakeCodex = resolve(
   () => {
     it("uses scoped latest checkpoints, preserves progress barriers, and guards bootstrap persistence after the row lock", async () => {
       const database = await startEmbeddedPostgresTestDatabase(
-        "paperclip-native-resume-selection-",
+        "wardmote-native-resume-selection-",
       );
       const db = createDb(database.connectionString);
       try {
@@ -2636,7 +2636,7 @@ describe("buildNativeExecutionInput wake projection", () => {
           "arn:aws:bedrock-agentcore:us-east-1:123456789012:memory/m-1",
         memoryId: "m-1",
         invocationRoleArn: "arn:aws:iam::123456789012:role/invoke",
-        contextBucket: "paperclip-context",
+        contextBucket: "wardmote-context",
         contextPrefix: "runner/",
         contextKmsKeyArn: "arn:aws:kms:us-east-1:123456789012:key/key-1",
         qualificationRevision: "aws-agentcore-harness-context-v2",

@@ -42,7 +42,7 @@ describeEmbeddedPostgres("tool gateway listing memory", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-tool-gateway-listing-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-tool-gateway-listing-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

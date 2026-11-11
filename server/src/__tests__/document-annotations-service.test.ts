@@ -49,7 +49,7 @@ describeEmbeddedPostgres("documentAnnotationService", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-document-annotations-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-document-annotations-");
     db = createDb(tempDb.connectionString);
     annotations = documentAnnotationService(db);
     docs = documentService(db);

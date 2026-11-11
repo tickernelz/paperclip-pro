@@ -56,7 +56,7 @@ describeEmbeddedPostgres("artifactReviewDocumentService", () => {
   let db!: ReturnType<typeof createDb>;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-artifact-review-docs-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-artifact-review-docs-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

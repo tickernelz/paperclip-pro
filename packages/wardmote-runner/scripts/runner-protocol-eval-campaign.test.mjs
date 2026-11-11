@@ -29,7 +29,7 @@ async function fixture() {
     mkdir(join(program, "campaigns"), { recursive: true }),
   ]);
   const config = {
-    schema: "paperclip-runner/eval-config/v1",
+    schema: "wardmote-runner/eval-config/v1",
     id: "live-opencode-model",
     provider: "opencode",
     driver: "opencode_server",
@@ -37,7 +37,7 @@ async function fixture() {
     opencodeVersion: "1.18.34",
   };
   const evalCase = {
-    schema: "paperclip-runner/eval-case/v1",
+    schema: "wardmote-runner/eval-case/v1",
     id: "get-task-context",
     title: "Get context",
     description: "Synthetic public fixture",
@@ -107,7 +107,7 @@ test("maps every qualified driver to one explicit credential boundary", () => {
 async function grokFixture() {
   const value = await fixture();
   value.config = {
-    schema: "paperclip-runner/eval-config/v1", id: "live-grok",
+    schema: "wardmote-runner/eval-config/v1", id: "live-grok",
     provider: "acpx", driver: "acpx_runtime", acpxAgent: "grok", model: "grok-4.7",
   };
   value.roster.model = value.config.model;

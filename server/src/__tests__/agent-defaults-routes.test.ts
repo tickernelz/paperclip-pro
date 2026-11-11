@@ -15,7 +15,7 @@ import {
 } from "./helpers/route-test-harness.js";
 
 describeEmbeddedPostgres("agent defaults routes", () => {
-  const ctx = useEmbeddedPostgres("paperclip-agent-defaults-", {
+  const ctx = useEmbeddedPostgres("wardmote-agent-defaults-", {
     resetEach: async (db) => {
       await db.delete(activityLog);
       await db.delete(agentConfigRevisions);

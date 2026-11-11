@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import { expect, test } from "@playwright/test";
 
 const evidenceRoot = resolve(
-  fileURLToPath(new URL("../.paperclip-local/evidence/sdk", import.meta.url)),
+  fileURLToPath(new URL("../.wardmote-local/evidence/sdk", import.meta.url)),
 );
 mkdirSync(evidenceRoot, { recursive: true });
 

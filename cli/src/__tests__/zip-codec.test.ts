@@ -5,7 +5,7 @@ import { createStoredZipArchive } from "./helpers/zip.js";
 describe("isBlobStorePath", () => {
   it("matches blobs/ entries at the archive root and under a package root", () => {
     expect(isBlobStorePath("blobs/4f2d1c9a")).toBe(true);
-    expect(isBlobStorePath("paperclip-demo/blobs/4f2d1c9a")).toBe(true);
+    expect(isBlobStorePath("wardmote-demo/blobs/4f2d1c9a")).toBe(true);
     expect(isBlobStorePath("tasks/pap-1/TASK.md")).toBe(false);
     expect(isBlobStorePath("blobs/nested/file")).toBe(false);
   });
@@ -46,11 +46,11 @@ describe("readZipArchive", () => {
         "blobs/4f2d1c9a": blobBytes,
         "notes/raw": invalidUtf8,
       },
-      "paperclip-demo",
+      "wardmote-demo",
     );
 
     await expect(readZipArchive(archive)).resolves.toEqual({
-      rootPath: "paperclip-demo",
+      rootPath: "wardmote-demo",
       files: {
         "COMPANY.md": "# Company\n",
         "blobs/4f2d1c9a": {

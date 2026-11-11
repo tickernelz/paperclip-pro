@@ -31,7 +31,7 @@ describePostgres("tasks created from an issue", () => {
   const expected = new Set<string>();
 
   beforeAll(async () => {
-    database = await startEmbeddedPostgresTestDatabase("paperclip-created-from-");
+    database = await startEmbeddedPostgresTestDatabase("wardmote-created-from-");
     db = createDb(database.connectionString);
     await db.insert(companies).values([
       { id: companyId, name: "Origin", issuePrefix: "ORG", defaultResponsibleUserId: "board-user" },

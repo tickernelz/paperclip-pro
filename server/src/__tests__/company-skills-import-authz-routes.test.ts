@@ -48,7 +48,7 @@ describeEmbeddedPostgres("company skill import authorization routes", () => {
     wardmoteHome = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-company-skills-import-authz-home-"));
     process.env.WARDMOTE_HOME = wardmoteHome;
     process.env.WARDMOTE_INSTANCE_ID = "default";
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-company-skills-import-authz-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-company-skills-import-authz-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

@@ -55,7 +55,7 @@ describeEmbeddedPostgres("pipelineService", () => {
   const noopHeartbeat = { wakeup: async () => null };
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-pipelines-service-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-pipelines-service-");
     db = createDb(tempDb.connectionString);
     svc = pipelineService(db, { heartbeat: noopHeartbeat });
   }, 20_000);

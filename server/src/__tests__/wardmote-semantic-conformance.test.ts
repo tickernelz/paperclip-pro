@@ -60,7 +60,7 @@ describeEmbedded("Wardmote semantic mock/production conformance", () => {
   };
 
   beforeAll(async () => {
-    temporary = await startEmbeddedPostgresTestDatabase("paperclip-semantic-conformance-");
+    temporary = await startEmbeddedPostgresTestDatabase("wardmote-semantic-conformance-");
     const db = createDb(temporary.connectionString);
     await seedWardmoteSemanticConformance(db, ids);
     mock = await CapabilityMockSemanticConformanceAdapter.create();
@@ -84,7 +84,7 @@ describeEmbedded("Wardmote semantic mock/production conformance", () => {
     });
 
     expect(report.rows).toHaveLength(CAPABILITY_HIGH_RISK_SEMANTIC_VECTORS.length);
-    expect(report.rows.every((row) => row.adapterIds.join(",") === "capability-mock,paperclip-production-services"))
+    expect(report.rows.every((row) => row.adapterIds.join(",") === "capability-mock,wardmote-production-services"))
       .toBe(true);
     expect(report.rows.find((row) => row.vectorId === "progress-duplicate-retry")?.observation.audit)
       .toEqual([]);

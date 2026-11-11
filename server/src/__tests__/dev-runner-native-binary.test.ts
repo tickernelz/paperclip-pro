@@ -115,7 +115,7 @@ describe("paperclip runner native dev prerequisite", () => {
       wardmoteRunnerBinaryNeedsBuild({
         repoRoot: "/checkout/without/a/staged/binary",
         nativeRunnerRequired: true,
-        configuredBinary: "/opt/paperclip/wardmote-runnerd",
+        configuredBinary: "/opt/wardmote/wardmote-runnerd",
       }),
     ).toBe(false);
   });

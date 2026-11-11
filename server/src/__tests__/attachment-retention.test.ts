@@ -49,7 +49,7 @@ describePg("attachment retention", () => {
   let storage: StorageService;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-attachment-retention-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-attachment-retention-");
     db = createDb(tempDb.connectionString);
   }, 30_000);
 

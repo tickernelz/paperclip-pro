@@ -66,7 +66,7 @@ describeEmbeddedPostgres("OpenWA run authority through the real admission path",
   const endpointIds: string[] = [];
 
   beforeAll(async () => {
-    database = await startEmbeddedPostgresTestDatabase("paperclip-openwa-authority-admission-");
+    database = await startEmbeddedPostgresTestDatabase("wardmote-openwa-authority-admission-");
     db = createDb(database.connectionString);
     scratch = await mkdtemp(path.join(os.tmpdir(), "openwa-authority-admission-"));
     process.env.WARDMOTE_HOME = scratch;

@@ -35,7 +35,7 @@ describeEmbeddedPostgres("companyTransferRunService", () => {
   let db!: ReturnType<typeof createDb>;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-transfer-runs-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-transfer-runs-");
     db = createDb(tempDb.connectionString);
   });
 

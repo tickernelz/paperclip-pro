@@ -173,7 +173,7 @@ describeEmbeddedPostgres("connector lifecycle telemetry (tool-access)", () => {
     keyDir = await mkdtemp(join(tmpdir(), "lifecycle-telemetry-secrets-"));
     vi.stubEnv("WARDMOTE_SECRETS_MASTER_KEY_FILE", join(keyDir, "key"));
     tempDb = await startEmbeddedPostgresTestDatabase(
-      "paperclip-lifecycle-telemetry-",
+      "wardmote-lifecycle-telemetry-",
     );
     db = createDb(tempDb.connectionString);
   }, 30_000);

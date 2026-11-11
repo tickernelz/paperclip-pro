@@ -32,7 +32,7 @@ describePostgres("agent-created follow-ups: parent links and creation source", (
   const legacyRun = randomUUID();
 
   beforeAll(async () => {
-    database = await startEmbeddedPostgresTestDatabase("paperclip-creation-source-");
+    database = await startEmbeddedPostgresTestDatabase("wardmote-creation-source-");
     db = createDb(database.connectionString);
     await db.insert(companies).values([
       { id: companyId, name: "Wardmote", issuePrefix: "PAP", defaultResponsibleUserId: "board-user", requireBoardApprovalForNewAgents: false },

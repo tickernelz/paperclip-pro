@@ -182,7 +182,7 @@ describe("plugin install and upgrade authz", () => {
 
     const res = await request(app)
       .post("/api/plugins/install")
-      .send({ packageName: "paperclip-plugin-example" });
+      .send({ packageName: "wardmote-plugin-example" });
 
     expect(res.status).toBe(403);
     expect(loader.installPlugin).not.toHaveBeenCalled();
@@ -200,13 +200,13 @@ describe("plugin install and upgrade authz", () => {
     mockRegistry.getByKey.mockResolvedValue({
       id: pluginId,
       pluginKey,
-      packageName: "paperclip-plugin-example",
+      packageName: "wardmote-plugin-example",
       version: "1.0.0",
     });
     mockRegistry.getById.mockResolvedValue({
       id: pluginId,
       pluginKey,
-      packageName: "paperclip-plugin-example",
+      packageName: "wardmote-plugin-example",
       version: "1.0.0",
     });
     mockLifecycle.load.mockResolvedValue(undefined);
@@ -224,11 +224,11 @@ describe("plugin install and upgrade authz", () => {
 
     const res = await request(app)
       .post("/api/plugins/install")
-      .send({ packageName: "paperclip-plugin-example" });
+      .send({ packageName: "wardmote-plugin-example" });
 
     expect(res.status).toBe(200);
     expect(loader.installPlugin).toHaveBeenCalledWith({
-      packageName: "paperclip-plugin-example",
+      packageName: "wardmote-plugin-example",
       version: undefined,
     });
     expect(mockLifecycle.load).toHaveBeenCalledWith(pluginId);
@@ -279,7 +279,7 @@ describe("plugin install and upgrade authz", () => {
   }, 20_000);
 
   it("resolves plugin keys without probing the UUID id column for core plugin actions", async () => {
-    const pluginKey = "paperclipqa.hello-plugin";
+    const pluginKey = "wardmoteqa.hello-plugin";
     const plugin = {
       id: pluginId,
       pluginKey,

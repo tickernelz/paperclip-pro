@@ -37,7 +37,7 @@ describeEmbeddedPostgres("conversation recovery with a non-invokable agent", () 
   let db: ReturnType<typeof createDb>;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-conversation-non-invokable-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-conversation-non-invokable-");
     db = createDb(tempDb.connectionString);
     await instanceSettingsService(db).updateExperimental({ enableAgentChat: true });
   }, 90_000);

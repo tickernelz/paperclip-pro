@@ -669,7 +669,7 @@ describe("scrubGitCredentialText", () => {
 describe("buildAnchorFallbackWorkspaceNotes", () => {
   it("reports materialization failures ahead of the generic no-cwd note", () => {
     expect(buildAnchorFallbackWorkspaceNotes({
-      fallbackCwd: "/paperclip/workspaces/agent-1",
+      fallbackCwd: "/wardmote/workspaces/agent-1",
       preferredWorkspaceWarning: null,
       materializationFailures: [{
         projectWorkspaceId: "workspace-1",
@@ -679,7 +679,7 @@ describe("buildAnchorFallbackWorkspaceNotes", () => {
       missingProjectCwds: [],
       hasConfiguredProjectCwd: false,
     })).toEqual([
-      'Failed to prepare the project workspace checkout: fatal: could not read Username. Using fallback workspace "/paperclip/workspaces/agent-1" for this run.',
+      'Failed to prepare the project workspace checkout: fatal: could not read Username. Using fallback workspace "/wardmote/workspaces/agent-1" for this run.',
     ]);
   });
 
@@ -1924,7 +1924,7 @@ async function buildSessionConfigMetadata(
       {
         key: "paperclip",
         runtimeName: "paperclip",
-        source: "/tmp/paperclip/runtime-skills/paperclip",
+        source: "/tmp/wardmote/runtime-skills/wardmote",
         versionId: null,
         currentVersionId: "skill-version-1",
         sourceStatus: "available",
@@ -1969,7 +1969,7 @@ describe("effective run session config freshness", () => {
     const skill = (overrides: Record<string, unknown> = {}) => ({
       key: "paperclip",
       runtimeName: "paperclip",
-      source: "/tmp/paperclip/runtime-skills/paperclip",
+      source: "/tmp/wardmote/runtime-skills/wardmote",
       versionId: null,
       currentVersionId: "skill-version-1",
       sourceStatus: "available",
@@ -1979,7 +1979,7 @@ describe("effective run session config freshness", () => {
     const first = await buildSessionConfigMetadata({ adapterType: "omp_local", runtimeSkills: [skill()] });
 
     for (const delivery of [
-      skill({ source: "/tmp/paperclip/runtime-context-assets/bundles/other-digest" }),
+      skill({ source: "/tmp/wardmote/runtime-context-assets/bundles/other-digest" }),
       skill({ sourceStatus: "missing", missingDetail: "The selected skill version produced no files." }),
     ]) {
       const next = await buildSessionConfigMetadata({ adapterType: "omp_local", runtimeSkills: [delivery] });
@@ -2345,7 +2345,7 @@ describe("effective run session config freshness", () => {
       const skill = (currentVersionId: string) => ({
         key: "paperclip",
         runtimeName: "paperclip",
-        source: "/tmp/paperclip/runtime-skills/paperclip",
+        source: "/tmp/wardmote/runtime-skills/wardmote",
         versionId: null,
         currentVersionId,
         sourceStatus: "available",
@@ -2422,7 +2422,7 @@ describe("effective run session config freshness", () => {
       const skill = (key: string, currentVersionId: string) => ({
         key,
         runtimeName: key,
-        source: `/tmp/paperclip/runtime-skills/${key}`,
+        source: `/tmp/wardmote/runtime-skills/${key}`,
         versionId: null,
         currentVersionId,
         sourceStatus: "available",
@@ -2781,7 +2781,7 @@ describe("effective run session config freshness", () => {
             {
               key: "paperclip",
               runtimeName: "paperclip",
-              source: "/tmp/paperclip/runtime-skills/paperclip",
+              source: "/tmp/wardmote/runtime-skills/wardmote",
               versionId: null,
               currentVersionId: "skill-version-2",
               sourceStatus: "available",

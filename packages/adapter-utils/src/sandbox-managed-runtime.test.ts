@@ -199,7 +199,7 @@ async function initGitRepo(repoDir: string): Promise<void> {
   await mkdir(repoDir, { recursive: true });
   await git(repoDir, ["init", "-q"]);
   await git(repoDir, ["config", "user.name", "Wardmote Test"]);
-  await git(repoDir, ["config", "user.email", "test@paperclip.dev"]);
+  await git(repoDir, ["config", "user.email", "test@wardmote.dev"]);
   await writeFile(path.join(repoDir, "README.md"), "root\n", "utf8");
   await git(repoDir, ["add", "README.md"]);
   await git(repoDir, ["commit", "-qm", "base"]);
@@ -847,7 +847,7 @@ describe("sandbox managed runtime", () => {
     await git(host, ["init"]);
     await git(host, ["checkout", "-b", "work"]);
     await git(host, ["config", "user.name", "Wardmote Test"]);
-    await git(host, ["config", "user.email", "test@paperclip.dev"]);
+    await git(host, ["config", "user.email", "test@wardmote.dev"]);
     await writeFile(path.join(host, "pins.txt"), "base\n");
     await writeFile(path.join(host, "notes.txt"), "original notes\n");
     await git(host, ["add", "."]);
@@ -868,7 +868,7 @@ describe("sandbox managed runtime", () => {
       workspaceLocalDir: host,
     });
     await git(remote, ["config", "user.name", "Wardmote Test"]);
-    await git(remote, ["config", "user.email", "test@paperclip.dev"]);
+    await git(remote, ["config", "user.email", "test@wardmote.dev"]);
     await git(remote, ["fetch", "--unshallow", host, "+refs/heads/*:refs/remotes/source/*"]);
     await expect(git(remote, ["rebase", "refs/remotes/source/upstream"])).rejects.toMatchObject({ code: 1 });
     await writeFile(path.join(remote, "pins.txt"), "resolved pins\n");
@@ -900,7 +900,7 @@ describe("sandbox managed runtime", () => {
     await git(host, ["init"]);
     await git(host, ["checkout", "-b", "work"]);
     await git(host, ["config", "user.name", "Wardmote Test"]);
-    await git(host, ["config", "user.email", "test@paperclip.dev"]);
+    await git(host, ["config", "user.email", "test@wardmote.dev"]);
     await writeFile(path.join(host, "tracked.txt"), "original\n");
     await git(host, ["add", "."]);
     await git(host, ["commit", "-m", "original"]);
@@ -936,7 +936,7 @@ describe("sandbox managed runtime", () => {
     await git(sourceRepoDir, ["init"]);
     await git(sourceRepoDir, ["checkout", "-b", "main"]);
     await git(sourceRepoDir, ["config", "user.name", "Wardmote Test"]);
-    await git(sourceRepoDir, ["config", "user.email", "test@paperclip.dev"]);
+    await git(sourceRepoDir, ["config", "user.email", "test@wardmote.dev"]);
     await writeFile(path.join(sourceRepoDir, ".gitignore"), "node_modules/\n*.secret\n", "utf8");
     await writeFile(path.join(sourceRepoDir, "tracked.txt"), "base\n", "utf8");
     await writeFile(path.join(sourceRepoDir, "clean.txt"), "from git\n", "utf8");
@@ -1042,7 +1042,7 @@ describe("sandbox managed runtime", () => {
     expect(workspaceMembers.some((entry) => entry === "node_modules" || entry.startsWith("node_modules/"))).toBe(false);
 
     await git(remoteWorkspaceDir, ["config", "user.name", "Wardmote Sandbox"]);
-    await git(remoteWorkspaceDir, ["config", "user.email", "sandbox@paperclip.dev"]);
+    await git(remoteWorkspaceDir, ["config", "user.email", "sandbox@wardmote.dev"]);
     await git(remoteWorkspaceDir, ["add", "-A"]);
     await git(remoteWorkspaceDir, ["commit", "-m", "sandbox update"]);
     await writeFile(path.join(remoteWorkspaceDir, "tracked.txt"), "remote dirty\n", "utf8");
@@ -1093,7 +1093,7 @@ describe("sandbox managed runtime", () => {
     await git(sourceRepoDir, ["init"]);
     await git(sourceRepoDir, ["checkout", "-b", "main"]);
     await git(sourceRepoDir, ["config", "user.name", "Wardmote Test"]);
-    await git(sourceRepoDir, ["config", "user.email", "test@paperclip.dev"]);
+    await git(sourceRepoDir, ["config", "user.email", "test@wardmote.dev"]);
     await writeFile(path.join(sourceRepoDir, "kept.txt"), "kept\n", "utf8");
     await writeFile(path.join(sourceRepoDir, "restored.txt"), "restored\n", "utf8");
     await git(sourceRepoDir, ["add", "kept.txt", "restored.txt"]);
@@ -1167,7 +1167,7 @@ describe("sandbox managed runtime", () => {
     await git(sourceRepoDir, ["init"]);
     await git(sourceRepoDir, ["checkout", "-b", "main"]);
     await git(sourceRepoDir, ["config", "user.name", "Wardmote Test"]);
-    await git(sourceRepoDir, ["config", "user.email", "test@paperclip.dev"]);
+    await git(sourceRepoDir, ["config", "user.email", "test@wardmote.dev"]);
     await writeFile(path.join(sourceRepoDir, "kept.txt"), "base\n", "utf8");
     await git(sourceRepoDir, ["add", "kept.txt"]);
     await git(sourceRepoDir, ["commit", "-m", "base"]);
@@ -1204,7 +1204,7 @@ describe("sandbox managed runtime", () => {
     await git(sourceRepoDir, ["init"]);
     await git(sourceRepoDir, ["checkout", "-b", "main"]);
     await git(sourceRepoDir, ["config", "user.name", "Wardmote Test"]);
-    await git(sourceRepoDir, ["config", "user.email", "test@paperclip.dev"]);
+    await git(sourceRepoDir, ["config", "user.email", "test@wardmote.dev"]);
     await mkdir(path.join(sourceRepoDir, "src"), { recursive: true });
     await writeFile(path.join(sourceRepoDir, "src", "tracked.ts"), "export const tracked = true;\n", "utf8");
     await git(sourceRepoDir, ["add", "src/tracked.ts"]);
@@ -2092,7 +2092,7 @@ describe("sandbox managed runtime", () => {
     await git(sourceRepoDir, ["init"]);
     await git(sourceRepoDir, ["checkout", "-b", "main"]);
     await git(sourceRepoDir, ["config", "user.name", "Wardmote Test"]);
-    await git(sourceRepoDir, ["config", "user.email", "test@paperclip.dev"]);
+    await git(sourceRepoDir, ["config", "user.email", "test@wardmote.dev"]);
     await writeFile(path.join(sourceRepoDir, "tracked.txt"), "tracked\n", "utf8");
     await git(sourceRepoDir, ["add", "tracked.txt"]);
     await git(sourceRepoDir, ["commit", "-m", "base"]);
@@ -2173,7 +2173,7 @@ describe("sandbox managed runtime", () => {
     await git(sourceRepoDir, ["init"]);
     await git(sourceRepoDir, ["checkout", "-b", "main"]);
     await git(sourceRepoDir, ["config", "user.name", "Wardmote Test"]);
-    await git(sourceRepoDir, ["config", "user.email", "test@paperclip.dev"]);
+    await git(sourceRepoDir, ["config", "user.email", "test@wardmote.dev"]);
     await writeFile(path.join(sourceRepoDir, "tracked.txt"), "tracked\n", "utf8");
     await git(sourceRepoDir, ["add", "tracked.txt"]);
     await git(sourceRepoDir, ["commit", "-m", "base"]);
@@ -2230,7 +2230,7 @@ describe("sandbox managed runtime", () => {
     await git(sourceRepoDir, ["init"]);
     await git(sourceRepoDir, ["checkout", "-b", "main"]);
     await git(sourceRepoDir, ["config", "user.name", "Wardmote Test"]);
-    await git(sourceRepoDir, ["config", "user.email", "test@paperclip.dev"]);
+    await git(sourceRepoDir, ["config", "user.email", "test@wardmote.dev"]);
     await writeFile(path.join(sourceRepoDir, "tracked.txt"), "tracked\n", "utf8");
     await git(sourceRepoDir, ["add", "tracked.txt"]);
     await git(sourceRepoDir, ["commit", "-m", "base"]);
@@ -2293,7 +2293,7 @@ describe("sandbox managed runtime", () => {
     await git(sourceRepoDir, ["init"]);
     await git(sourceRepoDir, ["checkout", "-b", "main"]);
     await git(sourceRepoDir, ["config", "user.name", "Wardmote Test"]);
-    await git(sourceRepoDir, ["config", "user.email", "test@paperclip.dev"]);
+    await git(sourceRepoDir, ["config", "user.email", "test@wardmote.dev"]);
     await writeFile(path.join(sourceRepoDir, "tracked.txt"), "tracked\n", "utf8");
     await git(sourceRepoDir, ["add", "tracked.txt"]);
     await git(sourceRepoDir, ["commit", "-m", "base"]);
@@ -2381,7 +2381,7 @@ describe("sandbox managed runtime", () => {
   });
 
   it("the merged workspace confine guard covers both tar mappings (escape in either trips it)", () => {
-    const runtimeRoot = "/home/daytona/paperclip-workspace/.wardmote-runtime/test-adapter";
+    const runtimeRoot = "/home/daytona/wardmote-workspace/.wardmote-runtime/test-adapter";
     const tempRoot = "/tmp/wardmote-sandbox-sync-abc";
     const gitMapping = {
       sourcePath: `${tempRoot}/git-workspace.tar`,
@@ -2453,7 +2453,7 @@ describe("sandbox managed runtime", () => {
     await git(sourceRepoDir, ["init"]);
     await git(sourceRepoDir, ["checkout", "-b", "main"]);
     await git(sourceRepoDir, ["config", "user.name", "Wardmote Test"]);
-    await git(sourceRepoDir, ["config", "user.email", "test@paperclip.dev"]);
+    await git(sourceRepoDir, ["config", "user.email", "test@wardmote.dev"]);
     await writeFile(path.join(sourceRepoDir, "tracked.txt"), "tracked\n", "utf8");
     await git(sourceRepoDir, ["add", "tracked.txt"]);
     await git(sourceRepoDir, ["commit", "-m", "base"]);
@@ -2565,7 +2565,7 @@ describe("sandbox managed runtime", () => {
     await git(sourceRepoDir, ["init"]);
     await git(sourceRepoDir, ["checkout", "-b", "main"]);
     await git(sourceRepoDir, ["config", "user.name", "Wardmote Test"]);
-    await git(sourceRepoDir, ["config", "user.email", "test@paperclip.dev"]);
+    await git(sourceRepoDir, ["config", "user.email", "test@wardmote.dev"]);
     await writeFile(path.join(sourceRepoDir, "tracked.txt"), "tracked\n", "utf8");
     await git(sourceRepoDir, ["add", "tracked.txt"]);
     await git(sourceRepoDir, ["commit", "-m", "base"]);
@@ -4413,7 +4413,7 @@ describe("sandbox git-bundle export transport", () => {
     await git(sourceRepoDir, ["init"]);
     await git(sourceRepoDir, ["checkout", "-b", "main"]);
     await git(sourceRepoDir, ["config", "user.name", "Wardmote Test"]);
-    await git(sourceRepoDir, ["config", "user.email", "test@paperclip.dev"]);
+    await git(sourceRepoDir, ["config", "user.email", "test@wardmote.dev"]);
     await writeFile(path.join(sourceRepoDir, ".gitignore"), "node_modules/\n", "utf8");
     await writeFile(path.join(sourceRepoDir, "tracked.txt"), "base\n", "utf8");
     await git(sourceRepoDir, ["add", "-A"]);
@@ -4426,7 +4426,7 @@ describe("sandbox git-bundle export transport", () => {
   // caller runs the restore after this, so the export moves this new history.
   async function commitInSandbox(remoteWorkspaceDir: string): Promise<void> {
     await git(remoteWorkspaceDir, ["config", "user.name", "Wardmote Sandbox"]);
-    await git(remoteWorkspaceDir, ["config", "user.email", "sandbox@paperclip.dev"]);
+    await git(remoteWorkspaceDir, ["config", "user.email", "sandbox@wardmote.dev"]);
     await writeFile(path.join(remoteWorkspaceDir, "remote-only.txt"), "from sandbox\n", "utf8");
     await git(remoteWorkspaceDir, ["add", "-A"]);
     await git(remoteWorkspaceDir, ["commit", "-m", "sandbox update"]);
@@ -4442,7 +4442,7 @@ describe("sandbox git-bundle export transport", () => {
     "git_export", "git_import", "workspace_transfer", "workspace_extract",
     "directory_merge", "git_integration", "index_reset", "git_ref_cleanup",
   ] as const)("identifies the actual %s failure during workspace restore", async (step) => {
-    const { localWorkspaceDir, remoteWorkspaceDir } = await setupGitBackedWorkspace("paperclip-restore-diagnostic-");
+    const { localWorkspaceDir, remoteWorkspaceDir } = await setupGitBackedWorkspace("wardmote-restore-diagnostic-");
     const client = makeTransportClient(step !== "workspace_extract", { syncOutOperations: [], readFilePaths: [] });
     const prepared = await prepareSandboxManagedRuntime({
       spec: gitSpec(remoteWorkspaceDir), adapterKey: "test-adapter", client, workspaceLocalDir: localWorkspaceDir,
@@ -4482,7 +4482,7 @@ describe("sandbox git-bundle export transport", () => {
 
   it("moves the bundle through one native syncOut file mapping, never through readFile", async () => {
     const capture: TransportCapture = { syncOutOperations: [], readFilePaths: [] };
-    const { localWorkspaceDir, remoteWorkspaceDir } = await setupGitBackedWorkspace("paperclip-bundle-native-");
+    const { localWorkspaceDir, remoteWorkspaceDir } = await setupGitBackedWorkspace("wardmote-bundle-native-");
     const client = makeTransportClient(true, capture);
     const prepared = await prepareSandboxManagedRuntime({
       spec: gitSpec(remoteWorkspaceDir),
@@ -4512,7 +4512,7 @@ describe("sandbox git-bundle export transport", () => {
 
   it("reads the bundle through readFile when the client has no native syncOut", async () => {
     const capture: TransportCapture = { syncOutOperations: [], readFilePaths: [] };
-    const { localWorkspaceDir, remoteWorkspaceDir } = await setupGitBackedWorkspace("paperclip-bundle-fallback-");
+    const { localWorkspaceDir, remoteWorkspaceDir } = await setupGitBackedWorkspace("wardmote-bundle-fallback-");
     const client = makeTransportClient(false, capture);
     const prepared = await prepareSandboxManagedRuntime({
       spec: gitSpec(remoteWorkspaceDir),
@@ -4547,7 +4547,7 @@ describe("sandbox git-bundle export transport", () => {
     await git(localWorkspaceDir, ["init"]);
     await git(localWorkspaceDir, ["checkout", "-b", "work"]);
     await git(localWorkspaceDir, ["config", "user.name", "Wardmote Test"]);
-    await git(localWorkspaceDir, ["config", "user.email", "test@paperclip.dev"]);
+    await git(localWorkspaceDir, ["config", "user.email", "test@wardmote.dev"]);
     await writeFile(path.join(localWorkspaceDir, "tracked.txt"), "base\n", "utf8");
     await git(localWorkspaceDir, ["add", "-A"]);
     await git(localWorkspaceDir, ["commit", "-m", "base"]);
@@ -4592,7 +4592,7 @@ describe("sandbox git-bundle export transport", () => {
 
   it("reports the real transferred bytes for the native git-history export and workspace restore", async () => {
     const capture: TransportCapture = { syncOutOperations: [], readFilePaths: [] };
-    const { localWorkspaceDir, remoteWorkspaceDir } = await setupGitBackedWorkspace("paperclip-restore-bytes-");
+    const { localWorkspaceDir, remoteWorkspaceDir } = await setupGitBackedWorkspace("wardmote-restore-bytes-");
     const client = makeTransportClient(true, capture);
     const prepared = await prepareSandboxManagedRuntime({
       spec: gitSpec(remoteWorkspaceDir),

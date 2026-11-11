@@ -19,7 +19,7 @@ describeEmbeddedPostgres("issue review verdict policy", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-issue-review-policy-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-issue-review-policy-");
     db = createDb(tempDb.connectionString);
   }, 30_000);
 

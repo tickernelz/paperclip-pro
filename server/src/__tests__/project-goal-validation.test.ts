@@ -34,7 +34,7 @@ describeEmbeddedPostgres("project goal validation", () => {
   let prefixCounter = 0;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-project-goal-validation-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-project-goal-validation-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

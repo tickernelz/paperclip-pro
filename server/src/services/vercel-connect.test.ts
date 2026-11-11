@@ -12,7 +12,7 @@ import type { VercelConnectCredentialReference } from "@tickernelz/wardmote-shar
 const credential: VercelConnectCredentialReference = {
   provider: "vercel_connect",
   connectorId: "scl_posthog",
-  connectorUid: "posthog-paperclip",
+  connectorUid: "posthog-wardmote",
   service: "posthog",
   connectorType: "api-key",
   principalMode: "user",
@@ -99,7 +99,7 @@ describe("Vercel Connect credential adapter", () => {
       resources: ["https://mcp.posthog.com/mcp"],
       grant: { kind: "organization", subjectUserId: null, externalCredential: null },
     })).toMatchObject({
-      connector: "posthog-paperclip",
+      connector: "posthog-wardmote",
       subject: { type: "app" },
       resources: ["https://mcp.posthog.com/mcp"],
     });
@@ -114,7 +114,7 @@ describe("Vercel Connect credential adapter", () => {
         token: "provider-bearer-must-not-persist",
         tokenId: "stk_123",
         expiresAt: Date.parse("2026-08-26T13:00:00.000Z"),
-        connector: { id: "scl_posthog", uid: "posthog-paperclip", type: "api-key" },
+        connector: { id: "scl_posthog", uid: "posthog-wardmote", type: "api-key" },
         installationId: "installation-1",
         tenantId: "project-1",
         claims: { email: "private@example.com" },

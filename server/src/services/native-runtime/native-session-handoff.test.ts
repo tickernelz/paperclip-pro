@@ -43,7 +43,7 @@ const support = await getEmbeddedPostgresTestSupport();
   let db: ReturnType<typeof createDb>;
   const companyId = randomUUID(), agentId = randomUUID(), issueId = randomUUID(), boundaryId = randomUUID(), requestId = randomUUID();
   beforeAll(async () => {
-    database = await startEmbeddedPostgresTestDatabase("paperclip-native-handoff-");
+    database = await startEmbeddedPostgresTestDatabase("wardmote-native-handoff-");
     db = createDb(database.connectionString);
     await db.insert(companies).values({ id: companyId, name: "Handoff", issuePrefix: "HAND" });
     await db.insert(agents).values({ id: agentId, companyId, name: "Dickens", role: "general", adapterType: "wardmote_runner" });

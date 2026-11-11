@@ -73,7 +73,7 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-local-run-cap-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-local-run-cap-");
     db = createDb(tempDb.connectionString);
   }, 30_000);
 

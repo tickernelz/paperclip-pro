@@ -45,7 +45,7 @@ const support = await getEmbeddedPostgresTestSupport();
       interactionId = randomUUID();
     beforeAll(async () => {
       database = await startEmbeddedPostgresTestDatabase(
-        "paperclip-continuation-context-",
+        "wardmote-continuation-context-",
       );
       db = createDb(database.connectionString);
       await db

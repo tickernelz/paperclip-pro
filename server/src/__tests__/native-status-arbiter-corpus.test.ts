@@ -381,7 +381,7 @@ describe("P6-31 Section 18.13 executable status-authority corpus", () => {
   const outsideAgentId = randomUUID();
 
   beforeAll(async () => {
-    temporary = await startEmbeddedPostgresTestDatabase("paperclip-status-corpus-");
+    temporary = await startEmbeddedPostgresTestDatabase("wardmote-status-corpus-");
     db = createDb(temporary.connectionString);
     await db.insert(companies).values({ id: companyId, name: "Status corpus", issuePrefix: "PSC" });
     await db.insert(companies).values({ id: outsideCompanyId, name: "Outside corpus", issuePrefix: "OUT" });

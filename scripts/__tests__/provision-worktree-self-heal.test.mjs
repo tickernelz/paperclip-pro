@@ -23,7 +23,7 @@ function makeTempDir(prefix) {
  * instance config of its own, so this is the seed source the scripts fall back to.
  */
 function makeInstanceHome() {
-  const home = makeTempDir("paperclip-provision-instance-home-");
+  const home = makeTempDir("wardmote-provision-instance-home-");
   fs.mkdirSync(path.join(home, "instances", "default"), { recursive: true });
   fs.writeFileSync(path.join(home, "instances", "default", "config.json"), "{}\n");
   return home;
@@ -44,7 +44,7 @@ test.after(() => {
  *           writes a marker config so tests can tell CLI init from fallback.
  */
 function makeBaseWorkspace({ helpExit, initExit, ensureExit = 0 }) {
-  const baseCwd = makeTempDir("paperclip-provision-base-");
+  const baseCwd = makeTempDir("wardmote-provision-base-");
   const runnerPath = path.join(baseCwd, "cli", "node_modules", "tsx", "dist", "cli.mjs");
   const entryPath = path.join(baseCwd, "cli", "src", "index.ts");
   fs.mkdirSync(path.dirname(runnerPath), { recursive: true });
@@ -100,9 +100,9 @@ process.exit(0);
 }
 
 function runProvision(baseCwd, { pathPrefix, setupWorktree, setupInstance, existingWorktree, env = {} } = {}) {
-  const worktreeCwd = existingWorktree ?? makeTempDir("paperclip-provision-worktree-");
+  const worktreeCwd = existingWorktree ?? makeTempDir("wardmote-provision-worktree-");
   setupWorktree?.(worktreeCwd);
-  const worktreesHome = makeTempDir("paperclip-provision-home-");
+  const worktreesHome = makeTempDir("wardmote-provision-home-");
   const wardmoteHome = makeInstanceHome();
   setupInstance?.(wardmoteHome);
   const result = spawnSync("bash", [script], {
@@ -125,7 +125,7 @@ function runProvision(baseCwd, { pathPrefix, setupWorktree, setupInstance, exist
 }
 
 function runRuntimeProvision(baseCwd, worktreeCwd, { setupInstance } = {}) {
-  const worktreesHome = makeTempDir("paperclip-provision-runtime-home-");
+  const worktreesHome = makeTempDir("wardmote-provision-runtime-home-");
   const wardmoteHome = makeInstanceHome();
   setupInstance?.(wardmoteHome);
   return spawnSync("bash", [runtimeScript], {
@@ -279,7 +279,7 @@ for (const file of ["config.json", ".env", "seed-manifest.json", "seed-pending",
 for (const installExit of [0, 42]) {
   test(`plain checkout dependency provisioning preserves install exit ${installExit}`, () => {
     const baseCwd = makeBaseWorkspace({ helpExit: 0, initExit: 0 });
-    const bin = makeTempDir("paperclip-checkout-pnpm-");
+    const bin = makeTempDir("wardmote-checkout-pnpm-");
     fs.writeFileSync(path.join(bin, "pnpm"), `#!/bin/sh\nprintf '%s\\n' "$*" >> pnpm-calls\nmkdir -p node_modules cli/node_modules\nexit ${installExit}\n`, { mode: 0o700 });
     const { result, worktreeCwd } = runProvision(baseCwd, {
       pathPrefix: bin,
@@ -467,7 +467,7 @@ process.exit(0);
   fs.writeFileSync(path.join(baseCwd, "pnpm-lock.yaml"), "lockfileVersion: '9.0'\n");
   spawnSync("git", ["init", "-q", baseCwd], { env: { PATH: testPath } });
 
-  const fakeBin = makeTempDir("paperclip-provision-fakebin-");
+  const fakeBin = makeTempDir("wardmote-provision-fakebin-");
   const installLog = path.join(baseCwd, "pnpm-invocations.log");
   fs.writeFileSync(
     path.join(fakeBin, "pnpm"),
@@ -512,7 +512,7 @@ test("a failed CLI init fails provisioning instead of being masked as success", 
 
 test("runtime provisioning invokes ensure-seeded once and fast-exits after success", () => {
   const baseCwd = makeBaseWorkspace({ helpExit: 0, initExit: 0 });
-  const worktreeCwd = makeTempDir("paperclip-provision-runtime-worktree-");
+  const worktreeCwd = makeTempDir("wardmote-provision-runtime-worktree-");
   fs.mkdirSync(path.join(worktreeCwd, ".wardmote"), { recursive: true });
   fs.writeFileSync(path.join(worktreeCwd, ".wardmote", "config.json"), "{}\n");
   fs.writeFileSync(path.join(worktreeCwd, ".wardmote", "seed-pending"), "{}\n");
@@ -543,7 +543,7 @@ test("runtime provisioning omits the source override when the base config exists
   const baseCwd = makeBaseWorkspace({ helpExit: 0, initExit: 0 });
   fs.mkdirSync(path.join(baseCwd, ".wardmote"), { recursive: true });
   fs.writeFileSync(path.join(baseCwd, ".wardmote", "config.json"), "{}\n");
-  const worktreeCwd = makeTempDir("paperclip-provision-runtime-base-config-");
+  const worktreeCwd = makeTempDir("wardmote-provision-runtime-base-config-");
   fs.mkdirSync(path.join(worktreeCwd, ".wardmote"), { recursive: true });
   fs.writeFileSync(path.join(worktreeCwd, ".wardmote", "config.json"), "{}\n");
 
@@ -574,7 +574,7 @@ test("runtime provisioning guards every optional source-config expansion for Bas
 
 test("runtime provisioning seeds a worktree config that has no seed markers", () => {
   const baseCwd = makeBaseWorkspace({ helpExit: 0, initExit: 0 });
-  const worktreeCwd = makeTempDir("paperclip-provision-runtime-unmarked-config-");
+  const worktreeCwd = makeTempDir("wardmote-provision-runtime-unmarked-config-");
   fs.mkdirSync(path.join(worktreeCwd, ".wardmote"), { recursive: true });
   fs.writeFileSync(path.join(worktreeCwd, ".wardmote", "config.json"), "{}\n");
 
@@ -596,7 +596,7 @@ test("runtime provisioning bootstraps and seeds an empty .paperclip directory", 
   const baseCwd = makeBaseWorkspace({ helpExit: 0, initExit: 0 });
   fs.mkdirSync(path.join(baseCwd, "scripts"), { recursive: true });
   fs.copyFileSync(script, path.join(baseCwd, "scripts", "provision-worktree.sh"));
-  const worktreeCwd = makeTempDir("paperclip-provision-runtime-empty-state-");
+  const worktreeCwd = makeTempDir("wardmote-provision-runtime-empty-state-");
   fs.mkdirSync(path.join(worktreeCwd, ".wardmote"), { recursive: true });
 
   const result = runRuntimeProvision(baseCwd, worktreeCwd);
@@ -620,7 +620,7 @@ test("runtime provisioning bootstraps and seeds an empty .paperclip directory", 
 
 test("runtime provisioning leaves seed-pending in place when ensure-seeded fails", () => {
   const baseCwd = makeBaseWorkspace({ helpExit: 0, initExit: 0, ensureExit: 4 });
-  const worktreeCwd = makeTempDir("paperclip-provision-runtime-failure-");
+  const worktreeCwd = makeTempDir("wardmote-provision-runtime-failure-");
   fs.mkdirSync(path.join(worktreeCwd, ".wardmote"), { recursive: true });
   fs.writeFileSync(path.join(worktreeCwd, ".wardmote", "config.json"), "{}\n");
   fs.writeFileSync(path.join(worktreeCwd, ".wardmote", "seed-pending"), "{}\n");
@@ -634,7 +634,7 @@ test("runtime provisioning leaves seed-pending in place when ensure-seeded fails
 
 test("runtime provisioning does not trust a truncated verified manifest", () => {
   const baseCwd = makeBaseWorkspace({ helpExit: 0, initExit: 0, ensureExit: 4 });
-  const worktreeCwd = makeTempDir("paperclip-provision-runtime-truncated-");
+  const worktreeCwd = makeTempDir("wardmote-provision-runtime-truncated-");
   fs.mkdirSync(path.join(worktreeCwd, ".wardmote"), { recursive: true });
   fs.writeFileSync(path.join(worktreeCwd, ".wardmote", "config.json"), "{}\n");
   fs.writeFileSync(
@@ -686,7 +686,7 @@ test("every pnpm install call site silences DEP0169 without overwriting NODE_OPT
 for (const failure of ["ERR_PNPM_LOCKFILE_CONFIG_MISMATCH", "ERR_PNPM_OUTDATED_LOCKFILE", "ENOTFOUND", "retry-fails"]) {
   test(`dependency provisioning preserves failures and bounds recovery: ${failure}`, () => {
     const baseCwd = makeBaseWorkspace({ helpExit: 0, initExit: 0 });
-    const bin = makeTempDir("paperclip-fake-pnpm-");
+    const bin = makeTempDir("wardmote-fake-pnpm-");
     fs.writeFileSync(path.join(bin, "pnpm"), `#!/bin/sh
 printf '%s\\n' "$*" >> pnpm-calls
 case "$*" in
@@ -712,7 +712,7 @@ esac
 
 test("patch content changes invalidate an otherwise matching install fingerprint", () => {
   const baseCwd = makeBaseWorkspace({ helpExit: 0, initExit: 0 });
-  const bin = makeTempDir("paperclip-patch-pnpm-");
+  const bin = makeTempDir("wardmote-patch-pnpm-");
   fs.writeFileSync(path.join(bin, "pnpm"), '#!/bin/sh\ncase "$1" in install) echo install >> pnpm-calls; mkdir -p node_modules cli/node_modules ;; esac\n', { mode: 0o700 });
   const first = runProvision(baseCwd, { pathPrefix: bin, setupWorktree(root) {
     fs.writeFileSync(path.join(root, "package.json"), JSON.stringify({ pnpm: { patchedDependencies: { "dependency@1": "patches/dependency.diff" } } }));

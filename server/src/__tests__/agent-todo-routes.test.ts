@@ -56,7 +56,7 @@ describeEmbeddedPostgres("GET /issues/:issueId/agent-todo", { concurrent: false 
   const previousPrivacyMode = process.env.WARDMOTE_ISSUE_PRIVACY_MODE;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-agent-todo-routes-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-agent-todo-routes-");
     db = createDb(tempDb.connectionString);
     process.env.WARDMOTE_ISSUE_PRIVACY_MODE = "enforce";
   }, 120_000);

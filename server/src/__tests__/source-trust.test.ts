@@ -96,7 +96,7 @@ describeEmbeddedPostgres("resolveActorSourceTrustForIssue", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-source-trust-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-source-trust-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

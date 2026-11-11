@@ -13,7 +13,7 @@ function skill(overrides: Partial<CompanySkillDetail> = {}): CompanySkillDetail 
   return {
     id: "skill-1",
     companyId: "company-1",
-    key: "paperclip/demo-skill",
+    key: "wardmote/demo-skill",
     slug: "demo-skill",
     name: "Demo Skill",
     description: "A demo skill.",

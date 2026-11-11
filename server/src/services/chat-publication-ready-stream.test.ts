@@ -38,7 +38,7 @@ type NativeStreamReceipt = {
 const streamReceipt = {
   ok: true,
   ts: "1788.901",
-  channel: "D-PAPERCLIP",
+  channel: "D-WARDMOTE",
 };
 
 async function withNativeSlack(
@@ -158,7 +158,7 @@ async function withNativeSlack(
       };
     };
     await run({
-      stream: (chunks) => adapter.stream("slack:D-PAPERCLIP:1788.400", chunks),
+      stream: (chunks) => adapter.stream("slack:D-WARDMOTE:1788.400", chunks),
       calls,
       start,
       append,
@@ -516,7 +516,7 @@ describe("already-approved publication streaming", () => {
           "chat.appendStream",
           "chat.stopStream",
         ]).toContain(method);
-        expect(body.get("channel")).toBe("D-PAPERCLIP");
+        expect(body.get("channel")).toBe("D-WARDMOTE");
         if (method === "chat.startStream")
           expect(body.get("thread_ts")).toBe("1788.400");
         else expect(body.get("ts")).toBe(streamReceipt.ts);
@@ -755,7 +755,7 @@ describe("already-approved publication streaming", () => {
         );
         const wait = vi.fn(async (_delayMs: number) => undefined);
         const result = await adapter.stream(
-          "slack:D-PAPERCLIP:1788.400",
+          "slack:D-WARDMOTE:1788.400",
           streamSafePublicationText(text, { wait }),
         );
         expect(result.id).toBe("1788.901");
@@ -821,7 +821,7 @@ describe("already-approved publication streaming", () => {
         persistence,
         providerConfig: {
           provider: "telegram",
-          userName: "paperclip_agent_bot",
+          userName: "wardmote_agent_bot",
           credentials: { botToken: "123:test", secretToken: "test" },
         },
       });

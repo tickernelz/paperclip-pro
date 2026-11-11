@@ -25,7 +25,7 @@ describeEmbeddedPostgres("project icon persistence", () => {
   let prefixCounter = 0;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-project-icon-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-project-icon-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

@@ -26,7 +26,7 @@ const support = await getEmbeddedPostgresTestSupport();
   let database: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;
   let db: ReturnType<typeof createDb>;
   beforeAll(async () => {
-    database = await startEmbeddedPostgresTestDatabase("paperclip-slack-idle-");
+    database = await startEmbeddedPostgresTestDatabase("wardmote-slack-idle-");
     db = createDb(database.connectionString);
   }, 90000);
   afterAll(async () => {

@@ -27,7 +27,7 @@ const channelId = "C-MODAL";
 const threadTs = "1788.100";
 const messageTs = "1788.200";
 const userId = "U-OPERATOR";
-const botUserId = "U-PAPERCLIP-BOT";
+const botUserId = "U-WARDMOTE-BOT";
 type SubmitCallback = NonNullable<ChatSdkRuntimeCallbacks["onModalSubmit"]>;
 type SubmitEvent = Parameters<SubmitCallback>[0];
 
@@ -192,7 +192,7 @@ function submission(view: SlackView) {
   )!;
   return {
     type: "view_submission",
-    team: { id: "T-PAPERCLIP" },
+    team: { id: "T-WARDMOTE" },
     user: { id: userId, username: "operator", name: "Operator Name" },
     view: {
       id: "V-MODAL",
@@ -352,7 +352,7 @@ describe("Slack native multi-question modal adapter-to-runtime boundary", () => 
       const response = await runtime.handleWebhook(
         signedRequest({
           type: "block_actions",
-          team: { id: "T-PAPERCLIP" },
+          team: { id: "T-WARDMOTE" },
           user: { id: userId, username: "operator", name: "Operator Name" },
           channel: { id: channelId },
           container: {

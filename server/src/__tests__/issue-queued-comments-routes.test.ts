@@ -63,7 +63,7 @@ describeEmbeddedPostgres("issue queued-comment routes", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-queued-comments-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-queued-comments-");
     db = createDb(tempDb.connectionString);
   }, 30_000);
 

@@ -7,7 +7,7 @@ import {
 
 describe("log redaction", () => {
   it("redacts the active username inside home-directory paths", () => {
-    const userName = "paperclipuser";
+    const userName = "wardmoteuser";
     const maskedUserName = maskUserNameForLogs(userName);
     const input = [
       `cwd=/Users/${userName}/paperclip`,
@@ -27,10 +27,10 @@ describe("log redaction", () => {
   });
 
   it("redacts standalone username mentions without mangling larger tokens", () => {
-    const userName = "paperclipuser";
+    const userName = "wardmoteuser";
     const maskedUserName = maskUserNameForLogs(userName);
     const result = redactCurrentUserText(
-      `user ${userName} said ${userName}/project should stay but apaperclipuserz should not change`,
+      `user ${userName} said ${userName}/project should stay but awardmoteuserz should not change`,
       {
         userNames: [userName],
         homeDirs: [],
@@ -38,16 +38,16 @@ describe("log redaction", () => {
     );
 
     expect(result).toBe(
-      `user ${maskedUserName} said ${maskedUserName}/project should stay but apaperclipuserz should not change`,
+      `user ${maskedUserName} said ${maskedUserName}/project should stay but awardmoteuserz should not change`,
     );
   });
 
   it("recursively redacts nested event payloads", () => {
-    const userName = "paperclipuser";
+    const userName = "wardmoteuser";
     const maskedUserName = maskUserNameForLogs(userName);
     const result = redactCurrentUserValue({
       cwd: `/Users/${userName}/paperclip`,
-      prompt: `open /Users/${userName}/paperclip/ui`,
+      prompt: `open /Users/${userName}/wardmote/ui`,
       nested: {
         author: userName,
       },
@@ -59,7 +59,7 @@ describe("log redaction", () => {
 
     expect(result).toEqual({
       cwd: `/Users/${maskedUserName}/paperclip`,
-      prompt: `open /Users/${maskedUserName}/paperclip/ui`,
+      prompt: `open /Users/${maskedUserName}/wardmote/ui`,
       nested: {
         author: maskedUserName,
       },
@@ -68,7 +68,7 @@ describe("log redaction", () => {
   });
 
   it("skips redaction when disabled", () => {
-    const input = "cwd=/Users/paperclipuser/paperclip";
+    const input = "cwd=/Users/wardmoteuser/wardmote";
     expect(redactCurrentUserText(input, { enabled: false })).toBe(input);
   });
 });

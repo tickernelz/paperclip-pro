@@ -106,7 +106,7 @@ describeEmbeddedPostgres("permissions upgrade visibility and route boundaries", 
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-permissions-boundary-routes-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-permissions-boundary-routes-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

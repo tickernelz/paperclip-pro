@@ -230,7 +230,7 @@ describeEmbeddedPostgres("company import batches inserts", () => {
   let counts!: InsertCounts;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-import-batching-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-import-batching-");
     db = createDb(tempDb.connectionString);
     counts = instrumentInserts(db as unknown as Record<string, unknown>);
   }, 30_000);

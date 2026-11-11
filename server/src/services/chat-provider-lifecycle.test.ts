@@ -160,15 +160,15 @@ describe("chat provider lifecycle normalization", () => {
           {
             id: 101,
             name: "enabled",
-            full_name: "paperclip/enabled",
-            html_url: "https://github.com/paperclip/enabled",
+            full_name: "wardmote/enabled",
+            html_url: "https://github.com/wardmote/enabled",
           },
         ],
         repositories_removed: [
           {
             id: 202,
             name: "removed",
-            full_name: "paperclip/removed",
+            full_name: "wardmote/removed",
           },
         ],
       },

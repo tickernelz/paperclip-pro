@@ -229,7 +229,7 @@ describe("native external-chat response wait", () => {
       endpointId,
       type: provider === "github" ? "repository" : "direct_message",
       providerResourceId:
-        provider === "github" ? "paperclip/test-repository" : "telegram-user",
+        provider === "github" ? "wardmote/test-repository" : "telegram-user",
       label:
         provider === "github"
           ? "Wardmote test repository"

@@ -157,7 +157,7 @@ describeEmbeddedPostgres("built-in agents", () => {
 
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-built-in-agents-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-built-in-agents-");
     db = createDb(tempDb.connectionString);
     lifecycleWorker = configureAgentLifecycle(db, { requiredPluginIds: async () => [], runPlugin: async () => "complete", runHost: async () => "complete" });
   }, 20_000);

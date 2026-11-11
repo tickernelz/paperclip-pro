@@ -175,7 +175,7 @@ printf '%s\\n' "$*" >>"$MOCK_AWS_LOG"
 if [[ " $* " == *" --version "* || "$1" == "--version" ]]; then
   printf 'aws-cli/2.31.0 Python/3.13.0\\n'
 elif [[ " $* " == *" sts get-caller-identity "* ]]; then
-  printf '{"Account":"123456789012","Arn":"arn:aws:iam::123456789012:role/paperclip-test"}\\n'
+  printf '{"Account":"123456789012","Arn":"arn:aws:iam::123456789012:role/wardmote-test"}\\n'
 elif [[ " $* " == *" cloudformation describe-stacks "* ]]; then
   printf '{"Stacks":[{"StackStatus":"ROLLBACK_COMPLETE","Description":"%s","Tags":[{"Key":"paperclip:owned","Value":"%s"},{"Key":"paperclip:environment","Value":"development"},{"Key":"paperclip:cost-center","Value":"runner-lab"}]}]}\\n' "\${MOCK_STACK_DESCRIPTION}" "\${MOCK_STACK_OWNED}"
 elif [[ " $* " == *" cloudformation deploy "* ]]; then

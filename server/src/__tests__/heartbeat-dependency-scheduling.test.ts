@@ -97,7 +97,7 @@ describeEmbeddedPostgres("heartbeat dependency-aware queued run selection", () =
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-heartbeat-dependency-scheduling-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-heartbeat-dependency-scheduling-");
     db = createDb(tempDb.connectionString);
     heartbeat = heartbeatService(db);
     await ensureIssueRelationsTable(db);

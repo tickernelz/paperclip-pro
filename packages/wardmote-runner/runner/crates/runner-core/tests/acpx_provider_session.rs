@@ -215,8 +215,7 @@ fn rejects_non_utf8_directories_before_spawning() {
     use std::ffi::OsString;
     use std::os::unix::ffi::OsStringExt;
 
-    let mut directory_name =
-        format!("paperclip-acpx-non-utf8-{}-", std::process::id()).into_bytes();
+    let mut directory_name = format!("wardmote-acpx-non-utf8-{}-", std::process::id()).into_bytes();
     directory_name.push(0xff);
     let directory = std::env::temp_dir().join(OsString::from_vec(directory_name));
 

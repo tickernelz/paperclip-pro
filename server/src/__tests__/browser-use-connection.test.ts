@@ -56,7 +56,7 @@ const actor = { actorType: "user" as const, actorId: "browser-reviewer" };
     const originalApiUrl = process.env.WARDMOTE_API_URL;
     beforeAll(async () => {
       process.env.WARDMOTE_API_URL = "http://127.0.0.1:3100";
-      temp = await startEmbeddedPostgresTestDatabase("paperclip-browser-use-");
+      temp = await startEmbeddedPostgresTestDatabase("wardmote-browser-use-");
       db = createDb(temp.connectionString);
     }, 30000);
     afterAll(async () => {

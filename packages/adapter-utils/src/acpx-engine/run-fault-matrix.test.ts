@@ -764,7 +764,7 @@ describe("composed ACPX run fault matrix", () => {
     const { stateDir, localCwd, executionTarget } = await setupRemoteSandbox();
     stubBridges();
     const eaccesError: NodeJS.ErrnoException = new Error(
-      `EACCES: permission denied, mkdir '/srv/telemetry-backend.paperclip-restore.lock' (pid ${process.pid})`,
+      `EACCES: permission denied, mkdir '/srv/telemetry-backend.wardmote-restore.lock' (pid ${process.pid})`,
     );
     eaccesError.code = "EACCES";
     const execute = createAcpxEngineExecutor({

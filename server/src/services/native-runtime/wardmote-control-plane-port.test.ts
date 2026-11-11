@@ -83,7 +83,7 @@ describe("WardmoteControlPlanePort conformance", () => {
   const governanceRunnerId = "00000000-0000-4000-8000-000000000021";
 
   beforeAll(async () => {
-    temporary = await startEmbeddedPostgresTestDatabase("paperclip-native-port-");
+    temporary = await startEmbeddedPostgresTestDatabase("wardmote-native-port-");
     db = createDb(temporary.connectionString);
     const identity = CONTROL_PLANE_CONFORMANCE_OPEN.identity;
     await db.insert(companies).values({ id: identity.companyId, name: "Phase 6", issuePrefix: "P6C" });
@@ -856,7 +856,7 @@ describe("WardmoteControlPlanePort conformance", () => {
       sourceKind: "runner",
       runId: taskRunId,
       normalizedSessionId: sessionId,
-      turnId: "turn-phase6-paperclip-task",
+      turnId: "turn-phase6-wardmote-task",
       eventType,
       schemaVersion: 1,
       priority: 0,
@@ -890,10 +890,10 @@ describe("WardmoteControlPlanePort conformance", () => {
             await new Promise((resolve) => setTimeout(resolve, 6_000));
             yield* events.slice(1);
           },
-          async startTurn() { return { turnId: "turn-phase6-paperclip-task" }; },
+          async startTurn() { return { turnId: "turn-phase6-wardmote-task" }; },
           cancel() { throw new Error("A completion report must not interrupt the provider"); },
-          async result() { return { result: taskResult, terminal: CONTROL_PLANE_CONFORMANCE_TERMINAL, turnId: "turn-phase6-paperclip-task" }; },
-          async snapshot() { return { backendKind: "mock", sessionId, identity: input.identity, providerSessionId: "provider-phase6-paperclip-task" }; },
+          async result() { return { result: taskResult, terminal: CONTROL_PLANE_CONFORMANCE_TERMINAL, turnId: "turn-phase6-wardmote-task" }; },
+          async snapshot() { return { backendKind: "mock", sessionId, identity: input.identity, providerSessionId: "provider-phase6-wardmote-task" }; },
           async close() {},
         };
       },
@@ -1009,14 +1009,14 @@ describe("WardmoteControlPlanePort conformance", () => {
     await expect(port.completeRun({
       result: taskResult,
       terminal: CONTROL_PLANE_CONFORMANCE_TERMINAL,
-      turnId: "turn-phase6-paperclip-task",
+      turnId: "turn-phase6-wardmote-task",
       callerResultId: `phase6-scripted-runner:${taskRunId}:result`,
       callerDedupeKey: `${taskRunId}:phase6-task-contract`,
     })).resolves.toBeUndefined();
     await expect(port.completeRun({
       result: { ...structuredClone(taskResult), summary: "Conflicting changed result bytes" },
       terminal: CONTROL_PLANE_CONFORMANCE_TERMINAL,
-      turnId: "turn-phase6-paperclip-task",
+      turnId: "turn-phase6-wardmote-task",
       callerResultId: `phase6-scripted-runner:${taskRunId}:result`,
       callerDedupeKey: `${taskRunId}:phase6-task-contract`,
     })).rejects.toThrow("structured_result_replay_conflict");

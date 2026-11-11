@@ -211,7 +211,7 @@ describe("OpenWA scheduled wakes (embedded Postgres + fake gateway)", () => {
   const endpointIds: string[] = [];
 
   beforeAll(async () => {
-    database = await startEmbeddedPostgresTestDatabase("paperclip-openwa-scheduled-");
+    database = await startEmbeddedPostgresTestDatabase("wardmote-openwa-scheduled-");
     db = createDb(database.connectionString);
     secrets = await mkdtemp(path.join(tmpdir(), "openwa-scheduled-secrets-"));
     process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE = path.join(secrets, "master.key");

@@ -27,7 +27,7 @@ describeEmbeddedPostgres("inbox agent policy routes", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-inbox-agent-policy-routes-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-inbox-agent-policy-routes-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

@@ -71,7 +71,7 @@ describe("OpenWA delegated task reports (embedded Postgres + fake gateway)", () 
   const endpointIds: string[] = [];
 
   beforeAll(async () => {
-    database = await startEmbeddedPostgresTestDatabase("paperclip-openwa-completion-");
+    database = await startEmbeddedPostgresTestDatabase("wardmote-openwa-completion-");
     db = createDb(database.connectionString);
     root = await mkdtemp(path.join(tmpdir(), "openwa-completion-"));
     process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE = path.join(root, "master.key");

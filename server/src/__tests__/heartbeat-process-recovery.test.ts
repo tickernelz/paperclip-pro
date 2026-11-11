@@ -503,7 +503,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
       db = createDb(externalTestDatabaseUrl);
     } else {
       tempDb = await startEmbeddedPostgresTestDatabase(
-        "paperclip-heartbeat-recovery-",
+        "wardmote-heartbeat-recovery-",
       );
       db = createDb(tempDb.connectionString);
     }
@@ -8020,7 +8020,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     },
   );
 
-  it.each([{}, { command: "/nonexistent-paperclip-bootstrap-command" }])("releases holds for real process bootstrap failures: %j", async (config) => {
+  it.each([{}, { command: "/nonexistent-wardmote-bootstrap-command" }])("releases holds for real process bootstrap failures: %j", async (config) => {
     const { execute } = await import("../adapters/process/execute.js");
     mockAdapterExecute.mockImplementationOnce(execute);
     const { runId, agentId } = await seedRunFixture({ runtimeMode: "legacy", agentStatus: "idle", runStatus: "queued", includeIssue: false });

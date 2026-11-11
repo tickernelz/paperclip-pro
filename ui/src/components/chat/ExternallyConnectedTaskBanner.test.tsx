@@ -600,7 +600,7 @@ describe("ExternallyConnectedTaskBanner publication truth", () => {
         provider,
         botLabel: "Maya",
         externalLabel: "paperclipai/paperclip#42",
-        externalUrl: "https://github.com/paperclipai/paperclip/issues/42",
+        externalUrl: "https://github.com/tickernelz/wardmote/issues/42",
         conversationId: "conversation-github",
         publicationState: null,
         assignedAgentLocked: true,

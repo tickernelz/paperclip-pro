@@ -15,7 +15,7 @@ describeEmbeddedPostgres("claimFirstInstanceAdmin", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-first-admin-claim-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-first-admin-claim-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

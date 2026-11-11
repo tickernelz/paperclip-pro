@@ -14,8 +14,8 @@ describe("process adapter bootstrap accounting proof", () => {
     runtime: { sessionId: null, sessionParams: null, sessionDisplayId: null, taskKey: null },
     config, context: {}, onLog: async () => {},
   });
-  it.each([{}, { command: "/nonexistent-paperclip-accounting-command" },
-    { command: process.execPath, cwd: "/nonexistent-paperclip-accounting-directory" }])(
+  it.each([{}, { command: "/nonexistent-wardmote-accounting-command" },
+    { command: process.execPath, cwd: "/nonexistent-wardmote-accounting-directory" }])(
     "proves no provider work for a failure before spawn: %j", async (config) => {
       const { execute } = await import("../adapters/process/execute.js");
       const onSpawn = vi.fn();

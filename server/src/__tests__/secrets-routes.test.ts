@@ -471,7 +471,7 @@ describe("secret routes", () => {
           },
           sampleCount: 2,
           samples: [
-            { name: "paperclip/prod-use1/company-1/openai", hasKmsKey: false, tagKeys: ["environment"] },
+            { name: "wardmote/prod-use1/company-1/openai", hasKmsKey: false, tagKeys: ["environment"] },
           ],
           signals: {
             namespace: "prod-use1",
@@ -518,7 +518,7 @@ describe("secret routes", () => {
         warningCount: 0,
       },
     }));
-    expect(JSON.stringify(mockLogActivity.mock.calls)).not.toContain("paperclip/prod-use1/company-1/openai");
+    expect(JSON.stringify(mockLogActivity.mock.calls)).not.toContain("wardmote/prod-use1/company-1/openai");
   });
 
   it("returns actionable sanitized provider vault discovery errors", async () => {

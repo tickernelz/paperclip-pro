@@ -155,7 +155,7 @@ describe("shouldSilenceHttpSuccessLog", () => {
     expect(
       shouldSilenceHttpSuccessLog(
         "GET",
-        "/@fs/Users/dotta/paperclip/ui/src/main.tsx",
+        "/@fs/Users/dotta/wardmote/ui/src/main.tsx",
         200,
       ),
     ).toBe(true);
@@ -182,7 +182,7 @@ describe("shouldSilenceHttpSuccessLog", () => {
     expect(
       shouldSilenceHttpSuccessLog(
         "GET",
-        "/@fs/Users/dotta/paperclip/ui/src/main.tsx",
+        "/@fs/Users/dotta/wardmote/ui/src/main.tsx",
         404,
       ),
     ).toBe(false);

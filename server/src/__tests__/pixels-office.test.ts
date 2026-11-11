@@ -72,7 +72,7 @@ describeEmbeddedPostgres("pixels office routes", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-pixels-office-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-pixels-office-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

@@ -27,7 +27,7 @@ describe.skipIf(!support.supported)('skill source persistence', () => {
   let commit = sha;
   const context: SkillSourceContext = { actor: { type: 'user', userId: 'board' }, read: () => githubFixture(files, { 'deep/one/scripts/run.sh': '100755' }, commit), authorize: async () => {}, audit: async () => {} };
   beforeAll(async () => {
-    testDb = await startEmbeddedPostgresTestDatabase('paperclip-skill-sources-'); db = createDb(testDb.connectionString);
+    testDb = await startEmbeddedPostgresTestDatabase('wardmote-skill-sources-'); db = createDb(testDb.connectionString);
     home = await fs.mkdtemp(path.join(os.tmpdir(), 'wardmote-source-test-')); process.env.WARDMOTE_HOME = home;
     await db.insert(companies).values({ id: companyId, name: 'Skills', issuePrefix: 'SKL' });
   }, 30000);

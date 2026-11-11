@@ -63,7 +63,7 @@ describeEmbeddedPostgres("deleted issue comment redaction", () => {
       db = createDb(externalTestDatabaseUrl);
     } else {
       tempDb = await startEmbeddedPostgresTestDatabase(
-        "paperclip-comment-redaction-",
+        "wardmote-comment-redaction-",
       );
       db = createDb(tempDb.connectionString);
     }

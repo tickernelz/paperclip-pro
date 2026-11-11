@@ -101,7 +101,7 @@ describeEmbeddedPostgres("agent hire idempotency within a run", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-agent-hire-idempotency-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-agent-hire-idempotency-");
     db = createDb(tempDb.connectionString);
     // Embedded Postgres cold-starts slowly on a loaded machine.
   }, 60_000);

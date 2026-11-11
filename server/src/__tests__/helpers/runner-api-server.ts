@@ -23,7 +23,7 @@ export async function startRunnerApiTestServer(options: {
   deploymentMode?: "authenticated" | "local_trusted";
 } = {}) {
   const root = await mkdtemp(join(tmpdir(), "wardmote-api-eval-"));
-  const temporary = await startEmbeddedPostgresTestDatabase("paperclip-api-eval-db-");
+  const temporary = await startEmbeddedPostgresTestDatabase("wardmote-api-eval-db-");
   const db = createDb(temporary.connectionString);
   const storage = createStorageService(createLocalDiskStorageProvider(join(root, "storage")));
   const app = await createApp(db, {

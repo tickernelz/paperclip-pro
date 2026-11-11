@@ -75,7 +75,7 @@ async function withServer(home, callback) {
     });
   try {
     await rpc("initialize", {
-      clientInfo: { name: "paperclip-fixture", version: "1" },
+      clientInfo: { name: "wardmote-fixture", version: "1" },
       capabilities: { experimentalApi: true },
     });
     child.stdin.write(JSON.stringify({ method: "initialized" }) + "\n");

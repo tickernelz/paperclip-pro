@@ -80,7 +80,7 @@ describe("OpenWA linked read-only numbers (embedded Postgres + fake gateway)", (
   const endpointIds: string[] = [];
 
   beforeAll(async () => {
-    database = await startEmbeddedPostgresTestDatabase("paperclip-openwa-linked-");
+    database = await startEmbeddedPostgresTestDatabase("wardmote-openwa-linked-");
     db = createDb(database.connectionString);
     root = await mkdtemp(path.join(tmpdir(), "openwa-linked-"));
     process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE = path.join(root, "master.key");
@@ -570,7 +570,7 @@ describe("OpenWA linked read-only numbers (embedded Postgres + fake gateway)", (
 
   it("revokes a created key when the gateway returns an id without the key", async () => {
     const t = await setup();
-    t.gateway.overrides.push({ method: "POST", path: "/api/auth/api-keys", status: 201, body: { id: "orphan-key-id", name: "paperclip-linked-x", role: "viewer" } });
+    t.gateway.overrides.push({ method: "POST", path: "/api/auth/api-keys", status: 201, body: { id: "orphan-key-id", name: "wardmote-linked-x", role: "viewer" } });
     const response = await request(boardApp(t)).post("/api/chat-endpoints/" + t.endpointId + "/openwa/linked-sessions").send({ sessionId: LINKED_SESSION_ID, label: "Zhafron" });
     expect(response.status).toBe(502);
     expect(response.body).toMatchObject({ code: "openwa_invalid_response" });

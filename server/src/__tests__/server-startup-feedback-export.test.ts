@@ -470,7 +470,7 @@ describe("startServer feedback export wiring", () => {
     let finish!: () => void;
     const pending = new Promise<void>(resolve => { finish = resolve; });
     const writeBackup = async (options: Parameters<typeof runDatabaseBackup>[0]) => {
-      const backupFile = path.join(directory, "paperclip-restart.sql.gz");
+      const backupFile = path.join(directory, "wardmote-restart.sql.gz");
       const bytes = gzipSync("SELECT 'restart recovery';\n");
       writeFileSync(backupFile, bytes);
       expect(options.retention).toEqual({ dailyDays: 7, weeklyWeeks: 4, monthlyMonths: 1 });
@@ -904,7 +904,7 @@ describe("startServer feedback export wiring", () => {
       deploymentExposure: "public",
       authBaseUrlMode: "explicit",
       authPublicBaseUrl: "https://tenant.example.com",
-      databaseUrl: "secret://paperclip-cloud/stacks/alpha/database/runtime-url",
+      databaseUrl: "secret://wardmote-cloud/stacks/alpha/database/runtime-url",
     }));
 
     await expect(startServer()).rejects.toThrow(

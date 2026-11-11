@@ -71,7 +71,7 @@ describeEmbeddedPostgres("autonomy windows", () => {
   const wakeup = vi.fn(async () => null);
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-autonomy-windows-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-autonomy-windows-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

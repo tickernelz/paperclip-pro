@@ -17,7 +17,7 @@ type Actor = Express.Request["actor"];
 const ISSUE_COUNT = 80;
 
 describeEmbeddedPostgres("hosted Wardmote MCP error and paging contract", () => {
-  const ctx = useEmbeddedPostgres("paperclip-hosted-mcp-contract-");
+  const ctx = useEmbeddedPostgres("wardmote-hosted-mcp-contract-");
   let server: Server;
   let origin = "";
   let actor: Actor = { type: "none", source: "none" };

@@ -166,7 +166,7 @@ const support = await getEmbeddedPostgresTestSupport();
       "repairs deployed provenance without replaying historical SQL or changing wake execution state",
       async () => {
         const database = await startEmbeddedPostgresTestDatabase(
-          "paperclip-chat-provenance-",
+          "wardmote-chat-provenance-",
         );
         const sql = postgres(database.connectionString, {
           max: 1,
@@ -389,7 +389,7 @@ const support = await getEmbeddedPostgresTestSupport();
       "corrects both original repair resolutions on a fresh migration path",
       async () => {
         const database = await startEmbeddedPostgresTestDatabase(
-          "paperclip-chat-provenance-fresh-",
+          "wardmote-chat-provenance-fresh-",
         );
         const sql = postgres(database.connectionString, {
           max: 1,
@@ -473,7 +473,7 @@ const support = await getEmbeddedPostgresTestSupport();
       "upgrades the actual prior chat schema through the new upstream chain without replaying chat effects",
       async () => {
         const database = await startEmbeddedPostgresTestDatabase(
-          "paperclip-chat-upstream-upgrade-",
+          "wardmote-chat-upstream-upgrade-",
         );
         const source = postgres(database.connectionString, {
           max: 1,
@@ -630,7 +630,7 @@ const support = await getEmbeddedPostgresTestSupport();
       "migrates a fresh database and upgrades deployed chat history without replaying chat SQL",
       async () => {
         const database = await startEmbeddedPostgresTestDatabase(
-          "paperclip-chat-identity-migration-",
+          "wardmote-chat-identity-migration-",
         );
         const sql = postgres(database.connectionString, {
           max: 1,

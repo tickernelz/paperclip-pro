@@ -79,7 +79,7 @@ describeEmbeddedPostgres("native run finalizer / status decision committer — a
   let agentId: string;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-native-finalizer-telemetry-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-native-finalizer-telemetry-");
     db = createDb(tempDb.connectionString);
     companyId = randomUUID();
     agentId = randomUUID();

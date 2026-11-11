@@ -54,7 +54,7 @@ fn temporary_directory() -> PathBuf {
         .as_nanos();
     let sequence = NEXT_TEMPORARY_DIRECTORY.fetch_add(1, Ordering::Relaxed);
     std::env::temp_dir().join(format!(
-        "paperclip-runner-public-recovery-{}-{nonce}-{sequence}",
+        "wardmote-runner-public-recovery-{}-{nonce}-{sequence}",
         std::process::id()
     ))
 }

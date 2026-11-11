@@ -35,7 +35,7 @@ function createSnapshotOptions(root: string) {
 
 describe("dev-runner watched snapshot", () => {
   it("skips files that disappear between directory listing and stat", () => {
-    const root = createTempRoot("paperclip-dev-runner-snapshot-file-race-");
+    const root = createTempRoot("wardmote-dev-runner-snapshot-file-race-");
     const serverDir = path.join(root, "server");
     const sourcePath = path.join(serverDir, "index.ts");
     fs.mkdirSync(serverDir, { recursive: true });
@@ -58,7 +58,7 @@ describe("dev-runner watched snapshot", () => {
   });
 
   it("skips directories that disappear before they can be read", () => {
-    const root = createTempRoot("paperclip-dev-runner-snapshot-dir-race-");
+    const root = createTempRoot("wardmote-dev-runner-snapshot-dir-race-");
     const serverDir = path.join(root, "server");
     const routesDir = path.join(serverDir, "routes");
     fs.mkdirSync(routesDir, { recursive: true });
@@ -81,7 +81,7 @@ describe("dev-runner watched snapshot", () => {
   });
 
   it("returns null for missing file signatures and not-directory races", () => {
-    const root = createTempRoot("paperclip-dev-runner-snapshot-diff-");
+    const root = createTempRoot("wardmote-dev-runner-snapshot-diff-");
     const missingPath = path.join(root, "server", "deleted.ts");
     const fileSystem = {
       statSync() {

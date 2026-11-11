@@ -111,7 +111,7 @@ describeEmbeddedPostgres("issue comment message delivery", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-delivery-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-delivery-");
     db = createDb(tempDb.connectionString);
   }, 30_000);
 

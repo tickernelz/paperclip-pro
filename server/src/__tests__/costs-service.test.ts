@@ -441,7 +441,7 @@ describeEmbeddedPostgres("cost and finance aggregate overflow handling", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-costs-service-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-costs-service-");
     db = createDb(tempDb.connectionString);
     costs = costService(db);
     finance = financeService(db);

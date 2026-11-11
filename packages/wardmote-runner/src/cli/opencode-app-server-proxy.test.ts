@@ -34,7 +34,7 @@ describe("OpenCode runnerd proxy executable", () => {
       const root = mkdtempSync(join(tmpdir(), "wardmote-opencode-nested-"));
       const directory = join(
         root,
-        ".paperclip-verified-executable-0123456789abcdef0123456789abcdef",
+        ".wardmote-verified-executable-0123456789abcdef0123456789abcdef",
       );
       const command = join(directory, "launch");
       try {

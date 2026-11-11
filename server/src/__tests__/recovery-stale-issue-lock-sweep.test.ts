@@ -47,7 +47,7 @@ describeEmbeddedPostgres("recovery sweepStaleIssueLocks", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-stale-lock-sweep-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-stale-lock-sweep-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

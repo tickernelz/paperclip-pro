@@ -66,7 +66,7 @@ describeEmbeddedPostgres("issue comment ancestor handoff (embedded postgres)", (
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-ancestor-handoff-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-ancestor-handoff-");
     db = createDb(tempDb.connectionString);
   }, 30_000);
 

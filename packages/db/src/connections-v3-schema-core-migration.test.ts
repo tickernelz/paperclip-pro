@@ -19,7 +19,7 @@ describeEmbeddedPostgres("connections v3 schema core migration", () => {
   afterEach(async () => Promise.all(cleanups.splice(0).map((cleanup) => cleanup())));
 
   it("backfills a workspace grant and rolls back without losing the connection", async () => {
-    const database = await startEmbeddedPostgresTestDatabase("paperclip-connections-v3-migration-");
+    const database = await startEmbeddedPostgresTestDatabase("wardmote-connections-v3-migration-");
     cleanups.push(database.cleanup);
     const sql = postgres(database.connectionString, { max: 1 });
     cleanups.push(async () => sql.end());

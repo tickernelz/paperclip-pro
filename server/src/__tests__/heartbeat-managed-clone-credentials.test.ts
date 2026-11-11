@@ -30,7 +30,7 @@ afterAll(async () => {
 async function createLocalSourceRepo() {
   const sourceRepo = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-clone-source-"));
   await execFile("git", ["init"], { cwd: sourceRepo });
-  await execFile("git", ["config", "user.email", "paperclip@example.com"], { cwd: sourceRepo });
+  await execFile("git", ["config", "user.email", "wardmote@example.com"], { cwd: sourceRepo });
   await execFile("git", ["config", "user.name", "Wardmote Test"], { cwd: sourceRepo });
   await fs.writeFile(path.join(sourceRepo, "README.md"), "hello\n", "utf8");
   await execFile("git", ["add", "README.md"], { cwd: sourceRepo });

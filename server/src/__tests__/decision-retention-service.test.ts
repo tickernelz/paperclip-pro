@@ -23,7 +23,7 @@ describePg("decision retention", () => {
   let db: ReturnType<typeof createDb>;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-decision-retention-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-decision-retention-");
     db = createDb(tempDb.connectionString);
   }, 30_000);
 

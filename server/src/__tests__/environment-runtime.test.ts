@@ -1231,7 +1231,7 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
         host: "ssh.example.test",
         port: 22,
         username: "ssh-user",
-        remoteWorkspacePath: "/srv/paperclip/workspace",
+        remoteWorkspacePath: "/srv/wardmote/workspace",
         privateKey: null,
         knownHosts: null,
         strictHostKeyChecking: true,
@@ -7472,7 +7472,7 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
     await db.insert(plugins).values({
       id: pluginId,
       pluginKey: "acme.environments",
-      packageName: "@acme/paperclip-environments",
+      packageName: "@acme/wardmote-environments",
       version: "1.0.0",
       apiVersion: 1,
       categories: ["automation"],
@@ -7598,7 +7598,7 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
     await db.insert(plugins).values({
       id: pluginId,
       pluginKey: "acme.environments",
-      packageName: "@acme/paperclip-environments",
+      packageName: "@acme/wardmote-environments",
       version: "1.0.0",
       apiVersion: 1,
       categories: ["automation"],
@@ -7705,7 +7705,7 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
     await db.insert(plugins).values({
       id: pluginId,
       pluginKey: "acme.environments",
-      packageName: "@acme/paperclip-environments",
+      packageName: "@acme/wardmote-environments",
       version: "1.0.0",
       apiVersion: 1,
       categories: ["automation"],
@@ -7860,7 +7860,7 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
     await db.insert(plugins).values({
       id: pluginId,
       pluginKey: "acme.environments",
-      packageName: "@acme/paperclip-environments",
+      packageName: "@acme/wardmote-environments",
       version: "1.0.0",
       apiVersion: 1,
       categories: ["automation"],

@@ -211,7 +211,7 @@ function makeSkill(overrides: Partial<CompanySkillDetail> = {}): CompanySkillDet
   return {
     id: "source-skill",
     companyId: "company-1",
-    key: "paperclip/demo-skill",
+    key: "wardmote/demo-skill",
     slug: "demo-skill",
     name: "Demo Skill",
     description: "A demo skill.",

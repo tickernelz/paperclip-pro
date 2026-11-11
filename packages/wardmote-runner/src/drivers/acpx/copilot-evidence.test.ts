@@ -73,7 +73,7 @@ describe("Copilot pinned executable evidence", () => {
     expect(evidence.initialize).toMatchObject({ protocolVersion: 1, agentInfo: { version: "1.0.88" } });
     expect(evidence).toMatchObject({ initializeRequestId: 0, cleanExit: true, inheritedCredentials: false,
       promptSent: false, fixtureRequests: [], costUsd: 0, missingCredentialPreflight: "COPILOT_AUTH_REQUIRED" });
-    expect(JSON.stringify(evidence)).not.toMatch(/\/Users\/|\/private\/var\/|\/tmp\/paperclip-/);
+    expect(JSON.stringify(evidence)).not.toMatch(/\/Users\/|\/private\/var\/|\/tmp\/wardmote-/);
   });
   it("accounts for every inventoried event and field without pretending all were observed", () => {
     const inventory = fixture("copilot-event-inventory-1.0.88.json");

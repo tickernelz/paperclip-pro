@@ -22,7 +22,7 @@ describeEmbeddedPostgres("export fidelity counts", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-export-fidelity-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-export-fidelity-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

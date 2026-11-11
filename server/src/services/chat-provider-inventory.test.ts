@@ -137,8 +137,8 @@ describe("chat provider inventory", () => {
             {
               id: 101,
               name: "repo",
-              full_name: "paperclip/repo",
-              html_url: "https://github.com/paperclip/repo",
+              full_name: "wardmote/repo",
+              html_url: "https://github.com/wardmote/repo",
               owner: { id: 12, login: "paperclip" },
               private: true,
             },
@@ -154,8 +154,8 @@ describe("chat provider inventory", () => {
       expect.objectContaining({
         providerResourceId: "101",
         parentProviderResourceId: "12",
-        label: "paperclip/repo",
-        providerUrl: "https://github.com/paperclip/repo",
+        label: "wardmote/repo",
+        providerUrl: "https://github.com/wardmote/repo",
       }),
     ]);
     expect(JSON.stringify(result)).not.toContain("installation-secret");

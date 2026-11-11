@@ -598,7 +598,7 @@ describe("sandbox callback bridge", () => {
           makeDirs: async () => {},
           listJsonFiles: async () => {
             throw new Error(
-              "list /remote/.wardmote-runtime/gemini/paperclip-bridge/queue/requests failed with exit code 255: kex_exchange_identification: read: Connection reset by peer",
+              "list /remote/.wardmote-runtime/gemini/wardmote-bridge/queue/requests failed with exit code 255: kex_exchange_identification: read: Connection reset by peer",
             );
           },
           readTextFile: async () => {
@@ -750,7 +750,7 @@ describe("sandbox callback bridge", () => {
     expect(loopStep).toBeNull();
   });
 
-  it("test_paperclip_loop_exec_parents_to_run_context", async () => {
+  it("test_wardmote_loop_exec_parents_to_run_context", async () => {
     const runParentToken = { marker: "run-parent-token" };
     let setupStep: ReturnType<typeof getActiveStepContext> | "unset" = "unset";
     let requestStep: ReturnType<typeof getActiveStepContext> | "unset" = "unset";
@@ -862,7 +862,7 @@ describe("sandbox callback bridge", () => {
     expect(wrapped).toContain("sandbox.callbackBridge.relayRequest");
   });
 
-  it("test_paperclip_loop_exec_stays_unparented_without_getter", async () => {
+  it("test_wardmote_loop_exec_stays_unparented_without_getter", async () => {
     // With no `getRuntimeParentContext`, a request runs with an empty active
     // step store, exactly like the earlier `runWithoutActiveStep` behavior. So a
     // request `sandbox.exec` span opens unparented with no stale startup flag.
@@ -1724,7 +1724,7 @@ describe("sandbox callback bridge", () => {
       timeoutMs: 30_000,
     });
 
-    await client.makeDir("/workspace/.wardmote-runtime/codex/paperclip-bridge/queue");
+    await client.makeDir("/workspace/.wardmote-runtime/codex/wardmote-bridge/queue");
 
     expect(runner.execute).toHaveBeenCalledWith(expect.objectContaining({
       env: {
@@ -3038,7 +3038,7 @@ describe("sandbox callback bridge", () => {
   }
 
   it("cleans up a timed-out request file and keeps serving after the host recovers", async () => {
-    const fixture = await prepareGatewayFixture("paperclip-bridge-timeout-clean-");
+    const fixture = await prepareGatewayFixture("wardmote-bridge-timeout-clean-");
 
     const bridge = await startSandboxCallbackBridgeServer({
       runner: fixture.runner,
@@ -3094,7 +3094,7 @@ describe("sandbox callback bridge", () => {
   }, 30_000);
 
   it("sweeps stale request files before rejecting at the queue-depth cap", async () => {
-    const fixture = await prepareGatewayFixture("paperclip-bridge-stale-sweep-");
+    const fixture = await prepareGatewayFixture("wardmote-bridge-stale-sweep-");
 
     const bridge = await startSandboxCallbackBridgeServer({
       runner: fixture.runner,

@@ -31,7 +31,7 @@ function workProduct(overrides: Partial<IssueWorkProduct> = {}): IssueWorkProduc
     provider: "github",
     externalId: "42",
     title: "Ship rich work-product cards",
-    url: "https://github.com/paperclipai/paperclip/pull/42",
+    url: "https://github.com/tickernelz/wardmote/pull/42",
     status: "merged",
     reviewState: "none",
     isPrimary: true,

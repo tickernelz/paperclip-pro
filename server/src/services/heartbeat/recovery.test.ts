@@ -171,7 +171,7 @@ describePostgres("heartbeat recovery module ownership", () => {
   let db: Db;
   let database: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;
   beforeAll(async () => {
-    database = await startEmbeddedPostgresTestDatabase("paperclip-heartbeat-recovery-module-");
+    database = await startEmbeddedPostgresTestDatabase("wardmote-heartbeat-recovery-module-");
     db = createDb(database.connectionString);
   }, EMBEDDED_POSTGRES_TEST_TIMEOUT_MS);
   afterAll(async () => { await database?.cleanup(); });

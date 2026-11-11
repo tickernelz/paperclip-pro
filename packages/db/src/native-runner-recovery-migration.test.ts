@@ -20,7 +20,7 @@ describeEmbeddedPostgres("native runner recovery migration", () => {
     "repairs a partial application and can be replayed without changing the schema",
     async () => {
       const database = await startEmbeddedPostgresTestDatabase(
-        "paperclip-native-recovery-migration-",
+        "wardmote-native-recovery-migration-",
       );
       cleanups.push(database.cleanup);
       const sql = postgres(database.connectionString, {

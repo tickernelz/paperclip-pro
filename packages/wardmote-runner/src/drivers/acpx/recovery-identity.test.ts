@@ -170,7 +170,7 @@ describe("ACPX recovery identity", () => {
       ...fixture.input,
       profile: {
         ...fixture.input.profile,
-        agentRuntimePackage: "@paperclip/test-runtime",
+        agentRuntimePackage: "@wardmote/test-runtime",
       },
     });
     const otherRuntimeVersion = await createAcpxRecoveryBinding({

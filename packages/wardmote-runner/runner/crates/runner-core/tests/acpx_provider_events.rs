@@ -444,7 +444,7 @@ fn leaves_builtin_and_malformed_mcp_titles_as_display_only_builtin_names() {
     for title in [
         "Read file",
         "write_document",
-        "paperclip__write_document",
+        "wardmote__write_document",
         "mcp____write_document",
         "mcp__wardmote__",
         "mcp..write_document",

@@ -19,7 +19,7 @@ const actor = { actorType: "user" as const, actorId: "local-browser-reviewer" };
   let temp: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;
 
   beforeAll(async () => {
-    temp = await startEmbeddedPostgresTestDatabase("paperclip-local-browser-");
+    temp = await startEmbeddedPostgresTestDatabase("wardmote-local-browser-");
     db = createDb(temp.connectionString);
   }, 60_000);
 

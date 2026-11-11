@@ -32,7 +32,7 @@ async function runServiceCommand(args: string[], home: string): Promise<{ code: 
     const result = await execFileAsync(process.execPath, [tsxEntry, cliEntry, ...args], {
       cwd: home,
       env: {
-        PATH: "/nonexistent-paperclip-test-path",
+        PATH: "/nonexistent-wardmote-test-path",
         HOME: home,
         WARDMOTE_HOME: home,
         WARDMOTE_TELEMETRY_DISABLED: "1",

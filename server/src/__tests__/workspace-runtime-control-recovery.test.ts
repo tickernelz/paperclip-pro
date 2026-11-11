@@ -49,7 +49,7 @@ describeEmbeddedPostgres("managed runtime-control operation recovery", () => {
   let previousLogRoot: string | undefined;
 
   beforeAll(async () => {
-    const started = await startEmbeddedPostgresTestDatabase("paperclip-runtime-control-recovery-");
+    const started = await startEmbeddedPostgresTestDatabase("wardmote-runtime-control-recovery-");
     stopDb = started.cleanup;
     db = createDb(started.connectionString);
     logRoot = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-runtime-control-logs-"));

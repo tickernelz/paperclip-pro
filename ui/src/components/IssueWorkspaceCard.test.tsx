@@ -57,7 +57,7 @@ function createExecutionWorkspace(overrides: Partial<ExecutionWorkspace> = {}): 
     cwd: "/tmp/issue-sandbox",
     repoUrl: null,
     baseRef: null,
-    branchName: "paperclip/papa-81",
+    branchName: "wardmote/papa-81",
     providerType: "git_worktree",
     providerRef: null,
     derivedFromExecutionWorkspaceId: null,

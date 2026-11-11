@@ -66,7 +66,7 @@ describe("OpenWA pending_card wakes (embedded Postgres + fake gateway)", () => {
   const endpointIds: string[] = [];
 
   beforeAll(async () => {
-    database = await startEmbeddedPostgresTestDatabase("paperclip-openwa-pending-card-");
+    database = await startEmbeddedPostgresTestDatabase("wardmote-openwa-pending-card-");
     db = createDb(database.connectionString);
     scratch = await mkdtemp(path.join(tmpdir(), "openwa-pending-card-"));
     process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE = path.join(scratch, "master.key");

@@ -163,9 +163,9 @@ describe("sandbox run site", () => {
 
   it("test_sandbox_site_preserves_bridge_overlap_and_callback_sequencing", async () => {
     const events: string[] = [];
-    let releasePaperclip!: () => void;
+    let releaseWardmote!: () => void;
     const wardmoteGate = new Promise<void>((resolve) => {
-      releasePaperclip = resolve;
+      releaseWardmote = resolve;
     });
     let processLaunchEnv: Record<string, string> | null = null;
     const { site } = makeSite({
@@ -192,7 +192,7 @@ describe("sandbox run site", () => {
     expect(events).toContain("process-session:start");
     expect(events).not.toContain("process-session:launch");
 
-    releasePaperclip();
+    releaseWardmote();
     const transport = await transportPromise;
     expect(events.indexOf("paperclip:env-ready")).toBeLessThan(events.indexOf("process-session:launch"));
     expect(processLaunchEnv).toEqual({ BASE: "1", CODEX_HOME: "/remote/home", WARDMOTE_API_KEY: "run-token" });

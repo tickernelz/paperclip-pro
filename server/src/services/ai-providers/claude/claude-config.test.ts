@@ -138,7 +138,7 @@ describe("prepareSandboxClaudeProbeRuntime managed-config diagnostics", () => {
     kind: "remote",
     transport: "sandbox",
     providerKey: "daytona",
-    remoteCwd: "/home/daytona/paperclip-workspace",
+    remoteCwd: "/home/daytona/wardmote-workspace",
     runner: {
       execute: async () => ({
         exitCode: 0,
@@ -195,7 +195,7 @@ describe("prepareSandboxClaudeProbeRuntime managed-config diagnostics", () => {
       runId: "run-1",
       target: sandboxTarget,
       // The probe passes no CLAUDE_CONFIG_DIR, so the managed branch runs.
-      cwd: "/home/daytona/paperclip-workspace",
+      cwd: "/home/daytona/wardmote-workspace",
       companyId: "company-1",
       env: {},
       installCommand: "install-claude",

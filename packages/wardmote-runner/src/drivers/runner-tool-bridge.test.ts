@@ -67,7 +67,7 @@ describe("runner semantic MCP bridge", () => {
     const handler = vi.fn(async ({ tool: name }) => ({ name }));
     const bridge = await startRunnerToolBridge({
       tools: [tool("documents.read")],
-      privateTools: [tool("__paperclip_permission")],
+      privateTools: [tool("__wardmote_permission")],
       handler,
     });
     bridges.push(bridge);
@@ -75,19 +75,19 @@ describe("runner semantic MCP bridge", () => {
       await rpc(bridge, { id: 1, method: "tools/list" })
     ).json()) as { result: { tools: Array<{ name: string }> } };
     expect(listed.result.tools.map(({ name }) => name)).not.toContain(
-      "__paperclip_permission",
+      "__wardmote_permission",
     );
     expect(
       await (
         await rpc(bridge, {
           id: "private-1",
           method: "tools/call",
-          params: { name: "__paperclip_permission", arguments: {} },
+          params: { name: "__wardmote_permission", arguments: {} },
         })
       ).json(),
     ).toMatchObject({
       result: {
-        content: [{ text: expect.stringContaining("__paperclip_permission") }],
+        content: [{ text: expect.stringContaining("__wardmote_permission") }],
       },
     });
   });

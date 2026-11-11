@@ -38,7 +38,7 @@ describeEmbeddedPostgres("companySkillService.detail", () => {
   const cleanupDirs = new Set<string>();
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-company-skills-detail-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-company-skills-detail-");
     db = createDb(tempDb.connectionString);
     svc = companySkillService(db);
   }, 20_000);

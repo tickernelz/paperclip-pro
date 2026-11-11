@@ -26,7 +26,7 @@ const request = vi.mocked(guardedRemoteHttpFetch);
 const imageUrl =
   "https://github.com/user-attachments/assets/11111111-2222-3333-4444-555555555555";
 const fileUrl = "https://github.com/user-attachments/files/31917991/proof.txt";
-const threadId = "github:paperclipai/chat-e2e:issue:42";
+const threadId = "github:tickernelz/chat-e2e:issue:42";
 const png = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10, 0]);
 function message(overrides: Record<string, unknown> = {}): Message {
   return {
@@ -43,7 +43,7 @@ function message(overrides: Record<string, unknown> = {}): Message {
       type: "issue_comment",
       prNumber: 42,
       threadType: "issue",
-      repository: { full_name: "paperclipai/chat-e2e" },
+      repository: { full_name: "tickernelz/chat-e2e" },
       comment: { id: 4242, body: `![Image](${imageUrl}) [proof](${fileUrl})` },
     },
     ...overrides,
@@ -67,8 +67,8 @@ const signedImageUrl =
 function canonicalComment(overrides: Record<string, unknown> = {}) {
   return {
     id: 4242,
-    url: "https://api.github.com/repos/paperclipai/chat-e2e/issues/comments/4242",
-    issue_url: "https://api.github.com/repos/paperclipai/chat-e2e/issues/42",
+    url: "https://api.github.com/repos/tickernelz/chat-e2e/issues/comments/4242",
+    issue_url: "https://api.github.com/repos/tickernelz/chat-e2e/issues/42",
     body: (message().raw as { comment: { body: string } }).comment.body,
     body_html: `<p><a href="${imageUrl}"><img src="${signedImageUrl}"></a><a href="${fileUrl}">proof</a></p>`,
     ...overrides,
@@ -81,7 +81,7 @@ describe("GitHub description and review-summary attachment provenance", () => {
     const source = { id: 4242, number: 42, body };
     const mention = githubExplicitMentionEvent(event, {
       action: event === "pull_request_review" ? "submitted" : "opened",
-      repository: { id: 12, full_name: "paperclipai/chat-e2e" }, sender: { id: 77, login: "octocat" },
+      repository: { id: 12, full_name: "tickernelz/chat-e2e" }, sender: { id: 77, login: "octocat" },
       issue: source, pull_request: source, review: source,
     }, "body-delivery", "maya")!;
     const inbound = message({ id: mention.messageId, threadId: mention.threadId, raw: mention.raw, formatted: parseMarkdown(body) });
@@ -89,12 +89,12 @@ describe("GitHub description and review-summary attachment provenance", () => {
     expect(attachments).toHaveLength(2);
     const saved = JSON.parse(JSON.stringify(githubAttachmentLocator(attachments[0])));
     const recovered = rehydrateGitHubPublicAttachment(saved, { threadId: mention.threadId, messageId: mention.messageId })!;
-    const expectedUrl = `https://api.github.com/repos/paperclipai/chat-e2e/${event === "issues" ? "issues/42" : event === "pull_request" ? "pulls/42" : "pulls/42/reviews/4242"}`;
+    const expectedUrl = `https://api.github.com/repos/tickernelz/chat-e2e/${event === "issues" ? "issues/42" : event === "pull_request" ? "pulls/42" : "pulls/42/reviews/4242"}`;
     const apiRequest = githubAttachmentCommentRequest(recovered)!;
     expect(apiRequest.url).toBe(expectedUrl);
     expect(isGitHubAttachmentCommentRequest(apiRequest)).toBe(true);
     const canonical = { id: 4242, body, body_html: canonicalComment().body_html,
-      ...(event === "pull_request_review" ? { pull_request_url: "https://api.github.com/repos/paperclipai/chat-e2e/pulls/42" } : { number: 42, url: expectedUrl }),
+      ...(event === "pull_request_review" ? { pull_request_url: "https://api.github.com/repos/tickernelz/chat-e2e/pulls/42" } : { number: 42, url: expectedUrl }),
     };
     expect(resolveGitHubCommentAttachmentTarget(recovered, canonical)?.href).toBe(signedImageUrl);
     expect(resolveGitHubCommentAttachmentTarget(recovered, { ...canonical, id: 999 })).toBeNull();
@@ -112,7 +112,7 @@ describe("GitHub description and review-summary attachment provenance", () => {
     const value = message({ id: "mention-event:body-delivery", raw: { type: "issue_description", source: { id: 4242, number: 42, body: imageUrl }, repository: { full_name: "other/repo" }, prNumber: 42 } });
     expect(githubPublicAttachmentsFromMessage(value)).toEqual([]);
     for (const suffix of ["issues/42/reviews/4242", "pulls/42/files", "issues/42?redirect=other", "../secret"]) {
-      expect(isGitHubAttachmentCommentRequest({ url: `https://api.github.com/repos/paperclipai/chat-e2e/${suffix}`, accept: "application/vnd.github.full+json" })).toBe(false);
+      expect(isGitHubAttachmentCommentRequest({ url: `https://api.github.com/repos/tickernelz/chat-e2e/${suffix}`, accept: "application/vnd.github.full+json" })).toBe(false);
     }
   });
 });
@@ -385,7 +385,7 @@ describe("GitHub exact-comment private image resolution", () => {
     { body: "edited body" },
     { issue_url: "https://api.github.com/repos/other/repo/issues/42" },
     {
-      url: "https://api.github.com/repos/paperclipai/chat-e2e/issues/comments/4243",
+      url: "https://api.github.com/repos/tickernelz/chat-e2e/issues/comments/4243",
     },
     {
       body_html: `<a href="${imageUrl}"><img src="${signedImageUrl}"><img src="${signedImageUrl}"></a>`,
@@ -424,7 +424,7 @@ describe("GitHub exact-comment private image resolution", () => {
   });
   it("uses the documented review-comment media type and exact review-root binding", () => {
     const value = message({
-      threadId: "github:paperclipai/chat-e2e:42:rc:4000",
+      threadId: "github:tickernelz/chat-e2e:42:rc:4000",
     });
     const raw = value.raw as Record<string, unknown>;
     raw.type = "review_comment";
@@ -432,13 +432,13 @@ describe("GitHub exact-comment private image resolution", () => {
     const image = githubPublicAttachmentsFromMessage(value)[0]!;
     const requestDescriptor = githubAttachmentCommentRequest(image)!;
     expect(requestDescriptor).toEqual({
-      url: "https://api.github.com/repos/paperclipai/chat-e2e/pulls/comments/4242",
+      url: "https://api.github.com/repos/tickernelz/chat-e2e/pulls/comments/4242",
       accept: "application/vnd.github-commitcomment.full+json",
     });
     const response = canonicalComment({
       url: requestDescriptor.url,
       pull_request_url:
-        "https://api.github.com/repos/paperclipai/chat-e2e/pulls/42",
+        "https://api.github.com/repos/tickernelz/chat-e2e/pulls/42",
       in_reply_to_id: 4000,
     });
     expect(resolveGitHubCommentAttachmentTarget(image, response)?.href).toBe(
@@ -728,8 +728,8 @@ describe("public GitHub attachment extraction", () => {
   it.each([
     { id: "99" },
     { threadId: "github:other/repo:issue:42" },
-    { threadId: "github:paperclipai/chat-e2e:issue:43" },
-    { threadId: "github:paperclipai/chat-e2e:42:rc:4242" },
+    { threadId: "github:tickernelz/chat-e2e:issue:43" },
+    { threadId: "github:tickernelz/chat-e2e:42:rc:4242" },
   ])("rejects forged source tuples %j", (override) => {
     expect(githubPublicAttachmentsFromMessage(message(override))).toEqual([]);
     expect(request).not.toHaveBeenCalled();

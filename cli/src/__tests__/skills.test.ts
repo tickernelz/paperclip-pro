@@ -31,7 +31,7 @@ function skill(overrides: Record<string, unknown> = {}) {
   return {
     id: "11111111-1111-1111-1111-111111111111",
     companyId: "company-1",
-    key: "paperclip/review-prs",
+    key: "wardmote/review-prs",
     slug: "review-prs",
     name: "Review PRs",
     description: "Review pull requests",
@@ -101,19 +101,19 @@ function agent(overrides: Record<string, unknown> = {}) {
 describe("skills CLI helpers", () => {
   it("resolves skill refs by id, key, or unique normalized slug", () => {
     const rows = [
-      skill({ id: "skill-a", key: "paperclip/a", slug: "alpha", name: "Alpha" }),
-      skill({ id: "skill-b", key: "paperclip/b", slug: "beta-skill", name: "Beta" }),
+      skill({ id: "skill-a", key: "wardmote/a", slug: "alpha", name: "Alpha" }),
+      skill({ id: "skill-b", key: "wardmote/b", slug: "beta-skill", name: "Beta" }),
     ];
 
-    expect(resolveCompanySkillReference(rows, "skill-a").key).toBe("paperclip/a");
-    expect(resolveCompanySkillReference(rows, "paperclip/b").id).toBe("skill-b");
+    expect(resolveCompanySkillReference(rows, "skill-a").key).toBe("wardmote/a");
+    expect(resolveCompanySkillReference(rows, "wardmote/b").id).toBe("skill-b");
     expect(resolveCompanySkillReference(rows, "Beta Skill").id).toBe("skill-b");
   });
 
   it("rejects ambiguous slug refs", () => {
     const rows = [
-      skill({ id: "skill-a", key: "paperclip/a", slug: "same", name: "A" }),
-      skill({ id: "skill-b", key: "paperclip/b", slug: "same", name: "B" }),
+      skill({ id: "skill-a", key: "wardmote/a", slug: "same", name: "A" }),
+      skill({ id: "skill-b", key: "wardmote/b", slug: "same", name: "B" }),
     ];
 
     expect(() => resolveCompanySkillReference(rows, "same")).toThrow(/Ambiguous skill slug/);
@@ -451,10 +451,10 @@ describe("skills CLI commands", () => {
       adapterType: "codex_local",
       supported: true,
       mode: "persistent",
-      desiredSkills: ["paperclip/review-prs"],
+      desiredSkills: ["wardmote/review-prs"],
       entries: [
         {
-          key: "paperclip/review-prs",
+          key: "wardmote/review-prs",
           runtimeName: "review-prs",
           desired: true,
           managed: true,
@@ -478,7 +478,7 @@ describe("skills CLI commands", () => {
       "--skill",
       "review-prs",
       "--skill",
-      "paperclip/qa",
+      "wardmote/qa",
       "--mode",
       "add",
       "--company-id",
@@ -500,7 +500,7 @@ describe("skills CLI commands", () => {
       "http://wardmote.test/api/agents/agent-1/skills/sync",
       expect.objectContaining({
         method: "POST",
-        body: JSON.stringify({ desiredSkills: ["review-prs", "paperclip/qa"], mode: "add" }),
+        body: JSON.stringify({ desiredSkills: ["review-prs", "wardmote/qa"], mode: "add" }),
       }),
     );
     expect(JSON.parse(String(logSpy.mock.calls[0]?.[0]))).toEqual(snapshot);

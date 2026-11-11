@@ -6,7 +6,7 @@ import {
 } from "./local-run-memory-gate.js";
 
 const GIB = 1024 * 1024 * 1024;
-const CGROUP = "/user.slice/user-1000.slice/user@1000.service/app.slice/paperclip-pro.service";
+const CGROUP = "/user.slice/user-1000.slice/user@1000.service/app.slice/wardmote-pro.service";
 
 type Host = {
   totalGiB?: number;

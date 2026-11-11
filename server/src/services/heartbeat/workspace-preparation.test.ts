@@ -27,7 +27,7 @@ describe.skipIf(!support.supported)("heartbeat workspace preparation boundary", 
   beforeAll(async () => {
     home = await mkdtemp(join(tmpdir(), "wardmote-workspace-preparation-"));
     vi.stubEnv("WARDMOTE_HOME", home);
-    database = await startEmbeddedPostgresTestDatabase("paperclip-workspace-preparation");
+    database = await startEmbeddedPostgresTestDatabase("wardmote-workspace-preparation");
     db = createDb(database.connectionString);
     await db.execute(sql`set client_min_messages = warning`);
   }, EMBEDDED_POSTGRES_TEST_TIMEOUT_MS);

@@ -65,7 +65,7 @@ describeEmbeddedPostgres("question response delivery", () => {
 
   beforeAll(async () => {
     tempDb = await startEmbeddedPostgresTestDatabase(
-      "paperclip-question-delivery-",
+      "wardmote-question-delivery-",
     );
     db = createDb(tempDb.connectionString);
   }, 20_000);

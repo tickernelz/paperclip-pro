@@ -10,7 +10,7 @@ const support = await getEmbeddedPostgresTestSupport();
   let temporary: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;
   let db: ReturnType<typeof createDb>;
   beforeAll(async () => {
-    temporary = await startEmbeddedPostgresTestDatabase("paperclip-runtime-workspace-binding-");
+    temporary = await startEmbeddedPostgresTestDatabase("wardmote-runtime-workspace-binding-");
     db = createDb(temporary.connectionString);
     await instanceSettingsService(db).updateExperimental({ enableIsolatedWorkspaces: false });
   }, 30_000);

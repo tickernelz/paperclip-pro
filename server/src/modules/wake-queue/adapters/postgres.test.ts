@@ -54,7 +54,7 @@ describeEmbeddedPostgres("wake-queue postgres adapter", () => {
   };
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-wake-queue-postgres-adapter-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-wake-queue-postgres-adapter-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

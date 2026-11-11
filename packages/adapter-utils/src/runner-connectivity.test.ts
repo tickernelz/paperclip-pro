@@ -139,14 +139,14 @@ describe("paperclip runner transport routing", () => {
       runId: "00000000-0000-4000-8000-000000000001",
       localConnectUrl: "ws://127.0.0.1/unused",
       runnerPublicUrl: "wss://wardmote.example.test/runner-base/",
-      runnerCaBundlePath: "/etc/paperclip/runner-ca.pem",
+      runnerCaBundlePath: "/etc/wardmote/runner-ca.pem",
       runnerIngressAuthorized: false,
     });
     expect(result).toEqual({
       mode: "direct_outbound",
       connectUrl:
         "wss://wardmote.example.test/runner-base/api/runner/v1/connect/00000000-0000-4000-8000-000000000001",
-      caBundlePath: "/etc/paperclip/runner-ca.pem",
+      caBundlePath: "/etc/wardmote/runner-ca.pem",
     });
   });
 

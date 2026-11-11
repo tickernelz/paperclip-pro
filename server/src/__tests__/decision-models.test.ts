@@ -32,7 +32,7 @@ beforeAll(async () => {
   home = await realpath(await mkdtemp(path.join(os.tmpdir(), "wardmote-decisions-")));
   vi.stubEnv("WARDMOTE_HOME", home);
   vi.stubEnv("WARDMOTE_INSTANCE_ID", "decisions-fixture");
-  database = await startEmbeddedPostgresTestDatabase("paperclip-decisions-db-");
+  database = await startEmbeddedPostgresTestDatabase("wardmote-decisions-db-");
   db = createDb(database.connectionString);
 }, 90000);
 afterAll(async () => { await database?.cleanup(); vi.unstubAllEnvs(); if (home) await rm(home, { recursive: true, force: true }); });

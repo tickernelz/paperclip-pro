@@ -30,7 +30,7 @@ describeEmbeddedPostgres("agent service clearError", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-agent-clear-error-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-agent-clear-error-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

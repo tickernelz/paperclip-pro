@@ -48,7 +48,7 @@ describeEmbeddedPostgres("plugin tenant isolation (company_id FK)", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-plugin-tenant-isolation-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-plugin-tenant-isolation-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

@@ -293,7 +293,7 @@ describeEmbeddedPostgres("wardmote company import/export e2e", () => {
     mkdirSync(wardmoteHome, { recursive: true });
     mkdirSync(cliShellHome, { recursive: true });
 
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-company-cli-db-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-company-cli-db-");
 
     const port = await getAvailablePort();
     writeTestConfig(configPath, tempRoot, port, tempDb.connectionString);
@@ -590,7 +590,7 @@ describeEmbeddedPostgres("wardmote company import/export e2e", () => {
     const zipPath = path.join(tempRoot, "exported-company.zip");
     const portableFiles: Record<string, string> = {};
     collectTextFiles(exportDir, exportDir, portableFiles);
-    writeFileSync(zipPath, createStoredZipArchive(portableFiles, "paperclip-demo"));
+    writeFileSync(zipPath, createStoredZipArchive(portableFiles, "wardmote-demo"));
 
     const importedFromZip = await runCliJson<{
       company: { id: string; name: string; action: string };
