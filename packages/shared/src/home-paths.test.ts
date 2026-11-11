@@ -72,21 +72,22 @@ describe("default home", () => {
   });
 
   it("maps a path recorded under the migration link to ~/.wardmote", async () => {
+    const { LEGACY_HOME_DIRNAME, resolveHomeAwarePath } = await homePaths();
+    const legacyHome = path.join(userHome, LEGACY_HOME_DIRNAME);
     fs.mkdirSync(path.join(userHome, ".wardmote"));
-    fs.symlinkSync(path.join(userHome, ".wardmote"), path.join(userHome, ".paperclip-pro"));
-    const { resolveHomeAwarePath } = await homePaths();
-    expect(resolveHomeAwarePath(path.join(userHome, ".paperclip-pro/instances/default/db"))).toBe(path.join(userHome, ".wardmote/instances/default/db"));
-    expect(resolveHomeAwarePath("~/.paperclip-pro")).toBe(path.join(userHome, ".wardmote"));
-    expect(resolveHomeAwarePath(path.join(userHome, ".paperclip-pro-old/db"))).toBe(path.join(userHome, ".paperclip-pro-old/db"));
+    fs.symlinkSync(path.join(userHome, ".wardmote"), legacyHome);
+    expect(resolveHomeAwarePath(path.join(legacyHome, "instances/default/db"))).toBe(path.join(userHome, ".wardmote/instances/default/db"));
+    expect(resolveHomeAwarePath(`~/${LEGACY_HOME_DIRNAME}`)).toBe(path.join(userHome, ".wardmote"));
+    expect(resolveHomeAwarePath(`${legacyHome}-old/db`)).toBe(`${legacyHome}-old/db`);
   });
 
-  it("keeps ~/.paperclip-pro paths while it is not the migration link", async () => {
+  it("keeps legacy home paths while it is not the migration link", async () => {
+    const { LEGACY_HOME_DIRNAME, resolveHomeAwarePath } = await homePaths();
     const elsewhere = path.join(userHome, "data");
     fs.mkdirSync(elsewhere);
     fs.mkdirSync(path.join(userHome, ".wardmote"));
-    fs.symlinkSync(elsewhere, path.join(userHome, ".paperclip-pro"));
-    const { resolveHomeAwarePath } = await homePaths();
-    expect(resolveHomeAwarePath("~/.paperclip-pro/db")).toBe(path.join(userHome, ".paperclip-pro/db"));
+    fs.symlinkSync(elsewhere, path.join(userHome, LEGACY_HOME_DIRNAME));
+    expect(resolveHomeAwarePath(`~/${LEGACY_HOME_DIRNAME}/db`)).toBe(path.join(userHome, LEGACY_HOME_DIRNAME, "db"));
   });
 });
 

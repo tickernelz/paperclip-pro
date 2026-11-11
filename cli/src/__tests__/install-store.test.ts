@@ -22,6 +22,7 @@ import {
   type InstallManifest,
   type InstallRecord,
 } from "../install-store.js";
+import { LEGACY_HOME_DIRNAME } from "@tickernelz/wardmote-shared/home-paths";
 import { resolveServiceShimPath } from "../services/service-manager.js";
 
 function record(payloadPath: string, version: string): InstallRecord {
@@ -106,8 +107,8 @@ describe("managed install store", () => {
     expect(payloads.slice(1).every((payload) => fs.existsSync(payload))).toBe(true);
   });
 
-  it("keeps payloads recorded under the migrated ~/.paperclip-pro link", () => {
-    const legacyHome = path.join(root, "home", ".paperclip-pro");
+  it("keeps payloads recorded under the migrated legacy home link", () => {
+    const legacyHome = path.join(root, "home", LEGACY_HOME_DIRNAME);
     const legacyPath = (payload: string) => path.join(legacyHome, path.relative(paths.wardmoteHome, payload));
     const payloads = ["1", "2", "3", "4"].map((version) => payloadPathFor(paths, "npm", version));
     for (const payload of payloads) fs.mkdirSync(payload, { recursive: true });
@@ -125,8 +126,8 @@ describe("managed install store", () => {
     expect(payloads.slice(1).every((payload) => fs.existsSync(payload))).toBe(true);
   });
 
-  it("leaves recorded payload paths alone while ~/.paperclip-pro is not the migration link", () => {
-    const legacyHome = path.join(root, "home", ".paperclip-pro");
+  it("leaves recorded payload paths alone while the legacy home is not the migration link", () => {
+    const legacyHome = path.join(root, "home", LEGACY_HOME_DIRNAME);
     fs.mkdirSync(legacyHome, { recursive: true });
     const legacyPayload = path.join(legacyHome, "cli", "installs", "npm", "1");
     writeInstallManifestAtomic({ schemaVersion: INSTALL_MANIFEST_VERSION, ...record(legacyPayload, "1"), previous: [] }, paths);

@@ -2,6 +2,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { LEGACY_HOME_DIRNAME } from "@tickernelz/wardmote-shared/home-paths";
 import { agentInstructionsBundleMode, agentInstructionsService } from "../services/agent-instructions.js";
 
 type TestAgent = {
@@ -62,10 +63,10 @@ describe("agent instructions service", () => {
   it.each([
     ["the migration link", "managed"],
     ["an unmigrated directory", "external"],
-  ] as const)("classifies a managed bundle recorded under ~/.paperclip-pro as %s", async (legacyKind, expected) => {
+  ] as const)("classifies a managed bundle recorded under the legacy home as %s", async (legacyKind, expected) => {
     const userHome = await makeTempDir("agent-instructions-user-home-"); cleanupDirs.add(userHome);
     const wardmoteHome = path.join(userHome, ".wardmote");
-    const legacyHome = path.join(userHome, ".paperclip-pro");
+    const legacyHome = path.join(userHome, LEGACY_HOME_DIRNAME);
     await fs.mkdir(wardmoteHome);
     if (legacyKind === "the migration link") await fs.symlink(wardmoteHome, legacyHome);
     else await fs.mkdir(legacyHome);

@@ -26,7 +26,7 @@ function isLinkTo(link: string, target: string): boolean {
     && fs.realpathSync(link) === fs.realpathSync(target);
 }
 
-/** Maps a path recorded under `~/.paperclip-pro` to `~/.wardmote` once `wardmote migrate-home` has linked the two. */
+/** Maps a path recorded under the legacy home to the Wardmote home once `wardmote migrate-home` has linked the two. */
 export function rehomeLegacyPath(
   value: string,
   wardmoteHome: string = path.resolve(os.homedir(), WARDMOTE_HOME_DIRNAME),
