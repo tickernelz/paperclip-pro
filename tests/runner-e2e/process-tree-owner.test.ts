@@ -150,3 +150,21 @@ it.skipIf(process.platform === 'win32')('bounds fallback even when the known dir
     expect(signals).toEqual(['SIGTERM', 'SIGKILL']);
   } finally { owner.stopObserving(); }
 });
+
+it.skipIf(process.platform === "win32")("retries an inspector that an outside group signal interrupted", async () => {
+  let attempts = 0;
+  const table = await readProcessTable(() => {
+    attempts += 1;
+    if (attempts === 1) {
+      const interrupted = spawn(process.execPath, ["-e", "setInterval(() => {}, 1000)"], { stdio: ["ignore", "pipe", "ignore"] });
+      interrupted.once("spawn", () => interrupted.kill("SIGTERM"));
+      return interrupted;
+    }
+    return spawn("ps", ["-e", "-o", "pid=,ppid=,pgid=,lstart=,stat=,comm="], {
+      env: { PATH: "/usr/bin:/bin", LANG: "C", LC_ALL: "C" },
+      stdio: ["ignore", "pipe", "ignore"],
+    });
+  });
+  expect(attempts).toBe(2);
+  expect(table?.some(row => row.pid === process.pid)).toBe(true);
+});

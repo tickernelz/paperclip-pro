@@ -1,6 +1,6 @@
 import type { Sandbox as CloudflareSandbox } from "@cloudflare/sandbox";
 import { getSandbox } from "@cloudflare/sandbox";
-import { buildLeaseSandboxId, buildSentinelPath, isTimeoutError } from "./helpers.js";
+import { buildLeaseSandboxId, buildRetiredSentinelPath, buildSentinelPath, isTimeoutError } from "./helpers.js";
 
 export interface BridgeEnv {
   Sandbox: DurableObjectNamespace<CloudflareSandbox>;
@@ -16,7 +16,7 @@ export interface BridgeLeaseConfig {
 export const DEFAULT_REMOTE_CWD = "/workspace/paperclip";
 export const DEFAULT_SESSION_ID = "paperclip";
 export const DEFAULT_TIMEOUT_MS = 300_000;
-export const LEASE_SENTINEL_FILE = ".paperclip-lease.json";
+export const LEASE_SENTINEL_FILE = ".wardmote-lease.json";
 
 export function toJsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -54,4 +54,4 @@ export async function applySandboxKeepAlive(
   await sandbox.setKeepAlive(keepAlive);
 }
 
-export { buildLeaseSandboxId, buildSentinelPath, isTimeoutError };
+export { buildLeaseSandboxId, buildRetiredSentinelPath, buildSentinelPath, isTimeoutError };
