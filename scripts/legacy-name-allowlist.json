@@ -48,6 +48,10 @@
     "id-terpin": {
       "reason": "Id skema protokol yang terikat artefak terpin atau teratestasi: deklarasi profil ACPX ber-hash dan kontrak runtime ACPX, tanda terima semantic tool, event terminal PRP, atestasi dan manifest closure Cursor/Copilot, serta bukti rekaman Pi/Cursor. Mengganti id mengubah digest identitas profil, atestasi, atau closure, jadi ikut irisan re-pin bersama closure Pi. Hanya boleh turun.",
       "approvedBy": "Keputusan otonom Raka 2026-11-10 di ZHA-5279 (Mode full otonom); sementara sampai irisan re-pin"
+    },
+    "sumber-daya-eksternal": {
+      "reason": "Nama lama di sumber daya milik operator di luar database Wardmote: nama dan tag secret AWS Secrets Manager yang dibuat sebelum rename. Tidak bisa dimigrasi otomatis tanpa menyalin nilai secret ke secret baru, jadi hanya dikenali: rotasi dan hapus secret lama tetap jalan, dan guard isolasi (tolak impor sebagai external ref, sembunyikan secret company lain di discovery) tetap menolak. Secret baru selalu memakai nama baru. Modul: server/src/secrets/retired-aws-secret-names.ts.",
+      "approvedBy": "Raka, keputusan otonom ZHA-5279 (mode full otonom, 2026-11-11); ditinjau Hendra"
     }
   },
   "entries": [
@@ -176,8 +180,7 @@
     ["doc/README-draft.md",4,"belum-diganti"],
     ["doc/RELEASE-NOTES-mcp-access-governance.md",10,"arsip"],
     ["doc/RELEASE-NOTES-wardmote-features.md",7,"arsip"],
-    ["doc/RELEASE-NOTES-wardmote-rename.md",30,"arsip"],
-    ["doc/SECRETS-AWS-PROVIDER.md",79,"belum-diganti"],
+    ["doc/RELEASE-NOTES-wardmote-rename.md",32,"arsip"],
     ["doc/SPEC-implementation.md",28,"belum-diganti"],
     ["doc/SPEC.md",59,"belum-diganti"],
     ["doc/TASK-WATCHDOG.md",3,"belum-diganti"],
@@ -1572,7 +1575,7 @@
     ["server/src/__tests__/attention-service.test.ts",1,"belum-diganti"],
     ["server/src/__tests__/authorization-service.test.ts",1,"belum-diganti"],
     ["server/src/__tests__/autonomy-windows.test.ts",1,"belum-diganti"],
-    ["server/src/__tests__/aws-secrets-manager-provider.test.ts",69,"belum-diganti"],
+    ["server/src/__tests__/aws-secrets-manager-retired-names.test.ts",13,"uji-regresi"],
     ["server/src/__tests__/better-auth-credential-signup.integration.test.ts",1,"belum-diganti"],
     ["server/src/__tests__/better-auth.test.ts",8,"belum-diganti"],
     ["server/src/__tests__/board-claim.test.ts",1,"belum-diganti"],
@@ -1855,7 +1858,7 @@
     ["server/src/__tests__/sandbox-provider-runtime.test.ts",6,"belum-diganti"],
     ["server/src/__tests__/secret-proposals-routes.test.ts",11,"belum-diganti"],
     ["server/src/__tests__/secrets-routes.test.ts",6,"belum-diganti"],
-    ["server/src/__tests__/secrets-service.test.ts",50,"belum-diganti"],
+    ["server/src/__tests__/secrets-service.test.ts",1,"belum-diganti"],
     ["server/src/__tests__/sentry.test.ts",1,"belum-diganti"],
     ["server/src/__tests__/server-startup-feedback-export.test.ts",3,"belum-diganti"],
     ["server/src/__tests__/setup-supertest.ts",5,"belum-diganti"],
@@ -1954,9 +1957,10 @@
     ["server/src/routes/terminal.test.ts",1,"belum-diganti"],
     ["server/src/routes/tool-access.ts",6,"belum-diganti"],
     ["server/src/routes/tool-gateway.ts",2,"belum-diganti"],
-    ["server/src/secrets/aws-secrets-manager-provider.ts",18,"belum-diganti"],
+    ["server/src/secrets/aws-secrets-manager-provider.ts",1,"belum-diganti"],
     ["server/src/secrets/external-stub-providers.ts",1,"belum-diganti"],
     ["server/src/secrets/local-encrypted-provider.ts",1,"belum-diganti"],
+    ["server/src/secrets/retired-aws-secret-names.ts",8,"sumber-daya-eksternal"],
     ["server/src/sentry.ts",6,"belum-diganti"],
     ["server/src/services/__tests__/run-failure-diagnostics.test.ts",1,"belum-diganti"],
     ["server/src/services/__tests__/run-failure-report.test.ts",2,"belum-diganti"],
@@ -2641,7 +2645,7 @@
     ["ui/storybook/fixtures/agent-avatar-url.ts",2,"belum-diganti"],
     ["ui/storybook/fixtures/connectionInstructions.ts",1,"belum-diganti"],
     ["ui/storybook/fixtures/evidence/rich-acp-browser-proof.darwin-arm64.json",1,"belum-diganti"],
-    ["ui/storybook/fixtures/wardmoteData.ts",31,"belum-diganti"],
+    ["ui/storybook/fixtures/wardmoteData.ts",28,"belum-diganti"],
     ["ui/storybook/fixtures/workTimeline.human.sample.json",17,"belum-diganti"],
     ["ui/storybook/fixtures/workTimeline.sample.json",17,"belum-diganti"],
     ["ui/storybook/prototypes/ConnectorCatalogNavigation.tsx",7,"belum-diganti"],

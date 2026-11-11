@@ -14,10 +14,24 @@ import type {
   StoredSecretVersionMaterial,
 } from "./types.js";
 import { SecretProviderClientError } from "./types.js";
+import {
+  RETIRED_AWS_COMPANY_ID_TAG,
+  RETIRED_AWS_DEFAULT_OWNER_TAG,
+  RETIRED_AWS_DEFAULT_PREFIX,
+  RETIRED_AWS_DEPLOYMENT_ID_TAG,
+  RETIRED_AWS_ENVIRONMENT_TAG,
+  RETIRED_AWS_MANAGED_BY_TAG,
+  RETIRED_AWS_MANAGED_BY_VALUE,
+  RETIRED_AWS_PROVIDER_OWNER_TAG,
+} from "./retired-aws-secret-names.js";
 
 const AWS_SECRETS_MANAGER_SCHEME = "aws_secrets_manager_v1";
-const DEFAULT_PREFIX = "paperclip";
-const DEFAULT_OWNER_TAG = "paperclip";
+const DEFAULT_PREFIX = "wardmote";
+const DEFAULT_OWNER_TAG = "wardmote";
+const MANAGED_BY_TAG = "wardmote:managed-by";
+const MANAGED_BY_VALUE = "wardmote";
+const DEPLOYMENT_ID_TAG = "wardmote:deployment-id";
+const COMPANY_ID_TAG = "wardmote:company-id";
 const DEFAULT_VERSION_STAGE = "AWSCURRENT";
 const WARDMOTE_PENDING_VERSION_STAGE = "WARDMOTE_PENDING";
 const DEFAULT_DELETE_RECOVERY_WINDOW_DAYS = 30;
@@ -477,9 +491,11 @@ function isManagedSecretRefForContext(
   externalRef: string | null | undefined,
 ) {
   if (!externalRef?.trim()) return false;
-  const expectedName = buildManagedSecretName(config, context);
   const actualName = extractAwsSecretName(externalRef);
-  return new RegExp(`^${escapeRegExp(expectedName)}(?:-[A-Za-z0-9]{6})?$`).test(actualName);
+  return managedPrefixes(config).some((prefix) => {
+    const expectedName = buildManagedSecretName({ ...config, prefix }, context);
+    return new RegExp(`^${escapeRegExp(expectedName)}(?:-[A-Za-z0-9]{6})?$`).test(actualName);
+  });
 }
 
 function isManagedSecretNamespaceRef(
@@ -487,15 +503,29 @@ function isManagedSecretNamespaceRef(
   externalRef: string | null | undefined,
 ) {
   if (!externalRef?.trim()) return false;
-  const namespacePrefix = [
-    sanitizePathSegment(config.prefix),
-    sanitizePathSegment(config.deploymentId),
-  ]
-    .filter(Boolean)
-    .join("/");
-  if (!namespacePrefix) return false;
   const actualName = extractAwsSecretName(externalRef);
-  return actualName === namespacePrefix || actualName.startsWith(`${namespacePrefix}/`);
+  return managedPrefixes(config).some((prefix) => {
+    const namespacePrefix = [sanitizePathSegment(prefix), sanitizePathSegment(config.deploymentId)]
+      .filter(Boolean)
+      .join("/");
+    if (!namespacePrefix) return false;
+    return actualName === namespacePrefix || actualName.startsWith(`${namespacePrefix}/`);
+  });
+}
+
+function currentOwnerTag(managed: boolean, ownerTag: string | null) {
+  return managed && ownerTag === RETIRED_AWS_DEFAULT_OWNER_TAG ? DEFAULT_OWNER_TAG : ownerTag;
+}
+
+function managedPrefixes(config: AwsSecretsManagerConfig) {
+  return config.prefix === DEFAULT_PREFIX ? [config.prefix, RETIRED_AWS_DEFAULT_PREFIX] : [config.prefix];
+}
+
+function isManagedByTag(tags: Map<string, string>) {
+  return (
+    tagValue(tags, [MANAGED_BY_TAG])?.toLowerCase() === MANAGED_BY_VALUE ||
+    tagValue(tags, [RETIRED_AWS_MANAGED_BY_TAG])?.toLowerCase() === RETIRED_AWS_MANAGED_BY_VALUE
+  );
 }
 
 function assertNotManagedNamespaceExternalRef(
@@ -536,12 +566,12 @@ function buildManagedSecretTags(
 ): AwsSecretsManagerTag[] {
   if (!context) return [];
   return [
-    { Key: "paperclip:managed-by", Value: "paperclip" },
-    { Key: "paperclip:provider-owner", Value: config.providerOwnerTag },
-    { Key: "paperclip:deployment-id", Value: config.deploymentId },
-    { Key: "paperclip:company-id", Value: context.companyId },
-    { Key: "paperclip:secret-key", Value: context.secretKey },
-    { Key: "paperclip:environment", Value: config.environmentTag },
+    { Key: MANAGED_BY_TAG, Value: MANAGED_BY_VALUE },
+    { Key: "wardmote:provider-owner", Value: config.providerOwnerTag },
+    { Key: DEPLOYMENT_ID_TAG, Value: config.deploymentId },
+    { Key: COMPANY_ID_TAG, Value: context.companyId },
+    { Key: "wardmote:secret-key", Value: context.secretKey },
+    { Key: "wardmote:environment", Value: config.environmentTag },
   ];
 }
 
@@ -631,12 +661,12 @@ function pathSegments(name: string) {
 function inferPathSignals(entry: AwsSecretsManagerListSecretEntry, tags: Map<string, string>) {
   const name = entry.Name?.trim() || entry.ARN?.trim() || "";
   const segments = pathSegments(name);
-  const wardmoteDeploymentId = tagValue(tags, ["paperclip:deployment-id"]);
-  const wardmoteManaged = tagValue(tags, ["paperclip:managed-by"])?.toLowerCase() === "paperclip";
+  const wardmoteDeploymentId = tagValue(tags, [DEPLOYMENT_ID_TAG, RETIRED_AWS_DEPLOYMENT_ID_TAG]);
+  const wardmoteManaged = isManagedByTag(tags);
 
   if (wardmoteDeploymentId || wardmoteManaged) {
     return {
-      prefix: segments[0] ?? DEFAULT_PREFIX,
+      prefix: !segments[0] || segments[0] === RETIRED_AWS_DEFAULT_PREFIX ? DEFAULT_PREFIX : segments[0],
       namespace: wardmoteDeploymentId ?? segments[1] ?? null,
     };
   }
@@ -697,8 +727,8 @@ function discoverAwsProviderConfigCandidates(input: {
     const name = entry.Name?.trim() || entry.ARN?.trim();
     if (!name) continue;
     const tags = normalizeAwsTags(entry.Tags);
-    const wardmoteManaged = tagValue(tags, ["paperclip:managed-by"])?.toLowerCase() === "paperclip";
-    const wardmoteCompanyId = tagValue(tags, ["paperclip:company-id"]);
+    const wardmoteManaged = isManagedByTag(tags);
+    const wardmoteCompanyId = tagValue(tags, [COMPANY_ID_TAG, RETIRED_AWS_COMPANY_ID_TAG]);
     if (wardmoteManaged && wardmoteCompanyId !== input.companyId) {
       skippedForeignWardmoteSampleCount += 1;
       continue;
@@ -710,8 +740,11 @@ function discoverAwsProviderConfigCandidates(input: {
       tags,
       prefix: path.prefix,
       namespace: path.namespace,
-      environmentTag: tagValue(tags, ["paperclip:environment", "environment", "env", "stage"]),
-      ownerTag: tagValue(tags, ["paperclip:provider-owner", "owner", "team", "service", "application"]),
+      environmentTag: tagValue(tags, ["wardmote:environment", RETIRED_AWS_ENVIRONMENT_TAG, "environment", "env", "stage"]),
+      ownerTag: currentOwnerTag(
+        wardmoteManaged,
+        tagValue(tags, ["wardmote:provider-owner", RETIRED_AWS_PROVIDER_OWNER_TAG, "owner", "team", "service", "application"]),
+      ),
       kmsKeyId: asOptionalNonEmptyString(entry.KmsKeyId),
       wardmoteManaged,
       wardmoteCompanyId,

@@ -1477,7 +1477,7 @@ export const storybookSecretProviderDiscoveryPreview: SecretProviderConfigDiscov
         {
           name: "paperclip/prod-use1/company-storybook/openai_api_key",
           hasKmsKey: true,
-          tagKeys: ["paperclip:managed-by", "paperclip:environment", "paperclip:provider-owner"],
+          tagKeys: ["wardmote:managed-by", "wardmote:environment", "wardmote:provider-owner"],
         },
       ],
       signals: {
