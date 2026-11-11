@@ -330,6 +330,11 @@ jobs:
     name: Mobile shell (WebKit) and contrast gate (rendered colours)
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    permissions:
+      contents: read
+      packages: read
+    env:
+      BROWSER_GATES_IMAGE: ghcr.io/tickernelz/wardmote/browser-gates@sha256:6f8e3d84c3cf27421f7dc8e2e5ddf89d59594fec1debc1d1c8fd23ecd2202666
     steps:
       - uses: actions/checkout@v7
         with:
@@ -340,8 +345,34 @@ jobs:
         id: playwright-version
         run: echo "version=$(pnpm exec playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
 
+      - name: Pull the browser gates image
+        id: image
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PLAYWRIGHT_VERSION: ${{ steps.playwright-version.outputs.version }}
+        run: |
+          ready=false
+          printf '%s' "$GH_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin >/dev/null || true
+          for attempt in 1 2 3; do
+            if docker pull --quiet "$BROWSER_GATES_IMAGE" >/dev/null; then
+              image_version="$(docker image inspect --format '{{range .Config.Env}}{{println .}}{{end}}' "$BROWSER_GATES_IMAGE" | sed -n 's/^PLAYWRIGHT_VERSION=//p')"
+              if [ "$image_version" = "$PLAYWRIGHT_VERSION" ]; then
+                ready=true
+              else
+                echo "::warning title=Browser gates image::image has Playwright $image_version, the lockfile has $PLAYWRIGHT_VERSION; rebuild .github/browser-gates.Dockerfile and pin the new digest. Installing on the runner instead."
+              fi
+              break
+            fi
+            [ "$attempt" = 3 ] || sleep $((attempt * 10))
+          done
+          if [ "$ready" != true ] && [ -z "${image_version:-}" ]; then
+            echo "::warning title=Browser gates image::could not pull $BROWSER_GATES_IMAGE; installing on the runner instead."
+          fi
+          echo "ready=$ready" >> "$GITHUB_OUTPUT"
+
       - name: Restore Playwright browsers and system packages
         id: playwright-cache
+        if: steps.image.outputs.ready != 'true'
         uses: actions/cache/restore@v5
         with:
           path: |
@@ -350,6 +381,7 @@ jobs:
           key: playwright-${{ runner.os }}-${{ env.ImageOS }}-${{ steps.playwright-version.outputs.version }}-webkit-chromium
 
       - name: Install WebKit and Chromium
+        if: steps.image.outputs.ready != 'true'
         timeout-minutes: 15
         env:
           PLAYWRIGHT_CACHE_HIT: ${{ steps.playwright-cache.outputs.cache-hit }}
@@ -364,7 +396,7 @@ jobs:
           sudo chown -R "$(id -u):$(id -g)" "$HOME/.cache/playwright-apt"
 
       - name: Save Playwright browsers and system packages
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        if: steps.image.outputs.ready != 'true' && steps.playwright-cache.outputs.cache-hit != 'true'
         uses: actions/cache/save@v5
         with:
           path: |
@@ -374,11 +406,15 @@ jobs:
 
       - name: Run mobile shell tests
         id: mobile-shell
-        run: pnpm exec playwright test --config tests/mobile-shell/playwright.config.ts
+        env:
+          BROWSER_GATES_IMAGE_READY: ${{ steps.image.outputs.ready }}
+        run: bash scripts/ci-browser-gate.sh tests/mobile-shell/playwright.config.ts
 
       - name: Run contrast gate
         if: ${{ !cancelled() }}
-        run: pnpm exec playwright test --config tests/contrast-gate/playwright.config.ts
+        env:
+          BROWSER_GATES_IMAGE_READY: ${{ steps.image.outputs.ready }}
+        run: bash scripts/ci-browser-gate.sh tests/contrast-gate/playwright.config.ts
 
       - name: Upload mobile shell Playwright report
         uses: actions/upload-artifact@v7
