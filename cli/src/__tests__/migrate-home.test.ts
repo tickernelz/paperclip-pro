@@ -2,7 +2,8 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { hasLegacyInstall, migrateHomeCommand, type MigrateHomeDependencies } from "../commands/migrate-home.js";
+import { hasLegacyInstall, migrateHomeCommand, rewriteLegacyStoreMarker, type MigrateHomeDependencies } from "../commands/migrate-home.js";
+import { initializeInstallStore, resolveInstallStorePaths } from "../install-store.js";
 
 let userHome: string;
 let legacy: string;
@@ -87,6 +88,61 @@ describe("migrate-home", () => {
     const log = vi.fn();
     await migrateHomeCommand({}, deps({ log }));
     expect(log).toHaveBeenCalledWith("Nothing to migrate: this install already uses the Wardmote names.");
+  });
+
+  it("rewrites the retired store marker and replaces the shim when the home already uses the Wardmote name", async () => {
+    fs.rmSync(legacy, { recursive: true });
+    const binDir = path.join(userHome, ".local", "bin");
+    fs.mkdirSync(binDir, { recursive: true });
+    fs.mkdirSync(path.join(target, "cli"), { recursive: true });
+    fs.writeFileSync(path.join(target, "cli", ".managed-install"), legacyStoreMarker);
+    const legacyShimPath = path.join(binDir, path.basename(unitPath, ".service"));
+    fs.writeFileSync(legacyShimPath, legacyShim(`${target}/cli/current/node_modules/.bin/x`), { mode: 0o755 });
+
+    await migrateHomeCommand({}, deps());
+
+    expect(fs.readFileSync(path.join(target, "cli", ".managed-install"), "utf8")).toBe("wardmote managed install store v1\n");
+    expect(fs.existsSync(legacyShimPath)).toBe(false);
+    expect(fs.readFileSync(path.join(binDir, "wardmote"), "utf8"))
+      .toContain(`'${path.join(target, "cli", "current", "node_modules", ".bin", "wardmote")}'`);
+    expect(fs.existsSync(path.join(path.dirname(unitPath), "wardmote.service"))).toBe(true);
+    initializeInstallStore(resolveInstallStorePaths({ wardmoteHome: target, homeDir: userHome }));
+  });
+
+  it("refuses an unrecognized store marker before replacing the unit or the shim", async () => {
+    const binDir = path.join(userHome, ".local", "bin");
+    fs.mkdirSync(binDir, { recursive: true });
+    fs.mkdirSync(path.join(legacy, "cli"), { recursive: true });
+    fs.writeFileSync(path.join(legacy, "cli", ".managed-install"), "someone else's store\n");
+    const legacyShimPath = path.join(binDir, path.basename(unitPath, ".service"));
+    fs.writeFileSync(legacyShimPath, legacyShim(`${legacy}/cli/current/node_modules/.bin/x`), { mode: 0o755 });
+
+    await expect(migrateHomeCommand({}, deps())).rejects.toThrow("unrecognized install store");
+
+    expect(fs.lstatSync(legacy).isDirectory()).toBe(true);
+    expect(fs.existsSync(unitPath)).toBe(true);
+    expect(fs.existsSync(path.join(path.dirname(unitPath), "wardmote.service"))).toBe(false);
+    expect(fs.existsSync(legacyShimPath)).toBe(true);
+  });
+
+  it("rewrites only an owned retired store marker", () => {
+    const markerPath = path.join(userHome, "store", ".managed-install");
+    fs.mkdirSync(path.dirname(markerPath));
+    expect(rewriteLegacyStoreMarker(markerPath)).toBe(false);
+    fs.writeFileSync(markerPath, "someone else's store\n");
+    expect(rewriteLegacyStoreMarker(markerPath)).toBe(false);
+    expect(fs.readFileSync(markerPath, "utf8")).toBe("someone else's store\n");
+    fs.rmSync(markerPath);
+    const real = path.join(userHome, "real-marker");
+    fs.writeFileSync(real, legacyStoreMarker);
+    fs.symlinkSync(real, markerPath);
+    expect(rewriteLegacyStoreMarker(markerPath)).toBe(false);
+    expect(fs.readFileSync(real, "utf8")).toBe(legacyStoreMarker);
+    fs.rmSync(markerPath);
+    fs.writeFileSync(markerPath, legacyStoreMarker);
+    expect(rewriteLegacyStoreMarker(markerPath)).toBe(true);
+    expect(fs.readFileSync(markerPath, "utf8")).toBe("wardmote managed install store v1\n");
+    expect(fs.statSync(markerPath).mode & 0o777).toBe(0o600);
   });
 
   it("reports a retired-marker shim it cannot recognise once and does not loop on it", async () => {
