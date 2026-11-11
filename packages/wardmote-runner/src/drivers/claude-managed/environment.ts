@@ -1,8 +1,3 @@
-/**
- * Builds the complete environment visible to runnerd for Claude Managed
- * execution. Remote providers receive governed inline tool definitions in the
- * durable descriptor, never a Paperclip MCP URL or capability token.
- */
 export function createSanitizedClaudeManagedEnvironment(
   environment: NodeJS.ProcessEnv | undefined,
 ): NodeJS.ProcessEnv {
@@ -35,11 +30,6 @@ export function createSanitizedClaudeManagedEnvironment(
   return result;
 }
 
-/**
- * AgentCore uses workload identity from a private runner home. Long-lived AWS
- * access keys, shared profiles, executable credential configuration, and
- * Paperclip capability credentials are excluded.
- */
 export function createSanitizedAwsAgentCoreEnvironment(
   environment: NodeJS.ProcessEnv | undefined,
   isolatedHome: string,

@@ -2,7 +2,6 @@ import { z } from "zod";
 
 export const BROWSER_USE_API_URL = "https://api.browser-use.com/api/v4";
 export const BROWSER_USE_IDLE_MS = 10 * 60 * 1000;
-/** Remote viewport dimensions, not Paperclip layout tokens. */
 export const BROWSER_USE_VIEWPORT_PRESETS = [
   { id: "phone", label: "Phone", width: 390, height: 844 },
   { id: "tablet", label: "Tablet", width: 768, height: 1024 },

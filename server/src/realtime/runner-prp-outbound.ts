@@ -242,10 +242,6 @@ export interface RunnerPrpOutboundHandle {
   close(): Promise<void>;
 }
 
-/**
- * Keep a Paperclip-originated provider-ingress WebSocket attached to one PRP
- * authority. Authentication is the readiness signal; HTTP success alone is not.
- */
 export function connectRunnerPrpIngress(input: {
   authority: DurablePrpControlPlane;
   endpoint: RunnerIngressEndpoint;

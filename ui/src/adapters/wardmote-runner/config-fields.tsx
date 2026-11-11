@@ -64,10 +64,6 @@ export function CodexLocalConfigFields({
   managedSandboxOnly,
 }: AdapterConfigFieldsProps) {
   const runnerManaged = adapterType === "wardmote_runner";
-  // The execution engine picks which binary runs on the execution host, and the
-  // ACP sub-fields below name host paths. The platform-managed environment owns
-  // both, so the managed-sandbox-only policy hides them the same way
-  // `runnerManaged` already does for the Paperclip Runner.
   const hideEngineChoice = runnerManaged || managedSandboxOnly === true;
   const configuredRunnerProvider = runnerManaged
     ? isCreate

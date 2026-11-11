@@ -690,12 +690,6 @@ describe("sandbox callback bridge", () => {
   });
 
   it("keeps the queue-directory setup on the startup step but resets the poll loop store", async () => {
-    // The worker starts inside the measured `bridge.paperclip` step. Its awaited
-    // queue-directory setup is startup work, so a `makeDir` `sandbox.exec` span
-    // must keep the active step and its `criticalPath` flag. The long-lived poll
-    // loop runs run-time execs for the whole run, so a loop `sandbox.exec` span
-    // must open unparented with no stale flag. This test reads the active step in
-    // both places and proves the boundary sits at the loop, not the whole worker.
     let setupStep: ReturnType<typeof getActiveStepContext> | "unset" = "unset";
     let loopStep: ReturnType<typeof getActiveStepContext> | "unset" = "unset";
     let resolveFirstPoll: () => void = () => {};
@@ -757,14 +751,6 @@ describe("sandbox callback bridge", () => {
   });
 
   it("test_paperclip_loop_exec_parents_to_run_context", async () => {
-    // The worker starts inside the measured `bridge.paperclip` step. Its awaited
-    // queue-directory setup is startup work and keeps the active step. The poll
-    // loop shell stays outside that store. But a per-request unit of work is
-    // run-time work, so the worker runs each request under the current-run
-    // parent context. A request `sandbox.exec` span then parents to the live run
-    // span, not to the ended startup step. This test drives the worker with a
-    // `getRuntimeParentContext` that returns a known token, queues one request,
-    // and proves the request work reads that token from the active step store.
     const runParentToken = { marker: "run-parent-token" };
     let setupStep: ReturnType<typeof getActiveStepContext> | "unset" = "unset";
     let requestStep: ReturnType<typeof getActiveStepContext> | "unset" = "unset";
@@ -1336,12 +1322,6 @@ describe("sandbox callback bridge", () => {
     ).resolves.toEqual([]);
   });
 
-  // The process-session remote script is a static, Paperclip-authored `.mjs`
-  // written into the sandbox on every bridge start. `syncRemoteTextFileWithHashSkip`
-  // (which now backs that write, mirroring the bridge-entrypoint sha256 gate)
-  // content-hash-skips it so a warm start where the remote script already matches
-  // costs ZERO write execs instead of the prior ~3 (prepare/append/finalize base64
-  // upload).
   it("test_process_session_script_skipped_when_remote_hash_matches: warm start with a matching remote hash writes 0 execs", async () => {
     const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-hashskip-warm-"));
     cleanupDirs.push(rootDir);

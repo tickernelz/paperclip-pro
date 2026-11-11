@@ -37,9 +37,6 @@ export function buildJobManifest(input: BuildJobManifestInput): Record<string, u
         metadata: { labels: podLabels },
         spec: {
           serviceAccountName: input.serviceAccountName,
-          // Agent containers call back to paperclip-server via HTTPS egress;
-          // they never call the Kubernetes API, so mounting an SA token is
-          // unnecessary attack surface.
           automountServiceAccountToken: false,
           restartPolicy: "Never",
           ...(input.runtimeClassName ? { runtimeClassName: input.runtimeClassName } : {}),

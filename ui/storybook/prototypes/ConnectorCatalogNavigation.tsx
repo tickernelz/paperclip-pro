@@ -115,7 +115,6 @@ export function ConnectorCatalogNavigation({
   }
 
   function changeQuery(value: string) {
-    // A search from Paperclip includes aggregator apps; explicit filters stay scoped.
     if (source === "paperclip" && !query.trim() && value.trim()) {
       setSource("all");
       setExpandedSearch(true);

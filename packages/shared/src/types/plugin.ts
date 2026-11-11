@@ -37,18 +37,7 @@ import type { Routine, RoutineTrigger, RoutineVariable } from "./routine.js";
 // JSON Schema placeholder – plugins declare config schemas as JSON Schema
 // ---------------------------------------------------------------------------
 
-/**
- * A JSON Schema object used for plugin config schemas and tool parameter schemas.
- * Plugins provide these as plain JSON Schema compatible objects.
- *
- * The Paperclip extension keywords below are recognised by the Paperclip UI
- * but are otherwise ignored by standard JSON Schema validators.
- */
 export type JsonSchema = {
-  /**
-   * When true, the Paperclip config UI hides this property behind an
-   * "Advanced options" disclosure. Defaults to false (always visible).
-   */
   "x-wardmote-advanced"?: boolean;
   "x-wardmote-group"?: string;
   [key: string]: unknown;
@@ -228,10 +217,6 @@ export interface PluginEnvironmentDriverDeclaration {
   supportsTemplateCapture?: boolean;
   /** Kind of template reference returned by the provider's capture hook. */
   templateRefKind?: "snapshot" | "image" | "provider_template" | "unknown" | (string & {});
-  /**
-   * How Paperclip should apply a captured template ref back into this provider's
-   * runtime config. Omit to use the standard key for `templateRefKind`.
-   */
   templateConfigBinding?: PluginEnvironmentTemplateConfigBinding;
   /**
    * Config paths (dot notation) that scope where captured templates live for
@@ -262,10 +247,6 @@ export interface PluginEnvironmentDriverDeclaration {
   configSchema: JsonSchema;
 }
 
-/**
- * Declares a normal Paperclip agent that a plugin can provision and later
- * resolve by stable key within each company.
- */
 export interface PluginManagedAgentDeclaration {
   /** Stable identifier for this managed agent, unique within the plugin. */
   agentKey: string;
@@ -289,7 +270,6 @@ export interface PluginManagedAgentDeclaration {
   adapterPreference?: Array<AgentAdapterType | string>;
   /** Suggested adapter configuration. */
   adapterConfig?: Record<string, unknown>;
-  /** Suggested Paperclip runtime configuration. */
   runtimeConfig?: Record<string, unknown>;
   /** Suggested permissions object. Normalized by the host on create/reset. */
   permissions?: Record<string, unknown>;
@@ -327,10 +307,6 @@ export interface PluginLocalFolderDeclaration {
   requiredFiles?: string[];
 }
 
-/**
- * Declares a normal Paperclip project that a plugin can provision and later
- * resolve by stable key within each company.
- */
 export interface PluginManagedProjectDeclaration {
   /** Stable identifier for this managed project, unique within the plugin. */
   projectKey: string;
@@ -565,12 +541,6 @@ export interface PluginLauncherDeclaration {
   render?: PluginLauncherRenderDeclaration;
 }
 
-/**
- * Lower-bound semver requirement for the Paperclip host.
- *
- * The host should reject installation when its running version is lower than
- * the declared minimum.
- */
 export type PluginMinimumHostVersion = string;
 
 /**

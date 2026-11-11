@@ -95,11 +95,6 @@ export function vercelConnectIntegrationStatus(env: NodeJS.ProcessEnv = process.
   };
 }
 
-/**
- * Vercel permits plaintext callbacks only on the literal `localhost` host.
- * Paperclip's local board commonly runs on 127.0.0.1, which is the same
- * loopback boundary but Vercel rejects it before authorization starts.
- */
 export function vercelConnectCallbackUrl(redirectUri: string, state: string): string {
   const callbackUrl = new URL(redirectUri);
   if (

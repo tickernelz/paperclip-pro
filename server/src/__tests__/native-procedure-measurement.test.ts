@@ -12,8 +12,6 @@ import { resolveQualifiedAcpxProfile } from "../../../packages/wardmote-runner/s
 import { FakeCodexTransport, WORKSPACE } from "../../../packages/wardmote-runner/src/drivers/codex/codex-app-server-driver.test-support.js";
 import { startOpenCodeMcpBridge } from "../../../packages/wardmote-runner/src/drivers/opencode/mcp-bridge.js";
 
-// Production catalog selection, scripted provider transport: this measures what
-// Paperclip delivers, not the vendor's private prompt, tokenizer or billing.
 const root = new URL("../../../", import.meta.url);
 const sha = (value: string | Buffer) => createHash("sha256").update(value).digest("hex");
 const identity = { companyId: "company", agentId: "agent", issueId: "issue", runId: "run", sessionId: "session" };

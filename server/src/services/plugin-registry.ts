@@ -48,18 +48,6 @@ function isPluginKeyConflict(error: unknown): boolean {
 // Service
 // ---------------------------------------------------------------------------
 
-/**
- * PluginRegistry – CRUD operations for the `plugins` and `plugin_config`
- * tables.  Follows the same factory-function pattern used by the rest of
- * the Paperclip service layer.
- *
- * This is the lowest-level persistence layer for plugins. Higher-level
- * concerns such as lifecycle state-machine enforcement and capability
- * gating are handled by {@link pluginLifecycleManager} and
- * {@link pluginCapabilityValidator} respectively.
- *
- * @see PLUGIN_SPEC.md §21.3 — Required Tables
- */
 export function pluginRegistryService(db: Db) {
   // -----------------------------------------------------------------------
   // Internal helpers
@@ -540,14 +528,6 @@ export function pluginRegistryService(db: Db) {
         .then((rows) => rows[0] ?? null);
     },
 
-    /**
-     * Create or update a persistent mapping between a Paperclip object and an
-     * external entity.
-     *
-     * @param pluginId - The UUID of the plugin.
-     * @param input - The entity data to persist.
-     * @returns The newly created or updated `PluginEntityRecord`.
-     */
     upsertEntity: async (
       pluginId: string,
       input: Omit<typeof pluginEntities.$inferInsert, "id" | "pluginId" | "createdAt" | "updatedAt">,

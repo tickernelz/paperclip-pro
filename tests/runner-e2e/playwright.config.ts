@@ -68,9 +68,6 @@ export default defineConfig({
     video: chromiumExecutable || process.env.WARDMOTE_RUNNER_E2E_PUBLIC_MCP === "1" ? "off" : "retain-on-failure",
   },
   webServer: {
-    // Do not put an env object here: Playwright serializes webServer config in
-    // blob reports. The wrapper inherits the test process and strips provider
-    // keys before spawning the real Paperclip process.
     command: runnerE2EWebServerCommand(repositoryRoot),
     gracefulShutdown: runnerE2EWebServerGracefulShutdown,
     url: `${baseURL}/api/health`,

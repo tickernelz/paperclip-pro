@@ -246,14 +246,6 @@ export type AdapterAuthPanelMode = (typeof ADAPTER_AUTH_PANEL_MODES)[number];
 // different: the provider shows a browser code, and the user submits that code.
 // So this contract carries a submitted browser code, not a displayed code.
 
-// The transport advisory for a setup-token confidential response. The product
-// owner set a non-negotiable requirement: do not force TLS. Many users run
-// Paperclip over plain HTTP on a home server or a Tailscale tailnet. So the
-// setup-token routes do not block a non-confidential transport. They attach this
-// advisory to the confidential response instead. The client shows a visible,
-// non-blocking disclaimer and the login still proceeds. A confidential transport
-// (direct TLS, a local-trusted loopback, or an allowlisted TLS proxy) carries no
-// advisory.
 export const SETUP_TOKEN_TRANSPORT_ADVISORY_CODE = "insecure_transport" as const;
 export type SetupTokenTransportAdvisoryCode = typeof SETUP_TOKEN_TRANSPORT_ADVISORY_CODE;
 

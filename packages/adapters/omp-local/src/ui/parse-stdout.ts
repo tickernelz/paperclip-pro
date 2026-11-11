@@ -149,7 +149,6 @@ function repairCandidates(line: string, at: number): string[] {
   return candidates;
 }
 
-/** Rebuild a JSON line whose escapes Paperclip's log redaction swallowed, or null when unrecoverable. */
 function repairRedactedJsonLine(line: string): string | null {
   if (!line.includes(REDACTED_LOG_MARKER)) return null;
   let current = line;
@@ -251,7 +250,6 @@ function unreadableEntry(line: string, ts: string): TranscriptEntry[] {
   }];
 }
 
-/** Parse one OMP JSONL stdout line into Paperclip transcript entries; stateless, so replay is stable. */
 export function parseOmpStdoutLine(line: string, ts: string): TranscriptEntry[] {
   const raw = (): TranscriptEntry[] => [{ kind: "stdout", ts, text: line }];
 

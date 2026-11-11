@@ -471,10 +471,6 @@ async function currentWakeCommentsSnapshot(
       filename: attachment.filename?.trim() || "attachment",
       contentType: attachment.contentType,
       byteSize: attachment.byteSize,
-      // This closed reader intentionally has no general Paperclip API key.
-      // Inline wake attachments are staged separately by the native harness;
-      // overflow attachments remain visible as metadata so the agent can be
-      // truthful rather than claiming it inspected bytes it cannot access.
       contentAccess: "metadata_only",
     });
     attachmentsByCommentId.set(attachment.issueCommentId, current);

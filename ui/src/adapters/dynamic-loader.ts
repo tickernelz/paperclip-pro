@@ -1,31 +1,3 @@
-/**
- * Dynamic UI parser loading for external adapters — sandboxed execution.
- *
- * When the Paperclip UI encounters an adapter type that doesn't have a
- * built-in parser (e.g., an external adapter loaded via the plugin system),
- * it fetches the parser JS from `/api/adapters/:type/ui-parser.js` and
- * executes it **inside a dedicated Web Worker** so it cannot access the
- * board UI's same-origin state (cookies, localStorage, DOM, authenticated
- * fetch, etc.).
- *
- * The worker communicates via a narrow postMessage protocol:
- *   Main → Worker:  { type: "init", source }
- *   Worker → Main:  { type: "ready" } | { type: "error", message }
- *   Main → Worker:  { type: "parse", id, line, ts }
- *   Worker → Main:  { type: "result", id, entries }
- *
- * Because the parse call is async (cross-thread postMessage), but the
- * existing `parseStdoutLine` contract is synchronous, we cache completed
- * worker results and ask the adapter registry to recompute transcripts when
- * a new result arrives.
- *
- * **Synchronous fast-path**: After init, parse requests are sent to the
- * worker which responds asynchronously.  The `parseStdoutLine` wrapper
- * returns cached results synchronously on the next transcript recomputation.
- * In practice this adds ~1 frame of latency which is imperceptible.
- *
- * Security: see `sandboxed-parser-worker.ts` for the full lockdown.
- */
 
 import type { TranscriptEntry } from "@tickernelz/wardmote-adapter-utils";
 import type { StdoutLineParser, StdoutParserFactory } from "./types";

@@ -70,8 +70,6 @@ export default defineConfig({
     // cannot shadow the UI under test with stale server/ui-dist assets.
     command: "pnpm --filter @tickernelz/wardmote-ui build --outDir ../server/ui-dist --emptyOutDir && node cli/node_modules/tsx/dist/cli.mjs cli/src/index.ts onboard --yes --run",
     url: `${BASE_URL}/api/health`,
-    // Always boot a dedicated throwaway instance for e2e so browser tests
-    // never attach to the developer's active Paperclip home/server.
     reuseExistingServer: false,
     timeout: 120_000,
     stdout: "pipe",

@@ -40,11 +40,6 @@ export type WardmoteRunnerPermissionCapability =
       description: string;
     };
 
-/**
- * Control-plane catalog for Paperclip Runner permission UX and validation.
- * Runtime contracts validate the same native values again at the process
- * boundary; this catalog must remain browser-safe.
- */
 export const WARDMOTE_RUNNER_PERMISSION_CAPABILITIES = {
   codex: {
     configurable: true,

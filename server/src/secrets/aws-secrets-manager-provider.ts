@@ -1226,8 +1226,6 @@ export function createAwsSecretsManagerProvider(
           SecretId: secretId,
           VersionStage: DEFAULT_VERSION_STAGE,
         });
-        // No VersionStages: the new version becomes AWSCURRENT so every consumer of the
-        // referenced secret (not just Paperclip) picks up the new value.
         const created = await gateway.putSecretValue({
           SecretId: secretId,
           SecretString: input.value,

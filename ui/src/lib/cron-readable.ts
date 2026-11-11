@@ -1,9 +1,3 @@
-/**
- * Tiny best-effort cron → plain-English helper for the routine Triggers section.
- * Not a full cron parser: it covers the common shapes Paperclip schedule triggers
- * produce (every N minutes/hours, daily at HH:MM, weekday/weekend, day-of-week).
- * Falls back to the raw expression when it can't confidently describe it.
- */
 
 const DOW_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 

@@ -179,10 +179,6 @@ export interface InstanceGeneralSettings {
 
 export interface InstanceExperimentalSettings {
   enableEnvironments: boolean;
-  /**
-   * Exposes the experimental Paperclip Runner adapter for new selections.
-   * Existing native runs ignore later flag changes so they remain recoverable.
-   */
   enableNativeRunner: boolean;
   enableAiConnectionRouters: boolean;
   /**
@@ -239,7 +235,6 @@ export interface InstanceExperimentalSettings {
   enableFastResponses: boolean;
   enableGoalsSidebarLink: boolean;
   enableServerInfoDebugView: boolean;
-  /** Shows internal Paperclip maintainer tools and observability links. */
   enableWardmoteDeveloperMode: boolean;
   /**
    * Instructs agents to write user-interaction content (confirmations,

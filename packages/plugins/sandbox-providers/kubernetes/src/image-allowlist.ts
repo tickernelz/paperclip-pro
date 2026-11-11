@@ -46,8 +46,6 @@ export function resolveImage(
 }
 
 function rewriteRegistry(image: string, registry: string): string {
-  // image is like "ghcr.io/paperclipai/agent-runtime-claude:v1"
-  // we want to replace the first two path segments (host + org) with `registry`
   const cleanRegistry = registry.replace(/\/+$/, "");
   const colonIdx = image.lastIndexOf(":");
   const tag = colonIdx >= 0 ? image.slice(colonIdx) : "";

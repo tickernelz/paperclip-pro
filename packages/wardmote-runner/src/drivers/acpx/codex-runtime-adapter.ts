@@ -147,11 +147,6 @@ export interface QualifiedAcpxRuntimeDependencies {
 /** @deprecated Use QualifiedAcpxRuntimeDependencies for provider-neutral ACPX runtimes. */
 export type CodexAcpxRuntimeDependencies = QualifiedAcpxRuntimeDependencies;
 
-/**
- * Adapt the pinned ACPX library to Paperclip's admitted runtime port. The
- * executable, launch environment, and spawn cwd stay host-owned and are never
- * persisted in ACPX's session options.
- */
 export async function openQualifiedAcpxRuntime(
   options: AcpxRuntimePortOpenOptions,
   dependencies: QualifiedAcpxRuntimeDependencies = {},
@@ -324,8 +319,6 @@ export async function openQualifiedAcpxRuntime(
         ? ["/paperclip-verified/grok", "agent", "stdio"]
         : [options.profile.agent === "claude" ? "/paperclip-verified/claude-agent-acp" : VERIFIED_COMMAND_SENTINEL] },
     }),
-    // ACPX does not know the Paperclip-specific mode. Exact SDK rules allow
-    // admitted actions; all remaining requests keep its closed read policy.
     permissionMode: options.permissionMode === "approve-paperclip"
       ? "approve-reads"
       : options.permissionMode,
@@ -2129,9 +2122,6 @@ function requireIdentity(handle: AcpRuntimeHandle): AcpxRuntimePortIdentity {
   return {
     acpxRecordId,
     backendSessionId,
-    // ACPX agents do not all advertise a distinct native thread identity.
-    // In that case the backend ID is the real ACP protocol session, so retain
-    // it explicitly rather than inventing a Paperclip-owned identifier.
     agentSessionId:
       nonEmptyRuntimeIdentity(handle.agentSessionId) ?? backendSessionId,
   };

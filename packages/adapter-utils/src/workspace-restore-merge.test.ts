@@ -217,10 +217,6 @@ describe("workspace restore merge", () => {
   });
 
   describe("instance-scoped directory merge lock", () => {
-    // Points WARDMOTE_HOME (and, where noted, WARDMOTE_INSTANCE_ID) at a
-    // temporary directory so the lock root never touches the real Paperclip
-    // instance, then restores the previous values. Mirrors the save-and-restore
-    // pattern in acpx-engine/execute.test.ts.
     let previousHome: string | undefined;
     let previousInstanceId: string | undefined;
 
@@ -723,8 +719,6 @@ describe("workspace restore merge", () => {
 
       const previousHome = process.env.WARDMOTE_HOME;
       process.env.WARDMOTE_HOME = fakeProcessHome;
-      // Stand in for the real host home directory, so the "no env at all"
-      // fallback lands under a temp dir instead of the real ~/.paperclip-pro.
       const homedirSpy = vi.spyOn(os, "homedir").mockReturnValue(fallbackOsHome);
       try {
         const targetDir = path.join(rootDir, "target");

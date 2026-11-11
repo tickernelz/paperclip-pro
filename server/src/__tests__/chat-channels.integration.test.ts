@@ -14364,8 +14364,6 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       endpoint.id,
       {
         action: "reconnect",
-        // Rotation accepts the one changed secret and merges the immutable
-        // Application/Server identity from Paperclip's existing vault refs.
         credentials: { botToken: "discord-secret-rotated" },
       },
       "owner-user",
@@ -24354,9 +24352,6 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       expect(endpointRuntime.webhookRequest, testCase.name).not.toBeNull();
     }
 
-    // Scope inspection is not a substitute for the adapter's signature gate.
-    // An invalid request must continue to the SDK so it receives the normal
-    // authentication failure instead of Paperclip acknowledging it as foreign.
     endpointRuntime.webhookRequest = null;
     const forgedForeign = signedRequest(
       cases[0]!.foreignBody,
@@ -29117,8 +29112,6 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       payload: { text: expect.stringMatching(/— in_progress$/) },
     });
 
-    // Sample again at send time so a status waiting behind an older provider
-    // operation cannot report a state Paperclip has already left.
     await db
       .update(issues)
       .set({ status: "done", completedAt: new Date(), updatedAt: new Date() })
@@ -37152,8 +37145,6 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     expect(uploaded.filename).toBe("paperclip-response.md");
     expect(uploaded.mimeType).toBe("text/markdown; charset=utf-8");
     expect(Buffer.isBuffer(uploaded.data)).toBe(true);
-    // The attachment is lossless after Paperclip's mandatory provider-safety
-    // projection (which strips URL query strings before any transport work).
     expect(uploaded.data.toString("utf8")).toBe(providerSafeSource);
     expect(uploaded.data.toString("utf8")).not.toContain("?case=discord");
 
@@ -38774,9 +38765,6 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         openModal: async () => undefined,
         raw: { type: "block_actions" },
         thread: channel.thread,
-        // The pinned Slack adapter uses the clicked Block Kit message ts here,
-        // even though the authoritative Paperclip conversation is rooted at
-        // the original mention (and a DM root has no ts at all).
         threadId:
           overrides.threadId ??
           `slack:C-QUESTION:${publication.providerMessageId}`,
@@ -38907,10 +38895,6 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       }),
     );
 
-    // Model the provider accepting the interactive card while Paperclip loses
-    // the response before it can persist the provider message binding. The
-    // signed callback and opaque issued token must reconcile that ambiguity
-    // without requiring a duplicate send or disabling the real button.
     await db
       .delete(chatMessageLinks)
       .where(eq(chatMessageLinks.publicationId, publication.id));
@@ -51298,9 +51282,6 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         text: "Starting a task…",
       },
     ]);
-    // Provider transport owns only its short authorization snapshot. The
-    // resource update completed while Slack was in flight, so the later
-    // Paperclip task mutation must honor the now-disabled destination.
     await expect(service.listConversations(endpoint.id)).resolves.toEqual([]);
     await expect(
       db
@@ -51572,8 +51553,6 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       })
       .returning();
 
-    // This row models the crash window after Slack returned the root timestamp
-    // but before the original callback could durably admit the Paperclip task.
     await service.processPendingDeliveries(1_000);
     await db
       .update(chatDeliveries)
@@ -51989,11 +51968,6 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       })
       .returning();
 
-    // Seed the exact crash boundary deterministically: Slack has confirmed the
-    // starter and Paperclip has durably normalized it, but no delivery drain
-    // has begun. A global reconciliation sweep intentionally runs action and
-    // delivery lanes concurrently, so using it to create this fixture made
-    // the pre-shutdown assertion depend on query scheduling under load.
     const endpointRuntime = runtime.endpoints.get(endpoint.id);
     if (!endpointRuntime) throw new Error("Slack runtime was unavailable");
     await callbacks.onMessage({
@@ -52085,9 +52059,6 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       createService(recoveredRuntime);
     await recoveredService.processPendingDeliveries(1_000);
 
-    // Slack already accepted the starter, so recovery must never post it again.
-    // Task admission is a distinct Paperclip mutation and must still honor the
-    // destination and identity policy that is current after restart.
     expect(recoveredRuntime.endpoints.get(endpoint.id)?.posts).toEqual([]);
     expect(recoveredWakeup).not.toHaveBeenCalled();
     await expect(
@@ -52668,9 +52639,6 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     const scheduledWork: Array<() => void> = [];
     const { callbacks, endpoint, runtime, service, wakeup } =
       await configuredSlackEndpoint(fixture, {
-        // Transport and Paperclip admission are separate durable phases.
-        // Run transport explicitly, then hold the delivery drain until reach
-        // revocation has committed instead of racing their query scheduling.
         deferWebhookProcessing: true,
         scheduleDeferredWork: (task) => scheduledWork.push(task),
       });
@@ -52836,8 +52804,6 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         .where(eq(chatEndpointResources.id, resource!.id)),
     ).resolves.toEqual([{ enabled: false }]);
 
-    // Expire only this receipt's reorder window, then drain after revocation.
-    // Provider acceptance is not a grant to create a Paperclip task later.
     await db
       .update(chatDeliveries)
       .set({ nextAttemptAt: new Date(0) })

@@ -75,13 +75,6 @@ export function resolveLocalServiceLogPath(serviceKey: string) {
   return path.resolve(getRuntimeServiceLogsDir(), `${serviceKey}.log`);
 }
 
-/**
- * Open a managed service's durable append-only output file.
- *
- * The returned descriptor is intended to be passed directly to spawn(). The
- * child receives its own duplicate, so the caller can close this handle as soon
- * as spawn returns without tying the service's stdio lifetime to Paperclip's.
- */
 export async function openLocalServiceLogFile(serviceKey: string) {
   await fs.mkdir(getRuntimeServiceLogsDir(), { recursive: true });
   const logPath = resolveLocalServiceLogPath(serviceKey);

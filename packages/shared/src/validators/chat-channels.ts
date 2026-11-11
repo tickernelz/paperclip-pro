@@ -37,13 +37,6 @@ export const chatResourceAvailabilitySchema = z.enum(
   CHAT_RESOURCE_AVAILABILITIES,
 );
 
-/**
- * Microsoft emits Entra application and tenant identifiers in canonical UUID
- * form in Bot Framework activities. Tenant aliases such as `common` or an
- * `onmicrosoft.com` domain can be accepted by the token endpoint, but cannot
- * be compared safely with the activity tenant id used by Paperclip's runtime
- * fence. Normalize the UUIDs at the API boundary instead.
- */
 export const microsoftTeamsCredentialIdSchema = z
   .string()
   .trim()

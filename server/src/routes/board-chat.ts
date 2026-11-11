@@ -20,22 +20,6 @@ function stripActionSignals(response: string): string {
 }
 
 /**
- * Board Concierge Chat routes.
- *
- * Implements `POST /board/chat/stream` (mounted under `/api`): a lightweight
- * chat relay that spawns the `claude` CLI with the paperclip-board skill as
- * its system prompt and streams the response back to the web UI via
- * Server-Sent Events. The conversation is persisted to a standing
- * "Board Operations" issue so it survives reloads.
- *
- * The SSE event protocol matches what `ui/src/pages/BoardChat.tsx` consumes:
- *   { type: "start",  issueId }   — emitted once the issue is resolved
- *   { type: "status", text }      — tool-use / progress indicator
- *   { type: "chunk",  text }      — a streamed token slice
- *   { type: "done",   issueId }   — terminal event; UI refetches comments
- *   { type: "error",  message }   — terminal error event
- */
-/**
  * Serialize a comment body as a tagged conversation turn. Bodies are
  * untrusted user content: without structure, a message containing a literal
  * `\n\nASSISTANT: ` prefix could fabricate assistant turns in the prompt

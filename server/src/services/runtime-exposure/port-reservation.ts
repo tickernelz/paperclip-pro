@@ -1,51 +1,3 @@
-/**
- * Central reservation + ownership mediation for `tailscale_https` app/HMR port
- * pairs (PAP-17419, from the PAP-17251 finding).
- *
- * ## Why this module exists
- *
- * Before it, "is this pair free?" was answered by three unrelated views that
- * never had to agree:
- *
- *  1. the allocator's liveness probe — is anything *listening* right now,
- *  2. `collectReservedExposurePorts` — persisted rows, but only those whose
- *     `exposure.state` was not yet `removed`,
- *  3. the broker's Serve mapping — consulted nowhere on the allocation path.
- *
- * A workspace can hold an exclusive lease on a pair while satisfying none of
- * those: stop the backend and the listener is gone; tear the exposure down and
- * the row goes `stopped` with `exposure.state = "removed"` **and an emptied
- * `listeners` array**, so the row stops contributing anything to the reserved
- * set even though its `port` column still names the pair the lease owns. That
- * is exactly how the pair leased to workspace `b7ce28b4` (`42001/52001`) was
- * handed to the unrelated workspace `PAP-16986-add-posthog-mcp`, while
- * Paperclip went on reporting the leased lane `stopped` and its exposure
- * `removed`.
- *
- * ## The mediation this module centralizes
- *
- * - **Reservation follows the lease, not the process.** An execution workspace
- *   whose lease is still open reserves its pair through stop, teardown, and
- *   `removed` — until the lease is explicitly released. {@link
- *   buildExposureReservationLedger} derives the pair from the row's `port`
- *   column precisely because teardown erases `exposure.listeners`.
- * - **Complete mediation on allocation.** {@link findExposurePairConflict}
- *   checks the persisted ledger *and* the live listener owner *and* the Serve
- *   mapping owner. Any of the three disagreeing fails the allocation closed,
- *   naming the conflicting workspace/issue.
- * - **No adoption across execution workspaces, ever.** {@link
- *   isExposureAdoptionPermitted} is the single predicate for "may this claimant
- *   take over that holder's port", and it answers no whenever the two execution
- *   workspace IDs are not the identical, non-null value.
- * - **Drift is surfaced, not silently reused.** {@link
- *   findExposureReservationDrift} reports a `stopped`/`removed` row whose
- *   reserved ports are live or mapped by someone else, so reconciliation can
- *   report a false-`stopped` lane instead of recycling it.
- *
- * Pure functions and one in-process claim registry: no sockets, no DB, no
- * broker. Every caller injects its own view, which is what makes all five
- * PAP-17419 regression cases testable without touching host Serve state.
- */
 import { deriveViteHmrPort, isRuntimeExposureAppPort } from "@tickernelz/wardmote-shared";
 
 /**
@@ -64,7 +16,6 @@ export interface ExposureOwnerIdentity {
 export type ExposureReservationSource =
   /** This process is running the runtime that owns the pair. */
   | "in_memory_runtime"
-  /** The broker reports a live Paperclip-owned Serve mapping on the port. */
   | "broker_mapping"
   /** A persisted row still claims an exposure that is not `removed`. */
   | "persisted_exposure"
@@ -129,7 +80,6 @@ export interface InMemoryExposureSnapshot {
   ports: ReadonlyArray<number>;
 }
 
-/** One Paperclip-owned listener as reported by the broker's `list()`. */
 export interface BrokerMappingSnapshot {
   runtimeId: string;
   port: number;
@@ -417,7 +367,6 @@ export class ExposurePortOwnershipConflictError extends Error {
 }
 
 export interface ExposureReservationDrift {
-  /** The row Paperclip believes is stopped/removed. */
   runtimeServiceId: string;
   owner: ExposureOwnerIdentity;
   port: number;

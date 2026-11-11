@@ -292,9 +292,6 @@ const nativeRunnerSuitePaths = [
   "server/src/__tests__/dot-runner.test.ts",
 ];
 
-// Mirrors ci.yml: the chat suite runs in its dedicated lane and the
-// cargo-dependent native-runner suite in the Rust-cached Verify Paperclip
-// Runner vitest lane, so together the three cover the full server group.
 test("the without-chat shards plus the dedicated chat and native-runner lanes cover the original server group exactly", () => {
   const ciEnv = { GITHUB_WORKFLOW: "CI" };
   const full = dryRunJson(["--mode", "general", "--group", "general-server", "--shard-index", "0", "--shard-count", "1"], ciEnv);

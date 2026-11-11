@@ -125,9 +125,6 @@ const explicitOpenApiOperationCoverageExclusions = new Set([
   "GET /mcp/runner/oauth/authorize",
   "POST /mcp/runner/oauth/token",
   "POST /mcp/runner/oauth/revoke",
-  // This endpoint is authenticated by the provider signature rather than by a
-  // Paperclip board/agent credential. It intentionally stays out of the public
-  // board API document, while this exact exclusion keeps route coverage honest.
   "POST /api/chat-webhooks/agentmail/{publicId}",
   "POST /api/chat-webhooks/{publicId}/{provider}",
   "POST /api/voice-webhooks/{publicId}/events",

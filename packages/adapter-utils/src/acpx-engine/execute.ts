@@ -222,20 +222,6 @@ type WardmoteAcpRuntimeOptions = AcpRuntimeOptions & {
 
 type AcpxRuntimeFactory = (options: WardmoteAcpRuntimeOptions) => AcpRuntime;
 
-/**
- * A remote runner-backed session's staged runtime, kept warm across runs so a
- * compatible resume reuses it instead of re-shipping the workspace / re-seeding
- * the managed home (PR 3: "stage once per session"). Keyed by the session's
- * `sessionKey` (`paperclip:companyId:agentId:taskKey:fingerprint`) — the SAME
- * fingerprint scoping the warm handle uses — so one session can never read
- * another session's staged credentials: a different agent/task/config hashes to
- * a different key, misses this cache, and stages its own home.
- *
- * Remote sessions are never held in the warm-handle cache (their agent process
- * lives behind a per-run process-session bridge, torn down each run and resumed
- * via `session/load`); the only thing that survives between their runs is the
- * in-sandbox staged workspace + home, which this cache reuses.
- */
 export interface StagedRuntimeCacheEntry {
   stagedRuntime: PreparedAdapterExecutionTargetRuntime;
   /**
@@ -561,20 +547,10 @@ export function buildSessionFingerprint(identity: SessionFingerprintIdentity): s
   return shortHash(identity);
 }
 
-/**
- * Build the session key from the fingerprint and the outer-key identity. The key
- * form is `paperclip:companyId:agentId:taskKey:fingerprint`.
- */
 export function buildSessionKey(identity: SessionKeyIdentity, fingerprint: string): string {
   return `paperclip:${identity.companyId}:${identity.agentId}:${identity.taskKey}:${fingerprint}`;
 }
 
-// ACPX runs inside the long-lived Paperclip server process. A local child needs
-// a small amount of host context (PATH, locale, certificate/proxy settings, and
-// provider authentication), but it must not inherit the server's complete
-// environment. A runner-backed remote sandbox inherits no ambient host context
-// at all. In particular, native-runner bootstrap and MCP credentials are host
-// authority, not provider credentials.
 const ACPX_INHERITED_HOST_ENV_KEYS = new Set([
   "PATH",
   "PATHEXT",
@@ -1630,13 +1606,6 @@ function uniqueSorted(values: Array<string | null | undefined>): string[] {
   return [...new Set(values.filter((value): value is string => typeof value === "string" && value.length > 0))].sort();
 }
 
-// The Claude Code SDK that `claude-agent-acp` runs uses
-// `settingSources: ["user", "project", "local"]`. By writing a per-worktree
-// `.claude/settings.local.json` we override the user's potentially-restrictive
-// `~/.claude/settings.json` (e.g. `defaultMode: "dontAsk"`, which silently
-// denies every non-allowlisted tool and never reaches `canUseTool`), and we
-// widen the SDK's Read sandbox to include the Paperclip state dirs the agent
-// needs to talk to its own control plane.
 async function writeWardmoteClaudeSettings(input: {
   cwd: string;
   stateDir: string;
@@ -2088,11 +2057,6 @@ async function buildRuntime(input: {
   );
   for (const [key, value] of Object.entries(shapedEnvConfig)) {
     if (typeof value !== "string") continue;
-    // Runtime WARDMOTE_* always wins over config: skip a WARDMOTE_* key that
-    // Paperclip has already assigned this run. WARDMOTE_API_KEY is never
-    // accepted from config — the harness-minted run token is the only source.
-    // A WARDMOTE_* key Paperclip did NOT set is stable per-run config, so it
-    // applies and feeds the fingerprint hash below.
     if (isForbiddenConfigEnvKey(key)) continue;
     if (isWardmoteRuntimeEnvKey(key) && key in env) continue;
     env[key] = value;
@@ -2123,8 +2087,6 @@ async function buildRuntime(input: {
       ...(input.ctx.agentIdentity ? { identityEnvironmentKeys: [...new Set([
         "PATH", "HOME", "LANG", "TMPDIR", "CODEX_HOME",
         "WARDMOTE_AGENT_KEY_ID", "WARDMOTE_AGENT_PUBLIC_KEY", "WARDMOTE_AGENT_PRIVATE_KEY",
-        // Preserve Codex's default secret-name exclusions. The short-lived
-        // Paperclip API token is required by the agent skill's Bash/curl calls.
         ...Object.keys(env).filter(key => key === "WARDMOTE_API_KEY" || !/key|secret|token/i.test(key)),
       ])] } : {}),
       requestedModel,
@@ -2566,23 +2528,12 @@ async function buildRuntime(input: {
       skillCommandNotes[i] = rebaseToSandbox(skillCommandNotes[i]!);
     }
   }
-  // Both bridge starts run under one try so a failure at EITHER — including the
-  // paperclip callback bridge — fires the same abandon-path cleanup. The
-  // paperclip bridge starts after the workspace + managed home were already
-  // staged and the per-session staging lease is already held, so leaving it
-  // outside the catch would strand the lease (and the staged temp) on a
-  // start failure and deadlock the next run of this session.
   let wardmoteBridge: AdapterExecutionTargetWardmoteBridgeHandle | null = null;
   let processSessionBridge: AdapterExecutionTargetProcessSessionBridgeHandle | null = null;
   let runtimeEnv: Record<string, string> = {};
   const startTransportStart = nowMs();
   try {
     if (useRemoteProcessSession && sandboxSite) {
-      // The sandbox run site brings up both host-side bridges concurrently, keeps
-      // the one paperclip-env → process-session-launch dependency at a single
-      // sequencing point, settles both starts, and returns the started handles
-      // plus the finalized launch env. On a partial failure it stops nothing and
-      // rethrows; the catch below stops whichever bridge the site started.
       const transport = await sandboxSite.startTransport({ sessionKey } as unknown as AcpRunContext);
       wardmoteBridge = transport.controlBridge;
       processSessionBridge = transport.agentBridge;
@@ -3205,14 +3156,6 @@ async function emitAcpxLog(ctx: AdapterExecutionContext, payload: Record<string,
   await ctx.onLog("stdout", `${JSON.stringify(payload)}\n`);
 }
 
-/**
- * Build the short run summary that Paperclip may auto-post as an issue comment
- * when the agent leaves no comment of its own.
- *
- * Prefer the last non-empty *output* segment after a tool call. Intermediate
- * "let me check…" narration between tools must not become a 50k-char dump.
- * Thought-stream text is never included (callers must not push it into segments).
- */
 export function buildAcpxRunSummary(input: {
   outputSegments: string[];
   fallback?: string | null;
@@ -4412,9 +4355,6 @@ export function createAcpxEngineExecutor(deps: AcpxEngineExecutorOptions = {}) {
           // and custom agents already emit their own per-tool output and don't
           // benefit from doubling the log volume.
           verbose: prepared.acpxAgent === "claude",
-          // The engine passes a complete, sanitized launch environment. ACPX
-          // must not merge the Paperclip server's ambient environment back in
-          // when it spawns the provider child.
           inheritProcessEnv: false,
           onAgentStderr: prepared.childStderrLogPath
             ? (chunk) => routeChildStderr(childStderrState, chunk)

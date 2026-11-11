@@ -5155,8 +5155,6 @@ describe("ensureRuntimeServicesForRun", () => {
       branchName: "PAP-874-chat-speed-issues",
       worktreePath: worktreeWorkspaceRoot,
     };
-    // A Paperclip dev runtime must answer `/api/health` semantically before it may
-    // be published, so the fake serves the same shape a real one does.
     const serviceCommand =
       "node -e \"require('node:http').createServer((req,res)=>{if(req.url==='/api/health'){res.setHeader('content-type','application/json');res.end(JSON.stringify({status:'ok'}));return;}res.end(process.env.WARDMOTE_HOME)}).listen(Number(process.env.PORT), '127.0.0.1')\"";
     const config = {
@@ -8206,7 +8204,6 @@ describeEmbeddedPostgres("workspace runtime startup reconciliation", () => {
       await expect(fetch(`http://127.0.0.1:${legacyPort}`)).resolves.toMatchObject({ ok: true });
       expect(brokerCalls).toEqual([]);
 
-      // ---- Deploy: the feature turns on and Paperclip restarts. ----
       await resetRuntimeServicesForTests();
       delete process.env.WARDMOTE_MANAGED_RUNTIME_HTTPS;
       installExposureDeps();

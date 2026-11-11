@@ -1,29 +1,3 @@
-/**
- * PluginLoader — discovery, installation, and runtime activation of plugins.
- *
- * This service is the entry point for the plugin system's I/O boundary:
- *
- * 1. **Discovery** — Scans the local plugin directory
- *    (`~/.paperclip-pro/plugins/`) and `node_modules` for packages matching
- *    the `paperclip-plugin-*` naming convention. Aggregates results with
- *    path-based deduplication.
- *
- * 2. **Installation** — `installPlugin()` downloads from npm (or reads a
- *    local path), validates the manifest, checks capability consistency,
- *    and persists the install record.
- *
- * 3. **Runtime activation** — `activatePlugin()` wires up a loaded plugin
- *    with all runtime services: resolves its entrypoint, builds
- *    capability-gated host handlers, spawns a worker process, syncs job
- *    declarations, registers event subscriptions, and discovers tools.
- *
- * 4. **Shutdown** — `shutdownAll()` gracefully stops all active workers
- *    and unregisters runtime hooks.
- *
- * @see PLUGIN_SPEC.md §8 — Plugin Discovery
- * @see PLUGIN_SPEC.md §10 — Package Contract
- * @see PLUGIN_SPEC.md §12 — Process Model
- */
 import { existsSync } from "node:fs";
 import { readdir, readFile, rm, stat } from "node:fs/promises";
 import { execFile } from "node:child_process";
@@ -65,12 +39,6 @@ const STANDALONE_BUNDLED_PLUGIN_SDK_PACKAGE = "@tickernelz/wardmote-plugin-sdk";
 // Constants
 // ---------------------------------------------------------------------------
 
-/**
- * Naming convention for npm-published Paperclip plugins.
- * Packages matching this pattern are considered Paperclip plugins.
- *
- * @see PLUGIN_SPEC.md §10 — Package Contract
- */
 export const NPM_PLUGIN_PACKAGE_PREFIX = "paperclip-plugin-";
 
 /**
@@ -211,7 +179,7 @@ export interface DiscoveredPlugin {
  */
 export type PluginSource =
   | "local-filesystem"
-  | "npm"               // npm packages matching paperclip-plugin-* convention
+  | "npm"
   | "registry";         // future: remote plugin registry URL
 
 type ParsedSemver = {
@@ -284,11 +252,6 @@ export interface PluginLoaderOptions {
    */
   enableLocalFilesystem?: boolean;
 
-  /**
-   * Whether to discover installed npm packages matching the paperclip-plugin-*
-   * naming convention.
-   * Defaults to true.
-   */
   enableNpmDiscovery?: boolean;
 
   /**
@@ -307,10 +270,6 @@ export interface PluginLoaderOptions {
  * Options for installing a single plugin package.
  */
 export interface PluginInstallOptions {
-  /**
-   * npm package name to install (e.g. "paperclip-plugin-linear" or "@acme/plugin-linear").
-   * Either packageName or localPath must be set.
-   */
   packageName?: string;
 
   /**
@@ -482,28 +441,8 @@ export interface PluginLoader {
    */
   discoverFromLocalFilesystem(dir?: string): Promise<PluginDiscoveryResult>;
 
-  /**
-   * Discover Paperclip plugins installed as npm packages in the current
-   * Node.js environment matching the "paperclip-plugin-*" naming convention.
-   *
-   * Looks for packages in node_modules that match the naming convention.
-   *
-   * @param searchDirs - node_modules directories to search (defaults to process cwd resolution).
-   */
   discoverFromNpm(searchDirs?: string[]): Promise<PluginDiscoveryResult>;
 
-  /**
-   * Load and parse the plugin manifest from a package directory.
-   *
-   * Reads the package.json, finds the manifest entrypoint declared under
-   * the "wardmotePlugin.manifest" key, loads the manifest module, and
-   * validates it against the plugin manifest schema.
-   *
-   * Returns null if the package is not a Paperclip plugin.
-   * Throws if the package is a Paperclip plugin but the manifest is invalid.
-   *
-   * @see PLUGIN_SPEC.md §10 — Package Contract
-   */
   loadManifest(packagePath: string): Promise<WardmotePluginManifestV1 | null>;
 
   /**
@@ -646,12 +585,6 @@ export interface PluginLoader {
 // Helpers
 // ---------------------------------------------------------------------------
 
-/**
- * Check whether a package name matches the Paperclip plugin naming convention.
- * Accepts both the "paperclip-plugin-" prefix and scoped "@scope/plugin-" packages.
- *
- * @see PLUGIN_SPEC.md §10 — Package Contract
- */
 export function isPluginPackageName(name: string): boolean {
   if (name.startsWith(NPM_PLUGIN_PACKAGE_PREFIX)) return true;
   // Also accept scoped packages like @acme/plugin-linear or @tickernelz/wardmote-plugin-*
@@ -1087,60 +1020,6 @@ export function getPluginUiContributionMetadata(
 // Factory
 // ---------------------------------------------------------------------------
 
-/**
- * Create a PluginLoader service.
- *
- * The loader is responsible for plugin discovery, installation, and runtime
- * activation.  It reads plugin packages from the local filesystem and npm,
- * validates their manifests, registers them in the database, and — when
- * runtime services are provided — initialises worker processes, event
- * subscriptions, job schedules, webhook endpoints, and agent tools.
- *
- * Usage (discovery & install only):
- * ```ts
- * const loader = pluginLoader(db, { enableLocalFilesystem: true });
- *
- * // Discover all available plugins
- * const result = await loader.discoverAll();
- * for (const plugin of result.discovered) {
- *   console.log(plugin.packageName, plugin.manifest?.id);
- * }
- *
- * // Install a specific plugin
- * const discovered = await loader.installPlugin({
- *   packageName: "paperclip-plugin-linear",
- *   version: "^1.0.0",
- * });
- * ```
- *
- * Usage (full runtime activation at server startup):
- * ```ts
- * const loader = pluginLoader(db, loaderOpts, {
- *   workerManager,
- *   eventBus,
- *   jobScheduler,
- *   jobStore,
- *   toolDispatcher,
- *   lifecycleManager,
- *   buildHostHandlers: (pluginId, manifest) => ({ ... }),
- *   instanceInfo: { instanceId: "inst-1", hostVersion: "1.0.0" },
- * });
- *
- * // Load all ready plugins at startup
- * const loadResult = await loader.loadAll();
- * console.log(`Loaded ${loadResult.succeeded}/${loadResult.total} plugins`);
- *
- * // Load a single plugin after install
- * const singleResult = await loader.loadSingle(pluginId);
- *
- * // Shutdown all plugin workers on server exit
- * await loader.shutdownAll();
- * ```
- *
- * @see PLUGIN_SPEC.md §8.1 — On-Disk Layout
- * @see PLUGIN_SPEC.md §8.3 — Install Process
- * @see PLUGIN_SPEC.md §12 — Process Model
- */
 export function pluginLoader(
   db: Db,
   options: PluginLoaderOptions = {},
@@ -1412,10 +1291,6 @@ export function pluginLoader(
     };
   }
 
-  /**
-   * Build a DiscoveredPlugin from a resolved package directory, or null
-   * if the package is not a Paperclip plugin.
-   */
   async function buildDiscoveredPlugin(
     packagePath: string,
     source: PluginSource,

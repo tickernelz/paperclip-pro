@@ -1,5 +1,3 @@
-// Deterministic provider: all effects use the real run-authenticated APIs/MCP transport.
-// No DB writes, mocked Paperclip responses, provider calls, or outside workspaces.
 const base = process.env.WARDMOTE_API_URL;
 const headers = {
   Authorization: `Bearer ${process.env.WARDMOTE_API_KEY}`,

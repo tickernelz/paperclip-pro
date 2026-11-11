@@ -307,7 +307,6 @@ async function readSourceCodexAuth(sourceAuth: string): Promise<Buffer | null> {
   }
 }
 
-/** Copy only Paperclip's value-free provider projection, never host tools or hooks. */
 async function managedCodexProviderConfig(sourceHome?: string | null): Promise<string> {
   if (!sourceHome?.trim()) return "";
   const source = await readSourceCodexAuth(join(sourceHome, "config.toml"));
@@ -357,9 +356,6 @@ export async function prepareIsolatedCodexHome(input: {
       ? [
           `[mcp_servers.${JSON.stringify(input.nativeMcp.name)}]`,
           `url = ${JSON.stringify(input.nativeMcp.url)}`,
-          // This endpoint is Paperclip's authenticated policy gateway, not an
-          // upstream server. It enforces connection grants and human approvals
-          // for every operation; the provider must deliver calls to that gate.
           'default_tools_approval_mode = "approve"',
           `http_headers = { Authorization = ${JSON.stringify(`Bearer ${input.nativeMcp.token}`)} }`,
           "",

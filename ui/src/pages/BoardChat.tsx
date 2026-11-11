@@ -35,11 +35,6 @@ import { cn, formatDateTime } from "../lib/utils";
 import type { FeedbackVoteValue } from "@tickernelz/wardmote-shared";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
-/**
- * Board Concierge Chat — a chat interface powered by the board-member skill.
- * Uses /board/chat/stream to invoke Claude with the board skill as system prompt.
- * The user manages their Paperclip company through natural conversation.
- */
 /** Hit zone to the right of the 1px line (line sits on chat pane’s right edge). */
 const SPLIT_DIVIDER_PX = 12;
 const SPLIT_MIN_PANE_PX = 280;

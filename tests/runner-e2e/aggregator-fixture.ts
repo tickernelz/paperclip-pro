@@ -1,7 +1,6 @@
 import type { RunnerApi } from "./api.js";
 import { startReviewProvider } from "../fixtures/connection-review-provider.js";
 
-/** Deterministic Arcade gateway; the real Paperclip transport, grants and agent are exercised. */
 export async function setupAggregatorFixture(
   api: RunnerApi,
   companyId: string,

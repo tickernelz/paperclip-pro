@@ -1,7 +1,6 @@
 import type { ChildProcess } from "node:child_process";
 import { createProcessTreeOwner, incompleteTreeFallback, type RestartRunnerIdentity } from "./process-tree-owner.js";
 
-// The wrapper receives Playwright's group signal; only it signals Paperclip.
 export const runnerE2EServerDetached = process.platform !== "win32";
 const wait = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms));
 

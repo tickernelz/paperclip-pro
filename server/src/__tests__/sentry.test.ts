@@ -813,16 +813,6 @@ describe.skipIf(!sentryPackage)("captured event shape against the real @sentry/n
     expect((captured as unknown as Record<string, unknown>).breadcrumbs).toBeUndefined();
   });
 
-  /**
-   * `skipOpenTelemetrySetup: true` (set above) keeps this module out of
-   * Paperclip's separate, independently opt-in OpenTelemetry feature. It
-   * also turns off Sentry's own per-request async-context tracking. The
-   * `RequestData` integration reads the inbound URL, method, headers,
-   * cookies, and query string from that per-request context. With the
-   * context off, a captured event carries no request field — not the
-   * SDK's documented default. This test proves the gap, so the operator
-   * documentation states the true capture set.
-   */
   it("a server event captured inside a real HTTP request handler carries no request field", async () => {
     const Sentry = sentryPackage!;
     let captured: Record<string, unknown> | null = null;

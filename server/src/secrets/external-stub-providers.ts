@@ -61,7 +61,6 @@ function unavailableProvider(
       throw unprocessable(`${id} provider is not configured in this deployment`);
     },
     async deleteOrArchive() {
-      // External references are metadata-only in Paperclip for unconfigured providers.
     },
     async healthCheck() {
       return {

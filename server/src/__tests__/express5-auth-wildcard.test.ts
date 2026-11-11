@@ -2,18 +2,6 @@ import express from "express";
 import request from "supertest";
 import { describe, expect, it } from "vitest";
 
-/**
- * Regression test for https://github.com/paperclipai/paperclip/issues/2898
- *
- * Express 5 (path-to-regexp v8+) dropped support for the `*paramName`
- * wildcard syntax used in Express 4. Routes declared with the old syntax
- * silently fail to match, causing every `/api/auth/*` request to fall
- * through and return 404.
- *
- * The correct Express 5 syntax for a named catch-all is `{*paramName}`.
- * These tests verify that the better-auth handler is invoked for both
- * shallow and deep auth sub-paths.
- */
 describe("Express 5 /api/auth wildcard route", () => {
   function buildApp() {
     const app = express();

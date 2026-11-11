@@ -2407,14 +2407,6 @@ function resolveManagedSkillsRoot(companyId: string) {
   return path.resolve(resolveWardmoteInstanceRoot(), "skills", companyId);
 }
 
-/**
- * A rename target must be a true Paperclip-managed local skill: a `local_path`
- * skill whose `managed_local` source directory lives directly under the
- * company managed-skills root (e.g. `<managedRoot>/<slug>`). This deliberately
- * excludes catalog (`__catalog__/...`), runtime (`__runtime__/...`) and other
- * reserved subtrees, project-scanned skills, unmanaged `local_path` skills, and
- * all remote source types, which keep their own identity/update semantics.
- */
 function isWardmoteManagedRenameTarget(skill: CompanySkill): boolean {
   if (skill.sourceType !== "local_path") return false;
   if (getSkillMeta(skill).sourceKind !== "managed_local") return false;

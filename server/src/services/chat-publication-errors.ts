@@ -2,7 +2,6 @@ export type ChatPublicationErrorDisposition =
   | {
       kind: "retry";
       retryAfterMs: number;
-      /** True when the provider explicitly asked Paperclip to slow down. */
       providerRateLimit?: boolean;
       reason: string;
     }
@@ -360,8 +359,6 @@ export function classifyChatPublicationError(
     names.includes("NotImplementedError") ||
     codes.includes("VALIDATION_ERROR") ||
     codes.includes("NOT_IMPLEMENTED") ||
-    // Paperclip rejected the destination locally before opening a provider
-    // request, so delivery is definitively impossible rather than ambiguous.
     codes.includes("CHAT_PROVIDER_PRETRANSPORT_REJECTED") ||
     // Adapter-contract drift is detected during runtime construction, before
     // any provider request can have been attempted.
@@ -386,8 +383,5 @@ export function classifyChatPublicationError(
     return { kind: "failed", reason };
   }
 
-  // Adapter NetworkError and ordinary fetch/transport errors are ambiguous:
-  // the request may have reached the provider even when no response reached
-  // Paperclip. An operator must inspect the native conversation before replay.
   return { kind: "delivery_unknown", reason };
 }

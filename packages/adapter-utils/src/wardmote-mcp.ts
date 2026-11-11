@@ -17,7 +17,6 @@ const RUN_ENV_KEYS = [
   "WARDMOTE_RUN_ID",
 ] as const;
 
-/** Which Paperclip access surface an adapter arms for a run. */
 export type WardmoteAccessMode = "mcp" | "rest";
 
 export type WardmoteMcpTransportKind = "http" | "stdio";
@@ -161,7 +160,6 @@ export function wardmoteMcpGuidance(toolsets: string, toolCount: number | null =
   return lines.join("\n");
 }
 
-/** Guidance for runtimes without the Paperclip MCP: reach the board over REST with the run credentials in env. */
 export function wardmoteRestGuidance(options: { shellHint?: string } = {}): string {
   const shell = options.shellHint?.trim();
   return [

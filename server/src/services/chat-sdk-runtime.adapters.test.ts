@@ -545,8 +545,6 @@ describe("Chat SDK published adapter integration", () => {
       const usersInfo = vi.fn(
         async () =>
           await new Promise<never>(() => {
-            // A regression to the upstream cold lookup would hold the provider
-            // acknowledgement open until Paperclip's webhook deadline.
           }),
       );
       adapter._client.users.info = usersInfo;

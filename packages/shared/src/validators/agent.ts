@@ -286,12 +286,6 @@ export const testAdapterEnvironmentSchema = z.object({
     MINIMAX_API_KEY: z.string().max(16384),
   }).partial().strict().optional(),
   adapterConfig: adapterConfigSchema.optional().default({}),
-  /**
-   * Optional environment to run the adapter test inside. When omitted, the
-   * test runs against the local Paperclip host. When provided and the
-   * environment is non-local (SSH/sandbox), the test probes are executed
-   * inside that environment so the result reflects real agent execution.
-   */
   environmentId: z.string().guid().optional().nullable(),
 });
 

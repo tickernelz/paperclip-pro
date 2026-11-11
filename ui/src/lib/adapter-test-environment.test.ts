@@ -36,10 +36,6 @@ describe("resolveAdapterTestEnvironmentId", () => {
   });
 
   it("falls back to the instance default when the agent has none", () => {
-    // The regression this pins: an agent relying on the instance default
-    // (e.g. a managed sandbox with extra CLIs baked into its image) must be
-    // tested inside that environment, not on the Paperclip host where the
-    // CLI does not exist.
     expect(
       resolveAdapterTestEnvironmentId({
         agentDefaultEnvironmentId: null,

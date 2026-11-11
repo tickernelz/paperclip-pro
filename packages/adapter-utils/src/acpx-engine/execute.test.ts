@@ -3278,8 +3278,6 @@ describe("gemini ACP flag selection", () => {
           runtimeSessionName: "runtime-session",
         }),
         startTurn: () => ({
-          // Never yields on its own: only the Paperclip wall-clock timer's
-          // cancel unblocks the turn, simulating a hung run.
           events: (async function* () {
             await turnCancelled;
           })(),
@@ -3635,16 +3633,9 @@ describe("ACPX engine remote sandbox staging seam (PR 1: workspace + cwd)", () =
       { authToken: "real-run-jwt", executionTarget },
     );
 
-    // The process-session bridge receives its launch env as a DEFERRED thunk —
-    // the seam that lets its env-independent setup overlap the paperclip bridge
-    // start instead of running strictly after it.
     const processArgs = vi.mocked(startAdapterExecutionTargetProcessSessionBridge).mock.calls[0]![0];
     expect(typeof processArgs.env).toBe("function");
 
-    // ...and despite the overlap the launch still observes the MERGED paperclip
-    // env: the paperclip-`env` → process-session-launch hand-off stays sequenced
-    // under concurrency (bridge base URL + minted bridge token both present, and
-    // the token is NOT the host run JWT).
     const payloadEnv = ((launchPayload as Record<string, unknown> | null)?.env ?? {}) as Record<
       string,
       unknown
@@ -3731,9 +3722,6 @@ describe("ACPX engine remote sandbox staging seam (PR 1: workspace + cwd)", () =
 
   it("stops the process-session bridge when the paperclip bridge fails under concurrency", async () => {
     const { stateDir, localCwd, executionTarget } = await setupRemoteSandbox();
-    // The paperclip bridge fails; the process-session bridge — started CONCURRENTLY
-    // with it — still resolves a live handle. The abandon path must stop that
-    // handle so no started bridge leaks on partial failure.
     const stop = vi.fn(async () => {});
     vi.mocked(startAdapterExecutionTargetWardmoteBridge).mockImplementationOnce(async () => {
       throw new Error("paperclip bridge boom");

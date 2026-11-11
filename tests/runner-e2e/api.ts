@@ -52,11 +52,6 @@ export class RunnerApi {
     return response.json() as Promise<T>;
   }
 
-  /**
-   * Playwright traces APIRequestContext request bodies. Secret creation must
-   * still use the public API, but it goes through Node fetch so plaintext is
-   * never serialized into trace/blob evidence before Paperclip encrypts it.
-   */
   async postSensitive<T>(path: string, data: unknown): Promise<T> {
     const response = await fetch(new URL(path, this.baseURL), {
       method: "POST",

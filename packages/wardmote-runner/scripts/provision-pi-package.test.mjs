@@ -25,8 +25,6 @@ test("public server tar layout carries a self-contained host provisioner and exa
     ["../../patches/pi-acp@0.0.33.patch", "pi-acp.patch"], ["src/drivers/acpx/pi-acp-runtime.ts", "pi-acp-runtime.ts"],
     ["src/drivers/acpx/pi-runtime-extension.ts", "pi-runtime-extension.ts"],
   ]) assert.deepEqual(await readFile(resolve(packageRoot, source)), await readFile(join(inputs, destination)));
-  // Exercise npm's actual package/ prefix after archive extraction, without
-  // pretending this small fixture is a complete published Paperclip release.
   const archive = join(root, "server.tgz");
   execFileSync("tar", ["-czf", archive, "-C", root, "package"], { env: { PATH: "/usr/bin:/bin" }, timeout: 10_000 });
   const installed = join(root, "installed"); await mkdir(installed);

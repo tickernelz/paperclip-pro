@@ -1,14 +1,3 @@
-/**
- * Wire and domain types for the least-privilege Tailscale HTTPS host broker.
- *
- * The broker's only capability is adding and removing Paperclip-owned,
- * same-number HTTPS-to-loopback listeners. It never gains general Tailscale
- * administration. See PAP-17049 (plan) and PAP-17050 (threat-model verdict).
- *
- * SECURITY: every value that crosses the socket is untrusted. The Paperclip
- * caller, CLI output, Serve state, the registry, and listener metadata are all
- * treated as untrusted inputs.
- */
 
 /** Supported broker protocol version. Requests on other versions are rejected. */
 export const BROKER_PROTOCOL_VERSION = 1;

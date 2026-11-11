@@ -1,28 +1,4 @@
 #!/usr/bin/env tsx
-/**
- * One-shot cleaner for `agent_task_sessions` rows whose persisted `claude_local`
- * session is poisoned by a non-`msg_*` `previous_message_id`.
- *
- * The poison shape: the Claude CLI keeps an on-disk JSONL transcript keyed by
- * sessionId at `<claude-config-dir>/projects/<encoded-cwd>/<sessionId>.jsonl`.
- * If the last `assistant` entry has a `message.id` that does NOT start with
- * `msg_`, every subsequent `--resume` against /v1/messages 400s with
- * `diagnostics.previous_message_id` and the issue is permanently stranded
- * until the persisted session is dropped. See RED-877 / RED-978 / RED-991 for
- * the upstream adapter fix; this script retroactively heals rows that were
- * stranded BEFORE that adapter shipped.
- *
- * Usage:
- *   tsx packages/db/scripts/clean-poisoned-claude-sessions.ts \
- *     --config /path/to/paperclip/config.json \
- *     [--claude-config-dir ~/.claude] \
- *     [--dry-run] [--json]
- *
- * Or in a Paperclip checkout shell:
- *   pnpm --filter @tickernelz/wardmote-db exec tsx scripts/clean-poisoned-claude-sessions.ts --dry-run
- *
- * Exits 0 on success even when nothing was healed. Idempotent.
- */
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";

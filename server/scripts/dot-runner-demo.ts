@@ -1,6 +1,3 @@
-/** Synthetic local lab, not production admission or a real OpenAI Dot.
- * Uses real OAuth, MCP HTTP, database-backed events, HMAC verification and the
- * native runner backend. Never reads a user's existing Paperclip database. */
 import assert from "node:assert/strict";
 import { createHash, createHmac, randomBytes, randomUUID, timingSafeEqual } from "node:crypto";
 import { once } from "node:events";

@@ -509,11 +509,6 @@ export const TimeseriesChart = createSdkUiComponent<TimeseriesChartProps>("Times
  */
 export const MarkdownBlock = createSdkUiComponent<MarkdownBlockProps>("MarkdownBlock");
 
-/**
- * Renders Paperclip's shared Markdown editor.
- *
- * @see PLUGIN_SPEC.md §19.6 — Shared Components
- */
 export const MarkdownEditor = createSdkUiComponent<MarkdownEditorProps>("MarkdownEditor");
 
 /**
@@ -575,10 +570,6 @@ export const ErrorBoundary = createSdkUiComponent<ErrorBoundaryProps>("ErrorBoun
  */
 export const FileTree = createSdkUiComponent<FileTreeProps>("FileTree");
 
-/**
- * Renders Paperclip's native issue list component for company-scoped plugin
- * pages that need a standard board issue view.
- */
 export const IssuesList = createSdkUiComponent<IssuesListProps>("IssuesList");
 
 /**
@@ -591,7 +582,4 @@ export const AssigneePicker = createSdkUiComponent<AssigneePickerProps>("Assigne
  */
 export const ProjectPicker = createSdkUiComponent<ProjectPickerProps>("ProjectPicker");
 
-/**
- * Renders Paperclip's native managed routines list for plugin settings pages.
- */
 export const ManagedRoutinesList = createSdkUiComponent<ManagedRoutinesListProps>("ManagedRoutinesList");

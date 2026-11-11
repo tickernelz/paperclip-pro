@@ -217,8 +217,6 @@ export function slackChatRegistrationService(db: Db, options: {
       try {
         await endpoint(endpointId, actor);
         await lease.assertOwned();
-        // Cloud ingress requires a tenant session. Send the preset PNG bytes so
-        // Slack does not need to fetch an authenticated Paperclip URL.
         const render = options.renderAvatar ?? (avatarPool ??= createAgentAvatarPool()).render;
         const appearance = { ...resolveAgentAppearance(current.agentAppearance, current.endpoint.assignedAgentId) };
         delete appearance.customAvatarAssetId; // The preset renderer cannot read private uploaded assets.

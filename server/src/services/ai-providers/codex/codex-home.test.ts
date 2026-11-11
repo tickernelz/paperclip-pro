@@ -132,12 +132,6 @@ describe("codex managed home", () => {
     }
   });
 
-  // Regression for #5028: older Paperclip versions copied auth.json into the
-  // managed home instead of symlinking. After upgrading to the symlink-based
-  // logic, the stale regular file at the target stayed in place and every
-  // subsequent codex_local run failed with refresh_token_reused as soon as the
-  // source token rotated. `ensureSymlink` now heals the upgrade path by
-  // unlinking the stale copy and creating a symlink to the live source.
   it("replaces a stale regular-file auth.json with a symlink to the live source (#5028)", async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-codex-home-"));
     try {
@@ -158,7 +152,6 @@ describe("codex managed home", () => {
       // The live source has rotated since the stale copy was written.
       await fs.writeFile(sharedAuth, '{"token":"fresh"}', "utf8");
 
-      // Simulate a stale copy left by a previous Paperclip version.
       await fs.mkdir(managedCodexHome, { recursive: true });
       await fs.writeFile(managedAuth, '{"token":"stale-from-copy"}', "utf8");
 
@@ -201,9 +194,6 @@ describe("codex managed home", () => {
     }
   });
 
-  // The isDirectory() guard added with the heal branch must keep an unexpected
-  // directory in place rather than throwing EISDIR. We treat a directory at
-  // this path as operator-owned, not a stale Paperclip copy.
   it("ensureSymlink: leaves an unexpected directory in place instead of throwing", async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-ensure-symlink-dir-"));
     try {
@@ -1262,10 +1252,6 @@ describe("stageCodexHomeForSync", () => {
     }
   });
 
-  // Circular symlinks inside skills/ must be silently skipped (not throw ELOOP).
-  // Skill symlinks that point OUTSIDE skills/ are intentional design (Paperclip
-  // stores skill packages in a shared location) and are dereferenced normally;
-  // all resulting files land 0600 inside the 0700 staged dir.
   it("skips circular skill symlinks (ELOOP) without throwing", async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-codex-stage-circular-"));
     let staged: string | null = null;

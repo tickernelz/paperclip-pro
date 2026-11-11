@@ -78,9 +78,6 @@ export function prUrl(repository, number) {
 export function resolveAuthorAllowlist(options, getGhJson) {
   if (options.include_community) return null;
   if (options.authors === true) throw new Error("--authors requires a comma-separated list of GitHub logins");
-  // Default to the authenticated gh identity: every PR this Paperclip instance
-  // opens is authored by that login, so it is the scope boundary that excludes
-  // community contributions without maintaining a separate roster.
   const raw = options.authors ?? getGhJson(["api", "user"]).login;
   const authors = String(raw)
     .split(",")

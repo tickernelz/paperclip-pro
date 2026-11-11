@@ -130,7 +130,6 @@ export interface SandboxRunSiteOptions {
   readonly publishStagedProjectHints: (stagedProjectDirs: Record<string, string>) => void;
   readonly onReuseLog: () => Promise<void>;
 
-  /** Start the host-side paperclip callback bridge. */
   readonly startWardmoteBridge: (
     runtimeRootDir: string | null,
   ) => Promise<AdapterExecutionTargetWardmoteBridgeHandle | null>;
@@ -173,12 +172,6 @@ export interface SandboxRunSite {
   syncBack(context: AcpRunContext): Promise<void>;
   /** The staged workspace the run installed or reused, or null before `placeWorkspace`. */
   readonly staged: StagedWorkspace | null;
-  /**
-   * The paperclip callback bridge the run started, or null before
-   * `startTransport` or on the host lane. `startTransport` sets it before it
-   * rethrows a partial-bring-up failure, so an abandon path can stop the bridge
-   * that started when its sibling threw.
-   */
   readonly controlBridge: AdapterExecutionTargetWardmoteBridgeHandle | null;
   /** The process-session bridge the run started, or null before `startTransport`. */
   readonly agentBridge: AdapterExecutionTargetProcessSessionBridgeHandle | null;
@@ -327,27 +320,15 @@ export function createSandboxRunSite(options: SandboxRunSiteOptions): SandboxRun
     },
 
     async startTransport(): Promise<SandboxRunSiteTransport> {
-      // Bring up both host-side bridges concurrently. Their remote subtrees are
-      // disjoint, so their env-independent setup overlaps. The one real
-      // dependency — the paperclip bridge's returned env must reach the
-      // process-session launch — is sequenced by `launchEnv`, a memoized thunk the
-      // process-session bridge awaits right before its launch.
       const stagedRootDir = staged?.stagedRuntime.runtimeRootDir ?? null;
       const wardmoteStart = options.measureBridgeStep("bridge.paperclip", () =>
         options.startWardmoteBridge(stagedRootDir),
       );
-      // The single sequencing point (paperclip env → process-session launch),
-      // memoized so the merge runs exactly once whether the process-session bridge
-      // consumes it at launch or `startTransport` finalizes it below.
       let launchEnvPromise: Promise<Record<string, string>> | null = null;
       let launchEnv: Record<string, string> = {};
       const finalizeLaunchEnv = (): Promise<Record<string, string>> =>
         (launchEnvPromise ??= (async () => {
           const paperclip = await wardmoteStart;
-          // The paperclip bridge token is run-scoped: it lives for this run only and
-          // never enters a reuse payload (Amendment B). The site hands it to the
-          // engine's `finalizeLaunchEnv`, the sole consumer of a contribution, and
-          // retains nothing.
           const contributions: LaunchEnvironmentContribution[] = [];
           if (paperclip) {
             contributions.push({ scope: "run", env: paperclip.env } as unknown as RunScopedContribution);

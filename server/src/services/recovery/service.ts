@@ -1512,11 +1512,6 @@ export function recoveryService(
     )
       return true;
 
-    // A provider thread owns the next wake for a successful external-chat
-    // turn. The Paperclip issue intentionally remains in progress so the next
-    // message can reuse it; that idle state is not stranded execution. Keep
-    // this scoped to the run that actually came from chat so an unrelated
-    // board/internal run on the same issue retains normal recovery semantics.
     if (
       issue.status === "in_progress" &&
       latestRun?.status === "succeeded" &&

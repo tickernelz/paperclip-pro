@@ -455,12 +455,6 @@ async function anySecretNamesAccountHome(
   return true;
 }
 
-// Serializes hire requests that share a company and run, so a retried POST
-// cannot race its original past the idempotency lookup: the lookup, the create
-// and the activity record all happen inside the held section. In-process is
-// the right scope because a Paperclip instance serves its API from one
-// process, and the lock is keyed narrowly enough that unrelated hires never
-// wait on each other.
 const hireRunLocks = new Map<string, Promise<void>>();
 
 async function withHireRunLock<T>(key: string, fn: () => Promise<T>): Promise<T> {
@@ -2530,12 +2524,6 @@ export function agentRoutes(
     };
   }
 
-  // CEO and board-created onboarding chief-of-staff instructions assume the
-  // core paperclip skills (board coordination, planning, hiring, memory).
-  // Union them into these skills-capable hires/creates so their desired skills
-  // match their instructions. Optional role
-  // skills remain removable afterwards. Legacy adapters separately guarantee
-  // the Paperclip operational skill as a runtime invariant.
   function defaultRoleSkillSelections(
     role: string | null | undefined,
     adapterType: string,
@@ -6250,18 +6238,6 @@ export function agentRoutes(
     return ownerUserId;
   };
 
-  /**
-   * Assesses the setup-token confidential transport. The product
-   * owner set a non-negotiable requirement: do not force TLS. Many users run
-   * Paperclip over plain HTTP on a home server or a Tailscale tailnet. So the
-   * route does not block a non-confidential transport. It returns a non-blocking
-   * advisory instead, and the route attaches it to the confidential response.
-   * The client shows a visible disclaimer and lets the login proceed. The
-   * function reads the raw socket TLS bit and the immediate peer address, so the
-   * global `trust proxy` setting cannot change the result. It returns null when
-   * the transport is confidential (direct TLS, a local-trusted loopback, or an
-   * allowlisted TLS proxy), so a confidential response shows no disclaimer.
-   */
   const assessSetupTokenTransport = (req: Request): SetupTokenTransportAdvisory | null => {
     const socket = req.socket as { encrypted?: boolean; remoteAddress?: string };
     const forwardedProto = req.headers["x-forwarded-proto"];

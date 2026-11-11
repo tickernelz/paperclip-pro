@@ -1,19 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { parseStatusFilter } from "../services/issue-list-query.ts";
 
-/**
- * Unit tests for the helper introduced in https://github.com/paperclipai/paperclip/issues/4628
- *
- * Express's default `qs` parser binds repeated query keys (`?status=todo&status=in_progress`)
- * to a `string[]`, but `services/issues.ts` previously called `.split(",")`
- * unconditionally and crashed with a 500. `parseStatusFilter` normalizes all
- * shapes the route can legitimately receive:
- *   - `undefined`
- *   - single string  (`?status=todo`)
- *   - comma-separated string (`?status=todo,in_progress`)
- *   - string array (`?status=todo&status=in_progress`)
- *   - mixed array+CSV (`?status=todo,in_progress&status=done`)
- */
 
 describe("parseStatusFilter", () => {
   it("returns [] for undefined", () => {

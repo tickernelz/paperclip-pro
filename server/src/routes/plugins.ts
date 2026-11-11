@@ -132,7 +132,6 @@ type PluginUiContribution = {
 
 /** Request body for POST /api/plugins/install */
 interface PluginInstallRequest {
-  /** npm package name (e.g., @paperclip/plugin-linear) or local path */
   packageName: string;
   /** Target version for npm packages (optional, defaults to latest) */
   version?: string;
@@ -880,43 +879,6 @@ export function pluginRoutes(
   // IMPORTANT: Static routes must come before parameterized routes
   // to avoid Express matching "ui-contributions" as a :pluginId
 
-  /**
-   * GET /api/plugins/ui-contributions
-   *
-   * Return UI contributions from all plugins in 'ready' state.
-   * Used by the frontend to discover plugin UI slots and launcher metadata.
-   *
-   * The response is normalized for the frontend slot host:
-   * - Only includes plugins with at least one declared UI slot or launcher
-   * - Excludes plugins with null/missing manifestJson (defensive)
-   * - Slots are extracted from manifest.ui.slots
-   * - Launchers are aggregated from legacy manifest.launchers and manifest.ui.launchers
-   *
-   * Example response:
-   * ```json
-   * [
-   *   {
-   *     "pluginId": "plg_123",
-   *     "pluginKey": "paperclip.claude-usage",
-   *     "displayName": "Claude Usage",
-   *     "version": "1.0.0",
-   *     "uiEntryFile": "index.js",
-   *     "slots": [],
-   *     "launchers": [
-   *       {
-   *         "id": "claude-usage-toolbar",
-   *         "displayName": "Claude Usage",
-   *         "placementZone": "toolbarButton",
-   *         "action": { "type": "openModal", "target": "ClaudeUsageView" },
-   *         "render": { "environment": "hostOverlay", "bounds": "wide" }
-   *       }
-   *     ]
-   *   }
-   * ]
-   * ```
-   *
-   * Response: PluginUiContribution[]
-   */
   router.get("/plugins/ui-contributions", async (req, res) => {
     assertBoardOrgAccess(req);
     const plugins = await registry.listByStatus("ready");

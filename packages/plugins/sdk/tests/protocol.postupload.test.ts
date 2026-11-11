@@ -2,11 +2,6 @@ import { describe, expect, it } from "vitest";
 
 import type { PluginPostUploadCommand, PluginSyncOperation } from "../src/protocol.js";
 
-// Phase 1 contract test (PAP-3222 / PAP-3159 #2+#4): the sync operation carries
-// an OPTIONAL, ordered `postUploadCommands` array whose absence is
-// indistinguishable from today's behavior. The field is a structured control
-// command — `{ command; cwd?; timeoutMs? }` — never free interpolation, and per
-// Security Condition C1 may be authored ONLY by Paperclip/adapter code.
 describe("PluginSyncOperation.postUploadCommands", () => {
   it("test_plugin_sync_operation_carries_ordered_post_upload_commands", () => {
     const commands: PluginPostUploadCommand[] = [

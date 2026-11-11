@@ -9,9 +9,6 @@ import { runAssistant, type AssistantTool, type AssistantTurn } from "./public-m
 import { gradeDelegation, gradeReportRetrieval, gradeInvitation, describesInvitationLimitation } from "./public-mcp-grading.js";
 import type { runPublicMcpFlow } from "./public-mcp-flow.js";
 
-/** A real MCP host owned by the evaluation harness, with explicit installation
- * tools. This evaluates invitation comprehension, not a vendor desktop UI.
- * No Paperclip transport or tool exists until a browser approves device OAuth. */
 export async function runPublicMcpInvitationFlow(input: Parameters<typeof runPublicMcpFlow>[0]) {
   const { page, api, fixtures, execution, nonce } = input;
   const team = fixtures.company;

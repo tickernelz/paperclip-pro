@@ -77,7 +77,6 @@ function reportWindows(report: Record<string, unknown>): QuotaWindow[] {
     .map(toWindow);
 }
 
-/** Project `omp usage --json` onto Paperclip's provider quota contract. */
 export async function getOmpQuotaWindows(): Promise<ProviderQuotaResult> {
   const command = resolveOmpCommand({});
   try {

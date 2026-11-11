@@ -1,4 +1,3 @@
-/** Production monitor tool; timers and wake delivery belong to Paperclip. */
 const description = "Schedule, replace, or clear a one-shot task monitor. Omit taskId for your current task; other tasks must also be assigned to you and in progress or review. Supply a future nextCheckAt and notes describing the next check, or monitor: null to clear. A successful receipt reports the persisted monitor; a replay reports its current state without re-arming it. After scheduling your current task, end the turn with wardmote_finish: yielded and continuation.kind monitor. Wardmote will wake you with issue_monitor_due; do not sleep, poll, mark done, or use call_api for this wait.";
 
 export const setTaskMonitorInputSchema = {

@@ -1,10 +1,5 @@
 import type { AdapterEnvironmentCheck } from "@tickernelz/wardmote-adapter-utils";
 
-/**
- * The fixed label a Test result shows when the probe runs on the local
- * Paperclip host. The label is a constant, so a local target check never
- * carries an environment ID, a config value, or a credential-derived string.
- */
 export const ADAPTER_TEST_HOST_TARGET_LABEL = "Wardmote host";
 
 // The login hint may show a login URL. The URL must be a normalized https URL

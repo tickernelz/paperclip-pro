@@ -153,8 +153,6 @@ it.skipIf(process.platform === "win32")("lets launcher cancellation join wrapper
     const stopping = once(wrapper, "message");
     wrapper.send("stop");
     expect((await stopping)[0].message).toBe("stopping");
-    // If Paperclip shared the wrapper group, this would kill its once-handler
-    // during the async close even though the helper sends only one signal.
     const messages: unknown[] = [];
     wrapper.on("message", message => messages.push(message));
     // Process exit is not IPC completion. Register both barriers before

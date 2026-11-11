@@ -166,10 +166,6 @@ export function breakdownSummarySentence(
   return `${sentence}.`;
 }
 
-/**
- * The read-only "Paperclip handles this" mechanics bullets, composed from the
- * config. Bullets 5 and 6 only appear when the wait gate is on.
- */
 export function breakdownMechanicsBullets(
   config: StageBreakdownConfig,
   names: BreakdownCopyNames,

@@ -65,7 +65,6 @@ export interface OmpModelFallbackTracker {
   snapshot(): { primary: string; start: string; active: string; switches: OmpModelFallbackSwitch[] };
 }
 
-/** Follows OMP's in-run model switches and reports each one as a Paperclip run event. */
 export function createOmpModelFallbackTracker(input: {
   primary: string;
   start: string;

@@ -1,18 +1,4 @@
-/**
- * Whimsical gerunds for the live status pill when the label carries no real
- * signal ("Running"/"Working"). Two curated pools: Paperclip's analog-office
- * vocabulary (led by the "Clipping" brand nod) and Claude-Code-style whimsy.
- * Every word is chosen to still read sensibly after-the-fact — a settled turn
- * that once said "Collating…" shouldn't feel like a lie.
- *
- * The pick is deterministic from a seed (the run-scoped status item id) so a
- * re-render never reshuffles the word, and it rotates to the next word every
- * ~10s of elapsed run time.
- */
 
-/** Paperclip / analog-office pool — "Clipping" is the guaranteed brand nod.
- * Board-curated round 2 (PAP-349): dropped Cataloguing / Carbon-copying /
- * Archiving, added the workshop-and-whiteboard verbs. */
 export const ANALOG_OFFICE_WORDS: readonly string[] = [
   "Clipping",
   "Organizing",

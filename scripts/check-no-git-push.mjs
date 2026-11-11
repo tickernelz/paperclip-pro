@@ -1,21 +1,4 @@
 #!/usr/bin/env node
-/**
- * check-no-git-push.mjs
- *
- * Static check that rejects `git push` (and equivalent remote-mutating git
- * invocations) inside adapter/runtime source code.
- *
- * Adapter and runtime code may never push to a git remote: the local
- * execution-workspace cwd is the only persistence boundary between runs
- * (see packages/adapters/AUTHORING.md and PAPA-432). Release tooling and
- * developer scripts that legitimately push are out of scope because they
- * live outside the directories scanned here.
- *
- * Opt-in mechanism: a line containing `paperclip:allow-git-push` (typically
- * inside a `// paperclip:allow-git-push: <reason>` comment on the line itself
- * or the line immediately above) suppresses the match. This is reserved for
- * operator-configured paths that legitimately push and must be reviewed.
- */
 
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";

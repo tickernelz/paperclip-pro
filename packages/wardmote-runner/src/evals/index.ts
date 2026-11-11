@@ -1,4 +1,3 @@
-/** Stable App-owned integration surface for Paperclip Evals. */
 export * from "./build-metadata.js";
 export * from "./compatibility.js";
 export * from "./native-execution.js";

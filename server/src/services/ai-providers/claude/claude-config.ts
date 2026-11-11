@@ -266,19 +266,6 @@ function isNonEmptyString(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
 }
 
-/**
- * Prepare the sandbox runtime that a Claude hello probe needs. The step
- * installs the Claude CLI in the sandbox when the CLI is absent, and it
- * materializes the Paperclip-managed Claude config directory. Both the CLI
- * Test lane and the ACP Test lane call this helper, so the two lanes probe
- * the same login state. The Claude CLI and the Claude ACP engine share the
- * same stored Claude login.
- *
- * The function mutates `env`: it sets `CLAUDE_CONFIG_DIR` to the managed
- * remote config directory when it materializes one. It returns the checks to
- * add to the Test result. An operator-provided `CLAUDE_CONFIG_DIR` wins, so
- * the function keeps it and skips the managed materialization.
- */
 export async function prepareSandboxClaudeProbeRuntime(input: {
   managedAiConnection?: boolean;
   runId: string;

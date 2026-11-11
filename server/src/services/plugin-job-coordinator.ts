@@ -1,28 +1,3 @@
-/**
- * PluginJobCoordinator — bridges the plugin lifecycle manager with the
- * job scheduler and job store.
- *
- * This service listens to lifecycle events and performs the corresponding
- * scheduler and job store operations:
- *
- * - **plugin.loaded** → sync job declarations from manifest, then register
- *   the plugin with the scheduler (computes `nextRunAt` for active jobs).
- *
- * - **plugin.disabled / plugin.unloaded** → unregister the plugin from the
- *   scheduler (cancels in-flight runs, clears tracking state).
- *
- * ## Why a separate coordinator?
- *
- * The lifecycle manager, scheduler, and job store are independent services
- * with clean single-responsibility boundaries. The coordinator provides
- * the "glue" between them without adding coupling. This pattern is used
- * throughout Paperclip (e.g. heartbeat service coordinates timers + runs).
- *
- * @see PLUGIN_SPEC.md §17 — Scheduled Jobs
- * @see ./plugin-job-scheduler.ts — Scheduler service
- * @see ./plugin-job-store.ts — Persistence layer
- * @see ./plugin-lifecycle.ts — Plugin state machine
- */
 
 import type { PluginLifecycleManager } from "./plugin-lifecycle.js";
 import type { PluginJobScheduler } from "./plugin-job-scheduler.js";

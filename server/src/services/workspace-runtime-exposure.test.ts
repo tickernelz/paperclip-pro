@@ -49,8 +49,6 @@ afterEach(async () => {
 });
 
 function serviceCommand() {
-  // Answers `/api/health` the way a real Paperclip dev runtime does: managed
-  // publication requires semantic health, not just a 200 (PAP-17572).
   return `node -e 'console.log("fixture started",process.pid,Date.now());const http=require("http");const p=Number(process.env.PORT);for(const q of [p,p+10000].filter(q=>q<65536))http.createServer((rq,r)=>{if(rq.url==="/api/health"){r.setHeader("content-type","application/json");r.end(JSON.stringify({status:"ok"}));return}r.statusCode=200;r.end("ok")}).listen(q,"127.0.0.1",()=>console.log("fixture listening",q,Date.now()));setInterval(()=>{},1000)'`;
 }
 
@@ -307,11 +305,6 @@ const DECLARED_EXPOSE = {
   failurePolicy: "fail_closed",
 } as const;
 
-/**
- * The pre-feature Paperclip App project template, verbatim: a hard-coded HTTP
- * `urlTemplate`, a pinned port outside the broker's dedicated range, and no
- * exposure declaration at all.
- */
 const LEGACY_HTTP_EXPOSE = {
   type: "url",
   urlTemplate: "http://paperclip-dev:{{port}}",

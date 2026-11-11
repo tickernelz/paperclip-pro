@@ -868,7 +868,6 @@ export interface OpenwaApprovalResolution {
   interactionId: string | null;
 }
 
-/** First-writer-wins resolution shared by WhatsApp and Paperclip; throws already_resolved for the loser. */
 export async function resolveOpenwaApproval(
   db: Db,
   input: {
@@ -1188,7 +1187,6 @@ export interface OpenwaApprovalView {
   canResolve: boolean;
 }
 
-/** Paperclip resolution through the generic interaction routes; the route already enforced chat_endpoint_owner. */
 export async function resolveOpenwaApprovalInteraction(
   db: Db,
   input: { companyId: string; issueId: string; interactionId: string; requestId: string; decision: OpenwaApprovalDecision; userId: string; reason?: string | null },
@@ -1308,7 +1306,6 @@ export interface OpenwaApprovalCancellation {
   interactionId: string | null;
 }
 
-/** Paperclip-only cancellation of a pending request by a current endpoint owner; issues no grants and wakes no agent. */
 export async function cancelOpenwaApproval(
   db: Db,
   input: { companyId: string; endpointId: string; requestId: string; userId: string },

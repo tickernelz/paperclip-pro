@@ -1,5 +1,3 @@
-// Upstream GitHub simulation only. Paperclip's discovery, secret resolution,
-// responsible-user authorization, and project creation all remain real.
 if (process.env.NODE_ENV === "test") {
   const realFetch = globalThis.fetch;
   globalThis.fetch = async (input, init) => {

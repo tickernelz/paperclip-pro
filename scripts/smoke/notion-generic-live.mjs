@@ -145,8 +145,6 @@ async function gotoWithVisibleMarker(
         return;
       }
     } catch {
-      // A credential-free Paperclip navigation is safe to repeat once. Do not
-      // retry provider pages or any mutation from this helper.
     }
     if (attempt < attempts) await page.waitForTimeout(500);
   }
@@ -621,9 +619,6 @@ async function runSmoke({ config, chromium }) {
       fail("A.connection-isolation", "connection_name_collision");
     }
 
-    // Fetch only after URL, health, Paperclip login, company, agent, and binding
-    // metadata have all passed. The value remains in this process and is never
-    // written to browser artifacts or command arguments.
     activeCheckpoint = "A.secret-binding";
     credential = await fetchNotionTestCredentials(config);
 

@@ -121,21 +121,6 @@ export function useHostContext(): PluginHostContext {
 // useHostNavigation
 // ---------------------------------------------------------------------------
 
-/**
- * Navigate within the Paperclip host without forcing a full document reload.
- *
- * Use `linkProps()` for links so browser-native behavior still works:
- * modifier-click, middle-click, copy-link, and open-in-new-tab all use the
- * returned real `href`.
- *
- * @example
- * ```tsx
- * function WikiSidebarLink() {
- *   const hostNavigation = useHostNavigation();
- *   return <a {...hostNavigation.linkProps("/wiki")}>Wiki</a>;
- * }
- * ```
- */
 export function useHostNavigation(): HostNavigation {
   const impl = getSdkUiRuntimeValue<() => HostNavigation>("useHostNavigation");
   return impl();

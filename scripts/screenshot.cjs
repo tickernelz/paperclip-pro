@@ -1,14 +1,4 @@
 #!/usr/bin/env node
-/**
- * Screenshot utility for Paperclip UI.
- *
- * Usage:
- *   node scripts/screenshot.cjs <url-or-path> [output.png] [--width 1280] [--height 800] [--wait 2000]
- *
- * Examples:
- *   node scripts/screenshot.cjs /PAPA/agents/cto/instructions /tmp/shot.png
- *   node scripts/screenshot.cjs http://localhost:5173/PAPA/agents/cto/instructions
- */
 
 const fs = require("fs");
 const path = require("path");
@@ -70,7 +60,6 @@ const origin = new URL(url).origin;
     });
 
     const page = await context.newPage();
-    // Scope the auth header to the Paperclip origin only
     await page.route(`${origin}/**`, async (route) => {
       await route.continue({
         headers: { ...route.request().headers(), Authorization: `Bearer ${cred.token}` },

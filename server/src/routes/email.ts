@@ -29,8 +29,6 @@ function actor(req: Request): EmailActor {
       };
 }
 
-// Provider rejections describe setup/account problems, not Paperclip crashes.
-// Only local messages and operation names reach the UI; never forward a body.
 const agentmailErrorHandler: ErrorRequestHandler = (error, _req, res, next) => {
   if (!(error instanceof AgentmailApiError)) return next(error);
   logger.warn({ operation: error.operation, providerStatus: error.status, providerCode: error.providerCode }, "AgentMail request rejected");
