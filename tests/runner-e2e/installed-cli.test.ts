@@ -15,7 +15,7 @@ async function fixture() {
   const root = await realpath(await mkdtemp(join(tmpdir(), "e2e-installed-cli-"))); roots.push(root);
   const cli = join(root, "node_modules/paperclip-pro"); const server = join(root, "node_modules/@tickernelz/wardmote-server");
   await mkdir(join(cli, "dist"), { recursive: true }); await mkdir(join(server, "dist"), { recursive: true });
-  await writeFile(join(cli, "package.json"), JSON.stringify({ name: "@tickernelz/wardmote", version: "1.2.3", type: "module", bin: { paperclipai: "./dist/index.js" } }));
+  await writeFile(join(cli, "package.json"), JSON.stringify({ name: "@tickernelz/wardmote", version: "1.2.3", type: "module", bin: { wardmote: "./dist/index.js" } }));
   await writeFile(join(server, "package.json"), JSON.stringify({ name: "@tickernelz/wardmote-server", version: "1.2.3", type: "module", exports: { ".": { import: "./dist/index.js" } } }));
   await writeFile(join(cli, "dist/index.js"), "// installed public CLI"); await writeFile(join(server, "dist/index.js"), "// installed public server");
   const env = { WARDMOTE_RUNNER_E2E_INSTALLED_CLI: join(cli, "dist/index.js"), WARDMOTE_RUNNER_E2E_INSTALLED_CLI_SHA256: hash("// installed public CLI"), WARDMOTE_RUNNER_E2E_INSTALLED_SERVER_ROOT: server, WARDMOTE_RUNNER_E2E_INSTALLED_SERVER_SHA256: hash("// installed public server") };

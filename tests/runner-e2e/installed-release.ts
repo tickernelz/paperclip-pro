@@ -8,7 +8,7 @@ export function installedReleaseLaunch(cliPath: string) {
   const root = path.resolve(path.dirname(cli), "..");
   const manifest = JSON.parse(readFileSync(path.join(root, "package.json"), "utf8"));
   if (path.basename(cli) !== "index.js" || path.basename(path.dirname(cli)) !== "dist" ||
-      manifest.name !== "paperclip-pro" || typeof manifest.version !== "string") {
+      manifest.name !== "@tickernelz/wardmote" || typeof manifest.version !== "string") {
     throw new Error("Installed release must use @tickernelz/wardmote/dist/index.js from its public package");
   }
   return { cli, cwd: root, args: [cli, "onboard", "--yes", "--run"], version: manifest.version };

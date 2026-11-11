@@ -62,7 +62,7 @@ it("rejects linked or escaped roots and a shadowed foreign resolved dependency",
   const f = await fixture(); const other = await fixture();
   f.authority.shared=other.authority.shared;await f.seal();await expect(verifyInstalledDaytonaPlugin(f.env,[cell])).rejects.toThrow("escapes");
   f.authority.shared={...other.authority.shared,root:join(f.root,"node_modules/@tickernelz/wardmote-shared")};await f.seal();
-  const nested=join(f.authority.plugin.root,"node_modules/@tickernelz");await mkdir(nested,{recursive:true});await symlink(other.authority.sdk.root,join(nested,"plugin-sdk"));
+  const nested=join(f.authority.plugin.root,"node_modules/@tickernelz");await mkdir(nested,{recursive:true});await symlink(other.authority.sdk.root,join(nested,"wardmote-plugin-sdk"));
   await expect(verifyInstalledDaytonaPlugin(f.env,[cell])).rejects.toThrow("foreign dependency");
   await rm(nested,{recursive:true});await rm(f.authority.shared.root,{recursive:true});await symlink(other.authority.shared.root,f.authority.shared.root);
   await expect(verifyInstalledDaytonaPlugin(f.env,[cell])).rejects.toThrow("canonical and unlinked");
