@@ -4910,7 +4910,7 @@ export function createAcpxEngineExecutor(deps: AcpxEngineExecutorOptions = {}) {
         const bridge = prepared.wardmoteBridge;
         if (bridge?.onLoss) {
           const cancelForLoss = (reason: DuplexLossReason) => {
-            void turn.cancel({ reason: `paperclip sandbox duplex channel lost (${reason})` }).catch(() => {});
+            void turn.cancel({ reason: `wardmote sandbox duplex channel lost (${reason})` }).catch(() => {});
             // `cancel()` only asks the agent to end the turn; it does not end
             // the turn by itself. Start the fail-fast deadline the moment the
             // loss latches, so the run does not wait past this bound for an
@@ -5121,7 +5121,7 @@ export function createAcpxEngineExecutor(deps: AcpxEngineExecutorOptions = {}) {
             : channelLost
               ? "paperclip duplex channel lost cleanup"
               : failedTurn
-                ? `paperclip turn ${terminal.status}`
+                ? `wardmote turn ${terminal.status}`
                 : "paperclip completed turn cleanup",
           discardPersistentState: sessionUnavailable || (terminal.status === "cancelled" && !preserveInterruptedSession) || timedOut || channelLost,
           dropWarmEntry: false,
