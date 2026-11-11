@@ -71,17 +71,17 @@ async function assertCasesEnabled(db: Db) {
 }
 
 async function lockCaseUpsertKey(db: CaseRouteDb, input: { companyId: string; caseType: string; key: string | null | undefined }) {
-  const lockKey = `paperclip:case-upsert:${input.companyId}:${input.caseType}:${input.key ?? "<null>"}`;
+  const lockKey = `wardmote:case-upsert:${input.companyId}:${input.caseType}:${input.key ?? "<null>"}`;
   await db.execute(sql`select pg_advisory_xact_lock(hashtext(${lockKey}))`);
 }
 
 async function lockCaseDocumentKey(db: CaseRouteDb, input: { companyId: string; caseId: string; key: string }) {
-  const lockKey = `paperclip:case-document:${input.companyId}:${input.caseId}:${input.key}`;
+  const lockKey = `wardmote:case-document:${input.companyId}:${input.caseId}:${input.key}`;
   await db.execute(sql`select pg_advisory_xact_lock(hashtext(${lockKey}))`);
 }
 
 async function lockCaseLabels(db: CaseRouteDb, input: { companyId: string; caseId: string }) {
-  const lockKey = `paperclip:case-labels:${input.companyId}:${input.caseId}`;
+  const lockKey = `wardmote:case-labels:${input.companyId}:${input.caseId}`;
   await db.execute(sql`select pg_advisory_xact_lock(hashtext(${lockKey}))`);
 }
 
@@ -362,7 +362,7 @@ async function autoLinkRunIssue(db: CaseRouteDb, input: {
 }
 
 async function nextCaseIdentity(db: CaseRouteDb, companyId: string) {
-  await db.execute(sql`select pg_advisory_xact_lock(hashtext(${`paperclip:cases:${companyId}`}))`);
+  await db.execute(sql`select pg_advisory_xact_lock(hashtext(${`wardmote:cases:${companyId}`}))`);
   const [company] = await db
     .select({ issuePrefix: companies.issuePrefix })
     .from(companies)

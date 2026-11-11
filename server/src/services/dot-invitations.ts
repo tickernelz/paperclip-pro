@@ -38,7 +38,7 @@ export function dotInvitationService(db: Db) {
     async create(companyId: string, operatorId: string) {
       if (!await dotRunnerBroker(db).enabled()) throw unprocessable("Turn on OpenAI Dot and Assistant connections in Settings > Features.");
       const database = db;
-      const lockKey = `paperclip:dot-invitation:${companyId}:${operatorId}`;
+      const lockKey = `wardmote:dot-invitation:${companyId}:${operatorId}`;
       return withDedicatedDbConnection(db, lockDb => lockDb.transaction(async lock => {
         await lock.execute(sql`select pg_advisory_xact_lock(hashtextextended(${lockKey}, 0))`);
         // SQL locking also serializes retries on different control-plane replicas.

@@ -11,7 +11,7 @@ import type { CanonicalProviderEvent } from "../../packages/wardmote-runner/src/
 import { CodexSessionState } from "../../packages/wardmote-runner/src/drivers/codex/codex-session-state.js";
 import { mapTerminalTurn } from "../../packages/wardmote-runner/src/drivers/codex/codex-session-terminal.js";
 
-const caller = readActiveStopCaller({ deploymentMode: "local_trusted" }, { session: { userId: "local-board", id: "paperclip:local_implicit:local-board" } });
+const caller = readActiveStopCaller({ deploymentMode: "local_trusted" }, { session: { userId: "local-board", id: "wardmote:local_implicit:local-board" } });
 const cancellationRequestId = "11111111-2222-4333-8444-555555555555";
 type Row = Record<string, any>;
 function fixture(provider: ActiveStopProvider = "copilot") {
@@ -315,10 +315,10 @@ describe("definitely active native permission Stop", () => {
     }
   });
   it.each([
-    [{ deploymentMode: "authenticated" }, { session: { userId: "local-board", id: "paperclip:local_implicit:local-board" } }],
-    [{ deploymentMode: "local_trusted" }, { session: { userId: null, id: "paperclip:local_implicit:local-board" } }],
-    [{ deploymentMode: "local_trusted" }, { session: { userId: "another", id: "paperclip:local_implicit:another" } }],
-    [{ deploymentMode: "local_trusted" }, { session: { userId: "local-board", id: "paperclip:session:local-board" } }],
+    [{ deploymentMode: "authenticated" }, { session: { userId: "local-board", id: "wardmote:local_implicit:local-board" } }],
+    [{ deploymentMode: "local_trusted" }, { session: { userId: null, id: "wardmote:local_implicit:local-board" } }],
+    [{ deploymentMode: "local_trusted" }, { session: { userId: "another", id: "wardmote:local_implicit:another" } }],
+    [{ deploymentMode: "local_trusted" }, { session: { userId: "local-board", id: "wardmote:session:local-board" } }],
   ])("rejects a non-fixture authentication context", (health, session) => expect(() => readActiveStopCaller(health, session)).toThrow());
   it("rejects a Stop dispatch not causally after the pending observation", () => {
     const { f, pending } = settled();

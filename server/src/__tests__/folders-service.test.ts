@@ -418,7 +418,7 @@ describeEmbeddedPostgres("folder service", () => {
     let markLockAcquired!: () => void;
     const lockAcquired = new Promise<void>((resolve) => { markLockAcquired = resolve; });
     const holdLock = new Promise<void>((resolve) => { releaseLock = resolve; });
-    const lockKey = `paperclip:folders:${companyId}`;
+    const lockKey = `wardmote:folders:${companyId}`;
     const blocker = db.transaction(async (tx) => {
       await tx.execute(sql`select pg_advisory_xact_lock(hashtextextended(${lockKey}, 0))`);
       markLockAcquired();
