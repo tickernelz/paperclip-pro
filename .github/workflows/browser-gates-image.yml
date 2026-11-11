@@ -3,9 +3,9 @@ name: Browser gates image
 on:
   push:
     branches: [main]
-    paths: [.github/browser-gates.Dockerfile]
+    paths: [.github/browser-gates.Dockerfile, .github/workflows/browser-gates-image.yml]
   pull_request:
-    paths: [.github/browser-gates.Dockerfile]
+    paths: [.github/browser-gates.Dockerfile, .github/workflows/browser-gates-image.yml]
   workflow_dispatch:
 
 permissions:
@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
-      IMAGE: ghcr.io/${{ github.repository_owner }}/wardmote-browser-gates
+      IMAGE: ghcr.io/${{ github.repository }}/browser-gates
       PUBLISH: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
     steps:
       - uses: actions/checkout@v7
@@ -62,7 +62,7 @@ jobs:
         run: |
           set -euo pipefail
           printf '%s' "$GH_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
-          docker push --quiet "$TAG"
+          docker push "$TAG"
           digest="$(docker image inspect --format '{{index .RepoDigests 0}}' "$TAG")"
           echo "Pin in ci.yml: \`$digest\`" >> "$GITHUB_STEP_SUMMARY"
           echo "digest $digest"
