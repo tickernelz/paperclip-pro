@@ -1268,7 +1268,7 @@ const support = await getEmbeddedPostgresTestSupport();
   it("makes call_my_phone discoverable through the governed gateway and reuses a durable attempt", async () => {
     const f = await phoneToolFixture();
     const tools = await f.gateway.listToolsForSession(f.gatewaySession.token);
-    const tool = tools.find(tool => tool.providerType === "paperclip_speko_voice");
+    const tool = tools.find(tool => tool.providerType === "wardmote_speko_voice");
     expect(tool).toMatchObject({ upstreamToolName: "call_my_phone", connectionId: f.connectionId });
     const call = { sessionToken: f.gatewaySession.token, tool: tool!.name, parameters: {}, idempotencyKey: randomUUID() };
     const result = await f.gateway.executeTool(call);
@@ -1286,7 +1286,7 @@ const support = await getEmbeddedPostgresTestSupport();
     const f = await phoneToolFixture();
     await db.delete(toolProfileBindings).where(eq(toolProfileBindings.targetId, f.agentId));
     await f.service.saveCallbackPreference(f.companyId, f.endpointId, f.request.caller, { phoneNumber: "+12015551234", enabled: true });
-    expect((await f.gateway.listToolsForSession(f.gatewaySession.token)).some(t => t.providerType === "paperclip_speko_voice")).toBe(false);
+    expect((await f.gateway.listToolsForSession(f.gatewaySession.token)).some(t => t.providerType === "wardmote_speko_voice")).toBe(false);
   });
   it("requires the current task requester, company, active endpoint, opt-in and agent assignment", async () => {
     const f = await phoneToolFixture();

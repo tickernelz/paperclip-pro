@@ -310,7 +310,7 @@ export async function githubBotToolsForSession(
       description: entry.description ?? "",
       parametersSchema: entry.inputSchema,
       pluginId: `github-bot:${endpoint.id}`,
-      providerType: "paperclip_github_chat",
+      providerType: "wardmote_github_chat",
       risk: entry.riskLevel === "read" ? "read" : "write",
       applicationId: connection.applicationId,
       applicationKey: "github-chat",
