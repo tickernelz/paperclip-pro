@@ -1031,8 +1031,8 @@ describe("local browser session teardown", () => {
     if (!address || typeof address === "string") throw new Error("sweep server did not bind");
     const sweepBridge = setupLocalBrowserWebSocketServer(sweepServer, postgres.db, {
       service: active.service,
-      pingIntervalMs: 40,
-      silenceLimitMs: 60,
+      pingIntervalMs: 100,
+      silenceLimitMs: 1_000,
     });
 
     const socket = new WebSocket("ws://127.0.0.1:" + address.port + "/api/local-browser/bridge?code=" + start.code);
