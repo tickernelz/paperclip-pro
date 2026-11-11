@@ -9,7 +9,7 @@ Wardmote supports external adapter plugins that can be installed from npm packag
 
 | | Built-in | External |
 |---|---|---|
-| Source location | Inside `paperclip-fork/packages/adapters/` | Separate npm package or local directory |
+| Source location | Inside `wardmote-fork/packages/adapters/` | Separate npm package or local directory |
 | Registration | Hardcoded in three registries | Loaded at startup via plugin system |
 | UI parser | Static import at build time | Dynamically loaded from API (see [UI Parser](/adapters/adapter-ui-parser)) |
 | Distribution | Ships with Wardmote | Published to npm or linked via `file:` |
@@ -42,7 +42,7 @@ my-adapter/
   "version": "1.0.0",
   "type": "module",
   "license": "MIT",
-  "paperclip": {
+  "wardmote": {
     "adapterUiParser": "1.0.0"
   },
   "exports": {

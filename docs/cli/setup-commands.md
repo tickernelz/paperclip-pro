@@ -136,6 +136,6 @@ WARDMOTE_HOME=/custom/home WARDMOTE_INSTANCE_ID=dev pnpm wardmote run
 Or pass `--data-dir` directly on any command:
 
 ```sh
-npx @tickernelz/wardmote run --data-dir ./tmp/paperclip-dev
-npx @tickernelz/wardmote doctor --data-dir ./tmp/paperclip-dev
+npx @tickernelz/wardmote run --data-dir ./tmp/wardmote-dev
+npx @tickernelz/wardmote doctor --data-dir ./tmp/wardmote-dev
 ```

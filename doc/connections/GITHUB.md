@@ -41,7 +41,7 @@ External contributors additionally need **Allow automatic runs for external cont
 Their restricted guest profile and sponsor requirements are unchanged.
 
 The passing-score number field accepts a whole number from 1 to 5, defaulting to 5.
-Paperclip publishes a successful **Paperclip Review** check only after a complete
+Wardmote publishes a successful **Wardmote Review** check only after a complete
 assessment of the current commit meets the threshold; lower scores fail and
 incomplete assessments require action. To block merging, separately require this
 check from the dedicated App in GitHub branch protection or a ruleset. A new head
@@ -63,7 +63,7 @@ managed connection. After approval, setup returns to the connect screen and cont
 GitHub without another instance approval or a service restart.
 
 If an unapproved enrollment link expires, return to setup and select
-**Continue**. Paperclip asks the server for a valid link. The server reuses a
+**Continue**. Wardmote asks the server for a valid link. The server reuses a
 live pending enrollment or replaces an expired one; this does not revoke or
 repeat an existing instance approval.
 
@@ -87,7 +87,7 @@ organization defaults, and are installed only for that agent.
 The connection installation is the credential owner's consent boundary. A
 personal setup may target every agent or a selected set, and runtime resolution
 considers only an enabled, active connection installed for the current agent.
-Within that boundary, Paperclip treats the run's server-resolved
+Within that boundary, Wardmote treats the run's server-resolved
 `responsibleUserId` as its credential principal, including for automated work;
 agents cannot choose or spoof this field. The owner must still be an active
 non-viewer company member at each use. A standing delegation is needed only
@@ -101,7 +101,7 @@ checked with GitHub's `/user` endpoint every 30 days, together with installation
 and repository summary refresh. Routine continuity requires no browser visit.
 
 If GitHub returns an expiring access token and rotating refresh token instead,
-Paperclip stores both encrypted and:
+Wardmote stores both encrypted and:
 
 - refreshes at least one hour before access expiry;
 - forces a rotation at least every 30 days while the instance is active;
@@ -118,7 +118,7 @@ installation-health failure, not as token expiry.
 
 OAuth completion verifies `/user`, every page of `/user/installations`, and every
 page of each installation's accessible repositories. Setup remains incomplete
-until at least one installation and repository are available. Paperclip stores
+until at least one installation and repository are available. Wardmote stores
 the authenticated username and a grant-scoped display snapshot containing only
 repository IDs, full names, installation IDs, and private-repository flags. GitHub stays authoritative:
 this snapshot never authorizes repository access.
@@ -161,7 +161,7 @@ and any workflow `inputs`. The workflow must declare `workflow_dispatch`.
 The GitHub App installation or fine-grained PAT needs **Actions: Read and
 write** for the repository. App owners set that permission on the GitHub App
 registration; installation owners must approve an increase before it takes
-effect. Paperclip's action controls do not grant GitHub permissions.
+effect. Wardmote's action controls do not grant GitHub permissions.
 
 The tool also supports rerunning and cancelling runs and deleting run logs.
 It retains GitHub's destructive classification. Read tools include
@@ -176,7 +176,7 @@ For the shared GitHub account connector, Paperclip Cloud verifies
 `X-Hub-Signature-256` against the exact bounded request
 body before parsing, deduplicates by `X-GitHub-Delivery`, and persists a minimal
 normalized event before returning `202`. Raw webhook payloads are discarded.
-When registering an active binding, Paperclip sends the current user token only
+When registering an active binding, Wardmote sends the current user token only
 inside the signed, payload-bound broker request so Cloud can verify access to
 that exact installation; Cloud neither logs nor persists that proof token.
 Deliveries fan out independently to every enrolled instance bound to the GitHub
@@ -186,7 +186,7 @@ The instance polls with backoff, stores a company-scoped idempotency receipt,
 and acknowledges only successful applications. A merged pull request updates
 its matching external-object snapshot and immediately runs the existing merge-
 confirmation resolver. It wakes the assignee only when that interaction's
-continuation policy requests it; unrelated Paperclip issues are not closed.
+continuation policy requests it; unrelated Wardmote issues are not closed.
 The periodic GitHub merge sweep remains the reconciliation fallback.
 
 Installation lifecycle events refresh or invalidate installation summaries and
@@ -225,7 +225,7 @@ an agent runtime can execute a review.
 
 ### One editable response per request
 
-After accepting authorized GitHub work, Paperclip posts **Working on this…**
+After accepting authorized GitHub work, Wardmote posts **Working on this…**
 before starting the agent. Issue and PR discussion comments use the same GitHub
 comment API; inline-review conversations receive an inline reply. Description
 mentions and automatic tasks also receive a working comment. No new eyes
@@ -241,7 +241,7 @@ The `comment` tool replaces that same comment with the final answer.
 `submit_review` replaces it with the allowed review summary; checks, inline
 findings and explicitly permitted formal reviews remain separate. Corrected
 assessments can update the summary again. Delayed progress cannot overwrite a
-final answer. Native final text stays in Paperclip and creates no extra comment.
+final answer. Native final text stays in Wardmote and creates no extra comment.
 Legacy connections without a saved review configuration retain automatic run
 progress and final replies until upgraded to this tool-owned response model.
 
@@ -256,7 +256,7 @@ that ends without a final reply clears a remaining working state honestly.
 Repository restrictions, person authorization and governed tool checks remain
 in effect for edits. Existing disabled or quarantined tools stay disabled.
 Existing native sessions refresh incompatible tool checkpoints so the agent
-can see `update_comment`. The same Paperclip task and saved history remain.
+can see `update_comment`. The same Wardmote task and saved history remain.
 
 ### Explicit bot mentions and subscriptions
 
@@ -267,7 +267,7 @@ repository/thread identity and body hashes remain bound across restarts. Signed
 image URLs and credentials are never added to durable attachment descriptors.
 
 A manual message naming another connected GitHub bot in the same company does
-not wake this bot through its thread subscription. Paperclip filters that
+not wake this bot through its thread subscription. Wardmote filters that
 delivery before creating task work or adding an acknowledgement. Explicitly
 mentioning both bots allows both to receive the request, subject to their normal
 authorization and repository checks.
@@ -294,4 +294,4 @@ Tokens never appear in arguments, URLs, files, logs, events, or model context,
 and the projection never replaces `HOME`.
 
 Cloud deployment and exact GitHub App registration settings live in
-`paperclip-cloud/docs/github-connector-deploy-bootstrap.md`.
+`wardmote-cloud/docs/github-connector-deploy-bootstrap.md`.

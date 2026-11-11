@@ -2,15 +2,15 @@
 
 **Download a company.**
 
-ClipHub is the public registry where people share, discover, and download Paperclip company configurations. A company template is a portable artifact containing an entire org — agents, reporting structure, adapter configs, role definitions, seed tasks — ready to spin up with one command.
+ClipHub is the public registry where people share, discover, and download Wardmote company configurations. A company template is a portable artifact containing an entire org — agents, reporting structure, adapter configs, role definitions, seed tasks — ready to spin up with one command.
 
 ---
 
 ## What It Is
 
-ClipHub is to Paperclip what a package registry is to a programming language. Paperclip already supports exportable org configs (see [SPEC.md](./SPEC.md) §2). ClipHub is the public directory where those exports live.
+ClipHub is to Wardmote what a package registry is to a programming language. Wardmote already supports exportable org configs (see [SPEC.md](./SPEC.md) §2). ClipHub is the public directory where those exports live.
 
-A user builds a working company in Paperclip — a dev shop, a marketing agency, a research lab, a content studio — exports the template, and publishes it to ClipHub. Anyone can browse, search, download, and spin up that company on their own Paperclip instance.
+A user builds a working company in Wardmote — a dev shop, a marketing agency, a research lab, a content studio — exports the template, and publishes it to ClipHub. Anyone can browse, search, download, and spin up that company on their own Wardmote instance.
 
 The tagline: **you can literally download a company.**
 
@@ -18,7 +18,7 @@ The tagline: **you can literally download a company.**
 
 ## What Gets Published
 
-A ClipHub package is a **company template export** — the portable artifact format defined in the Paperclip spec. It contains:
+A ClipHub package is a **company template export** — the portable artifact format defined in the Wardmote spec. It contains:
 
 | Component | Description |
 |---|---|
@@ -85,9 +85,9 @@ Two ways to use a template:
 
 **Install (fresh start):**
 ```
-paperclip install cliphub:<publisher>/<company-slug>
+wardmote install cliphub:<publisher>/<company-slug>
 ```
-Downloads the template and creates a new company in your local Paperclip instance. You add your own API keys, set budgets, customize agents, and hit go.
+Downloads the template and creates a new company in your local Wardmote instance. You add your own API keys, set budgets, customize agents, and hit go.
 
 **Fork:**
 Forking creates a copy of the template under your own ClipHub account. You can modify it, republish it as your own variant, and the fork lineage is tracked. This enables evolutionary improvement — someone publishes a marketing agency, you fork it, add a social media team, republish.
@@ -118,11 +118,11 @@ Anyone with a GitHub account can publish to ClipHub. Authentication is via GitHu
 
 ### How to Publish
 
-From within Paperclip, export your company as a template, then publish:
+From within Wardmote, export your company as a template, then publish:
 
 ```
-paperclip export --template my-company
-paperclip publish cliphub my-company
+wardmote export --template my-company
+wardmote publish cliphub my-company
 ```
 
 Or use the web UI to upload a template export directly.
@@ -152,7 +152,7 @@ Templates use semantic versioning. Each publish creates an immutable version. Us
 For power users who maintain multiple templates:
 
 ```
-paperclip cliphub sync
+wardmote cliphub sync
 ```
 
 Scans your local exported templates and publishes any that are new or updated. Useful for maintaining a portfolio of company templates from a single repo.
@@ -201,7 +201,7 @@ New accounts have a waiting period before they can publish. This prevents drive-
 
 ## Architecture
 
-ClipHub is a **separate service** from Paperclip itself. Paperclip is self-hosted; ClipHub is a hosted registry that Paperclip instances talk to.
+ClipHub is a **separate service** from Wardmote itself. Wardmote is self-hosted; ClipHub is a hosted registry that Wardmote instances talk to.
 
 ### Integration Points
 
@@ -209,15 +209,15 @@ ClipHub is a **separate service** from Paperclip itself. Paperclip is self-hoste
 |---|---|
 | **ClipHub Web** | Browse, search, discover, comment, star — the website |
 | **ClipHub API** | Registry API for publishing, downloading, searching programmatically |
-| **Paperclip CLI** | `wardmote install`, `wardmote publish`, `wardmote cliphub sync` — built into Paperclip |
-| **Paperclip UI** | "Browse ClipHub" panel in the Paperclip web UI for discovering templates without leaving the app |
+| **Wardmote CLI** | `wardmote install`, `wardmote publish`, `wardmote cliphub sync` — built into Wardmote |
+| **Wardmote UI** | "Browse ClipHub" panel in the Wardmote web UI for discovering templates without leaving the app |
 
 ### Tech Stack
 
 | Layer | Technology |
 |---|---|
-| Frontend | React + Vite (consistent with Paperclip) |
-| Backend | TypeScript + Hono (consistent with Paperclip) |
+| Frontend | React + Vite (consistent with Wardmote) |
+| Backend | TypeScript + Hono (consistent with Wardmote) |
 | Database | PostgreSQL |
 | Search | Vector embeddings for semantic search |
 | Auth | GitHub OAuth |
@@ -261,13 +261,13 @@ Report
 2. Find a template that fits — "Lean SaaS Dev Shop (CEO + CTO + 3 Engineers)"
 3. Read the description, inspect the org chart, check the comments
 4. Run `wardmote install cliphub:acme/lean-saas-shop`
-5. Paperclip creates the company locally with all agents pre-configured
+5. Wardmote creates the company locally with all agents pre-configured
 6. Set your API keys, adjust budgets, add your initial tasks
 7. Hit go
 
 ### "I built something great and want to share it"
 
-1. Build and iterate on a company in Paperclip until it works well
+1. Build and iterate on a company in Wardmote until it works well
 2. Export: `wardmote export --template my-agency`
 3. Publish: `wardmote publish cliphub my-agency`
 4. Fill in description, category, tags on the web UI
@@ -293,13 +293,13 @@ Report
 
 ## Relationship to Paperclip
 
-ClipHub is **not required** to use Paperclip. You can build companies entirely from scratch without ever touching ClipHub. But ClipHub dramatically lowers the barrier to entry:
+ClipHub is **not required** to use Wardmote. You can build companies entirely from scratch without ever touching ClipHub. But ClipHub dramatically lowers the barrier to entry:
 
 - **New users** get a working company in minutes instead of hours
 - **Experienced users** share proven configurations with the community
 - **The ecosystem** compounds — every good template makes the next company easier to build
 
-ClipHub is to Paperclip what a package registry is to a language runtime: optional, but transformative.
+ClipHub is to Wardmote what a package registry is to a language runtime: optional, but transformative.
 
 ---
 
@@ -325,7 +325,7 @@ ClipHub is to Paperclip what a package registry is to a language runtime: option
 - [ ] Agent and team sub-packages
 - [ ] Verified publisher badges
 - [ ] Automated security scanning of adapter configs
-- [ ] "Browse ClipHub" panel in Paperclip web UI
+- [ ] "Browse ClipHub" panel in Wardmote web UI
 - [ ] `wardmote cliphub sync` for bulk publishing
 - [ ] Publisher profiles and portfolios
 
@@ -333,4 +333,4 @@ ClipHub is to Paperclip what a package registry is to a language runtime: option
 
 - Paid / premium templates (everything is free and public, at least initially)
 - Private registries (may be a future enterprise feature)
-- Running companies on ClipHub (it's a registry, not a runtime — consistent with Paperclip's own philosophy)
+- Running companies on ClipHub (it's a registry, not a runtime — consistent with Wardmote's own philosophy)

@@ -1,6 +1,6 @@
 # Google Workspace connections
 
-Paperclip presents Google Workspace as nine independent Apps entries, not as
+Wardmote presents Google Workspace as nine independent Apps entries, not as
 one combined Google connection:
 
 1. Gmail

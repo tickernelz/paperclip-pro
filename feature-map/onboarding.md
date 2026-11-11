@@ -7,7 +7,7 @@ Implementation: [web flow](../ui/src/components/onboarding/OnboardingFlow.tsx), 
 ## Sub-features
 
 - `omp-gate`: OMP must be on PATH (or chosen as a file) at version 18.1.16 or newer before setup continues. The CLI `onboard` command and the first-agent hire enforce it on local installs; the Docker image bundles a pinned OMP (`WARDMOTE_OMP_BUNDLED_VERSION`) and is not gated.
-- `connect`: models are read from OMP's own sign-in (`~/.omp`); Paperclip never copies the credential. Sign-in runs `omp login <provider>` on this machine; on another machine or in Docker the step shows the command to run there.
+- `connect`: models are read from OMP's own sign-in (`~/.omp`); Wardmote never copies the credential. Sign-in runs `omp login <provider>` on this machine; on another machine or in Docker the step shows the command to run there.
 - `first-task`: one text box. The agent is Atlas (role general) with OMP's recommended model and the most recent OMP project folder, all changeable later on the agent page.
 - `remote`: one SSH address; OMP is checked over SSH and the agent gets an SSH environment whose working folder is the remote home folder.
 

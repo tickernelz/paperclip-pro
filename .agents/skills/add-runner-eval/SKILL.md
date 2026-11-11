@@ -1,6 +1,6 @@
 ---
 name: add-runner-eval
-description: Add or extend a Paperclip Runner protocol evaluation definition, roster, assertion, or report fixture with provenance and narrow validation.
+description: Add or extend a Wardmote Runner protocol evaluation definition, roster, assertion, or report fixture with provenance and narrow validation.
 ---
 
 # Add a Runner Eval
@@ -9,7 +9,7 @@ Use this skill for the **Runner Evals** family: a real Runner/provider session
 against a seeded mock control plane. Product browser/server/database/Daytona
 coverage belongs in [add-product-e2e-eval](../add-product-e2e-eval/SKILL.md).
 
-Locate the Paperclip checkout using `WARDMOTE_ROOT` when supplied, or
+Locate the Wardmote checkout using `WARDMOTE_ROOT` when supplied, or
 `git rev-parse --show-toplevel` from a checkout. From outside Git, inspect the
 workspace roots (for example `~/paperclipai/paperclip`) and verify that the
 selected root contains `packages/wardmote-runner` and `tests/runner-e2e`.
@@ -18,7 +18,7 @@ a worktree's parent directory need not contain that repository. Read
 `doc/evals.md` and `packages/wardmote-runner/docs/runner-protocol-live-evals.md`,
 then inspect the nearest existing case, roster, schema, and report test before
 editing. Definitions and authored cases belong in the sibling
-`paperclip-evals/evals/paperclip-runner`; Runner integration, aggregation,
+`wardmote-evals/evals/wardmote-runner`; Runner integration, aggregation,
 viewer, and publication behavior belongs in `packages/wardmote-runner`.
 Keep the control-plane boundary explicit in names and documentation.
 
@@ -33,14 +33,14 @@ separate plan changes:
 
 ```sh
 python3 evals/paperclip-runner/tools/eval_program.py validate \
-  --case evals/paperclip-runner/cases/get-task-context.json \
-  --config evals/paperclip-runner/configs/live-codex-pinned.json
-python3 evals/paperclip-runner/tools/run_live_roster.py validate \
-  --roster evals/paperclip-runner/rosters/live-mini.json --run-id validate-new-case
-python3 evals/paperclip-runner/tools/run_live_campaign.py validate \
-  --campaign evals/paperclip-runner/campaigns/live-direct-full.json
-python3 evals/paperclip-runner/tools/reliability_campaign.py validate \
-  --plan evals/paperclip-runner/campaigns/paperclip-runner-reliability.json
+  --case evals/wardmote-runner/cases/get-task-context.json \
+  --config evals/wardmote-runner/configs/live-codex-pinned.json
+python3 evals/wardmote-runner/tools/run_live_roster.py validate \
+  --roster evals/wardmote-runner/rosters/live-mini.json --run-id validate-new-case
+python3 evals/wardmote-runner/tools/run_live_campaign.py validate \
+  --campaign evals/wardmote-runner/campaigns/live-direct-full.json
+python3 evals/wardmote-runner/tools/reliability_campaign.py validate \
+  --plan evals/wardmote-runner/campaigns/wardmote-runner-reliability.json
 ```
 
 Use nearby positive and negative grader cases/fixtures to calibrate the new
@@ -60,7 +60,7 @@ reasoning may not.
 
 Validate without provider calls first using the commands above and the relevant
 report/render validation documented in the Runner docs. When a live run is
-authorized, pin the Paperclip commit and exact 40-character
+authorized, pin the Wardmote commit and exact 40-character
 `paperclip-evals` commit, select the smallest useful roster, and retain the
 complete provenance and cost record.
 

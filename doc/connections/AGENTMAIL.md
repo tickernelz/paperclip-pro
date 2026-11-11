@@ -11,7 +11,7 @@ back to `agentmail.to`. An explicit choice is preserved across reloads. Receivin
 mode, sender guidance, and trust settings are under **Advanced options**; an
 existing low-trust agent still needs its required work boundary and runtime.
 There is no separate review or Permissions detour. Each provider thread in the
-inbox becomes one Paperclip task. Subjects are not identifiers. The same email
+inbox becomes one Wardmote task. Subjects are not identifiers. The same email
 delivered to two connected inboxes creates two independent tasks.
 
 **Add connection** starts a fresh setup identity, so an earlier unfinished key
@@ -38,7 +38,7 @@ Setup accepts an AgentMail API key or the saved company credential from another
 AgentMail connection. Organization and pod keys create an inbox-scoped runtime
 key. An existing inbox-scoped key can connect only its own inbox. Credentials
 are vaulted and resolved by the server; they are not passed to agents. An inbox
-can have only one non-archived Paperclip endpoint across the instance.
+can have only one non-archived Wardmote endpoint across the instance.
 
 The shared API-key field offers labeled saved credentials and an explicit new-key
 choice. The server filters suggestions by company, provider, active secret, and
@@ -60,7 +60,7 @@ use the shared avatar-aware selector for both options and the selected value.
 An already allocated inbox must finish its original setup before changing accounts.
 
 Verified custom domains are selectable after checking the API key. Complete DNS
-setup in [AgentMail](https://docs.agentmail.to/custom-domains). Paperclip does not
+setup in [AgentMail](https://docs.agentmail.to/custom-domains). Wardmote does not
 register domains or manage DNS.
 
 Debounced address checks search the account's visible inbox list (up to 100
@@ -81,7 +81,7 @@ messages, suggested fixes, URLs, inbox identifiers, and credentials are excluded
 from these diagnostics. These diagnostics do not retry or suppress failures.
 
 Advanced options and the Permissions page explain that an unrestricted inbox can
-receive mail from anyone. Configure sender allowlists in AgentMail; Paperclip does not manage
+receive mail from anyone. Configure sender allowlists in AgentMail; Wardmote does not manage
 or verify them. AgentMail controls new-message and reply lists separately. The
 setup lets the operator review the agent’s trust settings and configure a project
 or root-task boundary for **Low-trust review**. Incoming tasks are placed
@@ -99,7 +99,7 @@ grant stops receiving and sending. Connection creation saves the vaulted binding
 human grants, and agent access in one database transaction.
 The catalog's **Remove connection** action uses the email inbox control API for
 AgentMail, including unfinished drafts. It preserves provider inboxes and task
-history while disconnecting Paperclip and removing its owned runtime credentials.
+history while disconnecting Wardmote and removing its owned runtime credentials.
 
 Each inbox has distinct **Settings**, **Access**, **Conversations**, and
 **Activity** views. Access reuses the saved account's credential and agent controls,
@@ -120,7 +120,7 @@ with an Authorization header, keeping the provider key out of the connection URL
 ([provider handshake](https://www.agentmail.to/docs/api-reference/websockets/websockets)). The service holds a
 renewable database lease, subscribes to the connected inbox, and reconnects with
 backoff. Webhook mode needs the configured public HTTPS webhook base URL. Setup
-registers a Paperclip-owned webhook. The raw request body is verified using Svix
+registers a Wardmote-owned webhook. The raw request body is verified using Svix
 before the inbox is admitted to the shared durable delivery queue.
 The API key needs inbox-scoped `webhook_create`, `webhook_read`, and
 `webhook_delete` permissions in addition to mail access. AgentMail's
@@ -163,7 +163,7 @@ switch. The agent uses an explicit email action; task messages themselves are
 not sent as email. Reply uses Reply-To when present, otherwise the sender;
 reply-all must be requested.
 Bcc is retained in the originating envelope but is not copied to reply inputs.
-Remote email images are not rendered. Attachments use Paperclip's content-type,
+Remote email images are not rendered. Attachments use Wardmote's content-type,
 size, company, and task bounds.
 
 An agent must own the inbox, be assigned the source task, and supply the running
@@ -241,7 +241,7 @@ Delivery callbacks update that publication and do not create new correspondence.
 Retries reuse the same immutable request and provider idempotency key. The worker
 stops automatic retries after 23 hours, conservatively inside AgentMail's 24-hour
 deduplication window. An uncertain receipt can be resolved by matching its
-provider message ID and Paperclip publication header, or by an operator confirming
+provider message ID and Wardmote publication header, or by an operator confirming
 that it was not sent. The latter marks it failed; any resend is a new explicit
 action. Do not change an idempotency key just because a request timed out.
 
@@ -250,9 +250,9 @@ action. Do not change an idempotency key just because a request timed out.
 Reconnect preserves inbox and task identity. Pause stops intake and sending.
 Disconnect archives the local endpoint and removes its credential bindings,
 unreferenced vaulted credentials, and only the webhook/runtime key created by
-Paperclip. It never deletes the provider inbox or task history. If a revoked key
+Wardmote. It never deletes the provider inbox or task history. If a revoked key
 prevents provider cleanup, local disconnection still completes and reports that
-Paperclip's provider registrations need cleanup in AgentMail.
+Wardmote's provider registrations need cleanup in AgentMail.
 
 Connection settings show state, receiving mode, catch-up time and errors. Tasks
 show publication failures and uncertain delivery resolution. Delivery admission,
@@ -318,7 +318,7 @@ Provider references: [inboxes](https://docs.agentmail.to/inboxes),
 
 ### Sandbox execution
 
-AgentMail runs in the Paperclip control plane using its vaulted credentials. It
+AgentMail runs in the Wardmote control plane using its vaulted credentials. It
 is a REST connection, not a local-stdio MCP server. The connection health check
 validates the key against AgentMail; it does not launch a local command or discover
 MCP tools.

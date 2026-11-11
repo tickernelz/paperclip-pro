@@ -23,7 +23,7 @@ hiring permission. Do not reassign the task or create an escalation task to bypa
 the denial. Use the applicable approval flow when available; otherwise save a
 human-input interaction on the current task with `resolverPolicy: "human_only"`
 and `continuationPolicy: "wake_assignee"`, then leave it `in_review`. Use the
-complete human-input payload in the `paperclip` skill; when the requesting user
+complete human-input payload in the `wardmote` skill; when the requesting user
 owns the decision, address it with their actual `addresseeUserId`. A human answer
 does not itself grant permission: recheck authorization before any hire.
 
@@ -38,7 +38,7 @@ Call the discovered operations with `call_api`; the server supplies company and
 authentication context. Read the returned schemas before drafting the hire.
 
 The MCP tool examples below apply to adapters that reach Wardmote through the
-`paperclip*` MCP tools. Wardmote Runner does not expose those tools. Do not
+`wardmote*` MCP tools. Wardmote Runner does not expose those tools. Do not
 search workspace files for a server address or credentials to recreate that path.
 If `search_api` / `call_api` are unavailable, report that hiring requires the
 operator to enable runner API tools for this company. Preserve the proposed hire

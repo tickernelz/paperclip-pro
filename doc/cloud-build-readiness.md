@@ -124,8 +124,8 @@ latency guarantee.
 
 `AWS_POST_MERGE_CI_ENABLED=true` routes cloud source verification and
 exact-master migrator preparation to the
-`paperclip-post-merge` runner group. The separate Fleet label is
-`runs-on/fleet=paperclip-post-merge-x64/env=public-ci`. Its 36 reserved slots use
+`wardmote-post-merge` runner group. The separate Fleet label is
+`runs-on/fleet=wardmote-post-merge-x64/env=public-ci`. Its 36 reserved slots use
 the same four-vCPU, 16-GiB machines as approved PR jobs. PR capacity is reduced
 to 64; the separately provisioned image capacity is unchanged by this retirement.
 This keeps PR bursts from consuming every post-merge verification slot.
@@ -153,7 +153,7 @@ source checks, and npm integrity checks are unchanged.
 
 ## Retired AWS cloud build routing
 
-`AWS_CLOUD_BUILDS_ENABLED` and the `paperclip-cloud-build` runner group no longer
+`AWS_CLOUD_BUILDS_ENABLED` and the `wardmote-cloud-build` runner group no longer
 route a public image job after this retirement. This source change does not
 delete runner groups, Fleets, credentials, registry images, or cache tags. Review
 shared infrastructure ownership separately before removing those resources.
@@ -166,7 +166,7 @@ dependencies only for canonical master pushes that verify the event's exact SHA.
 The `release-typecheck-v2` cache is separate from Runner verification because
 those jobs compile different profiles. The pinned toolchain is selected before
 cache lookup, and the cache action receives the Runner crate through the same
-checkout-independent `$HOME/paperclip-runner-rust` path as the Runner lanes
+checkout-independent `$HOME/wardmote-runner-rust` path as the Runner lanes
 (see `RELEASE-AUTOMATION-SETUP.md`). Workspace crates and installed cargo
 binaries are excluded, and all typechecks still execute. A missing or
 invalidated cache triggers compilation.

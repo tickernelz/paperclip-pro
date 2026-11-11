@@ -1,6 +1,6 @@
 # Release Channels
 
-Paperclip ships on four channels. Pick the one that matches your appetite for
+Wardmote ships on four channels. Pick the one that matches your appetite for
 freshness versus stability — switching is just a matter of which version you
 install.
 

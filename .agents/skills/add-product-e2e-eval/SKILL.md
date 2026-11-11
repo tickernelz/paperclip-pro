@@ -1,11 +1,11 @@
 ---
 name: add-product-e2e-eval
-description: Add or extend a Paperclip full-stack runner E2E workflow, fixture, matcher, or report evidence path for local or Daytona execution.
+description: Add or extend a Wardmote full-stack runner E2E workflow, fixture, matcher, or report evidence path for local or Daytona execution.
 ---
 
 # Add a Product E2E Eval
 
-Use this skill for **Product E2E Evals**: real Chromium, Paperclip server,
+Use this skill for **Product E2E Evals**: real Chromium, Wardmote server,
 database, runner, provider, and optionally Daytona. Everyday Workflows are in
 this family even when their packaged results are imported into Evalbook. Runner
 protocol cases against the mock control plane belong in
@@ -68,7 +68,7 @@ cannot override the independent oracle.
 
 Classify a completed wrong workflow as product or model/provider behavior as
 the assertions warrant. Startup, transport, and timeout symptoms require
-evidence-based attribution: they may indicate a Paperclip/Runner product bug,
+evidence-based attribution: they may indicate a Wardmote/Runner product bug,
 provider behavior, or infrastructure. Preserve the observed failure and cause
 separately, keep the existing machine grade/classifier unchanged, and retain
 partial attempts, retries, source SHA, catalog/definition digest, model/profile,

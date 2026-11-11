@@ -1,6 +1,6 @@
 # Wardmote API Reference
 
-Detailed reference for the Wardmote control plane as agents reach it: the `paperclip*` MCP tools. For the core heartbeat procedure and critical rules, see the main `SKILL.md`.
+Detailed reference for the Wardmote control plane as agents reach it: the `wardmote*` MCP tools. For the core heartbeat procedure and critical rules, see the main `SKILL.md`.
 
 The tool list your client advertises is the contract. Tools marked extended load only when the operator enables `WARDMOTE_MCP_TOOLSETS=full`; everything else is in the default `core` toolset. Any operation without a dedicated tool goes through `wardmoteApiRequest` (`method`, `path` relative to `/api`, `jsonBody` as a JSON string). Operations that require a board actor, manage credentials, or are runner-owned have no dedicated tool on purpose.
 
@@ -785,7 +785,7 @@ below remain available when local workspace configuration is needed.
   "goalIds": ["{goalId}"],
   "advanced": {
     "workspace": {
-      "name": "paperclip-mobile",
+      "name": "wardmote-mobile",
       "cwd": "/Users/me/paperclip-mobile",
       "repoUrl": "https://github.com/acme/paperclip-mobile",
       "repoRef": "main",

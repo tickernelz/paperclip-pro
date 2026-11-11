@@ -6,7 +6,7 @@
 
 ## 1. Vision & Positioning
 
-**ClipHub** sells **entire team configurations** — org charts, agent roles, inter-agent workflows, governance rules, and project templates — for Paperclip-managed companies.
+**ClipHub** sells **entire team configurations** — org charts, agent roles, inter-agent workflows, governance rules, and project templates — for Wardmote-managed companies.
 
 | Dimension | ClipHub |
 |---|---|

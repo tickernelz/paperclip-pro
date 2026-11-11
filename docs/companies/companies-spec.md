@@ -294,7 +294,7 @@ Rules:
 
 - `SKILL.md` should follow the Agent Skills spec
 - Wardmote must not require extra top-level fields for skill validity
-- Paperclip-specific extensions must live under `metadata.paperclip` or `metadata.sources`
+- Wardmote-specific extensions must live under `metadata.paperclip` or `metadata.sources`
 - a skill directory may include `scripts/`, `references/`, and `assets/` exactly as the Agent Skills ecosystem expects
 - tools implementing this spec should treat `skills.sh` compatibility as a first-class goal rather than inventing a parallel skill format
 
@@ -310,7 +310,7 @@ allowed-tools:
   - Read
   - Grep
 metadata:
-  paperclip:
+  wardmote:
     tags:
       - engineering
       - review
@@ -433,7 +433,7 @@ Example uses:
 - budgets
 - approval policies
 - project execution workspace policies
-- issue/task Paperclip-only metadata
+- issue/task Wardmote-only metadata
 
 Rules:
 
@@ -541,9 +541,9 @@ Wardmote can map this spec to its runtime model like this:
   - `SKILL.md` -> imported skill package
   - `sources[]` -> provenance and pinned upstream refs
 - Wardmote extension:
-  - `.wardmote.yaml` -> adapter config, runtime config, env input declarations, permissions, budgets, routine triggers, and other Paperclip-specific fidelity
+  - `.wardmote.yaml` -> adapter config, runtime config, env input declarations, permissions, budgets, routine triggers, and other Wardmote-specific fidelity
 
-Inline Paperclip-only metadata that must live inside a shared markdown file should use:
+Inline Wardmote-only metadata that must live inside a shared markdown file should use:
 
 - `metadata.paperclip`
 
@@ -555,7 +555,7 @@ This specification itself remains vendor-neutral and intended for any agent-comp
 
 Wardmote should cut over to this markdown-first package model as the primary portability format.
 
-`paperclip.manifest.json` does not need to be preserved as a compatibility requirement for the future package system.
+`wardmote.manifest.json` does not need to be preserved as a compatibility requirement for the future package system.
 
 For Wardmote, this should be treated as a hard cutover in product direction rather than a long-lived dual-format strategy.
 

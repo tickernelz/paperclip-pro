@@ -926,7 +926,7 @@ describe("wardmote CLI invocation safety", () => {
     const skill = read("skills/wardmote/SKILL.md");
     expect(skill).toContain("CLI safety");
     expect(skill).toContain("npx @tickernelz/wardmote");
-    expect(skill).toContain("Do not use `pnpm paperclip-pro`");
+    expect(skill).toContain("Do not use `pnpm wardmote`");
   });
 
   // ── Backslash line continuation ──────────────────────────────────────────

@@ -13,20 +13,20 @@ the new-agent picker or direct setup page offers the native runner.
 
 Grok Build speaks [ACP over stdio](https://github.com/xai-org/grok-build/blob/main/crates/codegen/xai-grok-pager/docs/user-guide/15-agent-mode.md).
 The runner owns `grok agent --no-leader stdio` through ACPX, including session
-identity, cancellation, recovery and the authenticated Paperclip MCP bridge.
+identity, cancellation, recovery and the authenticated Wardmote MCP bridge.
 ACP permission requests are approved by the runner under the default full-auto
 policy. It does not add `--always-approve`: permission decisions remain under
 the selected ACPX policy. Grok's ACP metadata cannot independently establish
-Paperclip tool authority, so explicitly selecting `approve-paperclip` or
+Wardmote tool authority, so explicitly selecting `approve-paperclip` or
 `approve-reads` returns the approval-required outcome; `deny-all` rejects requests.
-Full auto does not bypass Paperclip's company permissions, governed approvals,
+Full auto does not bypass Wardmote's company permissions, governed approvals,
 or execution-environment boundaries. Isolated ask
 rules override project allow rules, and compatible always-approve settings are
 locked off. Compatible hook/MCP discovery and shell login capture are disabled.
 
 ## Installation and identity
 
-Grok support ships inside the native runner and the public Paperclip server npm
+Grok support ships inside the native runner and the public Wardmote server npm
 artifact. There is no separate Grok npm package, binary payload, or npm lifecycle
 download. The built-in launcher is identified as `builtin:grok-acp` version 1;
 its native runtime identity is `native:grok` version 1.0.13. The historical

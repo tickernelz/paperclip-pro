@@ -22,7 +22,7 @@ pnpm build
 From the Wardmote checkout, with your instance running:
 
 ```sh
-node cli/node_modules/tsx/dist/cli.mjs cli/src/index.ts plugin install /absolute/path/to/paperclip/packages/plugins/sandbox-providers/createos
+node cli/node_modules/tsx/dist/cli.mjs cli/src/index.ts plugin install /absolute/path/to/wardmote/packages/plugins/sandbox-providers/createos
 node cli/node_modules/tsx/dist/cli.mjs cli/src/index.ts plugin list
 node cli/node_modules/tsx/dist/cli.mjs cli/src/index.ts plugin inspect wardmote.createos-sandbox-provider
 ```
@@ -97,7 +97,7 @@ command, and deletes the sandbox. It therefore uses real provider resources.
   Unknown process-creation outcomes and failed process cleanup prevent reuse
   in the current worker; the operator/host must destroy the affected lease.
   No automatic retry of process creation or command execution occurs.
-- Workspace realization at `/paperclip-workspace` and native binary file sync,
+- Workspace realization at `/wardmote-workspace` and native binary file sync,
   including directory archives, file modes, exclusions, symlink containment,
   atomic file downloads, and ordered post-upload commands. This keeps bulk data
   out of CreateOS's 1 MiB managed-process output journal. Ordinary command

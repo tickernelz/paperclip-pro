@@ -21,7 +21,7 @@ against the change summary from git history.
 - [ ] Prerequisites (Node version, pnpm version) are current
 - [ ] Server URL and port are correct
 
-### "What is Paperclip" section
+### "What is Wardmote" section
 - [ ] High-level description is accurate
 - [ ] Step table (Define goal / Hire team / Approve and run) is correct
 
@@ -30,11 +30,11 @@ against the change summary from git history.
 - [ ] No removed adapters still listed
 - [ ] Logos and labels match current adapter names
 
-### "Paperclip is right for you if"
+### "Wardmote is right for you if"
 - [ ] Use cases are still accurate
 - [ ] No claims about capabilities that don't exist
 
-### "Why Paperclip is special"
+### "Why Wardmote is special"
 - [ ] Technical claims are accurate (atomic execution, governance, etc.)
 - [ ] No features listed that were removed or significantly changed
 

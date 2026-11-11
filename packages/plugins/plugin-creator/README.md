@@ -36,7 +36,7 @@ Outside this repo, the scaffold snapshots `@tickernelz/wardmote-plugin-sdk` from
 ```bash
 node packages/plugins/plugin-creator/dist/bin.js @acme/my-plugin \
   --output /absolute/path/to/plugins \
-  --sdk-path /absolute/path/to/paperclip/packages/plugins/sdk
+  --sdk-path /absolute/path/to/wardmote/packages/plugins/sdk
 ```
 
 That gives you an outside-repo local development path before the SDK is published to npm.

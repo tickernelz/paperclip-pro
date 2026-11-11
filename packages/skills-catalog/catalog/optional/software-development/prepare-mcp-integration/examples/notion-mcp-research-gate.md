@@ -8,7 +8,7 @@
 
 ## Application
 
-1. Read the current `paperclip-content/integrations/README.md` and integration
+1. Read the current `wardmote-content/integrations/README.md` and integration
    harness from the content target commit.
 2. Research the official Notion MCP, OAuth, scopes, tools, limits, and admin
    setup. Record URLs and access dates, and mark unknowns rather than guessing.

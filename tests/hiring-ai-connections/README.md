@@ -8,7 +8,7 @@ missing managed-connection bindings.
 Start from a fresh worktree with dependencies installed:
 
 ```sh
-pnpm exec tsx cli/src/index.ts test-drive --data-dir /tmp/paperclip-hiring-qa --no-browser
+pnpm exec tsx cli/src/index.ts test-drive --data-dir /tmp/wardmote-hiring-qa --no-browser
 ```
 
 Use the URL printed at startup. Test-drive may choose another available port when
@@ -78,7 +78,7 @@ destination directory without starting the container:
 ```sh
 mkdir -p /tmp/hiring-native-artifacts
 hiring_image_container=$(docker create "$HIRING_AI_DAYTONA_IMAGE" /bin/true)
-docker cp "$hiring_image_container:/opt/paperclip-runner/provider-pack" /tmp/hiring-native-artifacts/provider-pack
+docker cp "$hiring_image_container:/opt/wardmote-runner/provider-pack" /tmp/hiring-native-artifacts/provider-pack
 docker cp "$hiring_image_container:/usr/local/bin/wardmote-runnerd" /tmp/hiring-native-artifacts/wardmote-runnerd
 docker rm "$hiring_image_container"
 ```

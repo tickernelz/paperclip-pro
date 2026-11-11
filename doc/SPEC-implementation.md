@@ -1,4 +1,4 @@
-# Paperclip V1 Implementation Spec
+# Wardmote V1 Implementation Spec
 
 Status: Implementation contract for first release (V1)
 Date: 2026-04-28
@@ -13,7 +13,7 @@ When there is a conflict, `SPEC-implementation.md` controls V1 behavior.
 
 ## 2. V1 Outcomes
 
-Paperclip V1 must provide a full control-plane loop for autonomous agents:
+Wardmote V1 must provide a full control-plane loop for autonomous agents:
 
 1. A human board creates a company and defines goals.
 2. The board creates and manages agents in an org tree.
@@ -39,7 +39,7 @@ These decisions close open questions from `SPEC.md` for V1.
 | Org graph | Strict tree (`reports_to` nullable root); no multi-manager reporting |
 | Visibility | Issues remain company-open by default. Opt-in `private` issues use task ACLs; deployment exposure flags remain independent of work-object privacy. |
 | Communication | Tasks + comments only (no separate chat system) |
-| Experimental voice transport | Speko browser voice can create or resume a task through the existing chat-connection delivery/publication pipeline. The selected Paperclip agent retains execution authority. Phone support remains gated on live continuation qualification. |
+| Experimental voice transport | Speko browser voice can create or resume a task through the existing chat-connection delivery/publication pipeline. The selected Wardmote agent retains execution authority. Phone support remains gated on live continuation qualification. |
 | Task ownership | Single assignee; atomic checkout required for `in_progress` transition |
 | Task watchdogs | A task watchdog is an explicitly configured, issue-subtree-scoped verification and recovery capacity. It may restore live task paths inside the watched subtree; for issue-thread interaction resolution it is an ordinary agent subject to the same audience and containment checks, not board authority, active-run output monitoring, or general liveness recovery. |
 | Recovery | Liveness/watchdog recovery preserves explicit ownership: continue interrupted local conversations with bounded fresh turns and preserved history, never replay tool calls automatically; retain native ownership and real execution gates; preserve verified stop evidence and reconsider saved post-stop user messages after cleanup; otherwise open visible source-scoped recovery actions by default, use issue-backed recovery only for independent repair work, or require human escalation (see `doc/execution-semantics.md`) |
@@ -161,7 +161,7 @@ Invariant: every business record belongs to exactly one company.
 - `capabilities` text null
 - `adapter_type` text; built-ins are `omp_local`, `wardmote_runner`, `process`, and `http`; rows with a removed adapter type stay readable and disabled
 - `adapter_config` jsonb not null
-- `runtime_config` jsonb not null default `{}`; contains Paperclip runtime policy such as heartbeat scheduling and debug settings
+- `runtime_config` jsonb not null default `{}`; contains Wardmote runtime policy such as heartbeat scheduling and debug settings
 - `default_environment_id` uuid fk `environments.id` null
 - `context_mode` enum: `thin | fat` default `thin`
 - `budget_monthly_cents` int not null default 0
@@ -230,9 +230,9 @@ Invariant: at least one root `company` level goal per company.
 
 Invariant:
 
-- project env is merged into run environment for issues in that project and overrides conflicting agent env keys before Paperclip runtime-owned keys are injected
+- project env is merged into run environment for issues in that project and overrides conflicting agent env keys before Wardmote runtime-owned keys are injected
 
-Routine execution issues add a routine-scoped env overlay after project env and before Paperclip runtime-owned keys. Routine env uses the same secret-aware binding format, is stored on `routines.env`, is snapshotted in routine revisions, and resolves secret refs against the routine binding target so routine-owned secrets do not require direct bindings on the executing agent.
+Routine execution issues add a routine-scoped env overlay after project env and before Wardmote runtime-owned keys. Routine env uses the same secret-aware binding format, is stored on `routines.env`, is snapshotted in routine revisions, and resolves secret refs against the routine binding target so routine-owned secrets do not require direct bindings on the executing agent.
 
 Project source repositories use the existing `project_workspaces` collection.
 Each selected GitHub repository has a canonical `repo_url` and stable provider ID
@@ -489,12 +489,12 @@ Operational policy:
   - Every content type is accepted by default (executables, archives, unknown binaries); an empty or unknown type is stored as `application/octet-stream` with the original filename. An operator can restrict types with `WARDMOTE_ALLOWED_ATTACHMENT_TYPES` (comma-separated MIME types or `type/*` / `prefix.*` patterns); size is bounded by the Instance Settings upload limit (1-500 MB), else `WARDMOTE_ATTACHMENT_MAX_BYTES`, else 100 MB. Uploads stream to a temp file under the instance data dir (`data/tmp/uploads`) and are moved into storage, never buffered whole in memory.
   - Attachment reads are company-scoped and expose stable path metadata: `contentPath`/`openPath` for inline-safe viewing and `downloadPath` for forced download.
   - Inline-safe responses use `Content-Disposition: inline`; unsafe types and explicit download requests use `attachment`.
-  - Script-capable content (HTML, XHTML, SVG, JavaScript, XML and `+xml` types) is always served as an `application/octet-stream` attachment with `X-Content-Type-Options: nosniff` and a sandboxed, deny-by-default CSP; it is never rendered inline on the Paperclip origin. Sanitized SVG image assets under the `assets/` namespace (company logos) keep `image/svg+xml` but are still served as sandboxed attachments.
+  - Script-capable content (HTML, XHTML, SVG, JavaScript, XML and `+xml` types) is always served as an `application/octet-stream` attachment with `X-Content-Type-Options: nosniff` and a sandboxed, deny-by-default CSP; it is never rendered inline on the Wardmote origin. Sanitized SVG image assets under the `assets/` namespace (company logos) keep `image/svg+xml` but are still served as sandboxed attachments.
   - Stored files are never executed by the server; agents treat them as data.
-  - Script-capable content such as HTML is always served as an attachment with `X-Content-Type-Options: nosniff` and a sandboxed, deny-by-default CSP; it is never rendered inline on the Paperclip origin.
+  - Script-capable content such as HTML is always served as an attachment with `X-Content-Type-Options: nosniff` and a sandboxed, deny-by-default CSP; it is never rendered inline on the Wardmote origin.
   - The board can fetch bounded HTML source for a rich preview in an opaque-origin iframe (`sandbox="allow-scripts"`, without `allow-same-origin`). A trusted CSP precedes artifact markup and blocks remote subresources, API connections, forms, and embeds. Rendered/raw icons sit beside Download. Workspace HTML previews return UTF-8 inside JSON under the existing text limits. See `doc/html-artifact-previews.md`.
   - Video attachments are inline-safe and support single `Range: bytes=start-end` requests with `206`, `Content-Range`, and `Accept-Ranges: bytes` for browser playback/seeking.
-- Attachment-backed artifact work products use `type: "artifact"`, `provider: "paperclip"`, and metadata with `attachmentId`, `contentType`, `byteSize`, `contentPath`, `openPath`, `downloadPath`, and optional `originalFilename`.
+- Attachment-backed artifact work products use `type: "artifact"`, `provider: "wardmote"`, and metadata with `attachmentId`, `contentType`, `byteSize`, `contentPath`, `openPath`, `downloadPath`, and optional `originalFilename`.
 - Workspace-only file references use work product `metadata.resourceRef` with `kind: "workspace_file"`, `issueId`, `workspaceKind` (`execution_workspace` or `project_workspace`), `workspaceId`, `relativePath`, optional `line`/`column`, and `displayPath`. These references point at files in a workspace; they do not replace attachment-backed artifacts for deliverables that must be inspectable without workspace access.
 
 ## 7.15 `documents` + `document_revisions` + `issue_documents`
@@ -613,7 +613,7 @@ V1 non-terminal liveness rule:
 - a blocked chain is covered only when each unresolved leaf issue is live or explicitly waiting
 - external waits are durable only when persisted as a bounded monitor/scheduled wake, a first-class blocker with a named owner and action, or healthy delegated child work connected by a blocker edge when the source must wait; parent/child structure alone is not a wait path
 - unmanaged shell jobs, detached sessions, adapter child processes, local polling loops, PIDs, logs, and comments are evidence rather than liveness; a managed runtime service counts only when paired with a persisted monitor, wake, blocker, or delegated issue that owns the next check
-- heartbeat finalization evaluates liveness from persisted Paperclip state; an issue cannot remain healthy `in_progress` solely because the exiting heartbeat started a local/background watcher
+- heartbeat finalization evaluates liveness from persisted Wardmote state; an issue cannot remain healthy `in_progress` solely because the exiting heartbeat started a local/background watcher
 - a continuation cancelled as `issue_continuation_waiting_on_review` first converts a current typed wait target into a first-class wait; without a current target it is classified as `deliberate_wait_without_target` and gives the invokable original owner five normal-model disposition-repair attempts (immediate, then after 60, 120, 240, and 480 seconds, with up to 10 percent jitter)
 - disposition repair revalidates blockers, children, interactions, approvals, monitors, execution stages, queued wakes, active runs, work products, owner invokability, budgets, and governance before every attempt; the attempt bound is keyed by durable source state, so comments or equivalent parked prose do not reset it while durable source-state changes may establish a new fingerprint
 - exhausted disposition repair appears in both task threads as “Agent needs attention,” with recorded attempt details and an explicit retry action; display uses structured recovery evidence, and the server rechecks the exact action, current task state, original owner, pause/approval/dependency/budget gates before restoring the task to todo
@@ -621,7 +621,7 @@ V1 non-terminal liveness rule:
 - the source fingerprint, source-attempt count, next due time, source owner, and return owner persist in the recovery action; startup and periodic reconciliation resume that exact lineage without duplicate wakes, fold it when a current typed wait appears, and reschedule or escalate an expired action that has no live scheduled run
 - source-attempt exhaustion opens one board-owned source-scoped recovery action without changing the source assignee and without waking a substitute agent; the board explicitly chooses whether to repair, retry the original owner, reassign, or resolve
 - an active recovery action counts as a live source or blocker-chain path only while its owner has a live run, queued wake, scheduled retry, typed wait, or explicit board escalation; source and blocker projections consume the same nested recovery-path result
-- when Paperclip cannot safely infer the next action, it surfaces the problem through visible blocked/recovery work instead of silently completing or reassigning work
+- when Wardmote cannot safely infer the next action, it surfaces the problem through visible blocked/recovery work instead of silently completing or reassigning work
 - explicit recovery actions are the liveness primitive; source-scoped actions are the default form, issue-backed recovery is a fallback for independent repair work or safety boundaries, and comments alone are evidence rather than a healthy liveness path
 - recovery-action ownership is separate from source-task ownership: automatic repair and board escalation preserve both source assignee fields; reassignment requires an explicit board decision or a policy-defined serious failure
 - source-scoped recovery routing is cause-keyed: bounded continuity and disposition repair may retry only the original agent; provider-quota failures create/reuse a scheduled wait-recovery monitor; every other exhausted or unsafe path creates/reuses a board-owned recovery action with `routingPolicy: board_escalation_no_takeover_v1` and no substitute-agent wake
@@ -775,7 +775,7 @@ changes so both agent and board edits are visible in the issue activity stream.
 
 ## 9.4 Permission Terminology and Default Visibility Rule
 
-Paperclip keeps company-scoped visibility as the default. The task-ACL foundation adds opt-in private issues while preserving `open` for all existing and unspecified issues.
+Wardmote keeps company-scoped visibility as the default. The task-ACL foundation adds opt-in private issues while preserving `open` for all existing and unspecified issues.
 
 The approved term set is:
 
@@ -1014,7 +1014,7 @@ Non-configurable invariants include authenticated actor identity, exact company 
 
 For avoidance of doubt:
 
-- Local-path imports, updates, resets, and project scans MUST resolve under a Paperclip-known local workspace root or a Paperclip-managed skill root. Arbitrary host filesystem paths are invalid even when the caller is otherwise authorized. Caller-supplied `source`, `sourceLocator`, or similar path strings are descriptive input only; they MUST NOT expand authority beyond those approved roots.
+- Local-path imports, updates, resets, and project scans MUST resolve under a Wardmote-known local workspace root or a Wardmote-managed skill root. Arbitrary host filesystem paths are invalid even when the caller is otherwise authorized. Caller-supplied `source`, `sourceLocator`, or similar path strings are descriptive input only; they MUST NOT expand authority beyond those approved roots.
 - Remote imports and updates MUST normalize to a known source category, require validated HTTPS or catalog sources, and resolve immutable content before install (for example pinned Git commit/content hash or pinned package version). Unknown schemes, unknown source categories, symlink escapes, and out-of-tree files fail closed before persistence.
 - Unsafe executable content, fetch-and-exec patterns, and secret exfiltration or non-redacted secret material are platform safety failures. Policy cannot waive them; the route MUST reject the operation before any new skill version, install, update, or reset is persisted.
 - Mandatory activity attribution is part of the invariant boundary. If the required audit record for a skill mutation or policy mutation cannot be persisted, the mutation MUST fail or roll back; do not return success with missing auditability.
@@ -1372,7 +1372,7 @@ ACP execution failures fail the run; they must not launch a different engine
 with different session, permission, or sandbox semantics. CLI execution requires
 explicit selection. Environment tests report the same engine availability error
 as execution. Codex CLI defaults permit workspace writes and network access for
-Paperclip coordination without disabling its sandbox; explicit operator
+Wardmote coordination without disabling its sandbox; explicit operator
 restrictions and execution-target network denials remain effective.
 
 ## 11.2 Process Adapter
@@ -1456,7 +1456,7 @@ goal unsupported. The Codex app-server driver maps controls to
 `thread/goal/get`, `thread/goal/set`, and `thread/goal/clear`; it observes
 provider-created goal notifications and reconciles with an authoritative get
 after each turn. An active goal suppresses premature run terminalization while
-autonomous turns continue. The Paperclip runner's persistent ACP backend opts
+autonomous turns continue. The Wardmote runner's persistent ACP backend opts
 in through the `_session/goal` extension and advertises its exact action subset.
 Its pinned Codex/Claude executables retain the runner's Linux x64 qualification
 requirement. Direct `codex_local` and `claude_local` adapters currently have no
@@ -1761,7 +1761,7 @@ V1 supports company import/export using a portable package contract:
 
 - markdown-first package rooted at `COMPANY.md`
 - implicit folder discovery by convention
-- `.wardmote.yaml` sidecar for Paperclip-specific fidelity
+- `.wardmote.yaml` sidecar for Wardmote-specific fidelity
 - canonical base package is vendor-neutral and aligned with `docs/companies/companies-spec.md`
 - common conventions:
   - `agents/<slug>/AGENTS.md`
@@ -1775,8 +1775,8 @@ Export/import behavior in V1:
 
 - export emits a clean vendor-neutral markdown package plus `.wardmote.yaml`
 - projects and starter tasks are opt-in export content rather than default package content
-- recurring `TASK.md` entries use `recurring: true` in the base package and Paperclip routine fidelity in `.wardmote.yaml`
-- Paperclip imports recurring task packages as routines instead of downgrading them to one-time issues
+- recurring `TASK.md` entries use `recurring: true` in the base package and Wardmote routine fidelity in `.wardmote.yaml`
+- Wardmote imports recurring task packages as routines instead of downgrading them to one-time issues
 - export strips environment-specific paths (`cwd`, local instruction file paths, inline prompt duplication) while preserving portable project repo/workspace metadata such as `repoUrl`, refs, and workspace-policy references keyed in `.wardmote.yaml`
 - export never includes secret values; env inputs are reported as portable declarations instead
 - export preserves explicit company skill policy and retained legacy skill grants in `.wardmote.yaml`; absence of policy remains the open default
@@ -1886,13 +1886,13 @@ A Photon Cloud project can represent one agent through the existing
 experimental channel subsystem. DMs and explicitly enabled groups create or
 continue task-bound conversations. Linked sender identity is the default;
 telephone numbers, email addresses, names, and group membership do not grant
-Paperclip authority. Photos/files and ordinary questions/confirmations use the
+Wardmote authority. Photos/files and ordinary questions/confirmations use the
 existing attachment, interaction, continuation, and publication contracts.
 Pause and Disconnect govern runtime behavior independently of the UI gate.
 Local Mac access, unsolicited conversations, and SMS/RCS
 fallback are excluded. Live qualification is required before release readiness.
 Pro shared allocation supports DMs only, with sender enrollment in Photon and
-separate identity linking in Paperclip. Shared channels reserve one project, not
+separate identity linking in Wardmote. Shared channels reserve one project, not
 a pool phone number; group admission and publication are disabled. Dedicated
 allocation retains one selected number and individually enabled groups.
 
@@ -1911,7 +1911,7 @@ the existing experimental channel subsystem, on a dedicated agent number or an
 owner's personal number. Linked owners start full-access runs; every other
 sender gets read-only runs whose writes, task creation, cross-chat sends and
 WhatsApp or gateway administration need an owner's approval from WhatsApp or
-Paperclip. Configurable sender lists, chat activation and trigger rules gate
+Wardmote. Configurable sender lists, chat activation and trigger rules gate
 admission; the server never composes WhatsApp text. Secret-issuing gateway
 operations stay in the gateway dashboard, and an endpoint audit records
 triggers, sends, tool calls, approvals and settings changes. The engine is

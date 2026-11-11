@@ -7,15 +7,15 @@ Executes the approved component-convergence scope from `DECISION-SHEET.md`: C5 (
 **If PR #9134 has merged to master (preferred):** create a fresh worktree from the main checkout —
 
 ```bash
-cd ~/Projects/DEV/paperclip
-git fetch origin && git worktree add ../paperclip-run3 -b design/component-convergence origin/master
-cd ../paperclip-run3 && pnpm install
+cd ~/Projects/DEV/wardmote
+git fetch origin && git worktree add ../wardmote-run3 -b design/component-convergence origin/master
+cd ../wardmote-run3 && pnpm install
 ```
 
 **If #9134 is still open:** reuse the existing worktree (it has everything installed and the baselines present) on a stacked branch —
 
 ```bash
-cd ~/Projects/DEV/paperclip-design-simplify
+cd ~/Projects/DEV/wardmote-design-simplify
 git checkout -b design/component-convergence
 ```
 
@@ -29,7 +29,7 @@ Either way: launch `claude` from inside that directory, type `/goal`, paste the 
 ## The /goal paste block
 
 ```
-Converge Paperclip's duplicated hand-rolled UI onto the shared
+Converge Wardmote's duplicated hand-rolled UI onto the shared
 primitives, per the approved scope in doc/design/DECISION-SHEET.md
 items C2, C3, C5, C11. DESIGN.md is the source of truth; read
 doc/design/CHANGING-THE-UI.md and doc/design/RUN3-PROMPT.md first.

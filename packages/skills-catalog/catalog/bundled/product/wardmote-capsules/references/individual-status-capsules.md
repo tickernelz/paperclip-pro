@@ -8,7 +8,7 @@ Use this reference for product UI, onboarding, org surfaces, and heartbeat statu
 2. `ui/src/index.css` - animation timings, reduced-motion behavior, agent gradient token values.
 3. `ui/src/lib/status-colors.ts` - heartbeat status color/motion mapping.
 4. `ui/src/components/OnboardingWizard.tsx` and `ui/src/pages/DesignGuide.tsx` - accepted usage examples.
-5. Website brand guide files under `paperclip-website/src/components/brand/sections/*` - marketing rules and the 12-preset website palette.
+5. Website brand guide files under `wardmote-website/src/components/brand/sections/*` - marketing rules and the 12-preset website palette.
 
 ## Individual Agent Capsule
 

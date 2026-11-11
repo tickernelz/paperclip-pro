@@ -146,7 +146,7 @@ an external-reference secret:
   "name": "prod-stripe-key",
   "provider": "aws_secrets_manager",
   "managedMode": "external_reference",
-  "externalRef": "arn:aws:secretsmanager:us-east-1:123456789012:secret:paperclip/prod/stripe",
+  "externalRef": "arn:aws:secretsmanager:us-east-1:123456789012:secret:wardmote/prod/stripe",
   "providerVersionRef": "version-id-or-label"
 }
 ```
@@ -208,8 +208,8 @@ POST /api/companies/{companyId}/secret-provider-configs
   "isDefault": true,
   "config": {
     "region": "us-east-1",
-    "namespace": "paperclip",
-    "secretNamePrefix": "paperclip",
+    "namespace": "wardmote",
+    "secretNamePrefix": "wardmote",
     "kmsKeyId": "arn:aws:kms:us-east-1:123456789012:key/abcd-...",
     "environmentTag": "production"
   }
@@ -324,7 +324,7 @@ POST /api/companies/{companyId}/secrets
   "provider": "aws_secrets_manager",
   "providerConfigId": "<vault-uuid>",
   "managedMode": "external_reference",
-  "externalRef": "arn:aws:secretsmanager:us-east-1:123456789012:secret:paperclip/prod/stripe"
+  "externalRef": "arn:aws:secretsmanager:us-east-1:123456789012:secret:wardmote/prod/stripe"
 }
 ```
 
@@ -412,7 +412,7 @@ Candidate statuses:
 
 Conflict types are `exact_reference`, `name`, `key`, and
 `provider_guardrail`. AWS refs under Wardmote's own managed namespace are
-blocked as external references; use the Paperclip-managed secret flow for those
+blocked as external references; use the Wardmote-managed secret flow for those
 resources instead.
 
 ### Import Selected Remote References
@@ -459,7 +459,7 @@ The import response is row-level:
       "key": "stripe-production-key",
       "status": "imported",
       "reason": null,
-      "secretId": "<paperclip-secret-id>",
+      "secretId": "<wardmote-secret-id>",
       "conflicts": []
     }
   ]

@@ -1,14 +1,14 @@
-# Paperclip Page Skill
+# Wardmote Page Skill
 
-`wardmote-page` publishes static page directories to a Paperclip-controlled S3
-bucket served through CloudFront. It is the durable Paperclip-owned replacement
+`wardmote-page` publishes static page directories to a Wardmote-controlled S3
+bucket served through CloudFront. It is the durable Wardmote-owned replacement
 for quick `here.now`-style page sharing.
 
 The v1 security posture is:
 
 - CloudFront + ACM + Origin Access Control in front of a private S3 REST origin.
 - Public content only.
-- Dedicated uploader IAM identity, separate from Paperclip attachment storage.
+- Dedicated uploader IAM identity, separate from Wardmote attachment storage.
 - No `s3:DeleteObject`, no `aws s3 sync --delete`, and no bucket/IAM/DNS changes
   from the publish helper.
 - Symlinks, hidden files, unsafe slugs, and accidental overwrites are rejected.
@@ -99,7 +99,7 @@ Credential resolution order inside `publish.sh`:
 Setting both the namespaced key pair and `WARDMOTE_PAGE_AWS_PROFILE` is an
 error.
 
-Recommended Paperclip secret names:
+Recommended Wardmote secret names:
 
 - `wardmote-page-aws-access-key-id`
 - `wardmote-page-aws-secret-access-key`
@@ -110,7 +110,7 @@ and `WARDMOTE_PAGE_AWS_SECRET_ACCESS_KEY`. Never bind them as the global
 `AWS_PROFILE` in the AWS CLI and every SDK, so global names silently switch the
 whole agent run — and every subprocess — to the page-uploader identity and
 break access to anything the uploader cannot reach (Secrets Manager, STS role
-use, other buckets). Do not reuse Paperclip's internal S3 attachment/object
+use, other buckets). Do not reuse Wardmote's internal S3 attachment/object
 storage credentials.
 
 ## AWS Setup
@@ -119,12 +119,12 @@ Run setup with an operator/admin AWS profile. Agents using this skill should not
 create buckets, mutate IAM, change DNS, or manage CloudFront.
 
 ```bash
-export AWS_PROFILE=paperclip-admin
+export AWS_PROFILE=wardmote-admin
 export AWS_REGION=us-east-1
 export BUCKET=wardmote-pages-prod
 export DOMAIN=pages.paperclip.ing
 export UPLOADER_USER=wardmote-page-uploader
-export CLOUDFRONT_COMMENT="Paperclip pages"
+export CLOUDFRONT_COMMENT="Wardmote pages"
 
 aws sts get-caller-identity --profile "$AWS_PROFILE"
 ```
@@ -205,7 +205,7 @@ aws acm request-certificate \
   --region "$ACM_REGION" \
   --domain-name "$DOMAIN" \
   --validation-method DNS \
-  --idempotency-token paperclippages \
+  --idempotency-token wardmotepages \
   > /tmp/wardmote-pages-acm.json
 
 export CERT_ARN="$(jq -r '.CertificateArn' /tmp/wardmote-pages-acm.json)"
@@ -485,7 +485,7 @@ Smoke check:
 curl -I "https://$DOMAIN/404.html"
 ```
 
-## Paperclip Secrets
+## Wardmote Secrets
 
 Create secrets from environment variables so values do not land in shell history:
 
@@ -534,9 +534,9 @@ Create or update the company skill from this package:
 ```bash
 npx @tickernelz/wardmote skills create \
   --company-id <company-id> \
-  --name "Paperclip Page" \
+  --name "Wardmote Page" \
   --slug wardmote-page \
-  --description "Publish static pages to the Paperclip pages host" \
+  --description "Publish static pages to the Wardmote pages host" \
   --body-file .agents/skills/wardmote-page/SKILL.md
 ```
 
@@ -563,7 +563,7 @@ aws iam create-access-key \
 chmod 600 /tmp/wardmote-page-uploader-key-rotation.json
 ```
 
-2. Store new secret versions in Paperclip Secrets.
+2. Store new secret versions in Wardmote Secrets.
 3. Update agent env bindings to the new versions or `latest`.
 4. Run a dry-run and a small publish smoke.
 5. Disable the old key:

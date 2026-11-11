@@ -6,12 +6,12 @@ Use this reference when the request is to generate Wardmote capsule graphics, ca
 
 1. Brand authority: app, website brand guide, feature-video references, and hero-bank spec.
 2. Deterministic identicon/profile-pill prototype:
-   - `paperclip-content/design/PAP-11825/paperclip-capsule-identicon-prototyper/README.md`
+   - `wardmote-content/design/PAP-11825/wardmote-capsule-identicon-prototyper/README.md`
    - `src/identicon.ts`
    - `src/App.tsx`
 3. Website embedded generator:
-   - `paperclip-website/public/brand/generator.js`
-   - `paperclip-website/src/components/brand/sections/08-imagery.html`
+   - `wardmote-website/public/brand/generator.js`
+   - `wardmote-website/src/components/brand/sections/08-imagery.html`
 4. Mirrored graphic-generator contract in this file.
 
 The mirrored contract below was source-mined from the external prototype at commit `36a8a092c6ea6aa85bd0862bafb35ff9b9fab852`, but this skill must not depend on that personal repository being reachable. Treat the mode, palette, and control lists in this reference as the durable workflow contract.

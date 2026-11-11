@@ -19,29 +19,29 @@ In Wardmote, **task** and **issue** refer to the same work item. The UI may use 
 
 ## Authentication
 
-Env vars auto-injected: `WARDMOTE_AGENT_ID`, `WARDMOTE_COMPANY_ID`, `WARDMOTE_RUN_ID`. Optional wake-context vars may also be present: `WARDMOTE_TASK_ID` (issue/task that triggered this wake), `WARDMOTE_WAKE_REASON` (why this run was triggered), `WARDMOTE_WAKE_COMMENT_ID` (specific comment that triggered this wake), `WARDMOTE_APPROVAL_ID`, `WARDMOTE_APPROVAL_STATUS`, and `WARDMOTE_LINKED_ISSUE_IDS` (comma-separated). For local adapters, `WARDMOTE_API_KEY` is auto-injected as a short-lived run JWT; for non-local adapters, your operator should set it in adapter config. The `paperclip*` tools resolve the endpoint and the credential themselves. Never paste the API key or a bridge token into prompts, comments, documents, restored workspace files, or logs.
+Env vars auto-injected: `WARDMOTE_AGENT_ID`, `WARDMOTE_COMPANY_ID`, `WARDMOTE_RUN_ID`. Optional wake-context vars may also be present: `WARDMOTE_TASK_ID` (issue/task that triggered this wake), `WARDMOTE_WAKE_REASON` (why this run was triggered), `WARDMOTE_WAKE_COMMENT_ID` (specific comment that triggered this wake), `WARDMOTE_APPROVAL_ID`, `WARDMOTE_APPROVAL_STATUS`, and `WARDMOTE_LINKED_ISSUE_IDS` (comma-separated). For local adapters, `WARDMOTE_API_KEY` is auto-injected as a short-lived run JWT; for non-local adapters, your operator should set it in adapter config. The `wardmote*` tools resolve the endpoint and the credential themselves. Never paste the API key or a bridge token into prompts, comments, documents, restored workspace files, or logs.
 
 Adapters deliver the wake payload in the run prompt. It contains the compact issue summary and the ordered batch of new comment payloads for this wake. Read that prompt section first. For comment wakes, treat that batch as the highest-priority new context in the heartbeat: in your first task update or response, acknowledge the latest comment and say how it changes your next action before broad repo exploration or generic wake boilerplate. Only reach for the comment tools immediately when `fallbackFetchNeeded` is true or you need broader context than the inline batch provides.
 
-Manual local CLI mode (outside heartbeat runs): use `paperclip-pro agent local-cli <agent-id-or-shortname> --company-id <company-id>` to install Wardmote skills for Claude/Codex and print/export the required `WARDMOTE_*` environment variables for that agent identity.
+Manual local CLI mode (outside heartbeat runs): use `wardmote agent local-cli <agent-id-or-shortname> --company-id <company-id>` to install Wardmote skills for Claude/Codex and print/export the required `WARDMOTE_*` environment variables for that agent identity.
 
-**CLI safety — use `npx @tickernelz/wardmote` for content-bearing arguments.** When you run the Wardmote CLI, use `npx @tickernelz/wardmote` for any argument that can hold untrusted content. Untrusted content includes issue text, comment bodies, Markdown, pasted snippets, and model output. `npx @tickernelz/wardmote` runs the CLI binary directly and passes the argument as an inert `argv` value; it does not run a shell over the value. Do not use `pnpm paperclip-pro` for such an argument. `pnpm paperclip-pro` is a `package.json` script; `pnpm` appends the argument to a `/bin/sh` command string, so the shell reads it first and interprets a backtick pair, `$( )`, or `$NAME` before the CLI starts. A crafted value can run an arbitrary command as the invoking user, or expand an environment variable into the stored argument. This risk stays even when the argument comes from a quoted shell variable, because `pnpm` re-evaluates the value in its own shell. Do not use `pnpm exec paperclip-pro` either; the root workspace does not link that binary, so the command fails with `Command "paperclip-pro" not found`. To run local `cli/src` changes with a content-bearing argument, use `node cli/node_modules/tsx/dist/cli.mjs cli/src/index.ts <command> <args>`. See `doc/CLI.md` for the full safe/unsafe matrix.
+**CLI safety — use `npx @tickernelz/wardmote` for content-bearing arguments.** When you run the Wardmote CLI, use `npx @tickernelz/wardmote` for any argument that can hold untrusted content. Untrusted content includes issue text, comment bodies, Markdown, pasted snippets, and model output. `npx @tickernelz/wardmote` runs the CLI binary directly and passes the argument as an inert `argv` value; it does not run a shell over the value. Do not use `pnpm wardmote` for such an argument. `pnpm wardmote` is a `package.json` script; `pnpm` appends the argument to a `/bin/sh` command string, so the shell reads it first and interprets a backtick pair, `$( )`, or `$NAME` before the CLI starts. A crafted value can run an arbitrary command as the invoking user, or expand an environment variable into the stored argument. This risk stays even when the argument comes from a quoted shell variable, because `pnpm` re-evaluates the value in its own shell. Do not use `pnpm exec wardmote` either; the root workspace does not link that binary, so the command fails with `Command "wardmote" not found`. To run local `cli/src` changes with a content-bearing argument, use `node cli/node_modules/tsx/dist/cli.mjs cli/src/index.ts <command> <args>`. See `doc/CLI.md` for the full safe/unsafe matrix.
 
 **Run audit trail:** the tools attach the current run id to every mutating call (checkout, update, comment, create subtask, release) automatically, so your actions stay linked to this heartbeat run without any extra argument.
 
 ## Wardmote MCP Tools
 
-The `paperclip*` tools are how you talk to Wardmote. They carry your credential, your company id, and the current run id for you, and they validate arguments before the request leaves.
+The `wardmote*` tools are how you talk to Wardmote. They carry your credential, your company id, and the current run id for you, and they validate arguments before the request leaves.
 
 - Hot paths map one-to-one: `wardmoteMe`, `wardmoteInboxLite`, `wardmoteCheckoutIssue`, `wardmoteGetHeartbeatContext`, `wardmoteListComments`, `wardmoteAddComment`, `wardmoteUpdateIssue`, `wardmoteCreateChildIssue`, `wardmoteUpsertIssueDocument`, `wardmoteCreateIssueWorkProduct`, `wardmoteReleaseIssue`. The table in **Key Endpoints (Hot Routes)** names the tool for each action.
 - The default toolset is `core` (about 60 tools). The rest of the agent-callable surface ships in the `full` toolset, available when the operator enables `WARDMOTE_MCP_TOOLSETS=full`; until then reach those operations with `wardmoteApiRequest`.
 - `wardmoteApiRequest` is the escape hatch for anything without a dedicated tool. Arguments: `method`, `path` relative to `/api`, and `jsonBody` as a JSON string.
 - Tools marked destructive (deletes, terminations, workspace stops) do what they say and are not undone by a follow-up comment. Read before you write.
 
-## No `paperclip*` tools in this runtime
+## No `wardmote*` tools in this runtime
 
 Some runtimes cannot mount the Wardmote MCP server. If your tool list has no
-`paperclip*` tool, every action below maps to the REST route named in
+`wardmote*` tool, every action below maps to the REST route named in
 [the API reference](references/api-reference.md), called from your terminal:
 
 ```bash
@@ -553,7 +553,7 @@ Load `references/workflows.md` when the task matches one of these:
 ## Cases
 
 Load `references/cases.md` when creating, upserting, documenting, attaching to,
-or linking cases through the agent-facing `paperclip*` case tools, available when
+or linking cases through the agent-facing `wardmote*` case tools, available when
 the operator enables `WARDMOTE_MCP_TOOLSETS=full`.
 
 ## Company Skills Workflow

@@ -132,7 +132,7 @@ The protocol is layered. A connector MAY implement lower layers without higher o
    - Normalized read access to provider tasks. Sufficient for browse/import UX.
 
 2. `Layer 2 — Task Link` (REQUIRED)
-   - Durable external-task ↔ Paperclip-issue association with sync state.
+   - Durable external-task ↔ Wardmote-issue association with sync state.
 
 3. `Layer 3 — Execution Orchestration, Symphony Profile` (RECOMMENDED)
    - Active external states drive Wardmote issue creation/wake; Wardmote checkout/run/retry
@@ -267,7 +267,7 @@ Fields:
 - `externalWorkspaceId`, `externalProjectId` (strings or null)
   - Provider container coordinates (team/project/board/database).
 - `externalTaskId`, `externalKey`, `externalUrl`
-- `originSide` (enum: `paperclip`, `external`, `manual_link`)
+- `originSide` (enum: `wardmote`, `external`, `manual_link`)
   - Which side created the pairing.
 - `syncMode` (enum, Section 4.2.1)
 - `runMode` (enum, Section 4.2.2)
@@ -276,7 +276,7 @@ Fields:
   - Last agreed projected state of both sides; the three-way merge base for conflict detection.
 - `lastExternalRevision` (string or null)
 - `lastWardmoteFingerprint` (string or null)
-  - Hash of the last Paperclip-side state this connector projected outbound.
+  - Hash of the last Wardmote-side state this connector projected outbound.
 - `lastInboundAt`, `lastOutboundAt`, `lastReconcileAt` (timestamps or null)
 - `status` (enum, Section 4.2.3)
 - `statusDetail` (string or null)
@@ -295,12 +295,12 @@ Invariants:
 
 Per-field ownership controlling sync direction and conflict classification.
 
-- Owners: `external`, `paperclip`, `shared`.
+- Owners: `external`, `wardmote`, `shared`.
 - Coverable fields (minimum): `title`, `description`, `state`, `priority`, `labels`, `assignee`,
   `dueAt`.
 - Default policy (RECOMMENDED): `title`/`description`/`priority`/`labels`/`dueAt` owned by
-  `external` for links with `originSide=external` (and by `paperclip` when
-  `originSide=paperclip`); `state` is `shared` and mediated by Section 7.4 and Section 10.3;
+  `external` for links with `originSide=external` (and by `wardmote` when
+  `originSide=wardmote`); `state` is `shared` and mediated by Section 7.4 and Section 10.3;
   `assignee` is never directly synced — it flows through routing (Section 8).
 - Writes from the non-owning side to an owned field MUST NOT be applied silently; they produce a
   conflict entry (Section 11) or are dropped per policy, and the choice MUST be visible in link
@@ -380,7 +380,7 @@ Per-link data flow direction:
 
 Per-link execution posture:
 
-- `paperclip_controlled` — Wardmote governance decides when agents run; external state changes
+- `wardmote_controlled` — Wardmote governance decides when agents run; external state changes
   inform but do not command execution.
 - `symphony_compatible` — active external states create/wake Wardmote work automatically per
   Section 9; the external tracker effectively drives dispatch.
@@ -509,7 +509,7 @@ Transitions MUST be recorded with timestamps and causes in the link record or it
    - The created issue MUST carry: source attribution (provider, external key, URL), the
      normalized description, and routing-resolved assignee (Section 8).
 
-2. `Export` (`originSide=paperclip`)
+2. `Export` (`originSide=wardmote`)
    - A Wardmote issue is projected into the provider via `createTask`.
    - REQUIRED only for connectors declaring write capability.
 
@@ -534,7 +534,7 @@ Title-similarity matching MAY be used to *warn* in import UX; it MUST NOT silent
 - When an external task is deleted/archived: the connector MUST NOT delete or cancel the Wardmote
   issue. Default behavior: mark the link `conflict` (`statusDetail: external task deleted`),
   comment on the Wardmote issue, and let the assignee/operator decide. `import_only` links with
-  no Paperclip-side activity MAY auto-unlink.
+  no Wardmote-side activity MAY auto-unlink.
 - When a Wardmote issue is cancelled/deleted: outbound policy decides whether to comment and/or
   transition the external task; the connector MUST NOT delete the external task unless an
   operator explicitly invokes a delete capability.
@@ -603,7 +603,7 @@ When the external task changes category:
   MUST request stop of a tracker-driven run only when the plugin host declares an issue-scoped
   run-stop capability (Section 9.3). Without that capability, it records a health warning and lets
   the active run finish. It MUST NOT pause the whole agent because that could stop unrelated work.
-  Paperclip-native obligations (approvals in flight, blockers) are unaffected.
+  Wardmote-native obligations (approvals in flight, blockers) are unaffected.
 - `* -> terminal` while the Wardmote issue is active (checked out, running, in review, or carrying
   unresolved blockers/approvals): default is a **conflict**, not silent closure. The issue gets a
   comment naming the external actor and transition; the link enters `conflict` until an agent or
@@ -657,7 +657,7 @@ Requirements:
 
 Comment commands give external users explicit control without new UI in the provider.
 
-- Syntax: line-anchored `/paperclip <verb> [args]`. Minimum verbs: `assign <agent>`,
+- Syntax: line-anchored `/wardmote <verb> [args]`. Minimum verbs: `assign <agent>`,
   `status`, `pause`, `resume`. Connectors MAY add verbs; all verbs MUST be listed in capability
   metadata.
 - Parsing MUST be deterministic connector code. An LLM MUST NOT infer intent from free text.
@@ -677,7 +677,7 @@ Comment commands give external users explicit control without new UI in the prov
 ## 9. Execution Orchestration: Symphony Profile
 
 This section defines how tracker-driven execution maps onto host primitives. It applies to links
-with `runMode=symphony_compatible`; `paperclip_controlled` links use only Sections 9.4–9.5 advice.
+with `runMode=symphony_compatible`; `wardmote_controlled` links use only Sections 9.4–9.5 advice.
 
 ### 9.1 Dispatch Model
 
@@ -822,7 +822,7 @@ inverted, with these rules:
 - `in_review` projects to the mapped `review` state where one exists — the Symphony handoff
   pattern — otherwise stays in `active` with a review-requested comment.
 - `done` projects to the mapped terminal state only when `fieldPolicy.state` permits
-  Paperclip-side closure; otherwise it posts a completion comment and leaves the transition to
+  Wardmote-side closure; otherwise it posts a completion comment and leaves the transition to
   external users.
 - Claim/run state (claimed by which agent, running, retrying, released) SHOULD be projected into a
   custom field or status comment where the provider allows, so external users see liveness.
@@ -861,7 +861,7 @@ where known), `status` (`open`, `resolved`, `dismissed`), `resolution`.
 
 Exposed in the conflict queue UI and as agent-invocable connector tools:
 
-- `keep_paperclip` (push Wardmote value outbound)
+- `keep_wardmote` (push Wardmote value outbound)
 - `keep_external` (apply external value inbound)
 - `merge_manual` (operator/agent supplies the merged value)
 - `unlink`
@@ -1100,7 +1100,7 @@ every reconcile_interval per connector_instance:
 - External-side claim/run state projection into provider custom fields
 - `user_mapping` routing and "assign back to me" flows
 - Lossless rich-text round-trip per provider
-- Comment-command verb extensions (e.g. `/paperclip plan`, `/paperclip qa`)
+- Comment-command verb extensions (e.g. `/wardmote plan`, `/wardmote qa`)
 - Promotion of task links from plugin state to core schema once two providers validate the model
 
 ## Appendix A. Provider Profiles

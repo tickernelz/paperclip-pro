@@ -40,8 +40,8 @@
     {
       "id": "skill:skills/wardmote/SKILL.md:41",
       "kind": "skill_heading",
-      "sourceAnchor": "skills/wardmote/SKILL.md#L41:no-paperclip-tools-in-this-runtime",
-      "heading": "No `paperclip*` tools in this runtime",
+      "sourceAnchor": "skills/wardmote/SKILL.md#L41:no-wardmote-tools-in-this-runtime",
+      "heading": "No `wardmote*` tools in this runtime",
       "primaryDisposition": "control_plane_owned",
       "semanticOperation": "runtime_reconciliation",
       "expectedMockState": "runtime_decision_record"

@@ -700,11 +700,11 @@ match. Docker must be running; the temporary container below is never started.
     *) echo "Use an immutable image digest" >&2; exit 1 ;;
   esac
   docker pull --platform linux/amd64 "$WARDMOTE_E2E_DAYTONA_IMAGE"
-  pack_dir="$(mktemp -d "${TMPDIR:-/tmp}/paperclip-e2e-provider-pack.XXXXXX")"
+  pack_dir="$(mktemp -d "${TMPDIR:-/tmp}/wardmote-e2e-provider-pack.XXXXXX")"
   container_id="$(docker create --platform linux/amd64 --network none \
     --entrypoint /bin/true "$WARDMOTE_E2E_DAYTONA_IMAGE")"
   trap 'docker rm "$container_id" >/dev/null' EXIT
-  docker cp "$container_id:/opt/paperclip-runner/provider-pack/." "$pack_dir/"
+  docker cp "$container_id:/opt/wardmote-runner/provider-pack/." "$pack_dir/"
   test -f "$pack_dir/provider-pack.json"
   printf 'Set WARDMOTE_RUNNER_REMOTE_PROVIDER_PACK_PATH to: %s\n' "$pack_dir"
 )
@@ -942,7 +942,7 @@ by the repository variable `RUNNER_FULL_STACK_E2E_NIGHTLY_ENABLED=true`. Set it
 only after the live acceptance ladder in the architecture plan is green.
 Set `RUNNER_E2E_AWS_ENABLED=true` to route paid cells to the repository-scoped
 ephemeral AWS RunsOn fleet selected by
-`runs-on/fleet=paperclip-public-pr-x64/env=public-ci`. Any other value uses the
+`runs-on/fleet=wardmote-public-pr-x64/env=public-ci`. Any other value uses the
 proven GitHub-hosted `ubuntu-latest` target. Set `RUNNER_E2E_MAX_PARALLEL` to an
 integer from 1–100 on AWS (default 100). The 171-cell default selection takes more than
 one wave at that limit; use suite selectors for smaller campaigns. The fallback runner retains its 1–57 limit and

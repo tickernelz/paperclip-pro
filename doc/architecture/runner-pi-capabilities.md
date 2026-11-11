@@ -89,7 +89,7 @@ required interaction; it does not prove the reasoning setting caused the timeout
 The test remains failed. Profile-13 deterministic, local paid, Runner, native
 control, and Daytona results must be established independently.
 
-| Capability | Native / ACP surface | Paperclip surface | Remaining boundary |
+| Capability | Native / ACP surface | Wardmote surface | Remaining boundary |
 | --- | --- | --- | --- |
 | Supported thinking levels | `get_available_thinking_levels`; ACP available session modes and `thought_level` choices | Pi reasoning-level configuration | Model selection is explicit and unrestricted; historical qualification used the recorded model and level. |
 | Set and verify thinking level | Native `set_thinking_level`, then `get_state`; ACP `session/set_mode` / config option | Saved agent setting, typed runner input, effective-mode admission | Live setting changes during an active turn are not exposed; a new compatible session is required. |
@@ -177,7 +177,7 @@ Compatibility changes preserve the existing rich runtime surface:
   every `cache_warming_decision` with `stop`; no background model refresh is
   authorized by an active or completed Runner turn.
 - Pi's new built-in extensions are disabled by the existing `--no-extensions`.
-  The explicitly loaded Paperclip extension still supplies assigned MCP tools,
+  The explicitly loaded Wardmote extension still supplies assigned MCP tools,
   native questions, permission decisions, instructions, and registered agent files.
 - Structural `system` message boundaries carry prompt/tool declaration changes.
   They pass through without assistant IDs or final-answer authority; malformed
@@ -407,17 +407,17 @@ boundaries explicit.
 | Questions | The owned `paperclip_native_question` tool exposes Pi `select`, `confirm`, `input`, and `editor` through ACP form elicitation. Select is single-choice with stable option IDs. Pi returns `false` for both No and dismissal of confirm, so the tool reports `negative_or_cancelled`; it never invents a confirmed answer. Other methods return explicit cancellation. Permissions and semantic Plan approval remain separate. |
 | Agent files | Only the authenticated execution's registered `agent_files` working copy can become `AGENT_HOME`. The Pi wrapper takes `PAPERCLIP_PI_AGENT_HOME` from the runner's bound launch, ignores ambient `AGENT_HOME`, and admits that canonical directory alongside the task workspace. Protected overlap, directory replacement and symlink escape fail closed. Read-only policy still forbids writes. `PI_CODING_AGENT_DIR` remains private provider state. |
 | Semantic tools | Runner-bound HTTP MCP catalogs (numeric loopback HTTP or assigned HTTPS gateways) register under exact `mcp__<server>__<tool>` names. Calls use an occurrence-scoped delivery ID and preserve the bounded native ID as private ACP-wire provenance, together with the cancellation signal. Common normalized events currently drop that metadata. Authenticated PRP tool handling owns semantic authorization and durable interactions. Only the exact session-assigned gateway URL and credential are used, with redirects disabled. Ambient and unassigned MCP servers are not admitted. |
-| Plans and artifacts | Pi has no native structured plan or artifact channel. Paperclip plan and artifact semantic tools remain available through the MCP bridge; native file edits retain bounded, workspace-confined ACP diff projection. Tool text/image results are preserved, and resource blocks are recorded without following URLs. |
+| Plans and artifacts | Pi has no native structured plan or artifact channel. Wardmote plan and artifact semantic tools remain available through the MCP bridge; native file edits retain bounded, workspace-confined ACP diff projection. Tool text/image results are preserved, and resource blocks are recorded without following URLs. |
 | Steering | Capability-negotiated `pi/steer` issues native RPC `steer` during an active turn. `pi/follow_up` explicitly queues native RPC `follow_up`. Neither is inferred from a second ACP prompt. Each takes `{sessionId, message}` and returns `{accepted: true, sessionId, kind}` with the matching control kind. |
 | Usage | Prompt results sum actual assistant message usage receipts across continuations. Input, output, cache reads/writes, total tokens and Pi-reported pricing estimates have provenance. Context-window occupancy is not billed usage. No receipt means no usage assertion; absent cache or cost fields remain unknown. Pi calculates cost from its model catalog rates, so this is not an authoritative provider bill. |
 | Retry and compaction | The pinned session notice extension preserves bounded, redacted summaries, severity and known native counters/flags separately from assistant text. `agent_settled`, rather than a transient `agent_end`, settles a prompt. A final provider error remains a failed prompt. |
 | Images | The upstream ACP wrapper accepts image blocks, but `AcpxRuntimeTurnInput` and the common adapter currently forward text only. P1: implement typed image content through the common converter and then qualify the exact model; live testing alone cannot close this implementation gap. |
 | Cancellation and death | Cancellation expires live UI waits and calls native abort. Pi process exit rejects pending RPC requests and all active/queued turns. Partial RPC frames, oversized frames, and malformed JSON fail closed. |
-| Fork and clone | Native Pi RPC exposes `fork(entryId)`, `clone`, and `get_fork_messages`; the ACP wrapper and Paperclip controls do not map them. P2: add explicit admitted session operations and verified lineage before exposing controls. |
+| Fork and clone | Native Pi RPC exposes `fork(entryId)`, `clone`, and `get_fork_messages`; the ACP wrapper and Wardmote controls do not map them. P2: add explicit admitted session operations and verified lineage before exposing controls. |
 | HTML export | Native `export_html` is available but unused by this integration. P2: add a bounded workspace artifact export with publication policy before exposing it. |
-| Durable goal and native plan | No mapped native surface. Paperclip semantic tools remain the plan path; no Codex parity is claimed. |
+| Durable goal and native plan | No mapped native surface. Wardmote semantic tools remain the plan path; no Codex parity is claimed. |
 
-`initialize` advertises `_meta.paperclipPi.version = 1`, `steering`,
+`initialize` advertises `_meta.wardmotePi.version = 1`, `steering`,
 `queuedFollowUp`, the four question methods, `nativePermissions`, `promptUsage`,
 `nativePlan: false`, and `pendingRequestRecovery: "live-process-only"`. The common
 host must inspect this advertisement before sending provider extension requests.
@@ -427,7 +427,7 @@ host must inspect this advertisement before sending provider extension requests.
 The [fresh/load model-request proof](../../packages/wardmote-runner/test-fixtures/pi-acp/prompt-delivery.v6.darwin-arm64.json)
 uses the actual pinned wrapper launch helper, owned extension, and Pi SDK
 `AgentSession.prompt` with a synthetic model stream. Captured model requests
-contain the exact composed Paperclip execution prompt, custom instruction-entry
+contain the exact composed Wardmote execution prompt, custom instruction-entry
 content, and current `AGENT_HOME` guidance. A disk-loaded session retains its
 prior reply while receiving changed entry content and a new agent-files root in
 its current system prompt and latest task constraints. The old root is absent
@@ -485,7 +485,7 @@ digest is `sha256:2324d9b47650c12b16f8e2c44dc33637d52f1b22ba8e914623eac4049e7e19
 
 ## Lifetime and recovery
 
-A provider UI request is a live Pi RPC promise. Paperclip's durable interaction
+A provider UI request is a live Pi RPC promise. Wardmote's durable interaction
 can survive a control-plane connection loss while the runner, wrapper, and Pi
 process remain alive. A response is forwarded once to that exact pending request.
 If Pi or the wrapper dies, the interaction must expire; neither a new process nor
@@ -514,8 +514,8 @@ and `prefill` for editor. There are at most 128 unique IDs and unique labels;
 titles, input fields and answers have UTF-8 bounds. Unsupported fields, unoffered
 answers and the reserved permission-title prefix are rejected. Exact retries of
 one native occurrence reuse its pending or completed result. This tool cannot
-approve a native operation or a Paperclip Plan. Durable semantic questions and
-revision-bound Plan approval continue to use assigned Paperclip tools.
+approve a native operation or a Wardmote Plan. Durable semantic questions and
+revision-bound Plan approval continue to use assigned Wardmote tools.
 
 Credential-free tests exercise all four methods through the actual pinned Pi
 AgentSession tool dispatcher and separately through the installed ACP wrapper's
@@ -554,7 +554,7 @@ accepted. Startup package update checks are disabled.
 The wrapper must not infer complete extension registration from process startup.
 It therefore probes
 `get_commands` and requires the exact readiness sentinel
-`paperclip-runtime-ready-v1` / `Paperclip runtime gate v1`. The extension registers
+`paperclip-runtime-ready-v1` / `Wardmote runtime gate v1`. The extension registers
 this command only after gates and every MCP catalog finish initialization. A
 missing sentinel kills the subprocess before the first model prompt.
 
@@ -572,7 +572,7 @@ The published Pi package has a shrinkwrap and a nested dependency graph. Provide
 pack creation must copy the complete installed graph and use the same pinned Pi
 family dependencies, rather than reconstructing the graph from `cli.js` imports.
 The emitted owned extension must be included in every macOS arm64/x64 and Linux
-x64 pack; the candidate materializer emits it at `runtime/extensions/paperclip.js`. The wrapper's `dist/paperclip-runtime.js` is
+x64 pack; the candidate materializer emits it at `runtime/extensions/wardmote.js`. The wrapper's `dist/paperclip-runtime.js` is
 part of its verified package and must never be omitted from a copy or hash.
 
 ## Verification and maintenance
@@ -683,7 +683,7 @@ configuration and an environment without npm or provider credentials. The builde
 checks every locked installed version and upstream shrinkwrap entry (with the
 exact security exception below), applies the
 owned ACP patch, verifies the helper matches its TypeScript source, and compiles
-the owned extension to `runtime/extensions/paperclip.js`.
+the owned extension to `runtime/extensions/wardmote.js`.
 
 Profile v5 replaces only the nested `undici@8.9.0` with `8.10.2`. Both an
 existing-lock resolution and a fresh resolution ignore npm's scoped override
@@ -864,7 +864,7 @@ every field in Pi's native event stream. These are explicit follow-ups:
   consumption; preserve queue content only under the existing content policy.
 - **P2 — extension UI and configuration.** `setStatus`, `setWidget`, `setTitle`,
   and `set_editor_text` messages
-  have no Paperclip UI projection. The admitted extension does not use them.
+  have no Wardmote UI projection. The admitted extension does not use them.
   `notify` retains a bounded message and severity, while interactive `select`,
   `confirm`, `input`, and `editor` have the explicit response bridge. Native
   session-name and thinking-level change events also lack a separate event
@@ -1166,7 +1166,7 @@ passes. Restart and refreshed hello are held until this defect is repaired.
 
 ## Explicit host installation
 
-For a published local Paperclip installation, run `wardmote runtime setup pi`
+For a published local Wardmote installation, run `wardmote runtime setup pi`
 with the same installed CLI and account that owns the server package. This is an
 explicit download and verification step; npm installation and agent launch never
 perform it automatically. It installs only this host's supported platform
@@ -1185,7 +1185,7 @@ The public server carries a self-contained setup tool and small pinned inputs in
 `dist/vendor/wardmote-runner/cli`; the installed host closure lives in that
 server package's `provider-assets/pi/<platform>`. Setup validates an existing
 closure again before accepting it. A corrupt existing installation is left
-untouched and rejected; reinstall the same Paperclip release into a clean package
+untouched and rejected; reinstall the same Wardmote release into a clean package
 location and repeat setup. Concurrent setup is rejected. Cancellation drains the
 current bounded download/build command before removing its private staging tree;
 allow that cleanup to complete before trying again.

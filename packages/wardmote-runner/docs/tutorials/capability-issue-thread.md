@@ -147,7 +147,7 @@ pnpm --filter @tickernelz/wardmote-runner check:capability:ui
 ```
 
 The first writes 24 images — the twelve slugs at 1440×900 and 390×844 — to
-`.paperclip-local/evidence/capability/ui/`. Every mobile capture asserts no horizontal
+`.wardmote-local/evidence/capability/ui/`. Every mobile capture asserts no horizontal
 scroll before the shot. The second re-records and confirms all 24 reproduce
 byte-for-byte, which is the property that makes the fake-mode matrix a stable
 acceptance artifact. Both modes render fixture time only, so a fresh checkout
@@ -178,7 +178,7 @@ Capture the live browser frames (a real browser driving a real Codex turn):
 # Recorded evidence generation is deferred from this release.
 ```
 
-The frames land in `.paperclip-local/evidence/capability/ui-live/`. They are intentionally
+The frames land in `.wardmote-local/evidence/capability/ui-live/`. They are intentionally
 **not** byte-stable — a real provider turn varies — so they are excluded from the
 determinism gate and are the mode that satisfies the final live acceptance
 criteria. A scripted (`mode=fake`) frame cannot.

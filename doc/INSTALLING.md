@@ -115,7 +115,7 @@ Managed code is separate from instance data:
 ```
 
 The `wardmote` shim remains stable while `current` switches atomically
-between complete payloads. Paperclip keeps the two previous managed payloads
+between complete payloads. Wardmote keeps the two previous managed payloads
 for rollback. Configuration, databases, uploads, logs, secrets, and workspaces
 remain under `~/.wardmote/instances/` and are not stored inside CLI payloads.
 
@@ -163,7 +163,7 @@ Run onboarding after a non-interactive installation:
 wardmote onboard
 ```
 
-Interactive onboarding asks whether Paperclip should run as a background
+Interactive onboarding asks whether Wardmote should run as a background
 service when the platform supports one. Automated onboarding deliberately does
 not install a service unless explicitly requested:
 
@@ -190,7 +190,7 @@ wardmote service logs -f
 wardmote service uninstall
 ```
 
-Paperclip uses a systemd user service on Linux and WSL2 systems with user
+Wardmote uses a systemd user service on Linux and WSL2 systems with user
 systemd, and a LaunchAgent on macOS. Containers, WSL1, and systems without a
 supported user service manager receive foreground `wardmote run` guidance
 instead of a hard failure.
@@ -225,7 +225,7 @@ new CLI, atomically flip `current`, and restart an installed service. A failed
 install or verification leaves the previous payload active.
 
 If the service is stopped, start it with `wardmote service start` before
-updating so Paperclip can take the safety backup. Use
+updating so Wardmote can take the safety backup. Use
 `wardmote update --no-backup` only when you intentionally accept updating
 without that rollback safeguard. A never-onboarded instance with no config or
 instance data skips the backup automatically because there is nothing to save.
@@ -239,10 +239,10 @@ wardmote update --rollback
 The `upgrade` command is an alias for `update`. Exact versions and commit SHAs
 are pinned; provide a new target when you want them to move.
 
-## Moving From `@tickernelz/paperclip-pro`
+## Moving From `@tickernelz/wardmote`
 
-Releases up to 2026.1108.0 were published as `@tickernelz/paperclip-pro`. That
-CLI only resolves its own package name, so `paperclip-pro update` stays on the
+Releases up to 2026.1108.0 were published as `@tickernelz/wardmote`. That
+CLI only resolves its own package name, so `wardmote update` stays on the
 last release published under it. Move an existing managed install once with
 the new package; it keeps the same home, database, shims, and service:
 
@@ -253,7 +253,7 @@ wardmote service restart --drain
 
 `wardmote update --rollback` returns to the payload you moved from. To
 install another release published under the old name, run that release's own
-CLI: `npx @tickernelz/paperclip-pro@<version> install --version <version> --yes`.
+CLI: `npx @tickernelz/wardmote@<version> install --version <version> --yes`.
 
 ## Other Installation Methods
 
@@ -313,4 +313,4 @@ wardmote uninstall
 `wardmote uninstall` removes the managed shim, manifest, and CLI payloads.
 It deliberately preserves `~/.wardmote/instances/`, including configuration,
 databases, uploads, logs, secrets, backups, and workspaces. Back up and remove
-that data separately only when you intend to delete the Paperclip instance.
+that data separately only when you intend to delete the Wardmote instance.

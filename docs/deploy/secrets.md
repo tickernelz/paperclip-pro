@@ -129,7 +129,7 @@ plaintext secret values.
 Recommended external ref shape for operator-owned AWS paths:
 
 ```text
-paperclip-ext/{environment}/{company-id}/user-secrets/{definition-key}/{opaque-owner-id}
+wardmote-ext/{environment}/{company-id}/user-secrets/{definition-key}/{opaque-owner-id}
 ```
 
 Guidance:
@@ -143,9 +143,9 @@ Guidance:
   vault id, Region, KMS key id or alias, tag counts, and fingerprint hashes.
   Do not store raw AWS descriptions, full tag maps, token scopes, provider
   error bodies, or anything copied from the secret value.
-- Keep Paperclip-managed AWS values under the Wardmote managed namespace.
+- Keep Wardmote-managed AWS values under the Wardmote managed namespace.
   External refs under that namespace are blocked by guardrails; use the
-  Paperclip-managed flow when Wardmote should create and rotate the value.
+  Wardmote-managed flow when Wardmote should create and rotate the value.
 
 ### IAM Caveats
 

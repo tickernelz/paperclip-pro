@@ -1,6 +1,6 @@
 # Publishing to npm
 
-Low-level reference for how Paperclip packages are prepared and published to npm.
+Low-level reference for how Wardmote packages are prepared and published to npm.
 
 For the maintainer workflow, use [doc/RELEASING.md](RELEASING.md). This document focuses on packaging internals.
 
@@ -13,7 +13,7 @@ Use these scripts:
 - [`scripts/rollback-latest.sh`](../scripts/rollback-latest.sh) to repoint `latest`
 - [`scripts/build-npm.sh`](../scripts/build-npm.sh) for the CLI packaging build
 
-Paperclip no longer uses release branches or Changesets for publishing.
+Wardmote no longer uses release branches or Changesets for publishing.
 
 ## Why the CLI needs special packaging
 
@@ -113,13 +113,13 @@ Notes:
 If the first real publish returns npm `E404`, check npm-side prerequisites before retrying:
 
 - `npm whoami` must succeed first. An expired or missing npm login will block the publish.
-- For an organization-scoped package like `@tickernelz/wardmote-ui`, the `paperclip-pro` npm organization must exist and the publisher must be a member with permission to publish to that scope.
+- For an organization-scoped package like `@tickernelz/wardmote-ui`, the `wardmote` npm organization must exist and the publisher must be a member with permission to publish to that scope.
 - The initial publish must include `--access public` for a public scoped package.
 - npm also requires either account 2FA for publishing or a granular token that is allowed to bypass 2FA.
 
 ## Version formats
 
-Paperclip uses calendar versions:
+Wardmote uses calendar versions:
 
 - stable: `YYYY.MDD.P`
 - canary: `YYYY.MDD.P-canary.N`
@@ -180,7 +180,7 @@ See [doc/RELEASE-AUTOMATION-SETUP.md](RELEASE-AUTOMATION-SETUP.md) for the GitHu
 
 ## Release enrollment for new public packages
 
-Paperclip does not auto-publish every non-private workspace package anymore.
+Wardmote does not auto-publish every non-private workspace package anymore.
 CI publishing is controlled by [`scripts/release-package-manifest.json`](../scripts/release-package-manifest.json).
 
 When you add a new public package:

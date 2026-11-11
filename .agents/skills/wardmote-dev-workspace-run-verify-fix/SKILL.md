@@ -1,16 +1,16 @@
 ---
 name: wardmote-dev-workspace-run-verify-fix
 description: >
-  Run, verify, reseed, and repair Paperclip isolated dev workspace services. Use
+  Run, verify, reseed, and repair Wardmote isolated dev workspace services. Use
   when asked to start or fix a managed project/worktree service and prove health,
   login readiness, cloned data, runtime visibility, and correct port ownership.
 ---
 
-# Paperclip Dev Workspace Run / Verify / Fix
+# Wardmote Dev Workspace Run / Verify / Fix
 
-This skill is for Paperclip-specific development workspaces whose service is
+This skill is for Wardmote-specific development workspaces whose service is
 started through project execution workspace runtime services, typically a
-worktree service such as `paperclip-dev`.
+worktree service such as `wardmote-dev`.
 
 Success means all of these are true:
 
@@ -42,14 +42,14 @@ passed.
   repairing a workspace. Managed workspaces run in their own folders, for
   example `~/.wardmote-worktrees/instances/<slug>/…`.
 - Never trust a `running` / `healthy` runtime row or a passing `/api/health`
-  alone. The `service:paperclip-dev` port is pinned in service config, so a
+  alone. The `service:wardmote-dev` port is pinned in service config, so a
   sibling workspace's process can own the port and still answer health checks.
   Confirm the port owner's real cwd (`readlink /proc/<pid>/cwd`) before and
   after every repair; the runtime row's recorded `cwd` and `pid` can be
   fabricated by port adoption.
-- Read `doc/DEVELOPING.md` before running Paperclip CLI, dev server, worktree,
+- Read `doc/DEVELOPING.md` before running Wardmote CLI, dev server, worktree,
   database, build, or test commands.
-- Use the Paperclip CLI and API as the source of truth for worktree and
+- Use the Wardmote CLI and API as the source of truth for worktree and
   database operations. Do not use `psql`, raw embedded-Postgres commands, or
   ad hoc row copying for the normal fix path.
 - Do not manually copy only auth rows as the final fix. That proves login, but
@@ -74,8 +74,8 @@ Use environment variables when available. Do not print API keys or passwords.
 - `WARDMOTE_COMPANY_ID`: company id
 - `WARDMOTE_AGENT_ID`: current agent id
 - execution workspace id for the worktree service
-- runtime workspace command id, usually `service:paperclip-dev`
-- expected service URL, for example `http://paperclip-dev:40631`
+- runtime workspace command id, usually `service:wardmote-dev`
+- expected service URL, for example `http://wardmote-dev:40631`
 - dev credential owner, if the user supplied one; never post the password
 
 If the execution workspace id or service command id is missing, read the issue,
@@ -119,7 +119,7 @@ curl -sS -X POST \
   -H "Authorization: Bearer $WARDMOTE_API_KEY" \
   -H "X-Wardmote-Run-Id: $WARDMOTE_RUN_ID" \
   -H "Content-Type: application/json" \
-  --data-binary '{"workspaceCommandId":"service:paperclip-dev"}'
+  --data-binary '{"workspaceCommandId":"service:wardmote-dev"}'
 ```
 
 ```sh
@@ -128,7 +128,7 @@ curl -sS -X POST \
   -H "Authorization: Bearer $WARDMOTE_API_KEY" \
   -H "X-Wardmote-Run-Id: $WARDMOTE_RUN_ID" \
   -H "Content-Type: application/json" \
-  --data-binary '{"workspaceCommandId":"service:paperclip-dev"}'
+  --data-binary '{"workspaceCommandId":"service:wardmote-dev"}'
 ```
 
 If the API returns an existing service, treat that as a candidate only. Verify
@@ -136,7 +136,7 @@ its real `/api/health` and its port-owner identity before trusting it.
 
 ## Port conflicts and workspace identity
 
-`service:paperclip-dev` pins an explicit port in service config, so every
+`service:wardmote-dev` pins an explicit port in service config, so every
 workspace that realizes that service claims the same port. On start, service
 adoption will adopt whatever process already owns the port when its command
 line looks similar — and it records the *requested* cwd, not the owner's real
@@ -184,7 +184,7 @@ curl -sS -X POST \
   -H "Authorization: Bearer $WARDMOTE_API_KEY" \
   -H "X-Wardmote-Run-Id: $WARDMOTE_RUN_ID" \
   -H "Content-Type: application/json" \
-  --data-binary '{"workspaceCommandId":"service:paperclip-dev"}'
+  --data-binary '{"workspaceCommandId":"service:wardmote-dev"}'
 ```
 
 6. A restart only holds if the conflicting owner stays stopped. If the port is
@@ -247,7 +247,7 @@ Check the port owner when a process is already listening:
 lsof -nP -iTCP:"$SERVICE_PORT" -sTCP:LISTEN || true
 ```
 
-Use this only to identify and remove a stale matching Paperclip dev-runner
+Use this only to identify and remove a stale matching Wardmote dev-runner
 process after managed stop fails. Do not kill unrelated processes.
 
 ## Verify main control-plane runtime state
@@ -263,7 +263,7 @@ curl -sS \
 
 The target service should show:
 
-- matching workspace command id, usually `service:paperclip-dev`
+- matching workspace command id, usually `service:wardmote-dev`
 - `status: "running"`
 - healthy health fields, if present
 - the same URL you are probing
@@ -274,7 +274,7 @@ stale process through the managed runtime.
 
 ## Verify served workspace runtime state
 
-The cloned Paperclip app must also know about the service. Query the same
+The cloned Wardmote app must also know about the service. Query the same
 execution workspace through the served app when agent auth is available there:
 
 ```sh
@@ -325,7 +325,7 @@ verification was delegated and why.
 
 ### Service URL serves a different workspace (port squat)
 
-Symptom: the workspace URL loads a working Paperclip app, but it is a sibling
+Symptom: the workspace URL loads a working Wardmote app, but it is a sibling
 worktree's app — wrong branch, wrong data, or the UI keeps bouncing you into
 another workspace's pages.
 
@@ -395,7 +395,7 @@ Likely cause: stale Node/web process remained alive after embedded Postgres
 died.
 
 Fix: managed stop first. If the process survives, identify the matching
-Paperclip dev-runner process group for the target port and terminate only that
+Wardmote dev-runner process group for the target port and terminate only that
 group. Then managed start.
 
 Verify: `/api/health` is ok after a stability wait and the runtime record is
@@ -417,7 +417,7 @@ Verify: main runtime row and `/api/health` agree.
 
 ### Served app loses track after full reseed
 
-Symptom: the main app sees `paperclip-dev` running, but the cloned app copied a
+Symptom: the main app sees `wardmote-dev` running, but the cloned app copied a
 runtime-service row whose id does not match the local registry.
 
 Likely cause: normal DB clone copied persisted runtime rows from the primary
@@ -438,7 +438,7 @@ Likely causes: the cloned issue/run/agent state does not match the current
 heartbeat, or the run id is absent in the cloned database after reseed.
 
 Fix: prefer the main control-plane managed runtime path and full reseed. If
-the cloned app state itself must be repaired, use normal Paperclip issue/run
+the cloned app state itself must be repaired, use normal Wardmote issue/run
 transitions first. Do not hide the condition with raw DB edits; report the
 exact guard or missing row if it blocks the normal path.
 
@@ -450,7 +450,7 @@ Each of these has burned a previous repair; check them before deep debugging.
   `~/.wardmote-worktrees/instances/<slug>/logs`. Read them before guessing at
   login or startup failures.
 - Probing the service through a LAN or tailscale IP can return `403` while
-  `127.0.0.1` (or the `paperclip-dev` hostname) works. Probe loopback first
+  `127.0.0.1` (or the `wardmote-dev` hostname) works. Probe loopback first
   before concluding auth is broken.
 - Browser QA that lands on a blank company path (for example `/FOR/...`)
   should switch to a company key that exists in the cloned data (for example

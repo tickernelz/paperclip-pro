@@ -4,12 +4,12 @@ The hero capsule bank is the one approved decorative exception to the rule that 
 
 ## Source Precedence
 
-1. `paperclip-content/td/capsules.md` - byte-accurate technical source for geometry, gradients, grain, crop, and wave.
+1. `wardmote-content/td/capsules.md` - byte-accurate technical source for geometry, gradients, grain, crop, and wave.
 2. Wardmote feature-video HyperFrames skill:
    - `references/capsule-bank-spec.md`
    - `references/brand-tokens.md`
    - `references/composition-recipes.md`
-3. `paperclip-content/videos/wireframe-skill-launch/src/HeroCapsuleBank.tsx` - working Remotion implementation.
+3. `wardmote-content/videos/wireframe-skill-launch/src/HeroCapsuleBank.tsx` - working Remotion implementation.
 
 ## Coordinate System
 

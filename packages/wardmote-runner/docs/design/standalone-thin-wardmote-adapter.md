@@ -627,7 +627,7 @@ packages/wardmote-runner/docs/tutorials/standalone-thin-wardmote-adapter.md
 packages/wardmote-runner/docs/tutorials/end-to-end.md
 packages/wardmote-runner/docs/index.md
 packages/wardmote-runner/docs/architecture.md
-packages/wardmote-runner/.paperclip-local/log.md
+packages/wardmote-runner/.wardmote-local/log.md
 ```
 
 ### Wardmote storage, adapter, finalizer, and read seam
@@ -960,13 +960,13 @@ packages/wardmote-runner/docs/design/standalone-thin-wardmote-adapter.md
 packages/wardmote-runner/docs/index.md
 packages/wardmote-runner/docs/standalone-thin-wardmote-adapter.md
 packages/wardmote-runner/docs/tutorials/standalone-thin-wardmote-adapter.md
-packages/wardmote-runner/.paperclip-local/log.md
+packages/wardmote-runner/.wardmote-local/log.md
 packages/wardmote-runner/package.json
 packages/wardmote-runner/spec/fixtures/status-authority-sdk.json
 packages/wardmote-runner/src/backends/codex-native-backend.ts
 packages/wardmote-runner/src/backends/harness-driver-backend.test.ts
 packages/wardmote-runner/src/backends/harness-driver-backend.ts
-packages/wardmote-runner/src/cli/standalone-paperclip.ts
+packages/wardmote-runner/src/cli/standalone-wardmote.ts
 packages/wardmote-runner/src/conformance/control-plane-port.test.ts
 packages/wardmote-runner/src/conformance/control-plane-port.ts
 packages/wardmote-runner/src/contracts/control-plane-port.ts
@@ -1050,7 +1050,7 @@ instance with the five `WARDMOTE_*` identifiers/auth variables already set):
 
 ```sh
 pnpm --filter @tickernelz/wardmote-runner trace:standalone -- \
-  --target paperclip --scenario happy-path
+  --target wardmote --scenario happy-path
 
 WARDMOTE_API_BASE="${WARDMOTE_API_URL%/}"
 WARDMOTE_API_BASE="${WARDMOTE_API_BASE%/api}"
@@ -1088,7 +1088,7 @@ Legacy fallback proof after disabling the flag:
 
 ```sh
 pnpm --filter @tickernelz/wardmote-runner trace:standalone -- \
-  --target paperclip --scenario legacy-fallback
+  --target wardmote --scenario legacy-fallback
 
 pnpm --filter @tickernelz/wardmote-server exec vitest run \
   src/__tests__/native-runner-standalone.integration.test.ts \

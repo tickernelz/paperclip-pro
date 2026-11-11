@@ -41,7 +41,7 @@ Built-in adapters:
 
 External plugin adapters (install via the adapter manager or API):
 
-- `droid_local`: runs your local Factory Droid CLI (`@henkey/droid-paperclip-adapter`)
+- `droid_local`: runs your local Factory Droid CLI (`@henkey/droid-wardmote-adapter`)
 
 For `omp_local` and other local CLI adapters, Wardmote assumes the CLI is already installed and authenticated on the host machine.
 

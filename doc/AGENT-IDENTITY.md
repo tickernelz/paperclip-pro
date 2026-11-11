@@ -1,7 +1,7 @@
 # Agent cryptographic identity
 
 Each agent has one persistent Ed25519 keypair. New agents receive it in the
-agent-creation transaction. Existing agents receive it when Paperclip prepares
+agent-creation transaction. Existing agents receive it when Wardmote prepares
 their next managed run. Migration, startup, public API reads, and opening the
 agent page do not provision existing agents. There is no backfill command.
 
@@ -28,7 +28,7 @@ restarts preserve the keypair.
 
 ## Managed runs
 
-Paperclip supplies these server-owned environment variables:
+Wardmote supplies these server-owned environment variables:
 
 ```text
 WARDMOTE_AGENT_KEY_ID
@@ -50,7 +50,7 @@ routing, timing, and interpretation metadata remain available.
 Managed remote providers, including Cursor Cloud, receive the same private key
 as managed local processes. Selecting a runtime therefore trusts its host with
 the agent's persistent identity: the agent and its host can retain the key and
-sign outside Paperclip. Encryption at rest protects database storage, not an
+sign outside Wardmote. Encryption at rest protects database storage, not an
 executing runtime. Move an agent only between runtime hosts trusted with that
 identity.
 
@@ -65,7 +65,7 @@ import { sign } from "node:crypto";
 const signature = sign(null, challengeBytes, process.env.WARDMOTE_AGENT_PRIVATE_KEY);
 ```
 
-This identity does not change Paperclip bearer-token authentication. There is no
+This identity does not change Wardmote bearer-token authentication. There is no
 signing API, private-key download endpoint, Git integration, rotation UI, or
 external-key import. Agents possess their private keys. External consumers must
 define their own authorization, expiry, and revocation rules.
@@ -97,6 +97,6 @@ have distinct identities.
 
 Native failure records and reports redact the assigned key before truncating diagnostics. Streaming output buffers settle at item or turn completion: short structural prefixes (such as a trailing dash) are preserved, longer interrupted key fragments become redaction markers, and pending buffers are cleared. Terminal events carry these settled `outputTails`; transcript projection displays them as deltas without changing the source event receipt.
 
-Codex shell delivery preserves its default `KEY`/`SECRET`/`TOKEN` name exclusions for other configured credentials. The exceptions are the three identity variables and `WARDMOTE_API_KEY`: the latter is the short-lived, scoped run/bridge credential required by the Paperclip agent skill’s Bash/curl API calls. Disabling Codex’s automatic exclusions is paired with this explicit filtered allowlist; it does not admit arbitrary host environment variables. Provider authentication secrets can still reach the provider process without being newly exposed to shell commands by this feature.
+Codex shell delivery preserves its default `KEY`/`SECRET`/`TOKEN` name exclusions for other configured credentials. The exceptions are the three identity variables and `WARDMOTE_API_KEY`: the latter is the short-lived, scoped run/bridge credential required by the Wardmote agent skill’s Bash/curl API calls. Disabling Codex’s automatic exclusions is paired with this explicit filtered allowlist; it does not admit arbitrary host environment variables. Provider authentication secrets can still reach the provider process without being newly exposed to shell commands by this feature.
 
 No additional agent keypair or private-key distribution is introduced.
