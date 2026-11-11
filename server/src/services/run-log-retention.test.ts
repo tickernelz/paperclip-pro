@@ -131,6 +131,23 @@ describe("run log retention", () => {
     expect(head[0]).toBe(0);
   });
 
+  it("treats an empty or corrupt marker as no marker for reads and sweeps", async () => {
+    const content = ndjson(400);
+    const absPath = await writeLog("c/a/corrupt.ndjson", content, 48 * HOUR_MS);
+    await fs.writeFile(`${absPath}${RUN_LOG_RETAINED_SUFFIX}`, "");
+    const store = createDurableRunLogStore({ basePath });
+
+    const head = await store.read({ store: "local_file", logRef: "c/a/corrupt.ndjson" }, { offset: 0, limitBytes: 200 });
+    const report = await sweepRunLogs({ basePath, settings, liveLogRefs: new Set(), now: NOW });
+
+    expect(head.content).toBe(content.slice(0, 200));
+    expect(report).toMatchObject({ trimmed: 1, errors: 0 });
+    const marker = JSON.parse(await fs.readFile(`${absPath}${RUN_LOG_RETAINED_SUFFIX}`, "utf8"));
+    expect(marker.originalBytes).toBe(content.length);
+    const trimmedHead = await store.read({ store: "local_file", logRef: "c/a/corrupt.ndjson" }, { offset: 0, limitBytes: 64_000 });
+    expect(trimmedHead.content).not.toContain("\u0000");
+  });
+
   it("leaves live, recently written, small, and dry-run logs untouched", async () => {
     const content = ndjson(400);
     await writeLog("c/a/live.ndjson", content, 48 * HOUR_MS);

@@ -67,8 +67,16 @@ export async function readRunLogRetainedMarker(logPath: string): Promise<RunLogR
     if ((err as NodeJS.ErrnoException | null)?.code === "ENOENT") return null;
     throw err;
   }
-  const parsed = JSON.parse(raw) as Partial<RunLogRetainedMarker>;
+  let parsed: Partial<RunLogRetainedMarker> | null;
+  try {
+    parsed = JSON.parse(raw) as Partial<RunLogRetainedMarker> | null;
+  } catch (err) {
+    if (err instanceof SyntaxError) return null;
+    throw err;
+  }
   if (
+    !parsed ||
+    typeof parsed !== "object" ||
     parsed.version !== 1 ||
     !Number.isSafeInteger(parsed.retainedFromByte) ||
     !Number.isSafeInteger(parsed.originalBytes) ||
