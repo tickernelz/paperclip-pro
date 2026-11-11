@@ -77,7 +77,7 @@ import { cn } from "@/lib/utils";
 import { useCopyAction } from "@/lib/use-copy-action";
 import { resolveAuthorizationTarget } from "@/lib/authorizationUrl";
 import { navigateTopLevel } from "@/lib/browserNavigation";
-import { prepareOAuthNavigation, savePendingCloudHandoff } from "@/lib/oauthHandoff";
+import { prepareOAuthNavigation } from "@/lib/oauthNavigation";
 import { redactUrlSecrets } from "@/lib/redact-url-secrets";
 import { askFirstCatalogEntryIdsFor } from "./connection-defaults";
 import { AppLogo } from "@/pages/apps/AppLogo";
@@ -681,7 +681,6 @@ function StandardConnectionSetupFlow({
   const oauthPopupRef = useRef<Window | null>(null);
   const [dialogOAuthConnectionId, setDialogOAuthConnectionId] = useState<string | null>(null);
   const [authorizationFallbackUrl, setAuthorizationFallbackUrl] = useState<string | null>(null);
-  const oauthHandoffAbortRef = useRef<AbortController | null>(null);
   const [showConnectionChoice, setShowConnectionChoice] = useState(
     existingConnections.length > 0 && Boolean(onUseExisting),
   );
@@ -736,37 +735,20 @@ function StandardConnectionSetupFlow({
     return () => window.clearInterval(timer);
   }, [host, oauthPhase, onPhaseChange]);
 
-  const prepareAndOpenOAuth = useCallback(async (
-    start: Pick<ToolOAuthStartResult, "authorizationUrl" | "handoff">,
+  const prepareAndOpenOAuth = useCallback((
+    start: Pick<ToolOAuthStartResult, "authorizationUrl">,
   ) => {
-    oauthHandoffAbortRef.current?.abort();
-    const controller = new AbortController();
-    oauthHandoffAbortRef.current = controller;
     try {
-      const target = await prepareOAuthNavigation(start, { signal: controller.signal });
-      if (target.kind === "reauthentication") {
-        const destination = host === "dialog" ? oauthPopupRef.current : window;
-        if (!destination || destination.closed || !start.handoff) {
-          throw new Error("Wardmote couldn’t preserve this sign-in while refreshing your account.");
-        }
-        savePendingCloudHandoff(start.handoff.session, destination.sessionStorage);
-        setOAuthPhase("starting");
-      } else {
-        setAuthorizationHost(target.host);
-        setOAuthPhase("redirecting");
-      }
+      const target = prepareOAuthNavigation(start);
+      setAuthorizationHost(target.host);
+      setOAuthPhase("redirecting");
       openAuthorization(target.url);
     } catch (error) {
-      if (controller.signal.aborted) return;
       setOAuthPhase("error");
       setOAuthError(error instanceof Error ? error.message : "Wardmote couldn’t start secure sign-in. Try again.");
       onPhaseChange?.("needs_retry");
-    } finally {
-      if (oauthHandoffAbortRef.current === controller) oauthHandoffAbortRef.current = null;
     }
-  }, [host, onPhaseChange, openAuthorization]);
-
-  useEffect(() => () => oauthHandoffAbortRef.current?.abort(), []);
+  }, [onPhaseChange, openAuthorization]);
 
   useEffect(() => {
     if (host !== "dialog" || !connectionIntentId) return;
@@ -1116,7 +1098,7 @@ function StandardConnectionSetupFlow({
       ...(connectionIntentId ? { interactionId: connectionIntentId } : {}),
       });
     },
-    onSuccess: (start) => void prepareAndOpenOAuth(start),
+    onSuccess: (start) => prepareAndOpenOAuth(start),
     onError: (error) => {
       const details = error instanceof ApiError && error.body && typeof error.body === "object"
         ? (error.body as { details?: { code?: unknown } }).details
@@ -1278,10 +1260,7 @@ function StandardConnectionSetupFlow({
           return;
         }
         setGenericOAuthPending(true);
-        void prepareAndOpenOAuth({
-          authorizationUrl: startUrl,
-          handoff: result.auth.handoff,
-        });
+        prepareAndOpenOAuth({ authorizationUrl: startUrl });
         return;
       }
       setLinkGuidance(null);
@@ -2022,13 +2001,11 @@ function StandardConnectionSetupFlow({
           }
         }}
         onBack={() => {
-          oauthHandoffAbortRef.current?.abort();
           setOAuthPhase("entry");
           setOAuthError(null);
           backToGallery();
         }}
         onCancel={() => {
-          oauthHandoffAbortRef.current?.abort();
           (onCancel ?? (() => navigate("/apps")))();
         }}
       />
@@ -2067,13 +2044,11 @@ function StandardConnectionSetupFlow({
           setOAuthPhase("entry");
         }}
         onBack={() => {
-          oauthHandoffAbortRef.current?.abort();
           setGenericOAuthPending(false);
           setOAuthPhase("entry");
           setOAuthError(null);
         }}
         onCancel={() => {
-          oauthHandoffAbortRef.current?.abort();
           (onCancel ?? (() => navigate("/apps")))();
         }}
       />

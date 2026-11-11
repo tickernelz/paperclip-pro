@@ -29,7 +29,7 @@ through browser sign-in — with no Paperclip-specific code involved. See
 PostHog hosts both the MCP resource and OAuth authorization service. Paperclip
 discovers the OAuth endpoints, dynamically registers the client when needed,
 stores returned credentials as secret references, and handles the callback at
-`/api/tools/oauth/callback`. No Paperclip-operated vendor relay is involved.
+`/api/tools/oauth/callback`. No vendor relay is involved.
 
 ```mermaid
 sequenceDiagram

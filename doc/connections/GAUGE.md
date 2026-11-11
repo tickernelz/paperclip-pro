@@ -28,9 +28,8 @@ guidance, and a publish warning. The same URL can also be connected from
 
 Gauge hosts the MCP resource and the authorization server. Paperclip stores
 the OAuth tokens or the key as secret references, discovers tools with
-`tools/list`, and sends the credential on every governed call. No
-Paperclip-operated vendor relay is involved; cloud and self-hosted instances
-use the same path.
+`tools/list`, and sends the credential on every governed call. No vendor relay is
+involved.
 
 ## Endpoints
 

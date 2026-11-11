@@ -690,7 +690,7 @@ function connectorEnrollmentPrincipal(req: Request): string {
       returnTo: req.body.returnTo,
       redirectUri: oauthRedirectUri(req),
     });
-    res.json({ url: result.authorizationUrl, ...(result.handoff ? { handoff: result.handoff } : {}) });
+    res.json({ url: result.authorizationUrl });
   });
 
   router.post("/agents/me/connections/:connectionId/token", validate(connectionTokenRequestSchema), async (req, res) => {
@@ -837,7 +837,6 @@ function connectorEnrollmentPrincipal(req: Request): string {
             ...(req.body.interactionId ? { interactionId: req.body.interactionId } : {}),
           });
           result.auth.startUrl = start.authorizationUrl;
-          result.auth.handoff = start.handoff;
           result.auth.issuer = start.issuer ?? result.auth.issuer ?? null;
           result.auth.resource = start.resource ?? result.auth.resource ?? null;
           result.auth.registrationSource = start.registrationSource ?? null;
@@ -894,7 +893,7 @@ function connectorEnrollmentPrincipal(req: Request): string {
         scopes: req.body.scopes,
         returnTo: req.body.returnTo,
       });
-      res.json({ url: result.authorizationUrl, ...(result.handoff ? { handoff: result.handoff } : {}) });
+      res.json({ url: result.authorizationUrl });
     },
   );
 

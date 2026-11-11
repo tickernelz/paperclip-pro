@@ -19,7 +19,6 @@ v1, plugin, skill, MCP, and gateway language onto Apps v2.
 | Subject | The app/workspace or Paperclip user on whose behalf a credential is requested. | The calling agent. |
 | Grant | Credential-bearing authorization for one connection subject and provider tenant. | A profile, rule, or permission bypass. |
 | Trigger | Provider-origin event definition that starts governed Paperclip work. | An unauthenticated webhook handler. |
-| Connector service | Paperclip-operated relay for managed OAuth callbacks, credential custody, and webhook intake at `connect.paperclip.ing`. | Paperclip ID or the per-company broker. |
 | Action / Tool | One invokable capability of a connection, risk-classified and quarantined when new or changed. | A free-form shell command or permission grant. |
 | Profile | Curated allowlist of actions bound to a scope such as company, project, agent, routine, or issue. | A permission system of its own. |
 | Rule | Allow, ask-first, or block per action. Ask-first lands in the Review queue. | A profile or catalog entry. |

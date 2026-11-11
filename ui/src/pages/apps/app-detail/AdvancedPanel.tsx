@@ -20,7 +20,7 @@ import { ToggleSwitch } from "@/components/ui/toggle-switch";
 import { useToast } from "@/context/ToastContext";
 import { redactUrlSecrets } from "@/lib/redact-url-secrets";
 import { navigateTopLevel } from "@/lib/browserNavigation";
-import { prepareOAuthNavigation, savePendingCloudHandoff } from "@/lib/oauthHandoff";
+import { prepareOAuthNavigation } from "@/lib/oauthNavigation";
 import { cn } from "@/lib/utils";
 import { Link } from "@/lib/router";
 import type { AppDetailSectionProps } from "./types";
@@ -167,13 +167,9 @@ export function ReconnectCard({
     mutationFn: () => connection.credentialPolicy === "per_user"
       ? toolsApi.startOAuth(connection.id, { asCurrentUser: true })
       : toolsApi.startOAuth(connection.id),
-    onSuccess: async (start) => {
+    onSuccess: (start) => {
       try {
-        const target = await prepareOAuthNavigation(start);
-        if (target.kind === "reauthentication" && start.handoff) {
-          savePendingCloudHandoff(start.handoff.session);
-        }
-        navigateTopLevel(target.url);
+        navigateTopLevel(prepareOAuthNavigation(start).url);
       } catch (error) {
         pushToast({
           title: "Couldn’t start sign-in",

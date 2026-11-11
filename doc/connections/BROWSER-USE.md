@@ -9,8 +9,7 @@ agent, local browser tools, or the board UI.
 
 Choose **Browser Use Cloud** (`browser-use-cloud`) in Apps, select agent access, enter a project API key from
 [Browser Use settings](https://cloud.browser-use.com/settings), and review
-Permissions. No OAuth registration, callback, Paperclip ID, or external connection
-broker is required. Cloud and self-hosted instances use the same server-side path.
+Permissions. No OAuth registration, callback, or external connection broker is required.
 The instance needs outbound HTTPS to `api.browser-use.com`; browsers need access
 to `live.browser-use.com`. An operator-supplied CSP must permit that viewer origin
 in `frame-src`.

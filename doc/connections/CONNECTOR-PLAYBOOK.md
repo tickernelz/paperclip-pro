@@ -48,10 +48,8 @@ durable provider credentials remain in the operator's Vercel account and
 Paperclip resolves short-lived tokens at invocation time. Before writing a
 connector, read [Identity vs. connections](./README.md#identity-vs-connections)
 for background. The boundary is mandatory: sign-in authenticates a person;
-a resource connection authorizes external work; Login with Paperclip issues
-first-party identity tokens to registered clients. Sign-in tokens are never
-reused as resource tokens, and `id.paperclip.ing` never stores resource tokens
-or hosts a connections hub. Keep company-scoped connection credentials and
+a resource connection authorizes external work. Sign-in tokens are never
+reused as resource tokens. Keep company-scoped connection credentials and
 agent access under the instance's connection governance.
 
 AI provider credentials use the same vault, applications, grants, installations,
@@ -296,7 +294,6 @@ fixture. `env` belongs primarily to approved local stdio templates.
 | Automatic OAuth | `auth: "oauth"`, `ownershipModes: ["dcr"]` | Browser sign-in | DCR/CIMD client binding plus token secret refs. |
 | Automatic OAuth with own-app escape hatch | `ownershipModes: ["customer", "dcr"]` | Recommended browser sign-in; own client under **Advanced** | Same as automatic, or supplied client ID plus encrypted client secret. |
 | Customer OAuth only | `ownershipModes: ["customer"]` | Required client ID and optional/required client secret, then browser sign-in | Client ID in redacted config; client secret and provider tokens as secret refs. |
-| Paperclip-managed OAuth | `oauthStrategy: "paperclip_cloud_connector"`, `connectorProfile`, `platform_shared` | Browser sign-in through Paperclip Cloud | Provider tokens still land in the instance vault on a user grant. Cloud handles the fixed provider callback but does not persist plaintext credentials; Paperclip ID remains identity-only. |
 | API key/PAT | `auth: "api_key"`, `credentialFields`, `keyPlacement` | Write-only credential field | Encrypted secret version plus placement-only refs. |
 | Generated URL | `auth: "none"`, no fixed URL/default template | Paste provider-generated MCP URL | Public URL shape in config; full secret-bearing URL in the vault. |
 | No auth | `auth: "none"`, fixed `serverUrl` or validated `serverUrlTemplate` | Zero fields or only required tenant/resource fields | No provider credential. |
@@ -1287,8 +1284,6 @@ Suggested PR verification block:
 | `transport` | `mcp_remote`, `local_stdio`, or specialized `rest_api`. |
 | `auth` | `oauth`, `api_key`, or `none`. |
 | `ownershipModes` | Allowed OAuth client ownership modes; also present for non-OAuth customer configuration. |
-| `oauthStrategy` | Managed broker strategy. New definitions use `paperclip_cloud_connector`; `paperclip_id_connector` is recognized only to require migration when an old grant expires. The protocols and provider clients are not interchangeable. Only valid for OAuth. |
-| `connectorProfile` | Managed connector capability/scope profile, required with `oauthStrategy`. |
 | `capabilityProfile` | User-facing read/write/mode grouping used for method selection. |
 | `grantKinds` | Restricts identity to `organization` and/or `user`; omit for flexible methods. |
 | `whenToUse` | One sentence distinguishing this method from alternatives. |
@@ -1435,9 +1430,8 @@ path with narrow actions before expanding to broader capabilities.
 Choose one method auth mode:
 
 - OAuth: delegated user or workspace authorization. The OAuth client may come
-  from DCR/CIMD, a customer-created client, a deployment-preconfigured client,
-  or a reviewed Paperclip Cloud connector profile. Do not assume Paperclip owns a
-  shared client registration.
+  from DCR/CIMD, a customer-created client, or a deployment-preconfigured
+  client. Do not assume a shared client registration exists.
 - API key: operator-supplied token or key. Use only when the provider supports
   a suitably restricted key and the value is stored as a `company_secrets`
   ref.
@@ -1783,16 +1777,9 @@ dynamically register on that vendor's behalf: omit `dcr` for a vendor that must
 not be auto-registered, and the broker will not fall through to the generic
 registration path for it.
 
-**DCR needs neither Paperclip ID nor Paperclip Connect.** DCR is always
-instance-local: the hosted connector service does not register DCR clients
-or hold their credentials.
-Each instance registers its own public client with the vendor and uses its own
-`/api/tools/oauth/callback` redirect. **Cloud-hosted and self-hosted instances
-use the SAME path** — the only per-instance difference is the hostname inside
-the redirect URI. `id.paperclip.ing` authenticates operators only and never
-holds resource tokens; `connect.paperclip.ing` is a fallback only for
-providers that genuinely require a pre-registered public redirect, which a DCR
-provider by definition does not.
+**DCR is instance-local.** Each instance registers its own public client with
+the vendor and uses its own `/api/tools/oauth/callback` redirect; the only
+per-instance difference is the hostname inside the redirect URI.
 
 ### Redirect-URI constraints
 
@@ -1814,10 +1801,9 @@ axes; a private HTTPS host can be fine even when plain HTTP is not.
 Every connection doc — playbook appendix, proposal, or user-facing doc —
 must include all of the following (they are part of the template below):
 
-1. **Service involvement statement.** Say explicitly whether Paperclip ID or
-   Paperclip Connect participates in the flow. For RFC 7591 DCR providers the
-   answer is always: neither — DCR is instance-local and cloud vs self-hosted
-   use the same path.
+1. **Client registration statement.** Say explicitly how the OAuth client is
+   registered: DCR, CIMD, customer-created, or deployment-preconfigured. For
+   RFC 7591 DCR providers registration is always instance-local.
 2. **Sequence diagram + exact endpoints.** A sequence diagram of how the
    connection works, and the exact paths/endpoints used for auth: authorize,
    token, registration (if DCR), and the Paperclip callback. Keep mermaid
@@ -1868,7 +1854,7 @@ Copy this section into a connector proposal or implementation issue.
   - Discovery (.well-known), if any:
   - Paperclip callback: `/api/tools/oauth/callback` (or n/a)
 - Redirect constraints (probed): none / https-or-loopback-http / requires-public-redirect
-- Paperclip ID / Paperclip Connect involvement: <"none — DCR is instance-local; cloud and self-hosted use the same path" for RFC 7591 providers; otherwise name the role>
+- Client registration: <"DCR — instance-local" for RFC 7591 providers; otherwise name the source>
 
 ## Administrator Setup (mandatory)
 
@@ -2124,7 +2110,7 @@ The UI examples use `ACME` as a sample company prefix. Replace it and any
 `wardmote.example.com` origin with your own company prefix and instance origin.
 These are example addresses, not a shared test deployment.
 
-Paperclip ID / Paperclip Connect involvement: **none — DCR is instance-local**.
+Client registration: **DCR — instance-local**.
 The instance registers the client, exchanges and refreshes tokens, and stores
 credential references in its own vault. **Cloud-hosted and self-hosted use the
 same path**. The only per-instance difference is the hostname in the redirect
@@ -2216,7 +2202,7 @@ plain-HTTP non-loopback origins.
 - What the admin must register: **nothing**. Notion's authorization server
   supports RFC 7591 DCR, so the instance registers its own public client on
   first connect. No Notion integration, no client credentials, no callback
-  registration, no Paperclip ID or Paperclip Connect involvement.
+  registration.
 - Optional escape hatch: to use a pre-registered classic Notion integration
   instead, set `WARDMOTE_TOOL_OAUTH_NOTION_CLIENT_ID` and
   `WARDMOTE_TOOL_OAUTH_NOTION_CLIENT_SECRET`; the env client always takes

@@ -1,9 +1,8 @@
 # GitHub managed connection
 
-GitHub is a Paperclip Cloud-managed GitHub App connection with an advanced PAT
-compatibility method. Cloud owns the fixed public OAuth callback and signed
-webhook inbox; provider tokens are sealed to the enrolled instance and stored
-only in its existing encrypted secret system.
+GitHub connects an account through a fine-grained personal access token
+(catalog method `mcp-key`). Dedicated agent GitHub Apps are created and
+operated by the instance itself; see [Dedicated agent Apps](#dedicated-agent-apps).
 
 ## Catalog entries
 
@@ -52,20 +51,11 @@ contains those optional agent permissions. Scheduling filters, ignored files,
 and inline-comment options have separate disclosures. The header shows the App
 identity, copyable mention, avatar download, and GitHub branding settings.
 
-## Self-hosted setup
+## Setup
 
 The setup screen states the default access in one line, with **Change** for
 other choices. **Continue to GitHub** on that screen starts the provider
 handoff.
-
-A self-hosted instance needs one Paperclip Cloud approval before its first
-managed connection. After approval, setup returns to the connect screen and continues to
-GitHub without another instance approval or a service restart.
-
-If an unapproved enrollment link expires, return to setup and select
-**Continue**. Paperclip asks the server for a valid link. The server reuses a
-live pending enrollment or replaces an expired one; this does not revoke or
-repeat an existing instance approval.
 
 ## Identity resolution
 
@@ -140,13 +130,6 @@ refresh instead of presenting a stale list. The page links to GitHub's
 installation management page. Selected repositories are recommended; all-
 repository access retains its warning.
 
-Fresh local test-drives use production Paperclip Cloud. Instance enrollment
-and provider enablement are separate: enrollment alone does not enable GitHub
-OAuth. Production must advertise the `github.code` profile (see Cloud's
-`docs/github-connector-deploy-bootstrap.md`). If it is unavailable, setup
-preserves the sign-in intent and offers a retry instead of silently switching
-to a personal access token. A successful retry preserves the chosen audience.
-
 ## GitHub Actions tools
 
 Managed and PAT connections request `X-MCP-Toolsets: default,actions` for MCP
@@ -170,58 +153,21 @@ It retains GitHub's destructive classification. Read tools include
 Provider references: [MCP toolset configuration](https://github.com/github/github-mcp-server/blob/main/docs/server-configuration.md)
 and [workflow dispatch permissions](https://docs.github.com/en/rest/actions/workflows#create-a-workflow-dispatch-event).
 
-## Webhooks
-
-For the shared GitHub account connector, Paperclip Cloud verifies
-`X-Hub-Signature-256` against the exact bounded request
-body before parsing, deduplicates by `X-GitHub-Delivery`, and persists a minimal
-normalized event before returning `202`. Raw webhook payloads are discarded.
-When registering an active binding, Paperclip sends the current user token only
-inside the signed, payload-bound broker request so Cloud can verify access to
-that exact installation; Cloud neither logs nor persists that proof token.
-Deliveries fan out independently to every enrolled instance bound to the GitHub
-installation and are sealed to each instance's public key.
-
-The instance polls with backoff, stores a company-scoped idempotency receipt,
-and acknowledges only successful applications. A merged pull request updates
-its matching external-object snapshot and immediately runs the existing merge-
-confirmation resolver. It wakes the assignee only when that interaction's
-continuation policy requests it; unrelated Paperclip issues are not closed.
-The periodic GitHub merge sweep remains the reconciliation fallback.
-
-Installation lifecycle events refresh or invalidate installation summaries and
-remove obsolete Cloud bindings. Activity records contain event identifiers and
-outcomes but no webhook content. GitHub webhook content is never first-party
-telemetry.
-
 ## Dedicated agent Apps
 
-The bot wizard uses Cloud gateway protocol version 2. The stack builds the
-private manifest for a personal account or organization. GitHub still asks the
-user to confirm creation and repository installation. The stack exchanges the
-returned manifest code directly with GitHub and stores every App secret in its
-vault, including the private key, client secret, and webhook verifier.
-
-Cloud stores only opaque, instance-bound callback routes and encrypted callback
-claims. It does not exchange codes, track App or installation identity, store
-GitHub secrets, or interpret bot events. It forwards original webhook bytes,
-provider headers, and signature in an envelope sealed to the stack before
-writing the inbox. The stack decrypts and authenticates those bytes through its
-existing durable ingress. Only that local check can verify a connection or
-admit work. Shared-App account connectors keep the behavior described above.
-
-Unverified gateway traffic has request, byte, pending-queue, retention and wake
-limits. Its transport deduplication includes the body and signature, so a forged
-request cannot occupy a real delivery's identifier. A ping received before its
-verifier reaches the vault remains queued for retry. Malformed and forged
-traffic is discarded after local verification. Installation returns only request
-a state refresh; the stack queries GitHub to establish installation authority.
+The bot wizard builds the private manifest for a personal account or
+organization. GitHub still asks the user to confirm creation and repository
+installation. The instance exchanges the returned manifest code directly with
+GitHub and stores every App secret in its vault, including the private key,
+client secret, and webhook verifier. GitHub delivers App webhooks to the
+instance's public HTTPS URL, where the existing durable ingress verifies the
+signature before any work is admitted.
 
 OAuth state, PKCE, consent, repository discovery, recovery and lifecycle changes
-also stay in the stack. Interrupted single-use manifest exchanges require
-recovery of the existing App instead of a second creation. Direct webhook and
-manual existing-App recovery remain available. Connecting does not prove that
-an agent runtime can execute a review.
+stay in the instance. Interrupted single-use manifest exchanges require
+recovery of the existing App instead of a second creation. Manual existing-App
+recovery remains available. Connecting does not prove that an agent runtime can
+execute a review.
 
 ### One editable response per request
 
@@ -292,6 +238,3 @@ projected only into the child process:
 
 Tokens never appear in arguments, URLs, files, logs, events, or model context,
 and the projection never replaces `HOME`.
-
-Cloud deployment and exact GitHub App registration settings live in
-`paperclip-cloud/docs/github-connector-deploy-bootstrap.md`.

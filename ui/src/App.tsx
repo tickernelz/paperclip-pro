@@ -81,7 +81,6 @@ import { canEnterAppsConnect } from "./pages/apps/app-connect-policy";
 import { AppsReview } from "./pages/apps/AppsReview";
 import { AppDetail } from "./pages/apps/AppDetail";
 import { AppNotConnected } from "./pages/apps/AppNotConnected";
-import { OAuthHandoffPage } from "./pages/apps/OAuthHandoff";
 import { GatewaysList } from "./pages/apps/gateways/GatewaysList";
 import { GatewayDetail } from "./pages/apps/gateways/GatewayDetail";
 import { CompanySkills } from "./pages/CompanySkills";
@@ -748,7 +747,6 @@ export function App() {
   return (
     <>
       <Routes>
-        <Route path="oauth-handoff" element={<OAuthHandoffPage />} />
         <Route path="auth" element={<AuthPage />} />
         <Route path="board-claim/:token" element={<BoardClaimPage />} />
         <Route path="mcp-connect/:id" element={<McpConnectPage />} />

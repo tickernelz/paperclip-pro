@@ -239,7 +239,7 @@ reference metadata, but runtime resolution requires provider configuration in th
 deployment. Their provider health check reports this as a warning until
 configured.
 
-For hosted Paperclip Cloud on AWS, see the AWS Secrets Manager operational
+For AWS deployments, see the AWS Secrets Manager operational
 contract — required env vars, IAM/KMS scoping, naming and tag conventions, and
 backup/rotation/incident runbooks — in `doc/SECRETS-AWS-PROVIDER.md`.
 
@@ -458,7 +458,7 @@ The AWS Secrets Manager provider cannot bootstrap itself from Wardmote
 create or resolve AWS-backed company secrets, regardless of whether you use the
 deployment-level default or a per-company vault.
 
-For Paperclip Cloud, provision the server runtime IAM role/workload identity,
+For hosted deployments, provision the server runtime IAM role/workload identity,
 KMS key, deployment prefix, and non-secret `WARDMOTE_SECRETS_AWS_*` environment
 configuration before enabling AWS-backed secrets in the board UI. For
 self-hosted and local runs, use the AWS SDK default credential chain: instance

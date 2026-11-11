@@ -131,10 +131,8 @@ sequenceDiagram
   redirect URI was accepted by DCR and round-tripped through a real consent on
   2026-09-25. Whether Enterpret would also accept a loopback HTTP redirect
   remains **unprobed** — the live run used HTTPS.
-- Paperclip ID / Paperclip Connect involvement: **none.** Enterpret is an
-  RFC 7591 DCR provider, so registration is instance-local and Cloud and
-  self-hosted use the same path. The only per-instance difference is the
-  hostname inside the redirect URI.
+- Enterpret is an RFC 7591 DCR provider, so registration is instance-local.
+  The only per-instance difference is the hostname inside the redirect URI.
 
 The definition ships `serverUrl` only. A complete `authorizationEndpoint` +
 `tokenEndpoint` pair would be authoritative and would suppress discovery

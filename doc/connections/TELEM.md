@@ -20,9 +20,8 @@ from **Connect your own MCP server** with the same URL and header. See
 
 ## Service involvement
 
-Telem.AI hosts the MCP resource. Paperclip ID and Paperclip Connect do not
-take part. Cloud and self-hosted instances use the same path. There is no
-OAuth flow and no Paperclip callback.
+Telem.AI hosts the MCP resource. There is no OAuth flow and no instance
+callback.
 
 ```mermaid
 sequenceDiagram

@@ -80,8 +80,8 @@ private-network HTTPS URL alone is not proof of public reachability.
 
 Only show prerequisites relevant to the chosen transport and deployment. Do not
 require a public URL for a connector that does not use public callbacks. When
-relevant, explain that Paperclip Cloud supplies HTTPS and link self-hosters to
-maintained setup documentation instead of embedding a long server tutorial.
+relevant, link to maintained setup documentation instead of embedding a long
+server tutorial.
 
 Generated manifests, webhook URLs, and diagnostic settings should not dominate
 the normal path:
