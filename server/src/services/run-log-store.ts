@@ -49,6 +49,52 @@ export interface RunLogStore {
   flushInflightMirrors?(): Promise<void>;
 }
 
+export const RUN_LOG_RETAINED_SUFFIX = ".retained.json";
+
+export interface RunLogRetainedMarker {
+  version: 1;
+  retainedFromByte: number;
+  originalBytes: number;
+  truncatedAt: string;
+  reason: "run_log_retention";
+}
+
+export async function readRunLogRetainedMarker(logPath: string): Promise<RunLogRetainedMarker | null> {
+  let raw: string;
+  try {
+    raw = await fs.readFile(`${logPath}${RUN_LOG_RETAINED_SUFFIX}`, "utf8");
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException | null)?.code === "ENOENT") return null;
+    throw err;
+  }
+  let parsed: Partial<RunLogRetainedMarker> | null;
+  try {
+    parsed = JSON.parse(raw) as Partial<RunLogRetainedMarker> | null;
+  } catch (err) {
+    if (err instanceof SyntaxError) return null;
+    throw err;
+  }
+  if (
+    !parsed ||
+    typeof parsed !== "object" ||
+    parsed.version !== 1 ||
+    !Number.isSafeInteger(parsed.retainedFromByte) ||
+    !Number.isSafeInteger(parsed.originalBytes) ||
+    typeof parsed.truncatedAt !== "string"
+  ) {
+    return null;
+  }
+  return parsed as RunLogRetainedMarker;
+}
+
+function retainedMarkerLine(marker: RunLogRetainedMarker) {
+  return `${JSON.stringify({
+    ts: marker.truncatedAt,
+    stream: "system",
+    chunk: `[run log retention] The first ${marker.retainedFromByte} bytes of this log were removed on ${marker.truncatedAt}; the remaining output follows.\n`,
+  })}\n`;
+}
+
 function safeSegments(...segments: string[]) {
   return segments.map((segment) => segment.replace(/[^a-zA-Z0-9._-]/g, "_"));
 }
@@ -237,6 +283,13 @@ export function createDurableRunLogStore(options: DurableRunLogStoreOptions): Ru
     }
     signal?.throwIfAborted();
     const bytes = Buffer.concat(chunks);
+    if (bytes.length > 0 && bytes[0] === 0) {
+      const marker = await readRunLogRetainedMarker(filePath);
+      if (marker && start < marker.retainedFromByte) {
+        const retained = await readLocalRange(filePath, marker.retainedFromByte, limitBytes, signal);
+        if (retained) return { ...retained, content: `${retainedMarkerLine(marker)}${retained.content}` };
+      }
+    }
     const content = bytes.subarray(0, limitBytes).toString("utf8");
     const nextOffset = bytes.length > limitBytes ? start + limitBytes : undefined;
     return { content, nextOffset };
@@ -496,10 +549,13 @@ function resolveRunLogS3(): DurableRunLogStoreOptions["s3"] {
 
 let cachedStore: RunLogStore | null = null;
 
+export function resolveRunLogBasePath() {
+  return process.env.RUN_LOG_BASE_PATH ?? path.resolve(resolveWardmoteInstanceRoot(), "data", "run-logs");
+}
+
 export function getRunLogStore() {
   if (cachedStore) return cachedStore;
-  const basePath = process.env.RUN_LOG_BASE_PATH ?? path.resolve(resolveWardmoteInstanceRoot(), "data", "run-logs");
-  cachedStore = createDurableRunLogStore({ basePath, s3: resolveRunLogS3() });
+  cachedStore = createDurableRunLogStore({ basePath: resolveRunLogBasePath(), s3: resolveRunLogS3() });
   return cachedStore;
 }
 

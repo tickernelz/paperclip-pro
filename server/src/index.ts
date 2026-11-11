@@ -96,6 +96,7 @@ import {
 } from "./services/index.js";
 import { questionResponseDeliveryService } from "./services/question-response-delivery.js";
 import { attachmentRetentionService, ATTACHMENT_RETENTION_TICK_MS } from "./services/attachment-retention.js";
+import { runLogRetentionService } from "./services/run-log-retention.js";
 import { openwaAuditPurgeScheduler } from "./services/openwa/audit.js";
 import { deliverNativeQuestionResponse } from "./services/native-runtime/native-question-bridge.js";
 import { queueIssueAssignmentWakeup } from "./services/issue-assignment-wakeup.js";
@@ -133,7 +134,7 @@ import {
   loadWithoutCoordinatedShutdownSignalHooks,
 } from "./shutdown.js";
 import { systemdNotify } from "./services/systemd-notify.js";
-import { flushInFlightRunLogMirrors } from "./services/run-log-store.js";
+import { flushInFlightRunLogMirrors, resolveRunLogBasePath } from "./services/run-log-store.js";
 import { migrateRetiredNames } from "./services/retired-name-migration.js";
 export { migrateRetiredNames } from "./services/retired-name-migration.js";
 import { getMaxAttachmentBytes } from "./attachment-types.js";
@@ -1127,6 +1128,15 @@ async function startServerWithDatabaseTeardown(
       logger.error({ err }, "scheduled attachment retention failed");
     });
   }, ATTACHMENT_RETENTION_TICK_MS);
+  const runLogRetention = runLogRetentionService(db as any, {
+    basePath: resolveRunLogBasePath(),
+    settings: config.runLogRetention,
+  });
+  setInterval(() => {
+    void runLogRetention.tick().catch((err: unknown) => {
+      logger.error({ err }, "scheduled run log retention failed");
+    });
+  }, runLogRetention.intervalMs);
 
   let heartbeatSchedulerInterval: ReturnType<typeof setInterval> | null = null;
   const heartbeatSchedulerInFlight = new Set<Promise<void>>();
