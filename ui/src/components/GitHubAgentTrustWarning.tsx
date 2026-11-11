@@ -4,7 +4,7 @@ import { getTrustPreset } from "@/lib/trust-policy-ui";
 import { Button } from "@/components/ui/button";
 
 export const LOW_TRUST_AGENT_GUIDE =
-  "https://docs.paperclip.ing/administration/trust-and-low-trust-review/";
+  "https://github.com/tickernelz/wardmote/blob/main/doc/LOW-TRUST-PRESETS.md";
 
 export function GitHubAgentTrustWarning({
   agent,

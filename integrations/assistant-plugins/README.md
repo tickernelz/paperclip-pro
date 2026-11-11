@@ -32,7 +32,7 @@ flow; do not put agent keys or browser cookies into plugin manifests.
 
 ## Distribution
 
-Package `openai/paperclip/` and `claude/paperclip/` separately. Before publishing,
+Package `openai/wardmote/` and `claude/wardmote/` separately. Before publishing,
 build against the stable Wardmote-owned public endpoint and complete the
 provider's review metadata, branding, privacy/support links and live tests.
 Submit the Claude remote connector and workflow plugin separately, paired by

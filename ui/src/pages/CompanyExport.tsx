@@ -430,7 +430,7 @@ function generateReadmeFromSelection(
 
   lines.push("## What's Inside");
   lines.push("");
-  lines.push("This is an [Agent Company](https://paperclip.ing) package.");
+  lines.push("This is an [Agent Company](https://agentcompanies.io) package.");
   lines.push("");
 
   const counts: Array<[string, number]> = [];
@@ -477,10 +477,10 @@ function generateReadmeFromSelection(
   lines.push("npx @tickernelz/wardmote company import this-github-url-or-folder");
   lines.push("```");
   lines.push("");
-  lines.push("See [Wardmote](https://paperclip.ing) for more information.");
+  lines.push("See [Wardmote](https://github.com/tickernelz/wardmote) for more information.");
   lines.push("");
   lines.push("---");
-  lines.push(`Exported from [Wardmote](https://paperclip.ing) on ${new Date().toISOString().split("T")[0]}`);
+  lines.push(`Exported from [Wardmote](https://github.com/tickernelz/wardmote) on ${new Date().toISOString().split("T")[0]}`);
   lines.push("");
 
   return lines.join("\n");
