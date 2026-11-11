@@ -281,7 +281,7 @@ describe("TaskChatSystemNotice (PAP-443)", () => {
 
   it("keeps workspace-ready events as a compact expandable notice", () => {
     renderNotice({
-      text: "Workspace ready. The isolated worktree is available at `/tmp/paperclip/worktrees/PAP-91`.",
+      text: "Workspace ready. The isolated worktree is available at `/tmp/wardmote/worktrees/PAP-91`.",
       metadata: null,
     });
 
@@ -290,10 +290,10 @@ describe("TaskChatSystemNotice (PAP-443)", () => {
     expect(button.textContent).toContain("System update");
     expect(button.textContent).toContain("Workspace ready.");
     expect(button.querySelector("code")).toBeNull();
-    expect(container.textContent).not.toContain("/tmp/paperclip/worktrees/PAP-91");
+    expect(container.textContent).not.toContain("/tmp/wardmote/worktrees/PAP-91");
 
     flushSync(() => button.click());
-    expect(container.textContent).toContain("/tmp/paperclip/worktrees/PAP-91");
+    expect(container.textContent).toContain("/tmp/wardmote/worktrees/PAP-91");
   });
 
   it("ignores malformed metadata while preserving expandable raw detail", () => {

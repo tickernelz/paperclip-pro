@@ -9,7 +9,7 @@ const migration = readFileSync(new URL("./migrations/0350_finalize_orphaned_clai
 
 (support.supported ? describe : describe.skip)("orphaned claimed wakeup repair migration", () => {
   it("finalizes claimed wakeups of terminal runs once and leaves live ones alone", async () => {
-    const database = await startEmbeddedPostgresTestDatabase("paperclip-claimed-wakeup-repair-");
+    const database = await startEmbeddedPostgresTestDatabase("wardmote-claimed-wakeup-repair-");
     const sql = postgres(database.connectionString, { max: 1, onnotice: () => {} });
     try {
       const companyId = randomUUID();

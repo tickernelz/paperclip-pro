@@ -18,7 +18,7 @@ describe("private task production review", () => {
   let db: ReturnType<typeof createDb>;
   beforeAll(async () => {
     process.env.WARDMOTE_ISSUE_PRIVACY_MODE = "enforce";
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-private-review-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-private-review-");
     db = createDb(tempDb.connectionString);
     // Load the current route dependency graph during setup, outside assertion timeouts.
     await Promise.all([import("../routes/issues.js"), import("../routes/projects.js")]);

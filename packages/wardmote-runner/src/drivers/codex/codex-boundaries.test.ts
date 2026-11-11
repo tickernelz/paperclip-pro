@@ -122,7 +122,7 @@ describe("Codex value and workspace boundaries", () => {
   });
 
   it("defers provider-owned workspace existence without weakening its assignment", () => {
-    const remoteWorkspace = "/home/daytona/paperclip-workspace";
+    const remoteWorkspace = "/home/daytona/wardmote-workspace";
     const remoteEnvironment = {
       HOME: remoteWorkspace,
       CODEX_HOME: `${remoteWorkspace}/.codex`,

@@ -125,7 +125,7 @@ describe("ensureWardmoteSkillSymlink", () => {
 });
 
 it("reserves identity credentials even for mixed-case inherited or configured keys", () => {
-  const keys = ["WARDMOTE_AGENT_KEY_ID", "Paperclip_Agent_Public_Key", "paperclip_agent_private_key"];
+  const keys = ["WARDMOTE_AGENT_KEY_ID", "Wardmote_Agent_Public_Key", "wardmote_agent_private_key"];
   const inherited = Object.fromEntries(keys.map(key => [key, "host-override"]));
   expect(sanitizeInheritedWardmoteEnv({ ...inherited, PATH: "/usr/bin" })).toEqual({ PATH: "/usr/bin" });
   for (const key of keys) expect(isForbiddenConfigEnvKey(key)).toBe(true);
@@ -286,13 +286,13 @@ describe("buildInvocationEnvForLogs", () => {
       { SAFE_VALUE: "visible" },
       {
         resolvedCommand:
-          "env OPENAI_API_KEY=sk-live-example WARDMOTE_API_KEY='paperclip-quoted-secret' custom-acp --paperclip-api-key=paperclip-flag-secret --token ghp_example_secret",
+          "env OPENAI_API_KEY=sk-live-example WARDMOTE_API_KEY='wardmote-quoted-secret' custom-acp --wardmote-api-key=wardmote-flag-secret --token ghp_example_secret",
       },
     );
 
     expect(loggedEnv.SAFE_VALUE).toBe("visible");
     expect(loggedEnv.WARDMOTE_RESOLVED_COMMAND).toBe(
-      "env OPENAI_API_KEY=***REDACTED*** WARDMOTE_API_KEY='***REDACTED***' custom-acp --paperclip-api-key=***REDACTED*** --token ***REDACTED***",
+      "env OPENAI_API_KEY=***REDACTED*** WARDMOTE_API_KEY='***REDACTED***' custom-acp --wardmote-api-key=***REDACTED*** --token ***REDACTED***",
     );
   });
 });
@@ -462,7 +462,7 @@ describe("adapter skill snapshots", () => {
   const requiredEntry = {
     key: "tickernelz/wardmote/wardmote",
     runtimeName: "paperclip",
-    source: "/runtime/paperclip",
+    source: "/runtime/wardmote",
   };
   const optionalEntry = {
     key: "company/ascii-heart",
@@ -507,7 +507,7 @@ describe("adapter skill snapshots", () => {
           key: "company/example/reflection-coach",
           runtimeName: "reflection-coach--abc123",
           source:
-            "/paperclip/skills/example/__runtime__/reflection-coach--abc123",
+            "/wardmote/skills/example/__runtime__/reflection-coach--abc123",
           sourceStatus: "missing",
           missingDetail:
             "Company skill exists, but its local source is missing.",
@@ -590,7 +590,7 @@ describe("adapter skill snapshots", () => {
       availableEntries: [requiredEntry, optionalEntry],
       desiredSkills: [requiredEntry.key, "missing-skill"],
       installed: new Map([
-        ["paperclip", { targetPath: "/runtime/paperclip", kind: "symlink" }],
+        ["paperclip", { targetPath: "/runtime/wardmote", kind: "symlink" }],
         [
           "ascii-heart",
           { targetPath: "/other/ascii-heart", kind: "directory" },

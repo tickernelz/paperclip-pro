@@ -834,7 +834,7 @@ describeEmbeddedPostgres(
 
     beforeAll(async () => {
       tempDb = await startEmbeddedPostgresTestDatabase(
-        "paperclip-low-trust-red-team-routes-",
+        "wardmote-low-trust-red-team-routes-",
       );
       db = createDb(tempDb.connectionString);
     }, 20_000);

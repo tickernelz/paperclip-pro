@@ -124,7 +124,7 @@ function createWorkspace(overrides: Partial<ProjectWorkspace> = {}): ProjectWork
     projectId: "project-content",
     name: "Wardmote Content",
     sourceType: "local_path",
-    cwd: "/srv/paperclip/home/paperclipai/paperclip-content",
+    cwd: "/srv/wardmote/home/tickernelz/wardmote-content",
     repoUrl: null,
     repoRef: null,
     defaultRef: null,
@@ -376,13 +376,13 @@ describe("WorkspaceFileBrowser", () => {
       ok(availableResponse([
         createItem({
           title: "tweet.md",
-          relativePath: "videos/90-days-paperclip/tweet.md",
-          displayPath: "videos/90-days-paperclip/tweet.md",
+          relativePath: "videos/90-days-wardmote/tweet.md",
+          displayPath: "videos/90-days-wardmote/tweet.md",
         }),
         createItem({
-          title: "90-days-paperclip-1x1.mp4",
-          relativePath: "videos/90-days-paperclip/out/90-days-paperclip-1x1.mp4",
-          displayPath: "videos/90-days-paperclip/out/90-days-paperclip-1x1.mp4",
+          title: "90-days-wardmote-1x1.mp4",
+          relativePath: "videos/90-days-wardmote/out/90-days-wardmote-1x1.mp4",
+          displayPath: "videos/90-days-wardmote/out/90-days-wardmote-1x1.mp4",
           previewKind: "video",
         }),
       ])),
@@ -392,10 +392,10 @@ describe("WorkspaceFileBrowser", () => {
 
     expect(container.querySelector('[role="tree"]')).not.toBeNull();
     expect(container.textContent).toContain("videos");
-    expect(container.textContent).toContain("90-days-paperclip");
+    expect(container.textContent).toContain("90-days-wardmote");
     expect(container.textContent).toContain("tweet.md");
-    expect(container.textContent).toContain("90-days-paperclip-1x1.mp4");
-    expect(container.textContent).not.toContain("videos/90-days-paperclip/tweet.md");
+    expect(container.textContent).toContain("90-days-wardmote-1x1.mp4");
+    expect(container.textContent).not.toContain("videos/90-days-wardmote/tweet.md");
 
     const videosFolder = Array.from(container.querySelectorAll('button[role="treeitem"]')).find(
       (el) => el.getAttribute("title") === "videos",
@@ -417,8 +417,8 @@ describe("WorkspaceFileBrowser", () => {
   it("hides source controls, folder headings, workspace labels, and timestamps", () => {
     useQueryMock.mockReturnValue(ok(availableResponse([
       createItem({
-        relativePath: "videos/90-days-paperclip/tweet.md",
-        displayPath: "videos/90-days-paperclip/tweet.md",
+        relativePath: "videos/90-days-wardmote/tweet.md",
+        displayPath: "videos/90-days-wardmote/tweet.md",
       }),
     ])));
 

@@ -32,7 +32,7 @@ describeEmbeddedPostgres("runner goal service", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-runner-goals-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-runner-goals-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

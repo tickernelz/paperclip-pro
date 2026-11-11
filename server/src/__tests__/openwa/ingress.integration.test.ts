@@ -75,7 +75,7 @@ describe("OpenWA ingress (embedded Postgres + fake gateway)", () => {
   const endpointIds: string[] = [];
 
   beforeAll(async () => {
-    database = await startEmbeddedPostgresTestDatabase("paperclip-openwa-");
+    database = await startEmbeddedPostgresTestDatabase("wardmote-openwa-");
     db = createDb(database.connectionString);
     secrets = await mkdtemp(path.join(tmpdir(), "openwa-secrets-"));
     process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE = path.join(secrets, "master.key");

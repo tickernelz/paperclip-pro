@@ -38,7 +38,7 @@ describeEmbeddedPostgres("issueThreadInteractionService telemetry", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-issue-interaction-telemetry-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-issue-interaction-telemetry-");
     db = createDb(tempDb.connectionString);
     interactionsSvc = issueThreadInteractionService(db);
   }, 20_000);

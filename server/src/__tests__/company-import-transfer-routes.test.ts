@@ -250,7 +250,7 @@ describeEmbeddedPostgres("company import transfer routes", () => {
   }
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-import-transfer-routes-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-import-transfer-routes-");
     db = createDb(tempDb.connectionString);
     // The mocked import result points at this company; the ledger's
     // company_id foreign key needs the row to exist.

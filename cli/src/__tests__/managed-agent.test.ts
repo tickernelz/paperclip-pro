@@ -26,7 +26,7 @@ function setupOptions(
     acknowledgeRetention: true,
     companyId: "company-1",
     apiBase: "http://localhost:3100",
-    apiKey: "paperclip-board-token",
+    apiKey: "wardmote-board-token",
     json: true,
     ...overrides,
   };

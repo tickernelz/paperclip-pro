@@ -26,7 +26,7 @@ describe("announcement routes and durable dismissals", () => {
     return server;
   }
   beforeAll(async () => {
-    database = await startEmbeddedPostgresTestDatabase("paperclip-announcements-");
+    database = await startEmbeddedPostgresTestDatabase("wardmote-announcements-");
     db = createDb(database.connectionString);
     await db.insert(companies).values([{ id: companyId, name: "Test", issuePrefix: "ANN" }, { id: otherCompanyId, name: "Other", issuePrefix: "ANB" }]);
   }, 90_000);

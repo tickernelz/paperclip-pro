@@ -584,7 +584,7 @@ test.describe.serial("native chat adapter UI", () => {
         await expect(avatarSection.getByRole("link", { name: "Open Slack app Settings" })).toBeVisible();
         const settingsDownloadEvent = page.waitForEvent("download");
         await avatarSection.getByRole("link", { name: "Download avatar" }).click();
-        expect((await settingsDownloadEvent).suggestedFilename()).toBe("maya-paperclip-avatar.png");
+        expect((await settingsDownloadEvent).suggestedFilename()).toBe("maya-wardmote-avatar.png");
       }
 
       await expect(

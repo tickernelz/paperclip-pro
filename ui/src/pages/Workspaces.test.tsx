@@ -68,7 +68,7 @@ function overviewItem(overrides: Partial<WorkspaceOverviewItem> = {}): Workspace
     workspaceId: overrides.workspaceId ?? "workspace-1",
     workspaceName: overrides.workspaceName ?? "Workspace Alpha",
     projectId: overrides.projectId ?? "project-1",
-    projectUrlKey: overrides.projectUrlKey ?? "paperclip-app",
+    projectUrlKey: overrides.projectUrlKey ?? "wardmote-app",
     projectName: overrides.projectName ?? "Wardmote App",
     mode: overrides.mode ?? "isolated_workspace",
     strategyType: overrides.strategyType ?? "git_worktree",
@@ -197,7 +197,7 @@ describe("Workspaces", () => {
     expect(container.textContent).toContain("PAP-11916");
     expect(container.textContent).toContain("+1 more");
     expect(container.textContent).toContain("Showing 1 of 2 workspaces.");
-    expect(container.querySelector('a[href="/projects/paperclip-app/workspaces"]')).not.toBeNull();
+    expect(container.querySelector('a[href="/projects/wardmote-app/workspaces"]')).not.toBeNull();
 
     const loadMoreButton = Array.from(container.querySelectorAll("button"))
       .find((button) => button.textContent === "Load more");

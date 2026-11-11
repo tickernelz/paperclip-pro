@@ -546,7 +546,7 @@ describeEmbeddedPostgres("tool gateway acceptance", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-tool-gateway-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-tool-gateway-");
     db = createDb(tempDb.connectionString);
   }, 90_000);
 
@@ -964,7 +964,7 @@ describeEmbeddedPostgres("tool gateway acceptance", () => {
         .expect(200);
       expect(resources.body.result.resources).toHaveLength(1);
       expect(resources.body.result.resources[0]).toMatchObject({
-        uri: expect.stringMatching(new RegExp(`^paperclip-resource://${assigned.connection.id}/`)),
+        uri: expect.stringMatching(new RegExp(`^wardmote-resource://${assigned.connection.id}/`)),
         name: "Assigned context: Note one",
       });
       const resourceUri = resources.body.result.resources[0].uri as string;
@@ -1636,7 +1636,7 @@ describeEmbeddedPostgres("tool gateway acceptance", () => {
 
   it("passes only approved env values to local stdio MCP processes", async () => {
     const previousDatabaseUrl = process.env.DATABASE_URL;
-    process.env.DATABASE_URL = "postgres://server-secret.example/paperclip";
+    process.env.DATABASE_URL = "postgres://server-secret.example/wardmote";
     try {
       const company = await createCompany(db);
       const agent = await createAgent(db, company.id);
@@ -3194,7 +3194,7 @@ rl.on("line", (line) => {
         connectionConfig: {
           sourceTemplateKey: "shopify",
           connectionMethodKey: "ucp-commerce",
-          methodConfig: { storeDomain: "paperclip-demo.myshopify.com" },
+          methodConfig: { storeDomain: "wardmote-demo.myshopify.com" },
         },
       });
       const toolName = expectedConnectedToolName({
@@ -3307,7 +3307,7 @@ rl.on("line", (line) => {
         connectionConfig: {
           sourceTemplateKey: "shopify",
           connectionMethodKey: "ucp-commerce",
-          methodConfig: { storeDomain: "paperclip-demo.myshopify.com" },
+          methodConfig: { storeDomain: "wardmote-demo.myshopify.com" },
         },
       });
       const toolName = expectedConnectedToolName({
@@ -3566,7 +3566,7 @@ rl.on("line", (line) => {
         connectionConfig: {
           sourceTemplateKey: "shopify",
           connectionMethodKey: "ucp-commerce",
-          methodConfig: { storeDomain: "paperclip-demo.myshopify.com" },
+          methodConfig: { storeDomain: "wardmote-demo.myshopify.com" },
         },
       });
       await allowToolsForAgent(db, company.id, agent.id, [
@@ -3750,7 +3750,7 @@ rl.on("line", (line) => {
             httpMethod: "POST",
             endpoint: fake.url,
             mcpMethod: "tools/call",
-            requestId: expect.stringMatching(/^paperclip-tool-/),
+            requestId: expect.stringMatching(/^wardmote-tool-/),
             upstreamToolName: "kv_set",
             dispatched: true,
           },

@@ -58,7 +58,7 @@ describeEmbeddedPostgres("issue comment attribution and patch audit routes", () 
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-comment-attribution-audit-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-comment-attribution-audit-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

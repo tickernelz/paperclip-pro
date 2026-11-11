@@ -80,7 +80,7 @@ describeEmbeddedPostgres("native question bridge", () => {
   let runnerInstanceId: string;
 
   beforeAll(async () => {
-    temporary = await startEmbeddedPostgresTestDatabase("paperclip-native-question-");
+    temporary = await startEmbeddedPostgresTestDatabase("wardmote-native-question-");
     db = createDb(temporary.connectionString);
     heartbeat = heartbeatService(db);
   }, 20_000);

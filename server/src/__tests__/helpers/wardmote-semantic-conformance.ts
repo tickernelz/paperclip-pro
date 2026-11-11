@@ -62,7 +62,7 @@ interface ProductionWorld {
  * revisions, interactions, and terminal arbitration remain production-owned.
  */
 export class WardmoteProductionSemanticConformanceAdapter implements SemanticConformanceAdapter {
-  readonly id = "paperclip-production-services";
+  readonly id = "wardmote-production-services";
   readonly kind = "production_binding" as const;
 
   private constructor(readonly worlds: ReadonlyMap<string, ProductionWorld>) {}
@@ -359,7 +359,7 @@ class WardmoteRouteSemanticPort {
       taskId: issue.id,
       sessionId: run.sessionIdAfter ?? run.sessionIdBefore ?? run.externalRunId ?? run.id,
       backendKind: "runner",
-      sourceInstanceId: "paperclip-production-services",
+      sourceInstanceId: "wardmote-production-services",
       status: toFixtureRunStatus(run.status),
       attempt: run.scheduledRetryAttempt + 1,
       openedAt: (run.startedAt ?? run.createdAt).toISOString(),

@@ -146,7 +146,7 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
 
   beforeAll(async () => {
     const started = await startEmbeddedPostgresTestDatabase(
-      "paperclip-heartbeat-comment-wake-",
+      "wardmote-heartbeat-comment-wake-",
     );
     db = createDb(started.connectionString);
     tempDb = started;

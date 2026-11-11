@@ -18,7 +18,7 @@ afterEach(async () => {
 
 describeEmbeddedPostgres("Vercel Connect credential-source migration", () => {
   it("defaults legacy rows to the vault and rejects mixed credential custody", async () => {
-    const database = await startEmbeddedPostgresTestDatabase("paperclip-vercel-connect-migration-");
+    const database = await startEmbeddedPostgresTestDatabase("wardmote-vercel-connect-migration-");
     cleanups.push(database.cleanup);
     const sql = postgres(database.connectionString, { max: 1, onnotice: () => {} });
     cleanups.push(async () => sql.end());
@@ -52,7 +52,7 @@ describeEmbeddedPostgres("Vercel Connect credential-source migration", () => {
     await sql`
       UPDATE "tool_connections" SET
         "credential_source" = 'vercel_connect',
-        "external_credential" = ${sql.json({ provider: "vercel_connect", connectorUid: "posthog-paperclip" })},
+        "external_credential" = ${sql.json({ provider: "vercel_connect", connectorUid: "posthog-wardmote" })},
         "credential_refs" = '[]'::jsonb,
         "credential_secret_refs" = '[]'::jsonb
       WHERE "id" = ${connectionId}

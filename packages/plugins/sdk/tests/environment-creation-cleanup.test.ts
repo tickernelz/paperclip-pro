@@ -7,7 +7,7 @@ import { createRequest, isJsonRpcResponse, JsonRpcCallError, parseMessage, seria
 import { startWorkerRpcHost } from "../src/worker-rpc-host.js";
 
 const ownership = {
-  providerLeaseId: "paperclip-create-attempt-1", companyId: "company-1", environmentId: "environment-1",
+  providerLeaseId: "wardmote-create-attempt-1", companyId: "company-1", environmentId: "environment-1",
   runId: "run-1", attemptId: "attempt-1", accountFingerprint: "a".repeat(64),
   labels: { "paperclip-provider": "daytona" },
 };

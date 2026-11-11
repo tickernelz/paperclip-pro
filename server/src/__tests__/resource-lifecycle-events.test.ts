@@ -26,7 +26,7 @@ describePostgres("Resource lifecycle events", () => {
   let worker: ReturnType<typeof configureAgentLifecycle>;
 
   beforeAll(async () => {
-    database = await startEmbeddedPostgresTestDatabase("paperclip-resource-events-");
+    database = await startEmbeddedPostgresTestDatabase("wardmote-resource-events-");
     db = createDb(database.connectionString);
   }, 90_000);
   afterAll(async () => { await worker?.stop(); await database?.cleanup(); });

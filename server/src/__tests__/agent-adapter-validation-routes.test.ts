@@ -445,7 +445,7 @@ describe("agent routes adapter validation", () => {
 
   it("restores a saved agent's redacted CODEX_HOME before testing its adapter", async () => {
     const agentId = "11111111-1111-4111-8111-111111111111";
-    const storedHome = "/paperclip/companies/company-1/agents/agent-1/codex-home";
+    const storedHome = "/wardmote/companies/company-1/agents/agent-1/codex-home";
     mockAgentService.getById.mockResolvedValue({
       ...(await mockAgentService.getById()),
       id: agentId,

@@ -51,21 +51,21 @@ describe("OpenCode MCP bridge", () => {
   });
 
   it("admits runner-private extension operations without advertising them to the model", async () => {
-    const handler = vi.fn(async ({ tool }) => ({ decision: tool === "__paperclip_permission" ? "accept" : "decline" }));
+    const handler = vi.fn(async ({ tool }) => ({ decision: tool === "__wardmote_permission" ? "accept" : "decline" }));
     const bridge = await startOpenCodeMcpBridge({
       tools: [{ name: "documents.read", inputSchema: { type: "object" } }],
-      privateTools: [{ name: "__paperclip_permission", inputSchema: { type: "object" } }],
+      privateTools: [{ name: "__wardmote_permission", inputSchema: { type: "object" } }],
       handler,
     });
     bridges.push(bridge);
     const listed = await (await rpc(bridge, { id: 1, method: "tools/list" })).json() as { result: { tools: Array<{ name: string }> } };
-    expect(listed.result.tools.map((tool) => tool.name)).not.toContain("__paperclip_permission");
+    expect(listed.result.tools.map((tool) => tool.name)).not.toContain("__wardmote_permission");
     expect(await (await rpc(bridge, {
       id: "permission-1",
       method: "tools/call",
-      params: { name: "__paperclip_permission", arguments: {} },
+      params: { name: "__wardmote_permission", arguments: {} },
     })).json()).toMatchObject({ result: { content: [{ text: "{\"decision\":\"accept\"}" }] } });
-    expect(handler).toHaveBeenCalledWith(expect.objectContaining({ tool: "__paperclip_permission" }));
+    expect(handler).toHaveBeenCalledWith(expect.objectContaining({ tool: "__wardmote_permission" }));
   });
 
   it("maps prefixed names and replays identical duplicate calls exactly once", async () => {
@@ -142,7 +142,7 @@ describe("OpenCode MCP bridge", () => {
   it("allows human-gated private calls to outlive ordinary tool timeouts", async () => {
     const bridge = await startOpenCodeMcpBridge({
       tools: [{ name: "documents.read", inputSchema: { type: "object" } }],
-      privateTools: [{ name: "__paperclip_runtime_input", inputSchema: { type: "object" } }],
+      privateTools: [{ name: "__wardmote_runtime_input", inputSchema: { type: "object" } }],
       timeoutMs: 20,
       privateToolTimeoutMs: 200,
       handler: async ({ tool }) => {
@@ -154,7 +154,7 @@ describe("OpenCode MCP bridge", () => {
     const response = await rpc(bridge, {
       id: "human-input",
       method: "tools/call",
-      params: { name: "__paperclip_runtime_input", arguments: {} },
+      params: { name: "__wardmote_runtime_input", arguments: {} },
     });
     expect(await response.json()).toMatchObject({
       result: { content: [{ text: expect.stringContaining("\"resolved\":true") }] },

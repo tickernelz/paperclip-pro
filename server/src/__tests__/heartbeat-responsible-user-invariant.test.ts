@@ -87,7 +87,7 @@ describeEmbeddedPostgres("heartbeat responsible-user invariant", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-heartbeat-responsible-user-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-heartbeat-responsible-user-");
     db = createDb(tempDb.connectionString);
     heartbeat = heartbeatService(db);
     const baseExecute = mockAdapterExecute.getMockImplementation()!;

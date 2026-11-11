@@ -60,7 +60,7 @@ describeEmbeddedPostgres("pipeline routes", () => {
   const noopHeartbeat = { wakeup: async () => null };
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-pipelines-routes-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-pipelines-routes-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

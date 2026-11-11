@@ -36,7 +36,7 @@ describeEmbeddedPostgres("heartbeat terminalizeRunOnLeaseRelease", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-lease-release-terminal-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-lease-release-terminal-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

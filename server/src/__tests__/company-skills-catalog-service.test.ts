@@ -102,7 +102,7 @@ describeEmbeddedPostgres("companySkillService.installFromCatalog", () => {
 
   beforeAll(async () => {
     oldWardmoteHome = process.env.WARDMOTE_HOME;
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-company-skills-catalog-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-company-skills-catalog-");
     db = createDb(tempDb.connectionString);
     svc = await createService();
   }, 20_000);

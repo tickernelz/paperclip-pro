@@ -21,7 +21,7 @@ describe("webhookUrlWarningReason", () => {
     ["https://[fc00::1]/fire", "private"],
     ["https://[fe80::1]/fire", "private"],
     ["https://[::ffff:192.168.1.2]/fire", "private"],
-    ["https://paperclip/fire", "private"],
+    ["https://wardmote/fire", "private"],
     ["https://wardmote.internal/fire", "private"],
     ["https://wardmote.local/fire", "private"],
     ["https://paperclip.home.arpa/fire", "private"],

@@ -136,7 +136,7 @@ async function seedValidWorktreeSource(
     VALUES (
       ${userId},
       ${userId === "local-board" ? "Board" : "Existing User"},
-      ${userId === "local-board" ? "local@wardmote.local" : "existing@paperclip.ing"},
+      ${userId === "local-board" ? "local@wardmote.local" : "existing@wardmote.example"},
       true, ${now.toISOString()}, ${now.toISOString()}
     )
   `;
@@ -145,7 +145,7 @@ async function seedValidWorktreeSource(
       id: "credential-existing",
       // The issuer Better Auth stamps on an email/password account.
       issuer: "local:credential",
-      accountId: "existing@paperclip.ing",
+      accountId: "existing@wardmote.example",
       providerId: "credential",
       userId,
       password: "fixture-password-hash",
@@ -292,7 +292,7 @@ describe("worktree helpers", () => {
       const localConfig = path.join(targetRoot, ".wardmote", "config.json");
       fs.mkdirSync(path.dirname(localConfig), { recursive: true });
       fs.writeFileSync(localConfig, "{}\n");
-      process.env.WARDMOTE_CONFIG = "/tmp/ambient-paperclip/config.json";
+      process.env.WARDMOTE_CONFIG = "/tmp/ambient-wardmote/config.json";
       process.chdir(targetRoot);
 
       expect(resolveCurrentWorktreeEndpoint()).toMatchObject({
@@ -315,7 +315,7 @@ describe("worktree helpers", () => {
       fs.mkdirSync(nestedDirectory, { recursive: true });
       fs.mkdirSync(path.dirname(localConfig), { recursive: true });
       fs.writeFileSync(localConfig, "{}\n");
-      process.env.WARDMOTE_CONFIG = "/tmp/ambient-paperclip/config.json";
+      process.env.WARDMOTE_CONFIG = "/tmp/ambient-wardmote/config.json";
       process.chdir(nestedDirectory);
 
       expect(resolveCurrentWorktreeEndpoint()).toMatchObject({
@@ -340,7 +340,7 @@ describe("worktree helpers", () => {
   });
 
   it("keeps addressing worktrees created under the retired name prefix", () => {
-    expect(resolveWorktreeMakeTargetPath("paperclip-pr-432")).toBe(path.resolve(os.homedir(), "paperclip-pr-432"));
+    expect(resolveWorktreeMakeTargetPath("wardmote-pr-432")).toBe(path.resolve(os.homedir(), "wardmote-pr-432"));
   });
 
   it("rejects worktree:make names that are not safe directory/branch names", () => {
@@ -1854,7 +1854,7 @@ describe("worktree helpers", () => {
         `postgres://wardmote:wardmote@127.0.0.1:${targetConfig.database.embeddedPostgresPort}/wardmote`,
       );
       const seededUsers = await targetDb.select().from(authUsers);
-      expect(seededUsers.some((row) => row.email === "existing@paperclip.ing")).toBe(true);
+      expect(seededUsers.some((row) => row.email === "existing@wardmote.example")).toBe(true);
       const restoredEvents = await targetDb.$client`
         SELECT id, action FROM resource_lifecycle_events WHERE resource_id = ${legacyAgentId} ORDER BY id
       `;
@@ -2158,7 +2158,7 @@ describe("worktree helpers", () => {
     });
     const sourcePaths = resolveWorktreeLocalPaths({
       cwd: sourceRoot,
-      homeDir: path.join(tempRoot, ".paperclip-source"),
+      homeDir: path.join(tempRoot, ".wardmote-source"),
       instanceId: "default",
     });
     const originalCwd = process.cwd();
@@ -2263,7 +2263,7 @@ describe("worktree helpers", () => {
     });
     const sourcePaths = resolveWorktreeLocalPaths({
       cwd: sourceRoot,
-      homeDir: path.join(tempRoot, ".paperclip-source"),
+      homeDir: path.join(tempRoot, ".wardmote-source"),
       instanceId: "default",
     });
     const originalCwd = process.cwd();
@@ -2334,26 +2334,26 @@ describe("worktree helpers", () => {
   it("rebinds same-repo workspace paths onto the current worktree root", () => {
     expect(
       rebindWorkspaceCwd({
-        sourceRepoRoot: "/Users/example/paperclip",
-        targetRepoRoot: "/Users/example/paperclip-pr-432",
-        workspaceCwd: "/Users/example/paperclip",
+        sourceRepoRoot: "/Users/example/wardmote",
+        targetRepoRoot: "/Users/example/wardmote-pr-432",
+        workspaceCwd: "/Users/example/wardmote",
       }),
-    ).toBe("/Users/example/paperclip-pr-432");
+    ).toBe("/Users/example/wardmote-pr-432");
 
     expect(
       rebindWorkspaceCwd({
-        sourceRepoRoot: "/Users/example/paperclip",
-        targetRepoRoot: "/Users/example/paperclip-pr-432",
-        workspaceCwd: "/Users/example/paperclip/packages/db",
+        sourceRepoRoot: "/Users/example/wardmote",
+        targetRepoRoot: "/Users/example/wardmote-pr-432",
+        workspaceCwd: "/Users/example/wardmote/packages/db",
       }),
-    ).toBe("/Users/example/paperclip-pr-432/packages/db");
+    ).toBe("/Users/example/wardmote-pr-432/packages/db");
   });
 
   it("does not rebind paths outside the source repo root", () => {
     expect(
       rebindWorkspaceCwd({
-        sourceRepoRoot: "/Users/example/paperclip",
-        targetRepoRoot: "/Users/example/paperclip-pr-432",
+        sourceRepoRoot: "/Users/example/wardmote",
+        targetRepoRoot: "/Users/example/wardmote-pr-432",
         workspaceCwd: "/Users/example/other-project",
       }),
     ).toBeNull();
@@ -2411,7 +2411,7 @@ describe("worktree helpers", () => {
     const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-worktree-make-"));
     const repoRoot = path.join(tempRoot, "repo");
     const fakeHome = path.join(tempRoot, "home");
-    const worktreePath = path.join(fakeHome, "paperclip-make-test");
+    const worktreePath = path.join(fakeHome, "wardmote-make-test");
     const originalCwd = process.cwd();
     const homedirSpy = vi.spyOn(os, "homedir").mockReturnValue(fakeHome);
 
@@ -2427,7 +2427,7 @@ describe("worktree helpers", () => {
 
       process.chdir(repoRoot);
 
-      await worktreeMakeCommand("paperclip-make-test", {
+      await worktreeMakeCommand("wardmote-make-test", {
         seed: false,
         home: path.join(tempRoot, ".wardmote-worktrees"),
       });

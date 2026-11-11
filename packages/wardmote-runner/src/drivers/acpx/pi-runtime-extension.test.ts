@@ -185,7 +185,7 @@ describe("owned Pi runtime extension", () => {
     const value = { invocationNamespace: "00000000-0000-4000-8000-000000000000", workspace: "/work/project", readOnly: false, readRoots: [], protectedRoots: [], instructions: "", servers: [{ type: "http", name: "paperclip", url: "http://127.0.0.1:1234/mcp", headers: [{ name: "Authorization", value: "Bearer 1234567890123456" }] }] };
     const parse = () => readPiRuntimeConfiguration({ PAPERCLIP_PI_RUNTIME_CONFIGURATION: JSON.stringify(value) });
     expect(parse().servers).toHaveLength(1);
-    for (const url of ["http://127.0.0.1.evil.test/mcp", "http://paperclip.example/mcp", "http://localhost/mcp", "http://user:password@127.0.0.1/mcp", "https://user:password@paperclip.example/mcp", "https://paperclip.example/mcp#unbound", "file:///tmp/mcp"]) {
+    for (const url of ["http://127.0.0.1.evil.test/mcp", "http://paperclip.example/mcp", "http://localhost/mcp", "http://user:password@127.0.0.1/mcp", "https://user:password@wardmote.example/mcp", "https://paperclip.example/mcp#unbound", "file:///tmp/mcp"]) {
       value.servers[0]!.url = url;
       expect(parse).toThrow("requires HTTPS or numeric loopback HTTP");
     }

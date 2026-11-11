@@ -64,7 +64,7 @@ describeEmbeddedPostgres("resolveRunReferencedProjects", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-run-referenced-projects-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-run-referenced-projects-");
     db = createDb(tempDb.connectionString);
     issuesSvc = issueService(db);
     projectsSvc = projectService(db);

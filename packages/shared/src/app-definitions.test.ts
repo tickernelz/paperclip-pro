@@ -1038,14 +1038,14 @@ describe("AppDefinition catalog", () => {
     });
     expect(
       resolveConnectionMethodServerUrl(ucp!, {
-        storeDomain: "paperclip-demo.myshopify.com",
+        storeDomain: "wardmote-demo.myshopify.com",
       }),
-    ).toBe("https://paperclip-demo.myshopify.com/api/ucp/mcp");
+    ).toBe("https://wardmote-demo.myshopify.com/api/ucp/mcp");
     expect(
       resolveConnectionMethodServerUrl(compatibility!, {
-        storeDomain: "paperclip-demo.myshopify.com",
+        storeDomain: "wardmote-demo.myshopify.com",
       }),
-    ).toBe("https://paperclip-demo.myshopify.com/api/mcp");
+    ).toBe("https://wardmote-demo.myshopify.com/api/mcp");
     expect(resolveConnectionMethodServerUrl(ucp!, {})).toBeNull();
     expect(shopify?.setupPrerequisite).toMatchObject({
       title: "Launch the storefront before connecting",

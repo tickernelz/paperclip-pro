@@ -37,7 +37,7 @@ describeEmbeddedPostgres("stranded reconciler scope", () => {
   let db: ReturnType<typeof createDb>;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-stranded-scope-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-stranded-scope-");
     db = createDb(tempDb.connectionString);
   }, 60_000);
 

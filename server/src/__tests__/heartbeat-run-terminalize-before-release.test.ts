@@ -65,7 +65,7 @@ describeEmbeddedPostgres("heartbeat teardown terminalizes the run before releasi
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-terminalize-before-release-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-terminalize-before-release-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

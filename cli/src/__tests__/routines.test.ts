@@ -93,7 +93,7 @@ describeEmbeddedPostgres("disableAllRoutinesInConfig", () => {
   let configPath = "";
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-routines-cli-db-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-routines-cli-db-");
     db = createDb(tempDb.connectionString);
     tempRoot = mkdtempSync(path.join(os.tmpdir(), "wardmote-routines-cli-config-"));
     configPath = path.join(tempRoot, "config.json");

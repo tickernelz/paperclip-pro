@@ -85,7 +85,7 @@ async function runGit(cwd: string, args: string[]) {
 async function createGitRepo() {
   const repoRoot = await mkdtemp(path.join(os.tmpdir(), "wardmote-finalize-branch-repo-"));
   await runGit(repoRoot, ["init"]);
-  await runGit(repoRoot, ["config", "user.email", "paperclip-test@example.com"]);
+  await runGit(repoRoot, ["config", "user.email", "wardmote-test@example.com"]);
   await runGit(repoRoot, ["config", "user.name", "Wardmote Test"]);
   await writeFile(path.join(repoRoot, "README.md"), "finalization branch guard\n", "utf8");
   await runGit(repoRoot, ["add", "README.md"]);
@@ -263,7 +263,7 @@ describeEmbeddedPostgres("heartbeat workspace finalization branch guard", () => 
   const tempRoots: string[] = [];
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-finalize-branch-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-finalize-branch-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

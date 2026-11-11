@@ -91,7 +91,7 @@ function fakeFallbackAdapter(): ServerAdapterModule {
 }
 
 describeEmbeddedPostgres("batch agent adapter config routes", () => {
-  const ctx = useEmbeddedPostgres("paperclip-agent-config-batch-", {
+  const ctx = useEmbeddedPostgres("wardmote-agent-config-batch-", {
     resetEach: async (db) => {
       await db.delete(activityLog);
       await db.delete(agents);

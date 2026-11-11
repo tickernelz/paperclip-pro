@@ -22,7 +22,7 @@ afterEach(() => {
 describe("Better Auth cookie scoping", () => {
   it("derives an instance-scoped cookie prefix", () => {
     expect(deriveAuthCookiePrefix("default")).toBe("paperclip-default");
-    expect(deriveAuthCookiePrefix("PAP-1601-worktree")).toBe("paperclip-PAP-1601-worktree");
+    expect(deriveAuthCookiePrefix("PAP-1601-worktree")).toBe("wardmote-PAP-1601-worktree");
   });
 
   it("uses WARDMOTE_INSTANCE_ID for the Better Auth cookie prefix", () => {
@@ -31,10 +31,10 @@ describe("Better Auth cookie scoping", () => {
     const advanced = buildBetterAuthAdvancedOptions({ disableSecureCookies: false });
 
     expect(advanced).toEqual({
-      cookiePrefix: "paperclip-sat-worktree",
+      cookiePrefix: "wardmote-sat-worktree",
     });
     expect(getCookies({ advanced } as BetterAuthOptions).sessionToken.name).toMatch(
-      /paperclip-sat-worktree\.session_token$/,
+      /wardmote-sat-worktree\.session_token$/,
     );
   });
 
@@ -42,12 +42,12 @@ describe("Better Auth cookie scoping", () => {
     process.env.WARDMOTE_INSTANCE_ID = "pap-worktree";
 
     expect(buildBetterAuthAdvancedOptions({ disableSecureCookies: true })).toEqual({
-      cookiePrefix: "paperclip-pap-worktree",
+      cookiePrefix: "wardmote-pap-worktree",
       useSecureCookies: false,
     });
     expect(getCookies({
       advanced: buildBetterAuthAdvancedOptions({ disableSecureCookies: true }),
-    } as BetterAuthOptions).sessionToken.name).toBe("paperclip-pap-worktree.session_token");
+    } as BetterAuthOptions).sessionToken.name).toBe("wardmote-pap-worktree.session_token");
   });
 
   it("enables Better Auth rate limiting for authenticated private instances by default", () => {

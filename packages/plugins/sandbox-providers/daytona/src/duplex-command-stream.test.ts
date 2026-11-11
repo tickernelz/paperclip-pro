@@ -16,11 +16,11 @@ const ENTER = "\r";
 // vector: element 0 is the program and the rest are its arguments. The real
 // command is the generated duplex gateway; the tests use a placeholder, because
 // the fake PTY runs no process.
-const GATEWAY = ["node", "/paperclip/gateway.mjs"];
+const GATEWAY = ["node", "/wardmote/gateway.mjs"];
 
 // The gateway argument vector after the wrapper quotes each element. The wrapper
 // quotes every argument as a single-quoted shell word.
-const GATEWAY_QUOTED = "'node' '/paperclip/gateway.mjs'";
+const GATEWAY_QUOTED = "'node' '/wardmote/gateway.mjs'";
 
 /**
  * A fake Daytona PTY handle. It records each input write, drives the output
@@ -214,15 +214,15 @@ describe("buildDuplexChannelLaunchWrapper", () => {
 
   it("quotes each command argument that holds shell metacharacters", () => {
     const wrapper = buildDuplexChannelLaunchWrapper(
-      ["node", "/paperclip/gateway.mjs", "; rm -rf ~"],
+      ["node", "/wardmote/gateway.mjs", "; rm -rf ~"],
       "/tmp/diag.log",
     );
 
     // Each argument is one single-quoted word, so the metacharacters stay literal
     // text. The dangerous `rm` argument never becomes its own command.
-    expect(wrapper).toContain(`exec 'node' '/paperclip/gateway.mjs' '; rm -rf ~'`);
+    expect(wrapper).toContain(`exec 'node' '/wardmote/gateway.mjs' '; rm -rf ~'`);
     expect(wrapper).not.toContain("; rm -rf ~;");
-    expect(wrapper).not.toContain("exec node /paperclip/gateway.mjs ; rm -rf ~");
+    expect(wrapper).not.toContain("exec node /wardmote/gateway.mjs ; rm -rf ~");
   });
 
   it("rejects an empty command argument vector", () => {

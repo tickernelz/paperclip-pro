@@ -214,7 +214,7 @@ it("captures the Node error shape for a host-invalid spawn cwd", async () => {
   // when it host-spawns the relay proxy with the in-sandbox `remoteCwd`.
   const missingCwd = path.join(
     os.tmpdir(),
-    "paperclip-acpx-missing-spawn-cwd",
+    "wardmote-acpx-missing-spawn-cwd",
     "nested",
     "does-not-exist",
   );

@@ -423,7 +423,7 @@ describe("Chat SDK endpoint runtime", () => {
       expectedKey: "telegram",
       providerConfig: {
         provider: "telegram" as const,
-        userName: "paperclip_agent_bot",
+        userName: "wardmote_agent_bot",
         credentials: {
           botToken: "telegram-token",
           secretToken: "telegram-secret",
@@ -817,7 +817,7 @@ describe("Chat SDK endpoint runtime", () => {
     createChatSdkEndpointRuntime({
       ...baseOptions({
         provider: "telegram",
-        userName: "paperclip_bot",
+        userName: "wardmote_bot",
         credentials: { botToken: "token", secretToken: "secret" },
       }),
       callbacks: {

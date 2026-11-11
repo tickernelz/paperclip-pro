@@ -25,7 +25,7 @@ describeDatabase("OpenWA chat migration", () => {
   it(
     "adds the OpenWA schema with tenant-scoped keys and enforced constraints",
     async () => {
-      const database = await startEmbeddedPostgresTestDatabase("paperclip-chat-openwa-");
+      const database = await startEmbeddedPostgresTestDatabase("wardmote-chat-openwa-");
       const sql = postgres(database.connectionString, { max: 1, onnotice: () => {} });
       try {
         const columns = await sql`

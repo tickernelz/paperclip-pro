@@ -177,7 +177,7 @@ describe("validateName", () => {
   });
 
   it("charset error takes precedence over reserved prefix", () => {
-    expect(validateName("PAPERCLIP-X", new Set(), reserved)?.level).toBe("error");
+    expect(validateName("WARDMOTE-X", new Set(), reserved)?.level).toBe("error");
   });
 });
 

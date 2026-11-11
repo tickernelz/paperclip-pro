@@ -38,7 +38,7 @@ suite("Teams same-transaction publication projection (real PostgreSQL)", () => {
     if (external) db = createDb(external);
     else {
       temporary = await startEmbeddedPostgresTestDatabase(
-        "paperclip-teams-projection-",
+        "wardmote-teams-projection-",
       );
       db = createDb(temporary.connectionString);
     }

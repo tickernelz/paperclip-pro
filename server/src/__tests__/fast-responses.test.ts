@@ -46,7 +46,7 @@ beforeAll(async () => {
   vi.stubEnv("WARDMOTE_HOME", home);
   vi.stubEnv("WARDMOTE_INSTANCE_ID", "fast-response-fixture");
   database = await startEmbeddedPostgresTestDatabase(
-    "paperclip-fast-response-db-",
+    "wardmote-fast-response-db-",
   );
   db = createDb(database.connectionString);
 }, 90000);

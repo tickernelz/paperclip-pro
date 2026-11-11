@@ -68,7 +68,7 @@ const support = await getEmbeddedPostgresTestSupport();
     let agentId: string;
     beforeAll(async () => {
       database = await startEmbeddedPostgresTestDatabase(
-        "paperclip-agent-conversations-",
+        "wardmote-agent-conversations-",
       );
       db = createDb(database.connectionString);
       companyId = randomUUID();

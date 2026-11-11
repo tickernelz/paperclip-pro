@@ -38,8 +38,8 @@ describe("applyDevRunnerOptions", () => {
   });
 
   it.each([
-    ["short option", ["-d", "~/paperclip-dev"]],
-    ["equals form", ["--data-dir=~/paperclip-dev"]],
+    ["short option", ["-d", "~/wardmote-dev"]],
+    ["equals form", ["--data-dir=~/wardmote-dev"]],
   ])("supports the %s", (_label, args) => {
     const env: NodeJS.ProcessEnv = {};
 

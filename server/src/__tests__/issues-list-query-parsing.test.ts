@@ -13,7 +13,7 @@ import {
 
 
 describeEmbeddedPostgres("issue list status query parsing", () => {
-  const ctx = useEmbeddedPostgres("paperclip-issues-list-query-parsing-", {
+  const ctx = useEmbeddedPostgres("wardmote-issues-list-query-parsing-", {
     resetEach: resetCompanyIssueFixtures,
   });
 

@@ -98,7 +98,7 @@ describe("OpenWA media ingest and speech-to-text (embedded Postgres + fake gatew
   const services: Array<ReturnType<typeof openwaMediaService>> = [];
 
   beforeAll(async () => {
-    database = await startEmbeddedPostgresTestDatabase("paperclip-openwa-media-");
+    database = await startEmbeddedPostgresTestDatabase("wardmote-openwa-media-");
     db = createDb(database.connectionString);
     root = await mkdtemp(path.join(tmpdir(), "openwa-media-"));
     storage = createStorageService(createLocalDiskStorageProvider(path.join(root, "storage")));

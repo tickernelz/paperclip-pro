@@ -79,7 +79,7 @@ describeEmbeddedPostgres("status card routes", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-status-cards-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-status-cards-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

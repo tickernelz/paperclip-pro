@@ -497,7 +497,7 @@ describe("TerminalView", () => {
   }
 
   it("saves a pasted image on the terminal host and types its shell-escaped path", async () => {
-    terminalApiMock.pasteImage.mockReset().mockResolvedValue({ path: "/tmp/paperclip pasted/shot.png", bytes: 4 });
+    terminalApiMock.pasteImage.mockReset().mockResolvedValue({ path: "/tmp/wardmote pasted/shot.png", bytes: 4 });
     const { socket } = await connected();
     const image = new File([new Uint8Array([1, 2, 3, 4])], "image.png", { type: "image/png" });
     const event = pasteEvent(["Files"], image);
@@ -509,7 +509,7 @@ describe("TerminalView", () => {
 
     expect(event.defaultPrevented).toBe(true);
     expect(terminalApiMock.pasteImage).toHaveBeenCalledWith("company-1", "session-1", image);
-    expect(inputs(socket)).toEqual(["'/tmp/paperclip pasted/shot.png' "]);
+    expect(inputs(socket)).toEqual(["'/tmp/wardmote pasted/shot.png' "]);
   });
 
   it("leaves a paste that carries text to the terminal's normal text paste", async () => {

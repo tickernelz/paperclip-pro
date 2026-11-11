@@ -201,7 +201,7 @@ describe("teams CLI commands", () => {
         installedCatalogTeam(),
         installedCatalogTeam({
           catalogId: "paperclipai:removed:team",
-          catalogKey: "paperclipai/removed/team",
+          catalogKey: "tickernelz/removed/team",
           present: false,
           currentContentHash: null,
           installedOriginHashes: ["sha256:removed"],
@@ -232,7 +232,7 @@ describe("teams CLI commands", () => {
       },
       {
         catalogId: "paperclipai:removed:team",
-        catalogKey: "paperclipai/removed/team",
+        catalogKey: "tickernelz/removed/team",
         installedStatus: "installed_missing",
         installedAgentCount: 2,
         present: false,

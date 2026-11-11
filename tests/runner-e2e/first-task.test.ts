@@ -958,7 +958,7 @@ Accept the card above and I write it. This task stays in review until then.`;
   });
   it("keeps source and display hashes distinct when instruction examples are redacted", () => {
     const content = 'curl -H "Authorization: Bearer some-example-token"';
-    const snapshot = snapshotInstruction("paperclip/SKILL.md", content);
+    const snapshot = snapshotInstruction("wardmote/SKILL.md", content);
     expect(snapshot.redacted).toBe(true);
     expect(snapshot.sha256).toBe(digestText(content));
     expect(snapshot.contentSha256).toBe(digestText(snapshot.content));

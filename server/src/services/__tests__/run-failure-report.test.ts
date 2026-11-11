@@ -46,7 +46,7 @@ describeEmbeddedPostgres("reportRunFailure", () => {
       await applyPendingMigrations(testDatabaseUrl);
       db = createDb(testDatabaseUrl);
     } else {
-      tempDb = await startEmbeddedPostgresTestDatabase("paperclip-run-failure-report-");
+      tempDb = await startEmbeddedPostgresTestDatabase("wardmote-run-failure-report-");
       db = createDb(tempDb.connectionString);
     }
   }, 20_000);

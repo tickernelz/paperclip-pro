@@ -63,7 +63,7 @@ describeEmbeddedPostgres("attention service", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-attention-service-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-attention-service-");
     db = createDb(tempDb.connectionString);
   }, 30_000);
 

@@ -35,7 +35,7 @@ describeEmbeddedPostgres("tool review queue vs unsigned ask-first request", () =
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-review-queue-unsigned-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-review-queue-unsigned-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

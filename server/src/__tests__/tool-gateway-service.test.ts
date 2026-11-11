@@ -174,7 +174,7 @@ describeEmbeddedPostgres("tool gateway service", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-tool-gateway-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-tool-gateway-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 
@@ -1503,7 +1503,7 @@ describeEmbeddedPostgres("tool gateway service", () => {
       externalCredential: {
         provider: "vercel_connect",
         connectorId: "scl_posthog",
-        connectorUid: "posthog-paperclip",
+        connectorUid: "posthog-wardmote",
         service: "posthog",
         connectorType: "api-key",
         principalMode: "app",
@@ -1529,7 +1529,7 @@ describeEmbeddedPostgres("tool gateway service", () => {
       token: options?.forceRefresh ? "fresh-provider-bearer" : "stale-provider-bearer",
       tokenId: options?.forceRefresh ? "stk_fresh" : "stk_stale",
       expiresAt: Date.now() + 60_000,
-      connector: { id: "scl_posthog", uid: "posthog-paperclip", type: "api-key" },
+      connector: { id: "scl_posthog", uid: "posthog-wardmote", type: "api-key" },
     }));
     const evict = vi.fn<VercelConnectClient["evict"]>();
     const vercelConnectClient: VercelConnectClient = {

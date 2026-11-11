@@ -48,7 +48,7 @@ describeEmbeddedPostgres("run-dispatch postgres adapter", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-run-dispatch-postgres-adapter-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-run-dispatch-postgres-adapter-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

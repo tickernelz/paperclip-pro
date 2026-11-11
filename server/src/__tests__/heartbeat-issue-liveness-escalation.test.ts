@@ -93,7 +93,7 @@ describeEmbeddedPostgres("heartbeat resolved dependency wake reconciliation", ()
   let db: ReturnType<typeof createDb>;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-heartbeat-issue-liveness-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-heartbeat-issue-liveness-");
     db = createDb(tempDb.connectionString);
   }, 30_000);
 

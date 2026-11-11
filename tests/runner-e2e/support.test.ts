@@ -934,8 +934,8 @@ describe("runner E2E server isolation", () => {
         WARDMOTE_STORAGE_S3_BUCKET: "production-bucket",
       },
       {
-        WARDMOTE_HOME: "/tmp/cell/paperclip-home",
-        WARDMOTE_CONFIG: "/tmp/cell/paperclip-home/instances/e2e/config.json",
+        WARDMOTE_HOME: "/tmp/cell/wardmote-home",
+        WARDMOTE_CONFIG: "/tmp/cell/wardmote-home/instances/e2e/config.json",
         XDG_CACHE_HOME: "/tmp/cell/xdg-cache",
         WARDMOTE_AGENT_JWT_SECRET: "generated-agent-jwt",
         WARDMOTE_DECISION_SIGNING_SECRET: "generated-decision-key",
@@ -964,8 +964,8 @@ describe("runner E2E server isolation", () => {
     expect(() =>
       assertIsolatedServerEnvironment(env, {
         temporaryRoot: "/tmp/cell",
-        wardmoteHome: "/tmp/cell/paperclip-home",
-        configPath: "/tmp/cell/paperclip-home/instances/e2e/config.json",
+        wardmoteHome: "/tmp/cell/wardmote-home",
+        configPath: "/tmp/cell/wardmote-home/instances/e2e/config.json",
       }),
     ).not.toThrow();
   });
@@ -973,10 +973,10 @@ describe("runner E2E server isolation", () => {
   it("uses absolute repository paths for the Playwright web server", () => {
     const command = runnerE2EWebServerCommand("/workspace/paperclip");
     expect(command).toContain(
-      "'/workspace/paperclip/cli/node_modules/tsx/dist/cli.mjs'",
+      "'/workspace/wardmote/cli/node_modules/tsx/dist/cli.mjs'",
     );
     expect(command).toContain(
-      "'/workspace/paperclip/tests/runner-e2e/server.ts'",
+      "'/workspace/wardmote/tests/runner-e2e/server.ts'",
     );
   });
 
@@ -1238,7 +1238,7 @@ describe("runner E2E evidence redaction", () => {
         root,
         path.join(
           root,
-          "instances/instance-1/runtime/paperclip-runner/acpx/acpx/session-1/codex-home/auth.json",
+          "instances/instance-1/runtime/wardmote-runner/acpx/acpx/session-1/codex-home/auth.json",
         ),
       ),
     ).toBe(true);
@@ -1247,7 +1247,7 @@ describe("runner E2E evidence redaction", () => {
         root,
         path.join(
           root,
-          "instances/instance-1/runtime/paperclip-runner/durable-sessions/session-1/codex-home/auth.json",
+          "instances/instance-1/runtime/wardmote-runner/durable-sessions/session-1/codex-home/auth.json",
         ),
       ),
     ).toBe(true);
@@ -1262,7 +1262,7 @@ describe("runner E2E evidence redaction", () => {
         root,
         path.join(
           root,
-          "instances/instance-1/runtime/paperclip-runner/durable-sessions/session-1/codex-home/config.toml",
+          "instances/instance-1/runtime/wardmote-runner/durable-sessions/session-1/codex-home/config.toml",
         ),
       ),
     ).toBe(false);

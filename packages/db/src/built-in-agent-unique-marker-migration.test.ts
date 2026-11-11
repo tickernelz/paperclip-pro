@@ -31,7 +31,7 @@ describeEmbeddedPostgres("built-in agent unique marker migration", () => {
   });
 
   it("resolves pre-existing duplicates and enforces uniqueness going forward", async () => {
-    const database = await startEmbeddedPostgresTestDatabase("paperclip-built-in-unique-marker-");
+    const database = await startEmbeddedPostgresTestDatabase("wardmote-built-in-unique-marker-");
     cleanups.push(database.cleanup);
     const sql = postgres(database.connectionString, { max: 1 });
     cleanups.push(async () => sql.end());

@@ -75,7 +75,7 @@ describe("assistant invitation content", () => {
     const markdown = mcpSetupMarkdown(resource, company.id);
     expect(markdown).toContain("wardmote_connection");
     expect(markdown).toContain("restart");
-    expect(markdown).not.toContain("paperclip_whoami");
+    expect(markdown).not.toContain("wardmote_whoami");
     expect(markdown).not.toContain("pcmcp_at_");
     expect(renderMcpSetup(resource, company.id)).toContain("Instructions for assistants");
     expect(renderMcpSetup(resource, company.id)).not.toContain(company.name);

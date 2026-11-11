@@ -46,7 +46,7 @@ describeEmbeddedPostgres("current external-chat wake comment reader", () => {
 
   beforeAll(async () => {
     const started = await startEmbeddedPostgresTestDatabase(
-      "paperclip-current-wake-comments-",
+      "wardmote-current-wake-comments-",
     );
     db = createDb(started.connectionString);
     tempDb = started;

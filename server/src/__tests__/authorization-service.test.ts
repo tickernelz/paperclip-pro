@@ -209,7 +209,7 @@ describeEmbeddedPostgres("authorization service", () => {
   });
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-authorization-service-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-authorization-service-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

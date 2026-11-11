@@ -99,7 +99,7 @@ describe("OpenWA round trip (embedded Postgres + fake gateway)", () => {
   const endpointIds: string[] = [];
 
   beforeAll(async () => {
-    database = await startEmbeddedPostgresTestDatabase("paperclip-openwa-round-trip-");
+    database = await startEmbeddedPostgresTestDatabase("wardmote-openwa-round-trip-");
     db = createDb(database.connectionString);
     scratch = await mkdtemp(path.join(tmpdir(), "openwa-round-trip-"));
     process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE = path.join(scratch, "master.key");

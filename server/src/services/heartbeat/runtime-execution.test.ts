@@ -44,7 +44,7 @@ describe.skipIf(!support.supported)("heartbeat runtime execution boundary", () =
   beforeAll(async () => {
     home = await mkdtemp(join(tmpdir(), "wardmote-runtime-execution-"));
     vi.stubEnv("WARDMOTE_HOME", home);
-    database = await startEmbeddedPostgresTestDatabase("paperclip-runtime-execution");
+    database = await startEmbeddedPostgresTestDatabase("wardmote-runtime-execution");
     db = createDb(database.connectionString);
     await db.execute(sql`set client_min_messages = warning`);
   }, EMBEDDED_POSTGRES_TEST_TIMEOUT_MS);

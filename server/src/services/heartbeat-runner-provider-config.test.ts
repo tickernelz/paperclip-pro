@@ -110,9 +110,9 @@ describe("Wardmote Runner native provider configuration", () => {
     const projected = projectWardmoteRunnerTaskConfig("opencode_server",
       { provider: "opencode", model: "openai/gpt-5.4" },
       { provider: "codex", model: "team-alias" },
-      "paperclip/team-alias");
+      "wardmote/team-alias");
     expect(resolveWardmoteRunnerNativeProviderInput({ backend: "opencode_server", adapterConfig: projected }))
-      .toMatchObject({ provider: "opencode", model: "paperclip/team-alias" });
+      .toMatchObject({ provider: "opencode", model: "wardmote/team-alias" });
   });
 
   it("requires persisted Claude recovery to use the qualified identity and current profile secret", () => {
@@ -170,7 +170,7 @@ describe("Wardmote Runner native provider configuration", () => {
       memoryArn: "arn:aws:bedrock-agentcore:us-east-1:123456789012:memory/m-1",
       memoryId: "m-1",
       invocationRoleArn: "arn:aws:iam::123456789012:role/invoke",
-      contextBucket: "paperclip-context",
+      contextBucket: "wardmote-context",
       contextPrefix: "runner/",
       contextKmsKeyArn: "arn:aws:kms:us-east-1:123456789012:key/key-1",
       qualificationRevision: "aws-agentcore-harness-context-v2",
@@ -307,7 +307,7 @@ describe("Wardmote Runner native provider configuration", () => {
           memoryArn: "arn:aws:bedrock-agentcore:us-east-1:123456789012:memory/m-1",
           memoryId: "m-1",
           invocationRoleArn: "arn:aws:iam::123456789012:role/invoke",
-          contextBucket: "paperclip-context",
+          contextBucket: "wardmote-context",
           contextPrefix: "runner/",
           contextKmsKeyArn: "arn:aws:kms:us-east-1:123456789012:key/key-1",
           qualificationRevision: "aws-agentcore-harness-context-v2",
@@ -361,7 +361,7 @@ describe("Wardmote Runner native provider configuration", () => {
           memoryArn: "arn:aws:bedrock-agentcore:us-east-1:123456789012:memory/m-1",
           memoryId: "m-1",
           invocationRoleArn: "arn:aws:iam::123456789012:role/invoke",
-          contextBucket: "paperclip-context",
+          contextBucket: "wardmote-context",
           contextPrefix: "runner/",
           contextKmsKeyArn: "arn:aws:kms:us-east-1:123456789012:key/key-1",
           qualificationRevision: "aws-agentcore-harness-context-v2",
@@ -435,7 +435,7 @@ describe("Wardmote Runner native provider configuration", () => {
           memoryArn: "arn:aws:bedrock-agentcore:us-east-1:123456789012:memory/m-1",
           memoryId: "m-1",
           invocationRoleArn: "arn:aws:iam::123456789012:role/invoke",
-          contextBucket: "paperclip-context",
+          contextBucket: "wardmote-context",
           contextPrefix: "runner/",
           contextKmsKeyArn: "arn:aws:kms:us-east-1:123456789012:key/key-1",
           qualificationRevision: "aws-agentcore-harness-context-v2",

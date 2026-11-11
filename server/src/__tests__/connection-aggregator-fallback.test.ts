@@ -42,7 +42,7 @@ const support = await getEmbeddedPostgresTestSupport();
     let runId!: string;
     beforeAll(async () => {
       const tempDb = await startEmbeddedPostgresTestDatabase(
-        "paperclip-connection-intents-",
+        "wardmote-connection-intents-",
       );
       cleanup = tempDb.cleanup;
       connectionString = tempDb.connectionString;

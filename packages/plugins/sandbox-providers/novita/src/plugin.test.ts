@@ -42,7 +42,7 @@ describe("Novita sandbox provider plugin", () => {
     expect(parseNovitaDriverConfig({
       apiKey: "sk-test",
       domain: "https://sandbox.example.test",
-      template: "paperclip-template",
+      template: "wardmote-template",
       requestedCwd: "/workspace",
       timeoutMs: 600000,
       requestTimeoutMs: 45000,
@@ -52,7 +52,7 @@ describe("Novita sandbox provider plugin", () => {
     })).toMatchObject({
       apiKey: "sk-test",
       domain: "https://sandbox.example.test",
-      template: "paperclip-template",
+      template: "wardmote-template",
       requestedCwd: "/workspace",
       timeoutMs: 600_000,
       requestTimeoutMs: 45_000,
@@ -105,8 +105,8 @@ describe("Novita sandbox provider plugin", () => {
     expect(firstPath).toBeTruthy();
     expect(secondPath).toBeTruthy();
     expect(firstPath).not.toBe(secondPath);
-    expect(first).not.toContain("/tmp/.paperclip-stdin <<");
-    expect(second).not.toContain("/tmp/.paperclip-stdin <<");
+    expect(first).not.toContain("/tmp/.wardmote-stdin <<");
+    expect(second).not.toContain("/tmp/.wardmote-stdin <<");
   });
 
   it("rejects unsafe environment variable keys", () => {

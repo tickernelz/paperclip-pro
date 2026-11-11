@@ -11,7 +11,7 @@ const support = await getEmbeddedPostgresTestSupport();
   let temporary: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;
   let db: ReturnType<typeof createDb>;
   beforeAll(async () => {
-    temporary = await startEmbeddedPostgresTestDatabase("paperclip-policy-persistence-");
+    temporary = await startEmbeddedPostgresTestDatabase("wardmote-policy-persistence-");
     db = createDb(temporary.connectionString);
   }, 30_000);
   afterAll(async () => { await temporary?.cleanup(); });

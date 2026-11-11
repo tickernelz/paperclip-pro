@@ -145,7 +145,7 @@ describeEmbeddedPostgres("issue recovery actions", () => {
   beforeAll(async () => {
     operationLogRoot = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-recovery-operation-logs-"));
     process.env.WORKSPACE_OPERATION_LOG_BASE_PATH = operationLogRoot;
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-issue-recovery-actions-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-issue-recovery-actions-");
     db = createDb(tempDb.connectionString);
   }, 30_000);
 

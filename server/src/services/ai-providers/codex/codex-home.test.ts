@@ -216,11 +216,11 @@ describe("codex managed home", () => {
 
 describe("isManagedCodexHomePath", () => {
   const env = {
-    WARDMOTE_HOME: "/srv/paperclip",
+    WARDMOTE_HOME: "/srv/wardmote",
     WARDMOTE_INSTANCE_ID: "default",
   } satisfies NodeJS.ProcessEnv;
   const companyRoot = path.resolve(
-    "/srv/paperclip/instances/default/companies/company-1",
+    "/srv/wardmote/instances/default/companies/company-1",
   );
 
   it("treats the per-agent managed home as managed", () => {
@@ -245,7 +245,7 @@ describe("isManagedCodexHomePath", () => {
       isManagedCodexHomePath(
         env,
         "company-1",
-        path.resolve("/srv/paperclip/instances/default/companies/company-2/codex-home"),
+        path.resolve("/srv/wardmote/instances/default/companies/company-2/codex-home"),
       ),
     ).toBe(false);
   });

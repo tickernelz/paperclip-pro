@@ -134,7 +134,7 @@ describe.skipIf(!support.supported)("heartbeat queue database wiring", () => {
   let database: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;
   let db: Db;
   beforeAll(async () => {
-    database = await startEmbeddedPostgresTestDatabase("paperclip-heartbeat-queue-module");
+    database = await startEmbeddedPostgresTestDatabase("wardmote-heartbeat-queue-module");
     db = createDb(database.connectionString);
   }, EMBEDDED_POSTGRES_TEST_TIMEOUT_MS);
   afterAll(async () => {

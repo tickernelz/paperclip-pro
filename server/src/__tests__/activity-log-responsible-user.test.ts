@@ -175,7 +175,7 @@ describeEmbeddedPostgres("logActivity responsible-user stamping", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-activity-responsible-user-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-activity-responsible-user-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

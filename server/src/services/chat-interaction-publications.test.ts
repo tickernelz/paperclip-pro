@@ -69,7 +69,7 @@ class CapturingTelegramAdapter extends TelegramAdapter {
       botToken: "123:test-token",
       mode: "webhook",
       secretToken: "test-webhook-secret",
-      userName: "paperclip_test_bot",
+      userName: "wardmote_test_bot",
     });
   }
 

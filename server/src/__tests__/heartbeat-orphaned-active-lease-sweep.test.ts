@@ -52,7 +52,7 @@ describeEmbeddedPostgres("heartbeat sweepOrphanedActiveLeases", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-orphaned-active-lease-sweep-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-orphaned-active-lease-sweep-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

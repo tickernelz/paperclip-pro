@@ -228,7 +228,7 @@ function makeDiscoveryPreview(
         sampleCount: 2,
         samples: [
           {
-            name: "paperclip/prod-use1/company-1/openai",
+            name: "wardmote/prod-use1/company-1/openai",
             hasKmsKey: true,
             tagKeys: ["owner", "environment"],
           },
@@ -683,10 +683,10 @@ describe("Secrets page layout", () => {
     const externalSecret = makeCompanySecret({
       id: "secret-neon",
       key: "neon_admin_api_key",
-      name: "paperclip-cloud/prod/provider/neon/admin-api-key",
+      name: "wardmote-cloud/prod/provider/neon/admin-api-key",
       provider: "aws_secrets_manager",
       managedMode: "external_reference",
-      externalRef: "arn:aws:secretsmanager:us-east-1:123456789012:secret:paperclip-cloud/prod/provider/neon/admin-api-key",
+      externalRef: "arn:aws:secretsmanager:us-east-1:123456789012:secret:wardmote-cloud/prod/provider/neon/admin-api-key",
       providerConfigId: "vault-aws",
     });
     mockSecretsApi.list.mockResolvedValue([externalSecret]);

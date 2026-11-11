@@ -59,7 +59,7 @@ describeEmbeddedPostgres("pixels office timeline route", () => {
   let tempDb: EmbeddedPostgresTestDatabase | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-pixels-timeline-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-pixels-timeline-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

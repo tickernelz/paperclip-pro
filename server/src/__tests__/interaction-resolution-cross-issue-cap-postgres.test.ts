@@ -43,7 +43,7 @@ describeEmbeddedPostgres("cross-issue interaction resolution cap (routes + postg
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-interaction-cap-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-interaction-cap-");
     db = createDb(tempDb.connectionString);
   }, 30_000);
 

@@ -71,7 +71,7 @@ suite(
       if (external) db = createDb(external);
       else {
         temporary = await startEmbeddedPostgresTestDatabase(
-          "paperclip-teams-transfers-",
+          "wardmote-teams-transfers-",
         );
         db = createDb(temporary.connectionString);
       }

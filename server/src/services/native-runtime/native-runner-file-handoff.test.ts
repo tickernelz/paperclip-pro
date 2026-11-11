@@ -1123,7 +1123,7 @@ describe("native runner file handoff", () => {
       },
     };
     await db.execute(sql`
-      CREATE OR REPLACE FUNCTION paperclip_test_fail_native_receipt()
+      CREATE OR REPLACE FUNCTION wardmote_test_fail_native_receipt()
       RETURNS trigger LANGUAGE plpgsql AS $$
       BEGIN
         IF NEW.result_json IS DISTINCT FROM OLD.result_json THEN
@@ -1134,9 +1134,9 @@ describe("native runner file handoff", () => {
       $$
     `);
     await db.execute(sql`
-      CREATE TRIGGER paperclip_test_fail_native_receipt
+      CREATE TRIGGER wardmote_test_fail_native_receipt
       BEFORE UPDATE ON heartbeat_runs
-      FOR EACH ROW EXECUTE FUNCTION paperclip_test_fail_native_receipt()
+      FOR EACH ROW EXECUTE FUNCTION wardmote_test_fail_native_receipt()
     `);
     try {
       const receiptFailureAuthority = new WardmoteRunnerToolAuthority(db, {
@@ -1170,10 +1170,10 @@ describe("native runner file handoff", () => {
       });
     } finally {
       await db.execute(
-        sql`DROP TRIGGER IF EXISTS paperclip_test_fail_native_receipt ON heartbeat_runs`,
+        sql`DROP TRIGGER IF EXISTS wardmote_test_fail_native_receipt ON heartbeat_runs`,
       );
       await db.execute(
-        sql`DROP FUNCTION IF EXISTS paperclip_test_fail_native_receipt()`,
+        sql`DROP FUNCTION IF EXISTS wardmote_test_fail_native_receipt()`,
       );
     }
     expect(receiptFailureObjectKey).toEqual(expect.any(String));

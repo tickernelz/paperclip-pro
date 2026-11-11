@@ -286,7 +286,7 @@ function buildContext(root: string, overrides: Partial<AdapterExecutionContext> 
 
 describe("codex_local ACP lane", () => {
   it("keeps ACP selected and reports unavailable prerequisites for default and explicit engines", async () => {
-    const root = await makeTempRoot("paperclip-codex-acp-default-");
+    const root = await makeTempRoot("wardmote-codex-acp-default-");
     const commandPath = path.join(root, "bin", "codex-acp");
     await fs.mkdir(path.dirname(commandPath), { recursive: true });
     await fs.writeFile(commandPath, "#!/usr/bin/env sh\n", "utf8");
@@ -531,7 +531,7 @@ describe("codex_local ACP lane", () => {
   });
 
   it("reports ACP prerequisites for the ACP lane", async () => {
-    const root = await makeTempRoot("paperclip-codex-acp-env-");
+    const root = await makeTempRoot("wardmote-codex-acp-env-");
     const commandPath = path.join(root, "bin", "codex-acp");
     await fs.mkdir(path.dirname(commandPath), { recursive: true });
     await fs.writeFile(commandPath, "#!/usr/bin/env sh\n", "utf8");
@@ -570,7 +570,7 @@ describe("codex_local ACP lane", () => {
   });
 
   it("detects shared managed Codex auth in ACP environment tests", async () => {
-    const root = await makeTempRoot("paperclip-codex-acp-managed-auth-");
+    const root = await makeTempRoot("wardmote-codex-acp-managed-auth-");
     const commandPath = path.join(root, "bin", "codex-acp");
     const sharedCodexHome = path.join(root, "shared-codex-home");
     const managedAgentHome = path.join(
@@ -619,7 +619,7 @@ describe("codex_local ACP lane", () => {
   });
 
   it("explains the Wardmote server credential boundary when ACP auth is missing", async () => {
-    const root = await makeTempRoot("paperclip-codex-acp-missing-auth-");
+    const root = await makeTempRoot("wardmote-codex-acp-missing-auth-");
     const commandPath = path.join(root, "bin", "codex-acp");
     const sharedCodexHome = path.join(root, "shared-codex-home");
     const managedAgentHome = path.join(
@@ -663,7 +663,7 @@ describe("codex_local ACP lane", () => {
   });
 
   it("emits the canonical adapter_auth_missing check for a missing-auth sandbox target", async () => {
-    const root = await makeTempRoot("paperclip-codex-acp-sandbox-missing-auth-");
+    const root = await makeTempRoot("wardmote-codex-acp-sandbox-missing-auth-");
     const sharedCodexHome = path.join(root, "shared-codex-home");
     const managedAgentHome = path.join(
       root,
@@ -722,7 +722,7 @@ describe("codex_local ACP lane", () => {
   });
 
   it("executes through ACPX with Codex session config and ephemeral skills", async () => {
-    const root = await makeTempRoot("paperclip-codex-acp-exec-");
+    const root = await makeTempRoot("wardmote-codex-acp-exec-");
     const skill = await createRuntimeSkill(root);
     const runtimes: FakeRuntime[] = [];
     const meta: AdapterInvocationMeta[] = [];
@@ -785,7 +785,7 @@ describe("codex_local ACP lane", () => {
   });
 
   it("sends assignment-owned markdown and ordered distinct wake comments at the ACP boundary", async () => {
-    const root = await makeTempRoot("paperclip-codex-acp-context-owner-");
+    const root = await makeTempRoot("wardmote-codex-acp-context-owner-");
     const runtimes: FakeRuntime[] = [];
     const execute = createCodexAcpExecutor({
       createRuntime: (options: FakeRuntimeOptions) => {
@@ -854,7 +854,7 @@ describe("codex_local ACP lane", () => {
   });
 
   it("creates the ACP session on the in-sandbox workspace cwd for runner-backed remote runs", async () => {
-    const root = await makeTempRoot("paperclip-codex-acp-remote-cwd-");
+    const root = await makeTempRoot("wardmote-codex-acp-remote-cwd-");
     const localCwd = path.join(root, "worktree");
     const remoteCwd = path.join(root, "remote-workspace");
     await fs.mkdir(localCwd, { recursive: true });
@@ -907,7 +907,7 @@ describe("codex_local ACP lane", () => {
   });
 
   it("seeds the managed Codex home into the sandbox and repoints CODEX_HOME to the in-sandbox path", async () => {
-    const root = await makeTempRoot("paperclip-codex-acp-home-seed-");
+    const root = await makeTempRoot("wardmote-codex-acp-home-seed-");
     const localCwd = path.join(root, "worktree");
     const remoteCwd = path.join(root, "remote-workspace");
     const sourceHome = path.join(root, "codex-home");
@@ -975,7 +975,7 @@ describe("codex_local ACP lane", () => {
   });
 
   it("copies a strictly-newer sandbox Codex auth back to the shared host on teardown", async () => {
-    const root = await makeTempRoot("paperclip-codex-acp-copyback-newer-");
+    const root = await makeTempRoot("wardmote-codex-acp-copyback-newer-");
     const localCwd = path.join(root, "worktree");
     const remoteCwd = path.join(root, "remote-workspace");
     const sourceHome = path.join(root, "codex-home");
@@ -1039,7 +1039,7 @@ describe("codex_local ACP lane", () => {
   });
 
   it("does not copy an API-key run's sandbox auth into the shared subscription home", async () => {
-    const root = await makeTempRoot("paperclip-codex-acp-key-copyback-");
+    const root = await makeTempRoot("wardmote-codex-acp-key-copyback-");
     const localCwd = path.join(root, "worktree");
     const remoteCwd = path.join(root, "remote-workspace");
     const keyHome = path.join(root, "api-key-home");
@@ -1085,7 +1085,7 @@ describe("codex_local ACP lane", () => {
   });
 
   it("keeps the subscription copy-back for a remote run when only the host holds an API key", async () => {
-    const root = await makeTempRoot("paperclip-codex-acp-host-key-");
+    const root = await makeTempRoot("wardmote-codex-acp-host-key-");
     const localCwd = path.join(root, "worktree");
     const remoteCwd = path.join(root, "remote-workspace");
     const sourceHome = path.join(root, "codex-home");
@@ -1137,7 +1137,7 @@ describe("codex_local ACP lane", () => {
   });
 
   it("keeps the shared host Codex auth when the sandbox copy is not strictly newer", async () => {
-    const root = await makeTempRoot("paperclip-codex-acp-copyback-older-");
+    const root = await makeTempRoot("wardmote-codex-acp-copyback-older-");
     const localCwd = path.join(root, "worktree");
     const remoteCwd = path.join(root, "remote-workspace");
     const sourceHome = path.join(root, "codex-home");
@@ -1202,7 +1202,7 @@ describe("codex_local ACP lane", () => {
     // turn the engine caches the staged runtime warm and its host staged home is
     // still on disk for the next compatible resume to reuse.
     const runId = `run-keep-staged-home-${randomUUID()}`;
-    const root = await makeTempRoot("paperclip-codex-acp-keep-staged-");
+    const root = await makeTempRoot("wardmote-codex-acp-keep-staged-");
     const localCwd = path.join(root, "worktree");
     const remoteCwd = path.join(root, "remote-workspace");
     const sourceHome = path.join(root, "codex-home");
@@ -1280,7 +1280,7 @@ describe("codex_local ACP lane", () => {
     // staged-home temp dir — while the per-run copy-back (`teardown`) STILL fires
     // on the unclean exit path, so a rotated sandbox credential is never lost.
     const runId = `run-drop-staged-home-${randomUUID()}`;
-    const root = await makeTempRoot("paperclip-codex-acp-drop-staged-");
+    const root = await makeTempRoot("wardmote-codex-acp-drop-staged-");
     const localCwd = path.join(root, "worktree");
     const remoteCwd = path.join(root, "remote-workspace");
     const sourceHome = path.join(root, "codex-home");
@@ -1355,7 +1355,7 @@ describe("codex_local ACP lane", () => {
     // Clear the shared, hoisted mock first: earlier tests in this file also
     // call through it, and a leftover call could hide a real wiring bug.
     mockCreateWorkspaceRestoreTeardown.mockClear();
-    const root = await makeTempRoot("paperclip-codex-acp-teardown-wiring-");
+    const root = await makeTempRoot("wardmote-codex-acp-teardown-wiring-");
     const localCwd = path.join(root, "worktree");
     const remoteCwd = path.join(root, "remote-workspace");
     await fs.mkdir(localCwd, { recursive: true });
@@ -1423,7 +1423,7 @@ describe("codex_local ACP lane", () => {
   });
 
   it("classifies ACP refresh-token auth failures", async () => {
-    const root = await makeTempRoot("paperclip-codex-acp-refresh-token-");
+    const root = await makeTempRoot("wardmote-codex-acp-refresh-token-");
     const execute = createCodexAcpExecutor({
       createRuntime: (options: FakeRuntimeOptions) => new FakeRuntime(
         options,
@@ -1445,7 +1445,7 @@ describe("codex_local ACP lane", () => {
   });
 
   it("resumes compatible ACP sessions on later Codex ACP runs", async () => {
-    const root = await makeTempRoot("paperclip-codex-acp-resume-");
+    const root = await makeTempRoot("wardmote-codex-acp-resume-");
     const runtimes: FakeRuntime[] = [];
     const execute = createCodexAcpExecutor({
       createRuntime: (options: FakeRuntimeOptions) => {

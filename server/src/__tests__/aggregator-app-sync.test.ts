@@ -21,7 +21,7 @@ if (!support.supported) console.warn(`Managed-account database tests unavailable
   let cleanup: (() => Promise<void>) | undefined;
   beforeAll(async () => {
     if (acceptanceDatabaseUrl) { db = createDb(acceptanceDatabaseUrl); return; }
-    const database = await startEmbeddedPostgresTestDatabase("paperclip-aggregator-sync-"); db = createDb(database.connectionString); cleanup = database.cleanup;
+    const database = await startEmbeddedPostgresTestDatabase("wardmote-aggregator-sync-"); db = createDb(database.connectionString); cleanup = database.cleanup;
   }, 90_000);
   afterAll(async () => { await cleanup?.(); });
   async function fixture(provider: "arcade" | "executor" = "executor") {

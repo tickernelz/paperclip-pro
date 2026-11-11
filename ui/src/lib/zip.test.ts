@@ -189,14 +189,14 @@ describe("createZipArchive", () => {
         "COMPANY.md": "# Company\n",
         "agents/ceo/AGENTS.md": "# CEO\n",
       },
-      "paperclip-demo",
+      "wardmote-demo",
     );
 
     expect(readUint32(archive, 0)).toBe(0x04034b50);
 
     const firstNameLength = readUint16(archive, 26);
     const firstBodyLength = readUint32(archive, 18);
-    expect(readString(archive, 30, firstNameLength)).toBe("paperclip-demo/agents/ceo/AGENTS.md");
+    expect(readString(archive, 30, firstNameLength)).toBe("wardmote-demo/agents/ceo/AGENTS.md");
     expect(readString(archive, 30 + firstNameLength, firstBodyLength)).toBe("# CEO\n");
 
     const secondOffset = 30 + firstNameLength + firstBodyLength;
@@ -204,7 +204,7 @@ describe("createZipArchive", () => {
 
     const secondNameLength = readUint16(archive, secondOffset + 26);
     const secondBodyLength = readUint32(archive, secondOffset + 18);
-    expect(readString(archive, secondOffset + 30, secondNameLength)).toBe("paperclip-demo/COMPANY.md");
+    expect(readString(archive, secondOffset + 30, secondNameLength)).toBe("wardmote-demo/COMPANY.md");
     expect(readString(archive, secondOffset + 30 + secondNameLength, secondBodyLength)).toBe("# Company\n");
 
     const endOffset = archive.length - 22;
@@ -220,11 +220,11 @@ describe("createZipArchive", () => {
         "agents/ceo/AGENTS.md": "# CEO\n",
         ".wardmote.yaml": "schema: wardmote/v1\n",
       },
-      "paperclip-demo",
+      "wardmote-demo",
     );
 
     await expect(readZipArchive(archive)).resolves.toEqual({
-      rootPath: "paperclip-demo",
+      rootPath: "wardmote-demo",
       files: {
         "COMPANY.md": "# Company\n",
         "agents/ceo/AGENTS.md": "# CEO\n",
@@ -242,11 +242,11 @@ describe("createZipArchive", () => {
           contentType: "image/png",
         },
       },
-      "paperclip-demo",
+      "wardmote-demo",
     );
 
     await expect(readZipArchive(archive)).resolves.toEqual({
-      rootPath: "paperclip-demo",
+      rootPath: "wardmote-demo",
       files: {
         "images/company-logo.png": {
           encoding: "base64",
@@ -269,11 +269,11 @@ describe("createZipArchive", () => {
         "COMPANY.md": "# Company\n",
         "blobs/4f2d1c9a": entry,
       },
-      "paperclip-demo",
+      "wardmote-demo",
     );
 
     await expect(readZipArchive(archive)).resolves.toEqual({
-      rootPath: "paperclip-demo",
+      rootPath: "wardmote-demo",
       files: {
         "COMPANY.md": "# Company\n",
         "blobs/4f2d1c9a": entry,
@@ -291,7 +291,7 @@ describe("createZipArchive", () => {
           contentType: null,
         },
       },
-      "paperclip-demo",
+      "wardmote-demo",
     );
 
     const result = await readZipArchive(archive);
@@ -308,11 +308,11 @@ describe("createZipArchive", () => {
         "COMPANY.md": "# Company\n",
         "agents/ceo/AGENTS.md": "# CEO\n",
       },
-      "paperclip-demo",
+      "wardmote-demo",
     );
 
     await expect(readZipArchive(archive)).resolves.toEqual({
-      rootPath: "paperclip-demo",
+      rootPath: "wardmote-demo",
       files: {
         "COMPANY.md": "# Company\n",
         "agents/ceo/AGENTS.md": "# CEO\n",
@@ -321,10 +321,10 @@ describe("createZipArchive", () => {
   });
 
   it("ignores directory entries from standard zip archives", async () => {
-    const archive = createZipArchiveWithDirectoryEntries("paperclip-demo");
+    const archive = createZipArchiveWithDirectoryEntries("wardmote-demo");
 
     await expect(readZipArchive(archive)).resolves.toEqual({
-      rootPath: "paperclip-demo",
+      rootPath: "wardmote-demo",
       files: {
         "COMPANY.md": "# Company\n",
         "agents/ceo/AGENTS.md": "# CEO\n",
@@ -351,8 +351,8 @@ describe("estimateZipArchiveSize", () => {
       "notes/empty.txt": "",
     };
 
-    expect(estimateZipArchiveSize(files, "paperclip-demo")).toBe(
-      createZipArchive(files, "paperclip-demo").byteLength,
+    expect(estimateZipArchiveSize(files, "wardmote-demo")).toBe(
+      createZipArchive(files, "wardmote-demo").byteLength,
     );
   });
 
@@ -383,9 +383,9 @@ describe("estimateZipArchiveSize", () => {
   });
 
   it("returns the 22-byte end-of-central-directory record for an empty map", () => {
-    expect(estimateZipArchiveSize({}, "paperclip-demo")).toBe(22);
-    expect(estimateZipArchiveSize({}, "paperclip-demo")).toBe(
-      createZipArchive({}, "paperclip-demo").byteLength,
+    expect(estimateZipArchiveSize({}, "wardmote-demo")).toBe(22);
+    expect(estimateZipArchiveSize({}, "wardmote-demo")).toBe(
+      createZipArchive({}, "wardmote-demo").byteLength,
     );
   });
 });

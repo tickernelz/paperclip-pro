@@ -60,7 +60,7 @@ describeEmbeddedPostgres("heartbeat sweepPendingCleanupLeases", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-pending-cleanup-sweep-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-pending-cleanup-sweep-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

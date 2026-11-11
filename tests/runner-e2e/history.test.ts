@@ -759,7 +759,7 @@ describe("historical publication security", () => {
   it("requires a private-origin-compatible destination shape", () => {
     expect(
       validateHistoryDestination({
-        bucket: "paperclip-runner-e2e-history",
+        bucket: "wardmote-runner-e2e-history",
         prefix: "/runner-e2e/",
         publicBaseUrl: "https://history.paperclip.ai/",
       }),
@@ -769,21 +769,21 @@ describe("historical publication security", () => {
     });
     expect(() =>
       validateHistoryDestination({
-        bucket: "paperclip-runner-e2e-history",
+        bucket: "wardmote-runner-e2e-history",
         prefix: "../unsafe",
         publicBaseUrl: "https://history.paperclip.ai/",
       }),
     ).toThrow("safe non-empty key prefix");
     expect(() =>
       validateHistoryDestination({
-        bucket: "paperclip-runner-e2e-history",
+        bucket: "wardmote-runner-e2e-history",
         prefix: "runner-e2e?other",
         publicBaseUrl: "https://history.paperclip.ai/",
       }),
     ).toThrow("safe non-empty key prefix");
     expect(() =>
       validateHistoryDestination({
-        bucket: "paperclip-runner-e2e-history",
+        bucket: "wardmote-runner-e2e-history",
         prefix: "runner-e2e",
         publicBaseUrl: "http://history.paperclip.ai/",
       }),
@@ -833,7 +833,7 @@ describe("historical publication security", () => {
         "evidence/core-compatibility.profile.local.case/attempt-1/snapshots/api-state.json",
       ),
     ).toBe(false);
-    expect(isHistoricalBundlePathAllowed("paperclip-home/database")).toBe(
+    expect(isHistoricalBundlePathAllowed("wardmote-home/database")).toBe(
       false,
     );
 

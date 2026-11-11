@@ -19,7 +19,7 @@ describeEmbeddedPostgres("issue create project validation routes", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-issue-create-project-validation-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-issue-create-project-validation-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

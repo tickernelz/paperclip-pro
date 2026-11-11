@@ -52,7 +52,7 @@ const support = await getEmbeddedPostgresTestSupport();
   let db: ReturnType<typeof createDb>;
   let cleanup: (() => Promise<void>) | undefined;
   beforeAll(async () => {
-    const database = await startEmbeddedPostgresTestDatabase("paperclip-composio-setup-");
+    const database = await startEmbeddedPostgresTestDatabase("wardmote-composio-setup-");
     db = createDb(database.connectionString);
     cleanup = database.cleanup;
   }, 20_000);

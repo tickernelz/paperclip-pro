@@ -43,8 +43,8 @@ afterEach(() => {
 
 describe("resolveCanonicalWorktreeSeedSource", () => {
   it("returns only the registered base workspace config", () => {
-    const source = makeInstance("paperclip-seed-source-", "source-instance");
-    const target = makeInstance("paperclip-seed-target-", "target-instance");
+    const source = makeInstance("wardmote-seed-source-", "source-instance");
+    const target = makeInstance("wardmote-seed-target-", "target-instance");
 
     expect(resolveCanonicalWorktreeSeedSource({
       registeredBaseWorkspaceCwd: source.cwd,
@@ -62,7 +62,7 @@ describe("resolveCanonicalWorktreeSeedSource", () => {
   it("takes the named source when the base workspace carries no config of its own", () => {
     const baseCwd = makePlainCheckout();
     const source = makeInstanceRoot("default");
-    const target = makeInstance("paperclip-seed-target-", "target-instance");
+    const target = makeInstance("wardmote-seed-target-", "target-instance");
 
     expect(resolveCanonicalWorktreeSeedSource({
       registeredBaseWorkspaceCwd: baseCwd,
@@ -83,7 +83,7 @@ describe("resolveCanonicalWorktreeSeedSource", () => {
     fs.mkdirSync(path.join(baseCwd, ".wardmote"), { recursive: true });
     fs.symlinkSync(path.join(baseCwd, "absent.json"), path.join(baseCwd, ".wardmote", "config.json"));
     const source = makeInstanceRoot("default");
-    const target = makeInstance("paperclip-seed-dangling-target-", "target-instance");
+    const target = makeInstance("wardmote-seed-dangling-target-", "target-instance");
 
     expect(() => resolveCanonicalWorktreeSeedSource({
       registeredBaseWorkspaceCwd: baseCwd,
@@ -99,7 +99,7 @@ describe("resolveCanonicalWorktreeSeedSource", () => {
     const baseCwd = makePlainCheckout();
     fs.writeFileSync(path.join(baseCwd, ".wardmote"), "not a directory\n");
     const source = makeInstanceRoot("default");
-    const target = makeInstance("paperclip-seed-unreadable-target-", "target-instance");
+    const target = makeInstance("wardmote-seed-unreadable-target-", "target-instance");
 
     expect(() => resolveCanonicalWorktreeSeedSource({
       registeredBaseWorkspaceCwd: baseCwd,
@@ -115,7 +115,7 @@ describe("resolveCanonicalWorktreeSeedSource", () => {
     const baseCwd = makePlainCheckout();
     fs.symlinkSync(path.join(baseCwd, "absent-dir"), path.join(baseCwd, ".wardmote"));
     const source = makeInstanceRoot("default");
-    const target = makeInstance("paperclip-seed-dangling-parent-target-", "target-instance");
+    const target = makeInstance("wardmote-seed-dangling-parent-target-", "target-instance");
 
     expect(() => resolveCanonicalWorktreeSeedSource({
       registeredBaseWorkspaceCwd: baseCwd,
@@ -133,7 +133,7 @@ describe("resolveCanonicalWorktreeSeedSource", () => {
     fs.mkdirSync(linked, { recursive: true });
     fs.symlinkSync(linked, path.join(baseCwd, ".wardmote"));
     const source = makeInstanceRoot("default");
-    const target = makeInstance("paperclip-seed-linked-empty-target-", "target-instance");
+    const target = makeInstance("wardmote-seed-linked-empty-target-", "target-instance");
 
     const resolved = resolveCanonicalWorktreeSeedSource({
       registeredBaseWorkspaceCwd: baseCwd,
@@ -150,7 +150,7 @@ describe("resolveCanonicalWorktreeSeedSource", () => {
 
   it("fails closed when the base workspace carries no config and none is named", () => {
     const baseCwd = makePlainCheckout();
-    const target = makeInstance("paperclip-seed-unnamed-target-", "target-instance");
+    const target = makeInstance("wardmote-seed-unnamed-target-", "target-instance");
 
     expect(() => resolveCanonicalWorktreeSeedSource({
       registeredBaseWorkspaceCwd: baseCwd,
@@ -162,7 +162,7 @@ describe("resolveCanonicalWorktreeSeedSource", () => {
   });
 
   it("fails closed without registration and when source equals target", () => {
-    const target = makeInstance("paperclip-seed-same-target-", "target-instance");
+    const target = makeInstance("wardmote-seed-same-target-", "target-instance");
     const diagnostic = { configPath: target.configPath, instanceId: target.instanceId };
 
     expect(() => resolveCanonicalWorktreeSeedSource({

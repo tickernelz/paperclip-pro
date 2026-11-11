@@ -104,7 +104,7 @@ const baseAcquireParams = {
 };
 
 const baseConfig = {
-  appName: "paperclip-app",
+  appName: "wardmote-app",
   image: "node:20",
   sandboxTimeoutMs: 3_600_000,
   execTimeoutMs: 300_000,
@@ -246,7 +246,7 @@ describe("Modal sandbox provider plugin", () => {
       config: { ...baseConfig, workdir: "/srv/work" },
     });
 
-    expect(mockAppFromName).toHaveBeenCalledWith("paperclip-app", {
+    expect(mockAppFromName).toHaveBeenCalledWith("wardmote-app", {
       createIfMissing: true,
       environment: undefined,
     });

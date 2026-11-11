@@ -259,7 +259,7 @@ describeEmbeddedPostgres("gateway connector invocation telemetry", () => {
 
   beforeAll(async () => {
     tempDb = await startEmbeddedPostgresTestDatabase(
-      "paperclip-connector-telemetry-",
+      "wardmote-connector-telemetry-",
     );
     db = createDb(tempDb.connectionString);
   }, 30_000);

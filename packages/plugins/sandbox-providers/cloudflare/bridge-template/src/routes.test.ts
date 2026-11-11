@@ -73,7 +73,7 @@ describe("bridge routes", () => {
     }
     expect(sessionExec.mock.calls[0]?.[0]).toContain("mkdir");
     expect(sessionExec.mock.calls[0]?.[0]).toContain("/workspace/paperclip");
-    expect(sessionExec.mock.calls[1]?.[0]).toContain("/workspace/paperclip/.wardmote-lease.json");
+    expect(sessionExec.mock.calls[1]?.[0]).toContain("/workspace/wardmote/.wardmote-lease.json");
   });
 
   it("checks lease sentinels through the named-session exec target on resume", async () => {
@@ -104,8 +104,8 @@ describe("bridge routes", () => {
     expect(typeof commandArg).toBe("string");
     expect(commandArg).toMatch(/^sh -lc /);
     expect(commandArg).toContain("test -s");
-    expect(commandArg).toContain("/workspace/paperclip/.wardmote-lease.json");
-    expect(commandArg).toContain(`/workspace/paperclip/${RETIRED_LEASE_SENTINEL_FILE}`);
+    expect(commandArg).toContain("/workspace/wardmote/.wardmote-lease.json");
+    expect(commandArg).toContain(`/workspace/wardmote/${RETIRED_LEASE_SENTINEL_FILE}`);
     expect(optionsArg).toEqual({ cwd: "/", timeout: expect.any(Number) });
     expect(optionsArg).not.toHaveProperty("args");
   });

@@ -23,7 +23,7 @@ function runtimeServiceRow(
     lifecycle: "shared",
     reuseKey: randomUUID(),
     command: "pnpm dev",
-    cwd: "/tmp/paperclip",
+    cwd: "/tmp/wardmote",
     port: null,
     url: null,
     provider: "local_process",

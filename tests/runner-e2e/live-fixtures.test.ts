@@ -218,7 +218,7 @@ describe("live runner fixtures", () => {
         DAYTONA_API_KEY: "daytona-test-value",
       },
       daytonaImage:
-        "ghcr.io/paperclip/image@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "ghcr.io/wardmote/image@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
     });
 
     expect(calls.indexOf("POST /api/plugins/install")).toBeLessThan(
@@ -296,7 +296,7 @@ describe("live runner fixtures", () => {
         DAYTONA_API_KEY: "daytona-test-value",
       },
       daytonaImage:
-        "ghcr.io/paperclip/image@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "ghcr.io/wardmote/image@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
     });
 
     expect(fixtures.project?.primaryWorkspace?.id).toBe("project-workspace-1");

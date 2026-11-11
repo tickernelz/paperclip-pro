@@ -66,7 +66,7 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
   const tempRoots: string[] = [];
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-plugin-orchestration-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-plugin-orchestration-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 
@@ -184,7 +184,7 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
       name: "Feature workspace",
       status: "active",
       cwd: "/tmp/wardmote-feature",
-      repoUrl: "https://example.com/paperclip.git",
+      repoUrl: "https://example.com/wardmote.git",
       baseRef: "main",
       branchName: "feature/workspace",
       providerType: "git_worktree",
@@ -204,7 +204,7 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
       projectWorkspaceId: null,
       path: "/tmp/wardmote-feature",
       cwd: "/tmp/wardmote-feature",
-      repoUrl: "https://example.com/paperclip.git",
+      repoUrl: "https://example.com/wardmote.git",
       baseRef: "main",
       branchName: "feature/workspace",
       providerType: "git_worktree",
@@ -432,7 +432,7 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
     await db.insert(plugins).values({
       id: pluginId,
       pluginKey: "paperclip.local-folders",
-      packageName: "@paperclip/plugin-local-folders",
+      packageName: "@wardmote/plugin-local-folders",
       version: "0.1.0",
       manifestJson: {
         id: "paperclip.local-folders",
@@ -505,7 +505,7 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
     await db.insert(plugins).values({
       id: pluginId,
       pluginKey: "paperclip.missions",
-      packageName: "@paperclip/plugin-missions",
+      packageName: "@wardmote/plugin-missions",
       version: "0.1.0",
       apiVersion: 1,
       categories: ["automation"],

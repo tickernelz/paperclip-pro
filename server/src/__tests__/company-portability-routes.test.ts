@@ -483,7 +483,7 @@ describe("company portability routes", () => {
       companyId,
       adapterConfig: {
         instructionsBundleMode: "external",
-        instructionsRootPath: "/srv/paperclip/external-agent",
+        instructionsRootPath: "/srv/wardmote/external-agent",
       },
     }]);
     const nonAdminActors = [
@@ -529,7 +529,7 @@ describe("company portability routes", () => {
       companyId,
       adapterConfig: {
         instructionsBundleMode: "external",
-        instructionsRootPath: "/srv/paperclip/external-agent",
+        instructionsRootPath: "/srv/wardmote/external-agent",
       },
     }]);
     const app = await createApp({
@@ -561,7 +561,7 @@ describe("company portability routes", () => {
         metadata: null,
         adapterConfig: {
           instructionsBundleMode: "external",
-          instructionsRootPath: "/srv/paperclip/external-agent",
+          instructionsRootPath: "/srv/wardmote/external-agent",
         },
       },
       {
@@ -606,7 +606,7 @@ describe("company portability routes", () => {
       companyId,
       adapterConfig: {
         instructionsBundleMode: "external",
-        instructionsRootPath: "/srv/paperclip/external-agent",
+        instructionsRootPath: "/srv/wardmote/external-agent",
       },
     }]);
     const app = await createApp({
@@ -1159,7 +1159,7 @@ describe("company portability routes", () => {
       .post("/api/companies/import")
       .set(TEST_USER_HEADER, "board-user-a")
       .field("meta", JSON.stringify(importMeta))
-      .attach("package", zip, "paperclip-demo.zip");
+      .attach("package", zip, "wardmote-demo.zip");
 
     expect(res.status).toBe(200);
     expect(mockCompanyPortabilityService.importBundle).toHaveBeenCalledTimes(1);
@@ -1180,7 +1180,7 @@ describe("company portability routes", () => {
       .post("/api/companies/import/preview")
       .set(TEST_USER_HEADER, "board-user-a")
       .field("meta", JSON.stringify(importMeta))
-      .attach("package", zip, "paperclip-demo.zip");
+      .attach("package", zip, "wardmote-demo.zip");
 
     expect(res.status).toBe(200);
     expect(mockCompanyPortabilityService.previewImport).toHaveBeenCalledTimes(1);
@@ -1202,7 +1202,7 @@ describe("company portability routes", () => {
       .post("/api/companies/import?async=1")
       .set(TEST_USER_HEADER, "board-user-a")
       .field("meta", JSON.stringify(importMeta))
-      .attach("package", zip, "paperclip-demo.zip");
+      .attach("package", zip, "wardmote-demo.zip");
 
     expect(accepted.status).toBe(202);
     expect(accepted.body.job.status).toBe("running");
@@ -1259,7 +1259,7 @@ describe("company portability routes", () => {
       .post("/api/companies/import")
       .set(TEST_USER_HEADER, "board-user-a")
       .field("meta", JSON.stringify(importMeta))
-      .attach("package", truncated, "paperclip-demo.zip");
+      .attach("package", truncated, "wardmote-demo.zip");
 
     expect(res.status).toBe(400);
     expect(mockCompanyPortabilityService.importBundle).not.toHaveBeenCalled();

@@ -44,7 +44,7 @@ describe("OpenWA gateway administration from the board (embedded Postgres + fake
   const endpointIds: string[] = [];
 
   beforeAll(async () => {
-    database = await startEmbeddedPostgresTestDatabase("paperclip-openwa-gateway-admin-");
+    database = await startEmbeddedPostgresTestDatabase("wardmote-openwa-gateway-admin-");
     db = createDb(database.connectionString);
     root = await mkdtemp(path.join(tmpdir(), "openwa-gateway-admin-"));
     process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE = path.join(root, "master.key");

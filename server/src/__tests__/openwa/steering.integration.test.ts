@@ -160,7 +160,7 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
   const endpointIds: string[] = [];
 
   beforeAll(async () => {
-    database = await startEmbeddedPostgresTestDatabase("paperclip-openwa-steering-");
+    database = await startEmbeddedPostgresTestDatabase("wardmote-openwa-steering-");
     db = createDb(database.connectionString);
     scratch = await mkdtemp(path.join(os.tmpdir(), "openwa-steering-"));
     process.env.WARDMOTE_HOME = scratch;

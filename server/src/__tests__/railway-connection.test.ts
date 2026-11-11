@@ -70,7 +70,7 @@ const initialTools = [
     const f = await fixture();
     const rows = await f.service.listCatalog(f.connectionId);
     expect((await f.service.getConnection(f.connectionId))?.config?.railwayApiStatus).toBe("available");
-    expect(rows.find((r) => r.toolName === "paperclip-railway-read-logs")?.status).toBe("active");
+    expect(rows.find((r) => r.toolName === "wardmote-railway-read-logs")?.status).toBe("active");
     expect(rows.find((r) => r.toolName === "redeploy")?.riskLevel).toBe("destructive");
     expect(rows.filter((r) => ["railway-agent", "accept-deploy"].includes(r.toolName)).every((r) => r.status === "disabled")).toBe(true);
     f.setTools([...initialTools.map((tool) => tool.name === "list-projects" ? { ...tool, inputSchema: { type: "object", properties: { changed: { type: "string" } } } } : tool), { name: "new-tool" }]);
@@ -83,7 +83,7 @@ const initialTools = [
     const after = await f.service.listCatalog(f.connectionId);
     expect(after.find((r) => r.toolName === "new-tool")?.status).toBe("quarantined");
     expect(JSON.stringify(await f.service.getConnection(f.connectionId))).not.toContain(token);
-    f.setTools([{ name: "paperclip_railway_restart" }]);
+    f.setTools([{ name: "wardmote_railway_restart" }]);
     await expect(f.service.refreshCatalog(f.connectionId, actor)).rejects.toThrow("Railway advertised a reserved Wardmote action");
   });
 
@@ -108,20 +108,20 @@ const initialTools = [
     const [run] = await db.insert(heartbeatRuns).values({ companyId: f.company.id, agentId: agent.id, invocationSource: "on_demand", status: "running" }).returning();
     const [profile] = await db.insert(toolProfiles).values({ companyId: f.company.id, name: "Railway tools", profileKey: randomUUID(), defaultAction: "allow" }).returning();
     await db.insert(toolProfileBindings).values({ companyId: f.company.id, profileId: profile.id, targetType: "agent", targetId: agent.id });
-    const [existing] = await db.select().from(toolCatalogEntries).where(and(eq(toolCatalogEntries.connectionId, f.connectionId), eq(toolCatalogEntries.toolName, "paperclip-railway-restart")));
-    const names = ["paperclip-railway-deploy-revision", "paperclip_railway_deploy_revision", "paperclipRailwayDeployRevision"];
+    const [existing] = await db.select().from(toolCatalogEntries).where(and(eq(toolCatalogEntries.connectionId, f.connectionId), eq(toolCatalogEntries.toolName, "wardmote-railway-restart")));
+    const names = ["paperclip-railway-deploy-revision", "wardmote_railway_deploy_revision", "wardmoteRailwayDeployRevision"];
     // Reproduce active catalog rows persisted by an older server, before refresh.
     await db.insert(toolCatalogEntries).values(names.map((name) => ({ ...existing, id: randomUUID(), name, toolName: name, inputSchema: { type: "object" } })));
     const gateway = createToolGatewayService(db, { remoteHttpRequest: f.request });
     const session = await gateway.createSession({ companyId: f.company.id, agentId: agent.id, runId: run.id });
     const listed = await gateway.listToolsForSession(session.token);
     expect(listed.some((tool) => names.includes(tool.upstreamToolName ?? ""))).toBe(false);
-    const restart = listed.find((tool) => tool.upstreamToolName === "paperclip-railway-restart")!;
+    const restart = listed.find((tool) => tool.upstreamToolName === "wardmote-railway-restart")!;
     expect(restart).toBeTruthy();
     f.request.mockClear();
     const { deploymentId: _, ...ids } = target;
     const parameters = { ...ids, repository: "example/app", commitSha: "a".repeat(40) };
-    await expect(gateway.executeTool({ sessionToken: session.token, tool: restart.name.replace("paperclip-railway-restart", names[0]), parameters, idempotencyKey: randomUUID() })).rejects.toMatchObject({ reasonCode: "tool_not_found" });
+    await expect(gateway.executeTool({ sessionToken: session.token, tool: restart.name.replace("wardmote-railway-restart", names[0]), parameters, idempotencyKey: randomUUID() })).rejects.toMatchObject({ reasonCode: "tool_not_found" });
     for (const toolName of names) {
       await expect(gateway.executeTestCall({ companyId: f.company.id, connectionId: f.connectionId, agentId: agent.id, userId: actor.actorId, toolName, parameters })).rejects.toMatchObject({ reasonCode: "tool_not_found" });
     }
@@ -160,7 +160,7 @@ const initialTools = [
     await db.insert(toolProfileBindings).values({ companyId: f.company.id, profileId: profile.id, targetType: "agent", targetId: agent.id });
     const gateway = createToolGatewayService(db, { remoteHttpRequest: f.request, toolActionSigningSecret: "railway-fixture-signing-key" });
     let session = await gateway.createSession({ companyId: f.company.id, agentId: agent.id, runId: run.id });
-    const tool = (await gateway.listToolsForSession(session.token)).find((r) => r.upstreamToolName === "paperclip-railway-restart")!;
+    const tool = (await gateway.listToolsForSession(session.token)).find((r) => r.upstreamToolName === "wardmote-railway-restart")!;
     expect(tool).toBeTruthy();
     const [policy] = await db.insert(toolPolicies).values({ companyId: f.company.id, name: "Approve Railway restart", policyType: "require_approval", selectors: { connectionId: f.connectionId }, priority: 10 }).returning();
     f.request.mockClear();

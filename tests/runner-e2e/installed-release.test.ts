@@ -8,7 +8,7 @@ const roots: string[] = [];
 afterEach(() => roots.splice(0).forEach(root => rmSync(root, { recursive: true, force: true })));
 describe("ordinary installed release smoke", () => {
   it("launches the public compiled CLI from its own consumer root", () => {
-    const root = realpathSync(mkdtempSync(path.join(tmpdir(), "installed-paperclip-"))); roots.push(root);
+    const root = realpathSync(mkdtempSync(path.join(tmpdir(), "installed-wardmote-"))); roots.push(root);
     mkdirSync(path.join(root, "dist"));
     const cli = path.join(root, "dist", "index.js"); writeFileSync(cli, "");
     writeFileSync(path.join(root, "package.json"), JSON.stringify({ name: "@tickernelz/wardmote", version: "0.0.0-verify" }));
@@ -19,7 +19,7 @@ describe("ordinary installed release smoke", () => {
   });
   it("uses the public compiled Daytona plugin beside the installed CLI", () => {
     const root = realpathSync(mkdtempSync(path.join(tmpdir(), "installed-daytona-"))); roots.push(root);
-    const cliRoot = path.join(root, "node_modules/paperclip-pro"), plugin = path.join(root, "node_modules/@tickernelz/wardmote-plugin-daytona");
+    const cliRoot = path.join(root, "node_modules/wardmote-pro"), plugin = path.join(root, "node_modules/@tickernelz/wardmote-plugin-daytona");
     mkdirSync(path.join(cliRoot, "dist"), { recursive: true }); mkdirSync(path.join(plugin, "dist"), { recursive: true });
     const cli = path.join(cliRoot, "dist/index.js"); writeFileSync(cli, "");
     writeFileSync(path.join(cliRoot, "package.json"), JSON.stringify({ name: "@tickernelz/wardmote", version: "0.0.0-verify" }));

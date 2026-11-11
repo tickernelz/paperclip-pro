@@ -126,7 +126,7 @@ describeEmbeddedPostgres("GET /companies/:companyId/issues/refs", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-issue-refs-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-issue-refs-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

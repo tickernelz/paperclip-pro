@@ -66,7 +66,7 @@ describeEmbeddedPostgres("OpenWA audit and retention", () => {
   const services: ChatChannelService[] = [];
 
   beforeAll(async () => {
-    database = await startEmbeddedPostgresTestDatabase("paperclip-openwa-audit-");
+    database = await startEmbeddedPostgresTestDatabase("wardmote-openwa-audit-");
     db = createDb(database.connectionString);
   }, 30_000);
 

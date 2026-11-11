@@ -55,7 +55,7 @@ describe("OpenWA session_health wakes (embedded Postgres + fake gateway)", () =>
   const endpointIds: string[] = [];
 
   beforeAll(async () => {
-    database = await startEmbeddedPostgresTestDatabase("paperclip-openwa-health-");
+    database = await startEmbeddedPostgresTestDatabase("wardmote-openwa-health-");
     db = createDb(database.connectionString);
     scratch = await mkdtemp(path.join(tmpdir(), "openwa-health-"));
     process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE = path.join(scratch, "master.key");

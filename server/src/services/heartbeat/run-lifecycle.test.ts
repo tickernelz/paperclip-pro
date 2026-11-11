@@ -97,7 +97,7 @@ describe.skipIf(!support.supported)("heartbeat lifecycle database wiring", () =>
   let database: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;
   let db: Db;
   beforeAll(async () => {
-    database = await startEmbeddedPostgresTestDatabase("paperclip-heartbeat-lifecycle-module");
+    database = await startEmbeddedPostgresTestDatabase("wardmote-heartbeat-lifecycle-module");
     db = createDb(database.connectionString);
   }, EMBEDDED_POSTGRES_TEST_TIMEOUT_MS);
   afterAll(async () => {

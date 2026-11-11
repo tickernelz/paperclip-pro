@@ -402,7 +402,7 @@ for (const scenario of ["hello", "interleaved-tools", "provider-error", "provide
       evidence: [], verification: [],
     });
     let stalledResponse;
-    const tools = ["paperclip_get_context", "wardmote_finish"].map(name => ({ name, description: name, inputSchema: { type: "object", properties: {}, additionalProperties: true } }));
+    const tools = ["wardmote_get_context", "wardmote_finish"].map(name => ({ name, description: name, inputSchema: { type: "object", properties: {}, additionalProperties: true } }));
     server = createServer(async (request, response) => {
       let body = ""; for await (const chunk of request) { body += chunk; assert.ok(body.length < 1_048_576); }
       const value = JSON.parse(body);
@@ -650,7 +650,7 @@ await import(${JSON.stringify(pathToFileURL(join(wrapperRoot, "dist/index.js")).
       assert.equal(calls.filter(call => call.method === "tools/call").length, 0);
       return;
     }
-    const result = await call("session/prompt", { sessionId: session.sessionId, prompt: [{ type: "text", text: "Call paperclip_get_context, then wardmote_finish. Finally say HELLO_COMPLETE." }] });
+    const result = await call("session/prompt", { sessionId: session.sessionId, prompt: [{ type: "text", text: "Call wardmote_get_context, then wardmote_finish. Finally say HELLO_COMPLETE." }] });
     assert.deepEqual(JSON.parse(await readFile(join(root, "network-denial.json"), "utf8")), { deniedBeforeConnect: true, underlyingConnections: 0 });
     assert.ok(modelRequests.every(value => value === "deepseek/deepseek-v4-flash-0731"));
     assert.doesNotMatch(JSON.stringify({ result, notifications, stderr }), /sensitive-canary/);
@@ -661,7 +661,7 @@ await import(${JSON.stringify(pathToFileURL(join(wrapperRoot, "dist/index.js")).
       assert.equal(notice?.params.details.reason, scenario === "provider-error" ? "provider_http_401" : "unknown_native_failure"); return;
     }
     assert.equal(result.stopReason, "end_turn"); assert.equal(result._meta?.jetbrains, undefined);
-    assert.deepEqual(calls.filter(call => call.method === "tools/call").map(call => call.name), ["paperclip_get_context", "wardmote_finish"]);
+    assert.deepEqual(calls.filter(call => call.method === "tools/call").map(call => call.name), ["wardmote_get_context", "wardmote_finish"]);
     assert.equal(result.usage.totalTokens, (scenario === "hello" ? 3 : 2) * 13);
     const updates = notifications.map(event => event.params?.update).filter(Boolean);
     assert.equal(updates.filter(update => update.content?.text === "HELLO_COMPLETE").length, 1);

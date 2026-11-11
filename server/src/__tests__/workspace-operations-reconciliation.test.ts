@@ -81,7 +81,7 @@ describeEmbeddedPostgres("workspace operation reconciliation", () => {
   let previousLogRoot: string | undefined;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-workspace-operation-reconcile-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-workspace-operation-reconcile-");
     db = createDb(tempDb.connectionString);
     logRoot = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-workspace-operation-logs-"));
     previousLogRoot = process.env.WORKSPACE_OPERATION_LOG_BASE_PATH;

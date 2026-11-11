@@ -145,7 +145,7 @@ describeEmbeddedPostgres("heartbeat stale queued-run invalidation", () => {
     mockAdapterExecute.mock.calls.filter(([context]) => context?.runId === runId).length;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-heartbeat-stale-queue-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-heartbeat-stale-queue-");
     db = createDb(tempDb.connectionString);
     heartbeat = heartbeatService(db, {
       runtimeEnv: { ...process.env, WARDMOTE_IN_WORKTREE: "false" },

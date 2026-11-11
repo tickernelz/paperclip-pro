@@ -35,7 +35,7 @@ describeEmbeddedPostgres("inbox archive routes", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-inbox-archive-routes-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-inbox-archive-routes-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

@@ -291,7 +291,7 @@ describe("agent skill routes", () => {
       {
         key: "tickernelz/wardmote/wardmote",
         runtimeName: "wardmote",
-        source: "/tmp/paperclip",
+        source: "/tmp/wardmote",
       },
     ]);
     mockCompanySkillService.resolveRequestedSkillKeys.mockImplementation(

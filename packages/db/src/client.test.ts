@@ -25,7 +25,7 @@ const embeddedPostgresSupport = await getEmbeddedPostgresTestSupport();
 const describeEmbeddedPostgres = embeddedPostgresSupport.supported ? describe : describe.skip;
 
 async function createTempDatabase(): Promise<string> {
-  const db = await startEmbeddedPostgresTestDatabase("paperclip-db-client-");
+  const db = await startEmbeddedPostgresTestDatabase("wardmote-db-client-");
   cleanups.push(db.cleanup);
   return db.connectionString;
 }
@@ -119,21 +119,21 @@ describeEmbeddedPostgres("createDb pool defaults", () => {
     const [self] = await db.$client`select application_name from pg_stat_activity where pid = pg_backend_pid()`;
     expect(self?.application_name).toBe(DEFAULT_DATABASE_APPLICATION_NAME);
 
-    const shortLived = createDb(url, { applicationName: "paperclip-idle-test", idleTimeoutSeconds: 1 });
+    const shortLived = createDb(url, { applicationName: "wardmote-idle-test", idleTimeoutSeconds: 1 });
     cleanups.push(async () => {
       await shortLived.$client.end({ timeout: 1 });
     });
     await shortLived.$client`select 1`;
-    expect(await backendsNamed("paperclip-idle-test")).toBe(1);
+    expect(await backendsNamed("wardmote-idle-test")).toBe(1);
 
     // The driver closes the idle connection after `idle_timeout`; without the
     // option (the driver default) the backend would stay until the process
     // exits. Wait past the timeout, then poll PostgreSQL's own view.
     const deadline = Date.now() + 10_000;
-    let remaining = await backendsNamed("paperclip-idle-test");
+    let remaining = await backendsNamed("wardmote-idle-test");
     while (remaining > 0 && Date.now() < deadline) {
       await new Promise((resolve) => setTimeout(resolve, 250));
-      remaining = await backendsNamed("paperclip-idle-test");
+      remaining = await backendsNamed("wardmote-idle-test");
     }
     expect(remaining).toBe(0);
   }, 30_000);

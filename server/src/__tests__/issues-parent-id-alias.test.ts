@@ -12,7 +12,7 @@ import {
 } from "./helpers/route-test-harness.js";
 
 describeEmbeddedPostgres("issue list parentIssueId query alias", () => {
-  const ctx = useEmbeddedPostgres("paperclip-issues-parent-id-alias-", {
+  const ctx = useEmbeddedPostgres("wardmote-issues-parent-id-alias-", {
     resetEach: resetCompanyIssueFixtures,
   });
 

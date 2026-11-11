@@ -29,7 +29,7 @@ let db: ReturnType<typeof createDb>;
 let root: string;
 let imageBase64: string;
 beforeAll(async () => {
-  temporary = await startEmbeddedPostgresTestDatabase("paperclip-profile-avatar-");
+  temporary = await startEmbeddedPostgresTestDatabase("wardmote-profile-avatar-");
   db = createDb(temporary.connectionString);
   root = await mkdtemp(join(tmpdir(), "profile-avatar-"));
   storage = createStorageService(createLocalDiskStorageProvider(root));

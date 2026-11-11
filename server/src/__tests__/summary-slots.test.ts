@@ -41,7 +41,7 @@ describeEmbeddedPostgres("summary slot service", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-summary-slots-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-summary-slots-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

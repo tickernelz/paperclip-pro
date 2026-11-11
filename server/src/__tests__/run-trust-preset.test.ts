@@ -83,7 +83,7 @@ it("dispatch retains raw trust before workspace and broker setup", () => {
 
     beforeAll(async () => {
       database = await startEmbeddedPostgresTestDatabase(
-        "paperclip-run-trust-",
+        "wardmote-run-trust-",
       );
       db = createDb(database.connectionString);
     }, 30_000);

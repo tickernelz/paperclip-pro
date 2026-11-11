@@ -30,7 +30,7 @@ fn lock_receipt_limit_test() -> MutexGuard<'static, ()> {
 
 fn temporary_directory(label: &str) -> PathBuf {
     let directory = std::env::temp_dir().join(format!(
-        "paperclip-runner-codex-{label}-{}-{}",
+        "wardmote-runner-codex-{label}-{}-{}",
         std::process::id(),
         NEXT_DIRECTORY.fetch_add(1, Ordering::Relaxed)
     ));

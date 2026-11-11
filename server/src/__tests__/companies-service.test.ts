@@ -53,7 +53,7 @@ describeEmbeddedPostgres("companyService", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-company-service-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-company-service-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

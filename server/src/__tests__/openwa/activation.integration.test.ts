@@ -65,7 +65,7 @@ describe("OpenWA activation through the owner test DM (embedded Postgres + fake 
   const endpointIds: string[] = [];
 
   beforeAll(async () => {
-    database = await startEmbeddedPostgresTestDatabase("paperclip-openwa-activation-");
+    database = await startEmbeddedPostgresTestDatabase("wardmote-openwa-activation-");
     db = createDb(database.connectionString);
     scratch = await mkdtemp(path.join(tmpdir(), "openwa-activation-"));
     process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE = path.join(scratch, "master.key");

@@ -48,7 +48,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-issue-thread-interactions-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-issue-thread-interactions-");
     db = createDb(tempDb.connectionString);
     issuesSvc = issueService(db);
     interactionsSvc = issueThreadInteractionService(db);
@@ -360,7 +360,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
 
   async function seedChatQuestion() {
     const fixture = await seedSourceQuestionFixture({});
-    const userId = "paperclip-id:question-owner";
+    const userId = "wardmote-id:question-owner";
     await seedQuestionUser(fixture.companyId, userId);
     await db.update(issues).set({
       conversationAgentId: fixture.agentId, conversationUserId: userId, conversationState: "active",
@@ -378,7 +378,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
     }, { agentId: fixture.agentId });
     expect(created.addresseeUserId).toBe(fixture.userId);
     const answer = { answers: [{ questionId: "scope", optionIds: ["phase-1"] }] };
-    for (const userId of ["question-owner", "paperclip-id:other-user"]) {
+    for (const userId of ["question-owner", "wardmote-id:other-user"]) {
       await expect(interactionsSvc.answerQuestions(scope, created.id, answer, { userId }))
         .rejects.toMatchObject({ status: 403, details: { code: "interaction_addressee_mismatch" } });
     }
@@ -423,9 +423,9 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
     expect((await interactionsSvc.create(scope, input, actor)).id).toBe(omitted.id);
   });
 
-  it.each(["question-owner", "paperclip-id:another-member"])("rejects contradictory chat recipient %s before saving", async (addresseeUserId) => {
+  it.each(["question-owner", "wardmote-id:another-member"])("rejects contradictory chat recipient %s before saving", async (addresseeUserId) => {
     const fixture = await seedChatQuestion();
-    await seedQuestionUser(fixture.companyId, "paperclip-id:another-member");
+    await seedQuestionUser(fixture.companyId, "wardmote-id:another-member");
     await expect(interactionsSvc.create({ id: fixture.issueId, companyId: fixture.companyId }, {
       ...questionCreateInput(fixture.runId), addresseeUserId,
     }, { agentId: fixture.agentId })).rejects.toMatchObject({
@@ -441,7 +441,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
     const input = { kind: "request_confirmation" as const, payload: { version: 1 as const, prompt: "Proceed?" } };
     const actor = { agentId: fixture.agentId };
     expect(await interactionsSvc.create(scope, input, actor)).toMatchObject({ addresseeUserId: null });
-    const addresseeUserId = "paperclip-id:confirmation-reviewer";
+    const addresseeUserId = "wardmote-id:confirmation-reviewer";
     await seedQuestionUser(fixture.companyId, addresseeUserId);
     expect(await interactionsSvc.create(scope, { ...input, addresseeUserId }, actor)).toMatchObject({ addresseeUserId });
   });
@@ -453,7 +453,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
     const actor = { agentId: fixture.agentId };
     const open = await interactionsSvc.create(scope, input, actor);
     expect(open.addresseeUserId).toBeNull();
-    const userId = "paperclip-id:task-recipient";
+    const userId = "wardmote-id:task-recipient";
     await seedQuestionUser(fixture.companyId, userId);
     const addressed = await interactionsSvc.create(scope, { ...input, addresseeUserId: userId }, actor);
     expect(addressed.addresseeUserId).toBe(userId);
@@ -464,7 +464,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
 
   it.each(["unknown", "prefix-dropped", "cross-company", "inactive", "viewer"])("rejects %s explicit task recipients before saving", async (kind) => {
     const fixture = await seedSourceQuestionFixture({});
-    const userId = "paperclip-id:task-recipient";
+    const userId = "wardmote-id:task-recipient";
     if (kind !== "unknown") {
       const companyId = kind === "cross-company" ? (await seedConfirmationIssue()).companyId : fixture.companyId;
       await seedQuestionUser(companyId, userId, kind === "viewer" ? "viewer" : "member", kind === "inactive" ? "inactive" : "active");

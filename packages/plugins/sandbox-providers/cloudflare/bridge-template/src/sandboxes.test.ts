@@ -22,7 +22,7 @@ describe("bridge sandbox helpers", () => {
   });
 
   it("builds the workspace sentinel path", () => {
-    expect(buildSentinelPath("/workspace/paperclip/")).toBe("/workspace/paperclip/.wardmote-lease.json");
+    expect(buildSentinelPath("/workspace/wardmote/")).toBe("/workspace/wardmote/.wardmote-lease.json");
   });
 
   it("detects timeout-shaped errors", () => {

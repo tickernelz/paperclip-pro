@@ -248,7 +248,7 @@ describe("adapter model listing", () => {
       process.env.WARDMOTE_ADAPTER_MODELS = JSON.stringify({
         opencode_local: [{ id: "tensorix/z-ai/glm-4.7", label: "GLM 4.7" }],
       });
-      process.env.WARDMOTE_OPENCODE_COMMAND = "__paperclip_missing_opencode_command__";
+      process.env.WARDMOTE_OPENCODE_COMMAND = "__wardmote_missing_opencode_command__";
 
       const models = await refreshRunnerHarnessModels("opencode_local");
 
@@ -283,7 +283,7 @@ describe("adapter model listing", () => {
 
     it("fails soft on malformed values: falls back to adapter models instead of throwing", async () => {
       process.env.WARDMOTE_ADAPTER_MODELS = "{not json";
-      process.env.WARDMOTE_OPENCODE_COMMAND = "__paperclip_missing_opencode_command__";
+      process.env.WARDMOTE_OPENCODE_COMMAND = "__wardmote_missing_opencode_command__";
       const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
       const models = await listRunnerHarnessModels("opencode_local");

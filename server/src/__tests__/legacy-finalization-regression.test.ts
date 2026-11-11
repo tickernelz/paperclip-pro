@@ -57,7 +57,7 @@ describe("P6-32 legacy finalization regression", () => {
   const issueId = randomUUID();
 
   beforeAll(async () => {
-    temporary = await startEmbeddedPostgresTestDatabase("paperclip-native-legacy-");
+    temporary = await startEmbeddedPostgresTestDatabase("wardmote-native-legacy-");
     db = createDb(temporary.connectionString);
     await instanceSettingsService(db).updateExperimental({ enableNativeRunner: false });
     await db.insert(companies).values({

@@ -53,7 +53,7 @@ describeEmbeddedPostgres("companySkillService.list", () => {
   }
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-company-skills-service-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-company-skills-service-");
     oldWardmoteHome = process.env.WARDMOTE_HOME;
     oldWardmoteInstanceId = process.env.WARDMOTE_INSTANCE_ID;
     wardmoteHome = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-company-skills-home-"));
@@ -369,7 +369,7 @@ describeEmbeddedPostgres("companySkillService.list", () => {
   it("does not remove imported local source files when deleting a skill", async () => {
     const companyId = randomUUID();
     await db.insert(companies).values({ id: companyId, name: "Imported source", issuePrefix: `T${companyId.slice(0, 6)}` });
-    const source = await createManagedSkillDir(companyId, "paperclip-imported-skill-");
+    const source = await createManagedSkillDir(companyId, "wardmote-imported-skill-");
     const markdown = "---\nname: external\ndescription: User-owned instructions.\n---\n# Keep this file\n";
     await fs.writeFile(path.join(source, "SKILL.md"), markdown);
     const imported = await svc.importFromSource(companyId, source);
@@ -1283,13 +1283,13 @@ describeEmbeddedPostgres("companySkillService.list", () => {
 
     const skill = await svc.createLocalSkill(companyId, {
       name: "Wardmote Blog Cover Image",
-      slug: "paperclip-blog-cover-image",
+      slug: "wardmote-blog-cover-image",
       markdown: "# Wardmote Blog Cover Image\n",
     });
 
-    await expect(svc.detail(companyId, "paperclip-blog-cover-image")).resolves.toMatchObject({
+    await expect(svc.detail(companyId, "wardmote-blog-cover-image")).resolves.toMatchObject({
       id: skill.id,
-      slug: "paperclip-blog-cover-image",
+      slug: "wardmote-blog-cover-image",
       name: "Wardmote Blog Cover Image",
     });
   });

@@ -67,13 +67,13 @@ function validatorFor(message: string): NonNullable<CapturedTextOptions["validat
 const dbFixture: DatabaseConfig = {
   mode: "postgres",
   connectionString: "postgres://user:pass@localhost:5432/paperclip",
-  embeddedPostgresDataDir: "/var/lib/paperclip/db",
+  embeddedPostgresDataDir: "/var/lib/wardmote/db",
   embeddedPostgresPort: 54329,
   backup: {
     enabled: false,
     intervalMinutes: 30,
     retentionDays: 7,
-    dir: "/var/lib/paperclip/backups",
+    dir: "/var/lib/wardmote/backups",
   },
 };
 

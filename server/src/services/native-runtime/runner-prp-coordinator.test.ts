@@ -111,7 +111,7 @@ describeEmbeddedPostgres("hidden runner PRP coordinator", () => {
 
   beforeAll(async () => {
     tempDb = await startEmbeddedPostgresTestDatabase(
-      "paperclip-runner-coordinator-",
+      "wardmote-runner-coordinator-",
     );
     db = createDb(tempDb.connectionString);
   }, 20_000);

@@ -196,7 +196,7 @@ describe("GET /health", () => {
 
   it("surfaces a stale database backup warning in full health details", async () => {
     const backupDir = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-health-backups-"));
-    const backupFile = path.join(backupDir, "paperclip-20260705-031702.sql.gz");
+    const backupFile = path.join(backupDir, "wardmote-20260705-031702.sql.gz");
     fs.writeFileSync(backupFile, "backup");
     fs.utimesSync(
       backupFile,
@@ -218,7 +218,7 @@ describe("GET /health", () => {
       backupDir,
       maxAgeHours: 26,
       latestBackup: {
-        name: "paperclip-20260705-031702.sql.gz",
+        name: "wardmote-20260705-031702.sql.gz",
         ageHours: 33.7,
       },
       warnings: [
@@ -232,7 +232,7 @@ describe("GET /health", () => {
 
   it("surfaces database backup failure markers in full health details", async () => {
     const backupDir = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-health-backups-"));
-    const backupFile = path.join(backupDir, "paperclip-20260706-031702.sql.gz");
+    const backupFile = path.join(backupDir, "wardmote-20260706-031702.sql.gz");
     const alertFile = path.join(backupDir, "db-backup-to-s3.failure");
     fs.writeFileSync(backupFile, "backup");
     fs.writeFileSync(alertFile, "db-backup-to-s3 failed at 2026-07-06T03:17:00.000Z exit=1\n");
@@ -266,7 +266,7 @@ describe("GET /health", () => {
     const backupRoot = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-health-backups-root-"));
     const backupDir = path.join(backupRoot, "backups");
     fs.mkdirSync(backupDir);
-    const backupFile = path.join(backupDir, "paperclip-20260706-031702.sql.gz");
+    const backupFile = path.join(backupDir, "wardmote-20260706-031702.sql.gz");
     const alertFile = path.join(backupRoot, "db-backup-to-s3.failure");
     fs.writeFileSync(backupFile, "backup");
     fs.writeFileSync(alertFile, "db-backup-to-s3 failed beside backups\n");
@@ -297,7 +297,7 @@ describe("GET /health", () => {
 
   it("surfaces redacted database backup warnings for anonymous authenticated probes", async () => {
     const backupDir = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-health-redacted-backups-"));
-    const backupFile = path.join(backupDir, "paperclip-20260705-031702.sql.gz");
+    const backupFile = path.join(backupDir, "wardmote-20260705-031702.sql.gz");
     fs.writeFileSync(backupFile, "backup");
     fs.utimesSync(
       backupFile,

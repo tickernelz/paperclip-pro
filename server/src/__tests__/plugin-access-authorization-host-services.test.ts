@@ -47,7 +47,7 @@ describeEmbeddedPostgres("plugin access and authorization host services", () => 
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-plugin-access-authz-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-plugin-access-authz-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

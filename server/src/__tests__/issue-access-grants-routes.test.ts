@@ -69,7 +69,7 @@ describeEmbeddedPostgres("issue access grant and locked edge routes", { concurre
   const previousPrivacyMode = process.env.WARDMOTE_ISSUE_PRIVACY_MODE;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-issue-access-grants-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-issue-access-grants-");
     db = createDb(tempDb.connectionString);
     process.env.WARDMOTE_ISSUE_PRIVACY_MODE = "enforce";
     // Load the current route dependency graph during setup, outside assertion timeouts.

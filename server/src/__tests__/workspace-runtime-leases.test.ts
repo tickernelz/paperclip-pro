@@ -37,7 +37,7 @@ describeEmbeddedPostgres("execution workspace runtime leases", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-workspace-runtime-lease-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-workspace-runtime-lease-");
     db = createDb(tempDb.connectionString);
     otherProcessDb = createDb(tempDb.connectionString);
   }, 30_000);

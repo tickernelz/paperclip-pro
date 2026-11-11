@@ -51,7 +51,7 @@ describeEmbeddedPostgres("multilingual issue routes", () => {
   ].join("\n");
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-multilingual-issues-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-multilingual-issues-");
     db = createDb(tempDb.connectionString);
     companyId = randomUUID();
     app = createApp(companyId);

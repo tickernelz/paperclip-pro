@@ -24,7 +24,7 @@ describePostgres("task-scoped runtime session reset", () => {
 
   beforeAll(async () => {
     database = await startEmbeddedPostgresTestDatabase(
-      "paperclip-task-session-reset-",
+      "wardmote-task-session-reset-",
     );
     db = createDb(database.connectionString);
   }, 20_000);

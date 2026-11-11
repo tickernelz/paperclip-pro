@@ -190,7 +190,7 @@ describeEmbeddedPostgres("issue wake diagnostics route", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-issue-wake-diagnostics-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-issue-wake-diagnostics-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

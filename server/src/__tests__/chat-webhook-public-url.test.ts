@@ -8,7 +8,7 @@ import { boardMutationGuard } from "../middleware/board-mutation-guard.js";
 
 const missingConfigPath = path.join(
   os.tmpdir(),
-  `paperclip-chat-webhook-url-${process.pid}.json`,
+  `wardmote-chat-webhook-url-${process.pid}.json`,
 );
 
 function useIsolatedConfigEnvironment() {

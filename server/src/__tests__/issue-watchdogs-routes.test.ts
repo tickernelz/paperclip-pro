@@ -70,7 +70,7 @@ describeEmbeddedPostgres("issue watchdog routes", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-issue-watchdogs-routes-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-issue-watchdogs-routes-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

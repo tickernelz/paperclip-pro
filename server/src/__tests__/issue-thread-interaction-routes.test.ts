@@ -842,19 +842,19 @@ describe("issue thread interaction routes", () => {
     );
   });
 
-  it.each(["paperclip-id:chat-owner", "chat-owner", "paperclip-id:another-user"])("keeps chat response delivery limited to the exact owner: %s", async (userId) => {
-    const issue = createIssue({ conversationAgentId: ASSIGNEE_AGENT_ID, conversationUserId: "paperclip-id:chat-owner" });
+  it.each(["wardmote-id:chat-owner", "chat-owner", "wardmote-id:another-user"])("keeps chat response delivery limited to the exact owner: %s", async (userId) => {
+    const issue = createIssue({ conversationAgentId: ASSIGNEE_AGENT_ID, conversationUserId: "wardmote-id:chat-owner" });
     mockIssueService.getById.mockResolvedValue(issue);
     mockInteractionService.getForIssue.mockResolvedValue({
       id: "interaction-2", kind: "ask_user_questions", status: "pending",
       requestedResolverPolicy: "human_only", effectiveResolverPolicy: "human_only",
-      addresseeUserId: "paperclip-id:chat-owner", continuationPolicy: "wake_assignee",
+      addresseeUserId: "wardmote-id:chat-owner", continuationPolicy: "wake_assignee",
       payload: { version: 1, questions: [] },
     });
     const app = await createApp({ type: "board", userId, source: "session", companyIds: ["company-1"] });
     const response = await request(app).post(`/api/issues/${ISSUE_ID}/interactions/interaction-2/respond`)
       .send({ answers: [{ questionId: "scope", optionIds: ["phase-1"] }] });
-    if (userId === "paperclip-id:chat-owner") {
+    if (userId === "wardmote-id:chat-owner") {
       expect(response.status).toBe(200);
       expect(mockInteractionService.answerQuestions).toHaveBeenCalledWith(expect.anything(), "interaction-2", expect.anything(), expect.objectContaining({ userId }));
       expect(mockQuestionResponseDeliveries.deliver).toHaveBeenCalledWith("interaction-2");

@@ -91,7 +91,7 @@ async function createSkill(root: string, name: string, body = `---\nrequired: fa
   await fs.mkdir(skillDir, { recursive: true });
   await fs.writeFile(path.join(skillDir, "SKILL.md"), body, "utf8");
   return {
-    key: `paperclipai/test/${name}`,
+    key: `tickernelz/test/${name}`,
     runtimeName: name,
     source: skillDir,
     required: false,
@@ -4105,7 +4105,7 @@ describe("ACPX engine Claude skill bundle staging (remote ACP lane)", () => {
     const cwd = path.join(root, "worktree");
     const stateDir = path.join(root, "state");
     await fs.mkdir(cwd, { recursive: true });
-    const skill = await createSkill(path.join(root, "sources"), "paperclip--versioned", [
+    const skill = await createSkill(path.join(root, "sources"), "wardmote--versioned", [
       "---", "description: >-", "  Use for Wardmote-managed tasks", "  and durable task documents.",
       "---", "PRIVATE_SKILL_BODY_RECIPE", "",
     ].join("\n"));
@@ -4260,7 +4260,7 @@ describe("ACPX engine Claude skill bundle staging (remote ACP lane)", () => {
     const brokenSource = path.join(skillsRoot, "broken");
     await fs.symlink(linkedTarget, brokenSource, "dir");
     const broken = {
-      key: "paperclipai/test/broken",
+      key: "tickernelz/test/broken",
       runtimeName: "broken",
       source: brokenSource,
       required: false,
@@ -4299,7 +4299,7 @@ describe("ACPX engine Claude skill bundle staging (remote ACP lane)", () => {
     const brokenSource = path.join(skillsRoot, "broken");
     await fs.symlink(linkedTarget, brokenSource, "dir");
     const broken = {
-      key: "paperclipai/test/broken",
+      key: "tickernelz/test/broken",
       runtimeName: "broken",
       source: brokenSource,
       required: false,
@@ -4337,7 +4337,7 @@ describe("ACPX engine Claude skill bundle staging (remote ACP lane)", () => {
     await fs.mkdir(symlinkedSkillMdSource, { recursive: true });
     await fs.symlink(linkedSkillMdTarget, path.join(symlinkedSkillMdSource, "SKILL.md"), "file");
     const symlinkedSkillMd = {
-      key: "paperclipai/test/symlinked-skill-md",
+      key: "tickernelz/test/symlinked-skill-md",
       runtimeName: "symlinked-skill-md",
       source: symlinkedSkillMdSource,
       required: false,
@@ -4348,7 +4348,7 @@ describe("ACPX engine Claude skill bundle staging (remote ACP lane)", () => {
     await fs.mkdir(noSkillMdSource, { recursive: true });
     await fs.writeFile(path.join(noSkillMdSource, "notes.md"), "# notes\n", "utf8");
     const noSkillMd = {
-      key: "paperclipai/test/no-skill-md",
+      key: "tickernelz/test/no-skill-md",
       runtimeName: "no-skill-md",
       source: noSkillMdSource,
       required: false,
@@ -7202,7 +7202,7 @@ describe("ACPX engine run lifecycle corrections (F3: one teardown error policy)"
 
       for (const scenario of scenarios) {
         const root = await makeTempRoot();
-        const marker = `paperclip-flush-probe-${scenario.name}`;
+        const marker = `wardmote-flush-probe-${scenario.name}`;
         const execute = createAcpxEngineExecutor({
           createRuntime: (options) => {
             const opts = options as {

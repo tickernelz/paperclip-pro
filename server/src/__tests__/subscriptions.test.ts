@@ -30,7 +30,7 @@ async function verifiedConnection(input: SubscriptionConnection) {
   return subscriptionService(db).register(input, observed);
 }
 
-beforeAll(async () => { database = await startEmbeddedPostgresTestDatabase("paperclip-subscriptions-"); db = createDb(database.connectionString); }, 90000);
+beforeAll(async () => { database = await startEmbeddedPostgresTestDatabase("wardmote-subscriptions-"); db = createDb(database.connectionString); }, 90000);
 afterAll(async () => { await database?.cleanup(); });
 
 async function company() {

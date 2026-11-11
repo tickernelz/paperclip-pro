@@ -338,7 +338,7 @@ describeEmbeddedPostgres("plugin database namespaces", () => {
   let packageRoots: string[] = [];
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-plugin-db-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-plugin-db-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 
@@ -497,7 +497,7 @@ describeEmbeddedPostgres("plugin database namespaces", () => {
       .where(and(eq(pluginMigrations.pluginId, pluginId), eq(pluginMigrations.status, "applied")));
     expect(migrations.map((migration) => migration.migrationKey)).toEqual([
       "001_llm_wiki.sql",
-      "002_paperclip_distillation.sql",
+      "002_wardmote_distillation.sql",
       "003_spaces.sql",
       "004_wardmote_settings_keys.sql",
     ]);

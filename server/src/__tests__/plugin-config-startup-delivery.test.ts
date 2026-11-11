@@ -34,7 +34,7 @@ describeEmbeddedPostgres("registry.listConfigs (startup config delivery)", () =>
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-plugin-config-delivery-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-plugin-config-delivery-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

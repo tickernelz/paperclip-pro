@@ -13,7 +13,7 @@ afterEach(async () => { await Promise.all(roots.splice(0).map(root => rm(root, {
 const hash = (value: string) => createHash("sha256").update(value).digest("hex");
 async function fixture() {
   const root = await realpath(await mkdtemp(join(tmpdir(), "e2e-installed-cli-"))); roots.push(root);
-  const cli = join(root, "node_modules/paperclip-pro"); const server = join(root, "node_modules/@tickernelz/wardmote-server");
+  const cli = join(root, "node_modules/wardmote-pro"); const server = join(root, "node_modules/@tickernelz/wardmote-server");
   await mkdir(join(cli, "dist"), { recursive: true }); await mkdir(join(server, "dist"), { recursive: true });
   await writeFile(join(cli, "package.json"), JSON.stringify({ name: "@tickernelz/wardmote", version: "1.2.3", type: "module", bin: { wardmote: "./dist/index.js" } }));
   await writeFile(join(server, "package.json"), JSON.stringify({ name: "@tickernelz/wardmote-server", version: "1.2.3", type: "module", exports: { ".": { import: "./dist/index.js" } } }));
