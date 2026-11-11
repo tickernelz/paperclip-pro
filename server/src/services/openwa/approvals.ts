@@ -16,6 +16,7 @@ import {
   type Db,
 } from "@tickernelz/wardmote-db";
 import {
+  OPENWA_APPROVAL_MESSAGE_MAX_LENGTH,
   OPENWA_GRANT_CATEGORIES,
   openwaEndpointPolicySchema,
   type ChatOwnerApprovalChannel,
@@ -254,13 +255,28 @@ async function plannedBubbles(ctx: ToolContext, owners: OpenwaCurrentOwner[]): P
   return [{ owner, chatId: route.chatId, chatKey: route.chatKey }];
 }
 
-function bubbleText(ctx: ToolContext, markdown: string): string {
+const APPROVAL_SHORTENED_SUFFIX = "\n\n[…]";
+const APPROVAL_SHORTEN_FLOOR = 200;
+
+/** One WhatsApp bubble for messageToOwners; text that does not fit is cut at a word boundary and marked. */
+function bubbleText(ctx: ToolContext, markdown: string): { text: string; shortenedFrom: number | null } {
   const prefix = ctx.policy.numberMode === "owner_number" && ctx.policy.ownerNumberPrefix.enabled ? ctx.policy.ownerNumberPrefix.text : null;
   if (!markdown.trim()) throw new OpenwaToolError(422, "gateway_error", "messageToOwners is empty");
-  const formatted = formatOpenwaPublication({ markdown, prefix });
-  if (formatted.kind !== "text" || formatted.parts.length !== 1)
-    throw new OpenwaToolError(422, "message_too_long", "messageToOwners must fit in one WhatsApp message");
-  return formatted.parts[0]!;
+  const single = (value: string) => {
+    const formatted = formatOpenwaPublication({ markdown: value, prefix });
+    return formatted.kind === "text" && formatted.parts.length === 1 ? formatted.parts[0]! : null;
+  };
+  const whole = single(markdown);
+  if (whole !== null) return { text: whole, shortenedFrom: null };
+  for (let room = Math.min(markdown.length, OPENWA_APPROVAL_MESSAGE_MAX_LENGTH); room >= APPROVAL_SHORTEN_FLOOR; room = Math.floor(room * 0.9)) {
+    const slice = markdown.slice(0, room);
+    let end = slice.length;
+    while (end > 0 && !/\s/.test(slice[end - 1]!)) end--;
+    const cut = (end > 0 ? slice.slice(0, end) : slice).trimEnd();
+    const text = single(cut + APPROVAL_SHORTENED_SUFFIX);
+    if (text !== null) return { text, shortenedFrom: markdown.length };
+  }
+  throw new OpenwaToolError(422, "message_too_long", "messageToOwners must fit in one WhatsApp message");
 }
 
 async function sendReserved(
@@ -392,7 +408,8 @@ export async function openwaRequestApprovalTool(ctx: ToolContext, args: Args): P
   const owners = await openwaCurrentOwners(ctx.db, ctx.endpoint);
   const planned = await plannedBubbles(ctx, owners);
   if (!planned.length) throw new OpenwaToolError(409, "no_owner_chat", "No current owner has a WhatsApp number to receive the request");
-  const body = bubbleText(ctx, String(args.messageToOwners));
+  const { text: body, shortenedFrom } = bubbleText(ctx, String(args.messageToOwners));
+  const shortened = shortenedFrom === null ? {} : { messageShortened: { originalLength: shortenedFrom, sentLength: body.length } };
   const { registry } = await ctx.runtime();
   const reserved: OpenwaOutboundRecord[] = [];
   const db = ctx.db;
@@ -564,12 +581,12 @@ export async function openwaRequestApprovalTool(ctx: ToolContext, args: Args): P
     throw error;
   }
   if (reused) {
-    const receipt = { requestId, status: "pending", reused: true, categories: reused, bubbles: await bubbleStates(ctx, requestId) };
+    const receipt = { requestId, status: "pending", reused: true, categories: reused, bubbles: await bubbleStates(ctx, requestId), ...shortened };
     await finishOpenwaWrite(ctx.db, action, receipt);
     return { actionId: action.id, ...receipt };
   }
   const bubbles = await deliverBubbles(ctx, planned, reserved, body);
-  const receipt = { requestId, status: "pending", reminded, bubbles };
+  const receipt = { requestId, status: "pending", reminded, bubbles, ...shortened };
   if (bubbles.every((bubble) => bubble.state !== "uncertain")) await finishOpenwaWrite(ctx.db, action, receipt);
   if (bubbles.every((bubble) => bubble.state === "failed"))
     throw new OpenwaToolError(502, "gateway_error", "No approval bubble could be delivered; the request stays pending in the OpenWA Approvals tab", { requestId });

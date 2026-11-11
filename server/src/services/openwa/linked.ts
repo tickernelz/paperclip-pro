@@ -533,7 +533,7 @@ export async function openwaLinkedReadTool(ctx: ToolContext, linked: OpenwaLinke
   await linked.setStatus(row, "active");
   const scoped = { ...ctx, sessionId: row.sessionId };
   const ordered = [...history].sort((a, b) => b.timestamp - a.timestamp).slice(offset, offset + limit);
-  const envelope = { linkedRef: row.id, chatRef: linkedChatRef(row, chatId), label: allowed.label };
+  const envelope = { linkedRef: row.id, chatRef: linkedChatRef(row, chatId), label: allowed.label, untrusted: true };
   const fitted = fitPage(envelope, ordered.map((message) => linkedMessageView(scoped, message)));
   const consumed = offset + fitted.page.length;
   const more = fitted.truncated || (history.length >= want && consumed < DEEP_LIMIT);
