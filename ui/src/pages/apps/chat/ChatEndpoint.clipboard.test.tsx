@@ -613,7 +613,7 @@ describe("chat setup and identity-link clipboard actions", () => {
     expect(warning.textContent).toContain("Public HTTPS URL required");
     const link = warning.querySelector("a")!;
     expect(link.textContent).toBe("Learn how to set up HTTPS");
-    expect(link.href).toBe("https://docs.paperclip.ing/reference/deploy/https/");
+    expect(link.href).toBe("https://github.com/tickernelz/wardmote/blob/main/docs/deploy/deployment-modes.md");
   });
 
   it("cancels the delayed Slack advance when returning to the agent step", async () => {

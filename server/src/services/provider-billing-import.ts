@@ -115,7 +115,7 @@ export async function fetchProviderDailyCosts(
           "OpenAI-Organization": parsed.accountId,
         }
       : { "x-api-key": credential, "anthropic-version": "2023-06-01" };
-  headers["User-Agent"] = "Wardmote/1.0 (https://paperclip.ing)";
+  headers["User-Agent"] = "Wardmote/1.0 (https://github.com/tickernelz/wardmote)";
   const totals = new Map<string, bigint>();
   const seen = new Set<string>();
   const days = new Set<number>();

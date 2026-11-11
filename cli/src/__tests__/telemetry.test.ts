@@ -74,6 +74,7 @@ describe("cli telemetry", () => {
     for (const key of CI_ENV_VARS) {
       delete process.env[key];
     }
+    process.env.WARDMOTE_TELEMETRY_ENDPOINT = "https://telemetry.example/ingest";
     vi.stubGlobal("fetch", vi.fn(async () => ({ ok: true })));
   });
 
@@ -94,6 +95,18 @@ describe("cli telemetry", () => {
 
     expect(client).toBeNull();
     expect(fs.existsSync(path.join(root, "home", "instances", "telemetry-test", "telemetry", "state.json"))).toBe(false);
+  });
+
+  it("stays off when no telemetry endpoint is configured", async () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-cli-telemetry-"));
+    const configPath = makeConfigPath(root, true);
+    process.env.WARDMOTE_HOME = path.join(root, "home");
+    process.env.WARDMOTE_INSTANCE_ID = "telemetry-test";
+    delete process.env.WARDMOTE_TELEMETRY_ENDPOINT;
+
+    const { initTelemetryFromConfigFile } = await import("../telemetry.js");
+    expect(initTelemetryFromConfigFile(configPath)).toBeNull();
+    expect(fetch).not.toHaveBeenCalled();
   });
 
   it("creates telemetry state only after the first event is tracked", async () => {

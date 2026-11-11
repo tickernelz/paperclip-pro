@@ -1,6 +1,5 @@
 import { z } from "zod";
 
-export const DEFAULT_ANNOUNCEMENT_FEED_URL = "https://pages.paperclip.ing/announcements/v1/current.json";
 export const ANNOUNCEMENT_MANIFEST_MAX_BYTES = 64 * 1024;
 export const ANNOUNCEMENT_IMAGE_MAX_BYTES = 2 * 1024 * 1024;
 export const ANNOUNCEMENT_ANIMATION_MAX_BYTES = 128 * 1024;
