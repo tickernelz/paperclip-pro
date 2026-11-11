@@ -114,6 +114,7 @@ export interface OpenwaWakeMessage {
   text: string;
   textTruncated?: true;
   repeatCount?: number;
+  forwarded?: { score: number | null };
   quoted: { id: string; text: string | null; fromAgent: boolean } | null;
   mentions: string[];
   location: { lat: number; lon: number; name?: string } | null;
@@ -422,6 +423,7 @@ function messageFrom(delivery: DeliveryRow, mediaItems: MediaItem[] | undefined,
   const text = truncate(body, OPENWA_WAKE_MAX_TEXT);
   const quoted = record(openwa.quoted);
   const quotedId = str(quoted.id);
+  const forwarded = openwa.forwarded && typeof openwa.forwarded === "object" ? record(openwa.forwarded) : null;
   const selfMentions = new Set(
     (Array.isArray(openwa.agentMentionIds) ? openwa.agentMentionIds : []).filter((id): id is string => typeof id === "string").map((id) => id.trim().toLowerCase()),
   );
@@ -434,6 +436,7 @@ function messageFrom(delivery: DeliveryRow, mediaItems: MediaItem[] | undefined,
     text: text.text,
     ...(text.truncated ? { textTruncated: true as const } : {}),
     ...(typeof openwa.repeatCount === "number" && openwa.repeatCount > 1 ? { repeatCount: openwa.repeatCount } : {}),
+    ...(forwarded ? { forwarded: { score: typeof forwarded.score === "number" ? forwarded.score : null } } : {}),
     quoted: quotedId
       ? { id: quotedId, text: clip(typeof quoted.body === "string" ? quoted.body : null, QUOTE_MAX_TEXT), fromAgent: quoted.fromAgent === true }
       : null,

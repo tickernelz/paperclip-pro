@@ -295,6 +295,28 @@ Defects and oddities seen in the same window:
 - The 10-04 `grant` run `42d36a24` created ZHA-381 but sent nothing to the
   requester; the 10-05 `grant` run `7501968b` did inform the group.
 
+### Gateway 0.30.0 qualification (2026-11-11)
+
+- Document diff, OpenWA `0.27.1` to `0.30.0`: 205 to 206 operations. Added
+  `MessageController_getReceipts` (category `read`, role viewer, 501 on
+  Baileys); none removed. Request change: `WebhookController_create` and
+  `_update` cap `events` at 27. Response changes, all additive:
+  `restriction.kind` gains `passkey_required` on the seven session
+  operations, chat history gains `isForwarded` and `forwardingScore`.
+  `RequireRole` of every other operation is unchanged in the gateway build.
+- Wardmote 2026.1109.0 (`gateway.js`, `receiver.js` of the installed build)
+  against isolated 0.27.1 and 0.30.0 gateways without a WhatsApp login, same
+  calls on both: document version, admin key validation, health, session
+  create, start, QR, stop and delete, stored messages, chat history, socket
+  subscription to the 11 events. Differences: a session id that is not a UUID
+  answers 404 (`not_found`) instead of 400, and a group read for a chat id
+  that is not a group answers 400 instead of 409. A new session's start took
+  23-54 s on both versions.
+- Production gateway upgraded with both whatsapp-web.js sessions logged in:
+  both `ready` 20.3 s after the old container stopped, with no new QR scan.
+- Not yet live on 0.30.0: a received `passkey_required` restriction (Baileys
+  only) and a forwarded message seen by an agent wake.
+
 ### Remaining journeys
 
 - AC15 (owner-number mode): not run; this endpoint uses `agent_number`.

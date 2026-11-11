@@ -199,8 +199,8 @@ describe("OpenWA gateway client requests", () => {
   });
 
   it("reads the gateway version from the public OpenAPI document", async () => {
-    handler = (_req, res) => reply(res, 200, { openapi: "3.0.0", info: { title: "OpenWA API", version: "0.27.1" }, paths: {} });
-    expect(await client().openApiVersion()).toBe("0.27.1");
+    handler = (_req, res) => reply(res, 200, { openapi: "3.0.0", info: { title: "OpenWA API", version: "0.30.0" }, paths: {} });
+    expect(await client().openApiVersion()).toBe("0.30.0");
     expect(seen[0].url).toBe("/api/docs-json");
     expect(seen[0].headers["x-api-key"]).toBeUndefined();
   });

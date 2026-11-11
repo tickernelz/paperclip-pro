@@ -22,6 +22,7 @@ import {
 } from "./receiver.js";
 import {
   dispatchOpenwaSessionHealthWake,
+  openwaRestrictionSummary,
   stageOpenwaSessionHealthWake,
   type OpenwaSessionHealthFacts,
 } from "./session-health.js";
@@ -153,7 +154,7 @@ export function createOpenwaIngressCallbacks(deps: OpenwaIngressDeps): OpenwaIng
       await transition({
         healthy: health.healthy,
         prefix: OPENWA_RESTRICTION_HEALTH_PREFIX,
-        message: "WhatsApp restricted this account" + (health.restrictionKind ? " (" + health.restrictionKind + ")" : ""),
+        message: openwaRestrictionSummary(health.restrictionKind),
         metadata: { active: health.active, kind: health.restrictionKind, code: health.code, expiresAt: health.expiresAt },
         wake: {
           kind: "restriction",

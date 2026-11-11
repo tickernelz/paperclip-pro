@@ -34,6 +34,11 @@ function record(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : {};
 }
 
+export function openwaRestrictionSummary(kind: string | null): string {
+  if (kind === "passkey_required") return "WhatsApp is waiting for a passkey on the phone to finish linking this number (passkey_required)";
+  return "WhatsApp restricted this number" + (kind ? " (" + kind + ")" : "");
+}
+
 function healthComment(facts: OpenwaSessionHealthFacts): string {
   if (facts.kind === "status")
     return facts.healthy
@@ -42,8 +47,8 @@ function healthComment(facts: OpenwaSessionHealthFacts): string {
   if (facts.healthy) return "OpenWA session health changed: the WhatsApp restriction on this number was lifted.";
   const restriction = facts.restriction;
   return (
-    "OpenWA session health changed: WhatsApp restricted this number" +
-    (restriction?.kind ? " (" + restriction.kind + ")" : "") +
+    "OpenWA session health changed: " +
+    openwaRestrictionSummary(restriction?.kind ?? null) +
     (restriction?.expiresAt ? " until " + restriction.expiresAt : "") +
     "."
   );

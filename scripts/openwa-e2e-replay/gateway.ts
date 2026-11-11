@@ -73,7 +73,7 @@ const sessionView = {
   engineLoaded: true,
 };
 gateway.overrides.push(
-  { method: "GET", path: "/api/docs-json", status: 200, body: { openapi: "3.0.0", info: { title: "OpenWA API", version: "0.27.1" } } },
+  { method: "GET", path: "/api/docs-json", status: 200, body: { openapi: "3.0.0", info: { title: "OpenWA API", version: "0.30.0" } } },
   { method: "GET", path: "/api/sessions", status: 200, body: [sessionView] },
   { method: "GET", path: "/api/sessions/" + gateway.sessionId, status: 200, body: sessionView },
 );

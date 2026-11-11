@@ -100,6 +100,7 @@ export interface OpenwaAdmissionDecoration {
   readonly location: Record<string, unknown> | null;
   readonly contact: Record<string, unknown> | null;
   readonly media: { mimetype: string | null; filename: string | null; sizeBytes: number | null; omitted: boolean } | null;
+  readonly forwarded?: { score: number | null };
   readonly group: { name: string | null; participantCount: number; actorMasked: string | null } | null;
   readonly absence?: OpenwaAbsenceBatch | null;
   readonly approval?: OpenwaApprovalReplyDecoration | null;
@@ -228,6 +229,7 @@ export function parseOpenwaDecoration(value: unknown): OpenwaAdmissionDecoration
   if (!event || !triggerClass || !principalRole || !chatKey || !chatId || !dedupeKey || !sender || typeof sender.jid !== "string") return null;
   const quoted = record(source.quoted);
   const media = record(source.media);
+  const forwarded = record(source.forwarded);
   const group = record(source.group);
   const absence = record(source.absence);
   const approval = record(source.approval);
@@ -259,6 +261,7 @@ export function parseOpenwaDecoration(value: unknown): OpenwaAdmissionDecoration
           omitted: media.omitted === true,
         }
       : null,
+    ...(forwarded ? { forwarded: { score: typeof forwarded.score === "number" ? forwarded.score : null } } : {}),
     group: group
       ? {
           name: stringOf(group.name),
@@ -340,6 +343,7 @@ export function openwaInboundDecoration(
     location: event.location,
     contact: event.contact,
     media: event.media ? { ...event.media } : null,
+    ...(event.forwarded ? { forwarded: { score: event.forwarded.score } } : {}),
     group: null,
     ...(input.absence ? { absence: input.absence } : {}),
     ...(input.ownerNowActive ? { ownerNowActive: true as const } : {}),
