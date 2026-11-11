@@ -51,7 +51,9 @@ async function handoffSource(tx: Connection, companyId: string, runId: string, a
 
 function ownerTriggeredRun(run: Run): boolean {
   const openwa = run.contextSnapshot?.wardmoteOpenwa;
-  return Boolean(openwa && typeof openwa === "object" && (openwa as Record<string, unknown>).triggerClass === "owner");
+  if (!openwa || typeof openwa !== "object") return false;
+  const context = openwa as Record<string, unknown>;
+  return context.triggerClass === "owner" || context.ownerOrigin === "owner_chat" || context.ownerOrigin === "owner_task";
 }
 
 async function recordOpenwaHandoff(tx: Connection, task: Issue, source: Issue, run: Run) {
@@ -74,6 +76,45 @@ export async function recordChatHandoff(tx: Connection, task: Issue, actorRunId:
     source.conversationSessionGeneration !== run.contextSnapshot?.conversationSessionGeneration) return;
   await tx.insert(handoffs).values({ taskId: task.id, companyId: task.companyId,
     conversationId: source.id, agentId: source.conversationAgentId, sessionGeneration: source.conversationSessionGeneration }).onConflictDoNothing();
+}
+
+const UUID_TEXT = "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$";
+
+export interface OpenwaTaskChatOrigin {
+  conversation: string;
+  requester: "owner" | "non_owner";
+  triggerClass: string | null;
+  requesterRole: string | null;
+}
+
+/** Server record of the OpenWA chat request behind a task: the nearest of issueIds (the task first, then its ancestors) handed off from a conversation. */
+export async function openwaTaskChatOrigin(db: Connection, input: { companyId: string; issueIds: string[] }): Promise<OpenwaTaskChatOrigin | null> {
+  if (input.issueIds.length === 0) return null;
+  const handoffRows = await db.select({ taskId: handoffs.taskId, reportToOwner: handoffs.reportToOwner, conversationId: handoffs.conversationId })
+    .from(handoffs)
+    .where(and(eq(handoffs.companyId, input.companyId), eq(handoffs.channel, "openwa"), inArray(handoffs.taskId, input.issueIds)));
+  if (handoffRows.length === 0) return null;
+  const byTask = new Map(handoffRows.map((row) => [row.taskId, row]));
+  const nearest = input.issueIds.map((id) => byTask.get(id)).find((row) => row !== undefined)!;
+  const [facts] = await db.execute(sql`
+    select coalesce(c.identifier, c.id::text) as conversation, ctx.openwa ->> 'triggerClass' as trigger_class,
+      (select d.principal_role from chat_deliveries d
+        where d.company_id = t.company_id and d.id = case when ctx.delivery_id ~* ${UUID_TEXT} then ctx.delivery_id::uuid end) as requester_role
+    from issues t
+    join issues c on c.id = ${nearest.conversationId}::uuid and c.company_id = t.company_id
+    left join heartbeat_runs r on r.company_id = t.company_id
+      and r.id = case when t.origin_run_id ~* ${UUID_TEXT} then t.origin_run_id::uuid end
+    left join lateral (select coalesce(r.context_snapshot -> 'wardmoteOpenwa', r.context_snapshot -> 'paperclipOpenwa') as openwa) o on true
+    left join lateral (select o.openwa, o.openwa -> 'deliveryIds' ->> -1 as delivery_id) ctx on true
+    where t.company_id = ${input.companyId}::uuid and t.id = ${nearest.taskId}::uuid`) as unknown as Array<{
+    conversation: string; trigger_class: string | null; requester_role: string | null;
+  }>;
+  return {
+    conversation: facts?.conversation ?? nearest.conversationId,
+    requester: nearest.reportToOwner ? "owner" : "non_owner",
+    triggerClass: facts?.trigger_class ?? null,
+    requesterRole: facts?.requester_role ?? null,
+  };
 }
 
 /** True when every child of an OpenWA conversation issue already reports to its agent through a per-task completion. */

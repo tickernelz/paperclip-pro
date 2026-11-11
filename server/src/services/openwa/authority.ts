@@ -25,7 +25,7 @@ import { RUN_TOOL_PROFILE_CONTEXT_KEY } from "@tickernelz/wardmote-adapter-utils
 import { HttpError, forbidden } from "../../errors.js";
 import { openwaCurrentOwners, openwaPrincipalAuthorization } from "./owners.js";
 import { logOpenwaActivity } from "./audit.js";
-import { isOpenwaCompletionTurn } from "../chat-completion-delivery.js";
+import { isOpenwaCompletionTurn, openwaCompletionOwedToOwner } from "../chat-completion-delivery.js";
 
 export const OPENWA_RUN_CONTEXT_KEY = "wardmoteOpenwa";
 export const OPENWA_APPROVAL_REQUIRED_CODE = "openwa_approval_required";
@@ -47,7 +47,12 @@ export interface OpenwaRunContext {
   requesterPrincipalId: string | null;
   approvalRequestId: string | null;
   triggerPrincipalId: string | null;
+  ownerOrigin?: OpenwaOwnerOrigin;
 }
+
+/** Server record that makes a wake without a chat message act for an owner: the owner's own DM, or a task an owner run handed off. */
+export type OpenwaOwnerOrigin = "owner_chat" | "owner_task";
+const OWNER_ORIGINS: ReadonlySet<string> = new Set<OpenwaOwnerOrigin>(["owner_chat", "owner_task"]);
 
 export class OpenwaApprovalRequiredError extends HttpError {
   readonly category: OpenwaApprovalCategory;
@@ -210,6 +215,7 @@ export function readOpenwaRunContext(contextSnapshot: unknown): OpenwaRunContext
     requesterPrincipalId: text(raw.requesterPrincipalId),
     approvalRequestId: text(raw.approvalRequestId),
     triggerPrincipalId: text(raw.triggerPrincipalId),
+    ...(OWNER_ORIGINS.has(String(raw.ownerOrigin)) ? { ownerOrigin: raw.ownerOrigin as OpenwaOwnerOrigin } : {}),
   };
 }
 
@@ -635,11 +641,14 @@ export async function resolveOpenwaRunContext(
       }
     }
   }
-  const profile: OpenwaRunProfile = cls === "owner" ? "full" : "read_only";
-  const runAllowedCategories = openwaAllowedCategories(policy, profile, runGranted, policy.gatewayAdminTools).allowed;
-  const requesterExternalTools = grants.some((grant) => grant.scope === "requester" && grant.category === "external_tools");
   const completionTurn = !wakeAction && cls === "other" && deliveries.length === 0 &&
     (await isOpenwaCompletionTurn(db, { companyId: input.companyId, runId: input.runId, issueId: input.issueId }));
+  const ownerOrigin = cls === "other" && deliveryIds.length === 0
+    ? await openwaOwnerOrigin(db, { binding, chatKey, companyId: input.companyId, runId: input.runId, issueId: input.issueId, completionTurn })
+    : null;
+  const profile: OpenwaRunProfile = cls === "owner" || ownerOrigin ? "full" : "read_only";
+  const runAllowedCategories = openwaAllowedCategories(policy, profile, runGranted, policy.gatewayAdminTools).allowed;
+  const requesterExternalTools = grants.some((grant) => grant.scope === "requester" && grant.category === "external_tools");
   return {
     ...base,
     triggerClass: cls,
@@ -657,7 +666,29 @@ export async function resolveOpenwaRunContext(
     triggerPrincipalId: cls === "owner"
       ? (deliveries.find((delivery) => delivery.id === deliveryIds[deliveryIds.length - 1])?.principalId ?? null)
       : null,
+    ...(ownerOrigin ? { ownerOrigin } : {}),
   };
+}
+
+async function openwaOwnerOrigin(
+  db: Db,
+  input: {
+    binding: { endpointId: string; isDirectMessage: boolean; status: string };
+    chatKey: string;
+    companyId: string;
+    runId: string;
+    issueId: string;
+    completionTurn: boolean;
+  },
+): Promise<OpenwaOwnerOrigin | null> {
+  if (input.binding.status === "archived") return null;
+  if (input.binding.isDirectMessage) {
+    const owners = await openwaCurrentOwners(db, { companyId: input.companyId, id: input.binding.endpointId });
+    if (owners.some((owner) => owner.jids.some((jid) => normalizeChatKey(jid) === input.chatKey))) return "owner_chat";
+  }
+  if (input.completionTurn && (await openwaCompletionOwedToOwner(db, { companyId: input.companyId, runId: input.runId, issueId: input.issueId })))
+    return "owner_task";
+  return null;
 }
 
 /** Writes the resolved context, or the explicit non-OpenWA marker when openwa is null. */

@@ -240,6 +240,7 @@ import {
 import {
   prepareChatCompletionTurn,
   chatCompletionInstruction,
+  openwaTaskChatOrigin,
 } from "./chat-completion-delivery.js";
 import { AgentDirectoryReuseInvalidatedError, isAgentDirectoryCopy } from "./agent-directory-working-copies.js";
 
@@ -3086,6 +3087,9 @@ export function heartbeatService(
             }
           : null,
         ancestors: issueAncestors,
+        chatOrigin: issueRef && !issueContext?.conversationAgentId
+          ? await openwaTaskChatOrigin(db, { companyId: agent.companyId, issueIds: [issueRef.id, ...issueAncestors.map((ancestor) => ancestor.id)] })
+          : null,
         wakeComment: safeWakeCommentContext,
         wakeComments: safeWakeComments,
         attachmentOmissions: wardmoteWakePayload?.attachmentOmissions,

@@ -62,7 +62,7 @@ import { openwaLinkedGetMediaTool, openwaLinkedListTool, openwaLinkedReadTool, t
 import { maskOpenwaDigits } from "./guidance.js";
 import { openwaAttachmentLocalPaths, type OpenwaIngestedMedia, type OpenwaMediaService } from "./media.js";
 import { openwaChatKey, type OpenwaOutboundRegistry } from "./outbound.js";
-import { openwaCurrentOwnerUserId, type OpenwaOwnerService } from "./owners.js";
+import { openwaCurrentOwnerUserId, openwaCurrentOwners, type OpenwaOwnerService } from "./owners.js";
 import { openwaOutsideAllowlistNeedsGrant, openwaResourceGroupActive } from "./policy.js";
 import { markTriggersAnswered, recordOpenwaRunOutcome } from "./publication.js";
 import { openwaWidString } from "./receiver.js";
@@ -1104,14 +1104,28 @@ async function openwaSend(ctx: ToolContext, args: Args): Promise<Record<string, 
   return { actionId: action.id, state: "delivered", ...receipt };
 }
 
-function senderView(ctx: Pick<ToolContext, "sessionId">, jid: string | null | undefined, name: unknown, phone?: unknown) {
+function senderView(
+  ctx: Pick<ToolContext, "sessionId">,
+  jid: string | null | undefined,
+  name: unknown,
+  phone?: unknown,
+  ownerKeys?: ReadonlySet<string>,
+) {
   const id = str(jid);
   const digits = phoneDigits(id) ?? (typeof phone === "string" && /^\d{5,}$/.test(phone) ? phone : null);
+  const owner = ownerKeys !== undefined && ((id !== null && ownerKeys.has(openwaChatKey(id))) || (digits !== null && ownerKeys.has(digits)));
   return {
     ref: id && /@(c\.us|lid|s\.whatsapp\.net)$/i.test(id) ? chatRef(ctx, openwaChatKey(id)) : null,
     phone: digits ? maskOpenwaPhoneNumber(digits) : null,
     name: displayName(name),
+    ...(ownerKeys ? { role: owner ? ("owner" as const) : ("non_owner" as const) } : {}),
   };
+}
+
+/** Chat keys and digits of the endpoint's current owners, for the server-derived sender role in read results. */
+async function ownerSenderKeys(ctx: ToolContext): Promise<ReadonlySet<string>> {
+  const owners = await openwaCurrentOwners(ctx.db, ctx.endpoint);
+  return new Set(owners.flatMap((owner) => [...owner.jids.map((jid) => openwaChatKey(jid)), ...(owner.digits ? [owner.digits] : [])]));
 }
 
 function textView(value: unknown) {
@@ -1146,13 +1160,13 @@ function quotedView(value: unknown) {
   return { id, text: clip(typeof quoted.body === "string" ? quoted.body : "", 200).text };
 }
 
-function storedView(ctx: ToolContext, message: OpenwaStoredMessage) {
+function storedView(ctx: ToolContext, message: OpenwaStoredMessage, ownerKeys: ReadonlySet<string>) {
   const metadata = record(message.metadata);
   const fromMe = message.direction === "outgoing";
   return {
     id: message.waMessageId ?? "row:" + message.id,
     fromMe,
-    sender: fromMe ? null : senderView(ctx, message.author ?? message.from, metadata.pushName ?? metadata.senderName),
+    sender: fromMe ? null : senderView(ctx, message.author ?? message.from, metadata.pushName ?? metadata.senderName, undefined, ownerKeys),
     type: message.type,
     timestamp: message.timestamp ?? Math.floor(Date.parse(message.createdAt) / 1000),
     ...textView(message.body),
@@ -1163,7 +1177,7 @@ function storedView(ctx: ToolContext, message: OpenwaStoredMessage) {
   };
 }
 
-export function liveView(ctx: Pick<ToolContext, "sessionId">, message: OpenwaHistoryMessage) {
+export function liveView(ctx: Pick<ToolContext, "sessionId">, message: OpenwaHistoryMessage, ownerKeys?: ReadonlySet<string>) {
   const media = record(message.media);
   const contact = record(message.contact);
   return {
@@ -1171,7 +1185,7 @@ export function liveView(ctx: Pick<ToolContext, "sessionId">, message: OpenwaHis
     fromMe: message.fromMe,
     sender: message.fromMe
       ? null
-      : senderView(ctx, message.author ?? message.from, contact.name ?? contact.pushName, message.senderPhone),
+      : senderView(ctx, message.author ?? message.from, contact.name ?? contact.pushName, message.senderPhone, ownerKeys),
     type: message.type,
     timestamp: message.timestamp,
     ...textView(message.body),
@@ -1206,11 +1220,12 @@ async function openwaReadChat(ctx: ToolContext, args: Args): Promise<Record<stri
   const deep = args.deep === true;
   const limit = Math.min(Number(args.limit ?? 50), deep ? DEEP_LIMIT : LIVE_LIMIT);
   const ref = chatRef(ctx, target.chatId);
+  const ownerKeys = await ownerSenderKeys(ctx);
   if (source === "stored") {
     if (cursor && !cursor.startsWith("s:")) throw new OpenwaToolError(400, "invalid_cursor", "The cursor belongs to the live source");
     const after = cursor ? cursor.slice(2) : null;
     const page = await gatewayCall(ctx, (gateway) => gateway.listStoredMessages({ chatId: target.chatId, limit: Math.min(limit, LIVE_LIMIT), after, inlineMedia: false }));
-    const views = page.messages.map((message) => ({ row: message.id, view: storedView(ctx, message) }));
+    const views = page.messages.map((message) => ({ row: message.id, view: storedView(ctx, message, ownerKeys) }));
     const envelope = { chatRef: ref, source };
     const fitted = fitPage(envelope, views.map((entry) => entry.view));
     const last = views[fitted.page.length - 1];
@@ -1226,7 +1241,7 @@ async function openwaReadChat(ctx: ToolContext, args: Args): Promise<Record<stri
   );
   const ordered = [...history].sort((a, b) => b.timestamp - a.timestamp).slice(offset, offset + limit);
   const envelope = { chatRef: ref, source };
-  const fitted = fitPage(envelope, ordered.map((message) => liveView(ctx, message)));
+  const fitted = fitPage(envelope, ordered.map((message) => liveView(ctx, message, ownerKeys)));
   const consumed = offset + fitted.page.length;
   const more = fitted.truncated || (history.length >= want && consumed < DEEP_LIMIT);
   return { ...envelope, messages: fitted.page, nextCursor: more ? "l:" + consumed : null, ...(fitted.truncated ? { truncated: true } : {}) };

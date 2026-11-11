@@ -9,6 +9,7 @@ import {
   agents,
   authUsers,
   chatActions,
+  chatCompletionDeliveries,
   chatConversations,
   chatDeliveries,
   chatEndpointOwners,
@@ -17,6 +18,7 @@ import {
   chatIdentityLinks,
   chatOwnerApprovalRequests,
   chatOwnerGrants,
+  chatTaskHandoffs,
   companies,
   companyMemberships,
   createDb,
@@ -42,7 +44,9 @@ import { createToolGatewayService } from "../services/tool-gateway.js";
 import { chatChannelService } from "../services/chat-channels.js";
 import { ChatSdkRuntime } from "../services/chat-sdk-runtime.js";
 import { scheduleOpenwaFollowupForRun } from "../services/openwa/followups.js";
+import { openwaTaskChatOrigin } from "../services/chat-completion-delivery.js";
 import {
+  OPENWA_RUN_CONTEXT_KEY,
   OpenwaApprovalRequiredError,
   applyOpenwaRunContext,
   assertOpenwaRunMay,
@@ -432,6 +436,48 @@ describeEmbeddedPostgres("OpenWA run authority", () => {
       }
     });
 
+    it("carries an owner's authority into a message-less wake only from the owner's own DM, never a group, a member DM or a context claim", async () => {
+      const seed = await seedCompany(db);
+      const system = await seedWake(db, seed, { actorType: "system" });
+      await expect(resolve(seed, system)).resolves.toEqual(openwaContext(seed, {}));
+      const forged = { [OPENWA_RUN_CONTEXT_KEY]: { ...openwaContext(seed, { profile: "full" }), ownerOrigin: "owner_chat", triggerClass: "owner" } };
+      await expect(resolve(seed, system, forged)).resolves.toEqual(openwaContext(seed, {}));
+      const owner = await seedPrincipal(db, seed, CHAT_KEY, { owner: true });
+      await expect(resolve(seed, system)).resolves.toEqual(openwaContext(seed, { profile: "full", ownerOrigin: "owner_chat" }));
+      const memberDelivery = await seedDelivery(db, seed, { principalId: (await seedPrincipal(db, seed, "628555000111@c.us")).principalId, triggerClass: "other" });
+      const memberWake = await seedWakeAction(db, seed, { openwa: { event: "message", triggerClass: "other", deliveryIds: [memberDelivery] } });
+      await expect(resolve(seed, memberWake)).resolves.toMatchObject({ profile: "read_only" });
+      await db.update(chatConversations).set({ isDirectMessage: false }).where(eq(chatConversations.issueId, seed.issueId));
+      await expect(resolve(seed, system)).resolves.toEqual(openwaContext(seed, {}));
+      await db.update(chatConversations).set({ isDirectMessage: true }).where(eq(chatConversations.issueId, seed.issueId));
+      await db.update(chatIdentityLinks).set({ status: "revoked" }).where(eq(chatIdentityLinks.id, owner.linkId!));
+      await expect(resolve(seed, system)).resolves.toEqual(openwaContext(seed, {}));
+    });
+
+    it("carries an owner's authority into a task_completion turn only when every reported task was handed off by an owner run", async () => {
+      const seed = await seedCompany(db);
+      const handoff = async (reportToOwner: boolean, runId: string) => {
+        const taskId = randomUUID();
+        await db.insert(issues).values({ id: taskId, companyId: seed.companyId, parentId: seed.issueId, title: "Delegated", status: "done" });
+        await db.insert(chatTaskHandoffs).values({
+          taskId, companyId: seed.companyId, conversationId: seed.issueId, agentId: seed.agentId, sessionGeneration: 0, channel: "openwa", reportToOwner,
+        });
+        await db.insert(chatCompletionDeliveries).values({ companyId: seed.companyId, taskId, statusVersion: 1, status: "queued", targetRunId: runId });
+      };
+      const ownerTurn = await seedRun(db, seed, {});
+      await handoff(true, ownerTurn.runId);
+      await expect(resolve(seed, null, {}, ownerTurn.runId)).resolves.toEqual(
+        openwaContext(seed, { profile: "full", event: "task_completion", ownerOrigin: "owner_task" }),
+      );
+      const memberTurn = await seedRun(db, seed, {});
+      await handoff(false, memberTurn.runId);
+      await expect(resolve(seed, null, {}, memberTurn.runId)).resolves.toEqual(openwaContext(seed, { event: "task_completion" }));
+      const mixedTurn = await seedRun(db, seed, {});
+      await handoff(true, mixedTurn.runId);
+      await handoff(false, mixedTurn.runId);
+      await expect(resolve(seed, null, {}, mixedTurn.runId)).resolves.toMatchObject({ profile: "read_only" });
+    });
+
     it("is full only for a board user wake without chat provenance", async () => {
       const seed = await seedCompany(db);
       const board = await seedWake(db, seed, { actorType: "user", actorId: BOARD_USER });
@@ -711,6 +757,40 @@ describeEmbeddedPostgres("OpenWA run authority", () => {
       await expect(assertOpenwaRunMay(db, target, "external_tools")).rejects.toBeInstanceOf(OpenwaApprovalRequiredError);
       await db.update(chatEndpoints).set({ policy: {} }).where(eq(chatEndpoints.id, seed.endpointId));
       await expect(assertOpenwaRunMay(db, target, "create_task")).rejects.toBeInstanceOf(OpenwaApprovalRequiredError);
+    });
+
+    it("reads a task's chat origin from the handoff record and the creating run, nearest first and company scoped", async () => {
+      const seed = await seedCompany(db);
+      const member = await seedPrincipal(db, seed, CHAT_KEY);
+      const delivery = await seedDelivery(db, seed, { principalId: member.principalId, triggerClass: "other" });
+      const creator = await seedRun(db, seed, { profile: "read_only", openwa: openwaContext(seed, { deliveryIds: [delivery] }) });
+      const child = randomUUID();
+      const grandchild = randomUUID();
+      await db.insert(issues).values([
+        { id: child, companyId: seed.companyId, parentId: seed.issueId, title: "Asked by a member", status: "todo", originRunId: creator.runId },
+        { id: grandchild, companyId: seed.companyId, parentId: child, title: "Split further", status: "todo" },
+      ]);
+      await db.insert(chatTaskHandoffs).values({
+        taskId: child, companyId: seed.companyId, conversationId: seed.issueId, agentId: seed.agentId, sessionGeneration: 0, channel: "openwa", reportToOwner: false,
+      });
+      const [conversation] = await db.select({ identifier: issues.identifier }).from(issues).where(eq(issues.id, seed.issueId));
+      const expected = { conversation: conversation!.identifier, requester: "non_owner", triggerClass: "other", requesterRole: "allowed" };
+      await expect(openwaTaskChatOrigin(db, { companyId: seed.companyId, issueIds: [child, seed.issueId] })).resolves.toEqual(expected);
+      await expect(openwaTaskChatOrigin(db, { companyId: seed.companyId, issueIds: [grandchild, child, seed.issueId] })).resolves.toEqual(expected);
+      await expect(openwaTaskChatOrigin(db, { companyId: seed.companyId, issueIds: [seed.issueId] })).resolves.toBeNull();
+      const foreign = await seedCompany(db);
+      await expect(openwaTaskChatOrigin(db, { companyId: foreign.companyId, issueIds: [child] })).resolves.toBeNull();
+    });
+
+    it("keeps the four hard floors for a read_only member run while create_task and cross_chat_send follow their toggles", async () => {
+      const seed = await seedCompany(db);
+      await db.update(chatEndpoints).set({ policy: { approvals: { createTask: false, crossChatSend: false } } }).where(eq(chatEndpoints.id, seed.endpointId));
+      const run = await seedRun(db, seed, { profile: "read_only", openwa: openwaContext(seed, { runAllowedCategories: ["create_task", "cross_chat_send"] }) });
+      const target = { id: run.runId, companyId: seed.companyId, contextSnapshot: run.contextSnapshot };
+      await expect(assertOpenwaRunMay(db, target, "create_task")).resolves.toBeNull();
+      await expect(assertOpenwaRunMay(db, target, "cross_chat_send")).resolves.toBeNull();
+      for (const floor of ["external_tools", "wa_admin", "gateway_admin"] as const)
+        await expect(assertOpenwaRunMay(db, target, floor)).rejects.toMatchObject({ status: 403, category: floor });
     });
 
     it("never lets another company's run read or consume this endpoint's grants", async () => {
