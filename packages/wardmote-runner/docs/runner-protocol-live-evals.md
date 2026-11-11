@@ -65,7 +65,7 @@ Download the aggregate Actions artifact, then:
 ```sh
 node packages/wardmote-runner/scripts/refresh-runner-protocol-eval-report.mjs \
   --source /path/to/downloaded-aggregate \
-  --evals-root /path/to/wardmote-evals \
+  --evals-root /path/to/paperclip-evals \
   --viewer-root packages/wardmote-runner/dist-issue-thread \
   --output /path/to/new-refresh-directory \
   --revision chat-v1
@@ -346,7 +346,7 @@ evals checkout:
 ```sh
 pnpm --filter @tickernelz/wardmote-runner \
   report:runner-protocol-eval:catalog -- \
-  --evals-root /path/to/wardmote-evals \
+  --evals-root /path/to/paperclip-evals \
   --campaign-id gha-1-1 \
   --output /tmp/runner-protocol-eval-catalog.json
 ```

@@ -129,7 +129,7 @@ plaintext secret values.
 Recommended external ref shape for operator-owned AWS paths:
 
 ```text
-wardmote-ext/{environment}/{company-id}/user-secrets/{definition-key}/{opaque-owner-id}
+paperclip-ext/{environment}/{company-id}/user-secrets/{definition-key}/{opaque-owner-id}
 ```
 
 Guidance:

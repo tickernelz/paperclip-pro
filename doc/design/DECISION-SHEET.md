@@ -72,7 +72,7 @@ User rulings from the tune-session gallery review; all intentionally visible, sn
 
 ## Baseline reconcile — Run 3 setup (Jul 7, 2026)
 
-Fresh worktree from origin/master (3b16ac380) on `design/component-convergence`. The baseline-manifest archive is still unpublished (placeholder URL), so the 510 local baselines were seeded from the Run 1 worktree (`~/Projects/DEV/wardmote-design-simplify`, `tests/storybook-visual/__snapshots__/`, branch head 44ab1ad17) into gitignored `tests/storybook-visual/.snapshots/`. First run: 497/510 green; 6 stories (12 snapshots, both themes) diffed, each verified against a specific master commit that postdates the baselines, then re-baselined — nothing else touched:
+Fresh worktree from origin/master (3b16ac380) on `design/component-convergence`. The baseline-manifest archive is still unpublished (placeholder URL), so the 510 local baselines were seeded from the Run 1 worktree (`~/Projects/DEV/paperclip-design-simplify`, `tests/storybook-visual/__snapshots__/`, branch head 44ab1ad17) into gitignored `tests/storybook-visual/.snapshots/`. First run: 497/510 green; 6 stories (12 snapshots, both themes) diffed, each verified against a specific master commit that postdates the baselines, then re-baselined — nothing else touched:
 
 - `pages-work-timeline--hour-zoom` / `--day-zoom` / `--with-human-activity` ← 59092e85d "[codex] Fix work timeline actor avatars (#9152)" (diff = actor avatar column only)
 - `product-navigation-layout--board-chrome-matrix` / `--sidebar-icon-alignment` ← 83f5f5984 "[codex] Hide goals sidebar link behind experiment (#9189)" (diff = one sidebar row removed, rows below shift up)

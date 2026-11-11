@@ -9,7 +9,7 @@ Operator guide for Wardmote's MCP tool access surface. Audience: board users and
 - [Mental model](#mental-model)
 - [Canonical integration model](#canonical-integration-model)
 - [Quick start](#quick-start)
-- [Wardmote as MCP endpoint vs MCP gateway](#wardmote-as-mcp-endpoint-vs-mcp-gateway)
+- [Wardmote as MCP endpoint vs MCP gateway](#paperclip-as-mcp-endpoint-vs-mcp-gateway)
 - [Managed connections](#managed-connections)
 - [Catalog and risk classification](#catalog-and-risk-classification)
 - [Profiles and bindings](#profiles-and-bindings)
@@ -132,7 +132,7 @@ and upstream tool identity; duplicate catalog entries also include their entry
 identity. Gateway metadata retains the original upstream name for dispatch,
 permissions, and audit. An alias never changes which connection executes a call.
 
-V1 does not claim host-wide MCP enforcement. If an unmanaged external client, hand-edited adapter config, or process outside the Wardmote-controlled workspace calls an upstream MCP server directly, Paperclip can warn about known overlapping config entries but cannot prevent or audit that bypass. Treat managed MCP config as a control-plane containment feature for Wardmote-launched agents, not as an endpoint firewall for the operator's whole machine.
+V1 does not claim host-wide MCP enforcement. If an unmanaged external client, hand-edited adapter config, or process outside the Paperclip-controlled workspace calls an upstream MCP server directly, Paperclip can warn about known overlapping config entries but cannot prevent or audit that bypass. Treat managed MCP config as a control-plane containment feature for Paperclip-launched agents, not as an endpoint firewall for the operator's whole machine.
 
 ## Managed connections
 

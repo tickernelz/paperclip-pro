@@ -128,10 +128,10 @@ The complete authoring example is `announcements/examples/animated/`. Preview
 it with the same staging/test-drive workflow below:
 
 ```sh
-cp -R announcements/examples/animated .wardmote/announcement-animation-preview
+cp -R announcements/examples/animated .paperclip/announcement-animation-preview
 # Edit HTML; recompute its digest and rename it; update current.json.
-node cli/node_modules/tsx/dist/cli.mjs scripts/publish-announcements.ts .wardmote/announcement-animation-preview --staging animated-preview --dry-run
-node cli/node_modules/tsx/dist/cli.mjs scripts/publish-announcements.ts .wardmote/announcement-animation-preview --staging animated-preview --publish
+node cli/node_modules/tsx/dist/cli.mjs scripts/publish-announcements.ts .paperclip/announcement-animation-preview --staging animated-preview --dry-run
+node cli/node_modules/tsx/dist/cli.mjs scripts/publish-announcements.ts .paperclip/announcement-animation-preview --staging animated-preview --publish
 ```
 
 Point the isolated instance at the printed URL and restart it. Verify movement,
@@ -160,9 +160,9 @@ export WARDMOTE_PAGE_DEFAULT_PREFIX=storybook/branches/codex-announcements
 
 # Copy the public fixture into an ignored directory and edit current.json there.
 mkdir -p .wardmote
-cp -R announcements/examples/staging .wardmote/announcement-preview
-node cli/node_modules/tsx/dist/cli.mjs scripts/publish-announcements.ts .wardmote/announcement-preview --staging my-preview --dry-run
-node cli/node_modules/tsx/dist/cli.mjs scripts/publish-announcements.ts .wardmote/announcement-preview --staging my-preview --publish
+cp -R announcements/examples/staging .paperclip/announcement-preview
+node cli/node_modules/tsx/dist/cli.mjs scripts/publish-announcements.ts .paperclip/announcement-preview --staging my-preview --dry-run
+node cli/node_modules/tsx/dist/cli.mjs scripts/publish-announcements.ts .paperclip/announcement-preview --staging my-preview --publish
 ```
 
 Choose a unique staging name for your test and use the printed manifest URL.
@@ -178,10 +178,10 @@ the **selected instance's `.env`**, not just the invoking shell: test-drive
 deliberately clears inherited `WARDMOTE_*` variables.
 
 ```sh
-mkdir -p .wardmote/announcement-test-drive/instances/default
+mkdir -p .paperclip/announcement-test-drive/instances/default
 # On a new test directory, create this file. On reuse, update these entries
 # while preserving the file's existing keys.
-cat > .wardmote/announcement-test-drive/instances/default/.env <<'EOF'
+cat > .paperclip/announcement-test-drive/instances/default/.env <<'EOF'
 WARDMOTE_ANNOUNCEMENTS_FEED_URL=https://d1p6rlowie26tp.cloudfront.net/storybook/branches/codex-announcements/announcements/staging/my-preview/v1/current.json
 WARDMOTE_ANNOUNCEMENTS_ENABLED=true
 WARDMOTE_DB_BACKUP_ENABLED=false
@@ -191,7 +191,7 @@ EOF
 # A fresh test-drive needs a provider key for its initial CEO. Use your usual
 # provider environment variable; never put a real key into a manifest or commit.
 # Reusing an initialized data directory does not require a bootstrap key.
-node cli/node_modules/tsx/dist/cli.mjs cli/src/index.ts test-drive --data-dir .wardmote/announcement-test-drive --no-browser
+node cli/node_modules/tsx/dist/cli.mjs cli/src/index.ts test-drive --data-dir .paperclip/announcement-test-drive --no-browser
 ```
 
 See [test-drive setup](DEVELOPING.md#one-command-isolated-manual-test-drive) for harness/key options.

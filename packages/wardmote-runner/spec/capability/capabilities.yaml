@@ -75,11 +75,11 @@
       ]
     },
     {
-      "id": "skill:skills/wardmote/SKILL.md:no-paperclip-tools-in-this-runtime:41",
+      "id": "skill:skills/wardmote/SKILL.md:no-wardmote-tools-in-this-runtime:41",
       "sourceKind": "skill_heading",
       "sourceAnchor": "skills/wardmote/SKILL.md:41",
-      "title": "No `paperclip*` tools in this runtime",
-      "expectedSemantics": "Skill guidance headed “No `paperclip*` tools in this runtime”.",
+      "title": "No `wardmote*` tools in this runtime",
+      "expectedSemantics": "Skill guidance headed “No `wardmote*` tools in this runtime”.",
       "primaryDisposition": "optional_agent_tool",
       "requiredGrants": [],
       "assertionClasses": [

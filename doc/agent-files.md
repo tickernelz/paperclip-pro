@@ -38,7 +38,7 @@ workspace: their independent agent copy therefore lives under the excluded
 workspace sync, Git staging, or task deliverables.
 
 Sandbox transfer scratch lives separately under
-`.wardmote-runtime/wardmote-runner/agent-file-transfers/<agent>/<run>/`.
+`.wardmote-runtime/paperclip-runner/agent-file-transfers/<agent>/<run>/`.
 Workspace-staging transfer scratch stays outside `AGENT_HOME`, including
 recovery after controller restart. Remote warm Codex checkpoints may temporarily
 stage changed-file payloads under `AGENT_HOME/.wardmote-runtime/checkpoint-*`;

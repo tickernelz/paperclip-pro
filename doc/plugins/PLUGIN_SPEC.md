@@ -955,7 +955,7 @@ Plugins may emit custom events using `ctx.events.emit(name, payload)`. Plugin-em
 Other plugins may subscribe to these events using the same `ctx.events.on()` API:
 
 ```ts
-ctx.events.on("plugin.@wardmote/plugin-git.push-detected", async (event) => {
+ctx.events.on("plugin.@paperclip/plugin-git.push-detected", async (event) => {
   // react to the git plugin detecting a push
 });
 ```
@@ -1069,7 +1069,7 @@ The SDK includes a `ui` subpath export that plugin frontends import. This subpat
 Plugins are encouraged but not required to use the shared components. A plugin may render entirely custom UI as long as it communicates through the bridge.
 
 `useHostNavigation()` is the supported way for plugin UI to navigate to
-Paperclip-internal pages. It exposes `resolveHref(to)`, `navigate(to,
+Wardmote-internal pages. It exposes `resolveHref(to)`, `navigate(to,
 options?)`, and `linkProps(to, options?)`. Plugin links should prefer
 `linkProps()` so anchors keep real `href` values for copy-link, modifier-click,
 middle-click, and open-in-new-tab behavior while plain left-clicks route through
@@ -1701,14 +1701,14 @@ The host should publish a starter template (`plugin-creator`) that scaffolds:
 
 This spec directly supports the following plugin types:
 
-- `@wardmote/plugin-workspace-files`
-- `@wardmote/plugin-terminal`
-- `@wardmote/plugin-git`
+- `@paperclip/plugin-workspace-files`
+- `@paperclip/plugin-terminal`
+- `@paperclip/plugin-git`
 - `@paperclip/plugin-linear`
-- `@wardmote/plugin-github-issues`
-- `@wardmote/plugin-grafana`
-- `@wardmote/plugin-runtime-processes`
-- `@wardmote/plugin-stripe`
+- `@paperclip/plugin-github-issues`
+- `@paperclip/plugin-grafana`
+- `@paperclip/plugin-runtime-processes`
+- `@paperclip/plugin-stripe`
 
 ## 29. Compatibility And Versioning
 

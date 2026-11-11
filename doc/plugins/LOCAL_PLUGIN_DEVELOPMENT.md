@@ -21,15 +21,15 @@ pause controls, and consistent audits instead of hidden daemon behavior.
 pnpm wardmote run
 
 # 2. Scaffold a plugin outside the Wardmote repo
-wardmote plugin init @acme/hello-plugin --output ~/dev/wardmote-plugins
+wardmote plugin init @acme/hello-plugin --output ~/dev/paperclip-plugins
 
 # 3. Install dependencies and start the watch build
-cd ~/dev/wardmote-plugins/hello-plugin
+cd ~/dev/paperclip-plugins/hello-plugin
 pnpm install
 pnpm dev
 
 # 4. In another terminal, install the plugin from its absolute path
-wardmote plugin install ~/dev/wardmote-plugins/hello-plugin
+wardmote plugin install ~/dev/paperclip-plugins/hello-plugin
 
 # 5. Confirm it loaded
 wardmote plugin list
@@ -57,10 +57,10 @@ Wardmote listens on `http://127.0.0.1:3100` by default. The CLI talks to that se
 ### 2. Scaffold the plugin
 
 ```bash
-wardmote plugin init @acme/hello-plugin --output ~/dev/wardmote-plugins
+wardmote plugin init @acme/hello-plugin --output ~/dev/paperclip-plugins
 ```
 
-This creates `~/dev/wardmote-plugins/hello-plugin/` with `src/manifest.ts`, `src/worker.ts`, `src/ui/index.tsx`, an esbuild watch config, a Vitest config, and a snapshot of `@tickernelz/wardmote-plugin-sdk` from your local Wardmote checkout. You can run the package and tests without publishing anything to npm.
+This creates `~/dev/paperclip-plugins/hello-plugin/` with `src/manifest.ts`, `src/worker.ts`, `src/ui/index.tsx`, an esbuild watch config, a Vitest config, and a snapshot of `@tickernelz/wardmote-plugin-sdk` from your local Wardmote checkout. You can run the package and tests without publishing anything to npm.
 
 Useful flags:
 
@@ -74,7 +74,7 @@ When `plugin init` finishes, it prints the next four commands literally. You can
 ### 3. Install dependencies and run the watch build
 
 ```bash
-cd ~/dev/wardmote-plugins/hello-plugin
+cd ~/dev/paperclip-plugins/hello-plugin
 pnpm install
 pnpm dev
 ```
@@ -86,7 +86,7 @@ If your plugin has UI and you want a browser-side dev server with hot module rep
 ### 4. Install from the absolute path
 
 ```bash
-wardmote plugin install ~/dev/wardmote-plugins/hello-plugin
+wardmote plugin install ~/dev/paperclip-plugins/hello-plugin
 ```
 
 The CLI auto-detects local paths (anything that looks absolute, starts with `./`, `../`, or `~`, or resolves to an existing folder relative to the current directory) and sends `{ isLocalPath: true }` to `POST /api/plugins/install` with the resolved absolute path. If you want to be explicit, pass `--local`.
@@ -96,10 +96,10 @@ Before it installs, the CLI probes `GET /api/health` on the instance it is confi
 ```
 Target Wardmote: http://127.0.0.1:3100
   health: status=ok  version=0.1.0  mode=local_trusted  exposure=private
-Installing plugin from local path: /Users/you/dev/wardmote-plugins/hello-plugin
+Installing plugin from local path: /Users/you/dev/paperclip-plugins/hello-plugin
 ✓ Installed acme.hello-plugin v0.1.0 (ready)
 Local plugin installs run trusted local code from your machine.
-Keep `pnpm dev` running in /Users/you/dev/wardmote-plugins/hello-plugin;
+Keep `pnpm dev` running in /Users/you/dev/paperclip-plugins/hello-plugin;
 Wardmote watches rebuilt dist output and reloads the plugin worker.
 ```
 
@@ -150,13 +150,13 @@ wardmote plugin target --api-base http://127.0.0.1:3120
 #   health: status=ok  version=<branch-version>  mode=local_trusted  exposure=private
 
 # 3. Install the local-path plugin into that service (not the default host).
-wardmote plugin install ~/dev/wardmote-plugins/hello-plugin \
+wardmote plugin install ~/dev/paperclip-plugins/hello-plugin \
   --api-base http://127.0.0.1:3120
 
 # Prefer setting it once for the shell instead of repeating --api-base:
 export WARDMOTE_API_URL=http://127.0.0.1:3120
 wardmote plugin target
-wardmote plugin install ~/dev/wardmote-plugins/hello-plugin
+wardmote plugin install ~/dev/paperclip-plugins/hello-plugin
 ```
 
 `plugin target` and the install-time probe both read `GET /api/health`, which returns the server `version`, `deploymentMode`, and `deploymentExposure`. Compare that `version` against the branch you expect to be running. If the diagnostics show a different URL, an unexpected version, or `health: unreachable`, you are about to test against the wrong instance — fix the target before reading anything into the plugin's behavior.

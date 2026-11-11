@@ -45,4 +45,4 @@ Company-scoped endpoints under `/api/companies/:companyId/fast-response`:
 
 Provider-contract tests use the real SDK adapters with mocked HTTP, including endpoint/auth/model/output/token/abort/error behavior. Database tests cover deduplication, simultaneous workers, provenance, completion isolation, revoked audience access, real-reply races, source mutation/deletion/cancellation/reassignment, retained charges and unknown billing. Stories cover configured, disabled, revoked, testing, timeout, result and mobile settings states.
 
-Live OpenRouter latency, prompt quality and complete Wardmote/Slack/GitHub journeys are a separate evidence category. Passing contract tests does not establish those live results. Live verification requires an authorized OpenRouter connection and designated channel test destinations.
+Live OpenRouter latency, prompt quality and complete Paperclip/Slack/GitHub journeys are a separate evidence category. Passing contract tests does not establish those live results. Live verification requires an authorized OpenRouter connection and designated channel test destinations.

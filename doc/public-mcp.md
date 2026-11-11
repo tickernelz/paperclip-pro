@@ -17,7 +17,7 @@ effect immediately without restarting the server.
 Use the instance's configured authentication public URL, or explicitly set:
 
 ```sh
-WARDMOTE_PUBLIC_URL=https://YOUR-WARDMOTE-HOST
+WARDMOTE_PUBLIC_URL=https://YOUR-PAPERCLIP-HOST
 ```
 
 The retired `WARDMOTE_PUBLIC_MCP_ENABLED` variable has no effect. The persisted
@@ -420,7 +420,7 @@ explicit overrides:
 # From the Wardmote repository's ui/ directory:
 pnpm exec storybook dev --port 6106 --config-dir storybook/.storybook --no-open
 
-# From the wardmote-cloud repository's web/ directory:
+# From the paperclip-cloud repository's web/ directory:
 npm run storybook -- --port 6107
 ```
 

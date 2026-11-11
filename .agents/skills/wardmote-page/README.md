@@ -119,7 +119,7 @@ Run setup with an operator/admin AWS profile. Agents using this skill should not
 create buckets, mutate IAM, change DNS, or manage CloudFront.
 
 ```bash
-export AWS_PROFILE=wardmote-admin
+export AWS_PROFILE=paperclip-admin
 export AWS_REGION=us-east-1
 export BUCKET=wardmote-pages-prod
 export DOMAIN=pages.paperclip.ing
@@ -205,7 +205,7 @@ aws acm request-certificate \
   --region "$ACM_REGION" \
   --domain-name "$DOMAIN" \
   --validation-method DNS \
-  --idempotency-token wardmotepages \
+  --idempotency-token paperclippages \
   > /tmp/wardmote-pages-acm.json
 
 export CERT_ARN="$(jq -r '.CertificateArn' /tmp/wardmote-pages-acm.json)"

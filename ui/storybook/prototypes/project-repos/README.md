@@ -19,7 +19,7 @@ fixtures for review; production screens use authenticated API requests.
   “Continue to GitHub” and simulates a successful return without starting OAuth.
   The project name and selected repos survive connect/cancel.
 - Configuration now previews the whole Onboarding configuration tab, based on
-  https://bull.staging.wardmote.app/BUL/projects/onboarding/configuration.
+  https://bull.staging.paperclip.app/BUL/projects/onboarding/configuration.
   It includes navigation, breadcrumbs, project title/star, tabs, the actual
   ProjectProperties general fields/environment editor/danger zone, and the
   proposed repo editor above environment variables. Status and Goals are

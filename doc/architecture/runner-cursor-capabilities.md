@@ -411,7 +411,7 @@ The additional rule uses the native global-rule representation and retains
 native ordering: additional rules precede the ordinarily discovered project
 rules in `RequestContext.rules`. It is not prepended to the user's message and
 does not replace Cursor's built-in system prompt. The synthetic rule identifier
-is `wardmote://runtime/instructions`; no generated instruction file is exposed
+is `paperclip://runtime/instructions`; no generated instruction file is exposed
 to workspace discovery.
 
 A synchronous ACPX `protocolGuardFactory` checks each connection independently.

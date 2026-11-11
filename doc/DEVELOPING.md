@@ -1037,7 +1037,7 @@ wardmote worktree init --force
 Repair an already-created repo-managed worktree and reseed its isolated instance from the main default install. Point `--from-config` at the instance config:
 
 ```sh
-cd /path/to/wardmote/.wardmote/worktrees/PAP-884-ai-commits-component
+cd /path/to/paperclip/.wardmote/worktrees/PAP-884-ai-commits-component
 npx @tickernelz/wardmote worktree init --force --seed-mode minimal \
   --name PAP-884-ai-commits-component \
   --from-config ~/.wardmote/instances/default/config.json
@@ -1064,12 +1064,12 @@ Examples:
 
 ```sh
 # From inside a linked worktree, rebuild missing .wardmote metadata and reseed it from the default instance.
-cd /path/to/wardmote/.wardmote/worktrees/PAP-1132-assistant-ui-pap-1131-make-issues-comments-be-like-a-chat
+cd /path/to/paperclip/.wardmote/worktrees/PAP-1132-assistant-ui-pap-1131-make-issues-comments-be-like-a-chat
 pnpm wardmote worktree repair
 
 # From the primary checkout, create or repair a linked worktree for a branch under .wardmote/worktrees/.
 # This command repairs the local checkout, so run the checked-out CLI through the direct-exec form.
-cd /path/to/paperclip
+cd /path/to/wardmote
 node cli/node_modules/tsx/dist/cli.mjs cli/src/index.ts worktree repair --branch PAP-1132-assistant-ui-pap-1131-make-issues-comments-be-like-a-chat
 ```
 
@@ -1093,7 +1093,7 @@ Examples:
 
 ```sh
 # From the main repo, reseed a worktree from the current default/master instance.
-cd /path/to/paperclip
+cd /path/to/wardmote
 npx @tickernelz/wardmote worktree reseed \
   --from current \
   --to PAP-1132-assistant-ui-pap-1131-make-issues-comments-be-like-a-chat \
@@ -1101,7 +1101,7 @@ npx @tickernelz/wardmote worktree reseed \
   --yes
 
 # From inside a worktree, reseed it from the default instance config.
-cd /path/to/wardmote/.wardmote/worktrees/PAP-1132-assistant-ui-pap-1131-make-issues-comments-be-like-a-chat
+cd /path/to/paperclip/.wardmote/worktrees/PAP-1132-assistant-ui-pap-1131-make-issues-comments-be-like-a-chat
 npx @tickernelz/wardmote worktree reseed \
   --from-instance default \
   --seed-mode full

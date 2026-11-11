@@ -18,7 +18,7 @@ a worktree's parent directory need not contain that repository. Read
 `doc/evals.md` and `packages/wardmote-runner/docs/runner-protocol-live-evals.md`,
 then inspect the nearest existing case, roster, schema, and report test before
 editing. Definitions and authored cases belong in the sibling
-`wardmote-evals/evals/wardmote-runner`; Runner integration, aggregation,
+`paperclip-evals/evals/paperclip-runner`; Runner integration, aggregation,
 viewer, and publication behavior belongs in `packages/wardmote-runner`.
 Keep the control-plane boundary explicit in names and documentation.
 
@@ -33,14 +33,14 @@ separate plan changes:
 
 ```sh
 python3 evals/paperclip-runner/tools/eval_program.py validate \
-  --case evals/wardmote-runner/cases/get-task-context.json \
-  --config evals/wardmote-runner/configs/live-codex-pinned.json
-python3 evals/wardmote-runner/tools/run_live_roster.py validate \
-  --roster evals/wardmote-runner/rosters/live-mini.json --run-id validate-new-case
-python3 evals/wardmote-runner/tools/run_live_campaign.py validate \
-  --campaign evals/wardmote-runner/campaigns/live-direct-full.json
-python3 evals/wardmote-runner/tools/reliability_campaign.py validate \
-  --plan evals/wardmote-runner/campaigns/wardmote-runner-reliability.json
+  --case evals/paperclip-runner/cases/get-task-context.json \
+  --config evals/paperclip-runner/configs/live-codex-pinned.json
+python3 evals/paperclip-runner/tools/run_live_roster.py validate \
+  --roster evals/paperclip-runner/rosters/live-mini.json --run-id validate-new-case
+python3 evals/paperclip-runner/tools/run_live_campaign.py validate \
+  --campaign evals/paperclip-runner/campaigns/live-direct-full.json
+python3 evals/paperclip-runner/tools/reliability_campaign.py validate \
+  --plan evals/paperclip-runner/campaigns/paperclip-runner-reliability.json
 ```
 
 Use nearby positive and negative grader cases/fixtures to calibrate the new

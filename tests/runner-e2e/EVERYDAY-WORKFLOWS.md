@@ -101,7 +101,7 @@ ZIPs, assertions, actual task comments and run records, timing, accounting,
 source provenance, and screenshots. The story records a digest of its harness
 sources. Infrastructure failures and failed attempts must remain inspectable.
 
-Import packaged results with `wardmote-evals/evals/everyday-workflows/import_results.py`.
+Import packaged results with `paperclip-evals/evals/everyday-workflows/import_results.py`.
 It uses the canonical Runner Evalbook generator and the built Runner Lab viewer.
 It does not invent provider transcripts, tool counts, model observations, or
 cost estimates. The selected model is checked against persisted native execution

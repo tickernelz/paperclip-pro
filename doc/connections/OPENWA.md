@@ -48,7 +48,7 @@ changes the gateway.
    allowlist and never as owners.
 3. Create an **operator** key (OpenWA dashboard **API Keys**, or Settings →
    **OpenWA API keys** once an admin key is connected, see
-   [Gateway management](#gateway-management-from-wardmote)) whose
+   [Gateway management](#gateway-management-from-paperclip)) whose
    `allowedSessions` contains only this agent's session. Leave `allowedChats`
    empty: a chat-restricted key disables live Socket.IO events and setup rejects
    it. `allowedIps` may be used.
@@ -728,7 +728,7 @@ are refused to agents for every run class and level with 403
 `server/src/services/openwa/catalog.ts:23`): `AuthController_create`,
 `IntegrationInstanceController_create`, `IntegrationInstanceController_regenerate`,
 `SessionController_requestPairingCode` and `SessionController_getQRCode`. A
-person does these under [Gateway management](#gateway-management-from-wardmote)
+person does these under [Gateway management](#gateway-management-from-paperclip)
 or in the OpenWA dashboard.
 
 WhatsApp message text is never altered: `openwa_send`, run-output publication,

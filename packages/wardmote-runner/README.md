@@ -157,7 +157,7 @@ See [the rich ACP capability report](../../doc/architecture/runner-rich-acp-capa
 Install Cursor explicitly with `wardmote runtime setup cursor`; npm installation
 does not download it. Run setup as the OS user that runs Wardmote (the service
 account for a managed service). Setup writes to that account's
-`~/.wardmote/runtimes/cursor/<platform>-<arch>/<closure-sha256>`, so a system-wide
+`~/.paperclip-pro/runtimes/cursor/<platform>-<arch>/<closure-sha256>`, so a system-wide
 npm installation can remain read-only. Isolated provider HOME/XDG settings do not
 redirect this cache. Container images continue to use their packaged assets.
 Configure a company secret binding for `CURSOR_API_KEY` or
@@ -458,7 +458,7 @@ and JSON content; see the protocol-server tutorial for direct `curl` examples.
 ## Direct live protocol qualification
 
 The canonical direct live protocol suite lives in the separate
-`paperclip-evals` repository under `evals/paperclip-runner/`. Its
+`paperclip-evals` repository under `evals/wardmote-runner/`. Its
 `live-mini.json` roster is the complete 35-case Codex qualification lane. Build
 this package's TypeScript output, release `wardmote-runnerd`, package tarball,
 and `dist-issue-thread` viewer, then use the roster runner documented in that
@@ -496,11 +496,11 @@ additional scheduling after the observed campaign total reaches that value:
 
 ```sh
 WARDMOTE_EVAL_MAX_CAMPAIGN_COST_USD=12 \
-  WARDMOTE_EVALS_ROOT=/path/to/wardmote-evals \
+  WARDMOTE_EVALS_ROOT=/path/to/paperclip-evals \
   pnpm --filter @tickernelz/wardmote-runner report:runner-live-evals
 
 # Run two scheduled native Codex executions only.
-WARDMOTE_EVALS_ROOT=/path/to/wardmote-evals \
+WARDMOTE_EVALS_ROOT=/path/to/paperclip-evals \
   pnpm --filter @tickernelz/wardmote-runner report:runner-live-evals -- \
   --candidate codex-luna --limit 2
 ```

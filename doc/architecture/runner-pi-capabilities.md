@@ -417,7 +417,7 @@ boundaries explicit.
 | HTML export | Native `export_html` is available but unused by this integration. P2: add a bounded workspace artifact export with publication policy before exposing it. |
 | Durable goal and native plan | No mapped native surface. Wardmote semantic tools remain the plan path; no Codex parity is claimed. |
 
-`initialize` advertises `_meta.wardmotePi.version = 1`, `steering`,
+`initialize` advertises `_meta.paperclipPi.version = 1`, `steering`,
 `queuedFollowUp`, the four question methods, `nativePermissions`, `promptUsage`,
 `nativePlan: false`, and `pendingRequestRecovery: "live-process-only"`. The common
 host must inspect this advertisement before sending provider extension requests.
@@ -572,7 +572,7 @@ The published Pi package has a shrinkwrap and a nested dependency graph. Provide
 pack creation must copy the complete installed graph and use the same pinned Pi
 family dependencies, rather than reconstructing the graph from `cli.js` imports.
 The emitted owned extension must be included in every macOS arm64/x64 and Linux
-x64 pack; the candidate materializer emits it at `runtime/extensions/wardmote.js`. The wrapper's `dist/paperclip-runtime.js` is
+x64 pack; the candidate materializer emits it at `runtime/extensions/paperclip.js`. The wrapper's `dist/paperclip-runtime.js` is
 part of its verified package and must never be omitted from a copy or hash.
 
 ## Verification and maintenance
@@ -683,7 +683,7 @@ configuration and an environment without npm or provider credentials. The builde
 checks every locked installed version and upstream shrinkwrap entry (with the
 exact security exception below), applies the
 owned ACP patch, verifies the helper matches its TypeScript source, and compiles
-the owned extension to `runtime/extensions/wardmote.js`.
+the owned extension to `runtime/extensions/paperclip.js`.
 
 Profile v5 replaces only the nested `undici@8.9.0` with `8.10.2`. Both an
 existing-lock resolution and a fresh resolution ignore npm's scoped override
@@ -851,9 +851,9 @@ every field in Pi's native event stream. These are explicit follow-ups:
   metadata and redaction. Extend field-by-field wrapper/canonical/browser parity
   without giving notices terminal authority or treating deterministic tests as
   paid qualification. See the [wrapper patch](https://github.com/paperclipai/paperclip/blob/41503eb38f03c436b1569f9f0204625bb4d58782/patches/pi-acp%400.0.33.patch#L381),
-  [notice adapter](https://github.com/paperclipai/paperclip/blob/41503eb38f03c436b1569f9f0204625bb4d58782/packages/wardmote-runner/src/drivers/acpx/pi-extension-adapter.ts#L22),
-  [package regressions](https://github.com/paperclipai/paperclip/blob/41503eb38f03c436b1569f9f0204625bb4d58782/packages/wardmote-runner/test/pi-acp-package-contract.test.mjs#L225),
-  [adapter regressions](https://github.com/paperclipai/paperclip/blob/41503eb38f03c436b1569f9f0204625bb4d58782/packages/wardmote-runner/src/drivers/acpx/pi-extension-adapter.test.ts#L5),
+  [notice adapter](https://github.com/paperclipai/paperclip/blob/41503eb38f03c436b1569f9f0204625bb4d58782/packages/paperclip-runner/src/drivers/acpx/pi-extension-adapter.ts#L22),
+  [package regressions](https://github.com/paperclipai/paperclip/blob/41503eb38f03c436b1569f9f0204625bb4d58782/packages/paperclip-runner/test/pi-acp-package-contract.test.mjs#L225),
+  [adapter regressions](https://github.com/paperclipai/paperclip/blob/41503eb38f03c436b1569f9f0204625bb4d58782/packages/paperclip-runner/src/drivers/acpx/pi-extension-adapter.test.ts#L5),
   and [UI details](https://github.com/paperclipai/paperclip/blob/41503eb38f03c436b1569f9f0204625bb4d58782/ui/src/components/task-chat/TaskChatProtocolActivityRow.tsx#L283).
 - **P1 — native queue state.** `queue_update` contains steering and follow-up queues. Extension calls
   acknowledge RPC acceptance, but the wrapper does not project that event into

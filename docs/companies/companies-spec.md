@@ -555,7 +555,7 @@ This specification itself remains vendor-neutral and intended for any agent-comp
 
 Wardmote should cut over to this markdown-first package model as the primary portability format.
 
-`wardmote.manifest.json` does not need to be preserved as a compatibility requirement for the future package system.
+`paperclip.manifest.json` does not need to be preserved as a compatibility requirement for the future package system.
 
 For Wardmote, this should be treated as a hard cutover in product direction rather than a long-lived dual-format strategy.
 

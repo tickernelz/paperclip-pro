@@ -253,12 +253,12 @@ Create or upsert the parent blog post with `wardmoteCreateCase`:
 ```json
 {
   "caseType": "blog_post",
-  "key": "wardmote-cases-launch",
+  "key": "paperclip-cases-launch",
   "title": "Introducing Wardmote Cases",
   "summary": "Blog post explaining the cases surface for agent outputs.",
   "status": "in_progress",
   "fields": {
-    "slug": "wardmote-cases-launch",
+    "slug": "paperclip-cases-launch",
     "target_audience": "AI company operators",
     "publish_url": null
   }
@@ -282,12 +282,12 @@ Create the child image-assets case with `wardmoteCreateCase`:
 ```json
 {
   "caseType": "image_assets",
-  "key": "wardmote-cases-launch:image-assets",
+  "key": "paperclip-cases-launch:image-assets",
   "title": "Image assets for Introducing Wardmote Cases",
   "parentCaseId": "parent-case-uuid",
   "status": "in_progress",
   "fields": {
-    "slug": "wardmote-cases-launch",
+    "slug": "paperclip-cases-launch",
     "required_assets": ["hero", "social-card"],
     "publish_url": null
   }
@@ -302,9 +302,9 @@ as they move through review with `wardmoteUpdateCaseById`:
   "caseId": "PAP-C42",
   "status": "in_review",
   "fields": {
-    "slug": "wardmote-cases-launch",
+    "slug": "paperclip-cases-launch",
     "target_audience": "AI company operators",
-    "publish_url": "https://example.com/blog/wardmote-cases-launch"
+    "publish_url": "https://example.com/blog/paperclip-cases-launch"
   }
 }
 ```

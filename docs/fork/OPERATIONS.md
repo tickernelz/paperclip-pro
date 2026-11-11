@@ -753,7 +753,7 @@ Keep `auth.disableSignUp=true` whenever the tunnel is up. To add a person:
 Verify the seal after any auth change:
 
 ```bash
-curl -s -X POST https://wardmote.zhafron.my.id/api/auth/sign-up/email \
+curl -s -X POST https://paperclip.zhafron.my.id/api/auth/sign-up/email \
   -H 'Content-Type: application/json' -H 'Origin: https://paperclip.zhafron.my.id' \
   -d '{"name":"probe","email":"probe@example.invalid","password":"x-probe-x-probe"}'
 ```

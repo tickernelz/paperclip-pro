@@ -117,7 +117,7 @@ copied into this field.
       "key": "stripe-production-key",
       "status": "imported",
       "reason": null,
-      "secretId": "<wardmote-secret-id>",
+      "secretId": "<paperclip-secret-id>",
       "conflicts": []
     }
   ]

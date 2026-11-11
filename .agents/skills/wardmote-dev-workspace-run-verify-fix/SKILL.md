@@ -42,7 +42,7 @@ passed.
   repairing a workspace. Managed workspaces run in their own folders, for
   example `~/.wardmote-worktrees/instances/<slug>/…`.
 - Never trust a `running` / `healthy` runtime row or a passing `/api/health`
-  alone. The `service:wardmote-dev` port is pinned in service config, so a
+  alone. The `service:paperclip-dev` port is pinned in service config, so a
   sibling workspace's process can own the port and still answer health checks.
   Confirm the port owner's real cwd (`readlink /proc/<pid>/cwd`) before and
   after every repair; the runtime row's recorded `cwd` and `pid` can be
@@ -74,8 +74,8 @@ Use environment variables when available. Do not print API keys or passwords.
 - `WARDMOTE_COMPANY_ID`: company id
 - `WARDMOTE_AGENT_ID`: current agent id
 - execution workspace id for the worktree service
-- runtime workspace command id, usually `service:wardmote-dev`
-- expected service URL, for example `http://wardmote-dev:40631`
+- runtime workspace command id, usually `service:paperclip-dev`
+- expected service URL, for example `http://paperclip-dev:40631`
 - dev credential owner, if the user supplied one; never post the password
 
 If the execution workspace id or service command id is missing, read the issue,
@@ -119,7 +119,7 @@ curl -sS -X POST \
   -H "Authorization: Bearer $WARDMOTE_API_KEY" \
   -H "X-Wardmote-Run-Id: $WARDMOTE_RUN_ID" \
   -H "Content-Type: application/json" \
-  --data-binary '{"workspaceCommandId":"service:wardmote-dev"}'
+  --data-binary '{"workspaceCommandId":"service:paperclip-dev"}'
 ```
 
 ```sh
@@ -128,7 +128,7 @@ curl -sS -X POST \
   -H "Authorization: Bearer $WARDMOTE_API_KEY" \
   -H "X-Wardmote-Run-Id: $WARDMOTE_RUN_ID" \
   -H "Content-Type: application/json" \
-  --data-binary '{"workspaceCommandId":"service:wardmote-dev"}'
+  --data-binary '{"workspaceCommandId":"service:paperclip-dev"}'
 ```
 
 If the API returns an existing service, treat that as a candidate only. Verify
@@ -136,7 +136,7 @@ its real `/api/health` and its port-owner identity before trusting it.
 
 ## Port conflicts and workspace identity
 
-`service:wardmote-dev` pins an explicit port in service config, so every
+`service:paperclip-dev` pins an explicit port in service config, so every
 workspace that realizes that service claims the same port. On start, service
 adoption will adopt whatever process already owns the port when its command
 line looks similar — and it records the *requested* cwd, not the owner's real
@@ -184,7 +184,7 @@ curl -sS -X POST \
   -H "Authorization: Bearer $WARDMOTE_API_KEY" \
   -H "X-Wardmote-Run-Id: $WARDMOTE_RUN_ID" \
   -H "Content-Type: application/json" \
-  --data-binary '{"workspaceCommandId":"service:wardmote-dev"}'
+  --data-binary '{"workspaceCommandId":"service:paperclip-dev"}'
 ```
 
 6. A restart only holds if the conflicting owner stays stopped. If the port is
@@ -263,7 +263,7 @@ curl -sS \
 
 The target service should show:
 
-- matching workspace command id, usually `service:wardmote-dev`
+- matching workspace command id, usually `service:paperclip-dev`
 - `status: "running"`
 - healthy health fields, if present
 - the same URL you are probing

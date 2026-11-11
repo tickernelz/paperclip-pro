@@ -45,7 +45,7 @@ The skill/reference inventory and eval cases are the only normative behavior sou
 | skill:skills/wardmote/SKILL.md:terminology:14 | optional_agent_tool | skills/wardmote/SKILL.md:14 |
 | skill:skills/wardmote/SKILL.md:authentication:20 | control_plane_owned | skills/wardmote/SKILL.md:20 |
 | skill:skills/wardmote/SKILL.md:wardmote-mcp-tools:32 | optional_agent_tool | skills/wardmote/SKILL.md:32 |
-| skill:skills/wardmote/SKILL.md:no-paperclip-tools-in-this-runtime:41 | optional_agent_tool | skills/wardmote/SKILL.md:41 |
+| skill:skills/wardmote/SKILL.md:no-wardmote-tools-in-this-runtime:41 | optional_agent_tool | skills/wardmote/SKILL.md:41 |
 | skill:skills/wardmote/SKILL.md:conversation-tasks:62 | optional_agent_tool | skills/wardmote/SKILL.md:62 |
 | skill:skills/wardmote/SKILL.md:server-verified-external-chat-turns:79 | control_plane_owned | skills/wardmote/SKILL.md:79 |
 | skill:skills/wardmote/SKILL.md:the-heartbeat-procedure:119 | optional_agent_tool | skills/wardmote/SKILL.md:119 |

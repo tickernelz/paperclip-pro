@@ -70,7 +70,7 @@ Unicode emoji. Discord renders the shortcodes; the changelog file uses prose.
 ```
 :wardmote: :wardmote: :wardmote: CLIPPERS!!! v{VERSION} IS OUT :wardmote: :wardmote: :wardmote:
 
-OFFICIAL TWITTER: https://x.com/wardmoteing - follow it, report any others
+OFFICIAL TWITTER: https://x.com/papercliping - follow it, report any others
 
 ## Highlights
 
@@ -97,7 +97,7 @@ OFFICIAL TWITTER: https://x.com/wardmoteing - follow it, report any others
 
 ## WHAT I NEED FROM YOU               (optional — only if there's a real ask)
 
-FOLLOW THE TWITTER: https://x.com/wardmoteing - that's the only official one
+FOLLOW THE TWITTER: https://x.com/papercliping - that's the only official one
 TELL ME if you're using Wardmote in your business - I want to meet you
 
 ## Community
@@ -193,7 +193,7 @@ Mimic this register; do not invent a "professional" tone.
    beta-keyed file during the soak, `releases/vYYYY.MDD.P.md` once
    canonicalized. Use the version and contributor list from that file —
    never re-derive them.
-2. Resolve the parent `release` case with key `wardmote-release:vYYYY.MDD.P`.
+2. Resolve the parent `release` case with key `paperclip-release:vYYYY.MDD.P`.
    If it does not exist and Cases are enabled, create it using the schema in
    `.agents/skills/release-changelog/SKILL.md` before creating child cases.
 3. Read the **release issue thread** (the one assigned to you that ran the
@@ -221,7 +221,7 @@ stable so retries update the same child case:
 POST /api/companies/:companyId/cases
 {
   "caseType": "tweet_storm",
-  "key": "wardmote-release:vYYYY.MDD.P:tweet-storm",
+  "key": "paperclip-release:vYYYY.MDD.P:tweet-storm",
   "title": "Wardmote vYYYY.MDD.P tweet storm",
   "summary": "Social announcement thread for Wardmote vYYYY.MDD.P.",
   "status": "in_review",
@@ -235,7 +235,7 @@ POST /api/companies/:companyId/cases
     "target_audience": ["operators", "contributors", "agent-company builders"],
     "links": {
       "release_notes": "https://github.com/paperclipai/paperclip/blob/master/releases/vYYYY.MDD.P.md",
-      "official_account": "https://x.com/wardmoteing"
+      "official_account": "https://x.com/papercliping"
     },
     "review": {
       "needs_human_copy_paste": true,
@@ -402,7 +402,7 @@ https://github.com/paperclipai/paperclip/releases/tag/v2026.416.0
 ```
 :wardmote: :wardmote: :wardmote: CLIPPERS!!! v2026.427.0 IS OUT :wardmote: :wardmote: :wardmote:
 
-THIS IS THE OFFICIAL TWITTER FOLLOW IT: https://x.com/wardmoteing
+THIS IS THE OFFICIAL TWITTER FOLLOW IT: https://x.com/papercliping
 
 ## Highlights
 
@@ -441,7 +441,7 @@ I met with the [Wisemen about Wardmote](https://x.com/dotta/status/2045146539534
 
 ## WHAT I NEED FROM YOU
 
-FOLLOW THIS TWITTER ACCOUNT: https://x.com/wardmoteing - that's the only official one, report any others
+FOLLOW THIS TWITTER ACCOUNT: https://x.com/papercliping - that's the only official one, report any others
 
 ## In Summary
 

@@ -59,7 +59,7 @@ Use complete sentences. Be direct and specific without sounding accusatory.
 If native tools are available, call `submit_suggestion` with `body` and a unique `idempotencyKey`. Otherwise resolve `scripts/submit-agent-commentary.mjs` from the installed **wardmote** operational skill directory (not the task workspace), and pass the message on standard input:
 
 ```sh
-node <wardmote-skill-directory>/scripts/submit-agent-commentary.mjs suggestion <<'FEEDBACK_EOF'
+node <paperclip-skill-directory>/scripts/submit-agent-commentary.mjs suggestion <<'FEEDBACK_EOF'
 The tool reports success before the file exists, so the next step fails. Return success only after the write completes.
 FEEDBACK_EOF
 ```

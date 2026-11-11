@@ -32,7 +32,7 @@ Turning on the flag is all the setup there is.
 
 That's it. The everyday dev server works as-is: a `local_trusted` localhost box, an
 **`authenticated` instance behind Tailscale + login** (e.g.
-`http://wardmote-dev:45439`), and a `pnpm dev` server built with
+`http://paperclip-dev:45439`), and a `pnpm dev` server built with
 `NODE_ENV=production` are all fine — those are private, so the Smoke Lab is
 available. The auth mode and the Node build target no longer matter; only public
 exposure is disallowed (the fake OAuth provider and fixture sidecars must never be

@@ -70,7 +70,7 @@ Tailscale-operator service account distinct from the Wardmote app account.
    # The Wardmote *app* service account must have this as its PRIMARY group so
    # its SO_PEERCRED gid matches the socket group (supplemental membership is
    # intentionally NOT accepted).
-   sudo usermod -g paperclip-tsbroker-sock <wardmote-app-account>
+   sudo usermod -g paperclip-tsbroker-sock <paperclip-app-account>
    ```
 
 3. **Grant Tailscale operator authority to the broker account only.**
@@ -111,7 +111,7 @@ Tailscale-operator service account distinct from the Wardmote app account.
    sudo install -D -m 0644 \
      packages/tailscale-https-broker/deploy/wardmote-tailscale-https-broker.service \
      /etc/systemd/system/wardmote-tailscale-https-broker.service
-   sudo install -d -m 0750 /etc/paperclip
+   sudo install -d -m 0750 /etc/wardmote
    sudoedit /etc/paperclip/tailscale-https-broker.env
    ```
 

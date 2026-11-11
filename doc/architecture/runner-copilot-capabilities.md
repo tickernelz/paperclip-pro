@@ -681,7 +681,7 @@ builder/materializer, candidate-registry and probe-cleanup tests, all six Dayton
 image-content tests, and the runner
 TypeScript build including generated schema checks and verified sidecar bundles.
 The evidence update itself passed the four evidence cases again. The complete
-pack remains inspectable at `/tmp/wardmote-copilot-launch-boundary-pack-20260928`
+pack remains inspectable at `/tmp/paperclip-copilot-launch-boundary-pack-20260928`
 on the build host; the sanitized tracked fixture provides the portable proof.
 The exact Docker resolution command, seeded from the tracked lockfile, produced
 `650e23d20e967bcfbfced888e131199b9a06e66a1ba4f64cfb68383b59def4a8`, matching

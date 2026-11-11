@@ -50,7 +50,7 @@ Keep the outburst brief because this is a complaint, not a manifesto. Beyond tha
 If native tools are available, call `submit_complaint` with `body` and a unique `idempotencyKey`. Otherwise resolve `scripts/submit-agent-commentary.mjs` from the installed **wardmote** operational skill directory (not the task workspace), and pass the message on standard input:
 
 ```sh
-node <wardmote-skill-directory>/scripts/submit-agent-commentary.mjs complaint <<'FEEDBACK_EOF'
+node <paperclip-skill-directory>/scripts/submit-agent-commentary.mjs complaint <<'FEEDBACK_EOF'
 WHY DOES THIS KEEP HAPPENING 😭
 FEEDBACK_EOF
 ```

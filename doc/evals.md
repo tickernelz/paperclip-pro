@@ -22,7 +22,7 @@ retained content. Neither source admission nor a scripted pass proves model
 behavior.
 
 - **Runner Evals:** real Runner/provider behavior against a seeded mock control
-  plane. Definitions live in `wardmote-evals/evals/wardmote-runner`; see the
+  plane. Definitions live in `paperclip-evals/evals/paperclip-runner`; see the
   [direct live protocol evals](../packages/wardmote-runner/docs/runner-protocol-live-evals.md).
 - **Product E2E Evals:** real browser, Wardmote server, database, Runner,
   provider, and (where selected) Daytona, using an isolated instance and
@@ -233,7 +233,7 @@ Retained result snapshots and dated measurement reports belong in
 `paperclip-evals`; application tests, Product E2E fixtures/graders, and executable
 scenario inventories remain in this repository. Keep a compact results index
 with immutable archive links and public report links, as in the
-[lifecycle baseline](../tests/lifecycle-baseline/README.md#recorded-results-moved-to-wardmote-evals).
+[lifecycle baseline](../tests/lifecycle-baseline/README.md#recorded-results-moved-to-paperclip-evals).
 The private archive is not a dependency of app test execution. Keep large logs,
 traces, and videos in the existing campaign artifact storage.
 
@@ -366,7 +366,7 @@ Build from the public history feeds and check its summary logic:
 
 ```sh
 python3 -m unittest discover -s scripts/evals-hub -p 'test_*.py'
-python3 scripts/evals-hub/build.py --output .wardmote/evals-hub
+python3 scripts/evals-hub/build.py --output .paperclip/evals-hub
 ```
 
 The hub checks need Python 3 and do not call model providers.
@@ -385,8 +385,8 @@ put `$(brew --prefix bash)/bin` first in `PATH` before these commands:
 export WARDMOTE_PAGE_BUCKET=pages.paperclip.ing
 export WARDMOTE_PAGE_BASE_URL=https://pages.paperclip.ing
 export AWS_REGION=us-east-1
-bash .agents/skills/wardmote-page/scripts/publish.sh .wardmote/evals-hub --slug evals --dry-run
-bash .agents/skills/wardmote-page/scripts/publish.sh .wardmote/evals-hub --slug evals
+bash .agents/skills/wardmote-page/scripts/publish.sh .paperclip/evals-hub --slug evals --dry-run
+bash .agents/skills/wardmote-page/scripts/publish.sh .paperclip/evals-hub --slug evals
 ```
 
 For later refreshes, rebuild in the same output directory and publish with

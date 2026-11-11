@@ -6,7 +6,7 @@ provider, dedicated `/mcp/runner` agent connection and durable broker. See
 current qualification limits. The transport proof below remains specific to
 this reference harness.
 
-Built 2026-10-02 on the public MCP foundation from `codex/wardmote-mcp-experimental-setting`
+Built 2026-10-02 on the public MCP foundation from `codex/paperclip-mcp-experimental-setting`
 (commit `a88448f77`), merged into the fresh `codex/dot-events-prototype` worktree.
 
 This is a working **protocol prototype**, not a production-selectable Dot

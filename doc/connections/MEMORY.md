@@ -132,8 +132,8 @@ All five providers now have authenticated managed-tool E2E evidence. Supermemory
 now also has verified scoped writes and semantic recall, as recorded below. Discovery does
 not establish that every individual tool or advanced provider feature was tested.
 No real memories were uploaded for testing. The synthetic Cognee dataset is
-`wardmote_memory_connector_smoke_20260924`; the Mem0 test user and Supermemory
-consent tag are `wardmote-memory-smoke-20260924`.
+`paperclip_memory_connector_smoke_20260924`; the Mem0 test user and Supermemory
+consent tag are `paperclip-memory-smoke-20260924`.
 
 ### Real agent tasks
 
@@ -152,10 +152,10 @@ tools and retrieved the approved Mem0 memory.
 - **MEM-1 / Mem0:** browser-created task requested a synthetic write, paused for
   **Ask first**, and resumed after the board clicked **Approve & run**. The write
   executed once and `search_memories` retrieved the same memory ID and exact
-  silver compass fact under user `wardmote-memory-task-e2e-20260924`.
+  silver compass fact under user `paperclip-memory-task-e2e-20260924`.
 - **MEM-2 / Cognee:** the task called `remember` and `recall` through the managed
   stdio gateway. The provider returned the amber telescope fact from dedicated
-  dataset `wardmote_memory_task_e2e_20260924` on the first recall.
+  dataset `paperclip_memory_task_e2e_20260924` on the first recall.
 - **MEM-3 / Supermemory:** read-only search succeeded within the consented tag
   with an honest zero-result response; one out-of-scope search returned the
   provider's explicit 403 denial. This does not test memory writes under
@@ -177,7 +177,7 @@ tools and retrieved the approved Mem0 memory.
   OAuth. After restart, run `f8498aa1-5c84-48f5-8a94-3b603ea30e9a` made seven
   successful managed calls: list/create workspace, create peer/session, add the
   peer, add a message, and retrieve messages. Dedicated workspace
-  `wardmote-memory-e2e-20260924`, peer `synthetic-test-explorer`, session
+  `paperclip-memory-e2e-20260924`, peer `synthetic-test-explorer`, session
   `synthetic-observatory-session`, message `q3nOttElad3g_JACmizQd` returned the
   exact violet sundial fact. No approval or provider errors occurred on the
   successful run. Its initial discovery still reflected the earlier failed
@@ -207,7 +207,7 @@ The remote runner binary was extracted from that image (SHA-256
 The first attempt failed before provider startup because a macOS host needs
 `WARDMOTE_RUNNER_REMOTE_BINARY_PATH` pointing to a Linux binary. After configuring
 it, PRP authenticated through Daytona provider ingress and the agent executed in
-`/home/daytona/paperclip-workspace` as the `daytona` user.
+`/home/daytona/wardmote-workspace` as the `daytona` user.
 
 That retry did **not** pass connector acceptance: its assigned MCP URL pointed to
 the local host's loopback address, which means the sandbox itself when used
@@ -232,9 +232,9 @@ Task-scoped gateway audit records independently confirm six calls:
 
 - Mem0 `add_memory` stored the exact copper lantern fact with `infer=false`;
   `search_memories` returned the same ID (`ba30eea2-f68b-4873-acbe-a59dae98ed75`)
-  under user `wardmote-memory-daytona-e2e-20260924`.
+  under user `paperclip-memory-daytona-e2e-20260924`.
 - Cognee `remember` accepted the dedicated
-  `wardmote_memory_daytona_e2e_20260924` dataset, and `recall` returned the fact
+  `paperclip_memory_daytona_e2e_20260924` dataset, and `recall` returned the fact
   on the first attempt. Its stdio provider process remains on the control plane;
   the Daytona agent calls it through PRP.
 - Supermemory `search_memory` succeeded within the existing consented tag with
@@ -264,7 +264,7 @@ successful provider calls across all five providers**:
   the exact message `e7g4wGXfWR5_rdb4bk6zN`.
 
 The agent confirmed Linux x86_64, user `daytona`, and working directory
-`/home/daytona/paperclip-workspace`. No unexpected approval or connector error
+`/home/daytona/wardmote-workspace`. No unexpected approval or connector error
 occurred. The control plane relayed all managed provider calls through the native
 runner channel, with no provider keys in the agent environment or public tunnel.
 All five connections finished healthy. The original local test-agent configuration
@@ -315,7 +315,7 @@ These are simulated provider journeys and do not replace live account tests.
 ### Supermemory write completion (September 24)
 
 The original read-only grant was replaced through the browser with a new
-read/write OAuth grant restricted to `wardmote-memory-smoke-20260924` and the
+read/write OAuth grant restricted to `paperclip-memory-smoke-20260924` and the
 same test agent. The old local connection was removed. `who_am_i` independently
 returned scoped `permission: write`; all 16 Wardmote tools remain Allowed.
 
@@ -340,13 +340,13 @@ sandbox `6a9723dd-972e-4933-b227-6b8e7e2133ae` was deleted and verified absent.
 The final implementation was retested after replacing the external MCP client
 with the bundled Cloud bridge. Local managed write run
 `16e7820c-2a94-41d9-8d7b-abe6524edf01` stored the bronze-telescope fact in
-`wardmote_memory_bundled_bridge_20260924`; the immediate recall did not yet
+`paperclip_memory_bundled_bridge_20260924`; the immediate recall did not yet
 prove indexing completion. Follow-up run `8e12cad1-f2f4-4471-a790-d589ffa050b7`
 returned “He keeps a bronze telescope in a birch observatory.”
 
 Final Daytona run `a56f9f97-3fb3-498c-abf6-974ddc7d5d30` independently recalled
 that fact, then stored “The Daytona Cognee test cartographer keeps a silver
-globe in a cedar study.” in `wardmote_memory_daytona_bridge_20260924`.
+globe in a cedar study.” in `paperclip_memory_daytona_bridge_20260924`.
 The provider returned dataset `9518ab46-e777-5f38-994b-9ceabfff4856`, then graph
 recall returned the silver globe and cedar study. Every call used the native
 runner relay and reported `transport: cognee_cloud`, `spawnedLocalProcess: false`.

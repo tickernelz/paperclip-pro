@@ -24,7 +24,7 @@ invent a relative path from this copied skill into the repository.
 Choose **Runner Evals** for real runner/provider protocol behavior against the
 mock control plane. Authoritative details are in
 `packages/wardmote-runner/docs/runner-protocol-live-evals.md` and the sibling
-`wardmote-evals/evals/wardmote-runner` definitions.
+`paperclip-evals/evals/paperclip-runner` definitions.
 
 Choose **Product E2E Evals** for real browser/server/database/runner/provider
 workflows, including local and Daytona environments. Read

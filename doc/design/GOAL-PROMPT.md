@@ -78,4 +78,4 @@ GUARDRAILS
 2. Read TOKEN-AUDIT.md; choose the real spacing/radius scale (PRIOR-ART.md has drafted rules to start from).
 3. Tune tokens; snapshots now fail intentionally — the diff folders are your design-review contact sheet. This is also where the ui.shadcn.com/create preset lands, as token-value edits.
 4. Review COMPONENT-INVENTORY.md; approve a merge list and shadcn-swap list → those become Run 2 and Run 3, each its own /goal.
-5. Merge to master when satisfied (rebase first if master moved). Scrap path: `git worktree remove ../wardmote-design-simplify --force`.
+5. Merge to master when satisfied (rebase first if master moved). Scrap path: `git worktree remove ../paperclip-design-simplify --force`.

@@ -33,10 +33,10 @@ environment. `WARDMOTE_EVAL_MAX_CAMPAIGN_COST_USD` must be a positive finite
 number and defaults to 12 USD for scheduled runs.
 
 Live executions export one immutable Evalbook attempt per workflow/candidate to
-`.wardmote-local/evals/workflows/evalbook-runs/`, then invoke
+`.paperclip-local/evals/workflows/evalbook-runs/`, then invoke
 `evals/paperclip-runner/tools/eval_program.py report` from a `paperclip-evals`
 checkout. That program writes the canonical matrix to
-`.wardmote-local/evals/workflows/index.html`, plus `latest.html`, test pages,
+`.paperclip-local/evals/workflows/index.html`, plus `latest.html`, test pages,
 and attempt pages. Set `WARDMOTE_EVALBOOK_PROGRAM` to the program's absolute
 path or `WARDMOTE_EVALS_ROOT` to its repository root. Conventional sibling
 worktree locations are discovered automatically. GitHub Actions checks out a

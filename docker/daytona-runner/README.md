@@ -61,14 +61,14 @@ docker buildx build \
   --platform linux/amd64 \
   --build-arg WARDMOTE_RUNNER_CONTENT_ID="${content_id}" \
   --build-arg WARDMOTE_RUNNER_SOURCE_REVISION="$(git rev-parse HEAD)" \
-  --tag "wardmote-daytona-runner:e2e-content-${content_id}" \
+  --tag "paperclip-daytona-runner:e2e-content-${content_id}" \
   --load \
   --file docker/daytona-runner/Dockerfile \
   .
 
 docker run --rm --platform linux/amd64 \
   --entrypoint wardmote-runnerd \
-  "wardmote-daytona-runner:e2e-content-${content_id}" \
+  "paperclip-daytona-runner:e2e-content-${content_id}" \
   --build-metadata
 ```
 
@@ -99,7 +99,7 @@ otherwise it stages the pack configured by
 `WARDMOTE_RUNNER_REMOTE_PROVIDER_PACK_PATH`. Remote OpenCode and ACPX never
 fall back to host-local processes.
 
-Do not promote `wardmote-runner-e2e-20260826-v2` for OpenCode or ACPX. Build a
+Do not promote `paperclip-runner-e2e-20260826-v2` for OpenCode or ACPX. Build a
 new immutable image or snapshot from a clean committed revision and pass that
 full Git SHA as `WARDMOTE_RUNNER_SOURCE_REVISION`.
 

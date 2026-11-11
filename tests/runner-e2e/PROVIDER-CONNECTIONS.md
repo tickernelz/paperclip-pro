@@ -108,7 +108,7 @@ To use an existing local server or staging, replace `target` with:
 ```json
 {
   "mode": "attach",
-  "baseURL": "https://YOUR-INSTANCE.staging.wardmote.app",
+  "baseURL": "https://YOUR-INSTANCE.staging.paperclip.app",
   "expectedCommit": "EXACT_40_CHARACTER_DEPLOYED_COMMIT_SHA",
   "deploymentMode": "authenticated"
 }

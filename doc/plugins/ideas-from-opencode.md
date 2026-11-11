@@ -529,7 +529,7 @@ This is a natural fit — the plugin already has the SDK context, the external A
 
 ## 8. Support plugin-to-plugin events
 
-Plugins should be able to emit custom events that other plugins can subscribe to. For example, the git plugin detects a push and emits `plugin.@wardmote/plugin-git.push-detected`. The GitHub Issues plugin subscribes to that event and updates PR links.
+Plugins should be able to emit custom events that other plugins can subscribe to. For example, the git plugin detects a push and emits `plugin.@paperclip/plugin-git.push-detected`. The GitHub Issues plugin subscribes to that event and updates PR links.
 
 This avoids plugins needing to coordinate through shared state or external channels. The host routes plugin events through the same event bus with the same delivery semantics as core events.
 
@@ -648,7 +648,7 @@ export default definePlugin({
     });
 
     // subscribe to events from another plugin
-    ctx.events.on("plugin.@wardmote/plugin-git.push-detected", async (event) => {
+    ctx.events.on("plugin.@paperclip/plugin-git.push-detected", async (event) => {
       // react to the git plugin detecting a push
     });
 
@@ -1017,7 +1017,7 @@ This is a useful middle ground:
 
 ## Workspace File Browser
 
-Package idea: `@wardmote/plugin-workspace-files`
+Package idea: `@paperclip/plugin-workspace-files`
 
 This plugin lets the board inspect project workspaces, agent workspaces, generated artifacts, and issue-related files without dropping to the shell. It is useful for:
 
@@ -1094,7 +1094,7 @@ Optional event subscriptions:
 
 ## Workspace Terminal
 
-Package idea: `@wardmote/plugin-terminal`
+Package idea: `@paperclip/plugin-terminal`
 
 This plugin gives the board a controlled terminal UI for project workspaces and agent workspaces. It is useful for:
 
@@ -1165,7 +1165,7 @@ Optional event subscriptions:
 
 ## Git Workflow
 
-Package idea: `@wardmote/plugin-git`
+Package idea: `@paperclip/plugin-git`
 
 This plugin adds repo-aware workflow tooling around issues and workspaces. It is useful for:
 
@@ -1232,7 +1232,7 @@ Recommended capabilities and extension points:
 - `projects.read`
 - `project.workspaces.read`
 - optional `agent.tools.register` (e.g. `create-branch`, `get-diff`, `get-status`)
-- optional `events.emit` (e.g. `plugin.@wardmote/plugin-git.push-detected`)
+- optional `events.emit` (e.g. `plugin.@paperclip/plugin-git.push-detected`)
 - `activity.log.write`
 
 The plugin resolves workspace paths through `ctx.projects` and handles all git operations (status, diff, log, branch create, commit, worktree create, push) directly using git CLI or a git library.
@@ -1243,7 +1243,7 @@ Optional event subscriptions:
 - `events.subscribe(issue.updated)`
 - `events.subscribe(agent.run.finished)`
 
-The git plugin can emit `plugin.@wardmote/plugin-git.push-detected` events that other plugins (e.g. GitHub Issues) subscribe to for cross-plugin coordination.
+The git plugin can emit `plugin.@paperclip/plugin-git.push-detected` events that other plugins (e.g. GitHub Issues) subscribe to for cross-plugin coordination.
 
 Note: GitHub/GitLab PR creation should likely live in a separate connector plugin rather than overloading the local git plugin.
 
@@ -1329,7 +1329,7 @@ Important constraint:
 
 ## GitHub Issue Tracking
 
-Package idea: `@wardmote/plugin-github-issues`
+Package idea: `@paperclip/plugin-github-issues`
 
 This plugin syncs Wardmote issues with GitHub Issues and optionally links PRs. It is useful for:
 
@@ -1387,7 +1387,7 @@ Recommended capabilities and extension points:
 - `events.subscribe(issue.created)`
 - `events.subscribe(issue.updated)`
 - `events.subscribe(issue.comment.created)`
-- `events.subscribe(plugin.@wardmote/plugin-git.push-detected)` (cross-plugin coordination)
+- `events.subscribe(plugin.@paperclip/plugin-git.push-detected)` (cross-plugin coordination)
 - `jobs.schedule`
 - `webhooks.receive`
 - `http.outbound`
@@ -1405,7 +1405,7 @@ Important constraint:
 
 ## Grafana Metrics
 
-Package idea: `@wardmote/plugin-grafana`
+Package idea: `@paperclip/plugin-grafana`
 
 This plugin surfaces external metrics and dashboards inside Wardmote. It is useful for:
 
@@ -1476,7 +1476,7 @@ Important constraint:
 
 ## Child Process / Server Tracking
 
-Package idea: `@wardmote/plugin-runtime-processes`
+Package idea: `@paperclip/plugin-runtime-processes`
 
 This plugin tracks long-lived local processes and dev servers started in project workspaces. It is useful for:
 
@@ -1549,7 +1549,7 @@ Optional event subscriptions:
 
 ## Stripe Revenue Tracking
 
-Package idea: `@wardmote/plugin-stripe`
+Package idea: `@paperclip/plugin-stripe`
 
 This plugin pulls Stripe revenue and subscription data into Wardmote. It is useful for:
 

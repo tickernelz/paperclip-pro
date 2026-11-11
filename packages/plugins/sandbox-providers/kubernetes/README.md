@@ -26,7 +26,7 @@ wardmote plugin install @tickernelz/wardmote-plugin-kubernetes
 Or, for local development:
 
 ```bash
-wardmote plugin install --local /path/to/wardmote/packages/plugins/sandbox-providers/kubernetes
+wardmote plugin install --local /path/to/paperclip/packages/plugins/sandbox-providers/kubernetes
 ```
 
 ## Backends

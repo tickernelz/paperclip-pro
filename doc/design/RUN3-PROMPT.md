@@ -8,14 +8,14 @@ Executes the approved component-convergence scope from `DECISION-SHEET.md`: C5 (
 
 ```bash
 cd ~/Projects/DEV/wardmote
-git fetch origin && git worktree add ../wardmote-run3 -b design/component-convergence origin/master
-cd ../wardmote-run3 && pnpm install
+git fetch origin && git worktree add ../paperclip-run3 -b design/component-convergence origin/master
+cd ../paperclip-run3 && pnpm install
 ```
 
 **If #9134 is still open:** reuse the existing worktree (it has everything installed and the baselines present) on a stacked branch —
 
 ```bash
-cd ~/Projects/DEV/wardmote-design-simplify
+cd ~/Projects/DEV/paperclip-design-simplify
 git checkout -b design/component-convergence
 ```
 

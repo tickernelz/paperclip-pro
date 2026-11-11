@@ -627,7 +627,7 @@ packages/wardmote-runner/docs/tutorials/standalone-thin-wardmote-adapter.md
 packages/wardmote-runner/docs/tutorials/end-to-end.md
 packages/wardmote-runner/docs/index.md
 packages/wardmote-runner/docs/architecture.md
-packages/wardmote-runner/.wardmote-local/log.md
+packages/wardmote-runner/.paperclip-local/log.md
 ```
 
 ### Wardmote storage, adapter, finalizer, and read seam
@@ -960,13 +960,13 @@ packages/wardmote-runner/docs/design/standalone-thin-wardmote-adapter.md
 packages/wardmote-runner/docs/index.md
 packages/wardmote-runner/docs/standalone-thin-wardmote-adapter.md
 packages/wardmote-runner/docs/tutorials/standalone-thin-wardmote-adapter.md
-packages/wardmote-runner/.wardmote-local/log.md
+packages/wardmote-runner/.paperclip-local/log.md
 packages/wardmote-runner/package.json
 packages/wardmote-runner/spec/fixtures/status-authority-sdk.json
 packages/wardmote-runner/src/backends/codex-native-backend.ts
 packages/wardmote-runner/src/backends/harness-driver-backend.test.ts
 packages/wardmote-runner/src/backends/harness-driver-backend.ts
-packages/wardmote-runner/src/cli/standalone-wardmote.ts
+packages/wardmote-runner/src/cli/standalone-paperclip.ts
 packages/wardmote-runner/src/conformance/control-plane-port.test.ts
 packages/wardmote-runner/src/conformance/control-plane-port.ts
 packages/wardmote-runner/src/contracts/control-plane-port.ts

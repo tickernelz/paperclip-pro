@@ -29,7 +29,7 @@ Expected: `dist/` populated with compiled `.js` and `.d.ts` files. No errors.
 In a separate terminal:
 
 ```bash
-cd /path/to/paperclip
+cd /path/to/wardmote
 export WARDMOTE_HOME=/tmp/wardmote-smoke
 export WARDMOTE_INSTANCE_ID=smoke
 export WARDMOTE_DEPLOYMENT_MODE=local_trusted
@@ -42,7 +42,7 @@ Wait for `Server listening on 127.0.0.1:3100`.
 
 ```bash
 npx @tickernelz/wardmote plugin install \
-  --local /path/to/wardmote/packages/plugins/sandbox-providers/kubernetes \
+  --local /path/to/paperclip/packages/plugins/sandbox-providers/kubernetes \
   --api-base http://127.0.0.1:3100
 ```
 

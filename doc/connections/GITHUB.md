@@ -294,4 +294,4 @@ Tokens never appear in arguments, URLs, files, logs, events, or model context,
 and the projection never replaces `HOME`.
 
 Cloud deployment and exact GitHub App registration settings live in
-`wardmote-cloud/docs/github-connector-deploy-bootstrap.md`.
+`paperclip-cloud/docs/github-connector-deploy-bootstrap.md`.

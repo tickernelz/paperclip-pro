@@ -142,7 +142,7 @@ Create or upsert the parent `release` case first:
 POST /api/companies/:companyId/cases
 {
   "caseType": "release",
-  "key": "wardmote-release:vYYYY.MDD.P",
+  "key": "paperclip-release:vYYYY.MDD.P",
   "title": "Wardmote vYYYY.MDD.P release",
   "summary": "Stable release content package for Wardmote vYYYY.MDD.P.",
   "status": "in_progress",
@@ -187,9 +187,9 @@ PUT /api/cases/:releaseCaseId/documents/body
 Then create or upsert these child cases with `parentCaseId` set to the release
 case id:
 
-- `blog_post`, key `wardmote-release:vYYYY.MDD.P:blog-post`, status
+- `blog_post`, key `paperclip-release:vYYYY.MDD.P:blog-post`, status
   `in_progress`, body document key `body`
-- `tweet_storm`, key `wardmote-release:vYYYY.MDD.P:tweet-storm`, status
+- `tweet_storm`, key `paperclip-release:vYYYY.MDD.P:tweet-storm`, status
   `in_progress`, body document key `body`
 
 Use deterministic keys exactly so rerunning the release-content flow upserts the

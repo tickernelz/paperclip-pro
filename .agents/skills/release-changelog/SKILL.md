@@ -275,7 +275,7 @@ Request:
 POST /api/companies/:companyId/cases
 {
   "caseType": "release",
-  "key": "wardmote-release:vYYYY.MDD.P",
+  "key": "paperclip-release:vYYYY.MDD.P",
   "title": "Wardmote vYYYY.MDD.P release",
   "summary": "Stable Wardmote release notes for vYYYY.MDD.P.",
   "status": "in_progress",

@@ -173,7 +173,7 @@ Hosts without the Playwright chromium system libraries can either run
 `WARDMOTE_RUNNER_CHROMIUM_PATH` to a preinstalled Chromium.
 
 The committed PNGs are pinned to the Chromium build listed in
-`.wardmote-local/evidence/capability/ui/index.md`, so `check:capability:ui` needs that same
+`.paperclip-local/evidence/capability/ui/index.md`, so `check:capability:ui` needs that same
 browser. Point `WARDMOTE_RUNNER_CHROMIUM_PATH` at the recorded browser before
 comparing — and when that path is the agent-browser wrapper, also set
 `WARDMOTE_CHROMIUM_BIN` to the exact binary, because the wrapper otherwise
@@ -219,6 +219,6 @@ One deviation is recorded against the Capability contract:
 Fake-mode fixtures render from authored data with a fixed clock, so two captures
 of a slug from a clean checkout are byte-identical. Live sessions are not
 byte-stable — a real model writes their prose — so live evidence lives in
-`.wardmote-local/evidence/capability/ui-live/` and is excluded from the determinism gate.
+`.paperclip-local/evidence/capability/ui-live/` and is excluded from the determinism gate.
 Durable comments in live mode carry the mock control plane's own deterministic
 clock rather than wall time, because that is the timestamp on the mock record.

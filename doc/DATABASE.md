@@ -74,7 +74,7 @@ This starts PostgreSQL 17 on `localhost:5432`. Then set the connection string:
 ```sh
 cp .env.example .env
 # .env already contains:
-# DATABASE_URL=postgres://wardmote:paperclip@localhost:5432/wardmote
+# DATABASE_URL=postgres://wardmote:wardmote@localhost:5432/wardmote
 ```
 
 Run migrations:
