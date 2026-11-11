@@ -344,7 +344,7 @@ describe("sandbox managed runtime", () => {
   const cleanupDirs: string[] = [];
 
   it.each(["host_current", "adopt_remote", "durable_seed"] as const)("stages and restores both project repositories with independent Git histories (%s)", async (mode) => {
-    const root = await mkdtemp(path.join(os.tmpdir(), "paperclip-multi-repo-"));
+    const root = await mkdtemp(path.join(os.tmpdir(), "wardmote-multi-repo-"));
     cleanupDirs.push(root);
     const local = path.join(root, "local");
     const remote = path.join(root, "remote");
@@ -420,7 +420,7 @@ describe("sandbox managed runtime", () => {
 
   it("adopts a warm remote workspace without inbound overwrite and still merges outbound changes", async () => {
     const rootDir = await mkdtemp(
-      path.join(os.tmpdir(), "paperclip-sandbox-adopt-"),
+      path.join(os.tmpdir(), "wardmote-sandbox-adopt-"),
     );
     cleanupDirs.push(rootDir);
     const localWorkspaceDir = path.join(rootDir, "local-workspace");
@@ -474,7 +474,7 @@ describe("sandbox managed runtime", () => {
 
   it("reconstructs a replacement workspace from the exact durable pre-turn seed", async () => {
     const rootDir = await mkdtemp(
-      path.join(os.tmpdir(), "paperclip-sandbox-durable-seed-"),
+      path.join(os.tmpdir(), "wardmote-sandbox-durable-seed-"),
     );
     cleanupDirs.push(rootDir);
     const localWorkspaceDir = path.join(rootDir, "local-workspace");
@@ -542,7 +542,7 @@ describe("sandbox managed runtime", () => {
   });
 
   it("preserves excluded local workspace artifacts during restore mirroring", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-sandbox-restore-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-sandbox-restore-"));
     cleanupDirs.push(rootDir);
     const sourceDir = path.join(rootDir, "source");
     const targetDir = path.join(rootDir, "target");
@@ -567,7 +567,7 @@ describe("sandbox managed runtime", () => {
   });
 
   it("applies file mode on a staged sibling before renaming into place", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-sandbox-copy-mode-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-sandbox-copy-mode-"));
     cleanupDirs.push(rootDir);
     const sourceDir = path.join(rootDir, "source");
     const targetDir = path.join(rootDir, "target");
@@ -594,7 +594,7 @@ describe("sandbox managed runtime", () => {
   });
 
   it("cleans up a staged sibling when chmod fails before rename", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-sandbox-copy-cleanup-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-sandbox-copy-cleanup-"));
     cleanupDirs.push(rootDir);
     const sourceDir = path.join(rootDir, "source");
     const targetDir = path.join(rootDir, "target");
@@ -624,7 +624,7 @@ describe("sandbox managed runtime", () => {
   });
 
   it("syncs workspace and assets through a provider-neutral sandbox client", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-sandbox-managed-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-sandbox-managed-"));
     cleanupDirs.push(rootDir);
     const localWorkspaceDir = path.join(rootDir, "local-workspace");
     const remoteWorkspaceDir = path.join(rootDir, "remote-workspace");
@@ -723,7 +723,7 @@ describe("sandbox managed runtime", () => {
   });
 
   it("falls back to the host-known byte count when the provider reports 0 for inbound workspace sync", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-sandbox-zero-report-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-sandbox-zero-report-"));
     cleanupDirs.push(rootDir);
     const localWorkspaceDir = path.join(rootDir, "local-workspace");
     const remoteWorkspaceDir = path.join(rootDir, "remote-workspace");
@@ -773,7 +773,7 @@ describe("sandbox managed runtime", () => {
   it.each(["workspace", "git-workspace"])(
     "rejects an asset key that collides with the reserved %s archive name",
     async (reservedKey) => {
-      const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-sandbox-asset-key-"));
+      const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-sandbox-asset-key-"));
       cleanupDirs.push(rootDir);
       const localWorkspaceDir = path.join(rootDir, "local-workspace");
       const remoteWorkspaceDir = path.join(rootDir, "remote-workspace");
@@ -809,7 +809,7 @@ describe("sandbox managed runtime", () => {
   it.each(["skills/nested", "skills\\nested", "..", "../escape"])(
     "rejects an asset key that is not a simple path segment: %s",
     async (unsafeKey) => {
-      const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-sandbox-asset-key-"));
+      const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-sandbox-asset-key-"));
       cleanupDirs.push(rootDir);
       const localWorkspaceDir = path.join(rootDir, "local-workspace");
       const remoteWorkspaceDir = path.join(rootDir, "remote-workspace");
@@ -839,7 +839,7 @@ describe("sandbox managed runtime", () => {
   );
 
   it("restores a sandbox rebase without merging it with unchanged host history", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-sandbox-rebase-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-sandbox-rebase-"));
     cleanupDirs.push(rootDir);
     const host = path.join(rootDir, "host");
     const remote = path.join(rootDir, "remote");
@@ -892,7 +892,7 @@ describe("sandbox managed runtime", () => {
   });
 
   it("restores a sandbox reset to an ancestor with the matching clean working tree", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-sandbox-reset-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-sandbox-reset-"));
     cleanupDirs.push(rootDir);
     const host = path.join(rootDir, "host");
     const remote = path.join(rootDir, "remote");
@@ -926,7 +926,7 @@ describe("sandbox managed runtime", () => {
   });
 
   it("syncs git-backed workspaces through a shallow standalone clone and keeps .git out of archives", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-sandbox-git-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-sandbox-git-"));
     cleanupDirs.push(rootDir);
     const sourceRepoDir = path.join(rootDir, "source-repo");
     const localWorkspaceDir = path.join(rootDir, "local-worktree");
@@ -1083,7 +1083,7 @@ describe("sandbox managed runtime", () => {
   });
 
   it("repairs stale host index deletions when the sandbox restores a clean git worktree", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-sandbox-clean-restore-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-sandbox-clean-restore-"));
     cleanupDirs.push(rootDir);
     const sourceRepoDir = path.join(rootDir, "source-repo");
     const localWorkspaceDir = path.join(rootDir, "local-worktree");
@@ -1158,7 +1158,7 @@ describe("sandbox managed runtime", () => {
   });
 
   it("does not fail clean restore checks when local working tree changes survive", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-sandbox-preserved-local-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-sandbox-preserved-local-"));
     cleanupDirs.push(rootDir);
     const sourceRepoDir = path.join(rootDir, "source-repo");
     const localWorkspaceDir = path.join(rootDir, "local-worktree");
@@ -1194,7 +1194,7 @@ describe("sandbox managed runtime", () => {
   });
 
   it("excludes unignored dependency trees from git-backed workspace overlay archives", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-sandbox-unignored-deps-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-sandbox-unignored-deps-"));
     cleanupDirs.push(rootDir);
     const sourceRepoDir = path.join(rootDir, "source-repo");
     const localWorkspaceDir = path.join(rootDir, "local-worktree");
@@ -1304,7 +1304,7 @@ describe("sandbox managed runtime", () => {
   it.each(["symlink", "root_symlink", "root_alias", "root_alias_retarget", "case_alias", "EACCES", "EIO", "ENOENT"])("handles an overlay source changed after the snapshot: %s", async (change) => {
     // The runtime pins a realpath root before staging. Match that spelling so
     // injected I/O errors also reach the selected file on macOS's /var alias.
-    const rootDir = await fsPromises.realpath(await mkdtemp(path.join(os.tmpdir(), "paperclip-sandbox-overlay-source-")));
+    const rootDir = await fsPromises.realpath(await mkdtemp(path.join(os.tmpdir(), "wardmote-sandbox-overlay-source-")));
     cleanupDirs.push(rootDir);
     const workspaceLocalDir = path.join(rootDir, "workspace");
     await initGitRepo(workspaceLocalDir);
@@ -1403,7 +1403,7 @@ describe("sandbox managed runtime", () => {
   });
 
   it("excludes an anchor-workspace ignored file whose name has leading and trailing whitespace from the staged tree", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-sandbox-ignored-whitespace-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-sandbox-ignored-whitespace-"));
     cleanupDirs.push(rootDir);
     const workspaceLocalDir = path.join(rootDir, "workspace");
     const remoteWorkspaceDir = path.join(rootDir, "remote-workspace");
@@ -1462,7 +1462,7 @@ describe("sandbox managed runtime", () => {
   });
 
   it("builds workspace/asset tarballs without a './' self-entry (so untar does not chmod/utime an unowned target dir)", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-sandbox-tarself-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-sandbox-tarself-"));
     cleanupDirs.push(rootDir);
     const localWorkspaceDir = path.join(rootDir, "local-workspace");
     const remoteWorkspaceDir = path.join(rootDir, "remote-workspace");
@@ -1540,7 +1540,7 @@ describe("sandbox managed runtime", () => {
   });
 
   it("excludes transient symlinked home dirs from the asset tar while keeping required content", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-sandbox-home-tmp-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-sandbox-home-tmp-"));
     cleanupDirs.push(rootDir);
     const localWorkspaceDir = path.join(rootDir, "local-workspace");
     const remoteWorkspaceDir = path.join(rootDir, "remote-workspace");
@@ -1632,7 +1632,7 @@ describe("sandbox managed runtime", () => {
   });
 
   it("emits throttled, labeled upload and restore progress with direction and percentages", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-sandbox-progress-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-sandbox-progress-"));
     cleanupDirs.push(rootDir);
     const localWorkspaceDir = path.join(rootDir, "local-workspace");
     const remoteWorkspaceDir = path.join(rootDir, "remote-workspace");
@@ -1716,7 +1716,7 @@ describe("sandbox managed runtime", () => {
   });
 
   it("creates valid empty workspace tarballs when the workspace is empty", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-sandbox-empty-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-sandbox-empty-"));
     cleanupDirs.push(rootDir);
     const localWorkspaceDir = path.join(rootDir, "local-workspace");
     const remoteWorkspaceDir = path.join(rootDir, "remote-workspace");
@@ -1772,7 +1772,7 @@ describe("sandbox managed runtime", () => {
   });
 
   it("provisions a contribution-less asset via a plain tar extract and restores it as a no-op", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-sandbox-default-asset-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-sandbox-default-asset-"));
     cleanupDirs.push(rootDir);
     const localWorkspaceDir = path.join(rootDir, "local-workspace");
     const remoteWorkspaceDir = path.join(rootDir, "remote-workspace");
@@ -1837,7 +1837,7 @@ describe("sandbox managed runtime", () => {
   });
 
   it("round-trips a non-codex asset through generic provision + restore contributions", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-sandbox-seam-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-sandbox-seam-"));
     cleanupDirs.push(rootDir);
     const localWorkspaceDir = path.join(rootDir, "local-workspace");
     const remoteWorkspaceDir = path.join(rootDir, "remote-workspace");
@@ -1919,7 +1919,7 @@ describe("sandbox managed runtime", () => {
   });
 
   it("rejects a provision stageFile.name that is not a simple basename", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-sandbox-traversal-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-sandbox-traversal-"));
     cleanupDirs.push(rootDir);
     const localWorkspaceDir = path.join(rootDir, "local-workspace");
     const remoteWorkspaceDir = path.join(rootDir, "remote-workspace");
@@ -1983,7 +1983,7 @@ describe("sandbox managed runtime", () => {
   });
 
   it("routes a custom-provisioned asset through a single syncIn operation with its post-upload command (native runner → 0 direct writeFile/run)", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-sandbox-native-asset-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-sandbox-native-asset-"));
     cleanupDirs.push(rootDir);
     const localWorkspaceDir = path.join(rootDir, "local-workspace");
     const remoteWorkspaceDir = path.join(rootDir, "remote-workspace");
@@ -2083,7 +2083,7 @@ describe("sandbox managed runtime", () => {
   });
 
   it("stages git and workspace via syncIn preserving .wardmote-runtime (native runner → 0 direct writeFile/run)", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-sandbox-native-git-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-sandbox-native-git-"));
     cleanupDirs.push(rootDir);
     const sourceRepoDir = path.join(rootDir, "source-repo");
     const localWorkspaceDir = path.join(rootDir, "local-workspace");
@@ -2164,7 +2164,7 @@ describe("sandbox managed runtime", () => {
   });
 
   it("the workspace wipe command preserves in-flight sync scratch tarballs (.paperclip-upload-*)", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-sandbox-scratch-shape-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-sandbox-scratch-shape-"));
     cleanupDirs.push(rootDir);
     const sourceRepoDir = path.join(rootDir, "source-repo");
     const localWorkspaceDir = path.join(rootDir, "local-workspace");
@@ -2221,7 +2221,7 @@ describe("sandbox managed runtime", () => {
   });
 
   it("the workspace wipe keeps an in-flight scratch tarball at the root but removes a stale sibling", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-sandbox-scratch-race-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-sandbox-scratch-race-"));
     cleanupDirs.push(rootDir);
     const sourceRepoDir = path.join(rootDir, "source-repo");
     const localWorkspaceDir = path.join(rootDir, "local-workspace");
@@ -2287,7 +2287,7 @@ describe("sandbox managed runtime", () => {
   });
 
   it("issues one merged syncIn operation for a git-backed workspace stage-sync with two ordered extract commands", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-sandbox-merged-git-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-sandbox-merged-git-"));
     cleanupDirs.push(rootDir);
     const sourceRepoDir = path.join(rootDir, "source-repo");
     const localWorkspaceDir = path.join(rootDir, "local-workspace");
@@ -2385,7 +2385,7 @@ describe("sandbox managed runtime", () => {
 
   it("the merged workspace confine guard covers both tar mappings (escape in either trips it)", () => {
     const runtimeRoot = "/home/daytona/paperclip-workspace/.wardmote-runtime/test-adapter";
-    const tempRoot = "/tmp/paperclip-sandbox-sync-abc";
+    const tempRoot = "/tmp/wardmote-sandbox-sync-abc";
     const gitMapping = {
       sourcePath: `${tempRoot}/git-workspace.tar`,
       targetPath: `${runtimeRoot}/git-workspace-upload.tar`,
@@ -2444,7 +2444,7 @@ describe("sandbox managed runtime", () => {
   // workspace operation back into two — fails loudly here instead of silently
   // regressing the start path.
   it("collapses a representative codex_local start to two syncIn round-trips: one merged workspace op plus the asset op", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-sandbox-codex-roundtrip-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-sandbox-codex-roundtrip-"));
     cleanupDirs.push(rootDir);
     const sourceRepoDir = path.join(rootDir, "source-repo");
     const localWorkspaceDir = path.join(rootDir, "local-workspace");
@@ -2556,7 +2556,7 @@ describe("sandbox managed runtime", () => {
   });
 
   it("authors the advisory access intent rw on workspace, git, and asset inbound mappings", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-access-rw-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-access-rw-"));
     cleanupDirs.push(rootDir);
     const sourceRepoDir = path.join(rootDir, "source-repo");
     const localWorkspaceDir = path.join(rootDir, "local-workspace");
@@ -2633,7 +2633,7 @@ describe("sandbox managed runtime", () => {
     const priorFlag = process.env[flagKey];
     process.env[flagKey] = "1";
     try {
-      const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-access-ro-"));
+      const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-access-ro-"));
       cleanupDirs.push(rootDir);
       const localWorkspaceDir = path.join(rootDir, "local-workspace");
       const remoteWorkspaceDir = path.join(rootDir, "remote-workspace");
@@ -2691,7 +2691,7 @@ describe("sandbox managed runtime", () => {
     const priorFlag = process.env[flagKey];
     process.env[flagKey] = "1";
     try {
-      const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-project-bytes-"));
+      const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-project-bytes-"));
       cleanupDirs.push(rootDir);
       const localWorkspaceDir = path.join(rootDir, "local-workspace");
       const remoteWorkspaceDir = path.join(rootDir, "remote-workspace");
@@ -2773,7 +2773,7 @@ describe("sandbox managed runtime", () => {
     const priorFlag = process.env[flagKey];
     process.env[flagKey] = "1";
     try {
-      const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-e2e-additional-"));
+      const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-e2e-additional-"));
       cleanupDirs.push(rootDir);
 
       const localWorkspaceDir = path.join(rootDir, "local-workspace");
@@ -2861,7 +2861,7 @@ describe("sandbox managed runtime", () => {
 
   describe("resolveReferencedSourceIgnore", () => {
     it("re-relativizes root-relative ignored paths to a nested localPath", async () => {
-      const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-ignore-nested-"));
+      const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-ignore-nested-"));
       cleanupDirs.push(rootDir);
       const repo = path.join(rootDir, "repo");
       await initGitRepo(repo);
@@ -2891,7 +2891,7 @@ describe("sandbox managed runtime", () => {
     });
 
     it("keeps today's fixed excludes for a non-Git source", async () => {
-      const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-ignore-nongit-"));
+      const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-ignore-nongit-"));
       cleanupDirs.push(rootDir);
       const plainDir = path.join(rootDir, "plain-project");
       await mkdir(plainDir, { recursive: true });
@@ -2901,7 +2901,7 @@ describe("sandbox managed runtime", () => {
     });
 
     it("fails closed on a real Git error instead of returning an unfiltered result", async () => {
-      const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-ignore-fail-"));
+      const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-ignore-fail-"));
       cleanupDirs.push(rootDir);
       const repo = path.join(rootDir, "repo");
       await initGitRepo(repo);
@@ -2924,7 +2924,7 @@ describe("sandbox managed runtime", () => {
 
     for (const sensitivePath of SENSITIVE_PATH_PROBES) {
       it(`redacts a caught Git error embedding ${sensitivePath} to the fixed category`, async () => {
-        const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-ignore-redact-caught-"));
+        const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-ignore-redact-caught-"));
         cleanupDirs.push(rootDir);
         const repo = path.join(rootDir, "repo");
         await initGitRepo(repo);
@@ -2952,7 +2952,7 @@ describe("sandbox managed runtime", () => {
       });
 
       it(`redacts a non-descendant toplevel embedding ${sensitivePath} to the fixed category`, async () => {
-        const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-ignore-redact-nondescendant-"));
+        const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-ignore-redact-nondescendant-"));
         cleanupDirs.push(rootDir);
         const localPath = path.join(rootDir, "referenced");
         await mkdir(localPath, { recursive: true });
@@ -2977,7 +2977,7 @@ describe("sandbox managed runtime", () => {
     }
 
     it("fails closed with a fixed category when the parsed ignored-entry count exceeds the bound", async () => {
-      const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-ignore-bound-count-"));
+      const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-ignore-bound-count-"));
       cleanupDirs.push(rootDir);
       const repo = path.join(rootDir, "repo");
       await initGitRepo(repo);
@@ -3004,7 +3004,7 @@ describe("sandbox managed runtime", () => {
     });
 
     it("fails closed with a fixed category when the total UTF-8 byte size of ignored paths exceeds the bound", async () => {
-      const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-ignore-bound-bytes-"));
+      const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-ignore-bound-bytes-"));
       cleanupDirs.push(rootDir);
       const repo = path.join(rootDir, "repo");
       await initGitRepo(repo);
@@ -3032,7 +3032,7 @@ describe("sandbox managed runtime", () => {
     });
 
     it("stages no bytes for either a count-breach or a byte-breach project, and stages a healthy sibling", async () => {
-      const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-ignore-bound-staging-"));
+      const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-ignore-bound-staging-"));
       cleanupDirs.push(rootDir);
       const localWorkspaceDir = path.join(rootDir, "local-workspace");
       const remoteWorkspaceDir = path.join(rootDir, "remote-workspace");
@@ -3189,7 +3189,7 @@ describe("sandbox managed runtime", () => {
     expect(escapeTarExcludeLiteral("wildcard*name")).toBe("wildcard\\*name");
     expect(escapeTarExcludeLiteral("question?mark")).toBe("question\\?mark");
 
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-ignore-glob-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-ignore-glob-"));
     cleanupDirs.push(rootDir);
     const referencedDir = path.join(rootDir, "referenced-project");
     await initGitRepo(referencedDir);
@@ -3213,7 +3213,7 @@ describe("sandbox managed runtime", () => {
   });
 
   it("never ships a Git-ignored secret in a referenced project's staged tree", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-ignore-secret-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-ignore-secret-"));
     cleanupDirs.push(rootDir);
     const referencedDir = path.join(rootDir, "referenced-project");
     await initGitRepo(referencedDir);
@@ -3232,7 +3232,7 @@ describe("sandbox managed runtime", () => {
   });
 
   it("stages no bytes for a project whose ignore resolution failed, and stages the rest", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-ignore-failed-skip-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-ignore-failed-skip-"));
     cleanupDirs.push(rootDir);
     const localWorkspaceDir = path.join(rootDir, "local-workspace");
     const remoteWorkspaceDir = path.join(rootDir, "remote-workspace");
@@ -3268,7 +3268,7 @@ describe("sandbox managed runtime", () => {
   });
 
   it("builds the workspace tarball inside one host pack span for a usual workspace sync", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-pack-span-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-pack-span-"));
     cleanupDirs.push(rootDir);
     const localWorkspaceDir = path.join(rootDir, "local-workspace");
     const remoteWorkspaceDir = path.join(rootDir, "remote-workspace");
@@ -3311,7 +3311,7 @@ describe("sandbox managed runtime", () => {
   });
 
   it("nests the host pack span under the stage.workspace task span", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-pack-nest-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-pack-nest-"));
     cleanupDirs.push(rootDir);
     const localWorkspaceDir = path.join(rootDir, "local-workspace");
     const remoteWorkspaceDir = path.join(rootDir, "remote-workspace");
@@ -3569,7 +3569,7 @@ describe("sandbox managed runtime inbound coordinator", () => {
     workspaceDir: string;
     dirOf: (name: string) => string;
   }> {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-inbound-coordinator-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-inbound-coordinator-"));
     cleanupDirs.push(rootDir);
     const workspaceDir = path.join(rootDir, "workspace");
     await mkdir(workspaceDir, { recursive: true });
@@ -4034,7 +4034,7 @@ describe("sandbox managed runtime outbound coordinator", () => {
     remoteWorkspaceDir: string;
     dirOf: (name: string) => string;
   }> {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-outbound-coordinator-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-outbound-coordinator-"));
     cleanupDirs.push(rootDir);
     const workspaceDir = path.join(rootDir, "workspace");
     const remoteWorkspaceDir = path.join(rootDir, "remote-workspace");
@@ -4220,8 +4220,8 @@ describe("sandbox managed runtime outbound coordinator", () => {
     expect(tempA).toBeTruthy();
     expect(tempB).toBeTruthy();
     expect(tempA).not.toBe(tempB);
-    expect(tempA!).toContain("paperclip-sandbox-restore-");
-    expect(tempB!).toContain("paperclip-sandbox-restore-");
+    expect(tempA!).toContain("wardmote-sandbox-restore-");
+    expect(tempB!).toContain("wardmote-sandbox-restore-");
 
     control.release("asset-a");
     control.release("asset-b");
@@ -4539,7 +4539,7 @@ describe("sandbox git-bundle export transport", () => {
 
   it("retries the full bundle through the native branch when the delta misses its prerequisite", async () => {
     const capture: TransportCapture = { syncOutOperations: [], readFilePaths: [] };
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-bundle-retry-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-bundle-retry-"));
     cleanupDirs.push(rootDir);
     // A standalone host repository, so the test controls object reachability. A
     // linked worktree shares the source object store, and the boundary commit

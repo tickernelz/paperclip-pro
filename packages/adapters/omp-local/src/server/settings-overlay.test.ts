@@ -149,7 +149,7 @@ describe("OMP settings overlay", () => {
       graceSec: 5,
     });
 
-    expect(path.dirname(overlay.path)).toContain("paperclip-omp-overlay-");
+    expect(path.dirname(overlay.path)).toContain("wardmote-omp-overlay-");
     const written = parseYaml(await fs.readFile(overlay.path, "utf8"));
     expect(written).toEqual(parseYaml(renderOmpSettingsOverlay(config)));
     expect(runShellMock).not.toHaveBeenCalled();

@@ -2650,7 +2650,7 @@ async function auditInstalledSkillBytes(skill: CompanySkill): Promise<CompanySki
 
 /** Audit downloaded packages before they become installed company content. */
 export async function auditSkillSnapshot(files: CompanySkillVersionFileInventoryEntry[]) {
-  const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-skill-audit-"));
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-skill-audit-"));
   try {
     for (const file of files) {
       const target = path.join(root, assertSkillSnapshotPath(file.path));

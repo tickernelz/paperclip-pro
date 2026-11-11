@@ -172,7 +172,7 @@ describeEmbeddedPostgres("heartbeat local environment lifecycle", () => {
     const companyId = randomUUID();
     const agentId = randomUUID();
     const issuePrefix = `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`;
-    const tempDir = await mkdtemp(join(tmpdir(), "paperclip-process-env-"));
+    const tempDir = await mkdtemp(join(tmpdir(), "wardmote-process-env-"));
     const envPath = join(tempDir, "env.json");
 
     await db.insert(companies).values({

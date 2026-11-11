@@ -16,7 +16,7 @@ if (EXTERNAL_URL) {
   }
 }
 const BASE_URL = EXTERNAL_URL ?? `http://127.0.0.1:${PORT}`;
-const WARDMOTE_HOME = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-issue-perf-home-"));
+const WARDMOTE_HOME = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-issue-perf-home-"));
 const WARDMOTE_INSTANCE_ID = "playwright-issue-perf";
 const WARDMOTE_CONFIG = path.join(WARDMOTE_HOME, "instances", WARDMOTE_INSTANCE_ID, "config.json");
 

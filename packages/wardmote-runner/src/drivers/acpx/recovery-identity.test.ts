@@ -359,7 +359,7 @@ describe("ACPX recovery identity", () => {
 });
 
 async function recoveryFixture() {
-  const root = await mkdtemp(join(tmpdir(), "paperclip-acpx-recovery-"));
+  const root = await mkdtemp(join(tmpdir(), "wardmote-acpx-recovery-"));
   temporaryDirectories.push(root);
   const workspace = join(root, "workspace");
   const runtimeDirectory = join(root, "runtime");

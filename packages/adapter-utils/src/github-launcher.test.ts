@@ -12,7 +12,7 @@ afterEach(async () => { for (const cleanup of cleanups.splice(0).reverse()) awai
 
 describe("managed GitHub launchers", () => {
   it.each(["repository", "command"])("uses explicit %s identity for local commits without managed credentials", async (identitySource) => {
-    const root = await mkdtemp(path.join(os.tmpdir(), "paperclip-github-local-identity-"));
+    const root = await mkdtemp(path.join(os.tmpdir(), "wardmote-github-local-identity-"));
     cleanups.push(() => rm(root, { recursive: true, force: true }));
     const bin = path.join(root, "managed");
     await mkdir(bin);
@@ -36,7 +36,7 @@ describe("managed GitHub launchers", () => {
   });
 
   it.each(["broker-offline", "config-unwritable", "capability-rejected"])("keeps real local Git usable when %s", async (failure) => {
-    const root = await mkdtemp(path.join(os.tmpdir(), "paperclip-github-failure-"));
+    const root = await mkdtemp(path.join(os.tmpdir(), "wardmote-github-failure-"));
     cleanups.push(() => rm(root, { recursive: true, force: true }));
     const bin = path.join(root, "managed");
     await mkdir(bin);
@@ -64,7 +64,7 @@ describe("managed GitHub launchers", () => {
   }, 15_000); // broker-offline retries the transport twice per command before it falls back
 
   it("explains unavailable access while allowing local work without credentials", async () => {
-    const root = await mkdtemp(path.join(os.tmpdir(), "paperclip-github-diagnostic-"));
+    const root = await mkdtemp(path.join(os.tmpdir(), "wardmote-github-diagnostic-"));
     cleanups.push(() => rm(root, {recursive:true,force:true}));
     const bin = path.join(root,"managed"), realBin = path.join(root,"real");
     await mkdir(bin); await mkdir(realBin);
@@ -89,7 +89,7 @@ describe("managed GitHub launchers", () => {
       res.writeHead(200, {"content-type":"application/json"}); res.write('{"status":'); setTimeout(() => res.socket?.destroy(), 20);
     }],
   ])("retries when the %s and still uses managed credentials", async (_label, fail) => {
-    const root = await mkdtemp(path.join(os.tmpdir(), "paperclip-github-retry-"));
+    const root = await mkdtemp(path.join(os.tmpdir(), "wardmote-github-retry-"));
     cleanups.push(() => rm(root, {recursive:true,force:true}));
     const bin = path.join(root,"managed"), realBin = path.join(root,"real");
     await mkdir(bin); await mkdir(realBin);
@@ -112,7 +112,7 @@ describe("managed GitHub launchers", () => {
     expect(result.stderr).not.toMatch(/host-token|run-capability/);
   });
   it("captures each command's identity and clears host credentials when the next person has none", async () => {
-    const root = await mkdtemp(path.join(os.tmpdir(), "paperclip-github-launcher-test-"));
+    const root = await mkdtemp(path.join(os.tmpdir(), "wardmote-github-launcher-test-"));
     cleanups.push(() => rm(root, { recursive: true, force: true }));
     const bin = path.join(root, "managed"), realBin = path.join(root, "real"), repo = path.join(root, "repo");
     for (const dir of [bin, realBin, repo, path.join(bin, "gh-config")]) await mkdir(dir, { recursive: true });

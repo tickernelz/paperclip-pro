@@ -25,7 +25,7 @@ const ORIGINAL_PATH = process.env.PATH;
 const ORIGINAL_EXIT_CODE = process.exitCode;
 
 function createExistingConfigFixture() {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-onboard-"));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-onboard-"));
   const runtimeRoot = path.join(root, "runtime");
   const configPath = path.join(root, ".wardmote", "config.json");
   const config: WardmoteConfig = {
@@ -92,7 +92,7 @@ function createExistingConfigFixture() {
 }
 
 function createFreshConfigPath() {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-onboard-fresh-"));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-onboard-fresh-"));
   return path.join(root, ".wardmote", "config.json");
 }
 
@@ -275,8 +275,8 @@ describe("onboard", () => {
   });
 
   it("creates instance-root config and data paths for a fresh WARDMOTE_HOME", async () => {
-    const home = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-onboard-home-"));
-    const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-onboard-cwd-"));
+    const home = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-onboard-home-"));
+    const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-onboard-cwd-"));
     process.chdir(cwd);
     process.env.WARDMOTE_HOME = home;
 

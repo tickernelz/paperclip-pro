@@ -18,7 +18,7 @@ async function startAcceptanceDatabase() {
   throw failure;
 }
 const database = await startAcceptanceDatabase();
-fs.writeFileSync("/tmp/paperclip-aggregator-acceptance-db.json", JSON.stringify({ connectionString: database.connectionString }), { mode: 0o600 });
+fs.writeFileSync("/tmp/wardmote-aggregator-acceptance-db.json", JSON.stringify({ connectionString: database.connectionString }), { mode: 0o600 });
 const db = createDb(database.connectionString);
 const [company] = await db.insert(companies).values({ name: "Managed accounts test drive", issuePrefix: "AGG" }).returning();
 const userId = randomUUID();
@@ -73,7 +73,7 @@ app.use(errorHandler);
 const server = app.listen(4310, "127.0.0.1", () => { clearInterval(startup); console.log("Managed-account fixture API ready at http://localhost:4310/fixture"); });
 async function stop() {
   server.close();
-  fs.rmSync("/tmp/paperclip-aggregator-acceptance-db.json", { force: true });
+  fs.rmSync("/tmp/wardmote-aggregator-acceptance-db.json", { force: true });
   await database.cleanup();
   process.exit(0);
 }

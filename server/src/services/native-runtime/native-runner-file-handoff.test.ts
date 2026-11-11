@@ -67,7 +67,7 @@ describe("native runner file handoff", () => {
     );
     db = createDb(temporary.connectionString);
     temporaryRoot = await mkdtemp(
-      path.join(tmpdir(), "paperclip-native-file-handoff-"),
+      path.join(tmpdir(), "wardmote-native-file-handoff-"),
     );
     workspaceRoot = path.join(temporaryRoot, "workspace");
     storageRoot = path.join(temporaryRoot, "storage");

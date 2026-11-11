@@ -23,11 +23,11 @@ describe("attachment size limit from instance settings", () => {
   let companyId = "";
 
   beforeAll(async () => {
-    home = await mkdtemp(path.join(os.tmpdir(), "paperclip-attachment-limit-"));
+    home = await mkdtemp(path.join(os.tmpdir(), "wardmote-attachment-limit-"));
     vi.stubEnv("WARDMOTE_HOME", home);
     vi.stubEnv("WARDMOTE_INSTANCE_ID", "default");
     vi.stubEnv("WARDMOTE_ATTACHMENT_MAX_BYTES", String(3 * MB));
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-attachment-limit-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-attachment-limit-");
     db = createDb(tempDb.connectionString);
     const [company] = await db.insert(companies).values({ name: "Limits", issuePrefix: "LIM" }).returning();
     companyId = company!.id;

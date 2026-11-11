@@ -17,7 +17,7 @@ describe("ACPX sidecar locations", () => {
     "preserves valid host-relative display names without admitting escape",
     () => {
       const workspace = mkdtempSync(
-        join(tmpdir(), "paperclip-acpx-locations-"),
+        join(tmpdir(), "wardmote-acpx-locations-"),
       );
       writeFileSync(join(workspace, "src:main.ts"), "");
       mkdirSync(join(workspace, "a:"));
@@ -91,7 +91,7 @@ describe("ACPX sidecar locations", () => {
     "attests a leading backslash as valid POSIX filename data",
     () => {
       const workspace = mkdtempSync(
-        join(tmpdir(), "paperclip-acpx-locations-"),
+        join(tmpdir(), "wardmote-acpx-locations-"),
       );
       writeFileSync(join(workspace, String.raw`\notes.md`), "");
       try {
@@ -136,7 +136,7 @@ describe("ACPX sidecar locations", () => {
     "attests scheme-shaped targets after relative and absolute normalization",
     () => {
       const workspace = mkdtempSync(
-        join(tmpdir(), "paperclip-acpx-locations-"),
+        join(tmpdir(), "wardmote-acpx-locations-"),
       );
       const entry = join(workspace, "src:main.ts");
       writeFileSync(entry, "");
@@ -169,7 +169,7 @@ describe("ACPX sidecar locations", () => {
   it.runIf(sep === "/")(
     "attests missing edit targets without weakening symlink containment",
     () => {
-      const root = mkdtempSync(join(tmpdir(), "paperclip-acpx-locations-"));
+      const root = mkdtempSync(join(tmpdir(), "wardmote-acpx-locations-"));
       const workspace = join(root, "workspace");
       const outside = join(root, "outside");
       mkdirSync(workspace);

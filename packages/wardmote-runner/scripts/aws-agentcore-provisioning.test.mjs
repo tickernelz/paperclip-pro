@@ -166,7 +166,7 @@ test("AgentCore wrapper rejects unsafe model IDs before AWS access", () => {
 });
 
 test("AgentCore wrapper never implicitly deletes a colliding failed stack", async () => {
-  const temp = await mkdtemp(join(tmpdir(), "paperclip-agentcore-test-"));
+  const temp = await mkdtemp(join(tmpdir(), "wardmote-agentcore-test-"));
   const fakeAws = join(temp, "aws");
   const commandLog = join(temp, "aws.log");
   await writeFile(fakeAws, `#!/usr/bin/env bash

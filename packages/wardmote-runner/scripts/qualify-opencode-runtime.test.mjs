@@ -18,7 +18,7 @@ test("the pinned OpenCode executable serves health, sessions, SSE, and a local-p
   skip: !enabled,
   timeout: 60_000,
 }, async (t) => {
-  const root = await mkdtemp(join(tmpdir(), "paperclip-opencode-qualification-"));
+  const root = await mkdtemp(join(tmpdir(), "wardmote-opencode-qualification-"));
   let provider;
   let child;
   let exited;

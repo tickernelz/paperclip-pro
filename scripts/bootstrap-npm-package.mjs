@@ -340,7 +340,7 @@ function printNextSteps(packageName) {
 
 async function stageAndPublish(packageName, { publish }) {
   const files = buildPlaceholderFiles(packageName);
-  const stageDir = mkdtempSync(join(tmpdir(), "paperclip-npm-placeholder-"));
+  const stageDir = mkdtempSync(join(tmpdir(), "wardmote-npm-placeholder-"));
 
   try {
     for (const fileName of ["package.json", "index.js", "README.md"]) {

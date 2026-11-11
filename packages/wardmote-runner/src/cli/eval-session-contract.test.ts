@@ -110,7 +110,7 @@ describe("eval-session request contract", () => {
   });
 
   it.each(["pi", "cursor", "copilot"] as const)("rejects stale or incomplete %s identities before runtime construction", async (agent) => {
-    const workspace = await mkdtemp(join(tmpdir(), "paperclip-eval-profile-"));
+    const workspace = await mkdtemp(join(tmpdir(), "wardmote-eval-profile-"));
     const model = agent === "pi" ? "openrouter/deepseek/deepseek-v4-flash-0731" : "explicit-provider-model";
     const expected = resolveQualifiedAcpxProfile(agent, model);
     const requestPath = join(workspace, "request.json");
@@ -142,7 +142,7 @@ describe("eval-session request contract", () => {
   });
 
   it("materializes a production-v3 runtime context for direct live providers", async () => {
-    const workspace = await mkdtemp(join(tmpdir(), "paperclip-eval-context-"));
+    const workspace = await mkdtemp(join(tmpdir(), "wardmote-eval-context-"));
     let instructionRoot: string | null = null;
     try {
       const context = await prepareEvalRuntimeContext(workspace);

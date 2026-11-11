@@ -20,18 +20,18 @@ function writeBaseConfig(configPath: string) {
     },
     database: {
       mode: "embedded-postgres",
-      embeddedPostgresDataDir: "/tmp/paperclip-db",
+      embeddedPostgresDataDir: "/tmp/wardmote-db",
       embeddedPostgresPort: 54329,
       backup: {
         enabled: true,
         intervalMinutes: 60,
         retentionDays: 30,
-        dir: "/tmp/paperclip-backups",
+        dir: "/tmp/wardmote-backups",
       },
     },
     logging: {
       mode: "file",
-      logDir: "/tmp/paperclip-logs",
+      logDir: "/tmp/wardmote-logs",
     },
     server: {
       deploymentMode: "local_trusted",
@@ -51,7 +51,7 @@ function writeBaseConfig(configPath: string) {
     },
     storage: {
       provider: "local_disk",
-      localDisk: { baseDir: "/tmp/paperclip-storage" },
+      localDisk: { baseDir: "/tmp/wardmote-storage" },
       s3: {
         bucket: "paperclip",
         region: "us-east-1",
@@ -62,7 +62,7 @@ function writeBaseConfig(configPath: string) {
     secrets: {
       provider: "local_encrypted",
       strictMode: false,
-      localEncrypted: { keyFilePath: "/tmp/paperclip-secrets/master.key" },
+      localEncrypted: { keyFilePath: "/tmp/wardmote-secrets/master.key" },
     },
   };
   fs.mkdirSync(path.dirname(configPath), { recursive: true });
@@ -71,7 +71,7 @@ function writeBaseConfig(configPath: string) {
 
 describe("configure command", () => {
   it("sets a failing exit code for unknown sections", async () => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-configure-"));
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-configure-"));
     const configPath = path.join(root, "config.json");
     writeBaseConfig(configPath);
 
@@ -85,7 +85,7 @@ describe("configure command", () => {
   });
 
   it("sets a failing exit code when no config exists", async () => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-configure-missing-"));
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-configure-missing-"));
     const configPath = path.join(root, "missing.json");
 
     try {
@@ -98,7 +98,7 @@ describe("configure command", () => {
   });
 
   it("backs up invalid config bytes and refuses non-interactive replacement", async () => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-configure-invalid-"));
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-configure-invalid-"));
     const configPath = path.join(root, "config.json");
     const invalidBytes = Buffer.from('{"server": invalid}\n', "utf8");
     const stdinDescriptor = Object.getOwnPropertyDescriptor(process.stdin, "isTTY");

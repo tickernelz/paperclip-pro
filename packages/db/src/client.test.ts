@@ -175,7 +175,7 @@ describeEmbeddedPostgres("applyPendingMigrations", () => {
     await ensurePostgresDatabase(clusterUrl.toString(), databaseName);
     clusterUrl.pathname = "/" + databaseName;
     const connectionString = clusterUrl.toString();
-    const prefixFolder = await fs.promises.mkdtemp(join(tmpdir(), "paperclip-migration-prefix-"));
+    const prefixFolder = await fs.promises.mkdtemp(join(tmpdir(), "wardmote-migration-prefix-"));
     cleanups.push(() => fs.promises.rm(prefixFolder, { recursive: true, force: true }));
     await fs.promises.mkdir(join(prefixFolder, "meta"));
     const journal = JSON.parse(await fs.promises.readFile(new URL("./migrations/meta/_journal.json", import.meta.url), "utf8"));
@@ -1534,7 +1534,7 @@ describeEmbeddedPostgres("applyPendingMigrations", () => {
       legacyUrl.pathname = "/native_legacy";
       const connectionString = legacyUrl.href;
       cleanups.push(() => closeRegisteredClients(connectionString));
-      const directory = await fs.promises.mkdtemp(join(tmpdir(), "paperclip-native-prior-migrations-"));
+      const directory = await fs.promises.mkdtemp(join(tmpdir(), "wardmote-native-prior-migrations-"));
       cleanups.push(() => fs.promises.rm(directory, { recursive: true, force: true }));
       const migrationsRoot = new URL("./migrations/", import.meta.url);
       const journal = JSON.parse(await fs.promises.readFile(new URL("meta/_journal.json", migrationsRoot), "utf8"));

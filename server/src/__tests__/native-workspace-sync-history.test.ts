@@ -46,7 +46,7 @@ describe("native warm workspace Git history", () => {
 
   it.each(["unchanged", "host_commit", "host_branch", "remote_commit", "nested_commit"] as const)(
     "checks Git identity before reusing a warm sandbox: %s", async (change) => {
-      const root = await mkdtemp(path.join(os.tmpdir(), "paperclip-warm-history-"));
+      const root = await mkdtemp(path.join(os.tmpdir(), "wardmote-warm-history-"));
       roots.push(root);
       process.env.WARDMOTE_HOME = path.join(root, "home");
       process.env.WARDMOTE_INSTANCE_ID = "test";

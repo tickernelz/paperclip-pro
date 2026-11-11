@@ -15,7 +15,7 @@ afterEach(async () => {
 
 describe("resolveInlineSourceFromPath", () => {
   it("imports portable files from a zip archive instead of scanning the parent directory", async () => {
-    const tempDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-company-import-zip-"));
+    const tempDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-company-import-zip-"));
     tempDirs.push(tempDir);
 
     const blobBytes = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x00, 0xff]);

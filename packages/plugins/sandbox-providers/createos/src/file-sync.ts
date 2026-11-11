@@ -110,7 +110,7 @@ export async function syncFiles(
       signal.throwIfAborted();
       const local = direction === "in" ? mapping.sourcePath : mapping.targetPath;
       const remote = direction === "in" ? mapping.targetPath : mapping.sourcePath;
-      const scratch = `/tmp/paperclip-createos-transfer-${randomUUID()}`;
+      const scratch = `/tmp/wardmote-createos-transfer-${randomUUID()}`;
       // Outbound temporary files are on the target filesystem for atomic rename.
       const parent = direction === "out" ? path.dirname(local) : os.tmpdir();
       await fs.mkdir(parent, { recursive: true });

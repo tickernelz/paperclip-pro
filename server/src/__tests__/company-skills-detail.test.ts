@@ -102,7 +102,7 @@ describeEmbeddedPostgres("companySkillService.detail", () => {
     const companyId = randomUUID();
     const skillId = randomUUID();
     const skillKey = `company/${companyId}/reflection-coach`;
-    const skillDir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-reflection-skill-"));
+    const skillDir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-reflection-skill-"));
     cleanupDirs.add(skillDir);
     await fs.writeFile(path.join(skillDir, "SKILL.md"), "# Reflection Coach\n", "utf8");
 
@@ -159,7 +159,7 @@ describeEmbeddedPostgres("companySkillService.detail", () => {
     const companyId = randomUUID();
     const skillId = randomUUID();
     const skillKey = `company/${companyId}/reflection-coach`;
-    const skillDir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-reflection-skill-"));
+    const skillDir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-reflection-skill-"));
     cleanupDirs.add(skillDir);
     await fs.writeFile(path.join(skillDir, "SKILL.md"), "# Reflection Coach\n", "utf8");
 

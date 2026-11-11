@@ -22,7 +22,7 @@ const worker = `
   setInterval(() => {}, 1000);
 `;
 async function fixture(source = worker) {
-  const root = await mkdtemp(path.join(os.tmpdir(), "paperclip-server-stop-"));
+  const root = await mkdtemp(path.join(os.tmpdir(), "wardmote-server-stop-"));
   directories.push(root);
   const entry = path.join(root, "worker.cjs");
   await writeFile(entry, source);

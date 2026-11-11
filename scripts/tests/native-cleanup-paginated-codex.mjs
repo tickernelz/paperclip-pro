@@ -32,7 +32,7 @@ if (
     "This opt-in qualification requires Codex CLI 0.160.0. Requalify deliberately before changing the pin.",
   );
 }
-const home = await mkdtemp(join(tmpdir(), "paperclip-paginated-probe-"));
+const home = await mkdtemp(join(tmpdir(), "wardmote-paginated-probe-"));
 const methods = [];
 async function withServer(home, callback) {
   const child = spawn(codexBinary, ["app-server"], {

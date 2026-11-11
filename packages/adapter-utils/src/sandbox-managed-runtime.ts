@@ -1747,7 +1747,7 @@ export async function prepareSandboxManagedRuntime(input: {
               });
               await nested.restoreWorkspace(restoreSink);
             }
-            await withTempDir("paperclip-sandbox-restore-", async (tempDir) => {
+            await withTempDir("wardmote-sandbox-restore-", async (tempDir) => {
               let importedRef: string | null = null;
               let importedHead: string | null = null;
               let remoteWorkspaceStatus = "dirty";
@@ -1957,7 +1957,7 @@ export async function prepareSandboxManagedRuntime(input: {
           withWorkspaceRestoreDiagnostics(
             "asset",
             () => runStepSpan(`restore.asset.${assetKey}`, async () => {
-              await withTempDir("paperclip-sandbox-restore-", async (tempDir) => {
+              await withTempDir("wardmote-sandbox-restore-", async (tempDir) => {
                 await withWorkspaceRestoreStep("asset_restore", () => assetRestore({
                   assetDir: path.posix.join(runtimeRootDir, assetKey),
                   readFile: async (remotePath) => toBuffer(await input.client.readFile(remotePath)),

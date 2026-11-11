@@ -9,7 +9,7 @@ const created: string[] = [];
 const ORIGINAL_IN_WORKTREE = process.env.WARDMOTE_IN_WORKTREE;
 
 function makeBase(): string {
-  const base = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-dbcheck-"));
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-dbcheck-"));
   created.push(base);
   return base;
 }

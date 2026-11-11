@@ -49,7 +49,7 @@ function stubStore(loaded: AcpSessionRecord | undefined) {
 const directories: string[] = [];
 afterEach(async () => { await Promise.all(directories.splice(0).map(directory => rm(directory, { recursive: true, force: true }))); });
 async function diskStore() {
-  const stateDir = await mkdtemp(join(tmpdir(), "paperclip-session-env-")); directories.push(stateDir);
+  const stateDir = await mkdtemp(join(tmpdir(), "wardmote-session-env-")); directories.push(stateDir);
   return { store: createRuntimeStore({ stateDir }), file: join(stateDir, "sessions", "fixture-record.json") };
 }
 

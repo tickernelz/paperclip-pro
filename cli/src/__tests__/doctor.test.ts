@@ -34,7 +34,7 @@ async function availablePort(): Promise<number> {
 }
 
 function createTempConfig(serverPort: number): string {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-doctor-"));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-doctor-"));
   const configPath = path.join(root, ".wardmote", "config.json");
   const runtimeRoot = path.join(root, "runtime");
 

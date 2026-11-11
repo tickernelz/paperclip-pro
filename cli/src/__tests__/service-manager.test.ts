@@ -23,7 +23,7 @@ afterEach(async () => {
 });
 
 async function temporaryDirectory(): Promise<string> {
-  const directory = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-service-test-"));
+  const directory = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-service-test-"));
   temporaryDirectories.push(directory);
   return directory;
 }

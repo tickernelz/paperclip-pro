@@ -106,7 +106,7 @@ describe("native workspace finalization recovery", () => {
 
   beforeAll(async () => {
     workspaceRoot = await fs.mkdtemp(
-      path.join(os.tmpdir(), "paperclip-native-workspace-finalizer-"),
+      path.join(os.tmpdir(), "wardmote-native-workspace-finalizer-"),
     );
     priorLogRoot = process.env.WORKSPACE_OPERATION_LOG_BASE_PATH;
     process.env.WORKSPACE_OPERATION_LOG_BASE_PATH = path.join(
@@ -114,7 +114,7 @@ describe("native workspace finalization recovery", () => {
       "operation-logs",
     );
     temporary = await startEmbeddedPostgresTestDatabase(
-      "paperclip-native-workspace-finalizer-",
+      "wardmote-native-workspace-finalizer-",
     );
     db = createDb(temporary.connectionString);
 

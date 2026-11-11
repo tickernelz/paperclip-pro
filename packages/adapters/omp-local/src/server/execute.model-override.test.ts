@@ -20,7 +20,7 @@ describe("OMP local model and thinking flags", () => {
   let captured: string[] | null;
 
   beforeEach(async () => {
-    root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-omp-model-override-"));
+    root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-omp-model-override-"));
     workspaceCwd = path.join(root, "workspace");
     commandPath = path.join(root, "fake-omp");
     await fs.mkdir(workspaceCwd, { recursive: true });

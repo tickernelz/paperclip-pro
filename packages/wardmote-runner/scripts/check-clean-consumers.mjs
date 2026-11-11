@@ -22,7 +22,7 @@ const scratchParent = process.env.WARDMOTE_RUN_SCRATCH_DIR
   ?? process.env.WARDMOTE_SCRATCH_DIR
   ?? tmpdir();
 await mkdir(scratchParent, { recursive: true });
-const scratchRoot = await mkdtemp(join(scratchParent, "paperclip-package-consumer-"));
+const scratchRoot = await mkdtemp(join(scratchParent, "wardmote-package-consumer-"));
 const artifactsRoot = resolve(scratchRoot, "artifacts");
 const publicationRoot = process.env.WARDMOTE_CLEAN_CONSUMER_OUTPUT_DIR === undefined
   ? undefined

@@ -61,7 +61,7 @@ const support = await getEmbeddedPostgresTestSupport();
         "test-github-broker-signing-secret",
       );
       database = await startEmbeddedPostgresTestDatabase(
-        "paperclip-github-operation-",
+        "wardmote-github-operation-",
       );
       db = createDb(database.connectionString);
     }, 30_000);

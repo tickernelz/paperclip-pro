@@ -45,7 +45,7 @@ describeEmbeddedPostgres("company skill import authorization routes", () => {
 
   beforeAll(async () => {
     process.env.WARDMOTE_AGENT_JWT_SECRET = "company-skills-import-authz-test-secret";
-    wardmoteHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-company-skills-import-authz-home-"));
+    wardmoteHome = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-company-skills-import-authz-home-"));
     process.env.WARDMOTE_HOME = wardmoteHome;
     process.env.WARDMOTE_INSTANCE_ID = "default";
     tempDb = await startEmbeddedPostgresTestDatabase("paperclip-company-skills-import-authz-");
@@ -94,7 +94,7 @@ describeEmbeddedPostgres("company skill import authorization routes", () => {
     // skill_workspace_boundary_denied.
     const managedRoot = path.join(wardmoteHome, "instances", "default", "skills", companyId);
     await fs.mkdir(managedRoot, { recursive: true });
-    const skillDir = await fs.mkdtemp(path.join(managedRoot, "paperclip-import-authz-skill-"));
+    const skillDir = await fs.mkdtemp(path.join(managedRoot, "wardmote-import-authz-skill-"));
     cleanupDirs.add(skillDir);
     await fs.writeFile(
       path.join(skillDir, "SKILL.md"),

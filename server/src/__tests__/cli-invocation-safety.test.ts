@@ -479,7 +479,7 @@ function scanForBrokenExecForm(): string[] {
 
 describe("wardmote CLI invocation safety", () => {
   it("excludes generated runner evidence while preserving authored runner guidance", () => {
-    const root = mkdtempSync(path.join(os.tmpdir(), "paperclip-cli-guidance-"));
+    const root = mkdtempSync(path.join(os.tmpdir(), "wardmote-cli-guidance-"));
     const sourcePaths = [
       "doc/CLI.md",
       "tests/runner-e2e/README.md",
@@ -502,7 +502,7 @@ describe("wardmote CLI invocation safety", () => {
   });
 
   it("excludes root runtime recordings but still scans unsafe docs and source guidance", () => {
-    const fixtureRoot = mkdtempSync(path.join(os.tmpdir(), "paperclip-cli-guidance-"));
+    const fixtureRoot = mkdtempSync(path.join(os.tmpdir(), "wardmote-cli-guidance-"));
     try {
       execFileSync("git", ["init", "--quiet"], { cwd: fixtureRoot });
       const fixtures = [
@@ -531,7 +531,7 @@ describe("wardmote CLI invocation safety", () => {
   });
 
   it("scans tracked and ordinary untracked guidance but excludes ignored untracked files", () => {
-    const root = mkdtempSync(path.join(os.tmpdir(), "paperclip-cli-guidance-"));
+    const root = mkdtempSync(path.join(os.tmpdir(), "wardmote-cli-guidance-"));
     try {
       execFileSync("git", ["init", "--quiet"], { cwd: root });
       writeFileSync(path.join(root, ".gitignore"), "ignored.md\ntracked.md\n");

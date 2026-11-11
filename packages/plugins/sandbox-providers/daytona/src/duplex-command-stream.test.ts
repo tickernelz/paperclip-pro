@@ -251,10 +251,10 @@ describe("openDaytonaDuplexChannelSession", () => {
     const process = createFakeProcess();
 
     await openDaytonaDuplexChannelSession(process, GATEWAY, {
-      diagnosticsPath: "/tmp/paperclip-duplex-fixed.log",
+      diagnosticsPath: "/tmp/wardmote-duplex-fixed.log",
     });
 
-    expect(process.handle?.inputs[0]).toContain("2>'/tmp/paperclip-duplex-fixed.log'");
+    expect(process.handle?.inputs[0]).toContain("2>'/tmp/wardmote-duplex-fixed.log'");
   });
 
   it("defaults the diagnostics path under /tmp when the caller gives none", async () => {
@@ -262,7 +262,7 @@ describe("openDaytonaDuplexChannelSession", () => {
 
     await openDaytonaDuplexChannelSession(process, GATEWAY);
 
-    expect(process.handle?.inputs[0]).toMatch(/2>'\/tmp\/paperclip-duplex-[0-9a-f-]+\.log'/);
+    expect(process.handle?.inputs[0]).toMatch(/2>'\/tmp\/wardmote-duplex-[0-9a-f-]+\.log'/);
   });
 
   it("delivers a host write to the process and does not echo it back as data", async () => {

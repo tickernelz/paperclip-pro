@@ -4095,7 +4095,7 @@ async function deleteGitBranchAtVerifiedTip(input: {
   const commonDir = path.isAbsolute(commonDirRaw)
     ? commonDirRaw
     : path.resolve(input.repoRoot, commonDirRaw);
-  const detachedGitDir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-branch-delete-"));
+  const detachedGitDir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-branch-delete-"));
   const detachedWorktree = `${detachedGitDir}-worktree`;
 
   try {

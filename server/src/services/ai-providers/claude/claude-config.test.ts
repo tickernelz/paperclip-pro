@@ -46,7 +46,7 @@ describe("prepareClaudeConfigSeed", () => {
   }
 
   it("reuses the same snapshot path when the seeded files are unchanged", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-claude-config-seed-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-claude-config-seed-"));
     cleanupDirs.push(root);
     const sourceDir = path.join(root, "claude-source");
     await fs.mkdir(sourceDir, { recursive: true });
@@ -70,7 +70,7 @@ describe("prepareClaudeConfigSeed", () => {
   });
 
   it("keeps an existing snapshot intact when the seeded files change", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-claude-config-race-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-claude-config-race-"));
     cleanupDirs.push(root);
     const sourceDir = path.join(root, "claude-source");
     await fs.mkdir(sourceDir, { recursive: true });
@@ -91,7 +91,7 @@ describe("prepareClaudeConfigSeed", () => {
   });
 
   it("strips local-only settings from remote Claude config seeds", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-claude-config-boundary-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-claude-config-boundary-"));
     cleanupDirs.push(root);
     const sourceDir = path.join(root, "claude-source");
     await fs.mkdir(sourceDir, { recursive: true });
@@ -174,7 +174,7 @@ describe("prepareSandboxClaudeProbeRuntime managed-config diagnostics", () => {
     const opaqueCredMarker = "OPAQUECREDMARKERconfig";
     const proxyMarker = "http://user:pass@proxy.corp.internal:3128";
 
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-claude-config-mgmt-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-claude-config-mgmt-"));
     cleanupDirs.push(root);
     const sourceDir = path.join(root, "claude-source");
     await fs.mkdir(sourceDir, { recursive: true });

@@ -77,7 +77,7 @@ describeEmbeddedPostgres("createPluginSecretsHandler shared vault integration", 
   let stopDb: (() => Promise<void>) | null = null;
   let db!: ReturnType<typeof createDb>;
   const previousKeyFile = process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE;
-  const secretsTmpDir = path.join(os.tmpdir(), `paperclip-plugin-secrets-${randomUUID()}`);
+  const secretsTmpDir = path.join(os.tmpdir(), `wardmote-plugin-secrets-${randomUUID()}`);
 
   beforeAll(async () => {
     mkdirSync(secretsTmpDir, { recursive: true });

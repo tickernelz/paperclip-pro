@@ -480,7 +480,7 @@ const support = await getEmbeddedPostgresTestSupport();
           onnotice: () => {},
         });
         const directory = await mkdtemp(
-          join(tmpdir(), "paperclip-chat-old-migrations-"),
+          join(tmpdir(), "wardmote-chat-old-migrations-"),
         );
         const name = `legacy_chat_${randomUUID().replaceAll("-", "")}`;
         const legacyUrl = new URL(database.connectionString);

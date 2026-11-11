@@ -173,7 +173,7 @@ async function readGit(cwd: string, args: string[]) {
 }
 
 async function createTempRepo() {
-  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-execution-workspace-"));
+  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-execution-workspace-"));
   await runGit(repoRoot, ["init"]);
   await runGit(repoRoot, ["config", "user.name", "Wardmote Test"]);
   await runGit(repoRoot, ["config", "user.email", "test@wardmote.local"]);
@@ -1918,7 +1918,7 @@ describeEmbeddedPostgres("executionWorkspaceService.getCloseReadiness", () => {
       name: "Primary",
       sourceType: "local_path",
       isPrimary: true,
-      cwd: "/tmp/paperclip-primary",
+      cwd: "/tmp/wardmote-primary",
     });
     await db.insert(executionWorkspaces).values({
       id: executionWorkspaceId,
@@ -1930,7 +1930,7 @@ describeEmbeddedPostgres("executionWorkspaceService.getCloseReadiness", () => {
       name: "Shared workspace",
       status: "active",
       providerType: "local_fs",
-      cwd: "/tmp/paperclip-primary",
+      cwd: "/tmp/wardmote-primary",
       metadata: {
         config: {
           teardownCommand: "bash ./scripts/teardown.sh",
@@ -3655,7 +3655,7 @@ describeEmbeddedPostgres("executionWorkspaceService.getCloseReadiness", () => {
     const projectId = randomUUID();
     const issueId = randomUUID();
     const executionWorkspaceId = randomUUID();
-    const runtimeStartedMarker = path.join(os.tmpdir(), `paperclip-runtime-started-${randomUUID()}.marker`);
+    const runtimeStartedMarker = path.join(os.tmpdir(), `wardmote-runtime-started-${randomUUID()}.marker`);
 
     await db.insert(companies).values({
       id: companyId,

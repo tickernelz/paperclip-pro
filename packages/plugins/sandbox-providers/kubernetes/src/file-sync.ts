@@ -148,7 +148,7 @@ function posixPathEscapes(relative: string): boolean {
 }
 
 async function withHostTempDir<T>(fn: (dir: string) => Promise<T>): Promise<T> {
-  const dir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-k8s-sync-"));
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-k8s-sync-"));
   try {
     return await fn(dir);
   } finally {

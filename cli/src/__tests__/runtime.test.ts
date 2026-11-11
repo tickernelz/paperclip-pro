@@ -8,7 +8,7 @@ import { buildPiSetupEnvironment, registerRuntimeCommands, resolvePiProvisioner,
 const roots: string[] = [];
 afterEach(async () => { await Promise.all(roots.splice(0).map(root => rm(root, { recursive: true, force: true }))); });
 async function fixture() {
-  const root = await realpath(await mkdtemp(join(tmpdir(), "paperclip-cli-runtime-"))); roots.push(root);
+  const root = await realpath(await mkdtemp(join(tmpdir(), "wardmote-cli-runtime-"))); roots.push(root);
   const cli = join(root, "dist/vendor/wardmote-runner/cli"); await mkdir(cli, { recursive: true });
   await writeFile(join(root, "package.json"), '{"name":"@tickernelz/wardmote-server"}');
   await writeFile(join(root, "dist/index.js"), "throw new Error('server must not start during setup resolution')");

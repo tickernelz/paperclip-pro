@@ -19,7 +19,7 @@ afterEach(async () => {
 });
 
 async function workspace() {
-  const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-acp-filesystem-"));
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-acp-filesystem-"));
   roots.push(root);
   const cwd = path.join(root, "workspace");
   await fs.mkdir(cwd);

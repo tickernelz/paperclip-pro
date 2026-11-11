@@ -8,7 +8,7 @@ import { captureWardmoteWorkspace, diffWardmoteWorkspace } from "./workspace-dif
 
 describe("runner-verified workspace diffs", () => {
   it("captures create, modify, delete, and rename without runner-owned noise", async () => {
-    const root = await mkdtemp(join(tmpdir(), "paperclip-workspace-diff-"));
+    const root = await mkdtemp(join(tmpdir(), "wardmote-workspace-diff-"));
     await mkdir(join(root, ".paperclip-runner-prp"));
     await writeFile(join(root, ".paperclip-runner-prp", "state.json"), "before");
     await writeFile(join(root, "modify.txt"), "old\n");
@@ -37,7 +37,7 @@ describe("runner-verified workspace diffs", () => {
   });
 
   it("returns no record when the workspace did not change", async () => {
-    const root = await mkdtemp(join(tmpdir(), "paperclip-workspace-stable-"));
+    const root = await mkdtemp(join(tmpdir(), "wardmote-workspace-stable-"));
     await writeFile(join(root, "stable.txt"), "same\n");
     const before = await captureWardmoteWorkspace(root);
     const after = await captureWardmoteWorkspace(root);

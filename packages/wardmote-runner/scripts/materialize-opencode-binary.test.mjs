@@ -22,7 +22,7 @@ afterEach(async () => {
 });
 
 async function fixture(options = {}) {
-  const root = await mkdtemp(join(tmpdir(), "paperclip-opencode-binary-"));
+  const root = await mkdtemp(join(tmpdir(), "wardmote-opencode-binary-"));
   temporaryDirectories.push(root);
   const packageRoot = join(root, "opencode-ai");
   const baselineRoot = join(root, "opencode-linux-x64-baseline");

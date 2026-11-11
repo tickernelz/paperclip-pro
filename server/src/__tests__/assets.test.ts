@@ -9,7 +9,7 @@ import request from "supertest";
 import type { StorageService } from "../storage/types.js";
 
 const previousWardmoteHome = process.env.WARDMOTE_HOME;
-const uploadHome = mkdtempSync(path.join(os.tmpdir(), "paperclip-assets-upload-"));
+const uploadHome = mkdtempSync(path.join(os.tmpdir(), "wardmote-assets-upload-"));
 process.env.WARDMOTE_HOME = uploadHome;
 afterAll(async () => {
   if (previousWardmoteHome === undefined) delete process.env.WARDMOTE_HOME;

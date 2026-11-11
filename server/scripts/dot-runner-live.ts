@@ -25,7 +25,7 @@ const origin = new URL(process.env.DOT_LAB_ORIGIN ?? "").origin;
 assert(origin.startsWith("https://"), "DOT_LAB_ORIGIN must be the public HTTPS tunnel origin");
 const port = z.coerce.number().int().min(1024).max(65534).parse(process.env.DOT_LAB_PORT ?? 43127);
 const requestIdSchema = z.string().regex(/^pcmcp_request_[A-Za-z0-9_-]{43}$/);
-const scratch = await mkdtemp(join(tmpdir(), "paperclip-dot-live-"));
+const scratch = await mkdtemp(join(tmpdir(), "wardmote-dot-live-"));
 process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE = join(scratch, "master.key");
 delete process.env.WARDMOTE_SECRETS_MASTER_KEY;
 delete process.env.WARDMOTE_CLOUD_API_ORIGIN;
@@ -41,7 +41,7 @@ async function listen(server: Server, listenPort: number) { server.listen(listen
 async function close(server: Server) { server.closeAllConnections(); if (server.listening) await new Promise<void>(resolve => server.close(() => resolve())); }
 const escape = (value: string) => value.replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 try {
-  database = await startEmbeddedPostgresTestDatabase("paperclip-dot-live-");
+  database = await startEmbeddedPostgresTestDatabase("wardmote-dot-live-");
   const db = createDb(database.connectionString);
   const oauth = createPublicMcpOAuth(db, { origin, resource: origin + "/mcp/wardmote" });
   await instanceSettingsService(db).updateExperimental({ enablePublicMcp: true });

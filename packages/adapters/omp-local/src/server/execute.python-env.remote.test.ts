@@ -83,7 +83,7 @@ describe("OMP remote Python env bridge", () => {
   });
 
   it("launches OMP through a remote PYTHONPATH launcher instead of a literal PYTHONPATH", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-omp-remote-pyenv-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-omp-remote-pyenv-"));
     cleanupDirs.push(rootDir);
     const workspaceDir = path.join(rootDir, "workspace");
     await mkdir(workspaceDir, { recursive: true });

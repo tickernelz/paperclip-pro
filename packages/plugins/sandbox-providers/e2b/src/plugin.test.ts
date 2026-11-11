@@ -302,19 +302,19 @@ describe("E2B sandbox provider plugin", () => {
     });
 
     expect(mockConnect).toHaveBeenCalledWith("sandbox-123", expect.objectContaining({ apiKey: "resolved-key" }));
-    expect(sandbox.files.write).toHaveBeenCalledWith(expect.stringMatching(/^\/tmp\/paperclip-stdin-/), "input");
+    expect(sandbox.files.write).toHaveBeenCalledWith(expect.stringMatching(/^\/tmp\/wardmote-stdin-/), "input");
     const stdinCall = sandbox.commands.run.mock.calls.find(([cmd]: [string]) => cmd.includes("'printf'"));
     expect(stdinCall).toBeDefined();
     if (!stdinCall) throw new Error("stdinCall not found");
     expect(stdinCall[0]).toMatch(/\.profile/);
-    expect(stdinCall[0]).toMatch(/exec env FOO='bar' 'printf' 'hello' < '\/tmp\/paperclip-stdin-/);
+    expect(stdinCall[0]).toMatch(/exec env FOO='bar' 'printf' 'hello' < '\/tmp\/wardmote-stdin-/);
     expect(stdinCall[1]).toEqual(expect.objectContaining({ cwd: "/workspace", timeoutMs: 1000 }));
     expect(stdinCall[1]).not.toHaveProperty("envs");
     expect(stdinCall[1]).not.toHaveProperty("background");
     expect(sandbox.commands.sendStdin).not.toHaveBeenCalled();
     expect(sandbox.commands.closeStdin).not.toHaveBeenCalled();
     expect(sandbox.handle.wait).not.toHaveBeenCalled();
-    expect(sandbox.files.remove).toHaveBeenCalledWith(expect.stringMatching(/^\/tmp\/paperclip-stdin-/));
+    expect(sandbox.files.remove).toHaveBeenCalledWith(expect.stringMatching(/^\/tmp\/wardmote-stdin-/));
     expect(result).toEqual({
       exitCode: 0,
       timedOut: false,
@@ -460,7 +460,7 @@ describe("E2B sandbox provider plugin", () => {
       timeoutMs: 1000,
     })).rejects.toThrow("write failed");
 
-    expect(sandbox.files.remove).toHaveBeenCalledWith(expect.stringMatching(/^\/tmp\/paperclip-stdin-/));
+    expect(sandbox.files.remove).toHaveBeenCalledWith(expect.stringMatching(/^\/tmp\/wardmote-stdin-/));
     expect(sandbox.commands.sendStdin).not.toHaveBeenCalled();
     expect(sandbox.handle.wait).not.toHaveBeenCalled();
   });
@@ -633,7 +633,7 @@ describe("E2B sandbox provider plugin", () => {
         metadata: { remoteCwd: "/home/user/paperclip-workspace" },
       },
       workspace: {
-        localPath: "/tmp/paperclip-workspace",
+        localPath: "/tmp/wardmote-workspace",
       },
     })).resolves.toEqual({
       cwd: "/home/user/paperclip-workspace",

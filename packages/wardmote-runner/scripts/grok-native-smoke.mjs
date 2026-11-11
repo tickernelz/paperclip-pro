@@ -35,7 +35,7 @@ report.binaryDigest = `sha256:${createHash('sha256').update(binary).digest('hex'
 async function persist() { await writeFile(resolve(values.output), JSON.stringify(report, null, 2)+'\n', { mode: 0o600 }); }
 await persist();
 for (let repetition=1; repetition<=repetitions; repetition++) {
-  const root = await realpath(await mkdtemp(join(tmpdir(), 'paperclip-grok-smoke-')));
+  const root = await realpath(await mkdtemp(join(tmpdir(), 'wardmote-grok-smoke-')));
   await mkdir(join(root,'runtime'), { mode:0o700 }); await mkdir(join(root,'workspace'), { mode:0o700 });
   const nonce=randomUUID(); let calls=0; let host;
   const attempt = { repetition, startedAt: new Date().toISOString(), status: 'running', checks: {}, usage: null, cost: null };

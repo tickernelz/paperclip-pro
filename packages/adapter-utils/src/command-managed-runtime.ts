@@ -433,7 +433,7 @@ export function createCommandManagedRuntimeClient(input: {
   // rides the shared `execute` seam.
   const fallbackSyncIn = async (operations: SandboxSyncOperation[]): Promise<SandboxSyncResult> => {
     const resultOperations: SandboxSyncResult["operations"] = [];
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-syncin-fallback-"));
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-syncin-fallback-"));
     try {
       for (const operation of operations) {
         let filesTransferred = 0;

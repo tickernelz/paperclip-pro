@@ -17,7 +17,7 @@ describe("ensureOmpSkills", () => {
   let skillsHome: string;
 
   beforeEach(async () => {
-    root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-omp-skills-"));
+    root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-omp-skills-"));
     agentDir = path.join(root, "agent");
     skillsHome = path.join(agentDir, "skills");
     await fs.mkdir(skillsHome, { recursive: true });

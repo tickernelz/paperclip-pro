@@ -87,7 +87,7 @@ afterEach(() => {
 
 describe("test-drive data isolation", () => {
   it.each([false, true])("reuses the saved port, with occupied=%s", async (occupied) => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-test-drive-port-"));
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-test-drive-port-"));
     cleanupDirectories.push(root);
     const listener = createServer();
     await new Promise<void>((resolve) => listener.listen(0, "127.0.0.1", resolve));
@@ -125,7 +125,7 @@ describe("test-drive data isolation", () => {
   });
 
   it("resolves an explicit reusable directory without resetting it", () => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-test-drive-explicit-"));
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-test-drive-explicit-"));
     cleanupDirectories.push(root);
     const marker = path.join(root, "keep.txt");
     fs.writeFileSync(marker, "keep");
@@ -135,7 +135,7 @@ describe("test-drive data isolation", () => {
   });
 
   it("discards inherited Wardmote routing", async () => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-test-drive-env-"));
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-test-drive-env-"));
     cleanupDirectories.push(root);
     process.env.WARDMOTE_HOME = "/normal/home";
     process.env.WARDMOTE_CONFIG = "/normal/config.json";

@@ -24,8 +24,8 @@ describe("local service supervision", () => {
   });
 
   it("keeps request-logging runtime stdio usable after the supervisor side closes", async () => {
-    const workspaceRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-service-stdio-"));
-    const wardmoteHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-service-home-"));
+    const workspaceRoot = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-service-stdio-"));
+    const wardmoteHome = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-service-home-"));
     const previousWardmoteHome = process.env.WARDMOTE_HOME;
     const previousInstanceId = process.env.WARDMOTE_INSTANCE_ID;
     process.env.WARDMOTE_HOME = wardmoteHome;

@@ -9,7 +9,7 @@ import { assertPiNodeSystemDependencies, PI_BRACE_SECURITY_PATCH_SHA256, PI_DIST
 import { verifyPiRuntimeManifest } from "../src/drivers/acpx/pi-verified-runtime.ts";
 
 async function fixture(t) {
-  const root = await mkdtemp(join(tmpdir(), "paperclip-pi-distribution-test-"));
+  const root = await mkdtemp(join(tmpdir(), "wardmote-pi-distribution-test-"));
   t.after(() => rm(root, { recursive: true, force: true }));
   const write = async (path, data) => { await mkdir(dirname(join(root, path)), { recursive: true }); await writeFile(join(root, path), data); };
   return { root, write };

@@ -84,7 +84,7 @@ describe("cli telemetry", () => {
   });
 
   it("respects telemetry.enabled=false from the config file", async () => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-cli-telemetry-"));
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-cli-telemetry-"));
     const configPath = makeConfigPath(root, false);
     process.env.WARDMOTE_HOME = path.join(root, "home");
     process.env.WARDMOTE_INSTANCE_ID = "telemetry-test";
@@ -97,7 +97,7 @@ describe("cli telemetry", () => {
   });
 
   it("creates telemetry state only after the first event is tracked", async () => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-cli-telemetry-"));
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-cli-telemetry-"));
     process.env.WARDMOTE_HOME = path.join(root, "home");
     process.env.WARDMOTE_INSTANCE_ID = "telemetry-test";
 

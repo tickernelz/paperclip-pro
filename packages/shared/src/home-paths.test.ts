@@ -80,7 +80,7 @@ afterEach(() => {
 
 describe("home path resolution", () => {
   it("resolves config and runtime data directly under the instance root", () => {
-    const home = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-home-paths-"));
+    const home = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-home-paths-"));
     process.env.WARDMOTE_HOME = home;
     delete process.env.WARDMOTE_INSTANCE_ID;
 

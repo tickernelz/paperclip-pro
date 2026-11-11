@@ -10,7 +10,7 @@ import { getMaxAttachmentBytes } from "../../attachment-types.js";
 describe("native SSH deliverable output budget", () => {
   let root: string;
   beforeEach(async () => {
-    root = await mkdtemp(join(tmpdir(), "paperclip-ssh-output-"));
+    root = await mkdtemp(join(tmpdir(), "wardmote-ssh-output-"));
     // Exercise the real SSH command adapter and its execFile output limit,
     // replacing only the network executable with a deterministic byte source.
     const executable = join(root, "ssh");

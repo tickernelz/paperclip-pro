@@ -537,7 +537,7 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
     try {
       const [agent] = await db.insert(agents).values({ companyId: f.company.id, name: "Researcher", role: "researcher", adapterType: "process", status: "idle" }).returning();
       const api = express.Router(); api.use(boardMutationGuard());
-      api.use(issueRoutes(db, createStorageService(createLocalDiskStorageProvider("/tmp/paperclip-public-mcp-unused-storage"))));
+      api.use(issueRoutes(db, createStorageService(createLocalDiskStorageProvider("/tmp/wardmote-public-mcp-unused-storage"))));
       api.use(activityRoutes(db));
       const execute = createPublicMcpExecutor(db, oauth, createMcpApiDispatch(api));
       const args = { companyId: f.company.id, requestId: randomUUID(), title: "Write a durable report", description: "Research the supplied material", assigneeAgentId: agent!.id };

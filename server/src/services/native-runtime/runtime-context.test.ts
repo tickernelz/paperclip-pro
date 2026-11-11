@@ -63,7 +63,7 @@ beforeEach(async () => {
   serviceMocks.spekoToolsForSession.mockResolvedValue([]);
   previousWardmoteHome = process.env.WARDMOTE_HOME;
   previousInstanceId = process.env.WARDMOTE_INSTANCE_ID;
-  const root = await mkdtemp(path.join(tmpdir(), "paperclip-native-context-"));
+  const root = await mkdtemp(path.join(tmpdir(), "wardmote-native-context-"));
   temporaryRoots.push(root);
   process.env.WARDMOTE_HOME = root;
   process.env.WARDMOTE_INSTANCE_ID = "runtime_context_test";
@@ -258,7 +258,7 @@ describe("buildNativeRuntimeContext", () => {
         "references/policy.md": "Company policy sibling.\n",
       },
     });
-    const sourceRoot = await mkdtemp(path.join(tmpdir(), "paperclip-native-skill-"));
+    const sourceRoot = await mkdtemp(path.join(tmpdir(), "wardmote-native-skill-"));
     temporaryRoots.push(sourceRoot);
     const selectedRoot = path.join(sourceRoot, "reviewer");
     const unselectedRoot = path.join(sourceRoot, "unused");
@@ -344,7 +344,7 @@ describe("buildNativeRuntimeContext", () => {
         missingDetail: "assigned skill checkout is unavailable",
       }],
     })).rejects.toThrow("assigned skill checkout is unavailable");
-    const supportedRoot = await mkdtemp(path.join(tmpdir(), "paperclip-native-supported-skill-"));
+    const supportedRoot = await mkdtemp(path.join(tmpdir(), "wardmote-native-supported-skill-"));
     temporaryRoots.push(supportedRoot);
     await writeFile(path.join(supportedRoot, "SKILL.md"), "# Supported\n");
     const context = await buildNativeRuntimeContext({

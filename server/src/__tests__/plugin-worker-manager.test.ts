@@ -1117,7 +1117,7 @@ function makeLoginPtyHandle(extra?: Record<string, unknown>) {
 }
 
 // One valid session home. The shape is the fixed root, one slash, and one UUID.
-const PTY_SESSION_HOME = "/tmp/paperclip-adapter-login/11111111-2222-4333-8444-555555555555";
+const PTY_SESSION_HOME = "/tmp/wardmote-adapter-login/11111111-2222-4333-8444-555555555555";
 
 function ptyOpenInput(directive: unknown) {
   return {
@@ -1177,7 +1177,7 @@ describe("plugin worker manager setup-token pty route gate", () => {
           environmentId: "env-1",
           providerLeaseId: JSON.stringify({ mode: "normal" }),
           loginCommandKey: "claude" as const,
-          sessionHome: "/tmp/paperclip-adapter-login/../etc",
+          sessionHome: "/tmp/wardmote-adapter-login/../etc",
         }),
       ).rejects.toThrow("LOGIN_PTY_INVALID_SESSION_HOME");
       // The rejected open never consumed the single route.

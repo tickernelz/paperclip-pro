@@ -137,7 +137,7 @@ async function readGit(cwd: string, args: string[]) {
 async function createGitRepo() {
   // realpath: on macOS os.tmpdir() is a symlink (/tmp -> /private/tmp) and the
   // runtime persists resolved worktree paths, so unresolved fixtures never match.
-  const repoRoot = await realpath(await mkdtemp(path.join(os.tmpdir(), "paperclip-branch-containment-repo-")));
+  const repoRoot = await realpath(await mkdtemp(path.join(os.tmpdir(), "wardmote-branch-containment-repo-")));
   await runGit(repoRoot, ["init"]);
   await runGit(repoRoot, ["config", "user.email", "paperclip-test@example.com"]);
   await runGit(repoRoot, ["config", "user.name", "Wardmote Test"]);
@@ -938,7 +938,7 @@ describeEmbeddedPostgres("heartbeat workspace branch containment", () => {
   }, 60_000);
 
   async function seedRetainedSourceRun(kind: "deleted" | "explicit_conflict" | "foreign_project" | "foreign_company" | "unproven") {
-    const home = await realpath(await mkdtemp(path.join(os.tmpdir(), "paperclip-retained-source-home-")));
+    const home = await realpath(await mkdtemp(path.join(os.tmpdir(), "wardmote-retained-source-home-")));
     tempRoots.push(home);
     vi.stubEnv("WARDMOTE_HOME", home);
     const original = await createGitRepo();

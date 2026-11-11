@@ -48,7 +48,7 @@ describe("WardmoteRunnerToolAuthority", () => {
 
   beforeAll(async () => {
     temporary = await startEmbeddedPostgresTestDatabase(
-      "paperclip-runner-tools-",
+      "wardmote-runner-tools-",
     );
     db = createDb(temporary.connectionString);
     await db.insert(companies).values({
@@ -248,7 +248,7 @@ describe("WardmoteRunnerToolAuthority", () => {
         agentId,
         issueId,
         runId,
-        workspaceRoot: "/tmp/paperclip-runner-tools",
+        workspaceRoot: "/tmp/wardmote-runner-tools",
         executionTargetKind: "local",
       });
     const requiredChatFileTools = [

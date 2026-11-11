@@ -88,7 +88,7 @@ describeEmbeddedPostgres("process-loss continuation session resume", () => {
 
   beforeAll(async () => {
     wardmoteHome = await fs.realpath(
-      await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-process-loss-home-")),
+      await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-process-loss-home-")),
     );
     process.env.WARDMOTE_HOME = wardmoteHome;
     tempDb = await startEmbeddedPostgresTestDatabase("paperclip-process-loss-session-");

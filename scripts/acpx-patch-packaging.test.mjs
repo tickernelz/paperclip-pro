@@ -33,7 +33,7 @@ const rootPackage = JSON.parse(await readFile(new URL("../package.json", import.
 const profileData = JSON.parse(await readFile(new URL("../packages/wardmote-runner/acpx-profiles.json", import.meta.url), "utf8"));
 const nativeTargets = ["linux-x64", "darwin-arm64", "darwin-x64"];
 function esbuildFixture(t) {
-  const directory = realpathSync(mkdtempSync(join(tmpdir(), "paperclip-bundled-esbuild-")));
+  const directory = realpathSync(mkdtempSync(join(tmpdir(), "wardmote-bundled-esbuild-")));
   t.after(() => rmSync(directory, { recursive: true, force: true }));
   const graph = join(directory, "node_modules");
   const writePackage = (location, metadata) => {
@@ -57,7 +57,7 @@ function esbuildFixture(t) {
 const codexTargets = ["linux-x64", "linux-arm64", "darwin-x64", "darwin-arm64", "win32-x64", "win32-arm64"];
 const codexOptional = Object.fromEntries(codexTargets.map(target => [`@openai/codex-${target}`, `npm:@openai/codex@0.160.0-${target}`]));
 function codexFixture(t) {
-  const directory = realpathSync(mkdtempSync(join(tmpdir(), "paperclip-bundled-codex-")));
+  const directory = realpathSync(mkdtempSync(join(tmpdir(), "wardmote-bundled-codex-")));
   t.after(() => rmSync(directory, { recursive: true, force: true }));
   const graph = join(directory, "node_modules");
   const writePackage = (location, metadata) => {
@@ -397,7 +397,7 @@ test("bundled package staging installs only dependencies included in the tarball
 });
 
 test("bundled package staging selects only the installed dependency version's patch", (t) => {
-  const destinationDir = mkdtempSync(join(tmpdir(), "paperclip-bundled-patch-selection-"));
+  const destinationDir = mkdtempSync(join(tmpdir(), "wardmote-bundled-patch-selection-"));
   const installedPackageDir = join(destinationDir, "node_modules", "acpx");
   mkdirSync(installedPackageDir, { recursive: true });
   writeFileSync(
@@ -422,7 +422,7 @@ test("bundled package staging selects only the installed dependency version's pa
 });
 
 test("bundled package patch selection handles scoped package names", (t) => {
-  const destinationDir = mkdtempSync(join(tmpdir(), "paperclip-scoped-patch-selection-"));
+  const destinationDir = mkdtempSync(join(tmpdir(), "wardmote-scoped-patch-selection-"));
   const installedPackageDir = join(destinationDir, "node_modules", "@example", "runtime");
   mkdirSync(installedPackageDir, { recursive: true });
   writeFileSync(
@@ -447,7 +447,7 @@ test("bundled package patch selection handles scoped package names", (t) => {
 });
 
 test("bundled package patch selection reports missing installed metadata", (t) => {
-  const destinationDir = mkdtempSync(join(tmpdir(), "paperclip-missing-patch-metadata-"));
+  const destinationDir = mkdtempSync(join(tmpdir(), "wardmote-missing-patch-metadata-"));
   t.after(() => rmSync(destinationDir, { recursive: true, force: true }));
 
   assert.throws(
@@ -460,7 +460,7 @@ test("bundled package patch selection reports missing installed metadata", (t) =
 });
 
 test("bundled package patch selection rejects an unpatched installed version", (t) => {
-  const destinationDir = mkdtempSync(join(tmpdir(), "paperclip-unmatched-patch-version-"));
+  const destinationDir = mkdtempSync(join(tmpdir(), "wardmote-unmatched-patch-version-"));
   const installedPackageDir = join(destinationDir, "node_modules", "acpx");
   mkdirSync(installedPackageDir, { recursive: true });
   writeFileSync(
@@ -480,7 +480,7 @@ test("bundled package patch selection rejects an unpatched installed version", (
 });
 
 test("server package staging applies every bundled runtime patch and preserves the vendored runner", (t) => {
-  const fixtureDir = realpathSync(mkdtempSync(join(tmpdir(), "paperclip-bundled-stage-")));
+  const fixtureDir = realpathSync(mkdtempSync(join(tmpdir(), "wardmote-bundled-stage-")));
   const sourceDir = join(fixtureDir, "source");
   const destinationDir = join(fixtureDir, "destination");
   const binDir = join(fixtureDir, "bin");

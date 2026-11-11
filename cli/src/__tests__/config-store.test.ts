@@ -19,7 +19,7 @@ afterEach(() => {
 });
 
 function createConfigPath(): string {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-config-store-"));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-config-store-"));
   roots.push(root);
   return path.join(root, "config.json");
 }

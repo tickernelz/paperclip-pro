@@ -575,7 +575,7 @@ export interface LoginPtyOpenInput {
   loginCommandKey: LoginCommandKey;
   /**
    * The server-controlled, validated session home. The shape is exact:
-   * `/tmp/paperclip-adapter-login/<uuid>`.
+   * `/tmp/wardmote-adapter-login/<uuid>`.
    */
   sessionHome: string;
 }

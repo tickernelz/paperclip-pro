@@ -28,7 +28,7 @@ async function close(server: Server) {
   server.closeAllConnections(); if (server.listening) await new Promise<void>(resolve => server.close(() => resolve()));
 }
 
-const scratch = await mkdtemp(join(tmpdir(), "paperclip-dot-demo-"));
+const scratch = await mkdtemp(join(tmpdir(), "wardmote-dot-demo-"));
 // This process has its own ephemeral encryption key, never the instance key.
 process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE = join(scratch, "master.key");
 delete process.env.WARDMOTE_SECRETS_MASTER_KEY;
@@ -45,7 +45,7 @@ let service: ReturnType<typeof createPublicMcpEvents> | undefined;
 let unregister: (() => void) | undefined;
 let active = true;
 try {
-  database = await startEmbeddedPostgresTestDatabase("paperclip-dot-demo-");
+  database = await startEmbeddedPostgresTestDatabase("wardmote-dot-demo-");
   const db = createDb(database.connectionString);
   const origin = await listen(http);
   const callbackOrigin = await listen(callback);

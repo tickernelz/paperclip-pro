@@ -55,7 +55,7 @@ afterEach(async () => {
 
 describe("ACPX installation integrity", () => {
   it.each([false, true])("admits only the declared qualified Codex platform in its npm-hoisted slot (published platform declaration: %s)", async (publishedDeclaration) => {
-    const parent = await realpath(await mkdtemp(join(tmpdir(), "paperclip-codex-npm-hoist-")));
+    const parent = await realpath(await mkdtemp(join(tmpdir(), "wardmote-codex-npm-hoist-")));
     temporaryDirectories.push(parent);
     const root = join(parent, "node_modules/@tickernelz/wardmote-server");
     const runtime = join(root, "node_modules/@openai/codex/package.json");
@@ -101,7 +101,7 @@ describe("ACPX installation integrity", () => {
   });
 
   it.each([false, true])("retains Codex executable version and byte admission for the hoisted platform (stale bundled alias: %s)", async (staleBundledAlias) => {
-    const parent = await realpath(await mkdtemp(join(tmpdir(), "paperclip-codex-npm-admission-")));
+    const parent = await realpath(await mkdtemp(join(tmpdir(), "wardmote-codex-npm-admission-")));
     temporaryDirectories.push(parent);
     const root = join(parent, "node_modules/@tickernelz/wardmote-server");
     const bridge = join(root, "node_modules/@agentclientprotocol/codex-acp");
@@ -169,7 +169,7 @@ describe("ACPX installation integrity", () => {
   );
   it("anchors dynamic provider package resolution at an explicit root", async () => {
     const parent = await mkdtemp(
-      join(tmpdir(), "paperclip-acpx-package-parent-"),
+      join(tmpdir(), "wardmote-acpx-package-parent-"),
     );
     temporaryDirectories.push(parent);
     const root = join(parent, "provider-pack");
@@ -2026,7 +2026,7 @@ async function expectOutput(
   expect(exitCode, stderr).toBe(0);
   let normalized = stdout;
   if (process.platform === "darwin") {
-    const snapshotPrefix = join(await realpath(tmpdir()), "paperclip-acpx-")
+    const snapshotPrefix = join(await realpath(tmpdir()), "wardmote-acpx-")
       .replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     normalized = stdout.replace(
       new RegExp(`${snapshotPrefix}[^/"\\s]+/0(?=[/"])`, "g"),
@@ -2189,7 +2189,7 @@ async function waitUntilAsync(
 }
 
 async function installationFixture() {
-  const root = await mkdtemp(join(tmpdir(), "paperclip-acpx-installation-"));
+  const root = await mkdtemp(join(tmpdir(), "wardmote-acpx-installation-"));
   temporaryDirectories.push(root);
   const serverDirectory = join(root, "pi-acp");
   const runtimeDirectory = join(root, "pi-runtime");

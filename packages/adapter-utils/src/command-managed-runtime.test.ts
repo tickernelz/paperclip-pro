@@ -158,7 +158,7 @@ describe("command managed runtime", () => {
   });
 
   it("reports a missing sandbox file as ENOENT without masking command failures", async () => {
-    const root = await mkdtemp(path.join(os.tmpdir(), "paperclip-remote-missing-"));
+    const root = await mkdtemp(path.join(os.tmpdir(), "wardmote-remote-missing-"));
     try {
       const { runner } = makeSpawnRunner();
       const client = createCommandManagedRuntimeClient({ runner, commandCwd: root, timeoutMs: 5000 });
@@ -179,7 +179,7 @@ describe("command managed runtime", () => {
   });
 
   it("keeps the runtime overlay out of sandbox workspace sync by default", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-command-runtime-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-command-runtime-"));
     cleanupDirs.push(rootDir);
 
     const localWorkspaceDir = path.join(rootDir, "local-workspace");
@@ -294,7 +294,7 @@ describe("command managed runtime", () => {
   });
 
   it("stages runtime assets without replacing or restoring an in-place workspace", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-command-runtime-assets-only-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-command-runtime-assets-only-"));
     cleanupDirs.push(rootDir);
 
     const localWorkspaceDir = path.join(rootDir, "local-workspace");
@@ -348,7 +348,7 @@ describe("command managed runtime", () => {
   });
 
   it("stages each additional project into an isolated dir on the base64/tar transport, one failure skipped", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-command-runtime-additional-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-command-runtime-additional-"));
     cleanupDirs.push(rootDir);
 
     const localWorkspaceDir = path.join(rootDir, "local-workspace");
@@ -401,7 +401,7 @@ describe("command managed runtime", () => {
   });
 
   it("keeps adapter detection on the profile-backed shell path", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-command-runtime-detect-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-command-runtime-detect-"));
     cleanupDirs.push(rootDir);
 
     const localWorkspaceDir = path.join(rootDir, "local-workspace");
@@ -431,7 +431,7 @@ describe("command managed runtime", () => {
   });
 
   it("runs setup commands from a stable root cwd when staging into a nested remote workspace dir", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-command-runtime-nested-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-command-runtime-nested-"));
     cleanupDirs.push(rootDir);
 
     const localWorkspaceDir = path.join(rootDir, "local-workspace");
@@ -460,7 +460,7 @@ describe("command managed runtime", () => {
   });
 
   it("uploads a multi-MB payload in a single process and preserves exact bytes", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-command-write-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-command-write-"));
     cleanupDirs.push(rootDir);
     const remotePath = path.join(rootDir, "nested", "payload.bin");
 
@@ -497,7 +497,7 @@ describe("command managed runtime", () => {
   });
 
   it("stages a single-file write to <path>.paperclip-upload then atomically renames it (single-stream path)", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-command-atomic-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-command-atomic-"));
     cleanupDirs.push(rootDir);
     const remotePath = path.join(rootDir, "nested", "payload.bin");
 
@@ -516,7 +516,7 @@ describe("command managed runtime", () => {
   });
 
   it("cleans up a staged upload when rename fails", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-command-upload-cleanup-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-command-upload-cleanup-"));
     cleanupDirs.push(rootDir);
     const remotePath = path.join(rootDir, "nested", "payload.bin");
 
@@ -553,7 +553,7 @@ describe("command managed runtime", () => {
   });
 
   it("stages a single-file write to a temp then renames it on the chunked fallback path too", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-command-atomic-fallback-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-command-atomic-fallback-"));
     cleanupDirs.push(rootDir);
     const remotePath = path.join(rootDir, "nested", "payload.bin");
 
@@ -692,7 +692,7 @@ describe("command managed runtime", () => {
   });
 
   it("fallback syncIn tarballs+uploads a directory then runs post-upload commands in order", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-syncin-fallback-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-syncin-fallback-"));
     cleanupDirs.push(rootDir);
     const sourceDir = path.join(rootDir, "source");
     const targetDir = path.join(rootDir, "target");
@@ -770,7 +770,7 @@ describe("command managed runtime", () => {
   });
 
   it("fallback syncIn writes a mode-constrained file directly to its target and then applies the mode", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-syncin-mode-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-syncin-mode-"));
     cleanupDirs.push(rootDir);
     const sourceFile = path.join(rootDir, "source.txt");
     const targetFile = path.join(rootDir, "target.txt");
@@ -922,7 +922,7 @@ describe("command managed runtime", () => {
     // Research A1: with single-stream enabled a ≤96 MiB write is ONE round-trip;
     // without it, the chunked path is `2 + ceil(bytes / 3 MiB)`. Same payload,
     // same client API — only the runner capability flag differs.
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-single-stream-collapse-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-single-stream-collapse-"));
     cleanupDirs.push(rootDir);
     const payload = Buffer.alloc(9 * 1024 * 1024, 7); // 9 MiB → chunked = 2 + 3 = 5 execs
 
@@ -943,7 +943,7 @@ describe("command managed runtime", () => {
   });
 
   it("falls back to chunked upload progress when the runner cannot report mid-stream stdin progress", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-command-write-fallback-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-command-write-fallback-"));
     cleanupDirs.push(rootDir);
     const remotePath = path.join(rootDir, "nested", "payload.bin");
 
@@ -977,7 +977,7 @@ describe("command managed runtime", () => {
   });
 
   it("falls back to bounded chunks when the runner does not explicitly opt in", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-command-write-fallback-no-progress-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-command-write-fallback-no-progress-"));
     cleanupDirs.push(rootDir);
     const remotePath = path.join(rootDir, "nested", "payload.bin");
 
@@ -1002,7 +1002,7 @@ describe("command managed runtime", () => {
   });
 
   it("downloads in bounded stdout chunks and reports monotonic byte progress to the total", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-command-read-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-command-read-"));
     cleanupDirs.push(rootDir);
     const remotePath = path.join(rootDir, "download.bin");
 

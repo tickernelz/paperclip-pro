@@ -41,7 +41,7 @@ let database: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>,
   home: string;
 beforeAll(async () => {
   home = await realpath(
-    await mkdtemp(path.join(os.tmpdir(), "paperclip-fast-response-")),
+    await mkdtemp(path.join(os.tmpdir(), "wardmote-fast-response-")),
   );
   vi.stubEnv("WARDMOTE_HOME", home);
   vi.stubEnv("WARDMOTE_INSTANCE_ID", "fast-response-fixture");

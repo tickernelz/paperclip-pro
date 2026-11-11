@@ -132,7 +132,7 @@ describe("sandbox callback bridge", () => {
   });
 
   it("round-trips localhost bridge requests over the sandbox queue without forwarding the bridge token", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-bridge-runtime-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-bridge-runtime-"));
     cleanupDirs.push(rootDir);
 
     const localWorkspaceDir = path.join(rootDir, "local-workspace");
@@ -304,7 +304,7 @@ describe("sandbox callback bridge", () => {
   });
 
   it("publishes complete fixture envelopes before queue readers can reserve their size", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-bridge-publication-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-bridge-publication-"));
     cleanupDirs.push(rootDir);
     const client = createFileSystemSandboxCallbackBridgeQueueClient();
     const requestPath = path.join(rootDir, "fixture.json");
@@ -335,7 +335,7 @@ describe("sandbox callback bridge", () => {
   });
 
   it("keeps the bounded reader fail-closed when a visible request grows after its size is reserved", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-bridge-growing-request-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-bridge-growing-request-"));
     cleanupDirs.push(rootDir);
     const queueDir = path.join(rootDir, "queue");
     const directories = sandboxCallbackBridgeDirectories(queueDir);
@@ -378,7 +378,7 @@ describe("sandbox callback bridge", () => {
   });
 
   it("serves schema discovery over the queue and denies schema mutations and lookalikes", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-bridge-schema-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-bridge-schema-"));
     cleanupDirs.push(rootDir);
     const queueDir = path.join(rootDir, "queue");
     const directories = sandboxCallbackBridgeDirectories(queueDir);
@@ -419,7 +419,7 @@ describe("sandbox callback bridge", () => {
   });
 
   it("denies non-allowlisted requests by default", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-bridge-default-policy-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-bridge-default-policy-"));
     cleanupDirs.push(rootDir);
 
     const queueDir = path.posix.join(rootDir, "queue");
@@ -464,7 +464,7 @@ describe("sandbox callback bridge", () => {
   });
 
   it("drains already-queued requests on stop", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-bridge-drain-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-bridge-drain-"));
     cleanupDirs.push(rootDir);
 
     const queueDir = path.posix.join(rootDir, "queue");
@@ -518,7 +518,7 @@ describe("sandbox callback bridge", () => {
   });
 
   it("writes fast 503 responses for queued requests that miss the drain deadline", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-bridge-drain-timeout-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-bridge-drain-timeout-"));
     cleanupDirs.push(rootDir);
 
     const queueDir = path.posix.join(rootDir, "queue");
@@ -581,7 +581,7 @@ describe("sandbox callback bridge", () => {
   });
 
   it("handles SSH queue polling failures without emitting an unhandled rejection", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-bridge-ssh-failure-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-bridge-ssh-failure-"));
     cleanupDirs.push(rootDir);
 
     const queueDir = path.posix.join(rootDir, "queue");
@@ -633,7 +633,7 @@ describe("sandbox callback bridge", () => {
     // terminal catch, killing the relay for the rest of the run. The loop must
     // instead back off, retry, and still deliver requests queued after the
     // failure window.
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-bridge-transient-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-bridge-transient-"));
     cleanupDirs.push(rootDir);
 
     const queueDir = path.posix.join(rootDir, "queue");
@@ -703,7 +703,7 @@ describe("sandbox callback bridge", () => {
       resolveFirstPoll = resolve;
     });
 
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-bridge-step-store-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-bridge-step-store-"));
     cleanupDirs.push(rootDir);
     const queueDir = path.posix.join(rootDir, "queue");
 
@@ -774,7 +774,7 @@ describe("sandbox callback bridge", () => {
       resolveServed = resolve;
     });
 
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-bridge-run-parent-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-bridge-run-parent-"));
     cleanupDirs.push(rootDir);
     const queueDir = path.posix.join(rootDir, "queue");
 
@@ -841,7 +841,7 @@ describe("sandbox callback bridge", () => {
       resolveServed = resolve;
     });
 
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-bridge-relay-span-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-bridge-relay-span-"));
     cleanupDirs.push(rootDir);
     const queueDir = path.posix.join(rootDir, "queue");
 
@@ -887,7 +887,7 @@ describe("sandbox callback bridge", () => {
       resolveServed = resolve;
     });
 
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-bridge-no-getter-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-bridge-no-getter-"));
     cleanupDirs.push(rootDir);
     const queueDir = path.posix.join(rootDir, "queue");
 
@@ -926,7 +926,7 @@ describe("sandbox callback bridge", () => {
   });
 
   it("serializes remote response writes so stop does not recreate a late orphaned response", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-bridge-response-lock-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-bridge-response-lock-"));
     cleanupDirs.push(rootDir);
 
     const localWorkspaceDir = path.join(rootDir, "local-workspace");
@@ -1018,7 +1018,7 @@ describe("sandbox callback bridge", () => {
   });
 
   it("rejects non-JSON request bodies and full queues at the bridge server", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-bridge-server-guards-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-bridge-server-guards-"));
     cleanupDirs.push(rootDir);
 
     const localWorkspaceDir = path.join(rootDir, "local-workspace");
@@ -1118,7 +1118,7 @@ describe("sandbox callback bridge", () => {
   });
 
   it("returns a 502 when the host response times out", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-bridge-timeout-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-bridge-timeout-"));
     cleanupDirs.push(rootDir);
 
     const localWorkspaceDir = path.join(rootDir, "local-workspace");
@@ -1170,7 +1170,7 @@ describe("sandbox callback bridge", () => {
   });
 
   it("returns a 502 for malformed host response files", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-bridge-malformed-response-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-bridge-malformed-response-"));
     cleanupDirs.push(rootDir);
 
     const localWorkspaceDir = path.join(rootDir, "local-workspace");
@@ -1231,7 +1231,7 @@ describe("sandbox callback bridge", () => {
   });
 
   it("reuses an already-uploaded bridge entrypoint when the remote file hash matches", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-bridge-sync-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-bridge-sync-"));
     cleanupDirs.push(rootDir);
 
     const remoteWorkspaceDir = path.join(rootDir, "remote-workspace");
@@ -1283,7 +1283,7 @@ describe("sandbox callback bridge", () => {
   });
 
   it("rejects a corrupted bridge entrypoint upload without committing a torn remote file", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-bridge-sync-corrupt-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-bridge-sync-corrupt-"));
     cleanupDirs.push(rootDir);
 
     const remoteWorkspaceDir = path.join(rootDir, "remote-workspace");
@@ -1343,7 +1343,7 @@ describe("sandbox callback bridge", () => {
   // costs ZERO write execs instead of the prior ~3 (prepare/append/finalize base64
   // upload).
   it("test_process_session_script_skipped_when_remote_hash_matches: warm start with a matching remote hash writes 0 execs", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-hashskip-warm-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-hashskip-warm-"));
     cleanupDirs.push(rootDir);
     const remoteDir = path.join(rootDir, "runtime", "codex", "process-sessions");
     const remotePath = path.posix.join(remoteDir, "paperclip-process-session-remote.mjs");
@@ -1398,7 +1398,7 @@ describe("sandbox callback bridge", () => {
   });
 
   it("test_process_session_script_rewritten_on_hash_mismatch: a mismatched remote hash still rewrites the script", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-hashskip-cold-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-hashskip-cold-"));
     cleanupDirs.push(rootDir);
     const remoteDir = path.join(rootDir, "runtime", "codex", "process-sessions");
     const remotePath = path.posix.join(remoteDir, "paperclip-process-session-remote.mjs");
@@ -1426,7 +1426,7 @@ describe("sandbox callback bridge", () => {
   });
 
   it("fails loud when the hash-skip sync exec errors instead of silently re-uploading", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-hashskip-fail-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-hashskip-fail-"));
     cleanupDirs.push(rootDir);
     const remoteDir = path.join(rootDir, "runtime", "codex", "process-sessions");
     const remotePath = path.posix.join(remoteDir, "paperclip-process-session-remote.mjs");
@@ -1754,7 +1754,7 @@ describe("sandbox callback bridge", () => {
   });
 
   it("creates the bridge queue directories in one directory-creation exec", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-bridge-makedirs-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-bridge-makedirs-"));
     cleanupDirs.push(rootDir);
 
     const queueDir = path.posix.join(rootDir, "queue");
@@ -1792,7 +1792,7 @@ describe("sandbox callback bridge", () => {
   });
 
   it("falls back to sequential makeDir when the queue client omits makeDirs", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-bridge-makedir-fallback-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-bridge-makedir-fallback-"));
     cleanupDirs.push(rootDir);
 
     const queueDir = path.posix.join(rootDir, "queue");
@@ -1893,7 +1893,7 @@ describe("sandbox callback bridge", () => {
   }
 
   it("times out a stalled poll, surfaces a run-level error, and recovers to deliver the request", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-bridge-hang-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-bridge-hang-"));
     cleanupDirs.push(rootDir);
 
     const queueDir = path.posix.join(rootDir, "queue");
@@ -2942,7 +2942,7 @@ describe("sandbox callback bridge", () => {
   });
 
   it("trips the watchdog on a stalled poll, writes a 503, and surfaces a run-level error", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-bridge-watchdog-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-bridge-watchdog-"));
     cleanupDirs.push(rootDir);
 
     const queueDir = path.posix.join(rootDir, "queue");
@@ -2989,7 +2989,7 @@ describe("sandbox callback bridge", () => {
   });
 
   it("processes a fast request with no false-positive timeout and no run-level error", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-bridge-fast-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-bridge-fast-"));
     cleanupDirs.push(rootDir);
 
     const queueDir = path.posix.join(rootDir, "queue");
@@ -3219,7 +3219,7 @@ describe("sandbox callback bridge", () => {
     // Before readiness, the crash handlers must not keep the process alive: a
     // failed bind means the gateway can never serve, and surviving would only
     // leave an un-ready zombie while the host waits out its readiness poll.
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-bridge-bind-fail-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-bridge-bind-fail-"));
     cleanupDirs.push(rootDir);
     const entrypoint = path.join(rootDir, "paperclip-bridge-server.mjs");
     await writeFile(entrypoint, getSandboxCallbackBridgeServerSource(), "utf8");
@@ -3264,7 +3264,7 @@ describe("sandbox callback bridge", () => {
     // The closed mode allowlist rejects `duplex_v1` before the queue-directory
     // check, so a stale `duplex_v1` launch environment fails startup instead
     // of silently falling through to the queue gateway.
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-bridge-mode-duplex-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-bridge-mode-duplex-"));
     cleanupDirs.push(rootDir);
     const entrypoint = path.join(rootDir, "paperclip-bridge-server.mjs");
     await writeFile(entrypoint, getSandboxCallbackBridgeServerSource(), "utf8");
@@ -3296,7 +3296,7 @@ describe("sandbox callback bridge", () => {
   it("exits nonzero for an unknown bridge mode instead of starting the queue gateway", async () => {
     // The closed mode allowlist rejects every value it does not name, not
     // only the retired duplex transport.
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-bridge-mode-unknown-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-bridge-mode-unknown-"));
     cleanupDirs.push(rootDir);
     const entrypoint = path.join(rootDir, "paperclip-bridge-server.mjs");
     await writeFile(entrypoint, getSandboxCallbackBridgeServerSource(), "utf8");
@@ -3332,7 +3332,7 @@ describe("sandbox callback bridge", () => {
     // with nothing in between, because the gateway hands stdout to the
     // HTTP/2 client immediately after it writes READY and starts no
     // heartbeat timer and writes no envelope frame on this path.
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-bridge-http2-gateway-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-bridge-http2-gateway-"));
     cleanupDirs.push(rootDir);
     const entrypoint = path.join(rootDir, "paperclip-bridge-server.mjs");
     await writeFile(entrypoint, getSandboxCallbackBridgeServerSource(), "utf8");
@@ -3418,7 +3418,7 @@ describe("sandbox callback bridge", () => {
     maxBodyBytes?: number;
     forwardRequest: (request: Http2BridgeForwardRequest) => Promise<Http2BridgeForwardResult>;
   }): Promise<{ baseUrl: string; stop: () => Promise<void> }> {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-bridge-http2-test-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-bridge-http2-test-"));
     cleanupDirs.push(rootDir);
     const entrypoint = path.join(rootDir, "paperclip-bridge-server.mjs");
     await writeFile(entrypoint, getSandboxCallbackBridgeServerSource(), "utf8");
@@ -3772,7 +3772,7 @@ describe("sandbox callback bridge", () => {
     client?: SandboxCallbackBridgeQueueClient;
     handleRequest: Parameters<typeof startSandboxCallbackBridgeWorker>[0]["handleRequest"];
   }) {
-    const root = await mkdtemp(path.join(os.tmpdir(), "paperclip-file-codec-"));
+    const root = await mkdtemp(path.join(os.tmpdir(), "wardmote-file-codec-"));
     cleanupDirs.push(root);
     const asset = await createSandboxCallbackBridgeAsset();
     cleanupFns.push(asset.cleanup);
@@ -3845,7 +3845,7 @@ describe("sandbox callback bridge", () => {
   });
 
   it("rejects a request body over maxBodyBytes on the queue path before it writes the queue file", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-bridge-queue-maxbody-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-bridge-queue-maxbody-"));
     cleanupDirs.push(rootDir);
     const localWorkspaceDir = path.join(rootDir, "local-workspace");
     const remoteWorkspaceDir = path.join(rootDir, "remote-workspace");
@@ -3901,7 +3901,7 @@ describe("sandbox callback bridge", () => {
   });
 
   it("keeps the queue request payload's body field as a plain JSON string", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-bridge-queue-body-shape-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-bridge-queue-body-shape-"));
     cleanupDirs.push(rootDir);
     const localWorkspaceDir = path.join(rootDir, "local-workspace");
     const remoteWorkspaceDir = path.join(rootDir, "remote-workspace");

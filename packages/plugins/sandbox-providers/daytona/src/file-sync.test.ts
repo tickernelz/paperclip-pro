@@ -66,7 +66,7 @@ describe("daytona file-sync inbound scratch cleanup", () => {
   });
 
   it("removes the reserved scratch tar when a directory extraction fails", async () => {
-    const rootDir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-daytona-scratch-"));
+    const rootDir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-daytona-scratch-"));
     cleanupDirs.push(rootDir);
     const sourceDir = path.join(rootDir, "referenced-project");
     await fs.mkdir(sourceDir, { recursive: true });
@@ -120,7 +120,7 @@ describe("daytona file-sync inbound scratch cleanup", () => {
   });
 
   it("does not sweep scratch on the happy path (extract removes it)", async () => {
-    const rootDir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-daytona-scratch-"));
+    const rootDir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-daytona-scratch-"));
     cleanupDirs.push(rootDir);
     const sourceDir = path.join(rootDir, "referenced-project");
     await fs.mkdir(sourceDir, { recursive: true });
@@ -159,7 +159,7 @@ describe("daytona file-sync inbound scratch cleanup", () => {
   });
 
   it("writes an inbound file mapping to a sandbox path outside the workspace root", async () => {
-    const hostDir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-daytona-outside-root-"));
+    const hostDir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-daytona-outside-root-"));
     cleanupDirs.push(hostDir);
     const sourcePath = path.join(hostDir, "source.txt");
     await fs.writeFile(sourcePath, "payload");
@@ -299,7 +299,7 @@ const gnuTar = ["gtar", "tar"].map((candidate) => {
 }).find(Boolean);
 
 it.skipIf(!gnuTar)("extracts interleaved read-only skill directories with GNU tar and preserves their modes", async () => {
-  const root = await fs.mkdtemp("/tmp/paperclip-daytona-readonly-");
+  const root = await fs.mkdtemp("/tmp/wardmote-daytona-readonly-");
   const source = path.join(root, "source");
   const remoteDir = path.join(root, "remote");
   const target = path.join(remoteDir, "skill");
@@ -357,7 +357,7 @@ it.skipIf(!gnuTar)("extracts interleaved read-only skill directories with GNU ta
 }, 30_000);
 
 it.skipIf(!gnuTar)("uploads gzip directory archives and preserves content, executable modes, and symlinks", async () => {
-  const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-daytona-gzip-dir-"));
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-daytona-gzip-dir-"));
   const source = path.join(root, "source");
   const remoteDir = path.join(root, "remote");
   const target = path.join(remoteDir, "target");
@@ -401,7 +401,7 @@ it.skipIf(!gnuTar)("uploads gzip directory archives and preserves content, execu
 }, 30_000);
 
 it.skipIf(!gnuTar)("uploads and extracts a gzip empty directory archive", async () => {
-  const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-daytona-gzip-empty-"));
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-daytona-gzip-empty-"));
   const source = path.join(root, "source");
   const remoteDir = path.join(root, "remote");
   const target = path.join(remoteDir, "target");
@@ -506,7 +506,7 @@ describe("daytona file-sync inbound zstd transport compression", () => {
 
       await performSyncIn({ sandbox: sandbox as never, operations, remoteDir, timeoutSeconds: 30 });
 
-      expect(capturedHostTempDir).toContain("paperclip-daytona-zstd-");
+      expect(capturedHostTempDir).toContain("wardmote-daytona-zstd-");
       // The private host temp directory (not just the file inside it) is gone
       // after a successful sync.
       await expect(fs.stat(capturedHostTempDir)).rejects.toThrow();
@@ -922,13 +922,13 @@ describe("daytona file-sync inbound zstd transport compression", () => {
           operationId: "op-1",
           files: [{ sourcePath, targetPath: "/workspace/target.bin", kind: "file" }],
         }];
-        const before = (await fs.readdir(os.tmpdir())).filter((name) => name.startsWith("paperclip-daytona-zstd-"));
+        const before = (await fs.readdir(os.tmpdir())).filter((name) => name.startsWith("wardmote-daytona-zstd-"));
 
         await performSyncIn({ sandbox: sandbox as never, operations, remoteDir: "/workspace", timeoutSeconds: 30 });
 
         expect(uploadedSources).toEqual([sourcePath]);
         expect(uploadedDestinations.some((dest) => dest.endsWith(".zst"))).toBe(false);
-        const after = (await fs.readdir(os.tmpdir())).filter((name) => name.startsWith("paperclip-daytona-zstd-"));
+        const after = (await fs.readdir(os.tmpdir())).filter((name) => name.startsWith("wardmote-daytona-zstd-"));
         expect(after).toEqual(before); // no leftover host temp file
       } finally {
         Object.defineProperty(zlib, "createZstdCompress", { value: original, configurable: true, writable: true });
@@ -959,14 +959,14 @@ describe("daytona file-sync inbound zstd transport compression", () => {
           operationId: "op-1",
           files: [{ sourcePath, targetPath: "/workspace/target.bin", kind: "file" }],
         }];
-        const before = (await fs.readdir(os.tmpdir())).filter((name) => name.startsWith("paperclip-daytona-zstd-"));
+        const before = (await fs.readdir(os.tmpdir())).filter((name) => name.startsWith("wardmote-daytona-zstd-"));
 
         await performSyncIn({ sandbox: sandbox as never, operations, remoteDir: "/workspace", timeoutSeconds: 30 });
 
         // The post-compression stat failed, so the candidate falls back to the raw path.
         expect(uploadedSources).toEqual([sourcePath]);
         expect(uploadedDestinations.some((dest) => dest.endsWith(".zst"))).toBe(false);
-        const after = (await fs.readdir(os.tmpdir())).filter((name) => name.startsWith("paperclip-daytona-zstd-"));
+        const after = (await fs.readdir(os.tmpdir())).filter((name) => name.startsWith("wardmote-daytona-zstd-"));
         expect(after).toEqual(before); // the stat failure did not leak the private host temp directory
       } finally {
         statSpy.mockRestore();
@@ -992,7 +992,7 @@ describe("daytona file-sync inbound zstd transport compression", () => {
           setFilePermissions: async () => undefined,
         },
       };
-      const before = (await fs.readdir(os.tmpdir())).filter((name) => name.startsWith("paperclip-daytona-zstd-"));
+      const before = (await fs.readdir(os.tmpdir())).filter((name) => name.startsWith("wardmote-daytona-zstd-"));
       const operations: PluginSyncOperation[] = [{
         operationId: "op-1",
         files: [{ sourcePath, targetPath: "/workspace/target.bin", kind: "file" }],
@@ -1002,7 +1002,7 @@ describe("daytona file-sync inbound zstd transport compression", () => {
         performSyncIn({ sandbox: sandbox as never, operations, remoteDir: "/workspace", timeoutSeconds: 30 }),
       ).rejects.toThrow(/simulated cancellation/);
 
-      const after = (await fs.readdir(os.tmpdir())).filter((name) => name.startsWith("paperclip-daytona-zstd-"));
+      const after = (await fs.readdir(os.tmpdir())).filter((name) => name.startsWith("wardmote-daytona-zstd-"));
       expect(after).toEqual(before); // no leftover host temp file
       const rmCommands = commands.filter((entry) => entry.command.includes("rm -f"));
       expect(rmCommands.length).toBeGreaterThan(0); // both reserved scratch names swept
@@ -1090,7 +1090,7 @@ describe.skipIf(!gnuTar)("automatic unsafe workspace export recovery", () => {
     await Promise.all(cleanupDirs.splice(0).map((root) => fs.rm(root, { recursive: true, force: true })));
   });
   it.each(["/usr/bin/pnpm", "../../outside.txt", "ambiguous", "ambiguous-target"])("preserves files and safe links when a link is unsafe: %s", async (target) => {
-    const root = await fs.mkdtemp("/tmp/paperclip-export-recovery-");
+    const root = await fs.mkdtemp("/tmp/wardmote-export-recovery-");
     cleanupDirs.push(root);
     const remoteDir = path.join(root, "remote");
     const output = path.join(root, "output");
@@ -1134,7 +1134,7 @@ describe.skipIf(!gnuTar)("automatic unsafe workspace export recovery", () => {
   });
 
   it("finishes an export containing only unsafe links with an empty directory", async () => {
-    const root = await fs.mkdtemp("/tmp/paperclip-export-empty-");
+    const root = await fs.mkdtemp("/tmp/wardmote-export-empty-");
     cleanupDirs.push(root);
     const remoteDir = path.join(root, "remote");
     const output = path.join(root, "output");

@@ -31,7 +31,7 @@ import {
 const tempDirs: string[] = [];
 
 function makeTempDir(): string {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-cli-plugin-"));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-cli-plugin-"));
   tempDirs.push(dir);
   return dir;
 }
@@ -49,7 +49,7 @@ describe("plugin init", () => {
   });
 
   it("maps package name and flags to scaffolder options", () => {
-    const cwd = path.resolve("/tmp/paperclip-cli-test");
+    const cwd = path.resolve("/tmp/wardmote-cli-test");
     const options = buildPluginInitScaffoldOptions(
       "@acme/plugin-linear",
       {
@@ -97,7 +97,7 @@ describe("plugin init", () => {
         "init",
         "demo-plugin",
         "--output",
-        "/tmp/paperclip-init-output",
+        "/tmp/wardmote-init-output",
         "--template",
         "workspace",
         "--category",
@@ -117,7 +117,7 @@ describe("plugin init", () => {
     expect(mocks.scaffoldPluginProject).toHaveBeenCalledTimes(1);
     expect(mocks.scaffoldPluginProject).toHaveBeenCalledWith({
       pluginName: "demo-plugin",
-      outputDir: path.resolve("/tmp/paperclip-init-output", "demo-plugin"),
+      outputDir: path.resolve("/tmp/wardmote-init-output", "demo-plugin"),
       template: "workspace",
       category: "workspace",
       displayName: "Demo Plugin",

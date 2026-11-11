@@ -1573,7 +1573,7 @@ export function githubOperationLauncherDirectory(input: GitHubLauncherLocation):
   return input.target?.kind === "remote"
     ? path.posix.join(input.target.remoteCwd, ".wardmote-runtime",
         ...(input.target.transport === "sandbox" ? ["paperclip-runner"] : []), "github", input.runId)
-    : path.join(os.tmpdir(), "paperclip-github-runtime", input.runId);
+    : path.join(os.tmpdir(), "wardmote-github-runtime", input.runId);
 }
 
 /** Call only after execution settles, before releasing its remote environment lease. */
@@ -2204,7 +2204,7 @@ export async function startAdapterExecutionTargetProcessSessionBridge(input: {
     message?: string;
   }> = [];
   const token = createSandboxCallbackBridgeToken(18);
-  const proxyDir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-process-session-proxy-"));
+  const proxyDir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-process-session-proxy-"));
   // `stop()` waits on this promise, bounded, for the wrapper's `shutdownAck`
   // event. `deliverRemoteEvent` resolves it below and never forwards the
   // event further: it is a host-internal control ack, not part of the ACP

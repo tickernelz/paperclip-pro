@@ -33,7 +33,7 @@ test("cross-version migration harness requires both refs before side effects", (
     { env: {}, missing: "E2E_UPDATE_BASE_REF" },
     { env: { E2E_UPDATE_BASE_REF: "test/base" }, missing: "E2E_UPDATE_NEXT_REF" },
   ]) {
-    const testHome = mkdtempSync(path.join(os.tmpdir(), "paperclip-update-migrations-"));
+    const testHome = mkdtempSync(path.join(os.tmpdir(), "wardmote-update-migrations-"));
     try {
       const result = spawnSync("bash", [script], {
         cwd: repoRoot,

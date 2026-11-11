@@ -56,7 +56,7 @@ describeEmbeddedPostgres("companySkillService.list", () => {
     tempDb = await startEmbeddedPostgresTestDatabase("paperclip-company-skills-service-");
     oldWardmoteHome = process.env.WARDMOTE_HOME;
     oldWardmoteInstanceId = process.env.WARDMOTE_INSTANCE_ID;
-    wardmoteHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-company-skills-home-"));
+    wardmoteHome = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-company-skills-home-"));
     process.env.WARDMOTE_HOME = wardmoteHome;
     process.env.WARDMOTE_INSTANCE_ID = "default";
     db = createDb(tempDb.connectionString);
@@ -448,7 +448,7 @@ describeEmbeddedPostgres("companySkillService.list", () => {
   it("lists skills without exposing markdown content", async () => {
     const companyId = randomUUID();
     const skillId = randomUUID();
-    const skillDir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-heavy-skill-"));
+    const skillDir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-heavy-skill-"));
     cleanupDirs.add(skillDir);
     await fs.writeFile(path.join(skillDir, "SKILL.md"), "# Heavy Skill\n", "utf8");
 
@@ -503,7 +503,7 @@ describeEmbeddedPostgres("companySkillService.list", () => {
     const userId = "board-editor";
     const now = new Date();
     async function writeTrackedSkillDir(slug: string, name: string) {
-      const dir = await fs.mkdtemp(path.join(os.tmpdir(), `paperclip-${slug}-`));
+      const dir = await fs.mkdtemp(path.join(os.tmpdir(), `wardmote-${slug}-`));
       cleanupDirs.add(dir);
       await fs.writeFile(path.join(dir, "SKILL.md"), `---\nname: ${name}\n---\n\n# ${name}\n`, "utf8");
       return dir;
@@ -981,7 +981,7 @@ describeEmbeddedPostgres("companySkillService.list", () => {
   it("filters store list results by category and creates version snapshots", async () => {
     const companyId = randomUUID();
     const skillId = randomUUID();
-    const skillDir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-versioned-skill-"));
+    const skillDir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-versioned-skill-"));
     cleanupDirs.add(skillDir);
     await fs.writeFile(path.join(skillDir, "SKILL.md"), "---\nname: Versioned Skill\ncategories:\n  - Memory\n---\n\n# Versioned Skill\n", "utf8");
 
@@ -1341,7 +1341,7 @@ describeEmbeddedPostgres("companySkillService.list", () => {
   it("creates a fork from the creation flow with copied files and lineage", async () => {
     const companyId = randomUUID();
     const sourceSkillId = randomUUID();
-    const sourceSkillDir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-source-fork-skill-"));
+    const sourceSkillDir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-source-fork-skill-"));
     cleanupDirs.add(sourceSkillDir);
     await fs.mkdir(path.join(sourceSkillDir, "references"), { recursive: true });
     await fs.writeFile(
@@ -1461,7 +1461,7 @@ describeEmbeddedPostgres("companySkillService.list", () => {
   it("prechecks existing forks and reassigns selected agents when forking", async () => {
     const companyId = randomUUID();
     const sourceSkillId = randomUUID();
-    const sourceSkillDir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-reassign-source-"));
+    const sourceSkillDir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-reassign-source-"));
     cleanupDirs.add(sourceSkillDir);
     await fs.writeFile(path.join(sourceSkillDir, "SKILL.md"), "# Source Skill\n", "utf8");
     await db.insert(companies).values({
@@ -1623,7 +1623,7 @@ describeEmbeddedPostgres("companySkillService.list", () => {
     const companyId = randomUUID();
     const skillId = randomUUID();
     const otherSkillId = randomUUID();
-    const skillDir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-pinned-skill-"));
+    const skillDir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-pinned-skill-"));
     cleanupDirs.add(skillDir);
     await fs.writeFile(path.join(skillDir, "SKILL.md"), "# Pinned Skill\n", "utf8");
     await db.insert(companies).values({
@@ -1690,7 +1690,7 @@ describeEmbeddedPostgres("companySkillService.list", () => {
   it("rejects unknown desired keys by default but preserves them when tolerating (PAP-13222)", async () => {
     const companyId = randomUUID();
     const skillId = randomUUID();
-    const skillDir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-tolerant-skill-"));
+    const skillDir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-tolerant-skill-"));
     cleanupDirs.add(skillDir);
     await fs.writeFile(path.join(skillDir, "SKILL.md"), "# Real Skill\n", "utf8");
     await db.insert(companies).values({
@@ -1774,7 +1774,7 @@ describeEmbeddedPostgres("companySkillService.list", () => {
     const companyId = randomUUID();
     const skillId = randomUUID();
     const skillKey = `company/${companyId}/reflection-coach`;
-    const missingSkillDir = path.join(await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-missing-used-skill-")), "gone");
+    const missingSkillDir = path.join(await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-missing-used-skill-")), "gone");
     cleanupDirs.add(path.dirname(missingSkillDir));
 
     await db.insert(companies).values({
@@ -1855,7 +1855,7 @@ describeEmbeddedPostgres("companySkillService.list", () => {
   it("continues pruning missing local-path skills that no active agent desires", async () => {
     const companyId = randomUUID();
     const skillId = randomUUID();
-    const missingSkillDir = path.join(await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-missing-unused-skill-")), "gone");
+    const missingSkillDir = path.join(await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-missing-unused-skill-")), "gone");
     cleanupDirs.add(path.dirname(missingSkillDir));
 
     await db.insert(companies).values({
@@ -1889,7 +1889,7 @@ describeEmbeddedPostgres("companySkillService.list", () => {
   it("refreshes stale local-path file inventory from disk", async () => {
     const companyId = randomUUID();
     const skillId = randomUUID();
-    const skillDir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-stale-inventory-skill-"));
+    const skillDir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-stale-inventory-skill-"));
     cleanupDirs.add(skillDir);
     await fs.mkdir(path.join(skillDir, "references"), { recursive: true });
     await fs.writeFile(path.join(skillDir, "SKILL.md"), "# Stale Inventory Skill\n", "utf8");
@@ -2098,7 +2098,7 @@ describeEmbeddedPostgres("companySkillService.list", () => {
   it("rejects unbundled package imports that claim reserved Wardmote skill keys", async () => {
     const companyId = randomUUID();
     const skillId = randomUUID();
-    const bundledSkillDir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-bundled-skill-"));
+    const bundledSkillDir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-bundled-skill-"));
     cleanupDirs.add(bundledSkillDir);
     await fs.writeFile(path.join(bundledSkillDir, "SKILL.md"), "---\nname: Wardmote\n---\n\n# Official Wardmote\n", "utf8");
 
@@ -2183,7 +2183,7 @@ describeEmbeddedPostgres("companySkillService.list", () => {
   it("clears the missing-source marker when a local-path skill source returns", async () => {
     const companyId = randomUUID();
     const skillId = randomUUID();
-    const skillDir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-restored-skill-"));
+    const skillDir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-restored-skill-"));
     cleanupDirs.add(skillDir);
     await fs.writeFile(path.join(skillDir, "SKILL.md"), "# Restored Skill\n", "utf8");
 
@@ -2228,7 +2228,7 @@ describeEmbeddedPostgres("companySkillService.list", () => {
     const companyId = randomUUID();
     const skillId = randomUUID();
     const skillKey = `company/${companyId}/reflection-coach`;
-    const missingSkillDir = path.join(await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-readonly-missing-skill-")), "gone");
+    const missingSkillDir = path.join(await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-readonly-missing-skill-")), "gone");
     cleanupDirs.add(path.dirname(missingSkillDir));
 
     await db.insert(companies).values({
@@ -2281,7 +2281,7 @@ describeEmbeddedPostgres("companySkillService.list", () => {
     const companyId = randomUUID();
     const skillId = randomUUID();
     const skillKey = `company/${companyId}/runtime-coach`;
-    const missingSkillDir = path.join(await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-missing-skill-")), "gone");
+    const missingSkillDir = path.join(await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-runtime-missing-skill-")), "gone");
     cleanupDirs.add(path.dirname(missingSkillDir));
 
     await db.insert(companies).values({
@@ -2335,7 +2335,7 @@ describeEmbeddedPostgres("companySkillService.list", () => {
     const companyId = randomUUID();
     const skillId = randomUUID();
     const skillKey = `company/${companyId}/broken-coach`;
-    const missingSkillDir = path.join(await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-broken-skill-")), "gone");
+    const missingSkillDir = path.join(await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-broken-skill-")), "gone");
     cleanupDirs.add(path.dirname(missingSkillDir));
 
     await db.insert(companies).values({
@@ -2395,7 +2395,7 @@ describeEmbeddedPostgres("companySkillService.list", () => {
     const companyId = randomUUID();
     const skillId = randomUUID();
     const skillKey = `company/${companyId}/missing-reader`;
-    const missingSkillDir = path.join(await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-missing-read-skill-")), "gone");
+    const missingSkillDir = path.join(await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-missing-read-skill-")), "gone");
     cleanupDirs.add(path.dirname(missingSkillDir));
 
     await db.insert(companies).values({
@@ -2607,7 +2607,7 @@ describeEmbeddedPostgres("companySkillService.list", () => {
     const companyId = randomUUID();
     const projectId = randomUUID();
     const workspaceId = randomUUID();
-    const workspaceDir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-skill-browse-"));
+    const workspaceDir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-skill-browse-"));
     cleanupDirs.add(workspaceDir);
     const skillDir = path.join(workspaceDir, "content", "teams", "editorial");
     await fs.mkdir(skillDir, { recursive: true });
@@ -2667,7 +2667,7 @@ describeEmbeddedPostgres("companySkillService.list", () => {
     const companyId = randomUUID();
     const projectId = randomUUID();
     const workspaceId = randomUUID();
-    const workspaceDir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-skill-preview-"));
+    const workspaceDir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-skill-preview-"));
     cleanupDirs.add(workspaceDir);
     const codexSkillDir = path.join(workspaceDir, ".codex", "skills", "preview-codex");
     const cursorSkillDir = path.join(workspaceDir, ".cursor", "skills", "preview-cursor");
@@ -2726,7 +2726,7 @@ describeEmbeddedPostgres("companySkillService.list", () => {
     const companyId = randomUUID();
     const projectId = randomUUID();
     const workspaceId = randomUUID();
-    const workspaceDir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-skill-same-path-"));
+    const workspaceDir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-skill-same-path-"));
     cleanupDirs.add(workspaceDir);
     const skillDir = path.join(workspaceDir, ".codex", "skills", "same-path");
     await fs.mkdir(skillDir, { recursive: true });
@@ -2774,8 +2774,8 @@ describeEmbeddedPostgres("companySkillService.list", () => {
     const projectId = randomUUID();
     const workspaceId = randomUUID();
     const bundledSkillId = randomUUID();
-    const workspaceDir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-skill-built-in-"));
-    const bundledSkillDir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-skill-bundled-source-"));
+    const workspaceDir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-skill-built-in-"));
+    const bundledSkillDir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-skill-bundled-source-"));
     cleanupDirs.add(workspaceDir);
     cleanupDirs.add(bundledSkillDir);
     const skillDir = path.join(workspaceDir, ".claude", "skills", "built-in-review");
@@ -2833,8 +2833,8 @@ describeEmbeddedPostgres("companySkillService.list", () => {
     const projectId = randomUUID();
     const workspaceId = randomUUID();
     const existingSkillId = randomUUID();
-    const workspaceDir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-skill-rename-"));
-    const existingSkillDir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-skill-existing-"));
+    const workspaceDir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-skill-rename-"));
+    const existingSkillDir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-skill-existing-"));
     cleanupDirs.add(workspaceDir);
     cleanupDirs.add(existingSkillDir);
     const skillDir = path.join(workspaceDir, ".cursor", "skills", "shared-skill");
@@ -2903,13 +2903,13 @@ describeEmbeddedPostgres("companySkillService.list", () => {
     const companyId = randomUUID();
     const projectId = randomUUID();
     const workspaceId = randomUUID();
-    const workspaceDir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-skill-selective-"));
+    const workspaceDir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-skill-selective-"));
     cleanupDirs.add(workspaceDir);
     const selectedSkillDir = path.join(workspaceDir, ".gemini", "skills", "selected-skill");
     const ignoredSkillDir = path.join(workspaceDir, ".opencode", "skills", "ignored-skill");
     const ignoredLinkedSkillDir = path.join(workspaceDir, ".claude", "skills", "ignored-link");
     const outsideSkillFile = path.join(
-      await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-skill-selective-outside-")),
+      await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-skill-selective-outside-")),
       "SKILL.md",
     );
     cleanupDirs.add(path.dirname(outsideSkillFile));
@@ -2978,11 +2978,11 @@ describeEmbeddedPostgres("companySkillService.list", () => {
     const companyId = randomUUID();
     const projectId = randomUUID();
     const workspaceId = randomUUID();
-    const workspaceDir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-skill-scope-"));
+    const workspaceDir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-skill-scope-"));
     const otherCompanyId = randomUUID();
     const otherProjectId = randomUUID();
     const otherWorkspaceId = randomUUID();
-    const otherWorkspaceDir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-skill-scope-other-"));
+    const otherWorkspaceDir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-skill-scope-other-"));
     cleanupDirs.add(workspaceDir);
     cleanupDirs.add(otherWorkspaceDir);
 
@@ -3074,8 +3074,8 @@ describeEmbeddedPostgres("companySkillService.list", () => {
     const companyId = randomUUID();
     const projectId = randomUUID();
     const workspaceId = randomUUID();
-    const workspaceDir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-skill-symlink-"));
-    const outsideDir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-skill-outside-"));
+    const workspaceDir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-skill-symlink-"));
+    const outsideDir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-skill-outside-"));
     cleanupDirs.add(workspaceDir);
     cleanupDirs.add(outsideDir);
     const linkedSkillDir = path.join(workspaceDir, ".codex", "skills", "linked-skill");
@@ -3144,7 +3144,7 @@ describeEmbeddedPostgres("companySkillService.list", () => {
     const projectId = randomUUID();
     const workspaceId = randomUUID();
     const folderSvc = folderService(db);
-    const workspaceDir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-skill-project-folder-"));
+    const workspaceDir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-skill-project-folder-"));
     cleanupDirs.add(workspaceDir);
     const skillDir = path.join(workspaceDir, "skills", "project-skill");
     const skillFile = path.join(skillDir, "SKILL.md");
@@ -3321,7 +3321,7 @@ describeEmbeddedPostgres("companySkillService.list", () => {
     // A sibling whose key already matches the derived target key but whose slug
     // differs, so only the key-conflict branch fires. It needs a real on-disk
     // source so inventory reconciliation does not prune it before the check.
-    const squatterDir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-key-squatter-"));
+    const squatterDir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-key-squatter-"));
     cleanupDirs.add(squatterDir);
     await fs.writeFile(path.join(squatterDir, "SKILL.md"), "---\nname: Key Squatter\n---\n# Key Squatter\n", "utf8");
     await db.insert(companySkills).values({
@@ -3350,7 +3350,7 @@ describeEmbeddedPostgres("companySkillService.list", () => {
     const companyId = randomUUID();
     await seedCompany(companyId);
 
-    const unmanagedDir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-unmanaged-skill-"));
+    const unmanagedDir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-unmanaged-skill-"));
     cleanupDirs.add(unmanagedDir);
     await fs.writeFile(path.join(unmanagedDir, "SKILL.md"), "---\nname: Unmanaged\n---\n# Unmanaged\n", "utf8");
 

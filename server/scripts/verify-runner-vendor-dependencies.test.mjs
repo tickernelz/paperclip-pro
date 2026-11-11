@@ -57,7 +57,7 @@ describe("findRunnerExternalPackages", () => {
   });
 
   function writeFixture() {
-    fixtureDir = mkdtempSync(join(tmpdir(), "paperclip-runner-vendor-fixture-"));
+    fixtureDir = mkdtempSync(join(tmpdir(), "wardmote-runner-vendor-fixture-"));
     writeFileSync(
       join(fixtureDir, "internal.js"),
       'import { parse } from "smol-toml";\n' +
@@ -88,7 +88,7 @@ describe("findRunnerExternalPackages", () => {
   });
 
   it("throws a clear, actionable error when an entry point is missing", async () => {
-    fixtureDir = mkdtempSync(join(tmpdir(), "paperclip-runner-vendor-fixture-"));
+    fixtureDir = mkdtempSync(join(tmpdir(), "wardmote-runner-vendor-fixture-"));
     const missingEntryPoint = join(fixtureDir, "index.js");
 
     await expect(findRunnerExternalPackages([missingEntryPoint])).rejects.toThrow(

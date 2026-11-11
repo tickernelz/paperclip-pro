@@ -108,7 +108,7 @@ describeEmbeddedPostgres("companySkillService.installFromCatalog", () => {
   }, 20_000);
 
   beforeEach(async () => {
-    const home = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-catalog-home-"));
+    const home = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-catalog-home-"));
     cleanupDirs.add(home);
     process.env.WARDMOTE_HOME = home;
     mockCatalogService.getCatalogSkillOrThrow.mockReturnValue(sampleCatalogSkill);
@@ -501,7 +501,7 @@ describeEmbeddedPostgres("companySkillService.installFromCatalog", () => {
 
   it("rejects duplicate slug conflicts", async () => {
     const companyId = await createCompany();
-    const skillDir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-existing-skill-"));
+    const skillDir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-existing-skill-"));
     cleanupDirs.add(skillDir);
     await fs.writeFile(path.join(skillDir, "SKILL.md"), "# Existing\n", "utf8");
     await db.insert(companySkills).values({

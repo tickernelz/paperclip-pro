@@ -36,7 +36,7 @@ describeEmbeddedPostgres("agent service secret binding sync", () => {
   let stopDb: (() => Promise<void>) | null = null;
   let db!: ReturnType<typeof createDb>;
   const previousKeyFile = process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE;
-  const secretsTmpDir = path.join(os.tmpdir(), `paperclip-agent-secret-bindings-${randomUUID()}`);
+  const secretsTmpDir = path.join(os.tmpdir(), `wardmote-agent-secret-bindings-${randomUUID()}`);
 
   beforeAll(async () => {
     mkdirSync(secretsTmpDir, { recursive: true });

@@ -90,7 +90,7 @@ async function executeProcess(ctx: AdapterExecutionContext): Promise<AdapterExec
   let proc: Awaited<ReturnType<typeof runChildProcess>>;
   try {
     if (typeof instructions.text === "string" && instructions.text) {
-      instructionsDirectory = await mkdtemp(join(tmpdir(), "paperclip-connection-instructions-"));
+      instructionsDirectory = await mkdtemp(join(tmpdir(), "wardmote-connection-instructions-"));
       const instructionsFile = join(instructionsDirectory, "instructions.json");
       await writeFile(instructionsFile, JSON.stringify(instructions), { mode: 0o600 });
       env.WARDMOTE_CONNECTION_INSTRUCTIONS_FILE = instructionsFile;

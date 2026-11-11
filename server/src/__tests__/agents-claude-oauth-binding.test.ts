@@ -227,7 +227,7 @@ describeEmbeddedPostgres("agent service Claude OAuth binding claim", () => {
   let connectionString!: string;
   let db!: ReturnType<typeof createDb>;
   const previousKeyFile = process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE;
-  const secretsTmpDir = path.join(os.tmpdir(), `paperclip-claude-oauth-binding-${randomUUID()}`);
+  const secretsTmpDir = path.join(os.tmpdir(), `wardmote-claude-oauth-binding-${randomUUID()}`);
 
   beforeAll(async () => {
     mkdirSync(secretsTmpDir, { recursive: true });

@@ -15,7 +15,7 @@ afterEach(async () => {
 
 describe("ProviderTraceFileSink", () => {
   it("omits raw identity-run frames even when a key is split into single-byte deltas", async () => {
-    const root = await mkdtemp(join(tmpdir(), "paperclip-provider-trace-identity-"));
+    const root = await mkdtemp(join(tmpdir(), "wardmote-provider-trace-identity-"));
     roots.push(root);
     const tracePath = join(root, "provider.ndjson");
     const sink = await createProviderTraceFileSink({ path: tracePath, provider: "opencode", channel: "test" });
@@ -33,7 +33,7 @@ describe("ProviderTraceFileSink", () => {
   });
 
   it("hardens an existing file before it appends provider frames", async () => {
-    const root = await mkdtemp(join(tmpdir(), "paperclip-provider-trace-mode-"));
+    const root = await mkdtemp(join(tmpdir(), "wardmote-provider-trace-mode-"));
     roots.push(root);
     const tracePath = join(root, "provider.ndjson");
     await writeFile(tracePath, "", { mode: 0o644 });
@@ -50,7 +50,7 @@ describe("ProviderTraceFileSink", () => {
   });
 
   it("redacts registered credentials before raw frames reach disk", async () => {
-    const root = await mkdtemp(join(tmpdir(), "paperclip-provider-trace-secret-"));
+    const root = await mkdtemp(join(tmpdir(), "wardmote-provider-trace-secret-"));
     roots.push(root);
     const tracePath = join(root, "provider.ndjson");
     const sink = await createProviderTraceFileSink({

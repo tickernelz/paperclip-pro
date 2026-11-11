@@ -11,7 +11,7 @@ export async function withCopilotSmokeResources(installation, callback, dependen
   let fixture;
   const fixtureRequests = [];
   try {
-    root = await dependencies.mkdtemp(join(tmpdir(), "paperclip-copilot-pack-smoke-"));
+    root = await dependencies.mkdtemp(join(tmpdir(), "wardmote-copilot-pack-smoke-"));
     fixture = dependencies.createServer((request, response) => {
       fixtureRequests.push({ method: request.method, path: request.url?.split("?")[0] });
       response.writeHead(request.method === "GET" ? 200 : 503, { "content-type": "application/json" });

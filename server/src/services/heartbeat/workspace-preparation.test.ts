@@ -25,7 +25,7 @@ describe.skipIf(!support.supported)("heartbeat workspace preparation boundary", 
   let home: string;
 
   beforeAll(async () => {
-    home = await mkdtemp(join(tmpdir(), "paperclip-workspace-preparation-"));
+    home = await mkdtemp(join(tmpdir(), "wardmote-workspace-preparation-"));
     vi.stubEnv("WARDMOTE_HOME", home);
     database = await startEmbeddedPostgresTestDatabase("paperclip-workspace-preparation");
     db = createDb(database.connectionString);

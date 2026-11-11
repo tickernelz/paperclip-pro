@@ -3118,7 +3118,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     fn: (home: string) => Promise<T>,
   ): Promise<T> {
     const home = await fs.mkdtemp(
-      path.join(os.tmpdir(), "paperclip-hot-restart-"),
+      path.join(os.tmpdir(), "wardmote-hot-restart-"),
     );
     const previousHome = process.env.WARDMOTE_HOME;
     process.env.WARDMOTE_HOME = home;
@@ -5364,7 +5364,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
 
   it("keeps an explicit local-path/worktree conflict blocked with a board action and no Sentry event", async () => {
     const { companyId, agentId, runId, issueId } = await seedQueuedIssueRunFixture();
-    const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-local-workspace-policy-"));
+    const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-local-workspace-policy-"));
     const projectId = randomUUID();
     const workspaceId = randomUUID();
     const heartbeat = heartbeatService(db);
@@ -5420,7 +5420,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     { name: "unknown clone failure", failures: ["unknown"], report: true },
   ])("preserves failed workspace recovery while classifying managed Git connections: $name", async ({ failures, report }) => {
     const { companyId, agentId, runId, issueId } = await seedQueuedIssueRunFixture();
-    const home = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-git-connection-lifecycle-"));
+    const home = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-git-connection-lifecycle-"));
     const bin = path.join(home, "bin");
     const callsPath = path.join(home, "git-calls.jsonl");
     const projectId = randomUUID();
@@ -5511,7 +5511,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
 
   it("keeps a direct additional-repository connection failure visible without reporting it to Sentry", async () => {
     const { companyId, agentId, runId, issueId } = await seedQueuedIssueRunFixture();
-    const home = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-additional-git-connection-"));
+    const home = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-additional-git-connection-"));
     const cwd = path.join(home, "primary");
     const bin = path.join(home, "bin");
     const cloneCalls = path.join(home, "clone-calls.jsonl");

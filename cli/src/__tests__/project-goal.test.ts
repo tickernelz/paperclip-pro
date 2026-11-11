@@ -28,7 +28,7 @@ describe("project and goal commands", () => {
     delete process.env.WARDMOTE_API_KEY;
     delete process.env.WARDMOTE_API_URL;
     delete process.env.WARDMOTE_COMPANY_ID;
-    process.env.WARDMOTE_CONTEXT = path.join(fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-project-goal-")), "context.json");
+    process.env.WARDMOTE_CONTEXT = path.join(fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-project-goal-")), "context.json");
   });
 
   afterEach(() => {

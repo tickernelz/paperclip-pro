@@ -153,7 +153,7 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
   }
 
   async function makeLocalRoot() {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-plugin-host-folder-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-plugin-host-folder-"));
     tempRoots.push(root);
     return root;
   }
@@ -183,12 +183,12 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
       strategyType: "git_worktree",
       name: "Feature workspace",
       status: "active",
-      cwd: "/tmp/paperclip-feature",
+      cwd: "/tmp/wardmote-feature",
       repoUrl: "https://example.com/paperclip.git",
       baseRef: "main",
       branchName: "feature/workspace",
       providerType: "git_worktree",
-      providerRef: "/tmp/paperclip-feature",
+      providerRef: "/tmp/wardmote-feature",
       metadata: {
         providerMetadata: { sandboxId: "sandbox-1" },
         workspaceRealizationRequest: { hiddenInternal: true },
@@ -202,8 +202,8 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
       companyId,
       projectId,
       projectWorkspaceId: null,
-      path: "/tmp/paperclip-feature",
-      cwd: "/tmp/paperclip-feature",
+      path: "/tmp/wardmote-feature",
+      cwd: "/tmp/wardmote-feature",
       repoUrl: "https://example.com/paperclip.git",
       baseRef: "main",
       branchName: "feature/workspace",

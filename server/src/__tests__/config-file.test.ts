@@ -36,7 +36,7 @@ describe("readConfigFile", () => {
   let configPath: string;
 
   beforeEach(() => {
-    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-config-file-test-"));
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-config-file-test-"));
     configPath = path.join(tempDir, "config.json");
     process.env.WARDMOTE_CONFIG = configPath;
   });

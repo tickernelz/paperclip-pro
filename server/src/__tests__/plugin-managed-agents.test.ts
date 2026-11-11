@@ -326,8 +326,8 @@ describeEmbeddedPostgres("plugin-managed agents", () => {
   it("materializes declared managed agent instructions with local folder paths", async () => {
     const previousHome = process.env.WARDMOTE_HOME;
     const previousInstance = process.env.WARDMOTE_INSTANCE_ID;
-    const tempHome = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-managed-agent-home-")));
-    const wikiRoot = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-managed-agent-wiki-")));
+    const tempHome = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-managed-agent-home-")));
+    const wikiRoot = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-managed-agent-wiki-")));
     process.env.WARDMOTE_HOME = tempHome;
     process.env.WARDMOTE_INSTANCE_ID = "test";
     try {

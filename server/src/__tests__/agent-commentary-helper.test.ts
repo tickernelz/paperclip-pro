@@ -18,7 +18,7 @@ describe("standalone Node commentary helper", () => {
   const token = "private-helper-test-token";
 
   beforeAll(async () => {
-    root = await mkdtemp(join(tmpdir(), "paperclip-node-feedback-"));
+    root = await mkdtemp(join(tmpdir(), "wardmote-node-feedback-"));
     helper = join(root, "submit-agent-commentary.mjs");
     // An installed skill must work outside the repository/package boundary.
     await copyFile(fileURLToPath(new URL("../../../skills/wardmote/scripts/submit-agent-commentary.mjs", import.meta.url)), helper);

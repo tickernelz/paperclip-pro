@@ -109,7 +109,7 @@ describeEmbeddedPostgres("shared-workspace run serialization", () => {
       db = createDb(tempDb.connectionString);
     }
     heartbeat = heartbeatService(db);
-    workspaceCwd = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-workspace-busy-"));
+    workspaceCwd = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-workspace-busy-"));
     registerServerAdapter({
       type: WORKSPACE_BUSY_TEST_ADAPTER,
       execute: async (input) => {

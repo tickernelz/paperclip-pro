@@ -3624,7 +3624,7 @@ class DurablePrpCodexTransport implements CodexAppServerTransport {
     this.#turnId = options.resumeActiveTurnId ?? "";
     this.#root =
       options.stateDirectory ??
-      mkdtempSync(resolve(tmpdir(), "paperclip-runner-lab-prp-"));
+      mkdtempSync(resolve(tmpdir(), "wardmote-runner-lab-prp-"));
     if (options.resumeDynamicTools !== undefined) {
       this.#authorizedTools = authorizedToolSetForProvider(options.provider, [
         ...options.resumeDynamicTools,

@@ -10344,7 +10344,7 @@ export async function stageRemoteRunnerDirectory(input: {
     let sourcePath = input.sourcePath;
     try {
       if (excludeArgs.length > 0) {
-        stagingRoot = mkdtempSync(join(tmpdir(), "paperclip-runner-restore-"));
+        stagingRoot = mkdtempSync(join(tmpdir(), "wardmote-runner-restore-"));
         const archive = execFileSync(
           "tar",
           [...excludeArgs, "-czf", "-", "-C", input.sourcePath, "."],

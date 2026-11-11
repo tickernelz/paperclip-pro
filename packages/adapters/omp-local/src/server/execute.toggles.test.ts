@@ -29,7 +29,7 @@ describe("OMP local toggle overlay", () => {
   let captured: Invocation | null;
 
   beforeEach(async () => {
-    root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-omp-toggles-"));
+    root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-omp-toggles-"));
     workspaceCwd = path.join(root, "workspace");
     commandPath = path.join(root, "fake-omp");
     await fs.mkdir(workspaceCwd, { recursive: true });

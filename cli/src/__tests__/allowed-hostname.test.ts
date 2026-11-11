@@ -6,7 +6,7 @@ import type { WardmoteConfig } from "../config/schema.js";
 import { addAllowedHostname } from "../commands/allowed-hostname.js";
 
 function createTempConfigPath() {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-allowed-hostname-"));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-allowed-hostname-"));
   return path.join(dir, "config.json");
 }
 
@@ -19,18 +19,18 @@ function writeBaseConfig(configPath: string) {
     },
     database: {
       mode: "embedded-postgres",
-      embeddedPostgresDataDir: "/tmp/paperclip-db",
+      embeddedPostgresDataDir: "/tmp/wardmote-db",
       embeddedPostgresPort: 54329,
       backup: {
         enabled: true,
         intervalMinutes: 60,
         retentionDays: 30,
-        dir: "/tmp/paperclip-backups",
+        dir: "/tmp/wardmote-backups",
       },
     },
     logging: {
       mode: "file",
-      logDir: "/tmp/paperclip-logs",
+      logDir: "/tmp/wardmote-logs",
     },
     server: {
       deploymentMode: "authenticated",
@@ -49,7 +49,7 @@ function writeBaseConfig(configPath: string) {
     },
     storage: {
       provider: "local_disk",
-      localDisk: { baseDir: "/tmp/paperclip-storage" },
+      localDisk: { baseDir: "/tmp/wardmote-storage" },
       s3: {
         bucket: "paperclip",
         region: "us-east-1",
@@ -60,7 +60,7 @@ function writeBaseConfig(configPath: string) {
     secrets: {
       provider: "local_encrypted",
       strictMode: false,
-      localEncrypted: { keyFilePath: "/tmp/paperclip-secrets/master.key" },
+      localEncrypted: { keyFilePath: "/tmp/wardmote-secrets/master.key" },
     },
   };
   fs.writeFileSync(configPath, JSON.stringify(base, null, 2));

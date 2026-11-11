@@ -9,7 +9,7 @@ import { build } from "esbuild";
 import { bundlePiProvisioner } from "./build-verified-provider-entrypoints.mjs";
 
 test("public server tar layout carries a self-contained host provisioner and exact small inputs", async t => {
-  const root = await realpath(await mkdtemp(join(tmpdir(), "paperclip-pi-public-layout-")));
+  const root = await realpath(await mkdtemp(join(tmpdir(), "wardmote-pi-public-layout-")));
   t.after(() => rm(root, { recursive: true, force: true }));
   const pkg = join(root, "package"); const cli = join(pkg, "dist/vendor/wardmote-runner/cli");
   await mkdir(cli, { recursive: true });
@@ -51,7 +51,7 @@ test("public server tar layout carries a self-contained host provisioner and exa
 });
 
 test("explicit CLI setup passes only network settings to its real child and enables Node proxy handling", async t => {
-  const root = await mkdtemp(join(tmpdir(), "paperclip-pi-setup-environment-"));
+  const root = await mkdtemp(join(tmpdir(), "wardmote-pi-setup-environment-"));
   t.after(() => rm(root, { recursive: true, force: true }));
   const server = join(root, "node_modules/@tickernelz/wardmote-server");
   const cli = join(server, "dist/vendor/wardmote-runner/cli");

@@ -3,7 +3,7 @@ import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { loadConfig } from "../config.js";
 
-const missingConfigPath = path.join(os.tmpdir(), `paperclip-managed-runtime-config-${process.pid}.json`);
+const missingConfigPath = path.join(os.tmpdir(), `wardmote-managed-runtime-config-${process.pid}.json`);
 
 function useIsolatedConfigEnvironment() {
   vi.stubEnv("WARDMOTE_CONFIG", missingConfigPath);

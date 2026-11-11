@@ -71,7 +71,7 @@ describe("native same-conversation chat attachment reuse", () => {
     temporary = await startEmbeddedPostgresTestDatabase("native-chat-reuse-");
     db = createDb(temporary.connectionString);
     const storageRoot = await mkdtemp(
-      path.join(tmpdir(), "paperclip-chat-reuse-"),
+      path.join(tmpdir(), "wardmote-chat-reuse-"),
     );
     await mkdir(storageRoot, { recursive: true });
     storage = createStorageService(createLocalDiskStorageProvider(storageRoot));

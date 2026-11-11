@@ -33,7 +33,7 @@ describe("OMP local workspace cwd precedence", () => {
   let workspaceCwd: string;
 
   beforeEach(async () => {
-    root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-omp-cwd-"));
+    root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-omp-cwd-"));
     configuredCwd = path.join(root, "configured");
     workspaceCwd = path.join(root, "workspace");
     commandPath = path.join(root, "fake-omp");

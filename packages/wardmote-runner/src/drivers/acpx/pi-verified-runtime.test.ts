@@ -15,7 +15,7 @@ vi.mock("node:fs/promises", async (importOriginal) => {
 const temporary: string[] = [];
 afterEach(async () => { vi.restoreAllMocks(); for (const root of temporary.splice(0)) await rm(root, { recursive: true, force: true }); });
 async function fixture() {
-  const root = await mkdtemp(join(tmpdir(), "paperclip-pi-verified-")); temporary.push(root);
+  const root = await mkdtemp(join(tmpdir(), "wardmote-pi-verified-")); temporary.push(root);
   await mkdir(join(root, "assets"));
   for (const name of ["node", "pi.js", "extension.js", "wrapper.js", "assets/native.node", "assets/image.wasm"]) await writeFile(join(root, name), `pinned:${name}`);
   const manifest: PiRuntimeManifest = { schema: PI_RUNTIME_MANIFEST_SCHEMA, node: "node", piEntrypoint: "pi.js", extension: "extension.js", wrapperEntrypoint: "wrapper.js", files: await inventoryPiRuntimeFiles(root) };
@@ -80,7 +80,7 @@ describe("Pi complete runtime manifest", () => {
   });
 
   it("bounds discovery and drains a failed batch before descent or later scheduling", async () => {
-    const root = await mkdtemp(join(tmpdir(), "paperclip-pi-discovery-")); temporary.push(root);
+    const root = await mkdtemp(join(tmpdir(), "wardmote-pi-discovery-")); temporary.push(root);
     for (let index = 0; index < 40; index++) await writeFile(join(root, `file-${String(index).padStart(2, "0")}`), "data");
     const original = await vi.importActual<typeof import("node:fs/promises")>("node:fs/promises");
     let release!: () => void; const hold = new Promise<void>(resolve => { release = resolve; });
@@ -106,8 +106,8 @@ describe("Pi complete runtime manifest", () => {
   });
 
   it("rechecks queued directories after earlier subtrees and never descends into a replacement symlink", async () => {
-    const root = await realpath(await mkdtemp(join(tmpdir(), "paperclip-pi-discovery-race-"))); temporary.push(root);
-    const outside = await realpath(await mkdtemp(join(tmpdir(), "paperclip-pi-outside-"))); temporary.push(outside);
+    const root = await realpath(await mkdtemp(join(tmpdir(), "wardmote-pi-discovery-race-"))); temporary.push(root);
+    const outside = await realpath(await mkdtemp(join(tmpdir(), "wardmote-pi-outside-"))); temporary.push(outside);
     await mkdir(join(root, "a")); await mkdir(join(root, "b"));
     await writeFile(join(root, "a/trigger"), "inside"); await writeFile(join(outside, "private"), "must not read");
     const original = await vi.importActual<typeof import("node:fs/promises")>("node:fs/promises");

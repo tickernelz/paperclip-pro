@@ -31,7 +31,7 @@ describeEmbeddedPostgres("secretService resolveAdapterConfigForRuntime — userS
   let stopDb: (() => Promise<void>) | null = null;
   let db!: ReturnType<typeof createDb>;
   const previousKeyFile = process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE;
-  const secretsTmpDir = path.join(os.tmpdir(), `paperclip-owner-scoped-${randomUUID()}`);
+  const secretsTmpDir = path.join(os.tmpdir(), `wardmote-owner-scoped-${randomUUID()}`);
 
   beforeAll(async () => {
     mkdirSync(secretsTmpDir, { recursive: true });

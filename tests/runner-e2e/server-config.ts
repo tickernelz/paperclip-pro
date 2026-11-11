@@ -6,7 +6,7 @@ import { reserveRunnerE2EDatabasePort } from "./ports.js";
 
 /** Runtime instructions and native filesystem grants must use the same path. */
 export async function createRunnerE2ETemporaryRoot(parent = os.tmpdir()) {
-  return await realpath(await mkdtemp(path.join(parent, "paperclip-runner-e2e-")));
+  return await realpath(await mkdtemp(path.join(parent, "wardmote-runner-e2e-")));
 }
 
 /** Seed only the disposable fixture. Onboarding preserves this validated config

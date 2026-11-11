@@ -28,11 +28,11 @@ describe("agent cryptographic identity", () => {
   let companyId: string;
 
   beforeAll(async () => {
-    directory = await mkdtemp(join(tmpdir(), "paperclip-identity-"));
+    directory = await mkdtemp(join(tmpdir(), "wardmote-identity-"));
     vi.stubEnv("WARDMOTE_HOME", directory);
     vi.stubEnv("WARDMOTE_SECRETS_MASTER_KEY", "");
     vi.stubEnv("WARDMOTE_SECRETS_MASTER_KEY_FILE", join(directory, "master.key"));
-    database = await startEmbeddedPostgresTestDatabase("paperclip-identity-");
+    database = await startEmbeddedPostgresTestDatabase("wardmote-identity-");
     db = createDb(database.connectionString);
     companyId = randomUUID();
     await db.insert(companies).values({ id: companyId, name: "Identity test", issuePrefix: "KEY", defaultResponsibleUserId: "identity-test-owner" });

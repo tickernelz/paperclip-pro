@@ -13,7 +13,7 @@ import {
 const directories: string[] = [];
 afterEach(async () => { for (const path of directories.splice(0)) await rm(path, { recursive: true, force: true }); });
 async function workspace() {
-  const root = await mkdtemp(join(tmpdir(), "paperclip-pi-extension-")); directories.push(root);
+  const root = await mkdtemp(join(tmpdir(), "wardmote-pi-extension-")); directories.push(root);
   await mkdir(join(root, "workspace")); await mkdir(join(root, "skills")); await mkdir(join(root, "private"));
   return { root, config: {
     invocationNamespace: "00000000-0000-4000-8000-000000000000",

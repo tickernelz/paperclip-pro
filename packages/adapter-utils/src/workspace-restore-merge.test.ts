@@ -33,7 +33,7 @@ describe("workspace restore merge", () => {
 
   it("round-trips a deterministic durable snapshot and rejects traversal", async () => {
     const rootDir = await mkdtemp(
-      path.join(os.tmpdir(), "paperclip-snapshot-"),
+      path.join(os.tmpdir(), "wardmote-snapshot-"),
     );
     cleanupDirs.push(rootDir);
     await mkdir(path.join(rootDir, "nested"), { recursive: true });
@@ -63,7 +63,7 @@ describe("workspace restore merge", () => {
   });
 
   it("preserves sibling files when sequential stale-baseline restores create the same nested directory tree", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-restore-merge-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-restore-merge-"));
     cleanupDirs.push(rootDir);
 
     const targetDir = path.join(rootDir, "target");
@@ -106,7 +106,7 @@ describe("workspace restore merge", () => {
   });
 
   it("preserves a host file replacing a deleted baseline directory and continues the restore", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-restore-conflict-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-restore-conflict-"));
     cleanupDirs.push(rootDir);
     const targetDir = path.join(rootDir, "target");
     const sourceDir = path.join(rootDir, "source");
@@ -126,7 +126,7 @@ describe("workspace restore merge", () => {
   it("ignores non-file entries when capturing snapshots", async () => {
     if (process.platform === "win32") return;
 
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-restore-merge-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-restore-merge-"));
     cleanupDirs.push(rootDir);
     const socketPath = path.join(rootDir, "runtime.sock");
     const server = net.createServer();
@@ -243,7 +243,7 @@ describe("workspace restore merge", () => {
     it.skipIf(process.platform === "win32")(
       "restores successfully when the parent directory of the target is not writable",
       async () => {
-        const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-restore-merge-"));
+        const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-restore-merge-"));
         cleanupDirs.push(rootDir);
         useTempWardmoteHome(path.join(rootDir, "paperclip-home"), "test-instance");
 
@@ -274,7 +274,7 @@ describe("workspace restore merge", () => {
     it.skipIf(process.platform === "win32")(
       "acquires the same lock for two alias paths that resolve to one canonical target",
       async () => {
-        const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-restore-merge-"));
+        const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-restore-merge-"));
         cleanupDirs.push(rootDir);
         const wardmoteHome = path.join(rootDir, "paperclip-home");
         useTempWardmoteHome(wardmoteHome, "test-instance");
@@ -304,7 +304,7 @@ describe("workspace restore merge", () => {
     );
 
     it("rejects a lock root that already exists as a symlink", async () => {
-      const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-restore-merge-"));
+      const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-restore-merge-"));
       cleanupDirs.push(rootDir);
       const wardmoteHome = path.join(rootDir, "paperclip-home");
       useTempWardmoteHome(wardmoteHome, "test-instance");
@@ -324,7 +324,7 @@ describe("workspace restore merge", () => {
     });
 
     it("rejects a lock root that already exists as a non-directory", async () => {
-      const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-restore-merge-"));
+      const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-restore-merge-"));
       cleanupDirs.push(rootDir);
       const wardmoteHome = path.join(rootDir, "paperclip-home");
       useTempWardmoteHome(wardmoteHome, "test-instance");
@@ -342,7 +342,7 @@ describe("workspace restore merge", () => {
     });
 
     it("closes the create/validate TOCTOU window: rejects a lock root a racing writer swapped for a symlink during creation", async () => {
-      const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-restore-merge-"));
+      const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-restore-merge-"));
       cleanupDirs.push(rootDir);
       const wardmoteHome = path.join(rootDir, "paperclip-home");
       useTempWardmoteHome(wardmoteHome, "test-instance");
@@ -377,7 +377,7 @@ describe("workspace restore merge", () => {
     });
 
     it("keeps the private lock database and removes diagnostic ownership after release", async () => {
-      const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-restore-merge-"));
+      const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-restore-merge-"));
       cleanupDirs.push(rootDir);
       const wardmoteHome = path.join(rootDir, "paperclip-home");
       useTempWardmoteHome(wardmoteHome, "test-instance");
@@ -400,7 +400,7 @@ describe("workspace restore merge", () => {
     });
 
     it("classifies the real lock-timeout error by its stable code, never by the message text", async () => {
-      const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-restore-merge-"));
+      const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-restore-merge-"));
       cleanupDirs.push(rootDir);
       const wardmoteHome = path.join(rootDir, "paperclip-home");
       useTempWardmoteHome(wardmoteHome, "test-instance");
@@ -453,7 +453,7 @@ describe("workspace restore merge", () => {
     });
 
     it("reports a known live holder without releasing it when a contender times out", async () => {
-      const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-lock-holder-"));
+      const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-lock-holder-"));
       cleanupDirs.push(rootDir);
       useTempWardmoteHome(path.join(rootDir, "home"), "test-instance");
       const targetDir = path.join(rootDir, "target");
@@ -478,7 +478,7 @@ describe("workspace restore merge", () => {
     });
 
     it("delivers the timeout when the diagnostic owner read stalls and ignores its late rejection", async () => {
-      const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-lock-read-stall-"));
+      const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-lock-read-stall-"));
       cleanupDirs.push(rootDir);
       useTempWardmoteHome(path.join(rootDir, "home"), "test-instance");
       const targetDir = path.join(rootDir, "target");
@@ -530,7 +530,7 @@ describe("workspace restore merge", () => {
       { label: "a missing file", raw: undefined, code: "ENOENT", ownerState: "missing" },
       { label: "an unreadable file", raw: undefined, code: "EACCES", ownerState: "unknown" },
     ])("distinguishes $label in the diagnostic read", async ({ raw, code, ownerState }) => {
-      const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-lock-read-state-"));
+      const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-lock-read-state-"));
       cleanupDirs.push(rootDir);
       useTempWardmoteHome(path.join(rootDir, "home"), "test-instance");
       const targetDir = path.join(rootDir, "target");
@@ -561,7 +561,7 @@ describe("workspace restore merge", () => {
     });
 
     it("reports an owner older than this process without reclaiming a live PID", async () => {
-      const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-lock-older-owner-"));
+      const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-lock-older-owner-"));
       cleanupDirs.push(rootDir);
       useTempWardmoteHome(path.join(rootDir, "home"), "test-instance");
       const targetDir = path.join(rootDir, "target");
@@ -591,7 +591,7 @@ describe("workspace restore merge", () => {
     it.skipIf(process.platform === "win32")(
       "serializes two concurrent writers that address one target through different aliases",
       async () => {
-        const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-restore-merge-"));
+        const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-restore-merge-"));
         cleanupDirs.push(rootDir);
         useTempWardmoteHome(path.join(rootDir, "paperclip-home"), "test-instance");
 
@@ -627,7 +627,7 @@ describe("workspace restore merge", () => {
     // always reading `process.env`.
 
     it("two callers that pass the same env with a temporary WARDMOTE_HOME take the same lock under that home", async () => {
-      const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-restore-merge-"));
+      const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-restore-merge-"));
       cleanupDirs.push(rootDir);
       const explicitHome = path.join(rootDir, "explicit-home");
       const env: NodeJS.ProcessEnv = { WARDMOTE_HOME: explicitHome, WARDMOTE_INSTANCE_ID: "test-instance" };
@@ -663,7 +663,7 @@ describe("workspace restore merge", () => {
     });
 
     it("does not write a lock entry under process.env.WARDMOTE_HOME when the caller passes its own env", async () => {
-      const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-restore-merge-"));
+      const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-restore-merge-"));
       cleanupDirs.push(rootDir);
       const explicitHome = path.join(rootDir, "explicit-home");
       const env: NodeJS.ProcessEnv = { WARDMOTE_HOME: explicitHome, WARDMOTE_INSTANCE_ID: "test-instance" };
@@ -687,7 +687,7 @@ describe("workspace restore merge", () => {
     });
 
     it("resolves the lock root under the default instance id when the caller env sets WARDMOTE_HOME but not WARDMOTE_INSTANCE_ID, ignoring process.env.WARDMOTE_INSTANCE_ID", async () => {
-      const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-restore-merge-"));
+      const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-restore-merge-"));
       cleanupDirs.push(rootDir);
       const explicitHome = path.join(rootDir, "explicit-home");
       const env: NodeJS.ProcessEnv = { WARDMOTE_HOME: explicitHome };
@@ -715,7 +715,7 @@ describe("workspace restore merge", () => {
     });
 
     it("does not read process.env.WARDMOTE_HOME when the caller env sets neither variable", async () => {
-      const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-restore-merge-"));
+      const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-restore-merge-"));
       cleanupDirs.push(rootDir);
       const fakeProcessHome = path.join(rootDir, "process-home");
       const fallbackOsHome = path.join(rootDir, "os-home");

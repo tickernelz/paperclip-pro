@@ -773,7 +773,7 @@ export async function executeLiveRunnerWorkflow(input: {
   runnerBinary?: string;
 }): Promise<RunnerWorkflowObservation> {
   const runtimeRoot = await mkdtemp(
-    join(tmpdir(), "paperclip-runner-live-eval-"),
+    join(tmpdir(), "wardmote-runner-live-eval-"),
   );
   const tracePath = join(runtimeRoot, "provider-trace.ndjson");
   const store = new InMemoryCapabilityLiveSessionStore();

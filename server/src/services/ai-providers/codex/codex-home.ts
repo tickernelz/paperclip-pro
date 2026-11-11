@@ -588,7 +588,7 @@ export async function stageCodexHomeForSync(
 ): Promise<string> {
   const runIdPart = nonEmpty(options.runId ?? undefined);
   const stagedHome = await fs.mkdtemp(
-    path.join(os.tmpdir(), `paperclip-codex-home-sync-${runIdPart ? `${runIdPart}-` : ""}`),
+    path.join(os.tmpdir(), `wardmote-codex-home-sync-${runIdPart ? `${runIdPart}-` : ""}`),
   );
   try {
     for (const entry of CODEX_SYNC_ALLOWLIST) {

@@ -65,12 +65,12 @@ describeEmbeddedPostgres("hired agent provider credential inheritance", () => {
   let db!: Db;
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
   const previousKeyFile = process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE;
-  const secretsTmpDir = path.join(os.tmpdir(), `paperclip-agent-hire-auth-inheritance-${randomUUID()}`);
+  const secretsTmpDir = path.join(os.tmpdir(), `wardmote-agent-hire-auth-inheritance-${randomUUID()}`);
 
   beforeAll(async () => {
     mkdirSync(secretsTmpDir, { recursive: true });
     process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE = path.join(secretsTmpDir, "master.key");
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-agent-hire-auth-inheritance-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-agent-hire-auth-inheritance-");
     db = createDb(tempDb.connectionString);
   }, 60_000);
 

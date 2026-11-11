@@ -4,7 +4,7 @@ import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { checkForUpdateNotice, isUpdateNoticeEnabled } from "../update-notice.js";
 let root: string; let previous: string | undefined;
-beforeEach(() => { root = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-notice-")); previous = process.env.WARDMOTE_UPDATE_CHECK; delete process.env.WARDMOTE_UPDATE_CHECK; });
+beforeEach(() => { root = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-notice-")); previous = process.env.WARDMOTE_UPDATE_CHECK; delete process.env.WARDMOTE_UPDATE_CHECK; });
 afterEach(() => { if (previous === undefined) delete process.env.WARDMOTE_UPDATE_CHECK; else process.env.WARDMOTE_UPDATE_CHECK = previous; fs.rmSync(root, { recursive: true, force: true }); });
 describe("update notice", () => {
   it("honors the environment and config kill switches", () => {

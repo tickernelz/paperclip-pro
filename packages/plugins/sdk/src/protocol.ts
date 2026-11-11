@@ -1051,7 +1051,7 @@ export interface PluginLoginPtyOpenParams {
   loginCommandKey: PluginLoginCommandKey;
   /**
    * The server-controlled, validated session home. The shape is exact:
-   * `/tmp/paperclip-adapter-login/<uuid>`. The worker revalidates the shape
+   * `/tmp/wardmote-adapter-login/<uuid>`. The worker revalidates the shape
    * before it touches the filesystem.
    */
   sessionHome: string;

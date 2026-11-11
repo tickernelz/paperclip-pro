@@ -34,7 +34,7 @@ let db: ReturnType<typeof createDb>;
 let home: string;
 
 beforeAll(async () => {
-  home = await mkdtemp(path.join(os.tmpdir(), "paperclip-hire-ai-"));
+  home = await mkdtemp(path.join(os.tmpdir(), "wardmote-hire-ai-"));
   vi.stubEnv("WARDMOTE_HOME", home);
   vi.stubEnv("WARDMOTE_INSTANCE_ID", "hire-ai");
   vi.stubEnv("WARDMOTE_IN_WORKTREE", "false");

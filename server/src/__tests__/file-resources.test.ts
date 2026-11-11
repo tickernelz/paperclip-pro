@@ -48,7 +48,7 @@ type TestGraph = {
 };
 
 async function makeWorkspace() {
-  const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-file-resources-"));
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-file-resources-"));
   const projectRoot = path.join(root, "project");
   const targetProjectRoot = path.join(root, "target-project");
   const executionRoot = path.join(root, "execution");
@@ -200,7 +200,7 @@ describeEmbeddedPostgres("workspace file resources", () => {
   let db: Db;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-file-resources-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-file-resources-");
     db = createDb(tempDb.connectionString);
   }, 60_000);
 

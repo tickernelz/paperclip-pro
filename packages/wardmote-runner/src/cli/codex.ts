@@ -63,7 +63,7 @@ async function main(): Promise<void> {
   const options = parseArgs(process.argv.slice(2));
   const workingDirectory = options.workingDirectory
     ? resolve(options.workingDirectory)
-    : await mkdtemp(join(tmpdir(), "paperclip-codex-safe-"));
+    : await mkdtemp(join(tmpdir(), "wardmote-codex-safe-"));
   await mkdir(workingDirectory, { recursive: true });
   const isolationCommand = options.denyReadWritePaths.length === 0
     ? null

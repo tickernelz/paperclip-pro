@@ -12,7 +12,7 @@ function writeExecutable(path, body) {
 }
 
 function runGate(args, { ancestor = true, mainRefExists = true, ghOutputs = [], env = {} } = {}) {
-  const fixtureDir = mkdtempSync(join(tmpdir(), "paperclip-tag-gate-"));
+  const fixtureDir = mkdtempSync(join(tmpdir(), "wardmote-tag-gate-"));
   const binDir = join(fixtureDir, "bin");
   mkdirSync(binDir);
 

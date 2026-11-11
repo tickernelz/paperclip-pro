@@ -69,7 +69,7 @@ const SYSTEM_READ_PATHS = [
 const PROXY_ENV_KEYS = ["HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", "http_proxy", "https_proxy", "all_proxy"] as const;
 const SANDBOX_PROXY_PORT = 31_337;
 const UNIX_SOCKET_PATH_MAX_BYTES = 107;
-const NETWORK_PROXY_TEMP_PREFIX = "paperclip-network-sandbox-";
+const NETWORK_PROXY_TEMP_PREFIX = "wardmote-network-sandbox-";
 
 function normalizeAbsolutePath(candidate: string, label: string): string {
   const trimmed = candidate.trim();

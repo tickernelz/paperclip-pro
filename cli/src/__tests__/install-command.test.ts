@@ -48,7 +48,7 @@ describe("managed install commands", () => {
   let root: string;
 
   beforeEach(() => {
-    root = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-install-command-"));
+    root = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-install-command-"));
     process.env = {
       ...ORIGINAL_ENV,
       HOME: path.join(root, "home"),

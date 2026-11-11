@@ -591,7 +591,7 @@ export async function withShallowGitWorkspaceClone<T>(
   },
   fn: (cloneDir: string) => Promise<T>,
 ): Promise<T> {
-  const cloneDir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-git-workspace-"));
+  const cloneDir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-git-workspace-"));
   const tempRef = `refs/paperclip/git-sync/import/${randomUUID()}`;
   try {
     const originUrl = await readSanitizedOriginRemoteUrl(input.localDir);

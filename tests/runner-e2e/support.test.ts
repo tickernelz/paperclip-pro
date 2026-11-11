@@ -1223,7 +1223,7 @@ describe("runner E2E evidence redaction", () => {
   });
 
   it("recognizes managed and durable Codex runtime auth files", () => {
-    const root = path.join(os.tmpdir(), "paperclip-home");
+    const root = path.join(os.tmpdir(), "wardmote-home");
     expect(
       isEphemeralCodexRuntimeAuthFile(
         root,

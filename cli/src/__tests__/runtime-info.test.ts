@@ -16,7 +16,7 @@ afterEach(() => {
 });
 
 function fixture(): { filePath: string; info: WardmoteRuntimeInfo } {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-runtime-info-"));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-runtime-info-"));
   roots.push(root);
   return {
     filePath: path.join(root, "runtime-info.json"),

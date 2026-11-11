@@ -22,7 +22,7 @@ const CONNECTION_SCENARIOS: readonly RunnerConnectionScenario[] = ["fresh", "pen
 export async function startRunnerApiTestServer(options: {
   deploymentMode?: "authenticated" | "local_trusted";
 } = {}) {
-  const root = await mkdtemp(join(tmpdir(), "paperclip-api-eval-"));
+  const root = await mkdtemp(join(tmpdir(), "wardmote-api-eval-"));
   const temporary = await startEmbeddedPostgresTestDatabase("paperclip-api-eval-db-");
   const db = createDb(temporary.connectionString);
   const storage = createStorageService(createLocalDiskStorageProvider(join(root, "storage")));

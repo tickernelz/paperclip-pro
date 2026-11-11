@@ -52,7 +52,7 @@ const execFile = promisify(execFileCallback);
 const tempRoots: string[] = [];
 
 async function makeTempRoot() {
-  const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-acpx-skills-"));
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-acpx-skills-"));
   tempRoots.push(root);
   return root;
 }

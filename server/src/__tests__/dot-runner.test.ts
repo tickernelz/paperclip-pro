@@ -43,7 +43,7 @@ describe("durable Dot Runner integration", () => {
     execFileSync("cargo", ["build", "--release", "--locked", "--manifest-path", join(runnerRoot, "runner/Cargo.toml"), "-p", "wardmote-runner-core", "--bin", "wardmote-runnerd"], { cwd: runnerRoot, stdio: "inherit", timeout: 300000 });
     temporary = await startEmbeddedPostgresTestDatabase("paperclip-dot-runner-");
     db = createDb(temporary.connectionString);
-    root = await mkdtemp(join(tmpdir(), "paperclip-dot-state-"));
+    root = await mkdtemp(join(tmpdir(), "wardmote-dot-state-"));
     vi.stubEnv("WARDMOTE_IN_WORKTREE", "false");
     vi.stubEnv("WARDMOTE_RUNNER_BINARY", join(runnerRoot, "runner/target/release", process.platform === "win32" ? "wardmote-runnerd.exe" : "wardmote-runnerd"));
     vi.stubEnv("WARDMOTE_RUNNER_STATE_DIR", join(root, "runner-state"));

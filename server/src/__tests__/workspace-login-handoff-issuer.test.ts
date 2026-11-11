@@ -21,7 +21,7 @@ const tempDirs: string[] = [];
 let previousSecret: string | undefined;
 
 function createWorkspaceCwd(instanceId: string | null) {
-  const cwd = mkdtempSync(path.join(os.tmpdir(), "paperclip-handoff-issuer-"));
+  const cwd = mkdtempSync(path.join(os.tmpdir(), "wardmote-handoff-issuer-"));
   tempDirs.push(cwd);
   mkdirSync(path.join(cwd, ".wardmote"), { recursive: true });
   if (instanceId) {

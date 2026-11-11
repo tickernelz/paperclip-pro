@@ -903,7 +903,7 @@ describe("ACPX runtime host", () => {
 
   it.each(["cursor", "copilot", "pi"] as const)("binds %s agent files from each registered run copy, never ambient roots", async (agent) => {
     const fixture = await hostFixture();
-    const copies = await mkdtemp(join(tmpdir(), "paperclip-agent-copies-"));
+    const copies = await mkdtemp(join(tmpdir(), "wardmote-agent-copies-"));
     temporaryDirectories.push(copies);
     const model = agent === "pi" ? "openrouter/deepseek/deepseek-v4-flash-0731" : "explicit-test-model";
     const options = { ...fixture.options, agent, model, ...(agent === "pi" ? { piThinkingLevel: "low" as const } : {}), permissionMode: "approve-all" as const,
@@ -941,7 +941,7 @@ describe("ACPX runtime host", () => {
   it("reopens Pi with the current registered home in a resumed child shell after prior copies are removed", async () => {
     const fixture = await hostFixture();
     const root = await realpath(fixture.root);
-    const copies = await realpath(await mkdtemp(join(tmpdir(), "paperclip-pi-home-probe-")));
+    const copies = await realpath(await mkdtemp(join(tmpdir(), "wardmote-pi-home-probe-")));
     temporaryDirectories.push(copies);
     const sessionHome = join(root, "pi-session-home");
     await mkdir(join(sessionHome, "sessions"), { recursive: true });
@@ -2068,7 +2068,7 @@ function runtimeTurn(): AcpxRuntimeTurn & {
 }
 
 async function hostFixture() {
-  const root = await mkdtemp(join(tmpdir(), "paperclip-acpx-host-"));
+  const root = await mkdtemp(join(tmpdir(), "wardmote-acpx-host-"));
   temporaryDirectories.push(root);
   const runtimeDirectory = join(root, "runtime");
   const workingDirectory = join(root, "workspace");

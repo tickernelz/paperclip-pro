@@ -7,7 +7,7 @@ import { build } from "vite";
 import { expect, it } from "vitest";
 
 it("keeps component names through the production bundle for React error traces", async () => {
-  const root = await mkdtemp(path.join(os.tmpdir(), "paperclip-component-names-"));
+  const root = await mkdtemp(path.join(os.tmpdir(), "wardmote-component-names-"));
   try {
     await mkdir(path.join(root, "public"));
     await writeFile(path.join(root, "public/sw.js"), 'const buildId = "__WARDMOTE_BUILD_ID__";');

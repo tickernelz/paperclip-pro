@@ -180,9 +180,9 @@ const rustSources = await filesUnder(
 await assertArtifactsFresh("runnerd", rustSources, [runnerd]);
 
 const smokeRoot = await mkdtemp(
-  join(tmpdir(), "paperclip-local-provider-smoke-"),
+  join(tmpdir(), "wardmote-local-provider-smoke-"),
 );
-if (!basename(smokeRoot).startsWith("paperclip-local-provider-smoke-")) {
+if (!basename(smokeRoot).startsWith("wardmote-local-provider-smoke-")) {
   throw new Error("Refusing an unrecognized local provider smoke root");
 }
 await Promise.all(

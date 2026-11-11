@@ -398,7 +398,7 @@ provision() {
   if aws_cli bedrock-agentcore-control get-harness-endpoint --harness-id "$harness_id" --endpoint-name "$ENDPOINT_NAME" >/dev/null 2>&1; then
     aws_cli bedrock-agentcore-control update-harness-endpoint --harness-id "$harness_id" --endpoint-name "$ENDPOINT_NAME" \
       --target-version "$harness_version" --description "Wardmote pinned Harness endpoint" \
-      --client-token "paperclip-update-$harness_id-$harness_version" >/dev/null
+      --client-token "wardmote-update-$harness_id-$harness_version" >/dev/null
   else
     aws_cli bedrock-agentcore-control create-harness-endpoint --harness-id "$harness_id" --endpoint-name "$ENDPOINT_NAME" \
       --target-version "$harness_version" --description "Wardmote pinned Harness endpoint" \

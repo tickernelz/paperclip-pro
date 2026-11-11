@@ -35,7 +35,7 @@ import {
 const tempDirs: string[] = [];
 
 function createMarkerDir(files: Record<string, string> = {}) {
-  const dir = mkdtempSync(path.join(os.tmpdir(), "paperclip-workspace-readiness-"));
+  const dir = mkdtempSync(path.join(os.tmpdir(), "wardmote-workspace-readiness-"));
   tempDirs.push(dir);
   const configPath = path.join(dir, "config.json");
   writeFileSync(configPath, "{}\n", "utf8");

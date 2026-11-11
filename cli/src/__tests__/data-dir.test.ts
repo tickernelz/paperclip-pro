@@ -37,16 +37,16 @@ describe("applyDataDirOverride", () => {
 
   it("uses the provided instance id when deriving default config path", () => {
     const home = applyDataDirOverride({
-      dataDir: "/tmp/paperclip-alt",
+      dataDir: "/tmp/wardmote-alt",
       instance: "dev_1",
       config: undefined,
       context: undefined,
     }, { hasConfigOption: true, hasContextOption: true });
 
-    expect(home).toBe(path.resolve("/tmp/paperclip-alt"));
+    expect(home).toBe(path.resolve("/tmp/wardmote-alt"));
     expect(process.env.WARDMOTE_INSTANCE_ID).toBe("dev_1");
     expect(process.env.WARDMOTE_CONFIG).toBe(
-      path.resolve("/tmp/paperclip-alt", "instances", "dev_1", "config.json"),
+      path.resolve("/tmp/wardmote-alt", "instances", "dev_1", "config.json"),
     );
   });
 
@@ -55,7 +55,7 @@ describe("applyDataDirOverride", () => {
     process.env.WARDMOTE_CONTEXT = "/env/context.json";
 
     applyDataDirOverride({
-      dataDir: "/tmp/paperclip-alt",
+      dataDir: "/tmp/wardmote-alt",
       config: "/flag/config.json",
       context: "/flag/context.json",
     }, { hasConfigOption: true, hasContextOption: true });
@@ -67,12 +67,12 @@ describe("applyDataDirOverride", () => {
   it("only applies defaults for options supported by the command", () => {
     applyDataDirOverride(
       {
-        dataDir: "/tmp/paperclip-alt",
+        dataDir: "/tmp/wardmote-alt",
       },
       { hasConfigOption: false, hasContextOption: false },
     );
 
-    expect(process.env.WARDMOTE_HOME).toBe(path.resolve("/tmp/paperclip-alt"));
+    expect(process.env.WARDMOTE_HOME).toBe(path.resolve("/tmp/wardmote-alt"));
     expect(process.env.WARDMOTE_CONFIG).toBeUndefined();
     expect(process.env.WARDMOTE_CONTEXT).toBeUndefined();
   });

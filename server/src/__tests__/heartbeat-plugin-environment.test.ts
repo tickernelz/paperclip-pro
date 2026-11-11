@@ -89,7 +89,7 @@ describeEmbeddedPostgres("heartbeat plugin environments", () => {
     const pluginId = randomUUID();
     const pluginKey = `acme.environments.${pluginId}`;
     const agentId = randomUUID();
-    const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), "paperclip-plugin-env-heartbeat-"));
+    const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), "wardmote-plugin-env-heartbeat-"));
     tempRoots.push(workspaceRoot);
     const workerManager = {
       isRunning: vi.fn((id: string) => id === pluginId),
@@ -259,8 +259,8 @@ describeEmbeddedPostgres("heartbeat plugin environments", () => {
     const workspaceBId = randomUUID();
     const agentAId = randomUUID();
     const agentBId = randomUUID();
-    const workspaceRootA = await mkdtemp(path.join(os.tmpdir(), "paperclip-plugin-env-company-a-"));
-    const workspaceRootB = await mkdtemp(path.join(os.tmpdir(), "paperclip-plugin-env-company-b-"));
+    const workspaceRootA = await mkdtemp(path.join(os.tmpdir(), "wardmote-plugin-env-company-a-"));
+    const workspaceRootB = await mkdtemp(path.join(os.tmpdir(), "wardmote-plugin-env-company-b-"));
     tempRoots.push(workspaceRootA, workspaceRootB);
     const workerManager = {
       isRunning: vi.fn((id: string) => id === pluginId),
@@ -494,7 +494,7 @@ describeEmbeddedPostgres("heartbeat plugin environments", () => {
     const agentId = randomUUID();
     const issueId = randomUUID();
     const staleExecutionWorkspaceId = randomUUID();
-    const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), "paperclip-plugin-env-issue-"));
+    const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), "wardmote-plugin-env-issue-"));
     tempRoots.push(workspaceRoot);
     const workerManager = {
       isRunning: vi.fn((id: string) => id === pluginId),

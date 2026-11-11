@@ -623,7 +623,7 @@ describe("worker-bound live pseudo-terminal opener", () => {
     expect(openInput).not.toHaveProperty("command");
     // The session home is the fixed root, one slash, and one UUID.
     expect(openInput.sessionHome).toMatch(
-      /^\/tmp\/paperclip-adapter-login\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
+      /^\/tmp\/wardmote-adapter-login\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
     );
     expect(opened).toBe(session);
   });

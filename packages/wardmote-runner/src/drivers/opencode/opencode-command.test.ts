@@ -9,7 +9,7 @@ const roots: string[] = [];
 afterEach(async () => { await Promise.all(roots.splice(0).map(root => rm(root, { recursive: true, force: true }))); });
 
 async function installed(layout: "source" | "standalone" | "vendored", platform: string, architecture: string, name: string) {
-  const root = await realpath(await mkdtemp(join(tmpdir(), "paperclip-opencode-install-")));
+  const root = await realpath(await mkdtemp(join(tmpdir(), "wardmote-opencode-install-")));
   roots.push(root);
   const issuer = join(root, layout === "vendored" ? "dist/vendor/wardmote-runner/drivers/opencode/driver.js"
     : layout === "source" ? "src/drivers/opencode/driver.ts" : "dist/drivers/opencode/driver.js");

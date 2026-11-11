@@ -22,7 +22,7 @@ import {
 
 describe("Codex value and workspace boundaries", () => {
   it("accepts assigned workspaces below HOME while rejecting host-state and containment escapes", () => {
-    const fixture = mkdtempSync(join(tmpdir(), "paperclip-codex-boundaries-"));
+    const fixture = mkdtempSync(join(tmpdir(), "wardmote-codex-boundaries-"));
     try {
       const hostRoot = join(fixture, "host");
       const hostHome = join(hostRoot, "home");

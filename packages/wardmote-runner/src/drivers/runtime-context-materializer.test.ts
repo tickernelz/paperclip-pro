@@ -119,7 +119,7 @@ describe("runtime context materialization", () => {
   });
 
   it("copies only assigned skills and writes an isolated MCP config", async () => {
-    const root = await mkdtemp(join(tmpdir(), "paperclip-runtime-context-"));
+    const root = await mkdtemp(join(tmpdir(), "wardmote-runtime-context-"));
     roots.push(root);
     const assigned = join(root, "assigned-source");
     const instructions = join(root, "instructions-source");
@@ -167,7 +167,7 @@ describe("runtime context materialization", () => {
   });
 
   it("preserves a managed provider while excluding ambient auth, hooks, and tool configuration", async () => {
-    const root = await mkdtemp(join(tmpdir(), "paperclip-routing-home-"));
+    const root = await mkdtemp(join(tmpdir(), "wardmote-routing-home-"));
     roots.push(root);
     const source = join(root, "source");
     const target = join(root, "isolated");
@@ -196,7 +196,7 @@ command = "untrusted-command"
   });
 
   it("rejects repeated assignments without changing the current assignment", async () => {
-    const root = await mkdtemp(join(tmpdir(), "paperclip-runtime-repeat-"));
+    const root = await mkdtemp(join(tmpdir(), "wardmote-runtime-repeat-"));
     roots.push(root);
     const assigned = join(root, "assigned-source");
     const replacement = join(root, "replacement-source");
@@ -229,7 +229,7 @@ command = "untrusted-command"
   });
 
   it("rejects source symlinks without changing the current assignment", async () => {
-    const root = await mkdtemp(join(tmpdir(), "paperclip-runtime-symlink-"));
+    const root = await mkdtemp(join(tmpdir(), "wardmote-runtime-symlink-"));
     roots.push(root);
     const assigned = join(root, "assigned-source");
     const unsafe = join(root, "unsafe-source");
@@ -257,7 +257,7 @@ command = "untrusted-command"
   });
 
   it("rejects overlapping portable names without changing the current assignment", async () => {
-    const root = await mkdtemp(join(tmpdir(), "paperclip-runtime-atomic-"));
+    const root = await mkdtemp(join(tmpdir(), "wardmote-runtime-atomic-"));
     roots.push(root);
     const assigned = join(root, "assigned-source");
     const replacement = join(root, "replacement-source");
@@ -320,7 +320,7 @@ command = "untrusted-command"
   });
 
   it("rejects an existing destination before filesystem mutation", async () => {
-    const root = await mkdtemp(join(tmpdir(), "paperclip-runtime-existing-"));
+    const root = await mkdtemp(join(tmpdir(), "wardmote-runtime-existing-"));
     roots.push(root);
     const assigned = join(root, "assigned-source");
     const replacement = join(root, "replacement-source");
@@ -371,7 +371,7 @@ command = "untrusted-command"
   });
 
   it("cleans private staging when fresh publication fails", async () => {
-    const root = await mkdtemp(join(tmpdir(), "paperclip-runtime-publish-"));
+    const root = await mkdtemp(join(tmpdir(), "wardmote-runtime-publish-"));
     roots.push(root);
     const assigned = join(root, "assigned-source");
     const instructions = join(root, "instructions-source");
@@ -402,7 +402,7 @@ command = "untrusted-command"
   });
 
   it("rejects skill names that can escape or alias the skills home", async () => {
-    const root = await mkdtemp(join(tmpdir(), "paperclip-runtime-name-"));
+    const root = await mkdtemp(join(tmpdir(), "wardmote-runtime-name-"));
     roots.push(root);
     const assigned = join(root, "assigned-source");
     const instructions = join(root, "instructions-source");
@@ -445,7 +445,7 @@ command = "untrusted-command"
   });
 
   it("writes API login state as an owner-only file and removes stale auth", async () => {
-    const root = await mkdtemp(join(tmpdir(), "paperclip-runtime-auth-"));
+    const root = await mkdtemp(join(tmpdir(), "wardmote-runtime-auth-"));
     roots.push(root);
     const codexHome = join(root, "codex-home");
     const emptyCodexHome = join(root, "empty-codex-home");
@@ -474,7 +474,7 @@ command = "untrusted-command"
   });
 
   it("copies regular host auth but refuses symlinked auth", async () => {
-    const root = await mkdtemp(join(tmpdir(), "paperclip-runtime-host-auth-"));
+    const root = await mkdtemp(join(tmpdir(), "wardmote-runtime-host-auth-"));
     roots.push(root);
     const codexHome = join(root, "codex-home");
     const symlinkCodexHome = join(root, "symlink-codex-home");

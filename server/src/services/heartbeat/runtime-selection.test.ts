@@ -31,9 +31,9 @@ describe.skipIf(!support.supported)("heartbeat runtime selection boundary", () =
   let db: Db;
   let instructionRoot: string;
   beforeAll(async () => {
-    instructionRoot = await mkdtemp(join(tmpdir(), "paperclip-selection-instructions-"));
+    instructionRoot = await mkdtemp(join(tmpdir(), "wardmote-selection-instructions-"));
     await writeFile(join(instructionRoot, "AGENTS.md"), "Complete the assigned task.\n");
-    database = await startEmbeddedPostgresTestDatabase("paperclip-runtime-selection");
+    database = await startEmbeddedPostgresTestDatabase("wardmote-runtime-selection");
     db = createDb(database.connectionString);
     await db.execute(sql`set client_min_messages = warning`);
   }, EMBEDDED_POSTGRES_TEST_TIMEOUT_MS);
@@ -60,7 +60,7 @@ describe.skipIf(!support.supported)("heartbeat runtime selection boundary", () =
       nativeRuntimeResolution: resolveHeartbeatNativeRuntimeMode({ persisted: run, enabled: true, runtimeConfig: {}, adapterConfig: agent.adapterConfig, agent, issue, target: null, workspaceId: null }),
       task: { issueRef: issue, issueContext: null, context: { wardmoteTaskMarkdown: "Complete this task" }, executionContinuation: null, safeWakeComments: [], safeWakeCommentContext: null, wardmoteWakePayload: null, acceptedPlanContinuationWake: false },
       session: { persistedNativeExecutionInput: null, persistedRunnerProfile: {}, taskSessionCredentialCompatible: true, taskSessionDecodedParams: null, taskSessionForRun: null, isFailedChatRunRetry: false, getFreshSessionHandoff: vi.fn(async () => "Earlier context") },
-      workspace: { persistedExecutionWorkspace: null, executionWorkspace: { cwd: "/tmp/paperclip-runtime-selection", repoUrl: null, repoRef: null, branchName: null }, executionTarget: null, isDotRun: false, projectRepositoryPaths: [],
+      workspace: { persistedExecutionWorkspace: null, executionWorkspace: { cwd: "/tmp/wardmote-runtime-selection", repoUrl: null, repoRef: null, branchName: null }, executionTarget: null, isDotRun: false, projectRepositoryPaths: [],
         activeEnvironmentLease: { lease: { id: randomUUID(), companyId: company.id, environmentId: null, executionWorkspaceId: null, issueId: issue.id, heartbeatRunId: run.id, status: "active", leasePolicy: "ephemeral", provider: null, providerLeaseId: null, acquiredAt: now, lastUsedAt: now, expiresAt: null, releasedAt: null, failureReason: null, cleanupStatus: null, metadata: null, createdAt: now, updatedAt: now } },
       },
       config: { runtimeConfig: {}, runtimeSkillEntries: [], runScopedMentionedSkillKeys: [], instructionCopy: null, agentIdentity: undefined, issueAssigneeOverrides: null, resolvedConfig: {}, managedAiRuntime: undefined },

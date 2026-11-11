@@ -1271,7 +1271,7 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
       return;
     }
 
-    const fixtureRoot = await mkdtemp(path.join(os.tmpdir(), "paperclip-environment-runtime-ssh-"));
+    const fixtureRoot = await mkdtemp(path.join(os.tmpdir(), "wardmote-environment-runtime-ssh-"));
     fixtureRoots.push(fixtureRoot);
     const statePath = path.join(fixtureRoot, "state.json");
     const fixture = await startSshEnvLabFixture({ statePath });
@@ -5329,7 +5329,7 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
 
   it("permits native-runner replacement only after verifying the stamped backup", async () => {
     const seeded = await seedReusablePluginSandboxLease("wardmote_runner");
-    const backupBase = await mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-replacement-"));
+    const backupBase = await mkdtemp(path.join(os.tmpdir(), "wardmote-runtime-replacement-"));
     const previousStateDirectory = process.env.WARDMOTE_RUNNER_STATE_DIR;
     process.env.WARDMOTE_RUNNER_STATE_DIR = backupBase;
     try {

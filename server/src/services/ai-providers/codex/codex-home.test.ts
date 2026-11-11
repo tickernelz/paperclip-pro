@@ -39,7 +39,7 @@ describe("codex managed home", () => {
   });
 
   it("treats a concurrently-created expected auth symlink as success", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-codex-home-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-codex-home-"));
     const sharedCodexHome = path.join(root, "shared-codex-home");
     const wardmoteHome = path.join(root, "paperclip-home");
     const managedCodexHome = path.join(
@@ -85,7 +85,7 @@ describe("codex managed home", () => {
   });
 
   it("still throws on EEXIST when a raced-in auth symlink points elsewhere", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-codex-home-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-codex-home-"));
     const sharedCodexHome = path.join(root, "shared-codex-home");
     const wardmoteHome = path.join(root, "paperclip-home");
     const managedCodexHome = path.join(
@@ -139,7 +139,7 @@ describe("codex managed home", () => {
   // source token rotated. `ensureSymlink` now heals the upgrade path by
   // unlinking the stale copy and creating a symlink to the live source.
   it("replaces a stale regular-file auth.json with a symlink to the live source (#5028)", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-codex-home-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-codex-home-"));
     try {
       const sharedCodexHome = path.join(root, "shared-codex-home");
       const wardmoteHome = path.join(root, "paperclip-home");
@@ -185,7 +185,7 @@ describe("codex managed home", () => {
   // ensureSymlink runs — so the heal branch never executes there. Call
   // ensureSymlink directly to prove the unlink-and-recreate path itself.
   it("ensureSymlink: unlinks a stale regular file and recreates the symlink", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-ensure-symlink-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-ensure-symlink-"));
     try {
       const source = path.join(root, "live-source.json");
       const target = path.join(root, "stale-target.json");
@@ -205,7 +205,7 @@ describe("codex managed home", () => {
   // directory in place rather than throwing EISDIR. We treat a directory at
   // this path as operator-owned, not a stale Paperclip copy.
   it("ensureSymlink: leaves an unexpected directory in place instead of throwing", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-ensure-symlink-dir-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-ensure-symlink-dir-"));
     try {
       const source = path.join(root, "live-source.json");
       const target = path.join(root, "unexpected-dir");
@@ -269,7 +269,7 @@ describe("isManagedCodexHomePath", () => {
 
 describe("codexHomeHasUsableAuth", () => {
   it("is true for credential-bearing auth.json and false when missing", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-codex-auth-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-codex-auth-"));
     try {
       expect(await codexHomeHasUsableAuth(root)).toBe(false);
       await fs.writeFile(path.join(root, "auth.json"), "{}", "utf8");
@@ -288,7 +288,7 @@ describe("codexHomeHasUsableAuth", () => {
   });
 
   it("recognizes the Codex 0.143 AuthDotJson subscription shape", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-codex-auth-modern-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-codex-auth-modern-"));
     try {
       await fs.writeFile(
         path.join(root, "auth.json"),
@@ -311,7 +311,7 @@ describe("codexHomeHasUsableAuth", () => {
   });
 
   it("treats subscription auth without account_id or token material as unusable", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-codex-auth-modern-invalid-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-codex-auth-modern-invalid-"));
     try {
       await fs.writeFile(
         path.join(root, "auth.json"),
@@ -344,7 +344,7 @@ describe("codexHomeHasUsableAuth", () => {
   });
 
   it("is false for a dangling auth.json symlink", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-codex-auth-dangling-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-codex-auth-dangling-"));
     try {
       await fs.symlink(path.join(root, "missing-source.json"), path.join(root, "auth.json"));
       expect(await codexHomeHasUsableAuth(root)).toBe(false);
@@ -356,7 +356,7 @@ describe("codexHomeHasUsableAuth", () => {
 
 describe("seedManagedCodexHome", () => {
   it("symlinks auth.json from the shared source into an explicit per-agent home", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-codex-seed-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-codex-seed-"));
     try {
       const sharedCodexHome = path.join(root, "shared-codex-home");
       const agentHome = path.join(
@@ -385,7 +385,7 @@ describe("seedManagedCodexHome", () => {
   });
 
   it("writes an API-key auth.json into the home when an apiKey is supplied", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-codex-seed-apikey-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-codex-seed-apikey-"));
     try {
       const agentHome = path.join(root, "agent-home");
       const emptyShared = path.join(root, "empty-shared");
@@ -425,7 +425,7 @@ describe("seedManagedCodexHome", () => {
     });
 
   it("keeps a promoted subscription auth.json when the shared source has no auth", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-codex-seed-promoted-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-codex-seed-promoted-"));
     try {
       const companyHome = path.join(root, "company-home");
       const emptyShared = path.join(root, "empty-shared");
@@ -445,7 +445,7 @@ describe("seedManagedCodexHome", () => {
   });
 
   it("keeps a promoted subscription auth.json whose identity differs from the shared source", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-codex-seed-foreign-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-codex-seed-foreign-"));
     try {
       const companyHome = path.join(root, "company-home");
       const sharedCodexHome = path.join(root, "shared-codex-home");
@@ -470,7 +470,7 @@ describe("seedManagedCodexHome", () => {
   });
 
   it("still replaces a same-identity stale regular copy with the shared symlink once the source is strictly fresher (#5028)", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-codex-seed-stale-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-codex-seed-stale-"));
     try {
       const companyHome = path.join(root, "company-home");
       const sharedCodexHome = path.join(root, "shared-codex-home");
@@ -501,7 +501,7 @@ describe("seedManagedCodexHome", () => {
     // than the host copy the user was failing with. Swapping it for the shared
     // symlink here would sign the company back in with that failing credential
     // right after the login that replaced it.
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-codex-seed-newer-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-codex-seed-newer-"));
     try {
       const companyHome = path.join(root, "company-home");
       const sharedCodexHome = path.join(root, "shared-codex-home");
@@ -538,7 +538,7 @@ describe("seedManagedCodexHome", () => {
       { source: "2026-07-09T02:00:00Z", target: null },
     ];
     for (const { source, target } of cases) {
-      const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-codex-seed-tie-"));
+      const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-codex-seed-tie-"));
       try {
         const companyHome = path.join(root, "company-home");
         const sharedCodexHome = path.join(root, "shared-codex-home");
@@ -564,7 +564,7 @@ describe("seedManagedCodexHome", () => {
   });
 
   it("keeps the usable target when the shared source exists but cannot be read", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-codex-seed-src-err-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-codex-seed-src-err-"));
     try {
       const companyHome = path.join(root, "company-home");
       const sharedCodexHome = path.join(root, "shared-codex-home");
@@ -594,7 +594,7 @@ describe("seedManagedCodexHome", () => {
     // promotion/vend/copy-back own — a strictly-fresher same-identity shared
     // source must NOT trigger the #5028 heal here, or the bound account is
     // silently swapped for the host login.
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-codex-seed-store-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-codex-seed-store-"));
     try {
       const sharedCodexHome = path.join(root, "shared-codex-home");
       const entryHome = path.join(
@@ -630,7 +630,7 @@ describe("seedManagedCodexHome", () => {
   });
 
   it("refuses an API-key rewrite of a credential-store entry's auth.json", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-codex-seed-store-apikey-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-codex-seed-store-apikey-"));
     try {
       const sharedCodexHome = path.join(root, "shared-codex-home");
       const entryHome = path.join(
@@ -659,7 +659,7 @@ describe("seedManagedCodexHome", () => {
   });
 
   it("still removes an apikey-mode auth.json so the chatgpt-mode symlink is restored", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-codex-seed-apikey-residue-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-codex-seed-apikey-residue-"));
     try {
       const companyHome = path.join(root, "company-home");
       const sharedCodexHome = path.join(root, "shared-codex-home");
@@ -687,7 +687,7 @@ describe("seedManagedCodexHome", () => {
 // Startup backfill for already-isolated managed homes.
 describe("reconcileManagedCodexHome", () => {
   async function makeFixture() {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-codex-reconcile-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-codex-reconcile-"));
     const sharedCodexHome = path.join(root, "shared-codex-home");
     const wardmoteHome = path.join(root, "paperclip-home");
     const agentHome = path.join(
@@ -869,7 +869,7 @@ describe("reconcileManagedCodexHome", () => {
 
 describe("evaluateCodexCredentialReadiness", () => {
   async function makeFixture() {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-codex-readiness-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-codex-readiness-"));
     const sharedCodexHome = path.join(root, "shared-codex-home");
     const wardmoteHome = path.join(root, "paperclip-home");
     const companyRoot = path.join(
@@ -992,7 +992,7 @@ describe("evaluateCodexCredentialReadiness", () => {
   });
 
   it("replaces the managed MCP block and clears stale servers for an empty runtime set", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-codex-mcp-config-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-codex-mcp-config-"));
     try {
       const alphaHome = path.join(root, "agent-alpha");
       const zeroHome = path.join(root, "agent-zero");
@@ -1034,7 +1034,7 @@ describe("evaluateCodexCredentialReadiness", () => {
   });
 
   it("restricts permissions on an existing managed MCP config", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-codex-mcp-config-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-codex-mcp-config-"));
     try {
       const configPath = path.join(root, "config.toml");
       await fs.writeFile(configPath, "model = \"gpt-5\"\n", { mode: 0o644 });
@@ -1096,7 +1096,7 @@ describe("stageCodexHomeForSync", () => {
   }
 
   it("stages exactly the allowlist, derefs auth.json to bytes, and excludes decoys", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-codex-stage-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-codex-stage-"));
     let staged: string | null = null;
     try {
       const { home, authBytes, skillBytes } = await buildFakeHome(root);
@@ -1130,7 +1130,7 @@ describe("stageCodexHomeForSync", () => {
 
   // C1 — staged credential file must be mode 0600 (not the world-readable default).
   it("writes the staged auth.json with mode 0600", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-codex-stage-mode-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-codex-stage-mode-"));
     let staged: string | null = null;
     try {
       const { home } = await buildFakeHome(root);
@@ -1146,7 +1146,7 @@ describe("stageCodexHomeForSync", () => {
   // config.toml carries the managed MCP `Authorization: Bearer …` header and is
   // secret-bearing; the staged copy must be 0600, not the world-readable default.
   it("writes the staged config.toml (managed MCP bearer header) with mode 0600", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-codex-stage-toml-mode-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-codex-stage-toml-mode-"));
     let staged: string | null = null;
     try {
       const home = path.join(root, "codex-home");
@@ -1170,7 +1170,7 @@ describe("stageCodexHomeForSync", () => {
   // Least privilege: no staged regular file needs group/other read, so every
   // one (config.json, instructions.md — not just credentials) is staged 0600.
   it("writes every staged regular file with mode 0600", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-codex-stage-all-mode-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-codex-stage-all-mode-"));
     let staged: string | null = null;
     try {
       const { home } = await buildFakeHome(root);
@@ -1187,7 +1187,7 @@ describe("stageCodexHomeForSync", () => {
 
   // C2 — staged dir must be 0700 (mkdtemp guarantees this on POSIX).
   it("creates the staged dir with mode 0700", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-codex-stage-dir-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-codex-stage-dir-"));
     let staged: string | null = null;
     try {
       const { home } = await buildFakeHome(root);
@@ -1201,7 +1201,7 @@ describe("stageCodexHomeForSync", () => {
   });
 
   it("skips absent optional entries without throwing", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-codex-stage-absent-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-codex-stage-absent-"));
     let staged: string | null = null;
     try {
       // Keyring-credential mode: no auth.json, no config.json.
@@ -1219,7 +1219,7 @@ describe("stageCodexHomeForSync", () => {
   });
 
   it("treats a dangling auth.json symlink as absent (skips it, no throw)", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-codex-stage-dangling-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-codex-stage-dangling-"));
     let staged: string | null = null;
     try {
       const home = path.join(root, "codex-home");
@@ -1238,7 +1238,7 @@ describe("stageCodexHomeForSync", () => {
   // C3 + C4 — an unexpected I/O error must reject (fail-closed, not partial)
   // AND remove the temp dir it created (cleanup on the error path).
   it("fails closed and removes the temp dir on an unexpected I/O error", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-codex-stage-fail-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-codex-stage-fail-"));
     try {
       const { home } = await buildFakeHome(root);
 
@@ -1267,7 +1267,7 @@ describe("stageCodexHomeForSync", () => {
   // stores skill packages in a shared location) and are dereferenced normally;
   // all resulting files land 0600 inside the 0700 staged dir.
   it("skips circular skill symlinks (ELOOP) without throwing", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-codex-stage-circular-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-codex-stage-circular-"));
     let staged: string | null = null;
     try {
       const home = path.join(root, "codex-home");
@@ -1292,7 +1292,7 @@ describe("stageCodexHomeForSync", () => {
 
   // Skill staging retains executable permission with owner-only access.
   it("retains skill executable bits without group or world permissions", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-codex-stage-skill-mode-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-codex-stage-skill-mode-"));
     let staged: string | null = null;
     try {
       const home = path.join(root, "codex-home");
@@ -1319,7 +1319,7 @@ describe("stageCodexHomeForSync", () => {
   // exhausted. Cycle detection must let staging finish while still copying the
   // real content and skipping the self-referential link.
   it("does not infinitely traverse an ancestor directory link (back -> .) inside a skill", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-codex-stage-cycle-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-codex-stage-cycle-"));
     let staged: string | null = null;
     try {
       const home = path.join(root, "codex-home");
@@ -1349,7 +1349,7 @@ describe("stageCodexHomeForSync", () => {
   // dereferenced into the staged asset — otherwise a malformed/compromised skill
   // could smuggle host secrets past CODEX_SYNC_ALLOWLIST.
   it("does not stage a nested skill symlink that escapes the skill root", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-codex-stage-escape-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-codex-stage-escape-"));
     let staged: string | null = null;
     try {
       const home = path.join(root, "codex-home");
@@ -1387,7 +1387,7 @@ describe("stageCodexHomeForSync", () => {
   // never adopted as a containment root — otherwise the whole home
   // (`sessions/`, `*.sqlite`, …) would be dragged into the staged skills asset.
   it("skips a top-level skills entry that resolves to an ancestor of skills/", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-codex-stage-ancestor-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-codex-stage-ancestor-"));
     let staged: string | null = null;
     try {
       const home = path.join(root, "codex-home");

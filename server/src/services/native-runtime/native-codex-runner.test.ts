@@ -15,7 +15,7 @@ afterEach(() => vi.restoreAllMocks());
 
 describe("installed runner selection", () => {
   it("uses the runner's platform-aware packaged selection", async () => {
-    const root = await mkdtemp(join(tmpdir(), "paperclip-runner-selection-"));
+    const root = await mkdtemp(join(tmpdir(), "wardmote-runner-selection-"));
     const binary = join(root, "wardmote-runnerd");
     try {
       await writeFile(binary, "test executable", { mode: 0o700 });
@@ -29,7 +29,7 @@ describe("installed runner selection", () => {
   });
 
   it("keeps an explicit usable override and rejects a relative override", async () => {
-    const root = await mkdtemp(join(tmpdir(), "paperclip-runner-selection-"));
+    const root = await mkdtemp(join(tmpdir(), "wardmote-runner-selection-"));
     const binary = join(root, "configured-runnerd");
     try {
       await writeFile(binary, "test executable", { mode: 0o700 });

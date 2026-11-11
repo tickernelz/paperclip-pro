@@ -128,7 +128,7 @@ describe("renderFeedbackReport", () => {
 
 describe("writeFeedbackExportBundle", () => {
   it("writes votes, traces, a manifest, and a zip archive", async () => {
-    const tempDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-feedback-export-"));
+    const tempDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-feedback-export-"));
     const outputDir = path.join(tempDir, "feedback-export");
     const traces = [
       makeTrace(),

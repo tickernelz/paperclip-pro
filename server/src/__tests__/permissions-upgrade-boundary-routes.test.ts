@@ -24,9 +24,9 @@ import {
 } from "./helpers/embedded-postgres.js";
 
 vi.hoisted(() => {
-  process.env.WARDMOTE_HOME = "/tmp/paperclip-test-home";
+  process.env.WARDMOTE_HOME = "/tmp/wardmote-test-home";
   process.env.WARDMOTE_INSTANCE_ID = "vitest";
-  process.env.WARDMOTE_LOG_DIR = "/tmp/paperclip-test-home/logs";
+  process.env.WARDMOTE_LOG_DIR = "/tmp/wardmote-test-home/logs";
   process.env.WARDMOTE_IN_WORKTREE = "false";
 });
 
@@ -53,7 +53,7 @@ function agentActor(companyId: string, agentId: string): Express.Request["actor"
 }
 
 async function createApp(db: Db, actor: Express.Request["actor"]) {
-  process.env.WARDMOTE_LOG_DIR = "/tmp/paperclip-test-home/logs";
+  process.env.WARDMOTE_LOG_DIR = "/tmp/wardmote-test-home/logs";
   process.env.WARDMOTE_IN_WORKTREE = "false";
   const app = express();
   app.use(express.json());

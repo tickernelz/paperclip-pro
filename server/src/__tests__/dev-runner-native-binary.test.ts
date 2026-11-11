@@ -18,7 +18,7 @@ afterEach(() => {
 });
 
 function createRunnerCheckout(): { root: string; source: string; binary: string } {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-dev-runner-binary-"));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-dev-runner-binary-"));
   tempRoots.add(root);
 
   const runnerRoot = path.join(root, "packages", "wardmote-runner", "runner");

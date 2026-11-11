@@ -17,7 +17,7 @@ describe("static SPA fallback HTML", () => {
   });
 
   it("ignores retired snippet settings in managed and self-hosted static HTML", () => {
-    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-cloud-html-"));
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-cloud-html-"));
     tempDirs.push(dir);
     fs.writeFileSync(path.join(dir, "index.html"), "<html><body>App</body></html>");
     vi.stubEnv("WARDMOTE_CLOUD_UI_SNIPPET", '<script src="https://example.com/chat.js"></script>');
@@ -32,7 +32,7 @@ describe("static SPA fallback HTML", () => {
   });
 
   it("serves the current index.html instead of reusing stale asset hashes", async () => {
-    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-static-index-"));
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-static-index-"));
     tempDirs.push(tempDir);
     const indexPath = path.join(tempDir, "index.html");
     const app = express();

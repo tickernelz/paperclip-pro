@@ -60,7 +60,7 @@ describe("local process sandbox", () => {
   });
 
   it.runIf(process.platform === "linux")("describes every valid allowlist input when no proxy rules remain", async () => {
-    const workspace = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-network-rules-"));
+    const workspace = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-network-rules-"));
     cleanup.push(workspace);
 
     await expect(buildLocalProcessSandboxSpawnTarget({
@@ -77,7 +77,7 @@ describe("local process sandbox", () => {
   });
 
   it.runIf(process.platform === "linux")("builds a fresh-root bubblewrap command with workspace access", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-fs-sandbox-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-fs-sandbox-"));
     cleanup.push(root);
     const workspace = path.join(root, "workspace");
     const managedHome = path.join(root, "managed-home");
@@ -104,7 +104,7 @@ describe("local process sandbox", () => {
   });
 
   it.runIf(process.platform === "linux")("binds a confined absolute alias to the synchronized workspace", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-fs-alias-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-fs-alias-"));
     cleanup.push(root);
     const workspace = path.join(root, "workspace");
     await fs.mkdir(workspace);
@@ -124,7 +124,7 @@ describe("local process sandbox", () => {
   });
 
   it.runIf(process.platform === "linux")("rejects writable out-of-tree paths without an outbound restore mapping", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-fs-outbound-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-fs-outbound-"));
     cleanup.push(root);
     const workspace = path.join(root, "workspace");
     const outside = path.join(root, "outside");
@@ -144,7 +144,7 @@ describe("local process sandbox", () => {
   });
 
   it.runIf(process.platform === "linux")("builds a network-only namespace without changing filesystem visibility", async () => {
-    const workspace = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-network-sandbox-"));
+    const workspace = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-network-sandbox-"));
     cleanup.push(workspace);
     const target = await buildLocalProcessSandboxSpawnTarget({
       executable: process.execPath,
@@ -160,7 +160,7 @@ describe("local process sandbox", () => {
   });
 
   it.runIf(process.platform === "linux")("forwards allowed proxy targets with a deep TMPDIR and rejects other hosts", async () => {
-    const workspace = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-network-proxy-"));
+    const workspace = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-network-proxy-"));
     cleanup.push(workspace);
     const deepTmpDir = path.join(workspace, ...Array.from({ length: 6 }, () => "deep-temporary-directory-segment"));
     await fs.mkdir(deepTmpDir, { recursive: true });
@@ -183,9 +183,9 @@ describe("local process sandbox", () => {
     );
     const delimiterIndex = target.args.indexOf("--");
     const socketPath = target.args[delimiterIndex + 3];
-    expect(Buffer.byteLength(path.join(deepTmpDir, "paperclip-network-sandbox-XXXXXX", "proxy.sock"))).toBeGreaterThan(107);
+    expect(Buffer.byteLength(path.join(deepTmpDir, "wardmote-network-sandbox-XXXXXX", "proxy.sock"))).toBeGreaterThan(107);
     expect(Buffer.byteLength(socketPath)).toBeLessThanOrEqual(107);
-    expect(socketPath).toMatch(/^\/tmp\/paperclip-network-sandbox-/);
+    expect(socketPath).toMatch(/^\/tmp\/wardmote-network-sandbox-/);
     expect(target.args).toContain(path.dirname(socketPath));
     const request = (url: string) => new Promise<{ status: number; contentType: string | null; body: string }>((resolve, reject) => {
       const outgoing = http.request({ socketPath, path: url, headers: { host: new URL(url).host } }, (response) => {
@@ -236,7 +236,7 @@ describe("local process sandbox", () => {
   });
 
   it.runIf(process.platform === "linux")("always permits trusted Wardmote control-plane URLs", async () => {
-    const workspace = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-network-trusted-"));
+    const workspace = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-network-trusted-"));
     cleanup.push(workspace);
     const server = http.createServer((_request, response) => response.end("control-plane-response"));
     await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
@@ -278,7 +278,7 @@ describe("local process sandbox", () => {
   });
 
   it("fails clearly when Bubblewrap is unavailable", async () => {
-    const workspace = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-fs-sandbox-missing-"));
+    const workspace = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-fs-sandbox-missing-"));
     cleanup.push(workspace);
     await expect(
       runChildProcess("filesystem-sandbox-missing", process.execPath, ["-e", "process.exit(0)"], {
@@ -299,7 +299,7 @@ describe("local process sandbox", () => {
   it.runIf(Boolean(process.env.WARDMOTE_TEST_BWRAP))(
     "prevents reads outside the workspace while allowing workspace writes",
     async () => {
-      const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-fs-sandbox-integration-"));
+      const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-fs-sandbox-integration-"));
       cleanup.push(root);
       const workspace = path.join(root, "workspace");
       const outside = path.join(root, "canary.txt");
@@ -364,7 +364,7 @@ describe("local process sandbox", () => {
   it.runIf(Boolean(process.env.WARDMOTE_TEST_BWRAP))(
     "denies direct network egress",
     async () => {
-      const workspace = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-network-deny-"));
+      const workspace = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-network-deny-"));
       cleanup.push(workspace);
       const server = http.createServer((_request, response) => response.end("host-network"));
       await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
@@ -394,7 +394,7 @@ describe("local process sandbox", () => {
   it.runIf(Boolean(process.env.WARDMOTE_TEST_BWRAP))(
     "allows only configured network targets through the proxy bridge",
     async () => {
-      const workspace = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-network-allowlist-"));
+      const workspace = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-network-allowlist-"));
       cleanup.push(workspace);
       const server = http.createServer((_request, response) => response.end("allowed-response"));
       await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));

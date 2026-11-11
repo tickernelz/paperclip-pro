@@ -24,7 +24,7 @@ describe("terminal clipboard", () => {
   });
 
   it("quotes paths only when the shell would split or expand them", () => {
-    expect(shellEscapePath("/tmp/paperclip-pasted-1000/pasted-image-1.png")).toBe("/tmp/paperclip-pasted-1000/pasted-image-1.png");
+    expect(shellEscapePath("/tmp/wardmote-pasted-1000/pasted-image-1.png")).toBe("/tmp/wardmote-pasted-1000/pasted-image-1.png");
     expect(shellEscapePath("/tmp/it's here/$x.png")).toBe("'/tmp/it'\\''s here/$x.png'");
   });
 });

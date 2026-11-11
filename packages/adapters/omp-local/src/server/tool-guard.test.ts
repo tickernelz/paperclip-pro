@@ -36,7 +36,7 @@ describe("OMP tool guard extension", () => {
   let handler: ToolCallHandler;
 
   beforeAll(async () => {
-    dir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-omp-guard-test-"));
+    dir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-omp-guard-test-"));
     handler = await loadGuard(dir, "full");
   });
 
@@ -117,7 +117,7 @@ describe("OMP tool guard extension in a read_only run", () => {
   let handler: ToolCallHandler;
 
   beforeAll(async () => {
-    dir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-omp-guard-ro-test-"));
+    dir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-omp-guard-ro-test-"));
     handler = await loadGuard(dir, "read_only");
   });
 

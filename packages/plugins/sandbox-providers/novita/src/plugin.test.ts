@@ -74,9 +74,9 @@ describe("Novita sandbox provider plugin", () => {
     expect(command).toContain("cd '/workspace/project'");
     expect(command).toContain("export MESSAGE='hello world';");
     expect(command).toContain("'node' '-e' 'console.log(process.env.MESSAGE)'");
-    expect(command).toContain("printf '%s' 'input body' > '/tmp/.paperclip-stdin-");
-    expect(command).toMatch(/< '\/tmp\/\.paperclip-stdin-[^']+'/);
-    expect(command).toMatch(/rm -f '\/tmp\/\.paperclip-stdin-[^']+'/);
+    expect(command).toContain("printf '%s' 'input body' > '/tmp/.wardmote-stdin-");
+    expect(command).toMatch(/< '\/tmp\/\.wardmote-stdin-[^']+'/);
+    expect(command).toMatch(/rm -f '\/tmp\/\.wardmote-stdin-[^']+'/);
     expect(command).toContain("exit $status");
   });
 
@@ -99,8 +99,8 @@ describe("Novita sandbox provider plugin", () => {
       command: "cat",
       stdin: "second",
     });
-    const firstPath = first.match(/\/tmp\/\.paperclip-stdin-[^']+/)?.[0];
-    const secondPath = second.match(/\/tmp\/\.paperclip-stdin-[^']+/)?.[0];
+    const firstPath = first.match(/\/tmp\/\.wardmote-stdin-[^']+/)?.[0];
+    const secondPath = second.match(/\/tmp\/\.wardmote-stdin-[^']+/)?.[0];
 
     expect(firstPath).toBeTruthy();
     expect(secondPath).toBeTruthy();

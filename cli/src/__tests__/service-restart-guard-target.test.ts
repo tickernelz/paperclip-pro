@@ -44,7 +44,7 @@ function writeRuntime(port: number, pid: number): void {
 beforeEach(() => {
   previousHome = process.env.WARDMOTE_HOME;
   previousInstance = process.env.WARDMOTE_INSTANCE_ID;
-  home = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-guardfix-"));
+  home = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-guardfix-"));
   process.env.WARDMOTE_HOME = home;
   process.env.WARDMOTE_INSTANCE_ID = INSTANCE;
 });

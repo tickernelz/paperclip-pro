@@ -105,7 +105,7 @@ function isValidShellEnvKey(value: string): boolean {
 }
 
 function buildStdinPath(): string {
-  return `/tmp/.paperclip-stdin-${randomUUID()}`;
+  return `/tmp/.wardmote-stdin-${randomUUID()}`;
 }
 
 export function buildShellCommand(input: {

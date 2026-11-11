@@ -21,7 +21,7 @@ import {
 const tempDirs = [];
 
 function createTempStatusFile(payload: unknown) {
-  const dir = mkdtempSync(path.join(os.tmpdir(), "paperclip-dev-status-"));
+  const dir = mkdtempSync(path.join(os.tmpdir(), "wardmote-dev-status-"));
   tempDirs.push(dir);
   const filePath = path.join(dir, "dev-server-status.json");
   writeFileSync(filePath, `${JSON.stringify(payload)}\n`, "utf8");

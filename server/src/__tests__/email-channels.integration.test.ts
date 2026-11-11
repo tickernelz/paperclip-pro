@@ -75,7 +75,7 @@ import { chatChannelService } from "../services/chat-channels.js";
 describe("AgentMail durable email pipeline", () => {
   let database: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;
   let db: ReturnType<typeof createDb>;
-  const folder = mkdtempSync(path.join(os.tmpdir(), "paperclip-email-"));
+  const folder = mkdtempSync(path.join(os.tmpdir(), "wardmote-email-"));
   const previous = process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE;
   const services: EmailChannelService[] = [];
   beforeAll(async () => {
@@ -83,7 +83,7 @@ describe("AgentMail durable email pipeline", () => {
       folder,
       "master.key",
     );
-    database = await startEmbeddedPostgresTestDatabase("paperclip-email-");
+    database = await startEmbeddedPostgresTestDatabase("wardmote-email-");
     db = createDb(database.connectionString);
     await instanceSettingsService(db).updateExperimental({
       enableChatConnectors: false,

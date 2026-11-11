@@ -150,7 +150,7 @@ describe("paperclip issue update helper", () => {
     });
 
   it("keeps the repository entrypoint working outside the repository", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-helper-wrapper-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-helper-wrapper-"));
     cleanupFns.push(() => fs.rm(root, { recursive: true, force: true }));
     const result = await runHelper("", [...doneArgs, "--dry-run"], { helper: REPO_HELPER_PATH, cwd: root });
     expect(result.code).toBe(0);

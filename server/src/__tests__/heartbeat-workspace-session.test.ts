@@ -72,7 +72,7 @@ async function runGit(cwd: string, args: string[]) {
 }
 
 async function createGitCheckout(options: { withRemote: boolean }) {
-  const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-push-preflight-"));
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-push-preflight-"));
   await runGit(root, ["init"]);
   if (options.withRemote) {
     await runGit(root, ["remote", "add", "origin", "https://github.com/example/repo.git"]);
@@ -235,7 +235,7 @@ describe("assertGitWorktreeBaseWorkspaceReady", () => {
   });
 
   it("rejects isolated git worktrees when the resolved base is not a git checkout", async () => {
-    const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-non-git-workspace-"));
+    const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-non-git-workspace-"));
     try {
       await expect(assertGitWorktreeBaseWorkspaceReady({
         requestedExecutionWorkspaceMode: "isolated_workspace",
@@ -282,7 +282,7 @@ describe("assertGitWorktreeBaseWorkspaceReady", () => {
   }
 
   it("marks a proven non-Git local path as an owner configuration conflict without changing the failure", async () => {
-    const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-local-path-policy-"));
+    const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-local-path-policy-"));
     try {
       await expect(assertGitWorktreeBaseWorkspaceReady(configuredLocalPathInput(cwd))).rejects.toMatchObject({
         code: "workspace_validation_failed",
@@ -297,7 +297,7 @@ describe("assertGitWorktreeBaseWorkspaceReady", () => {
 
   it.each(["legacy", "repository", "fallback", "materialization", "session", "unbound"])(
     "does not mark ambiguous non-Git workspace evidence as a configuration-only failure: %s", async (kind) => {
-      const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-ambiguous-workspace-"));
+      const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-ambiguous-workspace-"));
       try {
         const input = configuredLocalPathInput(cwd);
         if (kind === "legacy") input.anchor!.localPathOnlyWorkspace = undefined;
@@ -315,8 +315,8 @@ describe("assertGitWorktreeBaseWorkspaceReady", () => {
 
   it.each(["missing_git", "permission", "git_error", "killed", "missing_directory"])(
     "does not classify a Git or filesystem failure as an owner-only configuration mismatch: %s", async (kind) => {
-      const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-git-probe-failure-"));
-      const bin = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-git-probe-bin-"));
+      const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-git-probe-failure-"));
+      const bin = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-git-probe-bin-"));
       try {
         if (kind !== "missing_git" && kind !== "missing_directory") {
           const command = kind === "killed"
@@ -347,7 +347,7 @@ describe("assertGitWorktreeBaseWorkspaceReady", () => {
 
   it.each(["empty_metadata", "missing_head", "damaged_head", "dangling_metadata", "ancestor_metadata", "bare_metadata"])(
     "keeps real broken repository metadata reportable even when Git says not a repository: %s", async (kind) => {
-      const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-broken-local-repo-"));
+      const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-broken-local-repo-"));
       try {
         let cwd = root;
         if (kind === "missing_head" || kind === "damaged_head") {
@@ -430,7 +430,7 @@ describe("assertGitWorktreeBaseWorkspaceReady", () => {
   it("keeps the not-a-git-checkout reason for a fallback with no failed materialization attempt", async () => {
     // A configured path that is simply unavailable is not a clone failure; the message must
     // not steer the operator toward repairing clone access.
-    const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-unavailable-path-fallback-"));
+    const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-unavailable-path-fallback-"));
     try {
       await expect(assertGitWorktreeBaseWorkspaceReady({
         requestedExecutionWorkspaceMode: "isolated_workspace",
@@ -555,7 +555,7 @@ describe("assertGitWorktreeBaseWorkspaceReady", () => {
   });
 
   it("does not require git for shared project-primary workspaces", async () => {
-    const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-shared-workspace-"));
+    const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-shared-workspace-"));
     try {
       await expect(assertGitWorktreeBaseWorkspaceReady({
         requestedExecutionWorkspaceMode: "shared_workspace",
@@ -2309,7 +2309,7 @@ describe("effective run session config freshness", () => {
       first?: Record<string, unknown>;
       next?: Record<string, unknown>;
     }) {
-      const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-omp-model-switch-"));
+      const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-omp-model-switch-"));
       const instructionsPath = path.join(root, "AGENTS.md");
       const instructionsConfig = (overrides: Record<string, unknown> = {}) => ompConfig({
         instructionsBundleMode: "managed",
@@ -2806,7 +2806,7 @@ describe("effective run session config freshness", () => {
   });
 
   it("detects instructions content drift without storing the contents", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-session-fingerprint-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-session-fingerprint-"));
     const instructionsPath = path.join(root, "AGENTS.md");
     await fs.writeFile(instructionsPath, "Version one instructions.\n", "utf8");
     const base = await buildSessionConfigMetadata({
@@ -2844,7 +2844,7 @@ describe("effective run session config freshness", () => {
   });
 
   it("does not read unbounded legacy instructions paths for config fingerprints", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-session-fingerprint-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-session-fingerprint-"));
     const instructionsPath = path.join(root, "AGENTS.md");
     await fs.writeFile(instructionsPath, "Legacy direct-path instructions.\n", "utf8");
     const metadata = await buildSessionConfigMetadata({

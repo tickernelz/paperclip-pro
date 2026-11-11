@@ -14,7 +14,7 @@ import { startPrefetch, stopPrefetches } from './prefetch-child.mjs';
 import { retainRunnerQualificationPackages } from './retain-runner-qualification-packages.mjs';
 const repo = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 assert.equal(process.platform, 'linux', 'Run this verification on disposable EC2 Linux, not a developer host');
-const root = mkdtempSync(join(tmpdir(), 'paperclip-grok-public-install-'));
+const root = mkdtempSync(join(tmpdir(), 'wardmote-grok-public-install-'));
 const prerequisite = join(root, 'native/grok');
 const env = { ...process.env, NODE_PATH: '', WARDMOTE_RELEASE_REUSE_UI_DIST: '1', npm_config_ignore_scripts: 'false', npm_config_audit: 'false', npm_config_fund: 'false' };
 const run = (cmd, args, cwd = root) => execFileSync(cmd, args, { cwd, env, stdio: 'pipe', maxBuffer: 32 * 1024 * 1024 });

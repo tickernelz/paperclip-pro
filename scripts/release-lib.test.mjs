@@ -31,7 +31,7 @@ function runPublishHelper({
   verifyDelaySeconds = 0,
   visibilityPackages = null,
 }) {
-  const fixtureDir = mkdtempSync(join(tmpdir(), "paperclip-release-lib-"));
+  const fixtureDir = mkdtempSync(join(tmpdir(), "wardmote-release-lib-"));
   const binDir = join(fixtureDir, "bin");
   const stateDir = join(fixtureDir, "state");
   const callLog = join(fixtureDir, "calls.log");

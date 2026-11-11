@@ -37,7 +37,7 @@ function jsonResponse(body: unknown = { ok: true }, init: ResponseInit = { statu
 }
 
 function createTempContextPath() {
-  return path.join(fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-connect-test-")), "context.json");
+  return path.join(fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-connect-test-")), "context.json");
 }
 
 function readContext(filePath: string) {

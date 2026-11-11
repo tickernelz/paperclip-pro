@@ -28,9 +28,9 @@ describeEmbeddedPostgres("teams catalog install with no caller adapter overrides
 
   beforeAll(async () => {
     oldWardmoteHome = process.env.WARDMOTE_HOME;
-    tempHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-teams-catalog-no-overrides-"));
+    tempHome = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-teams-catalog-no-overrides-"));
     process.env.WARDMOTE_HOME = tempHome;
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-teams-catalog-no-overrides-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-teams-catalog-no-overrides-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

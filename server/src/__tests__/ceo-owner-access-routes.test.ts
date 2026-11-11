@@ -18,7 +18,7 @@ let db: ReturnType<typeof createDb>;
 let home: string;
 
 beforeAll(async () => {
-  home = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-ceo-owner-")));
+  home = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-ceo-owner-")));
   vi.stubEnv("WARDMOTE_HOME", home);
   vi.stubEnv("WARDMOTE_INSTANCE_ID", "ceo-owner");
   vi.stubEnv("WARDMOTE_IN_WORKTREE", "false");

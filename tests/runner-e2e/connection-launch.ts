@@ -68,7 +68,7 @@ export async function cleanupConnectionCompany(input: {
 
 export async function openConnectionBrowser(config: ConnectionConfig, repositoryRoot: string, origin: string) {
   const temporary = config.browser.freshness === "signed-out" || !config.browser.profileDir;
-  const profile = temporary ? await mkdtemp(path.join(os.tmpdir(), "paperclip-qa-browser-")) : path.resolve(config.browser.profileDir!);
+  const profile = temporary ? await mkdtemp(path.join(os.tmpdir(), "wardmote-qa-browser-")) : path.resolve(config.browser.profileDir!);
   await assertOutsideRepository(profile, repositoryRoot);
   await mkdir(profile, { recursive: true, mode: 0o700 });
   const stat = await lstat(profile);
@@ -125,7 +125,7 @@ async function safeWrite(file: string, value: unknown, secrets: readonly string[
 async function connectionAttempt(execution: MatrixExecution, config: ConnectionConfig, origin: string, summaryDir: string, repositoryRoot: string, signal: AbortSignal): Promise<RunnerE2EResult> {
   const startedAt = new Date().toISOString();
   const nonce = randomBytes(6).toString("hex");
-  const privateDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-connection-proof-"));
+  const privateDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-connection-proof-"));
   const evidenceDir = path.join(summaryDir, execution.suite.id, execution.profile.id, execution.environment.id, execution.task.id, "attempt-1");
   await mkdir(evidenceDir, { recursive: true, mode: 0o700 });
   const { entry, mode } = connectionCell(execution);

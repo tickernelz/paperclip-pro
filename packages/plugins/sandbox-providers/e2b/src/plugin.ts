@@ -417,7 +417,7 @@ const plugin = definePlugin({
     // whether the command exits in microseconds or minutes.
     let stagedStdinPath: string | null = null;
     if (params.stdin != null) {
-      stagedStdinPath = `/tmp/paperclip-stdin-${randomUUID()}`;
+      stagedStdinPath = `/tmp/wardmote-stdin-${randomUUID()}`;
       try {
         await sandbox.files.write(stagedStdinPath, params.stdin);
       } catch (error) {

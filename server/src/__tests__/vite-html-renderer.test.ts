@@ -35,7 +35,7 @@ describe("createCachedViteHtmlRenderer", () => {
   });
 
   it("ignores retired snippet settings in branded development HTML", async () => {
-    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-vite-html-"));
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-vite-html-"));
     tempDirs.push(tempDir);
     fs.writeFileSync(path.join(tempDir, "index.html"), "<html><body>App</body></html>");
     vi.stubEnv("WARDMOTE_MANAGED_CONFIG", "{}");
@@ -60,7 +60,7 @@ describe("createCachedViteHtmlRenderer", () => {
   });
 
   it("caches the branded template until index.html changes while transforming every request", async () => {
-    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-vite-html-"));
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-vite-html-"));
     tempDirs.push(tempDir);
     const indexPath = path.join(tempDir, "index.html");
     fs.writeFileSync(
@@ -115,7 +115,7 @@ describe("createCachedViteHtmlRenderer", () => {
   });
 
   it("runs Vite's HTML transform on every render so HMR entry timestamps stay current", async () => {
-    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-vite-html-"));
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-vite-html-"));
     tempDirs.push(tempDir);
     fs.writeFileSync(
       path.join(tempDir, "index.html"),

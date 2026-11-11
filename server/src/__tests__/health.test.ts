@@ -195,7 +195,7 @@ describe("GET /health", () => {
   });
 
   it("surfaces a stale database backup warning in full health details", async () => {
-    const backupDir = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-health-backups-"));
+    const backupDir = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-health-backups-"));
     const backupFile = path.join(backupDir, "paperclip-20260705-031702.sql.gz");
     fs.writeFileSync(backupFile, "backup");
     fs.utimesSync(
@@ -231,7 +231,7 @@ describe("GET /health", () => {
   });
 
   it("surfaces database backup failure markers in full health details", async () => {
-    const backupDir = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-health-backups-"));
+    const backupDir = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-health-backups-"));
     const backupFile = path.join(backupDir, "paperclip-20260706-031702.sql.gz");
     const alertFile = path.join(backupDir, "db-backup-to-s3.failure");
     fs.writeFileSync(backupFile, "backup");
@@ -263,7 +263,7 @@ describe("GET /health", () => {
   });
 
   it("finds conventional database backup failure markers without an explicit alert file", async () => {
-    const backupRoot = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-health-backups-root-"));
+    const backupRoot = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-health-backups-root-"));
     const backupDir = path.join(backupRoot, "backups");
     fs.mkdirSync(backupDir);
     const backupFile = path.join(backupDir, "paperclip-20260706-031702.sql.gz");
@@ -296,7 +296,7 @@ describe("GET /health", () => {
   });
 
   it("surfaces redacted database backup warnings for anonymous authenticated probes", async () => {
-    const backupDir = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-health-redacted-backups-"));
+    const backupDir = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-health-redacted-backups-"));
     const backupFile = path.join(backupDir, "paperclip-20260705-031702.sql.gz");
     fs.writeFileSync(backupFile, "backup");
     fs.utimesSync(

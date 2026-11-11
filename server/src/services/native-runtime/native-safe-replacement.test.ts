@@ -141,7 +141,7 @@ const support = externalDatabaseUrl
       async (mode) => {
         // The stopped-session verifier is the injected boundary here. These are
         // scheduler/database tests, not evidence that SIGKILL is a safe boundary.
-        const workspace = await mkdtemp(join(tmpdir(), "paperclip-recovery-work-"));
+        const workspace = await mkdtemp(join(tmpdir(), "wardmote-recovery-work-"));
         try {
           const file = join(workspace, "saved.txt");
           const saved = "Completed work from before the interruption.\n";

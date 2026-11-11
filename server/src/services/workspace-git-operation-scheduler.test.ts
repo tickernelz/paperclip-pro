@@ -14,7 +14,7 @@ import { WORKSPACE_GIT_SCAN_SATURATED_CODE } from "@tickernelz/wardmote-adapter-
 const tempPaths: string[] = [];
 
 async function makeWorkspace(name = "workspace"): Promise<string> {
-  const parent = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-git-scheduler-"));
+  const parent = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-git-scheduler-"));
   tempPaths.push(parent);
   const workspace = path.join(parent, name);
   await fs.mkdir(workspace, { recursive: true });

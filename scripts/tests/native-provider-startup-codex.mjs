@@ -58,7 +58,7 @@ if (args.length === 0 || (args.length === 1 && args[0] === "--help")) {
     assert.equal(runnerSha256, args[4], "staged_runner_digest_changed");
     const codexSha256 = digest(await readFile(codexBinary));
     fixture = await realpath(
-      await mkdtemp(join(tmpdir(), "paperclip-real-startup-")),
+      await mkdtemp(join(tmpdir(), "wardmote-real-startup-")),
     );
     const home = join(fixture, "empty-codex-home");
     const workspace = join(fixture, "workspace");

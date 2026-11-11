@@ -52,7 +52,7 @@ it.skipIf(!enabled).each(cases)(
   "measures $deltaCount final deltas, repetition $repeat, without relaxing durable handoff",
   async ({ deltaCount, repeat }) => {
     const root = await mkdtemp(
-      join(tmpdir(), "paperclip-final-burst-benchmark-"),
+      join(tmpdir(), "wardmote-final-burst-benchmark-"),
     );
     try {
       const stateDirectory = join(root, "session");

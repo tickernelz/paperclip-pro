@@ -363,7 +363,7 @@ describeEmbeddedPostgres("plugin database namespaces", () => {
   });
 
   async function createPluginPackage(manifest: WardmotePluginManifestV1, migrationSql: string) {
-    const packageRoot = await mkdtemp(path.join(os.tmpdir(), "paperclip-plugin-package-"));
+    const packageRoot = await mkdtemp(path.join(os.tmpdir(), "wardmote-plugin-package-"));
     packageRoots.push(packageRoot);
     const migrationsDir = path.join(packageRoot, manifest.database!.migrationsDir);
     await mkdir(migrationsDir, { recursive: true });
