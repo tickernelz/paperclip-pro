@@ -105,7 +105,7 @@ import {
   splitFrontmatterBlock,
   stringifyFrontmatter,
 } from "@tickernelz/wardmote-shared";
-import { resolveWardmoteInstanceRoot } from "../home-paths.js";
+import { resolveHomeAwarePath, resolveWardmoteInstanceRoot } from "../home-paths.js";
 import { conflict, forbidden, notFound, unprocessable } from "../errors.js";
 import { ghFetch, gitHubApiBase, resolveRawGitHubUrl } from "./github-fetch.js";
 import { agentService } from "./agents.js";
@@ -2351,7 +2351,7 @@ function resolveDesiredSkillEntries(
 
 function normalizeSkillDirectory(skill: SkillSourceInfoTarget) {
   if ((skill.sourceType !== "local_path" && skill.sourceType !== "catalog") || !skill.sourceLocator) return null;
-  const resolved = path.resolve(skill.sourceLocator);
+  const resolved = resolveHomeAwarePath(skill.sourceLocator);
   if (path.basename(resolved).toLowerCase() === "skill.md") {
     return path.dirname(resolved);
   }
@@ -2360,7 +2360,7 @@ function normalizeSkillDirectory(skill: SkillSourceInfoTarget) {
 
 function normalizeSourceLocatorDirectory(sourceLocator: string | null) {
   if (!sourceLocator) return null;
-  const resolved = path.resolve(sourceLocator);
+  const resolved = resolveHomeAwarePath(sourceLocator);
   return path.basename(resolved).toLowerCase() === "skill.md" ? path.dirname(resolved) : resolved;
 }
 

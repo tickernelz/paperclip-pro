@@ -2,7 +2,8 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { agentInstructionsService } from "../services/agent-instructions.js";
+import { LEGACY_HOME_DIRNAME } from "@tickernelz/wardmote-shared/home-paths";
+import { agentInstructionsBundleMode, agentInstructionsService } from "../services/agent-instructions.js";
 
 type TestAgent = {
   id: string;
@@ -57,6 +58,27 @@ describe("agent instructions service", () => {
     expect(bundle.entryFile).toBe("AGENTS.md");
     expect((await svc.readFile(agent, bundle.entryFile)).content).toBe("legacy instructions");
     if (entry === "../invalid") expect(bundle.warnings.length).toBeGreaterThan(0);
+  });
+
+  it.each([
+    ["the migration link", "managed"],
+    ["an unmigrated directory", "external"],
+  ] as const)("classifies a managed bundle recorded under the legacy home as %s", async (legacyKind, expected) => {
+    const userHome = await makeTempDir("agent-instructions-user-home-"); cleanupDirs.add(userHome);
+    const wardmoteHome = path.join(userHome, ".wardmote");
+    const legacyHome = path.join(userHome, LEGACY_HOME_DIRNAME);
+    await fs.mkdir(wardmoteHome);
+    if (legacyKind === "the migration link") await fs.symlink(wardmoteHome, legacyHome);
+    else await fs.mkdir(legacyHome);
+    const originalHome = process.env.HOME;
+    process.env.HOME = userHome;
+    process.env.WARDMOTE_HOME = wardmoteHome;
+    try {
+      const instructionsRootPath = path.join(legacyHome, "instances", "instructions-service-test", "companies", "company-1", "agents", "agent-1", "instructions");
+      expect(agentInstructionsBundleMode(makeAgent({ instructionsBundleMode: "managed", instructionsRootPath }))).toBe(expected);
+    } finally {
+      process.env.HOME = originalHome;
+    }
   });
 
   it("lists external bundles containing large binary assets", async () => {
