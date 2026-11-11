@@ -48,7 +48,7 @@ beforeAll(async () => {
   home = await realpath(await mkdtemp(path.join(os.tmpdir(), "wardmote-ai-tests-")));
   vi.stubEnv("WARDMOTE_HOME", home);
   vi.stubEnv("WARDMOTE_INSTANCE_ID", "ai-connection-fixture");
-  database = await startEmbeddedPostgresTestDatabase("paperclip-ai-db-");
+  database = await startEmbeddedPostgresTestDatabase("wardmote-ai-db-");
   db = createDb(database.connectionString);
   service = aiConnectionService(db);
   await db.insert(companies).values([{ id: companyId, name: "AI connection tests", issuePrefix: "AIT" }, { id: otherCompanyId, name: "Other", issuePrefix: "AIO" }]);

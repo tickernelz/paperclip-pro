@@ -25,7 +25,7 @@ describe.skipIf(!support.supported)("task search relevance rubric (real PostgreS
   const report: Array<{ engine: string; name: string; q: string; keys: string[]; ndcg5: number; reciprocalRank: number; ms: number }> = [];
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-search-quality-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-search-quality-");
     db = createDb(tempDb.connectionString);
     postgresVersion = String((await db.execute(sql`SELECT version()`))[0]!.version);
     await db.insert(companies).values({ id: companyId, name: "Search benchmark", issuePrefix: "EVAL" });

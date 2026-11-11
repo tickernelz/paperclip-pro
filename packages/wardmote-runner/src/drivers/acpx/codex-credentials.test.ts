@@ -371,8 +371,8 @@ describe("managed Codex credentials", () => {
       expect(
         (await readdir(fixture.home)).filter(
           (name) =>
-            name.includes("paperclip-auth-lease") ||
-            name.includes("paperclip-auth-home-claim"),
+            name.includes("wardmote-auth-lease") ||
+            name.includes("wardmote-auth-home-claim"),
         ),
       ).toEqual([]);
     } finally {
@@ -482,9 +482,9 @@ describe("managed Codex credentials", () => {
     expect(
       (await readdir(fixture.home)).filter(
         (name) =>
-          name.includes("paperclip-auth-lease") ||
-          name.includes("paperclip-auth-home-claim") ||
-          name.includes("paperclip-auth-lock"),
+          name.includes("wardmote-auth-lease") ||
+          name.includes("wardmote-auth-home-claim") ||
+          name.includes("wardmote-auth-lock"),
       ),
     ).toEqual([]);
   });

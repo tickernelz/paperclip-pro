@@ -24,8 +24,8 @@ describe("GitHub grant metadata", () => {
       }
       if (url.pathname === "/user/installations/101/repositories") {
         return json({ total_count: 2, repositories: secondPage
-          ? [{ id: 2, full_name: "paperclipai/b", owner: { type: "Organization" }, private: true, description: "must-not-persist", clone_url: "must-not-persist" }]
-          : [{ id: 1, full_name: "paperclipai/a", owner: { type: "Organization" }, private: false }],
+          ? [{ id: 2, full_name: "tickernelz/b", owner: { type: "Organization" }, private: true, description: "must-not-persist", clone_url: "must-not-persist" }]
+          : [{ id: 1, full_name: "tickernelz/a", owner: { type: "Organization" }, private: false }],
         }, !secondPage);
       }
       if (url.pathname === "/user/installations/102/repositories") {
@@ -34,7 +34,7 @@ describe("GitHub grant metadata", () => {
       throw new Error(`Unexpected GitHub path: ${url.pathname}`);
     });
 
-    const metadata = await loadGitHubGrantMetadata("ghu_secret", request, "paperclip-development");
+    const metadata = await loadGitHubGrantMetadata("ghu_secret", request, "wardmote-development");
     expect(metadata).toMatchObject({
       userId: "42",
       login: "octocat",
@@ -45,12 +45,12 @@ describe("GitHub grant metadata", () => {
       installationOwnerLogins: ["paperclipai", "octocat"],
       repositories: [
         { id: "3", fullName: "octocat/c", installationId: "102", ownerType: "personal" },
-        { id: "1", fullName: "paperclipai/a", installationId: "101", ownerType: "organization", private: false },
-        { id: "2", fullName: "paperclipai/b", installationId: "101", ownerType: "organization", private: true },
+        { id: "1", fullName: "tickernelz/a", installationId: "101", ownerType: "organization", private: false },
+        { id: "2", fullName: "tickernelz/b", installationId: "101", ownerType: "organization", private: true },
       ],
-      installationUrl: "https://github.com/apps/paperclip-development/installations/new",
+      installationUrl: "https://github.com/apps/wardmote-development/installations/new",
       managementUrl: "https://github.com/settings/installations/101",
-      appSlug: "paperclip-development",
+      appSlug: "wardmote-development",
       webhookHealth: "pending",
     });
     expect(metadata.repositories[0]).not.toHaveProperty("private");
@@ -65,11 +65,11 @@ describe("GitHub grant metadata", () => {
   it("recovers a legacy grant's app chooser from GitHub installation metadata", async () => {
     const request = vi.fn<typeof fetch>()
       .mockResolvedValueOnce(json({ id: 42, login: "octocat" }))
-      .mockResolvedValueOnce(json({ installations: [{ id: 101, app_slug: "paperclip-staging", repository_selection: "selected" }] }))
+      .mockResolvedValueOnce(json({ installations: [{ id: 101, app_slug: "wardmote-staging", repository_selection: "selected" }] }))
       .mockResolvedValueOnce(json({ repositories: [{ id: 1, full_name: "octocat/a" }] }));
     await expect(loadGitHubGrantMetadata("ghu_secret", request)).resolves.toMatchObject({
-      appSlug: "paperclip-staging",
-      installationUrl: "https://github.com/apps/paperclip-staging/installations/new",
+      appSlug: "wardmote-staging",
+      installationUrl: "https://github.com/apps/wardmote-staging/installations/new",
     });
   });
 

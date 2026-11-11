@@ -94,7 +94,7 @@ function registerRouteMocks() {
 }
 
 const EXTERNAL_ADAPTER_TYPE = "external_admin_test";
-const EXTERNAL_PACKAGE_NAME = "paperclip-external-adapter";
+const EXTERNAL_PACKAGE_NAME = "wardmote-external-adapter";
 let adapterRoutes: typeof import("../routes/adapters.js").adapterRoutes;
 let errorHandler: typeof import("../middleware/index.js").errorHandler;
 let registerServerAdapter: typeof import("../adapters/registry.js").registerServerAdapter;

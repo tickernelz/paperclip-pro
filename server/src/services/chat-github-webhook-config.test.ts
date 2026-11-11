@@ -124,7 +124,7 @@ describe("GitHub App webhook reconnect", () => {
 const deliveryId = "3841617089160847360";
 const guid = "ab0f5340-abb3-11f1-9eed-2b258532ab82";
 const deliveredAt = "2026-09-08T18:32:39.082Z";
-const repositoryFullName = "paperclip/example";
+const repositoryFullName = "wardmote/example";
 const commentBody = "synthetic-private-comment-must-not-return";
 const bodySha256 = createHash("sha256").update(commentBody).digest("hex");
 const comment = {
@@ -133,7 +133,7 @@ const comment = {
   updated_at: "2026-09-08T18:32:36Z",
   body: commentBody,
   user: { id: "9007199254740995", type: "User", login: "private-login" },
-  issue_url: "https://api.github.com/repos/paperclip/example/issues/3",
+  issue_url: "https://api.github.com/repos/wardmote/example/issues/3",
 };
 const delivery = {
   id: deliveryId,
@@ -311,7 +311,7 @@ describe("GitHub App webhook recovery HTTP boundaries", () => {
       issueNumber: "3",
     });
     expect(fetch).toHaveBeenCalledWith(
-      `https://api.github.com/repos/paperclip/example/issues/comments/${comment.id}`,
+      `https://api.github.com/repos/wardmote/example/issues/comments/${comment.id}`,
       expect.objectContaining({
         method: "GET",
         redirect: "error",
@@ -601,7 +601,7 @@ describe("GitHub App webhook recovery HTTP boundaries", () => {
           ...comment,
           issue_url: undefined,
           pull_request_url:
-            "https://api.github.com/repos/paperclip/example/pulls/4",
+            "https://api.github.com/repos/wardmote/example/pulls/4",
         }),
       )
       .mockResolvedValueOnce(new Response(null, { status: 204 }));
@@ -616,7 +616,7 @@ describe("GitHub App webhook recovery HTTP boundaries", () => {
       }),
     ).resolves.toMatchObject({ issueNumber: null, pullRequestNumber: "4" });
     expect(fetch.mock.calls[1]?.[0]).toBe(
-      `https://api.github.com/repos/paperclip/example/pulls/comments/${comment.id}`,
+      `https://api.github.com/repos/wardmote/example/pulls/comments/${comment.id}`,
     );
     expect(fetch).toHaveBeenCalledTimes(3);
   });
@@ -629,7 +629,7 @@ describe("GitHub App webhook recovery HTTP boundaries", () => {
     },
     {
       ...comment,
-      issue_url: "https://evil.example/repos/paperclip/example/issues/3",
+      issue_url: "https://evil.example/repos/wardmote/example/issues/3",
     },
     { ...comment, issue_url: `${comment.issue_url}?secret=private` },
     { ...comment, body: null },

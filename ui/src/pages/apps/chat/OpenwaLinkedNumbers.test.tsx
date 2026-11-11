@@ -152,13 +152,13 @@ describe("OpenWA linked numbers settings", () => {
   });
 
   it("shows the manual-revoke warning when the gateway did not revoke the key", async () => {
-    const warning = 'Unlinked, but OpenWA did not revoke the viewer key. Revoke the API key "paperclip-linked-abcd1234" in the OpenWA dashboard.';
+    const warning = 'Unlinked, but OpenWA did not revoke the viewer key. Revoke the API key "wardmote-linked-abcd1234" in the OpenWA dashboard.';
     mocks.api.unlinkOpenwaSession.mockResolvedValue({ revoked: false, warning });
     render();
     await vi.waitFor(() => expect(section().textContent).toContain("Personal"));
     click(button(section(), "Unlink Personal"));
     click(button(container.querySelector<HTMLElement>('[role="alertdialog"]')!, "Unlink"));
-    await vi.waitFor(() => expect(section().querySelector('[role="alert"]')?.textContent).toContain("paperclip-linked-abcd1234"));
+    await vi.waitFor(() => expect(section().querySelector('[role="alert"]')?.textContent).toContain("wardmote-linked-abcd1234"));
     click(button(section().querySelector<HTMLElement>('[role="alert"]')!, "Dismiss"));
     expect(section().querySelector('[role="alert"]')).toBeNull();
   });

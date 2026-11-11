@@ -58,7 +58,7 @@ const support = externalDatabaseUrl
         return;
       }
       database = await startEmbeddedPostgresTestDatabase(
-        "paperclip-safe-replacement-",
+        "wardmote-safe-replacement-",
       );
       db = createDb(database.connectionString);
     }, 30_000);

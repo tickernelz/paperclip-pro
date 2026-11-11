@@ -102,12 +102,12 @@ async function reportFixture() {
 test("accepts only credential-free HTTPS destinations and the dedicated prefix", () => {
   assert.deepEqual(
     validateProtocolEvalHistoryDestination({
-      bucket: "paperclip-public-reports",
+      bucket: "wardmote-public-reports",
       prefix: "/runner-protocol-evals/",
       publicBaseUrl: "https://reports.paperclip.ing/",
     }),
     {
-      bucket: "paperclip-public-reports",
+      bucket: "wardmote-public-reports",
       prefix: "runner-protocol-evals",
       publicBaseUrl: "https://reports.paperclip.ing",
     },

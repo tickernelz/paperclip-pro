@@ -98,7 +98,7 @@ describeEmbeddedPostgres("heartbeat bounded retry scheduling", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-heartbeat-retry-scheduling-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-heartbeat-retry-scheduling-");
     db = createDb(tempDb.connectionString);
     heartbeat = heartbeatService(db);
     registerServerAdapter({

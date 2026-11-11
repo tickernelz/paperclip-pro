@@ -156,13 +156,13 @@ process.stdout.write(nested.stdout);`,
       verifiedRuntimeExecutable(
         {
           [VERIFIED_RUNTIME_EXECUTABLE_ENV]:
-            "/private/tmp/.paperclip-verified-executable/launch",
+            "/private/tmp/.wardmote-verified-executable/launch",
         },
         "darwin",
         4321,
-        "/private/tmp/.paperclip-verified-executable/launch",
+        "/private/tmp/.wardmote-verified-executable/launch",
       ),
-    ).toBe("/private/tmp/.paperclip-verified-executable/launch");
+    ).toBe("/private/tmp/.wardmote-verified-executable/launch");
   });
 
   it("rejects a different environment-supplied executable on macOS", () => {
@@ -171,7 +171,7 @@ process.stdout.write(nested.stdout);`,
         { [VERIFIED_RUNTIME_EXECUTABLE_ENV]: "/tmp/attacker/node" },
         "darwin",
         4321,
-        "/private/tmp/.paperclip-verified-executable/launch",
+        "/private/tmp/.wardmote-verified-executable/launch",
       ),
     ).toThrow("path is invalid");
   });

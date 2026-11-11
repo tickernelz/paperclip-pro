@@ -46,7 +46,7 @@ describeEmbeddedPostgres("reopen archived isolated execution workspace", () => {
   const tempDirs: string[] = [];
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-reopen-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-reopen-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

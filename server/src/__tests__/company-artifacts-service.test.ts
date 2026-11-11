@@ -61,7 +61,7 @@ describeEmbeddedPostgres("companyArtifactsService", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-company-artifacts-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-company-artifacts-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

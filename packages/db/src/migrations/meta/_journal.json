@@ -2577,6 +2577,20 @@
       "when": 1794345117710,
       "tag": "0369_wardmote_chat_state_key",
       "breakpoints": true
+    },
+    {
+      "idx": 370,
+      "version": "7",
+      "when": 1794345177710,
+      "tag": "0370_wardmote_wake_context_key",
+      "breakpoints": true
+    },
+    {
+      "idx": 371,
+      "version": "7",
+      "when": 1794345237710,
+      "tag": "0371_wardmote_session_config_keys",
+      "breakpoints": true
     }
   ]
 }

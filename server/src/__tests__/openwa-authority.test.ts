@@ -356,7 +356,7 @@ describeEmbeddedPostgres("OpenWA run authority", () => {
   const previousInstance = process.env.WARDMOTE_INSTANCE_ID;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-openwa-authority-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-openwa-authority-");
     databaseUrl = tempDb.connectionString;
     db = createDb(tempDb.connectionString);
     await db.insert(authUsers).values({

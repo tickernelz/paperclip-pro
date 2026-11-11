@@ -320,7 +320,7 @@ describe("agent instructions bundle routes", () => {
       ...makeAgent(),
       adapterConfig: {
         instructionsBundleMode: "external",
-        instructionsRootPath: "/srv/paperclip/external-agent",
+        instructionsRootPath: "/srv/wardmote/external-agent",
         instructionsEntryFile: "AGENTS.md",
       },
     });
@@ -391,7 +391,7 @@ describe("agent instructions bundle routes", () => {
       ...makeAgent(),
       adapterConfig: {
         instructionsBundleMode: "external",
-        instructionsRootPath: "/srv/paperclip/external-agent",
+        instructionsRootPath: "/srv/wardmote/external-agent",
         instructionsEntryFile: "AGENTS.md",
       },
     });
@@ -419,7 +419,7 @@ describe("agent instructions bundle routes", () => {
     mockSyncInstructionsBundleConfigFromFilePath.mockImplementation((_agent, config) => ({
       ...config,
       instructionsBundleMode: "external",
-      instructionsRootPath: "/srv/paperclip/external-agent",
+      instructionsRootPath: "/srv/wardmote/external-agent",
       instructionsEntryFile: "AGENTS.md",
     }));
     const app = await createApp({
@@ -433,12 +433,12 @@ describe("agent instructions bundle routes", () => {
 
     const compatibilityRes = await request(app)
       .patch("/api/agents/11111111-1111-4111-8111-111111111111/instructions-path")
-      .send({ path: "/srv/paperclip/external-agent/AGENTS.md" });
+      .send({ path: "/srv/wardmote/external-agent/AGENTS.md" });
     expect(compatibilityRes.status, JSON.stringify(compatibilityRes.body)).toBe(403);
 
     const bundleRes = await request(app)
       .patch("/api/agents/11111111-1111-4111-8111-111111111111/instructions-bundle")
-      .send({ mode: "external", rootPath: "/srv/paperclip/external-agent" });
+      .send({ mode: "external", rootPath: "/srv/wardmote/external-agent" });
     expect(bundleRes.status, JSON.stringify(bundleRes.body)).toBe(403);
     expect(mockAgentService.update).not.toHaveBeenCalled();
     expect(mockAgentInstructionsService.updateBundle).not.toHaveBeenCalled();
@@ -460,7 +460,7 @@ describe("agent instructions bundle routes", () => {
       .send({
         adapterConfig: {
           instructionsBundleMode: "external",
-          instructionsRootPath: "/srv/paperclip/external-agent",
+          instructionsRootPath: "/srv/wardmote/external-agent",
           instructionsEntryFile: "AGENTS.md",
         },
       });
@@ -495,7 +495,7 @@ describe("agent instructions bundle routes", () => {
       adapterType: "codex_local",
       adapterConfig: {
         instructionsBundleMode: "external",
-        instructionsRootPath: "/srv/paperclip/external-agent",
+        instructionsRootPath: "/srv/wardmote/external-agent",
         instructionsEntryFile: "AGENTS.md",
       },
     };

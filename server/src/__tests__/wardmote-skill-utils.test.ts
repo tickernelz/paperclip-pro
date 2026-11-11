@@ -238,7 +238,7 @@ describe("paperclip skill utils", () => {
   });
 
   it("lists bundled runtime skills from ./skills without pulling in .agents/skills", async () => {
-    const root = await makeTempDir("paperclip-skill-roots-");
+    const root = await makeTempDir("wardmote-skill-roots-");
     cleanupDirs.add(root);
 
     const moduleDir = path.join(root, "a", "b", "c", "d", "e");
@@ -567,7 +567,7 @@ describe("paperclip skill utils", () => {
   });
 
   it("removes stale maintainer-only symlinks from a shared skills home", async () => {
-    const root = await makeTempDir("paperclip-skill-cleanup-");
+    const root = await makeTempDir("wardmote-skill-cleanup-");
     cleanupDirs.add(root);
 
     const skillsHome = path.join(root, "skills-home");

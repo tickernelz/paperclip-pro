@@ -200,7 +200,7 @@ describe("AuditTab", () => {
               httpMethod: "POST",
               endpoint: "https://mcp.zapier.com/api/mcp",
               mcpMethod: "tools/call",
-              requestId: "paperclip-tool-request-1",
+              requestId: "wardmote-tool-request-1",
               dispatched: true,
             },
             response: {

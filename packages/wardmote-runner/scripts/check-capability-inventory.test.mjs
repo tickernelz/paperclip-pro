@@ -47,7 +47,7 @@ function validInventories() {
     evaluations: {
       schemaVersion: 2,
       inventoryRole: "normative",
-      generatedFrom: "paperclip-evals/cases",
+      generatedFrom: "wardmote-evals/cases",
       rows: evaluations,
     },
     legacyMcpAliases: {

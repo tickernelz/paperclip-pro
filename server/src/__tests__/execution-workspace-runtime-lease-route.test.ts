@@ -91,7 +91,7 @@ describeEmbeddedPostgres("execution workspace runtime control lease enforcement"
   let competingIssueId = "";
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-runtime-lease-route-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-runtime-lease-route-");
     db = createDb(tempDb.connectionString);
   }, 30_000);
 

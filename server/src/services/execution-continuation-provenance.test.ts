@@ -10,7 +10,7 @@ const support = await getEmbeddedPostgresTestSupport();
   let database: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;
   let db: ReturnType<typeof createDb>;
   beforeAll(async () => {
-    database = await startEmbeddedPostgresTestDatabase("paperclip-continuation-provenance-");
+    database = await startEmbeddedPostgresTestDatabase("wardmote-continuation-provenance-");
     db = createDb(database.connectionString);
   }, 30_000);
   afterAll(async () => { await database?.cleanup(); });

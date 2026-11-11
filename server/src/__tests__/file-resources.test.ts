@@ -1668,7 +1668,7 @@ describeEmbeddedPostgres("file resource route guards", () => {
   let db: Db;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-file-resource-guards-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-file-resource-guards-");
     db = createDb(tempDb.connectionString);
   }, 60_000);
 

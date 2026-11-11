@@ -334,7 +334,7 @@ describeEmbeddedPostgres("generic remote MCP connections", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-generic-mcp-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-generic-mcp-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 
@@ -2001,7 +2001,7 @@ describeEmbeddedPostgres("generic remote MCP connections", () => {
     await service.connectGalleryApp(company.id, { link: MCP_URL, name: "Fixture unsolicited denial" });
 
     await expect(service.completeOAuthCallback({
-      state: "state-paperclip-never-issued",
+      state: "state-wardmote-never-issued",
       error: "access_denied",
       redirectUri: REDIRECT_URI,
       actor: { actorType: "user", actorId: "board-user" },

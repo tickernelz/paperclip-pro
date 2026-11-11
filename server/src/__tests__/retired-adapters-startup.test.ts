@@ -25,7 +25,7 @@ describeEmbeddedPostgres("stored agents with a removed adapter type", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-retired-adapters-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-retired-adapters-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

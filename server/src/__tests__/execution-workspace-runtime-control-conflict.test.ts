@@ -397,7 +397,7 @@ describe("execution workspace runtime control conflict and failure reconciliatio
   it.each(["sibling", "foreign_instance", "symlink", "instance_mismatch"] as const)(
     "rejects a %s repair manifest source before spawn or runtime mutation",
     async (variant) => {
-      const fixture = createRegisteredRepairFixture(`paperclip-route-repair-${variant}-`);
+      const fixture = createRegisteredRepairFixture(`wardmote-route-repair-${variant}-`);
       const attackerDir = path.join(path.dirname(fixture.workspaceCwd), `${path.basename(fixture.workspaceCwd)}-attacker`);
       try {
         fs.mkdirSync(attackerDir, { recursive: true });
@@ -480,7 +480,7 @@ describe("execution workspace runtime control conflict and failure reconciliatio
   });
 
   it("rejects repair when the registered base workspace has no runnable Wardmote CLI", async () => {
-    const fixture = createRegisteredRepairFixture("paperclip-route-repair-no-cli-", { withCli: false });
+    const fixture = createRegisteredRepairFixture("wardmote-route-repair-no-cli-", { withCli: false });
     try {
       const res = await request(await createApp())
         .post(`/api/execution-workspaces/${executionWorkspaceId}/runtime-commands/repair`)
@@ -500,7 +500,7 @@ describe("execution workspace runtime control conflict and failure reconciliatio
   });
 
   it("returns 422 with a stable reason when the verified manifest names another instance", async () => {
-    const fixture = createRegisteredRepairFixture("paperclip-route-repair-wrong-instance-");
+    const fixture = createRegisteredRepairFixture("wardmote-route-repair-wrong-instance-");
     try {
       mockVerifiedReseed(fixture, "another-workspace-instance");
 
@@ -522,7 +522,7 @@ describe("execution workspace runtime control conflict and failure reconciliatio
 
   it("uses the recorded instance pointer consistently for readiness, handoff, and repair", async () => {
     const recordedInstanceId = "recorded-repair-instance";
-    const fixture = createRegisteredRepairFixture("paperclip-route-repair-success-", {
+    const fixture = createRegisteredRepairFixture("wardmote-route-repair-success-", {
       targetInstanceId: recordedInstanceId,
     });
     try {
@@ -603,7 +603,7 @@ describe("execution workspace runtime control conflict and failure reconciliatio
   });
 
   it("completes database-only repair when no managed runtime service is configured", async () => {
-    const fixture = createRegisteredRepairFixture("paperclip-route-repair-db-only-");
+    const fixture = createRegisteredRepairFixture("wardmote-route-repair-db-only-");
     try {
       mockExecutionWorkspaceService.getById.mockResolvedValue(buildExecutionWorkspace({
         cwd: fixture.workspaceCwd,
@@ -631,7 +631,7 @@ describe("execution workspace runtime control conflict and failure reconciliatio
   });
 
   it("fails repair at the exact seed phase and leaves managed services stopped", async () => {
-    const fixture = createRegisteredRepairFixture("paperclip-route-repair-failure-");
+    const fixture = createRegisteredRepairFixture("wardmote-route-repair-failure-");
     try {
       mockEnsurePersistedExecutionWorkspaceAvailable.mockResolvedValue({ cwd: fixture.workspaceCwd });
       mockSpawn.mockImplementation(() => {

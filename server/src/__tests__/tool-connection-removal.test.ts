@@ -167,7 +167,7 @@ describeEmbeddedPostgres("tool connection removal", () => {
   const HEADER = { name: "X-Api-Key", value: "fixture-secret-value" };
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-removal-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-removal-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

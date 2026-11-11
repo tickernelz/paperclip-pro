@@ -46,7 +46,7 @@ describeEmbeddedPostgres("decision queue routes", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-decision-queues-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-decision-queues-");
     db = createDb(tempDb.connectionString);
   }, 30_000);
 

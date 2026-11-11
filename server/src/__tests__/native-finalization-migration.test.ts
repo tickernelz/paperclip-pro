@@ -12,7 +12,7 @@ import { startEmbeddedPostgresTestDatabase } from "./helpers/embedded-postgres.j
 
 describe("P6-18 / MIG-01..04 native finalization migration", () => {
   it("repairs only later duplicates and preserves legacy event bytes and cursors", async () => {
-    const temporary = await startEmbeddedPostgresTestDatabase("paperclip-native-migration-");
+    const temporary = await startEmbeddedPostgresTestDatabase("wardmote-native-migration-");
     const migration = await readFile(
       new URL("../../../packages/db/src/migrations/0227_modern_pandemic.sql", import.meta.url),
       "utf8",

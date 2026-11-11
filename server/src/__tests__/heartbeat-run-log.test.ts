@@ -25,19 +25,19 @@ describe("compactRunLogChunk", () => {
   it("redacts Wardmote credential shapes before persisting run-log chunks", () => {
     const chunk = [
       "Authorization: Bearer live-bearer-token-value",
-      `export WARDMOTE_API_KEY='paperclip-shell-secret'`,
+      `export WARDMOTE_API_KEY='wardmote-shell-secret'`,
       `auth {"refresh_token":"refresh-token-fixture-secret"}`,
-      `payload {"WARDMOTE_API_KEY":"paperclip-json-secret"}`,
-      "--paperclip-api-key=paperclip-flag-secret",
+      `payload {"WARDMOTE_API_KEY":"wardmote-json-secret"}`,
+      "--wardmote-api-key=wardmote-flag-secret",
     ].join("\n");
 
     const compacted = compactRunLogChunk(chunk);
 
     expect(compacted).toContain("***REDACTED***");
     expect(compacted).not.toContain("live-bearer-token-value");
-    expect(compacted).not.toContain("paperclip-shell-secret");
+    expect(compacted).not.toContain("wardmote-shell-secret");
     expect(compacted).not.toContain("refresh-token-fixture-secret");
-    expect(compacted).not.toContain("paperclip-json-secret");
-    expect(compacted).not.toContain("paperclip-flag-secret");
+    expect(compacted).not.toContain("wardmote-json-secret");
+    expect(compacted).not.toContain("wardmote-flag-secret");
   });
 });

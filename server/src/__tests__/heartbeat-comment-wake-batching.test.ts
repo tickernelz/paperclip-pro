@@ -146,7 +146,7 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
 
   beforeAll(async () => {
     const started = await startEmbeddedPostgresTestDatabase(
-      "paperclip-heartbeat-comment-wake-",
+      "wardmote-heartbeat-comment-wake-",
     );
     db = createDb(started.connectionString);
     tempDb = started;
@@ -292,7 +292,7 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
       approvalStatus: "approved",
     });
     expect(
-      (deferred?.payload as Record<string, unknown>)._paperclipWakeContext,
+      (deferred?.payload as Record<string, unknown>)._wardmoteWakeContext,
     ).toMatchObject({
       issueId,
       taskId: issueId,
@@ -416,7 +416,7 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
       }),
     });
     expect(
-      (deferred?.payload as Record<string, unknown>)._paperclipWakeContext,
+      (deferred?.payload as Record<string, unknown>)._wardmoteWakeContext,
     ).toMatchObject({
       issueId,
       taskId: issueId,
@@ -601,7 +601,7 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
 
       const deferredContext = (
         deferredWake?.payload as Record<string, unknown> | null
-      )?._paperclipWakeContext as Record<string, unknown> | undefined;
+      )?._wardmoteWakeContext as Record<string, unknown> | undefined;
       expect(deferredContext?.wakeCommentIds).toEqual([
         comment2.id,
         comment3.id,
@@ -4042,7 +4042,7 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
       payload: {
         issueId,
         commentId: holdComment.id,
-        _paperclipWakeContext: {
+        _wardmoteWakeContext: {
           wakeReason: "issue_commented",
           source: "issue.comment",
           wakeCommentIds: [holdComment.id],

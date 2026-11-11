@@ -104,7 +104,7 @@ describe("P6-25 pre-result native session recovery", () => {
   };
 
   beforeAll(async () => {
-    temporary = await startEmbeddedPostgresTestDatabase("paperclip-native-resume-");
+    temporary = await startEmbeddedPostgresTestDatabase("wardmote-native-resume-");
     db = createDb(temporary.connectionString);
     await db.insert(companies).values({ id: companyId, name: "Native resume", issuePrefix: "NRR" });
     await db.insert(agents).values({
@@ -782,7 +782,7 @@ describe.each(["unchanged", "newer_active", "stale_idle"] as const)(
 
     beforeAll(async () => {
       temporary = await startEmbeddedPostgresTestDatabase(
-        "paperclip-native-reaper-e2e-",
+        "wardmote-native-reaper-e2e-",
       );
       db = createDb(temporary.connectionString);
       await instanceSettingsService(db).updateExperimental({
@@ -1112,7 +1112,7 @@ describe.each(["unchanged", "newer_active", "stale_idle"] as const)(
           payload: {
             issueId,
             commentId: newerCommentId,
-            _paperclipWakeContext: {
+            _wardmoteWakeContext: {
               issueId,
               taskId: issueId,
               commentId: newerCommentId,

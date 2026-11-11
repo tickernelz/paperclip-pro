@@ -84,7 +84,7 @@ async function createGitRepo() {
   const repoRoot = await mkdtemp(path.join(os.tmpdir(), "wardmote-accepted-plan-repo-"));
   await runGit(repoRoot, ["init"]);
   await runGit(repoRoot, ["checkout", "-B", "master"]);
-  await runGit(repoRoot, ["config", "user.email", "paperclip-test@example.com"]);
+  await runGit(repoRoot, ["config", "user.email", "wardmote-test@example.com"]);
   await runGit(repoRoot, ["config", "user.name", "Wardmote Test"]);
   await writeFile(path.join(repoRoot, "README.md"), "accepted plan workspace refresh\n");
   await runGit(repoRoot, ["add", "README.md"]);
@@ -108,7 +108,7 @@ describeEmbeddedPostgres("accepted plan workspace refresh", () => {
   const tempRoots: string[] = [];
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-accepted-plan-workspace-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-accepted-plan-workspace-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

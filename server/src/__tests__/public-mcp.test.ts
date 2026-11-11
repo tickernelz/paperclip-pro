@@ -59,7 +59,7 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
   let oauth: ReturnType<typeof createPublicMcpOAuth>;
   beforeAll(async () => {
     vi.stubEnv("WARDMOTE_SECRETS_MASTER_KEY", randomBytes(32).toString("base64"));
-    temp = await startEmbeddedPostgresTestDatabase("paperclip-public-mcp-");
+    temp = await startEmbeddedPostgresTestDatabase("wardmote-public-mcp-");
     db = createDb(temp.connectionString);
     oauth = createPublicMcpOAuth(db, config);
     expect(await oauth.isEnabled()).toBe(false);

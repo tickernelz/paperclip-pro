@@ -25,7 +25,7 @@ describeEmbeddedPostgres("issue list routes updatedSince filter", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-issue-list-routes-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-issue-list-routes-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

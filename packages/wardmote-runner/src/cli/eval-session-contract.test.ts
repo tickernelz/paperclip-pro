@@ -55,8 +55,8 @@ function agentCoreProfile(overrides: Record<string, unknown> = {}) {
     memoryArn: "arn:aws:bedrock-agentcore:us-east-1:123456789012:memory/test",
     memoryId: "memory-test",
     invocationRoleArn: "arn:aws:iam::123456789012:role/paperclip-agentcore",
-    contextBucket: "paperclip-agentcore-context",
-    contextPrefix: "paperclip/agentcore/test",
+    contextBucket: "wardmote-agentcore-context",
+    contextPrefix: "wardmote/agentcore/test",
     contextKmsKeyArn: "arn:aws:kms:us-east-1:123456789012:key/test",
     qualificationRevision: "aws-agentcore-harness-context-v2",
     eventExpiryDays: 90,
@@ -239,8 +239,8 @@ describe("eval-session request contract", () => {
     }))).toMatchObject({
       provider: "aws_agentcore",
       agentCoreProfile: {
-        contextBucket: "paperclip-agentcore-context",
-        contextPrefix: "paperclip/agentcore/test",
+        contextBucket: "wardmote-agentcore-context",
+        contextPrefix: "wardmote/agentcore/test",
         contextKmsKeyArn: "arn:aws:kms:us-east-1:123456789012:key/test",
       },
     });

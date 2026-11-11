@@ -35,7 +35,7 @@ describeEmbeddedPostgres("emitAgentTaskRun", () => {
   let agentId!: string;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-agent-task-run-telemetry-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-agent-task-run-telemetry-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

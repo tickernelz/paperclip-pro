@@ -122,7 +122,7 @@ describeEmbeddedPostgres("recovery observability report", () => {
   const latestWeek = new Date("2026-07-14T12:00:00.000Z"); // in week 2026-07-13
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-recovery-observability-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-recovery-observability-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

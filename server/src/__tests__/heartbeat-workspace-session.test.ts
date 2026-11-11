@@ -669,7 +669,7 @@ describe("scrubGitCredentialText", () => {
 describe("buildAnchorFallbackWorkspaceNotes", () => {
   it("reports materialization failures ahead of the generic no-cwd note", () => {
     expect(buildAnchorFallbackWorkspaceNotes({
-      fallbackCwd: "/paperclip/workspaces/agent-1",
+      fallbackCwd: "/wardmote/workspaces/agent-1",
       preferredWorkspaceWarning: null,
       materializationFailures: [{
         projectWorkspaceId: "workspace-1",
@@ -679,7 +679,7 @@ describe("buildAnchorFallbackWorkspaceNotes", () => {
       missingProjectCwds: [],
       hasConfiguredProjectCwd: false,
     })).toEqual([
-      'Failed to prepare the project workspace checkout: fatal: could not read Username. Using fallback workspace "/paperclip/workspaces/agent-1" for this run.',
+      'Failed to prepare the project workspace checkout: fatal: could not read Username. Using fallback workspace "/wardmote/workspaces/agent-1" for this run.',
     ]);
   });
 
@@ -1815,7 +1815,7 @@ describe("shouldResetTaskSessionForModelChange", () => {
         configuredModel: "gpt-5.4-mini",
         taskSessionParams: {
           sessionId: "thread-1",
-          __paperclipConfiguredModel: "opencode/mimo-v2-pro-free",
+          __wardmoteConfiguredModel: "opencode/mimo-v2-pro-free",
         },
       }),
     ).toBe(true);
@@ -1827,7 +1827,7 @@ describe("shouldResetTaskSessionForModelChange", () => {
         configuredModel: "gpt-5.4-mini",
         taskSessionParams: {
           sessionId: "thread-1",
-        __paperclipConfiguredModel: "gpt-5.4-mini",
+        __wardmoteConfiguredModel: "gpt-5.4-mini",
         },
       }),
     ).toBe(false);
@@ -1850,7 +1850,7 @@ describe("shouldResetTaskSessionForModelChange", () => {
         configuredModel: null,
         taskSessionParams: {
           sessionId: "thread-1",
-          __paperclipConfiguredModel: "gpt-5.4-mini",
+          __wardmoteConfiguredModel: "gpt-5.4-mini",
         },
       }),
     ).toBe(false);
@@ -1924,7 +1924,7 @@ async function buildSessionConfigMetadata(
       {
         key: "paperclip",
         runtimeName: "paperclip",
-        source: "/tmp/paperclip/runtime-skills/paperclip",
+        source: "/tmp/wardmote/runtime-skills/wardmote",
         versionId: null,
         currentVersionId: "skill-version-1",
         sourceStatus: "available",
@@ -1946,13 +1946,13 @@ function sessionParamsWithConfigMetadata(
 ) {
   return {
     sessionId: "thread-1",
-    __paperclipConfiguredModel: configuredModel,
-    __paperclipConfigFingerprint: metadata.fingerprint,
-    __paperclipConfigFingerprintVersion: metadata.version,
-    __paperclipConfigCategories: metadata.categories,
-    __paperclipConfigCategoryFingerprints: metadata.categoryFingerprints,
-    __paperclipAdapterConfigKeyFingerprints: metadata.adapterConfigKeyFingerprints,
-    __paperclipConfigResumeNeutralCategoryFingerprints: metadata.resumeNeutralCategoryFingerprints,
+    __wardmoteConfiguredModel: configuredModel,
+    __wardmoteConfigFingerprint: metadata.fingerprint,
+    __wardmoteConfigFingerprintVersion: metadata.version,
+    __wardmoteConfigCategories: metadata.categories,
+    __wardmoteConfigCategoryFingerprints: metadata.categoryFingerprints,
+    __wardmoteAdapterConfigKeyFingerprints: metadata.adapterConfigKeyFingerprints,
+    __wardmoteConfigResumeNeutralCategoryFingerprints: metadata.resumeNeutralCategoryFingerprints,
   };
 }
 
@@ -1969,7 +1969,7 @@ describe("effective run session config freshness", () => {
     const skill = (overrides: Record<string, unknown> = {}) => ({
       key: "paperclip",
       runtimeName: "paperclip",
-      source: "/tmp/paperclip/runtime-skills/paperclip",
+      source: "/tmp/wardmote/runtime-skills/wardmote",
       versionId: null,
       currentVersionId: "skill-version-1",
       sourceStatus: "available",
@@ -1979,7 +1979,7 @@ describe("effective run session config freshness", () => {
     const first = await buildSessionConfigMetadata({ adapterType: "omp_local", runtimeSkills: [skill()] });
 
     for (const delivery of [
-      skill({ source: "/tmp/paperclip/runtime-context-assets/bundles/other-digest" }),
+      skill({ source: "/tmp/wardmote/runtime-context-assets/bundles/other-digest" }),
       skill({ sourceStatus: "missing", missingDetail: "The selected skill version produced no files." }),
     ]) {
       const next = await buildSessionConfigMetadata({ adapterType: "omp_local", runtimeSkills: [delivery] });
@@ -2345,7 +2345,7 @@ describe("effective run session config freshness", () => {
       const skill = (currentVersionId: string) => ({
         key: "paperclip",
         runtimeName: "paperclip",
-        source: "/tmp/paperclip/runtime-skills/paperclip",
+        source: "/tmp/wardmote/runtime-skills/wardmote",
         versionId: null,
         currentVersionId,
         sourceStatus: "available",
@@ -2422,7 +2422,7 @@ describe("effective run session config freshness", () => {
       const skill = (key: string, currentVersionId: string) => ({
         key,
         runtimeName: key,
-        source: `/tmp/paperclip/runtime-skills/${key}`,
+        source: `/tmp/wardmote/runtime-skills/${key}`,
         versionId: null,
         currentVersionId,
         sourceStatus: "available",
@@ -2451,7 +2451,7 @@ describe("effective run session config freshness", () => {
           base,
           "sub2api-claude/claude-opus-5-5",
         );
-        if (input.legacySession) delete taskSessionParams.__paperclipConfigResumeNeutralCategoryFingerprints;
+        if (input.legacySession) delete taskSessionParams.__wardmoteConfigResumeNeutralCategoryFingerprints;
         return resolveTaskSessionConfigFreshness({
           hasTaskSession: true,
           adapterType: input.adapterType,
@@ -2634,7 +2634,7 @@ describe("effective run session config freshness", () => {
         effectiveAdapterConfig: ompConfig({ noPty: true }),
       });
       const legacyParams = { ...sessionParamsWithConfigMetadata(base) };
-      delete legacyParams.__paperclipAdapterConfigKeyFingerprints;
+      delete legacyParams.__wardmoteAdapterConfigKeyFingerprints;
 
       const decision = resolveTaskSessionConfigFreshness({
         hasTaskSession: true,
@@ -2683,7 +2683,7 @@ describe("effective run session config freshness", () => {
       configuredModel: "gpt-5.4-mini",
       taskSessionParams: {
         sessionId: "thread-1",
-        __paperclipConfiguredModel: "gpt-5.4-mini",
+        __wardmoteConfiguredModel: "gpt-5.4-mini",
       },
       configMetadata: metadata,
     });
@@ -2716,7 +2716,7 @@ describe("effective run session config freshness", () => {
       configuredModel: "gpt-5.4-mini",
       taskSessionParams: {
         sessionId: "thread-1",
-        __paperclipConfiguredModel: "gpt-5.4-mini",
+        __wardmoteConfiguredModel: "gpt-5.4-mini",
       },
       configMetadata: metadata,
       preserveLegacySessionWithoutConfigMetadata: true,
@@ -2781,7 +2781,7 @@ describe("effective run session config freshness", () => {
             {
               key: "paperclip",
               runtimeName: "paperclip",
-              source: "/tmp/paperclip/runtime-skills/paperclip",
+              source: "/tmp/wardmote/runtime-skills/wardmote",
               versionId: null,
               currentVersionId: "skill-version-2",
               sourceStatus: "available",
@@ -2880,7 +2880,7 @@ describe("stripConfiguredModelFromSessionParams", () => {
     expect(
       stripConfiguredModelFromSessionParams({
         sessionId: "thread-1",
-        __paperclipConfiguredModel: "gpt-5.4-mini",
+        __wardmoteConfiguredModel: "gpt-5.4-mini",
       }),
     ).toEqual({ sessionId: "thread-1" });
   });
@@ -2891,15 +2891,15 @@ describe("stripConfiguredModelFromSessionParams", () => {
   });
 
   it("returns a copy without mutating the input", () => {
-    const input = { sessionId: "thread-1", __paperclipConfiguredModel: "gpt-5.4-mini" };
+    const input = { sessionId: "thread-1", __wardmoteConfiguredModel: "gpt-5.4-mini" };
     const result = stripConfiguredModelFromSessionParams(input);
     expect(result).not.toBe(input);
-    expect(input.__paperclipConfiguredModel).toBe("gpt-5.4-mini");
+    expect(input.__wardmoteConfiguredModel).toBe("gpt-5.4-mini");
   });
 
   it("returns an empty object when only the internal model key is present (caller must normalize)", () => {
     const stripped = stripConfiguredModelFromSessionParams({
-      __paperclipConfiguredModel: "gpt-5.4-mini",
+      __wardmoteConfiguredModel: "gpt-5.4-mini",
     });
     expect(stripped).toEqual({});
     // Callers that forward params to adapters must normalize {} back to null so
@@ -2915,12 +2915,12 @@ describe("stripWardmoteSessionMetadataFromSessionParams", () => {
         sessionId: "thread-1",
         cwd: "/tmp/project",
         wardmoteAiCredentialIdentity: "grant:user:generation",
-        __paperclipConfiguredModel: "gpt-5.4-mini",
-        __paperclipConfigFingerprint: "v1:sha256:abc",
-        __paperclipConfigFingerprintVersion: 1,
-        __paperclipConfigCategories: ["adapterConfig"],
-        __paperclipConfigCategoryFingerprints: { adapterConfig: "v1:sha256:def" },
-        __paperclipAdapterConfigKeyFingerprints: { command: "v1:sha256:ghi" },
+        __wardmoteConfiguredModel: "gpt-5.4-mini",
+        __wardmoteConfigFingerprint: "v1:sha256:abc",
+        __wardmoteConfigFingerprintVersion: 1,
+        __wardmoteConfigCategories: ["adapterConfig"],
+        __wardmoteConfigCategoryFingerprints: { adapterConfig: "v1:sha256:def" },
+        __wardmoteAdapterConfigKeyFingerprints: { command: "v1:sha256:ghi" },
       }),
     ).toEqual({
       sessionId: "thread-1",

@@ -39,7 +39,7 @@ test("passes on a repository without the trailer", () => {
 
 test("flags an instruction that tells agents to add the trailer, with file and line", () => {
   const root = makeRepo({
-    "skills/a/SKILL.md": `intro\n- you MUST add \`${TRAILER}: Wardmote <noreply@paperclip.ing>\`\n`,
+    "skills/a/SKILL.md": `intro\n- you MUST add \`${TRAILER}: Wardmote <noreply@wardmote.example>\`\n`,
   });
   try {
     const { code, errors } = capture(root);

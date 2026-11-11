@@ -161,7 +161,7 @@ describeEmbeddedPostgres("OpenWA setup inspection and configure", () => {
   const companyIds: string[] = [];
 
   beforeAll(async () => {
-    database = await startEmbeddedPostgresTestDatabase("paperclip-openwa-setup-");
+    database = await startEmbeddedPostgresTestDatabase("wardmote-openwa-setup-");
     db = createDb(database.connectionString);
     secretsDir = await mkdtemp(path.join(tmpdir(), "openwa-secrets-"));
     process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE = path.join(secretsDir, "master.key");

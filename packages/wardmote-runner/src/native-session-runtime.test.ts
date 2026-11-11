@@ -2046,7 +2046,7 @@ describe("executeNativeSession recovery", () => {
           schema: NATIVE_RUNTIME_ASSET_SCHEMA,
           digest,
           manifestDigest: digest,
-          rootPath: "/paperclip/context/instructions",
+          rootPath: "/wardmote/context/instructions",
           fileCount: 1,
           totalBytes: 1,
         },

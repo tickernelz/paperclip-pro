@@ -26,7 +26,7 @@ describeEmbeddedPostgres("databaseTerminalActorLoader", () => {
   let authSessionId: string;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-terminal-access-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-terminal-access-");
     db = createDb(tempDb.connectionString);
   }, 30_000);
 

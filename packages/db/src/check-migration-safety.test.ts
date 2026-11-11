@@ -482,7 +482,18 @@ describe("migration safety check", () => {
 
   it("honors suppressions only when they name a rule and reason", () => {
     const result = analyze(`
-      -- paperclip:migration-safety-ignore full-table-mutation-large-table: one-time metadata reset approved in issue thread
+      -- wardmote:migration-safety-ignore full-table-mutation-large-table: one-time metadata reset approved in issue thread
+      UPDATE "issue_comments"
+      SET "derived_author_source" = NULL;
+    `);
+
+    expect(result.newFindings).toEqual([]);
+  });
+
+  it("still honors the suppression marker spelled in already-applied migrations", () => {
+    const legacyMarker = [["paper", "clip"].join(""), "migration-safety-ignore"].join(":");
+    const result = analyze(`
+      -- ${legacyMarker} full-table-mutation-large-table: one-time metadata reset approved in issue thread
       UPDATE "issue_comments"
       SET "derived_author_source" = NULL;
     `);

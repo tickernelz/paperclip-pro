@@ -105,7 +105,7 @@ describeEmbeddedPostgres("shared-workspace run serialization", () => {
   beforeAll(async () => {
     if (externalTestDatabaseUrl) db = createDb(externalTestDatabaseUrl);
     else {
-      tempDb = await startEmbeddedPostgresTestDatabase("paperclip-heartbeat-workspace-busy-");
+      tempDb = await startEmbeddedPostgresTestDatabase("wardmote-heartbeat-workspace-busy-");
       db = createDb(tempDb.connectionString);
     }
     heartbeat = heartbeatService(db);

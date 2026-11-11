@@ -619,7 +619,7 @@ export function createHeartbeatRunControl(db: Db, dependencies: HeartbeatRunCont
     await enqueueWakeup(wake.agentId, {
       source: "on_demand", triggerDetail: "manual", reason: "issue_commented",
       payload: deliveryPayload, contextSnapshot: response
-        ? { ...parseObject(payload._paperclipWakeContext), issueId, triggeredBy: "board", actorId,
+        ? { ...parseObject(payload._wardmoteWakeContext), issueId, triggeredBy: "board", actorId,
             responsibleUserId: actorId }
         : withQueuedCommentIdsInRunContext({
             issueId, triggeredBy: "board", actorId, responsibleUserId: actorId,

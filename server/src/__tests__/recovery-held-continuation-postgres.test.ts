@@ -50,7 +50,7 @@ describeEmbeddedPostgres("continuing a recovery-held issue (routes + postgres)",
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-recovery-continue-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-recovery-continue-");
     db = createDb(tempDb.connectionString);
   }, 60_000);
 

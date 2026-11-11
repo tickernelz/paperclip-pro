@@ -40,7 +40,7 @@ beforeAll(async () => {
   vi.stubEnv("WARDMOTE_IN_WORKTREE", "false");
   if (externalTestDatabaseUrl) db = createDb(externalTestDatabaseUrl);
   else {
-    database = await startEmbeddedPostgresTestDatabase("paperclip-hire-ai-db-");
+    database = await startEmbeddedPostgresTestDatabase("wardmote-hire-ai-db-");
     db = createDb(database.connectionString);
   }
 }, 90_000);

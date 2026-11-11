@@ -13,7 +13,7 @@ describeDatabase("work product execution workspace validation", () => {
   let db: ReturnType<typeof createDb>;
 
   beforeAll(async () => {
-    database = await startEmbeddedPostgresTestDatabase("paperclip-work-product-workspace-");
+    database = await startEmbeddedPostgresTestDatabase("wardmote-work-product-workspace-");
     db = createDb(database.connectionString);
   }, 30_000);
 

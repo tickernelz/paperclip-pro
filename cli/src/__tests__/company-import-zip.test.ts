@@ -19,7 +19,7 @@ describe("resolveInlineSourceFromPath", () => {
     tempDirs.push(tempDir);
 
     const blobBytes = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x00, 0xff]);
-    const archivePath = path.join(tempDir, "paperclip-demo.zip");
+    const archivePath = path.join(tempDir, "wardmote-demo.zip");
     const archive = createStoredZipArchive(
       {
         "COMPANY.md": "# Company\n",
@@ -28,14 +28,14 @@ describe("resolveInlineSourceFromPath", () => {
         "blobs/4f2d1c9a": blobBytes,
         "notes/todo.txt": "ignore me\n",
       },
-      "paperclip-demo",
+      "wardmote-demo",
     );
     await writeFile(archivePath, archive);
 
     const resolved = await resolveInlineSourceFromPath(archivePath);
 
     expect(resolved).toEqual({
-      rootPath: "paperclip-demo",
+      rootPath: "wardmote-demo",
       files: {
         "COMPANY.md": "# Company\n",
         ".wardmote.yaml": "schema: wardmote/v1\n",

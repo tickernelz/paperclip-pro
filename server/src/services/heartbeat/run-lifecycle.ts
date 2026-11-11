@@ -1717,8 +1717,8 @@ export function createHeartbeatLifecycle(db: Db, dependencies: HeartbeatLifecycl
                 sql`(
                 ${agentWakeupRequests.payload} ->> 'issueId' = ${issue.id}
                 or ${agentWakeupRequests.payload} ->> 'taskId' = ${issue.id}
-                or ${agentWakeupRequests.payload} -> '_paperclipWakeContext' ->> 'issueId' = ${issue.id}
-                or ${agentWakeupRequests.payload} -> '_paperclipWakeContext' ->> 'taskId' = ${issue.id}
+                or ${agentWakeupRequests.payload} -> '_wardmoteWakeContext' ->> 'issueId' = ${issue.id}
+                or ${agentWakeupRequests.payload} -> '_wardmoteWakeContext' ->> 'taskId' = ${issue.id}
               )`,
               ),
             )

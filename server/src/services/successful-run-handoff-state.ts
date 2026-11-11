@@ -15,8 +15,8 @@ const heartbeatRunIssueId = sql<string>`coalesce(
 const wakeRequestIssueId = sql<string>`coalesce(
   ${agentWakeupRequests.payload} ->> 'issueId',
   ${agentWakeupRequests.payload} ->> 'taskId',
-  ${agentWakeupRequests.payload} -> '_paperclipWakeContext' ->> 'issueId',
-  ${agentWakeupRequests.payload} -> '_paperclipWakeContext' ->> 'taskId'
+  ${agentWakeupRequests.payload} -> '_wardmoteWakeContext' ->> 'issueId',
+  ${agentWakeupRequests.payload} -> '_wardmoteWakeContext' ->> 'taskId'
 )`;
 
 export async function hydrateSuccessfulRunHandoffLiveness(

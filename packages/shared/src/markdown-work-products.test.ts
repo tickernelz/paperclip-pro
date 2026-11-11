@@ -114,7 +114,7 @@ describe("getAttachmentArtifactWorkProductMetadata", () => {
     expect(getAttachmentArtifactWorkProductMetadata(workProduct({ type: "document" }))).toBeNull();
   });
 
-  it("returns null for non-paperclip providers", () => {
+  it("returns null for non-wardmote providers", () => {
     expect(getAttachmentArtifactWorkProductMetadata(workProduct({ provider: "github" }))).toBeNull();
   });
 

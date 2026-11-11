@@ -43,7 +43,7 @@ describeEmbeddedPostgres("notification dispatch", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-notifications-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-notifications-");
     db = createDb(tempDb.connectionString);
   }, 30_000);
 

@@ -40,7 +40,7 @@ describeEmbeddedPostgres("decision training", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-decision-training-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-decision-training-");
     db = createDb(tempDb.connectionString);
   }, 30_000);
 

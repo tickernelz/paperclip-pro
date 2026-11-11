@@ -381,7 +381,7 @@ describe("P6-31 Section 18.13 executable status-authority corpus", () => {
   const outsideAgentId = randomUUID();
 
   beforeAll(async () => {
-    temporary = await startEmbeddedPostgresTestDatabase("paperclip-status-corpus-");
+    temporary = await startEmbeddedPostgresTestDatabase("wardmote-status-corpus-");
     db = createDb(temporary.connectionString);
     await db.insert(companies).values({ id: companyId, name: "Status corpus", issuePrefix: "PSC" });
     await db.insert(companies).values({ id: outsideCompanyId, name: "Outside corpus", issuePrefix: "OUT" });
@@ -2089,7 +2089,7 @@ describe("P6-31 Section 18.13 executable status-authority corpus", () => {
           ? `native-status-wake-dispatch:${randomUUID()}` : "native-status-committer",
         status: delivery.startsWith("current_") ? "claimed" : delivery,
         runId: delivery === "current_run" ? seeded.runId : null,
-        payload: { issueId: seeded.issueId, _paperclipWakeContext: {
+        payload: { issueId: seeded.issueId, _wardmoteWakeContext: {
           wakeReason: "issue_children_completed", nativeChildCompletionDecisionId: randomUUID(),
         } },
       });
@@ -2119,7 +2119,7 @@ describe("P6-31 Section 18.13 executable status-authority corpus", () => {
       await db.insert(agentWakeupRequests).values({
         companyId, agentId, source: "automation", triggerDetail: "system", reason: "issue_children_completed",
         requestedByActorType: "system", requestedByActorId: "native-status-committer", status: "queued",
-        payload: { issueId: seeded.issueId, _paperclipWakeContext: { nativeChildCompletionDecisionId: randomUUID() } },
+        payload: { issueId: seeded.issueId, _wardmoteWakeContext: { nativeChildCompletionDecisionId: randomUUID() } },
       });
       return pending;
     });
@@ -2153,7 +2153,7 @@ describe("P6-31 Section 18.13 executable status-authority corpus", () => {
     await db.insert(agentWakeupRequests).values({
       companyId, agentId, source: "automation", triggerDetail: "system", reason: "issue_children_completed",
       requestedByActorType: "system", requestedByActorId: "native-status-committer", status: delivery,
-      payload: { issueId: seeded.issueId, _paperclipWakeContext: { nativeChildCompletionDecisionId: randomUUID() } },
+      payload: { issueId: seeded.issueId, _wardmoteWakeContext: { nativeChildCompletionDecisionId: randomUUID() } },
     });
     const results = await reconcileNativeFinalizations(db, [seeded.runId]);
     expect(results).toEqual([expect.objectContaining({ reconciliationAction: delivery === "queued"

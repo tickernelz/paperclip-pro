@@ -64,7 +64,7 @@ describeEmbeddedPostgres("owner-relayed decisions (routes + postgres)", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-owner-relay-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-owner-relay-");
     db = createDb(tempDb.connectionString);
   }, 60_000);
 

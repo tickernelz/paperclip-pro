@@ -59,7 +59,7 @@ describe("plugin init", () => {
         displayName: "Linear Bridge",
         description: "Syncs Linear issues",
         author: "Acme",
-        sdkPath: "../paperclip/packages/plugins/sdk",
+        sdkPath: "../wardmote/packages/plugins/sdk",
       },
       cwd,
     );
@@ -72,7 +72,7 @@ describe("plugin init", () => {
       displayName: "Linear Bridge",
       description: "Syncs Linear issues",
       author: "Acme",
-      sdkPath: "../paperclip/packages/plugins/sdk",
+      sdkPath: "../wardmote/packages/plugins/sdk",
     });
   });
 

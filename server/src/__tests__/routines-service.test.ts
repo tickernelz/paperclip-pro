@@ -53,7 +53,7 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
 
   beforeAll(async () => {
     process.env.WARDMOTE_API_URL = "http://localhost:3100";
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-routines-service-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-routines-service-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

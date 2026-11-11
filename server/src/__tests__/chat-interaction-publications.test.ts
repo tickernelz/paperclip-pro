@@ -44,7 +44,7 @@ describeEmbeddedPostgres(
     beforeAll(async () => {
       process.env.WARDMOTE_PUBLIC_URL = "https://wardmote.example";
       tempDb = await startEmbeddedPostgresTestDatabase(
-        "paperclip-terminal-chat-interaction-",
+        "wardmote-terminal-chat-interaction-",
       );
       db = createDb(tempDb.connectionString);
     }, 20_000);

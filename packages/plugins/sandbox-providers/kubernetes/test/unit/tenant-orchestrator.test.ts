@@ -81,11 +81,11 @@ describe("ensureTenant", () => {
     const clients = makeMockClients();
     await ensureTenant(clients as never, {
       ...baseInput,
-      serviceAccountAnnotations: { "eks.amazonaws.com/role-arn": "arn:aws:iam::123:role/paperclip" },
+      serviceAccountAnnotations: { "eks.amazonaws.com/role-arn": "arn:aws:iam::123:role/wardmote" },
     });
     const saCall = clients.calls.find((c) => c.kind === "ServiceAccount");
     const sa = saCall!.body as { metadata: { annotations: Record<string, string> } };
-    expect(sa.metadata.annotations["eks.amazonaws.com/role-arn"]).toBe("arn:aws:iam::123:role/paperclip");
+    expect(sa.metadata.annotations["eks.amazonaws.com/role-arn"]).toBe("arn:aws:iam::123:role/wardmote");
   });
 
   it("skips creates that already exist (idempotency)", async () => {

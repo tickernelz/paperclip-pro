@@ -238,7 +238,7 @@ describe("resolveEnvironmentExecutionTarget", () => {
       },
       leaseId: "lease-1",
       leaseMetadata: {
-        remoteCwd: "/home/sandbox/paperclip-workspace",
+        remoteCwd: "/home/sandbox/wardmote-workspace",
         sshAccess: {
           type: "ssh",
           host: "ssh.example.test",
@@ -254,7 +254,7 @@ describe("resolveEnvironmentExecutionTarget", () => {
       kind: "remote",
       transport: "sandbox",
       providerKey: "fake-plugin",
-      remoteCwd: "/home/sandbox/paperclip-workspace",
+      remoteCwd: "/home/sandbox/wardmote-workspace",
     });
   });
 
@@ -328,7 +328,7 @@ describe("resolveEnvironmentExecutionTarget", () => {
         host: "ssh.example.test",
         port: 22,
         username: "paperclip",
-        remoteWorkspacePath: "/srv/paperclip",
+        remoteWorkspacePath: "/srv/wardmote",
         privateKey: "PRIVATE KEY",
         knownHosts: "[ssh.example.test]:22 ssh-ed25519 AAAA",
         strictHostKeyChecking: true,
@@ -353,7 +353,7 @@ describe("resolveEnvironmentExecutionTarget", () => {
     expect(target).toMatchObject({
       kind: "remote",
       transport: "ssh",
-      remoteCwd: "/srv/paperclip",
+      remoteCwd: "/srv/wardmote",
     });
   });
 
@@ -364,7 +364,7 @@ describe("resolveEnvironmentExecutionTarget", () => {
         host: "ssh.example.test",
         port: 22,
         username: "paperclip",
-        remoteWorkspacePath: "/srv/paperclip",
+        remoteWorkspacePath: "/srv/wardmote",
         privateKey: "PRIVATE KEY",
         knownHosts: "[ssh.example.test]:22 ssh-ed25519 AAAA",
         strictHostKeyChecking: true,
@@ -389,7 +389,7 @@ describe("resolveEnvironmentExecutionTarget", () => {
     expect(target).toMatchObject({
       kind: "remote",
       transport: "ssh",
-      remoteCwd: "/srv/paperclip",
+      remoteCwd: "/srv/wardmote",
     });
   });
 
@@ -400,7 +400,7 @@ describe("resolveEnvironmentExecutionTarget", () => {
         host: "ssh.example.test",
         port: 22,
         username: "paperclip",
-        remoteWorkspacePath: "/srv/paperclip",
+        remoteWorkspacePath: "/srv/wardmote",
         privateKey: "PRIVATE KEY",
         knownHosts: "[ssh.example.test]:22 ssh-ed25519 AAAA",
         strictHostKeyChecking: true,
@@ -425,15 +425,15 @@ describe("resolveEnvironmentExecutionTarget", () => {
     expect(target).toMatchObject({
       kind: "remote",
       transport: "ssh",
-      remoteCwd: "/srv/paperclip",
+      remoteCwd: "/srv/wardmote",
       leaseId: "lease-ssh-1",
       environmentId: "env-ssh-1",
       spec: {
         host: "ssh.example.test",
         port: 22,
         username: "paperclip",
-        remoteWorkspacePath: "/srv/paperclip",
-        remoteCwd: "/srv/paperclip",
+        remoteWorkspacePath: "/srv/wardmote",
+        remoteCwd: "/srv/wardmote",
       },
     });
     expect(target).not.toHaveProperty("wardmoteApiUrl");

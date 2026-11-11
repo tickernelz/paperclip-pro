@@ -110,7 +110,7 @@ describe("paperclip-runner/native-execution/v1", () => {
 
   it("rejects unknown native schema versions", async () => {
     const bundle = await loadWardmoteNativeExecutionFixture();
-    expect(() => parseWardmoteNativeExecution({ ...bundle, schema: "paperclip-runner/native-execution/v2" }))
+    expect(() => parseWardmoteNativeExecution({ ...bundle, schema: "wardmote-runner/native-execution/v2" }))
       .toThrow(/unsupported schema/);
   });
 

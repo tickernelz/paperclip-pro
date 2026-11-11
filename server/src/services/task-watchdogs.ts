@@ -592,7 +592,7 @@ function issueIdFromRunContext(contextSnapshot: unknown) {
 
 function issueIdFromWakePayload(payload: unknown) {
   const parsed = parseObject(payload);
-  const nested = parseObject(parsed._paperclipWakeContext);
+  const nested = parseObject(parsed._wardmoteWakeContext);
   return readNonEmptyString(parsed.issueId) ??
     readNonEmptyString(parsed.taskId) ??
     readNonEmptyString(nested.issueId) ??
@@ -995,8 +995,8 @@ export function taskWatchdogService(db: Db, deps: TaskWatchdogServiceDeps = {}) 
           or(
             inArray(sql`${agentWakeupRequests.payload}->>'issueId'`, subtreeIssueIds),
             inArray(sql`${agentWakeupRequests.payload}->>'taskId'`, subtreeIssueIds),
-            inArray(sql`${agentWakeupRequests.payload}->'_paperclipWakeContext'->>'issueId'`, subtreeIssueIds),
-            inArray(sql`${agentWakeupRequests.payload}->'_paperclipWakeContext'->>'taskId'`, subtreeIssueIds),
+            inArray(sql`${agentWakeupRequests.payload}->'_wardmoteWakeContext'->>'issueId'`, subtreeIssueIds),
+            inArray(sql`${agentWakeupRequests.payload}->'_wardmoteWakeContext'->>'taskId'`, subtreeIssueIds),
           ),
         )),
       db
@@ -1210,8 +1210,8 @@ export function taskWatchdogService(db: Db, deps: TaskWatchdogServiceDeps = {}) 
           inArray(agentWakeupRequests.status, [...TASK_WATCHDOG_WAKE_REQUEST_STATUSES]),
           sql`(${agentWakeupRequests.payload}->>'issueId' = ${issueId}
             OR ${agentWakeupRequests.payload}->>'taskId' = ${issueId}
-            OR ${agentWakeupRequests.payload}->'_paperclipWakeContext'->>'issueId' = ${issueId}
-            OR ${agentWakeupRequests.payload}->'_paperclipWakeContext'->>'taskId' = ${issueId})`,
+            OR ${agentWakeupRequests.payload}->'_wardmoteWakeContext'->>'issueId' = ${issueId}
+            OR ${agentWakeupRequests.payload}->'_wardmoteWakeContext'->>'taskId' = ${issueId})`,
         ))
         .limit(1)
         .then((rows) => rows[0] ?? null),

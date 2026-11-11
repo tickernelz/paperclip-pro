@@ -26,7 +26,7 @@ describeEmbeddedPostgres("changeConsentGateService", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-reflection-coach-gate-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-reflection-coach-gate-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

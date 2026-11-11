@@ -24,7 +24,7 @@ beforeAll(async () => {
   vi.stubEnv("WARDMOTE_IN_WORKTREE", "false");
   if (externalTestDatabaseUrl) db = createDb(externalTestDatabaseUrl);
   else {
-    database = await startEmbeddedPostgresTestDatabase("paperclip-ceo-owner-db-");
+    database = await startEmbeddedPostgresTestDatabase("wardmote-ceo-owner-db-");
     db = createDb(database.connectionString);
   }
 }, 90_000);

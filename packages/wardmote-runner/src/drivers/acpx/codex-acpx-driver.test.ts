@@ -3112,7 +3112,7 @@ function fakeHost(createTurn: () => AcpxRuntimeTurn, onClose: () => void) {
       requestedModel: "gpt-5.6-sol",
       effectiveModel: "gpt-5.6-sol",
       permissionMode: "approve-reads" as const,
-      profileSessionKey: "paperclip-session",
+      profileSessionKey: "wardmote-session",
     }),
     status: vi.fn(async () => ({
       agentSessionId: "agent-1",

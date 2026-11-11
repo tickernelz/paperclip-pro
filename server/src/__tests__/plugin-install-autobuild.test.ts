@@ -289,7 +289,7 @@ describeEmbeddedPostgres("plugin install auto-build route", () => {
   const cleanupPaths = new Set<string>();
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-plugin-autobuild-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-plugin-autobuild-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

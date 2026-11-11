@@ -103,7 +103,7 @@ describe("OpenWA owner report routing (embedded Postgres + fake gateway)", () =>
   const endpointIds: string[] = [];
 
   beforeAll(async () => {
-    database = await startEmbeddedPostgresTestDatabase("paperclip-openwa-owner-report-");
+    database = await startEmbeddedPostgresTestDatabase("wardmote-openwa-owner-report-");
     db = createDb(database.connectionString);
     scratch = await mkdtemp(path.join(tmpdir(), "openwa-owner-report-"));
     process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE = path.join(scratch, "master.key");

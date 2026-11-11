@@ -91,8 +91,8 @@ describe("worktree instance cleanup", () => {
     expect(deriveWorktreeInstanceId(dashPath)).toMatch(/^feature-cleanup-[a-f0-9]{12}$/);
   });
   it("removes an instance directory inside the managed worktree instances root", async () => {
-    const worktreesDir = await makeTempRoot("paperclip-managed-worktrees-");
-    const workspacePath = await makeTempRoot("paperclip-cleanup-workspace-");
+    const worktreesDir = await makeTempRoot("wardmote-managed-worktrees-");
+    const workspacePath = await makeTempRoot("wardmote-cleanup-workspace-");
     const instanceId = "pap-16075";
     const instanceRoot = path.join(worktreesDir, "instances", instanceId);
     await fs.mkdir(path.join(instanceRoot, "db"), { recursive: true });
@@ -115,8 +115,8 @@ describe("worktree instance cleanup", () => {
   });
 
   it("preserves a collision-resistant active instance when persisted ownership is absent", async () => {
-    const worktreesDir = await makeTempRoot("paperclip-managed-worktrees-");
-    const workspacePath = await makeTempRoot("paperclip-cleanup-workspace-");
+    const worktreesDir = await makeTempRoot("wardmote-managed-worktrees-");
+    const workspacePath = await makeTempRoot("wardmote-cleanup-workspace-");
     const instanceId = deriveWorktreeInstanceId(workspacePath);
     const instanceRoot = path.join(worktreesDir, "instances", instanceId);
     await fs.mkdir(path.join(instanceRoot, "db"), { recursive: true });
@@ -139,9 +139,9 @@ describe("worktree instance cleanup", () => {
   });
 
   it("refuses and logs an instance pointer outside the managed worktree root", async () => {
-    const worktreesDir = await makeTempRoot("paperclip-managed-worktrees-");
-    const liveHome = await makeTempRoot("paperclip-live-home-");
-    const workspacePath = await makeTempRoot("paperclip-cleanup-workspace-");
+    const worktreesDir = await makeTempRoot("wardmote-managed-worktrees-");
+    const liveHome = await makeTempRoot("wardmote-live-home-");
+    const workspacePath = await makeTempRoot("wardmote-cleanup-workspace-");
     const liveInstanceRoot = path.join(liveHome, "instances", "default");
     await fs.mkdir(liveInstanceRoot, { recursive: true });
     await fs.writeFile(path.join(liveInstanceRoot, "marker"), "keep me", "utf8");
@@ -178,13 +178,13 @@ describe("worktree instance cleanup", () => {
   });
 
   it("treats a missing repo-local env file as a no-op", async () => {
-    const workspacePath = await makeTempRoot("paperclip-cleanup-workspace-");
+    const workspacePath = await makeTempRoot("wardmote-cleanup-workspace-");
     await expect(readWorktreeInstancePointer(workspacePath)).resolves.toBeNull();
   });
 
   it("captures the managed instance root for persisted workspace ownership", async () => {
-    const worktreesDir = await makeTempRoot("paperclip-managed-worktrees-");
-    const workspacePath = await makeTempRoot("paperclip-cleanup-workspace-");
+    const worktreesDir = await makeTempRoot("wardmote-managed-worktrees-");
+    const workspacePath = await makeTempRoot("wardmote-cleanup-workspace-");
     const instanceRoot = path.join(worktreesDir, "instances", "owned-instance");
     await fs.mkdir(instanceRoot, { recursive: true });
     await writeWorkspaceEnv(workspacePath, worktreesDir, "owned-instance");
@@ -194,8 +194,8 @@ describe("worktree instance cleanup", () => {
     ).resolves.toEqual({ instanceId: "owned-instance", instanceRoot });
   });
   it("stops embedded Postgres before deleting the instance root", async () => {
-    const worktreesDir = await makeTempRoot("paperclip-managed-worktrees-");
-    const workspacePath = await makeTempRoot("paperclip-cleanup-workspace-");
+    const worktreesDir = await makeTempRoot("wardmote-managed-worktrees-");
+    const workspacePath = await makeTempRoot("wardmote-cleanup-workspace-");
     const instanceRoot = path.join(worktreesDir, "instances", "ordered-cleanup");
     await fs.mkdir(path.join(instanceRoot, "db"), { recursive: true });
     await writeWorkspaceEnv(workspacePath, worktreesDir, "ordered-cleanup");
@@ -228,8 +228,8 @@ describe("worktree instance cleanup", () => {
   });
 
   it("refuses a pointer rewritten to another workspace's managed instance", async () => {
-    const worktreesDir = await makeTempRoot("paperclip-managed-worktrees-");
-    const workspacePath = await makeTempRoot("paperclip-cleanup-workspace-");
+    const worktreesDir = await makeTempRoot("wardmote-managed-worktrees-");
+    const workspacePath = await makeTempRoot("wardmote-cleanup-workspace-");
     const siblingInstanceRoot = path.join(worktreesDir, "instances", "feature-sibling");
     await fs.mkdir(path.join(siblingInstanceRoot, "db"), { recursive: true });
     await fs.writeFile(path.join(siblingInstanceRoot, "marker"), "keep me", "utf8");
@@ -266,9 +266,9 @@ describe("worktree instance cleanup", () => {
     ]);
   });
   it("refuses a managed-root symlink that canonically escapes the guard", async () => {
-    const worktreesDir = await makeTempRoot("paperclip-managed-worktrees-");
-    const outsideRoot = await makeTempRoot("paperclip-outside-instance-");
-    const workspacePath = await makeTempRoot("paperclip-cleanup-workspace-");
+    const worktreesDir = await makeTempRoot("wardmote-managed-worktrees-");
+    const outsideRoot = await makeTempRoot("wardmote-outside-instance-");
+    const workspacePath = await makeTempRoot("wardmote-cleanup-workspace-");
     const instancesDir = path.join(worktreesDir, "instances");
     await fs.mkdir(instancesDir, { recursive: true });
     await fs.symlink(outsideRoot, path.join(instancesDir, "escaped"), "dir");
@@ -290,9 +290,9 @@ describe("worktree instance cleanup", () => {
   });
 
   it("refuses when the managed instances directory itself is a symlink", async () => {
-    const worktreesDir = await makeTempRoot("paperclip-managed-worktrees-");
-    const liveInstancesDir = await makeTempRoot("paperclip-live-instances-");
-    const workspacePath = await makeTempRoot("paperclip-cleanup-workspace-");
+    const worktreesDir = await makeTempRoot("wardmote-managed-worktrees-");
+    const liveInstancesDir = await makeTempRoot("wardmote-live-instances-");
+    const workspacePath = await makeTempRoot("wardmote-cleanup-workspace-");
     const liveInstanceRoot = path.join(liveInstancesDir, "default");
     await fs.mkdir(liveInstanceRoot, { recursive: true });
     await fs.symlink(liveInstancesDir, path.join(worktreesDir, "instances"), "dir");
@@ -313,8 +313,8 @@ describe("worktree instance cleanup", () => {
     await expect(fs.stat(liveInstanceRoot)).resolves.toBeDefined();
   });
   it("refuses an instance pointer that belongs to a sibling worktree", async () => {
-    const worktreesDir = await makeTempRoot("paperclip-managed-worktrees-");
-    const workspacePath = await makeTempRoot("paperclip-cleanup-workspace-");
+    const worktreesDir = await makeTempRoot("wardmote-managed-worktrees-");
+    const workspacePath = await makeTempRoot("wardmote-cleanup-workspace-");
     const siblingRoot = path.join(worktreesDir, "instances", "sibling-worktree");
     await fs.mkdir(siblingRoot, { recursive: true });
     await fs.writeFile(path.join(siblingRoot, "marker"), "keep me", "utf8");
@@ -341,7 +341,7 @@ describe("worktree instance cleanup", () => {
   });
 
   it("treats an ESRCH signal race as an already-stopped PostgreSQL process", async () => {
-    const instanceRoot = await makeTempRoot("paperclip-postgres-exit-race-");
+    const instanceRoot = await makeTempRoot("wardmote-postgres-exit-race-");
     const dataDir = path.join(instanceRoot, "db");
     await fs.mkdir(dataDir, { recursive: true });
     await fs.writeFile(path.join(dataDir, "postmaster.pid"), `4242\n${dataDir}\n`, "utf8");

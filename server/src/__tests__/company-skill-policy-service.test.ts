@@ -19,7 +19,7 @@ describeEmbeddedPostgres("companySkillPolicyService", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-skill-policy-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-skill-policy-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

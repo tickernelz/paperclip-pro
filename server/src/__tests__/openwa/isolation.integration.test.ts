@@ -80,7 +80,7 @@ describe("OpenWA company isolation and invite-link joins (embedded Postgres + fa
   const endpointIds: string[] = [];
 
   beforeAll(async () => {
-    database = await startEmbeddedPostgresTestDatabase("paperclip-openwa-isolation-");
+    database = await startEmbeddedPostgresTestDatabase("wardmote-openwa-isolation-");
     db = createDb(database.connectionString);
     root = await mkdtemp(path.join(tmpdir(), "openwa-isolation-"));
     process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE = path.join(root, "master.key");

@@ -54,7 +54,7 @@ describeEmbeddedPostgres("steering acknowledgements survive run finalization", (
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-steer-ack-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-steer-ack-");
     db = createDb(tempDb.connectionString);
   }, 30_000);
 

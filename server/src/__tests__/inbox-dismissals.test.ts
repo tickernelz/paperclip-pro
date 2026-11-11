@@ -39,7 +39,7 @@ describeEmbeddedPostgres("inbox dismissals", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-inbox-dismissals-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-inbox-dismissals-");
     db = createDb(tempDb.connectionString);
     dismissalsSvc = inboxDismissalService(db);
     badgesSvc = sidebarBadgeService(db);

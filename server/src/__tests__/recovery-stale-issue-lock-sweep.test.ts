@@ -47,7 +47,7 @@ describeEmbeddedPostgres("recovery sweepStaleIssueLocks", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-stale-lock-sweep-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-stale-lock-sweep-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 
@@ -1111,7 +1111,7 @@ describeEmbeddedPostgres("recovery sweepStaleIssueLocks", () => {
         requestedByActorType: "user", requestedByActorId: "board",
         payload: {
           issueId, commentId: deferredCommentId, mutation: "comment",
-          _paperclipWakeContext: {
+          _wardmoteWakeContext: {
             issueId, wakeReason: "issue_commented", wakeCommentId: deferredCommentId,
             wakeCommentIds: [deferredCommentId],
           },

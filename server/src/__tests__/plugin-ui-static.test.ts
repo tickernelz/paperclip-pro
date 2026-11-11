@@ -25,7 +25,7 @@ let originalNodeEnv: string | undefined;
 function createPluginPackage(source = "export default {};\n") {
   const packageRoot = path.join(
     tmpdir(),
-    `paperclip-plugin-ui-static-${randomUUID()}`,
+    `wardmote-plugin-ui-static-${randomUUID()}`,
   );
   const uiDir = path.join(packageRoot, "dist", "ui");
   mkdirSync(uiDir, { recursive: true });
@@ -38,7 +38,7 @@ function readyPlugin(packageRoot: string) {
   mockRegistry.getById.mockResolvedValue({
     id: pluginId,
     pluginKey: "wardmote.example",
-    packageName: "paperclip-plugin-example",
+    packageName: "wardmote-plugin-example",
     packagePath: packageRoot,
     version: "1.0.0",
     status: "ready",
@@ -168,7 +168,7 @@ describe("plugin UI static route", () => {
     mockRegistry.getByKey.mockResolvedValue({
       id: pluginId,
       pluginKey: "wardmote.example",
-      packageName: "paperclip-plugin-example",
+      packageName: "wardmote-plugin-example",
       packagePath: packageRoot,
       version: "1.0.0",
       status: "ready",

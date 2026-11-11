@@ -49,7 +49,7 @@ describeEmbeddedPostgres("project list archived route defaults", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-projects-list-archived-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-projects-list-archived-");
     db = createDb(tempDb.connectionString);
   }, 120_000);
 
@@ -116,7 +116,7 @@ describeEmbeddedPostgres("private project route visibility", { concurrent: false
   const previousPrivacyMode = process.env.WARDMOTE_ISSUE_PRIVACY_MODE;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-private-project-routes-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-private-project-routes-");
     db = createDb(tempDb.connectionString);
     process.env.WARDMOTE_ISSUE_PRIVACY_MODE = "enforce";
   }, 20_000);

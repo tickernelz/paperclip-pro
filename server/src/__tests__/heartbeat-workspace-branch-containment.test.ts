@@ -139,7 +139,7 @@ async function createGitRepo() {
   // runtime persists resolved worktree paths, so unresolved fixtures never match.
   const repoRoot = await realpath(await mkdtemp(path.join(os.tmpdir(), "wardmote-branch-containment-repo-")));
   await runGit(repoRoot, ["init"]);
-  await runGit(repoRoot, ["config", "user.email", "paperclip-test@example.com"]);
+  await runGit(repoRoot, ["config", "user.email", "wardmote-test@example.com"]);
   await runGit(repoRoot, ["config", "user.name", "Wardmote Test"]);
   await writeFile(path.join(repoRoot, "README.md"), "branch containment\n", "utf8");
   await runGit(repoRoot, ["add", "README.md"]);
@@ -877,7 +877,7 @@ describeEmbeddedPostgres("heartbeat workspace branch containment", () => {
   beforeAll(async () => {
     if (externalTestDatabaseUrl) db = createDb(externalTestDatabaseUrl);
     else {
-      tempDb = await startEmbeddedPostgresTestDatabase("paperclip-branch-containment-");
+      tempDb = await startEmbeddedPostgresTestDatabase("wardmote-branch-containment-");
       db = createDb(tempDb.connectionString);
     }
   }, 20_000);

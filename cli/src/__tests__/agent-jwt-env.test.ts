@@ -95,7 +95,7 @@ describe("agent jwt env helpers", () => {
     const envPath = resolveAgentJwtEnvFile(configPath);
     const original = [
       "# operator comment",
-      "DATABASE_URL='postgres://operator:encoded@localhost/paperclip'",
+      "DATABASE_URL='postgres://operator:encoded@localhost/wardmote'",
       "",
       "export WARDMOTE_HOME = '/old path'  # managed path",
       "WARDMOTE_DUPLICATE=stale",
@@ -110,7 +110,7 @@ describe("agent jwt env helpers", () => {
         WARDMOTE_HOME: "/new path",
         WARDMOTE_DUPLICATE: "current",
         WARDMOTE_WORKTREE_COLOR: "#439edb",
-        DATABASE_URL: "postgres://paperclip-must-not-overwrite",
+        DATABASE_URL: "postgres://wardmote-must-not-overwrite",
       },
       envPath,
     );
@@ -118,7 +118,7 @@ describe("agent jwt env helpers", () => {
     const updated = fs.readFileSync(envPath, "utf8");
     expect(updated).toBe([
       "# operator comment",
-      "DATABASE_URL='postgres://operator:encoded@localhost/paperclip'",
+      "DATABASE_URL='postgres://operator:encoded@localhost/wardmote'",
       "",
       'export WARDMOTE_HOME = "/new path"  # managed path',
       "WARDMOTE_DUPLICATE=current",

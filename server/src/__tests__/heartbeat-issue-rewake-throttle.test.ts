@@ -64,7 +64,7 @@ describeEmbeddedPostgres("heartbeat issue rewake throttle", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-heartbeat-issue-rewake-throttle-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-heartbeat-issue-rewake-throttle-");
     db = createDb(tempDb.connectionString);
     heartbeat = heartbeatService(db);
   }, 20_000);

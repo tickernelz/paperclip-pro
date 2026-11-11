@@ -2731,7 +2731,7 @@ describe("sandbox adapter execution targets", () => {
     const tail = createSandboxRunLogTailFactory({
       runner,
       remoteCwd: "/workspace",
-      logsDir: "/workspace/.wardmote-runtime/codex/paperclip-bridge/queue/logs",
+      logsDir: "/workspace/.wardmote-runtime/codex/wardmote-bridge/queue/logs",
       pollIntervalMs: 1,
       maxChunkBytesPerTick: 4,
       tickTimeoutMs: 50,
@@ -2785,7 +2785,7 @@ describe("sandbox adapter execution targets", () => {
     const tail = createSandboxRunLogTailFactory({
       runner,
       remoteCwd: "/workspace",
-      logsDir: "/workspace/.wardmote-runtime/codex/paperclip-bridge/queue/logs",
+      logsDir: "/workspace/.wardmote-runtime/codex/wardmote-bridge/queue/logs",
       pollIntervalMs: 1,
       maxChunkBytesPerTick: 7,
       tickTimeoutMs: 50,
@@ -2819,7 +2819,7 @@ describe("sandbox adapter execution targets", () => {
     const tail = createSandboxRunLogTailFactory({
       runner,
       remoteCwd: "/workspace",
-      logsDir: "/workspace/.wardmote-runtime/codex/paperclip-bridge/queue/logs",
+      logsDir: "/workspace/.wardmote-runtime/codex/wardmote-bridge/queue/logs",
       pollIntervalMs: 1,
       tickTimeoutMs: 50,
       maxConsecutiveFailures: 1,
@@ -3657,7 +3657,7 @@ describe("sandbox adapter execution targets", () => {
   // Build a minimal multipart/form-data request body with one binary file
   // part, plus the matching `content-type` header value.
   function buildMultipartAttachmentUpload(fileBytes: Buffer): { body: Buffer; contentType: string } {
-    const boundary = "paperclip-test-boundary";
+    const boundary = "wardmote-test-boundary";
     const head = Buffer.from(
       `--${boundary}\r\n` +
         `Content-Disposition: form-data; name="file"; filename="upload.bin"\r\n` +

@@ -41,7 +41,7 @@ describeEmbeddedPostgres("managed runtime loopback auth cookies", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-managed-loopback-auth-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-managed-loopback-auth-");
   }, 20_000);
 
   afterAll(async () => {

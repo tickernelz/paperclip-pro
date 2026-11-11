@@ -33,7 +33,7 @@ const support = await getEmbeddedPostgresTestSupport();
   let db: Db;
   let companyId: string;
   const workers: ReturnType<typeof configureAgentLifecycle>[] = [];
-  beforeAll(async () => { database = await startEmbeddedPostgresTestDatabase("paperclip-agent-lifecycle-"); db = createDb(database.connectionString); }, 90_000);
+  beforeAll(async () => { database = await startEmbeddedPostgresTestDatabase("wardmote-agent-lifecycle-"); db = createDb(database.connectionString); }, 90_000);
   afterAll(async () => { for (const worker of workers) await worker.stop(); await database?.cleanup(); });
   beforeEach(async () => {
     for (const work of workers) await work.stop();

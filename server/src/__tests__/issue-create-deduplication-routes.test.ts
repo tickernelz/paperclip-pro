@@ -40,7 +40,7 @@ describeEmbeddedPostgres("issue create deduplication routes", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-issue-create-deduplication-routes-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-issue-create-deduplication-routes-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

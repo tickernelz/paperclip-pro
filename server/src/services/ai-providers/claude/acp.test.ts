@@ -269,7 +269,7 @@ function buildContext(root: string, overrides: Partial<AdapterExecutionContext> 
 
 describe("claude_local ACP lane", () => {
   it("uses the same default model in ACP startup and session identity", async () => {
-    const root = await makeTempRoot("paperclip-claude-acp-default-");
+    const root = await makeTempRoot("wardmote-claude-acp-default-");
     const meta: AdapterInvocationMeta[] = [];
     const execute = createClaudeAcpExecutor({
       createRuntime: (options: FakeRuntimeOptions) => new FakeRuntime(options) as never,
@@ -319,7 +319,7 @@ describe("claude_local ACP lane", () => {
   });
 
   it("keeps ACP selected and reports unavailable prerequisites for default and explicit engines", async () => {
-    const root = await makeTempRoot("paperclip-claude-acp-default-");
+    const root = await makeTempRoot("wardmote-claude-acp-default-");
     const commandPath = path.join(root, "bin", "claude-agent-acp");
     await fs.mkdir(path.dirname(commandPath), { recursive: true });
     await fs.writeFile(commandPath, "#!/usr/bin/env sh\n", "utf8");
@@ -489,7 +489,7 @@ describe("claude_local ACP lane", () => {
   });
 
   it("reports ACP prerequisites for the ACP lane", async () => {
-    const root = await makeTempRoot("paperclip-claude-acp-env-");
+    const root = await makeTempRoot("wardmote-claude-acp-env-");
     const commandPath = path.join(root, "bin", "claude-agent-acp");
     await fs.mkdir(path.dirname(commandPath), { recursive: true });
     await fs.writeFile(commandPath, "#!/usr/bin/env sh\n", "utf8");
@@ -539,7 +539,7 @@ describe("claude_local ACP lane", () => {
   });
 
   it("executes through ACPX with Claude model env, settings.local.json, and ephemeral skills", async () => {
-    const root = await makeTempRoot("paperclip-claude-acp-exec-");
+    const root = await makeTempRoot("wardmote-claude-acp-exec-");
     const skill = await createRuntimeSkill(root);
     const runtimes: FakeRuntime[] = [];
     const meta: AdapterInvocationMeta[] = [];
@@ -591,7 +591,7 @@ describe("claude_local ACP lane", () => {
 
   it("stages the skill bundle as a no-follow-symlinks asset for a remote ACP run, and points the prompt at the in-sandbox skill root", async () => {
     vi.mocked(prepareAdapterExecutionTargetRuntime).mockClear();
-    const root = await makeTempRoot("paperclip-claude-acp-skills-remote-");
+    const root = await makeTempRoot("wardmote-claude-acp-skills-remote-");
     const skill = await createRuntimeSkill(root);
     const localCwd = path.join(root, "worktree");
     const remoteCwd = path.join(root, "remote-workspace");
@@ -660,7 +660,7 @@ describe("claude_local ACP lane", () => {
 
   it("stages no skills asset for a remote ACP run with no selected skill", async () => {
     vi.mocked(prepareAdapterExecutionTargetRuntime).mockClear();
-    const root = await makeTempRoot("paperclip-claude-acp-skills-remote-empty-");
+    const root = await makeTempRoot("wardmote-claude-acp-skills-remote-empty-");
     // An available-but-undesired skill, so the run resolves a real (empty)
     // selection instead of falling back to the package's own default skill
     // set (that fallback only fires when `wardmoteRuntimeSkills` is absent).
@@ -712,7 +712,7 @@ describe("claude_local ACP lane", () => {
   });
 
   it("stages the skill bundle inside the sandbox but never syncs it back into the host workspace", async () => {
-    const root = await makeTempRoot("paperclip-claude-acp-skills-no-syncback-");
+    const root = await makeTempRoot("wardmote-claude-acp-skills-no-syncback-");
     const skill = await createRuntimeSkill(root);
     const localCwd = path.join(root, "worktree");
     const remoteCwd = path.join(root, "remote-workspace");
@@ -772,7 +772,7 @@ describe("claude_local ACP lane", () => {
   });
 
   it("passes the exact configured Fable 5.1 ID through ANTHROPIC_MODEL on the ACP lane", async () => {
-    const root = await makeTempRoot("paperclip-claude-acp-fable51-");
+    const root = await makeTempRoot("wardmote-claude-acp-fable51-");
     const meta: AdapterInvocationMeta[] = [];
     const execute = createClaudeAcpExecutor({
       createRuntime: (options: FakeRuntimeOptions) => new FakeRuntime(options) as never,
@@ -796,7 +796,7 @@ describe("claude_local ACP lane", () => {
   });
 
   it("creates the ACP session on the in-sandbox workspace cwd for runner-backed remote runs", async () => {
-    const root = await makeTempRoot("paperclip-claude-acp-remote-cwd-");
+    const root = await makeTempRoot("wardmote-claude-acp-remote-cwd-");
     const localCwd = path.join(root, "worktree");
     const remoteCwd = path.join(root, "remote-workspace");
     await fs.mkdir(localCwd, { recursive: true });
@@ -846,7 +846,7 @@ describe("claude_local ACP lane", () => {
   });
 
   it("seeds the managed Claude config into the sandbox and repoints CLAUDE_CONFIG_DIR to the in-sandbox path", async () => {
-    const root = await makeTempRoot("paperclip-claude-acp-home-seed-");
+    const root = await makeTempRoot("wardmote-claude-acp-home-seed-");
     const localCwd = path.join(root, "worktree");
     const remoteCwd = path.join(root, "remote-workspace");
     const sharedClaudeConfig = path.join(root, "shared-claude-config");
@@ -912,7 +912,7 @@ describe("claude_local ACP lane", () => {
   });
 
   it("test_claude_acp_seam_registers_workspace_sync_back", async () => {
-    const root = await makeTempRoot("paperclip-claude-acp-syncback-");
+    const root = await makeTempRoot("wardmote-claude-acp-syncback-");
     const localCwd = path.join(root, "worktree");
     const remoteCwd = path.join(root, "remote-workspace");
     const sharedClaudeConfig = path.join(root, "shared-claude-config");
@@ -990,7 +990,7 @@ describe("claude_local ACP lane", () => {
     // the caught error's own message there — that message can carry the host
     // workspace path. Force a real EACCES by making the workspace read-only,
     // and name it with a sentinel marker so any leak is easy to spot.
-    const root = await makeTempRoot("paperclip-claude-acp-restore-failure-");
+    const root = await makeTempRoot("wardmote-claude-acp-restore-failure-");
     const localCwd = path.join(root, "SENTINEL-HOST-PATH-marker", "worktree");
     const remoteCwd = path.join(root, "remote-workspace");
     await fs.mkdir(localCwd, { recursive: true });
@@ -1076,7 +1076,7 @@ describe("claude_local ACP lane", () => {
   });
 
   it("remaps a workspace-relative explicit CLAUDE_CONFIG_DIR onto the in-sandbox workspace path", async () => {
-    const root = await makeTempRoot("paperclip-claude-acp-explicit-inworkspace-");
+    const root = await makeTempRoot("wardmote-claude-acp-explicit-inworkspace-");
     const localCwd = path.join(root, "worktree");
     const remoteCwd = path.join(root, "remote-workspace");
     await fs.mkdir(localCwd, { recursive: true });
@@ -1142,7 +1142,7 @@ describe("claude_local ACP lane", () => {
   });
 
   it("ignores a host-only explicit CLAUDE_CONFIG_DIR that cannot reach the sandbox and seeds the managed config instead", async () => {
-    const root = await makeTempRoot("paperclip-claude-acp-explicit-hostonly-");
+    const root = await makeTempRoot("wardmote-claude-acp-explicit-hostonly-");
     const localCwd = path.join(root, "worktree");
     const remoteCwd = path.join(root, "remote-workspace");
     const sharedClaudeConfig = path.join(root, "shared-claude-config");
@@ -1236,7 +1236,7 @@ describe("claude_local ACP lane", () => {
   });
 
   it("sends assignment-owned markdown and ordered distinct wake comments at the ACP boundary", async () => {
-    const root = await makeTempRoot("paperclip-claude-acp-context-owner-");
+    const root = await makeTempRoot("wardmote-claude-acp-context-owner-");
     const runtimes: FakeRuntime[] = [];
     const execute = createClaudeAcpExecutor({
       createRuntime: (options: FakeRuntimeOptions) => {
@@ -1305,7 +1305,7 @@ describe("claude_local ACP lane", () => {
   });
 
   it("delivers owned assignment and current events through fresh and healthy resumed ACP turns", async () => {
-    const root = await makeTempRoot("paperclip-claude-acp-owned-context-");
+    const root = await makeTempRoot("wardmote-claude-acp-owned-context-");
     const runtimes: FakeRuntime[] = [];
     const fixture = createPromptContextFixture();
     const context = {
@@ -1360,7 +1360,7 @@ describe("claude_local ACP lane", () => {
   });
 
   it("restores the full assignment and current event history when a resume session is missing", async () => {
-    const root = await makeTempRoot("paperclip-claude-acp-missing-resume-context-");
+    const root = await makeTempRoot("wardmote-claude-acp-missing-resume-context-");
     const runtimes: MissingResumeRuntime[] = [];
     const assignment = "## Owned assignment\n\nRebuild the launch card. Rebuild the launch card.";
     const compact = "## Compact assignment";
@@ -1405,7 +1405,7 @@ describe("claude_local ACP lane", () => {
   });
 
   it("delivers the issue description exactly once per prompt and compacts non-assignment resume deltas", async () => {
-    const root = await makeTempRoot("paperclip-claude-acp-brief-");
+    const root = await makeTempRoot("wardmote-claude-acp-brief-");
     const runtimes: FakeRuntime[] = [];
     const execute = createClaudeAcpExecutor({
       createRuntime: (options: FakeRuntimeOptions) => {
@@ -1480,7 +1480,7 @@ describe("claude_local ACP lane", () => {
   });
 
   it("resumes compatible ACP sessions on later Claude ACP runs", async () => {
-    const root = await makeTempRoot("paperclip-claude-acp-resume-");
+    const root = await makeTempRoot("wardmote-claude-acp-resume-");
     const runtimes: FakeRuntime[] = [];
     const execute = createClaudeAcpExecutor({
       createRuntime: (options: FakeRuntimeOptions) => {

@@ -70,7 +70,7 @@ describe("openwa_endpoint_config (embedded Postgres + fake gateway)", () => {
   const endpointIds: string[] = [];
 
   beforeAll(async () => {
-    database = await startEmbeddedPostgresTestDatabase("paperclip-openwa-config-tool-");
+    database = await startEmbeddedPostgresTestDatabase("wardmote-openwa-config-tool-");
     db = createDb(database.connectionString);
     root = await mkdtemp(path.join(tmpdir(), "openwa-config-tool-"));
     process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE = path.join(root, "master.key");

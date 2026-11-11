@@ -98,7 +98,7 @@ describeEmbeddedPostgres("plugin-managed agents", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-plugin-managed-agents-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-plugin-managed-agents-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

@@ -36,7 +36,7 @@ describeEmbeddedPostgres("pending approval agent config integrity", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-pending-agent-config-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-pending-agent-config-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

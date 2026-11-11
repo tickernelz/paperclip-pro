@@ -25,7 +25,7 @@ describeEmbeddedPostgres("cross-issue influence limit PostgreSQL serialization",
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-cross-issue-cap-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-cross-issue-cap-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

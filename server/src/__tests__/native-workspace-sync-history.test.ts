@@ -56,7 +56,7 @@ describe("native warm workspace Git history", () => {
         await mkdir(dir, { recursive: true });
         await git(dir, "init", "-b", "work");
         await git(dir, "config", "user.name", "Test");
-        await git(dir, "config", "user.email", "test@paperclip.dev");
+        await git(dir, "config", "user.email", "test@wardmote.dev");
         await writeFile(path.join(dir, "file.txt"), "unchanged contents\n");
         await git(dir, "add", ".");
         await git(dir, "commit", "-m", "base");
@@ -102,7 +102,7 @@ describe("native warm workspace Git history", () => {
       } else if (change === "host_branch") {
         await git(host, "checkout", "-b", "other");
       } else if (change === "remote_commit") {
-        await git(remote, "-c", "user.name=Test", "-c", "user.email=test@paperclip.dev", "commit", "--allow-empty", "-m", "remote only");
+        await git(remote, "-c", "user.name=Test", "-c", "user.email=test@wardmote.dev", "commit", "--allow-empty", "-m", "remote only");
       }
       const expectedHead = await git(host, "rev-parse", "HEAD");
       const expectedBranch = await git(host, "symbolic-ref", "--short", "HEAD");

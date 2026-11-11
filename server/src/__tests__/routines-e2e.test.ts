@@ -100,7 +100,7 @@ describeEmbeddedPostgres("routine routes end-to-end", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-routines-e2e-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-routines-e2e-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

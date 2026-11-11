@@ -60,7 +60,7 @@ describeEmbeddedPostgres("recovery loop per-candidate isolation", () => {
   let db: ReturnType<typeof createDb>;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-recovery-loop-isolation-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-recovery-loop-isolation-");
     db = createDb(tempDb.connectionString);
   }, 60_000);
 

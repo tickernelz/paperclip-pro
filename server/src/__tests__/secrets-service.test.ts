@@ -2975,7 +2975,7 @@ describeEmbeddedPostgres("secretService", () => {
     const draftVault = await svc.createProviderConfig(companyId, {
       provider: "gcp_secret_manager",
       displayName: "GCP draft",
-      config: { projectId: "paperclip-prod1" },
+      config: { projectId: "wardmote-prod1" },
     });
 
     expect(draftVault.status).toBe("coming_soon");

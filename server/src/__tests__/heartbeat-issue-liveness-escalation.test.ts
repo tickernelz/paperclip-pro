@@ -93,7 +93,7 @@ describeEmbeddedPostgres("heartbeat resolved dependency wake reconciliation", ()
   let db: ReturnType<typeof createDb>;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-heartbeat-issue-liveness-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-heartbeat-issue-liveness-");
     db = createDb(tempDb.connectionString);
   }, 30_000);
 
@@ -414,7 +414,7 @@ describeEmbeddedPostgres("heartbeat resolved dependency wake reconciliation", ()
             message: "Waiting for execution recovery. Your message is saved.",
             recoveryActionId: action!.id,
           },
-          _paperclipWakeContext: {
+          _wardmoteWakeContext: {
             issueId: fixture.blockedIssueId,
             taskId: fixture.blockedIssueId,
             wakeReason: "issue_commented",

@@ -46,7 +46,7 @@ suite("Discord command ownership store (real PostgreSQL, no network)", () => {
     if (external) db = createDb(external);
     else {
       temporary = await startEmbeddedPostgresTestDatabase(
-        "paperclip-discord-command-store-",
+        "wardmote-discord-command-store-",
       );
       db = createDb(temporary.connectionString);
     }

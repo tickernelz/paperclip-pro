@@ -37,7 +37,7 @@ describePostgres("agent review handoff and reassign guards", () => {
   let issueNumber = 0;
 
   beforeAll(async () => {
-    database = await startEmbeddedPostgresTestDatabase("paperclip-handoff-guard-");
+    database = await startEmbeddedPostgresTestDatabase("wardmote-handoff-guard-");
     db = createDb(database.connectionString);
     await db.insert(companies).values({
       id: companyId,

@@ -4,7 +4,7 @@ import { expect, test, type Page } from "@playwright/test";
 const HARNESS = "/tests/mobile-chat-shell.html";
 const EVIDENCE_DIR =
   process.env.MOBILE_SHELL_EVIDENCE_DIR ??
-  `${process.env.HOME}/Projects/paperclip-pro-migration/evidence/mobile-composer`;
+  `${process.env.HOME}/Projects/wardmote-pro-migration/evidence/mobile-composer`;
 const KEYBOARD_PX = 336;
 
 async function installHeightProbe(page: Page): Promise<void> {

@@ -551,7 +551,7 @@ describe("worktree config repair", () => {
         "# Wardmote environment variables",
         "WARDMOTE_HOME=/old/home/.wardmote-worktrees",
         "WARDMOTE_INSTANCE_ID=pap-9940-what-can-we-learn",
-        "WARDMOTE_CONFIG=/old/home/paperclip/.wardmote/worktrees/PAP-9940-what-can-we-learn/.wardmote/config.json",
+        "WARDMOTE_CONFIG=/old/home/wardmote/.wardmote/worktrees/PAP-9940-what-can-we-learn/.wardmote/config.json",
         "WARDMOTE_CONTEXT=/old/home/.wardmote-worktrees/context.json",
         "WARDMOTE_IN_WORKTREE=true",
         "WARDMOTE_WORKTREE_NAME=PAP-9940-what-can-we-learn",

@@ -200,7 +200,7 @@ mod darwin_executable_role {
     impl OwnedDirectory {
         fn new() -> Self {
             let path = std::env::temp_dir().join(format!(
-                "paperclip-executable-role-{}",
+                "wardmote-executable-role-{}",
                 uuid::Uuid::new_v4().simple()
             ));
             fs::create_dir(&path).unwrap();

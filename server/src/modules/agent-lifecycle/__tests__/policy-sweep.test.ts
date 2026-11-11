@@ -10,7 +10,7 @@ const support = await getEmbeddedPostgresTestSupport();
   let database: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;
   let db: Db;
   beforeAll(async () => {
-    database = await startEmbeddedPostgresTestDatabase("paperclip-lifecycle-policy-");
+    database = await startEmbeddedPostgresTestDatabase("wardmote-lifecycle-policy-");
     db = createDb(database.connectionString);
   }, 90_000);
   afterAll(async () => { await database?.cleanup(); });

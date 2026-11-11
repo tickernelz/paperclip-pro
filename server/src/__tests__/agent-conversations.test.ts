@@ -68,7 +68,7 @@ const support = await getEmbeddedPostgresTestSupport();
     let agentId: string;
     beforeAll(async () => {
       database = await startEmbeddedPostgresTestDatabase(
-        "paperclip-agent-conversations-",
+        "wardmote-agent-conversations-",
       );
       db = createDb(database.connectionString);
       companyId = randomUUID();
@@ -729,7 +729,7 @@ const support = await getEmbeddedPostgresTestSupport();
             source: "on_demand", reason: "issue_execution_deferred", status: "deferred_issue_execution",
             requestedByActorType: "user", requestedByActorId: "local-board",
             payload: { issueId: chat.id, commentId: pending.id,
-              _paperclipWakeContext: { issueId: chat.id, wakeReason: "issue_commented", wakeCommentId: pending.id, wakeCommentIds: [pending.id] } },
+              _wardmoteWakeContext: { issueId: chat.id, wakeReason: "issue_commented", wakeCommentId: pending.id, wakeCommentIds: [pending.id] } },
           }).returning();
           stoppedQueuedWakeId = stoppedQueuedWake.id;
         }

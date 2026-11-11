@@ -272,7 +272,7 @@ describe("native backend factory", () => {
   });
 
   it("defers remote ACPX workspace admission to the runner filesystem", async () => {
-    const remoteWorkspace = "/home/daytona/paperclip-workspace";
+    const remoteWorkspace = "/home/daytona/wardmote-workspace";
     const transport = new FakeCodexTransport();
     const request = transport.request.bind(transport);
     transport.request = async (method, params) => {
@@ -344,7 +344,7 @@ describe("native backend factory", () => {
       createNativeSessionBackend(execution(), {
         workingDirectoryAuthority: "remote_runner",
         environment: {
-          WARDMOTE_WORKSPACE_CWD: "/home/daytona/paperclip-workspace",
+          WARDMOTE_WORKSPACE_CWD: "/home/daytona/wardmote-workspace",
         },
       }),
     ).toThrow("requires a runnerd transport");

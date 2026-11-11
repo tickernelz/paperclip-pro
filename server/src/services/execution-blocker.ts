@@ -83,7 +83,7 @@ export async function getExecutionBlocker(db: Db, companyId: string, issueId: st
     sql`${agentWakeupRequests.payload}->>'issueId' = ${issueId}`,
   ));
   const savedIds = [...new Set(queue.flatMap(entry => {
-    const context = entry.payload?._paperclipWakeContext as Record<string, unknown> | undefined;
+    const context = entry.payload?._wardmoteWakeContext as Record<string, unknown> | undefined;
     return [...queuedCommentIdsFromWakePayload(entry.payload), entry.payload?.commentId, context?.wakeCommentId]
       .filter((id): id is string => z.string().guid().safeParse(id).success);
   }))];

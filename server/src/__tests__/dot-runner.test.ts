@@ -41,7 +41,7 @@ describe("durable Dot Runner integration", () => {
   beforeAll(async () => {
     const runnerRoot = fileURLToPath(new URL("../../../packages/wardmote-runner/", import.meta.url));
     execFileSync("cargo", ["build", "--release", "--locked", "--manifest-path", join(runnerRoot, "runner/Cargo.toml"), "-p", "wardmote-runner-core", "--bin", "wardmote-runnerd"], { cwd: runnerRoot, stdio: "inherit", timeout: 300000 });
-    temporary = await startEmbeddedPostgresTestDatabase("paperclip-dot-runner-");
+    temporary = await startEmbeddedPostgresTestDatabase("wardmote-dot-runner-");
     db = createDb(temporary.connectionString);
     root = await mkdtemp(join(tmpdir(), "wardmote-dot-state-"));
     vi.stubEnv("WARDMOTE_IN_WORKTREE", "false");
@@ -373,7 +373,7 @@ describe("durable Dot Runner integration", () => {
         let wakes = await db.select().from(agentWakeupRequests).where(eq(agentWakeupRequests.agentId, f.agent.id));
         expect(wakes).toHaveLength(scenario === "read before wake admission" ? 2 : 1);
         const pending = wakes.find(wake => wake.status === "deferred_issue_execution")!;
-        expect(pending.payload?._paperclipWakeContext).toMatchObject({ wakeCommentIds:
+        expect(pending.payload?._wardmoteWakeContext).toMatchObject({ wakeCommentIds:
           ["finish before delivery", "failed history"].includes(scenario)
             ? comments.map(comment => comment.id) : [comments[1]!.id] });
         if (scenario === "read before wake admission") expect(wakes.find(wake => wake.payload?.commentId === comments[0]!.id)?.status).toBe("coalesced");

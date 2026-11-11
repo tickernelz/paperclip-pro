@@ -81,7 +81,7 @@ describe.skipIf(!support.supported)("heartbeat run completion boundary", () => {
     // Keep the accounting transaction real without reading provider receipt files.
     vi.spyOn(usageReceipts, "indexPendingUsageReceipts").mockResolvedValue(new Map());
     vi.spyOn(usageReceipts, "recoverPendingRunUsageReceipts").mockResolvedValue([]);
-    database = await startEmbeddedPostgresTestDatabase("paperclip-heartbeat-completion");
+    database = await startEmbeddedPostgresTestDatabase("wardmote-heartbeat-completion");
     db = createDb(database.connectionString);
     await db.execute(sql`set client_min_messages = warning`);
   }, EMBEDDED_POSTGRES_TEST_TIMEOUT_MS);

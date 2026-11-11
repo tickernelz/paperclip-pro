@@ -77,7 +77,7 @@ describe.skipIf(!postgres.supported)("heartbeat scheduling database boundary", (
   let database: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;
   let db: Db;
   beforeAll(async () => {
-    database = await startEmbeddedPostgresTestDatabase("paperclip-heartbeat-scheduling-module");
+    database = await startEmbeddedPostgresTestDatabase("wardmote-heartbeat-scheduling-module");
     db = createDb(database.connectionString);
   }, EMBEDDED_POSTGRES_TEST_TIMEOUT_MS);
   afterAll(async () => {

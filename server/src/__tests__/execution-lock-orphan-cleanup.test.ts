@@ -32,7 +32,7 @@ describeEmbeddedPostgres("execution lock orphan cleanup", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-exec-lock-orphan-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-exec-lock-orphan-");
     db = createDb(tempDb.connectionString);
   }, 30_000);
 

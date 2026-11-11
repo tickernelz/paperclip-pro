@@ -151,7 +151,7 @@ it("normalizes only the exact Linux comm truncation, never a nearby role name", 
   expect(diagnosticProcessKind("/tmp/wardmote-runner", "linux")).toBe("wardmote-runnerd");
   expect(diagnosticProcessKind("/tmp/wardmote-runnerd", "darwin")).toBe("wardmote-runnerd");
   expect(diagnosticProcessKind("wardmote-runner", "darwin")).toBe("other");
-  for (const name of ["wardmote-runne", "wardmote-runnerX", "paperclip-runne", "wardmote-runnerd-other"]) {
+  for (const name of ["wardmote-runne", "wardmote-runnerX", "wardmote-runne", "wardmote-runnerd-other"]) {
     expect(diagnosticProcessKind(name, "linux")).toBe("other");
   }
 });

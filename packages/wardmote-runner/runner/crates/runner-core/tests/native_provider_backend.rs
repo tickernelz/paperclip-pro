@@ -25,7 +25,7 @@ fn temporary_directory(label: &str) -> PathBuf {
         .unwrap()
         .as_nanos();
     let directory = std::env::temp_dir().join(format!(
-        "paperclip-native-provider-{label}-{}-{nonce}",
+        "wardmote-native-provider-{label}-{}-{nonce}",
         std::process::id()
     ));
     fs::create_dir_all(&directory).unwrap();

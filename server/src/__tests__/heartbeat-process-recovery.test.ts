@@ -503,7 +503,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
       db = createDb(externalTestDatabaseUrl);
     } else {
       tempDb = await startEmbeddedPostgresTestDatabase(
-        "paperclip-heartbeat-recovery-",
+        "wardmote-heartbeat-recovery-",
       );
       db = createDb(tempDb.connectionString);
     }
@@ -7742,7 +7742,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     const [wake] = await db.insert(agentWakeupRequests).values({
       companyId, agentId, source: "automation", reason: "issue_commented", status: "deferred_issue_execution",
       requestedByActorType: "user", requestedByActorId: "responsible-user",
-      payload: { issueId, commentId: comment!.id, _paperclipWakeContext: { issueId, wakeReason: "issue_commented", wakeCommentIds: [comment!.id] } },
+      payload: { issueId, commentId: comment!.id, _wardmoteWakeContext: { issueId, wakeReason: "issue_commented", wakeCommentIds: [comment!.id] } },
     }).returning();
     await heartbeat.cancelRun(runId, "Interrupt queued input", {
       errorCode: "operator_interrupted", suppressImmediateRecovery: true,
@@ -7767,7 +7767,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     const [wake] = await db.insert(agentWakeupRequests).values({
       companyId, agentId, source: "automation", reason: "issue_commented", status: "deferred_issue_execution",
       requestedByActorType: "user", requestedByActorId: "responsible-user",
-      payload: { issueId, commentId: comment!.id, _paperclipWakeContext: { issueId, wakeReason: "issue_commented", wakeCommentIds: [comment!.id] } },
+      payload: { issueId, commentId: comment!.id, _wardmoteWakeContext: { issueId, wakeReason: "issue_commented", wakeCommentIds: [comment!.id] } },
     }).returning();
     await db.update(heartbeatRuns).set({ resultJson: {
       queuedCommentInterruptQueueId: wake!.id,
@@ -7813,7 +7813,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
         companyId, agentId, source: "automation", reason: "issue_commented",
         status: state === "discarded" ? "cancelled" : "deferred_issue_execution",
         requestedByActorType: "user", requestedByActorId: "responsible-user",
-        payload: { issueId, commentId: commentIds[0], _paperclipWakeContext: {
+        payload: { issueId, commentId: commentIds[0], _wardmoteWakeContext: {
           issueId, wakeReason: "issue_commented", wakeCommentIds: commentIds,
         } },
       }).returning();
@@ -7825,7 +7825,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
         companyId, agentId, source: "automation", reason: "issue_commented",
         status: "deferred_issue_execution", requestedAt: new Date(0),
         requestedByActorType: "user", requestedByActorId: "other-user",
-        payload: { issueId, commentId: otherComment!.id, _paperclipWakeContext: {
+        payload: { issueId, commentId: otherComment!.id, _wardmoteWakeContext: {
           issueId, wakeReason: "issue_commented", wakeCommentIds: [otherComment!.id],
         } },
       });
@@ -7858,7 +7858,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     const heartbeat = heartbeatService(db);
     const [pending] = await db.insert(issueComments).values({ companyId, issueId, authorUserId: "responsible-user", body: "List recent Drive files" }).returning();
     const [deferred] = await db.insert(agentWakeupRequests).values({ companyId, agentId, source: "automation", reason: "issue_execution_deferred", status: "deferred_issue_execution",
-      payload: { issueId, commentId: pending!.id, _paperclipWakeContext: { issueId, wakeReason: "issue_commented", wakeCommentIds: [pending!.id] } },
+      payload: { issueId, commentId: pending!.id, _wardmoteWakeContext: { issueId, wakeReason: "issue_commented", wakeCommentIds: [pending!.id] } },
     }).returning();
     await heartbeat.cancelRun(runId, "Operator Stop", { resultJson: {
       executionCancellation: { state: "acknowledged" },
@@ -7924,7 +7924,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
         issueId,
         commentId: pending!.id,
         ...(dedicatedDonor ? { mutation: "interaction", ...interaction } : {}),
-        _paperclipWakeContext: {
+        _wardmoteWakeContext: {
           issueId,
           wakeReason: "issue_commented",
           wakeCommentIds: [pending!.id],
@@ -8020,7 +8020,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     },
   );
 
-  it.each([{}, { command: "/nonexistent-paperclip-bootstrap-command" }])("releases holds for real process bootstrap failures: %j", async (config) => {
+  it.each([{}, { command: "/nonexistent-wardmote-bootstrap-command" }])("releases holds for real process bootstrap failures: %j", async (config) => {
     const { execute } = await import("../adapters/process/execute.js");
     mockAdapterExecute.mockImplementationOnce(execute);
     const { runId, agentId } = await seedRunFixture({ runtimeMode: "legacy", agentStatus: "idle", runStatus: "queued", includeIssue: false });
@@ -12697,7 +12697,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
         issueId: source.issueId,
         ...(extra?.comments
           ? {
-              _paperclipWakeContext: {
+              _wardmoteWakeContext: {
                 wakeCommentIds: [source.sourceCommentId],
               },
             }

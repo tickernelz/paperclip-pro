@@ -11,7 +11,7 @@ const featuresOn = (experimental: Record<string, unknown>) =>
   featureKeysWithDestination("features").filter((key) => experimental[key] === true).sort();
 
 beforeAll(async () => {
-  database = await startEmbeddedPostgresTestDatabase("paperclip-new-install-db-");
+  database = await startEmbeddedPostgresTestDatabase("wardmote-new-install-db-");
   db = createDb(database.connectionString);
 }, 90_000);
 

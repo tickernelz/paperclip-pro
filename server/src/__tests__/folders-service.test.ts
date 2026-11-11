@@ -25,7 +25,7 @@ describeEmbeddedPostgres("folder service", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-folders-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-folders-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

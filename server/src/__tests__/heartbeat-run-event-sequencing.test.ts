@@ -16,7 +16,7 @@ import { startEmbeddedPostgresTestDatabase } from "./helpers/embedded-postgres.j
 
 describe("P6-11..13 / P6-17 canonical event allocator", () => {
   it.each([false, true])("deduplicates concurrent retry exhaustion (historical receipt: %s)", async (historical) => {
-    const temporary = await startEmbeddedPostgresTestDatabase("paperclip-exhaustion-events-");
+    const temporary = await startEmbeddedPostgresTestDatabase("wardmote-exhaustion-events-");
     const db = createDb(temporary.connectionString);
     const otherDb = createDb(temporary.connectionString);
     const companyId = "20000000-0000-4000-8000-000000000001";
@@ -77,7 +77,7 @@ describe("P6-11..13 / P6-17 canonical event allocator", () => {
   }, 60_000);
 
   it("serializes concurrent writers and rejects conflicting replay without cursor drift", async () => {
-    const temporary = await startEmbeddedPostgresTestDatabase("paperclip-native-events-");
+    const temporary = await startEmbeddedPostgresTestDatabase("wardmote-native-events-");
     const db = createDb(temporary.connectionString);
     const companyId = "20000000-0000-4000-8000-000000000001";
     const agentId = "20000000-0000-4000-8000-000000000002";

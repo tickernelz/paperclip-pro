@@ -68248,7 +68248,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
                 .from(agentWakeupRequests)
                 .where(eq(agentWakeupRequests.id, ownerId))
             : [];
-          const existingContext = owner?.payload?._paperclipWakeContext as
+          const existingContext = owner?.payload?._wardmoteWakeContext as
             Record<string, unknown> | undefined;
           const commentIds = [
             ...(Array.isArray(existingContext?.wakeCommentIds)
@@ -68258,7 +68258,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
           ];
           const payload = {
             ...opts.payload,
-            _paperclipWakeContext: {
+            _wardmoteWakeContext: {
               ...opts.contextSnapshot,
               wakeCommentIds: commentIds,
             },
@@ -68324,7 +68324,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         .from(agentWakeupRequests)
         .where(eq(agentWakeupRequests.id, ownerId!));
       const runId = randomUUID();
-      const contextSnapshot = owner.payload!._paperclipWakeContext as Record<
+      const contextSnapshot = owner.payload!._wardmoteWakeContext as Record<
         string,
         unknown
       >;
@@ -68834,7 +68834,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         .from(agentWakeupRequests)
         .where(eq(agentWakeupRequests.id, context.action.id));
       const remainingContext = {
-        ...(owner.payload!._paperclipWakeContext as Record<string, unknown>),
+        ...(owner.payload!._wardmoteWakeContext as Record<string, unknown>),
         wakeCommentId: second.payload.commentId,
         commentId: second.payload.commentId,
         wakeCommentIds: [second.payload.commentId],
@@ -68853,7 +68853,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
               ...owner.payload,
               wakeCommentId: second.payload.commentId,
               commentId: second.payload.commentId,
-              _paperclipWakeContext: remainingContext,
+              _wardmoteWakeContext: remainingContext,
             },
           })
           .where(eq(agentWakeupRequests.id, owner.id));

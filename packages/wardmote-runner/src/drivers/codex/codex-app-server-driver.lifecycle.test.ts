@@ -488,7 +488,7 @@ describe("Codex app-server Codex driver", () => {
     const baseInstructions = [
       "You are running as a Wardmote agent.",
       "Follow the attached AGENTS.md instructions.",
-      "Read-only instruction sibling root: /paperclip/context/instructions",
+      "Read-only instruction sibling root: /wardmote/context/instructions",
     ].join("\n\n");
     const driver = makeDriver([transport], {
       baseInstructions,

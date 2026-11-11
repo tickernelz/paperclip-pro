@@ -29,7 +29,7 @@ const support = await getEmbeddedPostgresTestSupport();
   let db: ReturnType<typeof createDb>;
 
   beforeAll(async () => {
-    database = await startEmbeddedPostgresTestDatabase("paperclip-queued-origin-");
+    database = await startEmbeddedPostgresTestDatabase("wardmote-queued-origin-");
     db = createDb(database.connectionString);
   }, 60_000);
 

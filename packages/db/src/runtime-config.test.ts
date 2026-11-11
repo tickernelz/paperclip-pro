@@ -52,14 +52,14 @@ describe("resolveDatabaseTarget", () => {
     });
     writeText(
       path.join(projectDir, ".wardmote", ".env"),
-      'DATABASE_URL="postgres://file-user:file-pass@db.example.com:6543/paperclip"\n',
+      'DATABASE_URL="postgres://file-user:file-pass@db.example.com:6543/wardmote"\n',
     );
 
     const target = resolveDatabaseTarget();
 
     expect(target).toMatchObject({
       mode: "postgres",
-      connectionString: "postgres://file-user:file-pass@db.example.com:6543/paperclip",
+      connectionString: "postgres://file-user:file-pass@db.example.com:6543/wardmote",
       source: "paperclip-env",
     });
   });
@@ -91,7 +91,7 @@ describe("resolveDatabaseTarget", () => {
     writeJson(configPath, {
       database: {
         mode: "embedded-postgres",
-        embeddedPostgresDataDir: "~/paperclip-test-db",
+        embeddedPostgresDataDir: "~/wardmote-test-db",
         embeddedPostgresPort: 55444,
       },
     });
@@ -100,7 +100,7 @@ describe("resolveDatabaseTarget", () => {
 
     expect(target).toMatchObject({
       mode: "embedded-postgres",
-      dataDir: path.resolve(os.homedir(), "paperclip-test-db"),
+      dataDir: path.resolve(os.homedir(), "wardmote-test-db"),
       port: 55444,
       source: "embedded-postgres@55444",
     });

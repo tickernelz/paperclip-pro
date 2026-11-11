@@ -73,7 +73,7 @@ function codexFixture(t) {
   const nested = writePackage(join(bridge, "node_modules/@openai/codex-darwin-arm64"), { name: "@openai/codex", version: "0.160.0-darwin-arm64", os: ["darwin"], cpu: ["arm64"] });
   writePackage(join(graph, "unrelated-linux-x64"), { name: "unrelated-linux-x64", version: "1.0.0" });
   const profiles = [{ agent: "codex", ...profileData.profiles.codex }];
-  const publish = { name: "paperclip-codex-pack-fixture", version: "1.0.0", dependencies: { "@agentclientprotocol/codex-acp": "1.6.2" }, bundleDependencies: ["@agentclientprotocol/codex-acp"] };
+  const publish = { name: "wardmote-codex-pack-fixture", version: "1.0.0", dependencies: { "@agentclientprotocol/codex-acp": "1.6.2" }, bundleDependencies: ["@agentclientprotocol/codex-acp"] };
   return { directory, graph, bridge, runtime, producer, nested, profiles, publish, writePackage };
 }
 const adapterUtilsPackage = JSON.parse(

@@ -429,7 +429,7 @@ export async function runOpenwaIngestBenchmark(input: { argv: string[]; root: st
     testEnvironment: async () => ({ adapterType: BENCH_ADAPTER, status: "pass", checks: [], testedAt: new Date().toISOString() }),
   });
 
-  const database = await startEmbeddedPostgresTestDatabase("paperclip-openwa-bench-");
+  const database = await startEmbeddedPostgresTestDatabase("wardmote-openwa-bench-");
   const db = createDb(database.connectionString);
   instrumentation.attach(db);
   instrumentation.watchStalls();
@@ -443,7 +443,7 @@ export async function runOpenwaIngestBenchmark(input: { argv: string[]; root: st
     const method = url.pathname.split("/").at(-1) ?? "";
     const body = typeof init?.body === "string" ? (JSON.parse(init.body || "{}") as Record<string, unknown>) : {};
     const ok = (result: unknown) => Response.json({ ok: true, result });
-    if (method === "getMe") return ok({ id: TELEGRAM_BOT_ID, is_bot: true, first_name: "Bench", username: "paperclip_bench_bot" });
+    if (method === "getMe") return ok({ id: TELEGRAM_BOT_ID, is_bot: true, first_name: "Bench", username: "wardmote_bench_bot" });
     if (method === "getWebhookInfo") return ok({ url: "" });
     if (method === "setWebhook") {
       telegram.secret = String(body.secret_token ?? "");

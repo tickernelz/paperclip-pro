@@ -834,7 +834,7 @@ describeEmbeddedPostgres(
 
     beforeAll(async () => {
       tempDb = await startEmbeddedPostgresTestDatabase(
-        "paperclip-low-trust-red-team-routes-",
+        "wardmote-low-trust-red-team-routes-",
       );
       db = createDb(tempDb.connectionString);
     }, 20_000);
@@ -968,13 +968,13 @@ describeEmbeddedPostgres(
       expect([403, 404]).toContain((await request(worker).get(`/api/issues/${created.body.id}`)).status);
       const pluginRun = await heartbeatService(db).wakeup(fixture.agents.lowTrust.id, {
         source: "automation", reason: "issue_commented", requestedByActorType: "user", requestedByActorId: "board-user",
-        payload: { issueId: created.body.id, _paperclipWakeContext: { source: "issue.comment" } },
+        payload: { issueId: created.body.id, _wardmoteWakeContext: { source: "issue.comment" } },
         contextSnapshot: { issueId: created.body.id, source: "plugin:example" },
       });
       expect(pluginRun).toBeTruthy();
       const pluginWake = (await db.select().from(agentWakeupRequests).where(eq(agentWakeupRequests.runId, pluginRun!.id)))
         .find(w => w.requestedByActorType === "user")!;
-      expect(pluginWake.payload?._paperclipWakeContext).toMatchObject({ source: "plugin:example" });
+      expect(pluginWake.payload?._wardmoteWakeContext).toMatchObject({ source: "plugin:example" });
       await db.update(heartbeatRuns).set({ status: "running" }).where(eq(heartbeatRuns.id, pluginRun!.id));
       const pluginWorker = createApp(db, { ...agentActor(fixture), runId: pluginRun!.id });
       expect([403, 404]).toContain((await request(pluginWorker).get(`/api/issues/${created.body.id}`)).status);

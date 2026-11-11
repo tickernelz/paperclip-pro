@@ -49,7 +49,7 @@ describeEmbeddedPostgres("feedbackService.saveIssueVote", () => {
   let tempDirs: string[] = [];
 
   beforeAll(async () => {
-    const started = await startEmbeddedPostgresTestDatabase("paperclip-feedback-service-");
+    const started = await startEmbeddedPostgresTestDatabase("wardmote-feedback-service-");
     db = createDb(started.connectionString);
     svc = feedbackService(db);
     tempDb = started;

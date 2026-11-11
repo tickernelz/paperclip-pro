@@ -40,7 +40,7 @@ describeEmbeddedPostgres("cleanup removal services", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-cleanup-removal-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-cleanup-removal-");
     db = createDb(tempDb.connectionString);
     configureAgentLifecycle(db, { requiredPluginIds: async () => [], runPlugin: async () => "complete", runHost: async () => "complete" });
   }, 20_000);

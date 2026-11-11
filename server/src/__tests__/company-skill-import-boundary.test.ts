@@ -17,7 +17,7 @@ describeEmbeddedPostgres("company skill local import boundary", () => {
   const cleanupDirs = new Set<string>();
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-skill-import-boundary-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-skill-import-boundary-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

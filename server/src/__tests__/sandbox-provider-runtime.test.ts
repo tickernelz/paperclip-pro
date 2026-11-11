@@ -186,21 +186,21 @@ describe("sandbox provider runtime", () => {
     expect(sandboxConfigFromLeaseMetadata({
       metadata: {
         provider: "secure-plugin",
-        template: "paperclip-template",
+        template: "wardmote-template",
       },
     })).toBeNull();
 
     expect(sandboxConfigFromLeaseMetadataLoose({
       metadata: {
         provider: "secure-plugin",
-        template: "paperclip-template",
+        template: "wardmote-template",
         timeoutMs: 120000,
         reuseLease: true,
         apiKey: "11111111-1111-1111-1111-111111111111",
       },
     })).toEqual({
       provider: "secure-plugin",
-      template: "paperclip-template",
+      template: "wardmote-template",
       apiKey: "11111111-1111-1111-1111-111111111111",
       timeoutMs: 120000,
       reuseLease: true,

@@ -169,7 +169,7 @@ async function writeRegisteredSourceConfig(baseCwd: string, instanceId = "source
 async function createTempRepo(defaultBranch = "main") {
   const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-worktree-repo-"));
   await runGit(repoRoot, ["init"]);
-  await runGit(repoRoot, ["config", "user.email", "paperclip@example.com"]);
+  await runGit(repoRoot, ["config", "user.email", "wardmote@example.com"]);
   await runGit(repoRoot, ["config", "user.name", "Wardmote Test"]);
   await fs.writeFile(path.join(repoRoot, "README.md"), "hello\n", "utf8");
   await runGit(repoRoot, ["add", "README.md"]);
@@ -260,7 +260,7 @@ async function createClonedRepoWithRemote() {
   const cloneRoot = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-worktree-clone-"));
   const repoRoot = path.join(cloneRoot, "paperclip");
   await execFileAsync("git", ["clone", remotePath, repoRoot]);
-  await runGit(repoRoot, ["config", "user.email", "paperclip@example.com"]);
+  await runGit(repoRoot, ["config", "user.email", "wardmote@example.com"]);
   await runGit(repoRoot, ["config", "user.name", "Wardmote Test"]);
   return { sourceRepo, remotePath, repoRoot };
 }
@@ -467,7 +467,7 @@ describe("sanitizeRuntimeServiceBaseEnv", () => {
   it("removes inherited Wardmote and pnpm auth flags before spawning runtime services", () => {
     const sanitized = sanitizeRuntimeServiceBaseEnv({
       PATH: process.env.PATH,
-      DATABASE_URL: "postgres://example.test/paperclip",
+      DATABASE_URL: "postgres://example.test/wardmote",
       WARDMOTE_HOME: "/tmp/wardmote-home",
       WARDMOTE_INSTANCE_ID: "runtime-instance",
       [`${RETIRED_ENV_PREFIX}HOME`]: "/tmp/parent-home",
@@ -896,7 +896,7 @@ describe("realizeExecutionWorkspace", () => {
     const cloneRoot = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-worktree-clone-"));
     const repoRoot = path.join(cloneRoot, "paperclip");
     await execFileAsync("git", ["clone", remotePath, repoRoot]);
-    await runGit(repoRoot, ["config", "user.email", "paperclip@example.com"]);
+    await runGit(repoRoot, ["config", "user.email", "wardmote@example.com"]);
     await runGit(repoRoot, ["config", "user.name", "Wardmote Test"]);
 
     await fs.writeFile(path.join(sourceRepo, "auth-fix.txt"), "cookie fix\n", "utf8");
@@ -1808,9 +1808,9 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
       [
         "#!/usr/bin/env bash",
         "set -euo pipefail",
-        "printf '%s\\n' \"$WARDMOTE_WORKSPACE_BRANCH\" > .paperclip-provision-branch",
-        "printf '%s\\n' \"$WARDMOTE_WORKSPACE_BASE_CWD\" > .paperclip-provision-base",
-        "printf '%s\\n' \"$WARDMOTE_WORKSPACE_CREATED\" > .paperclip-provision-created",
+        "printf '%s\\n' \"$WARDMOTE_WORKSPACE_BRANCH\" > .wardmote-provision-branch",
+        "printf '%s\\n' \"$WARDMOTE_WORKSPACE_BASE_CWD\" > .wardmote-provision-base",
+        "printf '%s\\n' \"$WARDMOTE_WORKSPACE_CREATED\" > .wardmote-provision-created",
       ].join("\n"),
       "utf8",
     );
@@ -1845,13 +1845,13 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
       },
     });
 
-    await expect(fs.readFile(path.join(workspace.cwd, ".paperclip-provision-branch"), "utf8")).resolves.toBe(
+    await expect(fs.readFile(path.join(workspace.cwd, ".wardmote-provision-branch"), "utf8")).resolves.toBe(
       "PAP-448-run-provision-command\n",
     );
-    await expect(fs.readFile(path.join(workspace.cwd, ".paperclip-provision-base"), "utf8")).resolves.toBe(
+    await expect(fs.readFile(path.join(workspace.cwd, ".wardmote-provision-base"), "utf8")).resolves.toBe(
       `${repoRoot}\n`,
     );
-    await expect(fs.readFile(path.join(workspace.cwd, ".paperclip-provision-created"), "utf8")).resolves.toBe(
+    await expect(fs.readFile(path.join(workspace.cwd, ".wardmote-provision-created"), "utf8")).resolves.toBe(
       "true\n",
     );
 
@@ -1883,7 +1883,7 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
       },
     });
 
-    await expect(fs.readFile(path.join(reused.cwd, ".paperclip-provision-created"), "utf8")).resolves.toBe("false\n");
+    await expect(fs.readFile(path.join(reused.cwd, ".wardmote-provision-created"), "utf8")).resolves.toBe("false\n");
   });
 
   it("uses the latest repo-managed provision script when reusing an existing worktree", async () => {
@@ -1894,7 +1894,7 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
       [
         "#!/usr/bin/env bash",
         "set -euo pipefail",
-        "printf 'v1\\n' > .paperclip-provision-version",
+        "printf 'v1\\n' > .wardmote-provision-version",
       ].join("\n"),
       "utf8",
     );
@@ -1929,14 +1929,14 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
       },
     });
 
-    await expect(fs.readFile(path.join(initial.cwd, ".paperclip-provision-version"), "utf8")).resolves.toBe("v1\n");
+    await expect(fs.readFile(path.join(initial.cwd, ".wardmote-provision-version"), "utf8")).resolves.toBe("v1\n");
 
     await fs.writeFile(
       path.join(repoRoot, "scripts", "provision.sh"),
       [
         "#!/usr/bin/env bash",
         "set -euo pipefail",
-        "printf 'v2\\n' > .paperclip-provision-version",
+        "printf 'v2\\n' > .wardmote-provision-version",
       ].join("\n"),
       "utf8",
     );
@@ -1973,7 +1973,7 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
       },
     });
 
-    await expect(fs.readFile(path.join(reused.cwd, ".paperclip-provision-version"), "utf8")).resolves.toBe("v2\n");
+    await expect(fs.readFile(path.join(reused.cwd, ".wardmote-provision-version"), "utf8")).resolves.toBe("v2\n");
   }, 30_000);
 
   it("writes an isolated repo-local Wardmote config and worktree branding when provisioning", async () => {
@@ -2064,7 +2064,7 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
       ) + "\n",
       "utf8",
     );
-    await fs.writeFile(sharedEnvPath, 'DATABASE_URL="postgres://worktree:test@db.example.com:6543/paperclip"\n', "utf8");
+    await fs.writeFile(sharedEnvPath, 'DATABASE_URL="postgres://worktree:test@db.example.com:6543/wardmote"\n', "utf8");
 
     await fs.mkdir(path.join(repoRoot, "scripts"), { recursive: true });
     await fs.copyFile(
@@ -2560,7 +2560,7 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
         [
           "WARDMOTE_HOME=/Users/example/.wardmote-worktrees",
           "WARDMOTE_INSTANCE_ID=stale",
-          `WARDMOTE_CONFIG=/Users/example/paperclip/${path.basename(worktreeRoot)}/.wardmote/config.json`,
+          `WARDMOTE_CONFIG=/Users/example/wardmote/${path.basename(worktreeRoot)}/.wardmote/config.json`,
           "",
         ].join("\n"),
         "utf8",
@@ -2948,7 +2948,7 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
       [
         "#!/usr/bin/env bash",
         "set -euo pipefail",
-        "printf '%s\\n' \"$WARDMOTE_WORKSPACE_BRANCH\" > .paperclip-restored-branch",
+        "printf '%s\\n' \"$WARDMOTE_WORKSPACE_BRANCH\" > .wardmote-restored-branch",
       ].join("\n"),
       "utf8",
     );
@@ -3031,7 +3031,7 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
     expect(restored).not.toBeNull();
     expect(restored?.cwd).toBe(initial.cwd);
     await expect(fs.readFile(path.join(initial.cwd, "feature.txt"), "utf8")).resolves.toBe("persisted\n");
-    await expect(fs.readFile(path.join(initial.cwd, ".paperclip-restored-branch"), "utf8")).resolves.toBe(`${branchName}\n`);
+    await expect(fs.readFile(path.join(initial.cwd, ".wardmote-restored-branch"), "utf8")).resolves.toBe(`${branchName}\n`);
     const actualHead = (await execFileAsync("git", ["rev-parse", "HEAD"], { cwd: initial.cwd })).stdout.trim();
     expect(actualHead).toBe(expectedHead);
   }, 15_000);
@@ -3734,7 +3734,7 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
       [
         "#!/usr/bin/env bash",
         "set -euo pipefail",
-        "printf 'reprovisioned\\n' > .paperclip-restored-state",
+        "printf 'reprovisioned\\n' > .wardmote-restored-state",
       ].join("\n"),
       "utf8",
     );
@@ -3770,7 +3770,7 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
       },
     });
 
-    await fs.rm(path.join(initial.cwd, ".paperclip-restored-state"), { force: true });
+    await fs.rm(path.join(initial.cwd, ".wardmote-restored-state"), { force: true });
 
     await ensurePersistedExecutionWorkspaceAvailable({
       base: {
@@ -3807,7 +3807,7 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
       },
     });
 
-    await expect(fs.readFile(path.join(initial.cwd, ".paperclip-restored-state"), "utf8")).resolves.toBe("reprovisioned\n");
+    await expect(fs.readFile(path.join(initial.cwd, ".wardmote-restored-state"), "utf8")).resolves.toBe("reprovisioned\n");
   }, 15_000);
 
   it("rejects an empty base checkout path with a clear cause", async () => {
@@ -4855,7 +4855,7 @@ describe("ensureRuntimeServicesForRun", () => {
   it("requires Wardmote dev runtime services to pass /api/health readiness", async () => {
     const workspaceRoot = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-runtime-health-"));
     const workspace = buildWorkspace(workspaceRoot);
-    const runId = "run-paperclip-health";
+    const runId = "run-wardmote-health";
     const serviceCommand =
       "node -e \"const http=require('node:http'); http.createServer((req,res)=>{ if (req.url==='/api/health') { res.statusCode=503; res.end('database_unreachable'); return; } res.end('ok'); }).listen(Number(process.env.PORT), '127.0.0.1')\"";
 
@@ -4995,7 +4995,7 @@ describe("ensureRuntimeServicesForRun", () => {
   it("rejects an unreachable exposed origin even when readiness uses a local probe", async () => {
     const workspaceRoot = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-runtime-explicit-readiness-"));
     const workspace = buildWorkspace(workspaceRoot);
-    const runId = "run-paperclip-explicit-readiness";
+    const runId = "run-wardmote-explicit-readiness";
     const serviceCommand =
       "node -e \"const http=require('node:http'); http.createServer((req,res)=>{ if (req.url==='/api/health') { res.end('ok'); return; } res.statusCode=404; res.end('not found'); }).listen(Number(process.env.PORT), '127.0.0.1')\"";
 
@@ -5025,7 +5025,7 @@ describe("ensureRuntimeServicesForRun", () => {
                 },
                 expose: {
                   type: "url",
-                  urlTemplate: "http://not-a-real-paperclip-host.invalid:{{port}}",
+                  urlTemplate: "http://not-a-real-wardmote-host.invalid:{{port}}",
                 },
                 lifecycle: "shared",
                 stopPolicy: {
@@ -5258,10 +5258,10 @@ describe("ensureRuntimeServicesForRun", () => {
       ),
     ].join(" ");
 
-    process.env.WARDMOTE_CONFIG = "/tmp/base-paperclip-config.json";
-    process.env.WARDMOTE_HOME = "/tmp/base-paperclip-home";
+    process.env.WARDMOTE_CONFIG = "/tmp/base-wardmote-config.json";
+    process.env.WARDMOTE_HOME = "/tmp/base-wardmote-home";
     process.env.WARDMOTE_INSTANCE_ID = "base-instance";
-    process.env.DATABASE_URL = "postgres://shared-db.example.com/paperclip";
+    process.env.DATABASE_URL = "postgres://shared-db.example.com/wardmote";
 
     const runId = "run-env";
     leasedRunIds.add(runId);
@@ -6137,7 +6137,7 @@ describeEmbeddedPostgres("workspace dirty quarantine branch repair", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-workspace-dirty-quarantine-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-workspace-dirty-quarantine-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 
@@ -6690,7 +6690,7 @@ describeEmbeddedPostgres("workspace dirty quarantine branch repair", () => {
     await expect(readGit(repoRoot, [
       "for-each-ref",
       "--format=%(refname:short)",
-      "refs/heads/paperclip/rescue",
+      "refs/heads/wardmote/rescue",
     ])).resolves.toBe("");
   }, 20_000);
 
@@ -6780,7 +6780,7 @@ describeEmbeddedPostgres("workspace runtime service control persistence", () => 
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-workspace-runtime-control-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-workspace-runtime-control-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 
@@ -7836,7 +7836,7 @@ describeEmbeddedPostgres("workspace runtime startup reconciliation", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-workspace-runtime-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-workspace-runtime-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 
@@ -8867,7 +8867,7 @@ describeEmbeddedPostgres("workspace runtime startup reconciliation", () => {
     });
     await writeLocalServiceRegistryRecord({
       version: 1,
-      serviceKey: "workspace-runtime-paperclip-dev-stale",
+      serviceKey: "workspace-runtime-wardmote-dev-stale",
       profileKind: "workspace-runtime",
       serviceName: "paperclip-dev",
       command: "pnpm dev",
@@ -8973,7 +8973,7 @@ describeEmbeddedPostgres("workspace runtime startup reconciliation", () => {
     });
     await writeLocalServiceRegistryRecord({
       version: 1,
-      serviceKey: "workspace-runtime-paperclip-dev-live-stopped",
+      serviceKey: "workspace-runtime-wardmote-dev-live-stopped",
       profileKind: "workspace-runtime",
       serviceName: "paperclip-dev",
       command: "node",

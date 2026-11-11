@@ -34,7 +34,7 @@ describeEmbeddedPostgres("budgetService release gate enforcement", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-budgets-service-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-budgets-service-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

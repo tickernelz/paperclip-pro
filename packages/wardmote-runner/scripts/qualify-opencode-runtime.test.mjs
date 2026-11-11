@@ -51,7 +51,7 @@ test("the pinned OpenCode executable serves health, sessions, SSE, and a local-p
     }
     response.writeHead(200, { "Content-Type": "text/event-stream" });
     for (const [delta, finish_reason] of [
-      [{ role: "assistant", content: "paperclip-opencode-qualified" }, null],
+      [{ role: "assistant", content: "wardmote-opencode-qualified" }, null],
       [{}, "stop"],
     ]) {
       response.write(`data: ${JSON.stringify({ id: "chatcmpl-qualification", object: "chat.completion.chunk", created: 1, model: "qualification", choices: [{ index: 0, delta, finish_reason }] })}\n\n`);
@@ -134,10 +134,10 @@ test("the pinned OpenCode executable serves health, sessions, SSE, and a local-p
   let messages;
   for (let attempt = 0; attempt < 150; attempt++) {
     messages = await (await api(`/session/${session.id}/message`)).json();
-    if (messages.some((message) => message.info.role === "assistant" && message.parts.some((part) => part.type === "text" && part.text === "paperclip-opencode-qualified"))) break;
+    if (messages.some((message) => message.info.role === "assistant" && message.parts.some((part) => part.type === "text" && part.text === "wardmote-opencode-qualified"))) break;
     await delay(100);
   }
-  assert.ok(messages.some((message) => message.info.role === "assistant" && message.parts.some((part) => part.type === "text" && part.text === "paperclip-opencode-qualified")), JSON.stringify(messages));
+  assert.ok(messages.some((message) => message.info.role === "assistant" && message.parts.some((part) => part.type === "text" && part.text === "wardmote-opencode-qualified")), JSON.stringify(messages));
   assert.ok(requests.some((request) => request.path === "/v1/chat/completions" && request.body.model === "qualification"));
   assert.ok(events.some((event) => event.type === "message.part.updated" || event.type === "message.part.delta"));
   streamAbort.abort();

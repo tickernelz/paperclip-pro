@@ -139,7 +139,7 @@ describeEmbeddedPostgres("plugin install route security floor", () => {
   const cleanupPaths = new Set<string>();
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-plugin-install-guard-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-plugin-install-guard-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

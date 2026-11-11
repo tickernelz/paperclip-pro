@@ -79,18 +79,18 @@ function configWithSecretsProvider(provider: WardmoteConfig["secrets"]["provider
     },
     database: {
       mode: "embedded-postgres",
-      embeddedPostgresDataDir: "/tmp/paperclip/db",
+      embeddedPostgresDataDir: "/tmp/wardmote/db",
       embeddedPostgresPort: 55432,
       backup: {
         enabled: true,
         intervalMinutes: 60,
         retentionDays: 30,
-        dir: "/tmp/paperclip/backups",
+        dir: "/tmp/wardmote/backups",
       },
     },
     logging: {
       mode: "file",
-      logDir: "/tmp/paperclip/logs",
+      logDir: "/tmp/wardmote/logs",
     },
     server: {
       deploymentMode: "local_trusted",
@@ -110,7 +110,7 @@ function configWithSecretsProvider(provider: WardmoteConfig["secrets"]["provider
     storage: {
       provider: "local_disk",
       localDisk: {
-        baseDir: "/tmp/paperclip/storage",
+        baseDir: "/tmp/wardmote/storage",
       },
       s3: {
         bucket: "paperclip",
@@ -123,7 +123,7 @@ function configWithSecretsProvider(provider: WardmoteConfig["secrets"]["provider
       provider,
       strictMode: true,
       localEncrypted: {
-        keyFilePath: "/tmp/paperclip/secrets/master.key",
+        keyFilePath: "/tmp/wardmote/secrets/master.key",
       },
     },
   };

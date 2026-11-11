@@ -18,7 +18,7 @@ describeEmbeddedPostgres("company skill policy routes", () => {
   let agentId: string;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-skill-policy-routes-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-skill-policy-routes-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 

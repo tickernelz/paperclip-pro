@@ -14,7 +14,7 @@ suite("MCP discovery over HTTP", () => {
   let db!: ReturnType<typeof createDb>;
   let temp!: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;
   beforeAll(async () => {
-    temp = await startEmbeddedPostgresTestDatabase("paperclip-discovery-http-");
+    temp = await startEmbeddedPostgresTestDatabase("wardmote-discovery-http-");
     db = createDb(temp.connectionString);
   });
   afterAll(async () => { await temp?.cleanup(); });

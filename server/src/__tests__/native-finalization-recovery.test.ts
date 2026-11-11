@@ -41,7 +41,7 @@ describe("P6-16/P6-25/P6-28 native finalization recovery", () => {
   const staleRunId = "72000000-0000-4000-8000-000000000015";
 
   beforeAll(async () => {
-    temporary = await startEmbeddedPostgresTestDatabase("paperclip-native-recovery-");
+    temporary = await startEmbeddedPostgresTestDatabase("wardmote-native-recovery-");
     db = createDb(temporary.connectionString);
     await db.insert(companies).values({ id: companyId, name: "Native recovery", issuePrefix: "NRC" });
     await db.insert(agents).values({
@@ -356,7 +356,7 @@ describe("retained native cleanup discovery", () => {
 
   beforeAll(async () => {
     temporary = await startEmbeddedPostgresTestDatabase(
-      "paperclip-native-cleanup-sweep-",
+      "wardmote-native-cleanup-sweep-",
     );
     db = createDb(temporary.connectionString);
     await db

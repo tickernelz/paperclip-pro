@@ -487,7 +487,7 @@ describe("provider-neutral events", () => {
     const event = canonicalProviderEventsFromOpenCodePart({
       id: "prt_02c35c313001X42cqyvQrpXOFv",
       type: "tool",
-      tool: "paperclip_report_progress",
+      tool: "wardmote_report_progress",
       callID: "call_6cd0302e681d44c2aba3c164",
       state: { status: "pending", input: {}, raw: "" },
     })[0]!;
@@ -497,7 +497,7 @@ describe("provider-neutral events", () => {
         schema: "wardmote.tool.execution.v1",
         transport: "builtin",
         status: "running",
-        name: "paperclip_report_progress",
+        name: "wardmote_report_progress",
       },
     });
     expect(validatePrpEvent(envelope(event))).toEqual({

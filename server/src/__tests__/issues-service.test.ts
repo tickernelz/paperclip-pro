@@ -84,7 +84,7 @@ describeEmbeddedPostgres("issueService run attachment artifacts", () => {
   });
 
   it("registers a run-produced attachment as an attachment-backed artifact work product", async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-run-attachment-artifact-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-run-attachment-artifact-");
     const db = createDb(tempDb.connectionString);
     const companyId = randomUUID();
     const agentId = randomUUID();
@@ -536,7 +536,7 @@ describeEmbeddedPostgres("issueService.list participantAgentId", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-issues-service-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-issues-service-");
     db = createDb(tempDb.connectionString);
     svc = issueService(db);
     await ensureIssueRelationsTable(db);
@@ -1682,7 +1682,7 @@ describeEmbeddedPostgres("issueService.list participantAgentId", () => {
     await db.insert(issueComments).values({
       companyId,
       issueId: commentMatchId,
-      body: "Reference: https://github.com/paperclipai/paperclip/pull/3303",
+      body: "Reference: https://github.com/tickernelz/wardmote/pull/3303",
     });
 
     const result = await svc.list(companyId, {
@@ -3039,7 +3039,7 @@ describeEmbeddedPostgres("issueService.findOpenAncestorCreatedByAgent", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-issues-ancestor-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-issues-ancestor-");
     db = createDb(tempDb.connectionString);
     svc = issueService(db);
     await ensureIssueRelationsTable(db);
@@ -3160,7 +3160,7 @@ describeEmbeddedPostgres("issueService.create workspace inheritance", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-issues-create-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-issues-create-");
     db = createDb(tempDb.connectionString);
     svc = issueService(db);
     await ensureIssueRelationsTable(db);
@@ -4217,7 +4217,7 @@ describeEmbeddedPostgres("issueService.create workspace inheritance", () => {
         id: targetProjectWorkspaceId,
         companyId,
         projectId: targetProjectId,
-        name: "paperclip-id",
+        name: "wardmote-id",
         isPrimary: true,
       },
     ]);
@@ -4306,7 +4306,7 @@ describeEmbeddedPostgres("issueService blockers and dependency wake readiness", 
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-issues-blockers-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-issues-blockers-");
     db = createDb(tempDb.connectionString);
     svc = issueService(db);
     await ensureIssueRelationsTable(db);
@@ -5198,7 +5198,7 @@ describeEmbeddedPostgres("issueService.create workspace inheritance", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-issues-create-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-issues-create-");
     db = createDb(tempDb.connectionString);
     svc = issueService(db);
     await ensureIssueRelationsTable(db);
@@ -5324,7 +5324,7 @@ describeEmbeddedPostgres("issueService.create workspace inheritance", () => {
         id: targetProjectWorkspaceId,
         companyId,
         projectId: targetProjectId,
-        name: "paperclip-id",
+        name: "wardmote-id",
         isPrimary: true,
       },
     ]);
@@ -5694,7 +5694,7 @@ describeEmbeddedPostgres("issueService.findMentionedProjectIds", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-issues-mentioned-projects-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-issues-mentioned-projects-");
     db = createDb(tempDb.connectionString);
     svc = issueService(db);
     await ensureIssueRelationsTable(db);
@@ -5863,7 +5863,7 @@ describeEmbeddedPostgres("issueService.clearExecutionRunIfTerminal", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-issues-execution-lock-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-issues-execution-lock-");
     db = createDb(tempDb.connectionString);
     svc = issueService(db);
   }, 20_000);
@@ -6333,7 +6333,7 @@ describeEmbeddedPostgres("accepted plan decomposition", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-accepted-plan-decomposition-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-accepted-plan-decomposition-");
     db = createDb(tempDb.connectionString);
     svc = issueService(db);
   }, 20_000);
@@ -7032,7 +7032,7 @@ describeEmbeddedPostgres("issueService.assertCheckoutOwner stale checkout adopti
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-issues-checkout-owner-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-issues-checkout-owner-");
     db = createDb(tempDb.connectionString);
     svc = issueService(db);
   }, 20_000);
@@ -7263,7 +7263,7 @@ describeEmbeddedPostgres("issueService.addComment createdByRunId", () => {
   let issueId!: string;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-issues-comment-runid-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-issues-comment-runid-");
     db = createDb(tempDb.connectionString);
     svc = issueService(db);
     singleConnectionDb = createDb(tempDb.connectionString, { maxConnections: 1 });
@@ -7386,7 +7386,7 @@ describeEmbeddedPostgres("issueService.list scoped search", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-issues-scoped-search-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-issues-scoped-search-");
     db = createDb(tempDb.connectionString);
     svc = issueService(db);
   }, 20_000);
