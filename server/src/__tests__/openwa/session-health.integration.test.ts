@@ -263,7 +263,7 @@ describe("OpenWA session_health wakes (embedded Postgres + fake gateway)", () =>
     return { openwa: openwa!, guidance: guidance! };
   }
 
-  it("wakes the owner conversation once per health transition with class other/read_only", async () => {
+  it("wakes the owner conversation once per health transition with class other and the owner_chat origin", async () => {
     const t = await setup();
     const owner = await ownerConversation(t);
     const baseWakes = t.wakeup.mock.calls.length;
@@ -281,11 +281,12 @@ describe("OpenWA session_health wakes (embedded Postgres + fake gateway)", () =>
     expect(downWake.wake.contextSnapshot).toMatchObject({ issueId: owner.issueId, source: "chat:openwa" });
     expect(downWake.wake.allowRunCoalescing).toBe(false);
     const downRun = await runContext(t, downWake);
-    expect(downRun.openwa).toMatchObject({ triggerClass: "other", profile: "read_only", event: "session_health" });
+    expect(downRun.openwa).toMatchObject({ triggerClass: "other", profile: "full", ownerOrigin: "owner_chat", event: "session_health" });
     expect(downRun.guidance.wakeEvent).toMatchObject({
       event: "session_health",
       triggerClass: "other",
-      profile: "read_only",
+      profile: "full",
+      ownerOrigin: "owner_chat",
       sessionHealth: { kind: "status", healthy: false, status: "disconnected", restriction: null },
     });
     expect(downRun.guidance.markdown).toContain("The WhatsApp session health changed.");
@@ -303,7 +304,7 @@ describe("OpenWA session_health wakes (embedded Postgres + fake gateway)", () =>
     expect(upWake.request.payload).toMatchObject({
       openwa: { event: "session_health", triggerClass: "other", sessionHealth: { kind: "status", healthy: true, status: "ready" } },
     });
-    expect((await runContext(t, upWake)).openwa).toMatchObject({ triggerClass: "other", profile: "read_only" });
+    expect((await runContext(t, upWake)).openwa).toMatchObject({ triggerClass: "other", profile: "full", ownerOrigin: "owner_chat" });
 
     t.gateway.emit("session.status", { sessionId: SESSION_ID, status: "ready" });
     await new Promise((resolve) => setTimeout(resolve, 400));

@@ -21,7 +21,22 @@ export const LEGACY_HOME_DIRNAME = ".paperclip-pro";
 const defaultHomeByUserHome = new Map<string, string>();
 
 function isLinkTo(link: string, target: string): boolean {
-  return fs.lstatSync(link).isSymbolicLink() && fs.existsSync(target) && fs.realpathSync(link) === fs.realpathSync(target);
+  return Boolean(fs.lstatSync(link, { throwIfNoEntry: false })?.isSymbolicLink())
+    && fs.existsSync(target)
+    && fs.realpathSync(link) === fs.realpathSync(target);
+}
+
+/** Maps a path recorded under the legacy home to the Wardmote home once `wardmote migrate-home` has linked the two. */
+export function rehomeLegacyPath(
+  value: string,
+  wardmoteHome: string = path.resolve(os.homedir(), WARDMOTE_HOME_DIRNAME),
+): string {
+  const resolved = path.resolve(expandHomePrefix(value));
+  const home = path.resolve(wardmoteHome);
+  const legacy = path.join(path.dirname(home), LEGACY_HOME_DIRNAME);
+  const relative = path.relative(legacy, resolved);
+  if (relative.startsWith("..") || path.isAbsolute(relative) || !isLinkTo(legacy, home)) return resolved;
+  return path.join(home, relative);
 }
 
 export function resolveDefaultWardmoteHomeDir(userHome: string = os.homedir()): string {
@@ -113,5 +128,5 @@ export function resolveDefaultBackupDir(input: {
 }
 
 export function resolveHomeAwarePath(value: string): string {
-  return path.resolve(expandHomePrefix(value));
+  return rehomeLegacyPath(value);
 }

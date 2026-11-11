@@ -145,7 +145,7 @@ export function resolveManagedInstructionsRoot(agent: AgentLike): string {
 }
 
 function resolveLegacyInstructionsPath(candidatePath: string, config: Record<string, unknown>): string {
-  if (path.isAbsolute(candidatePath)) return candidatePath;
+  if (path.isAbsolute(candidatePath)) return resolveHomeAwarePath(candidatePath);
   const cwd = asString(config.cwd);
   if (!cwd || !path.isAbsolute(cwd)) {
     throw unprocessable(

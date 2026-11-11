@@ -25,7 +25,7 @@ import { RUN_TOOL_PROFILE_CONTEXT_KEY } from "@tickernelz/wardmote-adapter-utils
 import { HttpError, forbidden } from "../../errors.js";
 import { openwaCurrentOwners, openwaPrincipalAuthorization } from "./owners.js";
 import { logOpenwaActivity } from "./audit.js";
-import { isOpenwaCompletionTurn } from "../chat-completion-delivery.js";
+import { isOpenwaCompletionTurn, openwaCompletionOwedToOwner } from "../chat-completion-delivery.js";
 
 export const OPENWA_RUN_CONTEXT_KEY = "wardmoteOpenwa";
 export const OPENWA_APPROVAL_REQUIRED_CODE = "openwa_approval_required";
@@ -47,7 +47,12 @@ export interface OpenwaRunContext {
   requesterPrincipalId: string | null;
   approvalRequestId: string | null;
   triggerPrincipalId: string | null;
+  ownerOrigin?: OpenwaOwnerOrigin;
 }
+
+/** Server record that makes a wake without a chat message act for an owner: the owner's own DM, or a task an owner run handed off. */
+export type OpenwaOwnerOrigin = "owner_chat" | "owner_task";
+const OWNER_ORIGINS: ReadonlySet<string> = new Set<OpenwaOwnerOrigin>(["owner_chat", "owner_task"]);
 
 export class OpenwaApprovalRequiredError extends HttpError {
   readonly category: OpenwaApprovalCategory;
@@ -210,6 +215,7 @@ export function readOpenwaRunContext(contextSnapshot: unknown): OpenwaRunContext
     requesterPrincipalId: text(raw.requesterPrincipalId),
     approvalRequestId: text(raw.approvalRequestId),
     triggerPrincipalId: text(raw.triggerPrincipalId),
+    ...(OWNER_ORIGINS.has(String(raw.ownerOrigin)) ? { ownerOrigin: raw.ownerOrigin as OpenwaOwnerOrigin } : {}),
   };
 }
 
@@ -635,11 +641,14 @@ export async function resolveOpenwaRunContext(
       }
     }
   }
-  const profile: OpenwaRunProfile = cls === "owner" ? "full" : "read_only";
-  const runAllowedCategories = openwaAllowedCategories(policy, profile, runGranted, policy.gatewayAdminTools).allowed;
-  const requesterExternalTools = grants.some((grant) => grant.scope === "requester" && grant.category === "external_tools");
   const completionTurn = !wakeAction && cls === "other" && deliveries.length === 0 &&
     (await isOpenwaCompletionTurn(db, { companyId: input.companyId, runId: input.runId, issueId: input.issueId }));
+  const ownerOrigin = cls === "other" && deliveryIds.length === 0
+    ? await openwaOwnerOrigin(db, { binding, chatKey, companyId: input.companyId, runId: input.runId, issueId: input.issueId, completionTurn })
+    : null;
+  const profile: OpenwaRunProfile = cls === "owner" || ownerOrigin ? "full" : "read_only";
+  const runAllowedCategories = openwaAllowedCategories(policy, profile, runGranted, policy.gatewayAdminTools).allowed;
+  const requesterExternalTools = grants.some((grant) => grant.scope === "requester" && grant.category === "external_tools");
   return {
     ...base,
     triggerClass: cls,
@@ -657,7 +666,29 @@ export async function resolveOpenwaRunContext(
     triggerPrincipalId: cls === "owner"
       ? (deliveries.find((delivery) => delivery.id === deliveryIds[deliveryIds.length - 1])?.principalId ?? null)
       : null,
+    ...(ownerOrigin ? { ownerOrigin } : {}),
   };
+}
+
+async function openwaOwnerOrigin(
+  db: Db,
+  input: {
+    binding: { endpointId: string; isDirectMessage: boolean; status: string };
+    chatKey: string;
+    companyId: string;
+    runId: string;
+    issueId: string;
+    completionTurn: boolean;
+  },
+): Promise<OpenwaOwnerOrigin | null> {
+  if (input.binding.status === "archived") return null;
+  if (input.binding.isDirectMessage) {
+    const owners = await openwaCurrentOwners(db, { companyId: input.companyId, id: input.binding.endpointId });
+    if (owners.some((owner) => owner.jids.some((jid) => normalizeChatKey(jid) === input.chatKey))) return "owner_chat";
+  }
+  if (input.completionTurn && (await openwaCompletionOwedToOwner(db, { companyId: input.companyId, runId: input.runId, issueId: input.issueId })))
+    return "owner_task";
+  return null;
 }
 
 /** Writes the resolved context, or the explicit non-OpenWA marker when openwa is null. */
@@ -831,19 +862,20 @@ export async function assertOpenwaRunIdMay(
 type RestRule = {
   method: string;
   path: RegExp;
-  ownIssue?: number;
+  issue?: "own" | "tree";
   check?: "workProduct" | "issuePatch";
 };
 
 const READ_ONLY_REST_ALLOW: readonly RestRule[] = [
-  { method: "POST", path: /^\/api\/issues\/([^/]+)\/comments$/i, ownIssue: 1 },
-  { method: "POST", path: /^\/api\/companies\/[^/]+\/issues\/([^/]+)\/attachments$/i, ownIssue: 1 },
-  { method: "POST", path: /^\/api\/issues\/([^/]+)\/work-products$/i, ownIssue: 1 },
+  { method: "POST", path: /^\/api\/issues\/([^/]+)\/comments$/i, issue: "tree" },
+  { method: "POST", path: /^\/api\/companies\/[^/]+\/issues\/([^/]+)\/attachments$/i, issue: "tree" },
+  { method: "POST", path: /^\/api\/issues\/([^/]+)\/work-products$/i, issue: "tree" },
   { method: "PATCH", path: /^\/api\/work-products\/([^/]+)$/i, check: "workProduct" },
-  { method: "PUT", path: /^\/api\/issues\/([^/]+)\/documents\/[^/]+$/i, ownIssue: 1 },
-  { method: "POST", path: /^\/api\/issues\/([^/]+)\/checkout$/i, ownIssue: 1 },
-  { method: "POST", path: /^\/api\/issues\/([^/]+)\/release$/i, ownIssue: 1 },
-  { method: "PATCH", path: /^\/api\/issues\/([^/]+)$/i, ownIssue: 1, check: "issuePatch" },
+  { method: "PUT", path: /^\/api\/issues\/([^/]+)\/documents\/[^/]+$/i, issue: "tree" },
+  { method: "POST", path: /^\/api\/issues\/([^/]+)\/share-link$/i, issue: "tree" },
+  { method: "POST", path: /^\/api\/issues\/([^/]+)\/checkout$/i, issue: "own" },
+  { method: "POST", path: /^\/api\/issues\/([^/]+)\/release$/i, issue: "own" },
+  { method: "PATCH", path: /^\/api\/issues\/([^/]+)$/i, issue: "tree", check: "issuePatch" },
   { method: "POST", path: /^\/api\/mcp\/wardmote$/i },
   { method: "POST", path: /^\/api\/tool-gateway\/sessions$/i },
   { method: "POST", path: /^\/api\/tool-gateway\/tools\/call$/i },
@@ -868,8 +900,9 @@ const ISSUE_DELEGATION_FIELDS = ["assigneeAgentId", "assigneeUserId", "parentId"
 const ISSUE_LIFECYCLE_PATCH_FIELDS = new Set(["status", "comment", "commentClientRequestId", "commentDeliver", "attachmentIds", "reopen", "resume", "interrupt"]);
 
 export type OpenwaRestDecision = { allowed: true } | { allowed: false; category: OpenwaApprovalCategory };
+type OpenwaRestLookup = { allowed: "workProduct"; workProductId: string } | { allowed: "treeIssue"; issueKey: string };
 
-/** Pure read_only REST allowlist; the work-product owner check is resolved by the caller. */
+/** Pure read_only REST allowlist; the caller resolves work-product owners and conversation-tree membership. */
 export function openwaReadOnlyRestDecision(input: {
   method: string;
   path: string;
@@ -877,7 +910,8 @@ export function openwaReadOnlyRestDecision(input: {
   ownIssueIdentifier?: string | null;
   body?: unknown;
   workProductIssueId?: string | null;
-}): OpenwaRestDecision | { allowed: "workProduct"; workProductId: string } {
+  treeIssueKeys?: ReadonlySet<string>;
+}): OpenwaRestDecision | OpenwaRestLookup {
   const method = input.method.toUpperCase();
   if (SAFE_METHODS.has(method)) return { allowed: true };
   const path = (input.path.length > 1 ? input.path.replace(/\/+$/, "") : input.path).toLowerCase();
@@ -890,17 +924,48 @@ export function openwaReadOnlyRestDecision(input: {
     if (rule.method !== method) continue;
     const match = rule.path.exec(path);
     if (!match) continue;
-    if (rule.ownIssue && !ownIssueKeys.has(match[rule.ownIssue]!)) continue;
     if (rule.check === "issuePatch" && !lifecycleOnly) continue;
+    let issueKey: string | null = rule.issue ? match[1]! : null;
     if (rule.check === "workProduct") {
       if (input.workProductIssueId === undefined) return { allowed: "workProduct", workProductId: match[1]! };
-      if (!ownIssueId || input.workProductIssueId?.toLowerCase() !== ownIssueId) continue;
+      if (!ownIssueId || !input.workProductIssueId) continue;
+      issueKey = input.workProductIssueId.toLowerCase();
+    }
+    if (issueKey !== null && !ownIssueKeys.has(issueKey)) {
+      if (rule.issue === "own" || !ownIssueId) continue;
+      if (!input.treeIssueKeys) return { allowed: "treeIssue", issueKey };
+      if (!input.treeIssueKeys.has(issueKey)) continue;
     }
     return { allowed: true };
   }
   const createsTask = CREATE_TASK_REST.some((rule) =>
     rule.method === method && rule.path.test(path) && (method !== "PATCH" || delegates));
   return { allowed: false, category: createsTask ? "create_task" : "external_tools" };
+}
+
+const OPENWA_TREE_MAX_DEPTH = 32;
+const ISSUE_UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** True when the issue (id or identifier) is the conversation issue or one of its descendants by parentId, within the company. */
+export async function isOpenwaConversationTreeIssue(
+  db: Db,
+  input: { companyId: string; rootIssueId: string; issueKey: string },
+): Promise<boolean> {
+  if (!ISSUE_UUID_PATTERN.test(input.rootIssueId)) return false;
+  const start = ISSUE_UUID_PATTERN.test(input.issueKey)
+    ? sql`id = ${input.issueKey}::uuid`
+    : sql`identifier = ${input.issueKey.toUpperCase()}`;
+  const rows = await db.execute(sql`
+    with recursive chain(id, parent_id, depth) as (
+      select id, parent_id, 0 from issues
+      where company_id = ${input.companyId}::uuid and ${start}
+      union all
+      select parent.id, parent.parent_id, chain.depth + 1 from issues parent
+      join chain on parent.id = chain.parent_id
+      where parent.company_id = ${input.companyId}::uuid and chain.depth < ${OPENWA_TREE_MAX_DEPTH} and chain.id <> ${input.rootIssueId}::uuid
+    )
+    select 1 as found from chain where id = ${input.rootIssueId}::uuid limit 1`);
+  return Array.from(rows as Iterable<unknown>).length > 0;
 }
 
 /** REST seam for signed run JWT requests: denies non-allowlisted mutations of read_only runs; returns a consumed grant id. */
@@ -912,25 +977,36 @@ export async function assertOpenwaRestAllowed(
   if ((await openwaRunProfile(db, input.run)) === "full") return null;
   const context = record(input.run.contextSnapshot);
   const ownIssueId = text(context.issueId) ?? text(context.taskId);
-  let decision = openwaReadOnlyRestDecision({ method: input.method, path: input.path, ownIssueId, body: input.body });
-  if (decision.allowed === "workProduct") {
-    const [product] = await db
-      .select({ issueId: issueWorkProducts.issueId })
-      .from(issueWorkProducts)
-      .where(and(eq(issueWorkProducts.id, decision.workProductId), eq(issueWorkProducts.companyId, input.run.companyId)))
-      .limit(1);
-    decision = openwaReadOnlyRestDecision({
-      method: input.method, path: input.path, ownIssueId, body: input.body, workProductIssueId: product?.issueId ?? null,
-    }) as OpenwaRestDecision;
-  }
+  const request: Parameters<typeof openwaReadOnlyRestDecision>[0] = { method: input.method, path: input.path, ownIssueId, body: input.body };
+  const resolve = async (): Promise<OpenwaRestDecision> => {
+    let decision = openwaReadOnlyRestDecision(request);
+    while (decision.allowed === "workProduct" || decision.allowed === "treeIssue") {
+      if (decision.allowed === "workProduct") {
+        const [product] = await db
+          .select({ issueId: issueWorkProducts.issueId })
+          .from(issueWorkProducts)
+          .where(and(eq(issueWorkProducts.id, decision.workProductId), eq(issueWorkProducts.companyId, input.run.companyId)))
+          .limit(1);
+        request.workProductIssueId = product?.issueId ?? null;
+      } else {
+        const inTree = await isOpenwaConversationTreeIssue(db, { companyId: input.run.companyId, rootIssueId: ownIssueId!, issueKey: decision.issueKey });
+        request.treeIssueKeys = new Set([...(request.treeIssueKeys ?? []), ...(inTree ? [decision.issueKey] : [])]);
+      }
+      decision = openwaReadOnlyRestDecision(request);
+    }
+    return decision;
+  };
+  let decision = await resolve();
   if (decision.allowed === false && ownIssueId) {
     const [issue] = await db
       .select({ identifier: issues.identifier })
       .from(issues)
       .where(and(eq(issues.id, ownIssueId), eq(issues.companyId, input.run.companyId)))
       .limit(1);
-    if (issue?.identifier)
-      decision = openwaReadOnlyRestDecision({ method: input.method, path: input.path, ownIssueId, ownIssueIdentifier: issue.identifier, body: input.body }) as OpenwaRestDecision;
+    if (issue?.identifier) {
+      request.ownIssueIdentifier = issue.identifier;
+      decision = await resolve();
+    }
   }
   if (decision.allowed === true) return null;
   return assertOpenwaRunMay(db, input.run, decision.category);

@@ -33,7 +33,8 @@ import {
   toolConnections,
   type Db,
 } from "@tickernelz/wardmote-db";
-import { SPEECH_TO_TEXT_DEFAULTS } from "@tickernelz/wardmote-shared";
+import { OPENWA_APPROVAL_MESSAGE_MAX_LENGTH, SPEECH_TO_TEXT_DEFAULTS } from "@tickernelz/wardmote-shared";
+import { OPENWA_TEXT_LIMIT } from "../../services/openwa/format.js";
 import { startEmbeddedPostgresTestDatabase } from "../helpers/embedded-postgres.js";
 import { createLocalDiskStorageProvider } from "../../storage/local-disk-provider.js";
 import { createStorageService } from "../../storage/service.js";
@@ -807,6 +808,31 @@ describe("OpenWA owner approvals and grants (embedded Postgres + fake gateway)",
     expect(resolved.status).toBe("approved");
     expect(await requestRow(request.id)).toMatchObject({ status: "approved", resolvedVia: "whatsapp", resolvedByUserId: t.ownerUsers[OWN_PHONE], ownerText: "oke boleh" });
     expect(await grantsOf(request.id)).toHaveLength(1);
+  }, 120_000);
+
+  it("shortens a messageToOwners longer than one WhatsApp bubble and reports it instead of failing", async () => {
+    const t = await setup();
+    const memberRun = await runStart(t, await admitted(t, { chatId: jid(MEMBER_A), body: "tolong buatkan task" }));
+    const long = "Ringkasan permintaan anggota. ".repeat(400).trim();
+    expect(long.length).toBeGreaterThan(OPENWA_APPROVAL_MESSAGE_MAX_LENGTH);
+    const created = (await requestApproval(memberRun.binding, { message: long })) as Awaited<ReturnType<typeof requestApproval>> & {
+      messageShortened?: { originalLength: number; sentLength: number };
+    };
+    expect(created.bubbles).toEqual([expect.objectContaining({ state: "sent" })]);
+    expect(created.messageShortened).toMatchObject({ originalLength: long.length });
+    const ownerSend = t.gateway.sends.find((send) => send.chatId === jid(OWNER_PHONE))!;
+    expect(ownerSend.text.length).toBeLessThanOrEqual(OPENWA_TEXT_LIMIT);
+    expect(ownerSend.text.length).toBe(created.messageShortened!.sentLength);
+    expect(ownerSend.text.endsWith("[…]")).toBe(true);
+    expect(ownerSend.text).toContain("Ringkasan permintaan anggota.");
+    const short = await requestApproval(memberRun.binding, { message: "Approve invoice task?" });
+    expect(short).not.toHaveProperty("messageShortened");
+    const spaced = "a" + " ".repeat(3400) + "b cx" + " filler".repeat(600);
+    const started = performance.now();
+    const cut = (await requestApproval(memberRun.binding, { message: spaced })) as Awaited<ReturnType<typeof requestApproval>> & { messageShortened?: unknown };
+    expect(performance.now() - started).toBeLessThan(5_000);
+    expect(cut.messageShortened).toMatchObject({ originalLength: spaced.length });
+    expect(t.gateway.sends.at(-1)!.text.endsWith("[…]")).toBe(true);
   }, 120_000);
 
   it("rejects approval requests from owner-class runs", async () => {

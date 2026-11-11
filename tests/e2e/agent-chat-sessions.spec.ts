@@ -333,7 +333,10 @@ test("secondary chat navigation preserves layout, unique conversations, history,
     await expect(editor).toContainText("Unsent draft for Alpha");
     await expect(nav.getByRole("link")).toHaveCount(6);
 
+    const historyBeforeChat = await page.evaluate(() => history.length);
     await page.getByRole("link", { name: "Chat", exact: true }).click();
+    await expect.poll(() => page.evaluate(() => history.length)).toBe(historyBeforeChat + 1);
+    await expect(page).toHaveURL(/\/chats\/alpha$/);
     await expect(page.getByRole("link", { name: "Configure Alpha", exact: true })).toBeVisible();
     await expect(editor).toContainText("Unsent draft for Alpha");
     expect(await sidebar.boundingBox()).toEqual(landingBounds);
