@@ -8,9 +8,11 @@ import { CreateosApiError, CreateosClient, object } from "./client.js";
 import { parseConfig, resolveApiKey } from "./config.js";
 import { CreateosCleanupError, execute, shellQuote } from "./execute.js";
 import { syncFiles } from "./file-sync.js";
+import { RETIRED_LEASE_MARKER_FILE } from "./retired-names.js";
 
 const CWD = "/paperclip-workspace";
-const MARKER = `${CWD}/.wardmote-runtime/.paperclip-createos-lease`;
+const MARKER = `${CWD}/.wardmote-runtime/.wardmote-createos-lease`;
+const RETIRED_MARKER = `${CWD}/.wardmote-runtime/${RETIRED_LEASE_MARKER_FILE}`;
 
 function metadataMatches(params: PluginEnvironmentDriverBaseParams, metadata?: Record<string, unknown>): boolean {
   return metadata?.provider === "createos" && metadata.companyId === params.companyId &&
@@ -163,10 +165,11 @@ export function createPlugin() {
         const sandbox = await client.getSandbox(params.providerLeaseId, signal);
         if (["destroyed", "failed"].includes(sandbox.status!)) return { providerLeaseId: null, metadata: { expired: true } };
         await client.transition(params.providerLeaseId, "running", signal);
-        const data = await client.json(`/sandboxes/${params.providerLeaseId}/exec`, "POST", {
-          cmd: "/bin/cat", args: [MARKER],
-        }, signal);
-        const result = object(data.result);
+        const readMarker = async (path: string) => object((await client.json(`/sandboxes/${params.providerLeaseId}/exec`, "POST", {
+          cmd: "/bin/cat", args: [path],
+        }, signal)).result);
+        let result = await readMarker(MARKER);
+        if (result.exit_code !== 0) result = await readMarker(RETIRED_MARKER);
         if (result.exit_code !== 0 || result.stdout !== marker) return { providerLeaseId: null, metadata: { expired: true } };
         return { providerLeaseId: params.providerLeaseId, metadata: { ...params.leaseMetadata, resumedLease: true } };
       } catch (error) {
