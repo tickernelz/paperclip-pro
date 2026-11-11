@@ -1202,16 +1202,19 @@ describeEmbeddedPostgres("issue comment message delivery", () => {
           posted.body.id,
         );
       });
-      const steered = await db
-        .select({ details: activityLog.details })
-        .from(activityLog)
-        .where(
-          and(
-            eq(activityLog.action, "issue.queued_comment_steered"),
-            eq(activityLog.entityId, seeded.issueId),
-          ),
-        );
-      expect(steered).toHaveLength(1);
+      const steered = await vi.waitFor(async () => {
+        const rows = await db
+          .select({ details: activityLog.details })
+          .from(activityLog)
+          .where(
+            and(
+              eq(activityLog.action, "issue.queued_comment_steered"),
+              eq(activityLog.entityId, seeded.issueId),
+            ),
+          );
+        expect(rows).toHaveLength(1);
+        return rows;
+      });
       expect(steered[0]?.details).toMatchObject({
         commentId: posted.body.id,
         targetRunId: seeded.runId,
