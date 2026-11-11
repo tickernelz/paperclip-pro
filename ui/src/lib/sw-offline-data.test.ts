@@ -43,7 +43,7 @@ function json(body: unknown, init: ResponseInit & { cacheControl?: string } = {}
   });
 }
 
-function session(userId: string, id = "paperclip:session:" + userId) {
+function session(userId: string, id = "wardmote:session:" + userId) {
   return { session: { id, userId }, user: { id: userId, email: null, name: userId, image: null }, sentryDsn: null };
 }
 

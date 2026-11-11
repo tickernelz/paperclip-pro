@@ -52,7 +52,7 @@ async function exercise(taskId: string, remote: boolean, failure?: "mutation" | 
     get: async (path: string) => {
       sync();
       if (path === "/api/health") return { deploymentMode: "local_trusted" };
-      if (path === "/api/auth/get-session") return { session: { userId: "local-board", id: "paperclip:local_implicit:local-board" } };
+      if (path === "/api/auth/get-session") return { session: { userId: "local-board", id: "wardmote:local_implicit:local-board" } };
       if (path === "/api/agents/agent") return { adapterConfig: {} };
       if (path.endsWith("/issues?limit=100")) return [f.issue];
       if (path === "/api/issues/issue") return f.issue;
