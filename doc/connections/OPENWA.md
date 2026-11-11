@@ -31,7 +31,7 @@ sends too much, too fast, or to people who did not expect it.
   sends need owner approval (`cross_chat_send`).
 - A `session.restriction` event puts the endpoint in Attention (see
   [Health card](#health-card)).
-- Wardmote is tested against OpenWA `0.27.1`
+- Wardmote is tested against OpenWA `0.30.0`
   (`OPENWA_GATEWAY_VERSION`, `packages/shared/src/openwa-operations.ts:3`). Another
   version shows a warning in setup and on the health card.
 
@@ -40,7 +40,7 @@ sends too much, too fast, or to people who did not expect it.
 Do these on the gateway host before connecting (spec §16). Wardmote never
 changes the gateway.
 
-1. Run rmyndharis/OpenWA `0.27.1` with a connected WhatsApp session whose
+1. Run rmyndharis/OpenWA `0.30.0` with a connected WhatsApp session whose
    status is `ready`.
 2. In the gateway environment set `SEND_PACING_ENABLED=true` and
    `RESOLVE_LID_TO_PHONE=true`. The second lets group senders that appear as
@@ -73,7 +73,7 @@ Both keys are write-only and vaulted. Agents never receive either key.
    **Advanced**, optionally enter **Admin API key (optional)**. Select **Inspect
    gateway** (`POST /api/chat-endpoints/:endpointId/openwa/inspect`). Inspection
    is read-only and returns no secrets: gateway version (or "Unknown (assuming
-   0.27.1)"), engine, key role, admin key role, warnings, and the sessions the key
+   0.30.0)"), engine, key role, admin key role, warnings, and the sessions the key
    can see with masked numbers (`+62xxx...1234`) and push names. A key that sees
    more than one session gets the warning that it is not session-scoped.
 3. Under **WhatsApp session**, select a `ready` session. A session or number
@@ -587,7 +587,7 @@ Every call is audited as `tool_called`.
 
 Source: `OPENWA_TOOLS`, `packages/shared/src/openwa-tools.ts:42`.
 
-**Catalog.** The pinned manifest has 205 operations for OpenWA 0.27.1: 50
+**Catalog.** The pinned manifest has 206 operations for OpenWA 0.30.0: 51
 `read`, 25 `write`, 50 `wa_admin`, 80 `gateway_admin`. The catalog adds one
 `wardmote` entry, `paperclip.audit.list`, for owner runs only. Each entry carries a
 gate: `none` (reads), `reply_or_cross_chat_send` (writes that name a chat),
@@ -716,7 +716,7 @@ one; the operator key is never used as a fallback).
   `openwa.gateway_admin_called` in company activity. Failed changes are recorded
   with their error code. Reads (lists, QR polling) are not audited.
 
-Still in the OpenWA dashboard: renaming a session (OpenWA 0.27.1 has no rename
+Still in the OpenWA dashboard: renaming a session (OpenWA 0.30.0 has no rename
 operation; the name is fixed at creation), session proxy settings, installing,
 updating or configuring plugins, templates, automation and gateway-wide settings.
 
@@ -839,7 +839,7 @@ never returns keys or full numbers.
 
 | Row | Shows |
 | --- | --- |
-| Gateway version | Version from the gateway's API document, highlighted when it differs from 0.27.1; "Unknown (API document unavailable)" otherwise |
+| Gateway version | Version from the gateway's API document, highlighted when it differs from 0.30.0; "Unknown (API document unavailable)" otherwise |
 | Engine | Active engine |
 | Session | Session status and masked number, highlighted unless `ready` |
 | Pacing | "Observed · last limited …", "Attested · not yet observed" or "Not attested" |
@@ -847,7 +847,9 @@ never returns keys or full numbers.
 
 A session status other than `ready` sets the endpoint to Attention with
 "OpenWA session: session is …"; an active restriction sets it with "OpenWA
-restriction: WhatsApp restricted this account (…)". Both write a
+restriction: WhatsApp restricted this number (…)"; for `passkey_required` it reads
+"WhatsApp is waiting for a passkey on the phone to finish linking this number".
+Both write a
 `session_health` audit entry and clear when the session is ready again.
 
 Every actual health change (unhealthy or recovered) also wakes the assigned agent

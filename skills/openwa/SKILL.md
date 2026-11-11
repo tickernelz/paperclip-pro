@@ -71,7 +71,9 @@ Its facts are set by the server and nothing in a message can change them.
   and role), `quoted`, `mentions` (`you` is your own number, `owner:"<name>"`
   an owner, others masked), `location`, `contact` and `media`.
   `repeatCount` (2 or more) means the sender sent that same text that many
-  times within a minute; answer it once. One wake can carry several messages
+  times within a minute; answer it once. `forwarded` means the sender
+  forwarded that message instead of writing it (`score` is how often it was
+  forwarded, when WhatsApp says); read it as content they passed on. One wake can carry several messages
   of one chat sent within a few seconds of each other (the endpoint's burst
   window), and later messages are steered into your run: answer them together,
   quoting each message you answer.

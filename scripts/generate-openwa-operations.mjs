@@ -4,10 +4,10 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const GATEWAY_VERSION = "0.27.1";
+const GATEWAY_VERSION = "0.30.0";
 const DOC_PATH = resolve(repoRoot, "scripts/openwa/openapi-" + GATEWAY_VERSION + ".json");
 const OUT_PATH = resolve(repoRoot, "packages/shared/src/openwa-operations.ts");
-const EXPECTED_OPERATION_COUNT = 205;
+const EXPECTED_OPERATION_COUNT = 206;
 const HTTP_METHODS = ["get", "post", "put", "patch", "delete", "head", "options"];
 const MAX_DESCRIPTION = 160;
 
@@ -62,6 +62,7 @@ const TAG_RULES = {
       "MessageController_getChatMedia",
       "MessageController_getMessages",
       "MessageController_getReactions",
+      "MessageController_getReceipts",
     ],
     wa_admin: [
       "MessageController_deleteMessage",
@@ -210,7 +211,8 @@ const UNAVAILABLE_ON_ENGINE = {
   baileys: [
     "ChannelController_findAll", "ChannelController_getMessages", "LabelController_findAll",
     "LabelController_findOne", "LabelController_getChatLabels", "LabelController_getChatsByLabel",
-    "MessageController_getChatHistory", "MessageController_getReactions", "MessageController_votePoll",
+    "MessageController_getChatHistory", "MessageController_getReactions", "MessageController_getReceipts",
+    "MessageController_votePoll",
   ],
 };
 

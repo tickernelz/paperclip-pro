@@ -258,7 +258,7 @@ describeEmbeddedPostgres("OpenWA guidance at run start", () => {
 
   async function seedDelivery(
     seed: OpenwaSeed,
-    input: { text: string; role?: "owner" | "allowed" | "outside_allowlist"; receivedAt?: Date; media?: boolean; quoted?: boolean; rules?: string[]; agentMention?: string },
+    input: { text: string; role?: "owner" | "allowed" | "outside_allowlist"; receivedAt?: Date; media?: boolean; quoted?: boolean; rules?: string[]; agentMention?: string; forwarded?: { score: number | null } },
   ) {
     const waMessageId = "false_" + seed.chatKey + "_" + randomUUID().replace(/-/g, "").slice(0, 16).toUpperCase();
     const group = seed.chatKey === GROUP;
@@ -280,6 +280,7 @@ describeEmbeddedPostgres("OpenWA guidance at run start", () => {
           ...(input.agentMention ? { agentMentionIds: [input.agentMention] } : {}),
           location: null, contact: null,
           media: input.media ? { mimetype: "audio/ogg", filename: null, sizeBytes: 2048, omitted: false } : null,
+          ...(input.forwarded ? { forwarded: input.forwarded } : {}),
         },
       },
       state: "processed", triggerClass, principalRole: input.role ?? "allowed",
@@ -652,7 +653,7 @@ describeEmbeddedPostgres("OpenWA guidance at run start", () => {
     const base = Date.now() - 60_000;
     for (let index = 0; index < OPENWA_WAKE_MAX_MESSAGES + 5; index += 1) {
       const text = index === OPENWA_WAKE_MAX_MESSAGES + 4 ? "x".repeat(5000) : "message " + index;
-      ids.push((await seedDelivery(seed, { text, receivedAt: new Date(base + index * 1000), media: index === 10, quoted: index === 11 })).id);
+      ids.push((await seedDelivery(seed, { text, receivedAt: new Date(base + index * 1000), media: index === 10, quoted: index === 11, ...(index === 11 ? { forwarded: { score: 5 } } : {}) })).id);
     }
     const [mediaDelivery] = await db.select({ normalizedEvent: chatDeliveries.normalizedEvent }).from(chatDeliveries).where(eq(chatDeliveries.id, ids[12]!));
     const mediaWaId = String((mediaDelivery!.normalizedEvent.openwa as Record<string, unknown>).waMessageId);
@@ -687,6 +688,8 @@ describeEmbeddedPostgres("OpenWA guidance at run start", () => {
     expect(result.wake.messages.find((message) => message.text === "message 11")!.quoted).toEqual({
       id: "false_" + PEER + "_QUOTED", text: "earlier agent text", fromAgent: true,
     });
+    expect(result.wake.messages.find((message) => message.text === "message 11")!.forwarded).toEqual({ score: 5 });
+    expect(result.wake.messages.find((message) => message.text === "message 10")!).not.toHaveProperty("forwarded");
     const withMedia = result.wake.messages.find((message) => message.text === "message 12")!;
     expect(withMedia.media).toEqual([{ kind: "voice", attachmentId, mime: "audio/ogg", size: 4096, transcript: "voice note text" }]);
     expect(withMedia.contact).toEqual({ name: "Rina", phones: ["+62xxx...6777"] });

@@ -564,6 +564,7 @@ export interface OpenwaInboundEvent {
   readonly media: OpenwaMediaMeta | null;
   readonly location: Record<string, unknown> | null;
   readonly contact: Record<string, unknown> | null;
+  readonly forwarded?: { readonly score: number | null };
   readonly raw: Record<string, unknown>;
 }
 
@@ -701,6 +702,9 @@ export function normalizeOpenwaInbound(
       : null,
     location: record(data.location),
     contact: record(data.contact),
+    ...(data.isForwarded === true
+      ? { forwarded: { score: typeof data.forwardingScore === "number" && data.forwardingScore > 0 ? data.forwardingScore : null } }
+      : {}),
     raw: data,
   };
 }

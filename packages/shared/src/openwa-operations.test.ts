@@ -6,10 +6,10 @@ const SEND_PATH = /\/messages\/(send-[a-z]+|reply|forward)$/;
 
 describe("OpenWA operation manifest", () => {
   it("covers every operation of the pinned gateway document exactly once", () => {
-    expect(OPENWA_GATEWAY_VERSION).toBe("0.27.1");
-    expect(OPENWA_OPERATIONS).toHaveLength(205);
-    expect(new Set(OPENWA_OPERATIONS.map((operation) => operation.id)).size).toBe(205);
-    expect(new Set(OPENWA_OPERATIONS.map((operation) => operation.method + " " + operation.path)).size).toBe(205);
+    expect(OPENWA_GATEWAY_VERSION).toBe("0.30.0");
+    expect(OPENWA_OPERATIONS).toHaveLength(206);
+    expect(new Set(OPENWA_OPERATIONS.map((operation) => operation.id)).size).toBe(206);
+    expect(new Set(OPENWA_OPERATIONS.map((operation) => operation.method + " " + operation.path)).size).toBe(206);
   });
 
   it("classifies every gateway administration surface as gateway_admin", () => {

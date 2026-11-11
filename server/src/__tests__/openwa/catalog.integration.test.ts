@@ -336,7 +336,7 @@ describe("OpenWA catalog, describe and call (embedded Postgres + fake gateway)",
     expect(outcomes.filter((entry) => entry.actual !== entry.expected)).toEqual([]);
     expect(outcomes.filter((entry) => (entry.actual === "dispatch") !== (entry.forwarded === 1))).toEqual([]);
     const counts = outcomes.reduce<Record<string, number>>((acc, entry) => ({ ...acc, [entry.actual]: (acc[entry.actual] ?? 0) + 1 }), {});
-    expect(counts).toEqual({ dispatch: 182, unavailable_on_engine: 14, self_session_requires_confirmation: 4, secret_issuing_operation: 5 });
+    expect(counts).toEqual({ dispatch: 183, unavailable_on_engine: 14, self_session_requires_confirmation: 4, secret_issuing_operation: 5 });
     const audited = await db
       .select({ count: sql<number>`count(*)::int` })
       .from(chatAuditEntries)
