@@ -1,0 +1,68 @@
+name: Browser gates image
+
+on:
+  push:
+    branches: [main]
+    paths: [.github/browser-gates.Dockerfile]
+  pull_request:
+    paths: [.github/browser-gates.Dockerfile]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: browser-gates-image-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  image:
+    name: Build the Mobile shell and contrast gate image
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      IMAGE: ghcr.io/${{ github.repository_owner }}/wardmote-browser-gates
+      PUBLISH: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+          sparse-checkout: .github/browser-gates.Dockerfile
+          sparse-checkout-cone-mode: false
+
+      - name: Build
+        id: build
+        run: |
+          set -euo pipefail
+          version="$(sed -n 's/^ARG PLAYWRIGHT_VERSION=//p' .github/browser-gates.Dockerfile)"
+          tag="$IMAGE:playwright-$version-$(sha256sum .github/browser-gates.Dockerfile | cut -c1-12)"
+          docker build --pull --tag "$tag" - < .github/browser-gates.Dockerfile
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          docker image ls "$tag" --format 'size {{.Size}}'
+
+      - name: Smoke the browsers
+        env:
+          TAG: ${{ steps.build.outputs.tag }}
+        run: |
+          docker run --rm --init --ipc=host --user 1001:1001 -e HOME=/tmp "$TAG" sh -c '
+            set -e
+            node --version
+            pnpm --version
+            ls "$PLAYWRIGHT_BROWSERS_PATH"
+            test -n "$(find "$PLAYWRIGHT_BROWSERS_PATH" -path "*webkit*" -name pw_run.sh)"
+            test -n "$(find "$PLAYWRIGHT_BROWSERS_PATH" -name chrome-headless-shell -type f)"
+          '
+
+      - name: Push
+        if: env.PUBLISH == 'true'
+        env:
+          TAG: ${{ steps.build.outputs.tag }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          printf '%s' "$GH_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+          docker push --quiet "$TAG"
+          digest="$(docker image inspect --format '{{index .RepoDigests 0}}' "$TAG")"
+          echo "Pin in ci.yml: \`$digest\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "digest $digest"
