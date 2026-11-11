@@ -1,6 +1,6 @@
 export const MINIMUM_NODE_VERSION = "24.11.0";
 export const NODE_VERSION_INSTALL_GUIDE_URL =
-  "https://github.com/paperclipai/paperclip/blob/master/doc/INSTALLING.md#recommended-install";
+  "https://github.com/tickernelz/wardmote/blob/main/doc/INSTALLING.md#recommended-install";
 const NODE_VERSION_WARNING_EMITTED = Symbol.for("@tickernelz/wardmote-node-version-warning-emitted");
 
 function parseVersion(version: string): [number, number, number] | null {

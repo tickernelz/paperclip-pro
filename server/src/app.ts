@@ -431,7 +431,7 @@ export async function createApp(
     chatWebhookPublicBaseUrl?: string;
     authReady: boolean;
     companyDeletionEnabled: boolean;
-    announcements?: { enabled: boolean; feedUrl: string };
+    announcements?: { enabled: boolean; feedUrl: string | undefined };
     instanceId?: string;
     hostVersion?: string;
     localPluginDir?: string;

@@ -422,9 +422,7 @@ function buildPlanDecisionResponseText(
   return reason ? `Requested changes\n\n${reason}` : "Requested changes";
 }
 
-const FEEDBACK_TERMS_URL =
-  import.meta.env.VITE_FEEDBACK_TERMS_URL?.trim() ||
-  "https://paperclip.ing/tos";
+const FEEDBACK_TERMS_URL = import.meta.env.VITE_FEEDBACK_TERMS_URL?.trim() || null;
 const ISSUE_COMMENT_AUTOLOAD_LIMIT = ISSUE_COMMENT_PAGE_SIZE * 3;
 const JUMP_TO_LATEST_MAX_COMMENT_PAGES = 10;
 const ISSUE_QUEUED_COMMENTS_POLL_MS = 3_000;
