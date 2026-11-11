@@ -827,6 +827,12 @@ describe("OpenWA owner approvals and grants (embedded Postgres + fake gateway)",
     expect(ownerSend.text).toContain("Ringkasan permintaan anggota.");
     const short = await requestApproval(memberRun.binding, { message: "Approve invoice task?" });
     expect(short).not.toHaveProperty("messageShortened");
+    const spaced = "a" + " ".repeat(3400) + "b cx" + " filler".repeat(600);
+    const started = performance.now();
+    const cut = (await requestApproval(memberRun.binding, { message: spaced })) as Awaited<ReturnType<typeof requestApproval>> & { messageShortened?: unknown };
+    expect(performance.now() - started).toBeLessThan(5_000);
+    expect(cut.messageShortened).toMatchObject({ originalLength: spaced.length });
+    expect(t.gateway.sends.at(-1)!.text.endsWith("[…]")).toBe(true);
   }, 120_000);
 
   it("rejects approval requests from owner-class runs", async () => {

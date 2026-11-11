@@ -269,7 +269,10 @@ function bubbleText(ctx: ToolContext, markdown: string): { text: string; shorten
   const whole = single(markdown);
   if (whole !== null) return { text: whole, shortenedFrom: null };
   for (let room = Math.min(markdown.length, OPENWA_APPROVAL_MESSAGE_MAX_LENGTH); room >= APPROVAL_SHORTEN_FLOOR; room = Math.floor(room * 0.9)) {
-    const cut = markdown.slice(0, room).replace(/\s+\S*$/, "").trimEnd();
+    const slice = markdown.slice(0, room);
+    let end = slice.length;
+    while (end > 0 && !/\s/.test(slice[end - 1]!)) end--;
+    const cut = (end > 0 ? slice.slice(0, end) : slice).trimEnd();
     const text = single(cut + APPROVAL_SHORTENED_SUFFIX);
     if (text !== null) return { text, shortenedFrom: markdown.length };
   }
