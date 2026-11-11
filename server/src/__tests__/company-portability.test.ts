@@ -403,7 +403,7 @@ describe("company portability", () => {
         description: "Wardmote coordination skill",
         markdown: "---\nname: paperclip\ndescription: Wardmote coordination skill\n---\n\n# Wardmote\n",
         sourceType: "github",
-        sourceLocator: "https://github.com/tickernelz/wardmote/tree/master/skills/wardmote",
+        sourceLocator: "https://github.com/paperclipai/paperclip/tree/master/skills/wardmote",
         sourceRef: "0123456789abcdef0123456789abcdef01234567",
         trustLevel: "markdown_only",
         compatibility: "compatible",
@@ -532,7 +532,7 @@ describe("company portability", () => {
 
   it("parses canonical GitHub import URLs with explicit ref and package path", () => {
     expect(
-      parseGitHubSourceUrl("https://github.com/tickernelz/companies?ref=feature%2Fdemo&path=gstack"),
+      parseGitHubSourceUrl("https://github.com/paperclipai/companies?ref=feature%2Fdemo&path=gstack"),
     ).toEqual({
       hostname: "github.com",
       owner: "paperclipai",
@@ -546,7 +546,7 @@ describe("company portability", () => {
   it("parses canonical GitHub import URLs with explicit companyPath", () => {
     expect(
       parseGitHubSourceUrl(
-        "https://github.com/tickernelz/companies?ref=abc123&companyPath=gstack%2FCOMPANY.md",
+        "https://github.com/paperclipai/companies?ref=abc123&companyPath=gstack%2FCOMPANY.md",
       ),
     ).toEqual({
       hostname: "github.com",
@@ -923,7 +923,7 @@ describe("company portability", () => {
       description: "Catalog review skill",
       markdown: "---\nname: review\ndescription: Catalog review skill\n---\n\n# Review\n",
       sourceType: "catalog",
-      sourceLocator: "/tmp/wardmote/catalog/review",
+      sourceLocator: "/tmp/paperclip/catalog/review",
       sourceRef: originHash,
       trustLevel: "markdown_only",
       compatibility: "compatible",
@@ -1136,7 +1136,7 @@ describe("company portability", () => {
         },
       },
       {
-        id: "skill-wardmote",
+        id: "skill-paperclip",
         companyId: "company-1",
         key: "tickernelz/wardmote/release-changelog",
         slug: "release-changelog",
@@ -1144,7 +1144,7 @@ describe("company portability", () => {
         description: "Bundled release changelog skill",
         markdown: "---\nname: release-changelog\n---\n\n# Bundled Release Changelog\n",
         sourceType: "github",
-        sourceLocator: "https://github.com/tickernelz/wardmote/tree/master/skills/release-changelog",
+        sourceLocator: "https://github.com/paperclipai/paperclip/tree/master/skills/release-changelog",
         sourceRef: "0123456789abcdef0123456789abcdef01234567",
         trustLevel: "markdown_only",
         compatibility: "compatible",
@@ -1323,13 +1323,13 @@ describe("company portability", () => {
             projectId: "project-1",
             name: "Main Repo",
             sourceType: "git_repo",
-            cwd: "/Users/dotta/wardmote",
+            cwd: "/Users/dotta/paperclip",
             repoUrl: "https://github.com/paperclipai/paperclip.git",
             repoRef: "main",
             defaultRef: "main",
             visibility: "default",
             setupCommand: "pnpm install",
-            cleanupCommand: "rm -rf .wardmote-tmp",
+            cleanupCommand: "rm -rf .paperclip-tmp",
             remoteProvider: null,
             remoteWorkspaceRef: null,
             sharedWorkspaceKey: null,
@@ -1401,7 +1401,7 @@ describe("company portability", () => {
     expect(extension).toContain('repoUrl: "https://github.com/paperclipai/paperclip.git"');
     expect(extension).toContain('defaultProjectWorkspaceKey: "main-repo"');
     expect(extension).toContain('projectWorkspaceKey: "main-repo"');
-    expect(extension).not.toContain("/Users/dotta/wardmote");
+    expect(extension).not.toContain("/Users/dotta/paperclip");
     expect(extension).not.toContain("workspace-1");
     expect(exported.warnings).toContain("Project launch workspace Local Scratch was omitted from export because it does not have a portable repoUrl.");
 
@@ -1535,7 +1535,7 @@ describe("company portability", () => {
     };
 
     await portability.importBundle({
-      source: { type: "inline", rootPath: "wardmote-demo", files },
+      source: { type: "inline", rootPath: "paperclip-demo", files },
       include: { company: true, agents: false, projects: true, issues: false },
       target: { mode: "new_company", newCompanyName: "Imported Wardmote" },
       collisionStrategy: "rename",
@@ -1560,7 +1560,7 @@ describe("company portability", () => {
       {
         id: "project-1",
         name: "Wardmote App",
-        urlKey: "wardmote-app",
+        urlKey: "paperclip-app",
         description: "Ship it",
         leadAgentId: null,
         targetDate: null,
@@ -2204,7 +2204,7 @@ describe("company portability", () => {
     await portability.importBundle({
       source: {
         type: "inline",
-        rootPath: "wardmote-demo",
+        rootPath: "paperclip-demo",
         files: {
           "COMPANY.md": [
             "---",
@@ -2704,7 +2704,7 @@ describe("company portability", () => {
     };
 
     const preview = await portability.previewImport({
-      source: { type: "inline", rootPath: "wardmote-demo", files },
+      source: { type: "inline", rootPath: "paperclip-demo", files },
       include: { company: true, agents: true, projects: true, issues: true, skills: false },
       target: { mode: "new_company", newCompanyName: "Imported Wardmote" },
       agents: "all",
@@ -2720,7 +2720,7 @@ describe("company portability", () => {
     ]);
 
     const result = await portability.importBundle({
-      source: { type: "inline", rootPath: "wardmote-demo", files },
+      source: { type: "inline", rootPath: "paperclip-demo", files },
       include: { company: true, agents: true, projects: true, issues: true, skills: false },
       target: { mode: "new_company", newCompanyName: "Imported Wardmote" },
       agents: "all",
@@ -2776,7 +2776,7 @@ describe("company portability", () => {
     };
 
     await portability.importBundle({
-      source: { type: "inline", rootPath: "wardmote-demo", files },
+      source: { type: "inline", rootPath: "paperclip-demo", files },
       include: { company: true, agents: false, projects: false, issues: false },
       // No newCompanyName: the manifest name is used and must be de-duplicated.
       target: { mode: "new_company" },
@@ -2804,7 +2804,7 @@ describe("company portability", () => {
     };
 
     await portability.importBundle({
-      source: { type: "inline", rootPath: "wardmote-demo", files },
+      source: { type: "inline", rootPath: "paperclip-demo", files },
       include: { company: true, agents: false, projects: false, issues: false },
       target: { mode: "new_company" },
       collisionStrategy: "rename",
@@ -2833,7 +2833,7 @@ describe("company portability", () => {
     };
 
     await portability.importBundle({
-      source: { type: "inline", rootPath: "wardmote-demo", files },
+      source: { type: "inline", rootPath: "paperclip-demo", files },
       include: { company: true, agents: false, projects: false, issues: false },
       target: { mode: "new_company", newCompanyName: "Imported Wardmote" },
       collisionStrategy: "rename",
@@ -2893,7 +2893,7 @@ describe("company portability", () => {
     };
 
     const result = await portability.importBundle({
-      source: { type: "inline", rootPath: "wardmote-demo", files },
+      source: { type: "inline", rootPath: "paperclip-demo", files },
       include: { company: true, agents: true, projects: true, issues: true, skills: false },
       target: { mode: "new_company", newCompanyName: "Imported Wardmote" },
       agents: "all",
@@ -2964,7 +2964,7 @@ describe("company portability", () => {
     };
 
     const result = await portability.importBundle({
-      source: { type: "inline", rootPath: "wardmote-demo", files },
+      source: { type: "inline", rootPath: "paperclip-demo", files },
       include: { company: true, agents: true, projects: true, issues: true, skills: false },
       target: { mode: "new_company", newCompanyName: "Imported Wardmote" },
       agents: "all",
@@ -3030,7 +3030,7 @@ describe("company portability", () => {
     };
 
     const preview = await portability.previewImport({
-      source: { type: "inline", rootPath: "wardmote-demo", files },
+      source: { type: "inline", rootPath: "paperclip-demo", files },
       include: { company: true, agents: true, projects: true, issues: true, skills: false },
       target: { mode: "new_company", newCompanyName: "Imported Wardmote" },
       agents: "all",
@@ -3044,7 +3044,7 @@ describe("company portability", () => {
     }));
 
     await portability.importBundle({
-      source: { type: "inline", rootPath: "wardmote-demo", files },
+      source: { type: "inline", rootPath: "paperclip-demo", files },
       include: { company: true, agents: true, projects: true, issues: true, skills: false },
       target: { mode: "new_company", newCompanyName: "Imported Wardmote" },
       agents: "all",
@@ -3083,7 +3083,7 @@ describe("company portability", () => {
       ].join("\n"),
     };
     const request = {
-      source: { type: "inline" as const, rootPath: "wardmote-demo", files },
+      source: { type: "inline" as const, rootPath: "paperclip-demo", files },
       include: { company: true, agents: false, projects: false, issues: true, skills: false },
       target: { mode: "new_company" as const, newCompanyName: "Imported Wardmote" },
       collisionStrategy: "rename" as const,
@@ -3122,7 +3122,7 @@ describe("company portability", () => {
     const preview = await portability.previewImport({
       source: {
         type: "inline",
-        rootPath: "wardmote-demo",
+        rootPath: "paperclip-demo",
         files: {
           "COMPANY.md": [
             "---",
@@ -3175,7 +3175,7 @@ describe("company portability", () => {
     await portability.importBundle({
       source: {
         type: "inline",
-        rootPath: "wardmote-demo",
+        rootPath: "paperclip-demo",
         files: {
           "COMPANY.md": [
             "---",
@@ -3347,7 +3347,7 @@ describe("company portability", () => {
       originalKey: "paperclip",
       originalSlug: "paperclip",
       requestedRefs: ["paperclip"],
-      reason: "Existing skill matched; renamed to wardmote-2.",
+      reason: "Existing skill matched; renamed to paperclip-2.",
     }]);
 
     const exported = await portability.exportBundle("company-1", {
@@ -3392,7 +3392,7 @@ describe("company portability", () => {
       slug: "paperclip",
       id: "skill-imported",
       action: "renamed",
-      reason: "Existing skill matched; renamed to wardmote-2.",
+      reason: "Existing skill matched; renamed to paperclip-2.",
     }]);
     expect(agentSvc.create).toHaveBeenCalledWith("company-imported", expect.objectContaining({
       adapterConfig: expect.objectContaining({

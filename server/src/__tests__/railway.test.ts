@@ -51,7 +51,7 @@ describe("Railway governed operations", () => {
     expect(isRailwayConnection({ transport: "mcp_remote", authKind: "oauth", credentialSource: "wardmote_vault", config: { url: "https://mcp.railway.com", sourceTemplateKey: "railway", connectionMethodKey: "mcp-oauth" } })).toBe(true);
     expect(railwayRisk("railwayAgent")).toBe("destructive");
     expect(isRailwayToolBlocked("accept_deploy")).toBe(true);
-    expect(railwayRisk("wardmote-railway-run-command")).toBe("destructive");
+    expect(railwayRisk("paperclip-railway-run-command")).toBe("destructive");
     expect(railwayRisk("unfamiliar-tool")).toBe("write");
     expect(RAILWAY_TOOLS).toHaveLength(11);
     expect(RAILWAY_TOOLS.map((tool) => tool.name)).not.toContain("paperclip-railway-deploy-revision");
@@ -66,7 +66,7 @@ describe("Railway governed operations", () => {
 
   it("checks full deployment membership before a single fixed mutation", async () => {
     const f = fixture();
-    await expect(f.client.call("wardmote-railway-restart", target)).resolves.toEqual({ deploymentRestart: true, targetDeploymentId: target.deploymentId });
+    await expect(f.client.call("paperclip-railway-restart", target)).resolves.toEqual({ deploymentRestart: true, targetDeploymentId: target.deploymentId });
     expect(f.request.mock.calls.map(([, init]) => JSON.parse(String(init.body)).query)).toEqual([RAILWAY_QUERIES.target, RAILWAY_QUERIES.deployment, RAILWAY_QUERIES.restart]);
     for (const [url, init] of f.request.mock.calls) {
       expect(url).toBe(RAILWAY_API_URL);
@@ -81,23 +81,23 @@ describe("Railway governed operations", () => {
       if (field === "deployment" && q === RAILWAY_QUERIES.deployment) return Response.json({ data: { deployment: { ...deploymentData.deployment, serviceId: instanceId } } });
       if (field !== "deployment" && q === RAILWAY_QUERIES.target) return Response.json({ data: { ...targetData, [field]: { ...targetData[field as keyof typeof targetData], id: instanceId } } });
     });
-    await expect(f.client.call("wardmote-railway-restart", target)).rejects.toMatchObject({ code: "railway_target_mismatch" });
+    await expect(f.client.call("paperclip-railway-restart", target)).rejects.toMatchObject({ code: "railway_target_mismatch" });
     expect(f.request.mock.calls.every(([, init]) => !JSON.parse(String(init.body)).query.startsWith("mutation"))).toBe(true);
   });
 
   it("bounds and redacts logs without selecting variables", async () => {
     const f = fixture((q) => q === RAILWAY_QUERIES.runtimeLogs ? Response.json({ data: { deploymentLogs: Array.from({ length: 20 }, () => ({ message: `railway-fixture-secret ${"x".repeat(9000)}`, severity: "INFO" })) } }) : undefined);
-    const result = await f.client.call("wardmote-railway-read-logs", { ...target, limit: 10 });
+    const result = await f.client.call("paperclip-railway-read-logs", { ...target, limit: 10 });
     expect(JSON.stringify(result)).not.toContain("railway-fixture-secret");
     expect(Buffer.byteLength(JSON.stringify(result))).toBeLessThan(66000);
     expect(result).toMatchObject({ truncated: true });
-    await expect(f.client.call("wardmote-railway-read-logs", { ...target, limit: 501 })).rejects.toMatchObject({ code: "railway_invalid_arguments" });
+    await expect(f.client.call("paperclip-railway-read-logs", { ...target, limit: 501 })).rejects.toMatchObject({ code: "railway_invalid_arguments" });
     expect(Object.values(RAILWAY_QUERIES).join(" ")).not.toMatch(/variableCollection|variables\s*\{/);
   });
 
   it("reports when a single long log line was cut", async () => {
     const f = fixture((q) => q === RAILWAY_QUERIES.runtimeLogs ? Response.json({ data: { deploymentLogs: [{ message: "x".repeat(20000) }] } }) : undefined);
-    await expect(f.client.call("wardmote-railway-read-logs", target)).resolves.toMatchObject({ truncated: true, limitReached: false });
+    await expect(f.client.call("paperclip-railway-read-logs", target)).resolves.toMatchObject({ truncated: true, limitReached: false });
   });
 
   it.each([401, 403, 429, 500])("sanitizes HTTP %s without retries", async (status) => {
@@ -108,7 +108,7 @@ describe("Railway governed operations", () => {
 
   it("does not expose GraphQL error details or retry an ambiguous mutation", async () => {
     const f = fixture((q) => q === RAILWAY_QUERIES.restart ? Response.json({ errors: [{ message: "sensitive provider payload" }] }) : undefined);
-    await expect(f.client.call("wardmote-railway-restart", target)).rejects.toMatchObject({ code: "railway_api_error" });
+    await expect(f.client.call("paperclip-railway-restart", target)).rejects.toMatchObject({ code: "railway_api_error" });
     expect(f.request).toHaveBeenCalledTimes(3);
   });
 
@@ -132,7 +132,7 @@ describe("Railway governed operations", () => {
     expect(f.request).toHaveBeenCalledTimes(1);
   });
 
-  it.each(["paperclip-railway-deploy-revision", "wardmote_railway_deploy_revision", "wardmoteRailwayDeployRevision"])("blocks %s before any repository preflight or deployment mutation", async (name) => {
+  it.each(["paperclip-railway-deploy-revision", "paperclip_railway_deploy_revision", "paperclipRailwayDeployRevision"])("blocks %s before any repository preflight or deployment mutation", async (name) => {
     // Even a matching repository in the preflight can change before mutation.
     // Without an atomic provider binding, no upstream request is safe to send.
     const f = fixture();
@@ -145,9 +145,9 @@ describe("Railway governed operations", () => {
 
   it("allows only an instance in the exact running deployment to reach SSH", async () => {
     const f = fixture();
-    await expect(f.client.call("wardmote-railway-run-command", { ...target, deploymentInstanceId: target.serviceId, command: "true" })).rejects.toMatchObject({ code: "railway_target_mismatch" });
+    await expect(f.client.call("paperclip-railway-run-command", { ...target, deploymentInstanceId: target.serviceId, command: "true" })).rejects.toMatchObject({ code: "railway_target_mismatch" });
     expect(f.runCommand).not.toHaveBeenCalled();
-    await f.client.call("wardmote-railway-run-command", { ...target, deploymentInstanceId: instanceId, command: "true" });
+    await f.client.call("paperclip-railway-run-command", { ...target, deploymentInstanceId: instanceId, command: "true" });
     expect(f.runCommand).toHaveBeenCalledWith({ deploymentInstanceId: instanceId, command: "true", timeoutSeconds: 30, signal: f.controller.signal });
   });
 });

@@ -217,7 +217,7 @@ describeEmbeddedPostgres("server-hosted Wardmote MCP endpoint", () => {
     const call = (name: string) => rpc({ method: "tools/call", params: { name, arguments: { issueId: seeded.issueId } } });
     const current = await call("wardmoteGetIssue");
     expect(current.body.result!.isError).toBeFalsy();
-    const retired = await call("wardmoteGetIssue");
+    const retired = await call("paperclipGetIssue");
     expect(retired.body.error ?? retired.body.result?.isError).toBeTruthy();
     const { body } = await rpc({ method: "tools/list" });
     const names = body.result!.tools!.map((tool) => tool.name);

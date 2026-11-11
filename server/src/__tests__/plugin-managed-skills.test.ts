@@ -68,7 +68,7 @@ describeEmbeddedPostgres("plugin-managed skills", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-plugin-managed-skills-");
+    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-plugin-managed-skills-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 
@@ -120,7 +120,7 @@ describeEmbeddedPostgres("plugin-managed skills", () => {
     expect(created.status).toBe("created");
     expect(created.skill).toMatchObject({
       name: "Wiki Maintainer Skill",
-      key: "plugin/wardmote-managed-skills-test/wiki-maintainer",
+      key: "plugin/paperclip-managed-skills-test/wiki-maintainer",
       sourceType: "catalog",
       fileInventory: expect.arrayContaining([
         expect.objectContaining({ path: "SKILL.md", kind: "skill" }),
@@ -171,7 +171,7 @@ describeEmbeddedPostgres("plugin-managed skills", () => {
       name: "Wiki Maintainer Skill",
       description: "Use LLM Wiki tools to maintain company knowledge.",
     });
-    expect(reset.skill?.markdown).toContain("key: \"plugin/wardmote-managed-skills-test/wiki-maintainer\"");
+    expect(reset.skill?.markdown).toContain("key: \"plugin/paperclip-managed-skills-test/wiki-maintainer\"");
   });
 
   it("does not rewrite managed skill bindings when defaults are unchanged", async () => {
@@ -273,9 +273,9 @@ describeEmbeddedPostgres("plugin-managed skills", () => {
 
     expect(created.status).toBe("created");
     expect(created.skill).toMatchObject({
-      key: "plugin/wardmote-managed-skills-test/markdown-skill",
+      key: "plugin/paperclip-managed-skills-test/markdown-skill",
       name: "markdown-skill",
     });
-    expect(created.skill?.markdown).toContain("key: \"plugin/wardmote-managed-skills-test/markdown-skill\"");
+    expect(created.skill?.markdown).toContain("key: \"plugin/paperclip-managed-skills-test/markdown-skill\"");
   });
 });

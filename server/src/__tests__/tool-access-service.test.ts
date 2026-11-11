@@ -750,7 +750,7 @@ describeEmbeddedPostgres("tool access service", () => {
       return;
     }
     tempDb = await startEmbeddedPostgresTestDatabase(
-      "wardmote-tool-access-service-",
+      "paperclip-tool-access-service-",
     );
     db = createDb(tempDb.connectionString);
     await instanceSettingsService(db).updateExperimental({ enableMemoryConnectors: true });
@@ -5872,7 +5872,7 @@ describeEmbeddedPostgres("tool access service", () => {
       expiresAt: Date.now() + 60_000,
       connector: {
         id: "scl_posthog",
-        uid: "posthog-wardmote",
+        uid: "posthog-paperclip",
         type: "api-key",
       },
       tenantId: "project-12345",
@@ -5883,7 +5883,7 @@ describeEmbeddedPostgres("tool access service", () => {
     const vercelConnectClient: VercelConnectClient = {
       getConnectorMetadata: vi.fn(async () => ({
         id: "scl_posthog",
-        uid: "posthog-wardmote",
+        uid: "posthog-paperclip",
         name: "Wardmote PostHog",
         type: "api-key",
         service: "mcp.posthog.com/mcp",
@@ -5921,7 +5921,7 @@ describeEmbeddedPostgres("tool access service", () => {
         galleryKey: "posthog",
         connectionMethodKey: "mcp-api-key",
         credentialSource: "vercel_connect",
-        vercelConnect: { connector: "posthog-wardmote" },
+        vercelConnect: { connector: "posthog-paperclip" },
         configValues: { projectId: "12345", mode: "tools" },
         grantKind: "organization",
       },
@@ -5947,7 +5947,7 @@ describeEmbeddedPostgres("tool access service", () => {
       externalCredential: {
         provider: "vercel_connect",
         connectorId: "scl_posthog",
-        connectorUid: "posthog-wardmote",
+        connectorUid: "posthog-paperclip",
         service: "mcp.posthog.com/mcp",
         principalMode: "app",
       },
@@ -5975,7 +5975,7 @@ describeEmbeddedPostgres("tool access service", () => {
           galleryKey: "posthog",
           connectionMethodKey: "mcp-api-key",
           credentialSource: "vercel_connect",
-          vercelConnect: { connector: "posthog-wardmote" },
+          vercelConnect: { connector: "posthog-paperclip" },
           configValues: { projectId: "67890", mode: "tools" },
         },
         { actorType: "user", actorId: "other-board" },
@@ -6013,7 +6013,7 @@ describeEmbeddedPostgres("tool access service", () => {
       vercelConnectClient: {
         getConnectorMetadata: vi.fn(async () => ({
           id: "scl_linear",
-          uid: "linear-wardmote",
+          uid: "linear-paperclip",
           name: "Linear",
           type: "api-key",
           service: "linear",
@@ -6035,7 +6035,7 @@ describeEmbeddedPostgres("tool access service", () => {
           galleryKey: "posthog",
           connectionMethodKey: "mcp-api-key",
           credentialSource: "vercel_connect",
-          vercelConnect: { connector: "linear-wardmote" },
+          vercelConnect: { connector: "linear-paperclip" },
           configValues: { projectId: "12345", mode: "tools" },
         },
         { actorType: "user", actorId: "board" },
@@ -6058,7 +6058,7 @@ describeEmbeddedPostgres("tool access service", () => {
       token: "notion-provider-bearer",
       tokenId: "stk_notion",
       expiresAt: Date.now() + 60_000,
-      connector: { id: "scl_notion", uid: "notion-wardmote", type: "oauth" },
+      connector: { id: "scl_notion", uid: "notion-paperclip", type: "oauth" },
       tenantId: "notion-workspace",
     }));
     const startAuthorization = vi.fn<VercelConnectClient["startAuthorization"]>(
@@ -6074,7 +6074,7 @@ describeEmbeddedPostgres("tool access service", () => {
       vercelConnectClient: {
         getConnectorMetadata: vi.fn(async () => ({
           id: "scl_notion",
-          uid: "notion-wardmote",
+          uid: "notion-paperclip",
           name: "Wardmote Notion",
           type: "oauth",
           service: "notion",
@@ -6103,7 +6103,7 @@ describeEmbeddedPostgres("tool access service", () => {
       {
         galleryKey: "notion",
         credentialSource: "vercel_connect",
-        vercelConnect: { connector: "notion-wardmote" },
+        vercelConnect: { connector: "notion-paperclip" },
         grantKind: "user",
       },
       { actorType: "user", actorId: "board-user", sessionId: "board-session" },
@@ -6130,7 +6130,7 @@ describeEmbeddedPostgres("tool access service", () => {
     );
     expect(startAuthorization).toHaveBeenCalledWith(
       expect.objectContaining({
-        connector: "notion-wardmote",
+        connector: "notion-paperclip",
         subject: expect.objectContaining({ type: "user" }),
         resources: ["https://mcp.notion.com/mcp"],
       }),
@@ -9621,7 +9621,7 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it.each([
-    "https://wardmote-public.example",
+    "https://paperclip-public.example",
     "http://127.0.0.1:3200",
     "http://localhost:3200",
   ])(
@@ -10312,7 +10312,7 @@ describeEmbeddedPostgres("tool access service", () => {
     ).toBe("notion-dcr-client");
     expect(registrationBodies).toEqual([
       {
-        client_name: "Wardmote wardmote-dev-tail29c1aa-ts-net",
+        client_name: "Wardmote paperclip-dev-tail29c1aa-ts-net",
         redirect_uris: [redirectUri],
         grant_types: ["authorization_code", "refresh_token"],
         response_types: ["code"],
@@ -18052,11 +18052,11 @@ describe("normalizeConnectionMethodConfig", () => {
   it("builds a concrete Shopify endpoint from the validated store domain", () => {
     expect(
       normalizeConnectionMethodConfig(shopifyMethod, {
-        storeDomain: "wardmote-demo.myshopify.com",
+        storeDomain: "paperclip-demo.myshopify.com",
       }),
     ).toEqual({
-      values: { storeDomain: "wardmote-demo.myshopify.com" },
-      url: "https://wardmote-demo.myshopify.com/api/mcp",
+      values: { storeDomain: "paperclip-demo.myshopify.com" },
+      url: "https://paperclip-demo.myshopify.com/api/mcp",
     });
   });
 

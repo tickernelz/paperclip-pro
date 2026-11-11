@@ -24,7 +24,7 @@ describe("runner E2E source provenance", () => {
       sha: "target-sha",
       ref: "refs/heads/target",
       workflowRunUrl:
-        "https://github.com/tickernelz/wardmote/actions/runs/123",
+        "https://github.com/paperclipai/paperclip/actions/runs/123",
     });
   });
 
@@ -48,7 +48,7 @@ describe("runner E2E source provenance", () => {
       sha: "result-sha",
       ref: "refs/heads/master",
       workflowRunUrl:
-        "https://github.com/tickernelz/wardmote/actions/runs/456",
+        "https://github.com/paperclipai/paperclip/actions/runs/456",
     });
     expect(resolveRunnerE2ESource(null, {})).toEqual({
       sha: null,

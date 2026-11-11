@@ -464,7 +464,7 @@ describe("terminal routes", () => {
 
       const ok = await request(app).post(`${base}/paste-image`).attach("file", png, { filename: "x", contentType: "image/png" });
       expect(ok.status).toBe(201);
-      const directory = path.join(tempDir, `wardmote-pasted-${process.getuid?.() ?? "user"}`);
+      const directory = path.join(tempDir, `paperclip-pasted-${process.getuid?.() ?? "user"}`);
       expect(path.dirname(ok.body.path)).toBe(directory);
       expect(path.basename(ok.body.path)).toMatch(/^pasted-image-\d+-[0-9a-f]{8}\.png$/);
       expect(readFileSync(ok.body.path)).toEqual(png);

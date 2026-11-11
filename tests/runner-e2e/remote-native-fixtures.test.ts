@@ -72,7 +72,7 @@ describe("remote native lease admission", () => {
     await expect(bindRemoteNativeFixture(h.options)).rejects.toThrow("lease_scope"); expect(h.executeCommand).not.toHaveBeenCalled();
   });
   it("rejects protected runtime targets and insufficient setup budget before SDK access", async () => {
-    for (const patch of [{ targets: [".wardmote-runtime/wardmote-runner/bin/forbidden"] }, { actionFile: ".wardmote-runtime/wardmote-runner/task.txt" }, { deadlineAt: Date.now() + 1000 }]) {
+    for (const patch of [{ targets: [".wardmote-runtime/paperclip-runner/bin/forbidden"] }, { actionFile: ".wardmote-runtime/paperclip-runner/task.txt" }, { deadlineAt: Date.now() + 1000 }]) {
       const h = harness(); await expect(bindRemoteNativeFixture({ ...h.options, ...patch })).rejects.toThrow(); expect(h.get).not.toHaveBeenCalled();
     }
   });
@@ -430,14 +430,14 @@ describe("actual generated observer state machine", () => {
     }
     const { source, config } = install.request;
     const intervals: Array<() => void> = [], timers: Array<{ fn: () => void; ms: number }> = [];
-    const proc = new Map<number, { ppid: number; group: number; ticks: string; argv: string[] }>([[21, { ppid: 1, group: 21, ticks: "100", argv: ["/workspace/.wardmote-runtime/wardmote-runner/bin/wardmote-runnerd", "--run-id", "run", "--environment-lease-id", "workspace-id", "--lifecycle-mode", "per_turn", "--state-dir", "/workspace/.wardmote-runtime/wardmote-runner/sessions/" + "a".repeat(64) + "/runner"] }]]);
+    const proc = new Map<number, { ppid: number; group: number; ticks: string; argv: string[] }>([[21, { ppid: 1, group: 21, ticks: "100", argv: ["/workspace/.wardmote-runtime/paperclip-runner/bin/wardmote-runnerd", "--run-id", "run", "--environment-lease-id", "workspace-id", "--lifecycle-mode", "per_turn", "--state-dir", "/workspace/.wardmote-runtime/paperclip-runner/sessions/" + "a".repeat(64) + "/runner"] }]]);
     const files = new Map<string, Buffer>([[`${config.root}/observer.cjs`, Buffer.from(source)], [config.sentinel.path, Buffer.from(JSON.stringify({ version: 1, provider: "daytona", token: config.sentinel.token, companyId: "company", environmentId: "environment" }))]]);
     const watches: Array<{ path: string; callback: (_kind: string, name: string | null) => void; closed: boolean }> = [];
     const handlers: Array<(socket: any) => void> = [], children: any[] = [];
     const missing = () => { throw Object.assign(new Error("missing"), { code: "ENOENT" }); };
     const fds = new Map<number, string>(); let nextFd = 50, runtimeInode = 4n;
     const symbolicLinks = new Set<string>(), directoryInodes = new Map<string, bigint>();
-    const directories = new Set(["/tmp", "/workspace", "/workspace/.wardmote-runtime", "/workspace/.wardmote-runtime/paperclip-runner", "/workspace/.wardmote-runtime/wardmote-runner/sessions"]);
+    const directories = new Set(["/tmp", "/workspace", "/workspace/.wardmote-runtime", "/workspace/.wardmote-runtime/paperclip-runner", "/workspace/.wardmote-runtime/paperclip-runner/sessions"]);
     if (!deferStartup) directories.add(config.root);
     const listeners = new Map<string, (socket: any) => void>();
     const fs = {
@@ -773,9 +773,9 @@ describe("actual generated observer state machine", () => {
   });
   it("scopes actual runtime symlinks/state churn out while retaining sentinel and sibling coverage", async () => {
     const o = await observerHarness();
-    o.symbolicLinks.add("/workspace/.wardmote-runtime/wardmote-runner/provider-pack");
-    o.files.set("/workspace/.wardmote-runtime/wardmote-runner/bin/wardmote-runnerd", Buffer.alloc(100000));
-    o.fs.writeFileSync("/workspace/.wardmote-runtime/wardmote-runner/sessions/state.json", "runtime churn", { flag: "wx" });
+    o.symbolicLinks.add("/workspace/.wardmote-runtime/paperclip-runner/provider-pack");
+    o.files.set("/workspace/.wardmote-runtime/paperclip-runner/bin/wardmote-runnerd", Buffer.alloc(100000));
+    o.fs.writeFileSync("/workspace/.wardmote-runtime/paperclip-runner/sessions/state.json", "runtime churn", { flag: "wx" });
     const before = o.request("snapshot")[0].result;
     expect(before.complete).toBe(true); expect(before.watcher.workspaceMutationCount).toBe(0);
     expect(Object.keys(before.workspace)).toContain(".wardmote-runtime/reusable-sandbox-lease.json");
