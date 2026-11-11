@@ -56,6 +56,7 @@ import {
 } from "../../adapters/utils.js";
 import {
   resolveDefaultAgentWorkspaceDir,
+  resolveHomeAwarePath,
   resolveManagedProjectWorkspaceDir,
   resolveWardmoteInstanceRoot,
 } from "../../home-paths.js";
@@ -1845,13 +1846,13 @@ export function resolveRuntimeSessionParamsForWorkspace(input: {
     };
   }
   const fallbackAgentHomeCwd = resolveDefaultAgentWorkspaceDir(agentId);
-  if (path.resolve(previousCwd) !== path.resolve(fallbackAgentHomeCwd)) {
+  if (resolveHomeAwarePath(previousCwd) !== path.resolve(fallbackAgentHomeCwd)) {
     return {
       sessionParams: previousSessionParams,
       warning: null as string | null,
     };
   }
-  if (path.resolve(projectCwd) === path.resolve(previousCwd)) {
+  if (path.resolve(projectCwd) === resolveHomeAwarePath(previousCwd)) {
     return {
       sessionParams: previousSessionParams,
       warning: null as string | null,

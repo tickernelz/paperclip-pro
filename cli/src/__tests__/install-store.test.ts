@@ -106,6 +106,33 @@ describe("managed install store", () => {
     expect(payloads.slice(1).every((payload) => fs.existsSync(payload))).toBe(true);
   });
 
+  it("keeps payloads recorded under the migrated ~/.paperclip-pro link", () => {
+    const legacyHome = path.join(root, "home", ".paperclip-pro");
+    const legacyPath = (payload: string) => path.join(legacyHome, path.relative(paths.wardmoteHome, payload));
+    const payloads = ["1", "2", "3", "4"].map((version) => payloadPathFor(paths, "npm", version));
+    for (const payload of payloads) fs.mkdirSync(payload, { recursive: true });
+    fs.symlinkSync(paths.wardmoteHome, legacyHome);
+    writeInstallManifestAtomic({
+      schemaVersion: INSTALL_MANIFEST_VERSION,
+      ...record(legacyPath(payloads[2]), "3"),
+      previous: [record(legacyPath(payloads[1]), "2"), record(legacyPath(payloads[0]), "1")],
+    }, paths);
+
+    const next = buildNextManifest(record(payloads[3], "4"), readInstallManifest(paths));
+
+    expect(next.previous.map((entry) => entry.payloadPath)).toEqual([payloads[2], payloads[1]]);
+    expect(pruneInstallPayloads(next, paths)).toEqual([payloads[0]]);
+    expect(payloads.slice(1).every((payload) => fs.existsSync(payload))).toBe(true);
+  });
+
+  it("leaves recorded payload paths alone while ~/.paperclip-pro is not the migration link", () => {
+    const legacyHome = path.join(root, "home", ".paperclip-pro");
+    fs.mkdirSync(legacyHome, { recursive: true });
+    const legacyPayload = path.join(legacyHome, "cli", "installs", "npm", "1");
+    writeInstallManifestAtomic({ schemaVersion: INSTALL_MANIFEST_VERSION, ...record(legacyPayload, "1"), previous: [] }, paths);
+    expect(readInstallManifest(paths)?.payloadPath).toBe(legacyPayload);
+  });
+
   it("writes a stable shim with the validated runtime and custom store path", () => {
     writeManagedShim(paths);
     const shim = fs.readFileSync(paths.shimPath, "utf8");

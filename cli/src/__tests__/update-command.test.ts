@@ -288,6 +288,19 @@ describe("update command", () => {
     expect(runCommand).toHaveBeenCalledWith("npm", expect.arrayContaining(["view", "@tickernelz/wardmote@latest"]), expect.anything());
   });
 
+  it("rolls back to a payload recorded under the migrated ~/.paperclip-pro link", () => {
+    const userHome = path.join(root, "home");
+    const paths = resolveInstallStorePaths({ homeDir: userHome, wardmoteHome: path.join(userHome, ".wardmote") }); initializeInstallStore(paths);
+    fs.symlinkSync(paths.wardmoteHome, path.join(userHome, ".paperclip-pro"));
+    const legacyPath = (payload: string) => path.join(userHome, ".paperclip-pro", path.relative(paths.wardmoteHome, payload));
+    const previousPayload = payloadPathFor(paths, "npm", "1"); createPayload(previousPayload, "1");
+    const currentPayload = payloadPathFor(paths, "npm", "2"); createPayload(currentPayload, "2");
+    flipCurrentAtomic(currentPayload, paths);
+    writeInstallManifestAtomic({ schemaVersion: 1, ...record(legacyPath(currentPayload), "2"), previous: [record(legacyPath(previousPayload), "1")] }, paths);
+    expect(rollbackManagedInstall(paths).version).toBe("1");
+    expect(fs.realpathSync(paths.currentPath)).toBe(fs.realpathSync(previousPayload));
+  });
+
   it("rolls back the active payload when restart validation fails", async () => {
     const paths = resolveInstallStorePaths(); initializeInstallStore(paths);
     const oldPayload = payloadPathFor(paths, "npm", "1.0.0"); const executable = createPayload(oldPayload, "1.0.0"); flipCurrentAtomic(oldPayload, paths);

@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { rehomeLegacyPath } from "@tickernelz/wardmote-shared/home-paths";
 import { resolveWardmoteHomeDir } from "./config/home.js";
 
 export const INSTALL_MANIFEST_VERSION = 1;
@@ -224,7 +225,11 @@ export function readInstallManifest(paths = resolveInstallStorePaths()): Install
     ) {
       throw new Error("unsupported manifest shape");
     }
-    return value;
+    const rehome = (record: InstallRecord): InstallRecord => ({
+      ...record,
+      payloadPath: rehomeLegacyPath(record.payloadPath, paths.wardmoteHome),
+    });
+    return { ...value, payloadPath: rehome(value).payloadPath, previous: value.previous.map(rehome) };
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") return null;
     throw new Error(`Could not read managed install manifest at ${paths.manifestPath}: ${String(error)}`);

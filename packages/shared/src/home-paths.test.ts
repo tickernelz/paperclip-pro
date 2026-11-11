@@ -70,6 +70,24 @@ describe("default home", () => {
     expect(resolveHomeAwarePath("~/.wardmote/instances/default/db")).toBe(path.join(userHome, ".wardmote/instances/default/db"));
     expect(resolveHomeAwarePath("/srv/db")).toBe("/srv/db");
   });
+
+  it("maps a path recorded under the migration link to ~/.wardmote", async () => {
+    fs.mkdirSync(path.join(userHome, ".wardmote"));
+    fs.symlinkSync(path.join(userHome, ".wardmote"), path.join(userHome, ".paperclip-pro"));
+    const { resolveHomeAwarePath } = await homePaths();
+    expect(resolveHomeAwarePath(path.join(userHome, ".paperclip-pro/instances/default/db"))).toBe(path.join(userHome, ".wardmote/instances/default/db"));
+    expect(resolveHomeAwarePath("~/.paperclip-pro")).toBe(path.join(userHome, ".wardmote"));
+    expect(resolveHomeAwarePath(path.join(userHome, ".paperclip-pro-old/db"))).toBe(path.join(userHome, ".paperclip-pro-old/db"));
+  });
+
+  it("keeps ~/.paperclip-pro paths while it is not the migration link", async () => {
+    const elsewhere = path.join(userHome, "data");
+    fs.mkdirSync(elsewhere);
+    fs.mkdirSync(path.join(userHome, ".wardmote"));
+    fs.symlinkSync(elsewhere, path.join(userHome, ".paperclip-pro"));
+    const { resolveHomeAwarePath } = await homePaths();
+    expect(resolveHomeAwarePath("~/.paperclip-pro/db")).toBe(path.join(userHome, ".paperclip-pro/db"));
+  });
 });
 
 const ORIGINAL_ENV = { ...process.env };
