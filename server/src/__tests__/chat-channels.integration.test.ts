@@ -5281,7 +5281,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         .where(
           and(
             eq(chatSdkState.endpointId, endpoint.id),
-            eq(chatSdkState.stateKey, "paperclip:github-webhook-recovery:v1"),
+            eq(chatSdkState.stateKey, "wardmote:github-webhook-recovery:v1"),
           ),
         )
         .then((rows) => rows[0]!);

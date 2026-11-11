@@ -386,7 +386,7 @@ export function adapterLoginPromotionLockKey(
   startedByUserId: string,
   adapterType: AgentAdapterType,
 ): string {
-  return `paperclip:adapter-login-promotion:${companyId}:${startedByUserId}:${adapterType}`;
+  return `wardmote:adapter-login-promotion:${companyId}:${startedByUserId}:${adapterType}`;
 }
 
 /**
