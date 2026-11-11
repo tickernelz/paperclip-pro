@@ -1892,27 +1892,27 @@ export function resolveRuntimeSessionParamsForWorkspace(input: {
 
 const SESSION_AI_CREDENTIAL_IDENTITY_KEY = "wardmoteAiCredentialIdentity";
 
-const SESSION_CONFIGURED_MODEL_KEY = "__paperclipConfiguredModel";
+const SESSION_CONFIGURED_MODEL_KEY = "__wardmoteConfiguredModel";
 
-const SESSION_CONFIG_FINGERPRINT_KEY = "__paperclipConfigFingerprint";
+const SESSION_CONFIG_FINGERPRINT_KEY = "__wardmoteConfigFingerprint";
 
 const SESSION_CONFIG_FINGERPRINT_VERSION_KEY =
-  "__paperclipConfigFingerprintVersion";
+  "__wardmoteConfigFingerprintVersion";
 
-const SESSION_CONFIG_CATEGORIES_KEY = "__paperclipConfigCategories";
+const SESSION_CONFIG_CATEGORIES_KEY = "__wardmoteConfigCategories";
 
 const SESSION_CONFIG_CATEGORY_FINGERPRINTS_KEY =
-  "__paperclipConfigCategoryFingerprints";
+  "__wardmoteConfigCategoryFingerprints";
 
 const SESSION_CONFIG_RESUME_FINGERPRINT_KEY =
-  "__paperclipConfigResumeFingerprint";
+  "__wardmoteConfigResumeFingerprint";
 
 /** Per-key digests of the adapterConfig value, so a reset can name the key that changed. */
 const SESSION_CONFIG_ADAPTER_CONFIG_KEY_FINGERPRINTS_KEY =
-  "__paperclipAdapterConfigKeyFingerprints";
+  "__wardmoteAdapterConfigKeyFingerprints";
 
 const SESSION_CONFIG_RESUME_NEUTRAL_CATEGORY_FINGERPRINTS_KEY =
-  "__paperclipConfigResumeNeutralCategoryFingerprints";
+  "__wardmoteConfigResumeNeutralCategoryFingerprints";
 
 const RESUME_NEUTRALIZED_SESSION_CONFIG_CATEGORIES = [
   "adapter",

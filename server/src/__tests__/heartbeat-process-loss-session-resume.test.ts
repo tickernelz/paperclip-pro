@@ -395,7 +395,7 @@ describeEmbeddedPostgres("process-loss continuation session resume", () => {
       .select()
       .from(agentTaskSessions)
       .where(eq(agentTaskSessions.agentId, seeded.agentId));
-    expect(stored?.sessionParamsJson).toMatchObject({ __paperclipConfiguredModel: "model-b" });
+    expect(stored?.sessionParamsJson).toMatchObject({ __wardmoteConfiguredModel: "model-b" });
   });
 
   it("still starts a fresh omp_local session when another adapter setting changes with the model", async () => {
