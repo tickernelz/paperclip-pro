@@ -35,7 +35,7 @@ function provider() {
     if (path.endsWith("/pause")) { state = "paused"; return success({ status: "pausing" }); }
     if (path.endsWith("/resume")) { state = "running"; return success({ status: "resuming" }); }
     if (parsed.pathname.endsWith("/files") && method === "PUT") {
-      if (parsed.searchParams.get("path")?.endsWith(".wardmote-createos-lease")) marker = raw;
+      if (parsed.searchParams.get("path")?.endsWith(".paperclip-createos-lease")) marker = raw;
       return success();
     }
     if (path.endsWith("/exec")) return success({ result: { exit_code: 0, stdout: body.cmd === "/bin/cat" ? marker : "", stderr: "" } });

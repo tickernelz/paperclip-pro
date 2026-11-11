@@ -10,7 +10,7 @@ import { CreateosCleanupError, execute, shellQuote } from "./execute.js";
 import { syncFiles } from "./file-sync.js";
 
 const CWD = "/paperclip-workspace";
-const MARKER = `${CWD}/.wardmote-runtime/.wardmote-createos-lease`;
+const MARKER = `${CWD}/.wardmote-runtime/.paperclip-createos-lease`;
 
 function metadataMatches(params: PluginEnvironmentDriverBaseParams, metadata?: Record<string, unknown>): boolean {
   return metadata?.provider === "createos" && metadata.companyId === params.companyId &&
