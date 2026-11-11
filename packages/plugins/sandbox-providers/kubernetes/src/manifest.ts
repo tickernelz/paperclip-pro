@@ -39,7 +39,7 @@ const manifest: WardmotePluginManifestV1 = {
           },
           namespacePrefix: {
             type: "string",
-            description: "Prefix for the per-company tenant namespace (default: paperclip-).",
+            description: "Prefix for the per-company tenant namespace (default: wardmote-).",
           },
           companySlug: {
             type: "string",

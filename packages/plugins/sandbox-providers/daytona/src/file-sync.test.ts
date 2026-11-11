@@ -99,11 +99,9 @@ describe("daytona file-sync inbound scratch cleanup", () => {
       }),
     ).rejects.toThrow(/syncIn extract/);
 
-    // The runtime uploaded exactly one reserved scratch tar under the workspace
-    // root. Its name carries the reserved `.paperclip-upload-` prefix.
     expect(uploadedDestinations).toHaveLength(1);
     const scratchTar = uploadedDestinations[0];
-    expect(scratchTar).toContain(".paperclip-upload-");
+    expect(scratchTar).toContain(".wardmote-upload-");
     expect(scratchTar.startsWith(`${remoteDir}/`)).toBe(true);
 
     // The failure path swept the scratch tar: a standalone `rm -f` of the exact
@@ -346,7 +344,7 @@ it.skipIf(!gnuTar)("extracts interleaved read-only skill directories with GNU ta
     await expect(performSyncIn({ sandbox: sandbox as never, remoteDir, timeoutSeconds: 30,
       operations: [{ operationId: "corrupt-skill-resume", files: [{ sourcePath: source, targetPath: target, kind: "directory", mode: 0o555 }] }] })).rejects.toThrow("syncIn extract");
     expect(await fs.readFile(qa, "utf8")).toBe("XX instructions");
-    expect((await fs.readdir(remoteDir)).filter((name) => name.startsWith(".paperclip-upload"))).toEqual([]);
+    expect((await fs.readdir(remoteDir)).filter((name) => name.startsWith(".wardmote-upload"))).toEqual([]);
 
   } finally {
     for (const base of [source, target]) {
@@ -480,7 +478,7 @@ describe("daytona file-sync inbound zstd transport compression", () => {
 
       // Cleanup on success: no reserved scratch (raw or `.zst`) remains.
       const remaining = await fs.readdir(remoteDir);
-      expect(remaining.filter((name) => name.includes(".paperclip-upload"))).toHaveLength(0);
+      expect(remaining.filter((name) => name.includes(".wardmote-upload"))).toHaveLength(0);
     });
 
     it("removes the private compressed host temp directory after a successful sync", async () => {
@@ -651,7 +649,7 @@ describe("daytona file-sync inbound zstd transport compression", () => {
 
       await expect(fs.stat(targetPath)).rejects.toThrow(); // never promoted
       const remaining = await fs.readdir(remoteDir);
-      expect(remaining.filter((name) => name.includes(".paperclip-upload"))).toHaveLength(0); // scratch swept
+      expect(remaining.filter((name) => name.includes(".wardmote-upload"))).toHaveLength(0); // scratch swept
     });
 
     it("applies mapping.mode via chmod before promotion, when set", async () => {
@@ -1130,7 +1128,7 @@ describe.skipIf(!gnuTar)("automatic unsafe workspace export recovery", () => {
     await expect(fs.stat(path.join(output, "cache", "ignored.txt"))).rejects.toMatchObject({ code: "ENOENT" });
     expect(await fs.readFile(path.join(root, "outside.txt"), "utf8")).toBe("private bytes");
     expect((await fs.lstat(path.join(remoteDir, "nested", linkName))).isSymbolicLink()).toBe(true);
-    expect((await fs.readdir(remoteDir)).filter((name) => name.startsWith(".paperclip-upload"))).toEqual([]);
+    expect((await fs.readdir(remoteDir)).filter((name) => name.startsWith(".wardmote-upload"))).toEqual([]);
   });
 
   it("finishes an export containing only unsafe links with an empty directory", async () => {
