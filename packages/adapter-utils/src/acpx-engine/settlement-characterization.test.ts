@@ -727,8 +727,8 @@ describe("ACP settlement — Layer A: engine teardown orchestration", () => {
       exitCode: number;
     }> = [
       { status: "completed", reason: "paperclip completed turn cleanup", discard: false, exitCode: 0 },
-      { status: "failed", reason: "paperclip turn failed", discard: false, exitCode: 1 },
-      { status: "cancelled", reason: "paperclip turn cancelled", discard: true, exitCode: 1 },
+      { status: "failed", reason: "wardmote turn failed", discard: false, exitCode: 1 },
+      { status: "cancelled", reason: "wardmote turn cancelled", discard: true, exitCode: 1 },
     ];
 
     for (const testCase of cases) {
