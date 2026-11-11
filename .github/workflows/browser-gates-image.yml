@@ -31,17 +31,33 @@ jobs:
           sparse-checkout: .github/browser-gates.Dockerfile
           sparse-checkout-cone-mode: false
 
-      - name: Build
+      - name: Look up the tag for this Dockerfile
         id: build
         run: |
           set -euo pipefail
           version="$(sed -n 's/^ARG PLAYWRIGHT_VERSION=//p' .github/browser-gates.Dockerfile)"
           tag="$IMAGE:playwright-$version-$(sha256sum .github/browser-gates.Dockerfile | cut -c1-12)"
-          docker build --pull --tag "$tag" - < .github/browser-gates.Dockerfile
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
-          docker image ls "$tag" --format 'size {{.Size}}'
+          if published="$(docker buildx imagetools inspect "$tag" 2>/dev/null)"; then
+            digest="$(sed -n 's/^Digest: *//p' <<<"$published")"
+            echo "$tag is already published; tags stay immutable, so nothing is rebuilt."
+            echo "Pin in ci.yml: \`$IMAGE@$digest\`" >> "$GITHUB_STEP_SUMMARY"
+            echo "digest $IMAGE@$digest"
+            echo "published=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "published=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build
+        if: steps.build.outputs.published != 'true'
+        env:
+          TAG: ${{ steps.build.outputs.tag }}
+        run: |
+          docker build --pull --tag "$TAG" - < .github/browser-gates.Dockerfile
+          docker image ls "$TAG" --format 'size {{.Size}}'
 
       - name: Smoke the browsers
+        if: steps.build.outputs.published != 'true'
         env:
           TAG: ${{ steps.build.outputs.tag }}
         run: |
@@ -55,7 +71,7 @@ jobs:
           '
 
       - name: Push
-        if: env.PUBLISH == 'true'
+        if: steps.build.outputs.published != 'true' && env.PUBLISH == 'true'
         env:
           TAG: ${{ steps.build.outputs.tag }}
           GH_TOKEN: ${{ github.token }}

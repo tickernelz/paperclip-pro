@@ -334,7 +334,7 @@ jobs:
       contents: read
       packages: read
     env:
-      BROWSER_GATES_IMAGE: ghcr.io/tickernelz/wardmote/browser-gates@sha256:6f8e3d84c3cf27421f7dc8e2e5ddf89d59594fec1debc1d1c8fd23ecd2202666
+      BROWSER_GATES_IMAGE: ghcr.io/tickernelz/wardmote/browser-gates@sha256:0c31673e81545dca2ea58154216866b4913ecb7b87277feca74ff65031af17cd
     steps:
       - uses: actions/checkout@v7
         with:
