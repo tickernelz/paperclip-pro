@@ -12,7 +12,7 @@
     "secondaryLink": {
       "kind": "external",
       "label": "Learn more",
-      "url": "https://paperclip.ing"
+      "url": "https://github.com/tickernelz/wardmote"
     },
     "primaryAction": {
       "kind": "route",

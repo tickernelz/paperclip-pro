@@ -29,7 +29,7 @@ export const StandardTrustWarning: Story = {
     const canvas = within(canvasElement);
     await userEvent.selectOptions(canvas.getByRole("combobox", { name: /Paperclip agent/ }), "Atlas");
     await expect(canvas.getByRole("alert")).toHaveTextContent("Atlas is not configured for low-trust review");
-    await expect(canvas.getByRole("link", { name: /Learn about low-trust agents/ })).toHaveAttribute("href", "https://docs.paperclip.ing/administration/trust-and-low-trust-review/");
+    await expect(canvas.getByRole("link", { name: /Learn about low-trust agents/ })).toHaveAttribute("href", "https://github.com/tickernelz/wardmote/blob/main/doc/LOW-TRUST-PRESETS.md");
   },
 };
 export const CreateApp: Story = {

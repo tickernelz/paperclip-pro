@@ -673,7 +673,6 @@ export const queryKeys = {
     attachmentRetention: ["instance", "attachment-retention"] as const,
   },
   health: ["health"] as const,
-  stagingCommit: ["staging-commit"] as const,
   secrets: {
     list: (companyId: string) => ["secrets", companyId] as const,
     providers: (companyId: string) => ["secret-providers", companyId] as const,

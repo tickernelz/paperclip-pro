@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "paperclip": {
+    "wardmote": {
       "type": "http",
       "url": "http://localhost:3100/mcp/wardmote"
     }
