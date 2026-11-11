@@ -109,7 +109,7 @@ export async function runPublicMcpFlow(input: {
   };
   try {
     const catalog = (await client.list()).tools;
-    check("bounded-direct-catalog", catalog.length === 37 && catalog.every(tool => tool.name.startsWith("paperclip_") && !/run_tool|approve|delete/.test(tool.name)), "Direct tools expose only the explicit work/configuration registry; generic calls use the same authority.");
+    check("bounded-direct-catalog", catalog.length === 37 && catalog.every(tool => tool.name.startsWith("wardmote_") && !/run_tool|approve|delete/.test(tool.name)), "Direct tools expose only the explicit work/configuration registry; generic calls use the same authority.");
     if (execution.task.id === "event-follow-up") {
       receiver = await eventReceiver(input.secrets);
       const discovered = await mcpEventRpc(connection.tokens, "server/discover");

@@ -163,7 +163,7 @@ export function diagnosticProcessKind(command: string, platform: NodeJS.Platform
   const name = path.basename(command);
   // Linux comm is limited to 15 bytes. This is a diagnostic role only;
   // preservation still requires the trusted run PID/start/group and ancestry.
-  if (platform === "linux" && name === "paperclip-runne") return "wardmote-runnerd";
+  if (platform === "linux" && name === "wardmote-runner") return "wardmote-runnerd";
   return diagnosticProcessKinds.has(name) ? name : "other";
 }
 
