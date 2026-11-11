@@ -25,6 +25,7 @@ const operation = z.string().min(1).max(100);
 const cursor = z.string().min(1).max(200).optional();
 const GRANT_CATEGORIES = ["create_task", "external_tools", "cross_chat_send", "wa_admin", "gateway_admin", "reply_outside_allowlist", "reply"] as const;
 export const OPENWA_APPROVAL_MESSAGE_MAX_LENGTH = 3500;
+const OPENWA_APPROVAL_MESSAGE_INPUT_MAX_LENGTH = 20_000;
 const MEDIA_KINDS = new Set<OpenwaSendKind>(["image", "video", "audio", "voice", "document", "sticker"]);
 export const OPENWA_CONFIG_UI_ONLY_FIELDS = ["credentials", "apiKey", "adminApiKey", "baseUrl", "sessionId", "numberMode", "owners", "gatewayAdminTools"] as const;
 const senderRule = z.object({ list: z.enum(["allow", "deny"]), number: e164 }).strict();
@@ -109,7 +110,7 @@ export const OPENWA_TOOLS = [
       scope: z.enum(["one_action", "requester"]).optional(),
       summary: z.string().trim().min(1).max(500).optional(),
       proposedAction: z.string().trim().min(1).max(2000).optional(),
-      messageToOwners: z.string().trim().min(1).max(OPENWA_APPROVAL_MESSAGE_MAX_LENGTH),
+      messageToOwners: z.string().trim().min(1).max(OPENWA_APPROVAL_MESSAGE_INPUT_MAX_LENGTH),
       remindRequestId: uuid.optional(),
       idempotencyKey: uuid,
     },
@@ -145,7 +146,7 @@ export const OPENWA_TOOLS = [
     "stay_silent",
     "write",
     "Leave triggers unanswered: marks the listed (default: all visible pending) triggers silenced.",
-    { triggerIds: triggerIds.optional() },
+    { triggerIds: z.array(uuid).max(50).optional() },
   ),
   tool(
     "handoff",

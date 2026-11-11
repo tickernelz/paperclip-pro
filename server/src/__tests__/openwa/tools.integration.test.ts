@@ -953,6 +953,7 @@ describe("OpenWA agent tools (embedded Postgres + fake gateway)", () => {
     await expect(executeOpenwaTool(db, binding, "openwa_stay_silent", { triggerIds: [a.id] })).resolves.toEqual({ silenced: [a.id] });
     expect(await answerStates([a.id, b.id])).toEqual(["silenced", "pending"]);
     await expect(executeOpenwaTool(db, binding, "openwa_stay_silent", {})).resolves.toEqual({ silenced: [b.id] });
+    await expect(executeOpenwaTool(db, binding, "openwa_stay_silent", { triggerIds: [] })).resolves.toEqual({ silenced: [] });
     const owner = await trigger(t, c, { triggerClass: "owner", role: "owner" });
     const other = await trigger(t, c, { triggerClass: "other", role: "allowed" });
     const refused = await rejection(executeOpenwaTool(db, binding, "openwa_handoff", { triggerIds: [owner.id, other.id], note: "Needs the owner" }));

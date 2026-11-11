@@ -1404,7 +1404,7 @@ async function openwaFind(ctx: ToolContext, args: Args): Promise<Record<string, 
 async function openwaStaySilent(ctx: ToolContext, args: Args): Promise<Record<string, unknown>> {
   const runClass = requireConversationRun(ctx);
   const listed = Array.isArray(args.triggerIds) ? (args.triggerIds as string[]) : null;
-  const rows = await ctx.db
+  const rows = listed?.length === 0 ? [] : await ctx.db
     .update(chatDeliveries)
     .set({ answerState: "silenced", updatedAt: new Date() })
     .where(
