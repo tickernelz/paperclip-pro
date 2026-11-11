@@ -32,23 +32,6 @@ import type {
   CapabilityTimelineEntry,
 } from "../scenarios/scenario-explorer-types.js";
 
-/**
- * Scenario chat chat session over the Capability mock control plane.
- *
- * A session is one long-lived mock core that survives across turns, unlike the
- * 7F single-shot run: the board sends a prompt, the scripted agent works, and
- * the state it changed is still there for the next prompt. That accumulation is
- * the whole demo — it is what makes a per-turn diff mean anything.
- *
- * The session decides nothing. It records turn boundaries and asks the existing
- * runtime layers for exposure, authorization, diffs, and verdicts, so the chat
- * UI can group evidence by turn without deriving a single fact itself
- * (7I interaction map §10).
- *
- * No credential, no network, no Paperclip service: the adapter is the in-memory
- * fixture core, and the only prompt text that leaves the page is the text the
- * board typed into this same page.
- */
 
 export interface CapabilityChatSessionOptions {
   mode?: CapabilityRunMode;

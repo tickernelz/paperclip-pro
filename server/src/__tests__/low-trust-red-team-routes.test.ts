@@ -2061,8 +2061,6 @@ describeEmbeddedPostgres(
         expect(run).not.toBeNull();
         await waitFor(() => gateway.getAgentPayloads().length === 1, 30_000);
         const payload = gateway.getAgentPayloads()[0] ?? {};
-        // The gateway rejects unknown root params, so the wake context rides in the
-        // generated message rather than a top-level `paperclip` field.
         expect(payload.paperclip).toBeUndefined();
         const wake = await readGatewayWakePayload(payload);
         // Security-critical: low-trust quarantined output is redacted to the sanitized

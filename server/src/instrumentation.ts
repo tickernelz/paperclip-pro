@@ -400,18 +400,6 @@ export function readBuildStamp(): string | null {
   }
 }
 
-/**
- * Read the current commit SHA with `git rev-parse --short HEAD`. Return the
- * SHA, or null on any failure. This covers dev mode, where the process runs
- * from a git checkout. A missing `git` or a checkout with no `.git` returns
- * null and is not fatal.
- *
- * The lookup runs in the directory of this module, not the directory the
- * server process started in. `import.meta.url` points at `src` in dev mode and
- * `dist` in a built server; both sit inside the Paperclip checkout. A server
- * launched from an unrelated directory, or from inside another repository,
- * would otherwise report a wrong commit or fall back.
- */
 export function readGitCommit(): string | null {
   try {
     const out = execFileSync("git", ["rev-parse", "--short", "HEAD"], {
@@ -426,17 +414,6 @@ export function readGitCommit(): string | null {
   }
 }
 
-/**
- * Resolve the `service.version` span attribute. The order is:
- *   1. The build stamp — the commit the running server was built from.
- *   2. A runtime git lookup — covers `tsx src/index.ts` dev mode.
- *   3. The `OTEL_SERVICE_VERSION` environment variable.
- *   4. "unknown".
- * The build stamp wins over the environment variable, so a stale
- * `OTEL_SERVICE_VERSION` cannot mask the true built commit. `OTEL_SERVICE_VERSION`
- * is a Paperclip-specific variable, not an OpenTelemetry SDK variable, so
- * Paperclip controls this precedence.
- */
 export function resolveServiceVersion(
   buildStamp: string | null,
   gitCommit: string | null,

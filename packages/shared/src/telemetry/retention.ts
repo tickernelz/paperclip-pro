@@ -1,19 +1,3 @@
-/**
- * Telemetry retention contract.
- *
- * Defines the retention class for each Paperclip telemetry event and the
- * corresponding retention window in days. This is a housekeeping/cost
- * concern separate from the event schema: it is updated by data-infra
- * and does not require a schema version bump.
- *
- * Retention class definitions
- * ─────────────────────────────────────────────────────────────────────────
- * operational_enum_count
- *   Events that carry only enums, booleans, counts, and coarse buckets.
- *   No token material (I5-clean) and no PII. Retention is a housekeeping
- *   and query-cost concern, not a privacy concern.
- *   Window: 90 days.
- */
 
 /** Retention window in days for each telemetry event class. */
 export const RETENTION_DAYS = {

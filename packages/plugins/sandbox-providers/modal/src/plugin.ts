@@ -91,10 +91,6 @@ function isMultipleOf1000(value: number): boolean {
 }
 
 function resolveAuth(config: ModalDriverConfig): { tokenId: string; tokenSecret: string } | null {
-  // The plugin worker runs in a child process that does not inherit host env
-  // vars (see PluginWorkerManager.spawnProcess), so MODAL_TOKEN_ID /
-  // MODAL_TOKEN_SECRET cannot be read here. Credentials must come from the
-  // environment config, which Paperclip stores as company secrets.
   const tokenId = config.tokenId ?? "";
   const tokenSecret = config.tokenSecret ?? "";
   if (!tokenId && !tokenSecret) return null;

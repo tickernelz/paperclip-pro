@@ -1,17 +1,3 @@
-/**
- * The static prompt an operator copies and hands to an agent to get a
- * paste-ready MCP config back (PAP-17087, plan section 3A).
- *
- * This is a constant on purpose. It must never interpolate the textarea's
- * contents, the company, an endpoint, or a secret: the operator pastes it into
- * whatever chat surface they like, so anything folded in here leaves Paperclip.
- * Keeping it a constant is also what makes "opening or copying help makes no
- * connection or import request" true by construction rather than by review.
- *
- * The instructions are ordered so the *first* thing in the reply is the JSON the
- * operator has to paste, because that is the only part Paperclip's config
- * preview parser reads. Everything else is prose for the human.
- */
 export const MCP_CONFIG_HELP_PROMPT = `I want to connect an MCP (Model Context Protocol) server to Wardmote, and I need a paste-ready config.
 
 Target server: <name the server, or ask me if I have not said>

@@ -17,9 +17,6 @@ import { nativeSystemInstructions, nativeTaskConstraints } from "./runtime-conte
 import { createRunnerdNativeSessionBackend } from "./codex-native-backend.js";
 import { inspectNativeCompletionSourceMetadata } from "../../../../tests/runner-e2e/native-completion-git-source.mjs";
 
-// This captures Paperclip's real runnerd RPC boundary with a scripted transport.
-// It measures complete Paperclip-supplied instruction/tool/message projections,
-// not provider-owned stock prompts, tokenization, billing or model behavior.
 const tools = WARDMOTE_SEMANTIC_ACTION_CATALOG
   .filter(tool => tool.placement === "core")
   .map(tool => ({ name: tool.operationId, description: tool.description, inputSchema: tool.inputSchema }));

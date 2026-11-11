@@ -271,11 +271,6 @@ interface CatalogTeamProvenance {
   originHash: string | null;
 }
 
-/**
- * Extract `metadata.paperclip.catalogTeam` provenance written by the team
- * importer (see `renderCatalogProvenanceYaml`). Returns null when the agent was
- * not installed from a catalog team.
- */
 export function readCatalogTeamProvenance(
   metadata: Record<string, unknown> | null | undefined,
 ): CatalogTeamProvenance | null {

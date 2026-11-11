@@ -307,20 +307,6 @@ function mergeManagedEnvironmentMetadata(
 }
 
 export function environmentService(db: Db) {
-  /**
-   * Idempotently ensure THE Paperclip-managed sandbox environment for this
-   * instance, configured for an arbitrary sandbox provider plugin. Mirrors
-   * `ensureLocalEnvironment`; the partial unique index
-   * `environments_managed_sandbox_idx` enforces at most one managed sandbox
-   * row per instance, so this function owns that single slot regardless of
-   * provider:
-   *
-   * - A stock-controlled managed row advances to a new stock hash in the same
-   *   transaction as its managed fields, including provider switches.
-   * - A stock-current row is returned without an environment write.
-   * - An operator-modified or previously unmanaged row is preserved and
-   *   reported as skipped; its user-owned fields are never folded into stock.
-   */
   const ensureManagedSandboxEnvironment = async (
     input: ManagedSandboxEnvironmentInput,
   ): Promise<ManagedSandboxEnvironmentReconcileResult> => {
@@ -548,12 +534,6 @@ export function environmentService(db: Db) {
             : desiredStock;
           let baselineHash = baseline?.stockHash ?? latestStockHash;
 
-          // Provider unavailability is an operational state transition, not
-          // an operator edit. If the binding records that Paperclip archived
-          // this row, restore only its availability status. Keep every other
-          // operator-modified field intact and leave the stock update pending.
-          // A manually archived row still has an active binding baseline, so
-          // it remains operator_modified and is not reactivated here.
           const archivedByReconciler = row.status === "archived" &&
             typeof rowArchiveToken === "string" &&
             matchingBindings.some((binding) => {
@@ -694,21 +674,6 @@ export function environmentService(db: Db) {
     return reconciliation;
   };
 
-  /**
-   * Archive the Paperclip-managed sandbox row when its provider became
-   * unavailable (plugin missing, not ready, or its worker not running), so
-   * run scheduling stops selecting an environment whose lease acquisition
-   * cannot succeed (`resolveEnvironment` rejects non-active rows).
-   *
-   * Scoped to the row provisioned for the SAME provider: a row that a
-   * provider switch left on a different provider is not touched (the ensure
-   * path adopts it once the new provider is healthy). Reactivation is
-   * automatic — the next successful `ensureManagedSandboxEnvironment` stamps
-   * the row `active` again.
-   *
-   * Returns the archived environment, or null when there is no active
-   * managed row for this provider.
-   */
   const archiveManagedSandboxEnvironment = async (
     input: { provider: string; companyId?: string },
   ): Promise<Environment | null> => {
@@ -762,9 +727,6 @@ export function environmentService(db: Db) {
         .then((rows) => rows[0] ?? null);
       if (!archived) return null;
 
-      // Archival is a Paperclip-owned availability transition. Record only
-      // that status change in each installed baseline. Deriving the new hash
-      // from defaultsJson keeps operator-modified row fields out of stock.
       for (const binding of bindings) {
         const archivedStock = {
           ...managedEnvironmentBaselineDefaults(binding.defaultsJson),

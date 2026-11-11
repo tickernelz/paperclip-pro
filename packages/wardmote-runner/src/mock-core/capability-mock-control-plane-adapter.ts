@@ -65,12 +65,6 @@ export interface CapabilityMockControlPlaneAdapterOptions {
   /** Optional process-independent owner for durable semantic-tool receipts. */
   semanticToolRuntimeStore?: CapabilitySemanticToolRuntimeStore;
 }
-/**
- * Deterministic, serializable control-plane authority for Capability scenarios.
- *
- * The adapter deliberately models Paperclip semantics instead of Paperclip
- * transport. It imports no server route, service, database, or provider binding.
- */
 export class CapabilityMockControlPlaneAdapter implements CapabilityMockControlPlanePort {
   #state: CapabilityFixtureState;
   readonly #semanticToolRuntimeStore:

@@ -4711,11 +4711,6 @@ function aggregateLintFindings(findings: Record<string, unknown>[]): { total: nu
   return counts;
 }
 
-// ---------------------------------------------------------------------------
-// History tab: native Paperclip issue table for recent LLM Wiki operation
-// issues. Each plugin run is represented by an issue, so the standard issue
-// history view is the right surface here.
-// ---------------------------------------------------------------------------
 
 function formatCostCents(cents: number): string {
   if (!Number.isFinite(cents) || cents <= 0) return "$0.00";

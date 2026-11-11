@@ -1,39 +1,3 @@
-/**
- * Smoke Lab recurring-routine wrapper (PAP-13351 / plan §D5).
- *
- * This is what the daily Smoke Lab routine's woken QA agent runs. It wraps the
- * S5 agent-driven browser runner (`smoke-lab-browser-runner.mts`) with the three
- * behaviours the plan asks for:
- *
- *   1. budget-bounded  — the browser run is killed after SMOKE_BUDGET_MS.
- *   2. file-on-failure — a real product failure files a control-plane issue
- *                        (failing step + screenshot) assigned to the owning coder
- *                        and links it back to the routine issue.
- *   3. amber/skipped   — if the local_trusted instance or the flag is unavailable
- *                        (or the runner itself crashes on an environment problem),
- *                        record an amber/skipped outcome instead of failing
- *                        silently or filing a bogus product bug.
- *
- * It never forks the P1-P7 step list: the actual lifecycle lives in the S5
- * runner, which imports the S4 catalog.
- *
- * Run (as the woken routine agent, after booting a throwaway local_trusted
- * instance per doc/connections/SMOKE-LAB-BROWSER-RUNNER.md §0):
- *   node --experimental-strip-types tests/e2e/smoke-lab-routine.mts
- *
- * Target under test (the throwaway instance):
- *   SMOKE_BASE=http://127.0.0.1:3251   local_trusted, non-prod instance
- *   SMOKE_ONLY=P1,P3                    budget-bounding path subset (optional)
- *   SMOKE_SHOT_DIR=<dir>               screenshot output (default under TMPDIR)
- *   SMOKE_BUDGET_MS=600000             hard timeout for the browser run
- *
- * Control plane where failure issues + amber notes are recorded (the REAL
- * Paperclip company — provided in every routine run's env):
- *   WARDMOTE_API_URL, WARDMOTE_API_KEY, WARDMOTE_COMPANY_ID, WARDMOTE_RUN_ID
- *   ROUTINE_ISSUE_ID=<uuid>            issue to record against (default WARDMOTE_TASK_ID)
- *   SMOKE_OWNER_DEFAULT / SMOKE_OWNER_UI / SMOKE_OWNER_CTO  owner overrides
- *   SMOKE_DRY_RUN=1                    log the control-plane writes, don't perform them
- */
 import { spawn } from "node:child_process";
 import { promises as fs } from "node:fs";
 import path from "node:path";

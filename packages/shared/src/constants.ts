@@ -1498,12 +1498,6 @@ export const PLUGIN_API_ROUTE_CHECKOUT_POLICIES = [
 ] as const;
 export type PluginApiRouteCheckoutPolicy = (typeof PLUGIN_API_ROUTE_CHECKOUT_POLICIES)[number];
 
-/**
- * UI extension slot types. Each slot type corresponds to a mount point in the
- * Paperclip UI where plugin components can be rendered.
- *
- * @see PLUGIN_SPEC.md §19 — UI Extension Model
- */
 export const PLUGIN_UI_SLOT_TYPES = [
   "page",
   "detailTab",

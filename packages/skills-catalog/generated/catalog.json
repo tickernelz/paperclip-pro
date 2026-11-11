@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "packageName": "@tickernelz/wardmote-skills-catalog",
   "packageVersion": "0.3.1",
-  "generatedAt": "2026-11-10T18:09:07.283Z",
+  "generatedAt": "2026-11-11T09:12:31.116Z",
   "skills": [
     {
       "id": "tickernelz:bundled:docs:doc-maintenance",
@@ -88,8 +88,8 @@
         {
           "path": "references/identicon-prototyper.md",
           "kind": "reference",
-          "sizeBytes": 6667,
-          "sha256": "a13c864a4b129f5b99f1c2ae08bdfbde28aaf2f0dfa33475c0c1a14753c341f1"
+          "sizeBytes": 6666,
+          "sha256": "841274d513a1c0a7585edc1a149f187b23db5d0a31ed7b201cf8cb32ed606c5a"
         },
         {
           "path": "references/individual-status-capsules.md",
@@ -98,7 +98,7 @@
           "sha256": "34ef1c050c6dea40b605d35a6173f31a4e42fe95a27b1fbb50bf2025a2744f6b"
         }
       ],
-      "contentHash": "sha256:9ed648d0ebfd6b12a57906fcfce8a83049a60eaa946d8740157186cb16d6759c"
+      "contentHash": "sha256:34cba01e34e4a3074debc58b68007beccea10b2c44a88b159839775762e24554"
     },
     {
       "id": "tickernelz:bundled:product:wireframe",
@@ -409,11 +409,11 @@
         {
           "path": "SKILL.md",
           "kind": "skill",
-          "sizeBytes": 1513,
-          "sha256": "ad22e194a156b260c0a3983a6fa2e57b645441098a843bb2566d16fd5fa7138a"
+          "sizeBytes": 1512,
+          "sha256": "6ae06fecb840255f450f1c767d05032279c4ef4c22621ab2f0050ede8aaa0da4"
         }
       ],
-      "contentHash": "sha256:095c25622be80f12585d779f8326b89247a5a71b4b2e7f7cec65133d6661c075"
+      "contentHash": "sha256:1022912fbe07a8af8fc4e6f724163a73790543d7e97e843e83431c25dcdd6081"
     },
     {
       "id": "tickernelz:optional:browser:agent-browser",

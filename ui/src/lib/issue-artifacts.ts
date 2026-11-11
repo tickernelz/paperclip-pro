@@ -19,12 +19,6 @@ export function isAgentAttachment(
   return !attachment.createdByUserId && !attachment.issueCommentId;
 }
 
-/**
- * Attachment ids owned by valid attachment-backed Paperclip work products.
- * Unlike `getPromotedOutputAttachmentIds`, this includes document-like content
- * types (e.g. Markdown) that the binary Output surface intentionally excludes,
- * so it is the right dedupe set for the Artifacts tab's Files section.
- */
 export function getAttachmentBackedWorkProductAttachmentIds(
   workProducts: IssueWorkProduct[] | null | undefined,
 ): Set<string> {

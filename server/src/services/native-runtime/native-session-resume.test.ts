@@ -2003,7 +2003,6 @@ describe("rebindNativeSessionCheckpoint", () => {
       expect(result.execution.task.prompt).toBe(
         "Full context for the same Wardmote task",
       );
-      // No deletion/reset of the existing provider checkpoint or Paperclip history.
       expect(prior).toEqual(priorSnapshot);
       expect(prior.runnerProfileJson.sessionCheckpoint.sessionId).toBe(
         "provider-thread-123",

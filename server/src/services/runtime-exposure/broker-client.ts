@@ -1,20 +1,3 @@
-/**
- * Server-side client for the least-privilege Tailscale HTTPS host broker.
- *
- * The Paperclip server process holds NO Tailscale operator authority. Its only
- * way to publish a same-number HTTPS-to-loopback listener is to ask the broker
- * over its Unix domain socket. This client speaks the exact versioned,
- * length-prefixed, byte-bounded wire protocol implemented by the broker's
- * socket server (PAP-17049 plan, PAP-17050 verdict requirement #5).
- *
- * Framing (must match `packages/tailscale-https-broker/src/socket-server.ts`):
- *   [4-byte big-endian body length][utf-8 JSON body]
- * One request per connection; the broker writes a single framed response and
- * closes the socket.
- *
- * Everything the broker returns is untrusted: the client validates the response
- * shape before handing it back and never logs lease handles.
- */
 import net from "node:net";
 
 /**

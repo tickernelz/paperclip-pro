@@ -251,7 +251,6 @@ export type NativeExecutionInput = NativeExecutionInputV1 | NativeExecutionInput
 export interface NativeModelEnvelopeV1 {
   schema: typeof NATIVE_MODEL_ENVELOPE_SCHEMA_V1;
   task: NativeExecutionInputV1["task"];
-  /** Remote providers have no Paperclip workspace mounted in their service. */
   workspace: Pick<NativeExecutionInputV1["workspace"], "cwd"> | null;
   completionContract: StrictCompletionContractInput;
   interactionResponses: NativeInteractionResponseEnvelope[];
@@ -329,11 +328,6 @@ function nullableText(value: unknown, path: string): string | null {
   return value === null ? null : text(value, path);
 }
 
-/**
- * Strictly validates the closed Paperclip-to-runner launch contract. This is
- * intentionally not an extensible metadata bag: new fields require a contract
- * revision and an explicit security review.
- */
 function parseDotNativeExecutionInput(input: Record<string, unknown>): NativeExecutionInputV6 {
   const provider = record(input.provider, "input.provider");
   exactKeys(provider, ["kind", "model", "binding"], "input.provider");

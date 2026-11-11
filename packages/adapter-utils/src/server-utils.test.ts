@@ -3890,7 +3890,6 @@ describe("refreshWardmoteWorkspaceEnvForExecution", () => {
     refreshWardmoteWorkspaceEnvForExecution({
       env,
       envConfig: {
-        // Plain non-PAPERCLIP key.
         OOGA_BOOGA_123: "plain-value",
         // Server-resolved secret_ref value arrives as a plain string here.
         OPENROUTER_API_KEY: "resolved-secret-value",
@@ -3918,8 +3917,6 @@ describe("refreshWardmoteWorkspaceEnvForExecution", () => {
       workspaceCwd: null,
     });
 
-    // Paperclip did not assign this WARDMOTE_*-named key for the run, so the
-    // configured value flows through to the spawned process.
     expect(env.WARDMOTE_CLOUD_PROVIDER_TOKEN).toBe("cloud-token");
   });
 
@@ -3944,8 +3941,6 @@ describe("refreshWardmoteWorkspaceEnvForExecution", () => {
       workspaceCwd: null,
     });
 
-    // The harness-minted run token is the only WARDMOTE_API_KEY source;
-    // a configured value is dropped even when Paperclip has not set one.
     expect(env.WARDMOTE_API_KEY).toBeUndefined();
   });
 });

@@ -1,5 +1,3 @@
-// One explicitly authorized real-service prompt. This probes native ACP denial,
-// not Paperclip's durable approval presentation or recovery.
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { appendFileSync, writeFileSync } from "node:fs";

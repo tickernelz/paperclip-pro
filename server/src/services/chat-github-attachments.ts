@@ -284,7 +284,6 @@ export function rehydrateGitHubPublicAttachment(
   return attachment;
 }
 
-/** Parse references only; network I/O happens later, after Paperclip's admission fence. */
 export function githubPublicAttachmentsFromMessage(
   message: Message,
 ): Attachment[] {

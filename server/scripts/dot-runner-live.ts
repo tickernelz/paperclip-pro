@@ -1,7 +1,3 @@
-/** Disposable real-Dot transport lab. Not production scheduling or admission.
- * Only the MCP listener may be tunneled. Control stays on a separate loopback
- * port with a random bearer credential stored in a mode-0600 local file.
- * No existing Paperclip database, user, API key, or company is loaded. */
 import assert from "node:assert/strict";
 import { randomBytes, randomUUID, timingSafeEqual } from "node:crypto";
 import { once } from "node:events";

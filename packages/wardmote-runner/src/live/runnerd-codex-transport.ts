@@ -1286,7 +1286,6 @@ export interface CapabilityRunnerdCodexTransportOptions {
   runtimeContext?: NativeRuntimeContextSnapshot | null;
   /** Runtime-context paths rewritten for the runner-owned filesystem. */
   runnerRuntimeContext?: NativeRuntimeContextSnapshot | null;
-  /** Root path visible to runnerd when it is not on the Paperclip host. */
   runnerFilesystemRoot?: string;
   /** Workspace cwd to retain when a local provider session is reopened. */
   resumeWorkingDirectory?: string;
@@ -1329,7 +1328,6 @@ export interface CapabilityRunnerdCodexTransportOptions {
     turnId: string;
     itemId: string;
   };
-  /** Registers the run-bound PRP authority on Paperclip's shared HTTP server. */
   controlPlaneRegistration?: (
     authority: DurablePrpControlPlane,
     identity?: DurableRecoveryIdentity,

@@ -4429,9 +4429,6 @@ describe("TaskChatThread live transcript", () => {
           createdAt: "2026-08-23T20:00:00.000Z",
           agentId: "agent-1",
           agentName: "Runner",
-          // Reproduces the lag that caused DOT-202: the transcript already has
-          // a Paperclip request while the linked-run adapter classification is
-          // still stale.
           adapterType: "codex_local",
         }}
       />,

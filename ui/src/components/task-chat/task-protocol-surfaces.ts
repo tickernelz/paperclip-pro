@@ -1,11 +1,3 @@
-/**
- * Exhaustive product disposition for Paperclip Runner Protocol surfaces.
- *
- * This is intentionally separate from the renderer: adding a protocol event
- * must be a conscious product decision even when the decision is to fold it
- * into an existing turn or keep it in DevTools. The contract test compares
- * these keys with the canonical JSON schemas.
- */
 export type TaskProtocolDisposition = "inline" | "folded" | "debug-only";
 
 export interface TaskProtocolSurfaceRegistration {

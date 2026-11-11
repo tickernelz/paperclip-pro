@@ -142,13 +142,6 @@ export function resolveManagedCodexHomeDir(
     : path.resolve(instanceRoot, "codex-home");
 }
 
-/**
- * True when `homePath` lives under the Paperclip-managed company tree
- * (`<instanceRoot>/companies/<companyId>/...`). This covers both the shared
- * company `codex-home` and the per-agent `agents/<agentId>/codex-home` set by
- * the server-side isolation guard. A path outside that tree is a genuine
- * external/user-supplied override that Paperclip must not seed or overwrite.
- */
 export function isManagedCodexHomePath(
   env: NodeJS.ProcessEnv,
   companyId: string | undefined,
@@ -228,16 +221,6 @@ export async function ensureSymlink(target: string, source: string): Promise<voi
   }
 
   if (!existing.isSymbolicLink()) {
-    // A previous Paperclip version copied this file into the managed home
-    // instead of symlinking it. Codex refresh tokens rotate and are
-    // single-use, so a stale copy fails with refresh_token_reused on the next
-    // run (#5028). Replace the regular file with a symlink so the CLI follows
-    // the live source. Safe to delete: target is always under the
-    // Paperclip-managed company home, never the user's real ~/.codex.
-    // Directories are left alone — `fs.unlink` would throw EISDIR on Unix
-    // (and behave inconsistently on Windows). A directory at this path is not
-    // a Paperclip-written stale copy and warrants operator inspection rather
-    // than silent removal.
     if (existing.isDirectory()) return;
     await fs.unlink(target);
     await createExpectedSymlink(target, source);
@@ -455,28 +438,6 @@ async function stageContainedSubtree(
   }
 }
 
-/**
- * Recursively copies `sourceDir` (a directory allowlist entry — currently only
- * `skills/`) into `targetDir`, dereferencing symlinks to bytes and normalizing
- * regular files to owner-only access (`0700` for executables, `0600` otherwise).
- * Created directories get mode `0700`.
- *
- * This replaces `fs.cp({ dereference: true })` which preserves source file modes,
- * leaving `0644` documents and `0755` scripts group/other-readable in the staged
- * asset; here skill files retain only their executable flag, with owner-only access.
- *
- * `sourceDir`'s *direct* children are the Paperclip-injected skill symlinks that
- * intentionally point into a shared skill store *outside* `CODEX_HOME/skills/`,
- * so each child is allowed to resolve anywhere — and when it resolves to a
- * directory it becomes the containment root for its own subtree. Everything
- * *below* that root is copied via {@link stageContainedSubtree}, which refuses to
- * follow a nested symlink out of the skill (finding 2) and detects directory
- * cycles (finding 1). A direct child that resolves to `sourceDir` itself or to
- * an ancestor of it (a degenerate `-> .` / `-> ..` link at the top level) is
- * skipped rather than used as a root, so it can never drag the wider home into
- * the staged skills asset. The `0700` staged directory and per-file owner-only mode
- * together ensure even externally-sourced skill content is not group/world-readable.
- */
 async function stageDirectorySecure(
   sourceDir: string,
   targetDir: string,
@@ -603,18 +564,6 @@ export async function stageCodexHomeForSync(
   }
 }
 
-/**
- * Seeds auth/config into an explicit Paperclip-managed `targetHome`. Symlinks
- * `auth.json` from the shared source home (so ChatGPT-subscription credentials
- * stay live and single-use refresh tokens are not copied), copies the static
- * shared config files, and — when an API key is supplied — writes an API-key
- * `auth.json` instead. A promoted device-login credential — a regular-file
- * `auth.json` holding a subscription identity the shared source does not hold,
- * or the same identity with a `last_refresh` the shared source has not strictly
- * moved past — is kept authoritative: it is neither removed nor replaced by the
- * shared symlink. Used both for the default company home and for the per-agent
- * home set by the server isolation guard.
- */
 export async function seedManagedCodexHome(
   targetHome: string,
   env: NodeJS.ProcessEnv,
@@ -882,7 +831,6 @@ export interface CodexCredentialReadinessInput {
 }
 
 export interface CodexCredentialReadiness {
-  /** True when Paperclip owns the effective home and is responsible for its auth. */
   managed: boolean;
   authMode: CodexCredentialAuthMode;
   /** True when a run launched now would be able to authenticate. */
@@ -892,21 +840,6 @@ export interface CodexCredentialReadiness {
   sharedSourceHome: string;
 }
 
-/**
- * Read-only predictor for whether a `codex_local` run will be able to
- * authenticate, without seeding or mutating any home. Mirrors the execute-time
- * fail-fast in `execute.ts`, factored out so the control plane can run the same
- * check *before* dispatch and surface a configuration-incomplete blocker instead
- * of dispatching a run that is guaranteed to fail with "no Codex credentials".
- *
- * - An external/user-supplied `CODEX_HOME` override manages its own auth, so it
- *   is always treated as ready (Paperclip must not seed or inspect it).
- * - A non-empty resolved `OPENAI_API_KEY` means API-key auth, always ready.
- * - Otherwise (subscription mode) the run needs a usable `auth.json`. Because a
- *   managed home symlinks `auth.json` from the shared source home at seed time,
- *   we treat the run as ready when either the (possibly already-seeded) effective
- *   home or the shared source home carries usable auth.
- */
 export async function evaluateCodexCredentialReadiness(
   input: CodexCredentialReadinessInput,
 ): Promise<CodexCredentialReadiness> {
@@ -922,7 +855,6 @@ export async function evaluateCodexCredentialReadiness(
   const effectiveHome = configuredCodexHome ?? resolveManagedCodexHomeDir(env, input.companyId);
 
   if (!effectiveHomeIsManaged) {
-    // Genuine external override: Paperclip never seeds or inspects it.
     return {
       managed: false,
       authMode: configuredApiKey ? "api" : "subscription",

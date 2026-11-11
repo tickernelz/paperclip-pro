@@ -38,22 +38,6 @@ export function agentEnvironmentTestService(db: Db, pluginWorkerManager?: Plugin
     return null;
   }
 
-  /**
-   * Resolve the execution target the adapter should run its test probes against.
-   *
-   * - No environmentId / local environment → returns a local target so the
-   *   adapter probes the Paperclip host (legacy behavior).
-   * - SSH environment → builds an SSH execution target from the environment
-   *   config so the adapter probes the remote box. No lease is required:
-   *   the SSH spec is fully derived from the saved environment config.
-   * - Sandbox / plugin environments → acquires an ad-hoc lease, realizes the
-   *   workspace, and resolves a sandbox execution target wired to the runtime
-   *   so the adapter probe runs inside the sandbox the same way a heartbeat
-   *   would. The returned `release` callback rolls the lease back when the
-   *   route is done.
-   *
-   * The caller MUST always invoke `release()` (typically in a `finally` block).
-   */
   async function resolveAdapterTestExecutionContext(input: {
     agentId?: string;
     companyId: string;

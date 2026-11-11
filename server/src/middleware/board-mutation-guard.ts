@@ -56,12 +56,6 @@ function trustedOriginsForRequest(req: Request) {
   return origins;
 }
 
-/**
- * Return the browser origin only when it is the same origin Paperclip's CSRF
- * guard accepts for this request. Callers may use this as browser-reachability
- * evidence, but must still apply any protocol-specific constraints (for
- * example OAuth requiring HTTPS outside loopback).
- */
 export function trustedBoardMutationOrigin(req: Request): string | null {
   const allowedOrigins = trustedOriginsForRequest(req);
   const origin = parseOrigin(req.header("origin"));

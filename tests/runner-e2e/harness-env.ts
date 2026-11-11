@@ -158,12 +158,6 @@ export function buildRunnerE2EProcessEnvironment(
   return result;
 }
 
-/**
- * Build the environment inherited by the Paperclip server. Paid credentials
- * deliberately stay in the launcher/Playwright process and cross the server
- * boundary through encrypted company secrets. Explicit subscription fixtures
- * stage their login in the disposable company's private credential home.
- */
 export function buildWardmoteServerEnvironment(
   source: NodeJS.ProcessEnv,
   overrides: NodeJS.ProcessEnv = {},

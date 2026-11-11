@@ -188,19 +188,6 @@ export interface CatalogTeamInstallResult {
   warnings: string[];
 }
 
-/**
- * Server-computed installed-team state for a company. Surfaced by
- * `GET /api/companies/:companyId/teams/catalog/installed` and consumed by the
- * Team Catalog UI to render the `INSTALLED · N` group, per-row out-of-date
- * badges, and the detail header "Update available" chip (design
- * [PAP-10238 §3.2 + §5]).
- *
- * `outOfDate` is true when at least one installed agent carries a
- * `metadata.paperclip.catalogTeam.originHash` that differs from the catalog
- * team's current `contentHash`. `present` is false when the installed team no
- * longer resolves to a catalog entry (e.g. removed from the package) — in that
- * case the comparison is unknown and `outOfDate` stays false.
- */
 export interface InstalledCatalogTeam {
   catalogId: string;
   catalogKey: string | null;

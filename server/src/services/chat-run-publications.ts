@@ -99,11 +99,6 @@ export async function resolveChatRunPresentationAuthorizationReason(
     input.runId,
   );
   if (bindings.length === 0) return "internal_agent_write";
-  // A native question/confirmation is the provider-visible result of its
-  // originating run. Keep the runner's final presentation as an internal
-  // Paperclip comment even if a fast provider answer resolves the interaction
-  // before this check; otherwise model metadata can appear as a noisy sibling
-  // beside the card or its continuation response.
   if (await hasChatRunOwnedProviderInteraction(db, input)) {
     return "internal_agent_write";
   }
@@ -274,11 +269,6 @@ export function safeMilestoneText(input: {
   }`;
 }
 
-/**
- * Projects a bounded sample of native activity into the existing run working
- * lane. The selector intentionally reads only event identity, type, sequence,
- * and time; native messages and payloads stay inside Paperclip.
- */
 async function enqueueSafeNativeChatProgress(
   db: Db,
   input: { since: Date; limit: number },
@@ -653,11 +643,6 @@ async function enqueueSafeNativeChatProgress(
   return inserted;
 }
 
-/**
- * Project only coarse run lifecycle into bound external conversations. Raw
- * output, errors, tool events, and reasoning stay in Paperclip. Idempotency is
- * keyed by run, milestone, and endpoint so polling and restarts are harmless.
- */
 export async function enqueueChatRunMilestones(
   db: Db,
   input: {

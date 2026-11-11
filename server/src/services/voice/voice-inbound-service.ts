@@ -101,8 +101,6 @@ export function voiceInboundService(db: Db, options: {
     if (!providerSessionId || event.call_id && event.call_id !== providerSessionId || event.organization_id && event.organization_id !== row.providerAccountId || event.agent_id && event.agent_id !== credentials.agentId) throw forbidden("Invalid voice call identity");
     if (event.type === "call.pre_call") {
       if (event.direction === "outbound") return {idleRePrompts: {enabled: true, delayMs: 10_000, maxPrompts: 10, messages: ["I'm still working on it."]}};
-      // Browser sessions use Paperclip result hints. The session-create API
-      // rejects idleRePrompts; pre-call pipeline overrides support this setting.
       if (event.direction === "web") return {idleRePrompts: {enabled: false}};
       if (event.direction !== "inbound" || event.organization_id !== row.providerAccountId) throw forbidden("Invalid incoming call");
       const context = await db.transaction(tx => store.endpointContext(tx, row.companyId, row.id));

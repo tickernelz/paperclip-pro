@@ -1,4 +1,3 @@
-/** Provider-neutral contracts for Paperclip's native external chat subsystem. */
 export const CHAT_PROVIDERS = [
   "slack",
   "github",

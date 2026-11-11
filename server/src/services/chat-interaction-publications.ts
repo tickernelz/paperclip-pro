@@ -163,12 +163,6 @@ export function nativeChatQuestion(
   return question;
 }
 
-/**
- * Telegram can safely render ordinary binary confirmations as inline buttons.
- * Confirmations that collect a rejection reason or authorize a credential,
- * connection, or tool side effect stay in Paperclip, where the complete
- * governed review UI and permission checks are available.
- */
 export function nativeTelegramConfirmation(
   interaction: IssueThreadInteraction,
 ): RequestConfirmationInteraction | null {
@@ -229,11 +223,6 @@ export async function enqueueIssueInteractionChatPublications(
 ) {
   if (interaction.status !== "pending") return [];
   if (interaction.kind === "request_confirmation" && interaction.payload.openwaApprovalRequestId) return [];
-  // The first native-chat wave intentionally externalizes only questions and
-  // confirmations. Other governance interactions have richer partial and
-  // terminal semantics that are authoritative in Paperclip; projecting a
-  // generic link card without complete settlement/recovery would leave stale
-  // provider prompts after a board decision.
   if (
     interaction.kind !== "ask_user_questions" &&
     interaction.kind !== "request_confirmation"
@@ -497,17 +486,6 @@ export async function enqueueIssueInteractionChatPublications(
   return inserted;
 }
 
-/**
- * Settles every delivered question or confirmation card. Providers without a
- * native callback receive the same actionless terminal edit/follow-up as
- * providers with buttons, so an "Open in Paperclip" prompt never remains
- * visibly pending after the authoritative board decision.
- *
- * The terminal publication shares the provider callback idempotency key. If a
- * provider click wins the race, its handler converges on the same row; if the
- * Paperclip UI wins, all still-issued callback tokens expire in this same
- * authoritative resolution transaction.
- */
 export async function enqueueTerminalIssueInteractionChatPublications(
   db: ChatPublicationDb,
   interaction: IssueThreadInteraction,

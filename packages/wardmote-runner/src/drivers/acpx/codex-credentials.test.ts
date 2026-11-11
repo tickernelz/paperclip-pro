@@ -307,9 +307,6 @@ describe("managed Codex credentials", () => {
     const childScript = join(fixture.root, "credential-owner.mjs");
     const credentialModule = new URL("./codex-credentials.ts", import.meta.url)
       .href;
-    // paperclip-runner intentionally does not ship a TS runtime dependency.
-    // Resolve the existing monorepo dev loader from a workspace that declares
-    // it, instead of asking the child to resolve an undeclared bare package.
     const tsxLoader = createRequire(
       new URL("../../../../../server/package.json", import.meta.url),
     ).resolve("tsx");

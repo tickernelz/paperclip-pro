@@ -68,7 +68,6 @@ function retryNotBefore(text: string): string | null {
   return new Date(Date.now() + Math.min(delay, 24 * 3_600_000)).toISOString();
 }
 
-/** Map OMP failure text onto Paperclip's retry vocabulary. */
 export function classifyOmpFailure(input: {
   parsedError: string;
   stderr: string;

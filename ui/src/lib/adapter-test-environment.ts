@@ -19,37 +19,6 @@ export class ManagedSandboxUnavailableForTestError extends Error {
   }
 }
 
-/**
- * Which environment should an adapter "Test" probe?
- *
- * The resolution mirrors the server run-time resolution
- * (`resolveExecutionWorkspaceEnvironmentId`) across all three tiers: the
- * agent's own environment wins, otherwise the instance default, otherwise the
- * instance local-default environment. The server always resolves a run to one
- * of these three tiers, so the Test must probe the same target. Without the
- * local-default tier the Test would send no environment id and probe the
- * Paperclip host, even though a real run resolves to the local-default
- * environment. The two paths must match, so a Test result reflects a real run.
- *
- * The managed-sandbox-only policy (`enableManagedSandboxOnly`) redirects a
- * resolution that lands on the local environment to the managed sandbox
- * environment, and it fails closed when no managed sandbox exists. This
- * function mirrors that redirect. A resolution that lands on the local
- * environment — the local tier, or no tier at all because the policy hides the
- * local tier — resolves to the managed sandbox environment instead. With no
- * managed sandbox environment the function throws, so the Test does not probe
- * the local host that the real run rejects. A resolution that lands on a
- * non-local environment (an agent or instance default that names an ssh or a
- * user sandbox) is untouched, because the policy hides local, it does not
- * forbid other environments.
- *
- * The policy hides the local environment from the client, so the resolved id
- * can name a local row the client cannot see (an agent default that still
- * points at the hidden local row). The `visibleEnvironmentIds` list closes that
- * gap: under the policy a resolved id that names no visible environment is the
- * hidden local row, or a stale reference, so the function redirects it to the
- * managed sandbox too. Omit the list to skip this visibility check.
- */
 export function resolveAdapterTestEnvironmentId(input: {
   agentDefaultEnvironmentId: string | null | undefined;
   instanceDefaultEnvironmentId: string | null | undefined;

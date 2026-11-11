@@ -182,9 +182,6 @@ export const chatEndpoints = pgTable(
       .on(table.botExternalId)
       .where(sql`${table.provider} = 'agentmail' and ${table.status} != 'archived' and ${table.botExternalId} is not null`),
     uniqueIndex("chat_endpoints_connection_uq").on(table.connectionId),
-    // A native provider identity can back only one live Paperclip endpoint.
-    // Historical archived/revoked endpoints retain attribution without
-    // preventing an operator from deliberately reusing the provider bot later.
     uniqueIndex("chat_endpoints_live_bot_external_uq")
       .on(table.provider, table.providerAccountId, table.botExternalId)
       .where(
@@ -192,10 +189,6 @@ export const chatEndpoints = pgTable(
           and ${table.providerAccountId} is not null
           and ${table.botExternalId} is not null`,
       ),
-    // One Discord application can be installed in many guilds, but it remains
-    // one native bot identity. Excluding providerAccountId closes the race
-    // where concurrent setup in two guilds could otherwise claim that bot for
-    // two Paperclip agents after both application-level prechecks passed.
     uniqueIndex("chat_endpoints_photon_number_uq")
       .on(table.botExternalId)
       .where(sql`${table.provider} = 'imessage-photon' and ${table.status} <> 'archived' and ${table.botExternalId} is not null`),
@@ -212,11 +205,6 @@ export const chatEndpoints = pgTable(
           and ${table.status} in ('verifying', 'active', 'paused', 'attention')
           and ${table.botExternalId} is not null`,
       ),
-    // GitHub App and Microsoft Bot application ids are provider-global bot
-    // identities. Their mutable owner/tenant coordinate is useful metadata,
-    // but it cannot be part of the exclusivity key: an App transfer or a
-    // multi-tenant service principal must never let one native bot represent
-    // two Paperclip agents through two different webhook URLs.
     uniqueIndex("chat_endpoints_live_global_app_bot_external_uq")
       .on(table.provider, table.botExternalId)
       .where(
@@ -427,9 +415,6 @@ export const chatConversations = pgTable(
       .references(() => issues.id, { onDelete: "restrict" }),
     externalConversationId: text("external_conversation_id").notNull(),
     externalThreadId: text("external_thread_id").notNull().default(""),
-    // Providers with linear conversations (DMs, Telegram groups, Teams group
-    // chats) reuse one native thread id. A generation preserves the native id
-    // used for replies while allowing completed Paperclip tasks to roll over.
     sessionGeneration: integer("session_generation").notNull().default(1),
     externalLabel: text("external_label").notNull(),
     providerUrl: text("provider_url"),

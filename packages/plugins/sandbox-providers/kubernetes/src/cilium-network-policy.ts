@@ -9,10 +9,6 @@ export interface BuildCiliumNetworkPolicyInput {
   ownerReferences?: Record<string, unknown>[];
 }
 
-// Design note: no ingress rules are defined here. Paperclip-server does NOT
-// push to agent pods — agents make outbound (egress) callbacks to
-// paperclip-server on port 3100. If server→agent push is ever needed, add a
-// targeted ingress rule scoped to the paperclip-server endpoint selector.
 export function buildCiliumNetworkPolicyManifest(input: BuildCiliumNetworkPolicyInput): Record<string, unknown> {
   const egress: Record<string, unknown>[] = [];
 

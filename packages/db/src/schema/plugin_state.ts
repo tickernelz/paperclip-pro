@@ -10,29 +10,6 @@ import {
 import type { PluginStateScopeKind } from "@tickernelz/wardmote-shared";
 import { plugins } from "./plugins.js";
 
-/**
- * `plugin_state` table — scoped key-value storage for plugin workers.
- *
- * Each row stores a single JSON value identified by
- * `(plugin_id, scope_kind, scope_id, namespace, state_key)`. Plugins use
- * this table through `ctx.state.get()`, `ctx.state.set()`, and
- * `ctx.state.delete()` in the SDK.
- *
- * Scope kinds determine the granularity of isolation:
- * - `instance` — one value shared across the whole Paperclip instance
- * - `company` — one value per company
- * - `project` — one value per project
- * - `project_workspace` — one value per project workspace
- * - `agent` — one value per agent
- * - `issue` — one value per issue
- * - `goal` — one value per goal
- * - `run` — one value per agent run
- *
- * The `namespace` column defaults to `"default"` and can be used to
- * logically group keys without polluting the root namespace.
- *
- * @see PLUGIN_SPEC.md §21.3 — `plugin_state`
- */
 export const pluginState = pgTable(
   "plugin_state",
   {

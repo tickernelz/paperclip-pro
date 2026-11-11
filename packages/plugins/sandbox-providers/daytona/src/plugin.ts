@@ -691,8 +691,6 @@ function leaseMetadata(input: {
     ...(input.resumedLease
       ? { resumedFromState: input.resumedFromState ?? null }
       : {}),
-    // Record the resources Paperclip attempted to request so future diagnosis
-    // can compare requested allocation against what Daytona provisioned.
     ...(input.config.cpu != null ? { cpu: input.config.cpu } : {}),
     ...(input.config.memory != null ? { memory: input.config.memory } : {}),
     ...(input.config.disk != null ? { disk: input.config.disk } : {}),
@@ -714,15 +712,6 @@ function expiresAtForMinutes(minutes: number): string {
   return new Date(Date.now() + minutes * 60_000).toISOString();
 }
 
-// Configure a provider-side time-to-live so Daytona destroys the sandbox at or
-// before the caller-requested deadline, even after a Paperclip crash or outage.
-// `setTtl` counts wall-clock time regardless of the sandbox state, so the destroy
-// happens even when the sandbox is stopped, paused, or archived. The function
-// returns the real provider destroy time (`autoDestroyAt`) as evidence of the
-// provider-side bound. It returns null when the caller sets no deadline, when the
-// deadline is invalid, or when the deadline is less than one minute away (Daytona
-// TTL granularity is one minute, so a nearer deadline maps to no valid TTL). The
-// server then fails closed on a null expiry and releases the lease.
 async function configureSandboxExpiry(input: {
   sandbox: Sandbox;
   requestedExpiresAt: string | null | undefined;
@@ -2453,9 +2442,6 @@ const plugin = definePlugin({
         phase = "shell";
         const shellCommand = await detectSandboxShellCommand(sandbox, toTimeoutSeconds(Math.max(1, deadline - Date.now())));
         assertActive();
-        // Configure a provider-side destroy time at or before a caller deadline, so
-        // an abandoned sandbox self-destroys even if Paperclip is down. The lease
-        // carries the real provider expiry (or none) as evidence of the bound.
         phase = "expiry";
         const expiresAt = await configureSandboxExpiry({
           sandbox,

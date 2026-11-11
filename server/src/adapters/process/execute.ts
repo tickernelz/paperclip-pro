@@ -49,9 +49,6 @@ async function executeProcess(ctx: AdapterExecutionContext): Promise<AdapterExec
   };
   for (const [k, v] of Object.entries(envConfig)) {
     if (typeof v !== "string") continue;
-    // Runtime WARDMOTE_* always wins over config, and WARDMOTE_API_KEY is
-    // never accepted from config — the harness-minted run token is the only
-    // source. Other WARDMOTE_* keys Paperclip did not assign flow through.
     if (isForbiddenConfigEnvKey(k)) continue;
     if (isWardmoteRuntimeEnvKey(k) && k in env) continue;
     env[k] = v;

@@ -1,5 +1,3 @@
-// Only the upstream credential check is simulated. The vault, card, adoption,
-// runtime credential selection, and continuation delivery use real Paperclip APIs.
 if (process.env.NODE_ENV === "test") {
   const realFetch = globalThis.fetch;
   globalThis.fetch = async (input, init) => {

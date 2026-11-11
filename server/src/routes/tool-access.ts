@@ -772,16 +772,6 @@ function connectorEnrollmentPrincipal(req: Request): string {
     res.json(await svc.preflightGalleryAppMetadata(req.params.galleryKey as string, methodKey));
   });
 
-  /**
-   * Paperclip's Client ID Metadata Document (PAP-17087).
-   *
-   * The document's own URL is the `client_id` Paperclip presents to an
-   * authorization server that supports CIMD, so this endpoint has to be publicly
-   * readable — an authorization server fetches it server-to-server with no
-   * Paperclip session. It contains only this deployment's callback and the
-   * grant/response/auth methods Paperclip uses: no company, connection or secret
-   * data of any kind.
-   */
   router.get(OAUTH_CLIENT_ID_METADATA_DOCUMENT_PATH.replace(/^\/api/, ""), (_req, res) => {
     const redirectUri = oauthRedirectUri(_req);
     const clientId = new URL(OAUTH_CLIENT_ID_METADATA_DOCUMENT_PATH, new URL(redirectUri).origin).toString();
@@ -1024,9 +1014,6 @@ function connectorEnrollmentPrincipal(req: Request): string {
     const state = typeof req.query.state === "string" ? req.query.state : "";
     const code = typeof req.query.code === "string" ? req.query.code : null;
     const error = typeof req.query.error === "string" ? req.query.error : null;
-    // `error_description` / `error_uri` are read from neither the query nor the
-    // provider's body: they are provider-authored prose, and Paperclip maps the
-    // `error` code to its own copy instead of reflecting them (PAP-17108).
     const iss = typeof req.query.iss === "string" ? req.query.iss : null;
     const pendingState = state ? await svc.peekOAuthState(state) : null;
     if (!pendingState || !hasCompanyAccess(req, pendingState.companyId)) {
@@ -1085,9 +1072,6 @@ function connectorEnrollmentPrincipal(req: Request): string {
         details: {
           code: callbackFailureCode,
           status: callbackError instanceof HttpError ? callbackError.status : 500,
-          // HttpError messages are Paperclip-authored. Provider-authored
-          // error_description/error_uri values are never read above and cannot
-          // be reflected into the activity stream.
           message: callbackError instanceof HttpError
             ? callbackError.message
             : "OAuth callback failed unexpectedly.",

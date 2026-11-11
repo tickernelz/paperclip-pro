@@ -37,12 +37,6 @@ export async function grokHomeHasSession(home: string, sessionId: string): Promi
   return inspect(path.join(home, "sessions"), 2);
 }
 
-/**
- * The allowlist of managed `GROK_HOME` entries that the grok-local adapter
- * stages into the sandbox `home` asset (see {@link stageGrokHomeForSync}).
- * Paperclip writes instructions and skills under the workspace, not under the
- * Grok home, so the credential file is the only entry a sandbox run needs.
- */
 export const GROK_SYNC_ALLOWLIST = ["auth.json"] as const;
 
 // Matches the composite `<issuer>::<uuid>` top-level key. The issuer is a
@@ -108,12 +102,6 @@ export async function grokHomeHasUsableAuth(home: string): Promise<boolean> {
   }
 }
 
-/**
- * Resolves the managed Grok home directory. With a `companyId`, it resolves the
- * company-scoped home under the Paperclip instance tree, the same isolation
- * boundary `resolveManagedCodexHomeDir` uses. Without one, it resolves the
- * instance-global home, which a promotion must never write.
- */
 export function resolveManagedGrokHomeDir(
   env: NodeJS.ProcessEnv,
   companyId?: string,

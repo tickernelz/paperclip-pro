@@ -13,11 +13,6 @@ export const CODEX_CLI_VERSION_INCOMPATIBLE_CHECK_CODE = "codex_cli_version_inco
 export const CODEX_CLI_VERSION_COMPATIBLE_CHECK_CODE = "codex_cli_version_compatible";
 export const CODEX_HELLO_PROBE_MODEL_REJECTED_CHECK_CODE = "codex_hello_probe_model_rejected";
 
-/**
- * Run `codex --version` where the run would execute it. Never cached: an
- * operator may upgrade Codex, or promote a new sandbox image, while the
- * Paperclip server keeps running, and the next Test should see the change.
- */
 export async function readCodexCommandVersion(input: {
   runId: string;
   command: string;

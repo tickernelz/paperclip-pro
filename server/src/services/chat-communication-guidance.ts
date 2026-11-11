@@ -2,8 +2,6 @@ import { SPEKO_COMMUNICATION_GUIDANCE } from "./voice/speko-skill.js";
 import type { ChatProvider } from "@tickernelz/wardmote-shared";
 import { slackTaskUpdateGuidance } from "./connectors/slack/task-update-guidance.js";
 
-// Presentation guidance only. Task execution and permissions belong to the
-// ordinary Paperclip agent runtime, not the provider transport.
 const providerGuidance: Partial<Record<ChatProvider, string>> = {
   speko: SPEKO_COMMUNICATION_GUIDANCE,
   slack: [

@@ -1,24 +1,3 @@
-/**
- * PluginEventBus — typed in-process event bus for the Paperclip plugin system.
- *
- * Responsibilities:
- * - Deliver core domain events to subscribing plugin workers (server-side).
- * - Apply `EventFilter` server-side so filtered-out events never reach the handler.
- * - Namespace plugin-emitted events as `plugin.<pluginId>.<eventName>`.
- * - Guard the core namespace: plugins may not emit events with the `plugin.` prefix.
- * - Isolate subscriptions per plugin — a plugin cannot enumerate or interfere with
- *   another plugin's subscriptions.
- * - Support wildcard subscriptions via prefix matching (e.g. `plugin.acme.linear.*`).
- *
- * The bus operates in-process. In the full out-of-process architecture the host
- * calls `bus.emit()` after receiving events from the DB/queue layer, and the bus
- * forwards to handlers that proxy the call to the relevant worker process via IPC.
- * That IPC layer is separate; this module only handles routing and filtering.
- *
- * @see PLUGIN_SPEC.md §16 — Event System
- * @see PLUGIN_SPEC.md §16.1 — Event Filtering
- * @see PLUGIN_SPEC.md §16.2 — Plugin-to-Plugin Events
- */
 
 import type { PluginEventType } from "@tickernelz/wardmote-shared";
 import type { PluginEvent, EventFilter } from "@tickernelz/wardmote-plugin-sdk";

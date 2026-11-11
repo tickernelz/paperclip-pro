@@ -1,33 +1,3 @@
-// The descriptor-bound credential read for the Codex device login.
-//
-// The login pseudo-terminal (PTY) runs `codex login --device-auth` and writes
-// `auth.json` into the server-controlled session home. The service reads that
-// file after the command exits with code zero. The read must close the
-// time-of-check-to-time-of-use (TOCTOU) window: a pathname check and a later
-// `cat` on the same pathname let an attacker swap the file between the two steps.
-//
-// This module runs one fixed, server-controlled operation inside the sandbox
-// instead. The operation opens the filesystem root, then walks each path
-// component of the session home with no symlink follow. `O_NOFOLLOW` protects
-// only the final component of one open, so the operation opens every intermediate
-// component with a separate no-follow open. A symlink at any ancestor fails the
-// walk. The operation then opens `auth.json` relative to the final directory
-// descriptor without a symlink follow, runs `fstat` on the opened descriptor, and
-// reads only from that same descriptor. The `fstat` check requires a regular
-// file, login-user ownership, exact mode `0600`, and a bounded size. A missing
-// file, a symlink at any component, a non-regular file, a wrong owner, a wrong
-// mode, or an oversize file returns one fixed, non-secret error.
-//
-// The provider exposes no descriptor application programming interface (API), so
-// this module runs a fixed helper program in the sandbox through the environment
-// runtime `execute` seam. The helper is node, because the sandbox already runs
-// node for the Paperclip bridge. The helper never re-opens the pathname after the
-// check: the `fstat` and the read bind to the one opened descriptor.
-//
-// Security: the helper prints only the base64 of the credential bytes on the
-// fully validated success path. It prints one fixed error token on every failed
-// path. It never prints the pathname, the raw bytes, or any other detail. This
-// module converts any failure to one fixed, non-secret error and reads no bytes.
 
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -53,23 +23,6 @@ export const AUTH_JSON_FILE_NAME = "auth.json";
 export const DEVICE_LOGIN_AUTH_READ_ERROR =
   "device login failed: the sandbox credential read errored.";
 
-/**
- * The fixed helper program. The server reads the helper from its own script file
- * and runs it in the sandbox as `node -e <script> <sessionHome> <maxBytes>
- * [<expectedUid>]`. The sandbox already runs node for the Paperclip bridge, so the
- * helper needs no extra runtime. The helper source lives in
- * `scripts/adapter-auth-read.cjs`, so no large script stays as a string literal in
- * this module.
- *
- * The helper opens the filesystem root, then opens each session-home path
- * component in turn with a no-follow, directory-only open, relative to the
- * previous directory descriptor, so a symlink at any component fails. It opens
- * `auth.json` relative to the final directory descriptor with `O_NOFOLLOW`, runs
- * `fstat` on the opened descriptor, and requires a regular file, the expected
- * owner, exact mode `0600`, and a size at or below the bound. It reads only from
- * that same descriptor. The `expectedUid` argument is optional; the server omits
- * it, so the helper uses the login user's own id.
- */
 export const DEVICE_LOGIN_AUTH_READ_SCRIPT = readFileSync(
   fileURLToPath(new URL("./scripts/adapter-auth-read.cjs", import.meta.url)),
   "utf8",

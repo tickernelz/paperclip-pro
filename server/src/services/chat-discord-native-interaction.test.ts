@@ -48,9 +48,6 @@ function component(customId: string, overrides: Record<string, unknown> = {}) {
   };
 }
 
-// Exercise the installed, compatibility-checked adapter and Chat SDK. Only the
-// Discord socket/API and final Paperclip service/DB callback are test doubles;
-// this suite does not claim a provider login or a native model continuation.
 interface DiscordAdapterSeam {
   handleGatewayInteraction(event: ReturnType<typeof component>): Promise<void>;
   handleComponentInteraction(event: Record<string, unknown>): Promise<void>;

@@ -287,23 +287,7 @@ export interface AdapterExecutionTargetProcessOptions {
    * after local child close or a remotely observed exit, including nonzero exits. */
   onProcessStopped?: () => void;
   terminalResultCleanup?: TerminalResultCleanupOptions;
-  /**
-   * Sandbox-only: factory from the Paperclip bridge handle that streams the
-   * CLI's stdout/stderr during the run. When provided, the batched provider
-   * onLog is suppressed and incremental chunks flow through `onLog` instead.
-   */
   runLogTail?: SandboxRunLogTailFactory | null;
-  /**
-   * Sandbox-only: the atomic run-disposition settle from the Paperclip bridge
-   * handle. When provided, `runAdapterExecutionTargetProcess` calls it once at
-   * the clean-completion boundary of the process, synchronously and before the
-   * run-log tail finishes. The call reads the disposition and marks the
-   * host-observed orderly completion in one broker step, so a gateway exit
-   * after the clean process completion cannot latch a false mid-run loss. A
-   * control channel that died before the clean completion still fails the run
-   * closed with the typed `duplex_channel_lost` code. The file bridge path
-   * never sets it.
-   */
   settleRunDisposition?: (() => DuplexBrokerRunDisposition) | null;
   localProcessSandbox?: LocalProcessSandboxOptions | null;
 }
@@ -430,7 +414,6 @@ function resolveDefaultWardmoteApiUrl(): string {
   const runtimeHost = resolveHostForUrl(
     process.env.WARDMOTE_LISTEN_HOST ?? process.env.HOST ?? "localhost",
   );
-  // 3100 matches the default Paperclip dev server port when the runtime does not provide one.
   const runtimePort = process.env.WARDMOTE_LISTEN_PORT ?? process.env.PORT ?? "3100";
   return `http://${runtimeHost}:${runtimePort}`;
 }
@@ -643,10 +626,6 @@ export function formatAdapterExecutionTimeoutErrorMessage(
   );
 }
 
-/**
- * One-line start-of-run statement of the effective wall-clock timeout and its
- * source. Callers prefix with `[paperclip] ` and append a newline.
- */
 export function formatAdapterExecutionTimeoutStartLogLine(
   resolution: AdapterExecutionTargetTimeoutResolution,
 ): string {
@@ -1259,16 +1238,6 @@ export async function ensureAdapterExecutionTargetFile(
   );
 }
 
-/**
- * Ensure a working directory exists (and is a directory) on the execution target.
- *
- * For local targets this delegates to the local `ensureAbsoluteDirectory` helper
- * (Node fs). For remote (SSH/sandbox) targets it shells out and runs
- * `mkdir -p` (when allowed) followed by a `[ -d ]` check so the result reflects
- * the directory state inside the environment, not on the Paperclip host.
- *
- * Throws an Error with a human-readable message on failure.
- */
 export async function ensureAdapterExecutionTargetDirectory(
   runId: string,
   target: AdapterExecutionTarget | null | undefined,
@@ -1889,12 +1858,6 @@ async function writeProcessSessionProxyScript(dir: string, port: number, token: 
   return proxyPath;
 }
 
-// Content-hash-skip the process-session remote script write, mirroring the
-// sandbox callback bridge entrypoint sha256 gate. The script is a static
-// Paperclip-authored `.mjs` that only changes when the build changes, so on a
-// warm start (same sandbox, script already present) the single sha-gate exec
-// skips the ~3-exec base64 upload entirely. `syncRemoteTextFileWithHashSkip`
-// fails loud on a check error rather than silently re-uploading.
 async function syncProcessSessionRemoteScript(input: {
   runner: CommandManagedRuntimeRunner;
   remoteCwd: string;
@@ -1965,11 +1928,6 @@ export async function startAdapterExecutionTargetProcessSessionBridge(input: {
   command: string;
   args: string[];
   cwd: string;
-  // The launch env is consumed ONLY when building the base64 `commandPayload`
-  // below — never during the env-INDEPENDENT dir/script setup. Accepting a
-  // resolver (in addition to a plain object) lets a caller overlap that setup
-  // with other work — e.g. starting the paperclip callback bridge — and hand the
-  // merged env in right before the launch.
   env: Record<string, string> | (() => Promise<Record<string, string>>);
   timeoutSec?: number | null;
   onLog?: (stream: "stdout" | "stderr", chunk: string) => Promise<void>;
@@ -2052,9 +2010,6 @@ export async function startAdapterExecutionTargetProcessSessionBridge(input: {
     outputToStdout: streamOutput,
   });
 
-  // Resolve the launch env AFTER the env-independent setup above, so a caller
-  // can defer it until an upstream dependency (e.g. the paperclip bridge's env)
-  // is ready without blocking the dir/script setup.
   const launchEnv = typeof input.env === "function" ? await input.env() : input.env;
   const commandPayload = Buffer.from(JSON.stringify({
     command: input.command,
@@ -4408,18 +4363,6 @@ export async function startAdapterExecutionTargetWardmoteBridge(input: {
     typeof input.maxBodyBytes === "number" && Number.isFinite(input.maxBodyBytes) && input.maxBodyBytes > 0
       ? Math.trunc(input.maxBodyBytes)
       : defaultBodyBytes;
-  // The bridge worker runs inside the same process that serves the Paperclip
-  // API, so forwarded sandbox calls must target the LOCAL listen origin. The
-  // WARDMOTE_RUNTIME_API_URL / WARDMOTE_API_URL exports now prefer a
-  // configured public base URL, which is the origin browsers and external
-  // agents use; routing this in-process loopback hop through the network edge
-  // breaks deployments whose public origin sits behind a session-gated proxy
-  // (every forwarded agent API call is rejected at the edge). Server boot
-  // exports WARDMOTE_LISTEN_HOST / WARDMOTE_LISTEN_PORT before any run
-  // executes, and resolveDefaultWardmoteApiUrl() maps wildcard listen hosts
-  // to the loopback address of the same family (0.0.0.0 -> 127.0.0.1,
-  // :: -> [::1]), so the fallback is always loopback-reachable.
-  // input.hostApiUrl stays available as an explicit override seam.
   const hostApiUrl = input.hostApiUrl?.trim() || resolveDefaultWardmoteApiUrl();
   const shellCommand = adapterExecutionTargetShellCommand(target);
   const runner = adapterExecutionTargetCommandRunner(target);
@@ -4456,11 +4399,6 @@ export async function startAdapterExecutionTargetWardmoteBridge(input: {
   // Only intended for active debugging in trusted environments.
   const bridgeDebugEnabled = isBridgeDebugEnabled(process.env);
 
-  // One forward of a relayed sandbox request onto the existing Paperclip API
-  // path. The forward applies the real host token and the signed run id, so the
-  // token replacement and the run attribution stay in one place for both the
-  // file bridge and the duplex broker. The sandbox request carries only the
-  // bridge token; the real agent token never leaves the host.
   const forwardBridgeRequest = async (
     request: {
       method: string;
@@ -4905,11 +4843,6 @@ export async function startAdapterExecutionTargetWardmoteBridge(input: {
       timeoutMs: bridgeTimeoutMs,
       shellCommand,
     });
-    // `startSandboxCallbackBridgeWorker` keeps its awaited queue-directory
-    // setup on the active `bridge.paperclip` step, and runs each request under
-    // the run parent context (see `runWithRuntimeParent` inside that function).
-    // So the startup `mkdir` execs stay parented to the step, and every later
-    // request `sandbox.exec` span parents to the live run span.
     worker = await startSandboxCallbackBridgeWorker({
       client,
       queueDir,

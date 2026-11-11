@@ -1880,10 +1880,6 @@ function checkpointedResultlessDispositionFallback(input: {
   };
 }
 
-/**
- * Package-owned normalized session loop. Paperclip supplies persistence and
- * authority through ControlPlanePort; provider/session behavior stays here.
- */
 export async function executeNativeSession(
   options: ExecuteNativeSessionOptions,
 ): Promise<NativeSessionExecutionResult> {

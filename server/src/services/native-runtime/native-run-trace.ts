@@ -190,14 +190,6 @@ function safeAttributes(
   );
 }
 
-/**
- * Run-scoped tracing for the native Paperclip runner path.
- *
- * A scope owns a real OpenTelemetry parent context. While work runs inside a
- * scope, nested native measurements and the existing sandbox/provider tracing
- * seams inherit that context. The persisted run-event copy retains the same
- * semantic parent name for developer installs without an OTLP collector.
- */
 export function createNativeRunTrace(input: {
   runId: string;
   startedAtMs?: number;

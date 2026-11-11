@@ -63,34 +63,6 @@ export type GuardedRemoteHttpFetchOptions = RemoteHttpEndpointGuardOptions & {
   unpinnedFetch?: typeof fetch;
 };
 
-/**
- * Fetch a remote endpoint without reopening the DNS-rebinding window the guard
- * just closed (PAP-17098).
- *
- * `assertPublicRemoteHttpEndpoint` used to hand its verdict to a bare global
- * `fetch`, which resolved the hostname a second time. An attacker who controls
- * the name server for the hostname could answer with a public address for the
- * guard's lookup and a loopback, RFC 1918 or link-local address for the
- * connection, reaching internal services and cloud metadata from the Paperclip
- * server. This function instead:
- *
- * 1. resolves and validates the hostname exactly once, keeping the approved
- *    address set;
- * 2. dials one of those approved addresses directly, so the socket layer never
- *    performs its own lookup;
- * 3. preserves the original hostname for the `Host` header, for TLS SNI and for
- *    certificate identity checking, so pinning is invisible to the peer;
- * 4. re-checks the address the socket actually connected to before a single
- *    request byte is written, which also covers a rebind below DNS; and
- * 5. never follows redirects — it behaves as `redirect: "manual"` so the caller
- *    re-runs the whole guard against every `Location` it decides to follow.
- *
- * URLs that already carry an IP literal need no pinning and keep platform
- * `fetch` semantics: no name resolution happens on
- *   either side of the guard, so there is no second answer to disagree with the
- *   first. `URL` has already normalised the literal (`0x7f.1`, `::ffff:7f00:1`)
- *   by the time the guard classifies it.
- */
 export async function guardedRemoteHttpFetch(
   url: string | URL,
   init: RequestInit,

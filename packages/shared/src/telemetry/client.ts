@@ -107,10 +107,6 @@ export class TelemetryClient {
     this.random = random;
   }
 
-  /**
-   * Tracks first-party Paperclip telemetry events registered in the generated
-   * backend event schema.
-   */
   track<K extends TelemetryEventName>(eventName: K, ...args: TrackArgs<K>): void {
     if (!this.isRegisteredEventName(eventName)) return;
     const [dimensions] = args;

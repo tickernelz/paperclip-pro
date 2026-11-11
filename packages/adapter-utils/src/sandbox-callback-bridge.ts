@@ -100,8 +100,6 @@ const SANDBOX_CALLBACK_BRIDGE_FILE_MODE = "queue_v1";
 /** The active non-file transport mode. */
 export const SANDBOX_CALLBACK_BRIDGE_HTTP2_MODE = "http2_v1";
 
-/** Span name that wraps one Paperclip-API callback request — read the request,
- * write the response, and remove the request file. */
 const CALLBACK_BRIDGE_RELAY_REQUEST_SPAN = "sandbox.callbackBridge.relayRequest";
 
 /** Span name for a failed or hung bridge worker. The worker runs a throwing
@@ -859,11 +857,6 @@ export async function startSandboxCallbackBridgeWorker(input: {
   // otherwise). When it is absent, the request work runs with an empty store,
   // exactly like the earlier `runWithoutActiveStep` behavior.
   getRuntimeParentContext?: () => StartupSpanContext | undefined;
-  // Wrap each Paperclip-API callback request in a
-  // `sandbox.callbackBridge.relayRequest` span, so the request's read, write, and
-  // remove execs group under one named span. When it is absent, the request work
-  // runs under the run parent with no wrapper span, exactly like the earlier
-  // behavior.
   runtimeSpan?: RuntimeSpanRunner;
 }): Promise<SandboxCallbackBridgeWorkerHandle> {
   const pollIntervalMs = normalizeTimeoutMs(input.pollIntervalMs, DEFAULT_BRIDGE_POLL_INTERVAL_MS);
@@ -1486,12 +1479,6 @@ export async function startSandboxCallbackBridgeWorker(input: {
     }
   };
 
-  // Start the long-lived poll loop outside the measured startup-step store.
-  // The `makeDir` calls above are startup work and must keep the active
-  // `bridge.paperclip` step. The loop runs run-time execs for the whole run,
-  // so each loop `sandbox.exec` span must not parent to the ended step or copy
-  // its `criticalPath` flag. `runWithoutActiveStep` empties the store for the
-  // loop only; Node keeps the empty store on every later poll continuation.
   const loop = runWithoutActiveStep(() => (async () => {
     // The watchdog runs on its own timer, so it fires even while the loop is
     // stuck on an awaited client call. It is the backstop for a hang the
@@ -1659,21 +1646,6 @@ export async function startSandboxCallbackBridgeWorker(input: {
   };
 }
 
-/**
- * Content-hash-skip write of a Paperclip-authored text file into the sandbox, in
- * a SINGLE remote exec. The body's sha256 is computed on the host; the one shell
- * round-trip skips the write entirely when the remote file already hashes to the
- * same value (warm start — 0 write execs), otherwise it uploads (base64 over
- * stdin), verifies the decoded bytes, and atomically renames into place. A
- * PID-liveness lock serializes concurrent writers to the same path and the
- * verify step guards against a torn upload.
- *
- * Fail loudly: a non-zero remote exit (surfaced by `requireSuccessfulResult`) or
- * malformed result JSON throws rather than silently re-uploading and masking a
- * failed check. The only intentional degradation is when the remote has neither
- * `sha256sum` nor `shasum` — then the skip cannot be proven and we conservatively
- * re-upload (and the post-upload verify is best-effort, as noted inline).
- */
 export async function syncRemoteTextFileWithHashSkip(input: {
   runner: CommandManagedRuntimeRunner;
   remoteCwd: string;

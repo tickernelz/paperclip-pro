@@ -475,12 +475,6 @@ function isInCompany<T extends { companyId: string | null | undefined }>(
   return Boolean(record && record.companyId === companyId);
 }
 
-/**
- * Create an in-memory host harness for plugin worker tests.
- *
- * The harness enforces declared capabilities and simulates host APIs, so tests
- * can validate plugin behavior without spinning up the Paperclip server runtime.
- */
 export function createTestHarness(options: TestHarnessOptions): TestHarness {
   const manifest = options.manifest;
   const capabilitySet = new Set(options.capabilities ?? manifest.capabilities);

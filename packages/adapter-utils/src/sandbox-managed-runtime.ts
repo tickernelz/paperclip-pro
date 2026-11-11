@@ -419,21 +419,6 @@ export interface SandboxSyncFileMapping {
   writablePath?: string;
 }
 
-/**
- * A control command run against the sandbox after a sync operation's files have
- * landed. Mirrors the plugin SDK `PluginPostUploadCommand`; kept as a local
- * structural type so `adapter-utils` does not depend on the plugin SDK. Ordered
- * within {@link SandboxSyncOperation.postUploadCommands} and executed in array
- * order, fail-fast (first non-zero exit or timeout aborts the operation).
- *
- * SECURITY — command origin (Stage-1 design review, condition C1). `command` is
- * a **Paperclip/adapter-authored control operation**: it may be supplied ONLY by
- * core/adapter code. No server route, issue/comment content, project/workspace
- * file content, provider-plugin callback, or arbitrary adapter config may supply
- * a raw `command` string; any path embedded in it MUST be built by adapter/core
- * helpers from already-confined paths and shell-quoted (C3). Providers treat the
- * command as **opaque** — execute or reject, never rewrite/concatenate/append.
- */
 export interface SandboxPostUploadCommand {
   /** The opaque, adapter-authored shell command to run after upload. */
   command: string;

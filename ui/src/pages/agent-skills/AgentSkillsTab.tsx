@@ -30,7 +30,6 @@ import { AgentSkillReleasePicker, releaseShortLabel } from "./AgentSkillReleaseP
 const MATERIALIZATION_NOTE =
   "Enabled skills are materialized into the stable Wardmote-managed prompt bundle on the agent's next run.";
 
-/** Company skill key of the Paperclip core skill that carries beta releases. */
 const WARDMOTE_CORE_SKILL_KEY = "tickernelz/wardmote/wardmote";
 
 /** Build the desired-skill sync payload, carrying any active version pins. */
@@ -97,8 +96,6 @@ export function AgentSkillsTab({ agent, companyId }: { agent: Agent; companyId?:
     [companySkills, skillSnapshot],
   );
 
-  // Seeded releases (release_id IS NOT NULL) for the paperclip core skill. Only
-  // fetched when the flag is on and the skill is present in the library.
   const { data: wardmoteVersions } = useQuery({
     queryKey: queryKeys.companySkills.versions(companyId ?? "", wardmoteCoreSkill?.id ?? ""),
     queryFn: () => companySkillsApi.versions(companyId!, wardmoteCoreSkill!.id),
@@ -328,8 +325,6 @@ export function AgentSkillsTab({ agent, companyId }: { agent: Agent; companyId?:
     syncSkills.mutate(toDesiredSkillPayload(skillDraft, nextPins));
   };
 
-  // The release picker only applies to the enabled paperclip core skill while the
-  // beta-skills flag is on and seeded releases exist.
   const releasePickerActive = betaSkillsEnabled && wardmoteReleases.length > 0;
 
   const renderRow = (row: AgentSkillRowData, variant: "enabled" | "available") => {

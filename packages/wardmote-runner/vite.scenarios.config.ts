@@ -8,14 +8,6 @@ import { capabilityExplorerFixturesPlugin } from "./scripts/capability-explorer-
 
 const packageRoot = fileURLToPath(new URL(".", import.meta.url));
 
-/**
- * Capability scenario explorer entry.
- *
- * `@paperclip-runner-local/*` is deliberately not the published SDK name: the
- * scenario runtime is package-local and stays outside the frozen 0.1.2 export
- * surface, while the explorer consumes `@tickernelz/wardmote-runner/react`
- * and its token sheet exactly as an external consumer would.
- */
 export default defineConfig({
   root: resolve(packageRoot, "examples"),
   base: "./",

@@ -80,7 +80,6 @@ function adminError(error: unknown, baseUrl: string): Error {
   return openwaSetupError(error, baseUrl);
 }
 
-/** Board-managed read-only OpenWA sessions linked to an endpoint; keys stay in Paperclip-managed secrets. */
 export function openwaLinkedService(db: Db, deps: OpenwaLinkedServiceDeps) {
   const secrets = secretService(db);
 

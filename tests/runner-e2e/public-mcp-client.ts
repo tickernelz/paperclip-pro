@@ -44,8 +44,6 @@ export async function beginConnection(write = true, redirect = origin + "/eval-c
 }
 
 export async function connect(context: BrowserContext, team: Team, write = true, page?: Page, secrets: string[] = [], configure = false) {
-  // A real assistant callback has its own origin. A same-origin fake callback
-  // would be intercepted by Paperclip's service worker and render the board.
   const callbackServer = page ? createServer((_req, res) => { res.writeHead(200, { "Content-Type": "text/html", "Cache-Control": "no-store", "Referrer-Policy": "no-referrer" }); res.end("<h1>Assistant connected</h1>"); }) : undefined;
   if (callbackServer) { callbackServer.listen(0, "127.0.0.1"); await once(callbackServer, "listening"); }
   const address = callbackServer?.address();

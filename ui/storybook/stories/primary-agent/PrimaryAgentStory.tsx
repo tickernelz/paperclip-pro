@@ -147,8 +147,6 @@ function installFixtures(state: StoryState, changed: () => void) {
     if (path.endsWith("/read-state")) return json({ unread: false });
     if (path.endsWith("/capabilities") && path.includes("/environments")) return json({ environments: [], defaultEnvironmentId: null });
     if (path.includes("/models") || path === "/api/adapters" || path.includes("/model-profiles")) return previousFetch(input, init);
-    // Other existing read-only shell panels are empty in this isolated company.
-    // Refuse unknown writes rather than ever reaching a running Paperclip API.
     return method === "GET" ? json([]) : Response.json({ error: "This action is outside the primary-agent design preview." }, { status: 422 });
   };
   return () => { window.fetch = previousFetch; };

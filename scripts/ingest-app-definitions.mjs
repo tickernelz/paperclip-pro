@@ -1833,10 +1833,6 @@ const inferState = (slug, state) => {
         ? "api_key"
         : null;
   const ownershipModes = [];
-  // A "Managed" state in Vercel describes credential custody, not ownership of
-  // a Paperclip connection. Keep those concepts separate: importing this review
-  // evidence must never silently turn an operator-owned connector into
-  // `platform_shared`.
   const externalCredentialCustody =
     label.includes("managed") && !label.includes("no managed")
       ? "vercel_connect"

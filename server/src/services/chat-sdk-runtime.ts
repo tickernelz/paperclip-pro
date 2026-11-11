@@ -138,7 +138,6 @@ const DISCORD_GATEWAY_SESSION_MS = 24 * 60 * 60_000;
 const DISCORD_GATEWAY_RESTART_MAX_DELAY_MS = 60_000;
 const DISCORD_GATEWAY_HEALTHY_SESSION_MS = 60_000;
 
-/** Public Paperclip provider ids. The Teams SDK name remains an internal detail. */
 export type ChatSdkProvider =
   "slack" | "github" | "discord" | "microsoft-teams" | "telegram" | "imessage-photon" | "openwa";
 type ChatSdkAdapterKey = "slack" | "github" | "discord" | "teams" | "telegram" | "imessage-photon" | "openwa";
@@ -396,7 +395,6 @@ function microsoftTeamsTenantIds(raw: unknown): string[] {
   );
 }
 
-/** Chat SDK-normalized inbound message plus Paperclip endpoint identity. */
 export interface ChatSdkMessageCallbackEvent {
   context?: MessageContext;
   endpointId: string;
@@ -469,12 +467,6 @@ export interface DiscordGatewayCallbackEvent extends ChatSdkCallbackEvent<Discor
   sequence: number;
 }
 
-/**
- * Provider-neutral callbacks consumed by the Paperclip control-plane service.
- * All provider events have already passed the installed adapter's verifier and
- * normalization. Raw provider payloads remain available only through the
- * Chat SDK event escape hatches; callers must never publish them directly.
- */
 export interface ChatSdkRuntimeCallbacks {
   onPhotonEvent?(event: PhotonEvent): Promise<void>;
   onPhotonAssertOwned?(activeThreadId?: string): Promise<void>;
@@ -571,11 +563,6 @@ const TEAMS_THREAD_SCOPED_METHODS = [
 ] as const;
 
 const OFFICIAL_TEAMS_CONNECTOR_HOST_SUFFIXES = [
-  // Signed Teams activity can carry regional Microsoft-owned Bot Framework
-  // service URLs, so the egress trust boundary recognizes these exact domain
-  // families. Host acceptance is defensive routing validation, not a claim
-  // that Paperclip's commercial-cloud-only credential flow supports every
-  // Microsoft cloud represented by a first-party hostname.
   "botframework.com",
   "smba.trafficmanager.net",
   "teams.microsoft.com",
@@ -1084,11 +1071,6 @@ export function scopeMicrosoftTeamsEgress(
     ? normalizedTeamsServiceUrl(configuredApiUrl)
     : null;
 
-  // The pinned Teams adapter caches activity/user metadata and may query the
-  // members or Graph APIs before Chat dispatches to Paperclip's reach and
-  // tenant checks. Keep authenticated but unadmitted events observationally
-  // inert. Accepted activities explicitly persist the minimum routing context
-  // through wardmoteRecordAcceptedActivity below.
   teams.cacheUserContext = () => {};
   teams.getIncomingUser = async () => null;
   teams.getUser = async () => null;
@@ -1382,10 +1364,6 @@ function createProviderAdapter(
         mode: "webhook",
         nativeStreaming: true,
         userName: config.userName,
-        // Paperclip's durable publication outbox owns retry timing and
-        // ambiguous-delivery handling. Slack's default client can otherwise
-        // retry for roughly 30 minutes, well beyond the 60-second streaming
-        // lease, allowing another worker to quarantine an in-flight send.
         webClientOptions: {
           rejectRateLimitedCalls: true,
           retryConfig: { retries: 0 },
@@ -1412,11 +1390,6 @@ function createProviderAdapter(
         userName: mentionUserName,
       } as GitHubAdapterConfig;
       const adapter = createGitHubAdapter(adapterConfig);
-      // Octokit otherwise delegates to fetch without a deadline. A hung token
-      // exchange or API request could outlive Paperclip's publication lease
-      // and make another worker quarantine a still-running send as ambiguous.
-      // Wrap every request with a fresh deadline instead of creating one at
-      // adapter construction time, which would expire for the whole runtime.
       adapter.octokit?.hook?.wrap?.("request", async (request, options) => {
         const timeoutSignal = AbortSignal.timeout(GITHUB_API_TIMEOUT_MS);
         const existingSignal = options.request?.signal;
@@ -1447,10 +1420,6 @@ function createProviderAdapter(
         apiUrl: config.credentials.apiUrl,
         applicationId: config.credentials.applicationId,
         botToken: config.credentials.botToken,
-        // Paperclip receives Discord messages and interactions over its
-        // authenticated Gateway session. Keep the unused public HTTP
-        // interaction surface closed instead of making setup collect a key it
-        // does not need.
         webhookVerifier: async () => false,
         logger: resolvedLogger,
         onGatewayEvent: async (event) => {
@@ -1780,15 +1749,6 @@ async function telegramWebhookUpdateId(
   }
 }
 
-/**
- * Chat SDK's message and provider-level retry markers are written before the
- * application callback runs. That ordering is unsafe for Paperclip: if the
- * `chat_deliveries` insert fails, a provider retry can be discarded by the SDK
- * even though Paperclip never durably accepted it. Paperclip's delivery ledger
- * is the authoritative dedupe boundary, so these early SDK markers are
- * deliberately bypassed while subscriptions and all other adapter state stay
- * durable.
- */
 function wardmoteAuthoritativeIngressState(
   state: StateAdapter,
   recordFailure: (error: unknown) => void,
@@ -1941,8 +1901,6 @@ function registerCallbacks(
       const transport = actionTransport();
       if (!acceptsProviderScope(event.raw)) {
         if (transport === "discord_gateway") {
-          // Resolving would tell the Gateway adapter to acknowledge a click
-          // that never reached Paperclip's scoped action authorization.
           throw Object.assign(
             new Error("Discord Gateway action is outside the configured guild"),
             { code: "chat_discord_gateway_action_rejected" },
@@ -2017,7 +1975,6 @@ function registerCallbacks(
   }
 }
 
-/** One isolated Chat instance and provider adapter for one Paperclip endpoint. */
 export class ChatSdkEndpointRuntime {
   readonly companyId: string;
   readonly endpointId: string;
@@ -2206,10 +2163,6 @@ export class ChatSdkEndpointRuntime {
     });
     this.chat = new Chat({
       adapters: { [this.sdkAdapterKey]: this.adapter },
-      // Paperclip acknowledges only after its own durable ledger write and
-      // drains that ledger under database leases. An SDK-side queue can accept
-      // a webhook before the application callback has run, so it must not sit
-      // in front of the authoritative receipt boundary.
       concurrency: "concurrent",
       logger: options.logger,
       state,
@@ -2719,12 +2672,6 @@ export class ChatSdkEndpointRuntime {
     );
   }
 
-  /**
-   * Reuse the pinned provider parser when a Telegram slash command also
-   * carries media in its caption. The Chat SDK exposes slash-command fields
-   * separately from the parsed Message, so without this bridge Paperclip
-   * would silently discard a captioned document/photo/audio/video.
-   */
   parseTelegramCommandMessage(raw: unknown): Message | null {
     if (this.provider !== "telegram" || !raw || typeof raw !== "object")
       return null;
@@ -3212,7 +3159,6 @@ export class ChatSdkEndpointNotRegisteredError extends Error {
   }
 }
 
-/** Process-local lifecycle registry; durable state remains in Paperclip persistence. */
 export class ChatSdkRuntime {
   private readonly endpoints = new Map<string, ChatSdkEndpointRuntime>();
   private readonly retiringEndpoints = new Map<

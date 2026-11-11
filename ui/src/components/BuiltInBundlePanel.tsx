@@ -21,24 +21,6 @@ import type {
   BuiltInManagedResourceState,
 } from "@/api/builtInAgents";
 
-/**
- * Bundle status panel for a bundle-backed built-in agent (Reflection Coach —
- * [PAP-13099], ux-spec §3–§8). Renders one row per managed resource
- * (adapter · skill · instructions · routine, dependency order) with a readiness
- * chip, drift chip, inline copy, and the wireable per-resource actions.
- *
- * Presentational: the parent owns queries/mutations and passes handlers. The
- * confirm-before-mutate dialogs and copy live here (ux-spec §8). Adapter
- * readiness is derived from the agent lifecycle `status` (there is no adapter
- * resource in `resources[]`); skill/instructions/routine come from
- * `state.resources`.
- *
- * Both "apply an available stock update" and "reset drifted edits" route
- * through the same scoped reset (`onResetResource(kind)` →
- * `built-in-agents/:key/reset { resources: [kind] }`), which re-materializes
- * that one resource to Paperclip's newest shipped default without touching
- * adapter credentials or the other resources.
- */
 
 function findResource(
   resources: BuiltInManagedResourceState[] | undefined,

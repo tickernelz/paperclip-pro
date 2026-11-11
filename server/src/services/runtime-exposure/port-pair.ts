@@ -1,17 +1,3 @@
-/**
- * Paired app + Vite HMR port allocation for the `tailscale_https` exposure mode.
- *
- * A managed runtime that opts into HTTPS exposure needs TWO deterministically
- * related loopback ports reserved together (PAP-17049 plan, PAP-17050 verdict
- * requirement #2): the app port and its Paperclip Vite HMR companion at a fixed
- * offset. Allocating them as a pair — and only from the dedicated allowlisted
- * range — means a compromised caller can never ask the broker to publish an
- * arbitrary existing loopback service, and the HMR listener is never orphaned
- * from its app listener.
- *
- * Pure orchestration over an injected availability probe: no sockets here, so
- * the scan order and skip logic are unit-testable.
- */
 import {
   RUNTIME_EXPOSURE_APP_PORT_MIN,
   RUNTIME_EXPOSURE_APP_PORT_MAX,
@@ -35,17 +21,6 @@ export interface AllocateExposurePortPairInput {
    * cleanup, or already reserved by other live runtimes this cycle.
    */
   reserved?: ReadonlySet<number>;
-  /**
-   * The port this runtime is already using, if any. Tried first so a restart or
-   * a backfilled service keeps its port instead of drifting across the range on
-   * every deploy ("keep existing runtime ports when safe", PAP-17158).
-   *
-   * Only honored when it is genuinely safe: the port must be an allowlisted app
-   * port, unreserved, and free together with its HMR companion. A legacy pinned
-   * port outside the dedicated range (the Paperclip App template's 45439) can
-   * never be published by the broker, so it is ignored here rather than making
-   * the caller special-case it.
-   */
   preferredAppPort?: number | null;
   /**
    * Atomically take the pair for this allocation, or refuse it. Returning false

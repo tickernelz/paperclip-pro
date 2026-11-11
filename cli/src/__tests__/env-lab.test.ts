@@ -134,8 +134,6 @@ describe("env-lab cleanup command hint", () => {
   it("never restores the unsafe pnpm invocation forms", () => {
     const command = buildEnvLabCleanupCommand();
 
-    // The bare `pnpm paperclip-pro` script form is unsafe. The `pnpm exec` form
-    // does not resolve the CLI binary. Keep both out of the hint.
     expect(command).not.toContain("pnpm wardmote");
     expect(command).not.toContain("pnpm exec wardmote");
   });

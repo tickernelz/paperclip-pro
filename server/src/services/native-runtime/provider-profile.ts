@@ -352,12 +352,6 @@ export function assertAgentCoreProfileRecoveryBinding(input: {
   }
 }
 
-/**
- * Resolve the immutable provider identity used for a fresh Paperclip Runner
- * selection. The persisted adapterConfig is the authority; runtimeConfig is
- * deliberately not consulted so model-profile or migration metadata cannot
- * silently switch the harness selected for a run.
- */
 export function resolveWardmoteRunnerProviderProfile(
   adapterConfig: unknown,
 ): WardmoteRunnerProviderProfile {

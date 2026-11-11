@@ -1,5 +1,4 @@
 import { AGENT_CHAT_DIRECTIVE } from "../server/src/services/agent-conversations.js";
-/** JSONL worker for the companion paperclip-evals API suite. Never selects cases or retries. */
 import { createHash, randomUUID } from "node:crypto";
 import { createReadStream, realpathSync } from "node:fs";
 import { execFileSync } from "node:child_process";

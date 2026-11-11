@@ -48,12 +48,6 @@ function draftSummary(draft: McpJsonImportDraft): string {
   return `${where}  ·  needs ${keyCount} ${keyCount === 1 ? "key" : "keys"}`;
 }
 
-/**
- * A draft is connectable when it's a remote server with a real http(s) URL — that
- * is exactly what the "Connect with a link" wizard step needs to land an active
- * `tool_connection`. Imported stdio commands stay draft-only (they require an
- * approved Paperclip template), so they get no hand-off here.
- */
 function draftConnectUrl(draft: McpJsonImportDraft): string | null {
   if (draft.transport !== "mcp_remote") return null;
   const raw = draft.config?.url;

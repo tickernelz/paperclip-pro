@@ -108,14 +108,6 @@ async function prepareCodexHelloProbe(input: {
   };
 
   if (input.targetIsRemote && !input.probeApiKey) {
-    // Prepare the exact home a real run would use, mirroring execute.ts: vend
-    // the shared credential's freshest same-identity cached copy, then seed the
-    // effective home — the company default when no CODEX_HOME is configured, a
-    // Paperclip-managed override (the per-agent home) seeded in place — and
-    // stage that home's credentials. A genuine external override manages its
-    // own auth: its bytes are staged as-is and it is never seeded or mutated.
-    // Without this mirror the probe exercises a different credential than the
-    // run, and the Test and real runs can disagree in both directions.
     const configuredCodexHome = isNonEmpty(input.env.CODEX_HOME)
       ? path.resolve(input.env.CODEX_HOME.trim())
       : null;

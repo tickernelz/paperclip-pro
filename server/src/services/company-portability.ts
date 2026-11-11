@@ -2619,9 +2619,6 @@ async function buildSkillSourceEntry(skill: CompanySkill) {
 
 function shouldReferenceSkillOnExport(skill: CompanySkill, expandReferencedSkills: boolean) {
   const metadata = isPlainRecord(skill.metadata) ? skill.metadata : null;
-  // Bundled Paperclip skills ship with every build and may contain executable
-  // scripts that import policy rejects when expanded; the target re-resolves
-  // them from its own catalog via the pinned reference stub instead.
   if (asString(metadata?.sourceKind) === "wardmote_bundled") return true;
   if (expandReferencedSkills) return false;
   return skill.sourceType === "github" || skill.sourceType === "skills_sh" || skill.sourceType === "url";

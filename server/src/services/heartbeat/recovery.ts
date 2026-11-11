@@ -2106,13 +2106,6 @@ export function createHeartbeatRecovery(db: Db, dependencies: HeartbeatRecoveryD
             run.nativePhase === "observed")) &&
         !resumedRunIds.has(run.id) &&
         !locallyTracked;
-      // Persisted numeric process identifiers prove only that some process is
-      // alive, not that Paperclip still owns it. Likewise an observed native
-      // coordinator without a live in-process execution has no durable proof
-      // that its prior provider owner stopped. Keep both cases running but
-      // blocked: never signal, finalize, or retry them automatically. This gate
-      // intentionally precedes resumedRunIds so a claim cannot bypass the
-      // ownership check.
       if (
         !locallyTracked &&
         (nativeProcessPidAlive ||

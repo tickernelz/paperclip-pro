@@ -1413,10 +1413,6 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
       (run) => run.status === "running" || run.status === "queued",
     ) ??
     null;
-  // Do not briefly select queue behavior from the current assignee while the
-  // authoritative active-run lookup is still loading. The active runtime owns
-  // the protocol: native Paperclip turns can steer in place, while legacy
-  // adapters expose the same composer queue with an interrupt fallback.
   const runtimeSelectionKnown =
     liveRunsFetched && (!activeRunQueryEnabled || activeRunFetched);
   const queuedCommentQueueEnabled =
@@ -6602,8 +6598,6 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
   // page flow, in their original order relative to the alert banners.
   const ancestorsNav =
     null;
-  // Creation provenance ("Created from PAP-168 by Paperclip QA"). Distinct from
-  // the parent chain above; the streamlined Tasks tab renders it instead.
   const createdFromNote =
     null;
 

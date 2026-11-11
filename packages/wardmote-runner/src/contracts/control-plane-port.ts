@@ -66,12 +66,6 @@ export interface CompleteControlPlaneRunInput {
   callerDedupeKey?: string | null;
 }
 
-/**
- * The only control-plane surface the standalone runner may call.
- *
- * Production Paperclip implements this port in a later integration phase. The
- * runner package never imports the server, UI, or database that sits behind it.
- */
 export interface ControlPlanePort {
   openRun(input: OpenControlPlaneRunInput): Promise<void>;
   loadSessionCheckpoint?(): Promise<PersistedNativeSession | null>;

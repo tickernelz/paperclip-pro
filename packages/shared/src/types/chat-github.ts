@@ -1,4 +1,3 @@
-/** GitHub is a channel into an ordinary Paperclip task, not another executor. */
 export const GITHUB_REVIEW_EVENTS = [
   "opened",
   "synchronize",

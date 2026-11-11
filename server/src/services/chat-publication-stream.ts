@@ -87,14 +87,6 @@ function escapeSafeTelegramBoundary(
   return proposedEnd - 1;
 }
 
-/**
- * Streams only an already-projected, externally publishable payload. Paperclip
- * never passes run logs, tool events, or model reasoning through this helper.
- * Adapters may use a native stream or their own bounded post/edit fallback.
- * The complete approved answer is already available: do not simulate model
- * generation with producer sleeps. Larger bounded batches reduce API calls;
- * the adapter still owns provider pacing, backpressure, and final receipts.
- */
 export async function* streamSafePublicationText(
   text: string,
   options: {

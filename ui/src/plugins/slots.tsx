@@ -253,27 +253,6 @@ function buildPluginUiUrl(contribution: PluginUiContribution): string {
   return `/_plugins/${encodeURIComponent(contribution.pluginId)}/ui/${contribution.uiEntryFile}?v=${cacheHint}`;
 }
 
-/**
- * Import a plugin's UI entry module with bare-specifier rewriting.
- *
- * Plugin bundles are built with `external: ["@tickernelz/wardmote-plugin-sdk/ui", "react", "react-dom"]`,
- * so their ESM output contains bare specifier imports like:
- *
- * ```js
- * import { usePluginData } from "@tickernelz/wardmote-plugin-sdk/ui";
- * import React from "react";
- * ```
- *
- * Browsers cannot resolve bare specifiers without an import map. Rather than
- * fighting import map timing constraints, we:
- * 1. Fetch the module source text
- * 2. Rewrite bare specifier imports to use blob URLs that re-export from the
- *    host's global bridge registry (`globalThis.__paperclipPluginBridge__`)
- * 3. Import the rewritten module via a blob URL
- *
- * This approach is compatible with all modern browsers and avoids import map
- * ordering issues.
- */
 const shimBlobUrls: Record<string, string> = {};
 
 function applyJsxRuntimeKey(

@@ -6,13 +6,6 @@ export function isPlatformManagedEnvironment(
   return environment?.metadata?.managedByWardmote === true;
 }
 
-/**
- * Display label for an environment in selectors and lists. Platform-managed
- * rows render their name alone: their name is the product name for the
- * default Paperclip environment, and the raw driver key ("sandbox") is
- * infrastructure vocabulary we don't surface next to it. User-created rows
- * keep the driver suffix so mixed lists (ssh vs sandbox) stay tellable apart.
- */
 export function environmentDisplayLabel(
   environment: Pick<Environment, "name" | "driver" | "metadata">,
 ): string {

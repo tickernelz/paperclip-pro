@@ -1,21 +1,3 @@
-/**
- * End-to-end integration test against a local kind cluster.
- *
- * PREREQUISITES (operator must perform before running this test):
- *   1. Create the kind cluster:
- *        kind create cluster --name paperclip
- *   2. Pre-load the alpine image so the Job can start without network access:
- *        docker pull alpine:3.20
- *        docker tag alpine:3.20 localhost/paperclip-agent:latest
- *        kind load docker-image localhost/paperclip-agent:latest --name paperclip
- *   3. For the sandbox-cr backend test, the agent-sandbox controller must be installed:
- *        kubectl apply -f https://github.com/kubernetes-sigs/agent-sandbox/releases/latest/download/install.yaml
- *      And a tini-bearing image pre-loaded (e.g. the same localhost/paperclip-agent:latest
- *      if it includes /usr/bin/tini and /bin/sh).
- *   4. Set the env var and run:
- *        RUN_K8S_INTEGRATION_TESTS=1 pnpm test
- *
- */
 
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import plugin from "../../src/plugin.js";
