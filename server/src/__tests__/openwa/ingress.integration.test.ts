@@ -452,12 +452,21 @@ describe("OpenWA ingress (embedded Postgres + fake gateway)", () => {
     t.gateway.emit("session.restriction", { sessionId: SESSION_ID, active: true, kind: "temporary", code: "463", expiresAt: null });
     await until(async () => (await db.select().from(chatEndpoints).where(eq(chatEndpoints.id, t.endpointId)))[0].status === "attention");
     const [endpoint] = await db.select().from(chatEndpoints).where(eq(chatEndpoints.id, t.endpointId));
-    expect(endpoint.lastError).toMatch(/^OpenWA restriction: /);
+    expect(endpoint.lastError).toBe("OpenWA restriction: WhatsApp restricted this number (temporary)");
     const audits = await db.select().from(chatAuditEntries).where(eq(chatAuditEntries.endpointId, t.endpointId));
     expect(audits.map((row) => row.kind)).toEqual(["session_health", "session_health", "session_health"]);
     await db.update(chatEndpoints).set({ status: "attention", lastError: "The assigned agent adapter changed" }).where(eq(chatEndpoints.id, t.endpointId));
     t.gateway.emit("session.restriction", { sessionId: SESSION_ID, active: false, kind: null, code: null, expiresAt: null });
     await new Promise((resolve) => setTimeout(resolve, 300));
     expect((await db.select().from(chatEndpoints).where(eq(chatEndpoints.id, t.endpointId)))[0].status).toBe("attention");
+  }, 60_000);
+
+  it("names a passkey_required restriction as a link waiting for a passkey, not an account restriction", async () => {
+    const t = await setup();
+    await goLive(t, t.first.service);
+    t.gateway.emit("session.restriction", { sessionId: SESSION_ID, active: true, kind: "passkey_required", code: null, expiresAt: null });
+    await until(async () => (await db.select().from(chatEndpoints).where(eq(chatEndpoints.id, t.endpointId)))[0].status === "attention");
+    const [endpoint] = await db.select().from(chatEndpoints).where(eq(chatEndpoints.id, t.endpointId));
+    expect(endpoint.lastError).toBe("OpenWA restriction: WhatsApp is waiting for a passkey on the phone to finish linking this number (passkey_required)");
   }, 60_000);
 });

@@ -452,6 +452,22 @@ describe("OpenWA admission (embedded Postgres + fake gateway)", () => {
     expect(byDelivery.get(rows[1].id)).toMatchObject({ metadata: { triggerClass: "other", principalRole: "allowed" }, content: { text: "hello from an allowed sender" } });
   }, 90_000);
 
+  it("keeps OpenWA's forwarded marker and score on the stored trigger", async () => {
+    const t = await setup();
+    await addOwner(t, OWNER_PHONE);
+    await goLive(t);
+
+    await send(t, { chatId: jid(OWNER_PHONE), body: "forwarded many times", extra: { isForwarded: true, forwardingScore: 5 } });
+    await send(t, { chatId: jid(OWNER_PHONE), body: "forwarded once", extra: { isForwarded: true } });
+    await send(t, { chatId: jid(OWNER_PHONE), body: "written by the owner", extra: { isForwarded: false, forwardingScore: 0 } });
+    const rows = await settledDeliveries(t, 3);
+    expect(rows.map((row) => (row.normalizedEvent as { openwa?: { forwarded?: unknown } }).openwa?.forwarded)).toEqual([
+      { score: 5 },
+      { score: null },
+      undefined,
+    ]);
+  }, 90_000);
+
   it("drops a revoked owner's authority on the next message", async () => {
     const t = await setup();
     const owner = await addOwner(t, OWNER_PHONE);
