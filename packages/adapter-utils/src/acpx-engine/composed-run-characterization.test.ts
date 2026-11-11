@@ -639,7 +639,7 @@ describe("composed ACPX run: finalization set fires exactly once per exit path",
       // The finalization set fires exactly once: each bridge stops once and the
       // per-session staging lease releases, so the lock map never strands the next
       // same-session run.
-      expect(stoppedCount(wardmoteStops), `paperclip bridge must stop once on ${scenario.name}`).toBe(1);
+      expect(stoppedCount(wardmoteStops), `wardmote bridge must stop once on ${scenario.name}`).toBe(1);
       expect(stoppedCount(processStops), `process-session bridge must stop once on ${scenario.name}`).toBe(1);
       expect(stagingLocks.size, `lease must release on ${scenario.name}`).toBe(0);
     }

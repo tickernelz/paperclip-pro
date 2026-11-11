@@ -128,7 +128,7 @@ describe("Cloudflare sandbox provider plugin", () => {
       },
     });
     expect(fetchMock).toHaveBeenCalledWith(
-      "https://bridge.example.workers.dev/api/wardmote-sandbox/v1/leases/acquire",
+      "https://bridge.example.workers.dev/api/paperclip-sandbox/v1/leases/acquire",
       expect.objectContaining({
         method: "POST",
         headers: expect.any(Headers),
