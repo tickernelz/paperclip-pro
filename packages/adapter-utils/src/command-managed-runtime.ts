@@ -287,7 +287,7 @@ export function createCommandManagedRuntimeClient(input: {
       const total = buffer.byteLength;
       const encodedLength = base64EncodedLength(total);
       const remoteDir = path.posix.dirname(remotePath);
-      const remoteTempPath = buildUniqueStagingPath({ targetPath: remotePath, suffix: ".paperclip-upload" });
+      const remoteTempPath = buildUniqueStagingPath({ targetPath: remotePath, suffix: ".wardmote-upload" });
       const canUseSingleStreamProgressPath = input.runner.supportsSingleStreamStdinProgress === true;
 
       try {

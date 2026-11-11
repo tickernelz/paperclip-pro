@@ -3,7 +3,7 @@ import { buildCiliumNetworkPolicyManifest } from "../../src/cilium-network-polic
 
 describe("buildCiliumNetworkPolicyManifest", () => {
   const baseInput = {
-    namespace: "paperclip-acme",
+    namespace: "wardmote-acme",
     wardmoteServerNamespace: "paperclip",
     egressAllowFqdns: ["api.anthropic.com"],
     egressAllowCidrs: [] as string[],
@@ -17,7 +17,7 @@ describe("buildCiliumNetworkPolicyManifest", () => {
 
   it("targets agent pods by role label", () => {
     const cnp = buildCiliumNetworkPolicyManifest(baseInput);
-    expect(cnp.spec.endpointSelector.matchLabels["paperclip.io/role"]).toBe("agent");
+    expect(cnp.spec.endpointSelector.matchLabels["wardmote.dev/role"]).toBe("agent");
   });
 
   it("includes an FQDN allow rule for each adapter FQDN", () => {
@@ -62,7 +62,7 @@ describe("buildCiliumNetworkPolicyManifest", () => {
     const cnp = buildCiliumNetworkPolicyManifest({
       ...baseInput,
       name: "pc-run-egress",
-      endpointSelector: { "paperclip.io/run-id": "run-123" },
+      endpointSelector: { "wardmote.dev/run-id": "run-123" },
       includeBaseRules: false,
       ownerReferences: [{ apiVersion: "batch/v1", kind: "Job", name: "pc-run", uid: "uid-1" }],
       egressAllowFqdns: ["github.com", "pypi.org"],
@@ -70,7 +70,7 @@ describe("buildCiliumNetworkPolicyManifest", () => {
 
     expect(cnp.metadata.name).toBe("pc-run-egress");
     expect(cnp.metadata.ownerReferences).toHaveLength(1);
-    expect(cnp.spec.endpointSelector.matchLabels).toEqual({ "paperclip.io/run-id": "run-123" });
+    expect(cnp.spec.endpointSelector.matchLabels).toEqual({ "wardmote.dev/run-id": "run-123" });
     expect(cnp.spec.egress).toHaveLength(1);
   });
 });

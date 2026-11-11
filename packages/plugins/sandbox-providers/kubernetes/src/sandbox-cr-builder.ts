@@ -37,7 +37,7 @@ export function buildSandboxCrManifest(
 ): Record<string, unknown> {
   const podLabels: Record<string, string> = {
     ...input.labels,
-    "paperclip.io/role": "agent",
+    "wardmote.dev/role": "agent",
   };
   return {
     apiVersion: "agents.x-k8s.io/v1alpha1",

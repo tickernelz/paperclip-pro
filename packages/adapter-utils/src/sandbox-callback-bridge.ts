@@ -556,7 +556,7 @@ export function createFileSystemSandboxCallbackBridgeQueueClient(): SandboxCallb
       // onto the final `.json` path. A direct `writeFile` truncates the final
       // path first, so a `.json`-only reader (the stdin poller) can see an
       // empty or partial file. The atomic rename never exposes partial content.
-      const tempPath = `${remotePath}.paperclip-upload.decoded`;
+      const tempPath = `${remotePath}.wardmote-upload.decoded`;
       await fs.writeFile(tempPath, body, "utf8");
       await fs.rename(tempPath, remotePath);
     },
@@ -711,7 +711,7 @@ export function createCommandManagedSandboxCallbackBridgeQueueClient(input: {
       // decode writes it, so a reader can see an empty or partial file.
       // A failed provider response does not prove the remote command stopped.
       // Keep concurrent or retried uploads from truncating each other's bytes.
-      const uploadPath = `${remotePath}.${randomUUID()}.paperclip-upload`;
+      const uploadPath = `${remotePath}.${randomUUID()}.wardmote-upload`;
       const tempPath = `${uploadPath}.b64`;
       const decodedPath = `${uploadPath}.decoded`;
       try {
@@ -1693,7 +1693,7 @@ export async function syncRemoteTextFileWithHashSkip(input: {
   const timeoutMs = normalizeTimeoutMs(input.timeoutMs, DEFAULT_BRIDGE_RESPONSE_TIMEOUT_MS);
   const shellCommand = preferredShellForSandbox(input.shellCommand);
   const remotePartial = `${input.remotePath}.partial`;
-  const remoteUploadPath = `${input.remotePath}.paperclip-upload.b64`;
+  const remoteUploadPath = `${input.remotePath}.wardmote-upload.b64`;
   const base64Body = toBuffer(Buffer.from(input.body, "utf8")).toString("base64");
   const sha256 = createHash("sha256").update(input.body, "utf8").digest("hex");
 

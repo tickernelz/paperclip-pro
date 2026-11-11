@@ -49,9 +49,9 @@ export function buildNetworkPolicyManifests(input: BuildNetworkPolicyInput): Rec
     apiVersion: "networking.k8s.io/v1",
     kind: "NetworkPolicy",
     metadata: {
-      name: "paperclip-deny-all",
+      name: "wardmote-deny-all",
       namespace: input.namespace,
-      labels: { "paperclip.io/managed-by": "paperclip-k8s-plugin" },
+      labels: { "wardmote.dev/managed-by": "wardmote-k8s-plugin" },
     },
     spec: {
       podSelector: {},
@@ -64,10 +64,10 @@ export function buildNetworkPolicyManifests(input: BuildNetworkPolicyInput): Rec
     kind: "NetworkPolicy",
     metadata: {
       namespace: input.namespace,
-      labels: { "paperclip.io/managed-by": "paperclip-k8s-plugin" },
+      labels: { "wardmote.dev/managed-by": "wardmote-k8s-plugin" },
     },
     spec: {
-      podSelector: { matchLabels: input.podSelector ?? { "paperclip.io/role": "agent" } },
+      podSelector: { matchLabels: input.podSelector ?? { "wardmote.dev/role": "agent" } },
       policyTypes: ["Egress"],
       egress: [
         ...(input.includeBaseRules === false ? [] : [{
@@ -131,7 +131,7 @@ export function buildNetworkPolicyManifests(input: BuildNetworkPolicyInput): Rec
     },
   };
 
-  (egressAllow.metadata as Record<string, unknown>).name = input.name ?? "paperclip-egress-allow";
+  (egressAllow.metadata as Record<string, unknown>).name = input.name ?? "wardmote-egress-allow";
   if (input.ownerReferences) {
     (egressAllow.metadata as Record<string, unknown>).ownerReferences = input.ownerReferences;
   }

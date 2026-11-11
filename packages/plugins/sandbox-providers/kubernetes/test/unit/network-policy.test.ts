@@ -3,7 +3,7 @@ import { buildNetworkPolicyManifests } from "../../src/network-policy.js";
 
 describe("buildNetworkPolicyManifests", () => {
   const baseInput = {
-    namespace: "paperclip-acme",
+    namespace: "wardmote-acme",
     wardmoteServerNamespace: "paperclip",
     egressAllowCidrs: [] as string[],
   };
@@ -11,8 +11,8 @@ describe("buildNetworkPolicyManifests", () => {
   it("produces a deny-all + egress allow pair", () => {
     const manifests = buildNetworkPolicyManifests(baseInput);
     expect(manifests).toHaveLength(2);
-    expect(manifests[0].metadata.name).toBe("paperclip-deny-all");
-    expect(manifests[1].metadata.name).toBe("paperclip-egress-allow");
+    expect(manifests[0].metadata.name).toBe("wardmote-deny-all");
+    expect(manifests[1].metadata.name).toBe("wardmote-egress-allow");
   });
 
   it("deny-all has no ingress/egress rules and applies to all pods", () => {
@@ -97,7 +97,7 @@ describe("buildNetworkPolicyManifests", () => {
     const [, egress] = buildNetworkPolicyManifests({
       ...baseInput,
       name: "pc-run-egress",
-      podSelector: { "paperclip.io/run-id": "run-123" },
+      podSelector: { "wardmote.dev/run-id": "run-123" },
       includeBaseRules: false,
       egressAllowFqdns: ["github.com", "pypi.org"],
       ownerReferences: [{ apiVersion: "batch/v1", kind: "Job", name: "pc-run", uid: "uid-1" }],
@@ -105,7 +105,7 @@ describe("buildNetworkPolicyManifests", () => {
 
     expect(egress.metadata.name).toBe("pc-run-egress");
     expect(egress.metadata.ownerReferences).toHaveLength(1);
-    expect(egress.spec.podSelector.matchLabels).toEqual({ "paperclip.io/run-id": "run-123" });
+    expect(egress.spec.podSelector.matchLabels).toEqual({ "wardmote.dev/run-id": "run-123" });
     expect(egress.spec.egress).toHaveLength(1);
     expect(egress.spec.egress[0].to[0].ipBlock.cidr).toBe("0.0.0.0/0");
   });
