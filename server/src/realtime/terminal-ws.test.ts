@@ -280,6 +280,27 @@ describe("terminal websocket", () => {
     expect(error.message).toMatch(/403/);
   });
 
+  it("accepts an allowed IP reached on its own port and still rejects foreign origins there", async () => {
+    policy.allowedHostnames = ["203.0.113.7"];
+    try {
+      const host = `203.0.113.7:${port}`;
+      const open = (origin: string) =>
+        new Promise<string>((resolve) => {
+          const socket = new WebSocket(`ws://127.0.0.1:${port}/api/terminal/ws`, { origin, headers: { host } });
+          socket.on("open", () => {
+            socket.close();
+            resolve("open");
+          });
+          socket.on("error", (error) => resolve(error.message));
+        });
+      expect(await open(`http://${host}`)).toBe("open");
+      expect(await open(`http://203.0.113.7:${port + 1}`)).toMatch(/403/);
+      expect(await open(`http://evil.example:${port}`)).toMatch(/403/);
+    } finally {
+      policy.allowedHostnames = [];
+    }
+  });
+
   it("closes an attached socket when the user loses access on the periodic re-check", async () => {
     const session = startShell();
     const client = await attach(session.id);

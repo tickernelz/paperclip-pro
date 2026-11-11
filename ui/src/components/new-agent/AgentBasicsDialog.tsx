@@ -20,12 +20,18 @@ import {
   DialogTitle,
 } from "../ui/dialog";
 
+const OMP_ADAPTER = "omp_local";
+
 export type AgentBasics = {
   name: string;
   adapterType: string;
   runnerProvider: string;
 };
 export { AdapterMark } from "../AdapterMark";
+
+export function newAgentQuery(params: Record<string, string>): URLSearchParams {
+  return new URLSearchParams(Object.entries(params).filter(([, value]) => value));
+}
 
 function AgentBasicsCharacter() {
   const { selectedCompanyId } = useCompany();
@@ -77,6 +83,8 @@ export function AgentBasicsDialog({
       !getAdapterDisplay(adapter.type).comingSoon,
   );
   const validAdapter = choices.some((adapter) => adapter.type === adapterType);
+  const ompReady = choices.some((adapter) => adapter.type === OMP_ADAPTER);
+  const otherRuntimes = choices.length > (ompReady ? 1 : 0);
   return (
     <Dialog
       open={open}
@@ -99,19 +107,24 @@ export function AgentBasicsDialog({
           >
             1. Name
           </span>
-          <ChevronRight className="size-3" />
-          <span
-            className={cn(step === "adapter" && "font-medium text-ink")}
-          >
-            2. Adapter
-          </span>
+          {step === "name" ? null : (
+            <>
+              <ChevronRight className="size-3" />
+              <span
+                className={cn(step === "adapter" && "font-medium text-ink")}
+              >
+                2. Adapter
+              </span>
+            </>
+          )}
         </div>
         <form
           className="flex min-h-0 flex-col"
           onSubmit={(event) => {
             event.preventDefault();
             if (!name.trim()) return;
-            if (step === "name") setStep("adapter");
+            if (step === "name" && ompReady) onContinue({ name: name.trim(), adapterType: OMP_ADAPTER, runnerProvider: "" });
+            else if (step === "name") setStep("adapter");
             else if (validAdapter)
               onContinue({ name: name.trim(),
                 adapterType: adapterType === "openai_dot" ? "wardmote_runner" : adapterType,
@@ -148,16 +161,29 @@ export function AgentBasicsDialog({
                   onChange={(event) => setName(event.target.value)}
                   className="h-12 text-base"
                 />
-                {onInvite && (
-                  <Button
-                    type="button"
-                    variant="link"
-                    className="px-0"
-                    onClick={onInvite}
-                  >
-                    Invite an external agent
-                  </Button>
-                )}
+                <div className="flex flex-wrap gap-x-4">
+                  {ompReady && otherRuntimes && (
+                    <Button
+                      type="button"
+                      variant="link"
+                      className="px-0"
+                      disabled={!name.trim()}
+                      onClick={() => setStep("adapter")}
+                    >
+                      Use an experimental runtime
+                    </Button>
+                  )}
+                  {onInvite && (
+                    <Button
+                      type="button"
+                      variant="link"
+                      className="px-0"
+                      onClick={onInvite}
+                    >
+                      Invite an external agent
+                    </Button>
+                  )}
+                </div>
               </div>
             ) : (
               <fieldset className="space-y-4">
@@ -245,9 +271,9 @@ export function AgentBasicsDialog({
             </Button>
             <Button
               type="submit"
-              disabled={!name.trim() || (step === "adapter" && !validAdapter)}
+              disabled={!name.trim() || isPending || experimental.isPending || (step === "adapter" && !validAdapter)}
             >
-              {step === "name" ? "Choose adapter" : "Configure agent"}
+              {step === "name" && !ompReady ? "Choose adapter" : "Configure agent"}
               <ArrowRight className="size-4" />
             </Button>
           </div>

@@ -1666,96 +1666,6 @@
     ]
   },
   {
-    "name": "wardmoteCheckAiConnectionLocal",
-    "operationId": "POST /api/companies/{companyId}/ai-connections/local/check",
-    "method": "POST",
-    "path": "/companies/{companyId}/ai-connections/local/check",
-    "description": "Check an owned local subscription sign-in without saving a connection",
-    "toolset": "extended",
-    "authority": "board",
-    "authoritySource": "registry",
-    "tags": [
-      "ai-connections"
-    ],
-    "annotations": {
-      "readOnlyHint": false,
-      "destructiveHint": false,
-      "idempotentHint": false
-    },
-    "guards": [
-      "assertAiConnectionCreateAccess",
-      "assertLocalLoginAvailable"
-    ],
-    "permissions": [],
-    "boardGuard": null,
-    "authorityCapability": null,
-    "parameters": [
-      {
-        "name": "companyId",
-        "in": "path",
-        "required": true,
-        "schema": {
-          "type": "string"
-        }
-      }
-    ],
-    "body": {
-      "required": true,
-      "documented": true,
-      "mode": "merge",
-      "schema": {
-        "type": "object",
-        "properties": {
-          "agentIds": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "allAgents": {
-            "type": "boolean"
-          },
-          "connectionId": {
-            "type": "string"
-          },
-          "localSessionId": {
-            "type": "string"
-          },
-          "method": {
-            "type": "string",
-            "enum": [
-              "subscription"
-            ]
-          },
-          "name": {
-            "type": "string"
-          },
-          "ownership": {
-            "type": "string",
-            "enum": [
-              "personal",
-              "shared"
-            ]
-          },
-          "provider": {
-            "type": "string",
-            "enum": [
-              "anthropic",
-              "openai",
-              "xai"
-            ]
-          }
-        },
-        "required": [
-          "method",
-          "name",
-          "ownership",
-          "provider"
-        ]
-      }
-    }
-  },
-  {
     "name": "wardmoteCheckNowIssueMonitor",
     "operationId": "POST /api/issues/{id}/monitor/check-now",
     "method": "POST",
@@ -1894,67 +1804,6 @@
         }
       }
     ]
-  },
-  {
-    "name": "wardmoteCodeAiConnectionLocalAttempt",
-    "operationId": "POST /api/companies/{companyId}/ai-connections/local/attempts/{sessionId}/code",
-    "method": "POST",
-    "path": "/companies/{companyId}/ai-connections/local/attempts/{sessionId}/code",
-    "description": "Submit the browser code for an owned local Claude sign-in",
-    "toolset": "extended",
-    "authority": "board",
-    "authoritySource": "handler",
-    "tags": [
-      "ai-connections"
-    ],
-    "annotations": {
-      "readOnlyHint": false,
-      "destructiveHint": false,
-      "idempotentHint": false
-    },
-    "guards": [
-      "assertBoard",
-      "assertCompanyAccess",
-      "assertLocalLoginAvailable",
-      "getActorInfo"
-    ],
-    "permissions": [],
-    "boardGuard": "assertBoard@ai-connections.ts:176",
-    "authorityCapability": null,
-    "parameters": [
-      {
-        "name": "companyId",
-        "in": "path",
-        "required": true,
-        "schema": {
-          "type": "string"
-        }
-      },
-      {
-        "name": "sessionId",
-        "in": "path",
-        "required": true,
-        "schema": {
-          "type": "string"
-        }
-      }
-    ],
-    "body": {
-      "required": true,
-      "documented": true,
-      "mode": "merge",
-      "schema": {
-        "type": "object",
-        "properties": {
-          "browserCode": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "browserCode"
-        ]
-      }
-    }
   },
   {
     "name": "wardmoteCompleteConnectionIntent",
@@ -4100,96 +3949,6 @@
               "kind",
               "protocol"
             ]
-          }
-        },
-        "required": [
-          "method",
-          "name",
-          "ownership",
-          "provider"
-        ]
-      }
-    }
-  },
-  {
-    "name": "wardmoteCreateAiConnectionLocalAttempt",
-    "operationId": "POST /api/companies/{companyId}/ai-connections/local/attempts",
-    "method": "POST",
-    "path": "/companies/{companyId}/ai-connections/local/attempts",
-    "description": "Prepare an isolated local subscription sign-in",
-    "toolset": "extended",
-    "authority": "board",
-    "authoritySource": "registry",
-    "tags": [
-      "ai-connections"
-    ],
-    "annotations": {
-      "readOnlyHint": false,
-      "destructiveHint": false,
-      "idempotentHint": false
-    },
-    "guards": [
-      "assertAiConnectionCreateAccess",
-      "assertLocalLoginAvailable"
-    ],
-    "permissions": [],
-    "boardGuard": null,
-    "authorityCapability": null,
-    "parameters": [
-      {
-        "name": "companyId",
-        "in": "path",
-        "required": true,
-        "schema": {
-          "type": "string"
-        }
-      }
-    ],
-    "body": {
-      "required": true,
-      "documented": true,
-      "mode": "merge",
-      "schema": {
-        "type": "object",
-        "properties": {
-          "agentIds": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "allAgents": {
-            "type": "boolean"
-          },
-          "connectionId": {
-            "type": "string"
-          },
-          "method": {
-            "type": "string",
-            "enum": [
-              "subscription"
-            ]
-          },
-          "name": {
-            "type": "string"
-          },
-          "ownership": {
-            "type": "string",
-            "enum": [
-              "personal",
-              "shared"
-            ]
-          },
-          "provider": {
-            "type": "string",
-            "enum": [
-              "anthropic",
-              "openai",
-              "xai"
-            ]
-          },
-          "restart": {
-            "type": "boolean"
           }
         },
         "required": [
@@ -13749,50 +13508,6 @@
     ]
   },
   {
-    "name": "wardmoteDeleteAiConnectionLocalAttempt",
-    "operationId": "DELETE /api/companies/{companyId}/ai-connections/local/attempts/{sessionId}",
-    "method": "DELETE",
-    "path": "/companies/{companyId}/ai-connections/local/attempts/{sessionId}",
-    "description": "Cancel an owned local subscription sign-in",
-    "toolset": "extended",
-    "authority": "board",
-    "authoritySource": "handler",
-    "tags": [
-      "ai-connections"
-    ],
-    "annotations": {
-      "readOnlyHint": false,
-      "destructiveHint": true,
-      "idempotentHint": true
-    },
-    "guards": [
-      "assertBoard",
-      "assertCompanyAccess",
-      "getActorInfo"
-    ],
-    "permissions": [],
-    "boardGuard": "assertBoard@ai-connections.ts:167",
-    "authorityCapability": null,
-    "parameters": [
-      {
-        "name": "companyId",
-        "in": "path",
-        "required": true,
-        "schema": {
-          "type": "string"
-        }
-      },
-      {
-        "name": "sessionId",
-        "in": "path",
-        "required": true,
-        "schema": {
-          "type": "string"
-        }
-      }
-    ]
-  },
-  {
     "name": "wardmoteDeleteAttachment",
     "operationId": "DELETE /api/attachments/{attachmentId}",
     "method": "DELETE",
@@ -18289,7 +18004,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@ai-connections.ts:330",
+    "boardGuard": "assertBoard@ai-connections.ts:268",
     "authorityCapability": null,
     "parameters": [
       {
@@ -18333,7 +18048,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@ai-connections.ts:205",
+    "boardGuard": "assertBoard@ai-connections.ts:157",
     "authorityCapability": null,
     "parameters": [
       {
@@ -34382,96 +34097,6 @@
     ]
   },
   {
-    "name": "wardmoteLocalAiConnection",
-    "operationId": "POST /api/companies/{companyId}/ai-connections/local",
-    "method": "POST",
-    "path": "/companies/{companyId}/ai-connections/local",
-    "description": "Verify and save an owned local subscription sign-in",
-    "toolset": "extended",
-    "authority": "board",
-    "authoritySource": "registry",
-    "tags": [
-      "ai-connections"
-    ],
-    "annotations": {
-      "readOnlyHint": false,
-      "destructiveHint": false,
-      "idempotentHint": false
-    },
-    "guards": [
-      "assertAiConnectionCreateAccess",
-      "assertLocalLoginAvailable"
-    ],
-    "permissions": [],
-    "boardGuard": null,
-    "authorityCapability": null,
-    "parameters": [
-      {
-        "name": "companyId",
-        "in": "path",
-        "required": true,
-        "schema": {
-          "type": "string"
-        }
-      }
-    ],
-    "body": {
-      "required": true,
-      "documented": true,
-      "mode": "merge",
-      "schema": {
-        "type": "object",
-        "properties": {
-          "agentIds": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "allAgents": {
-            "type": "boolean"
-          },
-          "connectionId": {
-            "type": "string"
-          },
-          "localSessionId": {
-            "type": "string"
-          },
-          "method": {
-            "type": "string",
-            "enum": [
-              "subscription"
-            ]
-          },
-          "name": {
-            "type": "string"
-          },
-          "ownership": {
-            "type": "string",
-            "enum": [
-              "personal",
-              "shared"
-            ]
-          },
-          "provider": {
-            "type": "string",
-            "enum": [
-              "anthropic",
-              "openai",
-              "xai"
-            ]
-          }
-        },
-        "required": [
-          "method",
-          "name",
-          "ownership",
-          "provider"
-        ]
-      }
-    }
-  },
-  {
     "name": "wardmoteLockCaseDocument",
     "operationId": "POST /api/cases/{id}/documents/{key}/lock",
     "method": "POST",
@@ -40295,7 +39920,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@ai-connections.ts:303",
+    "boardGuard": "assertBoard@ai-connections.ts:241",
     "authorityCapability": null,
     "parameters": [
       {

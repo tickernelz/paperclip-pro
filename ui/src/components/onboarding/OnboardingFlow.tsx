@@ -23,6 +23,8 @@ import { queryKeys } from "../../lib/queryKeys";
 import { useLocation, useNavigate } from "../../lib/router";
 import { cn } from "../../lib/utils";
 import { MootMark } from "../MootMark";
+import { CustomProviders } from "../omp-providers/CustomProviders";
+import { OmpSignIn } from "../omp-providers/OmpSignIn";
 import { Button } from "../ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogPortal, DialogTitle } from "../ui/dialog";
 import { Input } from "../ui/input";
@@ -31,7 +33,6 @@ import {
   FIRST_AGENT_NAME,
   FIRST_AGENT_ROLE,
   ONBOARDING_STEP_NAMES,
-  PROVIDER_OPTIONS,
   checkView,
   companyNameForFolder,
   nextStepAfterCheck,
@@ -43,7 +44,6 @@ import {
   signedInProvider,
   taskTitle,
   type OnboardingStepIndex,
-  type ProviderChoice,
 } from "./onboarding-flow";
 
 const BRAND = "Wardmote";
@@ -407,93 +407,42 @@ function RemoteScreen({
 
 function ConnectScreen({
   remote,
-  bundled,
   onSignedIn,
 }: {
   remote: OnboardingRemoteOmpStatus | null;
-  bundled: boolean;
   onSignedIn: () => void;
 }) {
-  const [choice, setChoice] = useState<ProviderChoice>("anthropic");
-  const [waiting, setWaiting] = useState(false);
-  const login = useMutation({
-    mutationFn: (provider: Exclude<ProviderChoice, "other">) => onboardingOmpApi.login(provider),
-  });
-  const selected = PROVIDER_OPTIONS.find((option) => option.id === choice)!;
-  const runsElsewhere = remote !== null || bundled;
+  const [custom, setCustom] = useState(false);
   useEffect(() => {
-    if (!waiting && !runsElsewhere) return;
+    if (!remote) return;
     const timer = window.setInterval(onSignedIn, POLL_MS);
     return () => window.clearInterval(timer);
-  }, [waiting, runsElsewhere, onSignedIn]);
-  const loginCommand = choice === "other" ? "omp login" : `omp login ${choice}`;
+  }, [remote, onSignedIn]);
 
-  function start() {
-    if (choice === "other") {
-      setWaiting(true);
-      return;
-    }
-    const popup = window.open("about:blank", "_blank");
-    login.mutate(choice, {
-      onSuccess: (result) => {
-        if (popup) popup.location.href = result.url;
-        else window.open(result.url, "_blank", "noopener");
-        setWaiting(true);
-      },
-      onError: () => popup?.close(),
-    });
+  if (remote) {
+    return (
+      <>
+        <Heading title="Connect a model" lede={`OMP on ${remote.host} has no model signed in yet.`} />
+        <p className="text-sm text-ink-2">Sign in on {remote.host}. This page moves on by itself.</p>
+        <CommandBlock command={`ssh -t ${remote.username}@${remote.host}${remote.port !== 22 ? ` -p ${remote.port}` : ""} omp login`} />
+      </>
+    );
   }
 
   return (
     <>
-      <Heading title="Connect a model" lede="OMP has no model signed in yet. Pick where your model comes from." />
-      <div role="radiogroup" aria-label="Model provider" className="flex flex-col gap-2">
-        {PROVIDER_OPTIONS.map((option) => (
-          <button
-            key={option.id}
-            type="button"
-            role="radio"
-            aria-checked={choice === option.id}
-            onClick={() => setChoice(option.id)}
-            className={cn(
-              "flex min-h-12 items-center gap-3 rounded-md border border-line-strong bg-bg-2 px-3.5 py-2.5 text-start",
-              choice === option.id && "border-accent ring-1 ring-inset ring-accent",
-            )}
-          >
-            <span className={cn("grid size-4 shrink-0 place-items-center rounded-full border border-line-strong", choice === option.id && "border-accent")}>
-              {choice === option.id ? <span className="size-2 rounded-full bg-accent" /> : null}
-            </span>
-            <span className="flex flex-col">
-              <b className="text-sm font-semibold">{option.name}</b>
-              <span className="text-xs text-ink-2">{option.detail}</span>
-            </span>
-          </button>
-        ))}
-      </div>
-      {remote ? (
-        <>
-          <p className="text-sm text-ink-2">Sign in on {remote.host}. This page moves on by itself.</p>
-          <CommandBlock command={`ssh ${remote.username}@${remote.host}${remote.port !== 22 ? ` -p ${remote.port}` : ""} ${loginCommand}`} />
-        </>
-      ) : bundled ? (
-        <>
-          <p className="text-sm text-ink-2">Run this inside the container. This page moves on by itself.</p>
-          <CommandBlock command={loginCommand} />
-        </>
-      ) : waiting ? (
-        choice === "other"
-          ? <Note tone="info">Add the server to OMP's models.yml in ~/.omp/agent. This page moves on by itself.</Note>
-          : <Note tone="info">Finish signing in in the browser tab that opened. This page moves on by itself.</Note>
-      ) : null}
-      {login.isError ? <Note tone="bad">{errorMessage(login.error)}</Note> : null}
-      {!runsElsewhere ? (
-        <Actions>
-          <span className="flex-1" />
-          <Button type="button" onClick={start} disabled={login.isPending}>
-            {choice === "other" ? "Continue" : `Sign in with ${selected.name}`}
-          </Button>
-        </Actions>
-      ) : null}
+      <Heading
+        title="Connect a model"
+        lede={custom ? "Add your own gateway or local server to OMP." : "OMP has no model signed in yet. Sign in to a provider; OMP keeps the sign-in."}
+      />
+      {custom ? <CustomProviders onChanged={onSignedIn} /> : <OmpSignIn autoFocus onSignedIn={onSignedIn} />}
+      <Actions>
+        <Button type="button" variant="link" size="sm" onClick={() => setCustom((value) => !value)}>
+          {custom ? "Sign in to a provider instead" : "Use my own server instead"}
+        </Button>
+        <span className="flex-1" />
+        <span className="text-xs text-ink-3">Moves on by itself once OMP has a model.</span>
+      </Actions>
     </>
   );
 }
@@ -761,7 +710,7 @@ function OnboardingFlowDialog({ companyId, onClose }: { companyId: string | null
                 }}
               />
             ) : null}
-            {step === 1 ? <ConnectScreen remote={mode === "remote" ? remote : null} bundled={status?.runtime === "bundled"} onSignedIn={recheckRemote} /> : null}
+            {step === 1 ? <ConnectScreen remote={mode === "remote" ? remote : null} onSignedIn={recheckRemote} /> : null}
             {step === 2 ? (
               <TaskScreen
                 status={status}

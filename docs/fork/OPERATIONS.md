@@ -281,6 +281,34 @@ Backups are `.sql.gz` dumps (`server/src/services/database-backup-health.ts:122`
 They are written inside the instance root, so a backup of the instance root is a
 backup of the backups too — copy them off the box if that matters.
 
+### Run-log retention
+
+Run transcripts under `data/run-logs` are trimmed hourly, **on by default**
+(`runLogs.retention` in the instance config, `packages/shared/src/config-schema.ts`):
+
+```
+enabled: true
+dryRun: false
+intervalMinutes: 60
+minIdleMinutes: 120
+keepFullHours: 24
+recentTailBytes: 5242880
+oldTailBytes: 262144
+```
+
+A log of a run that is not queued or running, and was last written more than
+`minIdleMinutes` ago, keeps its last `recentTailBytes`; once it is older than
+`keepFullHours` it keeps its last `oldTailBytes`. No log file is deleted. The
+removed head becomes a hole in the file, so byte offsets, `logBytes`, and every
+tail read stay valid; a `<log>.retained.json` sidecar records where the kept
+tail starts, and a read from inside the removed part returns one
+`[run log retention]` system line followed by the kept tail
+(`server/src/services/run-log-retention.ts`, `server/src/services/run-log-store.ts`).
+
+`WARDMOTE_RUN_LOG_RETENTION_DRY_RUN=true` logs what a sweep would trim
+(`run log retention dry run`) without touching files;
+`WARDMOTE_RUN_LOG_RETENTION_ENABLED=false` turns the sweep off.
+
 ## 8. Running the test suite without touching the live instance
 
 The repository's own test helpers can install services, write to

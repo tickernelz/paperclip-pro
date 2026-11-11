@@ -58,9 +58,7 @@ const meta: Meta = {
         if (url.pathname === "/api/instance/settings") return Response.json({ defaultEnvironmentId: "local-env" });
         if (url.pathname === "/api/instance/settings/general") return Response.json({ executionMode: "any" });
         if (url.pathname === "/api/instance/settings/experimental") return Response.json({});
-        if (url.pathname === "/api/health") return Response.json({ deploymentMode: "local_trusted", localAiLoginSupported: true });
-        if (url.pathname.endsWith("/ai-connections/local/attempts")) return Response.json({ sessionId: "storybook-login", command: "codex login", expiresAt: "2099-01-01T00:00:00Z" });
-        if (url.pathname.endsWith("/ai-connections/local/check")) return Response.json({ status: "sign_in_required" });
+        if (url.pathname === "/api/health") return Response.json({ deploymentMode: "local_trusted" });
         if (url.pathname.endsWith("/ai-connections") && (!init?.method || init.method === "GET")) return Response.json({ currentUserId: pending.addresseeUserId, connections: [] });
         if (url.pathname.includes("/secrets")) return Response.json([]);
         if (url.pathname.includes("claude-oauth")) return Response.json(null);

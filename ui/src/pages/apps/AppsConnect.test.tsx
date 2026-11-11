@@ -893,7 +893,7 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
     client.setQueryData(queryKeys.environments.capabilities("company-1"), {});
     client.setQueryData(queryKeys.instance.settings, { defaultEnvironmentId: "local-env" });
     client.setQueryData(queryKeys.instance.generalSettings, {});
-    client.setQueryData(queryKeys.health, { deploymentMode: "authenticated", localAiLoginSupported: false });
+    client.setQueryData(queryKeys.health, { deploymentMode: "authenticated" });
     await render(client, false, taskRepair ? <ConnectionSetupFlow host="dialog" serviceSlug="anthropic" interactionId="ai-intent" requestedAgentId="agent-1" aiConnection={{ provider: "anthropic", method: "subscription", mode: "responsible_user" }} /> : undefined);
     await passAccessStep();
     expect(container.textContent).toContain("Connection name");

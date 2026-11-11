@@ -55,7 +55,8 @@ import {
 } from "../onboarding/OnboardingPrimitives";
 import { stepMotion } from "../onboarding/onboarding-motion";
 import { RuntimeTestCard, type TestState } from "../RuntimeTestCard";
-import { AgentBasicsDialog, AdapterMark } from "./AgentBasicsDialog";
+import { AgentBasicsDialog, AdapterMark, newAgentQuery } from "./AgentBasicsDialog";
+import { OmpSignIn } from "../omp-providers/OmpSignIn";
 import {
   AgentProviderConnection,
   type ProviderConnection,
@@ -82,7 +83,7 @@ export function NewAgentSetup() {
       companyId={selectedCompanyId}
       name={params.get("name") ?? ""}
       adapterType={params.get("adapterType") ?? ""}
-      runnerProvider={params.get("runnerProvider") ?? "codex"}
+      runnerProvider={params.get("runnerProvider") ?? (params.get("adapterType") === "wardmote_runner" ? "codex" : "")}
       createdAgentId={params.get("createdAgentId")}
     />
   );
@@ -469,7 +470,7 @@ function Setup({
       appearanceDraft.clear();
       setScreen("saved");
       navigate(
-        `/agents/new?${new URLSearchParams({ name: response.agent.name, adapterType, runnerProvider, createdAgentId: response.agent.id })}`,
+        `/agents/new?${newAgentQuery({ name: response.agent.name, adapterType, runnerProvider, createdAgentId: response.agent.id })}`,
         { replace: true },
       );
       cache.setQueryData(
@@ -525,7 +526,7 @@ function Setup({
         initialAdapter={adapterType}
         onClose={() => navigate("/agents/all")}
         onContinue={(basics) =>
-          navigate(`/agents/new?${new URLSearchParams(basics)}`, {
+          navigate(`/agents/new?${newAgentQuery(basics)}`, {
             replace: true,
           })
         }
@@ -654,7 +655,6 @@ function Setup({
                       adapterType={connectionAdapter}
                       environmentId={environmentId}
                       canLogin={canLogin}
-                      localEnvironment={environment?.driver === "local"}
                       advancedConnection={{
                         value: aiBinding,
                         content: (
@@ -775,6 +775,15 @@ function Setup({
                             onChange={binding => { setRuntimeAiBinding(binding); resetTest(); }} />
                         )}
                         {(connectionModels ? connectionModels.error : models.error) && <p role="alert" className="text-sm text-bad">Could not load models. Retry or enter a model ID manually.</p>}
+                        {adapterType === "omp_local" && models.isSuccess && models.data.length === 0 && (
+                          <section aria-label="Connect a model" className="space-y-3 rounded-lg border border-line bg-bg-2 px-4 py-3">
+                            <p className="text-sm text-ink-2">OMP has no signed-in model yet. Sign in to a provider here, or add your own server in Settings, Models and providers.</p>
+                            <OmpSignIn onSignedIn={() => {
+                              void agentsApi.adapterModels(companyId, brandType, { refresh: true }).then((fresh) =>
+                                cache.setQueryData(queryKeys.agents.adapterModels(companyId, brandType, null, aiBinding?.provider), fresh));
+                            }} />
+                          </section>
+                        )}
                         {showModel && (
                           <div className="grid items-start gap-5 sm:grid-cols-2">
                             {showModel && (

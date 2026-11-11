@@ -1,11 +1,9 @@
 import { connectionIntentService } from "../services/connection-intents.js";
 import { connectionIntentDeliveryService } from "../services/connection-intent-delivery.js";
 import { issueRecoveryActionService } from "../services/issue-recovery-actions.js";
-import { localAiLoginService } from "../services/local-ai-login.js";
 // Background plan observations have their own provider-fixture coverage. Runtime
 // auth tests must not send the selected fixture credentials to a real provider.
 vi.mock("../services/subscription-refresh.js", () => ({ refreshSubscriptionConnection: vi.fn().mockResolvedValue(undefined) }));
-import * as localCredentials from "../services/local-ai-credentials.js";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { createHash, randomUUID } from "node:crypto";
 import { spawnSync } from "node:child_process";
@@ -34,9 +32,6 @@ import express from "express";
 import request from "supertest";
 import { aiConnectionRoutes, canInstallSharedAiConnectionForNewAgent, responsibleUserForAiRequest } from "../routes/ai-connections.js";
 import { validateAiApiKey } from "../routes/ai-connections.js";
-vi.mock("../services/local-ai-browser-login.js", () => ({
-  startLocalBrowserLogin: () => ({ authorizationUrl: "https://auth.openai.com/codex/device", code: "ABCD-EFGHJ", abort: () => {} }),
-}));
 
 let database: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;
 let db: ReturnType<typeof createDb>;
@@ -1535,120 +1530,6 @@ describe("managed AI connections", () => {
       expect((await request(app).post(base).set("x-test-user", "bob").send({ ...payload, connectionId: personal.connection.id })).status).toBe(403);
       expect(network).not.toHaveBeenCalled();
     } finally { network.mockRestore(); }
-  });
-  it.each(["anthropic", "openai"] as const)("reports a missing %s browser process after a server restart", async provider => {
-    const [environment] = await db.select().from(environments).where(eq(environments.driver, "local")).limit(1);
-    const id = randomUUID();
-    const owner = `restart-${provider}`;
-    const intent = { provider, method: "subscription", ownership: "personal", name: "Interrupted sign-in", allAgents: false, agentIds: [] } as const;
-    await db.insert(adapterAuthSessions).values({ id, publicSessionId: id, companyId, environmentId: environment.id, startedByUserId: owner, adapterType: provider === "anthropic" ? "claude_local" : "codex_local", aiConnection: { ...intent, agentIds: [] }, connectionMethod: "local_subscription", status: "waiting_for_user", expiresAt: new Date(Date.now() + 60_000) });
-    const reader = vi.spyOn(localCredentials, "readVerifiedLocalAiCredential").mockRejectedValue(new Error("No credential yet"));
-    try {
-      const login = localAiLoginService(db);
-      await expect(login.check(companyId, owner, { ...intent, agentIds: [] }, id)).resolves.toEqual({ status: "sign_in_required", error: "The server restarted during sign-in. Start sign-in again." });
-      await expect(login.check(companyId, "bob", { ...intent, agentIds: [] }, id)).rejects.toThrow("not found");
-      reader.mockResolvedValue("completed-before-restart");
-      await expect(login.check(companyId, owner, { ...intent, agentIds: [] }, id)).resolves.toEqual({ status: "ready" });
-    } finally { reader.mockRestore(); await db.delete(adapterAuthSessions).where(eq(adapterAuthSessions.id, id)); }
-  });
-  it("requires an owned browser sign-in attempt for local subscriptions", async () => {
-    const reader = vi.spyOn(localCredentials, "readVerifiedLocalAiCredential").mockResolvedValue("fixture-local-token");
-    const app = express();
-    app.use(express.json());
-    app.use((req, _res, next) => {
-      req.actor = { type: "board", source: req.headers["x-local"] === "yes" ? "local_implicit" : "session", userId: String(req.headers["x-test-user"] ?? "alice"), companyIds: [companyId], memberships: [{ companyId, status: "active", membershipRole: "member" }] };
-      next();
-    });
-    app.use("/api", aiConnectionRoutes(db));
-    app.use((error: { status?: number; message: string }, _req: express.Request, res: express.Response, _next: express.NextFunction) => { res.status(error.status ?? 500).json({ error: error.message }); });
-    const url = `/api/companies/${companyId}/ai-connections/local`;
-    const payload = { provider: "anthropic", method: "subscription", name: "Local account test", ownership: "personal", agentIds: [agentId], allAgents: false };
-    try {
-      expect((await request(app).post(url).send(payload)).status).toBe(403);
-      expect(reader).not.toHaveBeenCalled();
-      expect((await request(app).post(`${url}/check`).send(payload)).status).toBe(403);
-      expect(reader).not.toHaveBeenCalled();
-      const checked = await request(app).post(`${url}/check`).set("x-local", "yes").send(payload);
-      expect(checked.status).toBe(422);
-      expect((await service.list(companyId, "alice")).some(c => c.name === payload.name)).toBe(false);
-      const connected = await request(app).post(url).set("x-local", "yes").send(payload);
-      expect(connected.status).toBe(422);
-      expect(reader).not.toHaveBeenCalled();
-      const codex = { ...payload, provider: "openai", name: "Isolated terminal login" };
-      const attempts = `${url}/attempts`;
-      expect((await request(app).post(attempts).send(codex)).status).toBe(403); // This member cannot authorize agentId.
-      expect((await request(app).post(url).set("x-local", "yes").send(codex)).status).toBe(422);
-      const prepared = await request(app).post(attempts).set("x-local", "yes").send(codex);
-      expect(prepared.status).toBe(201);
-      expect(prepared.body.command).toBeUndefined();
-      expect((await request(app).post(attempts).set("x-local", "yes").send(codex)).body).toEqual(prepared.body);
-      expect((await request(app).delete(`${attempts}/${prepared.body.sessionId}`).set("x-test-user", "bob").send()).status).toBe(404);
-      expect((await request(app).delete(`${attempts}/${prepared.body.sessionId}`).set("x-local", "yes").send()).status).toBe(200);
-      expect((await request(app).post(url).set("x-local", "yes").send({ ...codex, localSessionId: prepared.body.sessionId })).status).toBe(422);
-    } finally { reader.mockRestore(); }
-  });
-  it.each(["anthropic", "openai"] as const)("blocks server-host %s login on a public deployment without a trusted host", async provider => {
-    const reader = vi.spyOn(localCredentials, "readVerifiedLocalAiCredential");
-    const app = express();
-    app.use(express.json());
-    app.use((req, _res, next) => {
-      req.actor = { type: "board", source: "session", userId: "alice", companyIds: [companyId], memberships: [{ companyId, status: "active", membershipRole: "member" }] };
-      next();
-    });
-    app.use("/api", aiConnectionRoutes(db, { deploymentMode: "authenticated", deploymentExposure: "public", trustedLocalStdioRuntimeHost: "" }));
-    app.use((error: { status?: number; message: string }, _req: express.Request, res: express.Response, _next: express.NextFunction) => { res.status(error.status ?? 500).json({ error: error.message }); });
-    const base = `/api/companies/${companyId}/ai-connections/local`;
-    const intent = { provider, method: "subscription", ownership: "personal", name: "Hosted account", allAgents: false, agentIds: [] };
-    try {
-      for (const endpoint of [base, `${base}/attempts`, `${base}/check`]) {
-        const result = await request(app).post(endpoint).send(intent);
-        expect(result.status).toBe(422);
-        expect(result.body.error).toContain("unavailable on this hosted instance");
-      }
-      expect(reader).not.toHaveBeenCalled();
-    } finally { reader.mockRestore(); }
-  });
-  it.each(["anthropic", "openai"] as const)("lets authenticated users connect only their own isolated %s login", async provider => {
-    const owner = `self-hosted-${provider}`;
-    await db.insert(companyMemberships).values({ companyId, principalId: owner, principalType: "user", status: "active", membershipRole: "member" });
-    const reader = vi.spyOn(localCredentials, "readVerifiedLocalAiCredential").mockResolvedValue("isolated-fixture-token");
-    const app = express();
-    app.use(express.json());
-    app.use((req, _res, next) => {
-      req.actor = { type: "board", source: "session", userId: String(req.headers["x-test-user"] ?? owner), companyIds: [companyId], memberships: [{ companyId, status: "active", membershipRole: req.headers["x-viewer"] ? "viewer" : "member" }] };
-      next();
-    });
-    app.use("/api", aiConnectionRoutes(db));
-    app.use((error: { status?: number; message: string }, _req: express.Request, res: express.Response, _next: express.NextFunction) => { res.status(error.status ?? 500).json({ error: error.message }); });
-    const base = `/api/companies/${companyId}/ai-connections/local`;
-    const intent = { provider, method: "subscription", ownership: "personal", name: `Self-hosted ${provider}`, allAgents: false, agentIds: [] };
-    try {
-      expect((await request(app).post(`${base}/attempts`).set("x-viewer", "yes").send(intent)).status).toBe(403);
-      const started = await request(app).post(`${base}/attempts`).send(intent);
-      expect(started.status).toBe(201);
-      expect(started.headers["cache-control"]).toBe("no-store");
-      expect(started.body.command).toBeUndefined();
-      expect((await request(app).post(`${base}/attempts`).send(intent)).body).toEqual(started.body);
-      const input = { ...intent, localSessionId: started.body.sessionId };
-      for (const endpoint of [base, `${base}/check`]) {
-        expect((await request(app).post(endpoint).set("x-test-user", "bob").send(input)).status).toBe(404);
-        expect((await request(app).post(endpoint.replace(companyId, otherCompanyId)).send(input)).status).toBe(403);
-      }
-      if (provider === "anthropic") {
-        const codeUrl = `${base}/attempts/${started.body.sessionId}/code`;
-        expect((await request(app).post(codeUrl).set("x-test-user", "bob").send({ browserCode: "fixture-code" })).status).toBe(404);
-        expect((await request(app).post(codeUrl).send({ browserCode: "fixture-code" })).status).toBe(422);
-      }
-      expect(reader).not.toHaveBeenCalled();
-      const checked = await request(app).post(`${base}/check`).send(input);
-      expect(checked.body).toEqual({ status: "ready" });
-      expect(reader).toHaveBeenLastCalledWith(provider, path.join(home, "instances/ai-connection-fixture/ai-local-logins", started.body.sessionId));
-      const saved = await request(app).post(base).send(input);
-      expect(saved.status).toBe(201);
-      expect((await request(app).post(base).send(input)).body).toEqual(saved.body);
-      expect(JSON.stringify(saved.body)).not.toContain("isolated-fixture-token");
-      expect((await service.list(companyId, owner)).filter(c => c.name === intent.name)).toHaveLength(1);
-    } finally { reader.mockRestore(); }
   });
   it("rejects invalid credentials without exposing the provider response", async () => {
     const request = vi.fn().mockResolvedValue(new Response("secret-provider-body", { status: 401 }));

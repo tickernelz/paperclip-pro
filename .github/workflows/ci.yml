@@ -158,6 +158,12 @@ jobs:
         if: matrix.part == 'checks'
         run: pnpm --filter @tickernelz/wardmote-runner check:runner
 
+      - name: Reserve the credential lease port range from ephemeral allocation
+        if: matrix.part == 'suites'
+        run: |
+          sudo sysctl -w net.ipv4.ip_local_reserved_ports=49152-65535
+          sysctl net.ipv4.ip_local_port_range net.ipv4.ip_local_reserved_ports
+
       - name: TypeScript suites
         if: matrix.part == 'suites'
         run: pnpm --filter @tickernelz/wardmote-runner test:typescript:vitest

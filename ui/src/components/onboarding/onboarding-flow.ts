@@ -19,15 +19,6 @@ export function statusFailure(error: { status?: unknown; message?: string } | nu
   if (error.status === 403) return { message: ADMIN_ONLY_MESSAGE, retry: false };
   return { message: error.message || "Could not check OMP on this server.", retry: true };
 }
-export type ProviderChoice = "anthropic" | "openai-codex" | "openrouter" | "other";
-
-export const PROVIDER_OPTIONS: ReadonlyArray<{ id: ProviderChoice; name: string; detail: string }> = [
-  { id: "anthropic", name: "Anthropic", detail: "Sign in in the browser" },
-  { id: "openai-codex", name: "OpenAI", detail: "Sign in in the browser" },
-  { id: "openrouter", name: "OpenRouter", detail: "Sign in in the browser" },
-  { id: "other", name: "Other", detail: "Any OpenAI-compatible server" },
-];
-
 const PROVIDER_LABELS: Record<string, string> = {
   anthropic: "Anthropic",
   openai: "OpenAI",

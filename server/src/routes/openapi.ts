@@ -1,5 +1,11 @@
 import { updateFastResponseSchema } from "@tickernelz/wardmote-shared";
-import { onboardingOmpLoginRequestSchema, onboardingRemoteOmpRequestSchema } from "@tickernelz/wardmote-shared";
+import {
+  ompCustomProviderInputSchema,
+  ompCustomProviderProbeSchema,
+  onboardingOmpLoginInputSchema,
+  onboardingOmpLoginRequestSchema,
+  onboardingRemoteOmpRequestSchema,
+} from "@tickernelz/wardmote-shared";
 import { agentTodoSnapshotSchema } from "@tickernelz/wardmote-shared";
 import { slackRegistrationSchema, slackSetupActionSchema, slackInstallAuthorizationSchema, slackRegistrationStateSchema, slackAppConfigurationSchema, slackAvatarStateSchema, slackAccountStateSchema } from "@tickernelz/wardmote-shared";
 import { experimentalApiMetadata } from "./experimental-api-metadata.js";
@@ -38,9 +44,6 @@ import {
   catalogTeamListQuerySchema,
   updateDecisionModelSchema,
   aiConnectionLoginIntentSchema,
-  localAiConnectionSchema,
-  localAiLoginStartSchema,
-  browserCodeSchema,
   emailEndpointSetupSchema,
   emailConnectionSchema,
   emailAddressCheckSchema,
@@ -1574,11 +1577,6 @@ const BOARD_ONLY_OPERATIONS = new Set([
   ...localBrowserOperations.map(([method, path]) => `${method.toUpperCase()} ${path}`),
   "GET /api/companies/{companyId}/ai-connections",
   "POST /api/companies/{companyId}/ai-connections",
-  "POST /api/companies/{companyId}/ai-connections/local",
-  "POST /api/companies/{companyId}/ai-connections/local/attempts",
-  "POST /api/companies/{companyId}/ai-connections/local/check",
-  "POST /api/companies/{companyId}/ai-connections/local/attempts/{sessionId}/code",
-  "DELETE /api/companies/{companyId}/ai-connections/local/attempts/{sessionId}",
   "PUT /api/companies/{companyId}/ai-connections/default",
   "GET /api/companies/{companyId}/ai-connections/{connectionId}/active-runs",
   "GET /api/companies/{companyId}/ai-connections/{connectionId}/usage",
@@ -1844,6 +1842,14 @@ const INSTANCE_ADMIN_OPERATIONS = new Set([
   "GET /api/onboarding/omp",
   "GET /api/onboarding/omp/browse",
   "POST /api/onboarding/omp/login",
+  "GET /api/onboarding/omp/login/providers",
+  "GET /api/onboarding/omp/login/{loginId}",
+  "POST /api/onboarding/omp/login/{loginId}/input",
+  "DELETE /api/onboarding/omp/login/{loginId}",
+  "GET /api/onboarding/omp/custom-providers",
+  "POST /api/onboarding/omp/custom-providers/probe",
+  "PUT /api/onboarding/omp/custom-providers/{name}",
+  "DELETE /api/onboarding/omp/custom-providers/{name}",
   "POST /api/onboarding/omp/remote",
   "POST /api/plugins/install",
   "POST /api/instance/database-backups",
@@ -9379,9 +9385,80 @@ registry.registerPath({
   method: "post",
   path: "/api/onboarding/omp/login",
   tags: ["onboarding"],
-  summary: "Start omp login for a provider and return its sign-in link",
+  summary: "Start omp login for a provider on the server and return its sign-in link and prompt",
   request: { body: jsonBody(onboardingOmpLoginRequestSchema) },
-  responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized, 403: r.forbidden, 409: r.conflict, 422: r.unprocessable },
+  responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized, 403: r.forbidden, 422: r.unprocessable },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/api/onboarding/omp/login/providers",
+  tags: ["onboarding"],
+  summary: "List the providers omp login can sign in to",
+  request: { query: z.object({ refresh: z.enum(["1"]).optional() }) },
+  responses: { 200: r.ok(), 401: r.unauthorized, 403: r.forbidden, 422: r.unprocessable },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/api/onboarding/omp/login/{loginId}",
+  tags: ["onboarding"],
+  summary: "Read the state of a running omp login",
+  request: { params: z.object({ loginId: z.string() }) },
+  responses: { 200: r.ok(), 401: r.unauthorized, 403: r.forbidden, 404: r.notFound },
+});
+
+registry.registerPath({
+  method: "post",
+  path: "/api/onboarding/omp/login/{loginId}/input",
+  tags: ["onboarding"],
+  summary: "Answer the prompt of a running omp login, such as a pasted redirect URL, code or API key",
+  request: { params: z.object({ loginId: z.string() }), body: jsonBody(onboardingOmpLoginInputSchema) },
+  responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized, 403: r.forbidden, 404: r.notFound, 409: r.conflict },
+});
+
+registry.registerPath({
+  method: "delete",
+  path: "/api/onboarding/omp/login/{loginId}",
+  tags: ["onboarding"],
+  summary: "Cancel a running omp login",
+  request: { params: z.object({ loginId: z.string() }) },
+  responses: { 200: r.ok(), 401: r.unauthorized, 403: r.forbidden, 404: r.notFound },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/api/onboarding/omp/custom-providers",
+  tags: ["onboarding"],
+  summary: "List custom providers in OMP's models.yml without their keys",
+  responses: { 200: r.ok(), 401: r.unauthorized, 403: r.forbidden, 422: r.unprocessable },
+});
+
+registry.registerPath({
+  method: "post",
+  path: "/api/onboarding/omp/custom-providers/probe",
+  tags: ["onboarding"],
+  summary: "Test a custom provider endpoint with one-token requests and suggest its wire format",
+  request: { body: jsonBody(ompCustomProviderProbeSchema) },
+  responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized, 403: r.forbidden, 422: r.unprocessable },
+});
+
+registry.registerPath({
+  method: "put",
+  path: "/api/onboarding/omp/custom-providers/{name}",
+  tags: ["onboarding"],
+  summary: "Create or update a custom provider in OMP's models.yml after OMP validates it",
+  request: { params: z.object({ name: z.string() }), body: jsonBody(ompCustomProviderInputSchema) },
+  responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized, 403: r.forbidden, 422: r.unprocessable },
+});
+
+registry.registerPath({
+  method: "delete",
+  path: "/api/onboarding/omp/custom-providers/{name}",
+  tags: ["onboarding"],
+  summary: "Remove a custom provider from OMP's models.yml",
+  request: { params: z.object({ name: z.string() }) },
+  responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized, 403: r.forbidden, 404: r.notFound },
 });
 
 registry.registerPath({
@@ -13615,43 +13692,6 @@ export function openApiRoutes() {
   });
   return router;
 }
-
-registerCurrentRoute({
-  method: "post",
-  path: "/api/companies/{companyId}/ai-connections/local",
-  tags: ["ai-connections"],
-  summary: "Verify and save an owned local subscription sign-in",
-  body: localAiConnectionSchema,
-  responses: { 201: r.ok(), 400: r.badRequest, 401: r.unauthorized, 403: r.forbidden, 422: r.unprocessable },
-});
-registerCurrentRoute({
-  method: "post",
-  path: "/api/companies/{companyId}/ai-connections/local/attempts",
-  tags: ["ai-connections"], summary: "Prepare an isolated local subscription sign-in",
-  body: localAiLoginStartSchema,
-  responses: { 201: r.ok(), 400: r.badRequest, 401: r.unauthorized, 403: r.forbidden, 422: r.unprocessable },
-});
-registerCurrentRoute({
-  method: "delete",
-  path: "/api/companies/{companyId}/ai-connections/local/attempts/{sessionId}",
-  tags: ["ai-connections"], summary: "Cancel an owned local subscription sign-in",
-  responses: { 200: r.ok(), 401: r.unauthorized, 403: r.forbidden, 404: r.notFound },
-});
-registerCurrentRoute({
-  method: "post",
-  path: "/api/companies/{companyId}/ai-connections/local/check",
-  tags: ["ai-connections"], summary: "Check an owned local subscription sign-in without saving a connection",
-  body: localAiConnectionSchema,
-  responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized, 403: r.forbidden, 404: r.notFound, 422: r.unprocessable },
-});
-
-registerCurrentRoute({
-  method: "post",
-  path: "/api/companies/{companyId}/ai-connections/local/attempts/{sessionId}/code",
-  tags: ["ai-connections"], summary: "Submit the browser code for an owned local Claude sign-in",
-  body: z.object({ browserCode: browserCodeSchema }),
-  responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized, 403: r.forbidden, 404: r.notFound, 422: r.unprocessable },
-});
 
 for (const [method, path, summary] of [
   ["get", "/api/companies/{companyId}/skill-sources", "List GitHub skill sources"],
