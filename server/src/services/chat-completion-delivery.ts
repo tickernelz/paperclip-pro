@@ -104,7 +104,7 @@ export async function openwaTaskChatOrigin(db: Connection, input: { companyId: s
     join issues c on c.id = ${nearest.conversationId}::uuid and c.company_id = t.company_id
     left join heartbeat_runs r on r.company_id = t.company_id
       and r.id = case when t.origin_run_id ~* ${UUID_TEXT} then t.origin_run_id::uuid end
-    left join lateral (select coalesce(r.context_snapshot -> 'wardmoteOpenwa', r.context_snapshot -> 'paperclipOpenwa') as openwa) o on true
+    left join lateral (select r.context_snapshot -> 'wardmoteOpenwa' as openwa) o on true
     left join lateral (select o.openwa, o.openwa -> 'deliveryIds' ->> -1 as delivery_id) ctx on true
     where t.company_id = ${input.companyId}::uuid and t.id = ${nearest.taskId}::uuid`) as unknown as Array<{
     conversation: string; trigger_class: string | null; requester_role: string | null;

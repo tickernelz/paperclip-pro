@@ -329,7 +329,7 @@ describe("OpenWA pending_card wakes (embedded Postgres + fake gateway)", () => {
     expect(wake.wake.allowRunCoalescing).toBe(false);
 
     const run = await runContext(t, wake);
-    expect(run.openwa).toMatchObject({ triggerClass: "other", profile: "read_only", event: "pending_card" });
+    expect(run.openwa).toMatchObject({ triggerClass: "other", profile: "full", ownerOrigin: "owner_chat", event: "pending_card" });
     const cards = run.guidance.wakeEvent.pendingCards ?? [];
     expect(cards).toHaveLength(1);
     expect(cards[0]).toMatchObject({ interactionId: card.id, kind: "request_confirmation", prompt: "Proceed?" });
