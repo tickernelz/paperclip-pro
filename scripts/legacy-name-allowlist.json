@@ -420,7 +420,7 @@
     ["packages/adapter-utils/CHANGELOG.md",6,"arsip"],
     ["packages/adapter-utils/src/acpx-engine/composed-run-characterization.test.ts",2,"belum-diganti"],
     ["packages/adapter-utils/src/acpx-engine/execute.test.ts",22,"belum-diganti"],
-    ["packages/adapter-utils/src/acpx-engine/execute.ts",14,"belum-diganti"],
+    ["packages/adapter-utils/src/acpx-engine/execute.ts",6,"belum-diganti"],
     ["packages/adapter-utils/src/acpx-engine/run-fault-matrix.test.ts",2,"belum-diganti"],
     ["packages/adapter-utils/src/acpx-engine/run-site-host.test.ts",6,"belum-diganti"],
     ["packages/adapter-utils/src/acpx-engine/run-site-sandbox.test.ts",11,"belum-diganti"],
