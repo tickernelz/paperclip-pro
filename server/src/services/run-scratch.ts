@@ -1,8 +1,9 @@
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
+import { RETIRED_HEARTBEAT_RUN_SCRATCH_MARKER } from "./retired-marker-names.js";
 
-export const HEARTBEAT_RUN_SCRATCH_MARKER = ".paperclip-run-scratch.json";
+export const HEARTBEAT_RUN_SCRATCH_MARKER = ".wardmote-run-scratch.json";
 
 export interface HeartbeatRunScratchMetadata {
   version: 1;
@@ -144,7 +145,9 @@ async function removeOwnedScratchDir(input: {
     return "missing";
   }
 
-  const marker = await readMarker(path.join(dir, HEARTBEAT_RUN_SCRATCH_MARKER));
+  const marker =
+    (await readMarker(path.join(dir, HEARTBEAT_RUN_SCRATCH_MARKER))) ??
+    (await readMarker(path.join(dir, RETIRED_HEARTBEAT_RUN_SCRATCH_MARKER)));
   if (!marker) return "unmarked";
   if (
     marker.companyId !== input.ownedBy.companyId ||

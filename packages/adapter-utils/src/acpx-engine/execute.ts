@@ -9,6 +9,7 @@ import { promisify } from "node:util";
 import { createHash, randomUUID } from "node:crypto";
 import { parseFrontmatterMarkdown } from "@tickernelz/wardmote-shared";
 import { fileURLToPath } from "node:url";
+import { readManagedCodexSkillsManifest, writeManagedCodexSkillsManifest } from "./managed-codex-skills-manifest.js";
 import type {
   AdapterBillingType,
   AdapterExecutionContext,
@@ -181,7 +182,6 @@ import {
 } from "./startup-timing.js";
 
 const defaultModuleDir = path.dirname(fileURLToPath(import.meta.url));
-const WARDMOTE_MANAGED_CODEX_SKILLS_MANIFEST = ".paperclip-managed-skills.json";
 const BENIGN_NES_CLOSE_STDERR = /method: ['"]nes\/close['"].*-32601/;
 
 function routeChildStderr(state: ChildStderrState, chunk: string) {
@@ -1239,29 +1239,6 @@ async function prepareClaudeSkillRuntime(input: {
       : [],
     bundleDir: selectedNames.length > 0 ? skillsHome : null,
   };
-}
-
-async function readManagedCodexSkillsManifest(skillsHome: string): Promise<Set<string>> {
-  const manifestPath = path.join(skillsHome, WARDMOTE_MANAGED_CODEX_SKILLS_MANIFEST);
-  try {
-    const raw = JSON.parse(await fs.readFile(manifestPath, "utf8")) as unknown;
-    const parsed = parseObject(raw);
-    const skills = Array.isArray(parsed.managedSkillNames)
-      ? parsed.managedSkillNames.filter((value): value is string => typeof value === "string" && value.trim().length > 0)
-      : [];
-    return new Set(skills);
-  } catch {
-    return new Set();
-  }
-}
-
-async function writeManagedCodexSkillsManifest(skillsHome: string, skillNames: Iterable<string>): Promise<void> {
-  const managedSkillNames = Array.from(new Set(skillNames)).sort();
-  await fs.writeFile(
-    path.join(skillsHome, WARDMOTE_MANAGED_CODEX_SKILLS_MANIFEST),
-    `${JSON.stringify({ version: 1, managedSkillNames }, null, 2)}\n`,
-    "utf8",
-  );
 }
 
 async function removeSkillTarget(target: string): Promise<boolean> {
