@@ -190,7 +190,6 @@ export interface PluginUiStaticRouteOptions {
   /**
    * The local plugin installation directory.
    * This is where plugins are installed via `npm install --prefix`.
-   * Defaults to the standard `~/.paperclip-pro/plugins/` location.
    */
   localPluginDir: string;
 }

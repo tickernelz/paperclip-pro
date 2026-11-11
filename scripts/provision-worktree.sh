@@ -3,18 +3,18 @@ set -euo pipefail
 
 base_cwd="${WARDMOTE_WORKSPACE_BASE_CWD:?WARDMOTE_WORKSPACE_BASE_CWD is required}"
 worktree_cwd="${WARDMOTE_WORKSPACE_CWD:?WARDMOTE_WORKSPACE_CWD is required}"
-paperclip_home="${WARDMOTE_HOME:-}"
-if [ -z "$paperclip_home" ]; then
-  if [ -d "$HOME/.paperclip-pro" ]; then paperclip_home="$HOME/.paperclip-pro"; else paperclip_home="$HOME/.wardmote"; fi
+wardmote_home="${WARDMOTE_HOME:-}"
+if [ -z "$wardmote_home" ]; then
+  wardmote_home="$HOME/.wardmote"
 fi
-paperclip_instance_id="${WARDMOTE_INSTANCE_ID:-default}"
-default_source_config_path="$paperclip_home/instances/$paperclip_instance_id/config.json"
-paperclip_dir="$worktree_cwd/.wardmote"
-worktree_config_path="$paperclip_dir/config.json"
-worktree_env_path="$paperclip_dir/.env"
-seed_manifest_path="$paperclip_dir/seed-manifest.json"
-seed_pending_marker_path="$paperclip_dir/seed-pending"
-seed_complete_marker_path="$paperclip_dir/seed-complete"
+wardmote_instance_id="${WARDMOTE_INSTANCE_ID:-default}"
+default_source_config_path="$wardmote_home/instances/$wardmote_instance_id/config.json"
+wardmote_dir="$worktree_cwd/.wardmote"
+worktree_config_path="$wardmote_dir/config.json"
+worktree_env_path="$wardmote_dir/.env"
+seed_manifest_path="$wardmote_dir/seed-manifest.json"
+seed_pending_marker_path="$wardmote_dir/seed-pending"
+seed_complete_marker_path="$wardmote_dir/seed-complete"
 worktree_name="${WARDMOTE_WORKSPACE_BRANCH:-$(basename "$worktree_cwd")}"
 created_worktree_config=0
 worktree_instance_id="$(WORKTREE_CWD="$worktree_cwd" node <<'EOF'
@@ -104,7 +104,7 @@ if [[ -n "$source_config_path" ]]; then
   source_env_path="$(dirname "$source_config_path")/.env"
 fi
 
-mkdir -p "$paperclip_dir"
+mkdir -p "$wardmote_dir"
 
 base_cli_runner_path="$base_cwd/cli/node_modules/tsx/dist/cli.mjs"
 base_cli_entry_path="$base_cwd/cli/src/index.ts"
@@ -150,7 +150,7 @@ repair_base_workspace_install() {
     # process that queued behind a peer's repair can skip its own reinstall.
     (
       cd "$base_cwd" || exit 1
-      exec 9>"$repair_lock_dir/paperclip-provision-repair.lock"
+      exec 9>"$repair_lock_dir/wardmote-provision-repair.lock"
       flock 9
       if base_cli_healthy; then
         echo "Base workspace CLI became healthy while waiting for the repair lock; skipping reinstall." >&2
@@ -198,7 +198,7 @@ run_isolated_worktree_init() {
   return 127
 }
 
-paperclipai_command_available() {
+wardmote_command_available() {
   if command -v pnpm >/dev/null 2>&1 && pnpm wardmote --help >/dev/null 2>&1; then
     return 0
   fi
@@ -394,7 +394,7 @@ write_fallback_worktree_config() {
   WORKTREE_NAME="$worktree_name" \
   BASE_CWD="$base_cwd" \
   WORKTREE_CWD="$worktree_cwd" \
-  WARDMOTE_DIR="$paperclip_dir" \
+  WARDMOTE_DIR="$wardmote_dir" \
   SOURCE_CONFIG_PATH="$source_config_path" \
   SOURCE_ENV_PATH="$source_env_path" \
   WORKTREE_INSTANCE_ID="$worktree_instance_id" \
@@ -656,7 +656,7 @@ if [[ -n "$source_config_path" ]]; then
     if [[ -e "$worktree_config_path" || -e "$worktree_env_path" ]]; then
       echo "Existing isolated Wardmote worktree config is stale for this host; regenerating." >&2
     fi
-    if paperclipai_command_available; then
+    if wardmote_command_available; then
       if run_isolated_worktree_init; then
         :
       else
@@ -758,7 +758,7 @@ EOF
 
 if [[ -f "$worktree_cwd/package.json" && -f "$worktree_cwd/pnpm-lock.yaml" ]]; then
   needs_install=0
-  install_fingerprint_path="$paperclip_dir/pnpm-install-fingerprint"
+  install_fingerprint_path="$wardmote_dir/pnpm-install-fingerprint"
   current_install_fingerprint="$(compute_pnpm_install_fingerprint)"
   previous_install_fingerprint=""
   if [[ -f "$install_fingerprint_path" ]]; then
@@ -780,7 +780,7 @@ if [[ -f "$worktree_cwd/package.json" && -f "$worktree_cwd/pnpm-lock.yaml" ]]; t
   fi
 
   if [[ "$needs_install" -eq 1 ]]; then
-    backup_suffix=".paperclip-backup-${BASHPID:-$$}"
+    backup_suffix=".wardmote-backup-${BASHPID:-$$}"
     moved_symlink_paths=()
 
     while IFS= read -r relative_path; do

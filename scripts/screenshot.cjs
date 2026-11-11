@@ -2,9 +2,6 @@
 /**
  * Screenshot utility for Paperclip UI.
  *
- * Reads the board token from ~/.paperclip-pro/auth.json and injects it as a
- * Bearer header so Playwright can access authenticated pages.
- *
  * Usage:
  *   node scripts/screenshot.cjs <url-or-path> [output.png] [--width 1280] [--height 800] [--wait 2000]
  *
@@ -53,7 +50,7 @@ function loadBoardToken() {
 
 const cred = loadBoardToken();
 if (!cred) {
-  console.error("No board token found in ~/.paperclip-pro/auth.json");
+  console.error("No board token found in ~/.wardmote/auth.json");
   process.exit(1);
 }
 

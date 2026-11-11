@@ -1725,7 +1725,7 @@ export const storybookSecretProviderHealth = {
       status: "ok" as const,
       message: "Encryption key loaded; permissions OK.",
       warnings: [] as string[],
-      backupGuidance: ["Backup ~/.paperclip-pro/instances/default/secrets/key separately from the database."],
+      backupGuidance: ["Backup ~/.wardmote/instances/default/secrets/key separately from the database."],
     },
     {
       provider: "aws_secrets_manager" as const,
