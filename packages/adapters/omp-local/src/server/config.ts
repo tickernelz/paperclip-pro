@@ -745,7 +745,7 @@ export async function prepareOmpRuntimeConfig(
   }
 
   const notes: string[] = [];
-  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-omp-agent-"));
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-omp-agent-"));
   await fs.chmod(tempDir, 0o700);
   let cleaned = false;
   const materializationEnv = { ...stringEnv(process.env), ...selection.env };

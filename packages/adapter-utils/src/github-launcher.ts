@@ -27,7 +27,7 @@ async function main() {
   let configReady = false;
   try {
     fs.mkdirSync(configRoot, { recursive: true, mode: 0o700 });
-    configDirectory = fs.mkdtempSync(path.join(configRoot, 'paperclip-github-operation-'));
+    configDirectory = fs.mkdtempSync(path.join(configRoot, 'wardmote-github-operation-'));
     fs.chmodSync(configDirectory, 0o700);
     configReady = true;
     process.once('exit', () => { try { fs.rmSync(configDirectory, { recursive: true, force: true }); } catch {} });

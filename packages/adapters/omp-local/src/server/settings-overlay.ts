@@ -119,7 +119,7 @@ export async function writeOmpSettingsOverlay(input: {
 }): Promise<OmpSettingsOverlay> {
   const content = renderOmpSettingsOverlay(input.config);
   if (!input.remote) {
-    const dir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-omp-overlay-"));
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-omp-overlay-"));
     await fs.chmod(dir, 0o700);
     const file = path.join(dir, "config.yml");
     await fs.writeFile(file, content, { encoding: "utf8", mode: 0o600 });

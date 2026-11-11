@@ -456,7 +456,7 @@ it("refreshes Copilot native instructions privately on every admission, includin
 });
 
 async function sandboxFixture(agent: "pi" | "claude" | "codex" | "grok" | "cursor" | "copilot") {
-  const root = await mkdtemp(join(tmpdir(), "paperclip-acpx-sandbox-"));
+  const root = await mkdtemp(join(tmpdir(), "wardmote-acpx-sandbox-"));
   temporaryDirectories.push(root);
   const workspace = join(root, "workspace");
   const runtimeDirectory = join(root, "runtime");

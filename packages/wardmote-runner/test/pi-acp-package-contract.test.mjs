@@ -29,7 +29,7 @@ test("Pi patch embeds the reviewed helper and pins exact upstream version", () =
 });
 
 async function fixture(t, extra = {}) {
-  const root = await realpath(await mkdtemp(join(tmpdir(), "paperclip-pi-acp-contract-")));
+  const root = await realpath(await mkdtemp(join(tmpdir(), "wardmote-pi-acp-contract-")));
   await mkdir(join(root, "workspace")); await mkdir(join(root, "agent"));
   await writeFile(join(root, "extension.js"), "export default function() {}\n");
   const fakePi = fileURLToPath(new URL("../test-fixtures/pi-acp/fake-pi.mjs", import.meta.url));

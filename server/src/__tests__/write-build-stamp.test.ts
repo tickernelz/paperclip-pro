@@ -7,7 +7,7 @@ import { join } from "node:path";
 import { resolveBuildCommit } from "../../scripts/write-build-stamp.mjs";
 
 it("packages a full source commit without a Docker build argument", () => {
-  const root = realpathSync(mkdtempSync(join(tmpdir(), "paperclip-build-stamp-")));
+  const root = realpathSync(mkdtempSync(join(tmpdir(), "wardmote-build-stamp-")));
   try {
     const scriptDir = join(root, "server", "scripts");
     mkdirSync(scriptDir, { recursive: true });

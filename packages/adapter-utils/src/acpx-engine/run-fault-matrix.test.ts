@@ -49,7 +49,7 @@ import type { SettlementDispositionReport } from "./run-coordinator.js";
 const tempRoots: string[] = [];
 
 async function makeTempRoot() {
-  const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-acpx-fault-"));
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-acpx-fault-"));
   tempRoots.push(root);
   return root;
 }

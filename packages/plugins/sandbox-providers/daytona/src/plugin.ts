@@ -1714,7 +1714,7 @@ async function executeOneShot(
   const timeoutMs = resolveTimeoutMs(params.timeoutMs, config);
   const effectiveTimeoutMs = gitNet ? Math.min(timeoutMs, GIT_NETWORK_TIMEOUT_MS) : timeoutMs;
   const timeoutSeconds = toTimeoutSeconds(effectiveTimeoutMs);
-  const stdinPath = params.stdin != null ? `/tmp/paperclip-stdin-${randomUUID()}` : null;
+  const stdinPath = params.stdin != null ? `/tmp/wardmote-stdin-${randomUUID()}` : null;
 
   // Marks the start of the `executeCommand` REST round-trip. Hoisted out of the
   // try so the timeout path below can still attribute the exec wall-time it spent
@@ -2076,7 +2076,7 @@ async function executeInSession(
   const timeoutMs = resolveTimeoutMs(params.timeoutMs, config);
   const effectiveTimeoutMs = gitNet ? Math.min(timeoutMs, GIT_NETWORK_TIMEOUT_MS) : timeoutMs;
   const timeoutSeconds = toTimeoutSeconds(effectiveTimeoutMs);
-  const stdinPath = params.stdin != null ? `/tmp/paperclip-stdin-${randomUUID()}` : null;
+  const stdinPath = params.stdin != null ? `/tmp/wardmote-stdin-${randomUUID()}` : null;
 
   // Marks the start of the session dispatch and poll. The timeout paths report
   // the exec wall-time spent before the abort, so a slow command is still

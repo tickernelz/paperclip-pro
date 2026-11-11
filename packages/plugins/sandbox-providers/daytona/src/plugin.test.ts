@@ -346,7 +346,7 @@ describe("Daytona sandbox provider plugin", () => {
       // It quotes each command argument and the diagnostics path as a shell word.
       expect(inputs[0]).toContain("stty raw -echo");
       expect(inputs[0]).toContain("exec 'node' '/paperclip/gateway.mjs'");
-      expect(inputs[0]).toMatch(/2>'\/tmp\/paperclip-duplex-.+\.log'/);
+      expect(inputs[0]).toMatch(/2>'\/tmp\/wardmote-duplex-.+\.log'/);
 
       // A host write on the exact pair reaches the process on the same channel.
       // `data` arrives in the wire-safe base64 form (see `ChannelBytesWireValue`
@@ -3319,16 +3319,16 @@ describe("Daytona sandbox provider plugin", () => {
 
     expect(sandbox.fs.uploadFile).toHaveBeenCalledWith(
       Buffer.from("input payload", "utf8"),
-      expect.stringMatching(/^\/tmp\/paperclip-stdin-/),
+      expect.stringMatching(/^\/tmp\/wardmote-stdin-/),
       1,
     );
     const [command] = sandbox.process.executeCommand.mock.calls[0] as [string];
     expect(command).toMatch(/\/etc\/profile/);
     expect(command).not.toMatch(/nvm\.sh/);
     expect(command).toMatch(/&& cd '\/workspace'/);
-    expect(command).toMatch(/env .* 'cat' < '\/tmp\/paperclip-stdin-/);
+    expect(command).toMatch(/env .* 'cat' < '\/tmp\/wardmote-stdin-/);
     expect(command).not.toMatch(/(?:^|&& )exec /);
-    expect(sandbox.fs.deleteFile).toHaveBeenCalledWith(expect.stringMatching(/^\/tmp\/paperclip-stdin-/));
+    expect(sandbox.fs.deleteFile).toHaveBeenCalledWith(expect.stringMatching(/^\/tmp\/wardmote-stdin-/));
     expect(result).toMatchObject({
       exitCode: 0,
       timedOut: false,
@@ -5583,7 +5583,7 @@ describe("daytona native file-sync hooks", () => {
     await expect(fs.stat(path.join(hostRoot, "escape.txt"))).rejects.toThrow();
   });
 
-  it.each(["../../outside.txt", "/tmp/paperclip-git-workspace-example/skills/demo"])("syncOut refuses a sandbox-authored tarball with escaping symlink target %s", async (linkTarget) => {
+  it.each(["../../outside.txt", "/tmp/wardmote-git-workspace-example/skills/demo"])("syncOut refuses a sandbox-authored tarball with escaping symlink target %s", async (linkTarget) => {
     const hostRoot = await makeHostDir();
     const restored = path.join(hostRoot, "restored");
     const sandbox = createMockSandbox();

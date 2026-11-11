@@ -56,7 +56,7 @@ describe("OMP local Wardmote MCP wiring", () => {
   let captured: Invocation | null;
 
   beforeEach(async () => {
-    root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-omp-mcp-test-"));
+    root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-omp-mcp-test-"));
     workspaceCwd = path.join(root, "workspace");
     commandPath = path.join(root, "fake-omp");
     await fs.mkdir(workspaceCwd, { recursive: true });

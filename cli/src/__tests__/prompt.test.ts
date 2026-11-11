@@ -8,7 +8,7 @@ import { runAgentPrompt, runBoardPrompt } from "../commands/client/prompt.js";
 const ORIGINAL_ENV = { ...process.env };
 
 function createTempContextPath(): string {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-cli-prompt-"));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-cli-prompt-"));
   return path.join(dir, "context.json");
 }
 

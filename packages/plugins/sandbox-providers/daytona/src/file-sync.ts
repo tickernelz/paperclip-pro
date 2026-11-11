@@ -139,7 +139,7 @@ export function assertConfinedSandboxPath(remoteDir: string, candidate: string, 
 }
 
 async function withHostTempDir<T>(fn: (dir: string) => Promise<T>): Promise<T> {
-  const dir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-daytona-sync-"));
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-daytona-sync-"));
   try {
     return await fn(dir);
   } finally {
@@ -490,7 +490,7 @@ function isZstdCompressionSupported(): boolean {
  * stat, so a throw there does not leave the directory behind.
  */
 async function compressFileToHostTemp(sourcePath: string): Promise<{ dir: string; path: string; bytesOut: number }> {
-  const dir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-daytona-zstd-"));
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-daytona-zstd-"));
   const tempPath = path.join(dir, "artifact.zst");
   try {
     await pipeline(

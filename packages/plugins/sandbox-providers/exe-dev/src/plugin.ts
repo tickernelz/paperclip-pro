@@ -518,7 +518,7 @@ async function prepareSshIdentity(config: ExeDevDriverConfig): Promise<{
     };
   }
 
-  const tempDir = await mkdtemp(path.join(tmpdir(), "paperclip-exe-dev-ssh-"));
+  const tempDir = await mkdtemp(path.join(tmpdir(), "wardmote-exe-dev-ssh-"));
   const sshIdentityFile = path.join(tempDir, "id_ed25519");
   const privateKey = config.sshPrivateKey.endsWith("\n")
     ? config.sshPrivateKey
@@ -911,7 +911,7 @@ const plugin = definePlugin({
       parseOptionalString(params.lease.metadata?.remoteCwd)
       ?? params.workspace.remotePath
       ?? params.workspace.localPath
-      ?? "/tmp/paperclip-workspace";
+      ?? "/tmp/wardmote-workspace";
 
     const vm = metadataVmRecord({
       providerLeaseId: params.lease.providerLeaseId,

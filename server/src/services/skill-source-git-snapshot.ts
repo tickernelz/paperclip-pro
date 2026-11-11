@@ -210,7 +210,7 @@ export async function openGitSkillSnapshot(input: { repositoryUrl: string; ref: 
   activeDownloads++;
   let directory: string | undefined;
   try {
-    directory = await mkdtemp(path.join(os.tmpdir(), 'paperclip-skill-git-'));
+    directory = await mkdtemp(path.join(os.tmpdir(), 'wardmote-skill-git-'));
     await chmod(directory, 0o700);
     await runGit(directory, ['init', '--bare', '--quiet', '.'], '', options);
     if (!input.commitSha && !/^[a-f0-9]{40}$/i.test(input.ref)) await runGit(directory, ['check-ref-format', '--branch', input.ref], '', options);

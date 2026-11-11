@@ -39,7 +39,7 @@ describe("managed install store", () => {
   let paths: ReturnType<typeof resolveInstallStorePaths>;
 
   beforeEach(() => {
-    root = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-install-store-"));
+    root = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-install-store-"));
     paths = resolveInstallStorePaths({
       homeDir: path.join(root, "home"),
       wardmoteHome: path.join(root, "home", ".wardmote"),

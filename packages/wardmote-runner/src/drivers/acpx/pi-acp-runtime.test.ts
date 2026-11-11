@@ -283,7 +283,7 @@ describe("Pi ACP bridge", () => {
   });
 
   it("launches verified paths only and rejects session escapes", async () => {
-    const root = await mkdtemp(join(tmpdir(), "paperclip-pi-launch-")); temporary.push(root);
+    const root = await mkdtemp(join(tmpdir(), "wardmote-pi-launch-")); temporary.push(root);
     await mkdir(join(root, "sessions"));
     for (const name of ["node", "cli.js", "extension.js"]) await writeFile(join(root, name), "verified");
     const environment = {

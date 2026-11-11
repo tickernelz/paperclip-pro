@@ -19,9 +19,9 @@ afterEach(async () => {
 describe("prepared OpenCode context transport", () => {
   it("sends prepared initial prompts without the proxy task envelope", async () => {
     await chmod(fixture, 0o755);
-    const root = await mkdtemp(join(tmpdir(), "paperclip-opencode-prepared-"));
+    const root = await mkdtemp(join(tmpdir(), "wardmote-opencode-prepared-"));
     const workspace = await mkdtemp(
-      join(tmpdir(), "paperclip-opencode-prepared-workspace-"),
+      join(tmpdir(), "wardmote-opencode-prepared-workspace-"),
     );
     roots.push(root, workspace);
     const submitted: Record<string, unknown>[] = [];

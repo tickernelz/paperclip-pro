@@ -20,7 +20,7 @@ afterEach(() => {
 
 describe("managed install doctor checks", () => {
   it("passes for a consistent store, manifest, current link, shim, and PATH", () => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-install-doctor-"));
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-install-doctor-"));
     const paths = resolveInstallStorePaths({
       wardmoteHome: path.join(root, ".wardmote"),
       homeDir: root,
@@ -46,7 +46,7 @@ describe("managed install doctor checks", () => {
   });
 
   it("fails when managed artifacts exist without a manifest", () => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-install-doctor-"));
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-install-doctor-"));
     const paths = resolveInstallStorePaths({
       wardmoteHome: path.join(root, ".wardmote"),
       homeDir: root,
@@ -60,7 +60,7 @@ describe("managed install doctor checks", () => {
   });
 
   it("ignores the shared CLI directory when it only contains update notice state", () => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-install-doctor-"));
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-install-doctor-"));
     const paths = resolveInstallStorePaths({
       wardmoteHome: path.join(root, ".wardmote"),
       homeDir: root,
@@ -74,7 +74,7 @@ describe("managed install doctor checks", () => {
   });
 
   it("ignores an empty installs directory left by a harmless lock lifecycle", () => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-install-doctor-"));
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-install-doctor-"));
     const paths = resolveInstallStorePaths({
       wardmoteHome: path.join(root, ".wardmote"),
       homeDir: root,

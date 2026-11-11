@@ -18,9 +18,9 @@ import {
 } from "./helpers/wardmote-semantic-conformance.js";
 
 vi.hoisted(() => {
-  process.env.WARDMOTE_HOME = "/tmp/paperclip-semantic-conformance-home";
+  process.env.WARDMOTE_HOME = "/tmp/wardmote-semantic-conformance-home";
   process.env.WARDMOTE_INSTANCE_ID = "semantic-conformance";
-  process.env.WARDMOTE_LOG_DIR = "/tmp/paperclip-semantic-conformance-home/logs";
+  process.env.WARDMOTE_LOG_DIR = "/tmp/wardmote-semantic-conformance-home/logs";
   process.env.WARDMOTE_IN_WORKTREE = "false";
 });
 

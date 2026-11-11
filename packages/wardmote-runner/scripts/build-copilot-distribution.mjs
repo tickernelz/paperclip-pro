@@ -41,7 +41,7 @@ export async function buildPinnedCopilotDistribution({ outputRoot, platform = pr
   }
   // Never extract archive paths. Only the two admitted files enter this private
   // temporary package, and no package scripts or executables are invoked.
-  const temporary = await mkdtemp(join(tmpdir(), "paperclip-copilot-build-"));
+  const temporary = await mkdtemp(join(tmpdir(), "wardmote-copilot-build-"));
   try {
     await writeFile(join(temporary, "package.json"), entries.get("package/package.json"), { flag: "wx", mode: 0o600 });
     await writeFile(join(temporary, "copilot"), binary, { flag: "wx", mode: 0o700 });

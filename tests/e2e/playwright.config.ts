@@ -7,7 +7,7 @@ import { defineConfig } from "@playwright/test";
 // even when the dev server is running on :3100 in authenticated mode.
 const PORT = Number(process.env.WARDMOTE_E2E_PORT ?? 3199);
 const BASE_URL = `http://127.0.0.1:${PORT}`;
-const WARDMOTE_HOME = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-e2e-home-"));
+const WARDMOTE_HOME = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-e2e-home-"));
 const WARDMOTE_INSTANCE_ID = "playwright-e2e";
 const WARDMOTE_CONFIG = path.join(WARDMOTE_HOME, "instances", WARDMOTE_INSTANCE_ID, "config.json");
 const WARDMOTE_AGENT_JWT_SECRET = process.env.WARDMOTE_AGENT_JWT_SECRET ?? "playwright-e2e-agent-jwt-secret";

@@ -233,7 +233,7 @@ async function stagedUploads() {
 
 describe("issue attachment routes", () => {
   beforeAll(async () => {
-    uploadHome = await mkdtemp(path.join(os.tmpdir(), "paperclip-upload-home-"));
+    uploadHome = await mkdtemp(path.join(os.tmpdir(), "wardmote-upload-home-"));
   });
 
   afterAll(async () => {

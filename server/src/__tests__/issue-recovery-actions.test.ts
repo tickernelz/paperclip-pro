@@ -143,7 +143,7 @@ describeEmbeddedPostgres("issue recovery actions", () => {
   const priorOperationLogRoot = process.env.WORKSPACE_OPERATION_LOG_BASE_PATH;
 
   beforeAll(async () => {
-    operationLogRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-recovery-operation-logs-"));
+    operationLogRoot = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-recovery-operation-logs-"));
     process.env.WORKSPACE_OPERATION_LOG_BASE_PATH = operationLogRoot;
     tempDb = await startEmbeddedPostgresTestDatabase("paperclip-issue-recovery-actions-");
     db = createDb(tempDb.connectionString);

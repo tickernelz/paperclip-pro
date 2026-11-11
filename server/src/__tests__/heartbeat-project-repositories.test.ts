@@ -31,7 +31,7 @@ suite("task project repository provisioning", () => {
   let root: string;
   let heartbeat: ReturnType<typeof heartbeatService>;
   beforeAll(async () => {
-    root = await mkdtemp(path.join(os.tmpdir(), "paperclip-project-repos-"));
+    root = await mkdtemp(path.join(os.tmpdir(), "wardmote-project-repos-"));
     vi.stubEnv("WARDMOTE_HOME", path.join(root, "home"));
     vi.stubEnv("WARDMOTE_MULTI_PROJECT_WORKSPACE_SYNC", "false");
     database = await startEmbeddedPostgresTestDatabase("project-repositories");

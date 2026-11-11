@@ -253,7 +253,7 @@ describe("Codex trace conformance", () => {
       import.meta.url,
     ));
     const source = JSON.parse(await readFile(fixturePath, "utf8"));
-    const directory = await mkdtemp(join(tmpdir(), "paperclip-live-fixture-"));
+    const directory = await mkdtemp(join(tmpdir(), "wardmote-live-fixture-"));
     const candidatePath = join(directory, "candidate.json");
     try {
       source.runtimeRequests[0].requestKind = "file_approval";

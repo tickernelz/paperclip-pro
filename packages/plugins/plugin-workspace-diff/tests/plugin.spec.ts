@@ -16,7 +16,7 @@ async function git(cwd: string, args: string[]) {
 }
 
 async function createGitWorkspace() {
-  const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-workspace-diff-plugin-"));
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-workspace-diff-plugin-"));
   tempRoots.push(root);
   await fs.mkdir(path.join(root, "src"), { recursive: true });
   await git(root, ["init"]);

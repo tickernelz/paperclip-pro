@@ -18,7 +18,7 @@ describe("runner create_skill through the real skill API", () => {
   const previousHome = process.env.WARDMOTE_HOME;
   beforeAll(async () => {
     process.env.WARDMOTE_AGENT_JWT_SECRET = randomUUID();
-    home = await mkdtemp(join(tmpdir(), "paperclip-create-skill-"));
+    home = await mkdtemp(join(tmpdir(), "wardmote-create-skill-"));
     process.env.WARDMOTE_HOME = home;
     server = await startRunnerApiTestServer();
   }, 60_000);

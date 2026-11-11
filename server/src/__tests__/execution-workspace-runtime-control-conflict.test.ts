@@ -370,7 +370,7 @@ describe("execution workspace runtime control conflict and failure reconciliatio
   });
 
   it("returns 422 with a stable reason when the repair seed manifest is malformed", async () => {
-    const workspaceCwd = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-route-repair-malformed-"));
+    const workspaceCwd = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-route-repair-malformed-"));
     try {
       const configDir = path.join(workspaceCwd, ".wardmote");
       fs.mkdirSync(configDir, { recursive: true });
@@ -448,7 +448,7 @@ describe("execution workspace runtime control conflict and failure reconciliatio
   );
 
   it("rejects repair when the execution workspace has no registered base workspace", async () => {
-    const workspaceCwd = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-route-repair-no-source-"));
+    const workspaceCwd = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-route-repair-no-source-"));
     try {
       const configDir = path.join(workspaceCwd, ".wardmote");
       fs.mkdirSync(configDir, { recursive: true });

@@ -11,7 +11,7 @@ import {
 
 describe("workspace file references", () => {
   it("normalizes Markdown links without retaining unproven file bytes", async () => {
-    const root = await mkdtemp(join(tmpdir(), "paperclip-file-reference-"));
+    const root = await mkdtemp(join(tmpdir(), "wardmote-file-reference-"));
     try {
       await writeFile(join(root, "guide.md"), "# Guide\n\nSafe content.\n");
       const canonicalRoot = await realpath(root);
@@ -46,8 +46,8 @@ describe("workspace file references", () => {
   });
 
   it("does not verify a symlink that resolves outside the workspace", async () => {
-    const root = await mkdtemp(join(tmpdir(), "paperclip-file-reference-root-"));
-    const outside = await mkdtemp(join(tmpdir(), "paperclip-file-reference-outside-"));
+    const root = await mkdtemp(join(tmpdir(), "wardmote-file-reference-root-"));
+    const outside = await mkdtemp(join(tmpdir(), "wardmote-file-reference-outside-"));
     try {
       const protectedPath = join(outside, "protected.md");
       await writeFile(protectedPath, "must not be disclosed");
@@ -67,7 +67,7 @@ describe("workspace file references", () => {
   });
 
   it("anchors parsing and verification to a canonical workspace root", async () => {
-    const parent = await mkdtemp(join(tmpdir(), "paperclip-file-reference-parent-"));
+    const parent = await mkdtemp(join(tmpdir(), "wardmote-file-reference-parent-"));
     const root = join(parent, "workspace");
     const alias = join(parent, "workspace-alias");
     try {
@@ -92,8 +92,8 @@ describe("workspace file references", () => {
   });
 
   it("does not expose bytes through an in-workspace hard link", async () => {
-    const root = await mkdtemp(join(tmpdir(), "paperclip-file-reference-root-"));
-    const outside = await mkdtemp(join(tmpdir(), "paperclip-file-reference-outside-"));
+    const root = await mkdtemp(join(tmpdir(), "wardmote-file-reference-root-"));
+    const outside = await mkdtemp(join(tmpdir(), "wardmote-file-reference-outside-"));
     try {
       const protectedPath = join(outside, "protected.md");
       await writeFile(protectedPath, "must not be disclosed");
@@ -119,8 +119,8 @@ describe("workspace file references", () => {
   });
 
   it("does not expose bytes after an outside hard link is removed", async () => {
-    const root = await mkdtemp(join(tmpdir(), "paperclip-file-reference-root-"));
-    const outside = await mkdtemp(join(tmpdir(), "paperclip-file-reference-outside-"));
+    const root = await mkdtemp(join(tmpdir(), "wardmote-file-reference-root-"));
+    const outside = await mkdtemp(join(tmpdir(), "wardmote-file-reference-outside-"));
     try {
       const protectedPath = join(outside, "protected.md");
       await writeFile(protectedPath, "must not be disclosed");

@@ -752,7 +752,7 @@ describe("Capability live runnerd and Codex session", () => {
   });
 
   it("turns an assistant local-file link into a verified dynamic-chat file card record", async () => {
-    const root = await mkdtemp(join(tmpdir(), "paperclip-live-file-reference-"));
+    const root = await mkdtemp(join(tmpdir(), "wardmote-live-file-reference-"));
     await writeFile(join(root, "guide.md"), "# Dynamic guide\n\nVerified by the runner.\n");
     const state = providerState();
     const service = new CapabilityLiveSessionService({ transportFactory: fakeTransportFactory(state) });
@@ -771,7 +771,7 @@ describe("Capability live runnerd and Codex session", () => {
   });
 
   it("records runner-verified file changes for a dynamic chat turn", async () => {
-    const root = await mkdtemp(join(tmpdir(), "paperclip-live-workspace-"));
+    const root = await mkdtemp(join(tmpdir(), "wardmote-live-workspace-"));
     await writeFile(join(root, "existing.txt"), "before\n");
     const state = providerState();
     state.onTurnStart = async () => {

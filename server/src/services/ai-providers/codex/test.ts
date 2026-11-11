@@ -153,7 +153,7 @@ async function prepareCodexHelloProbe(input: {
     // and streaming all of it into the sandbox made the environment Test probe
     // take many minutes and look like it hung. The hello probe only needs auth.
     probeHomeLocalDir = await fs.mkdtemp(
-      path.join(os.tmpdir(), `paperclip-codex-probe-home-${input.runId}-`),
+      path.join(os.tmpdir(), `wardmote-codex-probe-home-${input.runId}-`),
     );
     let seededAuth = false;
     let seededConfig = false;
@@ -182,7 +182,7 @@ async function prepareCodexHelloProbe(input: {
     }
 
     preparedRuntimeWorkspaceLocalDir = await fs.mkdtemp(
-      path.join(os.tmpdir(), `paperclip-codex-envtest-${input.runId}-`),
+      path.join(os.tmpdir(), `wardmote-codex-envtest-${input.runId}-`),
     );
     preparedRuntime = await prepareAdapterExecutionTargetRuntime({
       runId: input.runId,
@@ -214,7 +214,7 @@ async function prepareCodexHelloProbe(input: {
   if (input.probeApiKey) {
     const probeHome = input.targetIsRemote
       ? path.posix.join(input.cwd, ".wardmote-runtime", "codex", `probe-home-${input.runId}`)
-      : path.join(os.tmpdir(), `paperclip-codex-probe-${input.runId}`);
+      : path.join(os.tmpdir(), `wardmote-codex-probe-${input.runId}`);
     // The local finally path retries cleanup independently of the model result.
     if (!input.targetIsRemote) probeHomeLocalDir = probeHome;
     return {

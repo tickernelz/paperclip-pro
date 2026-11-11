@@ -1641,7 +1641,7 @@ describe("managed Codex credentials", () => {
 });
 
 async function credentialFixture(): Promise<{ root: string; home: string }> {
-  const root = await mkdtemp(join(tmpdir(), "paperclip-acpx-credential-"));
+  const root = await mkdtemp(join(tmpdir(), "wardmote-acpx-credential-"));
   temporaryDirectories.push(root);
   const home = join(root, "codex-home");
   await mkdir(home, { mode: 0o700 });

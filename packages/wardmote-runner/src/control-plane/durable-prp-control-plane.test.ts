@@ -271,7 +271,7 @@ it("pins the ACPX launch profile in runner startup arguments and restarts", () =
   const launches: RunnerProcessLaunchSpec[] = [];
   const handle = spawnRunner({
     connection: { mode: "connect", connectUrl: "ws://127.0.0.1:43127" },
-    stateDirectory: "/tmp/paperclip-runner-test",
+    stateDirectory: "/tmp/wardmote-runner-test",
     identity,
     ticket: "bootstrap-ticket",
     maxOutboxBytes: 256 * 1024,
@@ -329,7 +329,7 @@ it("pins the OpenCode launch profile in runner startup arguments and restarts", 
   };
   const handle = spawnRunner({
     connection: { mode: "connect", connectUrl: "ws://127.0.0.1:43127" },
-    stateDirectory: "/tmp/paperclip-runner-test",
+    stateDirectory: "/tmp/wardmote-runner-test",
     identity,
     ticket: "bootstrap-ticket",
     maxOutboxBytes: 256 * 1024,
@@ -382,7 +382,7 @@ it("preserves an explicit OpenCode permission mode at the runner spawn boundary"
   const launches: RunnerProcessLaunchSpec[] = [];
   spawnRunner({
     connection: { mode: "connect", connectUrl: "ws://127.0.0.1:43127" },
-    stateDirectory: "/tmp/paperclip-runner-test",
+    stateDirectory: "/tmp/wardmote-runner-test",
     identity,
     ticket: "bootstrap-ticket",
     maxOutboxBytes: 256 * 1024,
@@ -446,7 +446,7 @@ it("preserves only bounded GitHub credential projection at the runner spawn boun
   const launches: RunnerProcessLaunchSpec[] = [];
   spawnRunner({
     connection: { mode: "connect", connectUrl: "ws://127.0.0.1:43127" },
-    stateDirectory: "/tmp/paperclip-runner-test",
+    stateDirectory: "/tmp/wardmote-runner-test",
     identity,
     ticket: "bootstrap-ticket",
     maxOutboxBytes: 256 * 1024,
@@ -506,7 +506,7 @@ it("preserves the controller-selected ACPX provider package root", () => {
   const launches: RunnerProcessLaunchSpec[] = [];
   spawnRunner({
     connection: { mode: "connect", connectUrl: "ws://127.0.0.1:43127" },
-    stateDirectory: "/tmp/paperclip-runner-test",
+    stateDirectory: "/tmp/wardmote-runner-test",
     identity,
     ticket: "bootstrap-ticket",
     maxOutboxBytes: 256 * 1024,
@@ -572,7 +572,7 @@ it.each([
       });
       const handle = spawnRunner({
         connection: { mode: "connect", connectUrl: "ws://127.0.0.1:43127" },
-        stateDirectory: "/tmp/paperclip-runner-test", identity,
+        stateDirectory: "/tmp/wardmote-runner-test", identity,
         ticket: "bootstrap-ticket", maxOutboxBytes: 256 * 1024, p0ReserveBytes: 64 * 1024,
         runnerVersion: expectedRunnerVersion, runnerDigest: expectedRunnerDigest, environment,
         processLauncher: spec => {
@@ -608,7 +608,7 @@ it("preserves file-backed AWS workload identity at the runner spawn boundary", (
   const launches: RunnerProcessLaunchSpec[] = [];
   spawnRunner({
     connection: { mode: "connect", connectUrl: "ws://127.0.0.1:43127" },
-    stateDirectory: "/tmp/paperclip-runner-test",
+    stateDirectory: "/tmp/wardmote-runner-test",
     identity,
     ticket: "bootstrap-ticket",
     maxOutboxBytes: 256 * 1024,
@@ -1471,7 +1471,7 @@ describe("DurablePrpControlPlane", () => {
     "retains unanswered semantic input across the bounded event window (%s)",
     async (mode) => {
       const root = mkdtempSync(
-        resolve(tmpdir(), "paperclip-prp-semantic-window-"),
+        resolve(tmpdir(), "wardmote-prp-semantic-window-"),
       );
       const onCommittedEvent = vi.fn(async () => undefined);
       const onSemanticToolInput = vi.fn(
@@ -1620,7 +1620,7 @@ describe("DurablePrpControlPlane", () => {
     "promptly fails the real transport request and notification paths on authenticated bad semantic input (throwing observer: %s)",
     async (throwingObserver) => {
       const root = mkdtempSync(
-        resolve(tmpdir(), "paperclip-prp-transport-integrity-"),
+        resolve(tmpdir(), "wardmote-prp-transport-integrity-"),
       );
       let authority: DurablePrpControlPlane | undefined;
       let launched = false;
@@ -1726,7 +1726,7 @@ describe("DurablePrpControlPlane", () => {
     async ({ input, digest, eventType }) => {
       // The JSON transport normalizes negative zero before the receiver sees it.
       const wireInput = JSON.parse(JSON.stringify(input)) as Record<string, unknown>;
-      const root = mkdtempSync(resolve(tmpdir(), "paperclip-prp-raw-input-"));
+      const root = mkdtempSync(resolve(tmpdir(), "wardmote-prp-raw-input-"));
       const onProtocolIntegrityError = vi.fn();
       const onSemanticToolInput = vi.fn(async () => ({ result: { ok: true } }));
       const core = new DurablePrpControlPlane({
@@ -1764,7 +1764,7 @@ describe("DurablePrpControlPlane", () => {
   ] as const)(
     "rejects invalid raw semantic integrity without commit, dispatch or ACK: %s",
     async (fault) => {
-      const root = mkdtempSync(resolve(tmpdir(), "paperclip-prp-raw-integrity-"));
+      const root = mkdtempSync(resolve(tmpdir(), "wardmote-prp-raw-integrity-"));
       const onProtocolIntegrityError = vi.fn();
       const onCommittedEvent = vi.fn(async () => undefined);
       const onSemanticToolInput = vi.fn(async () => ({ result: { ok: true } }));
@@ -1824,7 +1824,7 @@ describe("DurablePrpControlPlane", () => {
   it.each(["authentication", "envelope", "event", "correlation"] as const)(
     "rejects raw semantic input outside its exact authenticated scope: %s",
     async (boundary) => {
-      const root = mkdtempSync(resolve(tmpdir(), "paperclip-prp-raw-scope-"));
+      const root = mkdtempSync(resolve(tmpdir(), "wardmote-prp-raw-scope-"));
       const onProtocolIntegrityError = vi.fn();
       const onCommittedEvent = vi.fn(async () => undefined);
       const onSemanticToolInput = vi.fn(async () => ({ result: { ok: true } }));
@@ -1858,7 +1858,7 @@ describe("DurablePrpControlPlane", () => {
   );
 
   it("latches an authenticated semantic integrity fault without ACK or dispatch and still permits suspension", async () => {
-    const root = mkdtempSync(resolve(tmpdir(), "paperclip-prp-integrity-"));
+    const root = mkdtempSync(resolve(tmpdir(), "wardmote-prp-integrity-"));
     const onProtocolIntegrityError = vi.fn();
     const onCommittedEvent = vi.fn(async () => undefined);
     const onSemanticToolInput = vi.fn(async () => ({ result: { ok: true } }));
@@ -1946,7 +1946,7 @@ describe("DurablePrpControlPlane", () => {
     "preserves a typed integrity fault from the trusted commit boundary (%s)",
     async (reason) => {
       const root = mkdtempSync(
-        resolve(tmpdir(), "paperclip-prp-typed-commit-integrity-"),
+        resolve(tmpdir(), "wardmote-prp-typed-commit-integrity-"),
       );
       const error = new NativeSessionProtocolIntegrityError(reason);
       const onProtocolIntegrityError = vi.fn();
@@ -1985,7 +1985,7 @@ describe("DurablePrpControlPlane", () => {
 
   it("latches an authenticated replay conflict against exactly committed bytes", async () => {
     const root = mkdtempSync(
-      resolve(tmpdir(), "paperclip-prp-replay-integrity-"),
+      resolve(tmpdir(), "wardmote-prp-replay-integrity-"),
     );
     const onProtocolIntegrityError = vi.fn();
     const onCommittedEvent = vi.fn(async () => undefined);
@@ -2064,7 +2064,7 @@ describe("DurablePrpControlPlane", () => {
     "rejects %s malformed input without poisoning the legitimate owner",
     async (mismatch) => {
       const root = mkdtempSync(
-        resolve(tmpdir(), "paperclip-prp-unbound-integrity-"),
+        resolve(tmpdir(), "wardmote-prp-unbound-integrity-"),
       );
       const onProtocolIntegrityError = vi.fn();
       const onCommittedEvent = vi.fn(async () => undefined);
@@ -2152,7 +2152,7 @@ describe("DurablePrpControlPlane", () => {
 
   it("does not dispatch an earlier in-flight commit after a replacement connection proves an integrity fault", async () => {
     const root = mkdtempSync(
-      resolve(tmpdir(), "paperclip-prp-integrity-commit-race-"),
+      resolve(tmpdir(), "wardmote-prp-integrity-commit-race-"),
     );
     let releaseCommit!: () => void;
     const commitBarrier = new Promise<void>((resolveCommit) => {
@@ -2193,7 +2193,7 @@ describe("DurablePrpControlPlane", () => {
 
   it("does not turn a missing semantic handler into an integrity fault", async () => {
     const root = mkdtempSync(
-      resolve(tmpdir(), "paperclip-prp-integrity-no-handler-"),
+      resolve(tmpdir(), "wardmote-prp-integrity-no-handler-"),
     );
     const onProtocolIntegrityError = vi.fn();
     const core = new DurablePrpControlPlane({
@@ -2225,7 +2225,7 @@ describe("DurablePrpControlPlane", () => {
     "keeps a non-typed commit failure retryable on the same authenticated authority (%s)",
     async (commitFailure) => {
       const root = mkdtempSync(
-        resolve(tmpdir(), "paperclip-prp-transient-commit-"),
+        resolve(tmpdir(), "wardmote-prp-transient-commit-"),
       );
       const onProtocolIntegrityError = vi.fn();
       const onCommittedEvent = vi
@@ -2268,7 +2268,7 @@ describe("DurablePrpControlPlane", () => {
 
   it("requires a fresh bootstrap to replace a v1 lease with v2 on the same authority", async () => {
     const root = mkdtempSync(
-      resolve(tmpdir(), "paperclip-prp-version-bootstrap-"),
+      resolve(tmpdir(), "wardmote-prp-version-bootstrap-"),
     );
     const core = new DurablePrpControlPlane({
       stateDirectory: root,
@@ -2330,7 +2330,7 @@ describe("DurablePrpControlPlane", () => {
     }
   });
   it("exchanges a one-use bootstrap for a run-bound reconnect lease", async () => {
-    const root = mkdtempSync(resolve(tmpdir(), "paperclip-prp-auth-"));
+    const root = mkdtempSync(resolve(tmpdir(), "wardmote-prp-auth-"));
     const controlPlane = new DurablePrpControlPlane({
       stateDirectory: root,
       identity,
@@ -2390,7 +2390,7 @@ describe("DurablePrpControlPlane", () => {
   });
 
   it("delivers a large lossless result without copying its large input into the command", async () => {
-    const root = mkdtempSync(resolve(tmpdir(), "paperclip-large-tool-result-"));
+    const root = mkdtempSync(resolve(tmpdir(), "wardmote-large-tool-result-"));
     const content = "日本語🦀".repeat(34_000) + "END";
     const args = { content };
     const handler = vi.fn(async () => ({ result: { content } }));
@@ -2429,7 +2429,7 @@ describe("DurablePrpControlPlane", () => {
   });
 
   it("reports an oversized semantic result without exposing its content or redispatching", async () => {
-    const root = mkdtempSync(resolve(tmpdir(), "paperclip-result-limit-"));
+    const root = mkdtempSync(resolve(tmpdir(), "wardmote-result-limit-"));
     const handler = vi.fn(async () => ({ result: { privateContent: "x".repeat(600_000) } }));
     const core = new DurablePrpControlPlane({ stateDirectory: root, identity,
       expectedRunnerVersion, expectedRunnerDigest, onSemanticToolInput: handler });
@@ -2450,7 +2450,7 @@ describe("DurablePrpControlPlane", () => {
   });
 
   it.each(["before_dispatch", "during_effect"] as const)("settles only proven pre-dispatch cancellation (%s)", async (stage) => {
-    const root = mkdtempSync(resolve(tmpdir(), "paperclip-tool-dispatch-boundary-"));
+    const root = mkdtempSync(resolve(tmpdir(), "wardmote-tool-dispatch-boundary-"));
     const handler = vi.fn(async () => {
       if (stage === "before_dispatch") throw new SemanticToolNotDispatchedError();
       throw new Error("connection lost after possibly committing a write");
@@ -2478,7 +2478,7 @@ describe("DurablePrpControlPlane", () => {
   });
 
   it("retains an uncertain semantic outcome without redispatching after a coordinator restart", async () => {
-    const root = mkdtempSync(resolve(tmpdir(), "paperclip-prp-recovery-"));
+    const root = mkdtempSync(resolve(tmpdir(), "wardmote-prp-recovery-"));
     let firstCalls = 0;
     const first = new DurablePrpControlPlane({
       stateDirectory: root,
@@ -2554,7 +2554,7 @@ describe("DurablePrpControlPlane", () => {
   });
 
   it("does not acknowledge an event before the caller commits it", async () => {
-    const root = mkdtempSync(resolve(tmpdir(), "paperclip-prp-commit-order-"));
+    const root = mkdtempSync(resolve(tmpdir(), "wardmote-prp-commit-order-"));
     const first = new DurablePrpControlPlane({
       stateDirectory: root,
       identity,
@@ -2605,7 +2605,7 @@ describe("DurablePrpControlPlane", () => {
   });
 
   it("keeps a recovered runner attached when it reports an indeterminate command", async () => {
-    const root = mkdtempSync(resolve(tmpdir(), "paperclip-prp-indeterminate-"));
+    const root = mkdtempSync(resolve(tmpdir(), "wardmote-prp-indeterminate-"));
     const controlPlane = new DurablePrpControlPlane({
       stateDirectory: root,
       identity,
@@ -2700,7 +2700,7 @@ describe("DurablePrpControlPlane", () => {
 
   it("retains an old warm attach result replay lane when its result ACK is lost after core rotation", async () => {
     const root = mkdtempSync(
-      resolve(tmpdir(), "paperclip-prp-attach-result-ack-loss-"),
+      resolve(tmpdir(), "wardmote-prp-attach-result-ack-loss-"),
     );
     const controlPlane = new DurablePrpControlPlane({
       stateDirectory: root,
@@ -2812,7 +2812,7 @@ describe("DurablePrpControlPlane", () => {
       return authenticate(...args);
     };
     const root = mkdtempSync(
-      resolve(tmpdir(), "paperclip-prp-attach-transition-"),
+      resolve(tmpdir(), "wardmote-prp-attach-transition-"),
     );
     let core = new DurablePrpControlPlane({
       stateDirectory: root,
@@ -3301,7 +3301,7 @@ describe("DurablePrpControlPlane", () => {
 
   it("fails closed after a warm receipt rename when parent directory fsync fails", async () => {
     const root = mkdtempSync(
-      resolve(tmpdir(), "paperclip-prp-transition-fsync-"),
+      resolve(tmpdir(), "wardmote-prp-transition-fsync-"),
     );
     const rootInode = nodeFs.statSync(root).ino;
     let core = new DurablePrpControlPlane({
@@ -3411,7 +3411,7 @@ describe("DurablePrpControlPlane", () => {
     "rejects a held old authentication proof after warm preparation (%s)",
     async (mode) => {
       const root = mkdtempSync(
-        resolve(tmpdir(), "paperclip-prp-transition-held-auth-"),
+        resolve(tmpdir(), "wardmote-prp-transition-held-auth-"),
       );
       let release!: () => void;
       let entered!: () => void;
@@ -3508,7 +3508,7 @@ describe("DurablePrpControlPlane", () => {
   );
 
   it("acknowledges terminal command results after persisting them", async () => {
-    const root = mkdtempSync(resolve(tmpdir(), "paperclip-prp-terminal-ack-"));
+    const root = mkdtempSync(resolve(tmpdir(), "wardmote-prp-terminal-ack-"));
     const controlPlane = new DurablePrpControlPlane({
       stateDirectory: root,
       identity,

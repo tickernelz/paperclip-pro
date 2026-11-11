@@ -275,7 +275,7 @@ describeEmbeddedPostgres("environment runtime driver contract", () => {
       return;
     }
 
-    const fixtureRoot = await mkdtemp(path.join(os.tmpdir(), "paperclip-env-runtime-contract-ssh-"));
+    const fixtureRoot = await mkdtemp(path.join(os.tmpdir(), "wardmote-env-runtime-contract-ssh-"));
     fixtureRoots.push(fixtureRoot);
     const fixture = await startSshEnvLabFixture({ statePath: path.join(fixtureRoot, "state.json") });
     const sshConfig = await buildSshEnvLabFixtureConfig(fixture);

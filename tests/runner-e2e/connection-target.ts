@@ -51,7 +51,7 @@ export async function startConnectionTarget(config: ConnectionConfig, executions
   const assertActive = () => { if (signal?.aborted) throw new ConnectionBlock("blocked_target", "test_interrupted"); };
   assertActive();
   if (config.target.mode === "attach") return { origin: targetOrigin(config.target.baseURL), stop: async () => {} };
-  const root = await mkdtemp(path.join(os.tmpdir(), "paperclip-connection-e2e-"));
+  const root = await mkdtemp(path.join(os.tmpdir(), "wardmote-connection-e2e-"));
   let child: ChildProcess | undefined;
   const stop = async () => { if (child) await stopOwnedServer(child); await rm(root, { recursive: true, force: true }); };
   try {

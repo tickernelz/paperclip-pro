@@ -90,7 +90,7 @@ export async function createNativeAcpxDistributionSnapshot(input: NativeAcpxDist
   const rootBefore = await lstat(source, { bigint: true });
   if (!rootBefore.isDirectory() || rootBefore.isSymbolicLink()) throw new Error("Native ACPX distribution must be a directory");
   const heldRoot = await open(source, constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_DIRECTORY);
-  const privateRoot = await realpath(await mkdtemp(join(tmpdir(), "paperclip-acpx-native-")));
+  const privateRoot = await realpath(await mkdtemp(join(tmpdir(), "wardmote-acpx-native-")));
   const packageRoot = join(privateRoot, "distribution");
   const cacheRoot = join(privateRoot, "state");
   const directories = new Set([privateRoot, packageRoot]);

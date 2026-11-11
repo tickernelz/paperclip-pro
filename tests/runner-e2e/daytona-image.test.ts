@@ -236,7 +236,7 @@ describe("runner E2E Daytona image contract", () => {
 
   it("changes for runtime source, package, lockfile, Dockerfile, frontend, base, or platform inputs", async () => {
     const root = await mkdtemp(
-      path.join(tmpdir(), "paperclip-daytona-image-id-"),
+      path.join(tmpdir(), "wardmote-daytona-image-id-"),
     );
     const inputPaths = [
       "docker/daytona-runner/Dockerfile",
@@ -359,7 +359,7 @@ describe("runner E2E Daytona image contract", () => {
     "packages/wardmote-runner/scripts/cursor-runtime-patch.mjs",
     "packages/wardmote-runner/scripts/provider-pack-executable-shims.mjs",
   ])("invalidates the image when %s changes", async (patchPath) => {
-    const root = await mkdtemp(path.join(tmpdir(), "paperclip-provider-image-id-"));
+    const root = await mkdtemp(path.join(tmpdir(), "wardmote-provider-image-id-"));
     expect(DAYTONA_IMAGE_INPUT_PATHS).toContain(patchPath);
     const options = {
       repositoryRoot: root,
@@ -381,7 +381,7 @@ describe("runner E2E Daytona image contract", () => {
 
   it("reuses the image for runner-only tests and documentation", async () => {
     const root = await mkdtemp(
-      path.join(tmpdir(), "paperclip-daytona-runner-development-inputs-"),
+      path.join(tmpdir(), "wardmote-daytona-runner-development-inputs-"),
     );
     const options = {
       repositoryRoot: root,

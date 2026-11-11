@@ -34,7 +34,7 @@ function setEnv(values: Record<string, string>) {
 }
 
 function createSeededWorkspace() {
-  const dir = mkdtempSync(path.join(os.tmpdir(), "paperclip-health-workspace-"));
+  const dir = mkdtempSync(path.join(os.tmpdir(), "wardmote-health-workspace-"));
   tempDirs.push(dir);
   writeFileSync(path.join(dir, "config.json"), "{}\n", "utf8");
   writeFileSync(
@@ -166,7 +166,7 @@ describe("GET /api/health workspace readiness", () => {
   });
 
   it("omits readiness entirely on an instance that is not a cloned workspace", async () => {
-    const dir = mkdtempSync(path.join(os.tmpdir(), "paperclip-health-primary-"));
+    const dir = mkdtempSync(path.join(os.tmpdir(), "wardmote-health-primary-"));
     tempDirs.push(dir);
     writeFileSync(path.join(dir, "config.json"), "{}\n", "utf8");
     setEnv({ WARDMOTE_CONFIG: path.join(dir, "config.json") });

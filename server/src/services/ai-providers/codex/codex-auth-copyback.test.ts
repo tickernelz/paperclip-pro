@@ -57,7 +57,7 @@ describe("copyBackCodexAuth", () => {
   }
 
   async function makeHostDir(): Promise<string> {
-    const dir = await mkdtemp(path.join(os.tmpdir(), "paperclip-codex-copyback-"));
+    const dir = await mkdtemp(path.join(os.tmpdir(), "wardmote-codex-copyback-"));
     cleanupDirs.push(dir);
     return dir;
   }
@@ -363,7 +363,7 @@ describe("copyBackCodexAuth identity-keyed cache write", () => {
     sharedHomeAuthPath: string;
     sharedHome: string;
   }> {
-    const home = await mkdtemp(path.join(os.tmpdir(), "paperclip-codex-copyback-cache-"));
+    const home = await mkdtemp(path.join(os.tmpdir(), "wardmote-codex-copyback-cache-"));
     cleanupDirs.push(home);
     const env: NodeJS.ProcessEnv = {
       WARDMOTE_HOME: home,

@@ -65,7 +65,7 @@ describeEmbeddedPostgres("reopen archived isolated execution workspace", () => {
   });
 
   async function makeExistingDir(): Promise<string> {
-    const dir = await mkdtemp(join(tmpdir(), "paperclip-reopen-cwd-"));
+    const dir = await mkdtemp(join(tmpdir(), "wardmote-reopen-cwd-"));
     tempDirs.push(dir);
     return dir;
   }
@@ -92,7 +92,7 @@ describeEmbeddedPostgres("reopen archived isolated execution workspace", () => {
       projectId,
       name: "Primary",
       sourceType: "local_path",
-      cwd: "/tmp/paperclip-reopen-project",
+      cwd: "/tmp/wardmote-reopen-project",
       isPrimary: true,
     });
     return { companyId, projectId, projectWorkspaceId };
@@ -309,7 +309,7 @@ describeEmbeddedPostgres("reopen archived isolated execution workspace", () => {
   it("fails closed and keeps the row closed when the rebuild fails", async () => {
     const { companyId, projectId, projectWorkspaceId } = await seedCompanyProject();
     // A directory that does not exist. The project_primary rebuild returns null.
-    const missingDir = join(tmpdir(), `paperclip-reopen-missing-${randomUUID()}`);
+    const missingDir = join(tmpdir(), `wardmote-reopen-missing-${randomUUID()}`);
     const workspaceId = await seedClosedWorkspace({
       companyId,
       projectId,
@@ -341,7 +341,7 @@ describeEmbeddedPostgres("reopen archived isolated execution workspace", () => {
 
   it("resolves the managed base checkout for a git_worktree row when the project workspace cwd is null", async () => {
     const previousHome = process.env.WARDMOTE_HOME;
-    const tempHome = await mkdtemp(join(tmpdir(), "paperclip-reopen-home-"));
+    const tempHome = await mkdtemp(join(tmpdir(), "wardmote-reopen-home-"));
     tempDirs.push(tempHome);
     process.env.WARDMOTE_HOME = tempHome;
     try {

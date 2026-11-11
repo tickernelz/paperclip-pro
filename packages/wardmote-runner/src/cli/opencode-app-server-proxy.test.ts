@@ -31,7 +31,7 @@ describe("OpenCode runnerd proxy executable", () => {
   it("executes the inherited artifact through the nested child fd mapping", async () => {
     if (process.platform === "win32") return;
     if (process.platform === "darwin") {
-      const root = mkdtempSync(join(tmpdir(), "paperclip-opencode-nested-"));
+      const root = mkdtempSync(join(tmpdir(), "wardmote-opencode-nested-"));
       const directory = join(
         root,
         ".paperclip-verified-executable-0123456789abcdef0123456789abcdef",

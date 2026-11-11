@@ -1805,7 +1805,7 @@ export function validateRunnerCatalog(): MatrixExecution[] {
     const payload = profile.buildAgent({
       environmentId: SAMPLE_UUID,
       environmentFixtureId: "local",
-      workspacePath: "/tmp/paperclip-runner-e2e-schema",
+      workspacePath: "/tmp/wardmote-runner-e2e-schema",
       secretRefs: sampleRefs,
       executionId: "schema-validation",
     });

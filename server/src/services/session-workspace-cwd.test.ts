@@ -20,7 +20,7 @@ describe("isUnsafeSessionWorkspaceCwd", () => {
   });
 
   it("allows concrete workspace descendants", () => {
-    expect(isUnsafeSessionWorkspaceCwd("/tmp/paperclip-workspace")).toBe(false);
+    expect(isUnsafeSessionWorkspaceCwd("/tmp/wardmote-workspace")).toBe(false);
     expect(isUnsafeSessionWorkspaceCwd("/Users/dotta/paperclip")).toBe(false);
     expect(isUnsafeSessionWorkspaceCwd(null)).toBe(false);
   });

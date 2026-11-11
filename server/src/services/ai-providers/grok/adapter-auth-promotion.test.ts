@@ -42,7 +42,7 @@ describe("grok device-login credential promotion", () => {
   });
 
   async function makeInstanceRoot(): Promise<string> {
-    const dir = await mkdtemp(path.join(os.tmpdir(), "paperclip-grok-promotion-"));
+    const dir = await mkdtemp(path.join(os.tmpdir(), "wardmote-grok-promotion-"));
     cleanupDirs.push(dir);
     return dir;
   }

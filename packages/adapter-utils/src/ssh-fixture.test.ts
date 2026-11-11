@@ -51,7 +51,7 @@ const fixtureTeardowns: FixtureTeardownEntry[] = [];
 // start (mkdir, writeFile, git init) still leaves the root directory queued
 // for removal.
 async function createFixtureRootDir(): Promise<string> {
-  const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-ssh-fixture-"));
+  const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-ssh-fixture-"));
   fixtureTeardowns.push({ rootDir, state: null });
   return rootDir;
 }

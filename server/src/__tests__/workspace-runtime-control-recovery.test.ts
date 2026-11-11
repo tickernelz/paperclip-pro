@@ -52,7 +52,7 @@ describeEmbeddedPostgres("managed runtime-control operation recovery", () => {
     const started = await startEmbeddedPostgresTestDatabase("paperclip-runtime-control-recovery-");
     stopDb = started.cleanup;
     db = createDb(started.connectionString);
-    logRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-control-logs-"));
+    logRoot = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-runtime-control-logs-"));
     previousLogRoot = process.env.WORKSPACE_OPERATION_LOG_BASE_PATH;
     process.env.WORKSPACE_OPERATION_LOG_BASE_PATH = logRoot;
   }, 60_000);

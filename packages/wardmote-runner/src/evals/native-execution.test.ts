@@ -19,7 +19,7 @@ import { serializeCapabilityGeneratedSemanticContracts } from "../semantic-tools
 
 describe("paperclip-runner/native-execution/v1", () => {
   it("refreshes a stale seeded catalog and its manifest with one semantic generator invocation", async () => {
-    const root = await mkdtemp(join(tmpdir(), "paperclip-semantic-generator-"));
+    const root = await mkdtemp(join(tmpdir(), "wardmote-semantic-generator-"));
     const packageRoot = fileURLToPath(new URL("../../", import.meta.url));
     const run = promisify(execFile);
     try {

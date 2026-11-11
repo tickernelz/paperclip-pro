@@ -227,7 +227,7 @@ export async function updateCommand(options: UpdateOptions, overrides: Partial<D
     if (comparison < 0 && options.yes !== true) { const confirmed = await (overrides.confirm ?? defaultConfirm)(`Downgrade wardmote from ${currentVersion} to ${targetVersion}?`); if (!confirmed) throw new Error("Downgrade cancelled. Re-run with --yes to confirm explicitly."); }
     const args = ["install", "-g", `@tickernelz/wardmote@${targetVersion}`, `--registry=${PUBLIC_NPM_REGISTRY}`, `--@tickernelz:registry=${PUBLIC_NPM_REGISTRY}`]; console.log(`Running: npm ${args.join(" ")}`);
     if (!options.dryRun) {
-      const npmConfigDir = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-npm-"));
+      const npmConfigDir = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-npm-"));
       const npmUserConfigPath = path.join(npmConfigDir, "npmrc");
       try {
         writeManagedNpmrc(npmUserConfigPath);

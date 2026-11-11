@@ -24,7 +24,7 @@ afterEach(async () => {
 });
 
 async function fakeCli(name: string, source: string) {
-  root ??= await mkdtemp(path.join(os.tmpdir(), "paperclip-browser-login-"));
+  root ??= await mkdtemp(path.join(os.tmpdir(), "wardmote-browser-login-"));
   const bin = path.join(root, "bin");
   await mkdir(bin, { recursive: true });
   await writeFile(path.join(bin, name), `#!/bin/sh\n${source}\n`, { mode: 0o700 });

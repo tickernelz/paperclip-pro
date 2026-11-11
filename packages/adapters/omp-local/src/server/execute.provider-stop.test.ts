@@ -34,7 +34,7 @@ describe("OMP local provider stop receipt", () => {
   let events: string[];
 
   beforeEach(async () => {
-    root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-omp-provider-stop-"));
+    root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-omp-provider-stop-"));
     commandPath = path.join(root, "fake-omp");
     await fs.writeFile(commandPath, "#!/bin/sh\nexit 0\n", "utf8");
     await fs.chmod(commandPath, 0o755);

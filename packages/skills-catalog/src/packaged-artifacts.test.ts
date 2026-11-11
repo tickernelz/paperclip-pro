@@ -24,7 +24,7 @@ describe("skills catalog package artifacts", () => {
   const cleanup: string[] = [];
 
   function createPackDestination() {
-    const destination = mkdtempSync(path.join(tmpdir(), "paperclip-skills-catalog-pack-"));
+    const destination = mkdtempSync(path.join(tmpdir(), "wardmote-skills-catalog-pack-"));
     cleanup.push(destination);
     return destination;
   }

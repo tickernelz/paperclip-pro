@@ -12,7 +12,7 @@ const tsx = fileURLToPath(new URL("../../node_modules/.bin/tsx", import.meta.url
 
 it("runs the eval CLI parser through both canonical and symlinked paths", async () => {
   const cli = await realpath(fileURLToPath(new URL("./eval-session.ts", import.meta.url)));
-  const root = await mkdtemp(join(tmpdir(), "paperclip-eval-cli-entrypoint-"));
+  const root = await mkdtemp(join(tmpdir(), "wardmote-eval-cli-entrypoint-"));
   try {
     const alias = join(root, "cli-alias");
     await symlink(dirname(cli), alias, "dir");

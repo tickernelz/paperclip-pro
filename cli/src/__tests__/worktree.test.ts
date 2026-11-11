@@ -287,7 +287,7 @@ function buildSourceConfig(): WardmoteConfig {
 
 describe("worktree helpers", () => {
   it("uses the repo-local config for the current worktree", () => {
-    const targetRoot = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-current-worktree-"));
+    const targetRoot = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-current-worktree-"));
     try {
       const localConfig = path.join(targetRoot, ".wardmote", "config.json");
       fs.mkdirSync(path.dirname(localConfig), { recursive: true });
@@ -307,7 +307,7 @@ describe("worktree helpers", () => {
   });
 
   it("uses the repository config from a nested working directory", () => {
-    const targetRoot = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-current-worktree-nested-"));
+    const targetRoot = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-current-worktree-nested-"));
     try {
       execFileSync("git", ["init", "-q"], { cwd: targetRoot });
       const nestedDirectory = path.join(targetRoot, "packages", "example", "src");
@@ -427,8 +427,8 @@ describe("worktree helpers", () => {
 
   it("builds isolated config and env paths for a worktree", () => {
     const paths = resolveWorktreeLocalPaths({
-      cwd: "/tmp/paperclip-feature",
-      homeDir: "/tmp/paperclip-worktrees",
+      cwd: "/tmp/wardmote-feature",
+      homeDir: "/tmp/wardmote-worktrees",
       instanceId: "feature-worktree-support",
     });
     const config = buildWorktreeConfig({
@@ -440,21 +440,21 @@ describe("worktree helpers", () => {
     });
 
     expect(config.database.embeddedPostgresDataDir).toBe(
-      path.resolve("/tmp/paperclip-worktrees", "instances", "feature-worktree-support", "db"),
+      path.resolve("/tmp/wardmote-worktrees", "instances", "feature-worktree-support", "db"),
     );
     expect(config.database.embeddedPostgresPort).toBe(54339);
     expect(config.database.backup.enabled).toBe(false);
     expect(config.server.port).toBe(3110);
     expect(config.auth.publicBaseUrl).toBe("http://127.0.0.1:3110/");
     expect(config.storage.localDisk.baseDir).toBe(
-      path.resolve("/tmp/paperclip-worktrees", "instances", "feature-worktree-support", "data", "storage"),
+      path.resolve("/tmp/wardmote-worktrees", "instances", "feature-worktree-support", "data", "storage"),
     );
 
     const env = buildWorktreeEnvEntries(paths, {
       name: "feature-worktree-support",
       color: "#3abf7a",
     });
-    expect(env.WARDMOTE_HOME).toBe(path.resolve("/tmp/paperclip-worktrees"));
+    expect(env.WARDMOTE_HOME).toBe(path.resolve("/tmp/wardmote-worktrees"));
     expect(env.WARDMOTE_INSTANCE_ID).toBe("feature-worktree-support");
     expect(env.WARDMOTE_IN_WORKTREE).toBe("true");
     expect(env.WARDMOTE_DB_BACKUP_ENABLED).toBe("false");
@@ -2100,7 +2100,7 @@ describe("worktree helpers", () => {
       fs.writeFileSync(
         envPath,
         [
-          "WARDMOTE_HOME=/tmp/paperclip-worktrees",
+          "WARDMOTE_HOME=/tmp/wardmote-worktrees",
           "WARDMOTE_INSTANCE_ID=pap-1132-chat",
         ].join("\n"),
         "utf8",
@@ -2112,7 +2112,7 @@ describe("worktree helpers", () => {
         }),
       ).toMatchObject({
         cwd: worktreeRoot,
-        homeDir: "/tmp/paperclip-worktrees",
+        homeDir: "/tmp/wardmote-worktrees",
         instanceId: "pap-1132-chat",
       });
     } finally {

@@ -42,7 +42,7 @@ describePg("decisionService", () => {
   let wakes: Array<Record<string, unknown>>;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-decisions-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-decisions-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 
@@ -360,7 +360,7 @@ describePg("decisionService", () => {
   it("fails closed when the configured signing secret is removed after proposal", async () => {
     const created = await createCommentDecision();
     const originalHome = process.env.WARDMOTE_HOME;
-    const tempHome = mkdtempSync(path.join(tmpdir(), "paperclip-decision-rotate-"));
+    const tempHome = mkdtempSync(path.join(tmpdir(), "wardmote-decision-rotate-"));
     process.env.WARDMOTE_HOME = tempHome;
     delete process.env.WARDMOTE_DECISION_SIGNING_SECRET;
     process.env.WARDMOTE_AGENT_JWT_SECRET = "agent-jwt-secret-must-not-sign-decisions";
@@ -377,7 +377,7 @@ describePg("decisionService", () => {
 
   it("signs and verifies with an auto-generated key when no secret is configured", async () => {
     const originalHome = process.env.WARDMOTE_HOME;
-    const tempHome = mkdtempSync(path.join(tmpdir(), "paperclip-decision-generated-"));
+    const tempHome = mkdtempSync(path.join(tmpdir(), "wardmote-decision-generated-"));
     process.env.WARDMOTE_HOME = tempHome;
     delete process.env.WARDMOTE_DECISION_SIGNING_SECRET;
     try {

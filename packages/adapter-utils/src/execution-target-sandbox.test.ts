@@ -386,7 +386,7 @@ describe("sandbox adapter execution targets", () => {
   });
 
   it("preserves stdin when wrapping sandbox adapter commands for run-log streaming", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-run-log-stdin-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-run-log-stdin-"));
     cleanupDirs.push(rootDir);
     const target: AdapterSandboxExecutionTarget = {
       kind: "remote",
@@ -428,7 +428,7 @@ describe("sandbox adapter execution targets", () => {
   });
 
   it("creates the process session directories only in the launch exec, not in upfront makeDir execs", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-process-session-makedir-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-process-session-makedir-"));
     cleanupDirs.push(rootDir);
     const childPath = path.join(rootDir, "noop-acp-child.mjs");
     await writeFile(childPath, "process.stdin.on('data', () => {});\n", "utf8");
@@ -488,7 +488,7 @@ describe("sandbox adapter execution targets", () => {
     "preserves an explicit remote PATH equal to host PATH in $outputMode mode",
     async ({ outputMode, streamOutputViaSession }) => {
       const rootDir = await mkdtemp(
-        path.join(os.tmpdir(), `paperclip-process-session-${outputMode}-path-`),
+        path.join(os.tmpdir(), `wardmote-process-session-${outputMode}-path-`),
       );
       cleanupDirs.push(rootDir);
       const childPath = path.join(rootDir, "print-path-child.mjs");
@@ -551,7 +551,7 @@ describe("sandbox adapter execution targets", () => {
   );
 
   it.each([false, true])("launches a large environment without oversized exec arguments (streamed=%s)", async (streamOutputViaSession) => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-large-process-env-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-large-process-env-"));
     cleanupDirs.push(rootDir);
     const value = "x".repeat(110_000);
     const childPath = path.join(rootDir, "child.mjs");
@@ -600,7 +600,7 @@ describe("sandbox adapter execution targets", () => {
   });
 
   it("logs a streamed wrapper launch failure before forwarding its exit", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-wrapper-launch-error-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-wrapper-launch-error-"));
     cleanupDirs.push(rootDir);
     const delegate = createLocalSandboxRunner();
     const logs: string[] = [];
@@ -626,7 +626,7 @@ describe("sandbox adapter execution targets", () => {
   }, 10_000);
 
   it("removes an incomplete private command payload when upload fails", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-payload-upload-error-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-payload-upload-error-"));
     cleanupDirs.push(rootDir);
     const delegate = createLocalSandboxRunner();
     await expect(startAdapterExecutionTargetProcessSessionBridge({
@@ -654,7 +654,7 @@ describe("sandbox adapter execution targets", () => {
     { streamed: true, corrupt: false },
     { streamed: true, corrupt: true },
   ])("reports payload read failures without hanging (streamed=$streamed, corrupt=$corrupt)", async ({ streamed, corrupt }) => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-payload-read-error-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-payload-read-error-"));
     cleanupDirs.push(rootDir);
     const delegate = createLocalSandboxRunner();
     const bridge = await startAdapterExecutionTargetProcessSessionBridge({
@@ -693,7 +693,7 @@ describe("sandbox adapter execution targets", () => {
     // that token. This test drives the bridge with a getter that returns a known
     // token, lets the first poll tick fire, and proves the poll exec reads that
     // token from the active step store.
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-process-session-poll-parent-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-process-session-poll-parent-"));
     cleanupDirs.push(rootDir);
     const childPath = path.join(rootDir, "noop-acp-child.mjs");
     await writeFile(childPath, "process.stdin.on('data', () => {});\n", "utf8");
@@ -761,7 +761,7 @@ describe("sandbox adapter execution targets", () => {
     // With no `getRuntimeParentContext`, the poll tick runs with an empty active
     // step store, exactly like the earlier `runWithoutActiveStep` behavior. So a
     // poll `sandbox.exec` span opens unparented with no stale startup flag.
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-process-session-poll-nogetter-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-process-session-poll-nogetter-"));
     cleanupDirs.push(rootDir);
     const childPath = path.join(rootDir, "noop-acp-child.mjs");
     await writeFile(childPath, "process.stdin.on('data', () => {});\n", "utf8");
@@ -823,7 +823,7 @@ describe("sandbox adapter execution targets", () => {
     // message in the `data` handler, not once at connect time. This test opens a
     // socket while `connectParent` is live, switches the getter to `turnParent`,
     // sends one stdin line, and proves the stdin write ran under `turnParent`.
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-process-session-stdin-parent-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-process-session-stdin-parent-"));
     cleanupDirs.push(rootDir);
     const childPath = path.join(rootDir, "noop-acp-child.mjs");
     await writeFile(childPath, "process.stdin.on('data', () => {});\n", "utf8");
@@ -920,7 +920,7 @@ describe("sandbox adapter execution targets", () => {
     // message to the agent in a `sandbox.agentSession.sendInput` span. This test
     // connects a socket, sends one stdin line, and proves the handler opens that
     // wrapper span around the write.
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-process-session-sendinput-span-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-process-session-sendinput-span-"));
     cleanupDirs.push(rootDir);
     const childPath = path.join(rootDir, "noop-acp-child.mjs");
     await writeFile(childPath, "process.stdin.on('data', () => {});\n", "utf8");
@@ -992,7 +992,7 @@ describe("sandbox adapter execution targets", () => {
     // With a span runner injected, the poll timer wraps each 100 ms poll tick in
     // a `sandbox.agentSession.pollOutput` span. This test lets the first poll tick
     // fire and proves the timer opens that wrapper span.
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-process-session-poll-span-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-process-session-poll-span-"));
     cleanupDirs.push(rootDir);
     const childPath = path.join(rootDir, "noop-acp-child.mjs");
     await writeFile(childPath, "process.stdin.on('data', () => {});\n", "utf8");
@@ -1041,7 +1041,7 @@ describe("sandbox adapter execution targets", () => {
   });
 
   it("bridges bidirectional sandbox process sessions through a local ACPX-spawnable proxy", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-process-session-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-process-session-"));
     cleanupDirs.push(rootDir);
     const childPath = path.join(rootDir, "fake-acp-child.mjs");
     await writeFile(
@@ -1099,7 +1099,7 @@ describe("sandbox adapter execution targets", () => {
     streamOutputViaSession,
     exitCode,
   }) => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-process-session-open-stdin-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-process-session-open-stdin-"));
     cleanupDirs.push(rootDir);
     // ACP keeps stdin open while it waits for a handshake. A remote child can
     // exit before replying; that must close the proxy and fail the handshake.
@@ -1145,7 +1145,7 @@ describe("sandbox adapter execution targets", () => {
   }, 15_000);
 
   it("flushes remote errors under backpressure and retains only bounded terminal evidence", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-terminal-flush-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-terminal-flush-"));
     cleanupDirs.push(rootDir);
     const delegate = createLocalSandboxRunner();
     const logs: string[] = [];
@@ -1232,7 +1232,7 @@ describe("sandbox adapter execution targets", () => {
   }, 15_000);
 
   it("reports a streamed transport failure even when diagnostic persistence stalls", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-terminal-stream-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-terminal-stream-"));
     cleanupDirs.push(rootDir);
     const delegate = createLocalSandboxRunner();
     const logs: string[] = [];
@@ -1265,7 +1265,7 @@ describe("sandbox adapter execution targets", () => {
   }, 10_000);
 
   it("closes a failed output poll without waiting for the run log", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-terminal-poll-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-terminal-poll-"));
     cleanupDirs.push(rootDir);
     const delegate = createLocalSandboxRunner();
     const logs: string[] = [];
@@ -1299,7 +1299,7 @@ describe("sandbox adapter execution targets", () => {
   }, 10_000);
 
   it("records an unexpected authenticated proxy close once and ignores unauthenticated peers", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-terminal-proxy-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-terminal-proxy-"));
     cleanupDirs.push(rootDir);
     const logs: string[] = [];
     const bridge = await startAdapterExecutionTargetProcessSessionBridge({
@@ -1333,7 +1333,7 @@ describe("sandbox adapter execution targets", () => {
   }, 10_000);
 
   it("buffers sandbox process session output until the local proxy connects", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-process-session-buffer-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-process-session-buffer-"));
     cleanupDirs.push(rootDir);
     const childPath = path.join(rootDir, "fast-acp-child.mjs");
     await writeFile(
@@ -1380,7 +1380,7 @@ describe("sandbox adapter execution targets", () => {
   });
 
   it("delivers full output when the sandbox child exits immediately after writing", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-process-session-fast-exit-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-process-session-fast-exit-"));
     cleanupDirs.push(rootDir);
     const childPath = path.join(rootDir, "instant-exit-acp-child.mjs");
     await writeFile(
@@ -1425,7 +1425,7 @@ describe("sandbox adapter execution targets", () => {
   });
 
   it("ignores unauthenticated connections to the process session bridge", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-process-session-auth-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-process-session-auth-"));
     cleanupDirs.push(rootDir);
     const childPath = path.join(rootDir, "guarded-acp-child.mjs");
     await writeFile(childPath, "process.stdout.write('guarded-out\\n');", "utf8");
@@ -1491,7 +1491,7 @@ describe("sandbox adapter execution targets", () => {
   });
 
   it("streams sandbox process session output before the remote child exits", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-process-session-stream-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-process-session-stream-"));
     cleanupDirs.push(rootDir);
     const childPath = path.join(rootDir, "streaming-acp-child.mjs");
     await writeFile(
@@ -1582,7 +1582,7 @@ describe("sandbox adapter execution targets", () => {
 
   describe("streamed output (streamOutputViaSession)", () => {
     it("bridges bidirectional sessions when the wrapper streams output to stdout", async () => {
-      const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-process-session-stream-echo-"));
+      const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-process-session-stream-echo-"));
       cleanupDirs.push(rootDir);
       const childPath = path.join(rootDir, "echo-acp-child.mjs");
       await writeFile(
@@ -1636,7 +1636,7 @@ describe("sandbox adapter execution targets", () => {
       // step) and stay open around the launch. Record the opened span names and
       // prove `sandbox.agentProcess` is among them, and that a normal exchange
       // still works through the wrap.
-      const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-process-session-stream-span-"));
+      const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-process-session-stream-span-"));
       cleanupDirs.push(rootDir);
       const childPath = path.join(rootDir, "echo-acp-child.mjs");
       await writeFile(
@@ -1697,7 +1697,7 @@ describe("sandbox adapter execution targets", () => {
       // `bridge.process-session` bring-up step — otherwise it dangles past its
       // parent and overlaps `agent.turn`. Build the real run-rooted runner from a
       // recording trace context and assert the recorded parent.
-      const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-process-session-stream-parent-"));
+      const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-process-session-stream-parent-"));
       cleanupDirs.push(rootDir);
       const childPath = path.join(rootDir, "noop-acp-child.mjs");
       await writeFile(childPath, "process.stdin.on('data', () => {});\n", "utf8");
@@ -1748,7 +1748,7 @@ describe("sandbox adapter execution targets", () => {
       // at `stop()`, which the caller awaits before it ends `task.run`. Use a
       // child that ignores stdin and never exits on its own, so the launch
       // command stays pending across `stop()`, and prove the span ends anyway.
-      const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-process-session-stream-linger-"));
+      const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-process-session-stream-linger-"));
       cleanupDirs.push(rootDir);
       const childPath = path.join(rootDir, "linger-acp-child.mjs");
       await writeFile(
@@ -1813,7 +1813,7 @@ describe("sandbox adapter execution targets", () => {
     });
 
     it("buffers streamed output until the local proxy connects", async () => {
-      const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-process-session-stream-buffer-"));
+      const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-process-session-stream-buffer-"));
       cleanupDirs.push(rootDir);
       const childPath = path.join(rootDir, "fast-stream-child.mjs");
       await writeFile(
@@ -1863,7 +1863,7 @@ describe("sandbox adapter execution targets", () => {
     });
 
     it("delivers full streamed output when the sandbox child exits immediately", async () => {
-      const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-process-session-stream-fast-exit-"));
+      const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-process-session-stream-fast-exit-"));
       cleanupDirs.push(rootDir);
       const childPath = path.join(rootDir, "instant-stream-child.mjs");
       await writeFile(
@@ -1909,7 +1909,7 @@ describe("sandbox adapter execution targets", () => {
     });
 
     it("streams live output before the child exits and never writes output event files", async () => {
-      const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-process-session-stream-live-"));
+      const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-process-session-stream-live-"));
       cleanupDirs.push(rootDir);
       const childPath = path.join(rootDir, "live-stream-child.mjs");
       await writeFile(
@@ -2017,7 +2017,7 @@ describe("sandbox adapter execution targets", () => {
       // teardown) must run concurrently with the agent, so each must force
       // itself off the session. On the session they queue behind the agent
       // command that never returns, and the first handshake write never drains.
-      const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-process-session-stream-isolation-"));
+      const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-process-session-stream-isolation-"));
       cleanupDirs.push(rootDir);
       const childPath = path.join(rootDir, "echo-acp-child.mjs");
       await writeFile(
@@ -2527,7 +2527,7 @@ describe("sandbox adapter execution targets", () => {
   });
 
   it("starts a localhost Wardmote bridge for sandbox targets in bridge mode", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-execution-target-bridge-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-execution-target-bridge-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     const runtimeRootDir = path.join(remoteCwd, ".wardmote-runtime", "codex");
@@ -2600,7 +2600,7 @@ describe("sandbox adapter execution targets", () => {
   });
 
   it("creates a sandbox run log tail factory when bridge streaming is enabled", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-execution-target-bridge-stream-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-execution-target-bridge-stream-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     const runtimeRootDir = path.join(remoteCwd, ".wardmote-runtime", "codex");
@@ -2644,7 +2644,7 @@ describe("sandbox adapter execution targets", () => {
   });
 
   it("defaults sandbox run log streaming on and honors the explicit opt-out", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-execution-target-bridge-stream-default-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-execution-target-bridge-stream-default-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     const runtimeRootDir = path.join(remoteCwd, ".wardmote-runtime", "codex");
@@ -2839,7 +2839,7 @@ describe("sandbox adapter execution targets", () => {
   });
 
   it("exposes the Wardmote bridge to the sandbox shell surface", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-execution-target-bridge-shell-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-execution-target-bridge-shell-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     const runtimeRootDir = path.join(remoteCwd, ".wardmote-runtime", "claude");
@@ -2953,7 +2953,7 @@ describe("sandbox adapter execution targets", () => {
   });
 
   it("bounds callback bridge operations independently of the adapter run timeout", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-execution-target-bridge-timeout-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-execution-target-bridge-timeout-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     const runtimeRootDir = path.join(remoteCwd, ".wardmote-runtime", "codex");
@@ -3017,7 +3017,7 @@ describe("sandbox adapter execution targets", () => {
     // a retryable 502. The in-sandbox server maps the indeterminate 504 to a
     // non-retryable 409. A retryable status would repeat the mutation with a new
     // request id outside the broker deduplication set.
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-execution-target-bridge-limit-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-execution-target-bridge-limit-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     const runtimeRootDir = path.join(remoteCwd, ".wardmote-runtime", "codex");
@@ -3109,7 +3109,7 @@ describe("sandbox adapter execution targets", () => {
     // retryable 502 with no indeterminate marker, not the non-retryable 504 the
     // forward returns for a mutating method. The in-sandbox server passes the 502
     // through, so the caller can retry the safe read.
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-execution-target-bridge-safe-limit-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-execution-target-bridge-safe-limit-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     const runtimeRootDir = path.join(remoteCwd, ".wardmote-runtime", "codex");
@@ -3187,7 +3187,7 @@ describe("sandbox adapter execution targets", () => {
   });
 
   it("forwards the host indeterminate-outcome header so the sandbox server maps the 504 to a non-retryable 409", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-execution-target-bridge-outcome-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-execution-target-bridge-outcome-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     const runtimeRootDir = path.join(remoteCwd, ".wardmote-runtime", "codex");
@@ -3256,7 +3256,7 @@ describe("sandbox adapter execution targets", () => {
   });
 
   it("forwards bridge traffic to the local listen origin even when public API URLs are configured", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-execution-target-bridge-local-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-execution-target-bridge-local-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     const runtimeRootDir = path.join(remoteCwd, ".wardmote-runtime", "claude");
@@ -3334,7 +3334,7 @@ describe("sandbox adapter execution targets", () => {
   });
 
   it("lets an explicit hostApiUrl input override the bridge forward target", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-execution-target-bridge-override-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-execution-target-bridge-override-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     const runtimeRootDir = path.join(remoteCwd, ".wardmote-runtime", "claude");
@@ -3741,7 +3741,7 @@ describe("sandbox adapter execution targets", () => {
     // The channel open itself fails (a provider startup fault, before any
     // READY line or preface is possible). The host must fall back to the
     // file bridge and record the typed open-failure reason, never hang.
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-http2-startup-fail-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-http2-startup-fail-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     await mkdir(remoteCwd, { recursive: true });
@@ -3804,7 +3804,7 @@ describe("sandbox adapter execution targets", () => {
   }, 20000);
 
   it("test_daytona_selects_http2_v1", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-http2-select-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-http2-select-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     await mkdir(remoteCwd, { recursive: true });
@@ -3873,7 +3873,7 @@ describe("sandbox adapter execution targets", () => {
   }, 20000);
 
   it("streams run logs on the http2 path under the same gate and log line as the file path", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-http2-runlog-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-http2-runlog-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     await mkdir(remoteCwd, { recursive: true });
@@ -3919,7 +3919,7 @@ describe("sandbox adapter execution targets", () => {
   }, 20000);
 
   it("returns no run-log tail on the http2 path when streaming is opted out", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-http2-runlog-off-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-http2-runlog-off-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     await mkdir(remoteCwd, { recursive: true });
@@ -3955,7 +3955,7 @@ describe("sandbox adapter execution targets", () => {
   }, 20000);
 
   it("routes http2 channel-open and fallback records to a recorder attached on the server seam", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-http2-recorder-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-http2-recorder-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     await mkdir(remoteCwd, { recursive: true });
@@ -4040,7 +4040,7 @@ describe("sandbox adapter execution targets", () => {
     { name: "the kill switch is off with the capability granted", enable: false, capability: true },
     { name: "the capability is absent with the kill switch on", enable: true, capability: false },
   ])("selects the file bridge when $name", async ({ enable, capability }) => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-duplex-gate-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-duplex-gate-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     await mkdir(remoteCwd, { recursive: true });
@@ -4099,7 +4099,7 @@ describe("sandbox adapter execution targets", () => {
       onOpen: () => {},
     },
   ])("fails closed to the file bridge on $name and leaves no live session", async ({ onOpen }) => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-duplex-fail-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-duplex-fail-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     await mkdir(remoteCwd, { recursive: true });
@@ -4152,7 +4152,7 @@ describe("sandbox adapter execution targets", () => {
   ])(
     "rejects a READY frame that carries $name and never sends the bridge token there",
     async ({ buildReady }) => {
-      const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-duplex-addr-"));
+      const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-duplex-addr-"));
       cleanupDirs.push(rootDir);
       const remoteCwd = path.join(rootDir, "workspace");
       await mkdir(remoteCwd, { recursive: true });
@@ -4220,7 +4220,7 @@ describe("sandbox adapter execution targets", () => {
   );
 
   it("test_route_allowlist_header_cleanup_and_token_replacement_hold_on_http2", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-http2-403-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-http2-403-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     await mkdir(remoteCwd, { recursive: true });
@@ -4348,7 +4348,7 @@ describe("sandbox adapter execution targets", () => {
       throw new Error("Expected the echo server to listen on a TCP port.");
     }
 
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-http2-raw-bytes-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-http2-raw-bytes-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     await mkdir(remoteCwd, { recursive: true });
@@ -4453,7 +4453,7 @@ describe("sandbox adapter execution targets", () => {
   });
 
   it("records an http2 request span with latency and the fixed dimension keys", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-http2-obs-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-http2-obs-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     await mkdir(remoteCwd, { recursive: true });
@@ -4525,7 +4525,7 @@ describe("sandbox adapter execution targets", () => {
   }, 20000);
 
   it("increments the fallback counter with an approved reason when the capability is absent", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-duplex-fb-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-duplex-fb-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     await mkdir(remoteCwd, { recursive: true });
@@ -4597,7 +4597,7 @@ describe("sandbox adapter execution targets", () => {
   ])(
     "names the open-failure stage $expectedReason and falls back to the file bridge on $name",
     async ({ error, expectedReason }) => {
-      const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-duplex-stage-"));
+      const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-duplex-stage-"));
       cleanupDirs.push(rootDir);
       const remoteCwd = path.join(rootDir, "workspace");
       await mkdir(remoteCwd, { recursive: true });
@@ -4658,7 +4658,7 @@ describe("sandbox adapter execution targets", () => {
     { name: "before any dispatch", dispatchFirst: false, expectedClass: "pre_dispatch" },
     { name: "after a dispatch", dispatchFirst: true, expectedClass: "post_dispatch" },
   ])("increments the loss counter with the loss class $name", async ({ dispatchFirst, expectedClass }) => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-http2-loss-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-http2-loss-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     await mkdir(remoteCwd, { recursive: true });
@@ -4723,7 +4723,7 @@ describe("sandbox adapter execution targets", () => {
   }, 20000);
 
   it("keeps serving the request path when the telemetry recorder throws", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-http2-guard-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-http2-guard-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     await mkdir(remoteCwd, { recursive: true });
@@ -4783,7 +4783,7 @@ describe("sandbox adapter execution targets", () => {
     // error string has no code path into a sink on the http2_v1 transport, so
     // this test proves the property that does need a live run: the route,
     // the query, the body, and both tokens never ride a sink either.
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-http2-redact-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-http2-redact-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     await mkdir(remoteCwd, { recursive: true });
@@ -4873,7 +4873,7 @@ describe("sandbox adapter execution targets", () => {
   }, 20000);
 
   it("maps a sentinel provider key to the constant other across every sink", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-http2-prov-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-http2-prov-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     await mkdir(remoteCwd, { recursive: true });
@@ -4943,7 +4943,7 @@ describe("sandbox adapter execution targets", () => {
   }, 20000);
 
   it("caps the pre-READY readiness buffer and falls back with a contaminated reason", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-duplex-cap-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-duplex-cap-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     await mkdir(remoteCwd, { recursive: true });
@@ -4997,7 +4997,7 @@ describe("sandbox adapter execution targets", () => {
   }, 20000);
 
   it("caps the pre-READY buffer under many small newline-less chunks", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-duplex-cap-small-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-duplex-cap-small-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     await mkdir(remoteCwd, { recursive: true });
@@ -5054,7 +5054,7 @@ describe("sandbox adapter execution targets", () => {
   }, 20000);
 
   it("bounds the pre-READY newline-scan work by the bytes received", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-duplex-scan-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-duplex-scan-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     await mkdir(remoteCwd, { recursive: true });
@@ -5110,7 +5110,7 @@ describe("sandbox adapter execution targets", () => {
   }, 20000);
 
   it("bounds the pre-READY buffer growth-copy work by the bytes received", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-duplex-growth-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-duplex-growth-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     await mkdir(remoteCwd, { recursive: true });
@@ -5168,7 +5168,7 @@ describe("sandbox adapter execution targets", () => {
   }, 20000);
 
   it("bounds the pre-READY skip scan work by the bytes received", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-duplex-blank-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-duplex-blank-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     await mkdir(remoteCwd, { recursive: true });
@@ -5230,7 +5230,7 @@ describe("sandbox adapter execution targets", () => {
   }, 20000);
 
   it("test_a_prologue_of_any_length_before_the_ready_line_is_discarded", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-http2-noise-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-http2-noise-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     await mkdir(remoteCwd, { recursive: true });
@@ -5286,7 +5286,7 @@ describe("sandbox adapter execution targets", () => {
   }, 20000);
 
   it("settles a wrong-nonce READY frame as a nonce mismatch, even after a noise line", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-duplex-noise-nonce-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-duplex-noise-nonce-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     await mkdir(remoteCwd, { recursive: true });
@@ -5337,7 +5337,7 @@ describe("sandbox adapter execution targets", () => {
   }, 20000);
 
   it("enforces the buffer cap on an over-cap blank prefix before it accepts a valid READY frame", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-duplex-capbypass-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-duplex-capbypass-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     await mkdir(remoteCwd, { recursive: true });
@@ -5395,7 +5395,7 @@ describe("sandbox adapter execution targets", () => {
   }, 20000);
 
   it("records the channel-open span with the fallback_reason dimension on the fallback path", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-duplex-openspan-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-duplex-openspan-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     await mkdir(remoteCwd, { recursive: true });
@@ -5448,7 +5448,7 @@ describe("sandbox adapter execution targets", () => {
   }, 20000);
 
   it("drops a header outside the allowlist on the host http2 forward path", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-http2-hdr-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-http2-hdr-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     await mkdir(remoteCwd, { recursive: true });
@@ -5511,7 +5511,7 @@ describe("sandbox adapter execution targets", () => {
   }, 20000);
 
   it("selects the http2 transport for a large forward budget", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-http2-budget-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-http2-budget-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     await mkdir(remoteCwd, { recursive: true });
@@ -5564,7 +5564,7 @@ describe("sandbox adapter execution targets", () => {
   }, 20000);
 
   it("test_a_missing_preface_aborts_the_open_and_falls_back_to_queue_v1", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-http2-no-preface-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-http2-no-preface-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     await mkdir(remoteCwd, { recursive: true });
@@ -5618,7 +5618,7 @@ describe("sandbox adapter execution targets", () => {
   }, 20000);
 
   it("test_disabled_flag_selects_queue_v1", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-http2-disabled-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-http2-disabled-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     await mkdir(remoteCwd, { recursive: true });
@@ -5662,7 +5662,7 @@ describe("sandbox adapter execution targets", () => {
     // The open attempt runs once per run, with no retry loop: a preface
     // failure falls through to the file bridge exactly one time, and the
     // host never re-attempts http2_v1 afterward in the same run.
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-http2-one-way-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-http2-one-way-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     await mkdir(remoteCwd, { recursive: true });
@@ -5717,7 +5717,7 @@ describe("sandbox adapter execution targets", () => {
     // READY: it holds the channel open, with no client preface arriving
     // (so the http2 server, if bound, would try to write its own SETTINGS
     // frame), and asserts zero bytes crossed the channel the whole time.
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-http2-no-early-write-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-http2-no-early-write-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     await mkdir(remoteCwd, { recursive: true });
@@ -5797,7 +5797,7 @@ describe("sandbox adapter execution targets", () => {
     // bytes are deliberately sentinel-marked and syntactically invalid (not
     // valid UTF-8 JSON), then a valid READY frame. No log line — on any
     // stream — may contain the sentinel bytes.
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-http2-invalid-ready-bytes-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-http2-invalid-ready-bytes-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     await mkdir(remoteCwd, { recursive: true });
@@ -5848,7 +5848,7 @@ describe("sandbox adapter execution targets", () => {
     // A loss ordered after a host-observed orderly completion is a normal
     // teardown, not a failure: the run already completed. The disposition
     // latch must keep the success and emit no loss event for it.
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-http2-orderly-close-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-http2-orderly-close-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     await mkdir(remoteCwd, { recursive: true });
@@ -5903,7 +5903,7 @@ describe("sandbox adapter execution targets", () => {
     // retryable: the host answers 502 with no indeterminate marker, the same
     // rule `forwardBridgeRequest` already applies on every transport. This
     // proves the http2_v1 forward handler reuses that one function unchanged.
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-http2-safe-retry-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-http2-safe-retry-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     await mkdir(remoteCwd, { recursive: true });
@@ -5964,7 +5964,7 @@ describe("sandbox adapter execution targets", () => {
     // host and the gateway share one resolved ceiling: this request carries
     // no body, so only the mock host's own response — comfortably over one
     // byte — trips the size check this test exists to force.
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-http2-unsafe-indeterminate-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-http2-unsafe-indeterminate-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     await mkdir(remoteCwd, { recursive: true });
@@ -6040,7 +6040,7 @@ describe("sandbox adapter execution targets", () => {
     }
     const apiOrigin = `http://127.0.0.1:${apiAddress.port}`;
 
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-http2-abort-forward-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-http2-abort-forward-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     await mkdir(remoteCwd, { recursive: true });
@@ -6125,7 +6125,7 @@ describe("sandbox adapter execution targets", () => {
     }
     const apiOrigin = `http://127.0.0.1:${apiAddress.port}`;
 
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-http2-denied-response-chunk-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-http2-denied-response-chunk-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     await mkdir(remoteCwd, { recursive: true });
@@ -6213,7 +6213,7 @@ describe("sandbox adapter execution targets", () => {
     }
     const apiOrigin = `http://127.0.0.1:${apiAddress.port}`;
 
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-http2-denied-response-concat-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-http2-denied-response-concat-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     await mkdir(remoteCwd, { recursive: true });
@@ -6328,7 +6328,7 @@ describe("sandbox adapter execution targets", () => {
     }
     const apiOrigin = `http://127.0.0.1:${apiAddress.port}`;
 
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-http2-denied-response-mutation-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-http2-denied-response-mutation-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     await mkdir(remoteCwd, { recursive: true });
@@ -6408,7 +6408,7 @@ describe("sandbox adapter execution targets", () => {
     }
     const apiOrigin = `http://127.0.0.1:${apiAddress.port}`;
 
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-http2-ceiling-aggregate-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-http2-ceiling-aggregate-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     await mkdir(remoteCwd, { recursive: true });
@@ -6482,7 +6482,7 @@ describe("sandbox adapter execution targets", () => {
       ctx.emitReady();
       sessionRef.current = ctx.connectHttp2();
     });
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-http2-host-body-limit-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-http2-host-body-limit-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     await mkdir(remoteCwd, { recursive: true });
@@ -6541,7 +6541,7 @@ describe("sandbox adapter execution targets", () => {
     // with no `reservation` option at all. `readBridgeForwardResponseBody`
     // must behave exactly as it did before that option existed: it still
     // forwards the request and still returns the host's body.
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-queue-no-reservation-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-queue-no-reservation-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     const runtimeRootDir = path.join(remoteCwd, ".wardmote-runtime", "codex");
@@ -6608,7 +6608,7 @@ describe("sandbox adapter execution targets", () => {
   // ---------------------------------------------------------------------------
 
   async function runReadinessReplay(emit: (ctx: Http2OpenContext) => void) {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-pty-replay-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-pty-replay-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     await mkdir(remoteCwd, { recursive: true });
@@ -6647,7 +6647,7 @@ describe("sandbox adapter execution targets", () => {
   it("PTY replay: accepts READY after an echoed prompt and wrapper line", async () => {
     const { mode } = await runReadinessReplay((ctx) => {
       ctx.emitRaw(
-        "daytona@212487a7f3c9:~$ exec 2>'/tmp/paperclip-duplex-x.log'; stty raw -echo; " +
+        "daytona@212487a7f3c9:~$ exec 2>'/tmp/wardmote-duplex-x.log'; stty raw -echo; " +
           "exec 'bash' '-c' 'exec env WARDMOTE_BRIDGE_NONCE=" + ctx.nonce + " node gateway.mjs'\r\n",
       );
       ctx.emitRaw('{"version":2,"type":"ready","nonce":"' + ctx.nonce + '"}\n');
@@ -6745,7 +6745,7 @@ describe("sandbox adapter execution targets", () => {
     // HTTP/2 server. A pre-preface byte would make the server report a
     // `PROTOCOL_ERROR`; this test proves the real session opens cleanly
     // instead, which only holds when the offset is exact.
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-http2-preface-offset-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-http2-preface-offset-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     await mkdir(remoteCwd, { recursive: true });
@@ -6800,7 +6800,7 @@ describe("sandbox adapter execution targets", () => {
     // the shell. This test embeds the exact preface bytes in the pre-READY
     // noise, then proves a session still starts only at the REAL preface
     // that follows READY.
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-http2-preface-lookalike-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-http2-preface-lookalike-"));
     cleanupDirs.push(rootDir);
     const remoteCwd = path.join(rootDir, "workspace");
     await mkdir(remoteCwd, { recursive: true });

@@ -37,8 +37,8 @@ describeEmbeddedPostgres("company skill local import boundary", () => {
   it("allows configured workspace imports and rejects out-of-tree and symlink escapes", async () => {
     const companyId = randomUUID();
     const projectId = randomUUID();
-    const workspace = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-approved-workspace-"));
-    const outside = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-outside-skill-"));
+    const workspace = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-approved-workspace-"));
+    const outside = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-outside-skill-"));
     cleanupDirs.add(workspace);
     cleanupDirs.add(outside);
     await fs.writeFile(path.join(outside, "SKILL.md"), "---\nname: escaped\ndescription: escaped\n---\n# Escaped\n", "utf8");
@@ -92,7 +92,7 @@ describeEmbeddedPostgres("company skill local import boundary", () => {
     const companyId = randomUUID();
     const projectId = randomUUID();
     // Redirect the instance root at temp so the server-derived managedFolder is under our control.
-    const home = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-managed-home-"));
+    const home = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-managed-home-"));
     cleanupDirs.add(home);
     const previousHome = process.env.WARDMOTE_HOME;
     process.env.WARDMOTE_HOME = home;

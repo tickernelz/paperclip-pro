@@ -93,7 +93,7 @@ describe("dev-runner worktree env bootstrap", () => {
     fs.writeFileSync(
       resolveWorktreeEnvFilePath(root),
       [
-        "WARDMOTE_HOME=/tmp/paperclip-worktrees",
+        "WARDMOTE_HOME=/tmp/wardmote-worktrees",
         "WARDMOTE_INSTANCE_ID=feature-worktree",
         "WARDMOTE_IN_WORKTREE=true",
         "WARDMOTE_WORKTREE_NAME=feature-worktree",
@@ -112,7 +112,7 @@ describe("dev-runner worktree env bootstrap", () => {
       envPath: resolveWorktreeEnvFilePath(root),
       missingEnv: false,
     });
-    expect(env.WARDMOTE_HOME).toBe("/tmp/paperclip-worktrees");
+    expect(env.WARDMOTE_HOME).toBe("/tmp/wardmote-worktrees");
     expect(env.WARDMOTE_INSTANCE_ID).toBe("already-set");
     expect(env.WARDMOTE_IN_WORKTREE).toBe("true");
     expect(env.WARDMOTE_OPTIONAL).toBe("");

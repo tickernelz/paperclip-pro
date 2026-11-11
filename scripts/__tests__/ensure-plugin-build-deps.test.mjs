@@ -8,7 +8,7 @@ import { setTimeout as sleep } from "node:timers/promises";
 import test from "node:test";
 
 function fixture(t) {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-build-lock-"));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-build-lock-"));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   fs.mkdirSync(path.join(root, "scripts"));
   fs.copyFileSync(new URL("../ensure-plugin-build-deps.mjs", import.meta.url), path.join(root, "scripts/ensure-plugin-build-deps.mjs"));

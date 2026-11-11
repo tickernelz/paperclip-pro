@@ -32,7 +32,7 @@ describe("OMP Python env bridge sitecustomize", () => {
   let bridgeDir: string;
 
   beforeEach(async () => {
-    root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-omp-pyenv-test-"));
+    root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-omp-pyenv-test-"));
     bridgeDir = path.join(root, "bridge");
     await fs.mkdir(bridgeDir);
     await fs.writeFile(path.join(bridgeDir, OMP_PYTHON_SITECUSTOMIZE_FILE_NAME), renderOmpSitecustomize(), "utf8");

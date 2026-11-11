@@ -5,7 +5,7 @@ import { expect, it, vi } from "vitest";
 import { AcpxRuntimeHost, type AcpxRuntimeHostDependencies, type AcpxRuntimePortOpenOptions } from "./runtime-host.js";
 
 it("reports missing Copilot authentication before spawn and releases admission ownership for retry", async () => {
-  const root = await mkdtemp(join(tmpdir(), "paperclip-copilot-auth-admission-"));
+  const root = await mkdtemp(join(tmpdir(), "wardmote-copilot-auth-admission-"));
   const runtimeDirectory = join(root, "runtime");
   const workingDirectory = join(root, "workspace");
   await Promise.all([mkdir(runtimeDirectory), mkdir(workingDirectory), mkdir(join(root, "provider"))]);
@@ -38,7 +38,7 @@ it("reports missing Copilot authentication before spawn and releases admission o
 });
 
 it("does not refresh Copilot instructions for a contender rejected by the lifetime lease", async () => {
-  const root = await mkdtemp(join(tmpdir(), "paperclip-copilot-instruction-owner-"));
+  const root = await mkdtemp(join(tmpdir(), "wardmote-copilot-instruction-owner-"));
   const runtimeDirectory = join(root, "runtime");
   const workingDirectory = join(root, "workspace");
   await Promise.all([mkdir(runtimeDirectory), mkdir(workingDirectory), mkdir(join(root, "provider"))]);

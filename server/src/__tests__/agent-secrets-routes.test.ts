@@ -36,7 +36,7 @@ describeEmbeddedPostgres("agent secret routes", () => {
   let stopDb: (() => Promise<void>) | null = null;
   let db!: ReturnType<typeof createDb>;
   const previousKeyFile = process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE;
-  const secretsTmpDir = path.join(os.tmpdir(), `paperclip-agent-secret-routes-${randomUUID()}`);
+  const secretsTmpDir = path.join(os.tmpdir(), `wardmote-agent-secret-routes-${randomUUID()}`);
 
   beforeAll(async () => {
     mkdirSync(secretsTmpDir, { recursive: true });

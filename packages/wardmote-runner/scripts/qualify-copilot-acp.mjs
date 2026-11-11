@@ -55,7 +55,7 @@ export async function runProbe(packInput, output, scenario, token) {
   const lease = await install.openCommand();
   let root;
   try {
-    root = await mkdtemp("/tmp/paperclip-copilot-live-probe-");
+    root = await mkdtemp("/tmp/wardmote-copilot-live-probe-");
     root = await realpath(root);
   } catch (error) {
     try { if (root) await rm(root, { recursive: true, force: true }); }

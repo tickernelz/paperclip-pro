@@ -50,13 +50,13 @@ if (!support.supported) {
 describeEmbedded("PAP-9522 QA: routine secrets end-to-end", () => {
   let db!: ReturnType<typeof createDb>;
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
-  const secretsTmpDir = path.join(os.tmpdir(), `paperclip-qa-routine-secrets-${randomUUID()}`);
+  const secretsTmpDir = path.join(os.tmpdir(), `wardmote-qa-routine-secrets-${randomUUID()}`);
   const previousKeyFile = process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE;
 
   beforeAll(async () => {
     mkdirSync(secretsTmpDir, { recursive: true });
     process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE = path.join(secretsTmpDir, "master.key");
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-qa-routine-secrets-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-qa-routine-secrets-");
     db = createDb(tempDb.connectionString);
   }, 30_000);
 

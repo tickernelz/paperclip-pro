@@ -17,7 +17,7 @@ export function retainRunnerQualificationPackages({ repo, output, sourceRevision
   output = resolve(output);
   assert.ok(!existsSync(output), 'Never replace retained qualification packages');
   mkdirSync(output, { recursive: true });
-  const staging = mkdtempSync(join(tmpdir(), 'paperclip-qualification-pack-'));
+  const staging = mkdtempSync(join(tmpdir(), 'wardmote-qualification-pack-'));
   const archives = [];
   const hash = file => createHash('sha256').update(readFileSync(file)).digest('hex');
   const retain = (name, file) => {

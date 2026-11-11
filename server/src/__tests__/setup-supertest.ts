@@ -25,7 +25,7 @@ type SupertestTestConstructor = {
 process.env.WARDMOTE_TEST_HOST_HOME ??= process.env.WARDMOTE_HOME?.trim() || path.join(os.homedir(), ".paperclip-pro");
 
 // Receipt-spool recovery must never scan a developer's instance during tests.
-const wardmoteTestHome = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-vitest-home-"));
+const wardmoteTestHome = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-vitest-home-"));
 process.env.WARDMOTE_HOME = wardmoteTestHome;
 // Setup-file afterAll hooks run before suites drain asynchronous heartbeats.
 // Cleanup at worker exit, after all suite teardown, avoids deleting live state.
@@ -56,7 +56,7 @@ const require = createRequire(import.meta.url);
 const SupertestTest = require("supertest/lib/test.js") as SupertestTestConstructor;
 
 if (!process.env.CODEX_HOME) {
-  const codexHome = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-vitest-codex-home-"));
+  const codexHome = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-vitest-codex-home-"));
   fs.writeFileSync(path.join(codexHome, "auth.json"), '{"OPENAI_API_KEY":"sk-vitest"}\n', { mode: 0o600 });
   process.env.CODEX_HOME = codexHome;
 }

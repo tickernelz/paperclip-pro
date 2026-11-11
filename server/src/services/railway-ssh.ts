@@ -19,7 +19,7 @@ export function validateRailwayKnownHosts(value: string): string {
 }
 
 export async function generateRailwaySshKey(): Promise<{ publicKey: string; privateKey: string }> {
-  const directory = await mkdtemp(path.join(tmpdir(), "paperclip-railway-key-"));
+  const directory = await mkdtemp(path.join(tmpdir(), "wardmote-railway-key-"));
   try {
     const keyPath = path.join(directory, "identity");
     await promisify(execFile)("/usr/bin/ssh-keygen", ["-q", "-t", "ed25519", "-N", "", "-C", "paperclip-railway", "-f", keyPath], { timeout: 10_000, env: { PATH: "/usr/bin:/bin" } });
@@ -46,7 +46,7 @@ export async function runRailwaySshCommand(input: RailwaySshInput & { privateKey
   input.signal.throwIfAborted();
   const knownHosts = validateRailwayKnownHosts(input.knownHosts);
   if (!input.privateKey.startsWith("-----BEGIN OPENSSH PRIVATE KEY-----")) throw new RailwayError("railway_ssh_key_invalid", "Regenerate the Railway connection's SSH key.", 422);
-  const directory = await mkdtemp(path.join(tmpdir(), "paperclip-railway-command-"));
+  const directory = await mkdtemp(path.join(tmpdir(), "wardmote-railway-command-"));
   try {
     await writeFile(path.join(directory, "identity"), input.privateKey, { mode: 0o600 });
     await writeFile(path.join(directory, "known_hosts"), knownHosts, { mode: 0o600 });

@@ -608,16 +608,16 @@ describe("Modal sandbox provider plugin", () => {
     });
 
     expect(sandbox.openedFiles).toHaveLength(1);
-    expect(sandbox.openedFiles[0]?.path).toMatch(/^\/tmp\/paperclip-stdin-/);
+    expect(sandbox.openedFiles[0]?.path).toMatch(/^\/tmp\/wardmote-stdin-/);
     expect(sandbox.openedFiles[0]?.mode).toBe("w");
     expect(sandbox.openedFiles[0]?.written).not.toBeNull();
     expect(new TextDecoder().decode(sandbox.openedFiles[0]!.written!)).toBe("input payload");
 
     // First exec is the user command; second is the rm cleanup.
     const userCall = sandbox.execCalls[0]!;
-    expect(userCall.argv[2]).toMatch(/&& exec 'cat' < '\/tmp\/paperclip-stdin-/);
+    expect(userCall.argv[2]).toMatch(/&& exec 'cat' < '\/tmp\/wardmote-stdin-/);
     const cleanupCall = sandbox.execCalls[1]!;
-    expect(cleanupCall.argv[2]).toMatch(/^rm -f '\/tmp\/paperclip-stdin-/);
+    expect(cleanupCall.argv[2]).toMatch(/^rm -f '\/tmp\/wardmote-stdin-/);
     expect(result?.exitCode).toBe(0);
   });
 

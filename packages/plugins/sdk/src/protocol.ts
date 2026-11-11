@@ -1049,11 +1049,6 @@ export interface PluginLoginPtyOpenParams {
    * compile-time command. The open request carries no command string.
    */
   loginCommandKey: PluginLoginCommandKey;
-  /**
-   * The server-controlled, validated session home. The shape is exact:
-   * `/tmp/paperclip-adapter-login/<uuid>`. The worker revalidates the shape
-   * before it touches the filesystem.
-   */
   sessionHome: string;
 }
 

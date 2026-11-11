@@ -32,7 +32,7 @@ afterEach(async () => {
 
 it("spawns a real Node ACP agent with per-session env on this platform", async () => {
   const root = await fs.mkdtemp(
-    path.join(os.tmpdir(), "paperclip-acpx-spawn-smoke-"),
+    path.join(os.tmpdir(), "wardmote-acpx-spawn-smoke-"),
   );
   tempRoots.push(root);
   const stateDir = path.join(root, "state");
@@ -69,7 +69,7 @@ it("spawns a real Node ACP agent with per-session env on this platform", async (
 
 it("retains a typed ACP failure as diagnostics without making it assistant output", async () => {
   const root = await fs.mkdtemp(
-    path.join(os.tmpdir(), "paperclip-acpx-typed-failure-"),
+    path.join(os.tmpdir(), "wardmote-acpx-typed-failure-"),
   );
   tempRoots.push(root);
   const logs: string[] = [];
@@ -104,7 +104,7 @@ it("retains a typed ACP failure as diagnostics without making it assistant outpu
 
 it("fails closed on a typed ACP session failure in persistent mode", async () => {
   const root = await fs.mkdtemp(
-    path.join(os.tmpdir(), "paperclip-acpx-persistent-typed-failure-"),
+    path.join(os.tmpdir(), "wardmote-acpx-persistent-typed-failure-"),
   );
   tempRoots.push(root);
   const providerText = "persistent-provider-error-canary-must-not-escape";
@@ -140,7 +140,7 @@ it("fails closed on a typed ACP session failure in persistent mode", async () =>
 
 it("preserves ordinary assistant text even when it resembles a provider error", async () => {
   const root = await fs.mkdtemp(
-    path.join(os.tmpdir(), "paperclip-acpx-error-shaped-answer-"),
+    path.join(os.tmpdir(), "wardmote-acpx-error-shaped-answer-"),
   );
   tempRoots.push(root);
   const answer =
@@ -170,7 +170,7 @@ it("preserves ordinary assistant text even when it resembles a provider error", 
 
 it("keeps a typed retry warning nonfatal when the turn produces an answer", async () => {
   const root = await fs.mkdtemp(
-    path.join(os.tmpdir(), "paperclip-acpx-typed-warning-"),
+    path.join(os.tmpdir(), "wardmote-acpx-typed-warning-"),
   );
   tempRoots.push(root);
   const answer = "Recovered after the transient connection warning.";

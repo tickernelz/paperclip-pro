@@ -175,7 +175,7 @@ describe("ensureLocalPluginBuilt", () => {
   });
 
   it("skips auto-build for local plugin paths outside the repo", async () => {
-    const tempRoot = await mkdtemp(path.join(os.tmpdir(), "paperclip-plugin-outside-"));
+    const tempRoot = await mkdtemp(path.join(os.tmpdir(), "wardmote-plugin-outside-"));
     const packageRoot = path.join(tempRoot, "plugin-outside");
     cleanupPaths.add(path.dirname(packageRoot));
     await mkdir(packageRoot, { recursive: true });

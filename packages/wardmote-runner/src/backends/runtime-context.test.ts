@@ -48,7 +48,7 @@ describe("native runtime context files", () => {
 
   it("reads an instruction entry contained by its bundle root", () => {
     const temporaryRoot = mkdtempSync(
-      join(tmpdir(), "paperclip-runtime-context-"),
+      join(tmpdir(), "wardmote-runtime-context-"),
     );
     temporaryRoots.push(temporaryRoot);
     const bundleRoot = join(temporaryRoot, "bundle");
@@ -374,7 +374,7 @@ describe("native runtime context files", () => {
 
   it("rejects traversal and symlink escapes from the bundle root", () => {
     const temporaryRoot = mkdtempSync(
-      join(tmpdir(), "paperclip-runtime-context-"),
+      join(tmpdir(), "wardmote-runtime-context-"),
     );
     temporaryRoots.push(temporaryRoot);
     const bundleRoot = join(temporaryRoot, "bundle");

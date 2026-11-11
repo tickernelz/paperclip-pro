@@ -30,7 +30,7 @@ afterEach(() => {
 });
 
 function makeTempPluginDir(): string {
-  const dir = mkdtempSync(path.join(os.tmpdir(), "paperclip-plugin-watch-"));
+  const dir = mkdtempSync(path.join(os.tmpdir(), "wardmote-plugin-watch-"));
   tempDirs.push(dir);
   return dir;
 }

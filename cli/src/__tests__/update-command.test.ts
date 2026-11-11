@@ -23,7 +23,7 @@ function createPayload(payloadPath: string, version: string): string {
   return entrypoint;
 }
 beforeEach(() => {
-  root = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-update-"));
+  root = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-update-"));
   previousHome = process.env.HOME;
   previousWardmoteHome = process.env.WARDMOTE_HOME;
   process.env.HOME = path.join(root, "home");

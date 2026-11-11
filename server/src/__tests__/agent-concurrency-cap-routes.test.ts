@@ -17,7 +17,7 @@ let db: ReturnType<typeof createDb>;
 let home: string;
 
 beforeAll(async () => {
-  home = await mkdtemp(path.join(os.tmpdir(), "paperclip-concurrency-cap-"));
+  home = await mkdtemp(path.join(os.tmpdir(), "wardmote-concurrency-cap-"));
   vi.stubEnv("WARDMOTE_HOME", home);
   vi.stubEnv("WARDMOTE_INSTANCE_ID", "concurrency-cap");
   vi.stubEnv("WARDMOTE_IN_WORKTREE", "false");

@@ -38,7 +38,7 @@ describe("codex auth cache store", () => {
   });
 
   async function makeInstanceRoot(): Promise<string> {
-    const dir = await mkdtemp(path.join(os.tmpdir(), "paperclip-codex-cache-"));
+    const dir = await mkdtemp(path.join(os.tmpdir(), "wardmote-codex-cache-"));
     cleanupDirs.push(dir);
     return dir;
   }

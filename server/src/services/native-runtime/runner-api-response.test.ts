@@ -33,7 +33,7 @@ describe("streamed API response capture", () => {
     })).rejects.toMatchObject({ code: "api_response_too_large" });
     expect(cancelled).toBe(true);
     expect(reserved).toBe(1);
-    expect((await readdir(tmpdir())).filter(name => name.startsWith("paperclip-api-response-") && !before.has(name))).toEqual([]);
+    expect((await readdir(tmpdir())).filter(name => name.startsWith("wardmote-api-response-") && !before.has(name))).toEqual([]);
   });
   it("accepts exactly the capture limit", async () => {
     const captured = await captureRunnerApiResponse(new Response(Buffer.alloc(8192)), 4096, controller(), 1000, undefined, { maxBytes: 8192 });

@@ -8,7 +8,7 @@ import { bundledRemoteProviderPackManifestPath, bundledRemoteRunnerBinary } from
 const roots: string[] = [];
 afterEach(() => roots.splice(0).forEach(root => rmSync(root, { recursive: true, force: true })));
 function release() {
-  const root = mkdtempSync(join(tmpdir(), "paperclip-remote-release-")); roots.push(root);
+  const root = mkdtempSync(join(tmpdir(), "wardmote-remote-release-")); roots.push(root);
   const output = join(root, "dist/vendor/wardmote-runner"), binary = join(output, "bin/linux-x64/wardmote-runnerd");
   mkdirSync(join(output, "bin/linux-x64"), { recursive: true });
   const bytes = Buffer.alloc(64); Buffer.from([0x7f, 0x45, 0x4c, 0x46, 2, 1]).copy(bytes); bytes.writeUInt16LE(62, 18);

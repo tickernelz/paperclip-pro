@@ -82,7 +82,7 @@ export async function checkStagedCredentialReadiness(
   if (authBytes.length === 0) {
     return { ready: false, reason: "empty_credential" };
   }
-  const scratchHome = await mkdtemp(path.join(os.tmpdir(), "paperclip-login-readiness-"));
+  const scratchHome = await mkdtemp(path.join(os.tmpdir(), "wardmote-login-readiness-"));
   try {
     await mkdir(scratchHome, { recursive: true, mode: READINESS_HOME_DIR_MODE });
     await writeFile(path.join(scratchHome, AUTH_FILE_NAME), authBytes, {

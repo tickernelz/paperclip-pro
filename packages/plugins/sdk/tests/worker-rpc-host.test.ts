@@ -34,7 +34,7 @@ describe("isWorkerEntrypoint", () => {
   });
 
   function createTempRoot(): string {
-    const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-sdk-worker-"));
+    const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-sdk-worker-"));
     tempRoots.push(tempRoot);
     return tempRoot;
   }
@@ -805,7 +805,7 @@ describe("worker setup-token pseudo-terminal dispatch", () => {
         expect(params.hostRouteId).toBe("route-1");
         expect(params.loginCommandKey).toBe("claude");
         expect(params.sessionHome).toBe(
-          "/tmp/paperclip-adapter-login/11111111-2222-4333-8444-555555555555",
+          "/tmp/wardmote-adapter-login/11111111-2222-4333-8444-555555555555",
         );
         expect(params.providerLeaseId).toBe("lease-1");
         return { workerSessionId: "ws-1" };
@@ -891,7 +891,7 @@ describe("worker setup-token pseudo-terminal dispatch", () => {
           environmentId: "env-1",
           providerLeaseId: "lease-1",
           loginCommandKey: "claude",
-          sessionHome: "/tmp/paperclip-adapter-login/11111111-2222-4333-8444-555555555555",
+          sessionHome: "/tmp/wardmote-adapter-login/11111111-2222-4333-8444-555555555555",
         }),
       ).resolves.toEqual({ workerSessionId: "ws-1" });
 

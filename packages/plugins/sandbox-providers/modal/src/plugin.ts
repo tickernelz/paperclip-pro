@@ -611,7 +611,7 @@ const plugin = definePlugin({
         };
       }
       const stdinPath = params.stdin != null
-        ? `/tmp/paperclip-stdin-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
+        ? `/tmp/wardmote-stdin-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
         : null;
       try {
         if (stdinPath && params.stdin != null) {

@@ -6,7 +6,7 @@ import { materializeNativeRuntimeSkills, releaseMaterializedNativeRuntimeSkills 
 
 /** Assigned assets live outside the protected credential/runtime tree. */
 export async function createAcpxRuntimeSkillLease(context: NativeRuntimeContextSnapshot | null) {
-  const root = await realpath(await mkdtemp(join(tmpdir(), "paperclip-acpx-skills-")));
+  const root = await realpath(await mkdtemp(join(tmpdir(), "wardmote-acpx-skills-")));
   const skills = join(root, "skills");
   const close = async () => {
     await releaseMaterializedNativeRuntimeSkills(skills);

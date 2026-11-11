@@ -29,7 +29,7 @@ test("Pi 1 offline catalog retains the exact qualification model", async () => {
 test("owned gate authorizes the actual pinned SDK path expansions and read fallbacks", async () => {
   assert.equal(metadata.version, "1.0.0");
   const { resolveToCwd, resolveReadPathAsync } = await import(pathToFileURL(join(packageRoot, "dist/core/tools/path-utils.js")).href);
-  const root = await realpath(await mkdtemp(join(tmpdir(), "paperclip-pi-native-paths-")));
+  const root = await realpath(await mkdtemp(join(tmpdir(), "wardmote-pi-native-paths-")));
   try {
     const workspace = join(root, "workspace"); const privateRoot = join(root, "private");
     await mkdir(workspace); await mkdir(privateRoot);
@@ -61,7 +61,7 @@ test("owned gate authorizes the actual pinned SDK path expansions and read fallb
 for (const brokenCatalog of [false, true]) {
   test(`real pinned Pi ${brokenCatalog ? "withholds" : "registers"} readiness after MCP initialization`, { timeout: 20_000 }, async (t) => {
     assert.equal(metadata.version, "1.0.0");
-    const root = await realpath(await mkdtemp(join(tmpdir(), "paperclip-pi-native-contract-")));
+    const root = await realpath(await mkdtemp(join(tmpdir(), "wardmote-pi-native-contract-")));
     await mkdir(join(root, "workspace")); await mkdir(join(root, "agent"));
     const extension = join(root, "extension.mjs");
     await writeFile(extension, stripTypeScriptTypes(extensionSource));
@@ -132,7 +132,7 @@ test("real pinned Pi model iterations align owned identities across warm prompts
   const [{ createAgentSession }, { DefaultResourceLoader }, { ModelRuntime }, { SessionManager }, { SettingsManager }, { AuthStorage }] = await Promise.all(
     ["sdk", "resource-loader", "model-runtime", "session-manager", "settings-manager", "auth-storage"].map(load),
   );
-  const root = await realpath(await mkdtemp(join(tmpdir(), "paperclip-pi-native-order-")));
+  const root = await realpath(await mkdtemp(join(tmpdir(), "wardmote-pi-native-order-")));
   let session;
   try {
     await writeFile(join(root, "helper.mjs"), stripTypeScriptTypes(await readFile(new URL("../src/drivers/acpx/pi-acp-runtime.ts", import.meta.url), "utf8")));
@@ -211,7 +211,7 @@ test("real pinned Pi executes all four owned native question methods without per
   const [{ createAgentSession }, { DefaultResourceLoader }, { ModelRuntime }, { SessionManager }, { SettingsManager }, { AuthStorage }] = await Promise.all(
     ["sdk", "resource-loader", "model-runtime", "session-manager", "settings-manager", "auth-storage"].map(load),
   );
-  const root = await realpath(await mkdtemp(join(tmpdir(), "paperclip-pi-native-questions-")));
+  const root = await realpath(await mkdtemp(join(tmpdir(), "wardmote-pi-native-questions-")));
   let session;
   try {
     await writeFile(join(root, "extension.mjs"), stripTypeScriptTypes(extensionSource));
@@ -265,7 +265,7 @@ test("real pinned Pi dispatches aliased MCP tools with their exact original name
   const [{ createAgentSession }, { DefaultResourceLoader }, { ModelRuntime }, { SessionManager }, { SettingsManager }, { AuthStorage }] = await Promise.all(
     ["sdk", "resource-loader", "model-runtime", "session-manager", "settings-manager", "auth-storage"].map(load),
   );
-  const root = await realpath(await mkdtemp(join(tmpdir(), "paperclip-pi-mcp-alias-")));
+  const root = await realpath(await mkdtemp(join(tmpdir(), "wardmote-pi-mcp-alias-")));
   let session;
   try {
     await writeFile(join(root, "extension.mjs"), stripTypeScriptTypes(extensionSource));
@@ -308,7 +308,7 @@ test("real pinned Pi tool dispatch admits registered agent files and rejects una
   const [{ createAgentSession }, { DefaultResourceLoader }, { ModelRuntime }, { SessionManager }, { SettingsManager }, { AuthStorage }] = await Promise.all(
     ["sdk", "resource-loader", "model-runtime", "session-manager", "settings-manager", "auth-storage"].map(load),
   );
-  const root = await realpath(await mkdtemp(join(tmpdir(), "paperclip-pi-native-agent-files-")));
+  const root = await realpath(await mkdtemp(join(tmpdir(), "wardmote-pi-native-agent-files-")));
   let session;
   try {
     const workspace = join(root, "workspace"); const agentHome = join(root, "agent-files"); const privateRoot = join(root, "private"); const outside = join(root, "outside");
@@ -361,7 +361,7 @@ test("real pinned Pi tool dispatch admits registered agent files and rejects una
 // dummy authentication is unrelated to any provider account.
 for (const scenario of ["hello", "interleaved-tools", "provider-error", "provider-unknown", "thinking-modes", "warm-recovery", "warm-pending-cancel"]) {
   test(`real Pi 1 serialized RPC ${scenario} through owned ACP/MCP bridge`, { timeout: 30_000 }, async t => {
-    const root = await realpath(await mkdtemp(join(tmpdir(), "paperclip-pi-stream-")));
+    const root = await realpath(await mkdtemp(join(tmpdir(), "wardmote-pi-stream-")));
     let child; let server;
     const warm = scenario.startsWith("warm-");
     const retirements = [];

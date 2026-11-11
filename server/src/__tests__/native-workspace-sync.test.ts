@@ -153,7 +153,7 @@ describe("native workspace sync durable metadata", () => {
   });
 
   it.each(["corrupt", "symlink", "foreign"] as const)("persists compact v2 manifests and rejects %s recovery storage", async (tamper) => {
-    const wardmoteHome = await mkdtemp(path.join(os.tmpdir(), "paperclip-native-manifest-"));
+    const wardmoteHome = await mkdtemp(path.join(os.tmpdir(), "wardmote-native-manifest-"));
     cleanupDirs.push(wardmoteHome);
     process.env.WARDMOTE_HOME = wardmoteHome;
     process.env.WARDMOTE_INSTANCE_ID = "manifest-test";
@@ -203,7 +203,7 @@ describe("native workspace sync durable metadata", () => {
 
   it.each([false, true])("writes one immutable descriptor when the same state is replayed (multiple repositories: %s)", async (multipleRepositories) => {
     const wardmoteHome = await mkdtemp(
-      path.join(os.tmpdir(), "paperclip-native-workspace-sync-"),
+      path.join(os.tmpdir(), "wardmote-native-workspace-sync-"),
     );
     cleanupDirs.push(wardmoteHome);
     process.env.WARDMOTE_HOME = wardmoteHome;
@@ -271,7 +271,7 @@ describe("native workspace sync durable metadata", () => {
 
   it("repairs finalized remote and lease stamps after an interrupted commit", async () => {
     const wardmoteHome = await mkdtemp(
-      path.join(os.tmpdir(), "paperclip-native-workspace-sync-repair-"),
+      path.join(os.tmpdir(), "wardmote-native-workspace-sync-repair-"),
     );
     cleanupDirs.push(wardmoteHome);
     process.env.WARDMOTE_HOME = wardmoteHome;

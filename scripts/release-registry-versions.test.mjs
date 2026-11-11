@@ -13,7 +13,7 @@ function writeExecutable(path, body) {
 }
 
 function makeFixture() {
-  const fixtureDir = mkdtempSync(join(tmpdir(), "paperclip-release-registry-"));
+  const fixtureDir = mkdtempSync(join(tmpdir(), "wardmote-release-registry-"));
   const binDir = join(fixtureDir, "bin");
   const callLog = join(fixtureDir, "calls.log");
   mkdirSync(binDir);

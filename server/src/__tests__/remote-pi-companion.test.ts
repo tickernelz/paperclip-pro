@@ -20,7 +20,7 @@ afterEach(() => { hooks.mkdir = undefined; hooks.rename = undefined; hooks.open 
 const hash = (bytes: string | Buffer) => createHash("sha256").update(bytes).digest("hex");
 const canonical = (v: any): string => Array.isArray(v) ? `[${v.map(canonical).join(",")}]` : v && typeof v === "object" ? `{${Object.keys(v).sort().map(k => `${JSON.stringify(k)}:${canonical(v[k])}`).join(",")}}` : JSON.stringify(v);
 async function fixture() {
-  const root = realpathSync(mkdtempSync(join(tmpdir(), "paperclip-companion-"))); roots.push(root);
+  const root = realpathSync(mkdtempSync(join(tmpdir(), "wardmote-companion-"))); roots.push(root);
   const source = "a".repeat(40); const serverRoot = join(root, "server"); const directory = join(root, "release");
   mkdirSync(join(serverRoot, "dist"), { recursive: true }); writeFileSync(join(serverRoot, "package.json"), '{"name":"@tickernelz/wardmote-server"}'); writeFileSync(join(serverRoot, "dist/build-info.json"), JSON.stringify({ commit: source }));
   mkdirSync(join(directory, "bin"), { recursive: true }); mkdirSync(join(directory, "provider-pack"));

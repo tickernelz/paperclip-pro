@@ -524,7 +524,7 @@ describe("exe.dev sandbox provider plugin", () => {
     fetchMock.mockResolvedValueOnce(new Response("{}", { status: 200 }));
     queueSpawnResult({
       code: 255,
-      stderr: 'Load key "/tmp/paperclip-exe-dev-ssh-abc/id_ed25519": invalid format\n',
+      stderr: 'Load key "/tmp/wardmote-exe-dev-ssh-abc/id_ed25519": invalid format\n',
     });
 
     await expect(plugin.definition.onEnvironmentAcquireLease?.({

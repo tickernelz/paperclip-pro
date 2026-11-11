@@ -77,7 +77,7 @@ describeEmbeddedPostgres("per-agent fallback models", () => {
     tempDb = await startEmbeddedPostgresTestDatabase("heartbeat-model-fallback-");
     db = createDb(tempDb.connectionString);
     heartbeat = heartbeatService(db);
-    wardmoteHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-model-fallback-home-"));
+    wardmoteHome = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-model-fallback-home-"));
     process.env.WARDMOTE_HOME = wardmoteHome;
     registerServerAdapter({
       type: "omp_local",

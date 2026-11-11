@@ -291,7 +291,7 @@ describe("adapter management route authorization", () => {
       ...mocks.externalRecords.values(),
     ]);
     mocks.getAdapterPluginsDir.mockReturnValue(
-      "/tmp/paperclip-adapter-route-authz-test",
+      "/tmp/wardmote-adapter-route-authz-test",
     );
     mocks.getDisabledAdapterTypes.mockReturnValue([]);
     mocks.setAdapterDisabled.mockReturnValue(true);

@@ -49,7 +49,7 @@ describe.skipIf(!hasLinuxNode)("remote deliverable real Linux descriptor reads",
   let runner: Pick<CommandManagedRuntimeRunner, "execute">;
 
   beforeEach(async () => {
-    root = await realpath(await mkdtemp(join(tmpdir(), "paperclip-remote-file-")));
+    root = await realpath(await mkdtemp(join(tmpdir(), "wardmote-remote-file-")));
     workspaceRoot = join(root, "workspace");
     await mkdir(workspaceRoot);
     await writeFile(join(workspaceRoot, "checklist.md"), body);

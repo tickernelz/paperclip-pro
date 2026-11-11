@@ -92,7 +92,7 @@ afterEach(async () => {
 
 describe("managed worktree seed source through the server spawn path", () => {
   it("preserves an explicitly empty instance during managed startup before its first database boot", async () => {
-    const tempRoot = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-server-empty-worktree-")));
+    const tempRoot = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-server-empty-worktree-")));
     cleanup.push(tempRoot);
     const baseCwd = path.join(tempRoot, "source");
     const cwd = path.join(tempRoot, "empty");
@@ -159,7 +159,7 @@ describe("managed worktree seed source through the server spawn path", () => {
   });
 
   it("re-derives an ambient-instance manifest written before provisioning", async () => {
-    const tempRoot = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-server-seed-source-")));
+    const tempRoot = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-server-seed-source-")));
     cleanup.push(tempRoot);
     const repoRoot = path.join(tempRoot, "repo");
     const hooksDir = path.join(tempRoot, "hooks");

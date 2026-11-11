@@ -24,7 +24,7 @@ let previousServiceManaged: string | undefined;
 beforeEach(() => {
   previousWardmoteHome = process.env.WARDMOTE_HOME;
   previousServiceManaged = process.env.WARDMOTE_SERVICE_MANAGED;
-  process.env.WARDMOTE_HOME = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-service-restart-"));
+  process.env.WARDMOTE_HOME = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-service-restart-"));
 });
 
 afterEach(() => {
@@ -35,7 +35,7 @@ afterEach(() => {
 });
 
 function managerFixture(active = true) {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-service-doctor-"));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-service-doctor-"));
   const definitionPath = path.join(root, "wardmote.service");
   fs.writeFileSync(definitionPath, "unit");
   return {

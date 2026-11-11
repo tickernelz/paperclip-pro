@@ -79,7 +79,7 @@ export function resolveTestDriveDataDir(dataDir?: string): string {
   if (explicit) {
     return path.resolve(expandHomePrefix(explicit));
   }
-  return fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-test-drive-"));
+  return fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-test-drive-"));
 }
 
 async function loopbackPortAvailable(port: number): Promise<boolean> {

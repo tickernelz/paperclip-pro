@@ -96,7 +96,7 @@ export async function execute(
   log: (stream: "stdout" | "stderr", text: string) => void = () => {},
 ): Promise<PluginEnvironmentExecuteResult> {
   const id = identifier(params.lease.providerLeaseId);
-  const stdinPath = params.stdin != null ? `/tmp/paperclip-stdin-${randomUUID()}` : null;
+  const stdinPath = params.stdin != null ? `/tmp/wardmote-stdin-${randomUUID()}` : null;
   const script = commandScript(params, stdinPath);
   const output = new Output(log);
   let processId: string | null = null;

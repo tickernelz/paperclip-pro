@@ -426,7 +426,7 @@ describe("Codex protocol integrity propagation", () => {
     "composes authenticated controller, transport, driver, backend, and runtime for %s",
     async (scenario) => {
       const directory = mkdtempSync(
-        join(tmpdir(), "paperclip-composed-integrity-"),
+        join(tmpdir(), "wardmote-composed-integrity-"),
       );
       // Only the process launcher is synthetic; hash a small fixture instead
       // of cold-reading the host Node executable during the protocol deadline.

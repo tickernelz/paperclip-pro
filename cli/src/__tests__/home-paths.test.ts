@@ -17,7 +17,7 @@ describe("home path resolution", () => {
   });
 
   it("defaults to ~/.paperclip-pro and default instance", () => {
-    const home = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-home-paths-"));
+    const home = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-home-paths-"));
     process.env.WARDMOTE_HOME = home;
     delete process.env.WARDMOTE_INSTANCE_ID;
 

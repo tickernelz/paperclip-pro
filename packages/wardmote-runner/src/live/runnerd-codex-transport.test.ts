@@ -1545,7 +1545,7 @@ it("defaults runnerd ACPX permissions to authorized Wardmote actions", () => {
 });
 
 it("rejects caller-selected local ACPX artifacts even when they are self-hashed", async () => {
-  const directory = await mkdtemp(join(tmpdir(), "paperclip-acpx-authority-"));
+  const directory = await mkdtemp(join(tmpdir(), "wardmote-acpx-authority-"));
   const command = join(directory, "node");
   const sidecar = join(directory, "sidecar.js");
   await writeFile(command, "caller-selected command", { mode: 0o700 });
@@ -1574,7 +1574,7 @@ it.each(["acpx-runtime-sidecar.cjs", "opencode-app-server-proxy.cjs"] as const)(
   "resolves the %s local provider artifact from verified build-owned output",
   async (artifact) => {
     const directory = await mkdtemp(
-      join(tmpdir(), "paperclip-provider-artifact-"),
+      join(tmpdir(), "wardmote-provider-artifact-"),
     );
     const sourceAdjacent = join(directory, "src", "cli", artifact);
     const buildOwned = join(directory, "dist", "cli", artifact);
@@ -1647,7 +1647,7 @@ it("uses the public server npm package as the authority for vendored sidecars", 
 
 it("keeps a self-rooted pnpm deployment inside its dependency authority", async () => {
   const deploymentRoot = await mkdtemp(
-    join(tmpdir(), "paperclip-deployed-provider-root-"),
+    join(tmpdir(), "wardmote-deployed-provider-root-"),
   );
   const deployedPackageRoot = deploymentRoot;
   await mkdir(join(deployedPackageRoot, "dist", "cli"), { recursive: true });
@@ -1676,7 +1676,7 @@ it("keeps a self-rooted pnpm deployment inside its dependency authority", async 
 
 it("keeps a scoped npm-installed package inside its portable dependency root", async () => {
   const deploymentRoot = await mkdtemp(
-    join(tmpdir(), "paperclip-npm-provider-root-"),
+    join(tmpdir(), "wardmote-npm-provider-root-"),
   );
   const deployedPackageRoot = join(
     deploymentRoot,
@@ -2072,7 +2072,7 @@ it("does not bind ambient candidate credentials from an inherited or caller-supp
 it.each(["opencode", "acpx"] as const)(
   "advertises runner-managed planning through the %s provider boundary",
   async (provider) => {
-    const root = await mkdtemp(join(tmpdir(), "paperclip-runner-plan-mode-"));
+    const root = await mkdtemp(join(tmpdir(), "wardmote-runner-plan-mode-"));
     const { transport } = createCapabilityRunnerdCodexTransport({
       provider,
       stateDirectory: root,
@@ -2092,7 +2092,7 @@ it.each(["opencode", "acpx"] as const)(
 );
 
 it("admits Pi runnerd transport without candidate opt-in and keeps pending Copilot gated", async () => {
-  const root = await mkdtemp(join(tmpdir(), "paperclip-pi-production-admission-"));
+  const root = await mkdtemp(join(tmpdir(), "wardmote-pi-production-admission-"));
   const { transport } = createCapabilityRunnerdCodexTransport({ provider: "acpx", acpxAgent: "pi", piThinkingLevel: "low", stateDirectory: root });
   try {
     await expect(transport.request("collaborationMode/list", {})).resolves.toMatchObject({ data: [{ mode: "plan" }] });
@@ -2137,7 +2137,7 @@ it("denies the isolated Codex home without denying a remote execution workspace"
 });
 
 it.each(["installed", "explicit"] as const)("records the selected %s Codex command before launch", async (selection) => {
-  const root = await mkdtemp(join(tmpdir(), "paperclip-codex-command-selection-"));
+  const root = await mkdtemp(join(tmpdir(), "wardmote-codex-command-selection-"));
   const command = join(root, "codex");
   const runnerBinary = join(root, "runnerd");
   await writeFile(command, "#!/bin/sh\nexit 99\n", { mode: 0o700 });
@@ -2171,7 +2171,7 @@ it.each(["installed", "explicit"] as const)("records the selected %s Codex comma
 });
 
 it("rejects remote Codex without a guest executable before resolving controller dependencies", async () => {
-  const root = await mkdtemp(join(tmpdir(), "paperclip-runner-remote-codex-command-"));
+  const root = await mkdtemp(join(tmpdir(), "wardmote-runner-remote-codex-command-"));
   const runnerBinary = join(root, "runnerd");
   await writeFile(runnerBinary, "unexecuted fixture artifact", { mode: 0o700 });
   const resolver = vi.spyOn(codexCommandRuntime, "resolveCodexCommand").mockImplementation(() => {
@@ -2193,7 +2193,7 @@ it("rejects remote Codex without a guest executable before resolving controller 
 });
 
 it.each(["missing", "changed"] as const)("reuses the recorded Codex command when dependency discovery is %s during resume", async (discovery) => {
-  const root = await mkdtemp(join(tmpdir(), "paperclip-codex-recorded-command-"));
+  const root = await mkdtemp(join(tmpdir(), "wardmote-codex-recorded-command-"));
   const command = join(root, "recorded-codex");
   const replacement = join(root, "replacement-codex");
   const runnerBinary = join(root, "runnerd");
@@ -2239,7 +2239,7 @@ it.each(["missing", "changed"] as const)("reuses the recorded Codex command when
 });
 
 it("rejects remote OpenCode before spawn when provider-pack paths are absent", async () => {
-  const root = await mkdtemp(join(tmpdir(), "paperclip-runner-remote-pack-"));
+  const root = await mkdtemp(join(tmpdir(), "wardmote-runner-remote-pack-"));
   const { transport } = createCapabilityRunnerdCodexTransport({
     provider: "opencode",
     stateDirectory: root,

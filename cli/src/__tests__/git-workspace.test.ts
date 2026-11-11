@@ -15,7 +15,7 @@ afterEach(() => {
 
 describe("Git worktree detection", () => {
   it("distinguishes a linked worktree from the primary checkout and non-Git paths", () => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-git-workspace-"));
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-git-workspace-"));
     cleanupDirectories.push(root);
     const primary = path.join(root, "primary");
     const linked = path.join(root, "linked");

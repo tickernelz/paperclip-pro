@@ -15,7 +15,7 @@ export async function withDiscoveryWorkspace(install, callback, filesystem = { m
   const lease = await install.openCommand();
   let root;
   try {
-    root = await filesystem.mkdtemp("/tmp/paperclip-copilot-auth-discovery-");
+    root = await filesystem.mkdtemp("/tmp/wardmote-copilot-auth-discovery-");
     return await callback(lease, root);
   } finally {
     try { await lease.close(); }

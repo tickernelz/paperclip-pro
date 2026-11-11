@@ -87,7 +87,7 @@ describe("paperclip-runner real server vertical slice", () => {
     setupRunnerPrpWebSocketServer(server, {
       apiUrl: `http://127.0.0.1:${address.port}`,
     });
-    const stateDirectory = await mkdtemp(resolve(tmpdir(), "paperclip-runner-real-resume-"));
+    const stateDirectory = await mkdtemp(resolve(tmpdir(), "wardmote-runner-real-resume-"));
     const expectedContextFile = resolve(stateDirectory, "expected-context.json");
     await writeFile(expectedContextFile, JSON.stringify({ companyId, actorId: agentId, taskId: issueId, runId, callId: "semantic-call-1" }));
     const fakeArgs = ["--state-file", resolve(stateDirectory, "fake-provider-state.json"), "--emit-tool-call", "--durable-turn-ids", "--durable-tool-ids", "--expected-canonical-task-context-file", expectedContextFile];

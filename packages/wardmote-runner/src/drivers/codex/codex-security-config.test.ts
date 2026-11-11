@@ -34,8 +34,8 @@ describe("Codex security configuration", () => {
       import { delimiter, dirname, isAbsolute, join } from "node:path";
       import { resolveCodexCommand, resolvePinnedCodexCommand } from ${JSON.stringify(new URL("./codex-command.ts", import.meta.url).href)};
       import { codexExecutableReadOnlyRoots, createIsolatedCodexAppServerArgs } from ${JSON.stringify(new URL("./codex-security-config.ts", import.meta.url).href)};
-      const root = realpathSync(mkdtempSync(join(tmpdir(), "paperclip-pinned-codex-test-")));
-      const pathOnlyRoot = realpathSync(mkdtempSync(join(tmpdir(), "paperclip-path-codex-test-")));
+      const root = realpathSync(mkdtempSync(join(tmpdir(), "wardmote-pinned-codex-test-")));
+      const pathOnlyRoot = realpathSync(mkdtempSync(join(tmpdir(), "wardmote-path-codex-test-")));
       const pathDirectory = join(pathOnlyRoot, "bin");
       const pathCommand = join(pathDirectory, "codex");
       const commandEnvironment = { PATH: pathDirectory };

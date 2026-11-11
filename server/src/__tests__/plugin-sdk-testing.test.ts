@@ -22,8 +22,8 @@ describe("plugin SDK test harness", () => {
         companyId: "company-1",
         projectId: "project-1",
         projectWorkspaceId: "project-workspace-1",
-        path: "/tmp/paperclip-test",
-        cwd: "/tmp/paperclip-test",
+        path: "/tmp/wardmote-test",
+        cwd: "/tmp/wardmote-test",
         repoUrl: "https://example.com/repo.git",
         baseRef: "main",
         branchName: "feature/test",
@@ -34,7 +34,7 @@ describe("plugin SDK test harness", () => {
 
     await expect(harness.ctx.executionWorkspaces.get("workspace-1", "company-1")).resolves.toMatchObject({
       id: "workspace-1",
-      cwd: "/tmp/paperclip-test",
+      cwd: "/tmp/wardmote-test",
       branchName: "feature/test",
       providerMetadata: { sandboxId: "sandbox-1" },
     });

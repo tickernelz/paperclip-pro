@@ -51,7 +51,7 @@ describe("ensureWardmoteSkillSymlink", () => {
     path.join(root, "installs", version, "node_modules", "@tickernelz", "wardmote-server", "skills", skill);
 
   it("moves a skill link from an older Wardmote install to the current one and leaves foreign links alone", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-skill-link-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-skill-link-"));
     try {
       const oldSource = bundled(root, "2026.928.5", "paperclip");
       const newSource = bundled(root, "2026.928.7", "paperclip");
@@ -75,7 +75,7 @@ describe("ensureWardmoteSkillSymlink", () => {
   });
 
   it("lets concurrent runs move the same skill link without failing", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-skill-link-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-skill-link-"));
     try {
       const oldSource = bundled(root, "2026.1002.0", "paperclip");
       const newSource = bundled(root, "2026.1002.1", "paperclip");
@@ -380,7 +380,7 @@ describe("sanitizeSshRemoteEnv", () => {
 describe("materializeWardmoteSkillCopy", () => {
   it("refuses to materialize into an ancestor of the source", async () => {
     const root = await fs.mkdtemp(
-      path.join(os.tmpdir(), "paperclip-skill-copy-"),
+      path.join(os.tmpdir(), "wardmote-skill-copy-"),
     );
     try {
       const source = path.join(root, "parent", "skill");
@@ -400,7 +400,7 @@ describe("materializeWardmoteSkillCopy", () => {
 
   it("does not delete and recopy an unchanged materialized skill target", async () => {
     const root = await fs.mkdtemp(
-      path.join(os.tmpdir(), "paperclip-skill-copy-"),
+      path.join(os.tmpdir(), "wardmote-skill-copy-"),
     );
     try {
       const source = path.join(root, "source");
@@ -428,7 +428,7 @@ describe("materializeWardmoteSkillCopy", () => {
 
   it("breaks stale materialization locks left by dead processes", async () => {
     const root = await fs.mkdtemp(
-      path.join(os.tmpdir(), "paperclip-skill-copy-"),
+      path.join(os.tmpdir(), "wardmote-skill-copy-"),
     );
     try {
       const source = path.join(root, "source");
@@ -4028,7 +4028,7 @@ describe("buildWardmoteEnv", () => {
 
 describe("runtime skill assignment boundaries", () => {
   it("preserves an explicitly empty assignment instead of discovering bundled connector skills", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-skills-empty-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-skills-empty-"));
     try {
       await fs.mkdir(path.join(root, "agentmail"));
       await fs.writeFile(path.join(root, "agentmail", "SKILL.md"), "---\nname: agentmail\ndescription: Email connector\n---\n");

@@ -47,7 +47,7 @@ describeEmbeddedPostgres("heartbeat OpenWA run profile at run start", () => {
   beforeAll(async () => {
     tempDb = await startEmbeddedPostgresTestDatabase("heartbeat-openwa-profile-");
     db = createDb(tempDb.connectionString);
-    wardmoteHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-openwa-profile-home-"));
+    wardmoteHome = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-openwa-profile-home-"));
     process.env.WARDMOTE_HOME = wardmoteHome;
     process.env.WARDMOTE_API_URL = "http://127.0.0.1:3100/api";
     registerServerAdapter({

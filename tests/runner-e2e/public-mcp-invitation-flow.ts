@@ -19,7 +19,7 @@ export async function runPublicMcpInvitationFlow(input: Parameters<typeof runPub
   const chatHandoff = kind === "invitation-cold-start";
   const denied = kind === "invitation-denied", unavailable = kind === "invitation-unavailable-host";
   const negative = denied || unavailable;
-  const directory = await mkdtemp(path.join(os.tmpdir(), "paperclip-invitation-host-"));
+  const directory = await mkdtemp(path.join(os.tmpdir(), "wardmote-invitation-host-"));
   const configPath = path.join(directory, "mcp.json");
   const existing = kind === "invitation-existing-config" ? { notes: { url: "https://notes.example/mcp", enabled: false } } : {};
   await writeFile(configPath, JSON.stringify(existing), { mode: 0o600 });

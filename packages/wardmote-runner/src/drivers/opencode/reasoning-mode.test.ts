@@ -14,7 +14,7 @@ describe("per-turn OpenCode reasoning", () => {
     expect(() => parseOpenCodeReasoningMode(value)).toThrow("turn.reasoningMode");
   });
   it("selects reasoning independently on successive turns and sends instructions once", async () => {
-    const root = await mkdtemp(join(tmpdir(), "paperclip-turn-reasoning-"));
+    const root = await mkdtemp(join(tmpdir(), "wardmote-turn-reasoning-"));
     const fixture = resolve("test/fixtures/fake-opencode-server.mjs");
     await chmod(fixture, 0o755);
     const submitted: Array<{ variant?: string; system?: string; parts: Array<{ text: string }> }> = [];

@@ -24,7 +24,7 @@ describe("plugin local folders", () => {
   });
 
   async function makeRoot() {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-plugin-folder-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-plugin-folder-"));
     tempRoots.push(root);
     return root;
   }
@@ -283,10 +283,10 @@ describe("plugin local folders", () => {
 
   it("roots default plugin data in the configured Wardmote home, not the real user home", () => {
     const previous = process.env.WARDMOTE_HOME;
-    process.env.WARDMOTE_HOME = path.join(os.tmpdir(), "paperclip-plugin-home-probe");
+    process.env.WARDMOTE_HOME = path.join(os.tmpdir(), "wardmote-plugin-home-probe");
     try {
       expect(defaultLocalFolderBasePath("acme.plugin", "company-1")).toBe(
-        path.join(os.tmpdir(), "paperclip-plugin-home-probe", "plugin-data", "company-1", "acme.plugin"),
+        path.join(os.tmpdir(), "wardmote-plugin-home-probe", "plugin-data", "company-1", "acme.plugin"),
       );
     } finally {
       if (previous === undefined) delete process.env.WARDMOTE_HOME;

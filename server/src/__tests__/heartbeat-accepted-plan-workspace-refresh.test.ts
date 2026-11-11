@@ -81,7 +81,7 @@ async function runGit(cwd: string, args: string[]) {
 }
 
 async function createGitRepo() {
-  const repoRoot = await mkdtemp(path.join(os.tmpdir(), "paperclip-accepted-plan-repo-"));
+  const repoRoot = await mkdtemp(path.join(os.tmpdir(), "wardmote-accepted-plan-repo-"));
   await runGit(repoRoot, ["init"]);
   await runGit(repoRoot, ["checkout", "-B", "master"]);
   await runGit(repoRoot, ["config", "user.email", "paperclip-test@example.com"]);
@@ -94,7 +94,7 @@ async function createGitRepo() {
 
 async function createGitRepoWithOrigin() {
   const repoRoot = await createGitRepo();
-  const originRoot = await mkdtemp(path.join(os.tmpdir(), "paperclip-accepted-plan-origin-"));
+  const originRoot = await mkdtemp(path.join(os.tmpdir(), "wardmote-accepted-plan-origin-"));
   await runGit(originRoot, ["init", "--bare"]);
   await runGit(repoRoot, ["remote", "add", "origin", originRoot]);
   await runGit(repoRoot, ["push", "-u", "origin", "master"]);

@@ -22,7 +22,7 @@ afterEach(() => {
 });
 
 async function withTempHome<T>(fn: (homeDir: string) => Promise<T>) {
-  const homeDir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-hot-restart-paths-"));
+  const homeDir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-hot-restart-paths-"));
   try {
     return await fn(homeDir);
   } finally {

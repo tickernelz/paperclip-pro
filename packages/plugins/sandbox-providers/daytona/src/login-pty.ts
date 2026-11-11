@@ -62,10 +62,6 @@ export type LoginCommandKey = "claude" | "codex" | "grok";
 export interface LoginPtyLaunchDescriptor {
   /** The host-resolved fixed command identity. */
   loginCommandKey: LoginCommandKey;
-  /**
-   * The server-controlled session home. The shape is exact:
-   * `/tmp/paperclip-adapter-login/<uuid>`.
-   */
   sessionHome: string;
 }
 
@@ -81,7 +77,7 @@ const LOGIN_COMMAND_BY_KEY: Readonly<Record<LoginCommandKey, string>> = {
 };
 
 /** The fixed root for a login session home. */
-const LOGIN_SESSION_HOME_ROOT = "/tmp/paperclip-adapter-login";
+const LOGIN_SESSION_HOME_ROOT = "/tmp/wardmote-adapter-login";
 
 /**
  * The exact absolute path shape for a login session home. The path is the fixed
@@ -90,7 +86,7 @@ const LOGIN_SESSION_HOME_ROOT = "/tmp/paperclip-adapter-login";
  * those match the UUID or the fixed root.
  */
 const SESSION_HOME_PATTERN =
-  /^\/tmp\/paperclip-adapter-login\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+  /^\/tmp\/wardmote-adapter-login\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
 /** The fixed non-secret error a rejected launch descriptor or session home returns. */
 export const LOGIN_PTY_DESCRIPTOR_REJECTED = "LOGIN_PTY_DESCRIPTOR_REJECTED";

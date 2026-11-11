@@ -79,7 +79,7 @@ if (!embeddedPostgresSupport.supported) {
 
 describe("built-in agent asset loading", () => {
   it("uses the first readable candidate path", () => {
-    const dir = mkdtempSync(path.join(tmpdir(), "paperclip-built-in-agent-"));
+    const dir = mkdtempSync(path.join(tmpdir(), "wardmote-built-in-agent-"));
     try {
       const first = path.join(dir, "missing.md");
       const second = path.join(dir, "asset.md");
@@ -107,7 +107,7 @@ describe("built-in agent asset loading", () => {
 
   it("warns about non-missing read errors before falling back", () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
-    const dir = mkdtempSync(path.join(tmpdir(), "paperclip-built-in-agent-"));
+    const dir = mkdtempSync(path.join(tmpdir(), "wardmote-built-in-agent-"));
     const label = "unreadable:" + randomUUID();
 
     try {

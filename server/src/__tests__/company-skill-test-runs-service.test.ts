@@ -69,7 +69,7 @@ describeEmbeddedPostgres("companySkillService skill test runs", () => {
     const companyId = randomUUID();
     const skillId = randomUUID();
     const agentId = randomUUID();
-    const skillDir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-skill-test-run-"));
+    const skillDir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-skill-test-run-"));
     cleanupDirs.add(skillDir);
     await fs.writeFile(path.join(skillDir, "SKILL.md"), "# Review Skill\n", "utf8");
     await db.insert(companies).values({
@@ -471,7 +471,7 @@ describeEmbeddedPostgres("companySkillService skill test runs", () => {
     const companyId = randomUUID();
     const skillId = randomUUID();
     const agentId = randomUUID();
-    const skillDir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-skill-test-run-"));
+    const skillDir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-skill-test-run-"));
     cleanupDirs.add(skillDir);
     await fs.writeFile(path.join(skillDir, "SKILL.md"), "# Review Skill\n", "utf8");
 

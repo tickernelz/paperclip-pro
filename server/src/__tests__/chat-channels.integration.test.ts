@@ -58713,7 +58713,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
               : providerAccount;
       const previous = process.env.WARDMOTE_RUNNER_STATE_DIR;
       const directory = mkdtempSync(
-        path.join(os.tmpdir(), "paperclip-chat-cleanup-retry-"),
+        path.join(os.tmpdir(), "wardmote-chat-cleanup-retry-"),
       );
       process.env.WARDMOTE_RUNNER_STATE_DIR = directory;
       try {
@@ -58738,7 +58738,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
             workMode: "standard",
           },
           workspace: {
-            cwd: "/tmp/paperclip-cleanup-retry",
+            cwd: "/tmp/wardmote-cleanup-retry",
             repoUrl: null,
             repoRef: null,
             branchName: null,
@@ -59170,7 +59170,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
             workMode: "standard",
           },
           workspace: {
-            cwd: "/tmp/paperclip-exact-chat-retry",
+            cwd: "/tmp/wardmote-exact-chat-retry",
             repoUrl: null,
             repoRef: null,
             branchName: null,
@@ -59273,7 +59273,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
           });
         if (hasCheckpoint) {
           stateDirectory = mkdtempSync(
-            path.join(os.tmpdir(), "paperclip-chat-retry-checkpoint-"),
+            path.join(os.tmpdir(), "wardmote-chat-retry-checkpoint-"),
           );
           process.env.WARDMOTE_RUNNER_STATE_DIR = stateDirectory;
           const canonical = (value: unknown): string =>

@@ -767,7 +767,7 @@ async function importGitWorkspaceToSsh(input: {
   snapshot: LocalGitWorkspaceSnapshot;
   onProgress?: RuntimeProgressSink;
 }): Promise<void> {
-  const bundleDir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-ssh-bundle-"));
+  const bundleDir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-ssh-bundle-"));
   const bundlePath = path.join(bundleDir, "workspace.bundle");
   // Per-import unique ref so concurrent imports against the same local repo
   // can't race on `update-ref` between this run's update and bundle create.
@@ -852,7 +852,7 @@ async function exportGitWorkspaceFromSsh(input: {
   resetLocalWorkspace?: boolean;
   onProgress?: RuntimeProgressSink;
 }): Promise<string> {
-  const bundleDir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-ssh-bundle-"));
+  const bundleDir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-ssh-bundle-"));
   const bundlePath = path.join(bundleDir, "workspace.bundle");
   const importedRef = input.importedRef ?? `refs/paperclip/ssh-sync/imported/${randomUUID()}`;
 
@@ -1532,7 +1532,7 @@ export async function syncDirectoryFromSsh(input: {
   progressLabel?: string;
 }): Promise<void> {
   const auth = await createSshAuthArgs(input.spec);
-  const stagingDir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-ssh-sync-back-"));
+  const stagingDir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-ssh-sync-back-"));
   const remoteTarScript = [
     `cd ${shellQuote(input.remoteDir)}`,
     `tar ${[...tarExcludeArgs(input.exclude).map(shellQuote), "-cf", "-", "."].join(" ")}`,
@@ -1760,7 +1760,7 @@ async function restoreWorkspaceRootFromSsh(input: {
 }): Promise<void> {
   const remoteDir = input.remoteDir;
   if (input.baselineSnapshot) {
-    const stagingDir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-ssh-sync-back-"));
+    const stagingDir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-ssh-sync-back-"));
     const importedRef = input.restoreGitHistory
       ? `refs/paperclip/ssh-sync/imported/${randomUUID()}`
       : null;

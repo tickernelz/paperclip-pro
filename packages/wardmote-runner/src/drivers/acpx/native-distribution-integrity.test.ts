@@ -218,7 +218,7 @@ describe("native ACPX execution closure", () => {
     const originalRm = vi.mocked(rm).getMockImplementation()!;
     let snapshotRoot = "";
     vi.mocked(rm).mockImplementation(async (path, options) => {
-      if (String(path).includes("paperclip-acpx-native-")) {
+      if (String(path).includes("wardmote-acpx-native-")) {
         snapshotRoot = String(path);
         deleting.release();
         await releaseDeletion.promise;
@@ -269,7 +269,7 @@ describe("native ACPX execution closure", () => {
     const originalRm = vi.mocked(rm).getMockImplementation()!;
     let snapshotRoot = "", failed = false;
     vi.mocked(rm).mockImplementation(async (path, options) => {
-      if (String(path).includes("paperclip-acpx-native-") && !failed) {
+      if (String(path).includes("wardmote-acpx-native-") && !failed) {
         failed = true;
         snapshotRoot = String(path);
         deleting.release();
@@ -319,7 +319,7 @@ describe("native ACPX execution closure", () => {
     const install = await verifyNativeAcpxInstallation(declaration);
     const first = await output((await install.openCommand()).spawn([], { env: { COPILOT_PKG_CACHE_HOME: "/ambient/cache" } }));
     const second = await output((await install.openCommand()).spawn());
-    expect(first.text).toMatch(/^native:fixed:.*paperclip-acpx-native-.*\/state$/);
+    expect(first.text).toMatch(/^native:fixed:.*wardmote-acpx-native-.*\/state$/);
     expect(first.text).not.toBe(second.text);
   });
   // Copy/hash the real Node closure and start its bootstrap + owned shim. These
@@ -340,7 +340,7 @@ describe("native ACPX execution closure", () => {
     const result = await output(lease.spawn([], { env: { COPILOT_CLI_DIST_DIR: "/ambient/evil", COPILOT_CLI_VERSION: "99.0.0", NODE_OPTIONS: "--untrusted-option" } }));
     expect(result.code, result.error).toBe(0);
     const observed = JSON.parse(result.text);
-    expect(observed.owned).toMatch(/paperclip-acpx-native-.*\/distribution\/distribution$/);
+    expect(observed.owned).toMatch(/wardmote-acpx-native-.*\/distribution\/distribution$/);
     expect(observed.dist).toBe(join(dirname(observed.owned), ".paperclip-copilot-entry"));
     expect(observed.version).toBeNull(); expect(observed.options).toBeNull();
     await lease.close();
@@ -430,7 +430,7 @@ describe("native ACPX execution closure", () => {
     const removalStart = vi.mocked(rm).mock.calls.length;
     const operation = async (path: any, mode: any) => {
       const selected = stage === "create"
-        ? /paperclip-acpx-native-.*\/distribution\/dir-\d+$/.test(String(path))
+        ? /wardmote-acpx-native-.*\/distribution\/dir-\d+$/.test(String(path))
         : mode === 0o500;
       if (!selected) return stage === "create" ? original.mkdir(path, mode) : original.chmod(path, mode);
       const index = started++; active++; peak = Math.max(peak, active);
@@ -447,12 +447,12 @@ describe("native ACPX execution closure", () => {
     try {
       await vi.waitFor(() => expect(started).toBe(32));
       expect(peak).toBeGreaterThan(1); expect(peak).toBeLessThanOrEqual(32); expect(settled).toBe(false);
-      expect(vi.mocked(rm).mock.calls.slice(removalStart).filter(([path]) => String(path).includes("paperclip-acpx-native-"))).toHaveLength(0);
+      expect(vi.mocked(rm).mock.calls.slice(removalStart).filter(([path]) => String(path).includes("wardmote-acpx-native-"))).toHaveLength(0);
     } finally { hold.release(); }
     try {
       await expect(creating).rejects.toThrow(`fixture ${stage} failure`);
       expect(active).toBe(0); expect(started).toBe(32);
-      const removed = vi.mocked(rm).mock.calls.slice(removalStart).map(([path]) => String(path)).filter(path => path.includes("paperclip-acpx-native-"));
+      const removed = vi.mocked(rm).mock.calls.slice(removalStart).map(([path]) => String(path)).filter(path => path.includes("wardmote-acpx-native-"));
       expect(removed).toHaveLength(1);
       await expect(stat(removed[0]!)).rejects.toMatchObject({ code: "ENOENT" });
     } finally { vi.mocked(mkdir).mockImplementation(original.mkdir); vi.mocked(chmod).mockImplementation(original.chmod); }
@@ -547,7 +547,7 @@ describe("native ACPX execution closure", () => {
     } finally { hold.release(); }
     await expect(creating).rejects.toThrow("digest mismatch: file-00");
     expect(readSizes).not.toContain(123);
-    const removals = vi.mocked(rm).mock.calls.slice(removalStart).map(([path]) => String(path)).filter(path => /paperclip-acpx-native-/.test(path));
+    const removals = vi.mocked(rm).mock.calls.slice(removalStart).map(([path]) => String(path)).filter(path => /wardmote-acpx-native-/.test(path));
     expect(removals).toHaveLength(1);
     await new Promise<void>(resolve => setImmediate(resolve));
     await expect(stat(removals[0]!)).rejects.toMatchObject({ code: "ENOENT" });
@@ -574,7 +574,7 @@ describe("native ACPX execution closure", () => {
       hold.release();
       await expect(creating).rejects.toThrow("owned command refresh cancelled");
       expect(readSizes).not.toContain(123);
-      const removals = vi.mocked(rm).mock.calls.slice(removalStart).map(([path]) => String(path)).filter(path => /paperclip-acpx-native-/.test(path));
+      const removals = vi.mocked(rm).mock.calls.slice(removalStart).map(([path]) => String(path)).filter(path => /wardmote-acpx-native-/.test(path));
       expect(removals).toHaveLength(1);
       await expect(stat(removals[0]!)).rejects.toMatchObject({ code: "ENOENT" });
     } finally {

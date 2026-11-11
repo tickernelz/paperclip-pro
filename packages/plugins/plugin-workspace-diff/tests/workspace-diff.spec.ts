@@ -17,7 +17,7 @@ async function runGit(cwd: string, args: string[]) {
 }
 
 async function createTempRepo() {
-  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-plugin-workspace-diff-"));
+  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-plugin-workspace-diff-"));
   tempDirs.add(repoRoot);
   await runGit(repoRoot, ["init"]);
   await runGit(repoRoot, ["config", "user.name", "Wardmote Test"]);
@@ -157,7 +157,7 @@ describe("plugin workspace diff service", () => {
 
   it("does not follow untracked symlinks outside the repo", async () => {
     const repoRoot = await createTempRepo();
-    const outsideDir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-plugin-workspace-diff-secret-"));
+    const outsideDir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-plugin-workspace-diff-secret-"));
     tempDirs.add(outsideDir);
     const secretContent = "external secret should not appear\n";
     const secretPath = path.join(outsideDir, "secret.txt");
@@ -186,7 +186,7 @@ describe("plugin workspace diff service", () => {
     await expect(svc.getDiff(createWorkspace(null), workingTreeQuery()))
       .rejects.toMatchObject({ status: 422, details: { code: "missing_cwd" } });
 
-    const nonGitDir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-plugin-workspace-diff-non-git-"));
+    const nonGitDir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-plugin-workspace-diff-non-git-"));
     tempDirs.add(nonGitDir);
     await expect(svc.getDiff(createWorkspace(nonGitDir), workingTreeQuery()))
       .rejects.toMatchObject({ status: 422, details: { code: "non_git_workspace" } });

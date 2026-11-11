@@ -22,7 +22,7 @@ const ORIGINAL_ENV = { ...process.env };
 const tempDirs: string[] = [];
 
 async function makeTempDir(): Promise<string> {
-  const dir = await mkdtemp(path.join(os.tmpdir(), "paperclip-company-import-transfer-"));
+  const dir = await mkdtemp(path.join(os.tmpdir(), "wardmote-company-import-transfer-"));
   tempDirs.push(dir);
   return dir;
 }

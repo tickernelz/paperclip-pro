@@ -83,7 +83,7 @@ async function runGit(cwd: string, args: string[]) {
 }
 
 async function createGitRepo() {
-  const repoRoot = await mkdtemp(path.join(os.tmpdir(), "paperclip-finalize-branch-repo-"));
+  const repoRoot = await mkdtemp(path.join(os.tmpdir(), "wardmote-finalize-branch-repo-"));
   await runGit(repoRoot, ["init"]);
   await runGit(repoRoot, ["config", "user.email", "paperclip-test@example.com"]);
   await runGit(repoRoot, ["config", "user.name", "Wardmote Test"]);

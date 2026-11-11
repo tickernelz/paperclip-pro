@@ -83,7 +83,7 @@ describe("workspace Git scan route load regression", () => {
   let tempRoot: string;
 
   beforeAll(async () => {
-    tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-file-scan-load-"));
+    tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-file-scan-load-"));
     await Promise.all([
       fs.mkdir(path.join(tempRoot, "repository-a")),
       fs.mkdir(path.join(tempRoot, "repository-b")),

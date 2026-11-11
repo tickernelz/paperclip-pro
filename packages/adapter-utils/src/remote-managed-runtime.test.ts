@@ -33,7 +33,7 @@ describe("remote managed runtime", () => {
   const cleanupDirs: string[] = [];
 
   it("stages all files over SSH without Git or cache exclusions and restores the same baseline", async () => {
-    const root = await mkdtemp(path.join(os.tmpdir(), "paperclip-ssh-plain-"));
+    const root = await mkdtemp(path.join(os.tmpdir(), "wardmote-ssh-plain-"));
     cleanupDirs.push(root);
     await mkdir(path.join(root, "node_modules"));
     await writeFile(path.join(root, ".gitignore"), "node_modules/\n");
@@ -69,7 +69,7 @@ describe("remote managed runtime", () => {
   });
 
   it("restores runtime assets without restoring an in-place SSH workspace", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-remote-runtime-assets-only-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-remote-runtime-assets-only-"));
     cleanupDirs.push(rootDir);
     const workspaceDir = path.join(rootDir, "workspace");
     const homeDir = path.join(rootDir, "home");
@@ -123,7 +123,7 @@ describe("remote managed runtime", () => {
   });
 
   it("stages each additional project into its own isolated SSH dir, isolating one failure", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-remote-runtime-additional-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-remote-runtime-additional-"));
     cleanupDirs.push(rootDir);
     const workspaceDir = path.join(rootDir, "workspace");
     const firstDir = path.join(rootDir, "referenced-first");
@@ -177,7 +177,7 @@ describe("remote managed runtime", () => {
   });
 
   it("skips an additional project whose localPath is not absolute", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-remote-runtime-relative-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-remote-runtime-relative-"));
     cleanupDirs.push(rootDir);
     const workspaceDir = path.join(rootDir, "workspace");
     const healthyDir = path.join(rootDir, "referenced-healthy");
@@ -214,7 +214,7 @@ describe("remote managed runtime", () => {
   });
 
   it("passes a project's resolved Git-ignored paths to the SSH exclude list, escaped", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-remote-runtime-ignore-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-remote-runtime-ignore-"));
     cleanupDirs.push(rootDir);
     const workspaceDir = path.join(rootDir, "workspace");
     const projectDir = path.join(rootDir, "referenced-project");
@@ -257,7 +257,7 @@ describe("remote managed runtime", () => {
   });
 
   it("skips a project whose ignore resolution failed without ever calling syncDirectoryToSsh for it", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-remote-runtime-failed-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-remote-runtime-failed-"));
     cleanupDirs.push(rootDir);
     const workspaceDir = path.join(rootDir, "workspace");
     const healthyDir = path.join(rootDir, "referenced-healthy");
@@ -293,7 +293,7 @@ describe("remote managed runtime", () => {
   });
 
   it("never leaks a raw absolute path into the remote per-project staging warning", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-remote-runtime-redact-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-remote-runtime-redact-"));
     cleanupDirs.push(rootDir);
     const workspaceDir = path.join(rootDir, "workspace");
     const failedDir = path.join(rootDir, "referenced-failed");

@@ -162,7 +162,7 @@ describe("issue subresource commands", () => {
   });
 
   it("wraps interactions, tree holds, labels, feedback votes, and attachments", async () => {
-    const tmp = await mkdtemp(join(tmpdir(), "paperclip-cli-test-"));
+    const tmp = await mkdtemp(join(tmpdir(), "wardmote-cli-test-"));
     const filePath = join(tmp, "attachment.txt");
     await writeFile(filePath, "hello", "utf8");
     const fetchMock = vi
@@ -243,7 +243,7 @@ describe("issue subresource commands", () => {
 
   it("forwards the agent run-id header and inferred content-type on attachment:upload", async () => {
     const RUN_ID = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
-    const tmp = await mkdtemp(join(tmpdir(), "paperclip-cli-test-"));
+    const tmp = await mkdtemp(join(tmpdir(), "wardmote-cli-test-"));
     const filePath = join(tmp, "deliverable.html");
     await writeFile(filePath, "<html><body>hi</body></html>", "utf8");
     const fetchMock = vi.fn().mockImplementation(() => Promise.resolve(jsonResponse()));

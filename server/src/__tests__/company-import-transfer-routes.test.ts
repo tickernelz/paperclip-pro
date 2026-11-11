@@ -255,7 +255,7 @@ describeEmbeddedPostgres("company import transfer routes", () => {
     // The mocked import result points at this company; the ledger's
     // company_id foreign key needs the row to exist.
     await db.insert(companies).values({ id: companyId, name: "Chunked Import Target" });
-    spoolRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-import-transfer-spool-"));
+    spoolRoot = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-import-transfer-spool-"));
     app = await createApp();
   });
 

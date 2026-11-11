@@ -9,7 +9,7 @@ import { apiPath, inferContentTypeFromPath, resolveApiBase, resolveCommandContex
 const ORIGINAL_ENV = { ...process.env };
 
 function createTempPath(name: string): string {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-cli-common-"));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-cli-common-"));
   return path.join(dir, name);
 }
 

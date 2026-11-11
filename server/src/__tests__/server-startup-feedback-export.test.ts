@@ -197,19 +197,19 @@ function buildTestConfig(overrides: Record<string, unknown> = {}) {
     authDisableSignUp: false,
     databaseMode: "postgres",
     databaseUrl: "postgres://wardmote:wardmote@127.0.0.1:5432/wardmote",
-    embeddedPostgresDataDir: "/tmp/paperclip-test-db",
+    embeddedPostgresDataDir: "/tmp/wardmote-test-db",
     embeddedPostgresPort: 54329,
     databaseBackupEnabled: false,
     databaseBackupIntervalMinutes: 60,
     databaseBackupRetentionDays: 30,
-    databaseBackupDir: "/tmp/paperclip-test-backups",
+    databaseBackupDir: "/tmp/wardmote-test-backups",
     serveUi: false,
     uiDevMiddleware: false,
     secretsProvider: "local_encrypted",
     secretsStrictMode: false,
-    secretsMasterKeyFilePath: "/tmp/paperclip-master.key",
+    secretsMasterKeyFilePath: "/tmp/wardmote-master.key",
     storageProvider: "local_disk",
-    storageLocalDiskBaseDir: "/tmp/paperclip-storage",
+    storageLocalDiskBaseDir: "/tmp/wardmote-storage",
     storageS3Bucket: "paperclip-test",
     storageS3Region: "us-east-1",
     storageS3Endpoint: undefined,
@@ -570,7 +570,7 @@ describe("startServer feedback export wiring", () => {
   it("starts without WARDMOTE_DECISION_SIGNING_SECRET by generating a persisted key", async () => {
     const originalHome = process.env.WARDMOTE_HOME;
     const originalInstanceId = process.env.WARDMOTE_INSTANCE_ID;
-    const tempHome = mkdtempSync(path.join(tmpdir(), "paperclip-decision-key-"));
+    const tempHome = mkdtempSync(path.join(tmpdir(), "wardmote-decision-key-"));
     process.env.WARDMOTE_HOME = tempHome;
     process.env.WARDMOTE_INSTANCE_ID = "default";
     delete process.env.WARDMOTE_DECISION_SIGNING_SECRET;
@@ -595,7 +595,7 @@ describe("startServer feedback export wiring", () => {
   it("repairs permissive permissions on an existing generated decision signing key", async () => {
     const originalHome = process.env.WARDMOTE_HOME;
     const originalInstanceId = process.env.WARDMOTE_INSTANCE_ID;
-    const tempHome = mkdtempSync(path.join(tmpdir(), "paperclip-decision-key-mode-"));
+    const tempHome = mkdtempSync(path.join(tmpdir(), "wardmote-decision-key-mode-"));
     const keyPath = path.join(tempHome, "instances", "default", "secrets", "decision-signing.key");
     const existingKey = Buffer.alloc(32, 7).toString("base64");
     mkdirSync(path.dirname(keyPath), { recursive: true, mode: 0o777 });
@@ -627,7 +627,7 @@ describe("startServer feedback export wiring", () => {
 
     const originalHome = process.env.WARDMOTE_HOME;
     const originalInstanceId = process.env.WARDMOTE_INSTANCE_ID;
-    const tempHome = mkdtempSync(path.join(tmpdir(), "paperclip-decision-key-symlink-"));
+    const tempHome = mkdtempSync(path.join(tmpdir(), "wardmote-decision-key-symlink-"));
     const keyPath = path.join(tempHome, "instances", "default", "secrets", "decision-signing.key");
     const plantedTarget = path.join(tempHome, "planted.key");
     const plantedKey = Buffer.alloc(32, 9).toString("base64");

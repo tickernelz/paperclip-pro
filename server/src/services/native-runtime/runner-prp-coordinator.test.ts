@@ -237,7 +237,7 @@ describeEmbeddedPostgres("hidden runner PRP coordinator", () => {
     const seed = await seedNativeRun();
     const server = createServer();
     setupRunnerPrpWebSocketServer(server, { apiUrl: "http://127.0.0.1:3213" });
-    const stateRoot = mkdtempSync(resolve(tmpdir(), "paperclip-runner-state-"));
+    const stateRoot = mkdtempSync(resolve(tmpdir(), "wardmote-runner-state-"));
     scratchDirectories.push(stateRoot);
     const coordinator = runnerPrpCoordinator(db, { stateRoot });
     await expect(

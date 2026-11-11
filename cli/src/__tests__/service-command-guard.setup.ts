@@ -13,7 +13,7 @@ const sandbox = vi.hoisted(() => ({ realHome: "", home: "" }));
 async function sandboxHomedir(importOriginal: () => Promise<typeof Os>) {
   const actual = await importOriginal();
   sandbox.realHome ||= actual.homedir();
-  sandbox.home ||= fs.mkdtempSync(path.join(actual.tmpdir(), "paperclip-cli-test-home-"));
+  sandbox.home ||= fs.mkdtempSync(path.join(actual.tmpdir(), "wardmote-cli-test-home-"));
   const homedir = (): string => {
     const home = process.env.HOME;
     return home && home !== sandbox.realHome ? home : sandbox.home;

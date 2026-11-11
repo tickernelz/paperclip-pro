@@ -33,7 +33,7 @@ describe("device-login credential export", () => {
   });
 
   async function makeInstanceRoot(): Promise<string> {
-    const dir = await mkdtemp(path.join(os.tmpdir(), "paperclip-codex-proof-"));
+    const dir = await mkdtemp(path.join(os.tmpdir(), "wardmote-codex-proof-"));
     cleanupDirs.push(dir);
     return dir;
   }

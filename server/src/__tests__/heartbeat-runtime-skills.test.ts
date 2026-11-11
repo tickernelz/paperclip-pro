@@ -71,7 +71,7 @@ describeEmbeddedPostgres("heartbeat runtime skill version pins", () => {
     tempDb = await startEmbeddedPostgresTestDatabase("heartbeat-runtime-skills-");
     db = createDb(tempDb.connectionString);
     oldWardmoteHome = process.env.WARDMOTE_HOME;
-    wardmoteHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-skills-home-"));
+    wardmoteHome = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-runtime-skills-home-"));
     process.env.WARDMOTE_HOME = wardmoteHome;
     // The server normalizes WARDMOTE_API_URL into its own env at boot
     // (server/src/index.ts); heartbeat gateway delivery requires it, so pin
@@ -152,7 +152,7 @@ describeEmbeddedPostgres("heartbeat runtime skill version pins", () => {
     const secondAgentId = randomUUID();
     const issuePrefix = `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`;
     const skillKey = `company/${companyId}/runtime-coach`;
-    const skillDir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-versioned-runtime-skill-"));
+    const skillDir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-versioned-runtime-skill-"));
     cleanupDirs.add(skillDir);
 
     await db.insert(companies).values({

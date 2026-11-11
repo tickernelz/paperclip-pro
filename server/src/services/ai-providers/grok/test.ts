@@ -165,7 +165,7 @@ export async function testEnvironment(
         // draw. Handing it the remote path as `workspaceLocalDir` made the
         // host-side ignore scan fail on a directory that does not exist.
         runtimeWorkspaceLocalDir = await mkdtemp(
-          path.join(os.tmpdir(), `paperclip-grok-envtest-${runId}-`),
+          path.join(os.tmpdir(), `wardmote-grok-envtest-${runId}-`),
         );
         const prepared = await prepareAdapterExecutionTargetRuntime({
           runId, target, adapterKey: "grok",

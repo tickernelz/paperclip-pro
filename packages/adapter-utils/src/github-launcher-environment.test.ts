@@ -24,7 +24,7 @@ afterEach(async () => {
 });
 
 async function sandbox(layout: string) {
-  const root = await mkdtemp(path.join(os.tmpdir(), "paperclip-launcher-env-"));
+  const root = await mkdtemp(path.join(os.tmpdir(), "wardmote-launcher-env-"));
   roots.push(root);
   const bin = path.join(root, layout);
   await mkdir(bin, { recursive: true });
@@ -210,7 +210,7 @@ describe("managed GitHub launcher environment", () => {
   });
 
   it("preserves local host credential helpers and validates worktree metadata", async () => {
-    const root = await mkdtemp(path.join(os.tmpdir(), "paperclip-host-git-")); roots.push(root);
+    const root = await mkdtemp(path.join(os.tmpdir(), "wardmote-host-git-")); roots.push(root);
     vi.stubEnv("HOME", root);
     vi.stubEnv("GH_TOKEN", "legacy-token");
     await writeFile(path.join(root, ".gitconfig"), '[credential]\n  helper = store\n');

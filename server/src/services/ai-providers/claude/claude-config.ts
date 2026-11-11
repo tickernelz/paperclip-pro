@@ -316,7 +316,7 @@ export async function prepareSandboxClaudeProbeRuntime(input: {
       const managedRemoteCwd =
         input.target?.kind === "remote" ? input.target.remoteCwd : input.cwd;
       tempWorkspaceDir = await fs.mkdtemp(
-        path.join(os.tmpdir(), "paperclip-claude-envtest-workspace-"),
+        path.join(os.tmpdir(), "wardmote-claude-envtest-workspace-"),
       );
       preparedRuntime = await prepareAdapterExecutionTargetRuntime({
         runId: input.runId,

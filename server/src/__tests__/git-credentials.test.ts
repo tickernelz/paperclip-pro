@@ -226,7 +226,7 @@ describe("buildGitAuthInvocation", () => {
 
 describe("credential helper execution (real git, no network)", () => {
   async function runCredentialFill(description: string) {
-    const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-git-cred-fill-"));
+    const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-git-cred-fill-"));
     try {
       const invocation = buildGitAuthInvocation({
         token: "abc123",

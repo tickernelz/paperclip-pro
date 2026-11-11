@@ -42,7 +42,7 @@ describe.skipIf(!support.supported)("heartbeat runtime execution boundary", () =
   let db: Db;
   let home: string;
   beforeAll(async () => {
-    home = await mkdtemp(join(tmpdir(), "paperclip-runtime-execution-"));
+    home = await mkdtemp(join(tmpdir(), "wardmote-runtime-execution-"));
     vi.stubEnv("WARDMOTE_HOME", home);
     database = await startEmbeddedPostgresTestDatabase("paperclip-runtime-execution");
     db = createDb(database.connectionString);

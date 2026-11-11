@@ -29,7 +29,7 @@ if (!support.supported) console.warn(`Planning fixture API calibration skipped: 
   let app: express.Express;
   beforeAll(async () => {
     tempDb = await startEmbeddedPostgresTestDatabase("paperclip-plan-fixture-");
-    root = await mkdtemp(path.join(os.tmpdir(), "paperclip-plan-fixture-home-"));
+    root = await mkdtemp(path.join(os.tmpdir(), "wardmote-plan-fixture-home-"));
     process.env.WARDMOTE_HOME = root;
     process.env.WARDMOTE_INSTANCE_ID = "default";
     db = createDb(tempDb.connectionString);

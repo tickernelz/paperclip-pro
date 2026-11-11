@@ -11,7 +11,7 @@ const contextRoots: string[] = [];
 afterEach(() => { for (const root of contextRoots.splice(0)) rmSync(root, { recursive: true, force: true }); });
 
 function preparedExecution(base: NativeExecutionInput): NativeExecutionInput {
-  const root = mkdtempSync(join(tmpdir(), "paperclip-prepared-backend-"));
+  const root = mkdtempSync(join(tmpdir(), "wardmote-prepared-backend-"));
   contextRoots.push(root);
   writeFileSync(join(root, "AGENTS.md"), "Keep assigned instructions.");
   const digest = "0".repeat(64);
@@ -629,7 +629,7 @@ describe("native backend factory", () => {
   it("projects v5 OpenCode constraints to the prepared runtime boundary", () => {
     const input = preparedExecution(opencodeExecution());
     const backend = createOpenCodeNativeSessionBackend(input, {
-      runtimeDirectory: "/tmp/paperclip-opencode-prepared-factory",
+      runtimeDirectory: "/tmp/wardmote-opencode-prepared-factory",
     });
     expect(backend.preparedTaskConstraints).toEqual(
       expect.arrayContaining([

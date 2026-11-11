@@ -284,7 +284,7 @@ describeEmbeddedPostgres("wardmote company import/export e2e", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempRoot = mkdtempSync(path.join(os.tmpdir(), "paperclip-company-cli-e2e-"));
+    tempRoot = mkdtempSync(path.join(os.tmpdir(), "wardmote-company-cli-e2e-"));
     configPath = path.join(tempRoot, "config", "config.json");
     exportDir = path.join(tempRoot, "exported-company");
     wardmoteHome = path.join(tempRoot, "paperclip-home");

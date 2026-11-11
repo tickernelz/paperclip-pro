@@ -44,7 +44,7 @@ describeEmbeddedPostgres("secretService Claude Code OAuth helper and compare-and
   let stopDb: (() => Promise<void>) | null = null;
   let db!: ReturnType<typeof createDb>;
   const previousKeyFile = process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE;
-  const secretsTmpDir = path.join(os.tmpdir(), `paperclip-claude-oauth-${randomUUID()}`);
+  const secretsTmpDir = path.join(os.tmpdir(), `wardmote-claude-oauth-${randomUUID()}`);
 
   beforeAll(async () => {
     mkdirSync(secretsTmpDir, { recursive: true });

@@ -1416,7 +1416,7 @@ function buildFailure(
 /** The fixed, session-specific Codex home template. The session identifier is
  *  server-generated, so no caller controls this path. */
 export function sessionLoginHomePath(sessionId: string): string {
-  return `/tmp/paperclip-adapter-login/${sessionId}`;
+  return `/tmp/wardmote-adapter-login/${sessionId}`;
 }
 
 /** The fixed, session-specific credential path. No caller controls it. */

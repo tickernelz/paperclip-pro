@@ -170,7 +170,7 @@ export async function stageGrokHomeForSync(
 ): Promise<string> {
   const runIdPart = nonEmpty(options.runId ?? undefined);
   const stagedHome = await fs.mkdtemp(
-    path.join(os.tmpdir(), `paperclip-grok-home-sync-${runIdPart ? `${runIdPart}-` : ""}`),
+    path.join(os.tmpdir(), `wardmote-grok-home-sync-${runIdPart ? `${runIdPart}-` : ""}`),
   );
   try {
     for (const entry of GROK_SYNC_ALLOWLIST) {

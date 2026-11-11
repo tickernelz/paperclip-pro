@@ -40,7 +40,7 @@ describe("device-login credential promotion", () => {
   });
 
   async function makeInstanceRoot(): Promise<string> {
-    const dir = await mkdtemp(path.join(os.tmpdir(), "paperclip-codex-promotion-"));
+    const dir = await mkdtemp(path.join(os.tmpdir(), "wardmote-codex-promotion-"));
     cleanupDirs.push(dir);
     return dir;
   }

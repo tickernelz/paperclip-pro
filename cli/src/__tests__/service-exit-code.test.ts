@@ -13,7 +13,7 @@ const tsxEntry = path.join(repoRoot, "cli", "node_modules", "tsx", "dist", "cli.
 const cliEntry = path.join(repoRoot, "cli", "src", "index.ts");
 
 function createIsolatedHome(instanceId: string): string {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-exit-code-"));
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-exit-code-"));
   const instanceDir = path.join(home, "instances", instanceId);
   fs.mkdirSync(instanceDir, { recursive: true });
   const config = wardmoteConfigSchema.parse({

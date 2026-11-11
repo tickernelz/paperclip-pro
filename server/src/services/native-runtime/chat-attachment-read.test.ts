@@ -86,10 +86,10 @@ describe("native same-conversation historical attachment reading", () => {
     temporary = await startEmbeddedPostgresTestDatabase("native-chat-reuse-");
     db = createDb(temporary.connectionString);
     workspaceRoot = await mkdtemp(
-      path.join(tmpdir(), "paperclip-chat-read-workspace-"),
+      path.join(tmpdir(), "wardmote-chat-read-workspace-"),
     );
     const storageRoot = await mkdtemp(
-      path.join(tmpdir(), "paperclip-chat-reuse-"),
+      path.join(tmpdir(), "wardmote-chat-reuse-"),
     );
     await mkdir(storageRoot, { recursive: true });
     storage = createStorageService(createLocalDiskStorageProvider(storageRoot));
@@ -497,10 +497,10 @@ describe("native same-conversation historical attachment reading", () => {
 
   it("rejects a symlinked staging root without touching its target", async () => {
     const unsafeRoot = await mkdtemp(
-      path.join(tmpdir(), "paperclip-chat-read-symlink-"),
+      path.join(tmpdir(), "wardmote-chat-read-symlink-"),
     );
     const outside = await mkdtemp(
-      path.join(tmpdir(), "paperclip-chat-read-outside-"),
+      path.join(tmpdir(), "wardmote-chat-read-outside-"),
     );
     await symlink(outside, path.join(unsafeRoot, ".paperclip-inbound"));
     const reader = scope({ workspaceRoot: unsafeRoot });

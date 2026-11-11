@@ -83,7 +83,7 @@ describeEmbeddedPostgres("workspace operation reconciliation", () => {
   beforeAll(async () => {
     tempDb = await startEmbeddedPostgresTestDatabase("paperclip-workspace-operation-reconcile-");
     db = createDb(tempDb.connectionString);
-    logRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-workspace-operation-logs-"));
+    logRoot = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-workspace-operation-logs-"));
     previousLogRoot = process.env.WORKSPACE_OPERATION_LOG_BASE_PATH;
     process.env.WORKSPACE_OPERATION_LOG_BASE_PATH = logRoot;
   }, 20_000);

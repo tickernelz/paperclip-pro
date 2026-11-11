@@ -58,7 +58,7 @@ describe("fake sandbox provider plugin", () => {
       lease,
       workspace: { mode: "isolated_workspace" },
     });
-    expect(realized.cwd).toContain("paperclip-fake-sandbox-");
+    expect(realized.cwd).toContain("wardmote-fake-sandbox-");
 
     const executed = await harness.execute({
       ...base,

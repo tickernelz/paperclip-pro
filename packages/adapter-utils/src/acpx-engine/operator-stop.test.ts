@@ -11,7 +11,7 @@ const fixture = fileURLToPath(new URL('../../../../scripts/mcp-fixtures/servers/
 const roots: string[] = [];
 afterEach(async () => { await Promise.all(roots.splice(0).map(root => fs.rm(root, { recursive: true, force: true }))); });
 async function setup(tool?: string) {
-  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'paperclip-acp-stop-'));
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'wardmote-acp-stop-'));
   roots.push(root);
   const abort = new AbortController();
   let ready!: () => void;

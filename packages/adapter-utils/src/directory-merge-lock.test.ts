@@ -33,7 +33,7 @@ describe("directory merge lock process lifetime", () => {
   });
 
   async function fixture() {
-    const root = await mkdtemp(path.join(os.tmpdir(), "paperclip-lock-process-"));
+    const root = await mkdtemp(path.join(os.tmpdir(), "wardmote-lock-process-"));
     directories.push(root);
     const target = path.join(root, "target");
     await mkdir(target);

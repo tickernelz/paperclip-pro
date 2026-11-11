@@ -524,7 +524,7 @@ describe("remote controller restart adoption", () => {
   });
   it("wires remote adoption when only controller state survived on the host", async () => {
     const stateBase = await mkdtemp(
-      join(tmpdir(), "paperclip-remote-reattach-"),
+      join(tmpdir(), "wardmote-remote-reattach-"),
     );
     const previous = process.env.WARDMOTE_RUNNER_STATE_DIR;
     process.env.WARDMOTE_RUNNER_STATE_DIR = stateBase;
@@ -1131,7 +1131,7 @@ describe("remote provider pack manifest", () => {
   };
 
   it.each(["opencode", "cursor"] as const)("uses the bundled Linux image authority for remote %s without controller overrides", async provider => {
-    const root = await mkdtemp(join(tmpdir(), "paperclip-bundled-image-"));
+    const root = await mkdtemp(join(tmpdir(), "wardmote-bundled-image-"));
     const digest = "sha256:" + "a".repeat(64);
     const artifacts = Object.fromEntries(Object.entries({
       grokLauncher: "dist/providers/grok/launcher.cjs", nodeCommand: "node_modules/node/bin/node",
@@ -1188,7 +1188,7 @@ describe("remote provider pack manifest", () => {
   });
 
   it("accepts a fully digested pack and rejects artifact tampering", async () => {
-    const root = await mkdtemp(join(tmpdir(), "paperclip-provider-pack-"));
+    const root = await mkdtemp(join(tmpdir(), "wardmote-provider-pack-"));
     await mkdir(join(root, "dist", "cli"), { recursive: true });
     await mkdir(join(root, "node_modules", "node", "bin"), { recursive: true });
     await mkdir(join(root, "node_modules", ".bin"), { recursive: true });
@@ -1301,7 +1301,7 @@ describe("remote provider pack manifest", () => {
     Object.assign(payload, { providers: { cursor } });
     await writeManifest();
     expect(readRemoteProviderPackManifest(root).payload.providers?.cursor?.version).toBe(QUALIFIED_ACPX_PROFILES.cursor.agentServerVersion);
-    const releaseMetadata = await mkdtemp(join(tmpdir(), "paperclip-image-identity-"));
+    const releaseMetadata = await mkdtemp(join(tmpdir(), "wardmote-image-identity-"));
     const manifestPath = join(releaseMetadata, "provider-pack.json");
     await cp(join(root, "provider-pack.json"), manifestPath);
     expect(readBundledRemoteProviderPackManifest(manifestPath).digest).toBe(readRemoteProviderPackManifest(root).digest);
@@ -1429,7 +1429,7 @@ describe("provider pack read diagnostics", () => {
   });
 
   it("classifies a JSON null manifest as incompatible instead of a TypeError", async () => {
-    const root = await mkdtemp(join(tmpdir(), "paperclip-null-pack-"));
+    const root = await mkdtemp(join(tmpdir(), "wardmote-null-pack-"));
     try {
       await writeFile(join(root, "provider-pack.json"), "null");
       expect(() => readRemoteProviderPackManifest(root)).toThrow(
@@ -1439,7 +1439,7 @@ describe("provider pack read diagnostics", () => {
   });
 
   it.each(["missing", "invalid_json", "invalid_path_type"])("reports %s without putting the path in the terminal message", async (reason) => {
-    const root = await mkdtemp(join(tmpdir(), "paperclip-private-pack-"));
+    const root = await mkdtemp(join(tmpdir(), "wardmote-private-pack-"));
     try {
       const manifestPath = join(root, "provider-pack.json");
       if (reason === "invalid_json") await writeFile(manifestPath, "{ private-invalid-json");
@@ -1721,7 +1721,7 @@ describe("verified native harness backups", () => {
   });
 
   it("accepts a complete digest-matched backup and rejects corruption", async () => {
-    const root = await mkdtemp(join(tmpdir(), "paperclip-harness-backup-"));
+    const root = await mkdtemp(join(tmpdir(), "wardmote-harness-backup-"));
     try {
       const current = join(root, "failover-backups", "current");
       await mkdir(join(current, "runner"), { recursive: true });
@@ -1799,7 +1799,7 @@ describe("verified native harness backups", () => {
 
   it("rejects a backup whose provider identity or harness contract changed", async () => {
     const root = await mkdtemp(
-      join(tmpdir(), "paperclip-harness-backup-identity-"),
+      join(tmpdir(), "wardmote-harness-backup-identity-"),
     );
     try {
       const current = join(root, "failover-backups", "current");
@@ -1828,7 +1828,7 @@ describe("verified native harness backups", () => {
   });
 
   it("verifies the lease stamp and all backup directory digests before replacement", async () => {
-    const stateBase = await mkdtemp(join(tmpdir(), "paperclip-harness-stamp-"));
+    const stateBase = await mkdtemp(join(tmpdir(), "wardmote-harness-stamp-"));
     const previousStateDirectory = process.env.WARDMOTE_RUNNER_STATE_DIR;
     process.env.WARDMOTE_RUNNER_STATE_DIR = stateBase;
     try {
@@ -1897,7 +1897,7 @@ describe("verified native harness backups", () => {
 
   it("rejects a digest-valid legacy stamp for remote lease authorization", async () => {
     const stateBase = await mkdtemp(
-      join(tmpdir(), "paperclip-legacy-harness-stamp-"),
+      join(tmpdir(), "wardmote-legacy-harness-stamp-"),
     );
     const previousStateDirectory = process.env.WARDMOTE_RUNNER_STATE_DIR;
     process.env.WARDMOTE_RUNNER_STATE_DIR = stateBase;
@@ -2284,7 +2284,7 @@ describe("remote provider checkpoint snapshots", () => {
     await syncRemoteRunnerDirectoryOut({
       runner: { execute, syncOut } as never,
       sourcePath: "/remote/session/filesystem/codex-home",
-      targetPath: "/tmp/paperclip-checkpoint-test-codex-home",
+      targetPath: "/tmp/wardmote-checkpoint-test-codex-home",
       mode: 0o700,
       excludeEntries: ["tmp", ".tmp", "auth.json", "config.toml"],
     });
@@ -2312,7 +2312,7 @@ describe("remote provider checkpoint snapshots", () => {
       sourcePath: expect.stringMatching(
         /^\/remote\/session\/filesystem\/\.paperclip-checkpoint-/,
       ),
-      targetPath: "/tmp/paperclip-checkpoint-test-codex-home",
+      targetPath: "/tmp/wardmote-checkpoint-test-codex-home",
       kind: "directory",
       mode: 0o700,
     });
@@ -2340,7 +2340,7 @@ describe("remote provider checkpoint snapshots", () => {
     await syncRemoteRunnerDirectoryOut({
       runner: { execute, syncOut } as never,
       sourcePath: "/remote/session/filesystem/acpx",
-      targetPath: "/tmp/paperclip-checkpoint-test-acpx",
+      targetPath: "/tmp/wardmote-checkpoint-test-acpx",
       mode: 0o700,
       excludeEntries: excluded,
     });
@@ -2365,7 +2365,7 @@ describe("remote provider checkpoint snapshots", () => {
       syncRemoteRunnerDirectoryOut({
         runner: { execute, syncOut: vi.fn() } as never,
         sourcePath: "/remote/codex-home",
-        targetPath: "/tmp/paperclip-checkpoint-invalid-codex-home",
+        targetPath: "/tmp/wardmote-checkpoint-invalid-codex-home",
         mode: 0o700,
         excludeEntries: ["../outside"],
       }),
@@ -2373,7 +2373,7 @@ describe("remote provider checkpoint snapshots", () => {
   });
 
   it("rejects unsafe fallback archives without replacing durable state", async () => {
-    const root = await mkdtemp(join(tmpdir(), "paperclip-checkpoint-unsafe-"));
+    const root = await mkdtemp(join(tmpdir(), "wardmote-checkpoint-unsafe-"));
     const archiveSource = join(root, "archive-source");
     const targetPath = join(root, "durable-target");
     try {
@@ -2421,7 +2421,7 @@ describe("remote provider checkpoint snapshots", () => {
 describe("remote provider checkpoint restores", () => {
   it("does not upload excluded Codex scratch trees or credentials", async () => {
     const sourcePath = await mkdtemp(
-      join(tmpdir(), "paperclip-codex-restore-source-"),
+      join(tmpdir(), "wardmote-codex-restore-source-"),
     );
     try {
       await mkdir(join(sourcePath, "sessions"), { recursive: true });
@@ -2480,7 +2480,7 @@ describe("remote provider checkpoint restores", () => {
 
 describe("remote preinstalled executable discovery", () => {
   it("stages a relative-path CLI shim without changing its installation or losing arguments", async () => {
-    const root = await mkdtemp(join(tmpdir(), "paperclip-codex-shim-"));
+    const root = await mkdtemp(join(tmpdir(), "wardmote-codex-shim-"));
     try {
       const installation = join(root, "image install's bin");
       const target = join(root, "workspace", "bin", "codex");
@@ -2931,7 +2931,7 @@ const execution = {
     workMode: "standard",
   },
   workspace: {
-    cwd: "/tmp/paperclip-native-session-test",
+    cwd: "/tmp/wardmote-native-session-test",
     repoUrl: null,
     repoRef: null,
     branchName: null,
@@ -3030,7 +3030,7 @@ describe("retained native cleanup activation", () => {
     "legacy_activation",
   ])("preserves exact original evidence for %s", async (mode) => {
     const directory = await mkdtemp(
-      join(tmpdir(), "paperclip-maintenance-activation-"),
+      join(tmpdir(), "wardmote-maintenance-activation-"),
     );
     let providerHomeDatabase: DatabaseSync | undefined;
     const preservedHomeFiles = [
@@ -4511,7 +4511,7 @@ describe("explicit failed native retry physical evidence", () => {
     "unselected_result",
   ])("observes %s without mutating the retained root", async (kind) => {
     const stateBase = await mkdtemp(
-      join(tmpdir(), "paperclip-failed-retry-state-"),
+      join(tmpdir(), "wardmote-failed-retry-state-"),
     );
     const previous = process.env.WARDMOTE_RUNNER_STATE_DIR;
     process.env.WARDMOTE_RUNNER_STATE_DIR = stateBase;
@@ -7891,7 +7891,7 @@ describe("native warm session supervision", () => {
   });
 
   it.each(["checkpoint first", "turn first"])("serializes restart checkpoint and turn admission: %s", async (order) => {
-    const stateBase = await mkdtemp(join(tmpdir(), "paperclip-close-race-"));
+    const stateBase = await mkdtemp(join(tmpdir(), "wardmote-close-race-"));
     const previousWardmoteHome = process.env.WARDMOTE_HOME;
     process.env.WARDMOTE_HOME = stateBase;
     let finishClose!: () => void;
@@ -8027,7 +8027,7 @@ describe("native warm session supervision", () => {
 
   it("preserves the active turn when a warm checkpoint resumes the same run", async () => {
     const stateBase = await mkdtemp(
-      join(tmpdir(), "paperclip-warm-same-run-recovery-"),
+      join(tmpdir(), "wardmote-warm-same-run-recovery-"),
     );
     const previousWardmoteHome = process.env.WARDMOTE_HOME;
     process.env.WARDMOTE_HOME = stateBase;
@@ -9997,7 +9997,7 @@ describe("runnerd provider runtime wiring", () => {
 
   it("carries the verified runner and lease binding into a projectless continuation", async () => {
     const stateBase = await mkdtemp(
-      join(tmpdir(), "paperclip-runner-binding-"),
+      join(tmpdir(), "wardmote-runner-binding-"),
     );
     const previousStateDirectory = process.env.WARDMOTE_RUNNER_STATE_DIR;
     process.env.WARDMOTE_RUNNER_STATE_DIR = stateBase;
@@ -10311,7 +10311,7 @@ describe("runnerd provider runtime wiring", () => {
 
   it("atomically migrates legacy unscoped state only for its exact durable run identity", async () => {
     const stateBase = await mkdtemp(
-      join(tmpdir(), "paperclip-legacy-runner-state-"),
+      join(tmpdir(), "wardmote-legacy-runner-state-"),
     );
     const previousStateDirectory = process.env.WARDMOTE_RUNNER_STATE_DIR;
     process.env.WARDMOTE_RUNNER_STATE_DIR = stateBase;
@@ -10404,7 +10404,7 @@ describe("runnerd provider runtime wiring", () => {
 
   it("migrates the former company/session scope into the full native session scope", async () => {
     const stateBase = await mkdtemp(
-      join(tmpdir(), "paperclip-company-session-state-"),
+      join(tmpdir(), "wardmote-company-session-state-"),
     );
     const previousStateDirectory = process.env.WARDMOTE_RUNNER_STATE_DIR;
     process.env.WARDMOTE_RUNNER_STATE_DIR = stateBase;
@@ -10478,7 +10478,7 @@ describe("runnerd provider runtime wiring", () => {
 
   it.each([0, 2048])("migrates a suspended prior-run authority in the same full session scope with %i retained events", async (eventCount) => {
     const stateBase = await mkdtemp(
-      join(tmpdir(), "paperclip-prior-run-session-state-"),
+      join(tmpdir(), "wardmote-prior-run-session-state-"),
     );
     const previousStateDirectory = process.env.WARDMOTE_RUNNER_STATE_DIR;
     process.env.WARDMOTE_RUNNER_STATE_DIR = stateBase;
@@ -10676,7 +10676,7 @@ describe("runnerd provider runtime wiring", () => {
     "uses remote prior-run backup when acceptance=$accepted direct=$directLifecycle backup=$backupLifecycle corrupt=$corrupt",
     async ({ directLifecycle, backupLifecycle, corrupt, accepted }) => {
       const stateBase = await mkdtemp(
-        join(tmpdir(), "paperclip-remote-prior-run-state-"),
+        join(tmpdir(), "wardmote-remote-prior-run-state-"),
       );
       const previousStateDirectory = process.env.WARDMOTE_RUNNER_STATE_DIR;
       process.env.WARDMOTE_RUNNER_STATE_DIR = stateBase;
@@ -10845,7 +10845,7 @@ describe("runnerd provider runtime wiring", () => {
 
   it("quarantines legacy prior-run state only after the database proves a terminal owner in the same full scope", async () => {
     const stateBase = await mkdtemp(
-      join(tmpdir(), "paperclip-legacy-terminal-unsuspended-state-"),
+      join(tmpdir(), "wardmote-legacy-terminal-unsuspended-state-"),
     );
     const previousStateDirectory = process.env.WARDMOTE_RUNNER_STATE_DIR;
     process.env.WARDMOTE_RUNNER_STATE_DIR = stateBase;
@@ -10943,7 +10943,7 @@ describe("runnerd provider runtime wiring", () => {
 
   it("rejects scoped prior-run state after restart while its heartbeat is still running", async () => {
     const stateBase = await mkdtemp(
-      join(tmpdir(), "paperclip-running-prior-run-state-"),
+      join(tmpdir(), "wardmote-running-prior-run-state-"),
     );
     const previousStateDirectory = process.env.WARDMOTE_RUNNER_STATE_DIR;
     process.env.WARDMOTE_RUNNER_STATE_DIR = stateBase;
@@ -11064,7 +11064,7 @@ describe("runnerd provider runtime wiring", () => {
     "automatically recovers only a proven settled local session: %s",
     async (scenario) => {
       const stateBase = await mkdtemp(
-        join(tmpdir(), "paperclip-quiescent-recovery-"),
+        join(tmpdir(), "wardmote-quiescent-recovery-"),
       );
       const previousStateDirectory = process.env.WARDMOTE_RUNNER_STATE_DIR;
       process.env.WARDMOTE_RUNNER_STATE_DIR = stateBase;
@@ -11354,7 +11354,7 @@ describe("runnerd provider runtime wiring", () => {
 
   it("quarantines scoped prior-run state when the heartbeat is terminal but runnerd is not suspended", async () => {
     const stateBase = await mkdtemp(
-      join(tmpdir(), "paperclip-terminal-unsuspended-state-"),
+      join(tmpdir(), "wardmote-terminal-unsuspended-state-"),
     );
     const previousStateDirectory = process.env.WARDMOTE_RUNNER_STATE_DIR;
     process.env.WARDMOTE_RUNNER_STATE_DIR = stateBase;
@@ -11498,7 +11498,7 @@ describe("runnerd provider runtime wiring", () => {
 
   it("resumes a matching scoped authority with valid history above 64 MiB", async () => {
     const stateBase = await mkdtemp(
-      join(tmpdir(), "paperclip-current-scoped-state-"),
+      join(tmpdir(), "wardmote-current-scoped-state-"),
     );
     const previousStateDirectory = process.env.WARDMOTE_RUNNER_STATE_DIR;
     process.env.WARDMOTE_RUNNER_STATE_DIR = stateBase;
@@ -11639,7 +11639,7 @@ describe("runnerd provider runtime wiring", () => {
     "preserves unadmitted forward warm-transition evidence (%s)",
     async (variant) => {
       const stateBase = await mkdtemp(
-        join(tmpdir(), "paperclip-pending-warm-transition-"),
+        join(tmpdir(), "wardmote-pending-warm-transition-"),
       );
       const previousStateDirectory = process.env.WARDMOTE_RUNNER_STATE_DIR;
       process.env.WARDMOTE_RUNNER_STATE_DIR = stateBase;
@@ -11763,7 +11763,7 @@ describe("runnerd provider runtime wiring", () => {
     "quarantines an exact-run runner state with %s",
     async (caseName) => {
       const stateBase = await mkdtemp(
-        join(tmpdir(), `paperclip-${caseName}-runner-state-`),
+        join(tmpdir(), `wardmote-${caseName}-runner-state-`),
       );
       const previousStateDirectory = process.env.WARDMOTE_RUNNER_STATE_DIR;
       process.env.WARDMOTE_RUNNER_STATE_DIR = stateBase;
@@ -11857,7 +11857,7 @@ describe("runnerd provider runtime wiring", () => {
     "fails closed on %s durable identity in an existing scoped root",
     async (caseName) => {
       const stateBase = await mkdtemp(
-        join(tmpdir(), `paperclip-${caseName}-scoped-state-`),
+        join(tmpdir(), `wardmote-${caseName}-scoped-state-`),
       );
       const previousStateDirectory = process.env.WARDMOTE_RUNNER_STATE_DIR;
       process.env.WARDMOTE_RUNNER_STATE_DIR = stateBase;
@@ -12025,7 +12025,7 @@ describe("runnerd provider runtime wiring", () => {
 
   it("does not quarantine an unsafe scoped-root symlink", async () => {
     const stateBase = await mkdtemp(
-      join(tmpdir(), "paperclip-symlink-scoped-state-"),
+      join(tmpdir(), "wardmote-symlink-scoped-state-"),
     );
     const previousStateDirectory = process.env.WARDMOTE_RUNNER_STATE_DIR;
     process.env.WARDMOTE_RUNNER_STATE_DIR = stateBase;
@@ -12088,7 +12088,7 @@ describe("runnerd provider runtime wiring", () => {
 
   it("rejects a suspended prior-run authority whose persisted execution belongs to another full session scope", async () => {
     const stateBase = await mkdtemp(
-      join(tmpdir(), "paperclip-prior-run-mismatched-state-"),
+      join(tmpdir(), "wardmote-prior-run-mismatched-state-"),
     );
     const previousStateDirectory = process.env.WARDMOTE_RUNNER_STATE_DIR;
     process.env.WARDMOTE_RUNNER_STATE_DIR = stateBase;
@@ -12181,7 +12181,7 @@ describe("runnerd provider runtime wiring", () => {
 
   it("fails closed instead of claiming a mismatched former session scope", async () => {
     const stateBase = await mkdtemp(
-      join(tmpdir(), "paperclip-mismatched-session-state-"),
+      join(tmpdir(), "wardmote-mismatched-session-state-"),
     );
     const previousStateDirectory = process.env.WARDMOTE_RUNNER_STATE_DIR;
     process.env.WARDMOTE_RUNNER_STATE_DIR = stateBase;
@@ -12316,7 +12316,7 @@ describe("runnerd provider runtime wiring", () => {
   });
 
   it("scopes local durable sessions by agent, workspace, and provider profile while reusing them across runs", async () => {
-    const stateBase = await mkdtemp(join(tmpdir(), "paperclip-session-scope-"));
+    const stateBase = await mkdtemp(join(tmpdir(), "wardmote-session-scope-"));
     const previousStateDirectory = process.env.WARDMOTE_RUNNER_STATE_DIR;
     process.env.WARDMOTE_RUNNER_STATE_DIR = stateBase;
     const scopedExecution = (input: {

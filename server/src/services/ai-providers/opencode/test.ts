@@ -148,11 +148,11 @@ export async function testEnvironment(
     // Native workspaces are assigned at execution time. A configuration probe
     // without an explicit workspace must not run in the server's checkout.
     if (!targetIsRemote && ctx.adapterType === "wardmote_runner" && !asString(config.cwd, "").trim()) {
-      nativeProbeWorkspaceLocalDir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-opencode-native-probe-"));
+      nativeProbeWorkspaceLocalDir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-opencode-native-probe-"));
       runtimeCwd = nativeProbeWorkspaceLocalDir;
     }
     if (targetIsRemote) {
-      preparedRuntimeWorkspaceLocalDir = await fs.mkdtemp(path.join(os.tmpdir(), `paperclip-opencode-envtest-${runId}-`));
+      preparedRuntimeWorkspaceLocalDir = await fs.mkdtemp(path.join(os.tmpdir(), `wardmote-opencode-envtest-${runId}-`));
       const preparedExecutionTargetRuntime = await prepareAdapterExecutionTargetRuntime({
         runId,
         target,

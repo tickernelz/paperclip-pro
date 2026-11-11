@@ -20,7 +20,7 @@ const runGit = promisify(execFile);
 let testRoot: string;
 
 beforeEach(async () => {
-  testRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-workspace-module-"));
+  testRoot = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-workspace-module-"));
   vi.stubEnv("WARDMOTE_HOME", testRoot);
   vi.stubEnv("WARDMOTE_INSTANCE_ID", "workspace-test");
   vi.stubEnv("WARDMOTE_MULTI_PROJECT_WORKSPACE_SYNC", "false");

@@ -24,7 +24,7 @@ readline.createInterface({input:process.stdin}).on('line',line=>{
 });`;
 
 test("actual ACP SDK and runtime retain identified empty assistant boundaries in order", { timeout: 15_000 }, async () => {
-  const cwd = await mkdtemp(join(tmpdir(), "paperclip-acpx-message-boundary-"));
+  const cwd = await mkdtemp(join(tmpdir(), "wardmote-acpx-message-boundary-"));
   const children = [];
   const runtime = createAcpRuntime({ cwd, sessionStore: createFileSessionStore({ stateDir: join(cwd, "sessions") }),
     agentRegistry: createAgentRegistry({ overrides: { pi: ["verified-fixture"] } }), permissionMode: "approve-all",

@@ -60,7 +60,7 @@ export async function createAcpxPrivateSnapshot(
     sourceRoots.map((root) => lstat(root, { bigint: true })),
   );
   const directory = await realpath(
-    await mkdtemp(join(tmpdir(), "paperclip-acpx-")),
+    await mkdtemp(join(tmpdir(), "wardmote-acpx-")),
   );
   const roots = sourceRoots.map((_, index) => join(directory, String(index)));
   const digests: Record<string, string> = {};

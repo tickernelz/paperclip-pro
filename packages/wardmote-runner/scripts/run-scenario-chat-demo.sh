@@ -13,7 +13,7 @@ ulimit -f 2048
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 package_root="$(cd "$script_dir/.." && pwd)"
 workspace_root="$(cd "$package_root/../.." && pwd)"
-socket_dir="${SCENARIO_CHAT_SOCKET_DIR:-/tmp/paperclip-scenario-chat-pap-16917}"
+socket_dir="${SCENARIO_CHAT_SOCKET_DIR:-/tmp/wardmote-scenario-chat-pap-16917}"
 socket_path="$socket_dir/scenario-chat.sock"
 
 install -d -m 700 "$socket_dir"

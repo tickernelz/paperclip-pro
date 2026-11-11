@@ -1346,7 +1346,7 @@ describe("company portability", () => {
             projectId: "project-1",
             name: "Local Scratch",
             sourceType: "local_path",
-            cwd: "/tmp/paperclip-local",
+            cwd: "/tmp/wardmote-local",
             repoUrl: null,
             repoRef: null,
             defaultRef: null,
@@ -1548,7 +1548,7 @@ describe("company portability", () => {
 
   it("infers portable git metadata from a local checkout without task warning fan-out", async () => {
     const portability = companyPortabilityService({} as any);
-    const repoDir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-portability-git-"));
+    const repoDir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-portability-git-"));
     execFileSync("git", ["init"], { cwd: repoDir, stdio: "ignore" });
     execFileSync("git", ["checkout", "-b", "main"], { cwd: repoDir, stdio: "ignore" });
     execFileSync("git", ["remote", "add", "origin", "https://github.com/paperclipai/paperclip.git"], {
