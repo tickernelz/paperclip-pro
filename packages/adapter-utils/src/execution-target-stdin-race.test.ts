@@ -1021,7 +1021,7 @@ describe("deterministic remote process-session wrapper shutdown (PAP-5316)", () 
             `const seq = process.env.WARDMOTE_TEST_PROBE_SWAP_SEQ;`,
             `const symlinkTarget = process.env.WARDMOTE_TEST_PROBE_SWAP_SYMLINK_TARGET;`,
             `if (mode && seq) {`,
-            `  const expectedName = ".paperclip-birthtime-probe-" + process.pid + "-" + seq;`,
+            `  const expectedName = ".wardmote-birthtime-probe-" + process.pid + "-" + seq;`,
             `  let swapped = false;`,
             `  const originalLstat = fs.promises.lstat.bind(fs.promises);`,
             `  fs.promises.lstat = async (candidatePath, opts) => {`,
@@ -1070,7 +1070,7 @@ describe("deterministic remote process-session wrapper shutdown (PAP-5316)", () 
             `const path = require("path");`,
             `const seq = process.env.WARDMOTE_TEST_FSTAT_FAILURE_SEQ;`,
             `if (seq) {`,
-            `  const expectedName = ".paperclip-birthtime-probe-" + process.pid + "-" + seq;`,
+            `  const expectedName = ".wardmote-birthtime-probe-" + process.pid + "-" + seq;`,
             `  const originalOpen = fs.promises.open.bind(fs.promises);`,
             `  fs.promises.open = async (targetPath, flags, mode) => {`,
             `    const handle = await originalOpen(targetPath, flags, mode);`,
@@ -2220,17 +2220,7 @@ describe("deterministic remote process-session wrapper shutdown (PAP-5316)", () 
       stdio: ["ignore", "pipe", "pipe"],
     });
 
-    // Wins the race to the probe path against the wrapper's own probe write.
-    // nextProbeFileName() is deterministic: it names
-    // ".paperclip-birthtime-probe-<pid>-1" on the wrapper's first probe call,
-    // which always targets sessionDir. child.pid is available synchronously
-    // right after spawn() returns, well before the freshly spawned process
-    // has loaded Node or parsed its own script, so this synchronous
-    // symlinkSync call lands first. This is the same advantage a real
-    // sandbox peer racing to pre-create the path would have, so it gives the
-    // strongest proof: the real wrapper process, under the real race, must
-    // still refuse to follow the link.
-    const probePath = path.join(sessionDir, `.paperclip-birthtime-probe-${child.pid}-1`);
+    const probePath = path.join(sessionDir, `.wardmote-birthtime-probe-${child.pid}-1`);
     symlinkSync(probeLinkTarget, probePath);
 
     let stderrText = "";
@@ -2274,7 +2264,7 @@ describe("deterministic remote process-session wrapper shutdown (PAP-5316)", () 
     });
     await waitForTrackedChildPid(pidFile);
 
-    const probePath = path.join(wrapper.sessionDir, `.paperclip-birthtime-probe-${wrapper.pid}-1`);
+    const probePath = path.join(wrapper.sessionDir, `.wardmote-birthtime-probe-${wrapper.pid}-1`);
     await waitFor(async () => !(await lstat(probePath).then(() => true).catch(() => false)), 4_000);
     await expect(lstat(probePath)).rejects.toThrow();
   }, 15_000);
@@ -2294,7 +2284,7 @@ describe("deterministic remote process-session wrapper shutdown (PAP-5316)", () 
     });
     await waitForTrackedChildPid(pidFile);
 
-    const probePath = path.join(wrapper.sessionDir, `.paperclip-birthtime-probe-${wrapper.pid}-1`);
+    const probePath = path.join(wrapper.sessionDir, `.wardmote-birthtime-probe-${wrapper.pid}-1`);
     await waitFor(async () => (await readFile(probePath, "utf8").catch(() => null)) === "peer-owned-content", 4_000);
     // The wrapper's own cleanup call already ran (the preload only swaps the
     // path the moment the wrapper itself checks it). This delay proves that
@@ -2318,7 +2308,7 @@ describe("deterministic remote process-session wrapper shutdown (PAP-5316)", () 
     });
     await waitForTrackedChildPid(pidFile);
 
-    const probePath = path.join(wrapper.sessionDir, `.paperclip-birthtime-probe-${wrapper.pid}-1`);
+    const probePath = path.join(wrapper.sessionDir, `.wardmote-birthtime-probe-${wrapper.pid}-1`);
     await waitFor(async () => await lstat(probePath).then((stats) => stats.isDirectory()).catch(() => false), 4_000);
     await delay(200);
     expect((await lstat(probePath)).isDirectory()).toBe(true);
@@ -2343,7 +2333,7 @@ describe("deterministic remote process-session wrapper shutdown (PAP-5316)", () 
     });
     await waitForTrackedChildPid(pidFile);
 
-    const probePath = path.join(wrapper.sessionDir, `.paperclip-birthtime-probe-${wrapper.pid}-1`);
+    const probePath = path.join(wrapper.sessionDir, `.wardmote-birthtime-probe-${wrapper.pid}-1`);
     await waitFor(async () => await lstat(probePath).then((stats) => stats.isSymbolicLink()).catch(() => false), 4_000);
     await delay(200);
     expect((await lstat(probePath)).isSymbolicLink()).toBe(true);
@@ -2378,7 +2368,7 @@ describe("deterministic remote process-session wrapper shutdown (PAP-5316)", () 
     // remove it by path alone: it leaves the file exactly as it created it,
     // rather than risking removal of a different entry a peer may have put
     // at the same path.
-    const probePath = path.join(wrapper.sessionDir, `.paperclip-birthtime-probe-${wrapper.pid}-1`);
+    const probePath = path.join(wrapper.sessionDir, `.wardmote-birthtime-probe-${wrapper.pid}-1`);
     expect((await lstat(probePath)).isFile()).toBe(true);
   }, 15_000);
 });

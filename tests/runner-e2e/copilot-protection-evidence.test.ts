@@ -121,7 +121,7 @@ describe("Copilot sealed remote proof", () => {
   it("exempts only exact completed action-file reads before the tested operation", () => {
     const call = { ...notice, seq: 10, status: "in_progress" as const };
     const read = { ...notice, toolCallId: "bootstrap", operation: "read", status: "completed", seq: 1 } as CopilotToolNotice;
-    const actionFile = `.paperclip-eval-action-${"a".repeat(36)}.txt`;
+    const actionFile = `.wardmote-eval-action-${"a".repeat(36)}.txt`;
     const event = { runId: "run", seq: 2, protocolSchemaVersion: 1, eventType: "tool.execution.completed", payload: { prpEvent: {
       schema: "wardmote.prp.event.v1", schemaVersion: 1, sourceKind: "runner", runId: "run", turnId: "turn", eventType: "tool.execution.completed", emittedAt: new Date(2).toISOString(),
       payload: { schema: "wardmote.tool.execution.v1", executionId: "bootstrap", transport: "builtin", operation: "read", target: actionFile, status: "completed" },

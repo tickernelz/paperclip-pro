@@ -255,7 +255,7 @@ export async function materializeNativeRuntimeSkills(
 
   const parent = dirname(skillsHome);
   const nonce = randomUUID();
-  const stagingHome = join(parent, `.paperclip-skills-staging-${nonce}`);
+  const stagingHome = join(parent, `.wardmote-skills-staging-${nonce}`);
   await mkdir(parent, { recursive: true, mode: 0o700 });
   await chmod(parent, 0o700);
   await mkdir(stagingHome, { mode: 0o700 });

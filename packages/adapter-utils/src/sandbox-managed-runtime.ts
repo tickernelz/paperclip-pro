@@ -861,7 +861,7 @@ async function copyWorkspaceEntry(sourceRoot: string, targetRoot: string, relati
     return;
   }
 
-  const stagedTargetPath = buildUniqueStagingPath({ targetPath, suffix: ".paperclip-copy" });
+  const stagedTargetPath = buildUniqueStagingPath({ targetPath, suffix: ".wardmote-copy" });
   await fs.rm(stagedTargetPath, { recursive: true, force: true }).catch(() => undefined);
   try {
     await fs.copyFile(sourcePath, stagedTargetPath, fsConstants.COPYFILE_FICLONE).catch(async () => {

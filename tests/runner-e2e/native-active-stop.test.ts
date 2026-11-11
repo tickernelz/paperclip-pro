@@ -232,7 +232,7 @@ describe("definitely active native permission Stop", () => {
     expect(read().schema).toBe("wardmote.e2e.native-active-stop-settlement.v2");
   });
   it("admits only a fully attested remote bootstrap read completed before the pending operation", () => {
-    const f = fixture(), actionFile = `.paperclip-eval-action-${"a".repeat(36)}.txt`;
+    const f = fixture(), actionFile = `.wardmote-eval-action-${"a".repeat(36)}.txt`;
     const readTargetSha256 = `sha256:${createHash("sha256").update(actionFile).digest("hex")}`;
     for (const row of f.events) { row.seq += 4; frame(row).sourceSeq += 4; frame(row).sourceEventId = `source:run:${row.seq}`; }
     f.events.unshift(f.notice(1, "tool", { toolCallId: "bootstrap", operation: "read", status: "pending", readTargetSha256 }),

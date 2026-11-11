@@ -544,7 +544,7 @@ describe("eval-session budget settlement", () => {
       expect(completeAttempt).toHaveBeenCalledWith("failed", artifact.accountingFailure.class);
     } finally {
       for (const entry of await readdir(workspace)) {
-        if (entry.startsWith(".paperclip-eval-runtime-context-")) await chmod(join(workspace, entry, "instructions"), 0o700).catch(() => undefined);
+        if (entry.startsWith(".wardmote-eval-runtime-context-")) await chmod(join(workspace, entry, "instructions"), 0o700).catch(() => undefined);
       }
       await rm(workspace, { recursive: true, force: true });
     }

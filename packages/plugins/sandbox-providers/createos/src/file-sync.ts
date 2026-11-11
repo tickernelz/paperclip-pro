@@ -114,7 +114,7 @@ export async function syncFiles(
       // Outbound temporary files are on the target filesystem for atomic rename.
       const parent = direction === "out" ? path.dirname(local) : os.tmpdir();
       await fs.mkdir(parent, { recursive: true });
-      const temp = await fs.mkdtemp(path.join(parent, ".paperclip-createos-"));
+      const temp = await fs.mkdtemp(path.join(parent, ".wardmote-createos-"));
       const transferFile = path.join(temp, "data");
       try {
         if (direction === "in") {

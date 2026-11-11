@@ -65,7 +65,7 @@ export function resolveWardmoteRunnerBinaryForHarness(
   return path.join(
     repositoryRoot,
     "packages",
-    "paperclip-runner",
+    "wardmote-runner",
     "runner",
     "target",
     "debug",

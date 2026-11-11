@@ -109,7 +109,7 @@ describe("bridge exec", () => {
     expect(writeFile).toHaveBeenCalledTimes(1);
     const [stdinPath, stdinPayload] = writeFile.mock.calls[0] ?? [];
     expect(typeof stdinPath).toBe("string");
-    expect(stdinPath).toMatch(/^\/tmp\/\.paperclip-bridge-stdin-/);
+    expect(stdinPath).toMatch(/^\/tmp\/\.wardmote-bridge-stdin-/);
     expect(stdinPayload).toBe("payload-bytes");
 
     const commandArg = exec.mock.calls[0]?.[0];

@@ -563,7 +563,7 @@ export function createFileSystemSandboxCallbackBridgeQueueClient(): SandboxCallb
     writeResponseFile: async (responsePath, body, options = {}) => {
       const responseDir = path.posix.dirname(responsePath);
       const tempPath = `${responsePath}.tmp`;
-      const lockDir = `${responsePath}.paperclip-write.lock`;
+      const lockDir = `${responsePath}.wardmote-write.lock`;
       const lockPidFile = `${lockDir}/pid`;
       if (options.requestPath) {
         const requestExists = await pathExists(options.requestPath);
@@ -747,7 +747,7 @@ export function createCommandManagedSandboxCallbackBridgeQueueClient(input: {
     writeResponseFile: async (responsePath, body, options = {}) => {
       const responseDir = path.posix.dirname(responsePath);
       const tempPath = `${responsePath}.tmp`;
-      const lockDir = `${responsePath}.paperclip-write.lock`;
+      const lockDir = `${responsePath}.wardmote-write.lock`;
       const requestPath = options.requestPath?.trim() || "";
       const result = await runShell(
         input.runner,
@@ -1786,7 +1786,7 @@ export async function syncSandboxCallbackBridgeEntrypoint(input: {
     body: entrypointSource,
     label: "Sandbox callback bridge entrypoint",
     action: "sync sandbox callback bridge entrypoint",
-    lockDir: path.posix.join(input.assetRemoteDir, ".paperclip-bridge-upload.lock"),
+    lockDir: path.posix.join(input.assetRemoteDir, ".wardmote-bridge-upload.lock"),
     timeoutMs: input.timeoutMs,
     shellCommand: input.shellCommand,
   });
