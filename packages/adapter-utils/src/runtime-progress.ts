@@ -92,7 +92,7 @@ export function createRuntimeProgressReporter(
     options.minIntervalMs && options.minIntervalMs > 0 ? options.minIntervalMs : 2000;
   const now = options.now ?? Date.now;
   const targetDisplay = options.target === "sandbox" ? "environment" : options.target;
-  const prefix = `[paperclip] ${options.phase}${options.label ? ` ${options.label}` : ""} ${options.direction} ${targetDisplay}`;
+  const prefix = `[wardmote] ${options.phase}${options.label ? ` ${options.label}` : ""} ${options.direction} ${targetDisplay}`;
 
   let lastEmitAt: number | null = null;
   let lastStep = -1;

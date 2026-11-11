@@ -141,7 +141,7 @@ describe("heartbeat run-log chunk formatting", () => {
 
   it("keeps the line head, tail, and omission count for a custom limit", () => {
     expect(compactRunLogChunk(`${"x".repeat(995)}tail!`, 600)).toBe(
-      `${"x".repeat(360)}[paperclip truncated run log chunk: omitted 490 chars]${"x".repeat(145)}tail!`,
+      `${"x".repeat(360)}[wardmote truncated run log chunk: omitted 490 chars]${"x".repeat(145)}tail!`,
     );
   });
 
@@ -170,6 +170,6 @@ describe("heartbeat run-log chunk formatting", () => {
     expect(compacted).toContain("***REDACTED***");
     expect(compacted).not.toContain("fixture-secret-token");
     expect(compacted).toContain("[omitted base64 image data: 70000 chars]");
-    expect(compacted).not.toContain("[paperclip truncated");
+    expect(compacted).not.toContain("[wardmote truncated");
   });
 });

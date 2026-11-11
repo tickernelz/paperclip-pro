@@ -22,7 +22,7 @@ try {
     throw new Error(`Unknown dev-service option: ${forwardedArgs[0]}`);
   }
 } catch (error) {
-  console.error(`[paperclip] ${error instanceof Error ? error.message : String(error)}`);
+  console.error(`[wardmote] ${error instanceof Error ? error.message : String(error)}`);
   process.exit(1);
 }
 

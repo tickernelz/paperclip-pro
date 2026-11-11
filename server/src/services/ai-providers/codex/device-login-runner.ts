@@ -138,7 +138,7 @@ export async function runDeviceLogin(
 
   try {
     if (signal?.aborted) {
-      log("[paperclip] Device login cancelled before start.");
+      log("[wardmote] Device login cancelled before start.");
       return { outcome: "cancelled", exitCode: null, promptSurfaced };
     }
 
@@ -146,17 +146,17 @@ export async function runDeviceLogin(
     const raced = await raceLoginRunnerExit(started, timeoutMs, signal);
 
     if (raced.kind === "timeout") {
-      log("[paperclip] Device login timed out; disposing the sandbox.");
+      log("[wardmote] Device login timed out; disposing the sandbox.");
       return { outcome: "timeout", exitCode: null, promptSurfaced };
     }
     if (raced.kind === "cancelled") {
-      log("[paperclip] Device login cancelled; disposing the sandbox.");
+      log("[wardmote] Device login cancelled; disposing the sandbox.");
       return { outcome: "cancelled", exitCode: null, promptSurfaced };
     }
 
     const exitCode = raced.exitCode;
     if (exitCode !== 0) {
-      log("[paperclip] Device login command ended with a non-zero exit code.");
+      log("[wardmote] Device login command ended with a non-zero exit code.");
       return { outcome: "failure", exitCode, promptSurfaced };
     }
 
@@ -164,7 +164,7 @@ export async function runDeviceLogin(
       const authBytes = await driver.readFile(authPath);
       await onCredential(authBytes);
     }
-    log("[paperclip] Device login command ended successfully.");
+    log("[wardmote] Device login command ended successfully.");
     return { outcome: "success", exitCode, promptSurfaced };
   } catch {
     // Convert any driver error to a fixed, non-secret error. The original error
@@ -176,7 +176,7 @@ export async function runDeviceLogin(
     try {
       await driver.dispose();
     } catch {
-      log("[paperclip] Device login: the sandbox dispose step errored.");
+      log("[wardmote] Device login: the sandbox dispose step errored.");
     }
   }
 }

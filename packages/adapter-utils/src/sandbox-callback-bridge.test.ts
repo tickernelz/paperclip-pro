@@ -3236,7 +3236,7 @@ describe("sandbox callback bridge", () => {
     });
 
     expect(exitCode).toBe(1);
-    expect(stderr).toContain("[paperclip-bridge] server error");
+    expect(stderr).toContain("[wardmote-bridge] server error");
     expect(stderr).toContain("EADDRINUSE");
   }, 15_000);
 

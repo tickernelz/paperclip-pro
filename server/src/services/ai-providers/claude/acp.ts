@@ -222,8 +222,8 @@ async function prepareClaudeRemoteManagedHome(
     createWorkspaceRestoreTeardown({
       stagedRuntime,
       onLog,
-      startMessage: "[paperclip] Restoring workspace changes from the sandbox.\n",
-      failurePrefix: "[paperclip] Claude ACP teardown workspace restore failed",
+      startMessage: "[wardmote] Restoring workspace changes from the sandbox.\n",
+      failurePrefix: "[wardmote] Claude ACP teardown workspace restore failed",
     });
   const envConfig = parseObject(input.config.env);
   const explicitClaudeConfigDir =
@@ -258,13 +258,13 @@ async function prepareClaudeRemoteManagedHome(
       env.CLAUDE_CONFIG_DIR = remappedConfigDir;
       await onLog(
         "stdout",
-        `[paperclip] Remapped operator CLAUDE_CONFIG_DIR from host path ${explicitClaudeConfigDir} onto the in-sandbox workspace path ${remappedConfigDir} for the remote ACP run.\n`,
+        `[wardmote] Remapped operator CLAUDE_CONFIG_DIR from host path ${explicitClaudeConfigDir} onto the in-sandbox workspace path ${remappedConfigDir} for the remote ACP run.\n`,
       );
       return { stagedRuntime, teardown: registerWorkspaceSyncBack(stagedRuntime) };
     }
     await onLog(
       "stderr",
-      `[paperclip] operator-provided CLAUDE_CONFIG_DIR=${explicitClaudeConfigDir} is outside the staged workspace and cannot reach the remote sandbox; ignoring the host-only path and seeding the managed Claude config instead.\n`,
+      `[wardmote] operator-provided CLAUDE_CONFIG_DIR=${explicitClaudeConfigDir} is outside the staged workspace and cannot reach the remote sandbox; ignoring the host-only path and seeding the managed Claude config instead.\n`,
     );
   }
 
@@ -297,7 +297,7 @@ async function prepareClaudeRemoteManagedHome(
     stagedRuntime.assetDirs["config-seed"] ?? path.posix.join(remoteClaudeRuntimeRoot, "config-seed");
   const remoteClaudeConfigDir = path.posix.join(remoteClaudeRuntimeRoot, "config");
 
-  await onLog("stdout", `[paperclip] Materializing Claude auth/config into ${remoteClaudeConfigDir}.\n`);
+  await onLog("stdout", `[wardmote] Materializing Claude auth/config into ${remoteClaudeConfigDir}.\n`);
   await materializeRemoteClaudeConfig({
     runId,
     target: executionTarget,

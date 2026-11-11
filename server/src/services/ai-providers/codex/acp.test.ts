@@ -1394,8 +1394,8 @@ describe("codex_local ACP lane", () => {
     expect(result.exitCode).toBe(0);
     expect(mockCreateWorkspaceRestoreTeardown).toHaveBeenCalledWith(
       expect.objectContaining({
-        startMessage: "[paperclip] Restoring workspace changes and Codex auth from the sandbox.\n",
-        failurePrefix: "[paperclip] Codex ACP teardown restore/copy-back failed",
+        startMessage: "[wardmote] Restoring workspace changes and Codex auth from the sandbox.\n",
+        failurePrefix: "[wardmote] Codex ACP teardown restore/copy-back failed",
       }),
     );
   });

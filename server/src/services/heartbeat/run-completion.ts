@@ -749,7 +749,7 @@ export function createHeartbeatRunCompletion(db: Db, dependencies: HeartbeatRunC
         );
         await onLog(
           "stderr",
-          `[paperclip] Failed to complete skill test run: ${err instanceof Error ? err.message : String(err)}\n`,
+          `[wardmote] Failed to complete skill test run: ${err instanceof Error ? err.message : String(err)}\n`,
         );
       }
       const livenessRun = finalizedRun;
@@ -892,7 +892,7 @@ export function createHeartbeatRunCompletion(db: Db, dependencies: HeartbeatRunC
       } catch (err) {
         await onLog(
           "stderr",
-          `[paperclip] Failed to resolve run presentation: ${err instanceof Error ? err.message : String(err)}\n`,
+          `[wardmote] Failed to resolve run presentation: ${err instanceof Error ? err.message : String(err)}\n`,
         );
       }
       if (processLossErrorCode) {

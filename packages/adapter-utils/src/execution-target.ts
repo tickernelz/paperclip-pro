@@ -830,7 +830,7 @@ function applyRunDispositionSeam(
   const disposition = settleRunDisposition();
   if (!disposition.failed) return result;
   const lossReason = disposition.lossReason ?? "other";
-  const note = `[paperclip] The sandbox duplex control channel was lost (${lossReason}) before the run completed.\n`;
+  const note = `[wardmote] The sandbox duplex control channel was lost (${lossReason}) before the run completed.\n`;
   const separator = result.stderr.length > 0 && !result.stderr.endsWith("\n") ? "\n" : "";
   return {
     ...result,
@@ -1211,7 +1211,7 @@ export async function ensureAdapterExecutionTargetRuntimeCommandInstalled(input:
         const reason = result.timedOut ? "timed out" : `exited ${result.exitCode ?? "?"}`;
         await input.onLog(
           "stderr",
-          `[paperclip] Install command ${reason} (${installCommand}) but ${detectCommand} is on PATH; continuing.\n`,
+          `[wardmote] Install command ${reason} (${installCommand}) but ${detectCommand} is on PATH; continuing.\n`,
         );
       }
       return;
@@ -2058,7 +2058,7 @@ export async function startAdapterExecutionTargetProcessSessionBridge(input: {
   // event files with the host poll below. The streamed path launches the wrapper
   // as one foreground session command further down instead, so skip this.
   if (!streamOutput) {
-    await onLog("stdout", `[paperclip] Starting ACP process session bridge in sandbox (${target.providerKey ?? "provider"}).\n`);
+    await onLog("stdout", `[wardmote] Starting ACP process session bridge in sandbox (${target.providerKey ?? "provider"}).\n`);
     const startResult = await runSandboxBridgeControlCommand(runner, {
       command: shellCommand,
       args: shellCommandArgs(
@@ -2147,7 +2147,7 @@ export async function startAdapterExecutionTargetProcessSessionBridge(input: {
       "SIGSEGV", "SIGPIPE", "SIGALRM", "SIGTERM", "SIGBUS", "SIGXCPU", "SIGXFSZ",
     ].includes(event.signal) ? event.signal : "unknown";
     logFailureWithoutWaiting(
-      `[paperclip] ACP process session terminal: source=${source} outcome=${outcome} exitCode=${code} signal=${signal}.\n`,
+      `[wardmote] ACP process session terminal: source=${source} outcome=${outcome} exitCode=${code} signal=${signal}.\n`,
     );
   };
   const pendingRemoteEvents: Array<{
@@ -2311,7 +2311,7 @@ export async function startAdapterExecutionTargetProcessSessionBridge(input: {
               }
               // stop() awaits this input chain before sending shutdown. Run-log
               // persistence must not hold teardown open when it stalls or fails.
-              logFailureWithoutWaiting(`[paperclip] ${message}\n`);
+              logFailureWithoutWaiting(`[wardmote] ${message}\n`);
             }
           });
         }
@@ -2414,7 +2414,7 @@ export async function startAdapterExecutionTargetProcessSessionBridge(input: {
 
     await onLog(
       "stdout",
-      `[paperclip] Starting streamed ACP process session bridge in sandbox (${target.providerKey ?? "provider"}).\n`,
+      `[wardmote] Starting streamed ACP process session bridge in sandbox (${target.providerKey ?? "provider"}).\n`,
     );
     // Fire the long-lived command; do NOT await it here. `useSession` forces the
     // persistent session so the provider streams the wrapper stdout back through
@@ -2585,7 +2585,7 @@ export async function startAdapterExecutionTargetProcessSessionBridge(input: {
       stopReadingForShutdownAck = true;
       if (!acknowledgedInTime) {
         logFailureWithoutWaiting(
-          `[paperclip] ACP process session wrapper did not acknowledge shutdown within ${DEFAULT_PROCESS_SESSION_SHUTDOWN_WAIT_MS}ms; removing the session directory anyway.\n`,
+          `[wardmote] ACP process session wrapper did not acknowledge shutdown within ${DEFAULT_PROCESS_SESSION_SHUTDOWN_WAIT_MS}ms; removing the session directory anyway.\n`,
         );
       }
       // Unconditional: this removal runs whether or not the wrapper
@@ -4373,7 +4373,7 @@ export async function startAdapterExecutionTargetWardmoteBridge(input: {
 
   await onLog(
     "stdout",
-    `[paperclip] Starting sandbox callback bridge for ${input.adapterKey} in ${bridgeRuntimeDir}.\n`,
+    `[wardmote] Starting sandbox callback bridge for ${input.adapterKey} in ${bridgeRuntimeDir}.\n`,
   );
 
   const bridgeAsset = await createSandboxCallbackBridgeAsset();
@@ -4426,7 +4426,7 @@ export async function startAdapterExecutionTargetWardmoteBridge(input: {
     if (emitDebugLog) {
       await onLog(
         "stdout",
-        `[paperclip] Bridge proxy ${method} ${request.path}${request.query ? `?${request.query}` : ""}\n`,
+        `[wardmote] Bridge proxy ${method} ${request.path}${request.query ? `?${request.query}` : ""}\n`,
       );
     }
     const headers = new Headers();
@@ -4460,7 +4460,7 @@ export async function startAdapterExecutionTargetWardmoteBridge(input: {
     if (emitDebugLog) {
       await onLog(
         "stdout",
-        `[paperclip] Bridge proxy response ${response.status} for ${method} ${request.path}${request.query ? `?${request.query}` : ""}\n`,
+        `[wardmote] Bridge proxy response ${response.status} for ${method} ${request.path}${request.query ? `?${request.query}` : ""}\n`,
       );
     }
     // The host delivered response headers, so the response-body read starts after
@@ -4628,7 +4628,7 @@ export async function startAdapterExecutionTargetWardmoteBridge(input: {
       duplexChannelOpen.fallback(reason);
       await onLog(
         "stderr",
-        `[paperclip] Could not open the sandbox duplex channel (${reason}). Using the file bridge.\n`,
+        `[wardmote] Could not open the sandbox duplex channel (${reason}). Using the file bridge.\n`,
       );
       channel = null;
     }
@@ -4650,7 +4650,7 @@ export async function startAdapterExecutionTargetWardmoteBridge(input: {
         duplexChannelOpen.fallback(duplexReadinessFallbackReason(readiness.reason));
         await onLog(
           "stderr",
-          `[paperclip] Sandbox duplex readiness failed (${readiness.reason}). Using the file bridge.\n`,
+          `[wardmote] Sandbox duplex readiness failed (${readiness.reason}). Using the file bridge.\n`,
         );
       } else {
         // Readiness passed. The gate retained every byte that followed the
@@ -4676,7 +4676,7 @@ export async function startAdapterExecutionTargetWardmoteBridge(input: {
           duplexChannelOpen.fallback("preface_missing");
           await onLog(
             "stderr",
-            "[paperclip] Sandbox HTTP/2 client preface did not appear inside the bounded readiness buffer (preface_missing). Using the file bridge.\n",
+            "[wardmote] Sandbox HTTP/2 client preface did not appear inside the bounded readiness buffer (preface_missing). Using the file bridge.\n",
           );
         } else {
           // The run disposition latch for the http2_v1 path, in the same
@@ -4700,7 +4700,7 @@ export async function startAdapterExecutionTargetWardmoteBridge(input: {
             }
             const lossClass = anyStreamDispatched ? "post_dispatch" : "pre_dispatch";
             duplexObservability.recordLoss(lossClass, reason);
-            void onLog("stderr", `[paperclip] Sandbox HTTP/2 channel lost (${reason}). The run fails.\n`);
+            void onLog("stderr", `[wardmote] Sandbox HTTP/2 channel lost (${reason}). The run fails.\n`);
           };
 
           // The forward handler applies the real host token and the run id
@@ -4782,7 +4782,7 @@ export async function startAdapterExecutionTargetWardmoteBridge(input: {
           duplexChannelOpen.ready();
           await onLog(
             "stdout",
-            "[paperclip] Sandbox HTTP/2 transport ready; serving the host-assigned origin.\n",
+            "[wardmote] Sandbox HTTP/2 transport ready; serving the host-assigned origin.\n",
           );
           // Stream run logs on the http2 path with the same gate and the same
           // log line as the file path. The http2 path starts no file-bridge
@@ -4803,7 +4803,7 @@ export async function startAdapterExecutionTargetWardmoteBridge(input: {
               logsDir: duplexLogsDir,
               shellCommand,
             });
-            await onLog("stdout", "[paperclip] Sandbox run log streaming enabled for this run.\n");
+            await onLog("stdout", "[wardmote] Sandbox run log streaming enabled for this run.\n");
           }
           return {
             env: {
@@ -4882,7 +4882,7 @@ export async function startAdapterExecutionTargetWardmoteBridge(input: {
       logsDir: sandboxCallbackBridgeDirectories(queueDir).logsDir,
       shellCommand,
     });
-    await onLog("stdout", "[paperclip] Sandbox run log streaming enabled for this run.\n");
+    await onLog("stdout", "[wardmote] Sandbox run log streaming enabled for this run.\n");
   }
 
   return {

@@ -38,20 +38,20 @@ try {
   cliArgs = appliedOptions.forwardedArgs;
   dataDir = appliedOptions.dataDir;
 } catch (error) {
-  console.error(`[paperclip] ${error instanceof Error ? error.message : String(error)}`);
+  console.error(`[wardmote] ${error instanceof Error ? error.message : String(error)}`);
   process.exit(1);
 }
 
 const worktreeEnvBootstrap = bootstrapDevRunnerWorktreeEnv(repoRoot, process.env);
 if (worktreeEnvBootstrap.missingEnv) {
   console.error(
-    `[paperclip] linked git worktree at ${repoRoot} is missing ${path.relative(repoRoot, worktreeEnvBootstrap.envPath)}. Run \`paperclip-pro worktree init\` in this worktree before \`pnpm dev\`.`,
+    `[wardmote] linked git worktree at ${repoRoot} is missing ${path.relative(repoRoot, worktreeEnvBootstrap.envPath)}. Run \`paperclip-pro worktree init\` in this worktree before \`pnpm dev\`.`,
   );
   process.exit(1);
 }
 if (isWorktreeSeedPending(repoRoot)) {
   console.error(
-    "[paperclip] this worktree database is seed-pending. Run `pnpm wardmote worktree ensure-seeded` before `pnpm dev`.",
+    "[wardmote] this worktree database is seed-pending. Run `pnpm wardmote worktree ensure-seeded` before `pnpm dev`.",
   );
   process.exit(1);
 }
@@ -121,7 +121,7 @@ for (let index = 0; index < cliArgs.length; index += 1) {
   if (arg === "--bind") {
     const value = cliArgs[index + 1];
     if (!value || value.startsWith("--") || !BIND_MODES.includes(value as BindMode)) {
-      console.error(`[paperclip] invalid --bind value. Use one of: ${BIND_MODES.join(", ")}`);
+      console.error(`[wardmote] invalid --bind value. Use one of: ${BIND_MODES.join(", ")}`);
       process.exit(1);
     }
     bindMode = value as BindMode;
@@ -131,7 +131,7 @@ for (let index = 0; index < cliArgs.length; index += 1) {
   if (arg === "--bind-host") {
     const value = cliArgs[index + 1];
     if (!value || value.startsWith("--")) {
-      console.error("[paperclip] --bind-host requires a value");
+      console.error("[wardmote] --bind-host requires a value");
       process.exit(1);
     }
     bindHost = value;
@@ -158,7 +158,7 @@ if (managedRuntimeExposure) {
   bindHost = "127.0.0.1";
 }
 if (bindMode === "custom" && !bindHost) {
-  console.error("[paperclip] --bind custom requires --bind-host <host>");
+  console.error("[wardmote] --bind custom requires --bind-host <host>");
   process.exit(1);
 }
 
@@ -187,7 +187,7 @@ if (mode === "watch") {
 if (tailscaleAuth || bindMode) {
   const effectiveBind = bindMode ?? "lan";
   if (tailscaleAuth) {
-    console.log("[paperclip] note: --tailscale-auth/--authenticated-private are legacy aliases for --bind lan");
+    console.log("[wardmote] note: --tailscale-auth/--authenticated-private are legacy aliases for --bind lan");
   }
   env.WARDMOTE_BIND = effectiveBind;
   if (bindHost) {
@@ -199,13 +199,13 @@ if (tailscaleAuth || bindMode) {
     delete env.WARDMOTE_DEPLOYMENT_MODE;
     delete env.WARDMOTE_DEPLOYMENT_EXPOSURE;
     delete env.WARDMOTE_AUTH_BASE_URL_MODE;
-    console.log("[paperclip] dev mode: local_trusted (bind=loopback)");
+    console.log("[wardmote] dev mode: local_trusted (bind=loopback)");
   } else {
     env.WARDMOTE_DEPLOYMENT_MODE = "authenticated";
     env.WARDMOTE_DEPLOYMENT_EXPOSURE = "private";
     env.WARDMOTE_AUTH_BASE_URL_MODE = managedRuntimeExposure ? "explicit" : "auto";
     console.log(
-      `[paperclip] dev mode: authenticated/private (bind=${effectiveBind}${bindHost ? `:${bindHost}` : ""})`,
+      `[wardmote] dev mode: authenticated/private (bind=${effectiveBind}${bindHost ? `:${bindHost}` : ""})`,
     );
   }
 } else {
@@ -214,7 +214,7 @@ if (tailscaleAuth || bindMode) {
   delete env.WARDMOTE_DEPLOYMENT_MODE;
   delete env.WARDMOTE_DEPLOYMENT_EXPOSURE;
   delete env.WARDMOTE_AUTH_BASE_URL_MODE;
-  console.log("[paperclip] dev mode: local_trusted (default)");
+  console.log("[wardmote] dev mode: local_trusted (default)");
 }
 
 const serverPort = Number.parseInt(env.PORT ?? process.env.PORT ?? "3100", 10) || 3100;
@@ -233,7 +233,7 @@ const existingRunner = await findAdoptableLocalService({
 });
 if (existingRunner) {
   console.log(
-    `[paperclip] ${devService.serviceName} already running (pid ${existingRunner.pid}${typeof existingRunner.metadata?.childPid === "number" ? `, child ${existingRunner.metadata.childPid}` : ""})`,
+    `[wardmote] ${devService.serviceName} already running (pid ${existingRunner.pid}${typeof existingRunner.metadata?.childPid === "number" ? `, child ${existingRunner.metadata.childPid}` : ""})`,
   );
   process.exit(0);
 }
@@ -418,7 +418,7 @@ async function getMigrationStatusPayload() {
     process.stderr.write(
       status.stderr ||
         status.stdout ||
-        `[paperclip] Command failed with code ${status.code}: pnpm --filter @tickernelz/wardmote-db exec tsx src/migration-status.ts --json\n`,
+        `[wardmote] Command failed with code ${status.code}: pnpm --filter @tickernelz/wardmote-db exec tsx src/migration-status.ts --json\n`,
     );
     process.exit(status.code);
   }
@@ -440,7 +440,7 @@ async function getMigrationStatusPayload() {
   process.stderr.write(
     status.stderr ||
       status.stdout ||
-      "[paperclip] migration-status returned invalid JSON payload\n",
+      "[wardmote] migration-status returned invalid JSON payload\n",
   );
   throw new Error("Unable to parse migration-status JSON output");
 }
@@ -490,7 +490,7 @@ async function maybePreflightMigrations(options: { interactive?: boolean; autoAp
   if (!shouldApply) {
     if (exitOnDecline) {
       process.stderr.write(
-        `[paperclip] Pending migrations detected (${formatPendingMigrationSummary(pendingMigrations)}). Refusing to start watch mode against a stale schema.\n`,
+        `[wardmote] Pending migrations detected (${formatPendingMigrationSummary(pendingMigrations)}). Refusing to start watch mode against a stale schema.\n`,
       );
       process.exit(1);
     }
@@ -514,7 +514,7 @@ async function maybePreflightMigrations(options: { interactive?: boolean; autoAp
 }
 
 async function buildPluginSdk() {
-  console.log("[paperclip] building plugin sdk...");
+  console.log("[wardmote] building plugin sdk...");
   const result = await runPnpm(
     ["--filter", "@tickernelz/wardmote-plugin-sdk", "build"],
     { stdio: "inherit" },
@@ -524,7 +524,7 @@ async function buildPluginSdk() {
     return;
   }
   if (result.code !== 0) {
-    console.error("[paperclip] plugin sdk build failed");
+    console.error("[wardmote] plugin sdk build failed");
     process.exit(result.code);
   }
 }
@@ -552,14 +552,14 @@ async function getNativeRunnerRequired(): Promise<boolean> {
   if (!requirement.valid) {
     const detail = status.stderr || status.stdout;
     process.stderr.write(
-      `[paperclip] unable to determine the native runner requirement; conservatively preparing the native runner${detail ? `\n${detail}` : "\n"}`,
+      `[wardmote] unable to determine the native runner requirement; conservatively preparing the native runner${detail ? `\n${detail}` : "\n"}`,
     );
   }
   return requirement.nativeRunnerRequired;
 }
 
 async function buildWardmoteRunner() {
-  console.log("[paperclip] building paperclip runner...");
+  console.log("[wardmote] building paperclip runner...");
   const typescriptResult = await runPnpm(
     ["--filter", "@tickernelz/wardmote-runner", "build:typescript"],
     { stdio: "inherit" },
@@ -569,7 +569,7 @@ async function buildWardmoteRunner() {
     return;
   }
   if (typescriptResult.code !== 0) {
-    console.error("[paperclip] paperclip runner build failed");
+    console.error("[wardmote] paperclip runner build failed");
     process.exit(typescriptResult.code);
   }
 
@@ -583,7 +583,7 @@ async function buildWardmoteRunner() {
     return;
   }
 
-  console.log("[paperclip] building paperclip runner native binary...");
+  console.log("[wardmote] building paperclip runner native binary...");
   const binaryResult = await runPnpm(
     ["--filter", "@tickernelz/wardmote-runner", "build:binary"],
     { stdio: "inherit" },
@@ -593,7 +593,7 @@ async function buildWardmoteRunner() {
     return;
   }
   if (binaryResult.code !== 0) {
-    console.error("[paperclip] paperclip runner native binary build failed");
+    console.error("[wardmote] paperclip runner native binary build failed");
     process.exit(binaryResult.code);
   }
 }
@@ -627,7 +627,7 @@ function uiBundleIsFresh(): boolean {
 }
 
 async function buildUiBundleForManagedRuntime(): Promise<boolean> {
-  console.log("[paperclip] managed runtime: building the UI bundle for static serving...");
+  console.log("[wardmote] managed runtime: building the UI bundle for static serving...");
   const result = await runPnpm(
     ["--filter", "@tickernelz/wardmote-ui", "build"],
     { stdio: "inherit" },
@@ -638,7 +638,7 @@ async function buildUiBundleForManagedRuntime(): Promise<boolean> {
   }
   if (result.code !== 0) {
     console.error(
-      "[paperclip] UI bundle build failed; falling back to the Vite dev middleware (the page may load slowly or stay blank over HTTPS)",
+      "[wardmote] UI bundle build failed; falling back to the Vite dev middleware (the page may load slowly or stay blank over HTTPS)",
     );
     return false;
   }
@@ -887,7 +887,7 @@ process.on("SIGTERM", () => {
 let uiBundleBuild: Promise<boolean> | null = null;
 if (serveBuiltUiForManagedRuntime) {
   if (uiBundleIsFresh()) {
-    console.log("[paperclip] managed runtime: reusing the up-to-date UI bundle in ui/dist");
+    console.log("[wardmote] managed runtime: reusing the up-to-date UI bundle in ui/dist");
   } else {
     uiBundleBuild = buildUiBundleForManagedRuntime();
   }

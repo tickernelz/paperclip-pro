@@ -307,7 +307,7 @@ export async function promoteGrokDeviceLoginCredential(
   // 3. Only a user-initiated login seeds the company slot.
   if (!userInitiated) {
     await log(
-      "[paperclip] Grok device-login promotion: skipped (an automatic background login never seeds a company slot).",
+      "[wardmote] Grok device-login promotion: skipped (an automatic background login never seeds a company slot).",
     );
     return "background_skipped";
   }
@@ -316,7 +316,7 @@ export async function promoteGrokDeviceLoginCredential(
   const soleOwner = await isSoleActiveOwner();
   if (!soleOwner) {
     await log(
-      "[paperclip] Grok device-login promotion: skipped (the session no longer holds the sole active claim on the slot).",
+      "[wardmote] Grok device-login promotion: skipped (the session no longer holds the sole active claim on the slot).",
     );
     return "not_sole_owner";
   }
@@ -353,13 +353,13 @@ export async function promoteGrokDeviceLoginCredential(
       const existingState = await readExistingHomeState(authPath);
       if (existingState.kind === "unreadable") {
         await log(
-          "[paperclip] Grok device-login promotion: kept the company credential home (the existing file is present but this step cannot read it as a usable Grok credential).",
+          "[wardmote] Grok device-login promotion: kept the company credential home (the existing file is present but this step cannot read it as a usable Grok credential).",
         );
         return "kept_foreign_identity";
       }
       if (existingState.kind === "identity" && existingState.identityKey !== payload.identityKey) {
         await log(
-          "[paperclip] Grok device-login promotion: kept the company credential home (the login is a different account than the one already set for this company).",
+          "[wardmote] Grok device-login promotion: kept the company credential home (the login is a different account than the one already set for this company).",
         );
         return "kept_foreign_identity";
       }
@@ -370,16 +370,16 @@ export async function promoteGrokDeviceLoginCredential(
         const wrote = await writeSameIdentityCredentialIfFresher(authBytes, authPath);
         if (!wrote) {
           await log(
-            "[paperclip] Grok device-login promotion: kept the company credential home (the existing same-identity credential is not older than the device-login credential).",
+            "[wardmote] Grok device-login promotion: kept the company credential home (the existing same-identity credential is not older than the device-login credential).",
           );
           return "kept";
         }
-        await log("[paperclip] Grok device-login promotion: wrote the company credential home at mode 0600.");
+        await log("[wardmote] Grok device-login promotion: wrote the company credential home at mode 0600.");
         return "promoted";
       }
 
       await writeAuthFileAtomically(authPath, authBytes);
-      await log("[paperclip] Grok device-login promotion: wrote the company credential home at mode 0600.");
+      await log("[wardmote] Grok device-login promotion: wrote the company credential home at mode 0600.");
       return "promoted";
     },
     env,

@@ -123,10 +123,10 @@ function shrinkLogJsonValue(
   if (typeof value === "string") {
     if (value.length <= limits.stringChars) return value;
     const kept = value.slice(0, limits.stringChars);
-    return `${kept}[paperclip truncated ${value.length - kept.length} chars]`;
+    return `${kept}[wardmote truncated ${value.length - kept.length} chars]`;
   }
   if (value === null || typeof value !== "object") return value;
-  if (depth >= COMPACTED_LOG_JSON_MAX_DEPTH) return "[paperclip truncated nested value]";
+  if (depth >= COMPACTED_LOG_JSON_MAX_DEPTH) return "[wardmote truncated nested value]";
   if (Array.isArray(value)) {
     const kept = value
       .slice(0, limits.arrayItems)
@@ -183,7 +183,7 @@ function compactLogLine(line: string, maxChars: number) {
   const headChars = Math.max(0, Math.floor(maxChars * 0.6));
   const tailChars = Math.max(0, Math.floor(maxChars * 0.25));
   const omittedChars = Math.max(0, line.length - headChars - tailChars);
-  const marker = `[paperclip truncated run log chunk: omitted ${omittedChars} chars]`;
+  const marker = `[wardmote truncated run log chunk: omitted ${omittedChars} chars]`;
   return `${line.slice(0, headChars)}${marker}${line.slice(line.length - tailChars)}`;
 }
 

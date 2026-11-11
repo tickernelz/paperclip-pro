@@ -1130,7 +1130,7 @@ describe("sandbox adapter execution targets", () => {
       expect(result.code).toBe(exitCode ?? 1);
       const terminal = logs.filter((line) => line.includes("ACP process session terminal:"));
       expect(terminal).toEqual([
-        `[paperclip] ACP process session terminal: source=remote_event outcome=${exitCode === null ? "error" : "exit"} exitCode=${exitCode ?? "unknown"} signal=unknown.\n`,
+        `[wardmote] ACP process session terminal: source=remote_event outcome=${exitCode === null ? "error" : "exit"} exitCode=${exitCode ?? "unknown"} signal=unknown.\n`,
       ]);
       if (exitCode === null) {
         expect(result.stdout).toBe("");
@@ -1221,7 +1221,7 @@ describe("sandbox adapter execution targets", () => {
       await closed;
       expect(JSON.parse(output)).toEqual(frame);
       expect(logs.filter((line) => line.includes("ACP process session terminal:"))).toEqual([
-        "[paperclip] ACP process session terminal: source=remote_event outcome=error exitCode=unknown signal=unknown.\n",
+        "[wardmote] ACP process session terminal: source=remote_event outcome=error exitCode=unknown signal=unknown.\n",
       ]);
     } finally {
       failInput(new Error("test cleanup"));
@@ -1256,7 +1256,7 @@ describe("sandbox adapter execution targets", () => {
       const result = await runProxyWithInput(bridge!.agentCommand, "", true);
       expect(result.code).toBe(1);
       expect(logs).toEqual([
-        "[paperclip] ACP process session terminal: source=output_stream outcome=error exitCode=unknown signal=unknown.\n",
+        "[wardmote] ACP process session terminal: source=output_stream outcome=error exitCode=unknown signal=unknown.\n",
       ]);
     } finally {
       releaseLog();
@@ -1290,7 +1290,7 @@ describe("sandbox adapter execution targets", () => {
       const result = await runProxyWithInput(bridge!.agentCommand, "", true);
       expect(result.code).toBe(1);
       expect(logs).toEqual([
-        "[paperclip] ACP process session terminal: source=output_poll outcome=error exitCode=unknown signal=unknown.\n",
+        "[wardmote] ACP process session terminal: source=output_poll outcome=error exitCode=unknown signal=unknown.\n",
       ]);
     } finally {
       releaseLog();
@@ -1325,7 +1325,7 @@ describe("sandbox adapter execution targets", () => {
       await waitForCondition(() => logs.length === 1, "Missing proxy-close diagnostic.");
       await bridge!.stop();
       expect(logs.filter((line) => line.includes("ACP process session terminal:"))).toEqual([
-        "[paperclip] ACP process session terminal: source=proxy_close outcome=error exitCode=unknown signal=unknown.\n",
+        "[wardmote] ACP process session terminal: source=proxy_close outcome=error exitCode=unknown signal=unknown.\n",
       ]);
     } finally {
       await bridge?.stop();
@@ -2834,7 +2834,7 @@ describe("sandbox adapter execution targets", () => {
 
     expect(combinedStream(events, "stdout")).toBe("final out\n");
     expect(combinedStream(events, "stderr")).toBe(
-      "final err\n[paperclip] Run log streaming degraded during the run; remaining output was delivered at completion.\n",
+      "final err\n[wardmote] Run log streaming degraded during the run; remaining output was delivered at completion.\n",
     );
   });
 
