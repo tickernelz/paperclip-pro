@@ -226,12 +226,12 @@ function normalizeApiUrl(value: string | null): string {
 }
 
 function normalizeNamePrefix(value: string | null): string {
-  const normalized = (value ?? "paperclip")
+  const normalized = (value ?? "wardmote")
     .toLowerCase()
     .replace(/[^a-z0-9-]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .replace(/-{2,}/g, "-");
-  return normalized.length > 0 ? normalized.slice(0, 24) : "paperclip";
+  return normalized.length > 0 ? normalized.slice(0, 24) : "wardmote";
 }
 
 function parseDriverConfig(raw: Record<string, unknown>): ExeDevDriverConfig {

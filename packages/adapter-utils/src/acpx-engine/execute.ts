@@ -5119,10 +5119,10 @@ export function createAcpxEngineExecutor(deps: AcpxEngineExecutorOptions = {}) {
           reason: timedOut
             ? "paperclip timeout cleanup"
             : channelLost
-              ? "paperclip duplex channel lost cleanup"
+              ? "wardmote duplex channel lost cleanup"
               : failedTurn
                 ? `wardmote turn ${terminal.status}`
-                : "paperclip completed turn cleanup",
+                : "wardmote completed turn cleanup",
           discardPersistentState: sessionUnavailable || (terminal.status === "cancelled" && !preserveInterruptedSession) || timedOut || channelLost,
           dropWarmEntry: false,
           recordCloseError: false,

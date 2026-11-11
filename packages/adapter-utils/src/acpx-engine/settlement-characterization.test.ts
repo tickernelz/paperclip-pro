@@ -532,7 +532,7 @@ describe("ACP settlement — Layer A: engine teardown orchestration", () => {
     expect(result.exitCode).toBe(0);
     expect(closeSpy).toHaveBeenCalledTimes(1);
     expect((closeSpy.mock.calls[0]! as unknown[])[0]).toMatchObject({
-      reason: "paperclip completed turn cleanup",
+      reason: "wardmote completed turn cleanup",
       discardPersistentState: false,
     });
   });
@@ -726,7 +726,7 @@ describe("ACP settlement — Layer A: engine teardown orchestration", () => {
       discard: boolean;
       exitCode: number;
     }> = [
-      { status: "completed", reason: "paperclip completed turn cleanup", discard: false, exitCode: 0 },
+      { status: "completed", reason: "wardmote completed turn cleanup", discard: false, exitCode: 0 },
       { status: "failed", reason: "wardmote turn failed", discard: false, exitCode: 1 },
       { status: "cancelled", reason: "wardmote turn cancelled", discard: true, exitCode: 1 },
     ];
