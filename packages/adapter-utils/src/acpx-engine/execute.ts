@@ -3973,7 +3973,7 @@ export function createAcpxEngineExecutor(deps: AcpxEngineExecutorOptions = {}) {
       idleMs: warmIdleMs,
       closeWarmEntry: async (entry) => {
         await entry.runtime
-          .close({ handle: entry.handle, reason: "paperclip idle cleanup", discardPersistentState: false })
+          .close({ handle: entry.handle, reason: "wardmote idle cleanup", discardPersistentState: false })
           .catch(() => {});
         flushChildStderr(entry.childStderrState);
       },
@@ -4439,7 +4439,7 @@ export function createAcpxEngineExecutor(deps: AcpxEngineExecutorOptions = {}) {
           void runtime
             .close({
               handle: lateHandle,
-              reason: "paperclip late handshake cleanup",
+              reason: "wardmote late handshake cleanup",
               discardPersistentState: false,
             })
             .catch(() =>
@@ -4579,7 +4579,7 @@ export function createAcpxEngineExecutor(deps: AcpxEngineExecutorOptions = {}) {
           runtimeSettlement = {
             mode: "direct",
             handle: handle ?? syntheticCloseHandle(),
-            reason: "paperclip handshake cleanup",
+            reason: "wardmote handshake cleanup",
             discardPersistentState: false,
             dropWarmEntry: true,
             recordCloseError: true,
@@ -4716,7 +4716,7 @@ export function createAcpxEngineExecutor(deps: AcpxEngineExecutorOptions = {}) {
         runtimeSettlement = {
           mode: "direct",
           handle: sessionHandle,
-          reason: "paperclip config cleanup",
+          reason: "wardmote config cleanup",
           discardPersistentState: false,
           dropWarmEntry: true,
           recordCloseError: true,
@@ -5117,7 +5117,7 @@ export function createAcpxEngineExecutor(deps: AcpxEngineExecutorOptions = {}) {
           mode: "warm_or_close",
           handle: sessionHandle,
           reason: timedOut
-            ? "paperclip timeout cleanup"
+            ? "wardmote timeout cleanup"
             : channelLost
               ? "wardmote duplex channel lost cleanup"
               : failedTurn
@@ -5283,7 +5283,7 @@ export function createAcpxEngineExecutor(deps: AcpxEngineExecutorOptions = {}) {
         runtimeSettlement = {
           mode: "direct",
           handle: sessionHandle,
-          reason: timedOut ? "paperclip timeout cleanup" : "paperclip error cleanup",
+          reason: timedOut ? "wardmote timeout cleanup" : "wardmote error cleanup",
           discardPersistentState: timedOut,
           dropWarmEntry: true,
           recordCloseError: true,
@@ -5399,7 +5399,7 @@ export function createAcpxEngineExecutor(deps: AcpxEngineExecutorOptions = {}) {
           const baseSettlement: RuntimeSettlementPlan = runtimeSettlement ?? {
             mode: "direct",
             handle: syntheticCloseHandle(),
-            reason: "paperclip cleanup",
+            reason: "wardmote cleanup",
             discardPersistentState: false,
             dropWarmEntry: false,
             recordCloseError: true,
