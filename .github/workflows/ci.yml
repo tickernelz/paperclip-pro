@@ -352,9 +352,11 @@ jobs:
           PLAYWRIGHT_VERSION: ${{ steps.playwright-version.outputs.version }}
         run: |
           ready=false
+          pulled=false
           printf '%s' "$GH_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin >/dev/null || true
           for attempt in 1 2 3; do
             if docker pull --quiet "$BROWSER_GATES_IMAGE" >/dev/null; then
+              pulled=true
               image_version="$(docker image inspect --format '{{range .Config.Env}}{{println .}}{{end}}' "$BROWSER_GATES_IMAGE" | sed -n 's/^PLAYWRIGHT_VERSION=//p')"
               if [ "$image_version" = "$PLAYWRIGHT_VERSION" ]; then
                 ready=true
@@ -365,7 +367,7 @@ jobs:
             fi
             [ "$attempt" = 3 ] || sleep $((attempt * 10))
           done
-          if [ "$ready" != true ] && [ -z "${image_version:-}" ]; then
+          if [ "$pulled" != true ]; then
             echo "::warning title=Browser gates image::could not pull $BROWSER_GATES_IMAGE; installing on the runner instead."
           fi
           echo "ready=$ready" >> "$GITHUB_OUTPUT"
