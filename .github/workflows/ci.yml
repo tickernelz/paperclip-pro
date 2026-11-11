@@ -351,10 +351,16 @@ jobs:
 
       - name: Install WebKit and Chromium
         timeout-minutes: 15
+        env:
+          PLAYWRIGHT_CACHE_HIT: ${{ steps.playwright-cache.outputs.cache-hit }}
         run: |
           mkdir -p "$HOME/.cache/playwright-apt/partial"
           printf 'Dir::Cache::Archives "%s";\nAPT::Keep-Downloaded-Packages "true";\n' "$HOME/.cache/playwright-apt" | sudo tee /etc/apt/apt.conf.d/99playwright-archives >/dev/null
-          pnpm exec playwright install --with-deps webkit chromium
+          if ! pnpm exec playwright install --with-deps webkit chromium; then
+            test "$PLAYWRIGHT_CACHE_HIT" = true
+            sudo dpkg -i "$HOME"/.cache/playwright-apt/*.deb
+            pnpm exec playwright install webkit chromium
+          fi
           sudo chown -R "$(id -u):$(id -g)" "$HOME/.cache/playwright-apt"
 
       - name: Save Playwright browsers and system packages
