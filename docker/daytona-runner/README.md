@@ -1,4 +1,4 @@
-# Paperclip Daytona runner image
+# Wardmote Daytona runner image
 
 Ordinary provider packs now include pinned Cursor assets for Linux x64; no
 `--candidate-providers=cursor` flag is needed. Cursor admission is enabled after
@@ -91,9 +91,9 @@ published copy and is retained as provenance rather than cache identity.
 
 Publish the image to a registry Daytona can pull, or use the environment
 editor's **Configure image** flow to produce a Daytona snapshot. Set the
-environment image to that immutable tag or snapshot. Paperclip probes the
+environment image to that immutable tag or snapshot. Wardmote probes the
 sandbox user's `PATH` for `wardmote-runnerd` and `codex` and checks
-`/opt/paperclip-runner/provider-pack` for OpenCode and ACPX. It uses the pack
+`/opt/wardmote-runner/provider-pack` for OpenCode and ACPX. It uses the pack
 only when its complete manifest matches the controller's build-owned pack;
 otherwise it stages the pack configured by
 `WARDMOTE_RUNNER_REMOTE_PROVIDER_PACK_PATH`. Remote OpenCode and ACPX never
@@ -103,7 +103,7 @@ Do not promote `paperclip-runner-e2e-20260826-v2` for OpenCode or ACPX. Build a
 new immutable image or snapshot from a clean committed revision and pass that
 full Git SHA as `WARDMOTE_RUNNER_SOURCE_REVISION`.
 
-Do not bake provider credentials, Paperclip bootstrap tickets, or Daytona
+Do not bake provider credentials, Wardmote bootstrap tickets, or Daytona
 preview tokens into this image. They remain per-run secret material.
 
 The provider-pack build pins the official Linux x64 Node 24.21.0 image by

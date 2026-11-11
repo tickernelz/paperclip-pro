@@ -1,6 +1,6 @@
 # MCP Access Governance
 
-Operator guide for Paperclip's MCP tool access surface. Audience: board users and CloudOps engineers who install connections, write policies, approve action requests, and respond to runtime alerts. For runtime alert response, pair this with [MCP-RUNTIME-OPERATIONS.md](./MCP-RUNTIME-OPERATIONS.md).
+Operator guide for Wardmote's MCP tool access surface. Audience: board users and CloudOps engineers who install connections, write policies, approve action requests, and respond to runtime alerts. For runtime alert response, pair this with [MCP-RUNTIME-OPERATIONS.md](./MCP-RUNTIME-OPERATIONS.md).
 
 > Time-to-first-success: under 5 minutes if you follow [Quick start](#quick-start) and use the bundled example. Everything else is reference and how-to material that you read on demand.
 
@@ -9,7 +9,7 @@ Operator guide for Paperclip's MCP tool access surface. Audience: board users an
 - [Mental model](#mental-model)
 - [Canonical integration model](#canonical-integration-model)
 - [Quick start](#quick-start)
-- [Paperclip as MCP endpoint vs MCP gateway](#paperclip-as-mcp-endpoint-vs-mcp-gateway)
+- [Wardmote as MCP endpoint vs MCP gateway](#paperclip-as-mcp-endpoint-vs-mcp-gateway)
 - [Managed connections](#managed-connections)
 - [Catalog and risk classification](#catalog-and-risk-classification)
 - [Profiles and bindings](#profiles-and-bindings)
@@ -24,7 +24,7 @@ Operator guide for Paperclip's MCP tool access surface. Audience: board users an
 
 ## Mental model
 
-Paperclip governs MCP tool access by separating four concerns:
+Wardmote governs MCP tool access by separating four concerns:
 
 ```
 ┌────────────┐    ┌──────────────┐    ┌──────────┐    ┌────────────────┐
@@ -94,21 +94,21 @@ Expected: `ok: true` with three green checks: `allow_read_tool`, `deny_write_too
 
 If the smoke fails, fix the failing check before introducing any production connection. The bundled fixture only depends on local code, so any failure is a control-plane problem rather than an upstream MCP issue.
 
-## Paperclip as MCP endpoint vs MCP gateway
+## Wardmote as MCP endpoint vs MCP gateway
 
-Paperclip plays two roles in the MCP graph, and confusing them is the most common operator error.
+Wardmote plays two roles in the MCP graph, and confusing them is the most common operator error.
 
 ```
-              Paperclip as MCP endpoint
-              (clients call Paperclip)
+              Wardmote as MCP endpoint
+              (clients call Wardmote)
                        ┌──────────────┐
-   Claude Code  ─────▶ │   Paperclip  │
+   Claude Code  ─────▶ │   Wardmote  │
    IDE / CLI    ─────▶ │ /mcp surface │
                        └──────────────┘
                           (task ops, agent ops)
 
 
-              Paperclip as MCP gateway / proxy
+              Wardmote as MCP gateway / proxy
               (agents call upstream MCP through Paperclip)
 
    ┌─────┐       ┌────────────┐       ┌──────────────┐
@@ -119,11 +119,11 @@ Paperclip plays two roles in the MCP graph, and confusing them is the most commo
                  └────────────┘
 ```
 
-**Endpoint mode** — Paperclip exposes its own MCP surface so external clients (Claude Code, IDEs, scripts) can manipulate Paperclip tasks and agents. This is what `doc/TASKS-mcp.md` covers. Access control here is the standard Paperclip auth model ([DEPLOYMENT-MODES.md](./DEPLOYMENT-MODES.md)): bearer keys, sessions, board API key.
+**Endpoint mode** — Wardmote exposes its own MCP surface so external clients (Claude Code, IDEs, scripts) can manipulate Wardmote tasks and agents. This is what `doc/TASKS-mcp.md` covers. Access control here is the standard Wardmote auth model ([DEPLOYMENT-MODES.md](./DEPLOYMENT-MODES.md)): bearer keys, sessions, board API key.
 
 **Gateway mode** — Paperclip proxies tool calls from a Paperclip agent to an upstream MCP server (GitHub, Linear, a local stdio fixture, etc.). Every call goes through profile selection, policy evaluation, optional human approval, rate limiting, redaction, and audit. This is what the rest of this document covers.
 
-Operators usually mean *gateway* when they say "MCP access governance". For Paperclip-managed local adapter runs, Paperclip writes adapter MCP config that points at named gateway endpoints with short-lived scoped bearer tokens. Policies, approvals, and the audit log only exist for calls that enter gateway mode.
+Operators usually mean *gateway* when they say "MCP access governance". For Wardmote-managed local adapter runs, Wardmote writes adapter MCP config that points at named gateway endpoints with short-lived scoped bearer tokens. Policies, approvals, and the audit log only exist for calls that enter gateway mode.
 
 Connected tool names reserve the `mcp__wardmote-assigned__` provider prefix
 within the 128-character limit. Short existing names stay compatible. Longer
@@ -197,7 +197,7 @@ Connection statuses: `draft`, `active`, `disabled`, `archived`. Health statuses:
 
 ## Catalog and risk classification
 
-Each tool discovered on a connection becomes a **catalog entry** with a risk level Paperclip infers from MCP annotations:
+Each tool discovered on a connection becomes a **catalog entry** with a risk level Wardmote infers from MCP annotations:
 
 | Risk | Trigger | Default treatment |
 | --- | --- | --- |
@@ -400,10 +400,10 @@ Audit is the source of truth for the security memo. It is intentionally append-o
 
 ## Local trusted deployment
 
-Local stdio MCP connections introduce a different trust model from remote_http: Paperclip is running a child process under its own credentials. Two questions decide whether this is safe in your deployment:
+Local stdio MCP connections introduce a different trust model from remote_http: Wardmote is running a child process under its own credentials. Two questions decide whether this is safe in your deployment:
 
 1. **Who controls the host?** If the operator and the host are the same human (developer laptop, internal CI runner), you can opt into local stdio. If the host is multi-tenant (shared cloud worker), you must not.
-2. **Who controls the template?** Only approved templates baked into the Paperclip build can run. Agents cannot supply arbitrary `command` / `args`.
+2. **Who controls the template?** Only approved templates baked into the Wardmote build can run. Agents cannot supply arbitrary `command` / `args`.
 
 The decision matrix:
 
@@ -431,7 +431,7 @@ These are intentional gaps as of the MCP Access Governance v1 launch. Track or w
 - **Trust rules match exact argument shapes only.** A trust rule built from one approval covers calls whose canonical argument hash matches and whose catalog schema hash is unchanged. Wildcards and structural filters across the rest of the schema are not supported in v1.
 - **Rate limits are per-policy.** Rate limit counters are scoped to the matching policy and counter key. There is no cross-policy aggregation (e.g. "300 requests/hour across all GitHub policies"). Operators who need that wire two `rate_limit` policies and accept the additive behavior.
 - **Action request expiry is fixed by policy.** The approval card carries a server-set expiry; the human approver cannot extend it from the UI. If a request expires before approval, the agent must retry the tool call.
-- **Endpoint mode (Paperclip as MCP server) is not policy-governed.** Tool access governance applies only to *gateway mode* — Paperclip's own MCP endpoint surface (`/mcp`) uses standard Paperclip auth and is not subject to the profile/policy stack.
+- **Endpoint mode (Wardmote as MCP server) is not policy-governed.** Tool access governance applies only to *gateway mode* — Wardmote's own MCP endpoint surface (`/mcp`) uses standard Wardmote auth and is not subject to the profile/policy stack.
 - **No multi-region runtime supervisor.** Local stdio slots run on the worker that serves the request that started them. If you scale workers, slots do not migrate. Plan capacity per worker, not per cluster.
 
 ## Reference

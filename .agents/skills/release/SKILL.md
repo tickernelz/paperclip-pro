@@ -1,14 +1,14 @@
 ---
 name: release
 description: >
-  Coordinate a full Paperclip release across engineering verification, npm,
+  Coordinate a full Wardmote release across engineering verification, npm,
   GitHub, smoke testing, and announcement follow-up. Use when leadership asks
   to ship a release, not merely to discuss versioning.
 ---
 
 # Release Coordination Skill
 
-Run the full Paperclip maintainer release workflow, not just an npm publish.
+Run the full Wardmote maintainer release workflow, not just an npm publish.
 
 This skill coordinates:
 
@@ -38,7 +38,7 @@ Before proceeding, verify all of the following:
 4. The candidate SHA has passed the verification gate or is about to.
 5. If manifests changed, the CI-owned `pnpm-lock.yaml` refresh is already merged on `master`.
 6. npm publish rights are available through GitHub trusted publishing, or through local npm auth for emergency/manual use.
-7. If running through Paperclip, you have issue context for status updates and follow-up task creation.
+7. If running through Wardmote, you have issue context for status updates and follow-up task creation.
 
 If any precondition fails, stop and report the blocker.
 
@@ -121,7 +121,7 @@ Create or verify follow-up work for:
 
 - website changelog publishing
 - launch post / social announcement
-- release summary in Paperclip issue context
+- release summary in Wardmote issue context
 
 These should reference the released version and its GitHub release.
 
@@ -143,8 +143,8 @@ POST /api/companies/:companyId/cases
 {
   "caseType": "release",
   "key": "paperclip-release:vYYYY.MDD.P",
-  "title": "Paperclip vYYYY.MDD.P release",
-  "summary": "Stable release content package for Paperclip vYYYY.MDD.P.",
+  "title": "Wardmote vYYYY.MDD.P release",
+  "summary": "Stable release content package for Wardmote vYYYY.MDD.P.",
   "status": "in_progress",
   "fields": {
     "schema_version": 1,
@@ -177,9 +177,9 @@ Write the parent body document immediately after the upsert:
 ```http
 PUT /api/cases/:releaseCaseId/documents/body
 {
-  "title": "Paperclip vYYYY.MDD.P release body",
+  "title": "Wardmote vYYYY.MDD.P release body",
   "format": "markdown",
-  "body": "# Paperclip vYYYY.MDD.P\n\nRelease summary and links...",
+  "body": "# Wardmote vYYYY.MDD.P\n\nRelease summary and links...",
   "changeSummary": "Initial release case body"
 }
 ```

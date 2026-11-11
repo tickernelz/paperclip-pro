@@ -74,7 +74,7 @@ This starts:
 
 `pnpm dev:once` auto-applies pending local migrations by default before starting the dev server.
 
-`pnpm dev` and `pnpm dev:once` are now idempotent for the current repo and instance: if the matching Paperclip dev runner is already alive, Paperclip reports the existing process instead of starting a duplicate.
+`pnpm dev` and `pnpm dev:once` are now idempotent for the current repo and instance: if the matching Wardmote dev runner is already alive, Wardmote reports the existing process instead of starting a duplicate.
 
 To run against a separate local state root, pass `--data-dir`. The dev runner
 translates it to an isolated `WARDMOTE_HOME` before migration checks or server
@@ -82,15 +82,15 @@ startup, so embedded PostgreSQL and other default instance state live under that
 directory:
 
 ```sh
-pnpm dev --data-dir ./tmp/paperclip-dev
+pnpm dev --data-dir ./tmp/wardmote-dev
 ```
 
 Pass the same option to the service-management commands so they use the
 isolated runtime-service registry:
 
 ```sh
-pnpm dev:list --data-dir ./tmp/paperclip-dev
-pnpm dev:stop --data-dir ./tmp/paperclip-dev
+pnpm dev:list --data-dir ./tmp/wardmote-dev
+pnpm dev:stop --data-dir ./tmp/wardmote-dev
 ```
 
 Issue execution may also use project execution workspace policies and workspace runtime services for per-project worktrees, preview servers, and managed dev commands. Configure those through the project workspace/runtime surfaces rather than starting long-running unmanaged processes when a task needs a reusable service.
@@ -228,7 +228,7 @@ fixtures and never start an agent.
 Use **Composer → Model and effort picker** to review harness-specific model
 choices. Codex uses the curated adapter catalog unless the instance declares
 `WARDMOTE_ADAPTER_MODELS`; general OpenAI API models are not Codex choices.
-The Paperclip Runner Codex profile shows the same known model effort levels.
+The Wardmote Runner Codex profile shows the same known model effort levels.
 Its selected effort is saved with the run and sent to Codex for each turn.
 When Codex reports that a selected model is not supported with a ChatGPT account,
 the task shows **Model unavailable**, the provider's account restriction, and
@@ -278,7 +278,7 @@ The board UI ships its own sans-serif webfont assets in `ui/public/fonts/`.
 `ui/src/index.css` declares Inter v4.1 variable regular and italic faces and wires
 the Tailwind `font-sans` token to those bundled files before system fallbacks.
 Linux screenshot or Storybook capture jobs should not install host Inter packages
-or inject external font CSS to make Paperclip text render correctly.
+or inject external font CSS to make Wardmote text render correctly.
 
 Font assets live in Vite's public directory so `pnpm --filter @tickernelz/wardmote-ui build`
 emits them under `ui/dist/fonts/`. The server package copies the same output into
@@ -304,7 +304,7 @@ owns committed updates.
 
 During a restart, the board's health, session, and access checks retry temporary
 network/gateway failures and non-JSON API responses every five seconds. A new
-page shows **Reconnecting to Paperclip** with a **Try again** action and waits
+page shows **Reconnecting to Wardmote** with a **Try again** action and waits
 for startup health to become ready. Valid startup metadata remains available to
 sign-in and invitation pages. An already
 open page stays mounted during temporary background failures so unsaved edits
@@ -313,12 +313,12 @@ this recovery does not reload the browser or replay mutations. Authorization
 failures still require sign-in or an explicit retry. Storybook **App / Connection
 recovery** shows the startup recovery states.
 
-Primary-instance rebuilds that restart `paperclip.service` can request one-shot live-run adoption instead of using the normal graceful shutdown drain. Before restarting the service, write the marker from the newly staged app with the current service PID:
+Primary-instance rebuilds that restart `wardmote.service` can request one-shot live-run adoption instead of using the normal graceful shutdown drain. Before restarting the service, write the marker from the newly staged app with the current service PID:
 
 ```sh
-old_main_pid="$(systemctl show paperclip.service -p MainPID --value)"
+old_main_pid="$(systemctl show wardmote.service -p MainPID --value)"
 pnpm --filter @tickernelz/wardmote-server exec tsx ../scripts/request-hot-restart.ts --server-pid "$old_main_pid"
-systemctl restart paperclip.service
+systemctl restart wardmote.service
 ```
 
 The staged command records the target server's boot identity and operating
@@ -328,15 +328,15 @@ identities let a later request reclaim an abandoned marker after the operating
 system recycles the numeric PID. Older markers stay compatible and use process
 start metadata when available. When OS metadata is unavailable, the current
 server's health-reported boot time can still prove that a legacy marker predates
-the process now using its PID. Paperclip refuses to create a new request without
+the process now using its PID. Wardmote refuses to create a new request without
 at least one identity source. Supported-platform process probes fail explicitly
 instead of silently treating a live PID as either the original owner or a
 recycled process when identity cannot be established.
 
 Use `--drain-required` only when the deploy intentionally requires the old terminate-and-retry behavior. Without that flag, the old server verifies that the marker targets its own PID, stops new scheduler work, waits for any queue-claim callback already in flight, snapshots currently running heartbeat run IDs and child PIDs, and skips the shutdown drain so eligible detached local-agent processes can keep running. ACP-backed local runs use server-owned stdio and cannot survive their parent server, so the old server instead persists their complete snapshot, changes the marker to `drainRequired` with `drainReason: "active_acp_run"`, and drains only those runs to bounded conversation retries. These retries resume the prior session when compatible, otherwise carry the full task conversation into a fresh session. They do not automatically replay tool calls or require receipts for every prior action. Detached CLI runs remain eligible for adoption during the same mixed restart. If an ACP process terminates but its terminal run update does not persist, startup classifies it as lost with reason `selective_drain_not_finalized` rather than treating the drain as successful. On startup the new server writes `$WARDMOTE_HOME/instances/${WARDMOTE_INSTANCE_ID:-default}/hot-restart-report.json` with `previousServerPid`, `newServerPid`, `previousServerVersion`, `newServerVersion`, `drainReason`, `adoptedRunIds`, `finalizedWhileDownRunIds`, `lostRunIds`, and per-run classifications before the normal orphan reaper runs.
 
-When Paperclip manages embedded PostgreSQL, it suppresses that dependency's eager
-`SIGINT`/`SIGTERM` cleanup hooks. Paperclip owns signal ordering so the heartbeat
+When Wardmote manages embedded PostgreSQL, it suppresses that dependency's eager
+`SIGINT`/`SIGTERM` cleanup hooks. Wardmote owns signal ordering so the heartbeat
 snapshot and any required drain complete while the database is still available;
 the coordinated shutdown path stops embedded PostgreSQL afterward.
 
@@ -358,10 +358,10 @@ made adoptable retroactively. Cross that version boundary once with the normal
 drain-and-retry path:
 
 ```sh
-old_main_pid="$(systemctl show paperclip.service -p MainPID --value)"
+old_main_pid="$(systemctl show wardmote.service -p MainPID --value)"
 pnpm --filter @tickernelz/wardmote-server exec tsx ../scripts/request-hot-restart.ts \
   --server-pid "$old_main_pid" --drain-required
-systemctl restart paperclip.service
+systemctl restart wardmote.service
 ```
 
 After the fixed server starts, wait for the replacement `codex_local` heartbeat
@@ -492,16 +492,16 @@ current during that delay.
 
 ### OpenCode native runtime
 
-Paperclip Runner resolves the pinned OpenCode platform package installed with
-Paperclip. On Apple Silicon and Intel Macs it runs the matching macOS binary;
+Wardmote Runner resolves the pinned OpenCode platform package installed with
+Wardmote. On Apple Silicon and Intel Macs it runs the matching macOS binary;
 on Linux x64 it runs the qualified baseline binary. No global OpenCode command
 or dependency postinstall script is required. This also works when installation
 scripts are disabled. The published server declares the same pinned dependency
 as the source Runner package.
 
-For native OpenCode and Cursor on Daytona, a complete installed Paperclip release
+For native OpenCode and Cursor on Daytona, a complete installed Wardmote release
 also selects its packaged Linux daemon and provider-pack identity automatically.
-Use the matching Paperclip Daytona image: the controller verifies the image's
+Use the matching Wardmote Daytona image: the controller verifies the image's
 pack manifest, executable hashes, bridge tree, and pinned versions before launch.
 The controller's operating system does not determine the remote daemon target.
 
@@ -521,7 +521,7 @@ pnpm wardmote run
 
 > **Note: private npm registry `.npmrc` + first-run onboarding**
 >
-> The first-run experience often starts with `npx @tickernelz/wardmote onboard --yes` (before you have a repo checkout). If your global `~/.npmrc` sets `registry` to a private registry (for example GitHub Packages), `npx` may try to resolve `paperclip-pro` from that private registry and fail with `E404`.
+> The first-run experience often starts with `npx @tickernelz/wardmote onboard --yes` (before you have a repo checkout). If your global `~/.npmrc` sets `registry` to a private registry (for example GitHub Packages), `npx` may try to resolve `wardmote` from that private registry and fail with `E404`.
 >
 > Diagnostic:
 >
@@ -532,7 +532,7 @@ pnpm wardmote run
 > Workaround (cross-platform; force the public npm registry for this command):
 >
 > ```sh
-> npx --registry https://registry.npmjs.org paperclip-pro onboard --yes
+> npx --registry https://registry.npmjs.org wardmote onboard --yes
 > ```
 
 `wardmote run` does:
@@ -584,7 +584,7 @@ Claude uses `ANTHROPIC_API_KEY`; Codex uses `OPENAI_API_KEY`; OpenCode uses
 `OPENROUTER_API_KEY` and requires an `openrouter/...` model. `--api-key-env`
 can name a different source variable while the agent still receives the
 canonical variable. `--api-key <value>` is also supported and is mutually
-exclusive with `--api-key-env`; Paperclip redacts it from its own output, but
+exclusive with `--api-key-env`; Wardmote redacts it from its own output, but
 also removes it from the JavaScript argument view before telemetry, diagnostics,
 or server startup. Wrappers, operating-system process listings, and shell
 history may still expose argument values. This is an explicit local test-drive
@@ -610,12 +610,12 @@ token, install the app, verify Slack delivery, and try a conversation. Agent
 selection generates readable defaults for the Slack app name, bot display name,
 and slash command; edit them under **Advanced** if needed. **Get your App
 configuration token** opens Slack app settings. Enter the temporary token directly
-into Paperclip, then select **Create Slack app**. Paperclip creates the app,
+into Wardmote, then select **Create Slack app**. Wardmote creates the app,
 vaults its credentials, and attempts avatar upload before discarding the token.
 App details lock after creation dispatch, including an uncertain result.
 
 **Install in Slack** obtains the bot token through OAuth, links the installing
-Slack account to the Paperclip account that started installation, and sends one
+Slack account to the Wardmote account that started installation, and sends one
 welcome DM. Approve with your own Slack account. After Slack verifies the Events
 Request URL, use **Open your Slack DM**, send the suggested message, and continue
 in the thread. **Done** finishes setup; the conversation test is optional.
@@ -654,7 +654,7 @@ separate strict connection-test API retains its conversation and delivery checks
 
 New Slack conversations receive default communication guidance that requires a
 clickable link to each task the agent creates. Agents use the public task URL
-from Paperclip tools or task context and report when a link is unavailable.
+from Wardmote tools or task context and report when a link is unavailable.
 Existing conversations keep their original communication guidance snapshot.
 
 ### Chat activity pagination and callback diagnostics
@@ -666,23 +666,23 @@ The first page refreshes automatically; older pages do not poll. Mutable action 
 entry forward in time, so this is a live ledger, not a historical snapshot. Requests without pagination
 parameters retain the recent-100 array response for existing clients.
 
-Slack callback diagnostics tolerate HTTP between a TLS proxy and Paperclip when the public host,
+Slack callback diagnostics tolerate HTTP between a TLS proxy and Wardmote when the public host,
 port, and path still match. A changed authority or path remains stale. This comparison only affects
 health display; it does not trust forwarded headers or alter Slack signature verification.
 
 
 ## Docker Quickstart (No local Node install)
 
-Build and run Paperclip in Docker:
+Build and run Wardmote in Docker:
 
 ```sh
-docker build -t paperclip-local .
-docker run --name paperclip \
+docker build -t wardmote-local .
+docker run --name wardmote \
   -p 3100:3100 \
   -e HOST=0.0.0.0 \
-  -e WARDMOTE_HOME=/paperclip \
-  -v "$(pwd)/data/docker-paperclip:/paperclip" \
-  paperclip-local
+  -e WARDMOTE_HOME=/wardmote \
+  -v "$(pwd)/data/docker-wardmote:/wardmote" \
+  wardmote-local
 ```
 
 Or use Compose:
@@ -792,7 +792,7 @@ When an agent generates a file that a board user or reviewer should inspect as
 a deliverable, attach it to the issue before marking the task complete. Do not
 rely on a local workspace path as the only access path.
 
-Use the helper bundled with the Paperclip skill from the repo root:
+Use the helper bundled with the Wardmote skill from the repo root:
 
 ```sh
 skills/wardmote/scripts/wardmote-upload-artifact.sh dist/demo.mp4 \
@@ -818,27 +818,27 @@ that file, not as the main completion path for deliverables.
 
 ## Default Agent Workspaces
 
-When a local agent run has no resolved project/session workspace, Paperclip falls back to an agent home workspace under the instance root:
+When a local agent run has no resolved project/session workspace, Wardmote falls back to an agent home workspace under the instance root:
 
 - `~/.wardmote/instances/default/workspaces/<agent-id>`
 
 This path honors `WARDMOTE_HOME` and `WARDMOTE_INSTANCE_ID` in non-default setups.
 
-For `codex_local`, Paperclip assigns new and updated agents an isolated Codex home under the instance root and blocks shared host/company Codex homes:
+For `codex_local`, Wardmote assigns new and updated agents an isolated Codex home under the instance root and blocks shared host/company Codex homes:
 
 - `~/.wardmote/instances/default/companies/<company-id>/agents/<agent-id>/codex-home`
 
-Paperclip also persists an empty `OPENAI_API_KEY` override for those agents so a host-level `OPENAI_API_KEY` cannot leak into Codex runs through process inheritance. If an operator explicitly configures `adapterConfig.env.CODEX_HOME`, it must not point at the shared company `codex-home`, `$CODEX_HOME`, or `~/.codex`.
+Wardmote also persists an empty `OPENAI_API_KEY` override for those agents so a host-level `OPENAI_API_KEY` cannot leak into Codex runs through process inheritance. If an operator explicitly configures `adapterConfig.env.CODEX_HOME`, it must not point at the shared company `codex-home`, `$CODEX_HOME`, or `~/.codex`.
 
 If the `codex` CLI is not installed or not on `PATH`, `codex_local` agent runs fail at execution time with a clear adapter error. Quota polling uses a short-lived `codex app-server` subprocess: when `codex` cannot be spawned, that provider reports `ok: false` in aggregated quota results and the API server keeps running (it must not exit on a missing binary).
 
-Local adapters require their corresponding CLI/session setup on the machine running Paperclip. External adapters are installed through the adapter/plugin flow and should not require hardcoded imports in `server/` or `ui/`.
+Local adapters require their corresponding CLI/session setup on the machine running Wardmote. External adapters are installed through the adapter/plugin flow and should not require hardcoded imports in `server/` or `ui/`.
 
 ## Project Repository Checkouts
 
-Tasks use every distinct repository attached to their project, including repository-only sources with no local folder. Paperclip creates a managed checkout when no local folder is configured. The selected repository remains at the task workspace root. Other project repositories have editable, independent Git checkouts under `.wardmote-repositories/<name>-<key>`. Workspace hints expose each checkout path to the agent.
+Tasks use every distinct repository attached to their project, including repository-only sources with no local folder. Wardmote creates a managed checkout when no local folder is configured. The selected repository remains at the task workspace root. Other project repositories have editable, independent Git checkouts under `.wardmote-repositories/<name>-<key>`. Workspace hints expose each checkout path to the agent.
 
-When an additional repository has a configured local checkout, Paperclip seeds the task copy from its current commit and uncommitted files. Git-ignored files stay out of that copy. Subsequent task edits stay in the task copy. They do not overwrite the configured source folder. Existing task copies retain their work across runs.
+When an additional repository has a configured local checkout, Wardmote seeds the task copy from its current commit and uncommitted files. Git-ignored files stay out of that copy. Subsequent task edits stay in the task copy. They do not overwrite the configured source folder. Existing task copies retain their work across runs.
 
 Sandbox staging, including Daytona, transfers each repository's Git history and working files. Restore merges files and commits back into each local task checkout independently. Durable sandbox recovery keeps the same repository snapshots. Normal ignore and workspace exclusion rules still apply. A clone failure stops task preparation with an error so the agent does not start with only part of the project.
 
@@ -850,13 +850,13 @@ If a repository is detached or its source configuration changes, its previous ta
 
 Agent, project, environment, secret, skill, and workspace config edits are sampled at the next run boundary. A heartbeat that is already running finishes with the config it started with. Native runners project explicitly configured task environment variables into provider processes and tool commands, including custom `WARDMOTE_*` names such as `WARDMOTE_PAGE_BUCKET`. Adding, changing, or removing a projected variable replaces a retained provider process at the next run boundary. Unchanged variables permit process reuse. The projection contains names only; secret values stay in the child environment. Ambient host secrets are not projected. Native projections allow up to 128 variable names, 64 KiB per entry, and 256 KiB of values in total. These native launch limits do not apply to legacy adapter configuration. Runtime authority, provider login credentials, and process-loader settings use their existing restricted paths.
 
-When effective run config changes, Paperclip may intentionally skip a saved adapter session, refresh persisted workspace runtime config, replace a reused execution workspace, or avoid reusing a sandbox/environment lease. Fresh execution can lose adapter-specific session, workspace, or sandbox state; correctness of the next run's config takes priority over continuity. Plain environment values affect freshness through value hashes; run result JSON and workspace operation logs expose only the non-sensitive freshness decision categories, without storing secret values, full env maps, provider credentials, or private path details.
+When effective run config changes, Wardmote may intentionally skip a saved adapter session, refresh persisted workspace runtime config, replace a reused execution workspace, or avoid reusing a sandbox/environment lease. Fresh execution can lose adapter-specific session, workspace, or sandbox state; correctness of the next run's config takes priority over continuity. Plain environment values affect freshness through value hashes; run result JSON and workspace operation logs expose only the non-sensitive freshness decision categories, without storing secret values, full env maps, provider credentials, or private path details.
 
 An explicit `reuse_existing` Git workspace keeps its recorded source repository, including after its project-workspace row is deleted or the project primary changes. The server verifies the original company, project, repository origin, and worktree registration before reuse. It does not attach a deleted association to the new primary. A conflicting explicit project-workspace selection, missing source identity, or an unverified legacy local checkout blocks the run. Restore the original source. Before intentionally clearing the existing-workspace binding to choose a new repository, review and preserve its retained work. Missing worktrees may be reconstructed only from the verified original source; current project defaults are not a fallback.
 
 ## Workspace Git Scan Protection
 
-Paperclip applies one process-wide scheduler to expensive host-side workspace Git enumeration, including changed-file browsing, runtime/finalization cleanliness guards, and adapter sandbox-sync snapshots. The scheduler defaults to two active scans and a bounded queue of 32. Identical buffered scans of the same canonical worktree share one subprocess, while successful changed-file listings are cached for 10 seconds. Streaming snapshot scans have caller-owned sinks, so they use separate jobs in the same queue and are never cached or coalesced. Correctness-sensitive runtime guards bypass the result cache.
+Wardmote applies one process-wide scheduler to expensive host-side workspace Git enumeration, including changed-file browsing, runtime/finalization cleanliness guards, and adapter sandbox-sync snapshots. The scheduler defaults to two active scans and a bounded queue of 32. Identical buffered scans of the same canonical worktree share one subprocess, while successful changed-file listings are cached for 10 seconds. Streaming snapshot scans have caller-owned sinks, so they use separate jobs in the same queue and are never cached or coalesced. Correctness-sensitive runtime guards bypass the result cache.
 
 The shared scan subprocess sets `GIT_OPTIONAL_LOCKS=0`, including when a caller supplies an environment. This prevents background `git status` from rewriting the index's stat cache and competing with workspace writers. Git still computes current tracked and untracked changes. Required write locks remain enforced; existing lock files are never removed or treated as stale by a scan. This avoids optional index refresh work but may make later scans repeat stat checks. See Git's [background refresh guidance](https://git-scm.com/docs/git-status#_background_refresh).
 
@@ -889,9 +889,9 @@ Structured `workspace_git_scan` logs expose the operation name, a non-reversible
 
 ## Worktree-local Instances
 
-When developing from multiple git worktrees, do not point two Paperclip servers at the same embedded PostgreSQL data directory.
+When developing from multiple git worktrees, do not point two Wardmote servers at the same embedded PostgreSQL data directory.
 
-Instead, create a repo-local Paperclip config plus an isolated instance for the worktree:
+Instead, create a repo-local Wardmote config plus an isolated instance for the worktree:
 
 ```sh
 wardmote worktree init
@@ -906,7 +906,7 @@ This command:
 - when run inside a linked git worktree, mirrors the effective git hooks into that worktree's private git dir
 - picks a free app port and embedded PostgreSQL port
 - disables automatic database backups for the isolated instance
-- by default seeds the isolated DB in `minimal` mode from the current effective Paperclip instance/config (repo-local worktree config when present, otherwise the default instance) via a logical SQL snapshot
+- by default seeds the isolated DB in `minimal` mode from the current effective Wardmote instance/config (repo-local worktree config when present, otherwise the default instance) via a logical SQL snapshot
 
 Seed modes:
 
@@ -923,9 +923,9 @@ While that marker exists, startup uses the instance's saved JWT and tool-action
 signing keys even if the shell inherited another instance's keys. Better Auth
 uses its saved key or the fresh instance JWT key. Missing saved keys stop startup.
 
-Seeded worktree instances quarantine copied live execution by default for both `minimal` and `full` seeds. During restore, Paperclip disables copied agent timer heartbeats, resets copied `running` agents to `idle`, blocks and unassigns copied agent-owned `in_progress` issues, and unassigns copied agent-owned `todo`/`in_review` issues. This keeps a freshly booted worktree from starting agents for work already owned by the source instance. Pass `--preserve-live-work` only when you intentionally want the isolated worktree to resume copied assignments.
+Seeded worktree instances quarantine copied live execution by default for both `minimal` and `full` seeds. During restore, Wardmote disables copied agent timer heartbeats, resets copied `running` agents to `idle`, blocks and unassigns copied agent-owned `in_progress` issues, and unassigns copied agent-owned `todo`/`in_review` issues. This keeps a freshly booted worktree from starting agents for work already owned by the source instance. Pass `--preserve-live-work` only when you intentionally want the isolated worktree to resume copied assignments.
 
-The same quarantine stops copied project/execution-workspace runtime desired states and clears copied runtime process claims. Without this reset, booting the cloned Paperclip database could restart a source workspace's dev service from the isolated instance, creating duplicate runners, port reassignment, and stale public URLs.
+The same quarantine stops copied project/execution-workspace runtime desired states and clears copied runtime process claims. Without this reset, booting the cloned Wardmote database could restart a source workspace's dev service from the isolated instance, creating duplicate runners, port reassignment, and stale public URLs.
 
 After `worktree init`, both the server and the CLI auto-load the repo-local `.wardmote/.env` when run inside that worktree, so normal commands like `pnpm dev`, `wardmote doctor`, and `wardmote db:backup` stay scoped to the worktree instance.
 
@@ -941,13 +941,13 @@ The default `worktree init` still seeds eagerly. A lean worktree (created withou
 
 - `pnpm wardmote worktree ensure-seeded` performs the deferred seed **exactly once**. It is lock-guarded and idempotent: only a complete `verified` manifest short-circuits it, so it is safe to call repeatedly and from concurrent processes. Managed workspaces derive the source from the control-plane-provided base project workspace when it carries its own `.wardmote/config.json`, and otherwise from the control plane's own registered instance config; either way the workspace's manifest never selects it. Manual worktrees must pass `--from-config`.
 - `wardmote run` calls `ensureWorktreeSeeded` automatically before doctor/boot. Managed runs transparently seed a lean worktree from their registered base workspace; an unmanaged lean worktree must first run `worktree ensure-seeded --from-config <source-config>`.
-- Managed Paperclip git worktrees default to the repository's `scripts/provision-worktree.sh` when the strategy omits `provisionCommand`. When a registered source config exists, setup creates the isolated config and pending manifest. Runtime startup also runs `scripts/provision-worktree-runtime.sh` automatically when no explicit runtime provision command is configured and the manifest is not verified. Explicitly configured provision commands still take precedence.
+- Managed Wardmote git worktrees default to the repository's `scripts/provision-worktree.sh` when the strategy omits `provisionCommand`. When a registered source config exists, setup creates the isolated config and pending manifest. Runtime startup also runs `scripts/provision-worktree-runtime.sh` automatically when no explicit runtime provision command is configured and the manifest is not verified. Explicitly configured provision commands still take precedence.
 - An environment-configured server may have no local seed config. If neither the base checkout nor the default control-plane instance has one, a fresh worktree prepares its dependencies without creating a development instance. This also applies when `WARDMOTE_CONFIG` names the default `$WARDMOTE_HOME/instances/$WARDMOTE_INSTANCE_ID/config.json` path, as the Docker image does. Setup creates no config, environment file, or seed manifest and does not claim runtime or seed readiness. A later request for a seeded development runtime still needs a canonical registered source config. Once that source exists, provisioning the checkout again creates the development instance normally.
 - A missing custom `WARDMOTE_CONFIG`, rejected symlink, or non-regular source file still fails setup. An existing worktree with a config, environment file, or seed state also fails if its source disappears; setup never downgrades that instance to a plain checkout. Repair the source before retrying.
 - The built-in deferred seed is recorded as its own terminal `workspace_seed` operation. A zero exit code is not enough for success: the operation succeeds only when `.wardmote/seed-manifest.json` contains complete verified evidence; failed, missing, or malformed manifests produce a failed operation with the seed phase in metadata.
-- Worktrees created before lazy seeding shipped may have neither marker. Paperclip adopts them only after their configured database proves a compatible migration journal and the core Paperclip schema; otherwise managed startup creates a pending manifest and performs the normal verified seed. Manual markerless worktrees must provide `--from-config` so the source remains explicit.
+- Worktrees created before lazy seeding shipped may have neither marker. Wardmote adopts them only after their configured database proves a compatible migration journal and the core Wardmote schema; otherwise managed startup creates a pending manifest and performs the normal verified seed. Manual markerless worktrees must provide `--from-config` so the source remains explicit.
 
-Both `minimal` and `full` modes use the same terminal data-validation contract. Source validation accepts a migration journal that is a prefix of the checkout's journal and records the source revision in seed diagnostics; it rejects a source that is ahead of the checkout because that would require a downgrade. After restore, Paperclip applies pending migrations and requires the target journal to be current. Both validations also read an auth user with an instance administrator role, active company membership, and representative cloned company/issue pair. Authenticated instances additionally require that administrator to have a non-empty credential account. `local_trusted` instances accept the implicit local Board user without an account row because that mode intentionally has no human login flow. Restore, migrations, execution quarantine, routine pausing, workspace rebinding, and post-restore validation all run under the seed lock. An interruption leaves the exact active phase in terminal `failed` state; it cannot produce readiness evidence.
+Both `minimal` and `full` modes use the same terminal data-validation contract. Source validation accepts a migration journal that is a prefix of the checkout's journal and records the source revision in seed diagnostics; it rejects a source that is ahead of the checkout because that would require a downgrade. After restore, Wardmote applies pending migrations and requires the target journal to be current. Both validations also read an auth user with an instance administrator role, active company membership, and representative cloned company/issue pair. Authenticated instances additionally require that administrator to have a non-empty credential account. `local_trusted` instances accept the implicit local Board user without an account row because that mode intentionally has no human login flow. Restore, migrations, execution quarantine, routine pausing, workspace rebinding, and post-restore validation all run under the seed lock. An interruption leaves the exact active phase in terminal `failed` state; it cannot produce readiness evidence.
 
 The seed process must own the target embedded PostgreSQL lifecycle for that entire sequence. It refuses to restore into a target postmaster that is already running, suppresses the embedded provider's process-global exit hooks, and stops its owned target only after validation or failure cleanup. A shutdown detected during restore is recorded as a target-database shutdown diagnostic rather than a generic restore failure.
 
@@ -956,7 +956,7 @@ The seed manifest never grants source-path authority. Its source path and instan
 **Unverified-seed guard.** `pnpm dev` (the dev-runner) refuses to boot a worktree whose manifest is pending, running, failed, malformed, or missing required verification evidence and points you at the fix:
 
 ```
-[paperclip] this worktree database is seed-pending. Run `pnpm wardmote worktree ensure-seeded` before `pnpm dev`.
+[wardmote] this worktree database is seed-pending. Run `pnpm wardmote worktree ensure-seeded` before `pnpm dev`.
 ```
 
 This guard (`isWorktreeSeedPending` in `server/src/dev-runner-worktree.ts`) prevents `pnpm dev` from starting the app against an empty or partially restored database — run `worktree ensure-seeded` once and re-run `pnpm dev`.
@@ -974,7 +974,7 @@ The server/UI use those values for worktree-specific branding such as the top ba
 Authenticated worktree servers also use the `WARDMOTE_INSTANCE_ID` value to scope Better Auth cookie names.
 Browser cookies are shared by host rather than port, so this prevents logging into one `127.0.0.1:<port>` worktree from replacing another worktree server's session cookie.
 
-When Paperclip closes a server-managed git worktree, it also reclaims the isolated instance referenced by that worktree's repo-local `.wardmote/.env`. New server-managed worktrees use a collision-resistant instance id derived from the resolved absolute worktree path, and Paperclip persists the resulting instance root as execution-workspace ownership metadata. Cleanup requires the env pointer to match that persisted root, stops a running embedded PostgreSQL process, and then removes the instance directory. The deletion guard only accepts canonical instance paths below `WARDMOTE_WORKTREES_DIR/instances/`; legacy or mismatched ownership, pointers to the default/live Paperclip home, and all other locations are logged and left untouched.
+When Wardmote closes a server-managed git worktree, it also reclaims the isolated instance referenced by that worktree's repo-local `.wardmote/.env`. New server-managed worktrees use a collision-resistant instance id derived from the resolved absolute worktree path, and Wardmote persists the resulting instance root as execution-workspace ownership metadata. Cleanup requires the env pointer to match that persisted root, stops a running embedded PostgreSQL process, and then removes the instance directory. The deletion guard only accepts canonical instance paths below `WARDMOTE_WORKTREES_DIR/instances/`; legacy or mismatched ownership, pointers to the default/live Wardmote home, and all other locations are logged and left untouched.
 
 Print shell exports explicitly when needed:
 
@@ -1063,19 +1063,19 @@ For an already-created worktree where you want the CLI to decide whether to rebu
 Examples:
 
 ```sh
-# From inside a linked worktree, rebuild missing .paperclip metadata and reseed it from the default instance.
+# From inside a linked worktree, rebuild missing .wardmote metadata and reseed it from the default instance.
 cd /path/to/paperclip/.wardmote/worktrees/PAP-1132-assistant-ui-pap-1131-make-issues-comments-be-like-a-chat
 pnpm wardmote worktree repair
 
 # From the primary checkout, create or repair a linked worktree for a branch under .wardmote/worktrees/.
 # This command repairs the local checkout, so run the checked-out CLI through the direct-exec form.
-cd /path/to/paperclip
+cd /path/to/wardmote
 node cli/node_modules/tsx/dist/cli.mjs cli/src/index.ts worktree repair --branch PAP-1132-assistant-ui-pap-1131-make-issues-comments-be-like-a-chat
 ```
 
-For an already-created worktree where you want to keep the existing repo-local config/env and only overwrite the isolated database, use `worktree reseed` instead. Stop the target worktree's Paperclip server first so the command can replace the DB safely.
+For an already-created worktree where you want to keep the existing repo-local config/env and only overwrite the isolated database, use `worktree reseed` instead. Stop the target worktree's Wardmote server first so the command can replace the DB safely.
 
-**`npx @tickernelz/wardmote worktree reseed [options]`** — Re-seed an existing worktree-local instance from another Paperclip instance or worktree while preserving the target worktree's current config, ports, and instance identity.
+**`npx @tickernelz/wardmote worktree reseed [options]`** — Re-seed an existing worktree-local instance from another Wardmote instance or worktree while preserving the target worktree's current config, ports, and instance identity.
 
 | Option | Description |
 |---|---|
@@ -1093,7 +1093,7 @@ Examples:
 
 ```sh
 # From the main repo, reseed a worktree from the current default/master instance.
-cd /path/to/paperclip
+cd /path/to/wardmote
 npx @tickernelz/wardmote worktree reseed \
   --from current \
   --to PAP-1132-assistant-ui-pap-1131-make-issues-comments-be-like-a-chat \
@@ -1109,7 +1109,7 @@ npx @tickernelz/wardmote worktree reseed \
 
 Managed workspace repair uses this same verified full-reseed contract through `POST /api/execution-workspaces/:id/runtime-commands/repair`. The exclusive, audited operation stops managed services, writes a recoverable pre-repair database backup under the isolated instance's backup directory, performs the full seed/migration/quarantine/rebinding sequence, and restarts only after terminal manifest and service-health validation. It preserves the worktree filesystem. On failure, services remain stopped while the database backup, seed manifest, bounded phase diagnostics, and operation log are retained for inspection; repair never retries itself in a loop.
 
-**`npx @tickernelz/wardmote worktree:make <name> [options]`** — Create `~/NAME` as a git worktree, then initialize an isolated Paperclip instance inside it. This combines `git worktree add` with `worktree init` in a single step.
+**`npx @tickernelz/wardmote worktree:make <name> [options]`** — Create `~/NAME` as a git worktree, then initialize an isolated Wardmote instance inside it. This combines `git worktree add` with `worktree init` in a single step.
 
 | Option | Description |
 |---|---|
@@ -1134,7 +1134,7 @@ npx @tickernelz/wardmote worktree:make my-feature --start-point origin/main
 npx @tickernelz/wardmote worktree:make experiment --no-seed
 ```
 
-**`npx @tickernelz/wardmote worktree env [options]`** — Print shell exports for the current worktree-local Paperclip instance.
+**`npx @tickernelz/wardmote worktree env [options]`** — Print shell exports for the current worktree-local Wardmote instance.
 
 | Option | Description |
 |---|---|
@@ -1149,13 +1149,13 @@ pnpm wardmote worktree env --json
 eval "$(npx @tickernelz/wardmote worktree env)"
 ```
 
-For project execution worktrees, Paperclip can also run a project-defined provision command after it creates or reuses an isolated git worktree. Configure this on the project's execution workspace policy (`workspaceStrategy.provisionCommand`). The command runs inside the derived worktree and receives `WARDMOTE_WORKSPACE_*`, `WARDMOTE_PROJECT_ID`, `WARDMOTE_AGENT_ID`, and `WARDMOTE_ISSUE_*` environment variables so each repo can bootstrap itself however it wants.
+For project execution worktrees, Wardmote can also run a project-defined provision command after it creates or reuses an isolated git worktree. Configure this on the project's execution workspace policy (`workspaceStrategy.provisionCommand`). The command runs inside the derived worktree and receives `WARDMOTE_WORKSPACE_*`, `WARDMOTE_PROJECT_ID`, `WARDMOTE_AGENT_ID`, and `WARDMOTE_ISSUE_*` environment variables so each repo can bootstrap itself however it wants.
 
 An issue's partial `workspaceStrategy` inherits omitted fields from the enabled project's strategy when both use the same type. For example, an issue can override `baseRef` without losing the project's provision, runtime provision, or teardown commands. An explicit value, including `null` or an empty string, replaces the project value. Clearing a command restores the runtime's usual default behavior; use `provisionCommand: "true"` for an explicit no-op. A different strategy type or a disabled project policy does not supply these defaults. An issue's `existingBranch` pin also excludes the project's `branchTemplate`.
 
 An issue can pin its isolated worktree to an exact pre-existing branch instead of a template-derived one — the contract PR-preparation tasks use. Set the issue's `executionWorkspaceSettings` to `{ "mode": "isolated_workspace", "workspaceStrategy": { "type": "git_worktree", "existingBranch": "<branch>" } }`. The validator requires isolated mode plus a `git_worktree` strategy and rejects `branchTemplate` alongside `existingBranch`. At dispatch the runtime attaches (never creates, renames, fast-forwards, or resets) that branch: it reuses a registered worktree that already has the branch checked out (including legacy `.worktrees/` paths), otherwise it attaches the branch under the managed worktree parent. A missing branch, an occupied worktree path on another branch, or a non-worktree strategy fails closed with a `workspace_validation_failed` error instead of falling back to the shared checkout or a derived branch, and an inherited `reuse_existing` workspace binding on a different branch is ignored in favor of realizing the pinned branch.
 
-Heavier setup that is only needed by a managed runtime service can use `workspaceStrategy.runtimeProvisionCommand`. Paperclip runs this command lazily before spawning the first service in a start batch, serializes concurrent provisioning for the same workspace, and records the attempt as `workspace_runtime_provision`. The command receives the same workspace environment as `provisionCommand` and should be idempotent because later service-start batches invoke it again.
+Heavier setup that is only needed by a managed runtime service can use `workspaceStrategy.runtimeProvisionCommand`. Wardmote runs this command lazily before spawning the first service in a start batch, serializes concurrent provisioning for the same workspace, and records the attempt as `workspace_runtime_provision`. The command receives the same workspace environment as `provisionCommand` and should be idempotent because later service-start batches invoke it again.
 
 Managed runtime control actions (`start`, `stop`, `restart`, and job `run`) are mutually exclusive per execution workspace. An overlapping control is rejected with `409 workspace_runtime_control_in_progress` instead of racing the active operation, and authorization is still checked first, so the conflict never widens who may control a workspace.
 
@@ -1164,7 +1164,7 @@ files under the instance's `runtime-service-logs/` directory. The child inherits
 the file descriptors rather than supervisor-owned pipes, so request-logging
 servers remain responsive and adoptable when the control plane restarts.
 
-Every managed control reaches a terminal operation state. Each one stamps the owning server process and pid on its `workspace_operations` row and heartbeats while it runs, and each one carries a wall-clock ceiling (30 minutes for lifecycle controls, 4 hours for workspace jobs) so a hung provider or listener fails the operation rather than leaving it active. When a start fails part-way, Paperclip tears the workspace's runtime services down through the ordinary stop path and records a stopped desired state, so the lane is retryable and a startup reconcile will not resurrect a service that never came up.
+Every managed control reaches a terminal operation state. Each one stamps the owning server process and pid on its `workspace_operations` row and heartbeats while it runs, and each one carries a wall-clock ceiling (30 minutes for lifecycle controls, 4 hours for workspace jobs) so a hung provider or listener fails the operation rather than leaving it active. When a start fails part-way, Wardmote tears the workspace's runtime services down through the ordinary stop path and records a stopped desired state, so the lane is retryable and a startup reconcile will not resurrect a service that never came up.
 
 Recovery of stranded controls is bounded and cannot steal a live operation. A `running` control is only terminalized when its owning process is gone, when the owning request in this process no longer exists, or after 60 seconds without a heartbeat; the terminalizing write is a compare-and-swap on `updated_at`, so an owner that heartbeats concurrently keeps its operation. Recovery runs on server startup and before each managed control, appends reconciliation evidence to the workspace-operation log, and stays inside the requested workspace's scope.
 
@@ -1176,11 +1176,11 @@ Lease recovery is bounded and explicit. Another issue may reclaim the lane once 
 
 For Tailscale HTTPS exposure, readiness includes stable listener-ownership checks for every requested loopback port (the app and, when configured, its Vite HMR companion). Each listener must belong to the spawned managed process group; an unrelated listener that races onto either reserved port fails the start closed before the broker is asked to expose it.
 
-Managed `paperclip-dev` worktree services enable `WARDMOTE_UI_DEV_MIDDLEWARE=true` by default, so newly started worktrees hot-reload UI source changes. Managed HTTPS services use this default only when they publish the Paperclip Vite HMR companion listener, which is the default exposure configuration. A service or adapter can explicitly set the variable to `false` when it intentionally needs to exercise the built UI bundle.
+Managed `wardmote-dev` worktree services enable `WARDMOTE_UI_DEV_MIDDLEWARE=true` by default, so newly started worktrees hot-reload UI source changes. Managed HTTPS services use this default only when they publish the Wardmote Vite HMR companion listener, which is the default exposure configuration. A service or adapter can explicitly set the variable to `false` when it intentionally needs to exercise the built UI bundle.
 
-In Vite middleware mode, Paperclip gives HMR a dedicated HTTP server bound to the managed runtime's loopback host. The browser still derives the HMR hostname from the public HTTPS page, and exposed runtimes use secure WebSockets, so listener containment does not break remote hot reload.
+In Vite middleware mode, Wardmote gives HMR a dedicated HTTP server bound to the managed runtime's loopback host. The browser still derives the HMR hostname from the public HTTPS page, and exposed runtimes use secure WebSockets, so listener containment does not break remote hot reload.
 
-When a workspace service runs Paperclip for browser OAuth QA, configure its `expose.urlTemplate` with the canonical URL the browser can reach. Paperclip preserves explicit `WARDMOTE_PUBLIC_URL` or `BETTER_AUTH_URL` settings; otherwise it uses a valid exposed HTTPS origin (or loopback HTTP) as the managed runtime fallback for Better Auth and `/api/tools/oauth/callback`. Internal service names such as `http://paperclip-dev:<port>` are rejected unless that hostname is genuinely the browser route. Use a unique origin per isolated worktree. See [Execution Workspaces And Runtime Services](../docs/guides/board-operator/execution-workspaces-and-runtime-services.md#browser-reachable-origins-for-oauth-qa) for configuration and verification.
+When a workspace service runs Wardmote for browser OAuth QA, configure its `expose.urlTemplate` with the canonical URL the browser can reach. Wardmote preserves explicit `WARDMOTE_PUBLIC_URL` or `BETTER_AUTH_URL` settings; otherwise it uses a valid exposed HTTPS origin (or loopback HTTP) as the managed runtime fallback for Better Auth and `/api/tools/oauth/callback`. Internal service names such as `http://wardmote-dev:<port>` are rejected unless that hostname is genuinely the browser route. Use a unique origin per isolated worktree. See [Execution Workspaces And Runtime Services](../docs/guides/board-operator/execution-workspaces-and-runtime-services.md#browser-reachable-origins-for-oauth-qa) for configuration and verification.
 
 ## Heartbeat Service Extractions
 
@@ -1339,15 +1339,15 @@ This removes the duplicate environment entry, not every possible `E2BIG` cause.
 ACP turns, SDK requests, and CLI paths that use stdin avoid the separate
 argument-size limit for the wake prompt.
 
-## Paperclip Runner Adapter Conversion
+## Wardmote Runner Adapter Conversion
 
-The experimental Paperclip Runner offers native Codex, OpenCode, and **ACPX
+The experimental Wardmote Runner offers native Codex, OpenCode, and **ACPX
 Claude**. Converting an existing Claude, Codex, or OpenCode agent selects its
 corresponding provider, preserves compatible models, credentials, workspace,
 and instructions, and resets execution sessions while retaining run history.
 Other adapters require an explicit provider choice. Legacy ACPX Codex agent
 settings normalize to native Codex on configuration updates and before fresh
-runs; immutable run descriptors remain readable. The **Paperclip Runner**
+runs; immutable run descriptors remain readable. The **Wardmote Runner**
 experimental setting and company access checks still apply.
 
 Agent configuration uses the same section layout across adapters: model and
@@ -1378,7 +1378,7 @@ otherwise stores the shared `gpt-5.6-sol` default. The native execution boundary
 applies the same default to older runner rows whose model is missing or blank.
 
 For an Agent Chat test drive, enable **Agent Chat** in Experimental settings and
-configure two agents with Paperclip Runner: native Codex and ACPX Claude. Connect
+configure two agents with Wardmote Runner: native Codex and ACPX Claude. Connect
 the Claude account through the agent's **AI connection** section (or supply an
 explicit supported provider credential); an ambient Claude CLI login alone is
 not a credential source for its isolated runner home. The default
@@ -1404,7 +1404,7 @@ hold. A generic retry cannot resolve this incident. The runner's
 `get_task_context` includes up to 100 existing direct child tasks and a truncation
 flag so resumed agents can reuse delegated work and inspect completed results.
 
-For native Codex runs, Paperclip passes the resolved execution workspace as
+For native Codex runs, Wardmote passes the resolved execution workspace as
 `WARDMOTE_WORKSPACE_CWD` and uses it as the provider containment boundary. A
 workspace below the host `HOME` is valid, including the default projectless
 agent workspace. The host `HOME` itself, a directory that contains it, a
@@ -1498,7 +1498,7 @@ recognizes both the legacy `adapter_failed` and current `provider_transport_fail
 close-failure labels. Process ownership, pending tool outcomes, and checkpoint
 verification still control whether that session can be reused.
 
-Paperclip Runner keeps its heartbeat run, native session, logical runner, and
+Wardmote Runner keeps its heartbeat run, native session, logical runner, and
 provider session identities across server restarts. A coordinated hot restart
 registers a correlated recovery request before it signals the dev supervisor.
 An uncoordinated server restart uses the same durable recovery classifier
@@ -1519,7 +1519,7 @@ ownership evidence. Scheduling and generic orphan recovery start only after
 that classification finishes.
 
 - A verified live runner re-registers its existing PRP authority and reconnects
-  with the same operating-system PID. Paperclip does not spawn a competing
+  with the same operating-system PID. Wardmote does not spawn a competing
   runner.
 - For a running sandbox session, recovery checks the original provider lease,
   remote workspace, durable runner identity, and process marker inside that
@@ -1539,14 +1539,14 @@ that classification finishes.
   resumes the same provider checkpoint. Only the operating-system PID changes.
 - A runner that died before its first authenticated connection can restart on
   the same run only when its durable root proves that no provider authority or
-  checkpoint exists. Paperclip quarantines the incomplete root first.
-- A live but mismatched or unverifiable process fails closed. Paperclip does not
+  checkpoint exists. Wardmote quarantines the incomplete root first.
+- A live but mismatched or unverifiable process fails closed. Wardmote does not
   signal it or spawn a replacement.
 - A persisted proposed or terminal result is reconciled before any runner or
   provider work starts, so restart recovery cannot submit a duplicate turn.
 - On the next run, a completed local Codex session whose warm controller died
   before suspension is recovered automatically, including a uniquely verified
-  checkpoint quarantined by older controllers. Paperclip requires matching
+  checkpoint quarantined by older controllers. Wardmote requires matching
   database/session/provider identities, a settled terminal journal, no pending
   commands or active provider turn, and a confirmed-dead process and process
   group. It seals the old authority for normal epoch rotation and preserves the
@@ -1579,7 +1579,7 @@ identity mismatches.
 
 ## App-Shipped Skills Catalog
 
-The Paperclip app ships a curated catalog of company skills out of the box. The
+The Wardmote app ships a curated catalog of company skills out of the box. The
 catalog is a workspace package at `packages/skills-catalog`:
 
 ```text
@@ -1595,7 +1595,7 @@ packages/skills-catalog/
 ```
 
 Server and CLI import the generated manifest; they do not crawl repository
-paths at request time. Root `skills/` remains reserved for Paperclip runtime
+paths at request time. Root `skills/` remains reserved for Wardmote runtime
 skills and is not part of the catalog.
 
 Skill-capable legacy local adapters always select the bundled
@@ -1705,7 +1705,7 @@ If you set `DATABASE_URL`, the server will use that instead of embedded PostgreS
 
 ## Automatic DB Backups
 
-Paperclip can run automatic logical database backups on a timer. These backups cover
+Wardmote can run automatic logical database backups on a timer. These backups cover
 non-system database schemas, including migration history and plugin-owned database
 schemas. Defaults:
 
@@ -1848,7 +1848,7 @@ Default behavior:
 
 ## CLI Client Operations
 
-Paperclip CLI now includes client-side control-plane commands in addition to setup commands.
+Wardmote CLI now includes client-side control-plane commands in addition to setup commands.
 
 Quick examples:
 
@@ -1883,11 +1883,11 @@ The board UI generates agent onboarding prompts from the add-agent modal (`+` in
 - `GET /api/invites/:token/onboarding` returns onboarding manifest details (registration endpoint, claim endpoint template, skill install hints).
 - `GET /api/invites/:token/onboarding.txt` returns a plain-text onboarding doc intended for both human operators and agents (llm.txt-style handoff), including optional inviter message and suggested network host candidates.
 - `GET /api/skills/index` lists available skill documents.
-- `GET /api/skills/wardmote` returns the Paperclip heartbeat skill markdown.
+- `GET /api/skills/wardmote` returns the Wardmote heartbeat skill markdown.
 
 ## PostHog MCP Live Smoke Test
 
-The PostHog smoke targets an already-running authenticated Paperclip instance.
+The PostHog smoke targets an already-running authenticated Wardmote instance.
 It is deliberately separate from `pnpm test` and `pnpm test:e2e` because it
 uses a live vendor OAuth flow and creates a short-lived connection plus one
 fresh-run proof issue.
@@ -1900,18 +1900,18 @@ pnpm smoke:posthog-live https://wardmote.example.test
 ```
 
 The command fails before browser launch unless all three integration bindings
-are present, and never prints their values. A Paperclip heartbeat derives the
+are present, and never prints their values. A Wardmote heartbeat derives the
 target origin from its injected `WARDMOTE_API_URL`; the positional URL (or
 `--base-url <url>`) selects the running instance for a manual invocation. It
 creates no trace, video, or HAR, begins
-screenshots only after OAuth returns to Paperclip, enables read actions only,
+screenshots only after OAuth returns to Wardmote, enables read actions only,
 installs the connection on `CodexCoderPro` only, runs `project-get` with `{}`
 from the board Test panel and a fresh agent run, then removes the connection.
 Sanitized JSON and PNG evidence defaults to `WARDMOTE_RUN_SCRATCH_DIR` when the
 command runs in a heartbeat; set `POSTHOG_EVIDENCE_DIR` for a different output
 directory.
 
-Run the focused harness checks without contacting Paperclip or PostHog:
+Run the focused harness checks without contacting Wardmote or PostHog:
 
 ```sh
 node --test scripts/smoke/posthog-live.test.mjs
@@ -1925,7 +1925,7 @@ See [execution GitHub identity](execution-github-identity.md) for the operation-
 
 See [agent-personas.md](agent-personas.md) for the dynamic avatar endpoint, cache,
 and character stories. Set `WARDMOTE_STORYBOOK_API_URL` to your isolated
-Paperclip API URL when running dev Storybook. Published Storybook builds automatically
+Wardmote API URL when running dev Storybook. Published Storybook builds automatically
 package avatar PNGs using the API renderer; static hosting needs no API proxy.
 
 ### Investigating polling load
@@ -1977,6 +1977,6 @@ module version. Production builds do not use the development cache.
 
 Run `pnpm test:e2e:browser-context` to test this with real Vite modules and
 Chromium. The test starts its own loopback Vite server and mocks API responses;
-it needs no running Paperclip instance or provider credentials. The same spec lives
+it needs no running Wardmote instance or provider credentials. The same spec lives
 in the default `test:e2e` discovery tree, so the existing Chrome CI shards run it
 on pull requests.

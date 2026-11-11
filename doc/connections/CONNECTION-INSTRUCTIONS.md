@@ -95,7 +95,7 @@ Custom integration contracts:
 
 Instruction guidance grants no new permissions. Approval requirements remain
 attached to tool calls, and remembered content does not override the current task.
-Provider memory scope follows the provider’s real configuration; Paperclip does
+Provider memory scope follows the provider’s real configuration; Wardmote does
 not claim isolation from invented agent IDs or tags.
 
 ## Honcho configuration

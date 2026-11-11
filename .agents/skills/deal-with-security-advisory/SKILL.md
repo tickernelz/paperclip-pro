@@ -1,7 +1,7 @@
 ---
 name: deal-with-security-advisory
 description: >
-  Handle confidential GitHub Security Advisory response for Paperclip. Use when
+  Handle confidential GitHub Security Advisory response for Wardmote. Use when
   coordinating advisory triage, private-fork fixes, CVE/publication steps, and
   immediate security releases.
 ---
@@ -59,14 +59,14 @@ This returns a repository object for the private fork. Save the `full_name` and 
 Clone it and set up your workspace:
 
 ```
-# Clone the private fork somewhere outside ~/paperclip
+# Clone the private fork somewhere outside ~/wardmote
 git clone <clone_url_from_response> ~/security-patch-{{ghsaId}}
 cd ~/security-patch-{{ghsaId}}
 git checkout -b security-fix
 
 ```
 
-**Do not edit `~/paperclip`** — the dev server is running off the `~/paperclip` master branch and we don't want to touch it. All work happens in the private fork clone.
+**Do not edit `~/wardmote`** — the dev server is running off the `~/wardmote` master branch and we don't want to touch it. All work happens in the private fork clone.
 
 **TIPS:**
 
@@ -161,7 +161,7 @@ gh api --method PATCH \
     {
       "package": {
         "ecosystem": "npm",
-        "name": "paperclip"
+        "name": "wardmote"
       },
       "vulnerable_version_range": "< {{patchedVersion}}",
       "patched_versions": "{{patchedVersion}}"
@@ -181,7 +181,7 @@ Publishing the advisory simultaneously:
 ### 6c. Cut a release immediately after merge
 
 ```
-cd ~/paperclip
+cd ~/wardmote
 git pull origin master
 
 gh release create v{{patchedVersion}} \

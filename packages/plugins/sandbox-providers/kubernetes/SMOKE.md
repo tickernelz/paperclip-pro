@@ -1,7 +1,7 @@
 # Manual smoke test — `@tickernelz/wardmote-plugin-kubernetes`
 
 Manual sanity check that the plugin works end-to-end against a real
-paperclip-server instance and a real Kubernetes cluster (kind for local
+wardmote-server instance and a real Kubernetes cluster (kind for local
 dev). Future work may automate this in CI.
 
 ## Prerequisites
@@ -24,12 +24,12 @@ pnpm build
 
 Expected: `dist/` populated with compiled `.js` and `.d.ts` files. No errors.
 
-### 2. Start paperclip-server in dev mode
+### 2. Start wardmote-server in dev mode
 
 In a separate terminal:
 
 ```bash
-cd /path/to/paperclip
+cd /path/to/wardmote
 export WARDMOTE_HOME=/tmp/wardmote-smoke
 export WARDMOTE_INSTANCE_ID=smoke
 export WARDMOTE_DEPLOYMENT_MODE=local_trusted
@@ -120,7 +120,7 @@ Expected:
 
 ```bash
 kubectl --context kind-paperclip delete namespace wardmote-smoke
-kill %1  # paperclip-server
+kill %1  # wardmote-server
 ```
 
 ### 9. Document the result

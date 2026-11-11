@@ -455,7 +455,7 @@ untrusted data.
 ## Other gateway operations
 
 - `openwa_catalog({category?, query?, cursor?})` lists every OpenWA operation
-  with its category (`read`, `write`, `wa_admin`, `gateway_admin`, `paperclip`),
+  with its category (`read`, `write`, `wa_admin`, `gateway_admin`, `wardmote`),
   its gate and whether this engine and key can run it. Page with `nextCursor`.
 - `openwa_describe({operation})` returns the argument schema. Never pass
   `sessionId`; the session is implied.

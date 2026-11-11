@@ -99,7 +99,7 @@ files as ordinary bytes, and preserves directory exclusions and empty directorie
 A fixed informational message records the fallback in the provider log.
 
 If native copyback still rejects the archive or its source confinement check,
-Paperclip discards that export, records `workspace_export_omitted` at info level
+Wardmote discards that export, records `workspace_export_omitted` at info level
 in the local run log, and completes finalization using the original accepted
 result. It does not create a task warning, recovery card, repair request, or new
 provider turn. The normal completion policy still enforces ownership and explicit

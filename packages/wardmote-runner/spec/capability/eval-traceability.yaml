@@ -2,7 +2,7 @@
 {
   "schemaVersion": 2,
   "inventoryRole": "normative",
-  "generatedFrom": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases",
+  "generatedFrom": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases",
   "rows": [
     {
       "id": "ap-approval-deny-01",
@@ -10,7 +10,7 @@
       "group": "ap",
       "legacyGroup": 10,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/ap-approval-deny-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/ap-approval-deny-01.yaml",
       "fixture": "approval-denied",
       "skillElements": [
         {
@@ -49,7 +49,7 @@
       "group": "ap",
       "legacyGroup": 10,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/ap-approval-wake-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/ap-approval-wake-01.yaml",
       "fixture": "approval-approved",
       "skillElements": [
         {
@@ -93,7 +93,7 @@
       "group": "ap",
       "legacyGroup": 10,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/ap-board-approval-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/ap-board-approval-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -135,7 +135,7 @@
       "group": "ap",
       "legacyGroup": 10,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/ap-mcp-expiry-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/ap-mcp-expiry-01.yaml",
       "fixture": "mcp-approval-gate",
       "skillElements": [
         {
@@ -170,7 +170,7 @@
       "group": "ap",
       "legacyGroup": 10,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/ap-mcp-gate-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/ap-mcp-gate-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -208,7 +208,7 @@
       "group": "ap",
       "legacyGroup": 10,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/ap-mcp-pathmissing-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/ap-mcp-pathmissing-01.yaml",
       "fixture": "mcp-approval-path-missing",
       "skillElements": [
         {
@@ -241,7 +241,7 @@
       "group": "ar",
       "legacyGroup": 11,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/ar-no-done-without-upload-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/ar-no-done-without-upload-01.yaml",
       "fixture": "deliverable-file",
       "skillElements": [
         {
@@ -272,7 +272,7 @@
       "group": "ar",
       "legacyGroup": 11,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/ar-upload-before-done-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/ar-upload-before-done-01.yaml",
       "fixture": "deliverable-file",
       "skillElements": [
         {
@@ -308,7 +308,7 @@
       "group": "ar",
       "legacyGroup": 11,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/ar-workproduct-pr-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/ar-workproduct-pr-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -338,7 +338,7 @@
       "group": "ar",
       "legacyGroup": 11,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/ar-workproduct-wsfile-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/ar-workproduct-wsfile-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -374,7 +374,7 @@
       "group": "bl",
       "legacyGroup": 7,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/bl-cancelled-not-resolved-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/bl-cancelled-not-resolved-01.yaml",
       "fixture": "blocker-graph",
       "skillElements": [
         {
@@ -411,7 +411,7 @@
       "group": "bl",
       "legacyGroup": 7,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/bl-clear-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/bl-clear-01.yaml",
       "fixture": "blocker-graph",
       "skillElements": [
         {
@@ -442,7 +442,7 @@
       "group": "bl",
       "legacyGroup": 7,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/bl-create-blocked-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/bl-create-blocked-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -473,7 +473,7 @@
       "group": "bl",
       "legacyGroup": 7,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/bl-firstclass-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/bl-firstclass-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -509,7 +509,7 @@
       "group": "bl",
       "legacyGroup": 7,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/bl-read-owners-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/bl-read-owners-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -540,7 +540,7 @@
       "group": "cm",
       "legacyGroup": 4,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/cm-mention-structured-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/cm-mention-structured-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -570,7 +570,7 @@
       "group": "cm",
       "legacyGroup": 4,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/cm-multiline-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/cm-multiline-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -609,7 +609,7 @@
       "group": "cm",
       "legacyGroup": 4,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/cm-prefixed-url-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/cm-prefixed-url-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -639,7 +639,7 @@
       "group": "cm",
       "legacyGroup": 4,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/cm-progress-nextaction-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/cm-progress-nextaction-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -674,7 +674,7 @@
       "group": "cm",
       "legacyGroup": 4,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/cm-runid-modify-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/cm-runid-modify-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -704,7 +704,7 @@
       "group": "cm",
       "legacyGroup": 4,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/cm-ticket-link-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/cm-ticket-link-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -734,7 +734,7 @@
       "group": "co",
       "legacyGroup": 2,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/co-409-stop-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/co-409-stop-01.yaml",
       "fixture": "checkout-conflict",
       "skillElements": [
         {
@@ -774,7 +774,7 @@
       "group": "co",
       "legacyGroup": 2,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/co-409-stop-02.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/co-409-stop-02.yaml",
       "fixture": "checkout-conflict",
       "skillElements": [
         {
@@ -814,7 +814,7 @@
       "group": "co",
       "legacyGroup": 2,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/co-before-work-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/co-before-work-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -846,7 +846,7 @@
       "group": "co",
       "legacyGroup": 2,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/co-body-contract-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/co-body-contract-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -881,7 +881,7 @@
       "group": "co",
       "legacyGroup": 2,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/co-no-status-patch-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/co-no-status-patch-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -918,7 +918,7 @@
       "group": "co",
       "legacyGroup": 2,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/co-runid-header-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/co-runid-header-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -954,7 +954,7 @@
       "group": "dp",
       "legacyGroup": 8,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/dp-base-revision-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/dp-base-revision-01.yaml",
       "fixture": "stale-plan",
       "skillElements": [
         {
@@ -995,7 +995,7 @@
       "group": "dp",
       "legacyGroup": 8,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/dp-plan-doc-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/dp-plan-doc-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -1036,7 +1036,7 @@
       "group": "dp",
       "legacyGroup": 8,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/dp-plan-link-comment-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/dp-plan-link-comment-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -1068,7 +1068,7 @@
       "group": "er",
       "legacyGroup": 12,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/er-blocked-dedup-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/er-blocked-dedup-01.yaml",
       "fixture": "blocked-dedup",
       "skillElements": [
         {
@@ -1106,7 +1106,7 @@
       "group": "er",
       "legacyGroup": 12,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/er-budget-critical-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/er-budget-critical-01.yaml",
       "fixture": "budget-critical",
       "skillElements": [
         {
@@ -1140,7 +1140,7 @@
       "group": "er",
       "legacyGroup": 12,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/er-close-retry-fault-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/er-close-retry-fault-01.yaml",
       "fixture": "patch-fault-close",
       "skillElements": [
         {
@@ -1171,7 +1171,7 @@
       "group": "er",
       "legacyGroup": 12,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/er-exec-not-participant-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/er-exec-not-participant-01.yaml",
       "fixture": "exec-not-participant",
       "skillElements": [
         {
@@ -1203,7 +1203,7 @@
       "group": "er",
       "legacyGroup": 12,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/er-exec-participant-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/er-exec-participant-01.yaml",
       "fixture": "exec-participant",
       "skillElements": [
         {
@@ -1236,7 +1236,7 @@
       "group": "er",
       "legacyGroup": 12,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/er-mention-handoff-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/er-mention-handoff-01.yaml",
       "fixture": "mention-directive",
       "skillElements": [
         {
@@ -1273,7 +1273,7 @@
       "group": "er",
       "legacyGroup": 12,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/er-mention-noassign-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/er-mention-noassign-01.yaml",
       "fixture": "mention-fyi",
       "skillElements": [
         {
@@ -1310,7 +1310,7 @@
       "group": "er",
       "legacyGroup": 12,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/er-no-unassigned-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/er-no-unassigned-01.yaml",
       "fixture": "empty-inbox",
       "skillElements": [
         {
@@ -1349,7 +1349,7 @@
       "group": "er",
       "legacyGroup": 12,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/er-release-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/er-release-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -1385,7 +1385,7 @@
       "group": "hb",
       "legacyGroup": 1,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/hb-context-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/hb-context-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -1422,7 +1422,7 @@
       "group": "hb",
       "legacyGroup": 1,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/hb-inbox-lite-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/hb-inbox-lite-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -1465,7 +1465,7 @@
       "group": "hb",
       "legacyGroup": 1,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/hb-pick-priority-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/hb-pick-priority-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -1496,7 +1496,7 @@
       "group": "hb",
       "legacyGroup": 1,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/hb-scoped-wake-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/hb-scoped-wake-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -1527,7 +1527,7 @@
       "group": "hb",
       "legacyGroup": 1,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/hb-wake-comment-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/hb-wake-comment-01.yaml",
       "fixture": "wake-comment",
       "skillElements": [
         {
@@ -1567,7 +1567,7 @@
       "group": "ix",
       "legacyGroup": 9,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/ix-checkbox-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/ix-checkbox-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -1608,7 +1608,7 @@
       "group": "ix",
       "legacyGroup": 9,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/ix-checkbox-result-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/ix-checkbox-result-01.yaml",
       "fixture": "continuation-wake",
       "skillElements": [
         {
@@ -1643,7 +1643,7 @@
       "group": "ix",
       "legacyGroup": 9,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/ix-confirmation-plan-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/ix-confirmation-plan-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -1685,7 +1685,7 @@
       "group": "ix",
       "legacyGroup": 9,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/ix-continuation-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/ix-continuation-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -1716,7 +1716,7 @@
       "group": "ix",
       "legacyGroup": 9,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/ix-questions-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/ix-questions-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -1752,7 +1752,7 @@
       "group": "ix",
       "legacyGroup": 9,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/ix-stale-target-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/ix-stale-target-01.yaml",
       "fixture": "stale-target",
       "skillElements": [
         {
@@ -1785,7 +1785,7 @@
       "group": "ix",
       "legacyGroup": 9,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/ix-suggest-tasks-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/ix-suggest-tasks-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -1821,7 +1821,7 @@
       "group": "ix",
       "legacyGroup": 9,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/ix-superseded-comment-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/ix-superseded-comment-01.yaml",
       "fixture": "superseded-interaction",
       "skillElements": [
         {
@@ -1855,7 +1855,7 @@
       "group": "ix",
       "legacyGroup": 9,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/ix-verdicts-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/ix-verdicts-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -1891,7 +1891,7 @@
       "group": "mh",
       "legacyGroup": 14,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/mh-blocked-handoff-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/mh-blocked-handoff-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -1928,7 +1928,7 @@
       "group": "mh",
       "legacyGroup": 14,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/mh-children-complete-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/mh-children-complete-01.yaml",
       "fixture": "children-done",
       "skillElements": [
         {
@@ -1965,7 +1965,7 @@
       "group": "mh",
       "legacyGroup": 14,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/mh-plan-confirm-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/mh-plan-confirm-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -2004,7 +2004,7 @@
       "group": "mh",
       "legacyGroup": 14,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/mh-subtask-tree-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/mh-subtask-tree-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -2041,7 +2041,7 @@
       "group": "rf",
       "legacyGroup": 13,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/rf-api-404-report-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/rf-api-404-report-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -2077,7 +2077,7 @@
       "group": "rf",
       "legacyGroup": 13,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/rf-api-cancel-obsolete-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/rf-api-cancel-obsolete-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -2110,7 +2110,7 @@
       "group": "rf",
       "legacyGroup": 13,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/rf-api-mention-discipline-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/rf-api-mention-discipline-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -2142,7 +2142,7 @@
       "group": "rf",
       "legacyGroup": 13,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/rf-api-mgr-heartbeat-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/rf-api-mgr-heartbeat-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -2186,7 +2186,7 @@
       "group": "rf",
       "legacyGroup": 13,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/rf-api-review-changes-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/rf-api-review-changes-01.yaml",
       "fixture": "exec-participant",
       "skillElements": [
         {
@@ -2219,7 +2219,7 @@
       "group": "rf",
       "legacyGroup": 13,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/rf-art-attachment-wp-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/rf-art-attachment-wp-01.yaml",
       "fixture": "deliverable-file",
       "skillElements": [
         {
@@ -2256,7 +2256,7 @@
       "group": "rf",
       "legacyGroup": 13,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/rf-case-child-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/rf-case-child-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -2292,7 +2292,7 @@
       "group": "rf",
       "legacyGroup": 13,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/rf-case-lifecycle-link-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/rf-case-lifecycle-link-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -2329,7 +2329,7 @@
       "group": "rf",
       "legacyGroup": 13,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/rf-case-upsert-doc-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/rf-case-upsert-doc-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -2366,7 +2366,7 @@
       "group": "rf",
       "legacyGroup": 13,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/rf-cskill-audit-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/rf-cskill-audit-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -2408,7 +2408,7 @@
       "group": "rf",
       "legacyGroup": 13,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/rf-cskill-install-attach-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/rf-cskill-install-attach-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -2445,7 +2445,7 @@
       "group": "rf",
       "legacyGroup": 13,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/rf-cskill-self-sync-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/rf-cskill-self-sync-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -2483,7 +2483,7 @@
       "group": "rf",
       "legacyGroup": 13,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/rf-iws-start-url-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/rf-iws-start-url-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -2531,7 +2531,7 @@
       "group": "rf",
       "legacyGroup": 13,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/rf-iws-target-restart-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/rf-iws-target-restart-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -2571,7 +2571,7 @@
       "group": "rf",
       "legacyGroup": 13,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/rf-routine-create-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/rf-routine-create-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -2609,7 +2609,7 @@
       "group": "rf",
       "legacyGroup": 13,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/rf-routine-manual-run-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/rf-routine-manual-run-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -2647,7 +2647,7 @@
       "group": "rf",
       "legacyGroup": 13,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/rf-routine-pause-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/rf-routine-pause-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -2685,7 +2685,7 @@
       "group": "rf",
       "legacyGroup": 13,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/rf-routine-policy-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/rf-routine-policy-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -2722,7 +2722,7 @@
       "group": "rf",
       "legacyGroup": 13,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/rf-routine-webhook-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/rf-routine-webhook-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -2759,7 +2759,7 @@
       "group": "rf",
       "legacyGroup": 13,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/rf-wf-export-preview-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/rf-wf-export-preview-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -2798,7 +2798,7 @@
       "group": "rf",
       "legacyGroup": 13,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/rf-wf-invite-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/rf-wf-invite-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -2835,7 +2835,7 @@
       "group": "rf",
       "legacyGroup": 13,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/rf-wf-project-setup-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/rf-wf-project-setup-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -2878,7 +2878,7 @@
       "group": "rs",
       "legacyGroup": 15,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/rs-dependency-blocked-wake-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/rs-dependency-blocked-wake-01.yaml",
       "fixture": "dependency-blocked-wake",
       "skillElements": [
         {
@@ -2910,7 +2910,7 @@
       "group": "rs",
       "legacyGroup": 15,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/rs-question-only-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/rs-question-only-01.yaml",
       "fixture": "wake-comment",
       "skillElements": [
         {
@@ -2948,7 +2948,7 @@
       "group": "rs",
       "legacyGroup": 15,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/rs-secret-hygiene-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/rs-secret-hygiene-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -2980,7 +2980,7 @@
       "group": "se",
       "legacyGroup": 5,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/se-get-issue-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/se-get-issue-01.yaml",
       "fixture": "issue-detail",
       "skillElements": [
         {
@@ -3017,7 +3017,7 @@
       "group": "se",
       "legacyGroup": 5,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/se-q-comments-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/se-q-comments-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -3049,7 +3049,7 @@
       "group": "se",
       "legacyGroup": 5,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/se-q-filters-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/se-q-filters-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -3088,7 +3088,7 @@
       "group": "se",
       "legacyGroup": 5,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/se-q-topic-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/se-q-topic-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -3120,7 +3120,7 @@
       "group": "st",
       "legacyGroup": 3,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/st-backlog-park-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/st-backlog-park-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -3152,7 +3152,7 @@
       "group": "st",
       "legacyGroup": 3,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/st-blocked-owner-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/st-blocked-owner-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -3187,7 +3187,7 @@
       "group": "st",
       "legacyGroup": 3,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/st-crossteam-cancel-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/st-crossteam-cancel-01.yaml",
       "fixture": "crossteam",
       "skillElements": [
         {
@@ -3223,7 +3223,7 @@
       "group": "st",
       "legacyGroup": 3,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/st-done-comment-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/st-done-comment-01.yaml",
       "fixture": "done-evidence",
       "skillElements": [
         {
@@ -3263,7 +3263,7 @@
       "group": "st",
       "legacyGroup": 3,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/st-env-blocked-notdone-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/st-env-blocked-notdone-01.yaml",
       "fixture": "env-blocked-task",
       "skillElements": [
         {
@@ -3300,7 +3300,7 @@
       "group": "st",
       "legacyGroup": 3,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/st-ephemeral-verify-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/st-ephemeral-verify-01.yaml",
       "fixture": "ephemeral-artifacts-task",
       "skillElements": [
         {
@@ -3336,7 +3336,7 @@
       "group": "st",
       "legacyGroup": 3,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/st-handback-review-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/st-handback-review-01.yaml",
       "fixture": "handback-comment",
       "skillElements": [
         {
@@ -3372,7 +3372,7 @@
       "group": "st",
       "legacyGroup": 3,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/st-unverified-toolchain-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/st-unverified-toolchain-01.yaml",
       "fixture": "toolchain-verify-task",
       "skillElements": [
         {
@@ -3410,7 +3410,7 @@
       "group": "su",
       "legacyGroup": 6,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/su-crossteam-billing-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/su-crossteam-billing-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -3441,7 +3441,7 @@
       "group": "su",
       "legacyGroup": 6,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/su-inherit-workspace-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/su-inherit-workspace-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -3477,7 +3477,7 @@
       "group": "su",
       "legacyGroup": 6,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/su-no-poll-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/su-no-poll-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -3513,7 +3513,7 @@
       "group": "su",
       "legacyGroup": 6,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/su-parent-goal-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/su-parent-goal-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -3553,7 +3553,7 @@
       "group": "wk",
       "legacyGroup": 16,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/wk-ask-mode-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/wk-ask-mode-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -3587,7 +3587,7 @@
       "group": "wk",
       "legacyGroup": 16,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/wk-plan-accepted-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/wk-plan-accepted-01.yaml",
       "fixture": "continuation-wake",
       "skillElements": [
         {
@@ -3627,7 +3627,7 @@
       "group": "wk",
       "legacyGroup": 16,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/wk-plan-annotation-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/wk-plan-annotation-01.yaml",
       "fixture": "plan-annotations",
       "skillElements": [
         {
@@ -3666,7 +3666,7 @@
       "group": "wk",
       "legacyGroup": 16,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/wk-plan-directive-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/wk-plan-directive-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -3706,7 +3706,7 @@
       "group": "wk",
       "legacyGroup": 16,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/wk-plan-directive-02.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/wk-plan-directive-02.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -3741,7 +3741,7 @@
       "group": "wk",
       "legacyGroup": 16,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/wk-recovery-processlost-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/wk-recovery-processlost-01.yaml",
       "fixture": "recovery-processlost",
       "skillElements": [
         {
@@ -3780,7 +3780,7 @@
       "group": "wk",
       "legacyGroup": 16,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/wk-resume-delta-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/wk-resume-delta-01.yaml",
       "fixture": "baseline",
       "skillElements": [
         {
@@ -3813,7 +3813,7 @@
       "group": "wk",
       "legacyGroup": 16,
       "sourceKind": "eval_case",
-      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/wk-skilltest-mode-01.yaml",
+      "sourceAnchor": "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/wk-skilltest-mode-01.yaml",
       "fixture": "skill-test-task",
       "skillElements": [
         {

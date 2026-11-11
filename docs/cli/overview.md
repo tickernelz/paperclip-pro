@@ -29,7 +29,7 @@ Company-scoped commands also accept `--company-id <id>`.
 For clean local instances, pass `--data-dir` on the command you run:
 
 ```sh
-npx @tickernelz/wardmote run --data-dir ./tmp/paperclip-dev
+npx @tickernelz/wardmote run --data-dir ./tmp/wardmote-dev
 ```
 
 ## Context Profiles

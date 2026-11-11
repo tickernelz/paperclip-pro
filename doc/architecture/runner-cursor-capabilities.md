@@ -20,7 +20,7 @@ results below retain their own identities and limits.
 The public installation path is `wardmote runtime setup cursor`. It explicitly
 downloads the pinned CLI `2026.09.26-dd393fe`, applies the source-owned patch, and
 verifies the complete runtime closure. npm installation does not download Cursor.
-Run setup as the OS user that runs Paperclip. Local assets live in that account's
+Run setup as the OS user that runs Wardmote. Local assets live in that account's
 `~/.wardmote/runtimes/cursor/<platform>-<arch>/<closure-sha256>`, independently of
 npm directory ownership and isolated provider HOME/XDG settings. Existing image
 assets remain authoritative; an invalid packaged runtime cannot fall back to the
@@ -37,7 +37,7 @@ model access, and entitlement failures are surfaced without selecting a substitu
 identity. Acceptance of a native plan succeeds the planning run while leaving the
 task open awaiting explicit direction; acceptance alone never starts implementation.
 
-Paperclip semantic questions are the supported question path. The native
+Wardmote semantic questions are the supported question path. The native
 AskQuestion handler is defensive compatibility code and is not certified for this
 release. Per-run dollar usage is unavailable. Partial counters remain diagnostic
 observations with unknown semantics; they do not establish measured spend or an
@@ -108,7 +108,7 @@ This historical field inventory distinguishes implemented transport behavior fro
 its original qualification gaps. The current release proof and exclusions are in
 the readiness report linked above; native AskQuestion remains uncertified.
 
-| Capability | Cursor harness/ACP evidence | Paperclip treatment | Remaining gap or qualification |
+| Capability | Cursor harness/ACP evidence | Wardmote treatment | Remaining gap or qualification |
 |---|---|---|---|
 | Streaming assistant/reasoning | `agent_message_chunk`, `agent_thought_chunk` in live and replay presenters | Existing ACP streaming path | Authenticated event capture required |
 | Tool lifecycle/input/output | `tool_call` and `tool_call_update`, including raw input/output, locations and content | Canonical lifecycle, bounded output, input-changed indicator and one relative target; Cursor extensions add semantic activity | Raw input body, structured content/diffs/media and additional locations are not projected. See the exact field audit below |
@@ -276,7 +276,7 @@ The first subsequent server-restart attempt **failed**; the later authorized ret
 
 The explicitly authorized serialized restart retry passed on source `d35b83074a018537f5475568d7410e3b1d676789`, using the final pack and matching release daemon, from 20:42:13.120 to 20:43:10.985 UTC. All six matchers passed, no invariant failed, and cleanup passed; a separate process inspection confirmed no remaining task-owned processes. The real pending semantic question survived the server restart, was answered Cobalt through the browser, and produced one successful continuation and Done. Both screenshots were inspected. This establishes semantic interaction persistence and wake-assignee recovery, not restoration of a blocked native `cursor/ask_question` request. The dashboard attributes two Luna rows at 20:42:26 UTC (23.8K tokens) and 20:42:57 UTC (41.7K), both Included with zero incremental cash; the displayed current-account total is 458.1K across eleven requests. Native metered dollars remain unknown. Original launcher and PostgreSQL failures remain retained.
 
-A separate native AskQuestion sidecar probe on final pack source `25fb1b5b317e52a8ad50208d7681a1ee34bd939c` sent one prompt at 20:39:47.990 UTC, with no Paperclip semantic tools. It requested single and multiple selection through Cursor's native question tool. The provider instead replied “The native AskQuestion tool is unavailable in this session,” emitted zero native input requests, and ended normally. The qualification oracle correctly failed; session close passed. The dashboard attributes a 20:39:48 UTC row with 17.4K tokens as Included, with zero incremental cash and unknown native metered dollars. This is observed default-mode tool unavailability, not proof of absence in every Cursor mode. The pinned source implements `session/set_mode` for agent/plan/ask and native question/plan handlers; the runner currently has no explicit mode-selection command. Retained native initialization exposes modes and model settings but no native tool inventory or question/plan availability bit. The bundled `ask_question_all_modes:true` default does not prove the server-selected tool catalog. No native Plan prompt was attempted, and no native interaction pass is claimed.
+A separate native AskQuestion sidecar probe on final pack source `25fb1b5b317e52a8ad50208d7681a1ee34bd939c` sent one prompt at 20:39:47.990 UTC, with no Wardmote semantic tools. It requested single and multiple selection through Cursor's native question tool. The provider instead replied “The native AskQuestion tool is unavailable in this session,” emitted zero native input requests, and ended normally. The qualification oracle correctly failed; session close passed. The dashboard attributes a 20:39:48 UTC row with 17.4K tokens as Included, with zero incremental cash and unknown native metered dollars. This is observed default-mode tool unavailability, not proof of absence in every Cursor mode. The pinned source implements `session/set_mode` for agent/plan/ask and native question/plan handlers; the runner currently has no explicit mode-selection command. Retained native initialization exposes modes and model settings but no native tool inventory or question/plan availability bit. The bundled `ask_question_all_modes:true` default does not prove the server-selected tool catalog. No native Plan prompt was attempted, and no native interaction pass is claimed.
 
 The restrictive native denial probe used the final verified pack and exact Luna model, with one prompt submitted at 20:52:07.462 UTC. Cursor emitted numeric request ID `0` for the shell write. Its offered IDs were `allow-once`, `allow-always`, and `reject-once`; the client selected the unchanged `reject-once` and acknowledged the pipe write at 20:52:10.919 UTC. The provider ended at 20:52:11.980 UTC. The forbidden marker was absent in all 98 independent samples, including before launch, at the terminal, five seconds later, and after process-group and lease cleanup at 20:52:16.996 UTC. This establishes the native harness denial behavior, not sidecar normalization, Rust durability, or Product approval UI.
 
@@ -288,7 +288,7 @@ The first attempt also exposed the shared live-eval layer's rejection of missing
 
 ## Exact remaining field audit
 
-This source audit follows pinned native update → ACPX runtime → `canonicalProviderEventsFromAcpxRuntimeEvent` → Paperclip activity. It supplements the higher-level capability matrix and does not claim an authenticated trace was captured.
+This source audit follows pinned native update → ACPX runtime → `canonicalProviderEventsFromAcpxRuntimeEvent` → Wardmote activity. It supplements the higher-level capability matrix and does not claim an authenticated trace was captured.
 
 | Native field/interface | Preserved boundary | Current projection / reason for partial use | Follow-up |
 |---|---|---|---|
@@ -390,7 +390,7 @@ qualification must use an image whose content hash includes that script.
 
 The pinned native ACP implementation ignores `_meta.systemPrompt` on session
 creation, and ACPX does not send it on load. Native workspace rules do not read
-Paperclip's registered `AGENT_HOME`. The hidden `--system-prompt` option is an
+Wardmote's registered `AGENT_HOME`. The hidden `--system-prompt` option is an
 internal-team-gated interactive CLI feature and is not used by this integration.
 Those facts invalidate any assumption that prior transport success alone proved
 canonical governance or custom entry instructions reached Cursor.
@@ -484,7 +484,7 @@ storage, transport, and enum-converter doubles. Real ACPX fixture tests separate
 prove cold-manager load/control ordering and automatic reconnect rejection before
 prompt bytes. Neither is paid model/tool qualification.
 
-Native mode does not change Paperclip permission policy, company governance, or
+Native mode does not change Wardmote permission policy, company governance, or
 filesystem isolation. The native descriptions say Plan is read-only planning and
 Ask has no edits or command execution; these descriptions are not an OS sandbox
 claim. Native ACP CreatePlan acceptance does not itself mutate session mode in
@@ -504,7 +504,7 @@ identified empty rich-input chunks at the native parser boundary.
 ## Accepted native plans wait for explicit continuation (2026-09-30)
 
 With Cursor CLI `2026.09.26-dd393fe`, accepting native CreatePlan can finish the
-planning turn normally without a Paperclip semantic completion result. The
+planning turn normally without a Wardmote semantic completion result. The
 controller recognizes this boundary only from the admitted Plan-mode run,
 company/task scope, exact native plan request and accepted revision, acknowledged
 human response delivery, and normal terminal event. An explicit semantic result

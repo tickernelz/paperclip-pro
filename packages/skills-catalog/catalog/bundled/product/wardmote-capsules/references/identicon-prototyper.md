@@ -20,7 +20,7 @@ Additional options such as color space, color scheme, motion, and manual angle a
 
 Default app state:
 
-- Seed: `paperclip capsule bank`
+- Seed: `wardmote capsule bank`
 - Variant: `gradient-smooth`
 - Size control: `48` in the UI; renderer often uses `512` for the primary preview and `256` for samples.
 - Density: `56`

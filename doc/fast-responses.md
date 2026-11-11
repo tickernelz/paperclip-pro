@@ -4,7 +4,7 @@ Fast response is an optional company service that acknowledges an accepted human
 
 The direct Vercel AI SDK service supports OpenAI Responses, Anthropic Messages, Google, xAI, OpenRouter, Bedrock, and connection-configured Responses, Messages, Chat Completions, and local endpoints. Routing, region, endpoint and authentication come from the saved connection. Model choices reuse existing catalogs; custom endpoints permit manual IDs. Decision-model execution is independent.
 
-**Allow company-sponsored fast responses** defaults on. It covers accepted external senders without linked Paperclip users. A linked user must retain both task access and connection audience permission; denial never falls back to sponsorship. Connection management permissions govern settings, model selection and tests. Costs history uses company cost visibility, with task links checked separately.
+**Allow company-sponsored fast responses** defaults on. It covers accepted external senders without linked Wardmote users. A linked user must retain both task access and connection audience permission; denial never falls back to sponsorship. Connection management permissions govern settings, model selection and tests. Costs history uses company cost visibility, with task links checked separately.
 
 ## Accepted turns and receipts
 

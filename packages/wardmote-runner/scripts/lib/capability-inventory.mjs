@@ -198,19 +198,19 @@ function foldLegacyMcpAliases(evaluations, legacyMcpAliases) {
 export async function buildInventories({ repoRoot, evalRoot }) {
   const capabilities = await buildSkillInventory(repoRoot);
 
-  const evalDirectory = resolve(evalRoot, "skills/wardmote/tests/cases");
+  const evalDirectory = resolve(evalRoot, "skills/paperclip/tests/cases");
   const { readdir } = await import("node:fs/promises");
   const caseNames = (await readdir(evalDirectory)).filter((name) => name.endsWith(".yaml")).sort();
   const evalRows = await Promise.all(caseNames.map(async (name) => parseCase(
     await readFile(resolve(evalDirectory, name), "utf8"),
-    `paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases/${name}`,
+    `paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases/${name}`,
   )));
 
   const legacyMcpAliases = await buildMcpInventory(repoRoot);
   const evaluations = foldLegacyMcpAliases({
     schemaVersion: 2,
     inventoryRole: "normative",
-    generatedFrom: "paperclip-evals/paperclip-skill-optimization/skills/wardmote/tests/cases",
+    generatedFrom: "paperclip-evals/paperclip-skill-optimization/skills/paperclip/tests/cases",
     rows: evalRows,
   }, legacyMcpAliases);
   return {

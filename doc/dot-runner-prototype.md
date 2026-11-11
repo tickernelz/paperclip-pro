@@ -2,7 +2,7 @@
 
 The reference prototype is now accompanied by an experimental Rust Runner
 provider, dedicated `/mcp/runner` agent connection and durable broker. See
-[OpenAI Dot with Paperclip Runner](openai-dot-runner.md) for setup and the
+[OpenAI Dot with Wardmote Runner](openai-dot-runner.md) for setup and the
 current qualification limits. The transport proof below remains specific to
 this reference harness.
 
@@ -72,7 +72,7 @@ node server/scripts/dot-runner-live-control.mjs /path/to/control.json approve RE
 The consent page then returns to ChatGPT. Give Dot the standing instruction
 printed by the lab, including the exact company and inbox task IDs. Wait for a
 verified `wardmote.dot.work_available` subscription in `status`, then publish
-the assignment from Paperclip's side:
+the assignment from Wardmote's side:
 
 ```sh
 node server/scripts/dot-runner-live-control.mjs /path/to/control.json queue
@@ -93,13 +93,13 @@ the tunnel after the test. Use this command for reliable cleanup; development
 process wrappers may terminate on a signal before asynchronous cleanup finishes.
 The lab expires after two hours,
 revokes its connection on graceful shutdown, and deletes its temporary database
-and encryption key. It never opens the user's existing Paperclip database.
+and encryption key. It never opens the user's existing Wardmote database.
 
 ## Two directions, two explicit identities
 
 ```mermaid
 sequenceDiagram
-  participant Host as Paperclip host
+  participant Host as Wardmote host
   participant Runner as Dot runner bridge
   participant MCP as OAuth MCP + event outbox
   participant Dot as OpenAI Dot
@@ -113,8 +113,8 @@ sequenceDiagram
   Dot->>MCP: Call projected tools / report progress / propose result
   MCP->>Runner: Check current authority; deduplicate request ID
   Runner-->>Host: PRP progress and structured result
-  Note over Host: Paperclip decides final task disposition
-  Dot->>MCP: Personal Paperclip reads/writes while idle
+  Note over Host: Wardmote decides final task disposition
+  Dot->>MCP: Personal Wardmote reads/writes while idle
   Note over MCP: These retain the consenting person's identity
 ```
 
@@ -185,7 +185,7 @@ Unregister completed runs to release the bounded in-process registry.
 
 ## Intended live onboarding
 
-1. Connect the existing Paperclip MCP plugin in developer mode and consent to
+1. Connect the existing Wardmote MCP plugin in developer mode and consent to
    the team and requested writes.
 2. Explicitly bind that connection to the chosen Dot agent after the production
    admission work above. Show the identity and the standing inbox task.
@@ -193,7 +193,7 @@ Unregister completed runs to release the bounded in-process registry.
    for that inbox, inspect current assignments, accept intended work, use the
    projected tools, and finish with a structured result. Treat duplicate events
    as wakeups, never as another task. Avoid comment-acknowledgement loops.
-4. Assign work in Paperclip and verify the entire loop with the actual account.
+4. Assign work in Wardmote and verify the entire loop with the actual account.
 
 OpenAI now documents MCP Events for dots. Private developer-mode testing does
 not require a public directory listing; public distribution is a separate review.
@@ -235,7 +235,7 @@ The later attempts below used the correct existing Dot account.
 ### Actual Dot attempt, 2026-10-02
 
 With the existing Dot open in the correct Chrome profile, the user approved
-installing the private `Paperclip Dot Lab` plugin and its lab-only OAuth grant.
+installing the private `Wardmote Dot Lab` plugin and its lab-only OAuth grant.
 The first real callback exposed a lab bug: OAuth consent request IDs are opaque
 `pcmcp_request_` tokens, not UUIDs. The live script now validates that format.
 Restarting the disposable database also erased ChatGPT's cached public client
@@ -255,7 +255,7 @@ Observed live results:
 - The plugin UI showed its connected account, 10 read tools, 6 write tools, and
   all four event definitions, including the six Dot runner actions.
 - Dot found `wardmote.dot.work_available` and recognized its argument schema.
-  Initially it reported no Paperclip action tools in its runtime, including the
+  Initially it reported no Wardmote action tools in its runtime, including the
   read-only `wardmote_connection`. An explicit @ mention did not make them
   available immediately.
 - Dot also reported that its event-subscription route requires a successful
@@ -269,7 +269,7 @@ The first lab and tunnel were stopped too early, revoking the temporary grant
 and deleting its database. Dot subsequently reported that the action tools had
 become available, but its connection check failed against that offline endpoint.
 This does not establish a Dot runtime incompatibility. A fresh lab and tunnel
-were connected as `Paperclip Dot Lab Retry`; the new server observed Dot calling
+were connected as `Wardmote Dot Lab Retry`; the new server observed Dot calling
 `wardmote_connection` successfully. The first plugin definition remains
 installed with its expired endpoint. Production still needs the admission,
 durable mailbox, recovery and tool-authority work above.
@@ -291,7 +291,7 @@ Observed server evidence (UTC):
 | 22:17:48 | Dot called `wardmote_dot_inbox` after the event, without another chat prompt. |
 | 22:17:56 | Dot read the assignment using `wardmote_dot_read`. |
 | 22:18:10 | Dot accepted it; the native Runner emitted `turn.started`. |
-| 22:18:23 | Dot called `save_report` through `wardmote_dot_tool`; the lab saved exactly one report: `Dot received the Paperclip event. 17 + 25 = 42.` |
+| 22:18:23 | Dot called `save_report` through `wardmote_dot_tool`; the lab saved exactly one report: `Dot received the Wardmote event. 17 + 25 = 42.` |
 | 22:18:38 | Dot submitted a valid `wardmote.run_result.v1`; the Runner emitted `run.result.proposed`, `turn.completed` and `run.terminal` with state `succeeded`. |
 | 22:18:50 | `events/unsubscribe` succeeded; no subscription remained. |
 

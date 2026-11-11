@@ -6,7 +6,7 @@ Audience: Operators setting up and running agents in Paperclip
 
 ## 1. What this system does
 
-Agents in Paperclip do not run continuously.  
+Agents in Wardmote do not run continuously.  
 They run in **heartbeats**: short execution windows triggered by a wakeup.
 
 Each heartbeat:
@@ -39,7 +39,7 @@ Common choices:
 - `process`: generic shell command adapter
 - `http`: calls an external HTTP endpoint
 
-For `claude_local` and `codex_local`, Paperclip assumes the CLI is already installed and authenticated on the host machine.
+For `claude_local` and `codex_local`, Wardmote assumes the CLI is already installed and authenticated on the host machine.
 
 ## 3.2 Runtime behavior
 
@@ -70,7 +70,7 @@ Templates support variables like `{{agent.id}}`, `{{agent.name}}`, and run conte
 
 ## 4. Session resume behavior
 
-Paperclip stores resumable session state per `(agent, taskKey, adapterType)`.
+Wardmote stores resumable session state per `(agent, taskKey, adapterType)`.
 `taskKey` is derived from wakeup context (`taskKey`, `taskId`, or `issueId`).
 When the wake names an issue, the key is canonicalised onto the issue id, so
 the identifier used by chat wakes and the id used by assignment wakes resolve
@@ -140,7 +140,7 @@ In local/dev setups, full logs are stored on disk under the configured run-log p
 
 ## 6. Live updates in the UI
 
-Paperclip pushes runtime/activity updates to the browser in real time.
+Wardmote pushes runtime/activity updates to the browser in real time.
 
 You should see live changes for:
 

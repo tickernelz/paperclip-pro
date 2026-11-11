@@ -51,7 +51,7 @@ socket so timed-out peers cannot retain kernel-level connection slots. Missing
 or invalid native credentials fail closed; socket permissions are not used as
 a substitute identity.
 
-## One-time host installation (`paperclip-dev`)
+## One-time host installation (`wardmote-dev`)
 
 These steps require **root** and must be run by CloudOps/host owner, not the
 Wardmote agent account. They install the broker as a dedicated
@@ -94,7 +94,7 @@ Tailscale-operator service account distinct from the Wardmote app account.
    The broker refuses to start if the registry path's parent is group/other
    writable.
 
-5. **Build, install the package under `/opt/paperclip`, and install the
+5. **Build, install the package under `/opt/wardmote`, and install the
    packaged systemd unit.** The unit's `ExecStart` (and the doctor command
    below) run the build output from
    `/opt/paperclip/packages/tailscale-https-broker/dist`, so copy it there
@@ -111,7 +111,7 @@ Tailscale-operator service account distinct from the Wardmote app account.
    sudo install -D -m 0644 \
      packages/tailscale-https-broker/deploy/wardmote-tailscale-https-broker.service \
      /etc/systemd/system/wardmote-tailscale-https-broker.service
-   sudo install -d -m 0750 /etc/paperclip
+   sudo install -d -m 0750 /etc/wardmote
    sudoedit /etc/paperclip/tailscale-https-broker.env
    ```
 

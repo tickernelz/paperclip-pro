@@ -46,7 +46,7 @@ steer/interrupt control instead of assuming acceptance interrupted execution.
 
 Send a follow-up from a linked external chat conversation while its task is
 running. Use that provider's supported stop/control affordance where available;
-inspect the resulting task and run in Paperclip.
+inspect the resulting task and run in Wardmote.
 
 ## Driving it
 
@@ -123,7 +123,7 @@ gap; do not assume browser queue controls are available in every channel.
 
 ## Gotchas
 
-- Paperclip's queue is server-owned once saved; it is not Omnigent's unsent
+- Wardmote's queue is server-owned once saved; it is not Omnigent's unsent
   browser draft buffer. A stale edit must not overwrite a consumed message.
 - Steer availability depends on the active runtime's capability, not its brand
   name. A UI row disappearing optimistically does not prove provider receipt.

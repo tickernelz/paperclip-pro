@@ -1,11 +1,11 @@
-# Paperclip UI Spec
+# Wardmote UI Spec
 
 Status: Draft
 Date: 2026-02-17
 
 ## 1. Design Philosophy
 
-Paperclip's UI is a professional-grade control plane, not a toy dashboard. It should feel like the kind of tool you live in all day — fast, keyboard-driven, information-dense without being cluttered, dark-themed by default. Every pixel should earn its place.
+Wardmote's UI is a professional-grade control plane, not a toy dashboard. It should feel like the kind of tool you live in all day — fast, keyboard-driven, information-dense without being cluttered, dark-themed by default. Every pixel should earn its place.
 
 Design principles:
 
@@ -194,7 +194,7 @@ The breadcrumb bar sits above the main content and properties panel. It serves a
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│ Projects › Paperclip › Issues › CLIP-42  [⭐] [···]     [🔔] [⬜] │
+│ Projects › Wardmote › Issues › CLIP-42  [⭐] [···]     [🔔] [⬜] │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -439,7 +439,7 @@ Triggered by the sidebar pencil icon, keyboard shortcut `C`, or the `+` buttons 
 - `···` more button reveals: Goal, Start date, Target date, Billing code, Parent issue.
 
 **Footer:**
-- Attachment button (paperclip icon).
+- Attachment button (wardmote icon).
 - "Create more" toggle — when on, creating an issue clears the form and stays open for rapid entry.
 - "Create issue" primary button.
 
@@ -477,7 +477,7 @@ Similar to the issue list but for projects.
 ┌─────────────────────────────────────────────────────────┐
 │ Projects                                [+ New project] │
 ├─────────────────────────────────────────────────────────┤
-│ [icon] Paperclip Auth     Backlog     CTO     Feb 20   │
+│ [icon] Wardmote Auth     Backlog     CTO     Feb 20   │
 │ [icon] Marketing Site     In Progress CMO     Mar 01   │
 │ [icon] API v2             Planned     CTO     Mar 15   │
 └─────────────────────────────────────────────────────────┘

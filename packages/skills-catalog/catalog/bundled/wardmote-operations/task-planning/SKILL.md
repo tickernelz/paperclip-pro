@@ -27,7 +27,7 @@ separate work.
 
 Save a requested plan as the issue document with key `plan`. Update its current
 revision instead of duplicating it, and link the saved document in your response.
-Use the native document tools when available; legacy agents follow the `paperclip`
+Use the native document tools when available; legacy agents follow the `wardmote`
 skill's document and planning API mechanics.
 
 Respect planning mode and explicit approval requests. When approval is required,

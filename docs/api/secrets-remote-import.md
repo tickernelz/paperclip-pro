@@ -70,7 +70,7 @@ Candidate `status` values:
 Conflict `type` values are `exact_reference`, `name`, `key`, and
 `provider_guardrail`. AWS refs under Wardmote's own managed namespace are
 blocked as external references so one company cannot import another company's
-Paperclip-managed AWS secret through a broad runtime role.
+Wardmote-managed AWS secret through a broad runtime role.
 
 ## Import Remote AWS Secret References
 

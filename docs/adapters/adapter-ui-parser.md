@@ -63,7 +63,7 @@ With a parser, the UI renders:
 
 ```json
 {
-  "paperclip": {
+  "wardmote": {
     "adapterUiParser": "1.0.0"
   }
 }

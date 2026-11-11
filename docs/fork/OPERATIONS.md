@@ -324,7 +324,7 @@ for b in systemctl loginctl launchctl journalctl; do
   chmod +x "$SANDBOX/bin/$b"
 done
 export HOME="$SANDBOX/home"
-export WARDMOTE_HOME="$SANDBOX/paperclip"
+export WARDMOTE_HOME="$SANDBOX/wardmote"
 export XDG_RUNTIME_DIR="$SANDBOX/run"
 export DBUS_SESSION_BUS_ADDRESS=
 export PATH="$SANDBOX/bin:$PATH"
@@ -559,9 +559,9 @@ actually mounted.
 Adapters that cannot mount, and every run with `wardmoteMcp` off, get
 `wardmoteRestGuidance()` instead: `curl` with `$WARDMOTE_API_URL`,
 `Authorization: Bearer $WARDMOTE_API_KEY` and
-`X-Wardmote-Run-Id: $WARDMOTE_RUN_ID`. No `paperclip*` tool name reaches those
-prompts. The `paperclip` skill carries the same fallback under
-**No `paperclip*` tools in this runtime**.
+`X-Wardmote-Run-Id: $WARDMOTE_RUN_ID`. No `wardmote*` tool name reaches those
+prompts. The `wardmote` skill carries the same fallback under
+**No `wardmote*` tools in this runtime**.
 
 ### `omp_local` specifics
 

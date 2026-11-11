@@ -7,7 +7,7 @@ Implementation: [endpoint setup](../ui/src/pages/apps/chat/ChatEndpointSetup.tsx
 ## Sub-features
 
 - `providers`: configure the available Slack, Discord, Microsoft Teams, Telegram, GitHub, AgentMail, and experimental iMessage Photon paths; availability still depends on gates and provider support.
-- `identity`: link the external sender to the intended authorized Paperclip identity.
+- `identity`: link the external sender to the intended authorized Wardmote identity.
 - `conversation`: route inbound messages to the selected agent and send replies to the correct thread.
 - `attachments`: transfer supported files with inspectable delivery and failure states.
 - `lifecycle`: inspect endpoint activity, repair auth, and disable delivery when required.
@@ -16,7 +16,7 @@ Implementation: [endpoint setup](../ui/src/pages/apps/chat/ChatEndpointSetup.tsx
 
 ### `external-thread`
 
-Message the configured bot/address from its external provider and follow the corresponding Paperclip conversation/task.
+Message the configured bot/address from its external provider and follow the corresponding Wardmote conversation/task.
 
 ### `endpoint-management`
 

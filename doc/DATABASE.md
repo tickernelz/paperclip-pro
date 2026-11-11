@@ -1,6 +1,6 @@
 # Database
 
-Paperclip uses PostgreSQL via [Drizzle ORM](https://orm.drizzle.team/). There are three ways to run the database, from simplest to most production-ready.
+Wardmote uses PostgreSQL via [Drizzle ORM](https://orm.drizzle.team/). There are three ways to run the database, from simplest to most production-ready.
 
 ## 1. Embedded PostgreSQL — zero config
 
@@ -13,7 +13,7 @@ pnpm dev
 That's it. On first start the server:
 
 1. Creates a `~/.wardmote/instances/default/db/` directory for storage
-2. Ensures the `paperclip` database exists
+2. Ensures the `wardmote` database exists
 3. Runs migrations automatically for empty databases
 4. Starts serving requests
 
@@ -43,7 +43,7 @@ If you need to apply pending migrations manually, run:
 pnpm db:migrate
 ```
 
-When `DATABASE_URL` is unset, this command targets the current embedded PostgreSQL instance for your active Paperclip config/instance.
+When `DATABASE_URL` is unset, this command targets the current embedded PostgreSQL instance for your active Wardmote config/instance.
 
 Issue reference mentions follow the normal migration path: the schema migration creates the tracking table, but it does not backfill historical issue titles, descriptions, comments, or documents automatically.
 
@@ -59,7 +59,7 @@ Future issue, comment, and document writes sync references automatically without
 
 This mode is ideal for local development and one-command installs.
 
-Docker note: the Docker quickstart image also uses embedded PostgreSQL by default. Persist `/paperclip` to keep DB state across container restarts (see `doc/DOCKER.md`).
+Docker note: the Docker quickstart image also uses embedded PostgreSQL by default. Persist `/wardmote` to keep DB state across container restarts (see `doc/DOCKER.md`).
 
 ## 2. Local PostgreSQL (Docker)
 
@@ -74,13 +74,13 @@ This starts PostgreSQL 17 on `localhost:5432`. Then set the connection string:
 ```sh
 cp .env.example .env
 # .env already contains:
-# DATABASE_URL=postgres://paperclip:paperclip@localhost:5432/paperclip
+# DATABASE_URL=postgres://wardmote:wardmote@localhost:5432/wardmote
 ```
 
 Run migrations:
 
 ```sh
-DATABASE_URL=postgres://paperclip:paperclip@localhost:5432/paperclip \
+DATABASE_URL=postgres://wardmote:wardmote@localhost:5432/wardmote \
   pnpm db:migrate
 ```
 
@@ -124,7 +124,7 @@ For the application runtime, use a direct PostgreSQL connection unless the datab
 DATABASE_URL=postgres://postgres.[PROJECT-REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:5432/postgres
 ```
 
-If you later run the app with a pooled runtime URL, set `DATABASE_MIGRATION_URL` to the direct connection URL. Paperclip uses it for startup schema checks/migrations and plugin namespace migrations, while the app continues to use `DATABASE_URL` for runtime queries:
+If you later run the app with a pooled runtime URL, set `DATABASE_MIGRATION_URL` to the direct connection URL. Wardmote uses it for startup schema checks/migrations and plugin namespace migrations, while the app continues to use `DATABASE_URL` for runtime queries:
 
 ```sh
 DATABASE_URL=postgres://postgres.[PROJECT-REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres
@@ -176,7 +176,7 @@ pool. Callers may retry only when the complete operation is idempotent or has
 a durable receipt that prevents duplicate effects. Some transient statement
 failures therefore reach the caller instead of being retried automatically.
 
-When a database connection closes, its transaction fails. Paperclip does not
+When a database connection closes, its transaction fails. Wardmote does not
 replay that transaction. New requests can use a fresh connection from the pool.
 Queries from the failed transaction must keep failing, even after the pool
 reconnects.
@@ -245,7 +245,7 @@ When authoring migrations or one-time backfills:
 - Treat the `check:migrations` CI gate as the enforcement backstop for these rules. If it flags a migration, rewrite the migration or add a suppression comment with the indexed predicate, batch bound, and reason the remaining scan is safe.
 
 Private-task migrations `0313` and `0314` are explicitly allowlisted in the
-Paperclip executor to run outside a file-wide transaction. Their idempotent
+Wardmote executor to run outside a file-wide transaction. Their idempotent
 keyset batches commit every 1,000 rows, and migration history is recorded only
 when all batches finish. The executor repairs invalid concurrent indexes on
 retry. A reserved connection holds a session advisory lock across all batch
@@ -266,7 +266,7 @@ connection, before enabling the new server and UI.
 
 ## Resource membership tables
 
-Paperclip stores current-user sidebar membership state in:
+Wardmote stores current-user sidebar membership state in:
 
 - `project_memberships`
 - `agent_memberships`
@@ -361,7 +361,7 @@ endpoint has no additional instructions.
 
 `chat_telegram_draft_ids` is a content-free, instance-wide PostgreSQL sequence,
 not a company-owned record. Telegram's native Stop callback carries a draft ID
-but no actor or Paperclip generation. IDs therefore must not be recycled when
+but no actor or Wardmote generation. IDs therefore must not be recycled when
 a transaction rolls back or an endpoint/company is deleted and its bot is
 connected again. The sequence allocates positive 31-bit IDs without cycling;
 exhaustion refuses new draft allocation rather than wrapping or falling back to
@@ -410,7 +410,7 @@ The plugin runtime tracks plugin-owned database namespaces and migrations in `pl
 
 ## Backups
 
-Paperclip supports automatic and manual logical database backups. These dumps include
+Wardmote supports automatic and manual logical database backups. These dumps include
 non-system database schemas such as `public`, the Drizzle migration journal, and
 plugin-owned database schemas. See `doc/DEVELOPING.md` for the current
 `wardmote db:backup` / `pnpm db:backup` commands and backup retention
@@ -422,7 +422,7 @@ up separately when you need full instance disaster recovery.
 
 ## Secret storage
 
-Paperclip stores secret metadata and versions in:
+Wardmote stores secret metadata and versions in:
 
 - `user_secret_definitions`
 - `user_secret_declarations`
@@ -638,7 +638,7 @@ bound before icon upload; an interrupted upload never triggers another app
 creation. This JSON state stores no token, image URL, or provider error payload.
 
 `chat_endpoints.setup.slackAccount` stores the OAuth installer’s Slack ID, the
-initiating Paperclip user ID, pending/linked status, durable welcome-DM and
+initiating Wardmote user ID, pending/linked status, durable welcome-DM and
 optional verification-DM status, and the returned DM channel ID. It stores no
 user OAuth token or provider payload.
 The account uses the existing company-scoped `chat_identity_links` table; it
@@ -652,7 +652,7 @@ in setup state, and the fingerprint is excluded from endpoint responses.
 For automatically registered apps, `webhookVerifiedAt` also records successful
 delivery of an authenticated message/app-mention event to the current callback
 URL. The current signing secret, saved app/workspace/bot binding, active connection,
-and runtime generation are checked before recording it. This is Paperclip's
+and runtime generation are checked before recording it. This is Wardmote's
 connection evidence, not Slack's settings-page URL-verification flag. Activity
 identifies this evidence as `authenticated_event`; no message body is recorded.
 

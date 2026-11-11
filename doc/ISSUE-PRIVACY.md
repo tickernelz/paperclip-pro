@@ -1,6 +1,6 @@
 # Private tasks and projects
 
-Paperclip work is company-open by default. A task or project can instead be
+Wardmote work is company-open by default. A task or project can instead be
 marked private when its title, discussion, documents, attachments, work
 products, or agent run traces should be limited to named participants.
 
@@ -62,7 +62,7 @@ those entities are deleted or the operation is relinked. Deletion preserves the
 audit record; unresolved sources make its details and log inaccessible. A
 company-scoped run does not override a private task linked to the operation.
 
-> **Residual risk — trusted agents (`trust-agent`).** Paperclip enforces privacy
+> **Residual risk — trusted agents (`trust-agent`).** Wardmote enforces privacy
 > on reads from the control plane, but an agent that legitimately processes a
 > private task may write learned content into shared persistent memory, its home
 > directory, an external tool, or a later public response. V1 deliberately
@@ -143,7 +143,7 @@ Migration `0329_private_task_draft_assets.sql` accompanies enforcement and binds
 historical inline images to their first owned task. Unbound drafts remain
 uploader-only under the new asset-content guard.
 
-Both privacy migrations use the Paperclip migration executor's explicit
+Both privacy migrations use the Wardmote migration executor's explicit
 nontransactional path. Indexes on existing tables build concurrently; invalid builds are repaired on
 retry. DDL statements commit individually and each 1,000-row
 keyset batch commits before advancing, releasing schema and row locks. The

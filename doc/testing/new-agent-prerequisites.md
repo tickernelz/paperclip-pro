@@ -5,7 +5,7 @@ Reviewed against the adapter builders and runtime probes on 2026-11-07.
 | Adapter | Setup connection/prerequisites | Model and effort in setup |
 | --- | --- | --- |
 | OMP (`omp_local`) | `omp` installed on the selected environment | Model from `omp models`; thinking effort per model |
-| Paperclip Runner | The selected Codex, Claude ACPX, or OpenCode connection | Provider model; no generic effort setting |
+| Wardmote Runner | The selected Codex, Claude ACPX, or OpenCode connection | Provider model; no generic effort setting |
 
 ## Contracts and regression coverage
 

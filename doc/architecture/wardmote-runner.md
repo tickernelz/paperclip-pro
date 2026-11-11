@@ -1,20 +1,20 @@
-# ADR: Paperclip Runner architecture
+# ADR: Wardmote Runner architecture
 
 - Status: Proposed
 - Date: 2026-08-24
-- Owners: Paperclip control plane and runner maintainers
-- Related: [Paperclip Runner compatibility and rollout](wardmote-runner-compatibility.md)
+- Owners: Wardmote control plane and runner maintainers
+- Related: [Wardmote Runner compatibility and rollout](wardmote-runner-compatibility.md)
 
 ## Context
 
-Paperclip is a control plane. It owns companies, agents, issues, budgets,
+Wardmote is a control plane. It owns companies, agents, issues, budgets,
 approvals, and durable workflow state. Agent providers remain execution
 services. Existing adapters invoke those services directly from the Paperclip
 server.
 
-Paperclip Runner introduces a separate execution process for provider sessions.
+Wardmote Runner introduces a separate execution process for provider sessions.
 This process needs durable delivery, restart recovery, and governed access to
-Paperclip actions. It must not become a second control plane. It must also land
+Wardmote actions. It must not become a second control plane. It must also land
 without changing the behavior of existing adapters.
 
 The implementation remains behind one explicit experimental adapter and one
@@ -24,21 +24,21 @@ OpenCode, Claude Managed, AWS AgentCore, and pinned Claude/Codex ACPX profiles.
 ## Decision
 
 Add a standalone package named `@tickernelz/wardmote-runner`. The package owns
-the language-neutral Paperclip Runner Protocol (PRP), the Rust runner process,
+the language-neutral Wardmote Runner Protocol (PRP), the Rust runner process,
 provider drivers, deterministic replay, and semantic action dispatch contracts.
 
 Add one explicit adapter named `wardmote_runner`. The adapter is available only
 when an instance-level, default-off rollout flag is enabled. Provider selection
 is persisted per run and may use only a qualified provider profile.
 
-Do not route existing adapters through Paperclip Runner. A direct adapter keeps
+Do not route existing adapters through Wardmote Runner. A direct adapter keeps
 its current invocation, transcript, interaction, cancellation, and finalization
 paths.
 
 ## Goals
 
-- Keep runner process ownership outside the Paperclip server process.
-- Preserve Paperclip as the authority for identity, policy, and workflow state.
+- Keep runner process ownership outside the Wardmote server process.
+- Preserve Wardmote as the authority for identity, policy, and workflow state.
 - Recover a run after runner or network interruption without duplicate effects.
 - Expose only actions that the current run is allowed to use.
 - Make protocol behavior deterministic across TypeScript and Rust.
@@ -48,7 +48,7 @@ paths.
 
 - Replace existing direct adapters.
 - Move business authorization or issue status policy into Rust.
-- Give runnerd a broad Paperclip API credential.
+- Give runnerd a broad Wardmote API credential.
 - Support unqualified provider versions, arbitrary ACPX agents, or editable
   remote-resource identity in agent configuration.
 - Expose browser SDK, React SDK, eval, lab, or scenario-explorer package entry
@@ -61,7 +61,7 @@ paths.
 The initial local topology is:
 
 ```text
-Paperclip server
+Wardmote server
   |  authenticated PRP v1 WebSocket
   v
 wardmote-runnerd
@@ -76,11 +76,11 @@ then owns the provider process group and the durable transport state for that
 run.
 
 The browser does not connect to runnerd. It reads projections from the existing
-Paperclip APIs and task-thread models.
+Wardmote APIs and task-thread models.
 
 ## Dependency direction
 
-The runner package must build and test without importing Paperclip server, UI,
+The runner package must build and test without importing Wardmote server, UI,
 CLI, database, or other private workspace implementation modules.
 
 ```text
@@ -94,7 +94,7 @@ JSON Schema and fixtures
                    v
          deterministic parity
 
-Paperclip server ----implements----> runner public ports
+Wardmote server ----implements----> runner public ports
 ```
 
 The dependency points from an implementation to a contract. The Paperclip
@@ -137,7 +137,7 @@ input.
 
 ## Trust boundary
 
-The Paperclip server is authoritative for:
+The Wardmote server is authoritative for:
 
 - company, agent, issue, run, session, and user attribution;
 - rollout and runtime selection;
@@ -157,7 +157,7 @@ Runnerd is authoritative only for its local responsibilities:
 Runnerd receives a short-lived, one-use bootstrap ticket. The ticket is bound to
 the company, agent, issue, run, runner, session, turn, and verified artifact. The
 server exchanges it for a short-lived connection lease. Raw tickets are never
-stored. Runnerd never receives a broad Paperclip API key.
+stored. Runnerd never receives a broad Wardmote API key.
 
 The server rejects expired, replayed, revoked, cross-company, mismatched,
 malformed, oversized, or protocol-incompatible connections. Cancellation,
@@ -245,7 +245,7 @@ Runtime selection is persisted before launch. Later setting changes cannot
 silently move an in-flight run between the direct and native execution paths.
 
 The detailed compatibility rules are in
-[Paperclip Runner compatibility and rollout](wardmote-runner-compatibility.md).
+[Wardmote Runner compatibility and rollout](wardmote-runner-compatibility.md).
 
 ## Observability
 
@@ -262,7 +262,7 @@ only on the agent adapter profile.
 
 This design adds process, protocol, and recovery complexity. In return, it gives
 provider sessions a durable and testable execution boundary without moving
-Paperclip governance into the runner.
+Wardmote governance into the runner.
 
 The default-off, explicit-adapter rollout duplicates some provider
 configuration during the experiment. This is intentional. It keeps comparison

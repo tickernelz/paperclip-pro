@@ -1,6 +1,6 @@
 # Plugins supplied by an application distribution
 
-A downstream image can add prebuilt plugins without changing Paperclip's
+A downstream image can add prebuilt plugins without changing Wardmote's
 built-in catalog. The operator owns the image and trusts its plugin code.
 This is packaging and activation policy, not a sandbox or entitlement system.
 Ordinary self-hosted images need no catalog and keep their existing behavior.

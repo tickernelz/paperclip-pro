@@ -1,10 +1,10 @@
 ---
 name: prepare-wardmote-pr
-description: Prepare a Paperclip branch for PR with commits, template body, and checks.
+description: Prepare a Wardmote branch for PR with commits, template body, and checks.
 ---
-# Prepare Paperclip PR
+# Prepare Wardmote PR
 
-The standard Paperclip procedure for turning branch work into a reviewed,
+The standard Wardmote procedure for turning branch work into a reviewed,
 green pull request against `paperclipai/paperclip` master. Apply it once per
 PR (if a task splits a branch into several PRs, run the whole procedure for
 each one).
@@ -12,7 +12,7 @@ each one).
 ## 0. Preconditions — worktree safety
 
 * Do all PR work in a **git worktree** on a dedicated branch. The main
-  `~/paperclip` checkout typically runs the live Paperclip server — never
+  `~/wardmote` checkout typically runs the live Wardmote server — never
   check out branches there. If you are already on a worktree/branch, verify it
   (`git rev-parse --git-dir`, `git branch --show-current`) and proceed.
 * If the main checkout is unexpectedly off `master`, fix that first without

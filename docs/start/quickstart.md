@@ -21,7 +21,7 @@ To start Wardmote again later:
 npx @tickernelz/wardmote run
 ```
 
-> **Note:** If you used `npx` for setup, always use `npx @tickernelz/wardmote` to run commands. The `pnpm paperclip-pro` form only works inside a cloned copy of the Wardmote repository (see Local Development below).
+> **Note:** If you used `npx` for setup, always use `npx @tickernelz/wardmote` to run commands. The `pnpm wardmote` form only works inside a cloned copy of the Wardmote repository (see Local Development below).
 
 ## Local Development
 

@@ -1050,7 +1050,7 @@ instance with the five `WARDMOTE_*` identifiers/auth variables already set):
 
 ```sh
 pnpm --filter @tickernelz/wardmote-runner trace:standalone -- \
-  --target paperclip --scenario happy-path
+  --target wardmote --scenario happy-path
 
 WARDMOTE_API_BASE="${WARDMOTE_API_URL%/}"
 WARDMOTE_API_BASE="${WARDMOTE_API_BASE%/api}"
@@ -1088,7 +1088,7 @@ Legacy fallback proof after disabling the flag:
 
 ```sh
 pnpm --filter @tickernelz/wardmote-runner trace:standalone -- \
-  --target paperclip --scenario legacy-fallback
+  --target wardmote --scenario legacy-fallback
 
 pnpm --filter @tickernelz/wardmote-server exec vitest run \
   src/__tests__/native-runner-standalone.integration.test.ts \

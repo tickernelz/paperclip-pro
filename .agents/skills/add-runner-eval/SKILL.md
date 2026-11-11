@@ -1,6 +1,6 @@
 ---
 name: add-runner-eval
-description: Add or extend a Paperclip Runner protocol evaluation definition, roster, assertion, or report fixture with provenance and narrow validation.
+description: Add or extend a Wardmote Runner protocol evaluation definition, roster, assertion, or report fixture with provenance and narrow validation.
 ---
 
 # Add a Runner Eval
@@ -9,7 +9,7 @@ Use this skill for the **Runner Evals** family: a real Runner/provider session
 against a seeded mock control plane. Product browser/server/database/Daytona
 coverage belongs in [add-product-e2e-eval](../add-product-e2e-eval/SKILL.md).
 
-Locate the Paperclip checkout using `WARDMOTE_ROOT` when supplied, or
+Locate the Wardmote checkout using `WARDMOTE_ROOT` when supplied, or
 `git rev-parse --show-toplevel` from a checkout. From outside Git, inspect the
 workspace roots (for example `~/paperclipai/paperclip`) and verify that the
 selected root contains `packages/wardmote-runner` and `tests/runner-e2e`.
@@ -60,7 +60,7 @@ reasoning may not.
 
 Validate without provider calls first using the commands above and the relevant
 report/render validation documented in the Runner docs. When a live run is
-authorized, pin the Paperclip commit and exact 40-character
+authorized, pin the Wardmote commit and exact 40-character
 `paperclip-evals` commit, select the smallest useful roster, and retain the
 complete provenance and cost record.
 

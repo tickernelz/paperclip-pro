@@ -295,7 +295,7 @@ reconnect from a late test result. Claude ACP's typed `access` failure is its
 provider `auth_required` signal and enters the existing sign-in recovery path,
 including when only the generic terminal-access fallback message is available.
 Claude ACP validates working directories on the selected execution target. A
-sandbox directory does not need to exist on the Paperclip server. When the agent
+sandbox directory does not need to exist on the Wardmote server. When the agent
 has no configured directory, the test uses the remote target's working directory.
 It checks responsible identity, membership, compatibility, connection health,
 human audience and agent installation before reading credentials.
@@ -407,7 +407,7 @@ onboarding, and agent setup share `LocalProviderLoginInstructions` and
 browser sign-in card. Claude accepts the authorization code in that card; Codex
 displays its device code there. The user does not run a shell command. Each
 local runner requires Python 3 for its pseudo-terminal (included in the Docker
-image) and the corresponding provider CLI on the Paperclip host. Each
+image) and the corresponding provider CLI on the Wardmote host. Each
 attempt retains a private credential home. The home is never seeded with the
 operator's existing login: copying a rotating refresh token would
 allow managed runs to invalidate credentials still used by legacy agents or the
@@ -644,19 +644,19 @@ remote URLs; loopback endpoints may use HTTP. Localhost refers to the agent’s
 execution environment, including when it is a sandbox. URLs cannot contain user
 credentials, query parameters, or fragments.
 
-Managed Grok uses a disposable runtime home. Paperclip does not retain or restore
+Managed Grok uses a disposable runtime home. Wardmote does not retain or restore
 Grok transcript files into host temporary directories: private file modes do not
 isolate agents running as the same OS user. Archives from earlier development
 builds are ignored. Provider session metadata still saves normally. If the selected
 session has no history in its current execution environment, Grok starts a fresh
-session with the Paperclip task handoff rather than attempting remote subscription
+session with the Wardmote task handoff rather than attempting remote subscription
 recovery. Transcript continuation requires an isolated provider history solution
 and is not qualified by this change.
 
 Runtime projection clears alternate provider credentials and routing overrides,
 uses disposable homes, and never falls back to host authentication. Codex probes
 retain the selected provider home. The new runner copies only the validated
-Paperclip provider stanza into its isolated Codex home, preserves its own tool
+Wardmote provider stanza into its isolated Codex home, preserves its own tool
 and sandbox policy, and disables shell snapshots. TypeScript and Rust launch
 boundaries explicitly allow only the corresponding provider credential and
 routing fields. Keys remain outside model-issued command environments on the
@@ -722,7 +722,7 @@ retaining the saved endpoint, protocol, model aliases, and connection identity.
 
 The Costs page shows metered API spend beside the **current monthly subscription
 commitment**. API dollars and both token totals follow the selected date range;
-monthly subscription fees do not. Tokens measure Paperclip work only, while a
+monthly subscription fees do not. Tokens measure Wardmote work only, while a
 subscription fee covers the entire provider account, including other usage.
 Recorded subscription overages remain separate from the recurring fee.
 
@@ -749,7 +749,7 @@ in `packages/shared/src/subscriptions.ts`. The UI labels these **Estimated** (or
 OpenAI Pro, Claude Max, team, or enterprise entitlement does not reliably
 identify the price: it stays **Price unknown** until its owner enters an amount.
 Annual prices are divided by 12 using exact decimal arithmetic. Supported
-currencies are totaled separately; Paperclip does not estimate exchange rates.
+currencies are totaled separately; Wardmote does not estimate exchange rates.
 
 Use **Subscriptions → View details → Edit price** to record the amount paid,
 billing cadence, and tracking status. Personal prices are editable by their

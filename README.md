@@ -72,7 +72,7 @@ The current release is [`2026.1108.1`](https://github.com/tickernelz/wardmote/re
 
 ### Coming from Paperclip Pro
 
-`@tickernelz/paperclip-pro` is deprecated and receives no further releases; install `@tickernelz/wardmote` instead. The CLI also answers to `paperclip-pro` for this release. An existing `~/.paperclip-pro` home keeps working; `wardmote migrate-home` moves it to `~/.wardmote` after you stop the service. Details: [doc/RELEASE-NOTES-wardmote-rename.md](doc/RELEASE-NOTES-wardmote-rename.md).
+`@tickernelz/paperclip-pro` is deprecated and receives no further releases; install `@tickernelz/wardmote` instead. The CLI command is `wardmote` only. A command that finds an unmigrated `~/.paperclip-pro` home stops; `wardmote install` and `wardmote update` run `wardmote migrate-home`, which moves the home, the service unit and the shim to the new names once the old service is stopped. Details: [doc/RELEASE-NOTES-wardmote-rename.md](doc/RELEASE-NOTES-wardmote-rename.md).
 
 ## Features and Advanced
 

@@ -18,7 +18,7 @@ Container images for running coding-agent harnesses in sandboxed environments (f
 - Node.js 24 (via NodeSource APT repo)
 - git
 - tini (PID-1 init, ensures signal propagation)
-- Non-root user `paperclip` (uid/gid 1000)
+- Non-root user `wardmote` (uid/gid 1000)
 
 The NodeSource install puts `node` on the default `PATH`. The agent shim in this
 image runs the harness directly with that `PATH`. The shim does not source a
@@ -28,11 +28,11 @@ sandbox providers instead wrap each command in a login shell. That shell sources
 exec path sources `nvm`. For the full exec-path contract, see
 `packages/plugins/sandbox-providers/SANDBOX-REQUIREMENTS.md`.
 
-**Paperclip Binaries:**
+**Wardmote Binaries:**
 - `/usr/local/bin/paperclip-agent-shim`: Go binary compiled from `tools/agent-shim/`. Reads `/run/paperclip/runtime-command.json` and `syscall.Exec`s the harness CLI.
 
 **Defaults:**
-- `USER`: 1000:1000 (paperclip, non-root)
+- `USER`: 1000:1000 (wardmote, non-root)
 - `WORKDIR`: `/workspace` (mount workspace volumes here)
 - `ENTRYPOINT`: `/usr/bin/tini --` (PID-1 reaper, forwards signals)
 - `CMD`: `/usr/local/bin/paperclip-agent-shim`
