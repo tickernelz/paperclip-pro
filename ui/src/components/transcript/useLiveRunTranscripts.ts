@@ -366,6 +366,7 @@ export function useLiveRunTranscripts({
     const inFlightRunIds = new Set<string>();
 
     const readRunLog = async (run: RunTranscriptSource) => {
+      if (!isTerminalStatus(run.status)) settledLogRunIdsRef.current.delete(run.id);
       if (
         missingTerminalLogRunIdsRef.current.has(run.id) ||
         settledLogRunIdsRef.current.has(run.id) ||

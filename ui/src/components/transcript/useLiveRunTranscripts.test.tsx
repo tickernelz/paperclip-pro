@@ -365,6 +365,42 @@ describe("useLiveRunTranscripts", () => {
     }
   });
 
+  it("reads a settled run again after the server reopens it under the same id", async () => {
+    logMock.mockImplementation(async () => ({ runId: "run-1", store: "memory", logRef: "log-1", content: "", nextOffset: undefined }));
+    let status = "succeeded";
+    function Harness() {
+      useLiveRunTranscripts({
+        companyId: "company-1",
+        runs: [{ id: "run-1", status, adapterType: "codex_local" }],
+        enableRealtimeUpdates: false,
+      });
+      return null;
+    }
+    const container = document.createElement("div");
+    const root = createRoot(container);
+    try {
+      await act(async () => root.render(<Harness />));
+      await flushAppendFrame();
+      expect(logMock).toHaveBeenCalledTimes(1);
+
+      status = "running";
+      await act(async () => root.render(<Harness />));
+      await flushAppendFrame();
+      expect(logMock).toHaveBeenCalledTimes(2);
+
+      status = "succeeded";
+      await act(async () => root.render(<Harness />));
+      await flushAppendFrame();
+      expect(logMock).toHaveBeenCalledTimes(3);
+
+      await act(async () => root.render(<Harness />));
+      await flushAppendFrame();
+      expect(logMock).toHaveBeenCalledTimes(3);
+    } finally {
+      act(() => root.unmount());
+    }
+  });
+
   it("keeps at most four persisted-log reads in flight while hydrating many runs", async () => {
     let inFlight = 0;
     let peak = 0;
