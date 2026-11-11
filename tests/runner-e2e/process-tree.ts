@@ -171,7 +171,15 @@ export async function readProcessTable(startInspector?: () => ChildProcess): Pro
   if (process.platform === "win32") {
     return null;
   }
-  return await new Promise<ProcessObservation[] | null>((resolve) => {
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const observations = await inspectProcessTable(startInspector);
+    if (observations !== "interrupted") return observations;
+  }
+  return null;
+}
+
+async function inspectProcessTable(startInspector?: () => ChildProcess): Promise<ProcessObservation[] | null | "interrupted"> {
+  return await new Promise<ProcessObservation[] | null | "interrupted">((resolve) => {
     const inspector = startInspector ? startInspector() : spawn(
       "ps",
       ["-e", "-o", "pid=,ppid=,pgid=,lstart=,stat=,comm="],
@@ -185,13 +193,15 @@ export async function readProcessTable(startInspector?: () => ChildProcess): Pro
     let output = "";
     let settled = false;
     let truncated = false;
-    const finish = (value: ProcessObservation[] | null) => {
+    let killed = false;
+    const finish = (value: ProcessObservation[] | null | "interrupted") => {
       if (settled) return;
       settled = true;
       clearTimeout(inspectionTimeout);
       resolve(value);
     };
     const inspectionTimeout = setTimeout(() => {
+      killed = true;
       inspector.kill("SIGKILL");
       finish(null);
     }, 5_000);
@@ -199,6 +209,7 @@ export async function readProcessTable(startInspector?: () => ChildProcess): Pro
     inspector.stdout?.setEncoding("utf8").on("data", (chunk: string) => {
       if (output.length + chunk.length > 1024 * 1024) {
         truncated = true;
+        killed = true;
         inspector.kill("SIGKILL");
         finish(null);
         return;
@@ -206,7 +217,8 @@ export async function readProcessTable(startInspector?: () => ChildProcess): Pro
       output += chunk;
     });
     inspector.once("error", () => finish(null));
-    inspector.once("close", (code) => {
+    inspector.once("close", (code, signal) => {
+      if (signal && !killed) { finish("interrupted"); return; }
       if (code !== 0 || truncated) { finish(null); return; }
       const observations = output
         .split(/\r?\n/)
