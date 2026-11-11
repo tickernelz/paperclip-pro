@@ -32,6 +32,7 @@ const SOCKET_CONNECTING = 0;
 const SOCKET_OPEN = 1;
 const LOG_POLL_INTERVAL_MS = 2000;
 const LOG_READ_LIMIT_BYTES = 256_000;
+const LOG_READ_CONCURRENCY = 4;
 // When realtime websocket updates are enabled, the frequent log poll is
 // redundant with the live stream; keep only a slow safety-net poll to cover
 // gaps and reconnects instead of polling every couple of seconds.
@@ -150,6 +151,7 @@ export function useLiveRunTranscripts({
   const pendingLogRowsByRunRef = useRef(new Map<string, string>());
   const logOffsetByRunRef = useRef(new Map<string, number>());
   const missingTerminalLogRunIdsRef = useRef(new Set<string>());
+  const settledLogRunIdsRef = useRef(new Set<string>());
   // PAP-462 B3: buffered runs that dropped out of the `runs` list, mapped to the
   // wall-clock deadline (ms) after which their buffer may be pruned. A run still
   // inside its grace window is retained across the empty poll; `pruneTick` fires
@@ -327,6 +329,11 @@ export function useLiveRunTranscripts({
         missingTerminalLogRunIdsRef.current.delete(runId);
       }
     }
+    for (const runId of settledLogRunIdsRef.current.keys()) {
+      if (!retainedRunIds.has(runId)) {
+        settledLogRunIdsRef.current.delete(runId);
+      }
+    }
     for (const runId of transcriptCacheRef.current.keys()) {
       if (!retainedRunIds.has(runId)) {
         transcriptCacheRef.current.delete(runId);
@@ -359,7 +366,12 @@ export function useLiveRunTranscripts({
     const inFlightRunIds = new Set<string>();
 
     const readRunLog = async (run: RunTranscriptSource) => {
-      if (missingTerminalLogRunIdsRef.current.has(run.id) || inFlightRunIds.has(run.id)) {
+      if (!isTerminalStatus(run.status)) settledLogRunIdsRef.current.delete(run.id);
+      if (
+        missingTerminalLogRunIdsRef.current.has(run.id) ||
+        settledLogRunIdsRef.current.has(run.id) ||
+        inFlightRunIds.has(run.id)
+      ) {
         return;
       }
       inFlightRunIds.add(run.id);
@@ -386,6 +398,7 @@ export function useLiveRunTranscripts({
         if (result.content.length > 0) {
           logOffsetByRunRef.current.set(run.id, offset + result.content.length);
         }
+        if (isTerminalStatus(run.status)) settledLogRunIdsRef.current.add(run.id);
       } catch (error) {
         if (cancelled) return;
         if (error instanceof ApiError && error.status === 404) {
@@ -418,11 +431,20 @@ export function useLiveRunTranscripts({
       }
     };
 
-    const readAll = async () => {
-      await Promise.all(readableRuns.map((run) => readRunLog(run)));
+    const readEach = async (targets: RunTranscriptSource[]) => {
+      let nextIndex = 0;
+      const worker = async () => {
+        while (!cancelled && nextIndex < targets.length) {
+          await readRunLog(targets[nextIndex++]!);
+        }
+      };
+      await Promise.all(Array.from({ length: Math.min(LOG_READ_CONCURRENCY, targets.length) }, worker));
     };
 
-    void readAll();
+    void readEach([
+      ...readableRuns.filter((run) => run.status === "running"),
+      ...readableRuns.filter((run) => run.status !== "running"),
+    ]);
     const activeRuns = readableRuns.filter((run) => run.status === "running");
     // The realtime websocket is the primary live source when enabled, so the
     // recurring poll only needs to run as a slow fallback rather than doubling
@@ -432,7 +454,7 @@ export function useLiveRunTranscripts({
       : logPollIntervalMs;
     const interval = activeRuns.length > 0 && effectivePollMs > 0
       ? window.setInterval(() => {
-          void Promise.all(activeRuns.map((run) => readRunLog(run)));
+          void readEach(activeRuns);
         }, effectivePollMs)
       : null;
 
