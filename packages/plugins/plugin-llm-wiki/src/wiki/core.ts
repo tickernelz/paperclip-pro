@@ -1053,7 +1053,7 @@ export async function updateWardmoteIngestionProfile(ctx: PluginContext, input: 
     entityType: "llm_wiki_space",
     entityId: space.id,
     metadata: {
-      type: "plugin.llm_wiki.paperclip_ingestion_profile_updated",
+      type: "plugin.llm_wiki.wardmote_ingestion_profile_updated",
       wikiId,
       spaceSlug: space.slug,
       beforeEnabled: current.enabled,
@@ -1216,23 +1216,23 @@ function bindingTable(ctx: PluginContext): string {
 }
 
 function distillationCursorTable(ctx: PluginContext): string {
-  return tableName(ctx.db.namespace, "paperclip_distillation_cursors");
+  return tableName(ctx.db.namespace, "wardmote_distillation_cursors");
 }
 
 function distillationRunTable(ctx: PluginContext): string {
-  return tableName(ctx.db.namespace, "paperclip_distillation_runs");
+  return tableName(ctx.db.namespace, "wardmote_distillation_runs");
 }
 
 function sourceSnapshotTable(ctx: PluginContext): string {
-  return tableName(ctx.db.namespace, "paperclip_source_snapshots");
+  return tableName(ctx.db.namespace, "wardmote_source_snapshots");
 }
 
 function distillationWorkItemTable(ctx: PluginContext): string {
-  return tableName(ctx.db.namespace, "paperclip_distillation_work_items");
+  return tableName(ctx.db.namespace, "wardmote_distillation_work_items");
 }
 
 function pageBindingTable(ctx: PluginContext): string {
-  return tableName(ctx.db.namespace, "paperclip_page_bindings");
+  return tableName(ctx.db.namespace, "wardmote_page_bindings");
 }
 
 function parseBindingMetadata(value: unknown): Record<string, unknown> {
@@ -2417,16 +2417,16 @@ async function upsertWardmoteDistillationCursor(ctx: PluginContext, input: {
   const cursorId = randomUUID();
   const scope = wardmoteCursorScopeMetadata(input);
   await ctx.db.execute(
-    `INSERT INTO ${distillationCursorTable(ctx)} AS paperclip_distillation_cursors
+    `INSERT INTO ${distillationCursorTable(ctx)} AS wardmote_distillation_cursors
        (id, company_id, wiki_id, space_id, source_scope, scope_key, project_id, root_issue_id, source_kind, last_observed_at, pending_event_count, metadata)
-     VALUES ($1, $2, $3, $11, $4, $5, $6, $7, 'paperclip_issue_history', $8::timestamptz, $9, $10::jsonb)
+     VALUES ($1, $2, $3, $11, $4, $5, $6, $7, 'wardmote_issue_history', $8::timestamptz, $9, $10::jsonb)
      ON CONFLICT (company_id, wiki_id, space_id, source_scope, scope_key, source_kind)
      DO UPDATE SET last_observed_at = GREATEST(
-                       COALESCE(paperclip_distillation_cursors.last_observed_at, EXCLUDED.last_observed_at),
-                       COALESCE(EXCLUDED.last_observed_at, paperclip_distillation_cursors.last_observed_at)
+                       COALESCE(wardmote_distillation_cursors.last_observed_at, EXCLUDED.last_observed_at),
+                       COALESCE(EXCLUDED.last_observed_at, wardmote_distillation_cursors.last_observed_at)
                      ),
-                   pending_event_count = paperclip_distillation_cursors.pending_event_count + EXCLUDED.pending_event_count,
-                   metadata = paperclip_distillation_cursors.metadata || EXCLUDED.metadata,
+                   pending_event_count = wardmote_distillation_cursors.pending_event_count + EXCLUDED.pending_event_count,
+                   metadata = wardmote_distillation_cursors.metadata || EXCLUDED.metadata,
                    updated_at = now()`,
     [
       cursorId,
@@ -2450,7 +2450,7 @@ async function upsertWardmoteDistillationCursor(ctx: PluginContext, input: {
         AND space_id = $3
         AND source_scope = $4
         AND scope_key = $5
-        AND source_kind = 'paperclip_issue_history'
+        AND source_kind = 'wardmote_issue_history'
       LIMIT 1`,
     [input.companyId, input.wikiId, input.spaceId, scope.sourceScope, scope.scopeKey],
   );
@@ -2902,12 +2902,12 @@ export async function createWardmoteDistillationWorkItem(ctx: PluginContext, inp
     throw new Error("Backfill work items must target a projectId or rootIssueId; whole-company backfill is not allowed.");
   }
   await ctx.db.execute(
-    `INSERT INTO ${distillationWorkItemTable(ctx)} AS paperclip_distillation_work_items
+    `INSERT INTO ${distillationWorkItemTable(ctx)} AS wardmote_distillation_work_items
        (id, company_id, wiki_id, space_id, work_item_kind, status, priority, project_id, root_issue_id, requested_by_issue_id, idempotency_key, metadata)
      VALUES ($1, $2, $3, $11, $4, 'pending', $5, $6, $7, $8, $9, $10::jsonb)
      ON CONFLICT (company_id, wiki_id, space_id, idempotency_key)
      DO UPDATE SET priority = EXCLUDED.priority,
-                   metadata = paperclip_distillation_work_items.metadata || EXCLUDED.metadata,
+                   metadata = wardmote_distillation_work_items.metadata || EXCLUDED.metadata,
                    updated_at = now()`,
     [
       itemId,
@@ -3283,13 +3283,13 @@ async function upsertPageBinding(ctx: PluginContext, input: {
   metadata?: Record<string, unknown>;
 }) {
   await ctx.db.execute(
-    `INSERT INTO ${pageBindingTable(ctx)} AS paperclip_page_bindings
+    `INSERT INTO ${pageBindingTable(ctx)} AS wardmote_page_bindings
        (id, company_id, wiki_id, space_id, project_id, root_issue_id, page_path, last_applied_source_hash, last_distillation_run_id, metadata)
      VALUES ($1, $2, $3, $10, $4, $5, $6, $7, $8, $9::jsonb)
      ON CONFLICT (company_id, wiki_id, space_id, page_path)
      DO UPDATE SET last_applied_source_hash = EXCLUDED.last_applied_source_hash,
                    last_distillation_run_id = EXCLUDED.last_distillation_run_id,
-                   metadata = paperclip_page_bindings.metadata || EXCLUDED.metadata,
+                   metadata = wardmote_page_bindings.metadata || EXCLUDED.metadata,
                    updated_at = now()`,
     [
       randomUUID(),

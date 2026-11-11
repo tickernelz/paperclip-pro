@@ -35,7 +35,7 @@ export const WIKI_MANAGED_SKILL_KEYS = [
 ] as const;
 
 function canonicalSkillKey(skillKey: string) {
-  return `plugin/paperclipai-plugin-llm-wiki/${skillKey}`;
+  return `plugin/wardmote-plugin-llm-wiki/${skillKey}`;
 }
 
 function skillMarkdown(skillKey: (typeof WIKI_MANAGED_SKILL_KEYS)[number]) {

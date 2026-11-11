@@ -1,0 +1,9 @@
+ALTER TABLE plugin_llm_wiki_1e554e7667.paperclip_distillation_cursors RENAME TO wardmote_distillation_cursors;
+ALTER TABLE plugin_llm_wiki_1e554e7667.paperclip_distillation_work_items RENAME TO wardmote_distillation_work_items;
+ALTER TABLE plugin_llm_wiki_1e554e7667.paperclip_distillation_runs RENAME TO wardmote_distillation_runs;
+ALTER TABLE plugin_llm_wiki_1e554e7667.paperclip_source_snapshots RENAME TO wardmote_source_snapshots;
+ALTER TABLE plugin_llm_wiki_1e554e7667.paperclip_page_bindings RENAME TO wardmote_page_bindings;
+ALTER TABLE plugin_llm_wiki_1e554e7667.wardmote_distillation_cursors ALTER COLUMN source_kind SET DEFAULT 'wardmote_issue_history';
+UPDATE plugin_llm_wiki_1e554e7667.wardmote_distillation_cursors
+SET source_kind = 'wardmote_issue_history'
+WHERE source_kind = 'paperclip_issue_history';
