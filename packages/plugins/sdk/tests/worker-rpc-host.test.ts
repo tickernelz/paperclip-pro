@@ -531,9 +531,9 @@ describe("worker provider tracer", () => {
       async setup(ctx) {
         ctx.data.register("probe", async () => {
           const span = ctx.tracer.startSpan("pack", {
-            attributes: { "paperclip.sandbox.startup.pack.wall_ms": 12 },
+            attributes: { "wardmote.sandbox.startup.pack.wall_ms": 12 },
           });
-          span.setAttribute("paperclip.sandbox.startup.provider", "daytona");
+          span.setAttribute("wardmote.sandbox.startup.provider", "daytona");
           span.end();
           return { ok: true };
         });
@@ -619,8 +619,8 @@ describe("worker provider tracer", () => {
     expect(record.params).toMatchObject({
       name: "pack",
       attributes: {
-        "paperclip.sandbox.startup.pack.wall_ms": 12,
-        "paperclip.sandbox.startup.provider": "daytona",
+        "wardmote.sandbox.startup.pack.wall_ms": 12,
+        "wardmote.sandbox.startup.provider": "daytona",
       },
     });
   });

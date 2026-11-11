@@ -771,18 +771,18 @@ describe("daytona file-sync inbound zstd transport compression", () => {
         (key) => key.includes(".transfer.compression.") || key.includes(".transfer.decompress."),
       );
       expect(new Set(compressionKeys)).toEqual(new Set([
-        "paperclip.sandbox.startup.transfer.compression.codec",
-        "paperclip.sandbox.startup.transfer.compression.wall_ms",
-        "paperclip.sandbox.startup.transfer.compression.bytes_in",
-        "paperclip.sandbox.startup.transfer.compression.bytes_out",
-        "paperclip.sandbox.startup.transfer.decompress.wall_ms",
+        "wardmote.sandbox.startup.transfer.compression.codec",
+        "wardmote.sandbox.startup.transfer.compression.wall_ms",
+        "wardmote.sandbox.startup.transfer.compression.bytes_in",
+        "wardmote.sandbox.startup.transfer.compression.bytes_out",
+        "wardmote.sandbox.startup.transfer.decompress.wall_ms",
       ]));
-      expect(allAttrs["paperclip.sandbox.startup.transfer.compression.codec"]).toBe("zstd");
+      expect(allAttrs["wardmote.sandbox.startup.transfer.compression.codec"]).toBe("zstd");
       for (const key of [
-        "paperclip.sandbox.startup.transfer.compression.wall_ms",
-        "paperclip.sandbox.startup.transfer.compression.bytes_in",
-        "paperclip.sandbox.startup.transfer.compression.bytes_out",
-        "paperclip.sandbox.startup.transfer.decompress.wall_ms",
+        "wardmote.sandbox.startup.transfer.compression.wall_ms",
+        "wardmote.sandbox.startup.transfer.compression.bytes_in",
+        "wardmote.sandbox.startup.transfer.compression.bytes_out",
+        "wardmote.sandbox.startup.transfer.decompress.wall_ms",
       ]) {
         expect(Number.isFinite(allAttrs[key] as number)).toBe(true);
       }

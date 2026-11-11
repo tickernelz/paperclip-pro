@@ -848,18 +848,18 @@ export async function selectHeartbeatRuntime(db: Db, input: HeartbeatRuntimeSele
         sandboxResource: nativeSandboxLifecycle.sandboxResource,
       });
       const selectedLifecycleSpan = getStartupTracer(
-        "paperclip.environment-lifecycle",
+        "wardmote.environment-lifecycle",
       ).startSpan("sandbox.lifecycle.selected", {
         attributes: {
-          "paperclip.native.span.provider": nativeExecution.provider.kind,
-          "paperclip.native.span.harness":
+          "wardmote.native.span.provider": nativeExecution.provider.kind,
+          "wardmote.native.span.harness":
             nativeExecution.session.driverKind,
-          "paperclip.native.span.lifecycle_mode":
+          "wardmote.native.span.lifecycle_mode":
             nativeExecution.session.lifecyclePolicy.mode,
-          "paperclip.native.span.sandbox_resource":
+          "wardmote.native.span.sandbox_resource":
             nativeSandboxLifecycle.sandboxResource,
-          "paperclip.native.span.outcome": "selected",
-          "paperclip.native.span.bytes_transferred": 0,
+          "wardmote.native.span.outcome": "selected",
+          "wardmote.native.span.bytes_transferred": 0,
         },
       });
       selectedLifecycleSpan.end();

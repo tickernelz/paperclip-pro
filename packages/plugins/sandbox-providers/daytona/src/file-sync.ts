@@ -22,7 +22,7 @@ const execFileAsync = promisify(execFile);
 // The span-attribute names. They mirror the host span-attribute contract by
 // value. The plugin ships bundled, so it stays free of the host packages and
 // repeats these strings; the host re-clamps a provider span by these exact keys.
-const SPAN_ATTR_PREFIX = "paperclip.sandbox.startup.";
+const SPAN_ATTR_PREFIX = "wardmote.sandbox.startup.";
 const SPAN_ATTR = {
   provider: `${SPAN_ATTR_PREFIX}provider`,
   packWallMs: `${SPAN_ATTR_PREFIX}pack.wall_ms`,
