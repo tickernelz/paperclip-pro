@@ -1688,7 +1688,7 @@ describe("WardmoteControlPlanePort conformance", () => {
           ? `native-status-wake-dispatch:${randomUUID()}` : "native-status-committer",
         status: delivery.startsWith("current_") ? "claimed" : delivery,
         runId: delivery === "current_run" ? runId : null,
-        payload: { issueId, _paperclipWakeContext: { wakeReason: "issue_children_completed", nativeChildCompletionDecisionId: randomUUID() } },
+        payload: { issueId, _wardmoteWakeContext: { wakeReason: "issue_children_completed", nativeChildCompletionDecisionId: randomUUID() } },
       });
       if (delivery === "current_intent") await db.update(heartbeatRuns)
         .set({ contextSnapshot: { issueId, nativeStatusWakeIntentId: intentId } })
@@ -1963,7 +1963,7 @@ describe("WardmoteControlPlanePort conformance", () => {
             summary: `Implemented revision ${revision} and passed 44/44 tests.`,
           }],
           childIssueSummaryTruncated: false,
-          _paperclipWakeContext: {
+          _wardmoteWakeContext: {
             wakeReason: "issue_children_completed",
             childIssueSummaries: [{
               id: childIssueId,
@@ -1973,7 +1973,7 @@ describe("WardmoteControlPlanePort conformance", () => {
         },
       });
       if (latestWake) {
-        const delivery = latestWake.payload?._paperclipWakeContext as Record<string, unknown>;
+        const delivery = latestWake.payload?._wardmoteWakeContext as Record<string, unknown>;
         expect(delivery.nativeChildCompletionDecisionId).toBe(
           originKind === "task_watchdog" ? undefined : completedChild!.lastStatusDecisionId,
         );

@@ -414,7 +414,7 @@ describeEmbeddedPostgres("heartbeat resolved dependency wake reconciliation", ()
             message: "Waiting for execution recovery. Your message is saved.",
             recoveryActionId: action!.id,
           },
-          _paperclipWakeContext: {
+          _wardmoteWakeContext: {
             issueId: fixture.blockedIssueId,
             taskId: fixture.blockedIssueId,
             wakeReason: "issue_commented",

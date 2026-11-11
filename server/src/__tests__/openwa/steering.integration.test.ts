@@ -851,7 +851,7 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
       const outsiderWake = await wakeRow(outsider.action.id);
       expect(outsiderWake.status).toBe("deferred_issue_execution");
       expect(outsiderWake.requestedByActorId).toBe(outsider.delivery.principalId);
-      const { _paperclipWakeContext: outsiderContext, ...outsiderPayload } = outsiderWake.payload as Record<string, unknown>;
+      const { _wardmoteWakeContext: outsiderContext, ...outsiderPayload } = outsiderWake.payload as Record<string, unknown>;
       const incoming = {
         agentId: t.agentId, source: outsiderWake.source, triggerDetail: outsiderWake.triggerDetail,
         requestedByActorType: outsiderWake.requestedByActorType, requestedByActorId: outsiderWake.requestedByActorId, idempotencyKey: outsiderWake.idempotencyKey,
@@ -868,7 +868,7 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
             existingDeferredWakeId: deferred.id,
             mergedPayload: {
               ...deferredPayload, ...outsiderPayload,
-              _paperclipWakeContext: mergeCoalescedContextSnapshot(deferredPayload._paperclipWakeContext, outsiderContext as Record<string, unknown>, { preserveExistingInteractionContinuation: true }),
+              _wardmoteWakeContext: mergeCoalescedContextSnapshot(deferredPayload._wardmoteWakeContext, outsiderContext as Record<string, unknown>, { preserveExistingInteractionContinuation: true }),
             },
             nextCoalescedCount: (deferred.coalescedCount ?? 0) + 1,
             coalescedReceipt: {

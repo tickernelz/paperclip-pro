@@ -417,7 +417,7 @@ interface NativeStatusWakeInput {
 }
 
 function completedChildIssueIdsOf(payload: Record<string, unknown>) {
-  const context = record(payload._paperclipWakeContext);
+  const context = record(payload._wardmoteWakeContext);
   const candidates = [
     ...(Array.isArray(payload.completedChildIssueIds) ? payload.completedChildIssueIds : []),
     ...(Array.isArray(context.completedChildIssueIds) ? context.completedChildIssueIds : []),
@@ -443,7 +443,7 @@ async function supersedePendingChildCompletionWake(input: NativeStatusWakeInput)
       eq(agentWakeupRequests.status, "queued"),
       isNull(agentWakeupRequests.runId),
       sql`${agentWakeupRequests.payload}->>'issueId' = ${input.issueId}`,
-      sql`nullif(${agentWakeupRequests.payload}->'_paperclipWakeContext'->>'nativeChildCompletionDecisionId', '') is not null`,
+      sql`nullif(${agentWakeupRequests.payload}->'_wardmoteWakeContext'->>'nativeChildCompletionDecisionId', '') is not null`,
     ))
     .orderBy(asc(agentWakeupRequests.requestedAt))
     .limit(1)
@@ -508,7 +508,7 @@ export async function enqueueNativeStatusWake(input: NativeStatusWakeInput) {
         taskId: input.issueId,
         ...input.payload,
         ...coalescedChildren,
-        _paperclipWakeContext: {
+        _wardmoteWakeContext: {
           issueId: input.issueId,
           taskId: input.issueId,
           ...(input.contextSnapshot ?? {}),
@@ -1080,8 +1080,8 @@ async function materializeDecisionEffect(input: {
           sql`coalesce(
           ${agentWakeupRequests.payload} ->> 'issueId',
           ${agentWakeupRequests.payload} ->> 'taskId',
-          ${agentWakeupRequests.payload} -> '_paperclipWakeContext' ->> 'issueId',
-          ${agentWakeupRequests.payload} -> '_paperclipWakeContext' ->> 'taskId'
+          ${agentWakeupRequests.payload} -> '_wardmoteWakeContext' ->> 'issueId',
+          ${agentWakeupRequests.payload} -> '_wardmoteWakeContext' ->> 'taskId'
         ) = ${input.issue.id}`,
         ),
       );

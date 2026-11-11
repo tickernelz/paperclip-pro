@@ -1112,7 +1112,7 @@ describe.each(["unchanged", "newer_active", "stale_idle"] as const)(
           payload: {
             issueId,
             commentId: newerCommentId,
-            _paperclipWakeContext: {
+            _wardmoteWakeContext: {
               issueId,
               taskId: issueId,
               commentId: newerCommentId,

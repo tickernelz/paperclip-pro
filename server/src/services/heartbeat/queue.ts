@@ -233,7 +233,7 @@ const HEARTBEAT_MAX_CONCURRENT_RUNS_MIN = 1;
 
 const HEARTBEAT_MAX_CONCURRENT_RUNS_MAX = 50;
 
-export const DEFERRED_WAKE_CONTEXT_KEY = "_paperclipWakeContext";
+export const DEFERRED_WAKE_CONTEXT_KEY = "_wardmoteWakeContext";
 
 export const EXECUTION_PATH_HEARTBEAT_RUN_STATUSES = [
   "queued",
@@ -1840,8 +1840,8 @@ export function createHeartbeatQueue(db: Db, dependencies: HeartbeatQueueDepende
       .where(and(eq(agentWakeupRequests.status, "deferred_issue_execution"),
         isNull(issues.executionRunId),
         or(and(
-          sql`jsonb_typeof(${agentWakeupRequests.payload} #> '{_paperclipWakeContext,wakeCommentIds}') = 'array'`,
-          sql`${agentWakeupRequests.payload} #> '{_paperclipWakeContext,wakeCommentIds}' <> '[]'::jsonb`,
+          sql`jsonb_typeof(${agentWakeupRequests.payload} #> '{_wardmoteWakeContext,wakeCommentIds}') = 'array'`,
+          sql`${agentWakeupRequests.payload} #> '{_wardmoteWakeContext,wakeCommentIds}' <> '[]'::jsonb`,
         ), sql`${agentWakeupRequests.payload}->>'mutation' = 'interaction'`),
         sql`${agentWakeupRequests.payload}->'queuedCommentInterrupt' is null`,
         cutoff ? gte(agentWakeupRequests.requestedAt, cutoff) : undefined))
@@ -4587,7 +4587,7 @@ export function createHeartbeatQueue(db: Db, dependencies: HeartbeatQueueDepende
       if (claimed.length === 0) continue;
 
       const payload = parseObject(candidate.payload);
-      const wakeContext = parseObject(payload._paperclipWakeContext);
+      const wakeContext = parseObject(payload._wardmoteWakeContext);
       const issueId =
         readNonEmptyString(payload.issueId) ??
         readNonEmptyString(payload.taskId) ??

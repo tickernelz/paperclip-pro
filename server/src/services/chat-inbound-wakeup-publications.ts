@@ -48,7 +48,7 @@ function hasComment(
   payload: Record<string, unknown> | null,
   commentId: string,
 ) {
-  const context = payload?._paperclipWakeContext;
+  const context = payload?._wardmoteWakeContext;
   const nested =
     context && typeof context === "object" && !Array.isArray(context)
       ? (context as Record<string, unknown>)

@@ -1607,7 +1607,7 @@ describeEmbeddedPostgres("heartbeat stale queued-run invalidation", () => {
       reason: "issue_execution_deferred",
       payload: {
         issueId,
-        _paperclipWakeContext: {
+        _wardmoteWakeContext: {
           issueId,
           wakeReason: "issue_mention",
         },

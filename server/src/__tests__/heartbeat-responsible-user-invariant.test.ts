@@ -192,7 +192,7 @@ describeEmbeddedPostgres("heartbeat responsible-user invariant", () => {
     await db.insert(agentWakeupRequests).values({ id: queueId, companyId, agentId,
       source: "automation", status: "deferred_issue_execution", requestedByActorType: "system",
       payload: { issueId, commentId, queuedCommentInterrupt: { actorId: operatorId, requestedAt: new Date().toISOString() },
-        _paperclipWakeContext: { wakeCommentIds: [commentId], responsibleUserId: ownerUserId,
+        _wardmoteWakeContext: { wakeCommentIds: [commentId], responsibleUserId: ownerUserId,
           retryOfRunId: randomUUID(), originIdentityContextId: randomUUID() } },
     });
     await heartbeat.resumeQueuedCommentInterrupt(companyId, queueId);
@@ -220,7 +220,7 @@ describeEmbeddedPostgres("heartbeat responsible-user invariant", () => {
     await db.insert(issueComments).values({ id: commentId, companyId, issueId, authorUserId: ownerUserId, body: "Pending work" });
     await db.insert(agentWakeupRequests).values({ id: queueId, companyId, agentId,
       source: "automation", reason: "issue_commented", status: "deferred_issue_execution", requestedByActorType: "user", requestedByActorId: ownerUserId,
-      payload: { issueId, commentId, _paperclipWakeContext: { wakeCommentIds: [commentId] } },
+      payload: { issueId, commentId, _wardmoteWakeContext: { wakeCommentIds: [commentId] } },
     });
     const run = await heartbeat.wakeup(agentId, { manualUserWake: true, source: "on_demand", triggerDetail: "manual",
       payload: { issueId }, requestedByActorType: "user", requestedByActorId: operatorId,
@@ -252,7 +252,7 @@ describeEmbeddedPostgres("heartbeat responsible-user invariant", () => {
       await db.insert(agentWakeupRequests).values({ id: queueId, companyId, agentId,
         source: "automation", reason: "issue_commented", status: "deferred_issue_execution",
         requestedByActorType: "user", requestedByActorId: ownerUserId,
-        payload: { issueId, commentId, _paperclipWakeContext: { wakeCommentIds: [commentId] } },
+        payload: { issueId, commentId, _wardmoteWakeContext: { wakeCommentIds: [commentId] } },
       });
       expect(await heartbeat.wakeup(agentId, { manualUserWake: true, source: "on_demand", triggerDetail: "manual",
         payload: { issueId }, requestedByActorType: "user", requestedByActorId: operatorId,

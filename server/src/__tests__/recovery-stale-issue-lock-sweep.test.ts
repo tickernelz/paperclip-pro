@@ -1111,7 +1111,7 @@ describeEmbeddedPostgres("recovery sweepStaleIssueLocks", () => {
         requestedByActorType: "user", requestedByActorId: "board",
         payload: {
           issueId, commentId: deferredCommentId, mutation: "comment",
-          _paperclipWakeContext: {
+          _wardmoteWakeContext: {
             issueId, wakeReason: "issue_commented", wakeCommentId: deferredCommentId,
             wakeCommentIds: [deferredCommentId],
           },

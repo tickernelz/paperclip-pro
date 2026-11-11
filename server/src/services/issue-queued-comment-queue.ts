@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import type { IssueComment, IssueQueuedCommentQueue } from "@tickernelz/wardmote-shared";
 
-const QUEUE_CONTEXT_KEY = "_paperclipWakeContext";
+const QUEUE_CONTEXT_KEY = "_wardmoteWakeContext";
 const QUEUE_IDS_KEY = "wakeCommentIds";
 
 function record(value: unknown): Record<string, unknown> {

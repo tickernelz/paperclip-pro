@@ -373,7 +373,7 @@ describe("durable Dot Runner integration", () => {
         let wakes = await db.select().from(agentWakeupRequests).where(eq(agentWakeupRequests.agentId, f.agent.id));
         expect(wakes).toHaveLength(scenario === "read before wake admission" ? 2 : 1);
         const pending = wakes.find(wake => wake.status === "deferred_issue_execution")!;
-        expect(pending.payload?._paperclipWakeContext).toMatchObject({ wakeCommentIds:
+        expect(pending.payload?._wardmoteWakeContext).toMatchObject({ wakeCommentIds:
           ["finish before delivery", "failed history"].includes(scenario)
             ? comments.map(comment => comment.id) : [comments[1]!.id] });
         if (scenario === "read before wake admission") expect(wakes.find(wake => wake.payload?.commentId === comments[0]!.id)?.status).toBe("coalesced");

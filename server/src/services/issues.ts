@@ -300,8 +300,8 @@ function wakeRequestTargetsIssue(issueId: string) {
   return sql`(
     ${agentWakeupRequests.payload} ->> 'issueId' = ${issueId}
     or ${agentWakeupRequests.payload} ->> 'taskId' = ${issueId}
-    or ${agentWakeupRequests.payload} -> '_paperclipWakeContext' ->> 'issueId' = ${issueId}
-    or ${agentWakeupRequests.payload} -> '_paperclipWakeContext' ->> 'taskId' = ${issueId}
+    or ${agentWakeupRequests.payload} -> '_wardmoteWakeContext' ->> 'issueId' = ${issueId}
+    or ${agentWakeupRequests.payload} -> '_wardmoteWakeContext' ->> 'taskId' = ${issueId}
   )`;
 }
 
@@ -4676,8 +4676,8 @@ async function listIssueReviewAttentionMap(
         issueId: sql<string | null>`coalesce(
           ${agentWakeupRequests.payload} ->> 'issueId',
           ${agentWakeupRequests.payload} ->> 'taskId',
-          ${agentWakeupRequests.payload} -> '_paperclipWakeContext' ->> 'issueId',
-          ${agentWakeupRequests.payload} -> '_paperclipWakeContext' ->> 'taskId'
+          ${agentWakeupRequests.payload} -> '_wardmoteWakeContext' ->> 'issueId',
+          ${agentWakeupRequests.payload} -> '_wardmoteWakeContext' ->> 'taskId'
         )`,
         agentId: agentWakeupRequests.agentId,
         status: agentWakeupRequests.status,
@@ -4698,8 +4698,8 @@ async function listIssueReviewAttentionMap(
             sql<string>`coalesce(
           ${agentWakeupRequests.payload} ->> 'issueId',
           ${agentWakeupRequests.payload} ->> 'taskId',
-          ${agentWakeupRequests.payload} -> '_paperclipWakeContext' ->> 'issueId',
-          ${agentWakeupRequests.payload} -> '_paperclipWakeContext' ->> 'taskId'
+          ${agentWakeupRequests.payload} -> '_wardmoteWakeContext' ->> 'issueId',
+          ${agentWakeupRequests.payload} -> '_wardmoteWakeContext' ->> 'taskId'
         )`,
             reviewIds,
           ),
@@ -5795,8 +5795,8 @@ async function listIssueBlockedInboxAttentionMap(
             issueId: sql<string | null>`coalesce(
               ${agentWakeupRequests.payload} ->> 'issueId',
               ${agentWakeupRequests.payload} ->> 'taskId',
-              ${agentWakeupRequests.payload} -> '_paperclipWakeContext' ->> 'issueId',
-              ${agentWakeupRequests.payload} -> '_paperclipWakeContext' ->> 'taskId'
+              ${agentWakeupRequests.payload} -> '_wardmoteWakeContext' ->> 'issueId',
+              ${agentWakeupRequests.payload} -> '_wardmoteWakeContext' ->> 'taskId'
             )`,
             agentId: agentWakeupRequests.agentId,
             status: agentWakeupRequests.status,
@@ -5813,8 +5813,8 @@ async function listIssueBlockedInboxAttentionMap(
                 sql<string>`coalesce(
               ${agentWakeupRequests.payload} ->> 'issueId',
               ${agentWakeupRequests.payload} ->> 'taskId',
-              ${agentWakeupRequests.payload} -> '_paperclipWakeContext' ->> 'issueId',
-              ${agentWakeupRequests.payload} -> '_paperclipWakeContext' ->> 'taskId'
+              ${agentWakeupRequests.payload} -> '_wardmoteWakeContext' ->> 'issueId',
+              ${agentWakeupRequests.payload} -> '_wardmoteWakeContext' ->> 'taskId'
             )`,
                 graphIssueIds,
               ),
@@ -9182,8 +9182,8 @@ export function issueService(db: Db) {
           coalesce(
             wake.payload ->> 'issueId',
             wake.payload ->> 'taskId',
-            wake.payload -> '_paperclipWakeContext' ->> 'issueId',
-            wake.payload -> '_paperclipWakeContext' ->> 'taskId'
+            wake.payload -> '_wardmoteWakeContext' ->> 'issueId',
+            wake.payload -> '_wardmoteWakeContext' ->> 'taskId'
           )
         `;
         const rawWakeRows = Array.from(
@@ -11402,8 +11402,8 @@ export function issueService(db: Db) {
             .where(and(eq(agentWakeupRequests.companyId, receiptExisting.companyId),
               eq(agentWakeupRequests.requestedByActorType, "user"),
               sql`coalesce(${agentWakeupRequests.payload}->>'issueId', ${agentWakeupRequests.payload}->>'taskId',
-                ${agentWakeupRequests.payload}->'_paperclipWakeContext'->>'issueId',
-                ${agentWakeupRequests.payload}->'_paperclipWakeContext'->>'taskId') = ${id}`));
+                ${agentWakeupRequests.payload}->'_wardmoteWakeContext'->>'issueId',
+                ${agentWakeupRequests.payload}->'_wardmoteWakeContext'->>'taskId') = ${id}`));
         }
         // Reasserting Blocked or changing its blockers is a fresh decision even
         // when the status string stays the same. Invalidate recovery's prior
