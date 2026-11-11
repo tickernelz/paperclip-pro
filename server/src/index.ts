@@ -1136,7 +1136,7 @@ async function startServerWithDatabaseTeardown(
     void runLogRetention.tick().catch((err: unknown) => {
       logger.error({ err }, "scheduled run log retention failed");
     });
-  }, runLogRetention.intervalMs).unref();
+  }, runLogRetention.intervalMs);
 
   let heartbeatSchedulerInterval: ReturnType<typeof setInterval> | null = null;
   const heartbeatSchedulerInFlight = new Set<Promise<void>>();
