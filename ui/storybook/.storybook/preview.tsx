@@ -163,7 +163,7 @@ function installStorybookApiFixtures() {
     }
 
     if (url.pathname === "/api/health") {
-      return Response.json({ deploymentMode: "authenticated", localAiLoginSupported: onboardingFixtureState.environments === "local" });
+      return Response.json({ deploymentMode: "authenticated" });
     }
 
     if (url.pathname === "/api/instance/settings") {

@@ -468,6 +468,14 @@ export async function writeModelsYaml(file: string, text: string): Promise<void>
   }
 }
 
+function hasModelList(stdout: string): boolean {
+  try {
+    return Array.isArray((JSON.parse(stdout) as { models?: unknown }).models);
+  } catch {
+    return false;
+  }
+}
+
 export async function validateModelsYamlWithOmp(command: string, env: NodeJS.ProcessEnv, text: string): Promise<string[]> {
   const dir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-models-check-"));
   try {
@@ -478,17 +486,42 @@ export async function validateModelsYamlWithOmp(command: string, env: NodeJS.Pro
     delete checkEnv.PI_CONFIG_FILES;
     const result = await runOmp(command, ["models", "--json"], checkEnv, 60_000);
     const output = plain(`${result.stderr}\n${result.stdout.startsWith("{") ? "" : result.stdout}`);
-    if (!/models\.yml validation failed|Failed to load config file models|Schema error/i.test(output)) return [];
-    const errors = output.split("\n").map((line) => line.trim()).filter((line) => /Schema error|must be|required|invalid|Unexpected/i.test(line));
-    return errors.length ? errors.slice(0, 10) : [lastLine(output) || "OMP rejected models.yml"];
+    if (/models\.yml validation failed|Failed to load config file models|Schema error/i.test(output)) {
+      const errors = output.split("\n").map((line) => line.trim()).filter((line) => /Schema error|must be|required|invalid|Unexpected/i.test(line));
+      return errors.length ? errors.slice(0, 10) : [lastLine(output) || "OMP rejected models.yml"];
+    }
+    if (result.code !== 0) return [`omp models --json could not check the file (exit ${result.code ?? "none"}): ${lastLine(output) || "no output"}`];
+    if (!hasModelList(result.stdout)) return ["omp models --json printed no model list, so the file could not be checked. Update OMP and try again."];
+    return [];
   } finally {
     await fs.rm(dir, { recursive: true, force: true });
   }
 }
 
-type FetchLike = (url: string, init: { method: string; headers: Record<string, string>; body?: string; signal: AbortSignal }) => Promise<{ status: number; text(): Promise<string> }>;
+type FetchLike = (url: string, init: { method: string; headers: Record<string, string>; body?: string; signal: AbortSignal }) => Promise<{ status: number; body: ReadableStream<Uint8Array> | null }>;
 
 const PROBE_TIMEOUT_MS = 15_000;
+const PROBE_BODY_LIMIT_BYTES = 8 * 1024 * 1024;
+
+async function readLimitedBody(body: ReadableStream<Uint8Array> | null, limit: number): Promise<string> {
+  if (!body) return "";
+  const reader = body.getReader();
+  const decoder = new TextDecoder();
+  let text = "";
+  let size = 0;
+  try {
+    while (size < limit) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      const chunk = value.byteLength > limit - size ? value.subarray(0, limit - size) : value;
+      size += chunk.byteLength;
+      text += decoder.decode(chunk, { stream: true });
+    }
+    return text + decoder.decode();
+  } finally {
+    await reader.cancel().catch(() => undefined);
+  }
+}
 
 function joinUrl(base: string, suffix: string): string {
   return `${base.replace(/\/+$/, "")}/${suffix}`;
@@ -513,7 +546,7 @@ export async function probeCustomProvider(options: {
   const call = async (api: OmpCustomProviderProbeAttempt["api"], url: string, init: { method: string; headers: Record<string, string>; body?: string }) => {
     try {
       const response = await fetchImpl(url, { ...init, signal: AbortSignal.timeout(PROBE_TIMEOUT_MS) });
-      const body = await response.text().catch(() => "");
+      const body = await readLimitedBody(response.body, PROBE_BODY_LIMIT_BYTES).catch(() => "");
       const ok = response.status >= 200 && response.status < 300;
       return { attempt: { api, url, status: response.status, ok, detail: ok ? null : shortDetail(body) }, body };
     } catch (error) {

@@ -37,7 +37,7 @@ export const onboardingOmpLoginRequestSchema = z.object({
 export type OnboardingOmpLoginRequest = z.infer<typeof onboardingOmpLoginRequestSchema>;
 
 export const onboardingOmpLoginInputSchema = z.object({
-  value: z.string().trim().min(1).max(8_192),
+  value: z.string().trim().min(1).max(8_192).refine((value) => !/[\r\n]/.test(value), "Paste a single line: the address the sign-in page ended on, or the code it shows"),
 }).strict();
 export type OnboardingOmpLoginInput = z.infer<typeof onboardingOmpLoginInputSchema>;
 

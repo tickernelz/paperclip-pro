@@ -205,6 +205,19 @@ describe("OMP sign-in", () => {
     expect(later.body.state).toBe("succeeded");
   });
 
+  it("refuses a pasted value with line breaks so it cannot answer more than one OMP prompt", async () => {
+    const writes: string[] = [];
+    const child = scriptedOmp((fake, line) => {
+      writes.push(line);
+      fake.stdout.write("Paste the authorization code (or full redirect URL): ");
+    });
+    const { app } = await appWith({ probe: async () => probeOf("ready", "18.18.8"), spawnOmp: () => child as never });
+    const started = await request(app).post("/api/onboarding/omp/login").send({ provider: "Anthropic (Claude Pro/Max)" });
+    const res = await request(app).post(`/api/onboarding/omp/login/${started.body.id}/input`).send({ value: "code-a\n2" });
+    expect(res.status).toBe(400);
+    expect(writes).toEqual(["2"]);
+  });
+
   it("explains a pasted value OMP asks for again instead of repeating the prompt", async () => {
     const prompt = "Paste the authorization code (or full redirect URL): ";
     const child = scriptedOmp((fake, _line, index) => {
@@ -305,6 +318,23 @@ describe("OMP custom providers", () => {
       disableStrictTools: true,
       models: [{ id: "gpt-x", name: "GPT X", contextWindow: 200000, maxTokens: 32000 }],
     });
+  });
+
+  it("keeps both providers when two saves overlap", async () => {
+    let calls = 0;
+    const { app, file } = await setup(async () => {
+      calls += 1;
+      await new Promise((resolve) => setTimeout(resolve, 30));
+      return [];
+    });
+    const [first, second] = await Promise.all([
+      request(app).put("/api/onboarding/omp/custom-providers/one").send(INPUT),
+      request(app).put("/api/onboarding/omp/custom-providers/two").send(INPUT),
+    ]);
+    expect([first.status, second.status]).toEqual([200, 200]);
+    expect(calls).toBe(2);
+    const text = await fs.readFile(file, "utf8");
+    expect(text.match(/^ {2}[a-z-]+:$/gm)?.sort()).toEqual(["  keep-me:", "  one:", "  two:"]);
   });
 
   it("keeps the stored key and header values when an edit leaves them out", async () => {

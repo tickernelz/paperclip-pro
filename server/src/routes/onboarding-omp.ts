@@ -115,6 +115,18 @@ function defaultRunSsh(args: string[], timeoutMs: number): Promise<{ code: numbe
   });
 }
 
+const modelsYamlWrites = new Map<string, Promise<unknown>>();
+
+function serializeModelsYamlWrite<T>(file: string, task: () => Promise<T>): Promise<T> {
+  const result = (modelsYamlWrites.get(file) ?? Promise.resolve()).then(task);
+  const tail = result.catch(() => undefined);
+  modelsYamlWrites.set(file, tail);
+  void tail.then(() => {
+    if (modelsYamlWrites.get(file) === tail) modelsYamlWrites.delete(file);
+  });
+  return result;
+}
+
 function defaultDeps(): OnboardingOmpDeps {
   return {
     env: process.env,
@@ -374,16 +386,18 @@ export function onboardingOmpRoutes(overrides: Partial<OnboardingOmpDeps> = {}) 
     const command = await readyCommand();
     const env = deps.ompEnv();
     const file = await modelsFile(command, env);
-    const before = await readModelsYaml(file);
-    let next: string;
-    try {
-      next = upsertCustomProviderYaml(before, name, req.body as OmpCustomProviderInput);
-    } catch (error) {
-      throw unprocessable((error as Error).message);
-    }
-    const problems = await deps.validateModelsYaml(command, env, next);
-    if (problems.length) throw unprocessable(`OMP rejected this provider: ${problems.join("; ")}`, { problems });
-    await writeModelsYaml(file, next);
+    const next = await serializeModelsYamlWrite(file, async () => {
+      let text: string;
+      try {
+        text = upsertCustomProviderYaml(await readModelsYaml(file), name, req.body as OmpCustomProviderInput);
+      } catch (error) {
+        throw unprocessable((error as Error).message);
+      }
+      const problems = await deps.validateModelsYaml(command, env, text);
+      if (problems.length) throw unprocessable(`OMP rejected this provider: ${problems.join("; ")}`, { problems });
+      await writeModelsYaml(file, text);
+      return text;
+    });
     refreshModelsQuietly("OMP model refresh after saving a custom provider failed");
     res.json(listCustomProviders(next, file, env));
   });
@@ -394,13 +408,16 @@ export function onboardingOmpRoutes(overrides: Partial<OnboardingOmpDeps> = {}) 
     const command = await readyCommand();
     const env = deps.ompEnv();
     const file = await modelsFile(command, env);
-    let next: string;
-    try {
-      next = removeCustomProviderYaml(await readModelsYaml(file), name);
-    } catch (error) {
-      throw notFound((error as Error).message);
-    }
-    await writeModelsYaml(file, next);
+    const next = await serializeModelsYamlWrite(file, async () => {
+      let text: string;
+      try {
+        text = removeCustomProviderYaml(await readModelsYaml(file), name);
+      } catch (error) {
+        throw notFound((error as Error).message);
+      }
+      await writeModelsYaml(file, text);
+      return text;
+    });
     refreshModelsQuietly("OMP model refresh after removing a custom provider failed");
     res.json(listCustomProviders(next, file, env));
   });
