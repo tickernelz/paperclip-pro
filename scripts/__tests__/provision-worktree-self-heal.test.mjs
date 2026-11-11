@@ -442,7 +442,7 @@ test("repairs an unhealthy base install under the lock and then uses the CLI", (
 
   // The CLI's health is controlled by a flag file, and a fake `pnpm install`
   // creates that flag — modeling a forced reinstall that relinks the store.
-  const baseCwd = makeTempDir("paperclip-provision-repair-base-");
+  const baseCwd = makeTempDir("wardmote-provision-repair-base-");
   const healthFlag = path.join(baseCwd, "cli-healthy.flag");
   const runnerPath = path.join(baseCwd, "cli", "node_modules", "tsx", "dist", "cli.mjs");
   const entryPath = path.join(baseCwd, "cli", "src", "index.ts");
@@ -495,7 +495,7 @@ exit 1
   assert.match(installs[0], /--force/);
   assert.match(installs[0], /--frozen-lockfile/);
   assert.ok(
-    fs.existsSync(path.join(baseCwd, ".git", "paperclip-provision-repair.lock")),
+    fs.existsSync(path.join(baseCwd, ".git", "wardmote-provision-repair.lock")),
     "expected the repair lock file inside the resolved git dir",
   );
 });

@@ -4,15 +4,15 @@ set -euo pipefail
 
 base_cwd="${WARDMOTE_WORKSPACE_BASE_CWD:?WARDMOTE_WORKSPACE_BASE_CWD is required}"
 worktree_cwd="${WARDMOTE_WORKSPACE_CWD:?WARDMOTE_WORKSPACE_CWD is required}"
-paperclip_home="${WARDMOTE_HOME:-}"
-if [ -z "$paperclip_home" ]; then
-  if [ -d "$HOME/.paperclip-pro" ]; then paperclip_home="$HOME/.paperclip-pro"; else paperclip_home="$HOME/.wardmote"; fi
+wardmote_home="${WARDMOTE_HOME:-}"
+if [ -z "$wardmote_home" ]; then
+  wardmote_home="$HOME/.wardmote"
 fi
-paperclip_instance_id="${WARDMOTE_INSTANCE_ID:-default}"
-paperclip_dir="$worktree_cwd/.wardmote"
-worktree_config_path="$paperclip_dir/config.json"
-seed_manifest_path="$paperclip_dir/seed-manifest.json"
-seed_empty_path="$paperclip_dir/seed-empty"
+wardmote_instance_id="${WARDMOTE_INSTANCE_ID:-default}"
+wardmote_dir="$worktree_cwd/.wardmote"
+worktree_config_path="$wardmote_dir/config.json"
+seed_manifest_path="$wardmote_dir/seed-manifest.json"
+seed_empty_path="$wardmote_dir/seed-empty"
 
 if [[ ! -d "$base_cwd" ]]; then
   echo "Base workspace does not exist: $base_cwd" >&2
@@ -89,7 +89,7 @@ if [[ -L "$base_cwd/.wardmote" && ! -d "$base_cwd/.wardmote" ]]; then
 fi
 source_config_args=()
 if [[ ! -e "$base_cwd/.wardmote/config.json" && ! -L "$base_cwd/.wardmote/config.json" ]]; then
-  source_config_path="${WARDMOTE_CONFIG:-$paperclip_home/instances/$paperclip_instance_id/config.json}"
+  source_config_path="${WARDMOTE_CONFIG:-$wardmote_home/instances/$wardmote_instance_id/config.json}"
   # A human may invoke this after sourcing `worktree env`, which points
   # WARDMOTE_CONFIG at the target. Naming the target as its own source is never
   # right, so leave the source to the CLI in that case.
@@ -129,7 +129,7 @@ repair_base_workspace_install() {
   if command -v flock >/dev/null 2>&1 && [[ -d "$repair_lock_dir" ]]; then
     (
       cd "$base_cwd" || exit 1
-      exec 9>"$repair_lock_dir/paperclip-provision-repair.lock"
+      exec 9>"$repair_lock_dir/wardmote-provision-repair.lock"
       flock 9
       if base_cli_healthy; then
         echo "Base workspace CLI became healthy while waiting for the repair lock; skipping reinstall." >&2

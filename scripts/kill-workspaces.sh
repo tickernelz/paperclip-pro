@@ -62,16 +62,15 @@ append_runtime_dir() {
   fi
 }
 
-paperclip_home="$(expand_home "${WARDMOTE_HOME:-}")"
-if [ -z "$paperclip_home" ]; then
-  if [ -d "$HOME/.paperclip-pro" ]; then paperclip_home="$HOME/.paperclip-pro"; else paperclip_home="$HOME/.wardmote"; fi
+wardmote_home="$(expand_home "${WARDMOTE_HOME:-}")"
+if [ -z "$wardmote_home" ]; then
+  wardmote_home="$HOME/.wardmote"
 fi
-paperclip_instance_id="${WARDMOTE_INSTANCE_ID:-default}"
-append_runtime_dir "$paperclip_home/instances/$paperclip_instance_id/runtime-services"
+wardmote_instance_id="${WARDMOTE_INSTANCE_ID:-default}"
+append_runtime_dir "$wardmote_home/instances/$wardmote_instance_id/runtime-services"
 
 if [[ "${WARDMOTE_KILL_WORKSPACES_ONLY_CURRENT:-}" != "1" ]]; then
   for dir in \
-    "$HOME"/.paperclip-pro/instances/*/runtime-services \
     "$HOME"/.wardmote/instances/*/runtime-services \
     "$HOME"/.wardmote-worktrees/instances/*/runtime-services \
     "$REPO_ROOT"/.wardmote/instances/*/runtime-services \
