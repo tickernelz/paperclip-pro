@@ -28,7 +28,7 @@ function fail(condition: unknown, reason: string): asserts condition { if (!cond
 export function readActiveStopCaller(health: unknown, authentication: unknown): ActiveStopCaller {
   const session = rec(rec(authentication).session);
   fail(rec(health).deploymentMode === "local_trusted" && session.userId === "local-board"
-    && session.id === "paperclip:local_implicit:local-board", "expected isolated board caller missing");
+    && session.id === "wardmote:local_implicit:local-board", "expected isolated board caller missing");
   return { type: "board", userId: "local-board", source: "local_implicit" };
 }
 function isActiveStopCaller(caller: unknown): caller is ActiveStopCaller {
