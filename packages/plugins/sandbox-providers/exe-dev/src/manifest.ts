@@ -155,7 +155,7 @@ const manifest: WardmotePluginManifestV1 = {
           namePrefix: {
             type: "string",
             description: "Optional prefix used when generating VM names.",
-            default: "paperclip",
+            default: "wardmote",
             "x-wardmote-advanced": true,
             "x-wardmote-group": "VM creation",
           },

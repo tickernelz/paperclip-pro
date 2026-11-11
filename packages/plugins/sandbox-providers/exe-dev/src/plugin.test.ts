@@ -95,7 +95,7 @@ describe("exe.dev sandbox provider plugin", () => {
       normalizedConfig: {
         apiKey: null,
         apiUrl: "https://exe.dev/exec",
-        namePrefix: "paperclip-sandbox",
+        namePrefix: "wardmote-sandbox",
         image: "ubuntu:22.04",
         command: null,
         cpu: 4,
@@ -323,8 +323,8 @@ describe("exe.dev sandbox provider plugin", () => {
   it("copies the source VM with exe.dev cp instead of creating a new VM", async () => {
     fetchMock.mockResolvedValueOnce(
       new Response(JSON.stringify({
-        vm_name: "paperclip-env1-run1",
-        ssh_dest: "paperclip-env1-run1.exe.xyz",
+        vm_name: "wardmote-env1-run1",
+        ssh_dest: "wardmote-env1-run1.exe.xyz",
         status: "running",
       }), { status: 200 }),
     );
@@ -348,9 +348,9 @@ describe("exe.dev sandbox provider plugin", () => {
     });
 
     expect(String(fetchMock.mock.calls[0]?.[1]?.body ?? "")).toBe(
-      "cp 'golden-vm' 'paperclip-env1-run1' --json --cpu='4' --memory='8GB' --disk='40GB'",
+      "cp 'golden-vm' 'wardmote-env1-run1' --json --cpu='4' --memory='8GB' --disk='40GB'",
     );
-    expect(lease).toMatchObject({ providerLeaseId: "paperclip-env1-run1" });
+    expect(lease).toMatchObject({ providerLeaseId: "wardmote-env1-run1" });
   });
 
   it("rejects VM creation settings that exe.dev cp cannot apply when sourceVm is set", async () => {
