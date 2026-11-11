@@ -9,7 +9,7 @@ import { TRANSCRIPT_REQUEST_TIMEOUT_MS } from "./read-transcript-request";
 
 const { useQueryMock, logMock, buildTranscriptMock } = vi.hoisted(() => ({
   useQueryMock: vi.fn(() => ({ data: { censorUsernameInLogs: false } })),
-  logMock: vi.fn(async () => ({ runId: "run-1", store: "memory", logRef: "log-1", content: "", nextOffset: 0 })),
+  logMock: vi.fn(async () => ({ runId: "run-1", store: "memory", logRef: "log-1", content: "", nextOffset: 0 as number | undefined })),
   buildTranscriptMock: vi.fn((chunks: unknown[], _parserSource?: unknown, _opts?: unknown) => chunks),
 }));
 
@@ -328,7 +328,7 @@ describe("useLiveRunTranscripts", () => {
   });
 
   it("reads each settled terminal run once while a running sibling keeps growing", async () => {
-    logMock.mockImplementation(async () => ({ runId: "run", store: "memory", logRef: "log", content: "" }));
+    logMock.mockImplementation(async () => ({ runId: "run", store: "memory", logRef: "log", content: "", nextOffset: undefined }));
     const settled = Array.from({ length: 87 }, (_, index) => ({
       id: `run-done-${index}`,
       status: "succeeded",
@@ -375,7 +375,7 @@ describe("useLiveRunTranscripts", () => {
       return new Promise((resolve) => {
         releases.push(() => {
           inFlight -= 1;
-          resolve({ runId: "run", store: "memory", logRef: "log", content: "" });
+          resolve({ runId: "run", store: "memory", logRef: "log", content: "", nextOffset: undefined });
         });
       });
     });
