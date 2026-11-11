@@ -7,7 +7,7 @@ Both are free-form, internally attributed records, not anonymous feedback.
 ## Agent entry points
 
 Skill-capable legacy adapters automatically receive `complain` and
-`suggestion-box` alongside the `paperclip` operational skill, including existing
+`suggestion-box` alongside the `wardmote` operational skill, including existing
 agents with empty optional-skill selections. The shared helper lives in that
 operational skill at `scripts/submit-agent-commentary.mjs`. It reads the body
 from stdin and uses the existing `WARDMOTE_API_URL`, `WARDMOTE_API_KEY`,
@@ -24,7 +24,7 @@ Submit before finishing the run.
 Instructions closely adapt Warp's
 [complain](https://github.com/warpdotdev/common-skills/blob/main/.agents/skills/complain/SKILL.md)
 and [suggestion-box](https://github.com/warpdotdev/common-skills/blob/main/.agents/skills/suggestion-box/SKILL.md)
-skills, with their MIT notices included. Paperclip changes the transport,
+skills, with their MIT notices included. Wardmote changes the transport,
 attribution, suggestion form, and size limit. Agents submit proactively when
 warranted, without routine previews or announcements, then continue working.
 Answer truthfully if a user asks about feedback or submitted content. Operators

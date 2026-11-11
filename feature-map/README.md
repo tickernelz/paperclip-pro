@@ -1,4 +1,4 @@
-# Paperclip feature map
+# Wardmote feature map
 
 Start here when reproducing a user-facing bug, verifying a change, or deciding
 which surfaces a fix must cover. Each recipe describes what a person can do,
@@ -130,7 +130,7 @@ discriminating result. Include task/run/request IDs when relevant, without secre
 A fix is verified across its affected surfaces only when each has evidence or
 an explicit reason it does not apply. Shared code alone does not prove parity.
 Keep product regressions visible; do not change the recipe to bless a failure.
-For Paperclip-assigned work, attach evidence through the
+For Wardmote-assigned work, attach evidence through the
 [artifact workflow](../doc/AGENT-ARTIFACTS.md).
 
 ## Inventory and remaining depth
@@ -174,4 +174,4 @@ Each recipe starts with an H1 and a user-visible description, then exactly:
 
 The format is inspired by
 [Omnigent's feature map](https://github.com/omnigent-ai/omnigent/tree/91acfbbb59f6fc210ff95a9e9428aadd62e06582/feature-map).
-Paperclip's recipes and checks follow its own task model and test infrastructure.
+Wardmote's recipes and checks follow its own task model and test infrastructure.

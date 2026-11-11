@@ -11,7 +11,7 @@
 > `npx` provides. See
 > [INSTALLING.md](INSTALLING.md) and [`../docs/fork/OPERATIONS.md`](../docs/fork/OPERATIONS.md).
 
-Paperclip CLI now supports both:
+Wardmote CLI now supports both:
 
 - installation and lifecycle management (`install`, `uninstall`, `update`, `upgrade`, `service`)
 - instance setup/diagnostics (`onboard`, `doctor`, `configure`, `env`, `allowed-hostname`, `env-lab`)
@@ -162,7 +162,7 @@ wardmote run --instance dev
 ## Isolated Manual Test Drives
 
 `wardmote test-drive` creates or reuses an isolated local data directory,
-ensures one usable CEO agent exists in a fresh database, starts Paperclip in the
+ensures one usable CEO agent exists in a fresh database, starts Wardmote in the
 foreground, and opens the browser after initialization succeeds. It never
 installs a background service and never creates a goal, project, issue, task,
 or heartbeat.
@@ -182,14 +182,14 @@ Defaults are `Test Company`, a `CEO` agent with the `ceo` role, and the Claude
 harness. Without `--data-dir`, every invocation creates a unique OS temporary
 directory and prints its absolute path. The directory is retained after exit
 for inspection. An explicit data directory is reused and is never reset. The
-reused directory must use Paperclip's embedded database; `DATABASE_URL`,
+reused directory must use Wardmote's embedded database; `DATABASE_URL`,
 `DATABASE_MIGRATION_URL`, and configs with `database.mode: postgres` are
 rejected so test-drive cannot mutate an external database. The server also
 ignores the invocation directory's `.env` for test-drive launches, while still
 loading the selected instance's own environment file. Reused directories also
-retain the normal guard against colliding with a managed Paperclip service. The
+retain the normal guard against colliding with a managed Wardmote service. The
 server uses the first available loopback port at or above `3100`, so an
-unrelated local Paperclip process can remain running.
+unrelated local Wardmote process can remain running.
 
 Harness configuration:
 
@@ -220,10 +220,10 @@ MY_ROUTER_KEY=... npx @tickernelz/wardmote test-drive \
   --api-key-env MY_ROUTER_KEY
 ```
 
-Credentials are stored through Paperclip's user-secret reference path and are
-redacted from Paperclip command output. Paperclip does not print `--api-key`,
+Credentials are stored through Wardmote's user-secret reference path and are
+redacted from Wardmote command output. Wardmote does not print `--api-key`,
 and it removes the value from its JavaScript argument view immediately after
-Commander parses it. Paperclip does not put the raw argument list in telemetry,
+Commander parses it. Wardmote does not put the raw argument list in telemetry,
 API metadata, or diagnostics. Command wrappers, operating-system process
 listings, and shell history can still expose values passed in arguments. This
 is an explicit tradeoff for the local test-drive workflow. Prefer an exported
@@ -342,7 +342,7 @@ API base resolution order:
 1. `--api-base <url>`
 2. `WARDMOTE_API_URL`
 3. selected context profile `apiBase`
-4. local Paperclip config server port
+4. local Wardmote config server port
 5. `http://localhost:3100`
 
 Connection failures include the attempted URL and a `GET /api/health` check hint.
@@ -363,8 +363,8 @@ Profiles store token env-var names, not plaintext tokens. The wizard prints shel
 Use `--data-dir` on any CLI command to isolate all default local state (config/context/db/logs/storage/secrets) away from `~/.wardmote`:
 
 ```sh
-npx @tickernelz/wardmote run --data-dir ./tmp/paperclip-dev
-npx @tickernelz/wardmote issue list --data-dir ./tmp/paperclip-dev
+npx @tickernelz/wardmote run --data-dir ./tmp/wardmote-dev
+npx @tickernelz/wardmote issue list --data-dir ./tmp/wardmote-dev
 ```
 
 ## Context Profiles
@@ -447,7 +447,7 @@ npx @tickernelz/wardmote issue force-release <issue-id>
 
 `issue create` sent from an agent run bound to an ordinary execution task is parented under that task when `--parent-id` is omitted; pass `--standalone` to create intentionally top-level work (`parentId: null`). The two flags are mutually exclusive.
 
-Issue subresources are exposed as Paperclip API wrappers. Commands that map to broad server schemas accept JSON payloads and validate them with shared schemas before sending.
+Issue subresources are exposed as Wardmote API wrappers. Commands that map to broad server schemas accept JSON payloads and validate them with shared schemas before sending.
 
 ```sh
 npx @tickernelz/wardmote issue child:create <issue-id> --payload-json '{"title":"Child task"}'
@@ -564,7 +564,7 @@ npx @tickernelz/wardmote agent runtime-state <agent-id>
 npx @tickernelz/wardmote agent runtime-state:reset-session <agent-id> [--task-key <key>]
 npx @tickernelz/wardmote agent task-sessions <agent-id>
 npx @tickernelz/wardmote agent skills <agent-id>
-npx @tickernelz/wardmote agent skills:sync <agent-id> --desired-skills paperclip,github --mode add
+npx @tickernelz/wardmote agent skills:sync <agent-id> --desired-skills wardmote,github --mode add
 npx @tickernelz/wardmote agent instructions-path:update <agent-id> --payload-json '{"path":"/path/to/AGENTS.md"}'
 npx @tickernelz/wardmote agent instructions-bundle <agent-id>
 npx @tickernelz/wardmote agent instructions-bundle:update <agent-id> --payload-json '{"mode":"managed"}'
@@ -573,12 +573,12 @@ npx @tickernelz/wardmote agent instructions-file:put <agent-id> --path AGENTS.md
 npx @tickernelz/wardmote agent instructions-file:delete <agent-id> --path AGENTS.md
 ```
 
-Agent config, instructions, skills, project env, environment, secret, and workspace edits affect the next run. Active runs finish with the config they started with. When a saved session, reused workspace, or sandbox lease no longer matches the effective next-run config, Paperclip may start fresh execution and records non-sensitive freshness categories in run result JSON and workspace operation logs.
+Agent config, instructions, skills, project env, environment, secret, and workspace edits affect the next run. Active runs finish with the config they started with. When a saved session, reused workspace, or sandbox lease no longer matches the effective next-run config, Wardmote may start fresh execution and records non-sensitive freshness categories in run result JSON and workspace operation logs.
 
-`agent local-cli` is the quickest way to run local Claude/Codex manually as a Paperclip agent:
+`agent local-cli` is the quickest way to run local Claude/Codex manually as a Wardmote agent:
 
 - creates a new long-lived agent API key
-- installs missing Paperclip skills into `~/.codex/skills` and `~/.claude/skills`
+- installs missing Wardmote skills into `~/.codex/skills` and `~/.claude/skills`
 - prints `export ...` lines for `WARDMOTE_API_URL`, `WARDMOTE_COMPANY_ID`, `WARDMOTE_AGENT_ID`, and `WARDMOTE_API_KEY`
 
 Example for shortname-based local setup:
@@ -609,7 +609,7 @@ npx @tickernelz/wardmote token board revoke <key-id>
 
 ## Run Commands
 
-`wardmote run` without a subcommand still bootstraps and starts a local Paperclip instance. The subcommands below inspect and control API heartbeat runs.
+`wardmote run` without a subcommand still bootstraps and starts a local Wardmote instance. The subcommands below inspect and control API heartbeat runs.
 
 ```sh
 npx @tickernelz/wardmote run list --company-id <company-id> [--agent-id <agent-id>] [--limit 50]
@@ -646,7 +646,7 @@ npx @tickernelz/wardmote routine trigger:fire <public-id> [--payload-json '{...}
 
 ## Prompt Handoff
 
-Prompt handoff creates Paperclip work. It does not create a chat session.
+Prompt handoff creates Wardmote work. It does not create a chat session.
 
 ```sh
 npx @tickernelz/wardmote agent-prompt <agent-name-or-id> <agent-api-key> "Prompt here"
@@ -672,7 +672,7 @@ By default the command creates a `todo` issue assigned to the target agent and w
    with files on disk and reports an `AgentSkillSnapshot` (`skills agent list`).
    `skills agent sync` triggers this automatically after updating desired state.
 
-Required Paperclip runtime skills (heartbeat, etc.) remain server-enforced and
+Required Wardmote runtime skills (heartbeat, etc.) remain server-enforced and
 are added on top of whatever the desired set names.
 
 Company skill mutations (`skills install`, `skills import`, `skills create`, and
@@ -684,7 +684,7 @@ also creates agents.
 
 ### Catalog (app-shipped skills)
 
-The Paperclip app ships a curated catalog under `@tickernelz/wardmote-skills-catalog`.
+The Wardmote app ships a curated catalog under `@tickernelz/wardmote-skills-catalog`.
 Browse and inspect commands never mutate company state; `install` adds a catalog
 skill to the company library.
 
@@ -772,7 +772,7 @@ npx @tickernelz/wardmote skills agent clear <agent-id-or-shortname> --yes --comp
 `AgentSkillSnapshot`. `add` preserves all unnamed assignments, `remove` deletes
 only named assignments, and `replace` destructively overwrites the complete
 non-required desired skill set.
-`skills agent clear` sends an empty desired list. Required Paperclip skills are
+`skills agent clear` sends an empty desired list. Required Wardmote skills are
 still enforced by the server in both cases.
 
 ### Notes
@@ -847,10 +847,10 @@ npx @tickernelz/wardmote secrets migrate-inline-env --company-id <company-id> [-
 
 Secret listing and declarations never print secret values. `create` accepts
 `--value-env` so shell history does not capture the value. `link` records
-provider-owned references without copying the secret value into Paperclip.
+provider-owned references without copying the secret value into Wardmote.
 For AWS-backed secrets, `secrets doctor` reports missing non-secret provider
 env and the expected AWS SDK runtime credential source; do not store AWS
-bootstrap credentials in Paperclip secrets.
+bootstrap credentials in Wardmote secrets.
 
 Per-company provider vaults (multiple vault instances per provider, default
 vault selection, coming-soon GCP/Vault) can be configured from the board UI under
@@ -1121,7 +1121,7 @@ npx @tickernelz/wardmote heartbeat run --agent-id <agent-id> [--api-base http://
 
 ## Local Storage Defaults
 
-Local Paperclip data lives under the selected instance root. `WARDMOTE_HOME` chooses the home directory and `WARDMOTE_INSTANCE_ID` chooses the instance.
+Local Wardmote data lives under the selected instance root. `WARDMOTE_HOME` chooses the home directory and `WARDMOTE_INSTANCE_ID` chooses the instance.
 
 ```text
 ~/.wardmote/                                     # WARDMOTE_HOME

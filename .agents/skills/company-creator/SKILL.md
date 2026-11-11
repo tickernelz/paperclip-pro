@@ -116,7 +116,7 @@ Create the directory structure and all files. Follow the spec's conventions exac
 │   └── <slug>/TASK.md        (if tasks are needed)
 ├── skills/
 │   └── <slug>/SKILL.md       (if custom skills are needed)
-└── .wardmote.yaml            (Paperclip vendor extension)
+└── .wardmote.yaml            (Wardmote vendor extension)
 ```
 
 **Rules:**
@@ -189,13 +189,13 @@ Write all files, then give a brief summary:
 
 ## .wardmote.yaml Guidelines
 
-The `.wardmote.yaml` file is the Paperclip vendor extension. It configures adapters and env inputs per agent.
+The `.wardmote.yaml` file is the Wardmote vendor extension. It configures adapters and env inputs per agent.
 
 ### Adapter Rules
 
-**Do not specify an adapter unless the repo or user context warrants it.** If you don't know what adapter the user wants, omit the adapter block entirely — Paperclip will use its default. Specifying an unknown adapter type causes an import error.
+**Do not specify an adapter unless the repo or user context warrants it.** If you don't know what adapter the user wants, omit the adapter block entirely — Wardmote will use its default. Specifying an unknown adapter type causes an import error.
 
-Paperclip's supported adapter types (these are the ONLY valid values):
+Wardmote's supported adapter types (these are the ONLY valid values):
 - `omp_local` — OMP coding agent
 
 Only set an adapter when:

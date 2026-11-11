@@ -1,11 +1,11 @@
 ---
 name: add-product-e2e-eval
-description: Add or extend a Paperclip full-stack runner E2E workflow, fixture, matcher, or report evidence path for local or Daytona execution.
+description: Add or extend a Wardmote full-stack runner E2E workflow, fixture, matcher, or report evidence path for local or Daytona execution.
 ---
 
 # Add a Product E2E Eval
 
-Use this skill for **Product E2E Evals**: real Chromium, Paperclip server,
+Use this skill for **Product E2E Evals**: real Chromium, Wardmote server,
 database, runner, provider, and optionally Daytona. Everyday Workflows are in
 this family even when their packaged results are imported into Evalbook. Runner
 protocol cases against the mock control plane belong in

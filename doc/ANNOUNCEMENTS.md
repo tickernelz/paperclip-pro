@@ -14,7 +14,7 @@ renders it with native components.
 Announcements are independent of telemetry. Feed/media requests originate from
 the instance without account IDs, company data, cookies or event tracking. The
 host sees ordinary server network request metadata. The browser requests only
-its own Paperclip API.
+its own Wardmote API.
 
 ## Authoring and publishing
 
@@ -25,7 +25,7 @@ The shared `announcementManifestSchema` defines the format:
   "schemaVersion": 1,
   "announcement": {
     "id": "2026-09-projects",
-    "eyebrow": "New in Paperclip",
+    "eyebrow": "New in Wardmote",
     "title": "Your next idea starts here",
     "description": "Bring your agents and work together in a project.",
     "secondaryLink": { "kind": "external", "label": "Learn more", "url": "https://github.com/tickernelz/wardmote" },
@@ -87,7 +87,7 @@ ETags improve fetching but never determine redisplay.
 
 An announcement can show a self-contained **HTML/CSS animation** in its hero
 area. The headline, description, close button and actions remain native
-Paperclip controls. Add an `animation` alongside the required static `image`:
+Wardmote controls. Add an `animation` alongside the required static `image`:
 
 ```json
 "image": { "path": "assets/<image-sha256>.png", "alt": "A team working together" },
@@ -106,7 +106,7 @@ requests and imports are blocked by CSP; keep all styling self-contained.
 The publisher and server use the same strict DOMPurify allowlist and reject
 unsupported markup rather than publishing a silently changed animation.
 
-Paperclip verifies the digest, validates the HTML, and renders the result in an
+Wardmote verifies the digest, validates the HTML, and renders the result in an
 opaque sandboxed iframe with no permissions. A Content Security Policy blocks
 scripts and network resources both inside the card and on direct API visits.
 The browser fetches HTML from its own authenticated instance; it never loads
@@ -116,12 +116,12 @@ See [iframe sandboxing](https://developer.mozilla.org/en-US/docs/Web/HTML/Refere
 
 The animation plays automatically without playback controls. The static image
 stays visible while loading and on failure. With reduced motion enabled,
-Paperclip does not request or play the animation. Also include a
+Wardmote does not request or play the animation. Also include a
 `prefers-reduced-motion` CSS rule in authored documents for standalone previews.
 Animations share the feed's constrained host, three-second server timeout,
 bounded cache, request deduplication and fifteen-minute failure cooldown.
 Dismissal and ID reuse rules are identical for animated and static cards.
-Older Paperclip builds that do not recognize `animation` treat that feed as
+Older Wardmote builds that do not recognize `animation` treat that feed as
 unsupported and quietly show no card.
 
 The complete authoring example is `announcements/examples/animated/`. Preview
@@ -148,18 +148,18 @@ cannot overwrite the production manifest. With no source directory it uses
 `announcements/examples/staging/`, including a sample banner. Commands default
 to dry-run unless `--publish` is supplied.
 
-For Paperclip's existing preview host, use the branch preview area that
+For Wardmote's existing preview host, use the branch preview area that
 CloudFront already has permission to read:
 
 ```sh
-aws sso login --profile paperclip-dev
-export WARDMOTE_PAGE_AWS_PROFILE=paperclip-dev
+aws sso login --profile wardmote-dev
+export WARDMOTE_PAGE_AWS_PROFILE=wardmote-dev
 export WARDMOTE_PAGE_BUCKET=paperclipai-runner-e2e-history-078455283791-us-east-1
 export WARDMOTE_PAGE_BASE_URL=https://d1p6rlowie26tp.cloudfront.net
 export WARDMOTE_PAGE_DEFAULT_PREFIX=storybook/branches/codex-announcements
 
 # Copy the public fixture into an ignored directory and edit current.json there.
-mkdir -p .paperclip
+mkdir -p .wardmote
 cp -R announcements/examples/staging .paperclip/announcement-preview
 node cli/node_modules/tsx/dist/cli.mjs scripts/publish-announcements.ts .paperclip/announcement-preview --staging my-preview --dry-run
 node cli/node_modules/tsx/dist/cli.mjs scripts/publish-announcements.ts .paperclip/announcement-preview --staging my-preview --publish
@@ -249,7 +249,7 @@ removes a visible card when its deadline arrives.
 
 ## Timing and persistence
 
-Show after three seconds when opening or returning to Paperclip, after company
+Show after three seconds when opening or returning to Wardmote, after company
 selection and onboarding. Dialogs and toasts take priority. Phones show it above
 bottom navigation. No automatic timeout, outside-click dismissal or carousel.
 Tab visibility controls the return check: moving focus to the address bar or

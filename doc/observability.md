@@ -6,7 +6,7 @@ instrumentation contracts; see the
 [Telemetry Data Contract](../packages/shared/src/telemetry/README.md) for the
 separate first-party event system.
 
-Paperclip ships with **opt-in** OpenTelemetry auto-instrumentation for the
+Wardmote ships with **opt-in** OpenTelemetry auto-instrumentation for the
 server process. When activated it produces **traces only** — no metrics and no
 logs are exported by this integration.
 
@@ -111,7 +111,7 @@ export OTEL_EXPORTER_OTLP_ENDPOINT="http://otel-collector:4317"
 export OTEL_EXPORTER_OTLP_PROTOCOL="grpc"
 
 # Optional — service identity attached to every span.
-export OTEL_SERVICE_NAME="paperclip"
+export OTEL_SERVICE_NAME="wardmote"
 export OTEL_SERVICE_VERSION="2026.5.0"
 ```
 
@@ -133,8 +133,8 @@ returns a value:
    stamp. A failure here is not fatal.
 3. **The `OTEL_SERVICE_VERSION` environment variable.** This is the fallback
    for a build with no stamp and no reachable git — for example a tarball
-   build. `OTEL_SERVICE_VERSION` is a Paperclip-specific variable, not an
-   OpenTelemetry SDK variable, so Paperclip controls this precedence.
+   build. `OTEL_SERVICE_VERSION` is a Wardmote-specific variable, not an
+   OpenTelemetry SDK variable, so Wardmote controls this precedence.
 4. **`"unknown"`** when no source returns a value.
 
 The server logs the resolved `service.version` once at startup, so an operator
@@ -163,7 +163,7 @@ Those sections follow below.
 
 ## Native Runner Trace Spans
 
-Paperclip Runner task runs emit a single foldable OpenTelemetry trace. This is
+Wardmote Runner task runs emit a single foldable OpenTelemetry trace. This is
 the native-run trace schema version `2`. `task.run` is the only full-run root;
 every other native span carries a real OpenTelemetry parent context rather than
 only a descriptive `parentName` field.
@@ -264,7 +264,7 @@ run-log copy is unaffected.
 
 ## Sentry Error Monitoring
 
-Paperclip ships with **opt-in** Sentry error monitoring for the server
+Wardmote ships with **opt-in** Sentry error monitoring for the server
 process and the browser app. The operator activates it with two
 environment variables: `SENTRY_DSN_FRONTEND` for the browser and
 `SENTRY_DSN_BACKEND` for the server. Each variable is optional. A
@@ -391,7 +391,7 @@ loaded bundle, even if the server has since deployed another version.
 The feature uses built-in Sentry options only.
 
 - `sendDefaultPii` is `false`, on both runtimes.
-- `tracesSampleRate` is `0`, on both runtimes. Paperclip sends no
+- `tracesSampleRate` is `0`, on both runtimes. Wardmote sends no
   performance trace and no profile.
 - There is no `beforeSend` hook and no custom filter, on either runtime.
 
@@ -407,7 +407,7 @@ server event captured inside a real HTTP request handler carries no
 request field").
 
 The reason is `skipOpenTelemetrySetup: true`. This feature sets that
-option so it never fights Paperclip's separate, independently opt-in
+option so it never fights Wardmote's separate, independently opt-in
 OpenTelemetry feature for control of the global tracer. The same option
 turns off Sentry's per-request context tracking. Sentry's built-in
 `RequestData` integration needs that tracking to find a URL, a method, a
@@ -950,13 +950,13 @@ Two controls belong to the operator. This feature ships neither one.
 
 ## Sandbox Startup Trace Spans
 
-Paperclip opens OpenTelemetry spans on the sandbox start path. These spans are
-an Observability surface. They are not Paperclip Telemetry events. The
+Wardmote opens OpenTelemetry spans on the sandbox start path. These spans are
+an Observability surface. They are not Wardmote Telemetry events. The
 generated telemetry contract does not cover them, so this section is their
 canonical contract.
 
-The spans are opt-in. Paperclip exports them only when an OTLP endpoint is
-configured. With no endpoint the whole span path is a no-op. Paperclip opens the
+The spans are opt-in. Wardmote exports them only when an OTLP endpoint is
+configured. With no endpoint the whole span path is a no-op. Wardmote opens the
 spans only for a run that targets a remote sandbox. A local run and an SSH run
 stay out of these spans.
 
@@ -971,7 +971,7 @@ value:
 - An image id, a sandbox id, and a lease id ride only as a non-reversible short
   hash.
 
-Each numeric attribute is finite. Paperclip omits an attribute when its value is
+Each numeric attribute is finite. Wardmote omits an attribute when its value is
 absent, never a misleading `0`.
 
 ### Spans
@@ -989,7 +989,7 @@ absent, never a misleading `0`.
 | `stage.asset.<key>`                   | One inbound asset stage task inside `stage.sync`. It packs and uploads one managed-home asset. The `<key>` segment is the asset key.                       | `stage.sync`                    |
 | `stage.project.<id>`                  | One inbound referenced-project stage task inside `stage.sync`. It uploads one referenced project. The `<id>` segment is the project id.                    | `stage.sync`                    |
 | `pack`                                | Host-side workspace tarball build inside the `stage.workspace` task.                                                                                       | `stage.workspace`               |
-| `bridge.paperclip`                    | Paperclip bridge start step.                                                                                                                               | `sandbox.startup`               |
+| `bridge.paperclip`                    | Wardmote bridge start step.                                                                                                                               | `sandbox.startup`               |
 | `bridge.process-session`              | Process-session bridge start step.                                                                                                                         | `sandbox.startup`               |
 | `acp.handshake`                       | ACP session handshake step.                                                                                                                                | `sandbox.startup`               |
 | `sandbox.syncBack`                    | The settlement sync-back that restores the managed home at teardown.                                                                                       | the active run span             |
@@ -1080,7 +1080,7 @@ per-execution `sandbox.exec` child spans carry that detail.
 
 ### `sandbox.exec` span attributes
 
-The `sandbox.exec` span uses this closed attribute allowlist. Paperclip omits a
+The `sandbox.exec` span uses this closed attribute allowlist. Wardmote omits a
 numeric attribute when the provider does not report the value.
 
 | Attribute                                       | Type    | Optional | Meaning                                                                    |
@@ -1097,7 +1097,7 @@ numeric attribute when the provider does not report the value.
 | `wardmote.sandbox.startup.outcome`             | string  | no       | The execution outcome (`ok` or `failed`).                                  |
 
 The plugin decides the cache hit at the sandbox-handle lookup. The span no
-longer infers a cache hit from `wait_before_ms == 0`. Paperclip omits the
+longer infers a cache hit from `wait_before_ms == 0`. Wardmote omits the
 `cache_hit` attribute when the provider does not report the value.
 
 To add a span attribute, extend the `SANDBOX_STARTUP_SPAN_ATTRS` allowlist in
@@ -1184,8 +1184,8 @@ This section documents one duplex transport with three sinks: an
 OpenTelemetry span, a counter in the `tool_runtime_metric_counters` table, and
 one run-log event.
 
-Paperclip opens a fixed observability surface for the sandbox duplex transport.
-This instrumentation is separate from Paperclip Telemetry events and from the
+Wardmote opens a fixed observability surface for the sandbox duplex transport.
+This instrumentation is separate from Wardmote Telemetry events and from the
 sandbox startup trace spans above. The generated telemetry contract does not
 cover it, so this section is its canonical contract. The code owner is
 `packages/adapter-utils/src/duplex-observability.ts`. That module holds each name and

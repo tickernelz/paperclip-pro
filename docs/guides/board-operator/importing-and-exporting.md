@@ -27,7 +27,7 @@ my-company/
 - **COMPANY.md** defines company name, description, and metadata.
 - **AGENT.md** files contain agent identity, role, and instructions.
 - **SKILL.md** files are compatible with the Agent Skills ecosystem.
-- **.wardmote.yaml** holds Paperclip-specific config (adapter types, env inputs, budgets) as an optional sidecar.
+- **.wardmote.yaml** holds Wardmote-specific config (adapter types, env inputs, budgets) as an optional sidecar.
 
 ## Export & Import in the App
 

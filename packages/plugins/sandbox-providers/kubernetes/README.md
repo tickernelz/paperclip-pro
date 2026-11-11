@@ -2,7 +2,7 @@
 
 First-party Wardmote sandbox-provider plugin for Kubernetes.
 
-**Alpha:** the default backend (`sandbox-cr`) is built on `kubernetes-sigs/agent-sandbox` v1alpha1 — expect breaking changes as that CRD evolves toward Beta. A stable fallback backend (`job`, using `batch/v1` Job) is available for clusters without agent-sandbox installed, but it does NOT support multi-command exec (paperclip-server's adapter-install pattern requires sandbox-cr).
+**Alpha:** the default backend (`sandbox-cr`) is built on `kubernetes-sigs/agent-sandbox` v1alpha1 — expect breaking changes as that CRD evolves toward Beta. A stable fallback backend (`job`, using `batch/v1` Job) is available for clusters without agent-sandbox installed, but it does NOT support multi-command exec (wardmote-server's adapter-install pattern requires sandbox-cr).
 
 ## Prerequisites
 
@@ -38,9 +38,9 @@ The plugin supports two backend modes, selected via the `backend` config field:
 | `sandbox-cr` | Yes | Alpha | Yes | `kubernetes-sigs/agent-sandbox` controller |
 | `job` | No | Stable | No | Nothing beyond k8s 1.27+ |
 
-**`sandbox-cr` (default):** Creates a `Sandbox` CR (`agents.x-k8s.io/v1alpha1`) whose controller provisions a long-lived pod running `sleep infinity`. paperclip-server execs individual commands into the running pod — this is the multi-command adapter-install pattern. When you `releaseLease`, the Sandbox CR is deleted and the controller tears down the pod.
+**`sandbox-cr` (default):** Creates a `Sandbox` CR (`agents.x-k8s.io/v1alpha1`) whose controller provisions a long-lived pod running `sleep infinity`. wardmote-server execs individual commands into the running pod — this is the multi-command adapter-install pattern. When you `releaseLease`, the Sandbox CR is deleted and the controller tears down the pod.
 
-**`job` (stable fallback):** Creates a `batch/v1` Job. The container entrypoint runs once and exits — no multi-command exec possible. Use this when you cannot install agent-sandbox, or when you need strictly stable Kubernetes APIs. Note: paperclip-server's adapter-install pattern will not work in job mode.
+**`job` (stable fallback):** Creates a `batch/v1` Job. The container entrypoint runs once and exits — no multi-command exec possible. Use this when you cannot install agent-sandbox, or when you need strictly stable Kubernetes APIs. Note: wardmote-server's adapter-install pattern will not work in job mode.
 
 ### Migrating from `job` to `sandbox-cr`
 
@@ -52,7 +52,7 @@ The plugin supports two backend modes, selected via the `backend` config field:
 
 Create a `sandbox` environment with `driver: kubernetes`. One of these auth fields is required:
 
-- `inCluster: true` — use the in-pod ServiceAccount credentials (when paperclip-server runs inside the same cluster).
+- `inCluster: true` — use the in-pod ServiceAccount credentials (when wardmote-server runs inside the same cluster).
 - `kubeconfig: <YAML>` — inline kubeconfig (stored as a company secret).
 - `kubeconfigSecretRef: <secret-uuid>` — reference to an existing Wardmote secret.
 
@@ -106,7 +106,7 @@ RoleBinding        wardmote-tenant-rb
 ResourceQuota      wardmote-quota                (pods, requests/limits cpu+memory)
 LimitRange         wardmote-limits               (container max/min/default/defaultRequest)
 NetworkPolicy      wardmote-deny-all             (deny ingress + egress baseline)
-NetworkPolicy      wardmote-egress-allow         (DNS + paperclip-server callback + user CIDRs)
+NetworkPolicy      wardmote-egress-allow         (DNS + wardmote-server callback + user CIDRs)
                    OR CiliumNetworkPolicy wardmote-egress-fqdn if egressMode=cilium
 ```
 
@@ -132,13 +132,13 @@ Every agent pod is:
 
 - non-root (`runAsUser: 1000`, `runAsGroup: 1000`, `runAsNonRoot: true`)
 - drops ALL Linux capabilities, `allowPrivilegeEscalation: false`
-- `readOnlyRootFilesystem: true` with explicit `emptyDir` mounts for `/workspace`, `/home/paperclip`, `/home/paperclip/.cache`, `/tmp`
+- `readOnlyRootFilesystem: true` with explicit `emptyDir` mounts for `/workspace`, `/home/wardmote`, `/home/paperclip/.cache`, `/tmp`
 - `seccompProfile: RuntimeDefault`
 - Tini as PID 1 (reaps zombies, forwards signals)
 - `fsGroupChangePolicy: OnRootMismatch` (fast PVC startup; openclaw-operator lesson)
-- `automountServiceAccountToken: true` (for the agent shim's paperclip-server callback)
+- `automountServiceAccountToken: true` (for the agent shim's wardmote-server callback)
 
-Plus per-namespace `pod-security.kubernetes.io/enforce: restricted` and a deny-all NetworkPolicy baseline with explicit egress allow-list (DNS, paperclip-server, configured FQDNs/CIDRs).
+Plus per-namespace `pod-security.kubernetes.io/enforce: restricted` and a deny-all NetworkPolicy baseline with explicit egress allow-list (DNS, wardmote-server, configured FQDNs/CIDRs).
 
 The per-run Secret carrying the bootstrap token and adapter API keys has `ownerReferences` pointing at the owning Job, so a single `kubectl delete job …` cascades cleanly to the Pod and Secret.
 

@@ -1,7 +1,7 @@
 # Automatic Slack app setup
 
 New Slack bot drafts default to automatic setup. Existing drafts without a
-`slackSetupMethod` remain manual. Paperclip uses Slack's Manifest API and OAuth
+`slackSetupMethod` remain manual. Wardmote uses Slack's Manifest API and OAuth
 v2 directly; neither the operator nor the assisting agent needs the Slack CLI.
 
 ## Operator setup
@@ -13,18 +13,18 @@ v2 directly; neither the operator nor the assisting agent needs the Slack CLI.
 2. On App configuration access token, select **Get your App configuration access token**. In
    [Slack app settings](https://api.slack.com/apps), open **Your App Configuration
    Tokens → Generate Token**, select the workspace, and paste the temporary
-   **Access Token** directly into Paperclip's password field. Do not supply
+   **Access Token** directly into Wardmote's password field. Do not supply
    its refresh token. Select **Create Slack app**.
-3. After creation and configuration succeed, Paperclip advances to **Install Slack app**
+3. After creation and configuration succeed, Wardmote advances to **Install Slack app**
    and opens Slack installation in a new window. Approve installation in the intended
    workspace. If the window is blocked or closed, select **Install in Slack**.
    If workspace policy requires administrator approval, return to this saved
-   draft when approval is available. The existing app is reused. Paperclip links
-   the Slack account returned by OAuth to the signed-in Paperclip account that
+   draft when approval is available. The existing app is reused. Wardmote links
+   the Slack account returned by OAuth to the signed-in Wardmote account that
    started installation and sends one welcome DM: “Hi, I’m <agent name>. Your Slack
-   account is connected to Paperclip.” Use your own Slack account.
+   account is connected to Wardmote.” Use your own Slack account.
 4. On **Send a message to your agent**, select **Open Slack** and send a message.
-   Paperclip checks incoming events automatically. A signed message event from the
+   Wardmote checks incoming events automatically. A signed message event from the
    saved app/workspace or Slack's signed challenge completes the check. The same
    fourth screen then shows **Success** with a checkmark and **Done**; there is no
    separate Try it screen. The welcome-message event can complete this check before
@@ -45,7 +45,7 @@ Slack nevertheless delivered an event, and the operator confirmed receiving an
 agent response without clicking Retry. A manifest update alone never advances verification.
 Manual creation continues to use the full canonical manifest.
 
-Slack's settings-page Request URL verification remains distinct from Paperclip's
+Slack's settings-page Request URL verification remains distinct from Wardmote's
 connection check. Automatic setup accepts an authenticated message/app-mention
 event only after the runtime accepts the request, with the current signing secret,
 expected app/workspace/bot binding, current callback URL, and active connection.
@@ -60,7 +60,7 @@ durable pending/sending/sent state. Repeated challenges do not send another DM; 
 not block setup or replay automatically. Background recovery processes pending
 messages and quarantines sends interrupted by a restart.
 
-Paperclip captures the signing secret and client secret from creation and obtains
+Wardmote captures the signing secret and client secret from creation and obtains
 the bot token during installation. Durable secrets are stored in the company
 vault and are not returned by setup APIs or added to the agent prompt. The
 temporary configuration token is used for app creation, `apps.manifest.update`, and `apps.icon.set`, then
@@ -78,7 +78,7 @@ is saved, so an existing-app draft reopens at credential entry. Agent instructio
 
 **Invite people** copies instructions for the saved app’s `connect` command.
 Each recipient gets their own expiring confirmation link in Slack and confirms
-their identity while signed in to Paperclip. New organization members require
+their identity while signed in to Wardmote. New organization members require
 membership approval. Existing members can self-link; disconnecting an identity
 does not permanently block that member from reconnecting. Guest access remains
 a separate, explicit setting for restricted work.
@@ -90,31 +90,31 @@ agents receive this saved command on each fresh or resumed turn, alongside the
 confirmation and membership-approval instructions. If the saved command is
 unavailable, they refer the connection manager to **Access → Invite people**
 instead of guessing from the agent name. Inviting a person or bot to a Slack
-channel does not grant that person Paperclip access.
+channel does not grant that person Wardmote access.
 
 **Allowed Channels** updates every five seconds while Slack Settings is open.
 Inviting the bot to a new channel enables replies and writes there automatically;
-no additional Paperclip configuration is required. An explicit off switch stays
+no additional Wardmote configuration is required. An explicit off switch stays
 off across repeated invitations, reconnects, and inventory refreshes.
 
-A bare @mention starts a normal agent conversation. Paperclip creates the task,
+A bare @mention starts a normal agent conversation. Wardmote creates the task,
 subscribes to the Slack thread, and starts the agent; later replies in that thread
 continue the same task without another mention. Normal account and channel access
 rules still apply, and repeated Slack deliveries do not create duplicate tasks.
 
-Agents can ask interactive questions in Slack through Paperclip's saved
+Agents can ask interactive questions in Slack through Wardmote's saved
 `ask_user_questions` interactions. Native runners use `request_human_input`;
 legacy adapters use the issue-interactions API documented in the injected
-Paperclip skill. Slack shows native answer buttons or an **Answer questions**
+Wardmote skill. Slack shows native answer buttons or an **Answer questions**
 button and form, depending on the question and connection capabilities.
 Submitting an answer wakes the assigned agent on the same task.
 This works even when the adapter's built-in question tool is unavailable.
 
 The app icon upload and Settings download use the agent’s 512×512 PNG on
-Paperclip’s dark-mode background (`#171717`). Slack flattens transparent app icons
+Wardmote’s dark-mode background (`#171717`). Slack flattens transparent app icons
 onto white, so this export has an opaque background before upload. Normal
-Paperclip avatars retain transparency. Existing Slack apps need an icon re-upload
-to adopt the new background; changing Paperclip does not replace their saved icon.
+Wardmote avatars retain transparency. Existing Slack apps need an icon re-upload
+to adopt the new background; changing Wardmote does not replace their saved icon.
 
 
 ## Deployment
@@ -132,7 +132,7 @@ the browser cannot supply a manifest, scopes, or callback destination.
 - Avatar upload renders the assigned agent's preset PNG on the server and sends
   its bytes through `apps.icon.set` as multipart form data. Slack does not need to
   fetch an image from the tenant's authenticated board origin. The image is
-  512 × 512 with the Paperclip dark background. The temporary configuration
+  512 × 512 with the Wardmote dark background. The temporary configuration
   token stays in the Authorization header and is discarded after setup.
 - The board origin is the configured authentication public base URL
   (`WARDMOTE_AUTH_PUBLIC_BASE_URL` or `WARDMOTE_PUBLIC_URL`).
@@ -152,7 +152,7 @@ the browser cannot supply a manifest, scopes, or callback destination.
 | App created; installation declined/pending | Install the saved app again. No configuration token is needed. |
 | Revoked bot token or uninstalled app | Start fresh installation authorization for the same saved app. Existing workspace, bot, and account bindings are preserved; consent started before revocation cannot restore the connection. |
 | Authorization expired or code exchange uncertain | Start fresh installation authorization. Used codes are never replayed. |
-| Credentials saved; connection check failed | Use Retry connecting. Paperclip reuses vaulted credentials. If Slack access changed or the token was revoked, use Authorize in Slack again for the same app. |
+| Credentials saved; connection check failed | Use Retry connecting. Wardmote reuses vaulted credentials. If Slack access changed or the token was revoked, use Authorize in Slack again for the same app. |
 | Wrong app/workspace/bot or missing scopes | Correct the installation of this app. Activation remains blocked. |
 | Avatar upload failed or interrupted | Continue setup with the saved app. Optionally upload the avatar from Settings later. The configuration token is not retained for retries. |
 | Existing or revoked personal account link conflicts | Manage account links in Access settings. Installation never overwrites someone else’s link or restores a revoked link. |
@@ -208,12 +208,12 @@ confirmed a real agent reply without clicking Retry. The new automatic advanceme
 based on that kind of event is covered by fixtures; the operator subsequently confirmed live automatic advancement after another message.
 Same-thread follow-up, reauthorization, and removal qualification remain outstanding.
 
-For live acceptance, use an isolated HTTPS Paperclip instance, a dedicated test
+For live acceptance, use an isolated HTTPS Wardmote instance, a dedicated test
 app, and an explicitly authorized Slack workspace and destination. Have the user
 enter the configuration token directly. Verify app creation, consent return,
 signed URL verification, avatar status, automatic installer linking, welcome DM,
 a real message and same-thread follow-up, the assigned agent run, and Slack delivery. Resume an
-interrupted setup, reauthorize the same app, and remove the Paperclip connection
+interrupted setup, reauthorize the same app, and remove the Wardmote connection
 with an outstanding attempt. Record sanitized IDs/links and outcomes, without
 secret fields, OAuth codes, or provider payloads. Record live results separately
 from deterministic fixtures.

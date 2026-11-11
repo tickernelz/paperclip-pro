@@ -3,12 +3,12 @@
 **Status: experimental. Live qualification is pending; see the
 [verification record](OPENWA-VERIFICATION.md).**
 
-This channel binds one Paperclip agent to one WhatsApp number served by a
+This channel binds one Wardmote agent to one WhatsApp number served by a
 self-hosted [rmyndharis/OpenWA](https://github.com/rmyndharis/OpenWA) gateway.
 The provider id is `openwa` and the catalog label is **OpenWA**. The agent answers
 people in DMs and groups, reports to the number's owners, asks the owners before
 it acts for anyone else, and leaves an audit trail per endpoint. The connection
-is a chat channel, not an MCP tool connection. Paperclip calls the gateway's
+is a chat channel, not an MCP tool connection. Wardmote calls the gateway's
 REST API and listens on its Socket.IO `/events` namespace; the gateway's own
 `/mcp` endpoint is not used.
 
@@ -31,13 +31,13 @@ sends too much, too fast, or to people who did not expect it.
   sends need owner approval (`cross_chat_send`).
 - A `session.restriction` event puts the endpoint in Attention (see
   [Health card](#health-card)).
-- Paperclip is tested against OpenWA `0.27.1`
+- Wardmote is tested against OpenWA `0.27.1`
   (`OPENWA_GATEWAY_VERSION`, `packages/shared/src/openwa-operations.ts:3`). Another
   version shows a warning in setup and on the health card.
 
 ## Gateway prerequisites
 
-Do these on the gateway host before connecting (spec §16). Paperclip never
+Do these on the gateway host before connecting (spec §16). Wardmote never
 changes the gateway.
 
 1. Run rmyndharis/OpenWA `0.27.1` with a connected WhatsApp session whose
@@ -86,16 +86,16 @@ Both keys are write-only and vaulted. Agents never receive either key.
      this number to reach the agent. DMs, mentions and replies start work.
    - **An owner's personal number** (`owner_number`): the agent replies as the
      owner. Only chats enabled in Settings can trigger it, its messages carry a
-     visible prefix, and Paperclip can read every chat the session sees.
+     visible prefix, and Wardmote can read every chat the session sees.
 5. **Before connecting, confirm** both attestations: send pacing is on in the
-   gateway, and Paperclip is the only app sending as this session. Both are
+   gateway, and Wardmote is the only app sending as this session. Both are
    required (`attestations.pacing`, `attestations.soleClient`). Select **Connect
    session** (`POST /api/chat-endpoints/:endpointId/setup` with action
    `configure`).
 6. **Owners**: in Settings, **Add owner number** (E.164, for example
-   `+6281234567890`). Paperclip returns a **Private identity-link URL**
+   `+6281234567890`). Wardmote returns a **Private identity-link URL**
    (valid 30 minutes by default, `expiresInSeconds` 300 to 86400). Send it only to
-   that owner; they open it while signed in to Paperclip to link the number to
+   that owner; they open it while signed in to Wardmote to link the number to
    their account (`POST /api/chat-endpoints/:endpointId/openwa/owners`).
 7. **Owner test DM**: send a WhatsApp message from an owner's phone to the
    connected number. Only an owner's message completes the test. Setup completes
@@ -123,7 +123,7 @@ Settings are stored in the endpoint policy (`openwaEndpointPolicySchema`,
 ### Owners
 
 An owner is a WhatsApp number in the endpoint's owner list whose identity link is
-`linked` and whose Paperclip membership is active and not `viewer`. Owner status
+`linked` and whose Wardmote membership is active and not `viewer`. Owner status
 is re-derived per message and per run. Owners can start full-access runs and
 approve requests. Removing an owner, or revoking their identity link, revokes
 the live grants that owner approved. Routes: `GET`/`POST`
@@ -201,7 +201,7 @@ chat from WhatsApp** lists the gateway's chats. Routes:
 Each chat has **Report to owner via** (`settings.ownerReportChatKey`):
 **Direct chat (default)** (unset or `null`) or a group picked from the chats
 list, normally a private group that holds only an owner and the agent number
-(for example `[BOT] DCM Paperclip`). It keeps each project's owner traffic in
+(for example `[BOT] DCM Wardmote`). It keeps each project's owner traffic in
 its own group instead of the owner's direct chat.
 
 - Everything owed to the owner that starts in that chat goes to the chosen
@@ -236,7 +236,7 @@ its own group instead of the owner's direct chat.
 ### Trigger rules
 
 A message that matches no rule is discarded in memory: nothing is written to
-Paperclip and it stays readable on the gateway through tools. Defaults come
+Wardmote and it stays readable on the gateway through tools. Defaults come
 from the number mode (`openwaDefaultTriggerRules`,
 `packages/shared/src/validators/chat-channels.ts:289`); a chat's override wins.
 
@@ -252,7 +252,7 @@ from the number mode (`openwaDefaultTriggerRules`,
 | `allMessages` | All messages | off | off |
 
 In a group that addresses members by LID, **Agent mentioned**, **Replies to the
-agent** and owner mentions match the agent and owner LIDs. Paperclip resolves each
+agent** and owner mentions match the agent and owner LIDs. Wardmote resolves each
 unknown LID a group message mentions or quotes with
 `GET /api/sessions/{sessionId}/contacts/{contactId}/phone` and keeps the ones whose
 phone is the agent number or an owner. The number check answers with the phone id
@@ -388,10 +388,10 @@ A run on the conversation issue without OpenWA context (agent mention,
 continuation, retry, recovery) is `read_only`. A run requested by a human board
 user is `full`. A live `external_tools` grant, or that category's approval toggle
 turned off, also gives the run the `full` runtime tool profile. Child issues
-created by owner or grant runs follow normal Paperclip authority.
+created by owner or grant runs follow normal Wardmote authority.
 
 A `read_only` run may use every read capability: runtime read/search tools and
-`bash`, Paperclip reads, connector tools with risk `read`, and every OpenWA read over
+`bash`, Wardmote reads, connector tools with risk `read`, and every OpenWA read over
 the chats visible to the endpoint (in `owner_number` mode, enabled chats only). It
 may comment on and attach artifacts to its own conversation issue, send to its
 origin chat subject to the reply policy, and call `openwa_request_approval`. It may
@@ -400,7 +400,7 @@ not, unless the category's approval toggle is off or a live grant covers it:
 | Category | Settings toggle | Covers |
 | --- | --- | --- |
 | `create_task` | Creating or delegating tasks | Creating, assigning or delegating issues; project creation |
-| `external_tools` | Write tools and external actions | Connector tools with risk `write`/`destructive`, runtime write tools, email sends, Paperclip mutations outside the read-only allowlist |
+| `external_tools` | Write tools and external actions | Connector tools with risk `write`/`destructive`, runtime write tools, email sends, Wardmote mutations outside the read-only allowlist |
 | `cross_chat_send` | Sending to other chats | Sending or forwarding to a chat other than the origin chat |
 | `wa_admin` | WhatsApp admin actions | Group join/leave/settings, message edit/delete/pin/star, block, labels, status posts, chat archive/mute/delete |
 | `gateway_admin` | Gateway admin actions | Session lifecycle, API keys, webhooks, plugins, settings, infrastructure |
@@ -416,7 +416,7 @@ to a live OpenWA endpoint cannot make non-safe requests at all.
 The runtime half of `read_only` depends on the adapter's
 `readOnlyToolProfile` capability (`enforced` or `instruction_only`; absent means
 `instruction_only`, `server/src/routes/adapters.ts:191`). With `instruction_only`
-the Paperclip seams above still apply, but the adapter's own file-writing tools
+the Wardmote seams above still apply, but the adapter's own file-writing tools
 are not blocked and the run relies on the agent following its instructions.
 `bash` stays available in every `read_only` run and is instruction-bound
 (accepted risk D32).
@@ -480,7 +480,7 @@ targets the conversation issue, not a run.
   owner (`publication_suppressed` reason `approval_acknowledged`); the server
   reacts to the owner's message with ✅ instead. A quote of an already-resolved
   bubble never creates a grant.
-- **Paperclip**: the endpoint's **Approvals** tab lists requests by **Status**
+- **Wardmote**: the endpoint's **Approvals** tab lists requests by **Status**
   (Pending, Approved, Rejected, Cancelled, Expired, Withdrawn, All) with origin chat, masked
   requester, scope, reminders sent and grants. Owners choose **Approve** or
   **Reject** with optional conditions or reason. API:
@@ -526,7 +526,7 @@ targets the conversation issue, not a run.
   (`approval_expired`, class `other`, idempotency key
   `openwa-approval-expired:<requestId>`) so it can tell the requester or drop the
   action. An expired request never grants anything: a later WhatsApp quote,
-  `openwa_approval_resolve` or Paperclip resolve returns `already_resolved`.
+  `openwa_approval_resolve` or Wardmote resolve returns `already_resolved`.
 - **Withdraw**: the agent closes its own pending request with
   `openwa_approval_withdraw({requestId, reason, ownerMessageRef?})` from a run on
   the WhatsApp conversation issue of the request's origin chat or of a chat that
@@ -558,7 +558,7 @@ targets the conversation issue, not a run.
 
 Exposure: native runner tools; the HTTP route
 `POST /api/companies/:companyId/openwa/tasks/:issueId/tools` (agent bearer plus
-`X-Wardmote-Run-Id`, body `{ tool, arguments }`); and the per-run Paperclip MCP
+`X-Wardmote-Run-Id`, body `{ tool, arguments }`); and the per-run Wardmote MCP
 toolset `openwa`. The bundled skill is `skills/openwa/SKILL.md`. Tools are offered on
 runs of OpenWA conversation issues and their child issues. The server binds
 company, endpoint, session, issue, run and profile; arguments never carry them.
@@ -589,7 +589,7 @@ Source: `OPENWA_TOOLS`, `packages/shared/src/openwa-tools.ts:42`.
 
 **Catalog.** The pinned manifest has 205 operations for OpenWA 0.27.1: 50
 `read`, 25 `write`, 50 `wa_admin`, 80 `gateway_admin`. The catalog adds one
-`paperclip` entry, `paperclip.audit.list`, for owner runs only. Each entry carries a
+`wardmote` entry, `paperclip.audit.list`, for owner runs only. Each entry carries a
 gate: `none` (reads), `reply_or_cross_chat_send` (writes that name a chat),
 `cross_chat_send`, `wa_admin`, `gateway_admin`, `owner_confirmation` or `owner_only`.
 Operations the active engine lacks are listed as unavailable
@@ -616,7 +616,7 @@ members get 403); other runs get `owner_only`.
 sender lists, chat activation, per-chat triggers, absence, reply policy, note and
 owner report group (`ownerReportChat`), approval toggles, reminders, the burst window and custom instructions from WhatsApp; other runs get
 `owner_only`. Credentials, number mode, owners and the gateway admin level stay
-Paperclip-only (`ui_only_setting`). Every change bumps the policy revision and is
+Wardmote-only (`ui_only_setting`). Every change bumps the policy revision and is
 audited with before and after values, attributed to the owner whose message
 started the run. Arguments are in the bundled skill.
 
@@ -628,7 +628,7 @@ The endpoint keeps its own agent number unchanged.
 
 - **Read only, on demand.** A linked session never sends, never wakes the agent,
   and is never subscribed to live events. The agent reads it only when it calls
-  a linked tool. Its messages are not stored in Paperclip tables (audit rows
+  a linked tool. Its messages are not stored in Wardmote tables (audit rows
   keep chat, count and time only), but the text the agent reads appears in that
   run's transcript and run log, and the agent quotes it only when the owner asks.
   A file fetched with `openwa_linked_get_media` is stored as an attachment on the
@@ -647,8 +647,8 @@ The endpoint keeps its own agent number unchanged.
   other chat fail 403 `linked_chat_not_allowed` before the gateway is called.
 - **Key.** **Link a number** creates a dedicated OpenWA API key with the
   endpoint's admin key: role `viewer`, `allowedSessions` set to the linked
-  session, named `paperclip-linked-<short id>`. Paperclip stores it as a
-  Paperclip-managed company secret and never returns it to a client or an agent.
+  session, named `paperclip-linked-<short id>`. Wardmote stores it as a
+  Wardmote-managed company secret and never returns it to a client or an agent.
   OpenWA refuses every send and write route for a viewer key. Without an admin
   key, linking fails 422 `openwa_admin_key_required`; add one under **Admin API
   key** first. The agent's own session cannot be linked (422
@@ -702,7 +702,7 @@ one; the operator key is never used as a fallback).
 
 - A new API key, a created or regenerated integration secret, the QR code and the
   pairing code come back once with `revealed: true` and are shown once in the UI.
-  Paperclip never stores them and never writes them to the audit or the log.
+  Wardmote never stores them and never writes them to the audit or the log.
   Every other result masks credential fields as described below.
 - Logout, stop, force-kill and delete of the agent's own session fail 409
   `openwa_own_session_confirmation_required` unless the request carries
@@ -739,7 +739,7 @@ is sent from the stored agent comment, not from the projected publication payloa
 other chat providers use. Only Markdown is converted to WhatsApp formatting and
 long text is split. Keeping secrets out of messages is the agent's instruction,
 not a filter. The one exception is the instance setting `censorUsernameInLogs`
-(off by default): when on, Paperclip stores every comment with the signed-in
+(off by default): when on, Wardmote stores every comment with the signed-in
 user's name masked, and the WhatsApp text follows the stored comment.
 
 Credential fields in gateway administration results (`gateway_admin` operations
@@ -987,14 +987,14 @@ one `chat_actions` row (`kind = openwa_pending_card`) per active OpenWA
 endpoint and notifies that lane. A card addressed to a specific person
 (`addresseeUserId`) goes only to that person's own chat, and only when they are
 a current owner of the endpoint; otherwise it stays with its addressee in
-Paperclip. A `request_confirmation` that an open autonomy window will accept at
+Wardmote. A `request_confirmation` that an open autonomy window will accept at
 once is not staged.
 
 - The wake goes to the owner's approval chat, the same target `session_health`
   uses: the owner's self-chat in `owner_number` mode, otherwise the most
   recently active DM with a current owner, matched by phone or LID. Cards on
   any issue of the company reach that chat, whether or not the issue came from
-  WhatsApp. When no such conversation exists the card stays in Paperclip, no
+  WhatsApp. When no such conversation exists the card stays in Wardmote, no
   row is staged, and the server logs `OpenWA owner card has no owner
   conversation`.
 - Issue privacy applies to the reader of that chat. The card is staged only when

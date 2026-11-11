@@ -42,7 +42,7 @@ my-adapter/
   "version": "1.0.0",
   "type": "module",
   "license": "MIT",
-  "paperclip": {
+  "wardmote": {
     "adapterUiParser": "1.0.0"
   },
   "exports": {

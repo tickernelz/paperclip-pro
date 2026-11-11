@@ -66,7 +66,7 @@ its output card. Skill-test authority is narrower than an ordinary company run.
 ### `external-channel`
 
 In a configured chat channel, answer a published question or confirmation as a
-linked sender. Open the associated Paperclip task to inspect the saved outcome.
+linked sender. Open the associated Wardmote task to inspect the saved outcome.
 Channel-specific forms and identity linking require separate provider evidence.
 
 ## Driving it

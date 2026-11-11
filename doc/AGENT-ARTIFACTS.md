@@ -1,7 +1,7 @@
 # Agent Artifact Upload Workflow
 
 Generated files that a board user or reviewer should inspect as deliverables
-must be attached to the Paperclip issue before the agent chooses a final
+must be attached to the Wardmote issue before the agent chooses a final
 disposition. A local workspace path is not enough, because cloud users and
 reviewers often cannot access the agent's disk.
 
@@ -27,14 +27,14 @@ test are separately recognized as denied attempts, not requested deliverables.
 Wait for the receipt. It includes `attachmentId`, `contentPath`, and
 `downloadPath`, along with the existing command, revision, entity references,
 and disposition. Reuse the original key after an ambiguous result. A receipt
-confirms storage and response binding in Paperclip; it does not confirm delivery
+confirms storage and response binding in Wardmote; it does not confirm delivery
 to an external chat provider. If registration fails, use the returned error to
 resolve the failure or explain the limitation; do not describe a workspace path
 as an uploaded file.
 
 ## Legacy adapters
 
-Use Bash to run the helper bundled with the Paperclip skill from the repo root; installed skill files may not retain executable permissions:
+Use Bash to run the helper bundled with the Wardmote skill from the repo root; installed skill files may not retain executable permissions:
 
 ```sh
 bash skills/wardmote/scripts/wardmote-upload-artifact.sh path/to/output.webm \
@@ -42,7 +42,7 @@ bash skills/wardmote/scripts/wardmote-upload-artifact.sh path/to/output.webm \
   --summary "Rendered walkthrough for review"
 ```
 
-The helper uses the authenticated Paperclip API from the current heartbeat
+The helper uses the authenticated Wardmote API from the current heartbeat
 environment:
 
 - `WARDMOTE_API_URL`
@@ -72,7 +72,7 @@ unregistered user input attachments remain in the conversation.
 Use uploaded artifacts for deliverables: videos, PDFs, screenshots, archives,
 reports, rendered HTML, or any file the board should inspect without needing the
 agent's checkout. Attachment-backed artifact work products set `type` to
-`artifact` and `provider` to `paperclip`, with metadata canonicalized from the
+`artifact` and `provider` to `wardmote`, with metadata canonicalized from the
 uploaded `attachmentId`.
 
 Use `workspace_file` metadata only for important files that intentionally remain
@@ -101,10 +101,10 @@ Expected work product metadata shape:
 `column` are optional. `relativePath` must be relative to that workspace root;
 do not store host-local absolute paths as workspace references.
 
-Workspace file links resolve only inside registered Paperclip workspaces. The
+Workspace file links resolve only inside registered Wardmote workspaces. The
 default target is the current issue's execution workspace first, then its
 project workspace. A link may target another same-company project workspace only
-when it carries both that `projectId` and `workspaceId`. Paperclip does not
+when it carries both that `projectId` and `workspaceId`. Wardmote does not
 resolve arbitrary machine-wide filesystem paths, absolute host paths, home
 paths, or relative paths that escape the selected workspace.
 
@@ -121,7 +121,7 @@ When a task produces a user-inspectable deliverable file:
 
 For a response that is explicitly intended for an external chat conversation,
 also pass each intended file with `wardmote issue comment --attachment-id
-<id>`. Paperclip binds only those exact uploaded files to that comment; other
+<id>`. Wardmote binds only those exact uploaded files to that comment; other
 task attachments remain internal.
 
 Final comments should name and link the uploaded artifact or work product, not
@@ -181,7 +181,7 @@ curl -sS -X POST \
   --data-binary @artifact-work-product.json
 ```
 
-Use `type: "artifact"`, `provider: "paperclip"`, and metadata containing the
+Use `type: "artifact"`, `provider: "wardmote"`, and metadata containing the
 uploaded `attachmentId`. The server canonicalizes `contentType`, `byteSize`,
 `contentPath`, `openPath`, `downloadPath`, and `originalFilename`.
 
@@ -211,7 +211,7 @@ WARDMOTE_FILE_DELIVERY_DAYTONA=1 pnpm exec vitest run server/src/__tests__/file-
 ```
 
 The live fixture deletes each sandbox before checking that its attachments
-remain downloadable from Paperclip. It does not run unless explicitly enabled.
+remain downloadable from Wardmote. It does not run unless explicitly enabled.
 
 ## Text attachment previews
 

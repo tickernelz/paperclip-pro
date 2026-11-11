@@ -1,6 +1,6 @@
 # Installation, configuration, updates, and backups
 
-An operator can install and run Paperclip, diagnose the instance, configure supported deployment settings, manage its service, and produce a recoverable database backup.
+An operator can install and run Wardmote, diagnose the instance, configure supported deployment settings, manage its service, and produce a recoverable database backup.
 
 Implementation: [CLI entry point](../cli/src/index.ts), [instance settings](../ui/src/pages/InstanceExperimentalSettings.tsx), [backup command](../cli/src/commands/db-backup.ts).
 

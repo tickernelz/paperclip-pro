@@ -38,7 +38,7 @@ Wardmote is a monorepo with four main layers.
 ## Repository Structure
 
 ```
-paperclip/
+wardmote/
 ├── ui/                          # React frontend
 │   ├── src/pages/              # Route pages
 │   ├── src/components/         # React components
@@ -59,7 +59,7 @@ paperclip/
 │       └── omp-local/           # OMP adapter
 │
 ├── skills/                      # Agent skills
-│   └── paperclip/               # Core Wardmote skill (heartbeat protocol)
+│   └── wardmote/               # Core Wardmote skill (heartbeat protocol)
 │
 ├── cli/                         # CLI client
 │   └── src/                     # Setup and control-plane commands

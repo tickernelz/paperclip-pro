@@ -1728,7 +1728,7 @@ provider startup, and no action is published before the observer is armed.
 
 The observer watches registered targets (including transient create/delete), user
 workspace changes and the exact runner process plus descendants. The single
-controller-owned `.wardmote-runtime/paperclip-runner` subtree is excluded from
+controller-owned `.wardmote-runtime/wardmote-runner` subtree is excluded from
 user-file inventory and mutation counts: it holds the binary, provider pack,
 context, active runtime state, and sandbox GitHub launchers, upload locks and
 per-command configuration. Launcher restaging after controller recovery uses

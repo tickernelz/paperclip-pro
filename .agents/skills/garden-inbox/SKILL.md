@@ -1,6 +1,6 @@
 ---
 name: garden-inbox
-description: Scan a Paperclip user's Mine inbox, classify reversible archive candidates, request checkbox confirmation, and archive only accepted selections. Use when asked to garden, clean up, prune, or tidy a Paperclip inbox without changing issues, branches, or workspaces.
+description: Scan a Wardmote user's Mine inbox, classify reversible archive candidates, request checkbox confirmation, and archive only accepted selections. Use when asked to garden, clean up, prune, or tidy a Wardmote inbox without changing issues, branches, or workspaces.
 ---
 
 # Garden Inbox
@@ -55,7 +55,7 @@ node .agents/skills/garden-inbox/scripts/garden-inbox.mjs confirm \
   --candidates "$RUN_DIR/candidates.json"
 ```
 
-The script posts sequential cards when a scan has more than 200 candidates. Re-running `confirm` with the same scan file is idempotent. Leave the driving issue in the waiting posture required by the surrounding Paperclip heartbeat workflow.
+The script posts sequential cards when a scan has more than 200 candidates. Re-running `confirm` with the same scan file is idempotent. Leave the driving issue in the waiting posture required by the surrounding Wardmote heartbeat workflow.
 
 When a candidate was declined by the user in an earlier pass, pass `--unselect <issueId>` (repeatable) so it starts unchecked and its description notes the earlier decline. Never re-offer previously declined items as default-checked.
 

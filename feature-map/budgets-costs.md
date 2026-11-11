@@ -39,6 +39,6 @@ Manual: Create a small fixture budget, cross its threshold with synthetic record
 
 ## Gotchas
 
-- Paperclip cost accounting is not a provider invoice or a promise about externally billed spend.
+- Wardmote cost accounting is not a provider invoice or a promise about externally billed spend.
 - Company, project, and agent gates can overlap; fixing one may leave another active.
 - A successful retry must not bypass an unresolved budget hold.

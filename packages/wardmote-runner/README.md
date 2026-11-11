@@ -458,7 +458,7 @@ and JSON content; see the protocol-server tutorial for direct `curl` examples.
 ## Direct live protocol qualification
 
 The canonical direct live protocol suite lives in the separate
-`paperclip-evals` repository under `evals/paperclip-runner/`. Its
+`paperclip-evals` repository under `evals/wardmote-runner/`. Its
 `live-mini.json` roster is the complete 35-case Codex qualification lane. Build
 this package's TypeScript output, release `wardmote-runnerd`, package tarball,
 and `dist-issue-thread` viewer, then use the roster runner documented in that
@@ -536,7 +536,7 @@ environment binding:
 
 ```sh
 pnpm --filter @tickernelz/wardmote-runner aws-agentcore:provision -- \
-  --aws-profile paperclip-dev \
+  --aws-profile wardmote-dev \
   --github-oidc-provider-arn arn:aws:iam::<account-id>:oidc-provider/token.actions.githubusercontent.com
 ```
 

@@ -1,14 +1,14 @@
 ---
 name: create-agent-adapter
 description: >
-  Create or modify Paperclip agent adapters across server, UI, and CLI surfaces.
+  Create or modify Wardmote agent adapters across server, UI, and CLI surfaces.
   Use when adding support for a new CLI agent, API agent, custom process, or
   adapter package.
 ---
 
-# Creating a Paperclip Agent Adapter
+# Creating a Wardmote Agent Adapter
 
-An adapter bridges Paperclip's orchestration layer to a specific AI agent runtime (Claude Code, Codex CLI, a custom process, an HTTP endpoint, etc.). Each adapter is a self-contained package that provides implementations for **three consumers**: the server, the UI, and the CLI.
+An adapter bridges Wardmote's orchestration layer to a specific AI agent runtime (Claude Code, Codex CLI, a custom process, an HTTP endpoint, etc.). Each adapter is a self-contained package that provides implementations for **three consumers**: the server, the UI, and the CLI.
 
 ---
 
@@ -76,7 +76,7 @@ interface AdapterExecutionResult {
   costUsd?: number | null;
   resultJson?: Record<string, unknown> | null;
   summary?: string | null;        // Human-readable summary of what the agent did
-  clearSession?: boolean;         // true = tell Paperclip to forget the stored session
+  clearSession?: boolean;         // true = tell Wardmote to forget the stored session
 }
 
 interface AdapterSessionCodec {
@@ -230,7 +230,7 @@ export const agentConfigurationDoc = `# my_agent agent configuration
 
 **Writing `agentConfigurationDoc` as routing logic:**
 
-The `agentConfigurationDoc` is read by LLM agents (including Paperclip agents that create other agents). Write it as **routing logic**, not marketing copy. Include concrete "use when" and "don't use when" guidance so an LLM can decide whether this adapter is appropriate for a given task.
+The `agentConfigurationDoc` is read by LLM agents (including Wardmote agents that create other agents). Write it as **routing logic**, not marketing copy. Include concrete "use when" and "don't use when" guidance so an LLM can decide whether this adapter is appropriate for a given task.
 
 ```ts
 export const agentConfigurationDoc = `# my_agent agent configuration
@@ -422,7 +422,7 @@ const myAgentAdapter: ServerAdapterModule = {
   execute: myExecute,
   sessionCodec: mySessionCodec,
   models: myModels,
-  supportsLocalAgentJwt: true,  // true if agent can use Paperclip API
+  supportsLocalAgentJwt: true,  // true if agent can use Wardmote API
   agentConfigurationDoc: myDoc,
 };
 
@@ -486,7 +486,7 @@ Sessions allow agents to maintain conversation context across runs. The system i
 - `sessionCodec.deserialize()` converts stored params back for the next run
 - `sessionCodec.getDisplayId()` extracts a human-readable session ID for the UI
 - **cwd-aware resume**: if the session was created in a different cwd than the current config, skip resuming (prevents cross-project session contamination)
-- **Unknown session retry**: if resume fails with a "session not found" error, retry with a fresh session and return `clearSession: true` so Paperclip wipes the stale session
+- **Unknown session retry**: if resume fails with a "session not found" error, retry with a fresh session and return `clearSession: true` so Wardmote wipes the stale session
 
 If the agent runtime supports any form of context compaction or conversation compression (e.g. Claude Code's automatic context management, or Codex's `previous_response_id` chaining), lean on it. Adapters that support session resume get compaction for free — the agent runtime handles context window management internally across resumes.
 
@@ -546,7 +546,7 @@ Import from `@tickernelz/wardmote-adapter-utils/server-utils`:
 ### Prompt Templates
 - Support `promptTemplate` for every run
 - Use `renderTemplate()` with the standard variable set
-- Default prompt should use `DEFAULT_WARDMOTE_AGENT_PROMPT_TEMPLATE` from `@tickernelz/wardmote-adapter-utils/server-utils` so local adapters share Paperclip's execution contract: act in the same heartbeat, avoid planning-only exits unless requested, leave durable progress and a next action, use child issues instead of polling, mark blockers with owner/action, and respect governance boundaries.
+- Default prompt should use `DEFAULT_WARDMOTE_AGENT_PROMPT_TEMPLATE` from `@tickernelz/wardmote-adapter-utils/server-utils` so local adapters share Wardmote's execution contract: act in the same heartbeat, avoid planning-only exits unless requested, leave durable progress and a next action, use child issues instead of polling, mark blockers with owner/action, and respect governance boundaries.
 
 ### Error Handling
 - Differentiate timeout vs process error vs parse failure
@@ -559,17 +559,17 @@ Import from `@tickernelz/wardmote-adapter-utils/server-utils`:
 - Call `onMeta(...)` before spawning to record invocation details
 - Use `redactEnvForLogs()` when including env in meta
 
-### Paperclip Skills Injection
+### Wardmote Skills Injection
 
-Paperclip ships shared skills (in the repo's top-level `skills/` directory) that agents need at runtime — things like the `paperclip` API skill and the `wardmote-create-agent` workflow skill. Each adapter is responsible for making these skills discoverable by its agent runtime **without polluting the agent's working directory**.
+Wardmote ships shared skills (in the repo's top-level `skills/` directory) that agents need at runtime — things like the `wardmote` API skill and the `wardmote-create-agent` workflow skill. Each adapter is responsible for making these skills discoverable by its agent runtime **without polluting the agent's working directory**.
 
-**The constraint:** never copy or symlink skills into the agent's `cwd`. The cwd is the user's project checkout — writing `.claude/skills/` or any other files into it would contaminate the repo with Paperclip internals, break git status, and potentially leak into commits.
+**The constraint:** never copy or symlink skills into the agent's `cwd`. The cwd is the user's project checkout — writing `.claude/skills/` or any other files into it would contaminate the repo with Wardmote internals, break git status, and potentially leak into commits.
 
 **The pattern:** create a clean, isolated location for skills and tell the agent runtime to look there.
 
 **How claude-local does it:**
 
-1. At execution time, create a fresh tmpdir: `mkdtemp("paperclip-skills-")`
+1. At execution time, create a fresh tmpdir: `mkdtemp("wardmote-skills-")`
 2. Inside it, create `.claude/skills/` (the directory structure Claude Code expects)
 3. Symlink each skill directory from the repo's `skills/` into the tmpdir's `.claude/skills/`
 4. Pass the tmpdir to Claude Code via `--add-dir <tmpdir>` — this makes Claude Code discover the skills as if they were registered in that directory, without touching the agent's actual cwd
@@ -578,7 +578,7 @@ Paperclip ships shared skills (in the repo's top-level `skills/` directory) that
 ```ts
 // From claude-local execute.ts
 async function buildSkillsDir(): Promise<string> {
-  const tmp = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-skills-"));
+  const tmp = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-skills-"));
   const target = path.join(tmp, ".claude", "skills");
   await fs.mkdir(target, { recursive: true });
   const entries = await fs.readdir(WARDMOTE_SKILLS_DIR, { withFileTypes: true });
@@ -602,7 +602,7 @@ args.push("--add-dir", skillsDir);
 
 **How codex-local does it:**
 
-Codex has a global personal skills directory (`$CODEX_HOME/skills` or `~/.codex/skills`). The adapter symlinks Paperclip skills there if they don't already exist. This is acceptable because it's the agent tool's own config directory, not the user's project.
+Codex has a global personal skills directory (`$CODEX_HOME/skills` or `~/.codex/skills`). The adapter symlinks Wardmote skills there if they don't already exist. This is acceptable because it's the agent tool's own config directory, not the user's project.
 
 ```ts
 // From codex-local execute.ts
@@ -625,15 +625,15 @@ async function ensureCodexSkillsInjected(onLog) {
 3. **Acceptable: env var** — if the runtime reads a skills/plugin path from an environment variable, point it at the repo's `skills/` directory directly.
 4. **Last resort: prompt injection** — if the runtime has no plugin system, include skill content in the prompt template itself. This uses tokens but avoids filesystem side effects entirely.
 
-**Skills as loaded procedures, not prompt bloat.** The Paperclip skills (like `paperclip` and `wardmote-create-agent`) are designed as on-demand procedures: the agent sees skill metadata (name + description) in its context, but only loads the full SKILL.md content when it decides to invoke a skill. This keeps the base prompt small. When writing `agentConfigurationDoc` or prompt templates for your adapter, do not inline skill content — let the agent runtime's skill discovery do the work. The descriptions in each SKILL.md frontmatter act as routing logic: they tell the agent when to load the full skill, not what the skill contains.
+**Skills as loaded procedures, not prompt bloat.** The Wardmote skills (like `wardmote` and `wardmote-create-agent`) are designed as on-demand procedures: the agent sees skill metadata (name + description) in its context, but only loads the full SKILL.md content when it decides to invoke a skill. This keeps the base prompt small. When writing `agentConfigurationDoc` or prompt templates for your adapter, do not inline skill content — let the agent runtime's skill discovery do the work. The descriptions in each SKILL.md frontmatter act as routing logic: they tell the agent when to load the full skill, not what the skill contains.
 
-**Explicit vs. fuzzy skill invocation.** For production workflows where reliability matters (e.g. an agent that must always call the Paperclip API to report status), use explicit instructions in the prompt template: "Use the paperclip skill to report your progress." Fuzzy routing (letting the model decide based on description matching) is fine for exploratory tasks but unreliable for mandatory procedures.
+**Explicit vs. fuzzy skill invocation.** For production workflows where reliability matters (e.g. an agent that must always call the Wardmote API to report status), use explicit instructions in the prompt template: "Use the wardmote skill to report your progress." Fuzzy routing (letting the model decide based on description matching) is fine for exploratory tasks but unreliable for mandatory procedures.
 
 ---
 
 ## 8. Security Considerations
 
-Adapters sit at the boundary between Paperclip's orchestration layer and arbitrary agent execution. This is a high-risk surface.
+Adapters sit at the boundary between Wardmote's orchestration layer and arbitrary agent execution. This is a high-risk surface.
 
 ### Treat Agent Output as Untrusted
 
@@ -653,7 +653,7 @@ This follows the "sidecar injection" pattern: the model never sees the real secr
 
 If your agent runtime supports network access controls (sandboxing, allowlists), configure them in the adapter:
 
-- Prefer minimal allowlists over open internet access. An agent that only needs to call the Paperclip API and GitHub should not have access to arbitrary hosts.
+- Prefer minimal allowlists over open internet access. An agent that only needs to call the Wardmote API and GitHub should not have access to arbitrary hosts.
 - Skills + network = amplified risk. A skill that teaches the agent to make HTTP requests combined with unrestricted network access creates an exfiltration path. Constrain one or the other.
 - If the runtime supports layered policies (org-level defaults + per-request overrides), wire the org-level policy into the adapter config and let per-agent config narrow further.
 

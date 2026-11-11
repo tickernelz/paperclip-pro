@@ -208,8 +208,8 @@ POST /api/companies/{companyId}/secret-provider-configs
   "isDefault": true,
   "config": {
     "region": "us-east-1",
-    "namespace": "paperclip",
-    "secretNamePrefix": "paperclip",
+    "namespace": "wardmote",
+    "secretNamePrefix": "wardmote",
     "kmsKeyId": "arn:aws:kms:us-east-1:123456789012:key/abcd-...",
     "environmentTag": "production"
   }
@@ -412,7 +412,7 @@ Candidate statuses:
 
 Conflict types are `exact_reference`, `name`, `key`, and
 `provider_guardrail`. AWS refs under Wardmote's own managed namespace are
-blocked as external references; use the Paperclip-managed secret flow for those
+blocked as external references; use the Wardmote-managed secret flow for those
 resources instead.
 
 ### Import Selected Remote References

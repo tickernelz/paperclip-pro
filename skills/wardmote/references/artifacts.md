@@ -4,7 +4,7 @@ When work produces a user-inspectable file, upload true deliverables to the curr
 
 Attachment upload is a multipart upload and has no MCP tool, so it keeps its own helper. Everything else on this page — listing and deleting attachments, and recording work products — is done with the `core` toolset tools named below.
 
-Use Bash to run the helper bundled with this skill; installed skill files may not retain executable permissions. From an installed `paperclip` skill directory, the helper lives at `scripts/wardmote-upload-artifact.sh`:
+Use Bash to run the helper bundled with this skill; installed skill files may not retain executable permissions. From an installed `wardmote` skill directory, the helper lives at `scripts/wardmote-upload-artifact.sh`:
 
 ```bash
 bash scripts/wardmote-upload-artifact.sh path/to/output.webm \
@@ -28,7 +28,7 @@ When the uploaded file is the deliverable, record it with `wardmoteCreateIssueWo
 {
   "issueId": "<issue-id>",
   "type": "artifact",
-  "provider": "paperclip",
+  "provider": "wardmote",
   "title": "Walkthrough render",
   "status": "ready_for_review",
   "reviewState": "needs_board_review",

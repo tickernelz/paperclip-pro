@@ -31,10 +31,10 @@ substrate on the PAP-10341 branch canonical:
   rules, action requests, gateway sessions, audit events, and runtime slots.
   Connections v1 is retired as an implementation path.
 - **D2: one credential authority per connection, brokered projections.** The
-  default is the Paperclip instance vault: durable third-party credentials live
+  default is the Wardmote instance vault: durable third-party credentials live
   in `company_secrets` as secret refs. A reviewed remote MCP method may instead
   opt in to [Vercel Connect](./VERCEL-CONNECT.md), in which case Vercel is the
-  durable credential authority and Paperclip stores only the connector reference
+  durable credential authority and Wardmote stores only the connector reference
   and redacted grant metadata. A connection must never mix those two sources.
   Adapter config, plugin config, harness credential files, and run environments
   may receive only brokered or projected credentials.
@@ -44,8 +44,8 @@ substrate on the PAP-10341 branch canonical:
 - **D4: unification lands on PAP-10341.** Pages, CircleBack-style harness MCP
   OAuth, provider gallery work, and plugin-provided integrations converge on
   this branch instead of spawning new integration substrates.
-- **D5: inbound stays thin.** External clients that call Paperclip use scoped
-  Paperclip tokens and existing profiles/rules. They do not get a separate
+- **D5: inbound stays thin.** External clients that call Wardmote use scoped
+  Wardmote tokens and existing profiles/rules. They do not get a separate
   permission model.
 
 ## Canonical Object Model
@@ -86,7 +86,7 @@ solves the problem:
 | Transport | how the external system is reached | remote HTTP MCP, local stdio, REST/OpenAPI, webhook |
 
 The agent should not hold a durable provider credential. It should hold a
-Paperclip run/session token; the server or broker resolves the connection,
+Wardmote run/session token; the server or broker resolves the connection,
 checks governance, invokes the provider, and writes audit.
 
 ## Identity vs. connections
@@ -135,7 +135,7 @@ not own durable tokens.
   playbook work.
 - [Connecting any remote MCP server](./GENERIC-REMOTE-MCP.md) is the baseline:
   how an operator connects a standards-compliant remote MCP endpoint with no
-  Paperclip code change, and how sign-in resolves a client.
+  Wardmote code change, and how sign-in resolves a client.
 - [Connection authoring runbook](./CONNECTOR-PLAYBOOK.md) is the one
   end-to-end, agent-executable guide for adding a vendor as a catalog entry on
   Apps v2: research, connection-type selection, OAuth/API-key/generated-URL

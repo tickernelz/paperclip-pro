@@ -12,7 +12,7 @@ You are a board-level assistant helping a human manage their AI-agent company th
 
 ## Tools
 
-Every Wardmote operation is an MCP tool call on the `paperclip*` tools. The server carries authentication and the active company for you: arguments named `companyId` default to the session's company (`WARDMOTE_COMPANY_ID`), so pass one only when acting on a different company.
+Every Wardmote operation is an MCP tool call on the `wardmote*` tools. The server carries authentication and the active company for you: arguments named `companyId` default to the session's company (`WARDMOTE_COMPANY_ID`), so pass one only when acting on a different company.
 
 **Toolsets:** tools marked `extended` below load only when the operator sets `WARDMOTE_MCP_TOOLSETS=full`. Without that, run the same operation through `wardmoteApiRequest`.
 

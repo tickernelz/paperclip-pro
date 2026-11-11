@@ -1,14 +1,14 @@
 ---
 name: wardmote-page
 description: >
-  Publish static HTML pages and asset folders to the Paperclip S3/CloudFront page
+  Publish static HTML pages and asset folders to the Wardmote S3/CloudFront page
   host. Use when asked to deploy, host, or share a persistent page, viewer,
   prototype, report, or static site without here.now.
 ---
 
-# Paperclip Page
+# Wardmote Page
 
-Use this skill to publish a static directory to the configured Paperclip pages
+Use this skill to publish a static directory to the configured Wardmote pages
 host, for example `https://pages.paperclip.ing/<slug>/`.
 
 ## Requirements
@@ -20,7 +20,7 @@ host, for example `https://pages.paperclip.ing/<slug>/`.
   - `WARDMOTE_PAGE_BASE_URL`
   - `AWS_REGION`
   - `WARDMOTE_PAGE_AWS_ACCESS_KEY_ID` and `WARDMOTE_PAGE_AWS_SECRET_ACCESS_KEY`
-    with the page-uploader credentials from Paperclip Secrets
+    with the page-uploader credentials from Wardmote Secrets
 - Optional environment variables:
   - `WARDMOTE_PAGE_DEFAULT_PREFIX`
   - `WARDMOTE_PAGE_AWS_PROFILE` (alternative to the namespaced key pair)
@@ -90,7 +90,7 @@ overwriting another page.
 - `Found symlink`: replace symlinks with real files before publishing.
 - `AccessDenied`: confirm the uploader IAM policy allows `ListBucket`,
   `GetObject`, and `PutObject` for the configured bucket/prefix, and that the
-  agent received the Paperclip Secrets.
+  agent received the Wardmote Secrets.
 - Public URL verification failed: check CloudFront deployment/DNS, object
   existence, and that the distribution uses HTTPS with the private S3 REST
   origin.
