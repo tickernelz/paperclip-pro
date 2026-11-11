@@ -72,7 +72,7 @@ test.describe("Onboarding", () => {
 
     mock.status = ompStatus({ models: [], recommendedModel: null });
     await expect(page.getByRole("heading", { name: "Connect a model" })).toBeVisible({ timeout: 10_000 });
-    await counter.select(page.getByLabel("Provider"), "ChatGPT Plus/Pro (Codex Subscription)");
+    await counter.select(page.getByRole("combobox", { name: /^Provider/ }), "ChatGPT Plus/Pro (Codex Subscription)");
     const popup = page.context().waitForEvent("page");
     await counter.click(page.getByRole("button", { name: "Sign in", exact: true }));
     counter.step("connect-model");
