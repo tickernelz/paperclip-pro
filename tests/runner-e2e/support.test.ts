@@ -454,7 +454,7 @@ describe("runner E2E matchers", () => {
         { kind: "runtime_mode", expected: "native" },
       ],
       {
-        message: "  complete   PAPERCLIP\\_E2E\\_OK\\_nonce  ",
+        message: "  complete   WARDMOTE\\_E2E\\_OK\\_nonce  ",
         issueStatus: "done",
         runtimeMode: "native",
       },

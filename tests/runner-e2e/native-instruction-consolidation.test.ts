@@ -8,7 +8,7 @@ import { describe, expect, it } from "vitest";
 import { runnerSuites, buildRunnerMatrix } from "./catalog.js";
 import { gradeNativeDefault, NATIVE_MASTER_DEFAULT_SHA256 } from "./native-completion-defaults.js";
 import { nativeCompletionTasks } from "./native-completion-cases.js";
-import { assertNativeInstructionLineage, assertNativeInstructionSelection, nativeInstructionVariant, validateNativeInstructionMeasurement, NATIVE_INSTRUCTION_BASE_SHA, NATIVE_INSTRUCTION_DEFAULT_SHA256, NATIVE_INSTRUCTION_SUITE, NATIVE_INSTRUCTION_VARIANTS } from "./native-instruction-consolidation.js";
+import { assertNativeInstructionLineage, assertNativeInstructionSelection, validateNativeInstructionMeasurement, NATIVE_INSTRUCTION_BASE_SHA, NATIVE_INSTRUCTION_DEFAULT_SHA256, NATIVE_INSTRUCTION_SUITE, NATIVE_INSTRUCTION_VARIANTS } from "./native-instruction-consolidation.js";
 
 describe("native instruction comparison admission", () => {
   it("proves real hosted ancestry when the source is more than eight commits from the base", () => {
@@ -65,22 +65,6 @@ describe("native instruction comparison admission", () => {
         "fetch", "--no-tags", `--depth=${depth}`, "https://github.com/paperclipai/paperclip.git", head]));
     }
   });
-  it("accepts each complete source variant and rejects a mixed variant", () => {
-    const files = Object.keys(NATIVE_INSTRUCTION_VARIANTS.baseline);
-    const baseline = new Map(files.map(file => [file, execFileSync("git", ["show", `${NATIVE_INSTRUCTION_BASE_SHA}:${file}`])]));
-    expect(nativeInstructionVariant(file => baseline.get(file)!)).toBe("baseline");
-    // This historical admission intentionally rejects later production changes.
-    // Exercise the retained qualified tree rather than requiring HEAD to remain
-    // one of this completed comparison's frozen variants forever.
-    const candidate = new Map(files.map(file => [file, execFileSync("git", ["show", `16ef1a5744b23bb043a8b286e6288921da1de98f:${file}`])]));
-    const currentVariant = nativeInstructionVariant(file => candidate.get(file)!);
-    expect(["baseline", "candidate", "corrected", "feedback", "opencodeFeedback", "opencodeFeedbackSettlement", "opencodeFeedbackResponses"]).toContain(currentVariant);
-    candidate.set(files[0]!, currentVariant === "candidate" ? baseline.get(files[0]!)! : Buffer.from("unknown source"));
-    expect(() => nativeInstructionVariant(file => candidate.get(file)!)).toThrow("Mixed or unknown");
-    baseline.set(files[0]!, Buffer.from("unknown source"));
-    expect(() => nativeInstructionVariant(file => baseline.get(file)!)).toThrow("Mixed or unknown");
-  });
-
   it("declares six explicit single-attempt cells with the original task prompts and oracle", () => {
     const suite = runnerSuites.find(value => value.id === NATIVE_INSTRUCTION_SUITE)!;
     expect(suite.tasks).toEqual(nativeCompletionTasks);

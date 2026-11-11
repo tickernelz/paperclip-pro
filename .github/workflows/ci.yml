@@ -247,6 +247,18 @@ jobs:
           WARDMOTE_SERVER_TEST_WORKERS: "3"
         run: pnpm test:run:serialized -- --shard-index ${{ matrix.shard_index }} --shard-count 3
 
+  runner-e2e-unit:
+    name: Runner E2E support suites
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-workspace
+      - name: Run the Runner E2E support suites
+        run: pnpm test:e2e:runner:unit
+
   e2e:
     name: E2E (${{ matrix.shard_index }}/5)
     runs-on: ubuntu-latest
@@ -403,7 +415,7 @@ jobs:
   verify:
     name: verify
     if: always()
-    needs: [policy, typecheck, build, runner, general, serialized, e2e, browser-gates, upgrade-path]
+    needs: [policy, typecheck, build, runner, general, serialized, runner-e2e-unit, e2e, browser-gates, upgrade-path]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:

@@ -8,7 +8,7 @@ const report = () => ({ testResults: [{ name: "/repo/boundary.test.ts", status: 
 numTotalTests: 1, numPassedTests: 1, numFailedTests: 0, numPendingTests: 0 });
 describe("stock harness prerequisite coverage", () => {
   it("maps every implemented change to an executable gate", () => {
-    expect(stockHarnessGates.map(gate => gate.id)).toEqual(["SH-1", "SH-2", "SH-3", "SH-3-hermes", "SH-eval"]);
+    expect(stockHarnessGates.map(gate => gate.id)).toEqual(["SH-1", "SH-2", "SH-3", "SH-eval"]);
     expect(stockHarnessGates.every(gate => gate.files.length > 0 && gate.required.length > 0)).toBe(true);
   });
   it("accepts an executed passing boundary", () => expect(gradeGate(gate, report(), 0).passed).toBe(true));

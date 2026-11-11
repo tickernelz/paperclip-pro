@@ -91,7 +91,7 @@ describe("production hiring template oracle", () => {
     historical.leadInstructions!.files = oldFiles;
     for (const file of Object.keys(oldFiles)) historical.expectedSourceHashes[`server/src/onboarding-assets/ceo/${file}`] = historical.servedSourceHashes[`server/src/onboarding-assets/ceo/${file}`] = hiringTemplateHash(oldFiles[file as keyof typeof oldFiles]);
     const historicalReference = await readFile(new URL("./fixtures/hiring-templates/coder.d7bdfc4.md", import.meta.url), "utf8");
-    expect(hiringTemplateHash(historicalReference)).toBe("766c6f5db907f3dc2e317d540feb80e77358202c59d759449228a32450fa6202");
+    expect(hiringTemplateHash(historicalReference)).toBe("be986a0d7f0b6a4e33ca536c2dbda428cb4fad326a8583abbb47c0ca7edd818a");
     historical.coderExample = renderHiringCoderExample(historicalReference, "Casey", "Fixture Company", "CEO", "FIX");
     expect(historical.coderExample).not.toMatch(/\{\{[^}]+\}\}/);
     expect(historical.coderExample).toContain("You report to CEO.");

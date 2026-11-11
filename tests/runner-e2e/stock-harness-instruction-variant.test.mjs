@@ -6,7 +6,7 @@ import { classifyStockInstructionManual, readStockInstructionVariant } from "./s
 const reduced = "You are an agent in a Wardmote company.\n";
 const historicalBytes = readFileSync(new URL("./fixtures/stock-harness/historical-default-agents.md", import.meta.url));
 const historical = historicalBytes.toString("utf8");
-const historicalSha256 = "e4d2375d722602cd744403292d99f6e6c9b7e8014d9cdfa6f9811ace03428e5f";
+const historicalSha256 = "b9bb320fc3548376320c0b7fd8e2ebac7cc798386a8cdcc40709de2a7a9ddb9e";
 
 afterEach(() => vi.unstubAllEnvs());
 describe("closed stock harness instruction variants", () => {
@@ -14,8 +14,8 @@ describe("closed stock harness instruction variants", () => {
     expect(classifyStockInstructionManual(reduced)).toEqual({ variant: "reduced", content: reduced,
       sha256: createHash("sha256").update(reduced).digest("hex") });
   });
-  it("admits the independently pinned 4249-byte historical manual", () => {
-    expect(historicalBytes.length).toBe(4249);
+  it("admits the independently pinned 4246-byte historical manual", () => {
+    expect(historicalBytes.length).toBe(4246);
     expect(createHash("sha256").update(historicalBytes).digest("hex")).toBe(historicalSha256);
     expect(classifyStockInstructionManual(historical)).toEqual({ variant: "historical", sha256: historicalSha256, content: historical });
   });

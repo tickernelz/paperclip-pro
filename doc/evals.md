@@ -102,7 +102,8 @@ sanitization.
 Product E2E Evals are owned by the runner E2E maintainers. The catalog and
 harness are under `tests/runner-e2e`; the package scripts are `test:e2e:runner`,
 `test:e2e:runner:unit`, `test:e2e:runner:typecheck`, and
-`test:e2e:runner:report`. `README.md`, `FIXTURES.md`, `SECURITY.md`, and
+`test:e2e:runner:report`. CI runs `test:e2e:runner:unit` on every pull request
+and push to `main`. `README.md`, `FIXTURES.md`, `SECURITY.md`, and
 `EVERYDAY-WORKFLOWS.md` are the detailed sources of truth. The harness starts
 the server and embedded database, creates the company/agent/task through the
 real APIs, drives Chromium, and invokes the selected local or Daytona runner.

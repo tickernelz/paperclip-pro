@@ -31,6 +31,7 @@ export const connectionScopeGaps = [
   { adapter: "acpx_local", status: "excluded", reason: "Generic legacy integration; native Claude/Grok ACPX profiles remain covered." },
   { adapter: "claude_managed", status: "excluded", reason: "Managed remote integration owns credentials." },
   { adapter: "aws_agentcore", status: "excluded", reason: "Remote integration owns credentials." },
+  { adapter: "omp_local", status: "excluded", reason: "OMP owns provider configuration in its own models.yml." },
 ] as const;
 
 export function routingForMode(mode: ConnectionMode): AiProviderRouting | undefined {
