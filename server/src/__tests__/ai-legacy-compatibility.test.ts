@@ -1,27 +1,15 @@
 import { beforeAll, afterAll, it, expect, vi } from "vitest";
 import { randomUUID } from "node:crypto";
-import { mkdtemp, readFile, writeFile, mkdir, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { eq, sql } from "drizzle-orm";
-import { createDb, companies, agents, companyMemberships, adapterAuthSessions, environments, connectionGrants, toolConnections, activityLog, companySecrets } from "@tickernelz/wardmote-db";
+import { createDb, companies, agents, companyMemberships, environments, connectionGrants, toolConnections, activityLog, companySecrets } from "@tickernelz/wardmote-db";
 import { startEmbeddedPostgresTestDatabase } from "@tickernelz/wardmote-db/test-embedded-postgres";
 import { secretService } from "../services/secrets.js";
 import { aiConnectionService } from "../services/ai-connections.js";
 import { prepareManagedAiRuntime, managedAiSessionFingerprintConfig } from "../services/ai-connection-runtime.js";
-import { localAiLoginService } from "../services/local-ai-login.js";
-import { readVerifiedLocalAiCredential } from "../services/local-ai-credentials.js";
-import { resolveWardmoteInstanceRoot } from "../home-paths.js";
 
-const browserLogin = vi.hoisted(() => ({ submitCode: vi.fn(), abort: vi.fn() }));
-vi.mock("../services/local-ai-browser-login.js", () => ({
-  startLocalBrowserLogin: () => ({
-    authorizationUrl: "https://auth.openai.com/codex/device",
-    code: "TEST-CODE",
-    submitCode: browserLogin.submitCode,
-    abort: browserLogin.abort,
-  }),
-}));
 
 let database: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;
 let db: ReturnType<typeof createDb>;
@@ -80,140 +68,10 @@ it("reconnect detaches an indexed credential without changing unadopted legacy a
 const intent = { provider: "openai", method: "subscription", name: "Isolated Codex", ownership: "personal", agentIds: [], allAgents: true } as const;
 const loginIntent = () => ({ ...intent, agentIds: [] });
 const auth = (mark: string, hour = 10) => JSON.stringify({ tokens: { account_id: "fixture-account", id_token: `id-${mark}`, access_token: `access-${mark}`, refresh_token: `refresh-${mark}` }, last_refresh: `2026-09-10T${hour}:00:00Z` });
-const directoryFor = (id: string) => path.join(resolveWardmoteInstanceRoot(), "ai-local-logins", id);
-
-it("accepts a Claude code once, only from its owner, and audits without the code", async () => {
-  const login = localAiLoginService(db);
-  const intent = { ...loginIntent(), provider: "anthropic" as const };
-  const attempt = await login.start(companyId, owner, intent);
-  browserLogin.submitCode.mockClear();
-  await expect(login.submitCode(companyId, "another-owner", attempt.sessionId, "fixture-secret-code")).rejects.toThrow("not found");
-  await expect(login.submitCode(randomUUID(), owner, attempt.sessionId, "fixture-secret-code")).rejects.toThrow("not found");
-  expect(browserLogin.submitCode).not.toHaveBeenCalled();
-  await login.submitCode(companyId, owner, attempt.sessionId, "fixture-secret-code");
-  expect(browserLogin.submitCode).toHaveBeenCalledExactlyOnceWith("fixture-secret-code");
-  await expect(login.submitCode(companyId, owner, attempt.sessionId, "fixture-secret-code")).rejects.toThrow("cannot accept a code");
-  const events = await db.select().from(activityLog).where(eq(activityLog.entityId, attempt.sessionId));
-  expect(events.filter(event => event.action === "ai_connection.local_login_code_submitted")).toHaveLength(1);
-  expect(JSON.stringify(events)).not.toContain("fixture-secret-code");
-  await login.cancel(companyId, owner, attempt.sessionId);
-});
-
-it.each(["cancelled", "expired"])("rejects code submission to a %s Claude attempt", async state => {
-  const login = localAiLoginService(db);
-  const intent = { ...loginIntent(), provider: "anthropic" as const };
-  const attempt = await login.start(companyId, owner, intent);
-  browserLogin.submitCode.mockClear();
-  if (state === "cancelled") await login.cancel(companyId, owner, attempt.sessionId);
-  else await db.update(adapterAuthSessions).set({ expiresAt: new Date(Date.now() - 1000) }).where(eq(adapterAuthSessions.id, attempt.sessionId));
-  await expect(login.submitCode(companyId, owner, attempt.sessionId, "fixture-code")).rejects.toThrow("expired or was cancelled");
-  expect(browserLogin.submitCode).not.toHaveBeenCalled();
-  await login.reapExpired();
-});
-
-it("isolates sign-in and refresh from the host, survives restart, and completes only once", async () => {
-  const hostHome = path.join(home, "host-codex");
-  await mkdir(hostHome);
-  await writeFile(path.join(hostHome, "auth.json"), auth("legacy"));
-  vi.stubEnv("CODEX_HOME", hostHome);
-  vi.stubGlobal("fetch", vi.fn(async () => new Response("{}")));
-  const login = localAiLoginService(db);
-  const attempt = await login.start(companyId, owner, loginIntent());
-  const directory = directoryFor(attempt.sessionId);
-  expect(await localAiLoginService(db).start(companyId, owner, loginIntent())).toEqual(attempt);
-  expect(attempt.command).toBeUndefined();
-  expect(await readFile(path.join(directory, "config.toml"), "utf8")).toContain('cli_auth_credentials_store = "file"');
-  expect(await localAiLoginService(db).check(companyId, owner, loginIntent(), attempt.sessionId)).toEqual({
-    status: "sign_in_required", authorizationUrl: "https://auth.openai.com/codex/device", code: "TEST-CODE",
-  });
-  // Resuming a valid attempt also repairs a missing directory without changing its ID.
-  await rm(directory, { recursive: true });
-  expect(await login.start(companyId, owner, loginIntent())).toEqual(attempt);
-  expect(await readFile(path.join(directory, "config.toml"), "utf8")).toContain('cli_auth_credentials_store = "file"');
-  // A valid host login cannot satisfy an unfinished connection-specific login.
-  await expect(login.complete(companyId, owner, attempt.sessionId, loginIntent())).rejects.toThrow("Finish browser sign-in");
-  expect((await aiConnectionService(db).list(companyId, owner)).filter(c => c.provider === "openai")).toHaveLength(0);
-  await writeFile(path.join(directory, "auth.json"), auth("independent-login"));
-  expect(await login.check(companyId, owner, loginIntent(), attempt.sessionId)).toEqual({ status: "ready" });
-  expect((await aiConnectionService(db).list(companyId, owner)).filter(c => c.provider === "openai")).toHaveLength(0);
-  await expect(login.check(companyId, "another-owner", loginIntent(), attempt.sessionId)).rejects.toThrow("not found");
-  await expect(login.check(randomUUID(), owner, loginIntent(), attempt.sessionId)).rejects.toThrow("not found");
-  await expect(login.check(companyId, owner, { ...loginIntent(), ownership: "shared" }, attempt.sessionId)).rejects.toThrow("not found");
-  // New service instance simulates process restart: all intent is durable.
-  const results = await Promise.all([
-    localAiLoginService(db).complete(companyId, owner, attempt.sessionId, loginIntent()),
-    localAiLoginService(db).complete(companyId, owner, attempt.sessionId, loginIntent()),
-  ]);
-  expect(results[0]).toEqual(results[1]);
-  await expect(readFile(path.join(directory, "auth.json"))).rejects.toHaveProperty("code", "ENOENT");
-  const input = { companyId, agentId, adapterType: "codex_local", responsibleUserId: owner, binding: { provider: "openai", method: "subscription", mode: "responsible_user" } as const, config: { cwd: home, model: "unchanged-model" } };
-  const run = await prepareManagedAiRuntime(db, input);
-  const credentialFile = path.join(String(run.config.env.CODEX_HOME), "auth.json");
-  expect(JSON.parse(await readFile(credentialFile, "utf8")).tokens.refresh_token).toBe("refresh-independent-login");
-  await writeFile(credentialFile, auth("rotated-independent", 11));
-  await run.cleanup();
-  expect(await readFile(path.join(hostHome, "auth.json"), "utf8")).toBe(auth("legacy"));
-  const next = await prepareManagedAiRuntime(db, input);
-  expect(JSON.parse(await readFile(path.join(String(next.config.env.CODEX_HOME), "auth.json"), "utf8")).tokens.refresh_token).toBe("refresh-rotated-independent");
-  expect(next.config.model).toBe(input.config.model);
-  await next.cleanup();
-  // Cancellation after successful completion must not revoke the saved account.
-  await login.cancel(companyId, owner, attempt.sessionId);
-  expect((await aiConnectionService(db).list(companyId, owner)).find(c => c.id === results[0].connectionId)?.status).toBe("connected");
-  expect((await db.select().from(activityLog).where(eq(activityLog.entityId, attempt.sessionId)))
-    .filter(event => event.action === "ai_connection.local_login_cancelled")).toHaveLength(0);
-  const reconnectIntent = { ...loginIntent(), connectionId: results[0].connectionId };
-  const reconnect = await login.start(companyId, owner, reconnectIntent);
-  expect(reconnect.sessionId).not.toBe(attempt.sessionId);
-  await writeFile(path.join(directoryFor(reconnect.sessionId), "auth.json"), auth("new-login"));
-  expect(await login.complete(companyId, owner, reconnect.sessionId, reconnectIntent)).toEqual(results[0]);
-  expect(await readFile(path.join(hostHome, "auth.json"), "utf8")).toBe(auth("legacy"));
-});
-
-it("enforces local attempt ownership, company, target, cancellation, and expiry", async () => {
-  const login = localAiLoginService(db);
-  const attempt = await login.start(companyId, owner, loginIntent());
-  const cancellations = async () => (await db.select().from(activityLog).where(eq(activityLog.entityId, attempt.sessionId)))
-    .filter(event => event.action === "ai_connection.local_login_cancelled");
-  await expect(login.complete(companyId, "another-owner", attempt.sessionId, loginIntent())).rejects.toThrow("not found");
-  await expect(login.cancel(companyId, "another-owner", attempt.sessionId)).rejects.toThrow("not found");
-  await expect(login.cancel(randomUUID(), owner, attempt.sessionId)).rejects.toThrow("not found");
-  await expect(login.complete(companyId, owner, attempt.sessionId, { ...loginIntent(), ownership: "shared" })).rejects.toThrow("not found");
-  expect(await cancellations()).toHaveLength(0);
-  await login.cancel(companyId, owner, attempt.sessionId);
-  await login.cancel(companyId, owner, attempt.sessionId);
-  expect(await cancellations()).toEqual([expect.objectContaining({
-    companyId, actorType: "user", actorId: owner, entityType: "adapter_auth_session",
-    entityId: attempt.sessionId, details: { provider: "openai" },
-  })]);
-  await expect(login.complete(companyId, owner, attempt.sessionId, loginIntent())).rejects.toThrow("cancelled");
-  const retry = await login.start(companyId, owner, loginIntent());
-  await writeFile(path.join(directoryFor(retry.sessionId), "auth.json"), auth("abandoned"));
-  await db.update(adapterAuthSessions).set({ expiresAt: new Date(Date.now() - 1000) }).where(eq(adapterAuthSessions.id, retry.sessionId));
-  await expect(login.complete(companyId, owner, retry.sessionId, loginIntent())).rejects.toThrow("expired");
-  expect(await login.check(companyId, owner, loginIntent(), retry.sessionId)).toEqual({ status: "expired" });
-  await localAiLoginService(db).reapExpired();
-  await expect(readFile(path.join(directoryFor(retry.sessionId), "auth.json"))).rejects.toHaveProperty("code", "ENOENT");
-  const [row] = await db.select().from(adapterAuthSessions).where(eq(adapterAuthSessions.id, retry.sessionId));
-  expect(row.status).toBe("timed_out");
-});
-
-it("explicit retry replaces another owned local attempt while ordinary navigation preserves it", async () => {
-  const login = localAiLoginService(db);
-  const first = await login.start(companyId, owner, loginIntent());
-  const restricted = { ...loginIntent(), allAgents: false, agentIds: [agentId] };
-  await expect(login.start(companyId, owner, restricted)).rejects.toThrow("Another sign-in");
-  const retry = await login.start(companyId, owner, restricted, true);
-  expect(retry.sessionId).not.toBe(first.sessionId);
-  const [old] = await db.select().from(adapterAuthSessions).where(eq(adapterAuthSessions.id, first.sessionId));
-  expect(old.status).toBe("cancelled");
-  await expect(readFile(path.join(directoryFor(first.sessionId), "config.toml"))).rejects.toHaveProperty("code", "ENOENT");
-  expect(await login.start(companyId, owner, restricted)).toEqual(retry);
-  await login.cancel(companyId, owner, retry.sessionId);
-});
 
 it("blocks preview-era copied subscriptions until isolated reconnect, leaving legacy config intact", async () => {
   const service = aiConnectionService(db);
+  await service.save(companyId, owner, loginIntent(), auth("preview"));
   const account = (await service.list(companyId, owner)).find(c => c.provider === "openai")!;
   const [connection] = await db.select().from(toolConnections).where(eq(toolConnections.id, account.id));
   await db.update(toolConnections).set({ config: { ...connection.config, aiIsolatedSubscription: false } }).where(eq(toolConnections.id, account.id));

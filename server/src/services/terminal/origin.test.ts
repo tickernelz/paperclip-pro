@@ -64,6 +64,31 @@ describe("terminalOriginAllowed", () => {
     expect(terminalOriginAllowed({ host: "127.0.0.1:3100" }, { ...livePolicy, deploymentMode: "local_trusted" })).toBe(true);
   });
 
+  it("accepts an allowed hostname reached directly on the port its Host header names", () => {
+    const ipPolicy: TerminalOriginPolicy = {
+      deploymentMode: "authenticated",
+      allowedHostnames: ["203.0.113.7", "fd00::7"],
+      bindHost: "0.0.0.0",
+      listenPort: 3100,
+      hostnameGuardEnabled: true,
+      publicBaseUrls: [undefined],
+    };
+    const check = (origin: string | undefined, host: string, policy = ipPolicy) =>
+      terminalOriginAllowed({ origin, host }, policy);
+    expect(check("http://203.0.113.7:3100", "203.0.113.7:3100")).toBe(true);
+    expect(check("https://203.0.113.7:8443", "203.0.113.7:8443")).toBe(true);
+    expect(check("http://203.0.113.7:8080", "203.0.113.7:8080")).toBe(true);
+    expect(check("http://[fd00::7]:3100", "[fd00::7]:3100")).toBe(true);
+    expect(check("http://203.0.113.7:3101", "203.0.113.7:3100")).toBe(false);
+    expect(check("http://203.0.113.7", "203.0.113.7")).toBe(false);
+    expect(check("https://203.0.113.7:3100", "203.0.113.7:3101")).toBe(false);
+    expect(check("ws://203.0.113.7:3100", "203.0.113.7:3100")).toBe(false);
+    expect(check("https://evil.example:3100", "203.0.113.7:3100")).toBe(false);
+    expect(check("http://198.51.100.9:3100", "198.51.100.9:3100")).toBe(false);
+    expect(check("http://evil.example:3100", "evil.example:3100", { ...ipPolicy, hostnameGuardEnabled: false })).toBe(false);
+    expect(check(undefined, "203.0.113.7:3100")).toBe(false);
+  });
+
   it("trusts WARDMOTE_PUBLIC_URL exactly", () => {
     process.env.WARDMOTE_PUBLIC_URL = "https://board.example.com:8443/app";
     const policy = { ...livePolicy, hostnameGuardEnabled: false, allowedHostnames: [], publicBaseUrls: [] };

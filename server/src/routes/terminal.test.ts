@@ -385,6 +385,31 @@ describe("terminal routes", () => {
     expect((await post("https://terminal.test")).status).toBe(201);
   });
 
+  it("accepts a board opened at an allowed IP and port and explains how to fix an untrusted address", async () => {
+    actor = adminActor;
+    const app = createApp({
+      ...authenticatedPolicy,
+      allowedHostnames: ["203.0.113.7"],
+      bindHost: "0.0.0.0",
+      hostnameGuardEnabled: true,
+    });
+    const post = (host: string, origin?: string) => {
+      const req = request(app).post(sessionsPath()).set("Host", host);
+      return (origin ? req.set("Origin", origin) : req).send({ kind: "local" });
+    };
+    expect((await post("203.0.113.7:3100", "http://203.0.113.7:3100")).status).toBe(201);
+    expect((await post("evil.example:3100", "http://evil.example:3100")).status).toBe(403);
+    expect((await post("203.0.113.7:3100")).status).toBe(403);
+    const denied = await post("203.0.113.7:3100", "http://203.0.113.7:3101");
+    expect(denied.status).toBe(403);
+    expect(denied.body).toMatchObject({
+      error: "This browser address is not trusted for terminal access.",
+      code: "terminal_origin_untrusted",
+      remediation:
+        "To use this address, add its hostname with npx @tickernelz/wardmote allowed-hostname <host>, restart Wardmote, and open http://<host>:3100.",
+    });
+  });
+
   it("uploads into the session cwd, rejects ../ traversal and never overwrites", async () => {
     const app = createApp();
     const created = await request(app).post(sessionsPath()).send({ kind: "local" });

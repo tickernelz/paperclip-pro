@@ -3,7 +3,7 @@ import { useCompany } from "../context/CompanyContext";
 import { ExternalAgentInviteDialog } from "./new-agent/ExternalAgentInviteDialog";
 import { useNavigate } from "@/lib/router";
 import { useDialog } from "../context/DialogContext";
-import { AgentBasicsDialog } from "./new-agent/AgentBasicsDialog";
+import { AgentBasicsDialog, newAgentQuery } from "./new-agent/AgentBasicsDialog";
 
 export function NewAgentDialog() {
   const { newAgentOpen, closeNewAgent } = useDialog();
@@ -23,7 +23,7 @@ function NewAgentDialogContent({ companyId, onClose }: { companyId: string | nul
       onInvite={companyId ? () => setInvite(true) : undefined}
       onContinue={(basics) => {
         onClose();
-        navigate(`/agents/new?${new URLSearchParams(basics)}`);
+        navigate(`/agents/new?${newAgentQuery(basics)}`);
       }}
     />
   );

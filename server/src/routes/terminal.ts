@@ -22,7 +22,12 @@ import { logActivity, type LogActivityInput } from "../services/activity-log.js"
 import { terminalAccessDenial } from "../services/terminal/access.js";
 import { localTerminalFiles, pastedImageFileName, type TerminalFileAccess } from "../services/terminal/files.js";
 import { terminalSessionManager, type TerminalSessionManager } from "../services/terminal/manager.js";
-import { terminalOriginAllowed, type TerminalOriginPolicy } from "../services/terminal/origin.js";
+import {
+  TERMINAL_ORIGIN_UNTRUSTED,
+  terminalOriginAllowed,
+  terminalOriginRemediation,
+  type TerminalOriginPolicy,
+} from "../services/terminal/origin.js";
 import { spawnLocalTerminal, type TerminalProcess } from "../services/terminal/process.js";
 import { createTerminalSessionSchema, createTerminalSshHostSchema } from "../services/terminal/schema.js";
 import { connectSshTerminal, type SshTerminalTarget } from "../services/terminal/ssh.js";
@@ -160,7 +165,12 @@ export function terminalRoutes(db: Db, options: TerminalRouteOptions) {
       },
       originPolicy,
     );
-    if (!allowed) throw forbidden("Terminal changes require a same-origin browser request");
+    if (!allowed) {
+      throw forbidden("This browser address is not trusted for terminal access.", {
+        code: TERMINAL_ORIGIN_UNTRUSTED,
+        remediation: terminalOriginRemediation(originPolicy),
+      });
+    }
     next();
   };
 

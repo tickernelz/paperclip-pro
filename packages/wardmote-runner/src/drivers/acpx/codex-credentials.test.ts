@@ -1641,12 +1641,30 @@ describe("managed Codex credentials", () => {
 });
 
 async function credentialFixture(): Promise<{ root: string; home: string }> {
-  const root = await mkdtemp(join(tmpdir(), "wardmote-acpx-credential-"));
-  temporaryDirectories.push(root);
-  const home = join(root, "codex-home");
-  await mkdir(home, { mode: 0o700 });
-  await chmod(home, 0o700);
-  return { root, home: await realpath(home) };
+  for (let attempt = 0; attempt < 32; attempt += 1) {
+    const root = await mkdtemp(join(tmpdir(), "wardmote-acpx-credential-"));
+    temporaryDirectories.push(root);
+    const home = join(root, "codex-home");
+    await mkdir(home, { mode: 0o700 });
+    await chmod(home, 0o700);
+    const fixture = { root, home: await realpath(home) };
+    if (await leaseCandidatesAreFree(fixture.home)) return fixture;
+  }
+  throw new Error("Credential fixture with free lease candidates exhausted.");
+}
+
+async function leaseCandidatesAreFree(home: string): Promise<boolean> {
+  const probes: Array<Awaited<ReturnType<typeof listenSilently>>> = [];
+  try {
+    for (const port of credentialLeasePorts(home))
+      probes.push(await listenSilently(port));
+    return true;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "EADDRINUSE") return false;
+    throw error;
+  } finally {
+    await Promise.all(probes.map((probe) => probe.close()));
+  }
 }
 
 async function occupiedQuorumFixture(count: number) {

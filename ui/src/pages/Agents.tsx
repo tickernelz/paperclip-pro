@@ -1,7 +1,8 @@
 import { PrimaryAgentIndicator } from "@/components/primary-agent/PrimaryAgentPresentation";
 import { AgentAvatar } from "@/components/AgentAvatar";
 import { useAgentChatEnabled } from "../hooks/useAgentChatEnabled";
-import { useState, useEffect, useMemo, lazy, Suspense, type ReactNode } from "react";
+import { useState, useEffect, useMemo, Suspense, type ReactNode } from "react";
+import { lazyPage } from "../lib/lazy-page";
 import { Link, useNavigate, useLocation } from "@/lib/router";
 import { useQuery } from "@tanstack/react-query";
 import { agentsApi, type OrgNode } from "../api/agents";
@@ -21,6 +22,7 @@ import { EmptyState } from "../components/EmptyState";
 import { PageSkeleton } from "../components/PageSkeleton";
 import { OrgChart } from "./OrgChart";
 import { relativeTime, cn, agentRouteRef, agentUrl } from "../lib/utils";
+import { AGENT_FILTER_TABS } from "../lib/agent-filter-tabs";
 import { PageTabBar } from "../components/PageTabBar";
 import { Tabs } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -48,13 +50,8 @@ const roleLabels = AGENT_ROLE_LABELS as Record<string, string>;
 
 // Lazy-loaded so the roster page doesn't statically pull in the full
 // AgentConfigForm module graph (the modal reuses its adapter/model pickers).
-const ConfigureBuiltInAgentModal = lazy(() =>
-  import("../components/ConfigureBuiltInAgentModal").then((m) => ({
-    default: m.ConfigureBuiltInAgentModal,
-  })),
-);
+const ConfigureBuiltInAgentModal = lazyPage(() => import("../components/ConfigureBuiltInAgentModal").then((m) => m.ConfigureBuiltInAgentModal));
 
-export const AGENT_FILTER_TABS = ["all", "active", "paused", "error", "builtin"] as const;
 type FilterTab = (typeof AGENT_FILTER_TABS)[number];
 
 const AGENT_FILTER_TAB_ITEMS: { value: FilterTab; label: string }[] = [

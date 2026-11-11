@@ -10,6 +10,8 @@
   "DELETE /api/issues/{id}/approvals/{approvalId}": "curated:wardmoteUnlinkIssueApproval",
   "DELETE /api/mcp/connections/{id}": "protocol",
   "DELETE /api/mcp/wardmote": "protocol",
+  "DELETE /api/onboarding/omp/custom-providers/{name}": "instance_admin",
+  "DELETE /api/onboarding/omp/login/{loginId}": "instance_admin",
   "DELETE /api/secret-provider-configs/{id}": "credential_surface",
   "DELETE /api/secrets/{id}": "credential_surface",
   "GET /api/_plugins/{pluginId}/ui/{filePath}": "protocol",
@@ -98,6 +100,9 @@
   "GET /api/mcp/wardmote": "protocol",
   "GET /api/onboarding/omp": "instance_admin",
   "GET /api/onboarding/omp/browse": "instance_admin",
+  "GET /api/onboarding/omp/custom-providers": "instance_admin",
+  "GET /api/onboarding/omp/login/{loginId}": "instance_admin",
+  "GET /api/onboarding/omp/login/providers": "instance_admin",
   "GET /api/openapi.json": "actor:public",
   "GET /api/plugins/{pluginId}/bridge/stream/{channel}": "reviewed:sse_stream",
   "GET /api/projects/{id}": "curated:wardmoteGetProject",
@@ -210,7 +215,9 @@
   "POST /api/mcp/requests/{id}/dot-pairing": "actor:public",
   "POST /api/mcp/requests/{id}/dot-pairing/preview": "actor:public",
   "POST /api/mcp/wardmote": "protocol",
+  "POST /api/onboarding/omp/custom-providers/probe": "instance_admin",
   "POST /api/onboarding/omp/login": "instance_admin",
+  "POST /api/onboarding/omp/login/{loginId}/input": "instance_admin",
   "POST /api/onboarding/omp/remote": "instance_admin",
   "POST /api/plugins/install": "instance_admin",
   "POST /api/routine-triggers/{id}/rotate-secret": "credential_surface",
@@ -232,5 +239,6 @@
   "POST /runtime-tools/github/credentials": "actor:runtime_tools",
   "PUT /api/admin/users/{userId}/company-access": "instance_admin",
   "PUT /api/companies/import/transfers/{transferId}/parts/{partIndex}": "non_json_request",
-  "PUT /api/issues/{id}/documents/{key}": "curated:wardmoteUpsertIssueDocument"
+  "PUT /api/issues/{id}/documents/{key}": "curated:wardmoteUpsertIssueDocument",
+  "PUT /api/onboarding/omp/custom-providers/{name}": "instance_admin"
 }
