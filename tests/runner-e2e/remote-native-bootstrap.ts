@@ -72,7 +72,7 @@ export function createRemoteNativeBootstrap(input: {
   return {
     prompt(nonce) {
       if (!/^[A-Za-z0-9_-]{1,128}$/u.test(nonce) || bindings.has(nonce)) throw new Error("Invalid or reused remote bootstrap nonce");
-      const path = `.paperclip-eval-action-${randomBytes(18).toString("hex")}.txt`;
+      const path = `.wardmote-eval-action-${randomBytes(18).toString("hex")}.txt`;
       bindings.set(nonce, { path, consumed: false });
       return [
         `Your task instructions will be published by the operator in the workspace file ${path}.`,

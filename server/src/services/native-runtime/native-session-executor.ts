@@ -10539,7 +10539,7 @@ export async function syncRemoteRunnerDirectoryOut(input: {
       const checkpointId = randomUUID();
       snapshotPath = posix.join(
         posix.dirname(input.sourcePath),
-        `.paperclip-checkpoint-${checkpointId}`,
+        `.wardmote-checkpoint-${checkpointId}`,
       );
       const archivePath = `${snapshotPath}.tar`;
       const escapedSource = input.sourcePath.replaceAll("'", "'\\''");
@@ -10604,11 +10604,11 @@ export async function syncRemoteRunnerDirectoryOut(input: {
   const archive = Buffer.from(result.stdout.replace(/\s+/g, ""), "base64");
   assertSafeRemoteCheckpointArchive(archive);
   const parent = resolve(input.targetPath, "..");
-  const stagingRoot = mkdtempSync(join(parent, ".paperclip-checkpoint-"));
+  const stagingRoot = mkdtempSync(join(parent, ".wardmote-checkpoint-"));
   const stagedTarget = join(stagingRoot, "payload");
   const previousTarget = join(
     parent,
-    `.paperclip-checkpoint-previous-${randomUUID()}`,
+    `.wardmote-checkpoint-previous-${randomUUID()}`,
   );
   let previousMoved = false;
   let replacementInstalled = false;

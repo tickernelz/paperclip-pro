@@ -99,7 +99,6 @@ done < <(ps aux | grep -E 'agent-browser/browsers/chrome-.*/Google Chrome for Te
 
 candidate_pidfiles=()
 candidate_pidfiles+=(
-  "$HOME"/.paperclip-pro/instances/*/db/postmaster.pid
   "$HOME"/.wardmote/instances/*/db/postmaster.pid
   "$REPO_ROOT"/.wardmote/instances/*/db/postmaster.pid
   "$REPO_ROOT"/.wardmote/runtime-services/instances/*/db/postmaster.pid

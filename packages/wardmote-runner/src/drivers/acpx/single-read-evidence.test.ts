@@ -4,7 +4,7 @@ import { updateSingleReadEvidence } from "./single-read-evidence.js";
 import { createCursorToolEvidence } from "./cursor-tool-evidence.js";
 import { createCopilotToolEvidence } from "./copilot-tool-evidence.js";
 import { validateAcpxRichEvent } from "./profile-extensions.js";
-const path = `.paperclip-eval-action-${"a".repeat(36)}.txt`;
+const path = `.wardmote-eval-action-${"a".repeat(36)}.txt`;
 const hash = `sha256:${createHash("sha256").update(path).digest("hex")}`;
 const origin = { type: "tool_call", tag: "tool_call", toolCallId: "read", kind: "read", status: "pending", rawInput: { path }, locations: [{ path }] };
 it("attests one explicit input path and retains proof through omitted native update fields", () => {

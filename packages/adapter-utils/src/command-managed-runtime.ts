@@ -452,7 +452,7 @@ export function createCommandManagedRuntimeClient(input: {
               const tarBytes = await fs.readFile(archivePath);
               const remoteTarPath = buildUniqueStagingPath({
                 targetPath: mapping.targetPath,
-                suffix: ".paperclip-syncin.tar",
+                suffix: ".wardmote-syncin.tar",
               });
               cleanupPaths.push(remoteTarPath);
               await client.writeFile(remoteTarPath, bufferToArrayBuffer(tarBytes));

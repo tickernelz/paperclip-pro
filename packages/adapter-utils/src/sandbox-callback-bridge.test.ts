@@ -1012,7 +1012,7 @@ describe("sandbox callback bridge", () => {
     await expect(readdir(directories.responsesDir)).resolves.toEqual([]);
     await expect(
       readdir(directories.responsesDir).then((entries) =>
-        entries.filter((entry) => entry.endsWith(".tmp") || entry.includes(".paperclip-write.lock")),
+        entries.filter((entry) => entry.endsWith(".tmp") || entry.includes(".wardmote-write.lock")),
       ),
     ).resolves.toEqual([]);
   });
@@ -1276,7 +1276,7 @@ describe("sandbox callback bridge", () => {
           (entry) =>
             entry.endsWith(".wardmote-upload.b64") ||
             entry.endsWith(".partial") ||
-            entry === ".paperclip-bridge-upload.lock",
+            entry === ".wardmote-bridge-upload.lock",
         ),
       ),
     ).resolves.toEqual([]);
@@ -1330,7 +1330,7 @@ describe("sandbox callback bridge", () => {
           (entry) =>
             entry.endsWith(".wardmote-upload.b64") ||
             entry.endsWith(".partial") ||
-            entry === ".paperclip-bridge-upload.lock",
+            entry === ".wardmote-bridge-upload.lock",
         ),
       ),
     ).resolves.toEqual([]);
@@ -1347,7 +1347,7 @@ describe("sandbox callback bridge", () => {
     cleanupDirs.push(rootDir);
     const remoteDir = path.join(rootDir, "runtime", "codex", "process-sessions");
     const remotePath = path.posix.join(remoteDir, "paperclip-process-session-remote.mjs");
-    const lockDir = path.posix.join(remoteDir, ".paperclip-process-session-script.lock");
+    const lockDir = path.posix.join(remoteDir, ".wardmote-process-session-script.lock");
     const body = "console.log('process session remote script v1');\n";
 
     let execCount = 0;
@@ -1391,7 +1391,7 @@ describe("sandbox callback bridge", () => {
           (entry) =>
             entry.endsWith(".wardmote-upload.b64") ||
             entry.endsWith(".partial") ||
-            entry === ".paperclip-process-session-script.lock",
+            entry === ".wardmote-process-session-script.lock",
         ),
       ),
     ).resolves.toEqual([]);
@@ -1402,7 +1402,7 @@ describe("sandbox callback bridge", () => {
     cleanupDirs.push(rootDir);
     const remoteDir = path.join(rootDir, "runtime", "codex", "process-sessions");
     const remotePath = path.posix.join(remoteDir, "paperclip-process-session-remote.mjs");
-    const lockDir = path.posix.join(remoteDir, ".paperclip-process-session-script.lock");
+    const lockDir = path.posix.join(remoteDir, ".wardmote-process-session-script.lock");
     const body = "console.log('process session remote script v2');\n";
 
     // Pre-seed the remote with a DIFFERENT script (a prior/stale build).
@@ -1430,7 +1430,7 @@ describe("sandbox callback bridge", () => {
     cleanupDirs.push(rootDir);
     const remoteDir = path.join(rootDir, "runtime", "codex", "process-sessions");
     const remotePath = path.posix.join(remoteDir, "paperclip-process-session-remote.mjs");
-    const lockDir = path.posix.join(remoteDir, ".paperclip-process-session-script.lock");
+    const lockDir = path.posix.join(remoteDir, ".wardmote-process-session-script.lock");
 
     // A runner whose exec fails: the hash-gate cannot be evaluated. The write
     // must surface the failure, never swallow it and re-upload behind a green

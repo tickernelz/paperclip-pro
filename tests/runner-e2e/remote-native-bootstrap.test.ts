@@ -90,7 +90,7 @@ it("withholds actual work until exact run admission, armed observer and awaited 
     sdkVersion: "0.203.0", targets: ["target.txt"],
     authority: { companyId: "company", environmentId: "env", runId: "run", leaseId: "lease", sandboxId: "sandbox", image: h.input.image },
   }));
-  expect(h.fixture.publishAction).toHaveBeenCalledWith(expect.stringMatching(/^\.paperclip-eval-action-[a-f0-9]{36}\.txt$/u), "PRIVATE ACTUAL ACTION");
+  expect(h.fixture.publishAction).toHaveBeenCalledWith(expect.stringMatching(/^\.wardmote-eval-action-[a-f0-9]{36}\.txt$/u), "PRIVATE ACTUAL ACTION");
   expect(JSON.stringify(h.input.evidence.mock.calls)).not.toContain("PRIVATE ACTUAL ACTION");
   await expect(h.bootstrap.bindAndRelease(h.request)).rejects.toThrow("one unconsumed");
 });

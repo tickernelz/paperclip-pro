@@ -1912,7 +1912,7 @@ async function syncProcessSessionRemoteScript(input: {
     body: getProcessSessionRemoteSource({ outputToStdout: input.outputToStdout === true }),
     label: "Process session remote script",
     action: "sync process session remote script",
-    lockDir: path.posix.join(input.remoteScriptDir, ".paperclip-process-session-script.lock"),
+    lockDir: path.posix.join(input.remoteScriptDir, ".wardmote-process-session-script.lock"),
     timeoutMs: input.timeoutMs,
     shellCommand: input.shellCommand,
   });
@@ -2847,7 +2847,7 @@ let probeSeq = 0;
 // a poll cycle ever lists the directory during the probe's short window.
 function nextProbeFileName() {
   probeSeq += 1;
-  return ".paperclip-birthtime-probe-" + process.pid + "-" + probeSeq;
+  return ".wardmote-birthtime-probe-" + process.pid + "-" + probeSeq;
 }
 
 // Proves a directory's reported birthtimeMs is a real creation time, not a

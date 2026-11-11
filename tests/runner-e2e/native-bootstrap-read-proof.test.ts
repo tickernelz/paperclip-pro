@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { expect, it } from "vitest";
 import { bootstrapReadExecutionId, withoutProvenBootstrapReads, type BootstrapReadNotice } from "./native-bootstrap-read-proof.js";
-const actionFile = `.paperclip-eval-action-${"a".repeat(36)}.txt`;
+const actionFile = `.wardmote-eval-action-${"a".repeat(36)}.txt`;
 const origin: BootstrapReadNotice = { runId: "run", sessionId: "session", turnId: "turn", toolCallId: "tested", stage: "tool", operation: "execute", status: "pending", seq: 20 };
 function read(status = "completed", seq = 1): BootstrapReadNotice { return { ...origin, toolCallId: "bootstrap", operation: "read", readTargetSha256: `sha256:${createHash("sha256").update(actionFile).digest("hex")}`, status, seq }; }
 function receipt(type = "completed", status = "completed", seq = 2) {

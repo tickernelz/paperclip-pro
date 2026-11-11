@@ -396,7 +396,7 @@ command = "untrusted-command"
     await expect(stat(skillsHome)).rejects.toThrow();
     expect(
       (await readdir(dirname(skillsHome))).filter((entry) =>
-        entry.startsWith(".paperclip-skills-staging-"),
+        entry.startsWith(".wardmote-skills-staging-"),
       ),
     ).toEqual([]);
   });
