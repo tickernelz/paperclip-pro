@@ -16,10 +16,13 @@ import type {
 import { SecretProviderClientError } from "./types.js";
 import {
   RETIRED_AWS_COMPANY_ID_TAG,
+  RETIRED_AWS_DEFAULT_OWNER_TAG,
   RETIRED_AWS_DEFAULT_PREFIX,
   RETIRED_AWS_DEPLOYMENT_ID_TAG,
+  RETIRED_AWS_ENVIRONMENT_TAG,
   RETIRED_AWS_MANAGED_BY_TAG,
   RETIRED_AWS_MANAGED_BY_VALUE,
+  RETIRED_AWS_PROVIDER_OWNER_TAG,
 } from "./retired-aws-secret-names.js";
 
 const AWS_SECRETS_MANAGER_SCHEME = "aws_secrets_manager_v1";
@@ -510,6 +513,10 @@ function isManagedSecretNamespaceRef(
   });
 }
 
+function currentOwnerTag(managed: boolean, ownerTag: string | null) {
+  return managed && ownerTag === RETIRED_AWS_DEFAULT_OWNER_TAG ? DEFAULT_OWNER_TAG : ownerTag;
+}
+
 function managedPrefixes(config: AwsSecretsManagerConfig) {
   return config.prefix === DEFAULT_PREFIX ? [config.prefix, RETIRED_AWS_DEFAULT_PREFIX] : [config.prefix];
 }
@@ -659,7 +666,7 @@ function inferPathSignals(entry: AwsSecretsManagerListSecretEntry, tags: Map<str
 
   if (wardmoteDeploymentId || wardmoteManaged) {
     return {
-      prefix: segments[0] ?? DEFAULT_PREFIX,
+      prefix: !segments[0] || segments[0] === RETIRED_AWS_DEFAULT_PREFIX ? DEFAULT_PREFIX : segments[0],
       namespace: wardmoteDeploymentId ?? segments[1] ?? null,
     };
   }
@@ -733,8 +740,11 @@ function discoverAwsProviderConfigCandidates(input: {
       tags,
       prefix: path.prefix,
       namespace: path.namespace,
-      environmentTag: tagValue(tags, ["wardmote:environment", "environment", "env", "stage"]),
-      ownerTag: tagValue(tags, ["wardmote:provider-owner", "owner", "team", "service", "application"]),
+      environmentTag: tagValue(tags, ["wardmote:environment", RETIRED_AWS_ENVIRONMENT_TAG, "environment", "env", "stage"]),
+      ownerTag: currentOwnerTag(
+        wardmoteManaged,
+        tagValue(tags, ["wardmote:provider-owner", RETIRED_AWS_PROVIDER_OWNER_TAG, "owner", "team", "service", "application"]),
+      ),
       kmsKeyId: asOptionalNonEmptyString(entry.KmsKeyId),
       wardmoteManaged,
       wardmoteCompanyId,

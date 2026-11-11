@@ -104,4 +104,47 @@ describe("awsSecretsManagerProvider secrets written before the rename", () => {
     expect(preview).toMatchObject({ sampledSecretCount: 0, skippedForeignWardmoteSampleCount: 1 });
     expect(JSON.stringify(preview)).not.toContain("company-2/stripe");
   });
+
+  it("suggests the current prefix and owner when discovery finds this company's secrets under the retired names", async () => {
+    const provider = createAwsSecretsManagerProvider({
+      config,
+      gateway: {
+        createSecret: unused,
+        putSecretValue: unused,
+        getSecretValue: unused,
+        deleteSecret: unused,
+        async listSecrets() {
+          return {
+            SecretList: [
+              {
+                ARN: `${RETIRED_REF}/company-1/openai`,
+                Name: "paperclip/prod-use1/company-1/openai",
+                Tags: [
+                  { Key: "paperclip:managed-by", Value: "paperclip" },
+                  { Key: "paperclip:deployment-id", Value: "prod-use1" },
+                  { Key: "paperclip:company-id", Value: "company-1" },
+                  { Key: "paperclip:environment", Value: "production" },
+                  { Key: "paperclip:provider-owner", Value: "paperclip" },
+                ],
+              },
+            ],
+          };
+        },
+      },
+    });
+
+    const preview = await provider.discoverProviderConfigs?.({
+      companyId: "company-1",
+      providerConfig: { id: "draft", provider: "aws_secrets_manager", status: "ready", config: { region: "us-east-1" } },
+      query: "",
+      pageSize: 25,
+    });
+
+    expect(preview?.candidates[0]?.config).toMatchObject({
+      namespace: "prod-use1",
+      secretNamePrefix: "wardmote",
+      ownerTag: "wardmote",
+      environmentTag: "production",
+    });
+  });
 });
