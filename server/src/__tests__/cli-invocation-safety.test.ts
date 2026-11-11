@@ -214,7 +214,7 @@ function findOffenders(relPath: string, text: string): string[] {
         offenders.push(command);
         continue;
       }
-      const canonical = command.replace(/^pnpm wardmote-pro/, "pnpm wardmote");
+      const canonical = command.replace(/^pnpm paperclip-pro/, "pnpm wardmote");
       if (PNPM_ALLOWLIST.has(canonical)) continue;
       if (DOC_PHRASES.has(canonical)) continue;
       offenders.push(command);
@@ -479,7 +479,7 @@ describe("wardmote CLI invocation safety", () => {
     // Path, ref, id, and name options on worktree commands.
     expect(scanText("doc/E.md", "pnpm wardmote worktree repair --branch PAP-1-x")).toHaveLength(1);
     expect(scanText("doc/E.md", "pnpm wardmote worktree:make my-feature --start-point origin/main")).toHaveLength(1);
-    expect(scanText("doc/E.md", "pnpm wardmote worktree init --from-config ~/.wardmote-pro/config.json")).toHaveLength(1);
+    expect(scanText("doc/E.md", "pnpm wardmote worktree init --from-config ~/.paperclip-pro/config.json")).toHaveLength(1);
     expect(scanText("doc/E.md", "pnpm wardmote worktree reseed --to PAP-1-x")).toHaveLength(1);
   });
 
