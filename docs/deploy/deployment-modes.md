@@ -45,6 +45,18 @@ Allow custom Tailscale hostnames:
 npx @tickernelz/wardmote allowed-hostname my-machine
 ```
 
+Opening the board directly at an allowed hostname or IP and the server port
+(for example `http://203.0.113.7:3100` after
+`npx @tickernelz/wardmote allowed-hostname 203.0.113.7`) is enough for the
+terminal: it trusts a browser origin that names the same allowed host and port
+the request reached. Origins from other sites, other ports, or other schemes
+stay rejected.
+
+Plain `http://` over an IP is not encrypted. Anyone on the network path can
+read the session cookie and everything typed into or printed by the terminal.
+For routine use, put Wardmote behind HTTPS (a Tailscale address, a Cloudflare
+tunnel, or a reverse proxy with TLS) and open the board through that URL.
+
 ### `authenticated` + `public`
 
 For internet-facing deployment.

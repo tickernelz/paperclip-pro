@@ -36,6 +36,32 @@ function hostnameFromHost(host: string): string | null {
   }
 }
 
+function explicitHostAndPort(host: string): { hostname: string; port: number } | null {
+  const match = /^(\[[^\]]+\]|[^:[\]]+):(\d{1,5})$/.exec(host.trim());
+  if (!match) return null;
+  const hostname = hostnameFromHost(match[1]);
+  const port = Number(match[2]);
+  return hostname && port > 0 && port <= 65535 ? { hostname, port } : null;
+}
+
+function effectivePort(url: URL): number {
+  if (url.port) return Number(url.port);
+  return url.protocol === "https:" ? 443 : 80;
+}
+
+function originMatchesAllowedHost(origin: string, host: string | undefined, policy: TerminalOriginPolicy): boolean {
+  if (!host) return false;
+  const requested = explicitHostAndPort(host);
+  if (!requested) return false;
+  const url = new URL(origin);
+  const hostname = normalizeHostname(url.hostname);
+  return (
+    hostname === requested.hostname &&
+    effectivePort(url) === requested.port &&
+    policy.allowedHostnames.some((allowed) => normalizeHostname(allowed) === hostname)
+  );
+}
+
 function originHost(hostname: string): string {
   return hostname.includes(":") ? `[${hostname}]` : hostname;
 }
@@ -61,6 +87,19 @@ export function trustedTerminalOrigins(policy: TerminalOriginPolicy): Set<string
   return trusted;
 }
 
+export const TERMINAL_ORIGIN_UNTRUSTED = "terminal_origin_untrusted";
+
+export function terminalOriginRemediation(policy: TerminalOriginPolicy): string {
+  const portSuffix = Number.isInteger(policy.listenPort) && policy.listenPort > 0 ? `:${policy.listenPort}` : "";
+  const addHostname = `add its hostname with npx @tickernelz/wardmote allowed-hostname <host>, restart Wardmote, and open http://<host>${portSuffix}.`;
+  const publicOrigin = [...policy.publicBaseUrls, process.env.WARDMOTE_PUBLIC_URL?.trim()]
+    .map(parseOrigin)
+    .find((origin): origin is string => origin !== null);
+  return publicOrigin
+    ? `Open the board through ${publicOrigin}, or ${addHostname}`
+    : `To use this address, ${addHostname}`;
+}
+
 export function terminalHostAllowed(host: string | undefined, policy: TerminalOriginPolicy): boolean {
   if (!policy.hostnameGuardEnabled) return true;
   const hostname = host ? hostnameFromHost(host) : null;
@@ -78,5 +117,6 @@ export function terminalOriginAllowed(
   const presented = input.origin ?? input.referer;
   if (presented === undefined || presented === "") return policy.deploymentMode === "local_trusted";
   const origin = parseOrigin(presented);
-  return origin !== null && trustedTerminalOrigins(policy).has(origin);
+  if (origin === null) return false;
+  return trustedTerminalOrigins(policy).has(origin) || originMatchesAllowedHost(origin, input.host, policy);
 }
