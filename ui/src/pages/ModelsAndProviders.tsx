@@ -1,8 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Plus, RefreshCw } from "lucide-react";
 import { agentsApi } from "@/api/agents";
 import { Button } from "@/components/ui/button";
+import { CustomProviders } from "@/components/omp-providers/CustomProviders";
+import { OmpSignIn } from "@/components/omp-providers/OmpSignIn";
 import { OMP_ADAPTER_TYPE, useOmpModels } from "@/components/omp-settings/omp-settings-model";
 import { useBreadcrumbs } from "@/context/BreadcrumbContext";
 import { useCompany } from "@/context/CompanyContext";
@@ -29,7 +31,7 @@ export function ModelsAndProviders() {
     return [...counts.entries()].sort(([a], [b]) => a.localeCompare(b));
   }, [models.data]);
 
-  const checkAgain = async () => {
+  const checkAgain = useCallback(async () => {
     if (!selectedCompanyId) return;
     setChecking(true);
     try {
@@ -38,7 +40,7 @@ export function ModelsAndProviders() {
     } finally {
       setChecking(false);
     }
-  };
+  }, [queryClient, selectedCompanyId]);
 
   if (!selectedCompanyId) return null;
 
@@ -47,7 +49,7 @@ export function ModelsAndProviders() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-1">
           <h1 className="text-lg font-semibold">Models and providers</h1>
-          <p className="text-sm text-ink-3">Imported from OMP. Keys stay in OMP's credential store; Wardmote never reads or keeps them.</p>
+          <p className="text-sm text-ink-3">Imported from OMP. Sign-ins stay in OMP's credential store and custom keys in its models.yml; Wardmote never shows them.</p>
         </div>
         <div className="flex shrink-0 gap-2">
           <Button type="button" variant="secondary" size="sm" disabled={checking} onClick={checkAgain}>
@@ -56,16 +58,15 @@ export function ModelsAndProviders() {
           </Button>
           <Button type="button" size="sm" onClick={() => setShowAdd((open) => !open)} aria-expanded={showAdd}>
             <Plus aria-hidden="true" />
-            Add provider
+            Sign in to a provider
           </Button>
         </div>
       </div>
 
       {showAdd ? (
-        <div className="space-y-2 rounded-lg border border-line bg-bg-2 px-4 py-3 text-sm sm:px-5">
-          <p>Sign in on the machine where agents run. OMP opens the provider's sign-in page or asks for a key, and stores it itself.</p>
-          <pre className="overflow-x-auto rounded-md bg-bg-3 px-3 py-2 font-mono text-xs">omp login</pre>
-          <p className="text-ink-3">Then press Check again.</p>
+        <div className="space-y-3 rounded-lg border border-line bg-bg-2 px-4 py-3 text-sm sm:px-5">
+          <p className="text-ink-2">Runs <code className="font-mono text-xs">omp login</code> on the Wardmote server. OMP keeps the sign-in.</p>
+          <OmpSignIn autoFocus onSignedIn={() => void checkAgain()} />
         </div>
       ) : null}
 
@@ -83,7 +84,7 @@ export function ModelsAndProviders() {
         {models.isLoading ? (
           <p className="px-4 py-3 text-sm text-ink-3 sm:px-5">Asking OMP...</p>
         ) : providers.length === 0 ? (
-          <p className="px-4 py-3 text-sm text-ink-3 sm:px-5">OMP reports no signed-in provider yet. Use Add provider.</p>
+          <p className="px-4 py-3 text-sm text-ink-3 sm:px-5">OMP reports no signed-in provider yet. Use Sign in to a provider, or add a custom provider below.</p>
         ) : (
           <div className="px-4 sm:px-5">
             <table aria-label="Providers" className="stack-table w-full text-sm">
@@ -111,6 +112,14 @@ export function ModelsAndProviders() {
             </table>
           </div>
         )}
+      </section>
+
+      <section aria-labelledby="custom-providers-title" className="space-y-3">
+        <div className="space-y-1">
+          <h2 id="custom-providers-title" className="text-xs font-semibold uppercase tracking-wide text-ink-3">Custom providers</h2>
+          <p className="text-sm text-ink-3">Your own gateway or local server (vLLM, LiteLLM, Ollama, any /v1 endpoint), saved to OMP's models.yml.</p>
+        </div>
+        <CustomProviders onChanged={() => void checkAgain()} />
       </section>
     </div>
   );

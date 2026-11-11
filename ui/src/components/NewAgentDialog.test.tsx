@@ -80,26 +80,38 @@ async function name() {
     )!.set!.call(input, "Ada & Co");
     input.dispatchEvent(new Event("input", { bubbles: true }));
   });
-  await click("Choose adapter");
+  await click("Use an experimental runtime");
 }
-it("requires a name and an enabled adapter before navigating", async () => {
-  await click("Choose adapter");
-  expect(document.body.textContent).toContain("Agent name");
+async function typeName() {
+  const input = document.querySelector("input")!;
+  await act(async () => {
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!.call(input, "Ada & Co");
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+}
+it("creates an OMP agent straight from the name, without an adapter step", async () => {
+  await click("Configure agent");
+  expect(state.navigate).not.toHaveBeenCalled();
+  expect(document.body.textContent).not.toContain("2. Adapter");
+  await typeName();
+  await click("Configure agent");
+  expect(state.close).toHaveBeenCalledTimes(1);
+  const query = new URL(state.navigate.mock.calls[0][0], "http://local").searchParams;
+  expect(query.get("name")).toBe("Ada & Co");
+  expect(query.get("adapterType")).toBe("omp_local");
+  expect(query.has("runnerProvider")).toBe(false);
+});
+it("keeps experimental runtimes behind an explicit link and never offers removed adapters", async () => {
   await name();
+  expect(document.body.textContent).toContain("2. Adapter");
   expect(document.querySelector('input[value="claude_local"]')).toBeNull();
   await click("Configure agent");
   expect(state.navigate).not.toHaveBeenCalled();
-  await act(async () =>
-    (
-      document.querySelector('input[value="omp_local"]') as HTMLInputElement
-    ).click(),
-  );
+  await act(async () => (document.querySelector('input[value="wardmote_runner"]') as HTMLInputElement).click());
   await click("Configure agent");
-  expect(state.close).toHaveBeenCalledTimes(1);
-  const query = new URL(state.navigate.mock.calls[0][0], "http://local")
-    .searchParams;
-  expect(query.get("name")).toBe("Ada & Co");
-  expect(query.get("adapterType")).toBe("omp_local");
+  const query = new URL(state.navigate.mock.calls[0][0], "http://local").searchParams;
+  expect(query.get("adapterType")).toBe("wardmote_runner");
+  expect(query.get("runnerProvider")).toBe("codex");
 });
 it("offers native Codex, Claude ACPX, and OpenCode runners", async () => {
   await name();
@@ -127,19 +139,17 @@ it.each([false, undefined])(
         enableNativeRunner,
       });
     });
-    await name();
-    expect(
-      document.querySelector('input[value="wardmote_runner"]'),
-    ).toBeNull();
-    expect(document.querySelector('input[value="omp_local"]')).not.toBeNull();
+    await typeName();
+    expect([...document.querySelectorAll("button")].some((b) => b.textContent?.trim() === "Use an experimental runtime")).toBe(false);
+    await click("Configure agent");
+    expect(new URL(state.navigate.mock.calls[0][0], "http://local").searchParams.get("adapterType")).toBe("omp_local");
   },
 );
 
 it("moves Dot out of the harness picker into experimental external invitations", async () => {
   await act(async () => cache.setQueryData(queryKeys.instance.experimentalSettings, { enableNativeRunner: false, enableOpenAiDot: true, enablePublicMcp: true }));
-  await name();
+  await typeName();
   expect(document.querySelector('input[value="openai_dot"]')).toBeNull();
-  await click("Back");
   await click("Invite an external agent");
   const dot = [...document.querySelectorAll("button")].find(b => b.textContent?.startsWith("Dot"));
   expect(dot?.disabled).toBe(false);

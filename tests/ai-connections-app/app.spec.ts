@@ -134,36 +134,6 @@ test("explicit OpenAI API method survives continuing and reloading", async ({ pa
   await page.getByRole("button", { name: "Cancel", exact: true }).first().click();
 });
 
-for (const [provider, label] of [["anthropic", "Claude"], ["openai", "OpenAI"]]) {
-  test(`Connections reuses the local browser sign-in step for ${label} (simulated auth)`, async ({ page }, testInfo) => {
-    // UI contract only: real subscription qualification is provider-connections.
-    const base = `/api/companies/${companyId}/ai-connections/local`;
-    const sessionId = "22222222-2222-4222-8222-222222222222";
-    await page.route(`**${base}/attempts`, route => route.fulfill({ json: { sessionId, expiresAt: new Date(Date.now() + 300000).toISOString() } }));
-    await page.route(`**${base}/check`, route => route.fulfill({ json: { status: "sign_in_required", authorizationUrl: "https://provider.example/authorize", ...(provider === "openai" ? { code: "ABCD-EFGH" } : {}) } }));
-    await page.route(`**${base}/attempts/${sessionId}`, route => route.fulfill({ json: { ok: true } }));
-    await page.goto(`/${prefix}/apps/connect?source=${provider}&method=ai-subscription`);
-    await expect(page.getByRole("radiogroup", { name: "Connect your model provider" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Connect for tool access instead" })).toHaveCount(0);
-    await page.getByRole("radio", { name: new RegExp(label) }).click();
-    await expect(page.getByRole("link", { name: `Sign in to ${label}`, exact: true })).toHaveAttribute("href", "https://provider.example/authorize");
-    await expect(page.getByText(/CODEX_HOME=|claude auth login|existing terminal login/)).toHaveCount(0);
-    if (provider === "anthropic") await expect(page.getByRole("button", { name: "Submit code", exact: true })).toBeDisabled();
-    else await expect(page.getByText("ABCD-EFGH", { exact: true })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Connect", exact: true })).toBeDisabled();
-    // Let the shared tile-collapse and card-enter animations settle for visual review.
-    await page.waitForTimeout(1000);
-    await page.screenshot({ path: testInfo.outputPath(`${provider}-shared-provider-step.png`), fullPage: true });
-    await page.getByRole("button", { name: "Back", exact: true }).click();
-    await page.getByRole("button", { name: "Use API key instead", exact: true }).click();
-    await page.getByRole("radio", { name: new RegExp(label) }).click();
-    await expect(page.getByLabel("API key", { exact: true })).toBeVisible();
-    await expect(page.getByText(/Provide your .* API key to connect/)).toBeVisible();
-    await page.getByRole("button", { name: "Cancel", exact: true }).first().click();
-    await expect(page).toHaveURL(new RegExp(`/${prefix}/apps$`));
-  });
-}
-
 // Exercise the real onboarding login controllers; only provider/server replies
 // are simulated. No credentials, sandbox leases or accounts are created here.
 for (const [provider, label, adapter] of [["anthropic", "Claude", "claude_local"], ["openai", "OpenAI", "codex_local"]]) {

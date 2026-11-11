@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { expect, test, type Locator, type Page } from "@playwright/test";
-import { E2E_MODEL, mockOnboardingOmp, ompStatus } from "./helpers/onboarding-omp";
+import { E2E_MODEL, LOGIN_URL, mockOnboardingOmp, ompStatus } from "./helpers/onboarding-omp";
 import { hasOverflow, probeResponsive, TOUCH_TARGET_BREAKPOINT } from "./helpers/responsive-probe";
 
 const V1 = { steps: 12, decisions: 4, clicks: 9, fields: 4 };
@@ -39,6 +39,12 @@ class Counter {
     if (options.decision) this.decisions += 1;
   }
 
+  async select(target: Locator, value: string) {
+    await target.selectOption(value);
+    this.clicks += 1;
+    this.decisions += 1;
+  }
+
   async fill(target: Locator, value: string) {
     await target.fill(value);
     this.fields += 1;
@@ -66,12 +72,15 @@ test.describe("Onboarding", () => {
 
     mock.status = ompStatus({ models: [], recommendedModel: null });
     await expect(page.getByRole("heading", { name: "Connect a model" })).toBeVisible({ timeout: 10_000 });
+    await counter.select(page.getByRole("combobox", { name: /^Provider/ }), "ChatGPT Plus/Pro (Codex Subscription)");
     const popup = page.context().waitForEvent("page");
-    await counter.click(page.getByRole("radio", { name: /^OpenAI/ }), { decision: true });
-    await counter.click(page.getByRole("button", { name: "Sign in with OpenAI" }));
+    await counter.click(page.getByRole("button", { name: "Sign in", exact: true }));
     counter.step("connect-model");
-    await (await popup).close();
-    expect(mock.logins).toEqual(["openai-codex"]);
+    const signInPage = await popup;
+    await expect.poll(() => signInPage.url()).toContain(LOGIN_URL);
+    await signInPage.close();
+    await expect(page.getByRole("link", { name: /Open the sign-in page/ })).toHaveAttribute("href", LOGIN_URL);
+    expect(mock.logins).toEqual(["ChatGPT Plus/Pro (Codex Subscription)"]);
 
     mock.status = ompStatus();
     await expect(page.getByRole("heading", { name: "What should your first agent do?" })).toBeVisible({ timeout: 10_000 });

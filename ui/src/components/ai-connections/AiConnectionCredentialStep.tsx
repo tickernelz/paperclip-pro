@@ -91,7 +91,6 @@ function SubscriptionConnectionStep({ companyId, provider, initialMethod, fixedM
       adapterType={provider === "anthropic" ? "claude_local" : provider === "xai" ? "grok_local" : "codex_local"}
       environmentId={environmentId}
       canLogin={canLogin}
-      localEnvironment={environment?.driver === "local"}
       onBack={onCancel}
       onConnected={() => {}}
       testConnection={async () => false}
