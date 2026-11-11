@@ -75,7 +75,7 @@ jobs:
           persist-credentials: false
       - uses: ./.github/actions/setup-workspace
       - name: Runner Rust release cache
-        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6
+        uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0
         with:
           workspaces: packages/wardmote-runner/runner -> target
           shared-key: runner-typecheck-v1
@@ -99,7 +99,7 @@ jobs:
       - name: Build Runner Evalbook viewer
         run: pnpm --filter @tickernelz/wardmote-runner build:issue-thread
       - name: Runner Rust release cache
-        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6
+        uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0
         with:
           workspaces: packages/wardmote-runner/runner -> target
           shared-key: runner-build-v1
@@ -142,7 +142,7 @@ jobs:
           rustup toolchain list
 
       - name: Runner Rust dependencies
-        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6
+        uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0
         with:
           workspaces: packages/wardmote-runner/runner -> target
           shared-key: runner-v1
@@ -336,7 +336,7 @@ jobs:
 
       - name: Restore Playwright browsers and system packages
         id: playwright-cache
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@v6
         with:
           path: |
             ~/.cache/ms-playwright
@@ -353,7 +353,7 @@ jobs:
 
       - name: Save Playwright browsers and system packages
         if: steps.playwright-cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v5
+        uses: actions/cache/save@v6
         with:
           path: |
             ~/.cache/ms-playwright
@@ -397,7 +397,7 @@ jobs:
         with:
           store: "true"
       - name: Runner Rust release cache
-        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6
+        uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0
         with:
           workspaces: packages/wardmote-runner/runner -> target
           shared-key: runner-build-v1
