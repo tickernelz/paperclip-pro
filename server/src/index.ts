@@ -32,7 +32,7 @@ import { stdin, stdout } from "node:process";
 import { pathToFileURL } from "node:url";
 import type { Request as ExpressRequest, RequestHandler } from "express";
 import { warnIfUnsupportedNodeVersion } from "@tickernelz/wardmote-shared/node-version";
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import {
   createDb,
   ensurePostgresDatabase,
@@ -49,6 +49,7 @@ import {
   authUsers,
   companies,
   companyMemberships,
+  heartbeatRuns,
   instanceUserRoles,
   EMBEDDED_POSTGRES_USER,
   EMBEDDED_POSTGRES_PASSWORD,
@@ -142,6 +143,7 @@ import { flushInFlightRunLogMirrors, resolveRunLogBasePath } from "./services/ru
 import { migrateRetiredNames } from "./services/retired-name-migration.js";
 import { createWardmoteUpdateService } from "./services/wardmote-updates.js";
 import { createSystemdUpdateLauncher, createUpdateInstaller } from "./services/wardmote-update-install.js";
+import { createAutoUpdater } from "./services/wardmote-auto-update.js";
 import { getTaskDrainStatus, listActiveRunExecutionIds } from "./services/heartbeat.js";
 import { startTaskDrain, stopTaskDrain } from "./services/task-admission.js";
 import { resolveWardmoteHomeDir, resolveWardmoteInstanceRoot } from "./home-paths.js";
@@ -997,6 +999,26 @@ async function startServerWithDatabaseTeardown(
     },
   });
   updateInstaller.resume();
+  createAutoUpdater({
+    enabled: async () => (await instanceSettingsService(db as any).getGeneral()).autoInstallUpdates === true,
+    status: () => wardmoteUpdates.status(),
+    refresh: () => wardmoteUpdates.refresh(),
+    installer: updateInstaller,
+    activeRuns: () => listActiveRunExecutionIds().length + getTaskDrainStatus().pendingWakes,
+    queuedRuns: async () => {
+      const [row] = await (db as any)
+        .select({ count: sql<number>`count(*)::int` })
+        .from(heartbeatRuns)
+        .where(inArray(heartbeatRuns.status, ["queued", "running"]));
+      return Number(row?.count ?? 0);
+    },
+    instanceRoot: resolveWardmoteInstanceRoot(),
+    onDecision: (decision) => {
+      if (decision.install || decision.reason === "runs_active" || decision.reason === "failed_before") {
+        logger.info({ autoUpdate: decision }, decision.install ? "automatic update starting" : "automatic update deferred");
+      }
+    },
+  }).start();
   const app = await createApp(db as any, {
     wardmoteUpdates,
     updateInstaller,

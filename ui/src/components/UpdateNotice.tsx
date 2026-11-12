@@ -101,15 +101,16 @@ export function UpdateNotice({ now = Date.now }: { now?: () => number }) {
   ) : null;
 
   if (showJobStrip && job) {
+    const subject = job.trigger === "auto" ? "Automatic update" : "Update";
     const label = job.phase === "waiting"
-      ? `Update to ${job.toVersion} is waiting for ${job.liveRuns} run${job.liveRuns === 1 ? "" : "s"} to finish`
+      ? `${subject} to ${job.toVersion} is waiting for ${job.liveRuns} run${job.liveRuns === 1 ? "" : "s"} to finish`
       : job.phase === "installing"
         ? serverReachable ? `Installing Wardmote ${job.toVersion}...` : "Wardmote is restarting..."
         : job.phase === "succeeded"
           ? `Wardmote ${job.installedVersion ?? job.toVersion} is installed`
           : job.rolledBackTo
-              ? `Update to ${job.toVersion} failed and was rolled back to ${job.rolledBackTo}`
-              : `Update to ${job.toVersion} failed`;
+              ? `${subject} to ${job.toVersion} failed and was rolled back to ${job.rolledBackTo}`
+              : `${subject} to ${job.toVersion} failed`;
     const dismiss = () => {
       writeStored(UPDATE_RESULT_SEEN_KEY, job.id);
       setSeenJob(job.id);
