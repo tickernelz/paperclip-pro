@@ -2640,6 +2640,13 @@
       "when": 1794604677710,
       "tag": "0378_wardmote_tool_template_keys",
       "breakpoints": true
+    },
+    {
+      "idx": 379,
+      "version": "7",
+      "when": 1794691077710,
+      "tag": "0379_wardmote_tool_selector_names",
+      "breakpoints": true
     }
   ]
 }
