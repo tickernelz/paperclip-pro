@@ -549,9 +549,11 @@ describe("OMP local Wardmote MCP wiring", () => {
     await expect(fs.access(invocation.mcpDir as string)).rejects.toThrow();
   });
 
-  async function runWithRuntimeTools(): Promise<Invocation> {
+  async function runWithRuntimeTools(
+    overrides: { runId?: string; expiresAt?: string; config?: Record<string, unknown> } = {},
+  ): Promise<Invocation> {
     await execute({
-      runId: "run-mcp",
+      runId: overrides.runId ?? "run-mcp",
       agent: {
         id: "agent-1",
         companyId: "company-1",
@@ -560,7 +562,7 @@ describe("OMP local Wardmote MCP wiring", () => {
         adapterConfig: {},
       },
       runtime: { sessionId: null, sessionParams: null, sessionDisplayId: null, taskKey: null },
-      config: { command: commandPath, noSession: true, cwd: workspaceCwd, rpcSteering: false },
+      config: { command: commandPath, noSession: true, cwd: workspaceCwd, rpcSteering: false, ...overrides.config },
       context: {},
       onLog: async () => {},
       authToken: "run-jwt",
@@ -573,7 +575,7 @@ describe("OMP local Wardmote MCP wiring", () => {
           connectionRequest: "http://127.0.0.1:3100/runtime-tools/connections/request",
         },
         bearerToken: "runtime-token",
-        expiresAt: "2026-09-28T12:00:00.000Z",
+        expiresAt: overrides.expiresAt ?? "2026-09-28T12:00:00.000Z",
         tools: ["connections_search", "connection_request"],
       },
     });
@@ -612,6 +614,34 @@ describe("OMP local Wardmote MCP wiring", () => {
       WARDMOTE_RUNTIME_TOOLS_CONNECTIONS_SEARCH_URL: "http://127.0.0.1:3100/runtime-tools/connections/search",
       WARDMOTE_RUNTIME_TOOLS_CONNECTION_REQUEST_URL: "http://127.0.0.1:3100/runtime-tools/connections/request",
     });
+  });
+
+  it("keeps the system prompt byte-identical across runs so a resumed session reuses the provider prompt cache", async () => {
+    const runs = [
+      { runId: "run-a", expiresAt: "2026-11-12T01:00:00.000Z" },
+      { runId: "run-b", expiresAt: "2026-11-12T02:00:00.000Z" },
+    ];
+    const invocations: Invocation[] = [];
+    for (const { runId, expiresAt } of runs) {
+      const instructionsDir = path.join(root, "file-sync", "runs", runId, "live");
+      await fs.mkdir(instructionsDir, { recursive: true });
+      await fs.writeFile(path.join(instructionsDir, "AGENTS.md"), "You are the probe agent.\n", "utf8");
+      captured = null;
+      invocations.push(
+        await runWithRuntimeTools({
+          runId,
+          expiresAt,
+          config: { instructionsFilePath: path.join(instructionsDir, "AGENTS.md") },
+        }),
+      );
+    }
+    const [first, second] = invocations;
+    expect(first.systemPrompt).toContain("You are the probe agent.");
+    expect(second.systemPrompt).toBe(first.systemPrompt);
+    expect(first.env.WARDMOTE_RUNTIME_TOOLS_EXPIRES_AT).toBe("2026-11-12T01:00:00.000Z");
+    expect(second.env.WARDMOTE_RUNTIME_TOOLS_EXPIRES_AT).toBe("2026-11-12T02:00:00.000Z");
+    expect(first.userPrompt).toContain(path.join(root, "file-sync", "runs", "run-a", "live", "AGENTS.md"));
+    expect(second.userPrompt).toContain(path.join(root, "file-sync", "runs", "run-b", "live", "AGENTS.md"));
   });
 
   it("states the connection guidance and execution contract once across the whole prompt", async () => {
