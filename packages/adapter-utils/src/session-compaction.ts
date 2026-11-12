@@ -34,7 +34,7 @@ const OMP_SESSION_COMPACTION_POLICY: SessionCompactionPolicy = {
   maxSessionRuns: 0,
   maxRawInputTokens: 0,
   maxSessionAgeHours: 0,
-  maxSessionBytes: 16 * 1024 * 1024,
+  maxSessionBytes: 0,
 };
 
 export const ADAPTER_SESSION_MANAGEMENT: Record<string, AdapterSessionManagement> = {

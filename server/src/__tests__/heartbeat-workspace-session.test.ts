@@ -3210,13 +3210,13 @@ describe("parseSessionCompactionPolicy", () => {
     });
   });
 
-  it("rotates omp_local on session file size while keeping its native compaction", () => {
+  it("leaves omp_local to its native compaction unless an agent sets a size threshold", () => {
     expect(parseSessionCompactionPolicy(buildAgent("omp_local"))).toEqual({
       enabled: true,
       maxSessionRuns: 0,
       maxRawInputTokens: 0,
       maxSessionAgeHours: 0,
-      maxSessionBytes: 16 * 1024 * 1024,
+      maxSessionBytes: 0,
     });
     expect(
       parseSessionCompactionPolicy(

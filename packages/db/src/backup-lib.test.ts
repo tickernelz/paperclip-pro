@@ -1,10 +1,17 @@
+import { spawn } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { gunzipSync, gzipSync } from "node:zlib";
 import { afterEach, describe, expect, it } from "vitest";
 import postgres from "postgres";
-import { adoptRetiredBackupFilenames, createBufferedTextFileWriter, runDatabaseBackup, runDatabaseRestore } from "./backup-lib.js";
+import {
+  adoptRetiredBackupFilenames,
+  createBufferedTextFileWriter,
+  removeAbandonedPartialBackups,
+  runDatabaseBackup,
+  runDatabaseRestore,
+} from "./backup-lib.js";
 import { ensurePostgresDatabase } from "./client.js";
 import {
   EMBEDDED_POSTGRES_TEST_TIMEOUT_MS,
@@ -91,7 +98,100 @@ describe("adoptRetiredBackupFilenames", () => {
   });
 });
 
+describe("removeAbandonedPartialBackups", () => {
+  it("removes partials of dead or stale owners and keeps live ones and unrelated files", () => {
+    const dir = createTempDir("wardmote-backup-partial-");
+    const deadPid = 999_999_999;
+    const write = (name: string, mtime?: Date) => {
+      fs.writeFileSync(path.join(dir, name), "x");
+      if (mtime) fs.utimesSync(path.join(dir, name), mtime, mtime);
+    };
+    write(`wardmote-20261112-040545.sql.gz.${deadPid}.partial`);
+    write(`wardmote-20261112-040545.sql.${deadPid}.partial`);
+    write(`wardmote-20261112-050000.sql.${process.pid}.partial`);
+    write(`wardmote-20261112-060000.sql.gz.${process.ppid}.partial`);
+    write(`wardmote-20261110-060000.sql.gz.${process.ppid}.partial`, new Date(Date.now() - 2 * 24 * 60 * 60 * 1000));
+    write(`notes.${deadPid}.partial`);
+    write("wardmote-20261112-070000.sql.gz");
+
+    expect(removeAbandonedPartialBackups(dir)).toBe(4);
+    expect(fs.readdirSync(dir).sort()).toEqual([
+      `notes.${deadPid}.partial`,
+      `wardmote-20261112-060000.sql.gz.${process.ppid}.partial`,
+      "wardmote-20261112-070000.sql.gz",
+    ]);
+  });
+});
+
 describeEmbeddedPostgres("runDatabaseBackup", () => {
+  it("leaves no final backup when the backup process is killed mid-dump, and the next run cleans its partials", async () => {
+    const connectionString = await createTempDatabase();
+    const backupDir = createTempDir("wardmote-backup-killed-");
+    const fixtureDir = createTempDir("wardmote-backup-killed-fixture-");
+    const marker = path.join(fixtureDir, "dumping");
+    const slowPgDump = path.join(fixtureDir, "pg-dump-slow");
+    fs.writeFileSync(
+      slowPgDump,
+      `#!/bin/sh\nhead -c 4000000 /dev/urandom | base64\ntouch '${marker}'\nexec sleep 60\n`,
+      { mode: 0o700 },
+    );
+    const script = path.join(fixtureDir, "backup.mts");
+    fs.writeFileSync(
+      script,
+      [
+        `import { runDatabaseBackup } from ${JSON.stringify(path.join(import.meta.dirname, "backup-lib.ts"))};`,
+        `await runDatabaseBackup({ connectionString: process.env.BACKUP_TEST_URL!, backupDir: ${JSON.stringify(backupDir)}, backupEngine: "pg_dump", retention: { dailyDays: 7, weeklyWeeks: 4, monthlyMonths: 1 } });`,
+      ].join("\n"),
+    );
+    const child = spawn(process.execPath, ["--import", "tsx", script], {
+      cwd: path.dirname(import.meta.dirname),
+      detached: true,
+      stdio: ["ignore", "ignore", "pipe"],
+      env: { ...process.env, BACKUP_TEST_URL: connectionString, WARDMOTE_PG_DUMP_PATH: slowPgDump },
+    });
+    let stderr = "";
+    child.stderr!.on("data", (chunk: Buffer) => { stderr += chunk.toString(); });
+    const exited = new Promise<NodeJS.Signals | null>((resolveExit) => child.once("exit", (_code, signal) => resolveExit(signal)));
+    cleanups.push(() => {
+      try {
+        process.kill(-child.pid!, "SIGKILL");
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException).code !== "ESRCH") throw error;
+      }
+    });
+
+    const archiveBytes = () => fs.readdirSync(backupDir)
+      .filter((name) => name.includes(".sql.gz"))
+      .reduce((sum, name) => sum + fs.statSync(path.join(backupDir, name)).size, 0);
+    const deadline = Date.now() + 60_000;
+    while (!(fs.existsSync(marker) && archiveBytes() > 0)) {
+      if (Date.now() > deadline) throw new Error(`backup never started writing: [${fs.readdirSync(backupDir).join(", ")}] ${stderr}`);
+      await new Promise((tick) => setTimeout(tick, 50));
+    }
+    process.kill(-child.pid!, "SIGKILL");
+    expect(await exited).toBe("SIGKILL");
+
+    const left = fs.readdirSync(backupDir);
+    expect(left.filter((name) => name.endsWith(".sql") || name.endsWith(".sql.gz"))).toEqual([]);
+    expect(left.some((name) => name.endsWith(`.${child.pid}.partial`))).toBe(true);
+
+    const quickPgDump = path.join(fixtureDir, "pg-dump-quick");
+    fs.writeFileSync(quickPgDump, "#!/bin/sh\nprintf 'SELECT 1;\\n'\n", { mode: 0o700 });
+    const previous = process.env.WARDMOTE_PG_DUMP_PATH;
+    process.env.WARDMOTE_PG_DUMP_PATH = quickPgDump;
+    try {
+      const result = await runDatabaseBackup({
+        connectionString, backupDir, backupEngine: "pg_dump",
+        retention: { dailyDays: 7, weeklyWeeks: 4, monthlyMonths: 1 },
+      });
+      expect(fs.readdirSync(backupDir)).toEqual([path.basename(result.backupFile)]);
+      expect(gunzipSync(fs.readFileSync(result.backupFile)).toString()).toBe("SELECT 1;\n");
+    } finally {
+      if (previous === undefined) delete process.env.WARDMOTE_PG_DUMP_PATH;
+      else process.env.WARDMOTE_PG_DUMP_PATH = previous;
+    }
+  }, EMBEDDED_POSTGRES_TEST_TIMEOUT_MS);
+
   it("preserves a post-pg_dump verification error without falling back or pruning", async () => {
     const connectionString = await createTempDatabase();
     const backupDir = createTempDir("checkpoint-pg-dump-");

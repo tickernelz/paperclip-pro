@@ -132,7 +132,7 @@ import {
   finalizeServerShutdown,
   loadWithoutCoordinatedShutdownSignalHooks,
 } from "./shutdown.js";
-import { systemdNotify } from "./services/systemd-notify.js";
+import { extendStartTimeoutUntilReady, systemdNotify } from "./services/systemd-notify.js";
 import { flushInFlightRunLogMirrors, resolveRunLogBasePath } from "./services/run-log-store.js";
 import { migrateRetiredNames } from "./services/retired-name-migration.js";
 export { migrateRetiredNames } from "./services/retired-name-migration.js";
@@ -218,6 +218,7 @@ export async function startServer(): Promise<StartedServer> {
 async function startServerWithDatabaseTeardown(
   startupDatabase: StartupDatabaseTeardown,
 ): Promise<StartedServer> {
+  extendStartTimeoutUntilReady();
   setStartupRecoveryPhase("starting");
   warnIfUnsupportedNodeVersion(process.versions.node, (message) => logger.warn(message));
 
