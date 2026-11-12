@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ExternalLink, Paperclip, Radio } from "lucide-react";
+import { ExternalLink, Radio } from "lucide-react";
+import { AttachmentIcon } from "@/components/icons/attachment-icon";
 import type {
   ChatPublicationState,
   ChatFileTransferPhase,
@@ -579,7 +580,7 @@ function ConnectedTaskComposer({
               disabled={uploadDisabled}
               onClick={() => fileInput.current?.click()}
             >
-              <Paperclip />
+              <AttachmentIcon />
               {uploading ? "Uploading…" : "Attach file"}
             </Button>
             <p className="text-xs text-ink-3">
@@ -647,7 +648,7 @@ function ConnectedTaskComposer({
                           publish.reset();
                         }}
                       />
-                      <Paperclip className="h-3.5 w-3.5 text-ink-3" />
+                      <AttachmentIcon className="h-3.5 w-3.5 text-ink-3" />
                       <span className="truncate">{label}</span>
                     </label>
                   );

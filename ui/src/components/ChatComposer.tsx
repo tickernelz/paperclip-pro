@@ -9,7 +9,8 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
   type ReactNode,
 } from "react";
-import { AlertTriangle, Check, Loader2, Paperclip, Send } from "lucide-react";
+import { AlertTriangle, Check, Loader2, Send } from "lucide-react";
+import { AttachmentIcon } from "@/components/icons/attachment-icon";
 import { OFFLINE_ACTION_REASON, useOffline } from "../lib/online-status";
 import { cn } from "../lib/utils";
 import { Button } from "@/components/ui/button";
@@ -256,7 +257,7 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(fu
           className="pointer-events-none absolute inset-1.5 z-20 flex items-center justify-center rounded-lg border border-dashed border-ink-3/50 bg-bg/80 text-xs text-ink-3 backdrop-blur-(--blur-1px)"
         >
           <span className="inline-flex items-center gap-2">
-            <Paperclip className="h-3.5 w-3.5" />
+            <AttachmentIcon className="h-3.5 w-3.5" />
             Drop to attach
           </span>
         </div>
@@ -349,7 +350,7 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(fu
               title="Attach files"
               className="grid h-7 w-7 shrink-0 place-items-center rounded-md text-ink-3 transition-colors duration-150 hover:bg-bg-3 hover:text-ink disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {attaching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Paperclip className="h-4 w-4" />}
+              {attaching ? <Loader2 className="h-4 w-4 animate-spin" /> : <AttachmentIcon className="h-4 w-4" />}
             </button>
           </>
         ) : null}
