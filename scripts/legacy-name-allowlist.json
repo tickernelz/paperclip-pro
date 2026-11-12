@@ -842,7 +842,7 @@
     ["packages/wardmote-runner/scripts/run-runner-workflow-evals.mjs",1,"belum-diganti"],
     ["packages/wardmote-runner/scripts/runner-protocol-eval-campaign.mjs",15,"belum-diganti"],
     ["packages/wardmote-runner/scripts/runner-protocol-eval-campaign.test.mjs",12,"belum-diganti"],
-    ["packages/wardmote-runner/scripts/runner-protocol-eval-history-view.mjs",5,"belum-diganti"],
+    ["packages/wardmote-runner/scripts/runner-protocol-eval-history-view.mjs",4,"belum-diganti"],
     ["packages/wardmote-runner/scripts/runner-protocol-eval-metrics.mjs",2,"belum-diganti"],
     ["packages/wardmote-runner/scripts/runner-protocol-eval-metrics.test.mjs",3,"belum-diganti"],
     ["packages/wardmote-runner/scripts/verify-rootless-linux.sh",2,"belum-diganti"],
