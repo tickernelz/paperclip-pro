@@ -128,7 +128,7 @@
       ],
       "whenToUse": "Share selected spreadsheets with the Wardmote robot account instead of connecting a Google identity.",
       "defaults": {
-        "templateKey": "paperclip.google-sheets"
+        "templateKey": "wardmote.google-sheets"
       },
       "guidanceMd": "Share each spreadsheet with the Wardmote robot email, then paste the sheet links.",
       "riskTier": "S3",

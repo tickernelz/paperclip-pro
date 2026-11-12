@@ -692,7 +692,7 @@ const APPROVED_STDIO_TEMPLATES: Record<
     tools: McpToolDescriptor[];
   }
 > = {
-  "paperclip.echo-calculator-time": {
+  "wardmote.echo-calculator-time": {
     name: "Wardmote Echo / Calculator / Time fixture",
     tools: [
       {
@@ -733,7 +733,7 @@ const APPROVED_STDIO_TEMPLATES: Record<
       },
     ],
   },
-  "paperclip.synthetic-todo-kv": {
+  "wardmote.synthetic-todo-kv": {
     name: "Wardmote Synthetic Todo / KV fixture",
     tools: [
       {
@@ -768,8 +768,8 @@ const APPROVED_STDIO_TEMPLATES: Record<
       },
     ],
   },
-  "paperclip.cognee-cloud": COGNEE_STDIO_TEMPLATE,
-  "paperclip.google-sheets": {
+  "wardmote.cognee-cloud": COGNEE_STDIO_TEMPLATE,
+  "wardmote.google-sheets": {
     name: "Google Sheets",
     command: "wardmote-google-sheets-mcp-server",
     args: [],
@@ -873,7 +873,7 @@ const APPROVED_STDIO_TEMPLATES: Record<
 };
 
 const GOOGLE_SHEETS_GALLERY_KEY = "google-sheets";
-const GOOGLE_SHEETS_TEMPLATE_ID = "paperclip.google-sheets";
+const GOOGLE_SHEETS_TEMPLATE_ID = "wardmote.google-sheets";
 const GOOGLE_SHEETS_ALLOWED_SPREADSHEET_IDS_ENV =
   "GOOGLE_SHEETS_ALLOWED_SPREADSHEET_IDS";
 const CONNECTION_TOKEN_MINT_TOOL_NAME = "connection_token.mint";
@@ -898,13 +898,13 @@ const TOOL_EXAMPLES: ToolExampleDefinition[] = [
     title: "Safe read-only Todo / KV fixture",
     description:
       "Installs a deterministic local MCP fixture and grants only its read-only catalog entries.",
-    applicationKey: "paperclip.examples.safe-read-only-todo-kv",
+    applicationKey: "wardmote.examples.safe-read-only-todo-kv",
     applicationName: "Wardmote example: Safe read-only Todo / KV",
     applicationDescription:
       "Deterministic MCP fixture for first-run tool governance checks.",
     connectionName: "Wardmote example: Safe read-only Todo / KV",
-    templateId: "paperclip.synthetic-todo-kv",
-    profileKey: "paperclip.examples.safe-read-only-todo-kv.profile",
+    templateId: "wardmote.synthetic-todo-kv",
+    profileKey: "wardmote.examples.safe-read-only-todo-kv.profile",
     profileName: "Example safe read-only tools",
     profileDescription:
       "Allows only the read-only tools from the Wardmote Todo / KV example fixture.",
@@ -3477,7 +3477,7 @@ export function toolAccessService(
     enabled: boolean,
     config: Record<string, unknown> = {},
   ) {
-    if (config.templateId === "paperclip.cognee-cloud") return;
+    if (config.templateId === "wardmote.cognee-cloud") return;
     if (
       transport === "local_stdio" &&
       enabled &&
@@ -4018,8 +4018,6 @@ export function toolAccessService(
     const applicationKey = application?.applicationKey ?? "";
     return Boolean(
       applicationKey === "wardmote-pages" ||
-      applicationKey === "paperclip.pages" ||
-      applicationKey === "pages.paperclip" ||
       readConfigString(config, "connectionType") === "pages" ||
       readConfigString(config, "service") === "pages" ||
       readConfigString(broker, "connectionType") === "pages" ||
@@ -6743,7 +6741,7 @@ export function toolAccessService(
   async function ensureRuntimeSlot(
     connection: typeof toolConnections.$inferSelect,
   ): Promise<ToolRuntimeSlot | null> {
-    if (connection.transport !== "local_stdio" || connection.config.templateId === "paperclip.cognee-cloud") return null;
+    if (connection.transport !== "local_stdio" || connection.config.templateId === "wardmote.cognee-cloud") return null;
     const slotKey = `mcp:${connection.companyId}:${connection.id}`;
     const [existing] = await db
       .select()
@@ -6766,7 +6764,7 @@ export function toolAccessService(
         ownerScopeId: connection.id,
         runtimeKind: "local_stdio",
         status: "stopped",
-        provider: "paperclip",
+        provider: "wardmote",
         providerRef: `template:${String(connection.config.templateId)}`,
         commandTemplateKey: String(connection.config.templateId),
         healthStatus: "unchecked",
@@ -7242,7 +7240,7 @@ export function toolAccessService(
   }
 
   async function validateCogneeConnection(connection: typeof toolConnections.$inferSelect, actor?: ActorInfo, probe = true) {
-    if (connection.config.templateId !== "paperclip.cognee-cloud") return;
+    if (connection.config.templateId !== "wardmote.cognee-cloud") return;
     const grant = await vaultGrantForConnection(connection, actor);
     const refs = grant?.credentialSecretRefs ?? connection.credentialSecretRefs;
     const values: Record<string, string> = {};
@@ -8244,7 +8242,7 @@ export function toolAccessService(
   ) {
     const metadata = {
       ...(existing?.metadata ?? {}),
-      source: "paperclip_example",
+      source: "wardmote_example",
       exampleId: definition.id,
       safeDefault: true,
     };
@@ -8323,7 +8321,7 @@ export function toolAccessService(
         applicationId,
         name: definition.connectionName,
         uid: connectionUid(
-          "paperclip",
+          "wardmote",
           definition.connectionName,
           connectionId,
         ),
@@ -8351,7 +8349,7 @@ export function toolAccessService(
   ) {
     const metadata = {
       ...(existing?.metadata ?? {}),
-      source: "paperclip_example",
+      source: "wardmote_example",
       exampleId: definition.id,
       safeDefault: true,
     };
@@ -8415,7 +8413,7 @@ export function toolAccessService(
           catalogEntryId: entry.id,
           toolName: entry.toolName,
           riskLevel: entry.riskLevel,
-          conditions: { source: "paperclip_example" },
+          conditions: { source: "wardmote_example" },
         })),
       )
       .returning();
@@ -8430,7 +8428,7 @@ export function toolAccessService(
   ): Promise<ToolProfileBinding> {
     const metadata = {
       ...(existing?.metadata ?? {}),
-      source: "paperclip_example",
+      source: "wardmote_example",
       safeDefault: true,
     };
     if (existing) {

@@ -51,7 +51,7 @@ Useful flags (all optional):
 - `--template <default|connector|workspace|environment>` — starter template.
 - `--category <connector|workspace|automation|ui|environment>` — manifest category.
 - `--display-name <name>`, `--description <text>`, `--author <name>` — manifest metadata.
-- `--sdk-path <path>` — snapshot the local SDK from a Wardmote checkout into `.paperclip-sdk/` (useful when developing against an unreleased SDK).
+- `--sdk-path <path>` — snapshot the local SDK from a Wardmote checkout into `.wardmote-sdk/` (useful when developing against an unreleased SDK).
 
 On success the command prints the exact next commands (`cd`, `pnpm install`, `pnpm dev`, `wardmote plugin install <abs-path>`). Run them in order.
 

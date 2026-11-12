@@ -862,7 +862,7 @@ describe("LLM Wiki plugin scaffold", () => {
     mockPageContentsByPath["wiki/concepts/sidebar-navigation.md"] = `---
 title: Sidebar navigation
 type: concept
-tags: [paperclip, wiki]
+tags: [wardmote, wiki]
 sources:
   - raw/sidebar-notes.md
 created: 2026-05-04
@@ -882,7 +882,7 @@ Route sidebar state stays attached to the selected wiki page.
     expect(markup).toContain(">type</dt>");
     expect(markup).toContain("concept");
     expect(markup).toContain(">tags</dt>");
-    expect(markup).toContain("paperclip");
+    expect(markup).toContain("wardmote");
     expect(markup).toContain("wiki");
     expect(markup).toContain(">sources</dt>");
     expect(markup).toContain("raw/sidebar-notes.md");
@@ -1610,7 +1610,7 @@ Duplicate headings receive stable suffixes.
       entries: options?.relativePath === "wiki"
         ? [
             { path: "wiki/concepts/agent-memory-layer.md", name: "agent-memory-layer.md", kind: "file", size: 12, modifiedAt },
-            { path: "wiki/entities/paperclip.md", name: "paperclip.md", kind: "file", size: 10, modifiedAt },
+            { path: "wiki/entities/wardmote.md", name: "wardmote.md", kind: "file", size: 10, modifiedAt },
             { path: "wiki/projects/llm-wiki/standup.md", name: "standup.md", kind: "file", size: 16, modifiedAt },
           ]
         : [
@@ -1634,7 +1634,7 @@ Duplicate headings receive stable suffixes.
 
     expect(result.pages).toEqual([
       expect.objectContaining({ path: "wiki/concepts/agent-memory-layer.md", title: null }),
-      expect.objectContaining({ path: "wiki/entities/paperclip.md", title: null }),
+      expect.objectContaining({ path: "wiki/entities/wardmote.md", title: null }),
       expect.objectContaining({ path: "wiki/projects/llm-wiki/standup.md", title: null }),
     ]);
     expect(result.sources).toEqual([
@@ -1866,7 +1866,7 @@ Duplicate headings receive stable suffixes.
       cursor: { maxWindowCharacters: 60000, maxCharactersPerSource: 12000, minSourceAgeMinutes: 15, maxWindowsPerRun: 6, staleAfterHours: 72 },
       backfill: { requireManualQueue: true },
     };
-    await harness.performAction("update-paperclip-ingestion-profile", {
+    await harness.performAction("update-wardmote-ingestion-profile", {
       companyId: COMPANY_ID,
       spaceSlug: created.space.slug,
       profile: enabledProfile,
@@ -1907,7 +1907,7 @@ Duplicate headings receive stable suffixes.
       cursor: { maxWindowCharacters: 60000, maxCharactersPerSource: 12000, minSourceAgeMinutes: 15, maxWindowsPerRun: 6, staleAfterHours: 72 },
       backfill: { requireManualQueue: true },
     };
-    await harness.performAction("update-paperclip-ingestion-profile", {
+    await harness.performAction("update-wardmote-ingestion-profile", {
       companyId: COMPANY_ID,
       spaceSlug: created.space.slug,
       profile: enabledProfile,
@@ -1919,7 +1919,7 @@ Duplicate headings receive stable suffixes.
       entityType: "issue",
       eventId: "event-before-disable",
     });
-    await harness.performAction("update-paperclip-ingestion-profile", {
+    await harness.performAction("update-wardmote-ingestion-profile", {
       companyId: COMPANY_ID,
       spaceSlug: created.space.slug,
       profile: { ...enabledProfile, enabled: false },
@@ -1987,12 +1987,12 @@ Duplicate headings receive stable suffixes.
       sourceRefs: Array<{ kind: string; issueIdentifier: string | null; documentKey?: string; commentId?: string }>;
       sourceHash: string;
       sourceWindowEnd: string | null;
-    }>("assemble-paperclip-source-bundle", {
+    }>("assemble-wardmote-source-bundle", {
       companyId: COMPANY_ID,
       rootIssueId: root.id,
       maxCharacters: 20000,
     });
-    const second = await harness.performAction<typeof first>("assemble-paperclip-source-bundle", {
+    const second = await harness.performAction<typeof first>("assemble-wardmote-source-bundle", {
       companyId: COMPANY_ID,
       rootIssueId: root.id,
       maxCharacters: 20000,
@@ -2054,7 +2054,7 @@ Duplicate headings receive stable suffixes.
         warnings: string[];
         sourceRefs: Array<Record<string, unknown>>;
       };
-    }>("create-paperclip-distillation-run", {
+    }>("create-wardmote-distillation-run", {
       companyId: COMPANY_ID,
       projectId: issue.projectId,
       maxCharacters: 20000,
@@ -2095,14 +2095,14 @@ Duplicate headings receive stable suffixes.
       cursorId: string;
       snapshotId: string;
       bundle: { sourceHash: string; sourceWindowEnd: string };
-    }>("create-paperclip-distillation-run", {
+    }>("create-wardmote-distillation-run", {
       companyId: COMPANY_ID,
       projectId: issue.projectId,
     });
     expect(run.snapshotId).toEqual(expect.any(String));
     expect(harness.dbExecutes.some((execute) => execute.sql.includes("wardmote_source_snapshots"))).toBe(true);
 
-    const failed = await harness.performAction<{ cursorAdvanced: boolean }>("record-paperclip-distillation-outcome", {
+    const failed = await harness.performAction<{ cursorAdvanced: boolean }>("record-wardmote-distillation-outcome", {
       companyId: COMPANY_ID,
       runId: run.runId,
       cursorId: run.cursorId,
@@ -2116,7 +2116,7 @@ Duplicate headings receive stable suffixes.
       execute.sql.trim().startsWith("UPDATE") && execute.sql.includes("wardmote_distillation_cursors"));
     expect(cursorUpdatesAfterFailure).toHaveLength(0);
 
-    const succeeded = await harness.performAction<{ cursorAdvanced: boolean }>("record-paperclip-distillation-outcome", {
+    const succeeded = await harness.performAction<{ cursorAdvanced: boolean }>("record-wardmote-distillation-outcome", {
       companyId: COMPANY_ID,
       runId: run.runId,
       cursorId: run.cursorId,
@@ -2158,7 +2158,7 @@ Duplicate headings receive stable suffixes.
     harness.seed({ projects: [project], issues: [issue] });
 
     await plugin.definition.setup(harness.ctx);
-    const result = await harness.performAction<{ cursorId: string }>("create-paperclip-distillation-run", {
+    const result = await harness.performAction<{ cursorId: string }>("create-wardmote-distillation-run", {
       companyId: COMPANY_ID,
       projectId: project.id,
     });
@@ -2173,20 +2173,20 @@ Duplicate headings receive stable suffixes.
     const harness = createTestHarness({ manifest });
     await plugin.definition.setup(harness.ctx);
 
-    await harness.performAction("create-paperclip-distillation-work-item", {
+    await harness.performAction("create-wardmote-distillation-work-item", {
       companyId: COMPANY_ID,
       kind: "manual",
       projectId: "77777777-7777-4777-8777-777777777777",
       idempotencyKey: "manual:project:77777777-7777-4777-8777-777777777777",
     });
-    await harness.performAction("create-paperclip-distillation-work-item", {
+    await harness.performAction("create-wardmote-distillation-work-item", {
       companyId: COMPANY_ID,
       kind: "retry",
       rootIssueId: "77777777-7777-4777-8777-777777777781",
       priority: "high",
       idempotencyKey: "retry:run:1",
     });
-    await harness.performAction("create-paperclip-distillation-work-item", {
+    await harness.performAction("create-wardmote-distillation-work-item", {
       companyId: COMPANY_ID,
       kind: "backfill",
       projectId: "77777777-7777-4777-8777-777777777777",
@@ -2202,7 +2202,7 @@ Duplicate headings receive stable suffixes.
     expect(String(workItemWrites[1].params?.[9])).toContain('"sourceScope":"root_issue"');
     expect(String(workItemWrites[2].params?.[9])).toContain('"sourceScope":"project"');
 
-    await expect(harness.performAction("create-paperclip-distillation-work-item", {
+    await expect(harness.performAction("create-wardmote-distillation-work-item", {
       companyId: COMPANY_ID,
       kind: "backfill",
       idempotencyKey: "backfill:company",
@@ -2235,7 +2235,7 @@ Duplicate headings receive stable suffixes.
       status: string;
       estimatedCostCents: number;
       snapshotId: string | null;
-    }>("create-paperclip-distillation-run", {
+    }>("create-wardmote-distillation-run", {
       companyId: COMPANY_ID,
       projectId: project.id,
       routineRun: true,
@@ -2276,7 +2276,7 @@ Duplicate headings receive stable suffixes.
       status: string;
       operation: { issue: { originKind: string; billingCode: string | null; assigneeAgentId: string | null; assigneeAdapterOverrides: Record<string, unknown> | null; description: string | null } };
       workItem: { kind: string; workItemId: string };
-    }>("distill-paperclip-now", {
+    }>("distill-wardmote-now", {
       companyId: COMPANY_ID,
       autoApply: false,
       includeSupportingPages: false,
@@ -2288,7 +2288,7 @@ Duplicate headings receive stable suffixes.
     expect(result.operation.issue.billingCode).toBe("plugin-llm-wiki:default");
     expect(result.operation.issue.assigneeAgentId).toBe(wikiMaintainerAgent().id);
     expect(result.operation.issue.assigneeAdapterOverrides).toBeNull();
-    expect(result.operation.issue.description).toContain("Prompt source: LLM Wiki plugin action `distill-paperclip-now`");
+    expect(result.operation.issue.description).toContain("Prompt source: LLM Wiki plugin action `distill-wardmote-now`");
     expect(result.operation.issue.description).toContain(`Required skill: use the installed \`${WARDMOTE_DISTILL_SKILL_KEY}\` skill`);
     expect(result.operation.issue.description).toContain("Do not hardcode a single project");
     expect(result.operation.issue.description).not.toContain(`Source project ID: ${project.id}`);
@@ -2361,7 +2361,7 @@ Duplicate headings receive stable suffixes.
     const result = await harness.performAction<{
       selectedProjects: Array<{ id: string; observedAt: string | null }>;
       eventIngestion: { enabled: boolean; sources: { issues: boolean; comments: boolean; documents: boolean } };
-    }>("enable-paperclip-distillation-active-projects", {
+    }>("enable-wardmote-distillation-active-projects", {
       companyId: COMPANY_ID,
       limit: 2,
     });
@@ -2416,7 +2416,7 @@ Duplicate headings receive stable suffixes.
       patches: Array<{ operationType: string; proposedContents: string }>;
       workItem: { kind: string };
       operation: { issue: { originKind: string } };
-    }>("backfill-paperclip-distillation", {
+    }>("backfill-wardmote-distillation", {
       companyId: COMPANY_ID,
       projectId: project.id,
       backfillStartAt: "2026-04-01T00:00:00Z",
@@ -2471,7 +2471,7 @@ Duplicate headings receive stable suffixes.
       status: string;
       patches: Array<{ pagePath: string; operationType: string; currentHash: string | null; proposedContents: string; sourceRefs: Array<{ issueIdentifier: string | null }> }>;
       warnings: string[];
-    }>("distill-paperclip-project-page", {
+    }>("distill-wardmote-project-page", {
       companyId: COMPANY_ID,
       projectId: project.id,
       autoApply: false,
@@ -2499,7 +2499,7 @@ Duplicate headings receive stable suffixes.
     expect(projectPatch.sourceRefs).toEqual([expect.objectContaining({ issueIdentifier: "PAP-4100" })]);
     expect(result.patches[2].proposedContents).toContain("[[wiki/projects/existing-wiki-project/index.md]]");
     expect(result.patches[2].proposedContents).toContain("[[wiki/projects/existing-wiki-project/standup.md]]");
-    expect(result.patches[3].proposedContents).toContain("paperclip-distill | proposed");
+    expect(result.patches[3].proposedContents).toContain("wardmote-distill | proposed");
     expect(result.warnings).toContain("Auto-apply policy disabled; proposed patches require review.");
   });
 
@@ -2559,7 +2559,7 @@ Duplicate headings receive stable suffixes.
     const result = await harness.performAction<{
       status: string;
       patches: Array<{ operationType: string; proposedContents: string }>;
-    }>("distill-paperclip-project-page", {
+    }>("distill-wardmote-project-page", {
       companyId: COMPANY_ID,
       projectId: project.id,
       maxCharacters: 20000,
@@ -2606,7 +2606,7 @@ Duplicate headings receive stable suffixes.
       status: string;
       appliedPages: string[];
       patches: Array<{ pagePath: string; sourceHash: string }>;
-    }>("distill-paperclip-project-page", {
+    }>("distill-wardmote-project-page", {
       companyId: COMPANY_ID,
       projectId: project.id,
       autoApply: true,
@@ -2625,7 +2625,7 @@ Duplicate headings receive stable suffixes.
     expect(files.get("wiki/projects/existing-wiki-project/index.md")).toContain("## Current Direction");
     expect(files.get("wiki/projects/existing-wiki-project/index.md")).toContain("## References");
     expect(files.get("wiki/index.md")).toContain("wiki/projects/existing-wiki-project/index.md");
-    expect(files.get("wiki/log.md")).toContain("paperclip-distill | proposed");
+    expect(files.get("wiki/log.md")).toContain("wardmote-distill | proposed");
     const bindingWrites = harness.dbExecutes.filter((execute) => execute.sql.includes("wardmote_page_bindings"));
     expect(bindingWrites).toHaveLength(4);
     expect(bindingWrites[0].params).toEqual(expect.arrayContaining([
@@ -2674,7 +2674,7 @@ Duplicate headings receive stable suffixes.
       status: string;
       appliedPages: string[];
       warnings: string[];
-    }>("distill-paperclip-project-page", {
+    }>("distill-wardmote-project-page", {
       companyId: COMPANY_ID,
       projectId: project.id,
       autoApply: true,
@@ -2720,7 +2720,7 @@ Duplicate headings receive stable suffixes.
     };
 
     await plugin.definition.setup(harness.ctx);
-    await expect(harness.performAction("distill-paperclip-project-page", {
+    await expect(harness.performAction("distill-wardmote-project-page", {
       companyId: COMPANY_ID,
       projectId: project.id,
       autoApply: true,
@@ -2749,7 +2749,7 @@ Duplicate headings receive stable suffixes.
     };
 
     await plugin.definition.setup(harness.ctx);
-    const result = await harness.performAction<{ status: string; reason: string; patches: unknown[] }>("distill-paperclip-project-page", {
+    const result = await harness.performAction<{ status: string; reason: string; patches: unknown[] }>("distill-wardmote-project-page", {
       companyId: COMPANY_ID,
       projectId: project.id,
       maxCharacters: 20000,
@@ -3082,7 +3082,7 @@ Duplicate headings receive stable suffixes.
 
     expect(source.spaceSlug).toBe(created.space.slug);
     expect(writes.map((write) => write.path)).toContain(`spaces/${created.space.slug}/${source.rawPath}`);
-    await expect(harness.performAction("distill-paperclip-now", {
+    await expect(harness.performAction("distill-wardmote-now", {
       companyId: COMPANY_ID,
       spaceSlug: created.space.slug,
       projectId: existingProject().id,
@@ -3132,7 +3132,7 @@ Duplicate headings receive stable suffixes.
       }
       return originalQuery<T>(sql, params);
     };
-    await expect(harness.performAction("distill-paperclip-now", {
+    await expect(harness.performAction("distill-wardmote-now", {
       companyId: COMPANY_ID,
       spaceSlug: created.space.slug,
       projectId: existingProject().id,
@@ -3160,7 +3160,7 @@ Duplicate headings receive stable suffixes.
     harness.seed({ agents: [wikiMaintainerAgent()], projects: [project], issues: [issue] });
 
     await plugin.definition.setup(harness.ctx);
-    const queued = await harness.performAction<{ status: string }>("distill-paperclip-now", {
+    const queued = await harness.performAction<{ status: string }>("distill-wardmote-now", {
       companyId: COMPANY_ID,
       projectId: project.id,
     });
@@ -3193,7 +3193,7 @@ Duplicate headings receive stable suffixes.
       return originalQuery<T>(sql, params);
     };
 
-    await expect(harness.performAction("create-paperclip-distillation-run", {
+    await expect(harness.performAction("create-wardmote-distillation-run", {
       companyId: COMPANY_ID,
       projectId: project.id,
     })).rejects.toThrow("personal spaces cannot ingest Wardmote sources");
@@ -3210,7 +3210,7 @@ Duplicate headings receive stable suffixes.
       workItemId: string;
       issueId: string;
       workItems: Array<{ workItemId: string; issueId: string; projectId: string | null; rootIssueId: string | null }>;
-    }>("queue-paperclip-ingestion-backfill", {
+    }>("queue-wardmote-ingestion-backfill", {
       companyId: COMPANY_ID,
       sourceScope: {
         kind: "selected_projects",
@@ -3245,18 +3245,18 @@ Duplicate headings receive stable suffixes.
       sources: { issues: true },
     })).rejects.toThrow("maxCharacters exceeds the hard Wardmote ingestion cap");
 
-    await expect(harness.performAction("enable-paperclip-distillation-active-projects", {
+    await expect(harness.performAction("enable-wardmote-distillation-active-projects", {
       companyId: COMPANY_ID,
       limit: 26,
     })).rejects.toThrow("fan-out exceeds the hard cap");
 
-    await expect(harness.performAction("assemble-paperclip-source-bundle", {
+    await expect(harness.performAction("assemble-wardmote-source-bundle", {
       companyId: COMPANY_ID,
       projectId: "77777777-7777-4777-8777-777777777777",
       rootIssueId: "77777777-7777-4777-8777-777777777778",
     })).rejects.toThrow("either projectId or rootIssueId");
 
-    await expect(harness.performAction("assemble-paperclip-source-bundle", {
+    await expect(harness.performAction("assemble-wardmote-source-bundle", {
       companyId: COMPANY_ID,
       projectId: "77777777-7777-4777-8777-777777777777",
       maxCharacters: 60001,

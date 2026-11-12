@@ -36,7 +36,6 @@ export const SMOKE_LAB_DEMO_PASSWORD = "smoke-password";
 export const SMOKE_LAB_BANNER = "SMOKE TEST - not a real provider";
 export const SMOKE_LAB_OAUTH_SCOPES = ["smoke:openid", "smoke:profile", "smoke:email"] as const;
 export const SMOKE_LAB_OAUTH_SCOPE = SMOKE_LAB_OAUTH_SCOPES.join(" ");
-export const SMOKE_LAB_OAUTH_CLIENT_ID = "paperclip-smoke-lab";
 
 // The fixture servers live at repo-root scripts/mcp-fixtures/servers. Resolve them
 // relative to this module, NOT process.cwd(): the workspace runtime boots the server

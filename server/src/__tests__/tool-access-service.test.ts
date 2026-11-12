@@ -2662,7 +2662,7 @@ describeEmbeddedPostgres("tool access service", () => {
       { sourceTemplateKey: "anthropic", connectionMethodKey: "api-key" },
       {
         sourceTemplateKey: "unsupported-rest-fixture",
-        templateId: "paperclip.echo-calculator-time",
+        templateId: "wardmote.echo-calculator-time",
       },
     ].flatMap((config) =>
       (["checkHealth", "refreshCatalog"] as const).map((operation) => ({ config, operation })),
@@ -2738,7 +2738,7 @@ describeEmbeddedPostgres("tool access service", () => {
     const connection = await service.createConnection(company.id, {
       name: "Local echo fixture",
       transport: "local_stdio",
-      config: { templateId: "paperclip.echo-calculator-time" },
+      config: { templateId: "wardmote.echo-calculator-time" },
       enabled: true,
       status: "active",
     });
@@ -2750,7 +2750,7 @@ describeEmbeddedPostgres("tool access service", () => {
       connectionId: connection.id,
       runtimeKind: "local_stdio",
       status: "stopped",
-      commandTemplateKey: "paperclip.echo-calculator-time",
+      commandTemplateKey: "wardmote.echo-calculator-time",
     });
     expect(refresh.catalog.map((entry) => entry.toolName).sort()).toEqual([
       "add",
@@ -2761,7 +2761,7 @@ describeEmbeddedPostgres("tool access service", () => {
     expect(runtimeSlots).toEqual([
       expect.objectContaining({
         connectionId: connection.id,
-        providerRef: "template:paperclip.echo-calculator-time",
+        providerRef: "template:wardmote.echo-calculator-time",
         healthStatus: "ok",
       }),
     ]);
@@ -2838,7 +2838,7 @@ describeEmbeddedPostgres("tool access service", () => {
     expect(listed.body.templates).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          templateId: "paperclip.echo-calculator-time",
+          templateId: "wardmote.echo-calculator-time",
           source: "built_in",
         }),
         expect.objectContaining({
@@ -4920,7 +4920,7 @@ describeEmbeddedPostgres("tool access service", () => {
     expect(install.created).toBe(true);
     expect(secondInstall.created).toBe(false);
     expect(install.application).toMatchObject({
-      applicationKey: "paperclip.examples.safe-read-only-todo-kv",
+      applicationKey: "wardmote.examples.safe-read-only-todo-kv",
       type: "mcp_stdio",
       status: "active",
     });
@@ -4929,11 +4929,11 @@ describeEmbeddedPostgres("tool access service", () => {
       status: "active",
       enabled: true,
       config: expect.objectContaining({
-        templateId: "paperclip.synthetic-todo-kv",
+        templateId: "wardmote.synthetic-todo-kv",
       }),
     });
     expect(install.profile).toMatchObject({
-      profileKey: "paperclip.examples.safe-read-only-todo-kv.profile",
+      profileKey: "wardmote.examples.safe-read-only-todo-kv.profile",
       defaultAction: "deny",
       status: "active",
     });
@@ -7048,7 +7048,7 @@ describeEmbeddedPostgres("tool access service", () => {
       .patch(`/api/tool-connections/${companyAConnection.connectionId}`)
       .send({
         config: {
-          templateId: "paperclip.google-sheets",
+          templateId: "wardmote.google-sheets",
           sourceTemplateKey: "google-sheets",
           allowedSpreadsheetIds: ["company-b-sheet"],
           env: { GOOGLE_SHEETS_ALLOWED_SPREADSHEET_IDS: "company-b-sheet" },
@@ -7261,7 +7261,7 @@ describeEmbeddedPostgres("tool access service", () => {
 
     const updated = await service.updateConnection(second.connectionId, {
       config: {
-        templateId: "paperclip.google-sheets",
+        templateId: "wardmote.google-sheets",
         sourceTemplateKey: "google-sheets",
         allowedSpreadsheetIds: [
           "same-company-sheet",
@@ -11357,7 +11357,7 @@ describeEmbeddedPostgres("tool access service", () => {
       method: "GET", headers: { "X-Api-Key": key }, redirect: "manual",
     }));
     const [connection] = await db.select().from(toolConnections).where(eq(toolConnections.id, connected.connectionId));
-    expect(connection.config).toMatchObject({ templateId: "paperclip.cognee-cloud" });
+    expect(connection.config).toMatchObject({ templateId: "wardmote.cognee-cloud" });
     expect(connection.credentialSecretRefs.map(ref => ref.configPath).sort()).toEqual(["env.COGNEE_API_KEY", "env.COGNEE_BASE_URL"]);
     expect(JSON.stringify(connected)).not.toContain(key);
     expect(JSON.stringify(connection)).not.toContain(key);
@@ -15632,7 +15632,7 @@ describeEmbeddedPostgres("tool access service", () => {
     const connection = await service.createConnection(company.id, {
       name: "Restartable local fixture",
       transport: "local_stdio",
-      config: { templateId: "paperclip.echo-calculator-time" },
+      config: { templateId: "wardmote.echo-calculator-time" },
       enabled: true,
       status: "active",
     });
@@ -15699,7 +15699,7 @@ describeEmbeddedPostgres("tool access service", () => {
     const connection = await service.createConnection(company.id, {
       name: "Route local fixture",
       transport: "local_stdio",
-      config: { templateId: "paperclip.echo-calculator-time" },
+      config: { templateId: "wardmote.echo-calculator-time" },
       enabled: true,
       status: "active",
     });
@@ -15749,7 +15749,7 @@ describeEmbeddedPostgres("tool access service", () => {
     const connection = await service.createConnection(company.id, {
       name: "Permissioned local fixture",
       transport: "local_stdio",
-      config: { templateId: "paperclip.echo-calculator-time" },
+      config: { templateId: "wardmote.echo-calculator-time" },
       enabled: true,
       status: "active",
     });
@@ -17022,7 +17022,7 @@ describeEmbeddedPostgres("tool access service", () => {
         runtimeKind: "mcp_remote",
         status: "running",
         reuseKey: connection.id,
-        provider: "paperclip",
+        provider: "wardmote",
         providerRef: "remote:https://fixture.example/mcp",
         healthStatus: "ok",
       })
@@ -17070,8 +17070,8 @@ describeEmbeddedPostgres("tool access service", () => {
         transport: "local_stdio",
         status: "active",
         enabled: true,
-        config: { templateId: "paperclip.echo-calculator-time" },
-        transportConfig: { templateId: "paperclip.echo-calculator-time" },
+        config: { templateId: "wardmote.echo-calculator-time" },
+        transportConfig: { templateId: "wardmote.echo-calculator-time" },
         healthStatus: "missing_secret",
         healthMessage: "A configured credential secret could not be resolved.",
       })
@@ -17081,15 +17081,15 @@ describeEmbeddedPostgres("tool access service", () => {
       companyId: company.id,
       applicationId: application.id,
       connectionId: connection.id,
-      slotKey: `${connection.id}:paperclip.echo-calculator-time`,
+      slotKey: `${connection.id}:wardmote.echo-calculator-time`,
       ownerScopeType: "connection",
       ownerScopeId: connection.id,
       runtimeKind: "local_stdio",
       status: "running",
       reuseKey: connection.id,
-      provider: "paperclip",
+      provider: "wardmote",
       providerRef: "local-stdio:test-host:slot",
-      commandTemplateKey: "paperclip.echo-calculator-time",
+      commandTemplateKey: "wardmote.echo-calculator-time",
       healthStatus: "ok",
       startedAt: staleAt,
       lastUsedAt: staleAt,
@@ -17268,7 +17268,7 @@ describeEmbeddedPostgres("tool access service", () => {
       hostedService.createConnection(company.id, {
         name: "Hosted local stdio",
         transport: "local_stdio",
-        config: { templateId: "paperclip.echo-calculator-time" },
+        config: { templateId: "wardmote.echo-calculator-time" },
         enabled: true,
         status: "active",
       }),
@@ -17286,7 +17286,7 @@ describeEmbeddedPostgres("tool access service", () => {
       trustedService.createConnection(company.id, {
         name: "Trusted hosted local stdio",
         transport: "local_stdio",
-        config: { templateId: "paperclip.echo-calculator-time" },
+        config: { templateId: "wardmote.echo-calculator-time" },
         enabled: true,
         status: "active",
       }),

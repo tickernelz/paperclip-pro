@@ -31,7 +31,7 @@ The scaffold starts with plain React elements so the generated plugin stays mini
 
 Inside this repo, the generated package uses `@tickernelz/wardmote-plugin-sdk` via `workspace:*`.
 
-Outside this repo, the scaffold snapshots `@tickernelz/wardmote-plugin-sdk` from your local Wardmote checkout into a `.paperclip-sdk/` tarball and points the generated package at that local file by default. You can override the SDK source explicitly:
+Outside this repo, the scaffold snapshots `@tickernelz/wardmote-plugin-sdk` from your local Wardmote checkout into a `.wardmote-sdk/` tarball and points the generated package at that local file by default. You can override the SDK source explicitly:
 
 ```bash
 node packages/plugins/plugin-creator/dist/bin.js @acme/my-plugin \

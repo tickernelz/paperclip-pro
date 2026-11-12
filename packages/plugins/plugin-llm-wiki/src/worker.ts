@@ -126,7 +126,7 @@ function buildManualDistillPrompt(input: { companyId: string; projectId?: string
   return [
     "Manual LLM Wiki distillation requested outside recurring cadence.",
     "",
-    "Prompt source: LLM Wiki plugin action `distill-paperclip-now` (`packages/plugins/plugin-llm-wiki/src/worker.ts`).",
+    "Prompt source: LLM Wiki plugin action `distill-wardmote-now` (`packages/plugins/plugin-llm-wiki/src/worker.ts`).",
     `Required skill: use the installed \`${WARDMOTE_DISTILL_SKILL_KEY}\` skill before changing wiki files.`,
     "",
     "Scope:",
@@ -141,7 +141,7 @@ function buildManualDistillPrompt(input: { companyId: string; projectId?: string
     "Process:",
     "1. Read the wiki root AGENTS.md, wiki/index.md, and recent wiki/log.md entries.",
     "2. Assemble bounded Wardmote source bundles for every eligible project or root issue, excluding LLM Wiki plugin-operation issues.",
-    "3. Turn durable signal into project standups, wiki-insightful project pages, decisions, history, index, and log updates per the paperclip-distill skill.",
+    "3. Turn durable signal into project standups, wiki-insightful project pages, decisions, history, index, and log updates per the wardmote-distill skill.",
     "4. Surface clipped, low-signal, stale-hash, or source-window warnings instead of hiding them.",
   ].filter((line): line is string => line !== null).join("\n");
 }
@@ -370,7 +370,7 @@ const plugin = definePlugin({
       });
     });
 
-    ctx.data.register("paperclip-ingestion-profile", async (params) => {
+    ctx.data.register("wardmote-ingestion-profile", async (params) => {
       return getWardmoteIngestionProfile(ctx, {
         companyId: readCompanyIdFromParams(params),
         wikiId: stringField(params.wikiId),
@@ -378,7 +378,7 @@ const plugin = definePlugin({
       });
     });
 
-    ctx.data.register("paperclip-ingestion-candidates", async (params) => {
+    ctx.data.register("wardmote-ingestion-candidates", async (params) => {
       return listWardmoteIngestionCandidates(ctx, {
         companyId: readCompanyIdFromParams(params),
         wikiId: stringField(params.wikiId),
@@ -387,7 +387,7 @@ const plugin = definePlugin({
       });
     });
 
-    ctx.actions.register("update-paperclip-ingestion-profile", async (params) => {
+    ctx.actions.register("update-wardmote-ingestion-profile", async (params) => {
       return updateWardmoteIngestionProfile(ctx, {
         companyId: readCompanyIdFromParams(params),
         wikiId: stringField(params.wikiId),
@@ -396,7 +396,7 @@ const plugin = definePlugin({
       });
     });
 
-    ctx.actions.register("queue-paperclip-ingestion-backfill", async (params) => {
+    ctx.actions.register("queue-wardmote-ingestion-backfill", async (params) => {
       const companyId = readCompanyIdFromParams(params);
       const sourceScope = typeof params.sourceScope === "object" && params.sourceScope != null && !Array.isArray(params.sourceScope)
         ? params.sourceScope as Record<string, unknown>
@@ -438,7 +438,7 @@ const plugin = definePlugin({
           idempotencyKey: idempotencyKey && scopes.length === 1
             ? idempotencyKey
             : `${idempotencyKey ?? "profile-backfill"}:${idempotencyScope}:${backfillStartAt ?? "begin"}:${backfillEndAt ?? "now"}`,
-          metadata: { backfillStartAt, backfillEndAt, requestedFrom: "queue-paperclip-ingestion-backfill" },
+          metadata: { backfillStartAt, backfillEndAt, requestedFrom: "queue-wardmote-ingestion-backfill" },
         });
         const operation = await createOperationIssue(ctx, {
           companyId,
@@ -508,7 +508,7 @@ const plugin = definePlugin({
       return { status: "ok", source: captured, operation: op };
     });
 
-    ctx.actions.register("assemble-paperclip-source-bundle", async (params) => {
+    ctx.actions.register("assemble-wardmote-source-bundle", async (params) => {
       return assembleWardmoteSourceBundle(ctx, {
         companyId: readCompanyIdFromParams(params),
         wikiId: stringField(params.wikiId),
@@ -525,7 +525,7 @@ const plugin = definePlugin({
       });
     });
 
-    ctx.actions.register("create-paperclip-distillation-run", async (params) => {
+    ctx.actions.register("create-wardmote-distillation-run", async (params) => {
       return createWardmoteDistillationRun(ctx, {
         companyId: readCompanyIdFromParams(params),
         wikiId: stringField(params.wikiId),
@@ -544,7 +544,7 @@ const plugin = definePlugin({
       });
     });
 
-    ctx.actions.register("record-paperclip-distillation-outcome", async (params) => {
+    ctx.actions.register("record-wardmote-distillation-outcome", async (params) => {
       const status = stringField(params.status);
       if (status !== "succeeded" && status !== "failed" && status !== "review_required") {
         throw new Error("status must be succeeded, failed, or review_required");
@@ -566,7 +566,7 @@ const plugin = definePlugin({
       });
     });
 
-    ctx.actions.register("distill-paperclip-project-page", async (params) => {
+    ctx.actions.register("distill-wardmote-project-page", async (params) => {
       return distillWardmoteProjectPage(ctx, {
         companyId: readCompanyIdFromParams(params),
         wikiId: stringField(params.wikiId),
@@ -588,7 +588,7 @@ const plugin = definePlugin({
       });
     });
 
-    ctx.actions.register("distill-paperclip-now", async (params) => {
+    ctx.actions.register("distill-wardmote-now", async (params) => {
       const companyId = readCompanyIdFromParams(params);
       const spaceSlug = stringField(params.spaceSlug);
       const projectId = stringField(params.projectId);
@@ -604,7 +604,7 @@ const plugin = definePlugin({
         requestedByIssueId: stringField(params.requestedByIssueId),
         priority: "medium",
         idempotencyKey: stringField(params.idempotencyKey) ?? `manual:${idempotencyScope}`,
-        metadata: { requestedFrom: "distill-paperclip-now" },
+        metadata: { requestedFrom: "distill-wardmote-now" },
       });
       const operation = await createOperationIssue(ctx, {
         companyId,
@@ -621,7 +621,7 @@ const plugin = definePlugin({
       return { status: "queued", workItem, operation };
     });
 
-    ctx.actions.register("enable-paperclip-distillation-active-projects", async (params) => {
+    ctx.actions.register("enable-wardmote-distillation-active-projects", async (params) => {
       return enableActiveProjectDistillation(ctx, {
         companyId: readCompanyIdFromParams(params),
         wikiId: stringField(params.wikiId),
@@ -630,7 +630,7 @@ const plugin = definePlugin({
       });
     });
 
-    ctx.actions.register("backfill-paperclip-distillation", async (params) => {
+    ctx.actions.register("backfill-wardmote-distillation", async (params) => {
       const companyId = readCompanyIdFromParams(params);
       const spaceSlug = stringField(params.spaceSlug);
       const projectId = stringField(params.projectId);
@@ -649,7 +649,7 @@ const plugin = definePlugin({
         requestedByIssueId: stringField(params.requestedByIssueId),
         priority: "low",
         idempotencyKey: stringField(params.idempotencyKey) ?? `backfill:${idempotencyScope}:${backfillStartAt ?? "begin"}:${backfillEndAt ?? "now"}`,
-        metadata: { backfillStartAt, backfillEndAt, requestedFrom: "backfill-paperclip-distillation" },
+        metadata: { backfillStartAt, backfillEndAt, requestedFrom: "backfill-wardmote-distillation" },
       });
       const operation = await createOperationIssue(ctx, {
         companyId,
@@ -688,7 +688,7 @@ const plugin = definePlugin({
       return { ...result, workItem, operation };
     });
 
-    ctx.actions.register("create-paperclip-distillation-work-item", async (params) => {
+    ctx.actions.register("create-wardmote-distillation-work-item", async (params) => {
       const kind = stringField(params.kind);
       if (
         kind !== "manual" &&

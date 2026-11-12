@@ -2633,6 +2633,34 @@
       "when": 1794518277710,
       "tag": "0377_wardmote_managed_archive_token",
       "breakpoints": true
+    },
+    {
+      "idx": 378,
+      "version": "7",
+      "when": 1794604677710,
+      "tag": "0378_wardmote_tool_template_keys",
+      "breakpoints": true
+    },
+    {
+      "idx": 379,
+      "version": "7",
+      "when": 1794691077710,
+      "tag": "0379_wardmote_tool_selector_names",
+      "breakpoints": true
+    },
+    {
+      "idx": 380,
+      "version": "7",
+      "when": 1794777477710,
+      "tag": "0380_wardmote_self_tool_names",
+      "breakpoints": true
+    },
+    {
+      "idx": 381,
+      "version": "7",
+      "when": 1794863877710,
+      "tag": "0381_wardmote_plugin_skill_keys",
+      "breakpoints": true
     }
   ]
 }
