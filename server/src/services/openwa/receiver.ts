@@ -230,6 +230,7 @@ function storedRowEvent(sessionId: string, row: OpenwaStoredMessage): OpenwaIngr
     fromMe: row.direction === "outgoing",
     isGroup: row.chatId.endsWith("@g.us"),
     status: row.status,
+    ...(row.direction === "incoming" && row.chatName ? { notifyName: row.chatName } : {}),
     ...(row.mediaMimetype ? { media: { mimetype: row.mediaMimetype, omitted: true } } : {}),
   };
   return {

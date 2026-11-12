@@ -214,6 +214,7 @@ export class FakeOpenwaGateway {
     timestamp?: number;
     emit?: boolean;
     store?: boolean;
+    chatName?: string | null;
     extra?: Record<string, unknown>;
   }): FakeStoredRow {
     const sequence = ++this.sequence;
@@ -233,6 +234,7 @@ export class FakeOpenwaGateway {
       direction: fromMe ? "outgoing" : "incoming",
       timestamp,
       metadata: null,
+      chatName: fromMe ? null : (input.chatName ?? null),
       mediaPath: null,
       mediaMimetype: null,
       status: fromMe ? "sent" : "delivered",
@@ -525,6 +527,7 @@ export class FakeOpenwaGateway {
           isGroup: row.chatId.endsWith("@g.us"),
           kind: row.chatId.endsWith("@g.us") ? "group" : "individual",
           ...(row.author ? { author: row.author } : {}),
+          ...(row.chatName ? { contact: { pushName: row.chatName } } : {}),
         })),
       );
     }
