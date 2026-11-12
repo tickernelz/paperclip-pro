@@ -1,7 +1,7 @@
 export interface WardmoteChatFilePreparationDelivery {
   readonly provider:
     "slack" | "github" | "discord" | "microsoft-teams" | "telegram" | "imessage-photon" | "speko" | null;
-  readonly mode: "provider_attachment" | "paperclip_task_only" | "unknown";
+  readonly mode: "provider_attachment" | "wardmote_task_only" | "unknown";
   readonly preparationState: "prepared";
   readonly providerDeliveryConfirmed: false;
   readonly guidance: string;
@@ -29,7 +29,7 @@ export function wardmoteChatFilePreparationDelivery(
     return {
       ...common,
       provider: authenticatedProvider,
-      mode: "paperclip_task_only",
+      mode: "wardmote_task_only",
       guidance: `This ${providerName} connection cannot upload file bytes into ${surface}. After a successful file-preparation receipt, say the file is saved on the Wardmote task and must be opened there with Wardmote access; do not say it is attached, displayed, downloadable, or available to open in this provider conversation. Do not invent a public download link. Preparation does not confirm provider delivery.`,
     };
   }

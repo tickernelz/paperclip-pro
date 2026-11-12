@@ -222,7 +222,7 @@ async function spekoToolsForEndpoint(db: Db, session: SpekoTaskSession, endpoint
     .where(and(eq(toolCatalogEntries.companyId, session.companyId), eq(toolCatalogEntries.connectionId, authority.endpoint.connectionId), eq(toolCatalogEntries.status, "active"), isNull(toolCatalogEntries.quarantinedAt), eq(toolConnections.enabled, true), eq(toolConnections.status, "active")));
   return entries.filter(({entry}) => entry.toolName === "call_my_phone").map(({entry, applicationId}) => ({
     name: `speko-voice.${endpointId}:call_my_phone`, displayName: "Call my phone", description: entry.description ?? "", parametersSchema: entry.inputSchema,
-    pluginId: `speko-voice:${endpointId}`, providerType: "paperclip_speko_voice", risk: "write", applicationId, applicationKey: "speko-voice",
+    pluginId: `speko-voice:${endpointId}`, providerType: "wardmote_speko_voice", risk: "write", applicationId, applicationKey: "speko-voice",
     applicationDisplayName: "Speko voice", connectionId: authority.endpoint.connectionId, catalogEntryId: entry.id,
     upstreamToolName: "call_my_phone", providerMetadata: { endpointId },
   }));

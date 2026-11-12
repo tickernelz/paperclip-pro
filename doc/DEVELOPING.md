@@ -1949,7 +1949,7 @@ cleanup validation still inspect Git afresh. A display result never authorizes
 worktree removal.
 
 The connection-health sweep selects only due IDs in SQL before applying its
-limit. Legacy `paperclip_plugin` placeholder connections are excluded: their
+limit. Legacy `wardmote_plugin` placeholder connections are excluded: their
 tools run in plugin workers and do not have remote MCP endpoints. These rows
 remain available; the sweep does not disable or delete plugin connections.
 
