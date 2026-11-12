@@ -63,13 +63,13 @@ export function RunnerConsoleApp({
   const viewingChild = console_.selectedThreadId !== null;
 
   React.useEffect(() => {
-    const stored = window.localStorage.getItem("paperclip-runner.sdk.v1.inspector");
+    const stored = window.localStorage.getItem("wardmote-runner.sdk.v1.inspector");
     if (stored === "open") setInspectorOpen(true);
   }, []);
 
   React.useEffect(() => {
     window.localStorage.setItem(
-      "paperclip-runner.sdk.v1.inspector",
+      "wardmote-runner.sdk.v1.inspector",
       inspectorOpen ? "open" : "closed",
     );
   }, [inspectorOpen]);
