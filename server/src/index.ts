@@ -141,11 +141,7 @@ import { extendStartTimeoutUntilReady, systemdNotify } from "./services/systemd-
 import { flushInFlightRunLogMirrors, resolveRunLogBasePath } from "./services/run-log-store.js";
 import { migrateRetiredNames } from "./services/retired-name-migration.js";
 import { createWardmoteUpdateService } from "./services/wardmote-updates.js";
-import { createSystemdUpdateLauncher, createUpdateInstaller } from "./services/wardmote-update-install.js";
-import { getTaskDrainStatus, listActiveRunExecutionIds } from "./services/heartbeat.js";
-import { startTaskDrain, stopTaskDrain } from "./services/task-admission.js";
-import { resolveWardmoteHomeDir, resolveWardmoteInstanceRoot } from "./home-paths.js";
-import { logActivity } from "./services/activity-log.js";
+import { createInstanceUpdateInstaller } from "./services/wardmote-update-runtime.js";
 export { migrateRetiredNames } from "./services/retired-name-migration.js";
 import { getMaxAttachmentBytes } from "./attachment-types.js";
 import { setWardmoteBridgeAttachmentMaxBytesSource } from "@tickernelz/wardmote-adapter-utils/execution-target";
@@ -944,59 +940,7 @@ async function startServerWithDatabaseTeardown(
   };
   const wardmoteUpdates = createWardmoteUpdateService();
   wardmoteUpdates.startPeriodicChecks();
-  const updateInstaller = createUpdateInstaller({
-    status: () => wardmoteUpdates.status(),
-    instanceRoot: resolveWardmoteInstanceRoot(),
-    runControl: {
-      async liveRuns() {
-        const drain = getTaskDrainStatus();
-        const runIds = listActiveRunExecutionIds();
-        return {
-          draining: drain.draining,
-          pendingWakes: drain.pendingWakes,
-          count: runIds.length,
-          runs: runIds.map((id) => ({ id, companyId: null, agentId: null, status: null, startedAt: null, issueId: null })),
-        };
-      },
-      async startDrain(ttlMs) {
-        if (getTaskDrainStatus().ownerId) throw conflict("An idle-sleep task drain is active");
-        startTaskDrain({ ttlMs });
-      },
-      async stopDrain() {
-        if (!getTaskDrainStatus().ownerId) stopTaskDrain();
-      },
-    },
-    launch: createSystemdUpdateLauncher({
-      homeDir: resolveWardmoteHomeDir(),
-      instanceId: resolveWardmoteInstanceId(),
-    }),
-    audit: async ({ action, job }) => {
-      const settings = instanceSettingsService(db as any);
-      const companyIds = await settings.listCompanyIds();
-      await Promise.all(companyIds.map((companyId) =>
-        logActivity(db as any, {
-          companyId,
-          actorType: job.requestedBy?.actorType === "user" ? "user" : "system",
-          actorId: job.requestedBy?.actorId ?? "wardmote-auto-update",
-          action,
-          entityType: "instance_update",
-          entityId: job.id,
-          details: {
-            fromVersion: job.fromVersion,
-            toVersion: job.toVersion,
-            mode: job.mode,
-            trigger: job.trigger,
-            phase: job.phase,
-            liveRuns: job.liveRuns,
-            installedVersion: job.installedVersion,
-            rolledBackTo: job.rolledBackTo,
-            error: job.error,
-          },
-        }),
-      ));
-    },
-  });
-  updateInstaller.resume();
+  const updateInstaller = createInstanceUpdateInstaller(db as any, wardmoteUpdates);
   const app = await createApp(db as any, {
     wardmoteUpdates,
     updateInstaller,
