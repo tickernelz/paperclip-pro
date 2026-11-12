@@ -5529,7 +5529,7 @@ rl.on("line", (line) => {
     const [idleSlot] = await db.select().from(toolRuntimeSlots).where(eq(toolRuntimeSlots.companyId, company.id));
     expect(idleSlot).toMatchObject({
       status: "idle",
-      commandTemplateKey: "paperclip.slow-stateful-stdio",
+      commandTemplateKey: "wardmote.slow-stateful-stdio",
       healthStatus: "ok",
     });
     expect(idleSlot.metadata).toMatchObject({
@@ -5642,7 +5642,7 @@ rl.on("line", (line) => {
     }));
     const local = await createLocalStdioMcpTool(db, company.id, {
       applicationKey: "cognee", toolName: "recall",
-      connectionConfig: { templateId: "paperclip.cognee-cloud" }, credentialSecretRefs: refs,
+      connectionConfig: { templateId: "wardmote.cognee-cloud" }, credentialSecretRefs: refs,
     });
     await allowAllToolsForAgent(db, company.id, agent.id);
     const bridge = vi.spyOn(cogneeBridge, "callCogneeCloud")

@@ -29,7 +29,7 @@
       ],
       "whenToUse": "Connect your Cloud tenant through the official Cognee MCP client.",
       "defaults": {
-        "templateKey": "paperclip.cognee-cloud"
+        "templateKey": "wardmote.cognee-cloud"
       },
       "guidanceMd": "Copy the API Base URL and create an API key on Cognee's API Keys page. Use a Cloud workspace with an active subscription. Wardmote uses its bundled Cloud client; no extra runtime installation is required.",
       "riskTier": "S3",

@@ -407,7 +407,7 @@ export function createToolRuntimeSupervisor(db: Db, options: ToolRuntimeSupervis
       .update(toolRuntimeSlots)
       .set({
         status: "running",
-        provider: "paperclip",
+        provider: "wardmote",
         providerRef,
         processId: null,
         healthStatus: "ok",
@@ -497,9 +497,9 @@ export function createToolRuntimeSupervisor(db: Db, options: ToolRuntimeSupervis
         runtimeKind: "local_stdio",
         status: "stopped",
         reuseKey: input.connectionKey,
-        provider: "paperclip",
+        provider: "wardmote",
         providerRef: null,
-        commandTemplateKey: input.commandTemplateKey ?? "paperclip.local-stdio-fixture",
+        commandTemplateKey: input.commandTemplateKey ?? "wardmote.local-stdio-fixture",
         healthStatus: "unchecked",
         metadata: {
           fixture: "slow-stateful-stdio",
@@ -707,7 +707,7 @@ export function createToolRuntimeSupervisor(db: Db, options: ToolRuntimeSupervis
     ): Promise<T> {
       const row = await ensureRunningSlot({
         ...input,
-        commandTemplateKey: "paperclip.slow-stateful-stdio",
+        commandTemplateKey: "wardmote.slow-stateful-stdio",
       });
       const metadata = asRecord(row.metadata);
       const handle: RuntimeSlotHandle = {
