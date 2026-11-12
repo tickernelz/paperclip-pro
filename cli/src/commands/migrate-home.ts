@@ -144,6 +144,22 @@ function readIfExists(filePath: string): string | null {
   }
 }
 
+/** Rewrites an owned retired install-store marker to the current one; true when it did. */
+export function rewriteLegacyStoreMarker(markerPath: string): boolean {
+  let contents: string;
+  try {
+    const stat = fs.lstatSync(markerPath);
+    const getuid = process.getuid;
+    if (!stat.isFile() || stat.nlink > 1 || (typeof getuid === "function" && stat.uid !== getuid())) return false;
+    contents = fs.readFileSync(markerPath, "utf8");
+  } catch {
+    return false;
+  }
+  if (contents !== LEGACY_STORE_MARKER) return false;
+  writeFileAtomic(markerPath, MANAGED_STORE_MARKER, 0o600);
+  return true;
+}
+
 /** True when the default home or managed install still uses the retired layout. */
 function isLegacyShim(file: string): boolean {
   const contents = readIfExists(file);
@@ -198,9 +214,13 @@ export async function migrateHomeCommand(
     .filter((file) => !legacyShims.includes(file) && readIfExists(file)?.includes(`# ${LEGACY_SHIM_MARKER}\n`));
   const rcFiles = [".bashrc", ".zshrc"].map((name) => path.join(deps.userHomeDir, name))
     .filter((file) => readIfExists(file)?.includes(LEGACY_PATH_BLOCK_START));
-  const storeHome = home === "absent" ? source : target;
+  const storeHome = target;
   const markerPath = path.join(home === "move" ? source : storeHome, "cli", ".managed-install");
-  const legacyStore = readIfExists(markerPath) === LEGACY_STORE_MARKER;
+  const storeMarker = readIfExists(markerPath);
+  const legacyStore = storeMarker === LEGACY_STORE_MARKER;
+  if (storeMarker !== null && !legacyStore && storeMarker !== MANAGED_STORE_MARKER) {
+    throw new Error(`Refusing to migrate: unrecognized install store marker ${markerPath}.`);
+  }
 
   const steps = [
     home === "move" ? `move ${source} to ${target} and link ${source} -> ${target}` : null,
