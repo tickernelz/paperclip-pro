@@ -48,7 +48,7 @@ export function serviceWorkerBuildIdPlugin(
   let outDir = "dist";
 
   return {
-    name: "paperclip-sw-build-id",
+    name: "wardmote-sw-build-id",
     apply: "build",
     configResolved(config) {
       outDir = config.build.outDir;

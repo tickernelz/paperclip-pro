@@ -51,7 +51,7 @@ import {
   type SearchQueryParserContext,
 } from "../lib/search-query-parser";
 
-const SEARCH_ALL_VALUE = "__paperclip-search-all__";
+const SEARCH_ALL_VALUE = "__wardmote-search-all__";
 
 export function buildFullSearchPath(query: string, context: SearchQueryParserContext = {}) {
   return buildSearchPathFromQuery(query, context);

@@ -1,5 +1,5 @@
 import type { UIAdapterModule } from "./types";
-import { paperclipRunnerUIAdapter } from "./wardmote-runner";
+import { wardmoteRunnerUIAdapter } from "./wardmote-runner";
 import { ompLocalUIAdapter } from "./omp-local";
 import { processUIAdapter } from "./process";
 import { httpUIAdapter } from "./http";
@@ -43,7 +43,7 @@ setDynamicParserResultNotifier(notifyAdapterChange);
 
 function registerBuiltInUIAdapters() {
   for (const adapter of [
-    paperclipRunnerUIAdapter,
+    wardmoteRunnerUIAdapter,
     ompLocalUIAdapter,
     processUIAdapter,
     httpUIAdapter,

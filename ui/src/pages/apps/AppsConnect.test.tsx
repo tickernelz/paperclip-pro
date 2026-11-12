@@ -1738,7 +1738,7 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
     expect(connectAppMock).toHaveBeenCalledTimes(1);
     expect(openSpy).toHaveBeenCalledWith(
       "about:blank",
-      "paperclip-connection-oauth",
+      "wardmote-connection-oauth",
       "popup,width=720,height=760,resizable=yes,scrollbars=yes",
     );
     expect(openSpy.mock.invocationCallOrder[0]).toBeLessThan(connectAppMock.mock.invocationCallOrder[0]!);

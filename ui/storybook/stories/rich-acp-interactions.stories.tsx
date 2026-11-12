@@ -7,7 +7,7 @@ import { TaskChatCompactInteractionCard } from "@/components/task-chat/TaskChatC
 import { TaskChatProtocolActivityRow } from "@/components/task-chat/TaskChatProtocolActivityRow";
 import { TaskChatProtocolCard } from "@/components/task-chat/TaskChatProtocolCard";
 import type { TaskChatRuntimeRequestDecision } from "@/components/task-chat/task-chat-model";
-import { paperclipRunnerUIAdapter } from "@/adapters/wardmote-runner";
+import { wardmoteRunnerUIAdapter } from "@/adapters/wardmote-runner";
 import { transcriptToTaskChatItems } from "@/components/task-chat/transcript-adapter";
 import {
   issueThreadInteractionFixtureMeta,
@@ -111,7 +111,7 @@ const cursorPlanQuestions: WardmoteQuestionSet = {
 
 function NativeCursorPlan() {
   const [receipt, setReceipt] = useState<{ requestId: string; decision: TaskChatRuntimeRequestDecision } | null>(null);
-  const entries = paperclipRunnerUIAdapter.parseStdoutLine(JSON.stringify({
+  const entries = wardmoteRunnerUIAdapter.parseStdoutLine(JSON.stringify({
     type: "paperclip.prp.event", event: { eventType: "runtime_request.created", turnId: "cursor-plan-turn", payload: {
       request: { requestId: "cursor-create-plan-revision-7", requestKind: "runtime", type: "input", status: "pending", prompt: "Review Cursor's plan", input: cursorPlanQuestions },
     } },

@@ -1991,7 +1991,7 @@ describe("NewIssueDialog", () => {
     await flush();
 
     const menu = document.createElement("div");
-    menu.setAttribute("data-paperclip-floating-ui", "");
+    menu.setAttribute("data-wardmote-floating-ui", "");
     const option = document.createElement("button");
     menu.appendChild(option);
     document.body.appendChild(menu);

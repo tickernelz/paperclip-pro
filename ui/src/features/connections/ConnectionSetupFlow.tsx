@@ -690,7 +690,7 @@ function StandardConnectionSetupFlow({
     if (host !== "dialog" || oauthPopupRef.current?.closed === false) return;
     oauthPopupRef.current = window.open(
       "about:blank",
-      "paperclip-connection-oauth",
+      "wardmote-connection-oauth",
       "popup,width=720,height=760,resizable=yes,scrollbars=yes",
     );
   }, [host]);
