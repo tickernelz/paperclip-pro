@@ -123,7 +123,7 @@ describeEmbeddedPostgres("hosted Wardmote MCP error and paging contract", () => 
     const result = await callTool("wardmoteGetIssue", { issueId: randomUUID() });
 
     expect(result.isError).toBe(true);
-    expect(result._meta).toEqual({ "paperclip/httpStatus": 404 });
+    expect(result._meta).toEqual({ "wardmote/httpStatus": 404 });
     expect(result.content![0]!.text).toContain("404");
   });
 
@@ -135,7 +135,7 @@ describeEmbeddedPostgres("hosted Wardmote MCP error and paging contract", () => 
     );
 
     expect(result.isError).toBe(true);
-    expect(result._meta).toEqual({ "paperclip/httpStatus": 403 });
+    expect(result._meta).toEqual({ "wardmote/httpStatus": 403 });
   });
 
   it("flags a 400 from the REST API as an MCP error with the status in _meta", async () => {
@@ -145,7 +145,7 @@ describeEmbeddedPostgres("hosted Wardmote MCP error and paging contract", () => 
     });
 
     expect(result.isError).toBe(true);
-    expect(result._meta).toEqual({ "paperclip/httpStatus": 400 });
+    expect(result._meta).toEqual({ "wardmote/httpStatus": 400 });
     expect(result.content![0]!.text).toContain("limit must be a positive integer");
   });
 

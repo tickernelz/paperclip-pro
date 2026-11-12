@@ -32,7 +32,7 @@ export function pastedImageFileName(mimeType: string, now: number = Date.now()):
   return `pasted-image-${now}-${randomBytes(4).toString("hex")}.${extension}`;
 }
 
-export const PASTED_IMAGE_DIR_PREFIX = "paperclip-pasted";
+export const PASTED_IMAGE_DIR_PREFIX = "wardmote-pasted";
 
 export function shellQuote(value: string): string {
   return `'${value.replace(/'/g, "'\\''")}'`;

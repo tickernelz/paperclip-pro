@@ -5352,7 +5352,7 @@ export function createAcpxEngineExecutor(deps: AcpxEngineExecutorOptions = {}) {
       // run-minted API key is never revoked, so it stays valid and forces a
       // close-and-relaunch. It is a non-secret marker; the settlement reads only its
       // presence, and no report or reuse payload carries it.
-      const LIVE_RUN_SCOPED_API_KEY = "paperclip-run-scoped-api-key";
+      const LIVE_RUN_SCOPED_API_KEY = "wardmote-run-scoped-api-key";
       // Record the final per-resource disposition report where a test can observe
       // it. The engine never reads it back.
       const recordDispositionReport = (report: SettlementDispositionReport): void => {

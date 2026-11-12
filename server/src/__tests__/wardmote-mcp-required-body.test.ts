@@ -30,8 +30,8 @@ type RpcResult = {
 };
 
 function httpStatus(result: RpcResult): number {
-  return typeof result._meta?.["paperclip/httpStatus"] === "number"
-    ? (result._meta["paperclip/httpStatus"] as number)
+  return typeof result._meta?.["wardmote/httpStatus"] === "number"
+    ? (result._meta["wardmote/httpStatus"] as number)
     : 200;
 }
 
