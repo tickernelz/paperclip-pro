@@ -281,7 +281,7 @@ Rules:
 
 - plugin contributions are additive by default
 - plugins may not override core routes or core actions by name collision
-- UI slot IDs are automatically namespaced by plugin ID (e.g. `@paperclip/plugin-linear:sync-health-widget`), so cross-plugin collisions are structurally impossible
+- UI slot IDs are automatically namespaced by plugin ID (e.g. `@wardmote/plugin-linear:sync-health-widget`), so cross-plugin collisions are structurally impossible
 - if a single plugin declares duplicate slot IDs within its own manifest, the host must reject at install time
 
 ## 10. Package Contract
@@ -298,7 +298,7 @@ Suggested `package.json` keys:
 
 ```json
 {
-  "name": "@paperclip/plugin-linear",
+  "name": "@wardmote/plugin-linear",
   "version": "0.1.0",
   "wardmotePlugin": {
     "manifest": "./dist/manifest.js",
@@ -955,7 +955,7 @@ Plugins may emit custom events using `ctx.events.emit(name, payload)`. Plugin-em
 Other plugins may subscribe to these events using the same `ctx.events.on()` API:
 
 ```ts
-ctx.events.on("plugin.@paperclip/plugin-git.push-detected", async (event) => {
+ctx.events.on("plugin.@wardmote/plugin-git.push-detected", async (event) => {
   // react to the git plugin detecting a push
 });
 ```
@@ -1701,14 +1701,14 @@ The host should publish a starter template (`plugin-creator`) that scaffolds:
 
 This spec directly supports the following plugin types:
 
-- `@paperclip/plugin-workspace-files`
-- `@paperclip/plugin-terminal`
-- `@paperclip/plugin-git`
-- `@paperclip/plugin-linear`
-- `@paperclip/plugin-github-issues`
-- `@paperclip/plugin-grafana`
-- `@paperclip/plugin-runtime-processes`
-- `@paperclip/plugin-stripe`
+- `@wardmote/plugin-workspace-files`
+- `@wardmote/plugin-terminal`
+- `@wardmote/plugin-git`
+- `@wardmote/plugin-linear`
+- `@wardmote/plugin-github-issues`
+- `@wardmote/plugin-grafana`
+- `@wardmote/plugin-runtime-processes`
+- `@wardmote/plugin-stripe`
 
 ## 29. Compatibility And Versioning
 

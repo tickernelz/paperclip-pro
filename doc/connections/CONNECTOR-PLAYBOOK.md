@@ -2188,8 +2188,8 @@ Redirect-URI probes against `/register`:
 
 | Probed `redirect_uris` value | Result |
 | --- | --- |
-| `http://paperclip-dev:3100/api/tools/oauth/callback` | 400 `invalid_redirect_uri` — "Redirect URI must use HTTPS unless it is a loopback HTTP URI" |
-| `https://paperclip-dev:3100/api/tools/oauth/callback` | Accepted — private host is fine over HTTPS |
+| `http://wardmote-dev:3100/api/tools/oauth/callback` | 400 `invalid_redirect_uri` — "Redirect URI must use HTTPS unless it is a loopback HTTP URI" |
+| `https://wardmote-dev:3100/api/tools/oauth/callback` | Accepted — private host is fine over HTTPS |
 | `http://localhost:3100/api/tools/oauth/callback` | Accepted |
 | `http://127.0.0.1:3100/api/tools/oauth/callback` | Accepted |
 

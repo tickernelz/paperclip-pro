@@ -140,7 +140,7 @@ returns a value:
 The server logs the resolved `service.version` once at startup, so an operator
 can confirm the value.
 
-If `OTEL_EXPORTER_OTLP_PROTOCOL` is set to an unrecognized value, Paperclip
+If `OTEL_EXPORTER_OTLP_PROTOCOL` is set to an unrecognized value, Wardmote
 logs a single warning and falls back to gRPC.
 
 Before it imports any OTel package, the server checks the four common
