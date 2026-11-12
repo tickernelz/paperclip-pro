@@ -148,18 +148,18 @@ describe("sandbox provider runtime", () => {
   it("reconstructs fake sandbox config from lease metadata for later release", () => {
     const metadata = {
       provider: "fake",
-      image: "paperclip-test",
+      image: "wardmote-test",
       reuseLease: true,
     };
 
     expect(sandboxConfigFromLeaseMetadata({ metadata })).toEqual({
       provider: "fake",
-      image: "paperclip-test",
+      image: "wardmote-test",
       reuseLease: true,
     });
     expect(sandboxConfigFromLeaseMetadataLoose({ metadata })).toEqual({
       provider: "fake",
-      image: "paperclip-test",
+      image: "wardmote-test",
       reuseLease: true,
     });
   });

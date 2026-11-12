@@ -281,9 +281,9 @@ describe("exe.dev sandbox provider plugin", () => {
   it("acquires a lease by creating a VM and preparing the SSH workspace", async () => {
     fetchMock.mockResolvedValueOnce(
       new Response(JSON.stringify({
-        vm_name: "paperclip-env-run",
-        ssh_dest: "paperclip-env-run.exe.xyz",
-        https_url: "https://paperclip-env-run.exe.xyz",
+        vm_name: "wardmote-env-run",
+        ssh_dest: "wardmote-env-run.exe.xyz",
+        https_url: "https://wardmote-env-run.exe.xyz",
         status: "running",
       }), { status: 200 }),
     );
@@ -308,11 +308,11 @@ describe("exe.dev sandbox provider plugin", () => {
     expect(String(fetchMock.mock.calls[0]?.[1]?.body ?? "")).toContain("new --json --no-email");
     expect(spawnMock).toHaveBeenCalledTimes(2);
     expect(lease).toMatchObject({
-      providerLeaseId: "paperclip-env-run",
+      providerLeaseId: "wardmote-env-run",
       metadata: {
         provider: "exe-dev",
-        vmName: "paperclip-env-run",
-        sshDest: "paperclip-env-run.exe.xyz",
+        vmName: "wardmote-env-run",
+        sshDest: "wardmote-env-run.exe.xyz",
         remoteCwd: "/workspace/custom",
         shellCommand: "bash",
         reuseLease: false,
@@ -374,9 +374,9 @@ describe("exe.dev sandbox provider plugin", () => {
   it("uses a pasted sshPrivateKey when connecting to the VM", async () => {
     fetchMock.mockResolvedValueOnce(
       new Response(JSON.stringify({
-        vm_name: "paperclip-env-run",
-        ssh_dest: "paperclip-env-run.exe.xyz",
-        https_url: "https://paperclip-env-run.exe.xyz",
+        vm_name: "wardmote-env-run",
+        ssh_dest: "wardmote-env-run.exe.xyz",
+        https_url: "https://wardmote-env-run.exe.xyz",
         status: "running",
       }), { status: 200 }),
     );
@@ -403,9 +403,9 @@ describe("exe.dev sandbox provider plugin", () => {
   it("supplies a default Node-install setup script when none is provided", async () => {
     fetchMock.mockResolvedValueOnce(
       new Response(JSON.stringify({
-        vm_name: "paperclip-env-run",
-        ssh_dest: "paperclip-env-run.exe.xyz",
-        https_url: "https://paperclip-env-run.exe.xyz",
+        vm_name: "wardmote-env-run",
+        ssh_dest: "wardmote-env-run.exe.xyz",
+        https_url: "https://wardmote-env-run.exe.xyz",
         status: "running",
       }), { status: 200 }),
     );
@@ -433,9 +433,9 @@ describe("exe.dev sandbox provider plugin", () => {
   it("preserves an operator-supplied setup script and does not append the default", async () => {
     fetchMock.mockResolvedValueOnce(
       new Response(JSON.stringify({
-        vm_name: "paperclip-env-run",
-        ssh_dest: "paperclip-env-run.exe.xyz",
-        https_url: "https://paperclip-env-run.exe.xyz",
+        vm_name: "wardmote-env-run",
+        ssh_dest: "wardmote-env-run.exe.xyz",
+        https_url: "https://wardmote-env-run.exe.xyz",
         status: "running",
       }), { status: 200 }),
     );
@@ -487,9 +487,9 @@ describe("exe.dev sandbox provider plugin", () => {
   it("surfaces exe.dev SSH onboarding guidance during lease acquisition", async () => {
     fetchMock.mockResolvedValueOnce(
       new Response(JSON.stringify({
-        vm_name: "paperclip-env-run",
-        ssh_dest: "paperclip-env-run.exe.xyz",
-        https_url: "https://paperclip-env-run.exe.xyz",
+        vm_name: "wardmote-env-run",
+        ssh_dest: "wardmote-env-run.exe.xyz",
+        https_url: "https://wardmote-env-run.exe.xyz",
         status: "running",
       }), { status: 200 }),
     );
@@ -509,15 +509,15 @@ describe("exe.dev sandbox provider plugin", () => {
       "the Wardmote host SSH key is not registered with exe.dev",
     );
 
-    expect(String(fetchMock.mock.calls[1]?.[1]?.body ?? "")).toBe("rm --json 'paperclip-env-run'");
+    expect(String(fetchMock.mock.calls[1]?.[1]?.body ?? "")).toBe("rm --json 'wardmote-env-run'");
   });
 
   it("surfaces invalid SSH key-format guidance during lease acquisition", async () => {
     fetchMock.mockResolvedValueOnce(
       new Response(JSON.stringify({
-        vm_name: "paperclip-env-run",
-        ssh_dest: "paperclip-env-run.exe.xyz",
-        https_url: "https://paperclip-env-run.exe.xyz",
+        vm_name: "wardmote-env-run",
+        ssh_dest: "wardmote-env-run.exe.xyz",
+        https_url: "https://wardmote-env-run.exe.xyz",
         status: "running",
       }), { status: 200 }),
     );
@@ -541,7 +541,7 @@ describe("exe.dev sandbox provider plugin", () => {
       "the configured SSH private key isn't an OpenSSH-format private key",
     );
 
-    expect(String(fetchMock.mock.calls[1]?.[1]?.body ?? "")).toBe("rm --json 'paperclip-env-run'");
+    expect(String(fetchMock.mock.calls[1]?.[1]?.body ?? "")).toBe("rm --json 'wardmote-env-run'");
   });
 
   it("redacts sensitive lifecycle flags in API errors", async () => {

@@ -65,7 +65,7 @@ describeEmbeddedPostgres("companySearchExtractService", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-company-search-extract-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-company-search-extract-");
     db = createDb(tempDb.connectionString);
     svc = companySearchExtractService(db);
   }, 20_000);

@@ -139,7 +139,7 @@ describeEmbeddedPostgres("merged pull-request confirmation sweep", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-merged-pr-confirmations-");
+    tempDb = await startEmbeddedPostgresTestDatabase("wardmote-merged-pr-confirmations-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 
