@@ -42,8 +42,8 @@
       "approvedBy": "Keputusan otonom Raka 2026-11-09 di ZHA-5279 (Mode full otonom), atas permintaan Wira mencatat pengecualian; sementara sampai irisan re-pin closure Pi"
     },
     "nama-lama-ditolak": {
-      "reason": "Nama lama (header x-paperclip-*, rute /mcp/paperclip, nama runtime skill bawaan paperclip*) hanya untuk menolak, meredaksi, atau melepas tautan basi (log pino-http, passthrough tool gateway, kebijakan log rute MCP, symlink skill bawaan lama di direktori skill agent); tidak pernah dibaca sebagai nilai, dilayani, atau dipasang. Modul: server/src/services/retired-header-names.ts, packages/adapter-utils/src/retired-skill-names.ts.",
-      "approvedBy": "Hendra, fix-before-push PR #220 (ZHA-5280 ronde 37, 2026-11-09)"
+      "reason": "Nama lama (header x-paperclip-*, rute /mcp/paperclip, nama runtime skill bawaan paperclip*) hanya untuk menolak, meredaksi, atau melepas tautan basi (log pino-http, passthrough tool gateway, kebijakan log rute MCP, symlink skill bawaan lama di direktori skill agent); tidak pernah dibaca sebagai nilai, dilayani, atau dipasang. Juga tes yang membuktikan nama lama ditolak, diblok, atau ditingkatkan (nama env lama di .env instance dan env warisan, kunci manifest/paket plugin lama, penanda migration-safety lama, direktori state instance lama, skema manifest aset lama). Modul: server/src/services/retired-header-names.ts, packages/adapter-utils/src/retired-skill-names.ts.",
+      "approvedBy": "Hendra, fix-before-push PR #220 (ZHA-5280 ronde 37, 2026-11-09); diperluas untuk tes penolakan, fix-before-push PR #308 (ZHA-5280 ronde 113, 2026-11-12)"
     },
     "id-terpin": {
       "reason": "Id skema protokol yang terikat artefak terpin atau teratestasi: deklarasi profil ACPX ber-hash dan kontrak runtime ACPX, tanda terima semantic tool, event terminal PRP, atestasi dan manifest closure Cursor/Copilot, serta bukti rekaman Pi/Cursor. Mengganti id mengubah digest identitas profil, atestasi, atau closure, jadi ikut irisan re-pin bersama closure Pi. Hanya boleh turun.",
@@ -437,6 +437,7 @@
     ["packages/adapter-utils/src/sandbox-callback-bridge.test.ts",23,"belum-diganti"],
     ["packages/adapter-utils/src/sandbox-callback-bridge.ts",1,"belum-diganti"],
     ["packages/adapter-utils/src/sandbox-managed-runtime.ts",2,"belum-diganti"],
+    ["packages/adapter-utils/src/server-utils-env.test.ts",1,"nama-lama-ditolak"],
     ["packages/adapter-utils/src/server-utils.test.ts",31,"belum-diganti"],
     ["packages/adapter-utils/src/server-utils.ts",1,"belum-diganti"],
     ["packages/adapter-utils/src/ssh-fixture.test.ts",2,"belum-diganti"],
@@ -686,6 +687,7 @@
     ["packages/shared/src/question-set.ts",2,"belum-diganti"],
     ["packages/shared/src/repo-config-dir.test.ts",10,"migrasi-otomatis"],
     ["packages/shared/src/repo-config-dir.ts",2,"migrasi-otomatis"],
+    ["packages/shared/src/retired-env-file.test.ts",5,"nama-lama-ditolak"],
     ["packages/shared/src/retired-env-file.ts",1,"migrasi-otomatis"],
     ["packages/shared/src/retired-names.test.ts",51,"migrasi-otomatis"],
     ["packages/shared/src/retired-names.ts",36,"migrasi-otomatis"],
