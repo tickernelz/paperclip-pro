@@ -144,7 +144,7 @@ export function assertNativeInstructionLineage(sourceSha: string, run = git, hos
     let ancestryError = error;
     for (const depth of [8, 32, 128]) {
       run("-c", "credential.helper=", "-c", "core.hooksPath=/dev/null", "fetch", "--no-tags", `--depth=${depth}`,
-        "https://github.com/paperclipai/paperclip.git", sourceSha);
+        "https://github.com/tickernelz/wardmote.git", sourceSha);
       if (run("rev-parse", "HEAD") !== sourceSha) throw new Error("Source changed during ancestry hydration");
       try {
         run("merge-base", "--is-ancestor", NATIVE_INSTRUCTION_BASE_SHA, sourceSha);

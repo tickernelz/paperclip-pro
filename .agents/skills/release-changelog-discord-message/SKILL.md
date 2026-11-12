@@ -119,7 +119,7 @@ ITS TIME TO CLIP :wardmote: :wardmote: :wardmote:
 
 FULL RELEASE NOTES
 
-https://github.com/paperclipai/paperclip/blob/master/releases/v{VERSION}.md
+https://github.com/tickernelz/wardmote/blob/main/releases/v{VERSION}.md
 
 ||@everyone||
 ```
@@ -234,7 +234,7 @@ POST /api/companies/:companyId/cases
     "post_count": 1,
     "target_audience": ["operators", "contributors", "agent-company builders"],
     "links": {
-      "release_notes": "https://github.com/paperclipai/paperclip/blob/master/releases/vYYYY.MDD.P.md",
+      "release_notes": "https://github.com/tickernelz/wardmote/blob/main/releases/vYYYY.MDD.P.md",
       "official_account": "https://x.com/papercliping"
     },
     "review": {
@@ -453,7 +453,7 @@ ITS TIME TO CLIP :wardmote: :wardmote: :wardmote:
 
 FULL RELEASE NOTES
 
-https://github.com/paperclipai/paperclip/blob/master/releases/v2026.427.0.md
+https://github.com/tickernelz/wardmote/blob/main/releases/v2026.427.0.md
 
 ||@everyone||
 ```

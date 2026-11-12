@@ -403,7 +403,7 @@ describe("company portability", () => {
         description: "Wardmote coordination skill",
         markdown: "---\nname: paperclip\ndescription: Wardmote coordination skill\n---\n\n# Wardmote\n",
         sourceType: "github",
-        sourceLocator: "https://github.com/paperclipai/paperclip/tree/master/skills/wardmote",
+        sourceLocator: "https://github.com/tickernelz/wardmote/tree/main/skills/wardmote",
         sourceRef: "0123456789abcdef0123456789abcdef01234567",
         trustLevel: "markdown_only",
         compatibility: "compatible",
@@ -1144,7 +1144,7 @@ describe("company portability", () => {
         description: "Bundled release changelog skill",
         markdown: "---\nname: release-changelog\n---\n\n# Bundled Release Changelog\n",
         sourceType: "github",
-        sourceLocator: "https://github.com/paperclipai/paperclip/tree/master/skills/release-changelog",
+        sourceLocator: "https://github.com/tickernelz/wardmote/tree/main/skills/release-changelog",
         sourceRef: "0123456789abcdef0123456789abcdef01234567",
         trustLevel: "markdown_only",
         compatibility: "compatible",
@@ -1324,7 +1324,7 @@ describe("company portability", () => {
             name: "Main Repo",
             sourceType: "git_repo",
             cwd: "/Users/dotta/paperclip",
-            repoUrl: "https://github.com/paperclipai/paperclip.git",
+            repoUrl: "https://github.com/tickernelz/wardmote.git",
             repoRef: "main",
             defaultRef: "main",
             visibility: "default",
@@ -1398,7 +1398,7 @@ describe("company portability", () => {
     expect(extension).toContain('icon: "rocket"');
     expect(extension).toContain("workspaces:");
     expect(extension).toContain("main-repo:");
-    expect(extension).toContain('repoUrl: "https://github.com/paperclipai/paperclip.git"');
+    expect(extension).toContain('repoUrl: "https://github.com/tickernelz/wardmote.git"');
     expect(extension).toContain('defaultProjectWorkspaceKey: "main-repo"');
     expect(extension).toContain('projectWorkspaceKey: "main-repo"');
     expect(extension).not.toContain("/Users/dotta/paperclip");
@@ -1471,7 +1471,7 @@ describe("company portability", () => {
     expect(projectSvc.createWorkspace).toHaveBeenCalledWith("project-imported", expect.objectContaining({
       name: "Main Repo",
       sourceType: "git_repo",
-      repoUrl: "https://github.com/paperclipai/paperclip.git",
+      repoUrl: "https://github.com/tickernelz/wardmote.git",
       repoRef: "main",
       defaultRef: "main",
       visibility: "default",
@@ -1551,7 +1551,7 @@ describe("company portability", () => {
     const repoDir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-portability-git-"));
     execFileSync("git", ["init"], { cwd: repoDir, stdio: "ignore" });
     execFileSync("git", ["checkout", "-b", "main"], { cwd: repoDir, stdio: "ignore" });
-    execFileSync("git", ["remote", "add", "origin", "https://github.com/paperclipai/paperclip.git"], {
+    execFileSync("git", ["remote", "add", "origin", "https://github.com/tickernelz/wardmote.git"], {
       cwd: repoDir,
       stdio: "ignore",
     });
@@ -1625,7 +1625,7 @@ describe("company portability", () => {
     });
 
     const extension = asTextFile(exported.files[".wardmote.yaml"]);
-    expect(extension).toContain('repoUrl: "https://github.com/paperclipai/paperclip.git"');
+    expect(extension).toContain('repoUrl: "https://github.com/tickernelz/wardmote.git"');
     expect(extension).toContain('projectWorkspaceKey: "paperclip"');
     expect(exported.warnings).not.toContainEqual(expect.stringContaining("does not have a portable repoUrl"));
     expect(exported.warnings).not.toContainEqual(expect.stringContaining("reference workspace workspace-1"));
@@ -5635,7 +5635,7 @@ describe("company portability", () => {
             "    workspaces:",
             "      default:",
             "        name: App",
-            "        repoUrl: https://github.com/paperclipai/paperclip",
+            "        repoUrl: https://github.com/tickernelz/wardmote",
             "        setupCommand: pnpm install",
             "",
           ].join("\n"),

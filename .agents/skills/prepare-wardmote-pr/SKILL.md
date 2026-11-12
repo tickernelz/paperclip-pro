@@ -51,7 +51,7 @@ each one).
 ## 4. Open the PR
 
 * Follow `CONTRIBUTING.md` (repo root,
-  https://github.com/paperclipai/paperclip/blob/master/CONTRIBUTING.md) for
+  https://github.com/tickernelz/wardmote/blob/main/CONTRIBUTING.md) for
   the PR title, message format, and issue description.
 * Push the branch and open the PR with `gh`.
 * Record the PR URL immediately — every report must include URLs to every PR.

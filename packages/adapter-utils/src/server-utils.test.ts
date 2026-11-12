@@ -3594,7 +3594,7 @@ describe("applyWardmoteWorkspaceEnv", () => {
         workspaceSource: "project_primary",
         workspaceStrategy: "git_worktree",
         workspaceId: "workspace-1",
-        workspaceRepoUrl: "https://github.com/paperclipai/paperclip.git",
+        workspaceRepoUrl: "https://github.com/tickernelz/wardmote.git",
         workspaceRepoRef: "main",
         workspaceBranch: "feature/test",
         workspaceWorktreePath: "/tmp/worktree",
@@ -3608,7 +3608,7 @@ describe("applyWardmoteWorkspaceEnv", () => {
       WARDMOTE_WORKSPACE_STRATEGY: "git_worktree",
       WARDMOTE_WORKSPACE_ID: "workspace-1",
       WARDMOTE_WORKSPACE_REPO_URL:
-        "https://github.com/paperclipai/paperclip.git",
+        "https://github.com/tickernelz/wardmote.git",
       WARDMOTE_WORKSPACE_REPO_REF: "main",
       WARDMOTE_WORKSPACE_BRANCH: "feature/test",
       WARDMOTE_WORKSPACE_WORKTREE_PATH: "/tmp/worktree",
@@ -3646,16 +3646,16 @@ describe("shapeWardmoteWorkspaceEnvForExecution", () => {
         {
           workspaceId: "workspace-1",
           cwd: "/tmp/workspace",
-          repoUrl: "https://github.com/paperclipai/paperclip.git",
+          repoUrl: "https://github.com/tickernelz/wardmote.git",
         },
         {
           workspaceId: "workspace-2",
           cwd: "/tmp/other-workspace",
-          repoUrl: "https://github.com/paperclipai/paperclip.git",
+          repoUrl: "https://github.com/tickernelz/wardmote.git",
         },
         {
           workspaceId: "workspace-3",
-          repoUrl: "https://github.com/paperclipai/paperclip.git",
+          repoUrl: "https://github.com/tickernelz/wardmote.git",
         },
       ],
       executionTargetIsRemote: true,
@@ -3669,15 +3669,15 @@ describe("shapeWardmoteWorkspaceEnvForExecution", () => {
         {
           workspaceId: "workspace-1",
           cwd: "/remote/workspace",
-          repoUrl: "https://github.com/paperclipai/paperclip.git",
+          repoUrl: "https://github.com/tickernelz/wardmote.git",
         },
         {
           workspaceId: "workspace-2",
-          repoUrl: "https://github.com/paperclipai/paperclip.git",
+          repoUrl: "https://github.com/tickernelz/wardmote.git",
         },
         {
           workspaceId: "workspace-3",
-          repoUrl: "https://github.com/paperclipai/paperclip.git",
+          repoUrl: "https://github.com/tickernelz/wardmote.git",
         },
       ],
     });

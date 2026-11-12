@@ -4,7 +4,7 @@ This document expands the roadmap preview in `README.md`.
 
 Wardmote is still moving quickly. The list below is directional, not promised, and priorities may shift as we learn from users and from operating real AI companies with the product.
 
-Status tracks the default branch: ✅ available, 🟡 partial or experimental, ⚪ planned. Check [release notes](https://github.com/paperclipai/paperclip/releases) for packaged versions. Some capabilities require instance settings, plugins, or provider setup.
+Status tracks the default branch: ✅ available, 🟡 partial or experimental, ⚪ planned. Check [release notes](https://github.com/tickernelz/wardmote/releases) for packaged versions. Some capabilities require instance settings, plugins, or provider setup.
 
 We value community involvement and want to make sure contributor energy goes toward areas where it can land.
 

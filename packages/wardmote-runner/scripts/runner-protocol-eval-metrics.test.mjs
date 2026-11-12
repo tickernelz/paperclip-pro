@@ -75,8 +75,8 @@ test("history graphs exclude refreshes, link exact SHAs and Actions, and open th
   assert.match(html, /2 recorded runs/);
   assert.match(html, /1 regressions · 1 recoveries/);
   assert.match(html, /Full maintained suite/);
-  assert.ok(html.includes(`https://github.com/paperclipai/paperclip/commit/${"a".repeat(40)}`));
-  assert.ok(html.includes(`https://github.com/tickernelz/wardmote-evals/commit/${"b".repeat(40)}`));
+  assert.ok(html.includes(`https://github.com/tickernelz/wardmote/commit/${"a".repeat(40)}`));
+  assert.ok(html.includes(`https://github.com/paperclipai/paperclip-evals/commit/${"b".repeat(40)}`));
   assert.match(html, /actions\/runs\/2/);
   assert.match(html, /href="https:\/\/reports.example\/runner-protocol-evals\/campaigns\/gha-2-1-report-theme\/">Latest · gha-2-1/);
   assert.doesNotMatch(html, /<script|NaN|Infinity/);

@@ -33,7 +33,7 @@ describe("native instruction comparison admission", () => {
       fixtureGit(temporary, ["clone", "--quiet", "--depth=1", "--branch=fixture", pathToFileURL(source).href, checkout]);
       const run = (...args: string[]) => fixtureGit(checkout, ["--no-replace-objects", ...args.map(value =>
         value === NATIVE_INSTRUCTION_BASE_SHA ? base
-          : value === "https://github.com/paperclipai/paperclip.git" ? pathToFileURL(source).href : value)]);
+          : value === "https://github.com/tickernelz/wardmote.git" ? pathToFileURL(source).href : value)]);
       expect(() => run("merge-base", "--is-ancestor", NATIVE_INSTRUCTION_BASE_SHA, head)).toThrow();
       expect(() => assertNativeInstructionLineage(head, run, true)).not.toThrow();
       expect(run("rev-parse", "HEAD")).toBe(head);
@@ -62,7 +62,7 @@ describe("native instruction comparison admission", () => {
       const fetches = calls.filter(args => args.includes("fetch"));
       const depths = ["local", "not-shallow"].includes(scenario) ? [] : scenario === "no-base" ? [8, 32, 128] : [8];
       expect(fetches).toEqual(depths.map(depth => ["-c", "credential.helper=", "-c", "core.hooksPath=/dev/null",
-        "fetch", "--no-tags", `--depth=${depth}`, "https://github.com/paperclipai/paperclip.git", head]));
+        "fetch", "--no-tags", `--depth=${depth}`, "https://github.com/tickernelz/wardmote.git", head]));
     }
   });
   it("declares six explicit single-attempt cells with the original task prompts and oracle", () => {
