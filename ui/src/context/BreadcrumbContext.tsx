@@ -33,6 +33,8 @@ interface BreadcrumbContextValue {
   setBreadcrumbPanelControl: (control: BreadcrumbPanelControl | null) => void;
   mobileToolbar: ReactNode | null;
   setMobileToolbar: (node: ReactNode | null) => void;
+  mobileTaskActionsSlot: HTMLElement | null;
+  setMobileTaskActionsSlot: (node: HTMLElement | null) => void;
 }
 
 export interface BreadcrumbPanelControl {
@@ -80,6 +82,7 @@ export function BreadcrumbProvider({ children, companyName }: BreadcrumbProvider
   const [breadcrumbPanelControl, setBreadcrumbPanelControlState] =
     useState<BreadcrumbPanelControl | null>(null);
   const [mobileToolbar, setMobileToolbarState] = useState<ReactNode | null>(null);
+  const [mobileTaskActionsSlot, setMobileTaskActionsSlot] = useState<HTMLElement | null>(null);
 
   const setBreadcrumbs = useCallback((crumbs: Breadcrumb[]) => {
     setBreadcrumbsState((current) => (breadcrumbsEqual(current, crumbs) ? current : crumbs));
@@ -112,6 +115,8 @@ export function BreadcrumbProvider({ children, companyName }: BreadcrumbProvider
         setBreadcrumbPanelControl,
         mobileToolbar,
         setMobileToolbar,
+        mobileTaskActionsSlot,
+        setMobileTaskActionsSlot,
       }}
     >
       {children}

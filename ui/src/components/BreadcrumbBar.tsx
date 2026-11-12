@@ -59,6 +59,7 @@ export function BreadcrumbBar({ taskDetailLayout = false }: { taskDetailLayout?:
     breadcrumbToolbar,
     breadcrumbPanelControl,
     mobileToolbar,
+    setMobileTaskActionsSlot,
   } = useBreadcrumbs();
   const { toggleSidebar, isMobile } = useSidebar();
   const { openNewIssue } = useDialogActions();
@@ -135,6 +136,11 @@ export function BreadcrumbBar({ taskDetailLayout = false }: { taskDetailLayout?:
           <span className="min-w-0 truncate" title={currentCrumb.label}>{currentCrumb.label}</span>
           <CrumbIdentifier identifier={currentCrumb.identifier} />
         </h1>
+        <div
+          ref={setMobileTaskActionsSlot}
+          data-slot="mobile-task-actions"
+          className="ms-1 flex shrink-0 items-center empty:hidden"
+        />
         {globalToolbarSlots}
       </div>
     );

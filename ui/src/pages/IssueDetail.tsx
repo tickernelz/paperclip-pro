@@ -32,6 +32,7 @@ import {
   type ReactNode,
   type Ref,
 } from "react";
+import { createPortal } from "react-dom";
 import {
   Link,
   useLocation,
@@ -2893,6 +2894,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     setBreadcrumbToolbar,
     setBreadcrumbPanelControl,
     setMobileToolbar,
+    mobileTaskActionsSlot,
   } = useBreadcrumbs();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -6757,6 +6759,11 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     </div>
   );
 
+  const mobileHeaderActionsPortal =
+    isMobile && mobileTaskActionsSlot && issueHeaderActions
+      ? createPortal(issueHeaderActions, mobileTaskActionsSlot)
+      : null;
+
   const issueHeaderBlock = issue.conversationAgentId ? null : (
     <div
       data-testid="issue-detail-header"
@@ -6765,7 +6772,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
         shellSectionClass,
       )}
     >
-      <div className="flex min-w-0 items-start gap-2 pr-20 md:items-center md:pr-32">
+      <div className={cn("flex min-w-0 items-start gap-2 md:items-center md:pr-32", !mobileHeaderActionsPortal && "pr-20")}>
           <div className="hidden md:block">{issueStatusControl}</div>
           <div
             data-slot="task-detail-title"
@@ -6903,6 +6910,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
       <IssueMonitorBanner
         key={issue.id}
         onCancelMonitor={() => cancelIssueMonitor.mutateAsync()}
+        defaultCollapsed={isMobile}
         issue={issue}
         workProducts={workProducts}
         checkError={checkIssueMonitorNow.error?.message}
@@ -6988,6 +6996,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
                   "flex h-full min-h-0 w-full flex-col gap-3"
           }
         >
+          {mobileHeaderActionsPortal}
           {/* Parent chain breadcrumb (redesign: rendered inside the thread viewport) */}
 
           <ExternallyConnectedTaskBanner
@@ -7113,7 +7122,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
                   browsers={browserQuery.data}
                   onOpenBrowser={(id) => { setOpenBrowserId(id); if (isMobile) setMobilePropsOpen(true); else openTaskSidePanel(); }}
                   threadHeader={<>{taskChatThreadHeader}<EmailTaskActivity key={issue.id} companyId={issue.companyId} issueId={issue.id} /></>}
-                  threadHeaderActions={issueHeaderActions}
+                  threadHeaderActions={mobileHeaderActionsPortal ? null : issueHeaderActions}
                   issueBrief={
                     // Suppress the seeded-description bubble for the onboarding first
                     // task: its description is agent instructions, not something the
@@ -7222,6 +7231,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
                     hasVisibleMonitorSurface(issue) ? (
                       <IssueMonitorComposerStrip
                         issue={issue}
+                        defaultCollapsed={isMobile}
                         workProducts={workProducts}
                         checkError={checkIssueMonitorNow.error?.message}
                         onCheckNow={() => checkIssueMonitorNow.mutate()}
