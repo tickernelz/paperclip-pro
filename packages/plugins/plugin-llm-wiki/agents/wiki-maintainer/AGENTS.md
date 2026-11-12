@@ -48,7 +48,7 @@ Each operation has a dedicated LLM Wiki skill installed on this agent. Use the m
 - `wiki-ingest` — a captured `raw/` source needs to become durable wiki pages.
 - `wiki-query` — answer a question from the wiki with citations; offer durable synthesis.
 - `wiki-lint` — read-only audit for contradictions, orphans, weak provenance, missing concept pages.
-- `paperclip-distill` — turn a Wardmote source bundle (cursor-window, distill, or backfill) into wiki-insightful project pages, decisions, and history. Replaces the stiff, datestamp-heavy templated output.
+- `wardmote-distill` — turn a Wardmote source bundle (cursor-window, distill, or backfill) into wiki-insightful project pages, decisions, and history. Replaces the stiff, datestamp-heavy templated output.
 - `index-refresh` — keep `wiki/index.md` accurate and scannable.
 
 The operation issue's `originKind` (`plugin:llm-wiki:operation:<type>`) tells you which skill to load:
@@ -58,7 +58,7 @@ The operation issue's `originKind` (`plugin:llm-wiki:operation:<type>`) tells yo
 | `ingest`              | `wiki-ingest`                                  |
 | `query`               | `wiki-query`                                   |
 | `lint`                | `wiki-lint`                                    |
-| `distill`, `backfill` | `paperclip-distill`                            |
+| `distill`, `backfill` | `wardmote-distill`                            |
 | `index`               | `index-refresh`                                |
 | `file-as-page`        | `wiki-query` (filing synthesis from an answer) |
 

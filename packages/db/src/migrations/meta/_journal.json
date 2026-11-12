@@ -2654,6 +2654,13 @@
       "when": 1794777477710,
       "tag": "0380_wardmote_self_tool_names",
       "breakpoints": true
+    },
+    {
+      "idx": 381,
+      "version": "7",
+      "when": 1794863877710,
+      "tag": "0381_wardmote_plugin_skill_keys",
+      "breakpoints": true
     }
   ]
 }
