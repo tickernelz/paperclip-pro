@@ -4978,7 +4978,7 @@ export function createToolGatewayService(
       await request("initialize", {
         protocolVersion: "2024-11-05",
         capabilities: {},
-        clientInfo: { name: "paperclip-tool-gateway", version: "0.3.1" },
+        clientInfo: { name: "wardmote-tool-gateway", version: "0.3.1" },
       });
       child.stdin.write(
         `${JSON.stringify({ jsonrpc: "2.0", method: "notifications/initialized", params: {} })}\n`,
@@ -5057,7 +5057,7 @@ export function createToolGatewayService(
         headers: mcpHttpRequestHeaders(headers),
         body: JSON.stringify({
           jsonrpc: "2.0",
-          id: `paperclip-context-${randomUUID()}`,
+          id: `wardmote-context-${randomUUID()}`,
           method: input.method,
           params: input.params,
         }),
@@ -5187,13 +5187,13 @@ export function createToolGatewayService(
     connectionId: string,
     value: string,
   ) {
-    return `paperclip-${kind}://${connectionId}/${Buffer.from(value, "utf8").toString("base64url")}`;
+    return `wardmote-${kind}://${connectionId}/${Buffer.from(value, "utf8").toString("base64url")}`;
   }
 
   function parseContextHandle(kind: "resource" | "prompt", value: unknown) {
     if (typeof value !== "string") return null;
     const match = value.match(
-      new RegExp(`^paperclip-${kind}://([0-9a-f-]{36})/([A-Za-z0-9_-]+)$`, "i"),
+      new RegExp(`^wardmote-${kind}://([0-9a-f-]{36})/([A-Za-z0-9_-]+)$`, "i"),
     );
     if (!match) return null;
     try {
@@ -5724,7 +5724,7 @@ export function createToolGatewayService(
     });
     let headers = builtHeaders.headers;
     let headerSummary = builtHeaders.summary;
-    const requestId = `paperclip-tool-${randomUUID()}`;
+    const requestId = `wardmote-tool-${randomUUID()}`;
     const execution: RemoteHttpExecutionAudit = {
       transport: "mcp_remote",
       request: {

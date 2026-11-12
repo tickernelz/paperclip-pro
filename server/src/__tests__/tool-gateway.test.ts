@@ -964,7 +964,7 @@ describeEmbeddedPostgres("tool gateway acceptance", () => {
         .expect(200);
       expect(resources.body.result.resources).toHaveLength(1);
       expect(resources.body.result.resources[0]).toMatchObject({
-        uri: expect.stringMatching(new RegExp(`^paperclip-resource://${assigned.connection.id}/`)),
+        uri: expect.stringMatching(new RegExp(`^wardmote-resource://${assigned.connection.id}/`)),
         name: "Assigned context: Note one",
       });
       const resourceUri = resources.body.result.resources[0].uri as string;
@@ -3778,7 +3778,7 @@ rl.on("line", (line) => {
             httpMethod: "POST",
             endpoint: fake.url,
             mcpMethod: "tools/call",
-            requestId: expect.stringMatching(/^paperclip-tool-/),
+            requestId: expect.stringMatching(/^wardmote-tool-/),
             upstreamToolName: "kv_set",
             dispatched: true,
           },
