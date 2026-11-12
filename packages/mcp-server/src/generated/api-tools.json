@@ -41680,7 +41680,8 @@
                 "assignment",
                 "review",
                 "run_failed",
-                "join_request"
+                "join_request",
+                "disk_space"
               ]
             }
           }
@@ -48031,6 +48032,9 @@
             "properties": {
               "dailyDays": {
                 "type": "number"
+              },
+              "maxFiles": {
+                "type": "integer"
               },
               "monthlyMonths": {
                 "type": "number"
