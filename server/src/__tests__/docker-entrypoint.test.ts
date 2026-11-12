@@ -156,13 +156,13 @@ describe("docker-entrypoint.sh", () => {
     mkdirSync(join(stubDir, "instances", "default"), { recursive: true });
     writeFileSync(
       join(stubDir, "instances", "default", "config.json"),
-      JSON.stringify({ database: { embeddedPostgresDataDir: ["", "paper" + "clip", "instances", "default", "db"].join("/") } }),
+      JSON.stringify({ database: { embeddedPostgresDataDir: "/paperclip/instances/default/db" } }),
     );
 
     const { stdout, calls } = await runEntrypoint({ WARDMOTE_HOME: stubDir });
 
     expect(stdout).toContain("ENTRYPOINT-CMD-RAN");
-    expect(calls).toContain(`ln -s ${stubDir} /${"paper" + "clip"}`);
+    expect(calls).toContain(`ln -s ${stubDir} /paperclip`);
   });
 
   it("refuses to start an empty home while instance data is still in the retired location", async () => {

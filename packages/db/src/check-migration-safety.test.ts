@@ -491,7 +491,7 @@ describe("migration safety check", () => {
   });
 
   it("still honors the suppression marker spelled in already-applied migrations", () => {
-    const legacyMarker = [["paper", "clip"].join(""), "migration-safety-ignore"].join(":");
+    const legacyMarker = "paperclip:migration-safety-ignore";
     const result = analyze(`
       -- ${legacyMarker} full-table-mutation-large-table: one-time metadata reset approved in issue thread
       UPDATE "issue_comments"

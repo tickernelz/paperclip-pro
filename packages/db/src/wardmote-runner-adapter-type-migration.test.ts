@@ -10,7 +10,7 @@ import {
 } from "./test-embedded-postgres.js";
 
 const MIGRATION_FILE = "0362_wardmote_runner_adapter_type.sql";
-const RETIRED_TYPE = "paper" + "clip_runner";
+const RETIRED_TYPE = "paperclip_runner";
 const RETIRED_REASON = `${RETIRED_TYPE}_protocol`;
 const cleanups: Array<() => Promise<void>> = [];
 const embeddedPostgresSupport = await getEmbeddedPostgresTestSupport();

@@ -10,7 +10,7 @@ import {
 } from "./test-embedded-postgres.js";
 
 const MIGRATION_FILE = "0363_wardmote_camel_keys.sql";
-const OLD = "paper" + "clip";
+const OLD = "paperclip";
 const cleanups: Array<() => Promise<void>> = [];
 const embeddedPostgresSupport = await getEmbeddedPostgresTestSupport();
 const describeEmbeddedPostgres = embeddedPostgresSupport.supported ? describe : describe.skip;
@@ -45,7 +45,7 @@ describeEmbeddedPostgres("wardmote camelCase key migration", () => {
     await sql`INSERT INTO "companies" ("id", "name", "issue_prefix") VALUES (${companyId}, 'Keys', 'KEY')`;
     await sql`
       INSERT INTO "instance_settings" ("singleton_key", "experimental")
-      VALUES ('default', ${sql.json({ ["enable" + "Paper" + "clipDeveloperMode"]: true, other: 1 })})
+      VALUES ('default', ${sql.json({ enablePaperclipDeveloperMode: true, other: 1 })})
       ON CONFLICT ("singleton_key") DO UPDATE SET "experimental" = excluded."experimental"
     `;
     await sql`

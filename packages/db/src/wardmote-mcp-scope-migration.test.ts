@@ -10,7 +10,7 @@ import {
 } from "./test-embedded-postgres.js";
 
 const MIGRATION_FILE = "0368_wardmote_mcp_scopes.sql";
-const OLD = ["paper", "clip"].join("");
+const OLD = "paperclip";
 const cleanups: Array<() => Promise<void>> = [];
 const embeddedPostgresSupport = await getEmbeddedPostgresTestSupport();
 const describeEmbeddedPostgres = embeddedPostgresSupport.supported ? describe : describe.skip;

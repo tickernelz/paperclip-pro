@@ -10,7 +10,7 @@ import {
 } from "./test-embedded-postgres.js";
 
 const MIGRATION_FILE = "0371_wardmote_session_config_keys.sql";
-const OLD_PREFIX = ["__", ["paper", "clip"].join("")].join("");
+const OLD_PREFIX = "__paperclip";
 const cleanups: Array<() => Promise<void>> = [];
 const embeddedPostgresSupport = await getEmbeddedPostgresTestSupport();
 const describeEmbeddedPostgres = embeddedPostgresSupport.supported ? describe : describe.skip;

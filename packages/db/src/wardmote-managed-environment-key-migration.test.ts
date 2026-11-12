@@ -11,7 +11,7 @@ import {
 
 const MIGRATION_FILE = "0366_wardmote_managed_environment_key.sql";
 const LEGACY_KEY = ["managedBy", "Paperclip"].join("");
-const LEGACY_DESCRIPTION = `Default execution environment for ${["Paper", "clip"].join("")} runs on this machine.`;
+const LEGACY_DESCRIPTION = `Default execution environment for Paperclip runs on this machine.`;
 const cleanups: Array<() => Promise<void>> = [];
 const embeddedPostgresSupport = await getEmbeddedPostgresTestSupport();
 const describeEmbeddedPostgres = embeddedPostgresSupport.supported ? describe : describe.skip;
