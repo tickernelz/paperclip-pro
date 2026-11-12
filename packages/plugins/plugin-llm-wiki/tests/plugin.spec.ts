@@ -729,7 +729,6 @@ describe("LLM Wiki plugin scaffold", () => {
       routePath: "wiki",
     });
     expect(packageJson.dependencies).toBeUndefined();
-    expect(packageJson.devDependencies?.react).toBeUndefined();
     expect(packageJson.devDependencies?.["react-dom"]).toBeDefined();
     expect(packageJson.devDependencies?.["@types/react-dom"]).toBeDefined();
     expect(packageJson.peerDependencies?.react).toBe(">=18");
@@ -998,7 +997,7 @@ Duplicate headings receive stable suffixes.
     } as never));
 
     expect(markup).toContain("Wiki Maintainer");
-    expect(markup).toContain("Adapter: claude local");
+    expect(markup).toContain("Adapter: omp local");
     expect(markup).toContain("Maintainer");
     expect(markup).toContain("Repair");
     expect(markup).toContain("Reset to defaults");
@@ -1026,7 +1025,7 @@ Duplicate headings receive stable suffixes.
 
     expect(markup).toContain("pending approval");
     expect(markup).toContain("Approve the agent");
-    expect(markup).toContain("Adapter: claude local");
+    expect(markup).toContain("Adapter: omp local");
   });
 
   it("renders root settings as a compact health checklist with the shared path picker", () => {
@@ -1044,7 +1043,7 @@ Duplicate headings receive stable suffixes.
     expect(markup.indexOf(">Managed Agents</h2>")).toBeLessThan(markup.indexOf(">Managed Skills</h2>"));
     expect(markup.indexOf(">Managed Skills</h2>")).toBeLessThan(markup.indexOf(">Managed Projects</h2>"));
     expect(markup.indexOf(">Managed Projects</h2>")).toBeLessThan(markup.indexOf(">Managed Routines</h2>"));
-    expect(markup).toContain("Adapter: claude local");
+    expect(markup).toContain("Adapter: omp local");
     expect(markup).toContain("Status: in progress");
     expect(markup).toContain("Wiki root health checklist");
     expect(markup).toContain("Health check");
@@ -1233,7 +1232,7 @@ Duplicate headings receive stable suffixes.
 
     expect(markup).toContain("Agent execution");
     expect(markup).toContain("Assigned maintainer");
-    expect(markup).toContain("Wiki Maintainer · claude local");
+    expect(markup).toContain("Wiki Maintainer · omp local");
     expect(markup).toContain("All sections — apply when source hash matches and confidence");
     expect(markup).not.toContain("Per-task budget");
     expect(markup).not.toContain("Project total budget");

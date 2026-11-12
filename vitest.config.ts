@@ -11,6 +11,7 @@ export default defineConfig({
       "packages/mcp-server",
       "packages/plugins/sdk",
       "packages/plugins/plugin-creator",
+      "packages/plugins/plugin-llm-wiki",
       "packages/plugins/sandbox-providers/daytona",
       "server",
       "ui",
