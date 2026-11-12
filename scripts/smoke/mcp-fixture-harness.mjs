@@ -19,17 +19,17 @@ const httpServerPath = resolve(repoRoot, "scripts/mcp-fixtures/servers/http-fixt
 function parseArgs(argv) {
   const args = {
     wardmoteUrl: process.env.WARDMOTE_API_URL ?? "http://127.0.0.1:3100/api",
-    requirePaperclip: false,
+    requireWardmote: false,
     json: false,
   };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
     if (arg === "--") continue;
-    if (arg === "--paperclip-url") args.wardmoteUrl = argv[++i];
-    else if (arg === "--require-paperclip") args.requirePaperclip = true;
+    if (arg === "--wardmote-url") args.wardmoteUrl = argv[++i];
+    else if (arg === "--require-wardmote") args.requireWardmote = true;
     else if (arg === "--json") args.json = true;
     else if (arg === "--help") {
-      console.log(`Usage: node scripts/smoke/mcp-fixture-harness.mjs [--paperclip-url URL] [--require-paperclip] [--json]`);
+      console.log(`Usage: node scripts/smoke/mcp-fixture-harness.mjs [--wardmote-url URL] [--require-wardmote] [--json]`);
       process.exit(0);
     } else {
       throw new Error(`Unknown argument: ${arg}`);
@@ -298,7 +298,7 @@ function assert(condition, message) {
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
-  const paperclip = await checkWardmoteHealth(args.wardmoteUrl, args.requirePaperclip);
+  const wardmote = await checkWardmoteHealth(args.wardmoteUrl, args.requireWardmote);
   const stdioClient = new StdioFixtureClient();
   const httpClient = new HttpFixtureClient();
   const results = [];
@@ -401,7 +401,7 @@ async function main() {
 
     const summary = {
       ok: results.every((result) => result.ok),
-      paperclip,
+      wardmote,
       results,
       auditEvents: harness.audit.length,
       profiles: fixtureProfiles.map((profile) => profile.id),
@@ -411,7 +411,7 @@ async function main() {
       console.log(JSON.stringify(summary, null, 2));
     } else {
       console.log(`MCP fixture smoke: ${summary.ok ? "PASS" : "FAIL"}`);
-      console.log(`Wardmote health: ${paperclip.ok ? "ok" : `skipped (${paperclip.skippedReason})`}`);
+      console.log(`Wardmote health: ${wardmote.ok ? "ok" : `skipped (${wardmote.skippedReason})`}`);
       for (const result of results) {
         console.log(`${result.ok ? "PASS" : "FAIL"} ${result.name}${result.error ? ` - ${result.error}` : ""}`);
       }

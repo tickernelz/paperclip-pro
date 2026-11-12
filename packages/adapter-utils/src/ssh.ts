@@ -387,7 +387,7 @@ async function createSshAuthArgs(
 
   if (config.strictHostKeyChecking) {
     if (config.knownHosts) {
-      const knownHosts = await withTempFile("paperclip-ssh-known-hosts-", config.knownHosts, 0o600);
+      const knownHosts = await withTempFile("wardmote-ssh-known-hosts-", config.knownHosts, 0o600);
       tempFiles.push(knownHosts.cleanup);
       sshArgs.push("-o", `UserKnownHostsFile=${knownHosts.path}`);
     }
@@ -396,7 +396,7 @@ async function createSshAuthArgs(
   }
 
   if (config.privateKey) {
-    const privateKey = await withTempFile("paperclip-ssh-key-", config.privateKey, 0o600);
+    const privateKey = await withTempFile("wardmote-ssh-key-", config.privateKey, 0o600);
     tempFiles.push(privateKey.cleanup);
     sshArgs.push("-i", privateKey.path);
   }
@@ -771,7 +771,7 @@ async function importGitWorkspaceToSsh(input: {
   const bundlePath = path.join(bundleDir, "workspace.bundle");
   // Per-import unique ref so concurrent imports against the same local repo
   // can't race on `update-ref` between this run's update and bundle create.
-  const tempRef = `refs/paperclip/ssh-sync/import/${randomUUID()}`;
+  const tempRef = `refs/wardmote/ssh-sync/import/${randomUUID()}`;
 
   try {
     await runLocalGit(input.localDir, ["update-ref", tempRef, input.snapshot.headCommit], {
@@ -854,17 +854,17 @@ async function exportGitWorkspaceFromSsh(input: {
 }): Promise<string> {
   const bundleDir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-ssh-bundle-"));
   const bundlePath = path.join(bundleDir, "workspace.bundle");
-  const importedRef = input.importedRef ?? `refs/paperclip/ssh-sync/imported/${randomUUID()}`;
+  const importedRef = input.importedRef ?? `refs/wardmote/ssh-sync/imported/${randomUUID()}`;
 
   try {
     const exportScript = [
       "set -e",
-      `git -C ${shellQuote(input.remoteDir)} update-ref refs/paperclip/ssh-sync/export HEAD`,
+      `git -C ${shellQuote(input.remoteDir)} update-ref refs/wardmote/ssh-sync/export HEAD`,
       `mkdir -p ${shellQuote(path.posix.join(input.remoteDir, ".wardmote-runtime"))}`,
       `tmp_bundle=$(mktemp ${shellQuote(path.posix.join(input.remoteDir, ".wardmote-runtime", "export-XXXXXX.bundle"))})`,
-      'cleanup() { rm -f "$tmp_bundle"; git -C ' + shellQuote(input.remoteDir) + ' update-ref -d refs/paperclip/ssh-sync/export >/dev/null 2>&1 || true; }',
+      'cleanup() { rm -f "$tmp_bundle"; git -C ' + shellQuote(input.remoteDir) + ' update-ref -d refs/wardmote/ssh-sync/export >/dev/null 2>&1 || true; }',
       'trap cleanup EXIT',
-      `git -C ${shellQuote(input.remoteDir)} bundle create "$tmp_bundle" refs/paperclip/ssh-sync/export >/dev/null`,
+      `git -C ${shellQuote(input.remoteDir)} bundle create "$tmp_bundle" refs/wardmote/ssh-sync/export >/dev/null`,
       'cat "$tmp_bundle"',
     ].join("\n");
 
@@ -893,7 +893,7 @@ async function exportGitWorkspaceFromSsh(input: {
       throw error;
     }
 
-    await runLocalGit(input.localDir, ["fetch", "--force", bundlePath, `refs/paperclip/ssh-sync/export:${importedRef}`], {
+    await runLocalGit(input.localDir, ["fetch", "--force", bundlePath, `refs/wardmote/ssh-sync/export:${importedRef}`], {
       timeout: 60_000,
       maxBuffer: 1024 * 1024,
     });
@@ -1740,7 +1740,7 @@ async function restoreWorkspaceRootFromSsh(input: {
   if (input.baselineSnapshot) {
     const stagingDir = await fs.mkdtemp(path.join(os.tmpdir(), "wardmote-ssh-sync-back-"));
     const importedRef = input.restoreGitHistory
-      ? `refs/paperclip/ssh-sync/imported/${randomUUID()}`
+      ? `refs/wardmote/ssh-sync/imported/${randomUUID()}`
       : null;
     try {
       const importedHead = input.restoreGitHistory

@@ -160,7 +160,7 @@ export async function probeWardmoteMcpEndpoint(input: {
         params: {
           protocolVersion: "2024-11-05",
           capabilities: {},
-          clientInfo: { name: "paperclip-omp-local", version: "1" },
+          clientInfo: { name: "wardmote-omp-local", version: "1" },
         },
       }),
     });
@@ -319,7 +319,7 @@ export async function probeWardmoteMcpServer(input: {
       params: {
         protocolVersion: "2024-11-05",
         capabilities: {},
-        clientInfo: { name: "paperclip-omp-local", version: "1" },
+        clientInfo: { name: "wardmote-omp-local", version: "1" },
       },
     })}\n`,
   );
@@ -352,7 +352,7 @@ export async function writeWardmoteMcpExtension(input: {
       env: input.env,
     }),
     fileName: ".mcp.json",
-    localPrefix: "paperclip-omp-mcp-",
+    localPrefix: "wardmote-omp-mcp-",
     remoteDir: path.posix.join(
       input.remoteRootDir ?? path.posix.join(input.cwd, ".wardmote-runtime", "omp"),
       "mcp-extension",
