@@ -116,6 +116,7 @@ program
   .option("--json", "Print machine-readable output")
   .option("-y, --yes", "Confirm an explicit downgrade")
   .option("--no-backup", "Skip the pre-update database backup")
+  .option("--result-file <path>", "Write the final outcome as JSON to this file")
   .action(updateCommand);
 
 program.hook("preAction", async (_thisCommand, actionCommand) => {

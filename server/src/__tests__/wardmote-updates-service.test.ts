@@ -22,6 +22,7 @@ function service(overrides: { env?: NodeJS.ProcessEnv; fetchImpl?: typeof fetch;
     now: overrides.now ?? (() => Date.UTC(2026, 10, 12)),
     configCheckEnabled: overrides.configCheckEnabled ?? (() => true),
     inContainer: () => false,
+    platform: "linux",
     serverModulePath: "/home/u/.wardmote/cli/installs/npm/2026.1111.0/node_modules/@tickernelz/wardmote-server/dist/services/wardmote-updates.js",
   });
 }
@@ -39,7 +40,7 @@ describe("wardmote update service", () => {
       updateAvailable: true,
       channel: "latest",
       releaseNotesUrl: "https://github.com/tickernelz/wardmote/releases/tag/v2026.1112.0",
-      install: { kind: "managed", command: "wardmote update --version 2026.1112.0" },
+      install: { kind: "managed", command: "wardmote update --version 2026.1112.0", canInstall: true },
     });
   });
 

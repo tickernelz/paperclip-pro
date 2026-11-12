@@ -9,13 +9,11 @@ import {
   assertAdmissionRestored,
   assertNoLiveRuns,
   createInstanceRunControl,
-  drainInstanceForRestart,
   isProcessAlive,
   resolveInstanceEndpoint,
   type InstanceEndpoint,
-  type InstanceRunControl,
-  type LiveRunsSnapshot,
 } from "../services/instance-drain.js";
+import { drainInstanceForRestart, type InstanceRunControl, type LiveRunsSnapshot } from "@tickernelz/wardmote-shared/instance-drain";
 import { readRuntimeInfo, type WardmoteRuntimeInfo } from "../runtime-info.js";
 import { buildLocalHealthUrl } from "../utils/health-url.js";
 
