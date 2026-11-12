@@ -143,7 +143,7 @@ A connection is an enabled, governed link to one MCP server. Two transports are 
 | `remote_http` | Hosted SaaS MCP servers (GitHub, Linear, custom remote MCP). Default for cloud. | Wardmote authenticates with stored credential refs and proxies calls. Process supervision is upstream's problem. |
 | `local_stdio` | Local fixtures or approved stdio templates that must run as a child process. | Only allowed when the host is explicitly trusted; see [Local trusted deployment](#local-trusted-deployment). Cloud public deployments fail closed unless a trusted runtime host is configured. |
 
-Operators do not paste arbitrary `command` / `args` for stdio. Allowed stdio entries are limited to the approved template catalog (e.g. `paperclip.echo-calculator-time`, `paperclip.synthetic-todo-kv`). To add a new template, ship a code change.
+Operators do not paste arbitrary `command` / `args` for stdio. Allowed stdio entries are limited to the approved template catalog (e.g. `wardmote.echo-calculator-time`, `wardmote.synthetic-todo-kv`). To add a new template, ship a code change.
 
 ### Create a connection (remote_http)
 

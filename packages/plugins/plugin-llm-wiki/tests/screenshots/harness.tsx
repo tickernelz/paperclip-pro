@@ -133,7 +133,7 @@ const MANAGED_SKILLS = [
   { status: "resolved", skillId: "skl-llmw-ingest", resourceKey: "wiki-ingest", details: { name: "Wiki Ingest", key: "plugin/tickernelz-plugin-llm-wiki/wiki-ingest", description: null } },
   { status: "resolved", skillId: "skl-llmw-query", resourceKey: "wiki-query", details: { name: "Wiki Query", key: "plugin/tickernelz-plugin-llm-wiki/wiki-query", description: null } },
   { status: "resolved", skillId: "skl-llmw-lint", resourceKey: "wiki-lint", details: { name: "Wiki Lint", key: "plugin/tickernelz-plugin-llm-wiki/wiki-lint", description: null } },
-  { status: "resolved", skillId: "skl-llmw-distill", resourceKey: "paperclip-distill", details: { name: "Wardmote Distill", key: "plugin/tickernelz-plugin-llm-wiki/wardmote-distill", description: null } },
+  { status: "resolved", skillId: "skl-llmw-distill", resourceKey: "wardmote-distill", details: { name: "Wardmote Distill", key: "plugin/tickernelz-plugin-llm-wiki/wardmote-distill", description: null } },
   { status: "resolved", skillId: "skl-llmw-index", resourceKey: "index-refresh", details: { name: "Index Refresh", key: "plugin/tickernelz-plugin-llm-wiki/index-refresh", description: null } },
 ];
 

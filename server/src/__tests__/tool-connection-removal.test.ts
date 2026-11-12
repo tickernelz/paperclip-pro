@@ -618,7 +618,7 @@ describeEmbeddedPostgres("tool connection removal", () => {
       ownerScopeId: connectionId,
       runtimeKind: "local_stdio",
       status: "running",
-      provider: "paperclip",
+      provider: "wardmote",
       healthStatus: "ok",
     }).returning();
 

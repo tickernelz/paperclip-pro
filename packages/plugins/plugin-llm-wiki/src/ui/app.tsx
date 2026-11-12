@@ -785,7 +785,7 @@ function useWardmoteIngestionProfile(companyId: string | null, spaceSlug: string
     if (!companyId || !spaceSlug) return undefined;
     return { companyId, spaceSlug };
   }, [companyId, spaceSlug]);
-  return usePluginData<WardmoteIngestionProfileData>("paperclip-ingestion-profile", params);
+  return usePluginData<WardmoteIngestionProfileData>("wardmote-ingestion-profile", params);
 }
 
 function usePageContent(companyId: string | null, path: string | null, spaceSlug?: string | null) {
@@ -4770,7 +4770,7 @@ function HistoryTab({ context, overview }: { context: { companyId: string | null
         companyId={context.companyId}
         projectId={projectId}
         filters={{ originKindPrefix }}
-        viewStateKey="paperclip:llm-wiki-history-issues-view"
+        viewStateKey="wardmote:llm-wiki-history-issues-view"
         searchWithinLoadedIssues
       />
     </div>
@@ -4801,7 +4801,7 @@ const MANAGED_SKILL_LABELS: Record<string, string> = {
   "wiki-ingest": "Wiki Ingest",
   "wiki-query": "Wiki Query",
   "wiki-lint": "Wiki Lint",
-  "paperclip-distill": "Wardmote Distill",
+  "wardmote-distill": "Wardmote Distill",
   "index-refresh": "Index Refresh",
 };
 
@@ -5427,9 +5427,9 @@ function MaintainerAgentLink({
 
 function DistillationSettingsPanel({ context, settings }: { context: { companyId: string | null }; settings: SettingsData }) {
   const overview = useDistillationOverview(context.companyId);
-  const distillNow = usePluginAction("distill-paperclip-now");
-  const enableActiveProjects = usePluginAction("enable-paperclip-distillation-active-projects");
-  const queueBackfill = usePluginAction("backfill-paperclip-distillation");
+  const distillNow = usePluginAction("distill-wardmote-now");
+  const enableActiveProjects = usePluginAction("enable-wardmote-distillation-active-projects");
+  const queueBackfill = usePluginAction("backfill-wardmote-distillation");
   const toast = usePluginToast();
   const isMobile = useIsMobileLayout();
   const [busy, setBusy] = useState<string | null>(null);
@@ -6906,7 +6906,7 @@ function wardmoteIngestionStateBadge(data: WardmoteIngestionProfileData | null):
 
 function WardmoteIngestionSpaceCard({ companyId, space, refresh }: { companyId: string | null; space: WikiSpace; refresh: () => void }) {
   const profileQuery = useWardmoteIngestionProfile(companyId, space.slug);
-  const updateProfile = usePluginAction("update-paperclip-ingestion-profile");
+  const updateProfile = usePluginAction("update-wardmote-ingestion-profile");
   const toast = usePluginToast();
   const data = profileQuery.data ?? null;
   const [draft, setDraft] = useState<WardmoteIngestionProfile | null>(null);

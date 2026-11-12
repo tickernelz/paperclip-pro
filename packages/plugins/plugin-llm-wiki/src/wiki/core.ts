@@ -1171,7 +1171,7 @@ function assertWikiPath(path: string, options: { allowMetadata?: boolean } = {})
     trimmed !== "log.md" &&
     !trimmed.startsWith("raw/") &&
     !trimmed.startsWith("wiki/") &&
-    !(options.allowMetadata && trimmed.startsWith(".paperclip/"))
+    !(options.allowMetadata && trimmed.startsWith(".wardmote/"))
   ) {
     throw new Error(`Wiki path must stay inside AGENTS.md, IDEA.md, raw/, or wiki/: ${path}`);
   }
@@ -2957,7 +2957,7 @@ function issueSourceRef(issue: Issue): WardmoteSourceRef {
 }
 
 function projectPageSlug(input: { project: Project | null; rootIssue: Issue | null }): string {
-  return slugify(input.project?.name ?? input.rootIssue?.title ?? "paperclip-project");
+  return slugify(input.project?.name ?? input.rootIssue?.title ?? "wardmote-project");
 }
 
 function issueDescription(issue: Issue): string {
@@ -3218,7 +3218,7 @@ function appendProjectLogContents(current: string | null, input: { standupPath: 
     ? input.warnings.map((warning) => `- warning: ${warning}`)
     : ["- warnings: none"];
   const entry = [
-    `## [${new Date().toISOString().slice(0, 10)}] paperclip-distill | ${input.status}`,
+    `## [${new Date().toISOString().slice(0, 10)}] wardmote-distill | ${input.status}`,
     `- standup: \`${input.standupPath}\``,
     `- page: \`${input.pagePath}\``,
     `- run: \`${input.runId}\``,
@@ -3561,7 +3561,7 @@ function rawPathForWardmoteEvent(input: {
 }): string {
   const identifier = input.issue.identifier ?? input.issue.id.slice(0, 8);
   const eventDate = input.event.occurredAt.slice(0, 10);
-  return assertRawPath(`raw/paperclip/${input.sourceKind}/${eventDate}-${slugify(identifier)}-${slugify(input.label)}-${contentHash(input.contents).slice(0, 8)}.md`);
+  return assertRawPath(`raw/wardmote/${input.sourceKind}/${eventDate}-${slugify(identifier)}-${slugify(input.label)}-${contentHash(input.contents).slice(0, 8)}.md`);
 }
 
 function formatIssueEventSource(issue: Issue, event: PluginEvent, maxCharacters: number): string {

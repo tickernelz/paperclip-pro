@@ -569,7 +569,7 @@ const apps = [
       "local",
       "local_stdio",
       "none",
-      { templateKey: "paperclip.google-sheets" },
+      { templateKey: "wardmote.google-sheets" },
       "S3",
       "Share each spreadsheet with the Wardmote robot email, then paste the sheet links.",
       { requiredResourceFilters: ["spreadsheet"] },
@@ -1660,7 +1660,7 @@ apps.push({
     description: "Use your Cognee Cloud tenant API URL and key. Wardmote's runtime host needs uv installed to run the official Cognee MCP client. Public deployments require a trusted MCP runtime host.",
     actionLabel: "Open Cognee API keys", actionUrl: "https://platform.cognee.ai/api-keys",
   },
-  methods: [method("cloud-local", "local_stdio", "api_key", { templateKey: "paperclip.cognee-cloud" }, "S3",
+  methods: [method("cloud-local", "local_stdio", "api_key", { templateKey: "wardmote.cognee-cloud" }, "S3",
     "Copy the API Base URL and create an API key on Cognee's API Keys page. Use a Cloud workspace with an active subscription. Wardmote uses its bundled Cloud client; no extra runtime installation is required.", {
       label: "Connect Cognee Cloud", whenToUse: "Connect your Cloud tenant through the official Cognee MCP client.",
       credentialFields: [

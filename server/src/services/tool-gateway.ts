@@ -442,8 +442,8 @@ const BUILTIN_LOCAL_STDIO_RUNTIME_TEMPLATES: Record<
   string,
   Omit<LocalStdioRuntimeTemplate, "templateId">
 > = {
-  "paperclip.cognee-cloud": COGNEE_STDIO_TEMPLATE,
-  "paperclip.google-sheets": {
+  "wardmote.cognee-cloud": COGNEE_STDIO_TEMPLATE,
+  "wardmote.google-sheets": {
     command: "wardmote-google-sheets-mcp-server",
     args: [],
     envKeys: [
@@ -452,12 +452,12 @@ const BUILTIN_LOCAL_STDIO_RUNTIME_TEMPLATES: Record<
       "GOOGLE_SHEETS_ALLOWED_SPREADSHEET_IDS",
     ],
   },
-  "paperclip.echo-calculator-time": {
+  "wardmote.echo-calculator-time": {
     command: null,
     args: [],
     envKeys: [],
   },
-  "paperclip.synthetic-todo-kv": {
+  "wardmote.synthetic-todo-kv": {
     command: null,
     args: [],
     envKeys: [],
@@ -993,7 +993,7 @@ const BUILTIN_TOOLS: ToolGatewayDescriptor[] = [
     risk: "write",
   },
   {
-    name: "paperclip-self:list_my_issues",
+    name: "wardmote-self:list_my_issues",
     displayName: "List my Wardmote issues",
     description:
       "Wardmote self-MCP read fixture that lists the authenticated agent's current issues.",
@@ -1002,12 +1002,12 @@ const BUILTIN_TOOLS: ToolGatewayDescriptor[] = [
       properties: { limit: { type: "number" } },
       additionalProperties: false,
     },
-    pluginId: "paperclip-self",
+    pluginId: "wardmote-self",
     providerType: "wardmote_self",
     risk: "read",
   },
   {
-    name: "paperclip-self:get_issue_context",
+    name: "wardmote-self:get_issue_context",
     displayName: "Get issue context",
     description:
       "Wardmote self-MCP read fixture that returns scoped issue context and plan document metadata.",
@@ -1016,7 +1016,7 @@ const BUILTIN_TOOLS: ToolGatewayDescriptor[] = [
       properties: { issueId: { type: "string" } },
       additionalProperties: false,
     },
-    pluginId: "paperclip-self",
+    pluginId: "wardmote-self",
     providerType: "wardmote_self",
     risk: "read",
   },
@@ -1063,7 +1063,7 @@ const VIRTUAL_SEARCH_TOOLS: ToolGatewayDescriptor = {
     },
     additionalProperties: false,
   },
-  pluginId: "paperclip-gateway",
+  pluginId: "wardmote-gateway",
   providerType: "wardmote_virtual",
   risk: "read",
 };
@@ -1082,7 +1082,7 @@ const VIRTUAL_RUN_TOOL: ToolGatewayDescriptor = {
     required: ["tool"],
     additionalProperties: false,
   },
-  pluginId: "paperclip-gateway",
+  pluginId: "wardmote-gateway",
   providerType: "wardmote_virtual",
   risk: "write",
 };
@@ -3171,7 +3171,7 @@ export function createToolGatewayService(
       };
     }
 
-    if (tool.name === "paperclip-self:list_my_issues") {
+    if (tool.name === "wardmote-self:list_my_issues") {
       if (!session.agentId) {
         throw new ToolGatewayHttpError(
           403,
@@ -3204,7 +3204,7 @@ export function createToolGatewayService(
       };
     }
 
-    if (tool.name === "paperclip-self:get_issue_context") {
+    if (tool.name === "wardmote-self:get_issue_context") {
       if (!session.agentId) {
         throw new ToolGatewayHttpError(
           403,
@@ -4774,7 +4774,7 @@ export function createToolGatewayService(
         );
       }
     }
-    if (template.templateId === "paperclip.cognee-cloud") {
+    if (template.templateId === "wardmote.cognee-cloud") {
       try { cogneeCloudUrl(env.COGNEE_BASE_URL ?? ""); }
       catch {
         throw new ToolGatewayHttpError(422, "Reconnect Cognee with the tenant API Base URL from its API Keys page.", "cognee_cloud_url_invalid");
@@ -4805,7 +4805,7 @@ export function createToolGatewayService(
     protocolParams?: Record<string, unknown>;
     timeoutMs: number;
   }): Promise<unknown> {
-    if (input.template.templateId === "paperclip.cognee-cloud") {
+    if (input.template.templateId === "wardmote.cognee-cloud") {
       if (input.protocolMethod === "resources/list") return { resources: [] };
       if (input.protocolMethod === "prompts/list") return { prompts: [] };
       if (input.protocolMethod && input.protocolMethod !== "tools/call") {
@@ -5151,7 +5151,7 @@ export function createToolGatewayService(
       template,
       grant,
     );
-    if (template.templateId === "paperclip.cognee-cloud") {
+    if (template.templateId === "wardmote.cognee-cloud") {
       return callLocalStdioMcp({ connection: input.connection, template, env,
         protocolMethod: input.method, protocolParams: input.params ?? {}, timeoutMs: DEFAULT_TOOL_TIMEOUT_MS });
     }
@@ -6134,10 +6134,10 @@ export function createToolGatewayService(
       grant,
     );
     const invoke = () => callLocalStdioMcp({ connection, entry, template, env, parameters,
-      timeoutMs: useProviderDefaultTimeout && template.templateId === "paperclip.cognee-cloud" ? 60_000 : ms });
+      timeoutMs: useProviderDefaultTimeout && template.templateId === "wardmote.cognee-cloud" ? 60_000 : ms });
     // Cognee is a bundled HTTP client. Provider failures are tool failures, not
     // crashed local processes, and must never consume slots or restart budgets.
-    const result = template.templateId === "paperclip.cognee-cloud"
+    const result = template.templateId === "wardmote.cognee-cloud"
       ? await invoke()
       : await runtimeSupervisor.useConnectionSlot(
       {
@@ -6162,7 +6162,7 @@ export function createToolGatewayService(
       },
     );
     return {
-      result: normalizeMcpToolResult(result, template.templateId === "paperclip.cognee-cloud" ? "cognee_cloud" : "local_stdio", template.templateId !== "paperclip.cognee-cloud"),
+      result: normalizeMcpToolResult(result, template.templateId === "wardmote.cognee-cloud" ? "cognee_cloud" : "local_stdio", template.templateId !== "wardmote.cognee-cloud"),
     };
   }
 
