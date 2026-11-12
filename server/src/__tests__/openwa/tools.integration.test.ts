@@ -236,9 +236,17 @@ describe("OpenWA agent tools (embedded Postgres + fake gateway)", () => {
   async function trigger(
     t: Fixture,
     c: Conversation,
-    input: { triggerClass: OpenwaTriggerClass; role: OpenwaPrincipalRole; principalId?: string | null; rules?: string[]; event?: string },
+    input: {
+      triggerClass: OpenwaTriggerClass;
+      role: OpenwaPrincipalRole;
+      principalId?: string | null;
+      rules?: string[];
+      event?: string;
+      sender?: { jid: string; phone: string | null; name: string | null };
+    },
   ) {
-    const row = t.gateway.inbound({ chatId: c.chatId, from: c.chatId.endsWith("@g.us") ? MEMBER : c.chatId, author: c.chatId.endsWith("@g.us") ? MEMBER : undefined, body: "question " + randomUUID().slice(0, 6), emit: false });
+    const author = input.sender?.jid ?? MEMBER;
+    const row = t.gateway.inbound({ chatId: c.chatId, from: c.chatId.endsWith("@g.us") ? author : c.chatId, author: c.chatId.endsWith("@g.us") ? author : undefined, body: "question " + randomUUID().slice(0, 6), emit: false });
     const waMessageId = row.waMessageId!;
     const [delivery] = await db
       .insert(chatDeliveries)
@@ -260,6 +268,7 @@ describe("OpenWA agent tools (embedded Postgres + fake gateway)", () => {
             principalRole: input.role,
             rules: input.rules ?? [],
             ...(input.event ? { event: input.event } : {}),
+            ...(input.sender ? { sender: input.sender } : {}),
           },
         },
         state: "processed",
@@ -309,7 +318,7 @@ describe("OpenWA agent tools (embedded Postgres + fake gateway)", () => {
   it("renders mentions as array plus @n tokens and quotes a trigger, marking it answered", async () => {
     const t = await setup();
     const c = await conversation(t, GROUP);
-    const first = await trigger(t, c, { triggerClass: "other", role: "allowed" });
+    const first = await trigger(t, c, { triggerClass: "other", role: "allowed", sender: { jid: "555000111222@lid", phone: "628555000444", name: "Rina" } });
     const second = await trigger(t, c, { triggerClass: "other", role: "allowed" });
     const binding = await run(t, c, { triggerClass: "other" });
     const result = await executeOpenwaTool(db, binding, "openwa_send", {
@@ -319,6 +328,10 @@ describe("OpenWA agent tools (embedded Postgres + fake gateway)", () => {
       idempotencyKey: randomUUID(),
     });
     expect(result).toMatchObject({ state: "delivered", chatRef: c.chatRef, quotedMessageId: first.waMessageId, answeredTriggerIds: [first.id] });
+    expect(result.mentions).toEqual([
+      { token: "@628333000111", ref: "openwa:" + SESSION_ID + ":628333000111@c.us", name: null, quotedSender: false },
+      { token: "@628555000444", ref: "openwa:" + SESSION_ID + ":628555000444@c.us", name: "Rina", quotedSender: true },
+    ]);
     const sent = t.gateway.sends.at(-1)!;
     expect(sent.text).toBe("@628555000444 Thanks *both*, see @628333000111");
     expect(sent.mentions).toEqual(["628333000111@c.us", "628555000444@c.us"]);
@@ -339,15 +352,16 @@ describe("OpenWA agent tools (embedded Postgres + fake gateway)", () => {
     t.gateway.failNextSend({ status: 404, body: { message: "Quoted message not found" } });
     const idempotencyKey = randomUUID();
     const sendsBefore = t.gateway.sends.length;
-    const result = await executeOpenwaTool(db, binding, "openwa_send", { text: "answer", quoteMessageId: first.id, idempotencyKey });
+    const result = await executeOpenwaTool(db, binding, "openwa_send", { text: "answer", mentions: ["+628222000333"], quoteMessageId: first.id, idempotencyKey });
     expect(result).toMatchObject({ state: "delivered", quoteDropped: true, answeredTriggerIds: [first.id] });
     expect(result).not.toHaveProperty("quotedMessageId");
+    expect(result.mentions).toEqual([{ token: "@628222000333", ref: "openwa:" + SESSION_ID + ":628222000333@c.us", name: null }]);
     const sends = t.gateway.sends.slice(sendsBefore);
     expect(sends).toHaveLength(2);
-    expect(sends[1]).toMatchObject({ text: "answer" });
+    expect(sends[1]).toMatchObject({ text: "@628222000333 answer" });
     expect(sends[1]).not.toHaveProperty("quotedMessageId");
     expect(await answerStates([first.id, second.id])).toEqual(["answered", "pending"]);
-    const replay = await executeOpenwaTool(db, binding, "openwa_send", { text: "answer", quoteMessageId: first.id, idempotencyKey });
+    const replay = await executeOpenwaTool(db, binding, "openwa_send", { text: "answer", mentions: ["+628222000333"], quoteMessageId: first.id, idempotencyKey });
     expect(replay).toMatchObject({ actionId: (result as { actionId: string }).actionId, replayed: true, quoteDropped: true });
     expect(t.gateway.sends.length).toBe(sendsBefore + 2);
     const sent = await db.select().from(chatAuditEntries).where(and(eq(chatAuditEntries.endpointId, t.endpointId), eq(chatAuditEntries.kind, "message_sent")));
@@ -900,6 +914,41 @@ describe("OpenWA agent tools (embedded Postgres + fake gateway)", () => {
     expect(JSON.stringify(stored)).toContain(JSON.stringify(text).slice(1, -1));
     const live = await executeOpenwaTool(db, binding, "openwa_read_chat", { source: "live", limit: 10 });
     expect((live.messages as Array<Record<string, unknown>>).some((message) => Object.values(message).includes(text))).toBe(true);
+  });
+
+  it("reports a tagged person who is not the quoted sender, and an unknown match as null, without blocking the send", async () => {
+    const t = await setup();
+    const c = await conversation(t, GROUP);
+    const quoted = await trigger(t, c, { triggerClass: "other", role: "allowed", sender: { jid: "555000111588@lid", phone: "628555000588", name: "Sari" } });
+    const other = await trigger(t, c, { triggerClass: "other", role: "allowed", sender: { jid: "555000111986@lid", phone: "628555000986", name: "Dodi" } });
+    const unknown = await trigger(t, c, { triggerClass: "other", role: "allowed", sender: { jid: "555000111777@lid", phone: null, name: "Nia" } });
+    const binding = await run(t, c, { triggerClass: "other" });
+    const wrong = await executeOpenwaTool(db, binding, "openwa_send", { text: "noted", mentions: ["+628555000986"], quoteMessageId: quoted.id, idempotencyKey: randomUUID() });
+    expect(wrong).toMatchObject({ state: "delivered", mentions: [{ token: "@628555000986", name: "Dodi", quotedSender: false }] });
+    expect(t.gateway.sends.at(-1)!.mentions).toEqual(["628555000986@c.us"]);
+    const unsure = await executeOpenwaTool(db, binding, "openwa_send", { text: "ok", mentions: ["+628555000123"], quoteMessageId: unknown.id, idempotencyKey: randomUUID() });
+    expect(unsure).toMatchObject({ state: "delivered", mentions: [{ token: "@628555000123", name: null, quotedSender: null }] });
+    const byLid = await executeOpenwaTool(db, binding, "openwa_send", { text: "ya", mentions: ["openwa:" + SESSION_ID + ":555000111777@lid"], quoteMessageId: unknown.id, idempotencyKey: randomUUID() });
+    expect(byLid).toMatchObject({ mentions: [{ token: "@555000111777", ref: "openwa:" + SESSION_ID + ":555000111777@lid", name: "Nia", quotedSender: true }] });
+    const unquoted = await executeOpenwaTool(db, binding, "openwa_send", { text: "hi", mentions: ["+628555000588"], idempotencyKey: randomUUID() });
+    expect(unquoted.mentions).toEqual([{ token: "@628555000588", ref: "openwa:" + SESSION_ID + ":628555000588@c.us", name: "Sari" }]);
+    const plain = await executeOpenwaTool(db, binding, "openwa_send", { text: "no tags", quoteMessageId: other.id, idempotencyKey: randomUUID() });
+    expect(plain).not.toHaveProperty("mentions");
+  });
+
+  it("names group members in read_chat from the gateway's push name and leaves an unnamed member null", async () => {
+    const t = await setup();
+    const c = await conversation(t, GROUP);
+    t.gateway.inbound({ chatId: GROUP, author: MEMBER, body: "named member", emit: false, chatName: "Rina" });
+    t.gateway.inbound({ chatId: GROUP, author: OTHER, body: "unnamed member", emit: false });
+    await trigger(t, c, { triggerClass: "other", role: "allowed" });
+    const binding = await run(t, c, { triggerClass: "other" });
+    for (const source of ["stored", "live"] as const) {
+      const read = await executeOpenwaTool(db, binding, "openwa_read_chat", { source, limit: 10 });
+      const names = new Map((read.messages as Array<{ text: string; sender: { name: string | null } | null }>).map((message) => [message.text, message.sender?.name]));
+      expect(names.get("named member")).toBe("Rina");
+      expect(names.get("unnamed member")).toBeNull();
+    }
   });
 
   it("marks each read_chat sender as owner or non_owner from the server's owner list, never from a display name", async () => {

@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { and, eq, inArray, lte, or, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, lte, or, sql } from "drizzle-orm";
 import {
   assets,
   chatActions,
@@ -578,6 +578,76 @@ export function openwaMentionText(text: string, mentions: ReadonlyArray<{ token:
   return missing.length ? missing.map((mention) => mention.token).join(" ") + " " + text : text;
 }
 
+const MENTION_LOOKUP_LIMIT = 200;
+
+function sameSender(sender: Record<string, unknown>, mention: { jid: string }): boolean | null {
+  const jid = str(sender.jid)?.toLowerCase() ?? null;
+  if (jid === mention.jid) return true;
+  const wanted = phoneDigits(mention.jid);
+  const phone = str(sender.phone)?.replace(/\D/g, "") || phoneDigits(jid);
+  if (wanted && phone) return wanted === phone;
+  return jid && jid.slice(jid.indexOf("@")) === mention.jid.slice(mention.jid.indexOf("@")) ? false : null;
+}
+
+async function mentionReceipt(
+  ctx: ToolContext,
+  target: Target,
+  mentions: ReadonlyArray<{ jid: string; token: string }>,
+  quote: string | null,
+): Promise<Array<Record<string, unknown>>> {
+  const openwa = sql`${chatDeliveries.normalizedEvent}->'openwa'`;
+  const senderJid = sql`lower(${openwa}->'sender'->>'jid')`;
+  const senderPhone = sql`${openwa}->'sender'->>'phone'`;
+  const waMessageId = sql<string | null>`${openwa}->>'waMessageId'`;
+  const phones = mentions.map((mention) => phoneDigits(mention.jid)).filter((digits): digits is string => digits !== null);
+  const rows = await ctx.db
+    .select({ sender: sql<unknown>`${openwa}->'sender'`, waMessageId })
+    .from(chatDeliveries)
+    .where(
+      and(
+        eq(chatDeliveries.companyId, ctx.endpoint.companyId),
+        eq(chatDeliveries.endpointId, ctx.endpoint.id),
+        target.isOrigin
+          ? eq(chatDeliveries.conversationId, ctx.conversation.id)
+          : inArray(
+              chatDeliveries.conversationId,
+              ctx.db
+                .select({ id: chatConversations.id })
+                .from(chatConversations)
+                .where(
+                  and(
+                    eq(chatConversations.companyId, ctx.endpoint.companyId),
+                    eq(chatConversations.endpointId, ctx.endpoint.id),
+                    eq(chatConversations.externalConversationId, chatRef(ctx, target.chatId)),
+                  ),
+                ),
+            ),
+        or(
+          inArray(senderJid, mentions.map((mention) => mention.jid)),
+          ...(phones.length ? [inArray(senderPhone, phones)] : []),
+          ...(quote ? [eq(waMessageId, quote)] : []),
+        ),
+      ),
+    )
+    .orderBy(desc(chatDeliveries.receivedAt))
+    .limit(MENTION_LOOKUP_LIMIT)
+    .catch((error: unknown) => {
+      logger.warn({ err: error, endpointId: ctx.endpoint.id, runId: ctx.run.id }, "failed to look up OpenWA mention names");
+      return [];
+    });
+  const senders = rows.map((row) => ({ sender: record(row.sender), waMessageId: row.waMessageId }));
+  const quoted = quote ? (senders.find((row) => row.waMessageId === quote)?.sender ?? null) : null;
+  return mentions.map((mention) => {
+    const named = senders.find((row) => sameSender(row.sender, mention) === true && str(row.sender.name));
+    return {
+      token: mention.token,
+      ref: chatRef(ctx, openwaChatKey(mention.jid)),
+      name: named ? displayName(named.sender.name) : null,
+      ...(quote ? { quotedSender: quoted ? sameSender(quoted, mention) : null } : {}),
+    };
+  });
+}
+
 export async function replyRequirementFailure(ctx: ToolContext, quotedMessageId: string | null = null): Promise<{ category: OpenwaGrantCategory; reason: string } | null> {
   return (await replyRequirementGaps(ctx, true, quotedMessageId))[0] ?? null;
 }
@@ -1087,9 +1157,11 @@ async function openwaSend(ctx: ToolContext, args: Args): Promise<Record<string, 
         })
       : [];
   if (target.isOrigin) await consumeReplyGrants(ctx);
+  const mentioned = mentionTargets(ctx, args.mentions);
   const receipt = {
     messageIds: outcome.messageIds,
     chatRef: chatRef(ctx, target.chatId),
+    ...(mentioned.length ? { mentions: await mentionReceipt(ctx, target, mentioned, quoteDropped ? null : quote) } : {}),
     answeredTriggerIds,
     ...(target.ownerReport ? { ownerReportChat: true } : {}),
     ...(quote && !quoteDropped ? { quotedMessageId: quote } : {}),
@@ -1166,7 +1238,7 @@ function storedView(ctx: ToolContext, message: OpenwaStoredMessage, ownerKeys: R
   return {
     id: message.waMessageId ?? "row:" + message.id,
     fromMe,
-    sender: fromMe ? null : senderView(ctx, message.author ?? message.from, metadata.pushName ?? metadata.senderName, undefined, ownerKeys),
+    sender: fromMe ? null : senderView(ctx, message.author ?? message.from, message.chatName, undefined, ownerKeys),
     type: message.type,
     timestamp: message.timestamp ?? Math.floor(Date.parse(message.createdAt) / 1000),
     ...textView(message.body),
