@@ -19,10 +19,7 @@ const sdkDir = join(repoRoot, "packages", "plugins", "sdk");
 // Plugin packages excluded from the workspace that still need @tickernelz/wardmote-plugin-sdk
 // linked in for local dev. Keep in sync with pnpm-workspace.yaml exclusions.
 function excludedPluginDirs() {
-  return [
-    ...readPluginsUnder(join(repoRoot, "packages", "plugins", "sandbox-providers")),
-    join(repoRoot, "packages", "plugins", "examples", "plugin-orchestration-smoke-example"),
-  ];
+  return readPluginsUnder(join(repoRoot, "packages", "plugins", "sandbox-providers"));
 }
 
 export function linkExcludedPlugins() {
