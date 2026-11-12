@@ -1223,7 +1223,7 @@
     ["server/src/__tests__/company-artifacts-service.test.ts",5,"belum-diganti"],
     ["server/src/__tests__/company-import-transfer-routes.test.ts",1,"belum-diganti"],
     ["server/src/__tests__/company-portability-routes.test.ts",13,"belum-diganti"],
-    ["server/src/__tests__/company-portability.test.ts",26,"belum-diganti"],
+    ["server/src/__tests__/company-portability.test.ts",19,"belum-diganti"],
     ["server/src/__tests__/company-skill-test-runs-service.test.ts",2,"belum-diganti"],
     ["server/src/__tests__/company-skills-catalog-service.test.ts",1,"belum-diganti"],
     ["server/src/__tests__/company-skills-detail.test.ts",1,"belum-diganti"],
