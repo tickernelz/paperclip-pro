@@ -236,8 +236,8 @@ const MANAGED_ENVIRONMENT_BUNDLE_KEY = "managed-sandbox-environment";
 const MANAGED_ENVIRONMENT_RESOURCE_KIND = "environment";
 const MANAGED_ENVIRONMENT_RESOURCE_KEY = "managed-sandbox";
 const MANAGED_ENVIRONMENT_STOCK_VERSION = "managed-environment-v1";
-const MANAGED_ENVIRONMENT_ARCHIVE_TOKEN_METADATA_KEY = "_paperclipManagedArchiveToken";
-const MANAGED_ENVIRONMENT_ARCHIVE_TOKEN_DEFAULTS_KEY = "_paperclipManagedArchiveToken";
+const MANAGED_ENVIRONMENT_ARCHIVE_TOKEN_METADATA_KEY = "_wardmoteManagedArchiveToken";
+const MANAGED_ENVIRONMENT_ARCHIVE_TOKEN_DEFAULTS_KEY = "_wardmoteManagedArchiveToken";
 
 function managedEnvironmentBaselineDefaults(
   defaultsJson: Record<string, unknown>,
