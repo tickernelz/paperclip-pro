@@ -21,6 +21,7 @@ import { TaskChatUsageReadout } from "./TaskChatUsageReadout";
 import { TaskChatRunnerActivityGroup } from "./TaskChatRunnerActivityGroup";
 import { TaskChatActivityPhase } from "./TaskChatActivityPhase";
 import { TaskChatThinking } from "./TaskChatThinking";
+import { TaskChatStickyHeaderActions } from "./TaskChatStickyHeaderActions";
 import { TaskMessageScroller } from "./TaskMessageScroller";
 import { TaskChatProtocolCard } from "./TaskChatProtocolCard";
 import { TaskChatProtocolActivityRow } from "./TaskChatProtocolActivityRow";
@@ -37,6 +38,8 @@ interface TaskChatThreadViewProps {
    * messages instead of staying pinned above the thread.
    */
   header?: ReactNode;
+  /** Actions that stay pinned to the top of the viewport while the header scrolls away. */
+  headerActions?: ReactNode;
   onApprovalDecision?: (statusItemId: string, optionId: string) => void;
   onRuntimeRequestDecision?: (
     item: TaskChatRuntimeRequestItem,
@@ -297,6 +300,7 @@ export function taskChatItemSpacingClass(
 export function TaskChatThreadView({
   items,
   header,
+  headerActions,
   onApprovalDecision,
   onRuntimeRequestDecision,
   renderInteraction,
@@ -438,6 +442,11 @@ export function TaskChatThreadView({
         className,
       )}
     >
+      {headerActions ? (
+        <TaskChatStickyHeaderActions className={streamlined ? undefined : "-mb-5"}>
+          {headerActions}
+        </TaskChatStickyHeaderActions>
+      ) : null}
       {header ? (
         <div
           className={cn("flex flex-col gap-6", streamlined ? "pb-4" : "pb-2")}
