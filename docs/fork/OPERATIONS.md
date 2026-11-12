@@ -665,8 +665,8 @@ also exposes `wardmoteMcp` (default on) and `wardmoteMcpToolsets`
 MCP is the agents' only path to Wardmote, so the adapter completes an MCP
 `initialize` before it spawns OMP: a POST against the endpoint with a 5 s
 timeout, or the handshake with the binary under the stdio fallback. Downtime
-fails the run with `errorCode: paperclip_mcp_unavailable`, a 401/403 with
-`errorCode: paperclip_mcp_credential_rejected`, and the unavailable code is
+fails the run with `errorCode: wardmote_mcp_unavailable`, a 401/403 with
+`errorCode: wardmote_mcp_credential_rejected`, and the unavailable code is
 raised again when OMP itself prints `Warning: MCP server "wardmote" failed to
 connect: …` on stderr or as a `notice` frame. The adapter reads whole lines and
 matches only a line that starts with that text, so a prompt, tool result or

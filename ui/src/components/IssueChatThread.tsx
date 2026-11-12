@@ -1588,7 +1588,7 @@ const TOOL_ICON_MAP: Record<
   string,
   React.ComponentType<{ className?: string }>
 > = {
-  paperclip_provider_activity: ClipboardList,
+  wardmote_provider_activity: ClipboardList,
 };
 
 function getToolIcon(
@@ -1611,7 +1611,7 @@ function IssueChatToolPart({
   isError?: boolean;
 }) {
   const [open, setOpen] = useState(false);
-  if (toolName === "paperclip_provider_activity") {
+  if (toolName === "wardmote_provider_activity") {
     return (
       <IssueChatProviderActivity
         args={args}

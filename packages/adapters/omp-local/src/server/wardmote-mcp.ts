@@ -25,7 +25,7 @@ export {
   type WardmoteMcpCommand,
 } from "@tickernelz/wardmote-adapter-utils/wardmote-mcp";
 
-export const WARDMOTE_MCP_UNAVAILABLE_CODE = "paperclip_mcp_unavailable";
+export const WARDMOTE_MCP_UNAVAILABLE_CODE = "wardmote_mcp_unavailable";
 const MCP_CONNECT_FAILURE_LINE_MAX_CHARS = 16_384;
 
 export interface McpConnectFailureDetector {
@@ -81,7 +81,7 @@ export function createMcpConnectFailureDetector(serverName: string = WARDMOTE_MC
     },
   };
 }
-export const WARDMOTE_MCP_CREDENTIAL_CODE = "paperclip_mcp_credential_rejected";
+export const WARDMOTE_MCP_CREDENTIAL_CODE = "wardmote_mcp_credential_rejected";
 const PROBE_TIMEOUT_MS = 30_000;
 const HTTP_PROBE_TIMEOUT_MS = 5_000;
 export const WARDMOTE_MCP_UNAVAILABLE_RETRY_DELAY_MS = 45_000;

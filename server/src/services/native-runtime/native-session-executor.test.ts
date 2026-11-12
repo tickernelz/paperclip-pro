@@ -12876,7 +12876,7 @@ describe("runnerd provider runtime wiring", () => {
             : "/usr/local/bin/codex\n";
         } else if (
           !script.includes("ln -sfn") &&
-          !script.includes("paperclip_codex_launcher_tmp")
+          !script.includes("wardmote_codex_launcher_tmp")
         ) {
           throw new Error(`unexpected command: ${command.command}`);
         }
@@ -12919,7 +12919,7 @@ describe("runnerd provider runtime wiring", () => {
     );
     if (!compatible) {
       expect(syncIn).not.toHaveBeenCalled();
-      expect(remoteExecute.mock.calls.some(([call]) => call.command === "npm" || call.args?.[1]?.includes("paperclip_codex_launcher_tmp"))).toBe(false);
+      expect(remoteExecute.mock.calls.some(([call]) => call.command === "npm" || call.args?.[1]?.includes("wardmote_codex_launcher_tmp"))).toBe(false);
       expect(onLog).not.toHaveBeenCalledWith("stderr", expect.stringContaining("using compatible Codex"));
       return;
     }
@@ -13010,7 +13010,7 @@ describe("runnerd provider runtime wiring", () => {
           stdout = "/usr/local/bin/wardmote-runnerd\n";
         } else if (script.includes("command -v codex")) {
           stdout = "/opt/paperclip-runner/bin/codex\n";
-        } else if (!script.includes("ln -sfn") && !script.includes("paperclip_codex_launcher_tmp")) {
+        } else if (!script.includes("ln -sfn") && !script.includes("wardmote_codex_launcher_tmp")) {
           throw new Error(`unexpected command: ${command.command}`);
         }
         return { exitCode: 0, signal: null, timedOut: false, stderr: "", stdout };
@@ -13053,7 +13053,7 @@ describe("runnerd provider runtime wiring", () => {
       // No npm spec is configured, so there is no fallback install; the run
       // fails before launch instead of running against the stale CLI.
       expect(remoteExecute.mock.calls.some(([call]) => call.command === "npm")).toBe(false);
-      expect(remoteExecute.mock.calls.some(([call]) => call.args?.[1]?.includes("paperclip_codex_launcher_tmp"))).toBe(false);
+      expect(remoteExecute.mock.calls.some(([call]) => call.args?.[1]?.includes("wardmote_codex_launcher_tmp"))).toBe(false);
     }
   });
 

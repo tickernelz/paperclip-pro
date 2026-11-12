@@ -351,7 +351,7 @@ function defaultSummaryGroup(action: Action): ToolSummaryGroup {
 }
 
 function wardmoteSummaryGroup(action: Action): ToolSummaryGroup {
-  if (action === "read" || action === "list") return group("paperclip_read", "Wardmote read", "Wardmote reads");
+  if (action === "read" || action === "list") return group("wardmote_read", "Wardmote read", "Wardmote reads");
   return group("task_operation", "task operation", "task operations");
 }
 

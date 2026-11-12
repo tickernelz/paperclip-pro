@@ -114,7 +114,7 @@ type AuthorizationLockMode = "blocking" | "nonblocking" | "read";
 
 class ExternalChatWaitAuthorizationContentionError extends Error {
   constructor() {
-    super("paperclip_external_chat_wait_authorization_contended");
+    super("wardmote_external_chat_wait_authorization_contended");
     this.name = "ExternalChatWaitAuthorizationContentionError";
   }
 }

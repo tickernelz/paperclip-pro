@@ -1661,7 +1661,7 @@ function phaseSummary(
               ? "Searched available tools"
               : `Searched available tools ${count} times`;
           break;
-        case "paperclip_read":
+        case "wardmote_read":
           text =
             count === 1
               ? "Read from Wardmote"
