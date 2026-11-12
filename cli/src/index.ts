@@ -50,7 +50,8 @@ import { registerSkillCommands } from "./commands/client/skill.js";
 import { cliVersion } from "./version.js";
 import { installCommand } from "./commands/install.js";
 import { uninstallCommand } from "./commands/uninstall.js";
-import { hasLegacyInstall, migrateHomeCommand } from "./commands/migrate-home.js";
+import { hasLegacyInstall, migrateHomeCommand, rewriteLegacyStoreMarker } from "./commands/migrate-home.js";
+import { resolveInstallStorePaths } from "./install-store.js";
 import { migrateNamesCommand } from "./commands/migrate-names.js";
 import { updateCommand } from "./commands/update.js";
 import { registerServiceCommands } from "./commands/service.js";
@@ -141,6 +142,9 @@ program.hook("preAction", async (_thisCommand, actionCommand) => {
     assertTestDriveDatabaseIsolation(options.config);
   }
   initTelemetryFromConfigFile(options.config);
+  if (["install", "update", "uninstall"].includes(actionCommand.name())) {
+    rewriteLegacyStoreMarker(resolveInstallStorePaths().markerPath);
+  }
 });
 
 registerTestDriveCommand(program);
