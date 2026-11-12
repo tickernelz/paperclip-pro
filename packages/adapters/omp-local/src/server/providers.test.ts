@@ -189,6 +189,43 @@ describe("fetchCustomProviderModels", () => {
     expect(calls[0].headers).toEqual({ "anthropic-version": "2023-06-01", authorization: `Bearer ${SECRET}` });
   });
 
+  it("stops paging at the total deadline and keeps the models read so far", async () => {
+    const slow = (signal: AbortSignal, reply: () => Response) => new Promise<Response>((resolve, reject) => {
+      const timer = setTimeout(() => resolve(reply()), 20);
+      signal.addEventListener("abort", () => {
+        clearTimeout(timer);
+        reject(signal.reason);
+      }, { once: true });
+    });
+    let pages = 0;
+    const endless = await fetchCustomProviderModels({
+      baseUrl: "http://gw/v1",
+      api: "anthropic-messages",
+      key: null,
+      authHeader: false,
+      headers: {},
+      totalTimeoutMs: 150,
+      fetchImpl: async (_url, init) => slow(init.signal, () => {
+        pages += 1;
+        return json({ data: [{ id: `m${pages}` }], has_more: true, last_id: `m${pages}` });
+      }),
+    });
+    expect(endless).toMatchObject({ truncated: true, error: null });
+    expect(endless.models.length).toBeGreaterThan(0);
+    expect(endless.models.length).toBeLessThan(50);
+
+    const silent = await fetchCustomProviderModels({
+      baseUrl: "http://gw/v1",
+      api: null,
+      key: null,
+      authHeader: false,
+      headers: {},
+      totalTimeoutMs: 50,
+      fetchImpl: async (_url, init) => new Promise((_resolve, reject) => init.signal.addEventListener("abort", () => reject(init.signal.reason), { once: true })),
+    });
+    expect(silent).toMatchObject({ models: [], error: "http://gw/v1/models did not finish listing models within 0.05 s." });
+  });
+
   it("explains failures without repeating the key or header values", async () => {
     const run = (reply: () => Response | Promise<Response>) =>
       fetchCustomProviderModels({ baseUrl: "http://gw/v1", api: null, key: SECRET, authHeader: false, headers: { "X-Org": "org-secret-value" }, fetchImpl: async () => reply() });

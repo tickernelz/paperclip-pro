@@ -575,6 +575,7 @@ export function parseUpstreamModelPage(body: string): UpstreamModelPage {
 
 const UPSTREAM_MODEL_LIMIT = 5_000;
 const UPSTREAM_PAGE_LIMIT = 50;
+const UPSTREAM_TOTAL_TIMEOUT_MS = 60_000;
 const ANTHROPIC_PAGE_SIZE = "1000";
 const ANTHROPIC_VERSION = "2023-06-01";
 
@@ -593,9 +594,12 @@ export async function fetchCustomProviderModels(options: {
   key: string | null;
   authHeader: boolean;
   headers: Record<string, string>;
+  totalTimeoutMs?: number;
   fetchImpl?: FetchLike;
 }): Promise<OmpCustomProviderModelsFetchResult> {
   const fetchImpl = options.fetchImpl ?? (fetch as unknown as FetchLike);
+  const totalTimeoutMs = options.totalTimeoutMs ?? UPSTREAM_TOTAL_TIMEOUT_MS;
+  const total = AbortSignal.timeout(totalTimeoutMs);
   const anthropic = options.api === "anthropic-messages";
   const auth: Record<string, string> = !options.key
     ? {}
@@ -616,7 +620,11 @@ export async function fetchCustomProviderModels(options: {
   let truncated = false;
   let after: string | null = null;
   const fail = (error: string): OmpCustomProviderModelsFetchResult => ({ url: base, status, models: [], truncated: false, error: redactSecrets(error, secrets) });
+  const outOfTime = (): OmpCustomProviderModelsFetchResult => (models.length
+    ? { url: base, status, models, truncated: true, error: null }
+    : fail(`${base} did not finish listing models within ${totalTimeoutMs / 1000} s.`));
   for (let page = 0; ; page += 1) {
+    if (total.aborted) return outOfTime();
     if (page === UPSTREAM_PAGE_LIMIT) {
       truncated = true;
       break;
@@ -624,11 +632,13 @@ export async function fetchCustomProviderModels(options: {
     const url = pageUrl(after);
     let body: string;
     try {
-      const response = await fetchImpl(url, { method: "GET", headers, signal: AbortSignal.timeout(PROBE_TIMEOUT_MS) });
+      const response = await fetchImpl(url, { method: "GET", headers, signal: AbortSignal.any([total, AbortSignal.timeout(PROBE_TIMEOUT_MS)]) });
       status = response.status;
       body = await readLimitedBody(response.body, PROBE_BODY_LIMIT_BYTES).catch(() => "");
+      if (total.aborted) return outOfTime();
       if (status < 200 || status >= 300) return fail(upstreamStatusMessage(url, status, shortDetail(body, secrets)));
     } catch (error) {
+      if (total.aborted) return outOfTime();
       const name = (error as Error).name;
       return fail(name === "TimeoutError" || name === "AbortError"
         ? `${url} did not answer within ${PROBE_TIMEOUT_MS / 1000} s.`
