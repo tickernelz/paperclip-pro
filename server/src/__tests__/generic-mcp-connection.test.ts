@@ -205,7 +205,7 @@ function installMcpOAuthFixture(options: FixtureOptions = {}) {
           structuredContent: { meeting_id: "meeting-1" },
         } });
       }
-      return jsonResponse({ jsonrpc: "2.0", id: "paperclip-catalog-refresh", result: { tools } });
+      return jsonResponse({ jsonrpc: "2.0", id: "wardmote-catalog-refresh", result: { tools } });
     }
 
     if (href === resourceMetadataUrl) {
@@ -510,7 +510,7 @@ describeEmbeddedPostgres("generic remote MCP connections", () => {
       if (String(url) === secretUrl && (init?.method ?? "GET").toUpperCase() === "POST") {
         return jsonResponse({
           jsonrpc: "2.0",
-          id: "paperclip-catalog-refresh",
+          id: "wardmote-catalog-refresh",
           result: { tools: FIXTURE_TOOLS },
         });
       }
@@ -1147,7 +1147,7 @@ describeEmbeddedPostgres("generic remote MCP connections", () => {
       probes += 1;
       if (probes === 2) release();
       await bothProbed;
-      return jsonResponse({ jsonrpc: "2.0", id: "paperclip-catalog-refresh", result: { tools: FIXTURE_TOOLS } });
+      return jsonResponse({ jsonrpc: "2.0", id: "wardmote-catalog-refresh", result: { tools: FIXTURE_TOOLS } });
     });
 
     const results = await Promise.allSettled([0, 1].map(() => service.connectGalleryApp(company.id, {
@@ -1193,7 +1193,7 @@ describeEmbeddedPostgres("generic remote MCP connections", () => {
         await releaseCatalog;
         throw new Error("first retry catalog unavailable");
       }
-      return jsonResponse({ jsonrpc: "2.0", id: "paperclip-catalog-refresh", result: { tools: FIXTURE_TOOLS } });
+      return jsonResponse({ jsonrpc: "2.0", id: "wardmote-catalog-refresh", result: { tools: FIXTURE_TOOLS } });
     });
     const failure = service.connectGalleryApp(company.id, {
       link: MCP_URL, name: "Personal retry rollback", grantKind: "user",
@@ -1227,7 +1227,7 @@ describeEmbeddedPostgres("generic remote MCP connections", () => {
     await db.update(toolApplications).set({ status: "archived", archivedAt: new Date() }).where(eq(toolApplications.id, first.application.id));
     fixture.fetchMock.mockRestore();
     vi.spyOn(globalThis, "fetch").mockImplementation(async () => jsonResponse({
-      jsonrpc: "2.0", id: "paperclip-catalog-refresh",
+      jsonrpc: "2.0", id: "wardmote-catalog-refresh",
       result: { tools: [...FIXTURE_TOOLS, { name: "new_tool", description: "Partial catalog addition" }] },
     }));
     await db.execute(sql`
