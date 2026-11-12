@@ -482,6 +482,7 @@
     ["packages/db/src/wardmote-plugin-id-migration.test.ts",6,"migrasi-otomatis"],
     ["packages/db/src/wardmote-repo-only-cwd-migration.test.ts",1,"migrasi-otomatis"],
     ["packages/db/src/wardmote-runner-adapter-type-migration.test.ts",1,"migrasi-otomatis"],
+    ["packages/db/src/wardmote-runner-question-key-migration.test.ts",1,"uji-regresi"],
     ["packages/db/src/wardmote-schema-id-migration.test.ts",1,"migrasi-otomatis"],
     ["packages/db/src/wardmote-session-config-keys-migration.test.ts",1,"migrasi-otomatis"],
     ["packages/db/src/wardmote-skill-key-migration.test.ts",40,"migrasi-otomatis"],
