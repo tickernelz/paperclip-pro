@@ -302,7 +302,7 @@ export async function prepareManagedAiRuntime(
     home = await mkdtemp(
       path.join(
         os.tmpdir(),
-        `paperclip-ai-${input.companyId}-${selection.grant.id}-`,
+        `wardmote-ai-${input.companyId}-${selection.grant.id}-`,
       ),
     );
     const providerHome = path.join(home, "provider");

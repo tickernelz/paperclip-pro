@@ -75,7 +75,7 @@ it("does not reuse public OpenRouter models after switching to a custom gateway"
   await vi.waitFor(() => expect(result?.models).toEqual(catalog));
   await render({ provider: "openai", method: "api_key", mode: "shared", connectionId: gateway.id, grantId: gateway.grantId });
   expect(result?.models).toEqual([]);
-  expect(result?.resolveModel("private-model")).toBe("paperclip/private-model");
+  expect(result?.resolveModel("private-model")).toBe("wardmote/private-model");
   expect(result?.refreshModels).toBeUndefined();
 });
 
