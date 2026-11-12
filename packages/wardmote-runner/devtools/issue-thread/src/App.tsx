@@ -28,15 +28,15 @@ import { parseCapabilityRoute, capabilityRouteHref, type CapabilityRoute } from 
 import { SurfaceNav, type CapabilityChatHistoryItem } from "./SurfaceNav";
 import { EvalAssertions, TurnGroup, type EvalAssertion } from "./ThreadItems";
 
-const PANEL_OPEN_KEY = "paperclip-runner.capability.panel.open";
+const PANEL_OPEN_KEY = "wardmote-runner.capability.panel.open";
 /**
  * The clean room keeps its own panel preference. Evidence is collapsed by
  * default there on purpose (revision 5: "the default view reads as plain
  * chat"), and inheriting an explorer session's opened drawer would quietly
  * break that on the very first visit.
  */
-const CHAT_PANEL_OPEN_KEY = "paperclip-runner.capability.chat.panel.open";
-const PANEL_WIDTH_KEY = "paperclip-runner.capability.panel.width";
+const CHAT_PANEL_OPEN_KEY = "wardmote-runner.capability.chat.panel.open";
+const PANEL_WIDTH_KEY = "wardmote-runner.capability.panel.width";
 const PANEL_MIN = 320;
 const PANEL_MAX = 960;
 /** Play-all cadence for the replay strip (§6); slow enough to read a turn. */
@@ -50,8 +50,8 @@ const PENDING_ANNOUNCEMENT = "A request is waiting for your answer.";
 const ANSWERED_ANNOUNCEMENT = "Your answer was recorded.";
 const SETTLED_ANNOUNCEMENT = "The pending request is resolved.";
 const SCENARIOS = ["hb-baseline", "dp-documents", "ix-interactions", "ar-artifacts", "wc-workspace-changes", "fr-file-reference", "pe-structured-plan", "te-command-execution", "mp-mcp-progress", "rs-web-research", "da-subagent-delegation", "mr-model-routing", "cc-context-compaction", "ag-generated-artifact", "rv-review-mode", "hk-hook-lifecycle", "mc-memory-citations", "sr-safety-review", "ti-terminal-input", "wt-intentional-wait", "pn-provider-notices", "ax-acpx-lifecycle", "ax-acpx-permissions", "ax-acpx-tools", "ax-acpx-events", "ax-acpx-failures"];
-const CHAT_HISTORY_KEY = "paperclip-runner.capability.chat.history.v1";
-const CHAT_HARNESS_KEY = "paperclip-runner.capability.chat.harness.v1";
+const CHAT_HISTORY_KEY = "wardmote-runner.capability.chat.history.v1";
+const CHAT_HARNESS_KEY = "wardmote-runner.capability.chat.harness.v1";
 const MODEL_PRESETS = {
   codex: ["gpt-5.4-mini", "gpt-5.4"],
   opencode: ["openrouter/deepseek/deepseek-v4-flash-0731"],
@@ -303,7 +303,7 @@ export function App() {
 
   useEffect(() => {
     if (embeddedEval !== null) {
-      document.title = `${embeddedEval.passed ? "✓" : "✕"} ${embeddedEval.caseId} · paperclip-runner eval`;
+      document.title = `${embeddedEval.passed ? "✓" : "✕"} ${embeddedEval.caseId} · wardmote-runner eval`;
       return;
     }
     document.title = chat

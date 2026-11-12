@@ -231,13 +231,13 @@ export const capabilityLiveClient = {
   },
 };
 
-const SESSION_STORAGE_KEY = "paperclip-runner.capability.session";
+const SESSION_STORAGE_KEY = "wardmote-runner.capability.session";
 /**
  * The clean room keeps its own key. Sharing one would let a scenario session id
  * be handed to the clean-room route (and the reverse) after a refresh, which is
  * exactly the cross-surface bleed the isolation criterion forbids.
  */
-const CLEAN_ROOM_STORAGE_KEY = "paperclip-runner.capability.cleanroom.session";
+const CLEAN_ROOM_STORAGE_KEY = "wardmote-runner.capability.cleanroom.session";
 
 function storageKey(surface: "issue" | "cleanroom"): string {
   return surface === "cleanroom" ? CLEAN_ROOM_STORAGE_KEY : SESSION_STORAGE_KEY;

@@ -25,7 +25,7 @@ import {
   type TranscriptEntry,
 } from "../browser/transcript-model.js";
 
-const SESSION_STORAGE_KEY = "paperclip-runner.sdk.v1.session";
+const SESSION_STORAGE_KEY = "wardmote-runner.sdk.v1.session";
 const RECONNECT_DELAY_MS = 1500;
 const MAX_RECONNECT_ATTEMPTS = 5;
 

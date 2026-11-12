@@ -74,13 +74,13 @@ export function LiveConsole() {
   const compact = useCompactLayout();
 
   React.useEffect(() => {
-    const stored = window.localStorage.getItem("paperclip-runner.live-console.inspector");
+    const stored = window.localStorage.getItem("wardmote-runner.live-console.inspector");
     if (stored === "open") setInspectorOpen(true);
   }, []);
 
   React.useEffect(() => {
     window.localStorage.setItem(
-      "paperclip-runner.live-console.inspector",
+      "wardmote-runner.live-console.inspector",
       inspectorOpen ? "open" : "closed",
     );
   }, [inspectorOpen]);

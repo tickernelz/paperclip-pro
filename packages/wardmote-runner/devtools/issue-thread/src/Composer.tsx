@@ -21,7 +21,7 @@ export interface ComposerProps {
 }
 
 function draftKey(sessionId: string): string {
-  return `paperclip-runner.capability.draft.${sessionId}`;
+  return `wardmote-runner.capability.draft.${sessionId}`;
 }
 
 function readDraft(sessionId: string): string {
