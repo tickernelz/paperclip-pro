@@ -253,7 +253,6 @@ import {
   Hammer,
   Loader2,
   MoreHorizontal,
-  Paperclip,
   PauseCircle,
   Search,
   Square,
@@ -262,6 +261,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
+import { AttachmentIcon } from "@/components/icons/attachment-icon";
 import { IssueBlockedNotice } from "./IssueBlockedNotice";
 import { IssueAssignedBacklogNotice } from "./IssueAssignedBacklogNotice";
 import {
@@ -3684,7 +3684,7 @@ function SystemNoticeCommentContent({
               {copiedLink ? (
                 <Check className="h-3.5 w-3.5" />
               ) : (
-                <Paperclip className="h-3.5 w-3.5" />
+                <AttachmentIcon className="h-3.5 w-3.5" />
               )}
             </button>
           ) : null}
@@ -5424,7 +5424,7 @@ export const IssueChatComposer = forwardRef<
         >
           <div className="flex max-w-md items-center gap-3 rounded-md bg-bg/80 px-3 py-2 text-left shadow-sm ring-1 ring-line/60">
             <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-accent/10 text-accent">
-              <Paperclip className="h-4 w-4" />
+              <AttachmentIcon className="h-4 w-4" />
             </span>
             <div className="min-w-0">
               <div className="text-sm font-medium text-ink">

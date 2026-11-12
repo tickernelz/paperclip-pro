@@ -1,7 +1,8 @@
 import { AgentAvatar } from "../AgentAvatar";
 import { AgentIdentity } from "../AgentIdentity";
 import { memo, type ComponentType, type SVGProps } from "react";
-import { Bot, FileText, Hexagon, MessageSquare, Paperclip, Quote } from "lucide-react";
+import { Bot, FileText, Hexagon, MessageSquare, Quote } from "lucide-react";
+import { AttachmentIcon } from "@/components/icons/attachment-icon";
 import type { Agent, CompanySearchResult } from "@tickernelz/wardmote-shared";
 import { Link } from "@/lib/router";
 import { cn } from "@/lib/utils";
@@ -17,7 +18,7 @@ type SnippetStyle = {
 const SNIPPET_STYLES: Record<string, SnippetStyle> = {
   comment: { Icon: MessageSquare, label: "Comment" },
   document: { Icon: FileText, label: "Doc" },
-  artifact: { Icon: Paperclip, label: "Artifact" },
+  artifact: { Icon: AttachmentIcon, label: "Artifact" },
   description: { Icon: Quote, label: "Description" },
 };
 
@@ -121,7 +122,7 @@ function SearchResultRowImpl({
         className={cn(ROW_BASE, "py-4", isActive && "bg-bg-3/40", className)}
         data-result-type="artifact"
       >
-        <Paperclip className="mt-1 h-4 w-4 shrink-0 text-ink-3" />
+        <AttachmentIcon className="mt-1 h-4 w-4 shrink-0 text-ink-3" />
         <div className="min-w-0 flex-1">
           <div className="flex min-w-0 flex-wrap items-baseline gap-x-2.5 gap-y-1">
             <span className="truncate text-sm font-medium text-ink">{result.title}</span>

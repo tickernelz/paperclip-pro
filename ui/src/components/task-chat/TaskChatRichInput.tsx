@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { ImagePlus, Loader2, Paperclip } from "lucide-react";
+import { ImagePlus, Loader2 } from "lucide-react";
+import { AttachmentIcon } from "@/components/icons/attachment-icon";
 import {
   MarkdownEditor,
   type MarkdownEditorRef,
@@ -144,7 +145,7 @@ export function TaskChatRichInput({
             {uploading ? (
               <Loader2 aria-hidden className="h-3.5 w-3.5 animate-spin" />
             ) : attachAnyFile ? (
-              <Paperclip aria-hidden className="h-3.5 w-3.5" />
+              <AttachmentIcon aria-hidden className="h-3.5 w-3.5" />
             ) : (
               <ImagePlus aria-hidden className="h-3.5 w-3.5" />
             )}
