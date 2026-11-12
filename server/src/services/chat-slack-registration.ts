@@ -221,7 +221,7 @@ export function slackChatRegistrationService(db: Db, options: {
         const appearance = { ...resolveAgentAppearance(current.agentAppearance, current.endpoint.assignedAgentId) };
         delete appearance.customAvatarAssetId; // The preset renderer cannot read private uploaded assets.
         const png = await render({ appearance,
-          size: 512, scale: 1, pose: "rest", muted: false, background: "paperclip-dark" });
+          size: 512, scale: 1, pose: "rest", muted: false, background: "wardmote-dark" });
         await endpoint(endpointId, actor);
         await lease.assertOwned();
         const upload = new FormData();
