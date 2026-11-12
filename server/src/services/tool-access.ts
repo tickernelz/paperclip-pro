@@ -2909,7 +2909,7 @@ function sanitizeHttpFailure(error: unknown): {
         code: "secret_missing",
       };
     }
-    return { status: "error", message: error.message, code: "paperclip_error" };
+    return { status: "error", message: error.message, code: "wardmote_error" };
   }
   if (error instanceof Error) {
     return {
@@ -3599,10 +3599,10 @@ export function toolAccessService(
     const credentialKey = await composioCredentialKey(await getConnectionRow(connectionId), actor);
     const send = (init: RequestInit) => requestRemoteHttpEndpoint(new URL(endpoint), { ...init, signal: AbortSignal.timeout(30_000) });
     let sessionHeaders = connection.config.mcpSessionRequired === true
-      ? await getMcpHttpSession({ send, headers, scope: `${connection.id}:app-setup:${actor.actorId}`, requestId: "paperclip-app-setup" }) : headers;
+      ? await getMcpHttpSession({ send, headers, scope: `${connection.id}:app-setup:${actor.actorId}`, requestId: "wardmote-app-setup" }) : headers;
     async function manage(toolkits: { name: string; action: "list" | "add" | "rename" | "remove"; account_id?: string; alias?: string }[], tolerateToolkitErrors = false) {
       const checkedAt = new Date();
-      const id = `paperclip-app-setup-${randomUUID()}`;
+      const id = `wardmote-app-setup-${randomUUID()}`;
       const request = () => send({ method: "POST", headers: mcpHttpRequestHeaders(sessionHeaders), body: JSON.stringify({
         jsonrpc: "2.0", id, method: "tools/call", params: { name: "COMPOSIO_MANAGE_CONNECTIONS", arguments: { toolkits } },
       }) });
@@ -3803,10 +3803,10 @@ export function toolAccessService(
       } });
     }
     const send = (init: RequestInit) => requestRemoteHttpEndpoint(endpoint, { ...init, signal: AbortSignal.timeout(30_000) });
-    let sessionHeaders = connection.config.mcpSessionRequired === true ? await getMcpHttpSession({ send, headers, scope: `${connection.id}:inventory:${actor.actorId}`, requestId: "paperclip-account-inventory" }) : headers;
+    let sessionHeaders = connection.config.mcpSessionRequired === true ? await getMcpHttpSession({ send, headers, scope: `${connection.id}:inventory:${actor.actorId}`, requestId: "wardmote-account-inventory" }) : headers;
     return discoverExecutorApps({ toolNames: tools.map(tool => tool.name), managementUrl: typeof connection.config.managementUrl === "string" ? connection.config.managementUrl : null,
       call: async (name, args) => {
-        const id = `paperclip-account-inventory-${randomUUID()}`;
+        const id = `wardmote-account-inventory-${randomUUID()}`;
         const request = () => send({ method: "POST", headers: mcpHttpRequestHeaders(sessionHeaders), body: JSON.stringify({ jsonrpc: "2.0", id, method: "tools/call", params: { name, arguments: args } }) });
         let response = await request();
         if (response.status === 400 || response.status === 404) {
@@ -7009,7 +7009,7 @@ export function toolAccessService(
     // Pinned to the address the guard approved: `config.url` is operator-supplied,
     // so a second DNS resolution here would reopen the rebinding window that
     // PAP-17098 closed for the OAuth endpoints.
-    let listRequestId = "paperclip-catalog-refresh";
+    let listRequestId = "wardmote-catalog-refresh";
     let sessionHeaders = headers;
     const sendRemote = (init: RequestInit) => withMcpConnectionFailure(() => requestRemoteHttpEndpoint(new URL(endpoint), init));
     const sendToolsList = (requestHeaders: Record<string, string>, cursor?: string) => {
@@ -7052,7 +7052,7 @@ export function toolAccessService(
           const sessionHeaders = await initializeMcpHttpSession({
             send: sendRemote,
             headers,
-            requestId: "paperclip-catalog-refresh",
+            requestId: "wardmote-catalog-refresh",
           });
           response = await sendToolsList(sessionHeaders);
           usedInitializedSession = response.ok;
@@ -7210,7 +7210,7 @@ export function toolAccessService(
       if (!cursor) break;
       if (seenCursors.has(cursor) || page >= 99 || descriptors.length > 20_000) throw new HttpError(502, "Remote MCP tool catalog pagination did not finish", { code: "mcp_catalog_pagination" });
       seenCursors.add(cursor);
-      listRequestId = `paperclip-catalog-refresh-${page + 1}`;
+      listRequestId = `wardmote-catalog-refresh-${page + 1}`;
       response = await sendToolsList(sessionHeaders, cursor);
       if (!response.ok) throw mcpDiscoveryHttpFailure(response, "Remote MCP catalog page could not be read");
     }
@@ -8483,7 +8483,7 @@ export function toolAccessService(
 
   function sampleArguments(toolName: string): Record<string, unknown> {
     if (toolName === "get_value") return { key: "project" };
-    if (toolName === "set_value") return { key: "project", value: "paperclip" };
+    if (toolName === "set_value") return { key: "project", value: "wardmote" };
     if (toolName === "create_item") return { title: "Smoke test item" };
     if (toolName === "mark_done" || toolName === "delete_item")
       return { id: "todo-1" };
