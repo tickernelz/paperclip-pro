@@ -97,7 +97,7 @@ const MOCK_CARDS: DiscoveryCard[] = [
     required: false,
     forkedFrom: true,
     updatedAt: STORY_NOW - 1 * 86_400_000,
-    sourceBadge: "paperclip",
+    sourceBadge: "wardmote",
   },
   {
     key: "anthropic/claude-api",
@@ -207,7 +207,7 @@ const MOCK_CARDS: DiscoveryCard[] = [
     required: true,
     forkedFrom: false,
     updatedAt: STORY_NOW - 30 * 86_400_000,
-    sourceBadge: "paperclip",
+    sourceBadge: "wardmote",
   },
   {
     key: "paperclipai/paperclip/diagnose-why-work-stopped",

@@ -2690,7 +2690,7 @@ function deriveSkillSourceInfo(skill: SkillSourceInfoTarget): {
       editable: false,
       editableReason: "Bundled Wardmote skills are read-only.",
       sourceLabel: "Wardmote bundled",
-      sourceBadge: "paperclip",
+      sourceBadge: "wardmote",
       sourcePath: null,
     };
   }
@@ -2739,7 +2739,7 @@ function deriveSkillSourceInfo(skill: SkillSourceInfoTarget): {
         editable: true,
         editableReason: null,
         sourceLabel: "Wardmote workspace",
-        sourceBadge: "paperclip",
+        sourceBadge: "wardmote",
         sourcePath: managedRoot,
       };
     }

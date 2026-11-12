@@ -10,7 +10,7 @@ const meta = {
     docs: { description: { component: "Focused chip navigation: Wardmote, Composio, Arcade, Installed, and All. Connected accounts remain above the paginated catalog. Uses shipped connection cards, public catalogs with native duplicates omitted, and sample saved accounts. No account authorization or mutations." } },
   },
   argTypes: {
-    initialSource: { control: "select", options: ["paperclip", "composio", "arcade", "installed", "all"] },
+    initialSource: { control: "select", options: ["wardmote", "composio", "arcade", "installed", "all"] },
     pageSize: { control: "select", options: [50] },
   },
 } satisfies Meta<typeof ConnectorCatalogNavigation>;
