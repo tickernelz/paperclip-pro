@@ -83,12 +83,13 @@ export async function drainInstanceForRestart(input: {
   sleep?: (ms: number) => Promise<void>;
   onPoll?: (snapshot: LiveRunsSnapshot) => void;
   signal?: AbortSignal;
+  keepDrainOnError?: (error: unknown) => boolean;
 }): Promise<LiveRunsSnapshot> {
   await input.control.startDrain(input.timeoutMs + 60_000);
   try {
     return await waitForInstanceQuiescent(input);
   } catch (error) {
-    await input.control.stopDrain().catch(() => undefined);
+    if (!input.keepDrainOnError?.(error)) await input.control.stopDrain().catch(() => undefined);
     throw error;
   }
 }

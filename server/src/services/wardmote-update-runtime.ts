@@ -5,7 +5,7 @@ import { logActivity } from "./activity-log.js";
 import { getTaskDrainStatus, listActiveRunExecutionIds } from "./heartbeat.js";
 import { instanceSettingsService } from "./instance-settings.js";
 import { startTaskDrain, stopTaskDrain } from "./task-admission.js";
-import { createSystemdUpdateLauncher, createUpdateInstaller, type UpdateInstaller } from "./wardmote-update-install.js";
+import { createSystemdUnitState, createSystemdUpdateLauncher, createUpdateInstaller, type UpdateInstaller } from "./wardmote-update-install.js";
 import type { WardmoteUpdateService } from "./wardmote-updates.js";
 
 export function createInstanceUpdateInstaller(db: Db, updates: WardmoteUpdateService): UpdateInstaller {
@@ -35,6 +35,7 @@ export function createInstanceUpdateInstaller(db: Db, updates: WardmoteUpdateSer
       homeDir: resolveWardmoteHomeDir(),
       instanceId: resolveWardmoteInstanceId(),
     }),
+    unitState: createSystemdUnitState(),
     audit: async ({ action, job }) => {
       const companyIds = await instanceSettingsService(db).listCompanyIds();
       await Promise.all(companyIds.map((companyId) =>

@@ -20,6 +20,9 @@ import { conflict, unprocessable } from "../errors.js";
 
 const execFileAsync = promisify(execFile);
 const RESULT_POLL_MS = 2_000;
+export const UPDATE_INSTALL_DEADLINE_MS = 45 * 60 * 1000;
+
+export type UpdateUnitState = "running" | "gone" | "unknown";
 
 type UpdateResultFile = { ok?: unknown; version?: unknown; rolledBackTo?: unknown; error?: unknown; finishedAt?: unknown };
 export type UpdateAuditEvent = { action: "instance.update.requested" | "instance.update.finished"; job: UpdateJob };
@@ -27,7 +30,8 @@ export type UpdateAuditEvent = { action: "instance.update.requested" | "instance
 export interface UpdateInstallerDeps {
   status: () => InstanceUpdateStatus;
   runControl: InstanceRunControl;
-  launch: (job: UpdateJob, resultPath: string) => Promise<{ logHint: string }>;
+  launch: (job: UpdateJob, resultPath: string) => Promise<{ logHint: string; unit: string }>;
+  unitState: (unit: string) => Promise<UpdateUnitState>;
   audit: (event: UpdateAuditEvent) => Promise<void>;
   instanceRoot: string;
   now?: () => number;
@@ -51,6 +55,7 @@ export function createUpdateInstaller(deps: UpdateInstallerDeps): UpdateInstalle
   let job: UpdateJob | null = readJson<UpdateJob>(jobPath);
   let waitAbort: AbortController | null = null;
   let monitor: ReturnType<typeof setInterval> | null = null;
+  let checking: Promise<void> | null = null;
 
   function save(next: UpdateJob): UpdateJob {
     job = next;
@@ -74,10 +79,39 @@ export function createUpdateInstaller(deps: UpdateInstallerDeps): UpdateInstalle
     monitor = null;
   }
 
-  async function checkResult(): Promise<void> {
-    if (job?.phase !== "installing" || !job.startedAt) return;
+  function readResult(startedAt: string): UpdateResultFile | null {
     const result = readJson<UpdateResultFile>(resultPath);
-    if (!result || typeof result.finishedAt !== "string" || Date.parse(result.finishedAt) < Date.parse(job.startedAt)) return;
+    if (!result || typeof result.finishedAt !== "string" || Date.parse(result.finishedAt) < Date.parse(startedAt)) return null;
+    return result;
+  }
+
+  async function failInstalling(error: string): Promise<void> {
+    await deps.runControl.stopDrain().catch(() => undefined);
+    await finish({ phase: "failed", error });
+  }
+
+  function checkResult(): Promise<void> {
+    checking ??= checkResultOnce().finally(() => { checking = null; });
+    return checking;
+  }
+
+  async function checkResultOnce(): Promise<void> {
+    if (job?.phase !== "installing" || !job.startedAt) return;
+    const startedAt = job.startedAt;
+    let result = readResult(startedAt);
+    if (!result) {
+      const logHint = job.logHint ? ` Log: ${job.logHint}` : "";
+      if (now() - Date.parse(startedAt) >= UPDATE_INSTALL_DEADLINE_MS) {
+        await failInstalling(`The update process did not report a result within ${Math.round(UPDATE_INSTALL_DEADLINE_MS / 60_000)} minutes.${logHint}`);
+        return;
+      }
+      if (!job.unit || (await deps.unitState(job.unit)) !== "gone") return;
+      result = readResult(startedAt);
+      if (!result) {
+        await failInstalling(`The update process exited without reporting a result.${logHint}`);
+        return;
+      }
+    }
     await deps.runControl.stopDrain().catch(() => undefined);
     await finish({
       phase: result.ok === true ? "succeeded" : "failed",
@@ -97,9 +131,10 @@ export function createUpdateInstaller(deps: UpdateInstallerDeps): UpdateInstalle
     if (!job) throw new Error("No update job to launch.");
     fs.rmSync(resultPath, { force: true });
     const started = save({ ...job, phase: "installing", startedAt: new Date(now()).toISOString() });
+    await deps.runControl.startDrain(UPDATE_INSTALL_DEADLINE_MS + 60_000).catch(() => undefined);
     try {
-      const { logHint } = await deps.launch(started, resultPath);
-      save({ ...started, logHint });
+      const { logHint, unit } = await deps.launch(started, resultPath);
+      save({ ...started, logHint, unit });
     } catch (error) {
       await deps.runControl.stopDrain().catch(() => undefined);
       return finish({ phase: "failed", error: `The update process could not be started: ${error instanceof Error ? error.message : String(error)}` });
@@ -115,6 +150,7 @@ export function createUpdateInstaller(deps: UpdateInstallerDeps): UpdateInstalle
         timeoutMs: deps.waitTimeoutMs ?? UPDATE_WAIT_TIMEOUT_MS,
         pollMs: deps.pollMs,
         signal,
+        keepDrainOnError: () => signal.reason === "force",
         onPoll: (snapshot) => {
           if (job?.phase === "waiting" && job.liveRuns !== snapshot.count + snapshot.pendingWakes) {
             save({ ...job, liveRuns: snapshot.count + snapshot.pendingWakes });
@@ -175,6 +211,7 @@ export function createUpdateInstaller(deps: UpdateInstallerDeps): UpdateInstalle
         rolledBackTo: null,
         error: null,
         logHint: null,
+        unit: null,
       });
       await deps.audit({ action: "instance.update.requested", job: job! }).catch(() => undefined);
       if (input.mode === "force") return launch();
@@ -230,9 +267,14 @@ export function createSystemdUpdateLauncher(input: {
   exec?: (file: string, args: string[]) => Promise<unknown>;
 }) {
   const exec = input.exec ?? ((file: string, args: string[]) => execFileAsync(file, args, { timeout: 30_000 }));
-  return async (job: UpdateJob, resultPath: string): Promise<{ logHint: string }> => {
+  return async (job: UpdateJob, resultPath: string): Promise<{ logHint: string; unit: string }> => {
     const unit = `wardmote-update-${input.instanceId}-${job.id.slice(0, 8)}`;
     const entrypoint = path.join(input.homeDir, "cli", "current", "node_modules", ".bin", "wardmote");
+    try {
+      fs.accessSync(entrypoint, fs.constants.X_OK);
+    } catch {
+      throw new Error(`the managed wardmote command is missing or not executable at ${entrypoint}`);
+    }
     const source = input.env ?? process.env;
     const env = [
       `WARDMOTE_HOME=${input.homeDir}`,
@@ -254,6 +296,20 @@ export function createSystemdUpdateLauncher(input: {
       "--result-file",
       resultPath,
     ]);
-    return { logHint: `journalctl --user -u ${unit}` };
+    return { logHint: `journalctl --user -u ${unit}`, unit };
+  };
+}
+
+export function createSystemdUnitState(exec: (file: string, args: string[]) => Promise<{ stdout: string }> = (file, args) => execFileAsync(file, args, { timeout: 10_000 })) {
+  return async (unit: string): Promise<UpdateUnitState> => {
+    try {
+      const { stdout } = await exec("systemctl", ["--user", "show", `${unit}.service`, "-p", "LoadState", "-p", "ActiveState"]);
+      const values = Object.fromEntries(stdout.split("\n").map((line) => line.split("=", 2) as [string, string]).filter(([key]) => key));
+      if (values.LoadState === "not-found") return "gone";
+      if (values.ActiveState === "inactive" || values.ActiveState === "failed") return "gone";
+      return values.ActiveState ? "running" : "unknown";
+    } catch {
+      return "unknown";
+    }
   };
 }

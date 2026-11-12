@@ -39,6 +39,7 @@ export interface UpdateJob {
   rolledBackTo: string | null;
   error: string | null;
   logHint: string | null;
+  unit: string | null;
 }
 
 export function isUpdateJobActive(job: Pick<UpdateJob, "phase"> | null | undefined): boolean {
