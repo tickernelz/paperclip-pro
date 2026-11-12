@@ -84,6 +84,25 @@ const RESERVED_APP_SUBPATHS = new Set([
   "app",
 ]);
 
+function useMobileTopbarHeightVar(isMobile: boolean) {
+  const topbarRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const topbar = topbarRef.current;
+    const host = topbar?.parentElement;
+    if (!isMobile || !topbar || !host) return;
+    const apply = () => host.style.setProperty("--mobile-topbar-h", `${topbar.offsetHeight}px`);
+    apply();
+    if (typeof ResizeObserver === "undefined") return () => host.style.removeProperty("--mobile-topbar-h");
+    const observer = new ResizeObserver(apply);
+    observer.observe(topbar);
+    return () => {
+      observer.disconnect();
+      host.style.removeProperty("--mobile-topbar-h");
+    };
+  }, [isMobile]);
+  return topbarRef;
+}
+
 export function Layout({ sidebarSections }: { sidebarSections?: ReactNode }) {
   const {
     sidebarOpen,
@@ -95,6 +114,7 @@ export function Layout({ sidebarSections }: { sidebarSections?: ReactNode }) {
     isMobile,
     isTablet,
   } = useSidebar();
+  const mobileTopbarRef = useMobileTopbarHeightVar(isMobile);
   const { openNewIssue, openOnboarding } = useDialogActions();
   const { togglePanelVisible } = usePanel();
   // Optional: Layout also renders in harnesses without a ToastProvider.
@@ -642,6 +662,7 @@ export function Layout({ sidebarSections }: { sidebarSections?: ReactNode }) {
 
         <div className={cn("flex min-w-0 flex-col", isMobile ? "w-full" : "h-full flex-1")}>
           <div
+            ref={mobileTopbarRef}
             data-slot={isMobile ? "mobile-topbar" : undefined}
             className={cn(
               !isMobile && useStreamlinedTaskDetailShell && "hidden",

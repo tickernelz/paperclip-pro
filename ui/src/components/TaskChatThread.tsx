@@ -23,6 +23,7 @@ import {
   useRef,
   useState,
   type ComponentProps,
+  type ReactNode,
 } from "react";
 import {
   IssueAssigneePausedNotice,
@@ -103,6 +104,7 @@ import {
   TaskChatThreadView,
   taskChatContentKey,
 } from "@/components/task-chat/TaskChatThreadView";
+import { TaskChatStickyHeaderActions } from "@/components/task-chat/TaskChatStickyHeaderActions";
 import {
   TaskChatComposer,
   type CommentReassignment,
@@ -433,6 +435,7 @@ export type TaskChatThreadProps = ComponentProps<typeof IssueChatThread> & {
   initialHistoryError?: boolean;
   onRetryInitialHistory?: () => void;
   onOpenSkill?: (skillId: string, name: string) => void;
+  threadHeaderActions?: ReactNode;
 };
 
 type PendingComposerInput =
@@ -543,6 +546,7 @@ export function TaskChatThread(props: TaskChatThreadProps) {
     onSubmitInteractionVerdicts,
     externalReferences,
     threadHeader,
+    threadHeaderActions,
     browsers = EMPTY_BROWSERS,
     onOpenBrowser,
     hasOlderComments = false,
@@ -3050,6 +3054,11 @@ export function TaskChatThread(props: TaskChatThreadProps) {
                   aria-label="Loading conversation"
                 >
                   <div className="mx-auto flex w-full max-w-(--tc-shell-max-w) flex-col gap-4 px-4 py-3">
+                    {threadHeaderActions ? (
+                      <TaskChatStickyHeaderActions className="-mb-4">
+                        {threadHeaderActions}
+                      </TaskChatStickyHeaderActions>
+                    ) : null}
                     {threadHeader}
                     <Skeleton className="h-16 w-3/4 animate-none" />
                     <Skeleton className="h-24 w-4/5 self-end animate-none" />
@@ -3081,6 +3090,11 @@ export function TaskChatThread(props: TaskChatThreadProps) {
                         )}
                         data-testid="task-chat-thread-header"
                       >
+                        {threadHeaderActions && historyRevealed ? (
+                          <TaskChatStickyHeaderActions className={cn("-mb-6", !isMobile && "top-3")}>
+                            {threadHeaderActions}
+                          </TaskChatStickyHeaderActions>
+                        ) : null}
                         {threadHeaderWithBlockers}
                       </div>
                     ) : null}
@@ -3103,6 +3117,7 @@ export function TaskChatThread(props: TaskChatThreadProps) {
                     items={items}
                     attachments={attachments}
                     header={threadHeaderWithBlockers}
+                    headerActions={historyRevealed ? threadHeaderActions : undefined}
                     renderInteraction={renderInteraction}
                     renderBrief={renderBrief}
                     renderMessageActions={renderMessageActions}

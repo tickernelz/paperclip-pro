@@ -135,6 +135,7 @@ describe("IssueMonitorBanner / IssueMonitorComposerStrip rendering", () => {
   afterEach(() => {
     vi.useRealTimers();
     container.remove();
+    window.localStorage.clear();
   });
 
   function issueWithMonitor(nextCheckAt: string | null): Issue {
@@ -167,6 +168,78 @@ describe("IssueMonitorBanner / IssueMonitorComposerStrip rendering", () => {
     flushSync(() => root.unmount());
   });
 
+  it("minimizes both surfaces to one row per task, keeps the next check and actions, and remembers the choice", () => {
+    const issue = { ...issueWithMonitor(new Date(NOW.getTime() + (2 * 60 + 12) * 60_000).toISOString()), id: "issue-a" } as Issue;
+    const other = { ...issue, id: "issue-b" } as Issue;
+    const onCheckNow = vi.fn();
+    const onCancel = vi.fn().mockResolvedValue(undefined);
+    const root = createRoot(container);
+    const render = () => flushSync(() => root.render(
+      <>
+        <IssueMonitorBanner issue={issue} onCheckNow={onCheckNow} onCancelMonitor={onCancel} />
+        <IssueMonitorComposerStrip issue={issue} onCheckNow={onCheckNow} />
+        <IssueMonitorBanner issue={other} onCheckNow={onCheckNow} />
+      </>,
+    ));
+    render();
+    const banners = () => Array.from(container.querySelectorAll('[data-testid="issue-monitor-banner"]'));
+    const strip = () => container.querySelector('[data-testid="issue-monitor-composer-strip"]')!;
+    const toggleOf = (el: Element) => el.querySelector("button[aria-expanded]") as HTMLButtonElement;
+
+    expect(toggleOf(banners()[0]).getAttribute("aria-expanded")).toBe("true");
+    expect(document.getElementById(toggleOf(banners()[0]).getAttribute("aria-controls")!)?.textContent).toContain("Watching: vercel-deploy");
+
+    flushSync(() => toggleOf(banners()[0]).click());
+
+    for (const el of [banners()[0], strip()]) {
+      expect(el.hasAttribute("data-collapsed")).toBe(true);
+      expect(toggleOf(el).getAttribute("aria-expanded")).toBe("false");
+      expect(el.textContent).toContain("Resumes in 2h 12m");
+      expect(el.textContent).not.toContain("Watching: vercel-deploy");
+    }
+    expect(banners()[1].hasAttribute("data-collapsed")).toBe(false);
+    expect(banners()[0].querySelector('[aria-label="Cancel monitor"]')).not.toBeNull();
+    flushSync(() => (Array.from(strip().querySelectorAll("button")).find((b) => b.textContent === "Check now")!).click());
+    expect(onCheckNow).toHaveBeenCalledTimes(1);
+
+    flushSync(() => root.unmount());
+    const remounted = createRoot(container);
+    flushSync(() => remounted.render(<IssueMonitorBanner issue={issue} onCheckNow={onCheckNow} />));
+    expect(container.querySelector('[data-testid="issue-monitor-banner"]')!.hasAttribute("data-collapsed")).toBe(true);
+    flushSync(() => toggleOf(container.querySelector('[data-testid="issue-monitor-banner"]')!).click());
+    expect(container.textContent).toContain("Watching: vercel-deploy");
+    flushSync(() => remounted.unmount());
+  });
+
+  it("starts minimized when the caller asks for it until the reader expands it", () => {
+    const issue = { ...issueWithMonitor(new Date(NOW.getTime() + 60 * 60_000).toISOString()), id: "issue-c" } as Issue;
+    const root = createRoot(container);
+    flushSync(() => root.render(<IssueMonitorComposerStrip issue={issue} defaultCollapsed />));
+    const strip = () => container.querySelector('[data-testid="issue-monitor-composer-strip"]')!;
+    expect(strip().hasAttribute("data-collapsed")).toBe(true);
+    flushSync(() => (strip().querySelector("button[aria-expanded]") as HTMLButtonElement).click());
+    expect(strip().hasAttribute("data-collapsed")).toBe(false);
+    flushSync(() => root.render(<IssueMonitorComposerStrip issue={issue} defaultCollapsed />));
+    expect(strip().hasAttribute("data-collapsed")).toBe(false);
+    flushSync(() => root.unmount());
+  });
+
+  it("still toggles when the browser refuses to store the choice", () => {
+    const issue = { ...issueWithMonitor(new Date(NOW.getTime() + 60 * 60_000).toISOString()), id: "issue-d" } as Issue;
+    const setItem = vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+      throw new DOMException("quota", "QuotaExceededError");
+    });
+    const root = createRoot(container);
+    flushSync(() => root.render(<IssueMonitorBanner issue={issue} />));
+    const banner = () => container.querySelector('[data-testid="issue-monitor-banner"]')!;
+    flushSync(() => (banner().querySelector("button[aria-expanded]") as HTMLButtonElement).click());
+    expect(banner().hasAttribute("data-collapsed")).toBe(true);
+    flushSync(() => (banner().querySelector("button[aria-expanded]") as HTMLButtonElement).click());
+    expect(banner().hasAttribute("data-collapsed")).toBe(false);
+    setItem.mockRestore();
+    flushSync(() => root.unmount());
+  });
+
   it("does not offer monitor cancellation for automatic retries", () => {
     const issue = { scheduledRetry: { status: "scheduled_retry", scheduledRetryAt: NOW.toISOString() } } as Issue;
     const root = createRoot(container);
@@ -194,7 +267,7 @@ describe("IssueMonitorBanner / IssueMonitorComposerStrip rendering", () => {
     expect(container.textContent).not.toContain("Resumes in");
     expect(container.querySelector("a")?.href).toBe("https://github.com/example/private-repo/pull/42");
     expect(container.querySelector("a")?.textContent).toBe("example/private-repo#42");
-    const button = container.querySelector("button")!;
+    const button = container.querySelector<HTMLButtonElement>("button:not([aria-expanded])")!;
     expect(button.textContent).toBe("Check status");
     flushSync(() => button.click());
     expect(onCheckNow).toHaveBeenCalledTimes(1);
@@ -215,7 +288,7 @@ describe("IssueMonitorBanner / IssueMonitorComposerStrip rendering", () => {
     expect(container.textContent).toContain("Waiting for workspace");
     expect(container.textContent).toContain("You can keep sending instructions while the agent waits.");
     expect(container.textContent).not.toContain("wakes the agent now");
-    expect(container.querySelector("button")).toBeNull();
+    expect(container.querySelector<HTMLButtonElement>("button:not([aria-expanded])")).toBeNull();
     flushSync(() => root.unmount());
   });
 
@@ -267,7 +340,7 @@ describe("IssueMonitorBanner / IssueMonitorComposerStrip rendering", () => {
       );
     });
 
-    const buttons = Array.from(container.querySelectorAll("button"));
+    const buttons = Array.from(container.querySelectorAll<HTMLButtonElement>("button:not([aria-expanded])"));
     expect(buttons.map((b) => b.textContent)).toEqual(["Retry now", "Retry now"]);
     for (const button of buttons) flushSync(() => button.dispatchEvent(new MouseEvent("click", { bubbles: true })));
     expect(onRetryNow).toHaveBeenCalledTimes(2);
@@ -277,7 +350,7 @@ describe("IssueMonitorBanner / IssueMonitorComposerStrip rendering", () => {
 
     const monitorWaiting = { ...retryWaiting, executionState: { monitor: { status: "scheduled", nextCheckAt: new Date(NOW.getTime() + 60 * 60_000).toISOString(), attemptCount: 1 } } } as unknown as Issue;
     flushSync(() => root.render(<IssueMonitorComposerStrip issue={monitorWaiting} onCheckNow={onCheckNow} onRetryNow={onRetryNow} />));
-    const monitorButton = container.querySelector("button")!;
+    const monitorButton = container.querySelector<HTMLButtonElement>("button:not([aria-expanded])")!;
     expect(monitorButton.textContent).toBe("Check now");
     flushSync(() => monitorButton.dispatchEvent(new MouseEvent("click", { bubbles: true })));
     expect(onCheckNow).toHaveBeenCalledTimes(1);
