@@ -72,9 +72,9 @@ function installed(row: Row) {
 
 /** Design review only: real public catalogs and shipped cards, with local example accounts. */
 export function ConnectorCatalogNavigation({
-  initialSource = "paperclip", initialQuery = "", initialPage = 1, pageSize = CATALOG_PAGE_SIZE,
+  initialSource = "wardmote", initialQuery = "", initialPage = 1, pageSize = CATALOG_PAGE_SIZE,
 }: { initialSource?: Source; initialQuery?: string; initialPage?: number; pageSize?: number }) {
-  const expandsInitialSearch = Boolean(initialQuery.trim() && initialSource === "paperclip");
+  const expandsInitialSearch = Boolean(initialQuery.trim() && initialSource === "wardmote");
   const [source, setSource] = useState<Source>(expandsInitialSearch ? "all" : initialSource);
   const [expandedSearch, setExpandedSearch] = useState(expandsInitialSearch);
   const [query, setQuery] = useState(initialQuery);
@@ -86,7 +86,7 @@ export function ConnectorCatalogNavigation({
   const native = nativeRows().filter(row => !provider || row.slug === source && installed(row) || row.upstreamApps?.some(app => app.provider === source && app.accounts.length > 0));
   // Saved apps stay visible above discovery, including apps managed through Composio.
   const aggregate = aggregatorCatalog
-    .filter(app => source === "paperclip" ? aggregatorAppIdentity(app.name) === "circleback"
+    .filter(app => source === "wardmote" ? aggregatorAppIdentity(app.name) === "circleback"
       : !provider || app.routes.some(route => route.provider === source))
     .map(app => aggregatorRow(app, provider ? source : "all"));
   const term = query.trim().toLocaleLowerCase();
@@ -115,12 +115,12 @@ export function ConnectorCatalogNavigation({
   }
 
   function changeQuery(value: string) {
-    if (source === "paperclip" && !query.trim() && value.trim()) {
+    if (source === "wardmote" && !query.trim() && value.trim()) {
       setSource("all");
       setExpandedSearch(true);
     }
     if (expandedSearch && !value.trim()) {
-      setSource("paperclip");
+      setSource("wardmote");
       setExpandedSearch(false);
     }
     setQuery(value);
@@ -155,7 +155,7 @@ export function ConnectorCatalogNavigation({
 
     {(available.length > 0 || connected.length === 0) ? <section ref={availableRef} aria-label="Available apps" className="flex flex-col gap-3">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-xs font-medium text-ink-3">{term ? "Search results" : source === "paperclip" ? "Built into Wardmote" : provider ? `${SOURCE_NAMES[source]} apps` : source === "installed" ? "Installed" : "Available apps"}</h2>
+        <h2 className="text-xs font-medium text-ink-3">{term ? "Search results" : source === "wardmote" ? "Built into Wardmote" : provider ? `${SOURCE_NAMES[source]} apps` : source === "installed" ? "Installed" : "Available apps"}</h2>
         <span className="text-xs text-ink-3" role="status">{available.length.toLocaleString("en-US")} {term ? available.length === 1 ? "result" : "results" : "apps"}</span>
       </div>
       {pageRows.length ? <div role="list" aria-label="Available connectors" className="flex flex-col gap-3">{pageRows.map(renderRow)}</div>
