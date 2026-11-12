@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CloudDownload, Pencil, Plus, Trash2, X } from "lucide-react";
 import {
@@ -22,6 +22,7 @@ import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/select";
 import { Segmented, SegmentedItem } from "@/components/ui/segmented";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
+import { InlineRowEditorPanel, useInlineRowEditor } from "@/components/InlineRowEditor";
 import { OmpNote } from "./OmpSignIn";
 import { UpstreamModelPicker } from "./UpstreamModelPicker";
 
@@ -222,13 +223,18 @@ export function CustomProviderForm({
   takenNames,
   onSaved,
   onCancel,
+  onDirtyChange,
 }: {
   provider: OmpCustomProviderView | null;
   takenNames: string[];
   onSaved: (list: OmpCustomProviderList) => void;
   onCancel: () => void;
+  onDirtyChange?: (dirty: boolean) => void;
 }) {
-  const [state, setState] = useState<FormState>(() => initialState(provider));
+  const [initial] = useState<FormState>(() => initialState(provider));
+  const [state, setState] = useState<FormState>(initial);
+  const dirty = JSON.stringify(state) !== JSON.stringify(initial);
+  useEffect(() => onDirtyChange?.(dirty), [dirty, onDirtyChange]);
   const [probe, setProbe] = useState<OmpCustomProviderProbeResult | null>(null);
   const [upstream, setUpstream] = useState<OmpCustomProviderModelsFetchResult | null>(null);
   const set = (patch: Partial<FormState>) => setState((current) => ({ ...current, ...patch }));
@@ -478,18 +484,31 @@ function keySummary(provider: OmpCustomProviderView): string {
   }
 }
 
+const NEW_PROVIDER = ":new";
+
+function providerKey(provider: OmpCustomProviderView | typeof NEW_PROVIDER): string {
+  return provider === NEW_PROVIDER ? NEW_PROVIDER : provider.name;
+}
+
 export function CustomProviders({ onChanged }: { onChanged?: () => void }) {
   const queryClient = useQueryClient();
   const list = useQuery({ queryKey: OMP_CUSTOM_PROVIDERS_KEY, queryFn: () => onboardingOmpApi.customProviders() });
-  const [editing, setEditing] = useState<OmpCustomProviderView | "new" | null>(null);
+  const editor = useInlineRowEditor<OmpCustomProviderView | typeof NEW_PROVIDER>(providerKey);
   const remove = useMutation({
     mutationFn: (name: string) => onboardingOmpApi.removeCustomProvider(name),
-    onSuccess: (data) => {
+    onSuccess: (data, name) => {
       queryClient.setQueryData(OMP_CUSTOM_PROVIDERS_KEY, data);
+      if (editor.openKey === name) editor.close(false);
       onChanged?.();
     },
   });
   const providers = list.data?.providers ?? [];
+  const takenNames = providers.map((provider) => provider.name);
+  const onSaved = (data: OmpCustomProviderList) => {
+    queryClient.setQueryData(OMP_CUSTOM_PROVIDERS_KEY, data);
+    editor.close();
+    onChanged?.();
+  };
 
   return (
     <div className="flex flex-col gap-3">
@@ -498,45 +517,56 @@ export function CustomProviders({ onChanged }: { onChanged?: () => void }) {
       {providers.length ? (
         <ul aria-label="Custom providers" className="flex flex-col divide-y divide-line rounded-lg border border-line">
           {providers.map((provider) => (
-            <li key={provider.name} className="flex flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2 text-sm">
-              <b className="font-medium">{provider.name}</b>
-              <span className="min-w-0 flex-1 truncate text-xs text-ink-3">
-                {[provider.baseUrl, provider.api, keySummary(provider), provider.discovery ? `discovery: ${provider.discovery.type}` : `${provider.models.length} ${provider.models.length === 1 ? "model" : "models"}`].filter(Boolean).join(" · ")}
-              </span>
-              <span className="flex gap-1">
-                <Button type="button" variant="ghost" size="icon-sm" aria-label={`Edit ${provider.name}`} onClick={() => setEditing(provider)}><Pencil aria-hidden="true" /></Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  aria-label={`Remove ${provider.name}`}
-                  disabled={remove.isPending}
-                  onClick={() => {
-                    if (window.confirm(`Remove ${provider.name} from OMP's models.yml? A backup stays in models.yml.bak.`)) remove.mutate(provider.name);
-                  }}
-                >
-                  <Trash2 aria-hidden="true" />
-                </Button>
-              </span>
+            <li key={provider.name}>
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2 text-sm">
+                <b className="font-medium">{provider.name}</b>
+                <span className="min-w-0 flex-1 truncate text-xs text-ink-3">
+                  {[provider.baseUrl, provider.api, keySummary(provider), provider.discovery ? `discovery: ${provider.discovery.type}` : `${provider.models.length} ${provider.models.length === 1 ? "model" : "models"}`].filter(Boolean).join(" · ")}
+                </span>
+                <span className="flex gap-1">
+                  <Button type="button" variant="ghost" size="icon-sm" aria-label={`Edit ${provider.name}`} {...editor.triggerProps(provider.name)} onClick={() => editor.toggle(provider)}><Pencil aria-hidden="true" /></Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label={`Remove ${provider.name}`}
+                    disabled={remove.isPending}
+                    onClick={() => {
+                      if (window.confirm(`Remove ${provider.name} from OMP's models.yml? A backup stays in models.yml.bak.`)) remove.mutate(provider.name);
+                    }}
+                  >
+                    <Trash2 aria-hidden="true" />
+                  </Button>
+                </span>
+              </div>
+              {editor.openKey === provider.name ? (
+                <InlineRowEditorPanel id={editor.panelId(provider.name)} onEscape={editor.dismiss} className="px-2 pb-2 sm:px-3 sm:pb-3">
+                  <CustomProviderForm
+                    provider={provider}
+                    takenNames={takenNames}
+                    onCancel={() => editor.close()}
+                    onSaved={onSaved}
+                    onDirtyChange={editor.setDirty}
+                  />
+                </InlineRowEditorPanel>
+              ) : null}
             </li>
           ))}
         </ul>
       ) : list.isLoading ? <p className="text-sm text-ink-3">Reading models.yml...</p> : null}
       {remove.error ? <OmpNote tone="bad">{problemsOf(remove.error).join(" ")}</OmpNote> : null}
-      {editing ? (
-        <CustomProviderForm
-          key={editing === "new" ? "new" : editing.name}
-          provider={editing === "new" ? null : editing}
-          takenNames={providers.map((provider) => provider.name)}
-          onCancel={() => setEditing(null)}
-          onSaved={(data) => {
-            queryClient.setQueryData(OMP_CUSTOM_PROVIDERS_KEY, data);
-            setEditing(null);
-            onChanged?.();
-          }}
-        />
+      {editor.openKey === NEW_PROVIDER ? (
+        <InlineRowEditorPanel id={editor.panelId(NEW_PROVIDER)} onEscape={editor.dismiss}>
+          <CustomProviderForm
+            provider={null}
+            takenNames={takenNames}
+            onCancel={() => editor.close()}
+            onSaved={onSaved}
+            onDirtyChange={editor.setDirty}
+          />
+        </InlineRowEditorPanel>
       ) : (
-        <Button type="button" variant="secondary" size="sm" className="self-start" disabled={Boolean(list.data?.parseError)} onClick={() => setEditing("new")}>
+        <Button type="button" variant="secondary" size="sm" className="self-start" disabled={Boolean(list.data?.parseError)} {...editor.triggerProps(NEW_PROVIDER)} onClick={() => editor.request(NEW_PROVIDER)}>
           <Plus aria-hidden="true" />Add custom provider
         </Button>
       )}

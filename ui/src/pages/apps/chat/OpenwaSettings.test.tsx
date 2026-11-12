@@ -373,6 +373,7 @@ describe("OpenWA settings", () => {
     click(button(chats, "Add a chat from WhatsApp"));
     await vi.waitFor(() => expect(chats.textContent).toContain("+62xxx...0555"));
     click(button(chats, "Configure"));
+    expect(button(chats, "Add a chat from WhatsApp").parentElement!.querySelector("#openwa-chat-activation")).not.toBeNull();
     setValue(field<HTMLSelectElement>("#openwa-chat-activation"), "off");
     click(button(chats, "Save chat"));
     await vi.waitFor(() =>
@@ -382,6 +383,29 @@ describe("OpenWA settings", () => {
         settings: { activation: "off" },
       }),
     );
+  });
+
+  it("asks before discarding a gateway chat draft and returns focus to the add button", async () => {
+    const confirm = vi.spyOn(window, "confirm").mockReturnValue(false);
+    render();
+    await vi.waitFor(() => expect(section("Chats").textContent).toContain("Ops group"));
+    const chats = section("Chats");
+    click(button(chats, "Add a chat from WhatsApp"));
+    await vi.waitFor(() => expect(chats.textContent).toContain("+62xxx...0555"));
+    click(button(chats, "Configure"));
+    setValue(field<HTMLTextAreaElement>("#openwa-chat-note"), "Draft note");
+    const escape = () =>
+      act(() => {
+        field("#openwa-chat-note").dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+      });
+    escape();
+    expect(confirm).toHaveBeenCalledTimes(1);
+    expect(field<HTMLTextAreaElement>("#openwa-chat-note").value).toBe("Draft note");
+    confirm.mockReturnValue(true);
+    escape();
+    expect(chats.querySelector("#openwa-chat-note")).toBeNull();
+    await vi.waitFor(() => expect(document.activeElement).toBe(button(chats, "Add a chat from WhatsApp")));
+    confirm.mockRestore();
   });
 
   it("picks an owner report group by name, saves it and shows it on the chat row", async () => {
@@ -408,6 +432,9 @@ describe("OpenWA settings", () => {
     const chats = section("Chats");
     const projectRow = Array.from(chats.querySelectorAll("li")).find((row) => row.textContent?.includes("Tim DCM"))!;
     click(button(projectRow, "Edit"));
+    expect(button(projectRow, "Edit").getAttribute("aria-expanded")).toBe("true");
+    expect(projectRow.querySelector("#openwa-chat-owner-report")).not.toBeNull();
+    expect(chats.querySelectorAll("#openwa-chat-owner-report")).toHaveLength(1);
     const select = field<HTMLSelectElement>("#openwa-chat-owner-report");
     expect(container.querySelector("label[for='openwa-chat-owner-report']")!.textContent).toBe("Report to owner via");
     expect(select.value).toBe("");
@@ -536,7 +563,6 @@ describe("OpenWA settings", () => {
     expect(name.textContent).toBe("Operations coordination and vendor escalation follow-ups 2026");
     expect(name.getAttribute("title")).toBe("Operations coordination and vendor escalation follow-ups 2026");
     expect(row.textContent).toContain("active · an owner is in this group · 11 members");
-    expect(chats.querySelector("li")!.className).toContain("sm:flex");
   });
 
   it("replaces the preset button with an applied badge once the chat replies to every message", async () => {
