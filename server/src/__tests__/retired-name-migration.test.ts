@@ -128,7 +128,7 @@ describe("retired product name migration", () => {
     const root = resolveManagedInstructionsRoot({ id: adoptedId, companyId, adapterConfig: {} } as never);
     const markerPath = path.join(path.dirname(root), "file-sync", "adopted.json");
     await fs.mkdir(path.dirname(markerPath), { recursive: true });
-    await fs.writeFile(markerPath, JSON.stringify({ schema: ["paper", "clip.agent-files.v1"].join("") }));
+    await fs.writeFile(markerPath, JSON.stringify({ schema: "paperclip.agent-files.v1" }));
     await fs.mkdir(root, { recursive: true });
     await fs.writeFile(path.join(root, "AGENTS.md"), "Use paperclipMe.\n");
 
@@ -145,7 +145,7 @@ describe("retired product name migration", () => {
     const stateBase = path.join(instanceRoot, "runtime", "paperclip-runner", "durable-sessions");
     const retiredKey = "a".repeat(64);
     const currentKey = "b".repeat(64);
-    const retiredSchema = ["paper", "clip.runner.durable.control-plane-state.v1"].join("");
+    const retiredSchema = "paperclip.runner.durable.control-plane-state.v1";
     for (const [key, schema] of [[retiredKey, retiredSchema], [currentKey, "wardmote.runner.durable.control-plane-state.v1"]] as const) {
       await fs.mkdir(path.join(stateBase, key, "control-plane"), { recursive: true });
       await fs.writeFile(path.join(stateBase, key, "control-plane", "control-plane-state.json"), JSON.stringify({ schema }));

@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 import { spawnSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, readdirSync, readFileSync, realpathSync, statSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, realpathSync, statSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadShardDurations, selectGeneralServerShard } from "./general-server-shard.mjs";
+import { linkSdkInto } from "./link-plugin-dev-sdk.mjs";
 
 
 import { assertSelectedTests, partitionTestLines } from "./test-line-shard.mjs";
@@ -31,9 +32,24 @@ const nonServerProjects = [
   "@tickernelz/wardmote-plugin-sdk",
   "@tickernelz/wardmote-create-paperclip-plugin",
   "@tickernelz/wardmote-plugin-llm-wiki",
+  "@tickernelz/wardmote-plugin-workspace-diff",
+  "@tickernelz/wardmote-plugin-fake-sandbox",
+  "@tickernelz/wardmote-plugin-authoring-smoke-example",
+  "@tickernelz/wardmote-plugin-orchestration-smoke-example",
+  "@tickernelz/wardmote-plugin-cloudflare-sandbox",
+  "@tickernelz/wardmote-plugin-createos",
+  "@tickernelz/wardmote-plugin-e2b",
+  "@tickernelz/wardmote-plugin-exe-dev",
+  "@tickernelz/wardmote-plugin-kubernetes",
+  "@tickernelz/wardmote-plugin-modal",
+  "@tickernelz/wardmote-plugin-novita-sandbox",
   "@tickernelz/wardmote-ui",
   "@tickernelz/wardmote",
 ];
+const standaloneDependencyProjects = new Map([
+  ["@tickernelz/wardmote-plugin-createos", "packages/plugins/sandbox-providers/createos"],
+  ["@tickernelz/wardmote-plugin-kubernetes", "packages/plugins/sandbox-providers/kubernetes"],
+]);
 const routeTestPattern = /[^/]*(?:route|routes|authz)[^/]*\.test\.ts$/;
 const additionalSerializedServerTests = new Set([
   "server/src/__tests__/approval-routes-idempotency.test.ts",
@@ -407,8 +423,30 @@ function runProjectGroup(projects, groupName, shardIndex = null, shardCount = nu
     shardCount !== null && shardCount > 1 ? [`--shard=${shardIndex + 1}/${shardCount}`] : [];
   const shardSuffix = shardArgs.length > 0 ? ` shard ${shardIndex + 1}/${shardCount}` : "";
   for (const project of projects) {
+    ensureStandaloneDependencies(project);
     runVitest(["--project", project, ...shardArgs], `${groupName} project ${project}${shardSuffix}`);
   }
+}
+
+function ensureStandaloneDependencies(project) {
+  const relativeDir = standaloneDependencyProjects.get(project);
+  if (!relativeDir) return;
+  const packageDir = path.join(repoRoot, relativeDir);
+  const { dependencies = {} } = JSON.parse(readFileSync(path.join(packageDir, "package.json"), "utf8"));
+  const missing = Object.keys(dependencies).filter(
+    (name) => !existsSync(path.join(packageDir, "node_modules", name, "package.json")),
+  );
+  if (missing.length === 0) return;
+  console.log(`\n[test:run] installing standalone dependencies of ${project}: ${missing.join(", ")}`);
+  const lockfileArgs = existsSync(path.join(packageDir, "pnpm-lock.yaml")) ? ["--frozen-lockfile"] : ["--no-lockfile"];
+  const result = spawnSync("pnpm", ["install", "--ignore-workspace", "--prod", "--ignore-scripts", ...lockfileArgs], {
+    cwd: packageDir,
+    stdio: "inherit",
+  });
+  if (result.error || result.status !== 0) {
+    fail(`Installing standalone dependencies of ${project} failed: ${result.error?.message ?? result.status}`);
+  }
+  linkSdkInto(packageDir);
 }
 
 function runGeneralGroup(routeTests, groupName, shardIndex = null, shardCount = null) {

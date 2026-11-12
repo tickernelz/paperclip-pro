@@ -36137,7 +36137,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
                   allowOther: true,
                   options: [
                     {
-                      id: "__paperclip_text__",
+                      id: "__wardmote_text__",
                       label: "Type an answer",
                       freeText: true,
                     },
@@ -39488,7 +39488,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
                 allowOther: true,
                 options: [
                   {
-                    id: "__paperclip_text__",
+                    id: "__wardmote_text__",
                     label: "Type an answer",
                     freeText: true,
                   },
@@ -40108,7 +40108,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
                 allowOther: true,
                 options: [
                   {
-                    id: "__paperclip_text__",
+                    id: "__wardmote_text__",
                     label: "Type an answer",
                     freeText: true,
                   },

@@ -100,7 +100,6 @@ import {
 
 const execFile = promisify(execFileCallback);
 
-const REPO_ONLY_CWD_SENTINEL = "/__paperclip_repo_only__";
 
 const MANAGED_WORKSPACE_GIT_CLONE_TIMEOUT_MS = 10 * 60 * 1000;
 
@@ -628,7 +627,7 @@ export async function prepareProjectRepositoryWorkspaces(input: {
     const cwd = path.join(root, key);
     const existing = await fs.lstat(cwd).catch(() => null);
     if (existing && (!existing.isDirectory() || existing.isSymbolicLink())) throw new Error("Invalid project repository checkout path");
-    const localSource = workspace.cwd && workspace.cwd !== REPO_ONLY_CWD_SENTINEL
+    const localSource = workspace.cwd
       && await fs.stat(workspace.cwd).then((entry) => entry.isDirectory()).catch(() => false)
       ? workspace.cwd : null;
     const result = await materializeManagedProjectWorkspace(cwd, { repoUrl, repoRef: workspace.repoRef, localSource, resolveGitAuth: input.resolveGitAuth });
@@ -660,7 +659,7 @@ async function resolveConfiguredOrManagedProjectCwd(input: {
   resolveGitAuth?: GitRemoteAuthProvider | null;
 }): Promise<{ cwd: string; warning: string | null }> {
   const configuredCwd = readNonEmptyString(input.cwd);
-  if (configuredCwd && configuredCwd !== REPO_ONLY_CWD_SENTINEL) {
+  if (configuredCwd) {
     return { cwd: configuredCwd, warning: null };
   }
   return ensureManagedProjectWorkspace({
@@ -762,9 +761,7 @@ export async function resolveAdditionalProjectWorkspace(
     // A row realizes real content only through a configured checkout directory or a repository URL
     // to clone. A row with neither can produce only an empty managed directory, so skip it here.
     const configuredCwd = readNonEmptyString(workspace.cwd);
-    const hasConfiguredCwd =
-      Boolean(configuredCwd) && configuredCwd !== REPO_ONLY_CWD_SENTINEL;
-    if (!hasConfiguredCwd && !readNonEmptyString(workspace.repoUrl)) {
+    if (!configuredCwd && !readNonEmptyString(workspace.repoUrl)) {
       continue;
     }
     const { cwd } = await deps.resolveConfiguredOrManagedProjectCwd({
@@ -3542,7 +3539,7 @@ export function createHeartbeatWorkspaceResolver(db: Db) {
             materializationFailures,
             localPathOnlyWorkspace:
               (workspace.sourceType === "local_path" || workspace.sourceType === "non_git_path") &&
-              Boolean(readNonEmptyString(workspace.cwd)) && workspace.cwd !== REPO_ONLY_CWD_SENTINEL &&
+              Boolean(readNonEmptyString(workspace.cwd)) &&
               !readNonEmptyString(workspace.repoUrl),
           };
         }

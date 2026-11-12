@@ -159,7 +159,6 @@ import {
   orderRecentlyUpdatedSkills,
   orderRecentlyVisitedSkills,
   skillEditorAvatar,
-  NO_TEST_RUN_TEMPLATE_STORAGE_VALUE,
   parseRunTemplateSelection,
   routeInteraction,
   runBadgeStatus,
@@ -177,6 +176,7 @@ import {
   type RunTemplateSelection,
   type SavedInputDraftState,
 } from "@/lib/skill-studio";
+import { NO_TEST_RUN_TEMPLATE_STORAGE_VALUE } from "@/lib/skill-studio-storage";
 
 const PANE_STORAGE_KEY = "skillStudio.paneSizes";
 const RUN_TEMPLATE_STORAGE_KEY_PREFIX = "skillStudio.runTemplate";

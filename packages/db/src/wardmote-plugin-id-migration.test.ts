@@ -10,9 +10,9 @@ import {
 } from "./test-embedded-postgres.js";
 
 const MIGRATION_FILE = "0365_wardmote_plugin_ids.sql";
-const LEGACY_WIKI_KEY = ["paper", "clipai.plugin-llm-wiki"].join("");
-const LEGACY_DIFF_KEY = ["paper", "clip.workspace-diff"].join("");
-const LEGACY_DAYTONA_KEY = ["paper", "clip.daytona-sandbox-provider"].join("");
+const LEGACY_WIKI_KEY = "paperclipai.plugin-llm-wiki";
+const LEGACY_DIFF_KEY = "paperclip.workspace-diff";
+const LEGACY_DAYTONA_KEY = "paperclip.daytona-sandbox-provider";
 const LEGACY_NAMESPACE = "plugin_llm_wiki_8f50da974f";
 const CURRENT_NAMESPACE = "plugin_llm_wiki_1e554e7667";
 const LEGACY_CHECKSUM = "fc392bf90771b716053de451810ea196c7aa8ab44478fcd18803928384da41d3";

@@ -10,9 +10,9 @@ import {
 } from "./test-embedded-postgres.js";
 
 const MIGRATION_FILE = "0364_wardmote_catalog_keys.sql";
-const LEGACY_OWNER = ["paper", "clipai"].join("");
-const LEGACY_CATEGORY = ["paper", "clip-operations"].join("");
-const LEGACY_CORE = ["paper", "clip-core"].join("");
+const LEGACY_OWNER = "paperclipai";
+const LEGACY_CATEGORY = "paperclip-operations";
+const LEGACY_CORE = "paperclip-core";
 const cleanups: Array<() => Promise<void>> = [];
 const embeddedPostgresSupport = await getEmbeddedPostgresTestSupport();
 const describeEmbeddedPostgres = embeddedPostgresSupport.supported ? describe : describe.skip;
