@@ -571,7 +571,7 @@ export function companySearchService(db: Db) {
 
       const fetchLimit = companySearchBranchFetchLimit(limit, offset);
       const tokenPatternArray = sqlTextArray(taskSearch.patterns);
-      const containsPattern = hasSearchText && tokens.length > 0 ? taskSearch.containsPattern : "__paperclip_no_match__";
+      const containsPattern = hasSearchText && tokens.length > 0 ? taskSearch.containsPattern : "__wardmote_no_match__";
       const tokenCount = tokens.length;
 
       const issueFilters = issueFilterConditions(companyId, query);

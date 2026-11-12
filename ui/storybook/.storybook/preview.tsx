@@ -94,12 +94,12 @@ installStorybookApiFixtures();
 function installStorybookApiFixtures() {
   if (typeof window === "undefined") return;
   const currentWindow = window as typeof window & {
-    __paperclipStorybookFetchInstalled?: boolean;
+    __wardmoteStorybookFetchInstalled?: boolean;
   };
-  if (currentWindow.__paperclipStorybookFetchInstalled) return;
+  if (currentWindow.__wardmoteStorybookFetchInstalled) return;
 
   const originalFetch = window.fetch.bind(window);
-  currentWindow.__paperclipStorybookFetchInstalled = true;
+  currentWindow.__wardmoteStorybookFetchInstalled = true;
 
   window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
     const rawUrl =
@@ -557,9 +557,9 @@ function installStorybookApiFixtures() {
       const [, adapterType] = adapterSchemaMatch;
       const schemas = (
         window as typeof window & {
-          __paperclipStorybookAdapterSchemas?: Record<string, unknown>;
+          __wardmoteStorybookAdapterSchemas?: Record<string, unknown>;
         }
-      ).__paperclipStorybookAdapterSchemas;
+      ).__wardmoteStorybookAdapterSchemas;
       const schema = schemas?.[adapterType];
       if (schema) return Response.json(schema);
     }

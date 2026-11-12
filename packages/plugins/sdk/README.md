@@ -1296,8 +1296,8 @@ const server = await startPluginDevServer({ rootDir: process.cwd() });
 ```
 
 Dev server endpoints:
-- `GET /__paperclip__/health` returns `{ ok, rootDir, uiDir }`
-- `GET /__paperclip__/events` streams `reload` SSE events on UI build changes
+- `GET /__wardmote__/health` returns `{ ok, rootDir, uiDir }`
+- `GET /__wardmote__/events` streams `reload` SSE events on UI build changes
 
 ### Persistent application shell contributions
 

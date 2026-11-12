@@ -129,12 +129,12 @@ export async function startPluginDevServer(options: PluginDevServerOptions = {})
   const handleRequest = async (req: IncomingMessage, res: ServerResponse) => {
     const url = req.url ?? "/";
 
-    if (url === "/__paperclip__/health") {
+    if (url === "/__wardmote__/health") {
       sendJson(res, { ok: true, rootDir, uiDir });
       return;
     }
 
-    if (url === "/__paperclip__/events") {
+    if (url === "/__wardmote__/events") {
       res.writeHead(200, {
         "Content-Type": "text/event-stream",
         "Cache-Control": "no-cache, no-transform",
