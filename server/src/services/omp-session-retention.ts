@@ -28,10 +28,6 @@ export interface OmpSessionSweepReport {
   errors: number;
 }
 
-export function defaultOmpSessionRoot() {
-  return path.join(os.homedir(), ".omp", "paperclip", "sessions");
-}
-
 export function defaultOmpAgentDir() {
   return path.join(os.homedir(), ".omp", "agent");
 }

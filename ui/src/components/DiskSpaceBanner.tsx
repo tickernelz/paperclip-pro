@@ -8,8 +8,8 @@ export function DiskSpaceBanner({ diskSpace, warnings }: { diskSpace?: DiskSpace
   if (shown.length === 0) return null;
   const critical = diskSpace?.level === "emergency";
   return (
-    <div
-      role="alert"
+    <section
+      aria-label={critical ? "Disk space critical" : "Disk space low"}
       className={
         critical
           ? "border-b border-red-300/60 bg-red-50 text-red-950 dark:border-red-500/25 dark:bg-red-500/10 dark:text-red-100"
@@ -25,6 +25,6 @@ export function DiskSpaceBanner({ diskSpace, warnings }: { diskSpace?: DiskSpace
           <p key={warning.code} className="mt-1 text-sm">{warning.message}</p>
         ))}
       </div>
-    </div>
+    </section>
   );
 }

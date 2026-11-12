@@ -364,8 +364,9 @@ with free bytes before and after. `WARDMOTE_DISK_GUARD_ENABLED=false` turns it o
 
 ### OMP sessions and blobs
 
-OMP keeps one transcript per task session under `~/.omp/paperclip/sessions`
-and images under `~/.omp/agent/blobs`. Hourly, the disk guard deletes session
+OMP keeps one transcript per task session under the `omp_local` adapter's
+session root (`defaultOmpSessionRoot()` in `packages/adapters/omp-local`) and images
+under `~/.omp/agent/blobs`. Hourly, the disk guard deletes session
 files (and their sidecar folders) idle longer than `ompSessionMaxIdleDays`,
 whatever the issue status, except sessions a queued or running run uses. Once a
 day (hourly under pressure) it deletes blobs idle that long that no remaining

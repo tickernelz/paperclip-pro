@@ -99,7 +99,8 @@ import { questionResponseDeliveryService } from "./services/question-response-de
 import { attachmentRetentionService, ATTACHMENT_RETENTION_TICK_MS } from "./services/attachment-retention.js";
 import { runLogRetentionService } from "./services/run-log-retention.js";
 import { diskGuardService } from "./services/disk-guard.js";
-import { defaultOmpAgentDir, defaultOmpSessionRoot } from "./services/omp-session-retention.js";
+import { defaultOmpSessionRoot } from "@tickernelz/wardmote-adapter-omp-local/server";
+import { defaultOmpAgentDir } from "./services/omp-session-retention.js";
 import { openwaAuditPurgeScheduler } from "./services/openwa/audit.js";
 import { deliverNativeQuestionResponse } from "./services/native-runtime/native-question-bridge.js";
 import { queueIssueAssignmentWakeup } from "./services/issue-assignment-wakeup.js";

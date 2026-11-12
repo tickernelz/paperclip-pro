@@ -41,7 +41,7 @@ function layout() {
   const root = tempRoot();
   return {
     root,
-    sessionRoot: path.join(root, "paperclip-sessions"),
+    sessionRoot: path.join(root, "wardmote-sessions"),
     agentDir: path.join(root, "agent"),
     blobDir: path.join(root, "agent", "blobs"),
   };
