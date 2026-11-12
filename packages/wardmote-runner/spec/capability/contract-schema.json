@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://paperclip.ai/schemas/capability-row.json",
+  "$id": "https://wardmote.dev/schemas/capability-row.json",
   "title": "Capability traceability row",
   "type": "object",
   "required": ["id", "sourceAnchor", "primaryDisposition", "semanticOperation", "expectedMockState"],
