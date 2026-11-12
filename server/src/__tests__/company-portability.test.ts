@@ -3341,12 +3341,12 @@ describe("company portability", () => {
       skill: {
         id: "skill-imported",
         key: wardmoteKey,
-        slug: "paperclip",
+        slug: "wardmote",
       },
       action: "renamed",
-      originalKey: "paperclip",
-      originalSlug: "paperclip",
-      requestedRefs: ["paperclip"],
+      originalKey: "wardmote",
+      originalSlug: "wardmote",
+      requestedRefs: ["wardmote"],
       reason: "Existing skill matched; renamed to wardmote-2.",
     }]);
 
@@ -3386,10 +3386,10 @@ describe("company portability", () => {
       onConflict: "rename",
     });
     expect(result.skills).toEqual([{
-      originalKey: "paperclip",
-      originalSlug: "paperclip",
+      originalKey: "wardmote",
+      originalSlug: "wardmote",
       key: wardmoteKey,
-      slug: "paperclip",
+      slug: "wardmote",
       id: "skill-imported",
       action: "renamed",
       reason: "Existing skill matched; renamed to wardmote-2.",
