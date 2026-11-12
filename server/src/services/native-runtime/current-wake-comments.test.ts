@@ -197,7 +197,7 @@ describeEmbeddedPostgres("current external-chat wake comment reader", () => {
 
     await expect(
       readCurrentWakeComments(db, binding, { cursor: "forged" }),
-    ).rejects.toThrow("paperclip_current_wake_comments_cursor_out_of_order");
+    ).rejects.toThrow("wardmote_current_wake_comments_cursor_out_of_order");
 
     let cursor: string | null = null;
     const reconstructed = new Map<string, string>();
@@ -258,7 +258,7 @@ describeEmbeddedPostgres("current external-chat wake comment reader", () => {
       .where(eq(issueComments.id, seeded.commentIds[0]!));
     await expect(
       readCurrentWakeComments(db, binding, { cursor: first.nextCursor }),
-    ).rejects.toThrow("paperclip_current_wake_comments_snapshot_changed");
+    ).rejects.toThrow("wardmote_current_wake_comments_snapshot_changed");
 
     const restarted = await readCurrentWakeComments(db, binding, {});
     expect(restarted.snapshotDigest).not.toBe(first.snapshotDigest);

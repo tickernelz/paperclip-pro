@@ -353,7 +353,7 @@ function decodeCursor(
     value.length === 0 ||
     value.length > MAX_CURSOR_CHARS
   ) {
-    throw new Error("paperclip_current_wake_comments_cursor_invalid");
+    throw new Error("wardmote_current_wake_comments_cursor_invalid");
   }
   try {
     const parsed = record(
@@ -368,17 +368,17 @@ function decodeCursor(
       Number(parsed.commentIndex) < 0 ||
       Number(parsed.bodyOffset) < 0
     ) {
-      throw new Error("paperclip_current_wake_comments_cursor_invalid");
+      throw new Error("wardmote_current_wake_comments_cursor_invalid");
     }
     return parsed as CurrentWakeCommentsCursor;
   } catch (error) {
     if (
       error instanceof Error &&
-      error.message === "paperclip_current_wake_comments_cursor_invalid"
+      error.message === "wardmote_current_wake_comments_cursor_invalid"
     ) {
       throw error;
     }
-    throw new Error("paperclip_current_wake_comments_cursor_invalid");
+    throw new Error("wardmote_current_wake_comments_cursor_invalid");
   }
 }
 
@@ -542,7 +542,7 @@ function buildPage(
   let commentIndex = cursor?.commentIndex ?? 0;
   let bodyOffset = cursor?.bodyOffset ?? 0;
   if (commentIndex > snapshot.comments.length) {
-    throw new Error("paperclip_current_wake_comments_cursor_invalid");
+    throw new Error("wardmote_current_wake_comments_cursor_invalid");
   }
   const chunks: CurrentWakeCommentChunk[] = [];
   let remainingChars = MAX_PAGE_BODY_CHARS;
@@ -554,7 +554,7 @@ function buildPage(
   ) {
     const comment = snapshot.comments[commentIndex]!;
     if (bodyOffset > comment.body.length) {
-      throw new Error("paperclip_current_wake_comments_cursor_invalid");
+      throw new Error("wardmote_current_wake_comments_cursor_invalid");
     }
     const remainingBody = comment.body.slice(bodyOffset);
     const chunkSize = Math.min(
@@ -614,7 +614,7 @@ export async function readCurrentWakeComments(
       typeof request.cursor === "string"
     )
   ) {
-    throw new Error("paperclip_current_wake_comments_input_invalid");
+    throw new Error("wardmote_current_wake_comments_input_invalid");
   }
   const inputCursor = request.cursor ?? null;
 
@@ -651,7 +651,7 @@ export async function readCurrentWakeComments(
       locked.issueAssigneeAgentId !== binding.agentId ||
       locked.issueExecutionRunId !== binding.runId
     ) {
-      throw new Error("paperclip_current_wake_comments_binding_not_authorized");
+      throw new Error("wardmote_current_wake_comments_binding_not_authorized");
     }
     const currentBinding = await resolveCurrentWakeCommentsBinding(
       tx as unknown as Db,
@@ -666,7 +666,7 @@ export async function readCurrentWakeComments(
       !currentBinding ||
       currentBinding.bindingDigest !== binding.bindingDigest
     ) {
-      throw new Error("paperclip_current_wake_comments_binding_changed");
+      throw new Error("wardmote_current_wake_comments_binding_changed");
     }
 
     const snapshot = await currentWakeCommentsSnapshot(
@@ -689,15 +689,15 @@ export async function readCurrentWakeComments(
         prior.snapshotDigest !== snapshot.snapshotDigest)
     ) {
       if (inputCursor !== null) {
-        throw new Error("paperclip_current_wake_comments_snapshot_changed");
+        throw new Error("wardmote_current_wake_comments_snapshot_changed");
       }
     } else if (!prior && inputCursor !== null) {
-      throw new Error("paperclip_current_wake_comments_cursor_out_of_order");
+      throw new Error("wardmote_current_wake_comments_cursor_out_of_order");
     } else if (prior && prior.nextCursor !== inputCursor) {
       throw new Error(
         prior.complete
-          ? "paperclip_current_wake_comments_already_complete"
-          : "paperclip_current_wake_comments_cursor_out_of_order",
+          ? "wardmote_current_wake_comments_already_complete"
+          : "wardmote_current_wake_comments_cursor_out_of_order",
       );
     }
 

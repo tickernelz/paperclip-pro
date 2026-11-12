@@ -949,7 +949,7 @@ export function buildAssistantPartsFromTranscript(entries: readonly IssueChatTra
       orderedParts.push({
         type: "tool-call",
         toolCallId,
-        toolName: "paperclip_provider_activity",
+        toolName: "wardmote_provider_activity",
         args,
         argsText: "",
         ...(entry.status === "running" ? {} : { result: { status: entry.status ?? "informational" } }),

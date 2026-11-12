@@ -222,7 +222,7 @@ describe("buildAssistantPartsFromTranscript", () => {
     expect(result.parts).toHaveLength(1);
     expect(result.parts[0]).toMatchObject({
       type: "tool-call",
-      toolName: "paperclip_provider_activity",
+      toolName: "wardmote_provider_activity",
       args: {
         family: "plan",
         eventType: "plan.updated",

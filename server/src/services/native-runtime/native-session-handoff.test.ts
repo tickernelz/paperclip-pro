@@ -96,7 +96,7 @@ const support = await getEmbeddedPostgresTestSupport();
   it("preserves the original goal and prior answer while excluding reset, deleted and future history", async () => {
     const result = await buildNativeSessionHandoff({ db, companyId, issueId, agentId, before: new Date(20_000) });
     expect(result).toContain("Build a GitHub PR review bot");
-    expect(result).toContain('"author":"paperclip_receipt"');
+    expect(result).toContain('"author":"wardmote_receipt"');
     expect(result).toContain("[Wardmote acknowledgement; not agent work] I’ll check the review request.");
     expect(result).toContain("Final constraint: require a team review");
     expect(result).toContain('"truncated":true');

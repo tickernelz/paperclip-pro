@@ -143,7 +143,7 @@ export async function buildNativeSessionHandoff(input: {
     if (entries.some(entry => entry.id === row.id)) return;
     const safe = sanitizeQuarantinedCommentForHigherTrust(row);
     entries.push({ ...safe, body: fastResponseHistoryBody(safe), kind,
-      author: row.origin === "fast_response" ? "paperclip_receipt" : row.authorAgentId ? "agent" : "user" });
+      author: row.origin === "fast_response" ? "wardmote_receipt" : row.authorAgentId ? "agent" : "user" });
   };
   if (origin[0]) addComment(origin[0], "original_request");
   recent.slice(0, LIMIT).forEach(row => addComment(row, "message"));

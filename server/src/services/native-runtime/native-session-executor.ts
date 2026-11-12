@@ -9941,11 +9941,11 @@ export function buildRemoteCodexLauncherCommand(
   return (
     `umask 077; mkdir -p ${quote(posix.dirname(targetPath))} && ` +
     `[ ! -d ${quote(targetPath)} ] && ` +
-    `paperclip_codex_launcher_tmp=$(mktemp ${quote(targetPath + ".tmp.XXXXXX")}) && ` +
-    `trap 'rm -f "$paperclip_codex_launcher_tmp"' 0 && ` +
-    `printf '%s' ${quote(launcher)} > "$paperclip_codex_launcher_tmp" && ` +
-    `chmod 700 "$paperclip_codex_launcher_tmp" && ` +
-    `mv -f "$paperclip_codex_launcher_tmp" ${quote(targetPath)}`
+    `wardmote_codex_launcher_tmp=$(mktemp ${quote(targetPath + ".tmp.XXXXXX")}) && ` +
+    `trap 'rm -f "$wardmote_codex_launcher_tmp"' 0 && ` +
+    `printf '%s' ${quote(launcher)} > "$wardmote_codex_launcher_tmp" && ` +
+    `chmod 700 "$wardmote_codex_launcher_tmp" && ` +
+    `mv -f "$wardmote_codex_launcher_tmp" ${quote(targetPath)}`
   );
 }
 

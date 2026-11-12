@@ -55,7 +55,7 @@ export async function runRailwaySshCommand(input: RailwaySshInput & { privateKey
       // No developer SSH config/agent, CLI login, provider token or ambient env.
       const child = spawn("/usr/bin/ssh", railwaySshArguments(directory, input.deploymentInstanceId), { env: { PATH: "/usr/bin:/bin", LANG: "C.UTF-8" }, stdio: ["pipe", "pipe", "pipe"] });
       let stdout = "", stderr = "", bytes = 0, truncated = false, timedOut = false, deliveryFailed = false;
-      const marker = `paperclip_railway_completed_${randomBytes(16).toString("hex")}`;
+      const marker = `wardmote_railway_completed_${randomBytes(16).toString("hex")}`;
       const stop = () => { child.kill("SIGKILL"); };
       const receive = (chunk: Buffer, stream: "out" | "err") => {
         const remaining = Math.max(0, 64 * 1024 - bytes);
@@ -85,7 +85,7 @@ export async function runRailwaySshCommand(input: RailwaySshInput & { privateKey
       });
       child.stdin.on("error", () => { deliveryFailed = true; });
       const quotedCommand = "'" + input.command.replace(/'/g, "'\\''") + "'";
-      child.stdin.end(`sh -c ${quotedCommand} </dev/null\npaperclip_command_status=$?\nprintf '\\n${marker}:%d\\n' "$paperclip_command_status"\nexit "$paperclip_command_status"\n`);
+      child.stdin.end(`sh -c ${quotedCommand} </dev/null\nwardmote_command_status=$?\nprintf '\\n${marker}:%d\\n' "$wardmote_command_status"\nexit "$wardmote_command_status"\n`);
     });
   } finally { await rm(directory, { recursive: true, force: true }); }
 }

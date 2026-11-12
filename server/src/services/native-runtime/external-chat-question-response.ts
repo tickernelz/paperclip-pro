@@ -730,7 +730,7 @@ async function resolveQuestionResponseChain(
       );
       if (!lock?.acquired)
         throw Object.assign(
-          new Error("paperclip_external_chat_wait_authorization_contended"),
+          new Error("wardmote_external_chat_wait_authorization_contended"),
           { code: "55P03" },
         );
     }

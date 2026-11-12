@@ -201,7 +201,7 @@ export const PROCESS_LOSS_ERROR_CODES: Record<string, true> = {
 
 export const ADAPTER_SELF_SIGNALLED_ERROR_CODES: Record<string, true> = {
   codex_output_inactivity_monitor: true,
-  paperclip_mcp_unavailable: true,
+  wardmote_mcp_unavailable: true,
 };
 
 export function isTransientWorkspaceGitScanCode(code: string | null | undefined): boolean {

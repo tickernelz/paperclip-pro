@@ -465,7 +465,7 @@ export async function conversationReplay(
     .reverse()
     .map((row) =>
       JSON.stringify({
-        author: row.origin === "fast_response" ? "paperclip_receipt" : row.authorAgentId ? "agent" : "user",
+        author: row.origin === "fast_response" ? "wardmote_receipt" : row.authorAgentId ? "agent" : "user",
         body: fastResponseHistoryBody(sanitizeQuarantinedCommentForHigherTrust(row)).slice(0, 8000),
       }),
     )
