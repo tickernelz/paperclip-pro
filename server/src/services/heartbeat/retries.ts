@@ -1862,6 +1862,23 @@ export function createHeartbeatRetries(db: Db, dependencies: HeartbeatRetryDepen
       };
     }
 
+    const gate = await runDispatch.evaluateScheduledRetryGate({
+      runId: scheduled.run.id,
+      companyId: scheduled.run.companyId,
+      retryReasonOverride: scheduled.run.scheduledRetryReason,
+      now,
+    });
+    if (!gate.allowed && gate.errorCode !== "issue_not_found") {
+      return {
+        outcome: "blocked" as const,
+        errorCode: gate.errorCode,
+        message: gate.errorCode === "agent_not_invokable" && scheduled.agentName
+          ? `Resume ${scheduled.agentName} before retrying now. The scheduled retry keeps its saved time.`
+          : `${gate.reason}. The scheduled retry keeps its saved time.`,
+        scheduledRetry: summarizeIssueScheduledRetryRun(scheduled),
+      };
+    }
+
     const contextSnapshot = {
       ...parseObject(scheduled.run.contextSnapshot),
       scheduledRetryAt: now.toISOString(),
