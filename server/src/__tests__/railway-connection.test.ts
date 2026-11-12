@@ -45,7 +45,7 @@ const initialTools = [
           expect(JSON.parse(body).params).toEqual({ name: "list-workspaces", arguments: {} });
           return Response.json({ jsonrpc: "2.0", id: "wardmote-railway-workspace-probe", result: { structuredContent: { workspaces: [{ id: target.projectId }] } } });
         }
-        return Response.json({ jsonrpc: "2.0", id: "paperclip-catalog-refresh", result: { tools } });
+        return Response.json({ jsonrpc: "2.0", id: "wardmote-catalog-refresh", result: { tools } });
       }
       if (url.includes("oauth-protected-resource")) return Response.json(railwayResourceMetadata);
       if (url.includes("oauth-authorization-server")) return Response.json(railwayAuthorizationMetadata);

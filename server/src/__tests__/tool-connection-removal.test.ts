@@ -108,7 +108,7 @@ function installMcpFixture(requiredHeader: { name: string; value: string }) {
       if (headers[requiredHeader.name.toLowerCase()] !== requiredHeader.value) {
         return jsonResponse({ error: "unauthorized" }, 401);
       }
-      return jsonResponse({ jsonrpc: "2.0", id: "paperclip-catalog-refresh", result: { tools: FIXTURE_TOOLS } });
+      return jsonResponse({ jsonrpc: "2.0", id: "wardmote-catalog-refresh", result: { tools: FIXTURE_TOOLS } });
     }
     return jsonResponse({ error: "not_found" }, 404);
   });

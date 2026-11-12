@@ -2348,7 +2348,7 @@ describeEmbeddedPostgres("tool access service", () => {
     fetchMock.mockResolvedValueOnce(
       mcpHttpResponse({
         jsonrpc: "2.0",
-        id: "paperclip-catalog-refresh",
+        id: "wardmote-catalog-refresh",
         result: {
           tools: [
             {
@@ -2610,7 +2610,7 @@ describeEmbeddedPostgres("tool access service", () => {
         }
         return mcpSseResponse({
           jsonrpc: "2.0",
-          id: "paperclip-catalog-refresh",
+          id: "wardmote-catalog-refresh",
           result: {
             tools: [
               {
@@ -5273,7 +5273,7 @@ describeEmbeddedPostgres("tool access service", () => {
     fetchMock.mockResolvedValueOnce(
       mcpHttpResponse({
         jsonrpc: "2.0",
-        id: "paperclip-catalog-refresh",
+        id: "wardmote-catalog-refresh",
         result: {
           tools: [
             { name: "get_organization_details", annotations: { readOnlyHint: true } },
@@ -5332,7 +5332,7 @@ describeEmbeddedPostgres("tool access service", () => {
     reconnectFetchMock.mockResolvedValueOnce(
       mcpHttpResponse({
         jsonrpc: "2.0",
-        id: "paperclip-catalog-refresh",
+        id: "wardmote-catalog-refresh",
         result: {
           tools: [
             { name: "get_organization_details", annotations: { readOnlyHint: true } },
@@ -5598,7 +5598,7 @@ describeEmbeddedPostgres("tool access service", () => {
         expect(headers.Authorization).toBe("Bearer imported-token");
         return mcpHttpResponse({
           jsonrpc: "2.0",
-          id: "paperclip-catalog-refresh",
+          id: "wardmote-catalog-refresh",
           result: {
             tools: [
               {
@@ -5747,7 +5747,7 @@ describeEmbeddedPostgres("tool access service", () => {
       .mockImplementation(async () =>
         mcpHttpResponse({
           jsonrpc: "2.0",
-          id: "paperclip-catalog-refresh",
+          id: "wardmote-catalog-refresh",
           result: { tools },
         }),
       );
@@ -5930,7 +5930,7 @@ describeEmbeddedPostgres("tool access service", () => {
         );
         return mcpHttpResponse({
           jsonrpc: "2.0",
-          id: "paperclip-catalog-refresh",
+          id: "wardmote-catalog-refresh",
           result: {
             tools: [
               { name: "query_insight", annotations: { readOnlyHint: true } },
@@ -6115,7 +6115,7 @@ describeEmbeddedPostgres("tool access service", () => {
       remoteHttpRequest: async () =>
         mcpHttpResponse({
           jsonrpc: "2.0",
-          id: "paperclip-catalog-refresh",
+          id: "wardmote-catalog-refresh",
           result: {
             tools: [
               { name: "search_pages", annotations: { readOnlyHint: true } },
@@ -7549,7 +7549,7 @@ describeEmbeddedPostgres("tool access service", () => {
         if (href === "https://mcp.slack.com/mcp") {
           return mcpHttpResponse({
             jsonrpc: "2.0",
-            id: "paperclip-catalog-refresh",
+            id: "wardmote-catalog-refresh",
             result: { tools: [] },
           });
         }
@@ -7681,7 +7681,7 @@ describeEmbeddedPostgres("tool access service", () => {
       if (href === "https://mcp.slack.com/mcp") {
         return mcpHttpResponse({
           jsonrpc: "2.0",
-          id: "paperclip-catalog-refresh",
+          id: "wardmote-catalog-refresh",
           result: { tools: [] },
         });
       }
@@ -8015,7 +8015,7 @@ describeEmbeddedPostgres("tool access service", () => {
           );
           return mcpHttpResponse({
             jsonrpc: "2.0",
-            id: "paperclip-catalog-refresh",
+            id: "wardmote-catalog-refresh",
             result: {
               tools: [
                 {
@@ -8355,7 +8355,7 @@ describeEmbeddedPostgres("tool access service", () => {
       if (href === "https://mcp.slack.com/mcp") {
         return mcpHttpResponse({
           jsonrpc: "2.0",
-          id: "paperclip-catalog-refresh",
+          id: "wardmote-catalog-refresh",
           result: {
             tools: [
               { name: "search_messages", annotations: { readOnlyHint: true } },
@@ -8517,7 +8517,7 @@ describeEmbeddedPostgres("tool access service", () => {
         if (href === "https://mcp.slack.com/mcp") {
           return mcpHttpResponse({
             jsonrpc: "2.0",
-            id: "paperclip-catalog-refresh",
+            id: "wardmote-catalog-refresh",
             result: {
               tools: [
                 {
@@ -8657,7 +8657,7 @@ describeEmbeddedPostgres("tool access service", () => {
       if (href === "https://mcp.slack.com/mcp") {
         return mcpHttpResponse({
           jsonrpc: "2.0",
-          id: "paperclip-catalog-refresh",
+          id: "wardmote-catalog-refresh",
           result: { tools: [] },
         });
       }
@@ -8751,7 +8751,7 @@ describeEmbeddedPostgres("tool access service", () => {
         }
         return mcpHttpResponse({
           jsonrpc: "2.0",
-          id: "paperclip-catalog-refresh",
+          id: "wardmote-catalog-refresh",
           result: { tools: [] },
         });
       }
@@ -8878,7 +8878,7 @@ describeEmbeddedPostgres("tool access service", () => {
       if (href === "https://mcp.slack.com/mcp") {
         return mcpHttpResponse({
           jsonrpc: "2.0",
-          id: "paperclip-catalog-refresh",
+          id: "wardmote-catalog-refresh",
           result: { tools: [] },
         });
       }
@@ -9013,7 +9013,7 @@ describeEmbeddedPostgres("tool access service", () => {
         if (href === "https://mcp.slack.com/mcp") {
           return mcpHttpResponse({
             jsonrpc: "2.0",
-            id: "paperclip-catalog-refresh",
+            id: "wardmote-catalog-refresh",
             result: { tools: [] },
           });
         }
@@ -9498,7 +9498,7 @@ describeEmbeddedPostgres("tool access service", () => {
         );
         return mcpHttpResponse({
           jsonrpc: "2.0",
-          id: "paperclip-catalog-refresh",
+          id: "wardmote-catalog-refresh",
           result: {
             tools: [
               { name: "notion-search", annotations: { readOnlyHint: true } },
@@ -9737,7 +9737,7 @@ describeEmbeddedPostgres("tool access service", () => {
             );
             return mcpHttpResponse({
               jsonrpc: "2.0",
-              id: "paperclip-catalog-refresh",
+              id: "wardmote-catalog-refresh",
               result: {
                 tools: [
                   {
@@ -10240,7 +10240,7 @@ describeEmbeddedPostgres("tool access service", () => {
         );
         return mcpHttpResponse({
           jsonrpc: "2.0",
-          id: "paperclip-catalog-refresh",
+          id: "wardmote-catalog-refresh",
           result: {
             tools: [
               { name: "search_messages", annotations: { readOnlyHint: true } },
@@ -10529,7 +10529,7 @@ describeEmbeddedPostgres("tool access service", () => {
           );
           return mcpHttpResponse({
             jsonrpc: "2.0",
-            id: "paperclip-catalog-refresh",
+            id: "wardmote-catalog-refresh",
             result: {
               tools: [
                 { name: "list_tables", annotations: { readOnlyHint: true } },
@@ -10685,7 +10685,7 @@ describeEmbeddedPostgres("tool access service", () => {
           );
           return mcpHttpResponse({
             jsonrpc: "2.0",
-            id: "paperclip-catalog-refresh",
+            id: "wardmote-catalog-refresh",
             result: {
               tools: [{ name: "whoami", annotations: { readOnlyHint: true } }],
             },
@@ -11626,7 +11626,7 @@ describeEmbeddedPostgres("tool access service", () => {
       if (href === "https://mcp.slack.com/mcp") {
         return mcpHttpResponse({
           jsonrpc: "2.0",
-          id: "paperclip-catalog-refresh",
+          id: "wardmote-catalog-refresh",
           result: {
             tools: [
               { name: "search_messages", annotations: { readOnlyHint: true } },
@@ -11753,7 +11753,7 @@ describeEmbeddedPostgres("tool access service", () => {
         if (href === "https://mcp.slack.com/mcp") {
           return mcpHttpResponse({
             jsonrpc: "2.0",
-            id: "paperclip-catalog-refresh",
+            id: "wardmote-catalog-refresh",
             result: { tools: [] },
           });
         }
@@ -11876,7 +11876,7 @@ describeEmbeddedPostgres("tool access service", () => {
         if (href === "https://mcp.slack.com/mcp") {
           return mcpHttpResponse({
             jsonrpc: "2.0",
-            id: "paperclip-catalog-refresh",
+            id: "wardmote-catalog-refresh",
             result: { tools: [] },
           });
         }
@@ -12053,7 +12053,7 @@ describeEmbeddedPostgres("tool access service", () => {
           );
           return mcpHttpResponse({
             jsonrpc: "2.0",
-            id: "paperclip-catalog-refresh",
+            id: "wardmote-catalog-refresh",
             result: {
               tools: [
                 { name: "machine_read", annotations: { readOnlyHint: true } },
@@ -12126,7 +12126,7 @@ describeEmbeddedPostgres("tool access service", () => {
         if (href === "https://mcp.slack.com/mcp") {
           return mcpHttpResponse({
             jsonrpc: "2.0",
-            id: "paperclip-catalog-refresh",
+            id: "wardmote-catalog-refresh",
             result: {
               tools: [
                 {
@@ -13868,7 +13868,7 @@ describeEmbeddedPostgres("tool access service", () => {
     ["mixed transport", () => { throw new TypeError("fetch failed", { cause: { errors: [{ code: "ECONNREFUSED" }, { code: "ERR_INTERNAL_ASSERTION" }] } }); }, true],
     ["forged classification", () => { throw new HttpError(502, "Remote app returned HTTP 503", { status: 503, connectionFailure: { schemaVersion: 1, provider: "mcp_http", operation: "discover_tools", reason: "remote_unavailable" } }); }, true],
     ["malformed response", () => new Response("not JSON"), true],
-    ["invalid catalog", () => new Response(JSON.stringify({ jsonrpc: "2.0", id: "paperclip-catalog-refresh", result: {} })), true],
+    ["invalid catalog", () => new Response(JSON.stringify({ jsonrpc: "2.0", id: "wardmote-catalog-refresh", result: {} })), true],
   ] as const)(
     "preserves MCP diagnostics and reports only unclassified failure: %s",
     async (_name, reply, reportable) => {
@@ -14099,7 +14099,7 @@ describeEmbeddedPostgres("tool access service", () => {
         );
         return mcpHttpResponse({
           jsonrpc: "2.0",
-          id: "paperclip-catalog-refresh",
+          id: "wardmote-catalog-refresh",
           result: {
             tools: [
               { name: "read_generic", annotations: { readOnlyHint: true } },
@@ -14318,7 +14318,7 @@ describeEmbeddedPostgres("tool access service", () => {
         if (String(url) === "http://smoke-fixture.test/mcp") {
           return mcpHttpResponse({
             jsonrpc: "2.0",
-            id: "paperclip-catalog-refresh",
+            id: "wardmote-catalog-refresh",
             result: {
               tools: [
                 { name: "todo.list", annotations: { readOnlyHint: true } },
@@ -14596,7 +14596,7 @@ describeEmbeddedPostgres("tool access service", () => {
     fetchMock.mockResolvedValueOnce(
       mcpHttpResponse({
         jsonrpc: "2.0",
-        id: "paperclip-catalog-refresh",
+        id: "wardmote-catalog-refresh",
         result: {
           tools: [
             {
@@ -14801,7 +14801,7 @@ describeEmbeddedPostgres("tool access service", () => {
     fetchMock.mockResolvedValueOnce(
       mcpHttpResponse({
         jsonrpc: "2.0",
-        id: "paperclip-catalog-refresh",
+        id: "wardmote-catalog-refresh",
         result: {
           tools: [
             { name: "list_zaps", annotations: { readOnlyHint: true } },
@@ -15353,7 +15353,7 @@ describeEmbeddedPostgres("tool access service", () => {
     fetchMock.mockResolvedValue(
       mcpHttpResponse({
         jsonrpc: "2.0",
-        id: "paperclip-catalog-refresh",
+        id: "wardmote-catalog-refresh",
         result: {
           tools: [
             {
