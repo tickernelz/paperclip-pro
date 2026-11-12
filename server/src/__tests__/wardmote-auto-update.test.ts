@@ -4,6 +4,7 @@ import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { InstanceUpdateStatus, UpdateJob } from "@tickernelz/wardmote-shared";
 import { createAutoUpdater, decideAutoUpdate } from "../services/wardmote-auto-update.js";
+import { createUpdateInstaller } from "../services/wardmote-update-install.js";
 
 const STATUS: InstanceUpdateStatus = {
   currentVersion: "2026.1111.0",
@@ -21,7 +22,7 @@ function job(overrides: Partial<UpdateJob>): UpdateJob {
     id: "job-1", phase: "failed", mode: "wait", trigger: "auto", fromVersion: "2026.1111.0", toVersion: "2026.1112.0",
     requestedBy: null, requestedAt: "2026-11-12T03:00:00.000Z", waitDeadline: null, liveRuns: 0,
     startedAt: "2026-11-12T03:00:01.000Z", finishedAt: "2026-11-12T03:01:00.000Z", installedVersion: "2026.1111.0",
-    rolledBackTo: "2026.1111.0", error: "rolled back", logHint: null, ...overrides,
+    rolledBackTo: "2026.1111.0", error: "rolled back", logHint: null, unit: null, ...overrides,
   };
 }
 
@@ -106,6 +107,46 @@ describe("createAutoUpdater", () => {
     setCurrent(job({ phase: "cancelled", trigger: "manual", startedAt: null }));
     expect(await auto.tick()).toEqual({ install: false, reason: "failed_before" });
     expect(start).not.toHaveBeenCalled();
+  });
+
+  it("does not retry a version whose automatic update process died without a result", async () => {
+    let unitState: "running" | "gone" = "running";
+    let draining = false;
+    const installer = createUpdateInstaller({
+      status: () => STATUS,
+      instanceRoot: root,
+      runControl: {
+        liveRuns: async () => ({ draining, pendingWakes: 0, count: 0, runs: [] }),
+        startDrain: async () => { draining = true; },
+        stopDrain: async () => { draining = false; },
+      },
+      launch: async () => ({ logHint: "journalctl --user -u wardmote-update-auto", unit: "wardmote-update-auto" }),
+      unitState: async () => unitState,
+      audit: async () => undefined,
+      pollMs: 5,
+    });
+    const auto = createAutoUpdater({
+      enabled: async () => true,
+      status: () => STATUS,
+      refresh: async () => undefined,
+      installer,
+      activeRuns: () => 0,
+      queuedRuns: async () => 0,
+      instanceRoot: root,
+    });
+    try {
+      expect(await auto.tick()).toEqual({ install: true, version: "2026.1112.0" });
+      for (let i = 0; i < 100 && installer.current()?.phase !== "installing"; i += 1) await new Promise((resolve) => setTimeout(resolve, 5));
+      expect(await auto.tick()).toEqual({ install: false, reason: "busy" });
+      unitState = "gone";
+      for (let i = 0; i < 200 && installer.current()?.phase !== "failed"; i += 1) await new Promise((resolve) => setTimeout(resolve, 5));
+      expect(installer.current()).toMatchObject({ phase: "failed", trigger: "auto" });
+      expect(draining).toBe(false);
+      expect(await auto.tick()).toEqual({ install: false, reason: "failed_before" });
+      expect(auto.failedVersions()).toEqual(["2026.1112.0"]);
+    } finally {
+      installer.stop();
+    }
   });
 
   it("retries a version whose automatic attempt never started installing", async () => {
