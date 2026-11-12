@@ -148,6 +148,8 @@ import {
   instanceDatabaseBackupRoutes,
   type InstanceDatabaseBackupService,
 } from "./routes/instance-database-backups.js";
+import { instanceUpdateRoutes } from "./routes/instance-updates.js";
+import { createWardmoteUpdateService, type WardmoteUpdateService } from "./services/wardmote-updates.js";
 import { llmRoutes } from "./routes/llms.js";
 import { authRoutes } from "./routes/auth.js";
 import { assetRoutes } from "./routes/assets.js";
@@ -422,6 +424,7 @@ export async function createApp(
       }): Promise<unknown>;
     };
     databaseBackupService?: InstanceDatabaseBackupService;
+    wardmoteUpdates?: WardmoteUpdateService;
     prepareIdleDatabaseBackup?: () => Promise<boolean>;
     databaseBackupHealth?: InspectDatabaseBackupHealthOptions;
     diskSpaceStatus?: () => DiskSpaceStatus | null;
@@ -781,6 +784,7 @@ export async function createApp(
   if (opts.databaseBackupService) {
     api.use(instanceDatabaseBackupRoutes(opts.databaseBackupService));
   }
+  api.use(instanceUpdateRoutes(opts.wardmoteUpdates ?? createWardmoteUpdateService()));
   const pluginRegistry = pluginRegistryService(db);
   const eventBus = createPluginEventBus();
   setPluginEventBus(eventBus);
