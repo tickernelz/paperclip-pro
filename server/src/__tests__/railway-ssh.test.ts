@@ -1,3 +1,4 @@
+import { spawnSync } from "node:child_process";
 import { EventEmitter } from "node:events";
 import { PassThrough } from "node:stream";
 import { access, readFile } from "node:fs/promises";
@@ -45,6 +46,14 @@ describe("Railway isolated container command runner", () => {
     const keyPath = args[args.indexOf("-i") + 1];
     await expect(access(path.dirname(keyPath))).rejects.toThrow();
     expect(spawnMock.mock.calls[0][2].env).toEqual({ PATH: "/usr/bin:/bin", LANG: "C.UTF-8" });
+  });
+  it("reports the remote command's exit status when the script runs in a real shell", async () => {
+    fakeProcess((child, script) => {
+      const shell = spawnSync("/bin/sh", ["-s"], { input: script, encoding: "utf8" });
+      child.stdout.write(shell.stdout);
+      child.emit("close", shell.status);
+    });
+    await expect(runRailwaySshCommand({ ...input(), command: "printf 'hello'; exit 3" })).resolves.toMatchObject({ exitCode: 3, stdout: "hello" });
   });
   it("never treats local success or stdin failure as confirmed remote success", async () => {
     fakeProcess((child) => { child.stdin.emit("error", new Error("EPIPE")); child.emit("close", 0); });

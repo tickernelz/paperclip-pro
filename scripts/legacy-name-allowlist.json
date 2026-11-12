@@ -1568,7 +1568,7 @@
     ["server/src/services/projects.ts",1,"belum-diganti"],
     ["server/src/services/provider-profile-qualification.ts",1,"belum-diganti"],
     ["server/src/services/public-mcp/expanded-capabilities.ts",1,"belum-diganti"],
-    ["server/src/services/railway-ssh.ts",2,"belum-diganti"],
+    ["server/src/services/railway-ssh.ts",1,"belum-diganti"],
     ["server/src/services/railway.ts",3,"belum-diganti"],
     ["server/src/services/remote-agent-profiles.test.ts",1,"belum-diganti"],
     ["server/src/services/retired-header-names.ts",2,"nama-lama-ditolak"],

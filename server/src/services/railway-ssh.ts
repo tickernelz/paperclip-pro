@@ -85,7 +85,7 @@ export async function runRailwaySshCommand(input: RailwaySshInput & { privateKey
       });
       child.stdin.on("error", () => { deliveryFailed = true; });
       const quotedCommand = "'" + input.command.replace(/'/g, "'\\''") + "'";
-      child.stdin.end(`sh -c ${quotedCommand} </dev/null\npaperclip_command_status=$?\nprintf '\\n${marker}:%d\\n' "$wardmote_command_status"\nexit "$wardmote_command_status"\n`);
+      child.stdin.end(`sh -c ${quotedCommand} </dev/null\nwardmote_command_status=$?\nprintf '\\n${marker}:%d\\n' "$wardmote_command_status"\nexit "$wardmote_command_status"\n`);
     });
   } finally { await rm(directory, { recursive: true, force: true }); }
 }
