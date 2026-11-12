@@ -71,7 +71,7 @@ export function UpdateNotice({ now = Date.now }: { now?: () => number }) {
     >
       <ArrowUpCircle className="size-4 shrink-0 text-accent" aria-hidden="true" />
       <p className="min-w-0 flex-1 truncate" title={`Installed ${update.currentVersion}. ${update.install.command}`}>
-        <b className="font-semibold">Wardmote {update.latestVersion} is available</b>
+        <b className="font-semibold">Wardmote {update.latestVersion}<span className="hidden sm:inline"> is available</span></b>
         <span className="hidden sm:inline"> · installed {update.currentVersion}</span>
         <span className="hidden lg:inline">
           {" · "}

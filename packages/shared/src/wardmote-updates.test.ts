@@ -17,6 +17,8 @@ describe("compareVersions", () => {
     expect(compareVersions("2026.1108.1", "2026.1108.0")).toBe(1);
     expect(compareVersions("2026.928.7", "2026.1001.0")).toBe(-1);
     expect(compareVersions("v2026.1112.0", "2026.1112.0")).toBe(0);
+    expect(compareVersions("2026.1112.0+25.git.5485ce0052", "2026.1112.0")).toBe(0);
+    expect(compareVersions("2026.1112.0", "2026.1111.0+3.git.abc1234")).toBe(1);
   });
 
   it("ranks prereleases below the release and compares their identifiers", () => {

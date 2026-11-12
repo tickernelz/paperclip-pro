@@ -19,7 +19,7 @@ export interface InstanceUpdateStatus {
 }
 
 export function compareVersions(left: string, right: string): number {
-  const parse = (value: string) => { const [core, prerelease = ""] = value.replace(/^v/, "").split("-", 2); return { numbers: core.split(".").map((part) => Number(part) || 0), prerelease }; };
+  const parse = (value: string) => { const [core, prerelease = ""] = value.replace(/^v/, "").replace(/\+.*$/, "").split("-", 2); return { numbers: core.split(".").map((part) => Number(part) || 0), prerelease }; };
   const a = parse(left); const b = parse(right);
   for (let index = 0; index < Math.max(a.numbers.length, b.numbers.length); index += 1) { const delta = (a.numbers[index] ?? 0) - (b.numbers[index] ?? 0); if (delta !== 0) return Math.sign(delta); }
   if (a.prerelease === b.prerelease) return 0;
