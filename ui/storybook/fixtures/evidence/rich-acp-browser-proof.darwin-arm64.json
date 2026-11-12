@@ -23,7 +23,7 @@
     "revision": "eedc589b367de4f6366ff76090d93676adb1e2238d4c5af280ac88393e1adef3",
     "requestId": "cursor-create-plan-revision-7",
     "pipeline": [
-      "paperclipRunnerUIAdapter",
+      "wardmoteRunnerUIAdapter",
       "transcriptToTaskChatItems",
       "TaskChatProtocolCard",
       "QuestionForm"

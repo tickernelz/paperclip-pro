@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { paperclipRunnerUIAdapter } from "./index";
+import { wardmoteRunnerUIAdapter } from "./index";
 import { createPiProfileExtensionAdapter, PI_NOTICE_METHOD } from "../../../../packages/wardmote-runner/src/drivers/acpx/pi-extension-adapter";
 import { transcriptToTaskChatItems } from "../../components/task-chat/transcript-adapter";
 
@@ -31,7 +31,7 @@ describe("paperclip runner transcript projection", () => {
     expect(raw).toHaveLength(2);
     expect(raw[0]!.payload.noticeId).not.toBe(raw[1]!.payload.noticeId);
     const before = structuredClone(raw);
-    const parse = paperclipRunnerUIAdapter.createStdoutParser!().parseLine;
+    const parse = wardmoteRunnerUIAdapter.createStdoutParser!().parseLine;
     const entries = raw.flatMap(event => parse(JSON.stringify({ type: "paperclip.prp.event", event: {
       runId: "run-1", normalizedSessionId: "session-1", turnId: "turn-1", ...event,
     } }), "2026-10-03T07:00:00.000Z"));
@@ -59,14 +59,14 @@ describe("paperclip runner transcript projection", () => {
       piFailure({}, { turnId: undefined }),
     ];
     for (const event of changed) {
-      const parse = paperclipRunnerUIAdapter.createStdoutParser!().parseLine;
+      const parse = wardmoteRunnerUIAdapter.createStdoutParser!().parseLine;
       expect(parse(JSON.stringify(piFailure()), "first")).toHaveLength(1);
       expect(parse(JSON.stringify(event), "second")).toHaveLength(1);
     }
   });
 
   it("starts a new diagnostic after retry activity, another event, or parser reset", () => {
-    const parser = paperclipRunnerUIAdapter.createStdoutParser!();
+    const parser = wardmoteRunnerUIAdapter.createStdoutParser!();
     const parse = (event: unknown) => parser.parseLine(JSON.stringify(event), "2026-10-03T07:00:00.000Z");
     expect(parse(piFailure())).toHaveLength(1);
     expect(parse(piFailure({ noticeId: "notice-2" }))).toEqual([]);
@@ -84,21 +84,21 @@ describe("paperclip runner transcript projection", () => {
     for (const event of [piFailure({ category: "other.runtime_failure" }),
       piFailure({ details: [] }), piFailure({}, { normalizedSessionId: undefined }),
       piFailure({}, { runId: undefined }), piFailure({}, { turnId: undefined })]) {
-      const parse = paperclipRunnerUIAdapter.createStdoutParser!().parseLine;
+      const parse = wardmoteRunnerUIAdapter.createStdoutParser!().parseLine;
       expect(parse(JSON.stringify(event), "first")).toHaveLength(1);
       expect(parse(JSON.stringify(event), "second")).toHaveLength(1);
     }
   });
 
   it("renders committed PRP semantic tool items with the existing chat parts", () => {
-    const started = paperclipRunnerUIAdapter.parseStdoutLine(JSON.stringify({
+    const started = wardmoteRunnerUIAdapter.parseStdoutLine(JSON.stringify({
       type: "paperclip.prp.event",
       event: {
         eventType: "item.started",
         payload: { item: { type: "tool_use", id: "call-1", name: "get_task_context", input: {} } },
       },
     }), "2026-08-21T12:00:00.000Z");
-    const completed = paperclipRunnerUIAdapter.parseStdoutLine(JSON.stringify({
+    const completed = wardmoteRunnerUIAdapter.parseStdoutLine(JSON.stringify({
       type: "paperclip.prp.event",
       event: {
         eventType: "item.completed",
@@ -110,7 +110,7 @@ describe("paperclip runner transcript projection", () => {
   });
 
   it("maps native Codex deltas, camel-case tools, and usage into the shared chat transcript", () => {
-    const parse = paperclipRunnerUIAdapter.createStdoutParser!().parseLine;
+    const parse = wardmoteRunnerUIAdapter.createStdoutParser!().parseLine;
     const event = (eventType: string, payload: Record<string, unknown>, itemId?: string) => parse(JSON.stringify({
       type: "paperclip.prp.event",
       event: { eventType, itemId, payload },
@@ -135,7 +135,7 @@ describe("paperclip runner transcript projection", () => {
   });
 
   it("emits semantic result governance once without racing the provider final", () => {
-    const parse = paperclipRunnerUIAdapter.createStdoutParser!().parseLine;
+    const parse = wardmoteRunnerUIAdapter.createStdoutParser!().parseLine;
     const line = (eventType: string, payload: Record<string, unknown>) => parse(JSON.stringify({
       type: "paperclip.prp.event",
       event: { eventType, payload },
@@ -150,7 +150,7 @@ describe("paperclip runner transcript projection", () => {
   });
 
   it("preserves progress, final-answer, and reasoning channels across item deltas", () => {
-    const parse = paperclipRunnerUIAdapter.createStdoutParser!().parseLine;
+    const parse = wardmoteRunnerUIAdapter.createStdoutParser!().parseLine;
     const event = (eventType: string, payload: Record<string, unknown>, itemId: string) => parse(JSON.stringify({
       type: "paperclip.prp.event",
       event: { eventType, itemId, payload },
@@ -171,7 +171,7 @@ describe("paperclip runner transcript projection", () => {
   });
 
   it("preserves empty reasoning lifecycle events as real thinking activity", () => {
-    const parse = paperclipRunnerUIAdapter.createStdoutParser!().parseLine;
+    const parse = wardmoteRunnerUIAdapter.createStdoutParser!().parseLine;
     const event = (eventType: string) => parse(JSON.stringify({
       type: "paperclip.prp.event",
       event: {
@@ -200,7 +200,7 @@ describe("paperclip runner transcript projection", () => {
   });
 
   it("never exposes the structured task result envelope as final-response prose", () => {
-    const parse = paperclipRunnerUIAdapter.createStdoutParser!().parseLine;
+    const parse = wardmoteRunnerUIAdapter.createStdoutParser!().parseLine;
     const event = (eventType: string, payload: Record<string, unknown>, itemId = "result-1") => parse(JSON.stringify({
       type: "paperclip.prp.event",
       event: { eventType, itemId, payload },
@@ -233,7 +233,7 @@ describe("paperclip runner transcript projection", () => {
     ] as const;
 
     for (const [eventType, family, payload] of cases) {
-      const entries = paperclipRunnerUIAdapter.parseStdoutLine(JSON.stringify({
+      const entries = wardmoteRunnerUIAdapter.parseStdoutLine(JSON.stringify({
         type: "paperclip.prp.event",
         event: { eventType, payload },
       }), "2026-08-21T12:00:00.000Z");
@@ -245,7 +245,7 @@ describe("paperclip runner transcript projection", () => {
       expect(entries, eventType).not.toEqual([expect.objectContaining({ kind: "assistant" })]);
     }
 
-    const modelRoute = paperclipRunnerUIAdapter.parseStdoutLine(JSON.stringify({
+    const modelRoute = wardmoteRunnerUIAdapter.parseStdoutLine(JSON.stringify({
       type: "paperclip.prp.event",
       event: { eventType: "model.route.changed", payload: { provider: "claude", requestedModel: "claude", effectiveModel: "Claude Sonnet" } },
     }), "2026-08-21T12:00:01.000Z");
@@ -253,7 +253,7 @@ describe("paperclip runner transcript projection", () => {
   });
 
   it("projects workspace changes and verified file references as bounded structured entries", () => {
-    const parse = paperclipRunnerUIAdapter.createStdoutParser!().parseLine;
+    const parse = wardmoteRunnerUIAdapter.createStdoutParser!().parseLine;
     const event = (eventType: string, payload: Record<string, unknown>) => parse(JSON.stringify({
       type: "paperclip.prp.event",
       event: { eventType, payload },
@@ -289,7 +289,7 @@ describe("paperclip runner transcript projection", () => {
   });
 
   it("preserves complete native plan context and revision identity through replay", () => {
-    const parse = paperclipRunnerUIAdapter.createStdoutParser!().parseLine;
+    const parse = wardmoteRunnerUIAdapter.createStdoutParser!().parseLine;
     const description = "# Plan\n" + "x".repeat(99_981) + "\nFINAL-CHECK";
     expect(description.length).toBe(100_000);
     const questionId = `plan-${"a".repeat(64)}`;
@@ -308,7 +308,7 @@ describe("paperclip runner transcript projection", () => {
   });
 
   it("rejects oversized native plan context instead of showing an incomplete decision", () => {
-    const entries = paperclipRunnerUIAdapter.parseStdoutLine(JSON.stringify({
+    const entries = wardmoteRunnerUIAdapter.parseStdoutLine(JSON.stringify({
       type: "paperclip.prp.event", event: { eventType: "runtime_request.created", payload: { request: {
         requestId: "oversized-plan", type: "input", input: {
           schema: "wardmote.question_set.v1", description: "x".repeat(100_001),
@@ -320,7 +320,7 @@ describe("paperclip runner transcript projection", () => {
   });
 
   it("coalesces runtime request lifecycle data and emits terminal state", () => {
-    const parse = paperclipRunnerUIAdapter.createStdoutParser!().parseLine;
+    const parse = wardmoteRunnerUIAdapter.createStdoutParser!().parseLine;
     const event = (eventType: string, payload: Record<string, unknown>, turnId = "turn-1") => parse(JSON.stringify({
       type: "paperclip.prp.event",
       event: { eventType, turnId, payload },
@@ -374,7 +374,7 @@ describe("paperclip runner transcript projection", () => {
   });
 
   it("normalizes MCP semantic tools, canonical usage, and actionable failures", () => {
-    const parse = paperclipRunnerUIAdapter.createStdoutParser!().parseLine;
+    const parse = wardmoteRunnerUIAdapter.createStdoutParser!().parseLine;
     const event = (eventType: string, payload: Record<string, unknown>) => parse(JSON.stringify({
       type: "paperclip.prp.event",
       event: { eventType, payload },

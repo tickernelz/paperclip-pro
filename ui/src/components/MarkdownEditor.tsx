@@ -1585,7 +1585,7 @@ export const MarkdownEditor = forwardRef<MarkdownEditorRef, MarkdownEditorProps>
       {mentionActive && filteredMentions.length > 0 && mentionMenuPosition &&
         createPortal(
           <div
-            data-paperclip-floating-ui=""
+            data-wardmote-floating-ui=""
             data-testid="mention-autocomplete-menu"
             className="pointer-events-auto fixed z-(--z-9999) min-w-(--sz-180px) max-w-(--sz-calc-15) max-h-(--sz-208px) overflow-y-auto overscroll-contain rounded-md border border-line bg-bg-2 shadow-md"
             style={{

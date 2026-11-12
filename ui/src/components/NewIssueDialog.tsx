@@ -1107,7 +1107,7 @@ export function NewIssueDialog() {
           const target = event.detail.originalEvent.target as HTMLElement | null;
           if (
             createIssue.isPending ||
-            target?.closest("[data-radix-popper-content-wrapper], [data-paperclip-floating-ui]")
+            target?.closest("[data-radix-popper-content-wrapper], [data-wardmote-floating-ui]")
           ) {
             event.preventDefault();
           }
