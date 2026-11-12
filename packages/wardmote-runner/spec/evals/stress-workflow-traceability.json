@@ -1,6 +1,6 @@
 {
   "schema": "wardmote.runner.stress-eval-traceability.v1",
-  "campaign": "2026-08-23-paperclip-runner-stress-campaign",
+  "campaign": "2026-08-23-wardmote-runner-stress-campaign",
   "expectedFindings": 44,
   "workflows": [
     "final-response",

@@ -220,6 +220,7 @@
   "POST /api/mcp/requests/{id}/dot-pairing": "actor:public",
   "POST /api/mcp/requests/{id}/dot-pairing/preview": "actor:public",
   "POST /api/mcp/wardmote": "protocol",
+  "POST /api/onboarding/omp/custom-providers/models": "instance_admin",
   "POST /api/onboarding/omp/custom-providers/probe": "instance_admin",
   "POST /api/onboarding/omp/login": "instance_admin",
   "POST /api/onboarding/omp/login/{loginId}/input": "instance_admin",

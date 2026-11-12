@@ -1,5 +1,5 @@
 {
-  "schema": "paperclip-runner/protocol-coverage/v1",
+  "schema": "wardmote-runner/protocol-coverage/v1",
   "generatedFrom": [
     "spec/capability/eval-traceability.yaml",
     "src/tools/capability-semantic-tool-catalog.ts",
@@ -3877,7 +3877,7 @@
       "deterministicOwner": "src/scenarios/scenario-explorer.test.ts; src/live/live-session.test.ts"
     },
     {
-      "id": "paperclip-adapter-selection",
+      "id": "wardmote-adapter-selection",
       "requirement": "wardmote_runner is selectable without changing legacy adapter behavior",
       "deterministicOwner": "server/src/services/native-runtime/runtime-mode.test.ts; server/src/__tests__/heartbeat-native-runner-selection.test.ts"
     },
@@ -3887,7 +3887,7 @@
       "deterministicOwner": "server/src/services/native-runtime/wardmote-runner-tool-authority.test.ts; server/src/services/native-runtime/wardmote-runner-real-server.integration.test.ts"
     },
     {
-      "id": "shared-paperclip-prp-route",
+      "id": "shared-wardmote-prp-route",
       "requirement": "Rust runnerd authenticates to the shared Wardmote server route and completes a real bound semantic tool call",
       "deterministicOwner": "server/src/realtime/runner-prp-ws.test.ts; server/src/services/native-runtime/wardmote-runner-real-server.integration.test.ts"
     },
@@ -3897,7 +3897,7 @@
       "deterministicOwner": "server/src/services/native-runtime/wardmote-runner-tool-authority.test.ts"
     },
     {
-      "id": "paperclip-thread-projection",
+      "id": "wardmote-thread-projection",
       "requirement": "committed PRP reasoning and semantic tool items render in the existing Wardmote task chat",
       "deterministicOwner": "ui/src/adapters/wardmote-runner/index.test.ts; server/src/services/native-runtime/wardmote-control-plane-port.test.ts"
     }
