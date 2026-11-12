@@ -143,7 +143,6 @@ export interface OpenwaStoredMessage {
   direction: "incoming" | "outgoing";
   timestamp?: number | null;
   metadata?: Record<string, unknown> | null;
-  chatName?: string | null;
   mediaPath?: string | null;
   mediaMimetype?: string | null;
   status: "pending" | "sent" | "delivered" | "read" | "failed";
