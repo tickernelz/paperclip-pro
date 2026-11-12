@@ -21,6 +21,7 @@ import { conflict, unprocessable } from "../errors.js";
 const execFileAsync = promisify(execFile);
 const RESULT_POLL_MS = 2_000;
 export const UPDATE_INSTALL_DEADLINE_MS = 45 * 60 * 1000;
+const UPDATE_DRAIN_TTL_MS = UPDATE_INSTALL_DEADLINE_MS + 60_000;
 
 export type UpdateUnitState = "running" | "gone" | "unknown";
 
@@ -56,6 +57,7 @@ export function createUpdateInstaller(deps: UpdateInstallerDeps): UpdateInstalle
   let waitAbort: AbortController | null = null;
   let monitor: ReturnType<typeof setInterval> | null = null;
   let checking: Promise<void> | null = null;
+  let drainHeldUntil: number | null = null;
 
   function save(next: UpdateJob): UpdateJob {
     job = next;
@@ -68,7 +70,7 @@ export function createUpdateInstaller(deps: UpdateInstallerDeps): UpdateInstalle
 
   async function finish(patch: Partial<UpdateJob>): Promise<UpdateJob> {
     if (!job) throw new Error("No update job to finish.");
-    const done = save({ ...job, ...patch, finishedAt: new Date(now()).toISOString() });
+    const done = save({ ...job, finishedAt: new Date(now()).toISOString(), ...patch });
     stopMonitor();
     await deps.audit({ action: "instance.update.finished", job: done }).catch(() => undefined);
     return done;
@@ -83,6 +85,28 @@ export function createUpdateInstaller(deps: UpdateInstallerDeps): UpdateInstalle
     const result = readJson<UpdateResultFile>(resultPath);
     if (!result || typeof result.finishedAt !== "string" || Date.parse(result.finishedAt) < Date.parse(startedAt)) return null;
     return result;
+  }
+
+  function resultPatch(result: UpdateResultFile): Partial<UpdateJob> {
+    return {
+      phase: result.ok === true ? "succeeded" : "failed",
+      installedVersion: typeof result.version === "string" ? result.version : null,
+      rolledBackTo: typeof result.rolledBackTo === "string" ? result.rolledBackTo : null,
+      error: typeof result.error === "string" ? result.error : null,
+      finishedAt: result.finishedAt as string,
+    };
+  }
+
+  function reconcileLateResult(): void {
+    if (job?.phase !== "failed" || !job.startedAt || !job.finishedAt) return;
+    const result = readResult(job.startedAt);
+    if (!result || Date.parse(result.finishedAt as string) <= Date.parse(job.finishedAt)) return;
+    void finish(resultPatch(result));
+  }
+
+  async function holdDrain(): Promise<void> {
+    await deps.runControl.startDrain(UPDATE_DRAIN_TTL_MS).catch(() => undefined);
+    drainHeldUntil = now() + UPDATE_DRAIN_TTL_MS;
   }
 
   async function failInstalling(error: string): Promise<void> {
@@ -101,11 +125,17 @@ export function createUpdateInstaller(deps: UpdateInstallerDeps): UpdateInstalle
     let result = readResult(startedAt);
     if (!result) {
       const logHint = job.logHint ? ` Log: ${job.logHint}` : "";
-      if (now() - Date.parse(startedAt) >= UPDATE_INSTALL_DEADLINE_MS) {
-        await failInstalling(`The update process did not report a result within ${Math.round(UPDATE_INSTALL_DEADLINE_MS / 60_000)} minutes.${logHint}`);
+      const state = job.unit ? await deps.unitState(job.unit) : "unknown";
+      if (state === "running") {
+        if (now() >= (drainHeldUntil ?? Date.parse(startedAt) + UPDATE_DRAIN_TTL_MS) - 60_000) await holdDrain();
         return;
       }
-      if (!job.unit || (await deps.unitState(job.unit)) !== "gone") return;
+      if (state === "unknown") {
+        if (now() - Date.parse(startedAt) >= UPDATE_INSTALL_DEADLINE_MS) {
+          await failInstalling(`The update process did not report a result within ${Math.round(UPDATE_INSTALL_DEADLINE_MS / 60_000)} minutes.${logHint}`);
+        }
+        return;
+      }
       result = readResult(startedAt);
       if (!result) {
         await failInstalling(`The update process exited without reporting a result.${logHint}`);
@@ -113,12 +143,7 @@ export function createUpdateInstaller(deps: UpdateInstallerDeps): UpdateInstalle
       }
     }
     await deps.runControl.stopDrain().catch(() => undefined);
-    await finish({
-      phase: result.ok === true ? "succeeded" : "failed",
-      installedVersion: typeof result.version === "string" ? result.version : null,
-      rolledBackTo: typeof result.rolledBackTo === "string" ? result.rolledBackTo : null,
-      error: typeof result.error === "string" ? result.error : null,
-    });
+    await finish(resultPatch(result));
   }
 
   function startMonitor() {
@@ -131,7 +156,7 @@ export function createUpdateInstaller(deps: UpdateInstallerDeps): UpdateInstalle
     if (!job) throw new Error("No update job to launch.");
     fs.rmSync(resultPath, { force: true });
     const started = save({ ...job, phase: "installing", startedAt: new Date(now()).toISOString() });
-    await deps.runControl.startDrain(UPDATE_INSTALL_DEADLINE_MS + 60_000).catch(() => undefined);
+    await holdDrain();
     try {
       const { logHint, unit } = await deps.launch(started, resultPath);
       save({ ...started, logHint, unit });
@@ -183,7 +208,10 @@ export function createUpdateInstaller(deps: UpdateInstallerDeps): UpdateInstalle
   }
 
   return {
-    current: () => job,
+    current() {
+      reconcileLateResult();
+      return job;
+    },
 
     async start(input) {
       if (isUpdateJobActive(job)) throw conflict("An update is already in progress");
@@ -239,6 +267,8 @@ export function createUpdateInstaller(deps: UpdateInstallerDeps): UpdateInstalle
         void checkResult();
       } else if (job?.phase === "waiting") {
         void finish({ phase: "cancelled", error: "The server restarted while the update was waiting for runs." });
+      } else {
+        reconcileLateResult();
       }
     },
 
