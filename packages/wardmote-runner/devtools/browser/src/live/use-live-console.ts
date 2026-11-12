@@ -20,7 +20,7 @@ import {
   type TranscriptEntry,
 } from "./transcript-model";
 
-const SESSION_STORAGE_KEY = "paperclip-runner.live-console.session";
+const SESSION_STORAGE_KEY = "wardmote-runner.live-console.session";
 const RECONNECT_DELAY_MS = 900;
 const MAX_RECONNECT_ATTEMPTS = 5;
 
