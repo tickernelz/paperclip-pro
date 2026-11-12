@@ -199,7 +199,7 @@ That creates `<output>/plugin-name/` with:
 
 Inside this monorepo, the scaffold uses `workspace:*` for `@tickernelz/wardmote-plugin-sdk`.
 
-Outside this monorepo, the scaffold snapshots `@tickernelz/wardmote-plugin-sdk` from the local Wardmote checkout into a `.paperclip-sdk/` tarball so you can build and test a plugin without publishing anything to npm first. Pass `--sdk-path /absolute/path/to/paperclip/packages/plugins/sdk` if you have more than one Wardmote checkout.
+Outside this monorepo, the scaffold snapshots `@tickernelz/wardmote-plugin-sdk` from the local Wardmote checkout into a `.wardmote-sdk/` tarball so you can build and test a plugin without publishing anything to npm first. Pass `--sdk-path /absolute/path/to/paperclip/packages/plugins/sdk` if you have more than one Wardmote checkout.
 
 ## Local development workflow
 

@@ -187,7 +187,7 @@ What that means in practice:
 - **Manifest:** save `src/manifest.ts` → `dist/manifest.js` rewrites → the worker restarts and the host re-reads the manifest.
 - **Plugin UI:** save a `.tsx` file → esbuild rewrites `dist/ui/` → Wardmote reloads the UI bundle on its next mount. To get HMR during UI iteration, run `pnpm dev:ui` and point at the dev server with `devUiUrl` in your manifest while developing.
 - **Without `pnpm dev`:** the watcher only fires on `dist/*` changes. If you stop the watch build, source edits do not reach Wardmote. Restart `pnpm dev` (or run `pnpm build` once) before expecting changes.
-- **`node_modules`, `.git`, `.paperclip-sdk`, and other dotfolders are ignored.** Adding a dependency requires the new code to actually be imported and rebuilt before the worker sees it.
+- **`node_modules`, `.git`, `.wardmote-sdk`, and other dotfolders are ignored.** Adding a dependency requires the new code to actually be imported and rebuilt before the worker sees it.
 
 The package's own build scripts still own compilation. Wardmote does not compile arbitrary local-path plugins for you. The exceptions are bundled plugins inside the Wardmote repo under `packages/plugins/`: workspace packages auto-build once with `pnpm --filter <package> build`, and standalone sandbox-provider packages under `packages/plugins/sandbox-providers/` first bootstrap package-local dependencies with `pnpm install --ignore-workspace ...` and then run `pnpm build` in place. Set `WARDMOTE_DISABLE_PLUGIN_AUTOBUILD=1` in the server environment to disable those fallbacks.
 

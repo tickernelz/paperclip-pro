@@ -100,7 +100,7 @@ function packLocalPackage(packagePath: string, outputDir: string): string {
   const packageName = packageJson.name ?? path.basename(packagePath);
   const packageVersion = packageJson.version ?? "0.0.0";
   const tarballFileName = `${packageName.replace(/^@/, "").replace("/", "-")}-${packageVersion}.tgz`;
-  const sdkBundleDir = path.join(outputDir, ".paperclip-sdk");
+  const sdkBundleDir = path.join(outputDir, ".wardmote-sdk");
 
   fs.mkdirSync(sdkBundleDir, { recursive: true });
   execFileSync("pnpm", ["build"], { cwd: packagePath, stdio: "pipe" });
@@ -672,7 +672,7 @@ output and reloads the plugin worker. Local installs run trusted code from this
 folder on your machine.
 
 ${sdkDependency.startsWith("file:")
-  ? `This scaffold snapshots \`@tickernelz/wardmote-plugin-sdk\` and \`@tickernelz/wardmote-shared\` from a local Wardmote checkout at:\n\n\`${toPosixPath(localSdkPath)}\`\n\nThe packed tarballs live in \`.paperclip-sdk/\` for local development. Before publishing this plugin, switch those dependencies to published package versions once they are available on npm.\n\n`
+  ? `This scaffold snapshots \`@tickernelz/wardmote-plugin-sdk\` and \`@tickernelz/wardmote-shared\` from a local Wardmote checkout at:\n\n\`${toPosixPath(localSdkPath)}\`\n\nThe packed tarballs live in \`.wardmote-sdk/\` for local development. Before publishing this plugin, switch those dependencies to published package versions once they are available on npm.\n\n`
   : ""}
 
 ## Install Into Wardmote
@@ -688,7 +688,7 @@ wardmote plugin install ${shellQuote(toPosixPath(outputDir))}
 `,
   );
 
-  writeFile(path.join(outputDir, ".gitignore"), "dist\nnode_modules\n.paperclip-sdk\n");
+  writeFile(path.join(outputDir, ".gitignore"), "dist\nnode_modules\n.wardmote-sdk\n");
 
   return outputDir;
 }
