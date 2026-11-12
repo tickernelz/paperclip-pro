@@ -17,6 +17,20 @@ export type DevServerHealthStatus = {
   lastRestartAt: string | null;
 };
 
+export type DiskSpaceHealth = {
+  level: "ok" | "warning" | "action" | "emergency";
+  holdingRuns: boolean;
+  freeBytes?: number;
+  totalBytes?: number;
+  freePercent?: number;
+  path?: string;
+};
+
+export type HealthWarning = {
+  code: string;
+  message: string;
+};
+
 export type HealthStatus = {
   status: "ok" | "starting";
   version?: string;
@@ -32,6 +46,8 @@ export type HealthStatus = {
   };
   serverInfo?: ServerInfoSnapshot;
   devServer?: DevServerHealthStatus;
+  diskSpace?: DiskSpaceHealth;
+  warnings?: HealthWarning[];
   /**
    * Settings surfaces hidden by the hosting operator (keys from the shared
    * settings-visibility registry). Absent when nothing is hidden.

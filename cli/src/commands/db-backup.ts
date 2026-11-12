@@ -1,7 +1,7 @@
 import path from "node:path";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
-import { formatDatabaseBackupResult, runDatabaseBackup, embeddedPostgresUrl, DATABASE_BACKUP_FILENAME_PREFIX } from "@tickernelz/wardmote-db";
+import { formatDatabaseBackupResult, runDatabaseBackup, embeddedPostgresUrl, DATABASE_BACKUP_FILENAME_PREFIX, pinnedBackupDir } from "@tickernelz/wardmote-db";
 import {
   expandHomePrefix,
   resolveDefaultBackupDir,
@@ -14,6 +14,8 @@ type DbBackupOptions = {
   config?: string;
   dir?: string;
   retentionDays?: number;
+  maxFiles?: number;
+  pin?: boolean;
   filenamePrefix?: string;
   json?: boolean;
 };
@@ -42,6 +44,14 @@ function normalizeRetentionDays(value: number | undefined, fallback: number): nu
   return candidate;
 }
 
+function normalizeMaxFiles(value: number | undefined, fallback: number): number {
+  const candidate = value ?? fallback;
+  if (!Number.isInteger(candidate) || candidate < 0 || candidate > 48) {
+    throw new Error(`Invalid max files '${String(candidate)}'. Use an integer from 0 to 48.`);
+  }
+  return candidate;
+}
+
 function resolveBackupDir(raw: string): string {
   return path.resolve(expandHomePrefix(raw.trim()));
 }
@@ -60,12 +70,17 @@ export async function dbBackupCommand(opts: DbBackupOptions): Promise<void> {
     opts.retentionDays,
     config?.database.backup.retentionDays ?? 30,
   );
+  const maxFiles = normalizeMaxFiles(opts.maxFiles, config?.database.backup.maxFiles ?? 2);
   const filenamePrefix = opts.filenamePrefix?.trim() || DATABASE_BACKUP_FILENAME_PREFIX;
+  const pinned = opts.pin === true;
+  const retentionLabel = pinned
+    ? "pinned (outside rotation)"
+    : maxFiles > 0 ? `newest ${maxFiles} verified backup(s)` : `${retentionDays} day(s), tiered`;
 
   p.log.message(pc.dim(`Config: ${configPath}`));
   p.log.message(pc.dim(`Connection source: ${connection.source}`));
-  p.log.message(pc.dim(`Backup dir: ${backupDir}`));
-  p.log.message(pc.dim(`Retention: ${retentionDays} day(s)`));
+  p.log.message(pc.dim(`Backup dir: ${pinned ? pinnedBackupDir(backupDir) : backupDir}`));
+  p.log.message(pc.dim(`Retention: ${retentionLabel}`));
 
   const spinner = p.spinner();
   spinner.start("Creating database backup...");
@@ -73,8 +88,14 @@ export async function dbBackupCommand(opts: DbBackupOptions): Promise<void> {
     const result = await runDatabaseBackup({
       connectionString: connection.value,
       backupDir,
-      retention: { dailyDays: retentionDays, weeklyWeeks: 4, monthlyMonths: 1 },
+      retention: { dailyDays: retentionDays, weeklyWeeks: 4, monthlyMonths: 1, maxFiles: maxFiles > 0 ? maxFiles : null },
       filenamePrefix,
+      pinned,
+      pinnedMaxAgeDays: config?.database.backup.pinnedMaxAgeDays ?? 30,
+      spaceGuard: {
+        reservePercent: config?.database.backup.reservePercent ?? 5,
+        reserveBytes: Math.round((config?.database.backup.reserveGb ?? 10) * 1024 ** 3),
+      },
     });
     spinner.stop(`Backup saved: ${formatDatabaseBackupResult(result)}`);
 
@@ -87,6 +108,8 @@ export async function dbBackupCommand(opts: DbBackupOptions): Promise<void> {
             prunedCount: result.prunedCount,
             backupDir,
             retentionDays,
+            maxFiles,
+            pinned,
             connectionSource: connection.source,
           },
           null,

@@ -5,6 +5,7 @@ import {
   DAILY_RETENTION_PRESETS,
   WEEKLY_RETENTION_PRESETS,
   MONTHLY_RETENTION_PRESETS,
+  BACKUP_MAX_FILES_PRESETS,
   DEFAULT_BACKUP_RETENTION,
   DEFAULT_ATTACHMENT_RETENTION,
   SPEECH_TO_TEXT_DEFAULTS,
@@ -193,12 +194,44 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
           <div className="space-y-1.5">
             <h2 className="text-sm font-semibold">Backup retention</h2>
             <p className="max-w-2xl text-sm text-ink-3">
-              Configure how long automatic database backups are retained. Backups run roughly
-              every hour and are compressed with gzip. Within the daily window all backups are
-              kept; beyond that, one backup per week and one per month are preserved.
+              Configure how many automatic database backups are kept. Backups run roughly every
+              hour, are compressed with gzip, and are verified before an older backup is removed.
+              Keeping the last few backups bounds disk use; tiered retention keeps every backup in
+              the daily window plus one per week and month, and grows with the database.
             </p>
           </div>
 
+          <div className="space-y-1.5">
+            <h3 className="text-xs font-medium text-ink-3 uppercase tracking-wide">Keep</h3>
+            <div className="flex flex-wrap gap-2">
+              {[...BACKUP_MAX_FILES_PRESETS, null].map((maxFiles) => {
+                const active = backupRetention.maxFiles === maxFiles;
+                const label = maxFiles === null ? "Tiered" : `Last ${maxFiles}`;
+                return (
+                  <button
+                    key={label}
+                    type="button"
+                    disabled={updateGeneralMutation.isPending || signOutMutation.isPending}
+                    className={cn(
+                      "rounded-lg border px-3 py-2 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-60",
+                      active
+                        ? "border-ink bg-bg-3 text-ink"
+                        : "border-line bg-bg hover:bg-bg-3/50",
+                    )}
+                    onClick={() =>
+                      updateGeneralMutation.mutate({
+                        backupRetention: { ...backupRetention, maxFiles },
+                      })
+                    }
+                  >
+                    <div className="text-sm font-medium">{label}</div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {backupRetention.maxFiles === null && (<>
           <div className="space-y-1.5">
             <h3 className="text-xs font-medium text-ink-3 uppercase tracking-wide">Daily</h3>
             <div className="flex flex-wrap gap-2">
@@ -287,6 +320,7 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
               })}
             </div>
           </div>
+          </>)}
         </div>
       </section>
       )}

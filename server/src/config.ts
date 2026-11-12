@@ -15,6 +15,8 @@ import {
   SECRET_PROVIDERS,
   STORAGE_PROVIDERS,
   runLogRetentionConfigSchema,
+  diskGuardConfigSchema,
+  type DiskGuardConfig,
   type RunLogRetentionConfig,
   type BindMode,
   type AuthBaseUrlMode,
@@ -81,8 +83,12 @@ export interface Config {
   databaseBackupIntervalMinutes: number;
   databaseBackupRetentionDays: number;
   databaseBackupDir: string;
+  databaseBackupReservePercent: number;
+  databaseBackupReserveBytes: number;
+  databaseBackupPinnedMaxAgeDays: number;
   workspaceReaperCooldownDays: number;
   runLogRetention: RunLogRetentionConfig;
+  diskGuard: DiskGuardConfig;
   serveUi: boolean;
   uiDevMiddleware: boolean;
   secretsProvider: SecretProvider;
@@ -146,6 +152,16 @@ export function loadConfig(): Config {
         ? process.env.WARDMOTE_RUN_LOG_RETENTION_DRY_RUN === "true"
         : fileRunLogRetention.dryRun,
   };
+  const diskGuard = diskGuardConfigSchema.parse(fileConfig?.diskGuard ?? {});
+  if (process.env.WARDMOTE_DISK_GUARD_ENABLED !== undefined) {
+    diskGuard.enabled = process.env.WARDMOTE_DISK_GUARD_ENABLED === "true";
+  }
+  if (diskGuard.ompSessionDir) diskGuard.ompSessionDir = resolveHomeAwarePath(diskGuard.ompSessionDir);
+  if (diskGuard.ompBlobDir) diskGuard.ompBlobDir = resolveHomeAwarePath(diskGuard.ompBlobDir);
+  if (diskGuard.ompAgentDir) diskGuard.ompAgentDir = resolveHomeAwarePath(diskGuard.ompAgentDir);
+  const databaseBackupReservePercent = fileDatabaseBackup?.reservePercent ?? 5;
+  const databaseBackupReserveBytes = Math.round((fileDatabaseBackup?.reserveGb ?? 10) * 1024 ** 3);
+  const databaseBackupPinnedMaxAgeDays = fileDatabaseBackup?.pinnedMaxAgeDays ?? 30;
   const fileSecrets = fileConfig?.secrets;
   const fileStorage = fileConfig?.storage;
 
@@ -352,8 +368,12 @@ export function loadConfig(): Config {
     databaseBackupIntervalMinutes,
     databaseBackupRetentionDays,
     databaseBackupDir,
+    databaseBackupReservePercent,
+    databaseBackupReserveBytes,
+    databaseBackupPinnedMaxAgeDays,
     workspaceReaperCooldownDays,
     runLogRetention,
+    diskGuard,
     serveUi:
       process.env.SERVE_UI !== undefined
         ? process.env.SERVE_UI === "true"

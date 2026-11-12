@@ -1,10 +1,13 @@
-import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { accessSync, constants, existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { basename, join, resolve } from "node:path";
+import { DATABASE_BACKUP_SKIPPED_MARKER } from "@tickernelz/wardmote-db";
 
 export type DatabaseBackupHealthWarningCode =
   | "database_backup_check_failed"
   | "database_backup_last_failure"
   | "database_backup_missing"
+  | "database_backup_skipped_low_disk"
+  | "database_backup_unreadable"
   | "database_backup_stale";
 
 export type DatabaseBackupHealthWarning = {
@@ -78,6 +81,31 @@ function readLastFailure(alertFiles: string[]) {
   };
 }
 
+function readSkippedBackup(backupDir: string) {
+  const markerPath = join(backupDir, DATABASE_BACKUP_SKIPPED_MARKER);
+  if (!existsSync(markerPath)) return null;
+  const marker = JSON.parse(readFileSync(markerPath, "utf8")) as {
+    skippedAt?: string;
+    freeBytes?: number;
+    requiredBytes?: number;
+  };
+  const gb = (bytes: number | undefined) => `${((bytes ?? 0) / 1024 ** 3).toFixed(1)} GB`;
+  return `Database backup skipped at ${marker.skippedAt ?? "unknown time"}: ${gb(marker.freeBytes)} free on the backup volume, ${gb(marker.requiredBytes)} required. Free disk space or lower the reserve; older backups were kept.`;
+}
+
+function listUnreadableBackups(backupDir: string): string[] {
+  if (!existsSync(backupDir)) return [];
+  return readdirSync(backupDir).filter((name) => {
+    if (!name.endsWith(".sql.gz")) return false;
+    try {
+      accessSync(join(backupDir, name), constants.R_OK);
+      return false;
+    } catch {
+      return true;
+    }
+  });
+}
+
 function findLatestBackup(backupDir: string, nowMs: number) {
   if (!existsSync(backupDir)) return null;
 
@@ -126,6 +154,19 @@ export function inspectDatabaseBackupHealth(
         code: "database_backup_stale",
         message: `Latest database backup is ${latestBackup.ageHours}h old, exceeding ${maxAgeHours}h.`,
       });
+    }
+
+    const unreadable = listUnreadableBackups(opts.backupDir);
+    if (unreadable.length > 0) {
+      warnings.push({
+        code: "database_backup_unreadable",
+        message: `${unreadable.length} database backup(s) cannot be read and are kept outside the rotation: ${unreadable.join(", ")}. Fix their permissions or remove them.`,
+      });
+    }
+
+    const skipped = readSkippedBackup(opts.backupDir);
+    if (skipped) {
+      warnings.push({ code: "database_backup_skipped_low_disk", message: skipped });
     }
 
     if (lastFailure) {

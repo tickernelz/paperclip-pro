@@ -45,6 +45,7 @@ import {
   reconcilePendingMigrationHistory,
   formatDatabaseBackupResult,
   runDatabaseBackup,
+  DatabaseBackupSkippedError,
   authUsers,
   companies,
   companyMemberships,
@@ -97,6 +98,9 @@ import {
 import { questionResponseDeliveryService } from "./services/question-response-delivery.js";
 import { attachmentRetentionService, ATTACHMENT_RETENTION_TICK_MS } from "./services/attachment-retention.js";
 import { runLogRetentionService } from "./services/run-log-retention.js";
+import { diskGuardService } from "./services/disk-guard.js";
+import { defaultOmpSessionRoot } from "@tickernelz/wardmote-adapter-omp-local/server";
+import { defaultOmpAgentDir } from "./services/omp-session-retention.js";
 import { openwaAuditPurgeScheduler } from "./services/openwa/audit.js";
 import { deliverNativeQuestionResponse } from "./services/native-runtime/native-question-bridge.js";
 import { queueIssueAssignmentWakeup } from "./services/issue-assignment-wakeup.js";
@@ -108,7 +112,8 @@ import {
   createProductionLoginSessionReaperRuntime,
 } from "./services/device-login-reaper.js";
 import { createProductionSetupTokenReaper } from "./services/setup-token-reaper.js";
-import { resolveWorktreeRunExecutionActivationState } from "./services/instance-settings.js";
+import { isTruthyRuntimeEnvValue, resolveWorktreeRunExecutionActivationState } from "./services/instance-settings.js";
+import { resolveWardmoteInstanceId } from "./home-paths.js";
 import {
   parseAdapterRegistryEnv,
   reconcileAdapterAvailability,
@@ -824,6 +829,22 @@ async function startServerWithDatabaseTeardown(
     resolve(config.databaseBackupDir, "db-backup-to-s3.failure"),
     resolve(config.databaseBackupDir, "..", "db-backup-to-s3.failure"),
   ];
+  const ompSessionRoot = config.diskGuard.ompSessionDir ?? defaultOmpSessionRoot();
+  const ompAgentDir = config.diskGuard.ompAgentDir ?? defaultOmpAgentDir();
+  const ompSweepEnabled = config.diskGuard.ompSessionSweep ??
+    (Boolean(config.diskGuard.ompSessionDir) ||
+      (!isTruthyRuntimeEnvValue(process.env.WARDMOTE_IN_WORKTREE) && resolveWardmoteInstanceId() === "default"));
+  const diskGuard = diskGuardService(db as any, {
+    config: config.diskGuard,
+    paths: [config.databaseBackupDir, resolveRunLogBasePath(), config.embeddedPostgresDataDir, ompSessionRoot]
+      .filter((path) => existsSync(path)),
+    runLogBasePath: resolveRunLogBasePath(),
+    runLogSettings: config.runLogRetention,
+    ompSessionRoot: ompSweepEnabled ? ompSessionRoot : null,
+    ompBlobDir: ompSweepEnabled ? config.diskGuard.ompBlobDir ?? resolve(ompAgentDir, "blobs") : null,
+    ompAgentDir,
+    listCompanyIds: () => backupSettingsSvc.listCompanyIds(),
+  });
   let databaseBackupInFlight = false;
   const idleDatabaseBackupEnabled = config.databaseBackupEnabled
     && process.env.WARDMOTE_DB_BACKUP_IDLE_CHECKPOINT_ENABLED === "1";
@@ -839,6 +860,10 @@ async function startServerWithDatabaseTeardown(
       throw conflict(message);
     }
 
+    if (trigger !== "manual" && diskGuard.status()?.holdingRuns) {
+      logger.warn({ diskSpace: diskGuard.status(), trigger }, "Skipping database backup: disk space is at the emergency level");
+      return null;
+    }
     databaseBackupInFlight = true;
     const finishIdleBackup = beginIdleTrackedWork();
     const startedAt = new Date();
@@ -857,6 +882,11 @@ async function startServerWithDatabaseTeardown(
         backupDir: config.databaseBackupDir,
         retention,
         verifyBeforePrune: verifyCheckpoint ? verifyIdleDatabaseBackup : undefined,
+        pinnedMaxAgeDays: config.databaseBackupPinnedMaxAgeDays,
+        spaceGuard: {
+          reservePercent: config.databaseBackupReservePercent,
+          reserveBytes: config.databaseBackupReserveBytes,
+        },
       });
       if (verifyCheckpoint) {
         if (trigger !== "idle") await clearIdleBackupWakeRequired(config.databaseBackupDir);
@@ -876,6 +906,7 @@ async function startServerWithDatabaseTeardown(
           backupFile: result.backupFile,
           sizeBytes: result.sizeBytes,
           prunedCount: result.prunedCount,
+          unreadableBackups: result.unreadableBackups,
           backupDir: config.databaseBackupDir,
           retention,
           trigger,
@@ -885,6 +916,11 @@ async function startServerWithDatabaseTeardown(
       );
       return response;
     } catch (err) {
+      if (err instanceof DatabaseBackupSkippedError) {
+        logger.warn({ backupDir: config.databaseBackupDir, trigger, freeBytes: err.freeBytes, requiredBytes: err.requiredBytes }, err.message);
+        if (trigger === "scheduled") return null;
+        throw conflict(err.message);
+      }
       logger.error({ err, backupDir: config.databaseBackupDir, trigger }, `${label} database backup failed`);
       throw err;
     } finally {
@@ -926,6 +962,7 @@ async function startServerWithDatabaseTeardown(
           alertFiles: databaseBackupAlertFiles,
         }
       : undefined,
+    diskSpaceStatus: () => diskGuard.status(),
     deploymentMode: config.deploymentMode,
     deploymentExposure: config.deploymentExposure,
     allowedHostnames: config.allowedHostnames,
@@ -1128,6 +1165,14 @@ async function startServerWithDatabaseTeardown(
     basePath: resolveRunLogBasePath(),
     settings: config.runLogRetention,
   });
+  void diskGuard.tick().catch((err: unknown) => {
+    logger.error({ err }, "disk guard check failed");
+  });
+  setInterval(() => {
+    void diskGuard.tick().catch((err: unknown) => {
+      logger.error({ err }, "disk guard check failed");
+    });
+  }, diskGuard.intervalMs);
   setInterval(() => {
     void runLogRetention.tick().catch((err: unknown) => {
       logger.error({ err }, "scheduled run log retention failed");

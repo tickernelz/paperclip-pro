@@ -203,8 +203,10 @@ program
   .option("-c, --config <path>", "Path to config file")
   .option("-d, --data-dir <path>", DATA_DIR_OPTION_HELP)
   .option("--dir <path>", "Backup output directory (overrides config)")
-  .option("--retention-days <days>", "Retention window used for pruning", (value) => Number(value))
-  .option("--filename-prefix <prefix>", "Backup filename prefix", "paperclip")
+  .option("--max-files <count>", "Keep this many newest verified backups (0 = tiered retention by --retention-days)", (value) => Number(value))
+  .option("--retention-days <days>", "Daily window for tiered retention when --max-files is 0", (value) => Number(value))
+  .option("--pin", "Write a pinned backup under <dir>/pinned, outside rotation (release and rollback dumps)")
+  .option("--filename-prefix <prefix>", "Backup filename prefix (default: wardmote)")
   .option("--json", "Print backup metadata as JSON")
   .action(async (opts) => {
     await dbBackupCommand(opts);

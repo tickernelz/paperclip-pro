@@ -425,6 +425,11 @@ export const OMP_TODO_PROMPT_LINE =
 const OMP_HEARTBEAT_PROMPT_TEMPLATE =
   "You are agent {{agent.id}} ({{agent.name}}). Continue your Wardmote work under the execution contract in your system prompt.";
 
+/** Local root under which each agent gets its default OMP session directory. */
+export function defaultOmpSessionRoot() {
+  return path.join(os.homedir(), ".omp", "paperclip", "sessions");
+}
+
 async function findOmpSessionFile(sessionDir: string, sessionId: string) {
   const entries = await fs.readdir(sessionDir).catch(() => [] as string[]);
   const match = entries.find((entry) => entry.endsWith(`${sessionId}.jsonl`));
@@ -788,7 +793,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
           "sessions",
           safePathSegment(agent.id),
         )
-      : path.join(os.homedir(), ".omp", "paperclip", "sessions", safePathSegment(agent.id));
+      : path.join(defaultOmpSessionRoot(), safePathSegment(agent.id));
     const sessionDir = canResume && savedSessionDir
       ? savedSessionDir
       : configuredSessionDir || defaultSessionDir;

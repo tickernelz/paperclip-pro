@@ -8,6 +8,8 @@ import postgres from "postgres";
 import {
   adoptRetiredBackupFilenames,
   createBufferedTextFileWriter,
+  DATABASE_BACKUP_SKIPPED_MARKER,
+  DatabaseBackupSkippedError,
   removeAbandonedPartialBackups,
   runDatabaseBackup,
   runDatabaseRestore,
@@ -780,3 +782,137 @@ describeEmbeddedPostgres("runDatabaseBackup", () => {
     20_000,
   );
 });
+
+describeEmbeddedPostgres("runDatabaseBackup rotation and disk guard", () => {
+  const retention = { dailyDays: 7, weeklyWeeks: 4, monthlyMonths: 1, maxFiles: 2 } as const;
+
+  async function withFixturePgDump<T>(backupDir: string, run: () => Promise<T>): Promise<T> {
+    const executable = path.join(path.dirname(backupDir), `pg-dump-fixture-${path.basename(backupDir)}`);
+    fs.writeFileSync(executable, "#!/bin/sh\nprintf 'SELECT 1;\\n'\n", { mode: 0o700 });
+    cleanups.push(() => fs.rmSync(executable, { force: true }));
+    const previous = process.env.WARDMOTE_PG_DUMP_PATH;
+    process.env.WARDMOTE_PG_DUMP_PATH = executable;
+    try {
+      return await run();
+    } finally {
+      if (previous === undefined) delete process.env.WARDMOTE_PG_DUMP_PATH;
+      else process.env.WARDMOTE_PG_DUMP_PATH = previous;
+    }
+  }
+
+  function seed(backupDir: string, name: string, bytes: Buffer, hoursAgo: number): string {
+    const file = path.join(backupDir, name);
+    fs.writeFileSync(file, bytes);
+    const at = new Date(Date.now() - hoursAgo * 3_600_000);
+    fs.utimesSync(file, at, at);
+    return file;
+  }
+
+  function rotated(backupDir: string): string[] {
+    return fs.readdirSync(backupDir).filter((name) => name.endsWith(".sql.gz")).sort();
+  }
+
+  const waitNextSecond = () => new Promise((resolveWait) => setTimeout(resolveWait, 1_100));
+
+  it("keeps exactly maxFiles valid backups and drops corrupt and empty ones", async () => {
+    const connectionString = await createTempDatabase();
+    const backupDir = createTempDir("rotation-max-files-");
+    seed(backupDir, "wardmote-20260101-030000.sql.gz", gzipSync("SELECT 'truncated';").subarray(0, 12), 1);
+    seed(backupDir, "wardmote-20260101-020000.sql.gz", Buffer.alloc(0), 2);
+    seed(backupDir, "wardmote-20260101-010000.sql.gz", gzipSync("SELECT 'last valid';"), 3);
+    seed(backupDir, "wardmote-20260101-000000.sql.gz", gzipSync("SELECT 'oldest';"), 4);
+
+    const result = await withFixturePgDump(backupDir, () =>
+      runDatabaseBackup({ connectionString, backupDir, retention }));
+
+    expect(rotated(backupDir)).toEqual(["wardmote-20260101-010000.sql.gz", path.basename(result.backupFile)].sort());
+    expect(result.prunedCount).toBe(3);
+    expect(gunzipSync(fs.readFileSync(result.backupFile)).toString()).toBe("SELECT 1;\n");
+  }, EMBEDDED_POSTGRES_TEST_TIMEOUT_MS);
+
+  it("keeps a backup it cannot read instead of treating it as corrupt", async () => {
+    if (process.getuid?.() === 0) return;
+    const connectionString = await createTempDatabase();
+    const backupDir = createTempDir("rotation-unreadable-");
+    const unreadable = seed(backupDir, "wardmote-20260101-020000.sql.gz", gzipSync("SELECT 'unreadable';"), 1);
+    fs.chmodSync(unreadable, 0o000);
+    cleanups.push(() => fs.chmodSync(unreadable, 0o600));
+    seed(backupDir, "wardmote-20260101-010000.sql.gz", gzipSync("SELECT 'valid';"), 2);
+    seed(backupDir, "wardmote-20260101-000000.sql.gz", gzipSync("SELECT 'oldest';"), 3);
+
+    const result = await withFixturePgDump(backupDir, () =>
+      runDatabaseBackup({ connectionString, backupDir, retention }));
+
+    expect(rotated(backupDir)).toEqual(
+      ["wardmote-20260101-010000.sql.gz", "wardmote-20260101-020000.sql.gz", path.basename(result.backupFile)].sort(),
+    );
+    expect(result.unreadableBackups).toEqual([unreadable]);
+  }, EMBEDDED_POSTGRES_TEST_TIMEOUT_MS);
+
+  it("skips the backup and keeps the last valid backup when space is short", async () => {
+    const connectionString = await createTempDatabase();
+    const backupDir = createTempDir("rotation-low-disk-");
+    const last = seed(backupDir, "wardmote-20260101-000000.sql.gz", gzipSync("SELECT 'last';"), 1);
+    const lastBytes = fs.readFileSync(last);
+
+    const attempt = withFixturePgDump(backupDir, () =>
+      runDatabaseBackup({
+        connectionString,
+        backupDir,
+        retention,
+        spaceGuard: { reservePercent: 5, reserveBytes: 0, statfs: () => ({ freeBytes: 1_000, totalBytes: 100_000 }) },
+      }));
+
+    await expect(attempt).rejects.toBeInstanceOf(DatabaseBackupSkippedError);
+    expect(rotated(backupDir)).toEqual(["wardmote-20260101-000000.sql.gz"]);
+    expect(fs.readFileSync(last)).toEqual(lastBytes);
+    expect(fs.readdirSync(backupDir).some((name) => name.endsWith(".partial"))).toBe(false);
+    const marker = JSON.parse(fs.readFileSync(path.join(backupDir, DATABASE_BACKUP_SKIPPED_MARKER), "utf8"));
+    expect(marker).toMatchObject({ freeBytes: 1_000, requiredBytes: 5_000 + Math.ceil(lastBytes.length * 1.5) });
+  }, EMBEDDED_POSTGRES_TEST_TIMEOUT_MS);
+
+  it("frees the oldest backup only when that makes room, then clears the skip marker", async () => {
+    const connectionString = await createTempDatabase();
+    const backupDir = createTempDir("rotation-make-room-");
+    const oldest = seed(backupDir, "wardmote-20260101-000000.sql.gz", gzipSync("x".repeat(4_000)), 2);
+    seed(backupDir, "wardmote-20260101-010000.sql.gz", gzipSync("SELECT 'newest';"), 1);
+    fs.writeFileSync(path.join(backupDir, DATABASE_BACKUP_SKIPPED_MARKER), "{}");
+    const newestSize = fs.statSync(path.join(backupDir, "wardmote-20260101-010000.sql.gz")).size;
+    const freeBytes = Math.ceil(newestSize * 1.5) - fs.statSync(oldest).size;
+
+    const result = await withFixturePgDump(backupDir, () =>
+      runDatabaseBackup({
+        connectionString,
+        backupDir,
+        retention,
+        spaceGuard: { reservePercent: 0, reserveBytes: 0, statfs: () => ({ freeBytes, totalBytes: 10_000_000 }) },
+      }));
+
+    expect(rotated(backupDir)).toEqual(["wardmote-20260101-010000.sql.gz", path.basename(result.backupFile)].sort());
+    expect(fs.existsSync(path.join(backupDir, DATABASE_BACKUP_SKIPPED_MARKER))).toBe(false);
+  }, EMBEDDED_POSTGRES_TEST_TIMEOUT_MS);
+
+  it("keeps pinned backups outside rotation and expires them only by age", async () => {
+    const connectionString = await createTempDatabase();
+    const backupDir = createTempDir("rotation-pinned-");
+    const pinnedDir = path.join(backupDir, "pinned");
+    fs.mkdirSync(pinnedDir);
+    const expired = seed(pinnedDir, "wardmote-20250101-000000.sql.gz", gzipSync("SELECT 'expired';"), 24 * 40);
+
+    const pinned = await withFixturePgDump(backupDir, () =>
+      runDatabaseBackup({ connectionString, backupDir, retention, pinned: true }));
+    expect(path.dirname(pinned.backupFile)).toBe(pinnedDir);
+    expect(fs.existsSync(expired)).toBe(true);
+
+    for (let index = 0; index < 3; index += 1) {
+      await waitNextSecond();
+      await withFixturePgDump(backupDir, () =>
+        runDatabaseBackup({ connectionString, backupDir, retention, pinnedMaxAgeDays: 30 }));
+    }
+
+    expect(rotated(backupDir)).toHaveLength(2);
+    expect(fs.existsSync(pinned.backupFile)).toBe(true);
+    expect(fs.existsSync(expired)).toBe(false);
+  }, EMBEDDED_POSTGRES_TEST_TIMEOUT_MS);
+});
+

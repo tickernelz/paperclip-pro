@@ -26,6 +26,7 @@ import { PluginAppShellOverlays } from "./PluginAppShellOverlays";
 import { MobileBottomNav } from "./MobileBottomNav";
 import { WorktreeBanner } from "./WorktreeBanner";
 import { DevRestartBanner } from "./DevRestartBanner";
+import { DiskSpaceBanner } from "./DiskSpaceBanner";
 import { StandaloneBrowserControls } from "./StandaloneBrowserControls";
 import { OfflineBanner } from "./OfflineBanner";
 import { WindowTitleBar } from "./WindowTitleBar";
@@ -575,6 +576,7 @@ export function Layout({ sidebarSections }: { sidebarSections?: ReactNode }) {
       <WindowTitleBar />
       <WorktreeBanner />
       <DevRestartBanner devServer={health?.devServer} />
+      <DiskSpaceBanner diskSpace={health?.diskSpace} warnings={health?.warnings} />
       <OfflineBanner />
       <div className={cn("min-h-0 flex-1", isMobile ? "w-full" : "flex overflow-clip")}>
         {isMobile && sidebarOpen && (

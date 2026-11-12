@@ -16,6 +16,7 @@ type PartialConfig = {
     backup?: {
       dir?: string;
       retentionDays?: number;
+      maxFiles?: number;
     };
   };
 };
@@ -80,7 +81,12 @@ async function main() {
     const result = await runDatabaseBackup({
       connectionString,
       backupDir,
-      retention: { dailyDays: retentionDays, weeklyWeeks: 4, monthlyMonths: 1 },
+      retention: {
+        dailyDays: retentionDays,
+        weeklyWeeks: 4,
+        monthlyMonths: 1,
+        maxFiles: asPositiveInt(config?.database?.backup?.maxFiles) ?? 2,
+      },
     });
 
     console.log(`Backup saved: ${formatDatabaseBackupResult(result)}`);
