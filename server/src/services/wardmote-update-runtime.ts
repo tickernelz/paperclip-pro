@@ -1,5 +1,8 @@
-import type { Db } from "@tickernelz/wardmote-db";
+import { inArray, sql } from "drizzle-orm";
+import { heartbeatRuns, type Db } from "@tickernelz/wardmote-db";
 import { conflict } from "../errors.js";
+import { logger } from "../middleware/logger.js";
+import { createAutoUpdater } from "./wardmote-auto-update.js";
 import { resolveWardmoteHomeDir, resolveWardmoteInstanceId, resolveWardmoteInstanceRoot } from "../home-paths.js";
 import { logActivity } from "./activity-log.js";
 import { getTaskDrainStatus, listActiveRunExecutionIds } from "./heartbeat.js";
@@ -63,4 +66,27 @@ export function createInstanceUpdateInstaller(db: Db, updates: WardmoteUpdateSer
   });
   installer.resume();
   return installer;
+}
+
+export function startInstanceAutoUpdater(db: Db, updates: WardmoteUpdateService, installer: UpdateInstaller): () => void {
+  return createAutoUpdater({
+    enabled: async () => (await instanceSettingsService(db).getGeneral()).autoInstallUpdates === true,
+    status: () => updates.status(),
+    refresh: () => updates.refresh(),
+    installer,
+    activeRuns: () => listActiveRunExecutionIds().length + getTaskDrainStatus().pendingWakes,
+    queuedRuns: async () => {
+      const [row] = await db
+        .select({ count: sql<number>`count(*)::int` })
+        .from(heartbeatRuns)
+        .where(inArray(heartbeatRuns.status, ["queued", "running"]));
+      return Number(row?.count ?? 0);
+    },
+    instanceRoot: resolveWardmoteInstanceRoot(),
+    onDecision: (decision) => {
+      if (decision.install || decision.reason === "runs_active" || decision.reason === "failed_before") {
+        logger.info({ autoUpdate: decision }, decision.install ? "automatic update starting" : "automatic update deferred");
+      }
+    },
+  }).start();
 }

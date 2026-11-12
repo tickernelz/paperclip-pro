@@ -377,6 +377,7 @@ vi.mock("../services/index.js", () => ({
 
 vi.mock("../services/wardmote-update-runtime.js", () => ({
   createInstanceUpdateInstaller: vi.fn(() => ({ current: () => null, start: vi.fn(), forceWaiting: vi.fn(), cancelWaiting: vi.fn(), resume: vi.fn(), stop: vi.fn() })),
+  startInstanceAutoUpdater: vi.fn(() => () => undefined),
 }));
 
 vi.mock("../services/retired-name-migration.js", () => ({

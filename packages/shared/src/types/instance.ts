@@ -181,6 +181,7 @@ export interface InstanceGeneralSettings {
   attachmentMaxMegabytes: number | null;
   attachmentRetention: AttachmentRetentionSettings;
   localRuns: LocalRunLimitsSettings;
+  autoInstallUpdates: boolean;
 }
 
 export interface InstanceExperimentalSettings {
