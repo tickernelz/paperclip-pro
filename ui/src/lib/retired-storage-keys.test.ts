@@ -25,7 +25,7 @@ describe("migrateRetiredStorageKeys", () => {
   });
 
   it("rewrites a stored no-template Skill Studio selection to the current value", () => {
-    const retired = ["__", "paper", "clip_no_template__"].join("");
+    const retired = "__paperclip_no_template__";
     window.localStorage.setItem("skillStudio.runTemplate.company-a", retired);
     window.localStorage.setItem("skillStudio.runTemplate.company-b", "template-1");
     migrateRetiredStorageKeys(window.localStorage);

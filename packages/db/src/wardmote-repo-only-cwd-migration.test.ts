@@ -10,7 +10,7 @@ import {
 } from "./test-embedded-postgres.js";
 
 const MIGRATION_FILE = "0373_wardmote_repo_only_cwd.sql";
-const RETIRED_SENTINEL = ["/__", "paper", "clip_repo_only__"].join("");
+const RETIRED_SENTINEL = "/__paperclip_repo_only__";
 const cleanups: Array<() => Promise<void>> = [];
 const embeddedPostgresSupport = await getEmbeddedPostgresTestSupport();
 const describeEmbeddedPostgres = embeddedPostgresSupport.supported ? describe : describe.skip;

@@ -2,7 +2,7 @@ import { NO_TEST_RUN_TEMPLATE_STORAGE_VALUE } from "./skill-studio-storage";
 
 const RETIRED_KEY_PREFIX = /^paperclip(?=[:.])/;
 const RUN_TEMPLATE_KEY_PREFIX = "skillStudio.runTemplate.";
-const RETIRED_NO_TEMPLATE_VALUE = ["__", "paper", "clip_no_template__"].join("");
+const RETIRED_NO_TEMPLATE_VALUE = "__paperclip_no_template__";
 
 export function migrateRetiredStorageKeys(storage: Storage) {
   const retiredKeys: string[] = [];
