@@ -876,7 +876,7 @@ export function runtimeQuestionFallbackFromEvent(
       question.answerMode === "text"
         ? [
             {
-              id: "__paperclip_text__",
+              id: "__wardmote_text__",
               label:
                 question.textValidation?.inputType === "integer"
                   ? "Enter an integer"
