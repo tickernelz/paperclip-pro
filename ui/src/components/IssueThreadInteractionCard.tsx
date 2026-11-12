@@ -60,7 +60,7 @@ import { ConnectionIntentInteractionBody } from "@/features/connections/Connecti
 import { clearDraft, loadStructuredDraft, saveStructuredDraft } from "../lib/composer-draft";
 import { QuestionForm } from "./task-chat/QuestionForm";
 
-const OTHER_ANSWER_ID = "__paperclip_other__";
+const OTHER_ANSWER_ID = "__wardmote_other__";
 
 function interactionCardDraftKey(interactionId: string) {
   return `wardmote:interaction-card-draft:${interactionId}`;

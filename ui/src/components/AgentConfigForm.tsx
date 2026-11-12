@@ -3768,7 +3768,7 @@ export function ModelDropdown({
   }
 
   if (presentation === "native") {
-    const customOption = "__paperclip_custom_model__";
+    const customOption = "__wardmote_custom_model__";
     const extraModels = [...new Set([value, ...promotedModelIds])].filter((id): id is string => !!id && (!models.some(model => model.id === id) || promotedModelIds.has(id)));
     return (
       <Field label="Model" hint={help.model}>

@@ -62,7 +62,7 @@ export function findSpecifiersInFiles(files) {
     }
   }
   if (javascript.length === 0) return results;
-  const root = "/__paperclip_import_check__";
+  const root = "/__wardmote_import_check__";
   const names = javascript.map(({ file }, index) => `input-${index}${extension(file) || ".ts"}`);
   const virtualFiles = Object.fromEntries(javascript.map(({ source }, index) => [`${root}/${names[index]}`, source]));
   virtualFiles[`${root}/tsconfig.json`] = JSON.stringify({

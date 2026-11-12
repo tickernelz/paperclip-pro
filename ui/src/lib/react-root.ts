@@ -1,7 +1,7 @@
 import { createRoot, type Root } from "react-dom/client";
 
 export interface WardmoteReactRootHost {
-  __paperclipReactRoot?: Root;
+  __wardmoteReactRoot?: Root;
 }
 
 type CreateRoot = (container: Parameters<typeof createRoot>[0]) => Root;
@@ -16,9 +16,9 @@ export function getOrCreateWardmoteReactRoot(
   create: CreateRoot = createRoot,
 ): Root {
   const rootHost = host as WardmoteReactRootHost;
-  if (rootHost.__paperclipReactRoot) return rootHost.__paperclipReactRoot;
+  if (rootHost.__wardmoteReactRoot) return rootHost.__wardmoteReactRoot;
 
   const root = create(container);
-  rootHost.__paperclipReactRoot = root;
+  rootHost.__wardmoteReactRoot = root;
   return root;
 }
