@@ -344,7 +344,7 @@ export function Browse({ renderAccountDetails = (connection) => connection.conne
   const { setBreadcrumbs } = useBreadcrumbs();
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
-  const [source, setSource] = useState<CatalogSource>("paperclip");
+  const [source, setSource] = useState<CatalogSource>("wardmote");
   const [expandedSearch, setExpandedSearch] = useState(false);
   const [executorToConfigure, setExecutorToConfigure] = useState<ToolConnection | null>(null);
   const [arcadeToConfigure, setArcadeToConfigure] = useState<ToolConnection | null>(null);
@@ -360,7 +360,7 @@ export function Browse({ renderAccountDetails = (connection) => connection.conne
     return () => setBreadcrumbs([]);
   }, [setBreadcrumbs]);
 
-  useEffect(() => { setQuery(""); setPage(1); setSource("paperclip"); setExpandedSearch(false); setArcadeToConfigure(null); setAggregatorToConnect(null); setAggregatorToManage(null); setInitialAggregatorProvider(undefined); setConnectionToRemove(null); }, [selectedCompanyId]);
+  useEffect(() => { setQuery(""); setPage(1); setSource("wardmote"); setExpandedSearch(false); setArcadeToConfigure(null); setAggregatorToConnect(null); setAggregatorToManage(null); setInitialAggregatorProvider(undefined); setConnectionToRemove(null); }, [selectedCompanyId]);
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("source") === "composio") {
@@ -769,7 +769,7 @@ export function Browse({ renderAccountDetails = (connection) => connection.conne
     const scoped = rows.filter((row) => {
       if (source === "all") return true;
       if (source === "installed") return isInstalled(row);
-      if (source === "paperclip") return !row.aggregatorApp || isInstalled(row);
+      if (source === "wardmote") return !row.aggregatorApp || isInstalled(row);
       return isAppAggregator(source) && (
         row.slug === source && isInstalled(row)
         || row.upstreamApps?.some(snapshot => snapshot.provider === source && snapshot.accounts.length > 0)
@@ -819,8 +819,8 @@ export function Browse({ renderAccountDetails = (connection) => connection.conne
     executor: aggregatorGateways.filter(connection => appConnectionSourceSlug(connection) === "executor"),
   }), [aggregatorGateways]);
   function changeQuery(value: string) {
-    if (source === "paperclip" && !query.trim() && value.trim()) { setSource("all"); setExpandedSearch(true); }
-    if (expandedSearch && !value.trim()) { setSource("paperclip"); setExpandedSearch(false); }
+    if (source === "wardmote" && !query.trim() && value.trim()) { setSource("all"); setExpandedSearch(true); }
+    if (expandedSearch && !value.trim()) { setSource("wardmote"); setExpandedSearch(false); }
     setQuery(value); setPage(1);
   }
   function closeAggregatorSetup() {
@@ -838,11 +838,11 @@ export function Browse({ renderAccountDetails = (connection) => connection.conne
     }
     setAggregatorToConnect(app);
   }
-  const showAssistantConnection = (source === "paperclip" || source === "all" ||
+  const showAssistantConnection = (source === "wardmote" || source === "all" ||
     (source === "installed" && (!assistantConnections.isSuccess || assistantConnections.rows.some(row => !row.revokedAt)))) &&
     (!trimmed || "assistant connection (mcp) wardmote codex claude opencode".includes(trimmed));
   const showCustomConnector =
-    (source === "paperclip" || source === "all") && (!trimmed || "connect your own tool custom mcp server".includes(trimmed));
+    (source === "wardmote" || source === "all") && (!trimmed || "connect your own tool custom mcp server".includes(trimmed));
 
   if (!selectedCompanyId) {
     return (
