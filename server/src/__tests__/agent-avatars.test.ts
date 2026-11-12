@@ -143,14 +143,14 @@ describe("on-demand agent avatars", () => {
     const service = createAgentAvatarService(await storage()); cleanups.push(() => service.close());
     const url = await serve(service);
     const clear = await fetch(url + "?size=512&scale=1");
-    const dark = await fetch(url + "?size=512&scale=1&background=paperclip-dark");
+    const dark = await fetch(url + "?size=512&scale=1&background=wardmote-dark");
     expect(dark.status).toBe(200);
     expect(dark.headers.get("etag")).not.toBe(clear.headers.get("etag"));
     const clearPixels = await sharp(Buffer.from(await clear.arrayBuffer())).ensureAlpha().raw().toBuffer();
     const darkPixels = await sharp(Buffer.from(await dark.arrayBuffer())).ensureAlpha().raw().toBuffer();
     expect(Array.from(clearPixels.subarray(0, 4))).toEqual([0, 0, 0, 0]);
     expect(Array.from(darkPixels.subarray(0, 4))).toEqual([...channels, 255]);
-    expect(avatarCacheKey({ ...request, background: "paperclip-dark" })).not.toBe(avatarCacheKey(request));
+    expect(avatarCacheKey({ ...request, background: "wardmote-dark" })).not.toBe(avatarCacheKey(request));
     const invalid = await fetch(url + "?background=white");
     expect(invalid.status).toBe(400); await invalid.text();
   }, 20_000);

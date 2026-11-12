@@ -8,7 +8,7 @@ not include a separate avatar step. Settings retains the download and manual
 re-upload instructions for existing apps and recovery.
 
 Slack exports use the persisted agent palette, `rest` pose, 512 × 512 pixels,
-and `background=paperclip-dark`. The background matches Wardmote’s dark-mode
+and `background=wardmote-dark`. The background matches Wardmote’s dark-mode
 app surface. Normal Wardmote avatars stay transparent. Storybook generates
 its preset files with the same production worker as the API.
 
