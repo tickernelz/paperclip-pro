@@ -81,14 +81,14 @@ The surface is bounded by the OpenAPI registry - 441 tools for an agent, 716 for
 A `tools/call` that fails is still a JSON-RPC success with a `result`, but the result carries the MCP error flag so a host cannot mistake it for data:
 
 - **`isError: true`** on every failure path: an API rejection (`WardmoteApiError`), a bad argument (zod validation), and any other thrown value. A successful call omits the field.
-- **`_meta["paperclip/httpStatus"]`** carries the original HTTP status when the failure came from the API, so a host can tell a `403` from a `500` without parsing the text. It is absent for argument and unknown failures.
+- **`_meta["wardmote/httpStatus"]`** carries the original HTTP status when the failure came from the API, so a host can tell a `403` from a `500` without parsing the text. It is absent for argument and unknown failures.
 - **Argument failures are flattened to one line per problem**, `issueId: expected string, received undefined`, instead of a stringified JSON array inside a JSON string. API failures keep the structured `{ error, status, method, path, body }` text payload.
 
 ```json
 {
   "content": [{ "type": "text", "text": "GET /issues/X failed with 403: Board access required" }],
   "isError": true,
-  "_meta": { "paperclip/httpStatus": 403 }
+  "_meta": { "wardmote/httpStatus": 403 }
 }
 ```
 

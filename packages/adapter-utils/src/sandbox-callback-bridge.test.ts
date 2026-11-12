@@ -1255,7 +1255,7 @@ describe("sandbox callback bridge", () => {
 
     expect(first.uploaded).toBe(true);
     expect(second.uploaded).toBe(false);
-    await expect(readFile(path.posix.join(remoteAssetDir, "paperclip-bridge-server.mjs"), "utf8")).resolves.toBe(expandedSource);
+    await expect(readFile(path.posix.join(remoteAssetDir, "wardmote-bridge-server.mjs"), "utf8")).resolves.toBe(expandedSource);
     await expect(
       readdir(remoteAssetDir).then((entries) =>
         entries.filter(
@@ -1309,7 +1309,7 @@ describe("sandbox callback bridge", () => {
       }),
     ).rejects.toThrow(/sha mismatch/i);
 
-    await expect(readFile(path.posix.join(remoteAssetDir, "paperclip-bridge-server.mjs"), "utf8")).rejects.toThrow();
+    await expect(readFile(path.posix.join(remoteAssetDir, "wardmote-bridge-server.mjs"), "utf8")).rejects.toThrow();
     await expect(
       readdir(remoteAssetDir).then((entries) =>
         entries.filter(
@@ -3201,7 +3201,7 @@ describe("sandbox callback bridge", () => {
     // leave an un-ready zombie while the host waits out its readiness poll.
     const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-bridge-bind-fail-"));
     cleanupDirs.push(rootDir);
-    const entrypoint = path.join(rootDir, "paperclip-bridge-server.mjs");
+    const entrypoint = path.join(rootDir, "wardmote-bridge-server.mjs");
     await writeFile(entrypoint, getSandboxCallbackBridgeServerSource(), "utf8");
     const queueDir = path.join(rootDir, "queue");
     await mkdir(queueDir, { recursive: true });
@@ -3246,7 +3246,7 @@ describe("sandbox callback bridge", () => {
     // of silently falling through to the queue gateway.
     const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-bridge-mode-duplex-"));
     cleanupDirs.push(rootDir);
-    const entrypoint = path.join(rootDir, "paperclip-bridge-server.mjs");
+    const entrypoint = path.join(rootDir, "wardmote-bridge-server.mjs");
     await writeFile(entrypoint, getSandboxCallbackBridgeServerSource(), "utf8");
     const queueDir = path.join(rootDir, "queue");
     await mkdir(queueDir, { recursive: true });
@@ -3278,7 +3278,7 @@ describe("sandbox callback bridge", () => {
     // only the retired duplex transport.
     const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-bridge-mode-unknown-"));
     cleanupDirs.push(rootDir);
-    const entrypoint = path.join(rootDir, "paperclip-bridge-server.mjs");
+    const entrypoint = path.join(rootDir, "wardmote-bridge-server.mjs");
     await writeFile(entrypoint, getSandboxCallbackBridgeServerSource(), "utf8");
     const queueDir = path.join(rootDir, "queue");
     await mkdir(queueDir, { recursive: true });
@@ -3314,7 +3314,7 @@ describe("sandbox callback bridge", () => {
     // heartbeat timer and writes no envelope frame on this path.
     const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-bridge-http2-gateway-"));
     cleanupDirs.push(rootDir);
-    const entrypoint = path.join(rootDir, "paperclip-bridge-server.mjs");
+    const entrypoint = path.join(rootDir, "wardmote-bridge-server.mjs");
     await writeFile(entrypoint, getSandboxCallbackBridgeServerSource(), "utf8");
 
     const probe = createServer();
@@ -3400,7 +3400,7 @@ describe("sandbox callback bridge", () => {
   }): Promise<{ baseUrl: string; stop: () => Promise<void> }> {
     const rootDir = await mkdtemp(path.join(os.tmpdir(), "wardmote-bridge-http2-test-"));
     cleanupDirs.push(rootDir);
-    const entrypoint = path.join(rootDir, "paperclip-bridge-server.mjs");
+    const entrypoint = path.join(rootDir, "wardmote-bridge-server.mjs");
     await writeFile(entrypoint, getSandboxCallbackBridgeServerSource(), "utf8");
 
     const probe = createServer();
