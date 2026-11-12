@@ -1,4 +1,4 @@
-import { createReadStream, createWriteStream, existsSync, mkdirSync, readdirSync, renameSync, statSync, unlinkSync } from "node:fs";
+import { createReadStream, createWriteStream, existsSync, mkdirSync, readdirSync, renameSync, rmSync, statSync, unlinkSync } from "node:fs";
 import { basename, resolve } from "node:path";
 import { createInterface } from "node:readline";
 import { spawn } from "node:child_process";
@@ -122,6 +122,43 @@ const RETIRED_BACKUP_FILENAME_PREFIX = "paperclip";
 
 function isBackupFilename(name: string): boolean {
   return name.endsWith(".sql") || name.endsWith(".sql.gz");
+}
+
+const PARTIAL_BACKUP_PATTERN = /\.(\d+)\.partial$/;
+const ABANDONED_PARTIAL_BACKUP_AGE_MS = 24 * 60 * 60 * 1000;
+const activePartialBackupFiles = new Set<string>();
+
+function partialBackupPath(finalPath: string): string {
+  return `${finalPath}.${process.pid}.partial`;
+}
+
+function isProcessAlive(pid: number): boolean {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (error) {
+    return (error as NodeJS.ErrnoException).code === "EPERM";
+  }
+}
+
+/** Deletes partial backups left by a killed backup process; returns the number removed. */
+export function removeAbandonedPartialBackups(backupDir: string, nowMs = Date.now()): number {
+  if (!existsSync(backupDir)) return 0;
+  let removed = 0;
+  for (const name of readdirSync(backupDir)) {
+    const match = PARTIAL_BACKUP_PATTERN.exec(name);
+    if (!match || !isBackupFilename(name.slice(0, match.index))) continue;
+    const fullPath = resolve(backupDir, name);
+    const pid = Number(match[1]);
+    const ownerGone = pid === process.pid ? !activePartialBackupFiles.has(fullPath) : !isProcessAlive(pid);
+    if (!ownerGone) {
+      const mtimeMs = statSync(fullPath, { throwIfNoEntry: false })?.mtimeMs;
+      if (mtimeMs === undefined || nowMs - mtimeMs < ABANDONED_PARTIAL_BACKUP_AGE_MS) continue;
+    }
+    rmSync(fullPath, { force: true });
+    removed += 1;
+  }
+  return removed;
 }
 
 /** Renames backups written under the retired filename prefix so retention keeps pruning them; idempotent. */
@@ -570,8 +607,13 @@ export async function runDatabaseBackup(opts: RunDatabaseBackupOptions): Promise
   // Initial and final sleep checks can run within the same second. A failed
   // second checkpoint must never overwrite the first verified recovery point.
   const checkpointSuffix = opts.verifyBeforePrune ? `-${randomUUID()}` : "";
-  const sqlFile = resolve(opts.backupDir, `${filenamePrefix}-${timestamp()}${checkpointSuffix}.sql`);
-  const backupFile = `${sqlFile}.gz`;
+  removeAbandonedPartialBackups(opts.backupDir);
+  const finalSqlFile = resolve(opts.backupDir, `${filenamePrefix}-${timestamp()}${checkpointSuffix}.sql`);
+  const backupFile = `${finalSqlFile}.gz`;
+  const sqlFile = partialBackupPath(finalSqlFile);
+  const partialBackupFile = partialBackupPath(backupFile);
+  activePartialBackupFiles.add(sqlFile);
+  activePartialBackupFiles.add(partialBackupFile);
   const writer = createBufferedTextFileWriter(sqlFile);
 
   try {
@@ -582,13 +624,14 @@ export async function runDatabaseBackup(opts: RunDatabaseBackupOptions): Promise
         await closeSql();
         await runPgDumpBackup({
           connectionString: opts.connectionString,
-          backupFile,
+          backupFile: partialBackupFile,
           connectTimeout,
         });
+        renameSync(partialBackupFile, backupFile);
         dumped = true;
       } catch (error) {
-        if (existsSync(backupFile)) {
-          try { unlinkSync(backupFile); } catch { /* ignore */ }
+        if (existsSync(partialBackupFile)) {
+          try { unlinkSync(partialBackupFile); } catch { /* ignore */ }
         }
         if (backupEngine === "pg_dump") {
           throw error;
@@ -1083,9 +1126,10 @@ export async function runDatabaseBackup(opts: RunDatabaseBackupOptions): Promise
 
     // Compress the SQL file with gzip
     const sqlReadStream = createReadStream(sqlFile);
-    const gzWriteStream = createWriteStream(backupFile);
+    const gzWriteStream = createWriteStream(partialBackupFile);
     await pipeline(sqlReadStream, createGzip(), gzWriteStream);
     unlinkSync(sqlFile);
+    renameSync(partialBackupFile, backupFile);
 
     const sizeBytes = statSync(backupFile).size;
     await opts.verifyBeforePrune?.(backupFile);
@@ -1098,14 +1142,15 @@ export async function runDatabaseBackup(opts: RunDatabaseBackupOptions): Promise
     };
   } catch (error) {
     await writer.abort();
-    if (existsSync(backupFile)) {
-      try { unlinkSync(backupFile); } catch { /* ignore */ }
-    }
-    if (existsSync(sqlFile)) {
-      try { unlinkSync(sqlFile); } catch { /* ignore */ }
+    for (const file of [backupFile, partialBackupFile, sqlFile]) {
+      if (existsSync(file)) {
+        try { unlinkSync(file); } catch { /* ignore */ }
+      }
     }
     throw error;
   } finally {
+    activePartialBackupFiles.delete(sqlFile);
+    activePartialBackupFiles.delete(partialBackupFile);
     await closeSql();
   }
 }
