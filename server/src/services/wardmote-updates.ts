@@ -31,6 +31,7 @@ export interface WardmoteUpdateServiceOptions {
   configCheckEnabled?: () => boolean;
   inContainer?: () => boolean;
   serverModulePath?: string;
+  platform?: NodeJS.Platform;
 }
 
 export interface WardmoteUpdateService {
@@ -88,6 +89,7 @@ export function createWardmoteUpdateService(options: WardmoteUpdateServiceOption
   const configCheckEnabled = options.configCheckEnabled ?? (() => readConfigFile()?.updates?.checkEnabled !== false);
   const serverModulePath = options.serverModulePath ?? fileURLToPath(import.meta.url);
   const inContainer = (options.inContainer ?? defaultInContainer)();
+  const platform = options.platform ?? process.platform;
   const cachePath = path.join(homeDir, "cli", "update-check.json");
   const checkEnabled = () => env.WARDMOTE_UPDATE_CHECK !== "0" && configCheckEnabled();
   const manifest = () => readInstallManifest(homeDir);
@@ -123,7 +125,7 @@ export function createWardmoteUpdateService(options: WardmoteUpdateServiceOption
       checkEnabled: enabled,
       checkedAt: enabled && result ? new Date(result.checkedAt).toISOString() : null,
       releaseNotesUrl: latest ? wardmoteReleaseNotesUrl(latest) : null,
-      install: { kind, command: manualUpdateCommand(kind, latest) },
+      install: { kind, command: manualUpdateCommand(kind, latest), canInstall: kind === "managed" && platform === "linux" },
     };
   }
 

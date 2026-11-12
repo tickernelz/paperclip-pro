@@ -231,6 +231,7 @@ function normalizeGeneralSettings(raw: unknown): InstanceGeneralSettings {
       attachmentMaxMegabytes: parsed.data.attachmentMaxMegabytes ?? null,
       attachmentRetention: parsed.data.attachmentRetention ?? DEFAULT_ATTACHMENT_RETENTION,
       localRuns: parsed.data.localRuns ?? DEFAULT_LOCAL_RUN_LIMITS_SETTINGS,
+      autoInstallUpdates: parsed.data.autoInstallUpdates ?? false,
       // Absent => unrestricted; only carry through an explicit policy.
       ...(parsed.data.executionMode ? { executionMode: parsed.data.executionMode } : {}),
     };
@@ -244,6 +245,7 @@ function normalizeGeneralSettings(raw: unknown): InstanceGeneralSettings {
     attachmentMaxMegabytes: null,
     attachmentRetention: DEFAULT_ATTACHMENT_RETENTION,
     localRuns: DEFAULT_LOCAL_RUN_LIMITS_SETTINGS,
+    autoInstallUpdates: false,
   };
 }
 

@@ -15,7 +15,35 @@ export interface InstanceUpdateStatus {
   checkEnabled: boolean;
   checkedAt: string | null;
   releaseNotesUrl: string | null;
-  install: { kind: WardmoteInstallKind; command: string };
+  install: { kind: WardmoteInstallKind; command: string; canInstall: boolean };
+}
+
+export type UpdateInstallMode = "force" | "wait";
+export type UpdateJobPhase = "waiting" | "installing" | "succeeded" | "failed" | "cancelled";
+export const UPDATE_WAIT_TIMEOUT_MS = 15 * 60 * 1000;
+
+export interface UpdateJob {
+  id: string;
+  phase: UpdateJobPhase;
+  mode: UpdateInstallMode;
+  trigger: "manual" | "auto";
+  fromVersion: string;
+  toVersion: string;
+  requestedBy: { actorType: string; actorId: string } | null;
+  requestedAt: string;
+  waitDeadline: string | null;
+  liveRuns: number;
+  startedAt: string | null;
+  finishedAt: string | null;
+  installedVersion: string | null;
+  rolledBackTo: string | null;
+  error: string | null;
+  logHint: string | null;
+  unit: string | null;
+}
+
+export function isUpdateJobActive(job: Pick<UpdateJob, "phase"> | null | undefined): boolean {
+  return job?.phase === "waiting" || job?.phase === "installing";
 }
 
 export function compareVersions(left: string, right: string): number {

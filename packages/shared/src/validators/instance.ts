@@ -171,6 +171,7 @@ export const instanceGeneralSettingsSchema = z.object({
   attachmentMaxMegabytes: attachmentMaxMegabytesSchema.nullable().default(null),
   attachmentRetention: attachmentRetentionSettingsSchema.default(DEFAULT_ATTACHMENT_RETENTION),
   localRuns: localRunLimitsSettingsSchema.default(DEFAULT_LOCAL_RUN_LIMITS_SETTINGS),
+  autoInstallUpdates: z.boolean().default(false),
   // Execution policy. Absent/"any" = unrestricted; "kubernetes" forces the
   // Kubernetes sandbox provider and denies local/ssh execution.
   executionMode: z.enum(["kubernetes", "any"]).optional(),

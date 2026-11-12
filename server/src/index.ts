@@ -141,6 +141,7 @@ import { extendStartTimeoutUntilReady, systemdNotify } from "./services/systemd-
 import { flushInFlightRunLogMirrors, resolveRunLogBasePath } from "./services/run-log-store.js";
 import { migrateRetiredNames } from "./services/retired-name-migration.js";
 import { createWardmoteUpdateService } from "./services/wardmote-updates.js";
+import { createInstanceUpdateInstaller, startInstanceAutoUpdater } from "./services/wardmote-update-runtime.js";
 export { migrateRetiredNames } from "./services/retired-name-migration.js";
 import { getMaxAttachmentBytes } from "./attachment-types.js";
 import { setWardmoteBridgeAttachmentMaxBytesSource } from "@tickernelz/wardmote-adapter-utils/execution-target";
@@ -939,8 +940,11 @@ async function startServerWithDatabaseTeardown(
   };
   const wardmoteUpdates = createWardmoteUpdateService();
   wardmoteUpdates.startPeriodicChecks();
+  const updateInstaller = createInstanceUpdateInstaller(db as any, wardmoteUpdates);
+  startInstanceAutoUpdater(db as any, wardmoteUpdates, updateInstaller);
   const app = await createApp(db as any, {
     wardmoteUpdates,
+    updateInstaller,
     prepareIdleDatabaseBackup: idleDatabaseBackupEnabled
       ? async () => (await runServerDatabaseBackup("idle")) !== null
       : undefined,

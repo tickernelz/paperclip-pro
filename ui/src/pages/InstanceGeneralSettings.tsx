@@ -93,6 +93,8 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
   const showSpeechToText = !hiddenSettings.has("instance.general.speechToText");
   const speechToText: SpeechToTextSettings = generalQuery.data?.speechToText ?? SPEECH_TO_TEXT_DEFAULTS;
   const showSignOut = !hiddenSettings.has("instance.general.signOut");
+  const showAutoInstallUpdates = !hiddenSettings.has("instance.general.autoInstallUpdates");
+  const autoInstallUpdates = generalQuery.data?.autoInstallUpdates === true;
   const localRuns = generalQuery.data?.localRuns ?? DEFAULT_LOCAL_RUN_LIMITS_SETTINGS;
   const visibleTopics = [
     ...(showCensorUsernameInLogs ? ["log display"] : []),
@@ -163,6 +165,28 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
               value={healthQuery.data?.bootstrapInviteActive ? "Active" : "None"}
             />
           </div>
+        </div>
+      </section>
+      )}
+
+      {showAutoInstallUpdates && (
+      <section>
+        <div className="flex items-start justify-between gap-4">
+          <div className="space-y-1.5">
+            <h2 className="text-sm font-semibold">Install updates automatically</h2>
+            <p className="max-w-2xl text-sm text-ink-3">
+              When a newer Wardmote release is published on this install's channel, install it while no runs are active
+              or queued. Running work is never stopped; the update waits for the next quiet check. A version that fails
+              and rolls back is not retried automatically. Only managed service installs on Linux can update themselves.
+              This is off by default.
+            </p>
+          </div>
+          <ToggleSwitch
+            checked={autoInstallUpdates}
+            onCheckedChange={() => updateGeneralMutation.mutate({ autoInstallUpdates: !autoInstallUpdates })}
+            disabled={updateGeneralMutation.isPending || signOutMutation.isPending}
+            aria-label="Toggle automatic updates"
+          />
         </div>
       </section>
       )}
