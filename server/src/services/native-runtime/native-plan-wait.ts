@@ -139,7 +139,7 @@ function planWaitFromFacts(facts: PlanWaitFacts, committedSource?: NativePlanWai
     if (matches.length !== 1) return null;
     const { interaction: i, delivery: d } = matches[0]!;
     if (i.companyId !== b.companyId || i.issueId !== b.issueId || i.sourceRunId !== b.runId || i.createdByAgentId !== b.agentId || i.kind !== "ask_user_questions" || i.status !== "answered" || i.continuationPolicy !== "none" || !i.resolvedByUserId || !i.resolvedAt || i.resolvedByAgentId ||
-      i.idempotencyKey !== `paperclip-runner-question:${b.runId}:${request.requestId}` || !same(record(i.payload).questionSet, questionSet) ||
+      i.idempotencyKey !== `wardmote-runner-question:${b.runId}:${request.requestId}` || !same(record(i.payload).questionSet, questionSet) ||
       d.companyId !== b.companyId || d.issueId !== b.issueId || d.interactionId !== i.id || d.sourceRunId !== b.runId || d.targetRunId !== b.runId || d.status !== "delivered" || d.deliveryMode !== "steered" || !d.acknowledgedAt || (d.targetTurnId !== null && d.targetTurnId !== terminal.turnId)) return null;
     const envelope = buildQuestionResponseDeliveryEnvelope(i as unknown as AskUserQuestionsInteraction);
     if (d.payloadSha256 !== nativeSha256(envelope) || !same(parseWardmoteQuestionResponse(questionSet, envelope.response), response)) return null;

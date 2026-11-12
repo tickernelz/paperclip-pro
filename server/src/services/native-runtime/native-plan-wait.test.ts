@@ -33,7 +33,7 @@ function fixture(): PlanWaitFacts {
   const planId = `plan-${"a".repeat(64)}`;
   const input = { schema: "wardmote.question_set.v1", title: "Plan", description: "Exact revised plan text", questions: [{ id: planId, prompt: "Proceed?", required: true, answerMode: "single_select", options: [{ id: "accept", label: "Accept" }, { id: "reject", label: "Reject" }, { id: "cancel", label: "Cancel" }] }] };
   const i = { id: "interaction", ...b, sourceRunId: b.runId, createdByAgentId: b.agentId, resolvedByUserId: "board", resolvedByAgentId: null, resolvedAt: new Date(0),
-    kind: "ask_user_questions", status: "answered", continuationPolicy: "none", idempotencyKey: "paperclip-runner-question:run:request",
+    kind: "ask_user_questions", status: "answered", continuationPolicy: "none", idempotencyKey: "wardmote-runner-question:run:request",
     payload: { runtimeRequestId: "request", questionSet: input }, result: { version: 1, answers: [{ questionId: planId, optionIds: ["accept"] }] } };
   const envelope = buildQuestionResponseDeliveryEnvelope(i as never);
   const d = { id: "delivery", ...b, interactionId: i.id, sourceRunId: b.runId, targetRunId: b.runId, targetTurnId: null, status: "delivered", deliveryMode: "steered", acknowledgedAt: new Date(1), payloadSha256: nativeSha256(envelope) };

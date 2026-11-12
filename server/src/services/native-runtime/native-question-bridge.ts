@@ -23,7 +23,7 @@ import type { NativeRunStoreBinding } from "./native-run-coordinator-store.js";
 
 import { parseQuestionInteractionAnswers, parseSavedQuestionInteractionAnswers } from "../question-interaction-answers.js";
 
-const QUESTION_KEY_PREFIX = "paperclip-runner-question:";
+const QUESTION_KEY_PREFIX = "wardmote-runner-question:";
 const REQUEST_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,159}$/;
 export const NATIVE_QUESTION_CANCELLATION_CONTEXT_KEY = "nativeQuestionCancellation";
 

@@ -66,7 +66,7 @@ function inspect(state: State, events: readonly Row[], companyId: string, header
     && hasAcpxNativeOrigin(request.origin, "pi", "elicitation/create") && questionSet.schema === "wardmote.question_set.v1"
     && id(question.id) && question.answerMode === "text" && question.header === header
     && card.payload?.runtimeRequestId === request.requestId && digest(card.payload.questionSet) === digest(questionSet)
-    && card.idempotencyKey === `paperclip-runner-question:${run.id}:${request.requestId}`, "canonical Pi input request identity missing");
+    && card.idempotencyKey === `wardmote-runner-question:${run.id}:${request.requestId}`, "canonical Pi input request identity missing");
   const submitted = rows.filter(x => x.event.eventType === "turn.submitted");
   const unboundSubmission = submitted.find(x => x.event.turnId == null);
   if (unboundSubmission) {

@@ -17,7 +17,7 @@ function fixture(fallback = true) {
       normalizedSessionId: "session", sourceInstanceId: "runner", sourceSeq, sourceEventId: `runner:run:${sourceSeq}`, payload } } });
   const state = { issue: { id: "issue", companyId: "company", status: "in_progress" }, runs: [{ id: "run", companyId: "company", nativeIssueId: "issue", runtimeMode: "native", status: "running", nativeSessionId: "session", runnerInstanceId: "runner" } as Row],
     interactions: [{ id: "original", companyId: "company", issueId: "issue", kind: "ask_user_questions", sourceRunId: "run", status: "pending", result: null,
-      continuationPolicy: "none", resolverPolicy: "human_only", idempotencyKey: "paperclip-runner-question:run:request", payload: { runtimeRequestId: "request", questionSet: question } } as Row] };
+      continuationPolicy: "none", resolverPolicy: "human_only", idempotencyKey: "wardmote-runner-question:run:request", payload: { runtimeRequestId: "request", questionSet: question } } as Row] };
   const events = [wrap("turn.started", 1, {}), wrap("runtime_request.created", 2, { request })];
   const pending = observePiPendingNativeInput(state, events, "company", "Pi native provider death");
   const before = structuredClone({ state, events });

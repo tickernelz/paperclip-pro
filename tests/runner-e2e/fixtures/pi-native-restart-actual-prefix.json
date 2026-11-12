@@ -28,7 +28,7 @@
         "sourceRunId": "run",
         "continuationPolicy": "none",
         "resolverPolicy": "human_only",
-        "idempotencyKey": "paperclip-runner-question:run:request",
+        "idempotencyKey": "wardmote-runner-question:run:request",
         "payload": {
           "version": 1,
           "title": "Pi native restart",

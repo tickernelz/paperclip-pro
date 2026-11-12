@@ -20,7 +20,7 @@ function fixture(adapter = "acpx-runtime-sidecar") {
   const state = { issue: { id: "issue", companyId: "company", status: "in_progress" },
     runs: [{ id: "run", companyId: "company", nativeIssueId: "issue", runtimeMode: "native", status: "running", nativeSessionId: "session", runnerInstanceId: "runner", processPid: 200, processGroupId: 200, processStartedAt: "2026-10-02T13:55:27.000Z" } as Row],
     interactions: [{ id: "interaction", companyId: "company", issueId: "issue", kind: "ask_user_questions", status: "pending", result: null,
-      sourceRunId: "run", continuationPolicy: "none", resolverPolicy: "human_only", idempotencyKey: "paperclip-runner-question:run:request",
+      sourceRunId: "run", continuationPolicy: "none", resolverPolicy: "human_only", idempotencyKey: "wardmote-runner-question:run:request",
       payload: { runtimeRequestId: "request", questionSet } } as Row] };
   const events = [wrap("runtime_request.created", 1, { request })];
   const control = (eventType: string, sourceSeq: number, payload: Row): Row => {
