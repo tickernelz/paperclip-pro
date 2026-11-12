@@ -72,13 +72,18 @@ function guard(root: string, freePercent: () => number) {
 
 describe("assessDiskPressure", () => {
   it.each([
-    [40, 1000, "ok"],
-    [15, 1000, "warning"],
-    [25, 200, "warning"],
-    [8, 1000, "action"],
-    [3, 1000, "emergency"],
-  ] as const)("%s%% free of %s GB is %s", (percent, totalGb, level) => {
-    expect(assessDiskPressure({ freeBytes: (percent / 100) * totalGb * GB, totalBytes: totalGb * GB }, config)).toBe(level);
+    [400, 1000, "ok"],
+    [150, 1000, "warning"],
+    [50, 200, "warning"],
+    [80, 1000, "action"],
+    [30, 1000, "emergency"],
+    [323, 1047, "ok"],
+    [34, 58, "ok"],
+    [25, 58, "warning"],
+    [11, 58, "warning"],
+    [5, 58, "action"],
+  ] as const)("%s GB free of %s GB is %s", (freeGb, totalGb, level) => {
+    expect(assessDiskPressure({ freeBytes: freeGb * GB, totalBytes: totalGb * GB }, config)).toBe(level);
   });
 });
 

@@ -165,6 +165,10 @@ vi.mock("./WorktreeBanner", () => ({
   WorktreeBanner: () => null,
 }));
 
+vi.mock("./UpdateNotice", () => ({
+  UpdateNotice: () => null,
+}));
+
 vi.mock("./DevRestartBanner", () => ({
   DevRestartBanner: () => null,
 }));

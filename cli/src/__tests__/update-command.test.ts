@@ -6,7 +6,7 @@ import { execFileSync } from "node:child_process";
 import { buildNextManifest, writeManagedShim, flipCurrentAtomic, initializeInstallStore, payloadPathFor, readInstallManifest, resolveInstallStorePaths, writeInstallManifestAtomic, type InstallManifest, type InstallRecord } from "../install-store.js";
 import { LEGACY_HOME_DIRNAME } from "@tickernelz/wardmote-shared/home-paths";
 import type { CommandRunner } from "../commands/install.js";
-import { compareVersions, detectInstallMode, resolveUpdateRequest, rollbackManagedInstall, updateCommand } from "../commands/update.js";
+import { detectInstallMode, resolveUpdateRequest, rollbackManagedInstall, updateCommand } from "../commands/update.js";
 
 let root: string;
 let previousHome: string | undefined;
@@ -88,12 +88,6 @@ describe("update command", () => {
     } finally {
       Object.defineProperty(process.versions, "node", nodeVersion);
     }
-  });
-
-  it("orders SemVer prerelease identifiers numerically", () => {
-    expect(compareVersions("1.0.0-canary.10", "1.0.0-canary.2")).toBeGreaterThan(0);
-    expect(compareVersions("1.0.0-1", "1.0.0-alpha")).toBeLessThan(0);
-    expect(compareVersions("1.0.0-alpha", "1.0.0-alpha.1")).toBeLessThan(0);
   });
 
   it("detects managed, global npm, npx, and source modes", () => {

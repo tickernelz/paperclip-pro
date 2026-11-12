@@ -1,16 +1,19 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Pencil, Plus, Trash2, X } from "lucide-react";
+import { CloudDownload, Pencil, Plus, Trash2, X } from "lucide-react";
 import {
+  OMP_CUSTOM_PROVIDER_MODEL_LIMIT,
   OMP_DISCOVERY_TYPES,
   OMP_PROVIDER_APIS,
   OMP_PROVIDER_NAME_PATTERN,
   type OmpCustomProviderInput,
   type OmpCustomProviderKeyInput,
   type OmpCustomProviderList,
+  type OmpCustomProviderModelsFetchResult,
   type OmpCustomProviderProbeResult,
   type OmpCustomProviderView,
   type OmpDiscoveryType,
+  type OmpUpstreamModel,
 } from "@tickernelz/wardmote-shared";
 import { ApiError } from "@/api/client";
 import { onboardingOmpApi } from "@/api/onboardingOmp";
@@ -21,6 +24,7 @@ import { Segmented, SegmentedItem } from "@/components/ui/segmented";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
 import { InlineRowEditorPanel, useInlineRowEditor } from "@/components/InlineRowEditor";
 import { OmpNote } from "./OmpSignIn";
+import { UpstreamModelPicker } from "./UpstreamModelPicker";
 
 export const OMP_CUSTOM_PROVIDERS_KEY = ["omp", "custom-providers"] as const;
 
@@ -51,6 +55,7 @@ type KeyMode = OmpCustomProviderKeyInput["kind"];
 interface ModelRow {
   id: string;
   name: string;
+  api: string;
   contextWindow: string;
   maxTokens: string;
   reasoning: boolean;
@@ -78,7 +83,7 @@ interface FormState {
   models: ModelRow[];
 }
 
-const EMPTY_MODEL: ModelRow = { id: "", name: "", contextWindow: "", maxTokens: "", reasoning: false, images: false };
+const EMPTY_MODEL: ModelRow = { id: "", name: "", api: "", contextWindow: "", maxTokens: "", reasoning: false, images: false };
 
 function initialState(provider: OmpCustomProviderView | null): FormState {
   if (!provider) {
@@ -112,6 +117,7 @@ function initialState(provider: OmpCustomProviderView | null): FormState {
     models: provider.models.map((model) => ({
       id: model.id,
       name: model.name ?? "",
+      api: model.api ?? "",
       contextWindow: model.contextWindow ? String(model.contextWindow) : "",
       maxTokens: model.maxTokens ? String(model.maxTokens) : "",
       reasoning: model.reasoning ?? false,
@@ -166,6 +172,7 @@ function toInput(state: FormState): OmpCustomProviderInput {
       .map((model) => ({
         id: model.id.trim(),
         ...(model.name.trim() ? { name: model.name.trim() } : {}),
+        ...(model.api ? { api: model.api as OmpCustomProviderInput["models"][number]["api"] } : {}),
         ...(positive(model.contextWindow) ? { contextWindow: positive(model.contextWindow) } : {}),
         ...(positive(model.maxTokens) ? { maxTokens: positive(model.maxTokens) } : {}),
         ...(model.reasoning ? { reasoning: true } : {}),
@@ -229,6 +236,7 @@ export function CustomProviderForm({
   const dirty = JSON.stringify(state) !== JSON.stringify(initial);
   useEffect(() => onDirtyChange?.(dirty), [dirty, onDirtyChange]);
   const [probe, setProbe] = useState<OmpCustomProviderProbeResult | null>(null);
+  const [upstream, setUpstream] = useState<OmpCustomProviderModelsFetchResult | null>(null);
   const set = (patch: Partial<FormState>) => setState((current) => ({ ...current, ...patch }));
   const setModel = (index: number, patch: Partial<ModelRow>) =>
     setState((current) => ({ ...current, models: current.models.map((model, at) => (at === index ? { ...model, ...patch } : model)) }));
@@ -268,6 +276,33 @@ export function CustomProviderForm({
     onError: () => setProbe(null),
   });
 
+  const fetchModels = useMutation({
+    mutationFn: () => onboardingOmpApi.fetchCustomProviderModels({
+      ...(editing ? { name: provider.name } : {}),
+      baseUrl: state.baseUrl.trim(),
+      api: (state.api || null) as OmpCustomProviderInput["api"],
+      apiKey: keyInput(state),
+      authHeader: state.authHeader,
+      headers: headersInput(state),
+    }),
+    onSuccess: setUpstream,
+    onError: () => setUpstream(null),
+  });
+  const savedIdList = state.models.map((model) => model.id.trim()).filter(Boolean).join("\n");
+  const savedIds = useMemo<ReadonlySet<string>>(() => new Set(savedIdList ? savedIdList.split("\n") : []), [savedIdList]);
+  const listedIds = useMemo(
+    () => (upstream && !upstream.error && !upstream.truncated ? new Set(upstream.models.map((model) => model.id)) : null),
+    [upstream],
+  );
+  const addUpstream = useCallback((models: OmpUpstreamModel[]) => {
+    setState((current) => {
+      const kept = current.models.filter((model) => model.id.trim());
+      const have = new Set(kept.map((model) => model.id.trim()));
+      const added = models.filter((model) => !have.has(model.id)).map((model) => ({ ...EMPTY_MODEL, id: model.id, name: model.name ?? "" }));
+      return { ...current, models: [...kept, ...added] };
+    });
+  }, []);
+
   function submit(event: FormEvent) {
     event.preventDefault();
     if (!nameError) save.mutate();
@@ -280,7 +315,6 @@ export function CustomProviderForm({
     { mode: "command", label: "Command" },
     { mode: "none", label: "No key" },
   ];
-  const listedNotAdded = probe?.models.filter((id) => !state.models.some((model) => model.id === id)) ?? [];
 
   return (
     <form onSubmit={submit} aria-label={editing ? `Edit ${provider.name}` : "Add a custom provider"} className="flex flex-col gap-4 rounded-lg border border-line bg-bg-2 px-4 py-4 sm:px-5">
@@ -357,6 +391,9 @@ export function CustomProviderForm({
         <legend className="mb-1.5 text-sm font-medium">Models</legend>
         {state.models.map((model, index) => (
           <div key={index} className="grid grid-cols-2 gap-2 rounded-md border border-line-soft p-2 sm:grid-cols-[2fr_2fr_1fr_1fr_auto]">
+            {listedIds && model.id.trim() && !listedIds.has(model.id.trim()) ? (
+              <span className="col-span-2 text-xs text-ink-3 sm:col-span-5">Not listed upstream any more; kept until you remove it.</span>
+            ) : null}
             <Input aria-label={`Model ${index + 1} id`} value={model.id} onChange={(event) => setModel(index, { id: event.target.value })} placeholder="model id" className="col-span-2 sm:col-span-1" autoComplete="off" />
             <Input aria-label={`Model ${index + 1} name`} value={model.name} onChange={(event) => setModel(index, { name: event.target.value })} placeholder="Display name" className="col-span-2 sm:col-span-1" />
             <Input aria-label={`Model ${index + 1} context window`} value={model.contextWindow} onChange={(event) => setModel(index, { contextWindow: event.target.value })} placeholder="Context" inputMode="numeric" />
@@ -370,12 +407,15 @@ export function CustomProviderForm({
         ))}
         <div className="flex flex-wrap gap-2">
           <Button type="button" variant="secondary" size="sm" onClick={() => set({ models: [...state.models, { ...EMPTY_MODEL }] })}><Plus aria-hidden="true" />Add model</Button>
-          {listedNotAdded.length ? (
-            <Button type="button" variant="secondary" size="sm" onClick={() => set({ models: [...state.models.filter((model) => model.id.trim()), ...listedNotAdded.map((id) => ({ ...EMPTY_MODEL, id }))] })}>
-              Add {listedNotAdded.length} listed {listedNotAdded.length === 1 ? "model" : "models"}
-            </Button>
-          ) : null}
+          <Button type="button" variant="secondary" size="sm" disabled={!state.baseUrl.trim() || fetchModels.isPending} onClick={() => fetchModels.mutate()}>
+            <CloudDownload aria-hidden="true" />{fetchModels.isPending ? "Fetching..." : "Fetch models"}
+          </Button>
         </div>
+        {fetchModels.error ? <OmpNote tone="bad">{problemsOf(fetchModels.error).join(" ")}</OmpNote> : null}
+        {upstream?.error ? <OmpNote tone="bad">{upstream.error}</OmpNote> : null}
+        {upstream && !upstream.error ? (
+          <UpstreamModelPicker result={upstream} savedIds={savedIds} room={OMP_CUSTOM_PROVIDER_MODEL_LIMIT - savedIds.size} onAdd={addUpstream} />
+        ) : null}
         <span className="text-xs text-ink-3">Leave context and max output empty when unsure; OMP fills known models in.</span>
       </fieldset>
 
