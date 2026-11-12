@@ -384,8 +384,16 @@ describeEmbeddedPostgres("issue scheduled retry routes", () => {
     });
   });
 
-  it("uses normal promotion gates and records gate-suppressed retries", async () => {
+  it("refuses retry-now for a paused agent and keeps the scheduled retry unchanged", async () => {
     const { companyId, issueId, retryRunId } = await seedIssueWithRetry({ agentStatus: "paused" });
+    const [before] = await db
+      .select()
+      .from(heartbeatRuns)
+      .where(eq(heartbeatRuns.id, retryRunId));
+    const [wakeBefore] = await db
+      .select({ payload: agentWakeupRequests.payload })
+      .from(agentWakeupRequests)
+      .where(eq(agentWakeupRequests.runId, retryRunId));
 
     const res = await request(createApp(boardActor(companyId)))
       .post(`/api/issues/${issueId}/scheduled-retry/retry-now`)
@@ -393,19 +401,26 @@ describeEmbeddedPostgres("issue scheduled retry routes", () => {
 
     expect(res.status, JSON.stringify(res.body)).toBe(200);
     expect(res.body).toMatchObject({
-      outcome: "gate_suppressed",
+      outcome: "blocked",
+      errorCode: "agent_not_invokable",
+      message: "Resume CodexCoder before retrying now. The scheduled retry keeps its saved time.",
       scheduledRetry: {
         runId: retryRunId,
-        status: "cancelled",
-        errorCode: "agent_not_invokable",
+        status: "scheduled_retry",
+        scheduledRetryAt: "2026-05-06T19:00:00.000Z",
       },
     });
 
-    const [run] = await db
-      .select({ status: heartbeatRuns.status, errorCode: heartbeatRuns.errorCode })
+    const [after] = await db
+      .select()
       .from(heartbeatRuns)
       .where(eq(heartbeatRuns.id, retryRunId));
-    expect(run).toEqual({ status: "cancelled", errorCode: "agent_not_invokable" });
+    expect(after).toEqual(before);
+    const [wakeAfter] = await db
+      .select({ payload: agentWakeupRequests.payload })
+      .from(agentWakeupRequests)
+      .where(eq(agentWakeupRequests.runId, retryRunId));
+    expect(wakeAfter).toEqual(wakeBefore);
 
     const [activity] = await db
       .select({ action: activityLog.action, entityId: activityLog.entityId, runId: activityLog.runId })

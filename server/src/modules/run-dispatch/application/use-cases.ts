@@ -5,7 +5,7 @@ export function createEvaluateScheduledRetryGate(deps: { reader: ScheduledRetryR
   return (input: {
     runId: string;
     companyId: string;
-    retryReasonOverride: string;
+    retryReasonOverride: string | null;
     now?: Date;
   }) => deps.reader.evaluateScheduledRetryGate({ ...input, now: input.now ?? new Date() });
 }

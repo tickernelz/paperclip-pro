@@ -731,11 +731,13 @@ export type IssueRetryNowOutcome =
   | "already_promoted"
   | "waiting"
   | "no_scheduled_retry"
-  | "gate_suppressed";
+  | "gate_suppressed"
+  | "blocked";
 
 export interface IssueRetryNowResponse {
   outcome: IssueRetryNowOutcome;
   message: string;
+  errorCode?: string | null;
   scheduledRetry: IssueScheduledRetry | null;
 }
 
