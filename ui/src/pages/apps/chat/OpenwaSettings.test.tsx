@@ -385,6 +385,29 @@ describe("OpenWA settings", () => {
     );
   });
 
+  it("asks before discarding a gateway chat draft and returns focus to the add button", async () => {
+    const confirm = vi.spyOn(window, "confirm").mockReturnValue(false);
+    render();
+    await vi.waitFor(() => expect(section("Chats").textContent).toContain("Ops group"));
+    const chats = section("Chats");
+    click(button(chats, "Add a chat from WhatsApp"));
+    await vi.waitFor(() => expect(chats.textContent).toContain("+62xxx...0555"));
+    click(button(chats, "Configure"));
+    setValue(field<HTMLTextAreaElement>("#openwa-chat-note"), "Draft note");
+    const escape = () =>
+      act(() => {
+        field("#openwa-chat-note").dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+      });
+    escape();
+    expect(confirm).toHaveBeenCalledTimes(1);
+    expect(field<HTMLTextAreaElement>("#openwa-chat-note").value).toBe("Draft note");
+    confirm.mockReturnValue(true);
+    escape();
+    expect(chats.querySelector("#openwa-chat-note")).toBeNull();
+    await vi.waitFor(() => expect(document.activeElement).toBe(button(chats, "Add a chat from WhatsApp")));
+    confirm.mockRestore();
+  });
+
   it("picks an owner report group by name, saves it and shows it on the chat row", async () => {
     const project = {
       id: "res-project",

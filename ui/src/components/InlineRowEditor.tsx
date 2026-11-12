@@ -58,6 +58,7 @@ export function useInlineRowEditor<T>(keyOf: (value: T) => string, fallbackFocus
   const triggerProps = (key: string) => ({
     ref: (element: HTMLElement | null) => {
       if (element) triggers.current.set(key, element);
+      else triggers.current.delete(key);
     },
     "aria-expanded": openKey === key,
     "aria-controls": openKey === key ? panelId(key) : undefined,
