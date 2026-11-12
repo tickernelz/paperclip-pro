@@ -58,6 +58,7 @@ export function createUpdateInstaller(deps: UpdateInstallerDeps): UpdateInstalle
   let monitor: ReturnType<typeof setInterval> | null = null;
   let checking: Promise<void> | null = null;
   let drainHeldUntil: number | null = null;
+  let unitSeenRunning = false;
 
   function save(next: UpdateJob): UpdateJob {
     job = next;
@@ -101,7 +102,7 @@ export function createUpdateInstaller(deps: UpdateInstallerDeps): UpdateInstalle
     if (job?.phase !== "failed" || !job.startedAt || !job.finishedAt) return;
     const result = readResult(job.startedAt);
     if (!result || Date.parse(result.finishedAt as string) <= Date.parse(job.finishedAt)) return;
-    void finish(resultPatch(result));
+    void finish(resultPatch(result)).catch(() => undefined);
   }
 
   async function holdDrain(): Promise<void> {
@@ -126,7 +127,8 @@ export function createUpdateInstaller(deps: UpdateInstallerDeps): UpdateInstalle
     if (!result) {
       const logHint = job.logHint ? ` Log: ${job.logHint}` : "";
       const state = job.unit ? await deps.unitState(job.unit) : "unknown";
-      if (state === "running") {
+      if (state === "running") unitSeenRunning = true;
+      if (state === "running" || (state === "unknown" && unitSeenRunning)) {
         if (now() >= (drainHeldUntil ?? Date.parse(startedAt) + UPDATE_DRAIN_TTL_MS) - 60_000) await holdDrain();
         return;
       }
@@ -155,6 +157,7 @@ export function createUpdateInstaller(deps: UpdateInstallerDeps): UpdateInstalle
   async function launch(): Promise<UpdateJob> {
     if (!job) throw new Error("No update job to launch.");
     fs.rmSync(resultPath, { force: true });
+    unitSeenRunning = false;
     const started = save({ ...job, phase: "installing", startedAt: new Date(now()).toISOString() });
     await holdDrain();
     try {

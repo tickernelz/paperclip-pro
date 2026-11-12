@@ -266,6 +266,24 @@ describe("update installer", () => {
     expect(control.isDraining()).toBe(false);
   });
 
+  it("does not give up on a running update when systemd briefly cannot be read after the deadline", async () => {
+    const control = runs(0);
+    let clock = Date.UTC(2026, 10, 12, 8);
+    const unit = { state: "running" as UpdateUnitState };
+    const { installer: updates, unitState } = installer({ runControl: control, unit, now: () => clock });
+    await updates.start({ version: "2026.1112.0", mode: "force", trigger: "manual", requestedBy: admin });
+    await until(() => unitState.mock.calls.length > 0);
+    clock += UPDATE_INSTALL_DEADLINE_MS + 60_000;
+    unit.state = "unknown";
+    const reads = unitState.mock.calls.length;
+    await until(() => unitState.mock.calls.length >= reads + 3);
+    expect(updates.current()?.phase).toBe("installing");
+    expect(control.isDraining()).toBe(true);
+    unit.state = "gone";
+    await until(() => updates.current()?.phase === "failed");
+    expect(updates.current()?.error).toContain("exited without reporting a result");
+  });
+
   it("shows the real outcome when the result arrives after the job was given up", async () => {
     const control = runs(0);
     let clock = Date.UTC(2026, 10, 12, 8);
