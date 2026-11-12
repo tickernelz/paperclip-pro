@@ -28,7 +28,7 @@ function recording(paths: QuestionPath[] = ["provider", "semantic"]) {
     const run = runs.at(-1)!;
     const provider = paths[n] === "provider";
     const request = `request-${n}`;
-    const idempotencyKey = provider ? `paperclip-runner-question:${run.id}:${request}` : `question-${n}`;
+    const idempotencyKey = provider ? `wardmote-runner-question:${run.id}:${request}` : `question-${n}`;
     const field = n === 0 ? { id: "field-1-question_0-hash", answerMode: "single_select", options: [
       { id: "am", label: "Morning" }, { id: "pm", label: "Afternoon" },
     ] } : { id: "reference", answerMode: "text" };

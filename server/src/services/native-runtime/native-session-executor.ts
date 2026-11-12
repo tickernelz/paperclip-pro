@@ -8636,7 +8636,7 @@ async function executeWardmoteNativeSessionWithinScope(
           activeIssueInteractionCondition({ runId: input.execution.binding.runId }),
           // Live provider questions resume their current turn; only durable
           // wake-based cards park it. A timeout creates a separate fallback.
-          sql`not (${issueThreadInteractions.kind} = 'ask_user_questions' and ${issueThreadInteractions.continuationPolicy} = 'none' and coalesce(${issueThreadInteractions.idempotencyKey}, '') like 'paperclip-runner-question:%')`,
+          sql`not (${issueThreadInteractions.kind} = 'ask_user_questions' and ${issueThreadInteractions.continuationPolicy} = 'none' and coalesce(${issueThreadInteractions.idempotencyKey}, '') like 'wardmote-runner-question:%')`,
         ),
       )
       .orderBy(

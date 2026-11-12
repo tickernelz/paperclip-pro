@@ -16623,7 +16623,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
       answerMode: "single_select", options: [{ id: "accept", label: "Accept" }, { id: "reject", label: "Reject" }, { id: "cancel", label: "Cancel" }] }] };
     const [interaction] = await db.insert(issueThreadInteractions).values({ id: interactionId, companyId: f.companyId, issueId: f.issueId, sourceRunId: f.runId,
       createdByAgentId: f.agentId, kind: "ask_user_questions", status: "answered", continuationPolicy: "none",
-      idempotencyKey: `paperclip-runner-question:${f.runId}:request`, resolvedByUserId: "responsible-user", resolvedAt: new Date(Date.now() - 1000),
+      idempotencyKey: `wardmote-runner-question:${f.runId}:request`, resolvedByUserId: "responsible-user", resolvedAt: new Date(Date.now() - 1000),
       payload: { version: 1, questions: [{ id: planId, prompt: "Proceed?", selectionMode: "single", required: true, allowOther: false, options: [{ id: "accept", label: "Accept" }, { id: "reject", label: "Reject" }, { id: "cancel", label: "Cancel" }] }], runtimeRequestId: "request", questionSet: questionSet as never }, result: { version: 1, answers: [{ questionId: planId, optionIds: ["accept"] }] } }).returning();
     const answer = buildQuestionResponseDeliveryEnvelope(interaction as never);
     const [delivery] = await db.insert(issueQuestionResponseDeliveries).values({ companyId: f.companyId, issueId: f.issueId, interactionId,
