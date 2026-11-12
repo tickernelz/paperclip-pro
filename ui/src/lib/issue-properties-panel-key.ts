@@ -23,6 +23,7 @@ type IssuePropertiesPanelKeyIssue = Pick<
   | "blockedBy"
   | "ancestors"
   | "watchdog"
+  | "scheduledRetry"
 >;
 
 type IssuePropertiesPanelKeyChild = Pick<Issue, "id" | "updatedAt" | "identifier" | "title">;
@@ -91,6 +92,16 @@ export function buildIssuePropertiesPanelKey(
           instructions: issue.watchdog.instructions ?? null,
           status: issue.watchdog.status,
           watchdogIssueId: issue.watchdog.watchdogIssueId ?? null,
+        }
+      : null,
+    scheduledRetry: issue.scheduledRetry
+      ? {
+          runId: issue.scheduledRetry.runId,
+          status: issue.scheduledRetry.status,
+          scheduledRetryAt: issue.scheduledRetry.scheduledRetryAt
+            ? String(issue.scheduledRetry.scheduledRetryAt)
+            : null,
+          scheduledRetryAttempt: issue.scheduledRetry.scheduledRetryAttempt,
         }
       : null,
     parentSummary: issue.ancestors?.[0]

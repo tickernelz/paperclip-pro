@@ -18,7 +18,7 @@ export type ListDueRetriesInput = {
 export type EvaluateScheduledRetryGateInput = {
   runId: string;
   companyId: string;
-  retryReasonOverride: string;
+  retryReasonOverride: string | null;
   now: Date;
 };
 

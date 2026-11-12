@@ -469,14 +469,12 @@ async function buildPrompts(input: {
   const notes: string[] = [];
   const instructionsPath = asString(input.config.instructionsFilePath, "").trim();
   let instructions = "";
+  let instructionsSource = "";
   if (instructionsPath) {
     const resolvedPath = path.resolve(input.cwd, instructionsPath);
     try {
-      const contents = await fs.readFile(resolvedPath, "utf8");
-      instructions = joinPromptSections([
-        contents,
-        `The above agent instructions were loaded from ${resolvedPath}. Resolve relative file references from ${path.dirname(resolvedPath)}/.`,
-      ]);
+      instructions = await fs.readFile(resolvedPath, "utf8");
+      instructionsSource = `Your agent instructions in the system prompt were loaded from ${resolvedPath}. Resolve relative file references in them from ${path.dirname(resolvedPath)}/.`;
       notes.push(`Loaded agent instructions from ${resolvedPath}`);
     } catch (error) {
       const reason = error instanceof Error ? error.message : String(error);
@@ -514,6 +512,7 @@ async function buildPrompts(input: {
     sessionHandoff,
     taskContextNote,
     heartbeatPrompt,
+    instructionsSource,
   ]);
   return {
     systemPrompt,
@@ -554,7 +553,7 @@ export function applyRuntimeToolAccess(
     sections.push(
       [
         "Wardmote runtime tools are delivered through the environment of this run.",
-        `Bearer token: $WARDMOTE_RUNTIME_TOOLS_TOKEN (valid until ${tools.expiresAt}).`,
+        "Bearer token: $WARDMOTE_RUNTIME_TOOLS_TOKEN (valid until $WARDMOTE_RUNTIME_TOOLS_EXPIRES_AT).",
         `Search connections: POST $WARDMOTE_RUNTIME_TOOLS_CONNECTIONS_SEARCH_URL`,
         `Request a connection: POST $WARDMOTE_RUNTIME_TOOLS_CONNECTION_REQUEST_URL`,
         `MCP endpoint: $WARDMOTE_RUNTIME_TOOLS_MCP_URL`,
