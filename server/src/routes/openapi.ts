@@ -2,6 +2,7 @@ import { updateFastResponseSchema } from "@tickernelz/wardmote-shared";
 import {
   ompCustomProviderInputSchema,
   ompCustomProviderProbeSchema,
+  ompCustomProviderModelsFetchSchema,
   onboardingOmpLoginInputSchema,
   onboardingOmpLoginRequestSchema,
   onboardingRemoteOmpRequestSchema,
@@ -1848,6 +1849,7 @@ const INSTANCE_ADMIN_OPERATIONS = new Set([
   "DELETE /api/onboarding/omp/login/{loginId}",
   "GET /api/onboarding/omp/custom-providers",
   "POST /api/onboarding/omp/custom-providers/probe",
+  "POST /api/onboarding/omp/custom-providers/models",
   "PUT /api/onboarding/omp/custom-providers/{name}",
   "DELETE /api/onboarding/omp/custom-providers/{name}",
   "POST /api/onboarding/omp/remote",
@@ -9446,6 +9448,15 @@ registry.registerPath({
   tags: ["onboarding"],
   summary: "Test a custom provider endpoint with one-token requests and suggest its wire format",
   request: { body: jsonBody(ompCustomProviderProbeSchema) },
+  responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized, 403: r.forbidden, 422: r.unprocessable },
+});
+
+registry.registerPath({
+  method: "post",
+  path: "/api/onboarding/omp/custom-providers/models",
+  tags: ["onboarding"],
+  summary: "List a custom provider's upstream models with its stored or given key, never returning the key",
+  request: { body: jsonBody(ompCustomProviderModelsFetchSchema) },
   responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized, 403: r.forbidden, 422: r.unprocessable },
 });
 

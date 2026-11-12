@@ -6,6 +6,7 @@ import { PassThrough } from "node:stream";
 import express from "express";
 import request from "supertest";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { fetchCustomProviderModels } from "@tickernelz/wardmote-adapter-omp-local/providers";
 import type { OmpInstallProbe } from "@tickernelz/wardmote-adapter-omp-local/readiness";
 import { errorHandler } from "../middleware/index.js";
 import { onboardingOmpRoutes, type OnboardingOmpDeps } from "../routes/onboarding-omp.js";
@@ -396,6 +397,51 @@ describe("OMP custom providers", () => {
     expect(res.body.suggestedApi).toBe("openai-completions");
     expect(probeProvider).toHaveBeenCalledWith(expect.objectContaining({ key: "sk-live-keep-me-secret", baseUrl: "http://localhost:1/v1" }));
     expect(JSON.stringify(res.body)).not.toContain("sk-live-keep-me-secret");
+  });
+
+  it("fetches a saved provider's upstream models with its stored key only at its own base URL, never returning the key", async () => {
+    const calls: Array<{ url: string; headers: Record<string, string> }> = [];
+    const fetchProviderModels: OnboardingOmpDeps["fetchProviderModels"] = (options) => fetchCustomProviderModels({
+      ...options,
+      fetchImpl: async (url, init) => {
+        calls.push({ url, headers: init.headers });
+        return calls.length === 1
+          ? new Response(JSON.stringify({ data: [{ id: "m1" }, { id: "m2" }] }), { status: 200 })
+          : new Response(`key ${init.headers.authorization} is revoked`, { status: 401 });
+      },
+    });
+    const agentDir = await fs.mkdtemp(path.join(os.tmpdir(), "onboarding-omp-agent-"));
+    homes.push(agentDir);
+    await fs.writeFile(path.join(agentDir, "models.yml"), EXISTING);
+    const { app } = await appWith({ probe: async () => probeOf("ready", "18.18.8"), agentDir: async () => agentDir, fetchProviderModels });
+    const body = { name: "keep-me", baseUrl: "http://localhost:1/v1", api: "openai-completions", apiKey: { kind: "keep" }, authHeader: false, headers: [] };
+
+    const listed = await request(app).post("/api/onboarding/omp/custom-providers/models").send(body);
+    expect(listed.status).toBe(200);
+    expect(listed.body).toEqual({ url: "http://localhost:1/v1/models", status: 200, models: [{ id: "m1" }, { id: "m2" }], truncated: false, error: null });
+
+    const refused = await request(app).post("/api/onboarding/omp/custom-providers/models").send(body);
+    expect(refused.status).toBe(200);
+    expect(refused.body.error).toBe("http://localhost:1/v1/models answered 401: the provider rejected the key or headers. key Bearer [redacted] is revoked");
+    expect(calls.map((call) => [call.url, call.headers.authorization])).toEqual([
+      ["http://localhost:1/v1/models", "Bearer sk-live-keep-me-secret"],
+      ["http://localhost:1/v1/models", "Bearer sk-live-keep-me-secret"],
+    ]);
+    expect(JSON.stringify([listed.body, refused.body])).not.toContain("sk-live-keep-me-secret");
+
+    const { api: _api, ...probeBody } = body;
+    for (const [route, sent] of [["models", body], ["probe", probeBody]] as const) {
+      const elsewhere = await request(app).post(`/api/onboarding/omp/custom-providers/${route}`).send({ ...sent, baseUrl: "https://attacker.example/v1" });
+      expect(elsewhere.status).toBe(422);
+      expect(elsewhere.body.error).toContain("only go to the saved base URL http://localhost:1/v1");
+    }
+    const slash = await request(app).post("/api/onboarding/omp/custom-providers/models").send({ ...body, baseUrl: "http://localhost:1/v1/" });
+    expect(slash.status).toBe(200);
+    calls.splice(2);
+
+    const member = await appWith({ probe: async () => probeOf("ready", "18.18.8"), agentDir: async () => agentDir, fetchProviderModels }, MEMBER);
+    expect((await request(member.app).post("/api/onboarding/omp/custom-providers/models").send(body)).status).toBe(403);
+    expect(calls).toHaveLength(2);
   });
 });
 

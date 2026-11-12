@@ -19,6 +19,7 @@ import {
 import {
   defaultSpawnOmp,
   existingProvider,
+  fetchCustomProviderModels,
   listCustomProviders,
   listOmpLoginProviders,
   modelsYamlPath,
@@ -38,12 +39,14 @@ import {
 import {
   OMP_PROVIDER_NAME_PATTERN,
   ompCustomProviderInputSchema,
+  ompCustomProviderModelsFetchSchema,
   ompCustomProviderProbeSchema,
   onboardingOmpLoginInputSchema,
   onboardingOmpLoginRequestSchema,
   onboardingRemoteOmpRequestSchema,
   parseSshAddress,
   type OmpCustomProviderInput,
+  type OmpCustomProviderModelsFetchInput,
   type OmpCustomProviderProbeInput,
   type OnboardingOmpBrowseEntry,
   type OnboardingOmpBrowseResult,
@@ -79,6 +82,7 @@ export interface OnboardingOmpDeps {
   agentDir: (command: string, env: NodeJS.ProcessEnv) => Promise<string>;
   validateModelsYaml: (command: string, env: NodeJS.ProcessEnv, text: string) => Promise<string[]>;
   probeProvider: typeof probeCustomProvider;
+  fetchProviderModels: typeof fetchCustomProviderModels;
   runSsh: (args: string[], timeoutMs: number) => Promise<{ code: number | null; stdout: string; stderr: string }>;
 }
 
@@ -141,6 +145,7 @@ function defaultDeps(): OnboardingOmpDeps {
     agentDir: resolveOmpAgentDir,
     validateModelsYaml: validateModelsYamlWithOmp,
     probeProvider: probeCustomProvider,
+    fetchProviderModels: fetchCustomProviderModels,
     runSsh: defaultRunSsh,
   };
 }
@@ -151,6 +156,11 @@ const REMOTE_SCRIPT = [
   "printf 'OMP=%s\\n' \"$p\"",
   "if [ -n \"$p\" ]; then printf 'VERSION=%s\\n' \"$(\"$p\" --version 2>&1 | head -n 1)\"; printf 'MODELS=%s\\n' \"$(\"$p\" models --json 2>/dev/null | tr -d '\\n')\"; fi",
 ].join("; ");
+
+function sameBaseUrl(saved: string | null, requested: string): boolean {
+  const trim = (url: string) => url.trim().replace(/\/+$/, "");
+  return saved !== null && trim(saved) === trim(requested);
+}
 
 function readMarker(stdout: string, key: string): string | null {
   const line = stdout.split(/\r?\n/).find((entry) => entry.startsWith(`${key}=`));
@@ -349,9 +359,7 @@ export function onboardingOmpRoutes(overrides: Partial<OnboardingOmpDeps> = {}) 
     res.json(listCustomProviders(await readModelsYaml(file), file, env));
   });
 
-  router.post("/onboarding/omp/custom-providers/probe", validate(ompCustomProviderProbeSchema), async (req, res) => {
-    assertInstanceAdmin(req);
-    const input = req.body as OmpCustomProviderProbeInput;
+  async function providerCredentials(input: Pick<OmpCustomProviderProbeInput, "name" | "baseUrl" | "apiKey" | "headers">) {
     const command = await readyCommand();
     const env = deps.ompEnv();
     let existing: Record<string, unknown> | null = null;
@@ -362,6 +370,10 @@ export function onboardingOmpRoutes(overrides: Partial<OnboardingOmpDeps> = {}) 
       } catch (error) {
         throw unprocessable((error as Error).message);
       }
+      const savedBaseUrl = typeof existing?.baseUrl === "string" ? existing.baseUrl : null;
+      if (existing && !sameBaseUrl(savedBaseUrl, input.baseUrl)) {
+        throw unprocessable(`The saved key and header values only go to the saved base URL ${savedBaseUrl}. Save the new base URL first, or enter the key and header values again.`);
+      }
     }
     const key = resolveProviderKey(input.apiKey, existing, env);
     if (key.error) throw unprocessable(key.error);
@@ -371,9 +383,29 @@ export function onboardingOmpRoutes(overrides: Partial<OnboardingOmpDeps> = {}) 
       const value = header.value ?? storedHeaders[header.name];
       if (typeof value === "string") headers[header.name] = value;
     }
+    return { key: key.key, headers };
+  }
+
+  router.post("/onboarding/omp/custom-providers/models", validate(ompCustomProviderModelsFetchSchema), async (req, res) => {
+    assertInstanceAdmin(req);
+    const input = req.body as OmpCustomProviderModelsFetchInput;
+    const { key, headers } = await providerCredentials(input);
+    res.json(await deps.fetchProviderModels({
+      baseUrl: input.baseUrl,
+      api: input.api,
+      key,
+      authHeader: input.authHeader,
+      headers,
+    }));
+  });
+
+  router.post("/onboarding/omp/custom-providers/probe", validate(ompCustomProviderProbeSchema), async (req, res) => {
+    assertInstanceAdmin(req);
+    const input = req.body as OmpCustomProviderProbeInput;
+    const { key, headers } = await providerCredentials(input);
     res.json(await deps.probeProvider({
       baseUrl: input.baseUrl,
-      key: key.key,
+      key,
       authHeader: input.authHeader,
       headers,
       modelId: input.modelId,

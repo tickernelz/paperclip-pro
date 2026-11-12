@@ -3,7 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { parse as parseYaml } from "yaml";
-import { customProvidersFromYaml, parseLoginProviders, probeCustomProvider, upsertCustomProviderYaml, validateModelsYamlWithOmp } from "./providers.js";
+import { customProvidersFromYaml, fetchCustomProviderModels, parseLoginProviders, probeCustomProvider, upsertCustomProviderYaml, validateModelsYamlWithOmp } from "./providers.js";
 
 const BASE = {
   baseUrl: "https://gw.example.com/v1",
@@ -107,6 +107,17 @@ describe("probeCustomProvider", () => {
     expect(result).toMatchObject({ suggestedApi: null, models: [], usedModel: null });
     expect(result.attempts).toEqual([{ api: "models-list", url: "http://gw/v1/models", status: 401, ok: false, detail: "unauthorized" }]);
   });
+  it("never repeats the key an upstream error echoes", async () => {
+    const result = await probeCustomProvider({
+      baseUrl: "http://gw/v1",
+      key: "sk-echoed-secret",
+      authHeader: false,
+      headers: {},
+      fetchImpl: async () => new Response("bad key sk-echoed-secret", { status: 401 }),
+    });
+    expect(result.attempts[0].detail).toBe("bad key [redacted]");
+  });
+
   it("stops reading a reply that never ends", async () => {
     let chunks = 0;
     const endless = () => new ReadableStream<Uint8Array>({
@@ -125,6 +136,107 @@ describe("probeCustomProvider", () => {
     expect(result.attempts[0]).toMatchObject({ status: 500, ok: false });
     expect(result.attempts[0].detail).toHaveLength(240);
     expect(chunks).toBeLessThanOrEqual(10);
+  });
+});
+
+describe("fetchCustomProviderModels", () => {
+  type Call = { url: string; headers: Record<string, string> };
+  const replying = (reply: (url: string) => Response) => {
+    const calls: Call[] = [];
+    return {
+      calls,
+      fetchImpl: async (url: string, init: { headers: Record<string, string> }) => {
+        calls.push({ url, headers: init.headers });
+        return reply(url);
+      },
+    };
+  };
+  const json = (value: unknown, status = 200) => new Response(JSON.stringify(value), { status });
+  const SECRET = "sk-stored-secret-123";
+
+  it("reads an OpenAI list with a bearer key, keeps upstream names and drops duplicates", async () => {
+    const { calls, fetchImpl } = replying(() => json({ data: [{ id: "a", name: "Model A" }, { id: "b" }, { id: "a" }, { id: "c", name: "c" }] }));
+    const result = await fetchCustomProviderModels({ baseUrl: "http://gw/v1/", api: "openai-completions", key: SECRET, authHeader: false, headers: { "X-Team": "t1" }, fetchImpl });
+    expect(result).toEqual({ url: "http://gw/v1/models", status: 200, truncated: false, error: null, models: [{ id: "a", name: "Model A" }, { id: "b" }, { id: "c" }] });
+    expect(calls).toEqual([{ url: "http://gw/v1/models", headers: { "X-Team": "t1", authorization: `Bearer ${SECRET}` } }]);
+  });
+
+  it("reads a models[] list by id or by name", async () => {
+    const { fetchImpl } = replying(() => json({ models: [{ id: "x", display_name: "X" }, { name: "llama3:8b" }, { size: 1 }] }));
+    const result = await fetchCustomProviderModels({ baseUrl: "http://gw", api: null, key: null, authHeader: false, headers: {}, fetchImpl });
+    expect(result.models).toEqual([{ id: "x", name: "X" }, { id: "llama3:8b" }]);
+  });
+
+  it("pages an Anthropic list with x-api-key and anthropic-version until has_more is false", async () => {
+    const { calls, fetchImpl } = replying((url) => {
+      const after = new URL(url).searchParams.get("after_id");
+      return after === null
+        ? json({ data: [{ id: "claude-a", display_name: "Claude A" }], has_more: true, last_id: "claude-a" })
+        : json({ data: [{ id: "claude-b" }], has_more: false, last_id: "claude-b" });
+    });
+    const result = await fetchCustomProviderModels({ baseUrl: "https://api.anthropic.com/v1", api: "anthropic-messages", key: SECRET, authHeader: false, headers: {}, fetchImpl });
+    expect(result.models).toEqual([{ id: "claude-a", name: "Claude A" }, { id: "claude-b" }]);
+    expect(calls.map((call) => call.url)).toEqual([
+      "https://api.anthropic.com/v1/models?limit=1000",
+      "https://api.anthropic.com/v1/models?limit=1000&after_id=claude-a",
+    ]);
+    expect(calls[0].headers).toEqual({ "anthropic-version": "2023-06-01", "x-api-key": SECRET });
+  });
+
+  it("sends an Anthropic key as Authorization when the provider asks for it", async () => {
+    const { calls, fetchImpl } = replying(() => json({ data: [{ id: "m" }], has_more: false }));
+    await fetchCustomProviderModels({ baseUrl: "https://proxy/v1", api: "anthropic-messages", key: SECRET, authHeader: true, headers: {}, fetchImpl });
+    expect(calls[0].headers).toEqual({ "anthropic-version": "2023-06-01", authorization: `Bearer ${SECRET}` });
+  });
+
+  it("stops paging at the total deadline and keeps the models read so far", async () => {
+    const slow = (signal: AbortSignal, reply: () => Response) => new Promise<Response>((resolve, reject) => {
+      const timer = setTimeout(() => resolve(reply()), 20);
+      signal.addEventListener("abort", () => {
+        clearTimeout(timer);
+        reject(signal.reason);
+      }, { once: true });
+    });
+    let pages = 0;
+    const endless = await fetchCustomProviderModels({
+      baseUrl: "http://gw/v1",
+      api: "anthropic-messages",
+      key: null,
+      authHeader: false,
+      headers: {},
+      totalTimeoutMs: 150,
+      fetchImpl: async (_url, init) => slow(init.signal, () => {
+        pages += 1;
+        return json({ data: [{ id: `m${pages}` }], has_more: true, last_id: `m${pages}` });
+      }),
+    });
+    expect(endless).toMatchObject({ truncated: true, error: null });
+    expect(endless.models.length).toBeGreaterThan(0);
+    expect(endless.models.length).toBeLessThan(50);
+
+    const silent = await fetchCustomProviderModels({
+      baseUrl: "http://gw/v1",
+      api: null,
+      key: null,
+      authHeader: false,
+      headers: {},
+      totalTimeoutMs: 50,
+      fetchImpl: async (_url, init) => new Promise((_resolve, reject) => init.signal.addEventListener("abort", () => reject(init.signal.reason), { once: true })),
+    });
+    expect(silent).toMatchObject({ models: [], error: "http://gw/v1/models did not finish listing models within 0.05 s." });
+  });
+
+  it("explains failures without repeating the key or header values", async () => {
+    const run = (reply: () => Response | Promise<Response>) =>
+      fetchCustomProviderModels({ baseUrl: "http://gw/v1", api: null, key: SECRET, authHeader: false, headers: { "X-Org": "org-secret-value" }, fetchImpl: async () => reply() });
+    const rejected = await run(() => new Response(`invalid key ${SECRET} for org-secret-value`, { status: 401 }));
+    expect(rejected).toMatchObject({ status: 401, models: [] });
+    expect(rejected.error).toBe("http://gw/v1/models answered 401: the provider rejected the key or headers. invalid key [redacted] for [redacted]");
+    expect((await run(() => new Response("nope", { status: 404 }))).error).toContain("answered 404: there is no model list at this address");
+    expect((await run(() => new Response(`<html>${SECRET}</html>`, { status: 200 }))).error).toBe("http://gw/v1/models did not answer with JSON: <html>[redacted]</html>");
+    expect((await run(() => json({ object: "list" }))).error).toContain("without a model list");
+    expect((await run(() => json({ data: [] }))).error).toBe("http://gw/v1/models listed no models.");
+    expect((await run(() => Promise.reject(Object.assign(new Error("timed out"), { name: "TimeoutError" })))).error).toBe("http://gw/v1/models did not answer within 15 s.");
   });
 });
 
