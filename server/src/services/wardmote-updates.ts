@@ -8,7 +8,11 @@ import {
   type WardmoteInstallKind,
   type WardmoteUpdateChannel,
 } from "@tickernelz/wardmote-shared";
-import { resolveLatestWardmoteVersion, type UpdateCheckResult } from "@tickernelz/wardmote-shared/wardmote-update-check";
+import {
+  readCachedLatestWardmoteVersion,
+  resolveLatestWardmoteVersion,
+  type UpdateCheckResult,
+} from "@tickernelz/wardmote-shared/wardmote-update-check";
 import { readConfigFile } from "../config-file.js";
 import { resolveWardmoteHomeDir } from "../home-paths.js";
 import { serverVersion } from "../version.js";
@@ -86,19 +90,19 @@ export function createWardmoteUpdateService(options: WardmoteUpdateServiceOption
   const serverModulePath = options.serverModulePath ?? fileURLToPath(import.meta.url);
   const inContainer = (options.inContainer ?? defaultInContainer)();
   const platform = options.platform ?? process.platform;
-  let result: UpdateCheckResult | null = null;
-  let inFlight: Promise<void> | null = null;
-
+  const cachePath = path.join(homeDir, "cli", "update-check.json");
   const checkEnabled = () => env.WARDMOTE_UPDATE_CHECK !== "0" && configCheckEnabled();
   const manifest = () => readInstallManifest(homeDir);
   const channel = (): WardmoteUpdateChannel =>
     manifest()?.channel === "canary" || /-canary\b/.test(currentVersion) ? "canary" : "latest";
+  let result: UpdateCheckResult | null = checkEnabled() ? readCachedLatestWardmoteVersion(cachePath, channel()) : null;
+  let inFlight: Promise<void> | null = null;
 
   async function refresh(): Promise<void> {
     if (!checkEnabled()) return;
     if (inFlight) return inFlight;
     inFlight = resolveLatestWardmoteVersion({
-      cachePath: path.join(homeDir, "cli", "update-check.json"),
+      cachePath,
       channel: channel(),
       now: now(),
       fetchImpl: options.fetchImpl,

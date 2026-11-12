@@ -52,6 +52,14 @@ describe("wardmote update service", () => {
     expect(fetchImpl).toHaveBeenCalledTimes(1);
   });
 
+  it("knows the cached newest version right after a restart, before any network check", async () => {
+    writeManifest({ source: "npm", channel: "latest" });
+    fs.writeFileSync(path.join(homeDir, "cli", "update-check.json"), JSON.stringify({ checkedAt: Date.UTC(2026, 10, 12), latest: "2026.1112.0", channel: "latest" }));
+    const fetchImpl = vi.fn(async () => new Response("{}"));
+    expect(service({ fetchImpl }).status()).toMatchObject({ latestVersion: "2026.1112.0", updateAvailable: true });
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
   it("stays silent and shows no update when the registry is unreachable", async () => {
     const updates = service({ fetchImpl: vi.fn(async () => { throw new TypeError("fetch failed"); }) });
     await expect(updates.refresh()).resolves.toBeUndefined();
