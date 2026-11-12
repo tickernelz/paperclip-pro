@@ -234,7 +234,7 @@ async function slackToolsForEndpoint(
       description: entry.description ?? "",
       parametersSchema: entry.inputSchema,
       pluginId: `slack-bot:${authority.endpoint.id}`,
-      providerType: "paperclip_slack_chat",
+      providerType: "wardmote_slack_chat",
       risk: entry.riskLevel === "read" ? "read" : "write",
       applicationId,
       applicationKey: "slack-chat",

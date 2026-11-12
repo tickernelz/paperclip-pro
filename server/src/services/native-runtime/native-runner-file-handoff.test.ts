@@ -1204,12 +1204,12 @@ describe("native runner file handoff", () => {
       {
         wake: wakeFor("github"),
         provider: "github",
-        mode: "paperclip_task_only",
+        mode: "wardmote_task_only",
       },
       {
         wake: wakeFor("microsoft-teams"),
         provider: "microsoft-teams",
-        mode: "paperclip_task_only",
+        mode: "wardmote_task_only",
       },
       ...["slack", "discord", "telegram"].map((provider) => ({
         wake: wakeFor(provider),

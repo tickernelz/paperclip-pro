@@ -8069,7 +8069,7 @@ export function toolAccessService(
           eq(toolConnections.status, "active"),
           ne(toolConnections.transport, "chat_sdk"),
           ne(toolConnections.transport, "runtime_auth"),
-          ne(toolApplications.type, "paperclip_plugin"),
+          ne(toolApplications.type, "wardmote_plugin"),
           or(isNull(toolConnections.healthCheckedAt), lte(toolConnections.healthCheckedAt, cutoff)),
         ),
       )

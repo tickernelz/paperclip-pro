@@ -141,7 +141,7 @@ process.stdout.write(JSON.stringify({identity, token:process.env.GH_TOKEN ?? nul
     await new Promise<void>(resolve => server.listen(0, "127.0.0.1", resolve));
     cleanups.push(() => new Promise<void>((resolve, reject) => server.close(error => error ? reject(error) : resolve())));
     const address = server.address() as { port: number };
-    const env: NodeJS.ProcessEnv = { ...process.env, ...githubBrokerEnvironment({
+    const env: NodeJS.ProcessEnv = { ...process.env, WARDMOTE_API_KEY: "", WARDMOTE_GITHUB_BRIDGE_TOKEN: "", ...githubBrokerEnvironment({
       GH_TOKEN: "ambient-host-token", GIT_AUTHOR_NAME: "Host", GIT_AUTHOR_EMAIL: "host@example.test",
     }, { url: `http://127.0.0.1:${address.port}`, token: "run-capability" }), PATH: `${bin}:${realBin}:${process.env.PATH}` };
     const git = async (...args: string[]) => (await exec(path.join(bin, "git"), args, { cwd: repo, env })).stdout.trim();

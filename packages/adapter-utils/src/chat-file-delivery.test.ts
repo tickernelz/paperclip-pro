@@ -25,7 +25,7 @@ describe("chat file preparation delivery contract", () => {
       const delivery = wardmoteChatFilePreparationDelivery(provider);
       expect(delivery).toMatchObject({
         provider,
-        mode: "paperclip_task_only",
+        mode: "wardmote_task_only",
         preparationState: "prepared",
         providerDeliveryConfirmed: false,
       });

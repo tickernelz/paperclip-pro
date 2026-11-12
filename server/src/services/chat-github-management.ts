@@ -581,7 +581,7 @@ export function githubChatManagementService(db: Db, fetchImpl = fetch) {
             applicationKey: "github-chat",
             connectionId: bot.connectionId,
             catalogEntryId: entry.id,
-            providerType: "paperclip_github_chat",
+            providerType: "wardmote_github_chat",
             upstreamToolName: entry.toolName,
             riskLevel: entry.riskLevel,
             arguments: {},
