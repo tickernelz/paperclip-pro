@@ -272,7 +272,7 @@ function createReactShimSource(reactModule: object): string {
     .join("\n");
 
   return `
-        const R = globalThis.__paperclipPluginBridge__?.react;
+        const R = globalThis.__wardmotePluginBridge__?.react;
         if (!R) {
           throw new Error("Wardmote plugin React runtime is not initialized.");
         }
@@ -295,7 +295,7 @@ function getShimBlobUrl(specifier: "react" | "react-dom" | "react-dom/client" | 
       // marking, so dev React emits "unique key" warnings for every
       // multi-child element rendered by a plugin component.
       source = `
-        const BRIDGE = globalThis.__paperclipPluginBridge__;
+        const BRIDGE = globalThis.__wardmotePluginBridge__;
         const RUNTIME = BRIDGE?.reactJsxRuntime;
         const R = BRIDGE?.react;
         const withKey = ${applyJsxRuntimeKey.toString()};
@@ -308,7 +308,7 @@ function getShimBlobUrl(specifier: "react" | "react-dom" | "react-dom/client" | 
     case "react-dom":
     case "react-dom/client":
       source = `
-        const RD = globalThis.__paperclipPluginBridge__?.reactDom;
+        const RD = globalThis.__wardmotePluginBridge__?.reactDom;
         export default RD;
         const { createRoot, hydrateRoot, createPortal, flushSync } = RD ?? {};
         export { createRoot, hydrateRoot, createPortal, flushSync };
@@ -316,7 +316,7 @@ function getShimBlobUrl(specifier: "react" | "react-dom" | "react-dom/client" | 
       break;
     case "sdk-ui":
       source = `
-        const SDK = globalThis.__paperclipPluginBridge__?.sdkUi ?? {};
+        const SDK = globalThis.__wardmotePluginBridge__?.sdkUi ?? {};
         function missing(name) {
           return function MissingWardmoteSdkUiComponent() {
             throw new Error('Wardmote plugin UI runtime is not initialized for "' + name + '". Ensure the host loaded the plugin bridge before rendering this UI module.');
@@ -401,7 +401,7 @@ function rewriteBareSpecifiers(source: string): string {
 async function importPluginModule(url: string): Promise<Record<string, unknown>> {
   // Check if the bridge registry is available. If not, fall back to direct
   // import (which will fail on bare specifiers but won't crash the loader).
-  if (!globalThis.__paperclipPluginBridge__) {
+  if (!globalThis.__wardmotePluginBridge__) {
     console.warn("[plugin-loader] Bridge registry not initialized, falling back to direct import");
     return import(/* @vite-ignore */ url);
   }

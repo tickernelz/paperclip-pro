@@ -1010,7 +1010,7 @@ const sdkUi: Record<string, unknown> = {
   ManagedRoutinesList: MockManagedRoutinesList,
 };
 
-(globalThis as { __paperclipPluginBridge__?: { sdkUi?: Record<string, unknown> } }).__paperclipPluginBridge__ = { sdkUi };
+(globalThis as { __wardmotePluginBridge__?: { sdkUi?: Record<string, unknown> } }).__wardmotePluginBridge__ = { sdkUi };
 
 // ---------------------------------------------------------------------------
 // Harness app: chooses which view to render based on a global hash. Playwright

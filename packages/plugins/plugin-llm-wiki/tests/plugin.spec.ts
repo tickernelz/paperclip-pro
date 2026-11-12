@@ -37,7 +37,7 @@ const OTHER_COMPANY_ID = "99999999-9999-4999-8999-999999999999";
 const ORIGINAL_DEPLOYMENT_MODE = process.env.WARDMOTE_DEPLOYMENT_MODE;
 const ORIGINAL_DEPLOYMENT_EXPOSURE = process.env.WARDMOTE_DEPLOYMENT_EXPOSURE;
 type TestBridgeGlobal = typeof globalThis & {
-  __paperclipPluginBridge__?: {
+  __wardmotePluginBridge__?: {
     sdkUi?: Record<string, unknown>;
   };
 };
@@ -122,7 +122,7 @@ beforeEach(() => {
   mockDistillationOverviewData = null;
   mockPageContentsByPath = {};
   mockPageMetadataByPath = {};
-  (globalThis as TestBridgeGlobal).__paperclipPluginBridge__ = {
+  (globalThis as TestBridgeGlobal).__wardmotePluginBridge__ = {
     sdkUi: {
       usePluginData: (key: string, params?: Record<string, unknown>) => {
         if (key === "overview") {
@@ -469,7 +469,7 @@ afterEach(() => {
   } else {
     process.env.WARDMOTE_DEPLOYMENT_EXPOSURE = ORIGINAL_DEPLOYMENT_EXPOSURE;
   }
-  delete (globalThis as TestBridgeGlobal).__paperclipPluginBridge__;
+  delete (globalThis as TestBridgeGlobal).__wardmotePluginBridge__;
 });
 
 function wikiMaintainerAgent(): Agent {

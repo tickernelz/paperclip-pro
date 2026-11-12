@@ -81,7 +81,7 @@ export interface PluginBridgeRegistry {
 
 declare global {
   // eslint-disable-next-line no-var
-  var __paperclipPluginBridge__: PluginBridgeRegistry | undefined;
+  var __wardmotePluginBridge__: PluginBridgeRegistry | undefined;
 }
 
 type PluginFileTreePathCollection = ReadonlySet<string> | readonly string[];
@@ -664,7 +664,7 @@ export function initPluginBridge(
   react: typeof import("react"),
   reactDom: typeof import("react-dom"),
 ): void {
-  globalThis.__paperclipPluginBridge__ = {
+  globalThis.__wardmotePluginBridge__ = {
     react,
     reactJsxRuntime: ReactJsxRuntimeModule,
     reactDom,

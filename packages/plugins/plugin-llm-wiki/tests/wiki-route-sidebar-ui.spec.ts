@@ -10,7 +10,7 @@ const COMPANY_ID = "11111111-1111-4111-8111-111111111111";
 const EXPANDED_STORAGE_KEY = `wardmote.plugin-llm-wiki:route-sidebar-expanded:v2:${COMPANY_ID}`;
 
 type BridgeGlobal = typeof globalThis & {
-  __paperclipPluginBridge__?: {
+  __wardmotePluginBridge__?: {
     sdkUi?: Record<string, unknown>;
   };
 };
@@ -109,7 +109,7 @@ describe("WikiRouteSidebar", () => {
     pluginDataCalls = [];
     pluginActionCalls = [];
     spacesRefreshCount = 0;
-    (globalThis as BridgeGlobal).__paperclipPluginBridge__ = {
+    (globalThis as BridgeGlobal).__wardmotePluginBridge__ = {
       sdkUi: {
         usePluginData: (key: string, params?: Record<string, unknown>) => {
           pluginDataCalls.push({ key, params });
@@ -242,7 +242,7 @@ describe("WikiRouteSidebar", () => {
     });
     container.remove();
     window.localStorage.clear();
-    delete (globalThis as BridgeGlobal).__paperclipPluginBridge__;
+    delete (globalThis as BridgeGlobal).__wardmotePluginBridge__;
   });
 
   it("defaults wiki categories open so local files are visible", () => {
@@ -482,7 +482,7 @@ describe("WikiPage", () => {
       hash: "",
     };
     navigatedTo = null;
-    (globalThis as BridgeGlobal).__paperclipPluginBridge__ = {
+    (globalThis as BridgeGlobal).__wardmotePluginBridge__ = {
       sdkUi: {
         usePluginData: (key: string) => {
           if (key === "overview") {
@@ -653,7 +653,7 @@ describe("WikiPage", () => {
     });
     container.remove();
     consoleError.mockRestore();
-    delete (globalThis as BridgeGlobal).__paperclipPluginBridge__;
+    delete (globalThis as BridgeGlobal).__wardmotePluginBridge__;
   });
 
   it("renders structured Wardmote source refs as text", () => {
