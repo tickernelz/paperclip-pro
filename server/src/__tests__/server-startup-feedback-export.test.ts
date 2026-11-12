@@ -263,6 +263,7 @@ vi.mock("@tickernelz/wardmote-db", () => ({
   reconcilePendingMigrationHistory: vi.fn(async () => ({ repairedMigrations: [] })),
   formatDatabaseBackupResult: vi.fn(() => "ok"),
   runDatabaseBackup: vi.fn(),
+  DatabaseBackupSkippedError: class DatabaseBackupSkippedError extends Error {},
   authUsers: {},
   companies: {},
   companyMemberships: {},
