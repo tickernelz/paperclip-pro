@@ -41,7 +41,7 @@ connecting. Loopback consent succeeded locally; HTTPS still needs live proof.
 | Hosted project/service listing and feature-flag reads | Actual discovered schemas; provider credential scope | Read for reviewed names |
 | Other hosted actions | Actual discovered schemas; provider credential scope | Write or destructive |
 | Hosted `railway-agent` and `accept-deploy` | Disabled at discovery and denied at dispatch, including normalized aliases | Destructive; unavailable |
-| `paperclip-railway-list-projects`, `list-services`, `list-environments` | Explicit workspace ID for projects, project ID for services/environments; 1–100 results per page, cursor ≤512 characters | Read |
+| `wardmote-railway-list-projects`, `list-services`, `list-environments` | Explicit workspace ID for projects, project ID for services/environments; 1–100 results per page, cursor ≤512 characters | Read |
 | `service-status`, `list-deployments`, `deployment-status` | Explicit project/environment/service IDs; deployment ID where applicable | Read |
 | `read-logs` | Build/runtime; ≤500 lines; time bounds/filter; ≤64 KiB of log entries | Read; sensitive application data |
 | `redeploy`, `restart`, `rollback` | Exact deployment membership checked before mutation | Destructive |
@@ -71,7 +71,7 @@ blocked by a narrow provider policy. Other providers and global defaults are
 unchanged. New or changed Railway schemas are quarantined after initial discovery,
 including reconnect flows that normally enable newly discovered actions.
 
-Source deployment (`paperclip-railway-deploy-revision`) is also blocked. The
+Source deployment (`wardmote-railway-deploy-revision`) is also blocked. The
 `serviceInstanceDeployV2` mutation accepts a commit SHA but cannot atomically
 verify the approved repository. A separate repository check can race a provider
 configuration change. Wardmote therefore offers 11 direct actions and no source

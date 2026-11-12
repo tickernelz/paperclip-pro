@@ -22,7 +22,7 @@ export async function generateRailwaySshKey(): Promise<{ publicKey: string; priv
   const directory = await mkdtemp(path.join(tmpdir(), "wardmote-railway-key-"));
   try {
     const keyPath = path.join(directory, "identity");
-    await promisify(execFile)("/usr/bin/ssh-keygen", ["-q", "-t", "ed25519", "-N", "", "-C", "paperclip-railway", "-f", keyPath], { timeout: 10_000, env: { PATH: "/usr/bin:/bin" } });
+    await promisify(execFile)("/usr/bin/ssh-keygen", ["-q", "-t", "ed25519", "-N", "", "-C", "wardmote-railway", "-f", keyPath], { timeout: 10_000, env: { PATH: "/usr/bin:/bin" } });
     return { publicKey: (await readFile(`${keyPath}.pub`, "utf8")).trim(), privateKey: await readFile(keyPath, "utf8") };
   } catch {
     throw new RailwayError("railway_ssh_unavailable", "Generating a Railway key requires system OpenSSH (ssh-keygen) on the Wardmote runtime.", 422);
