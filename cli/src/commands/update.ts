@@ -13,6 +13,7 @@ import { resolveConfigPath } from "../config/store.js";
 import { detectServiceManager } from "../services/service-manager.js";
 import { restartManagedService } from "./service.js";
 import { packageVersion } from "../version.js";
+import { compareVersions } from "@tickernelz/wardmote-shared";
 
 const execFileAsync = promisify(execFile);
 export type InstallMode = "managed" | "global-npm" | "npx" | "source" | "unknown";
@@ -88,30 +89,6 @@ export function detectInstallMode(executablePath = process.argv[1] ?? "", paths 
     cursor = path.dirname(cursor);
   }
   return "unknown";
-}
-
-export function compareVersions(left: string, right: string): number {
-  const parse = (value: string) => { const [core, prerelease = ""] = value.replace(/^v/, "").split("-", 2); return { numbers: core.split(".").map((part) => Number(part) || 0), prerelease }; };
-  const a = parse(left); const b = parse(right);
-  for (let index = 0; index < Math.max(a.numbers.length, b.numbers.length); index += 1) { const delta = (a.numbers[index] ?? 0) - (b.numbers[index] ?? 0); if (delta !== 0) return Math.sign(delta); }
-  if (a.prerelease === b.prerelease) return 0;
-  if (!a.prerelease) return 1;
-  if (!b.prerelease) return -1;
-  const aParts = a.prerelease.split(".");
-  const bParts = b.prerelease.split(".");
-  for (let index = 0; index < Math.max(aParts.length, bParts.length); index += 1) {
-    const leftPart = aParts[index];
-    const rightPart = bParts[index];
-    if (leftPart === undefined) return -1;
-    if (rightPart === undefined) return 1;
-    if (leftPart === rightPart) continue;
-    const leftNumeric = /^\d+$/.test(leftPart);
-    const rightNumeric = /^\d+$/.test(rightPart);
-    if (leftNumeric && rightNumeric) return Math.sign(Number(leftPart) - Number(rightPart));
-    if (leftNumeric !== rightNumeric) return leftNumeric ? -1 : 1;
-    return leftPart < rightPart ? -1 : 1;
-  }
-  return 0;
 }
 
 export function resolveUpdateRequest(manifest: InstallManifest | null, options: Pick<UpdateOptions, "canary" | "latest" | "version">): { spec: string; channel: InstallChannel; explicit: boolean } {

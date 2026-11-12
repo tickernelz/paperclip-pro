@@ -1853,6 +1853,7 @@ const INSTANCE_ADMIN_OPERATIONS = new Set([
   "POST /api/onboarding/omp/remote",
   "POST /api/plugins/install",
   "POST /api/instance/database-backups",
+  "GET /api/instance/updates",
   "GET /api/instance/attachment-retention",
   "POST /api/instance/attachment-retention/preview",
   "POST /api/instance/attachment-retention/run",
@@ -10750,6 +10751,14 @@ registry.registerPath({
   path: "/api/instance/database-backups",
   tags: ["instance"],
   summary: "Trigger a database backup",
+  responses: { 200: r.ok(), 401: r.unauthorized, 403: r.forbidden },
+});
+
+registerCurrentRoute({
+  method: "get",
+  path: "/api/instance/updates",
+  tags: ["instance"],
+  summary: "Get the installed and newest published Wardmote version for the update notice",
   responses: { 200: r.ok(), 401: r.unauthorized, 403: r.forbidden },
 });
 
