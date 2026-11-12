@@ -116,7 +116,7 @@ function questionForm() {
           allowOther: true,
           options: [
             {
-              id: "__paperclip_text__",
+              id: "__wardmote_text__",
               label: "Type an answer",
               freeText: true,
             },
