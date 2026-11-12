@@ -1379,6 +1379,34 @@ describeEmbeddedPostgres("tool gateway acceptance", () => {
     });
   });
 
+  it("lists and runs the granted Wardmote self tool for the session agent's issues", async () => {
+    const company = await createCompany(db);
+    const agent = await createAgent(db, company.id);
+    const { issue, run } = await createIssueAndRun(db, company.id, agent.id);
+    await allowToolsForAgent(db, company.id, agent.id, ["wardmote-self:list_my_issues"]);
+    const gateway = createTestToolGatewayService(db, { runtimeSupervisor: { idleTtlMs: 25 } });
+    const session = await gateway.createSession({
+      companyId: company.id,
+      agentId: agent.id,
+      runId: run.id,
+    });
+
+    const toolNames = (await gateway.listToolsForSession(session.token)).map((tool) => tool.name);
+    expect(toolNames).toContain("wardmote-self:list_my_issues");
+    expect(toolNames).not.toContain("wardmote-self:get_issue_context");
+
+    const result = await gateway.executeTool({
+      sessionToken: session.token,
+      tool: "wardmote-self:list_my_issues",
+      parameters: { limit: 5 },
+    });
+    expect(result).toMatchObject({
+      status: "completed",
+      tool: "wardmote-self:list_my_issues",
+      result: { data: { issues: [expect.objectContaining({ id: issue.id })] } },
+    });
+  });
+
   it("filters discovery, executes a remote HTTP fixture, and audits run and issue links", async () => {
     const company = await createCompany(db);
     const agent = await createAgent(db, company.id);

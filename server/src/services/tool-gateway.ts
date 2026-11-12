@@ -993,7 +993,7 @@ const BUILTIN_TOOLS: ToolGatewayDescriptor[] = [
     risk: "write",
   },
   {
-    name: "paperclip-self:list_my_issues",
+    name: "wardmote-self:list_my_issues",
     displayName: "List my Wardmote issues",
     description:
       "Wardmote self-MCP read fixture that lists the authenticated agent's current issues.",
@@ -1002,12 +1002,12 @@ const BUILTIN_TOOLS: ToolGatewayDescriptor[] = [
       properties: { limit: { type: "number" } },
       additionalProperties: false,
     },
-    pluginId: "paperclip-self",
+    pluginId: "wardmote-self",
     providerType: "wardmote_self",
     risk: "read",
   },
   {
-    name: "paperclip-self:get_issue_context",
+    name: "wardmote-self:get_issue_context",
     displayName: "Get issue context",
     description:
       "Wardmote self-MCP read fixture that returns scoped issue context and plan document metadata.",
@@ -1016,7 +1016,7 @@ const BUILTIN_TOOLS: ToolGatewayDescriptor[] = [
       properties: { issueId: { type: "string" } },
       additionalProperties: false,
     },
-    pluginId: "paperclip-self",
+    pluginId: "wardmote-self",
     providerType: "wardmote_self",
     risk: "read",
   },
@@ -1063,7 +1063,7 @@ const VIRTUAL_SEARCH_TOOLS: ToolGatewayDescriptor = {
     },
     additionalProperties: false,
   },
-  pluginId: "paperclip-gateway",
+  pluginId: "wardmote-gateway",
   providerType: "wardmote_virtual",
   risk: "read",
 };
@@ -1082,7 +1082,7 @@ const VIRTUAL_RUN_TOOL: ToolGatewayDescriptor = {
     required: ["tool"],
     additionalProperties: false,
   },
-  pluginId: "paperclip-gateway",
+  pluginId: "wardmote-gateway",
   providerType: "wardmote_virtual",
   risk: "write",
 };
@@ -3171,7 +3171,7 @@ export function createToolGatewayService(
       };
     }
 
-    if (tool.name === "paperclip-self:list_my_issues") {
+    if (tool.name === "wardmote-self:list_my_issues") {
       if (!session.agentId) {
         throw new ToolGatewayHttpError(
           403,
@@ -3204,7 +3204,7 @@ export function createToolGatewayService(
       };
     }
 
-    if (tool.name === "paperclip-self:get_issue_context") {
+    if (tool.name === "wardmote-self:get_issue_context") {
       if (!session.agentId) {
         throw new ToolGatewayHttpError(
           403,
