@@ -92,7 +92,7 @@ export interface SanitizedAcpxSpawnInput {
 /**
  * Build the only host-environment input that may cross an ACPX child-process
  * launch boundary. Agent-specific homes are added by the later runtime sandbox;
- * Wardmote transport and native MCP credentials are never inherited from the
+ * Paperclip transport and native MCP credentials are never inherited from the
  * host process.
  */
 export function createSanitizedAcpxSpawnInput(

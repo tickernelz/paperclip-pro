@@ -2131,7 +2131,7 @@ describe("Codex ACPX harness driver", () => {
     await expect(handoff.cleanup).resolves.toBeUndefined();
     await expect(providerResponse).resolves.toEqual({ action: "cancel" });
     expect(fixture.host.interruptActiveTurn).toHaveBeenCalledWith(
-      "Wardmote parked the ACPX input on a durable wait.",
+      "Paperclip parked the ACPX input on a durable wait.",
     );
     await expect(
       session.resolveRuntimeRequest!({

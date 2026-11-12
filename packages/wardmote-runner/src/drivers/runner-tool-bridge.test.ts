@@ -220,7 +220,7 @@ describe("runner semantic MCP bridge", () => {
     ).toMatchObject({
       result: {
         isError: true,
-        content: [{ text: "Wardmote tool call timed out" }],
+        content: [{ text: "Paperclip tool call timed out" }],
       },
     });
   });
@@ -264,7 +264,7 @@ describe("runner semantic MCP bridge", () => {
     expect(await (await pending).json()).toMatchObject({
       result: {
         isError: true,
-        content: [{ text: "Wardmote tool call cancelled" }],
+        content: [{ text: "Paperclip tool call cancelled" }],
       },
     });
     expect(aborted).toHaveBeenCalledOnce();
