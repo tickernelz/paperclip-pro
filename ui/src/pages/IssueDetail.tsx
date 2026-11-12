@@ -1152,6 +1152,7 @@ type IssueDetailChatTabProps = {
   /** Optional node rendered inline directly above the reply composer (e.g. the monitor strip). */
   composerAccessory?: ReactNode;
   threadHeader?: ReactNode;
+  threadHeaderActions?: ReactNode;
   /**
    * The task description rendered as the requester's first chat bubble in the
    * chat-style thread (PAP-375). Ignored by the classic thread.
@@ -1296,6 +1297,7 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
   composerRef,
   composerAccessory,
   threadHeader,
+  threadHeaderActions,
   issueBrief,
   footer,
   feedbackVotes,
@@ -2356,6 +2358,7 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
                 </>
               ) : null
             }
+            threadHeaderActions={threadHeaderActions}
             issueBrief={issueBrief}
             comments={commentsForThread}
             interactions={interactions}
@@ -6610,6 +6613,150 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     />
   );
 
+  const issueHeaderActions = issue.conversationAgentId ? null : (
+    <div data-slot="task-title-actions" className="flex h-7 items-center">
+      <Button
+        variant="ghost"
+        size="icon-xs"
+        onClick={() => setFileViewerPromptOpen(true)}
+        title="Open file... (g f)"
+        aria-label="Open file in this issue"
+      >
+        <FileCode2 className="h-4 w-4" />
+      </Button>
+      {canManageTreeControl && issue?.id ? (
+        <IssueShareControl issueId={issue.id} />
+      ) : null}
+      <IssuePrivacyActions
+        issue={issue}
+        companyId={issue.companyId}
+        canManage={canManagePrivacy}
+        closeMenu={() => setMoreOpen(false)}
+        implicitPrincipals={privacyImplicitPrincipals}
+      >
+        {(privacyMenuItems) => (
+          <Popover open={moreOpen} onOpenChange={setMoreOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon-xs"
+                className="shrink-0"
+                aria-label="More task actions"
+                title="More task actions"
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    setMoreOpen(true);
+                  }
+                }}
+              >
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-52 p-1" align="end">
+              <>
+                  <button
+                    className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-xs hover:bg-bg-3/50"
+                    onClick={() => {
+                      openNewSubIssue();
+                      setMoreOpen(false);
+                    }}
+                  >
+                    <Plus className="h-3 w-3" />
+                    Add subtask
+                  </button>
+                  <button
+                    className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-xs hover:bg-bg-3/50"
+                    onClick={() => {
+                      void copyIssueToClipboard();
+                      setMoreOpen(false);
+                    }}
+                  >
+                    {copied ? (
+                      <Check className="h-3 w-3" />
+                    ) : (
+                      <Copy className="h-3 w-3" />
+                    )}
+                    Copy as markdown
+                  </button>
+                  {canArchiveFromInbox ? (
+                    <button
+                      className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-xs hover:bg-bg-3/50 disabled:opacity-50"
+                      disabled={archivePending}
+                      onClick={() => {
+                        if (!archivePending && issue?.id)
+                          archiveFromInbox.mutate(issue.id);
+                        setMoreOpen(false);
+                      }}
+                    >
+                      <Archive className="h-3 w-3" />
+                      Archive from inbox
+                    </button>
+                  ) : null}
+                </>
+              {privacyMenuItems}
+              <TaskTreeControlMenuItems
+                scope={treeControlScope}
+                canPause={
+                  canPauseLeafWork ||
+                  (canShowSubtreeControls &&
+                    !activePauseHold &&
+                    !isTerminalIssue)
+                }
+                canResume={canResumeLeafWork || canResumeSubtree}
+                canCancel={canShowSubtreeControls}
+                canRestore={canRestoreSubtree}
+                pending={executeTreeControl.isPending}
+                onPause={() => {
+                  executeTreeControl.mutate({
+                    mode: "pause",
+                    scope: treeControlScope,
+                  });
+                  setMoreOpen(false);
+                }}
+                onResume={() => {
+                  executeTreeControl.reset();
+                  setTreeControlMode("resume");
+                  setTreeControlWakeAgentsOnResume(
+                    isAgentOwnedNonTerminalIssue || canShowSubtreeControls,
+                  );
+                  setTreeControlOpen(true);
+                  setMoreOpen(false);
+                }}
+                onCancel={() => {
+                  executeTreeControl.reset();
+                  setTreeControlMode("cancel");
+                  setTreeControlOpen(true);
+                  setMoreOpen(false);
+                }}
+                onRestore={() => {
+                  executeTreeControl.reset();
+                  setTreeControlMode("restore");
+                  setTreeControlWakeAgentsOnResume(false);
+                  setTreeControlOpen(true);
+                  setMoreOpen(false);
+                }}
+              />
+              <button
+                className="flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-bg-3/50 text-bad"
+                onClick={() => {
+                  updateIssue.mutate(
+                    { hiddenAt: new Date().toISOString() },
+                    { onSuccess: () => navigate("/issues/all") },
+                  );
+                  setMoreOpen(false);
+                }}
+              >
+                <EyeOff className="h-3 w-3" />
+                Hide this task
+              </button>
+            </PopoverContent>
+          </Popover>
+        )}
+      </IssuePrivacyActions>
+    </div>
+  );
+
   const issueHeaderBlock = issue.conversationAgentId ? null : (
     <div
       data-testid="issue-detail-header"
@@ -6618,7 +6765,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
         shellSectionClass,
       )}
     >
-      <div className="flex min-w-0 items-start gap-2 pr-14 md:items-center md:pr-32">
+      <div className="flex min-w-0 items-start gap-2 pr-20 md:items-center md:pr-32">
           <div className="hidden md:block">{issueStatusControl}</div>
           <div
             data-slot="task-detail-title"
@@ -6649,11 +6796,6 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
         <span className="min-w-0 max-w-full truncate font-mono text-sm text-ink-3 md:hidden">
             {issue.identifier ?? issue.id.slice(0, 8)}
           </span>
-        {canManageTreeControl && issue?.id ? (
-          <div className="order-last ml-auto shrink-0 md:hidden">
-            <IssueShareControl issueId={issue.id} />
-          </div>
-        ) : null}
         {/* PAP-411: priority UI hidden behind SHOW_TASK_PRIORITY_UI. */}
         {SHOW_TASK_PRIORITY_UI && (
           <PriorityIcon
@@ -6754,154 +6896,6 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
 
 
 
-        <div className="hidden md:flex items-center md:ml-auto shrink-0">
-          <Button
-              variant="ghost"
-              size="icon-xs"
-              onClick={() => setFileViewerPromptOpen(true)}
-              title="Open file... (g f)"
-              aria-label="Open file in this issue"
-            >
-              <FileCode2 className="h-4 w-4" />
-            </Button>
-          <div
-            data-slot="task-title-actions"
-            className={cn(
-              "absolute right-0 top-0 flex h-7 items-center",
-            )}
-          >
-            {canManageTreeControl && issue?.id ? (
-              <IssueShareControl issueId={issue.id} />
-            ) : null}
-            <IssuePrivacyActions
-                issue={issue}
-                companyId={issue.companyId}
-                canManage={canManagePrivacy}
-                closeMenu={() => setMoreOpen(false)}
-                implicitPrincipals={privacyImplicitPrincipals}
->
-                {(privacyMenuItems) => (
-            <Popover open={moreOpen} onOpenChange={setMoreOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon-xs"
-                  className="shrink-0"
-                  aria-label="More task actions"
-                  title="More task actions"
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter" || event.key === " ") {
-                      event.preventDefault();
-                      setMoreOpen(true);
-                    }
-                  }}
-                >
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-52 p-1" align="end">
-                <>
-                    <button
-                      className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-xs hover:bg-bg-3/50"
-                      onClick={() => {
-                        openNewSubIssue();
-                        setMoreOpen(false);
-                      }}
-                    >
-                      <Plus className="h-3 w-3" />
-                      Add subtask
-                    </button>
-                    <button
-                      className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-xs hover:bg-bg-3/50"
-                      onClick={() => {
-                        void copyIssueToClipboard();
-                        setMoreOpen(false);
-                      }}
-                    >
-                      {copied ? (
-                        <Check className="h-3 w-3" />
-                      ) : (
-                        <Copy className="h-3 w-3" />
-                      )}
-                      Copy as markdown
-                    </button>
-                    {canArchiveFromInbox ? (
-                      <button
-                        className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-xs hover:bg-bg-3/50 disabled:opacity-50"
-                        disabled={archivePending}
-                        onClick={() => {
-                          if (!archivePending && issue?.id)
-                            archiveFromInbox.mutate(issue.id);
-                          setMoreOpen(false);
-                        }}
-                      >
-                        <Archive className="h-3 w-3" />
-                        Archive from inbox
-                      </button>
-                    ) : null}
-                  </>
-                {privacyMenuItems}
-                <TaskTreeControlMenuItems
-                  scope={treeControlScope}
-                  canPause={
-                    canPauseLeafWork ||
-                    (canShowSubtreeControls &&
-                      !activePauseHold &&
-                      !isTerminalIssue)
-                  }
-                  canResume={canResumeLeafWork || canResumeSubtree}
-                  canCancel={canShowSubtreeControls}
-                  canRestore={canRestoreSubtree}
-                  pending={executeTreeControl.isPending}
-                  onPause={() => {
-                    executeTreeControl.mutate({
-                      mode: "pause",
-                      scope: treeControlScope,
-                    });
-                    setMoreOpen(false);
-                  }}
-                  onResume={() => {
-                    executeTreeControl.reset();
-                    setTreeControlMode("resume");
-                    setTreeControlWakeAgentsOnResume(
-                      isAgentOwnedNonTerminalIssue || canShowSubtreeControls,
-                    );
-                    setTreeControlOpen(true);
-                    setMoreOpen(false);
-                  }}
-                  onCancel={() => {
-                    executeTreeControl.reset();
-                    setTreeControlMode("cancel");
-                    setTreeControlOpen(true);
-                    setMoreOpen(false);
-                  }}
-                  onRestore={() => {
-                    executeTreeControl.reset();
-                    setTreeControlMode("restore");
-                    setTreeControlWakeAgentsOnResume(false);
-                    setTreeControlOpen(true);
-                    setMoreOpen(false);
-                  }}
-                />
-                <button
-                  className="flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-bg-3/50 text-bad"
-                  onClick={() => {
-                    updateIssue.mutate(
-                      { hiddenAt: new Date().toISOString() },
-                      { onSuccess: () => navigate("/issues/all") },
-                    );
-                    setMoreOpen(false);
-                  }}
-                >
-                  <EyeOff className="h-3 w-3" />
-                  Hide this task
-                </button>
-              </PopoverContent>
-            </Popover>
-                )}
-              </IssuePrivacyActions>
-          </div>
-        </div>
       </div>
 
 
@@ -7119,6 +7113,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
                   browsers={browserQuery.data}
                   onOpenBrowser={(id) => { setOpenBrowserId(id); if (isMobile) setMobilePropsOpen(true); else openTaskSidePanel(); }}
                   threadHeader={<>{taskChatThreadHeader}<EmailTaskActivity key={issue.id} companyId={issue.companyId} issueId={issue.id} /></>}
+                  threadHeaderActions={issueHeaderActions}
                   issueBrief={
                     // Suppress the seeded-description bubble for the onboarding first
                     // task: its description is agent instructions, not something the

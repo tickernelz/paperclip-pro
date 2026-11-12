@@ -405,6 +405,7 @@ vi.mock("../components/TaskChatThread", () => ({
     comments?: Array<{ metadata?: { recovery?: DispositionRecoverySnapshot } | null }>;
     workProducts?: IssueWorkProduct[];
     threadHeader?: ReactNode;
+    threadHeaderActions?: ReactNode;
     onStopRun?: (runId: string) => Promise<void>;
     stopRunLabel?: string;
     onTryAgainNoLiveExecutionPath?: () => Promise<void> | void;
@@ -423,6 +424,7 @@ vi.mock("../components/TaskChatThread", () => ({
     mockIssueChatThreadRender(props);
     return (
       <div data-testid="task-chat-thread">
+        {props.threadHeaderActions}
         {props.threadHeader}
         Task chat thread
         {props.comments?.map((comment, index) => comment.metadata?.recovery ? <DispositionRecoveryNotice key={index} snapshot={comment.metadata.recovery} /> : null)}
@@ -1723,7 +1725,6 @@ describe("IssueDetail", () => {
     const identifier = titleGroup?.querySelector(
       '[data-slot="task-title-identifier"]',
     );
-    const titleRow = titleGroup?.parentElement;
     const titleActions = container.querySelector(
       '[data-slot="task-title-actions"]',
     );
@@ -1731,9 +1732,6 @@ describe("IssueDetail", () => {
       "Issue detail smokePAP-1",
     );
     expect(identifier?.textContent).toBe("PAP-1");
-    expect(titleRow?.className).toMatch(/\bmd:pr-\d+\b/);
-    expect(titleActions?.className).toContain("absolute");
-    expect(titleActions?.className).toContain("top-0");
     expect(
       titleActions?.querySelector('button[aria-label="More task actions"]'),
     ).not.toBeNull();
