@@ -195,7 +195,7 @@ This release fixes a critical security vulnerability.
 {{briefDescription}} (e.g., Remote code execution via DNS rebinding in \`local_trusted\` mode)
 
 ### Advisory
-https://github.com/paperclipai/paperclip/security/advisories/{{ghsaId}}
+https://github.com/tickernelz/wardmote/security/advisories/{{ghsaId}}
 
 ### Credit
 Thanks to @{{reporterHandle}} for responsibly disclosing this vulnerability.
@@ -223,7 +223,7 @@ If the CVE hasn't been assigned yet, that's normal — it can take a few hours.
 
 Tell the human operator what you did by posting a comment to this task, including:
 
-* The published advisory URL: `https://github.com/paperclipai/paperclip/security/advisories/{{ghsaId}}`
+* The published advisory URL: `https://github.com/tickernelz/wardmote/security/advisories/{{ghsaId}}`
 * The release URL
 * Whether the CVE has been assigned yet
 * All URLs to any pull requests or branches

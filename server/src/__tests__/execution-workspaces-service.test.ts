@@ -336,7 +336,7 @@ describeEmbeddedPostgres("executionWorkspaceService.getCloseReadiness", () => {
       cwd: worktreePath,
       providerRef: worktreePath,
       providerType: "git_worktree",
-      repoUrl: "https://github.com/paperclipai/paperclip.git",
+      repoUrl: "https://github.com/tickernelz/wardmote.git",
       baseRef: "main",
       branchName: "PAP-16015-delivery",
     });
@@ -375,7 +375,7 @@ describeEmbeddedPostgres("executionWorkspaceService.getCloseReadiness", () => {
         type: "pull_request",
         provider: "github",
         title: "Delivered PR",
-        url: "https://github.com/paperclipai/paperclip/pull/10623",
+        url: "https://github.com/tickernelz/wardmote/pull/10623",
         status: "merged",
       });
     }
@@ -441,7 +441,7 @@ describeEmbeddedPostgres("executionWorkspaceService.getCloseReadiness", () => {
       providerRef: worktreePath,
       providerType: "git_worktree",
       baseRef: "main",
-      repoUrl: "https://github.com/paperclipai/paperclip.git",
+      repoUrl: "https://github.com/tickernelz/wardmote.git",
       branchName: "PAP-16015-delivery",
     }).where(eq(executionWorkspaces.id, seeded.executionWorkspaceId));
     await db.insert(issueWorkProducts).values({
@@ -450,7 +450,7 @@ describeEmbeddedPostgres("executionWorkspaceService.getCloseReadiness", () => {
       type: "pull_request",
       provider: "github",
       title: "Cross-branch delivery",
-      url: "https://github.com/paperclipai/paperclip/pull/10623",
+      url: "https://github.com/tickernelz/wardmote/pull/10623",
       status: "merged",
     });
 
@@ -518,7 +518,7 @@ describeEmbeddedPostgres("executionWorkspaceService.getCloseReadiness", () => {
       cwd: worktreePath,
       providerRef: worktreePath,
       providerType: "git_worktree",
-      repoUrl: "https://github.com/paperclipai/paperclip.git",
+      repoUrl: "https://github.com/tickernelz/wardmote.git",
       baseRef: "main",
       branchName,
     });

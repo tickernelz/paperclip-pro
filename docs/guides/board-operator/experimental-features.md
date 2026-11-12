@@ -68,4 +68,4 @@ Before enabling an experimental feature:
 
 - See [Status Cards](/guides/board-operator/status-cards) for the watched-query summary experiment, refresh policies, and cost model.
 - See the CLI caveat in [Control-Plane Commands](/cli/control-plane-commands).
-- See the repo CLI reference in [`doc/CLI.md`](https://github.com/paperclipai/paperclip/blob/master/doc/CLI.md) when working from the repository.
+- See the repo CLI reference in [`doc/CLI.md`](https://github.com/tickernelz/wardmote/blob/main/doc/CLI.md) when working from the repository.

@@ -33,7 +33,7 @@ if (!embeddedPostgresSupport.supported) {
 describe("extract-search query validation", () => {
   it("accepts supported extraction filters and rejects unsafe or ambiguous input", () => {
     const parsed = companySearchExtractQuerySchema.parse({
-      contains: "github.com/paperclipai/paperclip/pull",
+      contains: "github.com/tickernelz/wardmote/pull",
       kind: "url",
       scope: "comments",
       status: "in_progress,in_review",
@@ -111,9 +111,9 @@ describeEmbeddedPostgres("companySearchExtractService", () => {
 
   it("expands and deduplicates URLs across issue, comment, and document sources", async () => {
     const companyId = await createCompany();
-    const firstUrl = "https://github.com/paperclipai/paperclip/pull/123";
-    const secondUrl = "https://github.com/paperclipai/paperclip/pull/456";
-    const thirdUrl = "https://github.com/paperclipai/paperclip/pull/789";
+    const firstUrl = "https://github.com/tickernelz/wardmote/pull/123";
+    const secondUrl = "https://github.com/tickernelz/wardmote/pull/456";
+    const thirdUrl = "https://github.com/tickernelz/wardmote/pull/789";
     const issueId = await createIssue(companyId, {
       description: `Primary ${firstUrl} and duplicate ${firstUrl}.`,
     });
@@ -137,7 +137,7 @@ describeEmbeddedPostgres("companySearchExtractService", () => {
     });
 
     const result = await svc.extract(companyId, companySearchExtractQuerySchema.parse({
-      contains: "github.com/paperclipai/paperclip/pull",
+      contains: "github.com/tickernelz/wardmote/pull",
       kind: "url",
     }));
 
@@ -154,10 +154,10 @@ describeEmbeddedPostgres("companySearchExtractService", () => {
 
   it("keeps URL sources selected by scheme-less queries", async () => {
     const companyId = await createCompany();
-    const titleUrl = "https://github.com/paperclipai/paperclip/pull/101";
-    const descriptionUrl = "https://github.com/paperclipai/paperclip/pull/102";
-    const documentTitleUrl = "https://github.com/paperclipai/paperclip/pull/103";
-    const documentBodyUrl = "https://github.com/paperclipai/paperclip/pull/104";
+    const titleUrl = "https://github.com/tickernelz/wardmote/pull/101";
+    const descriptionUrl = "https://github.com/tickernelz/wardmote/pull/102";
+    const documentTitleUrl = "https://github.com/tickernelz/wardmote/pull/103";
+    const documentBodyUrl = "https://github.com/tickernelz/wardmote/pull/104";
     const issueId = await createIssue(companyId, {
       title: `Review ${titleUrl}`,
       description: `Then merge ${descriptionUrl}`,
@@ -177,7 +177,7 @@ describeEmbeddedPostgres("companySearchExtractService", () => {
     });
 
     const result = await svc.extract(companyId, companySearchExtractQuerySchema.parse({
-      contains: "github.com/paperclipai/paperclip/pull",
+      contains: "github.com/tickernelz/wardmote/pull",
       kind: "url",
       scope: "all",
     }));
@@ -225,12 +225,12 @@ describeEmbeddedPostgres("companySearchExtractService", () => {
     const companyId = await createCompany();
     const urls = Array.from(
       { length: COMPANY_SEARCH_EXTRACT_DEFAULT_MATCHES_PER_ISSUE + 1 },
-      (_, index) => `https://github.com/paperclipai/paperclip/pull/${index + 1}`,
+      (_, index) => `https://github.com/tickernelz/wardmote/pull/${index + 1}`,
     );
     await createIssue(companyId, { description: urls.join(" ") });
 
     const result = await svc.extract(companyId, companySearchExtractQuerySchema.parse({
-      contains: "github.com/paperclipai/paperclip/pull",
+      contains: "github.com/tickernelz/wardmote/pull",
       kind: "url",
     }));
 
@@ -244,12 +244,12 @@ describeEmbeddedPostgres("companySearchExtractService", () => {
     const companyId = await createCompany();
     const urls = Array.from(
       { length: COMPANY_SEARCH_EXTRACT_DEFAULT_MATCHES_PER_ISSUE + 1 },
-      (_, index) => `https://github.com/paperclipai/paperclip/pull/${index + 1}`,
+      (_, index) => `https://github.com/tickernelz/wardmote/pull/${index + 1}`,
     );
     await createIssue(companyId, { description: urls.join(" ") });
 
     const result = await svc.extract(companyId, companySearchExtractQuerySchema.parse({
-      contains: "github.com/paperclipai/paperclip/pull",
+      contains: "github.com/tickernelz/wardmote/pull",
       kind: "url",
       matchesPerIssue: COMPANY_SEARCH_EXTRACT_MAX_MATCHES_PER_ISSUE,
     }));

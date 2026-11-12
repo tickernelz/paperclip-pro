@@ -6,7 +6,7 @@ cd "$REPO_ROOT"
 
 WEBHOOK_URL="${DISCORD_WEBHOOK_URL:-}"
 DATE="${1:-$(date +%Y-%m-%d)}"
-REPO_URL="https://github.com/paperclipai/paperclip"
+REPO_URL="https://github.com/tickernelz/wardmote"
 
 if [[ -z "$WEBHOOK_URL" ]]; then
   echo "Error: DISCORD_WEBHOOK_URL env var is required" >&2
@@ -18,7 +18,7 @@ fi
 NEXT_DATE=$(date -j -v+1d -f "%Y-%m-%d" "$DATE" "+%Y-%m-%d" 2>/dev/null \
   || date -d "$DATE + 1 day" "+%Y-%m-%d" 2>/dev/null)
 
-COMMITS=$(git log --since="${DATE}T00:00:00" --until="${NEXT_DATE}T00:00:00" master \
+COMMITS=$(git log --since="${DATE}T00:00:00" --until="${NEXT_DATE}T00:00:00" main \
   --format="%h|%s|%an" 2>/dev/null || true)
 
 json_escape() {
@@ -29,7 +29,7 @@ if [[ -z "$COMMITS" ]]; then
 {
   "embeds": [{
     "title": "📋 Daily Merge Digest — ${DATE}",
-    "description": "No commits were merged into \`master\` today.",
+    "description": "No commits were merged into \`main\` today.",
     "color": 9807270
   }]
 }
@@ -49,10 +49,10 @@ else
 {
   "embeds": [{
     "title": "📋 Daily Merge Digest — ${DATE}",
-    "description": "**${COMMIT_COUNT} commit(s)** merged into \`master\` today:\\n\\n${LINES}",
+    "description": "**${COMMIT_COUNT} commit(s)** merged into \`main\` today:\\n\\n${LINES}",
     "color": 3066993,
     "footer": {
-      "text": "paperclipai/paperclip • master"
+      "text": "tickernelz/wardmote • main"
     }
   }]
 }

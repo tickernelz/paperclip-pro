@@ -62,7 +62,7 @@ function sourceCell(campaign: RunnerE2EHistoryCampaign) {
   const sha = campaign.source.sha;
   const shortSha = sha?.slice(0, 8) ?? "Unknown";
   const shaLabel = /^[0-9a-f]{40}$/i.test(sha ?? "")
-    ? `<a href="https://github.com/paperclipai/paperclip/commit/${html(sha)}">${html(shortSha)}</a>`
+    ? `<a href="https://github.com/tickernelz/wardmote/commit/${html(sha)}">${html(shortSha)}</a>`
     : html(shortSha);
   const workflow = campaign.source.workflowRunUrl
     ? `<a class="secondary-link" href="${html(campaign.source.workflowRunUrl)}">Workflow run</a>`
