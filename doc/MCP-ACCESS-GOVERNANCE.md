@@ -9,7 +9,7 @@ Operator guide for Wardmote's MCP tool access surface. Audience: board users and
 - [Mental model](#mental-model)
 - [Canonical integration model](#canonical-integration-model)
 - [Quick start](#quick-start)
-- [Wardmote as MCP endpoint vs MCP gateway](#paperclip-as-mcp-endpoint-vs-mcp-gateway)
+- [Wardmote as MCP endpoint vs MCP gateway](#wardmote-as-mcp-endpoint-vs-mcp-gateway)
 - [Managed connections](#managed-connections)
 - [Catalog and risk classification](#catalog-and-risk-classification)
 - [Profiles and bindings](#profiles-and-bindings)
@@ -132,7 +132,7 @@ and upstream tool identity; duplicate catalog entries also include their entry
 identity. Gateway metadata retains the original upstream name for dispatch,
 permissions, and audit. An alias never changes which connection executes a call.
 
-V1 does not claim host-wide MCP enforcement. If an unmanaged external client, hand-edited adapter config, or process outside the Paperclip-controlled workspace calls an upstream MCP server directly, Paperclip can warn about known overlapping config entries but cannot prevent or audit that bypass. Treat managed MCP config as a control-plane containment feature for Paperclip-launched agents, not as an endpoint firewall for the operator's whole machine.
+V1 does not claim host-wide MCP enforcement. If an unmanaged external client, hand-edited adapter config, or process outside the Wardmote-controlled workspace calls an upstream MCP server directly, Paperclip can warn about known overlapping config entries but cannot prevent or audit that bypass. Treat managed MCP config as a control-plane containment feature for Paperclip-launched agents, not as an endpoint firewall for the operator's whole machine.
 
 ## Managed connections
 
@@ -205,7 +205,7 @@ Each tool discovered on a connection becomes a **catalog entry** with a risk lev
 | `write` | `annotations.readOnlyHint: false` or `writeHint: true` | Requires approval by default unless the profile or a policy says otherwise. |
 | `destructive` | `annotations.destructiveHint: true` | Quarantined on first sight. Requires explicit operator action before any agent call can succeed. |
 
-When a catalog refresh discovers a new write/destructive tool that did not exist on the prior schema, Paperclip sets `status: quarantined` and records the reason in `quarantineReason`. Quarantined entries are never returned to the agent's tool list until an operator reviews and re-enables them. This is the **changed-tool quarantine** rule and the primary defense against an upstream server silently adding a destructive verb.
+When a catalog refresh discovers a new write/destructive tool that did not exist on the prior schema, Wardmote sets `status: quarantined` and records the reason in `quarantineReason`. Quarantined entries are never returned to the agent's tool list until an operator reviews and re-enables them. This is the **changed-tool quarantine** rule and the primary defense against an upstream server silently adding a destructive verb.
 
 To inspect and re-enable a quarantined entry, use the UI Catalog view, or PATCH the entry's status via the catalog routes (see [Reference](#reference)).
 
