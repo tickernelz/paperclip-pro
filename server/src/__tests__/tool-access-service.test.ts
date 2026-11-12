@@ -1915,6 +1915,27 @@ describeEmbeddedPostgres("tool access service", () => {
       });
 
       await waitForLockWaiters(1);
+      const grantQueueDb = createDb(tempDb!.connectionString, {
+        maxConnections: 1,
+      });
+      let releaseGrantQueue!: () => void;
+      const grantQueueMayCommit = new Promise<void>((resolve) => {
+        releaseGrantQueue = resolve;
+      });
+      let grantQueueLocked!: () => void;
+      const grantQueueIsLocked = new Promise<void>((resolve) => {
+        grantQueueLocked = resolve;
+      });
+      const grantQueue = grantQueueDb.transaction(async (tx) => {
+        await tx
+          .select({ id: connectionGrants.id })
+          .from(connectionGrants)
+          .where(eq(connectionGrants.id, grant.id))
+          .for("update");
+        grantQueueLocked();
+        await grantQueueMayCommit;
+      });
+      await waitForLockWaiters(2);
       let replacementSettled = false;
       const replacement = replacementService
         .replaceConnectionGrantMembers(connection.id, grant.id, [])
@@ -1925,12 +1946,16 @@ describeEmbeddedPostgres("tool access service", () => {
         .finally(() => {
           replacementSettled = true;
         });
-      await waitForLockWaiters(2);
+      await waitForLockWaiters(3);
       expect(replacementSettled).toBe(false);
 
       releaseFirstReplacement();
       await firstReplacement;
-      await membershipIsLocked;
+      await Promise.all([membershipIsLocked, grantQueueIsLocked]);
+      expect(replacementSettled).toBe(false);
+      releaseGrantQueue();
+      await grantQueue;
+      await waitForLockWaiters(1);
       expect(replacementSettled).toBe(false);
       releaseCleanup();
       await cleanup;
