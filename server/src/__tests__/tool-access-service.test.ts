@@ -17411,9 +17411,9 @@ describeEmbeddedPostgres("tool access service", () => {
       .returning();
     const [pluginApplication] = await db.insert(toolApplications).values({
       companyId: company.id,
-      applicationKey: `paperclip_plugin:fixture-${randomUUID()}`,
+      applicationKey: `wardmote_plugin:fixture-${randomUUID()}`,
       name: "Plugin placeholder",
-      type: "paperclip_plugin",
+      type: "wardmote_plugin",
       status: "active",
       metadata: { source: "plugin_backfill" },
     }).returning();
@@ -17426,8 +17426,8 @@ describeEmbeddedPostgres("tool access service", () => {
       transport: "mcp_remote",
       status: "active",
       enabled: true,
-      config: { type: "paperclip_plugin" },
-      transportConfig: { type: "paperclip_plugin" },
+      config: { type: "wardmote_plugin" },
+      transportConfig: { type: "wardmote_plugin" },
       healthStatus: "ok",
       healthCheckedAt: null,
     }).returning();

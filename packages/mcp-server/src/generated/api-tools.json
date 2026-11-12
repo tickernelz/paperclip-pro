@@ -11490,7 +11490,7 @@
               "rest_api",
               "mcp_http",
               "mcp_stdio",
-              "paperclip_plugin",
+              "wardmote_plugin",
               "a2a",
               "chat"
             ]
@@ -50351,7 +50351,7 @@
               "rest_api",
               "mcp_http",
               "mcp_stdio",
-              "paperclip_plugin",
+              "wardmote_plugin",
               "a2a",
               "chat"
             ]

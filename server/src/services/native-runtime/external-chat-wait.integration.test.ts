@@ -1590,7 +1590,7 @@ describe("native external-chat response wait", () => {
               provider,
               mode:
                 provider === "github"
-                  ? "paperclip_task_only"
+                  ? "wardmote_task_only"
                   : "provider_attachment",
               preparationState: "prepared",
               providerDeliveryConfirmed: false,
