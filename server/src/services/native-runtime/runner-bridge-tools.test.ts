@@ -181,7 +181,7 @@ if sys.argv[1] != "completion":
     const manifestPath = join(dirname(dirname(bundle.rootPath)), "manifests", `${bundle.digest}.json`);
     const current = await readFile(manifestPath, "utf8");
     await chmod(manifestPath, 0o600);
-    await writeFile(manifestPath, current.replace("\"schema\":\"wardmote.", `"schema":"${["paper", "clip"].join("")}.`));
+    await writeFile(manifestPath, current.replace("\"schema\":\"wardmote.", `"schema":"paperclip.`));
     expect(await materializeAsset(files)).toEqual(bundle);
     expect(await readFile(manifestPath, "utf8")).toBe(current);
     const context = { skills: [{ key: "assigned", runtimeName: "assigned", versionId: "version-1", bundle }] } as any;

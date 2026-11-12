@@ -9,7 +9,6 @@ import {
 } from "./retired-env-file.js";
 import { resolveWardmoteEnvPathForConfig } from "./home-paths.js";
 
-const retired = (name: string) => ["PAPER", "CLIP_", name].join("");
 const dirs: string[] = [];
 
 afterEach(() => {
@@ -26,8 +25,8 @@ describe("retired env file migration", () => {
   it("renames retired keys, keeps values, comments and other keys byte for byte", () => {
     const input = [
       "# kept comment",
-      `${retired("AGENT_JWT_SECRET")}=abc123`,
-      `export ${retired("PUBLIC_URL")} = "https://x.example/a=b"`,
+      `PAPERCLIP_AGENT_JWT_SECRET=abc123`,
+      `export PAPERCLIP_PUBLIC_URL = "https://x.example/a=b"`,
       "OTHER=1",
       "",
     ].join("\n");
@@ -41,14 +40,14 @@ describe("retired env file migration", () => {
   });
 
   it("drops a retired key whose current name is already assigned", () => {
-    const input = `${retired("HOME")}=/old\r\nWARDMOTE_HOME=/new\r\n`;
+    const input = `PAPERCLIP_HOME=/old\r\nWARDMOTE_HOME=/new\r\n`;
     expect(migrateRetiredEnvFileContents(input)).toBe("WARDMOTE_HOME=/new\r\n");
   });
 
   it("rewrites the file once, keeps an untouched owner-only backup, and is idempotent", () => {
     const dir = tempDir();
     const envPath = path.join(dir, ".env");
-    const original = `${retired("TOOL_ACTION_SIGNING_SECRET")}=s1\n`;
+    const original = `PAPERCLIP_TOOL_ACTION_SIGNING_SECRET=s1\n`;
     fs.writeFileSync(envPath, original, { mode: 0o644 });
 
     expect(migrateRetiredEnvFile(envPath)).toBe(true);
@@ -64,7 +63,7 @@ describe("retired env file migration", () => {
 
   it("migrates the instance env file when its path is resolved", () => {
     const dir = tempDir();
-    fs.writeFileSync(path.join(dir, ".env"), `${retired("AGENT_JWT_SECRET")}=keep\n`);
+    fs.writeFileSync(path.join(dir, ".env"), `PAPERCLIP_AGENT_JWT_SECRET=keep\n`);
     const envPath = resolveWardmoteEnvPathForConfig(path.join(dir, "config.json"));
     expect(fs.readFileSync(envPath, "utf8")).toBe("WARDMOTE_AGENT_JWT_SECRET=keep\n");
   });

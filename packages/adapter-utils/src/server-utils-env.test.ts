@@ -5,7 +5,7 @@ describe("sanitizeInheritedWardmoteEnv", () => {
   it("drops the host-only Wardmote CLI command pointer", () => {
     expect(sanitizeInheritedWardmoteEnv({
       WARDMOTE_CMD: "node /missing/@tickernelz/wardmote/dist/index.js",
-      [["PAPER", "CLIPAI_CMD"].join("")]: "node /missing/operator-cli.js",
+      PAPERCLIPAI_CMD: "node /missing/operator-cli.js",
       WARDMOTE_RUNTIME_API_URL: "http://127.0.0.1:3100",
       PATH: "/usr/bin",
     })).toEqual({

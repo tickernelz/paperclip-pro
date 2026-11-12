@@ -5,7 +5,7 @@ import { pluginManagedRoutineDeclarationSchema, pluginManifestV1Schema, pluginUi
 
 function buildSandboxProviderManifest(driver: Record<string, unknown>) {
   return {
-    id: "paperclip.capability-provider",
+    id: "wardmote.capability-provider",
     apiVersion: 1,
     version: "0.1.0",
     displayName: "Capability Provider",
@@ -41,7 +41,7 @@ describe("plugin manifest validators", () => {
 
   it("refuses the retired minimum-version alias instead of dropping its host-version bound", () => {
     const manifest = { id: "example.version", apiVersion: 1, version: "0.1.0", displayName: "Version", description: "Version", author: "Tests", categories: ["automation"], entrypoints: { worker: "worker.js" }, capabilities: ["companies.read"] };
-    const retired = pluginManifestV1Schema.safeParse({ ...manifest, ["minimum" + "Paper" + "clipVersion"]: "9.0.0" });
+    const retired = pluginManifestV1Schema.safeParse({ ...manifest, minimumPaperclipVersion: "9.0.0" });
     expect(retired.success).toBe(false);
     expect(retired.error?.issues[0]?.message).toContain("minimumHostVersion");
     expect(pluginManifestV1Schema.parse({ ...manifest, minimumHostVersion: "9.0.0" }).minimumHostVersion).toBe("9.0.0");
@@ -56,7 +56,7 @@ describe("plugin manifest validators", () => {
   });
   it("accepts existing-style plugins that do not request access or authorization capabilities", () => {
     const parsed = pluginManifestV1Schema.parse({
-      id: "paperclip.compat-dashboard",
+      id: "wardmote.compat-dashboard",
       apiVersion: 1,
       version: "0.1.0",
       displayName: "Compat Dashboard",
@@ -85,7 +85,7 @@ describe("plugin manifest validators", () => {
 
   it("accepts sandbox provider template config bindings", () => {
     const parsed = pluginManifestV1Schema.parse({
-      id: "paperclip.template-provider",
+      id: "wardmote.template-provider",
       apiVersion: 1,
       version: "0.1.0",
       displayName: "Template Provider",
@@ -118,7 +118,7 @@ describe("plugin manifest validators", () => {
 
   it("rejects template config bindings that replace provider identity", () => {
     const parsed = pluginManifestV1Schema.safeParse({
-      id: "paperclip.bad-template-provider",
+      id: "wardmote.bad-template-provider",
       apiVersion: 1,
       version: "0.1.0",
       displayName: "Bad Template Provider",
@@ -172,7 +172,7 @@ describe("plugin managed routine validators", () => {
 
 describe("plugin managed skill validators", () => {
   const baseManifest = {
-    id: "paperclip.test-managed-skills",
+    id: "wardmote.test-managed-skills",
     apiVersion: 1,
     version: "0.1.0",
     displayName: "Managed Skills",
