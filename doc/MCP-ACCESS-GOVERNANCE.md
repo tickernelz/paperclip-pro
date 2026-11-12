@@ -132,7 +132,7 @@ and upstream tool identity; duplicate catalog entries also include their entry
 identity. Gateway metadata retains the original upstream name for dispatch,
 permissions, and audit. An alias never changes which connection executes a call.
 
-V1 does not claim host-wide MCP enforcement. If an unmanaged external client, hand-edited adapter config, or process outside the Wardmote-controlled workspace calls an upstream MCP server directly, Paperclip can warn about known overlapping config entries but cannot prevent or audit that bypass. Treat managed MCP config as a control-plane containment feature for Paperclip-launched agents, not as an endpoint firewall for the operator's whole machine.
+V1 does not claim host-wide MCP enforcement. If an unmanaged external client, hand-edited adapter config, or process outside the Wardmote-controlled workspace calls an upstream MCP server directly, Wardmote can warn about known overlapping config entries but cannot prevent or audit that bypass. Treat managed MCP config as a control-plane containment feature for Wardmote-launched agents, not as an endpoint firewall for the operator's whole machine.
 
 ## Managed connections
 
