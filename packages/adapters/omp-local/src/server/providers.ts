@@ -6,15 +6,18 @@ import path from "node:path";
 import type { Readable, Writable } from "node:stream";
 import { isMap, isSeq, parseDocument, YAMLMap, type Document } from "yaml";
 import {
+  OMP_CUSTOM_PROVIDER_MODEL_LIMIT,
   OMP_ENV_NAME_PATTERN,
   type OmpCustomProviderInput,
   type OmpCustomProviderKeyInput,
   type OmpCustomProviderKeyView,
   type OmpCustomProviderList,
+  type OmpCustomProviderModelsFetchResult,
   type OmpCustomProviderProbeAttempt,
   type OmpCustomProviderProbeResult,
   type OmpCustomProviderView,
   type OmpProviderApi,
+  type OmpUpstreamModel,
   type OnboardingOmpLoginState,
   type OnboardingOmpLoginView,
 } from "@tickernelz/wardmote-shared";
@@ -527,9 +530,130 @@ function joinUrl(base: string, suffix: string): string {
   return `${base.replace(/\/+$/, "")}/${suffix}`;
 }
 
-function shortDetail(body: string): string | null {
-  const text = body.replace(/\s+/g, " ").trim();
+function redactSecrets(text: string, secrets: ReadonlyArray<string | null | undefined>): string {
+  return secrets.reduce<string>((out, secret) => (secret && secret.length >= MIN_REDACTED_LENGTH ? out.split(secret).join("[redacted]") : out), text);
+}
+
+function shortDetail(body: string, secrets: ReadonlyArray<string | null | undefined>): string | null {
+  const text = redactSecrets(body, secrets).replace(/\s+/g, " ").trim();
   return text ? text.slice(0, 240) : null;
+}
+
+type UpstreamModelPage =
+  | { kind: "ok"; rows: OmpUpstreamModel[]; next: string | null }
+  | { kind: "not_json" }
+  | { kind: "no_list" };
+
+function upstreamModelRow(row: unknown): OmpUpstreamModel | null {
+  if (typeof row === "string") return row.trim() ? { id: row } : null;
+  if (typeof row !== "object" || row === null) return null;
+  const record = row as Record<string, unknown>;
+  const id = stringAt(record.id) ?? stringAt(record.name);
+  if (!id) return null;
+  const name = stringAt(record.display_name) ?? stringAt(record.name);
+  return name && name !== id ? { id, name } : { id };
+}
+
+export function parseUpstreamModelPage(body: string): UpstreamModelPage {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(body);
+  } catch {
+    return { kind: "not_json" };
+  }
+  const record = typeof parsed === "object" && parsed !== null && !Array.isArray(parsed) ? parsed as Record<string, unknown> : null;
+  const rows: unknown[] | null = Array.isArray(parsed)
+    ? parsed
+    : record && Array.isArray(record.data) ? record.data : record && Array.isArray(record.models) ? record.models : null;
+  if (!rows) return { kind: "no_list" };
+  return {
+    kind: "ok",
+    rows: rows.map(upstreamModelRow).filter((row): row is OmpUpstreamModel => row !== null),
+    next: record?.has_more === true ? stringAt(record.last_id) ?? null : null,
+  };
+}
+
+const UPSTREAM_MODEL_LIMIT = 5_000;
+const UPSTREAM_PAGE_LIMIT = 50;
+const ANTHROPIC_PAGE_SIZE = "1000";
+const ANTHROPIC_VERSION = "2023-06-01";
+
+function upstreamStatusMessage(url: string, status: number, detail: string | null): string {
+  const reason = status === 401 || status === 403
+    ? `${url} answered ${status}: the provider rejected the key or headers.`
+    : status === 404
+      ? `${url} answered 404: there is no model list at this address. Check the base URL; it usually ends in /v1.`
+      : `${url} answered ${status}.`;
+  return detail ? `${reason} ${detail}` : reason;
+}
+
+export async function fetchCustomProviderModels(options: {
+  baseUrl: string;
+  api: OmpProviderApi | null;
+  key: string | null;
+  authHeader: boolean;
+  headers: Record<string, string>;
+  fetchImpl?: FetchLike;
+}): Promise<OmpCustomProviderModelsFetchResult> {
+  const fetchImpl = options.fetchImpl ?? (fetch as unknown as FetchLike);
+  const anthropic = options.api === "anthropic-messages";
+  const auth: Record<string, string> = !options.key
+    ? {}
+    : anthropic && !options.authHeader ? { "x-api-key": options.key } : { authorization: `Bearer ${options.key}` };
+  const headers = { ...(anthropic ? { "anthropic-version": ANTHROPIC_VERSION } : {}), ...options.headers, ...auth };
+  const secrets = [options.key, ...Object.values(options.headers)];
+  const base = joinUrl(options.baseUrl, "models");
+  const pageUrl = (after: string | null) => {
+    if (!anthropic && !after) return base;
+    const url = new URL(base);
+    if (anthropic) url.searchParams.set("limit", ANTHROPIC_PAGE_SIZE);
+    if (after) url.searchParams.set("after_id", after);
+    return url.toString();
+  };
+  const models: OmpUpstreamModel[] = [];
+  const seen = new Set<string>();
+  let status: number | null = null;
+  let truncated = false;
+  let after: string | null = null;
+  const fail = (error: string): OmpCustomProviderModelsFetchResult => ({ url: base, status, models: [], truncated: false, error: redactSecrets(error, secrets) });
+  for (let page = 0; ; page += 1) {
+    if (page === UPSTREAM_PAGE_LIMIT) {
+      truncated = true;
+      break;
+    }
+    const url = pageUrl(after);
+    let body: string;
+    try {
+      const response = await fetchImpl(url, { method: "GET", headers, signal: AbortSignal.timeout(PROBE_TIMEOUT_MS) });
+      status = response.status;
+      body = await readLimitedBody(response.body, PROBE_BODY_LIMIT_BYTES).catch(() => "");
+      if (status < 200 || status >= 300) return fail(upstreamStatusMessage(url, status, shortDetail(body, secrets)));
+    } catch (error) {
+      const name = (error as Error).name;
+      return fail(name === "TimeoutError" || name === "AbortError"
+        ? `${url} did not answer within ${PROBE_TIMEOUT_MS / 1000} s.`
+        : `${url} could not be reached: ${(error as Error).message}`);
+    }
+    const parsed = parseUpstreamModelPage(body);
+    if (parsed.kind === "not_json") {
+      const detail = shortDetail(body, secrets);
+      return fail(`${url} did not answer with JSON${detail ? `: ${detail.slice(0, 120)}` : "."}`);
+    }
+    if (parsed.kind === "no_list") return fail(`${url} answered JSON without a model list (expected data[] or models[]).`);
+    for (const row of parsed.rows) {
+      if (seen.has(row.id)) continue;
+      if (models.length === UPSTREAM_MODEL_LIMIT) {
+        truncated = true;
+        break;
+      }
+      seen.add(row.id);
+      models.push(row);
+    }
+    if (truncated || !parsed.next || parsed.next === after) break;
+    after = parsed.next;
+  }
+  if (models.length === 0) return fail(`${base} listed no models.`);
+  return { url: base, status, models, truncated, error: null };
 }
 
 export async function probeCustomProvider(options: {
@@ -543,27 +667,20 @@ export async function probeCustomProvider(options: {
   const fetchImpl = options.fetchImpl ?? (fetch as unknown as FetchLike);
   const bearer: Record<string, string> = options.key ? { authorization: `Bearer ${options.key}` } : {};
   const json = { "content-type": "application/json", ...options.headers };
+  const secrets = [options.key, ...Object.values(options.headers)];
   const call = async (api: OmpCustomProviderProbeAttempt["api"], url: string, init: { method: string; headers: Record<string, string>; body?: string }) => {
     try {
       const response = await fetchImpl(url, { ...init, signal: AbortSignal.timeout(PROBE_TIMEOUT_MS) });
       const body = await readLimitedBody(response.body, PROBE_BODY_LIMIT_BYTES).catch(() => "");
       const ok = response.status >= 200 && response.status < 300;
-      return { attempt: { api, url, status: response.status, ok, detail: ok ? null : shortDetail(body) }, body };
+      return { attempt: { api, url, status: response.status, ok, detail: ok ? null : shortDetail(body, secrets) }, body };
     } catch (error) {
-      return { attempt: { api, url, status: null, ok: false, detail: (error as Error).message.slice(0, 240) }, body: "" };
+      return { attempt: { api, url, status: null, ok: false, detail: redactSecrets((error as Error).message, secrets).slice(0, 240) }, body: "" };
     }
   };
   const list = await call("models-list", joinUrl(options.baseUrl, "models"), { method: "GET", headers: { ...options.headers, ...bearer } });
-  let models: string[] = [];
-  if (list.attempt.ok) {
-    try {
-      const parsed = JSON.parse(list.body) as { data?: Array<{ id?: unknown }>; models?: Array<{ id?: unknown; name?: unknown }> };
-      const rows = parsed.data ?? parsed.models ?? [];
-      models = rows.map((row) => (typeof row.id === "string" ? row.id : typeof (row as { name?: unknown }).name === "string" ? (row as { name: string }).name : null)).filter((id): id is string => Boolean(id)).slice(0, 500);
-    } catch {
-      models = [];
-    }
-  }
+  const page = list.attempt.ok ? parseUpstreamModelPage(list.body) : null;
+  const models = page?.kind === "ok" ? page.rows.map((row) => row.id).slice(0, OMP_CUSTOM_PROVIDER_MODEL_LIMIT) : [];
   const model = options.modelId ?? models[0] ?? null;
   const attempts: OmpCustomProviderProbeAttempt[] = [list.attempt];
   if (!model) return { suggestedApi: null, models, attempts, usedModel: null };
