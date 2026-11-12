@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   OPENWA_CHAT_ACTIVATIONS,
@@ -10,6 +10,7 @@ import {
   type OpenwaReplyPolicy,
 } from "@tickernelz/wardmote-shared";
 import { chatEndpointsApi, type OpenwaChat } from "@/api/chatEndpoints";
+import { InlineRowEditorPanel, useInlineRowEditor } from "@/components/InlineRowEditor";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -93,9 +94,16 @@ function DedicatedGroupToggle({ chat, pending, onApply }: { chat: OpenwaChat; pe
   );
 }
 
+type ChatEditTarget = { chatId: string; label: string; draft: ChatDraft; fromGateway: boolean };
+
+function chatEditKey(target: ChatEditTarget): string {
+  return target.chatId;
+}
+
 export function OpenwaChatsSettings({ endpointId, policy }: { endpointId: string; policy: OpenwaEndpointPolicy }) {
   const [picking, setPicking] = useState(false);
-  const [editing, setEditing] = useState<{ chatId: string; label: string; draft: ChatDraft } | null>(null);
+  const addChatButton = useRef<HTMLButtonElement>(null);
+  const editor = useInlineRowEditor<ChatEditTarget>(chatEditKey, addChatButton);
   const chats = useQuery({
     queryKey: queryKeys.chatEndpoints.openwaChats(endpointId),
     queryFn: () => chatEndpointsApi.listOpenwaChats(endpointId),
@@ -120,6 +128,18 @@ export function OpenwaChatsSettings({ endpointId, policy }: { endpointId: string
   const configured = chats.data ?? [];
   const labels = new Map(configured.map((chat) => [chat.chatKey, chat.label]));
   const unconfigured = (gatewayChats.data ?? []).filter((chat) => !chat.configured);
+  const editing = editor.open;
+  const chatEditor = (target: ChatEditTarget) => (
+    <ChatEditor
+      endpointId={endpointId}
+      chatId={target.chatId}
+      initial={target.draft}
+      reportGroups={ownerReportGroupOptions(configured, target.chatId.toLowerCase())}
+      reportLabels={labels}
+      onClose={() => editor.close()}
+      onDirtyChange={editor.setDirty}
+    />
+  );
   return (
     <SettingsSection
       title="Chats"
@@ -138,35 +158,47 @@ export function OpenwaChatsSettings({ endpointId, policy }: { endpointId: string
       ) : (
         <ul className="divide-y divide-line border-y border-line">
           {configured.map((chat) => (
-            <li key={chat.id} className="space-y-2 py-3 sm:flex sm:items-center sm:gap-4">
-              <div className="flex min-w-0 items-center gap-2 sm:min-w-32 sm:flex-1">
-                <p className="min-w-0 flex-1 truncate text-sm font-medium" title={chat.label}>
-                  {chat.label}
-                </p>
-                <Badge variant={chat.enabled ? "secondary" : "outline"} className="sm:hidden">
-                  {activationLabels[chat.settings.activation]}
-                </Badge>
+            <li key={chat.id} className="py-3">
+              <div className="space-y-2 sm:flex sm:items-center sm:gap-4">
+                <div className="flex min-w-0 items-center gap-2 sm:min-w-32 sm:flex-1">
+                  <p className="min-w-0 flex-1 truncate text-sm font-medium" title={chat.label}>
+                    {chat.label}
+                  </p>
+                  <Badge variant={chat.enabled ? "secondary" : "outline"} className="sm:hidden">
+                    {activationLabels[chat.settings.activation]}
+                  </Badge>
+                </div>
+                <div className="flex min-w-0 items-center gap-2 sm:flex-1">
+                  <p className="min-w-0 flex-1 truncate text-xs text-ink-3" title={chatMetaText(chat, policy.numberMode, labels)}>
+                    <ChatMetaLine text={chatMetaText(chat, policy.numberMode, labels)} />
+                  </p>
+                  <Badge variant={chat.enabled ? "secondary" : "outline"} className="hidden sm:inline-flex">
+                    {activationLabels[chat.settings.activation]}
+                  </Badge>
+                </div>
+                <div className="flex flex-wrap items-center gap-2 sm:shrink-0 sm:justify-end">
+                  {chat.type === "group_chat" ? (
+                    <DedicatedGroupToggle
+                      chat={chat}
+                      pending={dedicate.isPending}
+                      onApply={() => dedicate.mutate({ chatId: chat.chatId, label: chat.label, settings: chat.settings })}
+                    />
+                  ) : null}
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    {...editor.triggerProps(chat.chatId)}
+                    onClick={() => editor.toggle({ chatId: chat.chatId, label: chat.label, draft: chatDraft(chat.label, chat.settings), fromGateway: false })}
+                  >
+                    Edit
+                  </Button>
+                </div>
               </div>
-              <div className="flex min-w-0 items-center gap-2 sm:flex-1">
-                <p className="min-w-0 flex-1 truncate text-xs text-ink-3" title={chatMetaText(chat, policy.numberMode, labels)}>
-                  <ChatMetaLine text={chatMetaText(chat, policy.numberMode, labels)} />
-                </p>
-                <Badge variant={chat.enabled ? "secondary" : "outline"} className="hidden sm:inline-flex">
-                  {activationLabels[chat.settings.activation]}
-                </Badge>
-              </div>
-              <div className="flex flex-wrap items-center gap-2 sm:shrink-0 sm:justify-end">
-                {chat.type === "group_chat" ? (
-                  <DedicatedGroupToggle
-                    chat={chat}
-                    pending={dedicate.isPending}
-                    onApply={() => dedicate.mutate({ chatId: chat.chatId, label: chat.label, settings: chat.settings })}
-                  />
-                ) : null}
-                <Button size="sm" variant="secondary" onClick={() => setEditing({ chatId: chat.chatId, label: chat.label, draft: chatDraft(chat.label, chat.settings) })}>
-                  Edit
-                </Button>
-              </div>
+              {editing?.chatId === chat.chatId && !editing.fromGateway ? (
+                <InlineRowEditorPanel id={editor.panelId(chat.chatId)} onEscape={editor.dismiss} className="mt-3">
+                  {chatEditor(editing)}
+                </InlineRowEditorPanel>
+              ) : null}
             </li>
           ))}
         </ul>
@@ -176,21 +208,15 @@ export function OpenwaChatsSettings({ endpointId, policy }: { endpointId: string
           {dedicate.error instanceof Error ? dedicate.error.message : "Couldn't save the chat."}
         </p>
       ) : null}
-      {editing ? (
-        <ChatEditor
-          key={editing.chatId}
-          endpointId={endpointId}
-          chatId={editing.chatId}
-          initial={editing.draft}
-          reportGroups={ownerReportGroupOptions(configured, editing.chatId.toLowerCase())}
-          reportLabels={labels}
-          onClose={() => setEditing(null)}
-        />
-      ) : null}
       <div className="space-y-2">
-        <Button size="sm" variant="secondary" className="w-full sm:w-auto" onClick={() => setPicking((value) => !value)}>
+        <Button ref={addChatButton} size="sm" variant="secondary" className="w-full sm:w-auto" aria-expanded={picking} onClick={() => setPicking((value) => !value)}>
           {picking ? "Hide gateway chats" : "Add a chat from WhatsApp"}
         </Button>
+        {editing?.fromGateway ? (
+          <InlineRowEditorPanel key={editing.chatId} id={editor.panelId(editing.chatId)} onEscape={editor.dismiss}>
+            {chatEditor(editing)}
+          </InlineRowEditorPanel>
+        ) : null}
         {picking ? (
           gatewayChats.isPending ? (
             <p className="text-sm text-ink-3">Loading chats from the gateway…</p>
@@ -228,8 +254,7 @@ export function OpenwaChatsSettings({ endpointId, policy }: { endpointId: string
                       size="sm"
                       variant="ghost"
                       onClick={() => {
-                        setEditing({ chatId: chat.chatId, label: chat.name, draft: chatDraft(chat.name, { activation: chat.activation }) });
-                        setPicking(false);
+                        if (editor.request({ chatId: chat.chatId, label: chat.name, draft: chatDraft(chat.name, { activation: chat.activation }), fromGateway: true })) setPicking(false);
                       }}
                     >
                       Configure
@@ -252,6 +277,7 @@ function ChatEditor({
   reportGroups,
   reportLabels,
   onClose,
+  onDirtyChange,
 }: {
   endpointId: string;
   chatId: string;
@@ -259,9 +285,12 @@ function ChatEditor({
   reportGroups: OwnerReportGroupOption[];
   reportLabels: ReadonlyMap<string, string>;
   onClose: () => void;
+  onDirtyChange: (dirty: boolean) => void;
 }) {
   const queryClient = useQueryClient();
   const [draft, setDraft] = useState(initial);
+  const dirty = JSON.stringify(draft) !== JSON.stringify(initial);
+  useEffect(() => onDirtyChange(dirty), [dirty, onDirtyChange]);
   const [errors, setErrors] = useState<FieldErrors>({});
   const save = useMutation({
     mutationFn: () => chatEndpointsApi.updateOpenwaChat(endpointId, { chatId, label: draft.label.trim() || undefined, settings: chatSettingsInput(draft) }),
