@@ -88,6 +88,8 @@ export const ompCustomProviderDiscoverySchema = z.object({
   injectV1: z.boolean().optional(),
 }).strict();
 
+export const OMP_CUSTOM_PROVIDER_MODEL_LIMIT = 500;
+
 export const ompCustomProviderInputSchema = z.object({
   baseUrl: z.string().trim().url("Use a full URL such as http://localhost:8000/v1").max(2_000),
   api: z.enum(OMP_PROVIDER_APIS).nullable(),
@@ -96,7 +98,7 @@ export const ompCustomProviderInputSchema = z.object({
   disableStrictTools: z.boolean(),
   headers: z.array(ompCustomProviderHeaderSchema).max(50),
   discovery: ompCustomProviderDiscoverySchema.nullable(),
-  models: z.array(ompCustomProviderModelSchema).max(500),
+  models: z.array(ompCustomProviderModelSchema).max(OMP_CUSTOM_PROVIDER_MODEL_LIMIT),
 }).strict().superRefine((value, ctx) => {
   if (!value.discovery && value.models.length === 0) {
     ctx.addIssue({ code: "custom", path: ["models"], message: "Add at least one model, or turn on model discovery" });
@@ -130,6 +132,29 @@ export const ompCustomProviderProbeSchema = z.object({
   modelId: z.string().trim().min(1).max(300).optional(),
 }).strict();
 export type OmpCustomProviderProbeInput = z.infer<typeof ompCustomProviderProbeSchema>;
+
+export const ompCustomProviderModelsFetchSchema = z.object({
+  name: z.string().trim().regex(OMP_PROVIDER_NAME_PATTERN).optional(),
+  baseUrl: z.string().trim().url().max(2_000),
+  api: z.enum(OMP_PROVIDER_APIS).nullable(),
+  apiKey: ompCustomProviderKeySchema,
+  authHeader: z.boolean(),
+  headers: z.array(ompCustomProviderHeaderSchema).max(50),
+}).strict();
+export type OmpCustomProviderModelsFetchInput = z.infer<typeof ompCustomProviderModelsFetchSchema>;
+
+export interface OmpUpstreamModel {
+  id: string;
+  name?: string;
+}
+
+export interface OmpCustomProviderModelsFetchResult {
+  url: string;
+  status: number | null;
+  models: OmpUpstreamModel[];
+  truncated: boolean;
+  error: string | null;
+}
 
 export type OmpCustomProviderKeyView =
   | { kind: "env"; name: string; present: boolean }
