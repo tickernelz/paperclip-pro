@@ -1161,7 +1161,7 @@ async function openwaSend(ctx: ToolContext, args: Args): Promise<Record<string, 
   const receipt = {
     messageIds: outcome.messageIds,
     chatRef: chatRef(ctx, target.chatId),
-    ...(mentioned.length ? { mentions: await mentionReceipt(ctx, target, mentioned, quote) } : {}),
+    ...(mentioned.length ? { mentions: await mentionReceipt(ctx, target, mentioned, quoteDropped ? null : quote) } : {}),
     answeredTriggerIds,
     ...(target.ownerReport ? { ownerReportChat: true } : {}),
     ...(quote && !quoteDropped ? { quotedMessageId: quote } : {}),
@@ -1238,7 +1238,7 @@ function storedView(ctx: ToolContext, message: OpenwaStoredMessage, ownerKeys: R
   return {
     id: message.waMessageId ?? "row:" + message.id,
     fromMe,
-    sender: fromMe ? null : senderView(ctx, message.author ?? message.from, message.chatName ?? metadata.pushName ?? metadata.senderName, undefined, ownerKeys),
+    sender: fromMe ? null : senderView(ctx, message.author ?? message.from, message.chatName, undefined, ownerKeys),
     type: message.type,
     timestamp: message.timestamp ?? Math.floor(Date.parse(message.createdAt) / 1000),
     ...textView(message.body),
