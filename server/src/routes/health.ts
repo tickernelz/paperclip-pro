@@ -78,6 +78,7 @@ function redactedDatabaseBackupWarning(warning: DatabaseBackupHealthWarning): Da
     database_backup_last_failure: "Database backup failure marker is present.",
     database_backup_missing: "No recent database backup was found.",
     database_backup_skipped_low_disk: "Database backup was skipped because disk space is low.",
+    database_backup_unreadable: "Some database backups cannot be read.",
     database_backup_stale: "Latest database backup is stale.",
   };
   return {

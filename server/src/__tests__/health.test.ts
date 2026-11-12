@@ -194,6 +194,36 @@ describe("GET /health", () => {
     expect(res.body.commit).toBeNull();
   });
 
+  it("warns about database backups that cannot be read", async () => {
+    if (process.getuid?.() === 0) return;
+    const backupDir = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-health-unreadable-"));
+    const readable = path.join(backupDir, "wardmote-20260706-120000.sql.gz");
+    const unreadable = path.join(backupDir, "wardmote-20260706-110000.sql.gz");
+    fs.writeFileSync(readable, "backup");
+    fs.writeFileSync(unreadable, "backup");
+    fs.chmodSync(unreadable, 0o000);
+    try {
+      const app = createApp(createHealthyDb(), testServerInfo, {
+        enabled: true,
+        backupDir,
+        maxAgeHours: 26,
+        now: new Date(fs.statSync(readable).mtimeMs),
+      });
+
+      const res = await request(app).get("/health");
+
+      expect(res.body.databaseBackup.warnings).toEqual([
+        expect.objectContaining({
+          code: "database_backup_unreadable",
+          message: expect.stringContaining("wardmote-20260706-110000.sql.gz"),
+        }),
+      ]);
+    } finally {
+      fs.chmodSync(unreadable, 0o600);
+      fs.rmSync(backupDir, { recursive: true, force: true });
+    }
+  });
+
   it("surfaces a stale database backup warning in full health details", async () => {
     const backupDir = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-health-backups-"));
     const backupFile = path.join(backupDir, "wardmote-20260705-031702.sql.gz");

@@ -38,6 +38,10 @@ export function defaultOmpAgentDir() {
 
 /** Every place OMP keeps transcripts that may reference blobs, mirroring `omp gc`. */
 export async function collectOmpTranscriptSources(input: { agentDir: string; extraRoots: string[] }) {
+  const relative = input.extraRoots.filter((root) => !path.isAbsolute(root));
+  if (relative.length > 0) {
+    throw new Error(`OMP session directories with a relative path cannot be scanned: ${relative.join(", ")}`);
+  }
   const roots = [
     ...input.extraRoots,
     path.join(input.agentDir, "sessions"),
@@ -251,7 +255,7 @@ export async function loadOmpSessionDirs(db: Db): Promise<string[]> {
   const dirs = new Set<string>();
   for (const row of rows as unknown as Array<{ dir: string | null }>) {
     const dir = row.dir?.trim();
-    if (dir && path.isAbsolute(dir)) dirs.add(path.resolve(dir));
+    if (dir) dirs.add(path.isAbsolute(dir) ? path.resolve(dir) : dir);
   }
   return [...dirs];
 }

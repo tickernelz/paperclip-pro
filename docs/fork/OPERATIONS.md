@@ -286,8 +286,12 @@ old daily/weekly/monthly tiers). Rotation order is fixed:
 Recovery window with 2 backups is about 1–2 hours: a backup found corrupt later
 cannot be recovered from an older one. Raise `maxFiles` when that matters.
 
+A backup that cannot be read (permissions, I/O error) is kept, never counted
+toward `maxFiles`, and reported as `database_backup_unreadable` until it is fixed
+or removed by hand.
+
 Backup health is surfaced on the health endpoint as `database_backup_missing`,
-`database_backup_stale`, `database_backup_skipped_low_disk`,
+`database_backup_stale`, `database_backup_skipped_low_disk`, `database_backup_unreadable`,
 `database_backup_last_failure`, and `database_backup_check_failed`.
 
 Take a one-off backup:
@@ -374,8 +378,8 @@ transcript references as `blob:sha256:<hash>`. It reads the same transcripts
 session root, every per-agent `sessionDir`, `~/.omp/agent/sessions` and
 `~/.omp/agent/archive/sessions`, plus the files listed in
 `~/.omp/agent/custom-session-files` and `~/.omp/agent/terminal-sessions`. Any
-read or decompression error, or a held `~/.omp/agent/gc.lock`, skips blob
-deletion for that sweep. Only names `omp gc` treats as blobs are deleted.
+read or decompression error, a per-agent `sessionDir` with a relative path, or
+a held `~/.omp/agent/gc.lock` skips blob deletion for that sweep. Only names `omp gc` treats as blobs are deleted.
 
 The sweep runs only on the primary instance: instance id `default` outside a
 worktree (`WARDMOTE_IN_WORKTREE`), or any instance that sets
