@@ -906,6 +906,7 @@ async function startServerWithDatabaseTeardown(
           backupFile: result.backupFile,
           sizeBytes: result.sizeBytes,
           prunedCount: result.prunedCount,
+          unreadableBackups: result.unreadableBackups,
           backupDir: config.databaseBackupDir,
           retention,
           trigger,

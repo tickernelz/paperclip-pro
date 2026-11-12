@@ -58,6 +58,8 @@ export type RunDatabaseBackupResult = {
   backupFile: string;
   sizeBytes: number;
   prunedCount: number;
+  /** Rotated backups that could not be read; kept, not counted toward maxFiles. */
+  unreadableBackups?: string[];
 };
 
 export type RunDatabaseRestoreOptions = {
@@ -226,13 +228,17 @@ function removeBackupFile(file: string) {
   verifiedBackups.delete(file);
 }
 
-async function pruneToMaxFiles(backupDir: string, filenamePrefix: string, maxFiles: number, newestFile: string): Promise<number> {
+async function pruneToMaxFiles(backupDir: string, filenamePrefix: string, maxFiles: number, newestFile: string) {
   let kept = 1;
   let removed = 0;
+  const unreadable: string[] = [];
   for (const entry of listRotationBackups(backupDir, filenamePrefix)) {
     if (entry.fullPath === newestFile) continue;
     const check = await checkBackup(entry.fullPath);
-    if (check === "unreadable") continue;
+    if (check === "unreadable") {
+      unreadable.push(entry.fullPath);
+      continue;
+    }
     if (kept < maxFiles && check === "valid") {
       kept += 1;
       continue;
@@ -240,7 +246,7 @@ async function pruneToMaxFiles(backupDir: string, filenamePrefix: string, maxFil
     removeBackupFile(entry.fullPath);
     removed += 1;
   }
-  return removed;
+  return { removed, unreadable };
 }
 
 function prunePinnedBackups(backupDir: string, maxAgeDays: number | null | undefined, nowMs = Date.now()): number {
@@ -833,10 +839,15 @@ export async function runDatabaseBackup(opts: RunDatabaseBackupOptions): Promise
     if (opts.pinned) return { backupFile, sizeBytes, prunedCount: freedForSpace };
     const rotated = retention.maxFiles && retention.maxFiles > 0
       ? await pruneToMaxFiles(opts.backupDir, filenamePrefix, retention.maxFiles, backupFile)
-      : pruneOldBackups(opts.backupDir, retention, filenamePrefix);
-    const prunedCount = freedForSpace + rotated + prunePinnedBackups(opts.backupDir, opts.pinnedMaxAgeDays);
+      : { removed: pruneOldBackups(opts.backupDir, retention, filenamePrefix), unreadable: [] };
+    const prunedCount = freedForSpace + rotated.removed + prunePinnedBackups(opts.backupDir, opts.pinnedMaxAgeDays);
     rmSync(join(opts.backupDir, DATABASE_BACKUP_SKIPPED_MARKER), { force: true });
-    return { backupFile, sizeBytes, prunedCount };
+    return {
+      backupFile,
+      sizeBytes,
+      prunedCount,
+      ...(rotated.unreadable.length > 0 ? { unreadableBackups: rotated.unreadable } : {}),
+    };
   };
 
   try {
@@ -1405,5 +1416,8 @@ export async function runDatabaseRestore(opts: RunDatabaseRestoreOptions): Promi
 export function formatDatabaseBackupResult(result: RunDatabaseBackupResult): string {
   const size = formatBackupSize(result.sizeBytes);
   const pruned = result.prunedCount > 0 ? `; pruned ${result.prunedCount} old backup(s)` : "";
-  return `${result.backupFile} (${size}${pruned})`;
+  const unreadable = result.unreadableBackups?.length
+    ? `; kept ${result.unreadableBackups.length} unreadable backup(s)`
+    : "";
+  return `${result.backupFile} (${size}${pruned}${unreadable})`;
 }

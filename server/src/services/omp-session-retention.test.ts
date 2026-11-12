@@ -153,6 +153,16 @@ describe("sweepOmpSessions", () => {
     expect(fs.existsSync(path.join(dirs.blobDir, hash("e")))).toBe(true);
   });
 
+  it("keeps every blob when an agent session directory is relative and cannot be located", async () => {
+    const dirs = layout();
+    write(path.join(dirs.blobDir, hash("e")), "blob", 20);
+
+    const report = await sweep(dirs, { extraTranscriptRoots: ["relative/sessions"] });
+
+    expect(report.blobScan).toBe("aborted");
+    expect(fs.existsSync(path.join(dirs.blobDir, hash("e")))).toBe(true);
+  });
+
   it("touches nothing when the session sweep is disabled for this instance", async () => {
     const dirs = layout();
     const session = path.join(dirs.sessionRoot, "agent-a", "2026-10-01T00-00-00-000Z_old.jsonl");

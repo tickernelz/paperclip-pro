@@ -846,6 +846,7 @@ describeEmbeddedPostgres("runDatabaseBackup rotation and disk guard", () => {
     expect(rotated(backupDir)).toEqual(
       ["wardmote-20260101-010000.sql.gz", "wardmote-20260101-020000.sql.gz", path.basename(result.backupFile)].sort(),
     );
+    expect(result.unreadableBackups).toEqual([unreadable]);
   }, EMBEDDED_POSTGRES_TEST_TIMEOUT_MS);
 
   it("skips the backup and keeps the last valid backup when space is short", async () => {
