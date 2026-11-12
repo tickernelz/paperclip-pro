@@ -77,6 +77,26 @@ describe("buildIssuePropertiesPanelKey", () => {
     expect(second).not.toBe(first);
   });
 
+  it("changes when the scheduled retry is promoted", () => {
+    const scheduledRetry = {
+      runId: "run-1",
+      status: "scheduled_retry" as const,
+      agentId: "agent-1",
+      agentName: "Coder",
+      retryOfRunId: "run-0",
+      scheduledRetryAt: "2026-04-13T02:00:00.000Z",
+      scheduledRetryAttempt: 2,
+      scheduledRetryReason: "transient_failure",
+    };
+    const first = buildIssuePropertiesPanelKey(createIssue({ scheduledRetry }), []);
+    const second = buildIssuePropertiesPanelKey(
+      createIssue({ scheduledRetry: { ...scheduledRetry, status: "queued" } }),
+      [],
+    );
+
+    expect(second).not.toBe(first);
+  });
+
   it("changes when workspace detail hydrates after opening from a cached issue", () => {
     const first = buildIssuePropertiesPanelKey(createIssue(), []);
     const second = buildIssuePropertiesPanelKey(

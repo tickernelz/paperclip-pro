@@ -8,6 +8,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { IssueRetryNowOutcome, IssueScheduledRetry } from "@tickernelz/wardmote-shared";
 import { IssueScheduledRetryCard } from "./IssueScheduledRetryCard";
 import { ToastProvider } from "../context/ToastContext";
+import { queryKeys } from "../lib/queryKeys";
 
 const retryNowMock = vi.hoisted(() => vi.fn());
 
@@ -94,6 +95,7 @@ function renderWithProviders(ui: ReactNode) {
       </QueryClientProvider>,
     );
   });
+  return queryClient;
 }
 
 beforeEach(() => {
@@ -246,6 +248,48 @@ describe("IssueScheduledRetryCard", () => {
       const band = container.querySelector('[data-testid="issue-scheduled-retry-error-band"]');
       expect(band).not.toBeNull();
       expect((band?.textContent ?? "")).toContain("Server error");
+      expect(getRetryNowButton()!.disabled).toBe(false);
+    });
+  });
+
+  it("refreshes the issue cached under its identifier when retry-now is called with its id", async () => {
+    retryNowMock.mockResolvedValue({
+      outcome: "blocked",
+      errorCode: "agent_not_invokable",
+      message: "Resume ClaudeCoder before retrying now. The scheduled retry keeps its saved time.",
+      scheduledRetry: baseRetry,
+    });
+    const queryClient = renderWithProviders(
+      <IssueScheduledRetryCard issueId="issue-1" scheduledRetry={baseRetry} />,
+    );
+    queryClient.setQueryData(queryKeys.issues.detail("ZHA-1"), {
+      id: "issue-1",
+      identifier: "ZHA-1",
+      companyId: "company-1",
+      title: "Retryable issue",
+      status: "in_progress",
+      workMode: "standard",
+      priority: "medium",
+      projectId: null,
+      parentId: null,
+      description: null,
+      assigneeAgentId: "agent-1",
+      assigneeUserId: null,
+      executionRunId: null,
+      issueNumber: 1,
+      requestDepth: 0,
+      createdAt: "2026-04-18T19:00:00.000Z",
+      updatedAt: "2026-04-18T19:00:00.000Z",
+      scheduledRetry: baseRetry,
+    });
+
+    act(() => {
+      getRetryNowButton()!.click();
+    });
+    await waitForUi(() => {
+      expect(queryClient.getQueryState(queryKeys.issues.detail("ZHA-1"))?.isInvalidated).toBe(true);
+      const band = container.querySelector('[data-testid="issue-scheduled-retry-error-band"]');
+      expect(band?.textContent ?? "").toContain("Resume ClaudeCoder before retrying now");
       expect(getRetryNowButton()!.disabled).toBe(false);
     });
   });
