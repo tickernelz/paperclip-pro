@@ -76,7 +76,7 @@ function normalizedItemType(item: JsonRecord, payload: JsonRecord): string {
 }
 
 function itemId(event: JsonRecord, item: JsonRecord): string {
-  return text(event.itemId, text(item.id, "paperclip-runner-item"));
+  return text(event.itemId, text(item.id, "wardmote-runner-item"));
 }
 
 function toolFailure(item: JsonRecord): boolean {
@@ -818,7 +818,7 @@ export function parseWardmoteRunnerStdoutLine(line: string, ts: string): Transcr
   return parseWardmoteRunnerLine(line, ts, createParserState());
 }
 
-export const paperclipRunnerUIAdapter: UIAdapterModule = {
+export const wardmoteRunnerUIAdapter: UIAdapterModule = {
   type: "wardmote_runner",
   label: "Wardmote Runner",
   parseStdoutLine: parseWardmoteRunnerStdoutLine,

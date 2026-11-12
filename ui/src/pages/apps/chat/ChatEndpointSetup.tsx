@@ -863,7 +863,7 @@ function ProviderConnectStep({
   const slackBotName = slackApp.botName.trim();
   const slackCommand = slackApp.command.trim();
   const slackWebhookUrl =
-    endpoint.setup?.webhookUrl ?? "<paperclip-webhook-url>";
+    endpoint.setup?.webhookUrl ?? "<wardmote-webhook-url>";
   const slackManifest = JSON.stringify(buildSlackAppManifest({
     app: { appName: slackAppName, botName: slackBotName, command: slackCommand }, agentName,
     webhookUrl: slackWebhookUrl,

@@ -2235,8 +2235,8 @@ export function DesignGuide() {
           <RepositoryEditor selected={[]} onChange={() => {}} state="disconnected" onConnect={() => {}} onRetry={() => {}} />
         </SubSection>
         <SubSection title="Selected and searchable">
-          <RepositoryEditor selected={[{ id: "1", fullName: "paperclipai/paperclip", url: "https://github.com/paperclipai/paperclip", connections: ["Your GitHub"] }]}
-            available={[{ id: "2", fullName: "paperclipai/docs", url: "https://github.com/paperclipai/docs", connections: ["Company GitHub"] }]}
+          <RepositoryEditor selected={[{ id: "1", fullName: "tickernelz/wardmote", url: "https://github.com/tickernelz/wardmote", connections: ["Your GitHub"] }]}
+            available={[{ id: "2", fullName: "acme/docs", url: "https://github.com/acme/docs", connections: ["Company GitHub"] }]}
             onChange={() => {}} onConnect={() => {}} onRetry={() => {}} />
         </SubSection>
         <p className="text-sm text-ink-3">Loading, errors, empty search, mobile, and short viewports are covered in the Project repos Storybook stories.</p>

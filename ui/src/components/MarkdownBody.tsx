@@ -490,8 +490,8 @@ function createWikiLinkNode(href: string, wikiLink: ParsedWikiLink): MarkdownAst
     title: null,
     data: {
       hProperties: {
-        "data-paperclip-wiki-link": "true",
-        "data-paperclip-wiki-target": wikiLink.target,
+        "data-wardmote-wiki-link": "true",
+        "data-wardmote-wiki-target": wikiLink.target,
       },
     },
     children: [{ type: "text", value: wikiLink.label }],
@@ -932,7 +932,7 @@ function MarkdownBodyImpl({
       }
 
       const dataProps = anchorProps as Record<string, unknown>;
-      const isWikiLink = dataProps["data-paperclip-wiki-link"] === "true";
+      const isWikiLink = dataProps["data-wardmote-wiki-link"] === "true";
       if (isWikiLink && href && !/^[a-z][a-z\d+.-]*:/i.test(href) && !href.startsWith("//")) {
         return (
           <Link
