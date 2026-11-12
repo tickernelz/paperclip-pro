@@ -379,7 +379,7 @@ describe("Chat SDK published adapter integration", () => {
             {
               id: 9_000 + commentAuthorizations.length,
               body: "safe reply",
-              user: { id: 9001, login: "maya-paperclip[bot]", type: "Bot" },
+              user: { id: 9001, login: "maya-wardmote[bot]", type: "Bot" },
             },
             { status: 201 },
           );
@@ -396,7 +396,7 @@ describe("Chat SDK published adapter integration", () => {
       persistence,
       providerConfig: {
         provider: "github",
-        userName: "maya-paperclip[bot]",
+        userName: "maya-wardmote[bot]",
         credentials: {
           appId: "123456",
           botUserId: 9001,

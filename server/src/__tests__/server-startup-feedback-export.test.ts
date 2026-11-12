@@ -232,7 +232,7 @@ function buildTestConfig(overrides: Record<string, unknown> = {}) {
     secretsMasterKeyFilePath: "/tmp/wardmote-master.key",
     storageProvider: "local_disk",
     storageLocalDiskBaseDir: "/tmp/wardmote-storage",
-    storageS3Bucket: "paperclip-test",
+    storageS3Bucket: "wardmote-test",
     storageS3Region: "us-east-1",
     storageS3Endpoint: undefined,
     storageS3Prefix: "",

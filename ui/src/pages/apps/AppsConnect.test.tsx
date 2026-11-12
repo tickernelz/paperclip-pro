@@ -360,13 +360,13 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
     expect(buttonByText("Connect")?.disabled).toBe(true);
     await act(async () => buttonByText("Connect")?.click());
     expect(connectAppMock).not.toHaveBeenCalled();
-    await act(async () => setInputValue(workspace, "paperclip-acme"));
+    await act(async () => setInputValue(workspace, "wardmote-acme"));
     expect(buttonByText("Connect")?.disabled).toBe(false);
     await act(async () => buttonByText("Connect")?.click());
     await flushReact();
     expect(connectAppMock).toHaveBeenCalledOnce();
     expect(connectAppMock).toHaveBeenCalledWith("company-1", expect.objectContaining({
-      configValues: { workspaceId: "paperclip-acme" },
+      configValues: { workspaceId: "wardmote-acme" },
       agentInstructions: expect.objectContaining({ enabled: true, text: honcho.agentInstructions!.text }),
     }));
   });

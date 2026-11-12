@@ -1000,7 +1000,7 @@ describe("buildActivityPhases provider summaries", () => {
         {
           id: "finish",
           kind: "tool",
-          name: "Paperclip_finish",
+          name: "Wardmote_finish",
           status: "completed",
         },
         provider("research-1", "research"),
@@ -2291,7 +2291,7 @@ describe("paperclip runner semantic channels", () => {
       {
         id: "tool",
         kind: "tool",
-        name: "Paperclip_finish",
+        name: "Wardmote_finish",
         status: "completed",
         target: "done",
       },
@@ -2361,7 +2361,7 @@ describe("paperclip runner semantic channels", () => {
       {
         id: "finish",
         kind: "tool",
-        name: "Paperclip_finish",
+        name: "Wardmote_finish",
         rawName: "wardmote_finish",
         status: "completed",
       },
