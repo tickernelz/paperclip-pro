@@ -341,7 +341,7 @@ fresh attempt for a retryable failure.
 
 The reviewable sources live in this repository's `.agents/skills`. For a
 multi-repository workspace, install the three skills at
-`~/paperclipai/.agents/skills` (not `~/paperclipai/skills`). From the Paperclip
+`~/paperclipai/.agents/skills` (not `~/paperclipai/skills`). From the Wardmote
 checkout, run:
 
 ```sh

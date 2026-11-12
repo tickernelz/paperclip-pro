@@ -51,7 +51,7 @@ state-changing actions start off; newly discovered actions are quarantined until
 reviewed. That is the same treatment a curated connection gets.
 
 For **Just me**, the first probe of a new URL with no supplied credentials runs
-before a personal authorization exists. If the server requires OAuth, Paperclip
+before a personal authorization exists. If the server requires OAuth, Wardmote
 creates the personal grant only after sign-in succeeds. If the server is public,
 Wardmote creates a personal grant with no credentials after the probe succeeds.
 That successful public probe saves the draft identity and its grant. A later

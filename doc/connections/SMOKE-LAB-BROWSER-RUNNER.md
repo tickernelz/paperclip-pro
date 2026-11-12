@@ -32,7 +32,7 @@ the Smoke Lab — a private box is a private box. Every smoke-lab service method
 
 **The shared dev worktree service works as-is now.** The Wardmote-managed dev
 service (`pnpm dev`, `WARDMOTE_DEPLOYMENT_MODE=authenticated` + `NODE_ENV=production`,
-e.g. `http://paperclip-dev:45439`) is private, so it can run the Smoke Lab directly —
+e.g. `http://wardmote-dev:45439`) is private, so it can run the Smoke Lab directly —
 just turn the flag on. (Historically it was blocked because the gate required
 `local_trusted` + non-`production`; that restriction was removed in PAP-13351.) The
 installed package on `:3100` still may not ship the smoke-lab routes (404).
