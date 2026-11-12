@@ -29,7 +29,7 @@ function job(overrides: Partial<UpdateJob>): UpdateJob {
   return {
     id: "job-1", phase: "waiting", mode: "wait", trigger: "manual", fromVersion: "2026.1111.0", toVersion: "2026.1112.0",
     requestedBy: null, requestedAt: "2026-11-12T07:00:00.000Z", waitDeadline: "2026-11-12T07:15:00.000Z", liveRuns: 2,
-    startedAt: null, finishedAt: null, installedVersion: null, rolledBackTo: null, error: null, logHint: null, ...overrides,
+    startedAt: null, finishedAt: null, installedVersion: null, rolledBackTo: null, error: null, logHint: null, unit: null, ...overrides,
   };
 }
 
