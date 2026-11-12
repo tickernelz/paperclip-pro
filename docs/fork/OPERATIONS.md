@@ -252,30 +252,60 @@ wardmote allowed-hostname paperclip.zhafron.my.id
 
 ## 7. Database backups
 
-Automatic backups are **on by default**: hourly, retained 7 days, written to the
-instance backup directory (`packages/shared/src/config-schema.ts:23`):
+Automatic backups are **on by default**: hourly, written to the instance backup
+directory, and only the **2 newest verified backups** are kept
+(`database.backup` in `packages/shared/src/config-schema.ts`):
 
 ```
 enabled: true
 intervalMinutes: 60
-retentionDays: 7
 dir: ~/.wardmote/instances/default/data/backups
+maxFiles: 2              # CLI default; the server reads Instance Settings
+reservePercent: 5        # free space kept besides the new backup
+reserveGb: 10            # reserve = max(reservePercent of the volume, reserveGb)
+pinnedMaxAgeDays: 30     # 0 keeps pinned backups until an operator deletes them
+retentionDays: 7         # tiered retention only (maxFiles off)
 ```
 
-Change them with `wardmote configure --section database`. Backup health is
-surfaced on the health endpoint as `database_backup_missing`,
-`database_backup_stale`, `database_backup_last_failure`, and
-`database_backup_check_failed` (`server/src/routes/health.ts:82`).
+The server takes the count from **Instance Settings → General → Backup
+retention** (`backupRetention.maxFiles`, default 2, 1–48; "Tiered" restores the
+old daily/weekly/monthly tiers). Rotation order is fixed:
+
+1. The dump is written to `<name>.<pid>.partial` and decompressed end to end
+   (`verifyGzipBackup`) before it is renamed to `<name>.sql.gz`.
+2. Only then are older backups removed. The newest `maxFiles - 1` older backups
+   that decompress cleanly are kept; empty, truncated or corrupt files never
+   count and are deleted.
+3. Before writing, free space on the backup volume must cover the last backup
+   × 1.5 plus the reserve. If not, the oldest backups are removed only when the
+   newest valid one survives and the new one then fits; otherwise the backup is
+   **skipped**, `backup-skipped.json` is written, and the health endpoint and
+   the UI banner report `database_backup_skipped_low_disk` until the next
+   backup succeeds.
+
+Recovery window with 2 backups is about 1–2 hours: a backup found corrupt later
+cannot be recovered from an older one. Raise `maxFiles` when that matters.
+
+A backup that cannot be read (permissions, I/O error) is kept, never counted
+toward `maxFiles`, and reported as `database_backup_unreadable` until it is fixed
+or removed by hand.
+
+Backup health is surfaced on the health endpoint as `database_backup_missing`,
+`database_backup_stale`, `database_backup_skipped_low_disk`, `database_backup_unreadable`,
+`database_backup_last_failure`, and `database_backup_check_failed`.
 
 Take a one-off backup:
 
 ```bash
-wardmote db:backup
-wardmote db:backup --dir /some/other/place --retention-days 30 --json
+wardmote db:backup                     # joins the rotation (keeps 2)
+wardmote db:backup --pin               # pinned: <dir>/pinned, outside rotation
+wardmote db:backup --max-files 0 --retention-days 30 --json   # tiered
 ```
 
-(`cli/src/index.ts:176`.) `update` also takes a pre-update backup unless you pass
-`--no-backup` (`cli/src/index.ts:100`).
+Release and rollback dumps must be pinned: `wardmote update` takes its
+pre-update backup with `--pin` (skip with `--no-backup`), and release scripts
+call `wardmote db:backup --pin`. Pinned backups are never rotated; they are
+deleted after `pinnedMaxAgeDays` or by hand.
 
 Backups are `.sql.gz` dumps (`server/src/services/database-backup-health.ts:122`).
 They are written inside the instance root, so a backup of the instance root is a
@@ -308,6 +338,59 @@ tail starts, and a read from inside the removed part returns one
 `WARDMOTE_RUN_LOG_RETENTION_DRY_RUN=true` logs what a sweep would trim
 (`run log retention dry run`) without touching files;
 `WARDMOTE_RUN_LOG_RETENTION_ENABLED=false` turns the sweep off.
+
+### Disk guard
+
+Every 5 minutes the server reads free space (`statfs`) on the backup, run-log,
+embedded-Postgres and OMP-session volumes and acts on the fullest one
+(`diskGuard` in the instance config, `server/src/services/disk-guard.ts`):
+
+```
+enabled: true
+intervalMinutes: 5
+warnFreePercent: 20      # warning below 20% free or below warnFreeGb
+warnFreeGb: 100
+actionFreePercent: 10
+emergencyFreePercent: 5
+ompSessionMaxIdleDays: 7 # 5 at the lowest
+```
+
+| Level | Action |
+|---|---|
+| warning | Health warning `disk_space_low` and UI banner with the numbers; nothing else changes. |
+| action | Finished, idle run logs keep 256 KiB (recent) / 64 KiB (old) tails; OMP sessions idle more than 3 days are removed. |
+| emergency | Tails shrink to 64 KiB / 16 KiB, finished run logs whose tail is already minimal are deleted oldest first until 10% is free, OMP sessions idle more than 1 day are removed, scheduled backups are skipped, new runs stay queued (`disk_emergency`, like a task drain) and board members get a "disk space is critically low" notification. The server keeps running. |
+
+Logs of queued or running runs are never touched. Issues, comments,
+attachments and the database are never deleted. Every cleanup is written to each
+company's activity log (`instance.disk_guard.cleanup`, `instance.disk_space.*`)
+with free bytes before and after. `WARDMOTE_DISK_GUARD_ENABLED=false` turns it off.
+
+### OMP sessions and blobs
+
+OMP keeps one transcript per task session under the `omp_local` adapter's
+session root (`defaultOmpSessionRoot()` in `packages/adapters/omp-local`) and images
+under `~/.omp/agent/blobs`. Hourly, the disk guard deletes session
+files (and their sidecar folders) idle longer than `ompSessionMaxIdleDays`,
+whatever the issue status, except sessions a queued or running run uses. Once a
+day (hourly under pressure) it deletes blobs idle that long that no remaining
+transcript references as `blob:sha256:<hash>`. It reads the same transcripts
+`omp gc` reads: `*.jsonl`, `*.jsonl.gz` and `*.jsonl.*.bak` under the Wardmote
+session root, every per-agent `sessionDir`, `~/.omp/agent/sessions` and
+`~/.omp/agent/archive/sessions`, plus the files listed in
+`~/.omp/agent/custom-session-files` and `~/.omp/agent/terminal-sessions`. Any
+read or decompression error, a per-agent `sessionDir` with a relative path, or
+a held `~/.omp/agent/gc.lock` skips blob deletion for that sweep. Only names `omp gc` treats as blobs are deleted.
+
+The sweep runs only on the primary instance: instance id `default` outside a
+worktree (`WARDMOTE_IN_WORKTREE`), or any instance that sets
+`diskGuard.ompSessionDir` explicitly. `diskGuard.ompSessionSweep` forces it on
+or off.
+
+A task whose session file is gone starts a fresh OMP session: the adapter tries
+`--resume`, OMP answers `Session "<id>" not found.`, and the run retries once
+without it, carrying the issue's continuation summary. A reopened old issue
+therefore starts from an empty transcript plus that summary.
 
 ## 8. Running the test suite without touching the live instance
 

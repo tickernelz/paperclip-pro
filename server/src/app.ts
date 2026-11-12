@@ -55,6 +55,7 @@ import {
   type DeploymentMode,
 } from "@tickernelz/wardmote-shared";
 import type { InspectDatabaseBackupHealthOptions } from "./services/database-backup-health.js";
+import type { DiskSpaceStatus } from "./services/disk-guard.js";
 import type { StorageService } from "./storage/types.js";
 import { httpLogger, errorHandler } from "./middleware/index.js";
 import { actorMiddleware } from "./middleware/auth.js";
@@ -423,6 +424,7 @@ export async function createApp(
     databaseBackupService?: InstanceDatabaseBackupService;
     prepareIdleDatabaseBackup?: () => Promise<boolean>;
     databaseBackupHealth?: InspectDatabaseBackupHealthOptions;
+    diskSpaceStatus?: () => DiskSpaceStatus | null;
     deploymentMode: DeploymentMode;
     deploymentExposure: DeploymentExposure;
     allowedHostnames: string[];
@@ -456,6 +458,7 @@ export async function createApp(
     authReady: opts.authReady,
     companyDeletionEnabled: opts.companyDeletionEnabled,
     databaseBackupHealth: opts.databaseBackupHealth,
+    diskSpaceStatus: opts.diskSpaceStatus,
   });
   const captureRawBody = (
     req: express.Request,

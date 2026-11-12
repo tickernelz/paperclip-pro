@@ -1,8 +1,9 @@
-import { createReadStream, createWriteStream, existsSync, mkdirSync, readdirSync, renameSync, rmSync, statSync, unlinkSync } from "node:fs";
-import { basename, resolve } from "node:path";
+import { createReadStream, createWriteStream, existsSync, mkdirSync, readdirSync, renameSync, rmSync, statfsSync, statSync, unlinkSync, writeFileSync } from "node:fs";
+import { basename, join, resolve } from "node:path";
 import { createInterface } from "node:readline";
 import { spawn } from "node:child_process";
 import { open as openFile } from "node:fs/promises";
+import { Writable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import { createGunzip, createGzip } from "node:zlib";
 import postgres from "postgres";
@@ -12,6 +13,20 @@ export type BackupRetentionPolicy = {
   dailyDays: number;
   weeklyWeeks: number;
   monthlyMonths: number;
+  /** Keep only this many newest verified backups; null or absent keeps the daily/weekly/monthly tiers. */
+  maxFiles?: number | null;
+};
+
+export type BackupDiskSpace = {
+  freeBytes: number;
+  totalBytes: number;
+};
+
+export type BackupSpaceGuard = {
+  reservePercent: number;
+  reserveBytes: number;
+  headroomFactor?: number;
+  statfs?: (dir: string) => BackupDiskSpace;
 };
 
 export type RunDatabaseBackupOptions = {
@@ -31,12 +46,20 @@ export type RunDatabaseBackupOptions = {
   backupEngine?: "auto" | "pg_dump" | "javascript";
   /** Optional durability gate. A rejected archive must not prune history. */
   verifyBeforePrune?: (backupFile: string) => Promise<void>;
+  /** Writes under `<backupDir>/pinned`, outside rotation, for release and rollback dumps. */
+  pinned?: boolean;
+  /** Deletes pinned backups older than this many days during rotated runs; null or 0 keeps them. */
+  pinnedMaxAgeDays?: number | null;
+  /** Skips the backup instead of filling the volume when free space is short. */
+  spaceGuard?: BackupSpaceGuard | null;
 };
 
 export type RunDatabaseBackupResult = {
   backupFile: string;
   sizeBytes: number;
   prunedCount: number;
+  /** Rotated backups that could not be read; kept, not counted toward maxFiles. */
+  unreadableBackups?: string[];
 };
 
 export type RunDatabaseRestoreOptions = {
@@ -118,6 +141,182 @@ function monthlyRetentionCutoff(nowMs: number, monthlyMonths: number): number {
 }
 
 export const DATABASE_BACKUP_FILENAME_PREFIX = "wardmote";
+export const PINNED_BACKUP_DIRNAME = "pinned";
+export const DATABASE_BACKUP_SKIPPED_MARKER = "backup-skipped.json";
+const DEFAULT_BACKUP_HEADROOM_FACTOR = 1.5;
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+export class DatabaseBackupSkippedError extends Error {
+  readonly code = "database_backup_skipped_low_disk";
+
+  constructor(
+    readonly backupDir: string,
+    readonly freeBytes: number,
+    readonly requiredBytes: number,
+  ) {
+    super(
+      `Database backup skipped: ${formatBackupSize(freeBytes)} free on the backup volume, ${formatBackupSize(requiredBytes)} required (last backup x${DEFAULT_BACKUP_HEADROOM_FACTOR} plus reserve).`,
+    );
+    this.name = "DatabaseBackupSkippedError";
+  }
+}
+
+export function readBackupDiskSpace(dir: string): BackupDiskSpace {
+  const stats = statfsSync(dir);
+  return { freeBytes: stats.bavail * stats.bsize, totalBytes: stats.blocks * stats.bsize };
+}
+
+export function pinnedBackupDir(backupDir: string): string {
+  return join(backupDir, PINNED_BACKUP_DIRNAME);
+}
+
+const verifiedBackups = new Map<string, string>();
+
+function backupIdentity(file: string): string {
+  const stats = statSync(file);
+  return `${stats.size}:${stats.mtimeMs}`;
+}
+
+/** Decompresses a gzip backup end to end; rejects empty, truncated or corrupt archives. */
+export async function verifyGzipBackup(file: string): Promise<void> {
+  if (statSync(file).size === 0) throw new Error(`Backup ${basename(file)} is empty`);
+  await pipeline(
+    createReadStream(file, { highWaterMark: 1024 * 1024 }),
+    createGunzip({ chunkSize: 1024 * 1024 }),
+    new Writable({ write(_chunk, _encoding, callback) { callback(); } }),
+  );
+}
+
+type BackupCheck = "valid" | "invalid" | "unreadable";
+
+function isArchiveCorruption(error: unknown): boolean {
+  const code = (error as NodeJS.ErrnoException | null)?.code;
+  return typeof code === "string" && code.startsWith("Z_");
+}
+
+async function checkBackup(file: string): Promise<BackupCheck> {
+  const stats = statSync(file, { throwIfNoEntry: false });
+  if (!stats || stats.size === 0) return "invalid";
+  if (!file.endsWith(".gz")) return "valid";
+  if (verifiedBackups.get(file) === `${stats.size}:${stats.mtimeMs}`) return "valid";
+  try {
+    await verifyGzipBackup(file);
+  } catch (error) {
+    return isArchiveCorruption(error) ? "invalid" : "unreadable";
+  }
+  verifiedBackups.set(file, backupIdentity(file));
+  return "valid";
+}
+
+type RotationBackup = { fullPath: string; sizeBytes: number; mtimeMs: number };
+
+function listRotationBackups(backupDir: string, filenamePrefix: string): RotationBackup[] {
+  if (!existsSync(backupDir)) return [];
+  const entries: RotationBackup[] = [];
+  for (const name of readdirSync(backupDir)) {
+    if (!name.startsWith(`${filenamePrefix}-`) || !isBackupFilename(name)) continue;
+    const fullPath = resolve(backupDir, name);
+    const stats = statSync(fullPath, { throwIfNoEntry: false });
+    if (!stats?.isFile()) continue;
+    entries.push({ fullPath, sizeBytes: stats.size, mtimeMs: stats.mtimeMs });
+  }
+  return entries.sort((a, b) => b.mtimeMs - a.mtimeMs);
+}
+
+function removeBackupFile(file: string) {
+  rmSync(file, { force: true });
+  verifiedBackups.delete(file);
+}
+
+async function pruneToMaxFiles(backupDir: string, filenamePrefix: string, maxFiles: number, newestFile: string) {
+  let kept = 1;
+  let removed = 0;
+  const unreadable: string[] = [];
+  for (const entry of listRotationBackups(backupDir, filenamePrefix)) {
+    if (entry.fullPath === newestFile) continue;
+    const check = await checkBackup(entry.fullPath);
+    if (check === "unreadable") {
+      unreadable.push(entry.fullPath);
+      continue;
+    }
+    if (kept < maxFiles && check === "valid") {
+      kept += 1;
+      continue;
+    }
+    removeBackupFile(entry.fullPath);
+    removed += 1;
+  }
+  return { removed, unreadable };
+}
+
+function prunePinnedBackups(backupDir: string, maxAgeDays: number | null | undefined, nowMs = Date.now()): number {
+  if (!maxAgeDays || maxAgeDays <= 0) return 0;
+  const dir = pinnedBackupDir(backupDir);
+  if (!existsSync(dir)) return 0;
+  let removed = 0;
+  for (const name of readdirSync(dir)) {
+    if (!isBackupFilename(name)) continue;
+    const fullPath = resolve(dir, name);
+    const stats = statSync(fullPath, { throwIfNoEntry: false });
+    if (!stats?.isFile() || nowMs - stats.mtimeMs < maxAgeDays * DAY_MS) continue;
+    removeBackupFile(fullPath);
+    removed += 1;
+  }
+  return removed;
+}
+
+function backupReserveBytes(guard: BackupSpaceGuard, totalBytes: number): number {
+  return Math.max(guard.reserveBytes, Math.ceil((totalBytes * guard.reservePercent) / 100));
+}
+
+/** Frees room for one more backup by dropping the oldest rotated files, never the newest valid one; otherwise records a skip and throws. */
+async function ensureBackupSpace(input: {
+  backupDir: string;
+  targetDir: string;
+  filenamePrefix: string;
+  guard: BackupSpaceGuard;
+  rotate: boolean;
+}): Promise<number> {
+  const { guard } = input;
+  const statfs = guard.statfs ?? readBackupDiskSpace;
+  const existing = listRotationBackups(input.backupDir, input.filenamePrefix);
+  const lastSize = existing.find((entry) => entry.sizeBytes > 0)?.sizeBytes ?? 0;
+  const space = statfs(input.targetDir);
+  const requiredBytes =
+    Math.ceil(lastSize * (guard.headroomFactor ?? DEFAULT_BACKUP_HEADROOM_FACTOR)) +
+    backupReserveBytes(guard, space.totalBytes);
+  if (space.freeBytes >= requiredBytes) return 0;
+  if (input.rotate) {
+    const invalid: RotationBackup[] = [];
+    const valid: RotationBackup[] = [];
+    for (const entry of existing) {
+      const check = await checkBackup(entry.fullPath);
+      if (check === "valid") valid.push(entry);
+      else if (check === "invalid") invalid.push(entry);
+    }
+    const chosen: RotationBackup[] = [];
+    let reclaimed = 0;
+    for (const entry of [...invalid, ...valid.slice(1).reverse()]) {
+      if (space.freeBytes + reclaimed >= requiredBytes) break;
+      chosen.push(entry);
+      reclaimed += entry.sizeBytes;
+    }
+    if (space.freeBytes + reclaimed >= requiredBytes) {
+      for (const entry of chosen) removeBackupFile(entry.fullPath);
+      return chosen.length;
+    }
+    writeFileSync(
+      join(input.backupDir, DATABASE_BACKUP_SKIPPED_MARKER),
+      JSON.stringify({
+        skippedAt: new Date().toISOString(),
+        freeBytes: space.freeBytes,
+        requiredBytes,
+        totalBytes: space.totalBytes,
+      }),
+    );
+  }
+  throw new DatabaseBackupSkippedError(input.backupDir, space.freeBytes, requiredBytes);
+}
 const RETIRED_BACKUP_FILENAME_PREFIX = "paperclip";
 
 function isBackupFilename(name: string): boolean {
@@ -602,19 +801,54 @@ export async function runDatabaseBackup(opts: RunDatabaseBackupOptions): Promise
     sqlClosed = true;
     await sql.end();
   };
-  mkdirSync(opts.backupDir, { recursive: true });
+  const targetDir = opts.pinned ? pinnedBackupDir(opts.backupDir) : opts.backupDir;
+  mkdirSync(targetDir, { recursive: true });
   if (filenamePrefix === DATABASE_BACKUP_FILENAME_PREFIX) adoptRetiredBackupFilenames(opts.backupDir);
   // Initial and final sleep checks can run within the same second. A failed
   // second checkpoint must never overwrite the first verified recovery point.
   const checkpointSuffix = opts.verifyBeforePrune ? `-${randomUUID()}` : "";
-  removeAbandonedPartialBackups(opts.backupDir);
-  const finalSqlFile = resolve(opts.backupDir, `${filenamePrefix}-${timestamp()}${checkpointSuffix}.sql`);
+  removeAbandonedPartialBackups(targetDir);
+  let freedForSpace = 0;
+  if (opts.spaceGuard) {
+    try {
+      freedForSpace = await ensureBackupSpace({
+        backupDir: opts.backupDir,
+        targetDir,
+        filenamePrefix,
+        guard: opts.spaceGuard,
+        rotate: !opts.pinned,
+      });
+    } catch (error) {
+      await closeSql();
+      throw error;
+    }
+  }
+  const finalSqlFile = resolve(targetDir, `${filenamePrefix}-${timestamp()}${checkpointSuffix}.sql`);
   const backupFile = `${finalSqlFile}.gz`;
   const sqlFile = partialBackupPath(finalSqlFile);
   const partialBackupFile = partialBackupPath(backupFile);
   activePartialBackupFiles.add(sqlFile);
   activePartialBackupFiles.add(partialBackupFile);
   const writer = createBufferedTextFileWriter(sqlFile);
+  const finalizeBackup = async (): Promise<RunDatabaseBackupResult> => {
+    await verifyGzipBackup(partialBackupFile);
+    renameSync(partialBackupFile, backupFile);
+    verifiedBackups.set(backupFile, backupIdentity(backupFile));
+    const sizeBytes = statSync(backupFile).size;
+    await opts.verifyBeforePrune?.(backupFile);
+    if (opts.pinned) return { backupFile, sizeBytes, prunedCount: freedForSpace };
+    const rotated = retention.maxFiles && retention.maxFiles > 0
+      ? await pruneToMaxFiles(opts.backupDir, filenamePrefix, retention.maxFiles, backupFile)
+      : { removed: pruneOldBackups(opts.backupDir, retention, filenamePrefix), unreadable: [] };
+    const prunedCount = freedForSpace + rotated.removed + prunePinnedBackups(opts.backupDir, opts.pinnedMaxAgeDays);
+    rmSync(join(opts.backupDir, DATABASE_BACKUP_SKIPPED_MARKER), { force: true });
+    return {
+      backupFile,
+      sizeBytes,
+      prunedCount,
+      ...(rotated.unreadable.length > 0 ? { unreadableBackups: rotated.unreadable } : {}),
+    };
+  };
 
   try {
     if (backupEngine === "pg_dump" || (backupEngine === "auto" && canUsePgDump)) {
@@ -627,7 +861,6 @@ export async function runDatabaseBackup(opts: RunDatabaseBackupOptions): Promise
           backupFile: partialBackupFile,
           connectTimeout,
         });
-        renameSync(partialBackupFile, backupFile);
         dumped = true;
       } catch (error) {
         if (existsSync(partialBackupFile)) {
@@ -645,10 +878,7 @@ export async function runDatabaseBackup(opts: RunDatabaseBackupOptions): Promise
         // pg_dump succeeds, archive verification or persistence failures
         // must retain their original error and must not reuse a closed writer.
         await writer.abort();
-        const sizeBytes = statSync(backupFile).size;
-        await opts.verifyBeforePrune?.(backupFile);
-        const prunedCount = pruneOldBackups(opts.backupDir, retention, filenamePrefix);
-        return { backupFile, sizeBytes, prunedCount };
+        return await finalizeBackup();
       }
     }
 
@@ -1129,17 +1359,7 @@ export async function runDatabaseBackup(opts: RunDatabaseBackupOptions): Promise
     const gzWriteStream = createWriteStream(partialBackupFile);
     await pipeline(sqlReadStream, createGzip(), gzWriteStream);
     unlinkSync(sqlFile);
-    renameSync(partialBackupFile, backupFile);
-
-    const sizeBytes = statSync(backupFile).size;
-    await opts.verifyBeforePrune?.(backupFile);
-    const prunedCount = pruneOldBackups(opts.backupDir, retention, filenamePrefix);
-
-    return {
-      backupFile,
-      sizeBytes,
-      prunedCount,
-    };
+    return await finalizeBackup();
   } catch (error) {
     await writer.abort();
     for (const file of [backupFile, partialBackupFile, sqlFile]) {
@@ -1196,5 +1416,8 @@ export async function runDatabaseRestore(opts: RunDatabaseRestoreOptions): Promi
 export function formatDatabaseBackupResult(result: RunDatabaseBackupResult): string {
   const size = formatBackupSize(result.sizeBytes);
   const pruned = result.prunedCount > 0 ? `; pruned ${result.prunedCount} old backup(s)` : "";
-  return `${result.backupFile} (${size}${pruned})`;
+  const unreadable = result.unreadableBackups?.length
+    ? `; kept ${result.unreadableBackups.length} unreadable backup(s)`
+    : "";
+  return `${result.backupFile} (${size}${pruned}${unreadable})`;
 }

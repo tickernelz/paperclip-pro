@@ -19,6 +19,7 @@ import { listOmpSkills, syncOmpSkills } from "./skills.js";
 import { testEnvironment } from "./test.js";
 
 export { isOmpStartupComplete } from "./parse.js";
+export { defaultOmpSessionRoot } from "./execute.js";
 export { listOmpSettingsCatalog, OmpSettingsUnavailableError, type OmpSettingsCatalogEntry, type OmpSettingType } from "./settings-catalog.js";
 
 function nonEmptyString(value: unknown): string | null {

@@ -109,6 +109,14 @@ function parseActivity(event: LiveEvent): NotificationTrigger | null {
   const agentId = str(payload.agentId) ?? (actorType === "agent" ? actorId : null);
   const common = { actorUserId, agentId, entityId };
 
+  if (action === "instance.disk_space.emergency") {
+    return {
+      ...baseTrigger(event, "disk_space", `disk_space:${event.companyId}:${event.createdAt}`),
+      ...common,
+      detail: str(details.message),
+    };
+  }
+
   if (action === "join.requested") {
     return {
       ...baseTrigger(event, "join_request", `join_request:${entityId}`),
@@ -199,6 +207,7 @@ function resolveRecipients(trigger: NotificationTrigger, context: NotificationCo
     case "approval":
     case "run_failed":
     case "join_request":
+    case "disk_space":
       recipients = context.boardUserIds;
       break;
     case "question":
@@ -269,6 +278,12 @@ function describe(trigger: NotificationTrigger, context: NotificationContext) {
         title: trigger.status === "timed_out" ? `${actor} run timed out` : `${actor} run failed`,
         body: trigger.detail ?? (issue ? label : "The run ended with an error"),
         url: trigger.agentId ? `/${prefix}/agents/${trigger.agentId}/runs/${trigger.entityId}` : `/${prefix}/inbox`,
+      };
+    case "disk_space":
+      return {
+        title: "Wardmote disk space is critically low",
+        body: trigger.detail ?? "New runs are held until disk space is freed.",
+        url: `/${prefix}/inbox`,
       };
     case "join_request":
       return {
