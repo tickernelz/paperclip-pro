@@ -651,7 +651,7 @@ describe("TaskChatInteractionCard", () => {
           required: true,
           options: [
             {
-              id: "__paperclip_text__",
+              id: "__wardmote_text__",
               label: "Enter an integer",
               freeText: true,
             },

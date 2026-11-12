@@ -24,6 +24,15 @@ describe("migrateRetiredStorageKeys", () => {
     expect(window.localStorage.getItem("paperclip.theme")).toBeNull();
   });
 
+  it("rewrites a stored no-template Skill Studio selection to the current value", () => {
+    const retired = "__paperclip_no_template__";
+    window.localStorage.setItem("skillStudio.runTemplate.company-a", retired);
+    window.localStorage.setItem("skillStudio.runTemplate.company-b", "template-1");
+    migrateRetiredStorageKeys(window.localStorage);
+    expect(window.localStorage.getItem("skillStudio.runTemplate.company-a")).toBe("__wardmote_no_template__");
+    expect(window.localStorage.getItem("skillStudio.runTemplate.company-b")).toBe("template-1");
+  });
+
   it("leaves keys that only contain the old name elsewhere", () => {
     window.localStorage.setItem("paperclipX", "1");
     window.localStorage.setItem("other:paperclip.theme", "2");

@@ -2751,7 +2751,7 @@ describe("runtime question fallback", () => {
             {
               id: "replicas",
               selectionMode: "single",
-              options: [{ id: "__paperclip_text__", freeText: true }],
+              options: [{ id: "__wardmote_text__", freeText: true }],
             },
           ],
         },
