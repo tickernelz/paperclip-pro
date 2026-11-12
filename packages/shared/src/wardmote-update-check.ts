@@ -5,6 +5,11 @@ import { fetchLatestWardmoteVersion, UPDATE_CHECK_INTERVAL_MS, type WardmoteUpda
 export type UpdateCheckResult = { checkedAt: number; latest: string | null };
 type UpdateCheckCache = UpdateCheckResult & { channel?: WardmoteUpdateChannel };
 
+export function readCachedLatestWardmoteVersion(cachePath: string, channel: WardmoteUpdateChannel): UpdateCheckResult | null {
+  const cached = readCache(cachePath);
+  return cached && (cached.channel ?? "latest") === channel ? { checkedAt: cached.checkedAt, latest: cached.latest } : null;
+}
+
 function readCache(cachePath: string): UpdateCheckCache | null {
   try {
     const raw = JSON.parse(fs.readFileSync(cachePath, "utf8")) as Partial<UpdateCheckCache>;
