@@ -24,7 +24,7 @@ describeEmbeddedPostgres("nested skill folders migration", () => {
   });
 
   it("backfills existing folders, bundled skills, and project scan skills", async () => {
-    const database = await startEmbeddedPostgresTestDatabase("paperclip-nested-folders-migration-");
+    const database = await startEmbeddedPostgresTestDatabase("wardmote-nested-folders-migration-");
     cleanups.push(database.cleanup);
     const sql = postgres(database.connectionString, { max: 1 });
     cleanups.push(async () => sql.end());

@@ -226,7 +226,7 @@ describe("chat connector UI contract", () => {
     expect(setup).not.toContain(
       "does not require a <code>webApplicationInfo</code>",
     );
-    expect(setup).not.toContain("api://paperclip-chat/");
+    expect(setup).not.toContain("api://wardmote-chat/");
     expect(setup).toContain("not private channels");
     expect(setup).toContain("native file receipt and consent-based sending");
     expect(setup).toContain("issue_comment");
