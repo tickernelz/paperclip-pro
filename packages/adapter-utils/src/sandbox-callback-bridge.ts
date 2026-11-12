@@ -85,7 +85,7 @@ const BACKSTOP_WRITE_RETRY_MS = 50;
 // call every poll interval.
 const MAX_TRANSIENT_ITERATION_BACKOFF_MS = 5_000;
 const REMOTE_WRITE_BASE64_CHUNK_SIZE = 32 * 1024;
-export const SANDBOX_CALLBACK_BRIDGE_ENTRYPOINT = "paperclip-bridge-server.mjs";
+export const SANDBOX_CALLBACK_BRIDGE_ENTRYPOINT = "wardmote-bridge-server.mjs";
 const SANDBOX_EXEC_CHANNEL_ENV = "WARDMOTE_SANDBOX_EXEC_CHANNEL";
 const SANDBOX_EXEC_CHANNEL_BRIDGE = "bridge";
 

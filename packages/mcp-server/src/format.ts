@@ -7,7 +7,7 @@ type McpTextResponse = {
   _meta?: Record<string, unknown>;
 };
 
-export const HTTP_STATUS_META_KEY = "paperclip/httpStatus";
+export const HTTP_STATUS_META_KEY = "wardmote/httpStatus";
 
 export function formatTextResponse(value: unknown): McpTextResponse {
   return {
