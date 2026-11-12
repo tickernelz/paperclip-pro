@@ -250,6 +250,67 @@ describe("update installer", () => {
     expect(updates.current()?.error).toContain("within 45 minutes");
   });
 
+  it("keeps waiting and keeps admission closed while the update unit still runs past the deadline", async () => {
+    const control = runs(0);
+    let clock = Date.UTC(2026, 10, 12, 8);
+    const { installer: updates } = installer({ runControl: control, unit: { state: "running" }, now: () => clock });
+    await updates.start({ version: "2026.1112.0", mode: "force", trigger: "manual", requestedBy: admin });
+    clock += UPDATE_INSTALL_DEADLINE_MS + 10 * 60_000;
+    await until(() => vi.mocked(control.startDrain).mock.calls.length === 2);
+    await new Promise((resolve) => setTimeout(resolve, 30));
+    expect(updates.current()).toMatchObject({ phase: "installing", error: null });
+    expect(control.isDraining()).toBe(true);
+    expect(control.startDrain).toHaveBeenCalledTimes(2);
+    writeResult({ ok: true, version: "2026.1112.0", finishedAt: new Date(clock + 60_000).toISOString() });
+    await until(() => updates.current()?.phase === "succeeded");
+    expect(control.isDraining()).toBe(false);
+  });
+
+  it("does not give up on a running update when systemd briefly cannot be read after the deadline", async () => {
+    const control = runs(0);
+    let clock = Date.UTC(2026, 10, 12, 8);
+    const unit = { state: "running" as UpdateUnitState };
+    const { installer: updates, unitState } = installer({ runControl: control, unit, now: () => clock });
+    await updates.start({ version: "2026.1112.0", mode: "force", trigger: "manual", requestedBy: admin });
+    await until(() => unitState.mock.calls.length > 0);
+    clock += UPDATE_INSTALL_DEADLINE_MS + 60_000;
+    unit.state = "unknown";
+    const reads = unitState.mock.calls.length;
+    await until(() => unitState.mock.calls.length >= reads + 3);
+    expect(updates.current()?.phase).toBe("installing");
+    expect(control.isDraining()).toBe(true);
+    unit.state = "gone";
+    await until(() => updates.current()?.phase === "failed");
+    expect(updates.current()?.error).toContain("exited without reporting a result");
+  });
+
+  it("shows the real outcome when the result arrives after the job was given up", async () => {
+    const control = runs(0);
+    let clock = Date.UTC(2026, 10, 12, 8);
+    const { installer: updates, audits } = installer({ runControl: control, unit: { state: "unknown" }, now: () => clock });
+    await updates.start({ version: "2026.1112.0", mode: "force", trigger: "manual", requestedBy: admin });
+    clock += UPDATE_INSTALL_DEADLINE_MS;
+    await until(() => updates.current()?.phase === "failed");
+    const resultFinishedAt = new Date(clock + 5 * 60_000).toISOString();
+    writeResult({ ok: true, version: "2026.1112.0", finishedAt: resultFinishedAt });
+    expect(updates.current()).toMatchObject({ phase: "succeeded", installedVersion: "2026.1112.0", error: null, finishedAt: resultFinishedAt });
+    updates.current();
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(audits.map((event) => event.job.phase)).toEqual(["installing", "failed", "succeeded"]);
+  });
+
+  it("does not rewrite a failure that already came from the update's own result", async () => {
+    const control = runs(0);
+    const { installer: updates, audits } = installer({ runControl: control });
+    await updates.start({ version: "2026.1112.0", mode: "force", trigger: "manual", requestedBy: admin });
+    writeResult({ ok: false, error: "npm install failed" });
+    await until(() => updates.current()?.phase === "failed");
+    const finished = updates.current();
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(updates.current()).toEqual(finished);
+    expect(audits.filter((event) => event.action === "instance.update.finished")).toHaveLength(1);
+  });
+
   it("gives up after the wait limit without installing and lets runs start again", async () => {
     const control = runs(1);
     const { installer: updates, launch } = installer({ runControl: control, waitTimeoutMs: 40 });
