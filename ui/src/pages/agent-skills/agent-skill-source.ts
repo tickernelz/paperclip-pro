@@ -105,7 +105,7 @@ export function buildAgentSkillSourceMeta(skill: SourceSkill): AgentSkillSourceM
     return { icon: Link2, label: hostLabel(skill.sourceLabel) ?? hostLabel(skill.sourceLocator) ?? "URL" };
   }
 
-  if (skill.sourceBadge === "paperclip") {
+  if (skill.sourceBadge === "wardmote") {
     return { icon: MootMark, label: skill.sourceLabel?.trim() || "Wardmote managed" };
   }
 

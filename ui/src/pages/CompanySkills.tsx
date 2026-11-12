@@ -279,7 +279,7 @@ function sourceMeta(sourceBadge: CompanySkillSourceBadge, sourceLabel: string | 
       return { icon: Link2, label: sourceLabel ?? "URL", managedLabel: "URL managed" };
     case "local":
       return { icon: Folder, label: sourceLabel ?? "Folder", managedLabel: "Folder managed" };
-    case "paperclip":
+    case "wardmote":
       return { icon: MootMark, label: sourceLabel ?? "Wardmote", managedLabel: "Wardmote managed" };
     default:
       return { icon: Boxes, label: sourceLabel ?? "Catalog", managedLabel: "Catalog managed" };
@@ -357,7 +357,7 @@ function classifySource(skill: {
   catalogKind?: "bundled" | "optional" | null;
   metadata?: Record<string, unknown> | null;
 }): SourceFilter {
-  if (skill.sourceBadge === "paperclip") return "company";
+  if (skill.sourceBadge === "wardmote") return "company";
   if (skill.sourceType === "local_path" && !skill.sourceBadge.toString().includes("github")) {
     return "company";
   }
