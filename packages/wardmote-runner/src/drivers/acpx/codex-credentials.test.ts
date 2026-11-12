@@ -58,6 +58,28 @@ describe("managed Codex credentials", () => {
     );
   });
 
+  it("keeps every lease candidate above the default Linux ephemeral port range", async () => {
+    const candidates: number[] = [];
+    for (let index = 0; index < 8; index += 1) {
+      const fixture = await credentialFixture();
+      const lease = await stageManagedCodexCredential({
+        agentHomeDirectory: fixture.home,
+        environment: {
+          WARDMOTE_ACPX_CODEX_AUTH_JSON_SECRET: JSON.stringify({
+            tokens: { access_token: "range-canary" },
+          }),
+        },
+      });
+      candidates.push(...lease.lifetimeFenceCandidates);
+      await lease.close();
+    }
+
+    expect(new Set(candidates).size).toBeGreaterThan(3);
+    expect(
+      candidates.filter((port) => port < 61_000 || port > 65_535),
+    ).toEqual([]);
+  });
+
   it("stages inline JSON privately and removes it idempotently", async () => {
     const fixture = await credentialFixture();
     const lease = await stageManagedCodexCredential({
@@ -1738,11 +1760,11 @@ function credentialLeasePortsForScope(
     .update("\0")
     .update(home)
     .digest();
-  const start = digest.readUInt16BE(0) % 16_384;
-  const step = (digest.readUInt16BE(2) | 1) % 16_384;
+  const start = digest.readUInt16BE(0) % 4_536;
+  const step = (digest.readUInt16BE(2) | 1) % 4_536;
   return Array.from(
     { length: 3 },
-    (_, index) => 49_152 + ((start + index * step) % 16_384),
+    (_, index) => 61_000 + ((start + index * step) % 4_536),
   );
 }
 
