@@ -144,6 +144,10 @@ act beyond the run's facts. Silence never approves anything.
 
 - `mentions` are E.164 numbers or DM chatRefs; the server adds the `@number`
   token to the text when you did not write it, so the person is tagged.
+- The send receipt lists who was tagged: `mentions[]` with `token`, `ref`,
+  `name` (null when unknown) and, when you quoted a message, `quotedSender`
+  (`true` it is the quoted sender, `false` someone else, `null` unknown).
+  Check it after the send; tagging someone else is fine when you meant to.
 - `quoteMessageId` is a WhatsApp message id (`messages[].id`) or a trigger id
   (`messages[].triggerId`). In groups, quote the message you answer. An unknown
   quote fails with `quote_unresolvable`; it is never sent unquoted, except when

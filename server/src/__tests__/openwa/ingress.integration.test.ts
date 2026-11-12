@@ -230,7 +230,7 @@ describe("OpenWA ingress (embedded Postgres + fake gateway)", () => {
     t.gateway.killSocket();
     const idless = t.gateway.inbound({ chatId: PEER, emit: false, waMessageId: null });
     const missed = [idless.id];
-    for (let i = 0; i < 5; i++) missed.push(t.gateway.inbound({ chatId: PEER, emit: false }).id);
+    for (let i = 0; i < 5; i++) missed.push(t.gateway.inbound({ chatId: PEER, emit: false, ...(i === 0 ? { chatName: "Rina" } : {}) }).id);
     t.gateway.restartSocket();
     await until(() => t.gateway.subscriberCount === 1);
     for (let i = 0; i < 5; i++) t.gateway.inbound({ chatId: PEER });
@@ -240,6 +240,7 @@ describe("OpenWA ingress (embedded Postgres + fake gateway)", () => {
     expect(t.inbound.find((event) => event.rowUuid === idless.id)?.dedupeKey).toBe("openwa:" + SESSION_ID + ":row:" + idless.id);
     expect(t.inbound.filter((event) => missed.includes(event.rowUuid ?? "")).map((event) => event.source)).toEqual(Array(6).fill("catch_up"));
     expect(t.inbound.slice(0, 15).every((event) => event.source === "live")).toBe(true);
+    expect(t.inbound.filter((event) => missed.includes(event.rowUuid ?? "")).map((event) => event.raw.notifyName ?? null)).toEqual([null, "Rina", null, null, null, null]);
     expect(t.inbound.every((event) => event.chatKind === "dm" && !event.fromMe && !event.phoneTyped)).toBe(true);
   }, 60_000);
 
