@@ -146,10 +146,16 @@ function readIfExists(filePath: string): string | null {
 
 /** Rewrites an owned retired install-store marker to the current one; true when it did. */
 export function rewriteLegacyStoreMarker(markerPath: string): boolean {
-  const stat = fs.lstatSync(markerPath, { throwIfNoEntry: false });
-  const getuid = process.getuid;
-  if (!stat?.isFile() || stat.nlink > 1 || (typeof getuid === "function" && stat.uid !== getuid())) return false;
-  if (fs.readFileSync(markerPath, "utf8") !== LEGACY_STORE_MARKER) return false;
+  let contents: string;
+  try {
+    const stat = fs.lstatSync(markerPath);
+    const getuid = process.getuid;
+    if (!stat.isFile() || stat.nlink > 1 || (typeof getuid === "function" && stat.uid !== getuid())) return false;
+    contents = fs.readFileSync(markerPath, "utf8");
+  } catch {
+    return false;
+  }
+  if (contents !== LEGACY_STORE_MARKER) return false;
   writeFileAtomic(markerPath, MANAGED_STORE_MARKER, 0o600);
   return true;
 }

@@ -127,6 +127,9 @@ describe("migrate-home", () => {
 
   it("rewrites only an owned retired store marker", () => {
     const markerPath = path.join(userHome, "store", ".managed-install");
+    fs.writeFileSync(path.dirname(markerPath), "not a directory");
+    expect(rewriteLegacyStoreMarker(markerPath)).toBe(false);
+    fs.rmSync(path.dirname(markerPath));
     fs.mkdirSync(path.dirname(markerPath));
     expect(rewriteLegacyStoreMarker(markerPath)).toBe(false);
     fs.writeFileSync(markerPath, "someone else's store\n");
