@@ -122,8 +122,8 @@ const CAPABILITY_MANIFEST = {
   bindings: [
     "omp-jsonl",
     "session-dir-resume",
-    "paperclip-workspace-env",
-    "paperclip-skills",
+    "wardmote-workspace-env",
+    "wardmote-skills",
     "local-execution",
     "ssh-execution",
     "sandbox-execution",
@@ -145,8 +145,8 @@ const RPC_CAPABILITY_MANIFEST = {
     "omp-rpc-transport",
     "same-turn-steering",
     "session-dir-resume",
-    "paperclip-workspace-env",
-    "paperclip-skills",
+    "wardmote-workspace-env",
+    "wardmote-skills",
     "local-execution",
   ],
   limits: [

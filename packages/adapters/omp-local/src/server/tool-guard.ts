@@ -4,7 +4,7 @@ import { writeWardmoteMcpMount } from "@tickernelz/wardmote-adapter-utils/wardmo
 import type { RunToolProfile } from "@tickernelz/wardmote-adapter-utils/tool-profile";
 
 export const OMP_ASYNC_BASH_TIMEOUT_SEC = 3600;
-export const OMP_TOOL_GUARD_FILE_NAME = "paperclip-tool-guard.js";
+export const OMP_TOOL_GUARD_FILE_NAME = "wardmote-tool-guard.js";
 
 export interface OmpToolGuardExtension {
   path: string;
@@ -112,7 +112,7 @@ export async function writeOmpToolGuardExtension(input: {
     remote: input.remote,
     content: renderOmpToolGuardExtension(input.profile),
     fileName: OMP_TOOL_GUARD_FILE_NAME,
-    localPrefix: "paperclip-omp-guard-",
+    localPrefix: "wardmote-omp-guard-",
     remoteDir: path.posix.join(
       input.remoteRootDir ?? path.posix.join(input.cwd, ".wardmote-runtime", "omp"),
       "tool-guard",

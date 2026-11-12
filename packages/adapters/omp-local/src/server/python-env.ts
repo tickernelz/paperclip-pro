@@ -3,9 +3,9 @@ import path from "node:path";
 import type { AdapterExecutionTarget } from "@tickernelz/wardmote-adapter-utils/execution-target";
 import { writeWardmoteMcpMount } from "@tickernelz/wardmote-adapter-utils/wardmote-mcp-mount";
 
-export const OMP_PYTHON_ENV_FILE_NAME = "paperclip-env.json";
+export const OMP_PYTHON_ENV_FILE_NAME = "wardmote-env.json";
 export const OMP_PYTHON_SITECUSTOMIZE_FILE_NAME = "sitecustomize.py";
-export const OMP_PYTHON_LAUNCHER_FILE_NAME = "paperclip-python-env.sh";
+export const OMP_PYTHON_LAUNCHER_FILE_NAME = "wardmote-python-env.sh";
 
 export interface OmpPythonEnvLaunch {
   command: string;
@@ -23,11 +23,11 @@ export function renderOmpSitecustomize(): string {
 import sys
 
 
-def _paperclip_here():
+def _wardmote_here():
     return os.path.realpath(os.path.dirname(os.path.abspath(__file__)))
 
 
-def _paperclip_apply_env(here):
+def _wardmote_apply_env(here):
     import json
     with open(os.path.join(here, ${JSON.stringify(OMP_PYTHON_ENV_FILE_NAME)}), "r") as handle:
         data = json.load(handle)
@@ -38,15 +38,15 @@ def _paperclip_apply_env(here):
             os.environ.setdefault(key, value)
 
 
-def _paperclip_resolve(entry):
+def _wardmote_resolve(entry):
     try:
         return os.path.realpath(os.path.abspath(entry or os.curdir))
     except Exception:
         return None
 
 
-def _paperclip_is_bridge(entry):
-    resolved = _paperclip_resolve(entry)
+def _wardmote_is_bridge(entry):
+    resolved = _wardmote_resolve(entry)
     if resolved is None:
         return False
     try:
@@ -55,44 +55,44 @@ def _paperclip_is_bridge(entry):
         return False
 
 
-def _paperclip_chain(here):
+def _wardmote_chain(here):
     import importlib.machinery
     import importlib.util
     rest = [
         entry for entry in sys.path
-        if isinstance(entry, str) and _paperclip_resolve(entry) != here and not _paperclip_is_bridge(entry)
+        if isinstance(entry, str) and _wardmote_resolve(entry) != here and not _wardmote_is_bridge(entry)
     ]
     spec = importlib.machinery.PathFinder.find_spec("sitecustomize", rest)
     if spec is None or spec.loader is None or not spec.origin:
         return
-    if _paperclip_resolve(os.path.dirname(spec.origin)) == here:
+    if _wardmote_resolve(os.path.dirname(spec.origin)) == here:
         return
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
 
 
-def _paperclip_main():
-    if getattr(sys, "_paperclip_env_bridge_loaded", False):
+def _wardmote_main():
+    if getattr(sys, "_wardmote_env_bridge_loaded", False):
         return
     try:
-        setattr(sys, "_paperclip_env_bridge_loaded", True)
+        setattr(sys, "_wardmote_env_bridge_loaded", True)
     except Exception:
         return
     try:
-        here = _paperclip_here()
+        here = _wardmote_here()
     except Exception:
         return
     try:
-        _paperclip_apply_env(here)
+        _wardmote_apply_env(here)
     except Exception:
         pass
     try:
-        _paperclip_chain(here)
+        _wardmote_chain(here)
     except Exception:
         pass
 
 
-_paperclip_main()
+_wardmote_main()
 `;
 }
 
@@ -139,7 +139,7 @@ export async function writeOmpPythonEnvBridge(input: {
     runId: input.runId,
     target: input.target,
     remote: input.remote,
-    localPrefix: "paperclip-omp-pyenv-",
+    localPrefix: "wardmote-omp-pyenv-",
     remoteDir,
     cwd: input.cwd,
     env: input.env,

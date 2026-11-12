@@ -20,14 +20,14 @@ async function handleRequest(request) {
     process.stderr.write(
       "Error handling request { method: 'nes/close' } { code: -32601 }\n",
     );
-    process.stderr.write("paperclip-acp-echo-agent started\n");
+    process.stderr.write("wardmote-acp-echo-agent started\n");
     return {
       protocolVersion: 1,
       agentCapabilities: {
         loadSession: false,
         sessionCapabilities: { close: {} },
       },
-      agentInfo: { name: "paperclip-acp-echo-agent", version: "1.0.0" },
+      agentInfo: { name: "wardmote-acp-echo-agent", version: "1.0.0" },
     };
   }
   if (request.method === "session/new") return { sessionId: randomUUID() };

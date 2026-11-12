@@ -343,7 +343,7 @@ export const fixtureProfiles = [
 
 export const demoProfiles = [
   {
-    id: "paperclip-self-read",
+    id: "wardmote-self-read",
     profileId: "read-only",
     title: "Wardmote self-read",
     steps: ["time.now", "echo.echo"],
@@ -423,7 +423,7 @@ export function findTool(name, options) {
 export function createFixtureState() {
   return {
     todos: [{ id: "todo-1", title: "Review MCP fixture catalog", completed: false }],
-    kv: new Map([["project", "paperclip"]]),
+    kv: new Map([["project", "wardmote"]]),
     outbox: [],
     published: [],
     schemaVariant: "baseline",

@@ -24,13 +24,13 @@ checks the local Wardmote `/api/health` endpoint when available, then exercises:
 Use a specific dev instance URL:
 
 ```sh
-pnpm smoke:mcp-fixtures -- --paperclip-url http://127.0.0.1:3100
+pnpm smoke:mcp-fixtures -- --wardmote-url http://127.0.0.1:3100
 ```
 
 Require the dev instance health check:
 
 ```sh
-pnpm smoke:mcp-fixtures -- --require-paperclip
+pnpm smoke:mcp-fixtures -- --require-wardmote
 ```
 
 JSON output for CI or release-smoke ingestion:
@@ -60,7 +60,7 @@ The catalog also defines the first profile set:
 
 The first-install demo definitions are:
 
-- `paperclip-self-read`
+- `wardmote-self-read`
 - `child-issue-proposal`
 - `github-triage`
 - `update-sender`

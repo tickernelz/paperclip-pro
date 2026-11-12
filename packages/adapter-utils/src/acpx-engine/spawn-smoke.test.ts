@@ -64,7 +64,7 @@ it("spawns a real Node ACP agent with per-session env on this platform", async (
     "utf8",
   );
   expect(stderr).toContain("nes/close");
-  expect(stderr).toContain("paperclip-acp-echo-agent started");
+  expect(stderr).toContain("wardmote-acp-echo-agent started");
 });
 
 it("retains a typed ACP failure as diagnostics without making it assistant output", async () => {
