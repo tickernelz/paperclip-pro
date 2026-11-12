@@ -74,7 +74,7 @@ export interface AnnotationLayerProps {
 }
 
 /** Synthetic thread id used to render the in-progress (pending) comment highlight. */
-const PENDING_HIGHLIGHT_THREAD_ID = "__paperclip-pending-annotation__";
+const PENDING_HIGHLIGHT_THREAD_ID = "__wardmote-pending-annotation__";
 
 interface HighlightRect {
   threadId: string;

@@ -407,14 +407,14 @@ describe("MarkdownBody", () => {
 
   it("renders linked inline-code workspace paths as file viewer links before issue links", () => {
     const html = renderMarkdown(
-      "- **MP4**: [`videos/90-days-paperclip/out/90-days-paperclip-1x1.mp4`](/PAP/issues/PAP-10306 \"Publish handoff\")",
+      "- **MP4**: [`videos/90-days-wardmote/out/90-days-wardmote-1x1.mp4`](/PAP/issues/PAP-10306 \"Publish handoff\")",
       [{ identifier: "PAP-10306", status: "in_review", title: "Publish handoff" }],
       { resolveWorkspaceFileRef: () => OPENABLE_AUTO_TARGET },
     );
 
     expect(html).toContain('data-workspace-file-link="true"');
-    expect(html).toContain('data-workspace-file-path="videos/90-days-paperclip/out/90-days-paperclip-1x1.mp4"');
-    expect(html).toContain("videos/90-days-paperclip/out/90-days-paperclip-1x1.mp4");
+    expect(html).toContain('data-workspace-file-path="videos/90-days-wardmote/out/90-days-wardmote-1x1.mp4"');
+    expect(html).toContain("videos/90-days-wardmote/out/90-days-wardmote-1x1.mp4");
     expect(html).not.toContain("max-w-(--sz-38ch)");
     expect(html).not.toContain("wardmote-markdown-issue-ref");
     expect(html).not.toContain('href="/issues/PAP-10306"');
@@ -495,15 +495,15 @@ describe("MarkdownBody", () => {
   });
 
   it("leaves wiki links as text unless explicitly enabled", () => {
-    const html = renderMarkdown("See [[wiki/entities/paperclip]].");
+    const html = renderMarkdown("See [[wiki/entities/wardmote]].");
 
-    expect(html).toContain("[[wiki/entities/paperclip]]");
-    expect(html).not.toContain('href="/wiki/page/wiki/entities/paperclip.md"');
+    expect(html).toContain("[[wiki/entities/wardmote]]");
+    expect(html).not.toContain('href="/wiki/page/wiki/entities/wardmote.md"');
   });
 
   it("renders wiki links with a custom resolver when enabled", () => {
     const html = renderMarkdown(
-      "See [[wiki/entities/paperclip|Wardmote]] and [[wiki/entities/dotta-b]].",
+      "See [[wiki/entities/wardmote|Wardmote]] and [[wiki/entities/dotta-b]].",
       [],
       {
         enableWikiLinks: true,
@@ -511,18 +511,18 @@ describe("MarkdownBody", () => {
       },
     );
 
-    expect(html).toContain('href="/wiki/page/wiki/entities/paperclip.md"');
-    expect(html).toContain('data-paperclip-wiki-link="true"');
-    expect(html).toContain('data-paperclip-wiki-target="wiki/entities/paperclip"');
+    expect(html).toContain('href="/wiki/page/wiki/entities/wardmote.md"');
+    expect(html).toContain('data-wardmote-wiki-link="true"');
+    expect(html).toContain('data-wardmote-wiki-target="wiki/entities/wardmote"');
     expect(html).toContain(">Wardmote</a>");
     expect(html).toContain('href="/wiki/page/wiki/entities/dotta-b.md"');
     expect(html).toContain(">wiki/entities/dotta-b</a>");
-    expect(html).not.toContain("[[wiki/entities/paperclip");
+    expect(html).not.toContain("[[wiki/entities/wardmote");
   });
 
   it("keeps wiki links as text when the custom resolver rejects them", () => {
     const html = renderMarkdown(
-      "See [[wiki/entities/paperclip]].",
+      "See [[wiki/entities/wardmote]].",
       [],
       {
         enableWikiLinks: true,
@@ -531,14 +531,14 @@ describe("MarkdownBody", () => {
       },
     );
 
-    expect(html).toContain("[[wiki/entities/paperclip]]");
-    expect(html).not.toContain('data-paperclip-wiki-link="true"');
-    expect(html).not.toContain('href="/wiki/page/wiki/entities/paperclip"');
+    expect(html).toContain("[[wiki/entities/wardmote]]");
+    expect(html).not.toContain('data-wardmote-wiki-link="true"');
+    expect(html).not.toContain('href="/wiki/page/wiki/entities/wardmote"');
   });
 
   it("does not render wiki links inside code spans or code blocks", () => {
     const html = renderMarkdown(
-      "Inline `[[wiki/entities/paperclip]]`.\n\n```md\n[[wiki/entities/dotta-b]]\n```",
+      "Inline `[[wiki/entities/wardmote]]`.\n\n```md\n[[wiki/entities/dotta-b]]\n```",
       [],
       {
         enableWikiLinks: true,
@@ -546,9 +546,9 @@ describe("MarkdownBody", () => {
       },
     );
 
-    expect(html).toContain("[[wiki/entities/paperclip]]");
+    expect(html).toContain("[[wiki/entities/wardmote]]");
     expect(html).toContain("[[wiki/entities/dotta-b]]");
-    expect(html).not.toContain('href="/wiki/page/wiki/entities/paperclip"');
+    expect(html).not.toContain('href="/wiki/page/wiki/entities/wardmote"');
     expect(html).not.toContain('href="/wiki/page/wiki/entities/dotta-b"');
   });
 
@@ -590,7 +590,7 @@ describe("MarkdownBody", () => {
   });
 
   it("opens GitHub links in a new tab", () => {
-    const html = renderMarkdown("[pr](https://github.com/paperclipai/paperclip/pull/4099)");
+    const html = renderMarkdown("[pr](https://github.com/tickernelz/wardmote/pull/4099)");
 
     expect(html).toContain('target="_blank"');
     expect(html).toContain('rel="noopener noreferrer"');
@@ -605,21 +605,21 @@ describe("MarkdownBody", () => {
   });
 
   it("prefixes GitHub markdown links with the GitHub icon glued to the first character", () => {
-    const html = renderMarkdown("[https://github.com/paperclipai/paperclip/pull/4099](https://github.com/paperclipai/paperclip/pull/4099)");
+    const html = renderMarkdown("[https://github.com/tickernelz/wardmote/pull/4099](https://github.com/tickernelz/wardmote/pull/4099)");
 
-    expect(html).toContain('<a href="https://github.com/paperclipai/paperclip/pull/4099"');
+    expect(html).toContain('<a href="https://github.com/tickernelz/wardmote/pull/4099"');
     expect(html).toContain('class="lucide lucide-github mr-1 inline h-3.5 w-3.5 align-(--va-0_125em)"');
     // The icon and first character "h" must sit in a no-wrap span so the
     // icon can never be orphaned on the previous line from the URL text.
     expect(html).toMatch(/<span style="white-space:nowrap">.*lucide-github.*?<\/svg>h<\/span>/);
-    expect(html).toContain("ttps://github.com/paperclipai/paperclip/pull/4099");
+    expect(html).toContain("ttps://github.com/tickernelz/wardmote/pull/4099");
     expect(html).not.toContain("lucide-external-link");
   });
 
   it("prefixes GitHub autolinks with the GitHub icon", () => {
-    const html = renderMarkdown("See https://github.com/paperclipai/paperclip/issues/1778");
+    const html = renderMarkdown("See https://github.com/tickernelz/wardmote/issues/1778");
 
-    expect(html).toContain('<a href="https://github.com/paperclipai/paperclip/issues/1778"');
+    expect(html).toContain('<a href="https://github.com/tickernelz/wardmote/issues/1778"');
     expect(html).toContain('class="lucide lucide-github mr-1 inline h-3.5 w-3.5 align-(--va-0_125em)"');
   });
 

@@ -135,7 +135,7 @@ export function RemoteMcpProductionSetup({ providerId, connection, host = "page"
     // discard the later OAuth response. URL/token-only providers never need it.
     if (!saveDraft && host === "dialog" && state.auth === "auto" && (!popup.current || popup.current.closed)) {
       try {
-        popup.current = window.open("about:blank", "paperclip-connection-oauth", "popup,width=720,height=760,resizable=yes,scrollbars=yes");
+        popup.current = window.open("about:blank", "wardmote-connection-oauth", "popup,width=720,height=760,resizable=yes,scrollbars=yes");
       } catch { popup.current = null; }
     }
     busy.current = true;
