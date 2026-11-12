@@ -37,14 +37,14 @@ async function flush() {
   for (let i = 0; i < 3; i += 1) await act(async () => { await new Promise((resolve) => setTimeout(resolve, 0)); });
 }
 
-async function renderDialog(currentJob: UpdateJob | null) {
+async function renderDialog(currentJob: UpdateJob | null, showResult = false) {
   const container = document.createElement("div");
   document.body.append(container);
   const root = createRoot(container);
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   await act(async () => root.render(
     <QueryClientProvider client={client}>
-      <UpdateInstallDialog open onOpenChange={() => undefined} status={STATUS} job={currentJob} serverReachable />
+      <UpdateInstallDialog open onOpenChange={() => undefined} status={STATUS} job={currentJob} serverReachable showResult={showResult} />
     </QueryClientProvider>,
   ));
   await flush();
@@ -136,7 +136,15 @@ describe("UpdateInstallDialog", () => {
   });
 
   it("reports a rolled-back failure with the log command", async () => {
-    const view = await renderDialog(job({ phase: "failed", rolledBackTo: "2026.1111.0", error: "health timeout", logHint: "journalctl --user -u wardmote-update-default-abcd1234" }));
+    const failed = job({ phase: "failed", rolledBackTo: "2026.1111.0", error: "health timeout", logHint: "journalctl --user -u wardmote-update-default-abcd1234" });
+    api.liveRuns.mockResolvedValue({ draining: false, pendingWakes: 0, count: 0, runs: [] });
+    const fresh = await renderDialog(failed);
+    try {
+      expect(fresh.buttons()).toContain("Update now");
+    } finally {
+      fresh.cleanup();
+    }
+    const view = await renderDialog(failed, true);
     try {
       expect(view.dialog().textContent).toContain("failed and Wardmote was rolled back to 2026.1111.0");
       expect(view.dialog().textContent).toContain("journalctl --user -u wardmote-update-default-abcd1234");

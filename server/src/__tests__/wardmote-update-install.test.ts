@@ -4,7 +4,7 @@ import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { InstanceUpdateStatus, UpdateJob } from "@tickernelz/wardmote-shared";
 import type { InstanceRunControl } from "@tickernelz/wardmote-shared/instance-drain";
-import { createUpdateInstaller, type UpdateAuditEvent, type UpdateInstallerDeps } from "../services/wardmote-update-install.js";
+import { createSystemdUpdateLauncher, createUpdateInstaller, type UpdateAuditEvent, type UpdateInstallerDeps } from "../services/wardmote-update-install.js";
 
 const STATUS: InstanceUpdateStatus = {
   currentVersion: "2026.1111.0",
@@ -67,6 +67,30 @@ function writeResult(result: Record<string, unknown>) {
 }
 
 const admin = { actorType: "user", actorId: "admin-1" };
+
+describe("systemd update launcher", () => {
+  it("runs the managed CLI update in its own transient unit with the instance's home, shim, and exact version", async () => {
+    const exec = vi.fn(async () => undefined);
+    const launch = createSystemdUpdateLauncher({
+      homeDir: "/srv/wm",
+      instanceId: "team",
+      nodePath: "/opt/node/bin/node",
+      env: { WARDMOTE_SHIM_PATH: "/srv/bin/wardmote", PATH: "/opt/node/bin:/usr/bin", WARDMOTE_API_KEY: "secret" },
+      exec,
+    });
+    const result = await launch({ id: "abcdef12-0000", toVersion: "2026.1112.0" } as UpdateJob, "/srv/wm/instances/team/update-result.json");
+    expect(result.logHint).toBe("journalctl --user -u wardmote-update-team-abcdef12");
+    expect(exec).toHaveBeenCalledWith("systemd-run", [
+      "--user", "--collect", "--quiet", "--unit=wardmote-update-team-abcdef12",
+      "--setenv", "WARDMOTE_HOME=/srv/wm",
+      "--setenv", "WARDMOTE_INSTANCE_ID=team",
+      "--setenv", "WARDMOTE_SHIM_PATH=/srv/bin/wardmote",
+      "--setenv", "PATH=/opt/node/bin:/usr/bin",
+      "/opt/node/bin/node", "/srv/wm/cli/current/node_modules/.bin/wardmote",
+      "update", "--version", "2026.1112.0", "--yes", "--result-file", "/srv/wm/instances/team/update-result.json",
+    ]);
+  });
+});
 
 describe("update installer", () => {
   it("force starts the update at once, records the runs it cuts, and reports success after the restart", async () => {

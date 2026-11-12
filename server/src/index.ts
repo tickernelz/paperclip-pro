@@ -969,7 +969,6 @@ async function startServerWithDatabaseTeardown(
     launch: createSystemdUpdateLauncher({
       homeDir: resolveWardmoteHomeDir(),
       instanceId: resolveWardmoteInstanceId(),
-      configPath: process.env.WARDMOTE_CONFIG?.trim() || undefined,
     }),
     audit: async ({ action, job }) => {
       const settings = instanceSettingsService(db as any);

@@ -220,17 +220,26 @@ function readJson<T>(filePath: string): T | null {
   }
 }
 
-export function createSystemdUpdateLauncher(input: { homeDir: string; instanceId: string; configPath?: string; nodePath?: string }) {
+const FORWARDED_UPDATE_ENV = ["WARDMOTE_CONFIG", "WARDMOTE_SHIM_PATH", "PATH"] as const;
+
+export function createSystemdUpdateLauncher(input: {
+  homeDir: string;
+  instanceId: string;
+  nodePath?: string;
+  env?: NodeJS.ProcessEnv;
+  exec?: (file: string, args: string[]) => Promise<unknown>;
+}) {
+  const exec = input.exec ?? ((file: string, args: string[]) => execFileAsync(file, args, { timeout: 30_000 }));
   return async (job: UpdateJob, resultPath: string): Promise<{ logHint: string }> => {
     const unit = `wardmote-update-${input.instanceId}-${job.id.slice(0, 8)}`;
     const entrypoint = path.join(input.homeDir, "cli", "current", "node_modules", ".bin", "wardmote");
+    const source = input.env ?? process.env;
     const env = [
       `WARDMOTE_HOME=${input.homeDir}`,
       `WARDMOTE_INSTANCE_ID=${input.instanceId}`,
-      ...(input.configPath ? [`WARDMOTE_CONFIG=${input.configPath}`] : []),
-      `PATH=${process.env.PATH ?? "/usr/local/bin:/usr/bin:/bin"}`,
+      ...FORWARDED_UPDATE_ENV.flatMap((key) => (source[key]?.trim() ? [`${key}=${source[key]!.trim()}`] : [])),
     ].flatMap((value) => ["--setenv", value]);
-    await execFileAsync("systemd-run", [
+    await exec("systemd-run", [
       "--user",
       "--collect",
       "--quiet",
@@ -244,7 +253,7 @@ export function createSystemdUpdateLauncher(input: { homeDir: string; instanceId
       "--yes",
       "--result-file",
       resultPath,
-    ], { timeout: 30_000 });
+    ]);
     return { logHint: `journalctl --user -u ${unit}` };
   };
 }

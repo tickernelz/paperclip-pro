@@ -114,6 +114,31 @@ describe("UpdateNotice", () => {
     }
   });
 
+  it("offers Update now again after a cancelled update", async () => {
+    getCurrentBoardAccess.mockResolvedValue(access({ isInstanceAdmin: true }));
+    getStatus.mockResolvedValue({ ...STATUS, install: { ...STATUS.install, canInstall: true } });
+    getInstall.mockResolvedValue({ job: { id: "job-1", phase: "cancelled", toVersion: "2026.1112.0", liveRuns: 1, finishedAt: new Date(T0).toISOString() } });
+    const view = await renderNotice(() => T0 + 60_000);
+    try {
+      expect([...view.container.querySelectorAll("button")].map((button) => button.textContent)).toEqual(["Update now", "Hide"]);
+    } finally {
+      view.cleanup();
+    }
+  });
+
+  it("replaces an old success with the notice once a newer version is out", async () => {
+    getCurrentBoardAccess.mockResolvedValue(access({ isInstanceAdmin: true }));
+    getStatus.mockResolvedValue({ ...STATUS, currentVersion: "2026.1112.0", latestVersion: "2026.1113.0", install: { ...STATUS.install, canInstall: true } });
+    getInstall.mockResolvedValue({ job: { id: "job-1", phase: "succeeded", toVersion: "2026.1112.0", installedVersion: "2026.1112.0", liveRuns: 0, finishedAt: new Date(T0).toISOString() } });
+    const view = await renderNotice(() => T0 + 60_000);
+    try {
+      expect(view.notice()?.textContent).toContain("Wardmote 2026.1113.0");
+      expect([...view.container.querySelectorAll("button")].map((button) => button.textContent)).toEqual(["Update now", "Hide"]);
+    } finally {
+      view.cleanup();
+    }
+  });
+
   it("renders nothing when the installed version is current", async () => {
     getCurrentBoardAccess.mockResolvedValue(access({ source: "local_implicit" }));
     getStatus.mockResolvedValue({ ...STATUS, latestVersion: "2026.1111.0", updateAvailable: false });

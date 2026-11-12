@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { InstanceUpdateStatus, UpdateInstallMode, UpdateJob } from "@tickernelz/wardmote-shared";
+import { isUpdateJobActive, type InstanceUpdateStatus, type UpdateInstallMode, type UpdateJob } from "@tickernelz/wardmote-shared";
 import { instanceUpdatesApi } from "@/api/instanceUpdates";
 import { queryKeys } from "@/lib/queryKeys";
 import { Button } from "./ui/button";
@@ -60,16 +60,22 @@ export function UpdateInstallDialog({
   status,
   job,
   serverReachable,
+  showResult = false,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   status: InstanceUpdateStatus;
   job: UpdateJob | null;
   serverReachable: boolean;
+  showResult?: boolean;
 }) {
   const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
-  const showJob = job !== null && (job.phase === "waiting" || job.phase === "installing" || job.toVersion === status.latestVersion);
+  const [followedJobId, setFollowedJobId] = useState<string | null>(null);
+  useEffect(() => {
+    if (isUpdateJobActive(job)) setFollowedJobId(job!.id);
+  }, [job]);
+  const showJob = job !== null && (isUpdateJobActive(job) || showResult || job.id === followedJobId);
   const liveRuns = useQuery({
     queryKey: [...queryKeys.instance.updates, "live-runs"],
     queryFn: () => instanceUpdatesApi.liveRuns(),
@@ -79,6 +85,7 @@ export function UpdateInstallDialog({
   });
   const onJob = ({ job: next }: { job: UpdateJob }) => {
     setError(null);
+    setFollowedJobId(next.id);
     queryClient.setQueryData([...queryKeys.instance.updates, "install"], { job: next });
   };
   const onError = (cause: unknown) => setError(cause instanceof Error ? cause.message : String(cause));
@@ -105,8 +112,9 @@ export function UpdateInstallDialog({
             <p>{liveRuns.isError ? "Could not count the active runs." : "Counting active runs..."}</p>
           ) : active > 0 ? (
             <p>
-              {plural(active, "run")} {active === 1 ? "is" : "are"} active now. Stopping them restarts each from its
-              last checkpoint after the update; waiting lets them finish first.
+              {active === 1
+                ? "1 run is active now. Stopping it restarts it from its last checkpoint after the update; waiting lets it finish first."
+                : `${active} runs are active now. Stopping them restarts each from its last checkpoint after the update; waiting lets them finish first.`}
             </p>
           ) : (
             <p>No runs are active. The server restarts briefly.</p>

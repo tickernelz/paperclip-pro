@@ -70,7 +70,7 @@ export function UpdateNotice({ now = Date.now }: { now?: () => number }) {
   });
   const job = install.data?.job ?? null;
   const serverReachable = !install.isError;
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState<"start" | "result" | null>(null);
   const [hiddenUntil, setHiddenUntil] = useState<number | null>(readHiddenUntil);
   const [seenJob, setSeenJob] = useState<string | null>(() => readStored(UPDATE_RESULT_SEEN_KEY));
   const hidden = isUpdateNoticeHidden(hiddenUntil, now());
@@ -81,13 +81,23 @@ export function UpdateNotice({ now = Date.now }: { now?: () => number }) {
     return () => window.clearTimeout(timer);
   }, [hidden, hiddenUntil, now]);
 
-  const jobFinished = job?.finishedAt ? now() - Date.parse(job.finishedAt) < RESULT_SHOWN_FOR_MS : false;
-  const showJobStrip = job !== null && (isUpdateJobActive(job) || (jobFinished && seenJob !== job.id));
   const update = status.data;
   if (!allowed || !update) return null;
+  const recentResult = job?.finishedAt ? now() - Date.parse(job.finishedAt) < RESULT_SHOWN_FOR_MS && seenJob !== job.id : false;
+  const resultStillCurrent = job?.phase === "succeeded"
+    ? !update.updateAvailable
+    : job?.phase === "failed" && update.latestVersion === job.toVersion;
+  const showJobStrip = job !== null && (isUpdateJobActive(job) || (recentResult && resultStillCurrent));
 
   const dialog = canInstall ? (
-    <UpdateInstallDialog open={dialogOpen} onOpenChange={setDialogOpen} status={update} job={job} serverReachable={serverReachable} />
+    <UpdateInstallDialog
+      open={dialogOpen !== null}
+      onOpenChange={(open) => setDialogOpen(open ? dialogOpen ?? "start" : null)}
+      status={update}
+      job={job}
+      serverReachable={serverReachable}
+      showResult={dialogOpen === "result"}
+    />
   ) : null;
 
   if (showJobStrip && job) {
@@ -97,9 +107,7 @@ export function UpdateNotice({ now = Date.now }: { now?: () => number }) {
         ? serverReachable ? `Installing Wardmote ${job.toVersion}...` : "Wardmote is restarting..."
         : job.phase === "succeeded"
           ? `Wardmote ${job.installedVersion ?? job.toVersion} is installed`
-          : job.phase === "cancelled"
-            ? `Update to ${job.toVersion} was cancelled`
-            : job.rolledBackTo
+          : job.rolledBackTo
               ? `Update to ${job.toVersion} failed and was rolled back to ${job.rolledBackTo}`
               : `Update to ${job.toVersion} failed`;
     const dismiss = () => {
@@ -112,7 +120,7 @@ export function UpdateNotice({ now = Date.now }: { now?: () => number }) {
           ? <Loader2 className="size-4 shrink-0 animate-spin text-accent" aria-hidden="true" />
           : <ArrowUpCircle className={`size-4 shrink-0 ${job.phase === "failed" ? "text-bad" : "text-accent"}`} aria-hidden="true" />}
         <p className="min-w-0 flex-1 truncate font-semibold" role="status">{label}</p>
-        <Button type="button" variant="ghost" size="xs" onClick={() => setDialogOpen(true)}>Details</Button>
+        <Button type="button" variant="ghost" size="xs" onClick={() => setDialogOpen("result")}>Details</Button>
         {isUpdateJobActive(job) ? null : (
           <Button type="button" variant="ghost" size="xs" onClick={dismiss}>Dismiss</Button>
         )}
@@ -154,7 +162,7 @@ export function UpdateNotice({ now = Date.now }: { now?: () => number }) {
         </a>
       ) : null}
       {canInstall ? (
-        <Button type="button" variant="primary" size="xs" onClick={() => setDialogOpen(true)}>Update now</Button>
+        <Button type="button" variant="primary" size="xs" onClick={() => setDialogOpen("start")}>Update now</Button>
       ) : null}
       <Button
         type="button"
