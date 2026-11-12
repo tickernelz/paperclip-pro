@@ -251,7 +251,7 @@ describe("IssueMonitorBanner / IssueMonitorComposerStrip rendering", () => {
     expect(container.textContent).not.toContain("Resumes in");
     expect(container.querySelector("a")?.href).toBe("https://github.com/example/private-repo/pull/42");
     expect(container.querySelector("a")?.textContent).toBe("example/private-repo#42");
-    const button = container.querySelector("button:not([aria-expanded])")!;
+    const button = container.querySelector<HTMLButtonElement>("button:not([aria-expanded])")!;
     expect(button.textContent).toBe("Check status");
     flushSync(() => button.click());
     expect(onCheckNow).toHaveBeenCalledTimes(1);
@@ -272,7 +272,7 @@ describe("IssueMonitorBanner / IssueMonitorComposerStrip rendering", () => {
     expect(container.textContent).toContain("Waiting for workspace");
     expect(container.textContent).toContain("You can keep sending instructions while the agent waits.");
     expect(container.textContent).not.toContain("wakes the agent now");
-    expect(container.querySelector("button:not([aria-expanded])")).toBeNull();
+    expect(container.querySelector<HTMLButtonElement>("button:not([aria-expanded])")).toBeNull();
     flushSync(() => root.unmount());
   });
 
@@ -324,7 +324,7 @@ describe("IssueMonitorBanner / IssueMonitorComposerStrip rendering", () => {
       );
     });
 
-    const buttons = Array.from(container.querySelectorAll("button:not([aria-expanded])"));
+    const buttons = Array.from(container.querySelectorAll<HTMLButtonElement>("button:not([aria-expanded])"));
     expect(buttons.map((b) => b.textContent)).toEqual(["Retry now", "Retry now"]);
     for (const button of buttons) flushSync(() => button.dispatchEvent(new MouseEvent("click", { bubbles: true })));
     expect(onRetryNow).toHaveBeenCalledTimes(2);
@@ -334,7 +334,7 @@ describe("IssueMonitorBanner / IssueMonitorComposerStrip rendering", () => {
 
     const monitorWaiting = { ...retryWaiting, executionState: { monitor: { status: "scheduled", nextCheckAt: new Date(NOW.getTime() + 60 * 60_000).toISOString(), attemptCount: 1 } } } as unknown as Issue;
     flushSync(() => root.render(<IssueMonitorComposerStrip issue={monitorWaiting} onCheckNow={onCheckNow} onRetryNow={onRetryNow} />));
-    const monitorButton = container.querySelector("button:not([aria-expanded])")!;
+    const monitorButton = container.querySelector<HTMLButtonElement>("button:not([aria-expanded])")!;
     expect(monitorButton.textContent).toBe("Check now");
     flushSync(() => monitorButton.dispatchEvent(new MouseEvent("click", { bubbles: true })));
     expect(onCheckNow).toHaveBeenCalledTimes(1);
